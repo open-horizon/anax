@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang=en>
+
+<head>
+    <base href="/">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizon edge device self-registration for weather station application</title>
+    <link rel="stylesheet" href="/styles/main.css" />
+    <script src="/js/jquery.min.js"></script>
+</head>
+
+<body onload="getNeighborhoodName()">
+    <div class="grid">
+        <header class="grid__col--12 panel--padded--center" role="banner">
+            <h1>Personal Weather Station Self-Registration</h1>
+        </header>
+
+        <div class="grid">
+            <div class="grid__col--12">
+                <p>For Personal Weather Station registration:
+                    <br> &nbsp;&nbsp;- Select the correspondent Weather Station Model and Type below.
+                    <br> &nbsp;&nbsp;- Your station will be registered on Weather Underground and a new unique PWS ID will be issued to your device.
+                    <br>
+                </p>
+                <p>Your PWS and weather data will be shown on:
+                    <br> &nbsp;&nbsp;- The Blue Horizon <a href="https://bluehorizon.network/map/" style="text-decoration: underline;" target="_blank">Device Map</a>
+                    <br> &nbsp;&nbsp;- The Weather Underground's <a href="http://www.wunderground.com/" style="text-decoration: underline;" target="_blank">Personal Weather Station Network</a>
+                    <br> Weather data will be posted for public viewing.</p>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="grid__col--12">
+                <h4 class="grid">Weather Station Description ("Neighborhood" on Weather Underground)</h4>
+                <form class="form" id="bandwidth">
+                    <label class="inline-error" id="name_error" style="display: none;">*Cannot resolve the address information for your device. Please go back to the first page to enter the correct latitude and longitude.</label>
+                    <input class="form__input" type="text" id="pws_desc" value="My Personal Weather Station" readonly />
+                </form>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="grid__col--12">
+                <h4 class="grid">Weather Station Model and Type:&nbsp;&nbsp;&nbsp;(<a href="http://www.weewx.com/docs/usersguide.htm#hardware" style="text-decoration: underline;" target="_blank">Supported Hardware</a>)</h4>
+                <form class="form">
+                    <select class="form__input" id="pws_model_type">
+                    </select>
+                    <p>* = Experimental, this specific station model has not been tested on Horizon, although others with the same driver have been.</p>
+                </form>
+            </div>
+        </div>
+
+        <div class="grid" style="margin-top: 3em;">
+            <div class="grid__col--12">
+                <button class="btn--default" id="back">Back</button>
+                <button class="btn--default" id="next">Next</button>
+            </div>
+        </div>
+
+    </div>
+    <script src="/js/utils.js"></script>
+    <script src="/js/weather_station.js"></script>
+</body>
+
+</html>

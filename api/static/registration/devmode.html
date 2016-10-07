@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang=en>
+
+<head>
+    <base href="/">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizon edge device self-registration for development mode</title>
+    <link rel="stylesheet" href="/styles/main.css" />
+    <script src="/js/jquery.min.js"></script>
+</head>
+
+<body>
+    <div class="grid">
+        <header class="grid__col--12 panel--padded--center" role="banner">
+            <h1>Development Mode Configurations</h1>
+        </header>
+
+        <div class="grid">
+            <div class="grid__col--12">
+                <h4 class="grid">Development Mode Overview</h4>
+                <div class="grid__col--12">
+                    <p>​​Development Mode indicates that while you are developing and debugging your Quarks application code, you want to run a Blue Horizon agreementbot on your RPi and have it only contract with your RPi (and not let anyone else contract with your RPi).</p>
+                    <p>Please fill in the following IoTF information. It will be used by the agreementbot when setting up the Quarks workload on your RPi.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="grid__col--12">
+                <h4 class="grid">Cloud Message Broker Host</h4>
+                <form class="form" id="devmode_host_form">
+                    <label class="inline-error" id="devmode_cmbhost_error" style="display: none;">*Please specify your Message broker host name, ORGID.messaging.internetofthings.ibmcloud.com. Replace 'ORGID' with your Watson IoT Service Organization ID.</label>
+                    <input class="form__input" type="text" id="devmode_cmbhost" onblur="validate_data(id, 'devmode_cmbhost_error')" value="ORGID.messaging.internetofthings.ibmcloud.com" />
+                    <label for="devmode_cmbhost">Replace 'ORGID' with your Watson IoT Service Organization ID.</label>
+                </form>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="grid__col--12">
+                <h4 class="grid">Data Verification Interval (in seconds)</h4>
+                <form class="form" id="devmode_vinterval_form">
+                    <label class="inline-error" id="devmode_vinterval_error" style="display: none;">*Required. Please enter a possitive integer.</label>
+                    <input class="form__input" type="text" id="devmode_vinterval" value="300" onblur="validate_vinterval(value)" />
+                </form>
+            </div>
+        </div>
+
+
+        <div class="grid" style="margin-top: 3em;">
+            <div class="grid__col--12">
+                <button class="btn--default" id="back">Back</button>
+                <button class="btn--default" id="next">Next</button>
+            </div>
+        </div>
+
+    </div>
+    <script src="/js/utils.js"></script>
+    <script src="/js/devmode.js"></script>
+</body>
+
+</html>

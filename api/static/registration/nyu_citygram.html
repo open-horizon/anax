@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang=en>
+
+<head>
+    <base href="/">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizon edge device self-registration for Citygram sound sensor application</title>
+    <link rel="stylesheet" href="/styles/main.css" />
+    <script src="/js/jquery.min.js"></script>
+</head>
+
+<body>
+    <div class="grid">
+        <header class="grid__col--12 panel--padded--center" role="banner">
+            <h1>NYU Citygram Self-Registration</h1>
+        </header>
+
+        <div class="grid">
+            <div class="grid__col--12">
+                <p>To configure your Remote Sensing Device (RSD), enter your credentials for NYU's <a href="https://citygramsound.com:4347/indexA1.html" style="text-decoration: underline;" target="_blank">Citygram</a> network below.
+                    <br>
+                    <br class="grid"><b>Citygram Account email address and password:</b>
+                    <br>(Note: If you do not have an account, one will be created for you upon clicking "Next".)
+                    <form class="form" id="cg_email">
+                        <span class="inline-error" id="cg_emailError" style="display: none;">Please enter a valid email address</span>
+                        <label class="form__label--hidden" for="cg_email_inp">Email:</label>
+                        <input class="form__input" type="text" id="cg_email_inp" placeholder="Citygram account email address:" onblur="validateCGEmail(value)"/>
+                    </form>
+                    <form class="form" id="cg_pass">
+                        <span class="inline-error" id="cg_passError" style="display: none;">Please enter a valid password</span>
+                        <label class="form__label--hidden" for="cg_email_inp">Email:</label>
+                        <input class="form__input" type="text" id="cg_pass_inp" placeholder="Citygram account password:" onblur="checkCGPass(value)"/>
+                        <label class="inline-error" id="pass_error" style="display: none;">*Citygram login error: Password doesn't match that for email address on file.</label>
+                    </form>
+                </p>
+                <p><b>Remote Sensing Device (RSD) Name and Description:</b>
+                    <br>Enter a unique name and optional description for this device. This will differentiate this sound sensor from others under your account.  (Example: 'my-RSD01')
+                    <form class="form" id="cg_rsdname">
+                        <span class="inline-error" id="cg_rsdnameError" style="display: none;">RSD name required</span>
+                        <label class="form__label--hidden" for="cg_rsdname_inp">RSD Name:</label>
+                        <input class="form__input" type="text" id="cg_rsdname_inp" placeholder="Unique Device Name:" onblur="checkCGRSDName(value)"/>
+                    </form>
+                    <form class="form" id="cg_rsddesc">
+                        <label class="inline-error" id="rsdname_error" style="display: none;">*RSD name required.</label>
+                        <input class="form__input" type="text" id="cg_rsddesc_inp" placeholder="(Optional) Description of this device: (Example: 'Home, near window')"/>
+                    </form>
+                </p>
+                <p>Your sound data will be shown on:
+                    <br> &nbsp;&nbsp;- The Blue Horizon <a href="https://bluehorizon.network/map/" style="text-decoration: underline;" target="_blank">Device Map</a>
+                    <br> &nbsp;&nbsp;- NYU's <a href="http://www.citygramsound.com/" style="text-decoration: underline;" target="_blank">Citygram Soundscapes Network</a>
+                    <br>
+                    <br>To access your account, view sound data streams, and manage your RSD's, visit NYU's <a href="https://citygramsound.com:4347/indexA1.html" style="text-decoration: underline;" target="_blank">Citygram website</a>.
+                    <br>
+                    <br> Sound analysis data will be posted for public viewing. Your personal info will not be shared, nor will any sensitive sound data be shared. Voice data is not streamed from the device, only facts gathered through DSP: dB levels, spectral information, etc. <br>No personal information will be gathered or shared, and your voice can’t be reverse-engineered from the data stream.
+                    <label class="inline-error" id="general_error" style="display: none;">*Citygram server error. Please check information and re-submit.</label>
+                </p>
+            </div>
+        </div>
+        <div class="grid" style="margin-top: 3em;">
+            <div class="grid__col--12">
+                <button class="btn--default" id="back">Back</button>
+                <button class="btn--default" id="next">Next</button>
+            </div>
+        </div>
+
+    </div>
+    <script src="/js/utils.js"></script>
+    <script src="/js/nyu_citygram.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="40px" height="40px" viewBox="0 0 40 40" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.5.2 (25235) - http://www.bohemiancoding.com/sketch -->
+    <title>netspeed on</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="MTN-Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="Icons" sketch:type="MSArtboardGroup" transform="translate(-276.000000, -54.000000)">
+            <g id="netspeed-on" sketch:type="MSLayerGroup" transform="translate(276.000000, 54.000000)">
+                <circle id="Oval-14" fill-opacity="0.995329484" fill="#344597" sketch:type="MSShapeGroup" cx="20" cy="20" r="20"></circle>
+                <path d="M19.4826864,23.0182497 C17.9713915,23.0182497 16.5870394,23.6552169 15.5114061,24.5738619 L19.4826864,29.11 L23.4584737,24.5783687 C22.3820892,23.6574703 20.9969859,23.0182497 19.4826864,23.0182497 Z M19.6396748,14.0458752 C23.4051427,14.0458752 26.8378552,15.476798 29.4683496,17.8241124 L31.2943725,15.7419506 C28.1778901,12.9514633 24.1074591,11 19.6389237,11 C15.1778996,11 11.1127267,12.9462053 8,15.7291813 L9.82301825,17.8128453 C12.4527615,15.47154 15.879465,14.0458752 19.6396748,14.0458752 Z M19.587095,20.055 C21.8442725,20.055 23.9061535,20.9015355 25.4963181,22.2926479 L27.429754,20.0895525 C25.3265603,18.2267238 22.589404,17.0091248 19.5878461,17.0091248 C16.5915462,17.0091248 13.8581456,18.2229681 11.755703,20.0805388 L13.6861344,22.2866387 C15.2747968,20.8977798 17.3336732,20.055 19.587095,20.055 Z" id="Wifi" fill="#FFFFFF" sketch:type="MSShapeGroup"></path>
+            </g>
+        </g>
+    </g>
+</svg>

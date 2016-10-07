@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang=en>
+
+<head>
+    <base href="/">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizon edge device status</title>
+    <link rel="stylesheet" href="/styles/main.css" />
+    <script src="/js/jquery.min.js"></script>
+</head>
+
+<body>
+    <div class="grid">
+        <header class="grid__col--12 panel--padded--center" role="banner">
+            <h1>Contract Status</h1>
+        </header>
+
+        <div class="grid">
+            <div class="grid__col--12" id="hh">
+                <p id=account>Account:</p>
+                <form class="form">
+                    <table class="status_table" id="contract_status">
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                        </tr>
+                    </table>
+                    <p></p>
+                    <b>Possible Status Values:</b>
+                    <ul>
+                        <li>Waiting to Advertise &mdash; Waiting for device to register contracts on the blockchain.</li>
+                        <li>Advertised &mdash; Contract registered on the blockchain.</li>
+                        <li>Negotiating &mdash; AgreementBot has proposed agreement (process has begun).</li>
+                        <li>Downloading Workload &mdash; Proposal accepted and workload started downloading.</li>
+                        <li>Running Workload &mdash; Workload is running on the device.</li>
+                        <li>In Contract &mdash; Agreement reached and agreement should be paid out in tokens.</li>
+                        <li>In Contract (#num tokens paid) &mdash; Agreement reached and tokens paid.</li>
+                    </ul>
+                </form>
+            </div>
+        </div>
+
+    </div>
+    <script src="/js/config.js"></script>
+    <script src="/js/status.js"></script>
+</body>
+
+</html>

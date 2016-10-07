@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang=en>
+
+<head>
+    <base href="/">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizon edge device self-registration</title>
+    <link rel="stylesheet" href="/styles/main.css" />
+    <script src="/js/jquery.min.js"></script>
+</head>
+
+<body onload="getGeo()" onunload="saveGeo()">
+    <div class="grid">
+        <header class="grid__col--12 panel--padded--center" role="banner">
+            <h1>Device Self-Registration</h1>
+        </header>
+
+        <div class="grid" id="precheck" style="display: none;">
+            <h3 class="inline-error">***Your device does not have internet connectivity. Please resolve the network problem before proceeding.</h3>
+            <h3 class="inline-error" id="precheck_warn"></h3>
+        </div>
+
+        <div class="grid">
+            <div class="grid__col--12">
+                <h2 class="grid">Welcome</h2>
+
+                <p><a style="text-decoration: italic;">New Users:</a> Your device is accessible via a default account name and password. It is recommended that you change this password to avoid unwanted access.</p>
+                <p>To change your Pi's default password, log in to your Pi via the console (if using an external monitor) or ssh from another computer. For example:
+                    <a style="text-decoration: italic;">ssh root@<span id="localIp">192.168.123.3</span></a>
+                    <br> Account name: root, password: horizon
+                    <br>
+                    <a style="text-decoration: italic;">passwd</a> (set new password as prompted)</p>
+                <p>Additional security advice: Take care to not expose the device management page outside of your LAN. Use proper LAN security measures (strong router passwords, firewall).</p>
+                <br>
+                <p><a style="text-decoration: italic;">To Register:</a>
+                    <br>Fill in the fields below to register your device on the system.</p>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="grid__col--12">
+                <h2 class="grid">General Registration Info</h2>
+                <h4 class="grid">Contract Base Price (bacon)</h4>
+                <p>The amount of payment (in virtual currency "bacon" units) that your device will receive for running edge compute workloads under contract.</p>
+                <form class="form" id="contract">
+                    <span class="inline-error" id="costError" style="display: none;">*You must input an integer that is 60 or greater.</span>
+                    <label class="form__label--hidden" for="hourly_cost_bacon">Bacon:</label>
+                    <input class="form__input" type="text" id="hourly_cost_bacon" value="120" onblur="validateCost(value)" />
+                </form>
+                <h4 class="grid">Device Location</h4>
+                <p>Your device location will be made public by some applications like <a href="https://bluehorizon.network/map/" style="text-decoration: underline;" target="_blank">Horizon Map</a>. If you do not want to make your GPS location public, please leave the 'Latitude' and 'Longitude' fields blank and do not check the 'GPS kit' box.</p>
+                <form class="form" id="device_location">
+                    <span class="inline-error" id="latError" style="display: none;">Please make sure the latitude is within the range -90 to 90. </span>
+                    <label class="form__label--hidden" for="lat">Latitude:</label>
+                    <input class="form__input" type="text" id="lat" placeholder="Latitude" onblur="validateLatitude(value)" />
+
+                    <span class="inline-error" id="lonError" style="display: none;">Please make sure the longitude is within the range -180 to 180. </span>
+                    <label class="form__label--hidden" for="lon">Longitude:</label>
+                    <input class="form__input" type="text" id="lon" placeholder="Longitude" onblur="validateLongitude(value)" />
+                </form>
+                <div class="grid larger_text_110" id="location_notes_expand" style="cursor:pointer;"><span>Click for More...</span>
+                </div>
+                <div class="grid" id="location_notes" style="display: none;">
+                    <p>Coordinates are in decimal degrees; "South" latitudes and "West" longitudes are expressed as negative values. We've pre-filled the fields with discovered values. If you'd like to correct inaccurate discovered values, you might browse to <a href="http://www.latlong.net/" style="text-decoration: underline;" target="_blank">LatLong.net</a> to find yourself on a world map.</p>
+                    <p>*Note: we've used <a href="http://ip-api.com/" style="text-decoration: underline;" target="_blank">http://ip-api.com/</a> to pre-fill the above location fields. However if the fields are blank, they may have been blocked by the ad blockers. Please temporarily suspend the add blockers and refresh the page. You can re-enable the ad blockers after the registration is done.</p>
+                </div>
+                <h4 class="grid">Moving Device</h4>
+                <form class="form" id="device_location_gps">
+                    <p>If your device moves from place to place, the most current location is useful for some applications. Please check the following box if your device has an attached GPS kit and you want to share the most current device location from the GPS.</p>
+                    <input class="form__input" type="checkbox" id="gps" placeholder="Does your device have an attached GPS kit?">
+                    <label class="form__label" for="gps">Does your device have an attached GPS kit?</label>
+                </form>
+                <h4 class="grid">Project Involvement</h4>
+                <form class="form" id="contact">
+                    <p>This project is in early testing and we'd like to hear your feedback in our forum: <a href="https://discourse.bluehorizon.network/" style="text-decoration: underline;">https://discourse.bluehorizon.network/</a>. If you'd prefer to provide us with your email address, we'll update you from time-to-time as our work progresses.</p>
+                    <span class="inline-error" id="emailError" style="display: none;">Please enter a valid email address or leave it empty</span>
+                    <label class="form__label--hidden" for="email">Email:</label>
+                    <input class="form__input" type="text" id="email" placeholder="Email address" onblur="validateEmail(value)" />
+                    <p>
+                    </p>
+                    <p>If you are a developer and using this device to develop new Horizon applications, please check the following box. Note that currently when you select development mode you are only permitted to select one application.</p>
+                    <input class="form__input" type="checkbox" id="devmode" placeholder="Use this device for development." onclick="devmode_click();" disabled="disabled">
+                    <label class="form__label" for="devmode">Development Mode</label>
+                    <div class="grid" id="start_local_gov_section">
+                        <input class="form__input" type="checkbox" id="start_local_gov" placeholder="Start Local AgreementBot." checked="checked">
+                        <label class="form__label" for="start_local_gov">Start Local AgreementBot</label>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="grid" style="margin-top: 3em;">
+            <div class="grid__col--12">
+                <button class="btn--default" id="next">Next</button>
+            </div>
+        </div>
+    </div>
+    <script src="/js/config.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/index.js"></script>
+</body>
+
+</html>
