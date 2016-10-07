@@ -11,7 +11,7 @@ Related Projects:
 
 ## Documentation
 
-* [APIs](apis.md)
+* [APIs](api.md)
 
 ## Development
 
