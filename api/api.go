@@ -15,11 +15,12 @@ import (
 	"github.com/boltdb/bolt"
 	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
-	"repo.hovitos.engineering/MTN/anax/config"
-	"repo.hovitos.engineering/MTN/anax/events"
-	"repo.hovitos.engineering/MTN/anax/governance"
-	"repo.hovitos.engineering/MTN/anax/persistence"
-	"repo.hovitos.engineering/MTN/anax/worker"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/governance"
+	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/worker"
 )
 
 var HORIZON_SERVERS = [...]string{"firmware.bluehorizon.network", "images.bluehorizon.network"}
@@ -113,7 +114,7 @@ type Account struct {
 	Email *string `json:"email"`
 }
 
-func NewAPIListener(config *config.Config, db *bolt.DB) *API {
+func NewAPIListener(config *config.HorizonConfig, db *bolt.DB) *API {
 	messages := make(chan events.Message)
 
 	listener := &API{
@@ -125,9 +126,19 @@ func NewAPIListener(config *config.Config, db *bolt.DB) *API {
 		db: db,
 	}
 
-	listener.listen(config.APIListen)
+	listener.listen(config.Edge.APIListen)
 	return listener
 }
+
+// Worker framework functions
+func (a *API) Messages() chan events.Message {
+    return a.Manager.Messages
+}
+
+func (a *API) NewEvent(ev events.Message) {
+	return
+}
+
 
 func (a *API) listen(apiListen string) {
 	glog.Info("Starting Anax API server")
@@ -144,28 +155,28 @@ func (a *API) listen(apiListen string) {
 		router := mux.NewRouter()
 
 		router.HandleFunc("/agreement/{id}", a.agreement).Methods("DELETE")
-		router.HandleFunc("/agreement/{id}/latestmicropayment", a.latestmicropayment)
+		// router.HandleFunc("/agreement/{id}/latestmicropayment", a.latestmicropayment)
 		router.HandleFunc("/contract", a.contract)
-		router.HandleFunc("/contract/names", a.contractNames)
+		// router.HandleFunc("/contract/names", a.contractNames)
 		router.HandleFunc("/workload", a.workload)
-		router.HandleFunc("/micropayment", a.micropayment)
+		// router.HandleFunc("/micropayment", a.micropayment)
 		router.HandleFunc("/info", a.info)
 		router.HandleFunc("/account", account)
 		router.HandleFunc("/devmode", a.devmode)
 		router.HandleFunc("/iotfconf", a.iotfconf)
 
-		router.PathPrefix("/js/").Handler(http.StripPrefix("/js/", http.FileServer(http.Dir(path.Join(a.Config.StaticWebContent, "js")))))
-		router.PathPrefix("/styles/").Handler(http.StripPrefix("/styles/", http.FileServer(http.Dir(path.Join(a.Config.StaticWebContent, "styles")))))
-		router.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir(path.Join(a.Config.StaticWebContent, "images")))))
+		router.PathPrefix("/js/").Handler(http.StripPrefix("/js/", http.FileServer(http.Dir(path.Join(a.Config.Edge.StaticWebContent, "js")))))
+		router.PathPrefix("/styles/").Handler(http.StripPrefix("/styles/", http.FileServer(http.Dir(path.Join(a.Config.Edge.StaticWebContent, "styles")))))
+		router.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir(path.Join(a.Config.Edge.StaticWebContent, "images")))))
 
 		// paths to pages
-		router.PathPrefix("/status/").Handler(http.StripPrefix("/status/", http.FileServer(http.Dir(path.Join(a.Config.StaticWebContent, "status")))))
-		router.PathPrefix("/registration/").Handler(http.StripPrefix("/registration/", http.FileServer(http.Dir(path.Join(a.Config.StaticWebContent, "registration")))))
+		router.PathPrefix("/status/").Handler(http.StripPrefix("/status/", http.FileServer(http.Dir(path.Join(a.Config.Edge.StaticWebContent, "status")))))
+		router.PathPrefix("/registration/").Handler(http.StripPrefix("/registration/", http.FileServer(http.Dir(path.Join(a.Config.Edge.StaticWebContent, "registration")))))
 
 		// redir root
 		router.HandleFunc("/", a.redir)
 
-		glog.Infof("Serving static web content from: %v", a.Config.StaticWebContent)
+		glog.Infof("Serving static web content from: %v", a.Config.Edge.StaticWebContent)
 		http.ListenAndServe(apiListen, nocache(router))
 	}()
 }
@@ -199,7 +210,7 @@ func (a *API) info(w http.ResponseWriter, r *http.Request) {
 
 		info := NewInfo(false)
 
-		if err := WriteGethStatus(a.Config.GethURL, info.Geth); err != nil {
+		if err := WriteGethStatus(a.Config.Edge.GethURL, info.Geth); err != nil {
 			glog.Errorf("Unable to determine geth service facts: %v", err)
 		}
 
@@ -230,19 +241,13 @@ func (a *API) info(w http.ResponseWriter, r *http.Request) {
 }
 
 func allContractNames(db *bolt.DB) ([]string, error) {
-	if eContracts, err := persistence.FindEstablishedContracts(db, []persistence.ECFilter{}); err != nil {
-		return nil, fmt.Errorf("Error fetching established contracts: %v", err)
-	} else if pContracts, err := persistence.FindPendingContracts(db); err != nil {
-		return nil, fmt.Errorf("Error fetching pending contracts: %v", err)
+	if eAgreements, err := persistence.FindEstablishedAgreements(db, []persistence.ECFilter{}); err != nil {
+		return nil, fmt.Errorf("Error fetching established agreements: %v", err)
 	} else {
-		var names []string
+		names := make([]string, 0)
 
-		for _, eContract := range eContracts {
-			names = append(names, eContract.Name)
-		}
-
-		for _, pContract := range pContracts {
-			names = append(names, *pContract.Name)
+		for _, eAgreement := range eAgreements {
+			names = append(names, eAgreement.CurrentAgreementId)
 		}
 
 		return names, nil
@@ -308,7 +313,7 @@ func (a *API) workload(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
-		if client, err := dockerclient.NewClient(a.Config.DockerEndpoint); err != nil {
+		if client, err := dockerclient.NewClient(a.Config.Edge.DockerEndpoint); err != nil {
 			glog.Error(err)
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
@@ -348,74 +353,6 @@ func (a *API) workload(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (a *API) micropayment(w http.ResponseWriter, r *http.Request) {
-	glog.V(3).Infof("Handling request: %v", r)
-
-	switch r.Method {
-	case "GET":
-		if micropayments, err := persistence.ActiveAgreementMicropayments(a.db); err != nil {
-			glog.Error(err)
-			w.WriteHeader(http.StatusInternalServerError)
-		} else {
-
-			wrap := make(map[string][]persistence.Micropayments, 0)
-			wrap["micropayments"] = micropayments
-
-			if serial, err := json.Marshal(wrap); err != nil {
-				glog.Error(err)
-				w.WriteHeader(http.StatusInternalServerError)
-			} else {
-
-				w.Header().Set("Content-Type", "application/json")
-				if _, err := w.Write(serial); err != nil {
-					glog.Error(err)
-					w.WriteHeader(http.StatusInternalServerError)
-				}
-			}
-		}
-
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	}
-
-}
-
-func (a *API) latestmicropayment(w http.ResponseWriter, r *http.Request) {
-	glog.V(3).Infof("Handling request: %v", r)
-
-	switch r.Method {
-	case "GET":
-		pathVars := mux.Vars(r)
-		id := pathVars["id"]
-
-		if paymentTime, paymentValue, _, err := persistence.LastMicropayment(a.db, id); err != nil {
-			glog.Error(err)
-			w.WriteHeader(http.StatusInternalServerError)
-		} else {
-			var wrap persistence.LatestMicropayment
-			wrap.PaymentTime = paymentTime
-			wrap.PaymentValue = paymentValue
-			wrap.AgreementId = id
-
-			if serial, err := json.Marshal(wrap); err != nil {
-				glog.Error(err)
-				w.WriteHeader(http.StatusInternalServerError)
-			} else {
-
-				w.Header().Set("Content-Type", "application/json")
-				if _, err := w.Write(serial); err != nil {
-					glog.Error(err)
-					w.WriteHeader(http.StatusInternalServerError)
-				}
-			}
-		}
-
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	}
-
-}
-
 func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 	glog.V(3).Infof("Handling request: %v", r)
 
@@ -429,25 +366,24 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 
 		filters := make([]persistence.ECFilter, 0)
 		filters = append(filters, persistence.UnarchivedECFilter())
-		filters = append(filters, persistence.AgreementECFilter(id))
+		filters = append(filters, persistence.IdECFilter(id))
 
-		if contracts, err := persistence.FindEstablishedContracts(a.db, filters); err != nil {
+		if agreements, err := persistence.FindEstablishedAgreements(a.db, filters); err != nil {
 			glog.Error(err)
 			w.WriteHeader(http.StatusInternalServerError)
-		} else if len(contracts) == 0 {
+		} else if len(agreements) == 0 {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
 			// write message
-			ct := contracts[0]
+			ct := agreements[0]
 
-			a.Messages <- governance.NewGovernanceCancelationMessage(events.CONTRACT_ENDED, events.CT_TERMINATED, ct.ContractAddress, ct.CurrentAgreementId, &ct.CurrentDeployment, ct.PreviousAgreements)
+			a.Messages() <- governance.NewGovernanceCancelationMessage(events.CONTRACT_ENDED, events.CT_TERMINATED, ct.CurrentAgreementId, &ct.CurrentDeployment, ct.PreviousAgreements)
 			w.WriteHeader(http.StatusOK)
 		}
 	}
 }
 
 func (a *API) contract(w http.ResponseWriter, r *http.Request) {
-
 	writeInputErr := func(status int, inputErr *APIUserInputError) {
 		if serial, err := json.Marshal(inputErr); err != nil {
 			glog.Infof("Error serializing contract output: %v", err)
@@ -470,15 +406,15 @@ func (a *API) contract(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		// really only for the purpose of determining if contracts were registered
 
-		if contracts, err := persistence.FindEstablishedContracts(a.db, []persistence.ECFilter{}); err != nil {
+		if agreements, err := persistence.FindEstablishedAgreements(a.db, []persistence.ECFilter{}); err != nil {
 			glog.Error(err)
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
-			wrap := make(map[string][]persistence.EstablishedContract, 0)
-			wrap["contracts"] = contracts
+			wrap := make(map[string][]persistence.EstablishedAgreement, 0)
+			wrap["contracts"] = agreements
 
 			if serial, err := json.Marshal(wrap); err != nil {
-				glog.Infof("Error serializing contract output: %v", err)
+				glog.Infof("Error serializing agreement output: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)
 			} else {
 				w.Header().Set("Content-Type", "application/json")
@@ -525,14 +461,14 @@ func (a *API) contract(w http.ResponseWriter, r *http.Request) {
 				writeInputErr(http.StatusBadRequest, &APIUserInputError{Input: "ram", Error: nErrMsg})
 				return
 			}
-			if contract.HourlyCostBacon == nil {
-				writeInputErr(http.StatusBadRequest, &APIUserInputError{Input: "hourly_cost_bacon", Error: nErrMsg})
-				return
-			}
-			if *contract.HourlyCostBacon < 60 {
-				writeInputErr(http.StatusBadRequest, &APIUserInputError{Input: "hourly_cost_bacon", Error: "Value is < 60 and shouldn't be"})
-				return
-			}
+			// if contract.HourlyCostBacon == nil {
+			// 	writeInputErr(http.StatusBadRequest, &APIUserInputError{Input: "hourly_cost_bacon", Error: nErrMsg})
+			// 	return
+			// }
+			// if *contract.HourlyCostBacon < 60 {
+			// 	writeInputErr(http.StatusBadRequest, &APIUserInputError{Input: "hourly_cost_bacon", Error: "Value is < 60 and shouldn't be"})
+			// 	return
+			// }
 			if contract.AppAttributes == nil {
 				writeInputErr(http.StatusBadRequest, &APIUserInputError{Input: "app_attributes", Error: nErrMsg})
 				return
@@ -577,56 +513,14 @@ func (a *API) contract(w http.ResponseWriter, r *http.Request) {
 			contract.CPUs = runtime.NumCPU()
 			glog.V(2).Infof("Using discovered CPU count: %v", contract.CPUs)
 
-			// TODO: move this into the persistence module
-			duplicate := false
-
-			// check for duplicate pending and established contracts
-			pErr := a.db.View(func(tx *bolt.Tx) error {
-				bp := tx.Bucket([]byte(persistence.P_CONTRACTS))
-				if bp != nil {
-					duplicate = (bp.Get([]byte(*contract.Name)) != nil)
+			if *contract.Name != "Location Contract" {
+				if genErr := policy.GeneratePolicy(a.Messages(), *contract.Name, contract.Arch, contract.AppAttributes, a.Config.Edge.PolicyPath); genErr != nil {
+					glog.Errorf("Error: %v", genErr)
 				}
-
-				return nil
-
-			})
-
-			nameFilter := func(name string) persistence.ECFilter {
-				return func(e persistence.EstablishedContract) bool { return e.Name == name }
 			}
 
-			contracts, eErr := persistence.FindEstablishedContracts(a.db, []persistence.ECFilter{nameFilter(*contract.Name)})
+			w.WriteHeader(http.StatusCreated)
 
-			if pErr != nil || eErr != nil {
-				// TODO: sloppy, fix
-				glog.Errorf("Error checking duplicates of %v from db. Errors: %v %v", contract, pErr, eErr)
-				w.WriteHeader(http.StatusInternalServerError)
-			} else if len(contracts) != 0 || duplicate {
-				writeInputErr(http.StatusConflict, &APIUserInputError{Input: *contract.Name, Error: "Duplicate record found in pending or established contracts"})
-				return
-			}
-
-			writeErr := a.db.Update(func(tx *bolt.Tx) error {
-				b, err := tx.CreateBucketIfNotExists([]byte(persistence.P_CONTRACTS))
-				if err != nil {
-					return err
-				}
-
-				if serial, err := json.Marshal(&contract); err != nil {
-					glog.Errorf("Failed to serialize pending contract: %v. Error: %v", contract, err)
-				} else {
-					return b.Put([]byte(*contract.Name), serial)
-				}
-				return nil // end tx
-			})
-
-			if writeErr != nil {
-				glog.Errorf("Error storing contract (%v) to db. Error: %v", contract, writeErr)
-				w.WriteHeader(http.StatusInternalServerError)
-			} else {
-				glog.Infof("New pending contract: %v", contract)
-				w.WriteHeader(http.StatusCreated)
-			}
 		}
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -666,6 +560,10 @@ func (a *API) devmode(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 		} else {
 			glog.Infof("devemode=%v", mode)
+
+			// Hack for now, generate device ID and token
+			a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, "an12345", "abcdefg")
+
 			if err := persistence.SaveDevmode(a.db, mode); err != nil {
 				glog.Error("Error saving devmode: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)
@@ -703,7 +601,7 @@ func (a *API) iotfconf(w http.ResponseWriter, r *http.Request) {
 			}
 
 			glog.Infof("iotf_conf=%v", iotf_conf)
-			if err := persistence.SaveIoTFConf(a.Config.DBPath, iotf_conf); err != nil {
+			if err := persistence.SaveIoTFConf(a.Config.Edge.DBPath, iotf_conf); err != nil {
 				glog.Error("Error saving IoTF configuration in file.: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)
 			} else {
@@ -714,3 +612,4 @@ func (a *API) iotfconf(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
+

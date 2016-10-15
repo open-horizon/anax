@@ -8,19 +8,14 @@ import (
 	"fmt"
 	docker "github.com/fsouza/go-dockerclient"
 	"os"
-	"sort"
-	"strconv"
 	"time"
 
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
-	"repo.hovitos.engineering/MTN/anax/cutil"
-	"strings"
+	"github.com/open-horizon/anax/cutil"
 )
 
-const P_CONTRACTS = "pending_contracts"
-const E_CONTRACTS = "established_contracts" // may or may not be in agreements
-const MICROPAYMENTS = "micropayments"
+const E_AGREEMENTS = "established_agreements" // may or may not be in agreements
 const DEVMODE = "devmode"
 
 // uses pointers for members b/c it allows nil-checking at deserialization; !Important!: the json field names here must not change w/out changing the error messages returned from the API, they are not programmatically determined
@@ -29,14 +24,11 @@ type PendingContract struct {
 	Arch                 string             `json:"arch"`
 	CPUs                 int                `json:"cpus"`
 	RAM                  *int               `json:"ram"`
-	HourlyCostBacon      *int64             `json:"hourly_cost_bacon"`
 	IsLocEnabled         bool               `json:"is_loc_enabled"`
+	Lat                  *string            `json:"lat"`
+	Lon                  *string            `json:"lon"`
 	AppAttributes        *map[string]string `json:"app_attributes"`
 	PrivateAppAttributes *map[string]string `json:"private_app_attributes"`
-}
-
-func (c PendingContract) String() string {
-	return fmt.Sprintf("Name: %v, Arch: %v, CPUs: %v, RAM: %v, HourlyCostBacon: %v, IsLocEnabled: %v, AppAttributes: %v, PrivateAppAttributes: %v", *c.Name, c.Arch, c.CPUs, *c.RAM, *c.HourlyCostBacon, c.IsLocEnabled, *c.AppAttributes, *c.PrivateAppAttributes)
 }
 
 type DevMode struct {
@@ -73,15 +65,13 @@ type IoTFCred struct {
 	Password string `json:"password"`
 }
 
-type LatestMicropayment struct {
-	AgreementId  string `json:"agreement_id"`
-	PaymentTime  int64  `json:"payment_time"`
-	PaymentValue uint64 `json:"payment_value"`
+
+func (c PendingContract) String() string {
+	return fmt.Sprintf("Name: %v, Arch: %v, CPUs: %v, RAM: %v, IsLocEnabled: %v, AppAttribs: %v", *c.Name, c.Arch, c.CPUs, *c.RAM, c.IsLocEnabled, *c.AppAttributes)
 }
 
 // N.B. Important!! Ensure new values are handled in Update function below
-type EstablishedContract struct {
-	ContractAddress             string                   `json:"contract_address"` // also the key in the db for this struct
+type EstablishedAgreement struct {
 	Name                        string                   `json:"name"`
 	Archived                    bool                     `json:"archived"` // TODO: give risham, booz a way to indicate that a contract needs to be archived; REST api
 	CurrentAgreementId          string                   `json:"current_agreement_id"`
@@ -93,10 +83,11 @@ type EstablishedContract struct {
 	AgreementCreationTime       uint64                   `json:"agreement_creation_time"`
 	AgreementExecutionStartTime uint64                   `json:"agreement_execution_start_time"`
 	CurrentDeployment           map[string]ServiceConfig `json:"current_deployment"`
+	Proposal                    string                   `json:"proposal"`     // the proposal currently in effect
 }
 
-func (c EstablishedContract) String() string {
-	return fmt.Sprintf("ContractAddress: %v , Name: %v , Archived: %v , CurrentAgreementId: %v , ConfigureNonce: %v, CurrentDeployment (service names): %v, PrivateEnvironmentAdditions: %v, EnvironmentAdditions: %v, AgreementCreationTime: %v, AgreementExecutionStartTime: %v, AgreementAcceptedTime: %v, PreviousAgreements (sample): %v", c.ContractAddress, c.Name, c.Archived, c.CurrentAgreementId, c.ConfigureNonce, ServiceConfigNames(&c.CurrentDeployment), c.PrivateEnvironmentAdditions, c.EnvironmentAdditions, c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, cutil.FirstN(10, c.PreviousAgreements))
+func (c EstablishedAgreement) String() string {
+	return fmt.Sprintf("Name: %v , Archived: %v , CurrentAgreementId: %v , ConfigureNonce: %v, CurrentDeployment (service names): %v, PrivateEnvironmentAdditions: %v, EnvironmentAdditions: %v, AgreementCreationTime: %v, AgreementExecutionStartTime: %v, AgreementAcceptedTime: %v, PreviousAgreements (sample): %v", c.Name, c.Archived, c.CurrentAgreementId, c.ConfigureNonce, ServiceConfigNames(&c.CurrentDeployment), c.PrivateEnvironmentAdditions, c.EnvironmentAdditions, c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, cutil.FirstN(10, c.PreviousAgreements))
 }
 
 // the internal representation of this lib; *this is the one persisted using the persistence lib*
@@ -121,55 +112,95 @@ func (c ServiceConfig) String() string {
 	return fmt.Sprintf("Config: %v, HostConfig: %v", c.Config, c.HostConfig)
 }
 
-func NewEstablishedContract(pending *PendingContract, contractAddress string) (*EstablishedContract, error) {
+func NewEstablishedAgreement(db *bolt.DB, agreementId string, proposal string) (*EstablishedAgreement, error) {
 
-	if pending.Name == nil || *pending.Name == "" {
-		return nil, errors.New("Contract name unset or empty, cannot persist")
-	} else if contractAddress == "" {
-		return nil, errors.New("Contract address empty, cannot persist")
+	if agreementId == "" || proposal == "" {
+		return nil, errors.New("Agreement id or proposal empty, cannot persist")
 	} else {
-		// construct map for sensitive environment stuff from pending contract
-		privateEnvironmentAdditions := make(map[string]string, 0)
 
-		// deep copy of all private environment additions
-		for key, val := range *pending.PrivateAppAttributes {
-			privateEnvironmentAdditions[key] = val
+		filters := make([]ECFilter, 0)
+		filters = append(filters, UnarchivedECFilter())
+		filters = append(filters, IdECFilter(agreementId))
+
+		if agreements, err := FindEstablishedAgreements(db, filters); err != nil {
+			return nil, err
+		} else if len(agreements) != 0 {
+			return nil, fmt.Errorf("Not expecting any records with id: %v, found %v", agreementId, agreements)
+		} else {
+			// construct map for sensitive environment stuff from pending contract
+			privateEnvironmentAdditions := make(map[string]string, 0)
+			privateEnvironmentAdditions["lat"] = "lat"
+			privateEnvironmentAdditions["lon"] = "lon"
+
+			newAg := &EstablishedAgreement{
+				Name:                        "name",
+				Archived:                    false,
+				CurrentAgreementId:          agreementId,
+				PreviousAgreements:          []string{},
+				ConfigureNonce:              "", // needs to be set before this can be used
+				AgreementAcceptedTime:       0,
+				PrivateEnvironmentAdditions: privateEnvironmentAdditions,
+				EnvironmentAdditions:        map[string]string{},
+				AgreementCreationTime:       0,
+				AgreementExecutionStartTime: 0,
+				CurrentDeployment:           map[string]ServiceConfig{},
+				Proposal:                    proposal,
+			}
+
+			return newAg, db.Update(func(tx *bolt.Tx) error {
+
+				if b, err := tx.CreateBucketIfNotExists([]byte(E_AGREEMENTS)); err != nil {
+					return err
+				} else if bytes, err := json.Marshal(newAg); err != nil {
+					return fmt.Errorf("Unable to marshal new record: %v", err)
+				} else if err := b.Put([]byte(agreementId), []byte(bytes)); err != nil {
+					return fmt.Errorf("Unable to persist agreement: %v", err)
+				} else {
+					return nil
+				}
+			})
 		}
-
-		return &EstablishedContract{
-			Name:                        *pending.Name,
-			Archived:                    false,
-			ContractAddress:             contractAddress,
-			CurrentAgreementId:          "",
-			PreviousAgreements:          []string{},
-			ConfigureNonce:              "", // needs to be set before this can be used
-			AgreementAcceptedTime:       0,
-			PrivateEnvironmentAdditions: privateEnvironmentAdditions,
-			EnvironmentAdditions:        map[string]string{},
-			AgreementCreationTime:       0,
-			AgreementExecutionStartTime: 0,
-			CurrentDeployment:           map[string]ServiceConfig{},
-		}, nil
 	}
 }
 
-// not intended to be instantiated outside of this module
-type Micropayments struct {
-	PayerAddress    string            `json:"payer_address"`
-	ContractAddress string            `json:"contract_address"`
-	AgreementId     string            `json:"agreement_id"` // PK
-	Payments        map[string]uint64 `json:"payments"`     // timestamp (s): amount; N.B. the key must be a string so this is really an int timestamp converted upon serialization and deserialization
+
+func DeleteEstablishedAgreement(db *bolt.DB, agreementId string) error {
+
+	if agreementId == "" {
+		return errors.New("Agreement id empty, cannot remove")
+	} else {
+
+		filters := make([]ECFilter, 0)
+		filters = append(filters, UnarchivedECFilter())
+		filters = append(filters, IdECFilter(agreementId))
+
+		if agreements, err := FindEstablishedAgreements(db, filters); err != nil {
+			return err
+		} else if len(agreements) != 1 {
+			return fmt.Errorf("Expecting 1 records with id: %v, found %v", agreementId, agreements)
+		} else {
+
+			return db.Update(func(tx *bolt.Tx) error {
+
+				if b, err := tx.CreateBucketIfNotExists([]byte(E_AGREEMENTS)); err != nil {
+					return err
+				} else if err := b.Delete([]byte(agreementId)); err != nil {
+					return fmt.Errorf("Unable to delete agreement: %v", err)
+				} else {
+					return nil
+				}
+			})
+		}
+	}
 }
 
-func (m Micropayments) String() string {
-	return fmt.Sprintf("PayerAddress: %v, ContractAddress: %v, AgreementId: %v, Payments (recordedTimestamp: amountToDate): %v", m.PayerAddress, m.ContractAddress, m.AgreementId, m.Payments)
-}
+
 
 // TODO: share common initialization here with above factory method
 // reset contract record state to begin polling
-func ContractStateNew(db *bolt.DB, dbContractAddress string) (*EstablishedContract, error) {
-	return contractStateUpdate(db, dbContractAddress, func(c EstablishedContract) *EstablishedContract {
-		c.CurrentAgreementId = ""
+func AgreementStateNew(db *bolt.DB, dbAgreementId string) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, func(c EstablishedAgreement) *EstablishedAgreement {
+		// c.CurrentAgreementId = ""
 		c.AgreementAcceptedTime = 0
 		c.ConfigureNonce = ""
 		c.EnvironmentAdditions = map[string]string{}
@@ -181,47 +212,36 @@ func ContractStateNew(db *bolt.DB, dbContractAddress string) (*EstablishedContra
 }
 
 // set contract record state to in agreement, not yet accepted; N.B. It's expected that privateEnvironmentAdditions will already have been added by this time
-func ContractStateInAgreement(db *bolt.DB, dbContractAddress string, containerProvider string, currentAgreementId string, environmentAdditions map[string]string) (*EstablishedContract, error) {
+func AgreementStateInAgreement(db *bolt.DB, dbAgreementId string, environmentAdditions map[string]string) (*EstablishedAgreement, error) {
 
-	if err := initializeMicropaymentsRecord(db, containerProvider, dbContractAddress, currentAgreementId); err != nil {
+	var err error
+
+	ret, updateErr := agreementStateUpdate(db, dbAgreementId, func(c EstablishedAgreement) *EstablishedAgreement {
+		c.AgreementCreationTime = uint64(time.Now().Unix())
+		c.EnvironmentAdditions = environmentAdditions
+
+		return &c
+	})
+
+	if err != nil {
 		return nil, err
+	} else if updateErr != nil {
+		return nil, updateErr
 	} else {
-		var err error
-
-		ret, updateErr := contractStateUpdate(db, dbContractAddress, func(c EstablishedContract) *EstablishedContract {
-			c.CurrentAgreementId = currentAgreementId
-			c.AgreementCreationTime = uint64(time.Now().Unix())
-			c.EnvironmentAdditions = environmentAdditions
-
-			var nonce string
-			nonce, err = genNonce()
-			c.ConfigureNonce = nonce
-
-			// write confignonce into environment additions
-			c.EnvironmentAdditions["MTN_CONFIGURE_NONCE"] = c.ConfigureNonce
-			return &c
-		})
-
-		if err != nil {
-			return nil, err
-		} else if updateErr != nil {
-			return nil, updateErr
-		} else {
-			return ret, nil
-		}
+		return ret, nil
 	}
 }
 
-func ContractStateConfigured(db *bolt.DB, dbContractAddress string) (*EstablishedContract, error) {
-	return contractStateUpdate(db, dbContractAddress, func(c EstablishedContract) *EstablishedContract {
-		c.ConfigureNonce = ""
-		return &c
-	})
-}
+// func AgreementStateConfigured(db *bolt.DB, dbAgreementId string) (*EstablishedAgreement, error) {
+// 	return agreementStateUpdate(db, dbAgreementId, func(c EstablishedAgreement) *EstablishedAgreement {
+// 		c.ConfigureNonce = ""
+// 		return &c
+// 	})
+// }
 
 // set contract record state to execution start; this is before payment
-func ContractStateExecutionStarted(db *bolt.DB, dbContractAddress string, deployment *map[string]ServiceConfig) (*EstablishedContract, error) {
-	return contractStateUpdate(db, dbContractAddress, func(c EstablishedContract) *EstablishedContract {
+func AgreementStateExecutionStarted(db *bolt.DB, dbAgreementId string, deployment *map[string]ServiceConfig) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, func(c EstablishedAgreement) *EstablishedAgreement {
 		c.AgreementExecutionStartTime = uint64(time.Now().Unix())
 		c.CurrentDeployment = *deployment
 		return &c
@@ -229,51 +249,50 @@ func ContractStateExecutionStarted(db *bolt.DB, dbContractAddress string, deploy
 }
 
 // set contract record state to already in agreement and accepted (this means the other party has reported receiving data
-func ContractStateAccepted(db *bolt.DB, dbContractAddress string) (*EstablishedContract, error) {
-	return contractStateUpdate(db, dbContractAddress, func(c EstablishedContract) *EstablishedContract {
+func AgreementStateAccepted(db *bolt.DB, dbAgreementId string) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, func(c EstablishedAgreement) *EstablishedAgreement {
 		c.AgreementAcceptedTime = uint64(time.Now().Unix())
 		return &c
 	})
 }
 
-func contractStateUpdate(db *bolt.DB, dbContractAddress string, fn func(EstablishedContract) *EstablishedContract) (*EstablishedContract, error) {
+func agreementStateUpdate(db *bolt.DB, dbAgreementId string, fn func(EstablishedAgreement) *EstablishedAgreement) (*EstablishedAgreement, error) {
 	filters := make([]ECFilter, 0)
 	filters = append(filters, UnarchivedECFilter())
-	filters = append(filters, AddressECFilter(dbContractAddress))
+	filters = append(filters, IdECFilter(dbAgreementId))
 
-	if contracts, err := FindEstablishedContracts(db, filters); err != nil {
+	if agreements, err := FindEstablishedAgreements(db, filters); err != nil {
 		return nil, err
-	} else if len(contracts) > 1 {
-		return nil, fmt.Errorf("Expected only one record for dbContractAddress: %v, but retrieved: %v", dbContractAddress, contracts)
-	} else if len(contracts) == 0 {
-		return nil, fmt.Errorf("No record with id: %v", dbContractAddress)
+	} else if len(agreements) > 1 {
+		return nil, fmt.Errorf("Expected only one record for dbAgreementId: %v, but retrieved: %v", dbAgreementId, agreements)
+	} else if len(agreements) == 0 {
+		return nil, fmt.Errorf("No record with id: %v", dbAgreementId)
 	} else {
 		// run this single contract through provided update function and persist it
-		updated := fn(contracts[0])
-		return updated, PersistUpdatedContract(db, dbContractAddress, updated)
+		updated := fn(agreements[0])
+		return updated, PersistUpdatedAgreement(db, dbAgreementId, updated)
 	}
 }
 
 // does whole-member replacements of values that are legal to change during the course of a contract's life
-func PersistUpdatedContract(db *bolt.DB, dbContractAddress string, update *EstablishedContract) error {
+func PersistUpdatedAgreement(db *bolt.DB, dbAgreementId string, update *EstablishedAgreement) error {
 	return db.Update(func(tx *bolt.Tx) error {
-		if b, err := tx.CreateBucketIfNotExists([]byte(E_CONTRACTS)); err != nil {
+		if b, err := tx.CreateBucketIfNotExists([]byte(E_AGREEMENTS)); err != nil {
 			return err
 		} else {
-			current := b.Get([]byte(dbContractAddress))
-			var mod EstablishedContract
+			current := b.Get([]byte(dbAgreementId))
+			var mod EstablishedAgreement
 
 			if current == nil {
-				return fmt.Errorf("No contract with give address available to update: %v", dbContractAddress)
+				return fmt.Errorf("No agreement with given id available to update: %v", dbAgreementId)
 			} else if err := json.Unmarshal(current, &mod); err != nil {
-				return fmt.Errorf("Failed to unmarshal contract DB data: %v. Error: %v", string(current), err)
+				return fmt.Errorf("Failed to unmarshal agreement DB data: %v. Error: %v", string(current), err)
 			} else {
 
-				prevAgreementId := mod.CurrentAgreementId
+				// prevAgreementId := mod.CurrentAgreementId
 
 				// write updates only to the fields we expect should be updateable
 				mod.Archived = update.Archived
-				mod.CurrentAgreementId = update.CurrentAgreementId
 				mod.AgreementAcceptedTime = update.AgreementAcceptedTime
 				mod.ConfigureNonce = update.ConfigureNonce
 				mod.EnvironmentAdditions = update.EnvironmentAdditions
@@ -282,16 +301,16 @@ func PersistUpdatedContract(db *bolt.DB, dbContractAddress string, update *Estab
 				mod.CurrentDeployment = update.CurrentDeployment
 
 				// update PreviousAgreements array if CurrentAgreementId unset
-				if prevAgreementId != "" && mod.CurrentAgreementId == "" {
-					mod.PreviousAgreements = append([]string{prevAgreementId}, mod.PreviousAgreements...)
-				}
+				// if prevAgreementId != "" && mod.CurrentAgreementId == "" {
+				// 	mod.PreviousAgreements = append([]string{prevAgreementId}, mod.PreviousAgreements...)
+				// }
 
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize contract record: %v. Error: %v", mod, err)
-				} else if err := b.Put([]byte(dbContractAddress), serialized); err != nil {
-					return fmt.Errorf("Failed to write contract record with key: %v. Error: %v", dbContractAddress, err)
+				} else if err := b.Put([]byte(dbAgreementId), serialized); err != nil {
+					return fmt.Errorf("Failed to write contract record with key: %v. Error: %v", dbAgreementId, err)
 				} else {
-					glog.V(2).Infof("Succeeded updating contract record to %v", mod)
+					glog.V(2).Infof("Succeeded updating agreement id record to %v", mod)
 					return nil
 				}
 			}
@@ -299,67 +318,67 @@ func PersistUpdatedContract(db *bolt.DB, dbContractAddress string, update *Estab
 	})
 }
 
-func FindPendingContracts(db *bolt.DB) ([]PendingContract, error) {
-	pendingContracts := make([]PendingContract, 0)
+// func FindPendingAgreements(db *bolt.DB) ([]PendingAgreement, error) {
+// 	pendingAgreements := make([]PendingAgreement, 0)
 
-	// fetch pending contracts
-	readErr := db.View(func(tx *bolt.Tx) error {
+// 	// fetch pending contracts
+// 	readErr := db.View(func(tx *bolt.Tx) error {
 
-		// ok if pending contracts bucket doesn't exist yet; user interaction with the system creates it
-		if b := tx.Bucket([]byte(P_CONTRACTS)); b != nil {
-			b.ForEach(func(_, v []byte) error {
-				// key unnecessary, it's just the user-friendly name we gave at creation time
+// 		// ok if pending contracts bucket doesn't exist yet; user interaction with the system creates it
+// 		if b := tx.Bucket([]byte(P_AGREEMENTS)); b != nil {
+// 			b.ForEach(func(_, v []byte) error {
+// 				// key unnecessary, it's just the user-friendly name we gave at creation time
 
-				var p PendingContract
+// 				var p PendingAgreement
 
-				if err := json.Unmarshal(v, &p); err != nil {
-					glog.Errorf("Unable to deserialize db record: %v. Error: %v", v, err)
-				} else {
-					pendingContracts = append(pendingContracts, p)
-				}
+// 				if err := json.Unmarshal(v, &p); err != nil {
+// 					glog.Errorf("Unable to deserialize db record: %v. Error: %v", v, err)
+// 				} else {
+// 					pendingAgreements = append(pendingAgreements, p)
+// 				}
 
-				return nil
-			})
-		}
+// 				return nil
+// 			})
+// 		}
 
-		return nil // end the transaction
-	})
+// 		return nil // end the transaction
+// 	})
 
-	if readErr != nil {
-		return nil, readErr
-	} else {
-		return pendingContracts, nil
-	}
-}
+// 	if readErr != nil {
+// 		return nil, readErr
+// 	} else {
+// 		return pendingAgreements, nil
+// 	}
+// }
 
 func UnarchivedECFilter() ECFilter {
-	return func(e EstablishedContract) bool { return !e.Archived }
+	return func(e EstablishedAgreement) bool { return !e.Archived }
 }
 
-func AddressECFilter(address string) ECFilter {
-	return func(e EstablishedContract) bool { return e.ContractAddress == address }
+func IdECFilter(id string) ECFilter {
+	return func(e EstablishedAgreement) bool { return e.CurrentAgreementId == id }
 }
 
-func AgreementECFilter(agreementId string) ECFilter {
-	return func(e EstablishedContract) bool {
-		return strings.ToLower(e.CurrentAgreementId) == strings.ToLower(agreementId)
-	}
-}
+// func AgreementECFilter(agreementId string) ECFilter {
+// 	return func(e EstablishedContract) bool {
+// 		return strings.ToLower(e.CurrentAgreementId) == strings.ToLower(agreementId)
+// 	}
+// }
 
-// filter on EstablishedContracts
-type ECFilter func(EstablishedContract) bool
+// filter on EstablishedAgreements
+type ECFilter func(EstablishedAgreement) bool
 
-func FindEstablishedContracts(db *bolt.DB, filters []ECFilter) ([]EstablishedContract, error) {
-	contracts := make([]EstablishedContract, 0)
+func FindEstablishedAgreements(db *bolt.DB, filters []ECFilter) ([]EstablishedAgreement, error) {
+	agreements := make([]EstablishedAgreement, 0)
 
 	// fetch contracts
 	readErr := db.View(func(tx *bolt.Tx) error {
 
-		// ok if pending contracts bucket doesn't exist yet, depends on processing of pending contracts
-		if b := tx.Bucket([]byte(E_CONTRACTS)); b != nil {
+		// ok if pending contracts bucket doesn't exist yet, depends on processing of pending agreements
+		if b := tx.Bucket([]byte(E_AGREEMENTS)); b != nil {
 			b.ForEach(func(k, v []byte) error {
 
-				var e EstablishedContract
+				var e EstablishedAgreement
 
 				if err := json.Unmarshal(v, &e); err != nil {
 					glog.Errorf("Unable to deserialize db record: %v", v)
@@ -371,7 +390,7 @@ func FindEstablishedContracts(db *bolt.DB, filters []ECFilter) ([]EstablishedCon
 						}
 					}
 					if !exclude {
-						contracts = append(contracts, e)
+						agreements = append(agreements, e)
 					}
 				}
 				return nil
@@ -384,168 +403,10 @@ func FindEstablishedContracts(db *bolt.DB, filters []ECFilter) ([]EstablishedCon
 	if readErr != nil {
 		return nil, readErr
 	} else {
-		return contracts, nil
+		return agreements, nil
 	}
 }
 
-func initializeMicropaymentsRecord(db *bolt.DB, containerProvider string, dbContractAddress string, currentAgreementId string) error {
-
-	return db.Update(func(tx *bolt.Tx) error {
-		if b, err := tx.CreateBucketIfNotExists([]byte(MICROPAYMENTS)); err != nil {
-			return err
-		} else {
-			if existing := b.Get([]byte(currentAgreementId)); existing != nil {
-				glog.V(2).Infof("Existing micropayment record for agreement %v, not creating new one", currentAgreementId)
-				return nil
-			} else {
-				paymentsRecord := &Micropayments{
-					PayerAddress:    containerProvider,
-					ContractAddress: dbContractAddress,
-					AgreementId:     currentAgreementId,
-					Payments:        make(map[string]uint64, 0),
-				}
-
-				if serialized, err := json.Marshal(paymentsRecord); err != nil {
-					return fmt.Errorf("Failed to serialize micropayment record: %v. Error: %v", paymentsRecord, err)
-				} else if err := b.Put([]byte(currentAgreementId), serialized); err != nil {
-					return fmt.Errorf("Failed to write micropayment record with key: %v. Error: %v", currentAgreementId, err)
-				} else {
-					glog.V(2).Infof("Succeeded creating new micropayment record for %v", currentAgreementId)
-					return nil
-				}
-			}
-		}
-		return nil // end transaction
-	})
-}
-
-// supports both new payments on existing payment record and new payments on new payment record
-func RecordMicropayment(db *bolt.DB, agreementId string, amountToDate uint64, recorded int64) error {
-	if agreementId == "" || amountToDate == 0 || recorded == 0 {
-		return errors.New("Illegal (empty) argument")
-	} else {
-		return db.Update(func(tx *bolt.Tx) error {
-			if b, err := tx.CreateBucketIfNotExists([]byte(MICROPAYMENTS)); err != nil {
-				return err
-			} else if existing := b.Get([]byte(agreementId)); existing == nil {
-				glog.V(2).Infof("No current payment record for agreement %v, ignoring payment", agreementId)
-			} else {
-				glog.Infof("Existing payment record for agreement %v, updating it", agreementId)
-				var payment *Micropayments
-
-				if err := json.Unmarshal(existing, &payment); err != nil {
-					return err
-				} else {
-					payment.Payments[strconv.FormatInt(recorded, 10)] = amountToDate
-
-					if serialized, err := json.Marshal(payment); err != nil {
-						return fmt.Errorf("Failed to serialize micropayment record: %v. Error: %v", payment, err)
-					} else if err := b.Put([]byte(agreementId), serialized); err != nil {
-						return fmt.Errorf("Failed to write micropayment record with key: %v. Error: %v", agreementId, err)
-					} else {
-						glog.V(2).Infof("Wrote micropayment at %v to agreement %v", recorded, agreementId)
-					}
-				}
-			}
-
-			return nil // end transaction
-		})
-	}
-}
-
-// sortable type for payment times
-type sInt64 []int64
-
-func (a sInt64) Len() int           { return len(a) }
-func (a sInt64) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a sInt64) Less(i, j int) bool { return a[i] < a[j] }
-
-func ActiveAgreementMicropayments(db *bolt.DB) ([]Micropayments, error) {
-	filters := make([]ECFilter, 0)
-	filters = append(filters, UnarchivedECFilter())
-
-	micropayments := make([]Micropayments, 0)
-
-	ecs, err := FindEstablishedContracts(db, filters)
-	if err != nil {
-		return micropayments, err
-	}
-
-	if readErr := db.View(func(tx *bolt.Tx) error {
-
-		if b := tx.Bucket([]byte(MICROPAYMENTS)); b != nil {
-			b.ForEach(func(k, v []byte) error {
-				var record Micropayments
-
-				if err := json.Unmarshal(v, &record); err != nil {
-					return err
-				}
-
-				// see if this is in an active contract
-				for _, ec := range ecs {
-					if ec.CurrentAgreementId == record.AgreementId {
-						micropayments = append(micropayments, record)
-						break
-					}
-				}
-
-				return nil
-			})
-		}
-		return nil
-	}); readErr != nil {
-		return micropayments, readErr
-	}
-
-	return micropayments, nil
-}
-
-// reports last micropayment time and value made and account id on given agreement; 0 indicates no micropayments have been made
-func LastMicropayment(db *bolt.DB, agreementId string) (int64, uint64, string, error) {
-	last := int64(0)
-	value := uint64(0)
-	accountId := ""
-
-	readErr := db.View(func(tx *bolt.Tx) error {
-
-		// ok if bucket doesn't exist yet
-		if b := tx.Bucket([]byte(MICROPAYMENTS)); b != nil {
-			if existing := b.Get([]byte(agreementId)); existing != nil {
-				var payments Micropayments
-
-				if err := json.Unmarshal(existing, &payments); err != nil {
-					glog.Errorf("Error unmarshaling JSON micropayments record for agreementId: %v. Error: %v", agreementId, err)
-				} else if len(payments.Payments) > 0 {
-
-					// get keys, sort by them, and then pluck the last one for return
-					keys := make(sInt64, 0)
-					for key := range payments.Payments {
-						if ival, err := strconv.ParseInt(key, 10, 64); err != nil {
-							glog.Infof("Error converting serialized key value to int: %v", err)
-						} else {
-							keys = append(keys, ival)
-						}
-					}
-
-					sort.Sort(keys)
-					last = keys[len(keys)-1]
-					value = payments.Payments[strconv.FormatInt(last, 10)]
-				}
-
-				// set payer address even if there are no payments recorded
-				accountId = payments.PayerAddress
-			}
-		}
-
-		return nil // end the transaction
-	})
-
-	if readErr != nil {
-		return last, value, accountId, readErr
-	} else {
-		return last, value, accountId, nil
-	}
-}
 
 func genNonce() (string, error) {
 	bytes := make([]byte, 64)

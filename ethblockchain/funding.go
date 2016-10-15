@@ -1,4 +1,4 @@
-package blockchain
+package ethblockchain
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"math/big"
 	"net/http"
-	"repo.hovitos.engineering/MTN/anax/config"
 	"strings"
 )
 
@@ -38,7 +37,7 @@ func NewRPCRequest(method string, params []string) *RPCRequest {
 	}
 }
 
-func AccountFunded(config *config.Config) (bool, error) {
+func AccountFunded(gethURL string) (bool, error) {
 
 	if account, err := AccountId(); err != nil {
 		return false, err
@@ -53,7 +52,7 @@ func AccountFunded(config *config.Config) (bool, error) {
 			return false, err
 		} else {
 
-			if response, err := http.Post(config.GethURL, "application/json", strings.NewReader(string(req[:]))); err != nil {
+			if response, err := http.Post(gethURL, "application/json", strings.NewReader(string(req[:]))); err != nil {
 				return false, err
 			} else if response.StatusCode != 200 {
 				return false, fmt.Errorf("Got non-200 response code from Post to determine if account is funded: %v", response.StatusCode)
@@ -82,3 +81,44 @@ func AccountFunded(config *config.Config) (bool, error) {
 		}
 	}
 }
+
+// Move this to a better place
+func SignHash(hash string, gethURL string) (string, error) {
+
+	if account, err := AccountId(); err != nil {
+		return "", err
+	} else {
+		params := make([]string, 0)
+		params = append(params, fmt.Sprintf("0x%v", account))
+		params = append(params, hash)
+
+		msg := NewRPCRequest("eth_sign", params)
+
+		if req, err := json.Marshal(msg); err != nil {
+			return "", err
+		} else {
+
+			if response, err := http.Post(gethURL, "application/json", strings.NewReader(string(req[:]))); err != nil {
+				return "", err
+			} else if response.StatusCode != 200 {
+				return "", fmt.Errorf("Got non-200 response code from Post to sign hash: %v", response.StatusCode)
+			} else {
+				defer response.Body.Close()
+
+				if content, err := ioutil.ReadAll(response.Body); err != nil {
+					return "", err
+				} else {
+
+					var response RPCResponse
+					if err := json.Unmarshal(content, &response); err != nil {
+						return "", err
+					} else {
+						return response.Result, nil
+					}
+				}
+			}
+		}
+	}
+}
+
+

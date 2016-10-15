@@ -583,6 +583,10 @@
       "revisionTime": "2016-06-01T13:19:39Z"
     },
     {
+      "path": "repo.hovitos.engineering/MTN/go-policy",
+      "revision": ""
+    },
+    {
       "checksumSHA1": "QVd543KnuAAnroZxWOlCTDELpWU=",
       "path": "repo.hovitos.engineering/MTN/go-solidity",
       "revision": "79a30f5065781a23d92a6a0c06289462dda96bfd",
