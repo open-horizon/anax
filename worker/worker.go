@@ -1,8 +1,8 @@
 package worker
 
 import (
-	"repo.hovitos.engineering/MTN/anax/config"
-	"repo.hovitos.engineering/MTN/anax/events"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/events"
 )
 
 type Command interface{}

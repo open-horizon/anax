@@ -14,7 +14,7 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
-	"repo.hovitos.engineering/MTN/anax/cutil"
+	"github.com/open-horizon/anax/cutil"
 	"strings"
 )
 

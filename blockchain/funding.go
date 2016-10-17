@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"net/http"
-	"repo.hovitos.engineering/MTN/anax/config"
+	"github.com/open-horizon/anax/config"
 	"strings"
 )
 

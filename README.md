@@ -17,8 +17,6 @@ Related Projects:
 
 ### Preconditions
 
-* (until all sources open): `git config --global url.ssh://git@repo.hovitos.engineering:10022/.insteadOf https://repo.hovitos.engineering/`
-* Write SSH deploy key to `~/.ssh/` and set up `~/.ssh/config` to use the appropriate key for the repo above
 * To execute the lint and other code checkers (`make lint`), you must install: `go vet`, `golint`, and `jshint`
 
 ### Operations

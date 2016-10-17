@@ -79,66 +79,6 @@
 			"revisionTime": "2015-10-30T11:21:17Z"
 		},
 		{
-			"checksumSHA1": "Fq/nUFIaalWDa8/3xvfME7bQD3M=",
-			"path": "github.com/anacrolix/torrent/bencode",
-			"revision": "bb04cb88430d2609c5f0c67f71029d08c98960ec",
-			"revisionTime": "2016-03-22T02:11:36Z"
-		},
-		{
-			"checksumSHA1": "/KX0XBIVv40cERHIVPcjEwzLZ7Y=",
-			"path": "github.com/anacrolix/torrent/data/file",
-			"revision": "bb04cb88430d2609c5f0c67f71029d08c98960ec",
-			"revisionTime": "2016-03-22T02:11:36Z"
-		},
-		{
-			"checksumSHA1": "2JbyJ4VsKjg6mqA98PmXKMNJqdo=",
-			"path": "github.com/anacrolix/torrent/dht",
-			"revision": "bb04cb88430d2609c5f0c67f71029d08c98960ec",
-			"revisionTime": "2016-03-22T02:11:36Z"
-		},
-		{
-			"checksumSHA1": "U3zv+w5DL5tb7/Wmpp2/X4gKn1c=",
-			"path": "github.com/anacrolix/torrent/iplist",
-			"revision": "bb04cb88430d2609c5f0c67f71029d08c98960ec",
-			"revisionTime": "2016-03-22T02:11:36Z"
-		},
-		{
-			"checksumSHA1": "SuF+Ux65gQax8wtiBye1ScP+/yY=",
-			"path": "github.com/anacrolix/torrent/logonce",
-			"revision": "bb04cb88430d2609c5f0c67f71029d08c98960ec",
-			"revisionTime": "2016-03-22T02:11:36Z"
-		},
-		{
-			"checksumSHA1": "0Gyp9Jy+kNMHgeGUoaSY+vu2URQ=",
-			"path": "github.com/anacrolix/torrent/metainfo",
-			"revision": "bb04cb88430d2609c5f0c67f71029d08c98960ec",
-			"revisionTime": "2016-03-22T02:11:36Z"
-		},
-		{
-			"checksumSHA1": "pxOsKhm9QZmTLlFqYqa+GP82PrM=",
-			"path": "github.com/anacrolix/torrent/mse",
-			"revision": "bb04cb88430d2609c5f0c67f71029d08c98960ec",
-			"revisionTime": "2016-03-22T02:11:36Z"
-		},
-		{
-			"checksumSHA1": "LBAcNl/dqGILNbz1ZnsFtML3oMs=",
-			"path": "github.com/anacrolix/torrent/peer_protocol",
-			"revision": "bb04cb88430d2609c5f0c67f71029d08c98960ec",
-			"revisionTime": "2016-03-22T02:11:36Z"
-		},
-		{
-			"checksumSHA1": "wE6wL3zgXSmhCI9w1pNAGpFOF0o=",
-			"path": "github.com/anacrolix/torrent/tracker",
-			"revision": "bb04cb88430d2609c5f0c67f71029d08c98960ec",
-			"revisionTime": "2016-03-22T02:11:36Z"
-		},
-		{
-			"checksumSHA1": "fTbCz+CF5s+yV6dzcYXLhoHane0=",
-			"path": "github.com/anacrolix/torrent/util",
-			"revision": "bb04cb88430d2609c5f0c67f71029d08c98960ec",
-			"revisionTime": "2016-03-22T02:11:36Z"
-		},
-		{
 			"checksumSHA1": "+8kqknA2cEj9n1+3wmMfbTEUhtY=",
 			"path": "github.com/anacrolix/utp",
 			"revision": "0a78608853316110c36128d133e859b4a67a5c2a",
@@ -507,8 +447,68 @@
 		{
 			"checksumSHA1": "ZKSLqlFqUtWF6MdzuQ9v+jsUxBM=",
 			"path": "github.com/michaeldye/torrent",
-			"revision": "037a04068bf557835da3240ced55bcf821a45b95",
-			"revisionTime": "2016-10-17T21:10:02Z"
+			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
+			"revisionTime": "2016-10-17T23:07:13Z"
+		},
+		{
+			"checksumSHA1": "qm5AFeVWRfMZoHKkgnOj8t+RCNE=",
+			"path": "github.com/michaeldye/torrent/bencode",
+			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
+			"revisionTime": "2016-10-17T23:07:13Z"
+		},
+		{
+			"checksumSHA1": "6IJxzWhzN8exkA6CZAUP0vHwjCM=",
+			"path": "github.com/michaeldye/torrent/data/file",
+			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
+			"revisionTime": "2016-10-17T23:07:13Z"
+		},
+		{
+			"checksumSHA1": "uW6IsPyNt3Vy2C8BG3VqDhUTY4A=",
+			"path": "github.com/michaeldye/torrent/dht",
+			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
+			"revisionTime": "2016-10-17T23:07:13Z"
+		},
+		{
+			"checksumSHA1": "PyeJqQbFiidP8K+2ddTODvarTQA=",
+			"path": "github.com/michaeldye/torrent/iplist",
+			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
+			"revisionTime": "2016-10-17T23:07:13Z"
+		},
+		{
+			"checksumSHA1": "w/wvFCrTNFBxYiysuT6EliSe2N8=",
+			"path": "github.com/michaeldye/torrent/logonce",
+			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
+			"revisionTime": "2016-10-17T23:07:13Z"
+		},
+		{
+			"checksumSHA1": "2WF+a+L4wIRxULzbgAcfYEm7SUA=",
+			"path": "github.com/michaeldye/torrent/metainfo",
+			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
+			"revisionTime": "2016-10-17T23:07:13Z"
+		},
+		{
+			"checksumSHA1": "hFPj/bfJKedvAG8W28JJ0g7qNqg=",
+			"path": "github.com/michaeldye/torrent/mse",
+			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
+			"revisionTime": "2016-10-17T23:07:13Z"
+		},
+		{
+			"checksumSHA1": "2OaDETrBQENaNqjJSbjUvkdWTJo=",
+			"path": "github.com/michaeldye/torrent/peer_protocol",
+			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
+			"revisionTime": "2016-10-17T23:07:13Z"
+		},
+		{
+			"checksumSHA1": "3o6x3mubIuV1vq80vAOYezNveTs=",
+			"path": "github.com/michaeldye/torrent/tracker",
+			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
+			"revisionTime": "2016-10-17T23:07:13Z"
+		},
+		{
+			"checksumSHA1": "mlKdKZA+bblGZeW+lcr3Qrv5RuU=",
+			"path": "github.com/michaeldye/torrent/util",
+			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
+			"revisionTime": "2016-10-17T23:07:13Z"
 		},
 		{
 			"checksumSHA1": "TJMoqWZG9fhlgHq7bKd3seR2rA4=",
@@ -613,5 +613,5 @@
 			"revisionTime": "2016-06-01T13:19:39Z"
 		}
 	],
-	"rootPath": "repo.hovitos.engineering/MTN/anax"
+	"rootPath": "github.com/open-horizon/anax"
 }

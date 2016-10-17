@@ -15,11 +15,11 @@ import (
 	"github.com/boltdb/bolt"
 	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
-	"repo.hovitos.engineering/MTN/anax/config"
-	"repo.hovitos.engineering/MTN/anax/events"
-	"repo.hovitos.engineering/MTN/anax/governance"
-	"repo.hovitos.engineering/MTN/anax/persistence"
-	"repo.hovitos.engineering/MTN/anax/worker"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/governance"
+	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/worker"
 )
 
 var HORIZON_SERVERS = [...]string{"firmware.bluehorizon.network", "images.bluehorizon.network"}

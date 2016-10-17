@@ -3,7 +3,7 @@ ifeq ($(TMPDIR),)
 endif
 
 export TMPGOPATH := $(TMPDIR)/anax-gopath
-export PKGPATH := $(TMPGOPATH)/src/repo.hovitos.engineering/MTN
+export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon
 export PATH := $(TMPGOPATH)/bin:$(PATH)
 
 SHELL := /bin/bash
@@ -52,7 +52,7 @@ install: anax
 	cp anax $(DESTDIR)/bin/anax
 
   # duplicate smart contracts from repo
-	-git clone ssh://git@repo.hovitos.engineering:10022/MTN/go-solidity.git && \
+	-git clone https://github.com/open-horizon/go-solidity.git && \
 		mv ./go-solidity/contracts $(DESTDIR)
 	rm -Rf ./go-solidity
 

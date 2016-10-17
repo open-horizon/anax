@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	docker "github.com/fsouza/go-dockerclient"
 	"net/url"
-	gwhisper "repo.hovitos.engineering/MTN/go-whisper"
+	gwhisper "github.com/open-horizon/go-whisper"
 	"testing"
 )
 
