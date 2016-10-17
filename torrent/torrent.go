@@ -5,10 +5,10 @@ import (
 	"runtime"
 
 	"github.com/golang/glog"
+	"github.com/michaeldye/torrent"
 	"repo.hovitos.engineering/MTN/anax/config"
 	"repo.hovitos.engineering/MTN/anax/events"
 	"repo.hovitos.engineering/MTN/anax/worker"
-	"repo.hovitos.engineering/mdye/torrent"
 )
 
 type TorrentWorker struct {

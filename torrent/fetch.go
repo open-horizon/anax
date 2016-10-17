@@ -17,7 +17,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"repo.hovitos.engineering/mdye/torrent"
+	"github.com/michaeldye/torrent"
 )
 
 const HORIZON_WEBSEED_DEFAULT = "https://images.bluehorizon.network/"
