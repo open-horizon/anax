@@ -511,6 +511,30 @@
 			"revisionTime": "2016-10-17T21:10:02Z"
 		},
 		{
+			"checksumSHA1": "TJMoqWZG9fhlgHq7bKd3seR2rA4=",
+			"path": "github.com/open-horizon/go-solidity",
+			"revision": "0ff6d1b0e01aa9d45c767b996c34a0e60cb854e3",
+			"revisionTime": "2016-10-17T22:33:02Z"
+		},
+		{
+			"checksumSHA1": "fL9US392IuUp0KTTpE9HZSfNdCU=",
+			"path": "github.com/open-horizon/go-solidity/contract_api",
+			"revision": "0ff6d1b0e01aa9d45c767b996c34a0e60cb854e3",
+			"revisionTime": "2016-10-17T22:33:02Z"
+		},
+		{
+			"checksumSHA1": "V1zsphpkOB/LJi2GJni7I4YZjVY=",
+			"path": "github.com/open-horizon/go-solidity/utility",
+			"revision": "0ff6d1b0e01aa9d45c767b996c34a0e60cb854e3",
+			"revisionTime": "2016-10-17T22:33:02Z"
+		},
+		{
+			"checksumSHA1": "aW9c8/jFxYznqjr3S0D9QGs1QFk=",
+			"path": "github.com/open-horizon/go-whisper",
+			"revision": "52218caac583f7bae5cec6d6ec30707252432252",
+			"revisionTime": "2016-10-17T22:26:30Z"
+		},
+		{
 			"checksumSHA1": "3AoPMXlmVq2+iWMpsdJZkcUKHB8=",
 			"path": "github.com/opencontainers/runc/libcontainer/user",
 			"revision": "6c485e6902bb9dd77b8234042b8f00e20ef87a18",
@@ -587,30 +611,6 @@
 			"path": "golang.org/x/sys/windows",
 			"revision": "076b546753157f758b316e59bcb51e6807c04057",
 			"revisionTime": "2016-06-01T13:19:39Z"
-		},
-		{
-			"checksumSHA1": "QVd543KnuAAnroZxWOlCTDELpWU=",
-			"path": "repo.hovitos.engineering/MTN/go-solidity",
-			"revision": "79a30f5065781a23d92a6a0c06289462dda96bfd",
-			"revisionTime": "2016-06-14T16:59:30Z"
-		},
-		{
-			"checksumSHA1": "0rqE0D96bxDbQlrRcowe4noQxKI=",
-			"path": "repo.hovitos.engineering/MTN/go-solidity/contract_api",
-			"revision": "79a30f5065781a23d92a6a0c06289462dda96bfd",
-			"revisionTime": "2016-06-14T16:59:30Z"
-		},
-		{
-			"checksumSHA1": "Lky7CECFIpkh/GEZeV6gLwEsYuA=",
-			"path": "repo.hovitos.engineering/MTN/go-solidity/utility",
-			"revision": "79a30f5065781a23d92a6a0c06289462dda96bfd",
-			"revisionTime": "2016-06-14T16:59:30Z"
-		},
-		{
-			"checksumSHA1": "fi1GDWjFOQ8H7+z3Xz5c5AOaLIg=",
-			"path": "repo.hovitos.engineering/MTN/go-whisper",
-			"revision": "3233dff2269bb0915b2161084d1bdf5938b73442",
-			"revisionTime": "2016-09-16T03:58:48Z"
 		}
 	],
 	"rootPath": "repo.hovitos.engineering/MTN/anax"
