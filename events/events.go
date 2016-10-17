@@ -2,7 +2,7 @@ package events
 
 import (
 	"fmt"
-	gwhisper "repo.hovitos.engineering/MTN/go-whisper"
+	gwhisper "github.com/open-horizon/go-whisper"
 )
 
 type Event struct {

@@ -3,7 +3,7 @@ package blockchain
 import (
 	"fmt"
 	"os"
-	"repo.hovitos.engineering/MTN/go-solidity/contract_api"
+	"github.com/open-horizon/go-solidity/contract_api"
 )
 
 const dirVersionEnvvarName = "CMTN_DIRECTORY_VERSION"

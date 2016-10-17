@@ -6,9 +6,9 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/michaeldye/torrent"
-	"repo.hovitos.engineering/MTN/anax/config"
-	"repo.hovitos.engineering/MTN/anax/events"
-	"repo.hovitos.engineering/MTN/anax/worker"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/worker"
 )
 
 type TorrentWorker struct {

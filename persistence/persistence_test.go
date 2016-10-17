@@ -3,7 +3,7 @@ package persistence
 import (
 	"encoding/json"
 	"net/url"
-	gwhisper "repo.hovitos.engineering/MTN/go-whisper"
+	gwhisper "github.com/open-horizon/go-whisper"
 	"testing"
 )
 
