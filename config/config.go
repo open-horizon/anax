@@ -40,20 +40,20 @@ type AGConfig struct {
 	DBPath                       string
 	GethURL                      string
 	PayloadPath                  string
-	ActiveAccountExpirationS     int64     // If set to zero, disables active account checking
-	AgreementLockDurationS       int64
-	FullpaymentIntervalS         uint64    // default should be 28 days == 28*24*60*60 == 2419200
-	MicropaymentIntervalS        uint64    // default should be 5 mins == 5*60 == 300. Set to zero to turn off micropayment whisper messages.
-	                                       // Even with micropayments turned off, data verification can still be enabled in the policy. In this
-	                                       // case, data will be checked for every 5 mins.
+	// ActiveAccountExpirationS     int64     // If set to zero, disables active account checking
+	AgreementTimeoutS            uint64        // Number of seconds to wait before declaring agreement not finalized in blockchain
+	// FullpaymentIntervalS         uint64    // default should be 28 days == 28*24*60*60 == 2419200
+	// MicropaymentIntervalS        uint64    // default should be 5 mins == 5*60 == 300. Set to zero to turn off micropayment whisper messages.
+	//                                        // Even with micropayments turned off, data verification can still be enabled in the policy. In this
+	//                                        // case, data will be checked for every 5 mins.
 	NoDataIntervalS              uint64    // default should be 15 mins == 15*60 == 900. Ignored if the policy has data verification disabled.
 	ActiveContractsURL           string    // This field is the default and cannot be removed until all workloads are using their own URL
-	LoanIncrement                int       // default is 1000000
+	// LoanIncrement                int       // default is 1000000
 	EtcdUrl                      string    // default is http://localhost:2379/v2/keys. If not specified then ectd interactions are skipped.
 	PolicyPath                   string    // The directory where policy files are kept, default /etc/provider-tremor/policy/
 	NewContractIntervalS         uint64    // default should be 1
-	ProcessMicropaymentIntervalS uint64    // How long the gov sleeps before checking if a micropayment needs to be sent. It is
-	                                       // ignored if MicropaymentIntervalS == 0 because micro payments are turned off.
+	// ProcessMicropaymentIntervalS uint64    // How long the gov sleeps before checking if a micropayment needs to be sent. It is
+	//                                        // ignored if MicropaymentIntervalS == 0 because micro payments are turned off.
 	ProcessGovernanceIntervalS   uint64    // How long the gov sleeps before general gov checks (new payloads, interval payments, etc).
 	                                       // The default should be 5.
 	IgnoreContractWithAttribs    string    // A comma seperated list of contract attributes. If set, the contracts that contain one or more of the attributes will be ignored. The default is "ethereum_account".

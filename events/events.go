@@ -135,7 +135,8 @@ func NewEdgeRegisteredExchangeMessage(evId EventId, id string, token string) *Ed
 }
 
 
-
+// Anax device side fires this event when an agreement is reached so that it can begin
+// downloading containers. The Agreement is not final until it is seen in the blockchain.
 type AgreementReachedMessage struct {
     event         Event
     launchContext *AgreementLaunchContext
@@ -163,7 +164,6 @@ func NewAgreementMessage(id EventId, lc *AgreementLaunchContext) *AgreementReach
 
     }
 }
-
 
 
 type WhisperSubscribeToMessage struct {
@@ -229,5 +229,27 @@ func NewWhisperReceivedMessage(id EventId, payload string, from string) *Whisper
         },
         payload: payload,
         from: from,
+    }
+}
+
+type TorrentMessage struct {
+    event                  Event
+    ImageFiles             []string
+    AgreementLaunchContext *AgreementLaunchContext
+}
+
+// fulfill interface of events.Message
+func (b *TorrentMessage) Event() Event {
+    return b.event
+}
+
+func NewTorrentMessage(id EventId, imageFiles []string, agreementLaunchContext *AgreementLaunchContext) *TorrentMessage {
+
+    return &TorrentMessage{
+        event: Event{
+            Id: id,
+        },
+        ImageFiles:             imageFiles,
+        AgreementLaunchContext: agreementLaunchContext,
     }
 }

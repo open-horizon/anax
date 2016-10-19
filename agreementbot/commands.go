@@ -13,3 +13,17 @@ func NewReceivedWhisperMessageCommand(msg events.WhisperReceivedMessage) *Receiv
         Msg: msg,
     }
 }
+
+type AgreementTimeoutCommand struct {
+    AgreementId string
+    Protocol    string
+    Reason      uint
+}
+
+func NewAgreementTimeoutCommand(agreementId string, protocol string, reason uint) *AgreementTimeoutCommand {
+    return &AgreementTimeoutCommand{
+        AgreementId: agreementId,
+        Protocol: protocol,
+        Reason: reason,
+    }
+}

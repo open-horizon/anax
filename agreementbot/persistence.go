@@ -16,13 +16,17 @@ type Agreement struct {
     AgreementProtocol             string `json:"agreement_protocol"`       // immutable after construction
     AgreementInceptionTime        uint64 `json:"agreement_inception_time"` // immutable after construction
     AgreementCreationTime         uint64 `json:"agreement_creation_time"`  // device responds affirmatively to proposal
+    AgreementFinalizedTime        uint64 `json:"agreement_finalized_time"` // agreement is seen in the blockchain
+    AgreementTimedout             uint64 `json:"agreement_timeout"`        // agreement was not finalized before it timed out
+    ProposalSig                   string `json:"proposal_signature"`       // The signature used to create the agreement
     Proposal                      string `json:"proposal"`                 // JSON serialization of the proposal
+    CounterPartyAddress           string `json:"counter_party_address"`    // The blockchain address of the counterparty in the agreement
     DataVerificationURL           string `json:"data_verification_URL"`    // The URL to use to ensure that this agreement is sending data. New in v1.6.2.
     DisableDataVerificationChecks bool   `json:"disable_data_verification_checks"` // disable data verification checks, assume data is being sent. New in v1.6.3
 }
 
 func (a Agreement) String() string {
-    return fmt.Sprintf("CurrentAgreementId: %v , AgreementInceptionTime: %v, AgreementCreationTime: %v, Proposal: %v, DataVerificationURL: %v, DisableDataVerification: %v", a.CurrentAgreementId, a.AgreementInceptionTime, a.AgreementCreationTime, a.Proposal, a.DataVerificationURL, a.DisableDataVerificationChecks)
+    return fmt.Sprintf("CurrentAgreementId: %v , AgreementInceptionTime: %v, AgreementCreationTime: %v, AgreementFinalizedTime: %v, AgreementTimedout: %v, Proposal: %v, ProposalSig: %v, CounterPartyAddress: %v, DataVerificationURL: %v, DisableDataVerification: %v", a.CurrentAgreementId, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime, a.AgreementTimedout, a.Proposal, a.ProposalSig, a.CounterPartyAddress, a.DataVerificationURL, a.DisableDataVerificationChecks)
 }
 
 // private factory method for agreement w/out persistence safety:
@@ -35,7 +39,11 @@ func agreement(agreementid string, agreementProto string) (*Agreement, error) {
             AgreementProtocol:             agreementProto,
             AgreementInceptionTime:        uint64(time.Now().Unix()),
             AgreementCreationTime:         0,
+            AgreementFinalizedTime:        0,
+            AgreementTimedout:             0,
+            ProposalSig:                   "",
             Proposal:                      "",
+            CounterPartyAddress:           "",
             DataVerificationURL:           "",
             DisableDataVerificationChecks: false,
         }, nil
@@ -53,15 +61,45 @@ func AgreementAttempt(db *bolt.DB, agreementid string, agreementProto string) er
 }
 
 func AgreementUpdate(db *bolt.DB, agreementid string, proposal string, url string, checks bool ) (*Agreement, error) {
-    return AgreementMade(db, agreementid, proposal, url, checks)
-}
-
-func AgreementMade(db *bolt.DB, agreementid string, proposal string, url string, checks bool ) (*Agreement, error) {
     if agreement, err := singleAgreementUpdate(db, agreementid, func(a Agreement) *Agreement {
         a.AgreementCreationTime = uint64(time.Now().Unix())
         a.Proposal = proposal
         a.DataVerificationURL = url
         a.DisableDataVerificationChecks = checks
+        return &a
+    }); err != nil {
+        return nil, err
+    } else {
+        return agreement, nil
+    }
+}
+
+func AgreementMade(db *bolt.DB, agreementId string, counterParty string, signature string) (*Agreement, error) {
+    if agreement, err := singleAgreementUpdate(db, agreementId, func(a Agreement) *Agreement {
+        a.CounterPartyAddress = counterParty
+        a.ProposalSig = signature
+        return &a
+    }); err != nil {
+        return nil, err
+    } else {
+        return agreement, nil
+    }
+}
+
+func AgreementFinalized(db *bolt.DB, agreementid string) (*Agreement, error) {
+    if agreement, err := singleAgreementUpdate(db, agreementid, func(a Agreement) *Agreement {
+        a.AgreementFinalizedTime = uint64(time.Now().Unix())
+        return &a
+    }); err != nil {
+        return nil, err
+    } else {
+        return agreement, nil
+    }
+}
+
+func AgreementTimedout(db *bolt.DB, agreementid string) (*Agreement, error) {
+    if agreement, err := singleAgreementUpdate(db, agreementid, func(a Agreement) *Agreement {
+        a.AgreementTimedout = uint64(time.Now().Unix())
         return &a
     }); err != nil {
         return nil, err
@@ -114,7 +152,12 @@ func persistUpdatedAgreement(db *bolt.DB, agreementid string, update *Agreement)
 
                 // write updates only to the fields we expect should be updateable
                 mod.AgreementCreationTime = update.AgreementCreationTime
+                mod.AgreementFinalizedTime = update.AgreementFinalizedTime
+                mod.AgreementTimedout = update.AgreementTimedout
+                mod.CounterPartyAddress = update.CounterPartyAddress
+                mod.AgreementProtocol = update.AgreementProtocol
                 mod.Proposal = update.Proposal
+                mod.ProposalSig = update.ProposalSig
                 mod.DataVerificationURL = update.DataVerificationURL
                 mod.DisableDataVerificationChecks = update.DisableDataVerificationChecks
 

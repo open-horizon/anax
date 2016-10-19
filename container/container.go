@@ -364,6 +364,18 @@ func (w *ContainerWorker) Messages() chan events.Message {
 }
 
 func (w *ContainerWorker) NewEvent(incoming events.Message) {
+
+	switch incoming.(type) {
+    case *events.TorrentMessage:
+        msg, _ := incoming.(*events.TorrentMessage)
+
+        cCmd := w.NewContainerConfigureCommand(msg.ImageFiles, msg.AgreementLaunchContext)
+        w.Commands <- cCmd
+
+    default: // nothing
+
+    }
+
 	return
 }
 

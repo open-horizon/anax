@@ -158,7 +158,7 @@ func (w *AgreementWorker) start() {
 
                 if proposal, err := protocolHandler.ValidateProposal(cmd.Msg.Payload()); err != nil {
                     glog.Errorf(logString(fmt.Sprintf("discarding message: %v", cmd.Msg.Payload())))
-                } else if _, err := persistence.NewEstablishedAgreement(w.db, proposal.AgreementId, cmd.Msg.Payload()); err != nil {
+                } else if _, err := persistence.NewEstablishedAgreement(w.db, proposal.AgreementId, cmd.Msg.Payload(), "Citizen Scientist"); err != nil {
                     glog.Errorf(logString(fmt.Sprintf("persisting new pending agreement: %v", proposal.AgreementId)))
                 } else if reply, err := protocolHandler.DecideOnProposal(proposal, cmd.Msg.From()); err != nil {
                     glog.Errorf(logString(fmt.Sprintf("unable to respond to proposal, error: %v", err)))

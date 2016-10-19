@@ -257,8 +257,54 @@ func (p *ProtocolHandler) RecordAgreement(newProposal *Proposal, reply *Proposal
 
 }
 
-func (p *ProtocolHandler) VerifyAgreementRecorded() error {
+func (p *ProtocolHandler) TerminateAgreement(counterParty string, agreementId string, reason uint, con *contract_api.SolidityContract) error {
+
+    if binaryAgreementId, err := hex.DecodeString(agreementId); err != nil {
+        return errors.New(fmt.Sprintf("Error converting agreement ID %v to binary, error: %v", agreementId, err))
+    } else {
+
+        params := make([]interface{}, 0, 10)
+        params = append(params, counterParty)
+        params = append(params, binaryAgreementId)
+        params = append(params, reason)
+
+        if _, err := con.Invoke_method("terminate_agreement", params); err != nil {
+            return errors.New(fmt.Sprintf("Error invoking terminate_agreement with %v, error: %v", params, err))
+        }
+    }
+
     return nil
+
+}
+
+func (p *ProtocolHandler) VerifyAgreementRecorded(agreementId string, counterPartyAddress string, expectedSignature string, con *contract_api.SolidityContract) (bool, error) {
+
+    if binaryAgreementId, err := hex.DecodeString(agreementId); err != nil {
+        return false, errors.New(fmt.Sprintf("Error converting agreement ID %v to binary, error: %v", agreementId, err))
+    } else {
+
+        // glog.V(5).Infof("Using hash %v to record agreement %v", hex.EncodeToString(tcHash[:]), newProposal.AgreementId)
+
+        params := make([]interface{}, 0, 10)
+        params = append(params, counterPartyAddress)
+        params = append(params, binaryAgreementId)        
+
+        if returnedSig, err := con.Invoke_method("get_contract_signature", params); err != nil {
+            return false, errors.New(fmt.Sprintf("Error invoking get_contract_signature with %v, error: %v", params, err))
+        } else {
+            glog.V(5).Infof("Verify agreement recorded for %v with %v returned signature: %v", agreementId, counterPartyAddress, returnedSig)
+            if returnedSig == expectedSignature {
+                return true, nil
+            } else {
+                return false, nil
+            }
+        }
+    }
+
+
+
+
+    return false, nil
 }
 
 

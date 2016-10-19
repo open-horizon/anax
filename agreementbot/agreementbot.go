@@ -78,8 +78,7 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
             // }
         // }
 
-    default:
-        glog.Errorf("AgreementBotWorker received Unsupported event: %v", incoming.Event().Id)
+    default: //nothing
 
     }
 
@@ -91,7 +90,8 @@ func (w *AgreementBotWorker) start() {
 
     if w.db == nil {return}
 
-    // Establish the go objects that are used to interact with the ethereum blockchain
+    // Establish the go objects that are used to interact with the ethereum blockchain.
+    // This code should probably be in the protocol library.
     acct, _ := ethblockchain.AccountId()
     dir, _ := ethblockchain.DirectoryAddress()
     if bc, err := ethblockchain.InitBaseContracts(acct, w.Worker.Manager.Config.AgreementBot.GethURL, dir); err != nil {
@@ -125,8 +125,12 @@ func (w *AgreementBotWorker) start() {
         go w.InitiateAgreementProtocolHandler(protocolName)
     }
 
+    // Begin heartbeating with the exchange.
     targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/heartbeat?token=" + w.token
     go exchange.Heartbeat(&http.Client{}, targetURL, w.Worker.Manager.Config.AgreementBot.ExchangeHeartbeat)
+
+    // Start the governance routine.
+    go w.GovernAgreements()
 
     // Enter the command processing loop. Initialization is complete so wait for commands to
     // perform. Commands are created as the result of events that are triggered elsewhere
@@ -191,6 +195,17 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
                                     }
                         work <- agreementWork
                         glog.V(5).Infof("AgreementBot queued possible reply message")
+
+                    case *AgreementTimeoutCommand:
+                        glog.V(5).Infof("AgreementBot received agreement cancellation.")
+                        cmd := command.(*AgreementTimeoutCommand)
+                        agreementWork := CSCancelAgreement{
+                                        AgreementId: cmd.AgreementId,
+                                        Protocol: cmd.Protocol,
+                                        Reason: cmd.Reason,
+                                    }
+                        work <- agreementWork
+                        glog.V(5).Infof("AgreementBot queued agreement cancellation")
 
                     default:
                         glog.Errorf("Unknown command (%T): %v", command, command)

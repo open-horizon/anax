@@ -53,6 +53,18 @@ func (w *TorrentWorker) Messages() chan events.Message {
 }
 
 func (w *TorrentWorker) NewEvent(incoming events.Message) {
+
+	switch incoming.(type) {
+    case *events.AgreementReachedMessage:
+        msg, _ := incoming.(*events.AgreementReachedMessage)
+
+        fCmd := w.NewFetchCommand(msg.LaunchContext())
+        w.Commands <- fCmd
+
+    default: //nothing
+
+    }
+
 	return
 }
 
@@ -76,10 +88,10 @@ func (b *TorrentWorker) start() {
 					// TODO: write error out, then:
 					// 1. retry to fetch up to a limit
 					// 2. if failure persists, propagate a contract cancelation event with some meaningful reason for termination
-					b.Messages() <- NewTorrentMessage(events.TORRENT_FAILURE, make([]string, 0), cmd.AgreementLaunchContext)
+					b.Messages() <- events.NewTorrentMessage(events.TORRENT_FAILURE, make([]string, 0), cmd.AgreementLaunchContext)
 					glog.Errorf("Failed to fetch image files: %v", err)
 				} else {
-					b.Messages() <- NewTorrentMessage(events.TORRENT_FETCHED, imageFiles, cmd.AgreementLaunchContext)
+					b.Messages() <- events.NewTorrentMessage(events.TORRENT_FETCHED, imageFiles, cmd.AgreementLaunchContext)
 				}
 			}
 
@@ -98,24 +110,3 @@ func (t *TorrentWorker) NewFetchCommand(agreementLaunchContext *events.Agreement
 	}
 }
 
-type TorrentMessage struct {
-	event                  events.Event
-	ImageFiles             []string
-	AgreementLaunchContext *events.AgreementLaunchContext
-}
-
-// fulfill interface of events.Message
-func (b *TorrentMessage) Event() events.Event {
-	return b.event
-}
-
-func NewTorrentMessage(id events.EventId, imageFiles []string, agreementLaunchContext *events.AgreementLaunchContext) *TorrentMessage {
-
-	return &TorrentMessage{
-		event: events.Event{
-			Id: id,
-		},
-		ImageFiles:             imageFiles,
-		AgreementLaunchContext: agreementLaunchContext,
-	}
-}

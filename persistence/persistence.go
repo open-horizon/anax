@@ -83,11 +83,12 @@ type EstablishedAgreement struct {
 	AgreementCreationTime       uint64                   `json:"agreement_creation_time"`
 	AgreementExecutionStartTime uint64                   `json:"agreement_execution_start_time"`
 	CurrentDeployment           map[string]ServiceConfig `json:"current_deployment"`
-	Proposal                    string                   `json:"proposal"`     // the proposal currently in effect
+	Proposal                    string                   `json:"proposal"`            // the proposal currently in effect
+	AgreementProtocol           string                   `json:"agreement_protocol"`  // the agreement protocol being used. It is also in the proposal.
 }
 
 func (c EstablishedAgreement) String() string {
-	return fmt.Sprintf("Name: %v , Archived: %v , CurrentAgreementId: %v , ConfigureNonce: %v, CurrentDeployment (service names): %v, PrivateEnvironmentAdditions: %v, EnvironmentAdditions: %v, AgreementCreationTime: %v, AgreementExecutionStartTime: %v, AgreementAcceptedTime: %v, PreviousAgreements (sample): %v", c.Name, c.Archived, c.CurrentAgreementId, c.ConfigureNonce, ServiceConfigNames(&c.CurrentDeployment), c.PrivateEnvironmentAdditions, c.EnvironmentAdditions, c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, cutil.FirstN(10, c.PreviousAgreements))
+	return fmt.Sprintf("Name: %v , Archived: %v , CurrentAgreementId: %v , ConfigureNonce: %v, CurrentDeployment (service names): %v, PrivateEnvironmentAdditions: %v, EnvironmentAdditions: %v, AgreementCreationTime: %v, AgreementExecutionStartTime: %v, AgreementAcceptedTime: %v, PreviousAgreements (sample): %v, Agreement Protocol: %v", c.Name, c.Archived, c.CurrentAgreementId, c.ConfigureNonce, ServiceConfigNames(&c.CurrentDeployment), c.PrivateEnvironmentAdditions, c.EnvironmentAdditions, c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, cutil.FirstN(10, c.PreviousAgreements), c.AgreementProtocol)
 }
 
 // the internal representation of this lib; *this is the one persisted using the persistence lib*
@@ -112,10 +113,10 @@ func (c ServiceConfig) String() string {
 	return fmt.Sprintf("Config: %v, HostConfig: %v", c.Config, c.HostConfig)
 }
 
-func NewEstablishedAgreement(db *bolt.DB, agreementId string, proposal string) (*EstablishedAgreement, error) {
+func NewEstablishedAgreement(db *bolt.DB, agreementId string, proposal string, protocol string) (*EstablishedAgreement, error) {
 
-	if agreementId == "" || proposal == "" {
-		return nil, errors.New("Agreement id or proposal empty, cannot persist")
+	if agreementId == "" || proposal == "" || protocol == "" {
+		return nil, errors.New("Agreement id, proposal or protocol are empty, cannot persist")
 	} else {
 
 		filters := make([]ECFilter, 0)
@@ -145,6 +146,7 @@ func NewEstablishedAgreement(db *bolt.DB, agreementId string, proposal string) (
 				AgreementExecutionStartTime: 0,
 				CurrentDeployment:           map[string]ServiceConfig{},
 				Proposal:                    proposal,
+				AgreementProtocol:                    protocol,
 			}
 
 			return newAg, db.Update(func(tx *bolt.Tx) error {
@@ -198,18 +200,18 @@ func DeleteEstablishedAgreement(db *bolt.DB, agreementId string) error {
 
 // TODO: share common initialization here with above factory method
 // reset contract record state to begin polling
-func AgreementStateNew(db *bolt.DB, dbAgreementId string) (*EstablishedAgreement, error) {
-	return agreementStateUpdate(db, dbAgreementId, func(c EstablishedAgreement) *EstablishedAgreement {
-		// c.CurrentAgreementId = ""
-		c.AgreementAcceptedTime = 0
-		c.ConfigureNonce = ""
-		c.EnvironmentAdditions = map[string]string{}
-		c.AgreementCreationTime = 0
-		c.AgreementExecutionStartTime = 0
-		c.CurrentDeployment = map[string]ServiceConfig{}
-		return &c
-	})
-}
+// func AgreementStateNew(db *bolt.DB, dbAgreementId string) (*EstablishedAgreement, error) {
+// 	return agreementStateUpdate(db, dbAgreementId, func(c EstablishedAgreement) *EstablishedAgreement {
+// 		// c.CurrentAgreementId = ""
+// 		c.AgreementAcceptedTime = 0
+// 		c.ConfigureNonce = ""
+// 		c.EnvironmentAdditions = map[string]string{}
+// 		c.AgreementCreationTime = 0
+// 		c.AgreementExecutionStartTime = 0
+// 		c.CurrentDeployment = map[string]ServiceConfig{}
+// 		return &c
+// 	})
+// }
 
 // set contract record state to in agreement, not yet accepted; N.B. It's expected that privateEnvironmentAdditions will already have been added by this time
 func AgreementStateInAgreement(db *bolt.DB, dbAgreementId string, environmentAdditions map[string]string) (*EstablishedAgreement, error) {
