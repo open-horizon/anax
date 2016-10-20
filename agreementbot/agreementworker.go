@@ -183,7 +183,8 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
                 glog.Errorf(logString(fmt.Sprintf("error querying timed out agreement %v, error: %v", wi.AgreementId, err)))
             } else if err := protocolHandler.TerminateAgreement(ag.CounterPartyAddress, ag.CurrentAgreementId, wi.Reason, bc.Agreements); err != nil {
                 glog.Errorf(logString(fmt.Sprintf("error terminating agreement %v on the blockchain: %v", wi.AgreementId, err)))
-            } else if err := DeleteAgreement(a.db, wi.AgreementId); err != nil {
+            }
+            if err := DeleteAgreement(a.db, wi.AgreementId); err != nil {
                 glog.Errorf(logString(fmt.Sprintf("error deleting terminated agreement: %v, error: %v", wi.AgreementId, err)))
             }
 

@@ -23,7 +23,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
     for {
 
         notYetFinalFilter := func () AFilter {
-            return func(a Agreement) bool { return a.AgreementCreationTime != 0 && a.AgreementFinalizedTime == 0 && a.AgreementTimedout == 0 }
+            return func(a Agreement) bool { return a.AgreementCreationTime != 0 && a.AgreementFinalizedTime == 0 && a.AgreementTimedout == 0 && a.CounterPartyAddress != ""}
         }
 
         // Find all agreements that are not yet finalized and check the blockchain to see if they are final yet.
@@ -53,8 +53,8 @@ func (w *AgreementBotWorker) GovernAgreements() {
                             glog.Errorf(logString(fmt.Sprintf("error marking agreement %v timed out: %v", ag.CurrentAgreementId, err)))
                         }
                         // Update state in exchange
-                        if err := recordConsumerAgreementState(w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId, "", "Timedout Proposal"); err != nil {
-                            glog.Errorf(logString(fmt.Sprintf("error setting agreement %v timed out state in exchange: %v", ag.CurrentAgreementId, err)))
+                        if err := deleteConsumerAgreement(w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId); err != nil {
+                            glog.Errorf(logString(fmt.Sprintf("error deleting agreement %v in exchange: %v", ag.CurrentAgreementId, err)))
                         }
                         // Queue up a command for an agreement worker to do the blockchain work
                         w.pwcommands <- NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, CANCEL_NOT_FINALIZED_TIMEOUT)
@@ -102,3 +102,31 @@ func recordConsumerAgreementState(url string, agbotId string, token string, agre
     }
 
 }
+
+func deleteConsumerAgreement(url string, agbotId string, token string, agreementId string) error {
+
+    logString := func(v interface{}) string {
+        return fmt.Sprintf("AgreementBot Governance: %v", v)
+    }
+
+    glog.V(5).Infof(logString(fmt.Sprintf("deleting agreement %v in exchange", agreementId)))
+
+    var resp interface{}
+    resp = new(exchange.PostDeviceResponse)
+    targetURL := url + "agbots/" + agbotId + "/agreements/" + agreementId + "?token=" + token
+    for {
+        if err, tpErr := exchange.InvokeExchange(&http.Client{}, "DELETE", targetURL, nil, &resp); err != nil {
+            glog.Errorf(logString(fmt.Sprintf(err.Error())))
+            return err
+        } else if tpErr != nil {
+            glog.Warningf(err.Error())
+            time.Sleep(10 * time.Second)
+            continue
+        } else {
+            glog.V(5).Infof(logString(fmt.Sprintf("deleted agreement %v from exchange", agreementId)))
+            return nil
+        }
+    }
+
+}
+

@@ -200,6 +200,7 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
                         glog.V(5).Infof("AgreementBot received agreement cancellation.")
                         cmd := command.(*AgreementTimeoutCommand)
                         agreementWork := CSCancelAgreement{
+                                        workType: CANCEL,
                                         AgreementId: cmd.AgreementId,
                                         Protocol: cmd.Protocol,
                                         Reason: cmd.Reason,

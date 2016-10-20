@@ -236,6 +236,10 @@ func InvokeExchange(httpClient *http.Client, method string, url string, params i
                 return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil
             } else if (method == "PUT" || method == "POST") && httpResp.StatusCode != http.StatusCreated {
                 return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil
+            } else if method == "DELETE" && httpResp.StatusCode != http.StatusNoContent {
+                return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil
+            } else if method == "DELETE" {
+                return nil, nil
             } else {
                 out := string(outBytes)
                 glog.V(5).Infof("Response to %v at %v is %v", method, url, out)

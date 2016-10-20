@@ -134,7 +134,7 @@ func (p *ProtocolHandler) DecideOnProposal(proposal *Proposal, from string) (*Pr
         } else {
             reply.Decision = true
             reply.Address, _ = ethblockchain.AccountId()
-            reply.Signature = sig
+            reply.Signature = sig[2:]
         }
     }
 
@@ -266,7 +266,7 @@ func (p *ProtocolHandler) TerminateAgreement(counterParty string, agreementId st
         params := make([]interface{}, 0, 10)
         params = append(params, counterParty)
         params = append(params, binaryAgreementId)
-        params = append(params, reason)
+        params = append(params, int(reason))
 
         if _, err := con.Invoke_method("terminate_agreement", params); err != nil {
             return errors.New(fmt.Sprintf("Error invoking terminate_agreement with %v, error: %v", params, err))
@@ -289,20 +289,18 @@ func (p *ProtocolHandler) VerifyAgreementRecorded(agreementId string, counterPar
         params = append(params, counterPartyAddress)
         params = append(params, binaryAgreementId)        
 
-        if returnedSig, err := con.Invoke_method("get_contract_signature", params); err != nil {
+        if returnedSig, err := con.Invoke_method("get_producer_signature", params); err != nil {
             return false, errors.New(fmt.Sprintf("Error invoking get_contract_signature with %v, error: %v", params, err))
         } else {
-            glog.V(5).Infof("Verify agreement recorded for %v with %v returned signature: %v", agreementId, counterPartyAddress, returnedSig)
-            if returnedSig == expectedSignature {
+            sigString := hex.EncodeToString(returnedSig.([]byte))
+            glog.V(5).Infof("Verify agreement for %v with %v returned signature: %v", agreementId, counterPartyAddress, sigString)
+            if sigString == expectedSignature {
                 return true, nil
             } else {
                 return false, nil
             }
         }
     }
-
-
-
 
     return false, nil
 }
