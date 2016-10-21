@@ -12,6 +12,17 @@ import (
 
 // Functions used to interact with the policy library
 
+// Return the Sensor API Spec URL
+func GetSenorApiSpecUrl(sensorName string) (string, error) {
+
+	if len(sensorName) == 0 {
+		return "", errors.New(fmt.Sprintf("Error getting sensor API specification url, sensorName not specified"))
+	}
+
+	sensor_short_name := strings.ToLower(strings.Split(sensorName, " ")[0])
+	return "https://bluehorizon.network/documentation/" + sensor_short_name + "-device-api", nil
+}
+
 // This function generates policy files for each sensor on the device.
 func GeneratePolicy(e chan events.Message, sensorName string, arch string, props *map[string]string, filePath string) error {
 
