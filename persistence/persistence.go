@@ -71,19 +71,24 @@ func (c PendingContract) String() string {
 }
 
 // N.B. Important!! Ensure new values are handled in Update function below
+// This struct is for persisting agreements related to the 'Citizen Scientist' protocol
 type EstablishedAgreement struct {
 	Name                        string                   `json:"name"`
 	Archived                    bool                     `json:"archived"` // TODO: give risham, booz a way to indicate that a contract needs to be archived; REST api
 	CurrentAgreementId          string                   `json:"current_agreement_id"`
+	CounterPartyAddress         string                   `json:"counterparty_address"`
 	PreviousAgreements          []string                 `json:"previous_agreements"`
 	ConfigureNonce              string                   `json:"configure_nonce"` // one-time use configure token
+	AgreementCreationTime       uint64                   `json:"agreement_creation_time"`
 	AgreementAcceptedTime       uint64                   `json:"agreement_accepted_time"`
+	AgreementFinalizedTime      uint64                   `json:"agreement_finalized_time"`
+	AgreementTimedout           uint64                   `json:"agreement_timedout"`
+	AgreementExecutionStartTime uint64                   `json:"agreement_execution_start_time"`
 	PrivateEnvironmentAdditions map[string]string        `json:"private_environment_additions"` // platform-provided environment facts, none of which can leave the device
 	EnvironmentAdditions        map[string]string        `json:"environment_additions"`         // platform-provided environment facts, some of which are published on the blockchain for marketplace searching
-	AgreementCreationTime       uint64                   `json:"agreement_creation_time"`
-	AgreementExecutionStartTime uint64                   `json:"agreement_execution_start_time"`
 	CurrentDeployment           map[string]ServiceConfig `json:"current_deployment"`
-	Proposal                    string                   `json:"proposal"`            // the proposal currently in effect
+	Proposal                    string                   `json:"proposal"`
+	ProposalSig                 string                   `json:"proposal_sig"`             // the proposal currently in effect
 	AgreementProtocol           string                   `json:"agreement_protocol"`  // the agreement protocol being used. It is also in the proposal.
 }
 
@@ -119,11 +124,11 @@ func NewEstablishedAgreement(db *bolt.DB, agreementId string, proposal string, p
 		return nil, errors.New("Agreement id, proposal or protocol are empty, cannot persist")
 	} else {
 
-		filters := make([]ECFilter, 0)
-		filters = append(filters, UnarchivedECFilter())
-		filters = append(filters, IdECFilter(agreementId))
+		filters := make([]EAFilter, 0)
+		filters = append(filters, UnarchivedEAFilter())
+		filters = append(filters, IdEAFilter(agreementId))
 
-		if agreements, err := FindEstablishedAgreements(db, filters); err != nil {
+		if agreements, err := FindEstablishedAgreements(db, protocol, filters); err != nil {
 			return nil, err
 		} else if len(agreements) != 0 {
 			return nil, fmt.Errorf("Not expecting any records with id: %v, found %v", agreementId, agreements)
@@ -137,21 +142,25 @@ func NewEstablishedAgreement(db *bolt.DB, agreementId string, proposal string, p
 				Name:                        "name",
 				Archived:                    false,
 				CurrentAgreementId:          agreementId,
+				CounterPartyAddress:         agreementId,
 				PreviousAgreements:          []string{},
 				ConfigureNonce:              "", // needs to be set before this can be used
-				AgreementAcceptedTime:       0,
 				PrivateEnvironmentAdditions: privateEnvironmentAdditions,
 				EnvironmentAdditions:        map[string]string{},
-				AgreementCreationTime:       0,
+				AgreementCreationTime:       uint64(time.Now().Unix()),
+				AgreementAcceptedTime:       0,
+				AgreementFinalizedTime:      0,
+				AgreementTimedout:           0,
 				AgreementExecutionStartTime: 0,
 				CurrentDeployment:           map[string]ServiceConfig{},
 				Proposal:                    proposal,
-				AgreementProtocol:                    protocol,
+				ProposalSig:                 "",
+				AgreementProtocol:           protocol,
 			}
 
 			return newAg, db.Update(func(tx *bolt.Tx) error {
 
-				if b, err := tx.CreateBucketIfNotExists([]byte(E_AGREEMENTS)); err != nil {
+				if b, err := tx.CreateBucketIfNotExists([]byte(E_AGREEMENTS + "-" + protocol)); err != nil {
 					return err
 				} else if bytes, err := json.Marshal(newAg); err != nil {
 					return fmt.Errorf("Unable to marshal new record: %v", err)
@@ -166,17 +175,17 @@ func NewEstablishedAgreement(db *bolt.DB, agreementId string, proposal string, p
 }
 
 
-func DeleteEstablishedAgreement(db *bolt.DB, agreementId string) error {
+func DeleteEstablishedAgreement(db *bolt.DB, agreementId string, protocol string) error {
 
 	if agreementId == "" {
 		return errors.New("Agreement id empty, cannot remove")
 	} else {
 
-		filters := make([]ECFilter, 0)
-		filters = append(filters, UnarchivedECFilter())
-		filters = append(filters, IdECFilter(agreementId))
+		filters := make([]EAFilter, 0)
+		filters = append(filters, UnarchivedEAFilter())
+		filters = append(filters, IdEAFilter(agreementId))
 
-		if agreements, err := FindEstablishedAgreements(db, filters); err != nil {
+		if agreements, err := FindEstablishedAgreements(db, protocol, filters); err != nil {
 			return err
 		} else if len(agreements) != 1 {
 			return fmt.Errorf("Expecting 1 records with id: %v, found %v", agreementId, agreements)
@@ -184,7 +193,7 @@ func DeleteEstablishedAgreement(db *bolt.DB, agreementId string) error {
 
 			return db.Update(func(tx *bolt.Tx) error {
 
-				if b, err := tx.CreateBucketIfNotExists([]byte(E_AGREEMENTS)); err != nil {
+				if b, err := tx.CreateBucketIfNotExists([]byte(E_AGREEMENTS + "-" + protocol)); err != nil {
 					return err
 				} else if err := b.Delete([]byte(agreementId)); err != nil {
 					return fmt.Errorf("Unable to delete agreement: %v", err)
@@ -214,11 +223,11 @@ func DeleteEstablishedAgreement(db *bolt.DB, agreementId string) error {
 // }
 
 // set contract record state to in agreement, not yet accepted; N.B. It's expected that privateEnvironmentAdditions will already have been added by this time
-func AgreementStateInAgreement(db *bolt.DB, dbAgreementId string, environmentAdditions map[string]string) (*EstablishedAgreement, error) {
+func AgreementStateInAgreement(db *bolt.DB, dbAgreementId string, protocol string, environmentAdditions map[string]string) (*EstablishedAgreement, error) {
 
 	var err error
 
-	ret, updateErr := agreementStateUpdate(db, dbAgreementId, func(c EstablishedAgreement) *EstablishedAgreement {
+	ret, updateErr := agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
 		c.AgreementCreationTime = uint64(time.Now().Unix())
 		c.EnvironmentAdditions = environmentAdditions
 
@@ -241,29 +250,48 @@ func AgreementStateInAgreement(db *bolt.DB, dbAgreementId string, environmentAdd
 // 	})
 // }
 
-// set contract record state to execution start; this is before payment
-func AgreementStateExecutionStarted(db *bolt.DB, dbAgreementId string, deployment *map[string]ServiceConfig) (*EstablishedAgreement, error) {
-	return agreementStateUpdate(db, dbAgreementId, func(c EstablishedAgreement) *EstablishedAgreement {
+// set agreement state to execution started
+func AgreementStateExecutionStarted(db *bolt.DB, dbAgreementId string, protocol string, deployment *map[string]ServiceConfig) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
 		c.AgreementExecutionStartTime = uint64(time.Now().Unix())
 		c.CurrentDeployment = *deployment
 		return &c
 	})
 }
 
-// set contract record state to already in agreement and accepted (this means the other party has reported receiving data
-func AgreementStateAccepted(db *bolt.DB, dbAgreementId string) (*EstablishedAgreement, error) {
-	return agreementStateUpdate(db, dbAgreementId, func(c EstablishedAgreement) *EstablishedAgreement {
+// set agreement state to accepted, a positive reply is being sent
+func AgreementStateAccepted(db *bolt.DB, dbAgreementId string, protocol string, proposal string, from string, signature string) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
 		c.AgreementAcceptedTime = uint64(time.Now().Unix())
+		c.CounterPartyAddress = from
+		c.Proposal = proposal
+		c.ProposalSig = signature
 		return &c
 	})
 }
 
-func agreementStateUpdate(db *bolt.DB, dbAgreementId string, fn func(EstablishedAgreement) *EstablishedAgreement) (*EstablishedAgreement, error) {
-	filters := make([]ECFilter, 0)
-	filters = append(filters, UnarchivedECFilter())
-	filters = append(filters, IdECFilter(dbAgreementId))
+// set agreement state to finalized
+func AgreementStateFinalized(db *bolt.DB, dbAgreementId string, protocol string) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
+		c.AgreementFinalizedTime = uint64(time.Now().Unix())
+		return &c
+	})
+}
 
-	if agreements, err := FindEstablishedAgreements(db, filters); err != nil {
+// set agreement state to timed out
+func AgreementStateTimedout(db *bolt.DB, dbAgreementId string, protocol string) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
+		c.AgreementTimedout = uint64(time.Now().Unix())
+		return &c
+	})
+}
+
+func agreementStateUpdate(db *bolt.DB, dbAgreementId string, protocol string, fn func(EstablishedAgreement) *EstablishedAgreement) (*EstablishedAgreement, error) {
+	filters := make([]EAFilter, 0)
+	filters = append(filters, UnarchivedEAFilter())
+	filters = append(filters, IdEAFilter(dbAgreementId))
+
+	if agreements, err := FindEstablishedAgreements(db, protocol, filters); err != nil {
 		return nil, err
 	} else if len(agreements) > 1 {
 		return nil, fmt.Errorf("Expected only one record for dbAgreementId: %v, but retrieved: %v", dbAgreementId, agreements)
@@ -272,14 +300,14 @@ func agreementStateUpdate(db *bolt.DB, dbAgreementId string, fn func(Established
 	} else {
 		// run this single contract through provided update function and persist it
 		updated := fn(agreements[0])
-		return updated, PersistUpdatedAgreement(db, dbAgreementId, updated)
+		return updated, PersistUpdatedAgreement(db, dbAgreementId, protocol, updated)
 	}
 }
 
 // does whole-member replacements of values that are legal to change during the course of a contract's life
-func PersistUpdatedAgreement(db *bolt.DB, dbAgreementId string, update *EstablishedAgreement) error {
+func PersistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string, update *EstablishedAgreement) error {
 	return db.Update(func(tx *bolt.Tx) error {
-		if b, err := tx.CreateBucketIfNotExists([]byte(E_AGREEMENTS)); err != nil {
+		if b, err := tx.CreateBucketIfNotExists([]byte(E_AGREEMENTS + "-" + protocol)); err != nil {
 			return err
 		} else {
 			current := b.Get([]byte(dbAgreementId))
@@ -296,11 +324,16 @@ func PersistUpdatedAgreement(db *bolt.DB, dbAgreementId string, update *Establis
 				// write updates only to the fields we expect should be updateable
 				mod.Archived = update.Archived
 				mod.AgreementAcceptedTime = update.AgreementAcceptedTime
+				mod.AgreementFinalizedTime = update.AgreementFinalizedTime
+				mod.AgreementTimedout = update.AgreementTimedout
+				mod.CounterPartyAddress = update.CounterPartyAddress
 				mod.ConfigureNonce = update.ConfigureNonce
 				mod.EnvironmentAdditions = update.EnvironmentAdditions
-				mod.AgreementCreationTime = update.AgreementCreationTime
 				mod.AgreementExecutionStartTime = update.AgreementExecutionStartTime
 				mod.CurrentDeployment = update.CurrentDeployment
+				mod.Proposal = update.Proposal
+				mod.ProposalSig = update.ProposalSig
+				mod.AgreementProtocol = update.AgreementProtocol
 
 				// update PreviousAgreements array if CurrentAgreementId unset
 				// if prevAgreementId != "" && mod.CurrentAgreementId == "" {
@@ -353,31 +386,31 @@ func PersistUpdatedAgreement(db *bolt.DB, dbAgreementId string, update *Establis
 // 	}
 // }
 
-func UnarchivedECFilter() ECFilter {
+func UnarchivedEAFilter() EAFilter {
 	return func(e EstablishedAgreement) bool { return !e.Archived }
 }
 
-func IdECFilter(id string) ECFilter {
+func IdEAFilter(id string) EAFilter {
 	return func(e EstablishedAgreement) bool { return e.CurrentAgreementId == id }
 }
 
-// func AgreementECFilter(agreementId string) ECFilter {
+// func AgreementEAFilter(agreementId string) EAFilter {
 // 	return func(e EstablishedContract) bool {
 // 		return strings.ToLower(e.CurrentAgreementId) == strings.ToLower(agreementId)
 // 	}
 // }
 
 // filter on EstablishedAgreements
-type ECFilter func(EstablishedAgreement) bool
+type EAFilter func(EstablishedAgreement) bool
 
-func FindEstablishedAgreements(db *bolt.DB, filters []ECFilter) ([]EstablishedAgreement, error) {
+func FindEstablishedAgreements(db *bolt.DB, protocol string, filters []EAFilter) ([]EstablishedAgreement, error) {
 	agreements := make([]EstablishedAgreement, 0)
 
 	// fetch contracts
 	readErr := db.View(func(tx *bolt.Tx) error {
 
 		// ok if pending contracts bucket doesn't exist yet, depends on processing of pending agreements
-		if b := tx.Bucket([]byte(E_AGREEMENTS)); b != nil {
+		if b := tx.Bucket([]byte(E_AGREEMENTS + "-" + protocol)); b != nil {
 			b.ForEach(func(k, v []byte) error {
 
 				var e EstablishedAgreement

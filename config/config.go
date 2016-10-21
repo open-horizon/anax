@@ -27,6 +27,7 @@ type Config struct {
 	ExchangeURL          string
 	PolicyPath           string
 	ExchangeHeartbeat    int            // Seconds between heartbeats
+	AgreementTimeoutS    uint64         // Number of seconds to wait before declaring agreement not finalized in blockchain
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string
@@ -41,7 +42,7 @@ type AGConfig struct {
 	GethURL                      string
 	PayloadPath                  string
 	// ActiveAccountExpirationS     int64     // If set to zero, disables active account checking
-	AgreementTimeoutS            uint64        // Number of seconds to wait before declaring agreement not finalized in blockchain
+	AgreementTimeoutS            uint64       // Number of seconds to wait before declaring agreement not finalized in blockchain
 	// FullpaymentIntervalS         uint64    // default should be 28 days == 28*24*60*60 == 2419200
 	// MicropaymentIntervalS        uint64    // default should be 5 mins == 5*60 == 300. Set to zero to turn off micropayment whisper messages.
 	//                                        // Even with micropayments turned off, data verification can still be enabled in the policy. In this

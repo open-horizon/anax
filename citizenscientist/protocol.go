@@ -16,6 +16,8 @@ import (
     gwhisper "repo.hovitos.engineering/MTN/go-whisper"
 )
 
+const PROTOCOL_NAME = "Citizen Scientist"
+
 // This struct is the proposal body that flows from the consumer to the producer.
 const MsgTypeProposal = "proposal"
 const MsgTypeReply = "reply"
@@ -24,6 +26,7 @@ type Proposal struct {
     TsAndCs        string `json:"tsandcs"`
     ProducerPolicy string `json:"producerPolicy"`
     AgreementId    string `json:"agreementId"`
+    Address        string `json:"address"`
 }
 
 // This struct is the proposal reply body that flows from the producer to the consumer.
@@ -55,7 +58,7 @@ type ProtocolHandler struct {
     GethURL        string
     httpClient    *http.Client
     random        *rand.Rand
-    pm            *policy.PolicyManager
+    pm            *policy.PolicyManager    // TODO: Get rid of this field
 }
 
 func NewProtocolHandler (gethURL string, pm *policy.PolicyManager) *ProtocolHandler {
@@ -66,7 +69,7 @@ func NewProtocolHandler (gethURL string, pm *policy.PolicyManager) *ProtocolHand
     }
 }
 
-func (p *ProtocolHandler) InitiateAgreement(agreementId []byte, producerPolicy *policy.Policy, consumerPolicy *policy.Policy, device *exchange.Device) (*Proposal, error) {
+func (p *ProtocolHandler) InitiateAgreement(agreementId []byte, producerPolicy *policy.Policy, consumerPolicy *policy.Policy, device *exchange.Device, myAddress string) (*Proposal, error) {
 
     if TCPolicy, err := policy.Create_Terms_And_Conditions(producerPolicy, consumerPolicy); err != nil {
         return nil, errors.New(fmt.Sprintf("CS Protocol initiation received error trying to merge policy %v and %v, error: %v",  producerPolicy, consumerPolicy, err))
@@ -83,6 +86,7 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId []byte, producerPolicy *
             newProposal.TsAndCs = string(tcBytes)
             newProposal.ProducerPolicy = string(prodBytes)
             newProposal.AgreementId = hex.EncodeToString(agreementId)
+            newProposal.Address = myAddress
 
             topic := TCPolicy.AgreementProtocols[0].Name
             glog.V(5).Infof("Sending proposal %v", *newProposal)
@@ -224,7 +228,7 @@ func (p *ProtocolHandler) ValidateProposal(proposal string) (*Proposal, error) {
 
     if err := json.Unmarshal([]byte(proposal), &prop); err != nil {
         return nil, errors.New(fmt.Sprintf("Error deserializing proposal: %s, error: %v", proposal, err))
-    } else if prop.Type == MsgTypeProposal && len(prop.TsAndCs) != 0 && len(prop.ProducerPolicy) != 0 && len(prop.AgreementId) != 0 {
+    } else if prop.Type == MsgTypeProposal && len(prop.TsAndCs) != 0 && len(prop.ProducerPolicy) != 0 && len(prop.AgreementId) != 0 && len(prop.Address) != 0 {
         return prop, nil
     } else {
         return nil, errors.New(fmt.Sprintf("Proposal message: %s, is not a Proposal.", proposal))

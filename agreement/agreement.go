@@ -158,11 +158,11 @@ func (w *AgreementWorker) start() {
 
                 if proposal, err := protocolHandler.ValidateProposal(cmd.Msg.Payload()); err != nil {
                     glog.Errorf(logString(fmt.Sprintf("discarding message: %v", cmd.Msg.Payload())))
-                } else if _, err := persistence.NewEstablishedAgreement(w.db, proposal.AgreementId, cmd.Msg.Payload(), "Citizen Scientist"); err != nil {
+                } else if _, err := persistence.NewEstablishedAgreement(w.db, proposal.AgreementId, cmd.Msg.Payload(), citizenscientist.PROTOCOL_NAME); err != nil {
                     glog.Errorf(logString(fmt.Sprintf("persisting new pending agreement: %v", proposal.AgreementId)))
                 } else if reply, err := protocolHandler.DecideOnProposal(proposal, cmd.Msg.From()); err != nil {
                     glog.Errorf(logString(fmt.Sprintf("unable to respond to proposal, error: %v", err)))
-                } else if err := w.RecordReply(proposal, reply); err != nil {
+                } else if err := w.RecordReply(proposal, reply, citizenscientist.PROTOCOL_NAME, cmd); err != nil {
                     glog.Errorf(logString(fmt.Sprintf("unable to record reply %v, error: %v", *reply, err)))
                 }
 
@@ -207,11 +207,11 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 }
 
 
-func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply *citizenscientist.ProposalReply) error {
+func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply *citizenscientist.ProposalReply, protocol string, cmd *ReceivedProposalCommand) error {
 
     if reply != nil {
         // Update the state in the database
-        if _, err := persistence.AgreementStateAccepted(w.db, proposal.AgreementId); err != nil {
+        if _, err := persistence.AgreementStateAccepted(w.db, proposal.AgreementId, protocol, cmd.Msg.Payload(), proposal.Address, reply.Signature); err != nil {
             return errors.New(logString(fmt.Sprintf("received error updating database state, %v", err)))
 
         // Update the state in the exchange
@@ -249,7 +249,7 @@ func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply
         }
 
     } else {
-        if err := persistence.DeleteEstablishedAgreement(w.db, proposal.AgreementId); err != nil {
+        if err := persistence.DeleteEstablishedAgreement(w.db, proposal.AgreementId, protocol); err != nil {
             return errors.New(logString(fmt.Sprintf("received error deleting agreement from db %v", err)))
         } else if err := w.recordAgreementState(proposal.AgreementId, "", "Reject proposal"); err != nil {
             return errors.New(logString(fmt.Sprintf("received error setting state for agreement %v", err)))

@@ -81,10 +81,10 @@ func (c CSCancelAgreement) Type() string {
     return c.workType
 }
 
-// These constants represent agreement cancellation reason code
-const CANCEL_NOT_FINALIZED_TIMEOUT = 1
-const CANCEL_NO_DATA_RECEIVED = 2
-const CANCEL_POLICY_CHANGED = 3
+// These constants represent agreement cancellation reason codes
+const CANCEL_NOT_FINALIZED_TIMEOUT = 200
+const CANCEL_NO_DATA_RECEIVED = 201
+const CANCEL_POLICY_CHANGED = 202
 
 
 // This function receives an event to "make a new agreement" from the Process function, and then synchronously calls a function
@@ -107,6 +107,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
             wi := workItem.(CSInitiateAgreement)
             // Generate an agreement ID
             agreementId := generateAgreementId(random)
+            myAddress, _ := ethblockchain.AccountId()
             agreementIdString := hex.EncodeToString(agreementId)
             glog.V(5).Infof(logString(fmt.Sprintf("using AgreementId %v", agreementIdString)))
 
@@ -115,7 +116,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
                 glog.Errorf(logString(fmt.Sprintf("error persisting agreement attempt: %v", err)))
 
             // Initiate the protocol
-            } else if proposal, err := protocolHandler.InitiateAgreement(agreementId, wi.ProducerPolicy, wi.ConsumerPolicy, wi.Device); err != nil {
+            } else if proposal, err := protocolHandler.InitiateAgreement(agreementId, wi.ProducerPolicy, wi.ConsumerPolicy, wi.Device, myAddress); err != nil {
                 glog.Errorf(logString(fmt.Sprintf("error initiating agreement: %v", err)))
 
                 // Remove pending agreement from database

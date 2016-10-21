@@ -15,6 +15,7 @@ import (
 	"github.com/boltdb/bolt"
 	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/governance"
@@ -241,7 +242,7 @@ func (a *API) info(w http.ResponseWriter, r *http.Request) {
 }
 
 func allContractNames(db *bolt.DB) ([]string, error) {
-	if eAgreements, err := persistence.FindEstablishedAgreements(db, []persistence.ECFilter{}); err != nil {
+	if eAgreements, err := persistence.FindEstablishedAgreements(db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{}); err != nil {
 		return nil, fmt.Errorf("Error fetching established agreements: %v", err)
 	} else {
 		names := make([]string, 0)
@@ -364,11 +365,11 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 	} else {
 		glog.V(3).Infof("Handling DELETE of agreement: %v", r)
 
-		filters := make([]persistence.ECFilter, 0)
-		filters = append(filters, persistence.UnarchivedECFilter())
-		filters = append(filters, persistence.IdECFilter(id))
+		filters := make([]persistence.EAFilter, 0)
+		filters = append(filters, persistence.UnarchivedEAFilter())
+		filters = append(filters, persistence.IdEAFilter(id))
 
-		if agreements, err := persistence.FindEstablishedAgreements(a.db, filters); err != nil {
+		if agreements, err := persistence.FindEstablishedAgreements(a.db, citizenscientist.PROTOCOL_NAME, filters); err != nil {
 			glog.Error(err)
 			w.WriteHeader(http.StatusInternalServerError)
 		} else if len(agreements) == 0 {
@@ -406,7 +407,7 @@ func (a *API) contract(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		// really only for the purpose of determining if contracts were registered
 
-		if agreements, err := persistence.FindEstablishedAgreements(a.db, []persistence.ECFilter{}); err != nil {
+		if agreements, err := persistence.FindEstablishedAgreements(a.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{}); err != nil {
 			glog.Error(err)
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {

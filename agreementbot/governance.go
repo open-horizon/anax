@@ -38,7 +38,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
                         glog.Errorf(logString(fmt.Sprintf("error persisting agreement %v finalized: %v", ag.CurrentAgreementId, err)))
                     }
                     // Update state in exchange
-                    if err := recordConsumerAgreementState(w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId, "", "Finalized Proposal"); err != nil {
+                    if err := recordConsumerAgreementState(w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId, "", "Finalized Agreement"); err != nil {
                         glog.Errorf(logString(fmt.Sprintf("error setting agreement %v finalized state in exchange: %v", ag.CurrentAgreementId, err)))
                     }
                 } else {
