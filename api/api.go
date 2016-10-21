@@ -133,13 +133,12 @@ func NewAPIListener(config *config.HorizonConfig, db *bolt.DB) *API {
 
 // Worker framework functions
 func (a *API) Messages() chan events.Message {
-    return a.Manager.Messages
+	return a.Manager.Messages
 }
 
 func (a *API) NewEvent(ev events.Message) {
 	return
 }
-
 
 func (a *API) listen(apiListen string) {
 	glog.Info("Starting Anax API server")
@@ -514,9 +513,23 @@ func (a *API) contract(w http.ResponseWriter, r *http.Request) {
 			contract.CPUs = runtime.NumCPU()
 			glog.V(2).Infof("Using discovered CPU count: %v", contract.CPUs)
 
+			// get sensor api specification url and save it to the contract
+			if sensor_url, err := policy.GetSenorApiSpecUrl(*contract.Name); err != nil {
+				glog.Errorf("Error: %v", err)
+			} else {
+				contract.SensorUrl = &sensor_url
+			}
+
+			// save the contract in db
+			if err := persistence.SavePendingContract(a.db, contract); err != nil {
+				glog.Errorf("Error: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+
 			if *contract.Name != "Location Contract" {
 				if genErr := policy.GeneratePolicy(a.Messages(), *contract.Name, contract.Arch, contract.AppAttributes, a.Config.Edge.PolicyPath); genErr != nil {
 					glog.Errorf("Error: %v", genErr)
+					w.WriteHeader(http.StatusInternalServerError)
 				}
 			}
 
@@ -613,4 +626,3 @@ func (a *API) iotfconf(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
-

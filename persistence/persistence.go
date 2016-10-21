@@ -15,12 +15,14 @@ import (
 	"github.com/open-horizon/anax/cutil"
 )
 
+const P_CONTRACTS = "pending_contracts"
 const E_AGREEMENTS = "established_agreements" // may or may not be in agreements
 const DEVMODE = "devmode"
 
 // uses pointers for members b/c it allows nil-checking at deserialization; !Important!: the json field names here must not change w/out changing the error messages returned from the API, they are not programmatically determined
 type PendingContract struct {
 	Name                 *string            `json:"name"`
+	SensorUrl            *string            `json:"sensor_url"`
 	Arch                 string             `json:"arch"`
 	CPUs                 int                `json:"cpus"`
 	RAM                  *int               `json:"ram"`
@@ -65,9 +67,8 @@ type IoTFCred struct {
 	Password string `json:"password"`
 }
 
-
 func (c PendingContract) String() string {
-	return fmt.Sprintf("Name: %v, Arch: %v, CPUs: %v, RAM: %v, IsLocEnabled: %v, AppAttribs: %v", *c.Name, c.Arch, c.CPUs, *c.RAM, c.IsLocEnabled, *c.AppAttributes)
+	return fmt.Sprintf("Name: %v, SensorUrl: %v, Arch: %v, CPUs: %v, RAM: %v, IsLocEnabled: %v, AppAttribs: %v", *c.Name, *c.SensorUrl, c.Arch, c.CPUs, *c.RAM, c.IsLocEnabled, *c.AppAttributes)
 }
 
 // N.B. Important!! Ensure new values are handled in Update function below
@@ -88,8 +89,8 @@ type EstablishedAgreement struct {
 	EnvironmentAdditions        map[string]string        `json:"environment_additions"`         // platform-provided environment facts, some of which are published on the blockchain for marketplace searching
 	CurrentDeployment           map[string]ServiceConfig `json:"current_deployment"`
 	Proposal                    string                   `json:"proposal"`
-	ProposalSig                 string                   `json:"proposal_sig"`             // the proposal currently in effect
-	AgreementProtocol           string                   `json:"agreement_protocol"`  // the agreement protocol being used. It is also in the proposal.
+	ProposalSig                 string                   `json:"proposal_sig"`       // the proposal currently in effect
+	AgreementProtocol           string                   `json:"agreement_protocol"` // the agreement protocol being used. It is also in the proposal.
 }
 
 func (c EstablishedAgreement) String() string {
@@ -174,9 +175,7 @@ func NewEstablishedAgreement(db *bolt.DB, agreementId string, proposal string, p
 	}
 }
 
-
 func DeleteEstablishedAgreement(db *bolt.DB, agreementId string, protocol string) error {
-
 	if agreementId == "" {
 		return errors.New("Agreement id empty, cannot remove")
 	} else {
@@ -204,8 +203,6 @@ func DeleteEstablishedAgreement(db *bolt.DB, agreementId string, protocol string
 		}
 	}
 }
-
-
 
 // TODO: share common initialization here with above factory method
 // reset contract record state to begin polling
@@ -353,38 +350,135 @@ func PersistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 	})
 }
 
-// func FindPendingAgreements(db *bolt.DB) ([]PendingAgreement, error) {
-// 	pendingAgreements := make([]PendingAgreement, 0)
+// Returns all pending contracts
+func FindPendingContracts(db *bolt.DB) ([]PendingContract, error) {
+	pendingContracts := make([]PendingContract, 0)
 
-// 	// fetch pending contracts
-// 	readErr := db.View(func(tx *bolt.Tx) error {
+	// fetch pending contracts
+	readErr := db.View(func(tx *bolt.Tx) error {
 
-// 		// ok if pending contracts bucket doesn't exist yet; user interaction with the system creates it
-// 		if b := tx.Bucket([]byte(P_AGREEMENTS)); b != nil {
-// 			b.ForEach(func(_, v []byte) error {
-// 				// key unnecessary, it's just the user-friendly name we gave at creation time
+		// ok if pending contracts bucket doesn't exist yet; user interaction with the system creates it
+		if b := tx.Bucket([]byte(P_CONTRACTS)); b != nil {
+			b.ForEach(func(_, v []byte) error {
+				// key unnecessary, it's just the user-friendly name we gave at creation time
 
-// 				var p PendingAgreement
+				var p PendingContract
 
-// 				if err := json.Unmarshal(v, &p); err != nil {
-// 					glog.Errorf("Unable to deserialize db record: %v. Error: %v", v, err)
-// 				} else {
-// 					pendingAgreements = append(pendingAgreements, p)
-// 				}
+				if err := json.Unmarshal(v, &p); err != nil {
+					glog.Errorf("Unable to deserialize db record: %v. Error: %v", v, err)
+				} else {
+					pendingContracts = append(pendingContracts, p)
+				}
 
-// 				return nil
-// 			})
-// 		}
+				return nil
+			})
+		}
 
-// 		return nil // end the transaction
-// 	})
+		return nil // end the transaction
+	})
 
-// 	if readErr != nil {
-// 		return nil, readErr
-// 	} else {
-// 		return pendingAgreements, nil
-// 	}
-// }
+	if readErr != nil {
+		return nil, readErr
+	} else {
+		return pendingContracts, nil
+	}
+}
+
+// Saves the pending contract in the db
+func SavePendingContract(db *bolt.DB, contract PendingContract) error {
+	duplicate := false
+
+	// check for duplicate pending and established contracts
+	pErr := db.View(func(tx *bolt.Tx) error {
+		bp := tx.Bucket([]byte(P_CONTRACTS))
+		if bp != nil {
+			duplicate = (bp.Get([]byte(*contract.Name)) != nil)
+		}
+
+		return nil
+
+	})
+
+	if pErr != nil {
+		return fmt.Errorf("Error checking duplicates of %v from db. Error: %v", contract, pErr)
+	} else if duplicate {
+		return fmt.Errorf("Duplicate record found in the pending contracts for %v.", *contract.Name)
+	}
+
+	writeErr := db.Update(func(tx *bolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists([]byte(P_CONTRACTS))
+		if err != nil {
+			return err
+		}
+
+		if serial, err := json.Marshal(&contract); err != nil {
+			return fmt.Errorf("Failed to serialize pending contract: %v. Error: %v", contract, err)
+		} else {
+			return b.Put([]byte(*contract.Name), serial)
+		}
+		return nil
+	})
+
+	return writeErr
+}
+
+// filter on PendingContract
+type PCFilter func(PendingContract) bool
+
+// PendingContract filter by SensorUrl
+func SensorUrlPCFilter(url string) PCFilter {
+	return func(pc PendingContract) bool {
+		if pc.SensorUrl == nil {
+			return false
+		} else {
+			return *pc.SensorUrl == url
+		}
+	}
+}
+
+// PendingContract filter by Name
+func NamePCFilter(name string) PCFilter {
+	return func(pc PendingContract) bool { return *pc.Name == name }
+}
+
+// Find pending contract by filters
+func FindPendingContractByFilters(db *bolt.DB, filters []PCFilter) ([]PendingContract, error) {
+	pcs := make([]PendingContract, 0)
+
+	// fetch pending contracts
+	readErr := db.View(func(tx *bolt.Tx) error {
+
+		if b := tx.Bucket([]byte(P_CONTRACTS)); b != nil {
+			b.ForEach(func(_, v []byte) error {
+
+				var p PendingContract
+
+				if err := json.Unmarshal(v, &p); err != nil {
+					glog.Errorf("Unable to deserialize db record: %v. Error: %v", v, err)
+				} else {
+					exclude := false
+					for _, filterFn := range filters {
+						if !filterFn(p) {
+							exclude = true
+						}
+					}
+					if !exclude {
+						pcs = append(pcs, p)
+					}
+				}
+				return nil
+			})
+		}
+
+		return nil // end the transaction
+	})
+
+	if readErr != nil {
+		return nil, readErr
+	} else {
+		return pcs, nil
+	}
+}
 
 func UnarchivedEAFilter() EAFilter {
 	return func(e EstablishedAgreement) bool { return !e.Archived }
@@ -441,7 +535,6 @@ func FindEstablishedAgreements(db *bolt.DB, protocol string, filters []EAFilter)
 		return agreements, nil
 	}
 }
-
 
 func genNonce() (string, error) {
 	bytes := make([]byte, 64)
