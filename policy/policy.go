@@ -70,38 +70,6 @@ func GeneratePolicy(e chan events.Message, sensorName string, arch string, props
 }
 
 
-func GetAllPolicies(location string) ([]*gpolicy.Policy, error) {
-
-    var errorDetected = 0
-
-    policies := make([]*gpolicy.Policy, 0, 10)
-    changeNotify := func(fileName string, policy *gpolicy.Policy) {
-        policies = append(policies, policy)
-    }
-
-    deleteNotify := func(fileName string, policy *gpolicy.Policy) {
-        glog.Errorf("Policy watcher invoked delete notification unexpectedly for %v.", fileName)
-    }
-
-    errorNotify := func(fileName string, err error) {
-        glog.Errorf("Policy watcher invoked error notification unexpectedly for %v.", fileName)
-        errorDetected += 1
-    }
-
-    // Read in all the existing policy files
-    if err := gpolicy.PolicyFileChangeWatcher(location, changeNotify, deleteNotify, errorNotify, 0); err != nil {
-        return nil, err
-    } else if errorDetected != 0 {
-        return nil, errors.New(fmt.Sprintf("%v errors occurred while reading policies from disk", errorDetected))
-    } else {
-        return policies, nil
-    }
-}
-
-// func AreCompatible(producer_policy *gpolicy.Policy, consumer_policy *gpolicy.Policy) error {
-//     return gpolicy.Are_Compatible(producer_policy, consumer_policy)
-// }
-
 func RetrieveAllProperties(policy *gpolicy.Policy) (*gpolicy.PropertyList, error) {
     pl := new(gpolicy.PropertyList)
 
@@ -115,22 +83,4 @@ func RetrieveAllProperties(policy *gpolicy.Policy) (*gpolicy.PropertyList, error
     *pl = append(*pl, gpolicy.Property {Name:  "agreementProtocols", Value: policy.AgreementProtocols.As_String_Array(), })
 
     return pl, nil
-}
-
-func AllAgreementProtocols(location string) ([]string, error) {
-    r := make([]string, 0, 10)
-    m := make(map[string]int)
-    if policies, err := GetAllPolicies(location); err != nil {
-        return r, err
-    } else {
-        for _, p := range policies {
-            for _, e := range p.AgreementProtocols {
-                m[e.Name] = 1
-            }
-        }
-        for agp, _ := range m {
-            r = append(r, agp)
-        }
-        return r, nil
-    }
 }

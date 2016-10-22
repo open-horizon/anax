@@ -6,14 +6,14 @@ import (
     "fmt"
     "github.com/boltdb/bolt"
     "github.com/golang/glog"
-    "math/rand"
-    "net/http"
-    "os"
     "github.com/open-horizon/anax/config"
     "github.com/open-horizon/anax/ethblockchain"
     "github.com/open-horizon/anax/exchange"
     "github.com/open-horizon/anax/events"
     "github.com/open-horizon/anax/worker"
+    "math/rand"
+    "net/http"
+    "os"
     "repo.hovitos.engineering/MTN/go-policy"
     "runtime"
     "time"
@@ -78,6 +78,12 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
             // }
         // }
 
+        case *events.ABPolicyCreatedMessage:
+        msg, _ := incoming.(*events.ABPolicyCreatedMessage)
+
+            agCmd := NewNewPolicyCommand(msg.PolicyFile())
+            w.Commands <- agCmd
+
     default: //nothing
 
     }
@@ -88,7 +94,14 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 func (w *AgreementBotWorker) start() {
     glog.Info("AgreementBot worker started")
 
-    if w.db == nil {return}
+    // If there is no Agbot config, we will terminate
+    if w.Config.AgreementBot == (config.AGConfig{}) {
+        glog.Errorf("AgreementBotWorker terminating, no AgreementBot config.")
+        return
+    } else if w.db == nil {
+        glog.Errorf("AgreementBotWorker terminating, no AgreementBot database configured.")
+        return
+    }
 
     // Establish the go objects that are used to interact with the ethereum blockchain.
     // This code should probably be in the protocol library.
@@ -107,12 +120,18 @@ func (w *AgreementBotWorker) start() {
         return
     }
 
-    // Give the policy manager a chance to read in all the policies.
-    if policyManager, err := policy.Initialize(w.Worker.Manager.Config.AgreementBot.PolicyPath, ""); err != nil {
-        glog.Errorf("AgreementBotWorker unable to inialize policy manager, error: %v", err)
-        return
-    } else {
-        w.pm = policyManager
+    // Give the policy manager a chance to read in all the policies. The agbot worker will not proceed past this point
+    // until it has some policies to work with.
+    for {
+        if policyManager, err := policy.Initialize(w.Worker.Manager.Config.AgreementBot.PolicyPath); err != nil {
+            glog.Errorf("AgreementBotWorker unable to initialize policy manager, error: %v", err)
+        } else if policyManager.NumberPolicies() != 0 {
+            w.pm = policyManager
+            break
+        }
+        glog.V(3).Infof("AgreementBotWorker waiting for policies to appear")
+        time.Sleep(time.Duration(1) * time.Minute)
+        runtime.Gosched()
     }
 
     // For each agreement protocol in the current list of configured policies, startup a processor
@@ -148,6 +167,17 @@ func (w *AgreementBotWorker) start() {
                 // TODO: Hack assume there is only one protocol handler
                 w.pwcommands <- cmd
 
+            case *NewPolicyCommand:
+                cmd := command.(*NewPolicyCommand)
+                if newPolicy, err := policy.ReadPolicyFile(cmd.PolicyFile); err != nil {
+                    glog.Errorf("AgreementBotWorker unable to read policy file %v into memory, error: %v", cmd.PolicyFile, err)
+                } else {
+                    w.pm.AddPolicy(newPolicy)        // We dont care if it's already there
+
+                    // Make sure the whisper subsystem is subscribed to messages for this policy's agreement protocol
+                    w.Messages() <- events.NewWhisperSubscribeToMessage(events.SUBSCRIBE_TO, newPolicy.AgreementProtocols[0].Name)
+                }
+
             default:
                 glog.Errorf("Unknown command (%T): %v", command, command)
             }
@@ -180,7 +210,7 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
         // Main function of the agreement processor. Constantly search through the list of available
         // devices to ensure that we are contracting with as many devices as possible.
         go func() {
-            for {
+                for {
 
                 glog.V(5).Infof("AgreementBot about to select command (non-blocking).")
                 select {
@@ -216,15 +246,17 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 
                     glog.V(4).Infof("AgreementBot for %v protocol Polling Exchange.", protocol)
 
-                    for _, consumerPolicy := range w.pm.Policies {
+                    // Get a copy of all policies in the policy manager so that we can safely iterate it
+                    policies := w.pm.GetAllPolicies()
+                    for _, consumerPolicy := range policies {
 
                         agp := policy.AgreementProtocol_Factory(protocol)
                         agpl := new(policy.AgreementProtocolList)
                         *agpl = append(*agpl, *agp)
                         if _, err := consumerPolicy.AgreementProtocols.Intersects_With(agpl); err != nil {
                             continue
-                        } else if devices, err := w.searchExchange(consumerPolicy); err != nil {
-                            glog.Errorf("AgreementBot received error on searching for %v, error: %v", *consumerPolicy, err)
+                        } else if devices, err := w.searchExchange(&consumerPolicy); err != nil {
+                            glog.Errorf("AgreementBot received error on searching for %v, error: %v", consumerPolicy, err)
                         } else {
 
                             for _, dev := range (*devices) {
@@ -239,13 +271,13 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
                                     glog.Errorf("AgreementBot received error demarshalling policy blob %v, error: %v", dev.Microservices[0].Policy, err)
 
                                 // Check to see if the device's policy is compatible
-                                } else if err := policy.Are_Compatible(producerPolicy, consumerPolicy); err != nil {
-                                    glog.Errorf("AgreementBot received error comparing %v and %v, error: %v", *producerPolicy, *consumerPolicy, err)
+                                } else if err := policy.Are_Compatible(producerPolicy, &consumerPolicy); err != nil {
+                                    glog.Errorf("AgreementBot received error comparing %v and %v, error: %v", *producerPolicy, consumerPolicy, err)
                                 } else {
                                     agreementWork := CSInitiateAgreement{
                                         workType: INITIATE,
                                         ProducerPolicy: producerPolicy,
-                                        ConsumerPolicy: consumerPolicy,
+                                        ConsumerPolicy: &consumerPolicy,
                                         Device:         &dev,
                                     }
 

@@ -105,6 +105,23 @@ func (w *AgreementWorker) start() {
 
     w.Commands <- NewInitEdgeCommand()
 
+    // Make sure the policy directory is in place
+    if err := os.MkdirAll(w.Worker.Manager.Config.Edge.PolicyPath, 0644); err != nil {
+        glog.Errorf(logString(fmt.Sprintf("cannot create edge policy file path %v, terminating.", w.Worker.Manager.Config.Edge.PolicyPath)))
+        return
+    }
+
+    // Pick up any policy files that are already in place.
+    if policyManager, err := gpolicy.Initialize(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
+        glog.Errorf(logString(fmt.Sprintf("unable to initialize policy manager, error: %v", err)))
+    } else {
+        w.pm = policyManager
+        // Publish what we have for the world to see
+        if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
+            glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
+        }
+    }
+
     // Enter the command processing loop. Initialization is complete so wait for commands to
     // perform. Commands are created as the result of events that are triggered elsewhere
     // in the system.
@@ -129,27 +146,22 @@ func (w *AgreementWorker) start() {
                 return
 
             case *AdvertisePolicyCommand:
+                cmd, _ := command.(*AdvertisePolicyCommand)
 
-                // Give the policy manager a chance to read in all the policies.
-                if policyManager, err := gpolicy.Initialize(w.Worker.Manager.Config.Edge.PolicyPath, ""); err != nil {
-                    glog.Fatalf(logString(fmt.Sprintf("unable to inialize policy manager, error: %v", err)))
-                    return
+                if newPolicy, err := gpolicy.ReadPolicyFile(cmd.PolicyFile); err != nil {
+                    glog.Errorf(logString(fmt.Sprintf("unable to read policy file %v into memory, error: %v", cmd.PolicyFile, err)))
+                } else if err := w.pm.AddPolicy(newPolicy); err != nil {
+                    glog.Errorf(logString(fmt.Sprintf("policy name is a duplicate, not added, error: %v", err)))
                 } else {
-                    w.pm = policyManager
-                }
 
-                // Capture all the agreement protocols that we might be using, and the tell the whisper subsystem to get ready
-                w.protocols = w.pm.GetAllAgreementProtocols()
-                for protocolName, _ := range w.protocols {
-                    w.Messages() <- events.NewWhisperSubscribeToMessage(events.SUBSCRIBE_TO, protocolName)
-                    // go w.InitiateAgreementProtocolHandler(protocolName)
-                }
+                    // Make sure the whisper subsystem is subscribed to messages for this policy's agreement protocol
+                    w.Messages() <- events.NewWhisperSubscribeToMessage(events.SUBSCRIBE_TO, newPolicy.AgreementProtocols[0].Name)
 
-                // Publish what we have for the world to see
-                if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
-                    glog.Fatalf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
+                    // Publish what we have for the world to see
+                    if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
+                        glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
+                    }
                 }
-
 
             case *ReceivedProposalCommand:
                 cmd, _ := command.(*ReceivedProposalCommand)
@@ -270,9 +282,9 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 
     var pType, pValue, pCompare string
 
-    if policies, err := policy.GetAllPolicies(location); err != nil {
-        return errors.New(fmt.Sprintf("AgreementWorker received error reading in policy files: %v", err))
-    } else if len(policies) > 0 {
+    policies := w.pm.GetAllPolicies()
+
+    if len(policies) > 0 {
         ms := make([]exchange.Microservice, 0, 10)
         for _, p := range policies {
             newMS := new(exchange.Microservice)
@@ -285,7 +297,7 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
                 newMS.Policy = string(pBytes)
             }
 
-            if props, err := policy.RetrieveAllProperties(p); err != nil {
+            if props, err := policy.RetrieveAllProperties(&p); err != nil {
                 return errors.New(fmt.Sprintf("AgreementWorker received error calculating properties: %v", err))
             } else {
                 for _, prop := range *props {

@@ -27,3 +27,13 @@ func NewAgreementTimeoutCommand(agreementId string, protocol string, reason uint
         Reason: reason,
     }
 }
+
+type NewPolicyCommand struct {
+    PolicyFile string
+}
+
+func NewNewPolicyCommand(fileName string) *NewPolicyCommand {
+    return &NewPolicyCommand{
+        PolicyFile: fileName,
+    }
+}

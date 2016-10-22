@@ -118,20 +118,19 @@ func main() {
 		db = edgeDB
 	}
 
-	// open agbot DB if necessary
+	// open Agreement Bot DB if necessary
 	var agbotdb *bolt.DB
 	if len(config.AgreementBot.DBPath) != 0 {
 		if err := os.MkdirAll(config.AgreementBot.DBPath, 0700); err != nil {
 			panic(err)
 		}
 
-		db, err := bolt.Open(path.Join(config.AgreementBot.DBPath, "agreement-bot.db"), 0600, &bolt.Options{Timeout: 10 * time.Second})
+		agdb, err := bolt.Open(path.Join(config.AgreementBot.DBPath, "agreementbot.db"), 0600, &bolt.Options{Timeout: 10 * time.Second})
 		if err != nil {
 			panic(err)
 		}
-		agbotdb = db
+		agbotdb = agdb
 	}
-
 
 	// start control signal handler
 	control := make(chan os.Signal, 1)
@@ -185,6 +184,7 @@ func main() {
 	workers := worker.NewMessageHandlerRegistry()
 
 	workers.Add("whisper", whisper.NewWhisperWorker(config))
+	workers.Add("agreementBot", agreementbot.NewAgreementBotWorker(config, agbotdb))
 
 	if db != nil {
 		workers.Add("api", apiServer)
@@ -192,9 +192,6 @@ func main() {
 		workers.Add("torrent", torrent.NewTorrentWorker(config))
 		workers.Add("container", container.NewContainerWorker(config))
 		workers.Add("governance", governance.NewGovernanceWorker(config, db))
-	}
-	if agbotdb != nil{
-		workers.Add("agreementBot", agreementbot.NewAgreementBotWorker(config, agbotdb))
 	}
 
 	messageStream := mux(workers)
