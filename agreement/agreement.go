@@ -253,8 +253,15 @@ func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply
                 lc := new(events.AgreementLaunchContext)
                 lc.Configure = wc
                 lc.AgreementId = proposal.AgreementId
-                envAdds := make(map[string]string)
-                envAdds["MTN_RAM"] = "1024"
+
+				// get environmental settings for the workload
+				envAdds := make(map[string]string)
+				sensorUrl := tcPolicy.APISpecs[0].SpecRef
+				if envAdds, err = w.GetWorkloadPreference(sensorUrl); err != nil {
+					glog.Errorf("Error: %v", err)
+				}
+				envAdds["MTN_AGREEMENTID"] = proposal.AgreementId
+				envAdds["MTN_CONTRACT"] = tcPolicy.Header.Name
                 lc.EnvironmentAdditions = &envAdds
                 w.Worker.Manager.Messages <- events.NewAgreementMessage(events.AGREEMENT_REACHED, lc)
             }
@@ -277,6 +284,50 @@ func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply
 // ===============================================================================================
 // Utility functions
 //
+
+// get the environmental variables for the workload
+func (w *AgreementWorker) GetWorkloadPreference(url string) (map[string]string, error) {
+	environmentAdditions := make(map[string]string, 0)
+
+	if pcs, err := persistence.FindPendingContractByFilters(w.db, []persistence.PCFilter{persistence.SensorUrlPCFilter(url)}); err != nil {
+		return nil, fmt.Errorf("Error getting workload preference: %v", err)
+	} else {
+		if len(pcs) > 0 {
+			pc := pcs[0]
+			// get common attributes
+			environmentAdditions["MTN_NAME"] = *pc.Name
+			environmentAdditions["MTN_ARCH"] = pc.Arch
+			environmentAdditions["MTN_CPUS"] = strconv.Itoa(pc.CPUs)
+			environmentAdditions["MTN_RAM"] = strconv.Itoa(*pc.RAM)
+			environmentAdditions["MTN_IS_LOC_ENABLED"] = strconv.FormatBool(pc.IsLocEnabled)
+			if pc.Lat != nil {
+				environmentAdditions["MTN_LAT"] = *pc.Lat
+			}
+			if pc.Lon != nil {
+				environmentAdditions["MTN_LON"] = *pc.Lon
+			}
+
+			// get public attributes
+			if pc.AppAttributes != nil {
+				for key, val := range *pc.AppAttributes {
+					if val != "" {
+						environmentAdditions[fmt.Sprintf("MTN_%s", strings.ToUpper(key))] = val
+					}
+				}
+			}
+
+			// get private attributes
+			if pc.PrivateAppAttributes != nil {
+				for key, val := range *pc.PrivateAppAttributes {
+					if val != "" {
+						environmentAdditions[fmt.Sprintf("MTN_%s", strings.ToUpper(key))] = val
+					}
+				}
+			}
+		}
+	}
+	return environmentAdditions, nil
+}
 
 func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 

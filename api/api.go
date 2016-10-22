@@ -514,6 +514,19 @@ func (a *API) contract(w http.ResponseWriter, r *http.Request) {
 			contract.CPUs = runtime.NumCPU()
 			glog.V(2).Infof("Using discovered CPU count: %v", contract.CPUs)
 
+			// get sensor api specification url and save it to the contract
+			if sensor_url, err := policy.GetSenorApiSpecUrl(*contract.Name); err != nil {
+				glog.Errorf("Error: %v", err)
+			} else {
+				contract.SensorUrl = &sensor_url
+			}
+
+			// save the contract in db
+			if err := persistence.SavePendingContract(a.db, contract); err != nil {
+				glog.Errorf("Error: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+
 			if *contract.Name != "Location Contract" {
 				if genErr := policy.GeneratePolicy(a.Messages(), *contract.Name, contract.Arch, contract.AppAttributes, a.Config.Edge.PolicyPath); genErr != nil {
 					glog.Errorf("Error: %v", genErr)
