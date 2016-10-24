@@ -1,4 +1,4 @@
-package blockchain
+package ethblockchain
 
 import (
 	"fmt"

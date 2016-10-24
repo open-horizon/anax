@@ -1,0 +1,12 @@
+{
+    "name": "netspeed",
+    "apiSpec": [
+        {
+            "specRef": "https://bluehorizon.network/device-api/arm/netspeed"
+        }
+    ],
+    "quarks": {
+        "cloudMsgBrokerHost": "",
+        "dataVerificationInterval": 0
+    }
+}

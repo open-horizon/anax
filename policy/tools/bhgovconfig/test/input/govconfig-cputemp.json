@@ -1,0 +1,13 @@
+{
+    "name": "cpu_temp",
+    "apiSpec": [
+        {
+            "specRef": "https://bluehorizon.network/documentation/cpu_temp-device-api/"
+        }
+    ],
+    "arch": "arm",
+    "quarks": {
+        "cloudMsgBrokerHost": "",
+        "dataVerificationInterval": 0
+    }
+}

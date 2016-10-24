@@ -1,0 +1,7 @@
+#!/bin/bash -e
+
+if [ "$(uname -m | grep -s 'arm')" ]; then
+  echo "armhf"
+else
+  echo "x86"
+fi

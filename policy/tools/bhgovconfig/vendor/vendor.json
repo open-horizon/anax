@@ -1,0 +1,55 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "HmbftipkadrLlCfzzVQ+iFHbl6g=",
+			"path": "github.com/golang/glog",
+			"revision": "23def4e6c14b4da8ac2ed8007337bc5eb5007998",
+			"revisionTime": "2016-01-25T20:49:56Z"
+		},
+		{
+			"checksumSHA1": "xN14ZoFcgefABp24aowYtQVMDsc=",
+			"path": "github.com/pborman/uuid",
+			"revision": "c55201b036063326c5b1b89ccfe45a184973d073",
+			"revisionTime": "2016-02-16T16:37:10Z"
+		},
+		{
+			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",
+			"path": "github.com/satori/go.uuid",
+			"revision": "0aa62d5ddceb50dbcb909d790b5345affd3669b6",
+			"revisionTime": "2016-07-13T18:03:06Z"
+		},
+		{
+			"checksumSHA1": "FdUSKt9lzWvhFT/J4q2Me4ucPG0=",
+			"path": "repo.hovitos.engineering/MTN/go-policy",
+			"revision": "97f6049c9e0c60364bc5da403f6f4cfe3045fab1",
+			"revisionTime": "2016-07-13T16:58:25Z"
+		},
+		{
+			"checksumSHA1": "UNkivII8oVHDlvJgjmMSKh2CppA=",
+			"path": "repo.hovitos.engineering/MTN/go-policy/payload",
+			"revision": "97f6049c9e0c60364bc5da403f6f4cfe3045fab1",
+			"revisionTime": "2016-07-13T16:58:25Z"
+		},
+		{
+			"checksumSHA1": "Oz0WaYOSFKyLYGH2zSSiNJthXMA=",
+			"path": "repo.hovitos.engineering/MTN/go-whisper",
+			"revision": "d180108d189882d47e1171557bd1df5fcf1aa482",
+			"revisionTime": "2016-07-06T21:36:32Z"
+		},
+		{
+			"checksumSHA1": "ibLM+rtipqYXuMN4bhjSalQMktQ=",
+			"path": "repo.hovitos.engineering/MTN/provider-tremor",
+			"revision": "ed35b2b5373cb843ab2727799aa1d54e8409c502",
+			"revisionTime": "2016-07-14T18:03:54Z"
+		},
+		{
+			"checksumSHA1": "jMNpde5dmmJdVD7LfDjs2gslAZA=",
+			"path": "repo.hovitos.engineering/MTN/provider-tremor/config",
+			"revision": "ed35b2b5373cb843ab2727799aa1d54e8409c502",
+			"revisionTime": "2016-07-14T18:03:54Z"
+		}
+	],
+	"rootPath": "repo.hovitos.engineering/MTN/go-policy/tools/bhgovconfig"
+}

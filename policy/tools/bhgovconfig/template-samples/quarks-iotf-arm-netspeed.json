@@ -1,0 +1,36 @@
+{
+    "workloads": [
+        {
+            "matchgroups": [
+                [
+                    {
+                        "attr": "is_bandwidth_test_enabled",
+                        "value": "true"
+                    }
+                ],
+                [
+                    {
+                        "attr": "arch",
+                        "value": "arm"
+                    }
+                ]
+            ],
+            "deployment": "{\"netspeed5\":{\"image\":\"summit.hovitos.engineering/armhf/netspeed5:v1.7\",\"links\":[\"pitcherd\"],\"environment\":[\"DEPL_ENV=prod\"],\"restart\":\"always\"},\"pitcherd\":{\"image\":\"summit.hovitos.engineering/armhf/pitcherd:volcano\",\"environment\":[\"MTN_CATCHERS=https://catcher.bluehorizon.network:443\",\"MTN_PITCHERD_PORT=8081\"],\"restart\":\"always\"}}",
+            "deployment_signature": "LxKrVMp6UPlNFFB7NZUrX79FIN185SkY0hiPfczgg/yYO5u1+ZVJN6c4sghyeOejrzMXfKx5EcpuF70vPyjq0/r7qjS5iOa8XBju9mocKJWSvctgj+6DHd2uOoJo/ZTKhcaEd1jkZh+unhQhMNKT0rbnq1L4dASd6+90rnniaWWZB/tubiaed3JLMh+aGvC7q5mRnVTXTKUvvPQKjWR0koYoMIA44f4ypqMJfNFEELEufqsQK55RxvyzQLoVro2unAYo6xYQWfRqCJWEP34CbR8jxVyu5bmNuPsu7ELf5O4BwGHszGlzbunr6vIc+jigZP9Gy4jObznlg201+uCn2sQ/9i8qecUumL05RakFju9SvMS45KNNl6+nvCp9LnTVARcwPgcOHd655RdfVMyp4DPLkx1ZCHAaU+UpYqnUKA7crl/m35buSCZNPvDQbtZcvg7FVlEf5OGmJ2/3Un3DkMhm47JFwTz5h4ZCL4Usi04Ju0N89q0rBohtArgko9UX9IaB8WSHoLzT69pqN7WWZjtg0Khck0dvO1BN7l0G73fC9gF7+tSxrjV5GI9vcreYLMhg4gOBWHHnDilXfAISC+SzV/aBqboYjUtH2bH/t2lJvPmO227vy7MeCPvUuqFLFS1oxAPQrQzLxL91hALwNr50/FiI0q9+qHRGJuk/VXQ=",
+            "torrent": {
+                "url": "https://images.bluehorizon.network/5f63e2f4b42e512dde705563d706853c1f3d8e76.torrent",
+                "images": [
+                    {
+                        "file": "205ee68dfbba45be0eeef74d54e52e85b3edbbd8.tar.gz",
+                        "signature": "hkCYUWsMjY3EsIFANiXFGyCL9RaLIyWBljY9oQMAyHnCWV5ffe2iOsNcJib3sIj5gKFhdcYCmElw4KZ64x8dst8KPLagBe1kaaR53oLZ/liLRauvhRzZepkTFEf9m81mLNw3GflG0G736xipO+ItVSWpTsVjK0VKkUSwwBgy28508uTXWTV+DQfAMx0eIdtt/jRHB9fDJbCW/ttQM8ViZDZQNE2FHbu6EN8fwuftMIr5iO0bFqXIDCGL9PR4d9fi5SBvFRk+bF97nik/t5rPXpmEh4jSYTyV7Tz6INNZ1hPdRE7TkSwh1yjuJ27D+KN92ar4yC6hvR54zH6ISSJCeiHG2jsoIyOu4JZrZj+SUtl5uF7s/t+KhcmWdgghnpAHp4p1mUMaP78QAPTZnZBs72mGAx0v/UhnK4cKaHHWVp2fQFMeZD/neVp70Glwyo4tfrY8szVy/dewT0LrkekL5dxc+0t/F0Gag2l9uVezAhBwl4tKk/mvamDTyMl/Yaw6XnVPi9oed6Tw2PPuU6XaDWnM558QxpZMtyMwNnnKU/UvY3n3Op54zrv8zyHsoAW05x8Ary4i7lS8pvueKyI89BPMuk3c05Ozw3ydbYMRcLkBHsN+Ed9JWgeEYZLXLMt9xoX1sB/o5NKkPPOpvlobpl2tlzur4g3UuCHA0ea6Ktg="
+                    },
+                    {
+                        "file": "4f408ccaa5e356d96baabcc384b1afd4c73716e9.tar.gz",
+                        "signature": "YAzoS7sV6Fad468FqZqIqR/cNwaiasmW95vgxrsSbKVEC0GvrysA8hXF2+RuOHOcZrA0QuiL5h1pSrtJyQ/6N6Wop6S+5ut1vVdTKBE212/2A+HkkkrCV255xykf+S+pwQVMe0BUbXKpALx2PTdBrGpRNNpLRW6NqUm5ZG7mYDit9ZPopwziTezfsmKg85OXdqfOQyOWHxWtZ8ADBFVIBnTaAqQQN/uU1XyHd7M2WF/XZSoJZPsHDA4toWMDraTf96HqQ9ipS9Akl26gQI+LRcEbYau4T5a2SZu8Jgb0oum7v8ZKSRlInp0+45aYigaKBLBfUl8ddyrzPLgRDEJujzRUpGMFwQJEcBLxe/O0nu281+9KXCnAo+MHRwalQjrvcj8KR7e8LwvzF7wAx7uMPJ/+3VoHWmw58vYUqHDnrOnKaXX5QuPKKXfar4ivtOGGREAAYx2nshE0+Q877GFqB7P8uKLuRbe8c1xfDV1N2IZtFJqa8GjmyWojrbxJN3g+/DFUtuoriVqZKpKQngLtHyHLgAsJFqSbT8zE0sfdN5NVrNH7qJmHuypg3BvuIDl/MZsOsbVuvYCQZY+vtJVpR8Jx5EFYD5OiPiOoIxX6kvIKaevnqGO4LwLKDZkPxPbw1k0uNb6uE+lTjkxUmwO0LIa5S+XxNbZ1NamqFI5Ugb8="
+                    }
+                ]
+            },
+            "active_contracts_URL": "https://staging.bluehorizon.network/api/unified/allsdr/cache/maxage/minutes?type1=15&type2=15&type5=15"
+        }
+    ]
+}

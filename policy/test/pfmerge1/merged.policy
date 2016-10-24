@@ -1,0 +1,81 @@
+{
+    "header": {
+        "name": "device policy merged with agbot policy",
+        "version": "2.0"
+    },
+    "apiSpec": [
+        {
+            "specRef": "http://mycompany.com/dm/cpu_temp",
+            "version": "1.0.1",
+            "exclusiveAccess": false,
+            "numberAgreements": 0,
+            "arch": ""
+        }
+    ],
+    "agreementProtocols": [
+        {
+            "name": "Citizen Scientist"
+        }
+    ],
+    "workloads": [
+        {
+            "deployment": "Deployment instructions",
+            "deployment_signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "deployment_user_info": "",
+            "torrent": {
+                "url": "torrent://the.system.com",
+                "images": [
+                    {
+                        "file": "a_file.tar.gz",
+                        "signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                    }
+                ]
+            }
+        }
+    ],
+    "deviceType": "",
+    "valueExchange": {
+        "type": "url",
+        "value": "http://mycompany.com/data_analysis",
+        "paymentRate": 0,
+        "token": "siuwer78mvakj2ere"
+    },
+    "resourceLimits": {
+        "networkUpload": 0,
+        "networkDownload": 0,
+        "memory": 0,
+        "cpus": 0
+    },
+    "dataVerification": {
+        "enabled": false,
+        "URL": "",
+        "interval": 0
+    },
+    "proposalRejection": {
+        "number": 0,
+        "duration": 0
+    },
+    "maxAgreements": 0,
+    "properties": null,
+    "counterPartyProperties": null,
+    "blockchains": [
+        {
+            "type": "ethereum",
+            "details": {
+                "bootnodes": [
+                    "http://bhnetwork.com/bootnodes"
+                ],
+                "directory": [
+                    "http://bhnetwork.com/directory"
+                ],
+                "genesis": [
+                    "http://bhnetwork.com/genesis"
+                ],
+                "networkid": [
+                    "http://bhnetwork.com/networkid"
+                ]
+            }
+        }
+    ],
+    "requiredWorkload": ""
+}
