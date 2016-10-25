@@ -1,0 +1,79 @@
+{
+    "header": {
+        "name": "netspeed",
+        "version": "1.0"
+    },
+    "apiSpec": [
+        {
+            "specRef": "https://bluehorizon.network/device-api/arm/netspeed",
+            "version": "0.0.0",
+            "exclusiveAccess": false
+        }
+    ],
+    "agreementProtocols": [
+        {
+            "name": "2PartyDataUse"
+        }
+    ],
+    "workloads": [
+        {
+            "matchgroups": [
+                [
+                    {
+                        "attr": "is_bandwidth_test_enabled",
+                        "value": "true"
+                    }
+                ],
+                [
+                    {
+                        "attr": "arch",
+                        "value": "arm"
+                    }
+                ],
+                [
+                    {
+                        "attr": "ethereum_account",
+                        "value": "1a2b3c"
+                    },
+                    {
+                        "attr": "ethereum_account",
+                        "value": "4d5e6f"
+                    }
+                ]
+            ],
+            "deployment": "{\"services\":{\"hznquarks\":{\"image\":\"summit.hovitos.engineering/armhf/hznquarks:0.1.1\",\"ports\":[{\"localhost_only\":false,\"port_and_protocol\":\"8080/tcp\"}],\"network_isolation\":{\"outbound_permit_only_ignore\":\"ETH_ACCT_SPECIFIED\",\"outbound_permit_only\":[{\"dd_key\":\"deployment_user_info\",\"encoding\":\"JSON\",\"path\":\"cloudMsgBrokerHost\"}]}}}}",
+            "deployment_signature": "a66Ud4OTP6hWLp2PFG71elSFnq7JUKXMLX51qxIAaIxK9wPQqrymFs7VujCovhDI0vlmc1AfeuIU1WDItPobfRrqKJeKKBp6uzXxq2o/Amc/feCAVKwjAv2tSTZNODtXrUJQ67LQjm8o/uYFBS8JlH3DqNFdNwK6XFHMAm49AWMqu4mHsiLTGkqM7BusQeDTF2izZXKSu3kiLiJnSQIYYRSP8ICt45trmNDpkpUCjBju4RlkSxHdY/CfQZtW6PIum/9giVYoe63vnxghBX6kZ5DwxQBrNOCpszC9t8cttT6h9ffhYjtM4tDi98JC9qeF5gUZJUnrz1D5onQtltsyrM4etEyG1bBReVwilXu2L8ssrBLv6k/d3QreZbvRuDU9VkRJisOS28myBZ4MQu6dN1GIltNAlJYullBn8CJbJHtxEHZeBLi0ykH7fVHgwOBNUstHCklOpPFjEPcmqHAHAOq8KFtEyeoO3UrPn6LpxhazehIvDj0QHcpEthTcZkG36lWJ2Txhk7SuezQKjc+ulT2yVQGPny3XQ2/TwHrvJDBa1eM6x/M9+vK1rih1iaRVLw2iQczXxGOGB2BPMmwWo3hOr1eSqRTZly6bCYfTYK90SJTfFZrB+FJPhhWzZHgjUT8QDzbX4sR+Uk/BxBCTU0YAS9oM3BYnI4ySU23bXIw=",
+            "deployment_user_info": "{\"cloudMsgBrokerHost\":\"\",\"dataVerificationInterval\":0}",
+            "torrent": {
+                "url": "https://images.bluehorizon.network/2fd7deac740163d4e5a35d4df98250cc9528ba76.torrent",
+                "images": [
+                    {
+                        "file": "2fd7deac740163d4e5a35d4df98250cc9528ba76.tar.gz",
+                        "signature": "EXyAMQ0ZWCaMmINCoOfr7SCbUaHUjLjt3gaycqUSvu2lQ9t3Iy+EfMIwIFrIaT3IyNJ967GdSv+H8U6bbj4Uh3SYWQ/PAjcg66q4PKyTG2LIMnymvb3sGee74isiAl0AuzlNonLeYb84xUIvDWfFqXm+pkrHwPhu/nEtTiIgwVR/utsRrdnWvT/ANXsUgrhT7DrzewVkAkqjvDpBrO0AOdybiQcCneuWh9GrJF9TzAdaYKbPjSvhA1oPVOMuEGIoMc4ErOWKvY0yuvDRVSm7P+ODXcAbKrdQgnxaRgWrHCvhznxa7JIdd0f+58DO34drbHkgSEOnveL+qx30enr1eSctPqRFBfq32XN1LDz55iWQKLFNuCm4T8p4aAquDvJhxOrlt2gkdY6Wnh9ct8CuTdNLrwFFJ2HTNgVcSb4n5bxtQgkChAPdmHWsrjpCHZ4/oi+dDleORzO92nbAspqMgpCWyUUog3PUXa2zQAXm4Yc86Qmrwfb8PXPEcfpnJv9cAhDyzMNF4mmMV9LLoGy8LGtDywao9Sx2TLEHnl4XSVzeZxLFZrE1KFA7Ohasbva1EpoPAkwpu8hTvxl4oc5COwaXElMUeHZDWol9PrnsUiA3PkG4B3mtPMbYyjN6b2xSENGGf+9gDAqoNt1EMc27jjZr4WIw+36ks8U0Lroi13A="
+                    }
+                ]
+            }
+        }
+    ],
+    "deviceType": "",
+    "valueExchange": {
+        "type": "",
+        "value": "",
+        "paymentRate": 0
+    },
+    "resourceLimits": {
+        "networkUpload": 0,
+        "networkDownload": 0,
+        "memory": 0,
+        "cpus": 0
+    },
+    "dataVerification": {
+        "enabled": false,
+        "URL": "",
+        "interval": 0
+    },
+    "proposalRejection": {
+        "number": 0,
+        "duration": 0
+    }
+}

@@ -328,17 +328,17 @@ type ContainerWorker struct {
 	iptables      *iptables.IPTables
 }
 
-func NewContainerWorker(config *config.Config) *ContainerWorker {
+func NewContainerWorker(config *config.HorizonConfig) *ContainerWorker {
 	messages := make(chan events.Message)
 	commands := make(chan worker.Command, 200)
 
-	if err := unix.Access(config.WorkloadROStorage, unix.W_OK); err != nil {
-		glog.Errorf("Unable to access workload RO storage dir: %v. Error: %v", config.WorkloadROStorage, err)
+	if err := unix.Access(config.Edge.WorkloadROStorage, unix.W_OK); err != nil {
+		glog.Errorf("Unable to access workload RO storage dir: %v. Error: %v", config.Edge.WorkloadROStorage, err)
 		panic("Unable to access workload RO storage dir specified in config")
 	} else if ipt, err := iptables.New(); err != nil {
 		glog.Errorf("Failed to instantiate iptables Client: %v", err)
 		panic("Unable to instantiate iptables Client")
-	} else if client, err := docker.NewClient(config.DockerEndpoint); err != nil {
+	} else if client, err := docker.NewClient(config.Edge.DockerEndpoint); err != nil {
 		glog.Errorf("Failed to instantiate docker Client: %v", err)
 		panic("Unable to instantiate docker Client")
 	} else {
@@ -358,6 +358,27 @@ func NewContainerWorker(config *config.Config) *ContainerWorker {
 		return worker
 	}
 }
+
+func (w *ContainerWorker) Messages() chan events.Message {
+    return w.Worker.Manager.Messages
+}
+
+func (w *ContainerWorker) NewEvent(incoming events.Message) {
+
+	switch incoming.(type) {
+    case *events.TorrentMessage:
+        msg, _ := incoming.(*events.TorrentMessage)
+
+        cCmd := w.NewContainerConfigureCommand(msg.ImageFiles, msg.AgreementLaunchContext)
+        w.Commands <- cCmd
+
+    default: // nothing
+
+    }
+
+	return
+}
+
 
 func mkBridge(name string, client *docker.Client) (*docker.Network, error) {
 	bridgeOpts := docker.CreateNetworkOptions{
@@ -696,7 +717,7 @@ func processPostCreate(ipt *iptables.IPTables, client *docker.Client, agreementI
 }
 
 func (b *ContainerWorker) workloadStorageDir(agreementId string) string {
-	return path.Join(b.Config.WorkloadROStorage, agreementId)
+	return path.Join(b.Config.Edge.WorkloadROStorage, agreementId)
 }
 
 func (b *ContainerWorker) resourcesCreate(agreementId string, configure *gwhisper.Configure, configureRaw []byte, environmentAdditions map[string]string) (*map[string]persistence.ServiceConfig, error) {
@@ -766,7 +787,7 @@ func (b *ContainerWorker) resourcesCreate(agreementId string, configure *gwhispe
 		return nil, err
 	}
 
-	servicePairs, err := finalizeDeployment(agreementId, &deployment, environmentAdditions, workloadROStorageDir, b.Config.DefaultCPUSet)
+	servicePairs, err := finalizeDeployment(agreementId, &deployment, environmentAdditions, workloadROStorageDir, b.Config.Edge.DefaultCPUSet)
 	if err != nil {
 		return nil, err
 	}
@@ -890,23 +911,23 @@ func (b *ContainerWorker) start() {
 				if len(cmd.ImageFiles) == 0 {
 					glog.Infof("Command specified no new Docker images to load, expecting that the caller knows they're preloaded and this is not a bug. Skipping load operation")
 
-				} else if err := loadImages(b.client, b.Config.TorrentDir, cmd.ImageFiles); err != nil {
+				} else if err := loadImages(b.client, b.Config.Edge.TorrentDir, cmd.ImageFiles); err != nil {
 					glog.Errorf("Error loading image files: %v", err)
 
-					b.Messages <- NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.ContractId, cmd.AgreementLaunchContext.AgreementId, nil)
+					b.Messages() <- NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.ContractId, cmd.AgreementLaunchContext.AgreementId, nil)
 
 					continue
 				}
 
 				if deployment, err := b.resourcesCreate(cmd.AgreementLaunchContext.AgreementId, cmd.AgreementLaunchContext.Configure, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions); err != nil {
 					glog.Errorf("Error starting containers: %v", err)
-					b.Messages <- NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.ContractId, cmd.AgreementLaunchContext.AgreementId, deployment) // still using deployment here, need it to shutdown containers
+					b.Messages() <- NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.ContractId, cmd.AgreementLaunchContext.AgreementId, deployment) // still using deployment here, need it to shutdown containers
 
 				} else {
 					glog.Infof("Success starting pattern for agreement: %v, contract: %v, serviceNames: %v", cmd.AgreementLaunchContext.AgreementId, cmd.AgreementLaunchContext.ContractId, persistence.ServiceConfigNames(deployment))
 
 					// perhaps add the tc info to the container message so it can be enforced
-					b.Messages <- NewContainerMessage(events.EXECUTION_BEGUN, cmd.AgreementLaunchContext.ContractId, cmd.AgreementLaunchContext.AgreementId, deployment)
+					b.Messages() <- NewContainerMessage(events.EXECUTION_BEGUN, cmd.AgreementLaunchContext.ContractId, cmd.AgreementLaunchContext.AgreementId, deployment)
 				}
 
 			case *ContainerMaintenanceCommand:
@@ -954,7 +975,7 @@ func (b *ContainerWorker) start() {
 				if err := b.resourcesRemove(agreements); err != nil {
 					glog.Errorf("Error removing resources: %v", err)
 				} else {
-					b.Messages <- NewContainerMessage(eventRet, cmd.ContractId, cmd.CurrentAgreementId, cmd.Deployment)
+					b.Messages() <- NewContainerMessage(eventRet, cmd.ContractId, cmd.CurrentAgreementId, cmd.Deployment)
 				}
 
 			default:

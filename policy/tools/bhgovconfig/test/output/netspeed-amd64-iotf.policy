@@ -1,0 +1,83 @@
+{
+    "header": {
+        "name": "netspeed",
+        "version": "1.0"
+    },
+    "apiSpec": [
+        {
+            "specRef": "https://bluehorizon.network/documentation/netspeed-device-api",
+            "version": "0.0.0",
+            "exclusiveAccess": false
+        }
+    ],
+    "agreementProtocols": [
+        {
+            "name": "2PartyDataUse"
+        }
+    ],
+    "workloads": [
+        {
+            "matchgroups": [
+                [
+                    {
+                        "attr": "is_bandwidth_test_enabled",
+                        "value": "true"
+                    }
+                ],
+                [
+                    {
+                        "attr": "arch",
+                        "value": "amd64"
+                    }
+                ],
+                [
+                    {
+                        "attr": "ethereum_account",
+                        "value": "1a2b3c"
+                    },
+                    {
+                        "attr": "ethereum_account",
+                        "value": "4d5e6f"
+                    }
+                ]
+            ],
+            "deployment": "{\"netspeed5\":{\"image\":\"summit.hovitos.engineering/x86/netspeed5:volcano\",\"links\":[\"pitcherd\"],\"restart\":\"always\"},\"pitcherd\":{\"image\":\"summit.hovitos.engineering/x86/pitcherd:volcano\",\"environment\":[\"MTN_CATCHERS=https://catcher.bluehorizon.network:443\",\"MTN_PITCHERD_PORT=8081\"],\"restart\":\"always\"}}",
+            "deployment_signature": "sfsxqGjqUZxsEHXJC2cwSbjr/51KLAbU6hRs2aoX30r798i+MIXpdxZtC4OSqSsURht506G+4oB/+9Kil317sIpF2it5IXBRYLc704AGIcgyh2cbKd9JTniUUNwFOFaco35igjNVdjaGhuRGtpp63ONKaNWEkYEAXeS74FbDzAMbF2GRwICVG/C5xronrQUjEVoKFATh9HwywgmvNGLhBOfzHOfAaZ2YYPaEZyDNV6Gvj83YbrFhBF4iOnd1wRsRC97YDd+6snt/iPSnViKOAKhIxzcS/SiUwyHPtaAOoMK+c3IjCgy6HKCt2Hau6D7k5LS4yjbFi/R5/kogk38Qf00auGBMWTVkSnhUwyY+kk1g2IyxT3p0NuHLGEj//Gr8tSPFF4M8vyENWRB9RSIXl4PoDBBjuuqEHTacoDwm6tovflpr/Hxag2DDMsOF+9o4JwxV0j9j2xrzu7jTUbHCxjllN70ay10id5UCwTU5Nu6d98SRGmPqC1YWtFuKb8PPq+9jj8wNGQAFuCrs24iEYyrXWpguzOavCANiWk2LLKnHVBeUQSXf4TpNyuhEn8HsTbvXjYi1AnatOSvcag38D7YICfGkdZxcjxvDBjJ6M6uIPbGlTFFemJ3eJOBJdyoDumkUkVqy/dHxAJM4MmLSlPTxjEOKGpWE7RMoE9n3DRw=",
+            "deployment_user_info": "{\"cloudMsgBrokerHost\":\"9spkr0.messaging.internetofthings.ibmcloud.com\",\"dataVerificationInterval\":0}",
+            "torrent": {
+                "url": "https://images.bluehorizon.network/9e07c992bc709bf24d55d2e215cc1e431484dfd4.torrent",
+                "images": [
+                    {
+                        "file": "0544b73956f4333b314ef28c3c7931277225bcf0.tar.gz",
+                        "signature": "sDT6wVc3wbIF2uAFGO4l2jIM02dcsEafQRmJWter1F0ItP+SUNym5MPEyoA8lp+9GXmFhzQs8PTXJHo5u5m4Msqa5PeSrICnxdqlr0sQMUxMn/ollJs4qIpk7VUMJTa68v2AUojxx8U36WMKvxDUGGaLnibSBpYISv0a6+cu/fHUlslE/zHvWRV6MP5Np8F7w19+Ed6G7OOhLMezQtqZes56D+OHMnx6xZcB7vcKWIubm2jzzUBl3BLSB42M8mBCVFvFJZeQ0HXtxSj+VfJ3hZb6yFmLt0ggWSgJdxL3WPUM1YwqQ+7ELb7PYczyf79D8LL9zM7FxM2EupTs90ys6V0pHZLhP+20DIEfccEPKMA4y0nRdqe9o7aLQwGB7+b6LJGzD8sKvtxqua8+wXx9x/szU+EwQXNBKA9bYnUJqpz8Qrj3pTQjTB9Ap1bPBpTCc9yUrBfUe/k+/tkILUzc8VWBWwHIpa3GfOVwX2uTr9q3oANlu5HOOiZq+WCYQNxHu/LT7Fm4QzeAU13TsGWTHd/piN5m66UNyEmTGGsIanf+lN0CiEyeJzJ2Es5SFNPbtyvsKrYZLssPCM1/n6vlHWKVoagW/fzGzAhCfxWGnYVxI7A6SO1OruBLHDro8SFvrRx3jxWHgNgcZR9FxuFpqTBP/BPOaLR9RN/SFgC8sZ0="
+                    },
+                    {
+                        "file": "2d1c12d4a33c5ede7be47d0fded289b779b3bc73.tar.gz",
+                        "signature": "cBSTiYqbSHSlUlK5zLAB9LbWJ3RgMBE9sMFgWATN9WTL8egwtGvpHv6YVFfVl3fg1tBt2v4Kry/xutDVPy6qNI7iicZX3v49m1MwqpmyQfV5cznsG5E1ekbYVrg4vcd4+RMzFIAInxsqS7KruI8MvXIJMcYlqE6eg5GIGYR6KVr0fC1yVqr3+8PXccNmPT5oTf7lveoAfOT9rhIwQSoSgIhLEHb7N3B0v02WPKJMRzxcRAkNLoDYZtKahi5VTudfVODWtjGEKy47U/f2fv4HHwRysuETzKqhHWToJHbdXSBHxagbRfyMPoXim2Om5Mn7CQP2siNsSXNpxPmYtIYmgxU/K1PcmhdfMiWW9KJpYgqda9Jqdm047jV/NSZSPCffcpIVyc5HgqLrMZs7NSt/f2Z9gUemSwSClRZ1aGD6wxUXBRShSnu9/jEcWslWrWmXJvzG8Lbl6t8rMDBr7X7pnJAm2mZfQxR0KJddfSQRX+WGFMsa16M0/MT9K90fL0X+RJFGyBdeOzlVDm+nmgUH8VImmZE069lfsoNAgKTwsGCz+tF8Z/K+7DLliQUyTI3al3cHc/7yUjdywUreIVrbTjZhepG26OeBHn9W820+NsVcouFi30r+TObeO8G7fN9Met/i76TbkgeU12HNJCZMRpTXIxjxFFSOgPzA8KSCudE="
+                    }
+                ]
+            }
+        }
+    ],
+    "deviceType": "",
+    "valueExchange": {
+        "type": "",
+        "value": "",
+        "paymentRate": 0
+    },
+    "resourceLimits": {
+        "networkUpload": 0,
+        "networkDownload": 0,
+        "memory": 0,
+        "cpus": 0
+    },
+    "dataVerification": {
+        "enabled": false,
+        "URL": "9spkr0.messaging.internetofthings.ibmcloud.com",
+        "interval": 300
+    },
+    "proposalRejection": {
+        "number": 0,
+        "duration": 0
+    }
+}

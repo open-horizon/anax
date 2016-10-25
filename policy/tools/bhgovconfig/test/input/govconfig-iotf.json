@@ -1,0 +1,14 @@
+{
+    "name": "netspeed",
+    "apiSpec": [
+        {
+            "specRef": "https://bluehorizon.network/documentation/netspeed-device-api"
+        }
+    ],
+    "arch": "amd64",
+    "ethereumAccounts": [ "1a2b3c", "4d5e6f" ],
+    "quarks": {
+        "cloudMsgBrokerHost": "9spkr0.messaging.internetofthings.ibmcloud.com",
+        "dataVerificationInterval": 300
+    }
+}

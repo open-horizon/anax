@@ -1,4 +1,4 @@
-package blockchain
+package ethblockchain
 
 import (
 	"bytes"
@@ -30,12 +30,6 @@ func extractAttr(attributes []string, key string) string {
 	return ""
 }
 
-func ContractParam(key interface{}) []interface{} {
-	param := make([]interface{}, 0, 10)
-	param = append(param, key)
-
-	return param
-}
 
 // extract the key-value pairs from a byte array.
 // The input is a string array with each element is a byte array padded up to 32 bytes.

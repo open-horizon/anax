@@ -1,0 +1,114 @@
+{
+    "header": {
+        "name": "test creation",
+        "version": "2.0"
+    },
+    "apiSpec": [
+        {
+            "specRef": "http://mycompany.com/dm/cpu_temp",
+            "version": "1.0.0",
+            "exclusiveAccess": true,
+            "numberAgreements": 1,
+            "arch": "arm"
+        },
+        {
+            "specRef": "http://mycompany.com/dm/gps",
+            "version": "1.0.0",
+            "exclusiveAccess": true,
+            "numberAgreements": 1,
+            "arch": "arm"
+        }
+    ],
+    "agreementProtocols": [
+        {
+            "name": "Citizen Scientist"
+        },
+        {
+            "name": "2Party Bitcoin"
+        }
+    ],
+    "workloads": null,
+    "deviceType": "",
+    "valueExchange": {
+        "type": "",
+        "value": "",
+        "paymentRate": 0,
+        "token": ""
+    },
+    "resourceLimits": {
+        "networkUpload": 0,
+        "networkDownload": 0,
+        "memory": 0,
+        "cpus": 0
+    },
+    "dataVerification": {
+        "enabled": false,
+        "URL": "",
+        "interval": 0
+    },
+    "proposalRejection": {
+        "number": 0,
+        "duration": 0
+    },
+    "maxAgreements": 0,
+    "properties": [
+        {
+            "name": "rpiprop1",
+            "value": "rpival1"
+        },
+        {
+            "name": "rpiprop2",
+            "value": "rpival2"
+        },
+        {
+            "name": "rpiprop3",
+            "value": "rpival3"
+        },
+        {
+            "name": "rpiprop4",
+            "value": "rpival4"
+        },
+        {
+            "name": "rpiprop5",
+            "value": "rpival5"
+        }
+    ],
+    "counterPartyProperties": null,
+    "blockchains": [
+        {
+            "type": "ethereum",
+            "details": {
+                "bootnodes": [
+                    "http://bhnetwork.com/bootnodes"
+                ],
+                "directory": [
+                    "http://bhnetwork.com/directory"
+                ],
+                "genesis": [
+                    "http://bhnetwork.com/genesis"
+                ],
+                "networkid": [
+                    "http://bhnetwork.com/networkid"
+                ]
+            }
+        },
+        {
+            "type": "ethereum",
+            "details": {
+                "bootnodes": [
+                    "http://bhnetwork.staging.com/bootnodes"
+                ],
+                "directory": [
+                    "http://bhnetwork.staging.com/directory"
+                ],
+                "genesis": [
+                    "http://bhnetwork.staging.com/genesis"
+                ],
+                "networkid": [
+                    "http://bhnetwork.staging.com/networkid"
+                ]
+            }
+        }
+    ],
+    "requiredWorkload": ""
+}

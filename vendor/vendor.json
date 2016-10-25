@@ -553,6 +553,12 @@
 			"revisionTime": "2015-03-12T22:13:10Z"
 		},
 		{
+			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",
+			"path": "github.com/satori/go.uuid",
+			"revision": "b061729afc07e77a8aa4fad0a2fd840958f1942a",
+			"revisionTime": "2016-09-27T10:08:44Z"
+		},
+		{
 			"checksumSHA1": "kjorOzs6WaQDe7wnPITdQaacET0=",
 			"path": "github.com/tylertreat/BoomFilters",
 			"revision": "ae0b9585d4b87b2fe0b49ee09270abae7aaad179",
@@ -587,6 +593,12 @@
 			"path": "github.com/willf/bloom",
 			"revision": "aa3071d9203598166c09553d43e74b588c3d91be",
 			"revisionTime": "2016-02-25T14:53:07Z"
+		},
+		{
+			"checksumSHA1": "DDHnuGCrmkKSXdNzc8pmn6P5O28=",
+			"path": "golang.org/x/crypto/sha3",
+			"revision": "3c0d69f1777220f1a1d2ec373cb94a282f03eb42",
+			"revisionTime": "2016-10-21T20:34:17Z"
 		},
 		{
 			"checksumSHA1": "9jjO5GjLa0XF/nfWihF02RoH4qc=",
