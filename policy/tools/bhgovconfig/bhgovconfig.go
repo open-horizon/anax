@@ -12,50 +12,30 @@ import (
 	"encoding/json"
 	"fmt"
 	"flag"
+	"github.com/open-horizon/anax/citizenscientist"
+	"github.com/open-horizon/anax/policy"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"path"
-	// "path/filepath"
-	// "io"
-	"io/ioutil"
-	// "reflect"
 	"strings"
-	"net/http"
-	"runtime"
-
-	// "github.com/davecgh/go-spew/spew"
-
-	"repo.hovitos.engineering/MTN/go-policy"
-	"repo.hovitos.engineering/MTN/go-policy/payload"
-	"repo.hovitos.engineering/MTN/provider-tremor/config"
 )
 
 // This is the struct that can be input to stdin, and is also used to hold the cmd line values.
 // Several of these structs come from the policy mgr.
-// type CloudMsgBrokerTopicsStruct struct {
-// 	Apps string `json:"apps"`
-// 	PublishData []string `json:"publishData"`
-// 	Control string `json:"control"`
-// }
-
-// type CloudMsgBrokerCredentialsStruct struct {
-// 	User string `json:"user"`
-// 	Password string `json:"password"`
-// }
 
 type QuarksStruct struct {
-	CloudMsgBrokerHost string `json:"cloudMsgBrokerHost"`
-	// CloudMsgBrokerTopics CloudMsgBrokerTopicsStruct `json:"cloudMsgBrokerTopics"`
-	// CloudMsgBrokerCredentials CloudMsgBrokerCredentialsStruct `json:"cloudMsgBrokerCredentials"`
-	DataVerificationInterval int `json:"dataVerificationInterval"`
+	CloudMsgBrokerHost       string `json:"cloudMsgBrokerHost"`
+	DataVerificationInterval int    `json:"dataVerificationInterval"`
 }
 
 type Input struct {
-    Name                string              `json:"name"`
+    Name                string                     `json:"name"`
     APISpecs         	[]policy.APISpecification  `json:"apiSpec"`
-    Arch                string  `json:"arch"`
-    EthereumAccounts    []string  `json:"ethereumAccounts"`
-    Quarks				QuarksStruct	`json:"quarks"`
+    Arch                string                     `json:"arch"`
+    EthereumAccounts    []string                   `json:"ethereumAccounts"`
+    Quarks				QuarksStruct	           `json:"quarks"`
     ResourceLimits    	policy.ResourceLimit       `json:"resourceLimits"`
 }
 
@@ -71,9 +51,9 @@ func usage(exitCode int) {
 		"Usage:\n" +
 		"  cat <input json> | bhgovconfig [-d <output-dir>] [-t <template-dir>] [-root-dir <root-dir>] [-ethereum-accounts <acct-ids>]\n"+
 		"\n"+
-		"Create the blue horizon governor config files based on the specifief json properties piped to stdin,\n"+
+		"Create the blue horizon governor config files based on the specified json properties piped to stdin,\n"+
 		"and the commands options.  This command understands some of the common workload patterns like quarks apps\n"+
-		"and expands input into the full governor policy file and provider.config file.  These files are placed in\n"+
+		"and expands input into the full governor policy file and config file.  These files are placed in\n"+
 		"specified <output-dir>.  The command also needs access to the governor policy template files, which should\n"+
 		"be in the specified <template-dir>.\n"+
 		"\n"+
@@ -88,7 +68,7 @@ func usage(exitCode int) {
 		"    \"name\": \"netspeed\",\n"+
 		"    \"apiSpec\": [\n"+
 		"        {\n"+
-		"            \"specRef\": \"https://bluehorizon.network/device-api/arm/netspeed\"\n"+
+		"            \"specRef\": \"https://bluehorizon.network/documentation/netspeed-device-api\"\n"+
 		"        }\n"+
 		"    ],\n"+
 		"    \"arch\": \"arm\",\n"+
@@ -132,24 +112,12 @@ Check the input properties and make sure all require values are there.
 func checkInput(input *Input) {
 	// When loadStdinFile() unmarshalled the json, it checked its syntax, but not for the specific field names
 
-	if input.Name == "" { log.Fatal("error: the name of the contract workload must be specified\n") }
+	if input.Name == "" { log.Fatal("error: the name of the workload must be specified\n") }
 
 	if len(input.APISpecs) == 0 { log.Fatalf("error: no 'apiSpec' entries specified\n")	}
 	for i, spec := range input.APISpecs {
 		if spec.SpecRef == "" { log.Fatalf("error: apiSpec %v does not have a 'specRef' entry.\n", i) }
 	}
-
-	// if input.Quarks.CloudMsgBrokerHost == "" { log.Fatalf("error: no 'cloudMsgBrokerHost' entry specified in the 'quarks' object\n") } 		// in dev mode, empty host is appropriate
-	// if input.Quarks.CloudMsgBrokerTopics.Apps == "" { log.Fatalf("error: no 'apps' entry specified in the 'quarks.cloudMsgBrokerTopics' object\n") }
-	// if len(input.Quarks.CloudMsgBrokerTopics.PublishData) == 0 { log.Fatalf("error: no 'publishData' entry specified in the 'quarks.cloudMsgBrokerTopics' object\n") }
-	// if input.Quarks.CloudMsgBrokerTopics.Control == "" { log.Fatalf("error: no 'control' entry specified in the 'quarks.cloudMsgBrokerTopics' object\n") }
-	// if input.Quarks.CloudMsgBrokerCredentials.User == "" { log.Fatalf("error: no 'user' entry specified in the 'quarks.cloudMsgBrokerCredentials' object\n") }
-	// if input.Quarks.CloudMsgBrokerCredentials.Password == "" { log.Fatalf("error: no 'password' entry specified in the 'quarks.cloudMsgBrokerCredentials' object\n") }
-	// dataVerificationInterval is optional, if not specified it means do not check the data
-
-	// typeStr := reflect.TypeOf(payload.MatchGroups)
-	// field := reflect.ValueOf(payload).FieldByName("MatchGroups")
-	// spew.Dump(field)
 
 	// If we get here, everything checked out
 }
@@ -173,7 +141,6 @@ Get policy properties via the cmd line options
 */
 func getCliProperties(input *Input) {
 	name := flag.Lookup("name").Value.String()
-	// spew.Dump(flag.Lookup("name"))
 	if name != "" { input.Name = name }
 }
 
@@ -192,19 +159,13 @@ func getHttpResponse(url string) (*http.Response) {
 Download a file via http or https and return the byte array
 */
 func getHttpFile(url string) ([]byte) {
-	// out, err := os.Create(localFile)
-	// if err != nil { log.Fatalf("error creating local file %v: %v", localFile, err) }
-	// defer out.Close()
-	// fmt.Printf("Downloading %v...\n", url)
-	// resp, err := http.Get(url)
-	// if err != nil { log.Fatalf("error getting %v: %v", url, err) }
+
 	resp := getHttpResponse(url)
 	defer resp.Body.Close()
 	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil { log.Fatalf("error reading %v: %v", url, err) }
 	return bytes
-	// n, err := io.Copy(out, resp.Body)
-	// if err != nil { log.Fatalf("error writing file %v: %v, %v", localFile, n, err) }
+
 }
 
 
@@ -237,15 +198,8 @@ func createQuarksPolicyContent(input *Input, pol *policy.Policy, templateDir str
 		dir, deviceName = path.Split(apiUrl)
 		arch = path.Base(dir)
 	}
-	// var hostType string
-	// if strings.HasSuffix(host,"."+IOTFHOSTSUFFIX) {
-	// 	hostType = "iotf"
-	// } else {
-	// 	hostType = "neutron"
-	// }
-	// templateName := "quarks-" + hostType + "-" + arch + "-" + deviceName
+
 	templateName := "quarks-" + arch + "-" + deviceName
-	// templatePath := flag.Lookup("t").Value.String() + "/" + templateName + ".json"
 	templatePath := templateDir + "/" + templateName + ".json"
 
 	var bytes []byte
@@ -267,13 +221,9 @@ func createQuarksPolicyContent(input *Input, pol *policy.Policy, templateDir str
 	// Create the deployment_user_info string that contains deployment info the external developer is allowed to specify
 	var depUserInfo QuarksStruct
 	depUserInfo.CloudMsgBrokerHost = input.Quarks.CloudMsgBrokerHost
-	// depUserInfo.CloudMsgBrokerTopics = input.Quarks.CloudMsgBrokerTopics
-	// depUserInfo.CloudMsgBrokerCredentials = input.Quarks.CloudMsgBrokerCredentials
 	depUserInfoBytes, err := json.Marshal(depUserInfo)
 	if err != nil { log.Fatalf("error marshaling the user deployment info to json: %v", err) }
 	depUserInfoStr := string(depUserInfoBytes)
-	// spew.Dump(depUserInfoStr)
-	// fmt.Printf("deployment_user_info: %v\n", depUserInfoStr)
 	pol.Workloads[0].DeploymentUserInfo = depUserInfoStr
 
 	// Create the data verification info
@@ -281,8 +231,8 @@ func createQuarksPolicyContent(input *Input, pol *policy.Policy, templateDir str
 	if interval != 0 {
 		// They want data verification of the contract
 		pol.DataVerify.Interval = interval
-		pol.DataVerify.Enabled = false 		//todo: change to true when we have a data checking service for iotf topics
-		pol.DataVerify.URL = host 		//todo: develop a service that can be used to check mqtt topics and include creds here
+		pol.DataVerify.Enabled = false 		//TODO: change to true when we have a data checking service for iotf topics
+		pol.DataVerify.URL = host 		    //TODO: develop a service that can be used to check mqtt topics and include creds here
 	}
 }
 
@@ -292,7 +242,7 @@ From the input info, create the appropriate policy content in output variable po
 */
 func createPolicyContent(input *Input, pol *policy.Policy, templateDir string) {
 	pol.Header.Name = input.Name
-	pol.Header.Version = "1.0"
+	pol.Header.Version = policy.CurrentVersion
 
 	// Device api spec
 	pol.APISpecs = make([]policy.APISpecification, len(input.APISpecs))
@@ -303,11 +253,11 @@ func createPolicyContent(input *Input, pol *policy.Policy, templateDir string) {
 		} else {
 			version = spec.Version
 		}
-		pol.APISpecs[i] = policy.APISpecification{SpecRef: spec.SpecRef, Version: version, ExclusiveAccess: false}
+		pol.APISpecs[i] = *policy.APISpecification_Factory(spec.SpecRef, version, 1, input.Arch)
 	}
 
 	pol.AgreementProtocols = make([]policy.AgreementProtocol, 1)
-	pol.AgreementProtocols[0] = policy.AgreementProtocol{Name: "2PartyDataUse"} 	// for now we always use this contract
+	pol.AgreementProtocols[0] = policy.AgreementProtocol{Name: citizenscientist.PROTOCOL_NAME} 	// for now we always use this contract
 
 	// Find the correct workload template/pattern and fill it in and copy to pol
 	if input.Quarks.CloudMsgBrokerHost != "" || input.Quarks.CloudMsgBrokerHost == "" { 		//todo: need a way to recognize they want quarks
@@ -317,17 +267,17 @@ func createPolicyContent(input *Input, pol *policy.Policy, templateDir string) {
 		log.Fatalf("error: input does not specify a recognized predefined pattern")
 	}
 
-	// if ethAccts := flag.Lookup("ethereum-accounts").Value.String(); ethAccts != "" {
+	// Put all the ethereum accounts into an "and"ed array
 	if len(input.EthereumAccounts) > 0 {
-		// Add the ethereum account ids to pol.Workloads.MatchGroups
-		// accts := strings.Split(ethAccts, ",")
-		// workload := pol.Workloads[0] 		//todo: support more that 1 workload in a policy
-		// mGroups is a 2-d array.  Create the new inner entry, then we will append it to the outer array
-		mInner := make([]payload.Match, len(input.EthereumAccounts))
-		for i, a := range input.EthereumAccounts {
-			 mInner[i] = payload.Match{Attr: "ethereum_account", Value: a}
+
+		rp := policy.RequiredProperty_Factory()
+		(*rp)["and"] = make([]interface{}, 0, 10)
+
+		for _, a := range input.EthereumAccounts {
+			pe := policy.PropertyExpression_Factory("ethereum_account", a, "=")
+			(*rp)["and"] = append((*rp)["and"].([]interface{}), pe)
 		}
-		pol.Workloads[0].MatchGroups = append(pol.Workloads[0].MatchGroups, mInner)
+		pol.CounterPartyProperties = *rp
 	}
 }
 
@@ -363,85 +313,80 @@ func writePolicyFile(input *Input, pol *policy.Policy, policyOutputDir string) {
 /*
 From the input info, create the appropriate provider.config info
 */
-func createConfigContent(input *Input, templateDir string) (*config.Config) {
-	// templatePath := flag.Lookup("t").Value.String() + "/provider.config"
-	templatePath := templateDir + "/provider.config"
+// func createConfigContent(input *Input, templateDir string) (*config.Config) {
+// 	// templatePath := flag.Lookup("t").Value.String() + "/provider.config"
+// 	templatePath := templateDir + "/provider.config"
 
-	// Get the provider.config template file
-	var configStruct *config.Config
-	if strings.HasPrefix(templatePath, "http:") || strings.HasPrefix(templatePath, "https:") {
-		// Its a url, download it and parse it
-		resp := getHttpResponse(templatePath)
-		defer resp.Body.Close()
-		configStruct = &config.Config{}
-		err := json.NewDecoder(resp.Body).Decode(configStruct)
-		if err != nil { log.Fatalf("error decoding content of config file %v: %v", templatePath, err)
-		}
-	} else {
-		// Its a local file, read it and parse it
-		var err error
-		configStruct, err = config.Read(templatePath)
-		if err != nil { log.Fatalf("error parsing template policy file %v into json: %v", templatePath, err) }
-	}
+// 	// Get the provider.config template file
+// 	var configStruct *config.Config
+// 	if strings.HasPrefix(templatePath, "http:") || strings.HasPrefix(templatePath, "https:") {
+// 		// Its a url, download it and parse it
+// 		resp := getHttpResponse(templatePath)
+// 		defer resp.Body.Close()
+// 		configStruct = &config.Config{}
+// 		err := json.NewDecoder(resp.Body).Decode(configStruct)
+// 		if err != nil { log.Fatalf("error decoding content of config file %v: %v", templatePath, err)
+// 		}
+// 	} else {
+// 		// Its a local file, read it and parse it
+// 		var err error
+// 		configStruct, err = config.Read(templatePath)
+// 		if err != nil { log.Fatalf("error parsing template policy file %v into json: %v", templatePath, err) }
+// 	}
 
-	// if flag.Lookup("ethereum-accounts").Value.String() != "" {
-	if len(input.EthereumAccounts) > 0 {
-		// In development mode we pay attention to the eth acct ids that the rpi advertises, so we can contract with our own.
-		// (We also added the list of eth acct ids to the workload match groups.)
-		configStruct.IgnoreContractWithAttribs = ""
-		// configStruct.PayloadPath = ""   // the new template has this blanked
-	}
+// 	// if flag.Lookup("ethereum-accounts").Value.String() != "" {
+// 	if len(input.EthereumAccounts) > 0 {
+// 		// In development mode we pay attention to the eth acct ids that the rpi advertises, so we can contract with our own.
+// 		// (We also added the list of eth acct ids to the workload match groups.)
+// 		configStruct.IgnoreContractWithAttribs = ""
+// 		// configStruct.PayloadPath = ""   // the new template has this blanked
+// 	}
 
-	// In the specific case that this is our team and on x86 we want to leave EtcdUrl set.
-	// Otherwise we blank it out
-	if !( (runtime.GOARCH == "amd64" || runtime.GOARCH == "386") && (strings.ToLower(input.Quarks.CloudMsgBrokerHost)==NEUTRONHOSTPROD || strings.ToLower(input.Quarks.CloudMsgBrokerHost)==NEUTRONHOSTSTG) ) {
-		configStruct.EtcdUrl = ""
-	}
+// 	// In the specific case that this is our team and on x86 we want to leave EtcdUrl set.
+// 	// Otherwise we blank it out
+// 	if !( (runtime.GOARCH == "amd64" || runtime.GOARCH == "386") && (strings.ToLower(input.Quarks.CloudMsgBrokerHost)==NEUTRONHOSTPROD || strings.ToLower(input.Quarks.CloudMsgBrokerHost)==NEUTRONHOSTSTG) ) {
+// 		configStruct.EtcdUrl = ""
+// 	}
 
-	//todo: fill in the valueExchange section, but it is not read yet
+// 	//todo: fill in the valueExchange section, but it is not read yet
 
-	return configStruct
-}
+// 	return configStruct
+// }
 
 
 /*
 Write the contents of the provider.config struct to a file in the specified output dir
 */
-func writeConfigFile(config *config.Config, outputDir string) {
-	filename := outputDir + "/provider.config"
+// func writeConfigFile(config *config.Config, outputDir string) {
+// 	filename := outputDir + "/provider.config"
 
-	// this does not indent the json
-	// file, err := os.OpenFile(filepath.Clean(filename), os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0664)
-	// if err != nil { log.Fatalf("error: unable to open %s for write: %v", filename, err) }
-	// err = json.NewEncoder(file).Encode(config)
-	// if err != nil { log.Fatalf("error: unable to encode content of %v: %v", filename, err) }
+// 	// this does not indent the json
+// 	// file, err := os.OpenFile(filepath.Clean(filename), os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0664)
+// 	// if err != nil { log.Fatalf("error: unable to open %s for write: %v", filename, err) }
+// 	// err = json.NewEncoder(file).Encode(config)
+// 	// if err != nil { log.Fatalf("error: unable to encode content of %v: %v", filename, err) }
 
-	newJson, err := json.MarshalIndent(config, "", "    ")
-	if err != nil { log.Fatalf("error marshaling %v to json: %v", filename, err) }
+// 	newJson, err := json.MarshalIndent(config, "", "    ")
+// 	if err != nil { log.Fatalf("error marshaling %v to json: %v", filename, err) }
 
-	err = ioutil.WriteFile(filename, []byte(newJson), 0664)
-	if err != nil { log.Fatalf("error writing %v: %v", filename, err) }
-}
+// 	err = ioutil.WriteFile(filename, []byte(newJson), 0664)
+// 	if err != nil { log.Fatalf("error writing %v: %v", filename, err) }
+// }
 
 
 func main() {
 	// Get and check cmd line options
 	var name, outputDir, templateDir, rootDir, ethAccounts string
 	// var developmentMode bool
-	flag.StringVar(&name, "name", "", "name of this contract workload")
+	flag.StringVar(&name, "name", "", "name of this workload")
 	flag.StringVar(&outputDir, "d", "/vol/provider-tremor/etc/provider-tremor", "output directory for the config files, and location for the templates")
 	flag.StringVar(&templateDir, "t", "https://tor01.objectstorage.softlayer.net/v1/AUTH_bd05f276-e42f-4fa1-b7b3-780e8544769f/policy-templates", "url or directory that contains workload templates/patterns. Defaults to the standard Blue Horizon location in SoftLayer object store.")
 	flag.StringVar(&rootDir, "root-dir", "/vol/provider-tremor/root", "directory that will be /root for the governor container")
 	flag.StringVar(&ethAccounts, "ethereum-accounts", "", "comma separated list of ethereum account IDs that this governor should only contract with. Used for 'development mode'.")
-	// flag.BoolVar(&developmentMode, "devel", false, "development mode - only contract with the RPi I am running on")
 	flag.Usage = func() { usage(0) }
 	flag.Parse()
-	// spew.Dump(flag.Lookup("devel").Value.String())
-	// fName := "quarks-neutron-netspeed.json"
-	// getHttpFile(templateDir+"/"+fName, "/tmp/"+fName)
-	// os.Exit(0)
-	// Currently they need to specify the properties  stdin
-	// if name == "" && !isStdinFile() { usage(0) }
+
+	// Currently they need to specify the properties in stdin
 	if !isStdinFile() { usage(0) }
 
 	// Create output dirs if they do not exist
@@ -468,22 +413,22 @@ func main() {
 	getCliProperties(&input)
 
 	// Create the policy file content
-	var policy policy.Policy 		// once will fill this in, we will marshal it into the output file
+	var policy policy.Policy 		// once we fill this in, we will marshal it into the output file
 	createPolicyContent(&input, &policy, templateDir)
 
 	// Write the policy info to a file in the output dir
 	writePolicyFile(&input, &policy, policyOutputDir)
 
 	// Create the provider.config file content
-	config := createConfigContent(&input, templateDir)
+	// config := createConfigContent(&input, templateDir)
 
 	// Write the provider.config to a file in the output dir
-	writeConfigFile(config, outputDir)
+	// writeConfigFile(config, outputDir)
 
 	// Create required directory_version file, but do not touch it if it exists
-	dirVersionFilename := rootDir+"/.colonus/directory_version"
+	dirVersionFilename := path.Join(os.Getenv("SNAP_COMMON"), "eth", "directory_version")
 	if _, err := os.Stat(dirVersionFilename); os.IsNotExist(err) {
 		err = ioutil.WriteFile(dirVersionFilename, []byte("0\n"), 0664)
-		if err != nil { log.Fatalf("error writing %v: %v", rootDir+"/.colonus/directory_version", err) }
+		if err != nil { log.Fatalf("error writing %v: %v", dirVersionFilename, err) }
 	}
 }

@@ -16,7 +16,7 @@ ifeq ($(ARCH),armv7l)
 	COMPILE_ARGS +=  GOARCH=arm GOARM=7
 endif
 
-all: anax
+all: anax bhgovconfig
 
 # will always run b/c deps target is PHONY
 anax: $(shell find . -name '*.go' -not -path './vendor/*') deps
@@ -24,11 +24,17 @@ anax: $(shell find . -name '*.go' -not -path './vendor/*') deps
 	  export GOPATH=$(TMPGOPATH); \
 	    $(COMPILE_ARGS) go build -o anax
 
+bhgovconfig:
+	cd $(PKGPATH)/anax/policy/tools/bhgovconfig && \
+	  $(MAKE)
+
 clean:
 	find ./vendor -maxdepth 1 -not -path ./vendor -and -not -iname "vendor.json" -print0 | xargs -0 rm -Rf
 	rm -f anax
 	rm -rf $(TMPGOPATH)
 	rm -rf ./contracts
+	cd ./policy/tools/bhgovconfig && \
+	  $(MAKE) clean
 
 # let this run on every build to ensure newest deps are pulled
 deps: $(TMPGOPATH)/bin/govendor
