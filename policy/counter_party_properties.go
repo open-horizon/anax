@@ -34,6 +34,14 @@ const not = "not"
 
 type RequiredProperty map[string]interface{}
 
+func RequiredProperty_Factory() *RequiredProperty {
+    rp := new(RequiredProperty)
+    (*rp) = make(map[string]interface{})
+
+    return rp
+}
+
+
 // These are the comparison operators that are supported
 const lessthan = "<"
 const greaterthan = ">"
@@ -47,6 +55,15 @@ type PropertyExpression struct {
     Name  string      `json:"name"`  // The Property name
     Value interface{} `json:"value"` // The Property value
     Op    string      `json:"op"`    // The operator to apply to the property value
+}
+
+func PropertyExpression_Factory(name string, value interface{}, op string) *PropertyExpression {
+    pe := new(PropertyExpression)
+    pe.Name = name
+    pe.Value = value
+    pe.Op = op
+
+    return pe
 }
 
 // This function is used to determine if an input set of properties and values will satisfy
