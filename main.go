@@ -5,7 +5,6 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"os"
-	"os/exec"
 	"os/signal"
 	"path"
 	"github.com/open-horizon/anax/agreement"
@@ -63,17 +62,6 @@ func eventHandler(incoming events.Message, workers *worker.MessageHandlerRegistr
 	}
 
 	return successMsg, nil
-}
-
-
-// Calls the /bin/start_gov command to start the local governor
-func start_local_governor() {
-	glog.V(2).Infof("Starting local governor.")
-	out, err := exec.Command("/bin/start_gov").Output()
-	if err != nil {
-		glog.Errorf("Error starting local governor: %v", err)
-	}
-	glog.V(2).Infof("Started local governor: %v", out)
 }
 
 

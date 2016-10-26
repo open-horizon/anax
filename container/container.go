@@ -975,6 +975,9 @@ func (b *ContainerWorker) start() {
 					glog.V(4).Infof("Found expected count of running containers for agreement %v: %v", cmd.AgreementId, len(cMatches))
 				} else {
 					glog.Errorf("Insufficient running containers found for agreement %v. Found: %v", cmd.AgreementId, cMatches)
+
+					// ask governer to cancel the agreement
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementProtocol, cmd.AgreementId, cmd.Deployment)
 				}
 
 			case *ContainerShutdownCommand:
@@ -1070,7 +1073,7 @@ func (b *ContainerWorker) resourcesRemove(agreements []string) error {
 		// remove old workspaceROStorage dir
 		workloadROStorageDir := b.workloadStorageDir(agreementId)
 		if err := os.RemoveAll(workloadROStorageDir); err != nil {
-			return fmt.Errorf("Failed to remove workloadROStorageDir: %v. Error: %v", err)
+			return fmt.Errorf("Failed to remove workloadROStorageDir: %v. Error: %v", workloadROStorageDir, err)
 		}
 
 		return nil
