@@ -86,6 +86,7 @@ const CANCEL_NOT_FINALIZED_TIMEOUT = 200
 const CANCEL_NO_REPLY = 201
 const CANCEL_NO_DATA_RECEIVED = 202
 const CANCEL_POLICY_CHANGED = 203
+const CANCEL_DISCOVERED = 204
 
 
 // This function receives an event to "make a new agreement" from the Process function, and then synchronously calls a function
