@@ -2,4 +2,3 @@ anax
 main
 one-off
 vendor/*/
-policy/tools/bhgovconfig/docker/fs/root/.ssh/id_*

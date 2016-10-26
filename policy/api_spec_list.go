@@ -42,7 +42,7 @@ func (a APISpecification) IsSame(compare APISpecification) bool {
 }
 
 // This function creates API Spec objects
-func APISpecification_Factory(ref string, vers string, num_agree int, arch string ) *APISpecification {
+func APISpecification_Factory(ref string, vers string, num_agree int, arch string) *APISpecification {
     a := new(APISpecification)
     a.SpecRef = ref
     a.Version = vers

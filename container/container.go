@@ -10,17 +10,17 @@ import (
 	"github.com/coreos/go-iptables/iptables"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
-	"golang.org/x/sys/unix"
-	"io"
-	"io/ioutil"
-	"os"
-	"path"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/worker"
 	gwhisper "github.com/open-horizon/go-whisper"
+	"golang.org/x/sys/unix"
+	"io"
+	"io/ioutil"
+	"os"
+	"path"
 	"runtime"
 	"strconv"
 	"strings"
@@ -360,25 +360,45 @@ func NewContainerWorker(config *config.HorizonConfig) *ContainerWorker {
 }
 
 func (w *ContainerWorker) Messages() chan events.Message {
-    return w.Worker.Manager.Messages
+	return w.Worker.Manager.Messages
 }
 
 func (w *ContainerWorker) NewEvent(incoming events.Message) {
 
 	switch incoming.(type) {
-    case *events.TorrentMessage:
-        msg, _ := incoming.(*events.TorrentMessage)
+	case *events.TorrentMessage:
+		msg, _ := incoming.(*events.TorrentMessage)
+		switch msg.Event().Id {
+		case events.TORRENT_FETCHED:
+			glog.Infof("Fetched image files from torrent: %v", msg.ImageFiles)
+			cCmd := w.NewContainerConfigureCommand(msg.ImageFiles, msg.AgreementLaunchContext)
+			w.Commands <- cCmd
+		}
 
-        cCmd := w.NewContainerConfigureCommand(msg.ImageFiles, msg.AgreementLaunchContext)
-        w.Commands <- cCmd
+	case *events.GovernanceMaintenanceMessage:
+		msg, _ := incoming.(*events.GovernanceMaintenanceMessage)
 
-    default: // nothing
+		switch msg.Event().Id {
+		case events.CONTAINER_MAINTAIN:
+			containerCmd := w.NewContainerMaintenanceCommand(msg.AgreementProtocol, msg.AgreementId, msg.Deployment)
+			w.Commands <- containerCmd
+		}
 
-    }
+	case *events.GovernanceCancelationMessage:
+		msg, _ := incoming.(*events.GovernanceCancelationMessage)
+
+		switch msg.Event().Id {
+		case events.AGREEMENT_ENDED:
+			containerCmd := w.NewContainerShutdownCommand(msg.AgreementProtocol, msg.AgreementId, msg.Deployment, []string{})
+			w.Commands <- containerCmd
+		}
+
+	default: // nothing
+
+	}
 
 	return
 }
-
 
 func mkBridge(name string, client *docker.Client) (*docker.Network, error) {
 	bridgeOpts := docker.CreateNetworkOptions{
@@ -914,20 +934,20 @@ func (b *ContainerWorker) start() {
 				} else if err := loadImages(b.client, b.Config.Edge.TorrentDir, cmd.ImageFiles); err != nil {
 					glog.Errorf("Error loading image files: %v", err)
 
-					b.Messages() <- NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.ContractId, cmd.AgreementLaunchContext.AgreementId, nil)
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, cmd.AgreementLaunchContext.AgreementId, nil)
 
 					continue
 				}
 
 				if deployment, err := b.resourcesCreate(cmd.AgreementLaunchContext.AgreementId, cmd.AgreementLaunchContext.Configure, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions); err != nil {
 					glog.Errorf("Error starting containers: %v", err)
-					b.Messages() <- NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.ContractId, cmd.AgreementLaunchContext.AgreementId, deployment) // still using deployment here, need it to shutdown containers
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, cmd.AgreementLaunchContext.AgreementId, deployment) // still using deployment here, need it to shutdown containers
 
 				} else {
-					glog.Infof("Success starting pattern for agreement: %v, contract: %v, serviceNames: %v", cmd.AgreementLaunchContext.AgreementId, cmd.AgreementLaunchContext.ContractId, persistence.ServiceConfigNames(deployment))
+					glog.Infof("Success starting pattern for agreement: %v, protocol: %v, serviceNames: %v", cmd.AgreementLaunchContext.AgreementId, cmd.AgreementLaunchContext.AgreementProtocol, persistence.ServiceConfigNames(deployment))
 
 					// perhaps add the tc info to the container message so it can be enforced
-					b.Messages() <- NewContainerMessage(events.EXECUTION_BEGUN, cmd.AgreementLaunchContext.ContractId, cmd.AgreementLaunchContext.AgreementId, deployment)
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, cmd.AgreementLaunchContext.AgreementProtocol, cmd.AgreementLaunchContext.AgreementId, deployment)
 				}
 
 			case *ContainerMaintenanceCommand:
@@ -960,22 +980,15 @@ func (b *ContainerWorker) start() {
 			case *ContainerShutdownCommand:
 				cmd := command.(*ContainerShutdownCommand)
 
-				var eventRet events.EventId
 				agreements := cmd.Agreements
 				if cmd.CurrentAgreementId != "" {
 					glog.Infof("ContainerWorker received shutdown command w/ current agreement id: %v. Shutting down resources", cmd.CurrentAgreementId)
 					glog.V(5).Infof("Shutdown command for agreement id %v: %v", cmd.CurrentAgreementId, cmd)
 					agreements = append(agreements, cmd.CurrentAgreementId)
-					eventRet = events.PATTERN_DESTROYED
-				} else {
-					glog.Infof("ContainerWorker received command for periodic shutdown evaluation of old agreement resources")
-					eventRet = events.PREVIOUS_AGREEMENT_REAP
 				}
 
 				if err := b.resourcesRemove(agreements); err != nil {
 					glog.Errorf("Error removing resources: %v", err)
-				} else {
-					b.Messages() <- NewContainerMessage(eventRet, cmd.ContractId, cmd.CurrentAgreementId, cmd.Deployment)
 				}
 
 			default:
@@ -1159,66 +1172,39 @@ func (b *ContainerWorker) NewContainerConfigureCommand(imageFiles []string, agre
 }
 
 type ContainerMaintenanceCommand struct {
-	ContractId  string
-	AgreementId string
-	Deployment  *map[string]persistence.ServiceConfig
+	AgreementProtocol string
+	AgreementId       string
+	Deployment        *map[string]persistence.ServiceConfig
 }
 
 func (c ContainerMaintenanceCommand) String() string {
-	return fmt.Sprintf("ContractId: %v, AgreementId: %v, Deployment: %v", c.ContractId, c.AgreementId, persistence.ServiceConfigNames(c.Deployment))
+	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v, Deployment: %v", c.AgreementProtocol, c.AgreementId, persistence.ServiceConfigNames(c.Deployment))
 }
 
-func (b *ContainerWorker) NewContainerMaintenanceCommand(contractId string, agreementId string, deployment *map[string]persistence.ServiceConfig) *ContainerMaintenanceCommand {
+func (b *ContainerWorker) NewContainerMaintenanceCommand(protocol string, agreementId string, deployment *map[string]persistence.ServiceConfig) *ContainerMaintenanceCommand {
 	return &ContainerMaintenanceCommand{
-		ContractId:  contractId,
-		AgreementId: agreementId,
-		Deployment:  deployment,
+		AgreementProtocol: protocol,
+		AgreementId:       agreementId,
+		Deployment:        deployment,
 	}
 }
 
 type ContainerShutdownCommand struct {
-	ContractId         string
+	AgreementProtocol  string
 	CurrentAgreementId string
 	Deployment         *map[string]persistence.ServiceConfig
 	Agreements         []string
 }
 
 func (c ContainerShutdownCommand) String() string {
-	return fmt.Sprintf("ContractId: %v, CurrentAgreementId: %v, Deployment: %v, Agreements (sample): %v", c.ContractId, c.CurrentAgreementId, persistence.ServiceConfigNames(c.Deployment), cutil.FirstN(10, c.Agreements))
+	return fmt.Sprintf("AgreementProtocol: %v, CurrentAgreementId: %v, Deployment: %v, Agreements (sample): %v", c.AgreementProtocol, c.CurrentAgreementId, persistence.ServiceConfigNames(c.Deployment), cutil.FirstN(10, c.Agreements))
 }
 
-func (b *ContainerWorker) NewContainerShutdownCommand(contractId string, currentAgreementId string, deployment *map[string]persistence.ServiceConfig, agreements []string) *ContainerShutdownCommand {
+func (b *ContainerWorker) NewContainerShutdownCommand(protocol string, currentAgreementId string, deployment *map[string]persistence.ServiceConfig, agreements []string) *ContainerShutdownCommand {
 	return &ContainerShutdownCommand{
-		ContractId:         contractId,
+		AgreementProtocol:  protocol,
 		CurrentAgreementId: currentAgreementId,
 		Deployment:         deployment,
 		Agreements:         agreements,
-	}
-}
-
-type ContainerMessage struct {
-	event       events.Event
-	ContractId  string
-	AgreementId string
-	Deployment  *map[string]persistence.ServiceConfig
-}
-
-func (m ContainerMessage) String() string {
-	return fmt.Sprintf("event: %v, ContractId: %v, AgreementId: %v, Deployment: %v", m.event, m.ContractId, m.AgreementId, persistence.ServiceConfigNames(m.Deployment))
-}
-
-func (b ContainerMessage) Event() events.Event {
-	return b.event
-}
-
-func NewContainerMessage(id events.EventId, contractId string, agreementId string, deployment *map[string]persistence.ServiceConfig) *ContainerMessage {
-
-	return &ContainerMessage{
-		event: events.Event{
-			Id: id,
-		},
-		ContractId:  contractId,
-		AgreementId: agreementId,
-		Deployment:  deployment,
 	}
 }

@@ -25,7 +25,7 @@ import (
 
 const version1 = "1.0"              // Policy document schema version (in case we need it)
 const version2 = "2.0"
-const currentVersion = version2     // Current schema version
+const CurrentVersion = version2     // Current schema version
 
 type PolicyHeader struct {
     Name    string `json:"name"`         // Name assigned to this policy by its author
@@ -134,7 +134,7 @@ type Policy struct {
 func Policy_Factory(name string) *Policy {
     p := new(Policy)
     p.Header.Name = name
-    p.Header.Version = currentVersion
+    p.Header.Version = CurrentVersion
 
     return p
 }
@@ -225,7 +225,7 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 
     merged_pol := new(Policy)
     merged_pol.Header.Name = producer_policy1.Header.Name + " merged with " + producer_policy2.Header.Name
-    merged_pol.Header.Version = currentVersion
+    merged_pol.Header.Version = CurrentVersion
     (&merged_pol.APISpecs).Concatenate(&producer_policy1.APISpecs)
     (&merged_pol.APISpecs).Concatenate(&producer_policy2.APISpecs)
     intersecting_blockchains, _ := (&producer_policy1.Blockchains).Intersects_With(&producer_policy2.Blockchains)
@@ -258,7 +258,7 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
         // Start making a new merged policy
         merged_pol := new(Policy)
         merged_pol.Header.Name = producer_policy.Header.Name + " merged with " + consumer_policy.Header.Name
-        merged_pol.Header.Version = currentVersion
+        merged_pol.Header.Version = CurrentVersion
         merged_pol.APISpecs = consumer_policy.APISpecs
         intersecting_agreement_protocols, _ := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols)
         merged_pol.AgreementProtocols = *intersecting_agreement_protocols.Single_Element()
