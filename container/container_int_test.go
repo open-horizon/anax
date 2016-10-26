@@ -8,13 +8,13 @@ import (
 	"flag"
 	"fmt"
 	"github.com/fsouza/go-dockerclient"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/events"
+	gwhisper "github.com/open-horizon/go-whisper"
 	"io"
 	"net/url"
 	"os"
 	"path"
-	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/events"
-	gwhisper "github.com/open-horizon/go-whisper"
 	"runtime"
 	"strconv"
 	"strings"
@@ -246,7 +246,7 @@ func commonPatterned(t *testing.T, agreementId string, tFn func(worker *Containe
 	}
 
 	cmd := worker.NewContainerConfigureCommand([]string{}, &events.AgreementLaunchContext{
-		ContractId:           "somecontractid",
+		Protocol:             "Citizen Scientist",
 		AgreementId:          myAgreementId,
 		Configure:            gwhisper.NewConfigure("", url.URL{}, nil, nil, myDeployment, "", ""),
 		ConfigureRaw:         []byte("someRawConfigureData"),
@@ -290,10 +290,10 @@ func Test_resourcesCreate_failLoad(t *testing.T) {
 	config.WorkloadROStorage = "/tmp"
 	worker := tWorker(config)
 
-	contract := "somecontractid"
+	protocol := "Citizen Scientist"
 
 	env := map[string]string{
-		"MTN_CONTRACT":    contract,
+		"MTN_CONTRACT":    protocol,
 		"MTN_AGREEMENTID": agreementId,
 		"MTN_RAM":         "64",
 	}
@@ -305,7 +305,7 @@ func Test_resourcesCreate_failLoad(t *testing.T) {
 		"6fcc9d89326a42d48fa596e9f61dba5730b7a20e.tar.gz",
 		"aef3b0fe6536092014cb29e9723ccc661d321d35.tar.gz",
 	}, &events.AgreementLaunchContext{
-		ContractId:           "somecontractid",
+		Protocol:             "Citizen Scientist",
 		AgreementId:          agreementId,
 		Configure:            gwhisper.NewConfigure("", *dl, nil, nil, pattern, "wpDdJ60JG1MvThKLMRX0eJf6/LHGUes79FDypYCOkgDAmA96BsREKpEHzl3OVM15z1vop6mpkLH5ka6vvbG0xJBYzZQl9HvyCSA7oJ/dQOqodjy2CySNWmzlFC842QXhrZO9yZxHZX0EcaPr2BdGu9p/9q17LzH9BcBYmBo7dZNqKSqkphErdqc1BOGSnjGlk/FfwnQGZM5SFz8mXa3ZW1/8yQ7w9/vvjTpcyB/X0Rv8qy0hfN0LKUfjfsZJ6O/aij0RkQ0w5ioGorGawOzQGvijs17KN8qfyVNn6QGqa03d4+e0mEQalhG9xsZKWSviSY92ifdSpBs7DohevyYMfT2mCRafP4lF2luu61Ho3pBQPEUjVEhvWch6b0FbsiH4iVcIVFTR+7SZhcv6oVwLDawvdT4aDo6Q1JhEuUrLMJhs6fb9q0cHl8SBpkPfcua33F4XDRCJoiYwTj3a8TtEKfaGmMDuIQq/5mJI8DSdCKasKDitLYFTE4z7+i2uKYlmXD1tzC2hNIWgdgAIXg0meQymWPqNIxDoo+pzTgDvv+tQ9usDRAvd+aYIDcf7IXAlAomtg7GE4v8KTCJHkM1aHVKE1ZCy0yI5uEWQoce9v8DukyZVwRTxfSX83F8Y/zfhxneSAeGkHHKO1PyFp82/fQDRyWhaSDdqO1uFPFvfbBU=", ""),
 		ConfigureRaw:         []byte("someRawConfigureData"),
@@ -391,7 +391,7 @@ func Test_resourcesRemove(t *testing.T) {
 
 	defer tClean(t, createMsg.AgreementId, w, func(container *docker.APIContainers, containerDetail *docker.Container) error { return nil }, true)
 
-	cmd := w.NewContainerShutdownCommand(createMsg.ContractId, createMsg.AgreementId, createMsg.Deployment, []string{})
+	cmd := w.NewContainerShutdownCommand(createMsg.Protocol, createMsg.AgreementId, createMsg.Deployment, []string{})
 	w.Commands <- cmd
 	tMsg(w.Messages, events.PATTERN_DESTROYED, t)
 }
@@ -523,7 +523,7 @@ func Test_resourcesCreate_shared(t *testing.T) {
 
 	// do the shutdown
 	for _, createMsg := range createMsgs {
-		sCmd := w.NewContainerShutdownCommand(createMsg.ContractId, createMsg.AgreementId, createMsg.Deployment, []string{})
+		sCmd := w.NewContainerShutdownCommand(createMsg.Protocol, createMsg.AgreementId, createMsg.Deployment, []string{})
 		w.Commands <- sCmd
 		tMsg(w.Messages, events.PATTERN_DESTROYED, t)
 	}

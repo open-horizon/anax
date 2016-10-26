@@ -18,7 +18,6 @@ import (
 	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
-	"github.com/open-horizon/anax/governance"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
@@ -133,13 +132,12 @@ func NewAPIListener(config *config.HorizonConfig, db *bolt.DB) *API {
 
 // Worker framework functions
 func (a *API) Messages() chan events.Message {
-    return a.Manager.Messages
+	return a.Manager.Messages
 }
 
 func (a *API) NewEvent(ev events.Message) {
 	return
 }
-
 
 func (a *API) listen(apiListen string) {
 	glog.Info("Starting Anax API server")
@@ -378,7 +376,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 			// write message
 			ct := agreements[0]
 
-			a.Messages() <- governance.NewGovernanceCancelationMessage(events.CONTRACT_ENDED, events.CT_TERMINATED, ct.CurrentAgreementId, &ct.CurrentDeployment, ct.PreviousAgreements)
+			a.Messages() <- events.NewApiAgreementCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ct.AgreementProtocol, ct.CurrentAgreementId, &ct.CurrentDeployment)
 			w.WriteHeader(http.StatusOK)
 		}
 	}
@@ -626,4 +624,3 @@ func (a *API) iotfconf(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
-

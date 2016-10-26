@@ -1,8 +1,6 @@
 package persistence
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,7 +10,6 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
-	"github.com/open-horizon/anax/cutil"
 )
 
 const P_CONTRACTS = "pending_contracts"
@@ -67,7 +64,6 @@ type IoTFCred struct {
 	Password string `json:"password"`
 }
 
-
 func (c PendingContract) String() string {
 	return fmt.Sprintf("Name: %v, SensorUrl: %v, Arch: %v, CPUs: %v, RAM: %v, IsLocEnabled: %v, AppAttribs: %v", *c.Name, *c.SensorUrl, c.Arch, c.CPUs, *c.RAM, c.IsLocEnabled, *c.AppAttributes)
 }
@@ -79,23 +75,21 @@ type EstablishedAgreement struct {
 	Archived                    bool                     `json:"archived"` // TODO: give risham, booz a way to indicate that a contract needs to be archived; REST api
 	CurrentAgreementId          string                   `json:"current_agreement_id"`
 	CounterPartyAddress         string                   `json:"counterparty_address"`
-	PreviousAgreements          []string                 `json:"previous_agreements"`
-	ConfigureNonce              string                   `json:"configure_nonce"` // one-time use configure token
 	AgreementCreationTime       uint64                   `json:"agreement_creation_time"`
 	AgreementAcceptedTime       uint64                   `json:"agreement_accepted_time"`
 	AgreementFinalizedTime      uint64                   `json:"agreement_finalized_time"`
-	AgreementTimedout           uint64                   `json:"agreement_timedout"`
+	AgreementTerminated         uint64                   `json:"agreement_terminated_time"`
 	AgreementExecutionStartTime uint64                   `json:"agreement_execution_start_time"`
 	PrivateEnvironmentAdditions map[string]string        `json:"private_environment_additions"` // platform-provided environment facts, none of which can leave the device
 	EnvironmentAdditions        map[string]string        `json:"environment_additions"`         // platform-provided environment facts, some of which are published on the blockchain for marketplace searching
 	CurrentDeployment           map[string]ServiceConfig `json:"current_deployment"`
 	Proposal                    string                   `json:"proposal"`
-	ProposalSig                 string                   `json:"proposal_sig"`             // the proposal currently in effect
-	AgreementProtocol           string                   `json:"agreement_protocol"`  // the agreement protocol being used. It is also in the proposal.
+	ProposalSig                 string                   `json:"proposal_sig"`       // the proposal currently in effect
+	AgreementProtocol           string                   `json:"agreement_protocol"` // the agreement protocol being used. It is also in the proposal.
 }
 
 func (c EstablishedAgreement) String() string {
-	return fmt.Sprintf("Name: %v , Archived: %v , CurrentAgreementId: %v , ConfigureNonce: %v, CurrentDeployment (service names): %v, PrivateEnvironmentAdditions: %v, EnvironmentAdditions: %v, AgreementCreationTime: %v, AgreementExecutionStartTime: %v, AgreementAcceptedTime: %v, PreviousAgreements (sample): %v, Agreement Protocol: %v", c.Name, c.Archived, c.CurrentAgreementId, c.ConfigureNonce, ServiceConfigNames(&c.CurrentDeployment), c.PrivateEnvironmentAdditions, c.EnvironmentAdditions, c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, cutil.FirstN(10, c.PreviousAgreements), c.AgreementProtocol)
+	return fmt.Sprintf("Name: %v , Archived: %v , CurrentAgreementId: %v, CurrentDeployment (service names): %v, PrivateEnvironmentAdditions: %v, EnvironmentAdditions: %v, AgreementCreationTime: %v, AgreementExecutionStartTime: %v, AgreementAcceptedTime: %v, AgreementFinalizedTime: %v, Agreement Protocol: %v", c.Name, c.Archived, c.CurrentAgreementId, ServiceConfigNames(&c.CurrentDeployment), c.PrivateEnvironmentAdditions, c.EnvironmentAdditions, c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementFinalizedTime, c.AgreementProtocol)
 }
 
 // the internal representation of this lib; *this is the one persisted using the persistence lib*
@@ -145,14 +139,12 @@ func NewEstablishedAgreement(db *bolt.DB, agreementId string, proposal string, p
 				Archived:                    false,
 				CurrentAgreementId:          agreementId,
 				CounterPartyAddress:         agreementId,
-				PreviousAgreements:          []string{},
-				ConfigureNonce:              "", // needs to be set before this can be used
 				PrivateEnvironmentAdditions: privateEnvironmentAdditions,
 				EnvironmentAdditions:        map[string]string{},
 				AgreementCreationTime:       uint64(time.Now().Unix()),
 				AgreementAcceptedTime:       0,
 				AgreementFinalizedTime:      0,
-				AgreementTimedout:           0,
+				AgreementTerminated:         0,
 				AgreementExecutionStartTime: 0,
 				CurrentDeployment:           map[string]ServiceConfig{},
 				Proposal:                    proposal,
@@ -175,7 +167,6 @@ func NewEstablishedAgreement(db *bolt.DB, agreementId string, proposal string, p
 		}
 	}
 }
-
 
 func DeleteEstablishedAgreement(db *bolt.DB, agreementId string, protocol string) error {
 
@@ -206,7 +197,6 @@ func DeleteEstablishedAgreement(db *bolt.DB, agreementId string, protocol string
 		}
 	}
 }
-
 
 // set contract record state to in agreement, not yet accepted; N.B. It's expected that privateEnvironmentAdditions will already have been added by this time
 func AgreementStateInAgreement(db *bolt.DB, dbAgreementId string, protocol string, environmentAdditions map[string]string) (*EstablishedAgreement, error) {
@@ -257,10 +247,10 @@ func AgreementStateFinalized(db *bolt.DB, dbAgreementId string, protocol string)
 	})
 }
 
-// set agreement state to timed out
-func AgreementStateTimedout(db *bolt.DB, dbAgreementId string, protocol string) (*EstablishedAgreement, error) {
+// set agreement state to terminated
+func AgreementStateTerminated(db *bolt.DB, dbAgreementId string, protocol string) (*EstablishedAgreement, error) {
 	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
-		c.AgreementTimedout = uint64(time.Now().Unix())
+		c.AgreementTerminated = uint64(time.Now().Unix())
 		return &c
 	})
 }
@@ -304,20 +294,14 @@ func PersistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 				mod.Archived = update.Archived
 				mod.AgreementAcceptedTime = update.AgreementAcceptedTime
 				mod.AgreementFinalizedTime = update.AgreementFinalizedTime
-				mod.AgreementTimedout = update.AgreementTimedout
+				mod.AgreementTerminated = update.AgreementTerminated
 				mod.CounterPartyAddress = update.CounterPartyAddress
-				mod.ConfigureNonce = update.ConfigureNonce
 				mod.EnvironmentAdditions = update.EnvironmentAdditions
 				mod.AgreementExecutionStartTime = update.AgreementExecutionStartTime
 				mod.CurrentDeployment = update.CurrentDeployment
 				mod.Proposal = update.Proposal
 				mod.ProposalSig = update.ProposalSig
 				mod.AgreementProtocol = update.AgreementProtocol
-
-				// update PreviousAgreements array if CurrentAgreementId unset
-				// if prevAgreementId != "" && mod.CurrentAgreementId == "" {
-				// 	mod.PreviousAgreements = append([]string{prevAgreementId}, mod.PreviousAgreements...)
-				// }
 
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize contract record: %v. Error: %v", mod, err)
@@ -331,7 +315,6 @@ func PersistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 		}
 	})
 }
-
 
 // Saves the pending contract in the db
 func SavePendingContract(db *bolt.DB, contract PendingContract) error {
@@ -437,7 +420,6 @@ func IdEAFilter(id string) EAFilter {
 	return func(e EstablishedAgreement) bool { return e.CurrentAgreementId == id }
 }
 
-
 // filter on EstablishedAgreements
 type EAFilter func(EstablishedAgreement) bool
 
@@ -478,18 +460,6 @@ func FindEstablishedAgreements(db *bolt.DB, protocol string, filters []EAFilter)
 	} else {
 		return agreements, nil
 	}
-}
-
-
-func genNonce() (string, error) {
-	bytes := make([]byte, 64)
-
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	} else {
-		return base64.URLEncoding.EncodeToString(bytes), nil
-	}
-
 }
 
 // save the devmode in to the "devmode" bucket
