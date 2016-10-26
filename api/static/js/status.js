@@ -58,46 +58,30 @@ function fetch_info() {
 }
 
 
-// get the contract info from the server.
-function fetch_micropayment(agreement_id) {
-    $.ajax({
-        url: "/agreement/" + agreement_id + "/latestmicropayment",
-        type: 'GET',
-        dataType: 'json',
-        success: function(data) {
-            disp_micropayment(data);
-        },
-        error: function(xhr, status, err) {
-            console.log("Error getting micropayment info for " + agreement_id + ".:" + err + ". Return code is " + status);
-        }
-    });
-}
-
-
 // create a status string for the given contract
 function get_contract_status(contract) {
-    var status = STATUS[0];
+    var status = STATUS[1];
     // if the status has already defined in the contract, just use it.
     if ("status" in contract && contract.status !== null && contract.status != "") {
         return status;
     }
 
-    if (contract.agreement === null || contract.agreement === "") {
-        status = STATUS[1];
+    if (contract.agreement_terminated_time != 0) {
+        status = "Ended"
     } else {
-        status = STATUS[2];
-        if (contract.configure_nonce === null || contract.configure_nonce === "") {
+        if (contract.agreement_finalized_time != 0) {
+            status = STATUS[5];
+        } else if (contract.agreement_execution_start_time != 0) {
+            status = STATUS[4];
+        } else if (contract.agreement_accepted_time != 0) {
             status = STATUS[3];
+        }  else if (contract.agreement_creation_time != 0) {
+            status = STATUS[2];
+        } else {
+            status = STATUS[1]; 
         }
     }
 
-    if ((contract.services !== null) && (contract.services.length !== 0)) {
-        status = STATUS[4];
-    }
-
-    if (contract.accepted !== 0) {
-        status = STATUS[5];
-    }
     return status;
 }
 
@@ -132,7 +116,7 @@ function update_contract_table(contract) {
         name_cell.style = "white-space:nowrap";
     } else {
         // the contract info is from the server, so we have a link to show the details
-        name_cell.innerHTML = "<u>" + contract.name.link("/registration/details.html?name=" + contract.name) + "</u><br><small>" + contract.address + "</small>";
+        name_cell.innerHTML = "<u>" + contract.name.link("/registration/details.html?name=" + contract.name) + "</u><br><small>" + contract.agreement_id + "</small>";
         name_cell.style = "white-space:pre";
     }
 
@@ -194,7 +178,7 @@ function disp_single_row(text) {
 }
 
 
-// dispay the contracts on the table. it includes the established contract
+// display the contracts on the table. it includes the established contract
 // as well as the pending contract.
 function disp_contracts(data) {
     var total = 0;
@@ -212,13 +196,13 @@ function disp_contracts(data) {
         // display it on the table
         var it = {
             "name": con.name,
-            "address": con.contract_address,
-            "agreement": con.current_agreement_id,
-            "accepted": con.agreement_accepted_time,
-            "created": con.agreement_creation_time,
-            "started": con.agreement_execution_start_time,
+            "agreement_id": con.current_agreement_id,
+            "agreement_creation_time": con.agreement_creation_time,
+            "agreement_accepted_time": con.agreement_accepted_time,
+            "agreement_finalized_time":con.agreement_finalized_time,
+            "agreement_execution_start_time": con.agreement_execution_start_time,
+            "agreement_terminated_time":con.agreement_terminated_time,
             "services": services,
-            "configure_nonce": con.configure_nonce,
         };
         update_contract_table(it);
         total++;
@@ -226,9 +210,6 @@ function disp_contracts(data) {
         // add it the agreement map
         if (it.agreement !== null && it.agreement !== "") {
             Agreement_map[it.agreement] = it.name;
-
-            // get the micropayment for this agreement
-            fetch_micropayment(it.agreement)
         }
 
         // remove it from the pending contract list
@@ -246,14 +227,13 @@ function disp_contracts(data) {
         pending_cons.forEach(function(con) {
             var it = {
                 "name": con,
-                "address": "",
-                "agreement": null,
-                "accepted": 0,
-                "created": 0,
-                "started": 0,
-                "services": [],
+                "agreement_id": "0",
+                "agreement_creation_time": 0,
+                "agreement_accepted_time": 0,
+                "agreement_finalized_time": 0,
+                "agreement_execution_start_time": 0,
+                "agreement_terminated_time": 0,
                 "status": STATUS[0],
-                "configure_nonce": "",
             };
             update_contract_table(it);
             total++;
@@ -267,34 +247,13 @@ function disp_contracts(data) {
     }
 }
 
-// dispay ethereum account if it is not null
+// display ethereum account if it is not null
 function disp_accounts(data) {
     if (data !== null) {
         if (data.geth !== null) {
             if (data.geth.eth_accounts !== null) {
                 ACCOUNT = data.geth.eth_accounts.join(',');
                 document.getElementById("account").innerHTML = "Account: " + ACCOUNT;
-            }
-        }
-    }
-}
-
-// display the micropayment in the status 
-function disp_micropayment(data) {
-    if (data !== null) {
-        if (data.payment !== null) {
-            if (data.agreement_id !== null) {
-                if (data.payment_value > 0) {
-                    var contract_name = Agreement_map[data.agreement_id];
-                    var table = document.getElementById("contract_status");
-                    for (var i = 0, row; row = table.rows[i]; i++) {
-                        if (row.cells[name_column_index].innerText.startsWith(contract_name)) {
-                            status_cell = row.cells[status_column_index];
-                            status_cell.innerHTML = STATUS[5] + " (" + data.payment_value + " tokens paid)";
-                            break;
-                        }
-                    }
-                }
             }
         }
     }
