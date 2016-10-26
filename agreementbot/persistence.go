@@ -13,6 +13,7 @@ const AGREEMENTS = "agreements"
 
 type Agreement struct {
     CurrentAgreementId            string `json:"current_agreement_id"`     // unique
+    DeviceId                      string `json:"device_id"`                // the device id we are working with, immutable after construction
     AgreementProtocol             string `json:"agreement_protocol"`       // immutable after construction
     AgreementInceptionTime        uint64 `json:"agreement_inception_time"` // immutable after construction
     AgreementCreationTime         uint64 `json:"agreement_creation_time"`  // device responds affirmatively to proposal
@@ -26,16 +27,17 @@ type Agreement struct {
 }
 
 func (a Agreement) String() string {
-    return fmt.Sprintf("CurrentAgreementId: %v , AgreementInceptionTime: %v, AgreementCreationTime: %v, AgreementFinalizedTime: %v, AgreementTimedout: %v, Proposal: %v, ProposalSig: %v, CounterPartyAddress: %v, DataVerificationURL: %v, DisableDataVerification: %v", a.CurrentAgreementId, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime, a.AgreementTimedout, a.Proposal, a.ProposalSig, a.CounterPartyAddress, a.DataVerificationURL, a.DisableDataVerificationChecks)
+    return fmt.Sprintf("CurrentAgreementId: %v, DeviceId: %v, AgreementInceptionTime: %v, AgreementCreationTime: %v, AgreementFinalizedTime: %v, AgreementTimedout: %v, Proposal: %v, ProposalSig: %v, CounterPartyAddress: %v, DataVerificationURL: %v, DisableDataVerification: %v", a.CurrentAgreementId, a.DeviceId, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime, a.AgreementTimedout, a.Proposal, a.ProposalSig, a.CounterPartyAddress, a.DataVerificationURL, a.DisableDataVerificationChecks)
 }
 
 // private factory method for agreement w/out persistence safety:
-func agreement(agreementid string, agreementProto string) (*Agreement, error) {
+func agreement(agreementid string, deviceid string, agreementProto string) (*Agreement, error) {
     if agreementid == "" || agreementProto == "" {
         return nil, errors.New("Illegal input: agreement id or agreement protocol is empty")
     } else {
         return &Agreement{
             CurrentAgreementId:            agreementid,
+            DeviceId:                      deviceid,
             AgreementProtocol:             agreementProto,
             AgreementInceptionTime:        uint64(time.Now().Unix()),
             AgreementCreationTime:         0,
@@ -50,8 +52,8 @@ func agreement(agreementid string, agreementProto string) (*Agreement, error) {
     }
 }
 
-func AgreementAttempt(db *bolt.DB, agreementid string, agreementProto string) error {
-    if agreement, err := agreement(agreementid, agreementProto); err != nil {
+func AgreementAttempt(db *bolt.DB, agreementid string, deviceid string, agreementProto string) error {
+    if agreement, err := agreement(agreementid, deviceid, agreementProto); err != nil {
         return err
     } else if err := PersistNew(db, agreement.CurrentAgreementId, AGREEMENTS, &agreement); err != nil {
         return err

@@ -73,7 +73,34 @@
             "value": "rpival5"
         }
     ],
-    "counterPartyProperties": null,
+    "counterPartyProperties": {
+        "and": [
+            {
+                "and": [
+                    {
+                        "name": "conprop1",
+                        "value": "conval1"
+                    },
+                    {
+                        "name": "conprop2",
+                        "value": "conval2"
+                    }
+                ]
+            },
+            {
+                "and": [
+                    {
+                        "name": "conprop1",
+                        "value": "conval1"
+                    },
+                    {
+                        "name": "conprop2",
+                        "value": "conval2"
+                    }
+                ]
+            }
+        ]
+    },
     "blockchains": [
         {
             "type": "ethereum",

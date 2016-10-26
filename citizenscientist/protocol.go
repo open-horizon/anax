@@ -29,6 +29,14 @@ type Proposal struct {
     Address        string `json:"address"`
 }
 
+func (p Proposal) String() string {
+    res := ""
+    res += fmt.Sprintf("Type: %v, AgreementId: %v, Address: %v\n", p.Type, p.AgreementId, p.Address)
+    res += fmt.Sprintf("TsAndCs: %v\n", p.TsAndCs)
+    res += fmt.Sprintf("Producer Policy: %v\n", p.ProducerPolicy)
+    return res
+}
+
 // This struct is the proposal reply body that flows from the producer to the consumer.
 type ProposalReply struct {
     Type           string `json:"type"`
@@ -105,52 +113,86 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId []byte, producerPolicy *
 func (p *ProtocolHandler) DecideOnProposal(proposal *Proposal, from string) (*ProposalReply, error) {
     glog.V(3).Infof(fmt.Sprintf("Processing New proposal from %v, %v", from, proposal))
 
+    replyErr := error(nil)
     reply := NewProposalReply(false, proposal.AgreementId)
 
     var termsAndConditions, producerPolicy *policy.Policy
 
     // Marshal the policies in the proposal into in memory policy objects
     if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
-        return nil, errors.New(fmt.Sprintf("CS Protocol decide on proposal received error demarshalling TsAndCs, %v", err))
+        replyErr = errors.New(fmt.Sprintf("CS Protocol decide on proposal received error demarshalling TsAndCs, %v", err))
     } else if pPolicy, err := policy.DemarshalPolicy(proposal.ProducerPolicy); err != nil {
-        return nil, errors.New(fmt.Sprintf("CS Protocol decide on proposal received error demarshalling Producer Policy, %v", err))
+        replyErr = errors.New(fmt.Sprintf("CS Protocol decide on proposal received error demarshalling Producer Policy, %v", err))
     } else {
         termsAndConditions = tcPolicy
         producerPolicy = pPolicy
     }
 
+    // Tell the policy manager that we're going to attempt an agreement
+    if err := p.pm.AttemptingAgreement(producerPolicy, proposal.AgreementId); err != nil {
+        glog.Errorf(fmt.Sprintf("Error saving agreement count: %v", err))
+    } 
+
     // The consumer will send 2 policies, one is the merged policy that represents the
     // terms and conditions of the agreement. The other is a copy of my policy that he thinks
     // he is matching. Let's make sure it is one of my policies.
-    if err := p.pm.MatchesMine(producerPolicy); err != nil {
-        return nil, errors.New(fmt.Sprintf("CS Protocol decide on proposal received error, producer policy from proposal is not one of our current policies, rejecting proposal: %v", err))
+    if replyErr == nil {
+        if err := p.pm.MatchesMine(producerPolicy); err != nil {
+            replyErr = errors.New(fmt.Sprintf("CS Protocol decide on proposal received error, producer policy from proposal is not one of our current policies, rejecting proposal: %v", err))
 
-    // Now check to make sure that the merged policy is acceptable.
-    } else if err := policy.Are_Compatible(producerPolicy, termsAndConditions); err != nil {
-        return nil, errors.New(fmt.Sprintf("CS Protocol decide on proposal received error, T and C policy is not compatible, rejecting proposal: %v", err))
-    } else {
+        // Make sure max agreements hasnt been reached
+        } else if numberAgreements, err := p.pm.GetNumberAgreements(producerPolicy); err != nil {
+            replyErr = errors.New(fmt.Sprintf("CS Procotol decide on proposal received error getting number of agreements, rejecting proposal: %v", err))
+        } else if numberAgreements > producerPolicy.APISpecs[0].NumberAgreements {
+            replyErr = errors.New(fmt.Sprintf("CS Procotol max agreements %v reached, already have %v", producerPolicy.APISpecs[0].NumberAgreements, numberAgreements))
 
-        hash := sha3.Sum256([]byte(proposal.TsAndCs))
-        glog.V(5).Infof(fmt.Sprintf("CS Protocol decide on proposal using hash %v with agreement %v", hex.EncodeToString(hash[:]), proposal.AgreementId))
-
-        if sig, err := ethblockchain.SignHash(hex.EncodeToString(hash[:]), p.GethURL); err != nil {
-            return nil, errors.New(fmt.Sprintf("CS Protocol decide on proposal received error signing hash %v, error %v", hex.EncodeToString(hash[:]), err))
+        // Now check to make sure that the merged policy is acceptable.
+        } else if err := policy.Are_Compatible(producerPolicy, termsAndConditions); err != nil {
+            replyErr = errors.New(fmt.Sprintf("CS Protocol decide on proposal received error, T and C policy is not compatible, rejecting proposal: %v", err))
         } else {
-            reply.Decision = true
-            reply.Address, _ = ethblockchain.AccountId()
-            reply.Signature = sig[2:]
+
+            if err := p.pm.FinalAgreement(producerPolicy, proposal.AgreementId); err != nil {
+                 glog.Errorf(fmt.Sprintf("CS Protocol decide on proposal received error, unable to record agreement state in PM: %v", err))
+            }
+
+            hash := sha3.Sum256([]byte(proposal.TsAndCs))
+            glog.V(5).Infof(fmt.Sprintf("CS Protocol decide on proposal using hash %v with agreement %v", hex.EncodeToString(hash[:]), proposal.AgreementId))
+
+            if sig, err := ethblockchain.SignHash(hex.EncodeToString(hash[:]), p.GethURL); err != nil {
+                replyErr = errors.New(fmt.Sprintf("CS Protocol decide on proposal received error signing hash %v, error %v", hex.EncodeToString(hash[:]), err))
+            } else if len(sig) > 2 {
+                reply.Decision = true
+                reply.Address, _ = ethblockchain.AccountId()
+                reply.Signature = sig[2:]
+            } else {
+                replyErr = errors.New(fmt.Sprintf("CS Protocol received incorrect signature %v from eth_sign.", sig))
+            }
         }
     }
 
-    // Respond to the Proposer.
+    // Always respond to the Proposer
     if err := p.sendResponse(from, "Citizen Scientist", reply); err != nil {
         reply.Decision = false
-        return nil, errors.New(fmt.Sprintf("CS Protocol decide on proposal received error trying to send proposal response, error: %v", err))
+        replyErr = errors.New(fmt.Sprintf("CS Protocol decide on proposal received error trying to send proposal response, error: %v", err))
+    }
+
+    // Log any error that occurred along the way and return it
+    if replyErr != nil {
+        glog.Errorf(replyErr.Error())
+        return p.returnErrOnDecision(replyErr, producerPolicy, proposal.AgreementId)
     }
 
     return reply, nil
 }
 
+func (p *ProtocolHandler) returnErrOnDecision(err error, producerPolicy *policy.Policy, agreementId string) (*ProposalReply, error) {
+    if producerPolicy != nil {
+        if cerr := p.pm.CancelAgreement(producerPolicy, agreementId); cerr != nil {
+             glog.Errorf(fmt.Sprintf("Error cancalling agreement in PM %v", cerr))
+        }
+    }
+    return nil, err
+}
 
 
 func (p *ProtocolHandler) sendProposal(to string, topic string, proposal *Proposal) error {
@@ -213,7 +255,7 @@ func (p *ProtocolHandler) ValidateReply(reply string) (*ProposalReply, error) {
 
     if err := json.Unmarshal([]byte(reply), &proposalReply); err != nil {
         return nil, errors.New(fmt.Sprintf("Error deserializing reply: %s, error: %v", reply, err))
-    } else if proposalReply.Type == MsgTypeReply && len(proposalReply.Signature) != 0 && len(proposalReply.Address) != 0 && len(proposalReply.AgreeId) != 0 {
+    } else if proposalReply.Type == MsgTypeReply && len(proposalReply.AgreeId) != 0 {
         return proposalReply, nil
     } else {
         return nil, errors.New(fmt.Sprintf("Reply message: %s, is not a Proposal reply.", reply))
@@ -228,14 +270,26 @@ func (p *ProtocolHandler) ValidateProposal(proposal string) (*Proposal, error) {
 
     if err := json.Unmarshal([]byte(proposal), &prop); err != nil {
         return nil, errors.New(fmt.Sprintf("Error deserializing proposal: %s, error: %v", proposal, err))
-    } else if prop.Type == MsgTypeProposal && len(prop.TsAndCs) != 0 && len(prop.ProducerPolicy) != 0 && len(prop.AgreementId) != 0 && len(prop.Address) != 0 {
-        return prop, nil
-    } else {
+    } else if prop.Type != MsgTypeProposal || len(prop.TsAndCs) == 0 || len(prop.ProducerPolicy) == 0 || len(prop.AgreementId) == 0 || len(prop.Address) == 0 {
         return nil, errors.New(fmt.Sprintf("Proposal message: %s, is not a Proposal.", proposal))
+    } else {
+        return prop, nil
     }
 
 }
 
+func (p *ProtocolHandler) DemarshalProposal(proposal string) (*Proposal, error) {
+
+    // attempt deserialization of message
+    prop := new(Proposal)
+
+    if err := json.Unmarshal([]byte(proposal), &prop); err != nil {
+        return nil, errors.New(fmt.Sprintf("Error deserializing proposal: %s, error: %v", proposal, err))
+    } else {
+        return prop, nil
+    }
+
+}
 
 func (p *ProtocolHandler) RecordAgreement(newProposal *Proposal, reply *ProposalReply, con *contract_api.SolidityContract) error {
 

@@ -9,9 +9,30 @@ import (
 
 // This struct represents property values advertised by the policy
 type PropertyList []Property
+
+func (p PropertyList) IsSame(compare PropertyList) bool {
+    for _, prop := range p {
+        found := false
+        for _, compareProp := range compare {
+            if prop.IsSame(compareProp) {
+                found = true
+                break
+            }
+        }
+        if !found {
+            return false
+        }
+    }
+    return true
+}
+
 type Property struct {
     Name  string      `json:"name"`  // The Property name
     Value interface{} `json:"value"` // The Property value
+}
+
+func (p Property) IsSame(compare Property) bool {
+    return p.Name == compare.Name && p.Value == compare.Value
 }
 
 // This function creates Property objects

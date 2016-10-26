@@ -32,9 +32,17 @@ type PolicyHeader struct {
     Version string `json:"version"`      // The schema version of this file
 }
 
+func (h PolicyHeader) IsSame(compare PolicyHeader) bool {
+    return h.Name == compare.Name && h.Version == compare.Version
+}
+
 type Image struct {
     File      string `json:"file"`
     Signature string `json:"signature"`
+}
+
+func (i Image) IsSame(compare Image) bool {
+    return i.File == compare.File && i.Signature == compare.Signature
 }
 
 type Torrent struct {
@@ -42,11 +50,36 @@ type Torrent struct {
     Images []Image `json:"images"`
 }
 
+func (t Torrent) IsSame(compare Torrent) bool {
+    if t.Url != compare.Url {
+        return false
+    } else {
+        for _, i := range t.Images {
+            found := false
+            for _, compareI := range compare.Images {
+                if i.IsSame(compareI) {
+                    found = true
+                    break
+                }
+            }
+            if !found {
+                return false
+            }
+        }
+        return true
+    }
+}
+
+
 type Workload struct {                  // From the payload structure
     Deployment          string            `json:"deployment"`
     DeploymentSignature string            `json:"deployment_signature"`
     DeploymentUserInfo  string            `json:"deployment_user_info"`
     Torrent             Torrent           `json:"torrent"`
+}
+
+func (wl Workload) IsSame(compare Workload) bool {
+    return wl.Deployment == compare.Deployment && wl.DeploymentSignature == compare.DeploymentSignature && wl.DeploymentUserInfo == compare.DeploymentUserInfo && wl.Torrent.IsSame(compare.Torrent)
 }
 
 type ValueExchange struct {
@@ -67,6 +100,10 @@ type DataVerification struct {
     Enabled  bool   `json:"enabled"`  // Whether or not data verification is enabled
     URL      string `json:"URL"`      // The URL to be used for data receipt verification
     Interval int    `json:"interval"` // The number of seconds between data receipt checks
+}
+
+func (d DataVerification) IsSame(compare DataVerification) bool {
+    return d.Enabled == compare.Enabled && d.URL == compare.URL && d.Interval == compare.Interval
 }
 
 type ProposalRejection struct {
@@ -203,7 +240,7 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
     // TODO: implement comparison logic.
     // For now we will take the cowards way out and simply AND together the Counter Party Property expressions
     // from both policies.
-
+    merged_pol.CounterPartyProperties = *((&producer_policy1.CounterPartyProperties).Merge(&producer_policy2.CounterPartyProperties))
 
     return merged_pol, nil
 }
@@ -266,6 +303,21 @@ func (self *Policy) String() string {
     return res 
 }
 
+func (self *Policy) IsSameWorkload(compare *Policy) bool {
+    for _, wl := range self.Workloads {
+        found := false
+        for _, compareWL := range compare.Workloads {
+            if wl.IsSame(compareWL) {
+                found = true
+                break
+            }
+        }
+        if !found {
+            return false
+        }
+    }
+    return true
+}
 
 // These are functions that operate on policy files in the file system.
 //

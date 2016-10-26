@@ -10,8 +10,29 @@ import (
 
 const CitizenScientist = "Citizen Scientist"
 type AgreementProtocolList []AgreementProtocol
+
+func (a AgreementProtocolList) IsSame(compare AgreementProtocolList) bool {
+    for _, agps := range a {
+        found := false
+        for _, compareAGPs := range compare {
+            if agps.IsSame(compareAGPs) {
+                found = true
+                break
+            }
+        }
+        if !found {
+            return false
+        }
+    }
+    return true
+}
+
 type AgreementProtocol struct {
     Name string `json:"name"`          // The name of the agreement protocol to be used
+}
+
+func (a AgreementProtocol) IsSame(compare AgreementProtocol) bool {
+    return a.Name == compare.Name
 }
 
 // This function creates AgreementProtocol objects

@@ -8,6 +8,23 @@ import (
 // The purpose of this file is to provide APIs for working with the API spec list in a Policy.
 
 type APISpecList []APISpecification
+
+func (a APISpecList) IsSame(compare APISpecList) bool {
+    for _, apis := range a {
+        found := false
+        for _, compareAPIs := range compare {
+            if apis.IsSame(compareAPIs) {
+                found = true
+                break
+            }
+        }
+        if !found {
+            return false
+        }
+    }
+    return true
+}
+
 type APISpecification struct {
     SpecRef          string `json:"specRef"`          // A URL pointing to the definition of the API spec
     Version          string `json:"version"`          // The version of the API spec in OSGI version format
@@ -18,6 +35,10 @@ type APISpecification struct {
                                                       // then it's essentially exclusive access. For more than 1, then it's
                                                       // shared access. Added in version 2.
     Arch             string `json:"arch"`             // The hardware architecture of the API spec impl. Added in version 2.
+}
+
+func (a APISpecification) IsSame(compare APISpecification) bool {
+    return a.SpecRef == compare.SpecRef && a.Version == compare.Version && a.ExclusiveAccess == compare.ExclusiveAccess && a.NumberAgreements == compare.NumberAgreements && a.Arch == compare.Arch
 }
 
 // This function creates API Spec objects

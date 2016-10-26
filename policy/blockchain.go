@@ -24,6 +24,23 @@ type EthereumBlockchain struct {
 
 // This struct indicates the type and instance of blockchain to be used by the policy
 type BlockchainList []Blockchain
+
+func (a BlockchainList) IsSame(compare BlockchainList) bool {
+    for _, bc := range a {
+        found := false
+        for _, compareBC := range compare {
+            if bc.Same_Blockchain(&compareBC) {
+                found = true
+                break
+            }
+        }
+        if !found {
+            return false
+        }
+    }
+    return true
+}
+
 type Blockchain struct {
     Type    string      `json:"type"`     // The type of blockchain
     Details interface{} `json:"details"`  // The details of how to bootstrap to the blockchain, what's 

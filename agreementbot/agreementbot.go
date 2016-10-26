@@ -240,7 +240,7 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
                         glog.Errorf("Unknown command (%T): %v", command, command)
                     }
 
-                default:
+                case <- time.After(time.Duration(w.Worker.Manager.Config.AgreementBot.NewContractIntervalS) * time.Second):
 
                     glog.V(4).Infof("AgreementBot for %v protocol Polling Exchange.", protocol)
 
@@ -261,36 +261,46 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 
                                 glog.V(5).Infof("AgreementBot picked up %v", dev)
 
-                                // Deserialize the JSON policy blob into a policy object
-                                producerPolicy := new(policy.Policy)
-                                if len(dev.Microservices[0].Policy) == 0 {
-                                    glog.Errorf("AgreementBot received empty policy blob, skipping this microservice.")
-                                } else if err := json.Unmarshal([]byte(dev.Microservices[0].Policy), producerPolicy); err != nil {
-                                    glog.Errorf("AgreementBot received error demarshalling policy blob %v, error: %v", dev.Microservices[0].Policy, err)
-
-                                // Check to see if the device's policy is compatible
-                                } else if err := policy.Are_Compatible(producerPolicy, &consumerPolicy); err != nil {
-                                    glog.Errorf("AgreementBot received error comparing %v and %v, error: %v", *producerPolicy, consumerPolicy, err)
-                                } else {
-                                    agreementWork := CSInitiateAgreement{
-                                        workType: INITIATE,
-                                        ProducerPolicy: producerPolicy,
-                                        ConsumerPolicy: &consumerPolicy,
-                                        Device:         &dev,
-                                    }
-
-                                    work <- agreementWork
-                                    glog.V(5).Infof("AgreementBot queued agreement attempt")
+                                // Check to see if we're already doing something with this device
+                                pendingAgreementFilter := func () AFilter {
+                                    return func(a Agreement) bool { return a.DeviceId == dev.Id && a.AgreementFinalizedTime == 0 && a.AgreementTimedout == 0 }
                                 }
 
+                                // Find all agreements that are in progress. They might be waiting for a reply or not yet finalized on blockchain.
+                                if agreements, err := FindAgreements(w.db, []AFilter{pendingAgreementFilter()}); err != nil {
+                                    glog.Errorf("AgreementBot received error trying to find pending agreements: %v", err)
+                                } else if len(agreements) != 0 {
+                                    glog.V(5).Infof("AgreementBot skipping device id %v, agreement attempt already in progress", dev.Id)
+                                    continue
+                                } else {
+
+                                    // Deserialize the JSON policy blob into a policy object
+                                    producerPolicy := new(policy.Policy)
+                                    if len(dev.Microservices[0].Policy) == 0 {
+                                        glog.Errorf("AgreementBot received empty policy blob, skipping this microservice.")
+                                    } else if err := json.Unmarshal([]byte(dev.Microservices[0].Policy), producerPolicy); err != nil {
+                                        glog.Errorf("AgreementBot received error demarshalling policy blob %v, error: %v", dev.Microservices[0].Policy, err)
+
+                                    // Check to see if the device's policy is compatible
+                                    } else if err := policy.Are_Compatible(producerPolicy, &consumerPolicy); err != nil {
+                                        glog.Errorf("AgreementBot received error comparing %v and %v, error: %v", *producerPolicy, consumerPolicy, err)
+                                    } else {
+                                        agreementWork := CSInitiateAgreement{
+                                            workType: INITIATE,
+                                            ProducerPolicy: producerPolicy,
+                                            ConsumerPolicy: &consumerPolicy,
+                                            Device:         &dev,
+                                        }
+
+                                        work <- agreementWork
+                                        glog.V(5).Infof("AgreementBot queued agreement attempt")
+                                    }
+                                }
                             }
 
                         }
                     }
                 }
-
-                time.Sleep(time.Duration(w.Worker.Manager.Config.AgreementBot.NewContractIntervalS) * time.Second)
-                runtime.Gosched()
 
             }
         }()

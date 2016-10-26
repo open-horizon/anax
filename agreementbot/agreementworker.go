@@ -83,8 +83,9 @@ func (c CSCancelAgreement) Type() string {
 
 // These constants represent agreement cancellation reason codes
 const CANCEL_NOT_FINALIZED_TIMEOUT = 200
-const CANCEL_NO_DATA_RECEIVED = 201
-const CANCEL_POLICY_CHANGED = 202
+const CANCEL_NO_REPLY = 201
+const CANCEL_NO_DATA_RECEIVED = 202
+const CANCEL_POLICY_CHANGED = 203
 
 
 // This function receives an event to "make a new agreement" from the Process function, and then synchronously calls a function
@@ -112,7 +113,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
             glog.V(5).Infof(logString(fmt.Sprintf("using AgreementId %v", agreementIdString)))
 
             // Create pending agreement in database
-            if err := AgreementAttempt(a.db, agreementIdString, "Citizen Scientist"); err != nil {
+            if err := AgreementAttempt(a.db, agreementIdString, wi.Device.Id, "Citizen Scientist"); err != nil {
                 glog.Errorf(logString(fmt.Sprintf("error persisting agreement attempt: %v", err)))
 
             // Initiate the protocol
@@ -148,9 +149,13 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
                 // Find the saved agreement in the database
                 if agreement, err := FindSingleAgreementByAgreementId(a.db, reply.AgreementId()); err != nil {
                     glog.Errorf(logString(fmt.Sprintf("error querying pending agreement %v, error: %v", reply.AgreementId(), err)))
+                } else if agreement == nil {
+                    glog.V(5).Infof(logString(fmt.Sprintf("discarding reply, agreement id %v not in our database", reply.AgreementId())))
+                } else if agreement.CounterPartyAddress != "" {
+                    glog.V(5).Infof(logString(fmt.Sprintf("discarding reply, agreement id %v already received a reply", agreement.CurrentAgreementId)))
 
                 // Now we need to write the info to the exchange and the database
-                } else if proposal, err := protocolHandler.ValidateProposal(agreement.Proposal); err != nil {
+                } else if proposal, err := protocolHandler.DemarshalProposal(agreement.Proposal); err != nil {
                     glog.Errorf(logString(fmt.Sprintf("error validating proposal from pending agreement %v, error: %v", reply.AgreementId(), err)))
                 } else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
                     glog.Errorf(logString(fmt.Sprintf("error demarshalling tsandcs policy from pending agreement %v, error: %v", reply.AgreementId(), err)))
@@ -170,9 +175,16 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
                 }
 
             } else {
-                if err := a.recordConsumerAgreementState(reply.AgreementId(), "", "Producer rejected"); err != nil {
-                    glog.Errorf(logString(fmt.Sprintf("error setting agreement state for %v", reply.AgreementId())))
+                // Delete the agreement from the exchange
+                if err := DeleteConsumerAgreement(a.config.AgreementBot.ExchangeURL, a.agbotId, a.token, reply.AgreementId()); err != nil {
+                    glog.Errorf(logString(fmt.Sprintf("error deleting agreement %v in exchange: %v", reply.AgreementId(), err)))
                 }
+
+                // Delete from the database
+                if err := DeleteAgreement(a.db, reply.AgreementId()); err != nil {
+                    glog.Errorf(logString(fmt.Sprintf("error deleting rejected agreement: %v, error: %v", reply.AgreementId(), err)))
+                }
+
                 glog.Errorf(logString(fmt.Sprintf("received rejection from producer %v", *reply)))
             }
 
@@ -181,6 +193,8 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 
             if ag, err := FindSingleAgreementByAgreementId(a.db, wi.AgreementId); err != nil {
                 glog.Errorf(logString(fmt.Sprintf("error querying timed out agreement %v, error: %v", wi.AgreementId, err)))
+            } else if ag == nil || ag.CounterPartyAddress == "" {
+                glog.V(3).Infof(logString(fmt.Sprintf("no counterparty to terminate agreement %v, skipping blockchain update.", wi.AgreementId)))
             } else if err := protocolHandler.TerminateAgreement(ag.CounterPartyAddress, ag.CurrentAgreementId, wi.Reason, bc.Agreements); err != nil {
                 glog.Errorf(logString(fmt.Sprintf("error terminating agreement %v on the blockchain: %v", wi.AgreementId, err)))
             }

@@ -456,6 +456,7 @@ func FindEstablishedAgreements(db *bolt.DB, protocol string, filters []EAFilter)
 				if err := json.Unmarshal(v, &e); err != nil {
 					glog.Errorf("Unable to deserialize db record: %v", v)
 				} else {
+					glog.V(5).Infof("Demarshalled agreement in DB: %v", e)
 					exclude := false
 					for _, filterFn := range filters {
 						if !filterFn(e) {

@@ -18,7 +18,7 @@ func Test_Payloadmanager_init_success1(t *testing.T) {
             t.Errorf("String format of policy manager is incorrect, returned %v", stringDump)
         } else if pm.GetPolicy("find test policy") == nil {
             t.Errorf("Did not find policy by name.")
-        } else if pm.ContractCounts["find test policy"].Count != 0 || len(pm.ContractCounts["find test policy"].AgreementContracts) != 0 {
+        } else if pm.AgreementCounts["find test policy"].Count != 0 || len(pm.AgreementCounts["find test policy"].AgreementIds) != 0 {
             t.Errorf("Contract Count map is not initialized correctly %v", pm)
         } else if atMax, err := pm.ReachedMaxAgreements(pm.Policies[0]); err != nil {
             t.Error(err)

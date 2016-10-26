@@ -166,9 +166,9 @@ func (w *AgreementWorker) start() {
                 protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
 
                 if proposal, err := protocolHandler.ValidateProposal(cmd.Msg.Payload()); err != nil {
-                    glog.Errorf(logString(fmt.Sprintf("discarding message: %v", cmd.Msg.Payload())))
+                    glog.Errorf(logString(fmt.Sprintf("discarding message: %v due to %v", cmd.Msg.Payload(), err)))
                 } else if _, err := persistence.NewEstablishedAgreement(w.db, proposal.AgreementId, cmd.Msg.Payload(), citizenscientist.PROTOCOL_NAME); err != nil {
-                    glog.Errorf(logString(fmt.Sprintf("persisting new pending agreement: %v", proposal.AgreementId)))
+                    glog.Errorf(logString(fmt.Sprintf("error persisting new pending agreement: %v", proposal.AgreementId)))
                 } else if reply, err := protocolHandler.DecideOnProposal(proposal, cmd.Msg.From()); err != nil {
                     glog.Errorf(logString(fmt.Sprintf("unable to respond to proposal, error: %v", err)))
                 } else if err := w.RecordReply(proposal, reply, citizenscientist.PROTOCOL_NAME, cmd); err != nil {
@@ -265,11 +265,11 @@ func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply
         }
 
     } else {
+
         if err := persistence.DeleteEstablishedAgreement(w.db, proposal.AgreementId, protocol); err != nil {
             return errors.New(logString(fmt.Sprintf("received error deleting agreement from db %v", err)))
-        } else if err := w.recordAgreementState(proposal.AgreementId, "", "Reject proposal"); err != nil {
-            return errors.New(logString(fmt.Sprintf("received error setting state for agreement %v", err)))
         }
+
     }
 
     return nil

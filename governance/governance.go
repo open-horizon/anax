@@ -196,7 +196,7 @@ func (w *GovernanceWorker) governAgreements() {
 							glog.Errorf(logString(fmt.Sprintf("error persisting agreement %v finalized: %v", ag.CurrentAgreementId, err)))
 						}
 						// Update state in exchange
-                        if proposal, err := protocolHandler.ValidateProposal(ag.Proposal); err != nil {
+                        if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
                             glog.Errorf(logString(fmt.Sprintf("could not hydrate proposal, error: %v", err)))
                         } else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
                             glog.Errorf(logString(fmt.Sprintf("error demarshalling TsAndCs policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
@@ -220,11 +220,13 @@ func (w *GovernanceWorker) governAgreements() {
 							}
 
 							// Cancel on the blockchain
+                            glog.V(5).Infof(logString(fmt.Sprintf("terminating agreement %v on blockchain.", ag.CurrentAgreementId)))
 							if err := protocolHandler.TerminateAgreement(ag.CounterPartyAddress, ag.CurrentAgreementId, CANCEL_NOT_FINALIZED_TIMEOUT, w.bc.Agreements); err != nil {
 								glog.Errorf(logString(fmt.Sprintf("error terminating agreement %v on the blockchain: %v", ag.CurrentAgreementId, err)))
 							}
 
 							// Delete from the database
+                            glog.V(5).Infof(logString(fmt.Sprintf("deleting agreement %v from database.", ag.CurrentAgreementId)))
 							if err := persistence.DeleteEstablishedAgreement(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
 								glog.Errorf(logString(fmt.Sprintf("error deleting terminated agreement: %v, error: %v", ag.CurrentAgreementId, err)))
 							}
