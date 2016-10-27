@@ -4,9 +4,6 @@ import (
 	"flag"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
-	"os"
-	"os/signal"
-	"path"
 	"github.com/open-horizon/anax/agreement"
 	"github.com/open-horizon/anax/agreementbot"
 	"github.com/open-horizon/anax/api"
@@ -15,9 +12,13 @@ import (
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/governance"
+	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/torrent"
 	"github.com/open-horizon/anax/whisper"
 	"github.com/open-horizon/anax/worker"
+	"os"
+	"os/signal"
+	"path"
 	"runtime"
 	"runtime/pprof"
 	"syscall"
@@ -26,7 +27,7 @@ import (
 
 // This function combines all messages (events) from workers into a single global message quueue. From this
 // global queue, each message will get delivered to each worker by the event handler function.
-// 
+//
 func mux(workers *worker.MessageHandlerRegistry) chan events.Message {
 
 	muxed := make(chan events.Message)
@@ -37,7 +38,7 @@ func mux(workers *worker.MessageHandlerRegistry) chan events.Message {
 		for {
 			for _, w := range workers.Handlers {
 				select {
-				case ev := <- (*w).Messages():
+				case ev := <-(*w).Messages():
 					muxed <- ev
 				default: // nothing
 				}
@@ -48,7 +49,6 @@ func mux(workers *worker.MessageHandlerRegistry) chan events.Message {
 
 	return muxed
 }
-
 
 // eventHandler Main control flow area: receives incoming Message messages and operates on them by pushing them
 // out to each worker. Workers then receive messages and, for messages they care about, the worker pushes out as commands
@@ -63,7 +63,6 @@ func eventHandler(incoming events.Message, workers *worker.MessageHandlerRegistr
 
 	return successMsg, nil
 }
-
 
 // The core of anax is an event handling system that distributes events to workers, where the workers
 // process events that they are about. However, to get started, anax needs to do a bunch of initialization
@@ -129,8 +128,12 @@ func main() {
 		glog.Infof("Closing up shop.")
 
 		pprof.StopCPUProfile()
-		if db != nil { db.Close() }
-		if agbotdb != nil { agbotdb.Close() }
+		if db != nil {
+			db.Close()
+		}
+		if agbotdb != nil {
+			agbotdb.Close()
+		}
 
 		os.Exit(0)
 	}()
@@ -168,6 +171,21 @@ func main() {
 		time.Sleep(900 * time.Millisecond)
 	}
 
+	// Get the device side policy manager started early so that all the workers can use it.
+	// Make sure the policy directory is in place.
+	var pm *policy.PolicyManager
+	if config.Edge.PolicyPath == "" {
+		// nothing to initialize
+	} else if err := os.MkdirAll(config.Edge.PolicyPath, 0644); err != nil {
+		glog.Errorf("Cannot create edge policy file path %v, terminating.", config.Edge.PolicyPath)
+		panic(err)
+	} else if policyManager, err := policy.Initialize(config.Edge.PolicyPath); err != nil {
+		glog.Errorf("Unable to initialize policy manager, terminating.")
+		panic(err)
+	} else {
+		pm = policyManager
+	}
+
 	// start workers
 	workers := worker.NewMessageHandlerRegistry()
 
@@ -176,10 +194,10 @@ func main() {
 
 	if db != nil {
 		workers.Add("api", apiServer)
-		workers.Add("agreement", agreement.NewAgreementWorker(config, db))
+		workers.Add("agreement", agreement.NewAgreementWorker(config, db, pm))
 		workers.Add("torrent", torrent.NewTorrentWorker(config))
 		workers.Add("container", container.NewContainerWorker(config))
-		workers.Add("governance", governance.NewGovernanceWorker(config, db))
+		workers.Add("governance", governance.NewGovernanceWorker(config, db, pm))
 	}
 
 	messageStream := mux(workers)

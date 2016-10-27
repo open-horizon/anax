@@ -14,20 +14,20 @@ type HorizonConfig struct {
 
 // This is the configuration options for Edge component flavor of Anax
 type Config struct {
-	WorkloadROStorage    string
-	TorrentDir           string
-	APIListen            string
-	DBPath               string
-	GethURL              string
-	DockerEndpoint       string
-	DefaultCPUSet        string
-	StaticWebContent     string
-	PublicKeyPath        string
-	CACertsPath          string
-	ExchangeURL          string
-	PolicyPath           string
-	ExchangeHeartbeat    int            // Seconds between heartbeats
-	AgreementTimeoutS    uint64         // Number of seconds to wait before declaring agreement not finalized in blockchain
+	WorkloadROStorage string
+	TorrentDir        string
+	APIListen         string
+	DBPath            string
+	GethURL           string
+	DockerEndpoint    string
+	DefaultCPUSet     string
+	StaticWebContent  string
+	PublicKeyPath     string
+	CACertsPath       string
+	ExchangeURL       string
+	PolicyPath        string
+	ExchangeHeartbeat int    // Seconds between heartbeats
+	AgreementTimeoutS uint64 // Number of seconds to wait before declaring agreement not finalized in blockchain
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string
@@ -41,20 +41,19 @@ type AGConfig struct {
 	DBPath                       string
 	GethURL                      string
 	PayloadPath                  string
-	AgreementTimeoutS            uint64       // Number of seconds to wait before declaring agreement not finalized in blockchain
-	NoDataIntervalS              uint64    // default should be 15 mins == 15*60 == 900. Ignored if the policy has data verification disabled.
-	ActiveContractsURL           string    // This field is the default and cannot be removed until all workloads are using their own URL
-	EtcdUrl                      string    // default is http://localhost:2379/v2/keys. If not specified then ectd interactions are skipped.
-	PolicyPath                   string    // The directory where policy files are kept, default /etc/provider-tremor/policy/
-	NewContractIntervalS         uint64    // default should be 1
-	ProcessGovernanceIntervalS   uint64    // How long the gov sleeps before general gov checks (new payloads, interval payments, etc).
-	                                       // The default should be 5.
-	IgnoreContractWithAttribs    string    // A comma seperated list of contract attributes. If set, the contracts that contain one or more of the attributes will be ignored. The default is "ethereum_account".
-	ExchangeURL                  string    // The URL of the Horizon exchange. If not configured, the exchange will not be used.
-	ExchangeHeartbeat            int       // Seconds between heartbeats to the exchange
-	ExchangeId                   string    // The id of the agbot, not the userid of the exchange user
-	ExchangeToken                string    // The agbot's authentication token
-
+	AgreementTimeoutS            uint64 // Number of seconds to wait before declaring agreement not finalized in blockchain
+	NoDataIntervalS              uint64 // default should be 15 mins == 15*60 == 900. Ignored if the policy has data verification disabled.
+	ActiveContractsURL           string // This field is the default and cannot be removed until all workloads are using their own URL
+	EtcdUrl                      string // default is http://localhost:2379/v2/keys. If not specified then ectd interactions are skipped.
+	PolicyPath                   string // The directory where policy files are kept, default /etc/provider-tremor/policy/
+	NewContractIntervalS         uint64 // default should be 1
+	ProcessGovernanceIntervalS   uint64 // How long the gov sleeps before general gov checks (new payloads, interval payments, etc).
+	// The default should be 5.
+	IgnoreContractWithAttribs string // A comma seperated list of contract attributes. If set, the contracts that contain one or more of the attributes will be ignored. The default is "ethereum_account".
+	ExchangeURL               string // The URL of the Horizon exchange. If not configured, the exchange will not be used.
+	ExchangeHeartbeat         int    // Seconds between heartbeats to the exchange
+	ExchangeId                string // The id of the agbot, not the userid of the exchange user
+	ExchangeToken             string // The agbot's authentication token
 
 }
 

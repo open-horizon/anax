@@ -3,8 +3,8 @@ package container
 import (
 	"encoding/json"
 	docker "github.com/fsouza/go-dockerclient"
-	"net/url"
 	gwhisper "github.com/open-horizon/go-whisper"
+	"net/url"
 	"testing"
 )
 

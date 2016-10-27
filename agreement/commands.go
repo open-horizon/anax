@@ -1,7 +1,7 @@
 package agreement
 
 import (
-    "github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/events"
 )
 
 // ===============================================================================================
@@ -11,56 +11,47 @@ type InitEdgeCommand struct {
 }
 
 func NewInitEdgeCommand() *InitEdgeCommand {
-    return &InitEdgeCommand{}
+	return &InitEdgeCommand{}
 }
 
-
-
 type DeviceRegisteredCommand struct {
-    Id    string
-    Token string
+	Id    string
+	Token string
 }
 
 func NewDeviceRegisteredCommand(id string, token string) *DeviceRegisteredCommand {
-    return &DeviceRegisteredCommand{
-        Id: id,
-        Token: token,
-    }
+	return &DeviceRegisteredCommand{
+		Id:    id,
+		Token: token,
+	}
 }
 
-
-
 type TerminateCommand struct {
-    reason string
+	reason string
 }
 
 func NewTerminateCommand(reason string) *TerminateCommand {
-    return &TerminateCommand{
-        reason: reason,
-    }
+	return &TerminateCommand{
+		reason: reason,
+	}
 }
 
-
-
 type AdvertisePolicyCommand struct {
-    PolicyFile string
+	PolicyFile string
 }
 
 func NewAdvertisePolicyCommand(fileName string) *AdvertisePolicyCommand {
-    return &AdvertisePolicyCommand{
-        PolicyFile: fileName,
-    }
+	return &AdvertisePolicyCommand{
+		PolicyFile: fileName,
+	}
 }
 
-
-
-
 type ReceivedProposalCommand struct {
-    Msg events.WhisperReceivedMessage
+	Msg events.WhisperReceivedMessage
 }
 
 func NewReceivedProposalCommand(msg events.WhisperReceivedMessage) *ReceivedProposalCommand {
-    return &ReceivedProposalCommand{
-        Msg: msg,
-    }
+	return &ReceivedProposalCommand{
+		Msg: msg,
+	}
 }

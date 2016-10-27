@@ -49,21 +49,21 @@ func NewTorrentWorker(config *config.HorizonConfig) *TorrentWorker {
 }
 
 func (w *TorrentWorker) Messages() chan events.Message {
-    return w.Worker.Manager.Messages
+	return w.Worker.Manager.Messages
 }
 
 func (w *TorrentWorker) NewEvent(incoming events.Message) {
 
 	switch incoming.(type) {
-    case *events.AgreementReachedMessage:
-        msg, _ := incoming.(*events.AgreementReachedMessage)
+	case *events.AgreementReachedMessage:
+		msg, _ := incoming.(*events.AgreementReachedMessage)
 
-        fCmd := w.NewFetchCommand(msg.LaunchContext())
-        w.Commands <- fCmd
+		fCmd := w.NewFetchCommand(msg.LaunchContext())
+		w.Commands <- fCmd
 
-    default: //nothing
+	default: //nothing
 
-    }
+	}
 
 	return
 }
@@ -109,4 +109,3 @@ func (t *TorrentWorker) NewFetchCommand(agreementLaunchContext *events.Agreement
 		AgreementLaunchContext: agreementLaunchContext,
 	}
 }
-

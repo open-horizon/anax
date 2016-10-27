@@ -36,7 +36,7 @@ type AgreementWorker struct {
 	pm            *policy.PolicyManager
 }
 
-func NewAgreementWorker(config *config.HorizonConfig, db *bolt.DB) *AgreementWorker {
+func NewAgreementWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *AgreementWorker {
 	messages := make(chan events.Message)
 	commands := make(chan worker.Command, 100)
 
@@ -53,6 +53,7 @@ func NewAgreementWorker(config *config.HorizonConfig, db *bolt.DB) *AgreementWor
 		db:         db,
 		httpClient: &http.Client{},
 		protocols:  make(map[string]bool),
+		pm:         pm,
 	}
 
 	glog.Info("Starting Agreement worker")
@@ -102,21 +103,9 @@ func (w *AgreementWorker) start() {
 
 	w.Commands <- NewInitEdgeCommand()
 
-	// Make sure the policy directory is in place
-	if err := os.MkdirAll(w.Worker.Manager.Config.Edge.PolicyPath, 0644); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("cannot create edge policy file path %v, terminating.", w.Worker.Manager.Config.Edge.PolicyPath)))
-		return
-	}
-
-	// Pick up any policy files that are already in place.
-	if policyManager, err := policy.Initialize(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("unable to initialize policy manager, error: %v", err)))
-	} else {
-		w.pm = policyManager
-		// Publish what we have for the world to see
-		if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
-		}
+	// Publish what we have for the world to see
+	if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
 	}
 
 	// Enter the command processing loop. Initialization is complete so wait for commands to
@@ -166,12 +155,12 @@ func (w *AgreementWorker) start() {
 				protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
 
 				if proposal, err := protocolHandler.ValidateProposal(cmd.Msg.Payload()); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("discarding message: %v", cmd.Msg.Payload())))
+					glog.Errorf(logString(fmt.Sprintf("discarding message: %v due to %v", cmd.Msg.Payload(), err)))
 				} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
-				} else if _, err := persistence.NewEstablishedAgreement(w.db, proposal.AgreementId, cmd.Msg.Payload(), citizenscientist.PROTOCOL_NAME, tcPolicy.APISpecs[0].SpecRef); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("persisting new pending agreement: %v", proposal.AgreementId)))
-				} else if reply, err := protocolHandler.DecideOnProposal(proposal, cmd.Msg.From()); err != nil {
+				} else if _, err := persistence.NewEstablishedAgreement(w.db, proposal.AgreementId, proposal.ConsumerId, cmd.Msg.Payload(), citizenscientist.PROTOCOL_NAME, tcPolicy.APISpecs[0].SpecRef); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error persisting new pending agreement: %v", proposal.AgreementId)))
+				} else if reply, err := protocolHandler.DecideOnProposal(proposal, cmd.Msg.From(), w.deviceId); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to respond to proposal, error: %v", err)))
 				} else if err := w.RecordReply(proposal, reply, citizenscientist.PROTOCOL_NAME, cmd); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to record reply %v, error: %v", *reply, err)))
@@ -261,6 +250,7 @@ func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply
 				}
 				envAdds["MTN_AGREEMENTID"] = proposal.AgreementId
 				envAdds["MTN_CONTRACT"] = tcPolicy.Header.Name
+
 				lc.EnvironmentAdditions = &envAdds
 				lc.AgreementProtocol = citizenscientist.PROTOCOL_NAME
 				w.Worker.Manager.Messages <- events.NewAgreementMessage(events.AGREEMENT_REACHED, lc)
@@ -268,11 +258,11 @@ func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply
 		}
 
 	} else {
+
 		if err := persistence.DeleteEstablishedAgreement(w.db, proposal.AgreementId, protocol); err != nil {
 			return errors.New(logString(fmt.Sprintf("received error deleting agreement from db %v", err)))
-		} else if err := w.recordAgreementState(proposal.AgreementId, "", "Reject proposal"); err != nil {
-			return errors.New(logString(fmt.Sprintf("received error setting state for agreement %v", err)))
 		}
+
 	}
 
 	return nil
