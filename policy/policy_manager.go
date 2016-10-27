@@ -1,12 +1,12 @@
 package policy
 
 import (
-    "encoding/json"
-    "errors"
-    "fmt"
-    "github.com/golang/glog"
-    "reflect"
-    "sync"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/golang/glog"
+	"reflect"
+	"sync"
 )
 
 // The PolicyManager's purpose is to manage an in memory representation of all the policies in use
@@ -14,17 +14,17 @@ import (
 // for reusable functions.
 
 type PolicyManager struct {
-    Policies          []*Policy                       // The policies in effect at this time
-    PolicyLock        sync.Mutex                      // The lock that protects modification of the Policy array
-    ALock             sync.Mutex                      // The lock that protects the contract counts map
-    AgreementCounts   map[string]*AgreementCountEntry // A map of all policies (by name) that have an agreement with a given device
+	Policies        []*Policy                       // The policies in effect at this time
+	PolicyLock      sync.Mutex                      // The lock that protects modification of the Policy array
+	ALock           sync.Mutex                      // The lock that protects the contract counts map
+	AgreementCounts map[string]*AgreementCountEntry // A map of all policies (by name) that have an agreement with a given device
 }
 
 // The ContractCountEntry is used to track which device addresses (contract addresses) are in agrement for a given policy name. The
 // status of the agreement is also tracked.
 type AgreementCountEntry struct {
-    Count              int               // The number of agreements using this policy
-    AgreementIds       map[string]string // Map of agreement id to agreement status
+	Count        int               // The number of agreements using this policy
+	AgreementIds map[string]string // Map of agreement id to agreement status
 }
 
 const AGREEMENT_PENDING = "pending"
@@ -33,99 +33,99 @@ const AGREEMENT_FINAL = "final"
 // A simple function used to return a human readable string representation of the policies that
 // the policy manager knows about.
 func (self *PolicyManager) String() string {
-    res := ""
-    for _, pol := range self.Policies {
-        res += fmt.Sprintf("Name: %v Workload: %v\n", pol.Header.Name, pol.Workloads)
-    }
-    for pn, cce := range self.AgreementCounts {
-        res += fmt.Sprintf("Agreement counts policy %v entry: %v\n", pn, cce.String())
-    }
-    return res
+	res := ""
+	for _, pol := range self.Policies {
+		res += fmt.Sprintf("Name: %v Workload: %v\n", pol.Header.Name, pol.Workloads)
+	}
+	for pn, cce := range self.AgreementCounts {
+		res += fmt.Sprintf("Agreement counts policy %v entry: %v\n", pn, cce.String())
+	}
+	return res
 }
 
 // A simple function used to return a human readable string representation of the agreement counts that
 // the policy manager knows about.
 func (self *AgreementCountEntry) String() string {
-    res := fmt.Sprintf("Count: %v ", self.Count)
-    for con, status := range self.AgreementIds {
-        res += fmt.Sprintf("Agreement: %v Status: %v ", con, status)
-    }
-    return res
+	res := fmt.Sprintf("Count: %v ", self.Count)
+	for con, status := range self.AgreementIds {
+		res += fmt.Sprintf("Agreement: %v Status: %v ", con, status)
+	}
+	return res
 }
 
 // This function creates AgreementProtocol objects
 func PolicyManager_Factory() *PolicyManager {
-    pm := new(PolicyManager)
-    pm.AgreementCounts = make(map[string]*AgreementCountEntry)
+	pm := new(PolicyManager)
+	pm.AgreementCounts = make(map[string]*AgreementCountEntry)
 
-    return pm
+	return pm
 }
 
 // Add a new policy to the policy manager. If the policy is already there (by name), an error is returned.
 // The caller might be ok ignoring the error.
 func (self *PolicyManager) AddPolicy(newPolicy *Policy) error {
-    self.PolicyLock.Lock()
-    defer self.PolicyLock.Unlock()
+	self.PolicyLock.Lock()
+	defer self.PolicyLock.Unlock()
 
-    for _, pol := range self.Policies {
-        if pol.Header.Name == newPolicy.Header.Name {
-            return errors.New(fmt.Sprintf("Policy already known to the PolicyManager"))
-        }
-    }
-    self.Policies = append(self.Policies, newPolicy)
-    agc := make(map[string]string)
-    cce := new(AgreementCountEntry)
-    cce.AgreementIds = agc
-    self.AgreementCounts[newPolicy.Header.Name] = cce
-    return nil
+	for _, pol := range self.Policies {
+		if pol.Header.Name == newPolicy.Header.Name {
+			return errors.New(fmt.Sprintf("Policy already known to the PolicyManager"))
+		}
+	}
+	self.Policies = append(self.Policies, newPolicy)
+	agc := make(map[string]string)
+	cce := new(AgreementCountEntry)
+	cce.AgreementIds = agc
+	self.AgreementCounts[newPolicy.Header.Name] = cce
+	return nil
 }
 
 // This function is used to get the policy manager up and running. When this function returns, all the current policies
 // have been read into memory. It can be used instead of the factory method for convenience.
 func Initialize(policyPath string) (*PolicyManager, error) {
 
-    glog.V(1).Infof("Initializing Policy Manager with %v.", policyPath)
-    pm := PolicyManager_Factory()
-    numberFiles := 0
+	glog.V(1).Infof("Initializing Policy Manager with %v.", policyPath)
+	pm := PolicyManager_Factory()
+	numberFiles := 0
 
-    // Setup the callback functions for the policy file watcher. The change notification is the only callback
-    // that should be invoked at this time.
-    changeNotify := func(fileName string, policy *Policy) {
-        numberFiles += 1
-        pm.AddPolicy(policy)
-        glog.V(3).Infof("Found policy file %v containing %v.", fileName, policy.Header.Name)
-    }
+	// Setup the callback functions for the policy file watcher. The change notification is the only callback
+	// that should be invoked at this time.
+	changeNotify := func(fileName string, policy *Policy) {
+		numberFiles += 1
+		pm.AddPolicy(policy)
+		glog.V(3).Infof("Found policy file %v containing %v.", fileName, policy.Header.Name)
+	}
 
-    deleteNotify := func(fileName string, policy *Policy) {
-        glog.Errorf("Policy Watcher detected file %v deletion during initialization.", fileName)
-    }
+	deleteNotify := func(fileName string, policy *Policy) {
+		glog.Errorf("Policy Watcher detected file %v deletion during initialization.", fileName)
+	}
 
-    errorNotify := func(fileName string, err error) {
-        glog.Errorf("Policy Watcher detected error consuming policy file %v during initialization.", fileName)
-    }
+	errorNotify := func(fileName string, err error) {
+		glog.Errorf("Policy Watcher detected error consuming policy file %v during initialization.", fileName)
+	}
 
-    // Call the policy file watcher once to load up the initial set of policy files
-    if err := PolicyFileChangeWatcher(policyPath, changeNotify, deleteNotify, errorNotify, 0); err != nil {
-        return nil, err
-    } else if len(pm.Policies) != numberFiles {
-        return nil, errors.New(fmt.Sprintf("Policy Names must be unique, found %v files, but %v unique policies", numberFiles, len(pm.Policies)))
-    } else {
-        return pm, nil
-    }
+	// Call the policy file watcher once to load up the initial set of policy files
+	if err := PolicyFileChangeWatcher(policyPath, changeNotify, deleteNotify, errorNotify, 0); err != nil {
+		return nil, err
+	} else if len(pm.Policies) != numberFiles {
+		return nil, errors.New(fmt.Sprintf("Policy Names must be unique, found %v files, but %v unique policies", numberFiles, len(pm.Policies)))
+	} else {
+		return pm, nil
+	}
 }
 
 func (self *PolicyManager) MatchesMine(matchPolicy *Policy) error {
 
-    self.PolicyLock.Lock()
-    defer self.PolicyLock.Unlock()
+	self.PolicyLock.Lock()
+	defer self.PolicyLock.Unlock()
 
-    if matches, err := self.hasPolicy(matchPolicy); err != nil {
-        return err
-    } else if matches {
-        return nil
-    } else {
-        return errors.New(fmt.Sprintf("Policy matching %v not found in %v", *matchPolicy, self.Policies))
-    }
+	if matches, err := self.hasPolicy(matchPolicy); err != nil {
+		return err
+	} else if matches {
+		return nil
+	} else {
+		return errors.New(fmt.Sprintf("Policy matching %v not found in %v", *matchPolicy, self.Policies))
+	}
 
 }
 
@@ -133,53 +133,51 @@ func (self *PolicyManager) MatchesMine(matchPolicy *Policy) error {
 // if the policy manager already has this policy.
 func (self *PolicyManager) hasPolicy(matchPolicy *Policy) (bool, error) {
 
-    for _, pol := range self.Policies {
-        if !pol.Header.IsSame(matchPolicy.Header) {
-            return false, nil
-        } else if !pol.Header.IsSame(matchPolicy.Header) {
-            return false, nil
-        } else if !pol.APISpecs.IsSame(matchPolicy.APISpecs) {
-            return false, nil
-        } else if !pol.AgreementProtocols.IsSame(matchPolicy.AgreementProtocols) {
-            return false, nil
-        } else if !pol.IsSameWorkload(matchPolicy) {
-            return false, nil
-        } else if !pol.DataVerify.IsSame(matchPolicy.DataVerify) {
-            return false, nil
-        } else if !pol.Properties.IsSame(matchPolicy.Properties) {
-            return false, nil
-        } else if !reflect.DeepEqual(pol.CounterPartyProperties, matchPolicy.CounterPartyProperties) {
-            return false, nil
-        } else if !pol.Blockchains.IsSame(matchPolicy.Blockchains) {
-            return false, nil
-        } else if pol.RequiredWorkload != matchPolicy.RequiredWorkload {
-            return false, nil
-        } else {
-            return true, nil
-        }
+	for _, pol := range self.Policies {
+		if !pol.Header.IsSame(matchPolicy.Header) {
+			return false, nil
+		} else if !pol.Header.IsSame(matchPolicy.Header) {
+			return false, nil
+		} else if !pol.APISpecs.IsSame(matchPolicy.APISpecs) {
+			return false, nil
+		} else if !pol.AgreementProtocols.IsSame(matchPolicy.AgreementProtocols) {
+			return false, nil
+		} else if !pol.IsSameWorkload(matchPolicy) {
+			return false, nil
+		} else if !pol.DataVerify.IsSame(matchPolicy.DataVerify) {
+			return false, nil
+		} else if !pol.Properties.IsSame(matchPolicy.Properties) {
+			return false, nil
+		} else if !reflect.DeepEqual(pol.CounterPartyProperties, matchPolicy.CounterPartyProperties) {
+			return false, nil
+		} else if !pol.Blockchains.IsSame(matchPolicy.Blockchains) {
+			return false, nil
+		} else if pol.RequiredWorkload != matchPolicy.RequiredWorkload {
+			return false, nil
+		} else {
+			return true, nil
+		}
 
-    }
-    return false, nil
+	}
+	return false, nil
 }
 
-
 func MarshalPolicy(pol *Policy) (string, error) {
-    if polString, err := json.Marshal(pol); err != nil {
-        return "", err
-    } else {
-        return string(polString), nil
-    }
+	if polString, err := json.Marshal(pol); err != nil {
+		return "", err
+	} else {
+		return string(polString), nil
+	}
 }
 
 func DemarshalPolicy(policyString string) (*Policy, error) {
-    pol := new(Policy)
-    if err := json.Unmarshal([]byte(policyString), pol); err != nil {
-        return nil, err
-    }
+	pol := new(Policy)
+	if err := json.Unmarshal([]byte(policyString), pol); err != nil {
+		return nil, err
+	}
 
-    return pol, nil
+	return pol, nil
 }
-
 
 // Policies can specify that they only want to make agreements with a specific number of counterparties.
 // In order to track this, the policy manager has APIs that allow the gov to update it when agreements
@@ -187,156 +185,168 @@ func DemarshalPolicy(policyString string) (*Policy, error) {
 
 // This function is used to indicate a new agreement is in progress for this policy
 func (self *PolicyManager) AttemptingAgreement(policy *Policy, agreement string) error {
-    self.ALock.Lock()
-    defer self.ALock.Unlock()
-    if policy == nil {
-        return errors.New(fmt.Sprintf("Input policy for device %v is nil", agreement))
-    } else if agreement == "" {
-        return errors.New(fmt.Sprintf("Input agreement is nil"))
-    } else if cce, there := self.AgreementCounts[policy.Header.Name]; !there {
-        return errors.New(fmt.Sprintf("Unable to find policy name in agreement counter: %v", self))
-    } else if _, there := cce.AgreementIds[agreement]; there {
-        return errors.New(fmt.Sprintf("Contract %v already in agreement counter: %v", agreement, cce))
-    } else if self.unlockedReachedMaxAgreements(policy, cce.Count) {
-        return errors.New(fmt.Sprintf("Policy violation: Contract counter %v already in max agreements: %v", cce, policy.MaxAgreements))
-    } else {
-        cce.AgreementIds[agreement] = AGREEMENT_PENDING
-        cce.Count = len(cce.AgreementIds)
-        glog.V(4).Infof("Policy Manager: Agreement tracking %v", self.AgreementCounts)
-    }
-    return nil
+	self.ALock.Lock()
+	defer self.ALock.Unlock()
+	if policy == nil {
+		return errors.New(fmt.Sprintf("Input policy for device %v is nil", agreement))
+	} else if agreement == "" {
+		return errors.New(fmt.Sprintf("Input agreement is nil"))
+	} else if cce, there := self.AgreementCounts[policy.Header.Name]; !there {
+		return errors.New(fmt.Sprintf("Unable to find policy name in agreement counter: %v", self))
+	} else if _, there := cce.AgreementIds[agreement]; there {
+		return errors.New(fmt.Sprintf("Contract %v already in agreement counter: %v", agreement, cce))
+	} else {
+		cce.AgreementIds[agreement] = AGREEMENT_PENDING
+		cce.Count = len(cce.AgreementIds)
+		glog.V(3).Infof("Policy Manager: Agreement tracking %v", self.AgreementCounts)
+	}
+	return nil
 }
 
 // This function is used to indicate an agreement is finalized for this policy.
 func (self *PolicyManager) FinalAgreement(policy *Policy, agreement string) error {
-    self.ALock.Lock()
-    defer self.ALock.Unlock()
-    if policy == nil {
-        return errors.New(fmt.Sprintf("Input policy for device %v is nil", agreement))
-    } else if agreement == "" {
-        return errors.New(fmt.Sprintf("Input agreement is nil"))
-    } else if cce, there := self.AgreementCounts[policy.Header.Name]; !there {
-        return errors.New(fmt.Sprintf("Unable to find policy name in agreement counter: %v", self))
-    } else if status, there := cce.AgreementIds[agreement]; !there {
-        return errors.New(fmt.Sprintf("agreement %v NOT in agreement counter: %v", agreement, cce))
-    } else if status != AGREEMENT_PENDING {
-        return errors.New(fmt.Sprintf("agreement %v NOT in pending status: %v", agreement, status))
-    } else {
-        cce.AgreementIds[agreement] = AGREEMENT_FINAL
-        glog.V(4).Infof("Policy Manager: Agreement tracking %v", self.AgreementCounts)
-    }
-    return nil
+	self.ALock.Lock()
+	defer self.ALock.Unlock()
+	if policy == nil {
+		return errors.New(fmt.Sprintf("Input policy for device %v is nil", agreement))
+	} else if agreement == "" {
+		return errors.New(fmt.Sprintf("Input agreement is nil"))
+	} else if cce, there := self.AgreementCounts[policy.Header.Name]; !there {
+		return errors.New(fmt.Sprintf("Unable to find policy name in agreement counter: %v", self))
+	} else if status, there := cce.AgreementIds[agreement]; !there {
+		return errors.New(fmt.Sprintf("agreement %v NOT in agreement counter: %v", agreement, cce))
+	} else if status != AGREEMENT_PENDING {
+		return errors.New(fmt.Sprintf("agreement %v NOT in pending status: %v", agreement, status))
+	} else {
+		cce.AgreementIds[agreement] = AGREEMENT_FINAL
+		glog.V(3).Infof("Policy Manager: Agreement tracking %v", self.AgreementCounts)
+	}
+	return nil
 }
 
 // This function is used to indicate an agreement is cancelled.
 func (self *PolicyManager) CancelAgreement(policy *Policy, agreement string) error {
-    self.ALock.Lock()
-    defer self.ALock.Unlock()
-    if policy == nil {
-        return errors.New(fmt.Sprintf("Input policy for device %v is nil", agreement))
-    } else if agreement == "" {
-        return errors.New(fmt.Sprintf("Input agreement is nil"))
-    } else if cce, there := self.AgreementCounts[policy.Header.Name]; !there {
-        return errors.New(fmt.Sprintf("Unable to find policy name in agreement counter: %v", self))
-    } else if _, there := cce.AgreementIds[agreement]; !there {
-        return errors.New(fmt.Sprintf("agreement %v NOT in agreement counter: %v", agreement, cce))
-    } else {
-        delete(cce.AgreementIds, agreement)
-        cce.Count = len(cce.AgreementIds)
-        glog.V(4).Infof("Policy Manager: Agreement tracking %v", self.AgreementCounts)
-    }
-    return nil
+	self.ALock.Lock()
+	defer self.ALock.Unlock()
+	if policy == nil {
+		return errors.New(fmt.Sprintf("Input policy for device %v is nil", agreement))
+	} else if agreement == "" {
+		return errors.New(fmt.Sprintf("Input agreement is nil"))
+	} else if cce, there := self.AgreementCounts[policy.Header.Name]; !there {
+		return errors.New(fmt.Sprintf("Unable to find policy name in agreement counter: %v", self))
+	} else if _, there := cce.AgreementIds[agreement]; !there {
+		return errors.New(fmt.Sprintf("agreement %v NOT in agreement counter: %v", agreement, cce))
+	} else {
+		delete(cce.AgreementIds, agreement)
+		cce.Count = len(cce.AgreementIds)
+		glog.V(3).Infof("Policy Manager: Agreement tracking %v", self.AgreementCounts)
+	}
+	return nil
 }
 
 // This function returns true if the policy has reached its maximum number of agreements.
 func (self *PolicyManager) ReachedMaxAgreements(policy *Policy) (bool, error) {
-    self.ALock.Lock()
-    defer self.ALock.Unlock()
-    if policy == nil {
-        return false, errors.New(fmt.Sprintf("Input policy is nil"))
-    } else if cce, there := self.AgreementCounts[policy.Header.Name]; !there {
-        return false, errors.New(fmt.Sprintf("Unable to find policy name in contract counter: %v", self))
-    } else {
-        return self.unlockedReachedMaxAgreements(policy, cce.Count), nil
-    }
+	self.ALock.Lock()
+	defer self.ALock.Unlock()
+	if policy == nil {
+		return false, errors.New(fmt.Sprintf("Input policy is nil"))
+	} else if cce, there := self.AgreementCounts[policy.Header.Name]; !there {
+		return false, errors.New(fmt.Sprintf("Unable to find policy name in contract counter: %v", self))
+	} else {
+		return self.unlockedReachedMaxAgreements(policy, cce.Count), nil
+	}
 }
 
 // This function returns true if the policy has reached its maximum number of agreements.
 func (self *PolicyManager) GetNumberAgreements(policy *Policy) (int, error) {
-    self.ALock.Lock()
-    defer self.ALock.Unlock()
-    if policy == nil {
-        return 0, errors.New(fmt.Sprintf("Input policy is nil"))
-    } else if cce, there := self.AgreementCounts[policy.Header.Name]; !there {
-        return 0, errors.New(fmt.Sprintf("Unable to find policy name in contract counter: %v", self))
-    } else {
-        return cce.Count, nil
-    }
+	self.ALock.Lock()
+	defer self.ALock.Unlock()
+	if policy == nil {
+		return 0, errors.New(fmt.Sprintf("Input policy is nil"))
+	} else if cce, there := self.AgreementCounts[policy.Header.Name]; !there {
+		return 0, errors.New(fmt.Sprintf("Unable to find policy name in contract counter: %v", self))
+	} else {
+		return cce.Count, nil
+	}
 }
 
 // This is an internal function that runs unlocked and returns true if the policy has reached its maximum number of agreements.
 func (self *PolicyManager) unlockedReachedMaxAgreements(policy *Policy, current int) bool {
-    if policy.MaxAgreements != 0 && current >= policy.MaxAgreements {
-        return true
-    } else {
-        return false
-    }
+	if policy.MaxAgreements != 0 && current >= policy.MaxAgreements {
+		return true
+	} else {
+		return false
+	}
 }
 
 // This function returns an array of json serialized policies in the PM, as strings.
 func (self *PolicyManager) GetSerializedPolicies() (map[string]string, error) {
 
-    res := make(map[string]string)
-    self.PolicyLock.Lock()
-    defer self.PolicyLock.Unlock()
-    for _, pol := range self.Policies {
-        if serialPol, err := json.Marshal(pol); err != nil {
-            return res, errors.New(fmt.Sprintf("Failed to serialize policy %v. Error: %v", *pol, err))
-        } else {
-            res[pol.Header.Name] = string(serialPol)
-        }
-    }
-    return res, nil
+	res := make(map[string]string)
+	self.PolicyLock.Lock()
+	defer self.PolicyLock.Unlock()
+	for _, pol := range self.Policies {
+		if serialPol, err := json.Marshal(pol); err != nil {
+			return res, errors.New(fmt.Sprintf("Failed to serialize policy %v. Error: %v", *pol, err))
+		} else {
+			res[pol.Header.Name] = string(serialPol)
+		}
+	}
+	return res, nil
 }
 
 // This function returns the policy object of a given name.
 func (self *PolicyManager) GetPolicy(name string) *Policy {
 
-    self.PolicyLock.Lock()
-    defer self.PolicyLock.Unlock()
-    for _, pol := range self.Policies {
-        if pol.Header.Name == name {
-            return pol
-        }
-    }
-    return nil
+	self.PolicyLock.Lock()
+	defer self.PolicyLock.Unlock()
+	for _, pol := range self.Policies {
+		if pol.Header.Name == name {
+			return pol
+		}
+	}
+	return nil
 }
 
 func (self *PolicyManager) GetAllAgreementProtocols() map[string]bool {
-    protocols := make(map[string]bool)
-    self.PolicyLock.Lock()
-    defer self.PolicyLock.Unlock()
-    for _, pol := range self.Policies {
-        agps := pol.AgreementProtocols.As_String_Array()
-        for _, agp := range agps {
-            protocols[agp] = true
-        }
-    }
-    return protocols
+	protocols := make(map[string]bool)
+	self.PolicyLock.Lock()
+	defer self.PolicyLock.Unlock()
+	for _, pol := range self.Policies {
+		agps := pol.AgreementProtocols.As_String_Array()
+		for _, agp := range agps {
+			protocols[agp] = true
+		}
+	}
+	return protocols
 }
 
 func (self *PolicyManager) GetAllPolicies() []Policy {
-    policies := make([]Policy, 0, 10)
-    self.PolicyLock.Lock()
-    defer self.PolicyLock.Unlock()
-    for _, pol := range self.Policies {
-        policies = append(policies, *pol)
-    }
-    return policies
+	policies := make([]Policy, 0, 10)
+	self.PolicyLock.Lock()
+	defer self.PolicyLock.Unlock()
+	for _, pol := range self.Policies {
+		policies = append(policies, *pol)
+	}
+	return policies
+}
+
+func (self *PolicyManager) GetAllAvailablePolicies() []Policy {
+	policies := make([]Policy, 0, 10)
+	self.PolicyLock.Lock()
+	defer self.PolicyLock.Unlock()
+	for _, pol := range self.Policies {
+		if self.unlockedReachedMaxAgreements(pol, self.AgreementCounts[pol.Header.Name].Count) {
+			glog.V(3).Infof("Skipping policy %v, reached maximum of %v agreements.", pol.Header.Name, self.AgreementCounts[pol.Header.Name].Count)
+		} else {
+			policies = append(policies, *pol)
+		}
+	}
+	return policies
 }
 
 func (self *PolicyManager) NumberPolicies() int {
-    self.PolicyLock.Lock()
-    defer self.PolicyLock.Unlock()
-    return len(self.Policies)
+	self.PolicyLock.Lock()
+	defer self.PolicyLock.Unlock()
+	return len(self.Policies)
 }

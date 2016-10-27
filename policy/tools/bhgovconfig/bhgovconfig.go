@@ -10,8 +10,8 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"flag"
+	"fmt"
 	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
@@ -31,12 +31,12 @@ type QuarksStruct struct {
 }
 
 type Input struct {
-    Name                string                     `json:"name"`
-    APISpecs         	[]policy.APISpecification  `json:"apiSpec"`
-    Arch                string                     `json:"arch"`
-    EthereumAccounts    []string                   `json:"ethereumAccounts"`
-    Quarks				QuarksStruct	           `json:"quarks"`
-    ResourceLimits    	policy.ResourceLimit       `json:"resourceLimits"`
+	Name             string                    `json:"name"`
+	APISpecs         []policy.APISpecification `json:"apiSpec"`
+	Arch             string                    `json:"arch"`
+	EthereumAccounts []string                  `json:"ethereumAccounts"`
+	Quarks           QuarksStruct              `json:"quarks"`
+	ResourceLimits   policy.ResourceLimit      `json:"resourceLimits"`
 }
 
 // The output will go in the Policy struct
@@ -49,47 +49,46 @@ const NEUTRONHOSTSTG = "staging.bluehorizon.hovitos.engineering"
 func usage(exitCode int) {
 	usageStr1 := "" +
 		"Usage:\n" +
-		"  cat <input json> | bhgovconfig [-d <output-dir>] [-t <template-dir>] [-root-dir <root-dir>] [-ethereum-accounts <acct-ids>]\n"+
-		"\n"+
-		"Create the blue horizon governor config files based on the specified json properties piped to stdin,\n"+
-		"and the commands options.  This command understands some of the common workload patterns like quarks apps\n"+
-		"and expands input into the full governor policy file and config file.  These files are placed in\n"+
-		"specified <output-dir>.  The command also needs access to the governor policy template files, which should\n"+
-		"be in the specified <template-dir>.\n"+
-		"\n"+
+		"  cat <input json> | bhgovconfig [-d <output-dir>] [-t <template-dir>] [-root-dir <root-dir>] [-ethereum-accounts <acct-ids>]\n" +
+		"\n" +
+		"Create the blue horizon governor config files based on the specified json properties piped to stdin,\n" +
+		"and the commands options.  This command understands some of the common workload patterns like quarks apps\n" +
+		"and expands input into the full governor policy file and config file.  These files are placed in\n" +
+		"specified <output-dir>.  The command also needs access to the governor policy template files, which should\n" +
+		"be in the specified <template-dir>.\n" +
+		"\n" +
 		"Options:\n"
 		// "  -d <output-dir>    The directory to put the config files in. Defaults to the current directory.\n"+
 	usageStr2 := "\n" +
-		"Examples:\n"+
-		"  cat input.json | bhgovconfig -d /tmp\n"+
-		"\n"+
-		"Example input.json file:\n"+
-		"{\n"+
-		"    \"name\": \"netspeed\",\n"+
-		"    \"apiSpec\": [\n"+
-		"        {\n"+
-		"            \"specRef\": \"https://bluehorizon.network/documentation/netspeed-device-api\"\n"+
-		"        }\n"+
-		"    ],\n"+
-		"    \"arch\": \"arm\",\n"+
-		"    \"ethereumAccounts\": [ \"1a2b3c\", \"4d5e6f\" ],\n"+
-		"    \"quarks\": {\n"+
-		"        \"cloudMsgBrokerHost\": \"123abc.messaging.internetofthings.ibmcloud.com\",\n"+
-		"        \"dataVerificationInterval\": 300\n"+
-		"    }\n"+
+		"Examples:\n" +
+		"  cat input.json | bhgovconfig -d /tmp\n" +
+		"\n" +
+		"Example input.json file:\n" +
+		"{\n" +
+		"    \"name\": \"netspeed\",\n" +
+		"    \"apiSpec\": [\n" +
+		"        {\n" +
+		"            \"specRef\": \"https://bluehorizon.network/documentation/netspeed-device-api\"\n" +
+		"        }\n" +
+		"    ],\n" +
+		"    \"arch\": \"arm\",\n" +
+		"    \"ethereumAccounts\": [ \"1a2b3c\", \"4d5e6f\" ],\n" +
+		"    \"quarks\": {\n" +
+		"        \"cloudMsgBrokerHost\": \"123abc.messaging.internetofthings.ibmcloud.com\",\n" +
+		"        \"dataVerificationInterval\": 300\n" +
+		"    }\n" +
 		"}\n"
 	if exitCode > 0 {
-		fmt.Fprintf(os.Stderr, usageStr1)		// send it to stderr
+		fmt.Fprintf(os.Stderr, usageStr1) // send it to stderr
 		flag.PrintDefaults()
-		fmt.Fprintf(os.Stderr, usageStr2)		// send it to stderr
+		fmt.Fprintf(os.Stderr, usageStr2) // send it to stderr
 	} else {
-		fmt.Printf(usageStr1)		// send it to stdout
-		flag.PrintDefaults()		//todo: do not yet know how to get this to print to stdout
-		fmt.Printf(usageStr2)		// send it to stdout
+		fmt.Printf(usageStr1) // send it to stdout
+		flag.PrintDefaults()  //todo: do not yet know how to get this to print to stdout
+		fmt.Printf(usageStr2) // send it to stdout
 	}
 	os.Exit(exitCode)
 }
-
 
 /*
 Get the json from stdin and populate the fields of in the input struct.
@@ -100,11 +99,12 @@ func loadStdinFile(input *Input) {
 	buf.ReadFrom(os.Stdin)
 
 	err := json.Unmarshal(buf.Bytes(), &input)
-	if err != nil { log.Fatalf("error reading json properties from stdin: %v", err) }
+	if err != nil {
+		log.Fatalf("error reading json properties from stdin: %v", err)
+	}
 
-	checkInput(input) 		// this will exit with error if something is wrong
+	checkInput(input) // this will exit with error if something is wrong
 }
-
 
 /*
 Check the input properties and make sure all require values are there.
@@ -112,16 +112,21 @@ Check the input properties and make sure all require values are there.
 func checkInput(input *Input) {
 	// When loadStdinFile() unmarshalled the json, it checked its syntax, but not for the specific field names
 
-	if input.Name == "" { log.Fatal("error: the name of the workload must be specified\n") }
+	if input.Name == "" {
+		log.Fatal("error: the name of the workload must be specified\n")
+	}
 
-	if len(input.APISpecs) == 0 { log.Fatalf("error: no 'apiSpec' entries specified\n")	}
+	if len(input.APISpecs) == 0 {
+		log.Fatalf("error: no 'apiSpec' entries specified\n")
+	}
 	for i, spec := range input.APISpecs {
-		if spec.SpecRef == "" { log.Fatalf("error: apiSpec %v does not have a 'specRef' entry.\n", i) }
+		if spec.SpecRef == "" {
+			log.Fatalf("error: apiSpec %v does not have a 'specRef' entry.\n", i)
+		}
 	}
 
 	// If we get here, everything checked out
 }
-
 
 /*
 Return true if a file is piped into stdin.
@@ -129,45 +134,48 @@ Return true if a file is piped into stdin.
 func isStdinFile() bool {
 	stat, _ := os.Stdin.Stat()
 	if (stat.Mode() & os.ModeCharDevice) == 0 {
-	    return true
+		return true
 	} else {
-	    return false
+		return false
 	}
 }
-
 
 /*
 Get policy properties via the cmd line options
 */
 func getCliProperties(input *Input) {
 	name := flag.Lookup("name").Value.String()
-	if name != "" { input.Name = name }
+	if name != "" {
+		input.Name = name
+	}
 }
 
 /*
 Get an http.Response to a url. The caller must close the reader when done with it.
 */
-func getHttpResponse(url string) (*http.Response) {
+func getHttpResponse(url string) *http.Response {
 	fmt.Printf("Downloading %v...\n", url)
 	resp, err := http.Get(url)
-	if err != nil { log.Fatalf("error getting %v: %v", url, err) }
+	if err != nil {
+		log.Fatalf("error getting %v: %v", url, err)
+	}
 	return resp
 }
-
 
 /*
 Download a file via http or https and return the byte array
 */
-func getHttpFile(url string) ([]byte) {
+func getHttpFile(url string) []byte {
 
 	resp := getHttpResponse(url)
 	defer resp.Body.Close()
 	bytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil { log.Fatalf("error reading %v: %v", url, err) }
+	if err != nil {
+		log.Fatalf("error reading %v: %v", url, err)
+	}
 	return bytes
 
 }
-
 
 /*
 Create the appropriate policy content for the quarks workload pattern
@@ -177,19 +185,21 @@ func createQuarksPolicyContent(input *Input, pol *policy.Policy, templateDir str
 	host := strings.ToLower(input.Quarks.CloudMsgBrokerHost)
 	if len(input.EthereumAccounts) == 0 {
 		// the host is only required when not in dev mode
-		if !strings.HasSuffix(host,"."+IOTFHOSTSUFFIX) && host != NEUTRONHOSTPROD && host != NEUTRONHOSTSTG {
+		if !strings.HasSuffix(host, "."+IOTFHOSTSUFFIX) && host != NEUTRONHOSTPROD && host != NEUTRONHOSTSTG {
 			log.Fatalf("error: quarks.cloudMsgBrokerHost value %v must be '<org-id>.%v', '%v', or '%v'", host, IOTFHOSTSUFFIX, NEUTRONHOSTPROD, NEUTRONHOSTSTG)
 		}
 	}
 
 	// Find the template file to use for workload info
 	// there are 2 different forms of arch and specRef:
-	apiUrl := input.APISpecs[0].SpecRef 		// eventually need to support more than 1 device api
+	apiUrl := input.APISpecs[0].SpecRef // eventually need to support more than 1 device api
 	var deviceName, arch string
 	if input.Arch != "" {
 		// Arch is specified separately and specRef is like:  https://bluehorizon.network/documentation/cpu-temperature-device-api
 		base := path.Base(apiUrl)
-		if !strings.HasSuffix(base, "-device-api") { log.Fatalf("error: specRef does not end with '-device-api': %v", apiUrl) }
+		if !strings.HasSuffix(base, "-device-api") {
+			log.Fatalf("error: specRef does not end with '-device-api': %v", apiUrl)
+		}
 		deviceName = strings.TrimSuffix(base, "-device-api")
 		arch = input.Arch
 	} else {
@@ -210,19 +220,25 @@ func createQuarksPolicyContent(input *Input, pol *policy.Policy, templateDir str
 		// Its a local file, read it
 		var err error
 		bytes, err = ioutil.ReadFile(templatePath)
-		if err != nil { log.Fatalf("error reading template file %v: %v", templatePath, err) }
+		if err != nil {
+			log.Fatalf("error reading template file %v: %v", templatePath, err)
+		}
 	}
 
 	var template policy.Policy
 	err := json.Unmarshal(bytes, &template)
-	if err != nil { log.Fatalf("error parsing template file %v into json: %v", templatePath, err) }
+	if err != nil {
+		log.Fatalf("error parsing template file %v into json: %v", templatePath, err)
+	}
 	pol.Workloads = template.Workloads
 
 	// Create the deployment_user_info string that contains deployment info the external developer is allowed to specify
 	var depUserInfo QuarksStruct
 	depUserInfo.CloudMsgBrokerHost = input.Quarks.CloudMsgBrokerHost
 	depUserInfoBytes, err := json.Marshal(depUserInfo)
-	if err != nil { log.Fatalf("error marshaling the user deployment info to json: %v", err) }
+	if err != nil {
+		log.Fatalf("error marshaling the user deployment info to json: %v", err)
+	}
 	depUserInfoStr := string(depUserInfoBytes)
 	pol.Workloads[0].DeploymentUserInfo = depUserInfoStr
 
@@ -231,11 +247,10 @@ func createQuarksPolicyContent(input *Input, pol *policy.Policy, templateDir str
 	if interval != 0 {
 		// They want data verification of the contract
 		pol.DataVerify.Interval = interval
-		pol.DataVerify.Enabled = false 		//TODO: change to true when we have a data checking service for iotf topics
-		pol.DataVerify.URL = host 		    //TODO: develop a service that can be used to check mqtt topics and include creds here
+		pol.DataVerify.Enabled = false //TODO: change to true when we have a data checking service for iotf topics
+		pol.DataVerify.URL = host      //TODO: develop a service that can be used to check mqtt topics and include creds here
 	}
 }
-
 
 /*
 From the input info, create the appropriate policy content in output variable pol
@@ -249,7 +264,7 @@ func createPolicyContent(input *Input, pol *policy.Policy, templateDir string) {
 	for i, spec := range input.APISpecs {
 		var version string
 		if spec.Version == "" {
-			version = "0.0.0" 	// this means any version >= to this value, so any version
+			version = "0.0.0" // this means any version >= to this value, so any version
 		} else {
 			version = spec.Version
 		}
@@ -257,11 +272,11 @@ func createPolicyContent(input *Input, pol *policy.Policy, templateDir string) {
 	}
 
 	pol.AgreementProtocols = make([]policy.AgreementProtocol, 1)
-	pol.AgreementProtocols[0] = policy.AgreementProtocol{Name: citizenscientist.PROTOCOL_NAME} 	// for now we always use this contract
+	pol.AgreementProtocols[0] = policy.AgreementProtocol{Name: citizenscientist.PROTOCOL_NAME} // for now we always use this contract
 
 	// Find the correct workload template/pattern and fill it in and copy to pol
-	if input.Quarks.CloudMsgBrokerHost != "" || input.Quarks.CloudMsgBrokerHost == "" { 		//todo: need a way to recognize they want quarks
-		createQuarksPolicyContent(input, pol, templateDir) 		// quarks workload
+	if input.Quarks.CloudMsgBrokerHost != "" || input.Quarks.CloudMsgBrokerHost == "" { //todo: need a way to recognize they want quarks
+		createQuarksPolicyContent(input, pol, templateDir) // quarks workload
 	} else {
 		// it is not a predefined workload we understand
 		log.Fatalf("error: input does not specify a recognized predefined pattern")
@@ -281,15 +296,14 @@ func createPolicyContent(input *Input, pol *policy.Policy, templateDir string) {
 	}
 }
 
-
 /*
 Write the contents of the policy struct to a file in the specified output dir
 */
 func writePolicyFile(input *Input, pol *policy.Policy, policyOutputDir string) {
-	name := pol.Header.Name 		//todo: remove chars that are bad for file names
+	name := pol.Header.Name //todo: remove chars that are bad for file names
 
 	// there are 2 different forms of arch and specRef:
-	apiUrl := pol.APISpecs[0].SpecRef 		// eventually need to support more than 1 device api
+	apiUrl := pol.APISpecs[0].SpecRef // eventually need to support more than 1 device api
 	var arch string
 	if input.Arch != "" {
 		// Arch is specified separately
@@ -303,12 +317,15 @@ func writePolicyFile(input *Input, pol *policy.Policy, policyOutputDir string) {
 	filename := policyOutputDir + "/" + name + "-" + arch + ".policy"
 
 	newJson, err := json.MarshalIndent(pol, "", "    ")
-	if err != nil { log.Fatalf("error marshaling the policy info to json: %v", err) }
+	if err != nil {
+		log.Fatalf("error marshaling the policy info to json: %v", err)
+	}
 
 	err = ioutil.WriteFile(filename, []byte(newJson), 0664)
-	if err != nil { log.Fatalf("error writing the policy info to %v: %v", filename, err) }
+	if err != nil {
+		log.Fatalf("error writing the policy info to %v: %v", filename, err)
+	}
 }
-
 
 /*
 From the input info, create the appropriate provider.config info
@@ -353,7 +370,6 @@ From the input info, create the appropriate provider.config info
 // 	return configStruct
 // }
 
-
 /*
 Write the contents of the provider.config struct to a file in the specified output dir
 */
@@ -373,7 +389,6 @@ Write the contents of the provider.config struct to a file in the specified outp
 // 	if err != nil { log.Fatalf("error writing %v: %v", filename, err) }
 // }
 
-
 func main() {
 	// Get and check cmd line options
 	var name, outputDir, templateDir, rootDir, ethAccounts string
@@ -387,16 +402,24 @@ func main() {
 	flag.Parse()
 
 	// Currently they need to specify the properties in stdin
-	if !isStdinFile() { usage(0) }
+	if !isStdinFile() {
+		usage(0)
+	}
 
 	// Create output dirs if they do not exist
 	policyOutputDir := outputDir + "/policy.d"
 	err := os.MkdirAll(policyOutputDir, 0775)
-	if err != nil { log.Fatalf("error creating directory %v: %v", policyOutputDir, err) }
+	if err != nil {
+		log.Fatalf("error creating directory %v: %v", policyOutputDir, err)
+	}
 	err = os.MkdirAll(rootDir+"/.colonus", 0775)
-	if err != nil { log.Fatalf("error creating directory %v: %v", rootDir+"/.colonus", err) }
+	if err != nil {
+		log.Fatalf("error creating directory %v: %v", rootDir+"/.colonus", err)
+	}
 	err = os.MkdirAll(rootDir+"/.ethereum", 0775)
-	if err != nil { log.Fatalf("error creating directory %v: %v", rootDir+"/.ethereum", err) }
+	if err != nil {
+		log.Fatalf("error creating directory %v: %v", rootDir+"/.ethereum", err)
+	}
 
 	// If they are piping a json file to stdin, load that as default values
 	var input Input
@@ -413,7 +436,7 @@ func main() {
 	getCliProperties(&input)
 
 	// Create the policy file content
-	var policy policy.Policy 		// once we fill this in, we will marshal it into the output file
+	var policy policy.Policy // once we fill this in, we will marshal it into the output file
 	createPolicyContent(&input, &policy, templateDir)
 
 	// Write the policy info to a file in the output dir
@@ -429,6 +452,8 @@ func main() {
 	dirVersionFilename := path.Join(os.Getenv("SNAP_COMMON"), "eth", "directory_version")
 	if _, err := os.Stat(dirVersionFilename); os.IsNotExist(err) {
 		err = ioutil.WriteFile(dirVersionFilename, []byte("0\n"), 0664)
-		if err != nil { log.Fatalf("error writing %v: %v", dirVersionFilename, err) }
+		if err != nil {
+			log.Fatalf("error writing %v: %v", dirVersionFilename, err)
+		}
 	}
 }

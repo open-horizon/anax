@@ -120,5 +120,3 @@ func SignHash(hash string, gethURL string) (string, error) {
 		}
 	}
 }
-
-

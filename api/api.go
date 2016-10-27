@@ -575,9 +575,13 @@ func (a *API) devmode(w http.ResponseWriter, r *http.Request) {
 
 			// Hack for now, generate device ID and token
 			devId := os.Getenv("ANAX_DEVICEID")
-			if devId == "" { devId = "an12345" }
+			if devId == "" {
+				devId = "an12345"
+			}
 			tok := os.Getenv("ANAX_TOKEN")
-			if tok == "" { tok = "abcdefg" }
+			if tok == "" {
+				tok = "abcdefg"
+			}
 			a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, devId, tok)
 
 			if err := persistence.SaveDevmode(a.db, mode); err != nil {

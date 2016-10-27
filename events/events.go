@@ -222,6 +222,7 @@ type WhisperReceivedMessage struct {
 	payload string
 	topics  []string
 	from    string
+	to      string
 }
 
 func (e WhisperReceivedMessage) String() string {
@@ -244,7 +245,11 @@ func (e *WhisperReceivedMessage) From() string {
 	return e.from
 }
 
-func NewWhisperReceivedMessage(id EventId, payload string, from string) *WhisperReceivedMessage {
+func (e *WhisperReceivedMessage) To() string {
+	return e.to
+}
+
+func NewWhisperReceivedMessage(id EventId, payload string, from string, to string) *WhisperReceivedMessage {
 
 	return &WhisperReceivedMessage{
 		event: Event{
@@ -252,6 +257,7 @@ func NewWhisperReceivedMessage(id EventId, payload string, from string) *Whisper
 		},
 		payload: payload,
 		from:    from,
+		to:      to,
 	}
 }
 

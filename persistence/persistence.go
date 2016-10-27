@@ -74,6 +74,7 @@ type EstablishedAgreement struct {
 	Name                        string                   `json:"name"`
 	Archived                    bool                     `json:"archived"` // TODO: give risham, booz a way to indicate that a contract needs to be archived; REST api
 	CurrentAgreementId          string                   `json:"current_agreement_id"`
+	ConsumerId                  string                   `json:"consumer_id"`
 	CounterPartyAddress         string                   `json:"counterparty_address"`
 	AgreementCreationTime       uint64                   `json:"agreement_creation_time"`
 	AgreementAcceptedTime       uint64                   `json:"agreement_accepted_time"`
@@ -89,7 +90,7 @@ type EstablishedAgreement struct {
 }
 
 func (c EstablishedAgreement) String() string {
-	return fmt.Sprintf("Name: %v , Archived: %v , CurrentAgreementId: %v, CurrentDeployment (service names): %v, PrivateEnvironmentAdditions: %v, EnvironmentAdditions: %v, AgreementCreationTime: %v, AgreementExecutionStartTime: %v, AgreementAcceptedTime: %v, AgreementFinalizedTime: %v, Agreement Protocol: %v", c.Name, c.Archived, c.CurrentAgreementId, ServiceConfigNames(&c.CurrentDeployment), c.PrivateEnvironmentAdditions, c.EnvironmentAdditions, c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementFinalizedTime, c.AgreementProtocol)
+	return fmt.Sprintf("Name: %v , Archived: %v , CurrentAgreementId: %v, ConsumerId: %v, CurrentDeployment (service names): %v, PrivateEnvironmentAdditions: %v, EnvironmentAdditions: %v, AgreementCreationTime: %v, AgreementExecutionStartTime: %v, AgreementAcceptedTime: %v, AgreementFinalizedTime: %v, Agreement Protocol: %v", c.Name, c.Archived, c.CurrentAgreementId, c.ConsumerId, ServiceConfigNames(&c.CurrentDeployment), c.PrivateEnvironmentAdditions, c.EnvironmentAdditions, c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementFinalizedTime, c.AgreementProtocol)
 }
 
 // the internal representation of this lib; *this is the one persisted using the persistence lib*
@@ -114,10 +115,10 @@ func (c ServiceConfig) String() string {
 	return fmt.Sprintf("Config: %v, HostConfig: %v", c.Config, c.HostConfig)
 }
 
-func NewEstablishedAgreement(db *bolt.DB, agreementId string, proposal string, protocol string) (*EstablishedAgreement, error) {
+func NewEstablishedAgreement(db *bolt.DB, agreementId string, consumerId string, proposal string, protocol string) (*EstablishedAgreement, error) {
 
-	if agreementId == "" || proposal == "" || protocol == "" {
-		return nil, errors.New("Agreement id, proposal or protocol are empty, cannot persist")
+	if agreementId == "" || consumerId == "" || proposal == "" || protocol == "" {
+		return nil, errors.New("Agreement id, consumer id, proposal or protocol are empty, cannot persist")
 	} else {
 
 		filters := make([]EAFilter, 0)
@@ -138,7 +139,8 @@ func NewEstablishedAgreement(db *bolt.DB, agreementId string, proposal string, p
 				Name:                        "name",
 				Archived:                    false,
 				CurrentAgreementId:          agreementId,
-				CounterPartyAddress:         agreementId,
+				ConsumerId:                  consumerId,
+				CounterPartyAddress:         "",
 				PrivateEnvironmentAdditions: privateEnvironmentAdditions,
 				EnvironmentAdditions:        map[string]string{},
 				AgreementCreationTime:       uint64(time.Now().Unix()),
@@ -301,7 +303,6 @@ func PersistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 				mod.CurrentDeployment = update.CurrentDeployment
 				mod.Proposal = update.Proposal
 				mod.ProposalSig = update.ProposalSig
-				mod.AgreementProtocol = update.AgreementProtocol
 
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize contract record: %v. Error: %v", mod, err)

@@ -2,8 +2,8 @@ package whisper
 
 import (
 	"encoding/json"
-	"net/url"
 	gwhisper "github.com/open-horizon/go-whisper"
+	"net/url"
 	"testing"
 )
 
