@@ -72,6 +72,7 @@ func (c PendingContract) String() string {
 // This struct is for persisting agreements related to the 'Citizen Scientist' protocol
 type EstablishedAgreement struct {
 	Name                        string                   `json:"name"`
+	SensorUrl                   string                   `json:"sensor_url"`
 	Archived                    bool                     `json:"archived"` // TODO: give risham, booz a way to indicate that a contract needs to be archived; REST api
 	CurrentAgreementId          string                   `json:"current_agreement_id"`
 	ConsumerId                  string                   `json:"consumer_id"`
@@ -90,7 +91,9 @@ type EstablishedAgreement struct {
 }
 
 func (c EstablishedAgreement) String() string {
-	return fmt.Sprintf("Name: %v , Archived: %v , CurrentAgreementId: %v, ConsumerId: %v, CurrentDeployment (service names): %v, PrivateEnvironmentAdditions: %v, EnvironmentAdditions: %v, AgreementCreationTime: %v, AgreementExecutionStartTime: %v, AgreementAcceptedTime: %v, AgreementFinalizedTime: %v, Agreement Protocol: %v", c.Name, c.Archived, c.CurrentAgreementId, c.ConsumerId, ServiceConfigNames(&c.CurrentDeployment), c.PrivateEnvironmentAdditions, c.EnvironmentAdditions, c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementFinalizedTime, c.AgreementProtocol)
+
+	return fmt.Sprintf("Name: %v , SensorUrl: %v , Archived: %v , CurrentAgreementId: %v, ConsumerId: %v, CurrentDeployment (service names): %v, PrivateEnvironmentAdditions: %v, EnvironmentAdditions: %v, AgreementCreationTime: %v, AgreementExecutionStartTime: %v, AgreementAcceptedTime: %v, AgreementFinalizedTime: %v, Agreement Protocol: %v", c.Name, c.SensorUrl, c.Archived, c.CurrentAgreementId, c.ConsumerId, ServiceConfigNames(&c.CurrentDeployment), c.PrivateEnvironmentAdditions, c.EnvironmentAdditions, c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementFinalizedTime, c.AgreementProtocol)
+
 }
 
 // the internal representation of this lib; *this is the one persisted using the persistence lib*
@@ -115,7 +118,8 @@ func (c ServiceConfig) String() string {
 	return fmt.Sprintf("Config: %v, HostConfig: %v", c.Config, c.HostConfig)
 }
 
-func NewEstablishedAgreement(db *bolt.DB, agreementId string, consumerId string, proposal string, protocol string) (*EstablishedAgreement, error) {
+
+func NewEstablishedAgreement(db *bolt.DB, agreementId string, consumerId string, proposal string, protocol string, sensorUrl string) (*EstablishedAgreement, error) {
 
 	if agreementId == "" || consumerId == "" || proposal == "" || protocol == "" {
 		return nil, errors.New("Agreement id, consumer id, proposal or protocol are empty, cannot persist")
@@ -130,13 +134,26 @@ func NewEstablishedAgreement(db *bolt.DB, agreementId string, consumerId string,
 		} else if len(agreements) != 0 {
 			return nil, fmt.Errorf("Not expecting any records with id: %v, found %v", agreementId, agreements)
 		} else {
+			// find the user display name of the agreement
+			name := "name"
+			if sensorUrl != "" {
+				if pcs, err := FindPendingContractByFilters(db, []PCFilter{SensorUrlPCFilter(sensorUrl)}); err != nil {
+					glog.Errorf("Error getting pending contract from sensor url %v: %v", sensorUrl, err)
+				} else {
+					if len(pcs) > 0 {
+						name = *pcs[0].Name
+					}
+				}
+			}
+
 			// construct map for sensitive environment stuff from pending contract
 			privateEnvironmentAdditions := make(map[string]string, 0)
 			privateEnvironmentAdditions["lat"] = "lat"
 			privateEnvironmentAdditions["lon"] = "lon"
 
 			newAg := &EstablishedAgreement{
-				Name:                        "name",
+				Name:                        name,
+				SensorUrl:                   sensorUrl,
 				Archived:                    false,
 				CurrentAgreementId:          agreementId,
 				ConsumerId:                  consumerId,
