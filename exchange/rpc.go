@@ -57,6 +57,28 @@ type GetDevicesResponse struct {
 	LastIndex int               `json:"lastIndex"`
 }
 
+type AgbotAgreement struct {
+	Workload    string `json:"workload"`
+	State       string `json:"state"`
+	LastUpdated string `json:"lastUpdated"`
+}
+
+type DeviceAgreement struct {
+	Microservice string `json:"microservice"`
+	State        string `json:"state"`
+	LastUpdated  string `json:"lastUpdated"`
+}
+
+type AllAgbotAgreementsResponse struct {
+	Agreements map[string]AgbotAgreement `json:"agreements`
+	LastIndex  int                       `json:"lastIndex"`
+}
+
+type AllDeviceAgreementsResponse struct {
+	Agreements map[string]DeviceAgreement `json:"agreements`
+	LastIndex  int                        `json:"lastIndex"`
+}
+
 type PutDeviceResponse map[string]string
 
 type PostDeviceResponse struct {
@@ -264,6 +286,12 @@ func InvokeExchange(httpClient *http.Client, method string, url string, params i
 						return nil, nil
 
 					case *GetDevicesResponse:
+						return nil, nil
+
+					case *AllDeviceAgreementsResponse:
+						return nil, nil
+
+					case *AllAgbotAgreementsResponse:
 						return nil, nil
 
 					default:

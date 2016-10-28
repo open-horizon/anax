@@ -154,6 +154,8 @@ func (self *PolicyManager) hasPolicy(matchPolicy *Policy) (bool, error) {
 			return false, nil
 		} else if pol.RequiredWorkload != matchPolicy.RequiredWorkload {
 			return false, nil
+		} else if pol.MaxAgreements != matchPolicy.MaxAgreements {
+			return false, nil
 		} else {
 			return true, nil
 		}

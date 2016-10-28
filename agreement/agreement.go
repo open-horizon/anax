@@ -327,7 +327,7 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 		for _, p := range policies {
 			newMS := new(exchange.Microservice)
 			newMS.Url = p.APISpecs[0].SpecRef
-			newMS.NumAgreements = 1
+			newMS.NumAgreements = p.MaxAgreements
 
 			if pBytes, err := json.Marshal(p); err != nil {
 				return errors.New(fmt.Sprintf("AgreementWorker received error marshalling policy: %v", err))

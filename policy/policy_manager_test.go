@@ -154,8 +154,8 @@ func Test_contractCounter_failure1(t *testing.T) {
 			t.Error(err)
 		} else if err := pm.AttemptingAgreement(pol, "0x12345c"); err != nil {
 			t.Error(err)
-		} else if err := pm.AttemptingAgreement(pol, "0x12345d"); err == nil {
-			t.Errorf("Should have returned error attempting more agreements than the max %v.", pol.MaxAgreements)
+		} else if max, err := pm.ReachedMaxAgreements(pol); !max || err != nil {
+			t.Errorf("Should have returned true, reached max agreements of %v.", pol.MaxAgreements)
 		} else if err := pm.FinalAgreement(pol, "0x12345d"); err == nil {
 			t.Errorf("Should have returned error attempting to finalize non-existent agreement %v.", pm)
 		} else if err := pm.FinalAgreement(pol, "0x12345c"); err != nil {
