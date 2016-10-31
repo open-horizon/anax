@@ -9,7 +9,7 @@ var ACCOUNT = null;
 var Agreement_map = {};
 
 // contract status
-var STATUS = ["Waiting to Advertise", "Advertised", "Negotiating", "Downloading Workload", "Running Workload", "In Contract"];
+var STATUS = ["Registering", "Advertising", "Negotiating", "Downloading Workload", "Running Workload", "In Contract"];
 
 // set up the refresh interval for the table.  
 $(document).ready(function() {
