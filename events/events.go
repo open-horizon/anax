@@ -390,3 +390,32 @@ func NewApiAgreementCancelationMessage(id EventId, cause EndContractCause, proto
 		Cause:             cause,
 	}
 }
+
+// Initialization and restart messages
+type InitAgreementCancelationMessage struct {
+	event             Event
+	AgreementProtocol string
+	AgreementId       string
+	Deployment        *map[string]persistence.ServiceConfig
+	Reason            uint
+}
+
+func (m *InitAgreementCancelationMessage) Event() Event {
+	return m.event
+}
+
+func (m InitAgreementCancelationMessage) String() string {
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Reason: %v", m.Event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(m.Deployment), m.Reason)
+}
+
+func NewInitAgreementCancelationMessage(id EventId, reason uint, protocol string, agreementId string, deployment *map[string]persistence.ServiceConfig) *InitAgreementCancelationMessage {
+	return &InitAgreementCancelationMessage{
+		event: Event{
+			Id: id,
+		},
+		AgreementProtocol: protocol,
+		AgreementId:       agreementId,
+		Deployment:        deployment,
+		Reason:            reason,
+	}
+}

@@ -393,7 +393,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 			// so we don't need to do anything here.
 			if ag.AgreementCreationTime != 0 {
 				if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
-					glog.Errorf(AWlogString(fmt.Sprintf("unable to demarshal policy for agreement %v while trying to cleanup after rejection, error %v", ag.CurrentAgreementId, err)))
+					glog.Errorf(AWlogString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
 				} else if existingPol := w.pm.GetPolicy(pol.Header.Name); existingPol == nil {
 					glog.Errorf(AWlogString(fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
 					// Update state in exchange
