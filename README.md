@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This project contains the Horizon client system source code. To consume the Horizon system, please browse to http://bluehorizon.network.
+This project contains the Horizon client system source code. To learn more about the Horizon system, including how to try the Blue Horizon instance of it, please browse to http://bluehorizon.network. Note that the **HEAD** of this repository's `master` branch includes alpha-grade code under current development. Stable versions of this application are bundled in Ubuntu Snaps (cf. https://www.ubuntu.com/desktop/snappy), consult the `bluehorizon-snap` project listed below to learn more.
 
 Related Projects:
 
