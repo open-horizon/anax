@@ -62,6 +62,9 @@ func GeneratePolicy(e chan events.Message, sensorName string, arch string, props
 		p.Add_Property(Property_Factory(prop, val))
 	}
 
+	// Default the max agreements to 1
+	p.MaxAgreements = 1
+
 	// Store the policy on the filesystem
 	fullFileName := filePath + fileName + ".policy"
 	if err := os.MkdirAll(filePath, 0644); err != nil {

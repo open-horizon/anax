@@ -217,7 +217,10 @@ func (w *GovernanceWorker) governAgreements() {
 	}()
 }
 
-// It cancels the given agreement
+// It cancels the given agreement. Please take note that the system is very asynchronous. It is
+// possible for multiple cancellations to occur in the time it takes to actually stop workloads and
+// cancel on the blockchain, therefore this code needs to be prepared to run multiple times for the
+// same agreement id.
 func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol string, reason uint) {
 	protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
 
@@ -237,12 +240,14 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 	// Get the policy we used in the agreement and then cancel on the blockchain
 	glog.V(5).Infof(logString(fmt.Sprintf("terminating agreement %v on blockchain.", agreementId)))
 
-	if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("error demarshalling agreement %v proposal: %v", agreementId, err)))
-	} else if pPolicy, err := policy.DemarshalPolicy(proposal.ProducerPolicy); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("error demarshalling agreement %v Producer Policy: %v", agreementId, err)))
-	} else if err := protocolHandler.TerminateAgreement(pPolicy, ag.CounterPartyAddress, agreementId, reason, w.bc.Agreements); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("error terminating agreement %v on the blockchain: %v", agreementId, err)))
+	if ag != nil {
+		if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("error demarshalling agreement %v proposal: %v", agreementId, err)))
+		} else if pPolicy, err := policy.DemarshalPolicy(proposal.ProducerPolicy); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("error demarshalling agreement %v Producer Policy: %v", agreementId, err)))
+		} else if err := protocolHandler.TerminateAgreement(pPolicy, ag.CounterPartyAddress, agreementId, reason, w.bc.Agreements); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("error terminating agreement %v on the blockchain: %v", agreementId, err)))
+		}
 	}
 
 	// Delete from the database

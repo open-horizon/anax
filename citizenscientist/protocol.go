@@ -340,7 +340,7 @@ func (p *ProtocolHandler) TerminateAgreement(policy *policy.Policy, counterParty
 
 		// Tell the policy manager that we're terminating this agreement
 		if cerr := p.pm.CancelAgreement(policy, agreementId); cerr != nil {
-			glog.Errorf(fmt.Sprintf("Error cancalling agreement in PM %v", cerr))
+			glog.Errorf(fmt.Sprintf("Error cancelling agreement in PM %v", cerr))
 		}
 
 		if counterParty != "" {

@@ -142,6 +142,15 @@ func (w *AgreementBotWorker) start() {
 		go w.InitiateAgreementProtocolHandler(protocolName)
 	}
 
+	// Sync up between what's in our database versus what's in the exchange, and make sure that the policy manager's
+	// agreement counts are correct. The governance routine will cancel any agreements whose state might have changed
+	// while the agbot was down. We will also check to make sure that policies havent changed. If they have, then
+	// we will cancel agreements and allow them to re-negotiate.
+	if err := w.syncOnInit(); err != nil {
+		glog.Errorf("AgreementBotWorker Terminating, unable to sync up, error: %v", err)
+		return
+	}
+
 	// Begin heartbeating with the exchange.
 	targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/heartbeat?token=" + w.token
 	go exchange.Heartbeat(&http.Client{}, targetURL, w.Worker.Manager.Config.AgreementBot.ExchangeHeartbeat)
@@ -371,5 +380,128 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy) (*[]exchange.Dev
 	}
 }
 
+
+func (w *AgreementBotWorker) syncOnInit() error {
+	glog.V(3).Infof(AWlogString("beginning sync up."))
+
+	// Loop through our database and check each record for accuracy with the exchange and the blockchain
+	if agreements, err := FindAgreements(w.db, []AFilter{}); err == nil {
+		for _, ag := range agreements {
+
+			// If the agreement has received a reply then we just need to make sure that the policy manager's agreement counts
+			// are correct. Even for already timedout agreements, the governance process will cleanup old and outdated agreements,
+			// so we don't need to do anything here.
+			if ag.AgreementCreationTime != 0 {
+				if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
+					glog.Errorf(AWlogString(fmt.Sprintf("unable to demarshal policy for agreement %v while trying to cleanup after rejection, error %v", ag.CurrentAgreementId, err)))
+				} else if existingPol := w.pm.GetPolicy(pol.Header.Name); existingPol == nil {
+					glog.Errorf(AWlogString(fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
+					// Update state in exchange
+					if err := DeleteConsumerAgreement(w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("error deleting agreement %v in exchange: %v", ag.CurrentAgreementId, err)))
+					}
+					w.pwcommands <- NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, CANCEL_POLICY_CHANGED)
+				} else if err := w.pm.MatchesMine(pol); err != nil {
+					glog.Errorf(AWlogString(fmt.Sprintf("agreement %v has a policy %v that has changed.", ag.CurrentAgreementId, pol.Header.Name)))
+					// Update state in exchange
+					if err := DeleteConsumerAgreement(w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("error deleting agreement %v in exchange: %v", ag.CurrentAgreementId, err)))
+					}
+					w.pwcommands <- NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, CANCEL_POLICY_CHANGED)
+				} else if err := w.pm.AttemptingAgreement(existingPol, ag.CurrentAgreementId); err != nil {
+					glog.Errorf(AWlogString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
+				} else if err := w.pm.FinalAgreement(existingPol, ag.CurrentAgreementId); err != nil {
+					glog.Errorf(AWlogString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
+
+				// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
+				} else {
+
+					var exchangeAgreement map[string]exchange.AgbotAgreement
+					var resp interface{}
+					resp = new(exchange.AllAgbotAgreementsResponse)
+					targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/agreements/" + ag.CurrentAgreementId + "?token=" + w.token
+					for {
+						if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, nil, &resp); err != nil {
+							return err
+						} else if tpErr != nil {
+							glog.V(5).Infof(err.Error())
+							time.Sleep(10 * time.Second)
+							continue
+						} else {
+							exchangeAgreement = resp.(*exchange.AllAgbotAgreementsResponse).Agreements
+							glog.V(5).Infof(AWlogString(fmt.Sprintf("found agreements %v in the exchange.", exchangeAgreement)))
+							break
+						}
+					}
+
+					if _, there := exchangeAgreement[ag.CurrentAgreementId]; !there {
+						glog.V(3).Infof(AWlogString(fmt.Sprintf("agreement %v missing from exchange, adding it back in.", ag.CurrentAgreementId)))
+						state := ""
+						if ag.AgreementFinalizedTime != 0 {
+							state = "Finalized Agreement"
+						} else if ag.CounterPartyAddress != "" {
+							state = "Producer Agreed"
+						} else if ag.AgreementCreationTime != 0 {
+							state = "Formed Proposal"
+						} else {
+							state = "unknown"
+						}
+						w.recordConsumerAgreementState(ag.CurrentAgreementId, pol.APISpecs[0].SpecRef, state)
+					}
+					glog.V(3).Infof(AWlogString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))
+				}
+
+
+			// This state should never occur, but could if there was an error along the way. It means that a DB record
+			// was created for this agreement but the record was never updated with the creation time, which is supposed to occur
+			// immediately following creation of the record. Further, if this were to occur, then the exchange should not have been
+			// updated, so there is no reason to try to clean that up.
+			} else if ag.AgreementInceptionTime != 0 && ag.AgreementCreationTime == 0 {
+				if err := DeleteAgreement(w.db, ag.CurrentAgreementId); err != nil {
+					glog.Errorf(AWlogString(fmt.Sprintf("error deleting partially created agreement: %v, error: %v", ag.CurrentAgreementId, err)))
+				}
+			}
+
+		}
+	} else {
+		return errors.New(AWlogString(fmt.Sprintf("error searching database: %v", err)))
+	}
+
+	glog.V(3).Infof(AWlogString("sync up completed normally."))
+	return nil
+}
+
+
+func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, workloadID string, state string) error {
+
+	glog.V(5).Infof(AWlogString(fmt.Sprintf("setting agreement %v state to %v", agreementId, state)))
+
+	as := new(exchange.PutAgbotAgreementState)
+	as.Workload = workloadID
+	as.State = state
+	var resp interface{}
+	resp = new(exchange.PostDeviceResponse)
+	targetURL := w.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/agreements/" + agreementId + "?token=" + w.token
+	for {
+		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, &as, &resp); err != nil {
+			glog.Errorf(err.Error())
+			return err
+		} else if tpErr != nil {
+			glog.Warningf(err.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(5).Infof(AWlogString(fmt.Sprintf("set agreement %v to state %v", agreementId, state)))
+			return nil
+		}
+	}
+
+}
+
+
 // ==========================================================================================================
 // Utility functions
+
+var AWlogString = func(v interface{}) string {
+	return fmt.Sprintf("AgreementBotWorker %v", v)
+}
