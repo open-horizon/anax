@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
 	"net/http"
+	"os"
 	"runtime"
 	"time"
 )
@@ -101,6 +102,13 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			cmd := w.NewCleanupExecutionCommand(msg.AgreementLaunchContext.AgreementProtocol, msg.AgreementLaunchContext.AgreementId, CANCEL_TORRENT_FAILURE, nil)
 			w.Commands <- cmd
 		}
+	case *events.InitAgreementCancelationMessage:
+		msg, _ := incoming.(*events.InitAgreementCancelationMessage)
+		switch msg.Event().Id {
+		case events.AGREEMENT_ENDED:
+			cmd := w.NewCleanupExecutionCommand(msg.AgreementProtocol, msg.AgreementId, CANCEL_USER_REQUESTED, msg.Deployment)
+			w.Commands <- cmd
+		}
 	case *events.ApiAgreementCancelationMessage:
 		msg, _ := incoming.(*events.ApiAgreementCancelationMessage)
 		switch msg.Event().Id {
@@ -146,6 +154,23 @@ func (w *GovernanceWorker) governAgreements() {
 			if establishedAgreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{notYetFinalFilter()}); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("Unable to retrieve not yet final agreements from database: %v. Error: %v", err, err)))
 			} else {
+
+				// If there are agreemens in the database then we will assume that the device is already registered
+
+				// Hack for now, pick up device ID and token
+				if w.deviceId == "" {
+					devId := os.Getenv("ANAX_DEVICEID")
+					if devId == "" {
+						devId = "an12345"
+					}
+					tok := os.Getenv("ANAX_TOKEN")
+					if tok == "" {
+						tok = "abcdefg"
+					}
+
+					w.deviceId = devId
+					w.deviceToken = tok
+				}
 
 				for _, ag := range establishedAgreements {
 					if ag.AgreementFinalizedTime == 0 {

@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/governance"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
@@ -101,11 +102,9 @@ func (w *AgreementWorker) start() {
 
 	glog.Info(logString(fmt.Sprintf("started")))
 
-	w.Commands <- NewInitEdgeCommand()
-
-	// Publish what we have for the world to see
-	if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
+	// If there is no edge config then there is nothing to init on the edge
+	if w.Worker.Manager.Config.Edge == (config.Config{}) {
+		return
 	}
 
 	// Enter the command processing loop. Initialization is complete so wait for commands to
@@ -113,15 +112,34 @@ func (w *AgreementWorker) start() {
 	// in the system.
 	go func() {
 
+		// Sync up between what's in our database versus what's in the exchange, and make sure that the policy manager's
+		// agreement counts are correct. The governance routine will cancel any agreements whose state might have changed
+		// while the agbot was down. We will also check to make sure that policies havent changed. If they have, then
+		// we will cancel agreements and allow them to re-negotiate.
+		if err := w.syncOnInit(); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Terminating, unable to sync up, error: %v", err)))
+			return
+		}
+
+		// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
+		// start heartbeating when the registration event comes in.
+		if w.deviceId != "" {
+			targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/heartbeat?token=" + w.deviceToken
+			go exchange.Heartbeat(w.httpClient, targetURL, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
+		}
+
+		// Publish what we have for the world to see
+		if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
+		}
+
+
 		for {
 			glog.V(2).Infof(logString(fmt.Sprintf("blocking for commands")))
 			command := <-w.Commands
 			glog.V(2).Infof(logString(fmt.Sprintf("received command: %T", command)))
 
 			switch command.(type) {
-			case *InitEdgeCommand:
-				w.handleInitAnax()
-
 			case *DeviceRegisteredCommand:
 				cmd, _ := command.(*DeviceRegisteredCommand)
 				w.handleDeviceRegistered(cmd)
@@ -139,9 +157,6 @@ func (w *AgreementWorker) start() {
 				} else if err := w.pm.AddPolicy(newPolicy); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("policy name is a duplicate, not added, error: %v", err)))
 				} else {
-
-					// Make sure the whisper subsystem is subscribed to messages for this policy's agreement protocol
-					w.Messages() <- events.NewWhisperSubscribeToMessage(events.SUBSCRIBE_TO, newPolicy.AgreementProtocols[0].Name)
 
 					// Publish what we have for the world to see
 					if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
@@ -179,22 +194,6 @@ func (w *AgreementWorker) start() {
 
 }
 
-func (w *AgreementWorker) handleInitAnax() {
-
-	// If there is no edge config then there is nothing to init on the edge
-	if w.Worker.Manager.Config.Edge == (config.Config{}) {
-		return
-	}
-
-	// Make sure the policy file directories exist
-	if err := os.MkdirAll(w.Worker.Manager.Config.Edge.PolicyPath, 0644); err != nil {
-		reason := fmt.Sprintf("Cannot create anax policy file path %v", w.Worker.Manager.Config.Edge.PolicyPath)
-		glog.Errorf(logString(fmt.Sprintf("terminating, %v", reason)))
-		w.Commands <- NewTerminateCommand(reason)
-		return
-	}
-
-}
 
 func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
@@ -266,6 +265,112 @@ func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply
 	}
 
 	return nil
+}
+
+
+func (w *AgreementWorker) syncOnInit() error {
+
+	glog.V(3).Infof(logString("beginning sync up."))
+
+	protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
+
+	// Loop through our database and check each record for accuracy with the exchange and the blockchain
+	if agreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{}); err == nil {
+
+		// If there are agreemens in the database then we will assume that the device is already registered
+
+		// Hack for now, pick up device ID and token
+		devId := os.Getenv("ANAX_DEVICEID")
+		if devId == "" {
+			devId = "an12345"
+		}
+		tok := os.Getenv("ANAX_TOKEN")
+		if tok == "" {
+			tok = "abcdefg"
+		}
+
+		w.deviceId = devId
+		w.deviceToken = tok
+
+		glog.V(3).Infof(logString(fmt.Sprintf("device already registered as %v with %v.", w.deviceId, w.deviceToken)))
+
+		for _, ag := range agreements {
+
+			// If the agreement has received a reply then we just need to make sure that the policy manager's agreement counts
+			// are correct. Even for already timedout agreements, the governance process will cleanup old and outdated agreements,
+			// so we don't need to do anything here.
+			if ag.AgreementAcceptedTime != 0 {
+				if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v, error %v", ag.CurrentAgreementId, err)))
+				} else if pol, err := policy.DemarshalPolicy(proposal.ProducerPolicy); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
+				} else if existingPol := w.pm.GetPolicy(pol.Header.Name); existingPol == nil {
+					glog.Errorf(logString(fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
+					w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, governance.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, &ag.CurrentDeployment)
+
+				} else if err := w.pm.MatchesMine(pol); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("agreement %v has a policy %v that has changed.", ag.CurrentAgreementId, pol.Header.Name)))
+					w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, governance.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, &ag.CurrentDeployment)
+
+				} else if err := w.pm.AttemptingAgreement(existingPol, ag.CurrentAgreementId); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
+				} else if err := w.pm.FinalAgreement(existingPol, ag.CurrentAgreementId); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
+
+				// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
+				} else {
+
+					var exchangeAgreement map[string]exchange.DeviceAgreement
+					var resp interface{}
+					resp = new(exchange.AllDeviceAgreementsResponse)
+					targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/agreements/" + ag.CurrentAgreementId + "?token=" + w.deviceToken
+					for {
+						if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, nil, &resp); err != nil {
+							return err
+						} else if tpErr != nil {
+							glog.V(5).Infof(err.Error())
+							time.Sleep(10 * time.Second)
+							continue
+						} else {
+							exchangeAgreement = resp.(*exchange.AllDeviceAgreementsResponse).Agreements
+							glog.V(5).Infof(logString(fmt.Sprintf("found agreements %v in the exchange.", exchangeAgreement)))
+							break
+						}
+					}
+
+					if _, there := exchangeAgreement[ag.CurrentAgreementId]; !there {
+						glog.V(3).Infof(logString(fmt.Sprintf("agreement %v missing from exchange, adding it back in.", ag.CurrentAgreementId)))
+						state := ""
+						if ag.AgreementFinalizedTime != 0 {
+							state = "Finalized Agreement"
+						} else if ag.AgreementAcceptedTime != 0 {
+							state = "Agree to proposal"
+						} else {
+							state = "unknown"
+						}
+						w.recordAgreementState(ag.CurrentAgreementId, pol.APISpecs[0].SpecRef, state)
+					}
+					glog.V(3).Infof(logString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))
+				}
+
+
+			// This state should never occur, but could if there was an error along the way. It means that a DB record
+			// was created for this agreement but the record was never updated with the accepted time, which is supposed to occur
+			// immediately following creation of the record. A record in this state needs to be deleted.
+			} else if ag.AgreementCreationTime != 0 && ag.AgreementAcceptedTime == 0 {
+				if err := persistence.DeleteEstablishedAgreement(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error deleting partially created agreement: %v, error: %v", ag.CurrentAgreementId, err)))
+				}
+			}
+
+		}
+	} else {
+		return errors.New(logString(fmt.Sprintf("error searching database: %v", err)))
+	}
+
+	glog.V(3).Infof(logString("sync up completed normally."))
+	return nil
+
 }
 
 // ===============================================================================================
@@ -368,6 +473,11 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 					}
 					newMS.Properties = append(newMS.Properties, *newProp)
 				}
+			}
+
+			// Make sure whisper is listening for message in all agreement protocols
+			for _, agp := range p.AgreementProtocols {
+				w.Messages() <- events.NewWhisperSubscribeToMessage(events.SUBSCRIBE_TO, agp.Name)
 			}
 
 			ms = append(ms, *newMS)

@@ -7,13 +7,6 @@ import (
 // ===============================================================================================
 // Commands supported by the Exchange Worker
 
-type InitEdgeCommand struct {
-}
-
-func NewInitEdgeCommand() *InitEdgeCommand {
-	return &InitEdgeCommand{}
-}
-
 type DeviceRegisteredCommand struct {
 	Id    string
 	Token string
