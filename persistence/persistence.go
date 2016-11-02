@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	docker "github.com/fsouza/go-dockerclient"
-	"os"
 	"sort"
 	"strconv"
 	"time"
@@ -21,7 +20,6 @@ import (
 const P_CONTRACTS = "pending_contracts"
 const E_CONTRACTS = "established_contracts" // may or may not be in agreements
 const MICROPAYMENTS = "micropayments"
-const DEVMODE = "devmode"
 
 // uses pointers for members b/c it allows nil-checking at deserialization; !Important!: the json field names here must not change w/out changing the error messages returned from the API, they are not programmatically determined
 type PendingContract struct {
@@ -35,42 +33,8 @@ type PendingContract struct {
 	PrivateAppAttributes *map[string]string `json:"private_app_attributes"`
 }
 
-func (c PendingContract) String() string {
+func (c *PendingContract) String() string {
 	return fmt.Sprintf("Name: %v, Arch: %v, CPUs: %v, RAM: %v, HourlyCostBacon: %v, IsLocEnabled: %v, AppAttributes: %v, PrivateAppAttributes: %v", *c.Name, c.Arch, c.CPUs, *c.RAM, *c.HourlyCostBacon, c.IsLocEnabled, *c.AppAttributes, *c.PrivateAppAttributes)
-}
-
-type DevMode struct {
-	Mode     bool `json:"mode"`
-	LocalGov bool `json:"localgov"`
-}
-
-type IoTFConf struct {
-	Name    string     `json:"name"`
-	ApiSpec []SpecR    `json:"apiSpec"`
-	Arch    string     `json:"arch"`
-	Quarks  QuarksConf `json:"quarks"`
-}
-
-type SpecR struct {
-	SpecRef string `json:"specRef"`
-}
-
-type QuarksConf struct {
-	CloudMsgBrokerHost string `json:"cloudMsgBrokerHost"`
-	// CloudMsgBrokerTopics      IoTFTopics `json:"cloudMsgBrokerTopics"`
-	// CloudMsgBrokerCredentials IoTFCred   `json:"cloudMsgBrokerCredentials"`
-	DataVerificationInterval int `json:"dataVerificationInterval"`
-}
-
-type IoTFTopics struct {
-	Apps        string   `json:"apps"`
-	PublishData []string `json:"publishData"`
-	Control     string   `json:"control"`
-}
-
-type IoTFCred struct {
-	User     string `json:"user"`
-	Password string `json:"password"`
 }
 
 type LatestMicropayment struct {
@@ -556,70 +520,4 @@ func genNonce() (string, error) {
 		return base64.URLEncoding.EncodeToString(bytes), nil
 	}
 
-}
-
-// save the devmode in to the "devmode" bucket
-func SaveDevmode(db *bolt.DB, devmode DevMode) error {
-	// store some data
-	err := db.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists([]byte(DEVMODE))
-		if err != nil {
-			return err
-		}
-
-		if serialized, err := json.Marshal(devmode); err != nil {
-			return fmt.Errorf("Failed to serialize devemode: %v. Error: %v", devmode, err)
-		} else if err := bucket.Put([]byte("devmode"), serialized); err != nil {
-			return fmt.Errorf("Failed to write devmode: %v. Error: %v", devmode, err)
-		} else {
-			glog.V(2).Infof("Succeeded saving devmode %v", devmode)
-			return nil
-		}
-	})
-
-	return err
-}
-
-// get the devmode setting
-func GetDevmode(db *bolt.DB) (DevMode, error) {
-	var devmode DevMode
-	err := db.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(DEVMODE))
-		if bucket == nil {
-			devmode.Mode = false
-			devmode.LocalGov = false
-			return nil
-		}
-
-		val := bucket.Get([]byte("devmode"))
-		if val == nil {
-			devmode.Mode = false
-			devmode.LocalGov = false
-			return nil
-		} else if err := json.Unmarshal(val, &devmode); err != nil {
-			return fmt.Errorf("Failed to unmarshal devmode data.  Error: %v", err)
-		} else {
-			return nil
-		}
-	})
-	return devmode, err
-}
-
-// Save the IoTF configration to a file so that the PolicyWriter can pick it up
-func SaveIoTFConf(path string, iotf_conf IoTFConf) error {
-	fh, err := os.OpenFile(path+"/iotfconf.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	if err != nil {
-		return err
-	}
-	defer fh.Close()
-
-	if b, err := json.MarshalIndent(iotf_conf, "", "  "); err != nil {
-		return err
-	} else {
-		if _, err := fh.Write(b); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

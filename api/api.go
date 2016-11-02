@@ -10,7 +10,6 @@ import (
 	"path"
 	"regexp"
 	"runtime"
-	"strings"
 
 	"github.com/boltdb/bolt"
 	dockerclient "github.com/fsouza/go-dockerclient"
@@ -151,8 +150,6 @@ func (a *API) listen(apiListen string) {
 		router.HandleFunc("/micropayment", a.micropayment)
 		router.HandleFunc("/info", a.info)
 		router.HandleFunc("/account", account)
-		router.HandleFunc("/devmode", a.devmode)
-		router.HandleFunc("/iotfconf", a.iotfconf)
 
 		router.PathPrefix("/js/").Handler(http.StripPrefix("/js/", http.FileServer(http.Dir(path.Join(a.Config.StaticWebContent, "js")))))
 		router.PathPrefix("/styles/").Handler(http.StripPrefix("/styles/", http.FileServer(http.Dir(path.Join(a.Config.StaticWebContent, "styles")))))
@@ -274,8 +271,6 @@ func (a *API) contractNames(w http.ResponseWriter, r *http.Request) {
 }
 
 func account(w http.ResponseWriter, r *http.Request) {
-	glog.V(3).Infof("Handling request: %v", r)
-
 	switch r.Method {
 	case "POST":
 		var account Account
@@ -304,8 +299,6 @@ func account(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) workload(w http.ResponseWriter, r *http.Request) {
-	glog.V(3).Infof("Handling request: %v", r)
-
 	switch r.Method {
 	case "GET":
 		if client, err := dockerclient.NewClient(a.Config.DockerEndpoint); err != nil {
@@ -349,8 +342,6 @@ func (a *API) workload(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) micropayment(w http.ResponseWriter, r *http.Request) {
-	glog.V(3).Infof("Handling request: %v", r)
-
 	switch r.Method {
 	case "GET":
 		if micropayments, err := persistence.ActiveAgreementMicropayments(a.db); err != nil {
@@ -381,8 +372,6 @@ func (a *API) micropayment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) latestmicropayment(w http.ResponseWriter, r *http.Request) {
-	glog.V(3).Infof("Handling request: %v", r)
-
 	switch r.Method {
 	case "GET":
 		pathVars := mux.Vars(r)
@@ -417,8 +406,6 @@ func (a *API) latestmicropayment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
-	glog.V(3).Infof("Handling request: %v", r)
-
 	pathVars := mux.Vars(r)
 	id := pathVars["id"]
 
@@ -463,8 +450,6 @@ func (a *API) contract(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: refactor
-
-	glog.V(3).Infof("Handling request: %v", r)
 
 	switch r.Method {
 	case "GET":
@@ -626,88 +611,6 @@ func (a *API) contract(w http.ResponseWriter, r *http.Request) {
 			} else {
 				glog.Infof("New pending contract: %v", contract)
 				w.WriteHeader(http.StatusCreated)
-			}
-		}
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	}
-}
-
-func (a *API) devmode(w http.ResponseWriter, r *http.Request) {
-	glog.V(3).Infof("devmode handling request: %v", r)
-
-	switch r.Method {
-	case "GET":
-		// get the devmode status
-		if mode, err := persistence.GetDevmode(a.db); err != nil {
-			glog.Infof("Error getting devmode from db:%v", err)
-		} else {
-			if serial, err := json.Marshal(mode); err != nil {
-				glog.Error(err)
-				w.WriteHeader(http.StatusInternalServerError)
-			} else {
-				w.Header().Set("Content-Type", "application/json")
-				if _, err := w.Write(serial); err != nil {
-					glog.Error(err)
-					w.WriteHeader(http.StatusInternalServerError)
-				} else {
-					w.WriteHeader(http.StatusOK)
-				}
-			}
-		}
-	case "OPTIONS":
-		w.Header().Set("Allow", "OPTIONS, POST, GET")
-		w.WriteHeader(http.StatusOK)
-	case "POST":
-		var mode persistence.DevMode
-		body, _ := ioutil.ReadAll(r.Body)
-		if err := json.Unmarshal(body, &mode); err != nil {
-			glog.Infof("User submitted data couldn't be deserialized to Devmode struct: %v. Error: %v", string(body), err)
-			w.WriteHeader(http.StatusBadRequest)
-		} else {
-			glog.Infof("devemode=%v", mode)
-			if err := persistence.SaveDevmode(a.db, mode); err != nil {
-				glog.Error("Error saving devmode: %v", err)
-				w.WriteHeader(http.StatusInternalServerError)
-			} else {
-				w.WriteHeader(http.StatusOK)
-			}
-		}
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	}
-}
-
-// It gets the iotf configuration from the api and saves it to /root/.colonus/ directory
-// in .json format.
-func (a *API) iotfconf(w http.ResponseWriter, r *http.Request) {
-	glog.V(3).Infof("iotfconf handling request: %v", r)
-
-	switch r.Method {
-	case "OPTIONS":
-		w.Header().Set("Allow", "OPTIONS, POST")
-		w.WriteHeader(http.StatusOK)
-	case "POST":
-		var iotf_conf persistence.IoTFConf
-		body, _ := ioutil.ReadAll(r.Body)
-		if err := json.Unmarshal(body, &iotf_conf); err != nil {
-			glog.Infof("User submitted data couldn't be deserialized to IoTFConf struct: %v. Error: %v", string(body), err)
-			w.WriteHeader(http.StatusBadRequest)
-		} else {
-			// assign the correct arch
-			if strings.Contains(strings.ToLower(runtime.GOARCH), "amd") ||
-				strings.Contains(strings.ToLower(runtime.GOARCH), "x86") {
-				iotf_conf.Arch = "amd64"
-			} else {
-				iotf_conf.Arch = "arm"
-			}
-
-			glog.Infof("iotf_conf=%v", iotf_conf)
-			if err := persistence.SaveIoTFConf(a.Config.DBPath, iotf_conf); err != nil {
-				glog.Error("Error saving IoTF configuration in file.: %v", err)
-				w.WriteHeader(http.StatusInternalServerError)
-			} else {
-				w.WriteHeader(http.StatusOK)
 			}
 		}
 	default:

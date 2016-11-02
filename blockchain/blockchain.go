@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
-	"math/big"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
@@ -191,24 +190,6 @@ func (w *BlockchainWorker) registerContractInDirectory(directoryContract *contra
 	attrs = append(attrs, "ram", strconv.Itoa(*pending.RAM))
 	attrs = append(attrs, "hourly_cost_bacon", strconv.FormatInt(*pending.HourlyCostBacon, 10))
 	attrs = append(attrs, "is_loc_enabled", strconv.FormatBool(pending.IsLocEnabled))
-
-	// add account id for development mode
-	if devmode, err := persistence.GetDevmode(w.db); err != nil {
-		glog.Errorf("Error getting devmode: %v", err)
-	} else {
-		if devmode.Mode {
-			if account, err := AccountId(); err != nil {
-				glog.Errorf("Error getting account id: %v", err)
-			} else {
-				// etherum account is a 20 byte interger that is hex encoded into a 40 byte string
-				// we need to convert it back to 20 bytes in order to fit into the attribute
-				// because there is a 32 byte limit on attribute length.
-				bigIntForm := big.NewInt(0)
-				bigIntForm, _ = bigIntForm.SetString(account, 16)
-				attrs = append(attrs, "ethereum_account", string(bigIntForm.Bytes()))
-			}
-		}
-	}
 
 	// extract the application related data from pending contract
 	for key, value := range *pending.AppAttributes {
@@ -805,25 +786,23 @@ func NewBlockchainMessage(id events.EventId, agreement *Agreement) *BlockchainMe
 type BlockchainRegMessage struct {
 	event    events.Event
 	Contract persistence.PendingContract
-	DevMode  persistence.DevMode
 }
 
 func (m BlockchainRegMessage) String() string {
-	return fmt.Sprintf("event: %v, Contract: %v, DevMode: %v", m.event, m.Contract, m.DevMode)
+	return fmt.Sprintf("event: %v, Contract: %v", m.event, m.Contract)
 }
 
 func (b *BlockchainRegMessage) Event() events.Event {
 	return b.event
 }
 
-func NewBlockchainRegMessage(id events.EventId, contract persistence.PendingContract, devmode persistence.DevMode) *BlockchainRegMessage {
+func NewBlockchainRegMessage(id events.EventId, contract persistence.PendingContract) *BlockchainRegMessage {
 
 	return &BlockchainRegMessage{
 		event: events.Event{
 			Id: id,
 		},
 		Contract: contract,
-		DevMode:  devmode,
 	}
 }
 
