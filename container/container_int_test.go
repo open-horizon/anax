@@ -8,13 +8,13 @@ import (
 	"flag"
 	"fmt"
 	"github.com/fsouza/go-dockerclient"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/events"
+	gwhisper "github.com/open-horizon/go-whisper"
 	"io"
 	"net/url"
 	"os"
 	"path"
-	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/events"
-	gwhisper "github.com/open-horizon/go-whisper"
 	"runtime"
 	"strconv"
 	"strings"
@@ -318,8 +318,11 @@ func Test_resourcesCreate_failLoad(t *testing.T) {
 	thisTest(worker, env, agreementId)
 }
 
-// tests creation of a networked container pattern; does not test all features of container creation, that is left to a less complicated test
 func Test_resourcesCreate_patterned(t *testing.T) {
+	deviceUnique := fmt.Sprintf("%v", time.Now().UnixNano())
+	// add envvar for device
+	os.Setenv("CMTN_DEVICE", deviceUnique)
+
 	thisTest := func(worker *ContainerWorker, env map[string]string, agreementId string) {
 
 		setupVerification := func(container *docker.APIContainers, containerDetail *docker.Container) error {
@@ -345,17 +348,6 @@ func Test_resourcesCreate_patterned(t *testing.T) {
 				if containerDetail.HostConfig.Memory != ramMb*1024*1024 {
 					return fmt.Errorf("RAM not set correctly")
 				}
-
-				//if container.Names[0] == tName {
-				//	if containerDetail.HostConfig.Privileged {
-				//		return fmt.Errorf("container %v should not be privileged but is", container.Names[0])
-				//	}
-
-				//} else if container.Names[0] == tName2 {
-				//	if !containerDetail.HostConfig.Privileged {
-				//		return fmt.Errorf("container %v should be privileged but is not", container.Names[0])
-				//	}
-				//}
 
 				if !tConnectivity(t, worker.client, container) {
 					return fmt.Errorf("container connectivity test failed for %v", container.Names)
@@ -434,7 +426,7 @@ func Test_resourcesCreate_shared(t *testing.T) {
 				"privileged": true,
 				"environment": [
           "MTN_MQTT_TOKEN=ZZbrT4ON5rYzoBi7H1VK3Ak9n0Fwjcod",
-	        "SLEEP_INTERVAL=20"
+					"SLEEP_INTERVAL=20"
 				]
 			}
 		}
