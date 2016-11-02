@@ -318,8 +318,11 @@ func Test_resourcesCreate_failLoad(t *testing.T) {
 	thisTest(worker, env, agreementId)
 }
 
-// tests creation of a networked container pattern; does not test all features of container creation, that is left to a less complicated test
 func Test_resourcesCreate_patterned(t *testing.T) {
+	deviceUnique := fmt.Sprintf("%v", time.Now().UnixNano())
+	// add envvar for device
+	os.Setenv("CMTN_DEVICE", deviceUnique)
+
 	thisTest := func(worker *ContainerWorker, env map[string]string, agreementId string) {
 
 		setupVerification := func(container *docker.APIContainers, containerDetail *docker.Container) error {
@@ -346,16 +349,16 @@ func Test_resourcesCreate_patterned(t *testing.T) {
 					return fmt.Errorf("RAM not set correctly")
 				}
 
-				//if container.Names[0] == tName {
-				//	if containerDetail.HostConfig.Privileged {
-				//		return fmt.Errorf("container %v should not be privileged but is", container.Names[0])
-				//	}
+				hasDeviceEnv := false
+				for _, envvar := range containerDetail.Config.Env {
+					if envvar == fmt.Sprintf("CMTN_DEVICE=%v", deviceUnique) {
+						hasDeviceEnv = true
+					}
+				}
 
-				//} else if container.Names[0] == tName2 {
-				//	if !containerDetail.HostConfig.Privileged {
-				//		return fmt.Errorf("container %v should be privileged but is not", container.Names[0])
-				//	}
-				//}
+				if !hasDeviceEnv {
+					return fmt.Errorf("container %v should have device envvar but it does not", container.Names[0])
+				}
 
 				if !tConnectivity(t, worker.client, container) {
 					return fmt.Errorf("container connectivity test failed for %v", container.Names)
@@ -434,7 +437,7 @@ func Test_resourcesCreate_shared(t *testing.T) {
 				"privileged": true,
 				"environment": [
           "MTN_MQTT_TOKEN=ZZbrT4ON5rYzoBi7H1VK3Ak9n0Fwjcod",
-	        "SLEEP_INTERVAL=20"
+					"SLEEP_INTERVAL=20"
 				]
 			}
 		}
