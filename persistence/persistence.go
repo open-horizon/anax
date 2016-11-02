@@ -117,6 +117,31 @@ func NewEstablishedContract(pending *PendingContract, contractAddress string) (*
 	}
 }
 
+func DeleteEstablishedContracts(db *bolt.DB, name string) error {
+	return db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(E_CONTRACTS))
+		if b != nil {
+			return b.ForEach(func(k, v []byte) error {
+				var contract EstablishedContract
+
+				if err := json.Unmarshal(v, &contract); err != nil {
+					return err
+				}
+
+				if contract.Name == name {
+					if err := b.Delete([]byte(contract.ContractAddress)); err != nil {
+						return err
+					}
+				}
+				return nil
+			})
+		} else {
+			glog.Infof("DB bucket for established contracts not yet created, no need to delete contract with name: %v", name)
+			return nil
+		}
+	})
+}
+
 // not intended to be instantiated outside of this module
 type Micropayments struct {
 	PayerAddress    string            `json:"payer_address"`

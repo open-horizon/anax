@@ -19,6 +19,9 @@ import (
 	"time"
 )
 
+const MAX_PENDING_REGISTER_RETRIES = 3
+const PENDING_REGISTER_RETRY_DELAY_S = 300
+
 const WRITE_POLL_TIMEOUT_S = 480
 
 // must be safely-constructed!!
@@ -142,7 +145,7 @@ func (w *BlockchainWorker) pendingToNewContractRecord(pending persistence.Pendin
 			} else if err := pBucket.Delete([]byte(*pending.Name)); err != nil {
 				return fmt.Errorf("Unable to delete pendingContract %v from bucket: %v, Error: %v", pending, persistence.P_CONTRACTS, err)
 			} else {
-				glog.V(2).Infof("Succeeded at promoting pending contract: %v to established contract: %v in local storage", pending, established)
+				glog.V(2).Infof("Succeeded at promoting pending contract: %v to established contract: %v in local storage", &pending, established)
 				return nil // end transaction
 			}
 		})
@@ -291,28 +294,60 @@ func verify_blockchain_change(f func(c *contract_api.SolidityContract, params []
 	}
 }
 
-func registerPending(pending persistence.PendingContract, w *BlockchainWorker) {
-	glog.Infof("Starting registration of pending contract: %v", pending)
+func registerPending(w *BlockchainWorker, pendingTransition *pendingTransition, lock *sync.RWMutex) {
+	glog.Infof("Starting registration of pending contract: %v", &pendingTransition.pending)
 
-	if contract, err := deployDeviceContract(w.Config.BlockchainAccountId, pending, w.Config.GethURL); err != nil {
-		glog.Errorf("Failed to deploy new device contract for pending contract: %v. Error: %v", pending, err)
-	} else if err := w.connectTokenBank(contract, w.directoryContract); err != nil {
-		glog.Errorf("Failed to set up contract and token bank references: %v", err)
-	} else if err := w.registerContractInDirectory(w.directoryContract, contract, pending); err != nil {
-		glog.Errorf("Failed to register contract in directory: %v", err)
-	} else if err := w.pendingToNewContractRecord(pending, contract); err != nil {
-		glog.Errorf("Error writing new contract record to local storage: %v", err)
-	} else {
-		// send an event
-		if devmode, err := persistence.GetDevmode(w.db); err != nil {
-			glog.Errorf("Error getting devmode from db:%v", err)
-		} else {
-			registered := NewBlockchainRegMessage(events.CONTRACT_REGISTERED, pending, devmode)
-			w.Messages <- registered
+	// must be called on exit, regardless of failure
+	clearHandlingState := func() {
+		if err := persistence.DeleteEstablishedContracts(w.db, *pendingTransition.pending.Name); err != nil {
+			glog.Errorf("Failed deleting established contract for failed pending transition: %v. Error: %v", pendingTransition.pending, err)
 		}
-		// success!
-		glog.Infof("Succeeded at creating new contract in blockchain %v given pending contract: %v", contract, pending)
+
+		// do this delaying before locking and updating state
+		glog.Infof("Delaying retry of pending contract %v by %v seconds", pendingTransition.pending, PENDING_REGISTER_RETRY_DELAY_S)
+		time.Sleep(PENDING_REGISTER_RETRY_DELAY_S * time.Second)
+
+		lock.Lock()
+		pendingTransition.failCount = pendingTransition.failCount + 1
+		lock.Unlock()
 	}
+
+	var err error
+
+	contract, err := deployDeviceContract(w.Config.BlockchainAccountId, pendingTransition.pending, w.Config.GethURL)
+	if err != nil {
+		glog.Errorf("Failed to deploy new device contract for pending contract: %v. Error: %v", pendingTransition.pending, err)
+		clearHandlingState()
+		return
+	}
+
+	err = w.connectTokenBank(contract, w.directoryContract)
+	if err != nil {
+		glog.Errorf("Failed to set up contract and token bank references: %v", err)
+		clearHandlingState()
+		return
+	}
+
+	err = w.registerContractInDirectory(w.directoryContract, contract, pendingTransition.pending)
+	if err != nil {
+		glog.Errorf("Failed to register contract in directory: %v", err)
+		clearHandlingState()
+		return
+	}
+
+	err = w.pendingToNewContractRecord(pendingTransition.pending, contract)
+	if err != nil {
+		glog.Errorf("Error writing new contract record to local storage: %v", err)
+		clearHandlingState()
+		return
+	}
+
+	registered := NewBlockchainRegMessage(events.CONTRACT_REGISTERED, pendingTransition.pending)
+	w.Messages <- registered
+
+	// success!
+	glog.Infof("Succeeded at creating new contract in blockchain %v given pending contract: %v", contract, &pendingTransition.pending)
+	pendingTransition.complete = true
 }
 
 func (w *BlockchainWorker) updateWhisperIdInRegistry() {
@@ -380,26 +415,66 @@ func (w *BlockchainWorker) updateWhisperIdInRegistry() {
 	}
 }
 
-func (w *BlockchainWorker) pollPendingContracts() {
-	glog.V(2).Infof("Polling pending contracts")
-	handled := make(map[string]*persistence.PendingContract, 0)
+type pendingTransition struct {
+	pending   persistence.PendingContract
+	handling  bool
+	failCount int
+	complete  bool
+}
 
-	var m = &sync.Mutex{}
+func (p *pendingTransition) String() string {
+	return fmt.Sprintf("{pending: %v, handling: %v, failCount: %v, complete: %v}", &p.pending, p.handling, p.failCount, p.complete)
+}
+
+func (w *BlockchainWorker) pollPendingContracts() {
+
+	glog.V(2).Infof("Polling pending contracts")
+
+	// handle this stuff in ram instead of in db so a restart will re-process
+	var work = map[string]*pendingTransition{}
+	var lock = &sync.RWMutex{}
 
 	for {
 		if pendingContracts, err := persistence.FindPendingContracts(w.db); err != nil {
 			glog.Errorf("Unable to read pending contracts from database: %v", err)
 		} else {
-			for _, pending := range pendingContracts {
 
-				m.Lock()
-				if handled[*pending.Name] == nil {
-					handled[*pending.Name] = &pending
-					go registerPending(pending, w) // schedule registration in a new goroutine
-					glog.V(4).Infof("Scheduled registration of pending contract: %v", pending)
+			// enqueue new
+			for _, pending := range pendingContracts {
+				lock.Lock()
+
+				if _, exists := work[*pending.Name]; !exists {
+					trans := &pendingTransition{
+						pending:   pending,
+						handling:  false,
+						failCount: 0,
+						complete:  false,
+					}
+					work[*pending.Name] = trans
 				}
-				m.Unlock()
+				lock.Unlock()
+
+				time.Sleep(1 * time.Second)
 			}
+
+			// process enqueued
+			lock.Lock()
+			glog.V(5).Infof("Pending contract work queue (%d): %v", len(work), work)
+
+			for name, trans := range work {
+
+				if trans.complete {
+					delete(work, name)
+					break
+				} else if !trans.handling && trans.failCount < MAX_PENDING_REGISTER_RETRIES {
+					trans.handling = true
+
+					// process async; will record its own failure; since this shares the mutex, imperative that it releases under all circumstances
+					go registerPending(w, trans, lock)
+				}
+			}
+			lock.Unlock()
+
 		}
 
 		time.Sleep(1 * time.Second)

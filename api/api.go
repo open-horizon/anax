@@ -598,7 +598,7 @@ func (a *API) contract(w http.ResponseWriter, r *http.Request) {
 				}
 
 				if serial, err := json.Marshal(&contract); err != nil {
-					glog.Errorf("Failed to serialize pending contract: %v. Error: %v", contract, err)
+					glog.Errorf("Failed to serialize pending contract: %v. Error: %v", &contract, err)
 				} else {
 					return b.Put([]byte(*contract.Name), serial)
 				}
@@ -606,10 +606,10 @@ func (a *API) contract(w http.ResponseWriter, r *http.Request) {
 			})
 
 			if writeErr != nil {
-				glog.Errorf("Error storing contract (%v) to db. Error: %v", contract, writeErr)
+				glog.Errorf("Error storing contract (%v) to db. Error: %v", &contract, writeErr)
 				w.WriteHeader(http.StatusInternalServerError)
 			} else {
-				glog.Infof("New pending contract: %v", contract)
+				glog.Infof("New pending contract: %v", &contract)
 				w.WriteHeader(http.StatusCreated)
 			}
 		}
