@@ -69,7 +69,7 @@ func tWorker(config *config.Config) *ContainerWorker {
 	return NewContainerWorker(config)
 }
 
-func tMsg(messages chan events.Message, expectedEvent events.EventId, t *testing.T) *ContainerMessage {
+func tMsg(messages chan events.Message, expectedEvent events.EventId, t *testing.T) *events.ContainerMessage {
 	// block on this read
 	msg := <-messages
 
@@ -81,8 +81,8 @@ func tMsg(messages chan events.Message, expectedEvent events.EventId, t *testing
 
 	switch msg.(type) {
 
-	case *ContainerMessage:
-		m, _ := msg.(*ContainerMessage)
+	case *events.ContainerMessage:
+		m, _ := msg.(*events.ContainerMessage)
 		if m.Event().Id == expectedEvent {
 			t.Logf("m: %v", m)
 			return m
@@ -143,7 +143,7 @@ func tClean(t *testing.T, tName string, worker *ContainerWorker, setupVerificati
 	}
 
 	// TODO: handle
-	os.RemoveAll(worker.Config.WorkloadROStorage + "/" + tName)
+	os.RemoveAll(worker.Config.Config.WorkloadROStorage + "/" + tName)
 
 	for _, net := range networks {
 		if strings.Contains(net.Name, tName) {
@@ -319,9 +319,6 @@ func Test_resourcesCreate_failLoad(t *testing.T) {
 }
 
 func Test_resourcesCreate_patterned(t *testing.T) {
-	deviceUnique := fmt.Sprintf("%v", time.Now().UnixNano())
-	// add envvar for device
-	os.Setenv("CMTN_DEVICE", deviceUnique)
 
 	thisTest := func(worker *ContainerWorker, env map[string]string, agreementId string) {
 
@@ -349,17 +346,6 @@ func Test_resourcesCreate_patterned(t *testing.T) {
 					return fmt.Errorf("RAM not set correctly")
 				}
 
-				hasDeviceEnv := false
-				for _, envvar := range containerDetail.Config.Env {
-					if envvar == fmt.Sprintf("CMTN_DEVICE=%v", deviceUnique) {
-						hasDeviceEnv = true
-					}
-				}
-
-				if !hasDeviceEnv {
-					return fmt.Errorf("container %v should have device envvar but it does not", container.Names[0])
-				}
-
 				if !tConnectivity(t, worker.client, container) {
 					return fmt.Errorf("container connectivity test failed for %v", container.Names)
 				}
@@ -379,7 +365,7 @@ func Test_resourcesCreate_patterned(t *testing.T) {
 
 func Test_resourcesRemove(t *testing.T) {
 
-	var createMsg *ContainerMessage
+	var createMsg *events.ContainerMessage
 	var w *ContainerWorker
 
 	setup := func(worker *ContainerWorker, env map[string]string, agreementId string) {
