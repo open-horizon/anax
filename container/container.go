@@ -10,17 +10,17 @@ import (
 	"github.com/coreos/go-iptables/iptables"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
-	"golang.org/x/sys/unix"
-	"io"
-	"io/ioutil"
-	"os"
-	"path"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/worker"
 	gwhisper "github.com/open-horizon/go-whisper"
+	"golang.org/x/sys/unix"
+	"io"
+	"io/ioutil"
+	"os"
+	"path"
 	"runtime"
 	"strconv"
 	"strings"
@@ -274,6 +274,14 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 			if !strings.HasPrefix("MTN_ETHEREUM_ACCOUNT", v) {
 				serviceConfig.Config.Env = append(serviceConfig.Config.Env, v)
 			}
+		}
+
+		// add device_id
+		if os.Getenv("CMTN_DEVICE_ID") != "" {
+			// TODO: factor out the common prefix part
+			serviceConfig.Config.Env = append(serviceConfig.Config.Env, fmt.Sprintf("%s=%v", "DEVICE_ID", strings.Trim(os.Getenv("CMTN_DEVICE_ID"), " ")))
+		} else {
+			glog.Errorf("environment variable CMTN_DEVICE_ID not set, workload with config %v may be unstable", serviceConfig)
 		}
 
 		for _, port := range service.Ports {
