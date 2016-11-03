@@ -5,10 +5,6 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
-	"os"
-	"os/exec"
-	"os/signal"
-	"path"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/blockchain"
 	"github.com/open-horizon/anax/config"
@@ -17,6 +13,9 @@ import (
 	"github.com/open-horizon/anax/governance"
 	"github.com/open-horizon/anax/torrent"
 	"github.com/open-horizon/anax/whisper"
+	"os"
+	"os/signal"
+	"path"
 	"runtime"
 	"runtime/pprof"
 	"syscall"
@@ -90,9 +89,6 @@ func eventHandler(incoming events.Message, blockchainWorker *blockchain.Blockcha
 		switch msg.Event().Id {
 		case events.CONTRACT_REGISTERED:
 			// use local governor for development mode
-			if msg.DevMode.Mode && msg.DevMode.LocalGov {
-				go start_local_governor()
-			}
 
 		default:
 			return "", fmt.Errorf("Unsupported event: %v", incoming.Event().Id)
@@ -195,16 +191,6 @@ func eventHandler(incoming events.Message, blockchainWorker *blockchain.Blockcha
 		return "", fmt.Errorf("Unsupported message type: %T", incoming.Event)
 	}
 	return successMsg, nil
-}
-
-// Calls the /bin/start_gov command to start the local governor
-func start_local_governor() {
-	glog.V(2).Infof("Starting local governor.")
-	out, err := exec.Command("/bin/start_gov").Output()
-	if err != nil {
-		glog.Errorf("Error starting local governor: %v", err)
-	}
-	glog.V(2).Infof("Started local governor: %v", out)
 }
 
 func main() {
