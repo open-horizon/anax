@@ -11,7 +11,8 @@ Related Projects:
 
 ## Documentation
 
-* [APIs](api.md)
+* [Anax APIs](doc/api.md)
+* [Managed Workloads](doc/managed_workloads.md)
 
 ## Development
 
