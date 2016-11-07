@@ -20,18 +20,12 @@
             "name": "Citizen Scientist"
         }
     ],
-    "workloads": null,
-    "deviceType": "12345-54321-abcdef-fedcba",
-    "valueExchange": null,
     "resourceLimits": {
         "networkUpload": 1024,
         "networkDownload": 1024,
         "memory": 2048,
         "cpus": 2
     },
-    "dataVerification": null,
-    "proposalRejection": null,
-    "maxAgreements": 0,
     "properties": [
         {"name":"rpiprop1", "value":"rpival1"},
         {"name":"rpiprop2", "value":"rpival2"},
@@ -54,5 +48,5 @@
             }
         }
     ],
-    "requiredWorkload": null
+    "requiredWorkload": "http://mycompany.com/workload"
 }

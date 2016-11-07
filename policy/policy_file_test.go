@@ -297,8 +297,8 @@ func Test_Policy_Creation(t *testing.T) {
 
 	pf_created := Policy_Factory("test creation")
 
-	pf_created.Add_API_Spec(APISpecification_Factory("http://mycompany.com/dm/cpu_temp", "1.0.0", 1, "arm"))
-	pf_created.Add_API_Spec(APISpecification_Factory("http://mycompany.com/dm/gps", "1.0.0", 1, "arm"))
+	pf_created.Add_API_Spec(APISpecification_Factory("http://mycompany.com/dm/cpu_temp", "1.0.0", "arm"))
+	pf_created.Add_API_Spec(APISpecification_Factory("http://mycompany.com/dm/gps", "1.0.0", "arm"))
 
 	pf_created.Add_Agreement_Protocol(AgreementProtocol_Factory(CitizenScientist))
 	pf_created.Add_Agreement_Protocol(AgreementProtocol_Factory("2Party Bitcoin"))

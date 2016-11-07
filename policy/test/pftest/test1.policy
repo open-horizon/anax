@@ -8,7 +8,6 @@
             "specRef": "http://mycompany.com/policy",
             "version": "[1.0.0,2.0.0)",
             "exclusiveAccess": false,
-            "numberAgreements": 0,
             "arch": ""
         }
     ],
@@ -54,10 +53,5 @@
     "proposalRejection": {
         "number": 5,
         "duration": 86400
-    },
-    "maxAgreements": 0,
-    "properties": null,
-    "counterPartyProperties": null,
-    "blockchains": null,
-    "requiredWorkload": ""
+    }
 }

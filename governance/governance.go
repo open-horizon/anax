@@ -217,14 +217,7 @@ func (w *GovernanceWorker) governAgreements() {
 							w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, &ag.CurrentDeployment)
 						}
 
-						if ag.AgreementExecutionStartTime != 0 {
-							// maintian the finalized agreement. Cancel it if workload does not started within certaintime.
-							glog.V(3).Infof(logString(fmt.Sprintf("fire event to ensure containers are still up for agreement %v.", ag.CurrentAgreementId)))
-
-							// current contract, ensure workloads still running
-							w.Messages() <- events.NewGovernanceMaintenanceMessage(events.CONTAINER_MAINTAIN, ag.AgreementProtocol, ag.CurrentAgreementId, &ag.CurrentDeployment)
-
-						} else {
+						if ag.AgreementExecutionStartTime == 0 {
 							// workload not started yet and in an agreement ...
 							if (int64(ag.AgreementAcceptedTime) + (MAX_CONTRACT_PRELAUNCH_TIME_M * 60)) < time.Now().Unix() {
 								glog.Infof(logString(fmt.Sprintf("terminating agreement %v because it hasn't been launched in max allowed time. This could be because of a workload failure.", ag.CurrentAgreementId)))
@@ -237,7 +230,42 @@ func (w *GovernanceWorker) governAgreements() {
 				}
 			}
 
-			time.Sleep(10 * time.Second) // long so we don't send duplicate cancelations
+			time.Sleep(10 * time.Second)
+		}
+	}()
+}
+
+func (w *GovernanceWorker) governContainers() {
+
+	// go govern
+	go func() {
+
+		for {
+			glog.V(4).Infof(logString(fmt.Sprintf("governing containers")))
+
+			// Create a new filter for unfinalized agreements
+			runningFilter := func() persistence.EAFilter {
+				return func(a persistence.EstablishedAgreement) bool {
+					return a.AgreementExecutionStartTime != 0 && a.AgreementTerminated == 0 && a.CounterPartyAddress != ""
+				}
+			}
+
+			if establishedAgreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{runningFilter()}); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Unable to retrieve running agreements from database: %v. Error: %v", err, err)))
+			} else {
+
+				for _, ag := range establishedAgreements {
+
+					// Make sure containers are still running.
+					glog.V(3).Infof(logString(fmt.Sprintf("fire event to ensure containers are still up for agreement %v.", ag.CurrentAgreementId)))
+
+					// current contract, ensure workloads still running
+					w.Messages() <- events.NewGovernanceMaintenanceMessage(events.CONTAINER_MAINTAIN, ag.AgreementProtocol, ag.CurrentAgreementId, &ag.CurrentDeployment)
+
+				}
+			}
+
+			time.Sleep(1 * time.Minute)
 		}
 	}()
 }
@@ -285,6 +313,7 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 func (w *GovernanceWorker) start() {
 	go func() {
 		w.governAgreements()
+		w.governContainers()
 
 		for {
 			glog.V(4).Infof("GovernanceWorker command processor blocking waiting to receive incoming commands")
