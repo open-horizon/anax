@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -510,13 +511,22 @@ func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, wo
 
 func (w *AgreementBotWorker) ignoreDevice(dev exchange.Device) (bool, error) {
 	for _, prop := range dev.Microservices[0].Properties {
-		if prop.Name == w.Config.AgreementBot.IgnoreContractWithAttribs {
+		if listContains(w.Config.AgreementBot.IgnoreContractWithAttribs, prop.Name) {
 			return true, nil
 		}
 	}
 	return false, nil
 }
 
+func listContains(list string, target string) bool {
+    ignoreAttribs := strings.Split(list, ",")
+    for _, propName := range ignoreAttribs {
+        if propName == target {
+            return true
+        }
+    }
+    return false
+}
 
 // ==========================================================================================================
 // Utility functions
