@@ -36,7 +36,8 @@ func GeneratePolicy(e chan events.Message, sensorName string, arch string, props
 	fileName := strings.ToLower(strings.Split(sensorName, " ")[0])
 	p := Policy_Factory("Policy for " + fileName)
 
-	p.Add_API_Spec(APISpecification_Factory("https://bluehorizon.network/documentation/"+fileName+"-device-api", "1.0.0", 1, arch))
+	p.MaxAgreements = 1
+	p.Add_API_Spec(APISpecification_Factory("https://bluehorizon.network/documentation/"+fileName+"-device-api", "1.0.0", arch))
 	p.Add_Agreement_Protocol(AgreementProtocol_Factory(CitizenScientist))
 
 	// Hardwire to existing ethereum platform
@@ -91,7 +92,6 @@ func RetrieveAllProperties(policy *Policy) (*PropertyList, error) {
 
 	*pl = append(*pl, Property{Name: "version", Value: policy.APISpecs[0].Version})
 	*pl = append(*pl, Property{Name: "arch", Value: policy.APISpecs[0].Arch})
-	*pl = append(*pl, Property{Name: "dataVerification", Value: policy.DataVerify.Enabled})
 	*pl = append(*pl, Property{Name: "agreementProtocols", Value: policy.AgreementProtocols.As_String_Array()})
 
 	return pl, nil

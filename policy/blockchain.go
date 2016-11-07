@@ -90,7 +90,7 @@ func (self *BlockchainList) Intersects_With(other *BlockchainList) (*BlockchainL
 	}
 
 	if len(*inter) == 0 {
-		return nil, errors.New(fmt.Sprintf("Agreement Protocol Intersection Error: %v was not found in %v", (*self), (*other)))
+		return nil, errors.New(fmt.Sprintf("Blockchain Intersection Error: %v was not found in %v", (*self), (*other)))
 	} else {
 		return inter, nil
 	}
@@ -110,6 +110,12 @@ func (self *BlockchainList) Concatenate(new_list *BlockchainList) {
 			(*self) = append((*self), new_ele)
 		}
 	}
+}
+
+func (self *BlockchainList) Single_Element() *BlockchainList {
+	single := new(BlockchainList)
+	(*single) = append(*single, (*self)[0])
+	return single
 }
 
 // This function compares 2 Blockchain objects to see if they are equal.

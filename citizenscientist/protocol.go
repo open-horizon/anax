@@ -32,10 +32,14 @@ type Proposal struct {
 }
 
 func (p Proposal) String() string {
+	return fmt.Sprintf("Type: %v, AgreementId: %v, Address: %v, ConsumerId: %v\n", p.Type, p.AgreementId, p.Address, p.ConsumerId)
+}
+
+func (p Proposal) ShortString() string {
 	res := ""
 	res += fmt.Sprintf("Type: %v, AgreementId: %v, Address: %v, ConsumerId: %v\n", p.Type, p.AgreementId, p.Address, p.ConsumerId)
-	res += fmt.Sprintf("TsAndCs: %v\n", p.TsAndCs)
-	res += fmt.Sprintf("Producer Policy: %v\n", p.ProducerPolicy)
+	res += fmt.Sprintf("TsAndCs: %v\n", p.TsAndCs[:40])
+	res += fmt.Sprintf("Producer Policy: %v\n", p.ProducerPolicy[:40])
 	return res
 }
 
@@ -47,6 +51,14 @@ type ProposalReply struct {
 	Address   string `json:"address"`
 	AgreeId   string `json:"agreementId"`
 	DeviceId  string `json:"deviceId"`
+}
+
+func (p *ProposalReply) String() string {
+	return fmt.Sprintf("Type: %v, Decision: %v, Signature: %v, Address: %v, AgreementId: %v, DeviceId: %v", p.Type, p.Decision, p.Signature, p.Address, p.AgreementId, p.DeviceId)
+}
+
+func (p *ProposalReply) ShortString() string {
+	return p.String()
 }
 
 func (p *ProposalReply) ProposalAccepted() bool {
@@ -125,7 +137,8 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId []byte, producerPolicy *
 }
 
 func (p *ProtocolHandler) DecideOnProposal(proposal *Proposal, from string, myId string) (*ProposalReply, error) {
-	glog.V(3).Infof(fmt.Sprintf("Processing New proposal from %v, %v", from, proposal))
+	glog.V(3).Infof(fmt.Sprintf("Processing New proposal from %v, %v", from, proposal.ShortString()))
+	glog.V(5).Infof(fmt.Sprintf("New proposal: %v", proposal))
 
 	replyErr := error(nil)
 	reply := NewProposalReply(false, proposal.AgreementId, myId)
@@ -157,8 +170,8 @@ func (p *ProtocolHandler) DecideOnProposal(proposal *Proposal, from string, myId
 			// Make sure max agreements hasnt been reached
 		} else if numberAgreements, err := p.pm.GetNumberAgreements(producerPolicy); err != nil {
 			replyErr = errors.New(fmt.Sprintf("CS Procotol decide on proposal received error getting number of agreements, rejecting proposal: %v", err))
-		} else if numberAgreements > producerPolicy.APISpecs[0].NumberAgreements {
-			replyErr = errors.New(fmt.Sprintf("CS Procotol max agreements %v reached, already have %v", producerPolicy.APISpecs[0].NumberAgreements, numberAgreements))
+		} else if numberAgreements > producerPolicy.MaxAgreements {
+			replyErr = errors.New(fmt.Sprintf("CS Procotol max agreements %v reached, already have %v", producerPolicy.MaxAgreements, numberAgreements))
 
 			// Now check to make sure that the merged policy is acceptable.
 		} else if err := policy.Are_Compatible(producerPolicy, termsAndConditions); err != nil {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/events"
@@ -202,7 +203,7 @@ func (w *AgreementBotWorker) start() {
 // There is one of these running is a go routine for each agreement protocol that we support
 func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 
-	if protocol == policy.CitizenScientist {
+	if protocol == citizenscientist.PROTOCOL_NAME {
 
 		// Set up random number gen. This is used to generate agreement id strings.
 		random := rand.New(rand.NewSource(int64(time.Now().Nanosecond())))
@@ -263,12 +264,21 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 						if _, err := consumerPolicy.AgreementProtocols.Intersects_With(agpl); err != nil {
 							continue
 						} else if devices, err := w.searchExchange(&consumerPolicy); err != nil {
-							glog.Errorf("AgreementBot received error on searching for %v, error: %v", consumerPolicy, err)
+							glog.Errorf("AgreementBot received error on searching for %v, error: %v", &consumerPolicy, err)
 						} else {
 
 							for _, dev := range *devices {
 
+								glog.V(3).Infof("AgreementBot picked up %v", dev.ShortString())
 								glog.V(5).Infof("AgreementBot picked up %v", dev)
+
+								// If this device is advertising a property that we are supposed to ignore, then skip it.
+								if ignore, err := w.ignoreDevice(dev); err != nil {
+									glog.Errorf("AgreementBot received error checking for ignored device %v, error: %v", dev, err)
+								} else if ignore {
+									glog.V(5).Infof("AgreementBot skipping device %v, advertises ignored property", dev)
+									continue
+								}
 
 								// Check to see if we're already doing something with this device
 								pendingAgreementFilter := func() AFilter {
@@ -278,7 +288,7 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 								}
 
 								// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized on blockchain.
-								if agreements, err := FindAgreements(w.db, []AFilter{pendingAgreementFilter()}); err != nil {
+								if agreements, err := FindAgreements(w.db, []AFilter{pendingAgreementFilter()}, citizenscientist.PROTOCOL_NAME); err != nil {
 									glog.Errorf("AgreementBot received error trying to find pending agreements: %v", err)
 								} else if len(agreements) != 0 {
 									glog.V(5).Infof("AgreementBot skipping device id %v, agreement attempt already in progress", dev.Id)
@@ -332,7 +342,7 @@ func RetrieveAllProperties(pol *policy.Policy) (*policy.PropertyList, error) {
 	}
 
 	*pl = append(*pl, policy.Property{Name: "version", Value: pol.APISpecs[0].Version})
-	*pl = append(*pl, policy.Property{Name: "dataVerification", Value: pol.DataVerify.Enabled})
+	*pl = append(*pl, policy.Property{Name: "arch", Value: pol.APISpecs[0].Arch})
 	*pl = append(*pl, policy.Property{Name: "agreementProtocols", Value: pol.AgreementProtocols.As_String_Array()})
 
 	return pl, nil
@@ -385,7 +395,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 	glog.V(3).Infof(AWlogString("beginning sync up."))
 
 	// Loop through our database and check each record for accuracy with the exchange and the blockchain
-	if agreements, err := FindAgreements(w.db, []AFilter{}); err == nil {
+	if agreements, err := FindAgreements(w.db, []AFilter{}, citizenscientist.PROTOCOL_NAME); err == nil {
 		for _, ag := range agreements {
 
 			// If the agreement has received a reply then we just need to make sure that the policy manager's agreement counts
@@ -457,7 +467,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 			// immediately following creation of the record. Further, if this were to occur, then the exchange should not have been
 			// updated, so there is no reason to try to clean that up.
 			} else if ag.AgreementInceptionTime != 0 && ag.AgreementCreationTime == 0 {
-				if err := DeleteAgreement(w.db, ag.CurrentAgreementId); err != nil {
+				if err := DeleteAgreement(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
 					glog.Errorf(AWlogString(fmt.Sprintf("error deleting partially created agreement: %v, error: %v", ag.CurrentAgreementId, err)))
 				}
 			}
@@ -496,6 +506,15 @@ func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, wo
 		}
 	}
 
+}
+
+func (w *AgreementBotWorker) ignoreDevice(dev exchange.Device) (bool, error) {
+	for _, prop := range dev.Microservices[0].Properties {
+		if prop.Name == w.Config.AgreementBot.IgnoreContractWithAttribs {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 

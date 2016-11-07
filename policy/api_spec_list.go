@@ -29,7 +29,6 @@ type APISpecification struct {
 	SpecRef          string `json:"specRef"`          // A URL pointing to the definition of the API spec
 	Version          string `json:"version"`          // The version of the API spec in OSGI version format
 	ExclusiveAccess  bool   `json:"exclusiveAccess"`  // Whether or not exclusive access to this API spec is required
-	NumberAgreements int    `json:"numberAgreements"` // The Maximum number of agreements that a device supporting the
 	// API will allow. For a Consumer (agbot), this is likely to be 1.
 	// For a Producer, if this is zero, then no agreements, if 1 then
 	// then it's essentially exclusive access. For more than 1, then it's
@@ -38,16 +37,15 @@ type APISpecification struct {
 }
 
 func (a APISpecification) IsSame(compare APISpecification) bool {
-	return a.SpecRef == compare.SpecRef && a.Version == compare.Version && a.ExclusiveAccess == compare.ExclusiveAccess && a.NumberAgreements == compare.NumberAgreements && a.Arch == compare.Arch
+	return a.SpecRef == compare.SpecRef && a.Version == compare.Version && a.ExclusiveAccess == compare.ExclusiveAccess && a.Arch == compare.Arch
 }
 
 // This function creates API Spec objects
-func APISpecification_Factory(ref string, vers string, num_agree int, arch string) *APISpecification {
+func APISpecification_Factory(ref string, vers string, arch string) *APISpecification {
 	a := new(APISpecification)
 	a.SpecRef = ref
 	a.Version = vers
 	a.ExclusiveAccess = true
-	a.NumberAgreements = num_agree
 	a.Arch = arch
 
 	return a
@@ -60,7 +58,7 @@ func (self *APISpecList) Is_Subset_Of(super_set *APISpecList) error {
 	for _, sub_ele := range *self {
 		found := false
 		for _, super_ele := range *super_set {
-			if sub_ele.SpecRef == super_ele.SpecRef && sub_ele.Arch == super_ele.Arch && sub_ele.NumberAgreements <= super_ele.NumberAgreements {
+			if sub_ele.SpecRef == super_ele.SpecRef && sub_ele.Arch == super_ele.Arch {
 				if super_ver, err := Version_Expression_Factory(super_ele.Version); err != nil {
 					continue
 				} else if ok, err := super_ver.Is_within_range(sub_ele.Version); err != nil {

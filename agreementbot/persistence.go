@@ -23,12 +23,13 @@ type Agreement struct {
 	Proposal                      string `json:"proposal"`                         // JSON serialization of the proposal
 	Policy                        string `json:"policy"`                           // JSON serialization of the policy used to make the proposal
 	CounterPartyAddress           string `json:"counter_party_address"`            // The blockchain address of the counterparty in the agreement
-	DataVerificationURL           string `json:"data_verification_URL"`            // The URL to use to ensure that this agreement is sending data. New in v1.6.2.
-	DisableDataVerificationChecks bool   `json:"disable_data_verification_checks"` // disable data verification checks, assume data is being sent. New in v1.6.3
+	DataVerificationURL           string `json:"data_verification_URL"`            // The URL to use to ensure that this agreement is sending data.
+	DisableDataVerificationChecks bool   `json:"disable_data_verification_checks"` // disable data verification checks, assume data is being sent.
+	DataVerifiedTime              uint64 `json:"data_verification_time"`           // The last time that data verification was successful
 }
 
 func (a Agreement) String() string {
-	return fmt.Sprintf("CurrentAgreementId: %v, DeviceId: %v, AgreementInceptionTime: %v, AgreementCreationTime: %v, AgreementFinalizedTime: %v, AgreementTimedout: %v, ProposalSig: %v, CounterPartyAddress: %v, DataVerificationURL: %v, DisableDataVerification: %v", a.CurrentAgreementId, a.DeviceId, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime, a.AgreementTimedout, a.ProposalSig, a.CounterPartyAddress, a.DataVerificationURL, a.DisableDataVerificationChecks)
+	return fmt.Sprintf("CurrentAgreementId: %v, DeviceId: %v, AgreementInceptionTime: %v, AgreementCreationTime: %v, AgreementFinalizedTime: %v, AgreementTimedout: %v, ProposalSig: %v, CounterPartyAddress: %v, DataVerificationURL: %v, DisableDataVerification: %v, DataVerifiedTime: %v", a.CurrentAgreementId, a.DeviceId, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime, a.AgreementTimedout, a.ProposalSig, a.CounterPartyAddress, a.DataVerificationURL, a.DisableDataVerificationChecks, a.DataVerifiedTime)
 }
 
 // private factory method for agreement w/out persistence safety:
@@ -50,6 +51,7 @@ func agreement(agreementid string, deviceid string, agreementProto string) (*Agr
 			CounterPartyAddress:           "",
 			DataVerificationURL:           "",
 			DisableDataVerificationChecks: false,
+			DataVerifiedTime:              0,
 		}, nil
 	}
 }
@@ -57,20 +59,21 @@ func agreement(agreementid string, deviceid string, agreementProto string) (*Agr
 func AgreementAttempt(db *bolt.DB, agreementid string, deviceid string, agreementProto string) error {
 	if agreement, err := agreement(agreementid, deviceid, agreementProto); err != nil {
 		return err
-	} else if err := PersistNew(db, agreement.CurrentAgreementId, AGREEMENTS, &agreement); err != nil {
+	} else if err := PersistNew(db, agreement.CurrentAgreementId, bucketName(agreementProto), &agreement); err != nil {
 		return err
 	} else {
 		return nil
 	}
 }
 
-func AgreementUpdate(db *bolt.DB, agreementid string, proposal string, policy string, url string, checks bool) (*Agreement, error) {
-	if agreement, err := singleAgreementUpdate(db, agreementid, func(a Agreement) *Agreement {
+func AgreementUpdate(db *bolt.DB, agreementid string, proposal string, policy string, url string, checks bool, protocol string) (*Agreement, error) {
+	if agreement, err := singleAgreementUpdate(db, agreementid, protocol, func(a Agreement) *Agreement {
 		a.AgreementCreationTime = uint64(time.Now().Unix())
 		a.Proposal = proposal
 		a.Policy = policy
 		a.DataVerificationURL = url
 		a.DisableDataVerificationChecks = checks
+		a.DataVerifiedTime = uint64(time.Now().Unix())
 		return &a
 	}); err != nil {
 		return nil, err
@@ -79,8 +82,8 @@ func AgreementUpdate(db *bolt.DB, agreementid string, proposal string, policy st
 	}
 }
 
-func AgreementMade(db *bolt.DB, agreementId string, counterParty string, signature string) (*Agreement, error) {
-	if agreement, err := singleAgreementUpdate(db, agreementId, func(a Agreement) *Agreement {
+func AgreementMade(db *bolt.DB, agreementId string, counterParty string, signature string, protocol string) (*Agreement, error) {
+	if agreement, err := singleAgreementUpdate(db, agreementId, protocol, func(a Agreement) *Agreement {
 		a.CounterPartyAddress = counterParty
 		a.ProposalSig = signature
 		return &a
@@ -91,8 +94,8 @@ func AgreementMade(db *bolt.DB, agreementId string, counterParty string, signatu
 	}
 }
 
-func AgreementFinalized(db *bolt.DB, agreementid string) (*Agreement, error) {
-	if agreement, err := singleAgreementUpdate(db, agreementid, func(a Agreement) *Agreement {
+func AgreementFinalized(db *bolt.DB, agreementid string, protocol string) (*Agreement, error) {
+	if agreement, err := singleAgreementUpdate(db, agreementid, protocol, func(a Agreement) *Agreement {
 		a.AgreementFinalizedTime = uint64(time.Now().Unix())
 		return &a
 	}); err != nil {
@@ -102,8 +105,8 @@ func AgreementFinalized(db *bolt.DB, agreementid string) (*Agreement, error) {
 	}
 }
 
-func AgreementTimedout(db *bolt.DB, agreementid string) (*Agreement, error) {
-	if agreement, err := singleAgreementUpdate(db, agreementid, func(a Agreement) *Agreement {
+func AgreementTimedout(db *bolt.DB, agreementid string, protocol string) (*Agreement, error) {
+	if agreement, err := singleAgreementUpdate(db, agreementid, protocol, func(a Agreement) *Agreement {
 		a.AgreementTimedout = uint64(time.Now().Unix())
 		return &a
 	}); err != nil {
@@ -113,12 +116,23 @@ func AgreementTimedout(db *bolt.DB, agreementid string) (*Agreement, error) {
 	}
 }
 
+func DataVerified(db *bolt.DB, agreementid string, protocol string) (*Agreement, error) {
+	if agreement, err := singleAgreementUpdate(db, agreementid, protocol, func(a Agreement) *Agreement {
+		a.DataVerifiedTime = uint64(time.Now().Unix())
+		return &a
+	}); err != nil {
+		return nil, err
+	} else {
+		return agreement, nil
+	}
+}
+
 // no error on not found, only nil
-func FindSingleAgreementByAgreementId(db *bolt.DB, agreementid string) (*Agreement, error) {
+func FindSingleAgreementByAgreementId(db *bolt.DB, agreementid string, protocol string) (*Agreement, error) {
 	filters := make([]AFilter, 0)
 	filters = append(filters, IdAFilter(agreementid))
 
-	if agreements, err := FindAgreements(db, filters); err != nil {
+	if agreements, err := FindAgreements(db, filters, protocol); err != nil {
 		return nil, err
 	} else if len(agreements) > 1 {
 		return nil, fmt.Errorf("Expected only one record for agreementid: %v, but retrieved: %v", agreementid, agreements)
@@ -129,21 +143,21 @@ func FindSingleAgreementByAgreementId(db *bolt.DB, agreementid string) (*Agreeme
 	}
 }
 
-func singleAgreementUpdate(db *bolt.DB, agreementid string, fn func(Agreement) *Agreement) (*Agreement, error) {
-	if agreement, err := FindSingleAgreementByAgreementId(db, agreementid); err != nil {
+func singleAgreementUpdate(db *bolt.DB, agreementid string, protocol string, fn func(Agreement) *Agreement) (*Agreement, error) {
+	if agreement, err := FindSingleAgreementByAgreementId(db, agreementid, protocol); err != nil {
 		return nil, err
 	} else if agreement == nil {
 		return nil, fmt.Errorf("Unable to locate agreement id: %v", agreementid)
 	} else {
 		updated := fn(*agreement)
-		return updated, persistUpdatedAgreement(db, agreementid, updated)
+		return updated, persistUpdatedAgreement(db, agreementid, protocol, updated)
 	}
 }
 
 // does whole-member replacements of values that are legal to change during the course of an agreement's life
-func persistUpdatedAgreement(db *bolt.DB, agreementid string, update *Agreement) error {
+func persistUpdatedAgreement(db *bolt.DB, agreementid string, protocol string, update *Agreement) error {
 	return db.Update(func(tx *bolt.Tx) error {
-		if b, err := tx.CreateBucketIfNotExists([]byte(AGREEMENTS)); err != nil {
+		if b, err := tx.CreateBucketIfNotExists([]byte(AGREEMENTS + "-" + protocol)); err != nil {
 			return err
 		} else {
 			current := b.Get([]byte(agreementid))
@@ -166,6 +180,7 @@ func persistUpdatedAgreement(db *bolt.DB, agreementid string, update *Agreement)
 				mod.ProposalSig = update.ProposalSig
 				mod.DataVerificationURL = update.DataVerificationURL
 				mod.DisableDataVerificationChecks = update.DisableDataVerificationChecks
+				mod.DataVerifiedTime = update.DataVerifiedTime
 
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize agreement record: %v", mod)
@@ -180,15 +195,15 @@ func persistUpdatedAgreement(db *bolt.DB, agreementid string, update *Agreement)
 	})
 }
 
-func DeleteAgreement(db *bolt.DB, pk string) error {
+func DeleteAgreement(db *bolt.DB, pk string, protocol string) error {
 	if pk == "" {
 		return fmt.Errorf("Missing required arg pk")
 	} else {
 
 		return db.Update(func(tx *bolt.Tx) error {
-			b := tx.Bucket([]byte(AGREEMENTS))
+			b := tx.Bucket([]byte(bucketName(protocol)))
 			if b == nil {
-				return fmt.Errorf("Unknown bucket: %v", AGREEMENTS)
+				return fmt.Errorf("Unknown bucket: %v", bucketName(protocol))
 			} else if existing := b.Get([]byte(pk)); existing == nil {
 				glog.Errorf("Warning: record deletion requested, but record does not exist: %v", pk)
 				return nil // handle already-deleted agreement as success
@@ -213,12 +228,12 @@ func IdAFilter(id string) AFilter {
 
 type AFilter func(Agreement) bool
 
-func FindAgreements(db *bolt.DB, filters []AFilter) ([]Agreement, error) {
+func FindAgreements(db *bolt.DB, filters []AFilter, protocol string) ([]Agreement, error) {
 	agreements := make([]Agreement, 0)
 
 	readErr := db.View(func(tx *bolt.Tx) error {
 
-		if b := tx.Bucket([]byte(AGREEMENTS)); b != nil {
+		if b := tx.Bucket([]byte(bucketName(protocol))); b != nil {
 			b.ForEach(func(k, v []byte) error {
 
 				var a Agreement
@@ -273,4 +288,8 @@ func PersistNew(db *bolt.DB, pk string, bucket string, record interface{}) error
 
 		return writeErr
 	}
+}
+
+func bucketName(protocol string) string {
+	return AGREEMENTS + "-" + protocol
 }

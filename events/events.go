@@ -57,6 +57,7 @@ const (
 
 type Message interface {
 	Event() Event
+	ShortString() string
 }
 
 type AgreementLaunchContext struct {
@@ -71,6 +72,10 @@ func (c AgreementLaunchContext) String() string {
 	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v, Configure: %v, EnvironmentAdditions: %v", c.AgreementProtocol, c.AgreementId, c.Configure, c.EnvironmentAdditions)
 }
 
+func (c AgreementLaunchContext) ShortString() string {
+	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v", c.AgreementProtocol, c.AgreementId)
+}
+
 // This event indicates that a new microservice has been created in the form of a policy file
 type PolicyCreatedMessage struct {
 	event    Event
@@ -79,6 +84,10 @@ type PolicyCreatedMessage struct {
 
 func (e PolicyCreatedMessage) String() string {
 	return fmt.Sprintf("event: %v, file: %v", e.event, e.fileName)
+}
+
+func (e PolicyCreatedMessage) ShortString() string {
+	return e.String()
 }
 
 func (e *PolicyCreatedMessage) Event() Event {
@@ -109,6 +118,10 @@ func (e ABPolicyCreatedMessage) String() string {
 	return fmt.Sprintf("event: %v, file: %v", e.event, e.fileName)
 }
 
+func (e ABPolicyCreatedMessage) ShortString() string {
+	return e.String()
+}
+
 func (e *ABPolicyCreatedMessage) Event() Event {
 	return e.event
 }
@@ -136,6 +149,10 @@ type EdgeRegisteredExchangeMessage struct {
 
 func (e EdgeRegisteredExchangeMessage) String() string {
 	return fmt.Sprintf("event: %v, id: %v, token: %v", e.event, e.id, e.token)
+}
+
+func (e EdgeRegisteredExchangeMessage) ShortString() string {
+	return e.String()
 }
 
 func (e *EdgeRegisteredExchangeMessage) Event() Event {
@@ -172,6 +189,10 @@ func (e AgreementReachedMessage) String() string {
 	return fmt.Sprintf("event: %v, launch context: %v", e.event, e.launchContext)
 }
 
+func (e AgreementReachedMessage) ShortString() string {
+	return fmt.Sprintf("event: %v, launch context: %v", e.event, e.launchContext.ShortString())
+}
+
 func (e *AgreementReachedMessage) Event() Event {
 	return e.event
 }
@@ -199,6 +220,10 @@ func (e WhisperSubscribeToMessage) String() string {
 	return fmt.Sprintf("event: %v, topic: %v", e.event, e.topic)
 }
 
+func (e WhisperSubscribeToMessage) ShortString() string {
+	return e.String()
+}
+
 func (e *WhisperSubscribeToMessage) Event() Event {
 	return e.event
 }
@@ -223,6 +248,10 @@ type WhisperReceivedMessage struct {
 	topics  []string
 	from    string
 	to      string
+}
+
+func (e WhisperReceivedMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v, From: %v, To: %v, Topics: %v, Payload: %v", e.event, e.from, e.to, e.topics, e.payload[:40])
 }
 
 func (e WhisperReceivedMessage) String() string {
@@ -272,6 +301,14 @@ func (b *TorrentMessage) Event() Event {
 	return b.event
 }
 
+func (b *TorrentMessage) String() string {
+	return fmt.Sprintf("event: %v, imageFiles: %v, agreementLaunchContext: %v", b.event, b.ImageFiles, b.AgreementLaunchContext)
+}
+
+func (b *TorrentMessage) ShortString() string {
+	return fmt.Sprintf("event: %v, imageFiles: %v, agreementLaunchContext: %v", b.event, b.ImageFiles, b.AgreementLaunchContext.ShortString())
+}
+
 func NewTorrentMessage(id EventId, imageFiles []string, agreementLaunchContext *AgreementLaunchContext) *TorrentMessage {
 
 	return &TorrentMessage{
@@ -299,6 +336,10 @@ func (m GovernanceMaintenanceMessage) String() string {
 	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v", m.event, m.AgreementProtocol, m.AgreementId, m.Deployment)
 }
 
+func (m GovernanceMaintenanceMessage) ShortString() string {
+	return m.String()
+}
+
 type GovernanceCancelationMessage struct {
 	GovernanceMaintenanceMessage
 	Message
@@ -311,6 +352,10 @@ func (m *GovernanceCancelationMessage) Event() Event {
 
 func (m GovernanceCancelationMessage) String() string {
 	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Cause: %v", m.Event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(m.Deployment), m.Cause)
+}
+
+func (m GovernanceCancelationMessage) ShortString() string {
+	return m.String()
 }
 
 func NewGovernanceMaintenanceMessage(id EventId, protocol string, agreementId string, deployment *map[string]persistence.ServiceConfig) *GovernanceMaintenanceMessage {
@@ -346,6 +391,10 @@ func (m ContainerMessage) String() string {
 	return fmt.Sprintf("event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v", m.event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(m.Deployment))
 }
 
+func (m ContainerMessage) ShortString() string {
+	return m.String()
+}
+
 func (b ContainerMessage) Event() Event {
 	return b.event
 }
@@ -379,6 +428,10 @@ func (m ApiAgreementCancelationMessage) String() string {
 	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Cause: %v", m.Event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(m.Deployment), m.Cause)
 }
 
+func (m ApiAgreementCancelationMessage) ShortString() string {
+	return m.String()
+}
+
 func NewApiAgreementCancelationMessage(id EventId, cause EndContractCause, protocol string, agreementId string, deployment *map[string]persistence.ServiceConfig) *ApiAgreementCancelationMessage {
 	return &ApiAgreementCancelationMessage{
 		event: Event{
@@ -406,6 +459,10 @@ func (m *InitAgreementCancelationMessage) Event() Event {
 
 func (m InitAgreementCancelationMessage) String() string {
 	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Reason: %v", m.Event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(m.Deployment), m.Reason)
+}
+
+func (m InitAgreementCancelationMessage) ShortString() string {
+	return m.String()
 }
 
 func NewInitAgreementCancelationMessage(id EventId, reason uint, protocol string, agreementId string, deployment *map[string]persistence.ServiceConfig) *InitAgreementCancelationMessage {

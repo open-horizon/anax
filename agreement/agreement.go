@@ -490,6 +490,8 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 		resp = new(exchange.PutDeviceResponse)
 		targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "?token=" + w.deviceToken
 
+		glog.V(3).Infof("AgreementWorker Registering microservices: %v at %v", pdr.ShortString(), targetURL)
+
 		for {
 			if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, pdr, &resp); err != nil {
 				return err

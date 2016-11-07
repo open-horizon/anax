@@ -60,8 +60,8 @@ func Test_APISpecification_subset_found(t *testing.T) {
 		}
 	}
 
-	prod1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "[1.0.0,2.0.0)","exclusiveAccess": false,"numberAgreements":1}]`
-	con1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "1.0.0","exclusiveAccess": false,"numberAgreements":1}]`
+	prod1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "[1.0.0,2.0.0)","exclusiveAccess": false}]`
+	con1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "1.0.0","exclusiveAccess": false}]`
 	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
 		if con_as = create_APISpecification(con1, t); con_as != nil {
 			if err := con_as.Is_Subset_Of(prod_as); err != nil {
@@ -70,8 +70,8 @@ func Test_APISpecification_subset_found(t *testing.T) {
 		}
 	}
 
-	prod1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "[1.0.0,2.0.0)","exclusiveAccess": false,"numberAgreements":2}]`
-	con1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "1.0.0","exclusiveAccess": false,"numberAgreements":1}]`
+	prod1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "[1.0.0,2.0.0)","exclusiveAccess": false}]`
+	con1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "1.0.0","exclusiveAccess": false}]`
 	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
 		if con_as = create_APISpecification(con1, t); con_as != nil {
 			if err := con_as.Is_Subset_Of(prod_as); err != nil {
@@ -90,8 +90,8 @@ func Test_APISpecification_subset_found(t *testing.T) {
 		}
 	}
 
-	prod1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "[1.0.0,2.0.0)","exclusiveAccess": false,"numberAgreements":2,"arch":"x86"}]`
-	con1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "1.0.0","exclusiveAccess": false,"numberAgreements":1,"arch":"x86"}]`
+	prod1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "[1.0.0,2.0.0)","exclusiveAccess": false,"arch":"x86"}]`
+	con1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "1.0.0","exclusiveAccess": false,"arch":"x86"}]`
 	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
 		if con_as = create_APISpecification(con1, t); con_as != nil {
 			if err := con_as.Is_Subset_Of(prod_as); err != nil {
@@ -164,8 +164,8 @@ func Test_APISpecification_subset_not_found(t *testing.T) {
 		}
 	}
 
-	prod1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "[1.0.0,2.0.0)","exclusiveAccess": false,"numberAgreements":2,"arch":"arm"}]`
-	con1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "1","exclusiveAccess": false,"numberAgreements":1,"arch":"x86"}]`
+	prod1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "[1.0.0,2.0.0)","exclusiveAccess": false,"arch":"arm"}]`
+	con1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "1","exclusiveAccess": false,"arch":"x86"}]`
 	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
 		if con_as = create_APISpecification(con1, t); con_as != nil {
 			if err := con_as.Is_Subset_Of(prod_as); err == nil {
@@ -174,13 +174,4 @@ func Test_APISpecification_subset_not_found(t *testing.T) {
 		}
 	}
 
-	prod1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "[1.0.0,2.0.0)","exclusiveAccess": false,"numberAgreements":1,"arch":"x86"}]`
-	con1 = `[{"specRef": "http://mycompany.com/dm/gps","version": "1","exclusiveAccess": false,"numberAgreements":2,"arch":"x86"}]`
-	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
-		if con_as = create_APISpecification(con1, t); con_as != nil {
-			if err := con_as.Is_Subset_Of(prod_as); err == nil {
-				t.Errorf("Error: %v is not a subset of %v.\n", con1, prod1)
-			}
-		}
-	}
 }

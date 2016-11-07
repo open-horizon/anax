@@ -12,7 +12,7 @@ import (
 
 func (w *AgreementBotWorker) GovernAgreements() {
 
-	glog.Info(logString(fmt.Sprintf("started")))
+	glog.Info(logString(fmt.Sprintf("started agreement governance")))
 
 	protocolHandler := citizenscientist.NewProtocolHandler(w.Config.AgreementBot.GethURL, w.pm)
 
@@ -23,7 +23,9 @@ func (w *AgreementBotWorker) GovernAgreements() {
 		}
 
 		// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized on blockchain.
-		if agreements, err := FindAgreements(w.db, []AFilter{notYetFinalFilter()}); err == nil {
+		if agreements, err := FindAgreements(w.db, []AFilter{notYetFinalFilter()}, citizenscientist.PROTOCOL_NAME); err == nil {
+			activeDataVerification := true
+			allActiveAgreements := make(map[string][]string)
 			for _, ag := range agreements {
 
 				// Govern agreements that havent been finalized yet, we are waiting for confirmation in the blockchain
@@ -35,7 +37,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 						glog.Errorf(logString(fmt.Sprintf("unable to verify agreement %v on blockchain, error: %v", ag.CurrentAgreementId, err)))
 					} else if recorded {
 						// Update state in the database
-						if _, err := AgreementFinalized(w.db, ag.CurrentAgreementId); err != nil {
+						if _, err := AgreementFinalized(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
 							glog.Errorf(logString(fmt.Sprintf("error persisting agreement %v finalized: %v", ag.CurrentAgreementId, err)))
 						}
 						// Update state in exchange
@@ -51,7 +53,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 						}
 					}
 
-					// Govern agreements that we think are finalized in the blockchain, make sure they are still there
+				// Govern agreements that we think are finalized in the blockchain, make sure they are still there and sending data
 				} else if ag.CounterPartyAddress != "" && ag.AgreementFinalizedTime != 0 {
 					if recorded, err := protocolHandler.VerifyAgreementRecorded(ag.CurrentAgreementId, ag.CounterPartyAddress, ag.ProposalSig, w.bc.Agreements); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("unable to verify finalized agreement %v on blockchain, error: %v", ag.CurrentAgreementId, err)))
@@ -59,14 +61,29 @@ func (w *AgreementBotWorker) GovernAgreements() {
 						// The agreement is not on the blockchain, update state in exchange
 						glog.V(3).Infof(logString(fmt.Sprintf("discovered terminated agreement %v, cleaning up.", ag.CurrentAgreementId)))
 						w.TerminateAgreement(&ag, CANCEL_DISCOVERED)
+					} else if activeDataVerification {
+						// And make sure the device is still sending data
+						now := uint64(time.Now().Unix())
+						if activeAgreements, err := GetActiveAgreements(allActiveAgreements, ag, &w.Worker.Manager.Config.AgreementBot); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("unable to retrieve active agreement list. Terminating data verification loop early, error: %v", err)))
+							activeDataVerification = false
+						} else if ActiveAgreementsContains(activeAgreements, ag) {
+							if _, err := DataVerified(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+								glog.Errorf(logString(fmt.Sprintf("unable to record data verification, error: %v", err)))
+							}
+						} else if now - ag.DataVerifiedTime >= w.Worker.Manager.Config.AgreementBot.NoDataIntervalS {
+							// No data is being received, terminate the agreement
+							glog.V(3).Infof(logString(fmt.Sprintf("cancelling agreement %v due to lack of data", ag.CurrentAgreementId)))
+							w.TerminateAgreement(&ag, CANCEL_NO_DATA_RECEIVED)
+						}
 					}
 
-					// Govern agreements that havent seen a proposal reply yet
+				// Govern agreements that havent seen a proposal reply yet
 				} else {
 					// We are waiting for a reply
 					glog.V(5).Infof("AgreementBot Governance waiting for reply to %v.", ag.CurrentAgreementId)
 					now := uint64(time.Now().Unix())
-					if ag.AgreementCreationTime+w.Worker.Manager.Config.AgreementBot.AgreementTimeoutS < now {
+					if ag.AgreementCreationTime + w.Worker.Manager.Config.AgreementBot.AgreementTimeoutS < now {
 						w.TerminateAgreement(&ag, CANCEL_NO_REPLY)
 					}
 				}
@@ -79,7 +96,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 		runtime.Gosched()
 	}
 
-	glog.Info(logString(fmt.Sprintf("terminated")))
+	glog.Info(logString(fmt.Sprintf("terminated agreement governance")))
 
 }
 
@@ -88,7 +105,7 @@ func (w *AgreementBotWorker) TerminateAgreement(ag *Agreement, reason uint) {
 	glog.V(3).Infof(logString(fmt.Sprintf("detected agreement %v needs to terminate.", ag.CurrentAgreementId)))
 
 	// Update the database
-	if _, err := AgreementTimedout(w.db, ag.CurrentAgreementId); err != nil {
+	if _, err := AgreementTimedout(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error marking agreement %v terminate: %v", ag.CurrentAgreementId, err)))
 	}
 	// Update state in exchange

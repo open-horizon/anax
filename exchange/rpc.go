@@ -25,6 +25,10 @@ type MSProp struct {
 	Op       string `json:"op"`
 }
 
+func (p MSProp) String() string {
+	return fmt.Sprintf("Property %v %v %v, Type: %v,", p.Name, p.Op, p.Value, p.PropType)
+}
+
 type Microservice struct {
 	Url           string   `json:"url"`
 	Properties    []MSProp `json:"properties"`
@@ -32,12 +36,24 @@ type Microservice struct {
 	Policy        string   `json:"policy"`
 }
 
+func (m Microservice) String() string {
+	return fmt.Sprintf("URL: %v, Properties: %v, NumAgreements: %v, Policy: %v", m.Url, m.Properties, m.NumAgreements, m.Policy)
+}
+
+func (m Microservice) ShortString() string {
+	return fmt.Sprintf("URL: %v, NumAgreements: %v, Properties: %v", m.Url, m.NumAgreements, m.Properties)
+}
+
 type SearchExchangeRequest struct {
 	DesiredMicroservices []Microservice `json:"desiredMicroservices"`
 	DaysStale            int            `json:"daysStale"`
 	PropertiesToReturn   []string       `json:"propertiesToReturn"`
-	LastIndex            int            `json:"startIndex"`
+	StartIndex           int            `json:"startIndex"`
 	NumEntries           int            `json:"numEntries"`
+}
+
+func (a SearchExchangeRequest) String() string {
+	return fmt.Sprintf("Microservices: %v, DaysStale: %v, PropertiesToReturn: %v, StartIndex: %v, NumEntries: %v", a.DesiredMicroservices, a.DaysStale, a.PropertiesToReturn, a.StartIndex, a.NumEntries)
 }
 
 type Device struct {
@@ -47,9 +63,25 @@ type Device struct {
 	MsgEndPoint   string         `json:"msgEndPoint"`
 }
 
+func (d Device) String() string {
+	return fmt.Sprintf("Id: %v, Name: %v, Microservices: %v, MsgEndPoint: %v", d.Id, d.Name, d.Microservices, d.MsgEndPoint)
+}
+
+func (d Device) ShortString() string {
+	str := fmt.Sprintf("Id: %v, Name: %v, MsgEndPoint: %v, Microservice URLs:", d.Id, d.Name, d.Microservices, d.MsgEndPoint)
+	for _, ms := range d.Microservices {
+		str += fmt.Sprintf("%v,", ms.Url)
+	}
+	return str
+}
+
 type SearchExchangeResponse struct {
 	Devices   []Device `json:"devices"`
 	LastIndex int      `json:"lastIndex"`
+}
+
+func (r SearchExchangeResponse) String() string {
+	return fmt.Sprintf("Devices: %v, LastIndex: %v", r.Devices, r.LastIndex)
 }
 
 type GetDevicesResponse struct {
@@ -63,10 +95,18 @@ type AgbotAgreement struct {
 	LastUpdated string `json:"lastUpdated"`
 }
 
+func (a AgbotAgreement) String() string {
+	return fmt.Sprintf("Workload: %v, State: %v, LastUpdated: %v", a.Workload, a.State, a.LastUpdated)
+}
+
 type DeviceAgreement struct {
 	Microservice string `json:"microservice"`
 	State        string `json:"state"`
 	LastUpdated  string `json:"lastUpdated"`
+}
+
+func (a DeviceAgreement) String() string {
+	return fmt.Sprintf("Microservice: %v, State: %v, LastUpdated: %v", a.Microservice, a.State, a.LastUpdated)
 }
 
 type AllAgbotAgreementsResponse struct {
@@ -74,9 +114,17 @@ type AllAgbotAgreementsResponse struct {
 	LastIndex  int                       `json:"lastIndex"`
 }
 
+func (a AllAgbotAgreementsResponse) String() string {
+	return fmt.Sprintf("Agreements: %v, LastIndex: %v", a.Agreements, a.LastIndex)
+}
+
 type AllDeviceAgreementsResponse struct {
 	Agreements map[string]DeviceAgreement `json:"agreements`
 	LastIndex  int                        `json:"lastIndex"`
+}
+
+func (a AllDeviceAgreementsResponse) String() string {
+	return fmt.Sprintf("Agreements: %v, LastIndex: %v", a.Agreements, a.LastIndex)
 }
 
 type PutDeviceResponse map[string]string
@@ -106,12 +154,24 @@ type PutDeviceRequest struct {
 	SoftwareVersions        SoftwareVersion `json:"softwareVersions"`
 }
 
+func (p PutDeviceRequest) String() string {
+	return fmt.Sprintf("Token: %v, Name: %v, RegisteredMicroservices %v, MsgEndPoint %v, SoftwareVersions %v", p.Token, p.Name, p.RegisteredMicroservices, p.MsgEndPoint, p.SoftwareVersions)
+}
+
+func (p PutDeviceRequest) ShortString() string {
+	str := fmt.Sprintf("Token: %v, Name: %v, MsgEndPoint %v, SoftwareVersions %v, Microservice URLs: ", p.Token, p.Name, p.MsgEndPoint, p.SoftwareVersions)
+	for _, ms := range p.RegisteredMicroservices {
+		str += fmt.Sprintf("%v,", ms.Url)
+	}
+	return str
+}
+
 // This function creates the exchange search message body.
 func CreateSearchRequest() *SearchExchangeRequest {
 
 	ser := &SearchExchangeRequest{
 		DaysStale:  0,
-		LastIndex:  0,
+		StartIndex:  0,
 		NumEntries: 10,
 	}
 

@@ -102,7 +102,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 	protocolHandler := citizenscientist.NewProtocolHandler(a.config.AgreementBot.GethURL, a.pm)
 
 	for {
-		glog.V(2).Infof(logString(fmt.Sprintf("blocking for work")))
+		glog.V(5).Infof(logString(fmt.Sprintf("blocking for work")))
 		workItem := <-work // block waiting for work
 		glog.V(2).Infof(logString(fmt.Sprintf("received work: %v", workItem)))
 
@@ -123,7 +123,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				glog.Errorf(logString(fmt.Sprintf("error initiating agreement: %v", err)))
 
 				// Remove pending agreement from database
-				if err := DeleteAgreement(a.db, agreementIdString); err != nil {
+				if err := DeleteAgreement(a.db, agreementIdString, citizenscientist.PROTOCOL_NAME); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error deleting pending agreement: %v, error %v", agreementIdString, err)))
 				}
 
@@ -134,7 +134,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				glog.Errorf(logString(fmt.Sprintf("error marshalling policy for storage %v, error: %v", wi.ConsumerPolicy, err)))
 			} else if pBytes, err := json.Marshal(proposal); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error marshalling proposal for storage %v, error: %v", *proposal, err)))
-			} else if _, err := AgreementUpdate(a.db, agreementIdString, string(pBytes), string(polBytes), "", false); err != nil {
+			} else if _, err := AgreementUpdate(a.db, agreementIdString, string(pBytes), string(polBytes), wi.ConsumerPolicy.DataVerify.URL, !wi.ConsumerPolicy.Get_DataVerification_enabled(), citizenscientist.PROTOCOL_NAME); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", *proposal, err)))
 
 				// Record that the agreement was initiated, in the exchange
@@ -151,7 +151,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				// The producer is happy with the proposal.
 
 				// Find the saved agreement in the database
-				if agreement, err := FindSingleAgreementByAgreementId(a.db, reply.AgreementId()); err != nil {
+				if agreement, err := FindSingleAgreementByAgreementId(a.db, reply.AgreementId(), citizenscientist.PROTOCOL_NAME); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error querying pending agreement %v, error: %v", reply.AgreementId(), err)))
 				} else if agreement == nil {
 					glog.V(5).Infof(logString(fmt.Sprintf("discarding reply, agreement id %v not in our database", reply.AgreementId())))
@@ -164,7 +164,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error demarshalling tsandcs policy from pending agreement %v, error: %v", reply.AgreementId(), err)))
 
-				} else if _, err := AgreementMade(a.db, reply.AgreementId(), reply.Address, reply.Signature); err != nil {
+				} else if _, err := AgreementMade(a.db, reply.AgreementId(), reply.Address, reply.Signature, citizenscientist.PROTOCOL_NAME); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", *proposal, err)))
 
 				} else if err := a.recordConsumerAgreementState(reply.AgreementId(), pol.APISpecs[0].SpecRef, "Producer agreed"); err != nil {
@@ -187,7 +187,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				}
 
 				// Allow the protocol to perform any cleanup
-				if ag, err := FindSingleAgreementByAgreementId(a.db, reply.AgreementId()); err != nil {
+				if ag, err := FindSingleAgreementByAgreementId(a.db, reply.AgreementId(), citizenscientist.PROTOCOL_NAME); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error querying pending agreement %v, error: %v", reply.AgreementId(), err)))
 				} else if ag == nil {
 					glog.Errorf(logString(fmt.Sprintf("no database entry for agreement %v, can't cleanup after rejection.", reply.AgreementId())))
@@ -198,7 +198,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				}
 
 				// Delete from the database
-				if err := DeleteAgreement(a.db, reply.AgreementId()); err != nil {
+				if err := DeleteAgreement(a.db, reply.AgreementId(), citizenscientist.PROTOCOL_NAME); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error deleting rejected agreement: %v, error: %v", reply.AgreementId(), err)))
 				}
 
@@ -208,7 +208,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 		} else if workItem.Type() == CANCEL {
 			wi := workItem.(CSCancelAgreement)
 
-			if ag, err := FindSingleAgreementByAgreementId(a.db, wi.AgreementId); err != nil {
+			if ag, err := FindSingleAgreementByAgreementId(a.db, wi.AgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error querying timed out agreement %v, error: %v", wi.AgreementId, err)))
 			} else if ag == nil {
 				glog.V(3).Infof(logString(fmt.Sprintf("nothing to terminate for agreement %v, no database record.", wi.AgreementId)))
@@ -218,7 +218,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				glog.Errorf(logString(fmt.Sprintf("error terminating agreement %v on the blockchain: %v", wi.AgreementId, err)))
 			}
 
-			if err := DeleteAgreement(a.db, wi.AgreementId); err != nil {
+			if err := DeleteAgreement(a.db, wi.AgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error deleting terminated agreement: %v, error: %v", wi.AgreementId, err)))
 			}
 

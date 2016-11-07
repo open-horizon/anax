@@ -208,7 +208,8 @@ func main() {
 
 		select {
 		case msg := <-messageStream:
-			glog.V(3).Infof("Handling Message (%T): %v\n", msg, msg)
+			glog.V(3).Infof("Handling Message (%T): %v\n", msg, msg.ShortString())
+			glog.V(5).Infof("Handling Message (%T): %v\n", msg, msg)
 
 			if successMsg, err := eventHandler(msg, workers); err != nil {
 				// error! do some barfing and then continue

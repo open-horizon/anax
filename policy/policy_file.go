@@ -87,13 +87,6 @@ type ValueExchange struct {
 	Token       string `json:"token"`       // A token used to identify the user of the value - added in version 2
 }
 
-type ResourceLimit struct {
-	NetworkUpload   int `json:"networkUpload"`   // The max network upload allowed to be consumed Kbps
-	NetworkDownload int `json:"networkDownload"` // The max network download allowed to be consumed Kbps
-	Memory          int `json:"memory"`          // The max memory allowed to be consumed MB
-	CPUs            int `json:"cpus"`            // The max number of CPUs allowed to be consumed
-}
-
 type DataVerification struct {
 	Enabled  bool   `json:"enabled"`  // Whether or not data verification is enabled
 	URL      string `json:"URL"`      // The URL to be used for data receipt verification
@@ -102,6 +95,10 @@ type DataVerification struct {
 
 func (d DataVerification) IsSame(compare DataVerification) bool {
 	return d.Enabled == compare.Enabled && d.URL == compare.URL && d.Interval == compare.Interval
+}
+
+func (d DataVerification) String() string {
+	return fmt.Sprintf("Enabled: %v, URL: %v, Interval: %v", d.Enabled, d.URL, d.Interval)
 }
 
 type ProposalRejection struct {
@@ -114,17 +111,17 @@ type Policy struct {
 	Header                 PolicyHeader          `json:"header"`
 	APISpecs               APISpecList           `json:"apiSpec"`
 	AgreementProtocols     AgreementProtocolList `json:"agreementProtocols"`
-	Workloads              []Workload            `json:"workloads"`
-	DeviceType             string                `json:"deviceType"`
-	ValueEx                ValueExchange         `json:"valueExchange"`
-	ResourceLimits         ResourceLimit         `json:"resourceLimits"`
-	DataVerify             DataVerification      `json:"dataVerification"`
-	ProposalReject         ProposalRejection     `json:"proposalRejection"`
-	MaxAgreements          int                   `json:"maxAgreements"`
-	Properties             PropertyList          `json:"properties"`             // Version 2.0
-	CounterPartyProperties RequiredProperty      `json:"counterPartyProperties"` // Version 2.0
-	Blockchains            BlockchainList        `json:"blockchains"`            // Version 2.0
-	RequiredWorkload       string                `json:"requiredWorkload"`       // Version 2.0
+	Workloads              []Workload            `json:"workloads,omitempty"`
+	DeviceType             string                `json:"deviceType,omitempty"`
+	ValueEx                ValueExchange         `json:"valueExchange,omitempty"`
+	ResourceLimits         ResourceLimit         `json:"resourceLimits,omitempty"`
+	DataVerify             DataVerification      `json:"dataVerification,omitempty"`
+	ProposalReject         ProposalRejection     `json:"proposalRejection,omitempty"`
+	MaxAgreements          int                   `json:"maxAgreements,omitempty"`
+	Properties             PropertyList          `json:"properties,omitempty"`             // Version 2.0
+	CounterPartyProperties RequiredProperty      `json:"counterPartyProperties,omitempty"` // Version 2.0
+	Blockchains            BlockchainList        `json:"blockchains,omitempty"`            // Version 2.0
+	RequiredWorkload       string                `json:"requiredWorkload,omitempty"`       // Version 2.0
 }
 
 // These functions are used to create Policy objects. You can create the base object
@@ -197,7 +194,11 @@ func Are_Compatible(producer_policy *Policy, consumer_policy *Policy) error {
 		return errors.New(fmt.Sprintf("Compatibility Error: Producer policy Blockchains %v are not supported by Consumer Blockchain options %v. Underlying error: %v", producer_policy.Blockchains, consumer_policy.Blockchains, err))
 	} else if _, err := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols); err != nil {
 		return errors.New(fmt.Sprintf("Compatibility Error: No common Agreement Protocols between %v and %v. Underlying error: %v", producer_policy.AgreementProtocols, consumer_policy.AgreementProtocols, err))
-	} // TODO: Add code here for resource compatibilty checks
+	} else if !(&consumer_policy.ResourceLimits).IsSatisfiedBy(&producer_policy.ResourceLimits) {
+		return errors.New(fmt.Sprintf("Compatibility Error: Producer resource limits %v do not satisfy consumer resource requirements %v. Underlying error: %v", producer_policy.ResourceLimits, consumer_policy.ResourceLimits, err))
+	} else if (producer_policy.DataVerify != DataVerification{}) && producer_policy.DataVerify.IsSame(consumer_policy.DataVerify) {
+		return errors.New(fmt.Sprintf("Compatibility Error: Data verification must be identical or absent on one side, producer has %v and consumer has %v.", producer_policy.DataVerify, consumer_policy.DataVerify, err))
+	}
 
 	return nil
 }
@@ -219,6 +220,8 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 		return nil, errors.New(fmt.Sprintf("Compatibility Error: No common Agreement Protocols between %v and %v. Underlying error: %v", producer_policy1.AgreementProtocols, producer_policy2.AgreementProtocols, err))
 	} else if err := (&producer_policy1.Properties).Compatible_With(&producer_policy2.Properties); err != nil {
 		return nil, errors.New(fmt.Sprintf("Compatibility Error: Common Properties between %v and %v. Underlying error: %v", producer_policy1.Properties, producer_policy2.Properties, err))
+	} else if !producer_policy1.DataVerify.IsSame(producer_policy2.DataVerify) {
+		return nil, errors.New(fmt.Sprintf("Compatibility Error: Data verification must be identical between %v and %v.", producer_policy1.DataVerify, producer_policy2.DataVerify, err))
 	}
 
 	merged_pol := new(Policy)
@@ -232,6 +235,7 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 	(&merged_pol.AgreementProtocols).Concatenate(intersecting_agreement_protocols)
 	(&merged_pol.Properties).Concatenate(&producer_policy1.Properties)
 	(&merged_pol.Properties).Concatenate(&producer_policy2.Properties)
+	merged_pol.DataVerify = producer_policy1.DataVerify
 
 	// Merge counterpartyProperties
 	// 2 CounterPartyProperty specifications could be incompatible, and this could be detected in some cases.
@@ -239,6 +243,7 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 	// For now we will take the cowards way out and simply AND together the Counter Party Property expressions
 	// from both policies.
 	merged_pol.CounterPartyProperties = *((&producer_policy1.CounterPartyProperties).Merge(&producer_policy2.CounterPartyProperties))
+	merged_pol.ResourceLimits = *((&producer_policy1.ResourceLimits).MergeProducers(&producer_policy2.ResourceLimits))
 
 	return merged_pol, nil
 }
@@ -261,9 +266,13 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		merged_pol.AgreementProtocols = *intersecting_agreement_protocols.Single_Element()
 		merged_pol.Workloads = consumer_policy.Workloads
 		merged_pol.ValueEx = consumer_policy.ValueEx
-		merged_pol.Blockchains = producer_policy.Blockchains
-
-		// Merge the rest here
+		merged_pol.ResourceLimits = consumer_policy.ResourceLimits
+		merged_pol.DataVerify = consumer_policy.DataVerify
+		intersecting_blockchains, _ := (&producer_policy.Blockchains).Intersects_With(&consumer_policy.Blockchains)
+		merged_pol.Blockchains = *intersecting_blockchains.Single_Element()
+		(&merged_pol.Properties).Concatenate(&consumer_policy.Properties)
+		(&merged_pol.Properties).Concatenate(&producer_policy.Properties)
+		merged_pol.RequiredWorkload = producer_policy.RequiredWorkload
 
 		return merged_pol, nil
 	}
@@ -294,7 +303,8 @@ func (self *Policy) String() string {
 	for _, p := range self.Properties {
 		res += fmt.Sprintf("Name: %v Value: %v\n", p.Name, p.Value)
 	}
-	res += fmt.Sprintf("Value Exchange: %v\n", self.ValueEx)
+	res += fmt.Sprintf("Resource Limits: %v\n", self.ResourceLimits)
+	res += fmt.Sprintf("Data Verification: %v\n", self.DataVerify)
 	res += fmt.Sprintf("Blockchains: %v\n", self.Blockchains)
 
 	return res

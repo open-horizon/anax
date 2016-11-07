@@ -8,14 +8,12 @@
             "specRef": "http://mycompany.com/dm/cpu_temp",
             "version": "1.0.0",
             "exclusiveAccess": true,
-            "numberAgreements": 1,
             "arch": "arm"
         },
         {
             "specRef": "http://mycompany.com/dm/gps",
             "version": "1.0.0",
             "exclusiveAccess": true,
-            "numberAgreements": 1,
             "arch": "arm"
         }
     ],
@@ -27,8 +25,6 @@
             "name": "2Party Bitcoin"
         }
     ],
-    "workloads": null,
-    "deviceType": "",
     "valueExchange": {
         "type": "",
         "value": "",
@@ -50,7 +46,6 @@
         "number": 0,
         "duration": 0
     },
-    "maxAgreements": 0,
     "properties": [
         {
             "name": "rpiprop1",
@@ -73,7 +68,6 @@
             "value": "rpival5"
         }
     ],
-    "counterPartyProperties": null,
     "blockchains": [
         {
             "type": "ethereum",
@@ -109,6 +103,5 @@
                 ]
             }
         }
-    ],
-    "requiredWorkload": ""
+    ]
 }
