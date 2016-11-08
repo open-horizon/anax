@@ -1,0 +1,24 @@
+#!/bin/bash
+
+SOURCE="$(dirname $0)"
+
+# needed by solidity contract loader and hosed by docker squashing
+export GOPATH=${GOPATH:="/go"}
+
+ANAX_LOG_LEVEL=${ANAX_LOG_LEVEL:=5}
+
+file_wait() {
+  while :
+  do
+    if [ -e "$1" ]; then
+      break
+    else
+      echo "Waiting for $1 to be available"
+      sleep 3
+    fi
+  done
+}
+
+file_wait "$HOME/.colonus/accounts"
+
+/bin/anax -v=$ANAX_LOG_LEVEL -alsologtostderr=true -config /etc/agbot/agbot.config

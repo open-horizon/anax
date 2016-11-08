@@ -268,7 +268,7 @@ func createPolicyContent(input *Input, pol *policy.Policy, templateDir string) {
 		} else {
 			version = spec.Version
 		}
-		pol.APISpecs[i] = *policy.APISpecification_Factory(spec.SpecRef, version, 1, input.Arch)
+		pol.APISpecs[i] = *policy.APISpecification_Factory(spec.SpecRef, version, input.Arch)
 	}
 
 	pol.AgreementProtocols = make([]policy.AgreementProtocol, 1)

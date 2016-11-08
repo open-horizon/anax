@@ -1,0 +1,82 @@
+#!/bin/bash
+
+# Fetch and launch the containers needed for the agreement bot.
+# Can be run multiple times with different args to launch container sets for different agbots, e.g. for prod and staging.
+# Can re-execute to destroy existing containers and re-launch them.
+
+#export VOLUME_DIR=${VOLUME_DIR:="/vol/agbot/stg"}
+
+qport() {
+  netstat -lutn | awk 'NR>2 {print $4}' | grep -q ":$1"
+  echo $?
+}
+
+find_port() {
+  pot=33303
+
+  until [ $(qport $pot) = 1 ]; do
+    pot=$((pot+1))
+  done
+
+  echo $pot
+}
+
+if [ "$#" -lt 1 ]; then
+  echo -e "usage: $0 <unique_str> <volume_dir>\n    unique_str:  unique string that can be used for container network name and to prepend the container names\n    volume_dir:  path of volume directory that contains the dot and config files that should be mounted in the container. This parameter is optional and defaults to /."
+  # >&2 echo "usage: $0 bridge_name ethereum_dir colonus_dir"
+  exit 1
+fi
+
+# The first parameter is expected to be one of 'governor-prod' or 'governor-stg'. The salt
+# automation passes one of those 2 parameters into this script depending on which environment it is
+# trying to manage.
+unique="$1"
+volume_dir="$2"
+
+# The versions of the governor's containers are tightly controlled in production.
+if [ "$unique" == "governor-prod" ]; then
+  geth_version="v4.0.11"
+  agbot_version="v2.0.0"
+else
+  geth_version="latest"
+  agbot_version="latest"
+fi
+
+if [[ ! -f $volume_dir/root/.colonus/directory_version || ! -f $volume_dir/etc/agbot/agbot.config ]]; then
+  >&2 echo "Error:  1 or more of the required files does not exist: $volume_dir/root/.colonus/directory_version, $volume_dir/etc/agbot/agbot.config) do not exist."
+  exit 1
+fi
+mkdir  -p $volume_dir/root/.ethereum        # in case not created cd ~yet
+
+docker network ls | grep -q "$unique"
+if [ $? != 0 ]; then
+  docker network create --driver bridge $unique
+  if [ $? != 0 ]; then
+    >&2 echo "Failed to create docker bridge with name $unique"
+    exit 1
+  fi
+fi
+
+grep -q "net.netfilter.nf_conntrack_max" /etc/sysctl.conf
+if [ $? != 0 ]; then
+  echo "net.netfilter.nf_conntrack_max = 477360" >> /etc/sysctl.conf
+  sysctl -p
+fi
+
+port=$(find_port)
+
+for i in colonus-geth agreementbot; do
+  docker ps -a | grep -s $unique-$i
+
+  if [ $? == 0 ]; then
+    docker stop $unique-$i
+    docker rm $unique-$i
+  fi
+done
+
+docker pull summit.hovitos.engineering/x86_64/ethereum-prodclient:$geth_version
+docker run --name $unique-colonus-geth --net-alias=colonus-geth --restart always --net=$unique -p ${port}:${port} -p ${port}:${port}/udp -v $volume_dir/root/.ethereum:/root/.ethereum:rw -v $volume_dir/root/.colonus:/root/.colonus:rw -d -t summit.hovitos.engineering/x86_64/ethereum-prodclient:$geth_version
+sleep 10
+
+docker pull summit.hovitos.engineering/x86/agreementbot:$agbot_version
+docker run --name $unique-agreementbot --net-alias=agreementbot --restart always --net=$unique -e mtn_soliditycontract_block_read_delay=2 -e CMTN_DIRECTORY_VERSION=$(cat $volume_dir/root/.colonus/directory_version) -e CMTN_WHISPER_ADDRESS_PATH=/root/.colonus/shhid -e SNAP_COMMON=/root/.colonus/ -v $volume_dir/root/.colonus:/root/.colonus:rw -v $volume_dir/root/.colonus:/root/.colonus/eth:ro -v $volume_dir/etc/agbot:/etc/agbot:ro -d -t summit.hovitos.engineering/x86/agreementbot:$agbot_version /usr/local/bin/start
