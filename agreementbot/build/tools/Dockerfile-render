@@ -1,0 +1,37 @@
+#!/bin/bash -e
+
+if [ "$#" -lt 2 ]; then
+  echo "Usage:\n$0 arch template_fname"
+  exit 1
+fi
+
+P="$(dirname $2)"
+FNAME="$(basename $2 .tmpl)"
+DEST="$P/$FNAME"
+
+cp "$2" "$DEST"
+
+if [ "$1" == "armhf" ]; then
+  # use a different container for build and exec cases
+  case "$FNAME" in
+    (*"-exec")
+    sed -i 's|##from_image##|armhf/alpine:3.3|' "$DEST" ;;
+
+    (*)
+    sed -i 's|##from_image##|armhfbuild/debian:wheezy|' "$DEST" ;;
+  esac
+
+  sed -i 's|##golang_url##|https://storage.googleapis.com/golang/go1.6.1.linux-armv6l.tar.gz |' "$DEST"
+else
+  case "$FNAME" in
+    (*"-exec")
+    sed -i 's|##from_image##|alpine:3.3|' "$DEST" ;;
+
+    (*)
+    sed -i 's|##from_image##|debian:wheezy|' "$DEST" ;;
+  esac
+
+  sed -i 's|##golang_url##|https://storage.googleapis.com/golang/go1.7.3.linux-amd64.tar.gz|' "$DEST"
+fi
+
+sed -i "s|##arch##|$1|" "$DEST"

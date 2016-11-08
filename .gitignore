@@ -2,3 +2,6 @@ anax
 main
 one-off
 vendor/*/
+agreementbot/build/docker-bld
+agreementbot/build/docker-exec
+agreementbot/build/docker/fs/root/.ssh/id*

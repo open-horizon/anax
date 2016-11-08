@@ -53,7 +53,11 @@ gopathlinks:
 	rm -f $(PKGPATH)/anax
 	ln -s $(CURDIR) $(PKGPATH)/anax
 
-install: anax
+install: anax installagbot
+	# copy static content
+	cp -rvfa ./api/static $(DESTDIR)/srv/
+
+installagbot: anax
 	mkdir -p $(DESTDIR)/{bin,srv}
 	cp anax $(DESTDIR)/bin/anax
 
@@ -61,9 +65,6 @@ install: anax
 	-git clone https://github.com/open-horizon/go-solidity.git && \
 		mv ./go-solidity/contracts $(DESTDIR)
 	rm -Rf ./go-solidity
-
-	# copy static content
-	cp -rvfa ./api/static $(DESTDIR)/srv/
 
 lint:
 	-cd api/static && \
