@@ -22,6 +22,7 @@ type Agreement struct {
 	ProposalSig                   string `json:"proposal_signature"`               // The signature used to create the agreement
 	Proposal                      string `json:"proposal"`                         // JSON serialization of the proposal
 	Policy                        string `json:"policy"`                           // JSON serialization of the policy used to make the proposal
+	PolicyName                    string `json:"policy_name"`                      // The name of the policy for this agreement, policy names are unique
 	CounterPartyAddress           string `json:"counter_party_address"`            // The blockchain address of the counterparty in the agreement
 	DataVerificationURL           string `json:"data_verification_URL"`            // The URL to use to ensure that this agreement is sending data.
 	DisableDataVerificationChecks bool   `json:"disable_data_verification_checks"` // disable data verification checks, assume data is being sent.
@@ -29,11 +30,11 @@ type Agreement struct {
 }
 
 func (a Agreement) String() string {
-	return fmt.Sprintf("CurrentAgreementId: %v, DeviceId: %v, AgreementInceptionTime: %v, AgreementCreationTime: %v, AgreementFinalizedTime: %v, AgreementTimedout: %v, ProposalSig: %v, CounterPartyAddress: %v, DataVerificationURL: %v, DisableDataVerification: %v, DataVerifiedTime: %v", a.CurrentAgreementId, a.DeviceId, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime, a.AgreementTimedout, a.ProposalSig, a.CounterPartyAddress, a.DataVerificationURL, a.DisableDataVerificationChecks, a.DataVerifiedTime)
+	return fmt.Sprintf("CurrentAgreementId: %v, DeviceId: %v, AgreementInceptionTime: %v, AgreementCreationTime: %v, AgreementFinalizedTime: %v, AgreementTimedout: %v, ProposalSig: %v, Policy Name: %v, CounterPartyAddress: %v, DataVerificationURL: %v, DisableDataVerification: %v, DataVerifiedTime: %v", a.CurrentAgreementId, a.DeviceId, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime, a.AgreementTimedout, a.ProposalSig, a.PolicyName, a.CounterPartyAddress, a.DataVerificationURL, a.DisableDataVerificationChecks, a.DataVerifiedTime)
 }
 
 // private factory method for agreement w/out persistence safety:
-func agreement(agreementid string, deviceid string, agreementProto string) (*Agreement, error) {
+func agreement(agreementid string, deviceid string, policyName string, agreementProto string) (*Agreement, error) {
 	if agreementid == "" || agreementProto == "" {
 		return nil, errors.New("Illegal input: agreement id or agreement protocol is empty")
 	} else {
@@ -48,6 +49,7 @@ func agreement(agreementid string, deviceid string, agreementProto string) (*Agr
 			ProposalSig:                   "",
 			Proposal:                      "",
 			Policy:                        "",
+			PolicyName:                    policyName,
 			CounterPartyAddress:           "",
 			DataVerificationURL:           "",
 			DisableDataVerificationChecks: false,
@@ -56,8 +58,8 @@ func agreement(agreementid string, deviceid string, agreementProto string) (*Agr
 	}
 }
 
-func AgreementAttempt(db *bolt.DB, agreementid string, deviceid string, agreementProto string) error {
-	if agreement, err := agreement(agreementid, deviceid, agreementProto); err != nil {
+func AgreementAttempt(db *bolt.DB, agreementid string, deviceid string, policyName string, agreementProto string) error {
+	if agreement, err := agreement(agreementid, deviceid, policyName, agreementProto); err != nil {
 		return err
 	} else if err := PersistNew(db, agreement.CurrentAgreementId, bucketName(agreementProto), &agreement); err != nil {
 		return err
@@ -177,6 +179,7 @@ func persistUpdatedAgreement(db *bolt.DB, agreementid string, protocol string, u
 				mod.AgreementProtocol = update.AgreementProtocol
 				mod.Proposal = update.Proposal
 				mod.Policy = update.Policy
+				mod.PolicyName = update.PolicyName
 				mod.ProposalSig = update.ProposalSig
 				mod.DataVerificationURL = update.DataVerificationURL
 				mod.DisableDataVerificationChecks = update.DisableDataVerificationChecks

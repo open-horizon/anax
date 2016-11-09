@@ -53,9 +53,18 @@ type CSAgreementWork interface {
 
 type CSInitiateAgreement struct {
 	workType       string
-	ProducerPolicy *policy.Policy   // the producer policy received from the exchange
-	ConsumerPolicy *policy.Policy   // the consumer policy we're matched up with
-	Device         *exchange.Device // the device entry in the exchange
+	ProducerPolicy policy.Policy   // the producer policy received from the exchange
+	ConsumerPolicy policy.Policy   // the consumer policy we're matched up with
+	Device         exchange.Device // the device entry in the exchange
+}
+
+func (c CSInitiateAgreement) String() string {
+	res := ""
+	res += fmt.Sprintf("Workitem: %v\n", c.workType)
+	res += fmt.Sprintf("Producer Policy: %v\n", c.ProducerPolicy)
+	res += fmt.Sprintf("Consumer Policy: %v\n", c.ConsumerPolicy)
+	res += fmt.Sprintf("Device: %v", c.Device)
+	return res
 }
 
 func (c CSInitiateAgreement) Type() string {
@@ -115,11 +124,11 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 			glog.V(5).Infof(logString(fmt.Sprintf("using AgreementId %v", agreementIdString)))
 
 			// Create pending agreement in database
-			if err := AgreementAttempt(a.db, agreementIdString, wi.Device.Id, "Citizen Scientist"); err != nil {
+			if err := AgreementAttempt(a.db, agreementIdString, wi.Device.Id, wi.ConsumerPolicy.Header.Name, "Citizen Scientist"); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error persisting agreement attempt: %v", err)))
 
 				// Initiate the protocol
-			} else if proposal, err := protocolHandler.InitiateAgreement(agreementId, wi.ProducerPolicy, wi.ConsumerPolicy, wi.Device, myAddress, a.agbotId); err != nil {
+			} else if proposal, err := protocolHandler.InitiateAgreement(agreementId, &wi.ProducerPolicy, &wi.ConsumerPolicy, &wi.Device, myAddress, a.agbotId); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error initiating agreement: %v", err)))
 
 				// Remove pending agreement from database

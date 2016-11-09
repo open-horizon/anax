@@ -949,13 +949,13 @@ func (b *ContainerWorker) start() {
 
 				if deployment, err := b.resourcesCreate(cmd.AgreementLaunchContext.AgreementId, cmd.AgreementLaunchContext.Configure, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions); err != nil {
 					glog.Errorf("Error starting containers: %v", err)
-					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, cmd.AgreementLaunchContext.AgreementId, deployment) // still using deployment here, need it to shutdown containers
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, cmd.AgreementLaunchContext.AgreementId, *deployment) // still using deployment here, need it to shutdown containers
 
 				} else {
 					glog.Infof("Success starting pattern for agreement: %v, protocol: %v, serviceNames: %v", cmd.AgreementLaunchContext.AgreementId, cmd.AgreementLaunchContext.AgreementProtocol, persistence.ServiceConfigNames(deployment))
 
 					// perhaps add the tc info to the container message so it can be enforced
-					b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, cmd.AgreementLaunchContext.AgreementProtocol, cmd.AgreementLaunchContext.AgreementId, deployment)
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, cmd.AgreementLaunchContext.AgreementProtocol, cmd.AgreementLaunchContext.AgreementId, *deployment)
 				}
 
 			case *ContainerMaintenanceCommand:
@@ -964,7 +964,7 @@ func (b *ContainerWorker) start() {
 
 				cMatches := make([]docker.APIContainers, 0)
 
-				serviceNames := persistence.ServiceConfigNames(cmd.Deployment)
+				serviceNames := persistence.ServiceConfigNames(&cmd.Deployment)
 
 				report := func(container *docker.APIContainers, agreementId string) error {
 
@@ -1185,14 +1185,14 @@ func (b *ContainerWorker) NewContainerConfigureCommand(imageFiles []string, agre
 type ContainerMaintenanceCommand struct {
 	AgreementProtocol string
 	AgreementId       string
-	Deployment        *map[string]persistence.ServiceConfig
+	Deployment        map[string]persistence.ServiceConfig
 }
 
 func (c ContainerMaintenanceCommand) String() string {
-	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v, Deployment: %v", c.AgreementProtocol, c.AgreementId, persistence.ServiceConfigNames(c.Deployment))
+	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v, Deployment: %v", c.AgreementProtocol, c.AgreementId, persistence.ServiceConfigNames(&c.Deployment))
 }
 
-func (b *ContainerWorker) NewContainerMaintenanceCommand(protocol string, agreementId string, deployment *map[string]persistence.ServiceConfig) *ContainerMaintenanceCommand {
+func (b *ContainerWorker) NewContainerMaintenanceCommand(protocol string, agreementId string, deployment map[string]persistence.ServiceConfig) *ContainerMaintenanceCommand {
 	return &ContainerMaintenanceCommand{
 		AgreementProtocol: protocol,
 		AgreementId:       agreementId,
@@ -1203,15 +1203,15 @@ func (b *ContainerWorker) NewContainerMaintenanceCommand(protocol string, agreem
 type ContainerShutdownCommand struct {
 	AgreementProtocol  string
 	CurrentAgreementId string
-	Deployment         *map[string]persistence.ServiceConfig
+	Deployment         map[string]persistence.ServiceConfig
 	Agreements         []string
 }
 
 func (c ContainerShutdownCommand) String() string {
-	return fmt.Sprintf("AgreementProtocol: %v, CurrentAgreementId: %v, Deployment: %v, Agreements (sample): %v", c.AgreementProtocol, c.CurrentAgreementId, persistence.ServiceConfigNames(c.Deployment), cutil.FirstN(10, c.Agreements))
+	return fmt.Sprintf("AgreementProtocol: %v, CurrentAgreementId: %v, Deployment: %v, Agreements (sample): %v", c.AgreementProtocol, c.CurrentAgreementId, persistence.ServiceConfigNames(&c.Deployment), cutil.FirstN(10, c.Agreements))
 }
 
-func (b *ContainerWorker) NewContainerShutdownCommand(protocol string, currentAgreementId string, deployment *map[string]persistence.ServiceConfig, agreements []string) *ContainerShutdownCommand {
+func (b *ContainerWorker) NewContainerShutdownCommand(protocol string, currentAgreementId string, deployment map[string]persistence.ServiceConfig, agreements []string) *ContainerShutdownCommand {
 	return &ContainerShutdownCommand{
 		AgreementProtocol:  protocol,
 		CurrentAgreementId: currentAgreementId,

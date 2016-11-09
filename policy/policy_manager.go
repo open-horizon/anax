@@ -120,11 +120,11 @@ func (self *PolicyManager) MatchesMine(matchPolicy *Policy) error {
 	defer self.PolicyLock.Unlock()
 
 	if matches, err := self.hasPolicy(matchPolicy); err != nil {
-		return err
+		return errors.New(fmt.Sprintf("Policy matching %v not found in %v, error is %v", matchPolicy, self.Policies, err))
 	} else if matches {
 		return nil
 	} else {
-		return errors.New(fmt.Sprintf("Policy matching %v not found in %v", *matchPolicy, self.Policies))
+		return errors.New(fmt.Sprintf("Policy matching %v not found in %v, no error found", matchPolicy, self.Policies))
 	}
 
 }
@@ -133,35 +133,50 @@ func (self *PolicyManager) MatchesMine(matchPolicy *Policy) error {
 // if the policy manager already has this policy.
 func (self *PolicyManager) hasPolicy(matchPolicy *Policy) (bool, error) {
 
+	errString := ""
 	for _, pol := range self.Policies {
 		if !pol.Header.IsSame(matchPolicy.Header) {
-			return false, nil
-		} else if !pol.Header.IsSame(matchPolicy.Header) {
-			return false, nil
+			errString = fmt.Sprintf("Header %v mismatch with %v", pol.Header, matchPolicy.Header)
+			continue
 		} else if !pol.APISpecs.IsSame(matchPolicy.APISpecs) {
-			return false, nil
+			errString = fmt.Sprintf("API Spec %v mismatch with %v", pol.APISpecs, matchPolicy.APISpecs)
+			continue
 		} else if !pol.AgreementProtocols.IsSame(matchPolicy.AgreementProtocols) {
-			return false, nil
+			errString = fmt.Sprintf("AgreementProtocol %v mismatch with %v", pol.AgreementProtocols, matchPolicy.AgreementProtocols)
+			continue
 		} else if !pol.IsSameWorkload(matchPolicy) {
-			return false, nil
+			errString = fmt.Sprintf("Workload %v mismatch with %v", pol.Workloads, matchPolicy.Workloads)
+			continue
 		} else if !pol.DataVerify.IsSame(matchPolicy.DataVerify) {
-			return false, nil
+			errString = fmt.Sprintf("DataVerify %v mismatch with %v", pol.DataVerify, matchPolicy.DataVerify)
+			continue
 		} else if !pol.Properties.IsSame(matchPolicy.Properties) {
-			return false, nil
+			errString = fmt.Sprintf("Properties %v mismatch with %v", pol.Properties, matchPolicy.Properties)
+			continue
 		} else if !reflect.DeepEqual(pol.CounterPartyProperties, matchPolicy.CounterPartyProperties) {
-			return false, nil
+			errString = fmt.Sprintf("CounterPartyProperties %v mismatch with %v", pol.CounterPartyProperties, matchPolicy.CounterPartyProperties)
+			continue
 		} else if !pol.Blockchains.IsSame(matchPolicy.Blockchains) {
-			return false, nil
+			errString = fmt.Sprintf("Blockchain %v mismatch with %v", pol.Blockchains, matchPolicy.Blockchains)
+			continue
 		} else if pol.RequiredWorkload != matchPolicy.RequiredWorkload {
-			return false, nil
+			errString = fmt.Sprintf("RequiredWorkload %v mismatch with %v", pol.RequiredWorkload, matchPolicy.RequiredWorkload)
+			continue
 		} else if pol.MaxAgreements != matchPolicy.MaxAgreements {
-			return false, nil
+			errString = fmt.Sprintf("MaxAgreement %v mismatch with %v", pol.MaxAgreements, matchPolicy.MaxAgreements)
+			continue
 		} else {
-			return true, nil
+			errString = ""
+			break
 		}
 
 	}
-	return false, nil
+
+	if errString == "" {
+		return true, nil
+	} else {
+		return false, errors.New(errString)
+	}
 }
 
 func MarshalPolicy(pol *Policy) (string, error) {

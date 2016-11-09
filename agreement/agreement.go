@@ -248,7 +248,8 @@ func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply
 					glog.Errorf("Error: %v", err)
 				}
 				envAdds["MTN_AGREEMENTID"] = proposal.AgreementId
-				envAdds["MTN_CONTRACT"] = tcPolicy.Header.Name
+				envAdds["MTN_CONTRACT"] = w.Config.Edge.DVPrefix + proposal.AgreementId
+				envAdds["MTN_CONFIGURE_NONCE"] = proposal.AgreementId
 
 				lc.EnvironmentAdditions = &envAdds
 				lc.AgreementProtocol = citizenscientist.PROTOCOL_NAME
@@ -306,11 +307,11 @@ func (w *AgreementWorker) syncOnInit() error {
 					glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
 				} else if existingPol := w.pm.GetPolicy(pol.Header.Name); existingPol == nil {
 					glog.Errorf(logString(fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
-					w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, governance.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, &ag.CurrentDeployment)
+					w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, governance.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
 
 				} else if err := w.pm.MatchesMine(pol); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("agreement %v has a policy %v that has changed.", ag.CurrentAgreementId, pol.Header.Name)))
-					w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, governance.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, &ag.CurrentDeployment)
+					w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, governance.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
 
 				} else if err := w.pm.AttemptingAgreement(existingPol, ag.CurrentAgreementId); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))

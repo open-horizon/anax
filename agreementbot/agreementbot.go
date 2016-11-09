@@ -284,7 +284,7 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 								// Check to see if we're already doing something with this device
 								pendingAgreementFilter := func() AFilter {
 									return func(a Agreement) bool {
-										return a.DeviceId == dev.Id && a.AgreementFinalizedTime == 0 && a.AgreementTimedout == 0
+										return a.DeviceId == dev.Id && a.PolicyName == consumerPolicy.Header.Name && a.AgreementFinalizedTime == 0 && a.AgreementTimedout == 0
 									}
 								}
 
@@ -309,9 +309,9 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 									} else {
 										agreementWork := CSInitiateAgreement{
 											workType:       INITIATE,
-											ProducerPolicy: producerPolicy,
-											ConsumerPolicy: &consumerPolicy,
-											Device:         &dev,
+											ProducerPolicy: *producerPolicy,
+											ConsumerPolicy: consumerPolicy,
+											Device:         dev,
 										}
 
 										work <- agreementWork

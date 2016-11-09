@@ -376,7 +376,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 			// write message
 			ct := agreements[0]
 
-			a.Messages() <- events.NewApiAgreementCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ct.AgreementProtocol, ct.CurrentAgreementId, &ct.CurrentDeployment)
+			a.Messages() <- events.NewApiAgreementCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ct.AgreementProtocol, ct.CurrentAgreementId, ct.CurrentDeployment)
 			w.WriteHeader(http.StatusOK)
 		}
 	}
@@ -525,11 +525,11 @@ func (a *API) contract(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusInternalServerError)
 			}
 
-			if *contract.Name != "Location Contract" {
+			// if *contract.Name != "Location Contract" {
 				if genErr := policy.GeneratePolicy(a.Messages(), *contract.Name, contract.Arch, contract.AppAttributes, a.Config.Edge.PolicyPath); genErr != nil {
 					glog.Errorf("Error: %v", genErr)
 				}
-			}
+			// }
 
 			w.WriteHeader(http.StatusCreated)
 

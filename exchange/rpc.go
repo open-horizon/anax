@@ -68,7 +68,7 @@ func (d Device) String() string {
 }
 
 func (d Device) ShortString() string {
-	str := fmt.Sprintf("Id: %v, Name: %v, MsgEndPoint: %v, Microservice URLs:", d.Id, d.Name, d.Microservices, d.MsgEndPoint)
+	str := fmt.Sprintf("Id: %v, Name: %v, MsgEndPoint: %v, Microservice URLs:", d.Id, d.Name, d.MsgEndPoint)
 	for _, ms := range d.Microservices {
 		str += fmt.Sprintf("%v,", ms.Url)
 	}
@@ -220,7 +220,7 @@ func Heartbeat(h *http.Client, url string, interval int) {
 				glog.Errorf(err.Error())
 				break
 			} else if tpErr != nil {
-				glog.Warningf(err.Error())
+				glog.Warningf(tpErr.Error())
 				time.Sleep(10 * time.Second)
 				continue
 			} else {
