@@ -202,7 +202,7 @@ func (w *GovernanceWorker) governAgreements() {
 								w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, CANCEL_NOT_FINALIZED_TIMEOUT)
 
 								// cleanup workloads
-								w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, &ag.CurrentDeployment)
+								w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
 							}
 						}
 					} else {
@@ -214,7 +214,7 @@ func (w *GovernanceWorker) governAgreements() {
 							glog.Infof(logString(fmt.Sprintf("terminating agreement %v because it has been cancelled on the blockchain.", ag.CurrentAgreementId)))
 							w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, CANCEL_DISCOVERED)
 							// cleanup workloads if needed
-							w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, &ag.CurrentDeployment)
+							w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
 						}
 
 						if ag.AgreementExecutionStartTime == 0 {
@@ -223,7 +223,7 @@ func (w *GovernanceWorker) governAgreements() {
 								glog.Infof(logString(fmt.Sprintf("terminating agreement %v because it hasn't been launched in max allowed time. This could be because of a workload failure.", ag.CurrentAgreementId)))
 								w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, CANCEL_NOT_EXECUTED_TIMEOUT)
 								// cleanup workloads if needed
-								w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, &ag.CurrentDeployment)
+								w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
 							}
 						}
 					}
@@ -260,7 +260,7 @@ func (w *GovernanceWorker) governContainers() {
 					glog.V(3).Infof(logString(fmt.Sprintf("fire event to ensure containers are still up for agreement %v.", ag.CurrentAgreementId)))
 
 					// current contract, ensure workloads still running
-					w.Messages() <- events.NewGovernanceMaintenanceMessage(events.CONTAINER_MAINTAIN, ag.AgreementProtocol, ag.CurrentAgreementId, &ag.CurrentDeployment)
+					w.Messages() <- events.NewGovernanceMaintenanceMessage(events.CONTAINER_MAINTAIN, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
 
 				}
 			}
@@ -333,7 +333,7 @@ func (w *GovernanceWorker) start() {
 				cmd, _ := command.(*StartGovernExecutionCommand)
 				glog.V(3).Infof("Starting governance on resources in agreement: %v", cmd.AgreementId)
 
-				if _, err := persistence.AgreementStateExecutionStarted(w.db, cmd.AgreementId, cmd.AgreementProtocol, cmd.Deployment); err != nil {
+				if _, err := persistence.AgreementStateExecutionStarted(w.db, cmd.AgreementId, cmd.AgreementProtocol, &cmd.Deployment); err != nil {
 					glog.Errorf("Failed to update local contract record to start governing Agreement: %v. Error: %v", cmd.AgreementId, err)
 				}
 
@@ -356,10 +356,10 @@ func (w *GovernanceWorker) start() {
 type StartGovernExecutionCommand struct {
 	AgreementId       string
 	AgreementProtocol string
-	Deployment        *map[string]persistence.ServiceConfig
+	Deployment        map[string]persistence.ServiceConfig
 }
 
-func (w *GovernanceWorker) NewStartGovernExecutionCommand(deployment *map[string]persistence.ServiceConfig, protocol string, agreementId string) *StartGovernExecutionCommand {
+func (w *GovernanceWorker) NewStartGovernExecutionCommand(deployment map[string]persistence.ServiceConfig, protocol string, agreementId string) *StartGovernExecutionCommand {
 	return &StartGovernExecutionCommand{
 		AgreementId:       agreementId,
 		AgreementProtocol: protocol,
@@ -371,10 +371,10 @@ type CleanupExecutionCommand struct {
 	AgreementProtocol string
 	AgreementId       string
 	Reason            uint
-	Deployment        *map[string]persistence.ServiceConfig
+	Deployment        map[string]persistence.ServiceConfig
 }
 
-func (w *GovernanceWorker) NewCleanupExecutionCommand(protocol string, agreementId string, reason uint, deployment *map[string]persistence.ServiceConfig) *CleanupExecutionCommand {
+func (w *GovernanceWorker) NewCleanupExecutionCommand(protocol string, agreementId string, reason uint, deployment map[string]persistence.ServiceConfig) *CleanupExecutionCommand {
 	return &CleanupExecutionCommand{
 		AgreementProtocol: protocol,
 		AgreementId:       agreementId,

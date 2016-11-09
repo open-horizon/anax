@@ -325,7 +325,7 @@ type GovernanceMaintenanceMessage struct {
 	event             Event
 	AgreementProtocol string
 	AgreementId       string
-	Deployment        *map[string]persistence.ServiceConfig
+	Deployment        map[string]persistence.ServiceConfig
 }
 
 func (m *GovernanceMaintenanceMessage) Event() Event {
@@ -351,14 +351,14 @@ func (m *GovernanceCancelationMessage) Event() Event {
 }
 
 func (m GovernanceCancelationMessage) String() string {
-	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Cause: %v", m.Event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(m.Deployment), m.Cause)
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Cause: %v", m.Event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment), m.Cause)
 }
 
 func (m GovernanceCancelationMessage) ShortString() string {
 	return m.String()
 }
 
-func NewGovernanceMaintenanceMessage(id EventId, protocol string, agreementId string, deployment *map[string]persistence.ServiceConfig) *GovernanceMaintenanceMessage {
+func NewGovernanceMaintenanceMessage(id EventId, protocol string, agreementId string, deployment map[string]persistence.ServiceConfig) *GovernanceMaintenanceMessage {
 	return &GovernanceMaintenanceMessage{
 		event: Event{
 			Id: id,
@@ -369,7 +369,7 @@ func NewGovernanceMaintenanceMessage(id EventId, protocol string, agreementId st
 	}
 }
 
-func NewGovernanceCancelationMessage(id EventId, cause EndContractCause, protocol string, agreementId string, deployment *map[string]persistence.ServiceConfig) *GovernanceCancelationMessage {
+func NewGovernanceCancelationMessage(id EventId, cause EndContractCause, protocol string, agreementId string, deployment map[string]persistence.ServiceConfig) *GovernanceCancelationMessage {
 
 	govMaint := NewGovernanceMaintenanceMessage(id, protocol, agreementId, deployment)
 
@@ -384,11 +384,11 @@ type ContainerMessage struct {
 	event             Event
 	AgreementProtocol string
 	AgreementId       string
-	Deployment        *map[string]persistence.ServiceConfig
+	Deployment        map[string]persistence.ServiceConfig
 }
 
 func (m ContainerMessage) String() string {
-	return fmt.Sprintf("event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v", m.event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(m.Deployment))
+	return fmt.Sprintf("event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v", m.event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment))
 }
 
 func (m ContainerMessage) ShortString() string {
@@ -399,7 +399,7 @@ func (b ContainerMessage) Event() Event {
 	return b.event
 }
 
-func NewContainerMessage(id EventId, protocol string, agreementId string, deployment *map[string]persistence.ServiceConfig) *ContainerMessage {
+func NewContainerMessage(id EventId, protocol string, agreementId string, deployment map[string]persistence.ServiceConfig) *ContainerMessage {
 
 	return &ContainerMessage{
 		event: Event{
@@ -416,7 +416,7 @@ type ApiAgreementCancelationMessage struct {
 	event             Event
 	AgreementProtocol string
 	AgreementId       string
-	Deployment        *map[string]persistence.ServiceConfig
+	Deployment        map[string]persistence.ServiceConfig
 	Cause             EndContractCause
 }
 
@@ -425,14 +425,14 @@ func (m *ApiAgreementCancelationMessage) Event() Event {
 }
 
 func (m ApiAgreementCancelationMessage) String() string {
-	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Cause: %v", m.Event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(m.Deployment), m.Cause)
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Cause: %v", m.Event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment), m.Cause)
 }
 
 func (m ApiAgreementCancelationMessage) ShortString() string {
 	return m.String()
 }
 
-func NewApiAgreementCancelationMessage(id EventId, cause EndContractCause, protocol string, agreementId string, deployment *map[string]persistence.ServiceConfig) *ApiAgreementCancelationMessage {
+func NewApiAgreementCancelationMessage(id EventId, cause EndContractCause, protocol string, agreementId string, deployment map[string]persistence.ServiceConfig) *ApiAgreementCancelationMessage {
 	return &ApiAgreementCancelationMessage{
 		event: Event{
 			Id: id,
@@ -449,7 +449,7 @@ type InitAgreementCancelationMessage struct {
 	event             Event
 	AgreementProtocol string
 	AgreementId       string
-	Deployment        *map[string]persistence.ServiceConfig
+	Deployment        map[string]persistence.ServiceConfig
 	Reason            uint
 }
 
@@ -458,14 +458,14 @@ func (m *InitAgreementCancelationMessage) Event() Event {
 }
 
 func (m InitAgreementCancelationMessage) String() string {
-	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Reason: %v", m.Event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(m.Deployment), m.Reason)
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Reason: %v", m.Event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment), m.Reason)
 }
 
 func (m InitAgreementCancelationMessage) ShortString() string {
 	return m.String()
 }
 
-func NewInitAgreementCancelationMessage(id EventId, reason uint, protocol string, agreementId string, deployment *map[string]persistence.ServiceConfig) *InitAgreementCancelationMessage {
+func NewInitAgreementCancelationMessage(id EventId, reason uint, protocol string, agreementId string, deployment map[string]persistence.ServiceConfig) *InitAgreementCancelationMessage {
 	return &InitAgreementCancelationMessage{
 		event: Event{
 			Id: id,

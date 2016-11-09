@@ -9,6 +9,7 @@ import (
     "github.com/open-horizon/anax/config"
     "net/http"
     "os"
+    "strings"
     "time"
 )
 
@@ -83,7 +84,7 @@ func GetActiveAgreements(in_devices map[string][]string, agreement Agreement, co
     }
 }
 
-func ActiveAgreementsContains(activeAgreements []string, agreement Agreement) bool {
+func ActiveAgreementsContains(activeAgreements []string, agreement Agreement, prefix string) bool {
 
     inttest_mode := os.Getenv("mtn_integration_test")
     if inttest_mode != "" || agreement.DisableDataVerificationChecks == true {
@@ -91,7 +92,7 @@ func ActiveAgreementsContains(activeAgreements []string, agreement Agreement) bo
     }
 
     for _, dev := range activeAgreements {
-        if dev == agreement.CurrentAgreementId {
+        if dev == agreement.CurrentAgreementId || (prefix != "" && strings.Contains(dev, prefix)) {
             return true
         }
     }

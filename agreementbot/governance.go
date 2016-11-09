@@ -55,26 +55,26 @@ func (w *AgreementBotWorker) GovernAgreements() {
 
 				// Govern agreements that we think are finalized in the blockchain, make sure they are still there and sending data
 				} else if ag.CounterPartyAddress != "" && ag.AgreementFinalizedTime != 0 {
+					now := uint64(time.Now().Unix())
 					if recorded, err := protocolHandler.VerifyAgreementRecorded(ag.CurrentAgreementId, ag.CounterPartyAddress, ag.ProposalSig, w.bc.Agreements); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("unable to verify finalized agreement %v on blockchain, error: %v", ag.CurrentAgreementId, err)))
 					} else if !recorded {
 						// The agreement is not on the blockchain, update state in exchange
 						glog.V(3).Infof(logString(fmt.Sprintf("discovered terminated agreement %v, cleaning up.", ag.CurrentAgreementId)))
 						w.TerminateAgreement(&ag, CANCEL_DISCOVERED)
+					} else if now - ag.DataVerifiedTime >= w.Worker.Manager.Config.AgreementBot.NoDataIntervalS {
+						// No data is being received, terminate the agreement
+						glog.V(3).Infof(logString(fmt.Sprintf("cancelling agreement %v due to lack of data", ag.CurrentAgreementId)))
+						w.TerminateAgreement(&ag, CANCEL_NO_DATA_RECEIVED)
 					} else if activeDataVerification {
 						// And make sure the device is still sending data
-						now := uint64(time.Now().Unix())
 						if activeAgreements, err := GetActiveAgreements(allActiveAgreements, ag, &w.Worker.Manager.Config.AgreementBot); err != nil {
 							glog.Errorf(logString(fmt.Sprintf("unable to retrieve active agreement list. Terminating data verification loop early, error: %v", err)))
 							activeDataVerification = false
-						} else if ActiveAgreementsContains(activeAgreements, ag) {
+						} else if ActiveAgreementsContains(activeAgreements, ag, w.Config.AgreementBot.DVPrefix) {
 							if _, err := DataVerified(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
 								glog.Errorf(logString(fmt.Sprintf("unable to record data verification, error: %v", err)))
 							}
-						} else if now - ag.DataVerifiedTime >= w.Worker.Manager.Config.AgreementBot.NoDataIntervalS {
-							// No data is being received, terminate the agreement
-							glog.V(3).Infof(logString(fmt.Sprintf("cancelling agreement %v due to lack of data", ag.CurrentAgreementId)))
-							w.TerminateAgreement(&ag, CANCEL_NO_DATA_RECEIVED)
 						}
 					}
 
