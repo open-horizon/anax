@@ -69,7 +69,7 @@ func tWorker(config *config.Config) *ContainerWorker {
 	return NewContainerWorker(config)
 }
 
-func tMsg(messages chan events.Message, expectedEvent events.EventId, t *testing.T) *ContainerMessage {
+func tMsg(messages chan events.Message, expectedEvent events.EventId, t *testing.T) *events.ContainerMessage {
 	// block on this read
 	msg := <-messages
 
@@ -81,8 +81,8 @@ func tMsg(messages chan events.Message, expectedEvent events.EventId, t *testing
 
 	switch msg.(type) {
 
-	case *ContainerMessage:
-		m, _ := msg.(*ContainerMessage)
+	case *events.ContainerMessage:
+		m, _ := msg.(*events.ContainerMessage)
 		if m.Event().Id == expectedEvent {
 			t.Logf("m: %v", m)
 			return m
@@ -143,7 +143,7 @@ func tClean(t *testing.T, tName string, worker *ContainerWorker, setupVerificati
 	}
 
 	// TODO: handle
-	os.RemoveAll(worker.Config.WorkloadROStorage + "/" + tName)
+	os.RemoveAll(worker.Config.Config.WorkloadROStorage + "/" + tName)
 
 	for _, net := range networks {
 		if strings.Contains(net.Name, tName) {
@@ -318,8 +318,8 @@ func Test_resourcesCreate_failLoad(t *testing.T) {
 	thisTest(worker, env, agreementId)
 }
 
-// tests creation of a networked container pattern; does not test all features of container creation, that is left to a less complicated test
 func Test_resourcesCreate_patterned(t *testing.T) {
+
 	thisTest := func(worker *ContainerWorker, env map[string]string, agreementId string) {
 
 		setupVerification := func(container *docker.APIContainers, containerDetail *docker.Container) error {
@@ -346,17 +346,6 @@ func Test_resourcesCreate_patterned(t *testing.T) {
 					return fmt.Errorf("RAM not set correctly")
 				}
 
-				//if container.Names[0] == tName {
-				//	if containerDetail.HostConfig.Privileged {
-				//		return fmt.Errorf("container %v should not be privileged but is", container.Names[0])
-				//	}
-
-				//} else if container.Names[0] == tName2 {
-				//	if !containerDetail.HostConfig.Privileged {
-				//		return fmt.Errorf("container %v should be privileged but is not", container.Names[0])
-				//	}
-				//}
-
 				if !tConnectivity(t, worker.client, container) {
 					return fmt.Errorf("container connectivity test failed for %v", container.Names)
 				}
@@ -376,7 +365,7 @@ func Test_resourcesCreate_patterned(t *testing.T) {
 
 func Test_resourcesRemove(t *testing.T) {
 
-	var createMsg *ContainerMessage
+	var createMsg *events.ContainerMessage
 	var w *ContainerWorker
 
 	setup := func(worker *ContainerWorker, env map[string]string, agreementId string) {
@@ -434,7 +423,7 @@ func Test_resourcesCreate_shared(t *testing.T) {
 				"privileged": true,
 				"environment": [
           "MTN_MQTT_TOKEN=ZZbrT4ON5rYzoBi7H1VK3Ak9n0Fwjcod",
-	        "SLEEP_INTERVAL=20"
+					"SLEEP_INTERVAL=20"
 				]
 			}
 		}

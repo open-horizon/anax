@@ -276,6 +276,14 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 			}
 		}
 
+		// add device_id
+		if os.Getenv("CMTN_DEVICE_ID") != "" {
+			// TODO: factor out the common prefix part
+			serviceConfig.Config.Env = append(serviceConfig.Config.Env, fmt.Sprintf("%s=%v", "DEVICE_ID", strings.Trim(os.Getenv("CMTN_DEVICE_ID"), " ")))
+		} else {
+			glog.Errorf("environment variable CMTN_DEVICE_ID not set, workload with config %v may be unstable", serviceConfig)
+		}
+
 		for _, port := range service.Ports {
 			var hostIP string
 
