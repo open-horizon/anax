@@ -2,7 +2,7 @@ SHELL = /bin/bash -e
 
 ARCH = $(shell ./tools/arch-tag)
 DOCKER_REGISTRY ?= summit.hovitos.engineering
-DOCKER_TAG ?= v2.0.0
+DOCKER_TAG ?= v2.0.1
 DOCKER_OPTS ?= --no-cache
 COMPILE_CLEAN ?= clean
 

@@ -5,6 +5,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/policy"
 	"net/http"
 	"runtime"
 	"time"
@@ -19,7 +20,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 	for {
 
 		notYetFinalFilter := func() AFilter {
-			return func(a Agreement) bool { return a.AgreementInceptionTime != 0 && a.AgreementTimedout == 0 }
+			return func(a Agreement) bool { return a.AgreementCreationTime != 0 && a.AgreementTimedout == 0 }
 		}
 
 		// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized on blockchain.
@@ -41,7 +42,9 @@ func (w *AgreementBotWorker) GovernAgreements() {
 							glog.Errorf(logString(fmt.Sprintf("error persisting agreement %v finalized: %v", ag.CurrentAgreementId, err)))
 						}
 						// Update state in exchange
-						if err := recordConsumerAgreementState(w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId, "", "Finalized Agreement"); err != nil {
+						if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("error demarshalling policy from agreement %v, error: %v", ag.CurrentAgreementId, err)))
+						} else if err := recordConsumerAgreementState(w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId, pol.APISpecs[0].SpecRef, "Finalized Agreement"); err != nil {
 							glog.Errorf(logString(fmt.Sprintf("error setting agreement %v finalized state in exchange: %v", ag.CurrentAgreementId, err)))
 						}
 					} else {
