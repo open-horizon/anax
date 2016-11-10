@@ -170,9 +170,9 @@ func (p PutDeviceRequest) ShortString() string {
 func CreateSearchRequest() *SearchExchangeRequest {
 
 	ser := &SearchExchangeRequest{
-		DaysStale:  0,
+		DaysStale:  1,
 		StartIndex:  0,
-		NumEntries: 10,
+		NumEntries: 100,
 	}
 
 	return ser

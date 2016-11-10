@@ -9,7 +9,6 @@ import (
     "github.com/open-horizon/anax/config"
     "net/http"
     "os"
-    "strings"
     "time"
 )
 
@@ -92,7 +91,7 @@ func ActiveAgreementsContains(activeAgreements []string, agreement Agreement, pr
     }
 
     for _, dev := range activeAgreements {
-        if dev == agreement.CurrentAgreementId || (prefix != "" && strings.Contains(dev, prefix)) {
+        if dev == agreement.CurrentAgreementId || dev == prefix + agreement.CurrentAgreementId {
             return true
         }
     }
