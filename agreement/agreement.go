@@ -173,10 +173,10 @@ func (w *AgreementWorker) start() {
 					glog.Errorf(logString(fmt.Sprintf("discarding message: %v due to %v", cmd.Msg.Payload(), err)))
 				} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
+				} else if reply, err := protocolHandler.DecideOnProposal(proposal, cmd.Msg.From(), w.deviceId); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("respond to proposal with error: %v", err)))
 				} else if _, err := persistence.NewEstablishedAgreement(w.db, proposal.AgreementId, proposal.ConsumerId, cmd.Msg.Payload(), citizenscientist.PROTOCOL_NAME, tcPolicy.APISpecs[0].SpecRef); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error persisting new pending agreement: %v", proposal.AgreementId)))
-				} else if reply, err := protocolHandler.DecideOnProposal(proposal, cmd.Msg.From(), w.deviceId); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("unable to respond to proposal, error: %v", err)))
 				} else if err := w.RecordReply(proposal, reply, citizenscientist.PROTOCOL_NAME, cmd); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to record reply %v, error: %v", *reply, err)))
 				}
@@ -207,8 +207,7 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 }
 
 func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply *citizenscientist.ProposalReply, protocol string, cmd *ReceivedProposalCommand) error {
-
-	if reply != nil {
+ 	if reply != nil {
 		// Update the state in the database
 		if _, err := persistence.AgreementStateAccepted(w.db, proposal.AgreementId, protocol, cmd.Msg.Payload(), proposal.Address, reply.Signature); err != nil {
 			return errors.New(logString(fmt.Sprintf("received error updating database state, %v", err)))
