@@ -16,12 +16,13 @@ type EventId string
 // event constants are declared here for all workers to ensure uniqueness of constant values
 const (
 	// blockchain-related
-	NOOP                 EventId = "NOOP"
-	AGREEMENT_ACCEPTED   EventId = "AGREEMENT_ACCEPTED"
-	AGREEMENT_ENDED      EventId = "AGREEMENT_ENDED"
-	AGREEMENT_CREATED    EventId = "AGREEMENT_CREATED"
-	AGREEMENT_REGISTERED EventId = "AGREEMENT_REGISTERED"
-	ACCOUNT_FUNDED       EventId = "ACCOUNT_FUNDED"
+	NOOP                  EventId = "NOOP"
+	AGREEMENT_ACCEPTED    EventId = "AGREEMENT_ACCEPTED"
+	AGREEMENT_ENDED       EventId = "AGREEMENT_ENDED"
+	AGREEMENT_CREATED     EventId = "AGREEMENT_CREATED"
+	AGREEMENT_REGISTERED  EventId = "AGREEMENT_REGISTERED"
+	ACCOUNT_FUNDED        EventId = "ACCOUNT_FUNDED"
+	BC_CLIENT_INITIALIZED EventId = "BC_CLIENT_INITIALIZED"
 
 	// whisper related
 	RECEIVED_MSG EventId = "RECEIVED_MSG"
@@ -481,9 +482,9 @@ func NewInitAgreementCancelationMessage(id EventId, reason uint, protocol string
 
 // Account funded message
 type AccountFundedMessage struct {
-	event             Event
-	Account           string
-	Time              uint64
+	event   Event
+	Account string
+	Time    uint64
 }
 
 func (m *AccountFundedMessage) Event() Event {
@@ -504,6 +505,33 @@ func NewAccountFundedMessage(id EventId, acct string) *AccountFundedMessage {
 			Id: id,
 		},
 		Account: acct,
+		Time:    uint64(time.Now().Unix()),
+	}
+}
+
+// Blockchain client initialized message
+type BlockchainClientInitilizedMessage struct {
+	event Event
+	Time  uint64
+}
+
+func (m *BlockchainClientInitilizedMessage) Event() Event {
+	return m.event
+}
+
+func (m BlockchainClientInitilizedMessage) String() string {
+	return fmt.Sprintf("Event: %v, Time: %v", m.Event, m.Time)
+}
+
+func (m BlockchainClientInitilizedMessage) ShortString() string {
+	return m.String()
+}
+
+func NewBlockchainClientInitilizedMessage(id EventId) *BlockchainClientInitilizedMessage {
+	return &BlockchainClientInitilizedMessage{
+		event: Event{
+			Id: id,
+		},
 		Time: uint64(time.Now().Unix()),
 	}
 }

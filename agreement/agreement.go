@@ -27,14 +27,15 @@ import (
 
 // must be safely-constructed!!
 type AgreementWorker struct {
-	worker.Worker // embedded field
-	db            *bolt.DB
-	httpClient    *http.Client
-	userId        string
-	deviceId      string
-	deviceToken   string
-	protocols     map[string]bool
-	pm            *policy.PolicyManager
+	worker.Worker       // embedded field
+	db                  *bolt.DB
+	httpClient          *http.Client
+	userId              string
+	deviceId            string
+	deviceToken         string
+	protocols           map[string]bool
+	pm                  *policy.PolicyManager
+	bcClientInitialized bool
 }
 
 func NewAgreementWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *AgreementWorker {
@@ -51,10 +52,11 @@ func NewAgreementWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.Po
 			Commands: commands,
 		},
 
-		db:         db,
-		httpClient: &http.Client{},
-		protocols:  make(map[string]bool),
-		pm:         pm,
+		db:                  db,
+		httpClient:          &http.Client{},
+		protocols:           make(map[string]bool),
+		pm:                  pm,
+		bcClientInitialized: false,
 	}
 
 	glog.Info("Starting Agreement worker")
@@ -91,6 +93,13 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 		// now way of checking.
 		agCmd := NewReceivedProposalCommand(*msg)
 		w.Commands <- agCmd
+
+	case *events.BlockchainClientInitilizedMessage:
+		msg, _ := incoming.(*events.BlockchainClientInitilizedMessage)
+		switch msg.Event().Id {
+		case events.BC_CLIENT_INITIALIZED:
+			w.bcClientInitialized = true
+		}
 
 	default: //nothing
 	}
@@ -132,7 +141,6 @@ func (w *AgreementWorker) start() {
 		if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
 		}
-
 
 		for {
 			glog.V(2).Infof(logString(fmt.Sprintf("blocking for commands")))
@@ -194,7 +202,6 @@ func (w *AgreementWorker) start() {
 
 }
 
-
 func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
 	w.deviceId = cmd.Id
@@ -207,7 +214,7 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 }
 
 func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply *citizenscientist.ProposalReply, protocol string, cmd *ReceivedProposalCommand) error {
- 	if reply != nil {
+	if reply != nil {
 		// Update the state in the database
 		if _, err := persistence.AgreementStateAccepted(w.db, proposal.AgreementId, protocol, cmd.Msg.Payload(), proposal.Address, reply.Signature); err != nil {
 			return errors.New(logString(fmt.Sprintf("received error updating database state, %v", err)))
@@ -267,7 +274,6 @@ func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply
 	return nil
 }
 
-
 func (w *AgreementWorker) syncOnInit() error {
 
 	glog.V(3).Infof(logString("beginning sync up."))
@@ -317,7 +323,7 @@ func (w *AgreementWorker) syncOnInit() error {
 				} else if err := w.pm.FinalAgreement(existingPol, ag.CurrentAgreementId); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
 
-				// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
+					// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
 				} else {
 
 					var exchangeAgreement map[string]exchange.DeviceAgreement
@@ -353,10 +359,9 @@ func (w *AgreementWorker) syncOnInit() error {
 					glog.V(3).Infof(logString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))
 				}
 
-
-			// This state should never occur, but could if there was an error along the way. It means that a DB record
-			// was created for this agreement but the record was never updated with the accepted time, which is supposed to occur
-			// immediately following creation of the record. A record in this state needs to be deleted.
+				// This state should never occur, but could if there was an error along the way. It means that a DB record
+				// was created for this agreement but the record was never updated with the accepted time, which is supposed to occur
+				// immediately following creation of the record. A record in this state needs to be deleted.
 			} else if ag.AgreementCreationTime != 0 && ag.AgreementAcceptedTime == 0 {
 				if err := persistence.DeleteEstablishedAgreement(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error deleting partially created agreement: %v, error: %v", ag.CurrentAgreementId, err)))
@@ -422,6 +427,16 @@ func (w *AgreementWorker) GetWorkloadPreference(url string) (map[string]string, 
 }
 
 func (w *AgreementWorker) advertiseAllPolicies(location string) error {
+
+	// Wait for blockchain client fully initialized before advertising the policies
+	for {
+		if w.bcClientInitialized == false {
+			time.Sleep(time.Duration(5) * time.Second)
+			glog.V(3).Infof("AgreementWorker waiting for blockchain client fully initialized.")
+		} else {
+			break
+		}
+	}
 
 	var pType, pValue, pCompare string
 

@@ -9,7 +9,7 @@ var ACCOUNT = null;
 var Agreement_map = {};
 
 // contract status
-var STATUS = ["Waiting to Advertise", "Advertised", "Negotiating", "Downloading Workload", "Running Workload", "In Contract"];
+var STATUS = ["Registering", "Advertising", "Negotiating", "Downloading Workload", "Running Workload", "In Contract"];
 
 // set up the refresh interval for the table.  
 $(document).ready(function() {
@@ -60,7 +60,7 @@ function fetch_info() {
 
 // create a status string for the given contract
 function get_contract_status(contract) {
-    var status = STATUS[1];
+    var status = STATUS[0];
     // if the status has already defined in the contract, just use it.
     if ("status" in contract && contract.status !== null && contract.status != "") {
         return status;
