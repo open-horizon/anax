@@ -175,3 +175,81 @@ func Test_APISpecification_subset_not_found(t *testing.T) {
 	}
 
 }
+
+// Third, some positive tests for the API Spec search
+func Test_APISpecification_contains_specref(t *testing.T) {
+	var as1 *APISpecList
+	asString := `[{"specRef": "http://mycompany.com/dm/gps","version": "[1.0.0,2.0.0)","exclusiveAccess": false,"arch":"arm"}]`
+
+	searchURL := "http://mycompany.com/dm/gps"
+	if as1 = create_APISpecification(asString, t); as1 != nil {
+		if !(*as1).ContainsSpecRef(searchURL) {
+			t.Errorf("Error: %v is not in %v.\n", searchURL, *as1)
+		}
+	}
+
+	asString = `[{"specRef": "http://mycompany.com/dm/gps","version": "[1.0.0,2.0.0)","exclusiveAccess": false,"arch":"arm"},
+				{"specRef": "http://mycompany.com/dm/cpu","version": "[1.0.0,2.0.0)","exclusiveAccess": false,"arch":"arm"},
+				{"specRef": "http://mycompany.com/dm/net","version": "[1.0.0,2.0.0)","exclusiveAccess": false,"arch":"arm"}]`
+
+	searchURL = "http://mycompany.com/dm/net"
+	if as1 = create_APISpecification(asString, t); as1 != nil {
+		if !(*as1).ContainsSpecRef(searchURL) {
+			t.Errorf("Error: %v is not in %v.\n", searchURL, *as1)
+		}
+	}
+
+	searchURL = "http://mycompany.com/dm/gps"
+	if as1 = create_APISpecification(asString, t); as1 != nil {
+		if !(*as1).ContainsSpecRef(searchURL) {
+			t.Errorf("Error: %v is not in %v.\n", searchURL, *as1)
+		}
+	}
+
+	searchURL = "http://mycompany.com/dm/cpu"
+	if as1 = create_APISpecification(asString, t); as1 != nil {
+		if !(*as1).ContainsSpecRef(searchURL) {
+			t.Errorf("Error: %v is not in %v.\n", searchURL, *as1)
+		}
+	}
+}
+
+// Fourth, some negative tests for the API Spec search
+func Test_APISpecification_not_contains_specref(t *testing.T) {
+	var as1 *APISpecList
+	asString := `[{"specRef": "http://mycompany.com/dm/gps","version": "[1.0.0,2.0.0)","exclusiveAccess": false,"arch":"arm"}]`
+
+	searchURL := "http://mycompany.com/dm/net"
+	if as1 = create_APISpecification(asString, t); as1 != nil {
+		if (*as1).ContainsSpecRef(searchURL) {
+			t.Errorf("Error: %v is not in %v.\n", searchURL, *as1)
+		}
+	}
+
+	asString = `[{"specRef": "http://mycompany.com/dm/gps","version": "[1.0.0,2.0.0)","exclusiveAccess": false,"arch":"arm"},
+				{"specRef": "http://mycompany.com/dm/cpu","version": "[1.0.0,2.0.0)","exclusiveAccess": false,"arch":"arm"},
+				{"specRef": "http://mycompany.com/dm/net","version": "[1.0.0,2.0.0)","exclusiveAccess": false,"arch":"arm"}]`
+
+	searchURL = "http://mycompany.com/dm/nit"
+	if as1 = create_APISpecification(asString, t); as1 != nil {
+		if (*as1).ContainsSpecRef(searchURL) {
+			t.Errorf("Error: %v is not in %v.\n", searchURL, *as1)
+		}
+	}
+
+	searchURL = ""
+	if as1 = create_APISpecification(asString, t); as1 != nil {
+		if (*as1).ContainsSpecRef(searchURL) {
+			t.Errorf("Error: %v is not in %v.\n", searchURL, *as1)
+		}
+	}
+
+	asString = `[]`
+
+	searchURL = "http://mycompany.com/dm/nit"
+	if as1 = create_APISpecification(asString, t); as1 != nil {
+		if (*as1).ContainsSpecRef(searchURL) {
+			t.Errorf("Error: %v is not in %v.\n", searchURL, *as1)
+		}
+	}
+}
