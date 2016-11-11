@@ -94,3 +94,13 @@ func (self *APISpecList) Add_API_Spec(new_ele *APISpecification) error {
 	(*self) = append(*self, *new_ele)
 	return nil
 }
+
+// This function return true if an api spec list contains the input spec ref url
+func (self APISpecList) ContainsSpecRef(url string) bool {
+	for _, ele := range self {
+		if ele.SpecRef == url {
+			return true
+		}
+	}
+	return false
+}

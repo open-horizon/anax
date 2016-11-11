@@ -181,3 +181,28 @@ func Test_contractCounter_failure1(t *testing.T) {
 		}
 	}
 }
+
+func Test_find_by_apispec1(t *testing.T) {
+
+	if pm, err := Initialize("./test/pfcompat1/"); err != nil {
+		t.Error(err)
+	} else {
+		searchURL := "http://mycompany.com/dm/gps"
+		pols := pm.GetPolicyByURL(searchURL)
+		if len(pols) != 1 {
+			t.Errorf("Expected to find 1 policy, found %v", len(pols))
+		}
+
+		searchURL = "http://mycompany.com/dm/cpu_temp"
+		pols = pm.GetPolicyByURL(searchURL)
+		if len(pols) != 2 {
+			t.Errorf("Expected to find 2 policies, found %v", len(pols))
+		}
+
+		searchURL = ""
+		pols = pm.GetPolicyByURL(searchURL)
+		if len(pols) != 0 {
+			t.Errorf("Expected to find 0 policies, found %v", len(pols))
+		}
+	}
+}

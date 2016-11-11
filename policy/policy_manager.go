@@ -325,6 +325,35 @@ func (self *PolicyManager) GetPolicy(name string) *Policy {
 	return nil
 }
 
+// This function returns the set of policy objects that contains contain the input device URL.
+func (self *PolicyManager) GetPolicyByURL(url string) []Policy {
+
+	res := make([]Policy, 0, 10)
+	self.PolicyLock.Lock()
+	defer self.PolicyLock.Unlock()
+	for _, pol := range self.Policies {
+		if pol.APISpecs.ContainsSpecRef(url) {
+			res = append(res, *pol)
+		}
+	}
+	return res
+}
+
+// This function deletes a policy by URL
+func (self *PolicyManager) DeletePolicyByURL(url string) error {
+
+	self.PolicyLock.Lock()
+	defer self.PolicyLock.Unlock()
+	for _, pol := range self.Policies {
+		if pol.APISpecs.ContainsSpecRef(url) {
+			// save the policy name
+			// Delete this policy - compress the array
+			// Remove the agreement counts by policy name
+		}
+	}
+	return errors.New("Not implemented yet")
+}
+
 func (self *PolicyManager) GetAllAgreementProtocols() map[string]bool {
 	protocols := make(map[string]bool)
 	self.PolicyLock.Lock()
