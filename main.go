@@ -144,33 +144,6 @@ func main() {
 		apiServer = api.NewAPIListener(config, db)
 	}
 
-	// block here on blockchain account balance ; TODO: generalize, make a part of all work with ethereum in lib
-	// TODO: probably this should be in a worker that issues an event when funding is complete.
-	funded := false
-	gethURL := ""
-	if len(config.Edge.GethURL) != 0 {
-		gethURL = config.Edge.GethURL
-	} else {
-		gethURL = config.AgreementBot.GethURL
-	}
-	now := func() int64 { return time.Now().Unix() }
-	printed := now() - 31
-
-	for !funded {
-		e := now()
-		if e-printed > 30 {
-			glog.Infof("Waiting for account to be funded")
-			printed = e
-		}
-
-		var err error
-		if funded, err = ethblockchain.AccountFunded(gethURL); err != nil {
-			// bury these because they're expected for some time up-front
-			glog.V(4).Infof("Account not yet funded: %v", err)
-		}
-		time.Sleep(900 * time.Millisecond)
-	}
-
 	// Get the device side policy manager started early so that all the workers can use it.
 	// Make sure the policy directory is in place.
 	var pm *policy.PolicyManager
@@ -191,6 +164,12 @@ func main() {
 
 	workers.Add("whisper", whisper.NewWhisperWorker(config))
 	workers.Add("agreementBot", agreementbot.NewAgreementBotWorker(config, agbotdb))
+
+	gethURL := config.Edge.GethURL
+	if gethURL == "" {
+		gethURL = config.AgreementBot.GethURL
+	}
+	workers.Add("blockchain", ethblockchain.NewEthBlockchainWorker(config, gethURL, nil))
 
 	if db != nil {
 		workers.Add("api", apiServer)
