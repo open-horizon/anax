@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/persistence"
 	gwhisper "github.com/open-horizon/go-whisper"
+	"time"
 )
 
 type Event struct {
@@ -20,6 +21,7 @@ const (
 	AGREEMENT_ENDED      EventId = "AGREEMENT_ENDED"
 	AGREEMENT_CREATED    EventId = "AGREEMENT_CREATED"
 	AGREEMENT_REGISTERED EventId = "AGREEMENT_REGISTERED"
+	ACCOUNT_FUNDED       EventId = "ACCOUNT_FUNDED"
 
 	// whisper related
 	RECEIVED_MSG EventId = "RECEIVED_MSG"
@@ -474,5 +476,34 @@ func NewInitAgreementCancelationMessage(id EventId, reason uint, protocol string
 		AgreementId:       agreementId,
 		Deployment:        deployment,
 		Reason:            reason,
+	}
+}
+
+// Account funded message
+type AccountFundedMessage struct {
+	event             Event
+	Account           string
+	Time              uint64
+}
+
+func (m *AccountFundedMessage) Event() Event {
+	return m.event
+}
+
+func (m AccountFundedMessage) String() string {
+	return fmt.Sprintf("Event: %v, Account: %v, Time: %v", m.Event, m.Account, m.Time)
+}
+
+func (m AccountFundedMessage) ShortString() string {
+	return m.String()
+}
+
+func NewAccountFundedMessage(id EventId, acct string) *AccountFundedMessage {
+	return &AccountFundedMessage{
+		event: Event{
+			Id: id,
+		},
+		Account: acct,
+		Time: uint64(time.Now().Unix()),
 	}
 }

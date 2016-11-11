@@ -39,12 +39,14 @@ const CANCEL_USER_REQUESTED = 105
 const CANCEL_DISCOVERED = 106
 
 type GovernanceWorker struct {
-	worker.Worker // embedded field
-	db            *bolt.DB
-	bc            *ethblockchain.BaseContracts
-	deviceId      string
-	deviceToken   string
-	pm            *policy.PolicyManager
+	worker.Worker   // embedded field
+	db              *bolt.DB
+	bc              *ethblockchain.BaseContracts
+	deviceId        string
+	deviceToken     string
+	pm              *policy.PolicyManager
+	bcWritesEnabled bool                           // This field will be turned to true when the blockchain account has ether, which means
+	                                               // block chain writes (cancellations) can be done.
 }
 
 func NewGovernanceWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *GovernanceWorker {
@@ -64,6 +66,7 @@ func NewGovernanceWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.P
 
 		db: db,
 		pm: pm,
+		bcWritesEnabled: false,
 	}
 
 	worker.start()
@@ -115,6 +118,12 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 		case events.AGREEMENT_ENDED:
 			cmd := w.NewCleanupExecutionCommand(msg.AgreementProtocol, msg.AgreementId, CANCEL_USER_REQUESTED, msg.Deployment)
 			w.Commands <- cmd
+		}
+	case *events.AccountFundedMessage:
+		msg, _ := incoming.(*events.AccountFundedMessage)
+		switch msg.Event().Id {
+		case events.ACCOUNT_FUNDED:
+			w.bcWritesEnabled = true
 		}
 
 	default: //nothing
@@ -312,10 +321,26 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 
 func (w *GovernanceWorker) start() {
 	go func() {
+
+		// Hold the governance functions until we have blockchain funding. If there are events occurring that
+		// we need to react to, they will queue up on the command queue while we wait here. The agreement worker
+		// should not be blocked by this.
+		for {
+			if w.bcWritesEnabled == false {
+				time.Sleep(time.Duration(5) * time.Second)
+				glog.V(3).Infof("GovernanceWorker command processor waiting for funding")
+			} else {
+				break
+			}
+		}
+
+		// Fire up the agreement governor and the container governor
 		w.governAgreements()
 		w.governContainers()
 
+		// Fire up the command processor
 		for {
+
 			glog.V(4).Infof("GovernanceWorker command processor blocking waiting to receive incoming commands")
 
 			command := <-w.Commands
