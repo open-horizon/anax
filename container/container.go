@@ -206,9 +206,9 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 
 	var ramBytes int64
 
-	// we know that MTN_RAM is in MB
-	if ram, exists := (environmentAdditions)["MTN_RAM"]; !exists {
-		return nil, fmt.Errorf("Missing required environment var MTN_RAM for agreement: %v", agreementId)
+	// we know that RAM is in MB
+	if ram, exists := (environmentAdditions)[config.ENVVAR_PREFIX+"RAM"]; !exists {
+		return nil, fmt.Errorf("Missing required environment var *RAM for agreement: %v", agreementId)
 	} else {
 		ramMB, err := strconv.ParseInt(ram, 10, 64)
 		if err != nil {
@@ -271,17 +271,9 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 
 		for _, v := range service.Environment {
 			// skip this one b/c it's dangerous
-			if !strings.HasPrefix("MTN_ETHEREUM_ACCOUNT", v) {
+			if !strings.HasPrefix(config.ENVVAR_PREFIX+"ETHEREUM_ACCOUNT", v) {
 				serviceConfig.Config.Env = append(serviceConfig.Config.Env, v)
 			}
-		}
-
-		// add device_id
-		if os.Getenv("CMTN_DEVICE_ID") != "" {
-			// TODO: factor out the common prefix part
-			serviceConfig.Config.Env = append(serviceConfig.Config.Env, fmt.Sprintf("%s=%v", "DEVICE_ID", strings.Trim(os.Getenv("CMTN_DEVICE_ID"), " ")))
-		} else {
-			glog.Errorf("environment variable CMTN_DEVICE_ID not set, workload with config %v may be unstable", serviceConfig)
 		}
 
 		for _, port := range service.Ports {
@@ -912,7 +904,7 @@ func (b *ContainerWorker) resourcesCreate(agreementId string, configure *gwhispe
 	}
 
 	// check environmentAdditions for MTN_ETHEREUM_ACCOUNT
-	_, hasSpecifiedEthAccount := environmentAdditions["MTN_ETHEREUM_ACCOUNT"]
+	_, hasSpecifiedEthAccount := environmentAdditions[config.ENVVAR_PREFIX+"ETHEREUM_ACCOUNT"]
 
 	if err := processPostCreate(b.iptables, b.client, agreementId, deployment, configureRaw, hasSpecifiedEthAccount, postCreateContainers, fail); err != nil {
 		return nil, err

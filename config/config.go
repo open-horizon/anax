@@ -14,21 +14,22 @@ type HorizonConfig struct {
 
 // This is the configuration options for Edge component flavor of Anax
 type Config struct {
-	WorkloadROStorage string
-	TorrentDir        string
-	APIListen         string
-	DBPath            string
-	GethURL           string
-	DockerEndpoint    string
-	DefaultCPUSet     string
-	StaticWebContent  string
-	PublicKeyPath     string
-	CACertsPath       string
-	ExchangeURL       string
-	PolicyPath        string
-	ExchangeHeartbeat int    // Seconds between heartbeats
-	AgreementTimeoutS uint64 // Number of seconds to wait before declaring agreement not finalized in blockchain
-	DVPrefix          string // When passing agreement ids into a workload container, add this prefix to the agreement id
+	WorkloadROStorage             string
+	TorrentDir                    string
+	APIListen                     string
+	DBPath                        string
+	GethURL                       string
+	DockerEndpoint                string
+	DefaultCPUSet                 string
+	DefaultServiceRegistrationRAM int64
+	StaticWebContent              string
+	PublicKeyPath                 string
+	CACertsPath                   string
+	ExchangeURL                   string
+	PolicyPath                    string
+	ExchangeHeartbeat             int    // Seconds between heartbeats
+	AgreementTimeoutS             uint64 // Number of seconds to wait before declaring agreement not finalized in blockchain
+	DVPrefix                      string // When passing agreement ids into a workload container, add this prefix to the agreement id
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string

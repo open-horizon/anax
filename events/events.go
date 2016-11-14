@@ -145,12 +145,11 @@ func NewABPolicyCreatedMessage(id EventId, policyFileName string) *ABPolicyCreat
 // This event indicates that the edge device has been registered in the exchange
 type EdgeRegisteredExchangeMessage struct {
 	event Event
-	id    string
 	token string
 }
 
 func (e EdgeRegisteredExchangeMessage) String() string {
-	return fmt.Sprintf("event: %v, id: %v, token: %v", e.event, e.id, e.token)
+	return fmt.Sprintf("event: %v, token: %v", e.event, e.token)
 }
 
 func (e EdgeRegisteredExchangeMessage) ShortString() string {
@@ -161,21 +160,16 @@ func (e *EdgeRegisteredExchangeMessage) Event() Event {
 	return e.event
 }
 
-func (e *EdgeRegisteredExchangeMessage) ID() string {
-	return e.id
-}
-
 func (e *EdgeRegisteredExchangeMessage) Token() string {
 	return e.token
 }
 
-func NewEdgeRegisteredExchangeMessage(evId EventId, id string, token string) *EdgeRegisteredExchangeMessage {
+func NewEdgeRegisteredExchangeMessage(evId EventId, token string) *EdgeRegisteredExchangeMessage {
 
 	return &EdgeRegisteredExchangeMessage{
 		event: Event{
 			Id: evId,
 		},
-		id:    id,
 		token: token,
 	}
 }
@@ -481,9 +475,9 @@ func NewInitAgreementCancelationMessage(id EventId, reason uint, protocol string
 
 // Account funded message
 type AccountFundedMessage struct {
-	event             Event
-	Account           string
-	Time              uint64
+	event   Event
+	Account string
+	Time    uint64
 }
 
 func (m *AccountFundedMessage) Event() Event {
@@ -504,6 +498,6 @@ func NewAccountFundedMessage(id EventId, acct string) *AccountFundedMessage {
 			Id: id,
 		},
 		Account: acct,
-		Time: uint64(time.Now().Unix()),
+		Time:    uint64(time.Now().Unix()),
 	}
 }

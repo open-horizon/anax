@@ -6,22 +6,14 @@ import (
 
 func Test_InputIsIllegal(t *testing.T) {
 	fails := func(str string) bool {
-		if b, _ := InputIsIllegal(str, true); b != "" {
+		if b, _ := InputIsIllegal(str); b != "" {
 			return true
 		}
 		return false
 	}
 
-	if b, _ := InputIsIllegal("Fo_o ()2, .@", true); b != "" {
+	if b, _ := InputIsIllegal("Fo_o ()2, .@"); b != "" {
 		t.Errorf("Input found to be illegal but isn't")
-	}
-
-	if b, _ := InputIsIllegal("", false); b != "" {
-		t.Errorf("Input found to be illegal but isn't")
-	}
-
-	if b, _ := InputIsIllegal("", true); b != "" {
-		t.Errorf("Input found to be legal but isn't")
 	}
 
 	if !fails("z00!") || !fails("fro{") || !fails("go[") || !fails(">oog") {

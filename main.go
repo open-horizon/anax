@@ -9,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/container"
+	"github.com/open-horizon/anax/device"
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/governance"
@@ -25,7 +26,7 @@ import (
 	"time"
 )
 
-// This function combines all messages (events) from workers into a single global message quueue. From this
+// This function combines all messages (events) from workers into a single global message queue. From this
 // global queue, each message will get delivered to each worker by the event handler function.
 //
 func mux(workers *worker.MessageHandlerRegistry) chan events.Message {
@@ -90,6 +91,11 @@ func main() {
 	}
 	glog.V(2).Infof("Using config: %v", config)
 	glog.V(2).Infof("GOMAXPROCS: %v", runtime.GOMAXPROCS(-1))
+
+	// check device identity, bail if not specified
+	if _, err := device.Id(); err != nil {
+		panic(err)
+	}
 
 	// open edge DB if necessary
 	var db *bolt.DB
@@ -184,7 +190,6 @@ func main() {
 	last := int64(0)
 
 	for {
-
 		select {
 		case msg := <-messageStream:
 			glog.V(3).Infof("Handling Message (%T): %v\n", msg, msg.ShortString())
