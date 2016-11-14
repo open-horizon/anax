@@ -43,3 +43,7 @@ Related Projects:
 * Add `"ANAX_LOG_LEVEL=5"` to the `Environment=` configuration in the systemd unit file `/etc/systemd/system/snap.bluehorizon.anax.service`. Note that the value `5` is the classification of most debug log messages, `6` is used for even more granular log messages, something like a 'trace' level.
 * Reload the systemd unit file with `systemctl daemon-reload`.
 * Restart the anax process with `systemctl restart snap.bluehorizon.anax.service`.
+
+#### Development Environment
+
+Note that the Makefile constructs its own `GOPATH` and builds from it; this is a convenience that can sometimes cause problems for development tooling that expects a project to be in a subdirector of `$GOPATH/src`. To use the Makefile to build the project inside your user's `GOPATH`, set the `TMPGOPATH` envvar to `GOPATH` and execute make respecting your user's environment, e.g. `TMPGOPATH=$GOPATH make -e deps`
