@@ -6,6 +6,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/device"
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -52,6 +53,8 @@ func NewGovernanceWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.P
 	messages := make(chan events.Message)
 	commands := make(chan worker.Command, 200)
 
+	id, _ := device.Id()
+
 	worker := &GovernanceWorker{
 
 		Worker: worker.Worker{
@@ -65,6 +68,9 @@ func NewGovernanceWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.P
 
 		db:              db,
 		pm:              pm,
+		deviceId: id,
+		// TODO: this needs to be read from the db and "token_valid" set to false (using persistence.InvalidateExchangeDeviceToken)
+		deviceToken: "", // set by incoming event or read from database directly
 		bcWritesEnabled: false,
 	}
 
@@ -159,7 +165,7 @@ func (w *GovernanceWorker) governAgreements() {
 				}
 			}
 
-			if establishedAgreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{notYetFinalFilter()}); err != nil {
+			if establishedAgreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),notYetFinalFilter()}); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("Unable to retrieve not yet final agreements from database: %v. Error: %v", err, err)))
 			} else {
 
@@ -242,8 +248,8 @@ func (w *GovernanceWorker) governContainers() {
 				}
 			}
 
-			if establishedAgreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{runningFilter()}); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("Unable to retrieve running agreements from database: %v. Error: %v", err, err)))
+			if establishedAgreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),runningFilter()}); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Unable to retrieve running agreements from database, error: %v", err)))
 			} else {
 
 				for _, ag := range establishedAgreements {

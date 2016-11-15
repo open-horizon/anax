@@ -44,14 +44,16 @@ deps: $(TMPGOPATH)/bin/govendor
 
 $(TMPGOPATH)/bin/govendor: gopathlinks
 	mkdir -p $(TMPGOPATH)/bin
-	export GOPATH=$(TMPGOPATH); \
+	-export GOPATH=$(TMPGOPATH); \
 	  go get -u github.com/kardianos/govendor
 
 # this is a symlink to facilitate building outside of user's GOPATH
 gopathlinks:
+ifneq ($(GOPATH),$(TMPGOPATH))
 	mkdir -p $(PKGPATH)
 	rm -f $(PKGPATH)/anax
 	ln -s $(CURDIR) $(PKGPATH)/anax
+endif
 
 install: anax installagbot
 	# copy static content

@@ -27,14 +27,15 @@ import (
 
 // must be safely-constructed!!
 type AgreementWorker struct {
-	worker.Worker // embedded field
-	db            *bolt.DB
-	httpClient    *http.Client
-	userId        string
-	deviceId      string
-	deviceToken   string
-	protocols     map[string]bool
-	pm            *policy.PolicyManager
+	worker.Worker       // embedded field
+	db                  *bolt.DB
+	httpClient          *http.Client
+	userId              string
+	deviceId            string
+	deviceToken         string
+	protocols           map[string]bool
+	pm                  *policy.PolicyManager
+	bcClientInitialized bool
 }
 
 func NewAgreementWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *AgreementWorker {
@@ -57,6 +58,7 @@ func NewAgreementWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.Po
 		httpClient: &http.Client{},
 		protocols:  make(map[string]bool),
 		pm:         pm,
+		bcClientInitialized: false,
 		deviceId:   id,
 
 		// TODO: this needs to be read from the db and "token_valid" set to false (using persistence.InvalidateExchangeDeviceToken)
@@ -97,6 +99,13 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 		// now way of checking.
 		agCmd := NewReceivedProposalCommand(*msg)
 		w.Commands <- agCmd
+
+	case *events.BlockchainClientInitilizedMessage:
+		msg, _ := incoming.(*events.BlockchainClientInitilizedMessage)
+		switch msg.Event().Id {
+		case events.BC_CLIENT_INITIALIZED:
+			w.bcClientInitialized = true
+		}
 
 	default: //nothing
 	}
@@ -174,14 +183,21 @@ func (w *AgreementWorker) start() {
 
 				protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
 
+				// Proposal messages could be duplicates or fakes if there is an agbot imposter in the network. The sequence
+				// of checks here is very important to prevent duplicates from causing chaos, especially if there are duplicates
+				// on agreement worker threads at the same time.
 				if proposal, err := protocolHandler.ValidateProposal(cmd.Msg.Payload()); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("discarding message: %v due to %v", cmd.Msg.Payload(), err)))
+				} else if agAlreadyExists, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),persistence.IdEAFilter(proposal.AgreementId)}); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreements from database, error %v", err)))
+				} else if len(agAlreadyExists) != 0 {
+					glog.Errorf(logString(fmt.Sprintf("agreement %v already exists, ignoring proposal: %v", proposal.AgreementId, proposal.ShortString())))
 				} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
 				} else if reply, err := protocolHandler.DecideOnProposal(proposal, cmd.Msg.From(), w.deviceId); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("respond to proposal with error: %v", err)))
 				} else if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId, proposal.ConsumerId, cmd.Msg.Payload(), citizenscientist.PROTOCOL_NAME, tcPolicy.APISpecs[0].SpecRef); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error persisting new pending agreement: %v", proposal.AgreementId)))
+					glog.Errorf(logString(fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId, err)))
 				} else if err := w.RecordReply(proposal, reply, citizenscientist.PROTOCOL_NAME, cmd); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to record reply %v, error: %v", *reply, err)))
 				}
@@ -252,7 +268,10 @@ func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply
 				envAdds[config.ENVVAR_PREFIX+"AGREEMENTID"] = proposal.AgreementId
 				envAdds[config.ENVVAR_PREFIX+"CONTRACT"] = w.Config.Edge.DVPrefix + proposal.AgreementId
 				envAdds[config.ENVVAR_PREFIX+"CONFIGURE_NONCE"] = proposal.AgreementId
+				// For workload compatibility, the DEVICE_ID env var is passed with and without the prefix. We would like to drop
+				// the env var without prefix once all the workloads have ben updated.
 				envAdds["DEVICE_ID"] = w.deviceId
+				envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = w.deviceId
 
 				lc.EnvironmentAdditions = &envAdds
 				lc.AgreementProtocol = citizenscientist.PROTOCOL_NAME
@@ -278,7 +297,7 @@ func (w *AgreementWorker) syncOnInit() error {
 	protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
 
 	// Loop through our database and check each record for accuracy with the exchange and the blockchain
-	if agreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{}); err == nil {
+	if agreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err == nil {
 
 		// If there are agreemens in the database then we will assume that the device is already registered
 		for _, ag := range agreements {
@@ -374,6 +393,16 @@ func (w *AgreementWorker) GetWorkloadPreference(url string) (map[string]string, 
 }
 
 func (w *AgreementWorker) advertiseAllPolicies(location string) error {
+
+	// Wait for blockchain client fully initialized before advertising the policies
+	for {
+		if w.bcClientInitialized == false {
+			time.Sleep(time.Duration(5) * time.Second)
+			glog.V(3).Infof("AgreementWorker waiting for blockchain client fully initialized.")
+		} else {
+			break
+		}
+	}
 
 	var pType, pValue, pCompare string
 

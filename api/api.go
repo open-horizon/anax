@@ -109,7 +109,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		// TODO: incorporate fetching previous agreements too
 
-		agreements, err := persistence.FindEstablishedAgreements(a.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{})
+		agreements, err := persistence.FindEstablishedAgreements(a.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter()})
 		if err != nil {
 			glog.Error(err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)

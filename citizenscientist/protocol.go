@@ -157,7 +157,7 @@ func (p *ProtocolHandler) DecideOnProposal(proposal *Proposal, from string, myId
 
 	// Tell the policy manager that we're going to attempt an agreement
 	if err := p.pm.AttemptingAgreement(producerPolicy, proposal.AgreementId); err != nil {
-		glog.Errorf(fmt.Sprintf("Error saving agreement count: %v", err))
+		replyErr = errors.New(fmt.Sprintf("CS Protocol decide on proposal received error saving agreement count: %v", err))
 	}
 
 	// The consumer will send 2 policies, one is the merged policy that represents the
@@ -176,11 +176,9 @@ func (p *ProtocolHandler) DecideOnProposal(proposal *Proposal, from string, myId
 			// Now check to make sure that the merged policy is acceptable.
 		} else if err := policy.Are_Compatible(producerPolicy, termsAndConditions); err != nil {
 			replyErr = errors.New(fmt.Sprintf("CS Protocol decide on proposal received error, T and C policy is not compatible, rejecting proposal: %v", err))
+		} else if err := p.pm.FinalAgreement(producerPolicy, proposal.AgreementId); err != nil {
+			replyErr = errors.New(fmt.Sprintf("CS Protocol decide on proposal received error, unable to record agreement state in PM: %v", err))
 		} else {
-
-			if err := p.pm.FinalAgreement(producerPolicy, proposal.AgreementId); err != nil {
-				glog.Errorf(fmt.Sprintf("CS Protocol decide on proposal received error, unable to record agreement state in PM: %v", err))
-			}
 
 			hash := sha3.Sum256([]byte(proposal.TsAndCs))
 			glog.V(5).Infof(fmt.Sprintf("CS Protocol decide on proposal using hash %v with agreement %v", hex.EncodeToString(hash[:]), proposal.AgreementId))

@@ -85,40 +85,44 @@ func main() {
 		glog.V(2).Infof("Started CPU profiling. Writing to: %v", f.Name())
 	}
 
-	config, err := config.Read(*configFile)
+	cfg, err := config.Read(*configFile)
 	if err != nil {
 		panic(err)
 	}
-	glog.V(2).Infof("Using config: %v", config)
+	glog.V(2).Infof("Using config: %v", cfg)
 	glog.V(2).Infof("GOMAXPROCS: %v", runtime.GOMAXPROCS(-1))
 
+
 	// check device identity, bail if not specified
-	if _, err := device.Id(); err != nil {
-		panic(err)
+	if cfg.Edge != (config.Config{}) {
+		if _, err := device.Id(); err != nil {
+			panic(err)
+		}
 	}
 
 	// open edge DB if necessary
 	var db *bolt.DB
-	if len(config.Edge.DBPath) != 0 {
-		if err := os.MkdirAll(config.Edge.DBPath, 0700); err != nil {
+	if len(cfg.Edge.DBPath) != 0 {
+		if err := os.MkdirAll(cfg.Edge.DBPath, 0700); err != nil {
 			panic(err)
 		}
 
-		edgeDB, err := bolt.Open(path.Join(config.Edge.DBPath, "anax.db"), 0600, &bolt.Options{Timeout: 10 * time.Second})
+		edgeDB, err := bolt.Open(path.Join(cfg.Edge.DBPath, "anax.db"), 0600, &bolt.Options{Timeout: 10 * time.Second})
 		if err != nil {
 			panic(err)
 		}
 		db = edgeDB
+
 	}
 
 	// open Agreement Bot DB if necessary
 	var agbotdb *bolt.DB
-	if len(config.AgreementBot.DBPath) != 0 {
-		if err := os.MkdirAll(config.AgreementBot.DBPath, 0700); err != nil {
+	if len(cfg.AgreementBot.DBPath) != 0 {
+		if err := os.MkdirAll(cfg.AgreementBot.DBPath, 0700); err != nil {
 			panic(err)
 		}
 
-		agdb, err := bolt.Open(path.Join(config.AgreementBot.DBPath, "agreementbot.db"), 0600, &bolt.Options{Timeout: 10 * time.Second})
+		agdb, err := bolt.Open(path.Join(cfg.AgreementBot.DBPath, "agreementbot.db"), 0600, &bolt.Options{Timeout: 10 * time.Second})
 		if err != nil {
 			panic(err)
 		}
@@ -147,18 +151,18 @@ func main() {
 	// start API server
 	var apiServer *api.API
 	if db != nil {
-		apiServer = api.NewAPIListener(config, db)
+		apiServer = api.NewAPIListener(cfg, db)
 	}
 
 	// Get the device side policy manager started early so that all the workers can use it.
 	// Make sure the policy directory is in place.
 	var pm *policy.PolicyManager
-	if config.Edge.PolicyPath == "" {
+	if cfg.Edge.PolicyPath == "" {
 		// nothing to initialize
-	} else if err := os.MkdirAll(config.Edge.PolicyPath, 0644); err != nil {
-		glog.Errorf("Cannot create edge policy file path %v, terminating.", config.Edge.PolicyPath)
+	} else if err := os.MkdirAll(cfg.Edge.PolicyPath, 0644); err != nil {
+		glog.Errorf("Cannot create edge policy file path %v, terminating.", cfg.Edge.PolicyPath)
 		panic(err)
-	} else if policyManager, err := policy.Initialize(config.Edge.PolicyPath); err != nil {
+	} else if policyManager, err := policy.Initialize(cfg.Edge.PolicyPath); err != nil {
 		glog.Errorf("Unable to initialize policy manager, terminating.")
 		panic(err)
 	} else {
@@ -168,21 +172,21 @@ func main() {
 	// start workers
 	workers := worker.NewMessageHandlerRegistry()
 
-	workers.Add("whisper", whisper.NewWhisperWorker(config))
-	workers.Add("agreementBot", agreementbot.NewAgreementBotWorker(config, agbotdb))
+	workers.Add("whisper", whisper.NewWhisperWorker(cfg))
+	workers.Add("agreementBot", agreementbot.NewAgreementBotWorker(cfg, agbotdb))
 
-	gethURL := config.Edge.GethURL
+	gethURL := cfg.Edge.GethURL
 	if gethURL == "" {
-		gethURL = config.AgreementBot.GethURL
+		gethURL = cfg.AgreementBot.GethURL
 	}
-	workers.Add("blockchain", ethblockchain.NewEthBlockchainWorker(config, gethURL, nil))
+	workers.Add("blockchain", ethblockchain.NewEthBlockchainWorker(cfg, gethURL, nil))
 
 	if db != nil {
 		workers.Add("api", apiServer)
-		workers.Add("agreement", agreement.NewAgreementWorker(config, db, pm))
-		workers.Add("torrent", torrent.NewTorrentWorker(config))
-		workers.Add("container", container.NewContainerWorker(config))
-		workers.Add("governance", governance.NewGovernanceWorker(config, db, pm))
+		workers.Add("agreement", agreement.NewAgreementWorker(cfg, db, pm))
+		workers.Add("torrent", torrent.NewTorrentWorker(cfg))
+		workers.Add("container", container.NewContainerWorker(cfg))
+		workers.Add("governance", governance.NewGovernanceWorker(cfg, db, pm))
 	}
 
 	messageStream := mux(workers)
