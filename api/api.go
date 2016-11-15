@@ -6,112 +6,30 @@ import (
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"path"
-	"regexp"
-	"runtime"
-	"strings"
 
+	"bytes"
 	"github.com/boltdb/bolt"
 	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/device"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
+	"os"
+	"reflect"
+	"runtime"
+	"strconv"
+	"strings"
 )
-
-var HORIZON_SERVERS = [...]string{"firmware.bluehorizon.network", "images.bluehorizon.network"}
-
-var ILLEGAL_INPUT_CHAR_REGEX = `[^-() _\w\d.@,]`
 
 type API struct {
 	worker.Manager // embedded field
 	db             *bolt.DB
-}
-
-type Firmware struct {
-	Definition   string `json:"definition"`
-	FlashVersion string `json:"flash_version"`
-}
-
-type Container struct {
-	Status    string    `json:"status"`
-	ImageTags *[]string `json:"image_tags"`
-}
-
-type Geth struct {
-	NetPeerCount   int64    `json:"net_peer_count"`
-	EthSyncing     bool     `json:"eth_syncing"`
-	EthBlockNumber int64    `json:"eth_block_number"`
-	EthAccounts    []string `json:"eth_accounts"`
-}
-
-type Info struct {
-	Geth         *Geth                `json:"geth"`
-	Firmware     *Firmware            `json:"firmware"`
-	Colonus      map[string]Container `json:"colonus"`
-	Connectivity map[string]bool      `json:"connectivity"`
-}
-
-// "input" is flexible; could be a field name or other. Note: this is intended to be consumed by humans, either API consumers or developers of the UI. Add enum codes if these are to be evaluated in frontend code
-type APIUserInputError struct {
-	Error string `json:"error"`
-	Input string `json:"input"`
-}
-
-func InputIsIllegal(str string) (string, error) {
-	reg, err := regexp.Compile(ILLEGAL_INPUT_CHAR_REGEX)
-	if err != nil {
-		return "", fmt.Errorf("Unable to compile regex: %v, returning false for input check. Error: %v", ILLEGAL_INPUT_CHAR_REGEX, err)
-	}
-
-	maxLen := 32
-	if reg.MatchString(str) {
-		return fmt.Sprintf("Value violates regex illegal char match: %v", ILLEGAL_INPUT_CHAR_REGEX), nil
-	} else if len([]byte(str)) > maxLen {
-		return fmt.Sprintf("Value > max length: %v bytes", maxLen), nil
-	}
-
-	// a-ok!
-	return "", nil
-}
-
-// returns: faulty value, msg, error
-func MapInputIsIllegal(m map[string]string) (string, string, error) {
-	for k, v := range m {
-		if bogus, err := InputIsIllegal(k); err != nil || bogus != "" {
-			return k, bogus, err
-		}
-		if bogus, err := InputIsIllegal(v); err != nil || bogus != "" {
-			return fmt.Sprintf("%v: %v", k, v), bogus, err
-		}
-	}
-
-	// all good
-	return "", "", nil
-}
-
-func NewInfo(gethRunning bool) *Info {
-	return &Info{
-		Geth: &Geth{
-			NetPeerCount:   -1,
-			EthSyncing:     false,
-			EthBlockNumber: -1,
-		},
-		Firmware: &Firmware{
-			Definition:   "",
-			FlashVersion: "",
-		},
-		Colonus:      map[string]Container{},
-		Connectivity: map[string]bool{},
-	}
-}
-
-type Account struct {
-	Email *string `json:"email"`
 }
 
 func NewAPIListener(config *config.HorizonConfig, db *bolt.DB) *API {
@@ -146,6 +64,9 @@ func (a *API) listen(apiListen string) {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
 			w.Header().Add("Pragma", "no-cache, no-store")
+			w.Header().Add("Access-Control-Allow-Origin", "*")
+			w.Header().Add("Access-Control-Allow-Headers", "X-Requested-With, content-type, Authorization")
+			w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
 			h.ServeHTTP(w, r)
 		})
 	}
@@ -153,217 +74,75 @@ func (a *API) listen(apiListen string) {
 	go func() {
 		router := mux.NewRouter()
 
-		router.HandleFunc("/agreement/{id}", a.agreement).Methods("DELETE")
-		// router.HandleFunc("/agreement/{id}/latestmicropayment", a.latestmicropayment)
-		router.HandleFunc("/contract", a.contract)
-		// router.HandleFunc("/contract/names", a.contractNames)
-		router.HandleFunc("/workload", a.workload)
-		// router.HandleFunc("/micropayment", a.micropayment)
-		router.HandleFunc("/info", a.info)
-		router.HandleFunc("/account", account)
-		router.HandleFunc("/devmode", a.devmode)
-		router.HandleFunc("/iotfconf", a.iotfconf)
+		// given a path string, produces an http handler (note it assumes the dirname and path string match)
+		registerStatic := func(str string) {
+			p := fmt.Sprintf("/%s/", str)
+			router.PathPrefix(p).Handler(http.StripPrefix(p, http.FileServer(http.Dir(path.Join(a.Config.Edge.StaticWebContent, str)))))
+		}
 
-		router.PathPrefix("/js/").Handler(http.StripPrefix("/js/", http.FileServer(http.Dir(path.Join(a.Config.Edge.StaticWebContent, "js")))))
-		router.PathPrefix("/styles/").Handler(http.StripPrefix("/styles/", http.FileServer(http.Dir(path.Join(a.Config.Edge.StaticWebContent, "styles")))))
-		router.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir(path.Join(a.Config.Edge.StaticWebContent, "images")))))
+		router.HandleFunc("/agreement/{id}", a.agreement).Methods("GET", "DELETE", "OPTIONS")
 
-		// paths to pages
-		router.PathPrefix("/status/").Handler(http.StripPrefix("/status/", http.FileServer(http.Dir(path.Join(a.Config.Edge.StaticWebContent, "status")))))
-		router.PathPrefix("/registration/").Handler(http.StripPrefix("/registration/", http.FileServer(http.Dir(path.Join(a.Config.Edge.StaticWebContent, "registration")))))
+		// N.B. the following two paths are the primary registration endpoints as of v2.1.0; these notions
+		// get split apart when a proper microservice / workload prefs split is established in the future
+		router.HandleFunc("/service", a.service).Methods("GET", "POST", "DELETE", "OPTIONS")
+		router.HandleFunc("/service/attribute", a.serviceAttribute).Methods("GET", "POST", "DELETE", "OPTIONS")
 
-		// redir root
-		router.HandleFunc("/", a.redir)
+		router.HandleFunc("/status", a.status).Methods("GET", "OPTIONS")
+		router.HandleFunc("/token/random", tokenRandom).Methods("GET", "OPTIONS")
+		router.HandleFunc("/horizondevice", a.horizonDevice).Methods("GET", "POST", "PATCH", "OPTIONS")
+		router.HandleFunc("/workload", a.workload).Methods("GET", "OPTIONS")
+
+		registerStatic("js")
+		registerStatic("styles")
+		registerStatic("images")
+		registerStatic("dashboard")
+		registerStatic("registration")
 
 		glog.Infof("Serving static web content from: %v", a.Config.Edge.StaticWebContent)
 		http.ListenAndServe(apiListen, nocache(router))
 	}()
 }
 
-func (a *API) redir(w http.ResponseWriter, r *http.Request) {
-	reg := func() {
-		http.Redirect(w, r, "/registration/", http.StatusTemporaryRedirect)
-	}
+func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 
-	switch r.URL.String() {
-	case "/":
-		// redirect to status page if they've already registered, otherwise serve registration page
-		if names, err := allContractNames(a.db); err != nil {
+	switch r.Method {
+	case "GET":
+		// TODO: incorporate fetching previous agreements too
+
+		agreements, err := persistence.FindEstablishedAgreements(a.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter()})
+		if err != nil {
 			glog.Error(err)
-		} else if len(names) != 0 {
-			glog.Infof("User has already registered, redirecting to status page")
-
-			http.Redirect(w, r, "/registration/status.html", http.StatusTemporaryRedirect)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-		reg()
 
-	default:
-		reg()
-	}
-}
+		wrap := make(map[string][]persistence.EstablishedAgreement, 0)
+		wrap["active"] = agreements
 
-func (a *API) info(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "GET":
-
-		info := NewInfo(false)
-
-		if err := WriteGethStatus(a.Config.Edge.GethURL, info.Geth); err != nil {
-			glog.Errorf("Unable to determine geth service facts: %v", err)
+		serial, err := json.Marshal(wrap)
+		if err != nil {
+			glog.Infof("Error serializing agreement output: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
 		}
 
-		if err := WriteConnectionStatus(info); err != nil {
-			glog.Errorf("Unable to get connectivity status: %v", err)
+		w.Header().Set("Content-Type", "application/json")
+		if _, err := w.Write(serial); err != nil {
+			glog.Infof("Error writing response: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
 		}
+	case "DELETE":
+		pathVars := mux.Vars(r)
+		id := pathVars["id"]
 
-		if serial, err := json.Marshal(info); err != nil {
-			glog.Errorf("Failed to serialize status object: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-		} else {
-			w.WriteHeader(http.StatusOK)
-			w.Header().Set("Content-Type", "application/json")
-
-			if _, err := w.Write(serial); err != nil {
-				glog.Errorf("Failed to write response: %v", err)
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-		}
-
-	case "OPTIONS":
-		w.Header().Set("Allow", "OPTIONS, GET")
-		w.WriteHeader(http.StatusOK)
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	}
-
-}
-
-func allContractNames(db *bolt.DB) ([]string, error) {
-	if eAgreements, err := persistence.FindEstablishedAgreements(db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{}); err != nil {
-		return nil, fmt.Errorf("Error fetching established agreements: %v", err)
-	} else {
-		names := make([]string, 0)
-
-		for _, eAgreement := range eAgreements {
-			names = append(names, eAgreement.CurrentAgreementId)
-		}
-
-		return names, nil
-	}
-}
-
-func (a *API) contractNames(w http.ResponseWriter, r *http.Request) {
-	if names, err := allContractNames(a.db); err != nil {
-		glog.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
-
-	} else {
-
-		wrap := make(map[string][]string, 0)
-		wrap["names"] = names
-
-		if serial, err := json.Marshal(wrap); err != nil {
-			glog.Error(err)
-			w.WriteHeader(http.StatusInternalServerError)
-		} else {
-			w.Header().Set("Content-Type", "application/json")
-
-			if _, err := w.Write(serial); err != nil {
-				glog.Error(err)
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-		}
-	}
-}
-
-func account(w http.ResponseWriter, r *http.Request) {
-	glog.V(3).Infof("Handling request: %v", r)
-
-	switch r.Method {
-	case "POST":
-		var account Account
-		body, _ := ioutil.ReadAll(r.Body)
-		if err := json.Unmarshal(body, &account); err != nil {
-			glog.Infof("User submitted data couldn't be deserialized to Account struct: %v. Error: %v", string(body), err)
+		if id == "" {
 			w.WriteHeader(http.StatusBadRequest)
-		} else if account.Email != nil {
-			// writing email address to disk
-
-			// TODO: change to SNAP_USER_COMMON if this can be a multi-user thing
-			if f, err := os.Create(path.Join(os.Getenv("SNAP_COMMON"), "contact")); err != nil {
-				glog.Error(err)
-				w.WriteHeader(http.StatusServiceUnavailable)
-			} else {
-				defer f.Close()
-				if _, err := f.WriteString(*account.Email); err != nil {
-					glog.Errorf("Error writing account detail to fs: %v", err)
-				}
-			}
+			return
 		}
-
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	}
-}
-
-func (a *API) workload(w http.ResponseWriter, r *http.Request) {
-	glog.V(3).Infof("Handling request: %v", r)
-
-	switch r.Method {
-	case "GET":
-		if client, err := dockerclient.NewClient(a.Config.Edge.DockerEndpoint); err != nil {
-			glog.Error(err)
-			w.WriteHeader(http.StatusInternalServerError)
-		} else {
-			opts := dockerclient.ListContainersOptions{
-				All: true,
-			}
-
-			if containers, err := client.ListContainers(opts); err != nil {
-				glog.Error(err)
-				w.WriteHeader(http.StatusInternalServerError)
-			} else {
-				ret := make(map[string][]dockerclient.APIContainers, 0)
-				ret["workloads"] = []dockerclient.APIContainers{}
-
-				for _, c := range containers {
-					if _, exists := c.Labels["network.bluehorizon.colonus.service_name"]; exists {
-						ret["workloads"] = append(ret["workloads"], c)
-					}
-				}
-
-				if serial, err := json.Marshal(ret); err != nil {
-					glog.Error(err)
-					w.WriteHeader(http.StatusInternalServerError)
-				} else {
-					w.Header().Set("Content-Type", "application/json")
-					if _, err := w.Write(serial); err != nil {
-						glog.Error(err)
-						w.WriteHeader(http.StatusInternalServerError)
-					}
-				}
-			}
-		}
-
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	}
-
-}
-
-func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
-	glog.V(3).Infof("Handling request: %v", r)
-
-	pathVars := mux.Vars(r)
-	id := pathVars["id"]
-
-	if id == "" {
-		w.WriteHeader(http.StatusBadRequest)
-	} else {
 		glog.V(3).Infof("Handling DELETE of agreement: %v", r)
 
-		filters := make([]persistence.EAFilter, 0)
+		var filters []persistence.EAFilter
 		filters = append(filters, persistence.UnarchivedEAFilter())
 		filters = append(filters, persistence.IdEAFilter(id))
 
@@ -379,161 +158,9 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 			a.Messages() <- events.NewApiAgreementCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ct.AgreementProtocol, ct.CurrentAgreementId, ct.CurrentDeployment)
 			w.WriteHeader(http.StatusOK)
 		}
-	}
-}
-
-func (a *API) contract(w http.ResponseWriter, r *http.Request) {
-	writeInputErr := func(status int, inputErr *APIUserInputError) {
-		if serial, err := json.Marshal(inputErr); err != nil {
-			glog.Infof("Error serializing contract output: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-		} else {
-			w.WriteHeader(status)
-			if _, err := w.Write(serial); err != nil {
-				glog.Infof("Error writing response: %v", err)
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-			w.Header().Set("Content-Type", "application/json")
-		}
-	}
-
-	// TODO: refactor
-
-	glog.V(3).Infof("Handling request: %v", r)
-
-	switch r.Method {
-	case "GET":
-		// really only for the purpose of determining if contracts were registered
-
-		if agreements, err := persistence.FindEstablishedAgreements(a.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{}); err != nil {
-			glog.Error(err)
-			w.WriteHeader(http.StatusInternalServerError)
-		} else {
-			wrap := make(map[string][]persistence.EstablishedAgreement, 0)
-			wrap["contracts"] = agreements
-
-			if serial, err := json.Marshal(wrap); err != nil {
-				glog.Infof("Error serializing agreement output: %v", err)
-				w.WriteHeader(http.StatusInternalServerError)
-			} else {
-				w.Header().Set("Content-Type", "application/json")
-				if _, err := w.Write(serial); err != nil {
-					glog.Infof("Error writing response: %v", err)
-					w.WriteHeader(http.StatusInternalServerError)
-				}
-			}
-		}
 	case "OPTIONS":
-		w.Header().Set("Allow", "OPTIONS, POST, GET")
+		w.Header().Set("Allow", "GET, DELETE, OPTIONS")
 		w.WriteHeader(http.StatusOK)
-	case "POST":
-		// Check if it has internet connection
-		if err := checkConnectivity(HORIZON_SERVERS[0]); err != nil {
-			glog.Errorf("Cannot register the contract because this device does not have internet connection. %v", err)
-			w.WriteHeader(http.StatusServiceUnavailable)
-			return
-		} else {
-			var contract persistence.PendingContract
-
-			body, _ := ioutil.ReadAll(r.Body) //slurp it up
-			if err := json.Unmarshal(body, &contract); err != nil {
-				glog.Infof("User submitted data that couldn't be deserialized to Pending Contract: %v. Error: %v", string(body), err)
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-			nErrMsg := "null and must not be"
-
-			// TODO: programmatically determine the field label strings when serialized given the struct's member name; at the time of this writing the field label is simply known to match those specified in persistence
-			if contract.Name == nil {
-				writeInputErr(http.StatusBadRequest, &APIUserInputError{Input: "name", Error: nErrMsg})
-				return
-			}
-			if inputErr, err := InputIsIllegal(*contract.Name); err != nil {
-				glog.Errorf("Failed to check input: %v", err)
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			} else if inputErr != "" {
-				writeInputErr(http.StatusBadRequest, &APIUserInputError{Input: "name", Error: inputErr})
-				return
-			}
-			if contract.RAM == nil {
-				writeInputErr(http.StatusBadRequest, &APIUserInputError{Input: "ram", Error: nErrMsg})
-				return
-			}
-			// if contract.HourlyCostBacon == nil {
-			// 	writeInputErr(http.StatusBadRequest, &APIUserInputError{Input: "hourly_cost_bacon", Error: nErrMsg})
-			// 	return
-			// }
-			// if *contract.HourlyCostBacon < 60 {
-			// 	writeInputErr(http.StatusBadRequest, &APIUserInputError{Input: "hourly_cost_bacon", Error: "Value is < 60 and shouldn't be"})
-			// 	return
-			// }
-			if contract.AppAttributes == nil {
-				writeInputErr(http.StatusBadRequest, &APIUserInputError{Input: "app_attributes", Error: nErrMsg})
-				return
-			}
-			if len(*contract.AppAttributes) == 0 {
-				// TODO: expand to pick out required keys
-				writeInputErr(http.StatusBadRequest, &APIUserInputError{Input: "", Error: "Object missing required keys"})
-				return
-			}
-			if value, inputErr, err := MapInputIsIllegal(*contract.AppAttributes); err != nil {
-				glog.Errorf("Failed to check input: %v", err)
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			} else if inputErr != "" {
-				writeInputErr(http.StatusBadRequest, &APIUserInputError{Input: fmt.Sprintf("app_attributes.%v", value), Error: inputErr})
-				return
-			}
-			if contract.PrivateAppAttributes == nil {
-				writeInputErr(http.StatusBadRequest, &APIUserInputError{Input: "private_app_attributes", Error: nErrMsg})
-				return
-			}
-			if value, inputErr, err := MapInputIsIllegal(*contract.PrivateAppAttributes); err != nil {
-				glog.Errorf("Failed to check input: %v", err)
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			} else if inputErr != "" {
-				writeInputErr(http.StatusBadRequest, &APIUserInputError{Input: fmt.Sprintf("private_app_attributes.%v", value), Error: inputErr})
-				return
-			}
-
-			// input was ok!!
-
-			if _, laset := (*contract.PrivateAppAttributes)["lat"]; laset {
-				if _, loset := (*contract.PrivateAppAttributes)["lon"]; loset {
-					contract.IsLocEnabled = true
-				}
-			}
-
-			contract.Arch = runtime.GOARCH
-			glog.V(2).Infof("Using discovered architecture tag: %v", contract.Arch)
-
-			contract.CPUs = runtime.NumCPU()
-			glog.V(2).Infof("Using discovered CPU count: %v", contract.CPUs)
-
-			// get sensor api specification url and save it to the contract
-			if sensor_url, err := policy.GetSenorApiSpecUrl(*contract.Name); err != nil {
-				glog.Errorf("Error: %v", err)
-			} else {
-				contract.SensorUrl = &sensor_url
-			}
-
-			// save the contract in db
-			if err := persistence.SavePendingContract(a.db, contract); err != nil {
-				glog.Errorf("Error: %v", err)
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-
-			// if *contract.Name != "Location Contract" {
-				if genErr := policy.GeneratePolicy(a.Messages(), *contract.Name, contract.Arch, contract.AppAttributes, a.Config.Edge.PolicyPath); genErr != nil {
-					glog.Errorf("Error: %v", genErr)
-				}
-			// }
-
-			w.WriteHeader(http.StatusCreated)
-
-		}
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
@@ -582,7 +209,7 @@ func (a *API) devmode(w http.ResponseWriter, r *http.Request) {
 			if tok == "" {
 				tok = "abcdefg"
 			}
-			a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, devId, tok)
+			a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, tok)
 
 			if err := persistence.SaveDevmode(a.db, mode); err != nil {
 				glog.Error("Error saving devmode: %v", err)
@@ -591,6 +218,173 @@ func (a *API) devmode(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
 			}
 		}
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
+
+	// returns existing device ref and boolean if error occured during fetch (error output handled by this func)
+	fetch := func(device *HorizonDevice) (*persistence.ExchangeDevice, bool) {
+		existing, err := persistence.FindExchangeDevice(a.db)
+		if err != nil {
+			glog.Errorf("Failed fetching existing exchange device. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return nil, true
+		}
+
+		return existing, false
+	}
+
+	writeResponse := func(exDevice *persistence.ExchangeDevice, successStatusCode int) (*HorizonDevice, bool) {
+		id, _ := device.Id()
+
+		var outModel *HorizonDevice
+
+		if exDevice == nil {
+			outModel = &HorizonDevice{
+				Id: &id,
+			}
+		} else {
+			// assume input struct is well-formed, should come from persisted record
+			outModel = &HorizonDevice{
+				Name:               &exDevice.Name,
+				Id:                 &id,
+				TokenValid:         &exDevice.TokenValid,
+				TokenLastValidTime: &exDevice.TokenLastValidTime,
+				Account: &HorizonAccount{
+					Id:    &exDevice.Account.Id,
+					Email: &exDevice.Account.Email,
+				},
+			}
+		}
+
+		serial, err := json.Marshal(outModel)
+		if err != nil {
+			glog.Error(err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return nil, true
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(successStatusCode)
+
+		if _, err := w.Write(serial); err != nil {
+			glog.Error(err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return nil, true
+		}
+
+		return outModel, false
+	}
+
+	switch r.Method {
+	case "GET":
+		existingDevice, err := persistence.FindExchangeDevice(a.db)
+		if err != nil {
+			glog.Errorf("Failed fetching existing exchange device. Error: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		writeResponse(existingDevice, http.StatusOK)
+
+	case "POST":
+		var device HorizonDevice
+
+		body, _ := ioutil.ReadAll(r.Body)
+		if err := json.Unmarshal(body, &device); err != nil {
+			glog.Infof("User submitted data couldn't be deserialized to Device struct: %v. Error: %v", string(body), err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		if device.Account == nil {
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "account", Error: "null and must not be"})
+			return
+		}
+		if bail := checkInputString(w, "device.account.id", device.Account.Id); bail {
+			return
+		}
+		if bail := checkInputString(w, "device.account.email", device.Account.Email); bail {
+			return
+		}
+		if bail := checkInputString(w, "device.id", device.Id); bail {
+			return
+		}
+		if bail := checkInputString(w, "device.name", device.Name); bail {
+			return
+		}
+		if device.Token == nil {
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "device.token", Error: "null and must not be"})
+			return
+		}
+		// don't bother sanitizing token data; we *never* output it, and we *never* compute it
+
+		existing, fetchErrWritten := fetch(&device)
+		if fetchErrWritten {
+			// errors already written to response writer by fetch function call
+			return
+		}
+
+		// handle conflict here; should never be a conflict in POST method, PATCH is for update
+		if existing != nil {
+			w.WriteHeader(http.StatusConflict)
+			return
+		}
+
+		exDev, err := persistence.SaveNewExchangeDevice(a.db, *device.Token, *device.Name, *device.Account.Id, *device.Account.Email)
+		if err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, *device.Token)
+		writeResponse(exDev, http.StatusCreated)
+
+	case "PATCH":
+		var device HorizonDevice
+
+		body, _ := ioutil.ReadAll(r.Body)
+		if err := json.Unmarshal(body, &device); err != nil {
+			glog.Infof("User submitted data couldn't be deserialized to Device struct: %v. Error: %v", string(body), err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		if device.Account == nil {
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "account", Error: "null and must not be"})
+			return
+		}
+		if bail := checkInputString(w, "device.account.id", device.Account.Id); bail {
+			return
+		}
+		if device.Token == nil {
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "device.token", Error: "null and must not be"})
+			return
+		}
+
+		existing, fetchErrWritten := fetch(&device)
+		if fetchErrWritten {
+			// errors already written to response writer by fetch function call
+			return
+		}
+
+		if existing == nil {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		updatedDevice, err := persistence.SetExchangeDeviceToken(a.db, *device.Account.Id, *device.Token)
+		if err != nil {
+			glog.Errorf("Error doing token update on horizon device object: %v. Error: %v", existing, err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		}
+
+		writeResponse(updatedDevice, http.StatusOK)
+
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, POST, PATCH, OPTIONS")
+		w.WriteHeader(http.StatusOK)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
@@ -630,5 +424,417 @@ func (a *API) iotfconf(w http.ResponseWriter, r *http.Request) {
 		}
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+// for registering what *should* be microservices but as of v2.1.0, are more
+// like the old contracts
+func (a *API) service(w http.ResponseWriter, r *http.Request) {
+
+	// TODO: when this gets used, the /device entry in the exchange needs to be updated with the new registeredmicroservices
+
+	switch r.Method {
+	case "GET":
+		// depends on the completion of some policy file APIs; should try to return "services" that have policy files and the serviceAttributes that apply to them
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+
+	case "POST":
+		existingDevice, err := persistence.FindExchangeDevice(a.db)
+		if err != nil {
+			glog.Errorf("Failed fetching existing exchange device. Error: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		if existingDevice == nil {
+			writeInputErr(w, http.StatusFailedDependency, &APIUserInputError{Error: "Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API's /horizondevice path."})
+			return
+		}
+
+		// input should be: Service type w/ zero or more ServiceAttribute types
+		var service Service
+		body, _ := ioutil.ReadAll(r.Body)
+
+		decoder := json.NewDecoder(bytes.NewReader(body))
+		decoder.UseNumber()
+
+		if err := decoder.Decode(&service); err != nil {
+			glog.Infof("User submitted data that couldn't be deserialized to service: %v. Error: %v", string(body), err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		glog.V(5).Infof("Service POST: %v", &service)
+
+		if bail := checkInputString(w, "sensor_url", service.SensorUrl); bail {
+			return
+		}
+
+		if bail := checkInputString(w, "sensor_name", service.SensorName); bail {
+			return
+		}
+
+		var attributes []persistence.ServiceAttribute
+		if service.Attributes != nil {
+			// build a serviceAttribute for each one
+			var err error
+			var inputErrWritten bool
+			attributes, err, inputErrWritten = deserializeAttributes(w, *service.Attributes)
+			if err != nil {
+				glog.Errorf("Failure deserializing attributes: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			} else if inputErrWritten {
+				// signifies an already-written user api error
+				return
+			}
+		}
+
+		// check for errors in attribute input, like specifying a sensorUrl
+		for _, attr := range attributes {
+			if len(attr.GetMeta().SensorUrls) != 0 {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].sensor_urls", Error: "sensor_urls not permitted on attributes specified on a service"})
+				return
+			}
+			// now make sure we add our own sensorUrl to each attribute
+
+			attr.GetMeta().AppendSensorUrl(*service.SensorUrl)
+			glog.Infof("SensorUrls for %v: %v", attr.GetMeta().Id, attr.GetMeta().SensorUrls)
+		}
+
+		// check for required
+		cType := reflect.TypeOf(persistence.ComputeAttributes{}).String()
+		if attributesContains(attributes, *service.SensorUrl, cType) == nil {
+			// make a default
+			// TODO: create a factory for this
+			attributes = append(attributes, persistence.ComputeAttributes{
+				Meta: &persistence.AttributeMeta{
+					Id:          "compute",
+					SensorUrls:  []string{*service.SensorUrl},
+					Label:       "Compute Resources",
+					Publishable: true,
+					Type:        cType,
+				},
+				CPUs: 1,
+				RAM:  a.Config.Edge.DefaultServiceRegistrationRAM,
+			})
+
+		}
+
+		aType := reflect.TypeOf(persistence.ArchitectureAttributes{}).String()
+		// a little weird; could a user give us an alternate architecture than the one we're going to publising in the prop?
+		if attributesContains(attributes, *service.SensorUrl, aType) == nil {
+			// make a default
+
+			attributes = append(attributes, persistence.ArchitectureAttributes{
+				Meta: &persistence.AttributeMeta{
+					Id:          "architecture",
+					SensorUrls:  []string{*service.SensorUrl},
+					Label:       "Architecture",
+					Publishable: true,
+					Type:        aType,
+				},
+				Architecture: cutil.ArchString(),
+			})
+		}
+
+		// what's advertised
+		var policyArch string
+
+		// props to store in file; stuff that is enforced; need to convert from serviceattributes to props. *CAN NEVER BE* unpublishable ServiceAttributes
+		props := map[string]string{}
+
+		// persist all prefs; while we're at it, fetch the props we want to publish and the arch
+		for _, attr := range attributes {
+
+			_, err := persistence.SaveOrUpdateServiceAttribute(a.db, attr)
+			if err != nil {
+				glog.Errorf("Error saving attribute: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			switch attr.(type) {
+			case persistence.ComputeAttributes:
+				compute := attr.(persistence.ComputeAttributes)
+				props["cpus"] = strconv.FormatInt(compute.CPUs, 10)
+				props["ram"] = strconv.FormatInt(compute.RAM, 10)
+
+			case persistence.ArchitectureAttributes:
+				policyArch = attr.(persistence.ArchitectureAttributes).Architecture
+			default:
+				glog.V(4).Infof("Unhandled attr type (%T): %v", attr, attr)
+			}
+		}
+
+		glog.V(5).Infof("Complete Attr list for registration of service %v: %v", *service.SensorUrl, attributes)
+
+		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorName, policyArch, &props, a.Config.Edge.PolicyPath); genErr != nil {
+			glog.Errorf("Error: %v", genErr)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		// TODO: when there is a way to represent services for output, write it out w/ the 201
+		w.WriteHeader(http.StatusCreated)
+
+	case "DELETE":
+		// depends on the completion of some policy file APIs; should delete services, but how to handle associated serviceAttributes?
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, POST, DELETE, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+// for editing prefs used by one or more workloads *and* pushing shared attributes (like location)
+func (a *API) serviceAttribute(w http.ResponseWriter, r *http.Request) {
+
+	toOutModel := func(persisted persistence.ServiceAttribute) *Attribute {
+		mappings := persisted.GetGenericMappings()
+
+		return &Attribute{
+			Id:          &persisted.GetMeta().Id,
+			SensorUrls:  &persisted.GetMeta().SensorUrls,
+			Label:       &persisted.GetMeta().Label,
+			Publishable: &persisted.GetMeta().Publishable,
+			Mappings:    &mappings,
+		}
+	}
+
+	switch r.Method {
+	case "GET":
+		// empty string to match all
+		serviceAttributes, err := persistence.FindApplicableAttributes(a.db, "")
+		if err != nil {
+			glog.Errorf("Failed fetching existing service attributes. Error: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		outAttrs := []Attribute{}
+
+		for _, persisted := range serviceAttributes {
+			// convert persistence model to API model
+
+			outAttr := toOutModel(persisted)
+			outAttrs = append(outAttrs, *outAttr)
+		}
+
+		wrap := map[string][]Attribute{}
+		wrap["attributes"] = outAttrs
+
+		serial, err := json.Marshal(wrap)
+		if err != nil {
+			glog.Infof("Error serializing agreement output: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if _, err := w.Write(serial); err != nil {
+			glog.Infof("Error writing response: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+	case "POST":
+		existingDevice, err := persistence.FindExchangeDevice(a.db)
+		if err != nil {
+			glog.Errorf("Failed fetching existing exchange device. Error: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		if existingDevice == nil {
+			writeInputErr(w, http.StatusFailedDependency, &APIUserInputError{Error: "Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API's /horizondevice path."})
+			return
+		}
+
+		body, _ := ioutil.ReadAll(r.Body)
+
+		decoder := json.NewDecoder(bytes.NewReader(body))
+		decoder.UseNumber()
+
+		var attribute Attribute
+		if err := decoder.Decode(&attribute); err != nil {
+			glog.Infof("User submitted data that couldn't be deserialized to attribute: %v. Error: %v", string(body), err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		serviceAttrs, err, inputErr := deserializeAttributes(w, []Attribute{attribute})
+		if inputErr {
+			return
+		}
+		if err != nil {
+			glog.Errorf("Error deserializing attributes: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+
+		// save to db; we know there was only one
+		saved, err := persistence.SaveOrUpdateServiceAttribute(a.db, serviceAttrs[0])
+		if err != nil {
+			glog.Errorf("Error deserializing attributes: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+
+		outAttr := toOutModel(*saved)
+		serial, err := json.Marshal(outAttr)
+		if err != nil {
+			glog.Error(err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+
+		if _, err := w.Write(serial); err != nil {
+			glog.Error(err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusCreated)
+
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, POST, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *API) status(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		info := NewInfo(false)
+
+		if err := WriteGethStatus(a.Config.Edge.GethURL, info.Geth); err != nil {
+			glog.Errorf("Unable to determine geth service facts: %v", err)
+		}
+
+		if err := WriteConnectionStatus(info); err != nil {
+			glog.Errorf("Unable to get connectivity status: %v", err)
+		}
+
+		if serial, err := json.Marshal(info); err != nil {
+			glog.Errorf("Failed to serialize status object: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		} else {
+			w.WriteHeader(http.StatusOK)
+			w.Header().Set("Content-Type", "application/json")
+
+			if _, err := w.Write(serial); err != nil {
+				glog.Errorf("Failed to write response: %v", err)
+				http.Error(w, "Internal server error", http.StatusInternalServerError)
+			}
+		}
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func tokenRandom(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		str, err := cutil.SecureRandomString()
+		if err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		out := map[string]string{
+			"token": str,
+		}
+
+		serial, err := json.Marshal(out)
+		if err != nil {
+			glog.Error(err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+
+		if _, err := w.Write(serial); err != nil {
+			glog.Error(err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *API) workload(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		if client, err := dockerclient.NewClient(a.Config.Edge.DockerEndpoint); err != nil {
+			glog.Error(err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		} else {
+			opts := dockerclient.ListContainersOptions{
+				All: true,
+			}
+
+			if containers, err := client.ListContainers(opts); err != nil {
+				glog.Error(err)
+				http.Error(w, "Internal server error", http.StatusInternalServerError)
+			} else {
+				ret := make(map[string][]dockerclient.APIContainers, 0)
+				ret["workloads"] = []dockerclient.APIContainers{}
+
+				for _, c := range containers {
+					if _, exists := c.Labels["network.bluehorizon.colonus.service_name"]; exists {
+						ret["workloads"] = append(ret["workloads"], c)
+					}
+				}
+
+				if serial, err := json.Marshal(ret); err != nil {
+					glog.Error(err)
+					http.Error(w, "Internal server error", http.StatusInternalServerError)
+				} else {
+					w.Header().Set("Content-Type", "application/json")
+					if _, err := w.Write(serial); err != nil {
+						glog.Error(err)
+						http.Error(w, "Internal server error", http.StatusInternalServerError)
+					}
+				}
+			}
+		}
+
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+
+}
+
+func writeInputErr(writer http.ResponseWriter, status int, inputErr *APIUserInputError) {
+	if serial, err := json.Marshal(inputErr); err != nil {
+		glog.Infof("Error serializing agreement output: %v", err)
+		http.Error(writer, "Internal server error", http.StatusInternalServerError)
+	} else {
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(status)
+		if _, err := writer.Write(serial); err != nil {
+			glog.Infof("Error writing response: %v", err)
+			http.Error(writer, "Internal server error", http.StatusInternalServerError)
+		}
 	}
 }

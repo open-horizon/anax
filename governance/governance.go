@@ -6,6 +6,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/device"
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -13,7 +14,6 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
 	"net/http"
-	"os"
 	"runtime"
 	"time"
 )
@@ -45,13 +45,15 @@ type GovernanceWorker struct {
 	deviceId        string
 	deviceToken     string
 	pm              *policy.PolicyManager
-	bcWritesEnabled bool                           // This field will be turned to true when the blockchain account has ether, which means
-	                                               // block chain writes (cancellations) can be done.
+	bcWritesEnabled bool // This field will be turned to true when the blockchain account has ether, which means
+	// block chain writes (cancellations) can be done.
 }
 
 func NewGovernanceWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *GovernanceWorker {
 	messages := make(chan events.Message)
 	commands := make(chan worker.Command, 200)
+
+	id, _ := device.Id()
 
 	worker := &GovernanceWorker{
 
@@ -64,8 +66,11 @@ func NewGovernanceWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.P
 			Commands: commands,
 		},
 
-		db: db,
-		pm: pm,
+		db:              db,
+		pm:              pm,
+		deviceId: id,
+		// TODO: this needs to be read from the db and "token_valid" set to false (using persistence.InvalidateExchangeDeviceToken)
+		deviceToken: "", // set by incoming event or read from database directly
 		bcWritesEnabled: false,
 	}
 
@@ -82,7 +87,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 	switch incoming.(type) {
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
-		w.Commands <- NewDeviceRegisteredCommand(msg.ID(), msg.Token())
+		w.Commands <- NewDeviceRegisteredCommand(msg.Token())
 
 	case *events.ContainerMessage:
 		msg, _ := incoming.(*events.ContainerMessage)
@@ -156,31 +161,15 @@ func (w *GovernanceWorker) governAgreements() {
 			// Create a new filter for unfinalized agreements
 			notYetFinalFilter := func() persistence.EAFilter {
 				return func(a persistence.EstablishedAgreement) bool {
-					return a.AgreementCreationTime != 0 && a.AgreementAcceptedTime != 0 && a.AgreementTerminated == 0 && a.CounterPartyAddress != ""
+					return a.AgreementCreationTime != 0 && a.AgreementAcceptedTime != 0 && a.AgreementTerminatedTime == 0 && a.CounterPartyAddress != ""
 				}
 			}
 
-			if establishedAgreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{notYetFinalFilter()}); err != nil {
+			if establishedAgreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),notYetFinalFilter()}); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("Unable to retrieve not yet final agreements from database: %v. Error: %v", err, err)))
 			} else {
 
 				// If there are agreemens in the database then we will assume that the device is already registered
-
-				// Hack for now, pick up device ID and token
-				if w.deviceId == "" {
-					devId := os.Getenv("ANAX_DEVICEID")
-					if devId == "" {
-						devId = "an12345"
-					}
-					tok := os.Getenv("ANAX_TOKEN")
-					if tok == "" {
-						tok = "abcdefg"
-					}
-
-					w.deviceId = devId
-					w.deviceToken = tok
-				}
-
 				for _, ag := range establishedAgreements {
 					if ag.AgreementFinalizedTime == 0 {
 						// Verify that the blockchain update has occurred. If not, cancel the agreement.
@@ -255,12 +244,12 @@ func (w *GovernanceWorker) governContainers() {
 			// Create a new filter for unfinalized agreements
 			runningFilter := func() persistence.EAFilter {
 				return func(a persistence.EstablishedAgreement) bool {
-					return a.AgreementExecutionStartTime != 0 && a.AgreementTerminated == 0 && a.CounterPartyAddress != ""
+					return a.AgreementExecutionStartTime != 0 && a.AgreementTerminatedTime == 0 && a.CounterPartyAddress != ""
 				}
 			}
 
-			if establishedAgreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{runningFilter()}); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("Unable to retrieve running agreements from database: %v. Error: %v", err, err)))
+			if establishedAgreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),runningFilter()}); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Unable to retrieve running agreements from database, error: %v", err)))
 			} else {
 
 				for _, ag := range establishedAgreements {
@@ -312,10 +301,10 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 		}
 	}
 
-	// Delete from the database
-	glog.V(5).Infof(logString(fmt.Sprintf("deleting agreement %v from database.", agreementId)))
-	if err := persistence.DeleteEstablishedAgreement(w.db, agreementId, agreementProtocol); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("error deleting terminated agreement: %v, error: %v", agreementId, err)))
+	// Archive
+	glog.V(5).Infof(logString(fmt.Sprintf("archiving agreement %v", agreementId)))
+	if _, err := persistence.ArchiveEstablishedAgreement(w.db, agreementId, agreementProtocol); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error archiving terminated agreement: %v, error: %v", agreementId, err)))
 	}
 }
 
@@ -350,7 +339,6 @@ func (w *GovernanceWorker) start() {
 			switch command.(type) {
 			case *DeviceRegisteredCommand:
 				cmd, _ := command.(*DeviceRegisteredCommand)
-				w.deviceId = cmd.Id
 				w.deviceToken = cmd.Token
 
 			case *StartGovernExecutionCommand:
@@ -409,13 +397,11 @@ func (w *GovernanceWorker) NewCleanupExecutionCommand(protocol string, agreement
 }
 
 type DeviceRegisteredCommand struct {
-	Id    string
 	Token string
 }
 
-func NewDeviceRegisteredCommand(id string, token string) *DeviceRegisteredCommand {
+func NewDeviceRegisteredCommand(token string) *DeviceRegisteredCommand {
 	return &DeviceRegisteredCommand{
-		Id:    id,
 		Token: token,
 	}
 }

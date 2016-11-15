@@ -11,6 +11,40 @@ import (
 	"github.com/golang/glog"
 )
 
+type Firmware struct {
+	Definition   string `json:"definition"`
+	FlashVersion string `json:"flash_version"`
+}
+
+type Info struct {
+	Geth         *Geth           `json:"geth"`
+	Firmware     *Firmware       `json:"firmware"`
+	Connectivity map[string]bool `json:"connectivity"`
+}
+
+func NewInfo(gethRunning bool) *Info {
+	return &Info{
+		Geth: &Geth{
+			NetPeerCount:   -1,
+			EthSyncing:     false,
+			EthBlockNumber: -1,
+		},
+		Firmware: &Firmware{
+			Definition:   "",
+			FlashVersion: "",
+		},
+		Connectivity: map[string]bool{},
+	}
+}
+
+// Geth is an external type exposing the health of the go-ethereum process used by this anax instance
+type Geth struct {
+	NetPeerCount   int64    `json:"net_peer_count"`
+	EthSyncing     bool     `json:"eth_syncing"`
+	EthBlockNumber int64    `json:"eth_block_number"`
+	EthAccounts    []string `json:"eth_accounts"`
+}
+
 func WriteGethStatus(gethURL string, geth *Geth) error {
 
 	singleResult := func(meth string) interface{} {

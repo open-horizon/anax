@@ -8,13 +8,11 @@ import (
 // Commands supported by the Exchange Worker
 
 type DeviceRegisteredCommand struct {
-	Id    string
 	Token string
 }
 
-func NewDeviceRegisteredCommand(id string, token string) *DeviceRegisteredCommand {
+func NewDeviceRegisteredCommand(token string) *DeviceRegisteredCommand {
 	return &DeviceRegisteredCommand{
-		Id:    id,
 		Token: token,
 	}
 }

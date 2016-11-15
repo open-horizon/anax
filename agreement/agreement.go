@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/device"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/governance"
@@ -17,7 +18,6 @@ import (
 	gwhisper "github.com/open-horizon/go-whisper"
 	"net/http"
 	"net/url"
-	"os"
 	"reflect"
 	"runtime"
 	"strconv"
@@ -42,6 +42,8 @@ func NewAgreementWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.Po
 	messages := make(chan events.Message)
 	commands := make(chan worker.Command, 100)
 
+	id, _ := device.Id()
+
 	worker := &AgreementWorker{
 		Worker: worker.Worker{
 			Manager: worker.Manager{
@@ -52,11 +54,15 @@ func NewAgreementWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.Po
 			Commands: commands,
 		},
 
-		db:                  db,
-		httpClient:          &http.Client{},
-		protocols:           make(map[string]bool),
-		pm:                  pm,
+		db:         db,
+		httpClient: &http.Client{},
+		protocols:  make(map[string]bool),
+		pm:         pm,
 		bcClientInitialized: false,
+		deviceId:   id,
+
+		// TODO: this needs to be read from the db and "token_valid" set to false (using persistence.InvalidateExchangeDeviceToken)
+		deviceToken: "", // set by incoming event or read from database directly
 	}
 
 	glog.Info("Starting Agreement worker")
@@ -73,7 +79,7 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 	switch incoming.(type) {
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
-		w.Commands <- NewDeviceRegisteredCommand(msg.ID(), msg.Token())
+		w.Commands <- NewDeviceRegisteredCommand(msg.Token())
 
 	case *events.PolicyCreatedMessage:
 		msg, _ := incoming.(*events.PolicyCreatedMessage)
@@ -132,7 +138,7 @@ func (w *AgreementWorker) start() {
 
 		// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
 		// start heartbeating when the registration event comes in.
-		if w.deviceId != "" {
+		if w.deviceToken != "" {
 			targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/heartbeat?token=" + w.deviceToken
 			go exchange.Heartbeat(w.httpClient, targetURL, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
 		}
@@ -177,14 +183,21 @@ func (w *AgreementWorker) start() {
 
 				protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
 
+				// Proposal messages could be duplicates or fakes if there is an agbot imposter in the network. The sequence
+				// of checks here is very important to prevent duplicates from causing chaos, especially if there are duplicates
+				// on agreement worker threads at the same time.
 				if proposal, err := protocolHandler.ValidateProposal(cmd.Msg.Payload()); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("discarding message: %v due to %v", cmd.Msg.Payload(), err)))
+				} else if agAlreadyExists, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),persistence.IdEAFilter(proposal.AgreementId)}); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreements from database, error %v", err)))
+				} else if len(agAlreadyExists) != 0 {
+					glog.Errorf(logString(fmt.Sprintf("agreement %v already exists, ignoring proposal: %v", proposal.AgreementId, proposal.ShortString())))
 				} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
 				} else if reply, err := protocolHandler.DecideOnProposal(proposal, cmd.Msg.From(), w.deviceId); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("respond to proposal with error: %v", err)))
-				} else if _, err := persistence.NewEstablishedAgreement(w.db, proposal.AgreementId, proposal.ConsumerId, cmd.Msg.Payload(), citizenscientist.PROTOCOL_NAME, tcPolicy.APISpecs[0].SpecRef); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error persisting new pending agreement: %v", proposal.AgreementId)))
+				} else if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId, proposal.ConsumerId, cmd.Msg.Payload(), citizenscientist.PROTOCOL_NAME, tcPolicy.APISpecs[0].SpecRef); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId, err)))
 				} else if err := w.RecordReply(proposal, reply, citizenscientist.PROTOCOL_NAME, cmd); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to record reply %v, error: %v", *reply, err)))
 				}
@@ -204,7 +217,6 @@ func (w *AgreementWorker) start() {
 
 func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
-	w.deviceId = cmd.Id
 	w.deviceToken = cmd.Token
 
 	// Start the go thread that heartbeats to the exchange
@@ -253,9 +265,13 @@ func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply
 				if envAdds, err = w.GetWorkloadPreference(sensorUrl); err != nil {
 					glog.Errorf("Error: %v", err)
 				}
-				envAdds["MTN_AGREEMENTID"] = proposal.AgreementId
-				envAdds["MTN_CONTRACT"] = w.Config.Edge.DVPrefix + proposal.AgreementId
-				envAdds["MTN_CONFIGURE_NONCE"] = proposal.AgreementId
+				envAdds[config.ENVVAR_PREFIX+"AGREEMENTID"] = proposal.AgreementId
+				envAdds[config.ENVVAR_PREFIX+"CONTRACT"] = w.Config.Edge.DVPrefix + proposal.AgreementId
+				envAdds[config.ENVVAR_PREFIX+"CONFIGURE_NONCE"] = proposal.AgreementId
+				// For workload compatibility, the DEVICE_ID env var is passed with and without the prefix. We would like to drop
+				// the env var without prefix once all the workloads have ben updated.
+				envAdds["DEVICE_ID"] = w.deviceId
+				envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = w.deviceId
 
 				lc.EnvironmentAdditions = &envAdds
 				lc.AgreementProtocol = citizenscientist.PROTOCOL_NAME
@@ -265,7 +281,7 @@ func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply
 
 	} else {
 
-		if err := persistence.DeleteEstablishedAgreement(w.db, proposal.AgreementId, protocol); err != nil {
+		if _, err := persistence.ArchiveEstablishedAgreement(w.db, proposal.AgreementId, protocol); err != nil {
 			return errors.New(logString(fmt.Sprintf("received error deleting agreement from db %v", err)))
 		}
 
@@ -281,25 +297,9 @@ func (w *AgreementWorker) syncOnInit() error {
 	protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
 
 	// Loop through our database and check each record for accuracy with the exchange and the blockchain
-	if agreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{}); err == nil {
+	if agreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err == nil {
 
 		// If there are agreemens in the database then we will assume that the device is already registered
-
-		// Hack for now, pick up device ID and token
-		devId := os.Getenv("ANAX_DEVICEID")
-		if devId == "" {
-			devId = "an12345"
-		}
-		tok := os.Getenv("ANAX_TOKEN")
-		if tok == "" {
-			tok = "abcdefg"
-		}
-
-		w.deviceId = devId
-		w.deviceToken = tok
-
-		glog.V(3).Infof(logString(fmt.Sprintf("device already registered as %v with %v.", w.deviceId, w.deviceToken)))
-
 		for _, ag := range agreements {
 
 			// If the agreement has received a reply then we just need to make sure that the policy manager's agreement counts
@@ -363,7 +363,7 @@ func (w *AgreementWorker) syncOnInit() error {
 				// was created for this agreement but the record was never updated with the accepted time, which is supposed to occur
 				// immediately following creation of the record. A record in this state needs to be deleted.
 			} else if ag.AgreementCreationTime != 0 && ag.AgreementAcceptedTime == 0 {
-				if err := persistence.DeleteEstablishedAgreement(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+				if _, err := persistence.ArchiveEstablishedAgreement(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error deleting partially created agreement: %v, error: %v", ag.CurrentAgreementId, err)))
 				}
 			}
@@ -382,48 +382,14 @@ func (w *AgreementWorker) syncOnInit() error {
 // Utility functions
 //
 
-// get the environmental variables for the workload
+// get the environmental variables for the workload (this is about launching)
 func (w *AgreementWorker) GetWorkloadPreference(url string) (map[string]string, error) {
-	environmentAdditions := make(map[string]string, 0)
-
-	if pcs, err := persistence.FindPendingContractByFilters(w.db, []persistence.PCFilter{persistence.SensorUrlPCFilter(url)}); err != nil {
-		return nil, fmt.Errorf("Error getting workload preference: %v", err)
-	} else {
-		if len(pcs) > 0 {
-			pc := pcs[0]
-			// get common attributes
-			environmentAdditions["MTN_NAME"] = *pc.Name
-			environmentAdditions["MTN_ARCH"] = pc.Arch
-			environmentAdditions["MTN_CPUS"] = strconv.Itoa(pc.CPUs)
-			environmentAdditions["MTN_RAM"] = strconv.Itoa(*pc.RAM)
-			environmentAdditions["MTN_IS_LOC_ENABLED"] = strconv.FormatBool(pc.IsLocEnabled)
-			if pc.Lat != nil {
-				environmentAdditions["MTN_LAT"] = *pc.Lat
-			}
-			if pc.Lon != nil {
-				environmentAdditions["MTN_LON"] = *pc.Lon
-			}
-
-			// get public attributes
-			if pc.AppAttributes != nil {
-				for key, val := range *pc.AppAttributes {
-					if val != "" {
-						environmentAdditions[fmt.Sprintf("MTN_%s", strings.ToUpper(key))] = val
-					}
-				}
-			}
-
-			// get private attributes
-			if pc.PrivateAppAttributes != nil {
-				for key, val := range *pc.PrivateAppAttributes {
-					if val != "" {
-						environmentAdditions[fmt.Sprintf("MTN_%s", strings.ToUpper(key))] = val
-					}
-				}
-			}
-		}
+	attrs, err := persistence.FindApplicableAttributes(w.db, url)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to fetch workload preferences. Err: %v", err)
 	}
-	return environmentAdditions, nil
+
+	return persistence.AttributesToEnvvarMap(attrs, config.ENVVAR_PREFIX)
 }
 
 func (w *AgreementWorker) advertiseAllPolicies(location string) error {

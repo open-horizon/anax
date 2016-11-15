@@ -3,11 +3,9 @@ package ethblockchain
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/go-solidity/contract_api"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -117,37 +115,4 @@ func address(name string, directoryContract *contract_api.SolidityContract) (str
 			return addr.(string), nil
 		}
 	}
-}
-
-// Move this method out of here
-func prepEnvironmentAdditions(dbContractRecord *persistence.EstablishedAgreement, agreementId string, deviceRegistry *contract_api.SolidityContract) (map[string]string, error) {
-	environmentAdditions := make(map[string]string, 0)
-
-	// Replace this with properties from the merged policies
-	if attributesRaw, err := deviceRegistry.Invoke_method("get_description", ContractParam(dbContractRecord.CurrentAgreementId)); err != nil {
-		return nil, fmt.Errorf("Could not invoke get_description on deviceRegistry. Error: %v", err)
-	} else {
-		// extract attributes from the device contract, write them to environmentAdditions
-		attribute_map := extractAll(attributesRaw.([]string))
-		for key, val := range attribute_map {
-			if val != "" {
-				environmentAdditions[fmt.Sprintf("MTN_%s", strings.ToUpper(key))] = val
-			}
-		}
-
-		// add private envs to the environmentAdditions
-		if p_env := dbContractRecord.PrivateEnvironmentAdditions; p_env != nil {
-			for key, val := range p_env {
-				if val != "" {
-					environmentAdditions[fmt.Sprintf("MTN_%s", strings.ToUpper(key))] = val
-				}
-			}
-		}
-
-		// add contract / agreement features too
-		// environmentAdditions["MTN_CONTRACT"] = dbContractRecord.ContractAddress
-		environmentAdditions["MTN_AGREEMENTID"] = agreementId
-	}
-
-	return environmentAdditions, nil
 }

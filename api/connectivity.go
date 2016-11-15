@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+var HORIZON_SERVERS = [...]string{"firmware.bluehorizon.network", "images.bluehorizon.network"}
+
 // Check if the device has internect connection to the given host or not.
 func checkConnectivity(host string) error {
 	var err error
