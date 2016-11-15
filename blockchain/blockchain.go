@@ -308,6 +308,7 @@ func registerPending(w *BlockchainWorker, pendingTransition *pendingTransition, 
 		time.Sleep(PENDING_REGISTER_RETRY_DELAY_S * time.Second)
 
 		lock.Lock()
+		pendingTransition.handling = false
 		pendingTransition.failCount = pendingTransition.failCount + 1
 		lock.Unlock()
 	}
