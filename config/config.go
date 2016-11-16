@@ -54,6 +54,7 @@ type AGConfig struct {
 	ExchangeId                   string // The id of the agbot, not the userid of the exchange user
 	ExchangeToken                string // The agbot's authentication token
 	DVPrefix                     string // When looking for agreement ids in the data verification API response, look for agreement ids with this prefix.
+	ActiveDeviceTimeoutS         int    // The amount of time a device can go without heartbeating and still be considered active for the purposes of search
 
 }
 

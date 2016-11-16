@@ -394,6 +394,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy) (*[]exchange.Dev
 	}
 
 	ser := exchange.CreateSearchRequest()
+	ser.SecondsStale = w.Config.AgreementBot.ActiveDeviceTimeoutS
 	ser.DesiredMicroservices = append(ms, *newMS)
 
 	var resp interface{}

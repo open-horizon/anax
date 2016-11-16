@@ -55,6 +55,11 @@ func NewGovernanceWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.P
 
 	id, _ := device.Id()
 
+	token := ""
+	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
+		token = dev.Token
+	}
+
 	worker := &GovernanceWorker{
 
 		Worker: worker.Worker{
@@ -69,8 +74,7 @@ func NewGovernanceWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.P
 		db:              db,
 		pm:              pm,
 		deviceId: id,
-		// TODO: this needs to be read from the db and "token_valid" set to false (using persistence.InvalidateExchangeDeviceToken)
-		deviceToken: "", // set by incoming event or read from database directly
+		deviceToken: token,
 		bcWritesEnabled: false,
 	}
 

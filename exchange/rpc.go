@@ -46,14 +46,14 @@ func (m Microservice) ShortString() string {
 
 type SearchExchangeRequest struct {
 	DesiredMicroservices []Microservice `json:"desiredMicroservices"`
-	DaysStale            int            `json:"daysStale"`
+	SecondsStale         int            `json:"secondsStale"`
 	PropertiesToReturn   []string       `json:"propertiesToReturn"`
 	StartIndex           int            `json:"startIndex"`
 	NumEntries           int            `json:"numEntries"`
 }
 
 func (a SearchExchangeRequest) String() string {
-	return fmt.Sprintf("Microservices: %v, DaysStale: %v, PropertiesToReturn: %v, StartIndex: %v, NumEntries: %v", a.DesiredMicroservices, a.DaysStale, a.PropertiesToReturn, a.StartIndex, a.NumEntries)
+	return fmt.Sprintf("Microservices: %v, SecondsStale: %v, PropertiesToReturn: %v, StartIndex: %v, NumEntries: %v", a.DesiredMicroservices, a.SecondsStale, a.PropertiesToReturn, a.StartIndex, a.NumEntries)
 }
 
 type Device struct {
@@ -170,7 +170,6 @@ func (p PutDeviceRequest) ShortString() string {
 func CreateSearchRequest() *SearchExchangeRequest {
 
 	ser := &SearchExchangeRequest{
-		DaysStale:  1,
 		StartIndex:  0,
 		NumEntries: 100,
 	}
