@@ -44,6 +44,11 @@ func NewAgreementWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.Po
 
 	id, _ := device.Id()
 
+	token := ""
+	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
+		token = dev.Token
+	}
+
 	worker := &AgreementWorker{
 		Worker: worker.Worker{
 			Manager: worker.Manager{
@@ -60,9 +65,7 @@ func NewAgreementWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.Po
 		pm:         pm,
 		bcClientInitialized: false,
 		deviceId:   id,
-
-		// TODO: this needs to be read from the db and "token_valid" set to false (using persistence.InvalidateExchangeDeviceToken)
-		deviceToken: "", // set by incoming event or read from database directly
+		deviceToken: token,
 	}
 
 	glog.Info("Starting Agreement worker")
