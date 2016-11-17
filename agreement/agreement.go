@@ -130,18 +130,18 @@ func (w *AgreementWorker) start() {
 	// in the system.
 	go func() {
 
-		// Sync up between what's in our database versus what's in the exchange, and make sure that the policy manager's
-		// agreement counts are correct. The governance routine will cancel any agreements whose state might have changed
-		// while the agbot was down. We will also check to make sure that policies havent changed. If they have, then
-		// we will cancel agreements and allow them to re-negotiate.
-		if err := w.syncOnInit(); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Terminating, unable to sync up, error: %v", err)))
-			return
-		}
-
-		// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
-		// start heartbeating when the registration event comes in.
 		if w.deviceToken != "" {
+			// Sync up between what's in our database versus what's in the exchange, and make sure that the policy manager's
+			// agreement counts are correct. The governance routine will cancel any agreements whose state might have changed
+			// while the agbot was down. We will also check to make sure that policies havent changed. If they have, then
+			// we will cancel agreements and allow them to re-negotiate.
+			if err := w.syncOnInit(); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Terminating, unable to sync up, error: %v", err)))
+				return
+			}
+
+			// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
+			// start heartbeating when the registration event comes in.
 			targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/heartbeat?token=" + w.deviceToken
 			go exchange.Heartbeat(w.httpClient, targetURL, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
 		}
