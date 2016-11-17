@@ -92,7 +92,6 @@ func main() {
 	glog.V(2).Infof("Using config: %v", cfg)
 	glog.V(2).Infof("GOMAXPROCS: %v", runtime.GOMAXPROCS(-1))
 
-
 	// check device identity, bail if not specified
 	if cfg.Edge != (config.Config{}) {
 		if _, err := device.Id(); err != nil {
@@ -148,12 +147,6 @@ func main() {
 		os.Exit(0)
 	}()
 
-	// start API server
-	var apiServer *api.API
-	if db != nil {
-		apiServer = api.NewAPIListener(cfg, db)
-	}
-
 	// Get the device side policy manager started early so that all the workers can use it.
 	// Make sure the policy directory is in place.
 	var pm *policy.PolicyManager
@@ -182,7 +175,7 @@ func main() {
 	workers.Add("blockchain", ethblockchain.NewEthBlockchainWorker(cfg, gethURL, nil))
 
 	if db != nil {
-		workers.Add("api", apiServer)
+		workers.Add("api", api.NewAPIListener(cfg, db, pm))
 		workers.Add("agreement", agreement.NewAgreementWorker(cfg, db, pm))
 		workers.Add("torrent", torrent.NewTorrentWorker(cfg))
 		workers.Add("container", container.NewContainerWorker(cfg))
