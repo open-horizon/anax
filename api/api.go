@@ -30,9 +30,10 @@ import (
 type API struct {
 	worker.Manager // embedded field
 	db             *bolt.DB
+	pm             *policy.PolicyManager
 }
 
-func NewAPIListener(config *config.HorizonConfig, db *bolt.DB) *API {
+func NewAPIListener(config *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *API {
 	messages := make(chan events.Message)
 
 	listener := &API{
@@ -42,6 +43,7 @@ func NewAPIListener(config *config.HorizonConfig, db *bolt.DB) *API {
 		},
 
 		db: db,
+		pm: pm,
 	}
 
 	listener.listen(config.Edge.APIListen)
@@ -453,13 +455,77 @@ func (a *API) iotfconf(w http.ResponseWriter, r *http.Request) {
 // like the old contracts
 func (a *API) service(w http.ResponseWriter, r *http.Request) {
 
-	// TODO: when this gets used, the /device entry in the exchange needs to be updated with the new registeredmicroservices
+	findAdditions := func(attrs []persistence.ServiceAttribute, incoming []persistence.ServiceAttribute) []persistence.ServiceAttribute {
+
+		toAdd := []persistence.ServiceAttribute{}
+
+		for _, in := range incoming {
+			c := false
+			for _, attr := range attrs {
+				if in.GetMeta().Id == attr.GetMeta().Id {
+					c = true
+					break
+				}
+			}
+
+			if !c {
+				toAdd = append(toAdd, in)
+			}
+		}
+
+		// return the mutated copy
+		return toAdd
+	}
 
 	switch r.Method {
 	case "GET":
-		// depends on the completion of some policy file APIs; should try to return "services" that have policy files and the serviceAttributes that apply to them
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
+		type outServiceWrapper struct {
+			Policy     policy.Policy                  `json:"policy"`
+			Attributes []persistence.ServiceAttribute `json:"attributes"`
+		}
+
+		outServices := make(map[string]interface{}, 0)
+
+		allPolicies := a.pm.GetAllPolicies()
+
+		for _, pol := range allPolicies {
+
+			var applicable []persistence.ServiceAttribute
+
+			for _, apiSpec := range pol.APISpecs {
+				pAttr, err := persistence.FindApplicableAttributes(a.db, apiSpec.SpecRef)
+				if err != nil {
+					glog.Errorf("Failed fetching attributes. Error: %v", err)
+					http.Error(w, "Internal server error", http.StatusInternalServerError)
+					return
+				}
+
+				applicable = append(applicable, findAdditions(applicable, pAttr)...)
+			}
+
+			// TODO: consider sorting the attributes returned
+			outServices[pol.Header.Name] = outServiceWrapper{
+				Policy:     pol,
+				Attributes: applicable,
+			}
+		}
+
+		wrapper := make(map[string]map[string]interface{}, 0)
+		wrapper["services"] = outServices
+
+		serial, err := json.Marshal(wrapper)
+		if err != nil {
+			glog.Infof("Error serializing agreement output: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if _, err := w.Write(serial); err != nil {
+			glog.Infof("Error writing response: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
 
 	case "POST":
 		existingDevice, err := persistence.FindExchangeDevice(a.db)
