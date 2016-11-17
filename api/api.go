@@ -80,11 +80,12 @@ func (a *API) listen(apiListen string) {
 			router.PathPrefix(p).Handler(http.StripPrefix(p, http.FileServer(http.Dir(path.Join(a.Config.Edge.StaticWebContent, str)))))
 		}
 
+		router.HandleFunc("/agreement", a.agreement).Methods("GET", "OPTIONS")
 		router.HandleFunc("/agreement/{id}", a.agreement).Methods("GET", "DELETE", "OPTIONS")
 
 		// N.B. the following two paths are the primary registration endpoints as of v2.1.0; these notions
 		// get split apart when a proper microservice / workload prefs split is established in the future
-		router.HandleFunc("/service", a.service).Methods("GET", "POST", "DELETE", "OPTIONS")
+		router.HandleFunc("/service", a.service).Methods("GET", "POST", "OPTIONS")
 		router.HandleFunc("/service/attribute", a.serviceAttribute).Methods("GET", "POST", "DELETE", "OPTIONS")
 
 		router.HandleFunc("/status", a.status).Methods("GET", "OPTIONS")
@@ -107,17 +108,38 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
-		// TODO: incorporate fetching previous agreements too
+		pathVars := mux.Vars(r)
+		id := pathVars["id"]
 
-		agreements, err := persistence.FindEstablishedAgreements(a.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter()})
+		// we don't support getting just one yet
+		if id != "" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		agreements, err := persistence.FindEstablishedAgreements(a.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{})
 		if err != nil {
 			glog.Error(err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 
-		wrap := make(map[string][]persistence.EstablishedAgreement, 0)
-		wrap["active"] = agreements
+		var agreementsKey = "agreements"
+		var archivedKey = "archived"
+		var activeKey = "active"
+
+		wrap := make(map[string]map[string][]persistence.EstablishedAgreement, 0)
+		wrap[agreementsKey] = make(map[string][]persistence.EstablishedAgreement, 0)
+		wrap[agreementsKey][archivedKey] = []persistence.EstablishedAgreement{}
+		wrap[agreementsKey][activeKey] = []persistence.EstablishedAgreement{}
+
+		for _, agreement := range agreements {
+			if agreement.Archived {
+				wrap[agreementsKey][archivedKey] = append(wrap[agreementsKey][archivedKey], agreement)
+			} else {
+				wrap[agreementsKey][activeKey] = append(wrap[agreementsKey][activeKey], agreement)
+			}
+		}
 
 		serial, err := json.Marshal(wrap)
 		if err != nil {
@@ -579,13 +601,8 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		// TODO: when there is a way to represent services for output, write it out w/ the 201
 		w.WriteHeader(http.StatusCreated)
 
-	case "DELETE":
-		// depends on the completion of some policy file APIs; should delete services, but how to handle associated serviceAttributes?
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-
 	case "OPTIONS":
-		w.Header().Set("Allow", "GET, POST, DELETE, OPTIONS")
+		w.Header().Set("Allow", "GET, POST, OPTIONS")
 		w.WriteHeader(http.StatusOK)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
