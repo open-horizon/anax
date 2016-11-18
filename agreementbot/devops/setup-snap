@@ -1,0 +1,26 @@
+#!/bin/bash -e
+#
+# setup-snap.sh: a script to setup the filesystem for a snap based agbot
+# author: booz@us.ibm.com
+#
+
+SNAP_COMMON="/var/snap/bluehorizon/common"
+
+if ! [ -e "$SNAP_COMMON"/config ]; then
+  mkdir -p "$SNAP_COMMON"/config
+fi
+
+if ! [ -e "$SNAP_COMMON"/policy.d ]; then
+  mkdir -p "$SNAP_COMMON"/policy.d
+fi
+
+if ! [ -e "$SNAP_COMMON"/eth ]; then
+  mkdir -p "$SNAP_COMMON"/eth
+fi
+
+if ! [ -e "$SNAP_COMMON"/agbot/policy.d ]; then
+  mkdir -p "$SNAP_COMMON"/agbot/policy.d
+fi
+
+cp snap.config.sample "$SNAP_COMMON"/config/anax.json.tmpl
+
