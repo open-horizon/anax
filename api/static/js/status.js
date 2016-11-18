@@ -25,7 +25,7 @@ $(document).ready(function() {
 function fetch_info() {
     if (ACCOUNT === null) {
         $.ajax({
-            url: '/info',
+            url: '/status',
             type: 'GET',
             dataType: 'json',
             success: function(data) {
@@ -38,7 +38,7 @@ function fetch_info() {
     }
 
     $.ajax({
-        url: '/contract',
+        url: '/agreement/all',
         type: 'GET',
         dataType: 'json',
         success: function(data) {
@@ -188,7 +188,7 @@ function disp_contracts(data) {
         pending_cons = contract_submitted.split(',');
     }
 
-    $.each($.map(data.contracts, function(con) {
+    $.each($.map(data.active, function(con) {
         var services = $.map(con.current_deployment, function(n, key) {
             return key;
         });
