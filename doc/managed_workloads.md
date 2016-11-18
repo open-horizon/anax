@@ -22,6 +22,7 @@ Horizon guarantees that each workload is provided the follow static environment 
   * `<PREFIX>_USER_PROVIDED_COORDS`: `false` iff the system provided the coordinates and the user couldn't have provided inaccurate ones, `true` otherwise.
   * `<PREFIX>_USE_GPS`: `true` if the user gives permission for the system to read corrdinates from a GPS device, `false` otherwise. Note that a `true` value does not guarantee that a GPS device will be accessible.
   * `<PREFIX>_DEVICE_ID` (non-null): A unique identifier for the host device. Effort is made to assign a device the same ID across installations of Horizon, although that behavior is not guaranteed.
+  * `<PREFIX>_HASH`: (non-null): A generated value, using a user-provided secret in the workload deployment description, passed to the device for the purpose of data verification with security.  (Replaces the obsolete MTN_CONFIGURE_NONCE value)
 
 ##### Deprecated in version 2
   * `DEVICE_ID` (non-null): A unique identifier for the host device. Effort is made to assign a device the same ID across installations of Horizon, although that behavior is not guaranteed.
