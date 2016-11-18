@@ -38,7 +38,7 @@ function fetch_info() {
     }
 
     $.ajax({
-        url: '/agreement/all',
+        url: '/agreement',
         type: 'GET',
         dataType: 'json',
         success: function(data) {
@@ -188,7 +188,7 @@ function disp_contracts(data) {
         pending_cons = contract_submitted.split(',');
     }
 
-    $.each($.map(data.active, function(con) {
+    $.each($.map(data.agreements.active, function(con) {
         var services = $.map(con.current_deployment, function(n, key) {
             return key;
         });
