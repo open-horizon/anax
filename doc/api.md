@@ -1,6 +1,8 @@
 
 ## Horizon APIs
 
+### *N.B.* This is not applicable for v2. Updates coming soon.
+
 This document contains the Horizon JSON APIs for the horizon system running on an IOT device. The output of the APIs is in JSON compact format. To get a better view, you can use JSONView extension in your web browser or use `jq` command from the command line interface. For example:
 
 ```
@@ -9,13 +11,13 @@ curl -s http://<ip>/info | jq -r '.'
 
 ### 1. Information about the horizon system
 
-**API:**   
-GET  /info  
+**API:**
+GET  /info
 
-**Parameters:**   
-none   
+**Parameters:**
+none
 
-**Response:**  
+**Response:**
 
 | name | type | description |
 | ---- | ---- | ---------------- |
@@ -57,13 +59,13 @@ curl -s http://localhost/info |jq -r '.'
 
 ### 2. Information about the contracts
 
-**API:**     
-GET  /contract  
+**API:**
+GET  /contract
 
-**Parameters:**   
-none   
+**Parameters:**
+none
 
-**Response:**  
+**Response:**
 
 | name | type | description |
 | ---- | ---- | ---------------- |
@@ -75,10 +77,10 @@ none
 | previous_agreements | array | an array of the previous agreement ids that are canceled.  |
 | configure_nonce | string | a unique identifier that is used for contract negotiation. It is set when the negotiation starts and unset when the device starts downloading the workloads. |
 | agreement_creation_time | int64 | the time when the agreement proposal is received from the data consumer and the negotiation process starts. |
-| agreement_execution_start_time | int64 | the time when the device starts the workloads. | 
+| agreement_execution_start_time | int64 | the time when the device starts the workloads. |
 | agreement_accepted_time | int64 | the time when the agreement is finalized and the device will start receiving payment tokens. |
 | private_environment_additions | json | the private environment variables that will be passed into the workload containers. |
-| environment_additions | json | the public environment variables that will be passed into the workload containers. They will be written into the contract agreement. | 
+| environment_additions | json | the public environment variables that will be passed into the workload containers. They will be written into the contract agreement. |
 | current_deployment | json | contains the information of the workloads. The key is the name of the workload and the value is the result of [/containers/<id> docker remote API call](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/inspect-a-container) for the  workload container. Please refer to the link for details. |
 
 **Example:**
@@ -221,13 +223,13 @@ curl -s http://localhost/contract |jq -r '.'
 
 ### 3. Information about the workload
 
-**API:**      
-GET  /workload  
+**API:**
+GET  /workload
 
-**Parameters:**   
-none  
+**Parameters:**
+none
 
-**Response:**  
+**Response:**
 
 | name | type | description |
 | ---- | ---- | ---------------- |
@@ -308,13 +310,13 @@ curl -s http://localhost/workload |jq -r '.'
 
 ### 4. Information about micropayments for contracts
 
-**API:**     
-GET  /micropayment  
+**API:**
+GET  /micropayment
 
-**Parameters:**   
-none  
+**Parameters:**
+none
 
-**Response:**  
+**Response:**
 
 | name | type | description |
 | ---- | ---- | ---------------- |
@@ -362,8 +364,8 @@ curl -s http://localhost/micropayment |jq -r '.'
 ```
 
 ### 5. Latest micropayment information for a contract
-**API:**     
-GET  /agreement/<agreentment_id>/latestmicropayment  
+**API:**
+GET  /agreement/<agreentment_id>/latestmicropayment
 
 **Parameters:**
 
@@ -372,7 +374,7 @@ GET  /agreement/<agreentment_id>/latestmicropayment
 | agreentment_id | string | the id of a contract agreement. |
 
 
-**Response:**  
+**Response:**
 
 | name | type | description |
 | ---- | ---- | ---------------- |
