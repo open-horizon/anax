@@ -256,6 +256,8 @@ func AttributesToEnvvarMap(attributes []ServiceAttribute, prefix string) (map[st
 			s := serv.(LocationAttributes)
 			writePrefix("LAT", s.Lat)
 			writePrefix("LON", s.Lon)
+			writePrefix("USE_GPS", strconv.FormatBool(s.UseGps))
+			writePrefix("USER_PROVIDED_COORDS", strconv.FormatBool(s.UserProvidedCoords))
 
 		case ArchitectureAttributes:
 			s := serv.(ArchitectureAttributes)
