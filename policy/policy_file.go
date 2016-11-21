@@ -35,70 +35,11 @@ func (h PolicyHeader) IsSame(compare PolicyHeader) bool {
 	return h.Name == compare.Name && h.Version == compare.Version
 }
 
-type Image struct {
-	File      string `json:"file"`
-	Signature string `json:"signature"`
-}
-
-func (i Image) IsSame(compare Image) bool {
-	return i.File == compare.File && i.Signature == compare.Signature
-}
-
-type Torrent struct {
-	Url    string  `json:"url"`
-	Images []Image `json:"images"`
-}
-
-func (t Torrent) IsSame(compare Torrent) bool {
-	if t.Url != compare.Url {
-		return false
-	} else {
-		for _, i := range t.Images {
-			found := false
-			for _, compareI := range compare.Images {
-				if i.IsSame(compareI) {
-					found = true
-					break
-				}
-			}
-			if !found {
-				return false
-			}
-		}
-		return true
-	}
-}
-
-type Workload struct { // From the payload structure
-	Deployment          string  `json:"deployment"`
-	DeploymentSignature string  `json:"deployment_signature"`
-	DeploymentUserInfo  string  `json:"deployment_user_info"`
-	Torrent             Torrent `json:"torrent"`
-}
-
-func (wl Workload) IsSame(compare Workload) bool {
-	return wl.Deployment == compare.Deployment && wl.DeploymentSignature == compare.DeploymentSignature && wl.DeploymentUserInfo == compare.DeploymentUserInfo && wl.Torrent.IsSame(compare.Torrent)
-}
-
 type ValueExchange struct {
 	Type        string `json:"type"`        // The type of value exchange
 	Value       string `json:"value"`       // The value being exchanged
 	PaymentRate int    `json:"paymentRate"` // The number of seconds between payments
 	Token       string `json:"token"`       // A token used to identify the user of the value - added in version 2
-}
-
-type DataVerification struct {
-	Enabled  bool   `json:"enabled"`  // Whether or not data verification is enabled
-	URL      string `json:"URL"`      // The URL to be used for data receipt verification
-	Interval int    `json:"interval"` // The number of seconds between data receipt checks
-}
-
-func (d DataVerification) IsSame(compare DataVerification) bool {
-	return d.Enabled == compare.Enabled && d.URL == compare.URL && d.Interval == compare.Interval
-}
-
-func (d DataVerification) String() string {
-	return fmt.Sprintf("Enabled: %v, URL: %v, Interval: %v", d.Enabled, d.URL, d.Interval)
 }
 
 type ProposalRejection struct {
@@ -251,7 +192,7 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 // This function creates a merged policy file from a producer policy and a consumer policy, which will eventually
 // become the full terms and conditions of an agreement. If no error is returned, a merged policy object is returned.
 // The order of parameters is important, just like in the Are_Compatible API.
-func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Policy) (*Policy, error) {
+func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Policy, agreementId string) (*Policy, error) {
 
 	// Make sure the policies are compatible. If not an error will be returned.
 	if err := Are_Compatible(producer_policy, consumer_policy); err != nil {
@@ -265,9 +206,13 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		intersecting_agreement_protocols, _ := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols)
 		merged_pol.AgreementProtocols = *intersecting_agreement_protocols.Single_Element()
 		merged_pol.Workloads = consumer_policy.Workloads
+		if err := merged_pol.ObscureWorkloadPWs(agreementId); err != nil {
+			return nil, errors.New(fmt.Sprintf("Error merging policies, error: %v", err))
+		}
 		merged_pol.ValueEx = consumer_policy.ValueEx
 		merged_pol.ResourceLimits = consumer_policy.ResourceLimits
 		merged_pol.DataVerify = consumer_policy.DataVerify
+		merged_pol.DataVerify.Obscure()
 		intersecting_blockchains, _ := (&producer_policy.Blockchains).Intersects_With(&consumer_policy.Blockchains)
 		merged_pol.Blockchains = *intersecting_blockchains.Single_Element()
 		(&merged_pol.Properties).Concatenate(&consumer_policy.Properties)
@@ -324,6 +269,15 @@ func (self *Policy) IsSameWorkload(compare *Policy) bool {
 		}
 	}
 	return true
+}
+
+func (self *Policy) ObscureWorkloadPWs(agreementId string) error {
+	for ix, _ := range self.Workloads {
+		if err := (&self.Workloads[ix]).Obscure(agreementId); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // These are functions that operate on policy files in the file system.
@@ -453,58 +407,3 @@ func getPolicyFiles(homePath string) ([]os.FileInfo, error) {
 		return res, nil
 	}
 }
-
-// This function will convert the etherum_account attribute value from a
-// human readable string to a 20 byte interter string representation.
-// The attribute in the contract has the same representation of the value.
-// So they can compare in when calling the Match fucntion
-// func (self *Policy) ConvertEthereumAccount(bStrToBytes bool) error {
-//     for pi , prop := range self.Properties {
-//         if prop.Name == "ethereum_account" {
-//             if bStrToBytes {
-//                 if str_value, ok := prop.Value.(string); ok {
-//                     if bin, err := stringToBin(str_value); err != nil {
-//                         return fmt.Errorf("Unable to convert %v in property %v to binary.", str_value, prop.Name)
-//                     } else {
-//                         self.Properties[pi] = Property{Name: "ethereum_account", Value: bin}
-//                     }
-//                 } else {
-//                     return fmt.Errorf("Cannot convert account value to bytes in property %v because the value is not string", prop)
-//                 }
-//             } else {
-//                 if bvalue, ok := prop.Value.([]byte); ok {
-//                     self.Properties[pi] = Property{Name: "ethereum_account", Value: binToString(bvalue)}
-//                 } else {
-//                     return fmt.Errorf("Cannot convert account value to string in property %v because the value is not a byte array", prop)
-//                 }
-//             }
-//         }
-//     }
-//     return nil
-// }
-
-// func stringToBin(str_value string) ([]byte, error) {
-//     bin := make([]byte, 0, 20)
-//     if strings.HasPrefix(str_value, "0x") {
-//         str_value = str_value[2:]
-//     }
-//     bigIntForm := big.NewInt(0)
-//     success := false
-//     if bigIntForm, success = bigIntForm.SetString(str_value, 16); !success {
-//         return bin, fmt.Errorf("Not converted")
-//     } else {
-//         return bigIntForm.Bytes(), nil
-//     }
-// }
-
-// func binToString(bvalue []byte) string {
-//     bigIntForm := big.NewInt(0)
-//     bigIntForm = bigIntForm.SetBytes(bvalue)
-//     // Text is not supported by earlier version of go
-//     // value = bigIntForm.Text(16)
-//     str := fmt.Sprintf("%x", bigIntForm)
-//     if len(str) < 40 {
-//         str = strings.Repeat("0", 40-len(str)) + str
-//     }
-//     return str
-// }

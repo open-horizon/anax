@@ -40,6 +40,8 @@
     "dataVerification": {
         "enabled": false,
         "URL": "",
+        "URLUser": "",
+        "URLPassword": "",
         "interval": 0
     },
     "proposalRejection": {

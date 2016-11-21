@@ -25,12 +25,14 @@ type Agreement struct {
 	PolicyName                    string `json:"policy_name"`                      // The name of the policy for this agreement, policy names are unique
 	CounterPartyAddress           string `json:"counter_party_address"`            // The blockchain address of the counterparty in the agreement
 	DataVerificationURL           string `json:"data_verification_URL"`            // The URL to use to ensure that this agreement is sending data.
+	DataVerificationUser          string `json:"data_verification_user"`           // The user to use with the DataVerificationURL
+	DataVerificationPW            string `json:"data_verification_pw"`             // The pw of the data verification user
 	DisableDataVerificationChecks bool   `json:"disable_data_verification_checks"` // disable data verification checks, assume data is being sent.
 	DataVerifiedTime              uint64 `json:"data_verification_time"`           // The last time that data verification was successful
 }
 
 func (a Agreement) String() string {
-	return fmt.Sprintf("CurrentAgreementId: %v, DeviceId: %v, AgreementInceptionTime: %v, AgreementCreationTime: %v, AgreementFinalizedTime: %v, AgreementTimedout: %v, ProposalSig: %v, Policy Name: %v, CounterPartyAddress: %v, DataVerificationURL: %v, DisableDataVerification: %v, DataVerifiedTime: %v", a.CurrentAgreementId, a.DeviceId, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime, a.AgreementTimedout, a.ProposalSig, a.PolicyName, a.CounterPartyAddress, a.DataVerificationURL, a.DisableDataVerificationChecks, a.DataVerifiedTime)
+	return fmt.Sprintf("CurrentAgreementId: %v, DeviceId: %v, AgreementInceptionTime: %v, AgreementCreationTime: %v, AgreementFinalizedTime: %v, AgreementTimedout: %v, ProposalSig: %v, Policy Name: %v, CounterPartyAddress: %v, DataVerificationURL: %v, DataVerificationUser: %v, DisableDataVerification: %v, DataVerifiedTime: %v", a.CurrentAgreementId, a.DeviceId, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime, a.AgreementTimedout, a.ProposalSig, a.PolicyName, a.CounterPartyAddress, a.DataVerificationURL, a.DataVerificationUser, a.DisableDataVerificationChecks, a.DataVerifiedTime)
 }
 
 // private factory method for agreement w/out persistence safety:
@@ -52,6 +54,8 @@ func agreement(agreementid string, deviceid string, policyName string, agreement
 			PolicyName:                    policyName,
 			CounterPartyAddress:           "",
 			DataVerificationURL:           "",
+			DataVerificationUser:          "",
+			DataVerificationPW:            "",
 			DisableDataVerificationChecks: false,
 			DataVerifiedTime:              0,
 		}, nil
@@ -68,12 +72,14 @@ func AgreementAttempt(db *bolt.DB, agreementid string, deviceid string, policyNa
 	}
 }
 
-func AgreementUpdate(db *bolt.DB, agreementid string, proposal string, policy string, url string, checks bool, protocol string) (*Agreement, error) {
+func AgreementUpdate(db *bolt.DB, agreementid string, proposal string, policy string, url string, user string, pw string, checks bool, protocol string) (*Agreement, error) {
 	if agreement, err := singleAgreementUpdate(db, agreementid, protocol, func(a Agreement) *Agreement {
 		a.AgreementCreationTime = uint64(time.Now().Unix())
 		a.Proposal = proposal
 		a.Policy = policy
 		a.DataVerificationURL = url
+		a.DataVerificationUser = user
+		a.DataVerificationPW = pw
 		a.DisableDataVerificationChecks = checks
 		a.DataVerifiedTime = uint64(time.Now().Unix())
 		return &a
@@ -182,6 +188,8 @@ func persistUpdatedAgreement(db *bolt.DB, agreementid string, protocol string, u
 				mod.PolicyName = update.PolicyName
 				mod.ProposalSig = update.ProposalSig
 				mod.DataVerificationURL = update.DataVerificationURL
+				mod.DataVerificationUser = update.DataVerificationUser
+				mod.DataVerificationPW = update.DataVerificationPW
 				mod.DisableDataVerificationChecks = update.DisableDataVerificationChecks
 				mod.DataVerifiedTime = update.DataVerifiedTime
 

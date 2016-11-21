@@ -40,6 +40,8 @@
     "dataVerification": {
         "enabled": true,
         "URL": "http://data.receipt.system.com",
+        "URLUser": "",
+        "URLPassword": "",
         "interval": 300
     },
     "proposalRejection": {
