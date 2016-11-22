@@ -20,7 +20,6 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
-	"os"
 	"reflect"
 	"runtime"
 	"strconv"
@@ -223,17 +222,6 @@ func (a *API) devmode(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 		} else {
 			glog.Infof("devemode=%v", mode)
-
-			// Hack for now, generate device ID and token
-			devId := os.Getenv("ANAX_DEVICEID")
-			if devId == "" {
-				devId = "an12345"
-			}
-			tok := os.Getenv("ANAX_TOKEN")
-			if tok == "" {
-				tok = "abcdefg"
-			}
-			a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, tok)
 
 			if err := persistence.SaveDevmode(a.db, mode); err != nil {
 				glog.Error("Error saving devmode: %v", err)
