@@ -36,7 +36,7 @@ function fetchInfo(con_name) {
     }
 
     $.ajax({
-        url: '/agreement/all',
+        url: '/agreement',
         type: 'GET',
         dataType: 'json',
         success: function(data) {
@@ -77,7 +77,7 @@ function disp_single_row(text) {
 
 // dispay the contract attributes and values on the table
 function disp_contract_details(data, con_name) {
-    $.each($.map(data.active, function(con) {
+    $.each($.map(data.agreements.active, function(con) {
         var services = $.map(con.current_deployment, function(n, key) {
             return key;
         });
