@@ -31,12 +31,5 @@ func SecureRandomString() (string, error) {
 }
 
 func ArchString() string {
-	var archString string
-	if runtime.GOARCH == "arm" {
-		archString = "armhf"
-	} else {
-		archString = runtime.GOARCH
-	}
-
-	return archString
+	return runtime.GOARCH
 }
