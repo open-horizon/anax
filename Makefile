@@ -16,15 +16,15 @@ ifeq ($(ARCH),armv7l)
 	COMPILE_ARGS +=  GOARCH=arm GOARM=7
 endif
 
-all: anax bhgovconfig
+all: anax
 
 # will always run b/c deps target is PHONY
-anax: $(shell find . -name '*.go' -not -path './vendor/*') deps
+anax: $(shell find . -name '*.go' -not -path './vendor/*' -and -not -path './policy/tools/bhgovconfig/*') deps
 	cd $(PKGPATH)/anax && \
 	  export GOPATH=$(TMPGOPATH); \
 	    $(COMPILE_ARGS) go build -o anax
 
-bhgovconfig:
+bhgovconfig: $(shell find ./policy/tools/bhgovconfig/ -name '*.go') deps
 	cd $(PKGPATH)/anax/policy/tools/bhgovconfig && \
 	  $(MAKE)
 
