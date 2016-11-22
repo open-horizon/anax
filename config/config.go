@@ -45,6 +45,8 @@ type AGConfig struct {
 	AgreementTimeoutS            uint64 // Number of seconds to wait before declaring agreement not finalized in blockchain
 	NoDataIntervalS              uint64 // default should be 15 mins == 15*60 == 900. Ignored if the policy has data verification disabled.
 	ActiveAgreementsURL          string // This field is used when policy files indicate they want data verification but they dont specify a URL
+	ActiveAgreementsUser         string // This is the userid the agbot uses to authenticate to the data verifivcation API
+	ActiveAgreementsPW           string // This is the password for the ActiveAgreementsUser
 	PolicyPath                   string // The directory where policy files are kept, default /etc/provider-tremor/policy/
 	NewContractIntervalS         uint64 // default should be 1
 	ProcessGovernanceIntervalS   uint64 // How long the gov sleeps before general gov checks (new payloads, interval payments, etc).

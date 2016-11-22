@@ -29,7 +29,8 @@
                         "signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     }
                 ]
-            }
+            },
+            "workload_password": ""
         }
     ],
     "deviceType": "12345-54321-abcdef-fedcba",
@@ -48,6 +49,8 @@
     "dataVerification": {
         "enabled": true,
         "URL": "http://data.receipt.system.com",
+        "URLUser": "",
+        "URLPassword": "",
         "interval": 300
     },
     "proposalRejection": {

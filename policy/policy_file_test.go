@@ -243,7 +243,7 @@ func Test_Policy_Merge(t *testing.T) {
 		t.Error(err)
 	} else if pf_con, err := ReadPolicyFile("./test/pfmerge1/agbot.policy"); err != nil {
 		t.Error(err)
-	} else if pf_merged, err := Create_Terms_And_Conditions(pf_prod, pf_con); err != nil {
+	} else if pf_merged, err := Create_Terms_And_Conditions(pf_prod, pf_con, "12345"); err != nil {
 		t.Error(err)
 	} else if err := WritePolicyFile(pf_merged, "./test/pfmerge1/merged.policy"); err != nil {
 		t.Error(err)
@@ -343,49 +343,20 @@ func Test_Policy_Creation(t *testing.T) {
 
 }
 
-// func Test_convertAccount_succeeds1(t *testing.T) {
+// Now let's make sure we are obscuring the workload password
+func Test_Policy_Workload_obscure(t *testing.T) {
+	if pf_prod1, err := ReadPolicyFile("./test/pftest/test1.policy"); err != nil {
+		t.Error(err)
+	} else {
+		pf_prod1.Workloads[0].WorkloadPassword = "abcdefg"
+		if err := pf_prod1.ObscureWorkloadPWs("123456"); err != nil {
+			t.Error(err)
+		} else if pf_prod1.Workloads[0].WorkloadPassword == "abcdefg" {
+			t.Errorf("Password was not obscured in %v", pf_prod1.Workloads[0])
+		}
+	}
+}
 
-//     bigIntForm := big.NewInt(0)
-//     bigIntForm, _ = bigIntForm.SetString("1234567890abcdef1234567890abcdef12345678", 16)
-//     expected := bigIntForm.Bytes()
-
-//     if pf, err := ReadPolicyFile("./test/pfaccttest/acct1.policy"); err != nil {
-//         t.Error(err)
-//     } else {
-//         switch pf.Properties[0].Value.(type) {
-//             case []byte:
-//                 if bytes.Compare(pf.Properties[0].Value.([]byte), expected) != 0 {
-//                     t.Errorf("Expected byte array %v, received: %v", expected, pf.Properties[0].Value)
-//                 }
-//             default:
-//                 t.Errorf("Value should be a byte array, but is %T", pf.Properties[0].Value)
-//         }
-
-//         expectedString := "1234567890abcdef1234567890abcdef12345678"
-//         if err := pf.ConvertEthereumAccount(false); err != nil {
-//             t.Errorf("Error converting account to string: %v", err)
-//         } else {
-//             switch pf.Properties[0].Value.(type) {
-//                 case string:
-//                     if pf.Properties[0].Value.(string) != expectedString {
-//                         t.Errorf("Expected string %v, received: %v", expected, pf.Properties[0].Value)
-//                     }
-//                 default:
-//                     t.Errorf("Value should be a byte array")
-//             }
-//         }
-//     }
-// }
-
-// func Test_convertAccount_fails1(t *testing.T) {
-
-//     if _, err := ReadPolicyFile("./test/pfaccttest/acct2.policy"); err == nil {
-//         t.Errorf("Should be an error converting account to binary.")
-//     } else if !strings.Contains(err.Error(), "Unable to convert") {
-//         t.Errorf("Wrong error returned, expected 'Unable to convert', received %v", err)
-//     }
-
-// }
 
 // ================================================================================================================
 // Helper functions

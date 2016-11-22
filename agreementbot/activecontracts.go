@@ -48,6 +48,16 @@ func GetActiveAgreements(in_devices map[string][]string, agreement Agreement, co
         activeAgreementsURL = config.ActiveAgreementsURL
     }
 
+    activeAgreementsUser := agreement.DataVerificationUser
+    if activeAgreementsUser == "" {
+        activeAgreementsUser = config.ActiveAgreementsUser
+    }
+
+    activeAgreementsPW := agreement.DataVerificationPW
+    if activeAgreementsPW == "" {
+        activeAgreementsPW = config.ActiveAgreementsPW
+    }
+
     if _, ok := in_devices[activeAgreementsURL]; !ok {
         devices := make([]string, 0, 10)
         response := make([]DeviceEntry, 0, 10)
@@ -56,7 +66,7 @@ func GetActiveAgreements(in_devices map[string][]string, agreement Agreement, co
         // error to the caller.
         retries := 0
         for {
-            if err = Invoke_rest("GET", activeAgreementsURL, nil, &response); err != nil {
+            if err = Invoke_rest("GET", activeAgreementsURL, activeAgreementsUser, activeAgreementsPW, nil, &response); err != nil {
                 glog.Errorf("Error getting active agreements: %v", err)
                 if retries == 2 {
                     break
@@ -99,9 +109,12 @@ func ActiveAgreementsContains(activeAgreements []string, agreement Agreement, pr
     return false
 }
 
-func Invoke_rest(method string, url string, body []byte, outstruct interface{}) error {
+func Invoke_rest(method string, url string, user string, pw string, body []byte, outstruct interface{}) error {
     req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
     req.Header.Set("Content-Type", "application/json")
+    if user != "" && pw != "" {
+        req.SetBasicAuth(user, pw)
+    }
 
     req.Close = true // work around to ensure that Go doesn't get connections confused. Supposed to be fixed in Go 1.6.
 
