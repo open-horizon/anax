@@ -86,7 +86,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 					// We are waiting for a reply
 					glog.V(5).Infof("AgreementBot Governance waiting for reply to %v.", ag.CurrentAgreementId)
 					now := uint64(time.Now().Unix())
-					if ag.AgreementCreationTime + w.Worker.Manager.Config.AgreementBot.AgreementTimeoutS < now {
+					if ag.AgreementCreationTime + w.Worker.Manager.Config.AgreementBot.ProtocolTimeoutS < now {
 						w.TerminateAgreement(&ag, CANCEL_NO_REPLY)
 					}
 				}

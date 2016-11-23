@@ -43,8 +43,8 @@ func Test_data_verification_obscure(t *testing.T) {
         if dva.URLPassword == upb4 || dva.URLPassword != "********" {
             t.Errorf("DV section %v was not obscured correctly\n", dva)
         } else if dvb := create_DataVerification(dv2, t); dvb != nil {
-            if dva.IsSame(*dvb) {
-                t.Errorf("DV section %v is the same as %v\n", dva, dvb)
+            if !dva.IsSame(*dvb) {
+                t.Errorf("DV section %v is not the same as %v\n", dva, dvb)
             }
         }
     }

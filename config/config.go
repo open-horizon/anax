@@ -42,6 +42,7 @@ type AGConfig struct {
 	AgreementWorkers             int
 	DBPath                       string
 	GethURL                      string
+	ProtocolTimeoutS             uint64 // Number of seconds to wait before declaring proposal response is lost
 	AgreementTimeoutS            uint64 // Number of seconds to wait before declaring agreement not finalized in blockchain
 	NoDataIntervalS              uint64 // default should be 15 mins == 15*60 == 900. Ignored if the policy has data verification disabled.
 	ActiveAgreementsURL          string // This field is used when policy files indicate they want data verification but they dont specify a URL
