@@ -56,10 +56,12 @@ func mux(workers *worker.MessageHandlerRegistry) chan events.Message {
 // onto their own channels to operate on them.
 //
 func eventHandler(incoming events.Message, workers *worker.MessageHandlerRegistry) (string, error) {
-	successMsg := "propagated event to destination worker"
+	successMsg := "propagated event to all workers"
 
-	for _, worker := range workers.Handlers {
+	for name, worker := range workers.Handlers {
+		glog.V(5).Infof("Delivering message to %v", name)
 		(*worker).NewEvent(incoming)
+		glog.V(5).Infof("Delivered message to %v", name)
 	}
 
 	return successMsg, nil

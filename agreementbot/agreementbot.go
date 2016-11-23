@@ -33,6 +33,7 @@ type AgreementBotWorker struct {
 	pm              *policy.PolicyManager
 	pwcommands      chan worker.Command
 	bcWritesEnabled bool
+	ready           bool
 }
 
 func NewAgreementBotWorker(config *config.HorizonConfig, db *bolt.DB) *AgreementBotWorker {
@@ -57,6 +58,7 @@ func NewAgreementBotWorker(config *config.HorizonConfig, db *bolt.DB) *Agreement
 		protocols:       make(map[string]bool),
 		pwcommands:      pwcommands,
 		bcWritesEnabled: false,
+		ready:           false,
 	}
 
 	glog.Info("Starting AgreementBot worker")
@@ -72,19 +74,15 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 
 	switch incoming.(type) {
 	case *events.WhisperReceivedMessage:
-		msg, _ := incoming.(*events.WhisperReceivedMessage)
+		if w.ready {
+			msg, _ := incoming.(*events.WhisperReceivedMessage)
 
-		// TODO: When we replace this with telehash, check to see if the protocol in the message
-		// is already known to us. For now, whisper doesnt put the topic in the message so we have
-		// now way of checking.
-		agCmd := NewReceivedWhisperMessageCommand(*msg)
-		w.Commands <- agCmd
-
-	case *events.ABPolicyCreatedMessage:
-		msg, _ := incoming.(*events.ABPolicyCreatedMessage)
-
-		agCmd := NewNewPolicyCommand(msg.PolicyFile())
-		w.Commands <- agCmd
+			// TODO: When we replace this with telehash, check to see if the protocol in the message
+			// is already known to us. For now, whisper doesnt put the topic in the message so we have
+			// now way of checking.
+			agCmd := NewReceivedWhisperMessageCommand(*msg)
+			w.Commands <- agCmd
+		}
 
 	case *events.AccountFundedMessage:
 		msg, _ := incoming.(*events.AccountFundedMessage)
@@ -114,8 +112,6 @@ func (w *AgreementBotWorker) start() {
 				break
 			}
 		}
-
-
 
 		glog.Info("AgreementBot worker started")
 
@@ -177,6 +173,9 @@ func (w *AgreementBotWorker) start() {
 			glog.Errorf("AgreementBotWorker Terminating, unable to sync up, error: %v", err)
 			return
 		}
+
+		// The agbot worker is now ready to handle incoming messages
+		w.ready = true
 
 		// Begin heartbeating with the exchange.
 		targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/heartbeat?token=" + w.token
