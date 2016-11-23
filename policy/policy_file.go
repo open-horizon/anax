@@ -202,10 +202,10 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		merged_pol := new(Policy)
 		merged_pol.Header.Name = producer_policy.Header.Name + " merged with " + consumer_policy.Header.Name
 		merged_pol.Header.Version = CurrentVersion
-		merged_pol.APISpecs = consumer_policy.APISpecs
+		merged_pol.APISpecs = append(merged_pol.APISpecs, consumer_policy.APISpecs...)
 		intersecting_agreement_protocols, _ := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols)
 		merged_pol.AgreementProtocols = *intersecting_agreement_protocols.Single_Element()
-		merged_pol.Workloads = consumer_policy.Workloads
+		merged_pol.Workloads = append(merged_pol.Workloads, consumer_policy.Workloads...)
 		if err := merged_pol.ObscureWorkloadPWs(agreementId); err != nil {
 			return nil, errors.New(fmt.Sprintf("Error merging policies, error: %v", err))
 		}
