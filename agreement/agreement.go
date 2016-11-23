@@ -270,7 +270,12 @@ func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply
 				}
 				envAdds[config.ENVVAR_PREFIX+"AGREEMENTID"] = proposal.AgreementId
 				envAdds[config.ENVVAR_PREFIX+"CONTRACT"] = w.Config.Edge.DVPrefix + proposal.AgreementId
-				envAdds[config.ENVVAR_PREFIX+"CONFIGURE_NONCE"] = tcPolicy.Workloads[0].WorkloadPassword
+				// Temporary hack
+				if tcPolicy.Workloads[0].WorkloadPassword == "" {
+					envAdds[config.ENVVAR_PREFIX+"CONFIGURE_NONCE"] = proposal.AgreementId
+				} else {
+					envAdds[config.ENVVAR_PREFIX+"CONFIGURE_NONCE"] = tcPolicy.Workloads[0].WorkloadPassword
+				}
 				envAdds["HZN_HASH"] = tcPolicy.Workloads[0].WorkloadPassword
 				// For workload compatibility, the DEVICE_ID env var is passed with and without the prefix. We would like to drop
 				// the env var without prefix once all the workloads have ben updated.
