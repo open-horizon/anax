@@ -40,7 +40,6 @@ const (
 
 	// policy-related
 	NEW_POLICY    EventId = "NEW_POLICY"
-	NEW_AB_POLICY EventId = "NEW_AB_POLICY"
 
 	// exchange-related
 	NEW_DEVICE_REG EventId = "NEW_DEVICE_REG"
@@ -104,38 +103,6 @@ func (e *PolicyCreatedMessage) PolicyFile() string {
 func NewPolicyCreatedMessage(id EventId, policyFileName string) *PolicyCreatedMessage {
 
 	return &PolicyCreatedMessage{
-		event: Event{
-			Id: id,
-		},
-		fileName: policyFileName,
-	}
-}
-
-// This event indicates that a new agbot policy has been created
-type ABPolicyCreatedMessage struct {
-	event    Event
-	fileName string
-}
-
-func (e ABPolicyCreatedMessage) String() string {
-	return fmt.Sprintf("event: %v, file: %v", e.event, e.fileName)
-}
-
-func (e ABPolicyCreatedMessage) ShortString() string {
-	return e.String()
-}
-
-func (e *ABPolicyCreatedMessage) Event() Event {
-	return e.event
-}
-
-func (e *ABPolicyCreatedMessage) PolicyFile() string {
-	return e.fileName
-}
-
-func NewABPolicyCreatedMessage(id EventId, policyFileName string) *ABPolicyCreatedMessage {
-
-	return &ABPolicyCreatedMessage{
 		event: Event{
 			Id: id,
 		},
