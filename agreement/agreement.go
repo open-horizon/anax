@@ -151,6 +151,10 @@ func (w *AgreementWorker) start() {
 			glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
 		}
 
+		// Start the go routine that makes sure the whisper id is correct in the exchange
+		go w.maintainWhisperId()
+
+		// Handle agreement processor commands
 		for {
 			glog.V(2).Infof(logString(fmt.Sprintf("blocking for commands")))
 			command := <-w.Commands
@@ -204,6 +208,7 @@ func (w *AgreementWorker) start() {
 				} else if err := w.RecordReply(proposal, reply, citizenscientist.PROTOCOL_NAME, cmd); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to record reply %v, error: %v", *reply, err)))
 				}
+
 			default:
 				glog.Errorf("Unknown command (%T): %v", command, command)
 			}
@@ -217,6 +222,51 @@ func (w *AgreementWorker) start() {
 	glog.Info(logString(fmt.Sprintf("waiting for commands.")))
 
 }
+
+func (w *AgreementWorker) maintainWhisperId() {
+	// The device side whisper id can change if geth fails on us. If this happens, we need to
+	// update the whisper id in the exchange.
+
+	getWhisperId := func() string {
+		if wId, err := gwhisper.AccountId(w.Config.Edge.GethURL); err != nil {
+			glog.Errorf(logStringww(fmt.Sprintf("encountered error reading whisper id, error %v",err)))
+			return ""
+		} else {
+			return wId
+		}
+	}
+
+	for {
+		glog.V(5).Infof(logStringww(fmt.Sprintf("checking on whisper id")))
+
+		newId := getWhisperId()
+		if newId != "" {
+			var resp interface{}
+			resp = new(exchange.GetDevicesResponse)
+			targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "?token=" + w.deviceToken
+			if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, nil, &resp); err != nil || tpErr != nil {
+				glog.Errorf(logStringww(fmt.Sprintf("encountered error getting device info from exchange, error %v",err)))
+			} else if dev, there := resp.(*exchange.GetDevicesResponse).Devices[w.deviceId]; there {
+				glog.V(5).Infof(logStringww(fmt.Sprintf("found device %v in the exchange.", w.deviceId)))
+				if dev.MsgEndPoint != newId {
+					if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
+						glog.Errorf(logStringww(fmt.Sprintf("unable to update whisper id with exchange, error: %v", err)))
+					} else {
+						glog.V(3).Infof(logStringww(fmt.Sprintf("updated exchange for %v with new whisper id %v", w.deviceId, newId)))
+					}
+				} else {
+					glog.V(3).Infof(logStringww(fmt.Sprintf("whisper id for %v has not changed", w.deviceId)))
+				}
+			} else {
+				glog.Errorf(logStringww(fmt.Sprintf("did not find device %v in the exchange", w.deviceId)))
+			}
+		}
+
+		time.Sleep(30 * time.Second)
+	}
+
+}
+
 
 func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
@@ -269,18 +319,23 @@ func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply
 					glog.Errorf("Error: %v", err)
 				}
 				envAdds[config.ENVVAR_PREFIX+"AGREEMENTID"] = proposal.AgreementId
+				envAdds[config.COMPAT_ENVVAR_PREFIX+"AGREEMENTID"] = proposal.AgreementId
 				envAdds[config.ENVVAR_PREFIX+"CONTRACT"] = w.Config.Edge.DVPrefix + proposal.AgreementId
+				envAdds[config.COMPAT_ENVVAR_PREFIX+"CONTRACT"] = w.Config.Edge.DVPrefix + proposal.AgreementId
 				// Temporary hack
 				if tcPolicy.Workloads[0].WorkloadPassword == "" {
 					envAdds[config.ENVVAR_PREFIX+"CONFIGURE_NONCE"] = proposal.AgreementId
+					envAdds[config.COMPAT_ENVVAR_PREFIX+"CONFIGURE_NONCE"] = proposal.AgreementId
 				} else {
 					envAdds[config.ENVVAR_PREFIX+"CONFIGURE_NONCE"] = tcPolicy.Workloads[0].WorkloadPassword
+					envAdds[config.COMPAT_ENVVAR_PREFIX+"CONFIGURE_NONCE"] = tcPolicy.Workloads[0].WorkloadPassword
 				}
-				envAdds["HZN_HASH"] = tcPolicy.Workloads[0].WorkloadPassword
+				envAdds[config.ENVVAR_PREFIX+"HASH"] = tcPolicy.Workloads[0].WorkloadPassword
 				// For workload compatibility, the DEVICE_ID env var is passed with and without the prefix. We would like to drop
 				// the env var without prefix once all the workloads have ben updated.
 				envAdds["DEVICE_ID"] = w.deviceId
 				envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = w.deviceId
+				envAdds[config.COMPAT_ENVVAR_PREFIX+"DEVICE_ID"] = w.deviceId
 
 				lc.EnvironmentAdditions = &envAdds
 				lc.AgreementProtocol = citizenscientist.PROTOCOL_NAME
@@ -398,7 +453,19 @@ func (w *AgreementWorker) GetWorkloadPreference(url string) (map[string]string, 
 		return nil, fmt.Errorf("Unable to fetch workload preferences. Err: %v", err)
 	}
 
-	return persistence.AttributesToEnvvarMap(attrs, config.ENVVAR_PREFIX)
+	// temporarily create duplicate env var map holding the old names for compatibility and the new names for migration
+	// TODO: remove compatMap once Horizon workloads have migrated
+	if baseMap, err := persistence.AttributesToEnvvarMap(attrs, config.ENVVAR_PREFIX); err != nil {
+		return baseMap, err
+	} else if compatMap, err := persistence.AttributesToEnvvarMap(attrs, config.COMPAT_ENVVAR_PREFIX); err != nil {
+		return baseMap, err
+	} else {
+		for k, v := range compatMap {
+			baseMap[k] = v
+		}
+
+		return baseMap, nil
+	}
 }
 
 func (w *AgreementWorker) advertiseAllPolicies(location string) error {
@@ -407,7 +474,7 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 	for {
 		if w.bcClientInitialized == false {
 			time.Sleep(time.Duration(5) * time.Second)
-			glog.V(3).Infof("AgreementWorker waiting for blockchain client fully initialized.")
+			glog.V(3).Infof("AgreementWorker waiting for blockchain client to be fully initialized.")
 		} else {
 			break
 		}
@@ -528,4 +595,8 @@ func (w *AgreementWorker) recordAgreementState(agreementId string, microservice 
 
 var logString = func(v interface{}) string {
 	return fmt.Sprintf("AgreementWorker %v", v)
+}
+
+var logStringww = func(v interface{}) string {
+	return fmt.Sprintf("AgreementWorker whisper maintenance %v", v)
 }
