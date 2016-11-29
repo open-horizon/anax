@@ -271,7 +271,7 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 
 		for _, v := range service.Environment {
 			// skip this one b/c it's dangerous
-			if !strings.HasPrefix(config.ENVVAR_PREFIX+"ETHEREUM_ACCOUNT", v) {
+			if !strings.HasPrefix(config.ENVVAR_PREFIX+"ETHEREUM_ACCOUNT", v) && !strings.HasPrefix(config.COMPAT_ENVVAR_PREFIX+"ETHEREUM_ACCOUNT", v){
 				serviceConfig.Config.Env = append(serviceConfig.Config.Env, v)
 			}
 		}
