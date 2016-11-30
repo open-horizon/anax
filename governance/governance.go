@@ -419,9 +419,9 @@ func recordProducerAgreementState(url string, deviceId string, token string, agr
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := url + "devices/" + deviceId + "/agreements/" + agreementId + "?token=" + token
+	targetURL := url + "devices/" + deviceId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "PUT", targetURL, &as, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "PUT", targetURL, deviceId, token, &as, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
@@ -442,9 +442,9 @@ func deleteProducerAgreement(url string, deviceId string, token string, agreemen
 
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := url + "devices/" + deviceId + "/agreements/" + agreementId + "?token=" + token
+	targetURL := url + "devices/" + deviceId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "DELETE", targetURL, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {

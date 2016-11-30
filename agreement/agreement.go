@@ -142,8 +142,8 @@ func (w *AgreementWorker) start() {
 
 			// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
 			// start heartbeating when the registration event comes in.
-			targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/heartbeat?token=" + w.deviceToken
-			go exchange.Heartbeat(w.httpClient, targetURL, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
+			targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/heartbeat"
+			go exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
 		}
 
 		// Publish what we have for the world to see
@@ -243,8 +243,8 @@ func (w *AgreementWorker) maintainWhisperId() {
 		if newId != "" {
 			var resp interface{}
 			resp = new(exchange.GetDevicesResponse)
-			targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "?token=" + w.deviceToken
-			if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, nil, &resp); err != nil || tpErr != nil {
+			targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId
+			if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil || tpErr != nil {
 				glog.Errorf(logStringww(fmt.Sprintf("encountered error getting device info from exchange, error %v",err)))
 			} else if dev, there := resp.(*exchange.GetDevicesResponse).Devices[w.deviceId]; there {
 				glog.V(5).Infof(logStringww(fmt.Sprintf("found device %v in the exchange.", w.deviceId)))
@@ -273,8 +273,8 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 	w.deviceToken = cmd.Token
 
 	// Start the go thread that heartbeats to the exchange
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/heartbeat?token=" + w.deviceToken
-	go exchange.Heartbeat(w.httpClient, targetURL, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/heartbeat"
+	go exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
 
 }
 
@@ -393,9 +393,9 @@ func (w *AgreementWorker) syncOnInit() error {
 					var exchangeAgreement map[string]exchange.DeviceAgreement
 					var resp interface{}
 					resp = new(exchange.AllDeviceAgreementsResponse)
-					targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/agreements/" + ag.CurrentAgreementId + "?token=" + w.deviceToken
+					targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/agreements/" + ag.CurrentAgreementId
 					for {
-						if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, nil, &resp); err != nil {
+						if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
 							return err
 						} else if tpErr != nil {
 							glog.V(5).Infof(err.Error())
@@ -542,16 +542,16 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 
 		}
 
-		pdr := exchange.CreateDevicePut(w.Config.Edge.GethURL)
+		pdr := exchange.CreateDevicePut(w.Config.Edge.GethURL, w.deviceToken)
 		pdr.RegisteredMicroservices = ms
 		var resp interface{}
 		resp = new(exchange.PutDeviceResponse)
-		targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "?token=" + w.deviceToken
+		targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId
 
 		glog.V(3).Infof("AgreementWorker Registering microservices: %v at %v", pdr.ShortString(), targetURL)
 
 		for {
-			if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, pdr, &resp); err != nil {
+			if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.deviceId, w.deviceToken, pdr, &resp); err != nil {
 				return err
 			} else if tpErr != nil {
 				glog.V(5).Infof(err.Error())
@@ -576,9 +576,9 @@ func (w *AgreementWorker) recordAgreementState(agreementId string, microservice 
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/agreements/" + agreementId + "?token=" + w.deviceToken
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, as, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.deviceId, w.deviceToken, as, &resp); err != nil {
 			glog.Errorf(err.Error())
 			return err
 		} else if tpErr != nil {

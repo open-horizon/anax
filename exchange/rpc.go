@@ -178,7 +178,7 @@ func CreateSearchRequest() *SearchExchangeRequest {
 }
 
 // This function creates the device registration message body.
-func CreateDevicePut(gethURL string) *PutDeviceRequest {
+func CreateDevicePut(gethURL string, token string) *PutDeviceRequest {
 
 	getWhisperId := func() string {
 		if wId, err := gwhisper.AccountId(gethURL); err != nil {
@@ -190,6 +190,7 @@ func CreateDevicePut(gethURL string) *PutDeviceRequest {
 	}
 
 	pdr := &PutDeviceRequest{
+		Token:            token,
 		Name:             "anaxdev",
 		MsgEndPoint:      getWhisperId(),
 		SoftwareVersions: make(map[string]string),
@@ -207,7 +208,7 @@ func ConvertToString(a []string) string {
 	return r
 }
 
-func Heartbeat(h *http.Client, url string, interval int) {
+func Heartbeat(h *http.Client, url string, id string, token string, interval int) {
 
 	for {
 		glog.V(5).Infof("Heartbeating to exchange: %v", url)
@@ -215,7 +216,7 @@ func Heartbeat(h *http.Client, url string, interval int) {
 		var resp interface{}
 		resp = new(PostDeviceResponse)
 		for {
-			if err, tpErr := InvokeExchange(h, "POST", url, nil, &resp); err != nil {
+			if err, tpErr := InvokeExchange(h, "POST", url, id, token, nil, &resp); err != nil {
 				glog.Errorf(err.Error())
 				break
 			} else if tpErr != nil {
@@ -268,7 +269,7 @@ func ConvertPropertyToExchangeFormat(prop *policy.Property) (*MSProp, error) {
 }
 
 // This function is used to invoke an exchange API
-func InvokeExchange(httpClient *http.Client, method string, url string, params interface{}, resp *interface{}) (error, error) {
+func InvokeExchange(httpClient *http.Client, method string, url string, user string, pw string, params interface{}, resp *interface{}) (error, error) {
 
 	if len(method) == 0 {
 		return errors.New(fmt.Sprintf("Error invoking exchange, method name must be specified")), nil
@@ -297,6 +298,10 @@ func InvokeExchange(httpClient *http.Client, method string, url string, params i
 		if method != "GET" {
 			req.Header.Add("Content-Type", "application/json")
 		}
+		if user != "" && pw != "" {
+			req.Header.Add("Authorization", "Basic " + user + ":" + pw)
+		}
+		glog.V(5).Infof("Invoking exchange with headers: %v", req.Header)
 		if httpResp, err := httpClient.Do(req); err != nil {
 			return nil, errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, url, requestBody, err))
 		} else {

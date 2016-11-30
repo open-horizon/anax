@@ -260,9 +260,9 @@ func (a *CSAgreementWorker) recordConsumerAgreementState(agreementId string, wor
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := a.config.AgreementBot.ExchangeURL + "agbots/" + a.agbotId + "/agreements/" + agreementId + "?token=" + a.token
+	targetURL := a.config.AgreementBot.ExchangeURL + "agbots/" + a.agbotId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(a.httpClient, "PUT", targetURL, &as, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(a.httpClient, "PUT", targetURL, a.agbotId, a.token, &as, &resp); err != nil {
 			glog.Errorf(err.Error())
 			return err
 		} else if tpErr != nil {
