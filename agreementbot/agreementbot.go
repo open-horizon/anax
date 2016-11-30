@@ -178,8 +178,8 @@ func (w *AgreementBotWorker) start() {
 		w.ready = true
 
 		// Begin heartbeating with the exchange.
-		targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/heartbeat?token=" + w.token
-		go exchange.Heartbeat(&http.Client{}, targetURL, w.Worker.Manager.Config.AgreementBot.ExchangeHeartbeat)
+		targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/heartbeat"
+		go exchange.Heartbeat(&http.Client{}, targetURL, w.agbotId, w.token, w.Worker.Manager.Config.AgreementBot.ExchangeHeartbeat)
 
 		// Start the governance routine.
 		go w.GovernAgreements()
@@ -398,9 +398,9 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy) (*[]exchange.Dev
 
 	var resp interface{}
 	resp = new(exchange.SearchExchangeResponse)
-	targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "search/devices?id=" + w.agbotId + "&token=" + w.token
+	targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "search/devices"
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, ser, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, ser, &resp); err != nil {
 			return nil, err
 		} else if tpErr != nil {
 			glog.V(5).Infof(err.Error())
@@ -453,9 +453,9 @@ func (w *AgreementBotWorker) syncOnInit() error {
 					var exchangeAgreement map[string]exchange.AgbotAgreement
 					var resp interface{}
 					resp = new(exchange.AllAgbotAgreementsResponse)
-					targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/agreements/" + ag.CurrentAgreementId + "?token=" + w.token
+					targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/agreements/" + ag.CurrentAgreementId
 					for {
-						if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, nil, &resp); err != nil {
+						if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.agbotId, w.token, nil, &resp); err != nil {
 							return err
 						} else if tpErr != nil {
 							glog.V(5).Infof(err.Error())
@@ -515,9 +515,9 @@ func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, wo
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/agreements/" + agreementId + "?token=" + w.token
+	targetURL := w.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, &as, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.agbotId, w.token, &as, &resp); err != nil {
 			glog.Errorf(err.Error())
 			return err
 		} else if tpErr != nil {

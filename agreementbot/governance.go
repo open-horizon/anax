@@ -132,9 +132,9 @@ func recordConsumerAgreementState(url string, agbotId string, token string, agre
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := url + "agbots/" + agbotId + "/agreements/" + agreementId + "?token=" + token
+	targetURL := url + "agbots/" + agbotId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "PUT", targetURL, &as, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "PUT", targetURL, agbotId, token, &as, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
@@ -159,9 +159,9 @@ func DeleteConsumerAgreement(url string, agbotId string, token string, agreement
 
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := url + "agbots/" + agbotId + "/agreements/" + agreementId + "?token=" + token
+	targetURL := url + "agbots/" + agbotId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "DELETE", targetURL, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "DELETE", targetURL, agbotId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
