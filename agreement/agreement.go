@@ -481,6 +481,13 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 	}
 
 	var pType, pValue, pCompare string
+	var deviceName string
+
+	if dev, err := persistence.FindExchangeDevice(w.db); err != nil {
+		return errors.New(fmt.Sprintf("AgreementWorker received error getting device name: %v", err))
+	} else {
+		deviceName = dev.Name
+	}
 
 	policies := w.pm.GetAllPolicies()
 
@@ -542,7 +549,7 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 
 		}
 
-		pdr := exchange.CreateDevicePut(w.Config.Edge.GethURL, w.deviceToken)
+		pdr := exchange.CreateDevicePut(w.Config.Edge.GethURL, w.deviceToken, deviceName)
 		pdr.RegisteredMicroservices = ms
 		var resp interface{}
 		resp = new(exchange.PutDeviceResponse)

@@ -34,11 +34,12 @@ type EstablishedAgreement struct {
 	Proposal                    string                   `json:"proposal"`
 	ProposalSig                 string                   `json:"proposal_sig"`       // the proposal currently in effect
 	AgreementProtocol           string                   `json:"agreement_protocol"` // the agreement protocol being used. It is also in the proposal.
+	TerminatedReason            uint64                   `json:"terminated_reason"`  // the reason that the agreement was terminated
 }
 
 func (c EstablishedAgreement) String() string {
 
-	return fmt.Sprintf("Name: %v , SensorUrl: %v , Archived: %v , CurrentAgreementId: %v, ConsumerId: %v, CurrentDeployment (service names): %v, AgreementCreationTime: %v, AgreementExecutionStartTime: %v, AgreementAcceptedTime: %v, AgreementFinalizedTime: %v, AgreementTerminatedTime: %v, Agreement Protocol: %v", c.Name, c.SensorUrl, c.Archived, c.CurrentAgreementId, c.ConsumerId, ServiceConfigNames(&c.CurrentDeployment), c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementFinalizedTime, c.AgreementTerminatedTime, c.AgreementProtocol)
+	return fmt.Sprintf("Name: %v , SensorUrl: %v , Archived: %v , CurrentAgreementId: %v, ConsumerId: %v, CurrentDeployment (service names): %v, AgreementCreationTime: %v, AgreementExecutionStartTime: %v, AgreementAcceptedTime: %v, AgreementFinalizedTime: %v, AgreementTerminatedTime: %v, TerminatedReason: %v, Agreement Protocol: %v", c.Name, c.SensorUrl, c.Archived, c.CurrentAgreementId, c.ConsumerId, ServiceConfigNames(&c.CurrentDeployment), c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementFinalizedTime, c.AgreementTerminatedTime, c.TerminatedReason, c.AgreementProtocol)
 
 }
 
@@ -96,6 +97,7 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 		Proposal:                    proposal,
 		ProposalSig:                 "",
 		AgreementProtocol:           protocol,
+		TerminatedReason:            0,
 	}
 
 	return newAg, db.Update(func(tx *bolt.Tx) error {
@@ -150,9 +152,10 @@ func AgreementStateFinalized(db *bolt.DB, dbAgreementId string, protocol string)
 }
 
 // set agreement state to terminated
-func AgreementStateTerminated(db *bolt.DB, dbAgreementId string, protocol string) (*EstablishedAgreement, error) {
+func AgreementStateTerminated(db *bolt.DB, dbAgreementId string, reason uint64, protocol string) (*EstablishedAgreement, error) {
 	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
 		c.AgreementTerminatedTime = uint64(time.Now().Unix())
+		c.TerminatedReason = reason
 		return &c
 	})
 }
@@ -202,6 +205,7 @@ func persistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 				mod.CurrentDeployment = update.CurrentDeployment
 				mod.Proposal = update.Proposal
 				mod.ProposalSig = update.ProposalSig
+				mod.TerminatedReason = update.TerminatedReason
 
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize contract record: %v. Error: %v", mod, err)

@@ -178,7 +178,7 @@ func CreateSearchRequest() *SearchExchangeRequest {
 }
 
 // This function creates the device registration message body.
-func CreateDevicePut(gethURL string, token string) *PutDeviceRequest {
+func CreateDevicePut(gethURL string, token string, name string) *PutDeviceRequest {
 
 	getWhisperId := func() string {
 		if wId, err := gwhisper.AccountId(gethURL); err != nil {
@@ -191,7 +191,7 @@ func CreateDevicePut(gethURL string, token string) *PutDeviceRequest {
 
 	pdr := &PutDeviceRequest{
 		Token:            token,
-		Name:             "anaxdev",
+		Name:             name,
 		MsgEndPoint:      getWhisperId(),
 		SoftwareVersions: make(map[string]string),
 	}
