@@ -281,7 +281,7 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 
 	// Update the database
 	var ag *persistence.EstablishedAgreement
-	if agreement, err := persistence.AgreementStateTerminated(w.db, agreementId, agreementProtocol); err != nil {
+	if agreement, err := persistence.AgreementStateTerminated(w.db, agreementId, uint64(reason), agreementProtocol); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error marking agreement %v terminated: %v", agreementId, err)))
 	} else {
 		ag = agreement
