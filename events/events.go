@@ -23,6 +23,7 @@ const (
 	AGREEMENT_REGISTERED  EventId = "AGREEMENT_REGISTERED"
 	ACCOUNT_FUNDED        EventId = "ACCOUNT_FUNDED"
 	BC_CLIENT_INITIALIZED EventId = "BC_CLIENT_INITIALIZED"
+	BC_EVENT              EventId = "BC_EVENT"
 
 	// whisper related
 	RECEIVED_MSG EventId = "RECEIVED_MSG"
@@ -471,28 +472,63 @@ func NewAccountFundedMessage(id EventId, acct string) *AccountFundedMessage {
 }
 
 // Blockchain client initialized message
-type BlockchainClientInitilizedMessage struct {
+type BlockchainClientInitializedMessage struct {
 	event Event
 	Time  uint64
 }
 
-func (m *BlockchainClientInitilizedMessage) Event() Event {
+func (m *BlockchainClientInitializedMessage) Event() Event {
 	return m.event
 }
 
-func (m BlockchainClientInitilizedMessage) String() string {
+func (m BlockchainClientInitializedMessage) String() string {
 	return fmt.Sprintf("Event: %v, Time: %v", m.Event, m.Time)
 }
 
-func (m BlockchainClientInitilizedMessage) ShortString() string {
+func (m BlockchainClientInitializedMessage) ShortString() string {
 	return m.String()
 }
 
-func NewBlockchainClientInitilizedMessage(id EventId) *BlockchainClientInitilizedMessage {
-	return &BlockchainClientInitilizedMessage{
+func NewBlockchainClientInitializedMessage(id EventId) *BlockchainClientInitializedMessage {
+	return &BlockchainClientInitializedMessage{
 		event: Event{
 			Id: id,
 		},
+		Time: uint64(time.Now().Unix()),
+	}
+}
+
+// Blockchain event occurred
+type EthBlockchainEventMessage struct {
+	event    Event
+	rawEvent string
+	protocol string
+	Time     uint64
+}
+
+func (m *EthBlockchainEventMessage) Event() Event {
+	return m.event
+}
+
+func (m *EthBlockchainEventMessage) RawEvent() string {
+	return m.rawEvent
+}
+
+func (m EthBlockchainEventMessage) String() string {
+	return fmt.Sprintf("Event: %v, Protocol: %v, Raw Event: %v, Time: %v", m.Event, m.rawEvent, m.protocol, m.Time)
+}
+
+func (m EthBlockchainEventMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v, Protocol: %v, Time: %v", m.Event, m.protocol, m.Time)
+}
+
+func NewEthBlockchainEventMessage(id EventId, ev string, protocol string) *EthBlockchainEventMessage {
+	return &EthBlockchainEventMessage{
+		event: Event{
+			Id: id,
+		},
+		rawEvent: ev,
+		protocol: protocol,
 		Time: uint64(time.Now().Unix()),
 	}
 }

@@ -11,7 +11,6 @@ import (
 	"github.com/open-horizon/anax/device"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/governance"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
@@ -103,8 +102,8 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 		agCmd := NewReceivedProposalCommand(*msg)
 		w.Commands <- agCmd
 
-	case *events.BlockchainClientInitilizedMessage:
-		msg, _ := incoming.(*events.BlockchainClientInitilizedMessage)
+	case *events.BlockchainClientInitializedMessage:
+		msg, _ := incoming.(*events.BlockchainClientInitializedMessage)
 		switch msg.Event().Id {
 		case events.BC_CLIENT_INITIALIZED:
 			w.bcClientInitialized = true
@@ -376,11 +375,11 @@ func (w *AgreementWorker) syncOnInit() error {
 					glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
 				} else if existingPol := w.pm.GetPolicy(pol.Header.Name); existingPol == nil {
 					glog.Errorf(logString(fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
-					w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, governance.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
+					w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, citizenscientist.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
 
 				} else if err := w.pm.MatchesMine(pol); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("agreement %v has a policy %v that has changed.", ag.CurrentAgreementId, pol.Header.Name)))
-					w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, governance.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
+					w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, citizenscientist.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
 
 				} else if err := w.pm.AttemptingAgreement(existingPol, ag.CurrentAgreementId); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))

@@ -52,7 +52,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 						now := uint64(time.Now().Unix())
 						if ag.AgreementCreationTime+w.Worker.Manager.Config.AgreementBot.AgreementTimeoutS < now {
 							// Start timing out the agreement
-							w.TerminateAgreement(&ag, CANCEL_NOT_FINALIZED_TIMEOUT)
+							w.TerminateAgreement(&ag, citizenscientist.AB_CANCEL_NOT_FINALIZED_TIMEOUT)
 						}
 					}
 
@@ -64,11 +64,11 @@ func (w *AgreementBotWorker) GovernAgreements() {
 					} else if !recorded {
 						// The agreement is not on the blockchain, update state in exchange
 						glog.V(3).Infof(logString(fmt.Sprintf("discovered terminated agreement %v, cleaning up.", ag.CurrentAgreementId)))
-						w.TerminateAgreement(&ag, CANCEL_DISCOVERED)
+						w.TerminateAgreement(&ag, citizenscientist.AB_CANCEL_DISCOVERED)
 					} else if now - ag.DataVerifiedTime >= w.Worker.Manager.Config.AgreementBot.NoDataIntervalS {
 						// No data is being received, terminate the agreement
 						glog.V(3).Infof(logString(fmt.Sprintf("cancelling agreement %v due to lack of data", ag.CurrentAgreementId)))
-						w.TerminateAgreement(&ag, CANCEL_NO_DATA_RECEIVED)
+						w.TerminateAgreement(&ag, citizenscientist.AB_CANCEL_NO_DATA_RECEIVED)
 					} else if activeDataVerification {
 						// And make sure the device is still sending data
 						if activeAgreements, err := GetActiveAgreements(allActiveAgreements, ag, &w.Worker.Manager.Config.AgreementBot); err != nil {
@@ -87,7 +87,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 					glog.V(5).Infof("AgreementBot Governance waiting for reply to %v.", ag.CurrentAgreementId)
 					now := uint64(time.Now().Unix())
 					if ag.AgreementCreationTime + w.Worker.Manager.Config.AgreementBot.ProtocolTimeoutS < now {
-						w.TerminateAgreement(&ag, CANCEL_NO_REPLY)
+						w.TerminateAgreement(&ag, citizenscientist.AB_CANCEL_NO_REPLY)
 					}
 				}
 			}

@@ -91,13 +91,6 @@ func (c CSCancelAgreement) Type() string {
 	return c.workType
 }
 
-// These constants represent agreement cancellation reason codes
-const CANCEL_NOT_FINALIZED_TIMEOUT = 200
-const CANCEL_NO_REPLY = 201
-const CANCEL_NEGATIVE_REPLY = 202
-const CANCEL_NO_DATA_RECEIVED = 203
-const CANCEL_POLICY_CHANGED = 204
-const CANCEL_DISCOVERED = 205
 
 // This function receives an event to "make a new agreement" from the Process function, and then synchronously calls a function
 // to actually work through the agreement protocol.
@@ -202,7 +195,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 					glog.Errorf(logString(fmt.Sprintf("no database entry for agreement %v, can't cleanup after rejection.", reply.AgreementId())))
 				} else if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v while trying to cleanup after rejection, error %v", reply.AgreementId(), err)))
-				} else if err := protocolHandler.TerminateAgreement(pol, ag.CounterPartyAddress, ag.CurrentAgreementId, CANCEL_NEGATIVE_REPLY, bc.Agreements); err != nil {
+				} else if err := protocolHandler.TerminateAgreement(pol, ag.CounterPartyAddress, ag.CurrentAgreementId, citizenscientist.AB_CANCEL_NEGATIVE_REPLY, bc.Agreements); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error terminating agreement %v on the blockchain: %v", reply.AgreementId(), err)))
 				}
 
