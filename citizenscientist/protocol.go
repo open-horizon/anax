@@ -14,6 +14,7 @@ import (
 	"golang.org/x/crypto/sha3"
 	"math/rand"
 	"net/http"
+	"strconv"
 )
 
 const PROTOCOL_NAME = "Citizen Scientist"
@@ -397,4 +398,81 @@ func (p *ProtocolHandler) VerifyAgreementRecorded(agreementId string, counterPar
 	}
 
 	return false, nil
+}
+
+// Function that work with blockchain events
+
+const AGREEMENT_CREATE        = "0x0000000000000000000000000000000000000000000000000000000000000000"
+const AGREEMENT_DETAIL        = "0x0000000000000000000000000000000000000000000000000000000000000001"
+const AGREEMENT_FRAUD         = "0x0000000000000000000000000000000000000000000000000000000000000002"
+const AGREEMENT_CONSUMER_TERM = "0x0000000000000000000000000000000000000000000000000000000000000003"
+const AGREEMENT_PRODUCER_TERM = "0x0000000000000000000000000000000000000000000000000000000000000004"
+const AGREEMENT_FRAUD_TERM    = "0x0000000000000000000000000000000000000000000000000000000000000005"
+const AGREEMENT_ADMIN_TERM    = "0x0000000000000000000000000000000000000000000000000000000000000006"
+
+func (p *ProtocolHandler) DemarshalEvent(ev string) (*ethblockchain.Raw_Event, error) {
+	rawEvent := new(ethblockchain.Raw_Event)
+	if err := json.Unmarshal([]byte(ev), rawEvent); err != nil {
+		return nil, err
+	} else {
+		return rawEvent, nil
+	}
+}
+
+func (p *ProtocolHandler) AgreementCreated(ev *ethblockchain.Raw_Event) bool {
+	return ev.Topics[0] == AGREEMENT_CREATE
+}
+
+func (p *ProtocolHandler) ConsumerTermination(ev *ethblockchain.Raw_Event) bool {
+	return ev.Topics[0] == AGREEMENT_CONSUMER_TERM
+}
+
+func (p *ProtocolHandler) ProducerTermination(ev *ethblockchain.Raw_Event) bool {
+	return ev.Topics[0] == AGREEMENT_PRODUCER_TERM
+}
+
+func (p *ProtocolHandler) GetAgreementId(ev *ethblockchain.Raw_Event) string {
+	return ev.Topics[3][2:]
+}
+
+func (p *ProtocolHandler) GetReasonCode(ev *ethblockchain.Raw_Event) (uint64, error) {
+	return strconv.ParseUint(ev.Data[2:], 16, 64)
+}
+
+// constants indicating why an agreement is cancelled by the producer
+const CANCEL_NOT_FINALIZED_TIMEOUT = 100
+const CANCEL_POLICY_CHANGED        = 101
+const CANCEL_TORRENT_FAILURE       = 102
+const CANCEL_CONTAINER_FAILURE     = 103
+const CANCEL_NOT_EXECUTED_TIMEOUT  = 104
+const CANCEL_USER_REQUESTED        = 105
+
+// These constants represent consumer cancellation reason codes
+const AB_CANCEL_NOT_FINALIZED_TIMEOUT = 200
+const AB_CANCEL_NO_REPLY              = 201
+const AB_CANCEL_NEGATIVE_REPLY        = 202
+const AB_CANCEL_NO_DATA_RECEIVED      = 203
+const AB_CANCEL_POLICY_CHANGED        = 204
+const AB_CANCEL_DISCOVERED            = 205
+
+func DecodeReasonCode(code uint64) string {
+
+	codeMeanings := map[uint64]string{CANCEL_NOT_FINALIZED_TIMEOUT:    "agreement never appeared on the blockchain",
+									CANCEL_POLICY_CHANGED:           "producer policy changed",
+									CANCEL_TORRENT_FAILURE:          "torrent failed to download",
+									CANCEL_CONTAINER_FAILURE:        "workload terminated",
+									CANCEL_NOT_EXECUTED_TIMEOUT:     "workload start timeout",
+									CANCEL_USER_REQUESTED:           "user requested",
+									AB_CANCEL_NOT_FINALIZED_TIMEOUT: "agreement bot never detected agreement on the blockchain",
+									AB_CANCEL_NO_REPLY:              "agreement bot never received reply to proposal",
+									AB_CANCEL_NEGATIVE_REPLY:        "agreement bot received negative reply",
+									AB_CANCEL_NO_DATA_RECEIVED:      "agreement bot did not detect data",
+									AB_CANCEL_POLICY_CHANGED:        "agreement bot policy changed",
+									AB_CANCEL_DISCOVERED:            "agreement bot discovered cancellation from producer"}
+
+	if reasonString, ok := codeMeanings[code]; !ok {
+		return "unknown reason code, device might be downlevel"
+	} else {
+		return reasonString
+	}
 }

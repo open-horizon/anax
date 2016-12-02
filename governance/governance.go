@@ -29,15 +29,6 @@ const MAX_MICROPAYMENT_UNPAID_RUN_DURATION_M = 60
 // enforced only after the workloads are running
 const MAX_AGREEMENT_ACCEPTANCE_WAIT_TIME_M = 20
 
-// constants indicating why an agreement is cancelled
-const CANCEL_NOT_FINALIZED_TIMEOUT = 100
-const CANCEL_POLICY_CHANGED = 101
-const CANCEL_TORRENT_FAILURE = 102
-const CANCEL_CONTAINER_FAILURE = 103
-const CANCEL_NOT_EXECUTED_TIMEOUT = 104
-const CANCEL_USER_REQUESTED = 105
-const CANCEL_DISCOVERED = 106
-
 type GovernanceWorker struct {
 	worker.Worker   // embedded field
 	db              *bolt.DB
@@ -103,7 +94,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			cmd := w.NewStartGovernExecutionCommand(msg.Deployment, msg.AgreementProtocol, msg.AgreementId)
 			w.Commands <- cmd
 		case events.EXECUTION_FAILED:
-			cmd := w.NewCleanupExecutionCommand(msg.AgreementProtocol, msg.AgreementId, CANCEL_CONTAINER_FAILURE, msg.Deployment)
+			cmd := w.NewCleanupExecutionCommand(msg.AgreementProtocol, msg.AgreementId, citizenscientist.CANCEL_CONTAINER_FAILURE, msg.Deployment)
 			w.Commands <- cmd
 		}
 
@@ -111,21 +102,21 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 		msg, _ := incoming.(*events.TorrentMessage)
 		switch msg.Event().Id {
 		case events.TORRENT_FAILURE:
-			cmd := w.NewCleanupExecutionCommand(msg.AgreementLaunchContext.AgreementProtocol, msg.AgreementLaunchContext.AgreementId, CANCEL_TORRENT_FAILURE, nil)
+			cmd := w.NewCleanupExecutionCommand(msg.AgreementLaunchContext.AgreementProtocol, msg.AgreementLaunchContext.AgreementId, citizenscientist.CANCEL_TORRENT_FAILURE, nil)
 			w.Commands <- cmd
 		}
 	case *events.InitAgreementCancelationMessage:
 		msg, _ := incoming.(*events.InitAgreementCancelationMessage)
 		switch msg.Event().Id {
 		case events.AGREEMENT_ENDED:
-			cmd := w.NewCleanupExecutionCommand(msg.AgreementProtocol, msg.AgreementId, CANCEL_USER_REQUESTED, msg.Deployment)
+			cmd := w.NewCleanupExecutionCommand(msg.AgreementProtocol, msg.AgreementId, msg.Reason, msg.Deployment)
 			w.Commands <- cmd
 		}
 	case *events.ApiAgreementCancelationMessage:
 		msg, _ := incoming.(*events.ApiAgreementCancelationMessage)
 		switch msg.Event().Id {
 		case events.AGREEMENT_ENDED:
-			cmd := w.NewCleanupExecutionCommand(msg.AgreementProtocol, msg.AgreementId, CANCEL_USER_REQUESTED, msg.Deployment)
+			cmd := w.NewCleanupExecutionCommand(msg.AgreementProtocol, msg.AgreementId, citizenscientist.CANCEL_USER_REQUESTED, msg.Deployment)
 			w.Commands <- cmd
 		}
 	case *events.AccountFundedMessage:
@@ -133,6 +124,14 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 		switch msg.Event().Id {
 		case events.ACCOUNT_FUNDED:
 			w.bcWritesEnabled = true
+		}
+
+	case *events.EthBlockchainEventMessage:
+		msg, _ := incoming.(*events.EthBlockchainEventMessage)
+		switch msg.Event().Id {
+		case events.BC_EVENT:
+			cmd := NewBlockchainEventCommand(*msg)
+			w.Commands <- cmd
 		}
 
 	default: //nothing
@@ -143,98 +142,49 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 
 func (w *GovernanceWorker) governAgreements() {
 
-	// Establish the go objects that are used to interact with the ethereum blockchain.
-	// This code should probably be in the protocol library.
-	acct, _ := ethblockchain.AccountId()
-	dir, _ := ethblockchain.DirectoryAddress()
-	if bc, err := ethblockchain.InitBaseContracts(acct, w.Worker.Manager.Config.Edge.GethURL, dir); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("unable to initialize platform contracts, error: %v", err)))
-		return
-	} else {
-		w.bc = bc
+	glog.V(4).Infof(logString(fmt.Sprintf("governing pending agreements")))
+
+	// Create a new filter for unfinalized agreements
+	notYetFinalFilter := func() persistence.EAFilter {
+		return func(a persistence.EstablishedAgreement) bool {
+			return a.AgreementCreationTime != 0 && a.AgreementAcceptedTime != 0 && a.AgreementTerminatedTime == 0 && a.CounterPartyAddress != ""
+		}
 	}
 
-	// go govern
-	go func() {
+	if establishedAgreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),notYetFinalFilter()}); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Unable to retrieve not yet final agreements from database: %v. Error: %v", err, err)))
+	} else {
 
-		protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
+		// If there are agreemens in the database then we will assume that the device is already registered
+		for _, ag := range establishedAgreements {
+			if ag.AgreementFinalizedTime == 0 {
+				// Cancel the agreement if finalization doesn't occur before the timeout
+				glog.V(5).Infof(logString(fmt.Sprintf("checking agreement %v for finalization.", ag.CurrentAgreementId)))
 
-		for {
-			glog.V(4).Infof(logString(fmt.Sprintf("governing pending agreements")))
+				now := uint64(time.Now().Unix())
+				if ag.AgreementCreationTime + w.Worker.Manager.Config.Edge.AgreementTimeoutS < now {
+					// Start timing out the agreement
+					glog.V(3).Infof(logString(fmt.Sprintf("detected agreement %v timed out.", ag.CurrentAgreementId)))
 
-			// Create a new filter for unfinalized agreements
-			notYetFinalFilter := func() persistence.EAFilter {
-				return func(a persistence.EstablishedAgreement) bool {
-					return a.AgreementCreationTime != 0 && a.AgreementAcceptedTime != 0 && a.AgreementTerminatedTime == 0 && a.CounterPartyAddress != ""
+					w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, citizenscientist.CANCEL_NOT_FINALIZED_TIMEOUT, citizenscientist.DecodeReasonCode(citizenscientist.CANCEL_NOT_FINALIZED_TIMEOUT))
+
+					// cleanup workloads
+					w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
 				}
-			}
-
-			if establishedAgreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),notYetFinalFilter()}); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("Unable to retrieve not yet final agreements from database: %v. Error: %v", err, err)))
 			} else {
-
-				// If there are agreemens in the database then we will assume that the device is already registered
-				for _, ag := range establishedAgreements {
-					if ag.AgreementFinalizedTime == 0 {
-						// Verify that the blockchain update has occurred. If not, cancel the agreement.
-						glog.V(5).Infof(logString(fmt.Sprintf("checking agreement %v for finalization.", ag.CurrentAgreementId)))
-						if recorded, err := protocolHandler.VerifyAgreementRecorded(ag.CurrentAgreementId, ag.CounterPartyAddress, ag.ProposalSig, w.bc.Agreements); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("unable to verify agreement %v on blockchain, error: %v", ag.CurrentAgreementId, err)))
-						} else if recorded {
-							// Update state in the database
-							if _, err := persistence.AgreementStateFinalized(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("error persisting agreement %v finalized: %v", ag.CurrentAgreementId, err)))
-							}
-							// Update state in exchange
-							if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("could not hydrate proposal, error: %v", err)))
-							} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("error demarshalling TsAndCs policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
-							} else if err := recordProducerAgreementState(w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, ag.CurrentAgreementId, tcPolicy.APISpecs[0].SpecRef, "Finalized Agreement"); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("error setting agreement %v finalized state in exchange: %v", ag.CurrentAgreementId, err)))
-							}
-
-						} else {
-							glog.V(5).Infof(logString(fmt.Sprintf("detected agreement %v not yet final.", ag.CurrentAgreementId)))
-							now := uint64(time.Now().Unix())
-							if ag.AgreementCreationTime+w.Worker.Manager.Config.Edge.AgreementTimeoutS < now {
-								// Start timing out the agreement
-								glog.V(3).Infof(logString(fmt.Sprintf("detected agreement %v timed out.", ag.CurrentAgreementId)))
-
-								w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, CANCEL_NOT_FINALIZED_TIMEOUT)
-
-								// cleanup workloads
-								w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
-							}
-						}
-					} else {
-
-						// Make sure the agreement is still in the blockchain
-						if recorded, err := protocolHandler.VerifyAgreementRecorded(ag.CurrentAgreementId, ag.CounterPartyAddress, ag.ProposalSig, w.bc.Agreements); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("unable to verify agreement %v on blockchain, error: %v", ag.CurrentAgreementId, err)))
-						} else if !recorded {
-							glog.Infof(logString(fmt.Sprintf("terminating agreement %v because it has been cancelled on the blockchain.", ag.CurrentAgreementId)))
-							w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, CANCEL_DISCOVERED)
-							// cleanup workloads if needed
-							w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
-						}
-
-						if ag.AgreementExecutionStartTime == 0 {
-							// workload not started yet and in an agreement ...
-							if (int64(ag.AgreementAcceptedTime) + (MAX_CONTRACT_PRELAUNCH_TIME_M * 60)) < time.Now().Unix() {
-								glog.Infof(logString(fmt.Sprintf("terminating agreement %v because it hasn't been launched in max allowed time. This could be because of a workload failure.", ag.CurrentAgreementId)))
-								w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, CANCEL_NOT_EXECUTED_TIMEOUT)
-								// cleanup workloads if needed
-								w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
-							}
-						}
+				// For finalized agreenments, make sure the workload has been started in time
+				if ag.AgreementExecutionStartTime == 0 {
+					// workload not started yet and in an agreement ...
+					if (int64(ag.AgreementAcceptedTime) + (MAX_CONTRACT_PRELAUNCH_TIME_M * 60)) < time.Now().Unix() {
+						glog.Infof(logString(fmt.Sprintf("terminating agreement %v because it hasn't been launched in max allowed time. This could be because of a workload failure.", ag.CurrentAgreementId)))
+						w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, citizenscientist.CANCEL_NOT_EXECUTED_TIMEOUT, citizenscientist.DecodeReasonCode(citizenscientist.CANCEL_NOT_EXECUTED_TIMEOUT))
+						// cleanup workloads if needed
+						w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
 					}
 				}
 			}
-
-			time.Sleep(10 * time.Second)
 		}
-	}()
+	}
 }
 
 func (w *GovernanceWorker) governContainers() {
@@ -276,12 +226,12 @@ func (w *GovernanceWorker) governContainers() {
 // possible for multiple cancellations to occur in the time it takes to actually stop workloads and
 // cancel on the blockchain, therefore this code needs to be prepared to run multiple times for the
 // same agreement id.
-func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol string, reason uint) {
+func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol string, reason uint, desc string) {
 	protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
 
 	// Update the database
 	var ag *persistence.EstablishedAgreement
-	if agreement, err := persistence.AgreementStateTerminated(w.db, agreementId, uint64(reason), agreementProtocol); err != nil {
+	if agreement, err := persistence.AgreementStateTerminated(w.db, agreementId, uint64(reason), desc, agreementProtocol); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error marking agreement %v terminated: %v", agreementId, err)))
 	} else {
 		ag = agreement
@@ -327,41 +277,119 @@ func (w *GovernanceWorker) start() {
 			}
 		}
 
-		// Fire up the agreement governor and the container governor
-		w.governAgreements()
+		// Establish the go objects that are used to interact with the ethereum blockchain.
+		// This code should probably be in the protocol library.
+		acct, _ := ethblockchain.AccountId()
+		dir, _ := ethblockchain.DirectoryAddress()
+		if bc, err := ethblockchain.InitBaseContracts(acct, w.Worker.Manager.Config.Edge.GethURL, dir); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("unable to initialize platform contracts, error: %v", err)))
+			return
+		} else {
+			w.bc = bc
+		}
+
+		// Fire up the container governor
 		w.governContainers()
+
+		protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
 
 		// Fire up the command processor
 		for {
 
-			glog.V(4).Infof("GovernanceWorker command processor blocking waiting to receive incoming commands")
+			glog.V(4).Infof("GovernanceWorker command processor about to select command (non-blocking)")
 
-			command := <-w.Commands
-			glog.V(2).Infof("GovernanceWorker received command: %v", command)
+			select {
+			case command := <-w.Commands:
+				glog.V(2).Infof("GovernanceWorker received command: %v", command)
 
-			// TODO: consolidate DB update cases
-			switch command.(type) {
-			case *DeviceRegisteredCommand:
-				cmd, _ := command.(*DeviceRegisteredCommand)
-				w.deviceToken = cmd.Token
+				// TODO: consolidate DB update cases
+				switch command.(type) {
+				case *DeviceRegisteredCommand:
+					cmd, _ := command.(*DeviceRegisteredCommand)
+					w.deviceToken = cmd.Token
 
-			case *StartGovernExecutionCommand:
-				// TODO: update db start time and tc so it can be governed
-				cmd, _ := command.(*StartGovernExecutionCommand)
-				glog.V(3).Infof("Starting governance on resources in agreement: %v", cmd.AgreementId)
+				case *StartGovernExecutionCommand:
+					// TODO: update db start time and tc so it can be governed
+					cmd, _ := command.(*StartGovernExecutionCommand)
+					glog.V(3).Infof("Starting governance on resources in agreement: %v", cmd.AgreementId)
 
-				if _, err := persistence.AgreementStateExecutionStarted(w.db, cmd.AgreementId, cmd.AgreementProtocol, &cmd.Deployment); err != nil {
-					glog.Errorf("Failed to update local contract record to start governing Agreement: %v. Error: %v", cmd.AgreementId, err)
+					if _, err := persistence.AgreementStateExecutionStarted(w.db, cmd.AgreementId, cmd.AgreementProtocol, &cmd.Deployment); err != nil {
+						glog.Errorf("Failed to update local contract record to start governing Agreement: %v. Error: %v", cmd.AgreementId, err)
+					}
+
+				case *CleanupExecutionCommand:
+					cmd, _ := command.(*CleanupExecutionCommand)
+					glog.V(3).Infof("Ending the agreement: %v", cmd.AgreementId)
+
+					w.cancelAgreement(cmd.AgreementId, cmd.AgreementProtocol, cmd.Reason, citizenscientist.DecodeReasonCode(uint64(cmd.Reason)))
+
+					// send the event to the container in case it has started the workloads.
+					w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, cmd.AgreementProtocol, cmd.AgreementId, cmd.Deployment)
+
+				case *BlockchainEventCommand:
+					cmd, _ := command.(*BlockchainEventCommand)
+
+					// Unmarshal the raw event
+					if rawEvent, err := protocolHandler.DemarshalEvent(cmd.Msg.RawEvent()); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("unable to demarshal raw event %v, error: %v", cmd.Msg.RawEvent(), err)))
+
+					// If the event is a consumer termination event
+					} else if protocolHandler.ConsumerTermination(rawEvent) {
+						// Grab the agreement id from the event
+						agreementId := protocolHandler.GetAgreementId(rawEvent)
+
+						// If we have that agreement in our DB, then cancel it
+						if ags, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)}); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agreementId, err)))
+						} else if len(ags) != 1 {
+							glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, not our agreement id")))
+						} else if reason, err := protocolHandler.GetReasonCode(rawEvent); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("unable to retrieve reason code from %v, error %v", rawEvent, err)))
+						} else {
+							glog.Infof(logString(fmt.Sprintf("terminating agreement %v because it has been cancelled on the blockchain.", ags[0].CurrentAgreementId)))
+							w.cancelAgreement(ags[0].CurrentAgreementId, ags[0].AgreementProtocol, uint(reason), citizenscientist.DecodeReasonCode(reason))
+							// cleanup workloads if needed
+							w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, ags[0].CurrentDeployment)
+						}
+
+					// If the event is an agreement created event
+					} else if protocolHandler.AgreementCreated(rawEvent) {
+						// Grab the agreement id from the event
+						agreementId := protocolHandler.GetAgreementId(rawEvent)
+
+						// If we have that agreement in our DB, then finalize it
+						if ags, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)}); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agreementId, err)))
+						} else if len(ags) != 1 {
+							glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, not our agreement id")))
+
+						// Update state in the database
+						} else {
+							if _, err := persistence.AgreementStateFinalized(w.db, ags[0].CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+								glog.Errorf(logString(fmt.Sprintf("error persisting agreement %v finalized: %v", ags[0].CurrentAgreementId, err)))
+							}
+							// Update state in exchange
+							if proposal, err := protocolHandler.DemarshalProposal(ags[0].Proposal); err != nil {
+								glog.Errorf(logString(fmt.Sprintf("could not hydrate proposal, error: %v", err)))
+							} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
+								glog.Errorf(logString(fmt.Sprintf("error demarshalling TsAndCs policy for agreement %v, error %v", ags[0].CurrentAgreementId, err)))
+							} else if err := recordProducerAgreementState(w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, ags[0].CurrentAgreementId, tcPolicy.APISpecs[0].SpecRef, "Finalized Agreement"); err != nil {
+								glog.Errorf(logString(fmt.Sprintf("error setting agreement %v finalized state in exchange: %v", ags[0].CurrentAgreementId, err)))
+							}
+						}
+					} else {
+						glog.V(5).Infof(logString(fmt.Sprintf("ignoring event")))
+					}
+
+				default:
+					glog.Errorf("GovernanceWorker received unknown command (%T): %v", command, command)
 				}
+				glog.V(5).Infof("GovernanceWorker handled command")
 
-			case *CleanupExecutionCommand:
-				cmd, _ := command.(*CleanupExecutionCommand)
-				glog.V(3).Infof("Ending the agreement: %v", cmd.AgreementId)
+			case <-time.After(time.Duration(10) * time.Second):
+				// Make sure that all known agreements are maintained
+				w.governAgreements()
 
-				w.cancelAgreement(cmd.AgreementId, cmd.AgreementProtocol, cmd.Reason)
-
-				// send the event to the container in case it has started the workloads.
-				w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, cmd.AgreementProtocol, cmd.AgreementId, cmd.Deployment)
 			}
 
 			runtime.Gosched()
@@ -407,6 +435,16 @@ type DeviceRegisteredCommand struct {
 func NewDeviceRegisteredCommand(token string) *DeviceRegisteredCommand {
 	return &DeviceRegisteredCommand{
 		Token: token,
+	}
+}
+
+type BlockchainEventCommand struct {
+	Msg events.EthBlockchainEventMessage
+}
+
+func NewBlockchainEventCommand(msg events.EthBlockchainEventMessage) *BlockchainEventCommand {
+	return &BlockchainEventCommand{
+		Msg: msg,
 	}
 }
 
