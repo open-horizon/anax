@@ -138,7 +138,7 @@ func recordConsumerAgreementState(url string, agbotId string, token string, agre
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
-			glog.Warningf(err.Error())
+			glog.Warningf(tpErr.Error())
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
@@ -165,7 +165,7 @@ func DeleteConsumerAgreement(url string, agbotId string, token string, agreement
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
-			glog.Warningf(err.Error())
+			glog.Warningf(tpErr.Error())
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
