@@ -463,7 +463,7 @@ func recordProducerAgreementState(url string, deviceId string, token string, agr
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
-			glog.Warningf(err.Error())
+			glog.Warningf(tpErr.Error())
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
@@ -486,7 +486,7 @@ func deleteProducerAgreement(url string, deviceId string, token string, agreemen
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
-			glog.Warningf(err.Error())
+			glog.Warningf(tpErr.Error())
 			time.Sleep(10 * time.Second)
 			continue
 		} else {

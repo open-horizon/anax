@@ -403,7 +403,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy) (*[]exchange.Dev
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, ser, &resp); err != nil {
 			return nil, err
 		} else if tpErr != nil {
-			glog.V(5).Infof(err.Error())
+			glog.V(5).Infof(tpErr.Error())
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
@@ -454,33 +454,28 @@ func (w *AgreementBotWorker) syncOnInit() error {
 					var resp interface{}
 					resp = new(exchange.AllAgbotAgreementsResponse)
 					targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/agreements/" + ag.CurrentAgreementId
-					for {
-						if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.agbotId, w.token, nil, &resp); err != nil {
-							return err
-						} else if tpErr != nil {
-							glog.V(5).Infof(err.Error())
-							time.Sleep(10 * time.Second)
-							continue
-						} else {
-							exchangeAgreement = resp.(*exchange.AllAgbotAgreementsResponse).Agreements
-							glog.V(5).Infof(AWlogString(fmt.Sprintf("found agreements %v in the exchange.", exchangeAgreement)))
-							break
-						}
-					}
 
-					if _, there := exchangeAgreement[ag.CurrentAgreementId]; !there {
-						glog.V(3).Infof(AWlogString(fmt.Sprintf("agreement %v missing from exchange, adding it back in.", ag.CurrentAgreementId)))
-						state := ""
-						if ag.AgreementFinalizedTime != 0 {
-							state = "Finalized Agreement"
-						} else if ag.CounterPartyAddress != "" {
-							state = "Producer Agreed"
-						} else if ag.AgreementCreationTime != 0 {
-							state = "Formed Proposal"
-						} else {
-							state = "unknown"
+					if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.agbotId, w.token, nil, &resp); err != nil || tpErr != nil {
+						glog.Errorf(AWlogString(fmt.Sprintf("encountered error getting agbot info from exchange, error %v, transport error %v", err, tpErr)))
+						continue
+					} else {
+						exchangeAgreement = resp.(*exchange.AllAgbotAgreementsResponse).Agreements
+						glog.V(5).Infof(AWlogString(fmt.Sprintf("found agreements %v in the exchange.", exchangeAgreement)))
+
+						if _, there := exchangeAgreement[ag.CurrentAgreementId]; !there {
+							glog.V(3).Infof(AWlogString(fmt.Sprintf("agreement %v missing from exchange, adding it back in.", ag.CurrentAgreementId)))
+							state := ""
+							if ag.AgreementFinalizedTime != 0 {
+								state = "Finalized Agreement"
+							} else if ag.CounterPartyAddress != "" {
+								state = "Producer Agreed"
+							} else if ag.AgreementCreationTime != 0 {
+								state = "Formed Proposal"
+							} else {
+								state = "unknown"
+							}
+							w.recordConsumerAgreementState(ag.CurrentAgreementId, pol.APISpecs[0].SpecRef, state)
 						}
-						w.recordConsumerAgreementState(ag.CurrentAgreementId, pol.APISpecs[0].SpecRef, state)
 					}
 					glog.V(3).Infof(AWlogString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))
 				}
@@ -521,7 +516,7 @@ func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, wo
 			glog.Errorf(err.Error())
 			return err
 		} else if tpErr != nil {
-			glog.Warningf(err.Error())
+			glog.Warningf(tpErr.Error())
 			time.Sleep(10 * time.Second)
 			continue
 		} else {

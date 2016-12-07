@@ -244,7 +244,7 @@ func (w *AgreementWorker) maintainWhisperId() {
 			resp = new(exchange.GetDevicesResponse)
 			targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId
 			if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil || tpErr != nil {
-				glog.Errorf(logStringww(fmt.Sprintf("encountered error getting device info from exchange, error %v",err)))
+				glog.Errorf(logStringww(fmt.Sprintf("encountered error getting device info from exchange, error %v, transport error %v", err, tpErr)))
 			} else if dev, there := resp.(*exchange.GetDevicesResponse).Devices[w.deviceId]; there {
 				glog.V(5).Infof(logStringww(fmt.Sprintf("found device %v in the exchange.", w.deviceId)))
 				if dev.MsgEndPoint != newId {
@@ -393,31 +393,25 @@ func (w *AgreementWorker) syncOnInit() error {
 					var resp interface{}
 					resp = new(exchange.AllDeviceAgreementsResponse)
 					targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/agreements/" + ag.CurrentAgreementId
-					for {
-						if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
-							return err
-						} else if tpErr != nil {
-							glog.V(5).Infof(err.Error())
-							time.Sleep(10 * time.Second)
-							continue
-						} else {
-							exchangeAgreement = resp.(*exchange.AllDeviceAgreementsResponse).Agreements
-							glog.V(5).Infof(logString(fmt.Sprintf("found agreements %v in the exchange.", exchangeAgreement)))
-							break
-						}
-					}
 
-					if _, there := exchangeAgreement[ag.CurrentAgreementId]; !there {
-						glog.V(3).Infof(logString(fmt.Sprintf("agreement %v missing from exchange, adding it back in.", ag.CurrentAgreementId)))
-						state := ""
-						if ag.AgreementFinalizedTime != 0 {
-							state = "Finalized Agreement"
-						} else if ag.AgreementAcceptedTime != 0 {
-							state = "Agree to proposal"
-						} else {
-							state = "unknown"
+					if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil || tpErr != nil {
+						glog.Errorf(logStringww(fmt.Sprintf("encountered error getting device info from exchange, error %v, transport error %v", err, tpErr)))
+					} else {
+						exchangeAgreement = resp.(*exchange.AllDeviceAgreementsResponse).Agreements
+						glog.V(5).Infof(logString(fmt.Sprintf("found agreements %v in the exchange.", exchangeAgreement)))
+
+						if _, there := exchangeAgreement[ag.CurrentAgreementId]; !there {
+							glog.V(3).Infof(logString(fmt.Sprintf("agreement %v missing from exchange, adding it back in.", ag.CurrentAgreementId)))
+							state := ""
+							if ag.AgreementFinalizedTime != 0 {
+								state = "Finalized Agreement"
+							} else if ag.AgreementAcceptedTime != 0 {
+								state = "Agree to proposal"
+							} else {
+								state = "unknown"
+							}
+							w.recordAgreementState(ag.CurrentAgreementId, pol.APISpecs[0].SpecRef, state)
 						}
-						w.recordAgreementState(ag.CurrentAgreementId, pol.APISpecs[0].SpecRef, state)
 					}
 					glog.V(3).Infof(logString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))
 				}
@@ -560,7 +554,7 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 			if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.deviceId, w.deviceToken, pdr, &resp); err != nil {
 				return err
 			} else if tpErr != nil {
-				glog.V(5).Infof(err.Error())
+				glog.V(5).Infof(tpErr.Error())
 				time.Sleep(10 * time.Second)
 				continue
 			} else {
@@ -588,7 +582,7 @@ func (w *AgreementWorker) recordAgreementState(agreementId string, microservice 
 			glog.Errorf(err.Error())
 			return err
 		} else if tpErr != nil {
-			glog.Warningf(err.Error())
+			glog.Warningf(tpErr.Error())
 			time.Sleep(10 * time.Second)
 			continue
 		} else {

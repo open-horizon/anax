@@ -259,7 +259,7 @@ func (a *CSAgreementWorker) recordConsumerAgreementState(agreementId string, wor
 			glog.Errorf(err.Error())
 			return err
 		} else if tpErr != nil {
-			glog.Warningf(err.Error())
+			glog.Warningf(tpErr.Error())
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
