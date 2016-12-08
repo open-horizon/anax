@@ -7,6 +7,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"sort"
+	"strings"
 	"strconv"
 )
 
@@ -249,7 +250,7 @@ func AttributesToEnvvarMap(attributes []ServiceAttribute, prefix string) (map[st
 		case MappedAttributes:
 			s := serv.(MappedAttributes)
 			for k, v := range s.Mappings {
-				write(k, v, true)
+				writePrefix(strings.ToUpper(k), v)
 			}
 
 		case LocationAttributes:
