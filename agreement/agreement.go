@@ -478,6 +478,8 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 
 	if dev, err := persistence.FindExchangeDevice(w.db); err != nil {
 		return errors.New(fmt.Sprintf("AgreementWorker received error getting device name: %v", err))
+	} else if dev == nil {
+		return errors.New("AgreementWorker could not get device name because no device was registered yet.")
 	} else {
 		deviceName = dev.Name
 	}
