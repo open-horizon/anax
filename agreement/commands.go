@@ -37,12 +37,12 @@ func NewAdvertisePolicyCommand(fileName string) *AdvertisePolicyCommand {
 	}
 }
 
-type ReceivedProposalCommand struct {
+type WhisperMessageCommand struct {
 	Msg events.WhisperReceivedMessage
 }
 
-func NewReceivedProposalCommand(msg events.WhisperReceivedMessage) *ReceivedProposalCommand {
-	return &ReceivedProposalCommand{
+func NewWhisperMessageCommand(msg events.WhisperReceivedMessage) *WhisperMessageCommand {
+	return &WhisperMessageCommand{
 		Msg: msg,
 	}
 }

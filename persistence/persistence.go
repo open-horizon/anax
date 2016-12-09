@@ -66,7 +66,7 @@ func (c ServiceConfig) String() string {
 	return fmt.Sprintf("Config: %v, HostConfig: %v", c.Config, c.HostConfig)
 }
 
-func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consumerId string, proposal string, protocol string, sensorUrl string) (*EstablishedAgreement, error) {
+func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consumerId string, proposal string, protocol string, sensorUrl string, signature string, address string) (*EstablishedAgreement, error) {
 
 	if name == "" || agreementId == "" || consumerId == "" || proposal == "" || protocol == "" {
 		return nil, errors.New("Agreement id, consumer id, proposal or protocol are empty, cannot persist")
@@ -88,7 +88,7 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 		Archived:                    false,
 		CurrentAgreementId:          agreementId,
 		ConsumerId:                  consumerId,
-		CounterPartyAddress:         "",
+		CounterPartyAddress:         address,
 		AgreementCreationTime:       uint64(time.Now().Unix()),
 		AgreementAcceptedTime:       0,
 		AgreementFinalizedTime:      0,
@@ -96,7 +96,7 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 		AgreementExecutionStartTime: 0,
 		CurrentDeployment:           map[string]ServiceConfig{},
 		Proposal:                    proposal,
-		ProposalSig:                 "",
+		ProposalSig:                 signature,
 		AgreementProtocol:           protocol,
 		TerminatedReason:            0,
 		TerminatedDescription:       "",
@@ -135,12 +135,9 @@ func AgreementStateExecutionStarted(db *bolt.DB, dbAgreementId string, protocol 
 }
 
 // set agreement state to accepted, a positive reply is being sent
-func AgreementStateAccepted(db *bolt.DB, dbAgreementId string, protocol string, proposal string, from string, signature string) (*EstablishedAgreement, error) {
+func AgreementStateAccepted(db *bolt.DB, dbAgreementId string, protocol string) (*EstablishedAgreement, error) {
 	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
 		c.AgreementAcceptedTime = uint64(time.Now().Unix())
-		c.CounterPartyAddress = from
-		c.Proposal = proposal
-		c.ProposalSig = signature
 		return &c
 	})
 }
@@ -161,6 +158,36 @@ func AgreementStateTerminated(db *bolt.DB, dbAgreementId string, reason uint64, 
 		c.TerminatedDescription = reasonString
 		return &c
 	})
+}
+
+func DeleteEstablishedAgreement(db *bolt.DB, agreementId string, protocol string) error {
+
+	if agreementId == "" {
+		return errors.New("Agreement id empty, cannot remove")
+	} else {
+
+		filters := make([]EAFilter, 0)
+		filters = append(filters, UnarchivedEAFilter())
+		filters = append(filters, IdEAFilter(agreementId))
+
+		if agreements, err := FindEstablishedAgreements(db, protocol, filters); err != nil {
+			return err
+		} else if len(agreements) != 1 {
+			return fmt.Errorf("Expecting 1 records with id: %v, found %v", agreementId, agreements)
+		} else {
+
+			return db.Update(func(tx *bolt.Tx) error {
+
+				if b, err := tx.CreateBucketIfNotExists([]byte(E_AGREEMENTS + "-" + protocol)); err != nil {
+					return err
+				} else if err := b.Delete([]byte(agreementId)); err != nil {
+					return fmt.Errorf("Unable to delete agreement: %v", err)
+				} else {
+					return nil
+				}
+			})
+		}
+	}
 }
 
 func agreementStateUpdate(db *bolt.DB, dbAgreementId string, protocol string, fn func(EstablishedAgreement) *EstablishedAgreement) (*EstablishedAgreement, error) {
@@ -203,11 +230,8 @@ func persistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 				mod.AgreementAcceptedTime = update.AgreementAcceptedTime
 				mod.AgreementFinalizedTime = update.AgreementFinalizedTime
 				mod.AgreementTerminatedTime = update.AgreementTerminatedTime
-				mod.CounterPartyAddress = update.CounterPartyAddress
 				mod.AgreementExecutionStartTime = update.AgreementExecutionStartTime
 				mod.CurrentDeployment = update.CurrentDeployment
-				mod.Proposal = update.Proposal
-				mod.ProposalSig = update.ProposalSig
 				mod.TerminatedReason = update.TerminatedReason
 				mod.TerminatedDescription = update.TerminatedDescription
 

@@ -253,6 +253,7 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 						agreementWork := CSHandleReply{
 							workType: REPLY,
 							Reply:    cmd.Msg.Payload(),
+							From:     cmd.Msg.From(),
 						}
 						work <- agreementWork
 						glog.V(5).Infof("AgreementBot queued possible reply message")
