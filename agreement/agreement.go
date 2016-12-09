@@ -16,11 +16,9 @@ import (
 	"github.com/open-horizon/anax/worker"
 	gwhisper "github.com/open-horizon/go-whisper"
 	"net/http"
-	"net/url"
 	"reflect"
 	"runtime"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -99,7 +97,7 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 		// TODO: When we replace this with telehash, check to see if the protocol in the message
 		// is already known to us. For now, whisper doesnt put the topic in the message so we have
 		// now way of checking.
-		agCmd := NewReceivedProposalCommand(*msg)
+		agCmd := NewWhisperMessageCommand(*msg)
 		w.Commands <- agCmd
 
 	case *events.BlockchainClientInitializedMessage:
@@ -145,6 +143,20 @@ func (w *AgreementWorker) start() {
 			go exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
 		}
 
+		// Wait for blockchain client to fully initialize before advertising the policies
+		for {
+			if w.bcClientInitialized == false {
+				time.Sleep(time.Duration(5) * time.Second)
+				glog.V(3).Infof("AgreementWorker waiting for blockchain client to be fully initialized.")
+			} else {
+				if w.Config.Edge.RegistrationDelayS != 0 {
+					glog.V(3).Infof("AgreementWorker blocking for registration delay, %v seconds.", w.Config.Edge.RegistrationDelayS)
+					time.Sleep(time.Duration(w.Config.Edge.RegistrationDelayS) * time.Second)
+				}
+				break
+			}
+		}
+
 		// Publish what we have for the world to see
 		if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
@@ -184,8 +196,9 @@ func (w *AgreementWorker) start() {
 					}
 				}
 
-			case *ReceivedProposalCommand:
-				cmd, _ := command.(*ReceivedProposalCommand)
+			case *WhisperMessageCommand:
+				cmd, _ := command.(*WhisperMessageCommand)
+				// The whisper message could be one of the agreement protocol messages
 
 				protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
 
@@ -193,7 +206,7 @@ func (w *AgreementWorker) start() {
 				// of checks here is very important to prevent duplicates from causing chaos, especially if there are duplicates
 				// on agreement worker threads at the same time.
 				if proposal, err := protocolHandler.ValidateProposal(cmd.Msg.Payload()); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("discarding message: %v due to %v", cmd.Msg.Payload(), err)))
+					glog.Errorf(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %v due to %v", cmd.Msg.Payload(), err)))
 				} else if agAlreadyExists, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),persistence.IdEAFilter(proposal.AgreementId)}); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreements from database, error %v", err)))
 				} else if len(agAlreadyExists) != 0 {
@@ -202,10 +215,8 @@ func (w *AgreementWorker) start() {
 					glog.Errorf(logString(fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
 				} else if reply, err := protocolHandler.DecideOnProposal(proposal, cmd.Msg.From(), w.deviceId); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("respond to proposal with error: %v", err)))
-				} else if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId, proposal.ConsumerId, cmd.Msg.Payload(), citizenscientist.PROTOCOL_NAME, tcPolicy.APISpecs[0].SpecRef); err != nil {
+				} else if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId, proposal.ConsumerId, cmd.Msg.Payload(), citizenscientist.PROTOCOL_NAME, tcPolicy.APISpecs[0].SpecRef, reply.Signature, proposal.Address); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId, err)))
-				} else if err := w.RecordReply(proposal, reply, citizenscientist.PROTOCOL_NAME, cmd); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("unable to record reply %v, error: %v", *reply, err)))
 				}
 
 			default:
@@ -277,82 +288,6 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
 }
 
-func (w *AgreementWorker) RecordReply(proposal *citizenscientist.Proposal, reply *citizenscientist.ProposalReply, protocol string, cmd *ReceivedProposalCommand) error {
-	if reply != nil {
-		// Update the state in the database
-		if _, err := persistence.AgreementStateAccepted(w.db, proposal.AgreementId, protocol, cmd.Msg.Payload(), proposal.Address, reply.Signature); err != nil {
-			return errors.New(logString(fmt.Sprintf("received error updating database state, %v", err)))
-
-			// Update the state in the exchange
-		} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
-			return errors.New(logString(fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
-		} else if err := w.recordAgreementState(proposal.AgreementId, tcPolicy.APISpecs[0].SpecRef, "Agree to proposal"); err != nil {
-			return errors.New(logString(fmt.Sprintf("received error setting state for agreement %v", err)))
-		} else {
-
-			// Publish the "agreement reached" event to the message bus so that torrent can start downloading the workload
-			// hash is same as filename w/out extension
-			hashes := make(map[string]string, 0)
-			signatures := make(map[string]string, 0)
-			for _, image := range tcPolicy.Workloads[0].Torrent.Images {
-				bits := strings.Split(image.File, ".")
-				if len(bits) < 2 {
-					return errors.New(fmt.Sprintf("Ill-formed image filename: %v", bits))
-				} else {
-					hashes[image.File] = bits[0]
-				}
-				signatures[image.File] = image.Signature
-			}
-			if url, err := url.Parse(tcPolicy.Workloads[0].Torrent.Url); err != nil {
-				return errors.New(fmt.Sprintf("Ill-formed URL: %v", tcPolicy.Workloads[0].Torrent.Url))
-			} else {
-				wc := gwhisper.NewConfigure("", *url, hashes, signatures, tcPolicy.Workloads[0].Deployment, tcPolicy.Workloads[0].DeploymentSignature, tcPolicy.Workloads[0].DeploymentUserInfo)
-				lc := new(events.AgreementLaunchContext)
-				lc.Configure = wc
-				lc.AgreementId = proposal.AgreementId
-
-				// get environmental settings for the workload
-				envAdds := make(map[string]string)
-				sensorUrl := tcPolicy.APISpecs[0].SpecRef
-				if envAdds, err = w.GetWorkloadPreference(sensorUrl); err != nil {
-					glog.Errorf("Error: %v", err)
-				}
-				envAdds[config.ENVVAR_PREFIX+"AGREEMENTID"] = proposal.AgreementId
-				envAdds[config.COMPAT_ENVVAR_PREFIX+"AGREEMENTID"] = proposal.AgreementId
-				envAdds[config.ENVVAR_PREFIX+"CONTRACT"] = w.Config.Edge.DVPrefix + proposal.AgreementId
-				envAdds[config.COMPAT_ENVVAR_PREFIX+"CONTRACT"] = w.Config.Edge.DVPrefix + proposal.AgreementId
-				// Temporary hack
-				if tcPolicy.Workloads[0].WorkloadPassword == "" {
-					envAdds[config.ENVVAR_PREFIX+"CONFIGURE_NONCE"] = proposal.AgreementId
-					envAdds[config.COMPAT_ENVVAR_PREFIX+"CONFIGURE_NONCE"] = proposal.AgreementId
-				} else {
-					envAdds[config.ENVVAR_PREFIX+"CONFIGURE_NONCE"] = tcPolicy.Workloads[0].WorkloadPassword
-					envAdds[config.COMPAT_ENVVAR_PREFIX+"CONFIGURE_NONCE"] = tcPolicy.Workloads[0].WorkloadPassword
-				}
-				envAdds[config.ENVVAR_PREFIX+"HASH"] = tcPolicy.Workloads[0].WorkloadPassword
-				// For workload compatibility, the DEVICE_ID env var is passed with and without the prefix. We would like to drop
-				// the env var without prefix once all the workloads have ben updated.
-				envAdds["DEVICE_ID"] = w.deviceId
-				envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = w.deviceId
-				envAdds[config.COMPAT_ENVVAR_PREFIX+"DEVICE_ID"] = w.deviceId
-
-				lc.EnvironmentAdditions = &envAdds
-				lc.AgreementProtocol = citizenscientist.PROTOCOL_NAME
-				w.Worker.Manager.Messages <- events.NewAgreementMessage(events.AGREEMENT_REACHED, lc)
-			}
-		}
-
-	} else {
-
-		if _, err := persistence.ArchiveEstablishedAgreement(w.db, proposal.AgreementId, protocol); err != nil {
-			return errors.New(logString(fmt.Sprintf("received error deleting agreement from db %v", err)))
-		}
-
-	}
-
-	return nil
-}
-
 func (w *AgreementWorker) syncOnInit() error {
 
 	glog.V(3).Infof(logString("beginning sync up."))
@@ -365,64 +300,55 @@ func (w *AgreementWorker) syncOnInit() error {
 		// If there are agreemens in the database then we will assume that the device is already registered
 		for _, ag := range agreements {
 
-			// If the agreement has received a reply then we just need to make sure that the policy manager's agreement counts
+			// If the agreement has been started then we just need to make sure that the policy manager's agreement counts
 			// are correct. Even for already timedout agreements, the governance process will cleanup old and outdated agreements,
 			// so we don't need to do anything here.
-			if ag.AgreementAcceptedTime != 0 {
-				if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v, error %v", ag.CurrentAgreementId, err)))
-				} else if pol, err := policy.DemarshalPolicy(proposal.ProducerPolicy); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
-				} else if existingPol := w.pm.GetPolicy(pol.Header.Name); existingPol == nil {
-					glog.Errorf(logString(fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
-					w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, citizenscientist.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
 
-				} else if err := w.pm.MatchesMine(pol); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("agreement %v has a policy %v that has changed.", ag.CurrentAgreementId, pol.Header.Name)))
-					w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, citizenscientist.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
+			if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v, error %v", ag.CurrentAgreementId, err)))
+			} else if pol, err := policy.DemarshalPolicy(proposal.ProducerPolicy); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
+			} else if existingPol := w.pm.GetPolicy(pol.Header.Name); existingPol == nil {
+				glog.Errorf(logString(fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
+				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, citizenscientist.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
 
-				} else if err := w.pm.AttemptingAgreement(existingPol, ag.CurrentAgreementId); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
-				} else if err := w.pm.FinalAgreement(existingPol, ag.CurrentAgreementId); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
+			} else if err := w.pm.MatchesMine(pol); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("agreement %v has a policy %v that has changed.", ag.CurrentAgreementId, pol.Header.Name)))
+				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, citizenscientist.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
 
-					// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
+			} else if err := w.pm.AttemptingAgreement(existingPol, ag.CurrentAgreementId); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
+			} else if err := w.pm.FinalAgreement(existingPol, ag.CurrentAgreementId); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
+
+			// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
+			} else if ag.AgreementAcceptedTime != 0 {
+
+				var exchangeAgreement map[string]exchange.DeviceAgreement
+				var resp interface{}
+				resp = new(exchange.AllDeviceAgreementsResponse)
+				targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/agreements/" + ag.CurrentAgreementId
+
+				if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil || tpErr != nil {
+					glog.Errorf(logStringww(fmt.Sprintf("encountered error getting device info from exchange, error %v, transport error %v", err, tpErr)))
 				} else {
+					exchangeAgreement = resp.(*exchange.AllDeviceAgreementsResponse).Agreements
+					glog.V(5).Infof(logString(fmt.Sprintf("found agreements %v in the exchange.", exchangeAgreement)))
 
-					var exchangeAgreement map[string]exchange.DeviceAgreement
-					var resp interface{}
-					resp = new(exchange.AllDeviceAgreementsResponse)
-					targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/agreements/" + ag.CurrentAgreementId
-
-					if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil || tpErr != nil {
-						glog.Errorf(logStringww(fmt.Sprintf("encountered error getting device info from exchange, error %v, transport error %v", err, tpErr)))
-					} else {
-						exchangeAgreement = resp.(*exchange.AllDeviceAgreementsResponse).Agreements
-						glog.V(5).Infof(logString(fmt.Sprintf("found agreements %v in the exchange.", exchangeAgreement)))
-
-						if _, there := exchangeAgreement[ag.CurrentAgreementId]; !there {
-							glog.V(3).Infof(logString(fmt.Sprintf("agreement %v missing from exchange, adding it back in.", ag.CurrentAgreementId)))
-							state := ""
-							if ag.AgreementFinalizedTime != 0 {
-								state = "Finalized Agreement"
-							} else if ag.AgreementAcceptedTime != 0 {
-								state = "Agree to proposal"
-							} else {
-								state = "unknown"
-							}
-							w.recordAgreementState(ag.CurrentAgreementId, pol.APISpecs[0].SpecRef, state)
+					if _, there := exchangeAgreement[ag.CurrentAgreementId]; !there {
+						glog.V(3).Infof(logString(fmt.Sprintf("agreement %v missing from exchange, adding it back in.", ag.CurrentAgreementId)))
+						state := ""
+						if ag.AgreementFinalizedTime != 0 {
+							state = "Finalized Agreement"
+						} else if ag.AgreementAcceptedTime != 0 {
+							state = "Agree to proposal"
+						} else {
+							state = "unknown"
 						}
+						w.recordAgreementState(ag.CurrentAgreementId, pol.APISpecs[0].SpecRef, state)
 					}
-					glog.V(3).Infof(logString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))
 				}
-
-				// This state should never occur, but could if there was an error along the way. It means that a DB record
-				// was created for this agreement but the record was never updated with the accepted time, which is supposed to occur
-				// immediately following creation of the record. A record in this state needs to be deleted.
-			} else if ag.AgreementCreationTime != 0 && ag.AgreementAcceptedTime == 0 {
-				if _, err := persistence.ArchiveEstablishedAgreement(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error deleting partially created agreement: %v, error: %v", ag.CurrentAgreementId, err)))
-				}
+				glog.V(3).Infof(logString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))
 			}
 
 		}
@@ -439,39 +365,7 @@ func (w *AgreementWorker) syncOnInit() error {
 // Utility functions
 //
 
-// get the environmental variables for the workload (this is about launching)
-func (w *AgreementWorker) GetWorkloadPreference(url string) (map[string]string, error) {
-	attrs, err := persistence.FindApplicableAttributes(w.db, url)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to fetch workload preferences. Err: %v", err)
-	}
-
-	// temporarily create duplicate env var map holding the old names for compatibility and the new names for migration
-	// TODO: remove compatMap once Horizon workloads have migrated
-	if baseMap, err := persistence.AttributesToEnvvarMap(attrs, config.ENVVAR_PREFIX); err != nil {
-		return baseMap, err
-	} else if compatMap, err := persistence.AttributesToEnvvarMap(attrs, config.COMPAT_ENVVAR_PREFIX); err != nil {
-		return baseMap, err
-	} else {
-		for k, v := range compatMap {
-			baseMap[k] = v
-		}
-
-		return baseMap, nil
-	}
-}
-
 func (w *AgreementWorker) advertiseAllPolicies(location string) error {
-
-	// Wait for blockchain client fully initialized before advertising the policies
-	for {
-		if w.bcClientInitialized == false {
-			time.Sleep(time.Duration(5) * time.Second)
-			glog.V(3).Infof("AgreementWorker waiting for blockchain client to be fully initialized.")
-		} else {
-			break
-		}
-	}
 
 	var pType, pValue, pCompare string
 	var deviceName string

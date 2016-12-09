@@ -74,6 +74,7 @@ func (c CSInitiateAgreement) Type() string {
 type CSHandleReply struct {
 	workType string
 	Reply    string
+	From     string
 }
 
 func (c CSHandleReply) Type() string {
@@ -150,7 +151,8 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 			if reply, err := protocolHandler.ValidateReply(wi.Reply); err != nil {
 				glog.V(5).Infof(logString(fmt.Sprintf("discarding message: %v", wi.Reply)))
 			} else if reply.ProposalAccepted() {
-				// The producer is happy with the proposal.
+				// The producer is happy with the proposal. Assume we will ack negatively.
+				ackReplyAsValid := false
 
 				// Find the saved agreement in the database
 				if agreement, err := FindSingleAgreementByAgreementId(a.db, reply.AgreementId(), citizenscientist.PROTOCOL_NAME); err != nil {
@@ -160,7 +162,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				} else if agreement.CounterPartyAddress != "" {
 					glog.V(5).Infof(logString(fmt.Sprintf("discarding reply, agreement id %v already received a reply", agreement.CurrentAgreementId)))
 
-					// Now we need to write the info to the exchange and the database
+				// Now we need to write the info to the exchange and the database
 				} else if proposal, err := protocolHandler.DemarshalProposal(agreement.Proposal); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error validating proposal from pending agreement %v, error: %v", reply.AgreementId(), err)))
 				} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
@@ -172,14 +174,30 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				} else if err := a.recordConsumerAgreementState(reply.AgreementId(), pol.APISpecs[0].SpecRef, "Producer agreed"); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error setting agreement state for %v", reply.AgreementId())))
 
-					// We need to write the info to the blockchain
+				// We need to send a reply ack and write the info to the blockchain
 				} else if consumerPolicy, err := policy.DemarshalPolicy(agreement.Policy); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", reply.AgreementId(), err)))
-				} else if err := protocolHandler.RecordAgreement(proposal, reply, consumerPolicy, bc.Agreements); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error trying to record agreement in blockchain, %v", err)))
-
 				} else {
+					// Done handling the response successfully
+					ackReplyAsValid = true
+
+					if err := protocolHandler.Confirm(wi.From, ackReplyAsValid, reply.AgreementId()); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("error trying to send reply ack for %v to %v, error: %v", reply.AgreementId(), wi.From, err)))
+					}
+
+					// Recording the agreement on the blockchain could take a long time, so it needs to be the last thing we do.
+					if err := protocolHandler.RecordAgreement(proposal, reply, consumerPolicy, bc.Agreements); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("error trying to record agreement in blockchain, %v", err)))
+					}
+
 					glog.V(3).Infof(logString(fmt.Sprintf("recorded agreement %v", reply.AgreementId())))
+				}
+
+				// Always send an ack for a reply with a positive decision in it
+				if !ackReplyAsValid {
+					if err := protocolHandler.Confirm(wi.From, ackReplyAsValid, reply.AgreementId()); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("error trying to send reply ack for %v to %v, error: %v", reply.AgreementId(), wi.From, err)))
+					}
 				}
 
 			} else {

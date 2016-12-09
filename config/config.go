@@ -30,6 +30,7 @@ type Config struct {
 	ExchangeHeartbeat             int    // Seconds between heartbeats
 	AgreementTimeoutS             uint64 // Number of seconds to wait before declaring agreement not finalized in blockchain
 	DVPrefix                      string // When passing agreement ids into a workload container, add this prefix to the agreement id
+	RegistrationDelayS            uint64 // The number of seconds to wait after blockchain init before registering with the exchange. This is for testing initialization ONLY.
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string

@@ -87,7 +87,7 @@ func (w *EthBlockchainWorker) start() {
 					if !notifiedBCReady {
 						// geth initilzed
 						notifiedBCReady = true
-						glog.V(3).Infof(logString(fmt.Sprintf("sending blockchian client initialized event")))
+						glog.V(3).Infof(logString(fmt.Sprintf("sending blockchain client initialized event")))
 						w.initBlockchainEventListener()
 						w.Messages() <- events.NewBlockchainClientInitializedMessage(events.BC_CLIENT_INITIALIZED)
 					}

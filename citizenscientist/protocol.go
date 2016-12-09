@@ -21,7 +21,8 @@ const PROTOCOL_NAME = "Citizen Scientist"
 
 // This struct is the proposal body that flows from the consumer to the producer.
 const MsgTypeProposal = "proposal"
-const MsgTypeReply = "reply"
+const MsgTypeReply    = "reply"
+const MsgTypeReplyAck = "replyack"
 
 type Proposal struct {
 	Type           string `json:"type"`
@@ -76,6 +77,38 @@ func NewProposalReply(decision bool, id string, deviceId string) *ProposalReply 
 		Decision: false,
 		AgreeId:  id,
 		DeviceId: deviceId,
+	}
+}
+
+// This struct is the reply ack that flows from the consumer to the producer. The StillValid field tells
+// the producer whether (true) or not (false) the consumer is still pursuing the agreement.
+type ReplyAck struct {
+	Type       string `json:"type"`
+	StillValid bool   `json:"decision"`
+	AgreeId    string `json:"agreementId"`
+}
+
+func (p *ReplyAck) String() string {
+	return fmt.Sprintf("Type: %v, StillValid: %v, AgreementId: %v: %v", p.Type, p.StillValid, p.AgreementId)
+}
+
+func (p *ReplyAck) ShortString() string {
+	return p.String()
+}
+
+func (p *ReplyAck) ReplyAgreementStillValid() bool {
+	return p.StillValid
+}
+
+func (p *ReplyAck) AgreementId() string {
+	return p.AgreeId
+}
+
+func NewReplyAck(decision bool, id string) *ReplyAck {
+	return &ReplyAck{
+		Type:       MsgTypeReplyAck,
+		StillValid: decision,
+		AgreeId:    id,
 	}
 }
 
@@ -214,10 +247,15 @@ func (p *ProtocolHandler) DecideOnProposal(proposal *Proposal, from string, myId
 func (p *ProtocolHandler) returnErrOnDecision(err error, producerPolicy *policy.Policy, agreementId string) (*ProposalReply, error) {
 	if producerPolicy != nil {
 		if cerr := p.pm.CancelAgreement(producerPolicy, agreementId); cerr != nil {
-			glog.Errorf(fmt.Sprintf("Error cancalling agreement in PM %v", cerr))
+			glog.Errorf(fmt.Sprintf("Error cancelling agreement in PM %v", cerr))
 		}
 	}
 	return nil, err
+}
+
+func (p *ProtocolHandler) Confirm(to string, replyValid bool, agreementId string) error {
+	ra := NewReplyAck(replyValid, agreementId)
+	return p.sendResponseAck(to, "Citizen Scientist", ra)
 }
 
 func (p *ProtocolHandler) sendProposal(to string, topic string, proposal *Proposal) error {
@@ -232,7 +270,7 @@ func (p *ProtocolHandler) sendProposal(to string, topic string, proposal *Propos
 		return errors.New(fmt.Sprintf("Error obtaining whisper id: %v", err))
 	} else {
 		// this is to last long enough to be read by even an overloaded governor but still expire before a new worker might try to pick up the contract
-		msg, err := gwhisper.TopicMsgParams(from, to, []string{topic}, string(pay), 900, 50)
+		msg, err := gwhisper.TopicMsgParams(from, to, []string{topic}, string(pay), 180, 50)
 		if err != nil {
 			return errors.New(fmt.Sprintf("Error creating whisper message topic parameters: %v", err))
 		}
@@ -258,8 +296,35 @@ func (p *ProtocolHandler) sendResponse(to string, topic string, reply *ProposalR
 		return err
 	} else {
 
-		// this has to last long enough to be read by even an overloaded governor but still expire before a new worker might try to pick up the contract
-		msg, err := gwhisper.TopicMsgParams(from, to, []string{topic}, string(pay), 900, 50)
+		// this has to last long enough to be read by even an overloaded agbot
+		msg, err := gwhisper.TopicMsgParams(from, to, []string{topic}, string(pay), 180, 50)
+		if err != nil {
+			return err
+		}
+
+		_, err = gwhisper.WhisperSend(p.httpClient, p.GethURL, gwhisper.POST, msg, 3)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+}
+
+func (p *ProtocolHandler) sendResponseAck(to string, topic string, replyack *ReplyAck) error {
+	pay, err := json.Marshal(replyack)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Unable to serialize payload %v, error %v", *replyack, err))
+	}
+
+	glog.V(3).Infof("Sending reply ack message: %v to: %v", string(pay), to)
+
+	if from, err := gwhisper.AccountId(p.GethURL); err != nil {
+		glog.Errorf("Error obtaining whisper id, %v", err)
+		return err
+	} else {
+
+		// this has to last long enough to be read by an overloaded device
+		msg, err := gwhisper.TopicMsgParams(from, to, []string{topic}, string(pay), 180, 50)
 		if err != nil {
 			return err
 		}
@@ -283,6 +348,21 @@ func (p *ProtocolHandler) ValidateReply(reply string) (*ProposalReply, error) {
 		return proposalReply, nil
 	} else {
 		return nil, errors.New(fmt.Sprintf("Reply message: %s, is not a Proposal reply.", reply))
+	}
+
+}
+
+func (p *ProtocolHandler) ValidateReplyAck(replyack string) (*ReplyAck, error) {
+
+	// attempt deserialization of message from msg payload
+	replyAck := new(ReplyAck)
+
+	if err := json.Unmarshal([]byte(replyack), &replyAck); err != nil {
+		return nil, errors.New(fmt.Sprintf("Error deserializing reply ack: %s, error: %v", replyack, err))
+	} else if replyAck.Type == MsgTypeReplyAck && len(replyAck.AgreeId) != 0 {
+		return replyAck, nil
+	} else {
+		return nil, errors.New(fmt.Sprintf("ReplyAck message: %s, is not a reply ack.", replyack))
 	}
 
 }
@@ -446,6 +526,8 @@ const CANCEL_TORRENT_FAILURE       = 102
 const CANCEL_CONTAINER_FAILURE     = 103
 const CANCEL_NOT_EXECUTED_TIMEOUT  = 104
 const CANCEL_USER_REQUESTED        = 105
+const CANCEL_AGBOT_REQUESTED       = 106
+const CANCEL_NO_REPLY_ACK          = 107
 
 // These constants represent consumer cancellation reason codes
 const AB_CANCEL_NOT_FINALIZED_TIMEOUT = 200
@@ -463,6 +545,8 @@ func DecodeReasonCode(code uint64) string {
 									CANCEL_CONTAINER_FAILURE:        "workload terminated",
 									CANCEL_NOT_EXECUTED_TIMEOUT:     "workload start timeout",
 									CANCEL_USER_REQUESTED:           "user requested",
+									CANCEL_AGBOT_REQUESTED:          "agbot requested",
+									CANCEL_NO_REPLY_ACK:             "agreement protocol incomplete, no reply ack received",
 									AB_CANCEL_NOT_FINALIZED_TIMEOUT: "agreement bot never detected agreement on the blockchain",
 									AB_CANCEL_NO_REPLY:              "agreement bot never received reply to proposal",
 									AB_CANCEL_NEGATIVE_REPLY:        "agreement bot received negative reply",
