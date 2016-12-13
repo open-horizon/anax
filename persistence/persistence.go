@@ -30,6 +30,7 @@ type EstablishedAgreement struct {
 	AgreementFinalizedTime      uint64                   `json:"agreement_finalized_time"`
 	AgreementTerminatedTime     uint64                   `json:"agreement_terminated_time"`
 	AgreementExecutionStartTime uint64                   `json:"agreement_execution_start_time"`
+	AgreementDataReceivedTime   uint64                   `json:"agrement_data_received_time"`
 	CurrentDeployment           map[string]ServiceConfig `json:"current_deployment"`
 	Proposal                    string                   `json:"proposal"`
 	ProposalSig                 string                   `json:"proposal_sig"`       // the proposal currently in effect
@@ -40,7 +41,7 @@ type EstablishedAgreement struct {
 
 func (c EstablishedAgreement) String() string {
 
-	return fmt.Sprintf("Name: %v , SensorUrl: %v , Archived: %v , CurrentAgreementId: %v, ConsumerId: %v, CurrentDeployment (service names): %v, AgreementCreationTime: %v, AgreementExecutionStartTime: %v, AgreementAcceptedTime: %v, AgreementFinalizedTime: %v, AgreementTerminatedTime: %v, TerminatedReason: %v, TerminatedDescription: %v, Agreement Protocol: %v", c.Name, c.SensorUrl, c.Archived, c.CurrentAgreementId, c.ConsumerId, ServiceConfigNames(&c.CurrentDeployment), c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementFinalizedTime, c.AgreementTerminatedTime, c.TerminatedReason, c.TerminatedDescription, c.AgreementProtocol)
+	return fmt.Sprintf("Name: %v , SensorUrl: %v , Archived: %v , CurrentAgreementId: %v, ConsumerId: %v, CurrentDeployment (service names): %v, AgreementCreationTime: %v, AgreementExecutionStartTime: %v, AgreementAcceptedTime: %v, AgreementFinalizedTime: %v, AgreementDataReceivedTime: %v, AgreementTerminatedTime: %v, TerminatedReason: %v, TerminatedDescription: %v, Agreement Protocol: %v", c.Name, c.SensorUrl, c.Archived, c.CurrentAgreementId, c.ConsumerId, ServiceConfigNames(&c.CurrentDeployment), c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementFinalizedTime, c.AgreementDataReceivedTime, c.AgreementTerminatedTime, c.TerminatedReason, c.TerminatedDescription, c.AgreementProtocol)
 
 }
 
@@ -94,6 +95,7 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 		AgreementFinalizedTime:      0,
 		AgreementTerminatedTime:     0,
 		AgreementExecutionStartTime: 0,
+		AgreementDataReceivedTime:   0,
 		CurrentDeployment:           map[string]ServiceConfig{},
 		Proposal:                    proposal,
 		ProposalSig:                 signature,
@@ -156,6 +158,14 @@ func AgreementStateTerminated(db *bolt.DB, dbAgreementId string, reason uint64, 
 		c.AgreementTerminatedTime = uint64(time.Now().Unix())
 		c.TerminatedReason = reason
 		c.TerminatedDescription = reasonString
+		return &c
+	})
+}
+
+// set agreement state to data received
+func AgreementStateDataReceived(db *bolt.DB, dbAgreementId string, protocol string) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
+		c.AgreementDataReceivedTime = uint64(time.Now().Unix())
 		return &c
 	})
 }
@@ -231,6 +241,7 @@ func persistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 				mod.AgreementFinalizedTime = update.AgreementFinalizedTime
 				mod.AgreementTerminatedTime = update.AgreementTerminatedTime
 				mod.AgreementExecutionStartTime = update.AgreementExecutionStartTime
+				mod.AgreementDataReceivedTime = update.AgreementDataReceivedTime
 				mod.CurrentDeployment = update.CurrentDeployment
 				mod.TerminatedReason = update.TerminatedReason
 				mod.TerminatedDescription = update.TerminatedDescription

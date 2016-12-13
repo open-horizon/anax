@@ -206,7 +206,7 @@ func (w *AgreementWorker) start() {
 				// of checks here is very important to prevent duplicates from causing chaos, especially if there are duplicates
 				// on agreement worker threads at the same time.
 				if proposal, err := protocolHandler.ValidateProposal(cmd.Msg.Payload()); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %v due to %v", cmd.Msg.Payload(), err)))
+					glog.Warningf(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %v due to %v", cmd.Msg.Payload(), err)))
 				} else if agAlreadyExists, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),persistence.IdEAFilter(proposal.AgreementId)}); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreements from database, error %v", err)))
 				} else if len(agAlreadyExists) != 0 {

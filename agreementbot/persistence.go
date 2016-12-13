@@ -29,10 +29,11 @@ type Agreement struct {
 	DataVerificationPW            string `json:"data_verification_pw"`             // The pw of the data verification user
 	DisableDataVerificationChecks bool   `json:"disable_data_verification_checks"` // disable data verification checks, assume data is being sent.
 	DataVerifiedTime              uint64 `json:"data_verification_time"`           // The last time that data verification was successful
+	DataNotificationSent          uint64 `json:"data_notification_sent"`           // The timestamp for when data notification was sent to the device
 }
 
 func (a Agreement) String() string {
-	return fmt.Sprintf("CurrentAgreementId: %v, DeviceId: %v, AgreementInceptionTime: %v, AgreementCreationTime: %v, AgreementFinalizedTime: %v, AgreementTimedout: %v, ProposalSig: %v, Policy Name: %v, CounterPartyAddress: %v, DataVerificationURL: %v, DataVerificationUser: %v, DisableDataVerification: %v, DataVerifiedTime: %v", a.CurrentAgreementId, a.DeviceId, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime, a.AgreementTimedout, a.ProposalSig, a.PolicyName, a.CounterPartyAddress, a.DataVerificationURL, a.DataVerificationUser, a.DisableDataVerificationChecks, a.DataVerifiedTime)
+	return fmt.Sprintf("CurrentAgreementId: %v, DeviceId: %v, AgreementInceptionTime: %v, AgreementCreationTime: %v, AgreementFinalizedTime: %v, AgreementTimedout: %v, ProposalSig: %v, Policy Name: %v, CounterPartyAddress: %v, DataVerificationURL: %v, DataVerificationUser: %v, DisableDataVerification: %v, DataVerifiedTime: %v, DataNotificationSent: %v", a.CurrentAgreementId, a.DeviceId, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime, a.AgreementTimedout, a.ProposalSig, a.PolicyName, a.CounterPartyAddress, a.DataVerificationURL, a.DataVerificationUser, a.DisableDataVerificationChecks, a.DataVerifiedTime, a.DataNotificationSent)
 }
 
 // private factory method for agreement w/out persistence safety:
@@ -58,6 +59,7 @@ func agreement(agreementid string, deviceid string, policyName string, agreement
 			DataVerificationPW:            "",
 			DisableDataVerificationChecks: false,
 			DataVerifiedTime:              0,
+			DataNotificationSent:          0,
 		}, nil
 	}
 }
@@ -135,6 +137,17 @@ func DataVerified(db *bolt.DB, agreementid string, protocol string) (*Agreement,
 	}
 }
 
+func DataNotification(db *bolt.DB, agreementid string, protocol string) (*Agreement, error) {
+	if agreement, err := singleAgreementUpdate(db, agreementid, protocol, func(a Agreement) *Agreement {
+		a.DataNotificationSent = uint64(time.Now().Unix())
+		return &a
+	}); err != nil {
+		return nil, err
+	} else {
+		return agreement, nil
+	}
+}
+
 // no error on not found, only nil
 func FindSingleAgreementByAgreementId(db *bolt.DB, agreementid string, protocol string) (*Agreement, error) {
 	filters := make([]AFilter, 0)
@@ -192,6 +205,7 @@ func persistUpdatedAgreement(db *bolt.DB, agreementid string, protocol string, u
 				mod.DataVerificationPW = update.DataVerificationPW
 				mod.DisableDataVerificationChecks = update.DisableDataVerificationChecks
 				mod.DataVerifiedTime = update.DataVerifiedTime
+				mod.DataNotificationSent = update.DataNotificationSent
 
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize agreement record: %v", mod)
