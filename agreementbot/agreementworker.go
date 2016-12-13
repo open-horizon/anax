@@ -46,6 +46,7 @@ func NewCSAgreementWorker(policyManager *policy.PolicyManager, config *config.Ho
 const INITIATE = "INITIATE_AGREEMENT"
 const REPLY = "AGREEMENT_REPLY"
 const CANCEL = "AGREEMENT_CANCEL"
+const DATARECEIVEDACK = "AGREEMENT_DATARECEIVED_ACK"
 
 type CSAgreementWork interface {
 	Type() string
@@ -55,7 +56,7 @@ type CSInitiateAgreement struct {
 	workType       string
 	ProducerPolicy policy.Policy   // the producer policy received from the exchange
 	ConsumerPolicy policy.Policy   // the consumer policy we're matched up with
-	Device         exchange.Device // the device entry in the exchange
+	Device         exchange.SearchResultDevice // the device entry in the exchange
 }
 
 func (c CSInitiateAgreement) String() string {
@@ -78,6 +79,16 @@ type CSHandleReply struct {
 }
 
 func (c CSHandleReply) Type() string {
+	return c.workType
+}
+
+type CSHandleDataReceivedAck struct {
+	workType string
+	Ack      string
+	From     string
+}
+
+func (c CSHandleDataReceivedAck) Type() string {
 	return c.workType
 }
 
@@ -149,7 +160,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 			wi := workItem.(CSHandleReply)
 
 			if reply, err := protocolHandler.ValidateReply(wi.Reply); err != nil {
-				glog.V(5).Infof(logString(fmt.Sprintf("discarding message: %v", wi.Reply)))
+				glog.Warningf(logString(fmt.Sprintf("discarding message: %v", wi.Reply)))
 			} else if reply.ProposalAccepted() {
 				// The producer is happy with the proposal. Assume we will ack negatively.
 				ackReplyAsValid := false
@@ -223,6 +234,18 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				}
 
 				glog.Errorf(logString(fmt.Sprintf("received rejection from producer %v", *reply)))
+			}
+
+		} else if workItem.Type() == DATARECEIVEDACK {
+			wi := workItem.(CSHandleDataReceivedAck)
+			if drAck, err := protocolHandler.ValidateDataReceivedAck(wi.Ack); err != nil {
+				glog.Warningf(logString(fmt.Sprintf("discarding message: %v", wi.Ack)))
+			} else if ag, err := FindSingleAgreementByAgreementId(a.db, drAck.AgreementId(), citizenscientist.PROTOCOL_NAME); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error querying timed out agreement %v, error: %v", drAck.AgreementId(), err)))
+			} else if ag == nil {
+				glog.V(3).Infof(logString(fmt.Sprintf("nothing to terminate for agreement %v, no database record.", drAck.AgreementId())))
+			} else if _, err := DataNotification(a.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to record data notification, error: %v", err)))
 			}
 
 		} else if workItem.Type() == CANCEL {

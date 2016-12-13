@@ -20,12 +20,15 @@ import (
 const PROTOCOL_NAME = "Citizen Scientist"
 
 // This struct is the proposal body that flows from the consumer to the producer.
-const MsgTypeProposal = "proposal"
-const MsgTypeReply    = "reply"
-const MsgTypeReplyAck = "replyack"
+const MsgTypeProposal        = "proposal"
+const MsgTypeReply           = "reply"
+const MsgTypeReplyAck        = "replyack"
+const MsgTypeDataReceived    = "dataverification"
+const MsgTypeDataReceivedAck = "dataverificationack"
 
 type Proposal struct {
 	Type           string `json:"type"`
+	Protocol       string `json:"protocol"`
 	TsAndCs        string `json:"tsandcs"`
 	ProducerPolicy string `json:"producerPolicy"`
 	AgreementId    string `json:"agreementId"`
@@ -34,7 +37,7 @@ type Proposal struct {
 }
 
 func (p Proposal) String() string {
-	return fmt.Sprintf("Type: %v, AgreementId: %v, Address: %v, ConsumerId: %v\n", p.Type, p.AgreementId, p.Address, p.ConsumerId)
+	return fmt.Sprintf("Type: %v, Protocol: %v, AgreementId: %v, Address: %v, ConsumerId: %v\n", p.Type, p.AgreementId, p.Address, p.ConsumerId)
 }
 
 func (p Proposal) ShortString() string {
@@ -48,6 +51,7 @@ func (p Proposal) ShortString() string {
 // This struct is the proposal reply body that flows from the producer to the consumer.
 type ProposalReply struct {
 	Type      string `json:"type"`
+	Protocol  string `json:"protocol"`
 	Decision  bool   `json:"decision"`
 	Signature string `json:"signature"`
 	Address   string `json:"address"`
@@ -56,7 +60,7 @@ type ProposalReply struct {
 }
 
 func (p *ProposalReply) String() string {
-	return fmt.Sprintf("Type: %v, Decision: %v, Signature: %v, Address: %v, AgreementId: %v, DeviceId: %v", p.Type, p.Decision, p.Signature, p.Address, p.AgreementId, p.DeviceId)
+	return fmt.Sprintf("Type: %v, Protocol: %v, Decision: %v, Signature: %v, Address: %v, AgreementId: %v, DeviceId: %v", p.Type, p.Decision, p.Signature, p.Address, p.AgreementId, p.DeviceId)
 }
 
 func (p *ProposalReply) ShortString() string {
@@ -74,6 +78,7 @@ func (p *ProposalReply) AgreementId() string {
 func NewProposalReply(decision bool, id string, deviceId string) *ProposalReply {
 	return &ProposalReply{
 		Type:     MsgTypeReply,
+		Protocol: PROTOCOL_NAME,
 		Decision: false,
 		AgreeId:  id,
 		DeviceId: deviceId,
@@ -84,12 +89,13 @@ func NewProposalReply(decision bool, id string, deviceId string) *ProposalReply 
 // the producer whether (true) or not (false) the consumer is still pursuing the agreement.
 type ReplyAck struct {
 	Type       string `json:"type"`
+	Protocol   string `json:"protocol"`
 	StillValid bool   `json:"decision"`
 	AgreeId    string `json:"agreementId"`
 }
 
 func (p *ReplyAck) String() string {
-	return fmt.Sprintf("Type: %v, StillValid: %v, AgreementId: %v: %v", p.Type, p.StillValid, p.AgreementId)
+	return fmt.Sprintf("Type: %v, Protocol: %v, StillValid: %v, AgreementId: %v: %v", p.Type, p.StillValid, p.AgreementId)
 }
 
 func (p *ReplyAck) ShortString() string {
@@ -107,11 +113,69 @@ func (p *ReplyAck) AgreementId() string {
 func NewReplyAck(decision bool, id string) *ReplyAck {
 	return &ReplyAck{
 		Type:       MsgTypeReplyAck,
+		Protocol:   PROTOCOL_NAME,
 		StillValid: decision,
 		AgreeId:    id,
 	}
 }
 
+// This struct is the data received message that flows from the consumer to the producer. It indicates
+// that the consumer has seen data being received from the workloads on the device.
+type DataReceived struct {
+	Type       string `json:"type"`
+	Protocol   string `json:"protocol"`
+	AgreeId    string `json:"agreementId"`
+}
+
+func (p *DataReceived) String() string {
+	return fmt.Sprintf("Type: %v, Protocol: %v, AgreementId: %v: %v", p.Type, p.Protocol, p.AgreementId)
+}
+
+func (p *DataReceived) ShortString() string {
+	return p.String()
+}
+
+func (p *DataReceived) AgreementId() string {
+	return p.AgreeId
+}
+
+func NewDataReceived(id string) *DataReceived {
+	return &DataReceived{
+		Type:       MsgTypeDataReceived,
+		Protocol:   PROTOCOL_NAME,
+		AgreeId:    id,
+	}
+}
+
+// This struct is the data received message that flows from the consumer to the producer. It indicates
+// that the consumer has seen data being received from the workloads on the device.
+type DataReceivedAck struct {
+	Type       string `json:"type"`
+	Protocol   string `json:"protocol"`
+	AgreeId    string `json:"agreementId"`
+}
+
+func (p *DataReceivedAck) String() string {
+	return fmt.Sprintf("Type: %v, Protocol: %v, AgreementId: %v: %v", p.Type, p.Protocol, p.AgreementId)
+}
+
+func (p *DataReceivedAck) ShortString() string {
+	return p.String()
+}
+
+func (p *DataReceivedAck) AgreementId() string {
+	return p.AgreeId
+}
+
+func NewDataReceivedAck(id string) *DataReceivedAck {
+	return &DataReceivedAck{
+		Type:       MsgTypeDataReceivedAck,
+		Protocol:   PROTOCOL_NAME,
+		AgreeId:    id,
+	}
+}
+
+// This is the object which users of the agrement protocol use to get access to the protocol functions.
 type ProtocolHandler struct {
 	GethURL    string
 	httpClient *http.Client
@@ -127,7 +191,7 @@ func NewProtocolHandler(gethURL string, pm *policy.PolicyManager) *ProtocolHandl
 	}
 }
 
-func (p *ProtocolHandler) InitiateAgreement(agreementId string, producerPolicy *policy.Policy, consumerPolicy *policy.Policy, device *exchange.Device, myAddress string, myId string) (*Proposal, error) {
+func (p *ProtocolHandler) InitiateAgreement(agreementId string, producerPolicy *policy.Policy, consumerPolicy *policy.Policy, device *exchange.SearchResultDevice, myAddress string, myId string) (*Proposal, error) {
 
 	if TCPolicy, err := policy.Create_Terms_And_Conditions(producerPolicy, consumerPolicy, agreementId); err != nil {
 		return nil, errors.New(fmt.Sprintf("CS Protocol initiation received error trying to merge policy %v and %v, error: %v", producerPolicy, consumerPolicy, err))
@@ -141,6 +205,7 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string, producerPolicy *
 			return nil, errors.New(fmt.Sprintf("Error marshalling Producer Policy %v, error: %v", *producerPolicy, err))
 		} else {
 			newProposal.Type = MsgTypeProposal
+			newProposal.Protocol = PROTOCOL_NAME
 			newProposal.TsAndCs = string(tcBytes)
 			newProposal.ProducerPolicy = string(prodBytes)
 			newProposal.AgreementId = agreementId
@@ -230,7 +295,7 @@ func (p *ProtocolHandler) DecideOnProposal(proposal *Proposal, from string, myId
 	}
 
 	// Always respond to the Proposer
-	if err := p.sendResponse(from, "Citizen Scientist", reply); err != nil {
+	if err := p.sendResponse(from, PROTOCOL_NAME, reply); err != nil {
 		reply.Decision = false
 		replyErr = errors.New(fmt.Sprintf("CS Protocol decide on proposal received error trying to send proposal response, error: %v", err))
 	}
@@ -255,7 +320,17 @@ func (p *ProtocolHandler) returnErrOnDecision(err error, producerPolicy *policy.
 
 func (p *ProtocolHandler) Confirm(to string, replyValid bool, agreementId string) error {
 	ra := NewReplyAck(replyValid, agreementId)
-	return p.sendResponseAck(to, "Citizen Scientist", ra)
+	return p.sendResponseAck(to, PROTOCOL_NAME, ra)
+}
+
+func (p *ProtocolHandler) NotifyDataReceipt(to string, agreementId string) error {
+	ra := NewDataReceived(agreementId)
+	return p.sendDataNotification(to, PROTOCOL_NAME, ra)
+}
+
+func (p *ProtocolHandler) NotifyDataReceiptAck(to string, agreementId string) error {
+	ra := NewDataReceivedAck(agreementId)
+	return p.sendDataNotificationAck(to, PROTOCOL_NAME, ra)
 }
 
 func (p *ProtocolHandler) sendProposal(to string, topic string, proposal *Proposal) error {
@@ -337,6 +412,60 @@ func (p *ProtocolHandler) sendResponseAck(to string, topic string, replyack *Rep
 	}
 }
 
+func (p *ProtocolHandler) sendDataNotification(to string, topic string, dr *DataReceived) error {
+	pay, err := json.Marshal(dr)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Unable to serialize payload %v, error %v", *dr, err))
+	}
+
+	glog.V(3).Infof("Sending data notification message: %v to: %v", string(pay), to)
+
+	if from, err := gwhisper.AccountId(p.GethURL); err != nil {
+		glog.Errorf("Error obtaining whisper id, %v", err)
+		return err
+	} else {
+
+		// this has to last long enough to be read by an overloaded device
+		msg, err := gwhisper.TopicMsgParams(from, to, []string{topic}, string(pay), 180, 50)
+		if err != nil {
+			return err
+		}
+
+		_, err = gwhisper.WhisperSend(p.httpClient, p.GethURL, gwhisper.POST, msg, 3)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+}
+
+func (p *ProtocolHandler) sendDataNotificationAck(to string, topic string, dr *DataReceivedAck) error {
+	pay, err := json.Marshal(dr)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Unable to serialize payload %v, error %v", *dr, err))
+	}
+
+	glog.V(3).Infof("Sending data notification ack message: %v to: %v", string(pay), to)
+
+	if from, err := gwhisper.AccountId(p.GethURL); err != nil {
+		glog.Errorf("Error obtaining whisper id, %v", err)
+		return err
+	} else {
+
+		// this has to last long enough to be read by an overloaded device
+		msg, err := gwhisper.TopicMsgParams(from, to, []string{topic}, string(pay), 180, 50)
+		if err != nil {
+			return err
+		}
+
+		_, err = gwhisper.WhisperSend(p.httpClient, p.GethURL, gwhisper.POST, msg, 3)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+}
+
 func (p *ProtocolHandler) ValidateReply(reply string) (*ProposalReply, error) {
 
 	// attempt deserialization of message from msg payload
@@ -363,6 +492,36 @@ func (p *ProtocolHandler) ValidateReplyAck(replyack string) (*ReplyAck, error) {
 		return replyAck, nil
 	} else {
 		return nil, errors.New(fmt.Sprintf("ReplyAck message: %s, is not a reply ack.", replyack))
+	}
+
+}
+
+func (p *ProtocolHandler) ValidateDataReceived(dr string) (*DataReceived, error) {
+
+	// attempt deserialization of message from msg payload
+	dataReceived := new(DataReceived)
+
+	if err := json.Unmarshal([]byte(dr), &dataReceived); err != nil {
+		return nil, errors.New(fmt.Sprintf("Error deserializing data received notification: %s, error: %v", dr, err))
+	} else if dataReceived.Type == MsgTypeDataReceived && len(dataReceived.AgreeId) != 0 {
+		return dataReceived, nil
+	} else {
+		return nil, errors.New(fmt.Sprintf("DataReceived message: %s, is not a data received notification.", dr))
+	}
+
+}
+
+func (p *ProtocolHandler) ValidateDataReceivedAck(dr string) (*DataReceivedAck, error) {
+
+	// attempt deserialization of message from msg payload
+	dataReceivedAck := new(DataReceivedAck)
+
+	if err := json.Unmarshal([]byte(dr), &dataReceivedAck); err != nil {
+		return nil, errors.New(fmt.Sprintf("Error deserializing data received notification ack: %s, error: %v", dr, err))
+	} else if dataReceivedAck.Type == MsgTypeDataReceivedAck && len(dataReceivedAck.AgreeId) != 0 {
+		return dataReceivedAck, nil
+	} else {
+		return nil, errors.New(fmt.Sprintf("DataReceivedAck message: %s, is not a data received notification ack.", dr))
 	}
 
 }

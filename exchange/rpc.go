@@ -56,18 +56,18 @@ func (a SearchExchangeRequest) String() string {
 	return fmt.Sprintf("Microservices: %v, SecondsStale: %v, PropertiesToReturn: %v, StartIndex: %v, NumEntries: %v", a.DesiredMicroservices, a.SecondsStale, a.PropertiesToReturn, a.StartIndex, a.NumEntries)
 }
 
-type Device struct {
+type SearchResultDevice struct {
 	Id            string         `json:"id"`
 	Name          string         `json:"name"`
 	Microservices []Microservice `json:"microservices"`
 	MsgEndPoint   string         `json:"msgEndPoint"`
 }
 
-func (d Device) String() string {
+func (d SearchResultDevice) String() string {
 	return fmt.Sprintf("Id: %v, Name: %v, Microservices: %v, MsgEndPoint: %v", d.Id, d.Name, d.Microservices, d.MsgEndPoint)
 }
 
-func (d Device) ShortString() string {
+func (d SearchResultDevice) ShortString() string {
 	str := fmt.Sprintf("Id: %v, Name: %v, MsgEndPoint: %v, Microservice URLs:", d.Id, d.Name, d.MsgEndPoint)
 	for _, ms := range d.Microservices {
 		str += fmt.Sprintf("%v,", ms.Url)
@@ -76,12 +76,22 @@ func (d Device) ShortString() string {
 }
 
 type SearchExchangeResponse struct {
-	Devices   []Device `json:"devices"`
-	LastIndex int      `json:"lastIndex"`
+	Devices   []SearchResultDevice `json:"devices"`
+	LastIndex int                  `json:"lastIndex"`
 }
 
 func (r SearchExchangeResponse) String() string {
 	return fmt.Sprintf("Devices: %v, LastIndex: %v", r.Devices, r.LastIndex)
+}
+
+type Device struct {
+	Token                   string          `json:"token"`
+	Name                    string          `json:"name"`
+	Owner                   string          `json:"owner"`
+	RegisteredMicroservices []Microservice  `json:"registeredMicroservices"`
+	MsgEndPoint             string          `json:"msgEndPoint"`
+	SoftwareVersions        SoftwareVersion `json:"softwareVersions"`
+	LastHeartbeat           string          `json:"lastHeartbeat"`
 }
 
 type GetDevicesResponse struct {

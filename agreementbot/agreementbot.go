@@ -241,6 +241,9 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 		// Main function of the agreement processor. Constantly search through the list of available
 		// devices to ensure that we are contracting with as many devices as possible.
 		go func() {
+
+			protocolHandler := citizenscientist.NewProtocolHandler(w.Config.AgreementBot.GethURL, w.pm)
+
 			for {
 
 				glog.V(5).Infof("AgreementBot about to select command (non-blocking).")
@@ -250,13 +253,26 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 					case *ReceivedWhisperMessageCommand:
 						glog.V(5).Infof("AgreementBot received inbound whisper message.")
 						cmd := command.(*ReceivedWhisperMessageCommand)
-						agreementWork := CSHandleReply{
-							workType: REPLY,
-							Reply:    cmd.Msg.Payload(),
-							From:     cmd.Msg.From(),
+						// Figure out what kind of message this is
+						if _, err := protocolHandler.ValidateReply(cmd.Msg.Payload()); err == nil {
+							agreementWork := CSHandleReply{
+												workType: REPLY,
+												Reply:    cmd.Msg.Payload(),
+												From:     cmd.Msg.From(),
+											}
+							work <- agreementWork
+							glog.V(5).Infof("AgreementBot queued reply message")
+						} else if _, err := protocolHandler.ValidateDataReceivedAck(cmd.Msg.Payload()); err == nil {
+							agreementWork := CSHandleDataReceivedAck{
+												workType: DATARECEIVEDACK,
+												Ack:      cmd.Msg.Payload(),
+												From:     cmd.Msg.From(),
+											}
+							work <- agreementWork
+							glog.V(5).Infof("AgreementBot queued data received message")
+						} else {
+							glog.Warningf(AWlogString(fmt.Sprintf("ignoring  message: %v", cmd.Msg.Payload())))
 						}
-						work <- agreementWork
-						glog.V(5).Infof("AgreementBot queued possible reply message")
 
 					case *AgreementTimeoutCommand:
 						glog.V(5).Infof("AgreementBot received agreement cancellation.")
@@ -372,7 +388,7 @@ func RetrieveAllProperties(pol *policy.Policy) (*policy.PropertyList, error) {
 	return pl, nil
 }
 
-func (w *AgreementBotWorker) searchExchange(pol *policy.Policy) (*[]exchange.Device, error) {
+func (w *AgreementBotWorker) searchExchange(pol *policy.Policy) (*[]exchange.SearchResultDevice, error) {
 
 	// Convert the policy into a microservice object that the exchange can search on
 	ms := make([]exchange.Microservice, 0, 10)
@@ -528,7 +544,7 @@ func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, wo
 
 }
 
-func (w *AgreementBotWorker) ignoreDevice(dev exchange.Device) (bool, error) {
+func (w *AgreementBotWorker) ignoreDevice(dev exchange.SearchResultDevice) (bool, error) {
 	for _, prop := range dev.Microservices[0].Properties {
 		if listContains(w.Config.AgreementBot.IgnoreContractWithAttribs, prop.Name) {
 			return true, nil
