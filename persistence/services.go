@@ -139,10 +139,14 @@ func (a MappedAttributes) GetGenericMappings() map[string]interface{} {
 
 func FindApplicableAttributes(db *bolt.DB, serviceUrl string) ([]ServiceAttribute, error) {
 
-	var filteredAttrs []ServiceAttribute
+	filteredAttrs := []ServiceAttribute{}
 
 	return filteredAttrs, db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(SERVICE_ATTRIBUTES))
+
+		if bucket == nil {
+			return nil
+		}
 
 		return bucket.ForEach(func(k, v []byte) error {
 			var meta MetaAttributesOnly // for easy deserialization
