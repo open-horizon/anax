@@ -90,9 +90,9 @@ func (a *API) listen(apiListen string) {
 		router.HandleFunc(`/{p:[\w\/]+}`, func(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		})
-		router.PathPrefix("/").Handler(http.FileServer(http.Dir(a.Config.Edge.WebContent)))
+		router.PathPrefix("/").Handler(http.FileServer(http.Dir(a.Config.Edge.StaticWebContent)))
 
-		glog.Infof("Serving static web content from: %v", a.Config.Edge.WebContent)
+		glog.Infof("Serving static web content from: %v", a.Config.Edge.StaticWebContent)
 		http.ListenAndServe(apiListen, nocache(router))
 	}()
 }
