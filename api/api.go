@@ -2,11 +2,9 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
-	"path"
 
 	"bytes"
 	"github.com/boltdb/bolt"
@@ -75,12 +73,6 @@ func (a *API) listen(apiListen string) {
 	go func() {
 		router := mux.NewRouter()
 
-		// given a path string, produces an http handler (note it assumes the dirname and path string match)
-		registerStatic := func(str string) {
-			p := fmt.Sprintf("/%s/", str)
-			router.PathPrefix(p).Handler(http.StripPrefix(p, http.FileServer(http.Dir(path.Join(a.Config.Edge.StaticWebContent, str)))))
-		}
-
 		router.HandleFunc("/agreement", a.agreement).Methods("GET", "OPTIONS")
 		router.HandleFunc("/agreement/{id}", a.agreement).Methods("GET", "DELETE", "OPTIONS")
 
@@ -94,13 +86,13 @@ func (a *API) listen(apiListen string) {
 		router.HandleFunc("/horizondevice", a.horizonDevice).Methods("GET", "POST", "PATCH", "OPTIONS")
 		router.HandleFunc("/workload", a.workload).Methods("GET", "OPTIONS")
 
-		registerStatic("js")
-		registerStatic("styles")
-		registerStatic("images")
-		registerStatic("dashboard")
-		registerStatic("registration")
+		// redirect to index.html because SPA
+		router.HandleFunc(`/{p:[\w\/]+}`, func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		})
+		router.PathPrefix("/").Handler(http.FileServer(http.Dir(a.Config.Edge.WebContent)))
 
-		glog.Infof("Serving static web content from: %v", a.Config.Edge.StaticWebContent)
+		glog.Infof("Serving static web content from: %v", a.Config.Edge.WebContent)
 		http.ListenAndServe(apiListen, nocache(router))
 	}()
 }
@@ -595,7 +587,6 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 				CPUs: 1,
 				RAM:  a.Config.Edge.DefaultServiceRegistrationRAM,
 			})
-
 		}
 
 		aType := reflect.TypeOf(persistence.ArchitectureAttributes{}).String()
