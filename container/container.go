@@ -941,7 +941,11 @@ func (b *ContainerWorker) start() {
 
 				if deployment, err := b.resourcesCreate(cmd.AgreementLaunchContext.AgreementId, cmd.AgreementLaunchContext.Configure, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions); err != nil {
 					glog.Errorf("Error starting containers: %v", err)
-					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, cmd.AgreementLaunchContext.AgreementId, *deployment) // still using deployment here, need it to shutdown containers
+					var dep map[string]persistence.ServiceConfig
+					if deployment != nil {
+						dep = *deployment
+					}
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, cmd.AgreementLaunchContext.AgreementId, dep) // still using deployment here, need it to shutdown containers
 
 				} else {
 					glog.Infof("Success starting pattern for agreement: %v, protocol: %v, serviceNames: %v", cmd.AgreementLaunchContext.AgreementId, cmd.AgreementLaunchContext.AgreementProtocol, persistence.ServiceConfigNames(deployment))
