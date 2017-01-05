@@ -6,6 +6,7 @@ This project contains the Horizon client system source code. To learn more about
 
 Related Projects:
 
+* `anax-ui` (http://github.com/open-horizon/anax-ui): The source for the Anax web UI
 * `bluehorizon-snap` (http://github.com/open-horizon/bluehorizon-snap): A Ubuntu Snappy bundling of the complete Horizon client components
 * `ubuntu-classic-image` (http://github.com/open-horizon/ubuntu-classic-image): Produces complete system images
 

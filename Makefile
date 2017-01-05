@@ -56,8 +56,6 @@ ifneq ($(GOPATH),$(TMPGOPATH))
 endif
 
 install: anax installagbot
-	# copy static content
-	cp -rvfa ./api/static $(DESTDIR)/srv/
 
 installagbot: anax
 	mkdir -p $(DESTDIR)/{bin,srv}
