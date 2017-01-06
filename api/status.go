@@ -9,29 +9,29 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
 )
 
-type Firmware struct {
-	Definition   string `json:"definition"`
-	FlashVersion string `json:"flash_version"`
+type Configuration struct {
+	ExchangeAPI string `json:"exchange_api"`
 }
 
 type Info struct {
-	Geth         *Geth           `json:"geth"`
-	Firmware     *Firmware       `json:"firmware"`
-	Connectivity map[string]bool `json:"connectivity"`
+	Geth          *Geth           `json:"geth"`
+	Configuration *Configuration  `json:"configuration"`
+	Connectivity  map[string]bool `json:"connectivity"`
 }
 
-func NewInfo(gethRunning bool) *Info {
+func NewInfo(config *config.HorizonConfig) *Info {
 	return &Info{
 		Geth: &Geth{
 			NetPeerCount:   -1,
 			EthSyncing:     false,
 			EthBlockNumber: -1,
+			EthAccounts:    []string{},
 		},
-		Firmware: &Firmware{
-			Definition:   "",
-			FlashVersion: "",
+		Configuration: &Configuration{
+			ExchangeAPI: config.Edge.ExchangeURL,
 		},
 		Connectivity: map[string]bool{},
 	}

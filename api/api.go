@@ -774,7 +774,7 @@ func (a *API) serviceAttribute(w http.ResponseWriter, r *http.Request) {
 func (a *API) status(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		info := NewInfo(false)
+		info := NewInfo(a.Config)
 
 		if err := WriteGethStatus(a.Config.Edge.GethURL, info.Geth); err != nil {
 			glog.Errorf("Unable to determine geth service facts: %v", err)
