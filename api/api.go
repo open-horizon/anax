@@ -271,8 +271,8 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			return nil, true
 		}
 
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(successStatusCode)
+		w.Header().Set("Content-Type", "application/json")
 
 		if _, err := w.Write(serial); err != nil {
 			glog.Error(err)
@@ -311,9 +311,6 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if bail := checkInputString(w, "device.account.email", device.Account.Email); bail {
-			return
-		}
-		if bail := checkInputString(w, "device.id", device.Id); bail {
 			return
 		}
 		if bail := checkInputString(w, "device.name", device.Name); bail {
@@ -719,7 +716,6 @@ func (a *API) serviceAttribute(w http.ResponseWriter, r *http.Request) {
 		}
 
 		body, _ := ioutil.ReadAll(r.Body)
-
 		decoder := json.NewDecoder(bytes.NewReader(body))
 		decoder.UseNumber()
 
@@ -753,6 +749,7 @@ func (a *API) serviceAttribute(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
+		w.WriteHeader(http.StatusCreated)
 		w.Header().Set("Content-Type", "application/json")
 
 		if _, err := w.Write(serial); err != nil {
@@ -760,8 +757,6 @@ func (a *API) serviceAttribute(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-
-		w.WriteHeader(http.StatusCreated)
 
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, POST, OPTIONS")
@@ -774,7 +769,7 @@ func (a *API) serviceAttribute(w http.ResponseWriter, r *http.Request) {
 func (a *API) status(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		info := NewInfo(false)
+		info := NewInfo(a.Config)
 
 		if err := WriteGethStatus(a.Config.Edge.GethURL, info.Geth); err != nil {
 			glog.Errorf("Unable to determine geth service facts: %v", err)
@@ -788,7 +783,6 @@ func (a *API) status(w http.ResponseWriter, r *http.Request) {
 			glog.Errorf("Failed to serialize status object: %v", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 		} else {
-			w.WriteHeader(http.StatusOK)
 			w.Header().Set("Content-Type", "application/json")
 
 			if _, err := w.Write(serial); err != nil {
@@ -830,8 +824,6 @@ func tokenRandom(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-
-		w.WriteHeader(http.StatusOK)
 
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, OPTIONS")
@@ -892,8 +884,8 @@ func writeInputErr(writer http.ResponseWriter, status int, inputErr *APIUserInpu
 		glog.Infof("Error serializing agreement output: %v", err)
 		http.Error(writer, "Internal server error", http.StatusInternalServerError)
 	} else {
-		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(status)
+		writer.Header().Set("Content-Type", "application/json")
 		if _, err := writer.Write(serial); err != nil {
 			glog.Infof("Error writing response: %v", err)
 			http.Error(writer, "Internal server error", http.StatusInternalServerError)
