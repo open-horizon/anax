@@ -29,6 +29,7 @@ func NewInfo(config *config.HorizonConfig) *Info {
 			EthSyncing:     false,
 			EthBlockNumber: -1,
 			EthAccounts:    []string{},
+			EthBalance:     "",
 		},
 		Configuration: &Configuration{
 			ExchangeAPI: config.Edge.ExchangeURL,
@@ -43,6 +44,7 @@ type Geth struct {
 	EthSyncing     bool     `json:"eth_syncing"`
 	EthBlockNumber int64    `json:"eth_block_number"`
 	EthAccounts    []string `json:"eth_accounts"`
+	EthBalance     string   `json:"eth_balance"` // a string b/c this is a huge number
 }
 
 func WriteGethStatus(gethURL string, geth *Geth) error {
@@ -109,6 +111,8 @@ func WriteGethStatus(gethURL string, geth *Geth) error {
 		geth.NetPeerCount = peers
 	}
 
+	geth.EthBalance = singleResult("eth_getBalance").(string)
+
 	// get the account
 	if account := singleResult("eth_accounts"); account != nil {
 		switch account.(type) {
@@ -119,7 +123,7 @@ func WriteGethStatus(gethURL string, geth *Geth) error {
 				geth.EthAccounts[i] = a1[i].(string)
 			}
 		default:
-			geth.EthAccounts = nil
+			geth.EthAccounts = []string{}
 		}
 	}
 	return nil
