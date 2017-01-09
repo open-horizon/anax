@@ -16,6 +16,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"path"
 	"runtime"
 	"strings"
 	"time"
@@ -178,7 +179,7 @@ func (w *AgreementBotWorker) start() {
 		w.ready = true
 
 		// Begin heartbeating with the exchange.
-		targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/heartbeat"
+		targetURL := path.Join(w.Manager.Config.AgreementBot.ExchangeURL, "agbots", w.agbotId, "heartbeat")
 		go exchange.Heartbeat(&http.Client{}, targetURL, w.agbotId, w.token, w.Worker.Manager.Config.AgreementBot.ExchangeHeartbeat)
 
 		// Start the governance routine.
@@ -256,18 +257,18 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 						// Figure out what kind of message this is
 						if _, err := protocolHandler.ValidateReply(cmd.Msg.Payload()); err == nil {
 							agreementWork := CSHandleReply{
-												workType: REPLY,
-												Reply:    cmd.Msg.Payload(),
-												From:     cmd.Msg.From(),
-											}
+								workType: REPLY,
+								Reply:    cmd.Msg.Payload(),
+								From:     cmd.Msg.From(),
+							}
 							work <- agreementWork
 							glog.V(5).Infof("AgreementBot queued reply message")
 						} else if _, err := protocolHandler.ValidateDataReceivedAck(cmd.Msg.Payload()); err == nil {
 							agreementWork := CSHandleDataReceivedAck{
-												workType: DATARECEIVEDACK,
-												Ack:      cmd.Msg.Payload(),
-												From:     cmd.Msg.From(),
-											}
+								workType: DATARECEIVEDACK,
+								Ack:      cmd.Msg.Payload(),
+								From:     cmd.Msg.From(),
+							}
 							work <- agreementWork
 							glog.V(5).Infof("AgreementBot queued data received message")
 						} else {
@@ -415,7 +416,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy) (*[]exchange.Sea
 
 	var resp interface{}
 	resp = new(exchange.SearchExchangeResponse)
-	targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "search/devices"
+	targetURL := path.Join(w.Worker.Manager.Config.AgreementBot.ExchangeURL, "search/devices")
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, ser, &resp); err != nil {
 			return nil, err
@@ -430,7 +431,6 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy) (*[]exchange.Sea
 		}
 	}
 }
-
 
 func (w *AgreementBotWorker) syncOnInit() error {
 	glog.V(3).Infof(AWlogString("beginning sync up."))
@@ -464,13 +464,13 @@ func (w *AgreementBotWorker) syncOnInit() error {
 				} else if err := w.pm.FinalAgreement(existingPol, ag.CurrentAgreementId); err != nil {
 					glog.Errorf(AWlogString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
 
-				// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
+					// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
 				} else {
 
 					var exchangeAgreement map[string]exchange.AgbotAgreement
 					var resp interface{}
 					resp = new(exchange.AllAgbotAgreementsResponse)
-					targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/agreements/" + ag.CurrentAgreementId
+					targetURL := path.Join(w.Worker.Manager.Config.AgreementBot.ExchangeURL, "agbots", w.agbotId, "agreements", ag.CurrentAgreementId)
 
 					if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.agbotId, w.token, nil, &resp); err != nil || tpErr != nil {
 						glog.Errorf(AWlogString(fmt.Sprintf("encountered error getting agbot info from exchange, error %v, transport error %v", err, tpErr)))
@@ -497,11 +497,10 @@ func (w *AgreementBotWorker) syncOnInit() error {
 					glog.V(3).Infof(AWlogString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))
 				}
 
-
-			// This state should never occur, but could if there was an error along the way. It means that a DB record
-			// was created for this agreement but the record was never updated with the creation time, which is supposed to occur
-			// immediately following creation of the record. Further, if this were to occur, then the exchange should not have been
-			// updated, so there is no reason to try to clean that up.
+				// This state should never occur, but could if there was an error along the way. It means that a DB record
+				// was created for this agreement but the record was never updated with the creation time, which is supposed to occur
+				// immediately following creation of the record. Further, if this were to occur, then the exchange should not have been
+				// updated, so there is no reason to try to clean that up.
 			} else if ag.AgreementInceptionTime != 0 && ag.AgreementCreationTime == 0 {
 				if err := DeleteAgreement(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
 					glog.Errorf(AWlogString(fmt.Sprintf("error deleting partially created agreement: %v, error: %v", ag.CurrentAgreementId, err)))
@@ -517,7 +516,6 @@ func (w *AgreementBotWorker) syncOnInit() error {
 	return nil
 }
 
-
 func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, workloadID string, state string) error {
 
 	glog.V(5).Infof(AWlogString(fmt.Sprintf("setting agreement %v state to %v", agreementId, state)))
@@ -527,7 +525,7 @@ func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, wo
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/agreements/" + agreementId
+	targetURL := path.Join(w.Config.AgreementBot.ExchangeURL, "agbots", w.agbotId, "agreements", agreementId)
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.agbotId, w.token, &as, &resp); err != nil {
 			glog.Errorf(err.Error())
@@ -554,13 +552,13 @@ func (w *AgreementBotWorker) ignoreDevice(dev exchange.SearchResultDevice) (bool
 }
 
 func listContains(list string, target string) bool {
-    ignoreAttribs := strings.Split(list, ",")
-    for _, propName := range ignoreAttribs {
-        if propName == target {
-            return true
-        }
-    }
-    return false
+	ignoreAttribs := strings.Split(list, ",")
+	for _, propName := range ignoreAttribs {
+		if propName == target {
+			return true
+		}
+	}
+	return false
 }
 
 // ==========================================================================================================
