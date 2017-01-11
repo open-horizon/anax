@@ -14,7 +14,6 @@ import (
 	"github.com/satori/go.uuid"
 	"math/rand"
 	"net/http"
-	"path"
 	"runtime"
 	"time"
 )
@@ -55,8 +54,8 @@ type CSAgreementWork interface {
 
 type CSInitiateAgreement struct {
 	workType       string
-	ProducerPolicy policy.Policy               // the producer policy received from the exchange
-	ConsumerPolicy policy.Policy               // the consumer policy we're matched up with
+	ProducerPolicy policy.Policy   // the producer policy received from the exchange
+	ConsumerPolicy policy.Policy   // the consumer policy we're matched up with
 	Device         exchange.SearchResultDevice // the device entry in the exchange
 }
 
@@ -103,6 +102,7 @@ type CSCancelAgreement struct {
 func (c CSCancelAgreement) Type() string {
 	return c.workType
 }
+
 
 // This function receives an event to "make a new agreement" from the Process function, and then synchronously calls a function
 // to actually work through the agreement protocol.
@@ -173,7 +173,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				} else if agreement.CounterPartyAddress != "" {
 					glog.V(5).Infof(logString(fmt.Sprintf("discarding reply, agreement id %v already received a reply", agreement.CurrentAgreementId)))
 
-					// Now we need to write the info to the exchange and the database
+				// Now we need to write the info to the exchange and the database
 				} else if proposal, err := protocolHandler.DemarshalProposal(agreement.Proposal); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error validating proposal from pending agreement %v, error: %v", reply.AgreementId(), err)))
 				} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
@@ -185,7 +185,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				} else if err := a.recordConsumerAgreementState(reply.AgreementId(), pol.APISpecs[0].SpecRef, "Producer agreed"); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error setting agreement state for %v", reply.AgreementId())))
 
-					// We need to send a reply ack and write the info to the blockchain
+				// We need to send a reply ack and write the info to the blockchain
 				} else if consumerPolicy, err := policy.DemarshalPolicy(agreement.Policy); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", reply.AgreementId(), err)))
 				} else {
@@ -294,7 +294,7 @@ func (a *CSAgreementWorker) recordConsumerAgreementState(agreementId string, wor
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := path.Join(a.config.AgreementBot.ExchangeURL, "agbots", a.agbotId, "agreements", agreementId)
+	targetURL := a.config.AgreementBot.ExchangeURL + "agbots/" + a.agbotId + "/agreements/" + agreementId
 	for {
 		if err, tpErr := exchange.InvokeExchange(a.httpClient, "PUT", targetURL, a.agbotId, a.token, &as, &resp); err != nil {
 			glog.Errorf(err.Error())
