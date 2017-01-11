@@ -16,7 +16,6 @@ import (
 	"github.com/open-horizon/anax/worker"
 	gwhisper "github.com/open-horizon/go-whisper"
 	"net/http"
-	"path"
 	"reflect"
 	"runtime"
 	"strconv"
@@ -57,13 +56,13 @@ func NewAgreementWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.Po
 			Commands: commands,
 		},
 
-		db:                  db,
-		httpClient:          &http.Client{},
-		protocols:           make(map[string]bool),
-		pm:                  pm,
+		db:         db,
+		httpClient: &http.Client{},
+		protocols:  make(map[string]bool),
+		pm:         pm,
 		bcClientInitialized: false,
-		deviceId:            id,
-		deviceToken:         token,
+		deviceId:   id,
+		deviceToken: token,
 	}
 
 	glog.Info("Starting Agreement worker")
@@ -140,7 +139,7 @@ func (w *AgreementWorker) start() {
 
 			// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
 			// start heartbeating when the registration event comes in.
-			targetURL := path.Join(w.Manager.Config.Edge.ExchangeURL, "devices", w.deviceId, "heartbeat")
+			targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/heartbeat"
 			go exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
 		}
 
@@ -208,7 +207,7 @@ func (w *AgreementWorker) start() {
 				// on agreement worker threads at the same time.
 				if proposal, err := protocolHandler.ValidateProposal(cmd.Msg.Payload()); err != nil {
 					glog.Warningf(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %v due to %v", cmd.Msg.Payload(), err)))
-				} else if agAlreadyExists, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(proposal.AgreementId)}); err != nil {
+				} else if agAlreadyExists, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),persistence.IdEAFilter(proposal.AgreementId)}); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreements from database, error %v", err)))
 				} else if len(agAlreadyExists) != 0 {
 					glog.Errorf(logString(fmt.Sprintf("agreement %v already exists, ignoring proposal: %v", proposal.AgreementId, proposal.ShortString())))
@@ -240,7 +239,7 @@ func (w *AgreementWorker) maintainWhisperId() {
 
 	getWhisperId := func() string {
 		if wId, err := gwhisper.AccountId(w.Config.Edge.GethURL); err != nil {
-			glog.Errorf(logStringww(fmt.Sprintf("encountered error reading whisper id, error %v", err)))
+			glog.Errorf(logStringww(fmt.Sprintf("encountered error reading whisper id, error %v",err)))
 			return ""
 		} else {
 			return wId
@@ -254,7 +253,7 @@ func (w *AgreementWorker) maintainWhisperId() {
 		if newId != "" {
 			var resp interface{}
 			resp = new(exchange.GetDevicesResponse)
-			targetURL := path.Join(w.Worker.Manager.Config.Edge.ExchangeURL, "devices", w.deviceId)
+			targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId
 			if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil || tpErr != nil {
 				glog.Errorf(logStringww(fmt.Sprintf("encountered error getting device info from exchange, error %v, transport error %v", err, tpErr)))
 			} else if dev, there := resp.(*exchange.GetDevicesResponse).Devices[w.deviceId]; there {
@@ -278,12 +277,13 @@ func (w *AgreementWorker) maintainWhisperId() {
 
 }
 
+
 func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
 	w.deviceToken = cmd.Token
 
 	// Start the go thread that heartbeats to the exchange
-	targetURL := path.Join(w.Manager.Config.Edge.ExchangeURL, "devices", w.deviceId, "/heartbeat")
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/heartbeat"
 	go exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
 
 }
@@ -321,13 +321,13 @@ func (w *AgreementWorker) syncOnInit() error {
 			} else if err := w.pm.FinalAgreement(existingPol, ag.CurrentAgreementId); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
 
-				// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
+			// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
 			} else if ag.AgreementAcceptedTime != 0 {
 
 				var exchangeAgreement map[string]exchange.DeviceAgreement
 				var resp interface{}
 				resp = new(exchange.AllDeviceAgreementsResponse)
-				targetURL := path.Join(w.Worker.Manager.Config.Edge.ExchangeURL, "devices", w.deviceId, "agreements", ag.CurrentAgreementId)
+				targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/agreements/" + ag.CurrentAgreementId
 
 				if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil || tpErr != nil {
 					glog.Errorf(logStringww(fmt.Sprintf("encountered error getting device info from exchange, error %v, transport error %v", err, tpErr)))
@@ -442,7 +442,7 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 		pdr.RegisteredMicroservices = ms
 		var resp interface{}
 		resp = new(exchange.PutDeviceResponse)
-		targetURL := path.Join(w.Manager.Config.Edge.ExchangeURL, "devices", w.deviceId)
+		targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId
 
 		glog.V(3).Infof("AgreementWorker Registering microservices: %v at %v", pdr.ShortString(), targetURL)
 
@@ -472,7 +472,7 @@ func (w *AgreementWorker) recordAgreementState(agreementId string, microservice 
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := path.Join(w.Manager.Config.Edge.ExchangeURL, "devices", w.deviceId, "agreements", agreementId)
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/agreements/" + agreementId
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.deviceId, w.deviceToken, as, &resp); err != nil {
 			glog.Errorf(err.Error())
