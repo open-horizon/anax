@@ -43,7 +43,7 @@ func AccountFunded(gethURL string) (bool, error) {
 		return false, err
 	} else {
 		params := make([]string, 0)
-		params = append(params, fmt.Sprintf("0x%v", account))
+		params = append(params, account)
 		params = append(params, "latest")
 
 		msg := NewRPCRequest("eth_getBalance", params)
@@ -89,7 +89,7 @@ func SignHash(hash string, gethURL string) (string, error) {
 		return "", err
 	} else {
 		params := make([]string, 0)
-		params = append(params, fmt.Sprintf("0x%v", account))
+		params = append(params, account)
 		params = append(params, hash)
 
 		msg := NewRPCRequest("eth_sign", params)

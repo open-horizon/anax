@@ -30,11 +30,12 @@ type EstablishedAgreement struct {
 	AgreementFinalizedTime      uint64                   `json:"agreement_finalized_time"`
 	AgreementTerminatedTime     uint64                   `json:"agreement_terminated_time"`
 	AgreementExecutionStartTime uint64                   `json:"agreement_execution_start_time"`
-	AgreementDataReceivedTime   uint64                   `json:"agrement_data_received_time"`
+	AgreementDataReceivedTime   uint64                   `json:"agreement_data_received_time"`
 	CurrentDeployment           map[string]ServiceConfig `json:"current_deployment"`
 	Proposal                    string                   `json:"proposal"`
 	ProposalSig                 string                   `json:"proposal_sig"`       // the proposal currently in effect
 	AgreementProtocol           string                   `json:"agreement_protocol"` // the agreement protocol being used. It is also in the proposal.
+	ProtocolVersion             int                      `json:"protocol_version"`   // the agreement protocol version being used.
 	TerminatedReason            uint64                   `json:"terminated_reason"`  // the reason that the agreement was terminated
 	TerminatedDescription       string                   `json:"terminated_description"` // a string form of the reason that the agreement was terminated
 }
@@ -67,10 +68,10 @@ func (c ServiceConfig) String() string {
 	return fmt.Sprintf("Config: %v, HostConfig: %v", c.Config, c.HostConfig)
 }
 
-func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consumerId string, proposal string, protocol string, sensorUrl string, signature string, address string) (*EstablishedAgreement, error) {
+func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consumerId string, proposal string, protocol string, protocolVersion int, sensorUrl string, signature string, address string) (*EstablishedAgreement, error) {
 
-	if name == "" || agreementId == "" || consumerId == "" || proposal == "" || protocol == "" {
-		return nil, errors.New("Agreement id, consumer id, proposal or protocol are empty, cannot persist")
+	if name == "" || agreementId == "" || consumerId == "" || proposal == "" || protocol == "" || protocolVersion == 0 {
+		return nil, errors.New("Agreement id, consumer id, proposal, protocol, or protocol version are empty, cannot persist")
 	}
 
 	var filters []EAFilter
@@ -100,6 +101,7 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 		Proposal:                    proposal,
 		ProposalSig:                 signature,
 		AgreementProtocol:           protocol,
+		ProtocolVersion:             protocolVersion,
 		TerminatedReason:            0,
 		TerminatedDescription:       "",
 	}

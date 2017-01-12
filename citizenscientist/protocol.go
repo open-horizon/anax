@@ -18,6 +18,7 @@ import (
 )
 
 const PROTOCOL_NAME = "Citizen Scientist"
+const PROTOCOL_CURRENT_VERSION = 1
 
 // This struct is the proposal body that flows from the consumer to the producer.
 const MsgTypeProposal        = "proposal"
@@ -29,6 +30,7 @@ const MsgTypeDataReceivedAck = "dataverificationack"
 type Proposal struct {
 	Type           string `json:"type"`
 	Protocol       string `json:"protocol"`
+	Version        int    `json:"version"`
 	TsAndCs        string `json:"tsandcs"`
 	ProducerPolicy string `json:"producerPolicy"`
 	AgreementId    string `json:"agreementId"`
@@ -37,7 +39,7 @@ type Proposal struct {
 }
 
 func (p Proposal) String() string {
-	return fmt.Sprintf("Type: %v, Protocol: %v, AgreementId: %v, Address: %v, ConsumerId: %v\n", p.Type, p.AgreementId, p.Address, p.ConsumerId)
+	return fmt.Sprintf("Type: %v, Protocol: %v, Version: %v, AgreementId: %v, Address: %v, ConsumerId: %v\n", p.Type, p.Protocol, p.Version, p.AgreementId, p.Address, p.ConsumerId)
 }
 
 func (p Proposal) ShortString() string {
@@ -52,6 +54,7 @@ func (p Proposal) ShortString() string {
 type ProposalReply struct {
 	Type      string `json:"type"`
 	Protocol  string `json:"protocol"`
+	Version   int    `json:"version"`
 	Decision  bool   `json:"decision"`
 	Signature string `json:"signature"`
 	Address   string `json:"address"`
@@ -60,7 +63,7 @@ type ProposalReply struct {
 }
 
 func (p *ProposalReply) String() string {
-	return fmt.Sprintf("Type: %v, Protocol: %v, Decision: %v, Signature: %v, Address: %v, AgreementId: %v, DeviceId: %v", p.Type, p.Decision, p.Signature, p.Address, p.AgreementId, p.DeviceId)
+	return fmt.Sprintf("Type: %v, Protocol: %v, Version: %v, Decision: %v, Signature: %v, Address: %v, AgreementId: %v, DeviceId: %v", p.Type, p.Protocol, p.Version, p.Decision, p.Signature, p.Address, p.AgreementId, p.DeviceId)
 }
 
 func (p *ProposalReply) ShortString() string {
@@ -79,6 +82,7 @@ func NewProposalReply(decision bool, id string, deviceId string) *ProposalReply 
 	return &ProposalReply{
 		Type:     MsgTypeReply,
 		Protocol: PROTOCOL_NAME,
+		Version:  PROTOCOL_CURRENT_VERSION,
 		Decision: false,
 		AgreeId:  id,
 		DeviceId: deviceId,
@@ -90,12 +94,13 @@ func NewProposalReply(decision bool, id string, deviceId string) *ProposalReply 
 type ReplyAck struct {
 	Type       string `json:"type"`
 	Protocol   string `json:"protocol"`
+	Version    int    `json:"version"`
 	StillValid bool   `json:"decision"`
 	AgreeId    string `json:"agreementId"`
 }
 
 func (p *ReplyAck) String() string {
-	return fmt.Sprintf("Type: %v, Protocol: %v, StillValid: %v, AgreementId: %v: %v", p.Type, p.StillValid, p.AgreementId)
+	return fmt.Sprintf("Type: %v, Protocol: %v, Version: %v, StillValid: %v, AgreementId: %v: %v", p.Type, p.Protocol, p.Version, p.StillValid, p.AgreementId)
 }
 
 func (p *ReplyAck) ShortString() string {
@@ -114,6 +119,7 @@ func NewReplyAck(decision bool, id string) *ReplyAck {
 	return &ReplyAck{
 		Type:       MsgTypeReplyAck,
 		Protocol:   PROTOCOL_NAME,
+		Version:    PROTOCOL_CURRENT_VERSION,
 		StillValid: decision,
 		AgreeId:    id,
 	}
@@ -124,11 +130,12 @@ func NewReplyAck(decision bool, id string) *ReplyAck {
 type DataReceived struct {
 	Type       string `json:"type"`
 	Protocol   string `json:"protocol"`
+	Version    int    `json:"version"`
 	AgreeId    string `json:"agreementId"`
 }
 
 func (p *DataReceived) String() string {
-	return fmt.Sprintf("Type: %v, Protocol: %v, AgreementId: %v: %v", p.Type, p.Protocol, p.AgreementId)
+	return fmt.Sprintf("Type: %v, Protocol: %v, Version: %v, AgreementId: %v: %v", p.Type, p.Protocol, p.Version, p.AgreementId)
 }
 
 func (p *DataReceived) ShortString() string {
@@ -143,6 +150,7 @@ func NewDataReceived(id string) *DataReceived {
 	return &DataReceived{
 		Type:       MsgTypeDataReceived,
 		Protocol:   PROTOCOL_NAME,
+		Version:    PROTOCOL_CURRENT_VERSION,
 		AgreeId:    id,
 	}
 }
@@ -152,11 +160,12 @@ func NewDataReceived(id string) *DataReceived {
 type DataReceivedAck struct {
 	Type       string `json:"type"`
 	Protocol   string `json:"protocol"`
+	Version    int    `json:"version"`
 	AgreeId    string `json:"agreementId"`
 }
 
 func (p *DataReceivedAck) String() string {
-	return fmt.Sprintf("Type: %v, Protocol: %v, AgreementId: %v: %v", p.Type, p.Protocol, p.AgreementId)
+	return fmt.Sprintf("Type: %v, Protocol: %v, Version: %v, AgreementId: %v: %v", p.Type, p.Protocol, p.Version, p.AgreementId)
 }
 
 func (p *DataReceivedAck) ShortString() string {
@@ -171,6 +180,7 @@ func NewDataReceivedAck(id string) *DataReceivedAck {
 	return &DataReceivedAck{
 		Type:       MsgTypeDataReceivedAck,
 		Protocol:   PROTOCOL_NAME,
+		Version:    PROTOCOL_CURRENT_VERSION,
 		AgreeId:    id,
 	}
 }
@@ -206,6 +216,7 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string, producerPolicy *
 		} else {
 			newProposal.Type = MsgTypeProposal
 			newProposal.Protocol = PROTOCOL_NAME
+			newProposal.Version = PROTOCOL_CURRENT_VERSION
 			newProposal.TsAndCs = string(tcBytes)
 			newProposal.ProducerPolicy = string(prodBytes)
 			newProposal.AgreementId = agreementId

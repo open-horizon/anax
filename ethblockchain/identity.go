@@ -20,7 +20,11 @@ func readIdFromFs(filename string) (string, error) {
 	} else if data, err := ioutil.ReadFile(file.Name()); err != nil {
 		return "", err
 	} else {
-		return strings.Trim(string(data), "\n\r "), nil
+		res := strings.Trim(string(data), "\n\r ")
+		if !strings.HasPrefix(res, "0x") {
+			res = "0x" + res
+		}
+		return res, nil
 	}
 }
 
