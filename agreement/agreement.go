@@ -215,7 +215,7 @@ func (w *AgreementWorker) start() {
 					glog.Errorf(logString(fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
 				} else if reply, err := protocolHandler.DecideOnProposal(proposal, cmd.Msg.From(), w.deviceId); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("respond to proposal with error: %v", err)))
-				} else if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId, proposal.ConsumerId, cmd.Msg.Payload(), citizenscientist.PROTOCOL_NAME, tcPolicy.APISpecs[0].SpecRef, reply.Signature, proposal.Address); err != nil {
+				} else if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId, proposal.ConsumerId, cmd.Msg.Payload(), citizenscientist.PROTOCOL_NAME, proposal.Version, tcPolicy.APISpecs[0].SpecRef, reply.Signature, proposal.Address); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId, err)))
 				}
 
@@ -327,8 +327,8 @@ func (w *AgreementWorker) syncOnInit() error {
 				var exchangeAgreement map[string]exchange.DeviceAgreement
 				var resp interface{}
 				resp = new(exchange.AllDeviceAgreementsResponse)
-				targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/agreements/" + ag.CurrentAgreementId
 
+				targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/agreements/" + ag.CurrentAgreementId
 				if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil || tpErr != nil {
 					glog.Errorf(logStringww(fmt.Sprintf("encountered error getting device info from exchange, error %v, transport error %v", err, tpErr)))
 				} else {
