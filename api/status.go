@@ -49,8 +49,8 @@ type Geth struct {
 
 func WriteGethStatus(gethURL string, geth *Geth) error {
 
-	singleResult := func(meth string) interface{} {
-		serial, err := json.Marshal(map[string]interface{}{"jsonrpc": "2.0", "method": meth, "params": []string{}, "id": 1})
+	singleResult := func(meth string, params []string) interface{} {
+		serial, err := json.Marshal(map[string]interface{}{"jsonrpc": "2.0", "method": meth, "params": params, "id": 1})
 		if err != nil {
 			glog.Error(err)
 			return ""
@@ -85,14 +85,15 @@ func WriteGethStatus(gethURL string, geth *Geth) error {
 	}
 
 	// the return val is either a boolean if false, or an object
-	switch singleResult("eth_syncing").(type) {
+	switch singleResult("eth_syncing", []string{}).(type) {
 	case bool:
 		geth.EthSyncing = false
 	default:
 		geth.EthSyncing = true
 	}
 
-	blockStr := singleResult("eth_blockNumber").(string)
+    // get current the number of the current block
+	blockStr := singleResult("eth_blockNumber", []string{}).(string)
 	if blockStr != "" {
 		blockNum, err := strconv.ParseInt(strings.TrimPrefix(blockStr, "0x"), 16, 64)
 		if err != nil {
@@ -101,7 +102,8 @@ func WriteGethStatus(gethURL string, geth *Geth) error {
 		geth.EthBlockNumber = blockNum
 	}
 
-	peerStr := singleResult("net_peerCount").(string)
+    // get number of peers
+	peerStr := singleResult("net_peerCount", []string{}).(string)
 	if peerStr != "" {
 		peers, err := strconv.ParseInt(strings.TrimPrefix(peerStr, "0x"), 16, 64)
 		if err != nil {
@@ -111,10 +113,8 @@ func WriteGethStatus(gethURL string, geth *Geth) error {
 		geth.NetPeerCount = peers
 	}
 
-	geth.EthBalance = singleResult("eth_getBalance").(string)
-
 	// get the account
-	if account := singleResult("eth_accounts"); account != nil {
+	if account := singleResult("eth_accounts", []string{}); account != nil {
 		switch account.(type) {
 		case []interface{}:
 			a1 := account.([]interface{})
@@ -126,5 +126,16 @@ func WriteGethStatus(gethURL string, geth *Geth) error {
 			geth.EthAccounts = []string{}
 		}
 	}
+
+    // get account balance
+	if len(geth.EthAccounts) == 0 {
+		geth.EthBalance = "0x0"
+	} else {
+    	eth_balance_params := make([]string, 2)
+    	eth_balance_params[0] = geth.EthAccounts[0]
+    	eth_balance_params[1] = "latest"
+		geth.EthBalance = singleResult("eth_getBalance", eth_balance_params).(string)
+	}
+
 	return nil
 }
