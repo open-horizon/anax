@@ -30,7 +30,7 @@ type EstablishedAgreement struct {
 	AgreementFinalizedTime      uint64                   `json:"agreement_finalized_time"`
 	AgreementTerminatedTime     uint64                   `json:"agreement_terminated_time"`
 	AgreementExecutionStartTime uint64                   `json:"agreement_execution_start_time"`
-	AgreementDataReceivedTime   uint64                   `json:"agrement_data_received_time"`
+	AgreementDataReceivedTime   uint64                   `json:"agreement_data_received_time"`
 	CurrentDeployment           map[string]ServiceConfig `json:"current_deployment"`
 	Proposal                    string                   `json:"proposal"`
 	ProposalSig                 string                   `json:"proposal_sig"`       // the proposal currently in effect

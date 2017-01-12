@@ -175,7 +175,7 @@ func NewDataReceivedAck(id string) *DataReceivedAck {
 	}
 }
 
-// This is the object which users of the agrement protocol use to get access to the protocol functions.
+// This is the object which users of the agreement protocol use to get access to the protocol functions.
 type ProtocolHandler struct {
 	GethURL    string
 	httpClient *http.Client
