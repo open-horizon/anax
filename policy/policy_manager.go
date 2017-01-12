@@ -20,7 +20,7 @@ type PolicyManager struct {
 	AgreementCounts map[string]*AgreementCountEntry // A map of all policies (by name) that have an agreement with a given device
 }
 
-// The ContractCountEntry is used to track which device addresses (contract addresses) are in agrement for a given policy name. The
+// The ContractCountEntry is used to track which device addresses (contract addresses) are in agreement for a given policy name. The
 // status of the agreement is also tracked.
 type AgreementCountEntry struct {
 	Count        int               // The number of agreements using this policy
