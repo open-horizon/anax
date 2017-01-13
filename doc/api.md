@@ -406,7 +406,7 @@ body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| attributes | array | an array of all the attributes for all the services. The fields of a attribute are defined in the following. |
+| attributes | array | an array of all the attributes for all the services. The fields of an attribute are defined in the following. |
 
 attribute 
 
