@@ -88,9 +88,13 @@ func SignHash(hash string, gethURL string) (string, error) {
 	if account, err := AccountId(); err != nil {
 		return "", err
 	} else {
+		theHash := hash
+		if !strings.HasPrefix(theHash, "0x") {
+			theHash = "0x" + theHash
+		}
 		params := make([]string, 0)
 		params = append(params, account)
-		params = append(params, hash)
+		params = append(params, theHash)
 
 		msg := NewRPCRequest("eth_sign", params)
 
