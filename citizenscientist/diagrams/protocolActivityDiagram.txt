@@ -1,0 +1,54 @@
+@startuml
+
+start
+:Consumer sends fully formed terms and conditions to Producer;
+if (Producer agrees to the terms) then (yes)
+    :Producer creates SHA3 hash of terms;
+    :Producer signs hash with ethereum account;
+    :Producer responds to Consumer with signature;
+    :Consumer acknowledges response;
+    :Consumer writes agreement to the blockchain;
+
+    fork
+        while (Producer sees agreement in blockchain?) is (no)
+            if (timeout waiting for blockchain write) then (yes)
+                :Producer cancels agreement;
+                stop
+            else (no)
+                :Check for agreement on blockchain;
+            endif
+        endwhile (yes)
+
+    fork again
+        while (Consumer sees agreement in blockchain?) is (no)
+            if (timeout waiting for blockchain write) then (yes)
+                :Consumer cancels agreement;
+                stop
+            else (no)
+                :Check for agreement on blockchain;
+            endif
+        endwhile (yes)
+
+    fork again
+        :Producer downloads workload containers from bit torrent;
+        :Start the workload containers;
+
+    fork again
+        while (Consumer sees workload data yet?) is (no)
+            if (timeout waiting for data receipt) then (yes)
+                :Consumer cancels agreement;
+                stop
+            else (no)
+                :Check for data receipt;
+            endif
+        endwhile (yes)
+        :Consumer tells Producer that it received data;
+        :Producer acknowledges;
+    end fork
+
+else (no)
+    :Producer returns negative response to Consumer;
+    :Consumer acknowledges response;
+endif
+stop
+@enduml

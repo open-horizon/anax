@@ -1,0 +1,28 @@
+@startuml
+
+Consumer -> Producer: Send fully formed terms and conditions, do you agree to the terms?
+Producer -> Ethereum: Create SHA3 hash and sign the hash using Producer's ethereum account
+Ethereum --> Producer: signature
+Producer --> Consumer: Respond with signature (or I don't agree)
+Consumer -> Producer: Acknowledge response
+Consumer ->> Ethereum: Write agreement to blockchain
+
+Producer -> Ethereum: Fork (1): start polling blockchain for agreement
+Producer ->> Producer: (1) If agreement not written in time, cancel agreement
+Ethereum -->> Producer: (1) Agreement is on the blockchain
+
+Consumer -> Ethereum: Fork (2): start polling blockchain for agreement
+Consumer ->> Consumer: (2) If agreement not written in time, cancel agreement
+Ethereum -->> Consumer: (2) Agreement is on the blockchain
+
+Producer -> BitTorrent: Fork (3) Download workload
+BitTorrent --> Producer: (3) workload docker containers
+Producer -> Producer: (3) Start workload
+
+Consumer -> Consumer: Fork (4): start polling for data being received
+Consumer ->> Ethereum: (4) If data not received in time, cancel agreement
+Producer ->> Consumer: (4) Workload sends data
+Consumer -> Producer: (4) Data Received
+Producer --> Consumer: (4)Acknowledge data received
+
+@enduml 
