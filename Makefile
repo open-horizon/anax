@@ -84,4 +84,11 @@ test-integration: deps
 	cd $(PKGPATH)/anax && \
 		GOPATH=$(TMPGOPATH) go test -v -cover -tags=integration $(PKGS)
 
+# build sequence diagrams
+diagrams:
+	java -jar $(plantuml_path)/plantuml.jar ./citizenscientist/diagrams/horizonSequenceDiagram.txt
+	java -jar $(plantuml_path)/plantuml.jar ./citizenscientist/diagrams/horizonActivityDiagram.txt
+	java -jar $(plantuml_path)/plantuml.jar ./citizenscientist/diagrams/protocolSequenceDiagram.txt
+	java -jar $(plantuml_path)/plantuml.jar ./citizenscientist/diagrams/protocolActivityDiagram.txt
+
 .PHONY: clean deps gopathlinks install lint pull test test-integration
