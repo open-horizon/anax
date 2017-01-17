@@ -24,7 +24,7 @@ BitTorrent --> Producer: (3) workload docker containers
 Producer -> Producer: (3) Start workload
 
 Consumer -> Consumer: Fork (4): start polling for data being received
-Consumer -> Exchange: (2) If data not received in time, delete agreement
+Consumer -> Exchange: (4) If data not received in time, delete agreement
 Consumer ->> Ethereum: (4) If data not received in time, cancel agreement
 Producer ->> Consumer: (4) Workload sends data
 Consumer -> Producer: (4) Data Received
