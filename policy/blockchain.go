@@ -188,10 +188,18 @@ func (self *BlockchainList) Add_Blockchain(new_ele *Blockchain) error {
 // Utility function
 //
 // This function compares 2 string arrays of unknown length (go slices) to see if they have the same
-// contents. Assume the lengths have already been compared and found to be equivalent.
+// contents. The array elements dont have to be in the same order. Assume the lengths have already been compared
+// and found to be equivalent.
 func array_contents_equal(a1 []interface{}, a2 []interface{}) bool {
 	for ix, _ := range a1 {
-		if a1[ix].(string) != a2[ix].(string) {
+		found := false
+		for ix2, _ := range a2 {
+			if a1[ix].(string) == a2[ix2].(string) {
+				found = true
+				break
+			}
+		}
+		if !found {
 			return false
 		}
 	}

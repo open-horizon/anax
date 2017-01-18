@@ -131,7 +131,7 @@ func Are_Compatible(producer_policy *Policy, consumer_policy *Policy) error {
 		return errors.New(fmt.Sprintf("Compatibility Error: Producer properties %v do not satisfy Consumer property requirements %v. Underlying error: %v", producer_policy.Properties, consumer_policy.CounterPartyProperties, err))
 	} else if err := (&producer_policy.CounterPartyProperties).IsSatisfiedBy(consumer_policy.Properties); err != nil {
 		return errors.New(fmt.Sprintf("Compatibility Error: Consumer properties %v do not satisfy Producer property requirements %v. Underlying error: %v", consumer_policy.Properties, producer_policy.CounterPartyProperties, err))
-	} else if err := (&producer_policy.Blockchains).Is_Subset_Of(&consumer_policy.Blockchains); err != nil {
+	} else if _, err := (&producer_policy.Blockchains).Intersects_With(&consumer_policy.Blockchains); err != nil {
 		return errors.New(fmt.Sprintf("Compatibility Error: Producer policy Blockchains %v are not supported by Consumer Blockchain options %v. Underlying error: %v", producer_policy.Blockchains, consumer_policy.Blockchains, err))
 	} else if _, err := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols); err != nil {
 		return errors.New(fmt.Sprintf("Compatibility Error: No common Agreement Protocols between %v and %v. Underlying error: %v", producer_policy.AgreementProtocols, consumer_policy.AgreementProtocols, err))
