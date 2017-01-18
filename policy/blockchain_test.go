@@ -50,6 +50,39 @@ func Test_Blockchain_subset_found(t *testing.T) {
 			}
 		}
 	}
+
+	con1 = `[{"type":"ethereum","details":{"genesis":["http://mycompany.com/genesis1","http://mycompany.com/genesis2"],"networkid":["http://mycompany.com/networkid"],"bootnodes":["http://mycompany.com/bootnodes"],"directory":["http://mycompany.com/directory"]}}]`
+	prod1 = `[{"type":"ethereum","details":{"genesis":["http://mycompany.com/genesis2","http://mycompany.com/genesis1"],"networkid":["http://mycompany.com/networkid"],"bootnodes":["http://mycompany.com/bootnodes"],"directory":["http://mycompany.com/directory"]}}]`
+
+	if prod_bl = create_BlockchainList(prod1, t); prod_bl != nil {
+		if con_bl = create_BlockchainList(con1, t); con_bl != nil {
+			if err := prod_bl.Is_Subset_Of(con_bl); err != nil {
+				t.Errorf("Error: %v is a subset of %v, subset error was %v\n", prod1, con1, err)
+			}
+		}
+	}
+
+	con1 = `[{"type":"ethereum","details":{"genesis":["http://mycompany.com/genesis1","http://mycompany.com/genesis2","http://mycompany.com/genesis3"],"networkid":["http://mycompany.com/networkid"],"bootnodes":["http://mycompany.com/bootnodes"],"directory":["http://mycompany.com/directory"]}}]`
+	prod1 = `[{"type":"ethereum","details":{"genesis":["http://mycompany.com/genesis2","http://mycompany.com/genesis1"],"networkid":["http://mycompany.com/networkid"],"bootnodes":["http://mycompany.com/bootnodes"],"directory":["http://mycompany.com/directory"]}}]`
+
+	if prod_bl = create_BlockchainList(prod1, t); prod_bl != nil {
+		if con_bl = create_BlockchainList(con1, t); con_bl != nil {
+			if err := prod_bl.Is_Subset_Of(con_bl); err == nil {
+				t.Errorf("Error: %v is not a subset of %v\n", prod1, con1)
+			}
+		}
+	}
+
+	con1 = `[{"type":"ethereum","details":{"genesis":["http://mycompany.com/genesis1","http://mycompany.com/genesis2"],"networkid":["http://mycompany.com/networkid"],"bootnodes":["http://mycompany.com/bootnodes"],"directory":["http://mycompany.com/directory"]}}]`
+	prod1 = `[{"type":"ethereum","details":{"genesis":["http://mycompany.com/genesis2","http://mycompany.com/genesis1","http://mycompany.com/genesis3"],"networkid":["http://mycompany.com/networkid"],"bootnodes":["http://mycompany.com/bootnodes"],"directory":["http://mycompany.com/directory"]}}]`
+
+	if prod_bl = create_BlockchainList(prod1, t); prod_bl != nil {
+		if con_bl = create_BlockchainList(con1, t); con_bl != nil {
+			if err := prod_bl.Is_Subset_Of(con_bl); err == nil {
+				t.Errorf("Error: %v is not a subset of %v\n", prod1, con1)
+			}
+		}
+	}
 }
 
 // Second, some tests where a subset (or equal) is NOT found

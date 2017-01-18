@@ -29,6 +29,7 @@ func GeneratePolicy(e chan events.Message, sensorName string, arch string, props
 
 	// Hardwire to existing ethereum platform
 	var details interface{}
+
 	details_bc1 := make(map[string][]string)
 	details_bc1["bootnodes"] = []string{"https://dal05.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/volcano/peers",
 		"https://tok02.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/volcano/peers",
