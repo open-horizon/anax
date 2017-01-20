@@ -46,6 +46,22 @@ func GeneratePolicy(e chan events.Message, sensorName string, arch string, props
 	details = details_bc1
 	p.Add_Blockchain(Blockchain_Factory(Ethereum_bc, details))
 
+	details_bc2 := make(map[string][]string)
+    details_bc2["bootnodes"] = []string{"https://dal05.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/bluehorizon/peers",
+        "https://tok02.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/bluehorizon/peers",
+        "https://lon02.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/bluehorizon/peers"}
+    details_bc2["networkid"] = []string{"https://dal05.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/bluehorizon/networkid",
+        "https://tok02.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/bluehorizon/networkid",
+        "https://lon02.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/bluehorizon/networkid"}
+    details_bc2["directory"] = []string{"https://dal05.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/bluehorizon/directory.address",
+        "https://tok02.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/bluehorizon/directory.address",
+        "https://lon02.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/bluehorizon/directory.address"}
+    details_bc2["genesis"] = []string{"https://dal05.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/bluehorizon/genesis.json",
+        "https://tok02.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/bluehorizon/genesis.json",
+        "https://lon02.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/bluehorizon/genesis.json"}
+    details = details_bc2
+    p.Add_Blockchain(Blockchain_Factory(Ethereum_bc, details))
+
 	// Add properties to the policy
 	for prop, val := range *props {
 		p.Add_Property(Property_Factory(prop, val))
