@@ -1,0 +1,21 @@
+@startuml
+
+MsgSender -> SHA3: hash the original message
+SHA3 --> MsgSender: message digest
+MsgSender -> RSA: Sign the digest with sender's private key
+RSA --> MsgSender: digital signature
+MsgSender -> JSON: Create a JSON structure containing the original message, signature, and sender's public key (wrapped message)
+JSON --> MsgSender: JSON encoded "wrapped message"
+MsgSender -> AES: generate 1 time use symmetric key and nonce
+AES --> MsgSender: symmetric key and nonce
+MsgSender -> AES: symmetrically encrypt "wrapped message" using GCM algorithm
+AES --> MsgSender: encrypted "wrapped message"
+MsgSender -> JSON: Create a JSON structure containing the symmetric key and nonce (symmetric values)
+JSON --> MsgSender: JSON encoded "symmetric values"
+MsgSender -> RSA: Encrypt the "symmetric values" using receiver's public key
+RSA --> MsgSender: encrypted "symmetric values"
+MsgSender -> JSON: Create a "full message" with 2 parts, the encrypted "wrapped message" and the "symmetric values"
+JSON --> MsgSender: JSON encoded "full message"
+MsgSender -> Exchange: send the "full message" to the receiver
+
+@enduml 

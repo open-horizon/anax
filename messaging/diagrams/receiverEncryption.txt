@@ -1,0 +1,20 @@
+@startuml
+
+MsgReceiver -> Exchange: Get a message
+Exchange --> MsgReceiver: full message
+MsgReceiver -> JSON: Create full message structure
+JSON --> MsgReceiver: full message containing 2 parts, the encrypted "wrapped message" and the "symmetric values"
+MsgReceiver -> RSA: Decrypt "symmetric values" part of message using message receiver's private key
+RSA --> MsgReceiver: decrypted "symmetric values"
+MsgReceiver -> JSON: Create symmetric values structure from decrypted "symmetric values"
+JSON --> MsgReceiver: symmetric key and nonce used to encrypt the "wrapped message"
+MsgReceiver -> AES: Decrypt "wrapped message" using symmetric key and nonce
+AES --> MsgReceiver: decrypted "wrapped message"
+MsgReceiver -> JSON: Create wrapped message structure from decrypted "wrapped message"
+JSON --> MsgReceiver: message, signature and sender's public key
+MsgReceiver -> SHA3: hash the received message
+SHA3 --> MsgReceiver: message digest
+MsgReceiver -> RSA: Verify signature against message digest using sender's public key
+RSA --> MsgReceiver: verified or not verified
+
+@enduml 
