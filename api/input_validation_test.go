@@ -23,20 +23,15 @@ func Test_InputIsIllegal(t *testing.T) {
 }
 
 func Test_MapInputIsIllegal(t *testing.T) {
-	if b, _, _ := MapInputIsIllegal(map[string]string{"one": "g oo", "two": "()", "t hree": "3", "f()our": " ", "germ": "fooo"}); b != "" {
+	if b, _, _ := MapInputIsIllegal(map[string]interface{}{"one": "g oo", "two": "()", "t hree": "3", "f()our": " ", "germ": "fooo"}); b != "" {
 		t.Errorf("Map input found to be illegal but isn't")
 	}
 
-	if b, _, _ := MapInputIsIllegal(map[string]string{"one": "g oo", "two": "()", "t hree": "3", "f()our": " ", "germ": "X%"}); b == "" {
+	if b, _, _ := MapInputIsIllegal(map[string]interface{}{"one": "g oo", "two": "()", "t hree": "3", "f()our": " ", "germ": "X%"}); b == "" {
 		t.Errorf("Map input found to be legal but isn't")
 	}
 
-	if b, _, _ := MapInputIsIllegal(map[string]string{"one": "g oo", "t#wo": "()", "t hree": "3", "f()our": " ", "germ": "foo"}); b == "" {
-		t.Errorf("Map input found to be legal but isn't")
-	}
-
-	// has too many chars
-	if b, _, _ := MapInputIsIllegal(map[string]string{"one": "123456789012345678901234567890123"}); b == "" {
+	if b, _, _ := MapInputIsIllegal(map[string]interface{}{"one": "g oo", "t#wo": "()", "t hree": "3", "f()our": " ", "germ": "foo"}); b == "" {
 		t.Errorf("Map input found to be legal but isn't")
 	}
 }
