@@ -20,6 +20,7 @@ import (
 	"github.com/open-horizon/anax/worker"
 	"reflect"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -133,6 +134,10 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 				wrap[agreementsKey][activeKey] = append(wrap[agreementsKey][activeKey], agreement)
 			}
 		}
+
+		// do sorts
+		sort.Sort(EstablishedAgreementsByAgreementCreationTime(wrap[agreementsKey][activeKey]))
+		sort.Sort(EstablishedAgreementsByAgreementTerminatedTime(wrap[agreementsKey][archivedKey]))
 
 		serial, err := json.Marshal(wrap)
 		if err != nil {
