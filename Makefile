@@ -90,5 +90,7 @@ diagrams:
 	java -jar $(plantuml_path)/plantuml.jar ./citizenscientist/diagrams/horizonActivityDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./citizenscientist/diagrams/protocolSequenceDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./citizenscientist/diagrams/protocolActivityDiagram.txt
+	java -jar $(plantuml_path)/plantuml.jar ./messaging/diagrams/senderEncryption.txt
+	java -jar $(plantuml_path)/plantuml.jar ./messaging/diagrams/receiverEncryption.txt
 
 .PHONY: clean deps gopathlinks install lint pull test test-integration

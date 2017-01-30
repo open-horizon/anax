@@ -180,7 +180,7 @@ func (p PutDeviceRequest) ShortString() string {
 func CreateSearchRequest() *SearchExchangeRequest {
 
 	ser := &SearchExchangeRequest{
-		StartIndex:  0,
+		StartIndex: 0,
 		NumEntries: 100,
 	}
 
@@ -309,7 +309,7 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 			req.Header.Add("Content-Type", "application/json")
 		}
 		if user != "" && pw != "" {
-			req.Header.Add("Authorization", "Basic " + user + ":" + pw)
+			req.Header.Add("Authorization", "Basic "+user+":"+pw)
 		}
 		glog.V(5).Infof("Invoking exchange with headers: %v", req.Header)
 		if httpResp, err := httpClient.Do(req); err != nil {
