@@ -69,9 +69,9 @@ func NewGovernanceWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.P
 
 		db:              db,
 		pm:              pm,
-		deviceId: id,
-		deviceToken: token,
-		bcReady: false,
+		deviceId:        id,
+		deviceToken:     token,
+		bcReady:         false,
 		bcWritesEnabled: false,
 	}
 
@@ -169,7 +169,7 @@ func (w *GovernanceWorker) governAgreements() {
 		}
 	}
 
-	if establishedAgreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),notYetFinalFilter()}); err != nil {
+	if establishedAgreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), notYetFinalFilter()}); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Unable to retrieve not yet final agreements from database: %v. Error: %v", err, err)))
 	} else {
 
@@ -180,7 +180,7 @@ func (w *GovernanceWorker) governAgreements() {
 				glog.V(5).Infof(logString(fmt.Sprintf("checking agreement %v for finalization.", ag.CurrentAgreementId)))
 
 				now := uint64(time.Now().Unix())
-				if ag.AgreementCreationTime + w.Worker.Manager.Config.Edge.AgreementTimeoutS < now {
+				if ag.AgreementCreationTime+w.Worker.Manager.Config.Edge.AgreementTimeoutS < now {
 					// Start timing out the agreement
 					glog.V(3).Infof(logString(fmt.Sprintf("detected agreement %v timed out.", ag.CurrentAgreementId)))
 
@@ -224,7 +224,7 @@ func (w *GovernanceWorker) governContainers() {
 				}
 			}
 
-			if establishedAgreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),runningFilter()}); err != nil {
+			if establishedAgreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), runningFilter()}); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("Unable to retrieve running agreements from database, error: %v", err)))
 			} else {
 
@@ -326,7 +326,7 @@ func (w *GovernanceWorker) start() {
 
 		protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
 
-		deferredCommands := make([]worker.Command,0, 10)
+		deferredCommands := make([]worker.Command, 0, 10)
 
 		// Fire up the command processor
 		for {
@@ -373,10 +373,12 @@ func (w *GovernanceWorker) start() {
 					// ReplyAck messages could indicate that the agbot has decided not to pursue the agreement any longer.
 					if replyAck, err := protocolHandler.ValidateReplyAck(cmd.Msg.Payload()); err != nil {
 						glog.Warningf(logString(fmt.Sprintf("ReplyAck handler ignoring non-reply ack message: %v due to %v", cmd.Msg.Payload(), err)))
-					} else if ags, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),persistence.IdEAFilter(replyAck.AgreementId())}); err != nil {
+					} else if ags, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(replyAck.AgreementId())}); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", replyAck.AgreementId(), err)))
 					} else if len(ags) != 1 {
 						glog.Errorf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", replyAck.AgreementId(), err)))
+					} else if ags[0].AgreementTerminatedTime != 0 {
+						glog.Infof(logString(fmt.Sprintf("Received ReplyAck for agreement id %v. However this agreement has been terminated.", replyAck.AgreementId())))
 					} else if replyAck.ReplyAgreementStillValid() {
 						if proposal, err := protocolHandler.DemarshalProposal(ags[0].Proposal); err != nil {
 							glog.Errorf(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v from database", replyAck.AgreementId())))
@@ -384,15 +386,21 @@ func (w *GovernanceWorker) start() {
 							glog.Errorf(logString(fmt.Sprintf("unable to record reply %v, error: %v", *replyAck, err)))
 						}
 					} else {
-						// A negative reply ack means that the agbot has not written the agreement to the blockchain so it's ok to
-						// cancel without checking for blockchain writes being enabled.
-						w.cancelAgreement(replyAck.AgreementId(), citizenscientist.PROTOCOL_NAME, citizenscientist.CANCEL_AGBOT_REQUESTED, citizenscientist.DecodeReasonCode(uint64(citizenscientist.CANCEL_AGBOT_REQUESTED)))
+						if w.bcWritesEnabled == true {
+							glog.V(3).Infof("Ending the agreement: %v", replyAck.AgreementId())
+							// A negative reply ack means that the agbot has not written the agreement to the blockchain
+							w.cancelAgreement(replyAck.AgreementId(), citizenscientist.PROTOCOL_NAME, citizenscientist.CANCEL_AGBOT_REQUESTED, citizenscientist.DecodeReasonCode(uint64(citizenscientist.CANCEL_AGBOT_REQUESTED)))
+						} else {
+							// Requeue
+							glog.V(3).Infof("Deferring ending the agreement: %v", replyAck.AgreementId())
+							deferredCommands = append(deferredCommands, cmd)
+						}
 					}
 
 					// Data notification message indicates that the agbot has found that data is being received from the workload.
 					if dataReceived, err := protocolHandler.ValidateDataReceived(cmd.Msg.Payload()); err != nil {
 						glog.Warningf(logString(fmt.Sprintf("DataReceived handler ignoring non-data received message: %v due to %v", cmd.Msg.Payload(), err)))
-					} else if ags, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),persistence.IdEAFilter(dataReceived.AgreementId())}); err != nil {
+					} else if ags, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(dataReceived.AgreementId())}); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", dataReceived.AgreementId(), err)))
 					} else if len(ags) != 1 {
 						glog.Errorf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", dataReceived.AgreementId(), err)))
@@ -409,7 +417,7 @@ func (w *GovernanceWorker) start() {
 					if rawEvent, err := protocolHandler.DemarshalEvent(cmd.Msg.RawEvent()); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("unable to demarshal raw event %v, error: %v", cmd.Msg.RawEvent(), err)))
 
-					// If the event is a consumer termination event
+						// If the event is a consumer termination event
 					} else if protocolHandler.ConsumerTermination(rawEvent) {
 						// Grab the agreement id from the event
 						agreementId := protocolHandler.GetAgreementId(rawEvent)
@@ -433,7 +441,7 @@ func (w *GovernanceWorker) start() {
 							}
 						}
 
-					// If the event is an agreement created event
+						// If the event is an agreement created event
 					} else if protocolHandler.AgreementCreated(rawEvent) {
 						// Grab the agreement id from the event
 						agreementId := protocolHandler.GetAgreementId(rawEvent)
@@ -444,9 +452,10 @@ func (w *GovernanceWorker) start() {
 						} else if len(ags) != 1 {
 							glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, not our agreement id")))
 
-						// Update state in the database
+						} else if ags[0].AgreementTerminatedTime != 0 {
+							glog.Infof(logString(fmt.Sprintf("Received agreement recorded on the blockchain for agreement id %v. However this agreement has been terminated.", agreementId)))
+							// Update state in the database
 						} else {
-
 							// The reply ack might have been lost or mishandled. Since we are now seeing an event on the blockchain that the agreement
 							// was created by the agbot, we will assume we should have gotten a positive reply ack.
 							if ags[0].AgreementAcceptedTime == 0 {

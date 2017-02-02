@@ -180,7 +180,7 @@ func main() {
 		workers.Add("api", api.NewAPIListener(cfg, db, pm))
 		workers.Add("agreement", agreement.NewAgreementWorker(cfg, db, pm))
 		workers.Add("torrent", torrent.NewTorrentWorker(cfg))
-		workers.Add("container", container.NewContainerWorker(cfg))
+		workers.Add("container", container.NewContainerWorker(cfg, db))
 		workers.Add("governance", governance.NewGovernanceWorker(cfg, db, pm))
 	}
 
