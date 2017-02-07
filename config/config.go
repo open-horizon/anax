@@ -61,6 +61,7 @@ type AGConfig struct {
 	DVPrefix                     string // When looking for agreement ids in the data verification API response, look for agreement ids with this prefix.
 	ActiveDeviceTimeoutS         int    // The amount of time a device can go without heartbeating and still be considered active for the purposes of search
 	ExchangeMessageTTL           int    // The number of seconds the exchange will keep this message before automatically deleting it
+	MessageKeyPath               string // The path to the location of messaging keys
 
 }
 

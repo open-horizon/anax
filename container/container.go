@@ -7,9 +7,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/boltdb/bolt"
 	"github.com/coreos/go-iptables/iptables"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
@@ -271,7 +273,7 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 
 		for _, v := range service.Environment {
 			// skip this one b/c it's dangerous
-			if !strings.HasPrefix(config.ENVVAR_PREFIX+"ETHEREUM_ACCOUNT", v) && !strings.HasPrefix(config.COMPAT_ENVVAR_PREFIX+"ETHEREUM_ACCOUNT", v){
+			if !strings.HasPrefix(config.ENVVAR_PREFIX+"ETHEREUM_ACCOUNT", v) && !strings.HasPrefix(config.COMPAT_ENVVAR_PREFIX+"ETHEREUM_ACCOUNT", v) {
 				serviceConfig.Config.Env = append(serviceConfig.Config.Env, v)
 			}
 		}
@@ -324,11 +326,12 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 
 type ContainerWorker struct {
 	worker.Worker // embedded field
+	db            *bolt.DB
 	client        *docker.Client
 	iptables      *iptables.IPTables
 }
 
-func NewContainerWorker(config *config.HorizonConfig) *ContainerWorker {
+func NewContainerWorker(config *config.HorizonConfig, db *bolt.DB) *ContainerWorker {
 	messages := make(chan events.Message)
 	commands := make(chan worker.Command, 200)
 
@@ -350,6 +353,7 @@ func NewContainerWorker(config *config.HorizonConfig) *ContainerWorker {
 				},
 				Commands: commands,
 			},
+			db:       db,
 			client:   client,
 			iptables: ipt,
 		}
@@ -927,31 +931,45 @@ func (b *ContainerWorker) start() {
 			switch command.(type) {
 			case *ContainerConfigureCommand:
 				cmd := command.(*ContainerConfigureCommand)
+
 				glog.V(3).Infof("ContainerWorker received configure command: %v", cmd)
-				if len(cmd.ImageFiles) == 0 {
-					glog.Infof("Command specified no new Docker images to load, expecting that the caller knows they're preloaded and this is not a bug. Skipping load operation")
 
-				} else if err := loadImages(b.client, b.Config.Edge.TorrentDir, cmd.ImageFiles); err != nil {
-					glog.Errorf("Error loading image files: %v", err)
+				agreementId := cmd.AgreementLaunchContext.AgreementId
 
-					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, cmd.AgreementLaunchContext.AgreementId, nil)
-
-					continue
-				}
-
-				if deployment, err := b.resourcesCreate(cmd.AgreementLaunchContext.AgreementId, cmd.AgreementLaunchContext.Configure, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions); err != nil {
-					glog.Errorf("Error starting containers: %v", err)
-					var dep map[string]persistence.ServiceConfig
-					if deployment != nil {
-						dep = *deployment
-					}
-					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, cmd.AgreementLaunchContext.AgreementId, dep) // still using deployment here, need it to shutdown containers
-
+				if ags, err := persistence.FindEstablishedAgreements(b.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)}); err != nil {
+					glog.Errorf("Unable to retrieve agreement %v from database, error %v", agreementId, err)
+				} else if len(ags) != 1 {
+					glog.Infof("Ignoring the configure event for agreement %v, the agreement is archived.", agreementId)
+				} else if ags[0].AgreementTerminatedTime != 0 {
+					glog.Infof("Receved configure command for agreement %v. Ignoring it because this agreement has been terminated.", agreementId)
+				} else if ags[0].AgreementExecutionStartTime != 0 {
+					glog.Infof("Receved configure command for agreement %v. Ignoring it because the containers for this agreement has been configured.", agreementId)
 				} else {
-					glog.Infof("Success starting pattern for agreement: %v, protocol: %v, serviceNames: %v", cmd.AgreementLaunchContext.AgreementId, cmd.AgreementLaunchContext.AgreementProtocol, persistence.ServiceConfigNames(deployment))
+					if len(cmd.ImageFiles) == 0 {
+						glog.Infof("Command specified no new Docker images to load, expecting that the caller knows they're preloaded and this is not a bug. Skipping load operation")
 
-					// perhaps add the tc info to the container message so it can be enforced
-					b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, cmd.AgreementLaunchContext.AgreementProtocol, cmd.AgreementLaunchContext.AgreementId, *deployment)
+					} else if err := loadImages(b.client, b.Config.Edge.TorrentDir, cmd.ImageFiles); err != nil {
+						glog.Errorf("Error loading image files: %v", err)
+
+						b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
+
+						continue
+					}
+
+					if deployment, err := b.resourcesCreate(agreementId, cmd.AgreementLaunchContext.Configure, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions); err != nil {
+						glog.Errorf("Error starting containers: %v", err)
+						var dep map[string]persistence.ServiceConfig
+						if deployment != nil {
+							dep = *deployment
+						}
+						b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, dep) // still using deployment here, need it to shutdown containers
+
+					} else {
+						glog.Infof("Success starting pattern for agreement: %v, protocol: %v, serviceNames: %v", agreementId, cmd.AgreementLaunchContext.AgreementProtocol, persistence.ServiceConfigNames(deployment))
+
+						// perhaps add the tc info to the container message so it can be enforced
+						b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, *deployment)
+					}
 				}
 
 			case *ContainerMaintenanceCommand:

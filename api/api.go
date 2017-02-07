@@ -20,6 +20,7 @@ import (
 	"github.com/open-horizon/anax/worker"
 	"reflect"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -134,6 +135,10 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		// do sorts
+		sort.Sort(EstablishedAgreementsByAgreementCreationTime(wrap[agreementsKey][activeKey]))
+		sort.Sort(EstablishedAgreementsByAgreementTerminatedTime(wrap[agreementsKey][archivedKey]))
+
 		serial, err := json.Marshal(wrap)
 		if err != nil {
 			glog.Infof("Error serializing agreement output: %v", err)
@@ -173,6 +178,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 				a.Messages() <- events.NewApiAgreementCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ct.AgreementProtocol, ct.CurrentAgreementId, ct.CurrentDeployment)
 			}
 			w.WriteHeader(http.StatusOK)
+
 		}
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, DELETE, OPTIONS")

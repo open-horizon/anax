@@ -238,7 +238,7 @@ func (w *AgreementBotWorker) start() {
 
 						glog.V(3).Infof(fmt.Sprintf("AgreementBotWorker reading message %v from the exchange", msg.MsgId))
 						// First get my own keys
-						_, myPrivKey := exchange.GetKeys()
+						_, myPrivKey, _ := exchange.GetKeys(w.Config.AgreementBot.MessageKeyPath)
 
 						// Deconstruct and decrypt the message. Then process it.
 						if protocolMessage, receivedPubKey, err := exchange.DeconstructExchangeMessage(msg.Message, myPrivKey); err != nil {
@@ -656,7 +656,7 @@ func listContains(list string, target string) bool {
 func (w *AgreementBotWorker) registerPublicKey() error {
 	glog.V(5).Infof(AWlogString(fmt.Sprintf("registering agbot public key")))
 
-	as := exchange.CreateAgbotPublicKeyPatch()
+	as := exchange.CreateAgbotPublicKeyPatch(w.Config.AgreementBot.MessageKeyPath)
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := w.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId

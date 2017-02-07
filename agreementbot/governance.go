@@ -57,7 +57,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 			glog.V(3).Infof("Sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))
 
 			// Get my own keys
-			myPubKey, myPrivKey := exchange.GetKeys()
+			myPubKey, myPrivKey, _ := exchange.GetKeys(w.Config.AgreementBot.MessageKeyPath)
 
 			// Demarshal the receiver's public key if we need to
 			if messageTarget.ReceiverPublicKeyObj == nil {

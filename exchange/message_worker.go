@@ -94,7 +94,7 @@ func (w *ExchangeMessageWorker) pollIncoming() {
 				glog.V(3).Infof(logString(fmt.Sprintf("reading message %v from the exchange", msg.MsgId)))
 
 				// First get my own keys
-				_, myPrivKey := GetKeys()
+				_, myPrivKey, _ := GetKeys("")
 
 				// Deconstruct and decrypt the message.
 				if protocolMessage, receivedPubKey, err := DeconstructExchangeMessage(msg.Message, myPrivKey); err != nil {

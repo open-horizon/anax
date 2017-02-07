@@ -170,7 +170,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 			glog.V(3).Infof("Sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))
 
 			// Get my own keys
-			myPubKey, myPrivKey := exchange.GetKeys()
+			myPubKey, myPrivKey, _ := exchange.GetKeys(a.config.AgreementBot.MessageKeyPath)
 
 			// Demarshal the receiver's public key if we need to
 			if messageTarget.ReceiverPublicKeyObj == nil {
@@ -183,10 +183,10 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 
 			// Create an encrypted message
 			if encryptedMsg, err := exchange.ConstructExchangeMessage(pay, myPubKey, myPrivKey, messageTarget.ReceiverPublicKeyObj); err != nil {
-				return errors.New(fmt.Sprintf("Unable to construct encrypted message from %v, error %v", pay, err))
+				return errors.New(fmt.Sprintf("Unable to construct encrypted message, error %v for message %s", err, pay))
 			// Marshal it into a byte array
 			} else if msgBody, err := json.Marshal(encryptedMsg); err != nil {
-				return errors.New(fmt.Sprintf("Unable to marshal exchange message %v, error %v", encryptedMsg, err))
+				return errors.New(fmt.Sprintf("Unable to marshal exchange message, error %v for message %v", err, encryptedMsg))
 			// Send it to the device's message queue
 			} else {
 				pm := exchange.CreatePostMessage(msgBody, a.config.AgreementBot.ExchangeMessageTTL)

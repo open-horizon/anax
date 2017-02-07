@@ -183,10 +183,13 @@ type PatchAgbotPublicKey struct {
 }
 
 // This function creates the device registration message body.
-func CreateAgbotPublicKeyPatch() *PatchAgbotPublicKey {
+func CreateAgbotPublicKeyPatch(keyPath string) *PatchAgbotPublicKey {
 
 	keyBytes := func() []byte {
-		pubKey, _ := GetKeys()
+		pubKey, _, err := GetKeys(keyPath)
+		if err != nil {
+			glog.Errorf("Error getting keys %v", err)
+		}
 		if b, err := MarshalPublicKey(pubKey); err != nil {
 			glog.Errorf("Error marshalling agbot public key %v, error %v", pubKey, err)
 			return []byte(`none`)
@@ -297,7 +300,7 @@ func CreateSearchRequest() *SearchExchangeRequest {
 func CreateDevicePut(gethURL string, token string, name string) *PutDeviceRequest {
 
 	keyBytes := func() []byte {
-		pubKey, _ := GetKeys()
+		pubKey, _, _ := GetKeys("")
 		if b, err := MarshalPublicKey(pubKey); err != nil {
 			glog.Errorf("Error marshalling device public key %v, error %v", pubKey, err)
 			return []byte(`none`)
