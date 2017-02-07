@@ -941,7 +941,9 @@ func (b *ContainerWorker) start() {
 				} else if len(ags) != 1 {
 					glog.Infof("Ignoring the configure event for agreement %v, the agreement is archived.", agreementId)
 				} else if ags[0].AgreementTerminatedTime != 0 {
-					glog.Infof("Receved configure command for agreement %v. However this agreement has been terminated.", agreementId)
+					glog.Infof("Receved configure command for agreement %v. Ignoring it because this agreement has been terminated.", agreementId)
+				} else if ags[0].AgreementExecutionStartTime != 0 {
+					glog.Infof("Receved configure command for agreement %v. Ignoring it because the containers for this agreement has been configured.", agreementId)
 				} else {
 					if len(cmd.ImageFiles) == 0 {
 						glog.Infof("Command specified no new Docker images to load, expecting that the caller knows they're preloaded and this is not a bug. Skipping load operation")

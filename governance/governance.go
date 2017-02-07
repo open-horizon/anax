@@ -377,8 +377,8 @@ func (w *GovernanceWorker) start() {
 						glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", replyAck.AgreementId(), err)))
 					} else if len(ags) != 1 {
 						glog.Errorf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", replyAck.AgreementId(), err)))
-					} else if ags[0].AgreementTerminatedTime != 0 {
-						glog.Infof(logString(fmt.Sprintf("Received ReplyAck for agreement id %v. However this agreement has been terminated.", replyAck.AgreementId())))
+					} else if ags[0].AgreementAcceptedTime != 0 || ags[0].AgreementTerminatedTime != 0 {
+						glog.Errorf(logString(fmt.Sprintf("ignoring replyack for %v because we already received one or are cancelling", replyAck.AgreementId())))
 					} else if replyAck.ReplyAgreementStillValid() {
 						if proposal, err := protocolHandler.DemarshalProposal(ags[0].Proposal); err != nil {
 							glog.Errorf(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v from database", replyAck.AgreementId())))
