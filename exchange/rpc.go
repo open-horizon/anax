@@ -2,16 +2,15 @@ package exchange
 
 import (
 	"bytes"
+	"crypto/rsa"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/policy"
-	gwhisper "github.com/open-horizon/go-whisper"
 	"io/ioutil"
 	"net/http"
 	"reflect"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -61,6 +60,7 @@ type SearchResultDevice struct {
 	Name          string         `json:"name"`
 	Microservices []Microservice `json:"microservices"`
 	MsgEndPoint   string         `json:"msgEndPoint"`
+	PublicKey     []byte         `json:"publicKey"`
 }
 
 func (d SearchResultDevice) String() string {
@@ -92,6 +92,7 @@ type Device struct {
 	MsgEndPoint             string          `json:"msgEndPoint"`
 	SoftwareVersions        SoftwareVersion `json:"softwareVersions"`
 	LastHeartbeat           string          `json:"lastHeartbeat"`
+	PublicKey               []byte          `json:"publicKey"`
 }
 
 type GetDevicesResponse struct {
@@ -162,10 +163,11 @@ type PutDeviceRequest struct {
 	RegisteredMicroservices []Microservice  `json:"registeredMicroservices"`
 	MsgEndPoint             string          `json:"msgEndPoint"`
 	SoftwareVersions        SoftwareVersion `json:"softwareVersions"`
+	PublicKey               []byte          `json:"publicKey"`
 }
 
 func (p PutDeviceRequest) String() string {
-	return fmt.Sprintf("Token: %v, Name: %v, RegisteredMicroservices %v, MsgEndPoint %v, SoftwareVersions %v", p.Token, p.Name, p.RegisteredMicroservices, p.MsgEndPoint, p.SoftwareVersions)
+	return fmt.Sprintf("Token: %v, Name: %v, RegisteredMicroservices %v, MsgEndPoint %v, SoftwareVersions %v, PublicKey %x", p.Token, p.Name, p.RegisteredMicroservices, p.MsgEndPoint, p.SoftwareVersions, p.PublicKey)
 }
 
 func (p PutDeviceRequest) ShortString() string {
@@ -174,6 +176,110 @@ func (p PutDeviceRequest) ShortString() string {
 		str += fmt.Sprintf("%v,", ms.Url)
 	}
 	return str
+}
+
+type PatchAgbotPublicKey struct {
+	PublicKey []byte `json:"publicKey"`
+}
+
+// This function creates the device registration message body.
+func CreateAgbotPublicKeyPatch() *PatchAgbotPublicKey {
+
+	keyBytes := func() []byte {
+		pubKey, _ := GetKeys()
+		if b, err := MarshalPublicKey(pubKey); err != nil {
+			glog.Errorf("Error marshalling agbot public key %v, error %v", pubKey, err)
+			return []byte(`none`)
+		} else {
+			return b
+		}
+	}
+
+	pdr := &PatchAgbotPublicKey{
+		PublicKey:        keyBytes(),
+	}
+
+	return pdr
+}
+
+type PostMessage struct {
+	Message []byte `json:"message"`
+	TTL     int    `json:"ttl"`
+}
+
+func (p PostMessage) String() string {
+	return fmt.Sprintf("TTL: %v, Message: %x...", p.TTL, p.Message[:32])
+}
+
+func CreatePostMessage(msg []byte, ttl int) *PostMessage {
+	theTTL := 180
+	if ttl != 0 {
+		theTTL = ttl
+	}
+
+	pm := &PostMessage{
+		Message: msg,
+		TTL: theTTL,
+	}
+
+	return pm
+}
+
+type ExchangeMessageTarget struct {
+	ReceiverExchangeId     string
+	ReceiverPublicKeyObj   *rsa.PublicKey
+	ReceiverPublicKeyBytes []byte
+	ReceiverMsgEndPoint    string
+}
+
+func CreateMessageTarget(receiverId string, receiverPubKey *rsa.PublicKey, receiverPubKeySerialized []byte, receiverMessageEndpoint string) (*ExchangeMessageTarget, error) {
+	if len(receiverMessageEndpoint) == 0 && receiverPubKey == nil && len(receiverPubKeySerialized) == 0 {
+		return nil, errors.New(fmt.Sprintf("Must specify either one of the public key inputs OR the message endpoint input"))
+	} else if len(receiverMessageEndpoint) != 0 && (receiverPubKey != nil || len(receiverPubKeySerialized) != 0) {
+		return nil, errors.New(fmt.Sprintf("Specified message endpoint and at least one of the public key inputs, %v or %v", receiverPubKey, receiverPubKeySerialized))
+	} else {
+		return &ExchangeMessageTarget{
+			ReceiverExchangeId:     receiverId,
+			ReceiverPublicKeyObj:   receiverPubKey,
+			ReceiverPublicKeyBytes: receiverPubKeySerialized,
+			ReceiverMsgEndPoint:    receiverMessageEndpoint,
+			}, nil
+	}
+}
+
+type DeviceMessage struct {
+	MsgId       int    `json:"msgId"`
+	AgbotId     string `json:"agbotId"`
+	AgbotPubKey []byte `json:"agbotPubKey"`
+	Message     []byte `json:"message"`
+	TimeSent    string `json:"timeSent"`
+}
+
+func (d DeviceMessage) String() string {
+	return fmt.Sprintf("MsgId: %v, AgbotId: %v, AgbotPubKey %v, Message %v, TimeSent %v", d.MsgId, d.AgbotId, d.AgbotPubKey, d.Message[:32], d.TimeSent)
+}
+
+type GetDeviceMessageResponse struct {
+	Messages  []DeviceMessage `json:"messages"`
+	LastIndex int             `json:"lastIndex"`
+}
+
+type AgbotMessage struct {
+	MsgId        int    `json:"msgId"`
+	DeviceId     string `json:"deviceId"`
+	DevicePubKey []byte `json:"devicePubKey"`
+	Message      []byte `json:"message"`
+	TimeSent     string `json:"timeSent"`
+	TimeExpires  string `json:"timeExpires"`
+}
+
+func (a AgbotMessage) String() string {
+	return fmt.Sprintf("MsgId: %v, DeviceId: %v, TimeSent %v, TimeExpires %v, DevicePubKey %v, Message %v", a.MsgId, a.DeviceId, a.TimeSent, a.TimeExpires, a.DevicePubKey, a.Message[:32])
+}
+
+type GetAgbotMessageResponse struct {
+	Messages  []AgbotMessage `json:"messages"`
+	LastIndex int            `json:"lastIndex"`
 }
 
 // This function creates the exchange search message body.
@@ -190,20 +296,22 @@ func CreateSearchRequest() *SearchExchangeRequest {
 // This function creates the device registration message body.
 func CreateDevicePut(gethURL string, token string, name string) *PutDeviceRequest {
 
-	getWhisperId := func() string {
-		if wId, err := gwhisper.AccountId(gethURL); err != nil {
-			glog.Error(err)
-			return ""
+	keyBytes := func() []byte {
+		pubKey, _ := GetKeys()
+		if b, err := MarshalPublicKey(pubKey); err != nil {
+			glog.Errorf("Error marshalling device public key %v, error %v", pubKey, err)
+			return []byte(`none`)
 		} else {
-			return wId
+			return b
 		}
 	}
 
 	pdr := &PutDeviceRequest{
 		Token:            token,
 		Name:             name,
-		MsgEndPoint:      getWhisperId(),
+		MsgEndPoint:      "",
 		SoftwareVersions: make(map[string]string),
+		PublicKey:        keyBytes(),
 	}
 
 	return pdr
@@ -240,7 +348,6 @@ func Heartbeat(h *http.Client, url string, id string, token string, interval int
 		}
 
 		time.Sleep(time.Duration(interval) * time.Second)
-		runtime.Gosched()
 	}
 
 }
@@ -332,7 +439,7 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 
 			if method == "GET" && (httpResp.StatusCode != http.StatusOK && httpResp.StatusCode != http.StatusNotFound) {
 				return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil
-			} else if (method == "PUT" || method == "POST") && httpResp.StatusCode != http.StatusCreated {
+			} else if (method == "PUT" || method == "POST" || method == "PATCH") && httpResp.StatusCode != http.StatusCreated {
 				return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil
 			} else if method == "DELETE" && httpResp.StatusCode != http.StatusNoContent {
 				return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil
@@ -366,6 +473,12 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 						return nil, nil
 
 					case *AllAgbotAgreementsResponse:
+						return nil, nil
+
+					case *GetDeviceMessageResponse:
+						return nil, nil
+
+					case *GetAgbotMessageResponse:
 						return nil, nil
 
 					default:

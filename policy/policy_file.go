@@ -7,7 +7,6 @@ import (
 	"github.com/golang/glog"
 	"io/ioutil"
 	"os"
-	"runtime"
 	"strings"
 	"time"
 )
@@ -382,7 +381,6 @@ func PolicyFileChangeWatcher(homePath string, fileChanged func(fileName string, 
 		// doesnt want us to monitor the directory.
 		if checkInterval > 0 {
 			time.Sleep(time.Duration(checkInterval) * time.Second)
-			runtime.Gosched()
 		} else {
 			break
 		}

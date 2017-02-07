@@ -196,6 +196,7 @@ func (self *Event_Log) Get_Next_Raw_Event_Batch(topics []interface{}, size uint6
 func (self *Event_Log) get_raw_events_in_range(topics []interface{}, start uint64, end uint64) ([]Raw_Event, error) {
     events := make([]Raw_Event,0,10)
 
+    glog.V(3).Infof("EventLog looking for events from %v to %v", start, end)
     if err := self.establish_Filter(start, end, topics); err != nil {
         glog.Errorf("For %v could not establish filter: %v", self.contractAddress, err)
         return events, err

@@ -238,7 +238,7 @@ func DeleteAgreement(db *bolt.DB, pk string, protocol string) error {
 				if err := json.Unmarshal(existing, &record); err != nil {
 					glog.Errorf("Error deserializing agreement: %v. This is a pre-deletion warning message function so deletion will still proceed", record)
 				} else if record.CurrentAgreementId != "" {
-					glog.Errorf("Warning! Deleting an agreement record with an agreement id, this operation should only be done after cancelling on the blockchain.")
+					glog.Warningf("Warning! Deleting an agreement record with an agreement id, this operation should only be done after cancelling on the blockchain.")
 				}
 			}
 

@@ -362,3 +362,21 @@ func symmetricallyDecrypt(data []byte, key []byte, nonce []byte) ([]byte, error)
 	return receivedDecryptedMessage, nil
 
 }
+
+// Temporary API to allow testing to proceed while we figure out how/where keys will be kept on the platform
+var privateKey *rsa.PrivateKey
+var publicKey *rsa.PublicKey
+
+func GetKeys() (*rsa.PublicKey, *rsa.PrivateKey) {
+	if privateKey == nil {
+		// Generate RSA key pair
+		err := error(nil)
+
+		if privateKey, err = rsa.GenerateKey(rand.Reader, 2048); err != nil {
+			glog.Errorf("Could not generate private key, error %v\n", err)
+		} else {
+			publicKey = &privateKey.PublicKey
+		}
+	}
+	return publicKey, privateKey
+}

@@ -7,12 +7,9 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/ethblockchain"
-	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/go-solidity/contract_api"
-	gwhisper "github.com/open-horizon/go-whisper"
 	"golang.org/x/crypto/sha3"
-	"math/rand"
 	"net/http"
 	"strconv"
 )
@@ -187,21 +184,20 @@ func NewDataReceivedAck(id string) *DataReceivedAck {
 
 // This is the object which users of the agreement protocol use to get access to the protocol functions.
 type ProtocolHandler struct {
-	GethURL    string
-	httpClient *http.Client
-	random     *rand.Rand
-	pm         *policy.PolicyManager // TODO: Get rid of this field
+	GethURL       string
+	httpClient    *http.Client
+	pm            *policy.PolicyManager // TODO: Get rid of this field
 }
 
 func NewProtocolHandler(gethURL string, pm *policy.PolicyManager) *ProtocolHandler {
 	return &ProtocolHandler{
-		GethURL:    gethURL,
-		httpClient: &http.Client{},
-		pm:         pm,
+		GethURL:       gethURL,
+		httpClient:    &http.Client{},
+		pm:            pm,
 	}
 }
 
-func (p *ProtocolHandler) InitiateAgreement(agreementId string, producerPolicy *policy.Policy, consumerPolicy *policy.Policy, device *exchange.SearchResultDevice, myAddress string, myId string) (*Proposal, error) {
+func (p *ProtocolHandler) InitiateAgreement(agreementId string, producerPolicy *policy.Policy, consumerPolicy *policy.Policy, myAddress string, myId string, messageTarget interface{}, sendMessage func(msgTarget interface{}, pay []byte) error) (*Proposal, error) {
 
 	if TCPolicy, err := policy.Create_Terms_And_Conditions(producerPolicy, consumerPolicy, agreementId); err != nil {
 		return nil, errors.New(fmt.Sprintf("CS Protocol initiation received error trying to merge policy %v and %v, error: %v", producerPolicy, consumerPolicy, err))
@@ -223,7 +219,6 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string, producerPolicy *
 			newProposal.Address = myAddress
 			newProposal.ConsumerId = myId
 
-			topic := TCPolicy.AgreementProtocols[0].Name
 			glog.V(5).Infof("Sending proposal %v", *newProposal)
 
 			// Tell the policy manager that we're going to attempt an agreement
@@ -231,8 +226,8 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string, producerPolicy *
 				glog.Errorf(fmt.Sprintf("Error saving agreement count: %v", err))
 			}
 
-			// Send a whisper message to the device to initiate the agreement protocol.
-			if err := p.sendProposal(device.MsgEndPoint, topic, newProposal); err != nil {
+			// Send a message to the device to initiate the agreement protocol.
+			if err := p.sendProposal(messageTarget, newProposal, sendMessage); err != nil {
 				// Tell the policy manager that we're not attempting an agreement
 				if err := p.pm.CancelAgreement(consumerPolicy, newProposal.AgreementId); err != nil {
 					glog.Errorf(fmt.Sprintf("Error saving agreement count: %v", err))
@@ -246,8 +241,8 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string, producerPolicy *
 
 }
 
-func (p *ProtocolHandler) DecideOnProposal(proposal *Proposal, from string, myId string) (*ProposalReply, error) {
-	glog.V(3).Infof(fmt.Sprintf("Processing New proposal from %v, %v", from, proposal.ShortString()))
+func (p *ProtocolHandler) DecideOnProposal(proposal *Proposal, myId string, messageTarget interface{}, sendMessage func(mt interface{}, pay []byte) error) (*ProposalReply, error) {
+	glog.V(3).Infof(fmt.Sprintf("Processing New proposal from %v, %v", proposal.ConsumerId, proposal.ShortString()))
 	glog.V(5).Infof(fmt.Sprintf("New proposal: %v", proposal))
 
 	replyErr := error(nil)
@@ -306,7 +301,7 @@ func (p *ProtocolHandler) DecideOnProposal(proposal *Proposal, from string, myId
 	}
 
 	// Always respond to the Proposer
-	if err := p.sendResponse(from, PROTOCOL_NAME, reply); err != nil {
+	if err := p.sendResponse(messageTarget, reply, sendMessage); err != nil {
 		reply.Decision = false
 		replyErr = errors.New(fmt.Sprintf("CS Protocol decide on proposal received error trying to send proposal response, error: %v", err))
 	}
@@ -329,152 +324,77 @@ func (p *ProtocolHandler) returnErrOnDecision(err error, producerPolicy *policy.
 	return nil, err
 }
 
-func (p *ProtocolHandler) Confirm(to string, replyValid bool, agreementId string) error {
+func (p *ProtocolHandler) Confirm(replyValid bool, agreementId string, messageTarget interface{}, sendMessage func(mt interface{}, pay []byte) error) error {
 	ra := NewReplyAck(replyValid, agreementId)
-	return p.sendResponseAck(to, PROTOCOL_NAME, ra)
+	return p.sendResponseAck(messageTarget, PROTOCOL_NAME, ra, sendMessage)
 }
 
-func (p *ProtocolHandler) NotifyDataReceipt(to string, agreementId string) error {
+func (p *ProtocolHandler) NotifyDataReceipt(agreementId string, messageTarget interface{}, sendMessage func(mt interface{}, pay []byte) error) error {
 	ra := NewDataReceived(agreementId)
-	return p.sendDataNotification(to, PROTOCOL_NAME, ra)
+	return p.sendDataNotification(messageTarget, PROTOCOL_NAME, ra, sendMessage)
 }
 
-func (p *ProtocolHandler) NotifyDataReceiptAck(to string, agreementId string) error {
+func (p *ProtocolHandler) NotifyDataReceiptAck(agreementId string, messageTarget interface{}, sendMessage func(mt interface{}, pay []byte) error) error {
 	ra := NewDataReceivedAck(agreementId)
-	return p.sendDataNotificationAck(to, PROTOCOL_NAME, ra)
+	return p.sendDataNotificationAck(messageTarget, PROTOCOL_NAME, ra, sendMessage)
 }
 
-func (p *ProtocolHandler) sendProposal(to string, topic string, proposal *Proposal) error {
+func (p *ProtocolHandler) sendProposal(messageTarget interface{}, proposal *Proposal, sendMessage func(mt interface{}, pay []byte) error) error {
+
 	pay, err := json.Marshal(proposal)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Unable to serialize payload %v, error: %v", *proposal, err))
+	} else if err := sendMessage(messageTarget, pay); err != nil {
+		return errors.New(fmt.Sprintf("Error sending proposal message: %v", err))
 	}
 
-	glog.V(3).Infof("Sending proposal message: %v to: %v", string(pay), to)
-
-	if from, err := gwhisper.AccountId(p.GethURL); err != nil {
-		return errors.New(fmt.Sprintf("Error obtaining whisper id: %v", err))
-	} else {
-		// this is to last long enough to be read by even an overloaded governor but still expire before a new worker might try to pick up the contract
-		msg, err := gwhisper.TopicMsgParams(from, to, []string{topic}, string(pay), 180, 50)
-		if err != nil {
-			return errors.New(fmt.Sprintf("Error creating whisper message topic parameters: %v", err))
-		}
-
-		_, err = gwhisper.WhisperSend(p.httpClient, p.GethURL, gwhisper.POST, msg, 3)
-		if err != nil {
-			return errors.New(fmt.Sprintf("Error sending whisper message: %v, error: %v", msg, err))
-		}
-		return nil
-	}
+	return nil
 }
 
-func (p *ProtocolHandler) sendResponse(to string, topic string, reply *ProposalReply) error {
+func (p *ProtocolHandler) sendResponse(messageTarget interface{}, reply *ProposalReply, sendMessage func(mt interface{}, pay []byte) error) error {
 	pay, err := json.Marshal(reply)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Unable to serialize payload %v, error %v", *reply, err))
+	} else if err := sendMessage(messageTarget, pay); err != nil {
+		return errors.New(fmt.Sprintf("Unable to send proposal reply %v, error %v", *reply, err))
 	}
 
-	glog.V(3).Infof("Sending proposal response message: %v to: %v", string(pay), to)
+	return nil
 
-	if from, err := gwhisper.AccountId(p.GethURL); err != nil {
-		glog.Errorf("Error obtaining whisper id, %v", err)
-		return err
-	} else {
-
-		// this has to last long enough to be read by even an overloaded agbot
-		msg, err := gwhisper.TopicMsgParams(from, to, []string{topic}, string(pay), 180, 50)
-		if err != nil {
-			return err
-		}
-
-		_, err = gwhisper.WhisperSend(p.httpClient, p.GethURL, gwhisper.POST, msg, 3)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
 }
 
-func (p *ProtocolHandler) sendResponseAck(to string, topic string, replyack *ReplyAck) error {
+func (p *ProtocolHandler) sendResponseAck(messageTarget interface{}, topic string, replyack *ReplyAck, sendMessage func(mt interface{}, pay []byte) error) error {
 	pay, err := json.Marshal(replyack)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Unable to serialize payload %v, error %v", *replyack, err))
+	} else if err := sendMessage(messageTarget, pay); err != nil {
+		return errors.New(fmt.Sprintf("Unable to send reply ack %v, error %v", *replyack, err))
 	}
 
-	glog.V(3).Infof("Sending reply ack message: %v to: %v", string(pay), to)
+	return nil
 
-	if from, err := gwhisper.AccountId(p.GethURL); err != nil {
-		glog.Errorf("Error obtaining whisper id, %v", err)
-		return err
-	} else {
-
-		// this has to last long enough to be read by an overloaded device
-		msg, err := gwhisper.TopicMsgParams(from, to, []string{topic}, string(pay), 180, 50)
-		if err != nil {
-			return err
-		}
-
-		_, err = gwhisper.WhisperSend(p.httpClient, p.GethURL, gwhisper.POST, msg, 3)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
 }
 
-func (p *ProtocolHandler) sendDataNotification(to string, topic string, dr *DataReceived) error {
+func (p *ProtocolHandler) sendDataNotification(messageTarget interface{}, topic string, dr *DataReceived, sendMessage func(mt interface{}, pay []byte) error) error {
 	pay, err := json.Marshal(dr)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Unable to serialize payload %v, error %v", *dr, err))
+	} else if err := sendMessage(messageTarget, pay); err != nil {
+		return errors.New(fmt.Sprintf("Unable to send data notification %v, error %v", *dr, err))
 	}
 
-	glog.V(3).Infof("Sending data notification message: %v to: %v", string(pay), to)
-
-	if from, err := gwhisper.AccountId(p.GethURL); err != nil {
-		glog.Errorf("Error obtaining whisper id, %v", err)
-		return err
-	} else {
-
-		// this has to last long enough to be read by an overloaded device
-		msg, err := gwhisper.TopicMsgParams(from, to, []string{topic}, string(pay), 180, 50)
-		if err != nil {
-			return err
-		}
-
-		_, err = gwhisper.WhisperSend(p.httpClient, p.GethURL, gwhisper.POST, msg, 3)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
+	return nil
 }
 
-func (p *ProtocolHandler) sendDataNotificationAck(to string, topic string, dr *DataReceivedAck) error {
+func (p *ProtocolHandler) sendDataNotificationAck(messageTarget interface{}, topic string, dr *DataReceivedAck, sendMessage func(mt interface{}, pay []byte) error) error {
 	pay, err := json.Marshal(dr)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Unable to serialize payload %v, error %v", *dr, err))
+	} else if err := sendMessage(messageTarget, pay); err != nil {
+		return errors.New(fmt.Sprintf("Unable to send data notification ack %v, error %v", *dr, err))
 	}
 
-	glog.V(3).Infof("Sending data notification ack message: %v to: %v", string(pay), to)
-
-	if from, err := gwhisper.AccountId(p.GethURL); err != nil {
-		glog.Errorf("Error obtaining whisper id, %v", err)
-		return err
-	} else {
-
-		// this has to last long enough to be read by an overloaded device
-		msg, err := gwhisper.TopicMsgParams(from, to, []string{topic}, string(pay), 180, 50)
-		if err != nil {
-			return err
-		}
-
-		_, err = gwhisper.WhisperSend(p.httpClient, p.GethURL, gwhisper.POST, msg, 3)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
+	return nil
 }
 
 func (p *ProtocolHandler) ValidateReply(reply string) (*ProposalReply, error) {
@@ -573,7 +493,7 @@ func (p *ProtocolHandler) RecordAgreement(newProposal *Proposal, reply *Proposal
 
 		// Tell the policy manager that we're in this agreement
 		if cerr := p.pm.FinalAgreement(consumerPolicy, newProposal.AgreementId); cerr != nil {
-			glog.Errorf(fmt.Sprintf("Error finalizing agreement in PM %v", cerr))
+			glog.Errorf(fmt.Sprintf("Error finalizing agreement %v in PM %v", newProposal.AgreementId, cerr))
 		}
 
 		tcHash := sha3.Sum256([]byte(newProposal.TsAndCs))
@@ -586,7 +506,7 @@ func (p *ProtocolHandler) RecordAgreement(newProposal *Proposal, reply *Proposal
 		params = append(params, reply.Address)
 
 		if _, err := con.Invoke_method("create_agreement", params); err != nil {
-			return errors.New(fmt.Sprintf("Error invoking create_agreement with %v, error: %v", params, err))
+			return errors.New(fmt.Sprintf("Error invoking create_agreement %v with %v, error: %v", newProposal.AgreementId, params, err))
 		}
 	}
 
@@ -602,7 +522,7 @@ func (p *ProtocolHandler) TerminateAgreement(policy *policy.Policy, counterParty
 
 		// Tell the policy manager that we're terminating this agreement
 		if cerr := p.pm.CancelAgreement(policy, agreementId); cerr != nil {
-			glog.Errorf(fmt.Sprintf("Error cancelling agreement in PM %v", cerr))
+			glog.Errorf(fmt.Sprintf("Error cancelling agreement %v in PM %v", agreementId, cerr))
 		}
 
 		if counterParty != "" {
@@ -613,7 +533,7 @@ func (p *ProtocolHandler) TerminateAgreement(policy *policy.Policy, counterParty
 			params = append(params, int(reason))
 
 			if _, err := con.Invoke_method("terminate_agreement", params); err != nil {
-				return errors.New(fmt.Sprintf("Error invoking terminate_agreement with %v, error: %v", params, err))
+				return errors.New(fmt.Sprintf("Error invoking terminate_agreement %v with %v, error: %v", agreementId, params, err))
 			}
 		}
 	}
@@ -635,13 +555,14 @@ func (p *ProtocolHandler) VerifyAgreementRecorded(agreementId string, counterPar
 		params = append(params, binaryAgreementId)
 
 		if returnedSig, err := con.Invoke_method("get_producer_signature", params); err != nil {
-			return false, errors.New(fmt.Sprintf("Error invoking get_contract_signature with %v, error: %v", params, err))
+			return false, errors.New(fmt.Sprintf("Error invoking get_contract_signature for %v with %v, error: %v", agreementId, params, err))
 		} else {
 			sigString := hex.EncodeToString(returnedSig.([]byte))
 			glog.V(5).Infof("Verify agreement for %v with %v returned signature: %v", agreementId, counterPartyAddress, sigString)
 			if sigString == expectedSignature {
 				return true, nil
 			} else {
+				glog.V(3).Infof("Returned signature %v does not match expected signature %v for %v", sigString, expectedSignature, agreementId)
 				return false, nil
 			}
 		}
@@ -690,22 +611,22 @@ func (p *ProtocolHandler) GetReasonCode(ev *ethblockchain.Raw_Event) (uint64, er
 }
 
 // constants indicating why an agreement is cancelled by the producer
-const CANCEL_NOT_FINALIZED_TIMEOUT = 100
+const CANCEL_NOT_FINALIZED_TIMEOUT = 100  // x64
 const CANCEL_POLICY_CHANGED        = 101
 const CANCEL_TORRENT_FAILURE       = 102
 const CANCEL_CONTAINER_FAILURE     = 103
 const CANCEL_NOT_EXECUTED_TIMEOUT  = 104
 const CANCEL_USER_REQUESTED        = 105
-const CANCEL_AGBOT_REQUESTED       = 106
+const CANCEL_AGBOT_REQUESTED       = 106  // x6a
 const CANCEL_NO_REPLY_ACK          = 107
 
 // These constants represent consumer cancellation reason codes
-const AB_CANCEL_NOT_FINALIZED_TIMEOUT = 200
+const AB_CANCEL_NOT_FINALIZED_TIMEOUT = 200  // xc8
 const AB_CANCEL_NO_REPLY              = 201
 const AB_CANCEL_NEGATIVE_REPLY        = 202
 const AB_CANCEL_NO_DATA_RECEIVED      = 203
 const AB_CANCEL_POLICY_CHANGED        = 204
-const AB_CANCEL_DISCOVERED            = 205
+const AB_CANCEL_DISCOVERED            = 205  // xcd
 
 func DecodeReasonCode(code uint64) string {
 

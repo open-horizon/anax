@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/device"
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/governance"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/torrent"
@@ -167,7 +168,6 @@ func main() {
 	// start workers
 	workers := worker.NewMessageHandlerRegistry()
 
-	workers.Add("whisper", whisper.NewWhisperWorker(cfg))
 	workers.Add("agreementBot", agreementbot.NewAgreementBotWorker(cfg, agbotdb))
 
 	gethURL := cfg.Edge.GethURL
@@ -182,6 +182,9 @@ func main() {
 		workers.Add("torrent", torrent.NewTorrentWorker(cfg))
 		workers.Add("container", container.NewContainerWorker(cfg))
 		workers.Add("governance", governance.NewGovernanceWorker(cfg, db, pm))
+		workers.Add("exchange", exchange.NewExchangeMessageWorker(cfg, db))
+	} else {
+		workers.Add("whisper", whisper.NewWhisperWorker(cfg))
 	}
 
 	messageStream := mux(workers)

@@ -329,7 +329,7 @@ func TestMessageConstruction_success1(t *testing.T) {
 	if msg, err := ConstructExchangeMessage(message, consumerPublicKey, consumerPrivateKey, prodPublicKey); err != nil {
 		t.Errorf("Could not construct message, %v", err)
 	} else if msgBody, err := json.Marshal(msg); err != nil {
-		t.Errorf("Error marshalling symmetric values, %v", err)
+		t.Errorf("Error marshalling exchange message, %v", err)
 	} else if receivedMessage, _, err := DeconstructExchangeMessage(msgBody, prodPrivateKey); err != nil {
 		t.Errorf("Could not deconstruct message, %v", err)
 	} else if bytes.Compare(message, receivedMessage) != 0 {

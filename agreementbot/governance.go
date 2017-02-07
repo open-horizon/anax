@@ -1,20 +1,101 @@
 package agreementbot
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
+	gwhisper "github.com/open-horizon/go-whisper"
 	"net/http"
-	"runtime"
 	"time"
 )
 
 func (w *AgreementBotWorker) GovernAgreements() {
 
 	glog.Info(logString(fmt.Sprintf("started agreement governance")))
+
+	sendMessage := func(mt interface{}, pay []byte) error {
+		// The mt parameter is an abstract message target object that is passed to this routine
+		// by the agreement protocol. It's an interface{} type so that we can avoid the protocol knowing
+		// about non protocol types.
+
+		var messageTarget *exchange.ExchangeMessageTarget
+		switch mt.(type) {
+		case *exchange.ExchangeMessageTarget:
+			messageTarget = mt.(*exchange.ExchangeMessageTarget)
+		default:
+			return errors.New(fmt.Sprintf("input message target is %T, expecting exchange.MessageTarget", mt))
+		}
+
+		// If the message target is using whisper, then send via whisper
+		if len(messageTarget.ReceiverMsgEndPoint) != 0 {
+			to := messageTarget.ReceiverMsgEndPoint
+			glog.V(3).Infof("Sending whisper message to: %v at whisper %v, message %v", messageTarget.ReceiverExchangeId, to, string(pay))
+
+			if from, err := gwhisper.AccountId(w.Config.AgreementBot.GethURL); err != nil {
+				return errors.New(fmt.Sprintf("Error obtaining whisper id: %v", err))
+			} else {
+				// this is to last long enough to be read by even an overloaded governor but still expire before a new worker might try to pick up the contract
+				msg, err := gwhisper.TopicMsgParams(from, to, []string{citizenscientist.PROTOCOL_NAME}, string(pay), 180, 50)
+				if err != nil {
+					return errors.New(fmt.Sprintf("Error creating whisper message topic parameters: %v", err))
+				}
+
+				_, err = gwhisper.WhisperSend(w.httpClient, w.Config.AgreementBot.GethURL, gwhisper.POST, msg, 3)
+				if err != nil {
+					return errors.New(fmt.Sprintf("Error sending whisper message: %v, error: %v", msg, err))
+				}
+			}
+
+		// The message target is using the exchange message queue, so use it
+		} else {
+
+			// Grab the exchange ID of the message receiver
+			glog.V(3).Infof("Sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))
+
+			// Get my own keys
+			myPubKey, myPrivKey := exchange.GetKeys()
+
+			// Demarshal the receiver's public key if we need to
+			if messageTarget.ReceiverPublicKeyObj == nil {
+				if mtpk, err := exchange.DemarshalPublicKey(messageTarget.ReceiverPublicKeyBytes); err != nil {
+					return errors.New(fmt.Sprintf("Unable to demarshal device's public key %x, error %v", messageTarget.ReceiverPublicKeyBytes, err))
+				} else {
+					messageTarget.ReceiverPublicKeyObj = mtpk
+				}
+			}
+
+			// Create an encrypted message
+			if encryptedMsg, err := exchange.ConstructExchangeMessage(pay, myPubKey, myPrivKey, messageTarget.ReceiverPublicKeyObj); err != nil {
+				return errors.New(fmt.Sprintf("Unable to construct encrypted message from %v, error %v", pay, err))
+			// Marshal it into a byte array
+			} else if msgBody, err := json.Marshal(encryptedMsg); err != nil {
+				return errors.New(fmt.Sprintf("Unable to marshal exchange message %v, error %v", encryptedMsg, err))
+			// Send it to the device's message queue
+			} else {
+				pm := exchange.CreatePostMessage(msgBody, w.Config.AgreementBot.ExchangeMessageTTL)
+				var resp interface{}
+				resp = new(exchange.PostDeviceResponse)
+				targetURL := w.Config.AgreementBot.ExchangeURL + "devices/" + messageTarget.ReceiverExchangeId + "/msgs"
+				for {
+					if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, pm, &resp); err != nil {
+						return err
+					} else if tpErr != nil {
+						glog.V(5).Infof(tpErr.Error())
+						time.Sleep(10 * time.Second)
+						continue
+					} else {
+						glog.V(5).Infof("Sent message for %v to exchange.", messageTarget.ReceiverExchangeId)
+						return nil
+					}
+				}
+			}
+		}
+		return nil
+	}
 
 	protocolHandler := citizenscientist.NewProtocolHandler(w.Config.AgreementBot.GethURL, w.pm)
 
@@ -90,9 +171,11 @@ func (w *AgreementBotWorker) GovernAgreements() {
 								// Get whisper address of the device from the exchange. The device ensures that the exchange is kept current.
 								// If the address happens to be invalid, that should be a temporary condition. We will keep sending until
 								// we get an ack to our verification message.
-								if to, err := getDeviceMessageEndpoint(ag.DeviceId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+								if whisperTo, pubkeyTo, err := getDeviceMessageEndpoint(ag.DeviceId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
 									glog.Errorf(logString(fmt.Sprintf("Error obtaining whisper id for data notification: %v", err)))
-								} else if err := protocolHandler.NotifyDataReceipt(to, ag.CurrentAgreementId); err != nil {
+								} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
+									glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
+								} else if err := protocolHandler.NotifyDataReceipt(ag.CurrentAgreementId, mt, sendMessage); err != nil {
 									glog.Errorf(logString(fmt.Sprintf("unable to send data notification, error: %v", err)))
 								}
 							}
@@ -114,7 +197,6 @@ func (w *AgreementBotWorker) GovernAgreements() {
 		}
 
 		time.Sleep(time.Duration(w.Worker.Manager.Config.AgreementBot.ProcessGovernanceIntervalS) * time.Second)
-		runtime.Gosched()
 	}
 
 	glog.Info(logString(fmt.Sprintf("terminated agreement governance")))
@@ -194,7 +276,7 @@ func DeleteConsumerAgreement(url string, agbotId string, token string, agreement
 
 }
 
-func getDeviceMessageEndpoint(deviceId string, url string, agbotId string, token string) (string, error) {
+func getDeviceMessageEndpoint(deviceId string, url string, agbotId string, token string) (string, []byte, error) {
 
 	glog.V(5).Infof(logString(fmt.Sprintf("retrieving device %v msg endpoint from exchange", deviceId)))
 
@@ -204,7 +286,7 @@ func getDeviceMessageEndpoint(deviceId string, url string, agbotId string, token
 	for {
 		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
-			return "", err
+			return "", nil, err
 		} else if tpErr != nil {
 			glog.Warningf(tpErr.Error())
 			time.Sleep(10 * time.Second)
@@ -212,10 +294,10 @@ func getDeviceMessageEndpoint(deviceId string, url string, agbotId string, token
 		} else {
 			devs := resp.(*exchange.GetDevicesResponse).Devices
 			if dev, there := devs[deviceId]; !there {
-				return "", errors.New(fmt.Sprintf("device %v not in GET response %v as expected", deviceId, devs))
+				return "", nil, errors.New(fmt.Sprintf("device %v not in GET response %v as expected", deviceId, devs))
 			} else {
 				glog.V(5).Infof(logString(fmt.Sprintf("retrieved device %v msg endpoint from exchange %v", deviceId, dev.MsgEndPoint)))
-				return dev.MsgEndPoint, nil
+				return dev.MsgEndPoint, dev.PublicKey, nil
 			}
 		}
 	}

@@ -169,8 +169,9 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 		} else {
 			// write message
 			ct := agreements[0]
-
-			a.Messages() <- events.NewApiAgreementCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ct.AgreementProtocol, ct.CurrentAgreementId, ct.CurrentDeployment)
+			if ct.AgreementTerminatedTime == 0 {
+				a.Messages() <- events.NewApiAgreementCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ct.AgreementProtocol, ct.CurrentAgreementId, ct.CurrentDeployment)
+			}
 			w.WriteHeader(http.StatusOK)
 		}
 	case "OPTIONS":

@@ -37,3 +37,19 @@ func NewNewPolicyCommand(fileName string) *NewPolicyCommand {
 		PolicyFile: fileName,
 	}
 }
+
+type NewProtocolMessageCommand struct {
+	Message   []byte
+	MessageId int
+	From      string
+	PubKey    []byte
+}
+
+func NewNewProtocolMessageCommand(msg []byte, msgId int, deviceId string, pubkey []byte) *NewProtocolMessageCommand {
+	return &NewProtocolMessageCommand{
+		Message:   msg,
+		MessageId: msgId,
+		From:      deviceId,
+		PubKey:    pubkey,
+	}
+}

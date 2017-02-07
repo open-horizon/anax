@@ -31,6 +31,7 @@ type Config struct {
 	AgreementTimeoutS             uint64 // Number of seconds to wait before declaring agreement not finalized in blockchain
 	DVPrefix                      string // When passing agreement ids into a workload container, add this prefix to the agreement id
 	RegistrationDelayS            uint64 // The number of seconds to wait after blockchain init before registering with the exchange. This is for testing initialization ONLY.
+	ExchangeMessageTTL            int    // The number of seconds the exchange will keep this message before automatically deleting it
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string
@@ -59,6 +60,7 @@ type AGConfig struct {
 	ExchangeToken                string // The agbot's authentication token
 	DVPrefix                     string // When looking for agreement ids in the data verification API response, look for agreement ids with this prefix.
 	ActiveDeviceTimeoutS         int    // The amount of time a device can go without heartbeating and still be considered active for the purposes of search
+	ExchangeMessageTTL           int    // The number of seconds the exchange will keep this message before automatically deleting it
 
 }
 
