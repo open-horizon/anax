@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"golang.org/x/crypto/sha3"
+	"os"
 	"testing"
 )
 
@@ -969,4 +970,35 @@ func TestPKDemarshalling_failure5(t *testing.T) {
 	} else {
 		fmt.Printf("Successful pub key demarshal error test 5 returned %v\n", err)
 	}
+}
+
+func TestKeySaving_success1(t *testing.T) {
+
+	if _, err := os.Stat("/tmp/privateMessagingKey.pem"); !os.IsNotExist(err) {
+		os.Remove("/tmp/privateMessagingKey.pem")
+	}
+
+	if _, err := os.Stat("/tmp/publicMessagingKey.pem"); !os.IsNotExist(err) {
+		os.Remove("/tmp/publicMessagingKey.pem")
+	}
+
+	_ = os.Setenv("SNAP_COMMON","/tmp")
+
+	// Test the initial start of a new anax
+	if priv, pub, err := GetKeys(""); err != nil {
+		t.Errorf("Could not generate key, error %v\n", err)
+	} else if priv == nil || pub == nil {
+		t.Errorf("One of the returned keys %v and %v are nil.\n", priv, pub)
+	}
+
+	// Now test the restart scenario.
+	gPublicKey = nil
+	gPrivateKey = nil
+
+	if priv, pub, err := GetKeys(""); err != nil {
+		t.Errorf("Could not generate key, error %v\n", err)
+	} else if priv == nil || pub == nil {
+		t.Errorf("One of the returned keys %v and %v are nil.\n", priv, pub)
+	}
+
 }

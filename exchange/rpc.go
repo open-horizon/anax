@@ -186,11 +186,10 @@ type PatchAgbotPublicKey struct {
 func CreateAgbotPublicKeyPatch(keyPath string) *PatchAgbotPublicKey {
 
 	keyBytes := func() []byte {
-		pubKey, _, err := GetKeys(keyPath)
-		if err != nil {
+		if pubKey, _, err := GetKeys(keyPath); err != nil {
 			glog.Errorf("Error getting keys %v", err)
-		}
-		if b, err := MarshalPublicKey(pubKey); err != nil {
+			return []byte(`none`)
+		} else if b, err := MarshalPublicKey(pubKey); err != nil {
 			glog.Errorf("Error marshalling agbot public key %v, error %v", pubKey, err)
 			return []byte(`none`)
 		} else {
@@ -300,8 +299,10 @@ func CreateSearchRequest() *SearchExchangeRequest {
 func CreateDevicePut(gethURL string, token string, name string) *PutDeviceRequest {
 
 	keyBytes := func() []byte {
-		pubKey, _, _ := GetKeys("")
-		if b, err := MarshalPublicKey(pubKey); err != nil {
+		if pubKey, _, err := GetKeys(""); err != nil {
+			glog.Errorf("Error getting keys %v", err)
+			return []byte(`none`)
+		} else if b, err := MarshalPublicKey(pubKey); err != nil {
 			glog.Errorf("Error marshalling device public key %v, error %v", pubKey, err)
 			return []byte(`none`)
 		} else {
