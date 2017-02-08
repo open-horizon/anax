@@ -1,6 +1,7 @@
 package agreementbot
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -152,7 +153,14 @@ func (w *AgreementBotWorker) start() {
 			}
 			glog.V(3).Infof("AgreementBotWorker waiting for policies to appear")
 			time.Sleep(time.Duration(1) * time.Minute)
-			runtime.Gosched()
+		}
+
+		// As soon as policies appear, the agbot worker function should start doing agbot work. That means
+		// we need to make sure that our public key is registered in the exchange so that other parties
+		// can send us messages.
+		if err := w.registerPublicKey(); err != nil {
+			glog.Errorf("AgreementBotWorker unable to register public key, error: %v", err)
+			return
 		}
 
 		// For each agreement protocol in the current list of configured policies, startup a processor
@@ -186,41 +194,95 @@ func (w *AgreementBotWorker) start() {
 
 		// Enter the command processing loop. Initialization is complete so wait for commands to
 		// perform. Commands are created as the result of events that are triggered elsewhere
-		// in the system.
+		// in the system. This function also wakes up periodically and looks for messages on
+		// its exchnage message queue.
 
+		nonBlockDuration := 10
 		for {
-			glog.V(2).Infof("AgreementBotWorker blocking for commands")
-			command := <-w.Commands
-			glog.V(2).Infof("AgreementBotWorker received command: %v", command)
+			glog.V(2).Infof("AgreementBotWorker non-blocking for commands")
+			select {
+			case command := <-w.Commands:
+				glog.V(2).Infof("AgreementBotWorker received command: %v", command)
 
-			switch command.(type) {
-			case *ReceivedWhisperMessageCommand:
-				cmd := command.(*ReceivedWhisperMessageCommand)
-				// TODO: Hack assume there is only one protocol handler
-				w.pwcommands <- cmd
+				switch command.(type) {
+				case *ReceivedWhisperMessageCommand:
+					cmd := command.(*ReceivedWhisperMessageCommand)
+					// TODO: Hack assume there is only one protocol handler
+					w.pwcommands <- cmd
 
-			case *NewPolicyCommand:
-				cmd := command.(*NewPolicyCommand)
-				if newPolicy, err := policy.ReadPolicyFile(cmd.PolicyFile); err != nil {
-					glog.Errorf("AgreementBotWorker unable to read policy file %v into memory, error: %v", cmd.PolicyFile, err)
-				} else {
-					w.pm.AddPolicy(newPolicy) // We dont care if it's already there
+				case *NewPolicyCommand:
+					cmd := command.(*NewPolicyCommand)
+					if newPolicy, err := policy.ReadPolicyFile(cmd.PolicyFile); err != nil {
+						glog.Errorf("AgreementBotWorker unable to read policy file %v into memory, error: %v", cmd.PolicyFile, err)
+					} else {
+						w.pm.AddPolicy(newPolicy) // We dont care if it's already there
 
-					// Make sure the whisper subsystem is subscribed to messages for this policy's agreement protocol
-					w.Messages() <- events.NewWhisperSubscribeToMessage(events.SUBSCRIBE_TO, newPolicy.AgreementProtocols[0].Name)
+						// Make sure the whisper subsystem is subscribed to messages for this policy's agreement protocol
+						w.Messages() <- events.NewWhisperSubscribeToMessage(events.SUBSCRIBE_TO, newPolicy.AgreementProtocols[0].Name)
+					}
+
+				default:
+					glog.Errorf("AgreementBotWorker Unknown command (%T): %v", command, command)
 				}
 
-			default:
-				glog.Errorf("Unknown command (%T): %v", command, command)
-			}
+				glog.V(5).Infof("AgreementBotWorker handled command")
 
-			glog.V(5).Infof("AgreementBotWorker handled command")
+			case <-time.After(time.Duration(nonBlockDuration) * time.Second):
+				glog.V(5).Infof(fmt.Sprintf("AgreementBotWorker retrieving messages from the exchange"))
+
+				if msgs, err := w.getMessages(); err != nil {
+					glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to retrieve exchange messages, error: %v", err))
+				} else {
+					// Loop through all the returned messages and process them
+					for _, msg := range msgs {
+
+						glog.V(3).Infof(fmt.Sprintf("AgreementBotWorker reading message %v from the exchange", msg.MsgId))
+						// First get my own keys
+						_, myPrivKey, _ := exchange.GetKeys(w.Config.AgreementBot.MessageKeyPath)
+
+						// Deconstruct and decrypt the message. Then process it.
+						if protocolMessage, receivedPubKey, err := exchange.DeconstructExchangeMessage(msg.Message, myPrivKey); err != nil {
+							glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to deconstruct exchange message %v, error %v", msg, err))
+						} else if serializedPubKey, err := exchange.MarshalPublicKey(receivedPubKey); err != nil {
+							glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to marshal the key from the encrypted message %v, error %v", receivedPubKey, err))
+						} else if bytes.Compare(msg.DevicePubKey, serializedPubKey) != 0 {
+							glog.Errorf(fmt.Sprintf("AgreementBotWorker sender public key from exchange %x is not the same as the sender public key in the encrypted message %x", msg.DevicePubKey, serializedPubKey))
+						} else {
+							cmd := NewNewProtocolMessageCommand(protocolMessage, msg.MsgId, msg.DeviceId, msg.DevicePubKey)
+							// TODO: Hack assume there is only one protocol handler
+							w.pwcommands <- cmd
+						}
+					}
+				}
+
+				glog.V(5).Infof(fmt.Sprintf("AgreementBotWorker done processing messages"))
+			}
 			runtime.Gosched()
 		}
 	}()
 
 	glog.Info("AgreementBotWorker waiting for commands.")
 
+}
+
+func (w *AgreementBotWorker) getMessages() ([]exchange.AgbotMessage, error) {
+	var resp interface{}
+	resp = new(exchange.GetAgbotMessageResponse)
+	targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/msgs"
+	for {
+		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.agbotId, w.token, nil, &resp); err != nil {
+			glog.Errorf(err.Error())
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(3).Infof(fmt.Sprintf("AgreementBotWorker retrieved %v messages", len(resp.(*exchange.GetAgbotMessageResponse).Messages)))
+			msgs := resp.(*exchange.GetAgbotMessageResponse).Messages
+			return msgs, nil
+		}
+	}
 }
 
 // There is one of these running is a go routine for each agreement protocol that we support
@@ -269,9 +331,37 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 												From:     cmd.Msg.From(),
 											}
 							work <- agreementWork
-							glog.V(5).Infof("AgreementBot queued data received message")
+							glog.V(5).Infof("AgreementBot queued data received ack message")
 						} else {
 							glog.Warningf(AWlogString(fmt.Sprintf("ignoring  message: %v", cmd.Msg.Payload())))
+						}
+
+					case *NewProtocolMessageCommand:
+						glog.V(5).Infof("AgreementBot received inbound exchange message.")
+						cmd := command.(*NewProtocolMessageCommand)
+						// Figure out what kind of message this is
+						if _, err := protocolHandler.ValidateReply(string(cmd.Message)); err == nil {
+							agreementWork := CSHandleReply{
+												workType:     REPLY,
+												Reply:        string(cmd.Message),
+												SenderId:     cmd.From,
+												SenderPubKey: cmd.PubKey,
+												MessageId:    cmd.MessageId,
+											}
+							work <- agreementWork
+							glog.V(5).Infof("AgreementBot queued reply message")
+						} else if _, err := protocolHandler.ValidateDataReceivedAck(string(cmd.Message)); err == nil {
+							agreementWork := CSHandleDataReceivedAck{
+												workType:     DATARECEIVEDACK,
+												Ack:          string(cmd.Message),
+												SenderId:     cmd.From,
+												SenderPubKey: cmd.PubKey,
+												MessageId:    cmd.MessageId,
+											}
+							work <- agreementWork
+							glog.V(5).Infof("AgreementBot queued data received ack message")
+						} else {
+							glog.Warningf(AWlogString(fmt.Sprintf("ignoring  message: %v", string(cmd.Message))))
 						}
 
 					case *AgreementTimeoutCommand:
@@ -562,6 +652,29 @@ func listContains(list string, target string) bool {
     }
     return false
 }
+
+func (w *AgreementBotWorker) registerPublicKey() error {
+	glog.V(5).Infof(AWlogString(fmt.Sprintf("registering agbot public key")))
+
+	as := exchange.CreateAgbotPublicKeyPatch(w.Config.AgreementBot.MessageKeyPath)
+	var resp interface{}
+	resp = new(exchange.PostDeviceResponse)
+	targetURL := w.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId
+	for {
+		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PATCH", targetURL, w.agbotId, w.token, &as, &resp); err != nil {
+			glog.Errorf(err.Error())
+			return err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(5).Infof(AWlogString(fmt.Sprintf("patched agbot public key %x", as)))
+			return nil
+		}
+	}
+}
+
 
 // ==========================================================================================================
 // Utility functions

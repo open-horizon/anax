@@ -115,7 +115,6 @@ func Test_PolicyFileChangeWatcher(t *testing.T) {
 
 	// Give the watcher a chance to read the contents of the pfwatchtest directory and fire events
 	time.Sleep(2 * time.Second)
-	runtime.Gosched()
 
 	// Add a new policy file
 	newPolicyContent := `{"header":{"name":"new policy","version":"1.0"}}`

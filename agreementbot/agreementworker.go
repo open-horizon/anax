@@ -3,6 +3,7 @@ package agreementbot
 import (
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
@@ -11,10 +12,12 @@ import (
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
+	gwhisper "github.com/open-horizon/go-whisper"
 	"github.com/satori/go.uuid"
 	"math/rand"
 	"net/http"
 	"runtime"
+	"strconv"
 	"time"
 )
 
@@ -73,9 +76,16 @@ func (c CSInitiateAgreement) Type() string {
 }
 
 type CSHandleReply struct {
-	workType string
-	Reply    string
-	From     string
+	workType     string
+	Reply        string
+	From         string        // deprecated whisper address
+	SenderId     string        // exchange Id of sender
+	SenderPubKey []byte
+	MessageId    int
+}
+
+func (c CSHandleReply) String() string {
+	return fmt.Sprintf("Workitem: %v, SenderId: %v, MessageId: %v, From: %v, Reply: %v, SenderPubKey: %x", c.workType, c.SenderId, c.MessageId, c.From, c.Reply, c.SenderPubKey)
 }
 
 func (c CSHandleReply) Type() string {
@@ -83,9 +93,16 @@ func (c CSHandleReply) Type() string {
 }
 
 type CSHandleDataReceivedAck struct {
-	workType string
-	Ack      string
-	From     string
+	workType     string
+	Ack          string
+	From         string        // deprecated whisper address
+	SenderId     string        // exchange Id of sender
+	SenderPubKey []byte
+	MessageId    int
+}
+
+func (c CSHandleDataReceivedAck) String() string {
+	return fmt.Sprintf("Workitem: %v, SenderId: %v, MessageId: %v, From: %v, Ack: %v, SenderPubKey: %x", c.workType, c.SenderId, c.MessageId, c.From, c.Ack, c.SenderPubKey)
 }
 
 func (c CSHandleDataReceivedAck) Type() string {
@@ -113,6 +130,86 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 		return fmt.Sprintf("CSAgreementWorker (%v): %v", workerID, v)
 	}
 
+	sendMessage := func(mt interface{}, pay []byte) error {
+		// The mt parameter is an abstract message target object that is passed to this routine
+		// by the agreement protocol. It's an interface{} type so that we can avoid the protocol knowing
+		// about non protocol types.
+
+		var messageTarget *exchange.ExchangeMessageTarget
+		switch mt.(type) {
+		case *exchange.ExchangeMessageTarget:
+			messageTarget = mt.(*exchange.ExchangeMessageTarget)
+		default:
+			return errors.New(fmt.Sprintf("input message target is %T, expecting exchange.MessageTarget", mt))
+		}
+
+		// If the message target is using whisper, then send via whisper
+		if len(messageTarget.ReceiverMsgEndPoint) != 0 {
+			to := messageTarget.ReceiverMsgEndPoint
+			glog.V(3).Infof("Sending whisper message to: %v at whisper %v, message %v", messageTarget.ReceiverExchangeId, to, string(pay))
+
+			if from, err := gwhisper.AccountId(a.config.AgreementBot.GethURL); err != nil {
+				return errors.New(fmt.Sprintf("Error obtaining whisper id: %v", err))
+			} else {
+				// this is to last long enough to be read by even an overloaded governor but still expire before a new worker might try to pick up the contract
+				msg, err := gwhisper.TopicMsgParams(from, to, []string{citizenscientist.PROTOCOL_NAME}, string(pay), 180, 50)
+				if err != nil {
+					return errors.New(fmt.Sprintf("Error creating whisper message topic parameters: %v", err))
+				}
+
+				_, err = gwhisper.WhisperSend(a.httpClient, a.config.AgreementBot.GethURL, gwhisper.POST, msg, 3)
+				if err != nil {
+					return errors.New(fmt.Sprintf("Error sending whisper message: %v, error: %v", msg, err))
+				}
+			}
+
+		// The message target is using the exchange message queue, so use it
+		} else {
+
+			// Grab the exchange ID of the message receiver
+			glog.V(3).Infof("Sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))
+
+			// Get my own keys
+			myPubKey, myPrivKey, _ := exchange.GetKeys(a.config.AgreementBot.MessageKeyPath)
+
+			// Demarshal the receiver's public key if we need to
+			if messageTarget.ReceiverPublicKeyObj == nil {
+				if mtpk, err := exchange.DemarshalPublicKey(messageTarget.ReceiverPublicKeyBytes); err != nil {
+					return errors.New(fmt.Sprintf("Unable to demarshal device's public key %x, error %v", messageTarget.ReceiverPublicKeyBytes, err))
+				} else {
+					messageTarget.ReceiverPublicKeyObj = mtpk
+				}
+			}
+
+			// Create an encrypted message
+			if encryptedMsg, err := exchange.ConstructExchangeMessage(pay, myPubKey, myPrivKey, messageTarget.ReceiverPublicKeyObj); err != nil {
+				return errors.New(fmt.Sprintf("Unable to construct encrypted message, error %v for message %s", err, pay))
+			// Marshal it into a byte array
+			} else if msgBody, err := json.Marshal(encryptedMsg); err != nil {
+				return errors.New(fmt.Sprintf("Unable to marshal exchange message, error %v for message %v", err, encryptedMsg))
+			// Send it to the device's message queue
+			} else {
+				pm := exchange.CreatePostMessage(msgBody, a.config.AgreementBot.ExchangeMessageTTL)
+				var resp interface{}
+				resp = new(exchange.PostDeviceResponse)
+				targetURL := a.config.AgreementBot.ExchangeURL + "devices/" + messageTarget.ReceiverExchangeId + "/msgs"
+				for {
+					if err, tpErr := exchange.InvokeExchange(a.httpClient, "POST", targetURL, a.agbotId, a.token, pm, &resp); err != nil {
+						return err
+					} else if tpErr != nil {
+						glog.V(5).Infof(tpErr.Error())
+						time.Sleep(10 * time.Second)
+						continue
+					} else {
+						glog.V(5).Infof("Sent message for %v to exchange.", messageTarget.ReceiverExchangeId)
+						return nil
+					}
+				}
+			}
+		}
+		return nil
+	}
+
 	protocolHandler := citizenscientist.NewProtocolHandler(a.config.AgreementBot.GethURL, a.pm)
 
 	for {
@@ -132,8 +229,12 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 			if err := AgreementAttempt(a.db, agreementIdString, wi.Device.Id, wi.ConsumerPolicy.Header.Name, "Citizen Scientist"); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error persisting agreement attempt: %v", err)))
 
-				// Initiate the protocol
-			} else if proposal, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, &wi.ConsumerPolicy, &wi.Device, myAddress, a.agbotId); err != nil {
+			// Create message target for protocol message
+			} else if mt, err := exchange.CreateMessageTarget(wi.Device.Id, nil, wi.Device.PublicKey, wi.Device.MsgEndPoint); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
+
+			// Initiate the protocol
+			} else if proposal, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, &wi.ConsumerPolicy, myAddress, a.agbotId, mt, sendMessage); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error initiating agreement: %v", err)))
 
 				// Remove pending agreement from database
@@ -143,7 +244,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 
 				// TODO: Publish error on the message bus
 
-				// Update the agreement in the DB with the proposal and policy
+			// Update the agreement in the DB with the proposal and policy
 			} else if polBytes, err := json.Marshal(wi.ConsumerPolicy); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error marshalling policy for storage %v, error: %v", wi.ConsumerPolicy, err)))
 			} else if pBytes, err := json.Marshal(proposal); err != nil {
@@ -151,7 +252,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 			} else if _, err := AgreementUpdate(a.db, agreementIdString, string(pBytes), string(polBytes), wi.ConsumerPolicy.DataVerify.URL, wi.ConsumerPolicy.DataVerify.URLUser, wi.ConsumerPolicy.DataVerify.URLPassword, !wi.ConsumerPolicy.Get_DataVerification_enabled(), citizenscientist.PROTOCOL_NAME); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", *proposal, err)))
 
-				// Record that the agreement was initiated, in the exchange
+			// Record that the agreement was initiated, in the exchange
 			} else if err := a.recordConsumerAgreementState(agreementIdString, wi.ConsumerPolicy.APISpecs[0].SpecRef, "Formed Proposal"); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error setting agreement state for %v", agreementIdString)))
 			}
@@ -159,10 +260,14 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 		} else if workItem.Type() == REPLY {
 			wi := workItem.(CSHandleReply)
 
+			// The reply message is usually deleted before recording on the blockchain. For now assume it will be deleted at the end.
+			deletedMessage := false
+
+
 			if reply, err := protocolHandler.ValidateReply(wi.Reply); err != nil {
 				glog.Warningf(logString(fmt.Sprintf("discarding message: %v", wi.Reply)))
 			} else if reply.ProposalAccepted() {
-				// The producer is happy with the proposal. Assume we will ack negatively.
+				// The producer is happy with the proposal. Assume we will ack negatively unless we find out that everything is ok.
 				ackReplyAsValid := false
 
 				// Find the saved agreement in the database
@@ -172,6 +277,8 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 					glog.V(5).Infof(logString(fmt.Sprintf("discarding reply, agreement id %v not in our database", reply.AgreementId())))
 				} else if agreement.CounterPartyAddress != "" {
 					glog.V(5).Infof(logString(fmt.Sprintf("discarding reply, agreement id %v already received a reply", agreement.CurrentAgreementId)))
+					// this will cause us to not send a reply ack, which is what we want in this case
+					ackReplyAsValid = true
 
 				// Now we need to write the info to the exchange and the database
 				} else if proposal, err := protocolHandler.DemarshalProposal(agreement.Proposal); err != nil {
@@ -192,9 +299,20 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 					// Done handling the response successfully
 					ackReplyAsValid = true
 
-					if err := protocolHandler.Confirm(wi.From, ackReplyAsValid, reply.AgreementId()); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("error trying to send reply ack for %v to %v, error: %v", reply.AgreementId(), wi.From, err)))
+					// Send the reply Ack
+					if mt, err := exchange.CreateMessageTarget(wi.SenderId, nil, wi.SenderPubKey, wi.From); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
+					} else if err := protocolHandler.Confirm(ackReplyAsValid, reply.AgreementId(), mt, sendMessage); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("error trying to send reply ack for %v to %v, error: %v", reply.AgreementId(), mt, err)))
 					}
+
+					// Delete the original reply message
+					if wi.MessageId != 0 {
+						if err := a.deleteMessage(wi.MessageId); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, a.agbotId)))
+						}
+					}
+					deletedMessage = true
 
 					// Recording the agreement on the blockchain could take a long time, so it needs to be the last thing we do.
 					if err := protocolHandler.RecordAgreement(proposal, reply, consumerPolicy, bc.Agreements); err != nil {
@@ -206,7 +324,9 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 
 				// Always send an ack for a reply with a positive decision in it
 				if !ackReplyAsValid {
-					if err := protocolHandler.Confirm(wi.From, ackReplyAsValid, reply.AgreementId()); err != nil {
+					if mt, err := exchange.CreateMessageTarget(wi.SenderId, nil, wi.SenderPubKey, wi.From); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
+					} else if err := protocolHandler.Confirm(ackReplyAsValid, reply.AgreementId(), mt, sendMessage); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("error trying to send reply ack for %v to %v, error: %v", reply.AgreementId(), wi.From, err)))
 					}
 				}
@@ -236,6 +356,13 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				glog.Errorf(logString(fmt.Sprintf("received rejection from producer %v", *reply)))
 			}
 
+			// Get rid of the exchange message if there is one
+			if wi.MessageId != 0 && !deletedMessage {
+				if err := a.deleteMessage(wi.MessageId); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, a.agbotId)))
+				}
+			}
+
 		} else if workItem.Type() == DATARECEIVEDACK {
 			wi := workItem.(CSHandleDataReceivedAck)
 			if drAck, err := protocolHandler.ValidateDataReceivedAck(wi.Ack); err != nil {
@@ -246,6 +373,13 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				glog.V(3).Infof(logString(fmt.Sprintf("nothing to terminate for agreement %v, no database record.", drAck.AgreementId())))
 			} else if _, err := DataNotification(a.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to record data notification, error: %v", err)))
+			}
+
+			// Get rid of the exchange message if there is one
+			if wi.MessageId != 0 {
+				if err := a.deleteMessage(wi.MessageId); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, a.agbotId)))
+				}
 			}
 
 		} else if workItem.Type() == CANCEL {
@@ -309,4 +443,23 @@ func (a *CSAgreementWorker) recordConsumerAgreementState(agreementId string, wor
 		}
 	}
 
+}
+
+func (a *CSAgreementWorker) deleteMessage(msgId int) error {
+	var resp interface{}
+	resp = new(exchange.PostDeviceResponse)
+	targetURL := a.config.AgreementBot.ExchangeURL + "agbots/" + a.agbotId + "/msgs/" + strconv.Itoa(msgId)
+	for {
+		if err, tpErr := exchange.InvokeExchange(a.httpClient, "DELETE", targetURL, a.agbotId, a.token, nil, &resp); err != nil {
+			glog.Errorf(err.Error())
+			return err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(3).Infof(logString(fmt.Sprintf("deleted message %v", msgId)))
+			return nil
+		}
+	}
 }

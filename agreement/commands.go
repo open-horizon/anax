@@ -46,3 +46,13 @@ func NewWhisperMessageCommand(msg events.WhisperReceivedMessage) *WhisperMessage
 		Msg: msg,
 	}
 }
+
+type ExchangeMessageCommand struct {
+	Msg events.ExchangeDeviceMessage
+}
+
+func NewExchangeMessageCommand(msg events.ExchangeDeviceMessage) *ExchangeMessageCommand {
+	return &ExchangeMessageCommand{
+		Msg: msg,
+	}
+}

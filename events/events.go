@@ -11,6 +11,10 @@ type Event struct {
 	Id EventId
 }
 
+func (e Event) String() string {
+	return fmt.Sprintf("%v", e.Id)
+}
+
 type EventId string
 
 // event constants are declared here for all workers to ensure uniqueness of constant values
@@ -28,6 +32,9 @@ const (
 	// whisper related
 	RECEIVED_MSG EventId = "RECEIVED_MSG"
 	SUBSCRIBE_TO EventId = "SUBSCRIBE_TO"
+
+	// exchange related
+	RECEIVED_EXCHANGE_DEV_MSG EventId = "RECEIVED_EXCHANGE_DEV_MSG"
 
 	// torrent-related
 	TORRENT_FAILURE EventId = "TORRENT_FAILURE"
@@ -316,7 +323,7 @@ func (m *GovernanceCancelationMessage) Event() Event {
 }
 
 func (m GovernanceCancelationMessage) String() string {
-	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Cause: %v", m.Event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment), m.Cause)
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Cause: %v", m.event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment), m.Cause)
 }
 
 func (m GovernanceCancelationMessage) ShortString() string {
@@ -353,7 +360,7 @@ type ContainerMessage struct {
 }
 
 func (m ContainerMessage) String() string {
-	return fmt.Sprintf("event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v", m.event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment))
+	return fmt.Sprintf("event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v", m.event.Id, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment))
 }
 
 func (m ContainerMessage) ShortString() string {
@@ -390,7 +397,7 @@ func (m *ApiAgreementCancelationMessage) Event() Event {
 }
 
 func (m ApiAgreementCancelationMessage) String() string {
-	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Cause: %v", m.Event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment), m.Cause)
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Cause: %v", m.event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment), m.Cause)
 }
 
 func (m ApiAgreementCancelationMessage) ShortString() string {
@@ -423,7 +430,7 @@ func (m *InitAgreementCancelationMessage) Event() Event {
 }
 
 func (m InitAgreementCancelationMessage) String() string {
-	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Reason: %v", m.Event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment), m.Reason)
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Reason: %v", m.event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment), m.Reason)
 }
 
 func (m InitAgreementCancelationMessage) ShortString() string {
@@ -454,7 +461,7 @@ func (m *AccountFundedMessage) Event() Event {
 }
 
 func (m AccountFundedMessage) String() string {
-	return fmt.Sprintf("Event: %v, Account: %v, Time: %v", m.Event, m.Account, m.Time)
+	return fmt.Sprintf("Event: %v, Account: %v, Time: %v", m.event.Id, m.Account, m.Time)
 }
 
 func (m AccountFundedMessage) ShortString() string {
@@ -482,7 +489,7 @@ func (m *BlockchainClientInitializedMessage) Event() Event {
 }
 
 func (m BlockchainClientInitializedMessage) String() string {
-	return fmt.Sprintf("Event: %v, Time: %v", m.Event, m.Time)
+	return fmt.Sprintf("Event: %v, Time: %v", m.event, m.Time)
 }
 
 func (m BlockchainClientInitializedMessage) ShortString() string {
@@ -515,11 +522,11 @@ func (m *EthBlockchainEventMessage) RawEvent() string {
 }
 
 func (m EthBlockchainEventMessage) String() string {
-	return fmt.Sprintf("Event: %v, Protocol: %v, Raw Event: %v, Time: %v", m.Event, m.rawEvent, m.protocol, m.Time)
+	return fmt.Sprintf("Event: %v, Protocol: %v, Raw Event: %v, Time: %v", m.event, m.protocol, m.rawEvent, m.Time)
 }
 
 func (m EthBlockchainEventMessage) ShortString() string {
-	return fmt.Sprintf("Event: %v, Protocol: %v, Time: %v", m.Event, m.protocol, m.Time)
+	return fmt.Sprintf("Event: %v, Protocol: %v, Time: %v", m.event, m.protocol, m.Time)
 }
 
 func NewEthBlockchainEventMessage(id EventId, ev string, protocol string) *EthBlockchainEventMessage {
@@ -530,5 +537,44 @@ func NewEthBlockchainEventMessage(id EventId, ev string, protocol string) *EthBl
 		rawEvent: ev,
 		protocol: protocol,
 		Time: uint64(time.Now().Unix()),
+	}
+}
+
+// Exchange message received event occurred
+type ExchangeDeviceMessage struct {
+	event           Event
+	exchangeMessage []byte
+	protocolMessage string
+	Time            uint64
+}
+
+func (m *ExchangeDeviceMessage) Event() Event {
+	return m.event
+}
+
+func (m *ExchangeDeviceMessage) ExchangeMessage() []byte {
+	return m.exchangeMessage
+}
+
+func (m *ExchangeDeviceMessage) ProtocolMessage() string {
+	return m.protocolMessage
+}
+
+func (m ExchangeDeviceMessage) String() string {
+	return fmt.Sprintf("Event: %v, ProtocolMessage: %v, Time: %v, ExchangeMessage: %s", m.event, m.protocolMessage, m.Time, m.exchangeMessage)
+}
+
+func (m ExchangeDeviceMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v, ProtocolMessage: %v, Time: %v", m.event, m.protocolMessage, m.Time)
+}
+
+func NewExchangeDeviceMessage(id EventId, exMsg []byte, pMsg string) *ExchangeDeviceMessage {
+	return &ExchangeDeviceMessage{
+		event: Event{
+			Id: id,
+		},
+		exchangeMessage: exMsg,
+		protocolMessage: pMsg,
+		Time:            uint64(time.Now().Unix()),
 	}
 }

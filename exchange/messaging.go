@@ -8,10 +8,14 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
 	"golang.org/x/crypto/sha3"
+	"io/ioutil"
+	"path"
+	"os"
 )
 
 // This module is used to construct a message that can be sent over an insecure transport
@@ -361,4 +365,89 @@ func symmetricallyDecrypt(data []byte, key []byte, nonce []byte) ([]byte, error)
 	}
 	return receivedDecryptedMessage, nil
 
+}
+
+// Get the public and private RSA keys being used by this runtime. If the keys dont exist in the
+// filesystem, they will be created and written to the filesystem. If they already exist in the
+// filesystem then they will be demarshalled and returned to the caller.
+
+var gPublicKey *rsa.PublicKey
+var gPrivateKey *rsa.PrivateKey
+
+func GetKeys(keyPath string) (*rsa.PublicKey, *rsa.PrivateKey, error) {
+
+	if gPublicKey != nil {
+		return gPublicKey, gPrivateKey, nil
+	}
+
+
+	privFileName := "privateMessagingKey.pem"
+	pubFileName := "publicMessagingKey.pem"
+
+	privFilepath := path.Join(os.Getenv("SNAP_COMMON"), keyPath, privFileName)
+	pubFilepath := path.Join(os.Getenv("SNAP_COMMON"), keyPath, pubFileName)
+	if _, ferr := os.Stat(privFilepath); os.IsNotExist(ferr) {
+
+		if privateKey, err := rsa.GenerateKey(rand.Reader, 2048); err != nil {
+			return nil, nil, errors.New(fmt.Sprintf("Could not generate private key, error %v", err))
+		} else if privFile, err := os.Create(privFilepath); err != nil {
+			return nil, nil, errors.New(fmt.Sprintf("Could not create private key file %v, error %v", privFilepath, err))
+		} else if err := privFile.Chmod(0600); err != nil {
+			return nil, nil, errors.New(fmt.Sprintf("Could not chmod private key file %v, error %v", privFilepath, err))
+		} else if pubFile, err := os.Create(pubFilepath); err != nil {
+			return nil, nil, errors.New(fmt.Sprintf("Could not create public key file %v, error %v", pubFilepath, err))
+		} else if err := pubFile.Chmod(0600); err != nil {
+			return nil, nil, errors.New(fmt.Sprintf("Could not chmod public key file %v, error %v", pubFilepath, err))
+		} else {
+			publicKey := &privateKey.PublicKey
+
+			if pubKeyBytes, err := x509.MarshalPKIXPublicKey(publicKey); err != nil {
+				return nil, nil, errors.New(fmt.Sprintf("Could not marshal public key, error %v", err))
+			} else {
+				pubEnc := &pem.Block{
+					Type:    "PUBLIC KEY",
+					Headers: nil,
+					Bytes:   pubKeyBytes}
+				if err := pem.Encode(pubFile, pubEnc); err != nil {
+					return nil, nil, errors.New(fmt.Sprintf("Could not encode public key to file, error %v", err))
+				} else {
+					pubFile.Close()
+				}
+			}
+
+			privEnc := &pem.Block{
+					Type:    "RSA PRIVATE KEY",
+					Headers: nil,
+					Bytes:   x509.MarshalPKCS1PrivateKey(privateKey)}
+			if err := pem.Encode(privFile, privEnc); err != nil {
+				return nil, nil, errors.New(fmt.Sprintf("Could not encode private key to file, error %v", err))
+			} else {
+				privFile.Close()
+			}
+
+			gPublicKey = publicKey
+			gPrivateKey = privateKey
+		}
+	} else {
+		if _, ferr := os.Stat(pubFilepath); os.IsNotExist(ferr) {
+			return nil, nil, errors.New(fmt.Sprintf("Could not find public key file %v, error %v", privFilepath, ferr))
+		} else if privFile, err := os.Open(privFilepath); err != nil {
+			return nil, nil, errors.New(fmt.Sprintf("Unable to open private key file %v, error: %v", privFilepath, err))
+		} else if privBytes, err := ioutil.ReadAll(privFile); err != nil {
+			return nil, nil, errors.New(fmt.Sprintf("Unable to read private key file %v, error: %v", privFilepath, err))
+		} else if privateKey, err := x509.ParsePKCS1PrivateKey(privBytes); err != nil {
+			return nil, nil, errors.New(fmt.Sprintf("Unable to parse private key %x, error: %v", privBytes, err))
+		} else if pubFile, err := os.Open(pubFilepath); err != nil {
+			return nil, nil, errors.New(fmt.Sprintf("Unable to open public key file %v, error: %v", pubFilepath, err))
+		} else if pubBytes, err := ioutil.ReadAll(pubFile); err != nil {
+			return nil, nil, errors.New(fmt.Sprintf("Unable to read public key file %v, error: %v", pubFilepath, err))
+		} else if publicKey, err := x509.ParsePKIXPublicKey(pubBytes); err != nil {
+			return nil, nil, errors.New(fmt.Sprintf("Unable to parse public key %x, error: %v", pubBytes, err))
+		} else {
+			gPublicKey = publicKey.(*rsa.PublicKey)
+			gPrivateKey = privateKey
+		}
+	}
+
+	return gPublicKey, gPrivateKey, nil
 }

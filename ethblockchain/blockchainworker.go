@@ -96,7 +96,6 @@ func (w *EthBlockchainWorker) start() {
 						glog.V(3).Infof(logString(fmt.Sprintf("account %v not funded yet", acct)))
 					} else if funded && !notifiedFunded {
 						notifiedFunded = true
-						nonBlockDuration = 60
 						glog.V(3).Infof(logString(fmt.Sprintf("sending acct %v funded event", acct)))
 						w.Messages() <- events.NewAccountFundedMessage(events.ACCOUNT_FUNDED, acct)
 					} else if funded {
@@ -188,7 +187,7 @@ func (w *EthBlockchainWorker) handleEvents(newEvents []Raw_Event) {
 			glog.Errorf(logString(fmt.Sprintf("unable to marshal event %v, error %v", ev, err)))
 		} else {
 			rawEvent := string(evBytes)
-			glog.V(5).Info(logString(fmt.Sprintf("found event: %v", rawEvent)))
+			glog.V(3).Info(logString(fmt.Sprintf("found event: %v", rawEvent)))
 			w.Messages() <- events.NewEthBlockchainEventMessage(events.BC_EVENT, rawEvent, policy.CitizenScientist)
 		}
 	}

@@ -14,7 +14,6 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
-	gwhisper "github.com/open-horizon/go-whisper"
 	"net/http"
 	"reflect"
 	"runtime"
@@ -91,20 +90,18 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 			glog.Errorf("AgreementWorker received Unsupported event: %v", incoming.Event().Id)
 		}
 
-	case *events.WhisperReceivedMessage:
-		msg, _ := incoming.(*events.WhisperReceivedMessage)
-
-		// TODO: When we replace this with telehash, check to see if the protocol in the message
-		// is already known to us. For now, whisper doesnt put the topic in the message so we have
-		// now way of checking.
-		agCmd := NewWhisperMessageCommand(*msg)
-		w.Commands <- agCmd
-
 	case *events.BlockchainClientInitializedMessage:
 		msg, _ := incoming.(*events.BlockchainClientInitializedMessage)
 		switch msg.Event().Id {
 		case events.BC_CLIENT_INITIALIZED:
 			w.bcClientInitialized = true
+		}
+
+	case *events.ExchangeDeviceMessage:
+		msg, _ := incoming.(*events.ExchangeDeviceMessage)
+		switch msg.Event().Id {
+		case events.RECEIVED_EXCHANGE_DEV_MSG:
+			w.Commands <- NewExchangeMessageCommand(*msg)
 		}
 
 	default: //nothing
@@ -114,6 +111,70 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 }
 
 func (w *AgreementWorker) start() {
+
+	sendMessage := func(mt interface{}, pay []byte) error {
+		// The mt parameter is an abstract message target object that is passed to this routine
+		// by the agreement protocol. It's an interface{} type so that we can avoid the protocol knowing
+		// about non protocol types.
+
+		var messageTarget *exchange.ExchangeMessageTarget
+		switch mt.(type) {
+		case *exchange.ExchangeMessageTarget:
+			messageTarget = mt.(*exchange.ExchangeMessageTarget)
+		default:
+			return errors.New(fmt.Sprintf("input message target is %T, expecting exchange.MessageTarget", mt))
+		}
+
+		// If the message target is using whisper, then send via whisper
+		if len(messageTarget.ReceiverMsgEndPoint) != 0 {
+			return errors.New(fmt.Sprintf("Message target should never be whisper, %v", messageTarget))
+
+		// The message target is using the exchange message queue, so use it
+		} else {
+
+			// Grab the exchange ID of the message receiver
+			glog.V(3).Infof("Sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))
+
+			// Get my own keys
+			myPubKey, myPrivKey, _ := exchange.GetKeys("")
+
+			// Demarshal the receiver's public key if we need to
+			if messageTarget.ReceiverPublicKeyObj == nil {
+				if mtpk, err := exchange.DemarshalPublicKey(messageTarget.ReceiverPublicKeyBytes); err != nil {
+					return errors.New(fmt.Sprintf("Unable to demarshal device's public key %x, error %v", messageTarget.ReceiverPublicKeyBytes, err))
+				} else {
+					messageTarget.ReceiverPublicKeyObj = mtpk
+				}
+			}
+
+			// Create an encrypted message
+			if encryptedMsg, err := exchange.ConstructExchangeMessage(pay, myPubKey, myPrivKey, messageTarget.ReceiverPublicKeyObj); err != nil {
+				return errors.New(fmt.Sprintf("Unable to construct encrypted message from %v, error %v", pay, err))
+			// Marshal it into a byte array
+			} else if msgBody, err := json.Marshal(encryptedMsg); err != nil {
+				return errors.New(fmt.Sprintf("Unable to marshal exchange message %v, error %v", encryptedMsg, err))
+			// Send it to the device's message queue
+			} else {
+				pm := exchange.CreatePostMessage(msgBody, w.Worker.Manager.Config.Edge.ExchangeMessageTTL)
+				var resp interface{}
+				resp = new(exchange.PostDeviceResponse)
+				targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "agbots/" + messageTarget.ReceiverExchangeId + "/msgs"
+				for {
+					if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.deviceId, w.deviceToken, pm, &resp); err != nil {
+						return err
+					} else if tpErr != nil {
+						glog.V(5).Infof(tpErr.Error())
+						time.Sleep(10 * time.Second)
+						continue
+					} else {
+						glog.V(5).Infof("Sent message for %v to exchange.", messageTarget.ReceiverExchangeId)
+						return nil
+					}
+				}
+			}
+		}
+		return nil
+	}
 
 	glog.Info(logString(fmt.Sprintf("started")))
 
@@ -162,9 +223,7 @@ func (w *AgreementWorker) start() {
 			glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
 		}
 
-		// Start the go routine that makes sure the whisper id is correct in the exchange
-		go w.maintainWhisperId()
-
+		protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
 		// Handle agreement processor commands
 		for {
 			glog.V(2).Infof(logString(fmt.Sprintf("blocking for commands")))
@@ -196,27 +255,43 @@ func (w *AgreementWorker) start() {
 					}
 				}
 
-			case *WhisperMessageCommand:
-				cmd, _ := command.(*WhisperMessageCommand)
-				// The whisper message could be one of the agreement protocol messages
+			case *ExchangeMessageCommand:
+				cmd, _ := command.(*ExchangeMessageCommand)
+				exchangeMsg := new(exchange.DeviceMessage)
+				if err := json.Unmarshal(cmd.Msg.ExchangeMessage(), &exchangeMsg); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("unable to demarshal exchange device message %v, error %v", cmd.Msg.ExchangeMessage(), err)))
+				}
+				protocolMsg := cmd.Msg.ProtocolMessage()
 
-				protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
+				glog.V(3).Infof(logString(fmt.Sprintf("received message %v from the exchange: %v", exchangeMsg.MsgId, protocolMsg)))
 
-				// Proposal messages could be duplicates or fakes if there is an agbot imposter in the network. The sequence
-				// of checks here is very important to prevent duplicates from causing chaos, especially if there are duplicates
-				// on agreement worker threads at the same time.
-				if proposal, err := protocolHandler.ValidateProposal(cmd.Msg.Payload()); err != nil {
-					glog.Warningf(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %v due to %v", cmd.Msg.Payload(), err)))
+				// Process the message if it's a proposal.
+				deleteMessage := false
+				if proposal, err := protocolHandler.ValidateProposal(string(protocolMsg)); err != nil {
+					glog.Warningf(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %s due to %v", protocolMsg, err)))
 				} else if agAlreadyExists, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),persistence.IdEAFilter(proposal.AgreementId)}); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreements from database, error %v", err)))
 				} else if len(agAlreadyExists) != 0 {
 					glog.Errorf(logString(fmt.Sprintf("agreement %v already exists, ignoring proposal: %v", proposal.AgreementId, proposal.ShortString())))
+					deleteMessage = true
 				} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
-				} else if reply, err := protocolHandler.DecideOnProposal(proposal, cmd.Msg.From(), w.deviceId); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("respond to proposal with error: %v", err)))
-				} else if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId, proposal.ConsumerId, cmd.Msg.Payload(), citizenscientist.PROTOCOL_NAME, proposal.Version, tcPolicy.APISpecs[0].SpecRef, reply.Signature, proposal.Address); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId, err)))
+				} else if messageTarget, err := exchange.CreateMessageTarget(exchangeMsg.AgbotId, nil, exchangeMsg.AgbotPubKey, ""); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
+				} else {
+					deleteMessage = true
+					if reply, err := protocolHandler.DecideOnProposal(proposal, w.deviceId, messageTarget, sendMessage); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("respond to proposal with error: %v", err)))
+					} else if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId, proposal.ConsumerId, protocolMsg, citizenscientist.PROTOCOL_NAME, proposal.Version, tcPolicy.APISpecs[0].SpecRef, reply.Signature, proposal.Address); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId, err)))
+						deleteMessage = false
+					}
+				}
+
+				if deleteMessage {
+					if err := w.deleteMessage(exchangeMsg); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("error deleting exchange message %v, error %v", exchangeMsg.MsgId, err)))
+					}
 				}
 
 			default:
@@ -232,51 +307,6 @@ func (w *AgreementWorker) start() {
 	glog.Info(logString(fmt.Sprintf("waiting for commands.")))
 
 }
-
-func (w *AgreementWorker) maintainWhisperId() {
-	// The device side whisper id can change if geth fails on us. If this happens, we need to
-	// update the whisper id in the exchange.
-
-	getWhisperId := func() string {
-		if wId, err := gwhisper.AccountId(w.Config.Edge.GethURL); err != nil {
-			glog.Errorf(logStringww(fmt.Sprintf("encountered error reading whisper id, error %v",err)))
-			return ""
-		} else {
-			return wId
-		}
-	}
-
-	for {
-		glog.V(5).Infof(logStringww(fmt.Sprintf("checking on whisper id")))
-
-		newId := getWhisperId()
-		if newId != "" {
-			var resp interface{}
-			resp = new(exchange.GetDevicesResponse)
-			targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId
-			if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil || tpErr != nil {
-				glog.Errorf(logStringww(fmt.Sprintf("encountered error getting device info from exchange, error %v, transport error %v", err, tpErr)))
-			} else if dev, there := resp.(*exchange.GetDevicesResponse).Devices[w.deviceId]; there {
-				glog.V(5).Infof(logStringww(fmt.Sprintf("found device %v in the exchange.", w.deviceId)))
-				if dev.MsgEndPoint != newId {
-					if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
-						glog.Errorf(logStringww(fmt.Sprintf("unable to update whisper id with exchange, error: %v", err)))
-					} else {
-						glog.V(3).Infof(logStringww(fmt.Sprintf("updated exchange for %v with new whisper id %v", w.deviceId, newId)))
-					}
-				} else {
-					glog.V(3).Infof(logStringww(fmt.Sprintf("whisper id for %v has not changed", w.deviceId)))
-				}
-			} else {
-				glog.Errorf(logStringww(fmt.Sprintf("did not find device %v in the exchange", w.deviceId)))
-			}
-		}
-
-		time.Sleep(30 * time.Second)
-	}
-
-}
-
 
 func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
@@ -330,7 +360,7 @@ func (w *AgreementWorker) syncOnInit() error {
 
 				targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/agreements/" + ag.CurrentAgreementId
 				if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil || tpErr != nil {
-					glog.Errorf(logStringww(fmt.Sprintf("encountered error getting device info from exchange, error %v, transport error %v", err, tpErr)))
+					glog.Errorf(logString(fmt.Sprintf("encountered error getting device info from exchange, error %v, transport error %v", err, tpErr)))
 				} else {
 					exchangeAgreement = resp.(*exchange.AllDeviceAgreementsResponse).Agreements
 					glog.V(5).Infof(logString(fmt.Sprintf("found agreements %v in the exchange.", exchangeAgreement)))
@@ -489,10 +519,25 @@ func (w *AgreementWorker) recordAgreementState(agreementId string, microservice 
 
 }
 
-var logString = func(v interface{}) string {
-	return fmt.Sprintf("AgreementWorker %v", v)
+func (w *AgreementWorker) deleteMessage(msg *exchange.DeviceMessage) error {
+	var resp interface{}
+	resp = new(exchange.PostDeviceResponse)
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/msgs/" + strconv.Itoa(msg.MsgId)
+	for {
+		if err, tpErr := exchange.InvokeExchange(w.httpClient, "DELETE", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
+			glog.Errorf(err.Error())
+			return err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(3).Infof(logString(fmt.Sprintf("deleted message %v", msg.MsgId)))
+			return nil
+		}
+	}
 }
 
-var logStringww = func(v interface{}) string {
-	return fmt.Sprintf("AgreementWorker whisper maintenance %v", v)
+var logString = func(v interface{}) string {
+	return fmt.Sprintf("AgreementWorker %v", v)
 }
