@@ -107,7 +107,6 @@ func (w *EthBlockchainWorker) start() {
 				if w.el != nil {
 					if events, _, err := w.el.Get_Next_Raw_Event_Batch(getFilter(), 0); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("unable to get event batch, error %v", err)))
-						return
 					} else {
 						w.handleEvents(events)
 					}
