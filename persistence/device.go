@@ -42,8 +42,9 @@ func (e ExchangeDevice) String() string {
 	return fmt.Sprintf("Account: %v, Token: <%s>, Name: %v, TokenLastValidTime: %v, TokenValid: %v", e.Account, tokenShadow, e.Name, e.TokenLastValidTime, e.TokenValid)
 }
 
+// TODO: removed check for email set temporarily until the new account mgmt. stuff is released
 func newExchangeDevice(token string, name string, tokenLastValidTime uint64, account *ExchangeAccount) (*ExchangeDevice, error) {
-	if token == "" || name == "" || tokenLastValidTime == 0 || account == nil || account.Id == "" || account.Email == "" {
+	if token == "" || name == "" || tokenLastValidTime == 0 || account == nil || account.Id == "" {
 		return nil, errors.New("Cannot create exchange account, illegal arguments")
 	}
 
@@ -139,7 +140,7 @@ func updateExchangeDeviceToken(db *bolt.DB, accountId string, token string) (*Ex
 // always assumed the given token is valid at the time of call
 func SaveNewExchangeDevice(db *bolt.DB, token string, name string, accountId string, accountEmail string) (*ExchangeDevice, error) {
 
-	if token == "" || name == "" || accountId == "" || accountEmail == "" {
+	if token == "" || name == "" || accountId == "" {
 		return nil, errors.New("Argument null and must not be")
 	}
 
