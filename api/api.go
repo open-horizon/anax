@@ -344,6 +344,7 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 		exDev, err := persistence.SaveNewExchangeDevice(a.db, *device.Token, *device.Name, *device.Account.Id, *device.Account.Email)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			glog.Errorf("Error persisting new exchange device: %v", err)
 			return
 		}
 
