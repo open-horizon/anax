@@ -303,7 +303,7 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 				glog.Errorf(logString(fmt.Sprintf("unable to delete record for agreement %v, error: %v", agreementId, err)))
 			}
 		}
-	} ()
+	}()
 }
 
 func (w *GovernanceWorker) start() {
@@ -326,7 +326,7 @@ func (w *GovernanceWorker) start() {
 			if len(messageTarget.ReceiverMsgEndPoint) != 0 {
 				return errors.New(fmt.Sprintf("Message target should never be whisper, %v", messageTarget))
 
-			// The message target is using the exchange message queue, so use it
+				// The message target is using the exchange message queue, so use it
 			} else {
 
 				// Grab the exchange ID of the message receiver
@@ -347,10 +347,10 @@ func (w *GovernanceWorker) start() {
 				// Create an encrypted message
 				if encryptedMsg, err := exchange.ConstructExchangeMessage(pay, myPubKey, myPrivKey, messageTarget.ReceiverPublicKeyObj); err != nil {
 					return errors.New(fmt.Sprintf("Unable to construct encrypted message from %v, error %v", pay, err))
-				// Marshal it into a byte array
+					// Marshal it into a byte array
 				} else if msgBody, err := json.Marshal(encryptedMsg); err != nil {
 					return errors.New(fmt.Sprintf("Unable to marshal exchange message %v, error %v", encryptedMsg, err))
-				// Send it to the device's message queue
+					// Send it to the device's message queue
 				} else {
 					pm := exchange.CreatePostMessage(msgBody, w.Worker.Manager.Config.Edge.ExchangeMessageTTL)
 					var resp interface{}
@@ -431,15 +431,22 @@ func (w *GovernanceWorker) start() {
 				case *CleanupExecutionCommand:
 					cmd, _ := command.(*CleanupExecutionCommand)
 
-					if w.bcWritesEnabled == true {
-						glog.V(3).Infof("Ending the agreement: %v", cmd.AgreementId)
-						w.cancelAgreement(cmd.AgreementId, cmd.AgreementProtocol, cmd.Reason, citizenscientist.DecodeReasonCode(uint64(cmd.Reason)))
+					agreementId := cmd.AgreementId
+					if ags, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)}); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agreementId, err)))
+					} else if len(ags) != 1 {
+						glog.V(5).Infof(logString(fmt.Sprintf("ignoring the event, unable to retrieve unarchived single agreement %v from the database.", agreementId)))
+					} else if ags[0].AgreementTerminatedTime != 0 {
+						glog.V(3).Infof(logString(fmt.Sprintf("ignoring the event, agreement %v is already terminating", agreementId)))
+					} else if w.bcWritesEnabled == true {
+						glog.V(3).Infof("Ending the agreement: %v", agreementId)
+						w.cancelAgreement(agreementId, cmd.AgreementProtocol, cmd.Reason, citizenscientist.DecodeReasonCode(uint64(cmd.Reason)))
 
 						// send the event to the container in case it has started the workloads.
-						w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, cmd.AgreementProtocol, cmd.AgreementId, cmd.Deployment)
+						w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, cmd.AgreementProtocol, agreementId, cmd.Deployment)
 					} else {
 						// Requeue
-						glog.V(3).Infof("Deferring ending the agreement: %v", cmd.AgreementId)
+						glog.V(3).Infof("Deferring ending the agreement: %v", agreementId)
 						deferredCommands = append(deferredCommands, cmd)
 					}
 
@@ -464,10 +471,10 @@ func (w *GovernanceWorker) start() {
 					// ReplyAck messages could indicate that the agbot has decided not to pursue the agreement any longer.
 					if replyAck, err := protocolHandler.ValidateReplyAck(cmd.Msg.ProtocolMessage()); err != nil {
 						glog.Warningf(logString(fmt.Sprintf("ReplyAck handler ignoring non-reply ack message: %v due to %v", cmd.Msg.ProtocolMessage(), err)))
-					} else if ags, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),persistence.IdEAFilter(replyAck.AgreementId())}); err != nil {
+					} else if ags, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(replyAck.AgreementId())}); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", replyAck.AgreementId(), err)))
 					} else if len(ags) != 1 {
-						glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", replyAck.AgreementId(), err)))
+						glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database.", replyAck.AgreementId())))
 						deleteMessage = true
 					} else if ags[0].AgreementAcceptedTime != 0 || ags[0].AgreementTerminatedTime != 0 {
 						glog.Errorf(logString(fmt.Sprintf("ignoring replyack for %v because we already received one or are cancelling", replyAck.AgreementId())))
@@ -515,7 +522,6 @@ func (w *GovernanceWorker) start() {
 							glog.Errorf(logString(fmt.Sprintf("error deleting exchange message %v, error %v", exchangeMsg.MsgId, err)))
 						}
 					}
-
 
 				case *BlockchainEventCommand:
 					cmd, _ := command.(*BlockchainEventCommand)
