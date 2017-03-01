@@ -34,6 +34,10 @@ const MAX_MICROPAYMENT_UNPAID_RUN_DURATION_M = 60
 // enforced only after the workloads are running
 const MAX_AGREEMENT_ACCEPTANCE_WAIT_TIME_M = 20
 
+// related to agreement cleanup status
+const STATUS_WORKLOAD_DESTROYED = 500
+const STATUS_AG_PROTOCOL_TERMINATED = 501
+
 type GovernanceWorker struct {
 	worker.Worker   // embedded field
 	db              *bolt.DB
@@ -104,6 +108,9 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			w.Commands <- cmd
 		case events.EXECUTION_FAILED:
 			cmd := w.NewCleanupExecutionCommand(msg.AgreementProtocol, msg.AgreementId, citizenscientist.CANCEL_CONTAINER_FAILURE, msg.Deployment)
+			w.Commands <- cmd
+		case events.WORKLOAD_DESTROYED:
+			cmd := w.NewCleanupStatusCommand(msg.AgreementProtocol, msg.AgreementId, STATUS_WORKLOAD_DESTROYED)
 			w.Commands <- cmd
 		}
 
@@ -289,20 +296,9 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 			}
 		}
 
-		if ag != nil && ag.AgreementAcceptedTime != 0 {
-			// Archive agreements that were accepted
-			glog.V(5).Infof(logString(fmt.Sprintf("archiving agreement %v", agreementId)))
-			if _, err := persistence.ArchiveEstablishedAgreement(w.db, agreementId, agreementProtocol); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("error archiving terminated agreement: %v, error: %v", agreementId, err)))
-			}
-		} else {
-			// The only place the agreement is known is in the DB, so we can just delete the record. In the situation where
-			// the agbot changes its mind about the proposal, we dont want to create an archived agreement because an
-			// agreement was never really established.
-			if err := persistence.DeleteEstablishedAgreement(w.db, agreementId, agreementProtocol); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("unable to delete record for agreement %v, error: %v", agreementId, err)))
-			}
-		}
+		// report the cleanup status
+		cmd := w.NewCleanupStatusCommand(agreementProtocol, agreementId, STATUS_AG_PROTOCOL_TERMINATED)
+		w.Commands <- cmd
 	}()
 }
 
@@ -601,6 +597,50 @@ func (w *GovernanceWorker) start() {
 						glog.V(5).Infof(logString(fmt.Sprintf("ignoring event")))
 					}
 
+				case *CleanupStatusCommand:
+					cmd, _ := command.(*CleanupStatusCommand)
+
+					glog.V(5).Infof(logString(fmt.Sprintf("Received CleanupStatusCommand: %v.", cmd)))
+					if ags, err := persistence.FindEstablishedAgreements(w.db, cmd.AgreementProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(cmd.AgreementId)}); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", cmd.AgreementId, err)))
+					} else if len(ags) != 1 {
+						glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, not our agreement id")))
+					} else if ags[0].AgreementAcceptedTime == 0 {
+						// The only place the agreement is known is in the DB, so we can just delete the record. In the situation where
+						// the agbot changes its mind about the proposal, we don't want to create an archived agreement because an
+						// agreement was never really established.
+						if err := persistence.DeleteEstablishedAgreement(w.db, cmd.AgreementId, cmd.AgreementProtocol); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("unable to delete record for agreement %v, error: %v", cmd.AgreementId, err)))
+						}
+					} else {
+						// writes the cleanup status into the db
+						var archive = false
+						switch cmd.Status {
+						case STATUS_WORKLOAD_DESTROYED:
+							if agreement, err := persistence.AgreementStateWorkloadTerminated(w.db, cmd.AgreementId, cmd.AgreementProtocol); err != nil {
+								glog.Errorf(logString(fmt.Sprintf("error marking agreement %v workload terminated: %v", cmd.AgreementId, err)))
+							} else if agreement.AgreementProtocolTerminatedTime != 0 {
+								archive = true
+							}
+						case STATUS_AG_PROTOCOL_TERMINATED:
+							if agreement, err := persistence.AgreementStateAgreementProtocolTerminated(w.db, cmd.AgreementId, cmd.AgreementProtocol); err != nil {
+								glog.Errorf(logString(fmt.Sprintf("error marking agreement %v agreement protocol terminated: %v", cmd.AgreementId, err)))
+							} else if agreement.WorkloadTerminatedTime != 0 {
+								archive = true
+							}
+						default:
+							glog.Errorf(logString(fmt.Sprintf("The cleanup status %v is not supported for agreement %v.", cmd.Status, cmd.AgreementId)))
+						}
+
+						// archive the agreement if all the cleanup processes are done
+						if archive {
+							glog.V(5).Infof(logString(fmt.Sprintf("archiving agreement %v", cmd.AgreementId)))
+							if _, err := persistence.ArchiveEstablishedAgreement(w.db, cmd.AgreementId, cmd.AgreementProtocol); err != nil {
+								glog.Errorf(logString(fmt.Sprintf("error archiving terminated agreement: %v, error: %v", cmd.AgreementId, err)))
+							}
+						}
+					}
+
 				default:
 					glog.Errorf("GovernanceWorker received unknown command (%T): %v", command, command)
 				}
@@ -619,7 +659,6 @@ func (w *GovernanceWorker) start() {
 					w.Commands <- c
 				}
 				deferredCommands = make([]worker.Command, 0, 10)
-
 			}
 
 		}
@@ -747,6 +786,20 @@ func (w *GovernanceWorker) NewCleanupExecutionCommand(protocol string, agreement
 		AgreementId:       agreementId,
 		Reason:            reason,
 		Deployment:        deployment,
+	}
+}
+
+type CleanupStatusCommand struct {
+	AgreementProtocol string
+	AgreementId       string
+	Status            uint
+}
+
+func (w *GovernanceWorker) NewCleanupStatusCommand(protocol string, agreementId string, status uint) *CleanupStatusCommand {
+	return &CleanupStatusCommand{
+		AgreementProtocol: protocol,
+		AgreementId:       agreementId,
+		Status:            status,
 	}
 }
 

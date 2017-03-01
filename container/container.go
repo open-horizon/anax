@@ -1016,6 +1016,9 @@ func (b *ContainerWorker) start() {
 					glog.Errorf("Error removing resources: %v", err)
 				}
 
+				// send the event to let others know that the workload clean up has been processed
+				b.Messages() <- events.NewContainerMessage(events.WORKLOAD_DESTROYED, cmd.AgreementProtocol, cmd.CurrentAgreementId, nil)
+
 			default:
 				glog.Errorf("Unsupported command: %v", command)
 
