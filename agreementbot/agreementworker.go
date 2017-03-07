@@ -234,7 +234,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
 
 			// Initiate the protocol
-			} else if proposal, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, &wi.ConsumerPolicy, myAddress, a.agbotId, mt, sendMessage); err != nil {
+			} else if proposal, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, &wi.ConsumerPolicy, myAddress, a.agbotId, mt, a.config.AgreementBot.DefaultWorkloadPW, sendMessage); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error initiating agreement: %v", err)))
 
 				// Remove pending agreement from database

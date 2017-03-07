@@ -17,12 +17,12 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/worker"
-	gwhisper "github.com/open-horizon/go-whisper"
 	"golang.org/x/sys/unix"
 	"io"
 	"io/ioutil"
 	"os"
 	"path"
+	"reflect"
 	"runtime"
 	"strconv"
 	"strings"
@@ -69,8 +69,49 @@ const IPT_COLONUS_ISOLATED_CHAIN = "COLONUS-ISOLATION"
  */
 
 type DeploymentDescription struct {
-	Services       map[string]Service `json:"services"`
-	ServicePattern Pattern            `json:"service_pattern"`
+	Services       map[string]*Service `json:"services"`
+	ServicePattern Pattern             `json:"service_pattern"`
+}
+
+var invalidDeploymentOptions = map[string][]string {
+	"workload": []string{"Binds","SpecificPorts"},
+	"infrastructure": []string{},
+}
+
+func (d DeploymentDescription) isValidFor(context string) bool {
+	for _, service := range d.Services {
+		for _, invalidField := range invalidDeploymentOptions[context] {
+			v := reflect.ValueOf(*service)
+			fv := v.FieldByName(invalidField)
+			switch fv.Type().String() {
+			case "[]string":
+				if fv.Len() != reflect.Zero(fv.Type()).Len() {
+					return false
+				}
+			case "[]docker.PortBinding":
+				if fv.Len() != reflect.Zero(fv.Type()).Len() {
+					return false
+				}
+			case "bool":
+				if fv.Bool() {
+					return false
+				}
+			}
+		}
+	}
+	return true
+}
+
+func (d DeploymentDescription) serviceNames() []string {
+	names := []string{}
+
+	if d.Services != nil {
+		for name, _ := range d.Services {
+			names = append(names, name)
+		}
+	}
+
+	return names
 }
 
 type Pattern struct {
@@ -161,15 +202,31 @@ func (p *Pattern) isShared(tp string, serviceName string) bool {
 
 // Service Only those marked "omitempty" may be omitted
 type Service struct {
-	Image            string           `json:"image"`
-	VariationLabel   string           `json:"variation_label,omitempty"`
-	Privileged       bool             `json:"privileged"`
-	Environment      []string         `json:"environment,omitempty"`
-	CapAdd           []string         `json:"cap_add,omitempty"`
-	Command          []string         `json:"command,omitempty"`
-	Devices          []string         `json:"devices,omitempty"`
-	Ports            []Port           `json:"ports,omitempty"`
-	NetworkIsolation NetworkIsolation `json:"network_isolation,omitempty"`
+	Image            string               `json:"image"`
+	VariationLabel   string               `json:"variation_label,omitempty"`
+	Privileged       bool                 `json:"privileged"`
+	Environment      []string             `json:"environment,omitempty"`
+	CapAdd           []string             `json:"cap_add,omitempty"`
+	Command          []string             `json:"command,omitempty"`
+	Devices          []string             `json:"devices,omitempty"`
+	Ports            []Port               `json:"ports,omitempty"`
+	NetworkIsolation NetworkIsolation     `json:"network_isolation,omitempty"`
+	Binds            []string             `json:"binds,omitempty"`            // Only used by infrastructure containers
+	SpecificPorts    []docker.PortBinding `json:"specific_ports,omitempty"`   // Only used by infrastructure containers
+}
+
+func (s *Service) addFilesystemBinding(bind string) {
+	if s.Binds == nil {
+		s.Binds = make([]string, 0, 10)
+	}
+	s.Binds = append(s.Binds, bind)
+}
+
+func(s *Service) addSpecificPortBinding(b docker.PortBinding) {
+	if s.SpecificPorts == nil {
+		s.SpecificPorts = make([]docker.PortBinding, 0, 5)
+	}
+	s.SpecificPorts = append(s.SpecificPorts, b)
 }
 
 type Port struct {
@@ -224,9 +281,16 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 	}
 
 	for serviceName, service := range deployment.Services {
-		deploymentHash, err := hashService(&service)
+		deploymentHash, err := hashService(service)
 		if err != nil {
 			return nil, err
+		}
+
+		// Assume only 1 filesystem binding
+		hostVol := ""
+		hostVolIndex := strings.Index(service.Binds[0], ":")
+		if hostVolIndex != -1 {
+			hostVol = service.Binds[0][:hostVolIndex]
 		}
 
 		serviceConfig := &persistence.ServiceConfig{
@@ -242,7 +306,7 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 					LABEL_PREFIX + ".deployment_description_hash": deploymentHash,
 				},
 				Volumes: map[string]struct{}{
-					workloadROStorageDir: {},
+					hostVol: {},
 				},
 				ExposedPorts: map[docker.Port]struct{}{},
 			},
@@ -262,7 +326,7 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 						"tag": fmt.Sprintf("workload-%v_%v", strings.ToLower(agreementId), serviceName),
 					},
 				},
-				Binds: []string{fmt.Sprintf("%v:%v:ro", workloadROStorageDir, "/workload_config")},
+				Binds: service.Binds,
 			},
 		}
 
@@ -303,6 +367,16 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 			}
 		}
 
+		for _, specificPort := range service.SpecificPorts {
+			var emptyS struct{}
+			dPort := docker.Port(specificPort.HostPort + "/tcp")
+			serviceConfig.Config.ExposedPorts[dPort] = emptyS
+
+			serviceConfig.HostConfig.PortBindings[dPort] = []docker.PortBinding{
+				specificPort,
+			}
+		}
+
 		for _, givenDevice := range service.Devices {
 			sp := strings.Split(givenDevice, ":")
 			if len(sp) != 2 {
@@ -317,7 +391,7 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 
 		services[serviceName] = servicePair{
 			serviceConfig: serviceConfig,
-			service:       &service,
+			service:       service,
 		}
 	}
 
@@ -335,10 +409,15 @@ func NewContainerWorker(config *config.HorizonConfig, db *bolt.DB) *ContainerWor
 	messages := make(chan events.Message)
 	commands := make(chan worker.Command, 200)
 
-	if err := unix.Access(config.Edge.WorkloadROStorage, unix.W_OK); err != nil {
+	if config.Edge.WorkloadROStorage == "" && config.Edge.DBPath == "" {
+		// We are running in an agbot, dont need the workload RO storage config.
+
+	} else if err := unix.Access(config.Edge.WorkloadROStorage, unix.W_OK); err != nil {
 		glog.Errorf("Unable to access workload RO storage dir: %v. Error: %v", config.Edge.WorkloadROStorage, err)
 		panic("Unable to access workload RO storage dir specified in config")
-	} else if ipt, err := iptables.New(); err != nil {
+	}
+
+	if ipt, err := iptables.New(); err != nil {
 		glog.Errorf("Failed to instantiate iptables Client: %v", err)
 		panic("Unable to instantiate iptables Client")
 	} else if client, err := docker.NewClient(config.Edge.DockerEndpoint); err != nil {
@@ -375,8 +454,17 @@ func (w *ContainerWorker) NewEvent(incoming events.Message) {
 		switch msg.Event().Id {
 		case events.TORRENT_FETCHED:
 			glog.Infof("Fetched image files from torrent: %v", msg.ImageFiles)
-			cCmd := w.NewContainerConfigureCommand(msg.ImageFiles, msg.AgreementLaunchContext)
-			w.Commands <- cCmd
+			switch msg.LaunchContext.(type) {
+			case *events.AgreementLaunchContext:
+				lc := msg.LaunchContext.(*events.AgreementLaunchContext)
+				cCmd := w.NewWorkloadConfigureCommand(msg.ImageFiles, lc)
+				w.Commands <- cCmd
+
+			case *events.ContainerLaunchContext:
+				lc := msg.LaunchContext.(*events.ContainerLaunchContext)
+				cCmd := w.NewContainerConfigureCommand(msg.ImageFiles, lc)
+				w.Commands <- cCmd
+			}
 		}
 
 	case *events.GovernanceMaintenanceMessage:
@@ -744,7 +832,7 @@ func (b *ContainerWorker) workloadStorageDir(agreementId string) string {
 	return path.Join(b.Config.Edge.WorkloadROStorage, agreementId)
 }
 
-func (b *ContainerWorker) resourcesCreate(agreementId string, configure *gwhisper.Configure, configureRaw []byte, environmentAdditions map[string]string) (*map[string]persistence.ServiceConfig, error) {
+func (b *ContainerWorker) resourcesCreate(agreementId string, configure *events.ContainerConfig, deployment *DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string) (*map[string]persistence.ServiceConfig, error) {
 
 	// local helpers
 	fail := func(container *docker.Container, name string, err error) error {
@@ -793,11 +881,6 @@ func (b *ContainerWorker) resourcesCreate(agreementId string, configure *gwhispe
 		return endpoints
 	}
 
-	// incoming def
-	var deployment DeploymentDescription
-	if err := json.Unmarshal([]byte(configure.Deployment), &deployment); err != nil {
-		return nil, err
-	}
 	workloadROStorageDir := b.workloadStorageDir(agreementId)
 
 	// create RO workload storage dir
@@ -811,7 +894,7 @@ func (b *ContainerWorker) resourcesCreate(agreementId string, configure *gwhispe
 		return nil, err
 	}
 
-	servicePairs, err := finalizeDeployment(agreementId, &deployment, environmentAdditions, workloadROStorageDir, b.Config.Edge.DefaultCPUSet)
+	servicePairs, err := finalizeDeployment(agreementId, deployment, environmentAdditions, workloadROStorageDir, b.Config.Edge.DefaultCPUSet)
 	if err != nil {
 		return nil, err
 	}
@@ -825,9 +908,9 @@ func (b *ContainerWorker) resourcesCreate(agreementId string, configure *gwhispe
 
 	for serviceName, servicePair := range servicePairs {
 		if image, err := b.client.InspectImage(servicePair.serviceConfig.Config.Image); err != nil {
-			return nil, err
+			return nil, fail(nil, serviceName, fmt.Errorf("Failed to inspect image. Original error: %v", err))
 		} else if image == nil {
-			return nil, fmt.Errorf("Unable to find Docker image: %v", servicePair.serviceConfig.Config.Image)
+			return nil, fail(nil, serviceName, fmt.Errorf("Unable to find Docker image: %v", servicePair.serviceConfig.Config.Image))
 		}
 
 		// need to examine original deploymentDescription to determine which containers are "shared" or in other special patterns
@@ -910,7 +993,7 @@ func (b *ContainerWorker) resourcesCreate(agreementId string, configure *gwhispe
 	// check environmentAdditions for MTN_ETHEREUM_ACCOUNT
 	_, hasSpecifiedEthAccount := environmentAdditions[config.ENVVAR_PREFIX+"ETHEREUM_ACCOUNT"]
 
-	if err := processPostCreate(b.iptables, b.client, agreementId, deployment, configureRaw, hasSpecifiedEthAccount, postCreateContainers, fail); err != nil {
+	if err := processPostCreate(b.iptables, b.client, agreementId, *deployment, configureRaw, hasSpecifiedEthAccount, postCreateContainers, fail); err != nil {
 		return nil, err
 	}
 
@@ -929,10 +1012,10 @@ func (b *ContainerWorker) start() {
 			command := <-b.Commands
 
 			switch command.(type) {
-			case *ContainerConfigureCommand:
-				cmd := command.(*ContainerConfigureCommand)
+			case *WorkloadConfigureCommand:
+				cmd := command.(*WorkloadConfigureCommand)
 
-				glog.V(3).Infof("ContainerWorker received configure command: %v", cmd)
+				glog.V(3).Infof("ContainerWorker received workoad configure command: %v", cmd)
 
 				agreementId := cmd.AgreementLaunchContext.AgreementId
 
@@ -951,25 +1034,121 @@ func (b *ContainerWorker) start() {
 					} else if err := loadImages(b.client, b.Config.Edge.TorrentDir, cmd.ImageFiles); err != nil {
 						glog.Errorf("Error loading image files: %v", err)
 
-						b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
+						b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
 
 						continue
 					}
 
-					if deployment, err := b.resourcesCreate(agreementId, cmd.AgreementLaunchContext.Configure, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions); err != nil {
+					// We support capabilities in the deployment string that not all container deployments should be able
+					// to exploit, e.g. file system mapping from host to container. This check ensures that workloads dont try
+					// to do something dangerous.
+					deploymentDesc := new(DeploymentDescription)
+					if err := json.Unmarshal([]byte(cmd.AgreementLaunchContext.Configure.Deployment), &deploymentDesc); err != nil {
+						glog.Errorf("Error Unmarshalling deployment string %v for agreement %v, error: %v", cmd.AgreementLaunchContext.Configure.Deployment, agreementId, err)
+						continue
+					} else if valid := deploymentDesc.isValidFor("workload"); !valid {
+						glog.Errorf("Deployment config %v contains unsupported capability for a workload", cmd.AgreementLaunchContext.Configure.Deployment)
+						b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
+					}
+
+					// Dynamically add in a filesystem mapping so that the workload container has a RO filesystem.
+					for serviceName, _ := range deploymentDesc.Services {
+						dir := b.workloadStorageDir(agreementId)
+						deploymentDesc.Services[serviceName].addFilesystemBinding(fmt.Sprintf("%v:%v:ro", dir, "/workload_config"))
+					}
+
+					// Create the docker configuration and launch the containers.
+					if deployment, err := b.resourcesCreate(agreementId, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions); err != nil {
 						glog.Errorf("Error starting containers: %v", err)
 						var dep map[string]persistence.ServiceConfig
 						if deployment != nil {
 							dep = *deployment
 						}
-						b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, dep) // still using deployment here, need it to shutdown containers
+						b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, dep) // still using deployment here, need it to shutdown containers
 
 					} else {
 						glog.Infof("Success starting pattern for agreement: %v, protocol: %v, serviceNames: %v", agreementId, cmd.AgreementLaunchContext.AgreementProtocol, persistence.ServiceConfigNames(deployment))
 
 						// perhaps add the tc info to the container message so it can be enforced
-						b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, *deployment)
+						b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_BEGUN, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, *deployment)
 					}
+				}
+
+			case *ContainerConfigureCommand:
+				cmd := command.(*ContainerConfigureCommand)
+
+				glog.V(3).Infof("ContainerWorker received container configure command: %v", cmd)
+
+				// We support capabilities in the deployment string that not all container deployments should be able
+				// to exploit, e.g. file system mapping from host to container. This check ensures that infrastructure
+				// containers dont try to do something unsupported.
+				deploymentDesc := new(DeploymentDescription)
+				if err := json.Unmarshal([]byte(cmd.ContainerLaunchContext.Configure.Deployment), &deploymentDesc); err != nil {
+					glog.Errorf("Error Unmarshalling deployment string %v, error: %v", cmd.ContainerLaunchContext.Configure.Deployment, err)
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext)
+					continue
+				} else if valid := deploymentDesc.isValidFor("infrastructure"); !valid {
+					glog.Errorf("Deployment config %v contains unsupported capability for infrastructure container", cmd.ContainerLaunchContext.Configure.Deployment)
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext)
+					continue
+				}
+
+				// Check to see if the container is already running. No need to start it if so.
+				cMatches := make([]docker.APIContainers, 0)
+				serviceNames := deploymentDesc.serviceNames()
+				report := func(container *docker.APIContainers, contName string) error {
+
+					for _, name := range serviceNames {
+						if container.Labels[LABEL_PREFIX+".service_name"] == name {
+							cMatches = append(cMatches, *container)
+							glog.V(4).Infof("Matching container instance for name %v: %v", contName, container)
+						}
+					}
+					return nil
+				}
+
+				b.ContainersMatchingAgreement([]string{cmd.ContainerLaunchContext.Blockchain.Name}, false, report)
+
+				if len(serviceNames) <= len(cMatches) {
+					glog.V(4).Infof("Found container already running for %v: %v", cmd.ContainerLaunchContext.Blockchain.Name, len(cMatches))
+					continue
+				}
+
+				// The container is not already running, so we can proceed to load the docker image.
+				if len(cmd.ImageFiles) == 0 {
+					glog.Errorf("Torrent configuration in deployment specified no new Docker images to load: %v, unable to load container", deploymentDesc)
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext)
+					continue
+				} else if err := loadImages(b.client, b.Config.Edge.TorrentDir, cmd.ImageFiles); err != nil {
+					glog.Errorf("Error loading image files: %v", err)
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext)
+					continue
+				}
+
+				// Dynamically add in a filesystem mapping so that the infrastructure container can write files that will
+				// be saveable or observable to the host system.
+				for serviceName, _ := range deploymentDesc.Services {
+					dir := ""
+					// NON_SNAP_COMMON is used for testing purposes only
+					if altDir := os.Getenv("NON_SNAP_COMMON"); len(altDir) != 0 {
+						dir = altDir + ":/root"
+					} else {
+						dir = path.Join(os.Getenv("SNAP_COMMON")) + ":/root"
+					}
+					deploymentDesc.Services[serviceName].addFilesystemBinding(dir)
+					deploymentDesc.Services[serviceName].addSpecificPortBinding(docker.PortBinding{HostIP:"0.0.0.0", HostPort:"8545"})
+				}
+
+				// Get the container started.
+				if deployment, err := b.resourcesCreate(cmd.ContainerLaunchContext.Blockchain.Name, &cmd.ContainerLaunchContext.Configure, deploymentDesc, []byte(""), *cmd.ContainerLaunchContext.EnvironmentAdditions); err != nil {
+					glog.Errorf("Error starting containers: %v", err)
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext)
+
+				} else {
+					glog.Infof("Success starting pattern for serviceNames: %v", persistence.ServiceConfigNames(deployment))
+
+					// perhaps add the tc info to the container message so it can be enforced
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, *cmd.ContainerLaunchContext)
 				}
 
 			case *ContainerMaintenanceCommand:
@@ -999,7 +1178,7 @@ func (b *ContainerWorker) start() {
 					glog.Errorf("Insufficient running containers found for agreement %v. Found: %v", cmd.AgreementId, cMatches)
 
 					// ask governer to cancel the agreement
-					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, cmd.AgreementProtocol, cmd.AgreementId, cmd.Deployment)
+					b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementProtocol, cmd.AgreementId, cmd.Deployment)
 				}
 
 			case *ContainerShutdownCommand:
@@ -1028,6 +1207,15 @@ func (b *ContainerWorker) start() {
 func (b *ContainerWorker) resourcesRemove(agreements []string) error {
 	glog.V(5).Infof("Killing and removing resources in agreements: %v", agreements)
 
+	// remove old workspaceROStorage dir
+	for _, agreementId := range agreements {
+		workloadROStorageDir := b.workloadStorageDir(agreementId)
+		if err := os.RemoveAll(workloadROStorageDir); err != nil {
+			glog.Errorf("Failed to remove workloadROStorageDir: %v. Error: %v", workloadROStorageDir, err)
+		}
+	}
+
+	// Remove networks
 	networks, err := b.client.ListNetworks()
 	if err != nil {
 		return fmt.Errorf("Unable to list networks: %v", err)
@@ -1090,12 +1278,6 @@ func (b *ContainerWorker) resourcesRemove(agreements []string) error {
 			glog.Infof("Service %v in agreement %v stopped and removed", serviceName, agreementId)
 		} else {
 			glog.V(5).Infof("Service %v in agreement %v already removed", serviceName, agreementId)
-		}
-
-		// remove old workspaceROStorage dir
-		workloadROStorageDir := b.workloadStorageDir(agreementId)
-		if err := os.RemoveAll(workloadROStorageDir); err != nil {
-			return fmt.Errorf("Failed to remove workloadROStorageDir: %v. Error: %v", workloadROStorageDir, err)
 		}
 
 		return nil
@@ -1180,19 +1362,35 @@ func (b *ContainerWorker) ContainersMatchingAgreement(agreements []string, inclu
 	return processingErr
 }
 
-type ContainerConfigureCommand struct {
+type WorkloadConfigureCommand struct {
 	ImageFiles             []string
 	AgreementLaunchContext *events.AgreementLaunchContext
 }
 
-func (c ContainerConfigureCommand) String() string {
+func (c WorkloadConfigureCommand) String() string {
 	return fmt.Sprintf("ImageFiles: %v, AgreementLaunchContext: %v", c.ImageFiles, c.AgreementLaunchContext)
 }
 
-func (b *ContainerWorker) NewContainerConfigureCommand(imageFiles []string, agreementLaunchContext *events.AgreementLaunchContext) *ContainerConfigureCommand {
-	return &ContainerConfigureCommand{
+func (b *ContainerWorker) NewWorkloadConfigureCommand(imageFiles []string, agreementLaunchContext *events.AgreementLaunchContext) *WorkloadConfigureCommand {
+	return &WorkloadConfigureCommand{
 		ImageFiles:             imageFiles,
 		AgreementLaunchContext: agreementLaunchContext,
+	}
+}
+
+type ContainerConfigureCommand struct {
+	ImageFiles             []string
+	ContainerLaunchContext *events.ContainerLaunchContext
+}
+
+func (c ContainerConfigureCommand) String() string {
+	return fmt.Sprintf("ImageFiles: %v, ContainerLaunchContext: %v", c.ImageFiles, c.ContainerLaunchContext)
+}
+
+func (b *ContainerWorker) NewContainerConfigureCommand(imageFiles []string, containerLaunchContext *events.ContainerLaunchContext) *ContainerConfigureCommand {
+	return &ContainerConfigureCommand{
+		ImageFiles:             imageFiles,
+		ContainerLaunchContext: containerLaunchContext,
 	}
 }
 

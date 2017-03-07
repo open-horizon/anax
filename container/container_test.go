@@ -67,3 +67,58 @@ func Test_generatePermittedStringDynamic(t *testing.T) {
 		t.Errorf("Expected permitted string %v, but found %v", "gooo", permitted)
 	}
 }
+
+func Test_isValidFor_API(t *testing.T) {
+
+	serv1 := Service{
+		Image: "an image",
+		VariationLabel: "label",
+		Privileged: true,
+		Environment: []string{"a=1","b=2"},
+		CapAdd: []string{"a","b"},
+		Command: []string{"start"},
+		Devices: []string{},
+		Ports: []Port{},
+		NetworkIsolation: NetworkIsolation{},
+		Binds: []string{"/tmp/geth:/root"},
+	}
+
+	services := make(map[string]*Service)
+	services["geth"] = &serv1
+
+	desc := DeploymentDescription{
+		Services: services,
+		ServicePattern: Pattern{},
+	}
+
+	if valid := desc.isValidFor("workload"); valid {
+		t.Errorf("Service1 is not valid for a workload, %v", serv1)
+	} else if valid := desc.isValidFor("infrastructure"); !valid {
+		t.Errorf("Service1 is valid for infrastructure, %v", serv1)
+	}
+
+	serv2 := Service{
+		Image: "an image",
+		VariationLabel: "label",
+		Privileged: true,
+		Environment: []string{"a=1","b=2"},
+		CapAdd: []string{"a","b"},
+		Command: []string{"start"},
+		Devices: []string{},
+		Ports: []Port{},
+		NetworkIsolation: NetworkIsolation{},
+		SpecificPorts: []docker.PortBinding{{HostIP:"0.0.0.0", HostPort:"8545"}},
+	}
+
+	services["geth"] = &serv2
+	desc2 := DeploymentDescription{
+		Services: services,
+		ServicePattern: Pattern{},
+	}
+
+	if valid := desc2.isValidFor("workload"); valid {
+		t.Errorf("Service2 is not valid for a workload, %v", serv2)
+	} else if valid := desc2.isValidFor("infrastructure"); !valid {
+		t.Errorf("Service2 is valid for infrastructure, %v", serv2)
+	}
+}

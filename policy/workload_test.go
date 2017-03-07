@@ -55,6 +55,28 @@ func Test_workload_pw_hash(t *testing.T) {
 
 }
 
+// This function is a quick debug tool for suspected workload password issues. Uncomment it, fill in the
+// agbot password, a valid agreement id and the resulting hash. This test will verify that the hash came from
+// the password and agreement id. NEVER NEVER check in this code with a valid password filled in. Yes, this is
+// quick and dirty.
+//
+// func Test_workload_pw_hash2(t *testing.T) {
+
+//     password := ""
+//     agid := "250171459f48f81adc2d0ad92df0d37fb57f4d864abe23f5a98bef725daef50a"
+//     hash := "$2a$10$kThocDiwbcdWWTxyiRd8A.YvmpWEncI9ip6vePTPTCFr2qPdw6pQm"
+
+//     // Perform the hash twice
+//     if hash1, err := bcrypt.GenerateFromPassword([]byte(password+agid), bcrypt.DefaultCost); err != nil {
+//         t.Error(err)
+//     } else if err := bcrypt.CompareHashAndPassword(hash1, []byte(password+agid)); err != nil {
+//         t.Error(err)
+//     } else if err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password+agid)); err != nil {
+//         t.Error(err)
+//     }
+
+// }
+
 func Test_workload_pw_hash_error(t *testing.T) {
 
     pw := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -76,12 +98,21 @@ func Test_workload_obscure(t *testing.T) {
     wl2 := `{"deployment":"deploymentabcdefg","deployment_signature":"123456","deployment_user_info":"duiabcdefg","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
     if wla := create_Workload(wl1, t); wla != nil {
         wpb4 := wla.WorkloadPassword
-        wla.Obscure("01020304")
+        wla.Obscure("01020304","")
         if wla.WorkloadPassword == wpb4 {
             t.Errorf("Workload section %v was not obscured correctly\n", wla)
         } else if wlb := create_Workload(wl2, t); wlb != nil {
             if wla.IsSame(*wlb) {
                 t.Errorf("Workload section %v is the same as %v\n", wla, wlb)
+            }
+        } else {
+            wla.Obscure("","05060708")
+            if wla.WorkloadPassword == wpb4 {
+                t.Errorf("Workload section %v was not obscured correctly\n", wla)
+            } else if wlb := create_Workload(wl2, t); wlb != nil {
+                if wla.IsSame(*wlb) {
+                    t.Errorf("Workload section %v is the same as %v\n", wla, wlb)
+                }
             }
         }
     }

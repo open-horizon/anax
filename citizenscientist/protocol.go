@@ -197,9 +197,9 @@ func NewProtocolHandler(gethURL string, pm *policy.PolicyManager) *ProtocolHandl
 	}
 }
 
-func (p *ProtocolHandler) InitiateAgreement(agreementId string, producerPolicy *policy.Policy, consumerPolicy *policy.Policy, myAddress string, myId string, messageTarget interface{}, sendMessage func(msgTarget interface{}, pay []byte) error) (*Proposal, error) {
+func (p *ProtocolHandler) InitiateAgreement(agreementId string, producerPolicy *policy.Policy, consumerPolicy *policy.Policy, myAddress string, myId string, messageTarget interface{}, defaultPW string, sendMessage func(msgTarget interface{}, pay []byte) error) (*Proposal, error) {
 
-	if TCPolicy, err := policy.Create_Terms_And_Conditions(producerPolicy, consumerPolicy, agreementId); err != nil {
+	if TCPolicy, err := policy.Create_Terms_And_Conditions(producerPolicy, consumerPolicy, agreementId, defaultPW); err != nil {
 		return nil, errors.New(fmt.Sprintf("CS Protocol initiation received error trying to merge policy %v and %v, error: %v", producerPolicy, consumerPolicy, err))
 	} else {
 		glog.V(5).Infof("Merged Policy %v", *TCPolicy)
