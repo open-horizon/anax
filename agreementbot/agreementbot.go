@@ -119,7 +119,9 @@ func (w *AgreementBotWorker) start() {
 		}
 
 		// Tell the eth worker to start the ethereum client container
-		w.Worker.Manager.Messages <- events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, w.Manager.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
+		if w.agbotId != "" && w.token != "" {
+			w.Worker.Manager.Messages <- events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, w.Manager.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
+		}
 
 		// Hold the agbot functions until we have blockchain funding. If there are events occurring that
 		// we need to react to, they will queue up on the command queue while we wait here.

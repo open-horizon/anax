@@ -1114,7 +1114,30 @@ func (b *ContainerWorker) start() {
 					continue
 				}
 
-				// The container is not already running, so we can proceed to load the docker image.
+				// The container is not already running, so let's make sure we do some clean up to ensure that the container will start.
+				workloadROStorageDir := b.workloadStorageDir(cmd.ContainerLaunchContext.Blockchain.Name)
+				if err := os.RemoveAll(workloadROStorageDir); err != nil {
+					glog.Infof("workloadROStorageDir already cleaned up: %v. Error: %v", workloadROStorageDir, err)
+				}
+
+				// Remove network if it is left hanging around
+				if networks, err := b.client.ListNetworks(); err != nil {
+					glog.Infof("Unable to list networks: %v", err)
+				} else {
+					for _, net := range networks {
+						if net.Name == cmd.ContainerLaunchContext.Blockchain.Name {
+							glog.V(5).Infof("Freeing blockchain net: %v", net.Name)
+							if err := b.client.RemoveNetwork(net.ID); err != nil {
+								glog.Errorf("Failure removing network: %v. Error: %v", net.ID, err)
+							} else {
+								glog.V(5).Infof("Freed blockchain net: %v", net.Name)
+							}
+							break
+						}
+					}
+				}
+
+				// Proceed to load the docker image.
 				if len(cmd.ImageFiles) == 0 {
 					glog.Errorf("Torrent configuration in deployment specified no new Docker images to load: %v, unable to load container", deploymentDesc)
 					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext)
