@@ -43,13 +43,13 @@ const (
 	// container-related
 	EXECUTION_FAILED   EventId = "EXECUTION_FAILED"
 	EXECUTION_BEGUN    EventId = "EXECUTION_BEGUN"
-	PATTERN_DESTROYED  EventId = "PATTERN_DESTROYED"
+	WORKLOAD_DESTROYED EventId = "WORKLOAD_DESTROYED"
 	CONTAINER_MAINTAIN EventId = "CONTAINER_MAINTAIN"
 	LOAD_CONTAINER     EventId = "LOAD_CONTAINER"
 	NEW_ETH_CLIENT     EventId = "NEW_ETH_CONTAINER"
 
 	// policy-related
-	NEW_POLICY    EventId = "NEW_POLICY"
+	NEW_POLICY EventId = "NEW_POLICY"
 
 	// exchange-related
 	NEW_DEVICE_REG EventId = "NEW_DEVICE_REG"
@@ -680,7 +680,7 @@ func NewEthBlockchainEventMessage(id EventId, ev string, protocol string) *EthBl
 		},
 		rawEvent: ev,
 		protocol: protocol,
-		Time: uint64(time.Now().Unix()),
+		Time:     uint64(time.Now().Unix()),
 	}
 }
 

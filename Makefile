@@ -10,7 +10,7 @@ SHELL := /bin/bash
 ARCH = $(shell uname -m)
 PKGS=$(shell cd $(PKGPATH)/anax; GOPATH=$(TMPGOPATH) go list ./... | gawk '$$1 !~ /vendor\// {print $$1}')
 
-COMPILE_ARGS := CGO_ENABLED=0 GOOS=linux
+COMPILE_ARGS := CGO_ENABLED=0
 # TODO: handle other ARM architectures on build boxes too
 ifeq ($(ARCH),armv7l)
 	COMPILE_ARGS +=  GOARCH=arm GOARM=7
@@ -31,7 +31,9 @@ bhgovconfig: $(shell find ./policy/tools/bhgovconfig/ -name '*.go') deps
 clean:
 	find ./vendor -maxdepth 1 -not -path ./vendor -and -not -iname "vendor.json" -print0 | xargs -0 rm -Rf
 	rm -f anax
+ifneq ($(TMPGOPATH),$(GOPATH))
 	rm -rf $(TMPGOPATH)
+endif
 	rm -rf ./contracts
 	cd ./policy/tools/bhgovconfig && \
 	  $(MAKE) clean

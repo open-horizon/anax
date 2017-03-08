@@ -382,7 +382,7 @@ func Test_resourcesRemove(t *testing.T) {
 
 	cmd := w.NewContainerShutdownCommand(createMsg.Protocol, createMsg.AgreementId, createMsg.Deployment, []string{})
 	w.Commands <- cmd
-	tMsg(w.Messages, events.PATTERN_DESTROYED, t)
+	tMsg(w.Messages, events.WORKLOAD_DESTROYED, t)
 }
 
 func Test_resourcesCreate_shared(t *testing.T) {
@@ -514,6 +514,6 @@ func Test_resourcesCreate_shared(t *testing.T) {
 	for _, createMsg := range createMsgs {
 		sCmd := w.NewContainerShutdownCommand(createMsg.Protocol, createMsg.AgreementId, createMsg.Deployment, []string{})
 		w.Commands <- sCmd
-		tMsg(w.Messages, events.PATTERN_DESTROYED, t)
+		tMsg(w.Messages, events.WORKLOAD_DESTROYED, t)
 	}
 }

@@ -1218,6 +1218,9 @@ func (b *ContainerWorker) start() {
 					glog.Errorf("Error removing resources: %v", err)
 				}
 
+				// send the event to let others know that the workload clean up has been processed
+				b.Messages() <- events.NewWorkloadMessage(events.WORKLOAD_DESTROYED, cmd.AgreementProtocol, cmd.CurrentAgreementId, nil)
+
 			default:
 				glog.Errorf("Unsupported command: %v", command)
 
@@ -1312,6 +1315,26 @@ func (b *ContainerWorker) resourcesRemove(agreements []string) error {
 	for _, net := range networks {
 		for _, agreementId := range agreements {
 			if net.Name == agreementId {
+				// disconnect the network from the containers if they are still connected to it.
+				if netInfo, err := b.client.NetworkInfo(net.ID); err != nil {
+					glog.Errorf("Failure getting network info for %v. Error: %v", net.Name, err)
+				} else {
+					for conID, container := range netInfo.Containers {
+						glog.V(5).Infof("Disconnecting network %v from container %v.", netInfo.Name, container.Name)
+						err := b.client.DisconnectNetwork(netInfo.ID, docker.NetworkConnectionOptions{
+							Container:      conID,
+							EndpointConfig: nil,
+							Force:          true,
+						})
+						if err != nil {
+							glog.Errorf("Failure disconnecting network: %v from container %v. Error: %v", netInfo.Name, container.Name, err)
+						} else {
+							glog.Infof("Succeeded disconnecting network: %v from container %v", netInfo.Name, container.Name)
+						}
+					}
+				}
+
+				// save the net for removing later
 				glog.V(5).Infof("Freeing agreement net: %v", net.Name)
 				freeNets = append(freeNets, net)
 			}

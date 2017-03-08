@@ -128,7 +128,8 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 		wrap[agreementsKey][activeKey] = []persistence.EstablishedAgreement{}
 
 		for _, agreement := range agreements {
-			if agreement.Archived {
+			// The archived agreements and the agreements being terminated are returned as archived.
+			if agreement.Archived || agreement.AgreementTerminatedTime != 0 {
 				wrap[agreementsKey][archivedKey] = append(wrap[agreementsKey][archivedKey], agreement)
 			} else {
 				wrap[agreementsKey][activeKey] = append(wrap[agreementsKey][activeKey], agreement)
@@ -344,6 +345,7 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 		exDev, err := persistence.SaveNewExchangeDevice(a.db, *device.Token, *device.Name, *device.Account.Id, *device.Account.Email)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			glog.Errorf("Error persisting new exchange device: %v", err)
 			return
 		}
 

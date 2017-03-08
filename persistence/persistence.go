@@ -19,30 +19,52 @@ const DEVMODE = "devmode"
 // N.B. Important!! Ensure new values are handled in Update function below
 // This struct is for persisting agreements related to the 'Citizen Scientist' protocol
 type EstablishedAgreement struct {
-	Name                        string                   `json:"name"`
-	SensorUrl                   string                   `json:"sensor_url"`
-	Archived                    bool                     `json:"archived"`
-	CurrentAgreementId          string                   `json:"current_agreement_id"`
-	ConsumerId                  string                   `json:"consumer_id"`
-	CounterPartyAddress         string                   `json:"counterparty_address"`
-	AgreementCreationTime       uint64                   `json:"agreement_creation_time"`
-	AgreementAcceptedTime       uint64                   `json:"agreement_accepted_time"`
-	AgreementFinalizedTime      uint64                   `json:"agreement_finalized_time"`
-	AgreementTerminatedTime     uint64                   `json:"agreement_terminated_time"`
-	AgreementExecutionStartTime uint64                   `json:"agreement_execution_start_time"`
-	AgreementDataReceivedTime   uint64                   `json:"agreement_data_received_time"`
-	CurrentDeployment           map[string]ServiceConfig `json:"current_deployment"`
-	Proposal                    string                   `json:"proposal"`
-	ProposalSig                 string                   `json:"proposal_sig"`       // the proposal currently in effect
-	AgreementProtocol           string                   `json:"agreement_protocol"` // the agreement protocol being used. It is also in the proposal.
-	ProtocolVersion             int                      `json:"protocol_version"`   // the agreement protocol version being used.
-	TerminatedReason            uint64                   `json:"terminated_reason"`  // the reason that the agreement was terminated
-	TerminatedDescription       string                   `json:"terminated_description"` // a string form of the reason that the agreement was terminated
+	Name                            string                   `json:"name"`
+	SensorUrl                       string                   `json:"sensor_url"`
+	Archived                        bool                     `json:"archived"`
+	CurrentAgreementId              string                   `json:"current_agreement_id"`
+	ConsumerId                      string                   `json:"consumer_id"`
+	CounterPartyAddress             string                   `json:"counterparty_address"`
+	AgreementCreationTime           uint64                   `json:"agreement_creation_time"`
+	AgreementAcceptedTime           uint64                   `json:"agreement_accepted_time"`
+	AgreementFinalizedTime          uint64                   `json:"agreement_finalized_time"`
+	AgreementTerminatedTime         uint64                   `json:"agreement_terminated_time"`
+	AgreementExecutionStartTime     uint64                   `json:"agreement_execution_start_time"`
+	AgreementDataReceivedTime       uint64                   `json:"agreement_data_received_time"`
+	CurrentDeployment               map[string]ServiceConfig `json:"current_deployment"`
+	Proposal                        string                   `json:"proposal"`
+	ProposalSig                     string                   `json:"proposal_sig"`           // the proposal currently in effect
+	AgreementProtocol               string                   `json:"agreement_protocol"`     // the agreement protocol being used. It is also in the proposal.
+	ProtocolVersion                 int                      `json:"protocol_version"`       // the agreement protocol version being used.
+	TerminatedReason                uint64                   `json:"terminated_reason"`      // the reason that the agreement was terminated
+	TerminatedDescription           string                   `json:"terminated_description"` // a string form of the reason that the agreement was terminated
+	AgreementProtocolTerminatedTime uint64                   `json:"agreement_protocol_terminated_time"`
+	WorkloadTerminatedTime          uint64                   `json:"workload_terminated_time"`
 }
 
 func (c EstablishedAgreement) String() string {
 
-	return fmt.Sprintf("Name: %v , SensorUrl: %v , Archived: %v , CurrentAgreementId: %v, ConsumerId: %v, CurrentDeployment (service names): %v, AgreementCreationTime: %v, AgreementExecutionStartTime: %v, AgreementAcceptedTime: %v, AgreementFinalizedTime: %v, AgreementDataReceivedTime: %v, AgreementTerminatedTime: %v, TerminatedReason: %v, TerminatedDescription: %v, Agreement Protocol: %v", c.Name, c.SensorUrl, c.Archived, c.CurrentAgreementId, c.ConsumerId, ServiceConfigNames(&c.CurrentDeployment), c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementFinalizedTime, c.AgreementDataReceivedTime, c.AgreementTerminatedTime, c.TerminatedReason, c.TerminatedDescription, c.AgreementProtocol)
+	return fmt.Sprintf("Name: %v , "+
+		"SensorUrl: %v , "+
+		"Archived: %v , "+
+		"CurrentAgreementId: %v, "+
+		"ConsumerId: %v, "+
+		"CurrentDeployment (service names): %v, "+
+		"AgreementCreationTime: %v, "+
+		"AgreementExecutionStartTime: %v, "+
+		"AgreementAcceptedTime: %v, "+
+		"AgreementFinalizedTime: %v, "+
+		"AgreementDataReceivedTime: %v, "+
+		"AgreementTerminatedTime: %v, "+
+		"TerminatedReason: %v, "+
+		"TerminatedDescription: %v, "+
+		"Agreement Protocol: %v, "+
+		"AgreementProtocolTerminatedTime : %v, "+
+		"WorkloadTerminatedTime: %v"+
+		c.Name, c.SensorUrl, c.Archived, c.CurrentAgreementId, c.ConsumerId, ServiceConfigNames(&c.CurrentDeployment),
+		c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementFinalizedTime,
+		c.AgreementDataReceivedTime, c.AgreementTerminatedTime, c.TerminatedReason, c.TerminatedDescription,
+		c.AgreementProtocol, c.AgreementProtocolTerminatedTime, c.WorkloadTerminatedTime)
 
 }
 
@@ -85,25 +107,27 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 	}
 
 	newAg := &EstablishedAgreement{
-		Name:                        name,
-		SensorUrl:                   sensorUrl,
-		Archived:                    false,
-		CurrentAgreementId:          agreementId,
-		ConsumerId:                  consumerId,
-		CounterPartyAddress:         address,
-		AgreementCreationTime:       uint64(time.Now().Unix()),
-		AgreementAcceptedTime:       0,
-		AgreementFinalizedTime:      0,
-		AgreementTerminatedTime:     0,
-		AgreementExecutionStartTime: 0,
-		AgreementDataReceivedTime:   0,
-		CurrentDeployment:           map[string]ServiceConfig{},
-		Proposal:                    proposal,
-		ProposalSig:                 signature,
-		AgreementProtocol:           protocol,
-		ProtocolVersion:             protocolVersion,
-		TerminatedReason:            0,
-		TerminatedDescription:       "",
+		Name:                            name,
+		SensorUrl:                       sensorUrl,
+		Archived:                        false,
+		CurrentAgreementId:              agreementId,
+		ConsumerId:                      consumerId,
+		CounterPartyAddress:             address,
+		AgreementCreationTime:           uint64(time.Now().Unix()),
+		AgreementAcceptedTime:           0,
+		AgreementFinalizedTime:          0,
+		AgreementTerminatedTime:         0,
+		AgreementExecutionStartTime:     0,
+		AgreementDataReceivedTime:       0,
+		CurrentDeployment:               map[string]ServiceConfig{},
+		Proposal:                        proposal,
+		ProposalSig:                     signature,
+		AgreementProtocol:               protocol,
+		ProtocolVersion:                 protocolVersion,
+		TerminatedReason:                0,
+		TerminatedDescription:           "",
+		AgreementProtocolTerminatedTime: 0,
+		WorkloadTerminatedTime:          0,
 	}
 
 	return newAg, db.Update(func(tx *bolt.Tx) error {
@@ -168,6 +192,22 @@ func AgreementStateTerminated(db *bolt.DB, dbAgreementId string, reason uint64, 
 func AgreementStateDataReceived(db *bolt.DB, dbAgreementId string, protocol string) (*EstablishedAgreement, error) {
 	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
 		c.AgreementDataReceivedTime = uint64(time.Now().Unix())
+		return &c
+	})
+}
+
+// set agreement state to agreement protocol terminated
+func AgreementStateAgreementProtocolTerminated(db *bolt.DB, dbAgreementId string, protocol string) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
+		c.AgreementProtocolTerminatedTime = uint64(time.Now().Unix())
+		return &c
+	})
+}
+
+// set agreement state to workload terminated
+func AgreementStateWorkloadTerminated(db *bolt.DB, dbAgreementId string, protocol string) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
+		c.WorkloadTerminatedTime = uint64(time.Now().Unix())
 		return &c
 	})
 }
@@ -247,6 +287,8 @@ func persistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 				mod.CurrentDeployment = update.CurrentDeployment
 				mod.TerminatedReason = update.TerminatedReason
 				mod.TerminatedDescription = update.TerminatedDescription
+				mod.AgreementProtocolTerminatedTime = update.AgreementProtocolTerminatedTime
+				mod.WorkloadTerminatedTime = update.WorkloadTerminatedTime
 
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize contract record: %v. Error: %v", mod, err)

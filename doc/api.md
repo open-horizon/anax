@@ -548,6 +548,8 @@ body:
 | protocol_version | int | the version of the agreement protocol being used. |
 | current_deployment | json | contains the information of the workloads. The key is the name of the workload and the value is the result of [/containers/<id> docker remote API call](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/inspect-a-container) for the  workload container. Please refer to the link for details. |
 | archived | bool |  if the agreement is archived or not.  |
+Note: The agreements that are being terminated but not yet archived are treated as archived in this api.
+
 
 **Example:**
 ```
