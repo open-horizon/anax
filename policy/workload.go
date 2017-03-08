@@ -50,13 +50,20 @@ func (wl Workload) IsSame(compare Workload) bool {
     return wl.Deployment == compare.Deployment && wl.DeploymentSignature == compare.DeploymentSignature && wl.DeploymentUserInfo == compare.DeploymentUserInfo && wl.Torrent.IsSame(compare.Torrent) && wl.WorkloadPassword == compare.WorkloadPassword
 }
 
-func (w *Workload) Obscure(agreementId string) error {
-    if w.WorkloadPassword == "" {
+func (w *Workload) Obscure(agreementId string, defaultPW string) error {
+
+    if w.WorkloadPassword == "" && defaultPW == "" {
         return nil
     }
 
+    // Workload password in a policy file overrides the default workload PW from the config
+    wpw := w.WorkloadPassword
+    if defaultPW != "" {
+        wpw = defaultPW
+    }
+
     // Convert the workload password into a hash by first concatenating the agreement id onto the end of the password
-    if hash, err := bcrypt.GenerateFromPassword([]byte(w.WorkloadPassword + agreementId), bcrypt.DefaultCost); err != nil {
+    if hash, err := bcrypt.GenerateFromPassword([]byte(wpw + agreementId), bcrypt.DefaultCost); err != nil {
         return err
     } else {
         w.WorkloadPassword = string(hash)

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -242,7 +241,7 @@ func Test_Policy_Merge(t *testing.T) {
 		t.Error(err)
 	} else if pf_con, err := ReadPolicyFile("./test/pfmerge1/agbot.policy"); err != nil {
 		t.Error(err)
-	} else if pf_merged, err := Create_Terms_And_Conditions(pf_prod, pf_con, "12345"); err != nil {
+	} else if pf_merged, err := Create_Terms_And_Conditions(pf_prod, pf_con, "12345", ""); err != nil {
 		t.Error(err)
 	} else if err := WritePolicyFile(pf_merged, "./test/pfmerge1/merged.policy"); err != nil {
 		t.Error(err)
@@ -343,12 +342,12 @@ func Test_Policy_Creation(t *testing.T) {
 }
 
 // Now let's make sure we are obscuring the workload password
-func Test_Policy_Workload_obscure(t *testing.T) {
+func Test_Policy_Workload_obscure1(t *testing.T) {
 	if pf_prod1, err := ReadPolicyFile("./test/pftest/test1.policy"); err != nil {
 		t.Error(err)
 	} else {
 		pf_prod1.Workloads[0].WorkloadPassword = "abcdefg"
-		if err := pf_prod1.ObscureWorkloadPWs("123456"); err != nil {
+		if err := pf_prod1.ObscureWorkloadPWs("123456",""); err != nil {
 			t.Error(err)
 		} else if pf_prod1.Workloads[0].WorkloadPassword == "abcdefg" {
 			t.Errorf("Password was not obscured in %v", pf_prod1.Workloads[0])
@@ -356,6 +355,18 @@ func Test_Policy_Workload_obscure(t *testing.T) {
 	}
 }
 
+func Test_Policy_Workload_obscure2(t *testing.T) {
+	if pf_prod1, err := ReadPolicyFile("./test/pftest/test1.policy"); err != nil {
+		t.Error(err)
+	} else {
+		pf_prod1.Workloads[0].WorkloadPassword = "abcdefg"
+		if err := pf_prod1.ObscureWorkloadPWs("","098765"); err != nil {
+			t.Error(err)
+		} else if pf_prod1.Workloads[0].WorkloadPassword == "abcdefg" {
+			t.Errorf("Password was not obscured in %v", pf_prod1.Workloads[0])
+		}
+	}
+}
 
 // ================================================================================================================
 // Helper functions

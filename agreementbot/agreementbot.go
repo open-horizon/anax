@@ -73,6 +73,10 @@ func (w *AgreementBotWorker) Messages() chan events.Message {
 
 func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 
+	if w.Config.AgreementBot == (config.AGConfig{}) {
+		return
+	}
+
 	switch incoming.(type) {
 	case *events.WhisperReceivedMessage:
 		if w.ready {
@@ -103,6 +107,22 @@ func (w *AgreementBotWorker) start() {
 
 	go func() {
 
+		glog.Info("AgreementBot worker initializing")
+
+		// If there is no Agbot config, we will terminate
+		if w.Config.AgreementBot == (config.AGConfig{}) {
+			glog.Errorf("AgreementBotWorker terminating, no AgreementBot config.")
+			return
+		} else if w.db == nil {
+			glog.Errorf("AgreementBotWorker terminating, no AgreementBot database configured.")
+			return
+		}
+
+		// Tell the eth worker to start the ethereum client container
+		if w.agbotId != "" && w.token != "" {
+			w.Worker.Manager.Messages <- events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, w.Manager.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
+		}
+
 		// Hold the agbot functions until we have blockchain funding. If there are events occurring that
 		// we need to react to, they will queue up on the command queue while we wait here.
 		for {
@@ -115,15 +135,6 @@ func (w *AgreementBotWorker) start() {
 		}
 
 		glog.Info("AgreementBot worker started")
-
-		// If there is no Agbot config, we will terminate
-		if w.Config.AgreementBot == (config.AGConfig{}) {
-			glog.Errorf("AgreementBotWorker terminating, no AgreementBot config.")
-			return
-		} else if w.db == nil {
-			glog.Errorf("AgreementBotWorker terminating, no AgreementBot database configured.")
-			return
-		}
 
 		// Establish the go objects that are used to interact with the ethereum blockchain.
 		// This code should probably be in the protocol library.
@@ -285,7 +296,7 @@ func (w *AgreementBotWorker) getMessages() ([]exchange.AgbotMessage, error) {
 	}
 }
 
-// There is one of these running is a go routine for each agreement protocol that we support
+// There is one of these running for each agreement protocol that we support
 func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 
 	if protocol == citizenscientist.PROTOCOL_NAME {

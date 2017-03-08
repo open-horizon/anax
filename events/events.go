@@ -3,7 +3,7 @@ package events
 import (
 	"fmt"
 	"github.com/open-horizon/anax/persistence"
-	gwhisper "github.com/open-horizon/go-whisper"
+	"net/url"
 	"time"
 )
 
@@ -45,6 +45,8 @@ const (
 	EXECUTION_BEGUN    EventId = "EXECUTION_BEGUN"
 	WORKLOAD_DESTROYED EventId = "WORKLOAD_DESTROYED"
 	CONTAINER_MAINTAIN EventId = "CONTAINER_MAINTAIN"
+	LOAD_CONTAINER     EventId = "LOAD_CONTAINER"
+	NEW_ETH_CLIENT     EventId = "NEW_ETH_CONTAINER"
 
 	// policy-related
 	NEW_POLICY EventId = "NEW_POLICY"
@@ -70,10 +72,17 @@ type Message interface {
 	ShortString() string
 }
 
+type LaunchContext interface {
+	URL()         url.URL
+	Hashes()      map[string]string
+	Signatures()  map[string]string
+	ShortString() string
+}
+
 type AgreementLaunchContext struct {
 	AgreementProtocol    string
 	AgreementId          string
-	Configure            *gwhisper.Configure
+	Configure            ContainerConfig
 	ConfigureRaw         []byte
 	EnvironmentAdditions *map[string]string // provided by platform, not but user
 }
@@ -84,6 +93,113 @@ func (c AgreementLaunchContext) String() string {
 
 func (c AgreementLaunchContext) ShortString() string {
 	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v", c.AgreementProtocol, c.AgreementId)
+}
+
+func (c AgreementLaunchContext) URL() url.URL {
+	return c.Configure.TorrentURL
+}
+
+func (c AgreementLaunchContext) Hashes() map[string]string {
+	return c.Configure.ImageHashes
+}
+
+func (c AgreementLaunchContext) Signatures() map[string]string {
+	return c.Configure.ImageSignatures
+}
+
+type ContainerConfig struct {
+	TorrentURL          url.URL           `json:"torrent_url"`
+	ImageHashes         map[string]string `json:"image_hashes"`
+	ImageSignatures     map[string]string `json:"image_signatures"` // cryptographic signatures per-image
+	Deployment          string            `json:"deployment"`       // JSON docker-compose like
+	DeploymentSignature string            `json:"deployment_signature"`
+	DeploymentUserInfo  string            `json:"deployment_user_info"`
+}
+
+func (c ContainerConfig) String() string {
+	return fmt.Sprintf("TorrentURL: %v, ImageHashes: %v, ImageSignatures: %v, Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v", c.TorrentURL.String(), c.ImageHashes, c.ImageSignatures, c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo)
+}
+
+func NewContainerConfig(torrentURL url.URL, imageHashes map[string]string, imageSignatures map[string]string, deployment string, deploymentSignature string, deploymentUserInfo string) *ContainerConfig {
+	return &ContainerConfig{
+		TorrentURL:          torrentURL,
+		ImageHashes:         imageHashes,
+		ImageSignatures:     imageSignatures,
+		Deployment:          deployment,
+		DeploymentSignature: deploymentSignature,
+		DeploymentUserInfo:  deploymentUserInfo,
+	}
+}
+
+type BlockchainConfig struct {
+	Type string
+	Name string
+}
+
+type ContainerLaunchContext struct {
+	Configure            ContainerConfig
+	EnvironmentAdditions *map[string]string
+	Blockchain           BlockchainConfig
+}
+
+func (c ContainerLaunchContext) String() string {
+	return fmt.Sprintf("ContainerConfig: %v, EnvironmentAdditions: %v, Blockchain: %v", c.Configure, c.EnvironmentAdditions, c.Blockchain)
+}
+
+func (c ContainerLaunchContext) ShortString() string {
+	return c.String()
+}
+
+func (c ContainerLaunchContext) URL() url.URL {
+	return c.Configure.TorrentURL
+}
+
+func (c ContainerLaunchContext) Hashes() map[string]string {
+	return c.Configure.ImageHashes
+}
+
+func (c ContainerLaunchContext) Signatures() map[string]string {
+	return c.Configure.ImageSignatures
+}
+
+func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]string, bc BlockchainConfig) *ContainerLaunchContext {
+	return &ContainerLaunchContext{
+		Configure:            *config,
+		EnvironmentAdditions: envAdds,
+		Blockchain:           bc,
+	}
+}
+
+// Anax device side fires this event when it needs to download and load a container.
+type LoadContainerMessage struct {
+	event         Event
+	launchContext *ContainerLaunchContext
+}
+
+func (e LoadContainerMessage) String() string {
+	return fmt.Sprintf("event: %v, launch context: %v", e.event, e.launchContext)
+}
+
+func (e LoadContainerMessage) ShortString() string {
+	return e.String()
+}
+
+func (e *LoadContainerMessage) Event() Event {
+	return e.event
+}
+
+func (e *LoadContainerMessage) LaunchContext() *ContainerLaunchContext {
+	return e.launchContext
+}
+
+func NewLoadContainerMessage(id EventId, lc *ContainerLaunchContext) *LoadContainerMessage {
+
+	return &LoadContainerMessage{
+		event: Event{
+			Id: id,
+		},
+		launchContext: lc,
+	}
 }
 
 // This event indicates that a new microservice has been created in the form of a policy file
@@ -263,9 +379,9 @@ func NewWhisperReceivedMessage(id EventId, payload string, from string, to strin
 }
 
 type TorrentMessage struct {
-	event                  Event
-	ImageFiles             []string
-	AgreementLaunchContext *AgreementLaunchContext
+	event         Event
+	ImageFiles    []string
+	LaunchContext interface{}
 }
 
 // fulfill interface of events.Message
@@ -274,21 +390,21 @@ func (b *TorrentMessage) Event() Event {
 }
 
 func (b *TorrentMessage) String() string {
-	return fmt.Sprintf("event: %v, imageFiles: %v, agreementLaunchContext: %v", b.event, b.ImageFiles, b.AgreementLaunchContext)
+	return fmt.Sprintf("event: %v, imageFiles: %v, launchContext: %v", b.event, b.ImageFiles, b.LaunchContext)
 }
 
 func (b *TorrentMessage) ShortString() string {
-	return fmt.Sprintf("event: %v, imageFiles: %v, agreementLaunchContext: %v", b.event, b.ImageFiles, b.AgreementLaunchContext.ShortString())
+	return fmt.Sprintf("event: %v, imageFiles: %v, launchContext: %v", b.event, b.ImageFiles, b.LaunchContext)
 }
 
-func NewTorrentMessage(id EventId, imageFiles []string, agreementLaunchContext *AgreementLaunchContext) *TorrentMessage {
+func NewTorrentMessage(id EventId, imageFiles []string, launchContext interface{}) *TorrentMessage {
 
 	return &TorrentMessage{
 		event: Event{
 			Id: id,
 		},
-		ImageFiles:             imageFiles,
-		AgreementLaunchContext: agreementLaunchContext,
+		ImageFiles:    imageFiles,
+		LaunchContext: launchContext,
 	}
 }
 
@@ -351,16 +467,46 @@ func NewGovernanceCancelationMessage(id EventId, cause EndContractCause, protoco
 	}
 }
 
-//Container messages
-type ContainerMessage struct {
+//Workload messages
+type WorkloadMessage struct {
 	event             Event
 	AgreementProtocol string
 	AgreementId       string
 	Deployment        map[string]persistence.ServiceConfig
 }
 
-func (m ContainerMessage) String() string {
+func (m WorkloadMessage) String() string {
 	return fmt.Sprintf("event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v", m.event.Id, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment))
+}
+
+func (m WorkloadMessage) ShortString() string {
+	return m.String()
+}
+
+func (b WorkloadMessage) Event() Event {
+	return b.event
+}
+
+func NewWorkloadMessage(id EventId, protocol string, agreementId string, deployment map[string]persistence.ServiceConfig) *WorkloadMessage {
+
+	return &WorkloadMessage{
+		event: Event{
+			Id: id,
+		},
+		AgreementProtocol: protocol,
+		AgreementId:       agreementId,
+		Deployment:        deployment,
+	}
+}
+
+//Container messages
+type ContainerMessage struct {
+	event             Event
+	LaunchContext     ContainerLaunchContext
+}
+
+func (m ContainerMessage) String() string {
+	return fmt.Sprintf("event: %v, LaunchContext: %v", m.event.Id, m.LaunchContext)
 }
 
 func (m ContainerMessage) ShortString() string {
@@ -371,15 +517,13 @@ func (b ContainerMessage) Event() Event {
 	return b.event
 }
 
-func NewContainerMessage(id EventId, protocol string, agreementId string, deployment map[string]persistence.ServiceConfig) *ContainerMessage {
+func NewContainerMessage(id EventId, lc ContainerLaunchContext) *ContainerMessage {
 
 	return &ContainerMessage{
 		event: Event{
 			Id: id,
 		},
-		AgreementProtocol: protocol,
-		AgreementId:       agreementId,
-		Deployment:        deployment,
+		LaunchContext: lc,
 	}
 }
 
@@ -576,5 +720,49 @@ func NewExchangeDeviceMessage(id EventId, exMsg []byte, pMsg string) *ExchangeDe
 		exchangeMessage: exMsg,
 		protocolMessage: pMsg,
 		Time:            uint64(time.Now().Unix()),
+	}
+}
+
+// Make sure eth container is up and running
+type NewEthContainerMessage struct {
+	event             Event
+	exchangeURL       string
+	exchangeId        string
+	exchangeToken     string
+	Time              uint64
+}
+
+func (m *NewEthContainerMessage) Event() Event {
+	return m.event
+}
+
+func (m *NewEthContainerMessage) ExchangeURL() string {
+	return m.exchangeURL
+}
+
+func (m *NewEthContainerMessage) ExchangeId() string {
+	return m.exchangeId
+}
+func (m *NewEthContainerMessage) ExchangeToken() string {
+	return m.exchangeToken
+}
+
+func (m NewEthContainerMessage) String() string {
+	return fmt.Sprintf("Event: %v, Time: %v, ExchangeURL: %v, ExchangeId: %v, ExchangeToken: %v", m.event, m.Time, m.exchangeURL, m.exchangeId, m.exchangeToken)
+}
+
+func (m NewEthContainerMessage) ShortString() string {
+	return m.String()
+}
+
+func NewNewEthContainerMessage(id EventId, exchangeURL string, exchangeId string, exchangeToken string) *NewEthContainerMessage {
+	return &NewEthContainerMessage{
+		event: Event{
+			Id: id,
+		},
+		exchangeURL:      exchangeURL,
+		exchangeId:       exchangeId,
+		exchangeToken:    exchangeToken,
+		Time:             uint64(time.Now().Unix()),
 	}
 }
