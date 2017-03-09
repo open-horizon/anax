@@ -44,23 +44,23 @@ type EstablishedAgreement struct {
 
 func (c EstablishedAgreement) String() string {
 
-	return fmt.Sprintf("Name: %v , "+
-		"SensorUrl: %v , "+
-		"Archived: %v , "+
-		"CurrentAgreementId: %v, "+
-		"ConsumerId: %v, "+
-		"CurrentDeployment (service names): %v, "+
-		"AgreementCreationTime: %v, "+
-		"AgreementExecutionStartTime: %v, "+
-		"AgreementAcceptedTime: %v, "+
-		"AgreementFinalizedTime: %v, "+
-		"AgreementDataReceivedTime: %v, "+
-		"AgreementTerminatedTime: %v, "+
-		"TerminatedReason: %v, "+
-		"TerminatedDescription: %v, "+
-		"Agreement Protocol: %v, "+
-		"AgreementProtocolTerminatedTime : %v, "+
-		"WorkloadTerminatedTime: %v"+
+	return fmt.Sprintf("Name: %v, " +
+		"SensorUrl: %v, " +
+		"Archived: %v, " +
+		"CurrentAgreementId: %v, " +
+		"ConsumerId: %v, " +
+		"CurrentDeployment (service names): %v, " +
+		"AgreementCreationTime: %v, " +
+		"AgreementExecutionStartTime: %v, " +
+		"AgreementAcceptedTime: %v, " +
+		"AgreementFinalizedTime: %v, " +
+		"AgreementDataReceivedTime: %v, " +
+		"AgreementTerminatedTime: %v, " +
+		"TerminatedReason: %v, " +
+		"TerminatedDescription: %v, " +
+		"Agreement Protocol: %v, " +
+		"AgreementProtocolTerminatedTime : %v, " +
+		"WorkloadTerminatedTime: %v",
 		c.Name, c.SensorUrl, c.Archived, c.CurrentAgreementId, c.ConsumerId, ServiceConfigNames(&c.CurrentDeployment),
 		c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementFinalizedTime,
 		c.AgreementDataReceivedTime, c.AgreementTerminatedTime, c.TerminatedReason, c.TerminatedDescription,
