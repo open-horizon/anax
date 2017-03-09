@@ -53,3 +53,13 @@ func NewNewProtocolMessageCommand(msg []byte, msgId int, deviceId string, pubkey
 		PubKey:    pubkey,
 	}
 }
+
+type BlockchainEventCommand struct {
+	Msg events.EthBlockchainEventMessage
+}
+
+func NewBlockchainEventCommand(msg events.EthBlockchainEventMessage) *BlockchainEventCommand {
+	return &BlockchainEventCommand{
+		Msg: msg,
+	}
+}
