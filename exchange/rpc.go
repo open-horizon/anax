@@ -296,6 +296,16 @@ type BlockchainDef struct {
 	LastUpdated string `json:"lastUpdated"`
 }
 
+// This is the structure of what is marshalled into the BlockchainDef.Details field.
+type ChainDetails struct {
+	Arch           string          `json:"arch"`
+	DeploymentDesc policy.Workload `json:"deployment_description"`
+}
+
+type BlockchainDetails struct {
+	Chains []ChainDetails `json:"chains"`
+}
+
 // This function creates the exchange search message body.
 func CreateSearchRequest() *SearchExchangeRequest {
 

@@ -31,6 +31,7 @@ type EthBlockchainWorker struct {
 	exchangeURL         string
 	exchangeId          string
 	exchangeToken       string
+	horizonPubKeyFile   string
 }
 
 func NewEthBlockchainWorker(config *config.HorizonConfig, gethURL string) *EthBlockchainWorker {
@@ -51,6 +52,7 @@ func NewEthBlockchainWorker(config *config.HorizonConfig, gethURL string) *EthBl
 		gethURL:             gethURL,
 		ethContainerStarted: false,
 		ethContainerLoaded:  false,
+		horizonPubKeyFile:   config.Edge.PublicKeyPath,
 	}
 
 	glog.Info(logString("starting worker"))
@@ -139,7 +141,7 @@ func (w *EthBlockchainWorker) start() {
 				// Make sure we are trying to start the container
 				if !w.ethContainerStarted {
 					w.ethContainerStarted = true
-					if err := w.startEthContainer(); err != nil {
+					if err := w.getEthContainer(); err != nil {
 						w.ethContainerStarted = false
 						glog.Errorf(logString(fmt.Sprintf("unable to start Eth container, error %v", err)))
 					}
@@ -200,7 +202,7 @@ func (w *EthBlockchainWorker) handleNewClient(cmd *NewClientCommand) {
 		w.exchangeId = cmd.Msg.ExchangeId()
 		w.exchangeToken = cmd.Msg.ExchangeToken()
 
-		if err := w.startEthContainer(); err != nil {
+		if err := w.getEthContainer(); err != nil {
 			w.ethContainerStarted = false
 			glog.Errorf(logString(fmt.Sprintf("unable to start Eth container, error %v", err)))
 		}
@@ -210,7 +212,7 @@ func (w *EthBlockchainWorker) handleNewClient(cmd *NewClientCommand) {
 }
 
 // This function is used to start the process of starting the ethereum container
-func (w *EthBlockchainWorker) startEthContainer() error {
+func (w *EthBlockchainWorker) getEthContainer() error {
 
 	// Get blockchain metadata from the exchange and tell the eth worker to start the ethereum client container
 	chainName := "bluehorizon"
@@ -223,39 +225,63 @@ func (w *EthBlockchainWorker) startEthContainer() error {
 	} else {
 
 		// Convert the metadata into a container config object so that the Torrent worker can download the container.
-		torrObj := new(policy.Workload)
-		if err := json.Unmarshal([]byte(bcMetadata), torrObj); err != nil {
-			return errors.New(logString(fmt.Sprintf("could not unmarshal torrent metadata, error %v, metadata %v", err, bcMetadata)))
-		} else if url, err := url.Parse(torrObj.Torrent.Url); err != nil {
-			return errors.New(logString(fmt.Sprintf("ill-formed URL: %v, error %v", torrObj.Torrent.Url, err)))
+		detailsObj := new(exchange.BlockchainDetails)
+		if err := json.Unmarshal([]byte(bcMetadata), detailsObj); err != nil {
+			return errors.New(logString(fmt.Sprintf("could not unmarshal blockchain metadata, error %v, metadata %v", err, bcMetadata)))
 		} else {
-			hashes := make(map[string]string, 0)
-			signatures := make(map[string]string, 0)
-
-			for _, image := range torrObj.Torrent.Images {
-				bits := strings.Split(image.File, ".")
-				if len(bits) < 2 {
-					return errors.New(logString(fmt.Sprintf("found ill-formed image filename: %v, no file suffix found", bits)))
-				} else {
-					hashes[image.File] = bits[0]
+			// Search for the architecture we're running on
+			fired := false
+			for _, chain := range detailsObj.Chains {
+				if chain.Arch == runtime.GOARCH {
+					if err := w.fireStartEvent(&chain, chainName); err != nil {
+						return err
+					}
+					fired = true
+					break
 				}
-				signatures[image.File] = image.Signature
 			}
-
-			// Fire an event to the torrent worker so that it will download the container
-			cc := events.NewContainerConfig(*url, hashes, signatures, torrObj.Deployment, torrObj.DeploymentSignature, torrObj.DeploymentUserInfo)
-			envAdds := make(map[string]string)
-			envAdds["COLONUS_DIR"] = "/root/eth"
-			// envAdds["ETHEREUM_DIR"] = "/root/.ethereum"
-			envAdds["HZN_RAM"] = "2048"
-			lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{Type:"ethereum", Name:chainName})
-			w.Worker.Manager.Messages <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
-
-			return nil
+			if !fired {
+				return errors.New(logString(fmt.Sprintf("could not locate eth metadata for %v", runtime.GOARCH)))
+			}
 		}
+		return nil
 	}
 }
 
+func (w *EthBlockchainWorker) fireStartEvent(details *exchange.ChainDetails, chainName string) error {
+	if url, err := url.Parse(details.DeploymentDesc.Torrent.Url); err != nil {
+		return errors.New(logString(fmt.Sprintf("ill-formed URL: %v, error %v", details.DeploymentDesc.Torrent.Url, err)))
+	} else {
+		hashes := make(map[string]string, 0)
+		signatures := make(map[string]string, 0)
+
+		for _, image := range details.DeploymentDesc.Torrent.Images {
+			bits := strings.Split(image.File, ".")
+			if len(bits) < 2 {
+				return errors.New(logString(fmt.Sprintf("found ill-formed image filename: %v, no file suffix found", bits)))
+			} else {
+				hashes[image.File] = bits[0]
+			}
+			signatures[image.File] = image.Signature
+		}
+
+		// Verify the deployment signature
+		if err := details.DeploymentDesc.HasValidSignature(w.horizonPubKeyFile); err != nil {
+			return errors.New(logString(fmt.Sprintf("eth container has invalid deployment signature %v for %v", details.DeploymentDesc.DeploymentSignature, details.DeploymentDesc.Deployment)))
+		}
+
+		// Fire an event to the torrent worker so that it will download the container
+		cc := events.NewContainerConfig(*url, hashes, signatures, details.DeploymentDesc.Deployment, details.DeploymentDesc.DeploymentSignature, details.DeploymentDesc.DeploymentUserInfo)
+		envAdds := make(map[string]string)
+		envAdds["COLONUS_DIR"] = "/root/eth"
+		// envAdds["ETHEREUM_DIR"] = "/root/.ethereum"
+		envAdds["HZN_RAM"] = "2048"
+		lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{Type:"ethereum", Name:chainName})
+		w.Worker.Manager.Messages <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
+
+		return nil
+	}
+}
 
 // This function sets up the blockchain event listener
 func (w *EthBlockchainWorker) initBlockchainEventListener() {

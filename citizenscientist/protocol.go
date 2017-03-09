@@ -278,7 +278,8 @@ func (p *ProtocolHandler) DecideOnProposal(proposal *Proposal, myId string, mess
 		} else if numberAgreements > producerPolicy.MaxAgreements {
 			replyErr = errors.New(fmt.Sprintf("CS Procotol max agreements %v reached, already have %v", producerPolicy.MaxAgreements, numberAgreements))
 
-			// Now check to make sure that the merged policy is acceptable.
+			// Now check to make sure that the merged policy is acceptable. The policy is not acceptable if the terms and conditions are not
+			// compatible with the producer's policy.
 		} else if err := policy.Are_Compatible(producerPolicy, termsAndConditions); err != nil {
 			replyErr = errors.New(fmt.Sprintf("CS Protocol decide on proposal received error, T and C policy is not compatible, rejecting proposal: %v", err))
 		} else if err := p.pm.FinalAgreement(producerPolicy, proposal.AgreementId); err != nil {

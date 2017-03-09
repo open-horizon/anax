@@ -222,6 +222,15 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 	}
 }
 
+func (self *Policy) Is_Self_Consistent(keyPath string) error {
+	for _, workload := range self.Workloads {
+		if err := workload.HasValidSignature(keyPath); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // These are getter functions used to query attributes of a policy object
 func (self *Policy) Get_DataVerification_enabled() bool {
 	return self.DataVerify.Enabled
