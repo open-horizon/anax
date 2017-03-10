@@ -139,7 +139,7 @@ func (w *EthBlockchainWorker) start() {
 			case <-time.After(time.Duration(nonBlockDuration) * time.Second):
 
 				// Make sure we are trying to start the container
-				if !w.ethContainerStarted {
+				if !w.ethContainerStarted && w.exchangeId != "" {
 					w.ethContainerStarted = true
 					if err := w.getEthContainer(); err != nil {
 						w.ethContainerStarted = false
