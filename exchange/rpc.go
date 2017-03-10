@@ -470,7 +470,7 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 		}
 		glog.V(5).Infof("Invoking exchange with headers: %v", req.Header)
 		if httpResp, err := httpClient.Do(req); err != nil {
-			return nil, errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, url, requestBody, err))
+			return errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, url, requestBody, err)), nil
 		} else {
 			defer httpResp.Body.Close()
 
