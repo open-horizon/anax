@@ -2,30 +2,39 @@ package ethblockchain
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
 	"net/http"
+	"net/url"
 	"os"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 )
 
 // must be safely-constructed!!
 type EthBlockchainWorker struct {
-	worker.Worker // embedded field
-	httpClient    *http.Client
-	gethURL       string
-	bcMetadata    *policy.EthereumBlockchain
-	bc            *BaseContracts
-	el            *Event_Log
+	worker.Worker       // embedded field
+	httpClient          *http.Client
+	gethURL             string
+	bc                  *BaseContracts
+	el                  *Event_Log
+	ethContainerStarted bool
+	ethContainerLoaded  bool
+	exchangeURL         string
+	exchangeId          string
+	exchangeToken       string
+	horizonPubKeyFile   string
 }
 
-func NewEthBlockchainWorker(config *config.HorizonConfig, gethURL string, bcMetadata *policy.EthereumBlockchain) *EthBlockchainWorker {
+func NewEthBlockchainWorker(config *config.HorizonConfig, gethURL string) *EthBlockchainWorker {
 	messages := make(chan events.Message)      // The channel for outbound messages to the anax wide bus
 	commands := make(chan worker.Command, 100) // The channel for commands into the agreement bot worker
 
@@ -39,9 +48,11 @@ func NewEthBlockchainWorker(config *config.HorizonConfig, gethURL string, bcMeta
 			Commands: commands,
 		},
 
-		httpClient: &http.Client{},
-		gethURL:    gethURL,
-		bcMetadata: bcMetadata,
+		httpClient:          &http.Client{},
+		gethURL:             gethURL,
+		ethContainerStarted: false,
+		ethContainerLoaded:  false,
+		horizonPubKeyFile:   config.Edge.PublicKeyPath,
 	}
 
 	glog.Info(logString("starting worker"))
@@ -54,6 +65,50 @@ func (w *EthBlockchainWorker) Messages() chan events.Message {
 }
 
 func (w *EthBlockchainWorker) NewEvent(incoming events.Message) {
+
+	switch incoming.(type) {
+	case *events.NewEthContainerMessage:
+		msg, _ := incoming.(*events.NewEthContainerMessage)
+		cmd := NewNewClientCommand(*msg)
+		w.Commands <- cmd
+
+	case *events.ContainerMessage:
+		msg, _ := incoming.(*events.ContainerMessage)
+		switch msg.Event().Id {
+		case events.EXECUTION_FAILED:
+			noBCCOnfig := events.BlockchainConfig{}
+			if msg.LaunchContext.Blockchain != noBCCOnfig && msg.LaunchContext.Blockchain.Type == "ethereum" {
+				w.ethContainerStarted = false
+				// fake up a new eth container message to restart the process of loading the eth container
+				newMsg := events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, w.exchangeURL, w.exchangeId, w.exchangeToken)
+				cmd := NewNewClientCommand(*newMsg)
+				w.Commands <- cmd
+			}
+		}
+
+	case *events.TorrentMessage:
+		msg, _ := incoming.(*events.TorrentMessage)
+		switch msg.Event().Id {
+		case events.TORRENT_FAILURE:
+			noBCCOnfig := events.BlockchainConfig{}
+
+			switch msg.LaunchContext.(type) {
+			case *events.ContainerLaunchContext:
+				lc := msg.LaunchContext.(*events.ContainerLaunchContext)
+				if lc.Blockchain != noBCCOnfig && lc.Blockchain.Type == "ethereum" {
+					w.ethContainerStarted = false
+					// fake up a new eth container message to restart the process of loading the eth container
+					newMsg := events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, w.exchangeURL, w.exchangeId, w.exchangeToken)
+					cmd := NewNewClientCommand(*newMsg)
+					w.Commands <- cmd
+				}
+			default:
+				glog.Errorf(logString(fmt.Sprintf("unknown LaunchContext type: %T", msg.LaunchContext)))
+			}
+		}
+	default: //nothing
+	}
+
 	return
 }
 
@@ -72,18 +127,35 @@ func (w *EthBlockchainWorker) start() {
 			select {
 			case command := <-w.Commands:
 				switch command.(type) {
+				case *NewClientCommand:
+					cmd := command.(*NewClientCommand)
+					w.handleNewClient(cmd)
+
 				default:
 					glog.Errorf(logString(fmt.Sprintf("unknown command (%T): %v", command, command)))
 				}
 				glog.V(5).Infof(logString(fmt.Sprintf("handled command")))
 
 			case <-time.After(time.Duration(nonBlockDuration) * time.Second):
+
+				// Make sure we are trying to start the container
+				if !w.ethContainerStarted {
+					w.ethContainerStarted = true
+					if err := w.getEthContainer(); err != nil {
+						w.ethContainerStarted = false
+						glog.Errorf(logString(fmt.Sprintf("unable to start Eth container, error %v", err)))
+					}
+				}
+
 				// Check status of blockchain
-				if acct, err := AccountId(); err != nil {
+				if dirAddr, err := DirectoryAddress(); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("unable to obtain directory address, error %v", err)))
+				} else if acct, err := AccountId(); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to obtain account, error %v", err)))
 				} else if funded, err := AccountFunded(w.gethURL); err != nil {
 					glog.V(3).Infof(logString(fmt.Sprintf("error checking for account funding: %v", err)))
 				} else {
+					glog.V(3).Infof(logString(fmt.Sprintf("using directory address: %v", dirAddr)))
 					if !notifiedBCReady {
 						// geth initilzed
 						notifiedBCReady = true
@@ -120,6 +192,95 @@ func (w *EthBlockchainWorker) start() {
 	}()
 
 	glog.Info(logString("ready for commands."))
+}
+
+func (w *EthBlockchainWorker) handleNewClient(cmd *NewClientCommand) {
+	// Start the eth container if necessary
+	if !w.ethContainerStarted {
+		w.ethContainerStarted = true
+		w.exchangeURL = cmd.Msg.ExchangeURL()
+		w.exchangeId = cmd.Msg.ExchangeId()
+		w.exchangeToken = cmd.Msg.ExchangeToken()
+
+		if err := w.getEthContainer(); err != nil {
+			w.ethContainerStarted = false
+			glog.Errorf(logString(fmt.Sprintf("unable to start Eth container, error %v", err)))
+		}
+	} else {
+		glog.V(3).Infof(logString(fmt.Sprintf("ignoring duplicate request to start eth container")))
+	}
+}
+
+// This function is used to start the process of starting the ethereum container
+func (w *EthBlockchainWorker) getEthContainer() error {
+
+	// Get blockchain metadata from the exchange and tell the eth worker to start the ethereum client container
+	chainName := "bluehorizon"
+	if overrideName := os.Getenv("CMTN_BLOCKCHAIN"); overrideName != "" {
+		chainName = overrideName
+	}
+
+	if bcMetadata, err := exchange.GetEthereumClient(w.exchangeURL, chainName, w.exchangeId, w.exchangeToken); err != nil {
+		return errors.New(logString(fmt.Sprintf("unable to get eth client metadata, error: %v", err)))
+	} else {
+
+		// Convert the metadata into a container config object so that the Torrent worker can download the container.
+		detailsObj := new(exchange.BlockchainDetails)
+		if err := json.Unmarshal([]byte(bcMetadata), detailsObj); err != nil {
+			return errors.New(logString(fmt.Sprintf("could not unmarshal blockchain metadata, error %v, metadata %v", err, bcMetadata)))
+		} else {
+			// Search for the architecture we're running on
+			fired := false
+			for _, chain := range detailsObj.Chains {
+				if chain.Arch == runtime.GOARCH {
+					if err := w.fireStartEvent(&chain, chainName); err != nil {
+						return err
+					}
+					fired = true
+					break
+				}
+			}
+			if !fired {
+				return errors.New(logString(fmt.Sprintf("could not locate eth metadata for %v", runtime.GOARCH)))
+			}
+		}
+		return nil
+	}
+}
+
+func (w *EthBlockchainWorker) fireStartEvent(details *exchange.ChainDetails, chainName string) error {
+	if url, err := url.Parse(details.DeploymentDesc.Torrent.Url); err != nil {
+		return errors.New(logString(fmt.Sprintf("ill-formed URL: %v, error %v", details.DeploymentDesc.Torrent.Url, err)))
+	} else {
+		hashes := make(map[string]string, 0)
+		signatures := make(map[string]string, 0)
+
+		for _, image := range details.DeploymentDesc.Torrent.Images {
+			bits := strings.Split(image.File, ".")
+			if len(bits) < 2 {
+				return errors.New(logString(fmt.Sprintf("found ill-formed image filename: %v, no file suffix found", bits)))
+			} else {
+				hashes[image.File] = bits[0]
+			}
+			signatures[image.File] = image.Signature
+		}
+
+		// Verify the deployment signature
+		if err := details.DeploymentDesc.HasValidSignature(w.horizonPubKeyFile); err != nil {
+			return errors.New(logString(fmt.Sprintf("eth container has invalid deployment signature %v for %v", details.DeploymentDesc.DeploymentSignature, details.DeploymentDesc.Deployment)))
+		}
+
+		// Fire an event to the torrent worker so that it will download the container
+		cc := events.NewContainerConfig(*url, hashes, signatures, details.DeploymentDesc.Deployment, details.DeploymentDesc.DeploymentSignature, details.DeploymentDesc.DeploymentUserInfo)
+		envAdds := make(map[string]string)
+		envAdds["COLONUS_DIR"] = "/root/eth"
+		// envAdds["ETHEREUM_DIR"] = "/root/.ethereum"
+		envAdds["HZN_RAM"] = "2048"
+		lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{Type:"ethereum", Name:chainName})
+		w.Worker.Manager.Messages <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
+
+		return nil
+	}
 }
 
 // This function sets up the blockchain event listener
@@ -196,6 +357,18 @@ func getFilter() []interface{} {
 	filter := []interface{}{}
 	return filter
 }
+
+type NewClientCommand struct {
+	Msg events.NewEthContainerMessage
+}
+
+func NewNewClientCommand(msg events.NewEthContainerMessage) *NewClientCommand {
+	return &NewClientCommand{
+		Msg: msg,
+	}
+}
+
+
 
 // ==========================================================================================================
 // Utility functions

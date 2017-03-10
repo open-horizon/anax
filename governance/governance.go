@@ -15,7 +15,6 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
-	gwhisper "github.com/open-horizon/go-whisper"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -95,10 +94,10 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 	switch incoming.(type) {
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
-		w.Commands <- NewDeviceRegisteredCommand(msg.Token())
+		w.deviceToken = msg.Token()
 
-	case *events.ContainerMessage:
-		msg, _ := incoming.(*events.ContainerMessage)
+	case *events.WorkloadMessage:
+		msg, _ := incoming.(*events.WorkloadMessage)
 
 		switch msg.Event().Id {
 		case events.EXECUTION_BEGUN:
@@ -118,8 +117,12 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 		msg, _ := incoming.(*events.TorrentMessage)
 		switch msg.Event().Id {
 		case events.TORRENT_FAILURE:
-			cmd := w.NewCleanupExecutionCommand(msg.AgreementLaunchContext.AgreementProtocol, msg.AgreementLaunchContext.AgreementId, citizenscientist.CANCEL_TORRENT_FAILURE, nil)
-			w.Commands <- cmd
+			switch msg.LaunchContext.(type) {
+			case events.AgreementLaunchContext:
+				lc := msg.LaunchContext.(events.AgreementLaunchContext)
+				cmd := w.NewCleanupExecutionCommand(lc.AgreementProtocol, lc.AgreementId, citizenscientist.CANCEL_TORRENT_FAILURE, nil)
+				w.Commands <- cmd
+			}
 		}
 	case *events.InitAgreementCancelationMessage:
 		msg, _ := incoming.(*events.InitAgreementCancelationMessage)
@@ -369,6 +372,19 @@ func (w *GovernanceWorker) start() {
 			return nil
 		}
 
+		// Fire up the eth container after the device is registered.
+		for {
+			if w.deviceToken != "" {
+				break
+			} else {
+				glog.V(3).Infof("GovernanceWorker command processor waiting for device registration")
+				time.Sleep(time.Duration(5) * time.Second)
+			}
+		}
+
+		// Tell the eth worker to start the ethereum client container.
+		w.Worker.Manager.Messages <- events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, w.Worker.Manager.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken)
+
 		// Hold the governance functions until we have blockchain funding. If there are events occurring that
 		// we need to react to, they will queue up on the command queue while we wait here. The agreement worker
 		// should not be blocked by this.
@@ -411,10 +427,6 @@ func (w *GovernanceWorker) start() {
 
 				// TODO: consolidate DB update cases
 				switch command.(type) {
-				case *DeviceRegisteredCommand:
-					cmd, _ := command.(*DeviceRegisteredCommand)
-					w.deviceToken = cmd.Token
-
 				case *StartGovernExecutionCommand:
 					// TODO: update db start time and tc so it can be governed
 					cmd, _ := command.(*StartGovernExecutionCommand)
@@ -694,9 +706,10 @@ func (w *GovernanceWorker) RecordReply(proposal *citizenscientist.Proposal, prot
 		if url, err := url.Parse(tcPolicy.Workloads[0].Torrent.Url); err != nil {
 			return errors.New(fmt.Sprintf("Ill-formed URL: %v", tcPolicy.Workloads[0].Torrent.Url))
 		} else {
-			wc := gwhisper.NewConfigure("", *url, hashes, signatures, tcPolicy.Workloads[0].Deployment, tcPolicy.Workloads[0].DeploymentSignature, tcPolicy.Workloads[0].DeploymentUserInfo)
+			cc := events.NewContainerConfig(*url, hashes, signatures, tcPolicy.Workloads[0].Deployment, tcPolicy.Workloads[0].DeploymentSignature, tcPolicy.Workloads[0].DeploymentUserInfo)
+
 			lc := new(events.AgreementLaunchContext)
-			lc.Configure = wc
+			lc.Configure = *cc
 			lc.AgreementId = proposal.AgreementId
 
 			// get environmental settings for the workload
@@ -800,16 +813,6 @@ func (w *GovernanceWorker) NewCleanupStatusCommand(protocol string, agreementId 
 		AgreementProtocol: protocol,
 		AgreementId:       agreementId,
 		Status:            status,
-	}
-}
-
-type DeviceRegisteredCommand struct {
-	Token string
-}
-
-func NewDeviceRegisteredCommand(token string) *DeviceRegisteredCommand {
-	return &DeviceRegisteredCommand{
-		Token: token,
 	}
 }
 

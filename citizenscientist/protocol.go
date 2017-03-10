@@ -197,9 +197,9 @@ func NewProtocolHandler(gethURL string, pm *policy.PolicyManager) *ProtocolHandl
 	}
 }
 
-func (p *ProtocolHandler) InitiateAgreement(agreementId string, producerPolicy *policy.Policy, consumerPolicy *policy.Policy, myAddress string, myId string, messageTarget interface{}, sendMessage func(msgTarget interface{}, pay []byte) error) (*Proposal, error) {
+func (p *ProtocolHandler) InitiateAgreement(agreementId string, producerPolicy *policy.Policy, consumerPolicy *policy.Policy, myAddress string, myId string, messageTarget interface{}, defaultPW string, sendMessage func(msgTarget interface{}, pay []byte) error) (*Proposal, error) {
 
-	if TCPolicy, err := policy.Create_Terms_And_Conditions(producerPolicy, consumerPolicy, agreementId); err != nil {
+	if TCPolicy, err := policy.Create_Terms_And_Conditions(producerPolicy, consumerPolicy, agreementId, defaultPW); err != nil {
 		return nil, errors.New(fmt.Sprintf("CS Protocol initiation received error trying to merge policy %v and %v, error: %v", producerPolicy, consumerPolicy, err))
 	} else {
 		glog.V(5).Infof("Merged Policy %v", *TCPolicy)
@@ -278,7 +278,8 @@ func (p *ProtocolHandler) DecideOnProposal(proposal *Proposal, myId string, mess
 		} else if numberAgreements > producerPolicy.MaxAgreements {
 			replyErr = errors.New(fmt.Sprintf("CS Procotol max agreements %v reached, already have %v", producerPolicy.MaxAgreements, numberAgreements))
 
-			// Now check to make sure that the merged policy is acceptable.
+			// Now check to make sure that the merged policy is acceptable. The policy is not acceptable if the terms and conditions are not
+			// compatible with the producer's policy.
 		} else if err := policy.Are_Compatible(producerPolicy, termsAndConditions); err != nil {
 			replyErr = errors.New(fmt.Sprintf("CS Protocol decide on proposal received error, T and C policy is not compatible, rejecting proposal: %v", err))
 		} else if err := p.pm.FinalAgreement(producerPolicy, proposal.AgreementId); err != nil {

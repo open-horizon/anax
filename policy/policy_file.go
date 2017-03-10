@@ -191,7 +191,7 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 // This function creates a merged policy file from a producer policy and a consumer policy, which will eventually
 // become the full terms and conditions of an agreement. If no error is returned, a merged policy object is returned.
 // The order of parameters is important, just like in the Are_Compatible API.
-func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Policy, agreementId string) (*Policy, error) {
+func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Policy, agreementId string, defaultPW string) (*Policy, error) {
 
 	// Make sure the policies are compatible. If not an error will be returned.
 	if err := Are_Compatible(producer_policy, consumer_policy); err != nil {
@@ -205,7 +205,7 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		intersecting_agreement_protocols, _ := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols)
 		merged_pol.AgreementProtocols = *intersecting_agreement_protocols.Single_Element()
 		merged_pol.Workloads = append(merged_pol.Workloads, consumer_policy.Workloads...)
-		if err := merged_pol.ObscureWorkloadPWs(agreementId); err != nil {
+		if err := merged_pol.ObscureWorkloadPWs(agreementId, defaultPW); err != nil {
 			return nil, errors.New(fmt.Sprintf("Error merging policies, error: %v", err))
 		}
 		merged_pol.ValueEx = consumer_policy.ValueEx
@@ -220,6 +220,15 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 
 		return merged_pol, nil
 	}
+}
+
+func (self *Policy) Is_Self_Consistent(keyPath string) error {
+	for _, workload := range self.Workloads {
+		if err := workload.HasValidSignature(keyPath); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // These are getter functions used to query attributes of a policy object
@@ -270,9 +279,9 @@ func (self *Policy) IsSameWorkload(compare *Policy) bool {
 	return true
 }
 
-func (self *Policy) ObscureWorkloadPWs(agreementId string) error {
+func (self *Policy) ObscureWorkloadPWs(agreementId string, defaultPW string) error {
 	for ix, _ := range self.Workloads {
-		if err := (&self.Workloads[ix]).Obscure(agreementId); err != nil {
+		if err := (&self.Workloads[ix]).Obscure(agreementId, defaultPW); err != nil {
 			return err
 		}
 	}

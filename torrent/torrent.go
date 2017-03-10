@@ -27,6 +27,7 @@ func NewTorrentWorker(config *config.HorizonConfig) *TorrentWorker {
 		NoUpload:        false,
 		DisableTrackers: false,
 		NoDHT:           true,
+		ListenAddr:      config.Edge.TorrentListenAddr,
 	})
 	if err != nil {
 		panic(fmt.Sprintf("Unable to instantiate torrent client: %s", err))
@@ -61,6 +62,12 @@ func (w *TorrentWorker) NewEvent(incoming events.Message) {
 		fCmd := w.NewFetchCommand(msg.LaunchContext())
 		w.Commands <- fCmd
 
+	case *events.LoadContainerMessage:
+		msg, _ := incoming.(*events.LoadContainerMessage)
+
+		fCmd := w.NewFetchCommand(msg.LaunchContext())
+		w.Commands <- fCmd
+
 	default: //nothing
 
 	}
@@ -82,16 +89,20 @@ func (b *TorrentWorker) start() {
 			case *FetchCommand:
 
 				cmd := command.(*FetchCommand)
-				glog.V(2).Infof("URL to fetch: %s\n", cmd.AgreementLaunchContext.Configure.TorrentURL)
-				imageFiles, err := Fetch(cmd.AgreementLaunchContext.Configure.TorrentURL, cmd.AgreementLaunchContext.Configure.ImageHashes, cmd.AgreementLaunchContext.Configure.ImageSignatures, b.Config.Edge.CACertsPath, b.Config.Edge.TorrentDir, b.Config.Edge.PublicKeyPath, b.client)
-				if err != nil {
-					// TODO: write error out, then:
-					// 1. retry to fetch up to a limit
-					// 2. if failure persists, propagate a contract cancelation event with some meaningful reason for termination
-					b.Messages() <- events.NewTorrentMessage(events.TORRENT_FAILURE, make([]string, 0), cmd.AgreementLaunchContext)
-					glog.Errorf("Failed to fetch image files: %v", err)
+				if lc := b.getLaunchContext(cmd.LaunchContext); lc == nil {
+					glog.Errorf("Incoming event was not a known launch context: %T", cmd.LaunchContext)
 				} else {
-					b.Messages() <- events.NewTorrentMessage(events.TORRENT_FETCHED, imageFiles, cmd.AgreementLaunchContext)
+					glog.V(2).Infof("URL to fetch: %s\n", lc.URL())
+					imageFiles, err := Fetch(lc.URL(), lc.Hashes(), lc.Signatures(), b.Config.Edge.CACertsPath, b.Config.Edge.TorrentDir, b.Config.Edge.PublicKeyPath, b.client)
+					if err != nil {
+						// TODO: write error out, then:
+						// 1. retry to fetch up to a limit
+						// 2. if failure persists, propagate a contract cancelation event with some meaningful reason for termination
+						b.Messages() <- events.NewTorrentMessage(events.TORRENT_FAILURE, make([]string, 0), lc)
+						glog.Errorf("Failed to fetch image files: %v", err)
+					} else {
+						b.Messages() <- events.NewTorrentMessage(events.TORRENT_FETCHED, imageFiles, lc)
+					}
 				}
 			}
 
@@ -101,11 +112,23 @@ func (b *TorrentWorker) start() {
 }
 
 type FetchCommand struct {
-	AgreementLaunchContext *events.AgreementLaunchContext
+	LaunchContext interface{}
 }
 
-func (t *TorrentWorker) NewFetchCommand(agreementLaunchContext *events.AgreementLaunchContext) *FetchCommand {
+func (t *TorrentWorker) NewFetchCommand(launchContext interface{}) *FetchCommand {
 	return &FetchCommand{
-		AgreementLaunchContext: agreementLaunchContext,
+		LaunchContext: launchContext,
 	}
+}
+
+func (t *TorrentWorker) getLaunchContext(launchContext interface{}) events.LaunchContext {
+	switch launchContext.(type) {
+	case *events.ContainerLaunchContext:
+		lc := launchContext.(events.LaunchContext)
+		return lc
+	case *events.AgreementLaunchContext:
+		lc := launchContext.(events.LaunchContext)
+		return lc
+	}
+	return nil
 }

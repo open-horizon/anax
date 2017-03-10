@@ -284,6 +284,28 @@ type GetAgbotMessageResponse struct {
 	LastIndex int            `json:"lastIndex"`
 }
 
+type GetEthereumClientResponse struct {
+	Blockchains map[string]BlockchainDef `json:"blockchains"`
+	LastIndex   int                      `json:"lastIndex"`
+}
+
+type BlockchainDef struct {
+	Description string `json:"description"`
+	DefinedBy   string `json:"definedBy"`
+	Details     string `json:"details"`
+	LastUpdated string `json:"lastUpdated"`
+}
+
+// This is the structure of what is marshalled into the BlockchainDef.Details field.
+type ChainDetails struct {
+	Arch           string          `json:"arch"`
+	DeploymentDesc policy.Workload `json:"deployment_description"`
+}
+
+type BlockchainDetails struct {
+	Chains []ChainDetails `json:"chains"`
+}
+
 // This function creates the exchange search message body.
 func CreateSearchRequest() *SearchExchangeRequest {
 
@@ -352,6 +374,30 @@ func Heartbeat(h *http.Client, url string, id string, token string, interval int
 		}
 
 		time.Sleep(time.Duration(interval) * time.Second)
+	}
+
+}
+
+func GetEthereumClient(url string, chainName string, deviceId string, token string) (string, error) {
+
+	glog.V(5).Infof(logString(fmt.Sprintf("getting ethereum client metadata for chain %v", chainName)))
+
+	var resp interface{}
+	resp = new(GetEthereumClientResponse)
+	targetURL := url + "bctypes/ethereum/blockchains/" + chainName
+	for {
+		if err, tpErr := InvokeExchange(&http.Client{}, "GET", targetURL, deviceId, token, nil, &resp); err != nil {
+			glog.Errorf(logString(fmt.Sprintf(err.Error())))
+			return "", err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(3).Infof(logString(fmt.Sprintf("found blockchain %v.", resp)))
+			clientMetadata := resp.(*GetEthereumClientResponse).Blockchains[chainName].Details
+			return clientMetadata, nil
+		}
 	}
 
 }
@@ -483,6 +529,9 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 						return nil, nil
 
 					case *GetAgbotMessageResponse:
+						return nil, nil
+
+					case *GetEthereumClientResponse:
 						return nil, nil
 
 					default:

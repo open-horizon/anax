@@ -96,7 +96,7 @@ func main() {
 	glog.V(2).Infof("GOMAXPROCS: %v", runtime.GOMAXPROCS(-1))
 
 	// check device identity, bail if not specified
-	if cfg.Edge != (config.Config{}) {
+	if len(cfg.Edge.DBPath) != 0 {
 		if _, err := device.Id(); err != nil {
 			panic(err)
 		}
@@ -174,17 +174,18 @@ func main() {
 	if gethURL == "" {
 		gethURL = cfg.AgreementBot.GethURL
 	}
-	workers.Add("blockchain", ethblockchain.NewEthBlockchainWorker(cfg, gethURL, nil))
+	workers.Add("blockchain", ethblockchain.NewEthBlockchainWorker(cfg, gethURL))
+	workers.Add("torrent", torrent.NewTorrentWorker(cfg))
 
 	if db != nil {
 		workers.Add("api", api.NewAPIListener(cfg, db, pm))
 		workers.Add("agreement", agreement.NewAgreementWorker(cfg, db, pm))
-		workers.Add("torrent", torrent.NewTorrentWorker(cfg))
-		workers.Add("container", container.NewContainerWorker(cfg, db))
 		workers.Add("governance", governance.NewGovernanceWorker(cfg, db, pm))
 		workers.Add("exchange", exchange.NewExchangeMessageWorker(cfg, db))
+		workers.Add("container", container.NewContainerWorker(cfg, db))
 	} else {
 		workers.Add("whisper", whisper.NewWhisperWorker(cfg))
+		workers.Add("container", container.NewContainerWorker(cfg, agbotdb))
 	}
 
 	messageStream := mux(workers)
