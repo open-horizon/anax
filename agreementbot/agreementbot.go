@@ -96,6 +96,14 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 			w.bcWritesEnabled = true
 		}
 
+	case *events.EthBlockchainEventMessage:
+		msg, _ := incoming.(*events.EthBlockchainEventMessage)
+		switch msg.Event().Id {
+		case events.BC_EVENT:
+			agCmd := NewBlockchainEventCommand(*msg)
+			w.Commands <- agCmd
+		}
+
 	default: //nothing
 
 	}
@@ -221,6 +229,11 @@ func (w *AgreementBotWorker) start() {
 					// TODO: Hack assume there is only one protocol handler
 					w.pwcommands <- cmd
 
+				case *BlockchainEventCommand:
+					cmd, _ := command.(*BlockchainEventCommand)
+					// TODO: Hack assume there is only one protocol handler
+					w.pwcommands <- cmd
+
 				case *NewPolicyCommand:
 					cmd := command.(*NewPolicyCommand)
 					if newPolicy, err := policy.ReadPolicyFile(cmd.PolicyFile); err != nil {
@@ -329,18 +342,18 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 						// Figure out what kind of message this is
 						if _, err := protocolHandler.ValidateReply(cmd.Msg.Payload()); err == nil {
 							agreementWork := CSHandleReply{
-												workType: REPLY,
-												Reply:    cmd.Msg.Payload(),
-												From:     cmd.Msg.From(),
-											}
+								workType: REPLY,
+								Reply:    cmd.Msg.Payload(),
+								From:     cmd.Msg.From(),
+							}
 							work <- agreementWork
 							glog.V(5).Infof("AgreementBot queued reply message")
 						} else if _, err := protocolHandler.ValidateDataReceivedAck(cmd.Msg.Payload()); err == nil {
 							agreementWork := CSHandleDataReceivedAck{
-												workType: DATARECEIVEDACK,
-												Ack:      cmd.Msg.Payload(),
-												From:     cmd.Msg.From(),
-											}
+								workType: DATARECEIVEDACK,
+								Ack:      cmd.Msg.Payload(),
+								From:     cmd.Msg.From(),
+							}
 							work <- agreementWork
 							glog.V(5).Infof("AgreementBot queued data received ack message")
 						} else {
@@ -353,22 +366,22 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 						// Figure out what kind of message this is
 						if _, err := protocolHandler.ValidateReply(string(cmd.Message)); err == nil {
 							agreementWork := CSHandleReply{
-												workType:     REPLY,
-												Reply:        string(cmd.Message),
-												SenderId:     cmd.From,
-												SenderPubKey: cmd.PubKey,
-												MessageId:    cmd.MessageId,
-											}
+								workType:     REPLY,
+								Reply:        string(cmd.Message),
+								SenderId:     cmd.From,
+								SenderPubKey: cmd.PubKey,
+								MessageId:    cmd.MessageId,
+							}
 							work <- agreementWork
 							glog.V(5).Infof("AgreementBot queued reply message")
 						} else if _, err := protocolHandler.ValidateDataReceivedAck(string(cmd.Message)); err == nil {
 							agreementWork := CSHandleDataReceivedAck{
-												workType:     DATARECEIVEDACK,
-												Ack:          string(cmd.Message),
-												SenderId:     cmd.From,
-												SenderPubKey: cmd.PubKey,
-												MessageId:    cmd.MessageId,
-											}
+								workType:     DATARECEIVEDACK,
+								Ack:          string(cmd.Message),
+								SenderId:     cmd.From,
+								SenderPubKey: cmd.PubKey,
+								MessageId:    cmd.MessageId,
+							}
 							work <- agreementWork
 							glog.V(5).Infof("AgreementBot queued data received ack message")
 						} else {
@@ -387,6 +400,44 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 						work <- agreementWork
 						glog.V(5).Infof("AgreementBot queued agreement cancellation")
 
+					case *BlockchainEventCommand:
+						glog.V(5).Infof("AgreementBot received blockchain event.")
+						cmd, _ := command.(*BlockchainEventCommand)
+
+						// Unmarshal the raw event
+						if rawEvent, err := protocolHandler.DemarshalEvent(cmd.Msg.RawEvent()); err != nil {
+							glog.Errorf("AgreementBotWorker unable to demarshal raw event %v, error: %v", cmd.Msg.RawEvent(), err)
+						} else if !protocolHandler.AgreementCreated(rawEvent) && !protocolHandler.ProducerTermination(rawEvent) && !protocolHandler.ConsumerTermination(rawEvent) {
+							glog.V(5).Infof(AWlogString(fmt.Sprintf("ignoring the blockchain event because it is not agreement creation or termination event.")))
+						} else {
+							agreementId := protocolHandler.GetAgreementId(rawEvent)
+
+							if ag, err := FindSingleAgreementByAgreementId(w.db, agreementId, protocol); err != nil {
+								glog.Errorf(AWlogString(fmt.Sprintf("error querying agreement %v from database, error: %v", agreementId, err)))
+							} else if ag == nil {
+								glog.V(3).Infof(AWlogString(fmt.Sprintf("ignoring the blockchain event, no database record for for agreement %v with protocol %v.", agreementId, protocol)))
+
+								// if the event is agreement recorded event
+							} else if protocolHandler.AgreementCreated(rawEvent) {
+								agreementWork := CSHandleBCRecorded{
+									workType:    BC_RECORDED,
+									AgreementId: agreementId,
+									Protocol:    protocol,
+								}
+								work <- agreementWork
+								glog.V(5).Infof("AgreementBot queued blockchain agreement recorded event: %v", agreementWork)
+
+								// If the event is a agreement terminated event
+							} else if protocolHandler.ProducerTermination(rawEvent) || protocolHandler.ConsumerTermination(rawEvent) {
+								agreementWork := CSHandleBCTerminated{
+									workType:    BC_TERMINATED,
+									AgreementId: agreementId,
+									Protocol:    protocol,
+								}
+								work <- agreementWork
+								glog.V(5).Infof("AgreementBot queued agreement cancellation due to blockchain termination event: %v", agreementWork)
+							}
+						}
 					default:
 						glog.Errorf("Unknown command (%T): %v", command, command)
 					}
@@ -532,7 +583,6 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy) (*[]exchange.Sea
 	}
 }
 
-
 func (w *AgreementBotWorker) syncOnInit() error {
 	glog.V(3).Infof(AWlogString("beginning sync up."))
 
@@ -550,14 +600,14 @@ func (w *AgreementBotWorker) syncOnInit() error {
 					glog.Errorf(AWlogString(fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
 					// Update state in exchange
 					if err := DeleteConsumerAgreement(w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("error deleting agreement %v in exchange: %v", ag.CurrentAgreementId, err)))
+						glog.Errorf(AWlogString(fmt.Sprintf("error deleting agreement %v in exchange: %v", ag.CurrentAgreementId, err)))
 					}
 					w.pwcommands <- NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, citizenscientist.AB_CANCEL_POLICY_CHANGED)
 				} else if err := w.pm.MatchesMine(pol); err != nil {
 					glog.Errorf(AWlogString(fmt.Sprintf("agreement %v has a policy %v that has changed: %v", ag.CurrentAgreementId, pol.Header.Name, err)))
 					// Update state in exchange
 					if err := DeleteConsumerAgreement(w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("error deleting agreement %v in exchange: %v", ag.CurrentAgreementId, err)))
+						glog.Errorf(AWlogString(fmt.Sprintf("error deleting agreement %v in exchange: %v", ag.CurrentAgreementId, err)))
 					}
 					w.pwcommands <- NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, citizenscientist.AB_CANCEL_POLICY_CHANGED)
 				} else if err := w.pm.AttemptingAgreement(existingPol, ag.CurrentAgreementId); err != nil {
@@ -565,7 +615,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 				} else if err := w.pm.FinalAgreement(existingPol, ag.CurrentAgreementId); err != nil {
 					glog.Errorf(AWlogString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
 
-				// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
+					// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
 				} else {
 
 					var exchangeAgreement map[string]exchange.AgbotAgreement
@@ -598,11 +648,10 @@ func (w *AgreementBotWorker) syncOnInit() error {
 					glog.V(3).Infof(AWlogString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))
 				}
 
-
-			// This state should never occur, but could if there was an error along the way. It means that a DB record
-			// was created for this agreement but the record was never updated with the creation time, which is supposed to occur
-			// immediately following creation of the record. Further, if this were to occur, then the exchange should not have been
-			// updated, so there is no reason to try to clean that up.
+				// This state should never occur, but could if there was an error along the way. It means that a DB record
+				// was created for this agreement but the record was never updated with the creation time, which is supposed to occur
+				// immediately following creation of the record. Further, if this were to occur, then the exchange should not have been
+				// updated, so there is no reason to try to clean that up.
 			} else if ag.AgreementInceptionTime != 0 && ag.AgreementCreationTime == 0 {
 				if err := DeleteAgreement(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
 					glog.Errorf(AWlogString(fmt.Sprintf("error deleting partially created agreement: %v, error: %v", ag.CurrentAgreementId, err)))
@@ -617,7 +666,6 @@ func (w *AgreementBotWorker) syncOnInit() error {
 	glog.V(3).Infof(AWlogString("sync up completed normally."))
 	return nil
 }
-
 
 func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, workloadID string, state string) error {
 
@@ -655,13 +703,13 @@ func (w *AgreementBotWorker) ignoreDevice(dev exchange.SearchResultDevice) (bool
 }
 
 func listContains(list string, target string) bool {
-    ignoreAttribs := strings.Split(list, ",")
-    for _, propName := range ignoreAttribs {
-        if propName == target {
-            return true
-        }
-    }
-    return false
+	ignoreAttribs := strings.Split(list, ",")
+	for _, propName := range ignoreAttribs {
+		if propName == target {
+			return true
+		}
+	}
+	return false
 }
 
 func (w *AgreementBotWorker) registerPublicKey() error {
@@ -685,7 +733,6 @@ func (w *AgreementBotWorker) registerPublicKey() error {
 		}
 	}
 }
-
 
 // ==========================================================================================================
 // Utility functions
