@@ -231,8 +231,14 @@ func (w *EthBlockchainWorker) getEthContainer() error {
 		} else {
 			// Search for the architecture we're running on
 			fired := false
+
+			arch := runtime.GOARCH
+			if strings.Contains(arch, "arm") {
+				arch = "armhf"
+			}
+
 			for _, chain := range detailsObj.Chains {
-				if chain.Arch == runtime.GOARCH {
+				if chain.Arch == arch {
 					if err := w.fireStartEvent(&chain, chainName); err != nil {
 						return err
 					}
@@ -276,7 +282,7 @@ func (w *EthBlockchainWorker) fireStartEvent(details *exchange.ChainDetails, cha
 		envAdds["COLONUS_DIR"] = "/root/eth"
 		// envAdds["ETHEREUM_DIR"] = "/root/.ethereum"
 		envAdds["HZN_RAM"] = "2048"
-		lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{Type:"ethereum", Name:chainName})
+		lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{Type: "ethereum", Name: chainName})
 		w.Worker.Manager.Messages <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
 
 		return nil
@@ -324,7 +330,7 @@ func (w *EthBlockchainWorker) initBlockchainEventListener() {
 		if block, err := rpc.Get_block_number(); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("unable to get current block, error %v", err)))
 			return
-		} else if err := os.Setenv("bh_event_log_start", strconv.FormatUint(block - uint64(block_read_delay), 10)); err != nil {
+		} else if err := os.Setenv("bh_event_log_start", strconv.FormatUint(block-uint64(block_read_delay), 10)); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("unable to set starting block, error %v", err)))
 			return
 		}
@@ -367,8 +373,6 @@ func NewNewClientCommand(msg events.NewEthContainerMessage) *NewClientCommand {
 		Msg: msg,
 	}
 }
-
-
 
 // ==========================================================================================================
 // Utility functions
