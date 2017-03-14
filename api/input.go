@@ -46,7 +46,17 @@ type Attribute struct {
 }
 
 func (a Attribute) String() string {
-	return fmt.Sprintf("Id: %v, ShortType: %v, SensorUrls: %v, Label: %v, Publishable: %v, Mappings: %v", *a.Id, *a.ShortType, *a.SensorUrls, *a.Label, *a.Publishable, *a.Mappings)
+	// function to make sure the nil pointers get printed without 'invalid memory address' error
+	getString := func(v interface{}) string {
+		if reflect.ValueOf(v).IsNil() {
+			return "<nil>"
+		} else {
+			return fmt.Sprintf("%v", reflect.Indirect(reflect.ValueOf(v)))
+		}
+	}
+
+	return fmt.Sprintf("Id: %v, ShortType: %v, SensorUrls: %v, Label: %v, Publishable: %v, Mappings: %v",
+		getString(a.Id), getString(a.ShortType), getString(a.SensorUrls), getString(a.Label), getString(a.Publishable), getString(a.Mappings))
 }
 
 // uses pointers for members b/c it allows nil-checking at deserialization; !Important!: the json field names here must not change w/out changing the error messages returned from the API, they are not programmatically dete  rmined

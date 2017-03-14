@@ -55,13 +55,13 @@ func NewAgreementWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.Po
 			Commands: commands,
 		},
 
-		db:         db,
-		httpClient: &http.Client{},
-		protocols:  make(map[string]bool),
-		pm:         pm,
+		db:                  db,
+		httpClient:          &http.Client{},
+		protocols:           make(map[string]bool),
+		pm:                  pm,
 		bcClientInitialized: false,
-		deviceId:   id,
-		deviceToken: token,
+		deviceId:            id,
+		deviceToken:         token,
 	}
 
 	glog.Info("Starting Agreement worker")
@@ -129,7 +129,7 @@ func (w *AgreementWorker) start() {
 		if len(messageTarget.ReceiverMsgEndPoint) != 0 {
 			return errors.New(fmt.Sprintf("Message target should never be whisper, %v", messageTarget))
 
-		// The message target is using the exchange message queue, so use it
+			// The message target is using the exchange message queue, so use it
 		} else {
 
 			// Grab the exchange ID of the message receiver
@@ -150,10 +150,10 @@ func (w *AgreementWorker) start() {
 			// Create an encrypted message
 			if encryptedMsg, err := exchange.ConstructExchangeMessage(pay, myPubKey, myPrivKey, messageTarget.ReceiverPublicKeyObj); err != nil {
 				return errors.New(fmt.Sprintf("Unable to construct encrypted message from %v, error %v", pay, err))
-			// Marshal it into a byte array
+				// Marshal it into a byte array
 			} else if msgBody, err := json.Marshal(encryptedMsg); err != nil {
 				return errors.New(fmt.Sprintf("Unable to marshal exchange message %v, error %v", encryptedMsg, err))
-			// Send it to the device's message queue
+				// Send it to the device's message queue
 			} else {
 				pm := exchange.CreatePostMessage(msgBody, w.Worker.Manager.Config.Edge.ExchangeMessageTTL)
 				var resp interface{}
@@ -269,7 +269,7 @@ func (w *AgreementWorker) start() {
 				deleteMessage := false
 				if proposal, err := protocolHandler.ValidateProposal(string(protocolMsg)); err != nil {
 					glog.Warningf(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %s due to %v", protocolMsg, err)))
-				} else if agAlreadyExists, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(),persistence.IdEAFilter(proposal.AgreementId)}); err != nil {
+				} else if agAlreadyExists, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(proposal.AgreementId)}); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreements from database, error %v", err)))
 				} else if len(agAlreadyExists) != 0 {
 					glog.Errorf(logString(fmt.Sprintf("agreement %v already exists, ignoring proposal: %v", proposal.AgreementId, proposal.ShortString())))
@@ -353,8 +353,8 @@ func (w *AgreementWorker) syncOnInit() error {
 			} else if err := w.pm.FinalAgreement(existingPol, ag.CurrentAgreementId); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
 
-			// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
-			} else if ag.AgreementAcceptedTime != 0 {
+				// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
+			} else if ag.AgreementAcceptedTime != 0 && ag.AgreementTerminatedTime == 0 {
 
 				var exchangeAgreement map[string]exchange.DeviceAgreement
 				var resp interface{}
