@@ -97,11 +97,13 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 		}
 
 	case *events.EthBlockchainEventMessage:
-		msg, _ := incoming.(*events.EthBlockchainEventMessage)
-		switch msg.Event().Id {
-		case events.BC_EVENT:
-			agCmd := NewBlockchainEventCommand(*msg)
-			w.Commands <- agCmd
+		if w.ready {
+			msg, _ := incoming.(*events.EthBlockchainEventMessage)
+			switch msg.Event().Id {
+			case events.BC_EVENT:
+				agCmd := NewBlockchainEventCommand(*msg)
+				w.Commands <- agCmd
+			}
 		}
 
 	default: //nothing
