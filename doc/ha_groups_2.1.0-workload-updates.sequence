@@ -11,8 +11,8 @@ DeviceA -> DeviceA: execute workload pattern
 DeviceA -> DPE: publish data
 DeviceB -> DeviceB: execute workload pattern
 DeviceB -> DPE: publish data
-Agbot -> DPE: verify data published by A, B (async, continuous)
 Agbot --> Chaindata: finalize agreements with A, B (upon verification)
+Agbot -> DPE: continually verify data published by A, B (async, continuous)
 
 == Workload Update on HA Group DeviceA  ==
 Agbot -> Agbot: determine workload on A, B updated from workload version 1.1 to 1.2
@@ -31,6 +31,6 @@ Agbot -> Exchange: begin agreement negotiation with A to execute version 1.1
 DeviceA -> Exchange: negotiate agreement with Agbot
 DeviceA -> DeviceA: execute workload version 1.1
 DeviceA -> DPE: publish data
-Agbot -> DPE: verify data published by A (async, continuous)
 Agbot --> Chaindata: finalize agreement with A (upon verification)
+Agbot -> DPE: continually verify data published by A (async, continuous)
 @enduml

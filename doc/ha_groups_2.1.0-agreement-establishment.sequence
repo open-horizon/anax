@@ -13,9 +13,9 @@ DeviceB -> Exchange: publish partnership with DeviceA
 Agbot -> Exchange: discover devices A, B (async)
 
 == Agreement Establishment ==
-Agbot -> Exchange: begin agreement with A, B (async)
-DeviceA -> Exchange: negotiate agreement with Agbot
-DeviceB -> Exchange: negotiate agreement with Agbot
+Agbot <-> Exchange: negotiate agreements with A, B (async)
+DeviceA <-> Exchange: negotiate agreement with Agbot
+DeviceB <-> Exchange: negotiate agreement with Agbot
 DeviceA -> DeviceA: execute workload pattern
 DeviceA -> DPE: publish data
 DeviceB -> DeviceB: execute workload pattern
