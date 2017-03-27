@@ -28,32 +28,6 @@
                     }
                 ]
             }
-        },
-        {
-            "deployment": "Deployment 2",
-            "deployment_signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ2",
-            "torrent": {
-                "url": "torrent://the.system.com",
-                "images": [
-                    {
-                        "file": "a_file.tar.gz",
-                        "signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                    }
-                ]
-            }
-        },
-        {
-            "deployment": "Deployment 3",
-            "deployment_signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ3",
-            "torrent": {
-                "url": "torrent://the.system.com",
-                "images": [
-                    {
-                        "file": "a_file.tar.gz",
-                        "signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                    }
-                ]
-            }
         }
     ],
     "deviceType": "12345-54321-abcdef-fedcba",

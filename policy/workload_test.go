@@ -180,10 +180,10 @@ func Test_workload_signature(t *testing.T) {
 
 // func Test_debug_signature(t *testing.T) {
 
-//     tempKeyFile := "/tmp/e2edev/.colonus/mtn-publicKey.pem"
-//     str := `{"services":{"geth":{"image":"summit.hovitos.engineering/private-eth:v1.5.7","command":["start.sh"]}}}`
+//     tempKeyFile := "/tmp/mtn-publicKey.pem"
+//     str := `{"services":{"culex":{"image":"summit.hovitos.engineering/x86/culex:latest","environment":["MTN_MQTT_TOKEN=ZZbrT4ON5rYzoBi7H1VK3Ak9n0Fwjcod"]},"gps":{"image":"summit.hovitos.engineering/x86/gps:v1.2","privileged":true,"environment":["MTN_MQTT_TOKEN=ZZbrT4ON5rYzoBi7H1VK3Ak9n0Fwjcod","SLEEP_INTERVAL=20"],"devices":["/dev/bus/usb/001/001:/dev/bus/usb/001/001"]},"location":{"image":"summit.hovitos.engineering/x86/location:v1.3","environment":["DEPL_ENV=staging"]}}}`
 //     //str := `{\"services\":{\"geth\":{\"image\":\"summit.hovitos.engineering/private-eth:v1.5.7\",\"command\":[\"start.sh\"]}}}`
-//     sig := `DMFgRyyH8OVcoN97FN//8aPpJSy/vNxIxvzrF2N6PmutQOHe2QQaAVfTNJ29jamK7Dl4QuTf/Qk59iK8dz/MgvPSYF3jUEULItbj3sA9DciV1hqE3y0Rn0HP2VCv6qYO+g9A7Pjv73Tpxu+MaYoG4mVr6GovOnIq9udRTCjPUv/4a0gjaHZe4ePoV/BR5n9jeMNGiH8VVD4jv2uw0nOiVvo0X5NSxOzn5NlqvntQWdDLkWduDa4alFXuhIsVUnnTPWMvmZNOU8hiUbBzAnuG9YGX4XO4NkVdSR7jWC0vi2PyvHmb1GSzph1WvaSvcNPePPQuvmrxjSgdSRzDYfOxwl5EPbE+18nJuUou7HWOm1LcyHup8+8e0BQblFh0OUlXLDKDdQwWiLK4DUUdQbzUzX9UFJPiOKS+BvBorRIV3v2s99yR1bH9/ScCMnzgXzmr8lW03QSCwCIyiPc5AYelFWaBzNBERhy7b6r2fGkzOA+NcmoB25dMpOJAellNS4dSarSA82+nSR4gFeZ3znQhk2IH8VYs5kbdDSUpyk2cvYee4K7tx5CUvNyOCvErlayz9fxD2oTznlG2clqtu5GUTJcUKSDEccMJGZHFwPyXHc0BnMtKFFkv362Ybord1JQVFQg6kV9tDaSGbzuEhwls5P26zy+eeW2pSHxYAogaWag=`
+//     sig := `gB2d3aN9nvE926H0muL02k4JGUzvYF4oiNFelxMhLxyTlb37yyLyqcHIVV/RNbJM4UOPiyXAyha61MXL0O7zluyN6uJQ9In0puHkcPRX9pC+iDfi2v6ygYl/nCR7OYAwX/8P+NoV3cuQJ1OTAPkTJJCaITvk0S1JsF4QOk+EoNFZrcvZ0JYKc7rzulBEXacW9bydzcFPJuQGhk32SwSzMJ0Rf/XCydeI5VsIGNwCCgTNxZn3cuslUS2JvY0Th3910p662OkEmTKY412ozOLyRM99hWPSxaO5OvGzWYZB7vfQ6N0eGbGVQv6GnDSnnJ+plzXR/rFolgJ92ir2fC1biL4AgnTjm0Ckn5EKj6f63kpgzdFtTw/yMt+5VczQNET2541iV3xyRc8nCDR/HqlfVaY9Q1R+W9R5JZTyVULkNG0yLeP4Hs+3O32PvqtCJovzlppKYX9/Orq3pUTOjRQRZ0AcenPpgmQUxuJEAs0UmhK4oKe5+a9CJm/YigwzyLlk8whxZLIZgvTPAWjW29n41zj8JVAwWIb7UF3bpVxh63p12sUUD1I7cFWCQA6stTpL6yF5+RQHom5frWvhTaNnPGfcFP5EwFVYtH/lFNoICWOyZy98pAbMzK46c8FnFzVB/TM1dCMMcTSjfJILhi7SCURh42Rp6hj3EPf/lO444hI=`
 
 //     wl1 := `{"deployment":"","deployment_signature":"","deployment_user_info":"","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
 //     if wla := create_Workload(wl1, t); wla != nil {
@@ -244,6 +244,147 @@ func Test_workload_signature_invalid(t *testing.T) {
 
         }
     }
+}
+
+func Test_nexthighestpriority_workload1(t *testing.T) {
+
+    wl1 := `{"priority":{"priority_value":3,"retries":2,"retry_durations":5},"deployment":"3","deployment_signature":"1","deployment_user_info":"d","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
+    wl2 := `{"priority":{"priority_value":2,"retries":2,"retry_durations":5},"deployment":"2","deployment_signature":"1","deployment_user_info":"d","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
+    wl3 := `{"priority":{"priority_value":1,"retries":2,"retry_durations":5},"deployment":"1","deployment_signature":"1","deployment_user_info":"d","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
+
+    if wla := create_Workload(wl1, t); wla == nil {
+        t.Errorf("Error unmarshalling Workload json string: %v\n", wl1)
+    } else if wlb := create_Workload(wl2, t); wlb == nil {
+        t.Errorf("Error unmarshalling Workload json string: %v\n", wl2)
+    } else if wlc := create_Workload(wl3, t); wlc == nil {
+        t.Errorf("Error unmarshalling Workload json string: %v\n", wl3)
+    } else {
+
+        pf_created := Policy_Factory("test creation")
+        pf_created.Workloads = append(pf_created.Workloads, *wlb)
+
+        // Try with 1 workload
+        if wl := pf_created.NextHighestPriorityWorkload(0, 0, 0); wl == nil {
+            t.Errorf("Error finding highest priority workload.\n")
+        } else if wl.Deployment != "2" {
+            t.Errorf("Returned workload is not the next highest priority, returned %v", wl)
+        }
+
+        // Now add multiple workloads
+        pf_created.Workloads = append(pf_created.Workloads, *wla)
+        pf_created.Workloads = append(pf_created.Workloads, *wlc)
+
+        // Find priority 1 workload
+        if wl := pf_created.NextHighestPriorityWorkload(0, 0, 0); wl == nil {
+            t.Errorf("Error finding highest priority workload.\n")
+        } else if wl.Deployment != "1" {
+            t.Errorf("Returned workload is not the next highest priority, returned %v", wl)
+        }
+
+        // Find priority 1 again
+        if wl := pf_created.NextHighestPriorityWorkload(1, 1, 1000); wl == nil {
+            t.Errorf("Error finding highest priority workload.\n")
+        } else if wl.Deployment != "1" {
+            t.Errorf("Returned workload is not the next highest priority, returned %v", wl)
+        }
+
+        // Move to priority 2 due to retries
+        now := uint64(time.Now().Unix())
+        if wl := pf_created.NextHighestPriorityWorkload(1, 2, now-1); wl == nil {
+            t.Errorf("Error finding highest priority workload.\n")
+        } else if wl.Deployment != "2" {
+            t.Errorf("Returned workload is not the next highest priority, returned %v", wl)
+        }
+
+        // Stay with priority 2
+        if wl := pf_created.NextHighestPriorityWorkload(2, 1, now-1); wl == nil {
+            t.Errorf("Error finding highest priority workload.\n")
+        } else if wl.Deployment != "2" {
+            t.Errorf("Returned workload is not the next highest priority, returned %v", wl)
+        }
+
+        // Stay with priority 2 - not enough retries in the alloted retry duration
+        if wl := pf_created.NextHighestPriorityWorkload(2, 2, now-6); wl == nil {
+            t.Errorf("Error finding highest priority workload.\n")
+        } else if wl.Deployment != "2" {
+            t.Errorf("Returned workload is not the next highest priority, returned %v", wl)
+        }
+
+        // Move to priority 3
+        if wl := pf_created.NextHighestPriorityWorkload(2, 2, now-1); wl == nil {
+            t.Errorf("Error finding highest priority workload.\n")
+        } else if wl.Deployment != "3" {
+            t.Errorf("Returned workload is not the next highest priority, returned %v", wl)
+        }
+
+        // Stay with priority 3 - not enough retries yet
+        if wl := pf_created.NextHighestPriorityWorkload(3, 0, now-1); wl == nil {
+            t.Errorf("Error finding highest priority workload.\n")
+        } else if wl.Deployment != "3" {
+            t.Errorf("Returned workload is not the next highest priority, returned %v", wl)
+        }
+
+        // Stay with priority 3 - not enough retries yet
+        if wl := pf_created.NextHighestPriorityWorkload(3, 1, now-1); wl == nil {
+            t.Errorf("Error finding highest priority workload.\n")
+        } else if wl.Deployment != "3" {
+            t.Errorf("Returned workload is not the next highest priority, returned %v", wl)
+        }
+
+        // Stay with priority 3 - retries exceeded but not in the time limit
+        if wl := pf_created.NextHighestPriorityWorkload(3, 2, now-10); wl == nil {
+            t.Errorf("Error finding highest priority workload.\n")
+        } else if wl.Deployment != "3" {
+            t.Errorf("Returned workload is not the next highest priority, returned %v", wl)
+        }
+
+        // Stay with priority 3 - retries exceeded but lowest priority workload
+        if wl := pf_created.NextHighestPriorityWorkload(3, 2, now-1); wl == nil {
+            t.Errorf("Error finding highest priority workload.\n")
+        } else if wl.Deployment != "3" {
+            t.Errorf("Returned workload is not the next highest priority, returned %v", wl)
+        }
+
+        // Stay with priority 3 - retries exceeded but lowest priority workload
+        if wl := pf_created.NextHighestPriorityWorkload(3, 3, now-1); wl == nil {
+            t.Errorf("Error finding highest priority workload.\n")
+        } else if wl.Deployment != "3" {
+            t.Errorf("Returned workload is not the next highest priority, returned %v", wl)
+        }
+
+    }
+
+}
+
+func Test_nexthighestpriority_workload2(t *testing.T) {
+
+    wl1 := `{"priority":{"priority_value":3,"retries":2,"retry_durations":5},"deployment":"3","deployment_signature":"1","deployment_user_info":"d","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
+    wl2 := `{"priority":{"priority_value":2,"retries":0,"retry_durations":5},"deployment":"2","deployment_signature":"1","deployment_user_info":"d","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
+    wl3 := `{"priority":{"priority_value":1,"retries":2,"retry_durations":5},"deployment":"1","deployment_signature":"1","deployment_user_info":"d","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
+
+    if wla := create_Workload(wl1, t); wla == nil {
+        t.Errorf("Error unmarshalling Workload json string: %v\n", wl1)
+    } else if wlb := create_Workload(wl2, t); wlb == nil {
+        t.Errorf("Error unmarshalling Workload json string: %v\n", wl2)
+    } else if wlc := create_Workload(wl3, t); wlc == nil {
+        t.Errorf("Error unmarshalling Workload json string: %v\n", wl3)
+    } else {
+
+        pf_created := Policy_Factory("test creation")
+        pf_created.Workloads = append(pf_created.Workloads, *wlb)
+        pf_created.Workloads = append(pf_created.Workloads, *wla)
+        pf_created.Workloads = append(pf_created.Workloads, *wlc)
+
+        // Find priority 3 workload
+        now := uint64(time.Now().Unix())
+        if wl := pf_created.NextHighestPriorityWorkload(2, 1, now-1); wl == nil {
+            t.Errorf("Error finding highest priority workload.\n")
+        } else if wl.Deployment != "3" {
+            t.Errorf("Returned workload is not the next highest priority, returned %v", wl)
+        }
+
+    }
+
 }
 
 // Create a Workload section from a JSON serialization. The JSON serialization

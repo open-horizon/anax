@@ -12,28 +12,46 @@ import (
 const AGREEMENTS = "agreements"
 
 type Agreement struct {
-	CurrentAgreementId            string `json:"current_agreement_id"`             // unique
-	DeviceId                      string `json:"device_id"`                        // the device id we are working with, immutable after construction
-	AgreementProtocol             string `json:"agreement_protocol"`               // immutable after construction
-	AgreementInceptionTime        uint64 `json:"agreement_inception_time"`         // immutable after construction
-	AgreementCreationTime         uint64 `json:"agreement_creation_time"`          // device responds affirmatively to proposal
-	AgreementFinalizedTime        uint64 `json:"agreement_finalized_time"`         // agreement is seen in the blockchain
-	AgreementTimedout             uint64 `json:"agreement_timeout"`                // agreement was not finalized before it timed out
-	ProposalSig                   string `json:"proposal_signature"`               // The signature used to create the agreement
-	Proposal                      string `json:"proposal"`                         // JSON serialization of the proposal
-	Policy                        string `json:"policy"`                           // JSON serialization of the policy used to make the proposal
-	PolicyName                    string `json:"policy_name"`                      // The name of the policy for this agreement, policy names are unique
-	CounterPartyAddress           string `json:"counter_party_address"`            // The blockchain address of the counterparty in the agreement
-	DataVerificationURL           string `json:"data_verification_URL"`            // The URL to use to ensure that this agreement is sending data.
-	DataVerificationUser          string `json:"data_verification_user"`           // The user to use with the DataVerificationURL
-	DataVerificationPW            string `json:"data_verification_pw"`             // The pw of the data verification user
-	DisableDataVerificationChecks bool   `json:"disable_data_verification_checks"` // disable data verification checks, assume data is being sent.
-	DataVerifiedTime              uint64 `json:"data_verification_time"`           // The last time that data verification was successful
-	DataNotificationSent          uint64 `json:"data_notification_sent"`           // The timestamp for when data notification was sent to the device
+	CurrentAgreementId            string   `json:"current_agreement_id"`             // unique
+	DeviceId                      string   `json:"device_id"`                        // the device id we are working with, immutable after construction
+	HAPartners                    []string `json:"ha_partners"`                      // list of HA partner device IDs
+	AgreementProtocol             string   `json:"agreement_protocol"`               // immutable after construction
+	AgreementInceptionTime        uint64   `json:"agreement_inception_time"`         // immutable after construction
+	AgreementCreationTime         uint64   `json:"agreement_creation_time"`          // device responds affirmatively to proposal
+	AgreementFinalizedTime        uint64   `json:"agreement_finalized_time"`         // agreement is seen in the blockchain
+	AgreementTimedout             uint64   `json:"agreement_timeout"`                // agreement was not finalized before it timed out
+	ProposalSig                   string   `json:"proposal_signature"`               // The signature used to create the agreement
+	Proposal                      string   `json:"proposal"`                         // JSON serialization of the proposal
+	Policy                        string   `json:"policy"`                           // JSON serialization of the policy used to make the proposal
+	PolicyName                    string   `json:"policy_name"`                      // The name of the policy for this agreement, policy names are unique
+	CounterPartyAddress           string   `json:"counter_party_address"`            // The blockchain address of the counterparty in the agreement
+	DataVerificationURL           string   `json:"data_verification_URL"`            // The URL to use to ensure that this agreement is sending data.
+	DataVerificationUser          string   `json:"data_verification_user"`           // The user to use with the DataVerificationURL
+	DataVerificationPW            string   `json:"data_verification_pw"`             // The pw of the data verification user
+	DisableDataVerificationChecks bool     `json:"disable_data_verification_checks"` // disable data verification checks, assume data is being sent.
+	DataVerifiedTime              uint64   `json:"data_verification_time"`           // The last time that data verification was successful
+	DataNotificationSent          uint64   `json:"data_notification_sent"`           // The timestamp for when data notification was sent to the device
 }
 
 func (a Agreement) String() string {
-	return fmt.Sprintf("CurrentAgreementId: %v, DeviceId: %v, AgreementInceptionTime: %v, AgreementCreationTime: %v, AgreementFinalizedTime: %v, AgreementTimedout: %v, ProposalSig: %v, Policy Name: %v, CounterPartyAddress: %v, DataVerificationURL: %v, DataVerificationUser: %v, DisableDataVerification: %v, DataVerifiedTime: %v, DataNotificationSent: %v", a.CurrentAgreementId, a.DeviceId, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime, a.AgreementTimedout, a.ProposalSig, a.PolicyName, a.CounterPartyAddress, a.DataVerificationURL, a.DataVerificationUser, a.DisableDataVerificationChecks, a.DataVerifiedTime, a.DataNotificationSent)
+	return fmt.Sprintf("CurrentAgreementId: %v, " +
+		"DeviceId: %v, " +
+		"HA Partners: %v, " +
+		"AgreementInceptionTime: %v, " +
+		"AgreementCreationTime: %v, " +
+		"AgreementFinalizedTime: %v, " +
+		"AgreementTimedout: %v, " +
+		"ProposalSig: %v, " +
+		"Policy Name: %v, " +
+		"CounterPartyAddress: %v, " +
+		"DataVerificationURL: %v, " +
+		"DataVerificationUser: %v, " +
+		"DisableDataVerification: %v, " +
+		"DataVerifiedTime: %v, " +
+		"DataNotificationSent: %v",
+		a.CurrentAgreementId, a.DeviceId, a.HAPartners, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime,
+		a.AgreementTimedout, a.ProposalSig, a.PolicyName, a.CounterPartyAddress, a.DataVerificationURL, a.DataVerificationUser,
+		a.DisableDataVerificationChecks, a.DataVerifiedTime, a.DataNotificationSent)
 }
 
 // private factory method for agreement w/out persistence safety:
@@ -44,6 +62,7 @@ func agreement(agreementid string, deviceid string, policyName string, agreement
 		return &Agreement{
 			CurrentAgreementId:            agreementid,
 			DeviceId:                      deviceid,
+			HAPartners:                    []string{},
 			AgreementProtocol:             agreementProto,
 			AgreementInceptionTime:        uint64(time.Now().Unix()),
 			AgreementCreationTime:         0,
@@ -92,10 +111,11 @@ func AgreementUpdate(db *bolt.DB, agreementid string, proposal string, policy st
 	}
 }
 
-func AgreementMade(db *bolt.DB, agreementId string, counterParty string, signature string, protocol string) (*Agreement, error) {
+func AgreementMade(db *bolt.DB, agreementId string, counterParty string, signature string, protocol string, hapartners []string) (*Agreement, error) {
 	if agreement, err := singleAgreementUpdate(db, agreementId, protocol, func(a Agreement) *Agreement {
 		a.CounterPartyAddress = counterParty
 		a.ProposalSig = signature
+		a.HAPartners = hapartners
 		return &a
 	}); err != nil {
 		return nil, err
@@ -206,6 +226,7 @@ func persistUpdatedAgreement(db *bolt.DB, agreementid string, protocol string, u
 				mod.DisableDataVerificationChecks = update.DisableDataVerificationChecks
 				mod.DataVerifiedTime = update.DataVerifiedTime
 				mod.DataNotificationSent = update.DataNotificationSent
+				mod.HAPartners = update.HAPartners
 
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize agreement record: %v", mod)

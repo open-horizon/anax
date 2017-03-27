@@ -49,14 +49,39 @@ func (t Torrent) IsSame(compare Torrent) bool {
     }
 }
 
-type Workload struct {
-    Deployment          string  `json:"deployment"`
-    DeploymentSignature string  `json:"deployment_signature"`
-    DeploymentUserInfo  string  `json:"deployment_user_info"`
-    Torrent             Torrent `json:"torrent"`
-    WorkloadPassword    string  `json:"workload_password"` // The password used to create the bcrypt hash that is passed to the workload so that the workload can verify the caller
+type WorkloadPriority struct {
+    PriorityValue  int `json:"priority_value"`  // The priority of the workload
+    Retries        int `json:"retries"`         // The number of retries before giving up and moving to the next priority
+    RetryDurationS int `json:"retry_durations"` // The number of seconds in which the specified number of retries must occur in order for the next priority workload to be attempted.
 }
 
+func (wp WorkloadPriority) String() string {
+    return fmt.Sprintf("PriorityValue: %v, " +
+        "Retries: %v, " +
+        "RetryDurationS: %v",
+        wp.PriorityValue, wp.Retries, wp.RetryDurationS)
+}
+
+type Workload struct {
+    Deployment          string           `json:"deployment"`
+    DeploymentSignature string           `json:"deployment_signature"`
+    DeploymentUserInfo  string           `json:"deployment_user_info"`
+    Torrent             Torrent          `json:"torrent"`
+    WorkloadPassword    string           `json:"workload_password"` // The password used to create the bcrypt hash that is passed to the workload so that the workload can verify the caller
+    Priority            WorkloadPriority `json:"priority,omitempty"` // The highest priority workload is tried first for an agrement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
+}
+
+func (w Workload) String() string {
+    return fmt.Sprintf("Priority: %v, " +
+        "Deployment: %v, " +
+        "DeploymentSignature: %v, " +
+        "DeploymentUserInfo: %v, " +
+        "Torrent: %v, " +
+        "WorkloadPassword: %v",
+        w.Priority, w.Deployment, w.DeploymentSignature, w.DeploymentUserInfo, w.Torrent, w.WorkloadPassword)
+}
+
+// This function specifically omits checking the Priority section of the workload because that section is not relevant to the equivalence between 2 workload definitions.
 func (wl Workload) IsSame(compare Workload) bool {
     return wl.Deployment == compare.Deployment && wl.DeploymentSignature == compare.DeploymentSignature && wl.DeploymentUserInfo == compare.DeploymentUserInfo && wl.Torrent.IsSame(compare.Torrent) && wl.WorkloadPassword == compare.WorkloadPassword
 }
@@ -115,4 +140,11 @@ func (w Workload) HasValidSignature(pubKeyFile string) error {
 
         }
     }
+}
+
+func (w Workload) HasEmptyPriority() bool {
+    if w.Priority.PriorityValue == 0 && w.Priority.Retries == 0 && w.Priority.RetryDurationS == 0 {
+        return true
+    }
+    return false
 }

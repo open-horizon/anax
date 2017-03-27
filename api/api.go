@@ -265,6 +265,7 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 				Id:                 &id,
 				TokenValid:         &exDevice.TokenValid,
 				TokenLastValidTime: &exDevice.TokenLastValidTime,
+				HADevice:           &exDevice.HADevice,
 				Account: &HorizonAccount{
 					Id:    &exDevice.Account.Id,
 					Email: &exDevice.Account.Email,
@@ -342,7 +343,12 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		exDev, err := persistence.SaveNewExchangeDevice(a.db, *device.Token, *device.Name, *device.Account.Id, *device.Account.Email)
+		haDevice := false
+		if device.HADevice != nil && *device.HADevice == true {
+			haDevice = true
+		}
+
+		exDev, err := persistence.SaveNewExchangeDevice(a.db, *device.Token, *device.Name, *device.Account.Id, *device.Account.Email, haDevice)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			glog.Errorf("Error persisting new exchange device: %v", err)
@@ -565,11 +571,35 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		// check for errors in attribute input, like specifying a sensorUrl
+		// check for errors in attribute input, like specifying a sensorUrl or specifying HA Partner on a non-HA device
 		for _, attr := range attributes {
 			if len(attr.GetMeta().SensorUrls) != 0 {
 				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].sensor_urls", Error: "sensor_urls not permitted on attributes specified on a service"})
 				return
+			}
+
+			// if the device is not HA enabled then the HA partner attribute is illegal
+			if !existingDevice.HADevice && attr.GetMeta().Id == "ha" {
+				glog.Errorf("Non-HA device %v does not support HA enabled service %v", existingDevice, service)
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].Id", Error: "HA partner not permitted on non-HA devices"})
+				return
+			}
+
+			// Make sure that a device doesnt specify itself in the HA partner list
+			if existingDevice.HADevice {
+				if _, ok := attr.GetGenericMappings()["partnerID"]; ok {
+					switch attr.GetGenericMappings()["partnerID"].(type) {
+					case []string:
+						partners := attr.GetGenericMappings()["partnerID"].([]string)
+						for _, partner := range partners {
+							if partner == existingDevice.Id {
+								glog.Errorf("HA device %v cannot refer to itself in partner list %v", existingDevice, partners)
+								writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].ha", Error: "partner list cannot refer to itself."})
+								return
+							}
+						}
+					}
+				}
 			}
 			// now make sure we add our own sensorUrl to each attribute
 
@@ -612,8 +642,18 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 
+		haType := reflect.TypeOf(persistence.HAAttributes{}).String()
+		if existingDevice.HADevice {
+			if attr := attributesContains(attributes, *service.SensorUrl, haType); attr == nil {
+				glog.Errorf("HA device %v can only support HA enabled services %v", existingDevice, service)
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].ha", Error: "services on an HA device must specify an HA partner."})
+				return
+			}
+		}
+
 		// what's advertised
 		var policyArch string
+		var haPartner []string
 
 		// props to store in file; stuff that is enforced; need to convert from serviceattributes to props. *CAN NEVER BE* unpublishable ServiceAttributes
 		props := map[string]string{}
@@ -636,6 +676,8 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 
 			case persistence.ArchitectureAttributes:
 				policyArch = attr.(persistence.ArchitectureAttributes).Architecture
+			case persistence.HAAttributes:
+				haPartner = attr.(persistence.HAAttributes).Partners
 			default:
 				glog.V(4).Infof("Unhandled attr type (%T): %v", attr, attr)
 			}
@@ -643,7 +685,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 
 		glog.V(5).Infof("Complete Attr list for registration of service %v: %v", *service.SensorUrl, attributes)
 
-		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorName, policyArch, &props, a.Config.Edge.PolicyPath); genErr != nil {
+		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorName, policyArch, &props, haPartner, a.Config.Edge.PolicyPath); genErr != nil {
 			glog.Errorf("Error: %v", genErr)
 			w.WriteHeader(http.StatusInternalServerError)
 			return

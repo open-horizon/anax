@@ -30,7 +30,12 @@
                     }
                 ]
             },
-            "workload_password": ""
+            "workload_password": "",
+            "priority": {
+                "priority_value": 0,
+                "retries": 0,
+                "retry_durations": 0
+            }
         }
     ],
     "deviceType": "12345-54321-abcdef-fedcba",
@@ -56,5 +61,8 @@
     "proposalRejection": {
         "number": 5,
         "duration": 86400
+    },
+    "ha_group": {
+        "partners": null
     }
 }

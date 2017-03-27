@@ -28,19 +28,6 @@
                     }
                 ]
             }
-        },
-        {
-            "deployment": "Deployment b_3",
-            "deployment_signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "torrent": {
-                "url": "torrent://the.system.com",
-                "images": [
-                    {
-                        "file": "a_file.tar.gz",
-                        "signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                    }
-                ]
-            }
         }
     ],
     "deviceType": "12345-54321-abcdef-fedcba",
