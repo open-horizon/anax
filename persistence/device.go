@@ -29,6 +29,7 @@ type ExchangeDevice struct {
 	Token              string          `json:"token"`
 	TokenLastValidTime uint64          `json:"token_last_valid_time"`
 	TokenValid         bool            `json:"token_valid"`
+	HADevice           bool            `json:"ha_device"`
 }
 
 func (e ExchangeDevice) String() string {
@@ -43,7 +44,7 @@ func (e ExchangeDevice) String() string {
 }
 
 // TODO: removed check for email set temporarily until the new account mgmt. stuff is released
-func newExchangeDevice(token string, name string, tokenLastValidTime uint64, account *ExchangeAccount) (*ExchangeDevice, error) {
+func newExchangeDevice(token string, name string, tokenLastValidTime uint64, ha bool,  account *ExchangeAccount) (*ExchangeDevice, error) {
 	if token == "" || name == "" || tokenLastValidTime == 0 || account == nil || account.Id == "" {
 		return nil, errors.New("Cannot create exchange account, illegal arguments")
 	}
@@ -56,6 +57,7 @@ func newExchangeDevice(token string, name string, tokenLastValidTime uint64, acc
 		Token:              token,
 		TokenLastValidTime: tokenLastValidTime,
 		TokenValid:         true,
+		HADevice:           ha,
 		Account:            *account,
 	}, nil
 }
@@ -138,7 +140,7 @@ func updateExchangeDeviceToken(db *bolt.DB, accountId string, token string) (*Ex
 }
 
 // always assumed the given token is valid at the time of call
-func SaveNewExchangeDevice(db *bolt.DB, token string, name string, accountId string, accountEmail string) (*ExchangeDevice, error) {
+func SaveNewExchangeDevice(db *bolt.DB, token string, name string, accountId string, accountEmail string, ha bool) (*ExchangeDevice, error) {
 
 	if token == "" || name == "" || accountId == "" {
 		return nil, errors.New("Argument null and must not be")
@@ -162,7 +164,7 @@ func SaveNewExchangeDevice(db *bolt.DB, token string, name string, accountId str
 		return nil, fmt.Errorf("Duplicate record found in devices for %v.", name)
 	}
 
-	exDevice, err := newExchangeDevice(token, name, uint64(time.Now().Unix()), &ExchangeAccount{
+	exDevice, err := newExchangeDevice(token, name, uint64(time.Now().Unix()), ha, &ExchangeAccount{
 		Id:    accountId,
 		Email: accountEmail,
 	})

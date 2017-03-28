@@ -25,6 +25,7 @@ type HorizonDevice struct {
 	Token              *string         `json:"token,omitempty"`
 	TokenLastValidTime *uint64         `json:"token_last_valid_time,omitempty"`
 	TokenValid         *bool           `json:"token_valid,omitempty"`
+	HADevice           *bool           `json:"ha_device,omitempty"`
 }
 
 func (h HorizonDevice) String() string {
@@ -241,6 +242,31 @@ func deserializeAttributes(w http.ResponseWriter, attrs []Attribute) ([]persiste
 				Meta:     generateAttributeMetadata(given, reflect.TypeOf(persistence.MappedAttributes{}).String()),
 				Mappings: mappedStr,
 			})
+
+		case "ha":
+			pID, exists := (*given.Mappings)["partnerID"]
+			if !exists {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "ha.mappings.partnerID", Error: "missing key"})
+				return nil, nil, true
+			} else if partnerIDs, ok := pID.([]interface{}); !ok {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "ha.mappings.partnerID", Error: fmt.Sprintf("expected []interface{} received %T", pID)})
+				return nil, nil, true
+			} else {
+				// convert partner values to proper array type
+				strPartners := make([]string, 0, 5)
+				for _, val := range partnerIDs {
+					if p, ok := val.(string); !ok {
+						writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "ha.mappings.partnerID", Error: fmt.Sprintf("array value is not a string, it is %T",val)})
+						return nil, nil, true
+					} else {
+						strPartners = append(strPartners, p)
+					}
+				}
+				attributes = append(attributes, persistence.HAAttributes{
+					Meta:     generateAttributeMetadata(given, reflect.TypeOf(persistence.HAAttributes{}).String()),
+					Partners: strPartners,
+					})
+			}
 
 		default:
 			glog.Errorf("Failed to find expected id for given input attribute: %v", given)

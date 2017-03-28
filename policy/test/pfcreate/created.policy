@@ -105,5 +105,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "ha_group": {
+        "partners": null
+    }
 }

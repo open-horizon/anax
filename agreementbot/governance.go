@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/exchange"
 	gwhisper "github.com/open-horizon/go-whisper"
+	"github.com/open-horizon/anax/policy"
 	"net/http"
 	"time"
 )
@@ -141,7 +142,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 								glog.Errorf(logString(fmt.Sprintf("unable to record data verification, error: %v", err)))
 							}
 							if ag.DataNotificationSent == 0 {
-								// Get whisper address of the device from the exchange. The device ensures that the exchange is kept current.
+								// Get message address of the device from the exchange. The device ensures that the exchange is kept current.
 								// If the address happens to be invalid, that should be a temporary condition. We will keep sending until
 								// we get an ack to our verification message.
 								if whisperTo, pubkeyTo, err := getDeviceMessageEndpoint(ag.DeviceId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
@@ -169,12 +170,165 @@ func (w *AgreementBotWorker) GovernAgreements() {
 			glog.Errorf(logString(fmt.Sprintf("unable to read agreements from database, error: %v", err)))
 		}
 
+		// Proactively check the state of pending workload upgrades for HA devices. When the need for an upgrade is detected, one of the
+		// devices in the HA group is chosen for upgrade and the others are marked for a pending upgrade (in their workload usage record).
+		// The goal of this routine is to detect when 1 member of the group is upgraded and it's safe to start to upgrade another member.
+		//
+		// Workload usage records survive agreement cancellations. They track the current workload being run on the device. We can be certain of
+		// this because proposals from agbots to devices only contain a single workload choice.
+
+		// First, make a more optimized quick check to see if there is anything we need to do by looking for any workload
+		// usage records that need to be upgraded. If there are none, then there is no need to do a more exhaustive analysis of
+		// the state of the HA group. Non-HA workload usages dont have the concern about incremental workload upgrades, so they are ignored
+		// by this routine.
+
+		glog.V(5).Infof(logString(fmt.Sprintf("checking for HA partners needing a workload upgrade.")))
+
+		HAPartnerUpgradeWUFilter := func() WUFilter {
+		    return func(a WorkloadUsage) bool { return len(a.HAPartners) != 0 && a.PendingUpgradeTime != 0 }
+		}
+
+		if upgrades, err := FindWorkloadUsages(w.db, []WUFilter{HAPartnerUpgradeWUFilter()}); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("error searching for HA devices that need their workloads upgraded, error: %v", err)))
+		} else if len(upgrades) != 0 {
+
+			for _, wlu := range upgrades {
+
+				// Setup variables to track the state of the HA group that the current workload usage record belongs to.
+				partnerUpgrading := ""
+				upgradedPartnerFound := ""
+
+				// Run through all the partners (wlUsage.HAPartners) of the current workload usage record.
+				for _, partnerId := range wlu.HAPartners {
+					glog.V(5).Infof(logString(fmt.Sprintf("analyzing HA group containing %v with partners %v", wlu.DeviceId, wlu.HAPartners)))
+
+					if partnerWLU, err := FindSingleWorkloadUsageByDeviceAndPolicyName(w.db, partnerId, wlu.PolicyName); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("error obtaining partner workload usage record for device %v and policy %v, error: %v", partnerId, wlu.PolicyName, err)))
+					} else if partnerWLU == nil {
+						// If the partner doesnt have a workload usage record, then it is because that partner is upgrading.
+						// Workload usage records are deleted when we want to upgrade a device. We also cancel the previous agreement.
+						partnerUpgrading = partnerId
+						glog.V(3).Infof(logString(fmt.Sprintf("HA group containing %v and %v has a member %v currently upgrading.", wlu.DeviceId, wlu.HAPartners, partnerId)))
+						break
+
+					} else if partnerWLU.PendingUpgradeTime != 0 {
+						// Skip partners that are pending upgrade, they dont help us figure out if we can upgrade the current member.
+						continue
+
+					} else {
+						// At this point we know that the partner WLU record is not pending an upgrade. Since it has a workload usage record,
+						// then we know it has been attempting to make an agreement in the past. Check the state of the agreement that it
+						// points to.
+
+						partnerUpgrading, upgradedPartnerFound = w.checkWorkloadUsageAgreement(partnerWLU, &wlu)
+
+						// If this partner is upgrading, then there is no reason to do further checks on the HA group.
+						if partnerUpgrading != "" {
+							break
+						}
+					}
+
+				}
+
+				// If there is already one partner successfully upgraded and there are no partners in the middle of an upgrade, then
+				// begin upgrading the partner who needs it.
+				if upgradedPartnerFound != "" && partnerUpgrading == "" {
+					glog.V(3).Infof(logString(fmt.Sprintf("beginning upgrade of HA member %v in group %v.", wlu.DeviceId, wlu.HAPartners)))
+					if ag, err := FindSingleAgreementByAgreementId(w.db, wlu.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("unable to read agreement %v from database, error: %v", wlu.CurrentAgreementId, err)))
+					} else {
+						// Make sure the workload usage record is gone,this will allow the device to pick up the newest workload.
+						if err := DeleteWorkloadUsage(w.db, wlu.DeviceId, wlu.PolicyName); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", wlu.DeviceId, wlu.PolicyName, err)))
+						}
+
+						// Cancel the agreement if there is one
+						if ag == nil {
+							glog.V(5).Infof(logString(fmt.Sprintf("agreement for %v already terminated.", wlu.DeviceId)))
+
+						} else {
+							w.TerminateAgreement(ag, citizenscientist.AB_CANCEL_POLICY_CHANGED)
+						}
+					}
+				} else {
+					glog.V(3).Infof(logString(fmt.Sprintf("no HA group members can be upgraded in group %v %v.", wlu.HAPartners, wlu.DeviceId)))
+				}
+
+			}
+
+		}
+
 		time.Sleep(time.Duration(w.Worker.Manager.Config.AgreementBot.ProcessGovernanceIntervalS) * time.Second)
 	}
 
 	glog.Info(logString(fmt.Sprintf("terminated agreement governance")))
 
 }
+
+// This function is used to determine if a device is actively trying to make an agreement. This is important to know because
+// a device in an HA group that is in the midst of making an agreement will prevent the agbot from upgrading other HA
+// partners. This function also considers the possibility that an HA partner has stopped heart beating (because it died), and
+// therefore wont be making any agreements right now. In that case, we skip that device and look for others to start upgrading.
+func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *WorkloadUsage, currentWLU *WorkloadUsage) (string, string) {
+
+	partnerUpgrading := ""
+	upgradedPartnerFound := ""
+
+	if ag, err := FindSingleAgreementByAgreementId(w.db, partnerWLU.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("unable to read agreement %v from database, error: %v", partnerWLU.CurrentAgreementId, err)))
+	} else if ag == nil {
+		// If we dont find an agreement for a partner, then it is because a previous agreement with that partner has failed and we
+		// managed to catch the workload usage record in a transition state between agreement attempts.
+		// Check to make sure the partner is heart-beating to the exchange. This should tell us if we can expect this device to
+		// complete an agreement at some time, or not.
+
+		if dev, err := getDevice(partnerWLU.DeviceId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("error obtaining device %v heartbeat state: %v", partnerWLU.DeviceId, err)))
+		} else if len(dev.LastHeartbeat) != 0 && (uint64(timeInSeconds(dev.LastHeartbeat) + 300) > uint64(time.Now().Unix())) {
+			// If the device is still alive (heart beat received in the last 5 mins), then assume this partner is trying to make an
+			// agreement. Exit the partner loop because no one else can safely upgrade right now. The upgrade might be bad.
+			glog.V(5).Infof(logString(fmt.Sprintf("HA group member %v is upgrading, has partners %v %v.", partnerWLU.DeviceId, currentWLU.HAPartners, currentWLU.DeviceId)))
+			partnerUpgrading = partnerWLU.DeviceId
+		} else {
+			// If the device is not alive then ignore it. We dont want this failed device to hold up the workload
+			// upgrade of other devices.
+			glog.V(5).Infof(logString(fmt.Sprintf("HA group member %v is not heartbeating, has partners %v %v.", partnerWLU.DeviceId, currentWLU.HAPartners, currentWLU.DeviceId)))
+		}
+	} else if ag.DataVerifiedTime != ag.AgreementCreationTime && ag.AgreementTimedout == 0 {
+		// If we find a partner with an agreement where data has been verified and that is also not being cancelled,
+		// then we have found a partner who is upgraded. Now we just need to make sure this partner is running the highest
+		// priority workload. If not, then it is not considered to be upgraded.
+
+		if pol, err := policy.DemarshalPolicy(partnerWLU.Policy); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for workload usage %v, error %v", partnerWLU, err)))
+		} else {
+			workload := pol.NextHighestPriorityWorkload(0,0,0)
+			if partnerWLU.Priority == workload.Priority.PriorityValue {
+				glog.V(5).Infof(logString(fmt.Sprintf("HA group member %v has upgraded, has partners %v %v.", partnerWLU.DeviceId, currentWLU.HAPartners, currentWLU.DeviceId)))
+				upgradedPartnerFound = partnerWLU.DeviceId
+			}
+		}
+	} else {
+		// All other states that the agreement might be in are considered to be making an agreement and therefore the
+		// partner is considered to be upgrading.
+		partnerUpgrading = partnerWLU.DeviceId
+	}
+
+	return partnerUpgrading, upgradedPartnerFound
+}
+
+func timeInSeconds(timestamp string) int64 {
+	timeFormat := "2006-01-02T15:04:05.999Z[MST]"  // exchange time format
+
+	if t, err := time.Parse(timeFormat, timestamp); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error converting heartbeat time %v into seconds, error: %v", timestamp, err)))
+		return 0
+	} else {
+		return t.Unix()
+	}
+}
+
+
 
 func (w *AgreementBotWorker) TerminateAgreement(ag *Agreement, reason uint) {
 	// Start timing out the agreement
@@ -250,13 +404,26 @@ func getDeviceMessageEndpoint(deviceId string, url string, agbotId string, token
 
 	glog.V(5).Infof(logString(fmt.Sprintf("retrieving device %v msg endpoint from exchange", deviceId)))
 
+	if dev, err := getDevice(deviceId, url, agbotId, token); err != nil {
+		return "", nil, err
+	} else {
+		glog.V(5).Infof(logString(fmt.Sprintf("retrieved device %v msg endpoint from exchange %v", deviceId, dev.MsgEndPoint)))
+		return dev.MsgEndPoint, dev.PublicKey, nil
+	}
+
+}
+
+func getDevice(deviceId string, url string, agbotId string, token string) (*exchange.Device, error) {
+
+	glog.V(5).Infof(logString(fmt.Sprintf("retrieving device %v from exchange", deviceId)))
+
 	var resp interface{}
 	resp = new(exchange.GetDevicesResponse)
 	targetURL := url + "devices/" + deviceId
 	for {
 		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
-			return "", nil, err
+			return nil, err
 		} else if tpErr != nil {
 			glog.Warningf(tpErr.Error())
 			time.Sleep(10 * time.Second)
@@ -264,10 +431,10 @@ func getDeviceMessageEndpoint(deviceId string, url string, agbotId string, token
 		} else {
 			devs := resp.(*exchange.GetDevicesResponse).Devices
 			if dev, there := devs[deviceId]; !there {
-				return "", nil, errors.New(fmt.Sprintf("device %v not in GET response %v as expected", deviceId, devs))
+				return nil, errors.New(fmt.Sprintf("device %v not in GET response %v as expected", deviceId, devs))
 			} else {
-				glog.V(5).Infof(logString(fmt.Sprintf("retrieved device %v msg endpoint from exchange %v", deviceId, dev.MsgEndPoint)))
-				return dev.MsgEndPoint, dev.PublicKey, nil
+				glog.V(5).Infof(logString(fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev)))
+				return &dev, nil
 			}
 		}
 	}

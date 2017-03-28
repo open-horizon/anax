@@ -30,7 +30,12 @@
                     }
                 ]
             },
-            "workload_password": ""
+            "workload_password": "",
+            "priority": {
+                "priority_value": 0,
+                "retries": 0,
+                "retry_durations": 0
+            }
         }
     ],
     "valueExchange": {
@@ -101,5 +106,8 @@
             }
         }
     ],
-    "requiredWorkload": "http://mycompany.com/workload1"
+    "requiredWorkload": "http://mycompany.com/workload1",
+    "ha_group": {
+        "partners": null
+    }
 }

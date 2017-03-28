@@ -499,6 +499,8 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 										// Check to see if the device's policy is compatible
 									} else if err := policy.Are_Compatible(producerPolicy, &consumerPolicy); err != nil {
 										glog.Errorf("AgreementBot received error comparing %v and %v, error: %v", *producerPolicy, consumerPolicy, err)
+									} else if err := w.incompleteHAGroup(dev, producerPolicy); err != nil {
+										glog.Warningf("AgreementBot received error checking HA group %v completeness for device %v, error: %v", producerPolicy.HAGroup, dev.Id, err)
 									} else {
 										agreementWork := CSInitiateAgreement{
 											workType:       INITIATE,
@@ -604,14 +606,33 @@ func (w *AgreementBotWorker) syncOnInit() error {
 					if err := DeleteConsumerAgreement(w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId); err != nil {
 						glog.Errorf(AWlogString(fmt.Sprintf("error deleting agreement %v in exchange: %v", ag.CurrentAgreementId, err)))
 					}
-					w.pwcommands <- NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, citizenscientist.AB_CANCEL_POLICY_CHANGED)
-				} else if err := w.pm.MatchesMine(pol); err != nil {
-					glog.Errorf(AWlogString(fmt.Sprintf("agreement %v has a policy %v that has changed: %v", ag.CurrentAgreementId, pol.Header.Name, err)))
-					// Update state in exchange
-					if err := DeleteConsumerAgreement(w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId); err != nil {
-						glog.Errorf(AWlogString(fmt.Sprintf("error deleting agreement %v in exchange: %v", ag.CurrentAgreementId, err)))
+					// Remove any workload usage records so that a new agreement will be made starting from the highest priority workload
+					if err := DeleteWorkloadUsage(w.db, ag.DeviceId, ag.PolicyName); err != nil {
+						glog.Warningf(AWlogString(fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 					}
 					w.pwcommands <- NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, citizenscientist.AB_CANCEL_POLICY_CHANGED)
+				} else if err := w.pm.MatchesMine(pol); err != nil {
+					glog.Warningf(AWlogString(fmt.Sprintf("agreement %v has a policy %v that has changed: %v", ag.CurrentAgreementId, pol.Header.Name, err)))
+
+					// Remove any workload usage records (non-HA) or mark for pending upgrade (HA). There might not be a workload usage record
+					// if the consumer policy does not specify the workload priority section.
+					if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(w.db, ag.DeviceId, ag.PolicyName); err != nil {
+						glog.Warningf(AWlogString(fmt.Sprintf("error retreiving workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
+					} else if wlUsage != nil && len(wlUsage.HAPartners) != 0 && wlUsage.PendingUpgradeTime != 0 {
+						// Skip this agreement, it is part of an HA group where another member is upgrading
+						continue
+					} else if wlUsage != nil && len(wlUsage.HAPartners) != 0 && wlUsage.PendingUpgradeTime == 0 {
+						for _, partnerId := range wlUsage.HAPartners {
+							if _, err := UpdatePendingUpgrade(w.db, partnerId, ag.PolicyName); err != nil {
+								glog.Warningf(AWlogString(fmt.Sprintf("could not update pending workload upgrade for %v using policy %v, error: %v", partnerId, ag.PolicyName, err)))
+							}
+						}
+						// Choose this device's agreement within the HA group to start upgrading
+						w.cleanupAgreement(&ag)
+					} else {
+						// Non-HA device or agrement without workload priority in the policy, re-make the agreement
+						w.cleanupAgreement(&ag)
+					}
 				} else if err := w.pm.AttemptingAgreement(existingPol, ag.CurrentAgreementId); err != nil {
 					glog.Errorf(AWlogString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
 				} else if err := w.pm.FinalAgreement(existingPol, ag.CurrentAgreementId); err != nil {
@@ -653,7 +674,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 				// This state should never occur, but could if there was an error along the way. It means that a DB record
 				// was created for this agreement but the record was never updated with the creation time, which is supposed to occur
 				// immediately following creation of the record. Further, if this were to occur, then the exchange should not have been
-				// updated, so there is no reason to try to clean that up.
+				// updated, so there is no reason to try to clean that up. Same is true for the workload usage records.
 			} else if ag.AgreementInceptionTime != 0 && ag.AgreementCreationTime == 0 {
 				if err := DeleteAgreement(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
 					glog.Errorf(AWlogString(fmt.Sprintf("error deleting partially created agreement: %v, error: %v", ag.CurrentAgreementId, err)))
@@ -667,6 +688,20 @@ func (w *AgreementBotWorker) syncOnInit() error {
 
 	glog.V(3).Infof(AWlogString("sync up completed normally."))
 	return nil
+}
+
+func (w *AgreementBotWorker) cleanupAgreement(ag *Agreement) {
+	// Update state in exchange
+	if err := DeleteConsumerAgreement(w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId); err != nil {
+		glog.Errorf(AWlogString(fmt.Sprintf("error deleting agreement %v in exchange: %v", ag.CurrentAgreementId, err)))
+	}
+
+	// Delete this workload usage record so that a new agreement will be made starting from the highest priority workload
+	if err := DeleteWorkloadUsage(w.db, ag.DeviceId, ag.PolicyName); err != nil {
+		glog.Warningf(AWlogString(fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
+	}
+
+	w.pwcommands <- NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, citizenscientist.AB_CANCEL_POLICY_CHANGED)
 }
 
 func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, workloadID string, state string) error {
@@ -690,6 +725,58 @@ func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, wo
 		} else {
 			glog.V(5).Infof(AWlogString(fmt.Sprintf("set agreement %v to state %v", agreementId, state)))
 			return nil
+		}
+	}
+
+}
+
+// This function checks the Exchange for every declared HA partner to verify that the partner is registered in the
+// exchange. As long as all partners are registered, agreements can be made. The partners dont have to be up and heart
+// beating, they just have to be registered. If not all partners are registered then no agreements will be attempted
+// with any of the registered partners.
+func (w *AgreementBotWorker) incompleteHAGroup(dev exchange.SearchResultDevice, producerPolicy *policy.Policy) error {
+
+	// If the HA group specification is empty, there is nothing to check.
+	if len(producerPolicy.HAGroup.Partners) == 0  {
+		return nil
+	} else {
+
+		// Make sure all partners are in the exchange
+		for _, partnerId := range producerPolicy.HAGroup.Partners {
+
+			if _, err := getTheDevice(partnerId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+				glog.Warningf(AWlogString(fmt.Sprintf("could not obtain device %v from the exchange: %v", partnerId, err)))
+				return err
+			}
+		}
+		return nil
+
+	}
+}
+
+func getTheDevice(deviceId string, url string, agbotId string, token string) (*exchange.Device, error) {
+
+	glog.V(5).Infof(AWlogString(fmt.Sprintf("retrieving device %v from exchange", deviceId)))
+
+	var resp interface{}
+	resp = new(exchange.GetDevicesResponse)
+	targetURL := url + "devices/" + deviceId
+	for {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
+			glog.Errorf(AWlogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			devs := resp.(*exchange.GetDevicesResponse).Devices
+			if dev, there := devs[deviceId]; !there {
+				return nil, errors.New(fmt.Sprintf("device %v not in GET response %v as expected", deviceId, devs))
+			} else {
+				glog.V(5).Infof(AWlogString(fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev)))
+				return &dev, nil
+			}
 		}
 	}
 

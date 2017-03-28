@@ -10,7 +10,7 @@ import (
 )
 
 // This function generates policy files for each sensor on the device.
-func GeneratePolicy(e chan events.Message, sensorName string, arch string, props *map[string]string, filePath string) error {
+func GeneratePolicy(e chan events.Message, sensorName string, arch string, props *map[string]string, haPartners []string, filePath string) error {
 
 	glog.V(5).Infof("Generating policy for %v", sensorName)
 
@@ -23,7 +23,6 @@ func GeneratePolicy(e chan events.Message, sensorName string, arch string, props
 	fileName := strings.ToLower(strings.Split(sensorName, " ")[0])
 	p := Policy_Factory("Policy for " + fileName)
 
-	p.MaxAgreements = 1
 	p.Add_API_Spec(APISpecification_Factory("https://bluehorizon.network/documentation/"+fileName+"-device-api", "1.0.0", arch))
 	p.Add_Agreement_Protocol(AgreementProtocol_Factory(CitizenScientist))
 
@@ -65,6 +64,11 @@ func GeneratePolicy(e chan events.Message, sensorName string, arch string, props
 	// Add properties to the policy
 	for prop, val := range *props {
 		p.Add_Property(Property_Factory(prop, val))
+	}
+
+	// Add HA configuration if there is any
+	if len(haPartners) != 0 {
+		p.Add_HAGroup(HAGroup_Factory(haPartners))
 	}
 
 	// Default the max agreements to 1

@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 // a "service is a v2.1.0 transitional concept: it stores patterned service-related information from v1 PoCs
@@ -118,6 +119,30 @@ func (a ComputeAttributes) GetGenericMappings() map[string]interface{} {
 	}
 }
 
+type HAAttributes struct {
+	Meta     *AttributeMeta `json:"meta"`
+	Partners []string       `json:"partners"`
+}
+
+func (a HAAttributes) GetMeta() *AttributeMeta {
+	return a.Meta
+}
+
+func (a HAAttributes) GetGenericMappings() map[string]interface{} {
+	return map[string]interface{}{
+		"partnerID": a.Partners,
+	}
+}
+
+func (a HAAttributes) PartnersContains(id string) bool {
+	for _, p := range a.Partners {
+		if p == id {
+			return true
+		}
+	}
+	return false
+}
+
 type MappedAttributes struct {
 	Meta     *AttributeMeta    `json:"meta"`
 	Mappings map[string]string `json:"mappings"`
@@ -187,6 +212,13 @@ func FindApplicableAttributes(db *bolt.DB, serviceUrl string) ([]ServiceAttribut
 					return err
 				}
 				attr = compute
+
+			case "persistence.HAAttributes":
+				var ha HAAttributes
+				if err := json.Unmarshal(v, &ha); err != nil {
+					return err
+				}
+				attr = ha
 
 			default:
 				return fmt.Errorf("Unknown attr type: %v, just handling as meta", meta.GetMeta().Type)
@@ -266,6 +298,10 @@ func AttributesToEnvvarMap(attributes []ServiceAttribute, prefix string) (map[st
 		case ArchitectureAttributes:
 			s := serv.(ArchitectureAttributes)
 			writePrefix("ARCH", s.Architecture)
+
+		case HAAttributes:
+			s := serv.(HAAttributes)
+			writePrefix("HA_PARTNERS", strings.Join(s.Partners,","))
 
 		default:
 			return nil, fmt.Errorf("Unhandled service attribute: %v", serv)

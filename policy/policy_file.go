@@ -62,6 +62,7 @@ type Policy struct {
 	CounterPartyProperties RequiredProperty      `json:"counterPartyProperties,omitempty"` // Version 2.0
 	Blockchains            BlockchainList        `json:"blockchains,omitempty"`            // Version 2.0
 	RequiredWorkload       string                `json:"requiredWorkload,omitempty"`       // Version 2.0
+	HAGroup                HighAvailabilityGroup `json:"ha_group,omitempty"`               // Version 2.0
 }
 
 // These functions are used to create Policy objects. You can create the base object
@@ -103,6 +104,15 @@ func (self *Policy) Add_Property(p *Property) error {
 		return self.Properties.Add_Property(p)
 	} else {
 		return errors.New(fmt.Sprintf("Add_Property Error: input Property is nil."))
+	}
+}
+
+func (self *Policy) Add_HAGroup(g *HighAvailabilityGroup) error {
+	if g != nil {
+		self.HAGroup = *g
+		return nil
+	} else {
+		return errors.New(fmt.Sprintf("Add_HAGroup Error: input Group is nil."))
 	}
 }
 
@@ -191,7 +201,7 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 // This function creates a merged policy file from a producer policy and a consumer policy, which will eventually
 // become the full terms and conditions of an agreement. If no error is returned, a merged policy object is returned.
 // The order of parameters is important, just like in the Are_Compatible API.
-func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Policy, agreementId string, defaultPW string) (*Policy, error) {
+func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Policy, workload *Workload, agreementId string, defaultPW string) (*Policy, error) {
 
 	// Make sure the policies are compatible. If not an error will be returned.
 	if err := Are_Compatible(producer_policy, consumer_policy); err != nil {
@@ -204,7 +214,7 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		merged_pol.APISpecs = append(merged_pol.APISpecs, consumer_policy.APISpecs...)
 		intersecting_agreement_protocols, _ := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols)
 		merged_pol.AgreementProtocols = *intersecting_agreement_protocols.Single_Element()
-		merged_pol.Workloads = append(merged_pol.Workloads, consumer_policy.Workloads...)
+		merged_pol.Workloads = append(merged_pol.Workloads, *workload)
 		if err := merged_pol.ObscureWorkloadPWs(agreementId, defaultPW); err != nil {
 			return nil, errors.New(fmt.Sprintf("Error merging policies, error: %v", err))
 		}
@@ -217,15 +227,28 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		(&merged_pol.Properties).Concatenate(&consumer_policy.Properties)
 		(&merged_pol.Properties).Concatenate(&producer_policy.Properties)
 		merged_pol.RequiredWorkload = producer_policy.RequiredWorkload
+		merged_pol.HAGroup = producer_policy.HAGroup
 
 		return merged_pol, nil
 	}
 }
 
 func (self *Policy) Is_Self_Consistent(keyPath string) error {
+	usedPriorities := make(map[int]bool)
 	for _, workload := range self.Workloads {
-		if err := workload.HasValidSignature(keyPath); err != nil {
-			return err
+		if len(keyPath) != 0 {
+			if err := workload.HasValidSignature(keyPath); err != nil {
+				return err
+			}
+		}
+		if len(self.Workloads) > 1 {
+			if workload.Priority.PriorityValue == 0 {
+				return errors.New(fmt.Sprintf("Missing required workload priority definition when there is more than 1 workload definition: %v", self.Workloads))
+			} else if _, ok := usedPriorities[workload.Priority.PriorityValue]; ok {
+				return errors.New(fmt.Sprintf("Duplicate workload priority value %v", workload))
+			} else {
+				usedPriorities[workload.Priority.PriorityValue] = true
+			}
 		}
 	}
 	return nil
@@ -287,6 +310,78 @@ func (self *Policy) ObscureWorkloadPWs(agreementId string, defaultPW string) err
 	}
 	return nil
 }
+
+// Returns the next highest priority workload given a starting priority value, the number of retries so far and the
+// starting time of the first try at this priority. If the caller passes in zero for the priority, then this routine will return
+// the absolute highest priority workload. If there is no next highest priority, this function will return the lowest
+// priority workload.
+//
+// Assumptions:
+// (a) 1 is a higher priority workload than any priority value greater than 1, etc.
+// (b) workload priorities dont have to be in order in the workload array.
+// (c) workload priorities dont have to be sequential, i.e. you can have priority 5, 10 and 45.
+// (d) there are no duplicate priority values in the array. This condition is checked by the Is_Self_Consistent() function
+//     which is called by the agbot when it initializes and reads in policy files.
+//
+func (self *Policy) NextHighestPriorityWorkload(currentPriority int, retryCount int, retryStartTime uint64) *Workload {
+
+	glog.V(3).Infof("Checking for next higher priority workload. Starting from priority %v, with %v retries at %v", currentPriority, retryCount, retryStartTime)
+
+	if len(self.Workloads) == 1 {
+		glog.V(3).Infof("Returning the only workload choice: %v", self.Workloads[0])
+		return &self.Workloads[0]
+	} else {
+		smallestDelta := 0
+		foundSomething := false
+		now := uint64(time.Now().Unix())
+		nextWorkload := 0
+		lowestPriorityWorkload := 0
+
+		// Loop through each workload array element. The possible outcomes are:
+		// (a) Pick the highest priority workload when the input currentPriority == 0
+		// (b) Stay with the input priority workload because it hasnt used up its retries within the specified time limit
+		// (c) Choose the next highest priority workload, which numerically is the next higher priority
+		// (d) Choose the lowest priority workload because there are no other choices
+		for ix, wl := range self.Workloads {
+
+			// If/when we find the workload entry at the same priority as the input priority, check to see if the
+			// retry count and time since first try indicate that we should stay with the current priority workload.
+			if wl.Priority.PriorityValue == currentPriority {
+				if wl.Priority.Retries > retryCount || now - retryStartTime > uint64(wl.Priority.RetryDurationS) {
+					nextWorkload = ix
+					foundSomething = true
+					break
+				}
+				glog.V(5).Infof("Workload: %v has reached retry limit %v retries in %v seconds", self.Workloads[ix], wl.Priority.Retries, wl.Priority.RetryDurationS)
+				lowestPriorityWorkload = ix
+			}
+
+			// Skip over workloads whose priority is higher (numerically less than) the input current priority
+			if wl.Priority.PriorityValue <= currentPriority {
+				continue
+			}
+
+			// If this workload is possibly the next highest priority workload, then remember it.
+			if smallestDelta == 0 || wl.Priority.PriorityValue - currentPriority < smallestDelta {
+				smallestDelta = wl.Priority.PriorityValue - currentPriority
+				nextWorkload = ix
+				foundSomething = true
+				glog.V(5).Infof("Found new candidate workload: %v", self.Workloads[nextWorkload])
+			}
+		}
+
+		// We might not find the next highest priority workload because the lowest priority workload might be
+		// our only choice, even if it has exceeded its retry count.
+		if !foundSomething {
+			glog.V(3).Infof("Returning lowest priority workload choice: %v", self.Workloads[lowestPriorityWorkload])
+			return &self.Workloads[lowestPriorityWorkload]
+		} else {
+			glog.V(3).Infof("Returning workload choice: %v", self.Workloads[nextWorkload])
+			return &self.Workloads[nextWorkload]
+		}
+	}
+}
+
 
 // These are functions that operate on policy files in the file system.
 //
@@ -360,6 +455,8 @@ func PolicyFileChangeWatcher(homePath string, fileChanged func(fileName string, 
 				if _, ok := contents[fileInfo.Name()]; !ok {
 					if policy, err := ReadPolicyFile(homePath + fileInfo.Name()); err != nil {
 						fileError(homePath+fileInfo.Name(), err)
+					} else if err := policy.Is_Self_Consistent(""); err != nil {
+						fileError(homePath+fileInfo.Name(), errors.New(fmt.Sprintf("Policy file not self consistent %v, error: %v", homePath, err)))
 					} else {
 						contents[fileInfo.Name()] = newWatchEntry(fileInfo, policy)
 						fileChanged(homePath+fileInfo.Name(), policy)

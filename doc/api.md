@@ -79,6 +79,7 @@ body:
 | name | string | the user readable name for the device  |
 | token_valid | bool| whether the device token is valid or not |
 | token_last_valid_time | uint64 | the time stamp when the device token was last valid. |
+| ha_device | bool | whether the device is part of an HA group or not |
 | account | json | the account information for the user who owns this device. |
 | account.id | string |  the user id on the account.   |
 | account.email | string | the user email on the account. |
@@ -413,7 +414,7 @@ attribute
 | id | string| the id of the attribute. |
 | ---- | ---- | ---------------- |
 | label | string | the user readable name of the attribute |
-| short_type| string | the short type name of the service. This filed is ominted if it is empty. Supported types are: compute, location, architecture and mapped. |
+| short_type| string | the short type name of the service. This filed is omitted if it is empty. Supported types are: compute, location, architecture, ha, and mapped. |
 | sensor_urls | array | an array of sensor url. It applies to all services if it is empty. |
 | publishable| bool | whether the attribute can be made public or not. |
 | mappings | map | a list of key value pairs. |

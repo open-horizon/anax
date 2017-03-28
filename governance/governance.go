@@ -694,7 +694,8 @@ func (w *GovernanceWorker) RecordReply(proposal *citizenscientist.Proposal, prot
 		// hash is same as filename w/out extension
 		hashes := make(map[string]string, 0)
 		signatures := make(map[string]string, 0)
-		for _, image := range tcPolicy.Workloads[0].Torrent.Images {
+		workload := tcPolicy.NextHighestPriorityWorkload(0,0,0)
+		for _, image := range workload.Torrent.Images {
 			bits := strings.Split(image.File, ".")
 			if len(bits) < 2 {
 				return errors.New(fmt.Sprintf("Ill-formed image filename: %v", bits))
@@ -703,10 +704,10 @@ func (w *GovernanceWorker) RecordReply(proposal *citizenscientist.Proposal, prot
 			}
 			signatures[image.File] = image.Signature
 		}
-		if url, err := url.Parse(tcPolicy.Workloads[0].Torrent.Url); err != nil {
-			return errors.New(fmt.Sprintf("Ill-formed URL: %v", tcPolicy.Workloads[0].Torrent.Url))
+		if url, err := url.Parse(workload.Torrent.Url); err != nil {
+			return errors.New(fmt.Sprintf("Ill-formed URL: %v", workload.Torrent.Url))
 		} else {
-			cc := events.NewContainerConfig(*url, hashes, signatures, tcPolicy.Workloads[0].Deployment, tcPolicy.Workloads[0].DeploymentSignature, tcPolicy.Workloads[0].DeploymentUserInfo)
+			cc := events.NewContainerConfig(*url, hashes, signatures, workload.Deployment, workload.DeploymentSignature, workload.DeploymentUserInfo)
 
 			lc := new(events.AgreementLaunchContext)
 			lc.Configure = *cc
@@ -723,14 +724,14 @@ func (w *GovernanceWorker) RecordReply(proposal *citizenscientist.Proposal, prot
 			envAdds[config.ENVVAR_PREFIX+"CONTRACT"] = w.Config.Edge.DVPrefix + proposal.AgreementId
 			envAdds[config.COMPAT_ENVVAR_PREFIX+"CONTRACT"] = w.Config.Edge.DVPrefix + proposal.AgreementId
 			// Temporary hack
-			if tcPolicy.Workloads[0].WorkloadPassword == "" {
+			if workload.WorkloadPassword == "" {
 				envAdds[config.ENVVAR_PREFIX+"CONFIGURE_NONCE"] = proposal.AgreementId
 				envAdds[config.COMPAT_ENVVAR_PREFIX+"CONFIGURE_NONCE"] = proposal.AgreementId
 			} else {
-				envAdds[config.ENVVAR_PREFIX+"CONFIGURE_NONCE"] = tcPolicy.Workloads[0].WorkloadPassword
-				envAdds[config.COMPAT_ENVVAR_PREFIX+"CONFIGURE_NONCE"] = tcPolicy.Workloads[0].WorkloadPassword
+				envAdds[config.ENVVAR_PREFIX+"CONFIGURE_NONCE"] = workload.WorkloadPassword
+				envAdds[config.COMPAT_ENVVAR_PREFIX+"CONFIGURE_NONCE"] = workload.WorkloadPassword
 			}
-			envAdds[config.ENVVAR_PREFIX+"HASH"] = tcPolicy.Workloads[0].WorkloadPassword
+			envAdds[config.ENVVAR_PREFIX+"HASH"] = workload.WorkloadPassword
 			// For workload compatibility, the DEVICE_ID env var is passed with and without the prefix. We would like to drop
 			// the env var without prefix once all the workloads have ben updated.
 			envAdds["DEVICE_ID"] = w.deviceId

@@ -101,7 +101,7 @@ func Initialize(policyPath string) (*PolicyManager, error) {
 	}
 
 	errorNotify := func(fileName string, err error) {
-		glog.Errorf("Policy Watcher detected error consuming policy file %v during initialization.", fileName)
+		glog.Errorf("Policy Watcher detected error consuming policy file %v during initialization, error: %v", fileName, err)
 	}
 
 	// Call the policy file watcher once to load up the initial set of policy files
@@ -328,7 +328,7 @@ func (self *PolicyManager) GetPolicy(name string) *Policy {
 	return nil
 }
 
-// This function returns the set of policy objects that contains contain the input device URL.
+// This function returns the set of policy objects that contain the input API spec URL.
 func (self *PolicyManager) GetPolicyByURL(url string) []Policy {
 
 	res := make([]Policy, 0, 10)
