@@ -1,0 +1,33 @@
+@startuml
+database Chaindata
+entity Exchange
+entity Agbot
+entity DPE
+entity DeviceA
+entity DeviceB
+
+== Discovery ==
+
+DeviceA -> Exchange: publish partnership with DeviceB
+DeviceB -> Exchange: publish partnership with DeviceA
+Agbot -> Exchange: discover devices A, B (async)
+
+== Agreement Establishment ==
+Agbot <-> Exchange: negotiate agreements with A, B (async)
+DeviceA <-> Exchange: negotiate agreement with Agbot
+DeviceB <-> Exchange: negotiate agreement with Agbot
+DeviceA -> DeviceA: execute workload pattern
+DeviceA -> DPE: publish data
+DeviceB -> DeviceB: execute workload pattern
+DeviceB -> DPE: publish data
+
+== Agreement Finalization ==
+Agbot -> DPE: verify data published by A, B (async, continuous)
+Agbot --> Chaindata: finalize agreement with A, B (upon verification)
+
+== Error Case ==
+hnote over DeviceA: device failure
+Agbot -> DPE: discover data publishing failure from A
+Agbot -> Exchange: cancel agreement with A
+Agbot -> Exchange: attempt to re-establish agreement with A
+@enduml

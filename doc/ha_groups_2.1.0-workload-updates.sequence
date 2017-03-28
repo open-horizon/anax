@@ -1,0 +1,36 @@
+@startuml
+entity Chaindata
+entity Exchange
+entity Agbot
+entity DPE
+entity DeviceA
+entity DeviceB
+
+== Successful Execution of workload version 1.1 on Devices A,B ==
+DeviceA -> DeviceA: execute workload pattern
+DeviceA -> DPE: publish data
+DeviceB -> DeviceB: execute workload pattern
+DeviceB -> DPE: publish data
+Agbot --> Chaindata: finalize agreements with A, B (upon verification)
+Agbot -> DPE: continually verify data published by A, B (async, continuous)
+
+== Workload Update on HA Group DeviceA  ==
+Agbot -> Agbot: determine workload on A, B updated from workload version 1.1 to 1.2
+Agbot -> Exchange: cancel agreement with A for execution of workload version 1.1
+DeviceA -> Chaindata: Device A learns of canceled agreement with Agbot
+Agbot -> Exchange: begin agreement negotiation with A for execution of workload version 1.2
+DeviceA -> Exchange: negotiate agreement with Agbot
+DeviceB -> DPE: uninterrupted publishing data from version 1.1
+
+== Error Case ==
+hnote over DeviceA: failure to execute\n workload version 1.2
+Agbot -> DPE: determine if data published from DeviceA executing workload version 1.2
+rnote over Agbot: Wait user-specified data verification timeout\n period and retry establishing version 1.2 agreements\n with Device A a user-defined number of times
+Agbot -> Exchange: cancel agreement with A for version 1.2
+Agbot -> Exchange: begin agreement negotiation with A to execute version 1.1
+DeviceA -> Exchange: negotiate agreement with Agbot
+DeviceA -> DeviceA: execute workload version 1.1
+DeviceA -> DPE: publish data
+Agbot --> Chaindata: finalize agreement with A (upon verification)
+Agbot -> DPE: continually verify data published by A (async, continuous)
+@enduml
