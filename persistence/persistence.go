@@ -29,6 +29,7 @@ type EstablishedAgreement struct {
 	AgreementAcceptedTime           uint64                   `json:"agreement_accepted_time"`
 	AgreementFinalizedTime          uint64                   `json:"agreement_finalized_time"`
 	AgreementTerminatedTime         uint64                   `json:"agreement_terminated_time"`
+	AgreementForceTerminatedTime    uint64                   `json:"agreement_force_terminated_time"`
 	AgreementExecutionStartTime     uint64                   `json:"agreement_execution_start_time"`
 	AgreementDataReceivedTime       uint64                   `json:"agreement_data_received_time"`
 	CurrentDeployment               map[string]ServiceConfig `json:"current_deployment"`
@@ -56,6 +57,7 @@ func (c EstablishedAgreement) String() string {
 		"AgreementFinalizedTime: %v, " +
 		"AgreementDataReceivedTime: %v, " +
 		"AgreementTerminatedTime: %v, " +
+		"AgreementForceTerminatedTime: %v, " +
 		"TerminatedReason: %v, " +
 		"TerminatedDescription: %v, " +
 		"Agreement Protocol: %v, " +
@@ -63,7 +65,7 @@ func (c EstablishedAgreement) String() string {
 		"WorkloadTerminatedTime: %v",
 		c.Name, c.SensorUrl, c.Archived, c.CurrentAgreementId, c.ConsumerId, ServiceConfigNames(&c.CurrentDeployment),
 		c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementFinalizedTime,
-		c.AgreementDataReceivedTime, c.AgreementTerminatedTime, c.TerminatedReason, c.TerminatedDescription,
+		c.AgreementDataReceivedTime, c.AgreementTerminatedTime, c.AgreementForceTerminatedTime, c.TerminatedReason, c.TerminatedDescription,
 		c.AgreementProtocol, c.AgreementProtocolTerminatedTime, c.WorkloadTerminatedTime)
 
 }
@@ -117,6 +119,7 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 		AgreementAcceptedTime:           0,
 		AgreementFinalizedTime:          0,
 		AgreementTerminatedTime:         0,
+		AgreementForceTerminatedTime:    0,
 		AgreementExecutionStartTime:     0,
 		AgreementDataReceivedTime:       0,
 		CurrentDeployment:               map[string]ServiceConfig{},
@@ -184,6 +187,14 @@ func AgreementStateTerminated(db *bolt.DB, dbAgreementId string, reason uint64, 
 		c.AgreementTerminatedTime = uint64(time.Now().Unix())
 		c.TerminatedReason = reason
 		c.TerminatedDescription = reasonString
+		return &c
+	})
+}
+
+// reset agreement state to not-terminated so that we can retry the termination
+func AgreementStateForceTerminated(db *bolt.DB, dbAgreementId string, protocol string) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
+		c.AgreementForceTerminatedTime = uint64(time.Now().Unix())
 		return &c
 	})
 }
@@ -282,6 +293,7 @@ func persistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 				mod.AgreementAcceptedTime = update.AgreementAcceptedTime
 				mod.AgreementFinalizedTime = update.AgreementFinalizedTime
 				mod.AgreementTerminatedTime = update.AgreementTerminatedTime
+				mod.AgreementForceTerminatedTime = update.AgreementForceTerminatedTime
 				mod.AgreementExecutionStartTime = update.AgreementExecutionStartTime
 				mod.AgreementDataReceivedTime = update.AgreementDataReceivedTime
 				mod.CurrentDeployment = update.CurrentDeployment

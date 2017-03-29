@@ -283,7 +283,7 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 
 	// Put the rest of the cancel processing into it's own go routine. Most of the time, this go routine will
 	// be waiting for the blockchain cancel to run. In general it will take around 30 seconds, but could be
-	// double or triple that time. This will free up the governance thread to handle messages protocol messages.
+	// double or triple that time. This will free up the governance thread to handle protocol messages.
 	go func() {
 
 		// Get the policy we used in the agreement and then cancel on the blockchain, just in case.
@@ -444,7 +444,7 @@ func (w *GovernanceWorker) start() {
 						glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agreementId, err)))
 					} else if len(ags) != 1 {
 						glog.V(5).Infof(logString(fmt.Sprintf("ignoring the event, unable to retrieve unarchived single agreement %v from the database.", agreementId)))
-					} else if ags[0].AgreementTerminatedTime != 0 {
+					} else if ags[0].AgreementTerminatedTime != 0 && ags[0].AgreementForceTerminatedTime == 0 {
 						glog.V(3).Infof(logString(fmt.Sprintf("ignoring the event, agreement %v is already terminating", agreementId)))
 					} else if w.bcWritesEnabled == true {
 						glog.V(3).Infof("Ending the agreement: %v", agreementId)
@@ -577,8 +577,6 @@ func (w *GovernanceWorker) start() {
 						} else if ags[0].AgreementTerminatedTime != 0 {
 							glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, agreement %v is terminating", ags[0].CurrentAgreementId)))
 
-						} else if ags[0].AgreementTerminatedTime != 0 {
-							glog.Infof(logString(fmt.Sprintf("Received agreement recorded on the blockchain for agreement id %v. However this agreement has been terminated.", agreementId)))
 							// Update state in the database
 						} else {
 							// The reply ack might have been lost or mishandled. Since we are now seeing an event on the blockchain that the agreement
