@@ -332,11 +332,20 @@ func (w *AgreementWorker) syncOnInit() error {
 		// If there are agreemens in the database then we will assume that the device is already registered
 		for _, ag := range agreements {
 
+			// If there is an active agreement that is marked as terminated, then anax was restarted in the middle of
+			// termination processing, and therefore we dont know how far it got. Initiate a cancel again to clean it up.
+			if ag.AgreementTerminatedTime != 0 {
+				reason := uint(ag.TerminatedReason)
+				if _, err := persistence.AgreementStateForceTerminated(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("unable to set force termination for agreement %v, error %v", ag.CurrentAgreementId, err)))
+				}
+				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, reason, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
+
 			// If the agreement has been started then we just need to make sure that the policy manager's agreement counts
 			// are correct. Even for already timedout agreements, the governance process will cleanup old and outdated agreements,
 			// so we don't need to do anything here.
 
-			if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
+			} else if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v, error %v", ag.CurrentAgreementId, err)))
 			} else if pol, err := policy.DemarshalPolicy(proposal.ProducerPolicy); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))

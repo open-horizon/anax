@@ -281,7 +281,11 @@ func (w *EthBlockchainWorker) fireStartEvent(details *exchange.ChainDetails, cha
 		envAdds := make(map[string]string)
 		envAdds["COLONUS_DIR"] = "/root/eth"
 		// envAdds["ETHEREUM_DIR"] = "/root/.ethereum"
-		envAdds["HZN_RAM"] = "2048"
+		if ram := os.Getenv("CMTN_GETH_RAM_OVERRIDE"); ram == "" {
+			envAdds["HZN_RAM"] = "192"
+		} else {
+			envAdds["HZN_RAM"] = ram
+		}
 		lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{Type: "ethereum", Name: chainName})
 		w.Worker.Manager.Messages <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
 
