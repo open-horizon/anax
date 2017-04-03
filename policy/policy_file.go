@@ -286,6 +286,28 @@ func (self *Policy) String() string {
 	return res
 }
 
+func (self *Policy) ShortString() string {
+	res := ""
+	res += fmt.Sprintf("Name: %v Version: %v", self.Header.Name, self.Header.Version)
+	res += ", API Specifications "
+	for _, apiSpec := range self.APISpecs {
+		res += fmt.Sprintf("Ref: %v Version: %v Exclusive: %v Arch: %v", apiSpec.SpecRef, apiSpec.Version, apiSpec.ExclusiveAccess, apiSpec.Arch)
+	}
+	res += fmt.Sprintf(", Agreement Protocol: %v", self.AgreementProtocols)
+	res += ", Workloads: "
+	for _, wl := range self.Workloads {
+		res += fmt.Sprintf("Deployment: %v", wl.Deployment)
+	}
+	res += ", Properties: "
+	for _, p := range self.Properties {
+		res += fmt.Sprintf("Name: %v Value: %v", p.Name, p.Value)
+	}
+	res += fmt.Sprintf(", Resource Limits: %v", self.ResourceLimits)
+	res += fmt.Sprintf(", Data Verification: %v", self.DataVerify)
+
+	return res
+}
+
 func (self *Policy) IsSameWorkload(compare *Policy) bool {
 	for _, wl := range self.Workloads {
 		found := false
@@ -328,7 +350,7 @@ func (self *Policy) NextHighestPriorityWorkload(currentPriority int, retryCount 
 	glog.V(3).Infof("Checking for next higher priority workload. Starting from priority %v, with %v retries at %v", currentPriority, retryCount, retryStartTime)
 
 	if len(self.Workloads) == 1 {
-		glog.V(3).Infof("Returning the only workload choice: %v", self.Workloads[0])
+		glog.V(3).Infof("Returning the only workload choice: %v", self.Workloads[0].ShortString())
 		return &self.Workloads[0]
 	} else {
 		smallestDelta := 0

@@ -1,14 +1,19 @@
 package agreement
 
 import (
+	"fmt"
 	"github.com/open-horizon/anax/events"
 )
 
 // ===============================================================================================
-// Commands supported by the Exchange Worker
+// Commands supported by the Agreement Worker
 
 type DeviceRegisteredCommand struct {
 	Token string
+}
+
+func (d DeviceRegisteredCommand) ShortString() string {
+	return fmt.Sprintf("%v", d)
 }
 
 func NewDeviceRegisteredCommand(token string) *DeviceRegisteredCommand {
@@ -17,8 +22,13 @@ func NewDeviceRegisteredCommand(token string) *DeviceRegisteredCommand {
 	}
 }
 
+// ==============================================================================================================
 type TerminateCommand struct {
 	reason string
+}
+
+func (t TerminateCommand) ShortString() string {
+	return fmt.Sprintf("%v", t)
 }
 
 func NewTerminateCommand(reason string) *TerminateCommand {
@@ -27,8 +37,13 @@ func NewTerminateCommand(reason string) *TerminateCommand {
 	}
 }
 
+// ==============================================================================================================
 type AdvertisePolicyCommand struct {
 	PolicyFile string
+}
+
+func (a AdvertisePolicyCommand) ShortString() string {
+	return fmt.Sprintf("%v", a)
 }
 
 func NewAdvertisePolicyCommand(fileName string) *AdvertisePolicyCommand {
@@ -37,18 +52,13 @@ func NewAdvertisePolicyCommand(fileName string) *AdvertisePolicyCommand {
 	}
 }
 
-type WhisperMessageCommand struct {
-	Msg events.WhisperReceivedMessage
-}
-
-func NewWhisperMessageCommand(msg events.WhisperReceivedMessage) *WhisperMessageCommand {
-	return &WhisperMessageCommand{
-		Msg: msg,
-	}
-}
-
+// ==============================================================================================================
 type ExchangeMessageCommand struct {
 	Msg events.ExchangeDeviceMessage
+}
+
+func (e ExchangeMessageCommand) ShortString() string {
+	return e.Msg.ShortString()
 }
 
 func NewExchangeMessageCommand(msg events.ExchangeDeviceMessage) *ExchangeMessageCommand {

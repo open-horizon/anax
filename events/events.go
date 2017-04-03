@@ -427,7 +427,11 @@ func (m GovernanceMaintenanceMessage) String() string {
 }
 
 func (m GovernanceMaintenanceMessage) ShortString() string {
-	return m.String()
+    depStr := ""
+    for key, _ := range m.Deployment {
+        depStr = depStr + key + ","
+    }
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment Services: %v", m.event, m.AgreementProtocol, m.AgreementId, depStr)
 }
 
 type GovernanceCancelationMessage struct {
@@ -706,12 +710,20 @@ func (m *ExchangeDeviceMessage) ProtocolMessage() string {
 	return m.protocolMessage
 }
 
+func (m *ExchangeDeviceMessage) ShortProtocolMessage() string {
+	end := 80
+	if len(m.protocolMessage) < end {
+		end = len(m.protocolMessage)
+	}
+	return m.protocolMessage[:end]
+}
+
 func (m ExchangeDeviceMessage) String() string {
 	return fmt.Sprintf("Event: %v, ProtocolMessage: %v, Time: %v, ExchangeMessage: %s", m.event, m.protocolMessage, m.Time, m.exchangeMessage)
 }
 
 func (m ExchangeDeviceMessage) ShortString() string {
-	return fmt.Sprintf("Event: %v, ProtocolMessage: %v, Time: %v", m.event, m.protocolMessage, m.Time)
+	return fmt.Sprintf("Event: %v, ProtocolMessage: %v, Time: %v", m.event, m.ShortProtocolMessage(), m.Time)
 }
 
 func NewExchangeDeviceMessage(id EventId, exMsg []byte, pMsg string) *ExchangeDeviceMessage {

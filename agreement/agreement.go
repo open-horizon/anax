@@ -254,7 +254,8 @@ func (w *AgreementWorker) start() {
 		for {
 			glog.V(2).Infof(logString(fmt.Sprintf("blocking for commands")))
 			command := <-w.Commands
-			glog.V(2).Infof(logString(fmt.Sprintf("received command: %T", command)))
+			glog.V(2).Infof(logString(fmt.Sprintf("received command: %v", command.ShortString())))
+			glog.V(5).Infof(logString(fmt.Sprintf("received command: %v", command)))
 
 			switch command.(type) {
 			case *DeviceRegisteredCommand:
@@ -289,12 +290,12 @@ func (w *AgreementWorker) start() {
 				}
 				protocolMsg := cmd.Msg.ProtocolMessage()
 
-				glog.V(3).Infof(logString(fmt.Sprintf("received message %v from the exchange: %v", exchangeMsg.MsgId, protocolMsg)))
+				glog.V(3).Infof(logString(fmt.Sprintf("received message %v from the exchange", exchangeMsg.MsgId)))
 
 				// Process the message if it's a proposal.
 				deleteMessage := false
 				if proposal, err := protocolHandler.ValidateProposal(string(protocolMsg)); err != nil {
-					glog.Warningf(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %s due to %v", protocolMsg, err)))
+					glog.Warningf(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %s due to %v", cmd.Msg.ShortProtocolMessage(), err)))
 				} else if agAlreadyExists, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(proposal.AgreementId)}); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreements from database, error %v", err)))
 				} else if len(agAlreadyExists) != 0 {

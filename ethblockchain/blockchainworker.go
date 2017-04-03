@@ -372,6 +372,10 @@ type NewClientCommand struct {
 	Msg events.NewEthContainerMessage
 }
 
+func (c NewClientCommand) ShortString() string {
+	return c.Msg.ShortString()
+}
+
 func NewNewClientCommand(msg events.NewEthContainerMessage) *NewClientCommand {
 	return &NewClientCommand{
 		Msg: msg,

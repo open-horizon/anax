@@ -81,6 +81,12 @@ func (w Workload) String() string {
         w.Priority, w.Deployment, w.DeploymentSignature, w.DeploymentUserInfo, w.Torrent, w.WorkloadPassword)
 }
 
+func (w Workload) ShortString() string {
+    return fmt.Sprintf("Priority: %v, " +
+        "Deployment: %v",
+        w.Priority, w.Deployment)
+}
+
 // This function specifically omits checking the Priority section of the workload because that section is not relevant to the equivalence between 2 workload definitions.
 func (wl Workload) IsSame(compare Workload) bool {
     return wl.Deployment == compare.Deployment && wl.DeploymentSignature == compare.DeploymentSignature && wl.DeploymentUserInfo == compare.DeploymentUserInfo && wl.Torrent.IsSame(compare.Torrent) && wl.WorkloadPassword == compare.WorkloadPassword

@@ -5,7 +5,9 @@ import (
 	"github.com/open-horizon/anax/events"
 )
 
-type Command interface{}
+type Command interface{
+	ShortString() string
+}
 
 type Manager struct {
 	Config   *config.HorizonConfig

@@ -1,11 +1,17 @@
 package agreementbot
 
 import (
+	"fmt"
 	"github.com/open-horizon/anax/events"
 )
 
+// ==============================================================================================================
 type ReceivedWhisperMessageCommand struct {
 	Msg events.WhisperReceivedMessage
+}
+
+func (r ReceivedWhisperMessageCommand) ShortString() string {
+	return fmt.Sprintf("%v", r)
 }
 
 func NewReceivedWhisperMessageCommand(msg events.WhisperReceivedMessage) *ReceivedWhisperMessageCommand {
@@ -14,10 +20,15 @@ func NewReceivedWhisperMessageCommand(msg events.WhisperReceivedMessage) *Receiv
 	}
 }
 
+// ==============================================================================================================
 type AgreementTimeoutCommand struct {
 	AgreementId string
 	Protocol    string
 	Reason      uint
+}
+
+func (a AgreementTimeoutCommand) ShortString() string {
+	return fmt.Sprintf("%v", a)
 }
 
 func NewAgreementTimeoutCommand(agreementId string, protocol string, reason uint) *AgreementTimeoutCommand {
@@ -28,8 +39,13 @@ func NewAgreementTimeoutCommand(agreementId string, protocol string, reason uint
 	}
 }
 
+// ==============================================================================================================
 type NewPolicyCommand struct {
 	PolicyFile string
+}
+
+func (p NewPolicyCommand) ShortString() string {
+	return fmt.Sprintf("%v", p)
 }
 
 func NewNewPolicyCommand(fileName string) *NewPolicyCommand {
@@ -38,11 +54,16 @@ func NewNewPolicyCommand(fileName string) *NewPolicyCommand {
 	}
 }
 
+// ==============================================================================================================
 type NewProtocolMessageCommand struct {
 	Message   []byte
 	MessageId int
 	From      string
 	PubKey    []byte
+}
+
+func (p NewProtocolMessageCommand) ShortString() string {
+	return fmt.Sprintf("%v", p)
 }
 
 func NewNewProtocolMessageCommand(msg []byte, msgId int, deviceId string, pubkey []byte) *NewProtocolMessageCommand {
@@ -54,8 +75,13 @@ func NewNewProtocolMessageCommand(msg []byte, msgId int, deviceId string, pubkey
 	}
 }
 
+// ==============================================================================================================
 type BlockchainEventCommand struct {
 	Msg events.EthBlockchainEventMessage
+}
+
+func (e BlockchainEventCommand) ShortString() string {
+	return e.Msg.ShortString()
 }
 
 func NewBlockchainEventCommand(msg events.EthBlockchainEventMessage) *BlockchainEventCommand {
