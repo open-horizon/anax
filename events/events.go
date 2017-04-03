@@ -56,7 +56,9 @@ const (
 	NEW_AGBOT_REG  EventId = "NEW_AGBOT_REG"
 
 	// agreement-related
-	AGREEMENT_REACHED EventId = "AGREEMENT_REACHED"
+	AGREEMENT_REACHED        EventId = "AGREEMENT_REACHED"
+	DEVICE_AGREEMENTS_SYNCED EventId = "DEVICE_AGREEMENTS_SYNCED"
+	DEVICE_CONTAINERS_SYNCED EventId = "DEVICE_CONTAINERS_SYNCED"
 )
 
 type EndContractCause string
@@ -764,5 +766,71 @@ func NewNewEthContainerMessage(id EventId, exchangeURL string, exchangeId string
 		exchangeId:       exchangeId,
 		exchangeToken:    exchangeToken,
 		Time:             uint64(time.Now().Unix()),
+	}
+}
+
+// Tell everyone that the device side of anax has synced up it's agreements wiht the exchange and blockchain
+type DeviceAgreementsSyncedMessage struct {
+	event     Event
+	Completed bool
+	Time      uint64
+}
+
+func (m *DeviceAgreementsSyncedMessage) Event() Event {
+	return m.event
+}
+
+func (m *DeviceAgreementsSyncedMessage) IsCompleted() bool {
+	return m.Completed
+}
+
+func (m DeviceAgreementsSyncedMessage) String() string {
+	return fmt.Sprintf("Event: %v, Completed: %v, Time: %v", m.event, m.Completed, m.Time)
+}
+
+func (m DeviceAgreementsSyncedMessage) ShortString() string {
+	return m.String()
+}
+
+func NewDeviceAgreementsSyncedMessage(id EventId, completed bool) *DeviceAgreementsSyncedMessage {
+	return &DeviceAgreementsSyncedMessage{
+		event: Event{
+			Id: id,
+		},
+		Completed: completed,
+		Time:      uint64(time.Now().Unix()),
+	}
+}
+
+// Tell everyone that the device side of anax has synced up it's containers with the local DB
+type DeviceContainersSyncedMessage struct {
+	event     Event
+	Completed bool
+	Time      uint64
+}
+
+func (m *DeviceContainersSyncedMessage) Event() Event {
+	return m.event
+}
+
+func (m *DeviceContainersSyncedMessage) IsCompleted() bool {
+	return m.Completed
+}
+
+func (m DeviceContainersSyncedMessage) String() string {
+	return fmt.Sprintf("Event: %v, Completed: %v, Time: %v", m.event, m.Completed, m.Time)
+}
+
+func (m DeviceContainersSyncedMessage) ShortString() string {
+	return m.String()
+}
+
+func NewDeviceContainersSyncedMessage(id EventId, completed bool) *DeviceContainersSyncedMessage {
+	return &DeviceContainersSyncedMessage{
+		event: Event{
+			Id: id,
+		},
+		Completed: completed,
+		Time:      uint64(time.Now().Unix()),
 	}
 }

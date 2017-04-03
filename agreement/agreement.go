@@ -9,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/device"
+	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
@@ -23,15 +24,17 @@ import (
 
 // must be safely-constructed!!
 type AgreementWorker struct {
-	worker.Worker       // embedded field
-	db                  *bolt.DB
-	httpClient          *http.Client
-	userId              string
-	deviceId            string
-	deviceToken         string
-	protocols           map[string]bool
-	pm                  *policy.PolicyManager
-	bcClientInitialized bool
+	worker.Worker            // embedded field
+	db                       *bolt.DB
+	httpClient               *http.Client
+	userId                   string
+	deviceId                 string
+	deviceToken              string
+	protocols                map[string]bool
+	pm                       *policy.PolicyManager
+	bcClientInitialized      bool
+	containerSyncUpEvent     bool
+	containerSyncUpSucessful bool
 }
 
 func NewAgreementWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *AgreementWorker {
@@ -102,6 +105,14 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 		switch msg.Event().Id {
 		case events.RECEIVED_EXCHANGE_DEV_MSG:
 			w.Commands <- NewExchangeMessageCommand(*msg)
+		}
+
+	case *events.DeviceContainersSyncedMessage:
+		msg, _ := incoming.(*events.DeviceContainersSyncedMessage)
+		switch msg.Event().Id {
+		case events.DEVICE_CONTAINERS_SYNCED:
+			w.containerSyncUpSucessful = msg.IsCompleted()
+			w.containerSyncUpEvent = true
 		}
 
 	default: //nothing
@@ -188,23 +199,7 @@ func (w *AgreementWorker) start() {
 	// in the system.
 	go func() {
 
-		if w.deviceToken != "" {
-			// Sync up between what's in our database versus what's in the exchange, and make sure that the policy manager's
-			// agreement counts are correct. The governance routine will cancel any agreements whose state might have changed
-			// while the agbot was down. We will also check to make sure that policies havent changed. If they have, then
-			// we will cancel agreements and allow them to re-negotiate.
-			if err := w.syncOnInit(); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("Terminating, unable to sync up, error: %v", err)))
-				return
-			}
-
-			// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
-			// start heartbeating when the registration event comes in.
-			targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/heartbeat"
-			go exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
-		}
-
-		// Wait for blockchain client to fully initialize before advertising the policies
+		// Wait for blockchain client to fully initialize before syncing and advertising the policies
 		for {
 			if w.bcClientInitialized == false {
 				time.Sleep(time.Duration(5) * time.Second)
@@ -216,6 +211,37 @@ func (w *AgreementWorker) start() {
 				}
 				break
 			}
+		}
+
+		// Block for the container syncup message, to make sure the docker state matches our local DB.
+		for {
+			if w.containerSyncUpEvent == false {
+				time.Sleep(time.Duration(5) * time.Second)
+				glog.V(3).Infof("AgreementWorker waiting for container syncup to be done.")
+			} else if w.containerSyncUpSucessful {
+				break
+			} else {
+				panic(logString(fmt.Sprintf("Terminating, unable to sync up containers")))
+			}
+		}
+
+		if w.deviceToken != "" {
+			// Sync up between what's in our database versus what's in the exchange, and make sure that the policy manager's
+			// agreement counts are correct. This function will cancel any agreements whose state might have changed
+			// while the device was down. We will also check to make sure that policies havent changed. If they have, then
+			// we will cancel agreements and allow them to re-negotiate.
+			if err := w.syncOnInit(); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Terminating, unable to sync up, error: %v", err)))
+				panic(logString(fmt.Sprintf("Terminating, unable to complete agreement sync up, error: %v", err)))
+			} else {
+				w.Messages() <- events.NewDeviceAgreementsSyncedMessage(events.DEVICE_AGREEMENTS_SYNCED, true)
+			}
+
+			// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
+			// start heartbeating when the registration event comes in.
+			targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/heartbeat"
+			go exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
+
 		}
 
 		// Publish what we have for the world to see
@@ -320,13 +346,55 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
 }
 
+// This function is only called when anax device side initializes. The agbot has it's own initialization checking.
+// This function is responsible for reconciling the agreements in our local DB with the agreements recorded in the exchange
+// and the blockchain, as well as looking for agreements that need to change based on changes to policy files. This function
+// handles agreements that exist in the exchange for which we have no DB records, it handles DB records for which
+// the state in the exchange is missing, and it handles agreements whose state has changed in the blockchain.
 func (w *AgreementWorker) syncOnInit() error {
 
 	glog.V(3).Infof(logString("beginning sync up."))
 
 	protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
 
-	// Loop through our database and check each record for accuracy with the exchange and the blockchain
+	// Establish the go objects that are used to interact with the ethereum blockchain.
+	// This code should probably be in the protocol library.
+	acct, _ := ethblockchain.AccountId()
+	dir, _ := ethblockchain.DirectoryAddress()
+	bc, err := ethblockchain.InitBaseContracts(acct, w.Config.Edge.GethURL, dir)
+	if err != nil {
+		return errors.New(logString(fmt.Sprintf("unable to initialize platform contracts, error: %v", err)))
+	}
+
+	// Reconcile the set of agreements recorded in the exchange for this device with the agreements in the local DB.
+	// First get all the agreements for this device from the exchange.
+
+	exchangeDeviceAgreements, err := w.getAllAgreements()
+	if err != nil {
+		return errors.New(logString(fmt.Sprintf("encountered error getting device agreement list from exchange, error %v", err)))
+	} else {
+
+		// Loop through each agreement in the exchange and search for that agreement in our DB. If it should not
+		// be in the exchange, then we have to delete it from the exchange because its presence in the exchange
+		// prevents an agbot from making an agreement with our device. It is posible to have a DB record for
+		// an agreement that is not yet recorded in the exchange (this case is handled later in this function),
+		// but the reverse should not occur normally. Agreements in the exchange must have a record on our local DB.
+		for exchangeAg, _ := range exchangeDeviceAgreements {
+			if agreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.IdEAFilter(exchangeAg), persistence.UnarchivedEAFilter()}); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error searching for agreement %v from exchange agreements", exchangeAg, err)))
+			} else if len(agreements) == 0 {
+				glog.V(3).Infof(logString(fmt.Sprintf("found agreement %v in the exchange that is not in our DB.", exchangeAg)))
+				// Delete the agreement from the exchange.
+				if err := deleteProducerAgreement(w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, exchangeAg); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error deleting agreement %v in exchange: %v", exchangeAg, err)))
+				}
+			}
+		}
+
+	}
+
+	// Now perform the reverse set of checks, looping through our database and checking each record for accuracy with the exchange
+	// and the blockchain.
 	if agreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err == nil {
 
 		// If there are agreemens in the database then we will assume that the device is already registered
@@ -341,6 +409,14 @@ func (w *AgreementWorker) syncOnInit() error {
 				}
 				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, reason, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
 
+			// Make sure the blockchain state agrees with our local DB state for this agreement. If not, then we might need to cancel the agreement.
+			// Anax could have been down for a long time (or inoperable), and the blockchain event logger worker doesnt go back in time to
+			// find events that we might have missed, so we need to query the BC for this info.
+			} else if ok, err := w.checkAgreementInBlockchain(&ag, protocolHandler, bc); err != nil {
+				return errors.New(logString(fmt.Sprintf("unable to check for agreement %v in blockchain, error %v", ag.CurrentAgreementId, err)))
+			} else if !ok {
+				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, citizenscientist.CANCEL_AGBOT_REQUESTED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
+
 			// If the agreement has been started then we just need to make sure that the policy manager's agreement counts
 			// are correct. Even for already timedout agreements, the governance process will cleanup old and outdated agreements,
 			// so we don't need to do anything here.
@@ -354,7 +430,7 @@ func (w *AgreementWorker) syncOnInit() error {
 				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, citizenscientist.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
 
 			} else if err := w.pm.MatchesMine(pol); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("agreement %v has a policy %v that has changed.", ag.CurrentAgreementId, pol.Header.Name)))
+				glog.Warningf(logString(fmt.Sprintf("agreement %v has a policy %v that has changed.", ag.CurrentAgreementId, pol.Header.Name)))
 				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, citizenscientist.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
 
 			} else if err := w.pm.AttemptingAgreement(existingPol, ag.CurrentAgreementId); err != nil {
@@ -365,29 +441,17 @@ func (w *AgreementWorker) syncOnInit() error {
 				// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
 			} else if ag.AgreementAcceptedTime != 0 && ag.AgreementTerminatedTime == 0 {
 
-				var exchangeAgreement map[string]exchange.DeviceAgreement
-				var resp interface{}
-				resp = new(exchange.AllDeviceAgreementsResponse)
-
-				targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/agreements/" + ag.CurrentAgreementId
-				if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil || tpErr != nil {
-					glog.Errorf(logString(fmt.Sprintf("encountered error getting device info from exchange, error %v, transport error %v", err, tpErr)))
-				} else {
-					exchangeAgreement = resp.(*exchange.AllDeviceAgreementsResponse).Agreements
-					glog.V(5).Infof(logString(fmt.Sprintf("found agreements %v in the exchange.", exchangeAgreement)))
-
-					if _, there := exchangeAgreement[ag.CurrentAgreementId]; !there {
-						glog.V(3).Infof(logString(fmt.Sprintf("agreement %v missing from exchange, adding it back in.", ag.CurrentAgreementId)))
-						state := ""
-						if ag.AgreementFinalizedTime != 0 {
-							state = "Finalized Agreement"
-						} else if ag.AgreementAcceptedTime != 0 {
-							state = "Agree to proposal"
-						} else {
-							state = "unknown"
-						}
-						w.recordAgreementState(ag.CurrentAgreementId, pol.APISpecs[0].SpecRef, state)
+				if _, there := exchangeDeviceAgreements[ag.CurrentAgreementId]; !there {
+					glog.V(3).Infof(logString(fmt.Sprintf("agreement %v missing from exchange, adding it back in.", ag.CurrentAgreementId)))
+					state := ""
+					if ag.AgreementFinalizedTime != 0 {
+						state = "Finalized Agreement"
+					} else if ag.AgreementAcceptedTime != 0 {
+						state = "Agree to proposal"
+					} else {
+						state = "unknown"
 					}
+					w.recordAgreementState(ag.CurrentAgreementId, pol.APISpecs[0].SpecRef, state)
 				}
 				glog.V(3).Infof(logString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))
 			}
@@ -399,6 +463,55 @@ func (w *AgreementWorker) syncOnInit() error {
 
 	glog.V(3).Infof(logString("sync up completed normally."))
 	return nil
+
+}
+
+// This function verifies that an agreement is present in the blockchain. An agreement might not be present for a variety of reasons,
+// some of which are legitimate. The purpose of this routine is to figure out whether or not an agreement cancellation
+// has occurred. It returns false if the agreement needs to be cancelled, or if there was an error.
+func (w *AgreementWorker) checkAgreementInBlockchain(ag *persistence.EstablishedAgreement, protocolHandler *citizenscientist.ProtocolHandler, bc *ethblockchain.BaseContracts) (bool, error) {
+
+	// Agreements that havent been accepted yet by the device will not be in the blockchain and it's ok that they are not in
+	// the blockchain, so return true.
+	if ag.AgreementAcceptedTime == 0 {
+		return true, nil
+	}
+
+	// Check to see if the agreement is in the blockchain. This call to the blockchain should be very fast.
+	if recorded, err := protocolHandler.VerifyAgreementRecorded(ag.CurrentAgreementId, ag.CounterPartyAddress, ag.ProposalSig, bc.Agreements); err != nil {
+		return false, errors.New(logString(fmt.Sprintf("encountered error verifying agreement %v on blockchain, error %v", ag.CurrentAgreementId, err)))
+	} else if !recorded {
+		// A finalized agreement should be on the blockchain
+		if ag.AgreementFinalizedTime != 0 && ag.AgreementTerminatedTime == 0 {
+			glog.V(3).Infof(logString(fmt.Sprintf("agreement %v is not in the blockchain, cancelling.", ag.CurrentAgreementId)))
+			return false, nil
+		}
+	}
+	return true, nil
+
+}
+
+func (w *AgreementWorker) getAllAgreements() (map[string]exchange.DeviceAgreement, error) {
+
+	var exchangeDeviceAgreements map[string]exchange.DeviceAgreement
+	var resp interface{}
+	resp = new(exchange.AllDeviceAgreementsResponse)
+
+	targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/agreements"
+	for {
+		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
+			glog.Errorf(err.Error())
+			return exchangeDeviceAgreements, err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			exchangeDeviceAgreements = resp.(*exchange.AllDeviceAgreementsResponse).Agreements
+			glog.V(5).Infof(logString(fmt.Sprintf("found agreements %v in the exchange.", exchangeDeviceAgreements)))
+			return exchangeDeviceAgreements, nil
+		}
+	}
 
 }
 
@@ -524,6 +637,29 @@ func (w *AgreementWorker) recordAgreementState(agreementId string, microservice 
 			continue
 		} else {
 			glog.V(5).Infof(logString(fmt.Sprintf("set agreement %v to state %v", agreementId, state)))
+			return nil
+		}
+	}
+
+}
+
+func deleteProducerAgreement(url string, deviceId string, token string, agreementId string) error {
+
+	glog.V(5).Infof(logString(fmt.Sprintf("deleting agreement %v in exchange", agreementId)))
+
+	var resp interface{}
+	resp = new(exchange.PostDeviceResponse)
+	targetURL := url + "devices/" + deviceId + "/agreements/" + agreementId
+	for {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
+			glog.Errorf(logString(fmt.Sprintf(err.Error())))
+			return err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(5).Infof(logString(fmt.Sprintf("deleted agreement %v from exchange", agreementId)))
 			return nil
 		}
 	}
