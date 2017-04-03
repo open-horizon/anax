@@ -20,6 +20,7 @@ import (
 	"golang.org/x/sys/unix"
 	"io"
 	"io/ioutil"
+	"math/big"
 	"os"
 	"path"
 	"reflect"
@@ -71,6 +72,7 @@ const IPT_COLONUS_ISOLATED_CHAIN = "COLONUS-ISOLATION"
 type DeploymentDescription struct {
 	Services       map[string]*Service `json:"services"`
 	ServicePattern Pattern             `json:"service_pattern"`
+	Infrastructure bool                `json:"infrastructure"`
 }
 
 var invalidDeploymentOptions = map[string][]string {
@@ -328,6 +330,11 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 				},
 				Binds: service.Binds,
 			},
+		}
+
+		// Mark each container as infrastructure if the deployment description indicates infrastructure
+		if deployment.Infrastructure {
+			serviceConfig.Config.Labels[LABEL_PREFIX + ".infrastructure"] = ""
 		}
 
 		// add environment additions to each service
@@ -1004,8 +1011,12 @@ func (b *ContainerWorker) resourcesCreate(agreementId string, configure *events.
 }
 
 func (b *ContainerWorker) start() {
+
 	go func() {
 
+		b.syncupResources()
+
+		// Now we can drop into the main command processing loop
 		for {
 			glog.V(4).Infof("ContainerWorker command processor blocking waiting to receive incoming commands")
 
@@ -1149,7 +1160,7 @@ func (b *ContainerWorker) start() {
 				}
 
 				// Dynamically add in a filesystem mapping so that the infrastructure container can write files that will
-				// be saveable or observable to the host system.
+				// be saveable or observable to the host system. Also turn on the privileged flag for this container.
 				for serviceName, _ := range deploymentDesc.Services {
 					dir := ""
 					// NON_SNAP_COMMON is used for testing purposes only
@@ -1160,7 +1171,11 @@ func (b *ContainerWorker) start() {
 					}
 					deploymentDesc.Services[serviceName].addFilesystemBinding(dir)
 					deploymentDesc.Services[serviceName].addSpecificPortBinding(docker.PortBinding{HostIP:"0.0.0.0", HostPort:"8545"})
+					deploymentDesc.Services[serviceName].Privileged = true
 				}
+
+				// Indicate that this deployment description is part of the infrastructure
+				deploymentDesc.Infrastructure = true
 
 				// Get the container started.
 				if deployment, err := b.resourcesCreate(cmd.ContainerLaunchContext.Blockchain.Name, &cmd.ContainerLaunchContext.Configure, deploymentDesc, []byte(""), *cmd.ContainerLaunchContext.EnvironmentAdditions); err != nil {
@@ -1228,6 +1243,127 @@ func (b *ContainerWorker) start() {
 			runtime.Gosched()
 		}
 	}()
+}
+
+// Before we let the worker do anything, we need to sync up the running containers, networks, etc with the
+// agreements in the local DB. If we find any containers or networks that shouldnt be there, we will get
+// rid of them. This can occur if anax terminates abruptly while in the middle of starting or cancelling an
+// agreement.
+// To ensure that all the containers for all known agreements are running, we will depend on the governance
+// function which periodically checks to ensure that all containers are running.
+func (b *ContainerWorker) syncupResources() {
+
+	outcome := true
+	leftoverAgreements := make(map[string]bool)
+
+	fail := func(msg string) {
+		glog.Errorf(msg)
+		outcome = false
+	}
+
+	IsAgreementId := func(id string) bool {
+		if len(id) < 64 {
+			return false
+		}
+
+		idInt := big.NewInt(0)
+		if _, ok := idInt.SetString(id, 16); !ok {
+			return false
+		}
+		return true
+	}
+
+	glog.V(3).Infof("ContainerWorker beginning sync up of docker resources.")
+
+	// First get all the agreements from the DB.
+	if agreements, err := persistence.FindEstablishedAgreements(b.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err != nil {
+		fail(fmt.Sprintf("ContainerWorker unable to retrieve agreements from database, error %v", err))
+	} else {
+
+		// Create quick access map of agreement ids. This will allow us to avoid nested loops.
+		agMap := make(map[string]bool)
+		for _, agreement := range agreements {
+			agMap[agreement.CurrentAgreementId] = true
+		}
+
+		// Second, run through each container looking for containers that are leftover from old agreements. Be aware that there
+		// could be other non-Horizon containers on this host, so we have to be careful to NOT terminate them.
+		if containers, err := b.client.ListContainers(docker.ListContainersOptions{}); err != nil {
+			fail(fmt.Sprintf("ContainerWorker unable to get list of running containers: %v", err))
+		} else {
+
+			// Look for orphaned containers.
+			for _, container := range containers {
+				glog.V(5).Infof("ContainerWorker working on container %v", container)
+
+				// Containers that are part of our horizon infrastructure or are shared or without an agreement id label will be ignored.
+				if _, infraLabel := container.Labels[LABEL_PREFIX + ".infrastructure"]; infraLabel {
+					continue
+				} else if _, sharedThere := container.Labels[LABEL_PREFIX + ".service_pattern.shared"]; sharedThere {
+					continue
+				} else if _, labelThere := container.Labels[LABEL_PREFIX + ".agreement_id"]; !labelThere {
+					continue
+				} else if !IsAgreementId(container.Labels[LABEL_PREFIX + ".agreement_id"]) {
+					// Not a valid number so it must be old infrastructure before the infrastructure label was added, ignore it.
+					continue
+				} else if _, there := agMap[container.Labels[LABEL_PREFIX + ".agreement_id"]]; !there {
+					// The container has the horizon agreement id label, but the agreement id is not in our local DB.
+					glog.V(3).Infof("ContainerWorker found leftover container %v", container)
+					leftoverAgreements[container.Labels[LABEL_PREFIX+".agreement_id"]] = true
+				}
+			}
+		}
+
+		// Third, run through each network looking for networks that are leftover from old agreements. Be aware that there
+		// could be other non-Horizon networks on this host, so we have to be careful to NOT terminate them.
+		if networks, err := b.client.ListNetworks(); err != nil {
+			fail(fmt.Sprintf("ContainerWorker unable to get list of networks: %v", err))
+		} else {
+			for _, net := range networks {
+				glog.V(5).Infof("ContainerWorker working on network %v", net)
+				if !IsAgreementId(net.Name) {
+					continue
+				} else if _, there := agMap[net.Name]; !there {
+					glog.V(3).Infof("ContainerWorker found leftover network %v", net)
+					leftoverAgreements[net.Name] = true
+				}
+			}
+		}
+
+		// Fourth, run through IP routing table rules, looking for rules that are leftover from old agreements. Be aware that there
+		// could be other non-Horizon rules on this host, so we have to be careful to NOT terminate them.
+		if exists, err := b.iptables.Exists("filter", IPT_COLONUS_ISOLATED_CHAIN, "-j", "RETURN"); err != nil {
+			fail(fmt.Sprintf("ContainerWorker unable to interrogate iptables on host. Error: %v", err))
+		} else if !exists {
+			glog.V(3).Infof(fmt.Sprintf("ContainerWorker primary redirect rule missing from %v chain.", IPT_COLONUS_ISOLATED_CHAIN))
+		} else if rules, err := b.iptables.List("filter", IPT_COLONUS_ISOLATED_CHAIN); err != nil {
+			fail(fmt.Sprintf("ContainerWorker unable to list rules in %v. Error: %v", IPT_COLONUS_ISOLATED_CHAIN, err))
+		} else {
+			for ix := len(rules) - 1; ix >= 0; ix-- {
+				glog.V(5).Infof("ContainerWorker found isolation rule: %v", rules[ix])
+			}
+		}
+
+		// If there are leftover resources, get rid of them.
+		if len(leftoverAgreements) != 0 {
+			// convert to an array of agreement ids to be removed
+			agreementList := make([]string, 0, 10)
+			for key, _ := range leftoverAgreements {
+				agreementList = append(agreementList, key)
+			}
+
+			// remove the leftovers
+			glog.V(5).Infof("ContainerWorker found leftover pieces of agreements: %v", agreementList)
+			if err := b.resourcesRemove(agreementList); err != nil {
+				fail(fmt.Sprintf("ContainerWorker unable to get rid of left over resources, error: %v", err))
+			}
+		}
+
+	}
+
+	glog.V(3).Infof("ContainerWorker done syncing docker resources, successful: %v.", outcome)
+	// Finally issue an event to tell everyone else that we are done with the sync up, and the final status of it.
+	b.Messages() <- events.NewDeviceContainersSyncedMessage(events.DEVICE_CONTAINERS_SYNCED, outcome)
 }
 
 func (b *ContainerWorker) resourcesRemove(agreements []string) error {

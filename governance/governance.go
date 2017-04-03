@@ -173,7 +173,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 	return
 }
 
-func (w *GovernanceWorker) governAgreements() {
+func (w *GovernanceWorker) governAgreements(protocolHandler *citizenscientist.ProtocolHandler) {
 
 	glog.V(3).Infof(logString(fmt.Sprintf("governing pending agreements")))
 
@@ -194,19 +194,31 @@ func (w *GovernanceWorker) governAgreements() {
 				// Cancel the agreement if finalization doesn't occur before the timeout
 				glog.V(5).Infof(logString(fmt.Sprintf("checking agreement %v for finalization.", ag.CurrentAgreementId)))
 
-				now := uint64(time.Now().Unix())
-				if ag.AgreementCreationTime+w.Worker.Manager.Config.Edge.AgreementTimeoutS < now {
-					// Start timing out the agreement
-					glog.V(3).Infof(logString(fmt.Sprintf("detected agreement %v timed out.", ag.CurrentAgreementId)))
-
-					reason := uint(citizenscientist.CANCEL_NOT_FINALIZED_TIMEOUT)
-					if ag.AgreementAcceptedTime == 0 {
-						reason = citizenscientist.CANCEL_NO_REPLY_ACK
+				// Check to see if the agreement is in the blockchain. This call to the blockchain should be very fast.
+				// The device might have been down for some time and/or restarted, causing it to miss events on the blockchain.
+				if recorded, err := protocolHandler.VerifyAgreementRecorded(ag.CurrentAgreementId, ag.CounterPartyAddress, ag.ProposalSig, w.bc.Agreements); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("encountered error verifying agreement %v on blockchain, error %v", ag.CurrentAgreementId, err)))
+				} else if recorded {
+					if err := w.finalizeAgreement(ag, protocolHandler); err != nil {
+						glog.Errorf(err.Error())
 					}
-					w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, reason, citizenscientist.DecodeReasonCode(uint64(reason)))
+				} else {
 
-					// cleanup workloads
-					w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
+					// Not in the blockchain yet, check for a timeout
+					now := uint64(time.Now().Unix())
+					if ag.AgreementCreationTime+w.Worker.Manager.Config.Edge.AgreementTimeoutS < now {
+						// Start timing out the agreement
+						glog.V(3).Infof(logString(fmt.Sprintf("detected agreement %v timed out.", ag.CurrentAgreementId)))
+
+						reason := uint(citizenscientist.CANCEL_NOT_FINALIZED_TIMEOUT)
+						if ag.AgreementAcceptedTime == 0 {
+							reason = citizenscientist.CANCEL_NO_REPLY_ACK
+						}
+						w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, reason, citizenscientist.DecodeReasonCode(uint64(reason)))
+
+						// cleanup workloads
+						w.Messages() <- events.NewGovernanceCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
+					}
 				}
 			} else {
 				// For finalized agreements, make sure the workload has been started in time
@@ -577,31 +589,9 @@ func (w *GovernanceWorker) start() {
 						} else if ags[0].AgreementTerminatedTime != 0 {
 							glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, agreement %v is terminating", ags[0].CurrentAgreementId)))
 
-							// Update state in the database
-						} else {
-							// The reply ack might have been lost or mishandled. Since we are now seeing an event on the blockchain that the agreement
-							// was created by the agbot, we will assume we should have gotten a positive reply ack.
-							if ags[0].AgreementAcceptedTime == 0 {
-								if proposal, err := protocolHandler.DemarshalProposal(ags[0].Proposal); err != nil {
-									glog.Errorf(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v from database, error %v", ags[0].CurrentAgreementId, err)))
-								} else if err := w.RecordReply(proposal, citizenscientist.PROTOCOL_NAME); err != nil {
-									glog.Errorf(logString(fmt.Sprintf("unable to accept agreement %v, error: %v", ags[0].CurrentAgreementId, err)))
-								}
-							}
-
-							if _, err := persistence.AgreementStateFinalized(w.db, ags[0].CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("error persisting agreement %v finalized: %v", ags[0].CurrentAgreementId, err)))
-							} else {
-								glog.V(3).Infof(logString(fmt.Sprintf("agreement %v finalized", ags[0].CurrentAgreementId)))
-							}
-							// Update state in exchange
-							if proposal, err := protocolHandler.DemarshalProposal(ags[0].Proposal); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("could not hydrate proposal, error: %v", err)))
-							} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("error demarshalling TsAndCs policy for agreement %v, error %v", ags[0].CurrentAgreementId, err)))
-							} else if err := recordProducerAgreementState(w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, ags[0].CurrentAgreementId, tcPolicy.APISpecs[0].SpecRef, "Finalized Agreement"); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("error setting agreement %v finalized state in exchange: %v", ags[0].CurrentAgreementId, err)))
-							}
+						// Finalize the agreement
+						} else if err := w.finalizeAgreement(ags[0], protocolHandler); err != nil {
+							glog.Errorf(err.Error())
 						}
 					} else {
 						glog.V(5).Infof(logString(fmt.Sprintf("ignoring event")))
@@ -659,7 +649,7 @@ func (w *GovernanceWorker) start() {
 			case <-time.After(time.Duration(10) * time.Second):
 				// Make sure that all known agreements are maintained
 				if w.bcWritesEnabled == true {
-					w.governAgreements()
+					w.governAgreements(protocolHandler)
 				}
 				// Any commands that have been deferred should be written back to the command queue now. The commands have been
 				// accumulating and have endured at least a 10 second break since they were last tried (because we are executing
@@ -673,6 +663,38 @@ func (w *GovernanceWorker) start() {
 
 		}
 	}()
+}
+
+// This function encapsulates finalization of an agreement for re-use
+func (w *GovernanceWorker) finalizeAgreement(agreement persistence.EstablishedAgreement, protocolHandler *citizenscientist.ProtocolHandler) error {
+
+	// The reply ack might have been lost or mishandled. Since we are now seeing evidence on the blockchain that the agreement
+	// was created by the agbot, we will assume we should have gotten a positive reply ack.
+	if agreement.AgreementAcceptedTime == 0 {
+		if proposal, err := protocolHandler.DemarshalProposal(agreement.Proposal); err != nil {
+			return errors.New(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v from database, error %v", agreement.CurrentAgreementId, err)))
+		} else if err := w.RecordReply(proposal, citizenscientist.PROTOCOL_NAME); err != nil {
+			return errors.New(logString(fmt.Sprintf("unable to accept agreement %v, error: %v", agreement.CurrentAgreementId, err)))
+		}
+	}
+
+	// Finalize the agreement in the DB
+	if _, err := persistence.AgreementStateFinalized(w.db, agreement.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+		return errors.New(logString(fmt.Sprintf("error persisting agreement %v finalized: %v", agreement.CurrentAgreementId, err)))
+	} else {
+		glog.V(3).Infof(logString(fmt.Sprintf("agreement %v finalized", agreement.CurrentAgreementId)))
+	}
+
+	// Update state in exchange
+	if proposal, err := protocolHandler.DemarshalProposal(agreement.Proposal); err != nil {
+		return errors.New(logString(fmt.Sprintf("could not hydrate proposal, error: %v", err)))
+	} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
+		return errors.New(logString(fmt.Sprintf("error demarshalling TsAndCs policy for agreement %v, error %v", agreement.CurrentAgreementId, err)))
+	} else if err := recordProducerAgreementState(w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, agreement.CurrentAgreementId, tcPolicy.APISpecs[0].SpecRef, "Finalized Agreement"); err != nil {
+		return errors.New(logString(fmt.Sprintf("error setting agreement %v finalized state in exchange: %v", agreement.CurrentAgreementId, err)))
+	}
+
+	return nil
 }
 
 func (w *GovernanceWorker) RecordReply(proposal *citizenscientist.Proposal, protocol string) error {
