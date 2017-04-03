@@ -434,7 +434,8 @@ func (w *GovernanceWorker) start() {
 
 			select {
 			case command := <-w.Commands:
-				glog.V(2).Infof("GovernanceWorker received command: %v", command)
+				glog.V(2).Infof("GovernanceWorker received command: %v", command.ShortString())
+				glog.V(5).Infof("GovernanceWorker received command: %v", command)
 				glog.V(4).Infof(logString(fmt.Sprintf("command channel length %v removed", len(w.Commands))))
 
 				// TODO: consolidate DB update cases
@@ -485,12 +486,12 @@ func (w *GovernanceWorker) start() {
 						continue
 					}
 
-					glog.V(3).Infof(logString(fmt.Sprintf("received message %v from the exchange: %v", exchangeMsg.MsgId, cmd.Msg.ProtocolMessage())))
+					glog.V(3).Infof(logString(fmt.Sprintf("received message %v from the exchange", exchangeMsg.MsgId)))
 
 					deleteMessage := false
 					// ReplyAck messages could indicate that the agbot has decided not to pursue the agreement any longer.
 					if replyAck, err := protocolHandler.ValidateReplyAck(cmd.Msg.ProtocolMessage()); err != nil {
-						glog.Warningf(logString(fmt.Sprintf("ReplyAck handler ignoring non-reply ack message: %v due to %v", cmd.Msg.ProtocolMessage(), err)))
+						glog.Warningf(logString(fmt.Sprintf("ReplyAck handler ignoring non-reply ack message: %v due to %v", cmd.Msg.ShortProtocolMessage(), err)))
 					} else if ags, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(replyAck.AgreementId())}); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", replyAck.AgreementId(), err)))
 					} else if len(ags) != 1 {
@@ -520,7 +521,7 @@ func (w *GovernanceWorker) start() {
 
 					// Data notification message indicates that the agbot has found that data is being received from the workload.
 					if dataReceived, err := protocolHandler.ValidateDataReceived(cmd.Msg.ProtocolMessage()); err != nil {
-						glog.Warningf(logString(fmt.Sprintf("DataReceived handler ignoring non-data received message: %v due to %v", cmd.Msg.ProtocolMessage(), err)))
+						glog.Warningf(logString(fmt.Sprintf("DataReceived handler ignoring non-data received message: %v due to %v", cmd.Msg.ShortProtocolMessage(), err)))
 					} else if ags, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(dataReceived.AgreementId())}); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", dataReceived.AgreementId(), err)))
 					} else if len(ags) != 1 {
@@ -789,71 +790,6 @@ func (w *GovernanceWorker) GetWorkloadPreference(url string) (map[string]string,
 		}
 
 		return baseMap, nil
-	}
-}
-
-// TODO: consolidate below
-type StartGovernExecutionCommand struct {
-	AgreementId       string
-	AgreementProtocol string
-	Deployment        map[string]persistence.ServiceConfig
-}
-
-func (w *GovernanceWorker) NewStartGovernExecutionCommand(deployment map[string]persistence.ServiceConfig, protocol string, agreementId string) *StartGovernExecutionCommand {
-	return &StartGovernExecutionCommand{
-		AgreementId:       agreementId,
-		AgreementProtocol: protocol,
-		Deployment:        deployment,
-	}
-}
-
-type CleanupExecutionCommand struct {
-	AgreementProtocol string
-	AgreementId       string
-	Reason            uint
-	Deployment        map[string]persistence.ServiceConfig
-}
-
-func (w *GovernanceWorker) NewCleanupExecutionCommand(protocol string, agreementId string, reason uint, deployment map[string]persistence.ServiceConfig) *CleanupExecutionCommand {
-	return &CleanupExecutionCommand{
-		AgreementProtocol: protocol,
-		AgreementId:       agreementId,
-		Reason:            reason,
-		Deployment:        deployment,
-	}
-}
-
-type CleanupStatusCommand struct {
-	AgreementProtocol string
-	AgreementId       string
-	Status            uint
-}
-
-func (w *GovernanceWorker) NewCleanupStatusCommand(protocol string, agreementId string, status uint) *CleanupStatusCommand {
-	return &CleanupStatusCommand{
-		AgreementProtocol: protocol,
-		AgreementId:       agreementId,
-		Status:            status,
-	}
-}
-
-type BlockchainEventCommand struct {
-	Msg events.EthBlockchainEventMessage
-}
-
-func NewBlockchainEventCommand(msg events.EthBlockchainEventMessage) *BlockchainEventCommand {
-	return &BlockchainEventCommand{
-		Msg: msg,
-	}
-}
-
-type ExchangeMessageCommand struct {
-	Msg events.ExchangeDeviceMessage
-}
-
-func NewExchangeMessageCommand(msg events.ExchangeDeviceMessage) *ExchangeMessageCommand {
-	return &ExchangeMessageCommand{
-		Msg: msg,
 	}
 }
 

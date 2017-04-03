@@ -81,7 +81,7 @@ func ConstructExchangeMessage(message []byte, senderPublicKey *rsa.PublicKey, se
 
 	// Start constructing the message
 	err := error(nil)
-	glog.V(5).Infof("Creating ExchangeMessage for %s", message)
+	glog.V(6).Infof("Creating ExchangeMessage for %s", message)
 
 	// 1. create a sha3 hash of the original message, called the message digest.
 	// Digital signing can be an expensive operation, so we will be signing the hash because
@@ -97,7 +97,7 @@ func ConstructExchangeMessage(message []byte, senderPublicKey *rsa.PublicKey, se
 	} else if len(signature) == 0 {
 		return nil, errors.New(fmt.Sprintf("Error signing the message, signature is empty byte array"))
 	} else {
-		glog.V(5).Infof("Created message digest %x", digest)
+		glog.V(6).Infof("Created message digest %x", digest)
 	}
 
 	// 3. construct a WrappedMessage object including the original message, the signature, and the signer's public key.
@@ -129,7 +129,7 @@ func ConstructExchangeMessage(message []byte, senderPublicKey *rsa.PublicKey, se
 	} else if len(wmBytes) == 0 {
 		return nil, errors.New(fmt.Sprintf("Error marshalling wrapped message, returned empty byte array"))
 	} else {
-		glog.V(5).Infof("Created Wrapped Message %s", wmBytes)
+		glog.V(6).Infof("Created Wrapped Message %s", wmBytes)
 	}
 
 	var encryptedMessage EncryptedWrappedMessage
@@ -139,7 +139,7 @@ func ConstructExchangeMessage(message []byte, senderPublicKey *rsa.PublicKey, se
 	} else if len(encryptedMessage) == 0 || len(symmetricKey) == 0 || len(nonce) == 0 {
 		return nil, errors.New(fmt.Sprintf("Error symmetrically encrypting, one of encrypted message %v, symmetric key %v, or nonce %v is an empty byte array", encryptedMessage, symmetricKey, nonce))
 	} else {
-		glog.V(5).Infof("Encrypted wrapped message  %x", encryptedMessage)
+		glog.V(6).Infof("Encrypted wrapped message  %x", encryptedMessage)
 	}
 
 	// 5. construct a SymmetricValues object including the symmetric key and nonce.
@@ -172,7 +172,7 @@ func ConstructExchangeMessage(message []byte, senderPublicKey *rsa.PublicKey, se
 	} else if len(encryptedSymmetricValues) == 0 {
 		return nil, errors.New(fmt.Sprintf("Error encrypting symmetric values, returned empty byte array"))
 	} else {
-		glog.V(5).Infof("Encrypted SymmetricValues %x", encryptedSymmetricValues)
+		glog.V(6).Infof("Encrypted SymmetricValues %x", encryptedSymmetricValues)
 	}
 
 	// 7. construct an ExchangeMessage from the encrypted WrappedMessage and the encrypted SymmetricValues.
@@ -214,8 +214,8 @@ func DeconstructExchangeMessage(encryptedMessage []byte, receiverPrivateKey *rsa
 		return nil, nil, errors.New(fmt.Sprintf("Error unmarshalling exchange message, one of wrapped message %v or symmetric values %v has length zero.", em.WrappedMessage, em.SymmetricValues))
 	}
 
-	glog.V(5).Infof("Encrypted Wrapped Message  %x", em.WrappedMessage)
-	glog.V(5).Infof("Encrypted Symmetric Values %x", em.SymmetricValues)
+	glog.V(6).Infof("Encrypted Wrapped Message  %x", em.WrappedMessage)
+	glog.V(6).Infof("Encrypted Symmetric Values %x", em.SymmetricValues)
 
 	// 2. decrypt the symmetric values using the receiver's private key.
 	// The SymmetricValues section includes the key and nonce needed to decrypt the wrapped message
@@ -243,7 +243,7 @@ func DeconstructExchangeMessage(encryptedMessage []byte, receiverPrivateKey *rsa
 	if receivedDecryptedMessage, err = symmetricallyDecrypt(em.WrappedMessage, sv.Key, sv.Nonce); err != nil {
 		return nil, nil, errors.New(fmt.Sprintf("Error decrypting message: %v", err))
 	} else {
-		glog.V(5).Infof("Decrypted Wrapped Message %s", receivedDecryptedMessage)
+		glog.V(6).Infof("Decrypted Wrapped Message %s", receivedDecryptedMessage)
 	}
 
 	wm := new(WrappedMessage)
@@ -252,8 +252,8 @@ func DeconstructExchangeMessage(encryptedMessage []byte, receiverPrivateKey *rsa
 	} else if len(wm.Signature) == 0 || len(wm.SignerPubKey) == 0 {
 		return nil, nil, errors.New(fmt.Sprintf("Error unmarshalling wrapped message, one of signature %v or signer public key %v has length zero.", wm.Signature, wm.SignerPubKey))
 	} else {
-		glog.V(5).Infof("Decrypted Wrapped Signature  %x", wm.Signature)
-		glog.V(5).Infof("Decrypted Wrapped Public Key %x", wm.SignerPubKey)
+		glog.V(6).Infof("Decrypted Wrapped Signature  %x", wm.Signature)
+		glog.V(6).Infof("Decrypted Wrapped Public Key %x", wm.SignerPubKey)
 	}
 
 	// 4. verify the signature of the hash of the message
@@ -267,12 +267,12 @@ func DeconstructExchangeMessage(encryptedMessage []byte, receiverPrivateKey *rsa
 
 	//Verify Signature
 	receivedDigest := sha3.Sum256(wm.Msg)
-	glog.V(5).Infof("Digest %x", receivedDigest)
+	glog.V(6).Infof("Digest %x", receivedDigest)
 
 	if err = rsa.VerifyPSS(receivedPubKey, crypto.SHA3_256, receivedDigest[:], wm.Signature, &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthAuto}); err != nil {
 		return nil, nil, errors.New(fmt.Sprintf("Error verifying signature, error %v", err))
 	} else {
-		glog.V(5).Infof("Signature verification successful")
+		glog.V(6).Infof("Signature verification successful")
 	}
 
 	// 5. extract the plain text message

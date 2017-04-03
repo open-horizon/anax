@@ -136,7 +136,7 @@ func (self *PolicyManager) hasPolicy(matchPolicy *Policy) (bool, error) {
 	errString := ""
 	for _, pol := range self.Policies {
 		if errString != "" {
-			glog.V(3).Infof("Policy Manager: Previous search loop returned: %v", errString)
+			glog.V(5).Infof("Policy Manager: Previous search loop returned: %v", errString)
 		}
 		if !pol.Header.IsSame(matchPolicy.Header) {
 			errString = fmt.Sprintf("Header %v mismatch with %v", pol.Header, matchPolicy.Header)

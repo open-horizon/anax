@@ -115,6 +115,10 @@ type FetchCommand struct {
 	LaunchContext interface{}
 }
 
+func (f FetchCommand) ShortString() string {
+	return fmt.Sprintf("%v", f)
+}
+
 func (t *TorrentWorker) NewFetchCommand(launchContext interface{}) *FetchCommand {
 	return &FetchCommand{
 		LaunchContext: launchContext,

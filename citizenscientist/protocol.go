@@ -41,9 +41,9 @@ func (p Proposal) String() string {
 
 func (p Proposal) ShortString() string {
 	res := ""
-	res += fmt.Sprintf("Type: %v, AgreementId: %v, Address: %v, ConsumerId: %v\n", p.Type, p.AgreementId, p.Address, p.ConsumerId)
-	res += fmt.Sprintf("TsAndCs: %v\n", p.TsAndCs[:40])
-	res += fmt.Sprintf("Producer Policy: %v\n", p.ProducerPolicy[:40])
+	res += fmt.Sprintf("Type: %v, AgreementId: %v, Address: %v, ConsumerId: %v", p.Type, p.AgreementId, p.Address, p.ConsumerId)
+	res += fmt.Sprintf(", TsAndCs: %vn", p.TsAndCs[:40])
+	res += fmt.Sprintf(", Producer Policy: %v", p.ProducerPolicy[:40])
 	return res
 }
 
@@ -258,6 +258,8 @@ func (p *ProtocolHandler) DecideOnProposal(proposal *Proposal, myId string, mess
 	} else {
 		termsAndConditions = tcPolicy
 		producerPolicy = pPolicy
+		glog.V(3).Infof(fmt.Sprintf("TsAndCs: %v", tcPolicy.ShortString()))
+		glog.V(3).Infof(fmt.Sprintf("Producer Policy: %v", pPolicy.ShortString()))
 	}
 
 	// Tell the policy manager that we're going to attempt an agreement
@@ -408,7 +410,7 @@ func (p *ProtocolHandler) ValidateReply(reply string) (*ProposalReply, error) {
 	} else if proposalReply.Type == MsgTypeReply && len(proposalReply.AgreeId) != 0 && len(proposalReply.DeviceId) != 0 {
 		return proposalReply, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("Reply message: %s, is not a Proposal reply.", reply))
+		return nil, errors.New(fmt.Sprintf("Reply message is not a Proposal reply."))
 	}
 
 }
@@ -423,7 +425,7 @@ func (p *ProtocolHandler) ValidateReplyAck(replyack string) (*ReplyAck, error) {
 	} else if replyAck.Type == MsgTypeReplyAck && len(replyAck.AgreeId) != 0 {
 		return replyAck, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("ReplyAck message: %s, is not a reply ack.", replyack))
+		return nil, errors.New(fmt.Sprintf("ReplyAck message is not a reply ack."))
 	}
 
 }
@@ -438,7 +440,7 @@ func (p *ProtocolHandler) ValidateDataReceived(dr string) (*DataReceived, error)
 	} else if dataReceived.Type == MsgTypeDataReceived && len(dataReceived.AgreeId) != 0 {
 		return dataReceived, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("DataReceived message: %s, is not a data received notification.", dr))
+		return nil, errors.New(fmt.Sprintf("DataReceived message is not a data received notification."))
 	}
 
 }
@@ -453,7 +455,7 @@ func (p *ProtocolHandler) ValidateDataReceivedAck(dr string) (*DataReceivedAck, 
 	} else if dataReceivedAck.Type == MsgTypeDataReceivedAck && len(dataReceivedAck.AgreeId) != 0 {
 		return dataReceivedAck, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("DataReceivedAck message: %s, is not a data received notification ack.", dr))
+		return nil, errors.New(fmt.Sprintf("DataReceivedAck message is not a data received notification ack."))
 	}
 
 }
@@ -466,7 +468,7 @@ func (p *ProtocolHandler) ValidateProposal(proposal string) (*Proposal, error) {
 	if err := json.Unmarshal([]byte(proposal), &prop); err != nil {
 		return nil, errors.New(fmt.Sprintf("Error deserializing proposal: %s, error: %v", proposal, err))
 	} else if prop.Type != MsgTypeProposal || len(prop.TsAndCs) == 0 || len(prop.ProducerPolicy) == 0 || len(prop.AgreementId) == 0 || len(prop.Address) == 0 || len(prop.ConsumerId) == 0 {
-		return nil, errors.New(fmt.Sprintf("Proposal message: %s, is not a Proposal.", proposal))
+		return nil, errors.New(fmt.Sprintf("Proposal message is not a Proposal."))
 	} else {
 		return prop, nil
 	}
