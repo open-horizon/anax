@@ -18,7 +18,7 @@ func (g StartGovernExecutionCommand) ShortString() string {
         depStr = depStr + key + ","
     }
 
-    return fmt.Sprintf("AgreementId %v, AgreementProtocol %v, Deployed Services %v", g.AgreementId, g.AgreementProtocol, depStr)
+    return fmt.Sprintf("GovernExecutionCommand: AgreementId %v, AgreementProtocol %v, Deployed Services %v", g.AgreementId, g.AgreementProtocol, depStr)
 }
 
 func (w *GovernanceWorker) NewStartGovernExecutionCommand(deployment map[string]persistence.ServiceConfig, protocol string, agreementId string) *StartGovernExecutionCommand {
@@ -43,7 +43,7 @@ func (c CleanupExecutionCommand) ShortString() string {
         depStr = depStr + key + ","
     }
 
-    return fmt.Sprintf("AgreementId %v, AgreementProtocol %v, Reason %v, Deployed Services %v", c.AgreementId, c.AgreementProtocol, c.Reason, depStr)
+    return fmt.Sprintf("CleanupExecutionCommand: AgreementId %v, AgreementProtocol %v, Reason %v, Deployed Services %v", c.AgreementId, c.AgreementProtocol, c.Reason, depStr)
 }
 
 func (w *GovernanceWorker) NewCleanupExecutionCommand(protocol string, agreementId string, reason uint, deployment map[string]persistence.ServiceConfig) *CleanupExecutionCommand {
@@ -64,7 +64,7 @@ type CleanupStatusCommand struct {
 
 func (c CleanupStatusCommand) ShortString() string {
 
-    return fmt.Sprintf("AgreementId %v, AgreementProtocol %v, Status %v", c.AgreementId, c.AgreementProtocol, c.Status)
+    return fmt.Sprintf("CleanupStatusCommand: AgreementId %v, AgreementProtocol %v, Status %v", c.AgreementId, c.AgreementProtocol, c.Status)
 }
 
 func (w *GovernanceWorker) NewCleanupStatusCommand(protocol string, agreementId string, status uint) *CleanupStatusCommand {

@@ -251,6 +251,8 @@ func hashService(service *Service) (string, error) {
 		return "", err
 	}
 
+	glog.V(5).Infof("Hashing Service: %v", string(b))
+
 	h := sha1.New()
 	if _, err := io.Copy(h, bytes.NewBuffer(b)); err != nil {
 		return "", err
@@ -294,18 +296,43 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 			hostVol = service.Binds[0][:hostVolIndex]
 		}
 
+		// setup labels and log config for the new container
+		labels := make(map[string]string)
+		labels[LABEL_PREFIX + ".service_name"] = serviceName
+		labels[LABEL_PREFIX + ".variation"] = service.VariationLabel
+		labels[LABEL_PREFIX + ".deployment_description_hash"] = deploymentHash
+
+		var logConfig docker.LogConfig
+
+		if !deployment.ServicePattern.isShared("singleton", serviceName) {
+			labels[LABEL_PREFIX + ".agreement_id"] = agreementId
+			logConfig = docker.LogConfig{
+						Type: "syslog",
+						Config: map[string]string{
+							"tag": fmt.Sprintf("workload-%v_%v", strings.ToLower(agreementId), serviceName),
+						},
+					}
+		} else {
+			logName := serviceName
+			if service.VariationLabel != "" {
+				logName = fmt.Sprintf("%v-%v", serviceName, service.VariationLabel)
+			}
+
+			logConfig = docker.LogConfig{
+						Type: "syslog",
+						Config: map[string]string{
+							"tag": fmt.Sprintf("workload-%v_%v", "singleton", logName),
+						},
+					}
+		}
+
 		serviceConfig := &persistence.ServiceConfig{
 			Config: docker.Config{
 				Image:  service.Image,
 				Env:    []string{},
 				Cmd:    service.Command,
 				CPUSet: cpuSet,
-				Labels: map[string]string{
-					LABEL_PREFIX + ".agreement_id":                agreementId,
-					LABEL_PREFIX + ".service_name":                serviceName,
-					LABEL_PREFIX + ".variation":                   service.VariationLabel,
-					LABEL_PREFIX + ".deployment_description_hash": deploymentHash,
-				},
+				Labels: labels,
 				Volumes: map[string]struct{}{
 					hostVol: {},
 				},
@@ -321,12 +348,7 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 				Memory:          ramBytes,
 				MemorySwap:      0,
 				Devices:         []docker.Device{},
-				LogConfig: docker.LogConfig{
-					Type: "syslog",
-					Config: map[string]string{
-						"tag": fmt.Sprintf("workload-%v_%v", strings.ToLower(agreementId), serviceName),
-					},
-				},
+				LogConfig:       logConfig,
 				Binds: service.Binds,
 			},
 		}
@@ -600,7 +622,7 @@ func existingShared(client *docker.Client, serviceName string, servicePair *serv
 
 	for _, net := range networks {
 		if net.Name == bridgeName {
-			glog.V(3).Infof("Found shared network: %v", net.ID)
+			glog.V(3).Infof("Found shared network: %v with name %v", net.ID, net.Name)
 			sBridge = net
 		}
 	}
@@ -617,6 +639,7 @@ func existingShared(client *docker.Client, serviceName string, servicePair *serv
 			},
 		},
 	}
+	glog.V(5).Infof("Searching for containers with filter %v", sharedOnly)
 	containers, err := client.ListContainers(sharedOnly)
 	if err != nil {
 		return nil, nil, err
@@ -628,13 +651,13 @@ func existingShared(client *docker.Client, serviceName string, servicePair *serv
 
 	if sBridge.ID != "" {
 		if len(containers) == 0 {
-			glog.V(4).Infof("Couldn't find shared service %v with hash %v, but found existing bridge, %v, using that", serviceName, servicePair.service.VariationLabel, sBridge.ID)
+			glog.V(4).Infof("Couldn't find shared service %v with hash %v, but found existing bridge, ID: %v and Name: %v", serviceName, servicePair.serviceConfig.Config.Labels[fmt.Sprintf("%v.deployment_description_hash", LABEL_PREFIX)], sBridge.ID, sBridge.Name)
 			return &sBridge, nil, nil
 		}
 
 		if len(containers) == 1 {
 			// success finding existing
-			glog.V(4).Infof("Found shared service %v and matching existing net: %v", containers[0].ID, sBridge.ID)
+			glog.V(4).Infof("Found shared service ID: %v Name: %v and matching existing net, ID: %v Name: %v", containers[0].ID, containers[0].Names, sBridge.ID, sBridge.Name)
 			return &sBridge, &containers[0], nil
 		} else {
 			return nil, nil, fmt.Errorf("Unknown state encountered finding shared container and bridge. Bridge: %v. Containers inspected: %v", sBridge, containers)
@@ -942,10 +965,12 @@ func (b *ContainerWorker) resourcesCreate(agreementId string, configure *events.
 
 		servicePair.serviceConfig.Config.Labels[LABEL_PREFIX+".service_pattern.shared"] = shareLabel
 		bridgeName := fmt.Sprintf("%v-%v", shareLabel, serviceName)
+		containerName := serviceName
 
 		// append variation label if it exists
 		if servicePair.service.VariationLabel != "" {
 			bridgeName = fmt.Sprintf("%v-%v", bridgeName, servicePair.service.VariationLabel)
+			containerName = fmt.Sprintf("%v-%v", serviceName, servicePair.service.VariationLabel)
 		}
 
 		var existingNetwork *docker.Network
@@ -953,18 +978,18 @@ func (b *ContainerWorker) resourcesCreate(agreementId string, configure *events.
 
 		existingNetwork, existingContainer, err = existingShared(b.client, serviceName, &servicePair, bridgeName, shareLabel)
 		if err != nil {
-			return nil, fail(nil, serviceName, fmt.Errorf("Failed to discover and use existing shared containers. Original error: %v", err))
+			return nil, fail(nil, containerName, fmt.Errorf("Failed to discover and use existing shared containers. Original error: %v", err))
 		}
 
 		if existingNetwork == nil {
 			existingNetwork, err = mkBridge(bridgeName, b.client)
-			glog.V(2).Infof("Created new network for shared container: %v. Network: %v", serviceName, existingNetwork)
+			glog.V(2).Infof("Created new network for shared container: %v. Network: %v", containerName, existingNetwork)
 			if err != nil {
-				return nil, fail(nil, serviceName, fmt.Errorf("Unable to create bridge for shared container. Original error: %v", err))
+				return nil, fail(nil, containerName, fmt.Errorf("Unable to create bridge for shared container. Original error: %v", err))
 			}
 		}
 
-		glog.V(4).Infof("Using network for shared service: %v. Network: %v", serviceName, existingNetwork.ID)
+		glog.V(4).Infof("Using network for shared service: %v. Network ID: %v", containerName, existingNetwork.ID)
 
 		// retain reference so we can wire "private" containers from this agreement to this bridge later; need to do this even if we already saw a net
 		eps := mkEndpoints(existingNetwork, serviceName)
@@ -973,7 +998,7 @@ func (b *ContainerWorker) resourcesCreate(agreementId string, configure *events.
 		if existingContainer == nil {
 			// only create container if there wasn't one
 			servicePair.serviceConfig.HostConfig.NetworkMode = bridgeName
-			if err := serviceStart(b.client, agreementId, serviceName, shareLabel, servicePair.serviceConfig, eps, nil, &postCreateContainers, fail); err != nil {
+			if err := serviceStart(b.client, agreementId, containerName, shareLabel, servicePair.serviceConfig, eps, nil, &postCreateContainers, fail); err != nil {
 				return nil, err
 			}
 		} else {
@@ -1062,8 +1087,13 @@ func (b *ContainerWorker) start() {
 					}
 
 					// Dynamically add in a filesystem mapping so that the workload container has a RO filesystem.
-					for serviceName, _ := range deploymentDesc.Services {
-						dir := b.workloadStorageDir(agreementId)
+					for serviceName, service := range deploymentDesc.Services {
+						dir := ""
+						if deploymentDesc.ServicePattern.isShared("singleton", serviceName) {
+							dir = b.workloadStorageDir(fmt.Sprintf("%v-%v-%v", "singleton", serviceName, service.VariationLabel))
+						} else {
+							dir = b.workloadStorageDir(agreementId)
+						}
 						deploymentDesc.Services[serviceName].addFilesystemBinding(fmt.Sprintf("%v:%v:ro", dir, "/workload_config"))
 					}
 
@@ -1247,7 +1277,9 @@ func (b *ContainerWorker) start() {
 // Before we let the worker do anything, we need to sync up the running containers, networks, etc with the
 // agreements in the local DB. If we find any containers or networks that shouldnt be there, we will get
 // rid of them. This can occur if anax terminates abruptly while in the middle of starting or cancelling an
-// agreement.
+// agreement. Shared networks and containers will be implicitly cleaned up by cleaning up any leftovers from
+// agreements. If all the usages of a shared container or network are from leftover agreements, when we cleanup
+// the leftovers, the shared resources will be cleaned up too when the last usage is removed.
 // To ensure that all the containers for all known agreements are running, we will depend on the governance
 // function which periodically checks to ensure that all containers are running.
 func (b *ContainerWorker) syncupResources() {
