@@ -168,16 +168,18 @@ func downloadTorrent(torrentFile *os.File, client *torrent.Client, httpClient *h
 			return nil, fmt.Errorf("Unexpected torrent file content, expecting at least one image file, instead found none. Torrent info: %v\n", torrent.Info())
 		} else {
 			glog.Infof("Torrent detail:\n  files: %v\ninfohash: %v\n", torrent.Files(), torrent.InfoHash())
-			if runtime.GOARCH == "arm" || runtime.GOARCH == "arm64" || runtime.GOARCH == "amd64" || runtime.GOARCH == "386" {
-				glog.Infof("Platform: %v. Using web seed for this platform to avoid taxing its meager resources.", runtime.GOARCH)
-				if err := downloadTorrentFromWebSeed(torrent.Files(), torrent.MetaInfo().URLList, httpClient, torrentDir); err != nil {
-					return nil, fmt.Errorf("Failed downloading torrent files from web seed. Error: %v", err)
-				}
-			} else {
+
+			fetchMechanism := os.Getenv("WORKLOAD_FETCH")
+			if fetchMechanism == "torrent" {
 				glog.Infof("Platform: %v. Using aggressive torrent client for this platform", runtime.GOARCH)
 				torrent.DownloadAll()
 				// TODO: this may cause client to wait too long in some circumstances: it blocks on *all* torrent downloads; should improve this by waiting only on a particular torrent to finish downloading
 				client.WaitAll()
+			} else {
+				glog.Infof("Platform: %v. Using web seed for this platform.", runtime.GOARCH)
+				if err := downloadTorrentFromWebSeed(torrent.Files(), torrent.MetaInfo().URLList, httpClient, torrentDir); err != nil {
+					return nil, fmt.Errorf("Failed downloading torrent files from web seed. Error: %v", err)
+				}
 			}
 
 			imageFiles := make([]string, fileCt)
