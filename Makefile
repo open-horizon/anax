@@ -57,16 +57,12 @@ ifneq ($(GOPATH),$(TMPGOPATH))
 	ln -s $(CURDIR) $(PKGPATH)/anax
 endif
 
-install: anax installagbot
-
-installagbot: anax
+install: anax
 	mkdir -p $(DESTDIR)/{bin,srv}
 	cp anax $(DESTDIR)/bin/anax
 
-  # duplicate smart contracts from repo
-	-git clone https://github.com/open-horizon/go-solidity.git && \
-		mv ./go-solidity/contracts $(DESTDIR)
-	rm -Rf ./go-solidity
+  # duplicate smart contracts from vendor dir
+	cp -vfap ./vendor/github.com/open-horizon/go-solidity/contracts $(DESTDIR)
 
 lint:
 	-cd api/static && \

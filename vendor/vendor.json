@@ -511,22 +511,11 @@
 			"revisionTime": "2016-10-17T23:07:13Z"
 		},
 		{
-			"checksumSHA1": "5fdHjIu+SjvZ1pbsj68kgYyHtr0=",
+			"checksumSHA1": "1vFwY1KleI0Ylc4ftm4jhQgdTWw=",
 			"path": "github.com/open-horizon/go-solidity",
 			"revision": "b2c2368b36ca25fec6421b8c73e6dcb168160e49",
-			"revisionTime": "2017-02-06T20:30:56Z"
-		},
-		{
-			"checksumSHA1": "8xQ2ptidpADGIDDMtbv1JtNeas8=",
-			"path": "github.com/open-horizon/go-solidity/contract_api",
-			"revision": "b2c2368b36ca25fec6421b8c73e6dcb168160e49",
-			"revisionTime": "2017-02-06T20:30:56Z"
-		},
-		{
-			"checksumSHA1": "V1zsphpkOB/LJi2GJni7I4YZjVY=",
-			"path": "github.com/open-horizon/go-solidity/utility",
-			"revision": "b2c2368b36ca25fec6421b8c73e6dcb168160e49",
-			"revisionTime": "2017-02-06T20:30:56Z"
+			"revisionTime": "2017-02-06T20:30:56Z",
+			"tree": true
 		},
 		{
 			"checksumSHA1": "aW9c8/jFxYznqjr3S0D9QGs1QFk=",
