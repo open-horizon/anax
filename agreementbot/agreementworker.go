@@ -267,7 +267,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
 
 			// Initiate the protocol
-			} else if proposal, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, &wi.ConsumerPolicy, myAddress, a.agbotId, mt, workload, a.config.AgreementBot.DefaultWorkloadPW, sendMessage); err != nil {
+			} else if proposal, hash, sig, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, &wi.ConsumerPolicy, myAddress, a.agbotId, mt, workload, a.config.AgreementBot.DefaultWorkloadPW, a.config.AgreementBot.NoDataIntervalS, sendMessage); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error initiating agreement: %v", err)))
 
 				// Remove pending agreement from database
@@ -282,7 +282,9 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				glog.Errorf(logString(fmt.Sprintf("error marshalling policy for storage %v, error: %v", wi.ConsumerPolicy, err)))
 			} else if pBytes, err := json.Marshal(proposal); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error marshalling proposal for storage %v, error: %v", *proposal, err)))
-			} else if _, err := AgreementUpdate(a.db, agreementIdString, string(pBytes), string(polBytes), wi.ConsumerPolicy.DataVerify.URL, wi.ConsumerPolicy.DataVerify.URLUser, wi.ConsumerPolicy.DataVerify.URLPassword, !wi.ConsumerPolicy.Get_DataVerification_enabled(), citizenscientist.PROTOCOL_NAME); err != nil {
+			} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error demarshalling TsandCs policy from pending agreement %v, error: %v", agreementIdString, err)))
+			} else if _, err := AgreementUpdate(a.db, agreementIdString, string(pBytes), string(polBytes), pol.DataVerify, hash, sig, citizenscientist.PROTOCOL_NAME); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", *proposal, err)))
 
 			// Record that the agreement was initiated, in the exchange

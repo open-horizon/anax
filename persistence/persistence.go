@@ -41,6 +41,7 @@ type EstablishedAgreement struct {
 	TerminatedDescription           string                   `json:"terminated_description"` // a string form of the reason that the agreement was terminated
 	AgreementProtocolTerminatedTime uint64                   `json:"agreement_protocol_terminated_time"`
 	WorkloadTerminatedTime          uint64                   `json:"workload_terminated_time"`
+	MeteringNotificationMsg         MeteringNotification     `json:"metering_notification,omitempty"`  // the most recent metering notification received
 }
 
 func (c EstablishedAgreement) String() string {
@@ -62,11 +63,13 @@ func (c EstablishedAgreement) String() string {
 		"TerminatedDescription: %v, " +
 		"Agreement Protocol: %v, " +
 		"AgreementProtocolTerminatedTime : %v, " +
-		"WorkloadTerminatedTime: %v",
+		"WorkloadTerminatedTime: %v, " +
+		"MeteringNotificationMsg: %v",
 		c.Name, c.SensorUrl, c.Archived, c.CurrentAgreementId, c.ConsumerId, ServiceConfigNames(&c.CurrentDeployment),
 		c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementFinalizedTime,
 		c.AgreementDataReceivedTime, c.AgreementTerminatedTime, c.AgreementForceTerminatedTime, c.TerminatedReason, c.TerminatedDescription,
-		c.AgreementProtocol, c.AgreementProtocolTerminatedTime, c.WorkloadTerminatedTime)
+		c.AgreementProtocol, c.AgreementProtocolTerminatedTime, c.WorkloadTerminatedTime,
+		c.MeteringNotificationMsg)
 
 }
 
@@ -131,6 +134,7 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 		TerminatedDescription:           "",
 		AgreementProtocolTerminatedTime: 0,
 		WorkloadTerminatedTime:          0,
+		MeteringNotificationMsg:         MeteringNotification{},
 	}
 
 	return newAg, db.Update(func(tx *bolt.Tx) error {
@@ -223,6 +227,14 @@ func AgreementStateWorkloadTerminated(db *bolt.DB, dbAgreementId string, protoco
 	})
 }
 
+// set agreement state to workload terminated
+func MeteringNotificationReceived(db *bolt.DB, dbAgreementId string, mn MeteringNotification, protocol string) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
+		c.MeteringNotificationMsg = mn
+		return &c
+	})
+}
+
 func DeleteEstablishedAgreement(db *bolt.DB, agreementId string, protocol string) error {
 
 	if agreementId == "" {
@@ -301,6 +313,7 @@ func persistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 				mod.TerminatedDescription = update.TerminatedDescription
 				mod.AgreementProtocolTerminatedTime = update.AgreementProtocolTerminatedTime
 				mod.WorkloadTerminatedTime = update.WorkloadTerminatedTime
+				mod.MeteringNotificationMsg = update.MeteringNotificationMsg
 
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize contract record: %v. Error: %v", mod, err)
@@ -467,4 +480,39 @@ func SaveIoTFConf(path string, iotf_conf IoTFConf) error {
 	}
 
 	return nil
+}
+
+// =================================================================================================
+// This is the persisted version of a Metering Notification. The persistence module has its own
+// type for this object to avoid a circular dependency in go that would be created if this module
+// tried to import the MeteringNotification type from the metering module.
+//
+
+type MeteringNotification struct {
+    Amount                 uint64 `json:"amount"` // The number of tokens granted by this notification, rounded to the nearest minute
+    StartTime              uint64 `json:"start_time"` // The time when the agreement started, in seconds since 1970.
+    CurrentTime            uint64 `json:"current_time"` // The time when the notification was sent, in seconds since 1970.
+    MissedTime             uint64 `json:"missed_time"`  // The amount of time in seconds that the consumer detected missing data
+    ConsumerMeterSignature string `json:"consumer_meter_signature"` // The consumer's signature of the meter (amount, current time, agreement Id)
+    AgreementHash          string `json:"agreement_hash"` // The 32 byte SHA3 FIPS 202 hash of the proposal for the agreement.
+    ConsumerSignature      string `json:"consumer_agreement_signature"` // The consumer's signature of the agreement hash.
+    ConsumerAddress        string `json:"consumer_address"` // The consumer's blockchain account/address.
+    ProducerSignature      string `json:"producer_agreement_signature"` // The producer's signature of the agreement
+    BlockchainType         string `json:"blockchain_type"` // The type of the blockchain that this notification is intended to work with
+}
+
+func (m MeteringNotification) String() string {
+    return fmt.Sprintf("Amount: %v, " +
+        "StartTime: %v, " +
+        "CurrentTime: %v, " +
+        "Missed Time: %v, " +
+        "ConsumerMeterSignature: %v, " +
+        "AgreementHash: %v, " +
+        "ConsumerSignature: %v, " +
+        "ConsumerAddress: %v, " +
+        "ProducerSignature: %v, " +
+        "BlockchainType: %v",
+        m.Amount, m.StartTime, m.CurrentTime, m.MissedTime, m.ConsumerMeterSignature,
+        m.AgreementHash, m.ConsumerSignature, m.ConsumerAddress, m.ProducerSignature,
+        m.BlockchainType)
 }

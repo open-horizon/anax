@@ -511,10 +511,10 @@
 			"revisionTime": "2016-10-17T23:07:13Z"
 		},
 		{
-			"checksumSHA1": "1vFwY1KleI0Ylc4ftm4jhQgdTWw=",
+			"checksumSHA1": "p23xyAjYsze9JjFeVPq7p4XcKK8=",
 			"path": "github.com/open-horizon/go-solidity",
-			"revision": "b2c2368b36ca25fec6421b8c73e6dcb168160e49",
-			"revisionTime": "2017-02-06T20:30:56Z",
+			"revision": "4fb00b46317dffd8e2c6d978f505119449b77088",
+			"revisionTime": "2017-04-13T12:01:04Z",
 			"tree": true
 		},
 		{

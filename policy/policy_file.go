@@ -145,9 +145,9 @@ func Are_Compatible(producer_policy *Policy, consumer_policy *Policy) error {
 	} else if _, err := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols); err != nil {
 		return errors.New(fmt.Sprintf("Compatibility Error: No common Agreement Protocols between %v and %v. Underlying error: %v", producer_policy.AgreementProtocols, consumer_policy.AgreementProtocols, err))
 	} else if !(&consumer_policy.ResourceLimits).IsSatisfiedBy(&producer_policy.ResourceLimits) {
-		return errors.New(fmt.Sprintf("Compatibility Error: Producer resource limits %v do not satisfy consumer resource requirements %v. Underlying error: %v", producer_policy.ResourceLimits, consumer_policy.ResourceLimits, err))
-	} else if (producer_policy.DataVerify != DataVerification{}) && producer_policy.DataVerify.IsSame(consumer_policy.DataVerify) {
-		return errors.New(fmt.Sprintf("Compatibility Error: Data verification must be identical or absent on one side, producer has %v and consumer has %v.", producer_policy.DataVerify, consumer_policy.DataVerify, err))
+		return errors.New(fmt.Sprintf("Compatibility Error: Producer resource limits %v do not satisfy consumer resource requirements %v", producer_policy.ResourceLimits, consumer_policy.ResourceLimits))
+	} else if !producer_policy.DataVerify.IsCompatibleWith(consumer_policy.DataVerify) {
+		return errors.New(fmt.Sprintf("Compatibility Error: Data verification must be compatible, producer has %v and consumer has %v.", producer_policy.DataVerify, consumer_policy.DataVerify))
 	}
 
 	return nil
@@ -201,7 +201,7 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 // This function creates a merged policy file from a producer policy and a consumer policy, which will eventually
 // become the full terms and conditions of an agreement. If no error is returned, a merged policy object is returned.
 // The order of parameters is important, just like in the Are_Compatible API.
-func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Policy, workload *Workload, agreementId string, defaultPW string) (*Policy, error) {
+func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Policy, workload *Workload, agreementId string, defaultPW string, defaultNoData uint64) (*Policy, error) {
 
 	// Make sure the policies are compatible. If not an error will be returned.
 	if err := Are_Compatible(producer_policy, consumer_policy); err != nil {
@@ -220,8 +220,7 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		}
 		merged_pol.ValueEx = consumer_policy.ValueEx
 		merged_pol.ResourceLimits = consumer_policy.ResourceLimits
-		merged_pol.DataVerify = consumer_policy.DataVerify
-		merged_pol.DataVerify.Obscure()
+		merged_pol.DataVerify = producer_policy.DataVerify.MergeWith(consumer_policy.DataVerify, defaultNoData)
 		intersecting_blockchains, _ := (&producer_policy.Blockchains).Intersects_With(&consumer_policy.Blockchains)
 		merged_pol.Blockchains = *intersecting_blockchains.Single_Element()
 		(&merged_pol.Properties).Concatenate(&consumer_policy.Properties)
@@ -234,6 +233,13 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 }
 
 func (self *Policy) Is_Self_Consistent(keyPath string) error {
+
+	// Check validity of the Data verification section
+	if ok, err := self.DataVerify.IsValid(); !ok {
+		return errors.New(fmt.Sprintf("Data Verification section is not valid, error: %v", err))
+	}
+
+	// Check validity of the Workload section
 	usedPriorities := make(map[int]bool)
 	for _, workload := range self.Workloads {
 		if len(keyPath) != 0 {

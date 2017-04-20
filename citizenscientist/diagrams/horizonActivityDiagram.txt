@@ -52,6 +52,7 @@ if (Producer agrees to the terms) then (yes)
         endwhile (yes)
         :Consumer tells Producer that it received data;
         :Producer acknowledges;
+        :Consumer sends Metering Notification to Producer;
     end fork
 
 else (no)

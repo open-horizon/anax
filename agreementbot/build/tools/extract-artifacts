@@ -1,6 +1,0 @@
-#!/bin/bash -e
-
-DEST_BIN="$(dirname $0)/../docker-exec/fs/"
-
-mkdir -p $DEST_BIN
-docker cp $1:/bld/ - | tar xvf - -C $DEST_BIN --strip-components=1 --exclude='.git'

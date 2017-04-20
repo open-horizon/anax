@@ -12,6 +12,7 @@ import (
 type BaseContracts struct {
 	Directory  *contract_api.SolidityContract
 	Agreements *contract_api.SolidityContract
+	Metering   *contract_api.SolidityContract
 }
 
 func InitBaseContracts(account string, gethUrl string, directoryAddress string) (*BaseContracts, error) {
@@ -47,9 +48,28 @@ func InitBaseContracts(account string, gethUrl string, directoryAddress string) 
 		return nil, err
 	}
 
+	meteringAddress := "0x0000000000000000000000000000000000000000"
+	for meteringAddress == "0x0000000000000000000000000000000000000000" {
+		meteringAddress, err = getContractAddress(dir, "metering", ver)
+		if err != nil {
+			glog.Errorf("Error finding Metering contract address: %v\n", err)
+			panic(err)
+		}
+		time.Sleep(1 * time.Second)
+	}
+
+	m := contract_api.SolidityContractFactory("metering")
+	m.Set_skip_eventlistener()
+	m.Set_contract_address(meteringAddress)
+	if _, err := m.Load_contract(account, gethUrl); err != nil {
+		glog.Errorf("Error loading metering contract: %v", err)
+		return nil, err
+	}
+
 	return &BaseContracts{
 		Directory:  dir,
 		Agreements: ag,
+		Metering:   m,
 	}, nil
 
 }

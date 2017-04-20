@@ -42,7 +42,13 @@
         "URL": "http://data.receipt.system.com",
         "URLUser": "",
         "URLPassword": "",
-        "interval": 300
+        "interval": 300,
+        "check_rate": 0,
+        "metering": {
+            "tokens": 0,
+            "per_time_unit": "",
+            "notification_interval": 0
+        }
     },
     "proposalRejection": {
         "number": 0,
