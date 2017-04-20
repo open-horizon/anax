@@ -29,5 +29,6 @@ Consumer ->> Ethereum: (4) If data not received in time, cancel agreement
 Producer ->> Consumer: (4) Workload sends data
 Consumer -> Producer: (4) Data Received
 Producer --> Consumer: (4)Acknowledge data received
+Consumer -> Producer: (4) If metering enabled, send metering notification
 
 @enduml 
