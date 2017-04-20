@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/ethblockchain"
+	"github.com/open-horizon/anax/metering"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/go-solidity/contract_api"
 	"golang.org/x/crypto/sha3"
@@ -23,6 +24,7 @@ const MsgTypeReply           = "reply"
 const MsgTypeReplyAck        = "replyack"
 const MsgTypeDataReceived    = "dataverification"
 const MsgTypeDataReceivedAck = "dataverificationack"
+const MsgTypeNotifyMetering  = "meteringnotification"
 
 type Proposal struct {
 	Type           string `json:"type"`
@@ -182,6 +184,43 @@ func NewDataReceivedAck(id string) *DataReceivedAck {
 	}
 }
 
+// This struct is the metering notification that flows from the consumer to the producer. It indicates
+// that the consumer has seen data being received from the workloads on the device and is granting
+// some metering tokens.
+type NotifyMetering struct {
+	Type         string `json:"type"`
+	Protocol     string `json:"protocol"`
+	Version      int    `json:"version"`
+	AgreeId      string `json:"agreementId"`
+	MeterReading string `json:"meter_reading"`
+}
+
+func (p *NotifyMetering) String() string {
+	return fmt.Sprintf("Type: %v, Protocol: %v, Version: %v, AgreementId: %v, MeterReading: %v", p.Type, p.Protocol, p.Version, p.AgreementId, p.MeterReading)
+}
+
+func (p *NotifyMetering) ShortString() string {
+	return p.String()
+}
+
+func (p *NotifyMetering) AgreementId() string {
+	return p.AgreeId
+}
+
+func (p *NotifyMetering) Meter() string {
+	return p.MeterReading
+}
+
+func NewNotifyMetering(id string, m string) *NotifyMetering {
+	return &NotifyMetering{
+		Type:         MsgTypeNotifyMetering,
+		Protocol:     PROTOCOL_NAME,
+		Version:      PROTOCOL_CURRENT_VERSION,
+		AgreeId:      id,
+		MeterReading: m,
+	}
+}
+
 // This is the object which users of the agreement protocol use to get access to the protocol functions.
 type ProtocolHandler struct {
 	GethURL       string
@@ -197,18 +236,18 @@ func NewProtocolHandler(gethURL string, pm *policy.PolicyManager) *ProtocolHandl
 	}
 }
 
-func (p *ProtocolHandler) InitiateAgreement(agreementId string, producerPolicy *policy.Policy, consumerPolicy *policy.Policy, myAddress string, myId string, messageTarget interface{}, workload *policy.Workload, defaultPW string, sendMessage func(msgTarget interface{}, pay []byte) error) (*Proposal, error) {
+func (p *ProtocolHandler) InitiateAgreement(agreementId string, producerPolicy *policy.Policy, consumerPolicy *policy.Policy, myAddress string, myId string, messageTarget interface{}, workload *policy.Workload, defaultPW string, defaultNoData uint64,sendMessage func(msgTarget interface{}, pay []byte) error) (*Proposal, string, string, error) {
 
-	if TCPolicy, err := policy.Create_Terms_And_Conditions(producerPolicy, consumerPolicy, workload, agreementId, defaultPW); err != nil {
-		return nil, errors.New(fmt.Sprintf("CS Protocol initiation received error trying to merge policy %v and %v, error: %v", producerPolicy, consumerPolicy, err))
+	if TCPolicy, err := policy.Create_Terms_And_Conditions(producerPolicy, consumerPolicy, workload, agreementId, defaultPW, defaultNoData); err != nil {
+		return nil, "", "", errors.New(fmt.Sprintf("CS Protocol initiation received error trying to merge policy %v and %v, error: %v", producerPolicy, consumerPolicy, err))
 	} else {
 		glog.V(5).Infof("Merged Policy %v", *TCPolicy)
 
 		newProposal := new(Proposal)
 		if tcBytes, err := json.Marshal(TCPolicy); err != nil {
-			return nil, errors.New(fmt.Sprintf("Error marshalling TsAndCs %v, error: %v", *TCPolicy, err))
+			return nil, "", "", errors.New(fmt.Sprintf("Error marshalling TsAndCs %v, error: %v", *TCPolicy, err))
 		} else if prodBytes, err := json.Marshal(producerPolicy); err != nil {
-			return nil, errors.New(fmt.Sprintf("Error marshalling Producer Policy %v, error: %v", *producerPolicy, err))
+			return nil, "", "", errors.New(fmt.Sprintf("Error marshalling Producer Policy %v, error: %v", *producerPolicy, err))
 		} else {
 			newProposal.Type = MsgTypeProposal
 			newProposal.Protocol = PROTOCOL_NAME
@@ -219,6 +258,21 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string, producerPolicy *
 			newProposal.Address = myAddress
 			newProposal.ConsumerId = myId
 
+			// Save the hash and our signature of it for later usage
+			sig := ""
+			hashBytes := sha3.Sum256([]byte(newProposal.TsAndCs))
+			hash := hex.EncodeToString(hashBytes[:])
+			glog.V(5).Infof(fmt.Sprintf("CS Protocol initiate agreement using hash %v with agreement %v", hash, newProposal.AgreementId))
+
+			if signature, err := ethblockchain.SignHash(hash, p.GethURL); err != nil {
+				return nil, "", "", errors.New(fmt.Sprintf("CS Protocol initiate agreement received error signing hash %v, error %v", hash, err))
+			} else if len(signature) <= 2 {
+				return nil, "", "", errors.New(fmt.Sprintf("CS Protocol initiate agreement received incorrect signature %v from eth_sign.", signature))
+			} else {
+				sig = signature[2:]
+			}
+
+			// Send the proposal to the other party
 			glog.V(5).Infof("Sending proposal %v", *newProposal)
 
 			// Tell the policy manager that we're going to attempt an agreement
@@ -232,9 +286,9 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string, producerPolicy *
 				if err := p.pm.CancelAgreement(consumerPolicy, newProposal.AgreementId); err != nil {
 					glog.Errorf(fmt.Sprintf("Error saving agreement count: %v", err))
 				}
-				return nil, errors.New(fmt.Sprintf("Error sending proposal %v, %v", *newProposal, err))
+				return nil, "", "", errors.New(fmt.Sprintf("Error sending proposal %v, %v", *newProposal, err))
 			} else {
-				return newProposal, nil
+				return newProposal, hash, sig, nil
 			}
 		}
 	}
@@ -342,6 +396,33 @@ func (p *ProtocolHandler) NotifyDataReceiptAck(agreementId string, messageTarget
 	return p.sendDataNotificationAck(messageTarget, PROTOCOL_NAME, ra, sendMessage)
 }
 
+func (p *ProtocolHandler) NotifyMetering(agreementId string, mn *metering.MeteringNotification, messageTarget interface{}, sendMessage func(mt interface{}, pay []byte) error) error {
+
+	// The metering notification is almost complete. We need to sign the hash.
+	hash := mn.GetMeterHash()
+	glog.V(5).Infof("Signing hash %v for %v, metering notification %v", hash, agreementId, mn)
+	sig := ""
+	if signature, err := ethblockchain.SignHash(hash, p.GethURL); err != nil {
+		return errors.New(fmt.Sprintf("CS Protocol sending meter notification received error signing hash %v, error %v", hash, err))
+	} else if len(signature) <= 2 {
+		return errors.New(fmt.Sprintf("CS Protocol sending meter notification received incorrect signature %v from eth_sign.", signature))
+	} else {
+		sig = signature[2:]
+	}
+
+	mn.SetConsumerMeterSignature(sig)
+	glog.V(5).Infof("Completed metering notification %v for %v", mn, agreementId)
+
+	// The metering notification is setup, now we can send it.
+	pay, err := json.Marshal(mn)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Unable to serialize payload %v, error: %v", mn, err))
+	} else {
+		ra := NewNotifyMetering(agreementId, string(pay))
+		return p.sendNotifyMetering(messageTarget, PROTOCOL_NAME, ra, sendMessage)
+	}
+}
+
 func (p *ProtocolHandler) sendProposal(messageTarget interface{}, proposal *Proposal, sendMessage func(mt interface{}, pay []byte) error) error {
 
 	pay, err := json.Marshal(proposal)
@@ -395,6 +476,17 @@ func (p *ProtocolHandler) sendDataNotificationAck(messageTarget interface{}, top
 		return errors.New(fmt.Sprintf("Unable to serialize payload %v, error %v", *dr, err))
 	} else if err := sendMessage(messageTarget, pay); err != nil {
 		return errors.New(fmt.Sprintf("Unable to send data notification ack %v, error %v", *dr, err))
+	}
+
+	return nil
+}
+
+func (p *ProtocolHandler) sendNotifyMetering(messageTarget interface{}, topic string, nm *NotifyMetering, sendMessage func(mt interface{}, pay []byte) error) error {
+	pay, err := json.Marshal(nm)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Unable to serialize payload %v, error %v", *nm, err))
+	} else if err := sendMessage(messageTarget, pay); err != nil {
+		return errors.New(fmt.Sprintf("Unable to send data notification ack %v, error %v", *nm, err))
 	}
 
 	return nil
@@ -471,6 +563,21 @@ func (p *ProtocolHandler) ValidateProposal(proposal string) (*Proposal, error) {
 		return nil, errors.New(fmt.Sprintf("Proposal message is not a Proposal."))
 	} else {
 		return prop, nil
+	}
+
+}
+
+func (p *ProtocolHandler) ValidateMeterNotification(mn string) (*NotifyMetering, error) {
+
+	// attempt deserialization of message from msg payload
+	nm := new(NotifyMetering)
+
+	if err := json.Unmarshal([]byte(mn), &nm); err != nil {
+		return nil, errors.New(fmt.Sprintf("Error deserializing data received notification ack: %s, error: %v", mn, err))
+	} else if nm.Type == MsgTypeNotifyMetering && len(nm.AgreeId) != 0 && len(nm.Meter()) != 0 {
+		return nm, nil
+	} else {
+		return nil, errors.New(fmt.Sprintf("NotifyMetering message is not a metering notification."))
 	}
 
 }
@@ -572,6 +679,31 @@ func (p *ProtocolHandler) VerifyAgreementRecorded(agreementId string, counterPar
 	}
 
 	return false, nil
+}
+
+func (p *ProtocolHandler) RecordMeter(agreementId string, mn *metering.MeteringNotification, con *contract_api.SolidityContract) error {
+
+	if binaryAgreementId, err := hex.DecodeString(agreementId); err != nil {
+		return errors.New(fmt.Sprintf("Error converting agreement ID %v to binary, error: %v", agreementId, err))
+	} else {
+		glog.V(5).Infof("Writing Metering Notification %v to the blockchain for %v.", *mn, agreementId)
+		p := make([]interface{}, 0, 10)
+		p = append(p, mn.Amount)
+	    p = append(p, mn.CurrentTime)
+	    p = append(p, binaryAgreementId)
+	    p = append(p, mn.GetMeterHash()[2:])
+	    p = append(p, mn.ConsumerMeterSignature)
+	    p = append(p, mn.AgreementHash)
+	    p = append(p, mn.ProducerSignature)
+	    p = append(p, mn.ConsumerSignature)
+	    p = append(p, mn.ConsumerAddress)
+	    if _, err = con.Invoke_method("create_meter", p); err != nil {
+			return errors.New(fmt.Sprintf("Error invoking create_meter %v with %v, error: %v", agreementId, p, err))
+		}
+	}
+
+	return nil
+
 }
 
 // Function that work with blockchain events

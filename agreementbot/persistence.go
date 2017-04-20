@@ -6,31 +6,41 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/policy"
 	"time"
 )
 
 const AGREEMENTS = "agreements"
 
 type Agreement struct {
-	CurrentAgreementId            string   `json:"current_agreement_id"`             // unique
-	DeviceId                      string   `json:"device_id"`                        // the device id we are working with, immutable after construction
-	HAPartners                    []string `json:"ha_partners"`                      // list of HA partner device IDs
-	AgreementProtocol             string   `json:"agreement_protocol"`               // immutable after construction
-	AgreementInceptionTime        uint64   `json:"agreement_inception_time"`         // immutable after construction
-	AgreementCreationTime         uint64   `json:"agreement_creation_time"`          // device responds affirmatively to proposal
-	AgreementFinalizedTime        uint64   `json:"agreement_finalized_time"`         // agreement is seen in the blockchain
-	AgreementTimedout             uint64   `json:"agreement_timeout"`                // agreement was not finalized before it timed out
-	ProposalSig                   string   `json:"proposal_signature"`               // The signature used to create the agreement
-	Proposal                      string   `json:"proposal"`                         // JSON serialization of the proposal
-	Policy                        string   `json:"policy"`                           // JSON serialization of the policy used to make the proposal
-	PolicyName                    string   `json:"policy_name"`                      // The name of the policy for this agreement, policy names are unique
-	CounterPartyAddress           string   `json:"counter_party_address"`            // The blockchain address of the counterparty in the agreement
-	DataVerificationURL           string   `json:"data_verification_URL"`            // The URL to use to ensure that this agreement is sending data.
-	DataVerificationUser          string   `json:"data_verification_user"`           // The user to use with the DataVerificationURL
-	DataVerificationPW            string   `json:"data_verification_pw"`             // The pw of the data verification user
-	DisableDataVerificationChecks bool     `json:"disable_data_verification_checks"` // disable data verification checks, assume data is being sent.
-	DataVerifiedTime              uint64   `json:"data_verification_time"`           // The last time that data verification was successful
-	DataNotificationSent          uint64   `json:"data_notification_sent"`           // The timestamp for when data notification was sent to the device
+	CurrentAgreementId             string   `json:"current_agreement_id"`             // unique
+	DeviceId                       string   `json:"device_id"`                        // the device id we are working with, immutable after construction
+	HAPartners                     []string `json:"ha_partners"`                      // list of HA partner device IDs
+	AgreementProtocol              string   `json:"agreement_protocol"`               // immutable after construction
+	AgreementInceptionTime         uint64   `json:"agreement_inception_time"`         // immutable after construction
+	AgreementCreationTime          uint64   `json:"agreement_creation_time"`          // device responds affirmatively to proposal
+	AgreementFinalizedTime         uint64   `json:"agreement_finalized_time"`         // agreement is seen in the blockchain
+	AgreementTimedout              uint64   `json:"agreement_timeout"`                // agreement was not finalized before it timed out
+	ProposalSig                    string   `json:"proposal_signature"`               // The signature used to create the agreement - from the producer
+	Proposal                       string   `json:"proposal"`                         // JSON serialization of the proposal
+	ProposalHash                   string   `json:"proposal_hash"`                    // Hash of the proposal
+	ConsumerProposalSig            string   `json:"consumer_proposal_sig"`            // Consumer's signature of the proposal
+	Policy                         string   `json:"policy"`                           // JSON serialization of the policy used to make the proposal
+	PolicyName                     string   `json:"policy_name"`                      // The name of the policy for this agreement, policy names are unique
+	CounterPartyAddress            string   `json:"counter_party_address"`            // The blockchain address of the counterparty in the agreement
+	DataVerificationURL            string   `json:"data_verification_URL"`            // The URL to use to ensure that this agreement is sending data.
+	DataVerificationUser           string   `json:"data_verification_user"`           // The user to use with the DataVerificationURL
+	DataVerificationPW             string   `json:"data_verification_pw"`             // The pw of the data verification user
+	DataVerificationCheckRate      int      `json:"data_verification_check_rate"`     // How often to check for data
+	DataVerificationMissedCount    uint64   `json:"data_verification_missed_count"`   // Number of data verification misses
+	DataVerificationNoDataInterval int      `json:"data_verification_nodata_interval"` // How long to wait before deciding there is no data
+	DisableDataVerificationChecks  bool     `json:"disable_data_verification_checks"` // disable data verification checks, assume data is being sent.
+	DataVerifiedTime               uint64   `json:"data_verification_time"`           // The last time that data verification was successful
+	DataNotificationSent           uint64   `json:"data_notification_sent"`           // The timestamp for when data notification was sent to the device
+	MeteringTokens                 uint64   `json:"metering_tokens"`                  // Number of metering tokens from proposal
+	MeteringPerTimeUnit            string   `json:"metering_per_time_unit"`           // The time units of tokens per, from the proposal
+	MeteringNotificationInterval   int      `json:"metering_notify_interval"`         // The interval of time between metering notifications (seconds)
+	MeteringNotificationSent       uint64   `json:"metering_notification_sent"`       // The last time a metering notification was sent
 }
 
 func (a Agreement) String() string {
@@ -42,16 +52,27 @@ func (a Agreement) String() string {
 		"AgreementFinalizedTime: %v, " +
 		"AgreementTimedout: %v, " +
 		"ProposalSig: %v, " +
+		"ProposalHash: %v, " +
+		"ConsumerProposalSig: %v, " +
 		"Policy Name: %v, " +
 		"CounterPartyAddress: %v, " +
 		"DataVerificationURL: %v, " +
 		"DataVerificationUser: %v, " +
+		"DataVerificationCheckRate: %v, " +
+		"DataVerificationMissedCount: %v, " +
+		"DataVerificationNoDataInterval: %v, " +
 		"DisableDataVerification: %v, " +
 		"DataVerifiedTime: %v, " +
-		"DataNotificationSent: %v",
+		"DataNotificationSent: %v, " +
+		"MeteringTokens: %v, " +
+		"MeteringPerTimeUnit: %v, " +
+		"MeteringNotificationInterval: %v, " +
+		"MeteringNotificationSent: %v",
 		a.CurrentAgreementId, a.DeviceId, a.HAPartners, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime,
-		a.AgreementTimedout, a.ProposalSig, a.PolicyName, a.CounterPartyAddress, a.DataVerificationURL, a.DataVerificationUser,
-		a.DisableDataVerificationChecks, a.DataVerifiedTime, a.DataNotificationSent)
+		a.AgreementTimedout, a.ProposalSig, a.ProposalHash, a.ConsumerProposalSig, a.PolicyName, a.CounterPartyAddress,
+		a.DataVerificationURL, a.DataVerificationUser, a.DataVerificationCheckRate, a.DataVerificationMissedCount, a.DataVerificationNoDataInterval,
+		a.DisableDataVerificationChecks, a.DataVerifiedTime, a.DataNotificationSent,
+		a.MeteringTokens, a.MeteringPerTimeUnit, a.MeteringNotificationInterval, a.MeteringNotificationSent)
 }
 
 // private factory method for agreement w/out persistence safety:
@@ -60,25 +81,33 @@ func agreement(agreementid string, deviceid string, policyName string, agreement
 		return nil, errors.New("Illegal input: agreement id or agreement protocol is empty")
 	} else {
 		return &Agreement{
-			CurrentAgreementId:            agreementid,
-			DeviceId:                      deviceid,
-			HAPartners:                    []string{},
-			AgreementProtocol:             agreementProto,
-			AgreementInceptionTime:        uint64(time.Now().Unix()),
-			AgreementCreationTime:         0,
-			AgreementFinalizedTime:        0,
-			AgreementTimedout:             0,
-			ProposalSig:                   "",
-			Proposal:                      "",
-			Policy:                        "",
-			PolicyName:                    policyName,
-			CounterPartyAddress:           "",
-			DataVerificationURL:           "",
-			DataVerificationUser:          "",
-			DataVerificationPW:            "",
-			DisableDataVerificationChecks: false,
-			DataVerifiedTime:              0,
-			DataNotificationSent:          0,
+			CurrentAgreementId:             agreementid,
+			DeviceId:                       deviceid,
+			HAPartners:                     []string{},
+			AgreementProtocol:              agreementProto,
+			AgreementInceptionTime:         uint64(time.Now().Unix()),
+			AgreementCreationTime:          0,
+			AgreementFinalizedTime:         0,
+			AgreementTimedout:              0,
+			ProposalSig:                    "",
+			Proposal:                       "",
+			ProposalHash:                   "",
+			ConsumerProposalSig:            "",
+			Policy:                         "",
+			PolicyName:                     policyName,
+			CounterPartyAddress:            "",
+			DataVerificationURL:            "",
+			DataVerificationUser:           "",
+			DataVerificationPW:             "",
+			DataVerificationCheckRate:      0,
+			DataVerificationNoDataInterval: 0,
+			DisableDataVerificationChecks:  false,
+			DataVerifiedTime:               0,
+			DataNotificationSent:           0,
+			MeteringTokens:                 0,
+			MeteringPerTimeUnit:            "",
+			MeteringNotificationInterval:   0,
+			MeteringNotificationSent:       0,
 		}, nil
 	}
 }
@@ -93,16 +122,25 @@ func AgreementAttempt(db *bolt.DB, agreementid string, deviceid string, policyNa
 	}
 }
 
-func AgreementUpdate(db *bolt.DB, agreementid string, proposal string, policy string, url string, user string, pw string, checks bool, protocol string) (*Agreement, error) {
+func AgreementUpdate(db *bolt.DB, agreementid string, proposal string, policy string, dvPolicy policy.DataVerification, hash string, sig string, protocol string) (*Agreement, error) {
 	if agreement, err := singleAgreementUpdate(db, agreementid, protocol, func(a Agreement) *Agreement {
 		a.AgreementCreationTime = uint64(time.Now().Unix())
 		a.Proposal = proposal
+		a.ProposalHash = hash
+		a.ConsumerProposalSig = sig
 		a.Policy = policy
-		a.DataVerificationURL = url
-		a.DataVerificationUser = user
-		a.DataVerificationPW = pw
-		a.DisableDataVerificationChecks = checks
-		a.DataVerifiedTime = uint64(time.Now().Unix())
+		a.DisableDataVerificationChecks = !dvPolicy.Enabled
+		if dvPolicy.Enabled {
+			a.DataVerificationURL = dvPolicy.URL
+			a.DataVerificationUser = dvPolicy.URLUser
+			a.DataVerificationPW = dvPolicy.URLPassword
+			a.DataVerificationCheckRate = dvPolicy.CheckRate
+			a.DataVerificationNoDataInterval = dvPolicy.Interval
+			a.DataVerifiedTime = uint64(time.Now().Unix())
+			a.MeteringTokens = dvPolicy.Metering.Tokens
+			a.MeteringPerTimeUnit = dvPolicy.Metering.PerTimeUnit
+			a.MeteringNotificationInterval = dvPolicy.Metering.NotificationIntervalS
+		}
 		return &a
 	}); err != nil {
 		return nil, err
@@ -157,9 +195,31 @@ func DataVerified(db *bolt.DB, agreementid string, protocol string) (*Agreement,
 	}
 }
 
+func DataNotVerified(db *bolt.DB, agreementid string, protocol string) (*Agreement, error) {
+	if agreement, err := singleAgreementUpdate(db, agreementid, protocol, func(a Agreement) *Agreement {
+		a.DataVerificationMissedCount += 1
+		return &a
+	}); err != nil {
+		return nil, err
+	} else {
+		return agreement, nil
+	}
+}
+
 func DataNotification(db *bolt.DB, agreementid string, protocol string) (*Agreement, error) {
 	if agreement, err := singleAgreementUpdate(db, agreementid, protocol, func(a Agreement) *Agreement {
 		a.DataNotificationSent = uint64(time.Now().Unix())
+		return &a
+	}); err != nil {
+		return nil, err
+	} else {
+		return agreement, nil
+	}
+}
+
+func MeteringNotification(db *bolt.DB, agreementid string, protocol string) (*Agreement, error) {
+	if agreement, err := singleAgreementUpdate(db, agreementid, protocol, func(a Agreement) *Agreement {
+		a.MeteringNotificationSent = uint64(time.Now().Unix())
 		return &a
 	}); err != nil {
 		return nil, err
@@ -217,16 +277,25 @@ func persistUpdatedAgreement(db *bolt.DB, agreementid string, protocol string, u
 				mod.CounterPartyAddress = update.CounterPartyAddress
 				mod.AgreementProtocol = update.AgreementProtocol
 				mod.Proposal = update.Proposal
+				mod.ProposalHash = update.ProposalHash
+				mod.ConsumerProposalSig = update.ConsumerProposalSig
 				mod.Policy = update.Policy
 				mod.PolicyName = update.PolicyName
 				mod.ProposalSig = update.ProposalSig
 				mod.DataVerificationURL = update.DataVerificationURL
 				mod.DataVerificationUser = update.DataVerificationUser
 				mod.DataVerificationPW = update.DataVerificationPW
+				mod.DataVerificationCheckRate = update.DataVerificationCheckRate
+				mod.DataVerificationMissedCount = update.DataVerificationMissedCount
+				mod.DataVerificationNoDataInterval = update.DataVerificationNoDataInterval
 				mod.DisableDataVerificationChecks = update.DisableDataVerificationChecks
 				mod.DataVerifiedTime = update.DataVerifiedTime
 				mod.DataNotificationSent = update.DataNotificationSent
 				mod.HAPartners = update.HAPartners
+				mod.MeteringTokens = update.MeteringTokens
+				mod.MeteringPerTimeUnit = update.MeteringPerTimeUnit
+				mod.MeteringNotificationInterval = update.MeteringNotificationInterval
+				mod.MeteringNotificationSent = update.MeteringNotificationSent
 
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize agreement record: %v", mod)

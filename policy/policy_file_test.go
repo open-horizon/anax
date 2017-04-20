@@ -241,7 +241,7 @@ func Test_Policy_Merge(t *testing.T) {
 		t.Error(err)
 	} else if pf_con, err := ReadPolicyFile("./test/pfmerge1/agbot.policy"); err != nil {
 		t.Error(err)
-	} else if pf_merged, err := Create_Terms_And_Conditions(pf_prod, pf_con, &pf_con.Workloads[0], "12345", ""); err != nil {
+	} else if pf_merged, err := Create_Terms_And_Conditions(pf_prod, pf_con, &pf_con.Workloads[0], "12345", "", 600); err != nil {
 		t.Error(err)
 	} else if err := WritePolicyFile(pf_merged, "./test/pfmerge1/merged.policy"); err != nil {
 		t.Error(err)

@@ -42,7 +42,13 @@
         "URL": "",
         "URLUser": "",
         "URLPassword": "",
-        "interval": 0
+        "interval": 0,
+        "check_rate": 0,
+        "metering": {
+            "tokens": 0,
+            "per_time_unit": "",
+            "notification_interval": 0
+        }
     },
     "proposalRejection": {
         "number": 0,

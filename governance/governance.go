@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/metering"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
@@ -309,12 +310,28 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 			} else if err := protocolHandler.TerminateAgreement(pPolicy, ag.CounterPartyAddress, agreementId, reason, w.bc.Agreements); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error terminating agreement %v on the blockchain: %v", agreementId, err)))
 			}
+
 		}
 
 		// report the cleanup status
 		cmd := w.NewCleanupStatusCommand(agreementProtocol, agreementId, STATUS_AG_PROTOCOL_TERMINATED)
 		w.Commands <- cmd
 	}()
+
+	// Concurrently write out the metering record. This is done in its own go routine for the same reason that
+	// the blockchain cancel is done in a separate go routine. This go routine can complete after the agreement is
+	// archived without any side effects.
+	go func() {
+		// If there are metering notifications, write them onto the blockchain also
+		if ag.MeteringNotificationMsg != (persistence.MeteringNotification{}) {
+			if mn := metering.ConvertFromPersistent(ag.MeteringNotificationMsg, agreementId); mn == nil {
+				glog.Errorf(logString(fmt.Sprintf("error converting from persistent Metering Notification %v for %v, returned nil.", ag.MeteringNotificationMsg, agreementId)))
+			} else if err := protocolHandler.RecordMeter(agreementId, mn, w.bc.Metering); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error writing meter %v for agreement %v on the blockchain: %v", ag.MeteringNotificationMsg, agreementId, err)))
+			}
+		}
+	}()
+
 }
 
 func (w *GovernanceWorker) start() {
@@ -533,6 +550,27 @@ func (w *GovernanceWorker) start() {
 						glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
 					} else if err := protocolHandler.NotifyDataReceiptAck(dataReceived.AgreementId(), messageTarget, sendMessage); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("unable to send data received ack for %v, error: %v", dataReceived.AgreementId(), err)))
+					} else {
+						deleteMessage = true
+					}
+
+					// Metering notification messages indicate that the agbot is metering data sent to the data ingest.
+					if mnReceived, err := protocolHandler.ValidateMeterNotification(cmd.Msg.ProtocolMessage()); err != nil {
+						glog.Warningf(logString(fmt.Sprintf("Meter Notification handler ignoring non-metering message: %v due to %v", cmd.Msg.ShortProtocolMessage(), err)))
+					} else if ags, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(mnReceived.AgreementId())}); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", mnReceived.AgreementId(), err)))
+					} else if len(ags) != 1 {
+						glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", mnReceived.AgreementId(), err)))
+						deleteMessage = true
+					} else if ags[0].AgreementTerminatedTime != 0 {
+						glog.Warningf(logString(fmt.Sprintf("ignoring metering notification, agreement %v is terminating", mnReceived.AgreementId())))
+						deleteMessage = true
+					} else if mn, err := metering.ConvertToPersistent(mnReceived.Meter()); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("unable to convert metering notification string %v to persistent metering notification for %v, error: %v", mnReceived.Meter(), mnReceived.AgreementId(), err)))
+						deleteMessage = true
+					} else if _, err := persistence.MeteringNotificationReceived(w.db, mnReceived.AgreementId(), *mn, citizenscientist.PROTOCOL_NAME); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("unable to update metering notification for %v, error: %v", mnReceived.AgreementId(), err)))
+						deleteMessage = true
 					} else {
 						deleteMessage = true
 					}
