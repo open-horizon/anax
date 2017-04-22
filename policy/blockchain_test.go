@@ -83,6 +83,96 @@ func Test_Blockchain_subset_found(t *testing.T) {
 			}
 		}
 	}
+
+	con1 = `[]`
+	prod1 = `[]`
+
+	if prod_bl = create_BlockchainList(prod1, t); prod_bl != nil {
+		if con_bl = create_BlockchainList(con1, t); con_bl != nil {
+			if err := prod_bl.Is_Subset_Of(con_bl); err != nil {
+				t.Errorf("Error: %v is a subset of %v\n", prod1, con1)
+			}
+		}
+	}
+
+	con1 = `[{"type":"ethereum","details":{"genesis":["http://mycompany.com/genesis1","http://mycompany.com/genesis2"],"networkid":["http://mycompany.com/networkid"],"bootnodes":["http://mycompany.com/bootnodes"],"directory":["http://mycompany.com/directory"]}}]`
+	prod1 = `[]`
+
+	if prod_bl = create_BlockchainList(prod1, t); prod_bl != nil {
+		if con_bl = create_BlockchainList(con1, t); con_bl != nil {
+			if err := prod_bl.Is_Subset_Of(con_bl); err != nil {
+				t.Errorf("Error: %v is a subset of %v\n", prod1, con1)
+			}
+		}
+	}
+
+}
+
+func Test_IntersectsWith(t *testing.T) {
+
+	var prod_bl *BlockchainList
+	var con_bl *BlockchainList
+
+	con1 := `[]`
+	prod1 := `[]`
+
+	if prod_bl = create_BlockchainList(prod1, t); prod_bl != nil {
+		if con_bl = create_BlockchainList(con1, t); con_bl != nil {
+			if bl, err := prod_bl.Intersects_With(con_bl); err != nil {
+				t.Errorf("Error: %v intersects with %v\n", prod1, con1)
+			} else if len(*bl) != 0 {
+				t.Errorf("Error: %v is not empty\n", bl)
+			}
+		}
+	}
+
+	con1 = `[{"type":"ethereum","details":{"genesis":["http://mycompany.com/genesis1","http://mycompany.com/genesis2"],"networkid":["http://mycompany.com/networkid"],"bootnodes":["http://mycompany.com/bootnodes"],"directory":["http://mycompany.com/directory"]}}]`
+	if prod_bl = create_BlockchainList(prod1, t); prod_bl != nil {
+		if con_bl = create_BlockchainList(con1, t); con_bl != nil {
+			if bl, err := prod_bl.Intersects_With(con_bl); err != nil {
+				t.Errorf("Error: %v intersects with %v\n", prod1, con1)
+			} else if len(*bl) != 1 {
+				t.Errorf("Error: %v is not empty\n", bl)
+			}
+		}
+	}
+
+	con1 = `[]`
+	prod1 = `[{"type":"ethereum","details":{"genesis":["http://mycompany.com/genesis2","http://mycompany.com/genesis1","http://mycompany.com/genesis3"],"networkid":["http://mycompany.com/networkid"],"bootnodes":["http://mycompany.com/bootnodes"],"directory":["http://mycompany.com/directory"]}}]`
+	if prod_bl = create_BlockchainList(prod1, t); prod_bl != nil {
+		if con_bl = create_BlockchainList(con1, t); con_bl != nil {
+			if bl, err := prod_bl.Intersects_With(con_bl); err != nil {
+				t.Errorf("Error: %v intersects with %v\n", prod1, con1)
+			} else if len(*bl) != 1 {
+				t.Errorf("Error: %v is not empty\n", bl)
+			}
+		}
+	}
+
+	con1 = `[{"type":"ethereum","details":{}}]`
+	prod1 = `[{"type":"ethereum","details":{}}]`
+	if prod_bl = create_BlockchainList(prod1, t); prod_bl != nil {
+		if con_bl = create_BlockchainList(con1, t); con_bl != nil {
+			if bl, err := prod_bl.Intersects_With(con_bl); err != nil {
+				t.Errorf("Error: %v intersects with %v\n", prod1, con1)
+			} else if len(*bl) != 1 {
+				t.Errorf("Error: %v is not empty\n", bl)
+			}
+		}
+	}
+
+	con1 = `[{"type":"ethereum"}]`
+	prod1 = `[{"type":"ethereum"}]`
+	if prod_bl = create_BlockchainList(prod1, t); prod_bl != nil {
+		if con_bl = create_BlockchainList(con1, t); con_bl != nil {
+			if bl, err := prod_bl.Intersects_With(con_bl); err != nil {
+				t.Errorf("Error: %v intersects with %v\n", prod1, con1)
+			} else if len(*bl) != 1 {
+				t.Errorf("Error: %v is not empty\n", bl)
+			}
+		}
+	}
+
 }
 
 // Second, some tests where a subset (or equal) is NOT found

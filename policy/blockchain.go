@@ -81,6 +81,22 @@ func (self *BlockchainList) Is_Subset_Of(super_set *BlockchainList) error {
 // between the 2 lists.
 func (self *BlockchainList) Intersects_With(other *BlockchainList) (*BlockchainList, error) {
 	inter := new(BlockchainList)
+
+	// If both lists are empty then they intersect on the empty list, which is legal
+	if len(*self) == 0 && len(*other) == 0 {
+		return inter, nil
+	}
+
+	// If one list is empty use the other list
+	if len(*self) == 0 {
+		(*inter) = append(*inter, (*other)...)
+		return inter, nil
+	} else if len(*other) == 0 {
+		(*inter) = append(*inter, (*self)...)
+		return inter, nil
+	}
+
+	// If the lists are not empty then we need to find an intersection
 	for _, sub_ele := range *self {
 		for _, other_ele := range *other {
 			if sub_ele.Same_Blockchain(&other_ele) {
@@ -114,7 +130,9 @@ func (self *BlockchainList) Concatenate(new_list *BlockchainList) {
 
 func (self *BlockchainList) Single_Element() *BlockchainList {
 	single := new(BlockchainList)
-	(*single) = append(*single, (*self)[0])
+	if len(*self) != 0 {
+		(*single) = append(*single, (*self)[0])
+	}
 	return single
 }
 
@@ -123,12 +141,20 @@ func (self *Blockchain) Same_Blockchain(second *Blockchain) bool {
 
 	if self.Type != second.Type {
 		return false
+	} else if self.Details == nil && second.Details == nil {
+		return true
 	}
 
 	switch self.Details.(type) {
 	case map[string]interface{}:
 		sub_d := self.Details.(map[string]interface{})
 		super_d := second.Details.(map[string]interface{})
+
+		// Empty details are ok as long as both are empty, they are equal
+		if len(sub_d) == 0 && len(super_d) == 0 {
+			return true
+		}
+
 		if self.Type == Ethereum_bc {
 			if _, ok := sub_d["genesis"]; !ok {
 				return false
