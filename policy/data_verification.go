@@ -157,6 +157,19 @@ type DataVerification struct {
 	Metering    Meter  `json:"metering,omitempty"` // The metering configuration
 }
 
+func DataVerification_Factory(url string, urluser string, urlpw string, interval int, checkRate int, meterPolicy Meter) *DataVerification {
+    d := new(DataVerification)
+    d.Enabled = true
+    d.URL = url
+    d.URLUser = urluser
+    d.URLPassword = urlpw
+    d.Interval = interval
+    d.CheckRate = checkRate
+    d.Metering = meterPolicy
+
+    return d
+}
+
 func (d DataVerification) IsValid() (bool, error) {
 	if !d.Metering.IsValid() {
 		return false, errors.New(fmt.Sprintf("Metering is not valid"))

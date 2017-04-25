@@ -324,6 +324,7 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 	go func() {
 		// If there are metering notifications, write them onto the blockchain also
 		if ag.MeteringNotificationMsg != (persistence.MeteringNotification{}) {
+			glog.V(3).Infof(logString(fmt.Sprintf("Writing Metering Notification %v to the blockchain for %v.", ag.MeteringNotificationMsg, agreementId)))
 			if mn := metering.ConvertFromPersistent(ag.MeteringNotificationMsg, agreementId); mn == nil {
 				glog.Errorf(logString(fmt.Sprintf("error converting from persistent Metering Notification %v for %v, returned nil.", ag.MeteringNotificationMsg, agreementId)))
 			} else if err := protocolHandler.RecordMeter(agreementId, mn, w.bc.Metering); err != nil {

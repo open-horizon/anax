@@ -654,9 +654,30 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		// what's advertised
 		var policyArch string
 		var haPartner []string
+		var meterPolicy policy.Meter
 
 		// props to store in file; stuff that is enforced; need to convert from serviceattributes to props. *CAN NEVER BE* unpublishable ServiceAttributes
 		props := map[string]string{}
+
+		// There might be a device wide metering attribute. Check for it and create a default metering policy for it.
+		if allAttrs, err := persistence.FindApplicableAttributes(a.db, ""); err != nil {
+			glog.Errorf("Unable to fetch workload preferences. Err: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		} else {
+			for _, attr := range allAttrs {
+				if attr.GetMeta().Id == "metering" && len(attr.GetMeta().SensorUrls) == 0 {
+					// found a global metering entry
+					meterPolicy = policy.Meter{
+						Tokens:                attr.(persistence.MeteringAttributes).Tokens,
+						PerTimeUnit:           attr.(persistence.MeteringAttributes).PerTimeUnit,
+						NotificationIntervalS: attr.(persistence.MeteringAttributes).NotificationIntervalS,
+					}
+					glog.V(5).Infof("Found default global metering attribute %v", attr)
+					break
+				}
+			}
+		}
 
 		// persist all prefs; while we're at it, fetch the props we want to publish and the arch
 		for _, attr := range attributes {
@@ -678,6 +699,12 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 				policyArch = attr.(persistence.ArchitectureAttributes).Architecture
 			case persistence.HAAttributes:
 				haPartner = attr.(persistence.HAAttributes).Partners
+			case persistence.MeteringAttributes:
+				meterPolicy = policy.Meter{
+					Tokens:                attr.(persistence.MeteringAttributes).Tokens,
+					PerTimeUnit:           attr.(persistence.MeteringAttributes).PerTimeUnit,
+					NotificationIntervalS: attr.(persistence.MeteringAttributes).NotificationIntervalS,
+				}
 			default:
 				glog.V(4).Infof("Unhandled attr type (%T): %v", attr, attr)
 			}
@@ -685,7 +712,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 
 		glog.V(5).Infof("Complete Attr list for registration of service %v: %v", *service.SensorUrl, attributes)
 
-		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorName, policyArch, &props, haPartner, a.Config.Edge.PolicyPath); genErr != nil {
+		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorName, policyArch, &props, haPartner, meterPolicy, a.Config.Edge.PolicyPath); genErr != nil {
 			glog.Errorf("Error: %v", genErr)
 			w.WriteHeader(http.StatusInternalServerError)
 			return

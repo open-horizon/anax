@@ -268,6 +268,73 @@ func deserializeAttributes(w http.ResponseWriter, attrs []Attribute) ([]persiste
 					})
 			}
 
+		case "metering":
+			var err error
+
+			// Check for valid combinations of input parameters
+			t, tokensExists := (*given.Mappings)["tokens"]
+			p, perTimeUnitExists := (*given.Mappings)["perTimeUnit"]
+			n, notificationIntervalExists := (*given.Mappings)["notificationInterval"]
+
+			if tokensExists && !perTimeUnitExists {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.perTimeUnit", Error: "missing key"})
+				return nil, nil, true
+			} else if !tokensExists && perTimeUnitExists {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.tokens", Error: "missing key"})
+				return nil, nil, true
+			} else if notificationIntervalExists && !tokensExists {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.notificationInterval", Error: "missing tokens and perTimeUnit keys"})
+				return nil, nil, true
+			}
+
+			// Deserialize the attribute pieces
+			var ok bool
+			var tokens int64
+			if _, ok = t.(json.Number); !ok {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.tokens", Error: "expected integer"})
+				return nil, nil, true
+			} else if tokens, err = t.(json.Number).Int64(); err != nil {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.tokens", Error: "could not convert to integer"})
+				return nil, nil, true
+			}
+
+			var perTimeUnit string
+			if perTimeUnit, ok = p.(string); !ok {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.perTimeUnit", Error: "expected string"})
+				return nil, nil, true
+			}
+
+			// Make sure the attribute values make sense together
+			if tokens == 0 && perTimeUnit != "" {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.tokens", Error: "must be non-zero"})
+				return nil, nil, true
+			} else if tokens != 0 && perTimeUnit == "" {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.perTimeUnit", Error: "must be non-empty"})
+				return nil, nil, true
+			}
+
+			// Deserialize and validate the last piece of the attribute
+			var notificationInterval int64
+			if _, ok = n.(json.Number); !ok {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.notificationInterval", Error: "expected integer"})
+				return nil, nil, true
+			} else if notificationInterval, err = n.(json.Number).Int64(); err != nil {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.notificationInterval", Error: "could not convert to integer"})
+				return nil, nil, true
+			}
+
+			if notificationInterval != 0 && tokens == 0 {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.notificationInterval", Error: "cannot be non-zero without tokens and perTimeUnit"})
+				return nil, nil, true
+			}
+
+			attributes = append(attributes, persistence.MeteringAttributes{
+				Meta: generateAttributeMetadata(given, reflect.TypeOf(persistence.MeteringAttributes{}).String()),
+				Tokens:                uint64(tokens),
+				PerTimeUnit:           perTimeUnit,
+				NotificationIntervalS: int(notificationInterval),
+			})
+
 		default:
 			glog.Errorf("Failed to find expected id for given input attribute: %v", given)
 			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "mappings", Error: "Unmappable id field"})

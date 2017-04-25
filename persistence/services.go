@@ -143,6 +143,25 @@ func (a HAAttributes) PartnersContains(id string) bool {
 	return false
 }
 
+type MeteringAttributes struct {
+	Meta                  *AttributeMeta `json:"meta"`
+	Tokens                uint64         `json:"tokens"`
+	PerTimeUnit           string         `json:"per_time_unit"`
+	NotificationIntervalS int            `json:"notification_interval"`
+}
+
+func (a MeteringAttributes) GetMeta() *AttributeMeta {
+	return a.Meta
+}
+
+func (a MeteringAttributes) GetGenericMappings() map[string]interface{} {
+	return map[string]interface{}{
+		"tokens":                a.Tokens,
+		"per_time_unit":         a.PerTimeUnit,
+		"notification_interval": a.NotificationIntervalS,
+	}
+}
+
 type MappedAttributes struct {
 	Meta     *AttributeMeta    `json:"meta"`
 	Mappings map[string]string `json:"mappings"`
@@ -219,6 +238,13 @@ func FindApplicableAttributes(db *bolt.DB, serviceUrl string) ([]ServiceAttribut
 					return err
 				}
 				attr = ha
+
+			case "persistence.MeteringAttributes":
+				var ma MeteringAttributes
+				if err := json.Unmarshal(v, &ma); err != nil {
+					return err
+				}
+				attr = ma
 
 			default:
 				return fmt.Errorf("Unknown attr type: %v, just handling as meta", meta.GetMeta().Type)
@@ -302,6 +328,9 @@ func AttributesToEnvvarMap(attributes []ServiceAttribute, prefix string) (map[st
 		case HAAttributes:
 			s := serv.(HAAttributes)
 			writePrefix("HA_PARTNERS", strings.Join(s.Partners,","))
+
+		case MeteringAttributes:
+			// Nothing to do
 
 		default:
 			return nil, fmt.Errorf("Unhandled service attribute: %v", serv)

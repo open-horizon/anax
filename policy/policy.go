@@ -10,7 +10,7 @@ import (
 )
 
 // This function generates policy files for each sensor on the device.
-func GeneratePolicy(e chan events.Message, sensorName string, arch string, props *map[string]string, haPartners []string, filePath string) error {
+func GeneratePolicy(e chan events.Message, sensorName string, arch string, props *map[string]string, haPartners []string, meterPolicy Meter, filePath string) error {
 
 	glog.V(5).Infof("Generating policy for %v", sensorName)
 
@@ -69,6 +69,11 @@ func GeneratePolicy(e chan events.Message, sensorName string, arch string, props
 	// Add HA configuration if there is any
 	if len(haPartners) != 0 {
 		p.Add_HAGroup(HAGroup_Factory(haPartners))
+	}
+
+	// Add Metering policy to the policy file
+	if meterPolicy.Tokens != 0 {
+		p.Add_DataVerification(DataVerification_Factory("", "", "", 0, 0, meterPolicy))
 	}
 
 	// Default the max agreements to 1
