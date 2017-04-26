@@ -162,6 +162,40 @@ func (a MeteringAttributes) GetGenericMappings() map[string]interface{} {
 	}
 }
 
+type CounterPartyPropertyAttributes struct {
+	Meta       *AttributeMeta          `json:"meta"`
+	Expression map[string]interface{} `json:"expression"`
+}
+
+func (a CounterPartyPropertyAttributes) GetMeta() *AttributeMeta {
+	return a.Meta
+}
+
+func (a CounterPartyPropertyAttributes) GetGenericMappings() map[string]interface{} {
+	return map[string]interface{}{
+		"expression": a.Expression,
+	}
+}
+
+type PropertyAttributes struct {
+	Meta     *AttributeMeta         `json:"meta"`
+	Mappings map[string]interface{} `json:"mappings"`
+}
+
+func (a PropertyAttributes) GetMeta() *AttributeMeta {
+	return a.Meta
+}
+
+func (a PropertyAttributes) GetGenericMappings() map[string]interface{} {
+	out := map[string]interface{}{}
+
+	for k, v := range a.Mappings {
+		out[k] = v
+	}
+
+	return out
+}
+
 type MappedAttributes struct {
 	Meta     *AttributeMeta    `json:"meta"`
 	Mappings map[string]string `json:"mappings"`
@@ -245,6 +279,20 @@ func FindApplicableAttributes(db *bolt.DB, serviceUrl string) ([]ServiceAttribut
 					return err
 				}
 				attr = ma
+
+			case "persistence.PropertyAttributes":
+				var pa PropertyAttributes
+				if err := json.Unmarshal(v, &pa); err != nil {
+					return err
+				}
+				attr = pa
+
+			case "persistence.CounterPartyPropertyAttributes":
+				var ca CounterPartyPropertyAttributes
+				if err := json.Unmarshal(v, &ca); err != nil {
+					return err
+				}
+				attr = ca
 
 			default:
 				return fmt.Errorf("Unknown attr type: %v, just handling as meta", meta.GetMeta().Type)
@@ -330,6 +378,12 @@ func AttributesToEnvvarMap(attributes []ServiceAttribute, prefix string) (map[st
 			writePrefix("HA_PARTNERS", strings.Join(s.Partners,","))
 
 		case MeteringAttributes:
+			// Nothing to do
+
+		case PropertyAttributes:
+			// Nothing to do
+
+		case CounterPartyPropertyAttributes:
 			// Nothing to do
 
 		default:

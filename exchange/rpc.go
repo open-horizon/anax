@@ -422,6 +422,10 @@ func ConvertPropertyToExchangeFormat(prop *policy.Property) (*MSProp, error) {
 		pType = "list"
 		pValue = ConvertToString(prop.Value.([]string))
 		pCompare = "in"
+	case float64:
+		pType = "int"
+		pValue = strconv.Itoa(int(prop.Value.(float64)))
+		pCompare = ">="
 	default:
 		return nil, errors.New(fmt.Sprintf("Encountered unsupported property type: %v converting to exchange format.", reflect.TypeOf(prop.Value).String()))
 	}
