@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 	"net/http"
 	"reflect"
 )
@@ -334,6 +335,38 @@ func deserializeAttributes(w http.ResponseWriter, attrs []Attribute) ([]persiste
 				PerTimeUnit:           perTimeUnit,
 				NotificationIntervalS: int(notificationInterval),
 			})
+
+		case "property":
+			attributes = append(attributes, persistence.PropertyAttributes{
+				Meta:     generateAttributeMetadata(given, reflect.TypeOf(persistence.PropertyAttributes{}).String()),
+				Mappings: (*given.Mappings),
+			})
+
+		case "counterpartyproperty":
+			rawExpression, exists := (*given.Mappings)["expression"]
+			if !exists {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "counterpartyproperty.mappings.expression", Error: "missing key"})
+				return nil, nil, true
+			} else {
+				if exp, ok := rawExpression.(map[string]interface{}); !ok {
+					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "counterpartyproperty.mappings.expression", Error: fmt.Sprintf("expected map[string]interface{}, is %T", rawExpression)})
+					return nil, nil, true
+				} else if rp := policy.RequiredProperty_Factory(); rp == nil {
+					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "counterpartyproperty.mappings.expression", Error: "could not construct RequiredProperty"})
+					return nil, nil, true
+				} else if err := rp.Initialize(&exp); err != nil {
+					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "counterpartyproperty.mappings.expression", Error: fmt.Sprintf("could not initialize RequiredProperty", err)})
+					return nil, nil, true
+				} else if err := rp.IsValid(); err != nil {
+					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "counterpartyproperty.mappings.expression", Error: fmt.Sprintf("not a valid expression: %v", err)})
+					return nil, nil, true
+				} else {
+					attributes = append(attributes, persistence.CounterPartyPropertyAttributes{
+						Meta:     generateAttributeMetadata(given, reflect.TypeOf(persistence.CounterPartyPropertyAttributes{}).String()),
+						Expression: rawExpression.(map[string]interface{}),
+						})
+				}
+			}
 
 		default:
 			glog.Errorf("Failed to find expected id for given input attribute: %v", given)

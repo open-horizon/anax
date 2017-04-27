@@ -125,6 +125,15 @@ func (self *Policy) Add_DataVerification(d *DataVerification) error {
 	}
 }
 
+func (self *Policy) Add_CounterPartyProperties(r *RequiredProperty) error {
+	if r != nil {
+		self.CounterPartyProperties = *r
+		return nil
+	} else {
+		return errors.New(fmt.Sprintf("Add_CounterPartyProperties Error: input is nil."))
+	}
+}
+
 // This is a function that compares two in-memory Policy objects to determine if they are compatible
 // or not. If no error is returned, then the policies are compatible. The order of parameters is
 // important. The first policy is the policy of the device that is offering itself for usage (aka

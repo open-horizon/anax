@@ -655,9 +655,10 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		var policyArch string
 		var haPartner []string
 		var meterPolicy policy.Meter
+		var counterPartyProperties policy.RequiredProperty
 
 		// props to store in file; stuff that is enforced; need to convert from serviceattributes to props. *CAN NEVER BE* unpublishable ServiceAttributes
-		props := map[string]string{}
+		props := make(map[string]interface{})
 
 		// There might be a device wide metering attribute. Check for it and create a default metering policy for it.
 		if allAttrs, err := persistence.FindApplicableAttributes(a.db, ""); err != nil {
@@ -666,6 +667,8 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			return
 		} else {
 			for _, attr := range allAttrs {
+
+				// Extract global metering property
 				if attr.GetMeta().Id == "metering" && len(attr.GetMeta().SensorUrls) == 0 {
 					// found a global metering entry
 					meterPolicy = policy.Meter{
@@ -674,7 +677,20 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 						NotificationIntervalS: attr.(persistence.MeteringAttributes).NotificationIntervalS,
 					}
 					glog.V(5).Infof("Found default global metering attribute %v", attr)
-					break
+				}
+
+				// Extract global counterparty property
+				if attr.GetMeta().Id == "counterpartyproperty" && len(attr.GetMeta().SensorUrls) == 0 {
+					counterPartyProperties = attr.(persistence.CounterPartyPropertyAttributes).Expression
+					glog.V(5).Infof("Found default global counterpartyproperty attribute %v", attr)
+				}
+
+				// Extract global properties
+				if attr.GetMeta().Id == "property" && len(attr.GetMeta().SensorUrls) == 0 {
+					for key, val := range attr.(persistence.PropertyAttributes).Mappings {
+						props[key] = val
+					}
+					glog.V(5).Infof("Found default global properties %v", props)
 				}
 			}
 		}
@@ -697,14 +713,26 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 
 			case persistence.ArchitectureAttributes:
 				policyArch = attr.(persistence.ArchitectureAttributes).Architecture
+
 			case persistence.HAAttributes:
 				haPartner = attr.(persistence.HAAttributes).Partners
+
 			case persistence.MeteringAttributes:
 				meterPolicy = policy.Meter{
 					Tokens:                attr.(persistence.MeteringAttributes).Tokens,
 					PerTimeUnit:           attr.(persistence.MeteringAttributes).PerTimeUnit,
 					NotificationIntervalS: attr.(persistence.MeteringAttributes).NotificationIntervalS,
 				}
+
+			case persistence.CounterPartyPropertyAttributes:
+				counterPartyProperties = attr.(persistence.CounterPartyPropertyAttributes).Expression
+
+			case persistence.PropertyAttributes:
+				for key, val := range attr.(persistence.PropertyAttributes).Mappings {
+					glog.V(5).Infof("Adding property %v=%v with value type %T", key, val, val)
+					props[key] = val
+				}
+
 			default:
 				glog.V(4).Infof("Unhandled attr type (%T): %v", attr, attr)
 			}
@@ -712,7 +740,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 
 		glog.V(5).Infof("Complete Attr list for registration of service %v: %v", *service.SensorUrl, attributes)
 
-		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorName, policyArch, &props, haPartner, meterPolicy, a.Config.Edge.PolicyPath); genErr != nil {
+		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorName, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, a.Config.Edge.PolicyPath); genErr != nil {
 			glog.Errorf("Error: %v", genErr)
 			w.WriteHeader(http.StatusInternalServerError)
 			return

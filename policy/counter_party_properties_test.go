@@ -24,6 +24,13 @@ func Test_valid_simple1(t *testing.T) {
 		}
 	}
 
+	simple_and = `{"and":[{"name":"prop1", "value":true, "op":"!="}]}`
+	if rp = create_RP(simple_and, t); rp != nil {
+		if err := rp.IsValid(); err != nil {
+			t.Error(err)
+		}
+	}
+
 	simple_or := `{"or":[{"name":"prop1", "value":"val1"}]}`
 	if rp = create_RP(simple_or, t); rp != nil {
 		if err := rp.IsValid(); err != nil {
@@ -110,6 +117,24 @@ func Test_invalid_simple1(t *testing.T) {
 
 // Test that simple expressions satisfy a single property value.
 func Test_satisfy_simple1(t *testing.T) {
+	var rp *RequiredProperty
+	var pa *[]Property
+
+	prop_list := `[{"name":"prop1", "value":true}]`
+	simple_and := `{"and":[{"name":"prop1", "value":true}]}`
+
+	if rp = create_RP(simple_and, t); rp != nil {
+		if pa = create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Error(err)
+			}
+		}
+	}
+
+}
+
+// Test that simple expressions satisfy a single property value.
+func Test_satisfy_simple2(t *testing.T) {
 	var rp *RequiredProperty
 	var pa *[]Property
 
@@ -254,8 +279,25 @@ func Test_satisfy_multiple1(t *testing.T) {
 	}
 }
 
-// Test that simple expressions dont satisfy a single property value.
+// Test that simple expressions satisfy a single property value.
 func Test_not_satisfy_simple1(t *testing.T) {
+	var rp *RequiredProperty
+	var pa *[]Property
+
+	prop_list := `[{"name":"prop1", "value":true}]`
+	simple_and := `{"and":[{"name":"prop1", "value":false}]}`
+
+	if rp = create_RP(simple_and, t); rp != nil {
+		if pa = create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err == nil {
+				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, simple_and)
+			}
+		}
+	}
+}
+
+// Test that simple expressions dont satisfy a single property value.
+func Test_not_satisfy_simple2(t *testing.T) {
 	var rp *RequiredProperty
 	var pa *[]Property
 

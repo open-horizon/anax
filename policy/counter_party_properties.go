@@ -65,6 +65,18 @@ func PropertyExpression_Factory(name string, value interface{}, op string) *Prop
 	return pe
 }
 
+// Initialize a RequiredProperty object from a plain map
+func (self *RequiredProperty) Initialize(exp *map[string]interface{}) error {
+	if len(*exp) != 1 {
+		return errors.New(fmt.Sprintf("Input expression must have only 1 key, has %v", len(*exp)))
+	} else {
+		for op, val := range *exp {
+			(*self)[op] = val
+		}
+	}
+	return nil
+}
+
 // This function is used to determine if an input set of properties and values will satisfy
 // the RequiredProperty expression.
 func (self *RequiredProperty) IsSatisfiedBy(props []Property) error {
@@ -331,6 +343,16 @@ func isString(x interface{}) bool {
 	}
 }
 
+// This function checks the type of the input interface object to see if it's a boolean.
+func isBoolean(x interface{}) bool {
+	switch x.(type) {
+	case bool:
+		return true
+	default:
+		return false
+	}
+}
+
 // This function extracts all the keys from the input map and returns them in a string array.
 func getKeys(m map[string]interface{}) []string {
 	keys := make([]string, 0, 10)
@@ -362,7 +384,15 @@ func propertyInArray(propexp *PropertyExpression, props *[]Property) bool {
 				} else {
 					return p.Value.(float64) == propexp.Value.(float64)
 				}
-			} else {
+			} else if isBoolean(p.Value) && isBoolean(propexp.Value) {
+				if _, ok := stringOperators()[propexp.Op]; !ok {
+					return false
+				} else if propexp.Op == notequalto {
+					return p.Value.(bool) != propexp.Value.(bool)
+				} else if propexp.Op == equalto {
+					return p.Value.(bool) == propexp.Value.(bool)
+				}
+			} else if isString(p.Value) && isString(propexp.Value) {
 				if _, ok := stringOperators()[propexp.Op]; !ok {
 					return false
 				} else if propexp.Op == notequalto {
