@@ -53,8 +53,7 @@ $(TMPGOPATH)/bin/govendor: gopathlinks
 gopathlinks:
 ifneq ($(GOPATH),$(TMPGOPATH))
 	mkdir -p $(PKGPATH)
-	rm -f $(PKGPATH)/anax
-	ln -s $(CURDIR) $(PKGPATH)/anax
+	-ln -s $(CURDIR) $(PKGPATH)/anax
 endif
 
 CDIR=$(DESTDIR)/go/src/github.com/open-horizon/go-solidity/contracts
