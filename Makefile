@@ -57,7 +57,7 @@ ifneq ($(GOPATH),$(TMPGOPATH))
 endif
 
 CDIR=$(DESTDIR)/go/src/github.com/open-horizon/go-solidity/contracts
-install: anax
+install:
 	mkdir -p $(DESTDIR)/bin && cp anax $(DESTDIR)/bin
 	mkdir -p $(CDIR) && \
 		cp -apv ./vendor/github.com/open-horizon/go-solidity/contracts/. $(CDIR)/
