@@ -578,31 +578,31 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			// if the device is not HA enabled then the HA partner attribute is illegal
-			if !existingDevice.HADevice && attr.GetMeta().Id == "ha" {
-				glog.Errorf("Non-HA device %v does not support HA enabled service %v", existingDevice, service)
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].Id", Error: "HA partner not permitted on non-HA devices"})
-				return
-			}
-
-			// Make sure that a device doesnt specify itself in the HA partner list
-			if existingDevice.HADevice {
-				if _, ok := attr.GetGenericMappings()["partnerID"]; ok {
-					switch attr.GetGenericMappings()["partnerID"].(type) {
-					case []string:
-						partners := attr.GetGenericMappings()["partnerID"].([]string)
-						for _, partner := range partners {
-							if partner == existingDevice.Id {
-								glog.Errorf("HA device %v cannot refer to itself in partner list %v", existingDevice, partners)
-								writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].ha", Error: "partner list cannot refer to itself."})
-								return
+			if attr.GetMeta().Id == "ha" {
+				// if the device is not HA enabled then the HA partner attribute is illegal
+				if !existingDevice.HADevice {
+					glog.Errorf("Non-HA device %v does not support HA enabled service %v", existingDevice, service)
+					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].Id", Error: "HA partner not permitted on non-HA devices"})
+					return
+				} else {
+					// Make sure that a device doesnt specify itself in the HA partner list
+					if _, ok := attr.GetGenericMappings()["partnerID"]; ok {
+						switch attr.GetGenericMappings()["partnerID"].(type) {
+						case []string:
+							partners := attr.GetGenericMappings()["partnerID"].([]string)
+							for _, partner := range partners {
+								if partner == existingDevice.Id {
+									glog.Errorf("HA device %v cannot refer to itself in partner list %v", existingDevice, partners)
+									writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].ha", Error: "partner list cannot refer to itself."})
+									return
+								}
 							}
 						}
 					}
 				}
 			}
-			// now make sure we add our own sensorUrl to each attribute
 
+			// now make sure we add our own sensorUrl to each attribute
 			attr.GetMeta().AppendSensorUrl(*service.SensorUrl)
 			glog.Infof("SensorUrls for %v: %v", attr.GetMeta().Id, attr.GetMeta().SensorUrls)
 		}
@@ -642,15 +642,6 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 
-		haType := reflect.TypeOf(persistence.HAAttributes{}).String()
-		if existingDevice.HADevice {
-			if attr := attributesContains(attributes, *service.SensorUrl, haType); attr == nil {
-				glog.Errorf("HA device %v can only support HA enabled services %v", existingDevice, service)
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].ha", Error: "services on an HA device must specify an HA partner."})
-				return
-			}
-		}
-
 		// what's advertised
 		var policyArch string
 		var haPartner []string
@@ -668,6 +659,12 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			return
 		} else {
 			for _, attr := range allAttrs {
+
+				// Extract ha property
+				if attr.GetMeta().Id == "ha" && len(attr.GetMeta().SensorUrls) == 0 {
+					haPartner = attr.(persistence.HAAttributes).Partners
+					glog.V(5).Infof("Found default global ha attribute %v", attr)
+				}
 
 				// Extract global metering property
 				if attr.GetMeta().Id == "metering" && len(attr.GetMeta().SensorUrls) == 0 {
@@ -691,6 +688,16 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 					properties = attr.(persistence.PropertyAttributes).Mappings
 					glog.V(5).Infof("Found default global properties %v", properties)
 				}
+			}
+		}
+
+		// ha device has no ha attribute from either device wide or service wide attributes
+		haType := reflect.TypeOf(persistence.HAAttributes{}).String()
+		if existingDevice.HADevice && len(haPartner) == 0 {
+			if attr := attributesContains(attributes, *service.SensorUrl, haType); attr == nil {
+				glog.Errorf("HA device %v can only support HA enabled services %v", existingDevice, service)
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].ha", Error: "services on an HA device must specify an HA partner."})
+				return
 			}
 		}
 
@@ -843,6 +850,33 @@ func (a *API) serviceAttribute(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			glog.Errorf("Error deserializing attributes: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
+		}
+
+		// verify ha attribute
+		for _, attr := range serviceAttrs {
+			if attr.GetMeta().Id == "ha" {
+				// if the device is not HA enabled then the HA partner attribute is illegal
+				if !existingDevice.HADevice {
+					glog.Errorf("Non-HA device %v does not support HA attribute", existingDevice)
+					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].Id", Error: "HA partner not permitted on non-HA devices"})
+					return
+				} else {
+					// Make sure that a device doesnt specify itself in the HA partner list
+					if _, ok := attr.GetGenericMappings()["partnerID"]; ok {
+						switch attr.GetGenericMappings()["partnerID"].(type) {
+						case []string:
+							partners := attr.GetGenericMappings()["partnerID"].([]string)
+							for _, partner := range partners {
+								if partner == existingDevice.Id {
+									glog.Errorf("HA device %v cannot refer to itself in partner list %v", existingDevice, partners)
+									writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].ha", Error: "partner list cannot refer to itself."})
+									return
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 
 		// save to db; we know there was only one
