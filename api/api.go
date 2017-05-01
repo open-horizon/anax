@@ -656,6 +656,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		var haPartner []string
 		var meterPolicy policy.Meter
 		var counterPartyProperties policy.RequiredProperty
+		var properties map[string]interface{}
 
 		// props to store in file; stuff that is enforced; need to convert from serviceattributes to props. *CAN NEVER BE* unpublishable ServiceAttributes
 		props := make(map[string]interface{})
@@ -687,10 +688,8 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 
 				// Extract global properties
 				if attr.GetMeta().Id == "property" && len(attr.GetMeta().SensorUrls) == 0 {
-					for key, val := range attr.(persistence.PropertyAttributes).Mappings {
-						props[key] = val
-					}
-					glog.V(5).Infof("Found default global properties %v", props)
+					properties = attr.(persistence.PropertyAttributes).Mappings
+					glog.V(5).Infof("Found default global properties %v", properties)
 				}
 			}
 		}
@@ -728,13 +727,18 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 				counterPartyProperties = attr.(persistence.CounterPartyPropertyAttributes).Expression
 
 			case persistence.PropertyAttributes:
-				for key, val := range attr.(persistence.PropertyAttributes).Mappings {
-					glog.V(5).Infof("Adding property %v=%v with value type %T", key, val, val)
-					props[key] = val
-				}
+				properties = attr.(persistence.PropertyAttributes).Mappings
 
 			default:
 				glog.V(4).Infof("Unhandled attr type (%T): %v", attr, attr)
+			}
+		}
+
+		// add the PropertyAttributes to props
+		if len(properties) > 0 {
+			for key, val := range properties {
+				glog.V(5).Infof("Adding property %v=%v with value type %T", key, val, val)
+				props[key] = val
 			}
 		}
 
