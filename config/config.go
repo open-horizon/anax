@@ -64,7 +64,8 @@ type AGConfig struct {
 	ExchangeMessageTTL           int    // The number of seconds the exchange will keep this message before automatically deleting it
 	MessageKeyPath               string // The path to the location of messaging keys
 	DefaultWorkloadPW            string // The default workload password if none is specified in the policy file
-
+	APIListen                    string // Host and port for the API to listen on
+	PurgeArchivedAgreementHours  int    // Number of hours to leave an archived agreement in the database before automatically deleting it
 }
 
 func Read(file string) (*HorizonConfig, error) {

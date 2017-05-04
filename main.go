@@ -169,6 +169,7 @@ func main() {
 	workers := worker.NewMessageHandlerRegistry()
 
 	workers.Add("agreementBot", agreementbot.NewAgreementBotWorker(cfg, agbotdb))
+	workers.Add("agapi", agreementbot.NewAPIListener(cfg, agbotdb))
 
 	gethURL := cfg.Edge.GethURL
 	if gethURL == "" {
