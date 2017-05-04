@@ -106,6 +106,16 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 			}
 		}
 
+	case *events.ABApiAgreementCancelationMessage:
+		if w.ready {
+			msg, _ := incoming.(*events.ABApiAgreementCancelationMessage)
+			switch msg.Event().Id {
+			case events.AGREEMENT_ENDED:
+				agCmd := NewAgreementTimeoutCommand(msg.AgreementId, msg.AgreementProtocol, uint(msg.Reason))
+				w.Commands <- agCmd
+			}
+		}
+
 	default: //nothing
 
 	}
@@ -210,8 +220,9 @@ func (w *AgreementBotWorker) start() {
 		targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/heartbeat"
 		go exchange.Heartbeat(&http.Client{}, targetURL, w.agbotId, w.token, w.Worker.Manager.Config.AgreementBot.ExchangeHeartbeat)
 
-		// Start the governance routine.
+		// Start the governance routines.
 		go w.GovernAgreements()
+		go w.GovernArchivedAgreements()
 
 		// Enter the command processing loop. Initialization is complete so wait for commands to
 		// perform. Commands are created as the result of events that are triggered elsewhere
@@ -246,6 +257,11 @@ func (w *AgreementBotWorker) start() {
 						// Make sure the whisper subsystem is subscribed to messages for this policy's agreement protocol
 						w.Messages() <- events.NewWhisperSubscribeToMessage(events.SUBSCRIBE_TO, newPolicy.AgreementProtocols[0].Name)
 					}
+
+				case *AgreementTimeoutCommand:
+					cmd, _ := command.(*AgreementTimeoutCommand)
+					// TODO: Hack assume there is only one protocol handler
+					w.pwcommands <- cmd
 
 				default:
 					glog.Errorf("AgreementBotWorker Unknown command (%T): %v", command, command)
@@ -313,6 +329,8 @@ func (w *AgreementBotWorker) getMessages() ([]exchange.AgbotMessage, error) {
 
 // There is one of these running for each agreement protocol that we support
 func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
+
+	unarchived := []AFilter{UnarchivedAFilter()}
 
 	if protocol == citizenscientist.PROTOCOL_NAME {
 
@@ -414,7 +432,7 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 						} else {
 							agreementId := protocolHandler.GetAgreementId(rawEvent)
 
-							if ag, err := FindSingleAgreementByAgreementId(w.db, agreementId, protocol); err != nil {
+							if ag, err := FindSingleAgreementByAgreementId(w.db, agreementId, protocol, unarchived); err != nil {
 								glog.Errorf(AWlogString(fmt.Sprintf("error querying agreement %v from database, error: %v", agreementId, err)))
 							} else if ag == nil {
 								glog.V(3).Infof(AWlogString(fmt.Sprintf("ignoring the blockchain event, no database record for for agreement %v with protocol %v.", agreementId, protocol)))
@@ -610,6 +628,10 @@ func (w *AgreementBotWorker) syncOnInit() error {
 					if err := DeleteWorkloadUsage(w.db, ag.DeviceId, ag.PolicyName); err != nil {
 						glog.Warningf(AWlogString(fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 					}
+					// Indicate that the agreement is timed out
+					if _, err := AgreementTimedout(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+						glog.Errorf(AWlogString(fmt.Sprintf("error marking agreement %v terminated: %v", ag.CurrentAgreementId, err)))
+					}
 					w.pwcommands <- NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, citizenscientist.AB_CANCEL_POLICY_CHANGED)
 				} else if err := w.pm.MatchesMine(pol); err != nil {
 					glog.Warningf(AWlogString(fmt.Sprintf("agreement %v has a policy %v that has changed: %v", ag.CurrentAgreementId, pol.Header.Name, err)))
@@ -699,6 +721,11 @@ func (w *AgreementBotWorker) cleanupAgreement(ag *Agreement) {
 	// Delete this workload usage record so that a new agreement will be made starting from the highest priority workload
 	if err := DeleteWorkloadUsage(w.db, ag.DeviceId, ag.PolicyName); err != nil {
 		glog.Warningf(AWlogString(fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
+	}
+
+	// Indicate that the agreement is timed out
+	if _, err := AgreementTimedout(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+		glog.Errorf(AWlogString(fmt.Sprintf("error marking agreement %v terminated: %v", ag.CurrentAgreementId, err)))
 	}
 
 	w.pwcommands <- NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, citizenscientist.AB_CANCEL_POLICY_CHANGED)

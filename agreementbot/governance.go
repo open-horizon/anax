@@ -19,6 +19,8 @@ func (w *AgreementBotWorker) GovernAgreements() {
 
 	glog.Info(logString(fmt.Sprintf("started agreement governance")))
 
+	unarchived := []AFilter{UnarchivedAFilter()}
+
 	sendMessage := func(mt interface{}, pay []byte) error {
 		// The mt parameter is an abstract message target object that is passed to this routine
 		// by the agreement protocol. It's an interface{} type so that we can avoid the protocol knowing
@@ -196,9 +198,9 @@ func (w *AgreementBotWorker) GovernAgreements() {
 										glog.Errorf(logString(fmt.Sprintf("error obtaining message target for metering notification: %v", err)))
 									} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
 										glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
-									} else if err := protocolHandler.NotifyMetering(ag.CurrentAgreementId, mn, mt, sendMessage); err != nil {
+									} else if msg, err := protocolHandler.NotifyMetering(ag.CurrentAgreementId, mn, mt, sendMessage); err != nil {
 										glog.Errorf(logString(fmt.Sprintf("unable to send metering notification, error: %v", err)))
-									} else if _, err := MeteringNotification(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+									} else if _, err := MeteringNotification(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME, msg); err != nil {
 										glog.Errorf(logString(fmt.Sprintf("unable to record metering notification, error: %v", err)))
 									}
 								}
@@ -286,7 +288,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 				// begin upgrading the partner who needs it.
 				if upgradedPartnerFound != "" && partnerUpgrading == "" {
 					glog.V(3).Infof(logString(fmt.Sprintf("beginning upgrade of HA member %v in group %v.", wlu.DeviceId, wlu.HAPartners)))
-					if ag, err := FindSingleAgreementByAgreementId(w.db, wlu.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+					if ag, err := FindSingleAgreementByAgreementId(w.db, wlu.CurrentAgreementId, citizenscientist.PROTOCOL_NAME, unarchived); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("unable to read agreement %v from database, error: %v", wlu.CurrentAgreementId, err)))
 					} else {
 						// Make sure the workload usage record is gone,this will allow the device to pick up the newest workload.
@@ -337,7 +339,7 @@ func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *WorkloadUsa
 	partnerUpgrading := ""
 	upgradedPartnerFound := ""
 
-	if ag, err := FindSingleAgreementByAgreementId(w.db, partnerWLU.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+	if ag, err := FindSingleAgreementByAgreementId(w.db, partnerWLU.CurrentAgreementId, citizenscientist.PROTOCOL_NAME, []AFilter{UnarchivedAFilter()}); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("unable to read agreement %v from database, error: %v", partnerWLU.CurrentAgreementId, err)))
 	} else if ag == nil {
 		// If we dont find an agreement for a partner, then it is because a previous agreement with that partner has failed and we
@@ -504,6 +506,58 @@ func getDevice(deviceId string, url string, agbotId string, token string) (*exch
 
 }
 
+// Govern the archived agreements, periodically deleting them from the database if they are old enough. The
+// age limit is defined by the agbot configuration, PurgeArchivedAgreementHours.
+//
+func (w *AgreementBotWorker) GovernArchivedAgreements() {
+
+	glog.Info(logString(fmt.Sprintf("started archived agreement governance")))
+
+	// Default to purging archived agreements an hour after they are terminated.
+	ageLimit := 1
+	if w.Config.AgreementBot.PurgeArchivedAgreementHours != 0 {
+		ageLimit = w.Config.AgreementBot.PurgeArchivedAgreementHours
+	} else {
+		glog.Info(logString(fmt.Sprintf("archive purge using default age limit of %v hour.", ageLimit)))
+	}
+
+	// This is the amount of time for the governance routine to wait.
+	waitTime := uint64(1800)
+
+	for {
+
+		glog.V(5).Infof(logString(fmt.Sprintf("archive purge scanning for agreements archived more than %v hour(s) ago.", ageLimit)))
+
+		// A filter for limiting the returned set of agreements to just those that are too old.
+		agedOutFilter := func(now int64, limitH int) AFilter {
+			return func(a Agreement) bool {
+				return a.AgreementTimedout != 0 && (a.AgreementTimedout + uint64(limitH * 3600) <= uint64(now))
+			}
+		}
+
+		// Find all archived agreements that are old enough and delete them.
+		now := time.Now().Unix()
+		if agreements, err := FindAgreements(w.db, []AFilter{ArchivedAFilter(), agedOutFilter(now, ageLimit)}, citizenscientist.PROTOCOL_NAME); err == nil {
+			for _, ag := range agreements {
+				if err := DeleteAgreement(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+					glog.Error(logString(fmt.Sprintf("error deleting archived agreement %v, error: %v", ag.CurrentAgreementId, err)))
+				} else {
+					glog.V(3).Infof(logString(fmt.Sprintf("archive purge deleted %v", ag.CurrentAgreementId)))
+				}
+			}
+
+		} else {
+			glog.Errorf(logString(fmt.Sprintf("unable to read archived agreements from database, error: %v", err)))
+		}
+
+		// Sleep
+		glog.V(5).Infof(logString(fmt.Sprintf("archive purge sleeping for %v seconds.", waitTime)))
+		time.Sleep(time.Duration(waitTime) * time.Second)
+	}
+
+}
+
+// global log record prefix
 var logString = func(v interface{}) string {
 	return fmt.Sprintf("AgreementBot Governance: %v", v)
 }
