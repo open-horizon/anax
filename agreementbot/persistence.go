@@ -41,10 +41,15 @@ type Agreement struct {
 	MeteringPerTimeUnit            string   `json:"metering_per_time_unit"`           // The time units of tokens per, from the proposal
 	MeteringNotificationInterval   int      `json:"metering_notify_interval"`         // The interval of time between metering notifications (seconds)
 	MeteringNotificationSent       uint64   `json:"metering_notification_sent"`       // The last time a metering notification was sent
+	MeteringNotificationMsgs       []string `json:"metering_notification_msgs"`       // The last metering messages that were sent, oldest at the end
+	Archived                       bool     `json:"archived"`                         // The record is archived
+	TerminatedReason               uint     `json:"terminated_reason"`                // The reason the agreement was terminated
+	TerminatedDescription          string   `json:"terminated_description"`           // The description of why the agreement was terminated
 }
 
 func (a Agreement) String() string {
-	return fmt.Sprintf("CurrentAgreementId: %v, " +
+	return fmt.Sprintf("Archived: %v, " +
+		"CurrentAgreementId: %v, " +
 		"DeviceId: %v, " +
 		"HA Partners: %v, " +
 		"AgreementInceptionTime: %v, " +
@@ -67,12 +72,16 @@ func (a Agreement) String() string {
 		"MeteringTokens: %v, " +
 		"MeteringPerTimeUnit: %v, " +
 		"MeteringNotificationInterval: %v, " +
-		"MeteringNotificationSent: %v",
-		a.CurrentAgreementId, a.DeviceId, a.HAPartners, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime,
+		"MeteringNotificationSent: %v, " +
+		"MeteringNotificationMsgs: %v, " +
+		"TerminatedReason: %v, " +
+		"TerminatedDescription: %v",
+		a.Archived, a.CurrentAgreementId, a.DeviceId, a.HAPartners, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime,
 		a.AgreementTimedout, a.ProposalSig, a.ProposalHash, a.ConsumerProposalSig, a.PolicyName, a.CounterPartyAddress,
 		a.DataVerificationURL, a.DataVerificationUser, a.DataVerificationCheckRate, a.DataVerificationMissedCount, a.DataVerificationNoDataInterval,
 		a.DisableDataVerificationChecks, a.DataVerifiedTime, a.DataNotificationSent,
-		a.MeteringTokens, a.MeteringPerTimeUnit, a.MeteringNotificationInterval, a.MeteringNotificationSent)
+		a.MeteringTokens, a.MeteringPerTimeUnit, a.MeteringNotificationInterval, a.MeteringNotificationSent, a.MeteringNotificationMsgs,
+		a.TerminatedReason, a.TerminatedDescription)
 }
 
 // private factory method for agreement w/out persistence safety:
@@ -108,6 +117,10 @@ func agreement(agreementid string, deviceid string, policyName string, agreement
 			MeteringPerTimeUnit:            "",
 			MeteringNotificationInterval:   0,
 			MeteringNotificationSent:       0,
+			MeteringNotificationMsgs:       []string{"",""},
+			Archived:                       false,
+			TerminatedReason:               0,
+			TerminatedDescription:          "",
 		}, nil
 	}
 }
@@ -217,9 +230,24 @@ func DataNotification(db *bolt.DB, agreementid string, protocol string) (*Agreem
 	}
 }
 
-func MeteringNotification(db *bolt.DB, agreementid string, protocol string) (*Agreement, error) {
+func MeteringNotification(db *bolt.DB, agreementid string, protocol string, mn string) (*Agreement, error) {
 	if agreement, err := singleAgreementUpdate(db, agreementid, protocol, func(a Agreement) *Agreement {
 		a.MeteringNotificationSent = uint64(time.Now().Unix())
+		a.MeteringNotificationMsgs[1] = a.MeteringNotificationMsgs[0]
+		a.MeteringNotificationMsgs[0] = mn
+		return &a
+	}); err != nil {
+		return nil, err
+	} else {
+		return agreement, nil
+	}
+}
+
+func ArchiveAgreement(db *bolt.DB, agreementid string, protocol string, reason uint, desc string) (*Agreement, error) {
+	if agreement, err := singleAgreementUpdate(db, agreementid, protocol, func(a Agreement) *Agreement {
+		a.Archived = true
+		a.TerminatedReason = reason
+		a.TerminatedDescription = desc
 		return &a
 	}); err != nil {
 		return nil, err
@@ -229,8 +257,7 @@ func MeteringNotification(db *bolt.DB, agreementid string, protocol string) (*Ag
 }
 
 // no error on not found, only nil
-func FindSingleAgreementByAgreementId(db *bolt.DB, agreementid string, protocol string) (*Agreement, error) {
-	filters := make([]AFilter, 0)
+func FindSingleAgreementByAgreementId(db *bolt.DB, agreementid string, protocol string, filters []AFilter) (*Agreement, error) {
 	filters = append(filters, IdAFilter(agreementid))
 
 	if agreements, err := FindAgreements(db, filters, protocol); err != nil {
@@ -245,7 +272,7 @@ func FindSingleAgreementByAgreementId(db *bolt.DB, agreementid string, protocol 
 }
 
 func singleAgreementUpdate(db *bolt.DB, agreementid string, protocol string, fn func(Agreement) *Agreement) (*Agreement, error) {
-	if agreement, err := FindSingleAgreementByAgreementId(db, agreementid, protocol); err != nil {
+	if agreement, err := FindSingleAgreementByAgreementId(db, agreementid, protocol, []AFilter{}); err != nil {
 		return nil, err
 	} else if agreement == nil {
 		return nil, fmt.Errorf("Unable to locate agreement id: %v", agreementid)
@@ -296,6 +323,10 @@ func persistUpdatedAgreement(db *bolt.DB, agreementid string, protocol string, u
 				mod.MeteringPerTimeUnit = update.MeteringPerTimeUnit
 				mod.MeteringNotificationInterval = update.MeteringNotificationInterval
 				mod.MeteringNotificationSent = update.MeteringNotificationSent
+				mod.MeteringNotificationMsgs = update.MeteringNotificationMsgs
+				mod.Archived = update.Archived
+				mod.TerminatedReason = update.TerminatedReason
+				mod.TerminatedDescription = update.TerminatedDescription
 
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize agreement record: %v", mod)
@@ -327,7 +358,7 @@ func DeleteAgreement(db *bolt.DB, pk string, protocol string) error {
 
 				if err := json.Unmarshal(existing, &record); err != nil {
 					glog.Errorf("Error deserializing agreement: %v. This is a pre-deletion warning message function so deletion will still proceed", record)
-				} else if record.CurrentAgreementId != "" {
+				} else if record.CurrentAgreementId != "" && !record.Archived {
 					glog.Warningf("Warning! Deleting an agreement record with an agreement id, this operation should only be done after cancelling on the blockchain.")
 				}
 			}
@@ -335,6 +366,14 @@ func DeleteAgreement(db *bolt.DB, pk string, protocol string) error {
 			return b.Delete([]byte(pk))
 		})
 	}
+}
+
+func UnarchivedAFilter() AFilter {
+	return func(e Agreement) bool { return !e.Archived }
+}
+
+func ArchivedAFilter() AFilter {
+	return func(e Agreement) bool { return e.Archived }
 }
 
 func IdAFilter(id string) AFilter {
@@ -356,7 +395,9 @@ func FindAgreements(db *bolt.DB, filters []AFilter, protocol string) ([]Agreemen
 				if err := json.Unmarshal(v, &a); err != nil {
 					glog.Errorf("Unable to deserialize db record: %v", v)
 				} else {
-					glog.V(5).Infof("Demarshalled agreement in DB: %v", a)
+					if !a.Archived {
+						glog.V(5).Infof("Demarshalled agreement in DB: %v", a)
+					}
 					exclude := false
 					for _, filterFn := range filters {
 						if !filterFn(a) {

@@ -147,6 +147,8 @@ func (c CSHandleBCTerminated) Type() string {
 func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, bc *ethblockchain.BaseContracts) {
 	workerID := uuid.NewV4().String()
 
+	unarchived := []AFilter{UnarchivedAFilter()}
+
 	logString := func(v interface{}) string {
 		return fmt.Sprintf("CSAgreementWorker (%v): %v", workerID, v)
 	}
@@ -305,7 +307,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				ackReplyAsValid := false
 
 				// Find the saved agreement in the database
-				if agreement, err := FindSingleAgreementByAgreementId(a.db, reply.AgreementId(), citizenscientist.PROTOCOL_NAME); err != nil {
+				if agreement, err := FindSingleAgreementByAgreementId(a.db, reply.AgreementId(), citizenscientist.PROTOCOL_NAME, unarchived); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error querying pending agreement %v, error: %v", reply.AgreementId(), err)))
 				} else if agreement == nil {
 					glog.V(5).Infof(logString(fmt.Sprintf("discarding reply, agreement id %v not in our database", reply.AgreementId())))
@@ -401,7 +403,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 			wi := workItem.(CSHandleDataReceivedAck)
 			if drAck, err := protocolHandler.ValidateDataReceivedAck(wi.Ack); err != nil {
 				glog.Warningf(logString(fmt.Sprintf("discarding message: %v", wi.Ack)))
-			} else if ag, err := FindSingleAgreementByAgreementId(a.db, drAck.AgreementId(), citizenscientist.PROTOCOL_NAME); err != nil {
+			} else if ag, err := FindSingleAgreementByAgreementId(a.db, drAck.AgreementId(), citizenscientist.PROTOCOL_NAME, unarchived); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error querying timed out agreement %v, error: %v", drAck.AgreementId(), err)))
 			} else if ag == nil {
 				glog.V(3).Infof(logString(fmt.Sprintf("nothing to terminate for agreement %v, no database record.", drAck.AgreementId())))
@@ -425,7 +427,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 			// the agreement is recorded on the blockchain
 			wi := workItem.(CSHandleBCRecorded)
 
-			if ag, err := FindSingleAgreementByAgreementId(a.db, wi.AgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+			if ag, err := FindSingleAgreementByAgreementId(a.db, wi.AgreementId, citizenscientist.PROTOCOL_NAME, unarchived); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error querying agreement %v from database, error: %v", wi.AgreementId, err)))
 			} else if ag == nil {
 				glog.V(3).Infof(logString(fmt.Sprintf("nothing to do for agreement %v, no database record.", wi.AgreementId)))
@@ -518,13 +520,18 @@ func (a *CSAgreementWorker) cancelAgreement(agreementId string, reason uint, pro
 	// Start timing out the agreement
 	glog.V(3).Infof("CSAgreementWorker: terminating agreement %v.", agreementId)
 
+	// Update the database
+	if _, err := AgreementTimedout(a.db, agreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+		glog.Errorf("CSAgreementWorker: error marking agreement %v terminated: %v", agreementId, err)
+	}
+
 	// Update state in exchange
 	if err := DeleteConsumerAgreement(a.config.AgreementBot.ExchangeURL, a.agbotId, a.token, agreementId); err != nil {
 		glog.Errorf("CSAgreementWorker: error deleting agreement %v in exchange: %v", agreementId, err)
 	}
 
 	// Find the agreement record
-	if ag, err := FindSingleAgreementByAgreementId(a.db, agreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+	if ag, err := FindSingleAgreementByAgreementId(a.db, agreementId, citizenscientist.PROTOCOL_NAME, []AFilter{UnarchivedAFilter()}); err != nil {
 		glog.Errorf("CSAgreementWorker: error querying agreement %v from database, error: %v", agreementId, err)
 	} else if ag == nil {
 		glog.V(3).Infof("CSAgreementWorker: nothing to terminate for agreement %v, no database record.", agreementId)
@@ -542,9 +549,9 @@ func (a *CSAgreementWorker) cancelAgreement(agreementId string, reason uint, pro
 			glog.Errorf("CSAgreementWorker: error terminating agreement %v on the blockchain: %v", agreementId, err)
 		}
 
-		// Remove from database
-		if err := DeleteAgreement(a.db, agreementId, citizenscientist.PROTOCOL_NAME); err != nil {
-			glog.Errorf("CSAgreementWorker: error deleting terminated agreement: %v, error: %v", agreementId, err)
+		// Archive the record
+		if _, err := ArchiveAgreement(a.db, agreementId, citizenscientist.PROTOCOL_NAME, reason, citizenscientist.DecodeReasonCode(uint64(reason))); err != nil {
+			glog.Errorf("CSAgreementWorker: error archiving terminated agreement: %v, error: %v", agreementId, err)
 		}
 	}
 }

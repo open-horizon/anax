@@ -396,16 +396,16 @@ func (p *ProtocolHandler) NotifyDataReceiptAck(agreementId string, messageTarget
 	return p.sendDataNotificationAck(messageTarget, PROTOCOL_NAME, ra, sendMessage)
 }
 
-func (p *ProtocolHandler) NotifyMetering(agreementId string, mn *metering.MeteringNotification, messageTarget interface{}, sendMessage func(mt interface{}, pay []byte) error) error {
+func (p *ProtocolHandler) NotifyMetering(agreementId string, mn *metering.MeteringNotification, messageTarget interface{}, sendMessage func(mt interface{}, pay []byte) error) (string, error) {
 
 	// The metering notification is almost complete. We need to sign the hash.
 	hash := mn.GetMeterHash()
 	glog.V(5).Infof("Signing hash %v for %v, metering notification %v", hash, agreementId, mn)
 	sig := ""
 	if signature, err := ethblockchain.SignHash(hash, p.GethURL); err != nil {
-		return errors.New(fmt.Sprintf("CS Protocol sending meter notification received error signing hash %v, error %v", hash, err))
+		return "", errors.New(fmt.Sprintf("CS Protocol sending meter notification received error signing hash %v, error %v", hash, err))
 	} else if len(signature) <= 2 {
-		return errors.New(fmt.Sprintf("CS Protocol sending meter notification received incorrect signature %v from eth_sign.", signature))
+		return "", errors.New(fmt.Sprintf("CS Protocol sending meter notification received incorrect signature %v from eth_sign.", signature))
 	} else {
 		sig = signature[2:]
 	}
@@ -416,10 +416,10 @@ func (p *ProtocolHandler) NotifyMetering(agreementId string, mn *metering.Meteri
 	// The metering notification is setup, now we can send it.
 	pay, err := json.Marshal(mn)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Unable to serialize payload %v, error: %v", mn, err))
+		return "", errors.New(fmt.Sprintf("Unable to serialize payload %v, error: %v", mn, err))
 	} else {
 		ra := NewNotifyMetering(agreementId, string(pay))
-		return p.sendNotifyMetering(messageTarget, PROTOCOL_NAME, ra, sendMessage)
+		return string(pay), p.sendNotifyMetering(messageTarget, PROTOCOL_NAME, ra, sendMessage)
 	}
 }
 
@@ -762,6 +762,7 @@ const AB_CANCEL_NEGATIVE_REPLY        = 202
 const AB_CANCEL_NO_DATA_RECEIVED      = 203
 const AB_CANCEL_POLICY_CHANGED        = 204
 const AB_CANCEL_DISCOVERED            = 205  // xcd
+const AB_USER_REQUESTED               = 206
 
 func DecodeReasonCode(code uint64) string {
 
@@ -778,7 +779,8 @@ func DecodeReasonCode(code uint64) string {
 									AB_CANCEL_NEGATIVE_REPLY:        "agreement bot received negative reply",
 									AB_CANCEL_NO_DATA_RECEIVED:      "agreement bot did not detect data",
 									AB_CANCEL_POLICY_CHANGED:        "agreement bot policy changed",
-									AB_CANCEL_DISCOVERED:            "agreement bot discovered cancellation from producer"}
+									AB_CANCEL_DISCOVERED:            "agreement bot discovered cancellation from producer",
+									AB_USER_REQUESTED:               "agreement bot user requested"}
 
 	if reasonString, ok := codeMeanings[code]; !ok {
 		return "unknown reason code, device might be downlevel"
