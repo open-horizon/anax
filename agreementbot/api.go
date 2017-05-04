@@ -52,7 +52,7 @@ func (a *API) listen(apiListen string) {
 	glog.Info("Starting AgreementBot API server")
 
 	// If there is no Agbot config, we will terminate
-	if a.Config.AgreementBot.APIListen == "" {
+	if apiListen == "" {
 		glog.Errorf("AgreementBotWorker API terminating, no AgreementBot API config.")
 		return
 	} else if a.db == nil {

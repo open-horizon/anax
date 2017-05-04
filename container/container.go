@@ -431,14 +431,17 @@ type ContainerWorker struct {
 	db            *bolt.DB
 	client        *docker.Client
 	iptables      *iptables.IPTables
+	inAgbot       bool
 }
 
 func NewContainerWorker(config *config.HorizonConfig, db *bolt.DB) *ContainerWorker {
 	messages := make(chan events.Message)
 	commands := make(chan worker.Command, 200)
 
+	inAgbot := false
 	if config.Edge.WorkloadROStorage == "" && config.Edge.DBPath == "" {
 		// We are running in an agbot, dont need the workload RO storage config.
+		inAgbot = true
 
 	} else if err := unix.Access(config.Edge.WorkloadROStorage, unix.W_OK); err != nil {
 		glog.Errorf("Unable to access workload RO storage dir: %v. Error: %v", config.Edge.WorkloadROStorage, err)
@@ -463,6 +466,7 @@ func NewContainerWorker(config *config.HorizonConfig, db *bolt.DB) *ContainerWor
 			db:       db,
 			client:   client,
 			iptables: ipt,
+			inAgbot:  inAgbot,
 		}
 
 		worker.start()
@@ -1283,6 +1287,11 @@ func (b *ContainerWorker) start() {
 // To ensure that all the containers for all known agreements are running, we will depend on the governance
 // function which periodically checks to ensure that all containers are running.
 func (b *ContainerWorker) syncupResources() {
+
+	if b.inAgbot {
+		glog.V(3).Infof("ContainerWorker skipping resource sync up on agreement bot.")
+		return
+	}
 
 	outcome := true
 	leftoverAgreements := make(map[string]bool)
