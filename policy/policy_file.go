@@ -480,21 +480,24 @@ func newWatchEntry(fi os.FileInfo, p *Policy) *WatchEntry {
 // when the system starts up. Or, it can be dispatched as a go routine that wakes up on the invoker's
 // interval to check for changes in the policy directory.
 //
+// Humans are devious and can make all kinds of different changes to the policy files. Changes like renaming
+// files, changing the contents of a file, changing a policy name within the file, adding new files, deleting
+// files, etc. All of these potential changes need to be accounted for within this function.
+//
 // When the watcher observes a change in the policy directory it will call the appropriate callback function:
 // - fileChanged is called when new files are added OR when an existing file is updated.
 // - fileDeleted is called when a file is deleted
 // - fileError is called when an error occurs trying to demarshal a file into a policy object
 
-func PolicyFileChangeWatcher(homePath string, fileChanged func(fileName string, policy *Policy), fileDeleted func(fileName string, policy *Policy), fileError func(fileName string, err error), checkInterval int) error {
+func PolicyFileChangeWatcher(homePath string, contents map[string]*WatchEntry, fileChanged func(fileName string, policy *Policy), fileDeleted func(fileName string, policy *Policy), fileError func(fileName string, err error), checkInterval int) (map[string]*WatchEntry, error) {
 
-	// The map that holds info on every policy document in the policy directory
-	var contents = make(map[string]*WatchEntry)
+	// contents is the map that holds info on every policy file in the policy directory
 
 	// The main loop that monitors the policy directory.
 	for {
 		// Get a list of all policy files in the directory
 		if files, err := getPolicyFiles(homePath); err != nil {
-			return errors.New(fmt.Sprintf("Policy File Watcher unable to get list of policy files in %v, error: %v", homePath, err))
+			return contents, errors.New(fmt.Sprintf("Policy File Watcher unable to get list of policy files in %v, error: %v", homePath, err))
 		} else {
 			// For each file, if we dont have a record of it, read in the file and create an entry in the map.
 			for _, fileInfo := range files {
@@ -513,19 +516,49 @@ func PolicyFileChangeWatcher(homePath string, fileChanged func(fileName string, 
 		}
 
 		// For each file that we know about (this includes any new files discovered above), check to see
-		// the file has changed or has been deleted.
+		// if the file has changed or has been deleted.
 		for _, we := range contents {
 			if newStat, err := os.Stat(homePath + we.FInfo.Name()); err != nil && !os.IsNotExist(err) {
 				fileError(homePath+we.FInfo.Name(), err)
 			} else if err != nil && os.IsNotExist(err) {
-				fileDeleted(homePath+we.FInfo.Name(), we.Pol)
-				glog.V(5).Infof("Policy File Watcher detected deleted file %v", homePath+we.FInfo.Name())
+				// A file that is deleted might actually have been renamed. To check this, we need to look at
+				// all the other policies we captured to see if there is another file with our policy in it. If so,
+				// we can skip the delete notification.
+				found := false
+				for key, val := range contents {
+					if key == we.FInfo.Name() {
+						continue
+					} else if val.Pol.Header.Name == we.Pol.Header.Name {
+						found = true
+						break
+					}
+				}
+				// If there is another file with our policy in it, then we can skip the delete event but we still have to 
+				// remove the file entry from the contents map.
+				if !found {
+					fileDeleted(homePath+we.FInfo.Name(), we.Pol)
+					glog.V(5).Infof("Policy File Watcher detected deleted file %v", homePath+we.FInfo.Name())
+				}
 				key := we.FInfo.Name()
 				delete(contents, key)
 			} else if newStat.ModTime().After(we.FInfo.ModTime()) {
-				fileChanged(homePath+we.FInfo.Name(), we.Pol)
-				glog.V(5).Infof("Policy File Watcher Stats detected changed file %v", homePath+we.FInfo.Name())
-				contents[we.FInfo.Name()] = newWatchEntry(newStat, we.Pol)
+				// A changed file could be a new policy and a deleted policy if it's the policy name that was changed.
+				if policy, err := ReadPolicyFile(homePath + we.FInfo.Name()); err != nil {
+					fileError(homePath+we.FInfo.Name(), err)
+				} else if policy.Header.Name != we.Pol.Header.Name {
+					// Contents of the file changed the policy name, so this means we have a new policy and a deleted policy at the same time.
+					// Inform the world about the deleted policy.
+					fileDeleted(homePath+we.FInfo.Name(), we.Pol)
+					glog.V(5).Infof("Policy File Watcher detected deleted policy in existing file %v", homePath+we.FInfo.Name())
+					// Inform the world about the new policy and save a reference to it.
+					fileChanged(homePath+we.FInfo.Name(), policy)
+					glog.V(5).Infof("Policy File Watcher Stats detected new policy in existing file %v", homePath+we.FInfo.Name())
+					contents[we.FInfo.Name()] = newWatchEntry(newStat, policy)
+				} else {
+					fileChanged(homePath+we.FInfo.Name(), policy)
+					glog.V(5).Infof("Policy File Watcher Stats detected changed file %v", homePath+we.FInfo.Name())
+					contents[we.FInfo.Name()] = newWatchEntry(newStat, policy)
+				}
 			}
 		}
 
@@ -538,7 +571,7 @@ func PolicyFileChangeWatcher(homePath string, fileChanged func(fileName string, 
 		}
 	}
 
-	return nil
+	return contents, nil
 }
 
 // This is an internal function used to find all policy files in the policy directory. Files that don't end in

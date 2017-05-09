@@ -40,17 +40,32 @@ func NewAgreementTimeoutCommand(agreementId string, protocol string, reason uint
 }
 
 // ==============================================================================================================
-type NewPolicyCommand struct {
-	PolicyFile string
+type PolicyChangedCommand struct {
+	Msg events.PolicyChangedMessage
 }
 
-func (p NewPolicyCommand) ShortString() string {
+func (p PolicyChangedCommand) ShortString() string {
 	return fmt.Sprintf("%v", p)
 }
 
-func NewNewPolicyCommand(fileName string) *NewPolicyCommand {
-	return &NewPolicyCommand{
-		PolicyFile: fileName,
+func NewPolicyChangedCommand(msg events.PolicyChangedMessage) *PolicyChangedCommand {
+	return &PolicyChangedCommand{
+		Msg: msg,
+	}
+}
+
+// ==============================================================================================================
+type PolicyDeletedCommand struct {
+	Msg events.PolicyDeletedMessage
+}
+
+func (p PolicyDeletedCommand) ShortString() string {
+	return fmt.Sprintf("%v", p)
+}
+
+func NewPolicyDeletedCommand(msg events.PolicyDeletedMessage) *PolicyDeletedCommand {
+	return &PolicyDeletedCommand{
+		Msg: msg,
 	}
 }
 

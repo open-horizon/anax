@@ -49,7 +49,9 @@ const (
 	NEW_ETH_CLIENT     EventId = "NEW_ETH_CONTAINER"
 
 	// policy-related
-	NEW_POLICY EventId = "NEW_POLICY"
+	NEW_POLICY EventId     = "NEW_POLICY"
+	CHANGED_POLICY EventId = "CHANGED_POLICY"
+	DELETED_POLICY EventId = "DELETED_POLICY"
 
 	// exchange-related
 	NEW_DEVICE_REG EventId = "NEW_DEVICE_REG"
@@ -233,6 +235,94 @@ func NewPolicyCreatedMessage(id EventId, policyFileName string) *PolicyCreatedMe
 			Id: id,
 		},
 		fileName: policyFileName,
+	}
+}
+
+// This event indicates that a policy file has changed. It might also be a new policy file in the agbot.
+type PolicyChangedMessage struct {
+	event    Event
+	fileName string
+	name     string
+	policy   string
+}
+
+func (e PolicyChangedMessage) String() string {
+	return fmt.Sprintf("event: %v, file: %v, name: %v, policy: %v", e.event, e.fileName, e.name, e.policy)
+}
+
+func (e PolicyChangedMessage) ShortString() string {
+	return e.String()
+}
+
+func (e *PolicyChangedMessage) Event() Event {
+	return e.event
+}
+
+func (e *PolicyChangedMessage) PolicyFile() string {
+	return e.fileName
+}
+
+func (e *PolicyChangedMessage) PolicyName() string {
+	return e.name
+}
+
+func (e *PolicyChangedMessage) PolicyString() string {
+	return e.policy
+}
+
+func NewPolicyChangedMessage(id EventId, policyFileName string, policyName string, policy string) *PolicyChangedMessage {
+
+	return &PolicyChangedMessage{
+		event: Event{
+			Id: id,
+		},
+		fileName: policyFileName,
+		name:     policyName,
+		policy:   policy,
+	}
+}
+
+// This event indicates that a policy file was deleted.
+type PolicyDeletedMessage struct {
+	event    Event
+	fileName string
+	name     string
+	policy   string
+}
+
+func (e PolicyDeletedMessage) String() string {
+	return fmt.Sprintf("event: %v, file: %v, name: %v, policy: %v", e.event, e.fileName, e.name, e.policy)
+}
+
+func (e PolicyDeletedMessage) ShortString() string {
+	return e.String()
+}
+
+func (e *PolicyDeletedMessage) Event() Event {
+	return e.event
+}
+
+func (e *PolicyDeletedMessage) PolicyFile() string {
+	return e.fileName
+}
+
+func (e *PolicyDeletedMessage) PolicyName() string {
+	return e.name
+}
+
+func (e *PolicyDeletedMessage) PolicyString() string {
+	return e.policy
+}
+
+func NewPolicyDeletedMessage(id EventId, policyFileName string, policyName string, policy string) *PolicyDeletedMessage {
+
+	return &PolicyDeletedMessage{
+		event: Event{
+			Id: id,
+		},
+		fileName: policyFileName,
+		name:     policyName,
+		policy:   policy,
 	}
 }
 

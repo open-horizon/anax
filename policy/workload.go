@@ -62,6 +62,12 @@ func (wp WorkloadPriority) String() string {
         wp.PriorityValue, wp.Retries, wp.RetryDurationS)
 }
 
+func (wp WorkloadPriority) IsSame(compare WorkloadPriority) bool {
+    return wp.PriorityValue == compare.PriorityValue &&
+            wp.Retries == compare.Retries &&
+            wp.RetryDurationS == compare.RetryDurationS
+}
+
 type Workload struct {
     Deployment          string           `json:"deployment"`
     DeploymentSignature string           `json:"deployment_signature"`
@@ -89,7 +95,12 @@ func (w Workload) ShortString() string {
 
 // This function specifically omits checking the Priority section of the workload because that section is not relevant to the equivalence between 2 workload definitions.
 func (wl Workload) IsSame(compare Workload) bool {
-    return wl.Deployment == compare.Deployment && wl.DeploymentSignature == compare.DeploymentSignature && wl.DeploymentUserInfo == compare.DeploymentUserInfo && wl.Torrent.IsSame(compare.Torrent) && wl.WorkloadPassword == compare.WorkloadPassword
+    return wl.Deployment == compare.Deployment &&
+            wl.DeploymentSignature == compare.DeploymentSignature &&
+            wl.DeploymentUserInfo == compare.DeploymentUserInfo &&
+            wl.Torrent.IsSame(compare.Torrent) &&
+            wl.WorkloadPassword == compare.WorkloadPassword &&
+            wl.Priority.IsSame(compare.Priority)
 }
 
 func (w *Workload) Obscure(agreementId string, defaultPW string) error {

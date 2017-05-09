@@ -29,9 +29,10 @@ type CSAgreementWorker struct {
 	agbotId    string
 	token      string
 	protocol   string
+	alm        *AgreementLockManager
 }
 
-func NewCSAgreementWorker(policyManager *policy.PolicyManager, config *config.HorizonConfig, db *bolt.DB) *CSAgreementWorker {
+func NewCSAgreementWorker(policyManager *policy.PolicyManager, config *config.HorizonConfig, db *bolt.DB, alm *AgreementLockManager) *CSAgreementWorker {
 
 	p := &CSAgreementWorker{
 		pm:         policyManager,
@@ -40,6 +41,7 @@ func NewCSAgreementWorker(policyManager *policy.PolicyManager, config *config.Ho
 		httpClient: &http.Client{},
 		agbotId:    config.AgreementBot.ExchangeId,
 		token:      config.AgreementBot.ExchangeToken,
+		alm:        alm,
 	}
 
 	return p
@@ -147,8 +149,6 @@ func (c CSHandleBCTerminated) Type() string {
 func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, bc *ethblockchain.BaseContracts) {
 	workerID := uuid.NewV4().String()
 
-	unarchived := []AFilter{UnarchivedAFilter()}
-
 	logString := func(v interface{}) string {
 		return fmt.Sprintf("CSAgreementWorker (%v): %v", workerID, v)
 	}
@@ -242,192 +242,39 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 
 		if workItem.Type() == INITIATE {
 			wi := workItem.(CSInitiateAgreement)
-			// Generate an agreement ID
-			agreementId := generateAgreementId(random)
-			myAddress, _ := ethblockchain.AccountId()
-			agreementIdString := hex.EncodeToString(agreementId)
-			glog.V(5).Infof(logString(fmt.Sprintf("using AgreementId %v", agreementIdString)))
-
-			// Determine which workload we should propose. This is based on the priority of each workload and
-			// whether or not this workload has been tried before.
-			var workload *policy.Workload
-			if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(a.db, wi.Device.Id, wi.ConsumerPolicy.Header.Name); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("error searching for persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
-				continue
-			} else if wlUsage == nil {
-				workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(0, 0, 0)
-			} else if wlUsage != nil {
-				workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(wlUsage.Priority, wlUsage.RetryCount+1, wlUsage.FirstTryTime)
-			}
-
-			// Create pending agreement in database
-			if err := AgreementAttempt(a.db, agreementIdString, wi.Device.Id, wi.ConsumerPolicy.Header.Name, "Citizen Scientist"); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("error persisting agreement attempt: %v", err)))
-
-			// Create message target for protocol message
-			} else if mt, err := exchange.CreateMessageTarget(wi.Device.Id, nil, wi.Device.PublicKey, wi.Device.MsgEndPoint); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
-
-			// Initiate the protocol
-			} else if proposal, hash, sig, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, &wi.ConsumerPolicy, myAddress, a.agbotId, mt, workload, a.config.AgreementBot.DefaultWorkloadPW, a.config.AgreementBot.NoDataIntervalS, sendMessage); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("error initiating agreement: %v", err)))
-
-				// Remove pending agreement from database
-				if err := DeleteAgreement(a.db, agreementIdString, citizenscientist.PROTOCOL_NAME); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error deleting pending agreement: %v, error %v", agreementIdString, err)))
-				}
-
-				// TODO: Publish error on the message bus
-
-			// Update the agreement in the DB with the proposal and policy
-			} else if polBytes, err := json.Marshal(wi.ConsumerPolicy); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("error marshalling policy for storage %v, error: %v", wi.ConsumerPolicy, err)))
-			} else if pBytes, err := json.Marshal(proposal); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("error marshalling proposal for storage %v, error: %v", *proposal, err)))
-			} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("error demarshalling TsandCs policy from pending agreement %v, error: %v", agreementIdString, err)))
-			} else if _, err := AgreementUpdate(a.db, agreementIdString, string(pBytes), string(polBytes), pol.DataVerify, hash, sig, citizenscientist.PROTOCOL_NAME); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", *proposal, err)))
-
-			// Record that the agreement was initiated, in the exchange
-			} else if err := a.recordConsumerAgreementState(agreementIdString, wi.ConsumerPolicy.APISpecs[0].SpecRef, "Formed Proposal"); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("error setting agreement state for %v", agreementIdString)))
-			}
+			a.initiateNewAgreement(wi, random, protocolHandler, sendMessage)
 
 		} else if workItem.Type() == REPLY {
 			wi := workItem.(CSHandleReply)
-
-			// The reply message is usually deleted before recording on the blockchain. For now assume it will be deleted at the end.
-			deletedMessage := false
-
-			if reply, err := protocolHandler.ValidateReply(wi.Reply); err != nil {
-				glog.Warningf(logString(fmt.Sprintf("discarding message: %v", wi.Reply)))
-			} else if reply.ProposalAccepted() {
-				// The producer is happy with the proposal. Assume we will ack negatively unless we find out that everything is ok.
-				ackReplyAsValid := false
-
-				// Find the saved agreement in the database
-				if agreement, err := FindSingleAgreementByAgreementId(a.db, reply.AgreementId(), citizenscientist.PROTOCOL_NAME, unarchived); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error querying pending agreement %v, error: %v", reply.AgreementId(), err)))
-				} else if agreement == nil {
-					glog.V(5).Infof(logString(fmt.Sprintf("discarding reply, agreement id %v not in our database", reply.AgreementId())))
-				} else if agreement.CounterPartyAddress != "" {
-					glog.V(5).Infof(logString(fmt.Sprintf("discarding reply, agreement id %v already received a reply", agreement.CurrentAgreementId)))
-					// this will cause us to not send a reply ack, which is what we want in this case
-					ackReplyAsValid = true
-
-				// Now we need to write the info to the exchange and the database
-				} else if proposal, err := protocolHandler.DemarshalProposal(agreement.Proposal); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error validating proposal from pending agreement %v, error: %v", reply.AgreementId(), err)))
-				} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error demarshalling tsandcs policy from pending agreement %v, error: %v", reply.AgreementId(), err)))
-
-				} else if _, err := AgreementMade(a.db, reply.AgreementId(), reply.Address, reply.Signature, citizenscientist.PROTOCOL_NAME, pol.HAGroup.Partners); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", *proposal, err)))
-
-				} else if err := a.recordConsumerAgreementState(reply.AgreementId(), pol.APISpecs[0].SpecRef, "Producer agreed"); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error setting agreement state for %v", reply.AgreementId())))
-
-					// We need to send a reply ack and write the info to the blockchain
-				} else if consumerPolicy, err := policy.DemarshalPolicy(agreement.Policy); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", reply.AgreementId(), err)))
-				} else {
-					// Done handling the response successfully
-					ackReplyAsValid = true
-
-					// If we dont have a workload usage record for this device, then we need to create one. If there is already a
-					// workload usage record, then check to see if the workload priority has changed. If so, update the record and reset
-					// the retry count and time. Othwerwise just update the retry count.
-					if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(a.db, wi.SenderId, consumerPolicy.Header.Name); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("error searching for persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
-					} else if wlUsage == nil {
-						if !pol.Workloads[0].HasEmptyPriority() {
-							if err := NewWorkloadUsage(a.db, wi.SenderId, pol.HAGroup.Partners, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, reply.AgreementId()); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
-							}
-						}
-					} else if pol.Workloads[0].Priority.PriorityValue != wlUsage.Priority {
-						if _, err := UpdatePriority(a.db, wi.SenderId, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, reply.AgreementId()); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("error updating workload usage prioroty for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
-						}
-					} else if _, err := UpdateRetryCount(a.db, wi.SenderId, consumerPolicy.Header.Name, wlUsage.RetryCount+1, reply.AgreementId()); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("error updating workload usage retry count for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
-					}
-
-					// Send the reply Ack
-					if mt, err := exchange.CreateMessageTarget(wi.SenderId, nil, wi.SenderPubKey, wi.From); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
-					} else if err := protocolHandler.Confirm(ackReplyAsValid, reply.AgreementId(), mt, sendMessage); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("error trying to send reply ack for %v to %v, error: %v", reply.AgreementId(), mt, err)))
-					}
-
-					// Delete the original reply message
-					if wi.MessageId != 0 {
-						if err := a.deleteMessage(wi.MessageId); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, a.agbotId)))
-						}
-					}
-					deletedMessage = true
-
-					// Recording the agreement on the blockchain could take a long time, so it needs to be the last thing we do.
-					if err := protocolHandler.RecordAgreement(proposal, reply, consumerPolicy, bc.Agreements); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("error trying to record agreement in blockchain, %v", err)))
-					}
-
-					glog.V(3).Infof(logString(fmt.Sprintf("recorded agreement %v", reply.AgreementId())))
-				}
-
-				// Always send an ack for a reply with a positive decision in it
-				if !ackReplyAsValid {
-					if mt, err := exchange.CreateMessageTarget(wi.SenderId, nil, wi.SenderPubKey, wi.From); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
-					} else if err := protocolHandler.Confirm(ackReplyAsValid, reply.AgreementId(), mt, sendMessage); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("error trying to send reply ack for %v to %v, error: %v", reply.AgreementId(), wi.From, err)))
-					}
-				}
-
-			} else {
-				glog.Errorf(logString(fmt.Sprintf("received rejection from producer %v", *reply)))
-
-				a.cancelAgreement(reply.AgreementId(), citizenscientist.AB_CANCEL_NEGATIVE_REPLY, protocolHandler, bc)
-			}
-
-			// Get rid of the exchange message if there is one
-			if wi.MessageId != 0 && !deletedMessage {
-				if err := a.deleteMessage(wi.MessageId); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, a.agbotId)))
-				}
-			}
+			a.handleAgreementReply(wi, protocolHandler, bc, sendMessage)
 
 		} else if workItem.Type() == DATARECEIVEDACK {
 			wi := workItem.(CSHandleDataReceivedAck)
-			if drAck, err := protocolHandler.ValidateDataReceivedAck(wi.Ack); err != nil {
-				glog.Warningf(logString(fmt.Sprintf("discarding message: %v", wi.Ack)))
-			} else if ag, err := FindSingleAgreementByAgreementId(a.db, drAck.AgreementId(), citizenscientist.PROTOCOL_NAME, unarchived); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("error querying timed out agreement %v, error: %v", drAck.AgreementId(), err)))
-			} else if ag == nil {
-				glog.V(3).Infof(logString(fmt.Sprintf("nothing to terminate for agreement %v, no database record.", drAck.AgreementId())))
-			} else if _, err := DataNotification(a.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("unable to record data notification, error: %v", err)))
-			}
-
-			// Get rid of the exchange message if there is one
-			if wi.MessageId != 0 {
-				if err := a.deleteMessage(wi.MessageId); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, a.agbotId)))
-				}
-			}
+			a.handleDataReceivedAck(wi, protocolHandler)
 
 		} else if workItem.Type() == CANCEL {
 			wi := workItem.(CSCancelAgreement)
 
+			// Get the agreement id lock to prevent any other thread from processing this same agreement.
+			lock := a.alm.getAgreementLock(wi.AgreementId)
+			lock.Lock()
+
 			a.cancelAgreement(wi.AgreementId, wi.Reason, protocolHandler, bc)
+
+			lock.Unlock()
+
+			// Don't need the agreement lock anymore
+			a.alm.deleteAgreementLock(wi.AgreementId)
 
 		} else if workItem.Type() == BC_RECORDED {
 			// the agreement is recorded on the blockchain
 			wi := workItem.(CSHandleBCRecorded)
 
-			if ag, err := FindSingleAgreementByAgreementId(a.db, wi.AgreementId, citizenscientist.PROTOCOL_NAME, unarchived); err != nil {
+			// Get the agreement id lock to prevent any other thread from processing this same agreement.
+			lock := a.alm.getAgreementLock(wi.AgreementId)
+			lock.Lock()
+
+			if ag, err := FindSingleAgreementByAgreementId(a.db, wi.AgreementId, citizenscientist.PROTOCOL_NAME, []AFilter{UnarchivedAFilter()}); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error querying agreement %v from database, error: %v", wi.AgreementId, err)))
 			} else if ag == nil {
 				glog.V(3).Infof(logString(fmt.Sprintf("nothing to do for agreement %v, no database record.", wi.AgreementId)))
@@ -445,11 +292,23 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				}
 			}
 
+			// Drop the lock. The code above must always flow through this point.
+			lock.Unlock()
+
 		} else if workItem.Type() == BC_TERMINATED {
 			// the agreement is terminated on the blockchain
 			wi := workItem.(CSHandleBCTerminated)
 
+			// Get the agreement id lock to prevent any other thread from processing this same agreement.
+			lock := a.alm.getAgreementLock(wi.AgreementId)
+			lock.Lock()
+
 			a.cancelAgreement(wi.AgreementId, citizenscientist.AB_CANCEL_DISCOVERED, protocolHandler, bc)
+
+			lock.Unlock()
+
+			// Don't need the agreement lock anymore
+			a.alm.deleteAgreementLock(wi.AgreementId)
 
 		} else {
 			glog.Errorf(logString(fmt.Sprintf("received unknown work request: %v", workItem)))
@@ -459,6 +318,230 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 		runtime.Gosched()
 
 	}
+}
+
+func (a *CSAgreementWorker) initiateNewAgreement(wi             CSInitiateAgreement,
+												random          *rand.Rand,
+												protocolHandler *citizenscientist.ProtocolHandler,
+												sendMessage     func(mt interface{}, pay []byte) error) {
+
+	// Generate an agreement ID
+	agreementId := generateAgreementId(random)
+	myAddress, _ := ethblockchain.AccountId()
+	agreementIdString := hex.EncodeToString(agreementId)
+	glog.V(5).Infof(logString(fmt.Sprintf("using AgreementId %v", agreementIdString)))
+
+	// Get the agreement id lock to prevent any other thread from processing this same agreement.
+	lock := a.alm.getAgreementLock(agreementIdString)
+	lock.Lock()
+	defer lock.Unlock()
+
+	// Determine which workload we should propose. This is based on the priority of each workload and
+	// whether or not this workload has been tried before.
+	var workload *policy.Workload
+	if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(a.db, wi.Device.Id, wi.ConsumerPolicy.Header.Name); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error searching for persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+		return
+	} else if wlUsage == nil {
+		workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(0, 0, 0)
+	} else if wlUsage != nil {
+		workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(wlUsage.Priority, wlUsage.RetryCount+1, wlUsage.FirstTryTime)
+	}
+
+	// Create pending agreement in database
+	if err := AgreementAttempt(a.db, agreementIdString, wi.Device.Id, wi.ConsumerPolicy.Header.Name, "Citizen Scientist"); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error persisting agreement attempt: %v", err)))
+
+	// Create message target for protocol message
+	} else if mt, err := exchange.CreateMessageTarget(wi.Device.Id, nil, wi.Device.PublicKey, wi.Device.MsgEndPoint); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
+
+	// Initiate the protocol
+	} else if proposal, hash, sig, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, &wi.ConsumerPolicy, myAddress, a.agbotId, mt, workload, a.config.AgreementBot.DefaultWorkloadPW, a.config.AgreementBot.NoDataIntervalS, sendMessage); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error initiating agreement: %v", err)))
+
+		// Remove pending agreement from database
+		if err := DeleteAgreement(a.db, agreementIdString, citizenscientist.PROTOCOL_NAME); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("error deleting pending agreement: %v, error %v", agreementIdString, err)))
+		}
+
+		// TODO: Publish error on the message bus
+
+	// Update the agreement in the DB with the proposal and policy
+	} else if polBytes, err := json.Marshal(wi.ConsumerPolicy); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error marshalling policy for storage %v, error: %v", wi.ConsumerPolicy, err)))
+	} else if pBytes, err := json.Marshal(proposal); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error marshalling proposal for storage %v, error: %v", *proposal, err)))
+	} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error demarshalling TsandCs policy from pending agreement %v, error: %v", agreementIdString, err)))
+	} else if _, err := AgreementUpdate(a.db, agreementIdString, string(pBytes), string(polBytes), pol.DataVerify, hash, sig, citizenscientist.PROTOCOL_NAME); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", *proposal, err)))
+
+	// Record that the agreement was initiated, in the exchange
+	} else if err := a.recordConsumerAgreementState(agreementIdString, wi.ConsumerPolicy.APISpecs[0].SpecRef, "Formed Proposal"); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error setting agreement state for %v", agreementIdString)))
+	}
+}
+
+func (a *CSAgreementWorker) handleAgreementReply(wi             CSHandleReply,
+												protocolHandler *citizenscientist.ProtocolHandler,
+												bc              *ethblockchain.BaseContracts,
+												sendMessage     func(mt interface{}, pay []byte) error) {
+
+	// The reply message is usually deleted before recording on the blockchain. For now assume it will be deleted at the end. Early exit from
+	// this function is NOT allowed.
+	deletedMessage := false
+
+	if reply, err := protocolHandler.ValidateReply(wi.Reply); err != nil {
+		glog.Warningf(logString(fmt.Sprintf("discarding message: %v", wi.Reply)))
+	} else {
+
+		// Get the agreement id lock to prevent any other thread from processing this same agreement.
+		lock := a.alm.getAgreementLock(reply.AgreementId())
+		lock.Lock()
+
+		// The lock is dropped at the end of this function or right before the blockchain write. Early exit from this function is NOT allowed.
+		droppedLock := false
+
+		if reply.ProposalAccepted() {
+			// The producer is happy with the proposal. Assume we will ack negatively unless we find out that everything is ok.
+			ackReplyAsValid := false
+
+			// Find the saved agreement in the database
+			if agreement, err := FindSingleAgreementByAgreementId(a.db, reply.AgreementId(), citizenscientist.PROTOCOL_NAME, []AFilter{UnarchivedAFilter()}); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error querying pending agreement %v, error: %v", reply.AgreementId(), err)))
+			} else if agreement == nil {
+				glog.V(5).Infof(logString(fmt.Sprintf("discarding reply, agreement id %v not in our database", reply.AgreementId())))
+			} else if agreement.CounterPartyAddress != "" {
+				glog.V(5).Infof(logString(fmt.Sprintf("discarding reply, agreement id %v already received a reply", agreement.CurrentAgreementId)))
+				// this will cause us to not send a reply ack, which is what we want in this case
+				ackReplyAsValid = true
+
+			// Now we need to write the info to the exchange and the database
+			} else if proposal, err := protocolHandler.DemarshalProposal(agreement.Proposal); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error validating proposal from pending agreement %v, error: %v", reply.AgreementId(), err)))
+			} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error demarshalling tsandcs policy from pending agreement %v, error: %v", reply.AgreementId(), err)))
+
+			} else if _, err := AgreementMade(a.db, reply.AgreementId(), reply.Address, reply.Signature, citizenscientist.PROTOCOL_NAME, pol.HAGroup.Partners); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", *proposal, err)))
+
+			} else if err := a.recordConsumerAgreementState(reply.AgreementId(), pol.APISpecs[0].SpecRef, "Producer agreed"); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error setting agreement state for %v", reply.AgreementId())))
+
+				// We need to send a reply ack and write the info to the blockchain
+			} else if consumerPolicy, err := policy.DemarshalPolicy(agreement.Policy); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", reply.AgreementId(), err)))
+			} else {
+				// Done handling the response successfully
+				ackReplyAsValid = true
+
+				// If we dont have a workload usage record for this device, then we need to create one. If there is already a
+				// workload usage record, then check to see if the workload priority has changed. If so, update the record and reset
+				// the retry count and time. Othwerwise just update the retry count.
+				if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(a.db, wi.SenderId, consumerPolicy.Header.Name); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error searching for persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
+				} else if wlUsage == nil {
+					if !pol.Workloads[0].HasEmptyPriority() {
+						if err := NewWorkloadUsage(a.db, wi.SenderId, pol.HAGroup.Partners, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, reply.AgreementId()); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
+						}
+					}
+				} else if pol.Workloads[0].Priority.PriorityValue != wlUsage.Priority {
+					if _, err := UpdatePriority(a.db, wi.SenderId, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, reply.AgreementId()); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("error updating workload usage prioroty for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
+					}
+				} else if _, err := UpdateRetryCount(a.db, wi.SenderId, consumerPolicy.Header.Name, wlUsage.RetryCount+1, reply.AgreementId()); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error updating workload usage retry count for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
+				}
+
+				// Send the reply Ack
+				if mt, err := exchange.CreateMessageTarget(wi.SenderId, nil, wi.SenderPubKey, wi.From); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
+				} else if err := protocolHandler.Confirm(ackReplyAsValid, reply.AgreementId(), mt, sendMessage); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error trying to send reply ack for %v to %v, error: %v", reply.AgreementId(), mt, err)))
+				}
+
+				// Delete the original reply message
+				if wi.MessageId != 0 {
+					if err := a.deleteMessage(wi.MessageId); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, a.agbotId)))
+					}
+				}
+				deletedMessage = true
+				droppedLock = true
+				lock.Unlock()
+
+				// Recording the agreement on the blockchain could take a long time, so it needs to be the last thing we do.
+				if err := protocolHandler.RecordAgreement(proposal, reply, consumerPolicy, bc.Agreements); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error trying to record agreement in blockchain, %v", err)))
+				}
+
+				glog.V(3).Infof(logString(fmt.Sprintf("recorded agreement %v", reply.AgreementId())))
+			}
+
+			// Always send an ack for a reply with a positive decision in it
+			if !ackReplyAsValid {
+				if mt, err := exchange.CreateMessageTarget(wi.SenderId, nil, wi.SenderPubKey, wi.From); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
+				} else if err := protocolHandler.Confirm(ackReplyAsValid, reply.AgreementId(), mt, sendMessage); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error trying to send reply ack for %v to %v, error: %v", reply.AgreementId(), wi.From, err)))
+				}
+			}
+
+		} else {
+			glog.Errorf(logString(fmt.Sprintf("received rejection from producer %v", *reply)))
+
+			a.cancelAgreement(reply.AgreementId(), citizenscientist.AB_CANCEL_NEGATIVE_REPLY, protocolHandler, bc)
+		}
+
+		// Get rid of the lock
+		if !droppedLock {
+			lock.Unlock()
+		}
+
+	}
+
+	// Get rid of the exchange message if there is one
+	if wi.MessageId != 0 && !deletedMessage {
+		if err := a.deleteMessage(wi.MessageId); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, a.agbotId)))
+		}
+	}
+
+}
+
+func (a *CSAgreementWorker) handleDataReceivedAck(wi            CSHandleDataReceivedAck,
+												protocolHandler *citizenscientist.ProtocolHandler) {
+
+	if drAck, err := protocolHandler.ValidateDataReceivedAck(wi.Ack); err != nil {
+		glog.Warningf(logString(fmt.Sprintf("discarding message: %v", wi.Ack)))
+	} else {
+
+		// Get the agreement id lock to prevent any other thread from processing this same agreement.
+		lock := a.alm.getAgreementLock(drAck.AgreementId())
+		lock.Lock()
+
+		if ag, err := FindSingleAgreementByAgreementId(a.db, drAck.AgreementId(), citizenscientist.PROTOCOL_NAME, []AFilter{UnarchivedAFilter()}); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("error querying timed out agreement %v, error: %v", drAck.AgreementId(), err)))
+		} else if ag == nil {
+			glog.V(3).Infof(logString(fmt.Sprintf("nothing to terminate for agreement %v, no database record.", drAck.AgreementId())))
+		} else if _, err := DataNotification(a.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("unable to record data notification, error: %v", err)))
+		}
+
+		// Drop the lock. The code block above must always flow through this point.
+		lock.Unlock()
+
+	}
+
+	// Get rid of the exchange message if there is one
+	if wi.MessageId != 0 {
+		if err := a.deleteMessage(wi.MessageId); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, a.agbotId)))
+		}
+	}
+
 }
 
 // This function is used to generate a random 32 byte bitstring that is used as the agreement id.
@@ -537,17 +620,21 @@ func (a *CSAgreementWorker) cancelAgreement(agreementId string, reason uint, pro
 		glog.V(3).Infof("CSAgreementWorker: nothing to terminate for agreement %v, no database record.", agreementId)
 	} else {
 
-		// Update the workload usage record to clear the agreement
+		// Update the workload usage record to clear the agreement. There might not be a workload usage record if there is no workload priority
+		// specified in the workload section of the policy.
 		if _, err := UpdateWUAgreementId(a.db, ag.DeviceId, ag.PolicyName, ""); err != nil {
-			glog.Errorf("CSAgreementWorker: error updating agreement id in workload usage for %v for policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)
+			glog.Warningf("CSAgreementWorker: error updating agreement id in workload usage for %v for policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)
 		}
 
-		// Remove from the blockchain
-		if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
-			glog.Errorf("CSAgreementWorker: unable to demarshal policy while trying to cancel %v, error %v", agreementId, err)
-		} else if err := protocolHandler.TerminateAgreement(pol, ag.CounterPartyAddress, agreementId, reason, bc.Agreements); err != nil {
-			glog.Errorf("CSAgreementWorker: error terminating agreement %v on the blockchain: %v", agreementId, err)
-		}
+		// Remove the long blockchain cancel from the worker thread
+		go func() {
+			// Remove from the blockchain
+			if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
+				glog.Errorf("CSAgreementWorker: unable to demarshal policy while trying to cancel %v, error %v", agreementId, err)
+			} else if err := protocolHandler.TerminateAgreement(pol, ag.CounterPartyAddress, agreementId, reason, bc.Agreements); err != nil {
+				glog.Errorf("CSAgreementWorker: error terminating agreement %v on the blockchain: %v", agreementId, err)
+			}
+		}()
 
 		// Archive the record
 		if _, err := ArchiveAgreement(a.db, agreementId, citizenscientist.PROTOCOL_NAME, reason, citizenscientist.DecodeReasonCode(uint64(reason))); err != nil {
