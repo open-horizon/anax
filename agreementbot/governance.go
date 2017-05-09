@@ -119,7 +119,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 		}
 
 		// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized on blockchain.
-		if agreements, err := FindAgreements(w.db, []AFilter{notYetFinalFilter()}, citizenscientist.PROTOCOL_NAME); err == nil {
+		if agreements, err := FindAgreements(w.db, []AFilter{notYetFinalFilter(),UnarchivedAFilter()}, citizenscientist.PROTOCOL_NAME); err == nil {
 			activeDataVerification := true
 			allActiveAgreements := make(map[string][]string)
 			for _, ag := range agreements {
@@ -405,64 +405,7 @@ func (w *AgreementBotWorker) TerminateAgreement(ag *Agreement, reason uint) {
 	}
 
 	// Queue up a command for an agreement worker to do the blockchain work
-	w.pwcommands <- NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, reason)
-}
-
-func recordConsumerAgreementState(url string, agbotId string, token string, agreementId string, workloadID string, state string) error {
-
-	logString := func(v interface{}) string {
-		return fmt.Sprintf("AgreementBot Governance: %v", v)
-	}
-
-	glog.V(5).Infof(logString(fmt.Sprintf("setting agreement %v state to %v", agreementId, state)))
-
-	as := new(exchange.PutAgbotAgreementState)
-	as.Workload = workloadID
-	as.State = state
-	var resp interface{}
-	resp = new(exchange.PostDeviceResponse)
-	targetURL := url + "agbots/" + agbotId + "/agreements/" + agreementId
-	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "PUT", targetURL, agbotId, token, &as, &resp); err != nil {
-			glog.Errorf(logString(fmt.Sprintf(err.Error())))
-			return err
-		} else if tpErr != nil {
-			glog.Warningf(tpErr.Error())
-			time.Sleep(10 * time.Second)
-			continue
-		} else {
-			glog.V(5).Infof(logString(fmt.Sprintf("set agreement %v to state %v", agreementId, state)))
-			return nil
-		}
-	}
-
-}
-
-func DeleteConsumerAgreement(url string, agbotId string, token string, agreementId string) error {
-
-	logString := func(v interface{}) string {
-		return fmt.Sprintf("AgreementBot Governance: %v", v)
-	}
-
-	glog.V(5).Infof(logString(fmt.Sprintf("deleting agreement %v in exchange", agreementId)))
-
-	var resp interface{}
-	resp = new(exchange.PostDeviceResponse)
-	targetURL := url + "agbots/" + agbotId + "/agreements/" + agreementId
-	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "DELETE", targetURL, agbotId, token, nil, &resp); err != nil {
-			glog.Errorf(logString(fmt.Sprintf(err.Error())))
-			return err
-		} else if tpErr != nil {
-			glog.Warningf(tpErr.Error())
-			time.Sleep(10 * time.Second)
-			continue
-		} else {
-			glog.V(5).Infof(logString(fmt.Sprintf("deleted agreement %v from exchange", agreementId)))
-			return nil
-		}
-	}
-
+	w.pwcommands[citizenscientist.PROTOCOL_NAME] <- NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, reason)
 }
 
 func getDeviceMessageEndpoint(deviceId string, url string, agbotId string, token string) (string, []byte, error) {

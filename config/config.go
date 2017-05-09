@@ -66,6 +66,7 @@ type AGConfig struct {
 	DefaultWorkloadPW            string // The default workload password if none is specified in the policy file
 	APIListen                    string // Host and port for the API to listen on
 	PurgeArchivedAgreementHours  int    // Number of hours to leave an archived agreement in the database before automatically deleting it
+	CheckUpdatedPolicyS          int    // The number of seconds to wait between checks for an updated policy file. Zero means auto checking is turned off.
 }
 
 func Read(file string) (*HorizonConfig, error) {

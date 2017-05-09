@@ -18,6 +18,7 @@ type PolicyManager struct {
 	PolicyLock      sync.Mutex                      // The lock that protects modification of the Policy array
 	ALock           sync.Mutex                      // The lock that protects the contract counts map
 	AgreementCounts map[string]*AgreementCountEntry // A map of all policies (by name) that have an agreement with a given device
+	WatcherContent  map[string]*WatchEntry          // The contents of the policy file watcher
 }
 
 // The ContractCountEntry is used to track which device addresses (contract addresses) are in agreement for a given policy name. The
@@ -67,6 +68,11 @@ func (self *PolicyManager) AddPolicy(newPolicy *Policy) error {
 	self.PolicyLock.Lock()
 	defer self.PolicyLock.Unlock()
 
+	return self.addPolicy(newPolicy)
+}
+
+func (self *PolicyManager) addPolicy(newPolicy *Policy) error {
+
 	for _, pol := range self.Policies {
 		if pol.Header.Name == newPolicy.Header.Name {
 			return errors.New(fmt.Sprintf("Policy already known to the PolicyManager"))
@@ -78,6 +84,37 @@ func (self *PolicyManager) AddPolicy(newPolicy *Policy) error {
 	cce.AgreementIds = agc
 	self.AgreementCounts[newPolicy.Header.Name] = cce
 	return nil
+}
+
+// Update a policy in the policy manager. If the policy is already there (by name), update it, otherwise it is just added.
+func (self *PolicyManager) UpdatePolicy(newPolicy *Policy) {
+	self.PolicyLock.Lock()
+	defer self.PolicyLock.Unlock()
+
+	for ix, pol := range self.Policies {
+		if pol.Header.Name == newPolicy.Header.Name {
+			// Replace existing policy
+			self.Policies[ix] = newPolicy
+			return
+		}
+	}
+	self.addPolicy(newPolicy)
+	return
+}
+
+// Delete a policy in the policy manager (by name).
+func (self *PolicyManager) DeletePolicy(delPolicy *Policy) {
+	self.PolicyLock.Lock()
+	defer self.PolicyLock.Unlock()
+
+	for ix, pol := range self.Policies {
+		if pol.Header.Name == delPolicy.Header.Name {
+			// Remove existing policy
+			self.Policies = append(self.Policies[:ix], self.Policies[ix+1:]...)
+			return
+		}
+	}
+	return
 }
 
 // This function is used to get the policy manager up and running. When this function returns, all the current policies
@@ -105,11 +142,13 @@ func Initialize(policyPath string) (*PolicyManager, error) {
 	}
 
 	// Call the policy file watcher once to load up the initial set of policy files
-	if err := PolicyFileChangeWatcher(policyPath, changeNotify, deleteNotify, errorNotify, 0); err != nil {
+	contents := make(map[string]*WatchEntry)
+	if cons, err := PolicyFileChangeWatcher(policyPath, contents, changeNotify, deleteNotify, errorNotify, 0); err != nil {
 		return nil, err
 	} else if len(pm.Policies) != numberFiles {
 		return nil, errors.New(fmt.Sprintf("Policy Names must be unique, found %v files, but %v unique policies", numberFiles, len(pm.Policies)))
 	} else {
+		pm.WatcherContent = cons
 		return pm, nil
 	}
 }

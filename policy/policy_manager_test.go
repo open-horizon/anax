@@ -1,6 +1,7 @@
 package policy
 
 import (
+	"encoding/json"
 	// "runtime"
 	"strings"
 	"testing"
@@ -204,5 +205,86 @@ func Test_find_by_apispec1(t *testing.T) {
 		if len(pols) != 0 {
 			t.Errorf("Expected to find 0 policies, found %v", len(pols))
 		}
+	}
+}
+
+func Test_add_policy(t *testing.T) {
+	if pm, err := Initialize("./test/pffindtest/"); err != nil {
+		t.Error(err)
+	} else {
+
+		// Add a new policy file
+		newPolicyContent := `{"header":{"name":"new policy","version":"1.0"}}`
+		newPolicy := new(Policy)
+		if err := json.Unmarshal([]byte(newPolicyContent), newPolicy); err != nil {
+			t.Errorf("Error demarshalling new policy: %v", err)
+		} else if err := pm.AddPolicy(newPolicy); err != nil {
+			t.Errorf("Error adding new policy: %v", err)
+		} else if err := pm.AddPolicy(newPolicy); err == nil {
+			t.Errorf("Should have been an error adding duplicate policy: %v", err)
+		} else if num := pm.NumberPolicies(); num != 2 {
+			t.Errorf("Expecting 2 policies, have %v", num)
+		}
+
+		// update existing policy
+		newPolicyContent = `{"header":{"name":"new policy","version":"2.0"}}`
+		newPolicy = new(Policy)
+		if err := json.Unmarshal([]byte(newPolicyContent), newPolicy); err != nil {
+			t.Errorf("Error demarshalling new policy: %v", err)
+		} else {
+			pm.UpdatePolicy(newPolicy)
+			if num := pm.NumberPolicies(); num != 2 {
+				t.Errorf("Expecting 2 policies, have %v", num)
+			}
+		}
+
+		// add this policy
+		newPolicyContent = `{"header":{"name":"new 2 policy","version":"1.0"}}`
+		newPolicy = new(Policy)
+		if err := json.Unmarshal([]byte(newPolicyContent), newPolicy); err != nil {
+			t.Errorf("Error demarshalling new policy: %v", err)
+		} else {
+			pm.UpdatePolicy(newPolicy)
+			if num := pm.NumberPolicies(); num != 3 {
+				t.Errorf("Expecting 3 policies, have %v", num)
+			}
+		}
+
+		// nothing to delete
+		newPolicyContent = `{"header":{"name":"new 3 policy","version":"1.0"}}`
+		newPolicy = new(Policy)
+		if err := json.Unmarshal([]byte(newPolicyContent), newPolicy); err != nil {
+			t.Errorf("Error demarshalling new policy: %v", err)
+		} else {
+			pm.DeletePolicy(newPolicy)
+			if num := pm.NumberPolicies(); num != 3 {
+				t.Errorf("Expecting 3 policies, have %v", num)
+			}
+		}
+
+		// delete 1 policy
+		newPolicyContent = `{"header":{"name":"new policy","version":"2.0"}}`
+		newPolicy = new(Policy)
+		if err := json.Unmarshal([]byte(newPolicyContent), newPolicy); err != nil {
+			t.Errorf("Error demarshalling new policy: %v", err)
+		} else {
+			pm.DeletePolicy(newPolicy)
+			if num := pm.NumberPolicies(); num != 2 {
+				t.Errorf("Expecting 2 policies, have %v", num)
+			}
+		}
+
+		// delete the other new policy
+		newPolicyContent = `{"header":{"name":"new 2 policy","version":"1.0"}}`
+		newPolicy = new(Policy)
+		if err := json.Unmarshal([]byte(newPolicyContent), newPolicy); err != nil {
+			t.Errorf("Error demarshalling new policy: %v", err)
+		} else {
+			pm.DeletePolicy(newPolicy)
+			if num := pm.NumberPolicies(); num != 1 {
+				t.Errorf("Expecting 1 policies, have %v", num)
+			}
+		}
+
 	}
 }

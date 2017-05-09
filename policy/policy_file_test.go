@@ -101,7 +101,8 @@ func Test_PolicyFileChangeWatcher(t *testing.T) {
 	}
 
 	// Test a single call into the watcher
-	if err := PolicyFileChangeWatcher("./test/pfwatchtest/", changeNotify, deleteNotify, errorNotify, 0); err != nil {
+	contents := make(map[string]*WatchEntry)
+	if _, err := PolicyFileChangeWatcher("./test/pfwatchtest/", contents, changeNotify, deleteNotify, errorNotify, 0); err != nil {
 		t.Error(err)
 	} else if changeDetected != 1 || deleteDetected != 0 || errorDetected != 0 {
 		t.Errorf("Incorrect number of events fired. Expected 1 change, saw %v, expected 0 deletes, saw %v, expected 0 errors, saw %v", changeDetected, deleteDetected, errorDetected)
@@ -110,10 +111,11 @@ func Test_PolicyFileChangeWatcher(t *testing.T) {
 	}
 
 	// Test a continously running watcher
-	go PolicyFileChangeWatcher("./test/pfwatchtest/", changeNotify, deleteNotify, errorNotify, checkInterval)
+	contents = make(map[string]*WatchEntry)
+	go PolicyFileChangeWatcher("./test/pfwatchtest/", contents, changeNotify, deleteNotify, errorNotify, checkInterval)
 
 	// Give the watcher a chance to read the contents of the pfwatchtest directory and fire events
-	time.Sleep(2 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	// Add a new policy file
 	newPolicyContent := `{"header":{"name":"new policy","version":"1.0"}}`
@@ -125,7 +127,7 @@ func Test_PolicyFileChangeWatcher(t *testing.T) {
 	}
 
 	// Give the watcher a chance to read the new policy
-	time.Sleep(2 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	// Change the newly created file
 	if err := WritePolicyFile(newPolicy, "./test/pfwatchtest/new.policy"); err != nil {
@@ -133,14 +135,26 @@ func Test_PolicyFileChangeWatcher(t *testing.T) {
 	}
 
 	// Give the watcher a chance to read the change policy
-	time.Sleep(2 * time.Second)
+	time.Sleep(3 * time.Second)
+
+	// Change the name of the existing policy
+	newPolicyContent = `{"header":{"name":"new 2 policy","version":"1.0"}}`
+	newPolicy = new(Policy)
+	if err := json.Unmarshal([]byte(newPolicyContent), newPolicy); err != nil {
+		t.Errorf("Error demarshalling new policy: %v", err)
+	} else if err := WritePolicyFile(newPolicy, "./test/pfwatchtest/new.policy"); err != nil {
+		t.Errorf("Error writing new policy: %v", err)
+	}
+
+	// Give the watcher a chance to read the change policy
+	time.Sleep(3 * time.Second)
 
 	// Remove the new file and give the watcher a chance to see it
 	os.Remove("./test/pfwatchtest/new.policy")
-	time.Sleep(2 * time.Second)
+	time.Sleep(3 * time.Second)
 
-	if changeDetected != 3 || deleteDetected != 1 || errorDetected != 0 {
-		t.Errorf("Incorrect number of events fired. Expected 3 changes, saw %v, expected 1 delete, saw %v, expected 0 errors, saw %v", changeDetected, deleteDetected, errorDetected)
+	if changeDetected != 4 || deleteDetected != 2 || errorDetected != 0 {
+		t.Errorf("Incorrect number of events fired. Expected 4 changes, saw %v, expected 2 delete, saw %v, expected 0 errors, saw %v", changeDetected, deleteDetected, errorDetected)
 	}
 
 }
@@ -167,7 +181,8 @@ func Test_PolicyFileChangeWatcher_Empty(t *testing.T) {
 	}
 
 	// Test a single call into the watcher
-	if err := PolicyFileChangeWatcher("./test/pfempty/", changeNotify, deleteNotify, errorNotify, 0); err != nil {
+	contents := make(map[string]*WatchEntry)
+	if _, err := PolicyFileChangeWatcher("./test/pfempty/", contents, changeNotify, deleteNotify, errorNotify, 0); err != nil {
 		t.Error(err)
 	} else if changeDetected != 0 || deleteDetected != 0 || errorDetected != 0 {
 		t.Errorf("Incorrect number of events fired. Expected 0 changes, saw %v, expected 0 deletes, saw %v, expected 0 errors, saw %v", changeDetected, deleteDetected, errorDetected)
@@ -196,7 +211,8 @@ func Test_PolicyFileChangeWatcher_NoDir(t *testing.T) {
 	}
 
 	// Test a single call into the watcher
-	if err := PolicyFileChangeWatcher("./test/notexist/", changeNotify, deleteNotify, errorNotify, 0); err == nil {
+	contents := make(map[string]*WatchEntry)
+	if _, err := PolicyFileChangeWatcher("./test/notexist/", contents, changeNotify, deleteNotify, errorNotify, 0); err == nil {
 		t.Error("Expected 'no such directory error', but no error was returned.")
 	} else if !strings.Contains(err.Error(), "no such file or directory") {
 		t.Errorf("Expected 'no such directory' error, but received %v", err)
