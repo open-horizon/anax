@@ -233,6 +233,9 @@ func DataNotification(db *bolt.DB, agreementid string, protocol string) (*Agreem
 func MeteringNotification(db *bolt.DB, agreementid string, protocol string, mn string) (*Agreement, error) {
 	if agreement, err := singleAgreementUpdate(db, agreementid, protocol, func(a Agreement) *Agreement {
 		a.MeteringNotificationSent = uint64(time.Now().Unix())
+		if len(a.MeteringNotificationMsgs) == 0 {
+			a.MeteringNotificationMsgs = []string{"",""}
+		}
 		a.MeteringNotificationMsgs[1] = a.MeteringNotificationMsgs[0]
 		a.MeteringNotificationMsgs[0] = mn
 		return &a

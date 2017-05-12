@@ -157,7 +157,7 @@
 			"revisionTime": "2016-06-02T15:21:38Z"
 		},
 		{
-			"checksumSHA1": "OShlvanyvyee8I0/kdmLuOEOF5w=",
+			"checksumSHA1": "X0KWsuhWFzXj1mqWVPpaK9L16hA=",
 			"path": "github.com/docker/docker/pkg/archive",
 			"revision": "a01ae049f982811c2e6d9a25a6c595bcd2fb7d32",
 			"revisionTime": "2016-06-07T14:40:14Z"
@@ -325,7 +325,7 @@
 			"revisionTime": "2016-03-19T12:58:36Z"
 		},
 		{
-			"checksumSHA1": "OECIN3MgL6Q/bup7ZbPYjAbPLZs=",
+			"checksumSHA1": "SNLOCk/XcRh0kfrx3rUT1kyq6aY=",
 			"path": "github.com/fsouza/go-dockerclient/external/github.com/docker/docker/pkg/archive",
 			"revision": "7c07ffce0f7e14a4da49ce92a2842d4e87be1c1e",
 			"revisionTime": "2016-03-19T12:58:36Z"
@@ -409,7 +409,7 @@
 			"revisionTime": "2016-03-19T12:58:36Z"
 		},
 		{
-			"checksumSHA1": "hugdbffSP0G67FyJUhGvu9O0WmM=",
+			"checksumSHA1": "g3YF/iwTLxB/2aW+MZitfLGNdTU=",
 			"path": "github.com/fsouza/go-dockerclient/external/golang.org/x/sys/unix",
 			"revision": "7c07ffce0f7e14a4da49ce92a2842d4e87be1c1e",
 			"revisionTime": "2016-03-19T12:58:36Z"
@@ -421,7 +421,7 @@
 			"revisionTime": "2016-01-25T20:49:56Z"
 		},
 		{
-			"checksumSHA1": "me40nSy9NBr9MmAwe5vDvTgSVZs=",
+			"checksumSHA1": "GENxfNGiSzB9hzo2fPZkI4F/Zzg=",
 			"path": "github.com/google/btree",
 			"revision": "cc6329d4279e3f025a53a83c397d2339b5705c45",
 			"revisionTime": "2015-04-13T16:36:44Z"
@@ -614,7 +614,7 @@
 			"revisionTime": "2016-03-22T02:00:46Z"
 		},
 		{
-			"checksumSHA1": "QcDlr1sWBDt6Dn/v7W/MRgccAi4=",
+			"checksumSHA1": "8oAbhYZMAWulBwz6UVnpJbnG9SA=",
 			"path": "golang.org/x/sys/unix",
 			"revision": "076b546753157f758b316e59bcb51e6807c04057",
 			"revisionTime": "2016-06-01T13:19:39Z"
