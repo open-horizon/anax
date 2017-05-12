@@ -374,7 +374,7 @@ func (a *CSAgreementWorker) initiateNewAgreement(wi             CSInitiateAgreem
 		glog.Errorf(logString(fmt.Sprintf("error marshalling proposal for storage %v, error: %v", *proposal, err)))
 	} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error demarshalling TsandCs policy from pending agreement %v, error: %v", agreementIdString, err)))
-	} else if _, err := AgreementUpdate(a.db, agreementIdString, string(pBytes), string(polBytes), pol.DataVerify, hash, sig, citizenscientist.PROTOCOL_NAME); err != nil {
+	} else if _, err := AgreementUpdate(a.db, agreementIdString, string(pBytes), string(polBytes), pol.DataVerify, a.config.AgreementBot.ProcessGovernanceIntervalS, hash, sig, citizenscientist.PROTOCOL_NAME); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", *proposal, err)))
 
 	// Record that the agreement was initiated, in the exchange
