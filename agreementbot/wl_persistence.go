@@ -25,6 +25,8 @@ type WorkloadUsage struct {
     CurrentAgreementId string   `json:"current_agreement_id"`  // the agreement id currently in use
     FirstTryTime       uint64   `json:"first_try_time"`        // time when first agrement attempt was made, used to count retries per time
     LatestRetryTime    uint64   `json:"latest_retry_time"`     // time when the newest retry has occurred
+    DisableRetry       bool     `json:"disable_retries"`       // when true, retry and retry durations are disbled which effectively disables workload rollback
+    VerifiedDurationS  int      `json:"verified_durations"`    // the number of seconds for successful data verification before disabling workload rollback retries
 }
 
 func (w WorkloadUsage) String() string {
@@ -39,13 +41,15 @@ func (w WorkloadUsage) String() string {
         "CurrentAgreementId: %v, " +
         "FirstTryTime: %v, " +
         "LatestRetryTime: %v, " +
+        "DisableRetry: %v, " +
+        "VerifiedDurationS: %v, " +
         "Policy: %v",
         w.Id, w.DeviceId, w.HAPartners, w.PendingUpgradeTime, w.PolicyName, w.Priority, w.RetryCount,
-        w.RetryDurationS, w.CurrentAgreementId, w.FirstTryTime, w.LatestRetryTime, w.Policy)
+        w.RetryDurationS, w.CurrentAgreementId, w.FirstTryTime, w.LatestRetryTime, w.DisableRetry, w.VerifiedDurationS, w.Policy)
 }
 
 // private factory method for workloadusage w/out persistence safety:
-func workloadUsage(deviceid string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, agid string) (*WorkloadUsage, error) {
+func workloadUsage(deviceid string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, agid string) (*WorkloadUsage, error) {
 
     if deviceid == "" || policy == "" || policyName == "" || priority == 0 || retryDurationS == 0 || agid == "" {
         return nil, errors.New("Illegal input: one of deviceid, policy, policyName, priority, retryDurationS, retryLimit or agreement id is empty")
@@ -62,12 +66,14 @@ func workloadUsage(deviceid string, hapartners []string, policy string, policyNa
             CurrentAgreementId: agid,
             FirstTryTime:       uint64(time.Now().Unix()),
             LatestRetryTime:    0,
+            DisableRetry:       false,
+            VerifiedDurationS:  verifiedDurationS,
         }, nil
     }
 }
 
-func NewWorkloadUsage(db *bolt.DB, deviceid string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, agid string) error {
-    if wlUsage, err := workloadUsage(deviceid, hapartners, policy, policyName, priority, retryDurationS, agid); err != nil {
+func NewWorkloadUsage(db *bolt.DB, deviceid string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, agid string) error {
+    if wlUsage, err := workloadUsage(deviceid, hapartners, policy, policyName, priority, retryDurationS, verifiedDurationS, agid); err != nil {
         return err
     } else if existing, err := FindSingleWorkloadUsageByDeviceAndPolicyName(db, deviceid, policyName); err != nil {
         return err
@@ -103,12 +109,13 @@ func UpdateRetryCount(db *bolt.DB, deviceid string, policyName string, retryCoun
     }
 }
 
-func UpdatePriority(db *bolt.DB, deviceid string, policyName string, priority int, retryDurationS int, agid string) (*WorkloadUsage, error) {
+func UpdatePriority(db *bolt.DB, deviceid string, policyName string, priority int, retryDurationS int, verifiedDurationS int, agid string) (*WorkloadUsage, error) {
     if wlUsage, err := singleWorkloadUsageUpdate(db, deviceid, policyName, func(w WorkloadUsage) *WorkloadUsage {
         w.CurrentAgreementId = agid
         w.Priority = priority
         w.RetryCount = 0
         w.RetryDurationS = retryDurationS
+        w.VerifiedDurationS = verifiedDurationS
         w.FirstTryTime = uint64(time.Now().Unix())
         return &w
     }); err != nil {
@@ -132,6 +139,18 @@ func UpdatePendingUpgrade(db *bolt.DB, deviceid string, policyName string) (*Wor
 func UpdateWUAgreementId(db *bolt.DB, deviceid string, policyName string, agid string) (*WorkloadUsage, error) {
     if wlUsage, err := singleWorkloadUsageUpdate(db, deviceid, policyName, func(w WorkloadUsage) *WorkloadUsage {
         w.CurrentAgreementId = agid
+        return &w
+    }); err != nil {
+        return nil, err
+    } else {
+        return wlUsage, nil
+    }
+}
+
+func DisableRollbackChecking(db *bolt.DB, deviceid string, policyName string) (*WorkloadUsage, error) {
+    if wlUsage, err := singleWorkloadUsageUpdate(db, deviceid, policyName, func(w WorkloadUsage) *WorkloadUsage {
+        w.DisableRetry = true
+        w.RetryCount = 0
         return &w
     }); err != nil {
         return nil, err
@@ -190,6 +209,8 @@ func persistUpdatedWorkloadUsage(db *bolt.DB, id uint64, update *WorkloadUsage) 
                 mod.FirstTryTime = update.FirstTryTime
                 mod.PendingUpgradeTime = update.PendingUpgradeTime
                 mod.LatestRetryTime = update.LatestRetryTime
+                mod.DisableRetry = update.DisableRetry
+                mod.VerifiedDurationS = update.VerifiedDurationS
 
                 if serialized, err := json.Marshal(mod); err != nil {
                     return fmt.Errorf("Failed to serialize workload usage record: %v", mod)
