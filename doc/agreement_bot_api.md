@@ -19,6 +19,7 @@ code:
 * 200 -- success
 
 body:
+
 | name | type | description |
 | ---- | ---- | ---------------- |
 | agreements  | json | contains active and archived agreements |
@@ -61,6 +62,7 @@ curl -s http://localhost/agreement | jq '.'
 ---
 
 **Parameters:**
+
 | name | type | description |
 | ---- | ---- | ---------------- |
 | id   | string | the id of the agreement to be retrieved. |
@@ -71,6 +73,7 @@ code:
 * 404 -- the agreement does not exist.
 
 body: 
+
 | name | type | description |
 | ---- | ---- | ---------------- |
 | current_agreement_id  | json | the agreement id for this agreement |
@@ -134,6 +137,7 @@ curl -s http://localhost/agreement/93bcddde28f43cf59761e948ebff45f0ad9e060e3081d
 ---
 
 **Parameters:**
+
 | name | type | description |
 | ---- | ---- | ---------------- |
 | id   | string | the id of the agreement to be deleted. |
