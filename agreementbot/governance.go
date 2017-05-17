@@ -204,6 +204,20 @@ func (w *AgreementBotWorker) GovernAgreements() {
 										glog.Errorf(logString(fmt.Sprintf("unable to record metering notification, error: %v", err)))
 									}
 								}
+
+								// Data verification has occured. If it has been maintained for the specified duration then we can turn off the
+								// workload rollback retry checking feature.
+								if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(w.db, ag.DeviceId, ag.PolicyName); err != nil {
+									glog.Errorf(logString(fmt.Sprintf("unable to find workload usage record, error: %v", err)))
+								} else if wlUsage != nil && !wlUsage.DisableRetry {
+									if wlUsage.VerifiedDurationS == 0 || (wlUsage.VerifiedDurationS != 0 && ag.DataNotificationSent != 0 && ag.DataVerifiedTime != ag.AgreementCreationTime && (ag.DataVerifiedTime > ag.DataNotificationSent) && ((ag.DataVerifiedTime-ag.DataNotificationSent) >= uint64(wlUsage.VerifiedDurationS))) {
+										glog.V(5).Infof(logString(fmt.Sprintf("disabling workload rollback for %v after %v seconds", ag.CurrentAgreementId, (ag.DataVerifiedTime-ag.DataNotificationSent))))
+										if _, err := DisableRollbackChecking(w.db, ag.DeviceId, ag.PolicyName); err != nil {
+											glog.Errorf(logString(fmt.Sprintf("unable to disable workload rollback retries, error: %v", err)))
+										}
+									}
+								}
+
 							} else if _, err := DataNotVerified(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
 								glog.Errorf(logString(fmt.Sprintf("unable to record data not verified, error: %v", err)))
 							}

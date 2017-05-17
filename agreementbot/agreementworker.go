@@ -344,6 +344,8 @@ func (a *CSAgreementWorker) initiateNewAgreement(wi             CSInitiateAgreem
 		return
 	} else if wlUsage == nil {
 		workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(0, 0, 0)
+	} else if wlUsage.DisableRetry {
+		workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(wlUsage.Priority, 0, wlUsage.FirstTryTime)
 	} else if wlUsage != nil {
 		workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(wlUsage.Priority, wlUsage.RetryCount+1, wlUsage.FirstTryTime)
 	}
@@ -437,22 +439,26 @@ func (a *CSAgreementWorker) handleAgreementReply(wi             CSHandleReply,
 				ackReplyAsValid = true
 
 				// If we dont have a workload usage record for this device, then we need to create one. If there is already a
-				// workload usage record, then check to see if the workload priority has changed. If so, update the record and reset
-				// the retry count and time. Othwerwise just update the retry count.
+				// workload usage record and workload rollback retry counting is enabled, then check to see if the workload priority
+				// has changed. If so, update the record and reset the retry count and time. Othwerwise just update the retry count.
 				if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(a.db, wi.SenderId, consumerPolicy.Header.Name); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error searching for persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 				} else if wlUsage == nil {
 					if !pol.Workloads[0].HasEmptyPriority() {
-						if err := NewWorkloadUsage(a.db, wi.SenderId, pol.HAGroup.Partners, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, reply.AgreementId()); err != nil {
+						if err := NewWorkloadUsage(a.db, wi.SenderId, pol.HAGroup.Partners, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, reply.AgreementId()); err != nil {
 							glog.Errorf(logString(fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 						}
 					}
-				} else if pol.Workloads[0].Priority.PriorityValue != wlUsage.Priority {
-					if _, err := UpdatePriority(a.db, wi.SenderId, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, reply.AgreementId()); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("error updating workload usage prioroty for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
+				} else if !wlUsage.DisableRetry {
+					if pol.Workloads[0].Priority.PriorityValue != wlUsage.Priority {
+						if _, err := UpdatePriority(a.db, wi.SenderId, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, reply.AgreementId()); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("error updating workload usage prioroty for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
+						}
+					} else if _, err := UpdateRetryCount(a.db, wi.SenderId, consumerPolicy.Header.Name, wlUsage.RetryCount+1, reply.AgreementId()); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("error updating workload usage retry count for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 					}
-				} else if _, err := UpdateRetryCount(a.db, wi.SenderId, consumerPolicy.Header.Name, wlUsage.RetryCount+1, reply.AgreementId()); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error updating workload usage retry count for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
+				} else if _, err := UpdateWUAgreementId(a.db, wi.SenderId, consumerPolicy.Header.Name, reply.AgreementId()); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error updating agreement id %v in workload usage for %v for policy %v, error: %v", reply.AgreementId(), wi.SenderId, consumerPolicy.Header.Name, err)))
 				}
 
 				// Send the reply Ack
