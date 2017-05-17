@@ -6,21 +6,6 @@ import (
 )
 
 // ==============================================================================================================
-type ReceivedWhisperMessageCommand struct {
-	Msg events.WhisperReceivedMessage
-}
-
-func (r ReceivedWhisperMessageCommand) ShortString() string {
-	return fmt.Sprintf("%v", r)
-}
-
-func NewReceivedWhisperMessageCommand(msg events.WhisperReceivedMessage) *ReceivedWhisperMessageCommand {
-	return &ReceivedWhisperMessageCommand{
-		Msg: msg,
-	}
-}
-
-// ==============================================================================================================
 type AgreementTimeoutCommand struct {
 	AgreementId string
 	Protocol    string

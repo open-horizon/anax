@@ -9,7 +9,6 @@ import (
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/metering"
-	gwhisper "github.com/open-horizon/go-whisper"
 	"github.com/open-horizon/anax/policy"
 	"net/http"
 	"time"
@@ -34,70 +33,47 @@ func (w *AgreementBotWorker) GovernAgreements() {
 			return errors.New(fmt.Sprintf("input message target is %T, expecting exchange.MessageTarget", mt))
 		}
 
-		// If the message target is using whisper, then send via whisper
-		if len(messageTarget.ReceiverMsgEndPoint) != 0 {
-			to := messageTarget.ReceiverMsgEndPoint
-			glog.V(3).Infof("Sending whisper message to: %v at whisper %v, message %v", messageTarget.ReceiverExchangeId, to, string(pay))
+		// Grab the exchange ID of the message receiver
+		glog.V(3).Infof("Sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))
 
-			if from, err := gwhisper.AccountId(w.Config.AgreementBot.GethURL); err != nil {
-				return errors.New(fmt.Sprintf("Error obtaining whisper id: %v", err))
+		// Get my own keys
+		myPubKey, myPrivKey, _ := exchange.GetKeys(w.Config.AgreementBot.MessageKeyPath)
+
+		// Demarshal the receiver's public key if we need to
+		if messageTarget.ReceiverPublicKeyObj == nil {
+			if mtpk, err := exchange.DemarshalPublicKey(messageTarget.ReceiverPublicKeyBytes); err != nil {
+				return errors.New(fmt.Sprintf("Unable to demarshal device's public key %x, error %v", messageTarget.ReceiverPublicKeyBytes, err))
 			} else {
-				// this is to last long enough to be read by even an overloaded governor but still expire before a new worker might try to pick up the contract
-				msg, err := gwhisper.TopicMsgParams(from, to, []string{citizenscientist.PROTOCOL_NAME}, string(pay), 180, 50)
-				if err != nil {
-					return errors.New(fmt.Sprintf("Error creating whisper message topic parameters: %v", err))
-				}
-
-				_, err = gwhisper.WhisperSend(w.httpClient, w.Config.AgreementBot.GethURL, gwhisper.POST, msg, 3)
-				if err != nil {
-					return errors.New(fmt.Sprintf("Error sending whisper message: %v, error: %v", msg, err))
-				}
+				messageTarget.ReceiverPublicKeyObj = mtpk
 			}
+		}
 
-			// The message target is using the exchange message queue, so use it
+		// Create an encrypted message
+		if encryptedMsg, err := exchange.ConstructExchangeMessage(pay, myPubKey, myPrivKey, messageTarget.ReceiverPublicKeyObj); err != nil {
+			return errors.New(fmt.Sprintf("Unable to construct encrypted message from %v, error %v", pay, err))
+			// Marshal it into a byte array
+		} else if msgBody, err := json.Marshal(encryptedMsg); err != nil {
+			return errors.New(fmt.Sprintf("Unable to marshal exchange message %v, error %v", encryptedMsg, err))
+			// Send it to the device's message queue
 		} else {
-
-			// Grab the exchange ID of the message receiver
-			glog.V(3).Infof("Sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))
-
-			// Get my own keys
-			myPubKey, myPrivKey, _ := exchange.GetKeys(w.Config.AgreementBot.MessageKeyPath)
-
-			// Demarshal the receiver's public key if we need to
-			if messageTarget.ReceiverPublicKeyObj == nil {
-				if mtpk, err := exchange.DemarshalPublicKey(messageTarget.ReceiverPublicKeyBytes); err != nil {
-					return errors.New(fmt.Sprintf("Unable to demarshal device's public key %x, error %v", messageTarget.ReceiverPublicKeyBytes, err))
+			pm := exchange.CreatePostMessage(msgBody, w.Config.AgreementBot.ExchangeMessageTTL)
+			var resp interface{}
+			resp = new(exchange.PostDeviceResponse)
+			targetURL := w.Config.AgreementBot.ExchangeURL + "devices/" + messageTarget.ReceiverExchangeId + "/msgs"
+			for {
+				if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, pm, &resp); err != nil {
+					return err
+				} else if tpErr != nil {
+					glog.V(5).Infof(tpErr.Error())
+					time.Sleep(10 * time.Second)
+					continue
 				} else {
-					messageTarget.ReceiverPublicKeyObj = mtpk
-				}
-			}
-
-			// Create an encrypted message
-			if encryptedMsg, err := exchange.ConstructExchangeMessage(pay, myPubKey, myPrivKey, messageTarget.ReceiverPublicKeyObj); err != nil {
-				return errors.New(fmt.Sprintf("Unable to construct encrypted message from %v, error %v", pay, err))
-				// Marshal it into a byte array
-			} else if msgBody, err := json.Marshal(encryptedMsg); err != nil {
-				return errors.New(fmt.Sprintf("Unable to marshal exchange message %v, error %v", encryptedMsg, err))
-				// Send it to the device's message queue
-			} else {
-				pm := exchange.CreatePostMessage(msgBody, w.Config.AgreementBot.ExchangeMessageTTL)
-				var resp interface{}
-				resp = new(exchange.PostDeviceResponse)
-				targetURL := w.Config.AgreementBot.ExchangeURL + "devices/" + messageTarget.ReceiverExchangeId + "/msgs"
-				for {
-					if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, pm, &resp); err != nil {
-						return err
-					} else if tpErr != nil {
-						glog.V(5).Infof(tpErr.Error())
-						time.Sleep(10 * time.Second)
-						continue
-					} else {
-						glog.V(5).Infof("Sent message for %v to exchange.", messageTarget.ReceiverExchangeId)
-						return nil
-					}
+					glog.V(5).Infof("Sent message for %v to exchange.", messageTarget.ReceiverExchangeId)
+					return nil
 				}
 			}
 		}
+
 		return nil
 	}
 

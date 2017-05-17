@@ -29,10 +29,6 @@ const (
 	BC_CLIENT_INITIALIZED EventId = "BC_CLIENT_INITIALIZED"
 	BC_EVENT              EventId = "BC_EVENT"
 
-	// whisper related
-	RECEIVED_MSG EventId = "RECEIVED_MSG"
-	SUBSCRIBE_TO EventId = "SUBSCRIBE_TO"
-
 	// exchange related
 	RECEIVED_EXCHANGE_DEV_MSG EventId = "RECEIVED_EXCHANGE_DEV_MSG"
 
@@ -388,85 +384,6 @@ func NewAgreementMessage(id EventId, lc *AgreementLaunchContext) *AgreementReach
 			Id: id,
 		},
 		launchContext: lc,
-	}
-}
-
-type WhisperSubscribeToMessage struct {
-	event Event
-	topic string
-}
-
-func (e WhisperSubscribeToMessage) String() string {
-	return fmt.Sprintf("event: %v, topic: %v", e.event, e.topic)
-}
-
-func (e WhisperSubscribeToMessage) ShortString() string {
-	return e.String()
-}
-
-func (e *WhisperSubscribeToMessage) Event() Event {
-	return e.event
-}
-
-func (e *WhisperSubscribeToMessage) Topic() string {
-	return e.topic
-}
-
-func NewWhisperSubscribeToMessage(id EventId, topic string) *WhisperSubscribeToMessage {
-
-	return &WhisperSubscribeToMessage{
-		event: Event{
-			Id: id,
-		},
-		topic: topic,
-	}
-}
-
-type WhisperReceivedMessage struct {
-	event   Event
-	payload string
-	topics  []string
-	from    string
-	to      string
-}
-
-func (e WhisperReceivedMessage) ShortString() string {
-	return fmt.Sprintf("Event: %v, From: %v, To: %v, Topics: %v, Payload: %v", e.event, e.from, e.to, e.topics, e.payload[:40])
-}
-
-func (e WhisperReceivedMessage) String() string {
-	return fmt.Sprintf("event: %v, payload: %v", e.event, e.payload)
-}
-
-func (e *WhisperReceivedMessage) Event() Event {
-	return e.event
-}
-
-func (e *WhisperReceivedMessage) Payload() string {
-	return e.payload
-}
-
-func (e *WhisperReceivedMessage) Topics() []string {
-	return e.topics
-}
-
-func (e *WhisperReceivedMessage) From() string {
-	return e.from
-}
-
-func (e *WhisperReceivedMessage) To() string {
-	return e.to
-}
-
-func NewWhisperReceivedMessage(id EventId, payload string, from string, to string) *WhisperReceivedMessage {
-
-	return &WhisperReceivedMessage{
-		event: Event{
-			Id: id,
-		},
-		payload: payload,
-		from:    from,
-		to:      to,
 	}
 }
 

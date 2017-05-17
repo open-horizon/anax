@@ -518,12 +518,6 @@
 			"tree": true
 		},
 		{
-			"checksumSHA1": "aW9c8/jFxYznqjr3S0D9QGs1QFk=",
-			"path": "github.com/open-horizon/go-whisper",
-			"revision": "52218caac583f7bae5cec6d6ec30707252432252",
-			"revisionTime": "2016-10-17T22:26:30Z"
-		},
-		{
 			"checksumSHA1": "3AoPMXlmVq2+iWMpsdJZkcUKHB8=",
 			"path": "github.com/opencontainers/runc/libcontainer/user",
 			"revision": "6c485e6902bb9dd77b8234042b8f00e20ef87a18",

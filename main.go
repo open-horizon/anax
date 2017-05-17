@@ -16,7 +16,6 @@ import (
 	"github.com/open-horizon/anax/governance"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/torrent"
-	"github.com/open-horizon/anax/whisper"
 	"github.com/open-horizon/anax/worker"
 	"os"
 	"os/signal"
@@ -185,7 +184,6 @@ func main() {
 		workers.Add("exchange", exchange.NewExchangeMessageWorker(cfg, db))
 		workers.Add("container", container.NewContainerWorker(cfg, db))
 	} else {
-		workers.Add("whisper", whisper.NewWhisperWorker(cfg))
 		workers.Add("container", container.NewContainerWorker(cfg, agbotdb))
 	}
 

@@ -78,17 +78,6 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 	}
 
 	switch incoming.(type) {
-	case *events.WhisperReceivedMessage:
-		if w.ready {
-			msg, _ := incoming.(*events.WhisperReceivedMessage)
-
-			// TODO: When we replace this with telehash, check to see if the protocol in the message
-			// is already known to us. For now, whisper doesnt put the topic in the message so we have
-			// now way of checking.
-			agCmd := NewReceivedWhisperMessageCommand(*msg)
-			w.Commands <- agCmd
-		}
-
 	case *events.AccountFundedMessage:
 		msg, _ := incoming.(*events.AccountFundedMessage)
 		switch msg.Event().Id {
@@ -215,13 +204,11 @@ func (w *AgreementBotWorker) start() {
 		}
 
 		// For each agreement protocol in the current list of configured policies, startup a processor
-		// to initiate the protocol and tell the whisper worker that it needs to listen on a specific
-		// topic.
+		// to initiate the protocol.
 
 		w.protocols = w.pm.GetAllAgreementProtocols()
 		for protocolName, _ := range w.protocols {
 			w.pwcommands[protocolName] = make(chan worker.Command, 100)
-			w.Messages() <- events.NewWhisperSubscribeToMessage(events.SUBSCRIBE_TO, protocolName)
 			go w.InitiateAgreementProtocolHandler(protocolName)
 		}
 
@@ -261,13 +248,6 @@ func (w *AgreementBotWorker) start() {
 				glog.V(2).Infof("AgreementBotWorker received command: %v", command)
 
 				switch command.(type) {
-				case *ReceivedWhisperMessageCommand:
-					cmd := command.(*ReceivedWhisperMessageCommand)
-					// Put command on each protocol worker's command queue
-					for _, ch := range w.pwcommands {
-						ch <- cmd
-					}
-
 				case *BlockchainEventCommand:
 					cmd, _ := command.(*BlockchainEventCommand)
 					// Put command on each protocol worker's command queue
@@ -292,8 +272,6 @@ func (w *AgreementBotWorker) start() {
 						if _, ok := w.pwcommands[protocolName]; !ok {
 							glog.V(3).Infof("AgreementBotWorker creating worker pool for new agreement protocol %v", protocolName)
 							w.pwcommands[protocolName] = make(chan worker.Command, 100)
-							// Make sure the whisper subsystem is subscribed to messages for this policy's agreement protocol
-							w.Messages() <- events.NewWhisperSubscribeToMessage(events.SUBSCRIBE_TO, protocolName)
 							go w.InitiateAgreementProtocolHandler(protocolName)
 						}
 
@@ -456,30 +434,6 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 				select {
 				case command := <-w.pwcommands[protocol]:
 					switch command.(type) {
-					case *ReceivedWhisperMessageCommand:
-						glog.V(5).Infof("AgreementBot received inbound whisper message.")
-						cmd := command.(*ReceivedWhisperMessageCommand)
-						// Figure out what kind of message this is
-						if _, err := protocolHandler.ValidateReply(cmd.Msg.Payload()); err == nil {
-							agreementWork := CSHandleReply{
-								workType: REPLY,
-								Reply:    cmd.Msg.Payload(),
-								From:     cmd.Msg.From(),
-							}
-							work <- agreementWork
-							glog.V(5).Infof("AgreementBot queued reply message")
-						} else if _, err := protocolHandler.ValidateDataReceivedAck(cmd.Msg.Payload()); err == nil {
-							agreementWork := CSHandleDataReceivedAck{
-								workType: DATARECEIVEDACK,
-								Ack:      cmd.Msg.Payload(),
-								From:     cmd.Msg.From(),
-							}
-							work <- agreementWork
-							glog.V(5).Infof("AgreementBot queued data received ack message")
-						} else {
-							glog.Warningf(AWlogString(fmt.Sprintf("ignoring  message: %v", cmd.Msg.Payload())))
-						}
-
 					case *NewProtocolMessageCommand:
 						glog.V(5).Infof("AgreementBot received inbound exchange message.")
 						cmd := command.(*NewProtocolMessageCommand)
