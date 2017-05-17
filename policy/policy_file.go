@@ -250,7 +250,7 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 	}
 }
 
-func (self *Policy) Is_Self_Consistent(keyPath string) error {
+func (self *Policy) Is_Self_Consistent(keyPath string, userKeys string) error {
 
 	// Check validity of the Data verification section
 	if ok, err := self.DataVerify.IsValid(); !ok {
@@ -261,7 +261,7 @@ func (self *Policy) Is_Self_Consistent(keyPath string) error {
 	usedPriorities := make(map[int]bool)
 	for _, workload := range self.Workloads {
 		if len(keyPath) != 0 {
-			if err := workload.HasValidSignature(keyPath); err != nil {
+			if err := workload.HasValidSignature(keyPath, userKeys); err != nil {
 				return err
 			}
 		}
@@ -504,7 +504,7 @@ func PolicyFileChangeWatcher(homePath string, contents map[string]*WatchEntry, f
 				if _, ok := contents[fileInfo.Name()]; !ok {
 					if policy, err := ReadPolicyFile(homePath + fileInfo.Name()); err != nil {
 						fileError(homePath+fileInfo.Name(), err)
-					} else if err := policy.Is_Self_Consistent(""); err != nil {
+					} else if err := policy.Is_Self_Consistent("", ""); err != nil {
 						fileError(homePath+fileInfo.Name(), errors.New(fmt.Sprintf("Policy file not self consistent %v, error: %v", homePath, err)))
 					} else {
 						contents[fileInfo.Name()] = newWatchEntry(fileInfo, policy)

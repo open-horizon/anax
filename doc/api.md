@@ -799,3 +799,100 @@ curl -s http://localhost/token/random | jq  '.'
 
 ```
 
+### 7. Public Keys for Workload Image Verification
+
+#### **API:** GET  /publickey
+---
+
+**Parameters:**
+
+none
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| pem  | json | an array of public key files that have previously been PUT to the device. |
+
+**Example:**
+```
+curl -s http://localhost/publickey | jq  '.'
+{
+  "pem": ["akeyfile.pem"]
+}
+
+```
+
+#### **API:** GET  /publickey/{filename}
+---
+
+**Parameters:**
+| name | type | description |
+| -----| ---- | ---------------- |
+| filename | string | the name of the public key file to retrieve. |
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+The contents of the requested file.
+
+**Example:**
+```
+curl -s http://localhost/publickey/akeyfile.pem > akeyfile.pem
+
+```
+
+#### **API:** PUT  /publickey/{filename}
+---
+
+**Parameters:**
+| name | type | description |
+| ---- | ---- | ---------------- |
+| filename | string | the name of the public key file to upload. |
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+none
+
+**Example:**
+```
+curl -T publickey.pem http://localhost/publickey/mynewworkloadkey.pem
+
+```
+
+#### **API:** DELETE  /publickey/{filename}
+---
+
+**Parameters:**
+| name | type | description |
+| ---- | ---- | ---------------- |
+| filename | string | the name of the public key file to remove. |
+
+**Response:**
+
+code:
+* 204 -- success
+
+body:
+
+none
+
+**Example:**
+```
+curl -s -X DELETE http://localhost/publickey/mynewworkloadkey.pem
+
+```
