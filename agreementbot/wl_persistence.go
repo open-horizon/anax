@@ -25,7 +25,7 @@ type WorkloadUsage struct {
     CurrentAgreementId string   `json:"current_agreement_id"`  // the agreement id currently in use
     FirstTryTime       uint64   `json:"first_try_time"`        // time when first agrement attempt was made, used to count retries per time
     LatestRetryTime    uint64   `json:"latest_retry_time"`     // time when the newest retry has occurred
-    DisableRetry       bool     `json:"disable_retries"`       // when true, retry and retry durations are disbled which effectively disables workload rollback
+    DisableRetry       bool     `json:"disable_retry"`         // when true, retry and retry durations are disbled which effectively disables workload rollback
     VerifiedDurationS  int      `json:"verified_durations"`    // the number of seconds for successful data verification before disabling workload rollback retries
 }
 
