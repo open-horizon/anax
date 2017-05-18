@@ -12,7 +12,6 @@ import (
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
-	gwhisper "github.com/open-horizon/go-whisper"
 	"github.com/satori/go.uuid"
 	"math/rand"
 	"net/http"
@@ -166,70 +165,47 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 			return errors.New(fmt.Sprintf("input message target is %T, expecting exchange.MessageTarget", mt))
 		}
 
-		// If the message target is using whisper, then send via whisper
-		if len(messageTarget.ReceiverMsgEndPoint) != 0 {
-			to := messageTarget.ReceiverMsgEndPoint
-			glog.V(3).Infof("Sending whisper message to: %v at whisper %v, message %v", messageTarget.ReceiverExchangeId, to, string(pay))
+		// Grab the exchange ID of the message receiver
+		glog.V(3).Infof("Sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))
 
-			if from, err := gwhisper.AccountId(a.config.AgreementBot.GethURL); err != nil {
-				return errors.New(fmt.Sprintf("Error obtaining whisper id: %v", err))
+		// Get my own keys
+		myPubKey, myPrivKey, _ := exchange.GetKeys(a.config.AgreementBot.MessageKeyPath)
+
+		// Demarshal the receiver's public key if we need to
+		if messageTarget.ReceiverPublicKeyObj == nil {
+			if mtpk, err := exchange.DemarshalPublicKey(messageTarget.ReceiverPublicKeyBytes); err != nil {
+				return errors.New(fmt.Sprintf("Unable to demarshal device's public key %x, error %v", messageTarget.ReceiverPublicKeyBytes, err))
 			} else {
-				// this is to last long enough to be read by even an overloaded governor but still expire before a new worker might try to pick up the contract
-				msg, err := gwhisper.TopicMsgParams(from, to, []string{citizenscientist.PROTOCOL_NAME}, string(pay), 180, 50)
-				if err != nil {
-					return errors.New(fmt.Sprintf("Error creating whisper message topic parameters: %v", err))
-				}
-
-				_, err = gwhisper.WhisperSend(a.httpClient, a.config.AgreementBot.GethURL, gwhisper.POST, msg, 3)
-				if err != nil {
-					return errors.New(fmt.Sprintf("Error sending whisper message: %v, error: %v", msg, err))
-				}
+				messageTarget.ReceiverPublicKeyObj = mtpk
 			}
+		}
 
-			// The message target is using the exchange message queue, so use it
+		// Create an encrypted message
+		if encryptedMsg, err := exchange.ConstructExchangeMessage(pay, myPubKey, myPrivKey, messageTarget.ReceiverPublicKeyObj); err != nil {
+			return errors.New(fmt.Sprintf("Unable to construct encrypted message, error %v for message %s", err, pay))
+			// Marshal it into a byte array
+		} else if msgBody, err := json.Marshal(encryptedMsg); err != nil {
+			return errors.New(fmt.Sprintf("Unable to marshal exchange message, error %v for message %v", err, encryptedMsg))
+			// Send it to the device's message queue
 		} else {
-
-			// Grab the exchange ID of the message receiver
-			glog.V(3).Infof("Sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))
-
-			// Get my own keys
-			myPubKey, myPrivKey, _ := exchange.GetKeys(a.config.AgreementBot.MessageKeyPath)
-
-			// Demarshal the receiver's public key if we need to
-			if messageTarget.ReceiverPublicKeyObj == nil {
-				if mtpk, err := exchange.DemarshalPublicKey(messageTarget.ReceiverPublicKeyBytes); err != nil {
-					return errors.New(fmt.Sprintf("Unable to demarshal device's public key %x, error %v", messageTarget.ReceiverPublicKeyBytes, err))
+			pm := exchange.CreatePostMessage(msgBody, a.config.AgreementBot.ExchangeMessageTTL)
+			var resp interface{}
+			resp = new(exchange.PostDeviceResponse)
+			targetURL := a.config.AgreementBot.ExchangeURL + "devices/" + messageTarget.ReceiverExchangeId + "/msgs"
+			for {
+				if err, tpErr := exchange.InvokeExchange(a.httpClient, "POST", targetURL, a.agbotId, a.token, pm, &resp); err != nil {
+					return err
+				} else if tpErr != nil {
+					glog.V(5).Infof(tpErr.Error())
+					time.Sleep(10 * time.Second)
+					continue
 				} else {
-					messageTarget.ReceiverPublicKeyObj = mtpk
-				}
-			}
-
-			// Create an encrypted message
-			if encryptedMsg, err := exchange.ConstructExchangeMessage(pay, myPubKey, myPrivKey, messageTarget.ReceiverPublicKeyObj); err != nil {
-				return errors.New(fmt.Sprintf("Unable to construct encrypted message, error %v for message %s", err, pay))
-				// Marshal it into a byte array
-			} else if msgBody, err := json.Marshal(encryptedMsg); err != nil {
-				return errors.New(fmt.Sprintf("Unable to marshal exchange message, error %v for message %v", err, encryptedMsg))
-				// Send it to the device's message queue
-			} else {
-				pm := exchange.CreatePostMessage(msgBody, a.config.AgreementBot.ExchangeMessageTTL)
-				var resp interface{}
-				resp = new(exchange.PostDeviceResponse)
-				targetURL := a.config.AgreementBot.ExchangeURL + "devices/" + messageTarget.ReceiverExchangeId + "/msgs"
-				for {
-					if err, tpErr := exchange.InvokeExchange(a.httpClient, "POST", targetURL, a.agbotId, a.token, pm, &resp); err != nil {
-						return err
-					} else if tpErr != nil {
-						glog.V(5).Infof(tpErr.Error())
-						time.Sleep(10 * time.Second)
-						continue
-					} else {
-						glog.V(5).Infof("Sent message for %v to exchange.", messageTarget.ReceiverExchangeId)
-						return nil
-					}
+					glog.V(5).Infof("Sent message for %v to exchange.", messageTarget.ReceiverExchangeId)
+					return nil
 				}
 			}
 		}
+
 		return nil
 	}
 
@@ -344,6 +320,8 @@ func (a *CSAgreementWorker) initiateNewAgreement(wi             CSInitiateAgreem
 		return
 	} else if wlUsage == nil {
 		workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(0, 0, 0)
+	} else if wlUsage.DisableRetry {
+		workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(wlUsage.Priority, 0, wlUsage.FirstTryTime)
 	} else if wlUsage != nil {
 		workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(wlUsage.Priority, wlUsage.RetryCount+1, wlUsage.FirstTryTime)
 	}
@@ -437,22 +415,26 @@ func (a *CSAgreementWorker) handleAgreementReply(wi             CSHandleReply,
 				ackReplyAsValid = true
 
 				// If we dont have a workload usage record for this device, then we need to create one. If there is already a
-				// workload usage record, then check to see if the workload priority has changed. If so, update the record and reset
-				// the retry count and time. Othwerwise just update the retry count.
+				// workload usage record and workload rollback retry counting is enabled, then check to see if the workload priority
+				// has changed. If so, update the record and reset the retry count and time. Othwerwise just update the retry count.
 				if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(a.db, wi.SenderId, consumerPolicy.Header.Name); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error searching for persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 				} else if wlUsage == nil {
 					if !pol.Workloads[0].HasEmptyPriority() {
-						if err := NewWorkloadUsage(a.db, wi.SenderId, pol.HAGroup.Partners, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, reply.AgreementId()); err != nil {
+						if err := NewWorkloadUsage(a.db, wi.SenderId, pol.HAGroup.Partners, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, reply.AgreementId()); err != nil {
 							glog.Errorf(logString(fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 						}
 					}
-				} else if pol.Workloads[0].Priority.PriorityValue != wlUsage.Priority {
-					if _, err := UpdatePriority(a.db, wi.SenderId, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, reply.AgreementId()); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("error updating workload usage prioroty for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
+				} else if !wlUsage.DisableRetry {
+					if pol.Workloads[0].Priority.PriorityValue != wlUsage.Priority {
+						if _, err := UpdatePriority(a.db, wi.SenderId, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, reply.AgreementId()); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("error updating workload usage prioroty for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
+						}
+					} else if _, err := UpdateRetryCount(a.db, wi.SenderId, consumerPolicy.Header.Name, wlUsage.RetryCount+1, reply.AgreementId()); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("error updating workload usage retry count for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 					}
-				} else if _, err := UpdateRetryCount(a.db, wi.SenderId, consumerPolicy.Header.Name, wlUsage.RetryCount+1, reply.AgreementId()); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error updating workload usage retry count for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
+				} else if _, err := UpdateWUAgreementId(a.db, wi.SenderId, consumerPolicy.Header.Name, reply.AgreementId()); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error updating agreement id %v in workload usage for %v for policy %v, error: %v", reply.AgreementId(), wi.SenderId, consumerPolicy.Header.Name, err)))
 				}
 
 				// Send the reply Ack

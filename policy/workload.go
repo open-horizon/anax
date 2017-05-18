@@ -53,22 +53,25 @@ func (t Torrent) IsSame(compare Torrent) bool {
 }
 
 type WorkloadPriority struct {
-    PriorityValue  int `json:"priority_value"`  // The priority of the workload
-    Retries        int `json:"retries"`         // The number of retries before giving up and moving to the next priority
-    RetryDurationS int `json:"retry_durations"` // The number of seconds in which the specified number of retries must occur in order for the next priority workload to be attempted.
+    PriorityValue     int `json:"priority_value"`  // The priority of the workload
+    Retries           int `json:"retries"`         // The number of retries before giving up and moving to the next priority
+    RetryDurationS    int `json:"retry_durations"` // The number of seconds in which the specified number of retries must occur in order for the next priority workload to be attempted.
+    VerifiedDurationS int `json:"verified_durations"` // The number of second in which verified data must exist before the rollback retry feature is turned off
 }
 
 func (wp WorkloadPriority) String() string {
     return fmt.Sprintf("PriorityValue: %v, " +
         "Retries: %v, " +
-        "RetryDurationS: %v",
+        "RetryDurationS: %v, " +
+        "VerifiedDurationS: %v",
         wp.PriorityValue, wp.Retries, wp.RetryDurationS)
 }
 
 func (wp WorkloadPriority) IsSame(compare WorkloadPriority) bool {
     return wp.PriorityValue == compare.PriorityValue &&
             wp.Retries == compare.Retries &&
-            wp.RetryDurationS == compare.RetryDurationS
+            wp.RetryDurationS == compare.RetryDurationS &&
+            wp.VerifiedDurationS == compare.VerifiedDurationS
 }
 
 type Workload struct {

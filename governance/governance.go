@@ -351,54 +351,47 @@ func (w *GovernanceWorker) start() {
 				return errors.New(fmt.Sprintf("input message target is %T, expecting exchange.MessageTarget", mt))
 			}
 
-			// If the message target is using whisper, then send via whisper
-			if len(messageTarget.ReceiverMsgEndPoint) != 0 {
-				return errors.New(fmt.Sprintf("Message target should never be whisper, %v", messageTarget))
+			// Grab the exchange ID of the message receiver
+			glog.V(3).Infof("Sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))
 
-				// The message target is using the exchange message queue, so use it
-			} else {
+			// Get my own keys
+			myPubKey, myPrivKey, _ := exchange.GetKeys("")
 
-				// Grab the exchange ID of the message receiver
-				glog.V(3).Infof("Sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))
-
-				// Get my own keys
-				myPubKey, myPrivKey, _ := exchange.GetKeys("")
-
-				// Demarshal the receiver's public key if we need to
-				if messageTarget.ReceiverPublicKeyObj == nil {
-					if mtpk, err := exchange.DemarshalPublicKey(messageTarget.ReceiverPublicKeyBytes); err != nil {
-						return errors.New(fmt.Sprintf("Unable to demarshal device's public key %x, error %v", messageTarget.ReceiverPublicKeyBytes, err))
-					} else {
-						messageTarget.ReceiverPublicKeyObj = mtpk
-					}
-				}
-
-				// Create an encrypted message
-				if encryptedMsg, err := exchange.ConstructExchangeMessage(pay, myPubKey, myPrivKey, messageTarget.ReceiverPublicKeyObj); err != nil {
-					return errors.New(fmt.Sprintf("Unable to construct encrypted message from %v, error %v", pay, err))
-					// Marshal it into a byte array
-				} else if msgBody, err := json.Marshal(encryptedMsg); err != nil {
-					return errors.New(fmt.Sprintf("Unable to marshal exchange message %v, error %v", encryptedMsg, err))
-					// Send it to the device's message queue
+			// Demarshal the receiver's public key if we need to
+			if messageTarget.ReceiverPublicKeyObj == nil {
+				if mtpk, err := exchange.DemarshalPublicKey(messageTarget.ReceiverPublicKeyBytes); err != nil {
+					return errors.New(fmt.Sprintf("Unable to demarshal device's public key %x, error %v", messageTarget.ReceiverPublicKeyBytes, err))
 				} else {
-					pm := exchange.CreatePostMessage(msgBody, w.Worker.Manager.Config.Edge.ExchangeMessageTTL)
-					var resp interface{}
-					resp = new(exchange.PostDeviceResponse)
-					targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "agbots/" + messageTarget.ReceiverExchangeId + "/msgs"
-					for {
-						if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.deviceId, w.deviceToken, pm, &resp); err != nil {
-							return err
-						} else if tpErr != nil {
-							glog.V(5).Infof(tpErr.Error())
-							time.Sleep(10 * time.Second)
-							continue
-						} else {
-							glog.V(5).Infof("Sent message for %v to exchange.", messageTarget.ReceiverExchangeId)
-							return nil
-						}
+					messageTarget.ReceiverPublicKeyObj = mtpk
+				}
+			}
+
+			// Create an encrypted message
+			if encryptedMsg, err := exchange.ConstructExchangeMessage(pay, myPubKey, myPrivKey, messageTarget.ReceiverPublicKeyObj); err != nil {
+				return errors.New(fmt.Sprintf("Unable to construct encrypted message from %v, error %v", pay, err))
+				// Marshal it into a byte array
+			} else if msgBody, err := json.Marshal(encryptedMsg); err != nil {
+				return errors.New(fmt.Sprintf("Unable to marshal exchange message %v, error %v", encryptedMsg, err))
+				// Send it to the device's message queue
+			} else {
+				pm := exchange.CreatePostMessage(msgBody, w.Worker.Manager.Config.Edge.ExchangeMessageTTL)
+				var resp interface{}
+				resp = new(exchange.PostDeviceResponse)
+				targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "agbots/" + messageTarget.ReceiverExchangeId + "/msgs"
+				for {
+					if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.deviceId, w.deviceToken, pm, &resp); err != nil {
+						return err
+					} else if tpErr != nil {
+						glog.V(5).Infof(tpErr.Error())
+						time.Sleep(10 * time.Second)
+						continue
+					} else {
+						glog.V(5).Infof("Sent message for %v to exchange.", messageTarget.ReceiverExchangeId)
+						return nil
 					}
 				}
 			}
+
 			return nil
 		}
 
@@ -780,23 +773,8 @@ func (w *GovernanceWorker) RecordReply(proposal *citizenscientist.Proposal, prot
 				glog.Errorf("Error: %v", err)
 			}
 			envAdds[config.ENVVAR_PREFIX+"AGREEMENTID"] = proposal.AgreementId
-			envAdds[config.COMPAT_ENVVAR_PREFIX+"AGREEMENTID"] = proposal.AgreementId
-			envAdds[config.ENVVAR_PREFIX+"CONTRACT"] = w.Config.Edge.DVPrefix + proposal.AgreementId
-			envAdds[config.COMPAT_ENVVAR_PREFIX+"CONTRACT"] = w.Config.Edge.DVPrefix + proposal.AgreementId
-			// Temporary hack
-			if workload.WorkloadPassword == "" {
-				envAdds[config.ENVVAR_PREFIX+"CONFIGURE_NONCE"] = proposal.AgreementId
-				envAdds[config.COMPAT_ENVVAR_PREFIX+"CONFIGURE_NONCE"] = proposal.AgreementId
-			} else {
-				envAdds[config.ENVVAR_PREFIX+"CONFIGURE_NONCE"] = workload.WorkloadPassword
-				envAdds[config.COMPAT_ENVVAR_PREFIX+"CONFIGURE_NONCE"] = workload.WorkloadPassword
-			}
 			envAdds[config.ENVVAR_PREFIX+"HASH"] = workload.WorkloadPassword
-			// For workload compatibility, the DEVICE_ID env var is passed with and without the prefix. We would like to drop
-			// the env var without prefix once all the workloads have ben updated.
-			envAdds["DEVICE_ID"] = w.deviceId
 			envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = w.deviceId
-			envAdds[config.COMPAT_ENVVAR_PREFIX+"DEVICE_ID"] = w.deviceId
 
 			// Add in the exchange URL so that the workload knows which ecosystem its part of
 			envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = w.Config.Edge.ExchangeURL
@@ -817,19 +795,8 @@ func (w *GovernanceWorker) GetWorkloadPreference(url string) (map[string]string,
 		return nil, fmt.Errorf("Unable to fetch workload preferences. Err: %v", err)
 	}
 
-	// temporarily create duplicate env var map holding the old names for compatibility and the new names for migration
-	// TODO: remove compatMap once Horizon workloads have migrated
-	if baseMap, err := persistence.AttributesToEnvvarMap(attrs, config.ENVVAR_PREFIX); err != nil {
-		return baseMap, err
-	} else if compatMap, err := persistence.AttributesToEnvvarMap(attrs, config.COMPAT_ENVVAR_PREFIX); err != nil {
-		return baseMap, err
-	} else {
-		for k, v := range compatMap {
-			baseMap[k] = v
-		}
+	return persistence.AttributesToEnvvarMap(attrs, config.ENVVAR_PREFIX)
 
-		return baseMap, nil
-	}
 }
 
 func recordProducerAgreementState(url string, deviceId string, token string, agreementId string, microservice string, state string) error {
