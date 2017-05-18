@@ -20,6 +20,7 @@ import (
 	"io"
 	"io/ioutil"
 	"math/big"
+	"net/url"
 	"os"
 	"path"
 	"reflect"
@@ -201,6 +202,43 @@ func (p *Pattern) isShared(tp string, serviceName string) bool {
 	return false
 }
 
+const T_CONFIGURE = "CONFIGURE"
+
+type WhisperProviderMsg struct {
+	Type string `json:"type"`
+}
+
+// message sent to contract owner from provider
+type Configure struct {
+	// embedded
+	WhisperProviderMsg
+	ConfigureNonce      string            `json:"configure_nonce"`
+	TorrentURL          url.URL           `json:"torrent_url"`
+	ImageHashes         map[string]string `json:"image_hashes"`
+	ImageSignatures     map[string]string `json:"image_signatures"` // cryptographic signatures per-image
+	Deployment          string            `json:"deployment"`       // JSON docker-compose like
+	DeploymentSignature string            `json:"deployment_signature"`
+	DeploymentUserInfo  string            `json:"deployment_user_info"`
+}
+
+func (c Configure) String() string {
+	return fmt.Sprintf("Type: %v, ConfigureNonce: %v, TorrentURL: %v, ImageHashes: %v, ImageSignatures: %v, Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v", c.Type, c.ConfigureNonce, c.TorrentURL.String(), c.ImageHashes, c.ImageSignatures, c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo)
+}
+
+func NewConfigure(configureNonce string, torrentURL url.URL, imageHashes map[string]string, imageSignatures map[string]string, deployment string, deploymentSignature string, deploymentUserInfo string) *Configure {
+	return &Configure{
+		WhisperProviderMsg:  WhisperProviderMsg{Type: T_CONFIGURE},
+		ConfigureNonce:      configureNonce,
+		TorrentURL:          torrentURL,
+		ImageHashes:         imageHashes,
+		ImageSignatures:     imageSignatures,
+		Deployment:          deployment,
+		DeploymentSignature: deploymentSignature,
+		DeploymentUserInfo:  deploymentUserInfo,
+	}
+
+}
+
 // Service Only those marked "omitempty" may be omitted
 type Service struct {
 	Image            string               `json:"image"`
@@ -365,7 +403,7 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 
 		for _, v := range service.Environment {
 			// skip this one b/c it's dangerous
-			if !strings.HasPrefix(config.ENVVAR_PREFIX+"ETHEREUM_ACCOUNT", v) && !strings.HasPrefix(config.COMPAT_ENVVAR_PREFIX+"ETHEREUM_ACCOUNT", v) {
+			if !strings.HasPrefix(config.ENVVAR_PREFIX+"ETHEREUM_ACCOUNT", v) {
 				serviceConfig.Config.Env = append(serviceConfig.Config.Env, v)
 			}
 		}

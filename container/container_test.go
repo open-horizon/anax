@@ -3,7 +3,6 @@ package container
 import (
 	"encoding/json"
 	docker "github.com/fsouza/go-dockerclient"
-	gwhisper "github.com/open-horizon/go-whisper"
 	"net/url"
 	"testing"
 )
@@ -56,7 +55,7 @@ func Test_generatePermittedStringDynamic(t *testing.T) {
 
 	url, _ := url.Parse("http://goo.foo")
 
-	configure := gwhisper.NewConfigure("", *url, map[string]string{}, map[string]string{}, "", "", deploymentUserInfo)
+	configure := NewConfigure("", *url, map[string]string{}, map[string]string{}, "", "", deploymentUserInfo)
 
 	bytes, _ := json.Marshal(configure)
 

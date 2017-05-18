@@ -10,7 +10,6 @@ import (
 	"github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
-	gwhisper "github.com/open-horizon/go-whisper"
 	"io"
 	"net/url"
 	"os"

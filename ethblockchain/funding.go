@@ -9,7 +9,6 @@ import (
 	"strings"
 )
 
-// similar to what's in the whisper pkg, consider consolidating
 type RPCMsg struct {
 	JsonRPC string `json:"jsonrpc"`
 	Id      int    `json:"id"`
