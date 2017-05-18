@@ -633,7 +633,7 @@ func existingShared(client *docker.Client, serviceName string, servicePair *serv
 
 	// some of the facts in the labels that are compared will also be in the hash
 	sharedOnly := docker.ListContainersOptions{
-		All: false,
+		All: true,
 		Filters: map[string][]string{
 			"label": []string{
 				fmt.Sprintf("%v.service_name=%v", LABEL_PREFIX, serviceName),
@@ -648,7 +648,32 @@ func existingShared(client *docker.Client, serviceName string, servicePair *serv
 	if err != nil {
 		return nil, nil, err
 	}
+	glog.V(5).Infof("Found containers %v", containers)
 
+	// The container we're looking for might exist, but might not be running. If it exists but is not running
+	// docker will prevent us from starting a new container so we have to get rid of it.
+	for _, con := range containers {
+		if con.State != "running" {
+			for _, name := range con.Names {
+				if strings.TrimLeft(name, "/") == bridgeName {
+					// We found the shared container, but it is not running
+					if err := client.RemoveContainer(docker.RemoveContainerOptions{ID: con.ID, RemoveVolumes: true, Force: true}); err != nil {
+						glog.Errorf("Error removing stopped shared container %v %v, error %v", con.Names, con.ID, err)
+						return nil, nil, err
+					}
+					break
+				}
+			}
+			// Do the container search again so that we are working with an updated list
+			containers, err = client.ListContainers(sharedOnly)
+			if err != nil {
+				return nil, nil, err
+			}
+			glog.V(5).Infof("Found containers again %v", containers)
+		}
+	}
+
+	// Return the shared resources that we found
 	if len(containers) > 1 {
 		return nil, nil, fmt.Errorf("Odd to find more than one shared service matching share criteria: %v. Containers: %v", sharedOnly, containers)
 	}
@@ -1361,7 +1386,17 @@ func (b *ContainerWorker) syncupResources() {
 		} else {
 			for _, net := range networks {
 				glog.V(5).Infof("ContainerWorker working on network %v", net)
-				if !IsAgreementId(net.Name) {
+				if strings.HasPrefix(net.Name, "singleton-") {
+					if netInfo, err := b.client.NetworkInfo(net.ID); err != nil {
+						glog.Errorf("Failure getting network info for %v. Error: %v", net.Name, err)
+					} else if len(netInfo.Containers) != 0 {
+						glog.V(3).Infof("Shared network %v has containers %v, so leave it alone", net.Name, netInfo.Containers)
+					} else if err := b.client.RemoveNetwork(net.ID); err != nil {
+						glog.Errorf("Failure removing network: %v. Error: %v", net, err)
+					} else {
+						glog.Infof("Succeeded removing unused shared network: %v", net)
+					}
+				} else if !IsAgreementId(net.Name) {
 					continue
 				} else if _, there := agMap[net.Name]; !there {
 					glog.V(3).Infof("ContainerWorker found leftover network %v", net)
@@ -1422,13 +1457,14 @@ func (b *ContainerWorker) resourcesRemove(agreements []string) error {
 	if err != nil {
 		return fmt.Errorf("Unable to list networks: %v", err)
 	}
+	glog.V(3).Infof("Existing networks: %v", networks)
 
 	freeNets := make([]docker.Network, 0)
 	destroy := func(container *docker.APIContainers, agreementId string) error {
 		if val, exists := container.Labels[LABEL_PREFIX+".service_pattern.shared"]; exists && val == "singleton" {
 			// must investigate bridge to see if other containers are still using this shared service
 
-			glog.V(4).Infof("Found shared container with names: %v", container.Names)
+			glog.V(4).Infof("Found shared container with names: %v and networks: %v", container.Names, container.Networks.Networks)
 
 			var sharedNet docker.Network
 			for netName, _ := range container.Networks.Networks {
@@ -1446,30 +1482,49 @@ func (b *ContainerWorker) resourcesRemove(agreements []string) error {
 			}
 
 			if sharedNet.ID == "" {
-				glog.V(3).Infof("Did not find existing network for shared container: %v", container)
-			}
+				glog.Warningf("Did not find existing network for shared container: %v", container)
+			} else if netInfo, err := b.client.NetworkInfo(sharedNet.ID); err != nil {
+				glog.Errorf("Failure getting network info for %v. Error: %v", sharedNet, err)
+			} else {
 
-			for conId, _ := range sharedNet.Containers {
-				// do container lookup
+				glog.V(3).Infof("Shared container network %v has container ids: %v", netInfo.Name, netInfo.Containers)
 
-				allContainers, err := b.client.ListContainers(docker.ListContainersOptions{})
-				if err != nil {
-					return err
-				}
+				for conId, _ := range netInfo.Containers {
+					// do container lookup
 
-				for _, con := range allContainers {
-					if conId == con.ID &&
-						con.Labels[LABEL_PREFIX+".agreement_id"] != container.Labels[LABEL_PREFIX+".agreement_id"] {
+					allContainers, err := b.client.ListContainers(docker.ListContainersOptions{})
+					if err != nil {
+						return err
+					}
 
-						glog.V(2).Infof("Will not free resources for shared container: %v, it's in use by %v", container.Names, con)
+					glog.V(5).Infof("All containers: %v", allContainers)
 
-						return nil
+					// Look through each container in the system to find one that is on the shared container's network and
+					// that has a different agreement id than the agreement we're terminating. If we find one, then we cant
+					// get rid of the shared container.
+					for _, con := range allContainers {
+						// The shared container we are trying to get rid of is one of the containers in the system, so we can just
+						// skip over it.
+						if val, exists := con.Labels[LABEL_PREFIX+".service_pattern.shared"]; exists && val == "singleton" {
+							continue
+						}
+
+						// If the current container is in the list of containers on the shared container's network, then we should check
+						// the agreement id. If it's different, the shared container will remain in use after we terminate all the containers
+						// in this agreement, so we need to leave the shared container up.
+						if conId == con.ID &&
+							con.Labels[LABEL_PREFIX+".agreement_id"] != agreementId {
+
+							glog.V(2).Infof("Will not free resources for shared container: %v, it's in use by %v", container.Names, con)
+
+							return nil
+						}
 					}
 				}
-			}
 
-			// if we made it this far, we can free this network
-			freeNets = append(freeNets, sharedNet)
+				// if we made it this far, we can free this network
+				freeNets = append(freeNets, sharedNet)
+			}
 		}
 
 		serviceName := container.Labels[LABEL_PREFIX+".service_name"]
