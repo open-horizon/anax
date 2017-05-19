@@ -303,36 +303,90 @@ func persistUpdatedAgreement(db *bolt.DB, agreementid string, protocol string, u
 				return fmt.Errorf("Failed to unmarshal agreement DB data: %v", string(current))
 			} else {
 
-				// write updates only to the fields we expect should be updateable
-				mod.AgreementCreationTime = update.AgreementCreationTime
-				mod.AgreementFinalizedTime = update.AgreementFinalizedTime
-				mod.AgreementTimedout = update.AgreementTimedout
-				mod.CounterPartyAddress = update.CounterPartyAddress
-				mod.AgreementProtocol = update.AgreementProtocol
-				mod.Proposal = update.Proposal
-				mod.ProposalHash = update.ProposalHash
-				mod.ConsumerProposalSig = update.ConsumerProposalSig
-				mod.Policy = update.Policy
-				mod.PolicyName = update.PolicyName
-				mod.ProposalSig = update.ProposalSig
-				mod.DataVerificationURL = update.DataVerificationURL
-				mod.DataVerificationUser = update.DataVerificationUser
-				mod.DataVerificationPW = update.DataVerificationPW
-				mod.DataVerificationCheckRate = update.DataVerificationCheckRate
-				mod.DataVerificationMissedCount = update.DataVerificationMissedCount
-				mod.DataVerificationNoDataInterval = update.DataVerificationNoDataInterval
-				mod.DisableDataVerificationChecks = update.DisableDataVerificationChecks
-				mod.DataVerifiedTime = update.DataVerifiedTime
-				mod.DataNotificationSent = update.DataNotificationSent
-				mod.HAPartners = update.HAPartners
-				mod.MeteringTokens = update.MeteringTokens
-				mod.MeteringPerTimeUnit = update.MeteringPerTimeUnit
-				mod.MeteringNotificationInterval = update.MeteringNotificationInterval
-				mod.MeteringNotificationSent = update.MeteringNotificationSent
-				mod.MeteringNotificationMsgs = update.MeteringNotificationMsgs
-				mod.Archived = update.Archived
-				mod.TerminatedReason = update.TerminatedReason
-				mod.TerminatedDescription = update.TerminatedDescription
+				// This code is running in a database transaction. Within the tx, the current record is
+				// read and then updated according to the updates within the input update record. It is critical
+				// to check for correct data transitions within the tx .
+				if mod.AgreementCreationTime == 0 {		// 1 transition from zero to non-zero
+					mod.AgreementCreationTime = update.AgreementCreationTime
+				}
+				if mod.AgreementFinalizedTime == 0 {	// 1 transition from zero to non-zero
+					mod.AgreementFinalizedTime = update.AgreementFinalizedTime
+				}
+				if mod.AgreementTimedout == 0 {			// 1 transition from zero to non-zero
+					mod.AgreementTimedout = update.AgreementTimedout
+				}
+				if mod.CounterPartyAddress == "" {		// 1 transition from empty to non-empty
+					mod.CounterPartyAddress = update.CounterPartyAddress
+				}
+				if mod.Proposal == "" {					// 1 transition from empty to non-empty
+					mod.Proposal = update.Proposal
+				}
+				if mod.ProposalHash == "" {				// 1 transition from empty to non-empty
+					mod.ProposalHash = update.ProposalHash
+				}
+				if mod.ConsumerProposalSig == "" {		// 1 transition from empty to non-empty
+					mod.ConsumerProposalSig = update.ConsumerProposalSig
+				}
+				if mod.Policy == "" {					// 1 transition from empty to non-empty
+					mod.Policy = update.Policy
+				}
+				if mod.ProposalSig == "" {				// 1 transition from empty to non-empty
+					mod.ProposalSig = update.ProposalSig
+				}
+				if mod.DataVerificationURL == "" {		// 1 transition from empty to non-empty
+					mod.DataVerificationURL = update.DataVerificationURL
+				}
+				if mod.DataVerificationUser == "" {		// 1 transition from empty to non-empty
+					mod.DataVerificationUser = update.DataVerificationUser
+				}
+				if mod.DataVerificationPW == "" {		// 1 transition from empty to non-empty
+					mod.DataVerificationPW = update.DataVerificationPW
+				}
+				if mod.DataVerificationCheckRate == 0 {	// 1 transition from zero to non-zero
+					mod.DataVerificationCheckRate = update.DataVerificationCheckRate
+				}
+				if mod.DataVerificationMissedCount == 0 {	// 1 transition from zero to non-zero
+					mod.DataVerificationMissedCount = update.DataVerificationMissedCount
+				}
+				if mod.DataVerificationNoDataInterval == 0 {	// 1 transition from zero to non-zero
+					mod.DataVerificationNoDataInterval = update.DataVerificationNoDataInterval
+				}
+				if !mod.DisableDataVerificationChecks {		// 1 transition from false to true
+					mod.DisableDataVerificationChecks = update.DisableDataVerificationChecks
+				}
+				if mod.DataVerifiedTime < update.DataVerifiedTime {	// Valid transitions must move forward
+					mod.DataVerifiedTime = update.DataVerifiedTime
+				}
+				if mod.DataNotificationSent < update.DataNotificationSent {	// Valid transitions must move forward
+					mod.DataNotificationSent = update.DataNotificationSent
+				}
+				if len(mod.HAPartners) == 0 { 		// 1 transition from empty array to non-empty
+					mod.HAPartners = update.HAPartners
+				}
+				if mod.MeteringTokens == 0 {		// 1 transition from zero to non-zero
+					mod.MeteringTokens = update.MeteringTokens
+				}
+				if mod.MeteringPerTimeUnit == "" {	// 1 transition from empty to non-empty
+					mod.MeteringPerTimeUnit = update.MeteringPerTimeUnit
+				}
+				if mod.MeteringNotificationInterval == 0 {	// 1 transition from zero to non-zero
+					mod.MeteringNotificationInterval = update.MeteringNotificationInterval
+				}
+				if mod.MeteringNotificationSent < update.MeteringNotificationSent {	// Valid transitions must move forward
+					mod.MeteringNotificationSent = update.MeteringNotificationSent
+				}
+				if len(mod.MeteringNotificationMsgs) == 0 || mod.MeteringNotificationMsgs[0] == update.MeteringNotificationMsgs[1] {	// msgs must move from new to old in the array
+					mod.MeteringNotificationMsgs = update.MeteringNotificationMsgs
+				}
+				if !mod.Archived {					// 1 transition from false to true
+					mod.Archived = update.Archived
+				}
+				if mod.TerminatedReason == 0 {		// 1 valid transition from zero to non-zero
+					mod.TerminatedReason = update.TerminatedReason
+				}
+				if mod.TerminatedDescription == "" {	// 1 transition from empty to non-empty
+					mod.TerminatedDescription = update.TerminatedDescription
+				}
 
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize agreement record: %v", mod)
