@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/citizenscientist"
+	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/metering"
@@ -64,7 +65,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 				if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, pm, &resp); err != nil {
 					return err
 				} else if tpErr != nil {
-					glog.V(5).Infof(tpErr.Error())
+					glog.Warningf(tpErr.Error())
 					time.Sleep(10 * time.Second)
 					continue
 				} else {
@@ -419,7 +420,7 @@ func getDevice(deviceId string, url string, agbotId string, token string) (*exch
 	resp = new(exchange.GetDevicesResponse)
 	targetURL := url + "devices/" + deviceId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return nil, err
 		} else if tpErr != nil {

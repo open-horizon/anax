@@ -34,25 +34,25 @@ type EthBlockchainWorker struct {
 	horizonPubKeyFile   string
 }
 
-func NewEthBlockchainWorker(config *config.HorizonConfig, gethURL string) *EthBlockchainWorker {
+func NewEthBlockchainWorker(cfg *config.HorizonConfig, gethURL string) *EthBlockchainWorker {
 	messages := make(chan events.Message)      // The channel for outbound messages to the anax wide bus
 	commands := make(chan worker.Command, 100) // The channel for commands into the agreement bot worker
 
 	worker := &EthBlockchainWorker{
 		Worker: worker.Worker{
 			Manager: worker.Manager{
-				Config:   config,
+				Config:   cfg,
 				Messages: messages,
 			},
 
 			Commands: commands,
 		},
 
-		httpClient:          &http.Client{},
+		httpClient:          &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)},
 		gethURL:             gethURL,
 		ethContainerStarted: false,
 		ethContainerLoaded:  false,
-		horizonPubKeyFile:   config.Edge.PublicKeyPath,
+		horizonPubKeyFile:   cfg.Edge.PublicKeyPath,
 	}
 
 	glog.Info(logString("starting worker"))

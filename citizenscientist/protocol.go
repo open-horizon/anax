@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/metering"
 	"github.com/open-horizon/anax/policy"
@@ -13,6 +14,7 @@ import (
 	"golang.org/x/crypto/sha3"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 const PROTOCOL_NAME = "Citizen Scientist"
@@ -231,7 +233,7 @@ type ProtocolHandler struct {
 func NewProtocolHandler(gethURL string, pm *policy.PolicyManager) *ProtocolHandler {
 	return &ProtocolHandler{
 		GethURL:       gethURL,
-		httpClient:    &http.Client{},
+		httpClient:    &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)},
 		pm:            pm,
 	}
 }
