@@ -15,7 +15,7 @@ const WORKLOAD_USAGE = "workload_usage"
 type WorkloadUsage struct {
     Id                 uint64   `json:"record_id"`             // unique primary key for records
     DeviceId           string   `json:"device_id"`             // the device id we are working with, immutable after construction
-    HAPartners         []string `json:"ha_partners"`           // list of deviceis which are partners to this device
+    HAPartners         []string `json:"ha_partners"`           // list of device id(s) which are partners to this device
     PendingUpgradeTime uint64   `json:"pending_upgrade_time"`  // time when this usage was marked for pending upgrade
     Policy             string   `json:"policy"`                // the policy containing the workloads we're managing
     PolicyName         string   `json:"policy_name"`           // the name of the policy containing the workloads we're managing

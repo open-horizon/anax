@@ -386,6 +386,10 @@ func IdAFilter(id string) AFilter {
 	return func(a Agreement) bool { return a.CurrentAgreementId == id }
 }
 
+func DevPolAFilter(deviceId string, policyName string) AFilter {
+	return func(a Agreement) bool { return a.DeviceId == deviceId && a.PolicyName == policyName }
+}
+
 type AFilter func(Agreement) bool
 
 func FindAgreements(db *bolt.DB, filters []AFilter, protocol string) ([]Agreement, error) {

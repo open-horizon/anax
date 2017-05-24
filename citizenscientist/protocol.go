@@ -635,7 +635,8 @@ func (p *ProtocolHandler) TerminateAgreement(policy *policy.Policy, counterParty
 			glog.Errorf(fmt.Sprintf("Error cancelling agreement %v in PM %v", agreementId, cerr))
 		}
 
-		if counterParty != "" {
+		// If the cancel reason is due to a blockchain write failure, then we dont need to do the cancel on the blockchain.
+		if counterParty != "" && reason != AB_CANCEL_BC_WRITE_FAILED {
 			// Setup parameters for call to the blockchain
 			params := make([]interface{}, 0, 10)
 			params = append(params, counterParty)
@@ -763,6 +764,8 @@ const AB_CANCEL_NO_DATA_RECEIVED      = 203
 const AB_CANCEL_POLICY_CHANGED        = 204
 const AB_CANCEL_DISCOVERED            = 205  // xcd
 const AB_USER_REQUESTED               = 206
+const AB_CANCEL_FORCED_UPGRADE        = 207
+const AB_CANCEL_BC_WRITE_FAILED       = 208  // xd0
 
 func DecodeReasonCode(code uint64) string {
 
@@ -780,7 +783,9 @@ func DecodeReasonCode(code uint64) string {
 									AB_CANCEL_NO_DATA_RECEIVED:      "agreement bot did not detect data",
 									AB_CANCEL_POLICY_CHANGED:        "agreement bot policy changed",
 									AB_CANCEL_DISCOVERED:            "agreement bot discovered cancellation from producer",
-									AB_USER_REQUESTED:               "agreement bot user requested"}
+									AB_USER_REQUESTED:               "agreement bot user requested",
+									AB_CANCEL_FORCED_UPGRADE:        "agreement bot user requested workload upgrade",
+									AB_CANCEL_BC_WRITE_FAILED:       "agreement bot agreement write failed"}
 
 	if reasonString, ok := codeMeanings[code]; !ok {
 		return "unknown reason code, device might be downlevel"
