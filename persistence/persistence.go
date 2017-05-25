@@ -298,22 +298,49 @@ func persistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 				return fmt.Errorf("Failed to unmarshal agreement DB data: %v. Error: %v", string(current), err)
 			} else {
 
-				// prevAgreementId := mod.CurrentAgreementId
-
-				// write updates only to the fields we expect should be updateable
-				mod.Archived = update.Archived
-				mod.AgreementAcceptedTime = update.AgreementAcceptedTime
-				mod.AgreementFinalizedTime = update.AgreementFinalizedTime
-				mod.AgreementTerminatedTime = update.AgreementTerminatedTime
-				mod.AgreementForceTerminatedTime = update.AgreementForceTerminatedTime
-				mod.AgreementExecutionStartTime = update.AgreementExecutionStartTime
-				mod.AgreementDataReceivedTime = update.AgreementDataReceivedTime
-				mod.CurrentDeployment = update.CurrentDeployment
-				mod.TerminatedReason = update.TerminatedReason
-				mod.TerminatedDescription = update.TerminatedDescription
-				mod.AgreementProtocolTerminatedTime = update.AgreementProtocolTerminatedTime
-				mod.WorkloadTerminatedTime = update.WorkloadTerminatedTime
-				mod.MeteringNotificationMsg = update.MeteringNotificationMsg
+				// This code is running in a database transaction. Within the tx, the current record is
+				// read and then updated according to the updates within the input update record. It is critical
+				// to check for correct data transitions within the tx.
+				if !mod.Archived {				// 1 transition from false to true
+					mod.Archived = update.Archived
+				}
+				if mod.AgreementAcceptedTime == 0 {		// 1 transition from zero to non-zero
+					mod.AgreementAcceptedTime = update.AgreementAcceptedTime
+				}
+				if mod.AgreementFinalizedTime == 0 { 	// 1 transition from zero to non-zero
+					mod.AgreementFinalizedTime = update.AgreementFinalizedTime
+				}
+				if mod.AgreementTerminatedTime == 0 {	// 1 transition from zero to non-zero
+					mod.AgreementTerminatedTime = update.AgreementTerminatedTime
+				}
+				if mod.AgreementForceTerminatedTime < update.AgreementForceTerminatedTime { // always moves forward
+					mod.AgreementForceTerminatedTime = update.AgreementForceTerminatedTime
+				}
+				if mod.AgreementExecutionStartTime == 0 {	// 1 transition from zero to non-zero
+					mod.AgreementExecutionStartTime = update.AgreementExecutionStartTime
+				}
+				if mod.AgreementDataReceivedTime < update.AgreementDataReceivedTime { // always moves forward
+					mod.AgreementDataReceivedTime = update.AgreementDataReceivedTime
+				}
+				// valid transitions are from empty to non-empty to empty, ad infinitum
+				if (len(mod.CurrentDeployment) == 0 && len(update.CurrentDeployment) != 0) || (len(mod.CurrentDeployment) != 0 && len(update.CurrentDeployment) == 0) {
+					mod.CurrentDeployment = update.CurrentDeployment
+				}
+				if mod.TerminatedReason == 0 {			// 1 transition from zero to non-zero
+					mod.TerminatedReason = update.TerminatedReason
+				}
+				if mod.TerminatedDescription == "" {	// 1 transition from empty to non-empty
+					mod.TerminatedDescription = update.TerminatedDescription
+				}
+				if mod.AgreementProtocolTerminatedTime == 0 {	// 1 transition from zero to non-zero
+					mod.AgreementProtocolTerminatedTime = update.AgreementProtocolTerminatedTime
+				}
+				if mod.WorkloadTerminatedTime == 0 {			// 1 transition from zero to non-zero
+					mod.WorkloadTerminatedTime = update.WorkloadTerminatedTime
+				}
+				if update.MeteringNotificationMsg != (MeteringNotification{}) { // only save non-empty values
+					mod.MeteringNotificationMsg = update.MeteringNotificationMsg
+				}
 
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize contract record: %v. Error: %v", mod, err)

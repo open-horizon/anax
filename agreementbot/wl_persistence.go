@@ -205,11 +205,22 @@ func persistUpdatedWorkloadUsage(db *bolt.DB, id uint64, update *WorkloadUsage) 
                 mod.Priority = update.Priority
                 mod.RetryCount = update.RetryCount
                 mod.RetryDurationS = update.RetryDurationS
-                mod.CurrentAgreementId = update.CurrentAgreementId
-                mod.FirstTryTime = update.FirstTryTime
-                mod.PendingUpgradeTime = update.PendingUpgradeTime
-                mod.LatestRetryTime = update.LatestRetryTime
-                mod.DisableRetry = update.DisableRetry
+                // This field goes from empty to non-empty to empty, ad infinitum
+                if (mod.CurrentAgreementId == "" && update.CurrentAgreementId != "") || (mod.CurrentAgreementId != "" && update.CurrentAgreementId == "") {
+                    mod.CurrentAgreementId = update.CurrentAgreementId
+                }
+                if mod.FirstTryTime < update.FirstTryTime {     // Always moves forward
+                    mod.FirstTryTime = update.FirstTryTime
+                }
+                if mod.PendingUpgradeTime == 0 {        // 1 transition from zero to non-zero
+                    mod.PendingUpgradeTime = update.PendingUpgradeTime
+                }
+                if mod.LatestRetryTime < update.LatestRetryTime {   // Always moves forward
+                    mod.LatestRetryTime = update.LatestRetryTime
+                }
+                if !mod.DisableRetry {                  // 1 transition from false to true
+                    mod.DisableRetry = update.DisableRetry
+                }
                 mod.VerifiedDurationS = update.VerifiedDurationS
 
                 if serialized, err := json.Marshal(mod); err != nil {
