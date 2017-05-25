@@ -24,7 +24,7 @@ type ExchangeMessageWorker struct {
 	token         string // device token
 }
 
-func NewExchangeMessageWorker(config *config.HorizonConfig, db *bolt.DB) *ExchangeMessageWorker {
+func NewExchangeMessageWorker(cfg *config.HorizonConfig, db *bolt.DB) *ExchangeMessageWorker {
 	messages := make(chan events.Message)
 	commands := make(chan worker.Command, 200)
 
@@ -38,14 +38,14 @@ func NewExchangeMessageWorker(config *config.HorizonConfig, db *bolt.DB) *Exchan
 	worker := &ExchangeMessageWorker{
 		Worker: worker.Worker{
 			Manager: worker.Manager{
-				Config:   config,
+				Config:   cfg,
 				Messages: messages,
 			},
 
 			Commands: commands,
 		},
 		db:         db,
-		httpClient: &http.Client{},
+		httpClient: &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)},
 		id:         id,
 		token:      token,
 	}

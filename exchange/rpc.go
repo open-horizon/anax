@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
 	"net/http"
@@ -386,7 +387,7 @@ func GetEthereumClient(url string, chainName string, deviceId string, token stri
 	resp = new(GetEthereumClientResponse)
 	targetURL := url + "bctypes/ethereum/blockchains/" + chainName
 	for {
-		if err, tpErr := InvokeExchange(&http.Client{}, "GET", targetURL, deviceId, token, nil, &resp); err != nil {
+		if err, tpErr := InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "GET", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return "", err
 		} else if tpErr != nil {
@@ -473,8 +474,13 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 			req.Header.Add("Authorization", "Basic "+user+":"+pw)
 		}
 		glog.V(5).Infof("Invoking exchange with headers: %v", req.Header)
+		// If the exchange is down, this call will return an error.
 		if httpResp, err := httpClient.Do(req); err != nil {
-			return errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, url, requestBody, err)), nil
+			if isTimeout(err) {
+				return nil, errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, url, requestBody, err))
+			} else {
+				return errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, url, requestBody, err)), nil
+			}
 		} else {
 			defer httpResp.Body.Close()
 
@@ -482,7 +488,11 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 			var readErr error
 			if httpResp.Body != nil {
 				if outBytes, readErr = ioutil.ReadAll(httpResp.Body); err != nil {
-					return errors.New(fmt.Sprintf("Invocation of %v at %v failed reading response message, HTTP Status %v, error: %v", method, url, httpResp.StatusCode, readErr)), nil
+					if isTimeout(err) {
+						return nil, errors.New(fmt.Sprintf("Invocation of %v at %v failed reading response message, HTTP Status %v, error: %v", method, url, httpResp.StatusCode, readErr))
+					} else {
+						return errors.New(fmt.Sprintf("Invocation of %v at %v failed reading response message, HTTP Status %v, error: %v", method, url, httpResp.StatusCode, readErr)), nil
+					}
 				}
 			}
 
@@ -545,4 +555,8 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 			}
 		}
 	}
+}
+
+func isTimeout(err error) bool {
+	return strings.Contains(strings.ToLower(err.Error()), "time") && strings.Contains(strings.ToLower(err.Error()), "out")
 }

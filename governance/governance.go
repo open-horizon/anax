@@ -51,7 +51,7 @@ type GovernanceWorker struct {
 	// block chain writes (cancellations) can be done.
 }
 
-func NewGovernanceWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *GovernanceWorker {
+func NewGovernanceWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *GovernanceWorker {
 	messages := make(chan events.Message)
 	commands := make(chan worker.Command, 200)
 
@@ -66,7 +66,7 @@ func NewGovernanceWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.P
 
 		Worker: worker.Worker{
 			Manager: worker.Manager{
-				Config:   config,
+				Config:   cfg,
 				Messages: messages,
 			},
 
@@ -74,7 +74,7 @@ func NewGovernanceWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.P
 		},
 
 		db:              db,
-		httpClient:      &http.Client{},
+		httpClient:      &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)},
 		pm:              pm,
 		deviceId:        id,
 		deviceToken:     token,
@@ -382,7 +382,7 @@ func (w *GovernanceWorker) start() {
 					if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.deviceId, w.deviceToken, pm, &resp); err != nil {
 						return err
 					} else if tpErr != nil {
-						glog.V(5).Infof(tpErr.Error())
+						glog.Warningf(tpErr.Error())
 						time.Sleep(10 * time.Second)
 						continue
 					} else {
@@ -810,7 +810,7 @@ func recordProducerAgreementState(url string, deviceId string, token string, agr
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := url + "devices/" + deviceId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "PUT", targetURL, deviceId, token, &as, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "PUT", targetURL, deviceId, token, &as, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
@@ -833,7 +833,7 @@ func deleteProducerAgreement(url string, deviceId string, token string, agreemen
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := url + "devices/" + deviceId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {

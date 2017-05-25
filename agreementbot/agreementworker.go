@@ -31,15 +31,15 @@ type CSAgreementWorker struct {
 	alm        *AgreementLockManager
 }
 
-func NewCSAgreementWorker(policyManager *policy.PolicyManager, config *config.HorizonConfig, db *bolt.DB, alm *AgreementLockManager) *CSAgreementWorker {
+func NewCSAgreementWorker(policyManager *policy.PolicyManager, cfg *config.HorizonConfig, db *bolt.DB, alm *AgreementLockManager) *CSAgreementWorker {
 
 	p := &CSAgreementWorker{
 		pm:         policyManager,
 		db:         db,
-		config:     config,
-		httpClient: &http.Client{},
-		agbotId:    config.AgreementBot.ExchangeId,
-		token:      config.AgreementBot.ExchangeToken,
+		config:     cfg,
+		httpClient: &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)},
+		agbotId:    cfg.AgreementBot.ExchangeId,
+		token:      cfg.AgreementBot.ExchangeToken,
 		alm:        alm,
 	}
 
@@ -196,7 +196,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 				if err, tpErr := exchange.InvokeExchange(a.httpClient, "POST", targetURL, a.agbotId, a.token, pm, &resp); err != nil {
 					return err
 				} else if tpErr != nil {
-					glog.V(5).Infof(tpErr.Error())
+					glog.Warningf(tpErr.Error())
 					time.Sleep(10 * time.Second)
 					continue
 				} else {

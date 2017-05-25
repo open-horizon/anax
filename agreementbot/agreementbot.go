@@ -37,7 +37,7 @@ type AgreementBotWorker struct {
 	ready           bool
 }
 
-func NewAgreementBotWorker(config *config.HorizonConfig, db *bolt.DB) *AgreementBotWorker {
+func NewAgreementBotWorker(cfg *config.HorizonConfig, db *bolt.DB) *AgreementBotWorker {
 	messages := make(chan events.Message, 100)   // The channel for outbound messages to the anax wide bus
 	commands := make(chan worker.Command, 100)   // The channel for commands into the agreement bot worker
 	pwcommands := make(map[string]chan worker.Command) // The map of channels for commands into the agreement protocol workers
@@ -45,7 +45,7 @@ func NewAgreementBotWorker(config *config.HorizonConfig, db *bolt.DB) *Agreement
 	worker := &AgreementBotWorker{
 		Worker: worker.Worker{
 			Manager: worker.Manager{
-				Config:   config,
+				Config:   cfg,
 				Messages: messages,
 			},
 
@@ -53,9 +53,9 @@ func NewAgreementBotWorker(config *config.HorizonConfig, db *bolt.DB) *Agreement
 		},
 
 		db:              db,
-		httpClient:      &http.Client{},
-		agbotId:         config.AgreementBot.ExchangeId,
-		token:           config.AgreementBot.ExchangeToken,
+		httpClient:      &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)},
+		agbotId:         cfg.AgreementBot.ExchangeId,
+		token:           cfg.AgreementBot.ExchangeToken,
 		protocols:       make(map[string]bool),
 		pwcommands:      pwcommands,
 		bcWritesEnabled: false,
@@ -226,7 +226,7 @@ func (w *AgreementBotWorker) start() {
 
 		// Begin heartbeating with the exchange.
 		targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/heartbeat"
-		go exchange.Heartbeat(&http.Client{}, targetURL, w.agbotId, w.token, w.Worker.Manager.Config.AgreementBot.ExchangeHeartbeat)
+		go exchange.Heartbeat(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, targetURL, w.agbotId, w.token, w.Worker.Manager.Config.AgreementBot.ExchangeHeartbeat)
 
 		// Start the governance routines.
 		go w.GovernAgreements()
@@ -748,7 +748,7 @@ func DeleteConsumerAgreement(url string, agbotId string, token string, agreement
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := url + "agbots/" + agbotId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "DELETE", targetURL, agbotId, token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "DELETE", targetURL, agbotId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
@@ -795,7 +795,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy) (*[]exchange.Sea
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, ser, &resp); err != nil {
 			return nil, err
 		} else if tpErr != nil {
-			glog.V(5).Infof(tpErr.Error())
+			glog.Warningf(tpErr.Error())
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
@@ -990,7 +990,7 @@ func getTheDevice(deviceId string, url string, agbotId string, token string) (*e
 	resp = new(exchange.GetDevicesResponse)
 	targetURL := url + "devices/" + deviceId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
 			glog.Errorf(AWlogString(fmt.Sprintf(err.Error())))
 			return nil, err
 		} else if tpErr != nil {

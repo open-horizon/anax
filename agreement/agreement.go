@@ -37,7 +37,7 @@ type AgreementWorker struct {
 	containerSyncUpSucessful bool
 }
 
-func NewAgreementWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *AgreementWorker {
+func NewAgreementWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *AgreementWorker {
 	messages := make(chan events.Message)
 	commands := make(chan worker.Command, 100)
 
@@ -51,7 +51,7 @@ func NewAgreementWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.Po
 	worker := &AgreementWorker{
 		Worker: worker.Worker{
 			Manager: worker.Manager{
-				Config:   config,
+				Config:   cfg,
 				Messages: messages,
 			},
 
@@ -59,7 +59,7 @@ func NewAgreementWorker(config *config.HorizonConfig, db *bolt.DB, pm *policy.Po
 		},
 
 		db:                  db,
-		httpClient:          &http.Client{},
+		httpClient:          &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)},
 		protocols:           make(map[string]bool),
 		pm:                  pm,
 		bcClientInitialized: false,
@@ -167,7 +167,7 @@ func (w *AgreementWorker) start() {
 				if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.deviceId, w.deviceToken, pm, &resp); err != nil {
 					return err
 				} else if tpErr != nil {
-					glog.V(5).Infof(tpErr.Error())
+					glog.Warningf(tpErr.Error())
 					time.Sleep(10 * time.Second)
 					continue
 				} else {
@@ -593,7 +593,7 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 			if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.deviceId, w.deviceToken, pdr, &resp); err != nil {
 				return err
 			} else if tpErr != nil {
-				glog.V(5).Infof(tpErr.Error())
+				glog.Warningf(tpErr.Error())
 				time.Sleep(10 * time.Second)
 				continue
 			} else {
@@ -640,7 +640,7 @@ func deleteProducerAgreement(url string, deviceId string, token string, agreemen
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := url + "devices/" + deviceId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{}, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {

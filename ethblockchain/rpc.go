@@ -6,6 +6,7 @@ import (
     "errors"
     "fmt"
     "github.com/golang/glog"
+    "github.com/open-horizon/anax/config"
     "io/ioutil"
     "math/big"
     "net/http"
@@ -34,13 +35,13 @@ func RPC_Client_Factory(connection *RPC_Connection) *RPC_Client {
 
         var rpc_timeout time.Duration
         if rpc_t, err := strconv.Atoi(os.Getenv("bh_rpc_timeout")); err != nil || rpc_t == 0 {
-            rpc_timeout = time.Duration(60 * time.Second)
+            rpc_timeout = time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)
         } else {
-            rpc_timeout = time.Duration(rpc_t)
+            rpc_timeout = time.Duration(time.Duration(rpc_t)*time.Second)
         }
 
         rpcc.httpClient = &http.Client{
-            Timeout: time.Duration(rpc_timeout * time.Second),
+            Timeout: time.Duration(rpc_timeout),
         }
         return rpcc
     }

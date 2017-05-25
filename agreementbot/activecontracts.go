@@ -118,7 +118,7 @@ func Invoke_rest(method string, url string, user string, pw string, body []byte,
 
     req.Close = true // work around to ensure that Go doesn't get connections confused. Supposed to be fixed in Go 1.6.
 
-    client := &http.Client{}
+    client := &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}
     rawresp, err := client.Do(req)
     if err != nil {
         return err
