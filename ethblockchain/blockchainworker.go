@@ -272,7 +272,7 @@ func (w *EthBlockchainWorker) fireStartEvent(details *exchange.ChainDetails, cha
 		}
 
 		// Verify the deployment signature
-		if err := details.DeploymentDesc.HasValidSignature(w.horizonPubKeyFile, config.USERKEYDIR); err != nil {
+		if err := details.DeploymentDesc.HasValidSignature(w.horizonPubKeyFile, w.Config.UserPublicKeyPath()); err != nil {
 			return errors.New(logString(fmt.Sprintf("eth container has invalid deployment signature %v for %v", details.DeploymentDesc.DeploymentSignature, details.DeploymentDesc.Deployment)))
 		}
 

@@ -93,7 +93,7 @@ func (b *TorrentWorker) start() {
 					glog.Errorf("Incoming event was not a known launch context: %T", cmd.LaunchContext)
 				} else {
 					glog.V(2).Infof("URL to fetch: %s\n", lc.URL())
-					imageFiles, err := Fetch(lc.URL(), lc.Hashes(), lc.Signatures(), b.Config.Edge.CACertsPath, b.Config.Edge.TorrentDir, b.Config.Edge.PublicKeyPath, b.client)
+					imageFiles, err := Fetch(lc.URL(), lc.Hashes(), lc.Signatures(), b.Config.Edge.CACertsPath, b.Config.Edge.TorrentDir, b.Config.Edge.PublicKeyPath, b.Config.UserPublicKeyPath(), b.client)
 					if err != nil {
 						// TODO: write error out, then:
 						// 1. retry to fetch up to a limit
