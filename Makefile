@@ -53,16 +53,15 @@ $(TMPGOPATH)/bin/govendor: gopathlinks
 gopathlinks:
 ifneq ($(GOPATH),$(TMPGOPATH))
 	mkdir -p $(PKGPATH)
-	rm -f $(PKGPATH)/anax
-	ln -s $(CURDIR) $(PKGPATH)/anax
+	-ln -s $(CURDIR) $(PKGPATH)/anax
 endif
 
-install: anax
-	mkdir -p $(DESTDIR)/{bin,srv}
-	cp anax $(DESTDIR)/bin/anax
-
-  # duplicate smart contracts from vendor dir
-	cp -vfap ./vendor/github.com/open-horizon/go-solidity/contracts $(DESTDIR)
+CDIR=$(DESTDIR)/go/src/github.com/open-horizon/go-solidity/contracts
+install:
+	mkdir -p $(DESTDIR)/bin && cp anax $(DESTDIR)/bin
+	mkdir -p $(CDIR) && \
+		cp -apv ./vendor/github.com/open-horizon/go-solidity/contracts/. $(CDIR)/
+	find $(CDIR)/ \( -name "Makefile" -or -iname ".git*" \) -exec rm {} \;
 
 lint:
 	-cd api/static && \
@@ -71,7 +70,6 @@ lint:
 	-go vet ./... 2>&1 | grep -vP "exit\ status|vendor/"
 
 pull: deps
-
 
 # only unit tests
 test: deps
