@@ -1039,7 +1039,7 @@ func (a *API) publickey(w http.ResponseWriter, r *http.Request) {
 		fileName := pathVars["filename"]
 
 		// Get a list of all valid public key PEM files in the configured location
-		pubKeyDir := a.Config.Edge.PublicKeyPath[:strings.LastIndex(a.Config.Edge.PublicKeyPath, "/")] + config.USERKEYDIR
+		pubKeyDir := a.Config.UserPublicKeyPath()
 		files, err := getPemFiles(pubKeyDir)
 		if err != nil {
 			glog.Errorf("APIWorker %v /publickey unable to read public key directory %v, error: %v", r.Method, pubKeyDir, err)
@@ -1137,7 +1137,7 @@ func (a *API) publickey(w http.ResponseWriter, r *http.Request) {
 		}
 
 		glog.V(3).Infof("APIWorker %v /publickey of %v", r.Method, fileName)
-		targetPath := a.Config.Edge.PublicKeyPath[:strings.LastIndex(a.Config.Edge.PublicKeyPath, "/")] + config.USERKEYDIR
+		targetPath := a.Config.UserPublicKeyPath()
 		targetFile := targetPath + "/" + fileName
 
 		// Receive the uploaded file content and verify that it is a valid public key. If it's valid then
@@ -1179,7 +1179,7 @@ func (a *API) publickey(w http.ResponseWriter, r *http.Request) {
 		glog.V(3).Infof("APIWorker %v /publickey of %v", r.Method, fileName)
 
 		// Get a list of all valid public key PEM files in the configured location
-		pubKeyDir := a.Config.Edge.PublicKeyPath[:strings.LastIndex(a.Config.Edge.PublicKeyPath, "/")] + config.USERKEYDIR
+		pubKeyDir := a.Config.UserPublicKeyPath()
 		files, err := getPemFiles(pubKeyDir)
 		if err != nil {
 			glog.Errorf("APIWorker %v /publickey unable to read public key directory %v, error: %v", r.Method, pubKeyDir, err)

@@ -7,11 +7,10 @@ import (
 	"os"
 
 	"github.com/golang/glog"
-	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/policy"
 )
 
-func verify(pubKeyFile string, signature string, image *os.File) (bool, error) {
+func verify(pubKeyFile string, userKeys string, signature string, image *os.File) (bool, error) {
 
 	glog.V(3).Infof("Verifying signature %v of image %v", signature, image.Name())
 
@@ -22,6 +21,6 @@ func verify(pubKeyFile string, signature string, image *os.File) (bool, error) {
 	}
 
 	// Verify the workload image.
-	return policy.VerifyWorkload(pubKeyFile, signature, hasher, config.USERKEYDIR)
+	return policy.VerifyWorkload(pubKeyFile, signature, hasher, userKeys)
 
 }

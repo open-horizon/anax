@@ -167,13 +167,10 @@ func VerifyWorkload(pubKeyFile string, signature string, hasher hash.Hash, userK
         return true, nil
     }
 
-    // Compute the public key directory for user keys based on the configured platform public key file location.
-    pubKeyDir = pubKeyDir + userKeys
-
     // Grab all PEM files from that location and try to verify the signature against each one.
-    if pemFiles, err := getPemFiles(pubKeyDir); err != nil {
+    if pemFiles, err := getPemFiles(userKeys); err != nil {
         return false, err
-    } else if checkAllKeys(pubKeyDir, pemFiles, hasher,signatureBytes) {
+    } else if checkAllKeys(userKeys, pemFiles, hasher,signatureBytes) {
         return true, nil
     }
 

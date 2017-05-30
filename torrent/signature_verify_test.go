@@ -83,7 +83,7 @@ func Test_verify(t *testing.T) {
 
                     if file, err := os.Open(filePath); err != nil {
                         t.Errorf("Unable to open file %v, error: %v", filePath, err)
-                    } else if verified, err := verify(publicFilePath, encoded, file); err != nil {
+                    } else if verified, err := verify(publicFilePath, "/tmp" + config.USERKEYDIR, encoded, file); err != nil {
                         t.Errorf("No verification: %v", err)
                     } else if !verified {
                         t.Errorf("No verification")   

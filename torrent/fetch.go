@@ -63,14 +63,14 @@ func CheckHashes(torrentDir string, images []string, imageHashes map[string]stri
 	return imageCheck(torrentDir, images, sha1Check)
 }
 
-func CheckSignatures(torrentDir string, images []string, imageSignatures map[string]string, publicKeyFile string) (bool, error) {
+func CheckSignatures(torrentDir string, images []string, imageSignatures map[string]string, publicKeyFile string, userKeys string) (bool, error) {
 
 	signatureCheck := func(filename string, file *os.File) (bool, error) {
 		expectedSignature := imageSignatures[filename]
 		if expectedSignature == "" {
 			return false, fmt.Errorf("Expected signature (key: %v) not present in provided imageSignatures: %v", filename, imageSignatures)
 		} else {
-			return verify(publicKeyFile, expectedSignature, file)
+			return verify(publicKeyFile, userKeys, expectedSignature, file)
 		}
 	}
 
@@ -218,7 +218,7 @@ func httpClient(caFile string) (*http.Client, error) {
 }
 
 // Fetch Uses given torrent client to fetch torrent w/ torrent file at given url to the destination configured with the Client. Checks given SHA1 hash of the downloaded image file or errors. Blocks until content is fetched.
-func Fetch(url url.URL, imageHashes map[string]string, imageSignatures map[string]string, caCertsPath string, torrentDir string, publicKeyFile string, client *torrent.Client) ([]string, error) {
+func Fetch(url url.URL, imageHashes map[string]string, imageSignatures map[string]string, caCertsPath string, torrentDir string, publicKeyFile string, userKeys string, client *torrent.Client) ([]string, error) {
 
 	httpClient, err := httpClient(caCertsPath)
 	if err != nil {
@@ -258,7 +258,7 @@ func Fetch(url url.URL, imageHashes map[string]string, imageSignatures map[strin
 
 					if hashCheck, err := CheckHashes(torrentDir, images, imageHashes); err != nil {
 						return nil, fmt.Errorf("Error checking hashes provided for images: %v. Error: %v", imageHashes, err)
-					} else if signatureCheck, err := CheckSignatures(torrentDir, images, imageSignatures, publicKeyFile); err != nil {
+					} else if signatureCheck, err := CheckSignatures(torrentDir, images, imageSignatures, publicKeyFile, userKeys); err != nil {
 						return nil, fmt.Errorf("Error checking cryptographic signatures provided for images: %v. Error: %v", imageSignatures, err)
 					} else if !(hashCheck && signatureCheck) {
 						return nil, errors.New("Invalid hashes or signatures for images, refusing to load")
