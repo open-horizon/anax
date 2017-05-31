@@ -95,7 +95,8 @@ curl -s http://localhost/horizondevice |jq '.'
   },
   "name": "mydevice1",
   "token_last_valid_time": 1481310188,
-  "token_valid": true
+  "token_valid": true,
+  "ha_device": false
 }
 
 ```
@@ -191,8 +192,12 @@ policy
 | apiSpec | array | an array of api specifications. Each one includes a URL pointing to the definition of the API spec, the version of the API spec in OSGI version format, whether or not exclusive access to this API spec is required and the hardware architecture of the API spec implementation. | 
 | agreementProtocols | array | an array of agreement protocols. Each one includes the name of the agreement protocol.|
 | maxAgreements| int | the maximum number of agreements allowed to make. |
-| properties | array | an array of name value pairs that will be matched with the counter party during agreement negotiation process. |
+| properties | array | an array of name value pairs that the current party have. |
+| counterPartyProperties | json | an array of (name, value, op)s that the counter party is required to have. |
+| requiredWorkload | string | the name of the workload that is required. |
+| ha_group | json | a list of ha partners. |
 | blockchains| array | an array of blockchain specifications including bockchain type, boot nodes, network ids etc. |
+
 Note: The policy also contains other fields that are unused and therefore not documented.
 
 service attribute
@@ -200,7 +205,7 @@ service attribute
 | name | type | description |
 | ---- | ---- | ---------------- |
 | meta | json |  the metadata that describes the attribute. It includes the id, the sensor_url, the label, the data type and weather or not the attribute is publishable or not. If the sensor_url is empty, the attribute is applied to all services. |
-| {name, value} |  | The names and values. Each type has a different set of name and value pairs.     Currently there are 4 supported types: ArchitectureAttributes (architecture), ComputeAttributes (cpu, ram), LocationAttributes (lat, lon, user_provided_coords, use_gps) and MappedAttributes (mappings) |
+| {name, value} |  | The names and values. Each type has a different set of name and value pairs. Supported attribute types are: ArchitectureAttributes (architecture), ComputeAttributes (cpu, ram), LocationAttributes (lat, lon, user_provided_coords, use_gps), MappedAttributes (mappings). HAAttributes (partners),  PropertyAttributes (mappings), CounterPartyPropertyAttributes (expression) etc. |
 
 
 **Example:**
@@ -543,12 +548,15 @@ body:
 | agreement_terminated_time| uint64 | the time when the agreement is terminated. |
 | terminated_reason| uint64 | the reason code for the agreement termination. |
 | terminated_description | string | the description of the agreement termination. |
+| agreement_protocol_terminated_time | uint64 | the time when the agreement protocol terminated. |
+| workload_terminated_time | uint64 | the time when the workload for an agreement terminated. |
 | proposal| string | the proposal currently in effect. |
 | proposal_sig| string | the proposal signature. |
 | agreement_protocol | string | the name of the agreement protocol being used. |
 | protocol_version | int | the version of the agreement protocol being used. |
 | current_deployment | json | contains the information of the workloads. The key is the name of the workload and the value is the result of [/containers/<id> docker remote API call](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/inspect-a-container) for the  workload container. Please refer to the link for details. |
 | archived | bool |  if the agreement is archived or not.  |
+| metering_notification | json |  the most recent metering notification received. It includes the amount, metering start time, data missed time, consumer address, consumer signature etc. |
 Note: The agreements that are being terminated but not yet archived are treated as archived in this api.
 
 
@@ -606,42 +614,6 @@ curl -s http://localhost/agreement |jq '.'
                 }
               }
             }
-          },
-          "pvp": {
-            "config": {
-              "Cpuset": "1-3",
-              "Env": [
-                "HZN_ARCH=arm",
-                "HZN_USE_GPS=false",
-    ...
-             ],
-              "Cmd": null,
-              "Image": "summit.hovitos.engineering/armhf/pvp:v1.0.2",
-              "Volumes": {
-                "/var/snap/bluehorizon/common/workload_ro/7539aad7bf9269c97bf6285b173b50f016dc13dbe722a1e7cedcfec8f23c528f": {}
-              },
-              "Entrypoint": null,
-              "Labels": {
-                "network.bluehorizon.colonus.agreement_id": "7539aad7bf9269c97bf6285b173b50f016dc13dbe722a1e7cedcfec8f23c528f",
-                "network.bluehorizon.colonus.deployment_description_hash": "lstukhZqPgmMcGZNSa3OdY-VvoI=",
-                "network.bluehorizon.colonus.service_name": "pvp",
-                "network.bluehorizon.colonus.variation": ""
-              }
-            },
-            "host_config": {
-              "Binds": [
-                "/var/snap/bluehorizon/common/workload_ro/7539aad7bf9269c97bf6285b173b50f016dc13dbe722a1e7cedcfec8f23c528f:/workload_config:ro"
-              ],
-              "RestartPolicy": {
-                "Name": "always"
-              },
-              "LogConfig": {
-                "Type": "syslog",
-                "Config": {
-                  "tag": "workload-7539aad7bf9269c97bf6285b173b50f016dc13dbe722a1e7cedcfec8f23c528f_pvp"
-                }
-              }
-            }
           }
         },
         "proposal"...",
@@ -649,6 +621,20 @@ curl -s http://localhost/agreement |jq '.'
         "agreement_protocol": "Citizen Scientist",
         "terminated_reason": 0,
         "terminated_description": ""
+        "agreement_protocol_terminated_time": 0,
+        "workload_terminated_time": 0,
+        "metering_notification": {
+            "amount": 42,
+            "start_time": 1496257354,
+            "current_time": 1496259896,
+            "missed_time": 10,
+            "consumer_meter_signature": "6955047f484573055a9a27b80c5f86daa9d6ae48ac...",
+            "agreement_hash": "91a9099372ade4a41db26b0f27819d60080f7774d51e71dc026269c3ae86d727",
+            "consumer_agreement_signature": "cf08e366c59b4e130a4f05d1921f3f56d899f...",
+            "consumer_address": "0xc299ff03ff89b48c6e56c25bd6b53932b100f9d6",
+            "producer_agreement_signature": "0ee94042d5c50e8773e23923e32826e4f01df...",
+            "blockchain_type": "ethereum"
+        }
       }
     ],
     "archived": []
@@ -832,6 +818,7 @@ curl -s http://localhost/publickey | jq  '.'
 ---
 
 **Parameters:**
+
 | name | type | description |
 | -----| ---- | ---------------- |
 | filename | string | the name of the public key file to retrieve. |
@@ -855,6 +842,7 @@ curl -s http://localhost/publickey/akeyfile.pem > akeyfile.pem
 ---
 
 **Parameters:**
+
 | name | type | description |
 | ---- | ---- | ---------------- |
 | filename | string | the name of the public key file to upload. |
@@ -878,6 +866,7 @@ curl -T publickey.pem http://localhost/publickey/mynewworkloadkey.pem
 ---
 
 **Parameters:**
+
 | name | type | description |
 | ---- | ---- | ---------------- |
 | filename | string | the name of the public key file to remove. |
