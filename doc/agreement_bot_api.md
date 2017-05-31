@@ -158,17 +158,19 @@ curl -X DELETE -s http://localhost/agreement/a70042dd17d2c18fa0c9f354bf1b560061d
 
 ### 2. Policy
 
-#### **API:** POST  /policy/<policy name>/upgrade
+#### **API:** POST  /policy/\<policy name\>/upgrade
 ---
 
 This API is used to force a device to attempt a workload upgrade.
 
 **Parameters:**
+
 | name | type | description |
 | ---- | ---- | ----------- |
 | policy name | string | the name of the policy or file name of the policy containing the workload to upgrade. |
 
 body:
+
 | name | type | description |
 | ---- | ---- | ----------- |
 | agreementId | string | the agreement id of an agreement between the given policy and the device to be upgraded. |
