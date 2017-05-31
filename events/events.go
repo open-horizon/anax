@@ -57,6 +57,7 @@ const (
 	AGREEMENT_REACHED        EventId = "AGREEMENT_REACHED"
 	DEVICE_AGREEMENTS_SYNCED EventId = "DEVICE_AGREEMENTS_SYNCED"
 	DEVICE_CONTAINERS_SYNCED EventId = "DEVICE_CONTAINERS_SYNCED"
+	WORKLOAD_UPGRADE         EventId = "WORKLOAD_UPGRADE"
 )
 
 type EndContractCause string
@@ -601,6 +602,38 @@ func NewABApiAgreementCancelationMessage(id EventId, reason uint64, protocol str
 		AgreementProtocol: protocol,
 		AgreementId:       agreementId,
 		Reason:            reason,
+	}
+}
+
+type ABApiWorkloadUpgradeMessage struct {
+	event             Event
+	AgreementProtocol string
+	AgreementId       string
+	DeviceId          string
+	PolicyName        string
+}
+
+func (m *ABApiWorkloadUpgradeMessage) Event() Event {
+	return m.event
+}
+
+func (m ABApiWorkloadUpgradeMessage) String() string {
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, DeviceId: %v, PolicyName: %v", m.event, m.AgreementProtocol, m.AgreementId, m.DeviceId, m.PolicyName)
+}
+
+func (m ABApiWorkloadUpgradeMessage) ShortString() string {
+	return m.String()
+}
+
+func NewABApiWorkloadUpgradeMessage(id EventId, protocol string, agreementId string, deviceId string, policyName string) *ABApiWorkloadUpgradeMessage {
+	return &ABApiWorkloadUpgradeMessage{
+		event: Event{
+			Id: id,
+		},
+		AgreementProtocol: protocol,
+		AgreementId:       agreementId,
+		DeviceId:          deviceId,
+		PolicyName:        policyName,
 	}
 }
 

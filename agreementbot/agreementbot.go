@@ -125,6 +125,16 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 			}
 		}
 
+	case *events.ABApiWorkloadUpgradeMessage:
+		if w.ready {
+			msg, _ := incoming.(*events.ABApiWorkloadUpgradeMessage)
+			switch msg.Event().Id {
+			case events.WORKLOAD_UPGRADE:
+				wuCmd := NewWorkloadUpgradeCommand(*msg)
+				w.Commands <- wuCmd
+			}
+		}
+
 	default: //nothing
 
 	}
@@ -314,6 +324,14 @@ func (w *AgreementBotWorker) start() {
 						ch <- cmd
 					}
 
+				case *WorkloadUpgradeCommand:
+					cmd, _ := command.(*WorkloadUpgradeCommand)
+					if _, ok := w.pwcommands[cmd.Msg.AgreementProtocol]; !ok {
+						glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to process workload upgrade command %v due to unknown agreement protocol", cmd))
+					} else {
+						w.pwcommands[cmd.Msg.AgreementProtocol] <- cmd
+					}
+
 				default:
 					glog.Errorf("AgreementBotWorker Unknown command (%T): %v", command, command)
 				}
@@ -405,8 +423,6 @@ func (w *AgreementBotWorker) getMessages() ([]exchange.AgbotMessage, error) {
 // There is one of these running for each agreement protocol that we support
 func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 
-	unarchived := []AFilter{UnarchivedAFilter()}
-
 	if protocol == citizenscientist.PROTOCOL_NAME {
 
 		// Set up random number gen. This is used to generate agreement id strings.
@@ -486,13 +502,7 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 						} else {
 							agreementId := protocolHandler.GetAgreementId(rawEvent)
 
-							if ag, err := FindSingleAgreementByAgreementId(w.db, agreementId, protocol, unarchived); err != nil {
-								glog.Errorf(AWlogString(fmt.Sprintf("error querying agreement %v from database, error: %v", agreementId, err)))
-							} else if ag == nil {
-								glog.V(3).Infof(AWlogString(fmt.Sprintf("ignoring the blockchain event, no database record for for agreement %v with protocol %v.", agreementId, protocol)))
-
-								// if the event is agreement recorded event
-							} else if protocolHandler.AgreementCreated(rawEvent) {
+							if protocolHandler.AgreementCreated(rawEvent) {
 								agreementWork := CSHandleBCRecorded{
 									workType:    BC_RECORDED,
 									AgreementId: agreementId,
@@ -630,6 +640,19 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 								glog.Errorf(AWlogString(fmt.Sprintf("error searching database: %v", err)))
 							}
 						}
+
+					case *WorkloadUpgradeCommand:
+						glog.V(5).Infof("AgreementBot received workload upgrade command.")
+						cmd := command.(*WorkloadUpgradeCommand)
+						agreementWork := CSHandleWorkloadUpgrade{
+							workType:    WORKLOAD_UPGRADE,
+							AgreementId: cmd.Msg.AgreementId,
+							Device:      cmd.Msg.DeviceId,
+							Protocol:    cmd.Msg.AgreementProtocol,
+							PolicyName:  cmd.Msg.PolicyName,
+						}
+						work <- agreementWork
+						glog.V(5).Infof("AgreementBot queued workload upgrade command.")
 
 					default:
 						glog.Errorf("Unknown command (%T): %v", command, command)
