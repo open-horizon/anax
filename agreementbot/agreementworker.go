@@ -53,6 +53,7 @@ const CANCEL = "AGREEMENT_CANCEL"
 const DATARECEIVEDACK = "AGREEMENT_DATARECEIVED_ACK"
 const BC_RECORDED = "AGREEMENT_BC_RECORDED"
 const BC_TERMINATED = "AGREEMENT_BC_TERMINATED"
+const WORKLOAD_UPGRADE = "WORKLOAD_UPGRADE"
 
 type CSAgreementWork interface {
 	Type() string
@@ -143,6 +144,18 @@ func (c CSHandleBCTerminated) Type() string {
 	return c.workType
 }
 
+type CSHandleWorkloadUpgrade struct {
+	workType    string
+	AgreementId string
+	Protocol    string
+	Device      string
+	PolicyName  string
+}
+
+func (c CSHandleWorkloadUpgrade) Type() string {
+	return c.workType
+}
+
 // This function receives an event to "make a new agreement" from the Process function, and then synchronously calls a function
 // to actually work through the agreement protocol.
 func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand) {
@@ -230,17 +243,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand) 
 
 		} else if workItem.Type() == CANCEL {
 			wi := workItem.(CSCancelAgreement)
-
-			// Get the agreement id lock to prevent any other thread from processing this same agreement.
-			lock := a.alm.getAgreementLock(wi.AgreementId)
-			lock.Lock()
-
-			a.cancelAgreement(wi.AgreementId, wi.Reason, protocolHandler)
-
-			lock.Unlock()
-
-			// Don't need the agreement lock anymore
-			a.alm.deleteAgreementLock(wi.AgreementId)
+			a.cancelAgreementWithLock(wi.AgreementId, wi.Reason, protocolHandler)
 
 		} else if workItem.Type() == BC_RECORDED {
 			// the agreement is recorded on the blockchain
@@ -250,10 +253,14 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand) 
 			lock := a.alm.getAgreementLock(wi.AgreementId)
 			lock.Lock()
 
-			if ag, err := FindSingleAgreementByAgreementId(a.db, wi.AgreementId, citizenscientist.PROTOCOL_NAME, []AFilter{UnarchivedAFilter()}); err != nil {
+			if ag, err := FindSingleAgreementByAgreementId(a.db, wi.AgreementId, citizenscientist.PROTOCOL_NAME, []AFilter{}); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error querying agreement %v from database, error: %v", wi.AgreementId, err)))
 			} else if ag == nil {
 				glog.V(3).Infof(logString(fmt.Sprintf("nothing to do for agreement %v, no database record.", wi.AgreementId)))
+			} else if ag.Archived || ag.AgreementTimedout != 0 {
+				// The agreement could be cancelled BEFORE it is written to the blockchain. If we find a BC recorded event for an archived
+				// or timed out agreement then we know this occurred. Cancel the agreement again so that the device will see the cancel.
+				go doBlockchainCancel(ag, ag.TerminatedReason, protocolHandler)
 			} else {
 				// Update state in the database
 				if _, err := AgreementFinalized(a.db, wi.AgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
@@ -274,17 +281,44 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand) 
 		} else if workItem.Type() == BC_TERMINATED {
 			// the agreement is terminated on the blockchain
 			wi := workItem.(CSHandleBCTerminated)
+			a.cancelAgreementWithLock(wi.AgreementId, citizenscientist.AB_CANCEL_DISCOVERED, protocolHandler)
 
-			// Get the agreement id lock to prevent any other thread from processing this same agreement.
-			lock := a.alm.getAgreementLock(wi.AgreementId)
-			lock.Lock()
+		} else if workItem.Type() == WORKLOAD_UPGRADE {
+			// Force an upgrade of a workload on a specific device, given a specific policy that delivered the workload.
+			// The upgrade request will contain a specific device and policy name, but it might not contain an agreement
+			// id. At this point we assume that the originator of the workload upgrade event validated that the agreement id
+			// (if specified) matches the device and policy name. Further, the caller has also validated that the device does
+			// (or did) have a workload running from the specified policy name.
 
-			a.cancelAgreement(wi.AgreementId, citizenscientist.AB_CANCEL_DISCOVERED, protocolHandler)
+			// If there is no agreement id specified then find one for the current device and policy name. If we find one,
+			// grab the agreement id lock, cancel the agreement and delete the workload usage record.
+			wi := workItem.(CSHandleWorkloadUpgrade)
+			if wi.AgreementId == "" {
+				if ags, err := FindAgreements(a.db, []AFilter{DevPolAFilter(wi.Device, wi.PolicyName)}, wi.Protocol); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error finding agreement for device %v and policyName %v, error: %v", wi.Device, wi.PolicyName, err)))
+				} else if len(ags) == 0 {
+					// If there is no agreement found, is it a problem? We could have caught the system in a state where there is no
+					// agreement, but there still might be a workload usage record for the device and policy name. It should be safe to
+					// just delete the workload usage record. When an agreement reply is processed, the code will verify that the
+					// highest priority workload is being used when creating a new workload usage record.
+					glog.V(5).Infof(logString(fmt.Sprintf("forced workload upgrade found no current agreement for device %v and policy name %v", wi.Device, wi.PolicyName)))
+				} else {
+					// Cancel all agreements
+					for _, ag := range ags {
+						// Terminate the agreement
+						a.cancelAgreementWithLock(ag.CurrentAgreementId, citizenscientist.AB_CANCEL_FORCED_UPGRADE, protocolHandler)
+					}
+				}
+			} else {
+				// Terminate the agreement
+				a.cancelAgreementWithLock(wi.AgreementId, citizenscientist.AB_CANCEL_FORCED_UPGRADE, protocolHandler)
+			}
 
-			lock.Unlock()
-
-			// Don't need the agreement lock anymore
-			a.alm.deleteAgreementLock(wi.AgreementId)
+			// Find the workload usage record and delete it. This will cause any new agreement negotiations to start with the highest priority
+			// workload.
+			if err := DeleteWorkloadUsage(a.db, wi.Device, wi.PolicyName); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error deleting workload usage record for device %v and policyName %v, error: %v", wi.Device, wi.PolicyName, err)))
+			}
 
 		} else {
 			glog.Errorf(logString(fmt.Sprintf("received unknown work request: %v", workItem)))
@@ -423,7 +457,15 @@ func (a *CSAgreementWorker) handleAgreementReply(wi             CSHandleReply,
 				if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(a.db, wi.SenderId, consumerPolicy.Header.Name); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error searching for persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 				} else if wlUsage == nil {
-					if !pol.Workloads[0].HasEmptyPriority() {
+					// There is no workload usage record. Make sure that the current workload chosen is the highest priority workload.
+					// There could have been a change in the system such that the chosen workload is no longer the right choice. If this
+					// is the case, then we need to reject the agreement and start over.
+
+					workload := consumerPolicy.NextHighestPriorityWorkload(0, 0, 0)
+					if !workload.Priority.IsSame(pol.Workloads[0].Priority) {
+						// Need a new workload usage record but not the same as the highest priority. That can't be right.
+						ackReplyAsValid = false
+					} else if !pol.Workloads[0].HasEmptyPriority() {
 						if err := NewWorkloadUsage(a.db, wi.SenderId, pol.HAGroup.Partners, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, reply.AgreementId()); err != nil {
 							glog.Errorf(logString(fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 						}
@@ -460,9 +502,11 @@ func (a *CSAgreementWorker) handleAgreementReply(wi             CSHandleReply,
 				// Recording the agreement on the blockchain could take a long time, so it needs to be the last thing we do.
 				if err := protocolHandler.RecordAgreement(proposal, reply, consumerPolicy); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error trying to record agreement in blockchain, %v", err)))
+					a.cancelAgreementWithLock(reply.AgreementId(), citizenscientist.AB_CANCEL_BC_WRITE_FAILED, protocolHandler)
+					ackReplyAsValid = false
+				} else {
+					glog.V(3).Infof(logString(fmt.Sprintf("recorded agreement %v", reply.AgreementId())))
 				}
-
-				glog.V(3).Infof(logString(fmt.Sprintf("recorded agreement %v", reply.AgreementId())))
 			}
 
 			// Always send an ack for a reply with a positive decision in it
@@ -586,6 +630,21 @@ func (a *CSAgreementWorker) deleteMessage(msgId int) error {
 	}
 }
 
+
+func (a *CSAgreementWorker) cancelAgreementWithLock(agreementId string, reason uint, protocolHandler *citizenscientist.ProtocolHandler) {
+	// Get the agreement id lock to prevent any other thread from processing this same agreement.
+	lock := a.alm.getAgreementLock(agreementId)
+	lock.Lock()
+
+	// Terminate the agreement
+	a.cancelAgreement(agreementId, reason, protocolHandler)
+
+	lock.Unlock()
+
+	// Don't need the agreement lock anymore
+	a.alm.deleteAgreementLock(agreementId)
+}
+
 func (a *CSAgreementWorker) cancelAgreement(agreementId string, reason uint, protocolHandler *citizenscientist.ProtocolHandler) {
 	// Start timing out the agreement
 	glog.V(3).Infof("CSAgreementWorker: terminating agreement %v.", agreementId)
@@ -613,15 +672,9 @@ func (a *CSAgreementWorker) cancelAgreement(agreementId string, reason uint, pro
 			glog.Warningf("CSAgreementWorker: error updating agreement id in workload usage for %v for policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)
 		}
 
-		// Remove the long blockchain cancel from the worker thread
-		go func() {
-			// Remove from the blockchain
-			if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
-				glog.Errorf("CSAgreementWorker: unable to demarshal policy while trying to cancel %v, error %v", agreementId, err)
-			} else if err := protocolHandler.TerminateAgreement(pol, ag.CounterPartyAddress, agreementId, reason); err != nil {
-				glog.Errorf("CSAgreementWorker: error terminating agreement %v on the blockchain: %v", agreementId, err)
-			}
-		}()
+		// Remove the long blockchain cancel from the worker thread. It is important to give the protocol handler a chance to 
+		// do whatever cleanup and termination it needs to do so we should never skip calling this function.
+		go doBlockchainCancel(ag, reason, protocolHandler)
 
 		// Archive the record
 		if _, err := ArchiveAgreement(a.db, agreementId, citizenscientist.PROTOCOL_NAME, reason, citizenscientist.DecodeReasonCode(uint64(reason))); err != nil {
@@ -629,3 +682,13 @@ func (a *CSAgreementWorker) cancelAgreement(agreementId string, reason uint, pro
 		}
 	}
 }
+
+func doBlockchainCancel(ag *Agreement, reason uint, protocolHandler *citizenscientist.ProtocolHandler) {
+	// Remove from the blockchain
+	if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
+		glog.Errorf("CSAgreementWorker: unable to demarshal policy while trying to cancel %v, error %v", ag.CurrentAgreementId, err)
+	} else if err := protocolHandler.TerminateAgreement(pol, ag.CounterPartyAddress, ag.CurrentAgreementId, reason); err != nil {
+		glog.Errorf("CSAgreementWorker: error terminating agreement %v on the blockchain: %v", ag.CurrentAgreementId, err)
+	}
+}
+

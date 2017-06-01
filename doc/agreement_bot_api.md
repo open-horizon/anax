@@ -155,3 +155,92 @@ none
 ```
 curl -X DELETE -s http://localhost/agreement/a70042dd17d2c18fa0c9f354bf1b560061d024895cadd2162a0768687ed55533
 ```
+
+### 2. Policy
+
+#### **API:** POST  /policy/\<policy name\>/upgrade
+---
+
+This API is used to force a device to attempt a workload upgrade.
+
+**Parameters:**
+
+| name | type | description |
+| ---- | ---- | ----------- |
+| policy name | string | the name of the policy or file name of the policy containing the workload to upgrade. |
+
+body:
+
+| name | type | description |
+| ---- | ---- | ----------- |
+| agreementId | string | the agreement id of an agreement between the given policy and the device to be upgraded. |
+| device      | string | the device id of the device to be upgraded.
+
+Note: At least one of the body parameters MUST be specified.
+
+**Response:**
+code:
+* 200 -- success
+
+body:
+
+none
+
+**Example:**
+```
+curl -s -X POST -H "Content-Type: application/json" -d '{"device":"12345678"}' http://localhost/policy/netspeed%20policy/upgrade
+```
+
+### 3. Workload Usage
+
+#### **API:** GET  /workloadusage
+---
+
+**Parameters:**
+none
+
+**Response:**
+code:
+* 200 -- success
+
+body:
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| id   | number | primary key of the usage record in the local database |
+| device_id | string | the device id running a workload for the agbot |
+| ha_partners | array | a list of device ids that are HA partners with this device |
+| pending_upgrade_time | timestamp | the time (in seconds) when this workload was marked to be upgraded as a result of a policy change |
+| policy | json | the full consumer (agbot) policy being used to manage a workload on the device |
+| policy_name | string | the name of the consumer (agbot) policy with a workload on the device |
+| priority | number | the workload priority currently being used by the device |
+| retry_count | number | the current number of retries used to get the workload running |
+| retry_durations | number | the number of seconds within which workload failures must occur in order for the workload rollback feature to cause a workload to rollback to a lower priority workload |
+| first_try_time | timestamp | the time (number of seconds) when the workload was first attempted |
+| latest_retry_time | timestamp | the time (number of seconds) when the workload was most recently attempted before declaring the workload to be stable |
+| disable_retry | boolean | if true, workload retries have been turned off because a stable workload priority was found |
+| verified_durations | number | the number of seconds of successful data verification before disabling workload rollback retries |
+| current_agreement_id | string | the agreement id which forms the agreement between the consumer (agbot) and the device |
+
+**Example:**
+```
+curl -s http://localhost/workloadusage | jq '.'
+[
+  {
+    "record_id": 1,
+    "device_id": "an12345",
+    "ha_partners": null,
+    "pending_upgrade_time": 0,
+    "policy": "...",
+    "policy_name": "netspeed policy",
+    "priority": 2,
+    "retry_count": 0,
+    "retry_durations": 1800,
+    "current_agreement_id": "9a0a76bbbb06a6d35e66992b0e6dade8f1ecab992f9c93dbcc7f076a20583790",
+    "first_try_time": 1495649010,
+    "latest_retry_time": 0,
+    "disable_retry": true,
+    "verified_durations": 45
+  }
+]
+```

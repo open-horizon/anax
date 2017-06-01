@@ -89,3 +89,18 @@ func NewBlockchainEventCommand(msg events.EthBlockchainEventMessage) *Blockchain
 		Msg: msg,
 	}
 }
+
+// ==============================================================================================================
+type WorkloadUpgradeCommand struct {
+	Msg events.ABApiWorkloadUpgradeMessage
+}
+
+func (e WorkloadUpgradeCommand) ShortString() string {
+	return e.Msg.ShortString()
+}
+
+func NewWorkloadUpgradeCommand(msg events.ABApiWorkloadUpgradeMessage) *WorkloadUpgradeCommand {
+	return &WorkloadUpgradeCommand{
+		Msg: msg,
+	}
+}

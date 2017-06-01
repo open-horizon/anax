@@ -305,7 +305,7 @@ func (w *AgreementWorker) start() {
 					deleteMessage = true
 				} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
-				} else if err := tcPolicy.Is_Self_Consistent(w.Config.Edge.PublicKeyPath, config.USERKEYDIR); err != nil {
+				} else if err := tcPolicy.Is_Self_Consistent(w.Config.Edge.PublicKeyPath, w.Config.UserPublicKeyPath()); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("received error check self consistency of TsAndCs, %v", err)))
 				} else if messageTarget, err := exchange.CreateMessageTarget(exchangeMsg.AgbotId, nil, exchangeMsg.AgbotPubKey, ""); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))

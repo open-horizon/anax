@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 )
 
@@ -33,6 +34,7 @@ type Config struct {
 	RegistrationDelayS            uint64 // The number of seconds to wait after blockchain init before registering with the exchange. This is for testing initialization ONLY.
 	ExchangeMessageTTL            int    // The number of seconds the exchange will keep this message before automatically deleting it
 	TorrentListenAddr             string // Override the torrent listen address just in case there are conflicts, syntax is "host:port"
+	UserPublicKeyPath             string // The location to store user keys uploaded through the REST API
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string
@@ -67,6 +69,18 @@ type AGConfig struct {
 	APIListen                    string // Host and port for the API to listen on
 	PurgeArchivedAgreementHours  int    // Number of hours to leave an archived agreement in the database before automatically deleting it
 	CheckUpdatedPolicyS          int    // The number of seconds to wait between checks for an updated policy file. Zero means auto checking is turned off.
+}
+
+func (c *HorizonConfig) UserPublicKeyPath() string {
+	if c.Edge.UserPublicKeyPath == "" {
+		if commonPath := os.Getenv("SNAP_COMMON"); commonPath != "" {
+			thePath := path.Join(os.Getenv("SNAP_COMMON"), USERKEYDIR)
+			c.Edge.UserPublicKeyPath = thePath
+		} else {
+			return ""
+		}
+	}
+	return c.Edge.UserPublicKeyPath
 }
 
 func Read(file string) (*HorizonConfig, error) {
