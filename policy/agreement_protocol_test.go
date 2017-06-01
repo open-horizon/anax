@@ -54,6 +54,40 @@ func Test_AgreementProtocolList_intersects(t *testing.T) {
 			}
 		}
 	}
+
+	p2 = `[]`
+	if pl1 = create_AgreementProtocolList(p1, t); pl1 != nil {
+		if pl2 = create_AgreementProtocolList(p2, t); pl2 != nil {
+			if pl3, err := pl1.Intersects_With(pl2); err != nil {
+				t.Errorf("Error: %v intersects with %v, error was %v\n", p1, p2, err)
+			} else if len(*pl3) != 2 {
+				t.Errorf("Error: Intersection of %v with %v should have produced 2 intersections, produced %v\n", p1, p2, len(*pl3))
+			}
+		}
+	}
+
+	p1 = `[]`
+	p2 = `[]`
+	if pl1 = create_AgreementProtocolList(p1, t); pl1 != nil {
+		if pl2 = create_AgreementProtocolList(p2, t); pl2 != nil {
+			if pl3, err := pl1.Intersects_With(pl2); err != nil {
+				t.Errorf("Error: %v intersects with %v, error was %v\n", p1, p2, err)
+			} else if len(*pl3) != 1 {
+				t.Errorf("Error: Intersection of %v with %v should have produced 1 intersections, produced %v\n", p1, p2, len(*pl3))
+			}
+		}
+	}
+
+	p2 = `[{"name":"ap2"}]`
+	if pl1 = create_AgreementProtocolList(p1, t); pl1 != nil {
+		if pl2 = create_AgreementProtocolList(p2, t); pl2 != nil {
+			if pl3, err := pl1.Intersects_With(pl2); err != nil {
+				t.Errorf("Error: %v intersects with %v, error was %v\n", p1, p2, err)
+			} else if len(*pl3) != 1 {
+				t.Errorf("Error: Intersection of %v with %v should have produced 1 intersections, produced %v\n", p1, p2, len(*pl3))
+			}
+		}
+	}
 }
 
 // Second, some tests where the lists are incompatible
@@ -88,4 +122,30 @@ func Test_AgreementProtocolList_no_intersect(t *testing.T) {
 			}
 		}
 	}
+}
+
+//Some tests on the Single_Element API
+func Test_AgreementProtocolList_single_element(t *testing.T) {
+	var pl1 *AgreementProtocolList
+
+	pb := `[{"name":"`+BasicProtocol+`"}]`
+	if pb1 := create_AgreementProtocolList(pb, t); pb1 == nil || len(*pb1) != 1 {
+		t.Errorf("Error: returned %v, should have returned %v\n", pb1, pb)
+	} else {
+
+		p1 := `[{"name":"ap1"}]`
+		if pl1 = create_AgreementProtocolList(p1, t); pl1 != nil {
+			if pl2 := pl1.Single_Element(); !pl1.IsSame(*pl2) {
+				t.Errorf("Error: returned %v, should have returned %v\n", pl2, pl1)
+			}
+		}
+
+		p1 = `[{"name":"ap1"},{"name":"Basic"}]`
+		if pl1 = create_AgreementProtocolList(p1, t); pl1 != nil {
+			if pl2 := pl1.Single_Element(); !pl2.IsSame(*pb1) {
+				t.Errorf("Error: returned %v, should have returned %v\n", pl2, pl1)
+			}
+		}
+	}
+
 }

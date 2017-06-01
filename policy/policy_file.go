@@ -257,6 +257,14 @@ func (self *Policy) Is_Self_Consistent(keyPath string, userKeys string) error {
 		return errors.New(fmt.Sprintf("Data Verification section is not valid, error: %v", err))
 	}
 
+	// Check validity of the agreement protocol list
+	list := self.AgreementProtocols.As_String_Array()
+	for _, agp := range list {
+		if !SupportedAgreementProtocol(agp) {
+			return errors.New(fmt.Sprintf("AgreementProtocol section of %v has unsupported protocol %v", self.Header.Name, agp))
+		}
+	}
+
 	// Check validity of the Workload section
 	usedPriorities := make(map[int]bool)
 	for _, workload := range self.Workloads {

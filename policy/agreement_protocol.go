@@ -9,6 +9,14 @@ import (
 // and its list type.
 
 const CitizenScientist = "Citizen Scientist"
+const BasicProtocol = "Basic"
+
+func SupportedAgreementProtocol(name string)  bool {
+	if name == CitizenScientist || name == BasicProtocol {
+		return true
+	}
+	return false
+}
 
 type AgreementProtocolList []AgreementProtocol
 
@@ -59,6 +67,18 @@ func (self AgreementProtocolList) As_String_Array() []string {
 func (self *AgreementProtocolList) Intersects_With(other *AgreementProtocolList) (*AgreementProtocolList, error) {
 
 	inter := new(AgreementProtocolList)
+
+	if len(*self) == 0 && len(*other) == 0 {
+		(*inter) = append(*inter, *AgreementProtocol_Factory(BasicProtocol))
+		return inter, nil
+	} else if len(*self) == 0 {
+		(*inter) = append(*inter, *other...)
+		return inter, nil
+	} else if len(*other) == 0 {
+		(*inter) = append(*inter, *self...)
+		return inter, nil
+	}
+
 	for _, sub_ele := range *self {
 		for _, other_ele := range *other {
 			if sub_ele.Name == other_ele.Name {
@@ -90,11 +110,20 @@ func (self *AgreementProtocolList) Concatenate(new_list *AgreementProtocolList) 
 	}
 }
 
-// This function returns an Agreement Protocol List with just a single element.
+// This function returns an Agreement Protocol List with just a single element. This function will prefer the
+// Basic protocol if available.
 func (self *AgreementProtocolList) Single_Element() *AgreementProtocolList {
-	single := new(AgreementProtocolList)
-	(*single) = append(*single, (*self)[0])
-	return single
+
+	basic := new(AgreementProtocolList)
+	(*basic) = append(*basic, *AgreementProtocol_Factory(BasicProtocol))
+
+	if intersect, err := (*self).Intersects_With(basic); err == nil {
+		return intersect
+	} else {
+		single := new(AgreementProtocolList)
+		(*single) = append(*single, (*self)[0])
+		return single
+	}
 }
 
 // This function adds an Agreement protocol to the list. Return an error if there are duplicates.

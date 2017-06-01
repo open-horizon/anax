@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/device"
-	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
@@ -242,7 +242,14 @@ func (w *AgreementWorker) start() {
 			glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
 		}
 
-		protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
+		// TODO: Is there a way to make this more automatic? put this map in abstract protocol with function for protocols to add themselves 
+		protocolHandlers := make(map[string]abstractprotocol.ProtocolHandler)
+
+		// Establish the go objects that are used to interact with the ethereum blockchain.
+
+		csprotocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
+		protocolHandlers[citizenscientist.PROTOCOL_NAME] = csprotocolHandler
+		
 		// Handle agreement processor commands
 		for {
 			glog.V(2).Infof(logString(fmt.Sprintf("blocking for commands")))
@@ -287,14 +294,16 @@ func (w *AgreementWorker) start() {
 
 				// Process the message if it's a proposal.
 				deleteMessage := false
-				if proposal, err := protocolHandler.ValidateProposal(string(protocolMsg)); err != nil {
+				if p, err := protocolHandlers[citizenscientist.PROTOCOL_NAME].ValidateProposal(string(protocolMsg)); err != nil {
 					glog.Warningf(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %s due to %v", cmd.Msg.ShortProtocolMessage(), err)))
-				} else if agAlreadyExists, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(proposal.AgreementId)}); err != nil {
+				} else if proposal, ok := p.(*citizenscientist.CSProposal); !ok {
+					glog.Errorf(logString(fmt.Sprintf("unable to cast proposal %v to %v Proposal Reply Ack, is %T", p, citizenscientist.PROTOCOL_NAME, p)))
+				} else if agAlreadyExists, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(proposal.AgreementId())}); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreements from database, error %v", err)))
 				} else if len(agAlreadyExists) != 0 {
 					glog.Errorf(logString(fmt.Sprintf("agreement %v already exists, ignoring proposal: %v", proposal.AgreementId, proposal.ShortString())))
 					deleteMessage = true
-				} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
+				} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
 				} else if err := tcPolicy.Is_Self_Consistent(w.Config.Edge.PublicKeyPath, config.USERKEYDIR); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("received error check self consistency of TsAndCs, %v", err)))
@@ -302,9 +311,11 @@ func (w *AgreementWorker) start() {
 					glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
 				} else {
 					deleteMessage = true
-					if reply, err := protocolHandler.DecideOnProposal(proposal, w.deviceId, messageTarget, sendMessage); err != nil {
+					if r, err := protocolHandlers[citizenscientist.PROTOCOL_NAME].DecideOnProposal(proposal, w.deviceId, messageTarget, sendMessage); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("respond to proposal with error: %v", err)))
-					} else if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId, proposal.ConsumerId, protocolMsg, citizenscientist.PROTOCOL_NAME, proposal.Version, tcPolicy.APISpecs[0].SpecRef, reply.Signature, proposal.Address); err != nil {
+					} else if reply, ok := r.(*citizenscientist.CSProposalReply); !ok {
+						glog.Errorf(logString(fmt.Sprintf("unable to cast proposal %v to %v Proposal Reply Ack, is %T", r, citizenscientist.PROTOCOL_NAME, r)))
+					} else if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, citizenscientist.PROTOCOL_NAME, proposal.Version(), tcPolicy.APISpecs[0].SpecRef, reply.Signature, proposal.Address); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId, err)))
 						deleteMessage = false
 					}
@@ -350,15 +361,6 @@ func (w *AgreementWorker) syncOnInit() error {
 	glog.V(3).Infof(logString("beginning sync up."))
 
 	protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
-
-	// Establish the go objects that are used to interact with the ethereum blockchain.
-	// This code should probably be in the protocol library.
-	acct, _ := ethblockchain.AccountId()
-	dir, _ := ethblockchain.DirectoryAddress()
-	bc, err := ethblockchain.InitBaseContracts(acct, w.Config.Edge.GethURL, dir)
-	if err != nil {
-		return errors.New(logString(fmt.Sprintf("unable to initialize platform contracts, error: %v", err)))
-	}
 
 	// Reconcile the set of agreements recorded in the exchange for this device with the agreements in the local DB.
 	// First get all the agreements for this device from the exchange.
@@ -406,7 +408,7 @@ func (w *AgreementWorker) syncOnInit() error {
 			// Make sure the blockchain state agrees with our local DB state for this agreement. If not, then we might need to cancel the agreement.
 			// Anax could have been down for a long time (or inoperable), and the blockchain event logger worker doesnt go back in time to
 			// find events that we might have missed, so we need to query the BC for this info.
-			} else if ok, err := w.checkAgreementInBlockchain(&ag, protocolHandler, bc); err != nil {
+			} else if ok, err := w.checkAgreementInBlockchain(&ag, protocolHandler); err != nil {
 				return errors.New(logString(fmt.Sprintf("unable to check for agreement %v in blockchain, error %v", ag.CurrentAgreementId, err)))
 			} else if !ok {
 				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, citizenscientist.CANCEL_AGBOT_REQUESTED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
@@ -417,7 +419,7 @@ func (w *AgreementWorker) syncOnInit() error {
 
 			} else if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v, error %v", ag.CurrentAgreementId, err)))
-			} else if pol, err := policy.DemarshalPolicy(proposal.ProducerPolicy); err != nil {
+			} else if pol, err := policy.DemarshalPolicy(proposal.ProducerPolicy()); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
 			} else if existingPol := w.pm.GetPolicy(pol.Header.Name); existingPol == nil {
 				glog.Errorf(logString(fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
@@ -463,7 +465,7 @@ func (w *AgreementWorker) syncOnInit() error {
 // This function verifies that an agreement is present in the blockchain. An agreement might not be present for a variety of reasons,
 // some of which are legitimate. The purpose of this routine is to figure out whether or not an agreement cancellation
 // has occurred. It returns false if the agreement needs to be cancelled, or if there was an error.
-func (w *AgreementWorker) checkAgreementInBlockchain(ag *persistence.EstablishedAgreement, protocolHandler *citizenscientist.ProtocolHandler, bc *ethblockchain.BaseContracts) (bool, error) {
+func (w *AgreementWorker) checkAgreementInBlockchain(ag *persistence.EstablishedAgreement, protocolHandler *citizenscientist.ProtocolHandler) (bool, error) {
 
 	// Agreements that havent been accepted yet by the device will not be in the blockchain and it's ok that they are not in
 	// the blockchain, so return true.
@@ -472,7 +474,7 @@ func (w *AgreementWorker) checkAgreementInBlockchain(ag *persistence.Established
 	}
 
 	// Check to see if the agreement is in the blockchain. This call to the blockchain should be very fast.
-	if recorded, err := protocolHandler.VerifyAgreementRecorded(ag.CurrentAgreementId, ag.CounterPartyAddress, ag.ProposalSig, bc.Agreements); err != nil {
+	if recorded, err := protocolHandler.VerifyAgreementRecorded(ag.CurrentAgreementId, ag.CounterPartyAddress, ag.ProposalSig); err != nil {
 		return false, errors.New(logString(fmt.Sprintf("encountered error verifying agreement %v on blockchain, error %v", ag.CurrentAgreementId, err)))
 	} else if !recorded {
 		// A finalized agreement should be on the blockchain

@@ -12,7 +12,7 @@
     ],
     "agreementProtocols": [
         {
-            "name": "2PartyDataUse"
+            "name": "Basic"
         }
     ],
     "workloads":[

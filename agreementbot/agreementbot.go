@@ -208,8 +208,12 @@ func (w *AgreementBotWorker) start() {
 
 		w.protocols = w.pm.GetAllAgreementProtocols()
 		for protocolName, _ := range w.protocols {
-			w.pwcommands[protocolName] = make(chan worker.Command, 100)
-			go w.InitiateAgreementProtocolHandler(protocolName)
+			if policy.SupportedAgreementProtocol(protocolName) {
+				w.pwcommands[protocolName] = make(chan worker.Command, 100)
+				go w.InitiateAgreementProtocolHandler(protocolName)
+			} else {
+				glog.Errorf("AgreementBotWorker ignoring agreement protocol %v, not supported.", protocolName)
+			}
 		}
 
 		// Sync up between what's in our database versus what's in the exchange, and make sure that the policy manager's
@@ -262,27 +266,26 @@ func (w *AgreementBotWorker) start() {
 						glog.Errorf(fmt.Sprintf("AgreementBotWorker error demarshalling change event policy %v, error: %v", cmd.Msg.PolicyString(), err))
 					} else {
 						protocolName := pol.AgreementProtocols[0].Name
+						if policy.SupportedAgreementProtocol(protocolName) {
 
-						glog.V(5).Infof("AgreementBotWorker about to update policy in PM.")
-						// Update the policy in the policy manager.
-						w.pm.UpdatePolicy(pol)
-						glog.V(5).Infof("AgreementBotWorker updated policy in PM.")
+							glog.V(5).Infof("AgreementBotWorker about to update policy in PM.")
+							// Update the policy in the policy manager.
+							w.pm.UpdatePolicy(pol)
+							glog.V(5).Infof("AgreementBotWorker updated policy in PM.")
 
-						// Update the protocol handler map and make sure there are workers available if the policy has a new protocol in it.
-						if _, ok := w.pwcommands[protocolName]; !ok {
-							glog.V(3).Infof("AgreementBotWorker creating worker pool for new agreement protocol %v", protocolName)
-							w.pwcommands[protocolName] = make(chan worker.Command, 100)
-							go w.InitiateAgreementProtocolHandler(protocolName)
-						}
+							// Update the protocol handler map and make sure there are workers available if the policy has a new protocol in it.
+							if _, ok := w.pwcommands[protocolName]; !ok {
+								glog.V(3).Infof("AgreementBotWorker creating worker pool for new agreement protocol %v", protocolName)
+								w.pwcommands[protocolName] = make(chan worker.Command, 100)
+								go w.InitiateAgreementProtocolHandler(protocolName)
+							}
 
-						// Queue the command to the correct protocol worker pool for further processing. In odd corner cases
-						// the policy file might contain an unsupported protocol, so be defensive.
-						if _, ok := w.pwcommands[protocolName]; ok {
+							// Queue the command to the correct protocol worker pool for further processing.
 							w.pwcommands[protocolName] <- cmd
-						} else {
-							glog.Errorf("AgreementBotWorker unable to queue up policy change command because the policy %v contains an unsupported agreement protocol %v", pol.Header.Name, protocolName)
-						}
 
+						} else {
+							glog.Errorf("AgreementBotWorker ignoring agreement protocol %v in policy %v, not supported.", protocolName, pol.Header.Name)
+						}
 					}
 
 				case *PolicyDeletedCommand:
@@ -419,7 +422,7 @@ func (w *AgreementBotWorker) InitiateAgreementProtocolHandler(protocol string) {
 		work := make(chan CSAgreementWork)
 		for ix := 0; ix < w.Worker.Manager.Config.AgreementBot.AgreementWorkers; ix++ {
 			agw := NewCSAgreementWorker(w.pm, w.Worker.Manager.Config, w.db, agreementLockMgr)
-			go agw.start(work, random, w.bc)
+			go agw.start(work, random)
 		}
 
 		// Main function of the agreement processor. Constantly search through the list of available

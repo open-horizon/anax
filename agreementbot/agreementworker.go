@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
 	"github.com/satori/go.uuid"
@@ -145,7 +145,7 @@ func (c CSHandleBCTerminated) Type() string {
 
 // This function receives an event to "make a new agreement" from the Process function, and then synchronously calls a function
 // to actually work through the agreement protocol.
-func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, bc *ethblockchain.BaseContracts) {
+func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand) {
 	workerID := uuid.NewV4().String()
 
 	logString := func(v interface{}) string {
@@ -222,7 +222,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 
 		} else if workItem.Type() == REPLY {
 			wi := workItem.(CSHandleReply)
-			a.handleAgreementReply(wi, protocolHandler, bc, sendMessage)
+			a.handleAgreementReply(wi, protocolHandler, sendMessage)
 
 		} else if workItem.Type() == DATARECEIVEDACK {
 			wi := workItem.(CSHandleDataReceivedAck)
@@ -235,7 +235,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 			lock := a.alm.getAgreementLock(wi.AgreementId)
 			lock.Lock()
 
-			a.cancelAgreement(wi.AgreementId, wi.Reason, protocolHandler, bc)
+			a.cancelAgreement(wi.AgreementId, wi.Reason, protocolHandler)
 
 			lock.Unlock()
 
@@ -279,7 +279,7 @@ func (a *CSAgreementWorker) start(work chan CSAgreementWork, random *rand.Rand, 
 			lock := a.alm.getAgreementLock(wi.AgreementId)
 			lock.Lock()
 
-			a.cancelAgreement(wi.AgreementId, citizenscientist.AB_CANCEL_DISCOVERED, protocolHandler, bc)
+			a.cancelAgreement(wi.AgreementId, citizenscientist.AB_CANCEL_DISCOVERED, protocolHandler)
 
 			lock.Unlock()
 
@@ -303,7 +303,7 @@ func (a *CSAgreementWorker) initiateNewAgreement(wi             CSInitiateAgreem
 
 	// Generate an agreement ID
 	agreementId := generateAgreementId(random)
-	myAddress, _ := ethblockchain.AccountId()
+	// myAddress, _ := ethblockchain.AccountId()
 	agreementIdString := hex.EncodeToString(agreementId)
 	glog.V(5).Infof(logString(fmt.Sprintf("using AgreementId %v", agreementIdString)))
 
@@ -335,7 +335,7 @@ func (a *CSAgreementWorker) initiateNewAgreement(wi             CSInitiateAgreem
 		glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
 
 	// Initiate the protocol
-	} else if proposal, hash, sig, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, &wi.ConsumerPolicy, myAddress, a.agbotId, mt, workload, a.config.AgreementBot.DefaultWorkloadPW, a.config.AgreementBot.NoDataIntervalS, sendMessage); err != nil {
+	} else if proposal, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, &wi.ConsumerPolicy, a.agbotId, mt, workload, a.config.AgreementBot.DefaultWorkloadPW, a.config.AgreementBot.NoDataIntervalS, sendMessage); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error initiating agreement: %v", err)))
 
 		// Remove pending agreement from database
@@ -346,14 +346,16 @@ func (a *CSAgreementWorker) initiateNewAgreement(wi             CSInitiateAgreem
 		// TODO: Publish error on the message bus
 
 	// Update the agreement in the DB with the proposal and policy
+	} else if hash, sig, err := protocolHandler.SignProposal(proposal); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error signing proposal %v, error: %v", proposal, err)))
 	} else if polBytes, err := json.Marshal(wi.ConsumerPolicy); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error marshalling policy for storage %v, error: %v", wi.ConsumerPolicy, err)))
 	} else if pBytes, err := json.Marshal(proposal); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("error marshalling proposal for storage %v, error: %v", *proposal, err)))
-	} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error marshalling proposal for storage %v, error: %v", proposal, err)))
+	} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error demarshalling TsandCs policy from pending agreement %v, error: %v", agreementIdString, err)))
 	} else if _, err := AgreementUpdate(a.db, agreementIdString, string(pBytes), string(polBytes), pol.DataVerify, a.config.AgreementBot.ProcessGovernanceIntervalS, hash, sig, citizenscientist.PROTOCOL_NAME); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", *proposal, err)))
+		glog.Errorf(logString(fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", proposal, err)))
 
 	// Record that the agreement was initiated, in the exchange
 	} else if err := a.recordConsumerAgreementState(agreementIdString, wi.ConsumerPolicy.APISpecs[0].SpecRef, "Formed Proposal"); err != nil {
@@ -363,15 +365,16 @@ func (a *CSAgreementWorker) initiateNewAgreement(wi             CSInitiateAgreem
 
 func (a *CSAgreementWorker) handleAgreementReply(wi             CSHandleReply,
 												protocolHandler *citizenscientist.ProtocolHandler,
-												bc              *ethblockchain.BaseContracts,
 												sendMessage     func(mt interface{}, pay []byte) error) {
 
 	// The reply message is usually deleted before recording on the blockchain. For now assume it will be deleted at the end. Early exit from
 	// this function is NOT allowed.
 	deletedMessage := false
 
-	if reply, err := protocolHandler.ValidateReply(wi.Reply); err != nil {
+	if r, err := protocolHandler.ValidateReply(wi.Reply); err != nil {
 		glog.Warningf(logString(fmt.Sprintf("discarding message: %v", wi.Reply)))
+	} else if reply, ok := r.(*citizenscientist.CSProposalReply); !ok {
+		glog.Errorf(logString(fmt.Sprintf("unable to cast reply %v to %v Proposal Reply, is %T", r, protocolHandler.Name(), r)))
 	} else {
 
 		// Get the agreement id lock to prevent any other thread from processing this same agreement.
@@ -398,11 +401,11 @@ func (a *CSAgreementWorker) handleAgreementReply(wi             CSHandleReply,
 			// Now we need to write the info to the exchange and the database
 			} else if proposal, err := protocolHandler.DemarshalProposal(agreement.Proposal); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error validating proposal from pending agreement %v, error: %v", reply.AgreementId(), err)))
-			} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs); err != nil {
+			} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error demarshalling tsandcs policy from pending agreement %v, error: %v", reply.AgreementId(), err)))
 
 			} else if _, err := AgreementMade(a.db, reply.AgreementId(), reply.Address, reply.Signature, citizenscientist.PROTOCOL_NAME, pol.HAGroup.Partners); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", *proposal, err)))
+				glog.Errorf(logString(fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", proposal, err)))
 
 			} else if err := a.recordConsumerAgreementState(reply.AgreementId(), pol.APISpecs[0].SpecRef, "Producer agreed"); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error setting agreement state for %v", reply.AgreementId())))
@@ -455,7 +458,7 @@ func (a *CSAgreementWorker) handleAgreementReply(wi             CSHandleReply,
 				lock.Unlock()
 
 				// Recording the agreement on the blockchain could take a long time, so it needs to be the last thing we do.
-				if err := protocolHandler.RecordAgreement(proposal, reply, consumerPolicy, bc.Agreements); err != nil {
+				if err := protocolHandler.RecordAgreement(proposal, reply, consumerPolicy); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error trying to record agreement in blockchain, %v", err)))
 				}
 
@@ -472,9 +475,9 @@ func (a *CSAgreementWorker) handleAgreementReply(wi             CSHandleReply,
 			}
 
 		} else {
-			glog.Errorf(logString(fmt.Sprintf("received rejection from producer %v", *reply)))
+			glog.Errorf(logString(fmt.Sprintf("received rejection from producer %v", reply)))
 
-			a.cancelAgreement(reply.AgreementId(), citizenscientist.AB_CANCEL_NEGATIVE_REPLY, protocolHandler, bc)
+			a.cancelAgreement(reply.AgreementId(), citizenscientist.AB_CANCEL_NEGATIVE_REPLY, protocolHandler)
 		}
 
 		// Get rid of the lock
@@ -496,8 +499,10 @@ func (a *CSAgreementWorker) handleAgreementReply(wi             CSHandleReply,
 func (a *CSAgreementWorker) handleDataReceivedAck(wi            CSHandleDataReceivedAck,
 												protocolHandler *citizenscientist.ProtocolHandler) {
 
-	if drAck, err := protocolHandler.ValidateDataReceivedAck(wi.Ack); err != nil {
+	if d, err := protocolHandler.ValidateDataReceivedAck(wi.Ack); err != nil {
 		glog.Warningf(logString(fmt.Sprintf("discarding message: %v", wi.Ack)))
+	} else if drAck, ok := d.(*abstractprotocol.BaseDataReceivedAck); !ok {
+		glog.Errorf(logString(fmt.Sprintf("unable to cast Data Received Ack %v to %v Proposal Reply, is %T", d, protocolHandler.Name(), d)))
 	} else {
 
 		// Get the agreement id lock to prevent any other thread from processing this same agreement.
@@ -581,7 +586,7 @@ func (a *CSAgreementWorker) deleteMessage(msgId int) error {
 	}
 }
 
-func (a *CSAgreementWorker) cancelAgreement(agreementId string, reason uint, protocolHandler *citizenscientist.ProtocolHandler, bc *ethblockchain.BaseContracts) {
+func (a *CSAgreementWorker) cancelAgreement(agreementId string, reason uint, protocolHandler *citizenscientist.ProtocolHandler) {
 	// Start timing out the agreement
 	glog.V(3).Infof("CSAgreementWorker: terminating agreement %v.", agreementId)
 
@@ -613,7 +618,7 @@ func (a *CSAgreementWorker) cancelAgreement(agreementId string, reason uint, pro
 			// Remove from the blockchain
 			if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
 				glog.Errorf("CSAgreementWorker: unable to demarshal policy while trying to cancel %v, error %v", agreementId, err)
-			} else if err := protocolHandler.TerminateAgreement(pol, ag.CounterPartyAddress, agreementId, reason, bc.Agreements); err != nil {
+			} else if err := protocolHandler.TerminateAgreement(pol, ag.CounterPartyAddress, agreementId, reason); err != nil {
 				glog.Errorf("CSAgreementWorker: error terminating agreement %v on the blockchain: %v", agreementId, err)
 			}
 		}()
