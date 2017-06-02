@@ -196,6 +196,9 @@ curl -s -X POST -H "Content-Type: application/json" -d '{"device":"12345678"}' h
 #### **API:** GET  /workloadusage
 ---
 
+It returns the current workload usage for the agreements whose agbot policies have more than one workload priorities.
+
+
 **Parameters:**
 none
 
