@@ -11,6 +11,8 @@ curl -s http://<ip>/status | jq '.'
 #### **API:** GET  /status
 ---
 
+Get the bluehorizon status on the device. It currently includes the ethereum status, anax configuration and the device connectivity. 
+
 **Parameters:**
 none
 
@@ -31,7 +33,7 @@ body:
 | geth.eth_accounts | array | an array of ethereum account numbers for this device. |
 | configuration| json| the configuration data.  |
 | configuration.exchange_api | string | the url for the exchange api.  |
-| connectivity | json | device has connections with some sites or not.  |
+| connectivity | json | device has connections with some remote sites or not.  |
 
 
 **Example:**
@@ -62,6 +64,8 @@ curl -s http://localhost/status |jq '.'
 ### 2. Device
 #### **API:** GET  /horizondevice
 ---
+
+Get the information for the current device which is registered on the exchange.
 
 **Parameters:**
 none
@@ -105,6 +109,8 @@ curl -s http://localhost/horizondevice |jq '.'
 #### **API:** POST  /horizondevice
 ---
 
+Set the information for the current device. The information should have been registered on the exchange.
+
 **Parameters:**
 
 Please refer to the response body of GET /horizondevice api.
@@ -136,6 +142,8 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
 #### **API:** PATCH  /horizondevice
 ---
 
+Update the information for the current device. The information should have been registered on the exchange.
+
 **Parameters:**
 
 Please refer to the response body of GET /horizondevice api.
@@ -166,6 +174,8 @@ curl -s -w "%{http_code}" -X PATCH-H 'Content-Type: application/json'  -d '{
 
 #### **API:** GET  /service
 ---
+
+Get the policies and the attributes for the registered services.
 
 **Parameters:**
 none
@@ -205,7 +215,7 @@ service attribute
 | name | type | description |
 | ---- | ---- | ---------------- |
 | meta | json |  the metadata that describes the attribute. It includes the id, the sensor_url, the label, the data type and weather or not the attribute is publishable or not. If the sensor_url is empty, the attribute is applied to all services. |
-| {name, value} |  | The names and values. Each type has a different set of name and value pairs. Supported attribute types are: ArchitectureAttributes (architecture), ComputeAttributes (cpu, ram), LocationAttributes (lat, lon, user_provided_coords, use_gps), MappedAttributes (mappings). HAAttributes (partners),  PropertyAttributes (mappings), CounterPartyPropertyAttributes (expression) etc. |
+| {name, value} |  | The names and values. Each type has a different set of name and value pairs. Supported attribute types are: architecture (architecture), compute (cpu, ram), location (lat, lon, user_provided_coords, use_gps), mapped (mappings). ha (partners),  property (mappings), counterpartyproperty (expression) etc. |
 
 
 **Example:**
@@ -264,33 +274,6 @@ curl -s -w %{http_code}  http://localhost/service | jq  '.'
           {
             "name": "ram",
             "value": "0"
-          }
-        ],
-        "blockchains": [
-          {
-            "type": "ethereum",
-            "details": {
-              "bootnodes": [
-                "https://dal05.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/volcano/peers",
-                "https://tok02.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/volcano/peers",
-                "https://lon02.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/volcano/peers"
-              ],
-              "directory": [
-                "https://dal05.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/volcano/directory.address",
-                "https://tok02.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/volcano/directory.address",
-                "https://lon02.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/volcano/directory.address"
-              ],
-              "genesis": [
-                "https://dal05.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/volcano/genesis.json",
-                "https://tok02.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/volcano/genesis.json",
-                "https://lon02.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/volcano/genesis.json"
-              ],
-              "networkid": [
-                "https://dal05.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/volcano/networkid",
-                "https://tok02.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/volcano/networkid",
-                "https://lon02.objectstorage.softlayer.net/v1/AUTH_773b8ed6-b3c8-4683-9d7a-dbe2ee11095e/volcano/networkid"
-              ]
-            }
           }
         ]
       },
@@ -358,6 +341,8 @@ curl -s -w %{http_code}  http://localhost/service | jq  '.'
 #### **API:** POST  /service
 ---
 
+Register a service.
+
 **Parameters:**
 
 | name | type | description |
@@ -400,6 +385,8 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
 #### **API:** GET  /service/attribute
 ---
 
+Get all the attributes for the registered services. 
+
 **Parameters:**
 none
 
@@ -419,7 +406,7 @@ attribute
 | id | string| the id of the attribute. |
 | ---- | ---- | ---------------- |
 | label | string | the user readable name of the attribute |
-| short_type| string | the short type name of the service. This filed is omitted if it is empty. Supported types are: compute, location, architecture, ha, and mapped. |
+| short_type| string | the short type name of the service. This filed is omitted if it is empty. Supported attribute types are: architecture, compute, location, mapped, ha, property, counterpartyproperty, metering etc. |
 | sensor_urls | array | an array of sensor url. It applies to all services if it is empty. |
 | publishable| bool | whether the attribute can be made public or not. |
 | mappings | map | a list of key value pairs. |
@@ -485,6 +472,8 @@ attribute
 #### **API:** POST  /service/attribute
 ---
 
+Register an attribute for a service. If the sensor_url is omitted, the attribute applies to all the services.
+
 **Parameters:**
 
 | name | type | description |
@@ -520,6 +509,8 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json' -d '{
 
 #### **API:** GET  /agreement
 ---
+
+Get all the active and archived service agreements ever made on the device. The agreements that are being terminated but not yet archived are treated as archived in this api.
 
 **Parameters:**
 none
@@ -557,7 +548,6 @@ body:
 | current_deployment | json | contains the information of the workloads. The key is the name of the workload and the value is the result of [/containers/<id> docker remote API call](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/inspect-a-container) for the  workload container. Please refer to the link for details. |
 | archived | bool |  if the agreement is archived or not.  |
 | metering_notification | json |  the most recent metering notification received. It includes the amount, metering start time, data missed time, consumer address, consumer signature etc. |
-Note: The agreements that are being terminated but not yet archived are treated as archived in this api.
 
 
 **Example:**
@@ -647,6 +637,8 @@ curl -s http://localhost/agreement |jq '.'
 #### **API:** DELETE  /agreement/{id}
 ---
 
+Delete a service agreement. The agbot will start new agreement negotiation with the device after the agreement is deleted.
+
 **Parameters:**
 
 | name | type | description |
@@ -670,10 +662,13 @@ none
 curl -X DELETE -s http://localhost/agreement/a70042dd17d2c18fa0c9f354bf1b560061d024895cadd2162a0768687ed55533
 
 ```
+
 ### 5. Workload
 
 #### **API:** GET  /workload
 ---
+
+Get the detailed information for all the workloads currently running on the device.
 
 **Parameters:**
 none
@@ -757,38 +752,13 @@ curl -s http://localhost/workload |jq '.'
 }
 ```
 
-### 6. Random Token
 
-#### **API:** GET  /token/random
----
-
-**Parameters:**
-none
-
-**Response:**
-
-code: 
-* 200 -- success
-
-body:
-
-| name | type | description |
-| ---- | ---- | ---------------- |
-| token   | string | a newly generated random token that you can use for device registration. |
-
-**Example:**
-```
-curl -s http://localhost/token/random | jq  '.'
-{
-  "token": "MTKg9ZGceikVoCfAOOC6NpKbku1mH5NVd9f_3UxTSUoooPaIQzGQVLtEZUHsYuJy70RkidLAT-eXhcO-pdVeqA=="
-}
-
-```
-
-### 7. Public Keys for Workload Image Verification
+### 6. Public Keys for Workload Image Verification
 
 #### **API:** GET  /publickey
 ---
+
+Get the user stored public keys. The public keys are used for workload image verification.
 
 **Parameters:**
 
@@ -817,6 +787,8 @@ curl -s http://localhost/publickey | jq  '.'
 #### **API:** GET  /publickey/{filename}
 ---
 
+Get the content of the user public key from a file that has been previously stored to the bluehorizon system. 
+
 **Parameters:**
 
 | name | type | description |
@@ -841,6 +813,8 @@ curl -s http://localhost/publickey/akeyfile.pem > akeyfile.pem
 #### **API:** PUT  /publickey/{filename}
 ---
 
+Put a user public key to the bluehorizon system for workload verification.
+
 **Parameters:**
 
 | name | type | description |
@@ -864,6 +838,8 @@ curl -T publickey.pem http://localhost/publickey/mynewworkloadkey.pem
 
 #### **API:** DELETE  /publickey/{filename}
 ---
+
+Delete a user public key from the bluehorizon system.
 
 **Parameters:**
 
