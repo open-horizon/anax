@@ -152,7 +152,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 									// If the address happens to be invalid, that should be a temporary condition. We will keep sending until
 									// we get an ack to our verification message.
 									if whisperTo, pubkeyTo, err := getDeviceMessageEndpoint(ag.DeviceId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
-										glog.Errorf(logString(fmt.Sprintf("error obtaining messgae target for data notification: %v", err)))
+										glog.Errorf(logString(fmt.Sprintf("error obtaining message target for data notification: %v", err)))
 									} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
 										glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
 									} else if err := protocolHandler.NotifyDataReceipt(ag.CurrentAgreementId, mt, sendMessage); err != nil {
