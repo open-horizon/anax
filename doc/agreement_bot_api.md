@@ -11,6 +11,8 @@ curl -s http://<ip>/agreement | jq '.'
 #### **API:** GET  /agreement
 ---
 
+Get all the active and archived agreements made on this agbot. The agreements that are being terminated but not yet archived are treated as archived in this API. Please note that the archived agreements get purged after a period of time which is defined by PurgeArchivedAgreementHours in the agbot configuration file. The purged agreements will not be shown by this API. 
+
 **Parameters:**
 none
 
@@ -27,8 +29,6 @@ body:
 | archived | array | an array of terminated agreements. | 
 
 See the GET /agreement/{id} API for documentation of the fields in an agreement.
-
-Note: The agreements that are being terminated but not yet archived are treated as archived in this API.
 
 **Example:**
 ```
@@ -60,6 +60,8 @@ curl -s http://localhost/agreement | jq '.'
 
 #### **API:** GET  /agreement/{id}
 ---
+
+Get detailed information for an agreement.
 
 **Parameters:**
 
@@ -136,6 +138,8 @@ curl -s http://localhost/agreement/93bcddde28f43cf59761e948ebff45f0ad9e060e3081d
 #### **API:** DELETE  /agreement/{id}
 ---
 
+Delete an agreement. The agbot will start new agreement negotiation with the device after the agreement deletion.
+
 **Parameters:**
 
 | name | type | description |
@@ -161,7 +165,7 @@ curl -X DELETE -s http://localhost/agreement/a70042dd17d2c18fa0c9f354bf1b560061d
 #### **API:** POST  /policy/\<policy name\>/upgrade
 ---
 
-This API is used to force a device to attempt a workload upgrade.
+Force a device to attempt a workload upgrade for the given device and given policy.
 
 **Parameters:**
 
@@ -195,6 +199,9 @@ curl -s -X POST -H "Content-Type: application/json" -d '{"device":"12345678"}' h
 
 #### **API:** GET  /workloadusage
 ---
+
+Get current workload usage information for the agreements whose agbot policies have more than one workload priorities.
+
 
 **Parameters:**
 none

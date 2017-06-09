@@ -237,9 +237,9 @@ type ExchangeMessageTarget struct {
 
 func CreateMessageTarget(receiverId string, receiverPubKey *rsa.PublicKey, receiverPubKeySerialized []byte, receiverMessageEndpoint string) (*ExchangeMessageTarget, error) {
 	if len(receiverMessageEndpoint) == 0 && receiverPubKey == nil && len(receiverPubKeySerialized) == 0 {
-		return nil, errors.New(fmt.Sprintf("Must specify either one of the public key inputs OR the message endpoint input"))
+		return nil, errors.New(fmt.Sprintf("Must specify either one of the public key inputs OR the message endpoint input for the message receiver %v", receiverId))
 	} else if len(receiverMessageEndpoint) != 0 && (receiverPubKey != nil || len(receiverPubKeySerialized) != 0) {
-		return nil, errors.New(fmt.Sprintf("Specified message endpoint and at least one of the public key inputs, %v or %v", receiverPubKey, receiverPubKeySerialized))
+		return nil, errors.New(fmt.Sprintf("Specified message endpoint and at least one of the public key inputs for the message receiver %v, %v or %v", receiverId, receiverPubKey, receiverPubKeySerialized))
 	} else {
 		return &ExchangeMessageTarget{
 			ReceiverExchangeId:     receiverId,
