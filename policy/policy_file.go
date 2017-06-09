@@ -171,6 +171,14 @@ func Are_Compatible(producer_policy *Policy, consumer_policy *Policy) error {
 	return nil
 }
 
+// This function will select an agreement protocol to pursue based on the input policies. This function
+// assumes that the input policies are compatible.
+func Select_Protocol(producer_policy *Policy, consumer_policy *Policy) string {
+	agpList, _ := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols)
+
+	return (*agpList.Single_Element())[0].Name
+}
+
 // This function is used to check if 2 producer policies are compatible with each other. This is the means
 // by which an agbot can make an agreement with a device that utilizes more than one API spec in the contract.
 // Producers advertise API spec availability individually in their policy files. An agbot that wants to

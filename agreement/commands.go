@@ -2,7 +2,6 @@ package agreement
 
 import (
 	"fmt"
-	"github.com/open-horizon/anax/events"
 )
 
 // ===============================================================================================
@@ -49,20 +48,5 @@ func (a AdvertisePolicyCommand) ShortString() string {
 func NewAdvertisePolicyCommand(fileName string) *AdvertisePolicyCommand {
 	return &AdvertisePolicyCommand{
 		PolicyFile: fileName,
-	}
-}
-
-// ==============================================================================================================
-type ExchangeMessageCommand struct {
-	Msg events.ExchangeDeviceMessage
-}
-
-func (e ExchangeMessageCommand) ShortString() string {
-	return e.Msg.ShortString()
-}
-
-func NewExchangeMessageCommand(msg events.ExchangeDeviceMessage) *ExchangeMessageCommand {
-	return &ExchangeMessageCommand{
-		Msg: msg,
 	}
 }

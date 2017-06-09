@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
-	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/policy"
@@ -94,7 +93,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 		id := pathVars["id"]
 
 		if id != "" {
-			if ag, err := FindSingleAgreementByAgreementId(a.db, id, citizenscientist.PROTOCOL_NAME, []AFilter{}); err != nil {
+			if ag, err := FindSingleAgreementByAgreementIdAllProtocols(a.db, id, policy.AllAgreementProtocols(), []AFilter{}); err != nil {
 				glog.Error(APIlogString(fmt.Sprintf("error finding agreement %v, error: %v", id, err)))
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
 			} else if ag == nil {
@@ -115,45 +114,50 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		} else {
-			if ags, err := FindAgreements(a.db, []AFilter{}, citizenscientist.PROTOCOL_NAME); err != nil {
-				glog.Error(APIlogString(fmt.Sprintf("error finding all agreements, error: %v", err)))
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
-			} else {
-				var agreementsKey = "agreements"
-				var archivedKey = "archived"
-				var activeKey = "active"
+			var agreementsKey = "agreements"
+			var archivedKey = "archived"
+			var activeKey = "active"
 
-				wrap := make(map[string]map[string][]Agreement, 0)
-				wrap[agreementsKey] = make(map[string][]Agreement, 0)
-				wrap[agreementsKey][archivedKey] = []Agreement{}
-				wrap[agreementsKey][activeKey] = []Agreement{}
+			wrap := make(map[string]map[string][]Agreement, 0)
+			wrap[agreementsKey] = make(map[string][]Agreement, 0)
+			wrap[agreementsKey][archivedKey] = []Agreement{}
+			wrap[agreementsKey][activeKey] = []Agreement{}
 
-				for _, agreement := range ags {
-					// The archived agreements and the agreements being terminated are returned as archived.
-					if agreement.Archived || agreement.AgreementTimedout != 0 {
-					 	wrap[agreementsKey][archivedKey] = append(wrap[agreementsKey][archivedKey], agreement)
-					} else {
-						wrap[agreementsKey][activeKey] = append(wrap[agreementsKey][activeKey], agreement)
+			for _, agp := range policy.AllAgreementProtocols() {
+				if ags, err := FindAgreements(a.db, []AFilter{}, agp); err != nil {
+					glog.Error(APIlogString(fmt.Sprintf("error finding all agreements, error: %v", err)))
+					http.Error(w, "Internal server error", http.StatusInternalServerError)
+					return
+				} else {
+
+					for _, agreement := range ags {
+						// The archived agreements and the agreements being terminated are returned as archived.
+						if agreement.Archived || agreement.AgreementTimedout != 0 {
+							wrap[agreementsKey][archivedKey] = append(wrap[agreementsKey][archivedKey], agreement)
+						} else {
+							wrap[agreementsKey][activeKey] = append(wrap[agreementsKey][activeKey], agreement)
+						}
 					}
-				}
 
-				// do sorts
-				sort.Sort(AgreementsByAgreementCreationTime(wrap[agreementsKey][activeKey]))
-				sort.Sort(AgreementsByAgreementTimeoutTime(wrap[agreementsKey][archivedKey]))
-
-				serial, err := json.Marshal(wrap)
-				if err != nil {
-					glog.Errorf(APIlogString(fmt.Sprintf("error serializing agreement output %v, error: %v", wrap, err)))
-					http.Error(w, "Internal server error", http.StatusInternalServerError)
-					return
 				}
+			}
 
-				w.Header().Set("Content-Type", "application/json")
-				if _, err := w.Write(serial); err != nil {
-					glog.Infof(APIlogString(fmt.Sprintf("error writing response %v, error: %v", serial, err)))
-					http.Error(w, "Internal server error", http.StatusInternalServerError)
-					return
-				}
+			// do sorts
+			sort.Sort(AgreementsByAgreementCreationTime(wrap[agreementsKey][activeKey]))
+			sort.Sort(AgreementsByAgreementTimeoutTime(wrap[agreementsKey][archivedKey]))
+
+			serial, err := json.Marshal(wrap)
+			if err != nil {
+				glog.Errorf(APIlogString(fmt.Sprintf("error serializing agreement output %v, error: %v", wrap, err)))
+				http.Error(w, "Internal server error", http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			if _, err := w.Write(serial); err != nil {
+				glog.Infof(APIlogString(fmt.Sprintf("error writing response %v, error: %v", serial, err)))
+				http.Error(w, "Internal server error", http.StatusInternalServerError)
+				return
 			}
 		}
 
@@ -167,7 +171,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 		}
 		glog.V(3).Infof(APIlogString(fmt.Sprintf("handling DELETE of agreement: %v", r)))
 
-		if ag, err := FindSingleAgreementByAgreementId(a.db, id, citizenscientist.PROTOCOL_NAME, []AFilter{UnarchivedAFilter()}); err != nil {
+		if ag, err := FindSingleAgreementByAgreementIdAllProtocols(a.db, id, policy.AllAgreementProtocols(), []AFilter{UnarchivedAFilter()}); err != nil {
 			glog.Error(APIlogString(fmt.Sprintf("error finding agreement %v, error: %v", id, err)))
 			w.WriteHeader(http.StatusInternalServerError)
 		} else if ag == nil {
@@ -175,10 +179,10 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 		} else {
 			if ag.AgreementTimedout == 0 {
 				// Update the database
-				if _, err := AgreementTimedout(a.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+				if _, err := AgreementTimedout(a.db, ag.CurrentAgreementId, ag.AgreementProtocol); err != nil {
 					glog.Errorf(APIlogString(fmt.Sprintf("error marking agreement %v terminated: %v", ag.CurrentAgreementId, err)))
 				}
-				a.Messages() <- events.NewABApiAgreementCancelationMessage(events.AGREEMENT_ENDED, citizenscientist.AB_USER_REQUESTED, ag.AgreementProtocol, ag.CurrentAgreementId)
+				a.Messages() <- events.NewABApiAgreementCancelationMessage(events.AGREEMENT_ENDED, ag.AgreementProtocol, ag.CurrentAgreementId)
 			} else {
 				glog.V(3).Infof(APIlogString(fmt.Sprintf("agreement %v not deleted, already timed out at %v", id, ag.AgreementTimedout)))
 			}
@@ -242,9 +246,10 @@ func (a *API) policyUpgrade(w http.ResponseWriter, r *http.Request) {
 			return
 		} else {
 
+			protocol := ""
 			// The body is syntacticly correct, verify that the agreement id matches up with the device id and policy name.
 			if upgrade.AgreementId != "" {
-				if ag, err := FindSingleAgreementByAgreementId(a.db, upgrade.AgreementId, citizenscientist.PROTOCOL_NAME, []AFilter{UnarchivedAFilter()}); err != nil {
+				if ag, err := FindSingleAgreementByAgreementIdAllProtocols(a.db, upgrade.AgreementId, policy.AllAgreementProtocols(), []AFilter{UnarchivedAFilter()}); err != nil {
 					glog.Error(APIlogString(fmt.Sprintf("error finding agreement %v, error: %v", upgrade.AgreementId, err)))
 					w.WriteHeader(http.StatusInternalServerError)
 					return
@@ -265,6 +270,7 @@ func (a *API) policyUpgrade(w http.ResponseWriter, r *http.Request) {
 					if upgrade.Device == "" {
 						upgrade.Device = ag.DeviceId
 					}
+					protocol = ag.AgreementProtocol
 				}
 
 			}
@@ -282,7 +288,7 @@ func (a *API) policyUpgrade(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// If we got this far, begin workload upgrade processing.
-			a.Messages() <- events.NewABApiWorkloadUpgradeMessage(events.WORKLOAD_UPGRADE, citizenscientist.PROTOCOL_NAME, upgrade.AgreementId, upgrade.Device, policyName)
+			a.Messages() <- events.NewABApiWorkloadUpgradeMessage(events.WORKLOAD_UPGRADE, protocol, upgrade.AgreementId, upgrade.Device, policyName)
 			w.WriteHeader(http.StatusOK)
 		}
 

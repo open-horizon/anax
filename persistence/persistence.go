@@ -407,6 +407,18 @@ func FindEstablishedAgreements(db *bolt.DB, protocol string, filters []EAFilter)
 	}
 }
 
+func FindEstablishedAgreementsAllProtocols(db *bolt.DB, protocols []string, filters []EAFilter) ([]EstablishedAgreement, error) {
+	agreements := make([]EstablishedAgreement, 0)
+	for _, protocol := range protocols {
+		if ags, err := FindEstablishedAgreements(db, protocol, filters); err != nil {
+			return nil, err
+		} else {
+			agreements = append(agreements, ags...)
+		}
+	}
+	return agreements, nil
+}
+
 type DevMode struct {
 	Mode     bool `json:"mode"`
 	LocalGov bool `json:"localgov"`

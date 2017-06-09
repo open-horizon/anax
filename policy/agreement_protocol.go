@@ -5,18 +5,27 @@ import (
 	"fmt"
 )
 
-// The purpose of this file is to abstract the operations on the AgreementProtocol type
-// and its list type.
-
+// All known and supported agreement protocols
 const CitizenScientist = "Citizen Scientist"
 const BasicProtocol = "Basic"
 
+var AllProtocols = []string{CitizenScientist}
+
 func SupportedAgreementProtocol(name string)  bool {
-	if name == CitizenScientist || name == BasicProtocol {
-		return true
-	}
-	return false
+    for _, p := range AllProtocols {
+        if p == name {
+            return true
+        }
+    }
+    return false
 }
+
+func AllAgreementProtocols() []string {
+    return AllProtocols
+}
+
+// The purpose of this file is to abstract the operations on the AgreementProtocol type
+// and its list type.
 
 type AgreementProtocolList []AgreementProtocol
 

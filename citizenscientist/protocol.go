@@ -42,7 +42,7 @@ func (p *CSProposal) IsValid() bool {
 func NewCSProposal(bp *abstractprotocol.BaseProposal, myAddress string) *CSProposal {
 	return &CSProposal{
 		BaseProposal: bp,
-		Address: myAddress,
+		Address:      myAddress,
 	}
 }
 
@@ -137,7 +137,7 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 	}
 
 	// Send the proposal to the other party
-	glog.V(5).Infof("Protocol %v sending proposal %v", p.Name(), *newProposal)
+	glog.V(5).Infof("Protocol %v sending proposal %s %T", p.Name(), *newProposal, newProposal)
 
 	if err := abstractprotocol.SendProposal(p, newProposal, consumerPolicy, messageTarget, sendMessage); err != nil {
 		return nil, err
@@ -228,7 +228,7 @@ func (p *ProtocolHandler) NotifyMetering(agreementId string,
 
 	// The metering notification is almost complete. We need to sign the hash.
 	hash := mn.GetMeterHash()
-	glog.V(5).Infof("Signing hash %v for %v, metering notification %v", hash, agreementId, mn)
+	glog.V(5).Infof("CS Protocol signing hash %v for %v, metering notification %v", hash, agreementId, mn)
 	sig := ""
 	if signature, err := ethblockchain.SignHash(hash, p.GethURL); err != nil {
 		return "", errors.New(fmt.Sprintf("CS Protocol sending meter notification received error signing hash %v, error %v", hash, err))
@@ -250,7 +250,7 @@ func (p *ProtocolHandler) ValidateProposal(proposal string) (abstractprotocol.Pr
 	// attempt deserialization of message
 	prop := new(CSProposal)
 
-	if err := json.Unmarshal([]byte(proposal), &prop); err != nil {
+	if err := json.Unmarshal([]byte(proposal), prop); err != nil {
 		return nil, errors.New(fmt.Sprintf("Error deserializing proposal: %s, error: %v", proposal, err))
 	} else if !prop.IsValid() {
 		return nil, errors.New(fmt.Sprintf("Message is not a Proposal."))
@@ -265,7 +265,7 @@ func (p *ProtocolHandler) ValidateReply(reply string) (abstractprotocol.Proposal
 	// attempt deserialization of message from msg payload
 	proposalReply := new(CSProposalReply)
 
-	if err := json.Unmarshal([]byte(reply), &proposalReply); err != nil {
+	if err := json.Unmarshal([]byte(reply), proposalReply); err != nil {
 		return nil, errors.New(fmt.Sprintf("Error deserializing reply: %s, error: %v", reply, err))
 	} else if proposalReply.IsValid() {
 		return proposalReply, nil
@@ -291,9 +291,9 @@ func (p *ProtocolHandler) ValidateMeterNotification(mn string) (abstractprotocol
 	return abstractprotocol.ValidateMeterNotification(mn)
 }
 
-func (p *ProtocolHandler) DemarshalProposal(proposal string) (*CSProposal, error) {
+func (p *ProtocolHandler) DemarshalProposal(proposal string) (abstractprotocol.Proposal, error) {
 
-	// attempt deserialization of message
+	// attempt deserialization of the proposal
 	prop := new(CSProposal)
 
 	if err := json.Unmarshal([]byte(proposal), &prop); err != nil {
@@ -308,7 +308,7 @@ func (p *ProtocolHandler) RecordAgreement(newProposal abstractprotocol.Proposal,
 										reply abstractprotocol.ProposalReply,
 										consumerPolicy *policy.Policy) error {
 
-	if csReply, ok := reply.(CSProposalReply); !ok {
+	if csReply, ok := reply.(*CSProposalReply); !ok {
 		return errors.New(fmt.Sprintf("Error casting reply %v to %v extended reply, input reply is %T.", reply, p.Name(), reply))
 	} else if binaryAgreementId, err := hex.DecodeString(newProposal.AgreementId()); err != nil {
 		return errors.New(fmt.Sprintf("Error converting agreement ID %v to binary, error: %v", newProposal.AgreementId(), err))
@@ -320,7 +320,7 @@ func (p *ProtocolHandler) RecordAgreement(newProposal abstractprotocol.Proposal,
 		}
 
 		tcHash := sha3.Sum256([]byte(newProposal.TsAndCs()))
-		glog.V(5).Infof("Using hash %v to record agreement %v", hex.EncodeToString(tcHash[:]), newProposal.AgreementId())
+		glog.V(5).Infof("CS Protocol using hash %v to record agreement %v", hex.EncodeToString(tcHash[:]), newProposal.AgreementId())
 
 		params := make([]interface{}, 0, 10)
 		params = append(params, binaryAgreementId)
@@ -369,13 +369,13 @@ func (p *ProtocolHandler) TerminateAgreement(policy *policy.Policy,
 
 }
 
-func (p *ProtocolHandler) VerifyAgreementRecorded(agreementId string, counterPartyAddress string, expectedSignature string) (bool, error) {
+func (p *ProtocolHandler) VerifyAgreement(agreementId string,
+										counterPartyAddress string,
+										expectedSignature string) (bool, error) {
 
 	if binaryAgreementId, err := hex.DecodeString(agreementId); err != nil {
 		return false, errors.New(fmt.Sprintf("Error converting agreement ID %v to binary, error: %v", agreementId, err))
 	} else {
-
-		// glog.V(5).Infof("Using hash %v to record agreement %v", hex.EncodeToString(tcHash[:]), newProposal.AgreementId)
 
 		params := make([]interface{}, 0, 10)
 		params = append(params, counterPartyAddress)
@@ -389,7 +389,7 @@ func (p *ProtocolHandler) VerifyAgreementRecorded(agreementId string, counterPar
 			if sigString == expectedSignature {
 				return true, nil
 			} else {
-				glog.V(3).Infof("Returned signature %v does not match expected signature %v for %v", sigString, expectedSignature, agreementId)
+				glog.V(3).Infof("CS Protocol returned signature %v does not match expected signature %v for %v", sigString, expectedSignature, agreementId)
 				return false, nil
 			}
 		}
@@ -403,7 +403,7 @@ func (p *ProtocolHandler) RecordMeter(agreementId string, mn *metering.MeteringN
 	if binaryAgreementId, err := hex.DecodeString(agreementId); err != nil {
 		return errors.New(fmt.Sprintf("Error converting agreement ID %v to binary, error: %v", agreementId, err))
 	} else {
-		glog.V(5).Infof("Writing Metering Notification %v to the blockchain for %v.", *mn, agreementId)
+		glog.V(5).Infof("CS Protocol writing Metering Notification %v to the blockchain for %v.", *mn, agreementId)
 		params := make([]interface{}, 0, 10)
 		params = append(params, mn.Amount)
 	    params = append(params, mn.CurrentTime)

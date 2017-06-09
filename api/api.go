@@ -11,7 +11,6 @@ import (
 	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
-	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/device"
@@ -118,7 +117,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		agreements, err := persistence.FindEstablishedAgreements(a.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{})
+		agreements, err := persistence.FindEstablishedAgreementsAllProtocols(a.db, policy.AllAgreementProtocols(), []persistence.EAFilter{})
 		if err != nil {
 			glog.Error(err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -174,7 +173,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 		filters = append(filters, persistence.UnarchivedEAFilter())
 		filters = append(filters, persistence.IdEAFilter(id))
 
-		if agreements, err := persistence.FindEstablishedAgreements(a.db, citizenscientist.PROTOCOL_NAME, filters); err != nil {
+		if agreements, err := persistence.FindEstablishedAgreementsAllProtocols(a.db, policy.AllAgreementProtocols(), filters); err != nil {
 			glog.Error(err)
 			w.WriteHeader(http.StatusInternalServerError)
 		} else if len(agreements) == 0 {

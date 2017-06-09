@@ -7,13 +7,13 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
-	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/device"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/producer"
 	"github.com/open-horizon/anax/worker"
 	"net/http"
 	"reflect"
@@ -35,6 +35,7 @@ type AgreementWorker struct {
 	bcClientInitialized      bool
 	containerSyncUpEvent     bool
 	containerSyncUpSucessful bool
+	producerPH               map[string]producer.ProducerProtocolHandler
 }
 
 func NewAgreementWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *AgreementWorker {
@@ -65,6 +66,7 @@ func NewAgreementWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.Polic
 		bcClientInitialized: false,
 		deviceId:            id,
 		deviceToken:         token,
+		producerPH:          make(map[string]producer.ProducerProtocolHandler),
 	}
 
 	glog.Info("Starting Agreement worker")
@@ -104,7 +106,7 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 		msg, _ := incoming.(*events.ExchangeDeviceMessage)
 		switch msg.Event().Id {
 		case events.RECEIVED_EXCHANGE_DEV_MSG:
-			w.Commands <- NewExchangeMessageCommand(*msg)
+			w.Commands <- producer.NewExchangeMessageCommand(*msg)
 		}
 
 	case *events.DeviceContainersSyncedMessage:
@@ -122,63 +124,6 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 }
 
 func (w *AgreementWorker) start() {
-
-	sendMessage := func(mt interface{}, pay []byte) error {
-		// The mt parameter is an abstract message target object that is passed to this routine
-		// by the agreement protocol. It's an interface{} type so that we can avoid the protocol knowing
-		// about non protocol types.
-
-		var messageTarget *exchange.ExchangeMessageTarget
-		switch mt.(type) {
-		case *exchange.ExchangeMessageTarget:
-			messageTarget = mt.(*exchange.ExchangeMessageTarget)
-		default:
-			return errors.New(fmt.Sprintf("input message target is %T, expecting exchange.MessageTarget", mt))
-		}
-
-		// Grab the exchange ID of the message receiver
-		glog.V(3).Infof("Sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))
-
-		// Get my own keys
-		myPubKey, myPrivKey, _ := exchange.GetKeys("")
-
-		// Demarshal the receiver's public key if we need to
-		if messageTarget.ReceiverPublicKeyObj == nil {
-			if mtpk, err := exchange.DemarshalPublicKey(messageTarget.ReceiverPublicKeyBytes); err != nil {
-				return errors.New(fmt.Sprintf("Unable to demarshal device's public key %x, error %v", messageTarget.ReceiverPublicKeyBytes, err))
-			} else {
-				messageTarget.ReceiverPublicKeyObj = mtpk
-			}
-		}
-
-		// Create an encrypted message
-		if encryptedMsg, err := exchange.ConstructExchangeMessage(pay, myPubKey, myPrivKey, messageTarget.ReceiverPublicKeyObj); err != nil {
-			return errors.New(fmt.Sprintf("Unable to construct encrypted message from %v, error %v", pay, err))
-			// Marshal it into a byte array
-		} else if msgBody, err := json.Marshal(encryptedMsg); err != nil {
-			return errors.New(fmt.Sprintf("Unable to marshal exchange message %v, error %v", encryptedMsg, err))
-			// Send it to the device's message queue
-		} else {
-			pm := exchange.CreatePostMessage(msgBody, w.Worker.Manager.Config.Edge.ExchangeMessageTTL)
-			var resp interface{}
-			resp = new(exchange.PostDeviceResponse)
-			targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "agbots/" + messageTarget.ReceiverExchangeId + "/msgs"
-			for {
-				if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.deviceId, w.deviceToken, pm, &resp); err != nil {
-					return err
-				} else if tpErr != nil {
-					glog.Warningf(tpErr.Error())
-					time.Sleep(10 * time.Second)
-					continue
-				} else {
-					glog.V(5).Infof("Sent message for %v to exchange.", messageTarget.ReceiverExchangeId)
-					return nil
-				}
-			}
-		}
-
-		return nil
-	}
 
 	glog.Info(logString(fmt.Sprintf("started")))
 
@@ -241,14 +186,6 @@ func (w *AgreementWorker) start() {
 		if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
 		}
-
-		// TODO: Is there a way to make this more automatic? put this map in abstract protocol with function for protocols to add themselves 
-		protocolHandlers := make(map[string]abstractprotocol.ProtocolHandler)
-
-		// Establish the go objects that are used to interact with the ethereum blockchain.
-
-		csprotocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
-		protocolHandlers[citizenscientist.PROTOCOL_NAME] = csprotocolHandler
 		
 		// Handle agreement processor commands
 		for {
@@ -282,8 +219,8 @@ func (w *AgreementWorker) start() {
 					}
 				}
 
-			case *ExchangeMessageCommand:
-				cmd, _ := command.(*ExchangeMessageCommand)
+			case *producer.ExchangeMessageCommand:
+				cmd, _ := command.(*producer.ExchangeMessageCommand)
 				exchangeMsg := new(exchange.DeviceMessage)
 				if err := json.Unmarshal(cmd.Msg.ExchangeMessage(), &exchangeMsg); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to demarshal exchange device message %v, error %v", cmd.Msg.ExchangeMessage(), err)))
@@ -293,32 +230,17 @@ func (w *AgreementWorker) start() {
 				glog.V(3).Infof(logString(fmt.Sprintf("received message %v from the exchange", exchangeMsg.MsgId)))
 
 				// Process the message if it's a proposal.
-				deleteMessage := false
-				if p, err := protocolHandlers[citizenscientist.PROTOCOL_NAME].ValidateProposal(string(protocolMsg)); err != nil {
+				deleteMessage := true
+
+				if msgProtocol, err := abstractprotocol.ExtractProtocol(protocolMsg); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("unable to extract agreement protocol name from message %v", protocolMsg)))
+				} else if _, ok := w.producerPH[msgProtocol]; !ok {
+					glog.Infof(logString(fmt.Sprintf("unable to direct exchange message %v to a protocol handler, deleting it.", protocolMsg)))
+				} else if p, err := w.producerPH[msgProtocol].AgreementProtocolHandler().ValidateProposal(protocolMsg); err != nil {
 					glog.Warningf(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %s due to %v", cmd.Msg.ShortProtocolMessage(), err)))
-				} else if proposal, ok := p.(*citizenscientist.CSProposal); !ok {
-					glog.Errorf(logString(fmt.Sprintf("unable to cast proposal %v to %v Proposal Reply Ack, is %T", p, citizenscientist.PROTOCOL_NAME, p)))
-				} else if agAlreadyExists, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(proposal.AgreementId())}); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreements from database, error %v", err)))
-				} else if len(agAlreadyExists) != 0 {
-					glog.Errorf(logString(fmt.Sprintf("agreement %v already exists, ignoring proposal: %v", proposal.AgreementId, proposal.ShortString())))
-					deleteMessage = true
-				} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
-				} else if err := tcPolicy.Is_Self_Consistent(w.Config.Edge.PublicKeyPath, w.Config.UserPublicKeyPath()); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("received error check self consistency of TsAndCs, %v", err)))
-				} else if messageTarget, err := exchange.CreateMessageTarget(exchangeMsg.AgbotId, nil, exchangeMsg.AgbotPubKey, ""); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
+					deleteMessage = false
 				} else {
-					deleteMessage = true
-					if r, err := protocolHandlers[citizenscientist.PROTOCOL_NAME].DecideOnProposal(proposal, w.deviceId, messageTarget, sendMessage); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("respond to proposal with error: %v", err)))
-					} else if reply, ok := r.(*citizenscientist.CSProposalReply); !ok {
-						glog.Errorf(logString(fmt.Sprintf("unable to cast proposal %v to %v Proposal Reply Ack, is %T", r, citizenscientist.PROTOCOL_NAME, r)))
-					} else if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, citizenscientist.PROTOCOL_NAME, proposal.Version(), tcPolicy.APISpecs[0].SpecRef, reply.Signature, proposal.Address); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId, err)))
-						deleteMessage = false
-					}
+					deleteMessage = w.producerPH[msgProtocol].HandleProposalMessage(p, protocolMsg, exchangeMsg)
 				}
 
 				if deleteMessage {
@@ -345,6 +267,13 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
 	w.deviceToken = cmd.Token
 
+	// Establish agreement protocol handlers
+	for _, protocolName := range policy.AllAgreementProtocols() {
+		pph := producer.CreateProducerPH(protocolName, w.Worker.Manager.Config, w.db, w.pm, w.deviceId, w.deviceToken)
+		pph.Initialize()
+		w.producerPH[protocolName] = pph
+	}
+
 	// Start the go thread that heartbeats to the exchange
 	targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/heartbeat"
 	go exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
@@ -360,8 +289,6 @@ func (w *AgreementWorker) syncOnInit() error {
 
 	glog.V(3).Infof(logString("beginning sync up."))
 
-	protocolHandler := citizenscientist.NewProtocolHandler(w.Config.Edge.GethURL, w.pm)
-
 	// Reconcile the set of agreements recorded in the exchange for this device with the agreements in the local DB.
 	// First get all the agreements for this device from the exchange.
 
@@ -376,7 +303,7 @@ func (w *AgreementWorker) syncOnInit() error {
 		// an agreement that is not yet recorded in the exchange (this case is handled later in this function),
 		// but the reverse should not occur normally. Agreements in the exchange must have a record on our local DB.
 		for exchangeAg, _ := range exchangeDeviceAgreements {
-			if agreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.IdEAFilter(exchangeAg), persistence.UnarchivedEAFilter()}); err != nil {
+			if agreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.IdEAFilter(exchangeAg), persistence.UnarchivedEAFilter()}); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error searching for agreement %v from exchange agreements", exchangeAg, err)))
 			} else if len(agreements) == 0 {
 				glog.V(3).Infof(logString(fmt.Sprintf("found agreement %v in the exchange that is not in our DB.", exchangeAg)))
@@ -391,7 +318,7 @@ func (w *AgreementWorker) syncOnInit() error {
 
 	// Now perform the reverse set of checks, looping through our database and checking each record for accuracy with the exchange
 	// and the blockchain.
-	if agreements, err := persistence.FindEstablishedAgreements(w.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err == nil {
+	if agreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err == nil {
 
 		// If there are agreemens in the database then we will assume that the device is already registered
 		for _, ag := range agreements {
@@ -400,34 +327,34 @@ func (w *AgreementWorker) syncOnInit() error {
 			// termination processing, and therefore we dont know how far it got. Initiate a cancel again to clean it up.
 			if ag.AgreementTerminatedTime != 0 {
 				reason := uint(ag.TerminatedReason)
-				if _, err := persistence.AgreementStateForceTerminated(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+				if _, err := persistence.AgreementStateForceTerminated(w.db, ag.CurrentAgreementId, ag.AgreementProtocol); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to set force termination for agreement %v, error %v", ag.CurrentAgreementId, err)))
 				}
-				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, reason, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
+				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, reason, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
 
-			// Make sure the blockchain state agrees with our local DB state for this agreement. If not, then we might need to cancel the agreement.
-			// Anax could have been down for a long time (or inoperable), and the blockchain event logger worker doesnt go back in time to
-			// find events that we might have missed, so we need to query the BC for this info.
-			} else if ok, err := w.checkAgreementInBlockchain(&ag, protocolHandler); err != nil {
+			// If the agreement's protocol requires that it is recorded externally in some way, verify that it is present there (e.g. a blockchain).
+			// Make sure the external state agrees with our local DB state for this agreement. If not, then we might need to cancel the agreement.
+			// Anax could have been down for a long time (or inoperable), and the state external state may have changed.
+			} else if ok, err := w.verifyAgreement(&ag, w.producerPH[ag.AgreementProtocol].AgreementProtocolHandler()); err != nil {
 				return errors.New(logString(fmt.Sprintf("unable to check for agreement %v in blockchain, error %v", ag.CurrentAgreementId, err)))
 			} else if !ok {
-				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, citizenscientist.CANCEL_AGBOT_REQUESTED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
+				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_AGBOT_REQUESTED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
 
 			// If the agreement has been started then we just need to make sure that the policy manager's agreement counts
 			// are correct. Even for already timedout agreements, the governance process will cleanup old and outdated agreements,
 			// so we don't need to do anything here.
 
-			} else if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
+			} else if proposal, err := w.producerPH[ag.AgreementProtocol].AgreementProtocolHandler().DemarshalProposal(ag.Proposal); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v, error %v", ag.CurrentAgreementId, err)))
 			} else if pol, err := policy.DemarshalPolicy(proposal.ProducerPolicy()); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
 			} else if existingPol := w.pm.GetPolicy(pol.Header.Name); existingPol == nil {
 				glog.Errorf(logString(fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
-				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, citizenscientist.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
+				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
 
 			} else if err := w.pm.MatchesMine(pol); err != nil {
 				glog.Warningf(logString(fmt.Sprintf("agreement %v has a policy %v that has changed.", ag.CurrentAgreementId, pol.Header.Name)))
-				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, citizenscientist.CANCEL_POLICY_CHANGED, citizenscientist.PROTOCOL_NAME, ag.CurrentAgreementId, ag.CurrentDeployment)
+				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
 
 			} else if err := w.pm.AttemptingAgreement(existingPol, ag.CurrentAgreementId); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
@@ -465,19 +392,19 @@ func (w *AgreementWorker) syncOnInit() error {
 // This function verifies that an agreement is present in the blockchain. An agreement might not be present for a variety of reasons,
 // some of which are legitimate. The purpose of this routine is to figure out whether or not an agreement cancellation
 // has occurred. It returns false if the agreement needs to be cancelled, or if there was an error.
-func (w *AgreementWorker) checkAgreementInBlockchain(ag *persistence.EstablishedAgreement, protocolHandler *citizenscientist.ProtocolHandler) (bool, error) {
+func (w *AgreementWorker) verifyAgreement(ag *persistence.EstablishedAgreement, protocolHandler abstractprotocol.ProtocolHandler) (bool, error) {
 
-	// Agreements that havent been accepted yet by the device will not be in the blockchain and it's ok that they are not in
-	// the blockchain, so return true.
+	// Agreements that havent been accepted yet by the device will not be in any external store so it's ok if they aren't there,
+	// so return true.
 	if ag.AgreementAcceptedTime == 0 {
 		return true, nil
 	}
 
-	// Check to see if the agreement is in the blockchain. This call to the blockchain should be very fast.
-	if recorded, err := protocolHandler.VerifyAgreementRecorded(ag.CurrentAgreementId, ag.CounterPartyAddress, ag.ProposalSig); err != nil {
+	// Check to see if the agreement is in an external store.
+	if recorded, err := protocolHandler.VerifyAgreement(ag.CurrentAgreementId, ag.CounterPartyAddress, ag.ProposalSig); err != nil {
 		return false, errors.New(logString(fmt.Sprintf("encountered error verifying agreement %v on blockchain, error %v", ag.CurrentAgreementId, err)))
 	} else if !recorded {
-		// A finalized agreement should be on the blockchain
+		// A finalized agreement should be in the external store.
 		if ag.AgreementFinalizedTime != 0 && ag.AgreementTerminatedTime == 0 {
 			glog.V(3).Infof(logString(fmt.Sprintf("agreement %v is not in the blockchain, cancelling.", ag.CurrentAgreementId)))
 			return false, nil
