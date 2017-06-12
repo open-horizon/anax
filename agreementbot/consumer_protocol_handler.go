@@ -133,7 +133,7 @@ func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMe
 
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received inbound exchange message.")))
 	// Figure out what kind of message this is
-	if reply, err := cph.AgreementProtocolHandler().ValidateReply(string(cmd.Message)); err == nil {
+	if reply, rerr := cph.AgreementProtocolHandler().ValidateReply(string(cmd.Message)); rerr == nil {
 		agreementWork := HandleReply{
 			workType:     REPLY,
 			Reply:        reply,
@@ -143,7 +143,7 @@ func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMe
 		}
 		cph.WorkQueue() <- agreementWork
 		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued reply message")))
-	} else if _, err := cph.AgreementProtocolHandler().ValidateDataReceivedAck(string(cmd.Message)); err == nil {
+	} else if _, aerr := cph.AgreementProtocolHandler().ValidateDataReceivedAck(string(cmd.Message)); aerr == nil {
 		agreementWork := HandleDataReceivedAck{
 			workType:     DATARECEIVEDACK,
 			Ack:          string(cmd.Message),
@@ -154,7 +154,7 @@ func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMe
 		cph.WorkQueue() <- agreementWork
 		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued data received ack message")))
 	} else {
-		glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("ignoring  message: %v", string(cmd.Message))))
+		glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("ignoring  message: %v due to errors: %v or %v", string(cmd.Message), rerr, aerr)))
 		return errors.New(BCPHlogstring(b.Name(), fmt.Sprintf("unexpected protocol msg %v", cmd.Message)))
 	}
 	return nil

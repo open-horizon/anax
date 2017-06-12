@@ -62,7 +62,7 @@ func (pr *CSProposalReply) ShortString() string {
 }
 
 func (pr *CSProposalReply) IsValid() bool {
-    return pr.BaseProposalReply.IsValid() && len(pr.Address) != 0 && len(pr.Signature) != 0
+    return pr.BaseProposalReply.IsValid()
 }
 
 func (pr *CSProposalReply) SetSignature(s string) {
@@ -137,7 +137,7 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 	}
 
 	// Send the proposal to the other party
-	glog.V(5).Infof("Protocol %v sending proposal %s %T", p.Name(), *newProposal, newProposal)
+	glog.V(5).Infof("Protocol %v sending proposal %s", p.Name(), newProposal)
 
 	if err := abstractprotocol.SendProposal(p, newProposal, consumerPolicy, messageTarget, sendMessage); err != nil {
 		return nil, err

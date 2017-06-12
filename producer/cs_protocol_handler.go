@@ -100,7 +100,8 @@ func (c *CSProtocolHandler) HandleBlockchainEventMessage(cmd *BlockchainEventCom
 		} else if c.agreementPH.AgreementCreated(rawEvent) {
 			return agId, false, 0, true, nil
 		} else {
-			return "", false, 0, false, errors.New(PPHlogString(fmt.Sprintf("ignoring event %v.", cmd.Msg.RawEvent())))
+			glog.V(3).Infof(PPHlogString(fmt.Sprintf("ignoring event %v.", cmd.Msg.RawEvent())))
+			return "", false, 0, false, nil
 		}
 	}
 }

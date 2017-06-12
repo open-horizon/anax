@@ -164,6 +164,14 @@ func (w *AgreementWorker) start() {
 		}
 
 		if w.deviceToken != "" {
+
+			// Establish agreement protocol handlers
+			for _, protocolName := range policy.AllAgreementProtocols() {
+				pph := producer.CreateProducerPH(protocolName, w.Worker.Manager.Config, w.db, w.pm, w.deviceId, w.deviceToken)
+				pph.Initialize()
+				w.producerPH[protocolName] = pph
+			}
+
 			// Sync up between what's in our database versus what's in the exchange, and make sure that the policy manager's
 			// agreement counts are correct. This function will cancel any agreements whose state might have changed
 			// while the device was down. We will also check to make sure that policies havent changed. If they have, then
@@ -267,11 +275,13 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
 	w.deviceToken = cmd.Token
 
-	// Establish agreement protocol handlers
-	for _, protocolName := range policy.AllAgreementProtocols() {
-		pph := producer.CreateProducerPH(protocolName, w.Worker.Manager.Config, w.db, w.pm, w.deviceId, w.deviceToken)
-		pph.Initialize()
-		w.producerPH[protocolName] = pph
+	if len(w.producerPH) == 0 {
+		// Establish agreement protocol handlers
+		for _, protocolName := range policy.AllAgreementProtocols() {
+			pph := producer.CreateProducerPH(protocolName, w.Worker.Manager.Config, w.db, w.pm, w.deviceId, w.deviceToken)
+			pph.Initialize()
+			w.producerPH[protocolName] = pph
+		}
 	}
 
 	// Start the go thread that heartbeats to the exchange
