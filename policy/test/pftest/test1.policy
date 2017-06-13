@@ -34,7 +34,8 @@
             "priority": {
                 "priority_value": 0,
                 "retries": 0,
-                "retry_durations": 0
+                "retry_durations": 0,
+                "verified_durations": 0
             }
         }
     ],

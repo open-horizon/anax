@@ -277,6 +277,24 @@ func FindSingleAgreementByAgreementId(db *bolt.DB, agreementid string, protocol 
 	}
 }
 
+// no error on not found, only nil
+func FindSingleAgreementByAgreementIdAllProtocols(db *bolt.DB, agreementid string, protocols []string, filters []AFilter) (*Agreement, error) {
+	filters = append(filters, IdAFilter(agreementid))
+
+	for _, protocol := range protocols {
+		if agreements, err := FindAgreements(db, filters, protocol); err != nil {
+			return nil, err
+		} else if len(agreements) > 1 {
+			return nil, fmt.Errorf("Expected only one record for agreementid: %v, but retrieved: %v", agreementid, agreements)
+		} else if len(agreements) == 0 {
+			continue
+		} else {
+			return &agreements[0], nil
+		}
+	}
+	return nil, nil
+}
+
 func singleAgreementUpdate(db *bolt.DB, agreementid string, protocol string, fn func(Agreement) *Agreement) (*Agreement, error) {
 	if agreement, err := FindSingleAgreementByAgreementId(db, agreementid, protocol, []AFilter{}); err != nil {
 		return nil, err
@@ -345,7 +363,7 @@ func persistUpdatedAgreement(db *bolt.DB, agreementid string, protocol string, u
 				if mod.DataVerificationCheckRate == 0 {	// 1 transition from zero to non-zero
 					mod.DataVerificationCheckRate = update.DataVerificationCheckRate
 				}
-				if mod.DataVerificationMissedCount == 0 {	// 1 transition from zero to non-zero
+				if mod.DataVerificationMissedCount < update.DataVerificationMissedCount {	// Valid transitions must move forward
 					mod.DataVerificationMissedCount = update.DataVerificationMissedCount
 				}
 				if mod.DataVerificationNoDataInterval == 0 {	// 1 transition from zero to non-zero

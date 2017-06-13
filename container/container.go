@@ -11,10 +11,10 @@ import (
 	"github.com/coreos/go-iptables/iptables"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
-	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
 	"golang.org/x/sys/unix"
 	"io"
@@ -1121,7 +1121,7 @@ func (b *ContainerWorker) start() {
 
 				agreementId := cmd.AgreementLaunchContext.AgreementId
 
-				if ags, err := persistence.FindEstablishedAgreements(b.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)}); err != nil {
+				if ags, err := persistence.FindEstablishedAgreements(b.db, cmd.AgreementLaunchContext.AgreementProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)}); err != nil {
 					glog.Errorf("Unable to retrieve agreement %v from database, error %v", agreementId, err)
 				} else if len(ags) != 1 {
 					glog.Infof("Ignoring the configure event for agreement %v, the agreement is archived.", agreementId)
@@ -1379,7 +1379,7 @@ func (b *ContainerWorker) syncupResources() {
 	glog.V(3).Infof("ContainerWorker beginning sync up of docker resources.")
 
 	// First get all the agreements from the DB.
-	if agreements, err := persistence.FindEstablishedAgreements(b.db, citizenscientist.PROTOCOL_NAME, []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err != nil {
+	if agreements, err := persistence.FindEstablishedAgreementsAllProtocols(b.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err != nil {
 		fail(fmt.Sprintf("ContainerWorker unable to retrieve agreements from database, error %v", err))
 	} else {
 

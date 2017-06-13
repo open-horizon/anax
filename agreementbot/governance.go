@@ -1,11 +1,9 @@
 package agreementbot
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
-	"github.com/open-horizon/anax/citizenscientist"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/exchange"
@@ -20,65 +18,6 @@ func (w *AgreementBotWorker) GovernAgreements() {
 	glog.Info(logString(fmt.Sprintf("started agreement governance")))
 
 	unarchived := []AFilter{UnarchivedAFilter()}
-
-	sendMessage := func(mt interface{}, pay []byte) error {
-		// The mt parameter is an abstract message target object that is passed to this routine
-		// by the agreement protocol. It's an interface{} type so that we can avoid the protocol knowing
-		// about non protocol types.
-
-		var messageTarget *exchange.ExchangeMessageTarget
-		switch mt.(type) {
-		case *exchange.ExchangeMessageTarget:
-			messageTarget = mt.(*exchange.ExchangeMessageTarget)
-		default:
-			return errors.New(fmt.Sprintf("input message target is %T, expecting exchange.MessageTarget", mt))
-		}
-
-		// Grab the exchange ID of the message receiver
-		glog.V(3).Infof("Sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))
-
-		// Get my own keys
-		myPubKey, myPrivKey, _ := exchange.GetKeys(w.Config.AgreementBot.MessageKeyPath)
-
-		// Demarshal the receiver's public key if we need to
-		if messageTarget.ReceiverPublicKeyObj == nil {
-			if mtpk, err := exchange.DemarshalPublicKey(messageTarget.ReceiverPublicKeyBytes); err != nil {
-				return errors.New(fmt.Sprintf("Unable to demarshal device's public key %x, error %v", messageTarget.ReceiverPublicKeyBytes, err))
-			} else {
-				messageTarget.ReceiverPublicKeyObj = mtpk
-			}
-		}
-
-		// Create an encrypted message
-		if encryptedMsg, err := exchange.ConstructExchangeMessage(pay, myPubKey, myPrivKey, messageTarget.ReceiverPublicKeyObj); err != nil {
-			return errors.New(fmt.Sprintf("Unable to construct encrypted message from %v, error %v", pay, err))
-			// Marshal it into a byte array
-		} else if msgBody, err := json.Marshal(encryptedMsg); err != nil {
-			return errors.New(fmt.Sprintf("Unable to marshal exchange message %v, error %v", encryptedMsg, err))
-			// Send it to the device's message queue
-		} else {
-			pm := exchange.CreatePostMessage(msgBody, w.Config.AgreementBot.ExchangeMessageTTL)
-			var resp interface{}
-			resp = new(exchange.PostDeviceResponse)
-			targetURL := w.Config.AgreementBot.ExchangeURL + "devices/" + messageTarget.ReceiverExchangeId + "/msgs"
-			for {
-				if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, pm, &resp); err != nil {
-					return err
-				} else if tpErr != nil {
-					glog.Warningf(tpErr.Error())
-					time.Sleep(10 * time.Second)
-					continue
-				} else {
-					glog.V(5).Infof("Sent message for %v to exchange.", messageTarget.ReceiverExchangeId)
-					return nil
-				}
-			}
-		}
-
-		return nil
-	}
-
-	protocolHandler := citizenscientist.NewProtocolHandler(w.Config.AgreementBot.GethURL, w.pm)
 
 	// The length of time this governance routine waits is based on several factors. The data verification check rate
 	// of any agreements that are being maintained and the default time specified in the agbot config. Assume that we
@@ -95,124 +34,130 @@ func (w *AgreementBotWorker) GovernAgreements() {
 			return func(a Agreement) bool { return a.AgreementCreationTime != 0 && a.AgreementTimedout == 0 }
 		}
 
-		// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized on blockchain.
-		if agreements, err := FindAgreements(w.db, []AFilter{notYetFinalFilter(),UnarchivedAFilter()}, citizenscientist.PROTOCOL_NAME); err == nil {
-			activeDataVerification := true
-			allActiveAgreements := make(map[string][]string)
-			for _, ag := range agreements {
+		// Look at all agreements across all protocols
+		for _, agp := range policy.AllAgreementProtocols() {
 
-				// Govern agreements that have seen a reply from the device
-				if ag.CounterPartyAddress != "" {
+			protocolHandler := w.consumerPH[agp]
 
-					// For agreements that havent seen a blockchain write yet, check timeout
-					if ag.AgreementFinalizedTime == 0 {
+			// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized on blockchain.
+			if agreements, err := FindAgreements(w.db, []AFilter{notYetFinalFilter(),UnarchivedAFilter()}, agp); err == nil {
+				activeDataVerification := true
+				allActiveAgreements := make(map[string][]string)
+				for _, ag := range agreements {
 
-						glog.V(5).Infof("AgreementBot Governance detected agreement %v not yet final.", ag.CurrentAgreementId)
-						now := uint64(time.Now().Unix())
-						if ag.AgreementCreationTime+w.Worker.Manager.Config.AgreementBot.AgreementTimeoutS < now {
-							// Start timing out the agreement
-							w.TerminateAgreement(&ag, citizenscientist.AB_CANCEL_NOT_FINALIZED_TIMEOUT)
-						}
-					}
+					// Govern agreements that have seen a reply from the device
+					if ag.CounterPartyAddress != "" {
 
-					// Check for the receipt of data in the data ingest system (if necessary)
-					if !ag.DisableDataVerificationChecks {
+						// For agreements that havent seen a blockchain write yet, check timeout
+						if ag.AgreementFinalizedTime == 0 {
 
-						// Capture the data verification check rate for later
-						if discoveredWaitTime == 0 || (discoveredWaitTime != 0 && uint64(ag.DataVerificationCheckRate) < discoveredWaitTime) {
-							discoveredWaitTime = uint64(ag.DataVerificationCheckRate)
-						}
-
-						// First check to see if this agreement is just not sending data. If so, terminate the agreement.
-						now := uint64(time.Now().Unix())
-						noDataLimit := w.Worker.Manager.Config.AgreementBot.NoDataIntervalS
-						if ag.DataVerificationNoDataInterval != 0 {
-							noDataLimit = uint64(ag.DataVerificationNoDataInterval)
-						}
-						if now-ag.DataVerifiedTime >= noDataLimit {
-							// No data is being received, terminate the agreement
-							glog.V(3).Infof(logString(fmt.Sprintf("cancelling agreement %v due to lack of data", ag.CurrentAgreementId)))
-							w.TerminateAgreement(&ag, citizenscientist.AB_CANCEL_NO_DATA_RECEIVED)
-
-						} else if activeDataVerification {
-							// Otherwise make sure the device is still sending data
-							if ag.DataVerifiedTime + uint64(ag.DataVerificationCheckRate) > now {
-								// It's not time to check again
-								continue
-							} else if activeAgreements, err := GetActiveAgreements(allActiveAgreements, ag, &w.Worker.Manager.Config.AgreementBot); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("unable to retrieve active agreement list. Terminating data verification loop early, error: %v", err)))
-								activeDataVerification = false
-							} else if ActiveAgreementsContains(activeAgreements, ag, w.Config.AgreementBot.DVPrefix) {
-								if _, err := DataVerified(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
-									glog.Errorf(logString(fmt.Sprintf("unable to record data verification, error: %v", err)))
-								}
-
-								if ag.DataNotificationSent == 0 {
-									// Get message address of the device from the exchange. The device ensures that the exchange is kept current.
-									// If the address happens to be invalid, that should be a temporary condition. We will keep sending until
-									// we get an ack to our verification message.
-									if whisperTo, pubkeyTo, err := getDeviceMessageEndpoint(ag.DeviceId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
-										glog.Errorf(logString(fmt.Sprintf("error obtaining message target for data notification: %v", err)))
-									} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
-										glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
-									} else if err := protocolHandler.NotifyDataReceipt(ag.CurrentAgreementId, mt, sendMessage); err != nil {
-										glog.Errorf(logString(fmt.Sprintf("unable to send data notification, error: %v", err)))
-									}
-								}
-
-								// Check to see if it's time to send a metering notification
-								if ag.MeteringNotificationSent == 0 || (ag.MeteringNotificationSent != 0 && (ag.MeteringNotificationSent + uint64(ag.MeteringNotificationInterval)) <= now) {
-									// Create Metering notification. If the policy is empty, there's nothing to do.
-									mp := policy.Meter{Tokens: ag.MeteringTokens, PerTimeUnit: ag.MeteringPerTimeUnit, NotificationIntervalS: ag.MeteringNotificationInterval}
-									if mp.IsEmpty() {
-										continue
-									}
-									myAddress, _ := ethblockchain.AccountId()
-
-									if mn, err := metering.NewMeteringNotification(mp, ag.AgreementCreationTime, uint64(ag.DataVerificationCheckRate), ag.DataVerificationMissedCount, ag.CurrentAgreementId, ag.ProposalHash, ag.ConsumerProposalSig, myAddress, ag.ProposalSig, "ethereum"); err != nil {
-										glog.Errorf(logString(fmt.Sprintf("unable to create metering notification, error: %v", err)))
-									} else if whisperTo, pubkeyTo, err := getDeviceMessageEndpoint(ag.DeviceId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
-										glog.Errorf(logString(fmt.Sprintf("error obtaining message target for metering notification: %v", err)))
-									} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
-										glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
-									} else if msg, err := protocolHandler.NotifyMetering(ag.CurrentAgreementId, mn, mt, sendMessage); err != nil {
-										glog.Errorf(logString(fmt.Sprintf("unable to send metering notification, error: %v", err)))
-									} else if _, err := MeteringNotification(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME, msg); err != nil {
-										glog.Errorf(logString(fmt.Sprintf("unable to record metering notification, error: %v", err)))
-									}
-								}
-
-								// Data verification has occured. If it has been maintained for the specified duration then we can turn off the
-								// workload rollback retry checking feature.
-								if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(w.db, ag.DeviceId, ag.PolicyName); err != nil {
-									glog.Errorf(logString(fmt.Sprintf("unable to find workload usage record, error: %v", err)))
-								} else if wlUsage != nil && !wlUsage.DisableRetry {
-									if wlUsage.VerifiedDurationS == 0 || (wlUsage.VerifiedDurationS != 0 && ag.DataNotificationSent != 0 && ag.DataVerifiedTime != ag.AgreementCreationTime && (ag.DataVerifiedTime > ag.DataNotificationSent) && ((ag.DataVerifiedTime-ag.DataNotificationSent) >= uint64(wlUsage.VerifiedDurationS))) {
-										glog.V(5).Infof(logString(fmt.Sprintf("disabling workload rollback for %v after %v seconds", ag.CurrentAgreementId, (ag.DataVerifiedTime-ag.DataNotificationSent))))
-										if _, err := DisableRollbackChecking(w.db, ag.DeviceId, ag.PolicyName); err != nil {
-											glog.Errorf(logString(fmt.Sprintf("unable to disable workload rollback retries, error: %v", err)))
-										}
-									}
-								}
-
-							} else if _, err := DataNotVerified(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("unable to record data not verified, error: %v", err)))
+							glog.V(5).Infof("AgreementBot Governance detected agreement %v not yet final.", ag.CurrentAgreementId)
+							now := uint64(time.Now().Unix())
+							if ag.AgreementCreationTime+w.Worker.Manager.Config.AgreementBot.AgreementTimeoutS < now {
+								// Start timing out the agreement
+								w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NOT_FINALIZED_TIMEOUT))
 							}
 						}
-					}
 
-					// Govern agreements that havent seen a proposal reply yet
-				} else {
-					// We are waiting for a reply
-					glog.V(5).Infof("AgreementBot Governance waiting for reply to %v.", ag.CurrentAgreementId)
-					now := uint64(time.Now().Unix())
-					if ag.AgreementCreationTime+w.Worker.Manager.Config.AgreementBot.ProtocolTimeoutS < now {
-						w.TerminateAgreement(&ag, citizenscientist.AB_CANCEL_NO_REPLY)
+						// Check for the receipt of data in the data ingest system (if necessary)
+						if !ag.DisableDataVerificationChecks {
+
+							// Capture the data verification check rate for later
+							if discoveredWaitTime == 0 || (discoveredWaitTime != 0 && uint64(ag.DataVerificationCheckRate) < discoveredWaitTime) {
+								discoveredWaitTime = uint64(ag.DataVerificationCheckRate)
+							}
+
+							// First check to see if this agreement is just not sending data. If so, terminate the agreement.
+							now := uint64(time.Now().Unix())
+							noDataLimit := w.Worker.Manager.Config.AgreementBot.NoDataIntervalS
+							if ag.DataVerificationNoDataInterval != 0 {
+								noDataLimit = uint64(ag.DataVerificationNoDataInterval)
+							}
+							if now-ag.DataVerifiedTime >= noDataLimit {
+								// No data is being received, terminate the agreement
+								glog.V(3).Infof(logString(fmt.Sprintf("cancelling agreement %v due to lack of data", ag.CurrentAgreementId)))
+								w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NO_DATA_RECEIVED))
+
+							} else if activeDataVerification {
+								// Otherwise make sure the device is still sending data
+								if ag.DataVerifiedTime + uint64(ag.DataVerificationCheckRate) > now {
+									// It's not time to check again
+									continue
+								} else if activeAgreements, err := GetActiveAgreements(allActiveAgreements, ag, &w.Worker.Manager.Config.AgreementBot); err != nil {
+									glog.Errorf(logString(fmt.Sprintf("unable to retrieve active agreement list. Terminating data verification loop early, error: %v", err)))
+									activeDataVerification = false
+								} else if ActiveAgreementsContains(activeAgreements, ag, w.Config.AgreementBot.DVPrefix) {
+									if _, err := DataVerified(w.db, ag.CurrentAgreementId, agp); err != nil {
+										glog.Errorf(logString(fmt.Sprintf("unable to record data verification, error: %v", err)))
+									}
+
+									if ag.DataNotificationSent == 0 {
+										// Get message address of the device from the exchange. The device ensures that the exchange is kept current.
+										// If the address happens to be invalid, that should be a temporary condition. We will keep sending until
+										// we get an ack to our verification message.
+										if whisperTo, pubkeyTo, err := getDeviceMessageEndpoint(ag.DeviceId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+											glog.Errorf(logString(fmt.Sprintf("error obtaining message target for data notification: %v", err)))
+										} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
+											glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
+										} else if err := protocolHandler.AgreementProtocolHandler().NotifyDataReceipt(ag.CurrentAgreementId, mt, protocolHandler.GetSendMessage()); err != nil {
+											glog.Errorf(logString(fmt.Sprintf("unable to send data notification, error: %v", err)))
+										}
+									}
+
+									// Check to see if it's time to send a metering notification
+									if ag.MeteringNotificationSent == 0 || (ag.MeteringNotificationSent != 0 && (ag.MeteringNotificationSent + uint64(ag.MeteringNotificationInterval)) <= now) {
+										// Create Metering notification. If the policy is empty, there's nothing to do.
+										mp := policy.Meter{Tokens: ag.MeteringTokens, PerTimeUnit: ag.MeteringPerTimeUnit, NotificationIntervalS: ag.MeteringNotificationInterval}
+										if mp.IsEmpty() {
+											continue
+										}
+										myAddress, _ := ethblockchain.AccountId()
+
+										if mn, err := metering.NewMeteringNotification(mp, ag.AgreementCreationTime, uint64(ag.DataVerificationCheckRate), ag.DataVerificationMissedCount, ag.CurrentAgreementId, ag.ProposalHash, ag.ConsumerProposalSig, myAddress, ag.ProposalSig, "ethereum"); err != nil {
+											glog.Errorf(logString(fmt.Sprintf("unable to create metering notification, error: %v", err)))
+										} else if whisperTo, pubkeyTo, err := getDeviceMessageEndpoint(ag.DeviceId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+											glog.Errorf(logString(fmt.Sprintf("error obtaining message target for metering notification: %v", err)))
+										} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
+											glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
+										} else if msg, err := protocolHandler.AgreementProtocolHandler().NotifyMetering(ag.CurrentAgreementId, mn, mt, protocolHandler.GetSendMessage()); err != nil {
+											glog.Errorf(logString(fmt.Sprintf("unable to send metering notification, error: %v", err)))
+										} else if _, err := MeteringNotification(w.db, ag.CurrentAgreementId, agp, msg); err != nil {
+											glog.Errorf(logString(fmt.Sprintf("unable to record metering notification, error: %v", err)))
+										}
+									}
+
+									// Data verification has occured. If it has been maintained for the specified duration then we can turn off the
+									// workload rollback retry checking feature.
+									if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(w.db, ag.DeviceId, ag.PolicyName); err != nil {
+										glog.Errorf(logString(fmt.Sprintf("unable to find workload usage record, error: %v", err)))
+									} else if wlUsage != nil && !wlUsage.DisableRetry {
+										if wlUsage.VerifiedDurationS == 0 || (wlUsage.VerifiedDurationS != 0 && ag.DataNotificationSent != 0 && ag.DataVerifiedTime != ag.AgreementCreationTime && (ag.DataVerifiedTime > ag.DataNotificationSent) && ((ag.DataVerifiedTime-ag.DataNotificationSent) >= uint64(wlUsage.VerifiedDurationS))) {
+											glog.V(5).Infof(logString(fmt.Sprintf("disabling workload rollback for %v after %v seconds", ag.CurrentAgreementId, (ag.DataVerifiedTime-ag.DataNotificationSent))))
+											if _, err := DisableRollbackChecking(w.db, ag.DeviceId, ag.PolicyName); err != nil {
+												glog.Errorf(logString(fmt.Sprintf("unable to disable workload rollback retries, error: %v", err)))
+											}
+										}
+									}
+
+								} else if _, err := DataNotVerified(w.db, ag.CurrentAgreementId, agp); err != nil {
+									glog.Errorf(logString(fmt.Sprintf("unable to record data not verified, error: %v", err)))
+								}
+							}
+						}
+
+						// Govern agreements that havent seen a proposal reply yet
+					} else {
+						// We are waiting for a reply
+						glog.V(5).Infof("AgreementBot Governance waiting for reply to %v.", ag.CurrentAgreementId)
+						now := uint64(time.Now().Unix())
+						if ag.AgreementCreationTime+w.Worker.Manager.Config.AgreementBot.ProtocolTimeoutS < now {
+							w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NO_REPLY))
+						}
 					}
 				}
+			} else {
+				glog.Errorf(logString(fmt.Sprintf("unable to read agreements from database, error: %v", err)))
 			}
-		} else {
-			glog.Errorf(logString(fmt.Sprintf("unable to read agreements from database, error: %v", err)))
 		}
 
 		// Proactively check the state of pending workload upgrades for HA devices. When the need for an upgrade is detected, one of the
@@ -279,7 +224,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 				// begin upgrading the partner who needs it.
 				if upgradedPartnerFound != "" && partnerUpgrading == "" {
 					glog.V(3).Infof(logString(fmt.Sprintf("beginning upgrade of HA member %v in group %v.", wlu.DeviceId, wlu.HAPartners)))
-					if ag, err := FindSingleAgreementByAgreementId(w.db, wlu.CurrentAgreementId, citizenscientist.PROTOCOL_NAME, unarchived); err != nil {
+					if ag, err := FindSingleAgreementByAgreementIdAllProtocols(w.db, wlu.CurrentAgreementId, policy.AllAgreementProtocols(), unarchived); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("unable to read agreement %v from database, error: %v", wlu.CurrentAgreementId, err)))
 					} else {
 						// Make sure the workload usage record is gone,this will allow the device to pick up the newest workload.
@@ -292,7 +237,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 							glog.V(5).Infof(logString(fmt.Sprintf("agreement for %v already terminated.", wlu.DeviceId)))
 
 						} else {
-							w.TerminateAgreement(ag, citizenscientist.AB_CANCEL_POLICY_CHANGED)
+							w.TerminateAgreement(ag, w.consumerPH[ag.AgreementProtocol].GetTerminationCode(TERM_REASON_POLICY_CHANGED))
 						}
 					}
 				} else {
@@ -330,7 +275,7 @@ func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *WorkloadUsa
 	partnerUpgrading := ""
 	upgradedPartnerFound := ""
 
-	if ag, err := FindSingleAgreementByAgreementId(w.db, partnerWLU.CurrentAgreementId, citizenscientist.PROTOCOL_NAME, []AFilter{UnarchivedAFilter()}); err != nil {
+	if ag, err := FindSingleAgreementByAgreementIdAllProtocols(w.db, partnerWLU.CurrentAgreementId, policy.AllAgreementProtocols(), []AFilter{UnarchivedAFilter()}); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("unable to read agreement %v from database, error: %v", partnerWLU.CurrentAgreementId, err)))
 	} else if ag == nil {
 		// If we dont find an agreement for a partner, then it is because a previous agreement with that partner has failed and we
@@ -391,12 +336,12 @@ func (w *AgreementBotWorker) TerminateAgreement(ag *Agreement, reason uint) {
 	glog.V(3).Infof(logString(fmt.Sprintf("detected agreement %v needs to terminate.", ag.CurrentAgreementId)))
 
 	// Update the database
-	if _, err := AgreementTimedout(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
+	if _, err := AgreementTimedout(w.db, ag.CurrentAgreementId, ag.AgreementProtocol); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error marking agreement %v terminate: %v", ag.CurrentAgreementId, err)))
 	}
 
 	// Queue up a command for an agreement worker to do the blockchain work
-	w.pwcommands[citizenscientist.PROTOCOL_NAME] <- NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, reason)
+	w.consumerPH[ag.AgreementProtocol].HandleAgreementTimeout(NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, reason), w.consumerPH[ag.AgreementProtocol])
 }
 
 func getDeviceMessageEndpoint(deviceId string, url string, agbotId string, token string) (string, []byte, error) {
@@ -470,18 +415,20 @@ func (w *AgreementBotWorker) GovernArchivedAgreements() {
 		}
 
 		// Find all archived agreements that are old enough and delete them.
-		now := time.Now().Unix()
-		if agreements, err := FindAgreements(w.db, []AFilter{ArchivedAFilter(), agedOutFilter(now, ageLimit)}, citizenscientist.PROTOCOL_NAME); err == nil {
-			for _, ag := range agreements {
-				if err := DeleteAgreement(w.db, ag.CurrentAgreementId, citizenscientist.PROTOCOL_NAME); err != nil {
-					glog.Error(logString(fmt.Sprintf("error deleting archived agreement %v, error: %v", ag.CurrentAgreementId, err)))
-				} else {
-					glog.V(3).Infof(logString(fmt.Sprintf("archive purge deleted %v", ag.CurrentAgreementId)))
+		for _, agp := range policy.AllAgreementProtocols() {
+			now := time.Now().Unix()
+			if agreements, err := FindAgreements(w.db, []AFilter{ArchivedAFilter(), agedOutFilter(now, ageLimit)}, agp); err == nil {
+				for _, ag := range agreements {
+					if err := DeleteAgreement(w.db, ag.CurrentAgreementId, agp); err != nil {
+						glog.Error(logString(fmt.Sprintf("error deleting archived agreement %v, error: %v", ag.CurrentAgreementId, err)))
+					} else {
+						glog.V(3).Infof(logString(fmt.Sprintf("archive purge deleted %v", ag.CurrentAgreementId)))
+					}
 				}
-			}
 
-		} else {
-			glog.Errorf(logString(fmt.Sprintf("unable to read archived agreements from database, error: %v", err)))
+			} else {
+				glog.Errorf(logString(fmt.Sprintf("unable to read archived agreements from database for protocol %v, error: %v", agp, err)))
+			}
 		}
 
 		// Sleep

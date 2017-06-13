@@ -579,7 +579,6 @@ type ABApiAgreementCancelationMessage struct {
 	event             Event
 	AgreementProtocol string
 	AgreementId       string
-	Reason            uint64
 }
 
 func (m *ABApiAgreementCancelationMessage) Event() Event {
@@ -587,21 +586,20 @@ func (m *ABApiAgreementCancelationMessage) Event() Event {
 }
 
 func (m ABApiAgreementCancelationMessage) String() string {
-	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Reason: %v", m.event, m.AgreementProtocol, m.AgreementId, m.Reason)
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v", m.event, m.AgreementProtocol, m.AgreementId)
 }
 
 func (m ABApiAgreementCancelationMessage) ShortString() string {
 	return m.String()
 }
 
-func NewABApiAgreementCancelationMessage(id EventId, reason uint64, protocol string, agreementId string) *ABApiAgreementCancelationMessage {
+func NewABApiAgreementCancelationMessage(id EventId, protocol string, agreementId string) *ABApiAgreementCancelationMessage {
 	return &ABApiAgreementCancelationMessage{
 		event: Event{
 			Id: id,
 		},
 		AgreementProtocol: protocol,
 		AgreementId:       agreementId,
-		Reason:            reason,
 	}
 }
 

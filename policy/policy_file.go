@@ -171,6 +171,14 @@ func Are_Compatible(producer_policy *Policy, consumer_policy *Policy) error {
 	return nil
 }
 
+// This function will select an agreement protocol to pursue based on the input policies. This function
+// assumes that the input policies are compatible.
+func Select_Protocol(producer_policy *Policy, consumer_policy *Policy) string {
+	agpList, _ := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols)
+
+	return (*agpList.Single_Element())[0].Name
+}
+
 // This function is used to check if 2 producer policies are compatible with each other. This is the means
 // by which an agbot can make an agreement with a device that utilizes more than one API spec in the contract.
 // Producers advertise API spec availability individually in their policy files. An agbot that wants to
@@ -255,6 +263,14 @@ func (self *Policy) Is_Self_Consistent(keyPath string, userKeys string) error {
 	// Check validity of the Data verification section
 	if ok, err := self.DataVerify.IsValid(); !ok {
 		return errors.New(fmt.Sprintf("Data Verification section is not valid, error: %v", err))
+	}
+
+	// Check validity of the agreement protocol list
+	list := self.AgreementProtocols.As_String_Array()
+	for _, agp := range list {
+		if !SupportedAgreementProtocol(agp) {
+			return errors.New(fmt.Sprintf("AgreementProtocol section of %v has unsupported protocol %v", self.Header.Name, agp))
+		}
 	}
 
 	// Check validity of the Workload section

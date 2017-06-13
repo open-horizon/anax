@@ -2,7 +2,6 @@ package governance
 
 import (
     "fmt"
-    "github.com/open-horizon/anax/events"
     "github.com/open-horizon/anax/persistence"
 )
 
@@ -72,36 +71,5 @@ func (w *GovernanceWorker) NewCleanupStatusCommand(protocol string, agreementId 
         AgreementProtocol: protocol,
         AgreementId:       agreementId,
         Status:            status,
-    }
-}
-
-// ==============================================================================================================
-type BlockchainEventCommand struct {
-    Msg events.EthBlockchainEventMessage
-}
-
-func (e BlockchainEventCommand) ShortString() string {
-    return e.Msg.ShortString()
-}
-
-
-func NewBlockchainEventCommand(msg events.EthBlockchainEventMessage) *BlockchainEventCommand {
-    return &BlockchainEventCommand{
-        Msg: msg,
-    }
-}
-
-// ==============================================================================================================
-type ExchangeMessageCommand struct {
-    Msg events.ExchangeDeviceMessage
-}
-
-func (e ExchangeMessageCommand) ShortString() string {
-    return e.Msg.ShortString()
-}
-
-func NewExchangeMessageCommand(msg events.ExchangeDeviceMessage) *ExchangeMessageCommand {
-    return &ExchangeMessageCommand{
-        Msg: msg,
     }
 }
