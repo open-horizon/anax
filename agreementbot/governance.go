@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/metering"
 	"github.com/open-horizon/anax/policy"
 	"net/http"
 	"time"
@@ -95,7 +93,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 										// Get message address of the device from the exchange. The device ensures that the exchange is kept current.
 										// If the address happens to be invalid, that should be a temporary condition. We will keep sending until
 										// we get an ack to our verification message.
-										if whisperTo, pubkeyTo, err := getDeviceMessageEndpoint(ag.DeviceId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+										if whisperTo, pubkeyTo, err := protocolHandler.GetDeviceMessageEndpoint(ag.DeviceId, "Governance"); err != nil {
 											glog.Errorf(logString(fmt.Sprintf("error obtaining message target for data notification: %v", err)))
 										} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
 											glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
@@ -111,11 +109,10 @@ func (w *AgreementBotWorker) GovernAgreements() {
 										if mp.IsEmpty() {
 											continue
 										}
-										myAddress, _ := ethblockchain.AccountId()
 
-										if mn, err := metering.NewMeteringNotification(mp, ag.AgreementCreationTime, uint64(ag.DataVerificationCheckRate), ag.DataVerificationMissedCount, ag.CurrentAgreementId, ag.ProposalHash, ag.ConsumerProposalSig, myAddress, ag.ProposalSig, "ethereum"); err != nil {
+										if mn, err := protocolHandler.CreateMeteringNotification(mp, &ag); err != nil {
 											glog.Errorf(logString(fmt.Sprintf("unable to create metering notification, error: %v", err)))
-										} else if whisperTo, pubkeyTo, err := getDeviceMessageEndpoint(ag.DeviceId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+										} else if whisperTo, pubkeyTo, err := protocolHandler.GetDeviceMessageEndpoint(ag.DeviceId, "Governance"); err != nil {
 											glog.Errorf(logString(fmt.Sprintf("error obtaining message target for metering notification: %v", err)))
 										} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
 											glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
@@ -344,19 +341,6 @@ func (w *AgreementBotWorker) TerminateAgreement(ag *Agreement, reason uint) {
 	w.consumerPH[ag.AgreementProtocol].HandleAgreementTimeout(NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, reason), w.consumerPH[ag.AgreementProtocol])
 }
 
-func getDeviceMessageEndpoint(deviceId string, url string, agbotId string, token string) (string, []byte, error) {
-
-	glog.V(5).Infof(logString(fmt.Sprintf("retrieving device %v msg endpoint from exchange", deviceId)))
-
-	if dev, err := getDevice(deviceId, url, agbotId, token); err != nil {
-		return "", nil, err
-	} else {
-		glog.V(5).Infof(logString(fmt.Sprintf("retrieved device %v msg endpoint from exchange %v", deviceId, dev.MsgEndPoint)))
-		return dev.MsgEndPoint, dev.PublicKey, nil
-	}
-
-}
-
 func getDevice(deviceId string, url string, agbotId string, token string) (*exchange.Device, error) {
 
 	glog.V(5).Infof(logString(fmt.Sprintf("retrieving device %v from exchange", deviceId)))
@@ -366,10 +350,10 @@ func getDevice(deviceId string, url string, agbotId string, token string) (*exch
 	targetURL := url + "devices/" + deviceId
 	for {
 		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
-			glog.Errorf(logString(fmt.Sprintf(err.Error())))
+			glog.Errorf(logString(err.Error()))
 			return nil, err
 		} else if tpErr != nil {
-			glog.Warningf(tpErr.Error())
+			glog.Warningf(logString(tpErr.Error()))
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
@@ -382,7 +366,6 @@ func getDevice(deviceId string, url string, agbotId string, token string) (*exch
 			}
 		}
 	}
-
 }
 
 // Govern the archived agreements, periodically deleting them from the database if they are old enough. The

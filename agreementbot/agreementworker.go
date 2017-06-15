@@ -149,7 +149,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	}
 
 	// Create pending agreement in database
-	if err := AgreementAttempt(b.db, agreementIdString, wi.Device.Id, wi.ConsumerPolicy.Header.Name, "Citizen Scientist"); err != nil {
+	if err := AgreementAttempt(b.db, agreementIdString, wi.Device.Id, wi.ConsumerPolicy.Header.Name, cph.Name()); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error persisting agreement attempt: %v", err)))
 
 	// Create message target for protocol message
@@ -174,7 +174,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 
 }
 
-func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, wi *HandleReply, workerId string) {
+func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, wi *HandleReply, workerId string) bool {
 
 	reply := wi.Reply
 	protocolHandler := cph.AgreementProtocolHandler()
@@ -190,10 +190,11 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 	// The lock is dropped at the end of this function or right before the blockchain write. Early exit from this function is NOT allowed.
 	droppedLock := false
 
-	if reply.ProposalAccepted() {
+	// Assume we will ack negatively unless we find out that everything is ok.
+	ackReplyAsValid := false
+	sendReply := true
 
-		// The producer is happy with the proposal. Assume we will ack negatively unless we find out that everything is ok.
-		ackReplyAsValid := false
+	if reply.ProposalAccepted() {
 
 		// Find the saved agreement in the database
 		if agreement, err := FindSingleAgreementByAgreementId(b.db, reply.AgreementId(), cph.Name(), []AFilter{UnarchivedAFilter()}); err != nil {
@@ -203,7 +204,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 		} else if agreement.CounterPartyAddress != "" {
 			glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("discarding reply, agreement id %v already received a reply", agreement.CurrentAgreementId)))
 			// this will cause us to not send a reply ack, which is what we want in this case
-			ackReplyAsValid = true
+			sendReply = false
 
 		// Now we need to write the info to the exchange and the database
 		} else if proposal, err := protocolHandler.DemarshalProposal(agreement.Proposal); err != nil {
@@ -284,7 +285,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 		}
 
 		// Always send an ack for a reply with a positive decision in it
-		if !ackReplyAsValid {
+		if !ackReplyAsValid && sendReply {
 			if mt, err := exchange.CreateMessageTarget(wi.SenderId, nil, wi.SenderPubKey, wi.From); err != nil {
 				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating message target: %v", err)))
 			} else if err := protocolHandler.Confirm(ackReplyAsValid, reply.AgreementId(), mt, cph.GetSendMessage()); err != nil {
@@ -309,6 +310,8 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, cph.ExchangeId())))
 		}
 	}
+
+	return ackReplyAsValid
 
 }
 
@@ -443,14 +446,7 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 
 func (b *BaseAgreementWorker) DoBlockchainCancel(cph ConsumerProtocolHandler, ag *Agreement, reason uint, workerId string) {
 
-	protocolHandler := cph.AgreementProtocolHandler()
-
-	// Remove from the blockchain
-	if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
-		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to demarshal policy while trying to cancel %v, error %v", ag.CurrentAgreementId, err)))
-	} else if err := protocolHandler.TerminateAgreement(pol, ag.CounterPartyAddress, ag.CurrentAgreementId, reason); err != nil {
-		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error terminating agreement %v on the blockchain: %v", ag.CurrentAgreementId, err)))
-	}
+	cph.TerminateAgreement(ag, reason, workerId)
 }
 
 func generateAgreementId(random *rand.Rand) []byte {

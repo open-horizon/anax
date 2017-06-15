@@ -17,7 +17,7 @@ const E_AGREEMENTS = "established_agreements" // may or may not be in agreements
 const DEVMODE = "devmode"
 
 // N.B. Important!! Ensure new values are handled in Update function below
-// This struct is for persisting agreements related to the 'Citizen Scientist' protocol
+// This struct is for persisting agreements
 type EstablishedAgreement struct {
 	Name                            string                   `json:"name"`
 	SensorUrl                       string                   `json:"sensor_url"`
@@ -51,6 +51,7 @@ func (c EstablishedAgreement) String() string {
 		"Archived: %v, " +
 		"CurrentAgreementId: %v, " +
 		"ConsumerId: %v, " +
+		"CounterPartyAddress: %v, " +
 		"CurrentDeployment (service names): %v, " +
 		"AgreementCreationTime: %v, " +
 		"AgreementExecutionStartTime: %v, " +
@@ -65,7 +66,7 @@ func (c EstablishedAgreement) String() string {
 		"AgreementProtocolTerminatedTime : %v, " +
 		"WorkloadTerminatedTime: %v, " +
 		"MeteringNotificationMsg: %v",
-		c.Name, c.SensorUrl, c.Archived, c.CurrentAgreementId, c.ConsumerId, ServiceConfigNames(&c.CurrentDeployment),
+		c.Name, c.SensorUrl, c.Archived, c.CurrentAgreementId, c.ConsumerId, c.CounterPartyAddress, ServiceConfigNames(&c.CurrentDeployment),
 		c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementFinalizedTime,
 		c.AgreementDataReceivedTime, c.AgreementTerminatedTime, c.AgreementForceTerminatedTime, c.TerminatedReason, c.TerminatedDescription,
 		c.AgreementProtocol, c.AgreementProtocolTerminatedTime, c.WorkloadTerminatedTime,

@@ -245,7 +245,7 @@ func (w *AgreementWorker) start() {
 				} else if _, ok := w.producerPH[msgProtocol]; !ok {
 					glog.Infof(logString(fmt.Sprintf("unable to direct exchange message %v to a protocol handler, deleting it.", protocolMsg)))
 				} else if p, err := w.producerPH[msgProtocol].AgreementProtocolHandler().ValidateProposal(protocolMsg); err != nil {
-					glog.Warningf(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %s due to %v", cmd.Msg.ShortProtocolMessage(), err)))
+					glog.V(5).Infof(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %s due to %v", cmd.Msg.ShortProtocolMessage(), err)))
 					deleteMessage = false
 				} else {
 					deleteMessage = w.producerPH[msgProtocol].HandleProposalMessage(p, protocolMsg, exchangeMsg)

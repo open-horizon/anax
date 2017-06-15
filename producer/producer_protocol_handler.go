@@ -20,23 +20,27 @@ import (
 func CreateProducerPH(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, id string, token string) ProducerProtocolHandler {
 	if handler := NewCSProtocolHandler(name, cfg, db, pm, id, token); handler != nil {
 		return handler
+	} else if handler := NewBasicProtocolHandler(name, cfg, db, pm, id, token); handler != nil {
+		return handler
 	} // Add new producer side protocol handlers here
 	return nil
 }
 
 type ProducerProtocolHandler interface {
 	Initialize()
+	Name() string
 	AcceptCommand(cmd worker.Command) bool
 	AgreementProtocolHandler() abstractprotocol.ProtocolHandler
 	HandleProposalMessage(proposal abstractprotocol.Proposal, protocolMsg string, exchangeMsg *exchange.DeviceMessage) bool
 	HandleBlockchainEventMessage(cmd *BlockchainEventCommand) (string, bool, uint64, bool, error)
+	TerminateAgreement(agreement *persistence.EstablishedAgreement, reason uint)
 	GetSendMessage() func(mt interface{}, pay []byte) error
 	GetTerminationCode(reason string) uint
 	GetTerminationReason(code uint) string
 }
 
 type BaseProducerProtocolHandler struct {
-	Name       string
+	name       string
 	pm         *policy.PolicyManager
 	db         *bolt.DB
 	config     *config.HorizonConfig
@@ -47,6 +51,10 @@ type BaseProducerProtocolHandler struct {
 
 func (w *BaseProducerProtocolHandler) GetSendMessage() func(mt interface{}, pay []byte) error {
 	return w.sendMessage
+}
+
+func (w *BaseProducerProtocolHandler) Name() string {
+	return w.name
 }
 
 func (w *BaseProducerProtocolHandler) sendMessage(mt interface{}, pay []byte) error {
@@ -63,7 +71,7 @@ func (w *BaseProducerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 	}
 
 	// Grab the exchange ID of the message receiver
-	glog.V(3).Infof(BPPHlogString(w.Name, fmt.Sprintf("Sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))))
+	glog.V(3).Infof(BPPHlogString(w.Name(), fmt.Sprintf("Sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))))
 
 	// Get my own keys
 	myPubKey, myPrivKey, _ := exchange.GetKeys("")
@@ -97,7 +105,7 @@ func (w *BaseProducerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 				time.Sleep(10 * time.Second)
 				continue
 			} else {
-				glog.V(5).Infof(BPPHlogString(w.Name, fmt.Sprintf("Sent message for %v to exchange.", messageTarget.ReceiverExchangeId)))
+				glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("Sent message for %v to exchange.", messageTarget.ReceiverExchangeId)))
 				return nil
 			}
 		}
@@ -110,22 +118,22 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 
 	handled := false
 
-	if agAlreadyExists, err := persistence.FindEstablishedAgreements(w.db, w.Name, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(proposal.AgreementId())}); err != nil {
-		glog.Errorf(BPPHlogString(w.Name, fmt.Sprintf("unable to retrieve agreements from database, error %v", err)))
+	if agAlreadyExists, err := persistence.FindEstablishedAgreements(w.db, w.Name(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(proposal.AgreementId())}); err != nil {
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("unable to retrieve agreements from database, error %v", err)))
 	} else if len(agAlreadyExists) != 0 {
-		glog.Errorf(BPPHlogString(w.Name, fmt.Sprintf("agreement %v already exists, ignoring proposal: %v", proposal.AgreementId(), proposal.ShortString())))
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("agreement %v already exists, ignoring proposal: %v", proposal.AgreementId(), proposal.ShortString())))
 		handled = true
 	} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
-		glog.Errorf(BPPHlogString(w.Name, fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
 	} else if err := tcPolicy.Is_Self_Consistent(w.config.Edge.PublicKeyPath, w.config.UserPublicKeyPath()); err != nil {
-		glog.Errorf(BPPHlogString(w.Name, fmt.Sprintf("received error checking self consistency of TsAndCs, %v", err)))
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking self consistency of TsAndCs, %v", err)))
 		handled = true
 	} else if messageTarget, err := exchange.CreateMessageTarget(exchangeMsg.AgbotId, nil, exchangeMsg.AgbotPubKey, ""); err != nil {
-		glog.Errorf(BPPHlogString(w.Name, fmt.Sprintf("error creating message target: %v", err)))
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error creating message target: %v", err)))
 	} else {
 		handled = true
 		if r, err := ph.DecideOnProposal(proposal, w.deviceId, messageTarget, w.sendMessage); err != nil {
-			glog.Errorf(BPPHlogString(w.Name, fmt.Sprintf("respond to proposal with error: %v", err)))
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("respond to proposal with error: %v", err)))
 		} else {
 			return handled, r, tcPolicy
 		}
@@ -135,9 +143,60 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 }
 
 func (w *BaseProducerProtocolHandler) PersistProposal(proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, tcPolicy *policy.Policy, protocolMsg string) {
-	if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, w.Name, proposal.Version(), tcPolicy.APISpecs[0].SpecRef, "", ""); err != nil {
-		glog.Errorf(BPPHlogString(w.Name, fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId(), err)))
+	if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, w.Name(), proposal.Version(), tcPolicy.APISpecs[0].SpecRef, "", proposal.ConsumerId()); err != nil {
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId(), err)))
 	}
+}
+
+func (w *BaseProducerProtocolHandler) TerminateAgreement(ag *persistence.EstablishedAgreement, reason uint, mt interface{}, pph ProducerProtocolHandler) {
+	if proposal, err := pph.AgreementProtocolHandler().DemarshalProposal(ag.Proposal); err != nil {
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error demarshalling agreement %v proposal: %v", ag.CurrentAgreementId, err)))
+	} else if pPolicy, err := policy.DemarshalPolicy(proposal.ProducerPolicy()); err != nil {
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error demarshalling agreement %v Producer Policy: %v", ag.CurrentAgreementId, err)))
+	} else if err := pph.AgreementProtocolHandler().TerminateAgreement(pPolicy, ag.CounterPartyAddress, ag.CurrentAgreementId, reason, mt, pph.GetSendMessage()); err != nil {
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error terminating agreement %v on the blockchain: %v", ag.CurrentAgreementId, err)))
+	}
+}
+
+func (w *BaseProducerProtocolHandler) GetAgbotMessageEndpoint(agbotId string) (string, []byte, error) {
+
+	glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("retrieving agbot %v msg endpoint from exchange", agbotId)))
+
+	if ag, err := w.getAgbot(agbotId, w.config.Edge.ExchangeURL, w.deviceId, w.token); err != nil {
+		return "", nil, err
+	} else {
+		glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("retrieved agbot %v msg endpoint from exchange %v", agbotId, ag.MsgEndPoint)))
+		return ag.MsgEndPoint, ag.PublicKey, nil
+	}
+
+}
+
+func (w *BaseProducerProtocolHandler) getAgbot(agbotId string, url string, deviceId string, token string) (*exchange.Agbot, error) {
+
+	glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("retrieving agbot %v from exchange", agbotId)))
+
+	var resp interface{}
+	resp = new(exchange.GetAgbotsResponse)
+	targetURL := url + "agbots/" + agbotId
+	for {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "GET", targetURL, deviceId, token, nil, &resp); err != nil {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(BPPHlogString(w.Name(), tpErr.Error()))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			ags := resp.(*exchange.GetAgbotsResponse).Agbots
+			if ag, there := ags[agbotId]; !there {
+				return nil, errors.New(fmt.Sprintf("agbot %v not in GET response %v as expected", agbotId, ags))
+			} else {
+				glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("retrieved agbot %v from exchange %v", agbotId, ag)))
+				return &ag, nil
+			}
+		}
+	}
+
 }
 
 // The list of termination reasons that should be supported by all agreement protocols. The caller can pass these into

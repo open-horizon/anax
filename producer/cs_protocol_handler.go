@@ -22,17 +22,21 @@ type CSProtocolHandler struct {
 }
 
 func NewCSProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, deviceId string, token string) *CSProtocolHandler {
-	return &CSProtocolHandler{
-		BaseProducerProtocolHandler: &BaseProducerProtocolHandler{
-			Name:       name,
-			pm:         pm,
-			db:         db,
-			config:     cfg,
-			deviceId:   deviceId,
-			token:      token,
-			httpClient: &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
-		},
-		agreementPH: citizenscientist.NewProtocolHandler(cfg.Edge.GethURL, pm),
+	if name == citizenscientist.PROTOCOL_NAME {
+		return &CSProtocolHandler{
+			BaseProducerProtocolHandler: &BaseProducerProtocolHandler{
+				name:       name,
+				pm:         pm,
+				db:         db,
+				config:     cfg,
+				deviceId:   deviceId,
+				token:      token,
+				httpClient: &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
+			},
+			agreementPH: citizenscientist.NewProtocolHandler(cfg.Edge.GethURL, pm),
+		}
+	} else {
+		return nil
 	}
 }
 
@@ -80,7 +84,7 @@ func (c *CSProtocolHandler) PersistProposal(p abstractprotocol.Proposal, r abstr
 		glog.Errorf(PPHlogString(fmt.Sprintf("unable to cast reply %v to %v Proposal Reply, is %T", r, c.Name, r)))
 	} else if proposal, ok := p.(*citizenscientist.CSProposal); !ok {
 		glog.Errorf(PPHlogString(fmt.Sprintf("unable to cast proposal %v to %v Proposal, is %T", p, c.Name, p)))
-	} else if _, err := persistence.NewEstablishedAgreement(c.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, c.Name, proposal.Version(), tcPolicy.APISpecs[0].SpecRef, reply.Signature, proposal.Address); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(c.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, c.Name(), proposal.Version(), tcPolicy.APISpecs[0].SpecRef, reply.Signature, proposal.Address); err != nil {
 		glog.Errorf(PPHlogString(fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId(), err)))
 	}
 }
@@ -104,6 +108,21 @@ func (c *CSProtocolHandler) HandleBlockchainEventMessage(cmd *BlockchainEventCom
 			return "", false, 0, false, nil
 		}
 	}
+}
+
+func (c *CSProtocolHandler) TerminateAgreement(ag *persistence.EstablishedAgreement, reason uint) {
+
+	// The CS protocol doesnt send cancel messages, it depends on the blockchain to maintain the state of
+	// any given agreement. This means we can fake up a message target for the TerminateAgreement call
+	// because we know that the CS implementation of the agreement protocol wont be sending a message.
+	fakeMT := &exchange.ExchangeMessageTarget{
+			ReceiverExchangeId:     "",
+			ReceiverPublicKeyObj:   nil,
+			ReceiverPublicKeyBytes: []byte(""),
+			ReceiverMsgEndPoint:    "",
+			}
+
+	c.BaseProducerProtocolHandler.TerminateAgreement(ag, reason, fakeMT, c)
 }
 
 func (c *CSProtocolHandler) GetTerminationCode(reason string) uint {

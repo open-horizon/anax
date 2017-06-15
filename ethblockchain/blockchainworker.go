@@ -103,7 +103,7 @@ func (w *EthBlockchainWorker) NewEvent(incoming events.Message) {
 					w.Commands <- cmd
 				}
 			default:
-				glog.Errorf(logString(fmt.Sprintf("unknown LaunchContext type: %T", msg.LaunchContext)))
+				glog.Warningf(logString(fmt.Sprintf("unknown LaunchContext type: %T", msg.LaunchContext)))
 			}
 		}
 	default: //nothing

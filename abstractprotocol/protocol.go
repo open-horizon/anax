@@ -17,6 +17,7 @@ const MsgTypeReplyAck = "replyack"
 const MsgTypeDataReceived = "dataverification"
 const MsgTypeDataReceivedAck = "dataverificationack"
 const MsgTypeNotifyMetering = "meteringnotification"
+const MsgTypeCancel = "cancel"
 
 // All protocol message have the following header info.
 type ProtocolMessage interface {
@@ -132,7 +133,9 @@ type ProtocolHandler interface {
 	TerminateAgreement(policy *policy.Policy,
 		counterParty string,
 		agreementId string,
-		reason uint) error
+		reason uint,
+		messageTarget interface{},
+		sendMessage func(mt interface{}, pay []byte) error) error
 
 	VerifyAgreement(agreementId string,
 		counterParty string,
@@ -148,6 +151,7 @@ type ProtocolHandler interface {
 	ValidateDataReceived(dr string) (DataReceived, error)
 	ValidateDataReceivedAck(dra string) (DataReceivedAck, error)
 	ValidateMeterNotification(mn string) (NotifyMetering, error)
+	ValidateCancel(can string) (Cancel, error)
 }
 
 type BaseProtocolHandler struct {
@@ -493,6 +497,34 @@ func ValidateMeterNotification(mn string) (NotifyMetering, error) {
 	} else {
 		return nil, errors.New(fmt.Sprintf("Message is not a Metering Notification."))
 	}
+
+}
+
+func ValidateCancel(can string) (Cancel, error) {
+
+	// attempt deserialization of message from msg payload
+	c := new(BaseCancel)
+
+	if err := json.Unmarshal([]byte(can), c); err != nil {
+		return nil, errors.New(fmt.Sprintf("Error deserializing cancel: %s, error: %v", can, err))
+	} else if c.IsValid() {
+		return c, nil
+	} else {
+		return nil, errors.New(fmt.Sprintf("Message is not a Cancel."))
+	}
+
+}
+
+func DemarshalProposal(proposal string) (Proposal, error) {
+
+    // attempt deserialization of the proposal
+    prop := new(BaseProposal)
+
+    if err := json.Unmarshal([]byte(proposal), &prop); err != nil {
+        return nil, errors.New(fmt.Sprintf("Error deserializing proposal: %s, error: %v", proposal, err))
+    } else {
+        return prop, nil
+    }
 
 }
 

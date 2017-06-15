@@ -215,7 +215,7 @@ service attribute
 | name | type | description |
 | ---- | ---- | ---------------- |
 | meta | json |  the metadata that describes the attribute. It includes the id, the sensor_url, the label, the data type and weather or not the attribute is publishable or not. If the sensor_url is empty, the attribute is applied to all services. |
-| {name, value} |  | The names and values. Each type has a different set of name and value pairs. Supported attribute types are: architecture (architecture), compute (cpu, ram), location (lat, lon, user_provided_coords, use_gps), mapped (mappings). ha (partners),  property (mappings), counterpartyproperty (expression) etc. |
+| {name, value} |  | The names and values. Each type has a different set of name and value pairs. Supported attribute types are: architecture (architecture), compute (cpu, ram), location (lat, lon, user_provided_coords, use_gps), mapped (mappings). ha (partners),  property (mappings), counterpartyproperty (expression), agreementprotocol (protocols), etc. |
 
 
 **Example:**
@@ -406,7 +406,7 @@ attribute
 | id | string| the id of the attribute. |
 | ---- | ---- | ---------------- |
 | label | string | the user readable name of the attribute |
-| short_type| string | the short type name of the service. This filed is omitted if it is empty. Supported attribute types are: architecture, compute, location, mapped, ha, property, counterpartyproperty, metering etc. |
+| short_type| string | the short type name of the service. This filed is omitted if it is empty. Supported attribute types are: architecture, compute, location, mapped, ha, property, counterpartyproperty, metering, agreementprotocol, etc. |
 | sensor_urls | array | an array of sensor url. It applies to all services if it is empty. |
 | publishable| bool | whether the attribute can be made public or not. |
 | mappings | map | a list of key value pairs. |

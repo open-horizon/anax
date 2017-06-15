@@ -64,7 +64,7 @@ func (wp WorkloadPriority) String() string {
         "Retries: %v, " +
         "RetryDurationS: %v, " +
         "VerifiedDurationS: %v",
-        wp.PriorityValue, wp.Retries, wp.RetryDurationS)
+        wp.PriorityValue, wp.Retries, wp.RetryDurationS, wp.VerifiedDurationS)
 }
 
 func (wp WorkloadPriority) IsSame(compare WorkloadPriority) bool {

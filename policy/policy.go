@@ -10,7 +10,7 @@ import (
 )
 
 // This function generates policy files for each sensor on the device.
-func GeneratePolicy(e chan events.Message, sensorName string, arch string, props *map[string]interface{}, haPartners []string, meterPolicy Meter, counterPartyProperties RequiredProperty, filePath string) error {
+func GeneratePolicy(e chan events.Message, sensorName string, arch string, props *map[string]interface{}, haPartners []string, meterPolicy Meter, counterPartyProperties RequiredProperty, agps []string, filePath string) error {
 
 	glog.V(5).Infof("Generating policy for %v", sensorName)
 
@@ -24,7 +24,14 @@ func GeneratePolicy(e chan events.Message, sensorName string, arch string, props
 	p := Policy_Factory("Policy for " + fileName)
 
 	p.Add_API_Spec(APISpecification_Factory("https://bluehorizon.network/documentation/"+fileName+"-device-api", "1.0.0", arch))
-	p.Add_Agreement_Protocol(AgreementProtocol_Factory(CitizenScientist))
+
+	if len(agps) != 0 {
+		for _, agp := range agps {
+			p.Add_Agreement_Protocol(AgreementProtocol_Factory(agp))
+		}
+	} else {
+		p.Add_Agreement_Protocol(AgreementProtocol_Factory(CitizenScientist))
+	}
 
 	// Add properties to the policy
 	for prop, val := range *props {
