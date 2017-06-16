@@ -50,6 +50,7 @@ type Agreement struct {
 func (a Agreement) String() string {
 	return fmt.Sprintf("Archived: %v, " +
 		"CurrentAgreementId: %v, " +
+		"AgreementProtocol: %v, " +
 		"DeviceId: %v, " +
 		"HA Partners: %v, " +
 		"AgreementInceptionTime: %v, " +
@@ -76,7 +77,7 @@ func (a Agreement) String() string {
 		"MeteringNotificationMsgs: %v, " +
 		"TerminatedReason: %v, " +
 		"TerminatedDescription: %v",
-		a.Archived, a.CurrentAgreementId, a.DeviceId, a.HAPartners, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime,
+		a.Archived, a.CurrentAgreementId, a.AgreementProtocol, a.DeviceId, a.HAPartners, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime,
 		a.AgreementTimedout, a.ProposalSig, a.ProposalHash, a.ConsumerProposalSig, a.PolicyName, a.CounterPartyAddress,
 		a.DataVerificationURL, a.DataVerificationUser, a.DataVerificationCheckRate, a.DataVerificationMissedCount, a.DataVerificationNoDataInterval,
 		a.DisableDataVerificationChecks, a.DataVerifiedTime, a.DataNotificationSent,

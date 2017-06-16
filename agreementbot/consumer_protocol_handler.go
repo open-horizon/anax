@@ -9,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/metering"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
 	"net/http"
@@ -17,6 +18,8 @@ import (
 
 func CreateConsumerPH(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) ConsumerProtocolHandler {
 	if handler := NewCSProtocolHandler(name, cfg, db, pm); handler != nil {
+		return handler
+	} else if handler := NewBasicProtocolHandler(name, cfg, db, pm); handler != nil {
 		return handler
 	} // Add new consumer side protocol handlers here
 	return nil
@@ -44,6 +47,9 @@ type ConsumerProtocolHandler interface {
 	GetSendMessage() func(mt interface{}, pay []byte) error
 	RecordConsumerAgreementState(agreementId string, workloadID string, state string, workerID string) error
 	DeleteMessage(msgId int) error
+	CreateMeteringNotification(mp policy.Meter, agreement *Agreement) (*metering.MeteringNotification, error)
+	TerminateAgreement(agreement *Agreement, reason uint, workerId string)
+	GetDeviceMessageEndpoint(deviceId string, workerId string) (string, []byte, error)
 }
 
 type BaseConsumerProtocolHandler struct {
@@ -153,8 +159,24 @@ func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMe
 		}
 		cph.WorkQueue() <- agreementWork
 		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued data received ack message")))
+	} else if can, aerr := cph.AgreementProtocolHandler().ValidateCancel(string(cmd.Message)); aerr == nil {
+		// Before dispatching the cancel to a worker thread, make sure it's a valid cancel
+		if ag, err := FindSingleAgreementByAgreementId(b.db, can.AgreementId(), can.Protocol(), []AFilter{}); err != nil {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error finding agreement %v in the db", can.AgreementId())))
+		} else if ag.DeviceId != cmd.From {
+			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("cancel ignored, cancel message for %v came from id %v but agreement is with %v", can.AgreementId(), cmd.From, ag.DeviceId)))
+		} else {
+			agreementWork := CancelAgreement{
+				workType:    CANCEL,
+				AgreementId: can.AgreementId(),
+				Protocol:    can.Protocol(),
+				Reason:      can.Reason(),
+			}
+			cph.WorkQueue() <- agreementWork
+			glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued cancel message")))
+		}
 	} else {
-		glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("ignoring  message: %v due to errors: %v or %v", string(cmd.Message), rerr, aerr)))
+		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("ignoring  message: %v due to errors: %v or %v", string(cmd.Message), rerr, aerr)))
 		return errors.New(BCPHlogstring(b.Name(), fmt.Sprintf("unexpected protocol msg %v", cmd.Message)))
 	}
 	return nil
@@ -371,6 +393,54 @@ func (b *BaseConsumerProtocolHandler) DeleteMessage(msgId int) error {
 
 }
 
+func (b *BaseConsumerProtocolHandler) TerminateAgreement(ag *Agreement, reason uint, mt interface{}, workerId string, cph ConsumerProtocolHandler) {
+	if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
+		glog.Errorf(BCPHlogstring2(workerId, fmt.Sprintf("unable to demarshal policy while trying to cancel %v, error %v", ag.CurrentAgreementId, err)))
+	} else if err := cph.AgreementProtocolHandler().TerminateAgreement(pol, ag.CounterPartyAddress, ag.CurrentAgreementId, reason, mt, b.GetSendMessage()); err != nil {
+		glog.Errorf(BCPHlogstring2(workerId, fmt.Sprintf("error terminating agreement %v on the blockchain: %v", ag.CurrentAgreementId, err)))
+	}
+}
+
+func (b *BaseConsumerProtocolHandler) GetDeviceMessageEndpoint(deviceId string, workerId string) (string, []byte, error) {
+
+	glog.V(5).Infof(BCPHlogstring2(workerId, fmt.Sprintf("retrieving device %v msg endpoint from exchange", deviceId)))
+
+	if dev, err := b.getDevice(deviceId, workerId); err != nil {
+		return "", nil, err
+	} else {
+		glog.V(5).Infof(BCPHlogstring2(workerId, fmt.Sprintf("retrieved device %v msg endpoint from exchange %v", deviceId, dev.MsgEndPoint)))
+		return dev.MsgEndPoint, dev.PublicKey, nil
+	}
+
+}
+
+func (b *BaseConsumerProtocolHandler) getDevice(deviceId string, workerId string) (*exchange.Device, error) {
+
+	glog.V(5).Infof(BCPHlogstring2(workerId, fmt.Sprintf("retrieving device %v from exchange", deviceId)))
+
+	var resp interface{}
+	resp = new(exchange.GetDevicesResponse)
+	targetURL := b.config.AgreementBot.ExchangeURL + "devices/" + deviceId
+	for {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "GET", targetURL, b.agbotId, b.token, nil, &resp); err != nil {
+			glog.Errorf(BCPHlogstring2(workerId, fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(BCPHlogstring2(workerId, tpErr.Error()))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			devs := resp.(*exchange.GetDevicesResponse).Devices
+			if dev, there := devs[deviceId]; !there {
+				return nil, errors.New(fmt.Sprintf("device %v not in GET response %v as expected", deviceId, devs))
+			} else {
+				glog.V(5).Infof(BCPHlogstring2(workerId, fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev)))
+				return &dev, nil
+			}
+		}
+	}
+}
+
 // The list of termination reasons that should be supported by all agreement protocols. The caller can pass these into
 // the GetTerminationCode API to get a protocol specific reason code for that termination reason.
 const TERM_REASON_POLICY_CHANGED = "PolicyChanged"
@@ -378,6 +448,7 @@ const TERM_REASON_NOT_FINALIZED_TIMEOUT = "NotFinalized"
 const TERM_REASON_NO_DATA_RECEIVED = "NoData"
 const TERM_REASON_NO_REPLY = "NoReply"
 const TERM_REASON_USER_REQUESTED = "UserRequested"
+const TERM_REASON_DEVICE_REQUESTED = "DeviceRequested"
 const TERM_REASON_NEGATIVE_REPLY = "NegativeReply"
 const TERM_REASON_CANCEL_DISCOVERED = "CancelDiscovered"
 const TERM_REASON_CANCEL_FORCED_UPGRADE = "ForceUpgrade"

@@ -608,6 +608,23 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
+			if attr.GetMeta().Id == "agreementprotocol" {
+				// Make sure the list of specified protocols is supported
+				if _, ok := attr.GetGenericMappings()["protocols"]; ok {
+					switch attr.GetGenericMappings()["protocols"].(type) {
+					case []string:
+						protocols := attr.GetGenericMappings()["protocols"].([]string)
+						for _, proto := range protocols {
+							if !policy.SupportedAgreementProtocol(proto) {
+								glog.Errorf("Attribute agreementprotocol specifies unsupported protocol name %v", proto)
+								writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].agreementprotocol", Error: fmt.Sprintf("unsupported protocol name %v.", proto)})
+								return
+							}
+						}
+					}
+				}
+			}
+
 			// now make sure we add our own sensorUrl to each attribute
 			attr.GetMeta().AppendSensorUrl(*service.SensorUrl)
 			glog.Infof("SensorUrls for %v: %v", attr.GetMeta().Id, attr.GetMeta().SensorUrls)
@@ -654,11 +671,12 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		var meterPolicy policy.Meter
 		var counterPartyProperties policy.RequiredProperty
 		var properties map[string]interface{}
+		var agreementProtocols []string
 
 		// props to store in file; stuff that is enforced; need to convert from serviceattributes to props. *CAN NEVER BE* unpublishable ServiceAttributes
 		props := make(map[string]interface{})
 
-		// There might be a device wide metering attribute. Check for it and create a default metering policy for it.
+		// There might be device wide attributes. Check for them and grab the values to use as defaults.
 		if allAttrs, err := persistence.FindApplicableAttributes(a.db, ""); err != nil {
 			glog.Errorf("Unable to fetch workload preferences. Err: %v", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -693,6 +711,12 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 				if attr.GetMeta().Id == "property" && len(attr.GetMeta().SensorUrls) == 0 {
 					properties = attr.(persistence.PropertyAttributes).Mappings
 					glog.V(5).Infof("Found default global properties %v", properties)
+				}
+
+				// Extract global agreement protocol attribute
+				if attr.GetMeta().Id == "agreementprotocol" && len(attr.GetMeta().SensorUrls) == 0 {
+					agreementProtocols = attr.(persistence.AgreementProtocolAttributes).Protocols
+					glog.V(5).Infof("Found default global agreement protocol attribute %v", agreementProtocols)
 				}
 			}
 		}
@@ -742,6 +766,9 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			case persistence.PropertyAttributes:
 				properties = attr.(persistence.PropertyAttributes).Mappings
 
+			case persistence.AgreementProtocolAttributes:
+				agreementProtocols = attr.(persistence.AgreementProtocolAttributes).Protocols
+
 			default:
 				glog.V(4).Infof("Unhandled attr type (%T): %v", attr, attr)
 			}
@@ -757,7 +784,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 
 		glog.V(5).Infof("Complete Attr list for registration of service %v: %v", *service.SensorUrl, attributes)
 
-		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorName, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, a.Config.Edge.PolicyPath); genErr != nil {
+		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorName, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, agreementProtocols, a.Config.Edge.PolicyPath); genErr != nil {
 			glog.Errorf("Error: %v", genErr)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -878,6 +905,24 @@ func (a *API) serviceAttribute(w http.ResponseWriter, r *http.Request) {
 									writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].ha", Error: "partner list cannot refer to itself."})
 									return
 								}
+							}
+						}
+					}
+				}
+			}
+
+			// verify agreement protocol attribute
+			if attr.GetMeta().Id == "agreementprotocol" {
+				// Make sure the list of specified protocols is supported
+				if _, ok := attr.GetGenericMappings()["protocols"]; ok {
+					switch attr.GetGenericMappings()["protocols"].(type) {
+					case []string:
+						protocols := attr.GetGenericMappings()["protocols"].([]string)
+						for _, proto := range protocols {
+							if !policy.SupportedAgreementProtocol(proto) {
+								glog.Errorf("Attribute agreementprotocol specifies unsupported protocol name %v", proto)
+								writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].agreementprotocol", Error: fmt.Sprintf("unsupported protocol name %v.", proto)})
+								return
 							}
 						}
 					}

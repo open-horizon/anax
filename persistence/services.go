@@ -215,6 +215,21 @@ func (a MappedAttributes) GetGenericMappings() map[string]interface{} {
 	return out
 }
 
+type AgreementProtocolAttributes struct {
+	Meta      *AttributeMeta `json:"meta"`
+	Protocols []string       `json:"protocols"`
+}
+
+func (a AgreementProtocolAttributes) GetMeta() *AttributeMeta {
+	return a.Meta
+}
+
+func (a AgreementProtocolAttributes) GetGenericMappings() map[string]interface{} {
+	return map[string]interface{}{
+		"protocols": a.Protocols,
+	}
+}
+
 func FindApplicableAttributes(db *bolt.DB, serviceUrl string) ([]ServiceAttribute, error) {
 
 	filteredAttrs := []ServiceAttribute{}
@@ -293,6 +308,13 @@ func FindApplicableAttributes(db *bolt.DB, serviceUrl string) ([]ServiceAttribut
 					return err
 				}
 				attr = ca
+
+			case "persistence.AgreementProtocolAttributes":
+				var agp AgreementProtocolAttributes
+				if err := json.Unmarshal(v, &agp); err != nil {
+					return err
+				}
+				attr = agp
 
 			default:
 				return fmt.Errorf("Unknown attr type: %v, just handling as meta", meta.GetMeta().Type)
@@ -384,6 +406,9 @@ func AttributesToEnvvarMap(attributes []ServiceAttribute, prefix string) (map[st
 			// Nothing to do
 
 		case CounterPartyPropertyAttributes:
+			// Nothing to do
+
+		case AgreementProtocolAttributes:
 			// Nothing to do
 
 		default:

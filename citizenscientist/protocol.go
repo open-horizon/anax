@@ -291,6 +291,10 @@ func (p *ProtocolHandler) ValidateMeterNotification(mn string) (abstractprotocol
 	return abstractprotocol.ValidateMeterNotification(mn)
 }
 
+func (p *ProtocolHandler) ValidateCancel(can string) (abstractprotocol.Cancel, error) {
+    return abstractprotocol.ValidateCancel(can)
+}
+
 func (p *ProtocolHandler) DemarshalProposal(proposal string) (abstractprotocol.Proposal, error) {
 
 	// attempt deserialization of the proposal
@@ -340,7 +344,9 @@ func (p *ProtocolHandler) RecordAgreement(newProposal abstractprotocol.Proposal,
 func (p *ProtocolHandler) TerminateAgreement(policy *policy.Policy,
 											counterParty string,
 											agreementId string,
-											reason uint) error {
+											reason uint,
+											messageTarget interface{},
+											sendMessage func(mt interface{}, pay []byte) error) error {
 
 	if binaryAgreementId, err := hex.DecodeString(agreementId); err != nil {
 		return errors.New(fmt.Sprintf("Error converting agreement ID %v to binary, error: %v", agreementId, err))

@@ -469,13 +469,14 @@ func (w *AgreementBotWorker) alreadyMakingAgreementWith(dev *exchange.SearchResu
 	// Check to see if we're already doing something with this device
 	pendingAgreementFilter := func() AFilter {
 		return func(a Agreement) bool {
-			return a.DeviceId == dev.Id && a.PolicyName == consumerPolicy.Header.Name && a.AgreementFinalizedTime == 0 && a.AgreementTimedout == 0
+			return a.DeviceId == dev.Id && a.PolicyName == consumerPolicy.Header.Name && a.AgreementTimedout == 0
 		}
 	}
 
 	// Search all agreement protocol buckets
 	for _, agp := range policy.AllAgreementProtocols() {
 		// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized on blockchain.
+		// TODO: To support more than 1 agreement (maxagreements > 1) with this device for this policy, we need to adjust this logic.
 		if agreements, err := FindAgreements(w.db, []AFilter{UnarchivedAFilter(), pendingAgreementFilter()}, agp); err != nil {
 			glog.Errorf("AgreementBotWorker received error trying to find pending agreements for protocol %v: %v", agp, err)
 		} else if len(agreements) != 0 {

@@ -9,7 +9,7 @@ import (
 const CitizenScientist = "Citizen Scientist"
 const BasicProtocol = "Basic"
 
-var AllProtocols = []string{CitizenScientist}
+var AllProtocols = []string{CitizenScientist, BasicProtocol}
 
 func SupportedAgreementProtocol(name string)  bool {
     for _, p := range AllProtocols {

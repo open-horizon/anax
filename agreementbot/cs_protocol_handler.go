@@ -7,7 +7,10 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/citizenscientist"
+	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/metering"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
 	"math/rand"
@@ -22,18 +25,22 @@ type CSProtocolHandler struct {
 }
 
 func NewCSProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *CSProtocolHandler {
-	return &CSProtocolHandler{
-		BaseConsumerProtocolHandler: &BaseConsumerProtocolHandler{
-			name:       name,
-			pm:         pm,
-			db:         db,
-			config:     cfg,
-			httpClient: &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
-			agbotId:    cfg.AgreementBot.ExchangeId,
-			token:      cfg.AgreementBot.ExchangeToken,
-		},
-		agreementPH: citizenscientist.NewProtocolHandler(cfg.AgreementBot.GethURL, pm),
-		Work:        make(chan AgreementWork),
+	if name == citizenscientist.PROTOCOL_NAME {
+		return &CSProtocolHandler{
+			BaseConsumerProtocolHandler: &BaseConsumerProtocolHandler{
+				name:       name,
+				pm:         pm,
+				db:         db,
+				config:     cfg,
+				httpClient: &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
+				agbotId:    cfg.AgreementBot.ExchangeId,
+				token:      cfg.AgreementBot.ExchangeToken,
+			},
+			agreementPH: citizenscientist.NewProtocolHandler(cfg.AgreementBot.GethURL, pm),
+			Work:        make(chan AgreementWork),
+		}
+	} else {
+		return nil
 	}
 }
 
@@ -145,6 +152,25 @@ func (c *CSProtocolHandler) HandleBlockchainEvent(cmd *BlockchainEventCommand) {
 		}
 	}
 
+}
+
+func (c *CSProtocolHandler) CreateMeteringNotification(mp policy.Meter, ag *Agreement) (*metering.MeteringNotification, error) {
+
+	myAddress, _ := ethblockchain.AccountId()
+	return metering.NewMeteringNotification(mp, ag.AgreementCreationTime, uint64(ag.DataVerificationCheckRate), ag.DataVerificationMissedCount, ag.CurrentAgreementId, ag.ProposalHash, ag.ConsumerProposalSig, myAddress, ag.ProposalSig, "ethereum")
+}
+
+func (c *CSProtocolHandler) TerminateAgreement(ag *Agreement, reason uint, workerId string) {
+	// The CS protocol doesnt send cancel messages, it depends on the blockchain to maintain the state of
+	// any given agreement. This means we can fake up a message target for the TerminateAgreement call
+	// because we know that the CS implementation of the agreement protocol wont be sending a message.
+	fakeMT := &exchange.ExchangeMessageTarget{
+			ReceiverExchangeId:     "",
+			ReceiverPublicKeyObj:   nil,
+			ReceiverPublicKeyBytes: []byte(""),
+			ReceiverMsgEndPoint:    "",
+			}
+	c.BaseConsumerProtocolHandler.TerminateAgreement(ag, reason, fakeMT, workerId, c)
 }
 
 func (c *CSProtocolHandler) GetTerminationCode(reason string) uint {

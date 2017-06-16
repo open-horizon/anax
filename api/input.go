@@ -368,6 +368,36 @@ func deserializeAttributes(w http.ResponseWriter, attrs []Attribute) ([]persiste
 				}
 			}
 
+		case "agreementprotocol":
+			p, exists := (*given.Mappings)["protocols"]
+			if !exists {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols", Error: "missing key"})
+				return nil, nil, true
+			} else if protocols, ok := p.([]interface{}); !ok {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols", Error: fmt.Sprintf("expected []interface{} received %T", p)})
+				return nil, nil, true
+			} else {
+				// convert protocol values to proper array type
+				strProtocols := make([]string, 0, 5)
+				for _, val := range protocols {
+					if p, ok := val.(string); !ok {
+						writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols", Error: fmt.Sprintf("array value is not a string, it is %T",val)})
+						return nil, nil, true
+					} else {
+						strProtocols = append(strProtocols, p)
+					}
+				}
+				if len(strProtocols) != 0 {
+					attributes = append(attributes, persistence.AgreementProtocolAttributes{
+						Meta:     generateAttributeMetadata(given, reflect.TypeOf(persistence.AgreementProtocolAttributes{}).String()),
+						Protocols: strProtocols,
+						})
+				} else {
+					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols", Error: "array value is empty"})
+					return nil, nil, true
+				}
+			}
+
 		default:
 			glog.Errorf("Failed to find expected id for given input attribute: %v", given)
 			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "mappings", Error: "Unmappable id field"})
