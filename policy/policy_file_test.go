@@ -69,15 +69,6 @@ func Test_getPolicyFiles_NoDir(t *testing.T) {
 	}
 }
 
-func Test_getPolicyFiles_EmptyDir(t *testing.T) {
-
-	if files, err := getPolicyFiles("./test/pfempty/"); err != nil {
-		t.Error(err)
-	} else if len(files) != 0 {
-		t.Errorf("Expected an empty directory, but received %v", files)
-	}
-}
-
 func Test_PolicyFileChangeWatcher(t *testing.T) {
 
 	var deleteDetected = 0
@@ -157,36 +148,6 @@ func Test_PolicyFileChangeWatcher(t *testing.T) {
 		t.Errorf("Incorrect number of events fired. Expected 4 changes, saw %v, expected 2 delete, saw %v, expected 0 errors, saw %v", changeDetected, deleteDetected, errorDetected)
 	}
 
-}
-
-func Test_PolicyFileChangeWatcher_Empty(t *testing.T) {
-
-	var deleteDetected = 0
-	var changeDetected = 0
-	var errorDetected = 0
-
-	changeNotify := func(fileName string, policy *Policy) {
-		changeDetected += 1
-		// fmt.Printf("Change to %v\n", fileName)
-	}
-
-	deleteNotify := func(fileName string, policy *Policy) {
-		deleteDetected += 1
-		// fmt.Printf("Delete for %v\n", fileName)
-	}
-
-	errorNotify := func(fileName string, err error) {
-		errorDetected += 1
-		// fmt.Printf("Error for %v error %v\n", fileName, err)
-	}
-
-	// Test a single call into the watcher
-	contents := make(map[string]*WatchEntry)
-	if _, err := PolicyFileChangeWatcher("./test/pfempty/", contents, changeNotify, deleteNotify, errorNotify, 0); err != nil {
-		t.Error(err)
-	} else if changeDetected != 0 || deleteDetected != 0 || errorDetected != 0 {
-		t.Errorf("Incorrect number of events fired. Expected 0 changes, saw %v, expected 0 deletes, saw %v, expected 0 errors, saw %v", changeDetected, deleteDetected, errorDetected)
-	}
 }
 
 func Test_PolicyFileChangeWatcher_NoDir(t *testing.T) {
