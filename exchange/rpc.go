@@ -360,9 +360,9 @@ func CreateDevicePut(gethURL string, token string, name string) *PutDeviceReques
 func ConvertToString(a []string) string {
 	r := ""
 	for _, s := range a {
-		r = r + s + ", "
+		r = r + s + ","
 	}
-	r = strings.TrimRight(r, ", ")
+	r = strings.TrimRight(r, ",")
 	return r
 }
 
