@@ -377,20 +377,57 @@ func deserializeAttributes(w http.ResponseWriter, attrs []Attribute) ([]persiste
 				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols", Error: fmt.Sprintf("expected []interface{} received %T", p)})
 				return nil, nil, true
 			} else {
-				// convert protocol values to proper array type
-				strProtocols := make([]string, 0, 5)
+				// convert protocol values to proper agreement protocol object
+				allProtocols := make([]policy.AgreementProtocol, 0, 5)
 				for _, val := range protocols {
-					if p, ok := val.(string); !ok {
-						writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols", Error: fmt.Sprintf("array value is not a string, it is %T",val)})
+					if protoDef, ok := val.(map[string]interface{}); !ok {
+						writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols", Error: fmt.Sprintf("array value is not a map[string]interface{}, it is %T",val)})
 						return nil, nil, true
 					} else {
-						strProtocols = append(strProtocols, p)
+						for protocolName, bcValue := range protoDef {
+							if !policy.SupportedAgreementProtocol(protocolName) {
+								writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.protocolName", Error: fmt.Sprintf("protocol name %v is not supported", protocolName)})
+								return nil, nil, true
+							} else if bcDefArray, ok := bcValue.([]interface{}); !ok {
+								writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain", Error: fmt.Sprintf("blockchain value is not []interface{}, it is %T", bcValue)})
+								return nil, nil, true
+							} else {
+								agp := policy.AgreementProtocol_Factory(protocolName)
+								for _, bcEle := range bcDefArray {
+									if bcDef, ok := bcEle.(map[string]interface{}); !ok {
+										writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain", Error: fmt.Sprintf("blockchain array element is not map[string]interface{}, it is %T", bcEle)})
+										return nil, nil, true
+									} else if _, ok := bcDef["type"].(string); bcDef["type"] != nil && !ok {
+										writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain.type", Error: fmt.Sprintf("blockchain type is not string, it is %T", bcDef["type"])})
+										return nil, nil, true
+									} else if _, ok := bcDef["name"].(string); bcDef["name"] != nil && !ok {
+										writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain.name", Error: fmt.Sprintf("blockchain name is not string, it is %T", bcDef["name"])})
+										return nil, nil, true
+									} else if bcDef["type"] != nil && bcDef["type"].(string) != "" && bcDef["type"].(string) != policy.RequiresBlockchainType(protocolName) {
+										writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain.type", Error: fmt.Sprintf("blockchain type %v is not supported for protocol %v", bcDef["type"].(string), protocolName)})
+										return nil, nil, true
+									} else {
+										bcType := ""
+										if bcDef["type"] != nil {
+											bcType = bcDef["type"].(string)
+										}
+										bcName := ""
+										if bcDef["name"] != nil {
+											bcName = bcDef["name"].(string)
+										}
+										(&agp.Blockchains).Add_Blockchain(policy.Blockchain_Factory(bcType, bcName))
+									}
+								}
+								agp.Initialize()
+								allProtocols = append(allProtocols, *agp)
+							}
+						}
 					}
 				}
-				if len(strProtocols) != 0 {
+				if len(allProtocols) != 0 {
 					attributes = append(attributes, persistence.AgreementProtocolAttributes{
 						Meta:     generateAttributeMetadata(given, reflect.TypeOf(persistence.AgreementProtocolAttributes{}).String()),
-						Protocols: strProtocols,
+						Protocols: allProtocols,
 						})
 				} else {
 					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols", Error: "array value is empty"})

@@ -1266,7 +1266,7 @@ func (b *ContainerWorker) start() {
 						dir = path.Join(os.Getenv("SNAP_COMMON")) + ":/root"
 					}
 					deploymentDesc.Services[serviceName].addFilesystemBinding(dir)
-					deploymentDesc.Services[serviceName].addSpecificPortBinding(docker.PortBinding{HostIP:"0.0.0.0", HostPort:"8545"})
+					deploymentDesc.Services[serviceName].addSpecificPortBinding(docker.PortBinding{HostIP:"127.0.0.1", HostPort:"8545"})
 					deploymentDesc.Services[serviceName].Privileged = true
 				}
 

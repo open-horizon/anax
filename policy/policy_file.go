@@ -60,7 +60,6 @@ type Policy struct {
 	MaxAgreements          int                   `json:"maxAgreements,omitempty"`
 	Properties             PropertyList          `json:"properties,omitempty"`             // Version 2.0
 	CounterPartyProperties RequiredProperty      `json:"counterPartyProperties,omitempty"` // Version 2.0
-	Blockchains            BlockchainList        `json:"blockchains,omitempty"`            // Version 2.0
 	RequiredWorkload       string                `json:"requiredWorkload,omitempty"`       // Version 2.0
 	HAGroup                HighAvailabilityGroup `json:"ha_group,omitempty"`               // Version 2.0
 }
@@ -80,14 +79,6 @@ func (self *Policy) Add_API_Spec(spec *APISpecification) error {
 		return self.APISpecs.Add_API_Spec(spec)
 	} else {
 		return errors.New(fmt.Sprintf("Add_API_Spec Error: input API Spec is nil."))
-	}
-}
-
-func (self *Policy) Add_Blockchain(bc *Blockchain) error {
-	if bc != nil {
-		return self.Blockchains.Add_Blockchain(bc)
-	} else {
-		return errors.New(fmt.Sprintf("Add_Blockchain Error: input Blockchain is nil."))
 	}
 }
 
@@ -158,8 +149,6 @@ func Are_Compatible(producer_policy *Policy, consumer_policy *Policy) error {
 		return errors.New(fmt.Sprintf("Compatibility Error: Producer properties %v do not satisfy Consumer property requirements %v. Underlying error: %v", producer_policy.Properties, consumer_policy.CounterPartyProperties, err))
 	} else if err := (&producer_policy.CounterPartyProperties).IsSatisfiedBy(consumer_policy.Properties); err != nil {
 		return errors.New(fmt.Sprintf("Compatibility Error: Consumer properties %v do not satisfy Producer property requirements %v. Underlying error: %v", consumer_policy.Properties, producer_policy.CounterPartyProperties, err))
-	} else if _, err := (&producer_policy.Blockchains).Intersects_With(&consumer_policy.Blockchains); err != nil {
-		return errors.New(fmt.Sprintf("Compatibility Error: Producer policy Blockchains %v are not supported by Consumer Blockchain options %v. Underlying error: %v", producer_policy.Blockchains, consumer_policy.Blockchains, err))
 	} else if _, err := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols); err != nil {
 		return errors.New(fmt.Sprintf("Compatibility Error: No common Agreement Protocols between %v and %v. Underlying error: %v", producer_policy.AgreementProtocols, consumer_policy.AgreementProtocols, err))
 	} else if !(&consumer_policy.ResourceLimits).IsSatisfiedBy(&producer_policy.ResourceLimits) {
@@ -190,8 +179,6 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 
 	if !producer_policy1.Is_Version(producer_policy2.Header.Version) {
 		return nil, errors.New(fmt.Sprintf("Compatibility Error: Schema versions are not the same, Policy1: %v, Policy2 %v", producer_policy1.Header.Version, producer_policy2.Header.Version))
-	} else if _, err := (&producer_policy1.Blockchains).Intersects_With(&producer_policy2.Blockchains); err != nil {
-		return nil, errors.New(fmt.Sprintf("Compatibility Error: No Common Blockchains between %v and %v. Underlying error: %v", producer_policy1.Blockchains, producer_policy2.Blockchains, err))
 	} else if _, err := (&producer_policy1.AgreementProtocols).Intersects_With(&producer_policy2.AgreementProtocols); err != nil {
 		return nil, errors.New(fmt.Sprintf("Compatibility Error: No common Agreement Protocols between %v and %v. Underlying error: %v", producer_policy1.AgreementProtocols, producer_policy2.AgreementProtocols, err))
 	} else if err := (&producer_policy1.Properties).Compatible_With(&producer_policy2.Properties); err != nil {
@@ -205,8 +192,6 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 	merged_pol.Header.Version = CurrentVersion
 	(&merged_pol.APISpecs).Concatenate(&producer_policy1.APISpecs)
 	(&merged_pol.APISpecs).Concatenate(&producer_policy2.APISpecs)
-	intersecting_blockchains, _ := (&producer_policy1.Blockchains).Intersects_With(&producer_policy2.Blockchains)
-	(&merged_pol.Blockchains).Concatenate(intersecting_blockchains)
 	intersecting_agreement_protocols, _ := (&producer_policy1.AgreementProtocols).Intersects_With(&producer_policy2.AgreementProtocols)
 	(&merged_pol.AgreementProtocols).Concatenate(intersecting_agreement_protocols)
 	(&merged_pol.Properties).Concatenate(&producer_policy1.Properties)
@@ -247,8 +232,6 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		merged_pol.ValueEx = consumer_policy.ValueEx
 		merged_pol.ResourceLimits = consumer_policy.ResourceLimits
 		merged_pol.DataVerify = producer_policy.DataVerify.MergeWith(consumer_policy.DataVerify, defaultNoData)
-		intersecting_blockchains, _ := (&producer_policy.Blockchains).Intersects_With(&consumer_policy.Blockchains)
-		merged_pol.Blockchains = *intersecting_blockchains.Single_Element()
 		(&merged_pol.Properties).Concatenate(&consumer_policy.Properties)
 		(&merged_pol.Properties).Concatenate(&producer_policy.Properties)
 		merged_pol.RequiredWorkload = producer_policy.RequiredWorkload
@@ -266,10 +249,9 @@ func (self *Policy) Is_Self_Consistent(keyPath string, userKeys string) error {
 	}
 
 	// Check validity of the agreement protocol list
-	list := self.AgreementProtocols.As_String_Array()
-	for _, agp := range list {
-		if !SupportedAgreementProtocol(agp) {
-			return errors.New(fmt.Sprintf("AgreementProtocol section of %v has unsupported protocol %v", self.Header.Name, agp))
+	for _, agp := range self.AgreementProtocols {
+		if err := agp.IsValid(); err != nil {
+			return errors.New(fmt.Sprintf("AgreementProtocol section of %v has error %v", self.Header.Name, err))
 		}
 	}
 
@@ -321,7 +303,6 @@ func (self *Policy) String() string {
 	}
 	res += fmt.Sprintf("Resource Limits: %v\n", self.ResourceLimits)
 	res += fmt.Sprintf("Data Verification: %v\n", self.DataVerify)
-	res += fmt.Sprintf("Blockchains: %v\n", self.Blockchains)
 
 	return res
 }
@@ -561,6 +542,8 @@ func PolicyFileChangeWatcher(homePath string, contents map[string]*WatchEntry, f
 				// A changed file could be a new policy and a deleted policy if it's the policy name that was changed.
 				if policy, err := ReadPolicyFile(homePath + we.FInfo.Name()); err != nil {
 					fileError(homePath+we.FInfo.Name(), err)
+				} else if err := policy.Is_Self_Consistent("", ""); err != nil {
+					fileError(homePath+we.FInfo.Name(), errors.New(fmt.Sprintf("Policy file not self consistent %v, error: %v", homePath, err)))
 				} else if policy.Header.Name != we.Pol.Header.Name {
 					// Contents of the file changed the policy name, so this means we have a new policy and a deleted policy at the same time.
 					// Inform the world about the deleted policy.

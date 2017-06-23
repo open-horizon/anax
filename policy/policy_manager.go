@@ -198,9 +198,6 @@ func (self *PolicyManager) hasPolicy(matchPolicy *Policy) (bool, error) {
 		} else if !reflect.DeepEqual(pol.CounterPartyProperties, matchPolicy.CounterPartyProperties) {
 			errString = fmt.Sprintf("CounterPartyProperties %v mismatch with %v", pol.CounterPartyProperties, matchPolicy.CounterPartyProperties)
 			continue
-		} else if !pol.Blockchains.IsSame(matchPolicy.Blockchains) {
-			errString = fmt.Sprintf("Blockchain %v mismatch with %v", pol.Blockchains, matchPolicy.Blockchains)
-			continue
 		} else if pol.RequiredWorkload != matchPolicy.RequiredWorkload {
 			errString = fmt.Sprintf("RequiredWorkload %v mismatch with %v", pol.RequiredWorkload, matchPolicy.RequiredWorkload)
 			continue
@@ -396,14 +393,13 @@ func (self *PolicyManager) DeletePolicyByURL(url string) error {
 	return errors.New("Not implemented yet")
 }
 
-func (self *PolicyManager) GetAllAgreementProtocols() map[string]bool {
-	protocols := make(map[string]bool)
+func (self *PolicyManager) GetAllAgreementProtocols() map[string]BlockchainList {
+	protocols := make(map[string]BlockchainList)
 	self.PolicyLock.Lock()
 	defer self.PolicyLock.Unlock()
 	for _, pol := range self.Policies {
-		agps := pol.AgreementProtocols.As_String_Array()
-		for _, agp := range agps {
-			protocols[agp] = true
+		for _, agp := range pol.AgreementProtocols {
+			protocols[agp.Name] = agp.Blockchains
 		}
 	}
 	return protocols

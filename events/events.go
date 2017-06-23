@@ -812,6 +812,7 @@ type NewEthContainerMessage struct {
 	exchangeURL       string
 	exchangeId        string
 	exchangeToken     string
+	instance          string
 	Time              uint64
 }
 
@@ -826,19 +827,24 @@ func (m *NewEthContainerMessage) ExchangeURL() string {
 func (m *NewEthContainerMessage) ExchangeId() string {
 	return m.exchangeId
 }
+
 func (m *NewEthContainerMessage) ExchangeToken() string {
 	return m.exchangeToken
 }
 
+func (m *NewEthContainerMessage) Instance() string {
+	return m.instance
+}
+
 func (m NewEthContainerMessage) String() string {
-	return fmt.Sprintf("Event: %v, Time: %v, ExchangeURL: %v, ExchangeId: %v, ExchangeToken: %v", m.event, m.Time, m.exchangeURL, m.exchangeId, m.exchangeToken)
+	return fmt.Sprintf("Event: %v, Instance: %v, Time: %v, ExchangeURL: %v, ExchangeId: %v, ExchangeToken: %v", m.event, m.instance, m.Time, m.exchangeURL, m.exchangeId, m.exchangeToken)
 }
 
 func (m NewEthContainerMessage) ShortString() string {
 	return m.String()
 }
 
-func NewNewEthContainerMessage(id EventId, exchangeURL string, exchangeId string, exchangeToken string) *NewEthContainerMessage {
+func NewNewEthContainerMessage(id EventId, instance string, exchangeURL string, exchangeId string, exchangeToken string) *NewEthContainerMessage {
 	return &NewEthContainerMessage{
 		event: Event{
 			Id: id,
@@ -846,6 +852,7 @@ func NewNewEthContainerMessage(id EventId, exchangeURL string, exchangeId string
 		exchangeURL:      exchangeURL,
 		exchangeId:       exchangeId,
 		exchangeToken:    exchangeToken,
+		instance:         instance,
 		Time:             uint64(time.Now().Unix()),
 	}
 }

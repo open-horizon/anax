@@ -1,8 +1,6 @@
 package citizenscientist
 
 import (
-    "fmt"
-    "github.com/open-horizon/anax/abstractprotocol"
     "testing"
 )
 

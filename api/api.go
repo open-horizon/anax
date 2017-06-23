@@ -23,7 +23,6 @@ import (
 	"net/http"
 	"os"
 	"reflect"
-	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -190,52 +189,6 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, DELETE, OPTIONS")
 		w.WriteHeader(http.StatusOK)
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	}
-}
-
-func (a *API) devmode(w http.ResponseWriter, r *http.Request) {
-	glog.V(3).Infof("devmode handling request: %v", r)
-
-	switch r.Method {
-	case "GET":
-		// get the devmode status
-		if mode, err := persistence.GetDevmode(a.db); err != nil {
-			glog.Infof("Error getting devmode from db:%v", err)
-		} else {
-			if serial, err := json.Marshal(mode); err != nil {
-				glog.Error(err)
-				w.WriteHeader(http.StatusInternalServerError)
-			} else {
-				w.Header().Set("Content-Type", "application/json")
-				if _, err := w.Write(serial); err != nil {
-					glog.Error(err)
-					w.WriteHeader(http.StatusInternalServerError)
-				} else {
-					w.WriteHeader(http.StatusOK)
-				}
-			}
-		}
-	case "OPTIONS":
-		w.Header().Set("Allow", "OPTIONS, POST, GET")
-		w.WriteHeader(http.StatusOK)
-	case "POST":
-		var mode persistence.DevMode
-		body, _ := ioutil.ReadAll(r.Body)
-		if err := json.Unmarshal(body, &mode); err != nil {
-			glog.Infof("User submitted data couldn't be deserialized to Devmode struct: %v. Error: %v", string(body), err)
-			w.WriteHeader(http.StatusBadRequest)
-		} else {
-			glog.Infof("devemode=%v", mode)
-
-			if err := persistence.SaveDevmode(a.db, mode); err != nil {
-				glog.Error("Error saving devmode: %v", err)
-				w.WriteHeader(http.StatusInternalServerError)
-			} else {
-				w.WriteHeader(http.StatusOK)
-			}
-		}
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
@@ -412,43 +365,6 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// It gets the iotf configuration from the api and saves it to /root/.colonus/ directory
-// in .json format.
-func (a *API) iotfconf(w http.ResponseWriter, r *http.Request) {
-	glog.V(3).Infof("iotfconf handling request: %v", r)
-
-	switch r.Method {
-	case "OPTIONS":
-		w.Header().Set("Allow", "OPTIONS, POST")
-		w.WriteHeader(http.StatusOK)
-	case "POST":
-		var iotf_conf persistence.IoTFConf
-		body, _ := ioutil.ReadAll(r.Body)
-		if err := json.Unmarshal(body, &iotf_conf); err != nil {
-			glog.Infof("User submitted data couldn't be deserialized to IoTFConf struct: %v. Error: %v", string(body), err)
-			w.WriteHeader(http.StatusBadRequest)
-		} else {
-			// assign the correct arch
-			if strings.Contains(strings.ToLower(runtime.GOARCH), "amd") ||
-				strings.Contains(strings.ToLower(runtime.GOARCH), "x86") {
-				iotf_conf.Arch = "amd64"
-			} else {
-				iotf_conf.Arch = "arm"
-			}
-
-			glog.Infof("iotf_conf=%v", iotf_conf)
-			if err := persistence.SaveIoTFConf(a.Config.Edge.DBPath, iotf_conf); err != nil {
-				glog.Error("Error saving IoTF configuration in file.: %v", err)
-				w.WriteHeader(http.StatusInternalServerError)
-			} else {
-				w.WriteHeader(http.StatusOK)
-			}
-		}
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	}
-}
-
 // for registering what *should* be microservices but as of v2.1.0, are more
 // like the old contracts
 func (a *API) service(w http.ResponseWriter, r *http.Request) {
@@ -546,8 +462,8 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		decoder.UseNumber()
 
 		if err := decoder.Decode(&service); err != nil {
-			glog.Infof("User submitted data that couldn't be deserialized to service: %v. Error: %v", string(body), err)
-			w.WriteHeader(http.StatusBadRequest)
+			glog.Errorf("User submitted data that couldn't be deserialized to service: %v. Error: %v", string(body), err)
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.attribute", Error: fmt.Sprintf("could not be demarshalled, error: %v", err)})
 			return
 		}
 
@@ -608,23 +524,6 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
-			if attr.GetMeta().Id == "agreementprotocol" {
-				// Make sure the list of specified protocols is supported
-				if _, ok := attr.GetGenericMappings()["protocols"]; ok {
-					switch attr.GetGenericMappings()["protocols"].(type) {
-					case []string:
-						protocols := attr.GetGenericMappings()["protocols"].([]string)
-						for _, proto := range protocols {
-							if !policy.SupportedAgreementProtocol(proto) {
-								glog.Errorf("Attribute agreementprotocol specifies unsupported protocol name %v", proto)
-								writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].agreementprotocol", Error: fmt.Sprintf("unsupported protocol name %v.", proto)})
-								return
-							}
-						}
-					}
-				}
-			}
-
 			// now make sure we add our own sensorUrl to each attribute
 			attr.GetMeta().AppendSensorUrl(*service.SensorUrl)
 			glog.Infof("SensorUrls for %v: %v", attr.GetMeta().Id, attr.GetMeta().SensorUrls)
@@ -671,7 +570,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		var meterPolicy policy.Meter
 		var counterPartyProperties policy.RequiredProperty
 		var properties map[string]interface{}
-		var agreementProtocols []string
+		var globalAgreementProtocols []interface{}
 
 		// props to store in file; stuff that is enforced; need to convert from serviceattributes to props. *CAN NEVER BE* unpublishable ServiceAttributes
 		props := make(map[string]interface{})
@@ -715,8 +614,9 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 
 				// Extract global agreement protocol attribute
 				if attr.GetMeta().Id == "agreementprotocol" && len(attr.GetMeta().SensorUrls) == 0 {
-					agreementProtocols = attr.(persistence.AgreementProtocolAttributes).Protocols
-					glog.V(5).Infof("Found default global agreement protocol attribute %v", agreementProtocols)
+					agpl := attr.(persistence.AgreementProtocolAttributes).Protocols
+					globalAgreementProtocols = agpl.([]interface{})
+					glog.V(5).Infof("Found default global agreement protocol attribute %v", globalAgreementProtocols)
 				}
 			}
 		}
@@ -731,6 +631,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		var serviceAgreementProtocols []policy.AgreementProtocol
 		// persist all prefs; while we're at it, fetch the props we want to publish and the arch
 		for _, attr := range attributes {
 
@@ -767,7 +668,8 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 				properties = attr.(persistence.PropertyAttributes).Mappings
 
 			case persistence.AgreementProtocolAttributes:
-				agreementProtocols = attr.(persistence.AgreementProtocolAttributes).Protocols
+				agpl := attr.(persistence.AgreementProtocolAttributes).Protocols
+				serviceAgreementProtocols = agpl.([]policy.AgreementProtocol)
 
 			default:
 				glog.V(4).Infof("Unhandled attr type (%T): %v", attr, attr)
@@ -784,10 +686,44 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 
 		glog.V(5).Infof("Complete Attr list for registration of service %v: %v", *service.SensorUrl, attributes)
 
-		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorName, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, agreementProtocols, a.Config.Edge.PolicyPath); genErr != nil {
+		// Establish the correct agreement protocol list
+		var agpList *[]policy.AgreementProtocol
+		if len(serviceAgreementProtocols) != 0 {
+			agpList = &serviceAgreementProtocols
+		} else if list, err := policy.ConvertToAgreementProtocolList(globalAgreementProtocols); err != nil {
+			glog.Errorf("Error converting global agreement protocol list attribute %v to agreement protocol list, error: %v", globalAgreementProtocols, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		} else {
+			agpList = list
+		}
+
+		// Generate a policy based on all the attributes and the service definition
+		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorName, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, a.Config.Edge.PolicyPath); genErr != nil {
 			glog.Errorf("Error: %v", genErr)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
+		}
+
+		// Tell the eth worker to start the ethereum client container(s) if we need to.
+		if existingDevice, err := persistence.FindExchangeDevice(a.db); err != nil {
+			glog.Errorf("Failed fetching existing exchange device. Error: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		} else if overrideName := os.Getenv("CMTN_BLOCKCHAIN"); overrideName != "" {
+			a.Messages() <- events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, overrideName, a.Config.Edge.ExchangeURL, existingDevice.Id, existingDevice.Token)
+		} else {
+			chainName := "bluehorizon"
+			for _, agp := range (*agpList) {
+				if policy.RequiresBlockchainType(agp.Name) != "" {
+					for _, bc := range agp.Blockchains {
+						if bc.Name != "" {
+							chainName = bc.Name
+						}
+					}
+				}
+			}
+			a.Messages() <- events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, chainName, a.Config.Edge.ExchangeURL, existingDevice.Id, existingDevice.Token)
 		}
 
 		// TODO: when there is a way to represent services for output, write it out w/ the 201
@@ -871,8 +807,8 @@ func (a *API) serviceAttribute(w http.ResponseWriter, r *http.Request) {
 
 		var attribute Attribute
 		if err := decoder.Decode(&attribute); err != nil {
-			glog.Infof("User submitted data that couldn't be deserialized to attribute: %v. Error: %v", string(body), err)
-			w.WriteHeader(http.StatusBadRequest)
+			glog.Errorf("User submitted data that couldn't be deserialized to attribute: %v. Error: %v", string(body), err)
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "attribute", Error: fmt.Sprintf("could not be demarshalled, error: %v", err)})
 			return
 		}
 
@@ -911,23 +847,6 @@ func (a *API) serviceAttribute(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
-			// verify agreement protocol attribute
-			if attr.GetMeta().Id == "agreementprotocol" {
-				// Make sure the list of specified protocols is supported
-				if _, ok := attr.GetGenericMappings()["protocols"]; ok {
-					switch attr.GetGenericMappings()["protocols"].(type) {
-					case []string:
-						protocols := attr.GetGenericMappings()["protocols"].([]string)
-						for _, proto := range protocols {
-							if !policy.SupportedAgreementProtocol(proto) {
-								glog.Errorf("Attribute agreementprotocol specifies unsupported protocol name %v", proto)
-								writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].agreementprotocol", Error: fmt.Sprintf("unsupported protocol name %v.", proto)})
-								return
-							}
-						}
-					}
-				}
-			}
 		}
 
 		// save to db; we know there was only one

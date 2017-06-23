@@ -71,7 +71,15 @@ func Test_getPolicyFiles_NoDir(t *testing.T) {
 
 func Test_getPolicyFiles_EmptyDir(t *testing.T) {
 
-	if files, err := getPolicyFiles("./test/pfempty/"); err != nil {
+	if _, err := os.Stat("/tmp/pfempty"); !os.IsNotExist(err) {
+		os.Remove("/tmp/pfempty")
+	}
+
+	if err := os.MkdirAll("/tmp/pfempty", 0644); err != nil {
+		t.Error(err)
+	}
+
+	if files, err := getPolicyFiles("/tmp/pfempty"); err != nil {
 		t.Error(err)
 	} else if len(files) != 0 {
 		t.Errorf("Expected an empty directory, but received %v", files)
@@ -180,9 +188,17 @@ func Test_PolicyFileChangeWatcher_Empty(t *testing.T) {
 		// fmt.Printf("Error for %v error %v\n", fileName, err)
 	}
 
+	if _, err := os.Stat("/tmp/pfempty"); !os.IsNotExist(err) {
+		os.Remove("/tmp/pfempty")
+	}
+
+	if err := os.MkdirAll("/tmp/pfempty", 0644); err != nil {
+		t.Error(err)
+	}
+
 	// Test a single call into the watcher
 	contents := make(map[string]*WatchEntry)
-	if _, err := PolicyFileChangeWatcher("./test/pfempty/", contents, changeNotify, deleteNotify, errorNotify, 0); err != nil {
+	if _, err := PolicyFileChangeWatcher("/tmp/pfempty", contents, changeNotify, deleteNotify, errorNotify, 0); err != nil {
 		t.Error(err)
 	} else if changeDetected != 0 || deleteDetected != 0 || errorDetected != 0 {
 		t.Errorf("Incorrect number of events fired. Expected 0 changes, saw %v, expected 0 deletes, saw %v, expected 0 errors, saw %v", changeDetected, deleteDetected, errorDetected)
@@ -314,26 +330,12 @@ func Test_Policy_Creation(t *testing.T) {
 	pf_created.Add_API_Spec(APISpecification_Factory("http://mycompany.com/dm/cpu_temp", "1.0.0", "arm"))
 	pf_created.Add_API_Spec(APISpecification_Factory("http://mycompany.com/dm/gps", "1.0.0", "arm"))
 
-	pf_created.Add_Agreement_Protocol(AgreementProtocol_Factory(CitizenScientist))
-	pf_created.Add_Agreement_Protocol(AgreementProtocol_Factory("2Party Bitcoin"))
-
-	var details interface{}
-	details_bc1 := make(map[string][]string)
-	details_bc1["bootnodes"] = append(details_bc1["bootnodes"], "http://bhnetwork.com/bootnodes")
-	details_bc1["directory"] = append(details_bc1["directory"], "http://bhnetwork.com/directory")
-	details_bc1["genesis"] = append(details_bc1["genesis"], "http://bhnetwork.com/genesis")
-	details_bc1["networkid"] = append(details_bc1["networkid"], "http://bhnetwork.com/networkid")
-	details = details_bc1
-	bc1 := Blockchain_Factory(Ethereum_bc, details)
-	details_bc2 := make(map[string][]string)
-	details_bc2["bootnodes"] = append(details_bc2["bootnodes"], "http://bhnetwork.staging.com/bootnodes")
-	details_bc2["directory"] = append(details_bc2["directory"], "http://bhnetwork.staging.com/directory")
-	details_bc2["genesis"] = append(details_bc2["genesis"], "http://bhnetwork.staging.com/genesis")
-	details_bc2["networkid"] = append(details_bc2["networkid"], "http://bhnetwork.staging.com/networkid")
-	details = details_bc2
-	bc2 := Blockchain_Factory(Ethereum_bc, details)
-	pf_created.Add_Blockchain(bc1)
-	pf_created.Add_Blockchain(bc2)
+	agp1 := AgreementProtocol_Factory(CitizenScientist)
+	agp1.Blockchains.Add_Blockchain(Blockchain_Factory(Ethereum_bc, "bc1"))
+	pf_created.Add_Agreement_Protocol(agp1)
+	agp2 := AgreementProtocol_Factory("2Party Bitcoin")
+	agp2.Blockchains.Add_Blockchain(Blockchain_Factory(Ethereum_bc, "bc2"))
+	pf_created.Add_Agreement_Protocol(agp2)
 
 	pf_created.Add_Property(Property_Factory("rpiprop1", "rpival1"))
 	pf_created.Add_Property(Property_Factory("rpiprop2", "rpival2"))

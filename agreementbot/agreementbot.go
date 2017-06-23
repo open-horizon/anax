@@ -154,35 +154,6 @@ func (w *AgreementBotWorker) start() {
 			return
 		}
 
-		// Tell the eth worker to start the ethereum client container
-		if w.agbotId != "" && w.token != "" {
-			w.Worker.Manager.Messages <- events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, w.Manager.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
-		}
-
-		// Hold the agbot functions until we have blockchain funding. If there are events occurring that
-		// we need to react to, they will queue up on the command queue while we wait here.
-		for {
-			if w.bcWritesEnabled == false {
-				time.Sleep(time.Duration(5) * time.Second)
-				glog.V(3).Infof("AgreementBotWorker command processor waiting for funding")
-			} else {
-				break
-			}
-		}
-
-		glog.Info("AgreementBot worker started")
-
-		// Establish the go objects that are used to interact with the ethereum blockchain.
-		// This code should probably be in the protocol library.
-		acct, _ := ethblockchain.AccountId()
-		dir, _ := ethblockchain.DirectoryAddress()
-		if bc, err := ethblockchain.InitBaseContracts(acct, w.Worker.Manager.Config.AgreementBot.GethURL, dir); err != nil {
-			glog.Errorf("AgreementBotWorker unable to initialize platform contracts, error: %v", err)
-			return
-		} else {
-			w.bc = bc
-		}
-
 		// Make sure the policy directory is in place
 		if err := os.MkdirAll(w.Worker.Manager.Config.AgreementBot.PolicyPath, 0644); err != nil {
 			glog.Errorf("AgreementBotWorker cannot create agreement bot policy file path %v, terminating.", w.Worker.Manager.Config.AgreementBot.PolicyPath)
@@ -202,11 +173,63 @@ func (w *AgreementBotWorker) start() {
 			time.Sleep(time.Duration(1) * time.Minute)
 		}
 
-		// As soon as policies appear, the agbot worker function should start doing agbot work. That means
-		// we need to make sure that our public key is registered in the exchange so that other parties
+		// Tell the eth worker to start the ethereum client container based on the policies that the agbot has.
+		if w.agbotId != "" && w.token != "" {
+			pl := w.pm.GetAllAgreementProtocols()
+			if chainName := os.Getenv("CMTN_BLOCKCHAIN"); chainName != "" {
+				w.Worker.Manager.Messages <- events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, chainName, w.Manager.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
+			} else {
+				chainName := "bluehorizon"
+				for protocolName, bcList := range pl {
+					if policy.RequiresBlockchainType(protocolName) != "" {
+						for _, bc := range bcList {
+							if bc.Name != "" {
+								chainName = bc.Name
+							}
+						}
+					}
+				}
+				w.Worker.Manager.Messages <- events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, chainName, w.Manager.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
+			}
+		}
+
+		glog.Info("AgreementBot worker started")
+
+		// Hold the agbot functions until we have blockchain funding. If there are events occurring that
+		// we need to react to, they will queue up on the command queue while we wait here.
+		for {
+			if w.bcWritesEnabled == false {
+				time.Sleep(time.Duration(5) * time.Second)
+				glog.V(3).Infof("AgreementBotWorker command processor waiting for funding")
+			} else {
+				break
+			}
+		}
+
+		// Establish the go objects that are used to interact with the ethereum blockchain.
+		// This code should probably be in the protocol library.
+		acct, _ := ethblockchain.AccountId()
+		dir, _ := ethblockchain.DirectoryAddress()
+		if bc, err := ethblockchain.InitBaseContracts(acct, w.Worker.Manager.Config.AgreementBot.GethURL, dir); err != nil {
+			glog.Errorf("AgreementBotWorker unable to initialize platform contracts, error: %v", err)
+			return
+		} else {
+			w.bc = bc
+		}
+
+		// Make sure that our public key is registered in the exchange so that other parties
 		// can send us messages.
 		if err := w.registerPublicKey(); err != nil {
 			glog.Errorf("AgreementBotWorker unable to register public key, error: %v", err)
+			return
+		}
+
+		// Sync up between what's in our database versus what's in the exchange, and make sure that the policy manager's
+		// agreement counts are correct. The governance routine will cancel any agreements whose state might have changed
+		// while the agbot was down. We will also check to make sure that policies havent changed. If they have, then
+		// we will cancel agreements and allow them to re-negotiate.
+		if err := w.syncOnInit(); err != nil {
+			glog.Errorf("AgreementBotWorker Terminating, unable to sync up, error: %v", err)
 			return
 		}
 
@@ -220,15 +243,6 @@ func (w *AgreementBotWorker) start() {
 			} else {
 				glog.Errorf("AgreementBotWorker ignoring agreement protocol %v, not supported.", protocolName)
 			}
-		}
-
-		// Sync up between what's in our database versus what's in the exchange, and make sure that the policy manager's
-		// agreement counts are correct. The governance routine will cancel any agreements whose state might have changed
-		// while the agbot was down. We will also check to make sure that policies havent changed. If they have, then
-		// we will cancel agreements and allow them to re-negotiate.
-		if err := w.syncOnInit(); err != nil {
-			glog.Errorf("AgreementBotWorker Terminating, unable to sync up, error: %v", err)
-			return
 		}
 
 		// The agbot worker is now ready to handle incoming messages

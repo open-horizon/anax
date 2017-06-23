@@ -5,7 +5,6 @@ package persistence
 import (
 	"fmt"
 	"github.com/boltdb/bolt"
-	"github.com/open-horizon/anax/persistence"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -36,25 +35,25 @@ func TestMain(m *testing.M) {
 func Test_SaveArchitectureAttributes(t *testing.T) {
 
 	// TODO: make a factory so the types don't have to be added by caller here
-	attr := &persistence.ArchitectureAttributes{
-		Meta: &persistence.AttributeMeta{
+	attr := &ArchitectureAttributes{
+		Meta: &AttributeMeta{
 			Id:          "arch",
 			SensorUrls:  []string{},
 			Label:       "Supported Architecture",
 			Publishable: true,
-			Type:        reflect.TypeOf(persistence.ArchitectureAttributes{}).String(),
+			Type:        reflect.TypeOf(ArchitectureAttributes{}).String(),
 		},
 		Architecture: "armhf",
 	}
 
 	attr.GetMeta().AppendSensorUrl("zoo").AppendSensorUrl("boo")
 
-	_, err := persistence.SaveOrUpdateServiceAttribute(testDb, attr)
+	_, err := SaveOrUpdateServiceAttribute(testDb, attr)
 	if err != nil {
 		panic(err)
 	}
 
-	matches, err := persistence.FindApplicableAttributes(testDb, "zoo")
+	matches, err := FindApplicableAttributes(testDb, "zoo")
 	if err != nil {
 		panic(err)
 	}
@@ -63,8 +62,8 @@ func Test_SaveArchitectureAttributes(t *testing.T) {
 	sAttr := matches[0]
 
 	switch sAttr.(type) {
-	case persistence.ArchitectureAttributes:
-		arch := sAttr.(persistence.ArchitectureAttributes)
+	case ArchitectureAttributes:
+		arch := sAttr.(ArchitectureAttributes)
 
 		if arch.Architecture != "armhf" {
 			t.Errorf("Architecture in persisted type not accessible (b/c of ill deserialization or wrong value")
@@ -78,13 +77,13 @@ func Test_SaveArchitectureAttributes(t *testing.T) {
 }
 
 func Test_DiscriminateSavedAttributes(t *testing.T) {
-	pub := func(attr persistence.ServiceAttribute, url ...string) {
+	pub := func(attr ServiceAttribute, url ...string) {
 		for _, u := range url {
 			attr.GetMeta().AppendSensorUrl(u)
 		}
 
 		// db is shared, ok for now
-		_, err := persistence.SaveOrUpdateServiceAttribute(testDb, attr)
+		_, err := SaveOrUpdateServiceAttribute(testDb, attr)
 		if err != nil {
 			panic(err)
 		}
@@ -93,26 +92,26 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 	illZ := "http://illuminated.z/v/2"
 	illK := "http://illuminated.k/v/2"
 
-	arch := &persistence.ArchitectureAttributes{
-		Meta: &persistence.AttributeMeta{
+	arch := &ArchitectureAttributes{
+		Meta: &AttributeMeta{
 			Id:          "architecture",
 			SensorUrls:  []string{},
 			Label:       "Supported Architecture",
 			Publishable: true,
-			Type:        reflect.TypeOf(persistence.ArchitectureAttributes{}).String(),
+			Type:        reflect.TypeOf(ArchitectureAttributes{}).String(),
 		},
 		Architecture: "amd64",
 	}
 
 	pub(arch, illZ, illK)
 
-	comp := &persistence.ComputeAttributes{
-		Meta: &persistence.AttributeMeta{
+	comp := &ComputeAttributes{
+		Meta: &AttributeMeta{
 			Id:          "compute",
 			SensorUrls:  []string{},
 			Label:       "Compute Resources",
 			Publishable: true,
-			Type:        reflect.TypeOf(persistence.ComputeAttributes{}).String(),
+			Type:        reflect.TypeOf(ComputeAttributes{}).String(),
 		},
 		CPUs: 4,
 		RAM:  1024,
@@ -120,13 +119,13 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 
 	pub(comp, illZ)
 
-	comp2 := &persistence.ComputeAttributes{
-		Meta: &persistence.AttributeMeta{
+	comp2 := &ComputeAttributes{
+		Meta: &AttributeMeta{
 			Id:          "compute",
 			SensorUrls:  []string{},
 			Label:       "Compute Resources",
 			Publishable: true,
-			Type:        reflect.TypeOf(persistence.ComputeAttributes{}).String(),
+			Type:        reflect.TypeOf(ComputeAttributes{}).String(),
 		},
 		CPUs: 2,
 		RAM:  2048,
@@ -134,13 +133,13 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 
 	pub(comp2, illK)
 
-	loc := &persistence.LocationAttributes{
-		Meta: &persistence.AttributeMeta{
+	loc := &LocationAttributes{
+		Meta: &AttributeMeta{
 			Id:          "location",
 			SensorUrls:  []string{},
 			Label:       "Location",
 			Publishable: false,
-			Type:        reflect.TypeOf(persistence.LocationAttributes{}).String(),
+			Type:        reflect.TypeOf(LocationAttributes{}).String(),
 		},
 		Lat: "-140.03",
 		Lon: "20.12",
@@ -149,16 +148,13 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 	// no sensors URLs in meta means apply to all
 	pub(loc)
 
-	empty := ""
-
-	misc := &persistence.MappedAttributes{
-		Meta: &persistence.AttributeMeta{
+	misc := &MappedAttributes{
+		Meta: &AttributeMeta{
 			Id:          "misc",
 			SensorUrls:  []string{},
 			Publishable: true,
-			Type:        reflect.TypeOf(persistence.MappedAttributes{}).String(),
+			Type:        reflect.TypeOf(MappedAttributes{}).String(),
 		},
-		KeyPrefix: &empty,
 		Mappings: map[string]string{
 			"x": "xoo",
 			"y": "yoo",
@@ -168,15 +164,13 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 
 	pub(misc, illZ)
 
-	cg := "cg_"
-	creds := &persistence.MappedAttributes{
-		Meta: &persistence.AttributeMeta{
+	creds := &MappedAttributes{
+		Meta: &AttributeMeta{
 			Id:          "credentials",
 			SensorUrls:  []string{},
 			Publishable: false,
-			Type:        reflect.TypeOf(persistence.MappedAttributes{}).String(),
+			Type:        reflect.TypeOf(MappedAttributes{}).String(),
 		},
-		KeyPrefix: &cg,
 		Mappings: map[string]string{
 			"user":         "fred",
 			"pass":         "pinkfloydfan4ever",
@@ -186,38 +180,38 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 
 	pub(creds, illK)
 
-	services, err := persistence.FindApplicableAttributes(testDb, illK)
+	services, err := FindApplicableAttributes(testDb, illK)
 	if err != nil {
 		panic(err)
 	}
 
-	var kComp *persistence.ComputeAttributes
-	var kCreds *persistence.MappedAttributes
-	var kArch *persistence.ArchitectureAttributes
-	var kLoc *persistence.LocationAttributes
+	var kComp *ComputeAttributes
+	var kCreds *MappedAttributes
+	var kArch *ArchitectureAttributes
+	var kLoc *LocationAttributes
 
 	for _, serv := range services {
 		switch serv.(type) {
-		case persistence.ComputeAttributes:
-			k := serv.(persistence.ComputeAttributes)
+		case ComputeAttributes:
+			k := serv.(ComputeAttributes)
 			kComp = &k
 			if kComp.CPUs != 2 {
 				t.Errorf("wrong CPU count")
 			}
-		case persistence.MappedAttributes:
-			k := serv.(persistence.MappedAttributes)
+		case MappedAttributes:
+			k := serv.(MappedAttributes)
 			kCreds = &k
 			if it, ok := kCreds.Mappings["device_label"]; !ok || it != "home" {
 				t.Errorf("wrong cred fact")
 			}
-		case persistence.LocationAttributes:
-			k := serv.(persistence.LocationAttributes)
+		case LocationAttributes:
+			k := serv.(LocationAttributes)
 			kLoc = &k
 			if kLoc.GetMeta().Publishable {
 				t.Errorf("wrong pub fact")
 			}
-		case persistence.ArchitectureAttributes:
-			k := serv.(persistence.ArchitectureAttributes)
+		case ArchitectureAttributes:
+			k := serv.(ArchitectureAttributes)
 			kArch = &k
 			if kArch.Architecture != "amd64" {
 				t.Errorf("wrong arch fact")
@@ -232,7 +226,7 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 	}
 
 	// TODO: separate into another test
-	envvars, err := persistence.AttributesToEnvvarMap(services, "HZN_")
+	envvars, err := AttributesToEnvvarMap(services, "HZN_")
 	if err != nil {
 		t.Errorf("Failed to get envvar map: %v", err)
 	}

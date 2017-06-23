@@ -94,25 +94,6 @@
             "value": "rpival3"
         }
     ],
-    "blockchains": [
-        {
-            "type": "ethereum",
-            "details": {
-                "bootnodes": [
-                    "http://bhnetwork.com/bootnodes"
-                ],
-                "directory": [
-                    "http://bhnetwork.com/directory"
-                ],
-                "genesis": [
-                    "http://bhnetwork.com/genesis"
-                ],
-                "networkid": [
-                    "http://bhnetwork.com/networkid"
-                ]
-            }
-        }
-    ],
     "requiredWorkload": "http://mycompany.com/workload1",
     "ha_group": {
         "partners": null

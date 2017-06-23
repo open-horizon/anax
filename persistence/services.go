@@ -163,7 +163,7 @@ func (a MeteringAttributes) GetGenericMappings() map[string]interface{} {
 }
 
 type CounterPartyPropertyAttributes struct {
-	Meta       *AttributeMeta          `json:"meta"`
+	Meta       *AttributeMeta         `json:"meta"`
 	Expression map[string]interface{} `json:"expression"`
 }
 
@@ -217,7 +217,7 @@ func (a MappedAttributes) GetGenericMappings() map[string]interface{} {
 
 type AgreementProtocolAttributes struct {
 	Meta      *AttributeMeta `json:"meta"`
-	Protocols []string       `json:"protocols"`
+	Protocols interface{}  `json:"protocols"`
 }
 
 func (a AgreementProtocolAttributes) GetMeta() *AttributeMeta {
