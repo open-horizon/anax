@@ -303,13 +303,17 @@ func (w *AgreementBotWorker) start() {
 								cph.Initialize()
 								w.consumerPH[agp.Name] = cph
 							}
-
-							// Queue the command to the relevant protocol handler for further processing.
-							if w.consumerPH[agp.Name].AcceptCommand(cmd) {
-								w.consumerPH[agp.Name].HandlePolicyChanged(cmd, w.consumerPH[agp.Name])
-							}
-
 						}
+
+						// Send the policy change command to all protocol handlers just in case an agreement protocol was
+						// deleted from the new policy file.
+						for agp, _ := range w.consumerPH {
+							// Queue the command to the relevant protocol handler for further processing.
+							if w.consumerPH[agp].AcceptCommand(cmd) {
+								w.consumerPH[agp].HandlePolicyChanged(cmd, w.consumerPH[agp])
+							}
+						}
+
 					}
 
 				case *PolicyDeletedCommand:

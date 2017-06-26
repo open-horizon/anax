@@ -390,3 +390,77 @@ func Test_AgreementProtocol_convert2(t *testing.T) {
 	}
 
 }
+
+func Test_AgreementProtocolList_isSame(t *testing.T) {
+
+	var pl1 *AgreementProtocolList
+	var pl2 *AgreementProtocolList
+
+	pa := `[{"name":"`+BasicProtocol+`"}]`
+	pb := `[{"name":"`+BasicProtocol+`"}]`
+	if pl1 = create_AgreementProtocolList(pa, t); pl1 == nil || len(*pl1) != 1 {
+		t.Errorf("Error: returned %v, should have returned %v\n", pl1, pa)
+	} else if pl2 = create_AgreementProtocolList(pb, t); pl2 == nil || len(*pl2) != 1 {
+		t.Errorf("Error: returned %v, should have returned %v\n", pl2, pb)
+	} else if !pl1.IsSame(*pl2) {
+		t.Errorf("Error: the lists are the same: %v %v\n", pl1, pl2)
+	}
+
+	pa = `[]`
+	pb = `[]`
+	if pl1 = create_AgreementProtocolList(pa, t); pl1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", pl1, pa)
+	} else if pl2 = create_AgreementProtocolList(pb, t); pl2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", pl2, pb)
+	} else if !pl1.IsSame(*pl2) {
+		t.Errorf("Error: the lists are the same: %v %v\n", pl1, pl2)
+	}
+
+}
+
+func Test_AgreementProtocolList_is_not_Same(t *testing.T) {
+
+	var pl1 *AgreementProtocolList
+	var pl2 *AgreementProtocolList
+
+	pa := `[{"name":"`+CitizenScientist+`"}]`
+	pb := `[{"name":"`+BasicProtocol+`"}]`
+	if pl1 = create_AgreementProtocolList(pa, t); pl1 == nil || len(*pl1) != 1 {
+		t.Errorf("Error: returned %v, should have returned %v\n", pl1, pa)
+	} else if pl2 = create_AgreementProtocolList(pb, t); pl2 == nil || len(*pl2) != 1 {
+		t.Errorf("Error: returned %v, should have returned %v\n", pl2, pb)
+	} else if pl1.IsSame(*pl2) {
+		t.Errorf("Error: the lists are not the same: %v %v\n", pl1, pl2)
+	}
+
+	pa = `[]`
+	pb = `[{"name":"`+BasicProtocol+`"}]`
+	if pl1 = create_AgreementProtocolList(pa, t); pl1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", pl1, pa)
+	} else if pl2 = create_AgreementProtocolList(pb, t); pl2 == nil || len(*pl2) != 1 {
+		t.Errorf("Error: returned %v, should have returned %v\n", pl2, pb)
+	} else if pl1.IsSame(*pl2) {
+		t.Errorf("Error: the lists are not the same: %v %v\n", pl1, pl2)
+	}
+
+	pa = `[{"name":"`+BasicProtocol+`"}]`
+	pb = `[]`
+	if pl1 = create_AgreementProtocolList(pa, t); pl1 == nil || len(*pl1) != 1 {
+		t.Errorf("Error: returned %v, should have returned %v\n", pl1, pa)
+	} else if pl2 = create_AgreementProtocolList(pb, t); pl2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", pl2, pb)
+	} else if pl1.IsSame(*pl2) {
+		t.Errorf("Error: the lists are not the same: %v %v\n", pl1, pl2)
+	}
+
+	pa = `[{"name":"`+BasicProtocol+`"}]`
+	pb = `[{"name":"`+BasicProtocol+`"},{"name":"`+CitizenScientist+`"}]`
+	if pl1 = create_AgreementProtocolList(pa, t); pl1 == nil || len(*pl1) != 1 {
+		t.Errorf("Error: returned %v, should have returned %v\n", pl1, pa)
+	} else if pl2 = create_AgreementProtocolList(pb, t); pl2 == nil || len(*pl2) != 2 {
+		t.Errorf("Error: returned %v, should have returned %v\n", pl2, pb)
+	} else if pl1.IsSame(*pl2) {
+		t.Errorf("Error: the lists are not the same: %v %v\n", pl1, pl2)
+	}
+
+}
