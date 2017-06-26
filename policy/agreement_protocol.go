@@ -30,6 +30,11 @@ func AllAgreementProtocols() []string {
 type AgreementProtocolList []AgreementProtocol
 
 func (a AgreementProtocolList) IsSame(compare AgreementProtocolList) bool {
+
+	if len(a) != len(compare) {
+		return false
+	}
+
 	for _, agps := range a {
 		found := false
 		for _, compareAGPs := range compare {
