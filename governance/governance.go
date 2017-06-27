@@ -345,9 +345,6 @@ func (w *GovernanceWorker) start() {
 			}
 		}
 
-		// Tell the eth worker to start the ethereum client container.
-		w.Worker.Manager.Messages <- events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, w.Worker.Manager.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken)
-
 		// Hold the governance functions until we have blockchain funding. If there are events occurring that
 		// we need to react to, they will queue up on the command queue while we wait here. The agreement worker
 		// should not be blocked by this.

@@ -24,14 +24,10 @@ endif
 all: anax
 
 # will always run b/c deps target is PHONY
-anax: $(shell find . -name '*.go' -not -path './vendor/*' -and -not -path './policy/tools/bhgovconfig/*') deps
+anax: $(shell find . -name '*.go' -not -path './vendor/*') deps
 	cd $(PKGPATH)/anax && \
 	  export GOPATH=$(TMPGOPATH); \
 	    $(COMPILE_ARGS) go build -o anax
-
-bhgovconfig: $(shell find ./policy/tools/bhgovconfig/ -name '*.go') deps
-	cd $(PKGPATH)/anax/policy/tools/bhgovconfig && \
-	  $(MAKE)
 
 clean:
 	find ./vendor -maxdepth 1 -not -path ./vendor -and -not -iname "vendor.json" -print0 | xargs -0 rm -Rf
@@ -40,8 +36,6 @@ ifneq ($(TMPGOPATH),$(GOPATH))
 	rm -rf $(TMPGOPATH)
 endif
 	rm -rf ./contracts
-	cd ./policy/tools/bhgovconfig && \
-	  $(MAKE) clean
 
 # let this run on every build to ensure newest deps are pulled
 deps: $(TMPGOPATH)/bin/govendor

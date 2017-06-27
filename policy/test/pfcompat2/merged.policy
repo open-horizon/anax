@@ -104,42 +104,6 @@
             }
         ]
     },
-    "blockchains": [
-        {
-            "type": "ethereum",
-            "details": {
-                "bootnodes": [
-                    "http://bhnetwork.com/bootnodes"
-                ],
-                "directory": [
-                    "http://bhnetwork.com/directory"
-                ],
-                "genesis": [
-                    "http://bhnetwork.com/genesis"
-                ],
-                "networkid": [
-                    "http://bhnetwork.com/networkid"
-                ]
-            }
-        },
-        {
-            "type": "ethereum",
-            "details": {
-                "bootnodes": [
-                    "http://bhnetwork.staging.com/bootnodes"
-                ],
-                "directory": [
-                    "http://bhnetwork.staging.com/directory"
-                ],
-                "genesis": [
-                    "http://bhnetwork.staging.com/genesis"
-                ],
-                "networkid": [
-                    "http://bhnetwork.staging.com/networkid"
-                ]
-            }
-        }
-    ],
     "ha_group": {
         "partners": null
     }

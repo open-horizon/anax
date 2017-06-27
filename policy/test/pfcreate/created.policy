@@ -19,10 +19,22 @@
     ],
     "agreementProtocols": [
         {
-            "name": "Citizen Scientist"
+            "name": "Citizen Scientist",
+            "blockchains": [
+                {
+                    "type": "ethereum",
+                    "name": "bc1"
+                }
+            ]
         },
         {
-            "name": "2Party Bitcoin"
+            "name": "2Party Bitcoin",
+            "blockchains": [
+                {
+                    "type": "ethereum",
+                    "name": "bc2"
+                }
+            ]
         }
     ],
     "valueExchange": {
@@ -74,42 +86,6 @@
         {
             "name": "rpiprop5",
             "value": "rpival5"
-        }
-    ],
-    "blockchains": [
-        {
-            "type": "ethereum",
-            "details": {
-                "bootnodes": [
-                    "http://bhnetwork.com/bootnodes"
-                ],
-                "directory": [
-                    "http://bhnetwork.com/directory"
-                ],
-                "genesis": [
-                    "http://bhnetwork.com/genesis"
-                ],
-                "networkid": [
-                    "http://bhnetwork.com/networkid"
-                ]
-            }
-        },
-        {
-            "type": "ethereum",
-            "details": {
-                "bootnodes": [
-                    "http://bhnetwork.staging.com/bootnodes"
-                ],
-                "directory": [
-                    "http://bhnetwork.staging.com/directory"
-                ],
-                "genesis": [
-                    "http://bhnetwork.staging.com/genesis"
-                ],
-                "networkid": [
-                    "http://bhnetwork.staging.com/networkid"
-                ]
-            }
         }
     ],
     "ha_group": {

@@ -201,10 +201,10 @@ func CreateAgbotPublicKeyPatch(keyPath string) *PatchAgbotPublicKey {
 
 	keyBytes := func() []byte {
 		if pubKey, _, err := GetKeys(keyPath); err != nil {
-			glog.Errorf("Error getting keys %v", err)
+			glog.Errorf(rpclogString(fmt.Sprintf("Error getting keys %v", err)))
 			return []byte(`none`)
 		} else if b, err := MarshalPublicKey(pubKey); err != nil {
-			glog.Errorf("Error marshalling agbot public key %v, error %v", pubKey, err)
+			glog.Errorf(rpclogString(fmt.Sprintf("Error marshalling agbot public key %v, error %v", pubKey, err)))
 			return []byte(`none`)
 		} else {
 			return b
@@ -310,10 +310,27 @@ type BlockchainDef struct {
 	LastUpdated string `json:"lastUpdated"`
 }
 
-// This is the structure of what is marshalled into the BlockchainDef.Details field.
+// This is the structure of what is marshalled into the BlockchainDef.Details field of ethereum
+// based blockchains.
+type ChainInstance struct {
+	BlocksURLs    string `json:"blocksURLs"`
+	ChainDataDir  string `json:"chainDataDir"`
+	DiscoveryURLs string `json:"discoveryURLs"`
+	Port          string `json:"port"`
+	HostName      string `json:"hostname"`
+	Identity      string `json:"identity"`
+	KDF           string `json:"kdf"`
+	PingHost      string `json:"pingHost"`
+	ColonusDir    string `json:"colonusDir"`
+	EthDir        string `json:"ethDir"`
+	MaxPeers      string `json:"maxPeers"`
+	GethLog       string `json:"gethLog"`
+}
+
 type ChainDetails struct {
 	Arch           string          `json:"arch"`
 	DeploymentDesc policy.Workload `json:"deployment_description"`
+	Instance       ChainInstance   `json:"instance"`
 }
 
 type BlockchainDetails struct {
@@ -336,10 +353,10 @@ func CreateDevicePut(gethURL string, token string, name string) *PutDeviceReques
 
 	keyBytes := func() []byte {
 		if pubKey, _, err := GetKeys(""); err != nil {
-			glog.Errorf("Error getting keys %v", err)
+			glog.Errorf(rpclogString(fmt.Sprintf("Error getting keys %v", err)))
 			return []byte(`none`)
 		} else if b, err := MarshalPublicKey(pubKey); err != nil {
-			glog.Errorf("Error marshalling device public key %v, error %v", pubKey, err)
+			glog.Errorf(rpclogString(fmt.Sprintf("Error marshalling device public key %v, error %v", pubKey, err)))
 			return []byte(`none`)
 		} else {
 			return b
@@ -369,20 +386,20 @@ func ConvertToString(a []string) string {
 func Heartbeat(h *http.Client, url string, id string, token string, interval int) {
 
 	for {
-		glog.V(5).Infof("Heartbeating to exchange: %v", url)
+		glog.V(5).Infof(rpclogString(fmt.Sprintf("Heartbeating to exchange: %v", url)))
 
 		var resp interface{}
 		resp = new(PostDeviceResponse)
 		for {
 			if err, tpErr := InvokeExchange(h, "POST", url, id, token, nil, &resp); err != nil {
-				glog.Errorf(err.Error())
+				glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
 				break
 			} else if tpErr != nil {
-				glog.Warningf(tpErr.Error())
+				glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 				time.Sleep(10 * time.Second)
 				continue
 			} else {
-				glog.V(5).Infof("Sent heartbeat %v: %v", url, resp)
+				glog.V(5).Infof(rpclogString(fmt.Sprintf("Sent heartbeat %v: %v", url, resp)))
 				break
 			}
 		}
@@ -392,23 +409,23 @@ func Heartbeat(h *http.Client, url string, id string, token string, interval int
 
 }
 
-func GetEthereumClient(url string, chainName string, deviceId string, token string) (string, error) {
+func GetEthereumClient(url string, chainName string, chainType string, deviceId string, token string) (string, error) {
 
-	glog.V(5).Infof(logString(fmt.Sprintf("getting ethereum client metadata for chain %v", chainName)))
+	glog.V(5).Infof(rpclogString(fmt.Sprintf("getting ethereum client metadata for chain %v", chainName)))
 
 	var resp interface{}
 	resp = new(GetEthereumClientResponse)
-	targetURL := url + "bctypes/ethereum/blockchains/" + chainName
+	targetURL := url + "bctypes/" + chainType + "/blockchains/" + chainName
 	for {
 		if err, tpErr := InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "GET", targetURL, deviceId, token, nil, &resp); err != nil {
-			glog.Errorf(logString(fmt.Sprintf(err.Error())))
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
 			return "", err
 		} else if tpErr != nil {
-			glog.Warningf(tpErr.Error())
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
-			glog.V(3).Infof(logString(fmt.Sprintf("found blockchain %v.", resp)))
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("found blockchain %v.", resp)))
 			clientMetadata := resp.(*GetEthereumClientResponse).Blockchains[chainName].Details
 			return clientMetadata, nil
 		}
@@ -464,7 +481,7 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 		return errors.New(fmt.Sprintf("Error invoking exchange, response object must be specified")), nil
 	}
 
-	glog.V(5).Infof("Invoking exchange %v at %v with %v", method, url, params)
+	glog.V(5).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, url, params)))
 
 	requestBody := bytes.NewBuffer(nil)
 	if params != nil {
@@ -486,7 +503,7 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 		if user != "" && pw != "" {
 			req.Header.Add("Authorization", "Basic "+user+":"+pw)
 		}
-		glog.V(5).Infof("Invoking exchange with headers: %v", req.Header)
+		glog.V(5).Infof(rpclogString(fmt.Sprintf("Invoking exchange with headers: %v", req.Header)))
 		// If the exchange is down, this call will return an error.
 		if httpResp, err := httpClient.Do(req); err != nil {
 			if isTimeout(err) {
@@ -524,7 +541,7 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 				return nil, nil
 			} else {
 				out := string(outBytes)
-				glog.V(5).Infof("Response to %v at %v is %v", method, url, out)
+				glog.V(5).Infof(rpclogString(fmt.Sprintf("Response to %v at %v is %v", method, url, out)))
 				if err := json.Unmarshal(outBytes, resp); err != nil {
 					return errors.New(fmt.Sprintf("Unable to demarshal response %v from invocation of %v at %v, error: %v", out, method, url, err)), nil
 				} else {
@@ -575,4 +592,8 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 
 func isTimeout(err error) bool {
 	return strings.Contains(strings.ToLower(err.Error()), "time") && strings.Contains(strings.ToLower(err.Error()), "out")
+}
+
+var rpclogString = func(v interface{}) string {
+	return fmt.Sprintf("Exchange RPC %v", v)
 }

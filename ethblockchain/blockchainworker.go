@@ -19,6 +19,8 @@ import (
 	"time"
 )
 
+const CHAIN_TYPE = "ethereum"
+
 // must be safely-constructed!!
 type EthBlockchainWorker struct {
 	worker.Worker       // embedded field
@@ -28,6 +30,7 @@ type EthBlockchainWorker struct {
 	el                  *Event_Log
 	ethContainerStarted bool
 	ethContainerLoaded  bool
+	ethContainerName    string
 	exchangeURL         string
 	exchangeId          string
 	exchangeToken       string
@@ -52,6 +55,7 @@ func NewEthBlockchainWorker(cfg *config.HorizonConfig, gethURL string) *EthBlock
 		gethURL:             gethURL,
 		ethContainerStarted: false,
 		ethContainerLoaded:  false,
+		ethContainerName:    "",
 		horizonPubKeyFile:   cfg.Edge.PublicKeyPath,
 	}
 
@@ -77,10 +81,10 @@ func (w *EthBlockchainWorker) NewEvent(incoming events.Message) {
 		switch msg.Event().Id {
 		case events.EXECUTION_FAILED:
 			noBCCOnfig := events.BlockchainConfig{}
-			if msg.LaunchContext.Blockchain != noBCCOnfig && msg.LaunchContext.Blockchain.Type == "ethereum" {
+			if msg.LaunchContext.Blockchain != noBCCOnfig && msg.LaunchContext.Blockchain.Type == CHAIN_TYPE {
 				w.ethContainerStarted = false
 				// fake up a new eth container message to restart the process of loading the eth container
-				newMsg := events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, w.exchangeURL, w.exchangeId, w.exchangeToken)
+				newMsg := events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, msg.LaunchContext.Blockchain.Name, w.exchangeURL, w.exchangeId, w.exchangeToken)
 				cmd := NewNewClientCommand(*newMsg)
 				w.Commands <- cmd
 			}
@@ -95,10 +99,10 @@ func (w *EthBlockchainWorker) NewEvent(incoming events.Message) {
 			switch msg.LaunchContext.(type) {
 			case *events.ContainerLaunchContext:
 				lc := msg.LaunchContext.(*events.ContainerLaunchContext)
-				if lc.Blockchain != noBCCOnfig && lc.Blockchain.Type == "ethereum" {
+				if lc.Blockchain != noBCCOnfig && lc.Blockchain.Type == CHAIN_TYPE {
 					w.ethContainerStarted = false
 					// fake up a new eth container message to restart the process of loading the eth container
-					newMsg := events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, w.exchangeURL, w.exchangeId, w.exchangeToken)
+					newMsg := events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, lc.Blockchain.Name, w.exchangeURL, w.exchangeId, w.exchangeToken)
 					cmd := NewNewClientCommand(*newMsg)
 					w.Commands <- cmd
 				}
@@ -139,9 +143,9 @@ func (w *EthBlockchainWorker) start() {
 			case <-time.After(time.Duration(nonBlockDuration) * time.Second):
 
 				// Make sure we are trying to start the container
-				if !w.ethContainerStarted && w.exchangeId != "" {
+				if !w.ethContainerStarted && w.exchangeId != "" && w.ethContainerName != "" {
 					w.ethContainerStarted = true
-					if err := w.getEthContainer(); err != nil {
+					if err := w.getEthContainer(w.ethContainerName); err != nil {
 						w.ethContainerStarted = false
 						glog.Errorf(logString(fmt.Sprintf("unable to start Eth container, error %v", err)))
 					}
@@ -201,27 +205,33 @@ func (w *EthBlockchainWorker) handleNewClient(cmd *NewClientCommand) {
 		w.exchangeURL = cmd.Msg.ExchangeURL()
 		w.exchangeId = cmd.Msg.ExchangeId()
 		w.exchangeToken = cmd.Msg.ExchangeToken()
+		w.ethContainerName = cmd.Msg.Instance()
 
-		if err := w.getEthContainer(); err != nil {
+		if err := w.getEthContainer(w.ethContainerName); err != nil {
 			w.ethContainerStarted = false
-			glog.Errorf(logString(fmt.Sprintf("unable to start Eth container, error %v", err)))
+			if strings.Contains(err.Error(), "not found") {
+				w.exchangeURL = ""
+				w.exchangeId = ""
+				w.exchangeToken = ""
+				w.ethContainerName = ""
+			}
+			glog.Errorf(logString(fmt.Sprintf("unable to start Eth container %v, error %v", w.ethContainerName, err)))
 		}
 	} else {
-		glog.V(3).Infof(logString(fmt.Sprintf("ignoring duplicate request to start eth container")))
+		glog.V(3).Infof(logString(fmt.Sprintf("ignoring duplicate request to start eth container %v", w.ethContainerName)))
 	}
 }
 
 // This function is used to start the process of starting the ethereum container
-func (w *EthBlockchainWorker) getEthContainer() error {
+func (w *EthBlockchainWorker) getEthContainer(name string) error {
 
 	// Get blockchain metadata from the exchange and tell the eth worker to start the ethereum client container
-	chainName := "bluehorizon"
-	if overrideName := os.Getenv("CMTN_BLOCKCHAIN"); overrideName != "" {
-		chainName = overrideName
-	}
 
-	if bcMetadata, err := exchange.GetEthereumClient(w.exchangeURL, chainName, w.exchangeId, w.exchangeToken); err != nil {
+	if bcMetadata, err := exchange.GetEthereumClient(w.exchangeURL, name, CHAIN_TYPE, w.exchangeId, w.exchangeToken); err != nil {
 		return errors.New(logString(fmt.Sprintf("unable to get eth client metadata, error: %v", err)))
+	} else if len(bcMetadata) == 0 {
+		glog.Errorf(logString(fmt.Sprintf("no metadata for container %v, giving up on it.", name)))
+		return errors.New(logString(fmt.Sprintf("blockchain not found")))
 	} else {
 
 		// Convert the metadata into a container config object so that the Torrent worker can download the container.
@@ -239,7 +249,7 @@ func (w *EthBlockchainWorker) getEthContainer() error {
 
 			for _, chain := range detailsObj.Chains {
 				if chain.Arch == arch {
-					if err := w.fireStartEvent(&chain, chainName); err != nil {
+					if err := w.fireStartEvent(&chain, name); err != nil {
 						return err
 					}
 					fired = true
@@ -254,7 +264,7 @@ func (w *EthBlockchainWorker) getEthContainer() error {
 	}
 }
 
-func (w *EthBlockchainWorker) fireStartEvent(details *exchange.ChainDetails, chainName string) error {
+func (w *EthBlockchainWorker) fireStartEvent(details *exchange.ChainDetails, name string) error {
 	if url, err := url.Parse(details.DeploymentDesc.Torrent.Url); err != nil {
 		return errors.New(logString(fmt.Sprintf("ill-formed URL: %v, error %v", details.DeploymentDesc.Torrent.Url, err)))
 	} else {
@@ -278,19 +288,71 @@ func (w *EthBlockchainWorker) fireStartEvent(details *exchange.ChainDetails, cha
 
 		// Fire an event to the torrent worker so that it will download the container
 		cc := events.NewContainerConfig(*url, hashes, signatures, details.DeploymentDesc.Deployment, details.DeploymentDesc.DeploymentSignature, details.DeploymentDesc.DeploymentUserInfo)
+		envAdds := w.computeEnvVarsForContainer(details)
+		lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{Type: CHAIN_TYPE, Name: name})
+		w.Worker.Manager.Messages <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
+
+		return nil
+	}
+}
+
+func (w *EthBlockchainWorker) computeEnvVarsForContainer(details *exchange.ChainDetails) map[string]string {
 		envAdds := make(map[string]string)
-		envAdds["COLONUS_DIR"] = "/root/eth"
-		// envAdds["ETHEREUM_DIR"] = "/root/.ethereum"
+
+		// Make sure the vars that MUST be set are set.
 		if ram := os.Getenv("CMTN_GETH_RAM_OVERRIDE"); ram == "" {
 			envAdds["HZN_RAM"] = "192"
 		} else {
 			envAdds["HZN_RAM"] = ram
 		}
-		lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{Type: "ethereum", Name: chainName})
-		w.Worker.Manager.Messages <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
 
-		return nil
+		envAdds["COLONUS_DIR"] = getInstanceValue("COLONUS_DIR", details.Instance.ColonusDir)
+
+		// If there are no instance details, then dont set any of these envvars.
+		if details.Instance == (exchange.ChainInstance{}) {
+			return envAdds
+		}
+
+		// Set env vars from the blockchain metadata details
+		envAdds["BLOCKS_URLS"] = details.Instance.BlocksURLs
+		envAdds["CHAINDATA_DIR"] = details.Instance.ChainDataDir
+		envAdds["DISCOVERY_URLS"] = details.Instance.DiscoveryURLs
+		envAdds["PORT"] = getInstanceValue("PORT", details.Instance.Port)
+		envAdds["HOSTNAME"] = getInstanceValue("HOSTNAME", details.Instance.HostName)
+		envAdds["IDENTITY"] = getInstanceValue("IDENTITY", details.Instance.Identity) + "-" + envAdds["HOSTNAME"]
+		envAdds["KDF"] = getInstanceValue("KDF", details.Instance.KDF)
+		envAdds["PING_HOST"] = details.Instance.PingHost
+		envAdds["ETHEREUM_DIR"] = getInstanceValue("ETHEREUM_DIR", details.Instance.EthDir)
+		envAdds["MAXPEERS"] = getInstanceValue("MAXPEERS", details.Instance.MaxPeers)
+		envAdds["GETH_LOG"] = getInstanceValue("GETH_LOG", details.Instance.GethLog)
+
+		return envAdds
+}
+
+func getInstanceValue(name string, value string) string {
+	if value != "" { return value }
+
+	res := ""
+	switch name {
+		case "PORT":
+			res = "33303"
+		case "HOSTNAME":
+			hName, _ := os.Hostname()
+			res = strings.Split(hName, ".")[0]
+		case "IDENTITY":
+			res = runtime.GOARCH
+		case "KDF":
+			res = "--lightkdf"
+		case "COLONUS_DIR":
+			res = "/root/eth"
+		case "ETHEREUM_DIR":
+			res = os.Getenv("HOME") + "/.ethereum"
+		case "MAXPEERS":
+			res = "12"
+		case "GETH_LOG":
+			res = "/tmp/geth.log"
 	}
+	return res
 }
 
 // This function sets up the blockchain event listener
