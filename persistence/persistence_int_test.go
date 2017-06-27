@@ -1,6 +1,6 @@
 // +build integration
 
-package persistence
+package persistence_test
 
 import (
 	"fmt"
@@ -149,8 +149,6 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 	// no sensors URLs in meta means apply to all
 	pub(loc)
 
-	empty := ""
-
 	misc := &persistence.MappedAttributes{
 		Meta: &persistence.AttributeMeta{
 			Id:          "misc",
@@ -158,7 +156,6 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 			Publishable: true,
 			Type:        reflect.TypeOf(persistence.MappedAttributes{}).String(),
 		},
-		KeyPrefix: &empty,
 		Mappings: map[string]string{
 			"x": "xoo",
 			"y": "yoo",
@@ -168,7 +165,6 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 
 	pub(misc, illZ)
 
-	cg := "cg_"
 	creds := &persistence.MappedAttributes{
 		Meta: &persistence.AttributeMeta{
 			Id:          "credentials",
@@ -176,7 +172,6 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 			Publishable: false,
 			Type:        reflect.TypeOf(persistence.MappedAttributes{}).String(),
 		},
-		KeyPrefix: &cg,
 		Mappings: map[string]string{
 			"user":         "fred",
 			"pass":         "pinkfloydfan4ever",
