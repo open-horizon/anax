@@ -1,8 +1,13 @@
 ifeq ($(TMPDIR),)
-	TMPDIR := /tmp
+	TMPDIR := /tmp/
 endif
 
-export TMPGOPATH := $(TMPDIR)/anax-gopath
+ifneq ("$(wildcard ./rules.env)","")
+	include rules.env
+	export $(shell sed 's/=.*//' rules.env)
+endif
+
+export TMPGOPATH := $(TMPDIR)anax-gopath
 export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon
 export PATH := $(TMPGOPATH)/bin:$(PATH)
 
@@ -40,6 +45,9 @@ endif
 
 # let this run on every build to ensure newest deps are pulled
 deps: $(TMPGOPATH)/bin/govendor
+ifneq ($(GOPATH_CACHE),)
+	-[ ! -e $(TMPGOPATH)/.cache ] && [ -e $(GOPATH_CACHE) ] && ln -s $(GOPATH_CACHE) $(TMPGOPATH)/.cache
+endif
 	cd $(PKGPATH)/anax && \
 	  export GOPATH=$(TMPGOPATH); \
 			govendor sync
@@ -53,7 +61,7 @@ $(TMPGOPATH)/bin/govendor: gopathlinks
 gopathlinks:
 ifneq ($(GOPATH),$(TMPGOPATH))
 	mkdir -p $(PKGPATH)
-	-ln -s $(CURDIR) $(PKGPATH)/anax
+	-[ ! -e $(PKGPATH)/anax ] && ln -s $(CURDIR) $(PKGPATH)/anax
 endif
 
 CDIR=$(DESTDIR)/go/src/github.com/open-horizon/go-solidity/contracts
