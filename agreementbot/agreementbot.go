@@ -464,7 +464,7 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 						glog.Warningf("AgreementBotWorker received error checking HA group %v completeness for device %v, error: %v", producerPolicy.HAGroup, dev.Id, err)
 					} else {
 						protocol := policy.Select_Protocol(producerPolicy, &consumerPolicy)
-						cmd := NewMakeAgreementCommand(*producerPolicy, consumerPolicy, dev)
+						cmd := NewMakeAgreementCommand(*producerPolicy, dev.Microservices[0].Policy, consumerPolicy, dev)
 						if _, ok := w.consumerPH[protocol]; !ok {
 							glog.Errorf("AgreementBotWorker unable to find protocol handler for %v.", protocol)
 						} else if !w.consumerPH[protocol].AcceptCommand(cmd) {

@@ -26,10 +26,11 @@ type AgreementWork interface {
 }
 
 type InitiateAgreement struct {
-	workType       string
-	ProducerPolicy policy.Policy               // the producer policy received from the exchange
-	ConsumerPolicy policy.Policy               // the consumer policy we're matched up with
-	Device         exchange.SearchResultDevice // the device entry in the exchange
+	workType               string
+	ProducerPolicy         policy.Policy               // the producer policy received from the exchange - demarshalled
+	OriginalProducerPolicy string                      // the producer policy received from the exchange - original in string form to be sent back
+	ConsumerPolicy         policy.Policy               // the consumer policy we're matched up with
+	Device                 exchange.SearchResultDevice // the device entry in the exchange
 }
 
 func (c InitiateAgreement) String() string {
@@ -157,7 +158,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating message target: %v", err)))
 
 	// Initiate the protocol
-	} else if proposal, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, &wi.ConsumerPolicy, cph.ExchangeId(), mt, workload, b.config.AgreementBot.DefaultWorkloadPW, b.config.AgreementBot.NoDataIntervalS, cph.GetSendMessage()); err != nil {
+	} else if proposal, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, wi.OriginalProducerPolicy, &wi.ConsumerPolicy, cph.ExchangeId(), mt, workload, b.config.AgreementBot.DefaultWorkloadPW, b.config.AgreementBot.NoDataIntervalS, cph.GetSendMessage()); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error initiating agreement: %v", err)))
 
 		// Remove pending agreement from database
