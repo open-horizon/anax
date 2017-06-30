@@ -93,6 +93,7 @@ type ProtocolHandler interface {
 	// Protocol methods that the handler has to implement
 	InitiateAgreement(agreementId string,
 		producerPolicy *policy.Policy,
+		originalProducerPolicy string,
 		consumerPolicy *policy.Policy,
 		myId string,
 		messageTarget interface{},
@@ -192,6 +193,7 @@ func NewBaseProtocolHandler(n string, v int, h *http.Client, p *policy.PolicyMan
 func CreateProposal(p ProtocolHandler,
 	agreementId string,
 	producerPolicy *policy.Policy,
+	originalProducerPolicy string,
 	consumerPolicy *policy.Policy,
 	myId string,
 	workload *policy.Workload,
@@ -205,10 +207,8 @@ func CreateProposal(p ProtocolHandler,
 
 		if tcBytes, err := json.Marshal(TCPolicy); err != nil {
 			return nil, errors.New(fmt.Sprintf("Protocol %v error marshalling TsAndCs %v, error: %v", p.Name(), *TCPolicy, err))
-		} else if prodBytes, err := json.Marshal(producerPolicy); err != nil {
-			return nil, errors.New(fmt.Sprintf("Protocol %v error marshalling Producer Policy %v, error: %v", p.Name(), *producerPolicy, err))
 		} else {
-			return NewProposal(p.Name(), p.Version(), string(tcBytes), string(prodBytes), agreementId, myId), nil
+			return NewProposal(p.Name(), p.Version(), string(tcBytes), originalProducerPolicy, agreementId, myId), nil
 		}
 	}
 }

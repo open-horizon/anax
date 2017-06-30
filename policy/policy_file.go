@@ -312,16 +312,16 @@ func (self *Policy) ShortString() string {
 	res += fmt.Sprintf("Name: %v Version: %v", self.Header.Name, self.Header.Version)
 	res += ", API Specifications "
 	for _, apiSpec := range self.APISpecs {
-		res += fmt.Sprintf("Ref: %v Version: %v Exclusive: %v Arch: %v", apiSpec.SpecRef, apiSpec.Version, apiSpec.ExclusiveAccess, apiSpec.Arch)
+		res += fmt.Sprintf("Ref: %v Version: %v Exclusive: %v Arch: %v ", apiSpec.SpecRef, apiSpec.Version, apiSpec.ExclusiveAccess, apiSpec.Arch)
 	}
 	res += fmt.Sprintf(", Agreement Protocol: %v", self.AgreementProtocols)
 	res += ", Workloads: "
 	for _, wl := range self.Workloads {
-		res += fmt.Sprintf("Deployment: %v", wl.Deployment)
+		res += fmt.Sprintf("Deployment: %v ", wl.Deployment)
 	}
 	res += ", Properties: "
 	for _, p := range self.Properties {
-		res += fmt.Sprintf("Name: %v Value: %v", p.Name, p.Value)
+		res += fmt.Sprintf("Name: %v Value: %v ", p.Name, p.Value)
 	}
 	res += fmt.Sprintf(", Resource Limits: %v", self.ResourceLimits)
 	res += fmt.Sprintf(", Data Verification: %v", self.DataVerify)

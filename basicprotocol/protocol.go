@@ -35,6 +35,7 @@ func NewProtocolHandler(pm *policy.PolicyManager) *ProtocolHandler {
 // The implementation of this protocol method has no extensions to the base abstraction.
 func (p *ProtocolHandler) InitiateAgreement(agreementId string,
                                             producerPolicy *policy.Policy,
+                                            originalProducerPolicy string,
                                             consumerPolicy *policy.Policy,
                                             myId string,
                                             messageTarget interface{},
@@ -43,7 +44,7 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string,
                                             defaultNoData uint64,
                                             sendMessage func(msgTarget interface{}, pay []byte) error) (abstractprotocol.Proposal, error) {
 
-    if bp, err := abstractprotocol.CreateProposal(p, agreementId, producerPolicy, consumerPolicy, myId, workload, defaultPW, defaultNoData); err != nil {
+    if bp, err := abstractprotocol.CreateProposal(p, agreementId, producerPolicy, originalProducerPolicy, consumerPolicy, myId, workload, defaultPW, defaultNoData); err != nil {
         return nil, err
     } else {
 

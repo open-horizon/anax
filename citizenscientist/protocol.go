@@ -119,6 +119,7 @@ func NewProtocolHandler(gethURL string, pm *policy.PolicyManager) *ProtocolHandl
 // the other party.
 func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 											producerPolicy *policy.Policy,
+											originalProducerPolicy string,
 											consumerPolicy *policy.Policy,
 											myId string,
 											messageTarget interface{},
@@ -130,7 +131,7 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 	// Create a proposal and augment it with the additional data we need in this protocol.
 	var newProposal *CSProposal
 
-	if bp, err := abstractprotocol.CreateProposal(p, agreementId, producerPolicy, consumerPolicy, myId, workload, defaultPW, defaultNoData); err != nil {
+	if bp, err := abstractprotocol.CreateProposal(p, agreementId, producerPolicy, originalProducerPolicy, consumerPolicy, myId, workload, defaultPW, defaultNoData); err != nil {
 		return nil, err
 	} else {
 		newProposal = NewCSProposal(bp, p.MyAddress)

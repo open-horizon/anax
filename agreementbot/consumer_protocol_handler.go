@@ -325,10 +325,11 @@ func (b *BaseConsumerProtocolHandler) HandleWorkloadUpgrade(cmd *WorkloadUpgrade
 func (b *BaseConsumerProtocolHandler) HandleMakeAgreement(cmd *MakeAgreementCommand, cph ConsumerProtocolHandler) {
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received make agreement command.")))
 	agreementWork := InitiateAgreement{
-		workType:       INITIATE,
-		ProducerPolicy: cmd.ProducerPolicy,
-		ConsumerPolicy: cmd.ConsumerPolicy,
-		Device:         cmd.Device,
+		workType:               INITIATE,
+		ProducerPolicy:         cmd.ProducerPolicy,
+		OriginalProducerPolicy: cmd.OriginalProducerPolicy,
+		ConsumerPolicy:         cmd.ConsumerPolicy,
+		Device:                 cmd.Device,
 	}
 	cph.WorkQueue() <- agreementWork
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued make agreement command.")))
