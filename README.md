@@ -7,8 +7,8 @@ This project contains the Horizon client system source code. To learn more about
 Related Projects:
 
 * `anax-ui` (http://github.com/open-horizon/anax-ui): The source for the Anax web UI
-* `bluehorizon-snap` (http://github.com/open-horizon/bluehorizon-snap): A Ubuntu Snappy bundling of the complete Horizon client components
-* `ubuntu-classic-image` (http://github.com/open-horizon/ubuntu-classic-image): Produces complete system images
+* `horizon-pkg` (http://github.com/open-horizon/horizon-pkg): A system for packaging Horizon system `deb`s for multiple distributions and architectures. It also produces Ubuntu snaps
+ * `raspbian-image` (http://github.com/open-horizon/raspbian-image): The Raspbian image builder for Raspberry Pi 2 and 3 models dedicated to Horizon
 
 ## Documentation
 
@@ -47,4 +47,4 @@ Related Projects:
 
 #### Development Environment
 
-Note that the Makefile constructs its own `GOPATH` and builds from it; this is a convenience that can sometimes cause problems for development tooling that expects a project to be in a subdirector of `$GOPATH/src`. To use the Makefile to build the project inside your user's `GOPATH`, set the `TMPGOPATH` envvar to `GOPATH` and execute make respecting your user's environment, e.g. `TMPGOPATH=$GOPATH make -e deps`
+Note that the Makefile constructs its own `GOPATH` and builds from it; this is a convenience that can sometimes cause problems for development tooling that expects a project to be in a subdirector of `$GOPATH/src`. To use the Makefile to build the project inside your user's `GOPATH`, set the `TMPGOPATH` variable to your `GOPATH` and execute make like this: `make deps TMPGOPATH=$GOPATH`
