@@ -76,7 +76,7 @@ type DeploymentDescription struct {
 }
 
 var invalidDeploymentOptions = map[string][]string {
-	"workload": []string{"Binds","SpecificPorts"},
+	"workload": []string{"Binds"},
 	"infrastructure": []string{},
 }
 
