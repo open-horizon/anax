@@ -435,12 +435,15 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 
 		for _, specificPort := range service.SpecificPorts {
 			var emptyS struct{}
-			dPort := docker.Port(specificPort.HostPort + "/tcp")
+			dockerPort := specificPort.HostPort
+			if !strings.Contains(specificPort.HostPort, "/") {
+				dockerPort = specificPort.HostPort + "/tcp"
+			}
+			dPort := docker.Port(dockerPort)
 			serviceConfig.Config.ExposedPorts[dPort] = emptyS
 
-			serviceConfig.HostConfig.PortBindings[dPort] = []docker.PortBinding{
-				specificPort,
-			}
+			//serviceConfig.HostConfig.PortBindings[dPort] = make([]docker.PortBinding, 0, 5)
+			serviceConfig.HostConfig.PortBindings[dPort] = append(serviceConfig.HostConfig.PortBindings[dPort], specificPort)
 		}
 
 		for _, givenDevice := range service.Devices {
