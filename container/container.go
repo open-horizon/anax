@@ -76,7 +76,7 @@ type DeploymentDescription struct {
 }
 
 var invalidDeploymentOptions = map[string][]string {
-	"workload": []string{"Binds"},
+	"workload": []string{},
 	"infrastructure": []string{},
 }
 
@@ -327,11 +327,14 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 			return nil, err
 		}
 
-		// Assume only 1 filesystem binding
-		hostVol := ""
-		hostVolIndex := strings.Index(service.Binds[0], ":")
-		if hostVolIndex != -1 {
-			hostVol = service.Binds[0][:hostVolIndex]
+		// Create the volume map based on the container paths being bound to the host.
+		// The bind string looks like this: <host-path>:<container-path>:<ro> where ro means readonly and is optional.
+		vols := make(map[string]struct{})
+		for _, bind := range service.Binds {
+			containerVol := strings.Split(bind, ":")
+			if len(containerVol) > 1 && containerVol[1] != "" {
+				vols[containerVol[1]] = struct{}{}
+			}
 		}
 
 		// setup labels and log config for the new container
@@ -366,14 +369,12 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 
 		serviceConfig := &persistence.ServiceConfig{
 			Config: docker.Config{
-				Image:  service.Image,
-				Env:    []string{},
-				Cmd:    service.Command,
-				CPUSet: cpuSet,
-				Labels: labels,
-				Volumes: map[string]struct{}{
-					hostVol: {},
-				},
+				Image:        service.Image,
+				Env:          []string{},
+				Cmd:          service.Command,
+				CPUSet:       cpuSet,
+				Labels:       labels,
+				Volumes:      vols,
 				ExposedPorts: map[docker.Port]struct{}{},
 			},
 			HostConfig: docker.HostConfig{
@@ -387,7 +388,7 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 				MemorySwap:      0,
 				Devices:         []docker.Device{},
 				LogConfig:       logConfig,
-				Binds: service.Binds,
+				Binds:           service.Binds,
 			},
 		}
 
