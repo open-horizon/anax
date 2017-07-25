@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 )
 
+const ExchangeURLEnvvarName = "HZN_EXCHANGE_URL"
+
 type HorizonConfig struct {
 	Edge         Config
 	AgreementBot AGConfig
@@ -83,6 +85,20 @@ func (c *HorizonConfig) UserPublicKeyPath() string {
 	return c.Edge.UserPublicKeyPath
 }
 
+// some configuration is provided by envvars; in this case we populate this config object from expected envvars
+func enrichFromEnvvars(config *HorizonConfig) error {
+
+	if exchangeURL := os.Getenv(ExchangeURLEnvvarName); exchangeURL != "" {
+		config.Edge.ExchangeURL = exchangeURL
+		config.AgreementBot.ExchangeURL = exchangeURL
+	} else {
+		// TODO: Enable this once we require the envvar to be set. For now, we don't return the error
+		// return fmt.Errorf("Unspecified but required envvar: %s", ExchangeURLEnvvarName)
+	}
+
+	return nil
+}
+
 func Read(file string) (*HorizonConfig, error) {
 
 	if _, err := os.Stat(file); err != nil {
@@ -100,6 +116,12 @@ func Read(file string) (*HorizonConfig, error) {
 		err := json.NewDecoder(path).Decode(&config)
 		if err != nil {
 			return nil, fmt.Errorf("Unable to decode content of config file: %v", err)
+		}
+
+		err = enrichFromEnvvars(&config)
+
+		if err != nil {
+			return nil, fmt.Errorf("Unable to enrich content of config file with envvars: %v", err)
 		}
 
 		// success at last!
