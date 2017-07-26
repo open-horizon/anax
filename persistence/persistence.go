@@ -7,7 +7,6 @@ import (
 	"github.com/boltdb/bolt"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
-	"os"
 	"time"
 )
 
@@ -27,6 +26,7 @@ type EstablishedAgreement struct {
 	CounterPartyAddress             string                   `json:"counterparty_address"`
 	AgreementCreationTime           uint64                   `json:"agreement_creation_time"`
 	AgreementAcceptedTime           uint64                   `json:"agreement_accepted_time"`
+	AgreementBCUpdateAckTime        uint64                   `json:"agreement_bc_update_ack_time"`  // V2 protocol - time when consumer acks our blockchain update
 	AgreementFinalizedTime          uint64                   `json:"agreement_finalized_time"`
 	AgreementTerminatedTime         uint64                   `json:"agreement_terminated_time"`
 	AgreementForceTerminatedTime    uint64                   `json:"agreement_force_terminated_time"`
@@ -42,6 +42,8 @@ type EstablishedAgreement struct {
 	AgreementProtocolTerminatedTime uint64                   `json:"agreement_protocol_terminated_time"`
 	WorkloadTerminatedTime          uint64                   `json:"workload_terminated_time"`
 	MeteringNotificationMsg         MeteringNotification     `json:"metering_notification,omitempty"`  // the most recent metering notification received
+	BlockchainType                  string                   `json:"blockchain_type,omitempty"` // the name of the type of the blockchain
+	BlockchainName                  string                   `json:"blockchain_name,omitempty"` // the name of the blockchain instance
 }
 
 func (c EstablishedAgreement) String() string {
@@ -53,9 +55,11 @@ func (c EstablishedAgreement) String() string {
 		"ConsumerId: %v, " +
 		"CounterPartyAddress: %v, " +
 		"CurrentDeployment (service names): %v, " +
+		"Proposal Signature: %v, " +
 		"AgreementCreationTime: %v, " +
 		"AgreementExecutionStartTime: %v, " +
 		"AgreementAcceptedTime: %v, " +
+		"AgreementBCUpdateAckTime: %v, " +
 		"AgreementFinalizedTime: %v, " +
 		"AgreementDataReceivedTime: %v, " +
 		"AgreementTerminatedTime: %v, " +
@@ -63,14 +67,18 @@ func (c EstablishedAgreement) String() string {
 		"TerminatedReason: %v, " +
 		"TerminatedDescription: %v, " +
 		"Agreement Protocol: %v, " +
+		"Agreement ProtocolVersion: %v, " +
 		"AgreementProtocolTerminatedTime : %v, " +
 		"WorkloadTerminatedTime: %v, " +
-		"MeteringNotificationMsg: %v",
+		"MeteringNotificationMsg: %v, " +
+		"BlockchainType: %v, " +
+		"BlockchainName: %v",
 		c.Name, c.SensorUrl, c.Archived, c.CurrentAgreementId, c.ConsumerId, c.CounterPartyAddress, ServiceConfigNames(&c.CurrentDeployment),
-		c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementFinalizedTime,
+		c.ProposalSig,
+		c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementBCUpdateAckTime, c.AgreementFinalizedTime,
 		c.AgreementDataReceivedTime, c.AgreementTerminatedTime, c.AgreementForceTerminatedTime, c.TerminatedReason, c.TerminatedDescription,
-		c.AgreementProtocol, c.AgreementProtocolTerminatedTime, c.WorkloadTerminatedTime,
-		c.MeteringNotificationMsg)
+		c.AgreementProtocol, c.ProtocolVersion, c.AgreementProtocolTerminatedTime, c.WorkloadTerminatedTime,
+		c.MeteringNotificationMsg, c.BlockchainType, c.BlockchainName)
 
 }
 
@@ -96,7 +104,7 @@ func (c ServiceConfig) String() string {
 	return fmt.Sprintf("Config: %v, HostConfig: %v", c.Config, c.HostConfig)
 }
 
-func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consumerId string, proposal string, protocol string, protocolVersion int, sensorUrl string, signature string, address string) (*EstablishedAgreement, error) {
+func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consumerId string, proposal string, protocol string, protocolVersion int, sensorUrl string, signature string, address string, bcType string, bcName string) (*EstablishedAgreement, error) {
 
 	if name == "" || agreementId == "" || consumerId == "" || proposal == "" || protocol == "" || protocolVersion == 0 {
 		return nil, errors.New("Agreement id, consumer id, proposal, protocol, or protocol version are empty, cannot persist")
@@ -121,6 +129,7 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 		CounterPartyAddress:             address,
 		AgreementCreationTime:           uint64(time.Now().Unix()),
 		AgreementAcceptedTime:           0,
+		AgreementBCUpdateAckTime:        0,
 		AgreementFinalizedTime:          0,
 		AgreementTerminatedTime:         0,
 		AgreementForceTerminatedTime:    0,
@@ -136,6 +145,8 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 		AgreementProtocolTerminatedTime: 0,
 		WorkloadTerminatedTime:          0,
 		MeteringNotificationMsg:         MeteringNotification{},
+		BlockchainType:                  bcType,
+		BlockchainName:                  bcName,
 	}
 
 	return newAg, db.Update(func(tx *bolt.Tx) error {
@@ -174,6 +185,30 @@ func AgreementStateExecutionStarted(db *bolt.DB, dbAgreementId string, protocol 
 func AgreementStateAccepted(db *bolt.DB, dbAgreementId string, protocol string) (*EstablishedAgreement, error) {
 	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
 		c.AgreementAcceptedTime = uint64(time.Now().Unix())
+		return &c
+	})
+}
+
+// set the eth signature of the proposal
+func AgreementStateProposalSigned(db *bolt.DB, dbAgreementId string, protocol string, sig string) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
+		c.ProposalSig = sig
+		return &c
+	})
+}
+
+// set the eth counterparty address when it is received from the consumer
+func AgreementStateBCDataReceived(db *bolt.DB, dbAgreementId string, protocol string, address string) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
+		c.CounterPartyAddress = address
+		return &c
+	})
+}
+
+// set the time when out agreement blockchain update message was Ack'd.
+func AgreementStateBCUpdateAcked(db *bolt.DB, dbAgreementId string, protocol string) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
+		c.AgreementBCUpdateAckTime = uint64(time.Now().Unix())
 		return &c
 	})
 }
@@ -305,8 +340,14 @@ func persistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 				if !mod.Archived {				// 1 transition from false to true
 					mod.Archived = update.Archived
 				}
+				if len(mod.CounterPartyAddress) == 0 { // 1 transition from empty to non-empty
+					mod.CounterPartyAddress = update.CounterPartyAddress
+				}
 				if mod.AgreementAcceptedTime == 0 {		// 1 transition from zero to non-zero
 					mod.AgreementAcceptedTime = update.AgreementAcceptedTime
+				}
+				if mod.AgreementBCUpdateAckTime == 0 {       // 1 transition from zero to non-zero
+					mod.AgreementBCUpdateAckTime = update.AgreementBCUpdateAckTime
 				}
 				if mod.AgreementFinalizedTime == 0 { 	// 1 transition from zero to non-zero
 					mod.AgreementFinalizedTime = update.AgreementFinalizedTime
@@ -341,6 +382,15 @@ func persistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 				}
 				if update.MeteringNotificationMsg != (MeteringNotification{}) { // only save non-empty values
 					mod.MeteringNotificationMsg = update.MeteringNotificationMsg
+				}
+				if mod.BlockchainType == "" {	// 1 transition from empty to non-empty
+					mod.BlockchainType = update.BlockchainType
+				}
+				if mod.BlockchainName == "" {	// 1 transition from empty to non-empty
+					mod.BlockchainName = update.BlockchainName
+				}
+				if mod.ProposalSig == "" {		// 1 transition from empty to non-empty
+					mod.ProposalSig = update.ProposalSig
 				}
 
 				if serialized, err := json.Marshal(mod); err != nil {
@@ -418,108 +468,6 @@ func FindEstablishedAgreementsAllProtocols(db *bolt.DB, protocols []string, filt
 		}
 	}
 	return agreements, nil
-}
-
-type DevMode struct {
-	Mode     bool `json:"mode"`
-	LocalGov bool `json:"localgov"`
-}
-
-type IoTFConf struct {
-	Name    string     `json:"name"`
-	ApiSpec []SpecR    `json:"apiSpec"`
-	Arch    string     `json:"arch"`
-	Quarks  QuarksConf `json:"quarks"`
-}
-
-type SpecR struct {
-	SpecRef string `json:"specRef"`
-}
-
-type QuarksConf struct {
-	CloudMsgBrokerHost string `json:"cloudMsgBrokerHost"`
-	// CloudMsgBrokerTopics      IoTFTopics `json:"cloudMsgBrokerTopics"`
-	// CloudMsgBrokerCredentials IoTFCred   `json:"cloudMsgBrokerCredentials"`
-	DataVerificationInterval int `json:"dataVerificationInterval"`
-}
-
-type IoTFTopics struct {
-	Apps        string   `json:"apps"`
-	PublishData []string `json:"publishData"`
-	Control     string   `json:"control"`
-}
-
-type IoTFCred struct {
-	User     string `json:"user"`
-	Password string `json:"password"`
-}
-
-// TODO: do something with this, must persist them and refer to the Service
-
-// save the devmode in to the "devmode" bucket
-func SaveDevmode(db *bolt.DB, devmode DevMode) error {
-	// store some data
-	err := db.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists([]byte(DEVMODE))
-		if err != nil {
-			return err
-		}
-
-		if serialized, err := json.Marshal(devmode); err != nil {
-			return fmt.Errorf("Failed to serialize devemode: %v. Error: %v", devmode, err)
-		} else if err := bucket.Put([]byte("devmode"), serialized); err != nil {
-			return fmt.Errorf("Failed to write devmode: %v. Error: %v", devmode, err)
-		} else {
-			glog.V(2).Infof("Succeeded saving devmode %v", devmode)
-			return nil
-		}
-	})
-
-	return err
-}
-
-// get the devmode setting
-func GetDevmode(db *bolt.DB) (DevMode, error) {
-	var devmode DevMode
-	err := db.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(DEVMODE))
-		if bucket == nil {
-			devmode.Mode = false
-			devmode.LocalGov = false
-			return nil
-		}
-
-		val := bucket.Get([]byte("devmode"))
-		if val == nil {
-			devmode.Mode = false
-			devmode.LocalGov = false
-			return nil
-		} else if err := json.Unmarshal(val, &devmode); err != nil {
-			return fmt.Errorf("Failed to unmarshal devmode data.  Error: %v", err)
-		} else {
-			return nil
-		}
-	})
-	return devmode, err
-}
-
-// Save the IoTF configration to a file so that the PolicyWriter can pick it up
-func SaveIoTFConf(path string, iotf_conf IoTFConf) error {
-	fh, err := os.OpenFile(path+"/iotfconf.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	if err != nil {
-		return err
-	}
-	defer fh.Close()
-
-	if b, err := json.MarshalIndent(iotf_conf, "", "  "); err != nil {
-		return err
-	} else {
-		if _, err := fh.Write(b); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 // =================================================================================================

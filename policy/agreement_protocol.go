@@ -65,7 +65,10 @@ func ConvertToAgreementProtocolList(list []interface{}) (*[]AgreementProtocol, e
 		if mapEle, ok := agpEle.(map[string]interface{}); ok {
 			if pName, ok := mapEle["name"].(string); ok {
 				newAGP := AgreementProtocol_Factory(pName)
-				if bcList, ok := mapEle["blockchains"].([]interface{}); ok {
+				if mapEle["blockchains"] == nil {
+					newList = append(newList, *newAGP)
+					continue
+				} else if bcList, ok := mapEle["blockchains"].([]interface{}); ok {
 					for _, bcDef := range bcList {
 						if bc, ok := bcDef.(map[string]interface{}); ok {
 							bcType := ""
@@ -78,30 +81,31 @@ func ConvertToAgreementProtocolList(list []interface{}) (*[]AgreementProtocol, e
 							}
 							(&newAGP.Blockchains).Add_Blockchain(Blockchain_Factory(bcType, bcName))
 						} else {
-							return nil, errors.New(fmt.Sprintf("could not convert blockchain list element to map[string]interface{}, %v is %T", list, bcDef, bcDef))
+							return nil, errors.New(fmt.Sprintf("could not convert blockchain list element to map[string]interface{}, %v is %T", bcDef, bcDef))
 						}
 					}
 					newList = append(newList, *newAGP)
 				} else {
-					return nil, errors.New(fmt.Sprintf("could not convert blockchain list to []interface{}, %v is %T", list, mapEle["blockchains"], mapEle["blockchains"]))
+					return nil, errors.New(fmt.Sprintf("could not convert blockchain list to []interface{}, %v is %T", mapEle["blockchains"], mapEle["blockchains"]))
 				}
 			} else {
-				return nil, errors.New(fmt.Sprintf("could not convert agreement protocol name to string, %v is %T", list, mapEle["name"], mapEle["name"]))
+				return nil, errors.New(fmt.Sprintf("could not convert agreement protocol name to string, %v is %T", mapEle["name"], mapEle["name"]))
 			}
 		} else {
-			return nil, errors.New(fmt.Sprintf("could not convert agreement protocol list element to map[string]interface{}, %v is %T", list, agpEle, agpEle))
+			return nil, errors.New(fmt.Sprintf("could not convert agreement protocol list element to map[string]interface{}, %v is %T", agpEle, agpEle))
 		}
 	}
 	return &newList, nil
 }
 
 type AgreementProtocol struct {
-	Name        string         `json:"name"` // The name of the agreement protocol to be used
-	Blockchains BlockchainList `json:"blockchains,omitempty"` // The blockchain to be used if the protocol requires one.
+	Name            string         `json:"name"` // The name of the agreement protocol to be used
+	ProtocolVersion int            `json:"protocolVersion,omitempty"` // The max protocol version supported
+	Blockchains     BlockchainList `json:"blockchains,omitempty"` // The blockchain to be used if the protocol requires one.
 }
 
 func (a AgreementProtocol) IsSame(compare AgreementProtocol) bool {
-	return a.Name == compare.Name && a.Blockchains.IsSame(compare.Blockchains)
+	return a.Name == compare.Name && a.Blockchains.IsSame(compare.Blockchains) && ((a.ProtocolVersion == 0 && compare.ProtocolVersion == 1) || (compare.ProtocolVersion == 0 && a.ProtocolVersion == 1) || (a.ProtocolVersion == compare.ProtocolVersion))
 }
 
 func (a *AgreementProtocol) Initialize() {
@@ -119,7 +123,7 @@ func (a *AgreementProtocol) Initialize() {
 }
 
 func (a AgreementProtocol) String() string {
-	res := fmt.Sprintf("Agreement Protocol name: %v, Blockchains:", a.Name)
+	res := fmt.Sprintf("Agreement Protocol name: %v, protocolVersion: %v, Blockchains:", a.Name, a.ProtocolVersion)
 	for _, bc := range a.Blockchains {
 		res += bc.String() + ","
 	}
@@ -140,11 +144,31 @@ func (a *AgreementProtocol) IsValid() error {
 	return nil
 }
 
+// Used to figoure out what protocol version to use for the initial agreement message. All subsequent
+// messages MUST use the same protocol version. Anax will store the protocol version of the initial
+// message for the agreement and will use the stored version for all future messages.
+func (a *AgreementProtocol) MinimumProtocolVersion(other *AgreementProtocol, maxSupportedVersion int) int {
+	if a.ProtocolVersion == 0 { 	// old Anax, before it always exported a protocol version in policy files.
+		return 1
+	} else if other.ProtocolVersion != 0 && other.ProtocolVersion <= a.ProtocolVersion { 	// Agbot policy file specified something lower than what device supports
+		return other.ProtocolVersion
+	} else if other.ProtocolVersion == 0 && maxSupportedVersion < a.ProtocolVersion { 	// For agbot policy files that dont specify a protocol version
+		return maxSupportedVersion
+	} else {
+		return a.ProtocolVersion 	// Producer always exports a protocol version at 2 or higher.
+	}
+}
+
 // This function creates AgreementProtocol objects
 func AgreementProtocol_Factory(name string) *AgreementProtocol {
 	a := new(AgreementProtocol)
 	a.Name = name
 	a.Blockchains = (*new(BlockchainList))
+	if name == CitizenScientist {
+		a.ProtocolVersion = 2
+	} else {
+		a.ProtocolVersion = 1 	// this might have to be zero
+	}
 	return a
 }
 
@@ -244,5 +268,16 @@ func (self *AgreementProtocolList) Add_Agreement_Protocol(new_ele *AgreementProt
 		}
 	}
 	(*self) = append(*self, *new_ele)
+	return nil
+}
+
+// This function returns a specific agreement protocol object from the list
+func (self *AgreementProtocolList) FindByName(name string) *AgreementProtocol {
+	for ix, ele := range *self {
+		if ele.Name == name {
+			return &(*self)[ix]
+		}
+	}
+
 	return nil
 }

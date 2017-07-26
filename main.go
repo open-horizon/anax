@@ -169,12 +169,7 @@ func main() {
 
 	workers.Add("agreementBot", agreementbot.NewAgreementBotWorker(cfg, agbotdb))
 	workers.Add("agapi", agreementbot.NewAPIListener(cfg, agbotdb))
-
-	gethURL := cfg.Edge.GethURL
-	if gethURL == "" {
-		gethURL = cfg.AgreementBot.GethURL
-	}
-	workers.Add("blockchain", ethblockchain.NewEthBlockchainWorker(cfg, gethURL))
+	workers.Add("eth blockchain", ethblockchain.NewEthBlockchainWorker(cfg))
 	workers.Add("torrent", torrent.NewTorrentWorker(cfg))
 
 	if db != nil {

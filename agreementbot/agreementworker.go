@@ -11,7 +11,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"math/rand"
 	"net/http"
-	// "time"
+	"os"
 )
 
 // These structs are the event bodies that flows from the processor to the agreement workers
@@ -20,6 +20,7 @@ const REPLY = "AGREEMENT_REPLY"
 const CANCEL = "AGREEMENT_CANCEL"
 const DATARECEIVEDACK = "AGREEMENT_DATARECEIVED_ACK"
 const WORKLOAD_UPGRADE = "WORKLOAD_UPGRADE"
+const ASYNC_CANCEL = "ASYNC_CANCEL"
 
 type AgreementWork interface {
 	Type() string
@@ -103,6 +104,17 @@ func (c HandleWorkloadUpgrade) Type() string {
 	return c.workType
 }
 
+type AsyncCancelAgreement struct {
+	workType    string
+	AgreementId string
+	Protocol    string
+	Reason      uint
+}
+
+func (c AsyncCancelAgreement) Type() string {
+	return c.workType
+}
+
 type AgreementWorker interface {
 	AgreementLockManager() *AgreementLockManager
 }
@@ -127,7 +139,31 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	agreementIdString := hex.EncodeToString(agreementId)
 	glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("using AgreementId %v", agreementIdString)))
 
-	protocolHandler := cph.AgreementProtocolHandler()
+	// If we're dealing with a device that is not running CS protocol version 2 then we might know the BC we need and thus which
+	// agreement protocol handler to use.
+	bcType := ""
+	bcName := ""
+	if (&wi.ProducerPolicy).RequiresDefaultBC(cph.Name()) {
+		bcType = policy.Ethereum_bc
+		bcName = policy.Default_Blockchain_name
+	} else {
+		bcType, bcName = (&wi.ProducerPolicy).RequiresKnownBC(cph.Name())
+	}
+
+	if bcType != "" {
+		if overrideName := os.Getenv("CMTN_BLOCKCHAIN"); overrideName != "" {
+			bcName = overrideName
+		}
+	} else {
+		bcName = ""
+	}
+
+	// Use the override blockchain name to choose the handler, even though the agreement will be based on the name in the policy.
+	protocolHandler := cph.AgreementProtocolHandler(bcType, bcName)
+	if protocolHandler == nil {
+		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("agreement protocol handler is not ready yet for %v %v", bcType, bcName)))
+		return
+	}
 
 	// Get the agreement id lock to prevent any other thread from processing this same agreement.
 	lock := b.alm.getAgreementLock(agreementIdString)
@@ -150,7 +186,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	}
 
 	// Create pending agreement in database
-	if err := AgreementAttempt(b.db, agreementIdString, wi.Device.Id, wi.ConsumerPolicy.Header.Name, cph.Name()); err != nil {
+	if err := AgreementAttempt(b.db, agreementIdString, wi.Device.Id, wi.ConsumerPolicy.Header.Name, bcType, bcName, cph.Name()); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error persisting agreement attempt: %v", err)))
 
 	// Create message target for protocol message
@@ -178,7 +214,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, wi *HandleReply, workerId string) bool {
 
 	reply := wi.Reply
-	protocolHandler := cph.AgreementProtocolHandler()
+	protocolHandler := cph.AgreementProtocolHandler("", "") 	// Use the generic protocol handler
 
 	// The reply message is usually deleted before recording on the blockchain. For now assume it will be deleted at the end. Early exit from
 	// this function is NOT allowed.
@@ -202,7 +238,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying pending agreement %v, error: %v", reply.AgreementId(), err)))
 		} else if agreement == nil {
 			glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("discarding reply, agreement id %v not in our database", reply.AgreementId())))
-		} else if agreement.CounterPartyAddress != "" {
+		} else if cph.AlreadyReceivedReply(agreement) {
 			glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("discarding reply, agreement id %v already received a reply", agreement.CurrentAgreementId)))
 			// this will cause us to not send a reply ack, which is what we want in this case
 			sendReply = false
@@ -257,31 +293,31 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating agreement id %v in workload usage for %v for policy %v, error: %v", reply.AgreementId(), wi.SenderId, consumerPolicy.Header.Name, err)))
 			}
 
-			// Send the reply Ack
-			if mt, err := exchange.CreateMessageTarget(wi.SenderId, nil, wi.SenderPubKey, wi.From); err != nil {
-				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating message target: %v", err)))
-			} else if err := protocolHandler.Confirm(ackReplyAsValid, reply.AgreementId(), mt, cph.GetSendMessage()); err != nil {
-				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error trying to send reply ack for %v to %v, error: %v", reply.AgreementId(), mt, err)))
-			}
-
-			// Delete the original reply message
-			if wi.MessageId != 0 {
-				if err := cph.DeleteMessage(wi.MessageId); err != nil {
-					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, cph.ExchangeId())))
+			// Send the reply Ack if it's still valid.
+			if ackReplyAsValid {
+				if mt, err := exchange.CreateMessageTarget(wi.SenderId, nil, wi.SenderPubKey, wi.From); err != nil {
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating message target: %v", err)))
+				} else if err := protocolHandler.Confirm(ackReplyAsValid, reply.AgreementId(), mt, cph.GetSendMessage()); err != nil {
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error trying to send reply ack for %v to %v, error: %v", reply.AgreementId(), mt, err)))
 				}
-			}
 
-			deletedMessage = true
-			droppedLock = true
-			lock.Unlock()
+				// Delete the original reply message
+				if wi.MessageId != 0 {
+					if err := cph.DeleteMessage(wi.MessageId); err != nil {
+						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, cph.ExchangeId())))
+					}
+				}
 
-			// Recording the agreement on the blockchain could take a long time, so it needs to be the last thing we do.
-			if err := protocolHandler.RecordAgreement(proposal, reply, consumerPolicy); err != nil {
-				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error trying to record agreement in blockchain, %v", err)))
-				b.CancelAgreementWithLock(cph, reply.AgreementId(), cph.GetTerminationCode(TERM_REASON_CANCEL_BC_WRITE_FAILED), workerId)
-				ackReplyAsValid = false
-			} else {
-				glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("recorded agreement %v", reply.AgreementId())))
+				deletedMessage = true
+				droppedLock = true
+				lock.Unlock()
+
+				if err := cph.PostReply(reply.AgreementId(), proposal, reply, consumerPolicy, workerId); err != nil {
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error trying to record agreement in blockchain, %v", err)))
+					b.CancelAgreementWithLock(cph, reply.AgreementId(), cph.GetTerminationCode(TERM_REASON_CANCEL_BC_WRITE_FAILED), workerId)
+					ackReplyAsValid = false
+				}
+
 			}
 		}
 
@@ -318,7 +354,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 
 func (b *BaseAgreementWorker) HandleDataReceivedAck(cph ConsumerProtocolHandler, wi *HandleDataReceivedAck, workerId string) {
 
-	protocolHandler := cph.AgreementProtocolHandler()
+	protocolHandler := cph.AgreementProtocolHandler("", "") // Use the generic protocol handler
 
 	if d, err := protocolHandler.ValidateDataReceivedAck(wi.Ack); err != nil {
 		glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("discarding message: %v", wi.Ack)))
@@ -431,23 +467,71 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 		// Update the workload usage record to clear the agreement. There might not be a workload usage record if there is no workload priority
 		// specified in the workload section of the policy.
 		if _, err := UpdateWUAgreementId(b.db, ag.DeviceId, ag.PolicyName, ""); err != nil {
-			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("error updating agreement id in workload usage for %v for policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
+			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("warning updating agreement id in workload usage for %v for policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 		}
 
 		// Remove the long blockchain cancel from the worker thread. It is important to give the protocol handler a chance to
 		// do whatever cleanup and termination it needs to do so we should never skip calling this function.
-		go b.DoBlockchainCancel(cph, ag, reason, workerId)
+		// If we can do the termination now, do it. Otherwise we will queue a command to do it later.
+
+		if cph.CanCancelNow(ag) || ag.CounterPartyAddress == "" {
+			b.DoAsyncCancel(cph, ag, reason, workerId)
+		}
+
+		if ag.AgreementProtocolVersion < 2 || (ag.BlockchainType != "" && !cph.IsBlockchainWritable(ag.BlockchainType, ag.BlockchainName)) {
+			// create deferred termination command
+			glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("deferring blockchain cancel for %v", agreementId)))
+			cph.DeferCommand(AsyncCancelAgreement{
+				workType:    ASYNC_CANCEL,
+				AgreementId: agreementId,
+				Protocol:    cph.Name(),
+				Reason:      reason,
+			})
+		}
 
 		// Archive the record
-		if _, err := ArchiveAgreement(b.db, agreementId, cph.Name(), reason, cph.GetTerminationReason(reason)); err != nil {
-			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error archiving terminated agreement: %v, error: %v", agreementId, err)))
+		if _, err := ArchiveAgreement(b.db, ag.CurrentAgreementId, cph.Name(), reason, cph.GetTerminationReason(reason)); err != nil {
+			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error archiving terminated agreement: %v, error: %v", ag.CurrentAgreementId, err)))
+		}
+
+	}
+}
+
+func (b *BaseAgreementWorker) ExternalCancel(cph ConsumerProtocolHandler, agreementId string, reason uint, workerId string) {
+
+	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("starting deferred cancel for %v", agreementId)))
+
+	// Find the agreement record
+	if ag, err := FindSingleAgreementByAgreementId(b.db, agreementId, cph.Name(), []AFilter{}); err != nil {
+		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying agreement %v from database, error: %v", agreementId, err)))
+	} else if ag == nil {
+		glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("nothing to terminate for agreement %v, no database record.", agreementId)))
+	} else {
+		bcType, bcName := cph.GetKnownBlockchain(ag)
+		if cph.IsBlockchainWritable(bcType, bcName) {
+			b.DoAsyncCancel(cph, ag, reason, workerId)
+
+			// Archive the record
+			// if _, err := ArchiveAgreement(b.db, ag.CurrentAgreementId, cph.Name(), reason, cph.GetTerminationReason(reason)); err != nil {
+			// 	glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error archiving terminated agreement: %v, error: %v", ag.CurrentAgreementId, err)))
+			// }
+		} else {
+			glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("deferring blockchain cancel for %v", agreementId)))
+			cph.DeferCommand(AsyncCancelAgreement{
+					workType:    ASYNC_CANCEL,
+					AgreementId: agreementId,
+					Protocol:    cph.Name(),
+					Reason:      reason,
+				})
 		}
 	}
 }
 
-func (b *BaseAgreementWorker) DoBlockchainCancel(cph ConsumerProtocolHandler, ag *Agreement, reason uint, workerId string) {
+func (b *BaseAgreementWorker) DoAsyncCancel(cph ConsumerProtocolHandler, ag *Agreement, reason uint, workerId string) {
 
-	cph.TerminateAgreement(ag, reason, workerId)
+	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("starting async cancel for %v", ag.CurrentAgreementId)))
+	go cph.TerminateAgreement(ag, reason, workerId)
+
 }
 
 func generateAgreementId(random *rand.Rand) []byte {

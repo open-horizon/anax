@@ -30,13 +30,23 @@ type ProducerProtocolHandler interface {
 	Initialize()
 	Name() string
 	AcceptCommand(cmd worker.Command) bool
-	AgreementProtocolHandler() abstractprotocol.ProtocolHandler
+	AgreementProtocolHandler(typeName string, name string) abstractprotocol.ProtocolHandler
 	HandleProposalMessage(proposal abstractprotocol.Proposal, protocolMsg string, exchangeMsg *exchange.DeviceMessage) bool
 	HandleBlockchainEventMessage(cmd *BlockchainEventCommand) (string, bool, uint64, bool, error)
 	TerminateAgreement(agreement *persistence.EstablishedAgreement, reason uint)
 	GetSendMessage() func(mt interface{}, pay []byte) error
 	GetTerminationCode(reason string) uint
 	GetTerminationReason(code uint) string
+	SetBlockchainClientAvailable(cmd *BCInitializedCommand)
+	SetBlockchainClientNotAvailable(cmd *BCStoppingCommand)
+	IsBlockchainClientAvailable(typeName string, name string) bool
+	SetBlockchainWritable(cmd *BCWritableCommand)
+	IsBlockchainWritable(agreement *persistence.EstablishedAgreement) bool
+	IsAgreementVerifiable(agreement *persistence.EstablishedAgreement) bool
+	HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, error)
+	UpdateConsumer(ag *persistence.EstablishedAgreement)
+	UpdateConsumers()
+	GetKnownBlockchain(ag *persistence.EstablishedAgreement) (string, string)
 }
 
 type BaseProducerProtocolHandler struct {
@@ -114,7 +124,7 @@ func (w *BaseProducerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 	return nil
 }
 
-func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.ProtocolHandler, proposal abstractprotocol.Proposal, protocolMsg string, exchangeMsg *exchange.DeviceMessage) (bool, abstractprotocol.ProposalReply, *policy.Policy) {
+func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.ProtocolHandler, proposal abstractprotocol.Proposal, protocolMsg string, runningBCs []string, exchangeMsg *exchange.DeviceMessage) (bool, abstractprotocol.ProposalReply, *policy.Policy) {
 
 	handled := false
 
@@ -132,7 +142,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error creating message target: %v", err)))
 	} else {
 		handled = true
-		if r, err := ph.DecideOnProposal(proposal, w.deviceId, messageTarget, w.sendMessage); err != nil {
+		if r, err := ph.DecideOnProposal(proposal, w.deviceId, runningBCs, messageTarget, w.sendMessage); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("respond to proposal with error: %v", err)))
 		} else {
 			return handled, r, tcPolicy
@@ -143,18 +153,23 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 }
 
 func (w *BaseProducerProtocolHandler) PersistProposal(proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, tcPolicy *policy.Policy, protocolMsg string) {
-	if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, w.Name(), proposal.Version(), tcPolicy.APISpecs[0].SpecRef, "", proposal.ConsumerId()); err != nil {
+	if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, w.Name(), proposal.Version(), tcPolicy.APISpecs[0].SpecRef, "", proposal.ConsumerId(), "", ""); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId(), err)))
 	}
 }
 
 func (w *BaseProducerProtocolHandler) TerminateAgreement(ag *persistence.EstablishedAgreement, reason uint, mt interface{}, pph ProducerProtocolHandler) {
-	if proposal, err := pph.AgreementProtocolHandler().DemarshalProposal(ag.Proposal); err != nil {
+	if proposal, err := pph.AgreementProtocolHandler("", "").DemarshalProposal(ag.Proposal); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error demarshalling agreement %v proposal: %v", ag.CurrentAgreementId, err)))
 	} else if pPolicy, err := policy.DemarshalPolicy(proposal.ProducerPolicy()); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error demarshalling agreement %v Producer Policy: %v", ag.CurrentAgreementId, err)))
-	} else if err := pph.AgreementProtocolHandler().TerminateAgreement(pPolicy, ag.CounterPartyAddress, ag.CurrentAgreementId, reason, mt, pph.GetSendMessage()); err != nil {
-		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error terminating agreement %v on the blockchain: %v", ag.CurrentAgreementId, err)))
+	} else {
+		bcType, bcName := pph.GetKnownBlockchain(ag)
+		if aph := pph.AgreementProtocolHandler(bcType, bcName); aph == nil {
+			glog.Warningf(BPPHlogString(w.Name(), fmt.Sprintf("cannot terminate agreement %v, agreement protocol handler doesnt exist yet.", ag.CurrentAgreementId)))
+		} else if err := aph.TerminateAgreement(pPolicy, ag.CounterPartyAddress, ag.CurrentAgreementId, reason, mt, pph.GetSendMessage()); err != nil {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error terminating agreement %v on the blockchain: %v", ag.CurrentAgreementId, err)))
+		}
 	}
 }
 
@@ -199,6 +214,26 @@ func (w *BaseProducerProtocolHandler) getAgbot(agbotId string, url string, devic
 
 }
 
+func (b *BaseProducerProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, error) {
+	return false, nil
+}
+
+func (b *BaseProducerProtocolHandler) UpdateConsumer(ag *persistence.EstablishedAgreement) {}
+
+func (b *BaseProducerProtocolHandler) UpdateConsumers() {}
+
+func (c *BaseProducerProtocolHandler) SetBlockchainClientAvailable(cmd *BCInitializedCommand) {
+    return
+}
+
+func (c *BaseProducerProtocolHandler) SetBlockchainClientNotAvailable(cmd *BCStoppingCommand) {
+    return
+}
+
+func (c *BaseProducerProtocolHandler) GetKnownBlockchain(ag *persistence.EstablishedAgreement) (string, string) {
+	return "", ""
+}
+
 // The list of termination reasons that should be supported by all agreement protocols. The caller can pass these into
 // the GetTerminationCode API to get a protocol specific reason code for that termination reason.
 const TERM_REASON_POLICY_CHANGED = "PolicyChanged"
@@ -238,6 +273,54 @@ func NewBlockchainEventCommand(msg events.EthBlockchainEventMessage) *Blockchain
 	return &BlockchainEventCommand{
 		Msg: msg,
 	}
+}
+
+// ==============================================================================================================
+type BCInitializedCommand struct {
+    Msg *events.BlockchainClientInitializedMessage
+}
+
+func (c BCInitializedCommand) ShortString() string {
+
+    return fmt.Sprintf("BCInitializedCommand: Msg %v", c.Msg)
+}
+
+func NewBCInitializedCommand(msg *events.BlockchainClientInitializedMessage) *BCInitializedCommand {
+    return &BCInitializedCommand{
+        Msg: msg,
+    }
+}
+
+// ==============================================================================================================
+type BCStoppingCommand struct {
+    Msg *events.BlockchainClientStoppingMessage
+}
+
+func (c BCStoppingCommand) ShortString() string {
+
+    return fmt.Sprintf("BCStoppingCommand: Msg %v", c.Msg)
+}
+
+func NewBCStoppingCommand(msg *events.BlockchainClientStoppingMessage) *BCStoppingCommand {
+    return &BCStoppingCommand{
+        Msg: msg,
+    }
+}
+
+// ==============================================================================================================
+type BCWritableCommand struct {
+    Msg events.AccountFundedMessage
+}
+
+func (c BCWritableCommand) ShortString() string {
+
+    return fmt.Sprintf("BCWritableCommand: Msg %v", c.Msg)
+}
+
+func NewBCWritableCommand(msg *events.AccountFundedMessage) *BCWritableCommand {
+    return &BCWritableCommand{
+        Msg: *msg,
+    }
 }
 
 // ==========================================================================================================

@@ -9,7 +9,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
@@ -29,10 +28,8 @@ type AgreementBotWorker struct {
 	httpClient      *http.Client
 	agbotId         string
 	token           string
-	bc              *ethblockchain.BaseContracts
 	pm              *policy.PolicyManager
 	consumerPH      map[string]ConsumerProtocolHandler
-	bcWritesEnabled bool
 	ready           bool
 }
 
@@ -55,7 +52,6 @@ func NewAgreementBotWorker(cfg *config.HorizonConfig, db *bolt.DB) *AgreementBot
 		agbotId:         cfg.AgreementBot.ExchangeId,
 		token:           cfg.AgreementBot.ExchangeToken,
 		consumerPH:      make(map[string]ConsumerProtocolHandler),
-		bcWritesEnabled: false,
 		ready:           false,
 	}
 
@@ -79,7 +75,24 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 		msg, _ := incoming.(*events.AccountFundedMessage)
 		switch msg.Event().Id {
 		case events.ACCOUNT_FUNDED:
-			w.bcWritesEnabled = true
+			cmd := NewAccountFundedCommand(msg)
+			w.Commands <- cmd
+		}
+
+	case *events.BlockchainClientInitializedMessage:
+		msg, _ := incoming.(*events.BlockchainClientInitializedMessage)
+		switch msg.Event().Id {
+		case events.BC_CLIENT_INITIALIZED:
+			cmd := NewClientInitializedCommand(msg)
+			w.Commands <- cmd
+		}
+
+	case *events.BlockchainClientStoppingMessage:
+		msg, _ := incoming.(*events.BlockchainClientStoppingMessage)
+		switch msg.Event().Id {
+		case events.BC_CLIENT_STOPPING:
+			cmd := NewClientStoppingCommand(msg)
+			w.Commands <- cmd
 		}
 
 	case *events.EthBlockchainEventMessage:
@@ -173,55 +186,25 @@ func (w *AgreementBotWorker) start() {
 			time.Sleep(time.Duration(1) * time.Minute)
 		}
 
-		// Tell the eth worker to start the ethereum client container based on the policies that the agbot has.
-		if w.agbotId != "" && w.token != "" {
-			pl := w.pm.GetAllAgreementProtocols()
-			if chainName := os.Getenv("CMTN_BLOCKCHAIN"); chainName != "" {
-				w.Worker.Manager.Messages <- events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, chainName, w.Manager.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
-			} else {
-				chainName := "bluehorizon"
-				for protocolName, bcList := range pl {
-					if policy.RequiresBlockchainType(protocolName) != "" {
-						for _, bc := range bcList {
-							if bc.Name != "" {
-								chainName = bc.Name
-							}
-						}
-					}
-				}
-				w.Worker.Manager.Messages <- events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, chainName, w.Manager.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
-			}
-		}
-
 		glog.Info("AgreementBot worker started")
-
-		// Hold the agbot functions until we have blockchain funding. If there are events occurring that
-		// we need to react to, they will queue up on the command queue while we wait here.
-		for {
-			if w.bcWritesEnabled == false {
-				time.Sleep(time.Duration(5) * time.Second)
-				glog.V(3).Infof("AgreementBotWorker command processor waiting for funding")
-			} else {
-				break
-			}
-		}
-
-		// Establish the go objects that are used to interact with the ethereum blockchain.
-		// This code should probably be in the protocol library.
-		acct, _ := ethblockchain.AccountId()
-		dir, _ := ethblockchain.DirectoryAddress()
-		if bc, err := ethblockchain.InitBaseContracts(acct, w.Worker.Manager.Config.AgreementBot.GethURL, dir); err != nil {
-			glog.Errorf("AgreementBotWorker unable to initialize platform contracts, error: %v", err)
-			return
-		} else {
-			w.bc = bc
-		}
 
 		// Make sure that our public key is registered in the exchange so that other parties
 		// can send us messages.
 		if err := w.registerPublicKey(); err != nil {
 			glog.Errorf("AgreementBotWorker unable to register public key, error: %v", err)
 			return
+		}
+
+		// For each agreement protocol in the current list of configured policies, startup a processor
+		// to initiate the protocol.
+		for protocolName, _ := range w.pm.GetAllAgreementProtocols() {
+			if policy.SupportedAgreementProtocol(protocolName) {
+				cph := CreateConsumerPH(protocolName, w.Worker.Manager.Config, w.db, w.pm, w.Worker.Manager.Messages)
+				cph.Initialize()
+				w.consumerPH[protocolName] = cph
+			} else {
+				glog.Errorf("AgreementBotWorker ignoring agreement protocol %v, not supported.", protocolName)
+			}
 		}
 
 		// Sync up between what's in our database versus what's in the exchange, and make sure that the policy manager's
@@ -231,18 +214,6 @@ func (w *AgreementBotWorker) start() {
 		if err := w.syncOnInit(); err != nil {
 			glog.Errorf("AgreementBotWorker Terminating, unable to sync up, error: %v", err)
 			return
-		}
-
-		// For each agreement protocol in the current list of configured policies, startup a processor
-		// to initiate the protocol.
-		for protocolName, _ := range w.pm.GetAllAgreementProtocols() {
-			if policy.SupportedAgreementProtocol(protocolName) {
-				cph := CreateConsumerPH(protocolName, w.Worker.Manager.Config, w.db, w.pm)
-				cph.Initialize()
-				w.consumerPH[protocolName] = cph
-			} else {
-				glog.Errorf("AgreementBotWorker ignoring agreement protocol %v, not supported.", protocolName)
-			}
 		}
 
 		// The agbot worker is now ready to handle incoming messages
@@ -255,6 +226,7 @@ func (w *AgreementBotWorker) start() {
 		// Start the governance routines.
 		go w.GovernAgreements()
 		go w.GovernArchivedAgreements()
+		go w.GovernBlockchainNeeds()
 		if w.Config.AgreementBot.CheckUpdatedPolicyS != 0 {
 			go policy.PolicyFileChangeWatcher(w.Config.AgreementBot.PolicyPath, w.pm.WatcherContent, w.changedPolicy, w.deletedPolicy, w.errorPolicy, w.Config.AgreementBot.CheckUpdatedPolicyS)
 		}
@@ -299,7 +271,7 @@ func (w *AgreementBotWorker) start() {
 							// Update the protocol handler map and make sure there are workers available if the policy has a new protocol in it.
 							if _, ok := w.consumerPH[agp.Name]; !ok {
 								glog.V(3).Infof("AgreementBotWorker creating worker pool for new agreement protocol %v", agp.Name)
-								cph := CreateConsumerPH(agp.Name, w.Worker.Manager.Config, w.db, w.pm)
+								cph := CreateConsumerPH(agp.Name, w.Worker.Manager.Config, w.db, w.pm, w.Worker.Manager.Messages)
 								cph.Initialize()
 								w.consumerPH[agp.Name] = cph
 							}
@@ -361,11 +333,35 @@ func (w *AgreementBotWorker) start() {
 						}
 					}
 
+				case *AccountFundedCommand:
+					cmd, _ := command.(*AccountFundedCommand)
+					for _, cph := range w.consumerPH {
+						cph.SetBlockchainWritable(&cmd.Msg)
+					}
+
+				case *ClientInitializedCommand:
+					cmd, _ := command.(*ClientInitializedCommand)
+					for _, cph := range w.consumerPH {
+						cph.SetBlockchainClientAvailable(&cmd.Msg)
+					}
+
+				case *ClientStoppingCommand:
+					cmd, _ := command.(*ClientStoppingCommand)
+					for _, cph := range w.consumerPH {
+						cph.SetBlockchainClientNotAvailable(&cmd.Msg)
+					}
+
 				default:
 					glog.Errorf("AgreementBotWorker Unknown command (%T): %v", command, command)
 				}
 
-				glog.V(5).Infof("AgreementBotWorker handled command")
+				glog.V(5).Infof("AgreementBotWorker handled command %v", command)
+
+				glog.V(4).Infof("AgreementBotWorker queueing deferred commands")
+				for _, cph := range w.consumerPH {
+					cph.HandleDeferredCommands()
+				}
+				glog.V(4).Infof("AgreementBotWorker done queueing deferred commands")
 
 			case <-time.After(time.Duration(nonBlockDuration) * time.Second):
 				glog.V(5).Infof(fmt.Sprintf("AgreementBotWorker retrieving messages from the exchange"))
@@ -408,6 +404,12 @@ func (w *AgreementBotWorker) start() {
 				glog.V(4).Infof("AgreementBotWorker Polling Exchange.")
 				w.findAndMakeAgreements()
 				glog.V(4).Infof("AgreementBotWorker Done Polling Exchange.")
+
+				glog.V(4).Infof("AgreementBotWorker queueing deferred commands")
+				for _, cph := range w.consumerPH {
+					cph.HandleDeferredCommands()
+				}
+				glog.V(4).Infof("AgreementBotWorker done queueing deferred commands")
 
 			}
 			runtime.Gosched()
@@ -457,7 +459,7 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 					} else if err := json.Unmarshal([]byte(dev.Microservices[0].Policy), producerPolicy); err != nil {
 						glog.Errorf("AgreementBotWorker received error demarshalling policy blob %v, error: %v", dev.Microservices[0].Policy, err)
 
-						// Check to see if the device's policy is compatible
+					// Check to see if the device's policy is compatible
 					} else if err := policy.Are_Compatible(producerPolicy, &consumerPolicy); err != nil {
 						glog.Errorf("AgreementBotWorker received error comparing %v and %v, error: %v", *producerPolicy, consumerPolicy, err)
 					} else if err := w.incompleteHAGroup(dev, producerPolicy); err != nil {
@@ -465,8 +467,28 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 					} else {
 						protocol := policy.Select_Protocol(producerPolicy, &consumerPolicy)
 						cmd := NewMakeAgreementCommand(*producerPolicy, dev.Microservices[0].Policy, consumerPolicy, dev)
+
+						bcType := ""
+						bcName := ""
+						if producerPolicy.RequiresDefaultBC(protocol) {
+							bcType = policy.Ethereum_bc
+							bcName = policy.Default_Blockchain_name
+						} else {
+							bcType, bcName = producerPolicy.RequiresKnownBC(protocol)
+						}
+
+						if overrideName := os.Getenv("CMTN_BLOCKCHAIN"); overrideName != "" {
+							bcName = overrideName
+						}
+
 						if _, ok := w.consumerPH[protocol]; !ok {
 							glog.Errorf("AgreementBotWorker unable to find protocol handler for %v.", protocol)
+						} else if bcType != "" && !w.consumerPH[protocol].IsBlockchainWritable(bcType, bcName) {
+							// Older devices assume that the agbot has the blockchain up and running before an agreement can be made.
+							// Get that blockchain running if it isn't up.
+							glog.V(5).Infof("AgreementBotWorker skipping device id %v, requires blockchain %v %v that isnt ready yet.", dev.Id,  bcType, bcName)
+							w.Worker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, bcType, bcName, w.Manager.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
+							continue
 						} else if !w.consumerPH[protocol].AcceptCommand(cmd) {
 							glog.Errorf("AgreementBotWorker protocol handler for %v not accepting new agreement commands.", protocol)
 						} else {
@@ -661,7 +683,19 @@ func (w *AgreementBotWorker) syncOnInit() error {
 
 		// Loop through our database and check each record for accuracy with the exchange and the blockchain
 		if agreements, err := FindAgreements(w.db, []AFilter{UnarchivedAFilter()}, agp); err == nil {
+
+			neededBCInstances := make(map[string]map[string]bool)
+
 			for _, ag := range agreements {
+
+				// Make a list of all blockchain instances in use by agreements in our DB so that we can make sure there is a
+				// blockchain client running for each instance.
+				bcType, bcName := w.consumerPH[ag.AgreementProtocol].GetKnownBlockchain(&ag)
+
+				if len(neededBCInstances[bcType]) == 0 {
+					neededBCInstances[bcType] = make(map[string]bool)
+				}
+				neededBCInstances[bcType][bcName] = true
 
 				// If the agreement has received a reply then we just need to make sure that the policy manager's agreement counts
 				// are correct. Even for already timedout agreements, the governance process will cleanup old and outdated agreements,
@@ -755,6 +789,16 @@ func (w *AgreementBotWorker) syncOnInit() error {
 				}
 
 			}
+
+			// Fire off start requests for each BC client that we need running. The blockchain worker and the container worker will tolerate
+			// a start request for containers that are already running.
+			glog.V(3).Infof(AWlogString(fmt.Sprintf("discovered BC instances in DB %v", neededBCInstances)))
+			for typeName, instMap := range neededBCInstances {
+				for instName, _ := range instMap {
+					w.Messages() <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, typeName, instName, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
+				}
+			}
+
 		} else {
 			return errors.New(AWlogString(fmt.Sprintf("error searching database: %v", err)))
 		}

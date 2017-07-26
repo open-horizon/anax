@@ -273,7 +273,7 @@ func Test_Policy_Merge(t *testing.T) {
 		t.Error(err)
 	} else if pf_con, err := ReadPolicyFile("./test/pfmerge1/agbot.policy"); err != nil {
 		t.Error(err)
-	} else if pf_merged, err := Create_Terms_And_Conditions(pf_prod, pf_con, &pf_con.Workloads[0], "12345", "", 600); err != nil {
+	} else if pf_merged, err := Create_Terms_And_Conditions(pf_prod, pf_con, &pf_con.Workloads[0], "12345", "", 600, 1); err != nil {
 		t.Error(err)
 	} else if err := WritePolicyFile(pf_merged, "./test/pfmerge1/merged.policy"); err != nil {
 		t.Error(err)
@@ -386,12 +386,84 @@ func Test_Policy_Workload_obscure2(t *testing.T) {
 	}
 }
 
+func Test_MinimumProtocolVersion(t *testing.T) {
+
+	var p1,p2 *Policy
+
+	pa := `{"agreementProtocols":[{"name":"`+CitizenScientist+`","blockchains":[{"name":"fred"}]}]}`
+	pb := `{"agreementProtocols":[{"name":"`+CitizenScientist+`","blockchains":[{"name":"fred"}]}]}`
+
+	if p1 = create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 = create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pa)
+	} else if pv := p1.MinimumProtocolVersion(CitizenScientist, p2, 2); pv != 1 {
+		t.Errorf("Error: the min version should be 1 but was %v\n", pv)
+	}
+
+	pa = `{"agreementProtocols":[{"name":"`+CitizenScientist+`","protocolVersion":2}]}`
+	pb = `{"agreementProtocols":[{"name":"`+CitizenScientist+`","protocolVersion":1}]}`
+
+	if p1 = create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 = create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pa)
+	} else if pv := p1.MinimumProtocolVersion(CitizenScientist, p2, 1); pv != 1 {
+		t.Errorf("Error: the min version should be 1 but was %v\n", pv)
+	}
+
+	pa = `{"agreementProtocols":[{"name":"`+CitizenScientist+`","protocolVersion":3}]}`
+	pb = `{"agreementProtocols":[{"name":"`+CitizenScientist+`"}]}`
+
+	if p1 = create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 = create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pa)
+	} else if pv := p1.MinimumProtocolVersion(CitizenScientist, p2, 2); pv != 2 {
+		t.Errorf("Error: the min version should be 2 but was %v\n", pv)
+	}
+
+	pa = `{"agreementProtocols":[{"name":"`+CitizenScientist+`","protocolVersion":3}]}`
+	pb = `{"agreementProtocols":[{"name":"`+CitizenScientist+`"}]}`
+
+	if p1 = create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 = create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pa)
+	} else if pv := p1.MinimumProtocolVersion(CitizenScientist, p2, 4); pv != 3 {
+		t.Errorf("Error: the min version should be 3 but was %v\n", pv)
+	}
+
+	pa = `{"agreementProtocols":[{"name":"`+CitizenScientist+`","protocolVersion":2}]}`
+	pb = `{"agreementProtocols":[{"name":"`+CitizenScientist+`","protocolVersion":4}]}`
+
+	if p1 = create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 = create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pa)
+	} else if pv := p1.MinimumProtocolVersion(CitizenScientist, p2, 5); pv != 2 {
+		t.Errorf("Error: the min version should be 2 but was %v\n", pv)
+	}
+
+}
+
 // ================================================================================================================
 // Helper functions
 //
 // Create an APISpecification array from a JSON serialization. The JSON serialization
 // does not have to be a valid APISpecification serialization, just has to be a valid
 // JSON serialization.
+func create_Policy(jsonString string, t *testing.T) *Policy {
+	p := new(Policy)
+
+	if err := json.Unmarshal([]byte(jsonString), p); err != nil {
+		t.Errorf("Error unmarshalling Policy json string: %v error:%v\n", jsonString, err)
+		return nil
+	} else {
+		return p
+	}
+}
+
 func create_APISpecification(jsonString string, t *testing.T) *APISpecList {
 	as := new(APISpecList)
 

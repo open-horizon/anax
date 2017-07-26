@@ -261,6 +261,55 @@ func (s *Service) addFilesystemBinding(bind string) {
 	s.Binds = append(s.Binds, bind)
 }
 
+func(s *Service) hasSpecificPortBinding() bool {
+	if s.SpecificPorts == nil {
+		return false
+	}
+	if len(s.SpecificPorts) != 0 {
+		return true
+	}
+	return false
+}
+
+func(s *Service) getSpecificHostPortBinding() string {
+	if s.SpecificPorts == nil {
+		return ""
+	} else if len(s.SpecificPorts) == 0 {
+		return ""
+	} else {
+		p := strings.Split(s.SpecificPorts[0].HostPort, ":")
+		port := strings.Split(p[0], "/")[0]
+		return port
+	}
+}
+
+func(s *Service) getSpecificContainerPortBinding() string {
+	if s.SpecificPorts == nil {
+		return ""
+	} else if len(s.SpecificPorts) == 0 {
+		return ""
+	} else {
+		p := strings.Split(s.SpecificPorts[0].HostPort, ":")
+		if len(p) < 2 {
+			port := strings.Split(p[0], "/")[0]
+			return port
+		} else {
+			port := strings.Split(p[1], "/")[0]
+			return port
+		}
+	}
+}
+
+func(s *Service) getSpecificHostBinding() string {
+	if s.SpecificPorts == nil {
+		return ""
+	} else if len(s.SpecificPorts) == 0 {
+		return ""
+	} else {
+		return s.SpecificPorts[0].HostIP
+	}
+}
+
 func(s *Service) addSpecificPortBinding(b docker.PortBinding) {
 	if s.SpecificPorts == nil {
 		s.SpecificPorts = make([]docker.PortBinding, 0, 5)
@@ -327,11 +376,14 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 			return nil, err
 		}
 
-		// Assume only 1 filesystem binding
-		hostVol := ""
-		hostVolIndex := strings.Index(service.Binds[0], ":")
-		if hostVolIndex != -1 {
-			hostVol = service.Binds[0][:hostVolIndex]
+		// Create the volume map based on the container paths being bound to the host.
+		// The bind string looks like this: <host-path>:<container-path>:<ro> where ro means readonly and is optional.
+		vols := make(map[string]struct{})
+		for _, bind := range service.Binds {
+			containerVol := strings.Split(bind, ":")
+			if len(containerVol) > 1 && containerVol[1] != "" {
+				vols[containerVol[1]] = struct{}{}
+			}
 		}
 
 		// setup labels and log config for the new container
@@ -366,14 +418,12 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 
 		serviceConfig := &persistence.ServiceConfig{
 			Config: docker.Config{
-				Image:  service.Image,
-				Env:    []string{},
-				Cmd:    service.Command,
-				CPUSet: cpuSet,
-				Labels: labels,
-				Volumes: map[string]struct{}{
-					hostVol: {},
-				},
+				Image:        service.Image,
+				Env:          []string{},
+				Cmd:          service.Command,
+				CPUSet:       cpuSet,
+				Labels:       labels,
+				Volumes:      vols,
 				ExposedPorts: map[docker.Port]struct{}{},
 			},
 			HostConfig: docker.HostConfig{
@@ -387,7 +437,7 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 				MemorySwap:      0,
 				Devices:         []docker.Device{},
 				LogConfig:       logConfig,
-				Binds: service.Binds,
+				Binds:           service.Binds,
 			},
 		}
 
@@ -433,14 +483,35 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 			}
 		}
 
+		// HostPort schema: <host_port>:<container_port>:<protocol>
+		// If <host_port> is absent, <container_port> is used instead.
+		// If <protocol> is absent, "/tcp" is used.
 		for _, specificPort := range service.SpecificPorts {
 			var emptyS struct{}
-			dPort := docker.Port(specificPort.HostPort + "/tcp")
+			cPort := ""
+			hPort := ""
+			pieces := strings.Split(specificPort.HostPort, ":")
+			hPort = pieces[0]
+			if len(pieces) < 2 {
+				cPort = pieces[0]
+			} else {
+				cPort = pieces[1]
+			}
+			if !strings.Contains(cPort, "/") {
+				cPort = cPort + "/tcp"
+			}
+			if !strings.Contains(hPort, "/") {
+				hPort = hPort + "/tcp"
+			}
+
+			dPort := docker.Port(cPort)
 			serviceConfig.Config.ExposedPorts[dPort] = emptyS
 
-			serviceConfig.HostConfig.PortBindings[dPort] = []docker.PortBinding{
-				specificPort,
-			}
+			hMapping := docker.PortBinding{
+					HostIP:   specificPort.HostIP,
+					HostPort: hPort,
+				}
+			serviceConfig.HostConfig.PortBindings[dPort] = append(serviceConfig.HostConfig.PortBindings[dPort], hMapping)
 		}
 
 		for _, givenDevice := range service.Devices {
@@ -546,12 +617,21 @@ func (w *ContainerWorker) NewEvent(incoming events.Message) {
 			w.Commands <- containerCmd
 		}
 
-	case *events.GovernanceCancelationMessage:
-		msg, _ := incoming.(*events.GovernanceCancelationMessage)
+	case *events.GovernanceWorkloadCancelationMessage:
+		msg, _ := incoming.(*events.GovernanceWorkloadCancelationMessage)
 
 		switch msg.Event().Id {
 		case events.AGREEMENT_ENDED:
-			containerCmd := w.NewContainerShutdownCommand(msg.AgreementProtocol, msg.AgreementId, msg.Deployment, []string{})
+			containerCmd := w.NewWorkloadShutdownCommand(msg.AgreementProtocol, msg.AgreementId, msg.Deployment, []string{})
+			w.Commands <- containerCmd
+		}
+
+	case *events.ContainerStopMessage:
+		msg, _ := incoming.(*events.ContainerStopMessage)
+
+		switch msg.Event().Id {
+		case events.CONTAINER_STOPPING:
+			containerCmd := w.NewContainerStopCommand(msg)
 			w.Commands <- containerCmd
 		}
 
@@ -613,7 +693,11 @@ func serviceStart(client *docker.Client,
 
 	container, cErr := client.CreateContainer(containerOpts)
 	if cErr != nil {
-		return fail(container, serviceName, cErr)
+		if cErr == docker.ErrContainerAlreadyExists {
+			return cErr
+		} else {
+			return fail(container, serviceName, cErr)
+		}
 	}
 
 	// second arg just a backwards compat feature, will go away someday
@@ -979,9 +1063,15 @@ func (b *ContainerWorker) resourcesCreate(agreementId string, configure *events.
 
 	workloadROStorageDir := b.workloadStorageDir(agreementId)
 
-	// create RO workload storage dir
+	// create RO workload storage dir if it doesnt already exist
 	if err := os.Mkdir(workloadROStorageDir, 0700); err != nil {
-		return nil, err
+		if pErr, ok := err.(*os.PathError); ok {
+			if pErr.Err.Error() != "file exists" {
+				return nil, err
+			}
+		} else {
+			return nil, err
+		}
 	}
 
 	glog.V(5).Infof("Writing raw config to file in %v. Config data: %v", workloadROStorageDir, string(configureRaw))
@@ -1075,16 +1165,36 @@ func (b *ContainerWorker) resourcesCreate(agreementId string, configure *events.
 	}
 
 	// from here on out, need to clean up bridge(s) if there is a problem
-	agBridge, err := mkBridge(agreementId, b.client)
-	if err != nil {
+
+	// If the network we want already exists, just use it.
+	var agBridge *docker.Network
+	if networks, err := b.client.ListNetworks(); err != nil {
+		glog.Errorf("Unable to list networks: %v", err)
 		return nil, err
+	} else {
+		for _, net := range networks {
+			if net.Name == agreementId {
+				glog.V(5).Infof("Found network %v already present", net.Name)
+				agBridge = &net
+				break
+			}
+		}
+		if agBridge == nil {
+			newBridge, err := mkBridge(agreementId, b.client)
+			if err != nil {
+				return nil, err
+			}
+			agBridge = newBridge
+		}
 	}
 
 	// every one of these gets wired to both the agBridge and every shared bridge from this agreement
 	for serviceName, servicePair := range private {
 		servicePair.serviceConfig.HostConfig.NetworkMode = agreementId // custom bridge has agreementId as name, same as endpoint key
 		if err := serviceStart(b.client, agreementId, serviceName, "", servicePair.serviceConfig, mkEndpoints(agBridge, serviceName), sharedEndpoints, &postCreateContainers, fail); err != nil {
-			return nil, err
+			if err != docker.ErrContainerAlreadyExists {
+				return nil, err
+			}
 		}
 	}
 
@@ -1117,7 +1227,7 @@ func (b *ContainerWorker) start() {
 			case *WorkloadConfigureCommand:
 				cmd := command.(*WorkloadConfigureCommand)
 
-				glog.V(3).Infof("ContainerWorker received workoad configure command: %v", cmd)
+				glog.V(3).Infof("ContainerWorker received workload configure command: %v", cmd)
 
 				agreementId := cmd.AgreementLaunchContext.AgreementId
 
@@ -1192,66 +1302,24 @@ func (b *ContainerWorker) start() {
 				deploymentDesc := new(DeploymentDescription)
 				if err := json.Unmarshal([]byte(cmd.ContainerLaunchContext.Configure.Deployment), &deploymentDesc); err != nil {
 					glog.Errorf("Error Unmarshalling deployment string %v, error: %v", cmd.ContainerLaunchContext.Configure.Deployment, err)
-					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext)
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 					continue
 				} else if valid := deploymentDesc.isValidFor("infrastructure"); !valid {
 					glog.Errorf("Deployment config %v contains unsupported capability for infrastructure container", cmd.ContainerLaunchContext.Configure.Deployment)
-					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext)
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 					continue
 				}
 
-				// Check to see if the container is already running. No need to start it if so.
-				cMatches := make([]docker.APIContainers, 0)
 				serviceNames := deploymentDesc.serviceNames()
-				report := func(container *docker.APIContainers, contName string) error {
-
-					for _, name := range serviceNames {
-						if container.Labels[LABEL_PREFIX+".service_name"] == name {
-							cMatches = append(cMatches, *container)
-							glog.V(4).Infof("Matching container instance for name %v: %v", contName, container)
-						}
-					}
-					return nil
-				}
-
-				b.ContainersMatchingAgreement([]string{cmd.ContainerLaunchContext.Blockchain.Name}, false, report)
-
-				if len(serviceNames) <= len(cMatches) {
-					glog.V(4).Infof("Found container already running for %v: %v", cmd.ContainerLaunchContext.Blockchain.Name, len(cMatches))
-					continue
-				}
-
-				// The container is not already running, so let's make sure we do some clean up to ensure that the container will start.
-				workloadROStorageDir := b.workloadStorageDir(cmd.ContainerLaunchContext.Blockchain.Name)
-				if err := os.RemoveAll(workloadROStorageDir); err != nil {
-					glog.Infof("workloadROStorageDir already cleaned up: %v. Error: %v", workloadROStorageDir, err)
-				}
-
-				// Remove network if it is left hanging around
-				if networks, err := b.client.ListNetworks(); err != nil {
-					glog.Infof("Unable to list networks: %v", err)
-				} else {
-					for _, net := range networks {
-						if net.Name == cmd.ContainerLaunchContext.Blockchain.Name {
-							glog.V(5).Infof("Freeing blockchain net: %v", net.Name)
-							if err := b.client.RemoveNetwork(net.ID); err != nil {
-								glog.Errorf("Failure removing network: %v. Error: %v", net.ID, err)
-							} else {
-								glog.V(5).Infof("Freed blockchain net: %v", net.Name)
-							}
-							break
-						}
-					}
-				}
 
 				// Proceed to load the docker image.
 				if len(cmd.ImageFiles) == 0 {
 					glog.Errorf("Torrent configuration in deployment specified no new Docker images to load: %v, unable to load container", deploymentDesc)
-					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext)
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 					continue
 				} else if err := loadImages(b.client, b.Config.Edge.TorrentDir, cmd.ImageFiles); err != nil {
 					glog.Errorf("Error loading image files: %v", err)
-					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext)
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 					continue
 				}
 
@@ -1266,7 +1334,9 @@ func (b *ContainerWorker) start() {
 						dir = path.Join(os.Getenv("SNAP_COMMON")) + ":/root"
 					}
 					deploymentDesc.Services[serviceName].addFilesystemBinding(dir)
-					deploymentDesc.Services[serviceName].addSpecificPortBinding(docker.PortBinding{HostIP:"127.0.0.1", HostPort:"8545"})
+					if !deploymentDesc.Services[serviceName].hasSpecificPortBinding() { 	// Add compatibility config - assume eth container
+						deploymentDesc.Services[serviceName].addSpecificPortBinding(docker.PortBinding{HostIP:"127.0.0.1", HostPort:"8545"})
+					}
 					deploymentDesc.Services[serviceName].Privileged = true
 				}
 
@@ -1276,13 +1346,17 @@ func (b *ContainerWorker) start() {
 				// Get the container started.
 				if deployment, err := b.resourcesCreate(cmd.ContainerLaunchContext.Blockchain.Name, &cmd.ContainerLaunchContext.Configure, deploymentDesc, []byte(""), *cmd.ContainerLaunchContext.EnvironmentAdditions); err != nil {
 					glog.Errorf("Error starting containers: %v", err)
-					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext)
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 
 				} else {
 					glog.Infof("Success starting pattern for serviceNames: %v", persistence.ServiceConfigNames(deployment))
 
 					// perhaps add the tc info to the container message so it can be enforced
-					b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, *cmd.ContainerLaunchContext)
+					if ov := os.Getenv("CMTN_SERVICEOVERRIDE"); ov != "" {
+						b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, *cmd.ContainerLaunchContext, serviceNames[0], deploymentDesc.Services[serviceNames[0]].getSpecificContainerPortBinding())
+					} else {
+						b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, *cmd.ContainerLaunchContext, deploymentDesc.Services[serviceNames[0]].getSpecificHostBinding(), deploymentDesc.Services[serviceNames[0]].getSpecificHostPortBinding())
+					}
 				}
 
 			case *ContainerMaintenanceCommand:
@@ -1315,8 +1389,8 @@ func (b *ContainerWorker) start() {
 					b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementProtocol, cmd.AgreementId, cmd.Deployment)
 				}
 
-			case *ContainerShutdownCommand:
-				cmd := command.(*ContainerShutdownCommand)
+			case *WorkloadShutdownCommand:
+				cmd := command.(*WorkloadShutdownCommand)
 
 				agreements := cmd.Agreements
 				if cmd.CurrentAgreementId != "" {
@@ -1331,6 +1405,17 @@ func (b *ContainerWorker) start() {
 
 				// send the event to let others know that the workload clean up has been processed
 				b.Messages() <- events.NewWorkloadMessage(events.WORKLOAD_DESTROYED, cmd.AgreementProtocol, cmd.CurrentAgreementId, nil)
+
+			case *ContainerStopCommand:
+				cmd := command.(*ContainerStopCommand)
+
+				glog.V(3).Infof("ContainerWorker received infrastructure container stop command: %v", cmd)
+				if err := b.resourcesRemove([]string{cmd.Msg.ContainerName}); err != nil {
+					glog.Errorf("Error removing resources: %v", err)
+				}
+
+				// send the event to let others know that the workload clean up has been processed
+				b.Messages() <- events.NewContainerShutdownMessage(events.CONTAINER_DESTROYED, cmd.Msg.ContainerName)
 
 			default:
 				glog.Errorf("Unsupported command: %v", command)

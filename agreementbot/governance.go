@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
 	"net/http"
@@ -27,7 +28,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 		// This is the amount of time for the routine to wait as discovered through scanning active agreements.
 		discoveredWaitTime := uint64(0)
 
-		// A filter for limiting the resturned set of agreements just to those that are in progress and not yet timed out.
+		// A filter for limiting the returned set of agreements just to those that are in progress and not yet timed out.
 		notYetFinalFilter := func() AFilter {
 			return func(a Agreement) bool { return a.AgreementCreationTime != 0 && a.AgreementTimedout == 0 }
 		}
@@ -44,7 +45,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 				for _, ag := range agreements {
 
 					// Govern agreements that have seen a reply from the device
-					if ag.CounterPartyAddress != "" {
+					if protocolHandler.AlreadyReceivedReply(&ag) {
 
 						// For agreements that havent seen a blockchain write yet, check timeout
 						if ag.AgreementFinalizedTime == 0 {
@@ -97,29 +98,35 @@ func (w *AgreementBotWorker) GovernAgreements() {
 											glog.Errorf(logString(fmt.Sprintf("error obtaining message target for data notification: %v", err)))
 										} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
 											glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
-										} else if err := protocolHandler.AgreementProtocolHandler().NotifyDataReceipt(ag.CurrentAgreementId, mt, protocolHandler.GetSendMessage()); err != nil {
+										} else if err := protocolHandler.AgreementProtocolHandler("", "").NotifyDataReceipt(ag.CurrentAgreementId, mt, protocolHandler.GetSendMessage()); err != nil {
 											glog.Errorf(logString(fmt.Sprintf("unable to send data notification, error: %v", err)))
 										}
 									}
 
 									// Check to see if it's time to send a metering notification
-									if ag.MeteringNotificationSent == 0 || (ag.MeteringNotificationSent != 0 && (ag.MeteringNotificationSent + uint64(ag.MeteringNotificationInterval)) <= now) {
-										// Create Metering notification. If the policy is empty, there's nothing to do.
-										mp := policy.Meter{Tokens: ag.MeteringTokens, PerTimeUnit: ag.MeteringPerTimeUnit, NotificationIntervalS: ag.MeteringNotificationInterval}
-										if mp.IsEmpty() {
-											continue
-										}
+									// Create Metering notification. If the policy is empty, there's nothing to do.
+									mp := policy.Meter{Tokens: ag.MeteringTokens, PerTimeUnit: ag.MeteringPerTimeUnit, NotificationIntervalS: ag.MeteringNotificationInterval}
+									if mp.IsEmpty() {
+										continue
+									} else if ag.MeteringNotificationSent == 0 || (ag.MeteringNotificationSent != 0 && (ag.MeteringNotificationSent + uint64(ag.MeteringNotificationInterval)) <= now) {
+										// Grab the blockchain info from the agreement if there is any
 
-										if mn, err := protocolHandler.CreateMeteringNotification(mp, &ag); err != nil {
-											glog.Errorf(logString(fmt.Sprintf("unable to create metering notification, error: %v", err)))
-										} else if whisperTo, pubkeyTo, err := protocolHandler.GetDeviceMessageEndpoint(ag.DeviceId, "Governance"); err != nil {
-											glog.Errorf(logString(fmt.Sprintf("error obtaining message target for metering notification: %v", err)))
-										} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
-											glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
-										} else if msg, err := protocolHandler.AgreementProtocolHandler().NotifyMetering(ag.CurrentAgreementId, mn, mt, protocolHandler.GetSendMessage()); err != nil {
-											glog.Errorf(logString(fmt.Sprintf("unable to send metering notification, error: %v", err)))
-										} else if _, err := MeteringNotification(w.db, ag.CurrentAgreementId, agp, msg); err != nil {
-											glog.Errorf(logString(fmt.Sprintf("unable to record metering notification, error: %v", err)))
+										bcType, bcName := protocolHandler.GetKnownBlockchain(&ag)
+										glog.V(5).Info(logString(fmt.Sprintf("metering on %v %v", bcType, bcName)))
+
+										// If we can write to the blockchain then we have all the info we need to do metering.
+										if protocolHandler.IsBlockchainWritable(bcType, bcName) && protocolHandler.CanSendMeterRecord(&ag) {
+											if mn, err := protocolHandler.CreateMeteringNotification(mp, &ag); err != nil {
+												glog.Errorf(logString(fmt.Sprintf("unable to create metering notification, error: %v", err)))
+											} else if whisperTo, pubkeyTo, err := protocolHandler.GetDeviceMessageEndpoint(ag.DeviceId, "Governance"); err != nil {
+												glog.Errorf(logString(fmt.Sprintf("error obtaining message target for metering notification: %v", err)))
+											} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
+												glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
+											} else if msg, err := protocolHandler.AgreementProtocolHandler(bcType, bcName).NotifyMetering(ag.CurrentAgreementId, mn, mt, protocolHandler.GetSendMessage()); err != nil {
+												glog.Errorf(logString(fmt.Sprintf("unable to send metering notification, error: %v", err)))
+											} else if _, err := MeteringNotification(w.db, ag.CurrentAgreementId, agp, msg); err != nil {
+												glog.Errorf(logString(fmt.Sprintf("unable to record metering notification, error: %v", err)))
+											}
 										}
 									}
 
@@ -416,6 +423,54 @@ func (w *AgreementBotWorker) GovernArchivedAgreements() {
 
 		// Sleep
 		glog.V(5).Infof(logString(fmt.Sprintf("archive purge sleeping for %v seconds.", waitTime)))
+		time.Sleep(time.Duration(waitTime) * time.Second)
+	}
+
+}
+
+// Govern the active agreements, reporting which ones need a blockchain running so that the blockchain workers
+// can keep them running.
+func (w *AgreementBotWorker) GovernBlockchainNeeds() {
+
+	glog.Info(logString(fmt.Sprintf("started blockchain need governance")))
+
+	// This is the amount of time for the governance routine to wait.
+	waitTime := uint64(60)
+
+	for {
+
+		// Find all agreements that need a blockchain by searching through all the agreement protocol DB buckets
+		for _, agp := range policy.AllAgreementProtocols() {
+
+			// If the agreement protocol doesnt require a blockchain then we can skip it.
+			if bcType := policy.RequiresBlockchainType(agp); bcType == "" {
+				continue
+			} else {
+
+				// Make a map of all blockchain names that we need to have running
+				neededBCs := make(map[string]bool)
+				if agreements, err := FindAgreements(w.db, []AFilter{UnarchivedAFilter()}, agp); err == nil {
+					for _, ag := range agreements {
+						_, bcName := w.consumerPH[agp].GetKnownBlockchain(&ag)
+						if  bcName != "" {
+							neededBCs[bcName] = true
+						}
+					}
+
+					// If we captured any needed blockchains, inform the blockchain worker
+					if len(neededBCs) != 0 {
+						w.Messages() <- events.NewReportNeededBlockchainsMessage(events.BC_NEEDED, bcType, neededBCs)
+					}
+
+				} else {
+					glog.Errorf(logString(fmt.Sprintf("unable to read agreements from database for protocol %v, error: %v", agp, err)))
+				}
+
+			}
+		}
+
+		// Sleep
+		glog.V(5).Infof(logString(fmt.Sprintf("blockchain need governance sleeping for %v seconds.", waitTime)))
 		time.Sleep(time.Duration(waitTime) * time.Second)
 	}
 

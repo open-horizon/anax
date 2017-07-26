@@ -36,9 +36,9 @@ func NewRPCRequest(method string, params []string) *RPCRequest {
 	}
 }
 
-func AccountFunded(gethURL string) (bool, error) {
+func AccountFunded(colonusDir string, gethURL string) (bool, error) {
 
-	if account, err := AccountId(); err != nil {
+	if account, err := AccountId(colonusDir); err != nil {
 		return false, err
 	} else {
 		params := make([]string, 0)
@@ -82,9 +82,9 @@ func AccountFunded(gethURL string) (bool, error) {
 }
 
 // Move this to a better place
-func SignHash(hash string, gethURL string) (string, error) {
+func SignHash(hash string, colonusDir string, gethURL string) (string, error) {
 
-	if account, err := AccountId(); err != nil {
+	if account, err := AccountId(colonusDir); err != nil {
 		return "", err
 	} else {
 		theHash := hash

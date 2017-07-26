@@ -27,7 +27,9 @@ const (
 	AGREEMENT_REGISTERED  EventId = "AGREEMENT_REGISTERED"
 	ACCOUNT_FUNDED        EventId = "ACCOUNT_FUNDED"
 	BC_CLIENT_INITIALIZED EventId = "BC_CLIENT_INITIALIZED"
+	BC_CLIENT_STOPPING    EventId = "BC_CLIENT_STOPPING"
 	BC_EVENT              EventId = "BC_EVENT"
+	BC_NEEDED             EventId = "BC_NEEDED"
 
 	// exchange related
 	RECEIVED_EXCHANGE_DEV_MSG EventId = "RECEIVED_EXCHANGE_DEV_MSG"
@@ -37,12 +39,14 @@ const (
 	TORRENT_FETCHED EventId = "TORRENT_FETCHED"
 
 	// container-related
-	EXECUTION_FAILED   EventId = "EXECUTION_FAILED"
-	EXECUTION_BEGUN    EventId = "EXECUTION_BEGUN"
-	WORKLOAD_DESTROYED EventId = "WORKLOAD_DESTROYED"
-	CONTAINER_MAINTAIN EventId = "CONTAINER_MAINTAIN"
-	LOAD_CONTAINER     EventId = "LOAD_CONTAINER"
-	NEW_ETH_CLIENT     EventId = "NEW_ETH_CONTAINER"
+	EXECUTION_FAILED    EventId = "EXECUTION_FAILED"
+	EXECUTION_BEGUN     EventId = "EXECUTION_BEGUN"
+	WORKLOAD_DESTROYED  EventId = "WORKLOAD_DESTROYED"
+	CONTAINER_STOPPING  EventId = "CONTAINER_STOPPING"
+	CONTAINER_DESTROYED EventId = "CONTAINER_DESTROYED"
+	CONTAINER_MAINTAIN  EventId = "CONTAINER_MAINTAIN"
+	LOAD_CONTAINER      EventId = "LOAD_CONTAINER"
+	NEW_BC_CLIENT       EventId = "NEW_BC_CONTAINER"
 
 	// policy-related
 	NEW_POLICY EventId     = "NEW_POLICY"
@@ -442,21 +446,21 @@ func (m GovernanceMaintenanceMessage) ShortString() string {
 	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment Services: %v", m.event, m.AgreementProtocol, m.AgreementId, depStr)
 }
 
-type GovernanceCancelationMessage struct {
+type GovernanceWorkloadCancelationMessage struct {
 	GovernanceMaintenanceMessage
 	Message
 	Cause EndContractCause
 }
 
-func (m *GovernanceCancelationMessage) Event() Event {
+func (m *GovernanceWorkloadCancelationMessage) Event() Event {
 	return m.event
 }
 
-func (m GovernanceCancelationMessage) String() string {
+func (m GovernanceWorkloadCancelationMessage) String() string {
 	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Cause: %v", m.event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment), m.Cause)
 }
 
-func (m GovernanceCancelationMessage) ShortString() string {
+func (m GovernanceWorkloadCancelationMessage) ShortString() string {
 	return m.String()
 }
 
@@ -471,11 +475,11 @@ func NewGovernanceMaintenanceMessage(id EventId, protocol string, agreementId st
 	}
 }
 
-func NewGovernanceCancelationMessage(id EventId, cause EndContractCause, protocol string, agreementId string, deployment map[string]persistence.ServiceConfig) *GovernanceCancelationMessage {
+func NewGovernanceWorkloadCancelationMessage(id EventId, cause EndContractCause, protocol string, agreementId string, deployment map[string]persistence.ServiceConfig) *GovernanceWorkloadCancelationMessage {
 
 	govMaint := NewGovernanceMaintenanceMessage(id, protocol, agreementId, deployment)
 
-	return &GovernanceCancelationMessage{
+	return &GovernanceWorkloadCancelationMessage{
 		GovernanceMaintenanceMessage: *govMaint,
 		Cause: cause,
 	}
@@ -517,10 +521,12 @@ func NewWorkloadMessage(id EventId, protocol string, agreementId string, deploym
 type ContainerMessage struct {
 	event             Event
 	LaunchContext     ContainerLaunchContext
+	ServiceName       string
+	ServicePort       string
 }
 
 func (m ContainerMessage) String() string {
-	return fmt.Sprintf("event: %v, LaunchContext: %v", m.event.Id, m.LaunchContext)
+	return fmt.Sprintf("event: %v, ServiceName: %v, ServicePort: %v, LaunchContext: %v", m.event.Id, m.ServiceName, m.ServicePort, m.LaunchContext)
 }
 
 func (m ContainerMessage) ShortString() string {
@@ -531,13 +537,71 @@ func (b ContainerMessage) Event() Event {
 	return b.event
 }
 
-func NewContainerMessage(id EventId, lc ContainerLaunchContext) *ContainerMessage {
+func NewContainerMessage(id EventId, lc ContainerLaunchContext, serviceName string, servicePort string) *ContainerMessage {
 
 	return &ContainerMessage{
 		event: Event{
 			Id: id,
 		},
 		LaunchContext: lc,
+		ServiceName:   serviceName,
+		ServicePort:   servicePort,
+	}
+}
+
+//Container stop message
+type ContainerStopMessage struct {
+	event             Event
+	ContainerName     string
+}
+
+func (m ContainerStopMessage) String() string {
+	return fmt.Sprintf("event: %v, ContainerName: %v", m.event.Id, m.ContainerName)
+}
+
+func (m ContainerStopMessage) ShortString() string {
+	return m.String()
+}
+
+func (b ContainerStopMessage) Event() Event {
+	return b.event
+}
+
+func NewContainerStopMessage(id EventId, containerName string) *ContainerStopMessage {
+
+	return &ContainerStopMessage{
+		event: Event{
+			Id: id,
+		},
+		ContainerName: containerName,
+	}
+}
+
+//Container Shutdown message
+type ContainerShutdownMessage struct {
+	event             Event
+	ContainerName     string
+}
+
+func (m ContainerShutdownMessage) String() string {
+	return fmt.Sprintf("event: %v, ContainerName: %v", m.event.Id, m.ContainerName)
+}
+
+func (m ContainerShutdownMessage) ShortString() string {
+	return m.String()
+}
+
+func (b ContainerShutdownMessage) Event() Event {
+	return b.event
+}
+
+func NewContainerShutdownMessage(id EventId, containerName string) *ContainerShutdownMessage {
+
+	return &ContainerShutdownMessage{
+		event: Event{
+			Id: id,
+		},
+		ContainerName: containerName,
 	}
 }
 
@@ -670,9 +734,14 @@ func NewInitAgreementCancelationMessage(id EventId, reason uint, protocol string
 
 // Account funded message
 type AccountFundedMessage struct {
-	event   Event
-	Account string
-	Time    uint64
+	event       Event
+	Account     string
+	Time        uint64
+	bcType      string
+	bcInstance  string
+	serviceName string
+	servicePort string
+	colonusDir  string
 }
 
 func (m *AccountFundedMessage) Event() Event {
@@ -680,27 +749,57 @@ func (m *AccountFundedMessage) Event() Event {
 }
 
 func (m AccountFundedMessage) String() string {
-	return fmt.Sprintf("Event: %v, Account: %v, Time: %v", m.event.Id, m.Account, m.Time)
+	return fmt.Sprintf("Event: %v, Account: %v, Time: %v, Type: %v, Instance: %v, ServiceName: %v, ServicePort: %v, ColonusDir: %v", m.event, m.Account, m.Time, m.bcType, m.bcInstance, m.serviceName, m.servicePort, m.colonusDir)
 }
 
 func (m AccountFundedMessage) ShortString() string {
 	return m.String()
 }
 
-func NewAccountFundedMessage(id EventId, acct string) *AccountFundedMessage {
+func (m AccountFundedMessage) BlockchainType() string {
+	return m.bcType
+}
+
+func (m AccountFundedMessage) BlockchainInstance() string {
+	return m.bcInstance
+}
+
+func (m AccountFundedMessage) ServiceName() string {
+	return m.serviceName
+}
+
+func (m AccountFundedMessage) ServicePort() string {
+	return m.servicePort
+}
+
+func (m AccountFundedMessage) ColonusDir() string {
+	return m.colonusDir
+}
+
+func NewAccountFundedMessage(id EventId, acct string, bcType string, bcName string, serviceName string, servicePort string, colonusDir string) *AccountFundedMessage {
 	return &AccountFundedMessage{
 		event: Event{
 			Id: id,
 		},
-		Account: acct,
-		Time:    uint64(time.Now().Unix()),
+		Account:     acct,
+		Time:        uint64(time.Now().Unix()),
+		bcType:      bcType,
+		bcInstance:  bcName,
+		serviceName: serviceName,
+		servicePort: servicePort,
+		colonusDir:  colonusDir,
 	}
 }
 
 // Blockchain client initialized message
 type BlockchainClientInitializedMessage struct {
-	event Event
-	Time  uint64
+	event       Event
+	Time        uint64
+	bcType      string
+	bcInstance  string
+	serviceName string
+	servicePort string
+	colonusDir  string
 }
 
 func (m *BlockchainClientInitializedMessage) Event() Event {
@@ -708,19 +807,122 @@ func (m *BlockchainClientInitializedMessage) Event() Event {
 }
 
 func (m BlockchainClientInitializedMessage) String() string {
-	return fmt.Sprintf("Event: %v, Time: %v", m.event, m.Time)
+	return fmt.Sprintf("Event: %v, Time: %v, Type: %v, Instance: %v, ServiceName: %v, ServicePort: %v, ColonusDir: %v", m.event, m.Time, m.bcType, m.bcInstance, m.serviceName, m.servicePort, m.colonusDir)
 }
 
 func (m BlockchainClientInitializedMessage) ShortString() string {
 	return m.String()
 }
 
-func NewBlockchainClientInitializedMessage(id EventId) *BlockchainClientInitializedMessage {
+func (m BlockchainClientInitializedMessage) BlockchainType() string {
+	return m.bcType
+}
+
+func (m BlockchainClientInitializedMessage) BlockchainInstance() string {
+	return m.bcInstance
+}
+
+func (m BlockchainClientInitializedMessage) ServiceName() string {
+	return m.serviceName
+}
+
+func (m BlockchainClientInitializedMessage) ServicePort() string {
+	return m.servicePort
+}
+
+func (m BlockchainClientInitializedMessage) ColonusDir() string {
+	return m.colonusDir
+}
+
+func NewBlockchainClientInitializedMessage(id EventId, bcType string, bcName string, serviceName string, servicePort string, colonusDir string) *BlockchainClientInitializedMessage {
 	return &BlockchainClientInitializedMessage{
 		event: Event{
 			Id: id,
 		},
-		Time: uint64(time.Now().Unix()),
+		Time:        uint64(time.Now().Unix()),
+		bcType:      bcType,
+		bcInstance:  bcName,
+		serviceName: serviceName,
+		servicePort: servicePort,
+		colonusDir:  colonusDir,
+	}
+}
+
+// Blockchain client Stopping message
+type BlockchainClientStoppingMessage struct {
+	event       Event
+	Time        uint64
+	bcType      string
+	bcInstance  string
+}
+
+func (m *BlockchainClientStoppingMessage) Event() Event {
+	return m.event
+}
+
+func (m BlockchainClientStoppingMessage) String() string {
+	return fmt.Sprintf("Event: %v, Time: %v, Type: %v, Instance: %v", m.event, m.Time, m.bcType, m.bcInstance)
+}
+
+func (m BlockchainClientStoppingMessage) ShortString() string {
+	return m.String()
+}
+
+func (m BlockchainClientStoppingMessage) BlockchainType() string {
+	return m.bcType
+}
+
+func (m BlockchainClientStoppingMessage) BlockchainInstance() string {
+	return m.bcInstance
+}
+
+func NewBlockchainClientStoppingMessage(id EventId, bcType string, bcName string) *BlockchainClientStoppingMessage {
+	return &BlockchainClientStoppingMessage{
+		event: Event{
+			Id: id,
+		},
+		Time:        uint64(time.Now().Unix()),
+		bcType:      bcType,
+		bcInstance:  bcName,
+	}
+}
+
+// Report of blockchains that are needed
+type ReportNeededBlockchainsMessage struct {
+	event       Event
+	Time        uint64
+	bcType      string
+	neededBCs   map[string]bool
+}
+
+func (m *ReportNeededBlockchainsMessage) Event() Event {
+	return m.event
+}
+
+func (m ReportNeededBlockchainsMessage) String() string {
+	return fmt.Sprintf("Event: %v, Time: %v, Type: %v, Needed Blockchains: %v", m.event, m.Time, m.bcType, m.neededBCs)
+}
+
+func (m ReportNeededBlockchainsMessage) ShortString() string {
+	return m.String()
+}
+
+func (m ReportNeededBlockchainsMessage) BlockchainType() string {
+	return m.bcType
+}
+
+func (m ReportNeededBlockchainsMessage) NeededBlockchains() map[string]bool {
+	return m.neededBCs
+}
+
+func NewReportNeededBlockchainsMessage(id EventId, bcType string, neededBCs map[string]bool) *ReportNeededBlockchainsMessage {
+	return &ReportNeededBlockchainsMessage{
+		event: Event{
+			Id: id,
+		},
+		Time:        uint64(time.Now().Unix()),
+		bcType:      bcType,
+		neededBCs:   neededBCs,
 	}
 }
 
@@ -729,6 +931,7 @@ type EthBlockchainEventMessage struct {
 	event    Event
 	rawEvent string
 	protocol string
+	name     string
 	Time     uint64
 }
 
@@ -740,21 +943,26 @@ func (m *EthBlockchainEventMessage) RawEvent() string {
 	return m.rawEvent
 }
 
+func (m *EthBlockchainEventMessage) Name() string {
+	return m.name
+}
+
 func (m EthBlockchainEventMessage) String() string {
-	return fmt.Sprintf("Event: %v, Protocol: %v, Raw Event: %v, Time: %v", m.event, m.protocol, m.rawEvent, m.Time)
+	return fmt.Sprintf("Event: %v, Name: %v, Protocol: %v, Raw Event: %v, Time: %v", m.event, m.name, m.protocol, m.rawEvent, m.Time)
 }
 
 func (m EthBlockchainEventMessage) ShortString() string {
-	return fmt.Sprintf("Event: %v, Protocol: %v, Time: %v", m.event, m.protocol, m.Time)
+	return fmt.Sprintf("Event: %v, Name: %v, Protocol: %v, Time: %v", m.event, m.name, m.protocol, m.Time)
 }
 
-func NewEthBlockchainEventMessage(id EventId, ev string, protocol string) *EthBlockchainEventMessage {
+func NewEthBlockchainEventMessage(id EventId, ev string, name string, protocol string) *EthBlockchainEventMessage {
 	return &EthBlockchainEventMessage{
 		event: Event{
 			Id: id,
 		},
 		rawEvent: ev,
 		protocol: protocol,
+		name:     name,
 		Time:     uint64(time.Now().Unix()),
 	}
 }
@@ -807,45 +1015,50 @@ func NewExchangeDeviceMessage(id EventId, exMsg []byte, pMsg string) *ExchangeDe
 }
 
 // Make sure eth container is up and running
-type NewEthContainerMessage struct {
+type NewBCContainerMessage struct {
 	event             Event
 	exchangeURL       string
 	exchangeId        string
 	exchangeToken     string
 	instance          string
+	typeName          string
 	Time              uint64
 }
 
-func (m *NewEthContainerMessage) Event() Event {
+func (m *NewBCContainerMessage) Event() Event {
 	return m.event
 }
 
-func (m *NewEthContainerMessage) ExchangeURL() string {
+func (m *NewBCContainerMessage) ExchangeURL() string {
 	return m.exchangeURL
 }
 
-func (m *NewEthContainerMessage) ExchangeId() string {
+func (m *NewBCContainerMessage) ExchangeId() string {
 	return m.exchangeId
 }
 
-func (m *NewEthContainerMessage) ExchangeToken() string {
+func (m *NewBCContainerMessage) ExchangeToken() string {
 	return m.exchangeToken
 }
 
-func (m *NewEthContainerMessage) Instance() string {
+func (m *NewBCContainerMessage) Instance() string {
 	return m.instance
 }
 
-func (m NewEthContainerMessage) String() string {
-	return fmt.Sprintf("Event: %v, Instance: %v, Time: %v, ExchangeURL: %v, ExchangeId: %v, ExchangeToken: %v", m.event, m.instance, m.Time, m.exchangeURL, m.exchangeId, m.exchangeToken)
+func (m *NewBCContainerMessage) TypeName() string {
+	return m.typeName
 }
 
-func (m NewEthContainerMessage) ShortString() string {
+func (m NewBCContainerMessage) String() string {
+	return fmt.Sprintf("Event: %v, Type: %v, Instance: %v, Time: %v, ExchangeURL: %v, ExchangeId: %v, ExchangeToken: %v", m.event, m.typeName, m.instance, m.Time, m.exchangeURL, m.exchangeId, m.exchangeToken)
+}
+
+func (m NewBCContainerMessage) ShortString() string {
 	return m.String()
 }
 
-func NewNewEthContainerMessage(id EventId, instance string, exchangeURL string, exchangeId string, exchangeToken string) *NewEthContainerMessage {
-	return &NewEthContainerMessage{
+func NewNewBCContainerMessage(id EventId, typeName string, instance string, exchangeURL string, exchangeId string, exchangeToken string) *NewBCContainerMessage {
+	return &NewBCContainerMessage{
 		event: Event{
 			Id: id,
 		},
@@ -853,6 +1066,7 @@ func NewNewEthContainerMessage(id EventId, instance string, exchangeURL string, 
 		exchangeId:       exchangeId,
 		exchangeToken:    exchangeToken,
 		instance:         instance,
+		typeName:         typeName,
 		Time:             uint64(time.Now().Unix()),
 	}
 }
