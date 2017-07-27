@@ -73,26 +73,45 @@ func (b *ContainerWorker) NewContainerMaintenanceCommand(protocol string, agreem
 }
 
 // ==============================================================================================================
-type ContainerShutdownCommand struct {
+type WorkloadShutdownCommand struct {
     AgreementProtocol  string
     CurrentAgreementId string
     Deployment         map[string]persistence.ServiceConfig
     Agreements         []string
 }
 
-func (c ContainerShutdownCommand) String() string {
+func (c WorkloadShutdownCommand) String() string {
     return fmt.Sprintf("AgreementProtocol: %v, CurrentAgreementId: %v, Deployment: %v, Agreements (sample): %v", c.AgreementProtocol, c.CurrentAgreementId, persistence.ServiceConfigNames(&c.Deployment), cutil.FirstN(10, c.Agreements))
 }
 
-func (c ContainerShutdownCommand) ShortString() string {
+func (c WorkloadShutdownCommand) ShortString() string {
     return c.String()
 }
 
-func (b *ContainerWorker) NewContainerShutdownCommand(protocol string, currentAgreementId string, deployment map[string]persistence.ServiceConfig, agreements []string) *ContainerShutdownCommand {
-    return &ContainerShutdownCommand{
+func (b *ContainerWorker) NewWorkloadShutdownCommand(protocol string, currentAgreementId string, deployment map[string]persistence.ServiceConfig, agreements []string) *WorkloadShutdownCommand {
+    return &WorkloadShutdownCommand{
         AgreementProtocol:  protocol,
         CurrentAgreementId: currentAgreementId,
         Deployment:         deployment,
         Agreements:         agreements,
+    }
+}
+
+// ==============================================================================================================
+type ContainerStopCommand struct {
+    Msg events.ContainerStopMessage
+}
+
+func (c ContainerStopCommand) String() string {
+    return fmt.Sprintf("Msg: %v", c.Msg)
+}
+
+func (c ContainerStopCommand) ShortString() string {
+    return c.String()
+}
+
+func (b *ContainerWorker) NewContainerStopCommand(msg *events.ContainerStopMessage) *ContainerStopCommand  {
+    return &ContainerStopCommand {
+        Msg:  *msg,
     }
 }

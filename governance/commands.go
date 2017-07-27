@@ -73,3 +73,23 @@ func (w *GovernanceWorker) NewCleanupStatusCommand(protocol string, agreementId 
         Status:            status,
     }
 }
+
+// ==============================================================================================================
+type AsyncTerminationCommand struct {
+    AgreementId       string
+    AgreementProtocol string
+    Reason            uint
+}
+
+func (c AsyncTerminationCommand) ShortString() string {
+
+    return fmt.Sprintf("AsyncTerminationCommand: AgreementId %v, AgreementProtocol %v, Reason %v", c.AgreementId, c.AgreementProtocol, c.Reason)
+}
+
+func NewAsyncTerminationCommand(agreementId string, agreementProtocol string, reason uint) *AsyncTerminationCommand {
+    return &AsyncTerminationCommand{
+        AgreementId:       agreementId,
+        AgreementProtocol: agreementProtocol,
+        Reason:            reason,
+    }
+}

@@ -76,6 +76,10 @@ func (a *BasicAgreementWorker) start(work chan AgreementWork, random *rand.Rand)
             wi := workItem.(HandleWorkloadUpgrade)
             a.HandleWorkloadUpgrade(a.protocolHandler, &wi, a.workerID)
 
+        } else if workItem.Type() == ASYNC_CANCEL {
+            wi := workItem.(AsyncCancelAgreement)
+            a.ExternalCancel(a.protocolHandler, wi.AgreementId, wi.Reason, a.workerID)
+
         } else {
             glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("received unknown work request: %v", workItem)))
         }

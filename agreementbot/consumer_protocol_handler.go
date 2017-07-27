@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/metering"
 	"github.com/open-horizon/anax/policy"
@@ -16,10 +17,10 @@ import (
 	"time"
 )
 
-func CreateConsumerPH(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) ConsumerProtocolHandler {
-	if handler := NewCSProtocolHandler(name, cfg, db, pm); handler != nil {
+func CreateConsumerPH(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, msgq chan events.Message) ConsumerProtocolHandler {
+	if handler := NewCSProtocolHandler(name, cfg, db, pm, msgq); handler != nil {
 		return handler
-	} else if handler := NewBasicProtocolHandler(name, cfg, db, pm); handler != nil {
+	} else if handler := NewBasicProtocolHandler(name, cfg, db, pm, msgq); handler != nil {
 		return handler
 	} // Add new consumer side protocol handlers here
 	return nil
@@ -31,7 +32,7 @@ type ConsumerProtocolHandler interface {
 	ExchangeId() string
 	ExchangeToken() string
 	AcceptCommand(cmd worker.Command) bool
-	AgreementProtocolHandler() abstractprotocol.ProtocolHandler
+	AgreementProtocolHandler(typeName string, name string) abstractprotocol.ProtocolHandler
 	WorkQueue() chan AgreementWork
 	DispatchProtocolMessage(cmd *NewProtocolMessageCommand, cph ConsumerProtocolHandler) error
 	PersistAgreement(wi *InitiateAgreement, proposal abstractprotocol.Proposal, workerID string) error
@@ -50,16 +51,31 @@ type ConsumerProtocolHandler interface {
 	CreateMeteringNotification(mp policy.Meter, agreement *Agreement) (*metering.MeteringNotification, error)
 	TerminateAgreement(agreement *Agreement, reason uint, workerId string)
 	GetDeviceMessageEndpoint(deviceId string, workerId string) (string, []byte, error)
+	SetBlockchainClientAvailable(ev *events.BlockchainClientInitializedMessage)
+	SetBlockchainClientNotAvailable(ev *events.BlockchainClientStoppingMessage)
+	SetBlockchainWritable(ev *events.AccountFundedMessage)
+	IsBlockchainWritable(typeName string, name string) bool
+	CanCancelNow(agreement *Agreement) bool
+	DeferCommand(cmd AgreementWork)
+	HandleDeferredCommands()
+	PostReply(agreementId string, proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, consumerPolicy *policy.Policy, workerId string) error
+	UpdateProducer(ag *Agreement)
+	HandleExtensionMessage(cmd *NewProtocolMessageCommand) error
+	AlreadyReceivedReply(ag *Agreement) bool
+	GetKnownBlockchain(ag *Agreement) (string, string)
+	CanSendMeterRecord(ag *Agreement) bool
 }
 
 type BaseConsumerProtocolHandler struct {
-	name       string
-	pm         *policy.PolicyManager
-	db         *bolt.DB
-	config     *config.HorizonConfig
-	httpClient *http.Client
-	agbotId    string
-	token      string
+	name             string
+	pm               *policy.PolicyManager
+	db               *bolt.DB
+	config           *config.HorizonConfig
+	httpClient       *http.Client
+	agbotId          string
+	token            string
+	deferredCommands []AgreementWork   // The agreement related work that has to be deferred and retried
+	messages         chan events.Message
 }
 
 func (b *BaseConsumerProtocolHandler) GetSendMessage() func(mt interface{}, pay []byte) error {
@@ -139,7 +155,7 @@ func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMe
 
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received inbound exchange message.")))
 	// Figure out what kind of message this is
-	if reply, rerr := cph.AgreementProtocolHandler().ValidateReply(string(cmd.Message)); rerr == nil {
+	if reply, rerr := cph.AgreementProtocolHandler("", "").ValidateReply(string(cmd.Message)); rerr == nil {
 		agreementWork := HandleReply{
 			workType:     REPLY,
 			Reply:        reply,
@@ -149,7 +165,7 @@ func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMe
 		}
 		cph.WorkQueue() <- agreementWork
 		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued reply message")))
-	} else if _, aerr := cph.AgreementProtocolHandler().ValidateDataReceivedAck(string(cmd.Message)); aerr == nil {
+	} else if _, aerr := cph.AgreementProtocolHandler("", "").ValidateDataReceivedAck(string(cmd.Message)); aerr == nil {
 		agreementWork := HandleDataReceivedAck{
 			workType:     DATARECEIVEDACK,
 			Ack:          string(cmd.Message),
@@ -159,7 +175,7 @@ func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMe
 		}
 		cph.WorkQueue() <- agreementWork
 		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued data received ack message")))
-	} else if can, aerr := cph.AgreementProtocolHandler().ValidateCancel(string(cmd.Message)); aerr == nil {
+	} else if can, cerr := cph.AgreementProtocolHandler("", "").ValidateCancel(string(cmd.Message)); cerr == nil {
 		// Before dispatching the cancel to a worker thread, make sure it's a valid cancel
 		if ag, err := FindSingleAgreementByAgreementId(b.db, can.AgreementId(), can.Protocol(), []AFilter{}); err != nil {
 			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error finding agreement %v in the db", can.AgreementId())))
@@ -175,8 +191,10 @@ func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMe
 			cph.WorkQueue() <- agreementWork
 			glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued cancel message")))
 		}
+	} else if exerr := cph.HandleExtensionMessage(cmd); exerr == nil {
+		// nothing to do
 	} else {
-		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("ignoring  message: %v due to errors: %v or %v", string(cmd.Message), rerr, aerr)))
+		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("ignoring  message: %v because it is an unknown type %v", string(cmd.Message))))
 		return errors.New(BCPHlogstring(b.Name(), fmt.Sprintf("unexpected protocol msg %v", cmd.Message)))
 	}
 	return nil
@@ -343,10 +361,10 @@ func (b *BaseConsumerProtocolHandler) PersistBaseAgreement(wi *InitiateAgreement
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error marshalling proposal for storage %v, error: %v", proposal, err)))
 	} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error demarshalling TsandCs policy from pending agreement %v, error: %v", proposal.AgreementId(), err)))
-	} else if _, err := AgreementUpdate(b.db, proposal.AgreementId(), string(pBytes), string(polBytes), pol.DataVerify, b.config.AgreementBot.ProcessGovernanceIntervalS, hash, sig, b.Name()); err != nil {
+	} else if _, err := AgreementUpdate(b.db, proposal.AgreementId(), string(pBytes), string(polBytes), pol.DataVerify, b.config.AgreementBot.ProcessGovernanceIntervalS, hash, sig, b.Name(), proposal.Version()); err != nil {
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", proposal, err)))
 
-		// Record that the agreement was initiated, in the exchange
+	// Record that the agreement was initiated, in the exchange
 	} else if err := b.RecordConsumerAgreementState(proposal.AgreementId(), wi.ConsumerPolicy.APISpecs[0].SpecRef, "Formed Proposal", workerID); err != nil {
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error setting agreement state for %v", proposal.AgreementId())))
 	}
@@ -355,7 +373,7 @@ func (b *BaseConsumerProtocolHandler) PersistBaseAgreement(wi *InitiateAgreement
 
 func (b *BaseConsumerProtocolHandler) PersistReply(reply abstractprotocol.ProposalReply, pol *policy.Policy, workerID string) error {
 
-	if _, err := AgreementMade(b.db, reply.AgreementId(), reply.DeviceId(), "", b.Name(), pol.HAGroup.Partners); err != nil {
+	if _, err := AgreementMade(b.db, reply.AgreementId(), reply.DeviceId(), "", b.Name(), pol.HAGroup.Partners, "", ""); err != nil {
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error updating agreement %v with reply info in DB, error: %v", reply.AgreementId(), err)))
 	}
 	return nil
@@ -397,8 +415,13 @@ func (b *BaseConsumerProtocolHandler) DeleteMessage(msgId int) error {
 func (b *BaseConsumerProtocolHandler) TerminateAgreement(ag *Agreement, reason uint, mt interface{}, workerId string, cph ConsumerProtocolHandler) {
 	if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
 		glog.Errorf(BCPHlogstring2(workerId, fmt.Sprintf("unable to demarshal policy while trying to cancel %v, error %v", ag.CurrentAgreementId, err)))
-	} else if err := cph.AgreementProtocolHandler().TerminateAgreement(pol, ag.CounterPartyAddress, ag.CurrentAgreementId, reason, mt, b.GetSendMessage()); err != nil {
-		glog.Errorf(BCPHlogstring2(workerId, fmt.Sprintf("error terminating agreement %v on the blockchain: %v", ag.CurrentAgreementId, err)))
+	} else {
+		bcType, bcName := cph.GetKnownBlockchain(ag)
+		if aph := cph.AgreementProtocolHandler(bcType, bcName); aph == nil {
+			glog.Warningf(BCPHlogstring2(workerId, fmt.Sprintf("for %v agreement protocol handler not ready", ag.CurrentAgreementId)))
+		} else if err := aph.TerminateAgreement(pol, ag.CounterPartyAddress, ag.CurrentAgreementId, reason, mt, b.GetSendMessage()); err != nil {
+			glog.Errorf(BCPHlogstring2(workerId, fmt.Sprintf("error terminating agreement %v on the blockchain: %v", ag.CurrentAgreementId, err)))
+		}
 	}
 }
 
@@ -440,6 +463,47 @@ func (b *BaseConsumerProtocolHandler) getDevice(deviceId string, workerId string
 			}
 		}
 	}
+}
+
+func (b *BaseConsumerProtocolHandler) DeferCommand(cmd AgreementWork) {
+	b.deferredCommands = append(b.deferredCommands, cmd)
+}
+
+func (b *BaseConsumerProtocolHandler) GetDeferredCommands() []AgreementWork {
+	res := b.deferredCommands
+	b.deferredCommands = make([]AgreementWork, 0, 10)
+	return res
+}
+
+func (b *BaseConsumerProtocolHandler) UpdateProducer(ag *Agreement) {
+	return
+}
+
+func (b *BaseConsumerProtocolHandler) HandleExtensionMessage(cmd *NewProtocolMessageCommand) error {
+	return nil
+}
+
+func (c *BaseConsumerProtocolHandler) SetBlockchainClientAvailable(ev *events.BlockchainClientInitializedMessage) {
+    return
+}
+
+func (c *BaseConsumerProtocolHandler) SetBlockchainClientNotAvailable(ev *events.BlockchainClientStoppingMessage) {
+    return
+}
+
+func (c *BaseConsumerProtocolHandler) AlreadyReceivedReply(ag *Agreement) bool {
+	if ag.CounterPartyAddress != "" {
+		return true
+	}
+	return false
+}
+
+func (c *BaseConsumerProtocolHandler) GetKnownBlockchain(ag *Agreement) (string, string) {
+	return "", ""
+}
+
+func (c *BaseConsumerProtocolHandler) CanSendMeterRecord(ag *Agreement) bool {
+	return true
 }
 
 // The list of termination reasons that should be supported by all agreement protocols. The caller can pass these into

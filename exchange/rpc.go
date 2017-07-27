@@ -110,6 +110,14 @@ type Agbot struct {
 	PublicKey     []byte `json:"publicKey"`
 }
 
+func (a Agbot) String() string {
+	return fmt.Sprintf("Name: %v, Owner: %v, LastHeartbeat: %v, PublicKey: %x", a.Name, a.Owner, a.LastHeartbeat, a.PublicKey)
+}
+
+func (a Agbot) ShortString() string {
+	return fmt.Sprintf("Name: %v, Owner: %v, LastHeartbeat: %v", a.Name, a.Owner, a.LastHeartbeat)
+}
+
 type GetAgbotsResponse struct {
 	Agbots map[string]Agbot `json:"agbots"`
 }
@@ -349,7 +357,7 @@ func CreateSearchRequest() *SearchExchangeRequest {
 }
 
 // This function creates the device registration message body.
-func CreateDevicePut(gethURL string, token string, name string) *PutDeviceRequest {
+func CreateDevicePut(token string, name string) *PutDeviceRequest {
 
 	keyBytes := func() []byte {
 		if pubKey, _, err := GetKeys(""); err != nil {

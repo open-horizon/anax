@@ -1,34 +1,51 @@
 @startuml
+
 Consumer -> Exchange: Update agreement state ('Formed Proposal')
 Consumer -> Producer: Send fully formed terms and conditions, do you agree to the terms?
-Producer -> Ethereum: Create SHA3 hash and sign the hash using Producer's ethereum account
-Ethereum --> Producer: signature
 Producer -> Exchange: Update agreement state ('Agree to Proposal')
-Producer --> Consumer: Respond with signature (or I don't agree)
-Consumer -> Producer: Acknowledge response
+Producer --> Consumer: Return which blockchain (type and name) to use
 Consumer -> Exchange: Update agreement state ('Producer agreed')
-Consumer ->> Ethereum: Write agreement to blockchain
+Consumer --> Producer: Acknowledge response
+Producer -> Producer: Start Fork 1 and 2
+Consumer -> Consumer: Start Fork 3, 4, and 5
 
-Producer -> Ethereum: Fork (1): start polling blockchain for agreement
-Producer -> Exchange: (1) If agreement not written in time, delete agreement
-Ethereum --> Producer: (1) Agreement is on the blockchain
+
+Producer -> BitTorrent: Fork (1) Download blockchain client container
+BitTorrent --> Producer: (1) blockchain client docker container
+Producer -> Producer: (1) Start blockchain client container
+Producer -> Ethereum: (1) Create SHA3 hash and sign the hash using Producer's ethereum account
+Ethereum --> Producer: (1) signature
+Producer -> Consumer: (1) Send Producer update message with signature
+Consumer --> Producer: (1) Acknowledge update message
+Producer -> Ethereum: (1): start polling blockchain for agreement
+Producer ->> Ethereum: (1) If agreement not written in time, cancel agreement
+Ethereum -->> Producer: (1) Agreement is on the blockchain
 Producer -> Exchange: (1) Update agreement state ('Finalized Agreement')
 
-Consumer -> Ethereum: Fork (2): start polling blockchain for agreement
-Consumer -> Exchange: (2) If agreement not written in time, delete agreement
-Ethereum --> Consumer: (2) Agreement is on the blockchain
-Consumer -> Exchange: (2) Update agreement state ('Finalized Agreement')
+Producer -> BitTorrent: Fork (2) Download workload
+BitTorrent --> Producer: (2) workload docker containers
+Producer -> Producer: (2) Start workload
 
-Producer -> BitTorrent: Fork (3) Download workload
-BitTorrent --> Producer: (3) workload docker containers
-Producer -> Producer: (3) Start workload
+Consumer -> BitTorrent: Fork (3) Download blockchain client container
+BitTorrent --> Consumer: (3) blockchain client docker container
+Consumer -> Consumer: (3) Start blockchain client container
+Consumer -> Ethereum: (3) Get ethereum account
+Ethereum --> Consumer: (3) ethereum account
+Consumer -> Producer: (3) Send Consumer update message with account
+Producer --> Consumer: (3) Acknowledge update message
 
-Consumer -> Consumer: Fork (4): start polling for data being received
-Consumer -> Exchange: (4) If data not received in time, delete agreement
-Consumer ->> Ethereum: (4) If data not received in time, cancel agreement
-Producer ->> Consumer: (4) Workload sends data
-Consumer -> Producer: (4) Data Received
-Producer --> Consumer: (4)Acknowledge data received
-Consumer -> Producer: (4) If metering enabled, send metering notification
+Consumer -> Ethereum: Fork (4) After both updates have been done, write agreement to blockchain
+Consumer -> Ethereum: (4): start polling blockchain for agreement
+Consumer ->> Ethereum: (4) If agreement not written in time, cancel agreement
+Ethereum -->> Consumer: (4) Agreement is on the blockchain
+Consumer -> Exchange: (4) Update agreement state ('Finalized Agreement')
+
+Consumer -> Consumer: Fork (5): start polling for data being received
+Consumer ->> Ethereum: (5) If data not received in time, cancel agreement
+Producer ->> Consumer: (5) Workload sends data
+Consumer -> Producer: (5) Data Received
+Producer --> Consumer: (5)Acknowledge data received
+Consumer -> Producer: (5) If metering enabled, send metering notification
+Producer -> Producer: (5) Save metering record in local database
 
 @enduml 

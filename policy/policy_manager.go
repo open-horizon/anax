@@ -117,6 +117,20 @@ func (self *PolicyManager) DeletePolicy(delPolicy *Policy) {
 	return
 }
 
+func (self *PolicyManager) UpgradeAgreementProtocols() {
+	self.PolicyLock.Lock()
+	defer self.PolicyLock.Unlock()
+
+	for pix, pol := range self.Policies {
+		for aix, agp := range pol.AgreementProtocols {
+			if agp.Name == CitizenScientist && agp.ProtocolVersion != 2 {
+				self.Policies[pix].AgreementProtocols[aix].ProtocolVersion = 2
+			}
+		}
+	}
+
+}
+
 // This function is used to get the policy manager up and running. When this function returns, all the current policies
 // have been read into memory. It can be used instead of the factory method for convenience.
 func Initialize(policyPath string) (*PolicyManager, error) {

@@ -19,7 +19,6 @@ type Config struct {
 	TorrentDir                    string
 	APIListen                     string
 	DBPath                        string
-	GethURL                       string
 	DockerEndpoint                string
 	DefaultCPUSet                 string
 	DefaultServiceRegistrationRAM int64
@@ -46,7 +45,6 @@ type AGConfig struct {
 	TxLostDelayTolerationSeconds int
 	AgreementWorkers             int
 	DBPath                       string
-	GethURL                      string
 	ProtocolTimeoutS             uint64 // Number of seconds to wait before declaring proposal response is lost
 	AgreementTimeoutS            uint64 // Number of seconds to wait before declaring agreement not finalized in blockchain
 	NoDataIntervalS              uint64 // default should be 15 mins == 15*60 == 900. Ignored if the policy has data verification disabled.

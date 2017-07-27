@@ -212,7 +212,7 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 // This function creates a merged policy file from a producer policy and a consumer policy, which will eventually
 // become the full terms and conditions of an agreement. If no error is returned, a merged policy object is returned.
 // The order of parameters is important, just like in the Are_Compatible API.
-func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Policy, workload *Workload, agreementId string, defaultPW string, defaultNoData uint64) (*Policy, error) {
+func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Policy, workload *Workload, agreementId string, defaultPW string, defaultNoData uint64, agreementProtocolVersion int) (*Policy, error) {
 
 	// Make sure the policies are compatible. If not an error will be returned.
 	if err := Are_Compatible(producer_policy, consumer_policy); err != nil {
@@ -224,7 +224,9 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		merged_pol.Header.Version = CurrentVersion
 		merged_pol.APISpecs = append(merged_pol.APISpecs, consumer_policy.APISpecs...)
 		intersecting_agreement_protocols, _ := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols)
-		merged_pol.AgreementProtocols = *intersecting_agreement_protocols.Single_Element()
+		agps := *intersecting_agreement_protocols.Single_Element()
+		agps[0].ProtocolVersion = agreementProtocolVersion
+		merged_pol.AgreementProtocols = agps
 		merged_pol.Workloads = append(merged_pol.Workloads, *workload)
 		if err := merged_pol.ObscureWorkloadPWs(agreementId, defaultPW); err != nil {
 			return nil, errors.New(fmt.Sprintf("Error merging policies, error: %v", err))
@@ -425,6 +427,39 @@ func (self *Policy) NextHighestPriorityWorkload(currentPriority int, retryCount 
 	}
 }
 
+func (p *Policy) MinimumProtocolVersion(name string, other *Policy, maxSupportedVersion int) int {
+	pv := maxSupportedVersion
+	if prodAGP := p.AgreementProtocols.FindByName(name); prodAGP == nil { 	// This should never happen
+		return pv
+	} else if conAGP := other.AgreementProtocols.FindByName(name); conAGP == nil { 	// This should never happen
+		return pv
+	} else {
+		return prodAGP.MinimumProtocolVersion(conAGP, maxSupportedVersion)
+	}
+
+}
+
+func (p *Policy) RequiresDefaultBC(protocol string) bool {
+	if protocol != CitizenScientist { return false }
+
+	if prodAGP := p.AgreementProtocols.FindByName(protocol); prodAGP == nil {
+		return false
+	} else if prodAGP.ProtocolVersion < 2 && len(prodAGP.Blockchains) == 0 {
+		return true
+	}
+	return false
+}
+
+func (p *Policy) RequiresKnownBC(protocol string) (string, string) {
+	if protocol != CitizenScientist { return "", "" }
+
+	if prodAGP := p.AgreementProtocols.FindByName(protocol); prodAGP == nil {
+		return "", ""
+	} else if prodAGP.ProtocolVersion < 2 && len(prodAGP.Blockchains) != 0 {
+		return prodAGP.Blockchains[0].Type, prodAGP.Blockchains[0].Name
+	}
+	return "", ""
+}
 
 // These are functions that operate on policy files in the file system.
 //

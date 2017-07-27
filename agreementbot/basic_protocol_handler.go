@@ -7,6 +7,7 @@ import (
     "github.com/open-horizon/anax/abstractprotocol"
     "github.com/open-horizon/anax/basicprotocol"
     "github.com/open-horizon/anax/config"
+    "github.com/open-horizon/anax/events"
     "github.com/open-horizon/anax/exchange"
     "github.com/open-horizon/anax/metering"
     "github.com/open-horizon/anax/policy"
@@ -22,17 +23,19 @@ type BasicProtocolHandler struct {
     Work        chan AgreementWork // outgoing commands for the workers
 }
 
-func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *BasicProtocolHandler {
+func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, messages chan events.Message) *BasicProtocolHandler {
     if name == basicprotocol.PROTOCOL_NAME {
         return &BasicProtocolHandler{
             BaseConsumerProtocolHandler: &BaseConsumerProtocolHandler{
-                name:       name,
-                pm:         pm,
-                db:         db,
-                config:     cfg,
-                httpClient: &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
-                agbotId:    cfg.AgreementBot.ExchangeId,
-                token:      cfg.AgreementBot.ExchangeToken,
+                name:             name,
+                pm:               pm,
+                db:               db,
+                config:           cfg,
+                httpClient:       &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
+                agbotId:          cfg.AgreementBot.ExchangeId,
+                token:            cfg.AgreementBot.ExchangeToken,
+                deferredCommands: nil,
+                messages:         messages,
             },
             agreementPH: basicprotocol.NewProtocolHandler(pm),
             Work:        make(chan AgreementWork),
@@ -67,7 +70,7 @@ func (c *BasicProtocolHandler) Initialize() {
 
 }
 
-func (c *BasicProtocolHandler) AgreementProtocolHandler() abstractprotocol.ProtocolHandler {
+func (c *BasicProtocolHandler) AgreementProtocolHandler(typeName string, name string) abstractprotocol.ProtocolHandler {
     return c.agreementPH
 }
 
@@ -154,6 +157,34 @@ func (c *BasicProtocolHandler) GetTerminationCode(reason string) uint {
 
 func (c *BasicProtocolHandler) GetTerminationReason(code uint) string {
     return basicprotocol.DecodeReasonCode(uint64(code))
+}
+
+func (c *BasicProtocolHandler) SetBlockchainWritable(ev *events.AccountFundedMessage) {
+    return
+}
+
+func (c *BasicProtocolHandler) IsBlockchainWritable(typeName string, name string) bool {
+    return true
+}
+
+func (c *BasicProtocolHandler) CanCancelNow(ag *Agreement) bool {
+    return true
+}
+
+func (c *BasicProtocolHandler) HandleDeferredCommands() {
+    return
+}
+
+func (b *BasicProtocolHandler) PostReply(agreementId string, proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, consumerPolicy *policy.Policy, workerId string) error {
+
+    if err := b.agreementPH.RecordAgreement(proposal, reply, "", "", consumerPolicy); err != nil {
+        return err
+    } else {
+        glog.V(3).Infof(BCPHlogstring2(workerId, fmt.Sprintf("recorded agreement %v", agreementId)))
+    }
+
+    return nil
+
 }
 
 // ==========================================================================================================

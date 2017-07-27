@@ -127,3 +127,48 @@ func NewMakeAgreementCommand(pPol policy.Policy, originalProducerPolicy string, 
 		Device:                 dev,
 	}
 }
+
+// ==============================================================================================================
+type ClientInitializedCommand struct {
+	Msg events.BlockchainClientInitializedMessage
+}
+
+func (e  ClientInitializedCommand) ShortString() string {
+	return e.Msg.ShortString()
+}
+
+func NewClientInitializedCommand(msg *events.BlockchainClientInitializedMessage) * ClientInitializedCommand {
+	return & ClientInitializedCommand{
+		Msg:         *msg,
+	}
+}
+
+// ==============================================================================================================
+type ClientStoppingCommand struct {
+	Msg events.BlockchainClientStoppingMessage
+}
+
+func (e  ClientStoppingCommand) ShortString() string {
+	return e.Msg.ShortString()
+}
+
+func NewClientStoppingCommand(msg *events.BlockchainClientStoppingMessage) * ClientStoppingCommand {
+	return & ClientStoppingCommand{
+		Msg:         *msg,
+	}
+}
+
+// ==============================================================================================================
+type AccountFundedCommand struct {
+	Msg events.AccountFundedMessage
+}
+
+func (e AccountFundedCommand) ShortString() string {
+	return e.Msg.ShortString()
+}
+
+func NewAccountFundedCommand(msg *events.AccountFundedMessage) *AccountFundedCommand {
+	return &AccountFundedCommand{
+		Msg:         *msg,
+	}
+}

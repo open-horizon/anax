@@ -44,7 +44,7 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string,
                                             defaultNoData uint64,
                                             sendMessage func(msgTarget interface{}, pay []byte) error) (abstractprotocol.Proposal, error) {
 
-    if bp, err := abstractprotocol.CreateProposal(p, agreementId, producerPolicy, originalProducerPolicy, consumerPolicy, myId, workload, defaultPW, defaultNoData); err != nil {
+    if bp, err := abstractprotocol.CreateProposal(p, agreementId, producerPolicy, originalProducerPolicy, consumerPolicy, PROTOCOL_CURRENT_VERSION, myId, workload, defaultPW, defaultNoData); err != nil {
         return nil, err
     } else {
 
@@ -62,6 +62,7 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 // This is an implementation of the Decide on proposal API, it has no extensions.
 func (p *ProtocolHandler) DecideOnProposal(proposal abstractprotocol.Proposal,
                                         myId string,
+                                        ignore []string,
                                         messageTarget interface{},
                                         sendMessage func(mt interface{}, pay []byte) error) (abstractprotocol.ProposalReply, error) {
 
@@ -136,6 +137,8 @@ func (p *ProtocolHandler) DemarshalProposal(proposal string) (abstractprotocol.P
 
 func (p *ProtocolHandler) RecordAgreement(newProposal abstractprotocol.Proposal,
                                         reply abstractprotocol.ProposalReply,
+                                        addr string,
+                                        sig string,
                                         consumerPolicy *policy.Policy) error {
 
     // Tell the policy manager that we're in this agreement

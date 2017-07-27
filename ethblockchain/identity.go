@@ -8,9 +8,10 @@ import (
 	"strings"
 )
 
-func readIdFromFs(filename string) (string, error) {
-	// TODO: change to SNAP_USER_COMMON if this can be a multi-user thing
-	filepath := path.Join(os.Getenv("SNAP_COMMON"), "eth", filename)
+func readIdFromFs(colonusDir string, filename string) (string, error) {
+
+	colonusSuffix := strings.Split(colonusDir, "/root/")[1]
+	filepath := path.Join(os.Getenv("SNAP_COMMON"), colonusSuffix, filename)
 
 	file, err := os.Open(filepath)
 	defer file.Close()
@@ -28,10 +29,10 @@ func readIdFromFs(filename string) (string, error) {
 	}
 }
 
-func DirectoryAddress() (string, error) {
-	return readIdFromFs("directory.address")
+func DirectoryAddress(colonusDir string) (string, error) {
+	return readIdFromFs(colonusDir, "directory.address")
 }
 
-func AccountId() (string, error) {
-	return readIdFromFs("accounts")
+func AccountId(colonusDir string) (string, error) {
+	return readIdFromFs(colonusDir, "accounts")
 }

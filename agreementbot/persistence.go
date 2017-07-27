@@ -16,7 +16,8 @@ type Agreement struct {
 	CurrentAgreementId             string   `json:"current_agreement_id"`             // unique
 	DeviceId                       string   `json:"device_id"`                        // the device id we are working with, immutable after construction
 	HAPartners                     []string `json:"ha_partners"`                      // list of HA partner device IDs
-	AgreementProtocol              string   `json:"agreement_protocol"`               // immutable after construction
+	AgreementProtocol              string   `json:"agreement_protocol"`               // immutable after construction - name of protocol in use
+	AgreementProtocolVersion       int      `json:"agreement_protocol_version"`       // version of protocol in use - New in V2 protocol
 	AgreementInceptionTime         uint64   `json:"agreement_inception_time"`         // immutable after construction
 	AgreementCreationTime          uint64   `json:"agreement_creation_time"`          // device responds affirmatively to proposal
 	AgreementFinalizedTime         uint64   `json:"agreement_finalized_time"`         // agreement is seen in the blockchain
@@ -45,12 +46,16 @@ type Agreement struct {
 	Archived                       bool     `json:"archived"`                         // The record is archived
 	TerminatedReason               uint     `json:"terminated_reason"`                // The reason the agreement was terminated
 	TerminatedDescription          string   `json:"terminated_description"`           // The description of why the agreement was terminated
+	BlockchainType                 string   `json:"blockchain_type"`                  // The name of the blockchain type that is being used (new V2 protocol)
+	BlockchainName                 string   `json:"blockchain_name"`                  // The name of the blockchain being used (new V2 protocol)
+	BCUpdateAckTime                uint64   `json:"blockchain_update_ack_time"`       // The time when the producer ACked our update ot him (new V2 protocol)
 }
 
 func (a Agreement) String() string {
 	return fmt.Sprintf("Archived: %v, " +
 		"CurrentAgreementId: %v, " +
 		"AgreementProtocol: %v, " +
+		"AgreementProtocolVersion: %v, " +
 		"DeviceId: %v, " +
 		"HA Partners: %v, " +
 		"AgreementInceptionTime: %v, " +
@@ -76,17 +81,21 @@ func (a Agreement) String() string {
 		"MeteringNotificationSent: %v, " +
 		"MeteringNotificationMsgs: %v, " +
 		"TerminatedReason: %v, " +
-		"TerminatedDescription: %v",
-		a.Archived, a.CurrentAgreementId, a.AgreementProtocol, a.DeviceId, a.HAPartners, a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime,
+		"TerminatedDescription: %v, " +
+		"BlockchainType: %v, " +
+		"BlockchainName: %v, " +
+		"BCUpdateAckTime: %v",
+		a.Archived, a.CurrentAgreementId, a.AgreementProtocol, a.AgreementProtocolVersion, a.DeviceId, a.HAPartners,
+		a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime,
 		a.AgreementTimedout, a.ProposalSig, a.ProposalHash, a.ConsumerProposalSig, a.PolicyName, a.CounterPartyAddress,
 		a.DataVerificationURL, a.DataVerificationUser, a.DataVerificationCheckRate, a.DataVerificationMissedCount, a.DataVerificationNoDataInterval,
 		a.DisableDataVerificationChecks, a.DataVerifiedTime, a.DataNotificationSent,
 		a.MeteringTokens, a.MeteringPerTimeUnit, a.MeteringNotificationInterval, a.MeteringNotificationSent, a.MeteringNotificationMsgs,
-		a.TerminatedReason, a.TerminatedDescription)
+		a.TerminatedReason, a.TerminatedDescription, a.BlockchainType, a.BlockchainName, a.BCUpdateAckTime)
 }
 
 // private factory method for agreement w/out persistence safety:
-func agreement(agreementid string, deviceid string, policyName string, agreementProto string) (*Agreement, error) {
+func agreement(agreementid string, deviceid string, policyName string, bcType string, bcName string, agreementProto string) (*Agreement, error) {
 	if agreementid == "" || agreementProto == "" {
 		return nil, errors.New("Illegal input: agreement id or agreement protocol is empty")
 	} else {
@@ -95,6 +104,7 @@ func agreement(agreementid string, deviceid string, policyName string, agreement
 			DeviceId:                       deviceid,
 			HAPartners:                     []string{},
 			AgreementProtocol:              agreementProto,
+			AgreementProtocolVersion:       0,
 			AgreementInceptionTime:         uint64(time.Now().Unix()),
 			AgreementCreationTime:          0,
 			AgreementFinalizedTime:         0,
@@ -122,12 +132,15 @@ func agreement(agreementid string, deviceid string, policyName string, agreement
 			Archived:                       false,
 			TerminatedReason:               0,
 			TerminatedDescription:          "",
+			BlockchainType:                 bcType,
+			BlockchainName:                 bcName,
+			BCUpdateAckTime:                0,
 		}, nil
 	}
 }
 
-func AgreementAttempt(db *bolt.DB, agreementid string, deviceid string, policyName string, agreementProto string) error {
-	if agreement, err := agreement(agreementid, deviceid, policyName, agreementProto); err != nil {
+func AgreementAttempt(db *bolt.DB, agreementid string, deviceid string, policyName string, bcType string, bcName string, agreementProto string) error {
+	if agreement, err := agreement(agreementid, deviceid, policyName, bcType, bcName, agreementProto); err != nil {
 		return err
 	} else if err := PersistNew(db, agreement.CurrentAgreementId, bucketName(agreementProto), &agreement); err != nil {
 		return err
@@ -136,13 +149,14 @@ func AgreementAttempt(db *bolt.DB, agreementid string, deviceid string, policyNa
 	}
 }
 
-func AgreementUpdate(db *bolt.DB, agreementid string, proposal string, policy string, dvPolicy policy.DataVerification, defaultCheckRate uint64, hash string, sig string, protocol string) (*Agreement, error) {
+func AgreementUpdate(db *bolt.DB, agreementid string, proposal string, policy string, dvPolicy policy.DataVerification, defaultCheckRate uint64, hash string, sig string, protocol string, agreementProtoVersion int) (*Agreement, error) {
 	if agreement, err := singleAgreementUpdate(db, agreementid, protocol, func(a Agreement) *Agreement {
 		a.AgreementCreationTime = uint64(time.Now().Unix())
 		a.Proposal = proposal
 		a.ProposalHash = hash
 		a.ConsumerProposalSig = sig
 		a.Policy = policy
+		a.AgreementProtocolVersion = agreementProtoVersion
 		a.DisableDataVerificationChecks = !dvPolicy.Enabled
 		if dvPolicy.Enabled {
 			a.DataVerificationURL = dvPolicy.URL
@@ -166,11 +180,38 @@ func AgreementUpdate(db *bolt.DB, agreementid string, proposal string, policy st
 	}
 }
 
-func AgreementMade(db *bolt.DB, agreementId string, counterParty string, signature string, protocol string, hapartners []string) (*Agreement, error) {
+func AgreementMade(db *bolt.DB, agreementId string, counterParty string, signature string, protocol string, hapartners []string, bcType string, bcName string) (*Agreement, error) {
 	if agreement, err := singleAgreementUpdate(db, agreementId, protocol, func(a Agreement) *Agreement {
 		a.CounterPartyAddress = counterParty
 		a.ProposalSig = signature
 		a.HAPartners = hapartners
+		a.BlockchainType = bcType
+		a.BlockchainName = bcName
+		return &a
+	}); err != nil {
+		return nil, err
+	} else {
+		return agreement, nil
+	}
+}
+
+func AgreementBlockchainUpdate(db *bolt.DB, agreementId string, consumerSig string, hash string, counterParty string, signature string, protocol string) (*Agreement, error) {
+	if agreement, err := singleAgreementUpdate(db, agreementId, protocol, func(a Agreement) *Agreement {
+		a.ConsumerProposalSig = consumerSig
+		a.ProposalHash = hash
+		a.CounterPartyAddress = counterParty
+		a.ProposalSig = signature
+		return &a
+	}); err != nil {
+		return nil, err
+	} else {
+		return agreement, nil
+	}
+}
+
+func AgreementBlockchainUpdateAck(db *bolt.DB, agreementId string, protocol string) (*Agreement, error) {
+	if agreement, err := singleAgreementUpdate(db, agreementId, protocol, func(a Agreement) *Agreement {
+		a.BCUpdateAckTime = uint64(time.Now().Unix())
 		return &a
 	}); err != nil {
 		return nil, err
@@ -406,7 +447,18 @@ func persistUpdatedAgreement(db *bolt.DB, agreementid string, protocol string, u
 				if mod.TerminatedDescription == "" {	// 1 transition from empty to non-empty
 					mod.TerminatedDescription = update.TerminatedDescription
 				}
-
+				if mod.BlockchainType == "" {		// 1 transition from empty to non-empty
+					mod.BlockchainType = update.BlockchainType
+				}
+				if mod.BlockchainName == "" {		// 1 transition from empty to non-empty
+					mod.BlockchainName = update.BlockchainName
+				}
+				if mod.AgreementProtocolVersion == 0 {		// 1 transition from empty to non-empty
+					mod.AgreementProtocolVersion = update.AgreementProtocolVersion
+				}
+				if mod.BCUpdateAckTime == 0 { 		// 1 transition from zero to non-zero
+					mod.BCUpdateAckTime = update.BCUpdateAckTime
+				}
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize agreement record: %v", mod)
 				} else if err := b.Put([]byte(agreementid), serialized); err != nil {

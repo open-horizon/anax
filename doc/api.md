@@ -11,7 +11,7 @@ curl -s http://<ip>/status | jq '.'
 #### **API:** GET  /status
 ---
 
-Get the bluehorizon status on the device. It currently includes the ethereum status, anax configuration and the device connectivity. 
+Get the bluehorizon status on the device. It currently includes the ethereum status, anax configuration and the device connectivity for all ethereum clients in use.
 
 **Parameters:**
 none
@@ -38,25 +38,27 @@ body:
 
 **Example:**
 ```
-curl -s http://localhost/status |jq '.'
-{
-  "geth": {
-    "net_peer_count": 6,
-    "eth_syncing": false,
-    "eth_block_number": 1684156,
-    "eth_accounts": [
-      "0x428ce7bcdc0459dd818c353ffc8a043f87ab3800"
-    ],
-    "eth_balance": "0x1bc16d674ec80000"
-  },
-  "configuration": {
-    "exchange_api": "https://exchange.staging.bluehorizon.network/api/v1/"
-  },
-  "connectivity": {
-    "firmware.bluehorizon.network": true,
-    "images.bluehorizon.network": true
+curl -s http://localhost/status | jq '.'
+[
+  {
+    "geth": {
+      "net_peer_count": 6,
+      "eth_syncing": false,
+      "eth_block_number": 1684156,
+      "eth_accounts": [
+        "0x428ce7bcdc0459dd818c353ffc8a043f87ab3800"
+      ],
+      "eth_balance": "0x1bc16d674ec80000"
+    },
+    "configuration": {
+      "exchange_api": "https://exchange.staging.bluehorizon.network/api/v1/"
+    },
+    "connectivity": {
+      "firmware.bluehorizon.network": true,
+      "images.bluehorizon.network": true
+    }
   }
-}
+]
 
 
 ```

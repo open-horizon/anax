@@ -46,7 +46,7 @@ func (pm *BaseProtocolMessage) String() string {
 }
 
 func (pm *BaseProtocolMessage) ShortString() string {
-	return fmt.Sprintf("Type: %v, AgreementId: %v", pm.MsgType, pm.AgreeId)
+	return pm.String()
 }
 
 func (pm *BaseProtocolMessage) Type() string {
@@ -106,6 +106,7 @@ type ProtocolHandler interface {
 
 	DecideOnProposal(proposal Proposal,
 		myId string,
+		runningBlockchains []string,
 		messageTarget interface{},
 		sendMessage func(mt interface{}, pay []byte) error) (ProposalReply, error)
 
@@ -129,6 +130,8 @@ type ProtocolHandler interface {
 
 	RecordAgreement(newProposal Proposal,
 		reply ProposalReply,
+		addr string,
+		sig string,
 		consumerPolicy *policy.Policy) error
 
 	TerminateAgreement(policy *policy.Policy,
@@ -195,12 +198,13 @@ func CreateProposal(p ProtocolHandler,
 	producerPolicy *policy.Policy,
 	originalProducerPolicy string,
 	consumerPolicy *policy.Policy,
+	version int,
 	myId string,
 	workload *policy.Workload,
 	defaultPW string,
 	defaultNoData uint64) (*BaseProposal, error) {
 
-	if TCPolicy, err := policy.Create_Terms_And_Conditions(producerPolicy, consumerPolicy, workload, agreementId, defaultPW, defaultNoData); err != nil {
+	if TCPolicy, err := policy.Create_Terms_And_Conditions(producerPolicy, consumerPolicy, workload, agreementId, defaultPW, defaultNoData, version); err != nil {
 		return nil, errors.New(fmt.Sprintf("Protocol %v initiation received error trying to merge policy %v and %v, error: %v", p.Name(), producerPolicy, consumerPolicy, err))
 	} else {
 		glog.V(5).Infof(AAPlogString(p.Name(), fmt.Sprintf("Merged Policy %v", *TCPolicy)))
@@ -208,7 +212,7 @@ func CreateProposal(p ProtocolHandler,
 		if tcBytes, err := json.Marshal(TCPolicy); err != nil {
 			return nil, errors.New(fmt.Sprintf("Protocol %v error marshalling TsAndCs %v, error: %v", p.Name(), *TCPolicy, err))
 		} else {
-			return NewProposal(p.Name(), p.Version(), string(tcBytes), originalProducerPolicy, agreementId, myId), nil
+			return NewProposal(p.Name(), version, string(tcBytes), originalProducerPolicy, agreementId, myId), nil
 		}
 	}
 }
@@ -247,7 +251,7 @@ func DecideOnProposal(p ProtocolHandler,
 	glog.V(5).Infof(AAPlogString(p.Name(), fmt.Sprintf("New proposal: %v", proposal)))
 
 	replyErr := error(nil)
-	reply := NewProposalReply(p.Name(), p.Version(), proposal.AgreementId(), myId)
+	reply := NewProposalReply(p.Name(), proposal.Version(), proposal.AgreementId(), myId)
 
 	var termsAndConditions, producerPolicy *policy.Policy
 

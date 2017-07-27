@@ -20,6 +20,7 @@
     "agreementProtocols": [
         {
             "name": "Citizen Scientist",
+            "protocolVersion": 2,
             "blockchains": [
                 {
                     "type": "ethereum",
@@ -29,6 +30,7 @@
         },
         {
             "name": "2Party Bitcoin",
+            "protocolVersion": 1,
             "blockchains": [
                 {
                     "type": "ethereum",

@@ -9,17 +9,25 @@ import (
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/ethblockchain"
+	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/metering"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/go-solidity/contract_api"
 	"golang.org/x/crypto/sha3"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
 
 const PROTOCOL_NAME = "Citizen Scientist"
-const PROTOCOL_CURRENT_VERSION = 1
+const PROTOCOL_CURRENT_VERSION = 2
+
+// Extended message types
+const MsgTypeBlockchainConsumerUpdate = "blockchainconsumerupdate"
+const MsgTypeBlockchainConsumerUpdateAck = "blockchainconsumerupdateack"
+const MsgTypeBlockchainProducerUpdate = "blockchainproducerupdate"
+const MsgTypeBlockchainProducerUpdateAck = "blockchainproducerupdateack"
 
 // This struct is the proposal body that flows from the consumer to the producer. It has an additional field for the ethereum account address.
 type CSProposal struct {
@@ -36,7 +44,7 @@ func (p *CSProposal) ShortString() string {
 }
 
 func (p *CSProposal) IsValid() bool {
-    return p.BaseProposal.IsValid() && len(p.Address) != 0
+    return p.BaseProposal.IsValid() && ((p.Version() == 1 && len(p.Address) != 0) || (p.Version() == 2 && len(p.Address) == 0))
 }
 
 func NewCSProposal(bp *abstractprotocol.BaseProposal, myAddress string) *CSProposal {
@@ -49,18 +57,21 @@ func NewCSProposal(bp *abstractprotocol.BaseProposal, myAddress string) *CSPropo
 // This struct is the proposal reply body that flows from the producer to the consumer.
 type CSProposalReply struct {
 	*abstractprotocol.BaseProposalReply
-	Signature string `json:"signature"`
-	Address   string `json:"address"`
+	Signature      string `json:"signature"`
+	Address        string `json:"address"`
+	BlockchainType string `json:"blockchainType"` // the type of the blockchain that was chosen - v2 field
+	BlockchainName string `json:"blockchainName"` // the name of the blockchain that was chosen - V2 field
 }
 
 func (pr *CSProposalReply) String() string {
-	return pr.BaseProposalReply.String() + fmt.Sprintf(", Address: %v, Signature: %v", pr.Address, pr.Signature)
+	return pr.BaseProposalReply.String() + fmt.Sprintf(", Address: %v, Signature: %v, BlockchainType: %v, BlockchainName: %v", pr.Address, pr.Signature, pr.BlockchainType, pr.BlockchainName)
 }
 
 func (pr *CSProposalReply) ShortString() string {
-	return pr.BaseProposalReply.ShortString() + fmt.Sprintf(", Address: %v, Signature: %v", pr.Address, pr.Signature)
+	return pr.BaseProposalReply.ShortString() + fmt.Sprintf(", Address: %v, Signature: %v, BlockchainType: %v, BlockchainName: %v", pr.Address, pr.Signature, pr.BlockchainType, pr.BlockchainName)
 }
 
+// Remember that a reply may contain none of the expected fields (other than the base fields) if the device's decision was NO (or false).
 func (pr *CSProposalReply) IsValid() bool {
     return pr.BaseProposalReply.IsValid()
 }
@@ -73,11 +84,116 @@ func (pr *CSProposalReply) SetAddress(a string) {
     pr.Address = a
 }
 
-func NewCSProposalReply(bp *abstractprotocol.BaseProposalReply, sig string, myAddress string) *CSProposalReply {
+func (pr *CSProposalReply) SetBlockchain(t string, n string) {
+    pr.BlockchainType = t
+    pr.BlockchainName = n
+}
+
+func NewCSProposalReply(bp *abstractprotocol.BaseProposalReply, sig string, myAddress string, bcType string, bcName string) *CSProposalReply {
 	return &CSProposalReply{
 		BaseProposalReply: bp,
 		Signature:         sig,
 		Address:           myAddress,
+		BlockchainType:    bcType,
+		BlockchainName:    bcName,
+	}
+}
+
+// This struct is the blockchain info for an agreement sent from consumer to producer as part of protocol version 2.
+type CSBlockchainConsumerUpdate struct {
+	*abstractprotocol.BaseProtocolMessage
+	Address        string `json:"address"`
+}
+
+func (bu *CSBlockchainConsumerUpdate) String() string {
+	return bu.BaseProtocolMessage.String() + fmt.Sprintf(", Address: %v", bu.Address)
+}
+
+func (bu *CSBlockchainConsumerUpdate) ShortString() string {
+	return bu.BaseProtocolMessage.ShortString() + fmt.Sprintf(", Address: %v", bu.Address)
+}
+
+func (bu *CSBlockchainConsumerUpdate) IsValid() bool {
+    return bu.BaseProtocolMessage.IsValid() && bu.MsgType == MsgTypeBlockchainConsumerUpdate && bu.Version() >= 2 && len(bu.Address) != 0
+}
+
+func NewCSBlockchainConsumerUpdate(bp *abstractprotocol.BaseProtocolMessage, myAddress string) *CSBlockchainConsumerUpdate {
+	return &CSBlockchainConsumerUpdate{
+		BaseProtocolMessage: bp,
+		Address:             myAddress,
+	}
+}
+
+// This struct is the ack for the blockchain info sent from consumer to producer as part of protocol version 2.
+type CSBlockchainConsumerUpdateAck struct {
+	*abstractprotocol.BaseProtocolMessage
+}
+
+func (bu *CSBlockchainConsumerUpdateAck) String() string {
+	return bu.BaseProtocolMessage.String()
+}
+
+func (bu *CSBlockchainConsumerUpdateAck) ShortString() string {
+	return bu.BaseProtocolMessage.ShortString()
+}
+
+func (bu *CSBlockchainConsumerUpdateAck) IsValid() bool {
+    return bu.BaseProtocolMessage.IsValid() && bu.MsgType == MsgTypeBlockchainConsumerUpdateAck && bu.Version() >= 2
+}
+
+func NewCSBlockchainConsumerUpdateAck(bp *abstractprotocol.BaseProtocolMessage) *CSBlockchainConsumerUpdateAck {
+	return &CSBlockchainConsumerUpdateAck{
+		BaseProtocolMessage: bp,
+	}
+}
+
+// This struct is the blockchain info for an agreement sent from producer to consumer as part of protocol version 2.
+type CSBlockchainProducerUpdate struct {
+	*abstractprotocol.BaseProtocolMessage
+	Address        string `json:"address"`
+	Signature      string `json:"signature"`
+}
+
+func (bu *CSBlockchainProducerUpdate) String() string {
+	return bu.BaseProtocolMessage.String() + fmt.Sprintf(", Address: %v, Signature: %v", bu.Address, bu.Signature)
+}
+
+func (bu *CSBlockchainProducerUpdate) ShortString() string {
+	return bu.BaseProtocolMessage.ShortString() + fmt.Sprintf(", Address: %v, Signature: %v", bu.Address, bu.Signature)
+}
+
+func (bu *CSBlockchainProducerUpdate) IsValid() bool {
+    return bu.BaseProtocolMessage.IsValid() && bu.MsgType == MsgTypeBlockchainProducerUpdate && bu.Version() >= 2 && len(bu.Address) != 0 && len(bu.Signature) != 0
+}
+
+func NewCSBlockchainProducerUpdate(bp *abstractprotocol.BaseProtocolMessage, myAddress string, sig string) *CSBlockchainProducerUpdate {
+	return &CSBlockchainProducerUpdate{
+		BaseProtocolMessage: bp,
+		Address:             myAddress,
+		Signature:           sig,
+	}
+}
+
+// This struct is the ack for the blockchain info sent from producer to consumer as part of protocol version 2.
+type CSBlockchainProducerUpdateAck struct {
+	*abstractprotocol.BaseProtocolMessage
+}
+
+func (bu *CSBlockchainProducerUpdateAck) String() string {
+	return bu.BaseProtocolMessage.String()
+}
+
+func (bu *CSBlockchainProducerUpdateAck) ShortString() string {
+	return bu.BaseProtocolMessage.ShortString()
+}
+
+func (bu *CSBlockchainProducerUpdateAck) IsValid() bool {
+    return bu.BaseProtocolMessage.IsValid() && bu.MsgType == MsgTypeBlockchainProducerUpdateAck && bu.Version() >= 2
+}
+
+func NewCSBlockchainProducerUpdateAck(bp *abstractprotocol.BaseProtocolMessage) *CSBlockchainProducerUpdateAck {
+	return &CSBlockchainProducerUpdateAck{
+		BaseProtocolMessage: bp,
 	}
 }
 
@@ -86,20 +202,13 @@ func NewCSProposalReply(bp *abstractprotocol.BaseProposalReply, sig string, myAd
 type ProtocolHandler struct {
 	*abstractprotocol.BaseProtocolHandler
 	GethURL              string
+	ColonusDir           string
 	MyAddress            string
 	EthAgreementContract *contract_api.SolidityContract
 	EthMeterContract     *contract_api.SolidityContract
 }
 
-func NewProtocolHandler(gethURL string, pm *policy.PolicyManager) *ProtocolHandler {
-
-	acct, _ := ethblockchain.AccountId()
-
-	dir, _ := ethblockchain.DirectoryAddress()
-	bc, err := ethblockchain.InitBaseContracts(acct, gethURL, dir)
-	if err != nil {
-		panic(fmt.Sprintf("%v Protocol Handler unable to initialize platform contracts, error: %v", PROTOCOL_NAME, err))
-	}
+func NewProtocolHandler(pm *policy.PolicyManager) *ProtocolHandler {
 
 	bph := abstractprotocol.NewBaseProtocolHandler(PROTOCOL_NAME,
 													PROTOCOL_CURRENT_VERSION,
@@ -108,15 +217,39 @@ func NewProtocolHandler(gethURL string, pm *policy.PolicyManager) *ProtocolHandl
 
 	return &ProtocolHandler{
 		BaseProtocolHandler:  bph,
-		GethURL:              gethURL,
-		MyAddress:            acct,
-		EthAgreementContract: bc.Agreements,
-		EthMeterContract:     bc.Metering,
+		GethURL:              "",
+		ColonusDir:           "",
+		MyAddress:            "",
+		EthAgreementContract: nil,
+		EthMeterContract:     nil,
 	}
 }
 
-// The implementation of this protocol method augments the proposal with an ethereum specific field before sending the proposal to
-// the other party.
+func (p *ProtocolHandler) InitBlockchain(ev *events.AccountFundedMessage) error {
+
+	p.GethURL = fmt.Sprintf("http://%v:%v", ev.ServiceName(), ev.ServicePort())
+
+	acct, _ := ethblockchain.AccountId(ev.ColonusDir())
+
+	dir, _ := ethblockchain.DirectoryAddress(ev.ColonusDir())
+	bc, err := ethblockchain.InitBaseContracts(acct, p.GethURL, dir)
+	if err != nil {
+		return errors.New(fmt.Sprintf("%v Protocol Handler unable to initialize platform contracts, error: %v", PROTOCOL_NAME, err))
+	}
+
+	p.MyAddress = acct
+	p.EthAgreementContract = bc.Agreements
+	p.EthMeterContract = bc.Metering
+	p.ColonusDir = ev.ColonusDir()
+
+	return nil
+
+}
+
+// The implementation of this protocol method handles multiple versions of the protocol depending on which versions are supported
+// by both parties. Each protocol version behaves slightly differently WRT the fields it fills in on the initial proposal.
+// In V1, the proposal has the ethereum specific address of the consumer.
+// In V2 that is omitted so that the blockchain can be negotiated first.
 func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 											producerPolicy *policy.Policy,
 											originalProducerPolicy string,
@@ -128,11 +261,16 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 											defaultNoData uint64,
 											sendMessage func(msgTarget interface{}, pay []byte) error) (abstractprotocol.Proposal, error) {
 
+	// Determine which protocol version to use.
+	protocolVersion := producerPolicy.MinimumProtocolVersion(p.Name(), consumerPolicy, PROTOCOL_CURRENT_VERSION)
+
 	// Create a proposal and augment it with the additional data we need in this protocol.
 	var newProposal *CSProposal
 
-	if bp, err := abstractprotocol.CreateProposal(p, agreementId, producerPolicy, originalProducerPolicy, consumerPolicy, myId, workload, defaultPW, defaultNoData); err != nil {
+	if bp, err := abstractprotocol.CreateProposal(p, agreementId, producerPolicy, originalProducerPolicy, consumerPolicy, protocolVersion, myId, workload, defaultPW, defaultNoData); err != nil {
 		return nil, err
+	} else if protocolVersion == 2 {
+		newProposal = NewCSProposal(bp, "")
 	} else {
 		newProposal = NewCSProposal(bp, p.MyAddress)
 	}
@@ -154,12 +292,12 @@ func (p *ProtocolHandler) SignProposal(newProposal abstractprotocol.Proposal) (s
 	sig := ""
 	hashBytes := sha3.Sum256([]byte(newProposal.TsAndCs()))
 	hash := hex.EncodeToString(hashBytes[:])
-	glog.V(5).Infof(fmt.Sprintf("CS Protocol initiate agreement using hash %v with agreement %v", hash, newProposal.AgreementId()))
+	glog.V(5).Infof(fmt.Sprintf("Protocol %v using hash %v with agreement %v", p.Name(), hash, newProposal.AgreementId()))
 
-	if signature, err := ethblockchain.SignHash(hash, p.GethURL); err != nil {
-		return "", "", errors.New(fmt.Sprintf("CS Protocol initiate agreement received error signing hash %v, error %v", hash, err))
+	if signature, err := ethblockchain.SignHash(hash, p.ColonusDir, p.GethURL); err != nil {
+		return "", "", errors.New(fmt.Sprintf("received error signing hash %v, error %v", hash, err))
 	} else if len(signature) <= 2 {
-		return "", "", errors.New(fmt.Sprintf("CS Protocol initiate agreement received incorrect signature %v from eth_sign.", signature))
+		return "", "", errors.New(fmt.Sprintf("received incorrect signature %v from eth_sign.", signature))
 	} else {
 		sig = signature[2:]
 	}
@@ -170,35 +308,140 @@ func (p *ProtocolHandler) SignProposal(newProposal abstractprotocol.Proposal) (s
 // of the proposal from the producer.
 func (p *ProtocolHandler) DecideOnProposal(proposal abstractprotocol.Proposal,
 										myId string,
+										runningBlockchains []string,
 										messageTarget interface{},
 										sendMessage func(mt interface{}, pay []byte) error) (abstractprotocol.ProposalReply, error) {
 
 	reply, replyErr := abstractprotocol.DecideOnProposal(p, proposal, myId)
-	newReply := NewCSProposalReply(reply, "", "")
+	newReply := NewCSProposalReply(reply, "", "", "", "")
 
 	if replyErr == nil {
+		if proposal.Version() == 1 {
 
-		// The proposal reply is set to decision == true at this point. If any of the extended processing done in this
-		// function encounters an error then we need to change the decision to false so that the other party will
-		// know what we decided.
+			// The proposal reply is set to decision == true at this point. If any of the extended processing done in this
+			// function encounters an error then we need to change the decision to false so that the other party will
+			// know what we decided.
 
-		hash := sha3.Sum256([]byte(proposal.TsAndCs()))
-		glog.V(5).Infof(fmt.Sprintf("Protocol %v decide on proposal using hash %v with agreement %v", p.Name(), hex.EncodeToString(hash[:]), proposal.AgreementId))
+			hash := sha3.Sum256([]byte(proposal.TsAndCs()))
+			glog.V(5).Infof(fmt.Sprintf("Protocol %v decide on proposal using hash %v with agreement %v", p.Name(), hex.EncodeToString(hash[:]), proposal.AgreementId()))
 
-		if sig, err := ethblockchain.SignHash(hex.EncodeToString(hash[:]), p.GethURL); err != nil {
-			replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error signing hash %v, error %v", p.Name(), hex.EncodeToString(hash[:]), err))
-			newReply.DoNotAcceptProposal()
-		} else if len(sig) > 2 {
-			newReply.SetSignature(sig[2:])
-			newReply.SetAddress(p.MyAddress)
-		} else {
-			replyErr = errors.New(fmt.Sprintf("Protocol %v received incorrect signature %v from eth_sign.", p.Name(), sig))
-			newReply.DoNotAcceptProposal()
+			if sig, err := ethblockchain.SignHash(hex.EncodeToString(hash[:]), p.ColonusDir, p.GethURL); err != nil {
+				replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error signing hash %v, error %v", p.Name(), hex.EncodeToString(hash[:]), err))
+				newReply.DoNotAcceptProposal()
+			} else if len(sig) > 2 {
+				newReply.SetSignature(sig[2:])
+				newReply.SetAddress(p.MyAddress)
+			} else {
+				replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received incorrect signature %v from eth_sign.", p.Name(), sig))
+				newReply.DoNotAcceptProposal()
+			}
+		} else if proposal.Version() == 2 {
+			// Based on the list of already running blockchains, choose 1 of them if possible.
+			if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
+				replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error demarshalling TsAndCs, %v", p.Name(), err))
+				newReply.DoNotAcceptProposal()
+			} else if overrideName := os.Getenv("CMTN_BLOCKCHAIN"); overrideName != "" {
+				newReply.SetBlockchain(policy.Ethereum_bc, overrideName)
+			} else {
+				bcChoices := tcPolicy.AgreementProtocols[0].Blockchains
+				bcRunning := (*new(policy.BlockchainList))
+				for _, bc := range runningBlockchains {
+					bcRunning.Add_Blockchain(policy.Blockchain_Factory(policy.Ethereum_bc, bc))
+				}
+				bcIntersect, _ := bcRunning.Intersects_With(&bcChoices, policy.Ethereum_bc)
+				newReply.SetBlockchain(policy.Ethereum_bc, (*bcIntersect)[0].Name)
+			}
+
 		}
+
 	}
 
 	// Always respond to the Proposer
 	return abstractprotocol.SendResponse(p, proposal, newReply, replyErr, messageTarget, sendMessage)
+
+}
+
+func (p *ProtocolHandler) SendBlockchainConsumerUpdate(
+		agreementId string,
+		messageTarget interface{},
+		sendMessage func(mt interface{}, pay []byte) error ) error {
+
+	update := NewCSBlockchainConsumerUpdate(&abstractprotocol.BaseProtocolMessage{
+												MsgType:   MsgTypeBlockchainConsumerUpdate,
+												AProtocol: p.Name(),
+												AVersion:  PROTOCOL_CURRENT_VERSION,
+												AgreeId:   agreementId,
+											},
+											p.MyAddress)
+
+	// Send the message
+	if err := abstractprotocol.SendProtocolMessage(messageTarget, update, sendMessage); err != nil {
+		return errors.New(fmt.Sprintf("Protocol %v error sending blockchain consumer update %v, %v", p.Name(), update, err))
+	}
+	return nil
+
+}
+
+func (p *ProtocolHandler) SendBlockchainConsumerUpdateAck(
+		agreementId string,
+		messageTarget interface{},
+		sendMessage func(mt interface{}, pay []byte) error ) error {
+
+	update := NewCSBlockchainConsumerUpdateAck(&abstractprotocol.BaseProtocolMessage{
+												MsgType:   MsgTypeBlockchainConsumerUpdateAck,
+												AProtocol: p.Name(),
+												AVersion:  PROTOCOL_CURRENT_VERSION,
+												AgreeId:   agreementId,
+											})
+
+	// Send the message
+	if err := abstractprotocol.SendProtocolMessage(messageTarget, update, sendMessage); err != nil {
+		return errors.New(fmt.Sprintf("Protocol %v error sending blockchain consumer update ack %v, %v", p.Name(), update, err))
+	}
+	return nil
+
+}
+
+func (p *ProtocolHandler) SendBlockchainProducerUpdate(
+		agreementId string,
+		sig string,
+		messageTarget interface{},
+		sendMessage func(mt interface{}, pay []byte) error ) error {
+
+	update := NewCSBlockchainProducerUpdate(&abstractprotocol.BaseProtocolMessage{
+												MsgType:   MsgTypeBlockchainProducerUpdate,
+												AProtocol: p.Name(),
+												AVersion:  PROTOCOL_CURRENT_VERSION,
+												AgreeId:   agreementId,
+											},
+											p.MyAddress,
+											sig)
+
+	// Send the message
+	if err := abstractprotocol.SendProtocolMessage(messageTarget, update, sendMessage); err != nil {
+		return errors.New(fmt.Sprintf("Protocol %v error sending blockchain producer update %v, %v", p.Name(), update, err))
+	}
+	return nil
+
+}
+
+func (p *ProtocolHandler) SendBlockchainProducerUpdateAck(
+		agreementId string,
+		messageTarget interface{},
+		sendMessage func(mt interface{}, pay []byte) error ) error {
+
+	update := NewCSBlockchainProducerUpdateAck(&abstractprotocol.BaseProtocolMessage{
+												MsgType:   MsgTypeBlockchainProducerUpdateAck,
+												AProtocol: p.Name(),
+												AVersion:  PROTOCOL_CURRENT_VERSION,
+												AgreeId:   agreementId,
+											})
+
+	// Send the message
+	if err := abstractprotocol.SendProtocolMessage(messageTarget, update, sendMessage); err != nil {
+		return errors.New(fmt.Sprintf("Protocol %v error sending blockchain producer update ack %v, %v", p.Name(), update, err))
+	}
+	return nil
 
 }
 
@@ -231,7 +474,7 @@ func (p *ProtocolHandler) NotifyMetering(agreementId string,
 	hash := mn.GetMeterHash()
 	glog.V(5).Infof("CS Protocol signing hash %v for %v, metering notification %v", hash, agreementId, mn)
 	sig := ""
-	if signature, err := ethblockchain.SignHash(hash, p.GethURL); err != nil {
+	if signature, err := ethblockchain.SignHash(hash, p.ColonusDir, p.GethURL); err != nil {
 		return "", errors.New(fmt.Sprintf("CS Protocol sending meter notification received error signing hash %v, error %v", hash, err))
 	} else if len(signature) <= 2 {
 		return "", errors.New(fmt.Sprintf("CS Protocol sending meter notification received incorrect signature %v from eth_sign.", signature))
@@ -296,6 +539,58 @@ func (p *ProtocolHandler) ValidateCancel(can string) (abstractprotocol.Cancel, e
     return abstractprotocol.ValidateCancel(can)
 }
 
+func (p *ProtocolHandler) ValidateBlockchainConsumerUpdate(upd string) (*CSBlockchainConsumerUpdate , error) {
+	// attempt deserialization of message
+	update := new(CSBlockchainConsumerUpdate)
+
+	if err := json.Unmarshal([]byte(upd), update); err != nil {
+		return nil, errors.New(fmt.Sprintf("Error deserializing blockchain consumer update: %s, error: %v", upd, err))
+	} else if !update.IsValid() {
+		return nil, errors.New(fmt.Sprintf("Message is not a Blockchain Consumer Update."))
+	} else {
+		return update, nil
+	}
+}
+
+func (p *ProtocolHandler) ValidateBlockchainConsumerUpdateAck(upd string) (*CSBlockchainConsumerUpdateAck , error) {
+	// attempt deserialization of message
+	update := new(CSBlockchainConsumerUpdateAck)
+
+	if err := json.Unmarshal([]byte(upd), update); err != nil {
+		return nil, errors.New(fmt.Sprintf("Error deserializing blockchain consumer update: %s, error: %v", upd, err))
+	} else if !update.IsValid() {
+		return nil, errors.New(fmt.Sprintf("Message is not a Blockchain Consumer Update."))
+	} else {
+		return update, nil
+	}
+}
+
+func (p *ProtocolHandler) ValidateBlockchainProducerUpdate(upd string) (*CSBlockchainProducerUpdate , error) {
+	// attempt deserialization of message
+	update := new(CSBlockchainProducerUpdate)
+
+	if err := json.Unmarshal([]byte(upd), update); err != nil {
+		return nil, errors.New(fmt.Sprintf("Error deserializing blockchain producer update: %s, error: %v", upd, err))
+	} else if !update.IsValid() {
+		return nil, errors.New(fmt.Sprintf("Message is not a Blockchain Producer Update."))
+	} else {
+		return update, nil
+	}
+}
+
+func (p *ProtocolHandler) ValidateBlockchainProducerUpdateAck(upd string) (*CSBlockchainProducerUpdateAck , error) {
+	// attempt deserialization of message
+	update := new(CSBlockchainProducerUpdateAck)
+
+	if err := json.Unmarshal([]byte(upd), update); err != nil {
+		return nil, errors.New(fmt.Sprintf("Error deserializing blockchain producer update: %s, error: %v", upd, err))
+	} else if !update.IsValid() {
+		return nil, errors.New(fmt.Sprintf("Message is not a Blockchain Producer Update."))
+	} else {
+		return update, nil
+	}
+}
+
 func (p *ProtocolHandler) DemarshalProposal(proposal string) (abstractprotocol.Proposal, error) {
 
 	// attempt deserialization of the proposal
@@ -311,11 +606,23 @@ func (p *ProtocolHandler) DemarshalProposal(proposal string) (abstractprotocol.P
 
 func (p *ProtocolHandler) RecordAgreement(newProposal abstractprotocol.Proposal,
 										reply abstractprotocol.ProposalReply,
+										addr string,
+										sig string,
 										consumerPolicy *policy.Policy) error {
 
-	if csReply, ok := reply.(*CSProposalReply); !ok {
+	address := ""
+	signature := ""
+	if reply == nil {
+		address = addr
+		signature = sig
+	} else if csReply, ok := reply.(*CSProposalReply); !ok {
 		return errors.New(fmt.Sprintf("Error casting reply %v to %v extended reply, input reply is %T.", reply, p.Name(), reply))
-	} else if binaryAgreementId, err := hex.DecodeString(newProposal.AgreementId()); err != nil {
+	} else {
+		address = csReply.Address
+		signature = csReply.Signature
+	}
+
+	if binaryAgreementId, err := hex.DecodeString(newProposal.AgreementId()); err != nil {
 		return errors.New(fmt.Sprintf("Error converting agreement ID %v to binary, error: %v", newProposal.AgreementId(), err))
 	} else {
 
@@ -330,8 +637,8 @@ func (p *ProtocolHandler) RecordAgreement(newProposal abstractprotocol.Proposal,
 		params := make([]interface{}, 0, 10)
 		params = append(params, binaryAgreementId)
 		params = append(params, tcHash[:])
-		params = append(params, csReply.Signature)
-		params = append(params, csReply.Address)
+		params = append(params, signature)
+		params = append(params, address)
 
 		if _, err := p.EthAgreementContract.Invoke_method("create_agreement", params); err != nil {
 			return errors.New(fmt.Sprintf("Error invoking create_agreement %v with %v, error: %v", newProposal.AgreementId(), params, err))
@@ -355,11 +662,12 @@ func (p *ProtocolHandler) TerminateAgreement(policy *policy.Policy,
 
 		// Tell the policy manager that we're terminating this agreement
 		if cerr := abstractprotocol.TerminateAgreement(p, policy, agreementId, reason); cerr != nil {
-			glog.Errorf(fmt.Sprintf("Error cancelling agreement %v in PM %v", agreementId, cerr))
+			glog.Warningf(fmt.Sprintf("Unable to cancel agreement %v in PM %v", agreementId, cerr))
 		}
 
 		// If the cancel reason is due to a blockchain write failure, then we dont need to do the cancel on the blockchain.
-		if counterParty != "" && reason != AB_CANCEL_BC_WRITE_FAILED {
+		// If the blockchain is not ready yet, then we dont need to send a cancel to it.
+		if p.EthAgreementContract != nil && counterParty != "" && reason != AB_CANCEL_BC_WRITE_FAILED {
 			// Setup parameters for call to the blockchain
 			params := make([]interface{}, 0, 10)
 			params = append(params, counterParty)
@@ -369,6 +677,8 @@ func (p *ProtocolHandler) TerminateAgreement(policy *policy.Policy,
 			if _, err := p.EthAgreementContract.Invoke_method("terminate_agreement", params); err != nil {
 				return errors.New(fmt.Sprintf("Error invoking terminate_agreement %v with %v, error: %v", agreementId, params, err))
 			}
+		} else {
+			glog.V(3).Infof(fmt.Sprintf("Protocol %v skipping blockchain cancel for %v, Agreement Contract %v Counterparty: %v Reason :%v", p.Name(), agreementId, p.EthAgreementContract, counterParty, reason))
 		}
 	}
 
@@ -409,7 +719,7 @@ func (p *ProtocolHandler) RecordMeter(agreementId string, mn *metering.MeteringN
 
 	if binaryAgreementId, err := hex.DecodeString(agreementId); err != nil {
 		return errors.New(fmt.Sprintf("Error converting agreement ID %v to binary, error: %v", agreementId, err))
-	} else {
+	} else if p.EthMeterContract != nil {
 		glog.V(5).Infof("CS Protocol writing Metering Notification %v to the blockchain for %v.", *mn, agreementId)
 		params := make([]interface{}, 0, 10)
 		params = append(params, mn.Amount)
@@ -424,6 +734,8 @@ func (p *ProtocolHandler) RecordMeter(agreementId string, mn *metering.MeteringN
 	    if _, err = p.EthMeterContract.Invoke_method("create_meter", params); err != nil {
 			return errors.New(fmt.Sprintf("Error invoking create_meter %v with %v, error: %v", agreementId, p, err))
 		}
+	} else {
+		glog.V(3).Infof(fmt.Sprintf("Protocol %v skipping blockchain metering record for %v, Metering Contract: %v, because blockchain is not up.", p.Name(), agreementId, p.EthMeterContract))
 	}
 
 	return nil

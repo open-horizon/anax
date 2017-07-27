@@ -50,10 +50,10 @@ func (c *BasicProtocolHandler) String() string {
         "PM: %v, "+
         "DB: %v, "+
         "Agreement PH: %v",
-        c.Name, c.deviceId, c.token, c.pm, c.db, c.agreementPH)
+        c.name, c.deviceId, c.token, c.pm, c.db, c.agreementPH)
 }
 
-func (c *BasicProtocolHandler) AgreementProtocolHandler() abstractprotocol.ProtocolHandler {
+func (c *BasicProtocolHandler) AgreementProtocolHandler(typeName string, name string) abstractprotocol.ProtocolHandler {
     return c.agreementPH
 }
 
@@ -64,7 +64,7 @@ func (c *BasicProtocolHandler) AcceptCommand(cmd worker.Command) bool {
 
 func (c *BasicProtocolHandler) HandleProposalMessage(proposal abstractprotocol.Proposal, protocolMsg string, exchangeMsg *exchange.DeviceMessage) bool {
 
-    if handled, reply, tcPolicy := c.HandleProposal(c.agreementPH, proposal, protocolMsg, exchangeMsg); handled {
+    if handled, reply, tcPolicy := c.HandleProposal(c.agreementPH, proposal, protocolMsg, []string{}, exchangeMsg); handled {
         if reply != nil {
             c.PersistProposal(proposal, reply, tcPolicy, protocolMsg)
         }
@@ -116,6 +116,22 @@ func (c *BasicProtocolHandler) GetTerminationCode(reason string) uint {
 
 func (c *BasicProtocolHandler) GetTerminationReason(code uint) string {
     return basicprotocol.DecodeReasonCode(uint64(code))
+}
+
+func (c *BasicProtocolHandler) IsBlockchainClientAvailable(typeName string, name string) bool {
+    return true
+}
+
+func (c *BasicProtocolHandler) SetBlockchainWritable(cmd *BCWritableCommand) {
+    return
+}
+
+func (c *BasicProtocolHandler) IsBlockchainWritable(agreement *persistence.EstablishedAgreement) bool {
+    return true
+}
+
+func (c *BasicProtocolHandler) IsAgreementVerifiable(ag *persistence.EstablishedAgreement) bool {
+    return true
 }
 
 // ==========================================================================================================

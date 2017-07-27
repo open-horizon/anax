@@ -26,12 +26,22 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type API struct {
 	worker.Manager // embedded field
 	db             *bolt.DB
 	pm             *policy.PolicyManager
+	bcState        map[string]map[string]BlockchainState
+	bcStateLock    sync.Mutex
+}
+
+type BlockchainState struct {
+	ready    bool  	   // the blockchain is ready
+	writable bool 	   // the blockchain is writable
+	service  string    // the network endpoint name of the container
+	servicePort string // the network port of the container
 }
 
 func NewAPIListener(config *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *API {
@@ -45,6 +55,8 @@ func NewAPIListener(config *config.HorizonConfig, db *bolt.DB, pm *policy.Policy
 
 		db: db,
 		pm: pm,
+		bcState:     make(map[string]map[string]BlockchainState),
+		bcStateLock: sync.Mutex{},
 	}
 
 	listener.listen(config.Edge.APIListen)
@@ -56,8 +68,68 @@ func (a *API) Messages() chan events.Message {
 	return a.Manager.Messages
 }
 
-func (a *API) NewEvent(ev events.Message) {
+func (a *API) NewEvent(incoming events.Message) {
+
+	switch incoming.(type) {
+	case *events.BlockchainClientInitializedMessage:
+		msg, _ := incoming.(*events.BlockchainClientInitializedMessage)
+		switch msg.Event().Id {
+		case events.BC_CLIENT_INITIALIZED:
+			a.handleNewBCInit(msg)
+			glog.V(3).Infof("API Worker processed BC initialization for %v", msg)
+		}
+
+	case *events.BlockchainClientStoppingMessage:
+		msg, _ := incoming.(*events.BlockchainClientStoppingMessage)
+		switch msg.Event().Id {
+		case events.BC_CLIENT_STOPPING:
+			a.handleStoppingBC(msg)
+			glog.V(3).Infof("API Worker processed BC stopping for %v", msg)
+		}
+	}
+
 	return
+}
+
+func (a *API) handleNewBCInit(ev *events.BlockchainClientInitializedMessage) {
+
+	a.bcStateLock.Lock()
+	defer a.bcStateLock.Unlock()
+
+	nameMap := a.getBCNameMap(ev.BlockchainType())
+	namedBC, ok := nameMap[ev.BlockchainInstance()]
+	if !ok {
+		nameMap[ev.BlockchainInstance()] = BlockchainState{
+											ready:       true,
+											writable:    false,
+											service:     ev.ServiceName(),
+											servicePort: ev.ServicePort(),
+										}
+	} else {
+		namedBC.ready = true
+		namedBC.service = ev.ServiceName()
+		namedBC.servicePort = ev.ServicePort()
+	}
+
+}
+
+func (a *API) handleStoppingBC(ev *events.BlockchainClientStoppingMessage) {
+
+	a.bcStateLock.Lock()
+	defer a.bcStateLock.Unlock()
+
+	nameMap := a.getBCNameMap(ev.BlockchainType())
+	delete(nameMap, ev.BlockchainInstance())
+
+}
+
+func (a *API) getBCNameMap(typeName string) map[string]BlockchainState {
+	nameMap, ok := a.bcState[typeName]
+	if !ok {
+		a.bcState[typeName] = make(map[string]BlockchainState)
+		nameMap = a.bcState[typeName]
+	}
+	return nameMap
 }
 
 func (a *API) listen(apiListen string) {
@@ -705,27 +777,6 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Tell the eth worker to start the ethereum client container(s) if we need to.
-		if existingDevice, err := persistence.FindExchangeDevice(a.db); err != nil {
-			glog.Errorf("Failed fetching existing exchange device. Error: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		} else if overrideName := os.Getenv("CMTN_BLOCKCHAIN"); overrideName != "" {
-			a.Messages() <- events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, overrideName, a.Config.Edge.ExchangeURL, existingDevice.Id, existingDevice.Token)
-		} else {
-			chainName := "bluehorizon"
-			for _, agp := range (*agpList) {
-				if policy.RequiresBlockchainType(agp.Name) != "" {
-					for _, bc := range agp.Blockchains {
-						if bc.Name != "" {
-							chainName = bc.Name
-						}
-					}
-				}
-			}
-			a.Messages() <- events.NewNewEthContainerMessage(events.NEW_ETH_CLIENT, chainName, a.Config.Edge.ExchangeURL, existingDevice.Id, existingDevice.Token)
-		}
-
 		// TODO: when there is a way to represent services for output, write it out w/ the 201
 		w.WriteHeader(http.StatusCreated)
 
@@ -883,17 +934,28 @@ func (a *API) serviceAttribute(w http.ResponseWriter, r *http.Request) {
 func (a *API) status(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		info := NewInfo(a.Config)
 
-		if err := WriteGethStatus(a.Config.Edge.GethURL, info.Geth); err != nil {
-			glog.Errorf("Unable to determine geth service facts: %v", err)
+		result := make([]Info, 0, 5)
+
+		a.bcStateLock.Lock()
+		defer a.bcStateLock.Unlock()
+
+		for _, bc := range a.bcState[policy.Ethereum_bc] {
+			info := NewInfo(a.Config)
+
+			gethURL := fmt.Sprintf("http://%v:%v", bc.service, bc.servicePort)
+			if err := WriteGethStatus(gethURL, info.Geth); err != nil {
+				glog.Errorf("Unable to determine geth service facts: %v", err)
+			}
+
+			if err := WriteConnectionStatus(info); err != nil {
+				glog.Errorf("Unable to get connectivity status: %v", err)
+			}
+
+			result = append(result, *info)
 		}
 
-		if err := WriteConnectionStatus(info); err != nil {
-			glog.Errorf("Unable to get connectivity status: %v", err)
-		}
-
-		if serial, err := json.Marshal(info); err != nil {
+		if serial, err := json.Marshal(result); err != nil {
 			glog.Errorf("Failed to serialize status object: %v", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 		} else {

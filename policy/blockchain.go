@@ -10,6 +10,7 @@ import (
 //
 
 const Ethereum_bc = "ethereum"
+const Default_Blockchain_name = "bluehorizon"
 
 // This struct indicates the type and instance of blockchain to be used by the policy
 type BlockchainList []Blockchain

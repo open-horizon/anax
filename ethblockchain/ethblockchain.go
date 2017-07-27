@@ -40,6 +40,8 @@ func InitBaseContracts(account string, gethUrl string, directoryAddress string) 
 		time.Sleep(1 * time.Second)
 	}
 
+	glog.V(5).Infof("Agreement contract address %v", agreementAddress)
+
 	ag := contract_api.SolidityContractFactory("agreements")
 	ag.Set_skip_eventlistener()
 	ag.Set_contract_address(agreementAddress)
@@ -57,6 +59,8 @@ func InitBaseContracts(account string, gethUrl string, directoryAddress string) 
 		}
 		time.Sleep(1 * time.Second)
 	}
+
+	glog.V(5).Infof("Metering contract address %v", meteringAddress)
 
 	m := contract_api.SolidityContractFactory("metering")
 	m.Set_skip_eventlistener()

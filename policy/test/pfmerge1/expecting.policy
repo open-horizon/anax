@@ -13,7 +13,8 @@
     ],
     "agreementProtocols": [
         {
-            "name": "Citizen Scientist"
+            "name": "Citizen Scientist",
+            "protocolVersion": 1
         }
     ],
     "workloads": [
