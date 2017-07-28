@@ -533,8 +533,13 @@ func (c *CSProtocolHandler) GetKnownBlockchain(ag *Agreement) (string, string) {
 		} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 			glog.Errorf(CPHlogString(fmt.Sprintf("error demarshalling tsandcs policy from agreement %v, error: %v", ag.CurrentAgreementId, err)))
 		} else {
-			bcType = pol.AgreementProtocols[0].Blockchains[0].Type
-			bcName = pol.AgreementProtocols[0].Blockchains[0].Name
+			agp := pol.AgreementProtocols[0]
+			if agp.Blockchains == nil || len(agp.Blockchains) == 0 {
+				return policy.Ethereum_bc, policy.Default_Blockchain_name
+			} else {
+				bcType = agp.Blockchains[0].Type
+				bcName = agp.Blockchains[0].Name
+			}
 		}
 	}
 	return bcType, bcName
