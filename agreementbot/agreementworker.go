@@ -2,6 +2,7 @@ package agreementbot
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
@@ -30,7 +31,7 @@ type InitiateAgreement struct {
 	workType               string
 	ProducerPolicy         policy.Policy               // the producer policy received from the exchange - demarshalled
 	OriginalProducerPolicy string                      // the producer policy received from the exchange - original in string form to be sent back
-	ConsumerPolicy         policy.Policy               // the consumer policy we're matched up with
+	ConsumerPolicy         policy.Policy               // the consumer policy we're matched up with - this is a copy so that we can modify/augment it
 	Device                 exchange.SearchResultDevice // the device entry in the exchange
 }
 
@@ -171,18 +172,108 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	defer lock.Unlock()
 
 	// Determine which workload we should propose. This is based on the priority of each workload and
-	// whether or not this workload has been tried before.
+	// whether or not this workload has been tried before. For policies that have the workload details embedded
+	// in them, we should exit this loop in 1 iteration. For policies that refer to the workload in the exchange,
+	// we should only iterate the loop more than once if we choose a workload entry that turns out to be
+	// unsupportable by the device.
 
-	var workload *policy.Workload
-	if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(b.db, wi.Device.Id, wi.ConsumerPolicy.Header.Name); err != nil {
-		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
-		return
-	} else if wlUsage == nil {
-		workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(0, 0, 0)
-	} else if wlUsage.DisableRetry {
-		workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(wlUsage.Priority, 0, wlUsage.FirstTryTime)
-	} else if wlUsage != nil {
-		workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(wlUsage.Priority, wlUsage.RetryCount+1, wlUsage.FirstTryTime)
+	foundWorkload := false
+	var workload, lastWorkload *policy.Workload
+
+	for !foundWorkload {
+
+		if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(b.db, wi.Device.Id, wi.ConsumerPolicy.Header.Name); err != nil {
+			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+			return
+		} else if wlUsage == nil {
+			workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(0, 0, 0)
+		} else if wlUsage.DisableRetry {
+			workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(wlUsage.Priority, 0, wlUsage.FirstTryTime)
+		} else if wlUsage != nil {
+			workload = wi.ConsumerPolicy.NextHighestPriorityWorkload(wlUsage.Priority, wlUsage.RetryCount+1, wlUsage.FirstTryTime)
+		}
+
+		// If we chose the same workload 2 times in a row through this loop, then we need to exit out of here
+		if lastWorkload == workload {
+			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("unable to find supported workload for %v within %v", wi.Device.Id, wi.ConsumerPolicy.Workloads)))
+
+			// If we created a workload usage record during this process, get rid of it.
+			if err := DeleteWorkloadUsage(b.db, wi.Device.Id, wi.ConsumerPolicy.Header.Name); err != nil {
+				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("unable to delete workload usage record for %v with %v because %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+			}
+			return
+		}
+
+		// If the workload in the consumer policy has a reference to the workload details, then we need to get the details so that we
+		// can verify that the device has the right version API specs to run this workload. Then, we can store the workload details
+		// into the policy file. We have a copy of the consumer policy file that we can modify. If the device doesnt have the right
+		// version API specs, then we will try the next workload.
+		if workload.WorkloadURL != "" {
+
+			if workloadDetails, err := exchange.GetWorkload(workload.WorkloadURL, workload.Version, workload.Arch, b.config.AgreementBot.ExchangeURL, cph.ExchangeId(), cph.ExchangeToken()); err != nil {
+				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for workload details %v, error: %v", workload, err)))
+				return
+			} else {
+
+				// Convert the workload details APISpec list to policy types
+				asl := new(policy.APISpecList)
+				for _, apiSpec := range workloadDetails.APISpecs {
+					(*asl) = append((*asl), (*policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Version, apiSpec.Arch)))
+				}
+
+				// If the device doesnt support the workload requirements, then remember that we rejected a higher priority workload because of
+				// device requirements not being met. This will cause agreement cancellation to try the highest priority workload again
+				// even if retries have been disabled.
+				if err := wi.ProducerPolicy.APISpecs.Supports(*asl); err != nil {
+					glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("skipping workload %v because device %v cant support it", workload, wi.Device.Id)))
+
+					if !workload.HasEmptyPriority() {
+						// If this is not the first time through the loop, update the workload usage record, otherwise create it.
+						if lastWorkload != nil {
+							if _, err := UpdatePriority(b.db, wi.Device.Id, wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, agreementIdString); err != nil {
+								glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating priority in persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+								return
+							}
+						} else if err := NewWorkloadUsage(b.db, wi.Device.Id, wi.ProducerPolicy.HAGroup.Partners, "", wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, true, agreementIdString); err != nil {
+							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+							return
+						}
+
+						// Artificially bump up the retry count so that the loop will choose the next workload
+						if _, err := UpdateRetryCount(b.db, wi.Device.Id, wi.ConsumerPolicy.Header.Name, workload.Priority.Retries+1, agreementIdString); err != nil {
+							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating retry count persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+							return
+						}
+					}
+				} else {
+
+					foundWorkload = true
+					// The device seems to support the required API specs, so augment the consumer policy file with the workload
+					// details that match what the producer can support.
+					for _, apiSpec := range workloadDetails.APISpecs {
+						wi.ConsumerPolicy.APISpecs = append(wi.ConsumerPolicy.APISpecs, *policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Version, apiSpec.Arch))
+					}
+
+					// The agbot rejects workload definitions that dont have exactly 1 workload element in the workloads array so it is
+					// safe to directly access the first element.
+					workload.Deployment = workloadDetails.Workloads[0].Deployment
+					workload.DeploymentSignature = workloadDetails.Workloads[0].DeploymentSignature
+					torr := new(policy.Torrent)
+					if err := json.Unmarshal([]byte(workloadDetails.Workloads[0].Torrent), torr); err != nil {
+						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Unable to demarshal torrent info from %v, error: %v", workloadDetails, err)))
+						return
+					} else {
+						workload.Torrent = *torr
+					}
+					glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("workload %v is supported by device %v", workload, wi.Device.Id)))
+				}
+
+			}
+
+		} else {
+			foundWorkload = true
+		}
+		lastWorkload = workload
 	}
 
 	// Create pending agreement in database
@@ -277,20 +368,28 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 					// Need a new workload usage record but not the same as the highest priority. That can't be right.
 					ackReplyAsValid = false
 				} else if !pol.Workloads[0].HasEmptyPriority() {
-					if err := NewWorkloadUsage(b.db, wi.SenderId, pol.HAGroup.Partners, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, reply.AgreementId()); err != nil {
+					if err := NewWorkloadUsage(b.db, wi.SenderId, pol.HAGroup.Partners, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, false, reply.AgreementId()); err != nil {
 						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 					}
 				}
-			} else if !wlUsage.DisableRetry {
-				if pol.Workloads[0].Priority.PriorityValue != wlUsage.Priority {
-					if _, err := UpdatePriority(b.db, wi.SenderId, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, reply.AgreementId()); err != nil {
-						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating workload usage prioroty for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
+			} else {
+				if wlUsage.Policy == "" {
+					if _, err := UpdatePolicy(b.db, wi.SenderId, consumerPolicy.Header.Name, agreement.Policy); err != nil {
+						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating policy in workload usage prioroty for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 					}
-				} else if _, err := UpdateRetryCount(b.db, wi.SenderId, consumerPolicy.Header.Name, wlUsage.RetryCount+1, reply.AgreementId()); err != nil {
-					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating workload usage retry count for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 				}
-			} else if _, err := UpdateWUAgreementId(b.db, wi.SenderId, consumerPolicy.Header.Name, reply.AgreementId()); err != nil {
-				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating agreement id %v in workload usage for %v for policy %v, error: %v", reply.AgreementId(), wi.SenderId, consumerPolicy.Header.Name, err)))
+
+				if !wlUsage.DisableRetry {
+					if pol.Workloads[0].Priority.PriorityValue != wlUsage.Priority {
+						if _, err := UpdatePriority(b.db, wi.SenderId, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, reply.AgreementId()); err != nil {
+							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating workload usage prioroty for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
+						}
+					} else if _, err := UpdateRetryCount(b.db, wi.SenderId, consumerPolicy.Header.Name, wlUsage.RetryCount+1, reply.AgreementId()); err != nil {
+						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating workload usage retry count for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
+					}
+				} else if _, err := UpdateWUAgreementId(b.db, wi.SenderId, consumerPolicy.Header.Name, reply.AgreementId()); err != nil {
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating agreement id %v in workload usage for %v for policy %v, error: %v", reply.AgreementId(), wi.SenderId, consumerPolicy.Header.Name, err)))
+				}
 			}
 
 			// Send the reply Ack if it's still valid.
@@ -466,8 +565,16 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 
 		// Update the workload usage record to clear the agreement. There might not be a workload usage record if there is no workload priority
 		// specified in the workload section of the policy.
-		if _, err := UpdateWUAgreementId(b.db, ag.DeviceId, ag.PolicyName, ""); err != nil {
+		if wlUsage, err := UpdateWUAgreementId(b.db, ag.DeviceId, ag.PolicyName, ""); err != nil {
 			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("warning updating agreement id in workload usage for %v for policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
+
+		} else if wlUsage != nil && wlUsage.ReqsNotMet {
+			// If the workload usage record indicates that it is not at the highest priority workload because the device cant meet the
+			// requirements of the higher priority workload, then when an agreement gets cancelled, we will remove the record so that the
+			// agbot always tries the next agreement starting with the highest priority workload again.
+			if err := DeleteWorkloadUsage(b.db, ag.DeviceId, ag.PolicyName); err != nil {
+				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting workload usage record for device %v and policyName %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
+			}
 		}
 
 		// Remove the long blockchain cancel from the worker thread. It is important to give the protocol handler a chance to

@@ -243,7 +243,7 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 	}
 }
 
-func (self *Policy) Is_Self_Consistent(keyPath string, userKeys string) error {
+func (self *Policy) Is_Self_Consistent(keyPath string, userKeys string, workloadResolver func(wURL string, wVersion string, wArch string) (*APISpecList, error)) error {
 
 	// Check validity of the Data verification section
 	if ok, err := self.DataVerify.IsValid(); !ok {
@@ -259,7 +259,8 @@ func (self *Policy) Is_Self_Consistent(keyPath string, userKeys string) error {
 
 	// Check validity of the Workload section
 	usedPriorities := make(map[int]bool)
-	for _, workload := range self.Workloads {
+	var referencedApiSpecRefs *APISpecList
+	for ix, workload := range self.Workloads {
 		if len(keyPath) != 0 {
 			if err := workload.HasValidSignature(keyPath, userKeys); err != nil {
 				return err
@@ -274,6 +275,32 @@ func (self *Policy) Is_Self_Consistent(keyPath string, userKeys string) error {
 				usedPriorities[workload.Priority.PriorityValue] = true
 			}
 		}
+
+		// If the policy file form is inconsistent, return the error
+		if (self.Workloads[0].WorkloadURL == "" && workload.WorkloadURL != "") || (self.Workloads[0].WorkloadURL != "" && workload.WorkloadURL == "") {
+			return errors.New(fmt.Sprintf("Workload section has mix of policy forms, element 0 has workloadUrl %v, element %v has %v", self.Workloads[0].WorkloadURL, ix, workload.WorkloadURL))
+		}
+
+		// If the workloads use different API specs, return the error. API specs can differ by version from one workload to
+		// another but they cant differ by architecture, nor can one workload require an API spec that is not required
+		// by another workload in this policy file.
+		if workloadResolver != nil && workload.WorkloadURL != "" && workload.Deployment == "" {
+			if ix == 0 {
+				if firstASRL, err := workloadResolver(workload.WorkloadURL, workload.Version, workload.Arch); err != nil {
+					return errors.New(fmt.Sprintf("Workload %v does not resolve, error: %v", workload, err))
+				} else {
+					referencedApiSpecRefs = firstASRL
+				}
+			} else {
+				if secondASRL, err := workloadResolver(workload.WorkloadURL, workload.Version, workload.Arch); err != nil {
+					return errors.New(fmt.Sprintf("Workload %v does not resolve, error: %v", workload, err))
+				} else if !(*referencedApiSpecRefs).IsSame(*secondASRL, false) {
+					return errors.New(fmt.Sprintf("Workload section has workloads that use different API specs %v and %v", *referencedApiSpecRefs, *secondASRL))
+				}
+			}
+
+		}
+
 	}
 	return nil
 }
@@ -521,7 +548,13 @@ func newWatchEntry(fi os.FileInfo, p *Policy) *WatchEntry {
 // - fileDeleted is called when a file is deleted
 // - fileError is called when an error occurs trying to demarshal a file into a policy object
 
-func PolicyFileChangeWatcher(homePath string, contents map[string]*WatchEntry, fileChanged func(fileName string, policy *Policy), fileDeleted func(fileName string, policy *Policy), fileError func(fileName string, err error), checkInterval int) (map[string]*WatchEntry, error) {
+func PolicyFileChangeWatcher(homePath string,
+		contents map[string]*WatchEntry,
+		fileChanged func(fileName string, policy *Policy),
+		fileDeleted func(fileName string, policy *Policy),
+		fileError func(fileName string, err error),
+		workloadResolver func(wURL string, wVersion string, wArch string) (*APISpecList, error),
+		checkInterval int) (map[string]*WatchEntry, error) {
 
 	// contents is the map that holds info on every policy file in the policy directory
 
@@ -536,7 +569,7 @@ func PolicyFileChangeWatcher(homePath string, contents map[string]*WatchEntry, f
 				if _, ok := contents[fileInfo.Name()]; !ok {
 					if policy, err := ReadPolicyFile(homePath + fileInfo.Name()); err != nil {
 						fileError(homePath+fileInfo.Name(), err)
-					} else if err := policy.Is_Self_Consistent("", ""); err != nil {
+					} else if err := policy.Is_Self_Consistent("", "", workloadResolver); err != nil {
 						fileError(homePath+fileInfo.Name(), errors.New(fmt.Sprintf("Policy file not self consistent %v, error: %v", homePath, err)))
 					} else {
 						contents[fileInfo.Name()] = newWatchEntry(fileInfo, policy)
@@ -577,7 +610,7 @@ func PolicyFileChangeWatcher(homePath string, contents map[string]*WatchEntry, f
 				// A changed file could be a new policy and a deleted policy if it's the policy name that was changed.
 				if policy, err := ReadPolicyFile(homePath + we.FInfo.Name()); err != nil {
 					fileError(homePath+we.FInfo.Name(), err)
-				} else if err := policy.Is_Self_Consistent("", ""); err != nil {
+				} else if err := policy.Is_Self_Consistent("", "", workloadResolver); err != nil {
 					fileError(homePath+we.FInfo.Name(), errors.New(fmt.Sprintf("Policy file not self consistent %v, error: %v", homePath, err)))
 				} else if policy.Header.Name != we.Pol.Header.Name {
 					// Contents of the file changed the policy name, so this means we have a new policy and a deleted policy at the same time.

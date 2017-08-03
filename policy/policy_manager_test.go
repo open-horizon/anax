@@ -10,7 +10,7 @@ import (
 
 func Test_Payloadmanager_init_success1(t *testing.T) {
 
-	if pm, err := Initialize("./test/pffindtest/"); err != nil {
+	if pm, err := Initialize("./test/pffindtest/", nil); err != nil {
 		t.Error(err)
 	} else {
 
@@ -32,13 +32,13 @@ func Test_Payloadmanager_init_success1(t *testing.T) {
 
 func Test_Payloadmanager_dup_policy_name(t *testing.T) {
 
-	if _, err := Initialize("./test/pfduptest/"); err == nil {
+	if _, err := Initialize("./test/pfduptest/", nil); err == nil {
 		t.Errorf("Should have found duplicate policy names but did not.")
 	}
 }
 
 func Test_contractCounter_success(t *testing.T) {
-	if pm, err := Initialize("./test/pfmatchtest/"); err != nil {
+	if pm, err := Initialize("./test/pfmatchtest/", nil); err != nil {
 		t.Error(err)
 	} else {
 
@@ -100,7 +100,7 @@ func Test_contractCounter_success(t *testing.T) {
 func Test_contractCounter_failure1(t *testing.T) {
 
 	var wrongPol *Policy
-	if pm, err := Initialize("./test/pffindtest/"); err != nil {
+	if pm, err := Initialize("./test/pffindtest/", nil); err != nil {
 		t.Error(err)
 	} else {
 		// Grab the wrong policy so that we can do error tests
@@ -113,7 +113,7 @@ func Test_contractCounter_failure1(t *testing.T) {
 		t.Errorf("Should have returned policy pointer.")
 	}
 
-	if pm, err := Initialize("./test/pfmatchtest/"); err != nil {
+	if pm, err := Initialize("./test/pfmatchtest/", nil); err != nil {
 		t.Error(err)
 	} else {
 
@@ -185,7 +185,7 @@ func Test_contractCounter_failure1(t *testing.T) {
 
 func Test_find_by_apispec1(t *testing.T) {
 
-	if pm, err := Initialize("./test/pfcompat1/"); err != nil {
+	if pm, err := Initialize("./test/pfcompat1/", nil); err != nil {
 		t.Error(err)
 	} else {
 		searchURL := "http://mycompany.com/dm/gps"
@@ -209,7 +209,7 @@ func Test_find_by_apispec1(t *testing.T) {
 }
 
 func Test_add_policy(t *testing.T) {
-	if pm, err := Initialize("./test/pffindtest/"); err != nil {
+	if pm, err := Initialize("./test/pffindtest/", nil); err != nil {
 		t.Error(err)
 	} else {
 

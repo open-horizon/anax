@@ -253,3 +253,112 @@ func Test_APISpecification_not_contains_specref(t *testing.T) {
 		}
 	}
 }
+
+// Fifth, some sameness tests - API spec lists which are the same
+func Test_APISpecification_same(t *testing.T) {
+	var as1, as2 *APISpecList
+	asString1 := `[{"specRef": "http://mycompany.com/dm/gps","version":"1.0.0","exclusiveAccess":false,"arch":"arm"}]`
+	asString2 := `[{"specRef": "http://mycompany.com/dm/gps","version":"1.0.0","exclusiveAccess":false,"arch":"arm"}]`
+
+	if as1 = create_APISpecification(asString1, t); as1 != nil {
+		if as2 = create_APISpecification(asString2, t); as2 != nil {
+			if !as1.IsSame(*as2, true) {
+				t.Errorf("Error: %v and %v are the same.", as1, as2)
+			}
+		}
+	}
+
+	asString1 = `[{"specRef": "http://mycompany.com/dm/gps","version":"1.0.0","exclusiveAccess":false,"arch":"arm"}]`
+	asString2 = `[{"specRef": "http://mycompany.com/dm/gps","version":"2.0.0","exclusiveAccess":false,"arch":"arm"}]`
+
+	if as1 = create_APISpecification(asString1, t); as1 != nil {
+		if as2 = create_APISpecification(asString2, t); as2 != nil {
+			if !as1.IsSame(*as2, false) {
+				t.Errorf("Error: %v and %v are the same ignoring version.", as1, as2)
+			}
+		}
+	}
+
+}
+
+// Soxth, some sameness tests - API spec lists which are NOT the same
+func Test_APISpecification_not_same(t *testing.T) {
+	var as1, as2 *APISpecList
+	asString1 := `[{"specRef": "http://mycompany.com/dm/gps","version":"1.0.0","exclusiveAccess":false,"arch":"arm"}]`
+	asString2 := `[{"specRef": "http://mycompany.com/dm/gps","version":"2.0.0","exclusiveAccess":false,"arch":"arm"}]`
+
+	if as1 = create_APISpecification(asString1, t); as1 != nil {
+		if as2 = create_APISpecification(asString2, t); as2 != nil {
+			if as1.IsSame(*as2, true) {
+				t.Errorf("Error: %v and %v are NOT the same.", as1, as2)
+			}
+		}
+	}
+
+	asString1 = `[{"specRef": "http://mycompany.com/dm/gps","version":"1.0.0","exclusiveAccess":false,"arch":"arm"}]`
+	asString2 = `[{"specRef": "http://mycompany.com/dm/gps2","version":"1.0.0","exclusiveAccess":false,"arch":"arm"}]`
+
+	if as1 = create_APISpecification(asString1, t); as1 != nil {
+		if as2 = create_APISpecification(asString2, t); as2 != nil {
+			if as1.IsSame(*as2, true) {
+				t.Errorf("Error: %v and %v are NOT the same.", as1, as2)
+			}
+		}
+	}
+
+	asString1 = `[{"specRef": "http://mycompany.com/dm/gps","version":"1.0.0","exclusiveAccess":false,"arch":"arm"}]`
+	asString2 = `[{"specRef": "http://mycompany.com/dm/gps","version":"1.0.0","exclusiveAccess":true,"arch":"arm"}]`
+
+	if as1 = create_APISpecification(asString1, t); as1 != nil {
+		if as2 = create_APISpecification(asString2, t); as2 != nil {
+			if as1.IsSame(*as2, true) {
+				t.Errorf("Error: %v and %v are NOT the same.", as1, as2)
+			}
+		}
+	}
+
+	asString1 = `[{"specRef": "http://mycompany.com/dm/gps","version":"1.0.0","exclusiveAccess":false,"arch":"arm"}]`
+	asString2 = `[{"specRef": "http://mycompany.com/dm/gps","version":"1.0.0","exclusiveAccess":false,"arch":"amd64"}]`
+
+	if as1 = create_APISpecification(asString1, t); as1 != nil {
+		if as2 = create_APISpecification(asString2, t); as2 != nil {
+			if as1.IsSame(*as2, true) {
+				t.Errorf("Error: %v and %v are NOT the same.", as1, as2)
+			}
+		}
+	}
+
+	asString1 = `[{"specRef": "http://mycompany.com/dm/gps","version":"1.0.0","exclusiveAccess":false,"arch":"arm"}]`
+	asString2 = `[{"specRef": "http://mycompany.com/dm/gps2","version":"2.0.0","exclusiveAccess":false,"arch":"arm"}]`
+
+	if as1 = create_APISpecification(asString1, t); as1 != nil {
+		if as2 = create_APISpecification(asString2, t); as2 != nil {
+			if as1.IsSame(*as2, false) {
+				t.Errorf("Error: %v and %v are NOT the same even ignoring version.", as1, as2)
+			}
+		}
+	}
+
+	asString1 = `[{"specRef": "http://mycompany.com/dm/gps","version":"1.0.0","exclusiveAccess":false,"arch":"arm"}]`
+	asString2 = `[{"specRef": "http://mycompany.com/dm/gps","version":"2.0.0","exclusiveAccess":true,"arch":"arm"}]`
+
+	if as1 = create_APISpecification(asString1, t); as1 != nil {
+		if as2 = create_APISpecification(asString2, t); as2 != nil {
+			if as1.IsSame(*as2, false) {
+				t.Errorf("Error: %v and %v are NOT the same even ignoring version.", as1, as2)
+			}
+		}
+	}
+
+	asString1 = `[{"specRef": "http://mycompany.com/dm/gps","version":"1.0.0","exclusiveAccess":false,"arch":"arm"}]`
+	asString2 = `[{"specRef": "http://mycompany.com/dm/gps","version":"2.0.0","exclusiveAccess":false,"arch":"amd64"}]`
+
+	if as1 = create_APISpecification(asString1, t); as1 != nil {
+		if as2 = create_APISpecification(asString2, t); as2 != nil {
+			if as1.IsSame(*as2, false) {
+				t.Errorf("Error: %v and %v are NOT the same even ignoring version.", as1, as2)
+			}
+		}
+	}
+
+}

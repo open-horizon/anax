@@ -124,6 +124,19 @@ func (w *BaseProducerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 	return nil
 }
 
+func (w *BaseProducerProtocolHandler) GetWorkloadResolver() func(wURL string, wVersion string, wArch string) (*policy.APISpecList, error) {
+	return w.workloadResolver
+}
+
+func (w *BaseProducerProtocolHandler) workloadResolver(wURL string, wVersion string, wArch string) (*policy.APISpecList, error) {
+
+	asl, err := exchange.WorkloadResolver(wURL, wVersion, wArch, w.config.Edge.ExchangeURL, w.deviceId, w.token)
+	if err != nil {
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("unable to resolve workload, error %v", err)))
+	}
+	return asl, err
+}
+
 func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.ProtocolHandler, proposal abstractprotocol.Proposal, protocolMsg string, runningBCs []string, exchangeMsg *exchange.DeviceMessage) (bool, abstractprotocol.ProposalReply, *policy.Policy) {
 
 	handled := false
@@ -135,7 +148,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 		handled = true
 	} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
-	} else if err := tcPolicy.Is_Self_Consistent(w.config.Edge.PublicKeyPath, w.config.UserPublicKeyPath()); err != nil {
+	} else if err := tcPolicy.Is_Self_Consistent(w.config.Edge.PublicKeyPath, w.config.UserPublicKeyPath(), w.GetWorkloadResolver()); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking self consistency of TsAndCs, %v", err)))
 		handled = true
 	} else if messageTarget, err := exchange.CreateMessageTarget(exchangeMsg.AgbotId, nil, exchangeMsg.AgbotPubKey, ""); err != nil {

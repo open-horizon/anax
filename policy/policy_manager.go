@@ -133,7 +133,7 @@ func (self *PolicyManager) UpgradeAgreementProtocols() {
 
 // This function is used to get the policy manager up and running. When this function returns, all the current policies
 // have been read into memory. It can be used instead of the factory method for convenience.
-func Initialize(policyPath string) (*PolicyManager, error) {
+func Initialize(policyPath string, workloadResolver func(wURL string, wVersion string, wArch string) (*APISpecList, error)) (*PolicyManager, error) {
 
 	glog.V(1).Infof("Initializing Policy Manager with %v.", policyPath)
 	pm := PolicyManager_Factory()
@@ -157,7 +157,7 @@ func Initialize(policyPath string) (*PolicyManager, error) {
 
 	// Call the policy file watcher once to load up the initial set of policy files
 	contents := make(map[string]*WatchEntry)
-	if cons, err := PolicyFileChangeWatcher(policyPath, contents, changeNotify, deleteNotify, errorNotify, 0); err != nil {
+	if cons, err := PolicyFileChangeWatcher(policyPath, contents, changeNotify, deleteNotify, errorNotify, workloadResolver, 0); err != nil {
 		return nil, err
 	} else if len(pm.Policies) != numberFiles {
 		return nil, errors.New(fmt.Sprintf("Policy Names must be unique, found %v files, but %v unique policies", numberFiles, len(pm.Policies)))
@@ -194,7 +194,7 @@ func (self *PolicyManager) hasPolicy(matchPolicy *Policy) (bool, error) {
 		if !pol.Header.IsSame(matchPolicy.Header) {
 			errString = fmt.Sprintf("Header %v mismatch with %v", pol.Header, matchPolicy.Header)
 			continue
-		} else if !pol.APISpecs.IsSame(matchPolicy.APISpecs) {
+		} else if (len(matchPolicy.Workloads) == 0 || (len(matchPolicy.Workloads) != 0 && matchPolicy.Workloads[0].WorkloadURL == "")) && !pol.APISpecs.IsSame(matchPolicy.APISpecs, true) {
 			errString = fmt.Sprintf("API Spec %v mismatch with %v", pol.APISpecs, matchPolicy.APISpecs)
 			continue
 		} else if !pol.AgreementProtocols.IsSame(matchPolicy.AgreementProtocols) {

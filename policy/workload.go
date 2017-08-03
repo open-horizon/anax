@@ -75,12 +75,17 @@ func (wp WorkloadPriority) IsSame(compare WorkloadPriority) bool {
 }
 
 type Workload struct {
-    Deployment          string           `json:"deployment"`
-    DeploymentSignature string           `json:"deployment_signature"`
-    DeploymentUserInfo  string           `json:"deployment_user_info"`
-    Torrent             Torrent          `json:"torrent"`
-    WorkloadPassword    string           `json:"workload_password"` // The password used to create the bcrypt hash that is passed to the workload so that the workload can verify the caller
-    Priority            WorkloadPriority `json:"priority,omitempty"` // The highest priority workload is tried first for an agrement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
+    Deployment                   string           `json:"deployment"`
+    DeploymentSignature          string           `json:"deployment_signature"`
+    DeploymentUserInfo           string           `json:"deployment_user_info"`
+    Torrent                      Torrent          `json:"torrent"`
+    WorkloadPassword             string           `json:"workload_password"` // The password used to create the bcrypt hash that is passed to the workload so that the workload can verify the caller
+    Priority                     WorkloadPriority `json:"priority,omitempty"` // The highest priority workload is tried first for an agrement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
+    WorkloadURL                  string           `json:"workloadUrl,omitempty"`  // Added with MS split, refers to a workload definition in the exchange
+    Version                      string           `json:"version,omitempty"`   // Added with MS split, refers to the version of the workload
+    Arch                         string           `json:"arch,omitempty"`     // Added with MS split, refers to the hardware architecture of the workload definition
+    DeploymentOverrides          string           `json:"deployment_overrides,omitempty"`     // Added with MS split, env var overrides for the workload
+    DeploymentOverridesSignature string           `json:"deployment_overrides_signature,omitempty"`   // Added with MS split, signature of env var overrides
 }
 
 func (w Workload) String() string {
@@ -89,24 +94,50 @@ func (w Workload) String() string {
         "DeploymentSignature: %v, " +
         "DeploymentUserInfo: %v, " +
         "Torrent: %v, " +
-        "WorkloadPassword: %v",
-        w.Priority, w.Deployment, w.DeploymentSignature, w.DeploymentUserInfo, w.Torrent, w.WorkloadPassword)
+        "Workload Password: %v, " +
+        "Workload URL: %v, " +
+        "Version: %v, " +
+        "Arch: %v, " +
+        "Deployment Overrides: %v, " +
+        "Deployment Overrides Signature: %v",
+        w.Priority, w.Deployment, w.DeploymentSignature, w.DeploymentUserInfo, w.Torrent, w.WorkloadPassword,
+        w.WorkloadURL, w.Version, w.Arch, w.DeploymentOverrides, w.DeploymentOverridesSignature)
 }
 
 func (w Workload) ShortString() string {
     return fmt.Sprintf("Priority: %v, " +
+        "Workload URL: %v, " +
+        "Version: %v, " +
         "Deployment: %v",
-        w.Priority, w.Deployment)
+        w.Priority, w.WorkloadURL, w.Version, w.Deployment)
 }
 
-// This function specifically omits checking the Priority section of the workload because that section is not relevant to the equivalence between 2 workload definitions.
+// This function compares 2 workload objects for sameness. This is slightly complicated because 2 workloads can be
+// semantically the same without having identical state. For example, a workload entry that has the WorkloadURL set
+// might also have the other workloads details that can be found at the other end of he URL. In this case, we can
+// ignore comparing the details fields and just stick with a comparison of the URL.
 func (wl Workload) IsSame(compare Workload) bool {
-    return wl.Deployment == compare.Deployment &&
+
+    // Common comparison checks
+    if wl.WorkloadPassword != compare.WorkloadPassword || !wl.Priority.IsSame(compare.Priority) {
+        return false
+    }
+
+    // old style policy file with workload details embedded in it
+    if wl.WorkloadURL == "" {
+        return wl.Deployment == compare.Deployment &&
             wl.DeploymentSignature == compare.DeploymentSignature &&
             wl.DeploymentUserInfo == compare.DeploymentUserInfo &&
-            wl.Torrent.IsSame(compare.Torrent) &&
-            wl.WorkloadPassword == compare.WorkloadPassword &&
-            wl.Priority.IsSame(compare.Priority)
+            wl.Torrent.IsSame(compare.Torrent)
+
+    } else {
+        return wl.WorkloadURL == compare.WorkloadURL &&
+            wl.Version == compare.Version &&
+            wl.Arch == compare.Arch &&
+            wl.DeploymentOverrides == compare.DeploymentOverrides &&
+            wl.DeploymentOverridesSignature == compare.DeploymentOverridesSignature
+    }
+
 }
 
 func (w *Workload) Obscure(agreementId string, defaultPW string) error {
@@ -133,15 +164,25 @@ func (w *Workload) Obscure(agreementId string, defaultPW string) error {
 func (w Workload) HasValidSignature(pubKeyFile string, userKeys string) error {
     glog.V(3).Infof("Verifying workload signature")
 
-    hasher := sha256.New()
-    if _, err := io.WriteString(hasher, w.Deployment); err != nil {
-        return errors.New(fmt.Sprintf("Error hashing deployment string: %v, Error: %v", w.Deployment, err))
-    } else {
-        if _, err := VerifyWorkload(pubKeyFile, w.DeploymentSignature, hasher, userKeys); err != nil {
+    if w.Deployment != "" {
+        hasher := sha256.New()
+        if _, err := io.WriteString(hasher, w.Deployment); err != nil {
+            return errors.New(fmt.Sprintf("Error hashing deployment string: %v, Error: %v", w.Deployment, err))
+        } else if _, err := VerifyWorkload(pubKeyFile, w.DeploymentSignature, hasher, userKeys); err != nil {
             return errors.New(fmt.Sprintf("Error verifying deployment signature: %v for deployment: %v, Error: %v", w.DeploymentSignature, w.Deployment, err))
-        } else {
-            return nil
         }
+    }
+
+    if w.DeploymentOverrides == "" {
+        return nil
+    } else {
+        hasher := sha256.New()
+        if _, err := io.WriteString(hasher, w.DeploymentOverrides); err != nil {
+            return errors.New(fmt.Sprintf("Error hashing deployment overrides string: %v, Error: %v", w.DeploymentOverrides, err))
+        } else if _, err := VerifyWorkload(pubKeyFile, w.DeploymentOverridesSignature, hasher, userKeys); err != nil {
+            return errors.New(fmt.Sprintf("Error verifying deployment overrides signature: %v for deployment: %v, Error: %v", w.DeploymentOverridesSignature, w.DeploymentOverrides, err))
+        }
+        return nil
     }
 
 }

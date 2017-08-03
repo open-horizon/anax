@@ -176,7 +176,7 @@ func (w *AgreementBotWorker) start() {
 		// Give the policy manager a chance to read in all the policies. The agbot worker will not proceed past this point
 		// until it has some policies to work with.
 		for {
-			if policyManager, err := policy.Initialize(w.Worker.Manager.Config.AgreementBot.PolicyPath); err != nil {
+			if policyManager, err := policy.Initialize(w.Worker.Manager.Config.AgreementBot.PolicyPath, w.workloadResolver); err != nil {
 				glog.Errorf("AgreementBotWorker unable to initialize policy manager, error: %v", err)
 			} else if policyManager.NumberPolicies() != 0 {
 				w.pm = policyManager
@@ -228,7 +228,7 @@ func (w *AgreementBotWorker) start() {
 		go w.GovernArchivedAgreements()
 		go w.GovernBlockchainNeeds()
 		if w.Config.AgreementBot.CheckUpdatedPolicyS != 0 {
-			go policy.PolicyFileChangeWatcher(w.Config.AgreementBot.PolicyPath, w.pm.WatcherContent, w.changedPolicy, w.deletedPolicy, w.errorPolicy, w.Config.AgreementBot.CheckUpdatedPolicyS)
+			go policy.PolicyFileChangeWatcher(w.Config.AgreementBot.PolicyPath, w.pm.WatcherContent, w.changedPolicy, w.deletedPolicy, w.errorPolicy, w.workloadResolver, w.Config.AgreementBot.CheckUpdatedPolicyS)
 		}
 
 		// Enter the command processing loop. Initialization is complete so wait for commands to
@@ -572,15 +572,17 @@ func (w *AgreementBotWorker) getMessages() ([]exchange.AgbotMessage, error) {
 
 // This function runs through the agbot policy and builds a list of properties and values that
 // it wants to search on.
-func RetrieveAllProperties(pol *policy.Policy) (*policy.PropertyList, error) {
+func RetrieveAllProperties(version string, arch string, pol *policy.Policy) (*policy.PropertyList, error) {
 	pl := new(policy.PropertyList)
 
 	for _, p := range pol.Properties {
 		*pl = append(*pl, p)
 	}
 
-	*pl = append(*pl, policy.Property{Name: "version", Value: pol.APISpecs[0].Version})
-	*pl = append(*pl, policy.Property{Name: "arch", Value: pol.APISpecs[0].Arch})
+	if version != "" {
+		*pl = append(*pl, policy.Property{Name: "version", Value: version})
+	}
+	*pl = append(*pl, policy.Property{Name: "arch", Value: arch})
 	*pl = append(*pl, policy.Property{Name: "agreementProtocols", Value: pol.AgreementProtocols.As_String_Array()})
 
 	return pl, nil
@@ -634,35 +636,62 @@ func DeleteMessage(msgId int, agbotId, agbotToken, exchangeURL string, httpClien
 
 func (w *AgreementBotWorker) searchExchange(pol *policy.Policy) (*[]exchange.SearchResultDevice, error) {
 
-	// Convert the policy into a microservice object that the exchange can search on
-	ms := make([]exchange.Microservice, 0, 10)
+	// Collect the API specs to search over into a map so that duplicates are automatically removed
+	msMap := make(map[string]*exchange.Microservice)
 
-	newMS := new(exchange.Microservice)
-	newMS.Url = pol.APISpecs[0].SpecRef
-	newMS.NumAgreements = 1
-
-	if props, err := RetrieveAllProperties(pol); err != nil {
-		return nil, errors.New(fmt.Sprintf("AgreementBotWorker received error calculating properties: %v", err))
-	} else {
-		for _, prop := range *props {
-			if newProp, err := exchange.ConvertPropertyToExchangeFormat(&prop); err != nil {
-				return nil, errors.New(fmt.Sprintf("AgreementBotWorker got error searching exchange: %v", err))
+	// For policy files that point to the exchange for workload details, we need to get all the referred to API specs
+	// from all workloads and search for devices that can satisfy all the workloads in the policy file. If a device
+	// can't satisfy all the workloads then workload rollback cant work so we shouldnt make an agreement with this
+	// device.
+	if pol.Workloads[0].WorkloadURL != "" {
+		for _, workload := range pol.Workloads {
+			if workload, err := exchange.GetWorkload(workload.WorkloadURL, workload.Version, workload.Arch, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+				return nil, errors.New(fmt.Sprintf("AgreementBotWorker received error retrieving workload definition for %v, error: %v", workload, err))
 			} else {
-				newMS.Properties = append(newMS.Properties, *newProp)
+				for _, apiSpec := range workload.APISpecs {
+					if newMS, err := w.makeNewMSSearchElement(apiSpec.SpecRef, "", apiSpec.Arch, pol); err != nil {
+						return nil, err
+					} else {
+						msMap[apiSpec.SpecRef] = newMS
+					}
+				}
 			}
+		}
+
+	} else {
+		// Working with an old style policy file.
+		// Convert the policy into a microservice object that the exchange can search on
+
+		if newMS, err := w.makeNewMSSearchElement(pol.APISpecs[0].SpecRef, pol.APISpecs[0].Version, pol.APISpecs[0].Arch, pol); err != nil {
+			return nil, err
+		} else {
+			msMap[pol.APISpecs[0].SpecRef] = newMS
 		}
 	}
 
+	// Convert the collected API specs into an array for the search request body
+	desiredMS := make([]exchange.Microservice, 0, 10)
+	for _, ms := range msMap {
+		desiredMS = append(desiredMS, *ms)
+	}
+
+	// Setup the search request body
 	ser := exchange.CreateSearchRequest()
 	ser.SecondsStale = w.Config.AgreementBot.ActiveDeviceTimeoutS
-	ser.DesiredMicroservices = append(ms, *newMS)
+	ser.DesiredMicroservices = desiredMS
 
+	// Invoke the exchange
 	var resp interface{}
 	resp = new(exchange.SearchExchangeResponse)
 	targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "search/devices"
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, ser, &resp); err != nil {
-			return nil, err
+			if !strings.Contains(err.Error(), "status: 404") {
+				return nil, err
+			} else {
+				empty := make([]exchange.SearchResultDevice, 0, 0)
+				return &empty, nil
+			}
 		} else if tpErr != nil {
 			glog.Warningf(tpErr.Error())
 			time.Sleep(10 * time.Second)
@@ -674,6 +703,26 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy) (*[]exchange.Sea
 		}
 	}
 }
+
+func (w *AgreementBotWorker) makeNewMSSearchElement(specRef string, version string, arch string, pol *policy.Policy) (*exchange.Microservice, error) {
+	newMS := new(exchange.Microservice)
+	newMS.Url = specRef
+	newMS.NumAgreements = 1
+
+	if props, err := RetrieveAllProperties(version, arch, pol); err != nil {
+		return nil, errors.New(fmt.Sprintf("AgreementBotWorker received error calculating properties: %v", err))
+	} else {
+		for _, prop := range *props {
+			if newProp, err := exchange.ConvertPropertyToExchangeFormat(&prop); err != nil {
+				return nil, errors.New(fmt.Sprintf("AgreementBotWorker got error converting properties %v to exchange format: %v", prop, err))
+			} else {
+				newMS.Properties = append(newMS.Properties, *newProp)
+			}
+		}
+	}
+	return newMS, nil
+}
+
 
 func (w *AgreementBotWorker) syncOnInit() error {
 	glog.V(3).Infof(AWlogString("beginning sync up."))
@@ -944,6 +993,15 @@ func (w *AgreementBotWorker) registerPublicKey() error {
 			return nil
 		}
 	}
+}
+
+func (w *AgreementBotWorker) workloadResolver(wURL string, wVersion string, wArch string) (*policy.APISpecList, error) {
+
+	asl, err := exchange.WorkloadResolver(wURL, wVersion, wArch, w.Config.AgreementBot.ExchangeURL, w.Config.AgreementBot.ExchangeId, w.Config.AgreementBot.ExchangeToken)
+	if err != nil {
+		glog.Errorf(AWlogString(fmt.Sprintf("unable to resolve workload, error %v", err)))
+	}
+	return asl, err
 }
 
 // ==========================================================================================================

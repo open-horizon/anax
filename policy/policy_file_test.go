@@ -110,7 +110,7 @@ func Test_PolicyFileChangeWatcher(t *testing.T) {
 
 	// Test a single call into the watcher
 	contents := make(map[string]*WatchEntry)
-	if _, err := PolicyFileChangeWatcher("./test/pfwatchtest/", contents, changeNotify, deleteNotify, errorNotify, 0); err != nil {
+	if _, err := PolicyFileChangeWatcher("./test/pfwatchtest/", contents, changeNotify, deleteNotify, errorNotify, nil, 0); err != nil {
 		t.Error(err)
 	} else if changeDetected != 1 || deleteDetected != 0 || errorDetected != 0 {
 		t.Errorf("Incorrect number of events fired. Expected 1 change, saw %v, expected 0 deletes, saw %v, expected 0 errors, saw %v", changeDetected, deleteDetected, errorDetected)
@@ -120,7 +120,7 @@ func Test_PolicyFileChangeWatcher(t *testing.T) {
 
 	// Test a continously running watcher
 	contents = make(map[string]*WatchEntry)
-	go PolicyFileChangeWatcher("./test/pfwatchtest/", contents, changeNotify, deleteNotify, errorNotify, checkInterval)
+	go PolicyFileChangeWatcher("./test/pfwatchtest/", contents, changeNotify, deleteNotify, errorNotify, nil, checkInterval)
 
 	// Give the watcher a chance to read the contents of the pfwatchtest directory and fire events
 	time.Sleep(3 * time.Second)
@@ -198,7 +198,7 @@ func Test_PolicyFileChangeWatcher_Empty(t *testing.T) {
 
 	// Test a single call into the watcher
 	contents := make(map[string]*WatchEntry)
-	if _, err := PolicyFileChangeWatcher("/tmp/pfempty", contents, changeNotify, deleteNotify, errorNotify, 0); err != nil {
+	if _, err := PolicyFileChangeWatcher("/tmp/pfempty", contents, changeNotify, deleteNotify, errorNotify, nil, 0); err != nil {
 		t.Error(err)
 	} else if changeDetected != 0 || deleteDetected != 0 || errorDetected != 0 {
 		t.Errorf("Incorrect number of events fired. Expected 0 changes, saw %v, expected 0 deletes, saw %v, expected 0 errors, saw %v", changeDetected, deleteDetected, errorDetected)
@@ -228,7 +228,7 @@ func Test_PolicyFileChangeWatcher_NoDir(t *testing.T) {
 
 	// Test a single call into the watcher
 	contents := make(map[string]*WatchEntry)
-	if _, err := PolicyFileChangeWatcher("./test/notexist/", contents, changeNotify, deleteNotify, errorNotify, 0); err == nil {
+	if _, err := PolicyFileChangeWatcher("./test/notexist/", contents, changeNotify, deleteNotify, errorNotify, nil, 0); err == nil {
 		t.Error("Expected 'no such directory error', but no error was returned.")
 	} else if !strings.Contains(err.Error(), "no such file or directory") {
 		t.Errorf("Expected 'no such directory' error, but received %v", err)
