@@ -478,6 +478,197 @@ func ConvertPropertyToExchangeFormat(prop *policy.Property) (*MSProp, error) {
 	return newProp, nil
 }
 
+// Functions related to working with workloads and microservices in the exchange
+type APISpec struct {
+	SpecRef string `json:"specRef"`
+	Version string `json:"version"`
+	Arch    string `json:"arch"`
+}
+
+type UserInput struct {
+	Name         string `json:"name"`
+	Label        string `json:"label"`
+	Type         string `json:"type"`
+	DefaultValue string `json:"defaultValue"`
+}
+
+type WorkloadDeployment struct {
+	Deployment          string `json:"deployment"`
+	DeploymentSignature string `json:"deployment_signature"`
+	Torrent             string `json:"torrent"`
+}
+
+type WorkloadDefinition struct {
+	Owner       string               `json:"owner"`
+	Label       string               `json:"label"`
+	Description string               `json:"description"`
+	WorkloadURL string               `json:"workloadUrl"`
+	Version     string               `json:"version"`
+	Arch        string               `json:"arch"`
+	DownloadURL string               `json:"downloadUrl"`
+	APISpecs    []APISpec            `json:"apiSpec"`
+	UserInputs  []UserInput          `json:"userInput"`
+	Workloads   []WorkloadDeployment `json:"workloads"`
+	LastUpdated string               `json:"lastUpdated"`
+}
+
+func (w *WorkloadDefinition) String() string {
+	return fmt.Sprintf("Owner: %v, " +
+		"Label: %v, " +
+		"Description: %v, " +
+		"WorkloadURL: %v, " +
+		"Version: %v, " +
+		"Arch: %v, " +
+		"DownloadURL: %v, " +
+		"APISpecs: %v, " +
+		"UserInputs: %v, " +
+		"Workloads: %v, " +
+		"LastUpdated: %v",
+		w.Owner, w.Label, w.Description, w.WorkloadURL, w.Version, w.Arch, w.DownloadURL,
+		w.APISpecs, w.UserInputs, w.Workloads, w.LastUpdated)
+}
+
+type GetWorkloadsResponse struct {
+	Workloads map[string]WorkloadDefinition `json:"workloads"`
+	LastIndex int                           `json:"lastIndex"`
+}
+
+type HardwareMatch struct {
+	USBDeviceIds string `json:"usbDeviceIds"`
+	Devfiles     string `json:"devFiles"`
+}
+
+type MicroserviceDefinition struct {
+	Owner         string               `json:"owner"`
+	Label         string               `json:"label"`
+	Description   string               `json:"description"`
+	SpecRef       string               `json:"specRef"`
+	Version       string               `json:"version"`
+	Arch          string               `json:"arch"`
+	Sharable      string               `json:"sharable"`
+	DownloadURL   string               `json:"downloadUrl"`
+	MatchHardware HardwareMatch        `json:"matchHardware"`
+	UserInputs    []UserInput          `json:"userInput"`
+	Workloads     []WorkloadDeployment `json:"workloads"`
+	LastUpdated   string               `json:"lastUpdated"`
+}
+
+func (w *MicroserviceDefinition) String() string {
+	return fmt.Sprintf("Owner: %v, " +
+		"Label: %v, " +
+		"Description: %v, " +
+		"SpecRef: %v, " +
+		"Version: %v, " +
+		"Arch: %v, " +
+		"Sharable: %v, " +
+		"DownloadURL: %v, " +
+		"MatchHardware: %v, " +
+		"UserInputs: %v, " +
+		"Workloads: %v, " +
+		"LastUpdated: %v",
+		w.Owner, w.Label, w.Description, w.SpecRef, w.Version, w.Arch, w.Sharable, w.DownloadURL,
+		w.MatchHardware, w.UserInputs, w.Workloads, w.LastUpdated)
+}
+
+type GetMicroservicesResponse struct {
+	Microservices map[string]MicroserviceDefinition `json:"microservices"`
+	LastIndex     int                               `json:"lastIndex"`
+}
+
+func GetWorkload(wURL string, wVersion string, wArch string, exURL string, id string, token string) (*WorkloadDefinition, error) {
+
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting workload definition %v %v %v", wURL, wVersion, wArch)))
+
+	var resp interface{}
+	resp = new(GetWorkloadsResponse)
+	targetURL := fmt.Sprintf("%vworkloads?workloadUrl=%v&version=%v&arch=%v", exURL, wURL, wVersion, wArch)
+	for {
+		if err, tpErr := InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "GET", targetURL, id, token, nil, &resp); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			workloadMetadata := resp.(*GetWorkloadsResponse).Workloads
+			if len(workloadMetadata) != 1 {
+				glog.Errorf(rpclogString(fmt.Sprintf("expecting 1 result in GET workloads response: %v", resp)))
+				return nil, errors.New(fmt.Sprintf("expecting 1 result in GET workloads response, got %v", len(workloadMetadata)))
+			} else {
+				for _, workloadDef := range workloadMetadata {
+					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v", &workloadDef)))
+					return &workloadDef, nil
+				}
+			}
+		}
+	}
+}
+
+func GetMicroservice(mURL string, mVersion string, mArch string, exURL string, id string, token string) (*MicroserviceDefinition, error) {
+
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting microservice definition %v %v %v", mURL, mVersion, mArch)))
+
+	var resp interface{}
+	resp = new(GetMicroservicesResponse)
+	targetURL := fmt.Sprintf("%vmicroservices?specRef=%v&version=%v&arch=%v", exURL, mURL, mVersion, mArch)
+	for {
+		if err, tpErr := InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "GET", targetURL, id, token, nil, &resp); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("found microservice %v.", resp)))
+			msMetadata := resp.(*GetMicroservicesResponse).Microservices
+			if len(msMetadata) != 1 {
+				glog.Errorf(rpclogString(fmt.Sprintf("expecting 1 result in GET microservces response: %v", resp)))
+				return nil, errors.New(fmt.Sprintf("expecting 1 result in GET microservces response, got %v", len(msMetadata)))
+			} else {
+				for _, msDef := range msMetadata {
+					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v", &msDef)))
+					return &msDef, nil
+				}
+			}
+		}
+	}
+}
+
+// The purpose of this function is to verify that a given workload URL, version and architecture, is defined in the exchange
+// as well as all of its API spec dependencies. This function also returns the API dependencies converted into
+// policy types so that the caller can use those types to do policy compatibility checks if they want to.
+func WorkloadResolver(wURL string, wVersion string, wArch string, exURL string, id string, token string) (*policy.APISpecList, error) {
+	resolveMicroservices := true
+
+	glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving workload %v %v %v", wURL, wVersion, wArch)))
+
+	if workload, err := GetWorkload(wURL, wVersion, wArch, exURL, id, token); err != nil {
+		return nil, err
+	} else if len(workload.Workloads) != 1 {
+		return nil, errors.New(fmt.Sprintf("expecting 1 element in the workloads array of %v, have %v", workload, len(workload.Workloads)))
+	} else {
+		if resolveMicroservices {
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving microservices for %v %v %v", wURL, wVersion, wArch)))
+			for _, apiSpec := range workload.APISpecs {
+				if _, err := GetMicroservice(apiSpec.SpecRef, apiSpec.Version, apiSpec.Arch, exURL, id, token); err != nil {
+					return nil, err
+				}
+			}
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved microservices for %v %v %v", wURL, wVersion, wArch)))
+		}
+		res := new(policy.APISpecList)
+		for _, apiSpec := range workload.APISpecs {
+			(*res) = append((*res), (*policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Version, apiSpec.Arch)))
+		}
+		glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved workload %v %v %v", wURL, wVersion, wArch)))
+		return res, nil
+
+	}
+
+}
+
 // This function is used to invoke an exchange API
 func InvokeExchange(httpClient *http.Client, method string, url string, user string, pw string, params interface{}, resp *interface{}) (error, error) {
 
@@ -587,6 +778,12 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 						return nil, nil
 
 					case *GetEthereumClientResponse:
+						return nil, nil
+
+					case *GetWorkloadsResponse:
+						return nil, nil
+
+					case *GetMicroservicesResponse:
 						return nil, nil
 
 					default:

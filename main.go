@@ -157,7 +157,7 @@ func main() {
 	} else if err := os.MkdirAll(cfg.Edge.PolicyPath, 0644); err != nil {
 		glog.Errorf("Cannot create edge policy file path %v, terminating.", cfg.Edge.PolicyPath)
 		panic(err)
-	} else if policyManager, err := policy.Initialize(cfg.Edge.PolicyPath); err != nil {
+	} else if policyManager, err := policy.Initialize(cfg.Edge.PolicyPath, nil); err != nil {
 		glog.Errorf("Unable to initialize policy manager, terminating.")
 		panic(err)
 	} else {

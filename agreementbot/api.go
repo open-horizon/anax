@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
 	"io/ioutil"
@@ -209,10 +210,17 @@ func (a *API) policyUpgrade(w http.ResponseWriter, r *http.Request) {
 		}
 		glog.V(3).Infof(APIlogString(fmt.Sprintf("handling POST of policy: %v", policyName)))
 
+		workloadResolver := func(wURL string, wVersion string, wArch string) (*policy.APISpecList, error) {
+			asl, err := exchange.WorkloadResolver(wURL, wVersion, wArch, a.Config.AgreementBot.ExchangeURL, a.Config.AgreementBot.ExchangeId, a.Config.AgreementBot.ExchangeToken)
+			if err != nil {
+				glog.Errorf(APIlogString(fmt.Sprintf("unable to resolve workload, error %v", err)))
+			}
+			return asl, err
+		}
 		// Verify the input policy name. It can be either the name of the policy within the header of the policy file or the name
 		// of the file itself.
 		found := false
-		if pm, err := policy.Initialize(a.Config.AgreementBot.PolicyPath); err != nil {
+		if pm, err := policy.Initialize(a.Config.AgreementBot.PolicyPath, workloadResolver); err != nil {
 			glog.Error(APIlogString(fmt.Sprintf("error initializing policy manager, error: %v", err)))
 			w.WriteHeader(http.StatusInternalServerError)
 			return
