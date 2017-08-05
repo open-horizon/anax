@@ -17,25 +17,25 @@ type Configuration struct {
 }
 
 type Info struct {
-	Geth          *Geth           `json:"geth"`
+	Geths         []Geth          `json:"geth"`
 	Configuration *Configuration  `json:"configuration"`
 	Connectivity  map[string]bool `json:"connectivity"`
 }
 
 func NewInfo(config *config.HorizonConfig) *Info {
 	return &Info{
-		Geth: &Geth{
-			NetPeerCount:   -1,
-			EthSyncing:     false,
-			EthBlockNumber: -1,
-			EthAccounts:    []string{},
-			EthBalance:     "",
-		},
+		Geths: []Geth{},
 		Configuration: &Configuration{
 			ExchangeAPI: config.Edge.ExchangeURL,
 		},
 		Connectivity: map[string]bool{},
 	}
+}
+
+func (info *Info) AddGeth(geth *Geth) *Info {
+	info.Geths = append(info.Geths, *geth)
+
+	return info
 }
 
 // Geth is an external type exposing the health of the go-ethereum process used by this anax instance
@@ -45,6 +45,16 @@ type Geth struct {
 	EthBlockNumber int64    `json:"eth_block_number"`
 	EthAccounts    []string `json:"eth_accounts"`
 	EthBalance     string   `json:"eth_balance"` // a string b/c this is a huge number
+}
+
+func NewGeth() *Geth {
+	return &Geth{
+		NetPeerCount:   -1,
+		EthSyncing:     false,
+		EthBlockNumber: -1,
+		EthAccounts:    []string{},
+		EthBalance:     "",
+	}
 }
 
 func WriteGethStatus(gethURL string, geth *Geth) error {
@@ -92,7 +102,7 @@ func WriteGethStatus(gethURL string, geth *Geth) error {
 		geth.EthSyncing = true
 	}
 
-    // get current the number of the current block
+	// get current the number of the current block
 	blockStr := singleResult("eth_blockNumber", []string{}).(string)
 	if blockStr != "" {
 		blockNum, err := strconv.ParseInt(strings.TrimPrefix(blockStr, "0x"), 16, 64)
@@ -102,7 +112,7 @@ func WriteGethStatus(gethURL string, geth *Geth) error {
 		geth.EthBlockNumber = blockNum
 	}
 
-    // get number of peers
+	// get number of peers
 	peerStr := singleResult("net_peerCount", []string{}).(string)
 	if peerStr != "" {
 		peers, err := strconv.ParseInt(strings.TrimPrefix(peerStr, "0x"), 16, 64)
@@ -127,13 +137,13 @@ func WriteGethStatus(gethURL string, geth *Geth) error {
 		}
 	}
 
-    // get account balance
+	// get account balance
 	if len(geth.EthAccounts) == 0 {
 		geth.EthBalance = "0x0"
 	} else {
-    	eth_balance_params := make([]string, 2)
-    	eth_balance_params[0] = geth.EthAccounts[0]
-    	eth_balance_params[1] = "latest"
+		eth_balance_params := make([]string, 2)
+		eth_balance_params[0] = geth.EthAccounts[0]
+		eth_balance_params[1] = "latest"
 		geth.EthBalance = singleResult("eth_getBalance", eth_balance_params).(string)
 	}
 

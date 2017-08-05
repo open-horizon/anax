@@ -38,9 +38,9 @@ type API struct {
 }
 
 type BlockchainState struct {
-	ready    bool  	   // the blockchain is ready
-	writable bool 	   // the blockchain is writable
-	service  string    // the network endpoint name of the container
+	ready       bool   // the blockchain is ready
+	writable    bool   // the blockchain is writable
+	service     string // the network endpoint name of the container
 	servicePort string // the network port of the container
 }
 
@@ -53,8 +53,8 @@ func NewAPIListener(config *config.HorizonConfig, db *bolt.DB, pm *policy.Policy
 			Messages: messages,
 		},
 
-		db: db,
-		pm: pm,
+		db:          db,
+		pm:          pm,
 		bcState:     make(map[string]map[string]BlockchainState),
 		bcStateLock: sync.Mutex{},
 	}
@@ -100,11 +100,11 @@ func (a *API) handleNewBCInit(ev *events.BlockchainClientInitializedMessage) {
 	namedBC, ok := nameMap[ev.BlockchainInstance()]
 	if !ok {
 		nameMap[ev.BlockchainInstance()] = BlockchainState{
-											ready:       true,
-											writable:    false,
-											service:     ev.ServiceName(),
-											servicePort: ev.ServicePort(),
-										}
+			ready:       true,
+			writable:    false,
+			service:     ev.ServiceName(),
+			servicePort: ev.ServicePort(),
+		}
 	} else {
 		namedBC.ready = true
 		namedBC.service = ev.ServiceName()
@@ -935,27 +935,27 @@ func (a *API) status(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 
-		result := make([]Info, 0, 5)
+		info := NewInfo(a.Config)
+
+		if err := WriteConnectionStatus(info); err != nil {
+			glog.Errorf("Unable to get connectivity status: %v", err)
+		}
 
 		a.bcStateLock.Lock()
 		defer a.bcStateLock.Unlock()
 
 		for _, bc := range a.bcState[policy.Ethereum_bc] {
-			info := NewInfo(a.Config)
+			geth := NewGeth()
 
 			gethURL := fmt.Sprintf("http://%v:%v", bc.service, bc.servicePort)
-			if err := WriteGethStatus(gethURL, info.Geth); err != nil {
+			if err := WriteGethStatus(gethURL, geth); err != nil {
 				glog.Errorf("Unable to determine geth service facts: %v", err)
 			}
 
-			if err := WriteConnectionStatus(info); err != nil {
-				glog.Errorf("Unable to get connectivity status: %v", err)
-			}
-
-			result = append(result, *info)
+			info.AddGeth(geth)
 		}
 
-		if serial, err := json.Marshal(result); err != nil {
+		if serial, err := json.Marshal(info); err != nil {
 			glog.Errorf("Failed to serialize status object: %v", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 		} else {
@@ -1232,7 +1232,6 @@ func (a *API) publickey(w http.ResponseWriter, r *http.Request) {
 		}
 		w.WriteHeader(http.StatusNoContent)
 		return
-
 
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, PUT, DELETE, OPTIONS")
