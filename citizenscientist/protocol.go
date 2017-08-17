@@ -44,7 +44,7 @@ func (p *CSProposal) ShortString() string {
 }
 
 func (p *CSProposal) IsValid() bool {
-    return p.BaseProposal.IsValid() && ((p.Version() == 1 && len(p.Address) != 0) || (p.Version() == 2 && len(p.Address) == 0))
+	return p.BaseProposal.IsValid() && ((p.Version() == 1 && len(p.Address) != 0) || (p.Version() == 2 && len(p.Address) == 0))
 }
 
 func NewCSProposal(bp *abstractprotocol.BaseProposal, myAddress string) *CSProposal {
@@ -73,20 +73,20 @@ func (pr *CSProposalReply) ShortString() string {
 
 // Remember that a reply may contain none of the expected fields (other than the base fields) if the device's decision was NO (or false).
 func (pr *CSProposalReply) IsValid() bool {
-    return pr.BaseProposalReply.IsValid()
+	return pr.BaseProposalReply.IsValid()
 }
 
 func (pr *CSProposalReply) SetSignature(s string) {
-    pr.Signature = s
+	pr.Signature = s
 }
 
 func (pr *CSProposalReply) SetAddress(a string) {
-    pr.Address = a
+	pr.Address = a
 }
 
 func (pr *CSProposalReply) SetBlockchain(t string, n string) {
-    pr.BlockchainType = t
-    pr.BlockchainName = n
+	pr.BlockchainType = t
+	pr.BlockchainName = n
 }
 
 func NewCSProposalReply(bp *abstractprotocol.BaseProposalReply, sig string, myAddress string, bcType string, bcName string) *CSProposalReply {
@@ -102,7 +102,7 @@ func NewCSProposalReply(bp *abstractprotocol.BaseProposalReply, sig string, myAd
 // This struct is the blockchain info for an agreement sent from consumer to producer as part of protocol version 2.
 type CSBlockchainConsumerUpdate struct {
 	*abstractprotocol.BaseProtocolMessage
-	Address        string `json:"address"`
+	Address string `json:"address"`
 }
 
 func (bu *CSBlockchainConsumerUpdate) String() string {
@@ -114,7 +114,7 @@ func (bu *CSBlockchainConsumerUpdate) ShortString() string {
 }
 
 func (bu *CSBlockchainConsumerUpdate) IsValid() bool {
-    return bu.BaseProtocolMessage.IsValid() && bu.MsgType == MsgTypeBlockchainConsumerUpdate && bu.Version() >= 2 && len(bu.Address) != 0
+	return bu.BaseProtocolMessage.IsValid() && bu.MsgType == MsgTypeBlockchainConsumerUpdate && bu.Version() >= 2 && len(bu.Address) != 0
 }
 
 func NewCSBlockchainConsumerUpdate(bp *abstractprotocol.BaseProtocolMessage, myAddress string) *CSBlockchainConsumerUpdate {
@@ -138,7 +138,7 @@ func (bu *CSBlockchainConsumerUpdateAck) ShortString() string {
 }
 
 func (bu *CSBlockchainConsumerUpdateAck) IsValid() bool {
-    return bu.BaseProtocolMessage.IsValid() && bu.MsgType == MsgTypeBlockchainConsumerUpdateAck && bu.Version() >= 2
+	return bu.BaseProtocolMessage.IsValid() && bu.MsgType == MsgTypeBlockchainConsumerUpdateAck && bu.Version() >= 2
 }
 
 func NewCSBlockchainConsumerUpdateAck(bp *abstractprotocol.BaseProtocolMessage) *CSBlockchainConsumerUpdateAck {
@@ -150,8 +150,8 @@ func NewCSBlockchainConsumerUpdateAck(bp *abstractprotocol.BaseProtocolMessage) 
 // This struct is the blockchain info for an agreement sent from producer to consumer as part of protocol version 2.
 type CSBlockchainProducerUpdate struct {
 	*abstractprotocol.BaseProtocolMessage
-	Address        string `json:"address"`
-	Signature      string `json:"signature"`
+	Address   string `json:"address"`
+	Signature string `json:"signature"`
 }
 
 func (bu *CSBlockchainProducerUpdate) String() string {
@@ -163,7 +163,7 @@ func (bu *CSBlockchainProducerUpdate) ShortString() string {
 }
 
 func (bu *CSBlockchainProducerUpdate) IsValid() bool {
-    return bu.BaseProtocolMessage.IsValid() && bu.MsgType == MsgTypeBlockchainProducerUpdate && bu.Version() >= 2 && len(bu.Address) != 0 && len(bu.Signature) != 0
+	return bu.BaseProtocolMessage.IsValid() && bu.MsgType == MsgTypeBlockchainProducerUpdate && bu.Version() >= 2 && len(bu.Address) != 0 && len(bu.Signature) != 0
 }
 
 func NewCSBlockchainProducerUpdate(bp *abstractprotocol.BaseProtocolMessage, myAddress string, sig string) *CSBlockchainProducerUpdate {
@@ -188,7 +188,7 @@ func (bu *CSBlockchainProducerUpdateAck) ShortString() string {
 }
 
 func (bu *CSBlockchainProducerUpdateAck) IsValid() bool {
-    return bu.BaseProtocolMessage.IsValid() && bu.MsgType == MsgTypeBlockchainProducerUpdateAck && bu.Version() >= 2
+	return bu.BaseProtocolMessage.IsValid() && bu.MsgType == MsgTypeBlockchainProducerUpdateAck && bu.Version() >= 2
 }
 
 func NewCSBlockchainProducerUpdateAck(bp *abstractprotocol.BaseProtocolMessage) *CSBlockchainProducerUpdateAck {
@@ -211,9 +211,9 @@ type ProtocolHandler struct {
 func NewProtocolHandler(pm *policy.PolicyManager) *ProtocolHandler {
 
 	bph := abstractprotocol.NewBaseProtocolHandler(PROTOCOL_NAME,
-													PROTOCOL_CURRENT_VERSION,
-													&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)},
-													pm)
+		PROTOCOL_CURRENT_VERSION,
+		&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
+		pm)
 
 	return &ProtocolHandler{
 		BaseProtocolHandler:  bph,
@@ -251,15 +251,15 @@ func (p *ProtocolHandler) InitBlockchain(ev *events.AccountFundedMessage) error 
 // In V1, the proposal has the ethereum specific address of the consumer.
 // In V2 that is omitted so that the blockchain can be negotiated first.
 func (p *ProtocolHandler) InitiateAgreement(agreementId string,
-											producerPolicy *policy.Policy,
-											originalProducerPolicy string,
-											consumerPolicy *policy.Policy,
-											myId string,
-											messageTarget interface{},
-											workload *policy.Workload,
-											defaultPW string,
-											defaultNoData uint64,
-											sendMessage func(msgTarget interface{}, pay []byte) error) (abstractprotocol.Proposal, error) {
+	producerPolicy *policy.Policy,
+	originalProducerPolicy string,
+	consumerPolicy *policy.Policy,
+	myId string,
+	messageTarget interface{},
+	workload *policy.Workload,
+	defaultPW string,
+	defaultNoData uint64,
+	sendMessage func(msgTarget interface{}, pay []byte) error) (abstractprotocol.Proposal, error) {
 
 	// Determine which protocol version to use.
 	protocolVersion := producerPolicy.MinimumProtocolVersion(p.Name(), consumerPolicy, PROTOCOL_CURRENT_VERSION)
@@ -307,10 +307,10 @@ func (p *ProtocolHandler) SignProposal(newProposal abstractprotocol.Proposal) (s
 // This is an implementation of the Decide on proposal API. It has been extended to support ethereum and a signature
 // of the proposal from the producer.
 func (p *ProtocolHandler) DecideOnProposal(proposal abstractprotocol.Proposal,
-										myId string,
-										runningBlockchains []string,
-										messageTarget interface{},
-										sendMessage func(mt interface{}, pay []byte) error) (abstractprotocol.ProposalReply, error) {
+	myId string,
+	runningBlockchains []string,
+	messageTarget interface{},
+	sendMessage func(mt interface{}, pay []byte) error) (abstractprotocol.ProposalReply, error) {
 
 	reply, replyErr := abstractprotocol.DecideOnProposal(p, proposal, myId)
 	newReply := NewCSProposalReply(reply, "", "", "", "")
@@ -362,17 +362,17 @@ func (p *ProtocolHandler) DecideOnProposal(proposal abstractprotocol.Proposal,
 }
 
 func (p *ProtocolHandler) SendBlockchainConsumerUpdate(
-		agreementId string,
-		messageTarget interface{},
-		sendMessage func(mt interface{}, pay []byte) error ) error {
+	agreementId string,
+	messageTarget interface{},
+	sendMessage func(mt interface{}, pay []byte) error) error {
 
 	update := NewCSBlockchainConsumerUpdate(&abstractprotocol.BaseProtocolMessage{
-												MsgType:   MsgTypeBlockchainConsumerUpdate,
-												AProtocol: p.Name(),
-												AVersion:  PROTOCOL_CURRENT_VERSION,
-												AgreeId:   agreementId,
-											},
-											p.MyAddress)
+		MsgType:   MsgTypeBlockchainConsumerUpdate,
+		AProtocol: p.Name(),
+		AVersion:  PROTOCOL_CURRENT_VERSION,
+		AgreeId:   agreementId,
+	},
+		p.MyAddress)
 
 	// Send the message
 	if err := abstractprotocol.SendProtocolMessage(messageTarget, update, sendMessage); err != nil {
@@ -383,16 +383,16 @@ func (p *ProtocolHandler) SendBlockchainConsumerUpdate(
 }
 
 func (p *ProtocolHandler) SendBlockchainConsumerUpdateAck(
-		agreementId string,
-		messageTarget interface{},
-		sendMessage func(mt interface{}, pay []byte) error ) error {
+	agreementId string,
+	messageTarget interface{},
+	sendMessage func(mt interface{}, pay []byte) error) error {
 
 	update := NewCSBlockchainConsumerUpdateAck(&abstractprotocol.BaseProtocolMessage{
-												MsgType:   MsgTypeBlockchainConsumerUpdateAck,
-												AProtocol: p.Name(),
-												AVersion:  PROTOCOL_CURRENT_VERSION,
-												AgreeId:   agreementId,
-											})
+		MsgType:   MsgTypeBlockchainConsumerUpdateAck,
+		AProtocol: p.Name(),
+		AVersion:  PROTOCOL_CURRENT_VERSION,
+		AgreeId:   agreementId,
+	})
 
 	// Send the message
 	if err := abstractprotocol.SendProtocolMessage(messageTarget, update, sendMessage); err != nil {
@@ -403,19 +403,19 @@ func (p *ProtocolHandler) SendBlockchainConsumerUpdateAck(
 }
 
 func (p *ProtocolHandler) SendBlockchainProducerUpdate(
-		agreementId string,
-		sig string,
-		messageTarget interface{},
-		sendMessage func(mt interface{}, pay []byte) error ) error {
+	agreementId string,
+	sig string,
+	messageTarget interface{},
+	sendMessage func(mt interface{}, pay []byte) error) error {
 
 	update := NewCSBlockchainProducerUpdate(&abstractprotocol.BaseProtocolMessage{
-												MsgType:   MsgTypeBlockchainProducerUpdate,
-												AProtocol: p.Name(),
-												AVersion:  PROTOCOL_CURRENT_VERSION,
-												AgreeId:   agreementId,
-											},
-											p.MyAddress,
-											sig)
+		MsgType:   MsgTypeBlockchainProducerUpdate,
+		AProtocol: p.Name(),
+		AVersion:  PROTOCOL_CURRENT_VERSION,
+		AgreeId:   agreementId,
+	},
+		p.MyAddress,
+		sig)
 
 	// Send the message
 	if err := abstractprotocol.SendProtocolMessage(messageTarget, update, sendMessage); err != nil {
@@ -426,16 +426,16 @@ func (p *ProtocolHandler) SendBlockchainProducerUpdate(
 }
 
 func (p *ProtocolHandler) SendBlockchainProducerUpdateAck(
-		agreementId string,
-		messageTarget interface{},
-		sendMessage func(mt interface{}, pay []byte) error ) error {
+	agreementId string,
+	messageTarget interface{},
+	sendMessage func(mt interface{}, pay []byte) error) error {
 
 	update := NewCSBlockchainProducerUpdateAck(&abstractprotocol.BaseProtocolMessage{
-												MsgType:   MsgTypeBlockchainProducerUpdateAck,
-												AProtocol: p.Name(),
-												AVersion:  PROTOCOL_CURRENT_VERSION,
-												AgreeId:   agreementId,
-											})
+		MsgType:   MsgTypeBlockchainProducerUpdateAck,
+		AProtocol: p.Name(),
+		AVersion:  PROTOCOL_CURRENT_VERSION,
+		AgreeId:   agreementId,
+	})
 
 	// Send the message
 	if err := abstractprotocol.SendProtocolMessage(messageTarget, update, sendMessage); err != nil {
@@ -447,28 +447,28 @@ func (p *ProtocolHandler) SendBlockchainProducerUpdateAck(
 
 // The following methods dont implement any extensions to the base agreement protocol.
 func (p *ProtocolHandler) Confirm(replyValid bool,
-								agreementId string,
-								messageTarget interface{},
-								sendMessage func(mt interface{}, pay []byte) error) error {
+	agreementId string,
+	messageTarget interface{},
+	sendMessage func(mt interface{}, pay []byte) error) error {
 	return abstractprotocol.Confirm(p, replyValid, agreementId, messageTarget, sendMessage)
 }
 
 func (p *ProtocolHandler) NotifyDataReceipt(agreementId string,
-											messageTarget interface{},
-											sendMessage func(mt interface{}, pay []byte) error) error {
+	messageTarget interface{},
+	sendMessage func(mt interface{}, pay []byte) error) error {
 	return abstractprotocol.NotifyDataReceipt(p, agreementId, messageTarget, sendMessage)
 }
 
 func (p *ProtocolHandler) NotifyDataReceiptAck(agreementId string,
-												messageTarget interface{},
-												sendMessage func(mt interface{}, pay []byte) error) error {
+	messageTarget interface{},
+	sendMessage func(mt interface{}, pay []byte) error) error {
 	return abstractprotocol.NotifyDataReceiptAck(p, agreementId, messageTarget, sendMessage)
 }
 
 func (p *ProtocolHandler) NotifyMetering(agreementId string,
-										mn *metering.MeteringNotification,
-										messageTarget interface{},
-										sendMessage func(mt interface{}, pay []byte) error) (string, error) {
+	mn *metering.MeteringNotification,
+	messageTarget interface{},
+	sendMessage func(mt interface{}, pay []byte) error) (string, error) {
 
 	// The metering notification is almost complete. We need to sign the hash.
 	hash := mn.GetMeterHash()
@@ -536,10 +536,10 @@ func (p *ProtocolHandler) ValidateMeterNotification(mn string) (abstractprotocol
 }
 
 func (p *ProtocolHandler) ValidateCancel(can string) (abstractprotocol.Cancel, error) {
-    return abstractprotocol.ValidateCancel(can)
+	return abstractprotocol.ValidateCancel(can)
 }
 
-func (p *ProtocolHandler) ValidateBlockchainConsumerUpdate(upd string) (*CSBlockchainConsumerUpdate , error) {
+func (p *ProtocolHandler) ValidateBlockchainConsumerUpdate(upd string) (*CSBlockchainConsumerUpdate, error) {
 	// attempt deserialization of message
 	update := new(CSBlockchainConsumerUpdate)
 
@@ -552,7 +552,7 @@ func (p *ProtocolHandler) ValidateBlockchainConsumerUpdate(upd string) (*CSBlock
 	}
 }
 
-func (p *ProtocolHandler) ValidateBlockchainConsumerUpdateAck(upd string) (*CSBlockchainConsumerUpdateAck , error) {
+func (p *ProtocolHandler) ValidateBlockchainConsumerUpdateAck(upd string) (*CSBlockchainConsumerUpdateAck, error) {
 	// attempt deserialization of message
 	update := new(CSBlockchainConsumerUpdateAck)
 
@@ -565,7 +565,7 @@ func (p *ProtocolHandler) ValidateBlockchainConsumerUpdateAck(upd string) (*CSBl
 	}
 }
 
-func (p *ProtocolHandler) ValidateBlockchainProducerUpdate(upd string) (*CSBlockchainProducerUpdate , error) {
+func (p *ProtocolHandler) ValidateBlockchainProducerUpdate(upd string) (*CSBlockchainProducerUpdate, error) {
 	// attempt deserialization of message
 	update := new(CSBlockchainProducerUpdate)
 
@@ -578,7 +578,7 @@ func (p *ProtocolHandler) ValidateBlockchainProducerUpdate(upd string) (*CSBlock
 	}
 }
 
-func (p *ProtocolHandler) ValidateBlockchainProducerUpdateAck(upd string) (*CSBlockchainProducerUpdateAck , error) {
+func (p *ProtocolHandler) ValidateBlockchainProducerUpdateAck(upd string) (*CSBlockchainProducerUpdateAck, error) {
 	// attempt deserialization of message
 	update := new(CSBlockchainProducerUpdateAck)
 
@@ -605,10 +605,10 @@ func (p *ProtocolHandler) DemarshalProposal(proposal string) (abstractprotocol.P
 }
 
 func (p *ProtocolHandler) RecordAgreement(newProposal abstractprotocol.Proposal,
-										reply abstractprotocol.ProposalReply,
-										addr string,
-										sig string,
-										consumerPolicy *policy.Policy) error {
+	reply abstractprotocol.ProposalReply,
+	addr string,
+	sig string,
+	consumerPolicy *policy.Policy) error {
 
 	address := ""
 	signature := ""
@@ -650,11 +650,11 @@ func (p *ProtocolHandler) RecordAgreement(newProposal abstractprotocol.Proposal,
 }
 
 func (p *ProtocolHandler) TerminateAgreement(policy *policy.Policy,
-											counterParty string,
-											agreementId string,
-											reason uint,
-											messageTarget interface{},
-											sendMessage func(mt interface{}, pay []byte) error) error {
+	counterParty string,
+	agreementId string,
+	reason uint,
+	messageTarget interface{},
+	sendMessage func(mt interface{}, pay []byte) error) error {
 
 	if binaryAgreementId, err := hex.DecodeString(agreementId); err != nil {
 		return errors.New(fmt.Sprintf("Error converting agreement ID %v to binary, error: %v", agreementId, err))
@@ -687,8 +687,8 @@ func (p *ProtocolHandler) TerminateAgreement(policy *policy.Policy,
 }
 
 func (p *ProtocolHandler) VerifyAgreement(agreementId string,
-										counterPartyAddress string,
-										expectedSignature string) (bool, error) {
+	counterPartyAddress string,
+	expectedSignature string) (bool, error) {
 
 	if binaryAgreementId, err := hex.DecodeString(agreementId); err != nil {
 		return false, errors.New(fmt.Sprintf("Error converting agreement ID %v to binary, error: %v", agreementId, err))
@@ -723,15 +723,15 @@ func (p *ProtocolHandler) RecordMeter(agreementId string, mn *metering.MeteringN
 		glog.V(5).Infof("CS Protocol writing Metering Notification %v to the blockchain for %v.", *mn, agreementId)
 		params := make([]interface{}, 0, 10)
 		params = append(params, mn.Amount)
-	    params = append(params, mn.CurrentTime)
-	    params = append(params, binaryAgreementId)
-	    params = append(params, mn.GetMeterHash()[2:])
-	    params = append(params, mn.ConsumerMeterSignature)
-	    params = append(params, mn.AgreementHash)
-	    params = append(params, mn.ProducerSignature)
-	    params = append(params, mn.ConsumerSignature)
-	    params = append(params, mn.ConsumerAddress)
-	    if _, err = p.EthMeterContract.Invoke_method("create_meter", params); err != nil {
+		params = append(params, mn.CurrentTime)
+		params = append(params, binaryAgreementId)
+		params = append(params, mn.GetMeterHash()[2:])
+		params = append(params, mn.ConsumerMeterSignature)
+		params = append(params, mn.AgreementHash)
+		params = append(params, mn.ProducerSignature)
+		params = append(params, mn.ConsumerSignature)
+		params = append(params, mn.ConsumerAddress)
+		if _, err = p.EthMeterContract.Invoke_method("create_meter", params); err != nil {
 			return errors.New(fmt.Sprintf("Error invoking create_meter %v with %v, error: %v", agreementId, p, err))
 		}
 	} else {
@@ -744,13 +744,13 @@ func (p *ProtocolHandler) RecordMeter(agreementId string, mn *metering.MeteringN
 
 // Functions that work with blockchain events
 
-const AGREEMENT_CREATE        = "0x0000000000000000000000000000000000000000000000000000000000000000"
-const AGREEMENT_DETAIL        = "0x0000000000000000000000000000000000000000000000000000000000000001"
-const AGREEMENT_FRAUD         = "0x0000000000000000000000000000000000000000000000000000000000000002"
+const AGREEMENT_CREATE = "0x0000000000000000000000000000000000000000000000000000000000000000"
+const AGREEMENT_DETAIL = "0x0000000000000000000000000000000000000000000000000000000000000001"
+const AGREEMENT_FRAUD = "0x0000000000000000000000000000000000000000000000000000000000000002"
 const AGREEMENT_CONSUMER_TERM = "0x0000000000000000000000000000000000000000000000000000000000000003"
 const AGREEMENT_PRODUCER_TERM = "0x0000000000000000000000000000000000000000000000000000000000000004"
-const AGREEMENT_FRAUD_TERM    = "0x0000000000000000000000000000000000000000000000000000000000000005"
-const AGREEMENT_ADMIN_TERM    = "0x0000000000000000000000000000000000000000000000000000000000000006"
+const AGREEMENT_FRAUD_TERM = "0x0000000000000000000000000000000000000000000000000000000000000005"
+const AGREEMENT_ADMIN_TERM = "0x0000000000000000000000000000000000000000000000000000000000000006"
 
 func (p *ProtocolHandler) DemarshalEvent(ev string) (*ethblockchain.Raw_Event, error) {
 	rawEvent := new(ethblockchain.Raw_Event)
@@ -782,45 +782,47 @@ func (p *ProtocolHandler) GetReasonCode(ev *ethblockchain.Raw_Event) (uint64, er
 }
 
 // constants indicating why an agreement is cancelled by the producer
-const CANCEL_NOT_FINALIZED_TIMEOUT = 100  // x64
-const CANCEL_POLICY_CHANGED        = 101
-const CANCEL_TORRENT_FAILURE       = 102
-const CANCEL_CONTAINER_FAILURE     = 103
-const CANCEL_NOT_EXECUTED_TIMEOUT  = 104
-const CANCEL_USER_REQUESTED        = 105
-const CANCEL_AGBOT_REQUESTED       = 106  // x6a
-const CANCEL_NO_REPLY_ACK          = 107
+const CANCEL_NOT_FINALIZED_TIMEOUT = 100 // x64
+const CANCEL_POLICY_CHANGED = 101
+const CANCEL_TORRENT_FAILURE = 102
+const CANCEL_CONTAINER_FAILURE = 103
+const CANCEL_NOT_EXECUTED_TIMEOUT = 104
+const CANCEL_USER_REQUESTED = 105
+const CANCEL_AGBOT_REQUESTED = 106 // x6a
+const CANCEL_NO_REPLY_ACK = 107
+const CANCEL_MICROSERVICE_FAILURE = 108
 
 // These constants represent consumer cancellation reason codes
-const AB_CANCEL_NOT_FINALIZED_TIMEOUT = 200  // xc8
-const AB_CANCEL_NO_REPLY              = 201
-const AB_CANCEL_NEGATIVE_REPLY        = 202
-const AB_CANCEL_NO_DATA_RECEIVED      = 203
-const AB_CANCEL_POLICY_CHANGED        = 204
-const AB_CANCEL_DISCOVERED            = 205  // xcd
-const AB_USER_REQUESTED               = 206
-const AB_CANCEL_FORCED_UPGRADE        = 207
-const AB_CANCEL_BC_WRITE_FAILED       = 208  // xd0
+const AB_CANCEL_NOT_FINALIZED_TIMEOUT = 200 // xc8
+const AB_CANCEL_NO_REPLY = 201
+const AB_CANCEL_NEGATIVE_REPLY = 202
+const AB_CANCEL_NO_DATA_RECEIVED = 203
+const AB_CANCEL_POLICY_CHANGED = 204
+const AB_CANCEL_DISCOVERED = 205 // xcd
+const AB_USER_REQUESTED = 206
+const AB_CANCEL_FORCED_UPGRADE = 207
+const AB_CANCEL_BC_WRITE_FAILED = 208 // xd0
 
 func DecodeReasonCode(code uint64) string {
 
-	codeMeanings := map[uint64]string{CANCEL_NOT_FINALIZED_TIMEOUT:    "agreement never appeared on the blockchain",
-									CANCEL_POLICY_CHANGED:           "producer policy changed",
-									CANCEL_TORRENT_FAILURE:          "torrent failed to download",
-									CANCEL_CONTAINER_FAILURE:        "workload terminated",
-									CANCEL_NOT_EXECUTED_TIMEOUT:     "workload start timeout",
-									CANCEL_USER_REQUESTED:           "user requested",
-									CANCEL_AGBOT_REQUESTED:          "agbot requested",
-									CANCEL_NO_REPLY_ACK:             "agreement protocol incomplete, no reply ack received",
-									AB_CANCEL_NOT_FINALIZED_TIMEOUT: "agreement bot never detected agreement on the blockchain",
-									AB_CANCEL_NO_REPLY:              "agreement bot never received reply to proposal",
-									AB_CANCEL_NEGATIVE_REPLY:        "agreement bot received negative reply",
-									AB_CANCEL_NO_DATA_RECEIVED:      "agreement bot did not detect data",
-									AB_CANCEL_POLICY_CHANGED:        "agreement bot policy changed",
-									AB_CANCEL_DISCOVERED:            "agreement bot discovered cancellation from producer",
-									AB_USER_REQUESTED:               "agreement bot user requested",
-									AB_CANCEL_FORCED_UPGRADE:        "agreement bot user requested workload upgrade",
-									AB_CANCEL_BC_WRITE_FAILED:       "agreement bot agreement write failed"}
+	codeMeanings := map[uint64]string{CANCEL_NOT_FINALIZED_TIMEOUT: "agreement never appeared on the blockchain",
+		CANCEL_POLICY_CHANGED:           "producer policy changed",
+		CANCEL_TORRENT_FAILURE:          "torrent failed to download",
+		CANCEL_CONTAINER_FAILURE:        "workload terminated",
+		CANCEL_NOT_EXECUTED_TIMEOUT:     "workload start timeout",
+		CANCEL_USER_REQUESTED:           "user requested",
+		CANCEL_AGBOT_REQUESTED:          "agbot requested",
+		CANCEL_NO_REPLY_ACK:             "agreement protocol incomplete, no reply ack received",
+		CANCEL_MICROSERVICE_FAILURE:     "microservice failed",
+		AB_CANCEL_NOT_FINALIZED_TIMEOUT: "agreement bot never detected agreement on the blockchain",
+		AB_CANCEL_NO_REPLY:              "agreement bot never received reply to proposal",
+		AB_CANCEL_NEGATIVE_REPLY:        "agreement bot received negative reply",
+		AB_CANCEL_NO_DATA_RECEIVED:      "agreement bot did not detect data",
+		AB_CANCEL_POLICY_CHANGED:        "agreement bot policy changed",
+		AB_CANCEL_DISCOVERED:            "agreement bot discovered cancellation from producer",
+		AB_USER_REQUESTED:               "agreement bot user requested",
+		AB_CANCEL_FORCED_UPGRADE:        "agreement bot user requested workload upgrade",
+		AB_CANCEL_BC_WRITE_FAILED:       "agreement bot agreement write failed"}
 
 	if reasonString, ok := codeMeanings[code]; !ok {
 		return "unknown reason code, device might be downlevel"

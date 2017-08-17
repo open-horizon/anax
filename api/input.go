@@ -63,13 +63,18 @@ func (a Attribute) String() string {
 
 // uses pointers for members b/c it allows nil-checking at deserialization; !Important!: the json field names here must not change w/out changing the error messages returned from the API, they are not programmatically dete  rmined
 type Service struct {
-	SensorUrl  *string      `json:"sensor_url"`  // uniquely identifying
-	SensorName *string      `json:"sensor_name"` // may not be uniquely identifying
-	Attributes *[]Attribute `json:"attributes"`
+	SensorUrl     *string      `json:"sensor_url"`     // uniquely identifying
+	SensorName    *string      `json:"sensor_name"`    // may not be uniquely identifying
+	SensorVersion *string      `json:"sensor_version"` // added for ms split. It is only used for microsevice. If it is omitted, old behavior is asumed.
+	Attributes    *[]Attribute `json:"attributes"`
 }
 
 func (s *Service) String() string {
-	return fmt.Sprintf("SensorUrl: %v, SensorName: %v, Attributes: %s", *s.SensorUrl, *s.SensorName, s.Attributes)
+	version := ""
+	if s.SensorVersion != nil {
+		version = *s.SensorVersion
+	}
+	return fmt.Sprintf("SensorUrl: %v, SensorName: %v, SensorVersion Attributes: %s", *s.SensorUrl, *s.SensorName, version, s.Attributes)
 }
 
 func attributesContains(given []persistence.ServiceAttribute, sensorUrl string, typeString string) *persistence.ServiceAttribute {
@@ -257,7 +262,7 @@ func deserializeAttributes(w http.ResponseWriter, attrs []Attribute) ([]persiste
 				strPartners := make([]string, 0, 5)
 				for _, val := range partnerIDs {
 					if p, ok := val.(string); !ok {
-						writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "ha.mappings.partnerID", Error: fmt.Sprintf("array value is not a string, it is %T",val)})
+						writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "ha.mappings.partnerID", Error: fmt.Sprintf("array value is not a string, it is %T", val)})
 						return nil, nil, true
 					} else {
 						strPartners = append(strPartners, p)
@@ -266,7 +271,7 @@ func deserializeAttributes(w http.ResponseWriter, attrs []Attribute) ([]persiste
 				attributes = append(attributes, persistence.HAAttributes{
 					Meta:     generateAttributeMetadata(given, reflect.TypeOf(persistence.HAAttributes{}).String()),
 					Partners: strPartners,
-					})
+				})
 			}
 
 		case "metering":
@@ -330,7 +335,7 @@ func deserializeAttributes(w http.ResponseWriter, attrs []Attribute) ([]persiste
 			}
 
 			attributes = append(attributes, persistence.MeteringAttributes{
-				Meta: generateAttributeMetadata(given, reflect.TypeOf(persistence.MeteringAttributes{}).String()),
+				Meta:                  generateAttributeMetadata(given, reflect.TypeOf(persistence.MeteringAttributes{}).String()),
 				Tokens:                uint64(tokens),
 				PerTimeUnit:           perTimeUnit,
 				NotificationIntervalS: int(notificationInterval),
@@ -362,9 +367,9 @@ func deserializeAttributes(w http.ResponseWriter, attrs []Attribute) ([]persiste
 					return nil, nil, true
 				} else {
 					attributes = append(attributes, persistence.CounterPartyPropertyAttributes{
-						Meta:     generateAttributeMetadata(given, reflect.TypeOf(persistence.CounterPartyPropertyAttributes{}).String()),
+						Meta:       generateAttributeMetadata(given, reflect.TypeOf(persistence.CounterPartyPropertyAttributes{}).String()),
 						Expression: rawExpression.(map[string]interface{}),
-						})
+					})
 				}
 			}
 
@@ -381,7 +386,7 @@ func deserializeAttributes(w http.ResponseWriter, attrs []Attribute) ([]persiste
 				allProtocols := make([]policy.AgreementProtocol, 0, 5)
 				for _, val := range protocols {
 					if protoDef, ok := val.(map[string]interface{}); !ok {
-						writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols", Error: fmt.Sprintf("array value is not a map[string]interface{}, it is %T",val)})
+						writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols", Error: fmt.Sprintf("array value is not a map[string]interface{}, it is %T", val)})
 						return nil, nil, true
 					} else {
 						for protocolName, bcValue := range protoDef {
@@ -426,9 +431,9 @@ func deserializeAttributes(w http.ResponseWriter, attrs []Attribute) ([]persiste
 				}
 				if len(allProtocols) != 0 {
 					attributes = append(attributes, persistence.AgreementProtocolAttributes{
-						Meta:     generateAttributeMetadata(given, reflect.TypeOf(persistence.AgreementProtocolAttributes{}).String()),
+						Meta:      generateAttributeMetadata(given, reflect.TypeOf(persistence.AgreementProtocolAttributes{}).String()),
 						Protocols: allProtocols,
-						})
+					})
 				} else {
 					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols", Error: "array value is empty"})
 					return nil, nil, true

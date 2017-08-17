@@ -62,7 +62,7 @@ func Version_Expression_Factory(ver_string string) (*Version_Expression, error) 
 	}
 
 	if singleVersion(ver_string) {
-		if !isVersionString(ver_string) {
+		if !IsVersionString(ver_string) {
 			errorString := fmt.Sprintf("Version_Expression: %v is not a valid version string.", ver_string)
 			// glog.Errorf(errorString)
 			return nil, errors.New(errorString)
@@ -97,7 +97,7 @@ func Version_Expression_Factory(ver_string string) (*Version_Expression, error) 
 
 	glog.V(5).Infof("Version_Expression: Seperated expression into %v %v", vers[0], vers[1])
 
-	if !isVersionString(vers[0]) {
+	if !IsVersionString(vers[0]) {
 		errorString := fmt.Sprintf("Version_Expression: %v is not a valid version string.", vers[0])
 		// glog.Errorf(errorString)
 		return nil, errors.New(errorString)
@@ -105,7 +105,7 @@ func Version_Expression_Factory(ver_string string) (*Version_Expression, error) 
 		startVersion = normalize(vers[0])
 	}
 
-	if !isVersionString(vers[1]) {
+	if !IsVersionString(vers[1]) {
 		errorString := fmt.Sprintf("Version_Expression: %v is not a valid version string.", vers[1])
 		// glog.Errorf(errorString)
 		return nil, errors.New(errorString)
@@ -136,7 +136,7 @@ func (self *Version_Expression) Get_expression() string {
 // if it falls within the boundaries of this object's version range.
 //
 func (self *Version_Expression) Is_within_range(expr string) (bool, error) {
-	if !isVersionString(expr) {
+	if !IsVersionString(expr) {
 		errorString := fmt.Sprintf("Version_Expression: %v is not a valid version string.", expr)
 		// glog.Errorf(errorString)
 		return false, errors.New(errorString)
@@ -223,7 +223,7 @@ func multipleVersions(expr string) bool {
 }
 
 // Return true if the input version string is a valid version according to the version string schema above.
-func isVersionString(expr string) bool {
+func IsVersionString(expr string) bool {
 	if expr == INF {
 		return true
 	}

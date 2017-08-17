@@ -15,6 +15,8 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/device"
 	"github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/microservice"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
@@ -549,6 +551,37 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// this is new behaviour after ms split
+		var msdef *persistence.MicroserviceDefinition
+		if service.SensorVersion != nil {
+
+			// valideate the version string
+			if !policy.IsVersionString(*service.SensorVersion) {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "sensor_version", Error: fmt.Sprintf("sensor_version %v is not a valid version string", *service.SensorVersion)})
+				return
+			}
+
+			// verify with the exchange to make sure the service exists
+			e_msdef, err := exchange.GetMicroservice(*service.SensorUrl, *service.SensorVersion, cutil.ArchString(), a.Config.Edge.ExchangeURL, existingDevice.Id, existingDevice.Token)
+			if err != nil {
+				glog.Errorf("Unable to find the microservice definition from the exchange: %v", err)
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Unable to find the microservice definition for '%v' on the exchange. Please verify sensor_url and sensor_version.", *service.SensorName)})
+				return
+			}
+			msdef = microservice.ConvertToPersistent(e_msdef)
+
+			// check if the microservice has been registered or not (currently only support one microservice per )
+			if pms, err := persistence.FindMicroserviceDefs(a.db, []persistence.MSFilter{persistence.AllDefsForUrlMSFilter(*service.SensorUrl)}); err != nil {
+				glog.Errorf("Error accessing db to find microservice definition: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			} else if pms != nil && len(pms) > 0 {
+				glog.Errorf("Duplicate registration for %v. Anax only supports one registration for each microservice now.", *service.SensorUrl)
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Duplicate registration for %v. Anax only supports one registration for each microservice now.", *service.SensorUrl)})
+				return
+			}
+		}
+
 		var attributes []persistence.ServiceAttribute
 		if service.Attributes != nil {
 			// build a serviceAttribute for each one
@@ -770,8 +803,22 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			agpList = list
 		}
 
+		// save ms def in local db
+		if service.SensorVersion != nil {
+			if err := persistence.SaveOrUpdateMicroserviceDef(a.db, msdef); err != nil { // save to db
+				glog.Errorf("Error saving microservice definition %v into db: %v", *msdef, err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		}
+
+		// Fire event to load the microservice container
+		if service.SensorVersion != nil {
+			a.Messages() <- events.NewStartMicroserviceMessage(events.START_MICROSERVICE, msdef.GetKey())
+		}
+
 		// Generate a policy based on all the attributes and the service definition
-		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorName, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, a.Config.Edge.PolicyPath); genErr != nil {
+		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorUrl, *service.SensorName, service.SensorVersion, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, a.Config.Edge.PolicyPath); genErr != nil {
 			glog.Errorf("Error: %v", genErr)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
