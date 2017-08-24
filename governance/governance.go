@@ -41,14 +41,14 @@ const STATUS_WORKLOAD_DESTROYED = 500
 const STATUS_AG_PROTOCOL_TERMINATED = 501
 
 type GovernanceWorker struct {
-	worker.Worker   // embedded field
-	db              *bolt.DB
-	httpClient      *http.Client
-	bc              *ethblockchain.BaseContracts
-	deviceId        string
-	deviceToken     string
-	pm              *policy.PolicyManager
-	producerPH      map[string]producer.ProducerProtocolHandler
+	worker.Worker // embedded field
+	db            *bolt.DB
+	httpClient    *http.Client
+	bc            *ethblockchain.BaseContracts
+	deviceId      string
+	deviceToken   string
+	pm            *policy.PolicyManager
+	producerPH    map[string]producer.ProducerProtocolHandler
 }
 
 func NewGovernanceWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *GovernanceWorker {
@@ -73,12 +73,12 @@ func NewGovernanceWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.Poli
 			Commands: commands,
 		},
 
-		db:              db,
-		httpClient:      &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)},
-		pm:              pm,
-		deviceId:        id,
-		deviceToken:     token,
-		producerPH:      make(map[string]producer.ProducerProtocolHandler),
+		db:          db,
+		httpClient:  &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
+		pm:          pm,
+		deviceId:    id,
+		deviceToken: token,
+		producerPH:  make(map[string]producer.ProducerProtocolHandler),
 	}
 
 	worker.start()
@@ -173,6 +173,25 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			cmd := producer.NewExchangeMessageCommand(*msg)
 			w.Commands <- cmd
 		}
+	case *events.StartMicroserviceMessage:
+		msg, _ := incoming.(*events.StartMicroserviceMessage)
+		switch msg.Event().Id {
+		case events.START_MICROSERVICE:
+			cmd := w.NewStartMicroserviceCommand(msg.MsDefKey)
+			w.Commands <- cmd
+		}
+	case *events.ContainerMessage:
+		msg, _ := incoming.(*events.ContainerMessage)
+		if msg.LaunchContext.Blockchain.Name == "" { // microservice case
+			switch msg.Event().Id {
+			case events.EXECUTION_BEGUN:
+				cmd := w.NewUpdateMicroserviceInstanceCommand(msg.LaunchContext.Name, true, 0, "")
+				w.Commands <- cmd
+			case events.EXECUTION_FAILED:
+				cmd := w.NewUpdateMicroserviceInstanceCommand(msg.LaunchContext.Name, false, 1, "Failed to launch containers.")
+				w.Commands <- cmd
+			}
+		}
 
 	default: //nothing
 	}
@@ -201,7 +220,7 @@ func (w *GovernanceWorker) governAgreements() {
 		for _, ag := range establishedAgreements {
 			bcType, bcName := w.producerPH[ag.AgreementProtocol].GetKnownBlockchain(&ag)
 			protocolHandler := w.producerPH[ag.AgreementProtocol].AgreementProtocolHandler(bcType, bcName)
-			if ag.AgreementFinalizedTime == 0 {   // TODO: might need to change this to be a protocol specific check
+			if ag.AgreementFinalizedTime == 0 { // TODO: might need to change this to be a protocol specific check
 
 				// Cancel the agreement if finalization doesn't occur before the timeout
 				glog.V(5).Infof(logString(fmt.Sprintf("checking agreement %v for finalization.", ag.CurrentAgreementId)))
@@ -276,7 +295,6 @@ func (w *GovernanceWorker) governContainers() {
 			if establishedAgreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), runningFilter()}); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("Unable to retrieve running agreements from database, error: %v", err)))
 			} else {
-
 				for _, ag := range establishedAgreements {
 
 					// Make sure containers are still running.
@@ -318,7 +336,7 @@ func (w *GovernanceWorker) reportBlockchains() {
 					if agreements, err := persistence.FindEstablishedAgreements(w.db, agp, []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err == nil {
 						for _, ag := range agreements {
 							_, bcName := w.producerPH[agp].GetKnownBlockchain(&ag)
-							if  bcName != "" {
+							if bcName != "" {
 								neededBCs[bcName] = true
 							}
 						}
@@ -343,6 +361,32 @@ func (w *GovernanceWorker) reportBlockchains() {
 	}()
 }
 
+func (w *GovernanceWorker) governMicroservices() {
+
+	go func() {
+		for {
+
+			// handle microservice instance containers down
+			glog.V(4).Infof(logString(fmt.Sprintf("governing microservice containers")))
+			if ms_instances, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.AllMIFilter(), persistence.UnarchivedMIFilter()}); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Error retrieving all microservice instances from database, error: %v", err)))
+			} else if ms_instances != nil {
+				for _, msi := range ms_instances {
+					// only check the ones that has containers started already
+					if msi.ExecutionStartTime != 0 {
+						glog.V(3).Infof(logString(fmt.Sprintf("fire event to ensure microservice containers are still up for microservice instance %v.", msi.GetKey())))
+
+						// ensure containers are still running
+						w.Messages() <- events.NewMicroserviceMaintenanceMessage(events.CONTAINER_MAINTAIN, msi.GetKey())
+					}
+				}
+			}
+
+			time.Sleep(1 * time.Minute)
+		}
+	}()
+}
+
 // It cancels the given agreement. Please take note that the system is very asynchronous. It is
 // possible for multiple cancellations to occur in the time it takes to actually stop workloads and
 // cancel on the blockchain, therefore this code needs to be prepared to run multiple times for the
@@ -355,6 +399,11 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 		glog.Errorf(logString(fmt.Sprintf("error marking agreement %v terminated: %v", agreementId, err)))
 	} else {
 		ag = agreement
+	}
+
+	// Update the microservice if any
+	if err := persistence.DeleteAsscAgmtsFromMSInstances(w.db, agreementId); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error removing agreement id %v from the microservice db: %v", agreementId, err)))
 	}
 
 	// Delete from the exchange
@@ -438,6 +487,9 @@ func (w *GovernanceWorker) start() {
 
 		// Fire up the blockchain reporter
 		w.reportBlockchains()
+
+		// Fire up the microservice governor
+		w.governMicroservices()
 
 		deferredCommands := make([]worker.Command, 0, 10)
 
@@ -651,7 +703,7 @@ func (w *GovernanceWorker) start() {
 							} else if ags[0].AgreementTerminatedTime != 0 {
 								glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, agreement %v is terminating", ags[0].CurrentAgreementId)))
 
-							// Finalize the agreement
+								// Finalize the agreement
 							} else if err := w.finalizeAgreement(ags[0], w.producerPH[protocol].AgreementProtocolHandler(ags[0].BlockchainType, ags[0].BlockchainName)); err != nil {
 								glog.Errorf(err.Error())
 							}
@@ -733,6 +785,32 @@ func (w *GovernanceWorker) start() {
 					} else {
 						deferredCommands = append(deferredCommands, cmd)
 					}
+				case *StartMicroserviceCommand:
+					cmd, _ := command.(*StartMicroserviceCommand)
+
+					if err := w.StartMicroservice(cmd.MsDefKey); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("Error starting microservice. %v", err)))
+					}
+
+				case *UpdateMicroserviceInstanceCommand:
+					cmd, _ := command.(*UpdateMicroserviceInstanceCommand)
+
+					// update the execution status for microservice instance
+					glog.V(5).Infof(logString(fmt.Sprintf("Updating microservice execution status %v", cmd)))
+					if _, err := persistence.UpdateMSInstanceExecutionState(w.db, cmd.MsInstKey, cmd.ExecutionStarted, cmd.ExecutionFailureCode, cmd.ExecutionFailureDesc); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("Error updating microservice execution status. %v", err)))
+					}
+
+					if !cmd.ExecutionStarted {
+						// for execution failur, we need to check if it is time to delete it and restart a new microservice
+						if ms, err := persistence.FindMicroserviceInstanceWithKey(w.db, cmd.MsInstKey); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("Error retrieving microservice instance %v from the db. %v", cmd.MsInstKey, err)))
+						} else if ms != nil {
+							if err := w.CleanupMicroservice(ms.SpecRef, ms.Version, cmd.MsInstKey, true); err != nil {
+								glog.Errorf(logString(fmt.Sprintf("Error restarting microservice instance %v. %v", cmd.MsInstKey, err)))
+							}
+						}
+					}
 
 				default:
 					glog.Errorf("GovernanceWorker received unknown command (%T): %v", command, command)
@@ -795,18 +873,17 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 	if ag, err := persistence.AgreementStateAccepted(w.db, proposal.AgreementId(), protocol); err != nil {
 		return errors.New(logString(fmt.Sprintf("received error updating database state, %v", err)))
 
-	// Update the state in the exchange
+		// Update the state in the exchange
 	} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 		return errors.New(logString(fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
 	} else if err := recordProducerAgreementState(w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, proposal.AgreementId(), tcPolicy.APISpecs[0].SpecRef, "Agree to proposal"); err != nil {
 		return errors.New(logString(fmt.Sprintf("received error setting state for agreement %v", err)))
 	} else {
-
 		// Publish the "agreement reached" event to the message bus so that torrent can start downloading the workload
 		// hash is same as filename w/out extension
 		hashes := make(map[string]string, 0)
 		signatures := make(map[string]string, 0)
-		workload := tcPolicy.NextHighestPriorityWorkload(0,0,0)
+		workload := tcPolicy.NextHighestPriorityWorkload(0, 0, 0)
 		for _, image := range workload.Torrent.Images {
 			bits := strings.Split(image.File, ".")
 			if len(bits) < 2 {
@@ -840,6 +917,19 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 
 			lc.EnvironmentAdditions = &envAdds
 			lc.AgreementProtocol = protocol
+
+			// get a list of microservices associated with this agreements and store them in the AgreementLaunchContext
+			ms_specs := []events.MicroserviceSpec{}
+			for _, as := range tcPolicy.APISpecs {
+				if msdef, err := persistence.FindMicroserviceDef(w.db, as.SpecRef, as.Version); err != nil {
+					return errors.New(logString(fmt.Sprintf("Error finding microservice definition from the local db for %v version %v. %v", as.SpecRef, as.Version, err)))
+				} else if msdef != nil { // if msdef is nil then it is old behaviour before the ms split
+					msspec := events.MicroserviceSpec{SpecRef: msdef.SpecRef, Version: msdef.Version, Arch: msdef.Arch}
+					ms_specs = append(ms_specs, msspec)
+				}
+			}
+			lc.Microservices = ms_specs
+
 			w.Worker.Manager.Messages <- events.NewAgreementMessage(events.AGREEMENT_REACHED, lc)
 		}
 
@@ -878,7 +968,7 @@ func recordProducerAgreementState(url string, deviceId string, token string, agr
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := url + "devices/" + deviceId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "PUT", targetURL, deviceId, token, &as, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "PUT", targetURL, deviceId, token, &as, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
@@ -901,7 +991,7 @@ func deleteProducerAgreement(url string, deviceId string, token string, agreemen
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := url + "devices/" + deviceId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
@@ -961,4 +1051,152 @@ func (w *GovernanceWorker) messageInExchange(msgId int) (bool, error) {
 
 var logString = func(v interface{}) string {
 	return fmt.Sprintf("GovernanceWorker: %v", v)
+}
+
+// create microservice instance and loads the containers
+func (w *GovernanceWorker) StartMicroservice(ms_key string) error {
+	glog.V(5).Infof(logString(fmt.Sprintf("Starting microservice instance for %v", ms_key)))
+	if msdef, err := persistence.FindMicroserviceDefWithKey(w.db, ms_key); err != nil {
+		return fmt.Errorf(logString(fmt.Sprintf("Error finding microserivce definition from db for %v. %v", ms_key, err)))
+	} else if msdef == nil {
+		return fmt.Errorf(logString(fmt.Sprintf("No microserivce definition available for %v.", ms_key)))
+	} else {
+
+		wls := msdef.Workloads
+		if wls == nil || len(wls) < 1 {
+			glog.Infof(logString(fmt.Sprintf("No workload needed for microservice %v.", msdef.SpecRef)))
+			return nil
+		}
+
+		for _, wl := range wls {
+			// convert the torren string to structure
+			var torrent policy.Torrent
+			if err := json.Unmarshal([]byte(wl.Torrent), &torrent); err != nil {
+				return fmt.Errorf(logString(fmt.Sprintf("The torrent definition for microservice %v has error: %v", msdef.SpecRef, err)))
+			}
+
+			// convert workload to policy workload structure
+			var ms_workload policy.Workload
+			ms_workload.Deployment = wl.Deployment
+			ms_workload.DeploymentSignature = wl.DeploymentSignature
+			ms_workload.Torrent = torrent
+			ms_workload.WorkloadPassword = ""
+			ms_workload.DeploymentUserInfo = ""
+
+			// verify torrent url
+			if url, err := url.Parse(torrent.Url); err != nil {
+				return fmt.Errorf("ill-formed URL: %v, error %v", torrent.Url, err)
+			} else {
+				hashes := make(map[string]string, 0)
+				signatures := make(map[string]string, 0)
+
+				for _, image := range torrent.Images {
+					bits := strings.Split(image.File, ".")
+					if len(bits) < 2 {
+						return fmt.Errorf("found ill-formed image filename: %v, no file suffix found", bits)
+					} else {
+						hashes[image.File] = bits[0]
+					}
+					signatures[image.File] = image.Signature
+				}
+
+				// Verify the deployment signature
+				if err := ms_workload.HasValidSignature(w.Config.Edge.PublicKeyPath, w.Config.UserPublicKeyPath()); err != nil {
+					return fmt.Errorf(logString(fmt.Sprintf("microservice container has invalid deployment signature %v for %v", ms_workload.DeploymentSignature, ms_workload.Deployment)))
+				}
+
+				// save the instance
+				if ms_instance, err := persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Version); err != nil {
+					return fmt.Errorf(logString(fmt.Sprintf("Error persisting microservice instance for %v.", ms_key)))
+				} else {
+					// Fire an event to the torrent worker so that it will download the container
+					cc := events.NewContainerConfig(*url, hashes, signatures, ms_workload.Deployment, ms_workload.DeploymentSignature, ms_workload.DeploymentUserInfo)
+
+					// convert the user input from the service attributes to env variables
+					if attrs, err := persistence.FindApplicableAttributes(w.db, msdef.SpecRef); err != nil {
+						return fmt.Errorf(logString(fmt.Sprintf("Unable to fetch microservice preferences for %v. Err: %v", msdef.SpecRef, err)))
+					} else if envAdds, err := persistence.AttributesToEnvvarMap(attrs, config.ENVVAR_PREFIX); err != nil {
+						return fmt.Errorf(logString(fmt.Sprintf("Failed to convert microservice preferences to environmental variables for %v. Err: %v", msdef.SpecRef, err)))
+					} else {
+						envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = w.deviceId
+						//envAdds[config.ENVVAR_PREFIX+"HASH"] = ms_workload.WorkloadPassword
+						envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = w.Config.Edge.ExchangeURL
+						lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey())
+						w.Messages() <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// create microservice instance and loads the containers
+func (w *GovernanceWorker) CleanupMicroservice(spec_ref string, version string, key string, restart bool) error {
+	glog.V(5).Infof(logString(fmt.Sprintf("Deleting microservice instance %v", key)))
+
+	// archive this microservice instance in the db
+	if ms_inst, err := persistence.ArchiveMicroserviceInstance(w.db, key); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Error archiving microservice instance %v. %v", key, err)))
+	} else if ms_inst == nil {
+		glog.Errorf(logString(fmt.Sprintf("Unable to find microservice instance %v.", key)))
+		// remove all the containers for agreements associated with it so that new agreements can be created over the new microservice
+	} else if agreements, err := w.FindEstablishedAgreementsWithIds(ms_inst.AssociatedAgreements); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Error finding agreements %v from the db. %v", ms_inst.AssociatedAgreements, err)))
+	} else if agreements != nil {
+		glog.V(5).Infof(logString(fmt.Sprintf("Removing all the containers for associated agreements %v", ms_inst.AssociatedAgreements)))
+		for _, ag := range agreements {
+			// send the event to the container so that the workloads can be deleted
+			w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
+
+			// end the agreements
+			glog.V(3).Infof("Ending the agreement: %v because microservice %v is deleted", ag.CurrentAgreementId, key)
+			reason_code := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_MICROSERVICE_FAILURE)
+			reason_text := w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason_code)
+			w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, reason_code, reason_text)
+		}
+
+		// remove all the microservice containers
+		glog.V(5).Infof(logString(fmt.Sprintf("Removing all the containers for %v", key)))
+		w.Messages() <- events.NewMicroserviceCancellationMessage(events.CANCEL_MICROSERVICE, key)
+	}
+
+	// restart a new microservice instance
+	if restart {
+		if msdef, err := persistence.FindMicroserviceDef(w.db, spec_ref, version); err != nil {
+			return fmt.Errorf(logString(fmt.Sprintf("Error finding microserivce definition fron db for %v version %v. %v", spec_ref, version, err)))
+		} else if msdef == nil {
+			return fmt.Errorf(logString(fmt.Sprintf("No microserivce definition record in db for %v version %v. %v", spec_ref, version, err)))
+		} else if err := w.StartMicroservice(msdef.GetKey()); err != nil {
+			return fmt.Errorf(logString(fmt.Sprintf("Error starting microservice for %v. %v", msdef.GetKey(), err)))
+		}
+	}
+
+	return nil
+}
+
+// go through all the protocols and find the agreements with given agreement ids from the db
+func (w *GovernanceWorker) FindEstablishedAgreementsWithIds(agreementIds []string) ([]persistence.EstablishedAgreement, error) {
+
+	// filter for finding all
+	multiIdFilter := func(ids []string) persistence.EAFilter {
+		return func(e persistence.EstablishedAgreement) bool {
+			for _, id := range ids {
+				if e.CurrentAgreementId == id {
+					return true
+				}
+			}
+			return false
+		}
+	}
+
+	if agreementIds == nil || len(agreementIds) == 0 {
+		return make([]persistence.EstablishedAgreement, 0), nil
+	}
+
+	// find all agreements in db
+	var filters []persistence.EAFilter
+	filters = append(filters, persistence.UnarchivedEAFilter())
+	filters = append(filters, multiIdFilter(agreementIds))
+	return persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), filters)
 }

@@ -29,7 +29,7 @@ const CHAIN_TYPE = "ethereum"
 type BCInstanceState struct {
 	bc             *BaseContracts
 	el             *Event_Log
-	started        bool 	// remains true when needsRestart is true so that messages to start the container are ignored until we are ready to start it
+	started        bool // remains true when needsRestart is true so that messages to start the container are ignored until we are ready to start it
 	needsRestart   bool
 	notifiedReady  bool
 	notifiedFunded bool
@@ -43,14 +43,14 @@ type BCInstanceState struct {
 // The worker is single threaded so there are no multi-thread concerns. Events that cause changes to instance state
 // need to be dispatched to the worker thread as commands.
 type EthBlockchainWorker struct {
-	worker.Worker       // embedded field
-	httpClient          *http.Client
-	exchangeURL         string
-	exchangeId          string
-	exchangeToken       string
-	horizonPubKeyFile   string
-	instances           map[string]*BCInstanceState
-	neededBCs           map[string]uint64 	// time stamp last time this BC was reported as needed
+	worker.Worker     // embedded field
+	httpClient        *http.Client
+	exchangeURL       string
+	exchangeId        string
+	exchangeToken     string
+	horizonPubKeyFile string
+	instances         map[string]*BCInstanceState
+	neededBCs         map[string]uint64 // time stamp last time this BC was reported as needed
 }
 
 func NewEthBlockchainWorker(cfg *config.HorizonConfig) *EthBlockchainWorker {
@@ -67,10 +67,10 @@ func NewEthBlockchainWorker(cfg *config.HorizonConfig) *EthBlockchainWorker {
 			Commands: commands,
 		},
 
-		httpClient:          &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)},
-		horizonPubKeyFile:   cfg.Edge.PublicKeyPath,
-		instances:           make(map[string]*BCInstanceState),
-		neededBCs:           make(map[string]uint64),
+		httpClient:        &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
+		horizonPubKeyFile: cfg.Edge.PublicKeyPath,
+		instances:         make(map[string]*BCInstanceState),
+		neededBCs:         make(map[string]uint64),
 	}
 
 	glog.Info(logString("starting worker"))
@@ -149,7 +149,7 @@ func (w *EthBlockchainWorker) NewEvent(incoming events.Message) {
 	return
 }
 
-func (w *EthBlockchainWorker) NewBCInstanceState (name string) *BCInstanceState {
+func (w *EthBlockchainWorker) NewBCInstanceState(name string) *BCInstanceState {
 
 	if _, ok := w.instances[name]; ok {
 		return nil
@@ -392,7 +392,6 @@ func (w *EthBlockchainWorker) CheckStatus() {
 	}
 }
 
-
 func (w *EthBlockchainWorker) handleNewClient(cmd *NewClientCommand) {
 
 	// Grab the exchange metadata we need for all blockchain client requests.
@@ -477,7 +476,6 @@ func (w *EthBlockchainWorker) getBCMetadata(name string) (string, *exchange.Bloc
 	}
 }
 
-
 func (w *EthBlockchainWorker) fireStartEvent(details *exchange.ChainDetails, name string) error {
 	if url, err := url.Parse(details.DeploymentDesc.Torrent.Url); err != nil {
 		return errors.New(logString(fmt.Sprintf("ill-formed URL: %v, error %v", details.DeploymentDesc.Torrent.Url, err)))
@@ -504,7 +502,7 @@ func (w *EthBlockchainWorker) fireStartEvent(details *exchange.ChainDetails, nam
 		cc := events.NewContainerConfig(*url, hashes, signatures, details.DeploymentDesc.Deployment, details.DeploymentDesc.DeploymentSignature, details.DeploymentDesc.DeploymentUserInfo)
 		envAdds := w.computeEnvVarsForContainer(details)
 		w.SetColonusDir(name, envAdds["COLONUS_DIR"])
-		lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{Type: CHAIN_TYPE, Name: name})
+		lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{Type: CHAIN_TYPE, Name: name}, name)
 		w.Worker.Manager.Messages <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
 
 		return nil
@@ -512,60 +510,62 @@ func (w *EthBlockchainWorker) fireStartEvent(details *exchange.ChainDetails, nam
 }
 
 func (w *EthBlockchainWorker) computeEnvVarsForContainer(details *exchange.ChainDetails) map[string]string {
-		envAdds := make(map[string]string)
+	envAdds := make(map[string]string)
 
-		// Make sure the vars that MUST be set are set.
-		if ram := os.Getenv("CMTN_GETH_RAM_OVERRIDE"); ram == "" {
-			envAdds["HZN_RAM"] = "192"
-		} else {
-			envAdds["HZN_RAM"] = ram
-		}
+	// Make sure the vars that MUST be set are set.
+	if ram := os.Getenv("CMTN_GETH_RAM_OVERRIDE"); ram == "" {
+		envAdds["HZN_RAM"] = "192"
+	} else {
+		envAdds["HZN_RAM"] = ram
+	}
 
-		envAdds["COLONUS_DIR"] = getInstanceValue("COLONUS_DIR", details.Instance.ColonusDir)
+	envAdds["COLONUS_DIR"] = getInstanceValue("COLONUS_DIR", details.Instance.ColonusDir)
 
-		// If there are no instance details, then dont set any of these envvars.
-		if details.Instance == (exchange.ChainInstance{}) {
-			return envAdds
-		}
-
-		// Set env vars from the blockchain metadata details
-		envAdds["BLOCKS_URLS"] = details.Instance.BlocksURLs
-		envAdds["CHAINDATA_DIR"] = details.Instance.ChainDataDir
-		envAdds["DISCOVERY_URLS"] = details.Instance.DiscoveryURLs
-		envAdds["PORT"] = getInstanceValue("PORT", details.Instance.Port)
-		envAdds["HOSTNAME"] = getInstanceValue("HOSTNAME", details.Instance.HostName)
-		envAdds["IDENTITY"] = getInstanceValue("IDENTITY", details.Instance.Identity) + "-" + envAdds["HOSTNAME"]
-		envAdds["KDF"] = getInstanceValue("KDF", details.Instance.KDF)
-		envAdds["PING_HOST"] = details.Instance.PingHost
-		envAdds["ETHEREUM_DIR"] = getInstanceValue("ETHEREUM_DIR", details.Instance.EthDir)
-		envAdds["MAXPEERS"] = getInstanceValue("MAXPEERS", details.Instance.MaxPeers)
-		envAdds["GETH_LOG"] = getInstanceValue("GETH_LOG", details.Instance.GethLog)
-
+	// If there are no instance details, then dont set any of these envvars.
+	if details.Instance == (exchange.ChainInstance{}) {
 		return envAdds
+	}
+
+	// Set env vars from the blockchain metadata details
+	envAdds["BLOCKS_URLS"] = details.Instance.BlocksURLs
+	envAdds["CHAINDATA_DIR"] = details.Instance.ChainDataDir
+	envAdds["DISCOVERY_URLS"] = details.Instance.DiscoveryURLs
+	envAdds["PORT"] = getInstanceValue("PORT", details.Instance.Port)
+	envAdds["HOSTNAME"] = getInstanceValue("HOSTNAME", details.Instance.HostName)
+	envAdds["IDENTITY"] = getInstanceValue("IDENTITY", details.Instance.Identity) + "-" + envAdds["HOSTNAME"]
+	envAdds["KDF"] = getInstanceValue("KDF", details.Instance.KDF)
+	envAdds["PING_HOST"] = details.Instance.PingHost
+	envAdds["ETHEREUM_DIR"] = getInstanceValue("ETHEREUM_DIR", details.Instance.EthDir)
+	envAdds["MAXPEERS"] = getInstanceValue("MAXPEERS", details.Instance.MaxPeers)
+	envAdds["GETH_LOG"] = getInstanceValue("GETH_LOG", details.Instance.GethLog)
+
+	return envAdds
 }
 
 func getInstanceValue(name string, value string) string {
-	if value != "" { return value }
+	if value != "" {
+		return value
+	}
 
 	res := ""
 	switch name {
-		case "PORT":
-			res = "33303"
-		case "HOSTNAME":
-			hName, _ := os.Hostname()
-			res = strings.Split(hName, ".")[0]
-		case "IDENTITY":
-			res = runtime.GOARCH
-		case "KDF":
-			res = "--lightkdf"
-		case "COLONUS_DIR":
-			res = "/root/eth"
-		case "ETHEREUM_DIR":
-			res = os.Getenv("HOME") + "/.ethereum"
-		case "MAXPEERS":
-			res = "12"
-		case "GETH_LOG":
-			res = "/tmp/geth.log"
+	case "PORT":
+		res = "33303"
+	case "HOSTNAME":
+		hName, _ := os.Hostname()
+		res = strings.Split(hName, ".")[0]
+	case "IDENTITY":
+		res = runtime.GOARCH
+	case "KDF":
+		res = "--lightkdf"
+	case "COLONUS_DIR":
+		res = "/root/eth"
+	case "ETHEREUM_DIR":
+		res = os.Getenv("HOME") + "/.ethereum"
+	case "MAXPEERS":
+		res = "12"
+	case "GETH_LOG":
+		res = "/tmp/geth.log"
 	}
 	return res
 }

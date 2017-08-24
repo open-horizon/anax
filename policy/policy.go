@@ -10,20 +10,40 @@ import (
 )
 
 // This function generates policy files for each sensor on the device.
-func GeneratePolicy(e chan events.Message, sensorName string, arch string, props *map[string]interface{}, haPartners []string, meterPolicy Meter, counterPartyProperties RequiredProperty, agps []AgreementProtocol, filePath string) error {
+// sensorVersion is a pointer to a string.
+// If it is nil, it will have the old behaviour befor the ms split. The version will be default to 1.0.0.
+// If it is not nil, it will have the new behaviour that the user is registering a microservice. The version value will be used. An empty version means that it
+// can take any version.
+func GeneratePolicy(e chan events.Message, sensorUrl string, sensorName string, sensorVersion *string, arch string, props *map[string]interface{}, haPartners []string, meterPolicy Meter, counterPartyProperties RequiredProperty, agps []AgreementProtocol, filePath string) error {
 
 	glog.V(5).Infof("Generating policy for %v", sensorName)
 
-	if len(sensorName) == 0 {
-		return errors.New(fmt.Sprintf("Error generating policy, sensorName not specified"))
-	} else if len(arch) == 0 {
+	if len(arch) == 0 {
 		return errors.New(fmt.Sprintf("Error generating policy, architecture not specified"))
 	}
 
-	fileName := strings.ToLower(strings.Split(sensorName, " ")[0])
-	p := Policy_Factory("Policy for " + fileName)
+	var s_version, s_url, fileName string
+	if sensorVersion == nil {
+		// for backward compatibility
+		s_version = "1.0.0"
+		if len(sensorName) == 0 {
+			return errors.New(fmt.Sprintf("Error generating policy, sensorName not specified"))
+		}
+		fileName = strings.ToLower(strings.Split(sensorName, " ")[0])
+		s_url = "https://bluehorizon.network/documentation/" + fileName + "-device-api"
+	} else {
+		// new behaviour: the input is for a ms
+		s_version = *sensorVersion
+		if len(sensorUrl) == 0 {
+			return errors.New(fmt.Sprintf("Error generating policy, sensorUrl not specified"))
+		}
+		a_tmp := strings.Split(sensorUrl, "/")
+		fileName = a_tmp[len(a_tmp)-1]
+		s_url = sensorUrl
+	}
 
-	p.Add_API_Spec(APISpecification_Factory("https://bluehorizon.network/documentation/"+fileName+"-device-api", "1.0.0", arch))
+	p := Policy_Factory("Policy for " + fileName)
+	p.Add_API_Spec(APISpecification_Factory(s_url, s_version, arch))
 
 	if len(agps) != 0 {
 		for _, agpEle := range agps {

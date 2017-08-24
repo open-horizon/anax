@@ -174,6 +174,8 @@ curl -s -w "%{http_code}" -X PATCH-H 'Content-Type: application/json'  -d '{
 
 ### 3. Service
 
+In this section, the word *service* means a *microservice* which is a containerized service running on the device that provides an API to access a sensor on the device.
+
 #### **API:** GET  /service
 ---
 
@@ -351,6 +353,7 @@ Register a service.
 | ---- | ---- | ---------------- |
 | sensor_url  | string | the url for the service. |
 | sensor_name  | string | the name of the service. |
+| sensor_version  | string | the version of the service. It should comply with the OSGI version specification. |
 | attributes | array | an array of attributes.  Please refer to the response body for the GET /service/attribute api for the fields of an attribute.  |
 
 **Response:**
@@ -368,6 +371,7 @@ none
 curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
   "sensor_url": "https://bluehorizon.network/documentation/netspeed-device-api",
   "sensor_name": "netspeed",
+  "sensor_version": "2.3.1",
   "attributes": [
     {
       "id": "app",

@@ -46,10 +46,12 @@ const (
 	CONTAINER_DESTROYED EventId = "CONTAINER_DESTROYED"
 	CONTAINER_MAINTAIN  EventId = "CONTAINER_MAINTAIN"
 	LOAD_CONTAINER      EventId = "LOAD_CONTAINER"
+	START_MICROSERVICE  EventId = "START_MICROSERVICE"
+	CANCEL_MICROSERVICE EventId = "CANCEL_MICROSERVICE"
 	NEW_BC_CLIENT       EventId = "NEW_BC_CONTAINER"
 
 	// policy-related
-	NEW_POLICY EventId     = "NEW_POLICY"
+	NEW_POLICY     EventId = "NEW_POLICY"
 	CHANGED_POLICY EventId = "CHANGED_POLICY"
 	DELETED_POLICY EventId = "DELETED_POLICY"
 
@@ -78,10 +80,16 @@ type Message interface {
 }
 
 type LaunchContext interface {
-	URL()         url.URL
-	Hashes()      map[string]string
-	Signatures()  map[string]string
+	URL() url.URL
+	Hashes() map[string]string
+	Signatures() map[string]string
 	ShortString() string
+}
+
+type MicroserviceSpec struct {
+	SpecRef string
+	Version string
+	Arch    string
 }
 
 type AgreementLaunchContext struct {
@@ -90,10 +98,11 @@ type AgreementLaunchContext struct {
 	Configure            ContainerConfig
 	ConfigureRaw         []byte
 	EnvironmentAdditions *map[string]string // provided by platform, not but user
+	Microservices        []MicroserviceSpec // for ms split.
 }
 
 func (c AgreementLaunchContext) String() string {
-	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v, Configure: %v, EnvironmentAdditions: %v", c.AgreementProtocol, c.AgreementId, c.Configure, c.EnvironmentAdditions)
+	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v, Configure: %v, EnvironmentAdditions: %v, Microservices: %v", c.AgreementProtocol, c.AgreementId, c.Configure, c.EnvironmentAdditions, c.Microservices)
 }
 
 func (c AgreementLaunchContext) ShortString() string {
@@ -145,10 +154,11 @@ type ContainerLaunchContext struct {
 	Configure            ContainerConfig
 	EnvironmentAdditions *map[string]string
 	Blockchain           BlockchainConfig
+	Name                 string // used as the docker network name and part of container name
 }
 
 func (c ContainerLaunchContext) String() string {
-	return fmt.Sprintf("ContainerConfig: %v, EnvironmentAdditions: %v, Blockchain: %v", c.Configure, c.EnvironmentAdditions, c.Blockchain)
+	return fmt.Sprintf("ContainerConfig: %v, EnvironmentAdditions: %v, Blockchain: %v, Name: %v", c.Configure, c.EnvironmentAdditions, c.Blockchain, c.Name)
 }
 
 func (c ContainerLaunchContext) ShortString() string {
@@ -167,11 +177,12 @@ func (c ContainerLaunchContext) Signatures() map[string]string {
 	return c.Configure.ImageSignatures
 }
 
-func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]string, bc BlockchainConfig) *ContainerLaunchContext {
+func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]string, bc BlockchainConfig, name string) *ContainerLaunchContext {
 	return &ContainerLaunchContext{
 		Configure:            *config,
 		EnvironmentAdditions: envAdds,
 		Blockchain:           bc,
+		Name:                 name,
 	}
 }
 
@@ -439,10 +450,10 @@ func (m GovernanceMaintenanceMessage) String() string {
 }
 
 func (m GovernanceMaintenanceMessage) ShortString() string {
-    depStr := ""
-    for key, _ := range m.Deployment {
-        depStr = depStr + key + ","
-    }
+	depStr := ""
+	for key, _ := range m.Deployment {
+		depStr = depStr + key + ","
+	}
 	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment Services: %v", m.event, m.AgreementProtocol, m.AgreementId, depStr)
 }
 
@@ -519,10 +530,10 @@ func NewWorkloadMessage(id EventId, protocol string, agreementId string, deploym
 
 //Container messages
 type ContainerMessage struct {
-	event             Event
-	LaunchContext     ContainerLaunchContext
-	ServiceName       string
-	ServicePort       string
+	event         Event
+	LaunchContext ContainerLaunchContext
+	ServiceName   string
+	ServicePort   string
 }
 
 func (m ContainerMessage) String() string {
@@ -551,8 +562,8 @@ func NewContainerMessage(id EventId, lc ContainerLaunchContext, serviceName stri
 
 //Container stop message
 type ContainerStopMessage struct {
-	event             Event
-	ContainerName     string
+	event         Event
+	ContainerName string
 }
 
 func (m ContainerStopMessage) String() string {
@@ -579,8 +590,8 @@ func NewContainerStopMessage(id EventId, containerName string) *ContainerStopMes
 
 //Container Shutdown message
 type ContainerShutdownMessage struct {
-	event             Event
-	ContainerName     string
+	event         Event
+	ContainerName string
 }
 
 func (m ContainerShutdownMessage) String() string {
@@ -850,10 +861,10 @@ func NewBlockchainClientInitializedMessage(id EventId, bcType string, bcName str
 
 // Blockchain client Stopping message
 type BlockchainClientStoppingMessage struct {
-	event       Event
-	Time        uint64
-	bcType      string
-	bcInstance  string
+	event      Event
+	Time       uint64
+	bcType     string
+	bcInstance string
 }
 
 func (m *BlockchainClientStoppingMessage) Event() Event {
@@ -881,18 +892,18 @@ func NewBlockchainClientStoppingMessage(id EventId, bcType string, bcName string
 		event: Event{
 			Id: id,
 		},
-		Time:        uint64(time.Now().Unix()),
-		bcType:      bcType,
-		bcInstance:  bcName,
+		Time:       uint64(time.Now().Unix()),
+		bcType:     bcType,
+		bcInstance: bcName,
 	}
 }
 
 // Report of blockchains that are needed
 type ReportNeededBlockchainsMessage struct {
-	event       Event
-	Time        uint64
-	bcType      string
-	neededBCs   map[string]bool
+	event     Event
+	Time      uint64
+	bcType    string
+	neededBCs map[string]bool
 }
 
 func (m *ReportNeededBlockchainsMessage) Event() Event {
@@ -920,9 +931,9 @@ func NewReportNeededBlockchainsMessage(id EventId, bcType string, neededBCs map[
 		event: Event{
 			Id: id,
 		},
-		Time:        uint64(time.Now().Unix()),
-		bcType:      bcType,
-		neededBCs:   neededBCs,
+		Time:      uint64(time.Now().Unix()),
+		bcType:    bcType,
+		neededBCs: neededBCs,
 	}
 }
 
@@ -1016,13 +1027,13 @@ func NewExchangeDeviceMessage(id EventId, exMsg []byte, pMsg string) *ExchangeDe
 
 // Make sure eth container is up and running
 type NewBCContainerMessage struct {
-	event             Event
-	exchangeURL       string
-	exchangeId        string
-	exchangeToken     string
-	instance          string
-	typeName          string
-	Time              uint64
+	event         Event
+	exchangeURL   string
+	exchangeId    string
+	exchangeToken string
+	instance      string
+	typeName      string
+	Time          uint64
 }
 
 func (m *NewBCContainerMessage) Event() Event {
@@ -1062,12 +1073,12 @@ func NewNewBCContainerMessage(id EventId, typeName string, instance string, exch
 		event: Event{
 			Id: id,
 		},
-		exchangeURL:      exchangeURL,
-		exchangeId:       exchangeId,
-		exchangeToken:    exchangeToken,
-		instance:         instance,
-		typeName:         typeName,
-		Time:             uint64(time.Now().Unix()),
+		exchangeURL:   exchangeURL,
+		exchangeId:    exchangeId,
+		exchangeToken: exchangeToken,
+		instance:      instance,
+		typeName:      typeName,
+		Time:          uint64(time.Now().Unix()),
 	}
 }
 
@@ -1134,5 +1145,85 @@ func NewDeviceContainersSyncedMessage(id EventId, completed bool) *DeviceContain
 		},
 		Completed: completed,
 		Time:      uint64(time.Now().Unix()),
+	}
+}
+
+// Anax device side fires this event when it needs to start a microservice.
+type StartMicroserviceMessage struct {
+	event    Event
+	MsDefKey string
+}
+
+func (e StartMicroserviceMessage) String() string {
+	return fmt.Sprintf("event: %v, MsDefKey: %v", e.event, e.MsDefKey)
+}
+
+func (e StartMicroserviceMessage) ShortString() string {
+	return e.String()
+}
+
+func (e *StartMicroserviceMessage) Event() Event {
+	return e.event
+}
+
+func NewStartMicroserviceMessage(id EventId, key string) *StartMicroserviceMessage {
+
+	return &StartMicroserviceMessage{
+		event: Event{
+			Id: id,
+		},
+		MsDefKey: key,
+	}
+}
+
+type MicroserviceMaintenanceMessage struct {
+	event     Event
+	MsInstKey string // the key to the microservice instance, it is used for network id and part of container name
+}
+
+func (m *MicroserviceMaintenanceMessage) Event() Event {
+	return m.event
+}
+
+func (m MicroserviceMaintenanceMessage) String() string {
+	return m.ShortString()
+}
+
+func (m MicroserviceMaintenanceMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v, MsInstKey: %v", m.event, m.MsInstKey)
+}
+
+func NewMicroserviceMaintenanceMessage(id EventId, key string) *MicroserviceMaintenanceMessage {
+	return &MicroserviceMaintenanceMessage{
+		event: Event{
+			Id: id,
+		},
+		MsInstKey: key,
+	}
+}
+
+type MicroserviceCancellationMessage struct {
+	event     Event
+	MsInstKey string // the key to the microservice instance
+}
+
+func (m *MicroserviceCancellationMessage) Event() Event {
+	return m.event
+}
+
+func (m MicroserviceCancellationMessage) String() string {
+	return m.ShortString()
+}
+
+func (m MicroserviceCancellationMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v, MsInstKey: %v", m.event, m.MsInstKey)
+}
+
+func NewMicroserviceCancellationMessage(id EventId, key string) *MicroserviceCancellationMessage {
+	return &MicroserviceCancellationMessage{
+		event: Event{
+			Id: id,
+		},
+		MsInstKey: key,
 	}
 }

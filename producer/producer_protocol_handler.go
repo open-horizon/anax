@@ -207,7 +207,7 @@ func (w *BaseProducerProtocolHandler) getAgbot(agbotId string, url string, devic
 	resp = new(exchange.GetAgbotsResponse)
 	targetURL := url + "agbots/" + agbotId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "GET", targetURL, deviceId, token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "GET", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf(err.Error())))
 			return nil, err
 		} else if tpErr != nil {
@@ -236,11 +236,11 @@ func (b *BaseProducerProtocolHandler) UpdateConsumer(ag *persistence.Established
 func (b *BaseProducerProtocolHandler) UpdateConsumers() {}
 
 func (c *BaseProducerProtocolHandler) SetBlockchainClientAvailable(cmd *BCInitializedCommand) {
-    return
+	return
 }
 
 func (c *BaseProducerProtocolHandler) SetBlockchainClientNotAvailable(cmd *BCStoppingCommand) {
-    return
+	return
 }
 
 func (c *BaseProducerProtocolHandler) GetKnownBlockchain(ag *persistence.EstablishedAgreement) (string, string) {
@@ -257,6 +257,7 @@ const TERM_REASON_USER_REQUESTED = "UserRequested"
 const TERM_REASON_NOT_FINALIZED_TIMEOUT = "NotFinalized"
 const TERM_REASON_NO_REPLY_ACK = "NoReplyAck"
 const TERM_REASON_NOT_EXECUTED_TIMEOUT = "NotExecuted"
+const TERM_REASON_MICROSERVICE_FAILURE = "MicroserviceFailure"
 
 // ==============================================================================================================
 type ExchangeMessageCommand struct {
@@ -290,50 +291,50 @@ func NewBlockchainEventCommand(msg events.EthBlockchainEventMessage) *Blockchain
 
 // ==============================================================================================================
 type BCInitializedCommand struct {
-    Msg *events.BlockchainClientInitializedMessage
+	Msg *events.BlockchainClientInitializedMessage
 }
 
 func (c BCInitializedCommand) ShortString() string {
 
-    return fmt.Sprintf("BCInitializedCommand: Msg %v", c.Msg)
+	return fmt.Sprintf("BCInitializedCommand: Msg %v", c.Msg)
 }
 
 func NewBCInitializedCommand(msg *events.BlockchainClientInitializedMessage) *BCInitializedCommand {
-    return &BCInitializedCommand{
-        Msg: msg,
-    }
+	return &BCInitializedCommand{
+		Msg: msg,
+	}
 }
 
 // ==============================================================================================================
 type BCStoppingCommand struct {
-    Msg *events.BlockchainClientStoppingMessage
+	Msg *events.BlockchainClientStoppingMessage
 }
 
 func (c BCStoppingCommand) ShortString() string {
 
-    return fmt.Sprintf("BCStoppingCommand: Msg %v", c.Msg)
+	return fmt.Sprintf("BCStoppingCommand: Msg %v", c.Msg)
 }
 
 func NewBCStoppingCommand(msg *events.BlockchainClientStoppingMessage) *BCStoppingCommand {
-    return &BCStoppingCommand{
-        Msg: msg,
-    }
+	return &BCStoppingCommand{
+		Msg: msg,
+	}
 }
 
 // ==============================================================================================================
 type BCWritableCommand struct {
-    Msg events.AccountFundedMessage
+	Msg events.AccountFundedMessage
 }
 
 func (c BCWritableCommand) ShortString() string {
 
-    return fmt.Sprintf("BCWritableCommand: Msg %v", c.Msg)
+	return fmt.Sprintf("BCWritableCommand: Msg %v", c.Msg)
 }
 
 func NewBCWritableCommand(msg *events.AccountFundedMessage) *BCWritableCommand {
-    return &BCWritableCommand{
-        Msg: *msg,
-    }
+	return &BCWritableCommand{
+		Msg: *msg,
+	}
 }
 
 // ==========================================================================================================

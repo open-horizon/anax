@@ -27,11 +27,10 @@ type BlockchainState struct {
 	agreementPH *citizenscientist.ProtocolHandler
 }
 
-
 type CSProtocolHandler struct {
 	*BaseProducerProtocolHandler
 	genericAgreementPH *citizenscientist.ProtocolHandler
-	bcState     map[string]map[string]*BlockchainState
+	bcState            map[string]map[string]*BlockchainState
 }
 
 func NewCSProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, deviceId string, token string) *CSProtocolHandler {
@@ -47,7 +46,7 @@ func NewCSProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB, p
 				httpClient: &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
 			},
 			genericAgreementPH: citizenscientist.NewProtocolHandler(pm),
-			bcState:     make(map[string]map[string]*BlockchainState),
+			bcState:            make(map[string]map[string]*BlockchainState),
 		}
 	} else {
 		return nil
@@ -160,11 +159,11 @@ func (c *CSProtocolHandler) TerminateAgreement(ag *persistence.EstablishedAgreem
 	// any given agreement. This means we can fake up a message target for the TerminateAgreement call
 	// because we know that the CS implementation of the agreement protocol wont be sending a message.
 	fakeMT := &exchange.ExchangeMessageTarget{
-			ReceiverExchangeId:     "",
-			ReceiverPublicKeyObj:   nil,
-			ReceiverPublicKeyBytes: []byte(""),
-			ReceiverMsgEndPoint:    "",
-			}
+		ReceiverExchangeId:     "",
+		ReceiverPublicKeyObj:   nil,
+		ReceiverPublicKeyBytes: []byte(""),
+		ReceiverMsgEndPoint:    "",
+	}
 
 	c.BaseProducerProtocolHandler.TerminateAgreement(ag, reason, fakeMT, c)
 }
@@ -187,6 +186,8 @@ func (c *CSProtocolHandler) GetTerminationCode(reason string) uint {
 		return citizenscientist.CANCEL_NO_REPLY_ACK
 	case TERM_REASON_NOT_EXECUTED_TIMEOUT:
 		return citizenscientist.CANCEL_NOT_EXECUTED_TIMEOUT
+	case TERM_REASON_MICROSERVICE_FAILURE:
+		return citizenscientist.CANCEL_MICROSERVICE_FAILURE
 	default:
 		return 999
 	}
@@ -225,13 +226,13 @@ func (c *CSProtocolHandler) SetBlockchainWritable(cmd *BCWritableCommand) {
 	_, ok := nameMap[cmd.Msg.BlockchainInstance()]
 	if !ok {
 		nameMap[cmd.Msg.BlockchainInstance()] = &BlockchainState{
-								ready:       true,
-								writable:    true,
-								service:     cmd.Msg.ServiceName(),
-								servicePort: cmd.Msg.ServicePort(),
-								colonusDir:  cmd.Msg.ColonusDir(),
-								agreementPH: citizenscientist.NewProtocolHandler(c.pm),
-							}
+			ready:       true,
+			writable:    true,
+			service:     cmd.Msg.ServiceName(),
+			servicePort: cmd.Msg.ServicePort(),
+			colonusDir:  cmd.Msg.ColonusDir(),
+			agreementPH: citizenscientist.NewProtocolHandler(c.pm),
+		}
 	} else {
 		nameMap[cmd.Msg.BlockchainInstance()].ready = true
 		nameMap[cmd.Msg.BlockchainInstance()].writable = true
@@ -253,11 +254,13 @@ func (c *CSProtocolHandler) SetBlockchainWritable(cmd *BCWritableCommand) {
 func (c *CSProtocolHandler) UpdateConsumers() {
 	// A filter for limiting the returned set of agreements just to those that are waiting on protocol version 2 messages.
 	notYetUpFilter := func() persistence.EAFilter {
-		return func(a persistence.EstablishedAgreement) bool { return a.ProtocolVersion == 2 && a.AgreementBCUpdateAckTime == 0 && a.AgreementTerminatedTime == 0}
+		return func(a persistence.EstablishedAgreement) bool {
+			return a.ProtocolVersion == 2 && a.AgreementBCUpdateAckTime == 0 && a.AgreementTerminatedTime == 0
+		}
 	}
 
 	// Find all agreements that are in progress, waiting for the blockchain to come up.
-	if agreements, err := persistence.FindEstablishedAgreements(c.db, c.Name(), []persistence.EAFilter{notYetUpFilter(),persistence.UnarchivedEAFilter()}); err != nil {
+	if agreements, err := persistence.FindEstablishedAgreements(c.db, c.Name(), []persistence.EAFilter{notYetUpFilter(), persistence.UnarchivedEAFilter()}); err != nil {
 		glog.Errorf(PPHlogString(fmt.Sprintf("failed to get agreements for %v from the database, error: %v", c.Name(), err)))
 	} else {
 
@@ -274,7 +277,7 @@ func (c *CSProtocolHandler) UpdateConsumer(ag *persistence.EstablishedAgreement)
 
 	signature := ""
 	if ag.ProposalSig == "" {
-	    if proposal, err := c.genericAgreementPH.DemarshalProposal(ag.Proposal); err != nil {
+		if proposal, err := c.genericAgreementPH.DemarshalProposal(ag.Proposal); err != nil {
 			glog.Errorf(PPHlogString(fmt.Sprintf("unable to demarshal proposal for agreement %v from database", ag.CurrentAgreementId)))
 			return
 		} else {
@@ -312,9 +315,11 @@ func (c *CSProtocolHandler) UpdateConsumer(ag *persistence.EstablishedAgreement)
 }
 
 func (c *CSProtocolHandler) IsBlockchainWritable(ag *persistence.EstablishedAgreement) bool {
-    if ag == nil { return true }
+	if ag == nil {
+		return true
+	}
 
-    bcType, bcName := c.GetKnownBlockchain(ag)
+	bcType, bcName := c.GetKnownBlockchain(ag)
 
 	nameMap := c.getBCNameMap(bcType)
 

@@ -220,7 +220,7 @@ func CreateAgbotPublicKeyPatch(keyPath string) *PatchAgbotPublicKey {
 	}
 
 	pdr := &PatchAgbotPublicKey{
-		PublicKey:        keyBytes(),
+		PublicKey: keyBytes(),
 	}
 
 	return pdr
@@ -243,7 +243,7 @@ func CreatePostMessage(msg []byte, ttl int) *PostMessage {
 
 	pm := &PostMessage{
 		Message: msg,
-		TTL: theTTL,
+		TTL:     theTTL,
 	}
 
 	return pm
@@ -267,7 +267,7 @@ func CreateMessageTarget(receiverId string, receiverPubKey *rsa.PublicKey, recei
 			ReceiverPublicKeyObj:   receiverPubKey,
 			ReceiverPublicKeyBytes: receiverPubKeySerialized,
 			ReceiverMsgEndPoint:    receiverMessageEndpoint,
-			}, nil
+		}, nil
 	}
 }
 
@@ -425,7 +425,7 @@ func GetEthereumClient(url string, chainName string, chainType string, deviceId 
 	resp = new(GetEthereumClientResponse)
 	targetURL := url + "bctypes/" + chainType + "/blockchains/" + chainName
 	for {
-		if err, tpErr := InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "GET", targetURL, deviceId, token, nil, &resp); err != nil {
+		if err, tpErr := InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "GET", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
 			return "", err
 		} else if tpErr != nil {
@@ -513,16 +513,16 @@ type WorkloadDefinition struct {
 }
 
 func (w *WorkloadDefinition) String() string {
-	return fmt.Sprintf("Owner: %v, " +
-		"Label: %v, " +
-		"Description: %v, " +
-		"WorkloadURL: %v, " +
-		"Version: %v, " +
-		"Arch: %v, " +
-		"DownloadURL: %v, " +
-		"APISpecs: %v, " +
-		"UserInputs: %v, " +
-		"Workloads: %v, " +
+	return fmt.Sprintf("Owner: %v, "+
+		"Label: %v, "+
+		"Description: %v, "+
+		"WorkloadURL: %v, "+
+		"Version: %v, "+
+		"Arch: %v, "+
+		"DownloadURL: %v, "+
+		"APISpecs: %v, "+
+		"UserInputs: %v, "+
+		"Workloads: %v, "+
 		"LastUpdated: %v",
 		w.Owner, w.Label, w.Description, w.WorkloadURL, w.Version, w.Arch, w.DownloadURL,
 		w.APISpecs, w.UserInputs, w.Workloads, w.LastUpdated)
@@ -554,17 +554,17 @@ type MicroserviceDefinition struct {
 }
 
 func (w *MicroserviceDefinition) String() string {
-	return fmt.Sprintf("Owner: %v, " +
-		"Label: %v, " +
-		"Description: %v, " +
-		"SpecRef: %v, " +
-		"Version: %v, " +
-		"Arch: %v, " +
-		"Sharable: %v, " +
-		"DownloadURL: %v, " +
-		"MatchHardware: %v, " +
-		"UserInputs: %v, " +
-		"Workloads: %v, " +
+	return fmt.Sprintf("Owner: %v, "+
+		"Label: %v, "+
+		"Description: %v, "+
+		"SpecRef: %v, "+
+		"Version: %v, "+
+		"Arch: %v, "+
+		"Sharable: %v, "+
+		"DownloadURL: %v, "+
+		"MatchHardware: %v, "+
+		"UserInputs: %v, "+
+		"Workloads: %v, "+
 		"LastUpdated: %v",
 		w.Owner, w.Label, w.Description, w.SpecRef, w.Version, w.Arch, w.Sharable, w.DownloadURL,
 		w.MatchHardware, w.UserInputs, w.Workloads, w.LastUpdated)
@@ -583,7 +583,7 @@ func GetWorkload(wURL string, wVersion string, wArch string, exURL string, id st
 	resp = new(GetWorkloadsResponse)
 	targetURL := fmt.Sprintf("%vworkloads?workloadUrl=%v&version=%v&arch=%v", exURL, wURL, wVersion, wArch)
 	for {
-		if err, tpErr := InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "GET", targetURL, id, token, nil, &resp); err != nil {
+		if err, tpErr := InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "GET", targetURL, id, token, nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
 			return nil, err
 		} else if tpErr != nil {
@@ -613,7 +613,7 @@ func GetMicroservice(mURL string, mVersion string, mArch string, exURL string, i
 	resp = new(GetMicroservicesResponse)
 	targetURL := fmt.Sprintf("%vmicroservices?specRef=%v&version=%v&arch=%v", exURL, mURL, mVersion, mArch)
 	for {
-		if err, tpErr := InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "GET", targetURL, id, token, nil, &resp); err != nil {
+		if err, tpErr := InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "GET", targetURL, id, token, nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
 			return nil, err
 		} else if tpErr != nil {
