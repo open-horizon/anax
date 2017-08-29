@@ -528,6 +528,16 @@ func (w *WorkloadDefinition) String() string {
 		w.APISpecs, w.UserInputs, w.Workloads, w.LastUpdated)
 }
 
+func (w *WorkloadDefinition) GetUserInputName(name string) *UserInput {
+	for _, ui := range w.UserInputs {
+		if ui.Name == name {
+			return &ui
+		}
+	}
+	return nil
+}
+
+
 type GetWorkloadsResponse struct {
 	Workloads map[string]WorkloadDefinition `json:"workloads"`
 	LastIndex int                           `json:"lastIndex"`

@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/open-horizon/anax/persistence"
+	"strings"
 )
 
 type EstablishedAgreementsByAgreementCreationTime []persistence.EstablishedAgreement
@@ -30,4 +31,18 @@ func (s EstablishedAgreementsByAgreementTerminatedTime) Swap(i, j int) {
 
 func (s EstablishedAgreementsByAgreementTerminatedTime) Less(i, j int) bool {
 	return s[i].AgreementTerminatedTime < s[j].AgreementTerminatedTime
+}
+
+type WorkloadConfigByWorkloadURLAndVersion []persistence.WorkloadConfig
+
+func (s WorkloadConfigByWorkloadURLAndVersion) Len() int {
+	return len(s)
+}
+
+func (s WorkloadConfigByWorkloadURLAndVersion) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s WorkloadConfigByWorkloadURLAndVersion) Less(i, j int) bool {
+	return (strings.Compare(s[i].WorkloadURL, s[j].WorkloadURL) == -1) && (strings.Compare(s[i].Version, s[j].Version) == -1)
 }

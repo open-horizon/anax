@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -904,12 +905,35 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 
 			// get environmental settings for the workload
 			envAdds := make(map[string]string)
-			sensorUrl := tcPolicy.APISpecs[0].SpecRef
-			if envAdds, err = w.GetWorkloadPreference(sensorUrl); err != nil {
-				glog.Errorf("Error: %v", err)
+
+			// Before the ms split, the attributes assigned to the service (sensorUrl) are added to the workload.
+			// After the split, the workload config variables are stored in the workload config database.
+			if workload.WorkloadURL == "" {
+				sensorUrl := tcPolicy.APISpecs[0].SpecRef
+				if envAdds, err = w.GetWorkloadPreference(sensorUrl); err != nil {
+					glog.Errorf("Error: %v", err)
+				}
+			} else {
+				if envAdds, err = w.GetWorkloadConfig(workload.WorkloadURL, workload.Version); err != nil {
+					glog.Errorf("Error: %v", err)
+				}
+				envAdds[config.ENVVAR_PREFIX+"HASH"] = workload.WorkloadPassword
+				// The workload config we have might be from a lower version of the workload. Go to the exchange and
+				// get the metadata for the version we are running and then add in any unset default user inputs.
+				if exWkld, err := exchange.GetWorkload(workload.WorkloadURL, workload.Version, workload.Arch, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken); err != nil {
+					return errors.New(logString(fmt.Sprintf("received error querying excahnge for workload metadata, error %v", err)))
+				} else {
+					for _, ui := range exWkld.UserInputs {
+						if ui.DefaultValue != "" {
+							if _, ok := envAdds[ui.Name]; !ok {
+								envAdds[ui.Name] = ui.DefaultValue
+							}
+						}
+					}
+				}
 			}
+
 			envAdds[config.ENVVAR_PREFIX+"AGREEMENTID"] = proposal.AgreementId()
-			envAdds[config.ENVVAR_PREFIX+"HASH"] = workload.WorkloadPassword
 			envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = w.deviceId
 
 			// Add in the exchange URL so that the workload knows which ecosystem its part of
@@ -946,7 +970,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 	return nil
 }
 
-// get the environmental variables for the workload (this is about launching)
+// get the environmental variables for the workload (this is about launching), pre MS split
 func (w *GovernanceWorker) GetWorkloadPreference(url string) (map[string]string, error) {
 	attrs, err := persistence.FindApplicableAttributes(w.db, url)
 	if err != nil {
@@ -954,6 +978,37 @@ func (w *GovernanceWorker) GetWorkloadPreference(url string) (map[string]string,
 	}
 
 	return persistence.AttributesToEnvvarMap(attrs, config.ENVVAR_PREFIX)
+
+}
+
+// Get the environmental variables for the workload for MS split workloads. The workload config
+// record we have might not match the version of the workload being started so we will use the most
+// current config we have that is not newer than the workload version being started.
+func (w *GovernanceWorker) GetWorkloadConfig(url string, version string) (map[string]string, error) {
+
+	// Filter to return workload configs with versions less than or equal to the input workload version
+	OlderWorkloadWCFilter := func(workload_url string, version string) persistence.WCFilter {
+		return func(e persistence.WorkloadConfig) bool {
+			if e.WorkloadURL == workload_url && strings.Compare(e.Version, version) <= 0 {
+				return true
+			} else {
+				return false
+			}
+		}
+	}
+
+	// Find the eligible workload config objects
+	cfgs, err := persistence.FindWorkloadConfigs(w.db, []persistence.WCFilter{OlderWorkloadWCFilter(url, version)})
+	if err != nil {
+		return nil, fmt.Errorf("Unable to fetch post split workload preferences. Err: %v", err)
+	} else if len(cfgs) == 0 {
+		return persistence.ConfigToEnvvarMap(w.db, nil, config.ENVVAR_PREFIX)
+	}
+
+	// Sort them by version, oldest to newest
+	sort.Sort(persistence.WorkloadConfigByVersion(cfgs))
+
+	return persistence.ConfigToEnvvarMap(w.db, &cfgs[len(cfgs)-1], config.ENVVAR_PREFIX)
 
 }
 
@@ -1069,7 +1124,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string) error {
 		}
 
 		for _, wl := range wls {
-			// convert the torren string to structure
+			// convert the torrent string to a structure
 			var torrent policy.Torrent
 			if err := json.Unmarshal([]byte(wl.Torrent), &torrent); err != nil {
 				return fmt.Errorf(logString(fmt.Sprintf("The torrent definition for microservice %v has error: %v", msdef.SpecRef, err)))
@@ -1119,8 +1174,15 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string) error {
 						return fmt.Errorf(logString(fmt.Sprintf("Failed to convert microservice preferences to environmental variables for %v. Err: %v", msdef.SpecRef, err)))
 					} else {
 						envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = w.deviceId
-						//envAdds[config.ENVVAR_PREFIX+"HASH"] = ms_workload.WorkloadPassword
 						envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = w.Config.Edge.ExchangeURL
+						// Add in any default variables from the microservice userInputs that havent been overridden
+						for _, ui := range msdef.UserInputs {
+							if ui.DefaultValue != "" {
+								if _, ok := envAdds[ui.Name]; !ok {
+									envAdds[ui.Name] = ui.DefaultValue
+								}
+							}
+						}
 						lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey())
 						w.Messages() <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
 					}
