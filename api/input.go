@@ -448,3 +448,17 @@ func deserializeAttributes(w http.ResponseWriter, attrs []Attribute) ([]persiste
 
 	return attributes, nil, false
 }
+
+// This section is for handling the workloadConfig API input
+type WorkloadConfig struct {
+	WorkloadURL string                 `json:"workload_url"`
+	Version     string                 `json:"workload_version"`
+	Variables   map[string]interface{} `json:"variables"`
+}
+
+func (w WorkloadConfig) String() string {
+	return fmt.Sprintf("WorkloadURL: %v, "+
+		"Version: %v, "+
+		"Variables: %v",
+		w.WorkloadURL, w.Version, w.Variables)
+}
