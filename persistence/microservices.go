@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/satori/go.uuid"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -59,18 +60,35 @@ func NewHardwareMatch(usb_dev_ids string, dev_files string) *HardwareMatch {
 }
 
 type MicroserviceDefinition struct {
-	Owner         string               `json:"owner"`
-	Label         string               `json:"label"`
-	Description   string               `json:"description"`
-	SpecRef       string               `json:"specRef"`
-	Version       string               `json:"version"`
-	Arch          string               `json:"arch"`
-	Sharable      string               `json:"sharable"`
-	DownloadURL   string               `json:"downloadUrl"`
-	MatchHardware HardwareMatch        `json:"matchHardware"`
-	UserInputs    []UserInput          `json:"userInput"`
-	Workloads     []WorkloadDeployment `json:"workloads"`
-	LastUpdated   string               `json:"lastUpdated"`
+	Id                           string               `json:"record_id"` // unique primary key for records
+	Owner                        string               `json:"owner"`
+	Label                        string               `json:"label"`
+	Description                  string               `json:"description"`
+	SpecRef                      string               `json:"specRef"`
+	Version                      string               `json:"version"`
+	Arch                         string               `json:"arch"`
+	Sharable                     string               `json:"sharable"`
+	DownloadURL                  string               `json:"downloadUrl"`
+	MatchHardware                HardwareMatch        `json:"matchHardware"`
+	UserInputs                   []UserInput          `json:"userInput"`
+	Workloads                    []WorkloadDeployment `json:"workloads"`
+	LastUpdated                  string               `json:"lastUpdated"`
+	Archived                     bool                 `json:"archived"`
+	Name                         string               `json:"name"`                  //the sensor_name passed in from the POST /service call
+	UpgradeVersionRange          string               `json:"upgrade_version_range"` //the sensor_version passed in from the POST service call
+	AutoUpgrade                  bool                 `json:"auto_upgrade"`          // passed in from the POST service call
+	ActiveUpgrade                bool                 `json:"active_upgrade"`        // passed in from the POST service call
+	UpgradeStartTime             uint64               `json:"upgrade_start_time"`
+	UpgradeMsUnregisteredTime    uint64               `json:"upgrade_ms_unregistered_time"`
+	UpgradeAgreementsClearedTime uint64               `json:"upgrade_agreements_cleared_time"`
+	UpgradeExecutionStartTime    uint64               `json:"upgrade_execution_start_time"`
+	UpgradeMsReregisteredTime    uint64               `json:"upgrade_ms_reregistered_time"`
+	UpgradeFailedTime            uint64               `json:"upgrade_failed_time"`
+	UngradeFailureReason         uint64               `json:"upgrade_failure_reason"`
+	UngradeFailureDescription    string               `json:"upgrade_failure_description"`
+	UpgradeNewMsId               string               `json:"upgrade_new_ms_id"`
+	MetadataHash                 []byte               `json:"metadata_hash"` // the hash of the whole exchange.MicroserviceDefinition
+
 }
 
 func (w MicroserviceDefinition) String() string {
@@ -85,93 +103,84 @@ func (w MicroserviceDefinition) String() string {
 		"MatchHardware: %v, "+
 		"UserInputs: %v, "+
 		"Workloads: %v, "+
-		"LastUpdated: %v",
+		"LastUpdated: %v, "+
+		"Archived: %v, "+
+		"Name: %v, "+
+		"UpgradeVersionRange: %v, "+
+		"AutoUpgrade: %v, "+
+		"ActiveUpgrade: %v, "+
+		"UpgradeStartTime: %v, "+
+		"UpgradeMsUnregisteredTime: %v, "+
+		"UpgradeAgreementsClearedTime: %v, "+
+		"UpgradeExecutionStartTime: %v, "+
+		"UpgradeMsReregisteredTime: %v, "+
+		"UpgradeFailedTime: %v, "+
+		"UngradeFailureReason: %v, "+
+		"UngradeFailureDescription: %v, "+
+		"UpgradeNewMsId: %v, "+
+		"MetadataHash: %v",
 		w.Owner, w.Label, w.Description, w.SpecRef, w.Version, w.Arch, w.Sharable, w.DownloadURL,
-		w.MatchHardware, w.UserInputs, w.Workloads, w.LastUpdated)
+		w.MatchHardware, w.UserInputs, w.Workloads, w.LastUpdated,
+		w.Archived, w.Name, w.UpgradeVersionRange, w.AutoUpgrade, w.ActiveUpgrade,
+		w.UpgradeStartTime, w.UpgradeMsUnregisteredTime, w.UpgradeAgreementsClearedTime, w.UpgradeExecutionStartTime, w.UpgradeMsReregisteredTime,
+		w.UpgradeFailedTime, w.UngradeFailureReason, w.UngradeFailureDescription, w.UpgradeNewMsId, w.MetadataHash)
 }
 
-// create a unique name for a microservice def
-// If SpecRef is https://bluehorizon.network/microservices/network and version is 2.3.1,
-// the output string will be "bluehorizon.network-microservices-network_2.3.1"
-func (m MicroserviceDefinition) GetKey() string {
-	s := m.SpecRef
-	if strings.Contains(m.SpecRef, "://") {
-		s = strings.Split(m.SpecRef, "://")[1]
-	}
-	new_s := strings.Replace(s, "/", "-", -1)
-
-	return fmt.Sprintf("%v_%v", new_s, m.Version)
-}
-
-func NewMicroserviceDefinition(owner string, label string, description string, specRef string, version string, arch string, sharable string,
-	download_url string, match_hardware HardwareMatch, user_inputs []UserInput, workloads []WorkloadDeployment, last_updated string) *MicroserviceDefinition {
-	return &MicroserviceDefinition{
-		Owner:         owner,
-		Label:         label,
-		Description:   description,
-		SpecRef:       specRef,
-		Version:       version,
-		Arch:          arch,
-		Sharable:      sharable,
-		DownloadURL:   download_url,
-		MatchHardware: match_hardware,
-		UserInputs:    user_inputs,
-		Workloads:     workloads,
-		LastUpdated:   last_updated,
-	}
+func (w MicroserviceDefinition) ShortString() string {
+	return fmt.Sprintf("Owner: %v, "+
+		"Label: %v, "+
+		"Description: %v, "+
+		"SpecRef: %v, "+
+		"Version: %v, "+
+		"Arch: %v, "+
+		"Archived: %v, "+
+		"Name: %v, "+
+		"UpgradeVersionRange: %v, "+
+		"AutoUpgrade: %v, "+
+		"ActiveUpgrade: %v, "+
+		"UpgradeStartTime: %v, "+
+		"UpgradeMsUnregisteredTime: %v, "+
+		"UpgradeAgreementsClearedTime: %v, "+
+		"UpgradeExecutionStartTime: %v, "+
+		"UpgradeMsReregisteredTime: %v, "+
+		"UpgradeFailedTime: %v, "+
+		"UngradeFailureReason: %v, "+
+		"UngradeFailureDescription: %v, "+
+		"UpgradeNewMsId: %v, "+
+		"MetadataHash: %v",
+		w.Owner, w.Label, w.Description, w.SpecRef, w.Version, w.Arch,
+		w.Archived, w.Name, w.UpgradeVersionRange, w.AutoUpgrade, w.ActiveUpgrade,
+		w.UpgradeStartTime, w.UpgradeMsUnregisteredTime, w.UpgradeAgreementsClearedTime, w.UpgradeExecutionStartTime, w.UpgradeMsReregisteredTime,
+		w.UpgradeFailedTime, w.UngradeFailureReason, w.UngradeFailureDescription, w.UpgradeNewMsId, w.MetadataHash)
 }
 
 // save the microservice record. update if it already exists in the db
 func SaveOrUpdateMicroserviceDef(db *bolt.DB, msdef *MicroserviceDefinition) error {
-	key := msdef.GetKey()
-
 	writeErr := db.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists([]byte(MICROSERVICE_DEFINITIONS))
-		if err != nil {
+		if bucket, err := tx.CreateBucketIfNotExists([]byte(MICROSERVICE_DEFINITIONS)); err != nil {
 			return err
-		}
+		} else if nextKey, err := bucket.NextSequence(); err != nil {
+			return fmt.Errorf("Unable to get sequence key for new msdef %v. Error: %v", msdef, err)
+		} else {
+			strKey := strconv.FormatUint(nextKey, 10)
+			msdef.Id = strKey
 
-		serial, err := json.Marshal(*msdef)
-		if err != nil {
-			return fmt.Errorf("Failed to serialize microservice: %v. Error: %v", *msdef, err)
+			glog.V(5).Infof("saving msdef %v to db", *msdef)
+
+			serial, err := json.Marshal(*msdef)
+			if err != nil {
+				return fmt.Errorf("Failed to serialize microservice: %v. Error: %v", *msdef, err)
+			}
+			return bucket.Put([]byte(strKey), serial)
 		}
-		return bucket.Put([]byte(key), serial)
 	})
 
 	return writeErr
 }
 
-// find the microservice definition from the db
-func FindMicroserviceDef(db *bolt.DB, url string, version string) (*MicroserviceDefinition, error) {
-	var pms *MicroserviceDefinition
-	pms = nil
-
-	// fetch microservice instances
-	readErr := db.View(func(tx *bolt.Tx) error {
-
-		if b := tx.Bucket([]byte(MICROSERVICE_DEFINITIONS)); b != nil {
-			b.ForEach(func(k, v []byte) error {
-
-				var ms MicroserviceDefinition
-
-				if err := json.Unmarshal(v, &ms); err != nil {
-					glog.Errorf("Unable to deserialize microservice db record: %v", v)
-				} else if ms.SpecRef == url && ms.Version == version {
-					pms = &ms
-					return nil
-				}
-				return nil
-			})
-		}
-
-		return nil // end the transaction
-	})
-
-	if readErr != nil {
-		return nil, readErr
-	} else {
-		return pms, nil
-	}
+// find the unarchived microservice definitions for the given url
+func FindUnarchivedMicroserviceDefs(db *bolt.DB, url string) ([]MicroserviceDefinition, error) {
+	return FindMicroserviceDefs(db, []MSFilter{UnarchivedMSFilter(), UrlMSFilter(url)})
 }
 
 // find the microservice definition from the db
@@ -214,15 +223,24 @@ func AllMSFilter() MSFilter {
 	return func(e MicroserviceDefinition) bool { return true }
 }
 
+// filter for all unarchived msdefs
+func UnarchivedMSFilter() MSFilter {
+	return func(e MicroserviceDefinition) bool { return !e.Archived }
+}
+
+// filter for all archived msdefs
+func ArchivedMSFilter() MSFilter {
+	return func(e MicroserviceDefinition) bool { return e.Archived }
+}
+
+// filter on the url + version
+func UrlVersionMSFilter(spec_url string, version string) MSFilter {
+	return func(e MicroserviceDefinition) bool { return (e.SpecRef == spec_url && e.Version == version) }
+}
+
 // filter for all the microservice defs for the given url
-func AllDefsForUrlMSFilter(spec_url string) MSFilter {
-	return func(e MicroserviceDefinition) bool {
-		if e.SpecRef == spec_url {
-			return true
-		} else {
-			return false
-		}
-	}
+func UrlMSFilter(spec_url string) MSFilter {
+	return func(e MicroserviceDefinition) bool { return (e.SpecRef == spec_url) }
 }
 
 // find the microservice instance from the db
@@ -265,6 +283,151 @@ func FindMicroserviceDefs(db *bolt.DB, filters []MSFilter) ([]MicroserviceDefini
 	}
 }
 
+// set the msdef to archived
+func MsDefArchived(db *bolt.DB, key string) (*MicroserviceDefinition, error) {
+	return microserviceDefStateUpdate(db, key, func(c MicroserviceDefinition) *MicroserviceDefinition {
+		c.Archived = true
+		return &c
+	})
+}
+
+// set the msdef to un-archived
+func MsDefUnarchived(db *bolt.DB, key string) (*MicroserviceDefinition, error) {
+	return microserviceDefStateUpdate(db, key, func(c MicroserviceDefinition) *MicroserviceDefinition {
+		c.Archived = false
+		return &c
+	})
+}
+
+func MSDefUpgradeStarted(db *bolt.DB, key string) (*MicroserviceDefinition, error) {
+	return microserviceDefStateUpdate(db, key, func(c MicroserviceDefinition) *MicroserviceDefinition {
+		c.UpgradeStartTime = uint64(time.Now().Unix())
+		return &c
+	})
+}
+
+func MSDefUpgradeMsUnregistered(db *bolt.DB, key string) (*MicroserviceDefinition, error) {
+	return microserviceDefStateUpdate(db, key, func(c MicroserviceDefinition) *MicroserviceDefinition {
+		c.UpgradeMsUnregisteredTime = uint64(time.Now().Unix())
+		return &c
+	})
+}
+
+func MsDefUpgradeAgreementsCleared(db *bolt.DB, key string) (*MicroserviceDefinition, error) {
+	return microserviceDefStateUpdate(db, key, func(c MicroserviceDefinition) *MicroserviceDefinition {
+		c.UpgradeAgreementsClearedTime = uint64(time.Now().Unix())
+		return &c
+	})
+}
+
+func MSDefUpgradeExecutionStarted(db *bolt.DB, key string) (*MicroserviceDefinition, error) {
+	return microserviceDefStateUpdate(db, key, func(c MicroserviceDefinition) *MicroserviceDefinition {
+		c.UpgradeExecutionStartTime = uint64(time.Now().Unix())
+		return &c
+	})
+}
+
+func MSDefUpgradeMsReregistered(db *bolt.DB, key string) (*MicroserviceDefinition, error) {
+	return microserviceDefStateUpdate(db, key, func(c MicroserviceDefinition) *MicroserviceDefinition {
+		c.UpgradeMsReregisteredTime = uint64(time.Now().Unix())
+		return &c
+	})
+}
+
+func MSDefUpgradeFailed(db *bolt.DB, key string, reason uint64, reasonString string) (*MicroserviceDefinition, error) {
+	return microserviceDefStateUpdate(db, key, func(c MicroserviceDefinition) *MicroserviceDefinition {
+		c.UpgradeFailedTime = uint64(time.Now().Unix())
+		c.UngradeFailureReason = reason
+		c.UngradeFailureDescription = reasonString
+		return &c
+	})
+}
+
+func MSDefUpgradeNewMsId(db *bolt.DB, key string, new_id string) (*MicroserviceDefinition, error) {
+	return microserviceDefStateUpdate(db, key, func(c MicroserviceDefinition) *MicroserviceDefinition {
+		c.UpgradeNewMsId = new_id
+		return &c
+	})
+}
+
+// update the micorserive definition
+func microserviceDefStateUpdate(db *bolt.DB, key string, fn func(MicroserviceDefinition) *MicroserviceDefinition) (*MicroserviceDefinition, error) {
+
+	if ms, err := FindMicroserviceDefWithKey(db, key); err != nil {
+		return nil, err
+	} else if ms == nil {
+		return nil, fmt.Errorf("No record with key: %v", key)
+	} else {
+		// run this single contract through provided update function and persist it
+		updated := fn(*ms)
+		return updated, persistUpdatedMicroserviceDef(db, key, updated)
+	}
+}
+
+// does whole-member replacements of values that are legal to change
+func persistUpdatedMicroserviceDef(db *bolt.DB, key string, update *MicroserviceDefinition) error {
+	return db.Update(func(tx *bolt.Tx) error {
+		if b, err := tx.CreateBucketIfNotExists([]byte(MICROSERVICE_DEFINITIONS)); err != nil {
+			return err
+		} else {
+			current := b.Get([]byte(key))
+			var mod MicroserviceDefinition
+
+			if current == nil {
+				return fmt.Errorf("No microservice with given key available to update: %v", key)
+			} else if err := json.Unmarshal(current, &mod); err != nil {
+				return fmt.Errorf("Failed to unmarshal microservice DB data: %v. Error: %v", string(current), err)
+			} else {
+
+				// This code is running in a database transaction. Within the tx, the current record is
+				// read and then updated according to the updates within the input update record. It is critical
+				// to check for correct data transitions within the tx.
+				if mod.UpgradeStartTime == 0 { // 1 transition from zero to non-zero
+					mod.UpgradeStartTime = update.UpgradeStartTime
+				}
+				if mod.UpgradeMsUnregisteredTime == 0 {
+					mod.UpgradeMsUnregisteredTime = update.UpgradeMsUnregisteredTime
+				}
+				if mod.UpgradeAgreementsClearedTime == 0 {
+					mod.UpgradeAgreementsClearedTime = update.UpgradeAgreementsClearedTime
+				}
+				if mod.UpgradeExecutionStartTime == 0 {
+					mod.UpgradeExecutionStartTime = update.UpgradeExecutionStartTime
+				}
+				if mod.UpgradeMsReregisteredTime == 0 {
+					mod.UpgradeMsReregisteredTime = update.UpgradeMsReregisteredTime
+				}
+				if mod.UpgradeFailedTime == 0 {
+					mod.UpgradeFailedTime = update.UpgradeFailedTime
+				}
+				if mod.UngradeFailureReason == 0 {
+					mod.UngradeFailureReason = update.UngradeFailureReason
+				}
+				if mod.UngradeFailureDescription == "" {
+					mod.UngradeFailureDescription = update.UngradeFailureDescription
+				}
+
+				if mod.Archived != update.Archived {
+					mod.Archived = update.Archived
+				}
+
+				if mod.UpgradeNewMsId != update.UpgradeNewMsId {
+					mod.UpgradeNewMsId = update.UpgradeNewMsId
+				}
+
+				if serialized, err := json.Marshal(mod); err != nil {
+					return fmt.Errorf("Failed to serialize contract record: %v. Error: %v", mod, err)
+				} else if err := b.Put([]byte(key), serialized); err != nil {
+					return fmt.Errorf("Failed to write microservice definition %v version %v key %v. Error: %v", mod.SpecRef, mod.Version, key, err)
+				} else {
+					glog.V(2).Infof("Succeeded updating microservice definition record to %v", mod.ShortString())
+					return nil
+				}
+			}
+		}
+	})
+}
+
 type MicroserviceInstance struct {
 	SpecRef              string   `json:"ref_url"`
 	Version              string   `json:"version"`
@@ -275,7 +438,9 @@ type MicroserviceInstance struct {
 	ExecutionStartTime   uint64   `json:"execution_start_time"`
 	ExecutionFailureCode uint     `json:"execution_failure_code"`
 	ExecutionFailureDesc string   `json:"execution_failure_desc"`
+	CleanupStartTime     uint64   `json:"cleanup_start_time"`
 	AssociatedAgreements []string `json:"associated_agreements"`
+	MicroserviceDefId    string   `json:"microservicedef_id"`
 }
 
 func (w MicroserviceInstance) String() string {
@@ -288,8 +453,12 @@ func (w MicroserviceInstance) String() string {
 		"ExecutionStartTime: %v, "+
 		"ExecutionFailureCode: %v, "+
 		"ExecutionFailureDesc: %v, "+
-		"AssociatedAgreements: %v",
-		w.SpecRef, w.Version, w.Arch, w.InstanceId, w.Archived, w.InstanceCreationTime, w.ExecutionStartTime, w.ExecutionFailureCode, w.ExecutionFailureDesc, w.AssociatedAgreements)
+		"CleanupStartTime: %v, "+
+		"AssociatedAgreements: %v, "+
+		"MicroserviceDefId: %v",
+		w.SpecRef, w.Version, w.Arch, w.InstanceId, w.Archived, w.InstanceCreationTime,
+		w.ExecutionStartTime, w.ExecutionFailureCode, w.ExecutionFailureDesc,
+		w.CleanupStartTime, w.AssociatedAgreements, w.MicroserviceDefId)
 }
 
 // create a unique name for a microservice def
@@ -305,8 +474,20 @@ func (m MicroserviceInstance) GetKey() string {
 	return fmt.Sprintf("%v_%v_%v", new_s, m.Version, m.InstanceId)
 }
 
+// Check if this microservice instance has workload or not.
+// If it does not have workload, then there is no need to do the execution
+func (m MicroserviceInstance) HasWorkload(db *bolt.DB) (bool, error) {
+	if msdef, err := FindMicroserviceDefWithKey(db, m.MicroserviceDefId); err != nil {
+		return false, err
+	} else if msdef.Workloads != nil && len(msdef.Workloads) > 0 {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 // create a new microservice instance and save it to db.
-func NewMicroserviceInstance(db *bolt.DB, ref_url string, version string) (*MicroserviceInstance, error) {
+func NewMicroserviceInstance(db *bolt.DB, ref_url string, version string, msdef_id string) (*MicroserviceInstance, error) {
 
 	if ref_url == "" || version == "" {
 		return nil, errors.New("Microservice ref url id or version is empty, cannot persist")
@@ -330,7 +511,9 @@ func NewMicroserviceInstance(db *bolt.DB, ref_url string, version string) (*Micr
 		ExecutionStartTime:   0, // execution started and running
 		ExecutionFailureCode: 0,
 		ExecutionFailureDesc: "",
+		CleanupStartTime:     0,
 		AssociatedAgreements: make([]string, 0),
+		MicroserviceDefId:    msdef_id,
 	}
 
 	return new_inst, db.Update(func(tx *bolt.Tx) error {
@@ -477,13 +660,13 @@ func FindMicroserviceInstances(db *bolt.DB, filters []MIFilter) ([]MicroserviceI
 // set microservice instance state to execution started or failed
 func UpdateMSInstanceExecutionState(db *bolt.DB, key string, started bool, failure_code uint, failure_desc string) (*MicroserviceInstance, error) {
 	if started {
-		return microserviceInstancetStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
+		return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
 			c.ExecutionStartTime = uint64(time.Now().Unix())
 			return &c
 		})
 
 	} else {
-		return microserviceInstancetStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
+		return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
 			c.ExecutionFailureCode = failure_code
 			c.ExecutionFailureDesc = failure_desc
 			return &c
@@ -493,7 +676,7 @@ func UpdateMSInstanceExecutionState(db *bolt.DB, key string, started bool, failu
 
 // add or delete an associated agreement id to/from the microservice instance in the db
 func UpdateMSInstanceAssociaedAgreements(db *bolt.DB, key string, add bool, agreement_id string) (*MicroserviceInstance, error) {
-	return microserviceInstancetStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
+	return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
 		if c.AssociatedAgreements == nil {
 			c.AssociatedAgreements = make([]string, 0)
 		} else {
@@ -517,14 +700,21 @@ func UpdateMSInstanceAssociaedAgreements(db *bolt.DB, key string, add bool, agre
 }
 
 func ArchiveMicroserviceInstance(db *bolt.DB, key string) (*MicroserviceInstance, error) {
-	return microserviceInstancetStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
+	return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
 		c.Archived = true
 		return &c
 	})
 }
 
+func MicroserviceInstanceCleanupStarted(db *bolt.DB, key string) (*MicroserviceInstance, error) {
+	return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
+		c.CleanupStartTime = uint64(time.Now().Unix())
+		return &c
+	})
+}
+
 // update the micorserive instance
-func microserviceInstancetStateUpdate(db *bolt.DB, key string, fn func(MicroserviceInstance) *MicroserviceInstance) (*MicroserviceInstance, error) {
+func microserviceInstanceStateUpdate(db *bolt.DB, key string, fn func(MicroserviceInstance) *MicroserviceInstance) (*MicroserviceInstance, error) {
 
 	if ms, err := FindMicroserviceInstanceWithKey(db, key); err != nil {
 		return nil, err
@@ -537,7 +727,7 @@ func microserviceInstancetStateUpdate(db *bolt.DB, key string, fn func(Microserv
 	}
 }
 
-// does whole-member replacements of values that are legal to change during the course of a contract's life
+// does whole-member replacements of values that are legal to change
 func persistUpdatedMicroserviceInstance(db *bolt.DB, key string, update *MicroserviceInstance) error {
 	return db.Update(func(tx *bolt.Tx) error {
 		if b, err := tx.CreateBucketIfNotExists([]byte(MICROSERVICE_INSTANCES)); err != nil {
@@ -570,6 +760,9 @@ func persistUpdatedMicroserviceInstance(db *bolt.DB, key string, update *Microse
 				if mod.ExecutionFailureDesc == "" {
 					mod.ExecutionFailureDesc = update.ExecutionFailureDesc
 				}
+				if mod.CleanupStartTime == 0 {
+					mod.CleanupStartTime = update.CleanupStartTime
+				}
 
 				mod.AssociatedAgreements = update.AssociatedAgreements
 
@@ -588,7 +781,7 @@ func persistUpdatedMicroserviceInstance(db *bolt.DB, key string, update *Microse
 
 // delete associated agreement id from all the microservice instances
 func DeleteAsscAgmtsFromMSInstances(db *bolt.DB, agreement_id string) error {
-	if ms_instances, err := FindMicroserviceInstances(db, []MIFilter{AllMIFilter(), UnarchivedMIFilter()}); err != nil {
+	if ms_instances, err := FindMicroserviceInstances(db, []MIFilter{UnarchivedMIFilter()}); err != nil {
 		return fmt.Errorf("Error retrieving all microservice instances from database, error: %v", err)
 	} else if ms_instances != nil {
 		for _, msi := range ms_instances {

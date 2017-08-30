@@ -213,9 +213,8 @@ func (w *AgreementWorker) start() {
 
 				if newPolicy, err := policy.ReadPolicyFile(cmd.PolicyFile); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to read policy file %v into memory, error: %v", cmd.PolicyFile, err)))
-				} else if err := w.pm.AddPolicy(newPolicy); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("policy name is a duplicate, not added, error: %v", err)))
 				} else {
+					w.pm.UpdatePolicy(newPolicy)
 
 					// Publish what we have for the world to see
 					if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {

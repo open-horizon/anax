@@ -752,6 +752,7 @@ func GetMicroservice(mURL string, mVersion string, mArch string, exURL string, i
 	}
 }
 
+
 // The purpose of this function is to verify that a given workload URL, version and architecture, is defined in the exchange
 // as well as all of its API spec dependencies. This function also returns the API dependencies converted into
 // policy types so that the caller can use those types to do policy compatibility checks if they want to.
@@ -822,7 +823,6 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 			requestBody = bytes.NewBuffer(jsonBytes)
 		}
 	}
-
 	if req, err := http.NewRequest(method, url, requestBody); err != nil {
 		return errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed creating HTTP request, error: %v", method, url, requestBody, err)), nil
 	} else {
@@ -836,6 +836,7 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 		}
 		glog.V(5).Infof(rpclogString(fmt.Sprintf("Invoking exchange with headers: %v", req.Header)))
 		// If the exchange is down, this call will return an error.
+
 		if httpResp, err := httpClient.Do(req); err != nil {
 			if isTimeout(err) {
 				return nil, errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, url, requestBody, err))
