@@ -127,7 +127,7 @@ func (c *CSProtocolHandler) PersistProposal(p abstractprotocol.Proposal, r abstr
 		glog.Errorf(PPHlogString(fmt.Sprintf("unable to cast reply %v to %v Proposal Reply, is %T", r, c.Name, r)))
 	} else if proposal, ok := p.(*citizenscientist.CSProposal); !ok {
 		glog.Errorf(PPHlogString(fmt.Sprintf("unable to cast proposal %v to %v Proposal, is %T", p, c.Name, p)))
-	} else if _, err := persistence.NewEstablishedAgreement(c.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, c.Name(), proposal.Version(), tcPolicy.APISpecs[0].SpecRef, reply.Signature, proposal.Address, reply.BlockchainType, reply.BlockchainName); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(c.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, c.Name(), proposal.Version(), (&tcPolicy.APISpecs).AsStringArray(), reply.Signature, proposal.Address, reply.BlockchainType, reply.BlockchainName); err != nil {
 		glog.Errorf(PPHlogString(fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId(), err)))
 	}
 }

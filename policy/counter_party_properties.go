@@ -209,8 +209,18 @@ func (self *RequiredProperty) verify(cop *map[string]interface{}) error {
 
 // This function will merge 2 RequiredProperty expressions together by ANDing them.
 func (self *RequiredProperty) Merge(other *RequiredProperty) *RequiredProperty {
-	// Setup the new structure to hold the merged expressions.
+
 	merged_rp := new(RequiredProperty)
+	// Only merge if we need to
+	if len(*self) == 0 && len(*other) == 0 {
+		return merged_rp
+	} else if len(*self) == 0 {
+		return other
+	} else if len(*other) == 0 {
+		return self
+	}
+
+	// Setup the new structure to hold the merged expressions.
 	(*merged_rp) = make(map[string]interface{})
 	(*merged_rp)["and"] = make([]interface{}, 0, 10)
 

@@ -252,7 +252,6 @@ func (p *ProtocolHandler) InitBlockchain(ev *events.AccountFundedMessage) error 
 // In V2 that is omitted so that the blockchain can be negotiated first.
 func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 	producerPolicy *policy.Policy,
-	originalProducerPolicy string,
 	consumerPolicy *policy.Policy,
 	myId string,
 	messageTarget interface{},
@@ -267,7 +266,7 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 	// Create a proposal and augment it with the additional data we need in this protocol.
 	var newProposal *CSProposal
 
-	if bp, err := abstractprotocol.CreateProposal(p, agreementId, producerPolicy, originalProducerPolicy, consumerPolicy, protocolVersion, myId, workload, defaultPW, defaultNoData); err != nil {
+	if bp, err := abstractprotocol.CreateProposal(p, agreementId, producerPolicy, consumerPolicy, protocolVersion, myId, workload, defaultPW, defaultNoData); err != nil {
 		return nil, err
 	} else if protocolVersion == 2 {
 		newProposal = NewCSProposal(bp, "")
@@ -649,7 +648,7 @@ func (p *ProtocolHandler) RecordAgreement(newProposal abstractprotocol.Proposal,
 
 }
 
-func (p *ProtocolHandler) TerminateAgreement(policy *policy.Policy,
+func (p *ProtocolHandler) TerminateAgreement(policies []policy.Policy,
 	counterParty string,
 	agreementId string,
 	reason uint,
@@ -661,7 +660,7 @@ func (p *ProtocolHandler) TerminateAgreement(policy *policy.Policy,
 	} else {
 
 		// Tell the policy manager that we're terminating this agreement
-		if cerr := abstractprotocol.TerminateAgreement(p, policy, agreementId, reason); cerr != nil {
+		if cerr := abstractprotocol.TerminateAgreement(p, policies, agreementId, reason); cerr != nil {
 			glog.Warningf(fmt.Sprintf("Unable to cancel agreement %v in PM %v", agreementId, cerr))
 		}
 

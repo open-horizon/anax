@@ -249,3 +249,64 @@ func TestRanges4(t *testing.T) {
 	}
 
 }
+
+// This series of tests verifies that Is_within_range correctly detects that a version
+// expression is within a version range that includes INFINITY.
+func TestRanges5(t *testing.T) {
+	if c, err := Version_Expression_Factory("[1,INFINITY)"); c == nil {
+		t.Errorf("Factory returned nil, but should not. Error: %v \n", err)
+	} else if inrange, err := c.Is_within_range("1"); err != nil || !inrange {
+		t.Errorf("Input is in range. Error: %v \n", err)
+	} else if inrange, err := c.Is_within_range("1.5.0"); err != nil || !inrange {
+		t.Errorf("Input is in range. Error: %v \n", err)
+	} else if inrange, err := c.Is_within_range("2.5.0"); err != nil || !inrange {
+		t.Errorf("Input is in range. Error: %v \n", err)
+	} else if inrange, err := c.Is_within_range("1.5.1"); err != nil || !inrange {
+		t.Errorf("Input is in range. Error: %v \n", err)
+	}
+
+}
+
+// This series of tests verifies that IsVersionExpression correctly detects that a version
+// expression is valid.
+func TestVersionExpressionSuccess(t *testing.T) {
+	if exp := IsVersionExpression("[1.2.3,INFINITY)"); !exp {
+		t.Errorf("Input is a version expression\n")
+	} else if exp := IsVersionExpression("[1.2.3,4.5.6)"); !exp {
+		t.Errorf("Input is a version expression\n")
+	} else if exp := IsVersionExpression("[1.2.3,4.5.6]"); !exp {
+		t.Errorf("Input is a version expression\n")
+	} else if exp := IsVersionExpression("(1.2.3,INFINITY)"); !exp {
+		t.Errorf("Input is a version expression\n")
+	} else if exp := IsVersionExpression("(1.2.3,4.5.6]"); !exp {
+		t.Errorf("Input is a version expression\n")
+	}
+}
+
+// This series of tests verifies that IsVersionExpression correctly detects that a version
+// expression is NOT valid.
+func TestVersionExpressionFailure(t *testing.T) {
+	if exp := IsVersionExpression("1"); exp {
+		t.Errorf("Input is NOT a version expression\n")
+	} else if exp := IsVersionExpression("1.2"); exp {
+		t.Errorf("Input is a NOT version expression\n")
+	} else if exp := IsVersionExpression("1.2.3"); exp {
+		t.Errorf("Input is NOT a version expression\n")
+	} else if exp := IsVersionExpression("[1.2)"); exp {
+		t.Errorf("Input is NOT a version expression\n")
+	} else if exp := IsVersionExpression("1,1"); exp {
+		t.Errorf("Input is NOT a version expression\n")
+	} else if exp := IsVersionExpression("(1"); exp {
+		t.Errorf("Input is NOT a version expression\n")
+	} else if exp := IsVersionExpression("(1,"); exp {
+		t.Errorf("Input is NOT a version expression\n")
+	} else if exp := IsVersionExpression("a"); exp {
+		t.Errorf("Input is NOT a version expression\n")
+	} else if exp := IsVersionExpression("[a,2]"); exp {
+		t.Errorf("Input is NOT a version expression\n")
+	} else if exp := IsVersionExpression("(a,b)"); exp {
+		t.Errorf("Input is NOT a version expression\n")
+	} else if exp := IsVersionExpression("(1.2.3,a]"); exp {
+		t.Errorf("Input is NOT a version expression\n")
+	}
+}

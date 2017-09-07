@@ -19,7 +19,7 @@ const DEVMODE = "devmode"
 // This struct is for persisting agreements
 type EstablishedAgreement struct {
 	Name                            string                   `json:"name"`
-	SensorUrl                       string                   `json:"sensor_url"`
+	SensorUrl                       []string                 `json:"sensor_url"`
 	Archived                        bool                     `json:"archived"`
 	CurrentAgreementId              string                   `json:"current_agreement_id"`
 	ConsumerId                      string                   `json:"consumer_id"`
@@ -104,7 +104,7 @@ func (c ServiceConfig) String() string {
 	return fmt.Sprintf("Config: %v, HostConfig: %v", c.Config, c.HostConfig)
 }
 
-func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consumerId string, proposal string, protocol string, protocolVersion int, sensorUrl string, signature string, address string, bcType string, bcName string) (*EstablishedAgreement, error) {
+func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consumerId string, proposal string, protocol string, protocolVersion int, sensorUrl []string, signature string, address string, bcType string, bcName string) (*EstablishedAgreement, error) {
 
 	if name == "" || agreementId == "" || consumerId == "" || proposal == "" || protocol == "" || protocolVersion == 0 {
 		return nil, errors.New("Agreement id, consumer id, proposal, protocol, or protocol version are empty, cannot persist")

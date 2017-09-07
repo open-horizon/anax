@@ -564,7 +564,7 @@ curl -s http://localhost/agreement |jq '.'
     "active": [
       {
         "name": "Policy for netspeed merged with netspeed arm",
-        "sensor_url": "https://bluehorizon.network/documentation/netspeed-device-api",
+        "sensor_url": ["https://bluehorizon.network/documentation/netspeed-device-api"],
         "archived": false,
         "current_agreement_id": "7539aad7bf9269c97bf6285b173b50f016dc13dbe722a1e7cedcfec8f23c528f",
         "consumer_id": "stg-agbot-lon02-01.horizon.hovitos.engineering",

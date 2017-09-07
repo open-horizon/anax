@@ -170,7 +170,7 @@ func (a *CSAgreementWorker) start(work chan AgreementWork, random *rand.Rand) {
 				// Update state in exchange
 				if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
 					glog.Errorf(logstring(a.workerID, fmt.Sprintf("error demarshalling policy from agreement %v, error: %v", wi.AgreementId, err)))
-				} else if err := a.protocolHandler.RecordConsumerAgreementState(wi.AgreementId, pol.APISpecs[0].SpecRef, "Finalized Agreement", a.workerID); err != nil {
+				} else if err := a.protocolHandler.RecordConsumerAgreementState(wi.AgreementId, pol, "Finalized Agreement", a.workerID); err != nil {
 					glog.Errorf(logstring(a.workerID, fmt.Sprintf("error setting agreement %v finalized state in exchange: %v", wi.AgreementId, err)))
 				}
 			}

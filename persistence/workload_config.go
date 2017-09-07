@@ -15,16 +15,16 @@ import (
 const WORKLOAD_CONFIG = "workload_config"
 
 type WorkloadConfig struct {
-	WorkloadURL string                 `json:"workload_url"`
-	Version     string                 `json:"version"`
-	Variables   map[string]interface{} `json:"variables"`
+	WorkloadURL       string                 `json:"workload_url"`
+	VersionExpression string                 `json:"version"` // This is a version range
+	Variables         map[string]interface{} `json:"variables"`
 }
 
 func (w WorkloadConfig) String() string {
 	return fmt.Sprintf("WorkloadURL: %v, "+
-		"Version: %v, "+
+		"VersionExpression: %v, "+
 		"Variables: %v",
-		w.WorkloadURL, w.Version, w.Variables)
+		w.WorkloadURL, w.VersionExpression, w.Variables)
 }
 
 func (w *WorkloadConfig) GetKey() string {
@@ -34,7 +34,7 @@ func (w *WorkloadConfig) GetKey() string {
 
 	var sb bytes.Buffer
 	sb.WriteString(catNull(w.WorkloadURL))
-	sb.WriteString(w.Version)
+	sb.WriteString(w.VersionExpression)
 
 	return sb.String()
 }
@@ -53,9 +53,9 @@ func NewWorkloadConfig(db *bolt.DB, workloadURL string, version string, variable
 	}
 
 	new_cfg := &WorkloadConfig{
-		WorkloadURL: workloadURL,
-		Version:     version,
-		Variables:   variables,
+		WorkloadURL:       workloadURL,
+		VersionExpression: version,
+		Variables:         variables,
 	}
 
 	return new_cfg, db.Update(func(tx *bolt.Tx) error {
@@ -86,7 +86,7 @@ func FindWorkloadConfig(db *bolt.DB, url string, version string) (*WorkloadConfi
 
 				if err := json.Unmarshal(v, &w); err != nil {
 					glog.Errorf("Unable to deserialize workload config db record: %v", v)
-				} else if w.WorkloadURL == url && w.Version == version {
+				} else if w.WorkloadURL == url && w.VersionExpression == version {
 					cfg = &w
 					return nil
 				}
@@ -201,7 +201,11 @@ func (s WorkloadConfigByVersion) Swap(i, j int) {
 }
 
 func (s WorkloadConfigByVersion) Less(i, j int) bool {
-	return strings.Compare(s[i].Version, s[j].Version) == -1
+
+	// Just compare the starting version in the two ranges
+	first := s[i].VersionExpression[1:strings.Index(s[i].VersionExpression,",")]
+	second := s[j].VersionExpression[1:strings.Index(s[j].VersionExpression,",")]
+	return strings.Compare(first, second) == -1
 }
 
 // Grab configured userInput variables for the workload and pass them into the

@@ -562,14 +562,23 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			// verify with the exchange to make sure the service exists
-			e_msdef, err := exchange.GetMicroservice(*service.SensorUrl, *service.SensorVersion, cutil.ArchString(), a.Config.Edge.ExchangeURL, existingDevice.Id, existingDevice.Token)
+			// convert the sensor version to a version expression
+			vExp, err := policy.Version_Expression_Factory(*service.SensorVersion)
 			if err != nil {
-				glog.Errorf("Unable to find the microservice definition from the exchange: %v", err)
+				glog.Errorf("Unable to convert %v to a version expression, error %v", *service.SensorVersion, err)
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "sensor_version", Error: fmt.Sprintf("sensor_version %v cannot be converted to a version expression, error %v", *service.SensorVersion, err)})
+				return
+			}
+
+			// verify with the exchange to make sure the service exists
+			e_msdef, err := exchange.GetMicroservice(*service.SensorUrl, vExp.Get_expression(), cutil.ArchString(), a.Config.Edge.ExchangeURL, existingDevice.Id, existingDevice.Token)
+			if err != nil || e_msdef == nil {
+				glog.Errorf("Unable to find the microservice definition in the exchange: %v", err)
 				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Unable to find the microservice definition for '%v' on the exchange. Please verify sensor_url and sensor_version.", *service.SensorName)})
 				return
 			}
 			msdef = microservice.ConvertToPersistent(e_msdef)
+			*service.SensorVersion = msdef.Version
 
 			// check if the microservice has been registered or not (currently only support one microservice per workload)
 			if pms, err := persistence.FindMicroserviceDefs(a.db, []persistence.MSFilter{persistence.AllDefsForUrlMSFilter(*service.SensorUrl)}); err != nil {
@@ -1374,7 +1383,7 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		glog.V(5).Infof("WorkloadConfig GET returns: %v", serial)
+		glog.V(5).Infof("WorkloadConfig GET returns: %v", string(serial))
 
 		w.Header().Set("Content-Type", "application/json")
 		if _, err := w.Write(serial); err != nil {
@@ -1418,14 +1427,22 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 			glog.Errorf("WorkloadConfig workload_version is empty: %v", cfg)
 			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "workload_version", Error: "not specified"})
 			return
-		} else if !policy.IsVersionString(cfg.Version) {
-			glog.Errorf("WorkloadConfig workload_version is not a valid version string: %v", cfg)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "workload_version", Error: fmt.Sprintf("workload_version %v is not a valid version string", cfg.Version)})
+		} else if !policy.IsVersionString(cfg.Version) && !policy.IsVersionExpression(cfg.Version) {
+			glog.Errorf("WorkloadConfig workload_version is not a valid version string or expression: %v", cfg)
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "workload_version", Error: fmt.Sprintf("workload_version %v is not a valid version string or expression", cfg.Version)})
 			return
 		}
 
-		// Reject the POST if there is already a config for this workload and version
-		existingCfg, err := persistence.FindWorkloadConfig(a.db, cfg.WorkloadURL, cfg.Version)
+		// Convert the input version to a full version expression if it is not already a full expression.
+		vExp, verr := policy.Version_Expression_Factory(cfg.Version)
+		if verr != nil {
+			glog.Errorf("WorkloadConfig workload_version %v error converting to full version expression, error: %v", cfg.Version, verr)
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "workload_version", Error: fmt.Sprintf("workload_version %v error converting to full version expression, error: %v", cfg.Version, verr)})
+			return
+		}
+
+		// Reject the POST if there is already a config for this workload and version range
+		existingCfg, err := persistence.FindWorkloadConfig(a.db, cfg.WorkloadURL, vExp.Get_expression())
 		if err != nil {
 			glog.Error(err)
 			http.Error(w, fmt.Sprintf("Internal server error: %v", err), http.StatusInternalServerError)
@@ -1437,10 +1454,10 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Get the workload metadata from the exchange and verify the userInput against the variables in the POST body.
-		workloadDef, err := exchange.GetWorkload(cfg.WorkloadURL, cfg.Version, cutil.ArchString(), a.Config.Edge.ExchangeURL, existingDevice.Id, existingDevice.Token)
-		if err != nil {
-			glog.Errorf("Unable to find the workload definition from the exchange: %v", err)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: "Unable to find the workload definition from the exchange."})
+		workloadDef, err := exchange.GetWorkload(cfg.WorkloadURL, vExp.Get_expression(), cutil.ArchString(), a.Config.Edge.ExchangeURL, existingDevice.Id, existingDevice.Token)
+		if err != nil || workloadDef == nil {
+			glog.Errorf("Unable to find the workload definition using version %v in the exchange: %v", vExp.Get_expression(), err)
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Unable to find the workload definition using version %v in the exchange.",vExp.Get_expression())})
 			return
 		}
 
@@ -1510,7 +1527,7 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 		// Persist the workload configuration to the database
 		glog.V(5).Infof("WorkloadConfig persisting variables: %v", cfg.Variables)
 
-		_, err = persistence.NewWorkloadConfig(a.db, cfg.WorkloadURL, cfg.Version, cfg.Variables)
+		_, err = persistence.NewWorkloadConfig(a.db, cfg.WorkloadURL, vExp.Get_expression(), cfg.Variables)
 		if err != nil {
 			glog.Error(err)
 			http.Error(w, fmt.Sprintf("Internal server error: %v", err), http.StatusInternalServerError)
@@ -1545,14 +1562,22 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 			glog.Errorf("WorkloadConfig workload_version is empty: %v", cfg)
 			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "workload_version", Error: "not specified"})
 			return
-		} else if !policy.IsVersionString(cfg.Version) {
+		} else if !policy.IsVersionString(cfg.Version) && !policy.IsVersionExpression(cfg.Version) {
 			glog.Errorf("WorkloadConfig workload_version is not a valid version string: %v", cfg)
 			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "workload_version", Error: fmt.Sprintf("workload_version %v is not a valid version string", cfg.Version)})
 			return
 		}
 
+		// Convert the input version to a full version expression if it is not already a full expression.
+		vExp, verr := policy.Version_Expression_Factory(cfg.Version)
+		if verr != nil {
+			glog.Errorf("WorkloadConfig workload_version %v error converting to full version expression, error: %v", cfg.Version, verr)
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "workload_version", Error: fmt.Sprintf("workload_version %v error converting to full version expression, error: %v", cfg.Version, verr)})
+			return
+		}
+
 		// Find the target record
-		existingCfg, err := persistence.FindWorkloadConfig(a.db, cfg.WorkloadURL, cfg.Version)
+		existingCfg, err := persistence.FindWorkloadConfig(a.db, cfg.WorkloadURL, vExp.Get_expression())
 		if err != nil {
 			glog.Error(err)
 			http.Error(w, fmt.Sprintf("Internal server error: %v", err), http.StatusInternalServerError)
@@ -1562,7 +1587,7 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 			return
 		} else {
 			glog.V(5).Infof("WorkloadConfig deleting: %v", &cfg)
-			persistence.DeleteWorkloadConfig(a.db, cfg.WorkloadURL, cfg.Version)
+			persistence.DeleteWorkloadConfig(a.db, cfg.WorkloadURL, vExp.Get_expression())
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}

@@ -5,10 +5,10 @@ import (
 )
 
 type ResourceLimit struct {
-    NetworkUpload   int `json:"networkUpload"`   // The max network upload allowed to be consumed Kbps
-    NetworkDownload int `json:"networkDownload"` // The max network download allowed to be consumed Kbps
-    Memory          int `json:"memory"`          // The max memory allowed to be consumed MB
-    CPUs            int `json:"cpus"`            // The max number of CPUs allowed to be consumed
+    NetworkUpload   int `json:"networkUpload,omitempty"`   // The max network upload allowed to be consumed Kbps
+    NetworkDownload int `json:"networkDownload,omitempty"` // The max network download allowed to be consumed Kbps
+    Memory          int `json:"memory,omitempty"`          // The max memory allowed to be consumed MB
+    CPUs            int `json:"cpus,omitempty"`            // The max number of CPUs allowed to be consumed
 }
 
 func (r ResourceLimit) String() string {

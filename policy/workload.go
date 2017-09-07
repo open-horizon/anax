@@ -53,10 +53,10 @@ func (t Torrent) IsSame(compare Torrent) bool {
 }
 
 type WorkloadPriority struct {
-    PriorityValue     int `json:"priority_value"`  // The priority of the workload
-    Retries           int `json:"retries"`         // The number of retries before giving up and moving to the next priority
-    RetryDurationS    int `json:"retry_durations"` // The number of seconds in which the specified number of retries must occur in order for the next priority workload to be attempted.
-    VerifiedDurationS int `json:"verified_durations"` // The number of second in which verified data must exist before the rollback retry feature is turned off
+    PriorityValue     int `json:"priority_value,omitempty"`  // The priority of the workload
+    Retries           int `json:"retries,omitempty"`         // The number of retries before giving up and moving to the next priority
+    RetryDurationS    int `json:"retry_durations,omitempty"` // The number of seconds in which the specified number of retries must occur in order for the next priority workload to be attempted.
+    VerifiedDurationS int `json:"verified_durations,omitempty"` // The number of second in which verified data must exist before the rollback retry feature is turned off
 }
 
 func (wp WorkloadPriority) String() string {
@@ -77,9 +77,9 @@ func (wp WorkloadPriority) IsSame(compare WorkloadPriority) bool {
 type Workload struct {
     Deployment                   string           `json:"deployment"`
     DeploymentSignature          string           `json:"deployment_signature"`
-    DeploymentUserInfo           string           `json:"deployment_user_info"`
+    DeploymentUserInfo           string           `json:"deployment_user_info,omitempty"`
     Torrent                      Torrent          `json:"torrent"`
-    WorkloadPassword             string           `json:"workload_password"` // The password used to create the bcrypt hash that is passed to the workload so that the workload can verify the caller
+    WorkloadPassword             string           `json:"workload_password,omitempty"` // The password used to create the bcrypt hash that is passed to the workload so that the workload can verify the caller
     Priority                     WorkloadPriority `json:"priority,omitempty"` // The highest priority workload is tried first for an agrement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
     WorkloadURL                  string           `json:"workloadUrl,omitempty"`  // Added with MS split, refers to a workload definition in the exchange
     Version                      string           `json:"version,omitempty"`   // Added with MS split, refers to the version of the workload

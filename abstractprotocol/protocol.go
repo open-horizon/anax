@@ -93,7 +93,6 @@ type ProtocolHandler interface {
 	// Protocol methods that the handler has to implement
 	InitiateAgreement(agreementId string,
 		producerPolicy *policy.Policy,
-		originalProducerPolicy string,
 		consumerPolicy *policy.Policy,
 		myId string,
 		messageTarget interface{},
@@ -134,7 +133,7 @@ type ProtocolHandler interface {
 		sig string,
 		consumerPolicy *policy.Policy) error
 
-	TerminateAgreement(policy *policy.Policy,
+	TerminateAgreement(policies []policy.Policy,
 		counterParty string,
 		agreementId string,
 		reason uint,
@@ -196,7 +195,6 @@ func NewBaseProtocolHandler(n string, v int, h *http.Client, p *policy.PolicyMan
 func CreateProposal(p ProtocolHandler,
 	agreementId string,
 	producerPolicy *policy.Policy,
-	originalProducerPolicy string,
 	consumerPolicy *policy.Policy,
 	version int,
 	myId string,
@@ -211,8 +209,10 @@ func CreateProposal(p ProtocolHandler,
 
 		if tcBytes, err := json.Marshal(TCPolicy); err != nil {
 			return nil, errors.New(fmt.Sprintf("Protocol %v error marshalling TsAndCs %v, error: %v", p.Name(), *TCPolicy, err))
+		} else if pBytes, err := json.Marshal(producerPolicy); err != nil {
+			return nil, errors.New(fmt.Sprintf("Protocol %v error marshalling producer policy %v, error: %v", p.Name(), *producerPolicy, err))
 		} else {
-			return NewProposal(p.Name(), version, string(tcBytes), originalProducerPolicy, agreementId, myId), nil
+			return NewProposal(p.Name(), version, string(tcBytes), string(pBytes), agreementId, myId), nil
 		}
 	}
 }
@@ -225,14 +225,14 @@ func SendProposal(p ProtocolHandler,
 	sendMessage func(msgTarget interface{}, pay []byte) error) error {
 
 	// Tell the policy manager that we're going to attempt an agreement
-	if err := p.PolicyManager().AttemptingAgreement(consumerPolicy, newProposal.AgreementId()); err != nil {
+	if err := p.PolicyManager().AttemptingAgreement([]policy.Policy{*consumerPolicy}, newProposal.AgreementId()); err != nil {
 		glog.Errorf(AAPlogString(p.Name(), fmt.Sprintf("error saving agreement count: %v", err)))
 	}
 
 	// Send a message to the device to initiate the agreement protocol.
 	if err := SendProtocolMessage(messageTarget, newProposal, sendMessage); err != nil {
 		// Tell the policy manager that we're not attempting an agreement
-		if perr := p.PolicyManager().CancelAgreement(consumerPolicy, newProposal.AgreementId()); perr != nil {
+		if perr := p.PolicyManager().CancelAgreement([]policy.Policy{*consumerPolicy}, newProposal.AgreementId()); perr != nil {
 			glog.Errorf(AAPlogString(p.Name(), fmt.Sprintf("error saving agreement count: %v", perr)))
 		}
 		return errors.New(fmt.Sprintf("Protocol %v error sending proposal %v, %v", p.Name(), newProposal, err))
@@ -267,29 +267,40 @@ func DecideOnProposal(p ProtocolHandler,
 		glog.V(3).Infof(AAPlogString(p.Name(), fmt.Sprintf("Producer Policy: %v", pPolicy.ShortString())))
 	}
 
+	// Get all the local policies that make up the producer policy.
+	policies, err := p.PolicyManager().GetPolicyList(producerPolicy)
+	if err != nil {
+		replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error getting policy list: %v", p.Name(), err))
+
 	// Tell the policy manager that we're going to attempt an agreement
-	if err := p.PolicyManager().AttemptingAgreement(producerPolicy, proposal.AgreementId()); err != nil {
+	} else if err := p.PolicyManager().AttemptingAgreement(policies, proposal.AgreementId()); err != nil {
 		replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error saving agreement count: %v", p.Name(), err))
 	}
 
 	// The consumer will send 2 policies, one is the merged policy that represents the
 	// terms and conditions of the agreement. The other is a copy of my policy that he thinks
-	// he is matching. Let's make sure it is one of my policies.
+	// he is matching. Let's make sure it is one of my policies or a valid merger of my policies.
 	if replyErr == nil {
-		if err := p.PolicyManager().MatchesMine(producerPolicy); err != nil {
-			replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error, producer policy from proposal is not one of our current policies, rejecting proposal: %v", p.Name(), err))
 
-		// Make sure max agreements hasnt been reached
-		} else if numberAgreements, err := p.PolicyManager().GetNumberAgreements(producerPolicy); err != nil {
-			replyErr = errors.New(fmt.Sprintf("Procotol %v decide on proposal received error getting number of agreements, rejecting proposal: %v", p.Name(), err))
-		} else if numberAgreements > producerPolicy.MaxAgreements {
-			replyErr = errors.New(fmt.Sprintf("Procotol %v max agreements %v reached, already have %v", p.Name(), producerPolicy.MaxAgreements, numberAgreements))
+		if mergedPolicy, err := p.PolicyManager().MergeAllProducers(&policies, producerPolicy); err != nil {
+			replyErr = errors.New(fmt.Sprintf("Protocol %v unable to merge producer policies, error: %v", p.Name(), err))
+
+		// Now that we successfully merged our policies, make sure that the input producer policy is compatible with
+		// the result of our merge
+		} else if _, err := policy.Are_Compatible_Producers(mergedPolicy, producerPolicy, uint64(producerPolicy.DataVerify.Interval)); err != nil {
+			replyErr = errors.New(fmt.Sprintf("Protocol %v error verifying merged policy %v and %v, error: %v", p.Name(), mergedPolicy, producerPolicy, err))
+
+		// And make sure we havent exceeded the maxAgreements in any of our policies.
+		} else if maxedOut, err := p.PolicyManager().ReachedMaxAgreements(policies); maxedOut {
+			replyErr = errors.New(fmt.Sprintf("Protocol %v max agreements reached: %v", p.Name(), p.PolicyManager().AgreementCountString()))
+		} else if err != nil {
+			replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error getting number of agreements, rejecting proposal: %v", p.Name(), err))
 
 		// Now check to make sure that the merged policy is acceptable. The policy is not acceptable if the terms and conditions are not
 		// compatible with the producer's policy.
 		} else if err := policy.Are_Compatible(producerPolicy, termsAndConditions); err != nil {
 			replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error, T and C policy is not compatible, rejecting proposal: %v", p.Name(), err))
-		} else if err := p.PolicyManager().FinalAgreement(producerPolicy, proposal.AgreementId()); err != nil {
+		} else if err := p.PolicyManager().FinalAgreement(policies, proposal.AgreementId()); err != nil {
 			replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error, unable to record agreement state in PM: %v", p.Name(), err))
 		} else {
 			reply.AcceptProposal()
@@ -318,7 +329,9 @@ func SendResponse(p ProtocolHandler,
 		glog.Errorf(AAPlogString(p.Name(), replyErr.Error()))
 		producerPolicy, _ := policy.DemarshalPolicy(proposal.ProducerPolicy())
 		if producerPolicy != nil {
-			if cerr := p.PolicyManager().CancelAgreement(producerPolicy, proposal.AgreementId()); cerr != nil {
+			if policies, err := p.PolicyManager().GetPolicyList(producerPolicy); err != nil {
+				glog.Errorf(AAPlogString(p.Name(), fmt.Sprintf("Error getting policy list: %v for agreement %v", proposal.AgreementId(), err)))
+			} else if cerr := p.PolicyManager().CancelAgreement(policies, proposal.AgreementId()); cerr != nil {
 				glog.Errorf(AAPlogString(p.Name(), fmt.Sprintf("Error cancelling agreement %v in PM %v", proposal.AgreementId(), cerr)))
 			}
 		}
@@ -399,17 +412,17 @@ func RecordAgreement(p ProtocolHandler,
 	consumerPolicy *policy.Policy) error {
 
 	// Tell the policy manager that we're in this agreement
-	return p.PolicyManager().FinalAgreement(consumerPolicy, newProposal.AgreementId())
+	return p.PolicyManager().FinalAgreement([]policy.Policy{*consumerPolicy}, newProposal.AgreementId())
 
 }
 
 func TerminateAgreement(p ProtocolHandler,
-	policy *policy.Policy,
+	policies []policy.Policy,
 	agreementId string,
 	reason uint) error {
 
 	// Tell the policy manager that we're terminating this agreement
-	return p.PolicyManager().CancelAgreement(policy, agreementId)
+	return p.PolicyManager().CancelAgreement(policies, agreementId)
 
 }
 

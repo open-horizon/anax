@@ -1282,7 +1282,7 @@ func (b *ContainerWorker) start() {
 					} else if ms_containers, err := b.findMsContainersAndUpdateMsInstance(agreementId, cmd.AgreementLaunchContext.Microservices); err != nil {
 						glog.Errorf("Error checking microservice containers: %v", err)
 
-						// requeque the command
+						// requeue the command
 						deferredCommands = append(deferredCommands, cmd)
 						continue
 					} else {

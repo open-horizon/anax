@@ -166,7 +166,12 @@ func (self *Version_Expression) Is_within_range(expr string) (bool, error) {
 		}
 	}
 
-	// Compare the start version to see if the input is in this object's range
+	// Compare the end version to see if the input is in this object's range. An end range of
+	// "INFINITY" will always be in range.
+	if self.end == INF {
+		return true, nil
+	}
+
 	endNums := strings.Split(self.end, numberSeperator)
 	for idx, endVal := range endNums {
 		endInt, _ := strconv.Atoi(endVal)
@@ -246,9 +251,35 @@ func IsVersionString(expr string) bool {
 	}
 }
 
+// Return true if the input version string is a full version expression
+func IsVersionExpression(expr string) bool {
+
+	if !(leftIncluded(expr) || leftExcluded(expr)) && !(rightIncluded(expr) || rightExcluded(expr)) {
+		return false
+	}
+
+	vers := strings.Split(expr, versionSeperator)
+	if len(vers) != 2 || vers[0] == "" || vers[1] == "" {
+		return false
+	}
+
+	glog.V(5).Infof("Version_Expression: Seperated expression into %v %v", vers[0], vers[1])
+
+	if !IsVersionString(vers[0][1:]) {
+		return false
+	}
+
+	if !IsVersionString(vers[1][:len(vers[1])-1]) {
+		return false
+	}
+
+	return true
+}
+
 // Return a normalized version string containing all 3 version numbers. The input version string is ASSUMED to
 // be a valid version string. For example, an input version string of 1 will be returned as 1.0.0
 func normalize(expr string) string {
+	if expr == INF { return expr }
 	result := expr
 	nums := strings.Split(expr, numberSeperator)
 	if len(nums) < 3 {

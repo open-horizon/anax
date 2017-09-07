@@ -35,15 +35,15 @@ func (h PolicyHeader) IsSame(compare PolicyHeader) bool {
 }
 
 type ValueExchange struct {
-	Type        string `json:"type"`        // The type of value exchange
-	Value       string `json:"value"`       // The value being exchanged
-	PaymentRate int    `json:"paymentRate"` // The number of seconds between payments
-	Token       string `json:"token"`       // A token used to identify the user of the value - added in version 2
+	Type        string `json:"type,omitempty"`        // The type of value exchange
+	Value       string `json:"value,omitempty"`       // The value being exchanged
+	PaymentRate int    `json:"paymentRate,omitempty"` // The number of seconds between payments
+	Token       string `json:"token,omitempty"`       // A token used to identify the user of the value - added in version 2
 }
 
 type ProposalRejection struct {
-	Number   int `json:"number"`   // Number of rejections before giving up on making agreements
-	Duration int `json:"duration"` // The length of time to wait before trying again
+	Number   int `json:"number,omitempty"`   // Number of rejections before giving up on making agreements
+	Duration int `json:"duration,omitempty"` // The length of time to wait before trying again
 }
 
 // This is the main struct that defines the Policy object
@@ -143,7 +143,7 @@ func Are_Compatible(producer_policy *Policy, consumer_policy *Policy) error {
 
 	if !consumer_policy.Is_Version(producer_policy.Header.Version) {
 		return errors.New(fmt.Sprintf("Compatibility Error: Schema versions are not the same, Consumer policy: %v, Producer policy %v", consumer_policy.Header.Version, producer_policy.Header.Version))
-	} else if err := (&consumer_policy.APISpecs).Is_Subset_Of(&producer_policy.APISpecs); err != nil {
+	} else if err := producer_policy.APISpecs.Supports(consumer_policy.APISpecs); err != nil {
 		return errors.New(fmt.Sprintf("Compatibility Error: Producer policy APISpecs %v do not support Consumer APISpec requirements %v. Underlying error: %v", producer_policy.APISpecs, consumer_policy.APISpecs, err))
 	} else if err := (&consumer_policy.CounterPartyProperties).IsSatisfiedBy(producer_policy.Properties); err != nil {
 		return errors.New(fmt.Sprintf("Compatibility Error: Producer properties %v do not satisfy Consumer property requirements %v. Underlying error: %v", producer_policy.Properties, consumer_policy.CounterPartyProperties, err))
@@ -175,7 +175,7 @@ func Select_Protocol(producer_policy *Policy, consumer_policy *Policy) string {
 // compatible with each other before attempting a compatibility check with it's own policy file.
 // If the policies are found to be compatible a merged policy will be returned. If the policies are not
 // compatible then an error will be returned.
-func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy) (*Policy, error) {
+func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy, defaultNoData uint64) (*Policy, error) {
 
 	if !producer_policy1.Is_Version(producer_policy2.Header.Version) {
 		return nil, errors.New(fmt.Sprintf("Compatibility Error: Schema versions are not the same, Policy1: %v, Policy2 %v", producer_policy1.Header.Version, producer_policy2.Header.Version))
@@ -183,20 +183,19 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 		return nil, errors.New(fmt.Sprintf("Compatibility Error: No common Agreement Protocols between %v and %v. Underlying error: %v", producer_policy1.AgreementProtocols, producer_policy2.AgreementProtocols, err))
 	} else if err := (&producer_policy1.Properties).Compatible_With(&producer_policy2.Properties); err != nil {
 		return nil, errors.New(fmt.Sprintf("Compatibility Error: Common Properties between %v and %v. Underlying error: %v", producer_policy1.Properties, producer_policy2.Properties, err))
-	} else if !producer_policy1.DataVerify.IsSame(producer_policy2.DataVerify) {
-		return nil, errors.New(fmt.Sprintf("Compatibility Error: Data verification must be identical between %v and %v.", producer_policy1.DataVerify, producer_policy2.DataVerify, err))
+	} else if !producer_policy1.DataVerify.IsProducerCompatible(producer_policy2.DataVerify) {
+		return nil, errors.New(fmt.Sprintf("Compatibility Error: Data verification must be compatible between %v and %v.", producer_policy1.DataVerify, producer_policy2.DataVerify))
 	}
 
 	merged_pol := new(Policy)
 	merged_pol.Header.Name = producer_policy1.Header.Name + " merged with " + producer_policy2.Header.Name
 	merged_pol.Header.Version = CurrentVersion
-	(&merged_pol.APISpecs).Concatenate(&producer_policy1.APISpecs)
-	(&merged_pol.APISpecs).Concatenate(&producer_policy2.APISpecs)
+	merged_pol.APISpecs = (&producer_policy1.APISpecs).MergeWith(&producer_policy2.APISpecs)
 	intersecting_agreement_protocols, _ := (&producer_policy1.AgreementProtocols).Intersects_With(&producer_policy2.AgreementProtocols)
 	(&merged_pol.AgreementProtocols).Concatenate(intersecting_agreement_protocols)
 	(&merged_pol.Properties).Concatenate(&producer_policy1.Properties)
 	(&merged_pol.Properties).Concatenate(&producer_policy2.Properties)
-	merged_pol.DataVerify = producer_policy1.DataVerify
+	merged_pol.DataVerify = producer_policy1.DataVerify.ProducerMergeWith(producer_policy2.DataVerify, defaultNoData)
 
 	// Merge counterpartyProperties
 	// 2 CounterPartyProperty specifications could be incompatible, and this could be detected in some cases.
@@ -204,9 +203,16 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 	// For now we will take the cowards way out and simply AND together the Counter Party Property expressions
 	// from both policies.
 	merged_pol.CounterPartyProperties = *((&producer_policy1.CounterPartyProperties).Merge(&producer_policy2.CounterPartyProperties))
-	merged_pol.ResourceLimits = *((&producer_policy1.ResourceLimits).MergeProducers(&producer_policy2.ResourceLimits))
+	merged_pol.MaxAgreements = min(producer_policy1.MaxAgreements, producer_policy2.MaxAgreements)
 
 	return merged_pol, nil
+}
+
+func min(first int, second int) int {
+	if first < second {
+		return first
+	}
+	return second
 }
 
 // This function creates a merged policy file from a producer policy and a consumer policy, which will eventually
@@ -222,7 +228,9 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		merged_pol := new(Policy)
 		merged_pol.Header.Name = producer_policy.Header.Name + " merged with " + consumer_policy.Header.Name
 		merged_pol.Header.Version = CurrentVersion
+		// The consumer policy object has already been augmented with the microservices from the producer
 		merged_pol.APISpecs = append(merged_pol.APISpecs, consumer_policy.APISpecs...)
+
 		intersecting_agreement_protocols, _ := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols)
 		agps := *intersecting_agreement_protocols.Single_Element()
 		agps[0].ProtocolVersion = agreementProtocolVersion
@@ -330,6 +338,7 @@ func (self *Policy) String() string {
 	for _, p := range self.Properties {
 		res += fmt.Sprintf("Name: %v Value: %v\n", p.Name, p.Value)
 	}
+	res += fmt.Sprintf("CounterPartyProperties: %v\n", self.CounterPartyProperties)
 	res += fmt.Sprintf("Resource Limits: %v\n", self.ResourceLimits)
 	res += fmt.Sprintf("Data Verification: %v\n", self.DataVerify)
 

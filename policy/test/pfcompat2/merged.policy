@@ -1,59 +1,41 @@
 {
     "header": {
-        "name": "device1 policy merged with device2 policy",
+        "name": "ms1 policy merged with ms2 policy",
         "version": "2.0"
     },
     "apiSpec": [
         {
-            "specRef": "http://mycompany.com/dm/cpu_temp",
-            "version": "[1.0.0,2.0.0)",
-            "exclusiveAccess": false,
-            "arch": ""
+            "specRef": "http://mycompany.com/dm/ms1",
+            "version": "1.0.0",
+            "exclusiveAccess": true,
+            "arch": "amd64"
         },
         {
-            "specRef": "http://mycompany.com/dm/gps",
-            "version": "[1.0.0,2.0.0)",
-            "exclusiveAccess": false,
-            "arch": ""
+            "specRef": "http://mycompany.com/dm/ms2",
+            "version": "1.0.0",
+            "exclusiveAccess": true,
+            "arch": "amd64"
         }
     ],
     "agreementProtocols": [
         {
-            "name": "Citizen Scientist"
-        },
-        {
-            "name": "2Party Bitcoin"
+            "name": "Basic",
+            "protocolVersion": 1
         }
     ],
-    "valueExchange": {
-        "type": "",
-        "value": "",
-        "paymentRate": 0,
-        "token": ""
-    },
-    "resourceLimits": {
-        "networkUpload": 1024,
-        "networkDownload": 1024,
-        "memory": 2048,
-        "cpus": 2
-    },
+    "valueExchange": {},
+    "resourceLimits": {},
     "dataVerification": {
         "enabled": true,
-        "URL": "http://data.receipt.system.com",
-        "URLUser": "",
-        "URLPassword": "",
-        "interval": 300,
-        "check_rate": 0,
+        "interval": 600,
         "metering": {
-            "tokens": 0,
-            "per_time_unit": "",
-            "notification_interval": 0
+            "tokens": 60,
+            "per_time_unit": "hour",
+            "notification_interval": 120
         }
     },
-    "proposalRejection": {
-        "number": 0,
-        "duration": 0
-    },
+    "proposalRejection": {},
+    "maxAgreements": 1,
     "properties": [
         {
             "name": "rpiprop1",
@@ -66,14 +48,6 @@
         {
             "name": "rpiprop3",
             "value": "rpival3"
-        },
-        {
-            "name": "rpiprop4",
-            "value": "rpival4"
-        },
-        {
-            "name": "rpiprop5",
-            "value": "rpival5"
         }
     ],
     "counterPartyProperties": {
@@ -82,10 +56,12 @@
                 "and": [
                     {
                         "name": "conprop1",
+                        "op": "=",
                         "value": "conval1"
                     },
                     {
                         "name": "conprop2",
+                        "op": "=",
                         "value": "conval2"
                     }
                 ]
@@ -94,17 +70,12 @@
                 "and": [
                     {
                         "name": "conprop1",
+                        "op": "=",
                         "value": "conval1"
-                    },
-                    {
-                        "name": "conprop2",
-                        "value": "conval2"
                     }
                 ]
             }
         ]
     },
-    "ha_group": {
-        "partners": null
-    }
+    "ha_group": {}
 }

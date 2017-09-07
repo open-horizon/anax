@@ -452,21 +452,20 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 					continue
 				} else {
 
-					// Deserialize the JSON policy blob into a policy object
-					producerPolicy := new(policy.Policy)
-					if len(dev.Microservices[0].Policy) == 0 {
-						glog.Errorf("AgreementBotWorker received empty policy blob, skipping this microservice.")
-					} else if err := json.Unmarshal([]byte(dev.Microservices[0].Policy), producerPolicy); err != nil {
-						glog.Errorf("AgreementBotWorker received error demarshalling policy blob %v, error: %v", dev.Microservices[0].Policy, err)
+					// For every microservice required by the workload, deserialize the JSON policy blob into a policy object and
+					// then merge them all together.
+					if producerPolicy, err := w.MergeAllProducerPolicies(&dev); err != nil {
+						glog.Errorf("AgreementBotWorker unable to merge microservice policies, error: %v", err)
 
 					// Check to see if the device's policy is compatible
+
 					} else if err := policy.Are_Compatible(producerPolicy, &consumerPolicy); err != nil {
 						glog.Errorf("AgreementBotWorker received error comparing %v and %v, error: %v", *producerPolicy, consumerPolicy, err)
 					} else if err := w.incompleteHAGroup(dev, producerPolicy); err != nil {
 						glog.Warningf("AgreementBotWorker received error checking HA group %v completeness for device %v, error: %v", producerPolicy.HAGroup, dev.Id, err)
 					} else {
 						protocol := policy.Select_Protocol(producerPolicy, &consumerPolicy)
-						cmd := NewMakeAgreementCommand(*producerPolicy, dev.Microservices[0].Policy, consumerPolicy, dev)
+						cmd := NewMakeAgreementCommand(*producerPolicy, consumerPolicy, dev)
 
 						bcType := ""
 						bcName := ""
@@ -527,7 +526,32 @@ func (w *AgreementBotWorker) alreadyMakingAgreementWith(dev *exchange.SearchResu
 
 }
 
+// Merge all the producer policies into 1 so that they can collectively be checked for compatibility against a consumer policy.
+// The list of microservices in a device object that comes back in a search only includes the microservices that we
+// searched for.
+func (w *AgreementBotWorker) MergeAllProducerPolicies(dev *exchange.SearchResultDevice) (*policy.Policy, error) {
 
+	var producerPolicy *policy.Policy
+
+	for _, msDef := range dev.Microservices {
+		tempPolicy := new(policy.Policy)
+		if len(msDef.Policy) == 0 {
+			return nil, errors.New(fmt.Sprintf("empty policy blob for %v, skipping this device.", msDef.Url))
+		} else if err := json.Unmarshal([]byte(msDef.Policy), tempPolicy); err != nil {
+			return nil, errors.New(fmt.Sprintf("error demarshalling policy blob %v, error: %v", msDef.Policy, err))
+		} else if producerPolicy == nil {
+			producerPolicy = tempPolicy
+		} else if newPolicy, err := policy.Are_Compatible_Producers(producerPolicy, tempPolicy, w.Config.AgreementBot.NoDataIntervalS); err != nil {
+			return nil, errors.New(fmt.Sprintf("error merging policies %v and %v, error: %v", producerPolicy, tempPolicy, err))
+		} else {
+			producerPolicy = newPolicy
+		}
+	}
+
+	return producerPolicy, nil
+}
+
+// Functions called by the policy watcher
 func (w *AgreementBotWorker) changedPolicy(fileName string, pol *policy.Policy) {
 	glog.V(3).Infof(fmt.Sprintf("AgreementBotWorker detected changed policy file %v containing %v", fileName, pol))
 	if policyString, err := policy.MarshalPolicy(pol); err != nil {
@@ -789,9 +813,9 @@ func (w *AgreementBotWorker) syncOnInit() error {
 							// Non-HA device or agrement without workload priority in the policy, re-make the agreement
 							w.cleanupAgreement(&ag)
 						}
-					} else if err := w.pm.AttemptingAgreement(existingPol, ag.CurrentAgreementId); err != nil {
+					} else if err := w.pm.AttemptingAgreement([]policy.Policy{*existingPol}, ag.CurrentAgreementId); err != nil {
 						glog.Errorf(AWlogString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
-					} else if err := w.pm.FinalAgreement(existingPol, ag.CurrentAgreementId); err != nil {
+					} else if err := w.pm.FinalAgreement([]policy.Policy{*existingPol}, ag.CurrentAgreementId); err != nil {
 						glog.Errorf(AWlogString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
 
 						// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
@@ -821,7 +845,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 								} else {
 									state = "unknown"
 								}
-								w.recordConsumerAgreementState(ag.CurrentAgreementId, pol.APISpecs[0].SpecRef, state)
+								w.recordConsumerAgreementState(ag.CurrentAgreementId, pol, state)
 							}
 						}
 						glog.V(3).Infof(AWlogString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))
@@ -876,12 +900,18 @@ func (w *AgreementBotWorker) cleanupAgreement(ag *Agreement) {
 	w.consumerPH[ag.AgreementProtocol].HandleAgreementTimeout(NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, w.consumerPH[ag.AgreementProtocol].GetTerminationCode(TERM_REASON_POLICY_CHANGED)), w.consumerPH[ag.AgreementProtocol])
 }
 
-func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, workloadID string, state string) error {
+func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, pol *policy.Policy, state string) error {
 
-	glog.V(5).Infof(AWlogString(fmt.Sprintf("setting agreement %v state to %v", agreementId, state)))
+	// Use the workload URL for MS split policies. Use the APIspec for old style policies.
+	workload := pol.Workloads[0].WorkloadURL
+	if pol.Workloads[0].WorkloadURL == "" {
+		workload = pol.APISpecs[0].SpecRef
+	}
+
+	glog.V(5).Infof(AWlogString(fmt.Sprintf("setting agreement %v for workload %v state to %v", agreementId, workload, state)))
 
 	as := new(exchange.PutAgbotAgreementState)
-	as.Workload = workloadID
+	as.Workload = workload
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
