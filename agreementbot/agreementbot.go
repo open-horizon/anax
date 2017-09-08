@@ -607,7 +607,10 @@ func RetrieveAllProperties(version string, arch string, pol *policy.Policy) (*po
 		*pl = append(*pl, policy.Property{Name: "version", Value: version})
 	}
 	*pl = append(*pl, policy.Property{Name: "arch", Value: arch})
-	*pl = append(*pl, policy.Property{Name: "agreementProtocols", Value: pol.AgreementProtocols.As_String_Array()})
+
+	if len(pol.AgreementProtocols) != 0 {
+		*pl = append(*pl, policy.Property{Name: "agreementProtocols", Value: pol.AgreementProtocols.As_String_Array()})
+	}
 
 	return pl, nil
 }

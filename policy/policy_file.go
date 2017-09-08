@@ -50,7 +50,7 @@ type ProposalRejection struct {
 type Policy struct {
 	Header                 PolicyHeader          `json:"header"`
 	APISpecs               APISpecList           `json:"apiSpec"`
-	AgreementProtocols     AgreementProtocolList `json:"agreementProtocols"`
+	AgreementProtocols     AgreementProtocolList `json:"agreementProtocols,omitempty"`
 	Workloads              []Workload            `json:"workloads,omitempty"`
 	DeviceType             string                `json:"deviceType,omitempty"`
 	ValueEx                ValueExchange         `json:"valueExchange,omitempty"`

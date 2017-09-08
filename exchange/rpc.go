@@ -448,7 +448,7 @@ func ConvertPropertyToExchangeFormat(prop *policy.Property) (*MSProp, error) {
 	if prop.Name == "version" {
 		newProp := &MSProp{
 			Name:     prop.Name,
-			Value:    pValue,
+			Value:    prop.Value.(string),
 			PropType: "version",
 			Op:       "in",
 		}

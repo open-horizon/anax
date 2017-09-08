@@ -49,10 +49,6 @@ func GeneratePolicy(e chan events.Message, sensorUrl string, sensorName string, 
 		for _, agpEle := range agps {
 			p.Add_Agreement_Protocol(&agpEle)
 		}
-	} else {
-		agp := AgreementProtocol_Factory(CitizenScientist)
-		agp.Initialize()
-		p.Add_Agreement_Protocol(agp)
 	}
 
 	// Add properties to the policy
@@ -103,7 +99,10 @@ func RetrieveAllProperties(policy *Policy) (*PropertyList, error) {
 	}
 
 	*pl = append(*pl, Property{Name: "arch", Value: policy.APISpecs[0].Arch})
-	*pl = append(*pl, Property{Name: "agreementProtocols", Value: policy.AgreementProtocols.As_String_Array()})
+
+	if len(policy.AgreementProtocols) != 0 {
+		*pl = append(*pl, Property{Name: "agreementProtocols", Value: policy.AgreementProtocols.As_String_Array()})
+	}
 
 	return pl, nil
 }

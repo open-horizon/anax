@@ -236,26 +236,19 @@ func (self *AgreementProtocolList) Concatenate(new_list *AgreementProtocolList) 
 	}
 }
 
-// This function returns an Agreement Protocol List with just a single element. This function will prefer the
-// Basic protocol if available.
+// This function returns an Agreement Protocol List with just a single element.
 func (self *AgreementProtocolList) Single_Element() *AgreementProtocolList {
 
-	basic := new(AgreementProtocolList)
-	(*basic) = append(*basic, *AgreementProtocol_Factory(BasicProtocol))
-
-	if intersect, err := (*self).Intersects_With(basic); err == nil {
-		return intersect
-	} else {
-		newAGP := (*self)[0]
-		if len(newAGP.Blockchains) > 1 {
-			bc := newAGP.Blockchains[0]
-			newAGP.Blockchains = nil
-			newAGP.Blockchains = append(newAGP.Blockchains, bc)
-		}
-		single := new(AgreementProtocolList)
-		(*single) = append(*single, newAGP)
-		return single
+	newAGP := (*self)[0]
+	if len(newAGP.Blockchains) > 1 {
+		bc := newAGP.Blockchains[0]
+		newAGP.Blockchains = nil
+		newAGP.Blockchains = append(newAGP.Blockchains, bc)
 	}
+	single := new(AgreementProtocolList)
+	(*single) = append(*single, newAGP)
+	return single
+
 }
 
 // This function adds an Agreement protocol to the list. Return an error if there are duplicates.
