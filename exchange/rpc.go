@@ -173,8 +173,8 @@ type PutAgbotAgreementState struct {
 }
 
 type PutAgreementState struct {
-	Microservice string `json:"microservice"`
-	State        string `json:"state"`
+	Microservices []string `json:"microservices"`
+	State         string   `json:"state"`
 }
 
 type SoftwareVersion map[string]string
@@ -444,6 +444,17 @@ func GetEthereumClient(url string, chainName string, chainType string, deviceId 
 func ConvertPropertyToExchangeFormat(prop *policy.Property) (*MSProp, error) {
 	var pType, pValue, pCompare string
 
+	// version is a special property, it has a special type.
+	if prop.Name == "version" {
+		newProp := &MSProp{
+			Name:     prop.Name,
+			Value:    pValue,
+			PropType: "version",
+			Op:       "in",
+		}
+		return newProp, nil
+	}
+
 	switch prop.Value.(type) {
 	case string:
 		pType = "string"
@@ -585,13 +596,41 @@ type GetMicroservicesResponse struct {
 	LastIndex     int                               `json:"lastIndex"`
 }
 
+func getSearchVersion(version string) (string, error) {
+	// The caller could pass a specific version or a version range, in the version parameter. If it's a version range
+	// then it must be a full expression. That is, it must be expanded into the full syntax. For example; 1.2.3 is a specific
+	// version, and [4.5.6, INFINITY) is the full expression corresponding to the shorthand form of "4.5.6".
+	searchVersion := ""
+	if version == "" || policy.IsVersionExpression(version) {
+		// search for all versions
+	} else if policy.IsVersionString(version) {
+		// search for a specific version
+		searchVersion = version
+	} else {
+		return "", errors.New(fmt.Sprintf("input version %v is not a valid version string", version))
+	}
+	return searchVersion, nil
+}
+
 func GetWorkload(wURL string, wVersion string, wArch string, exURL string, id string, token string) (*WorkloadDefinition, error) {
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting workload definition %v %v %v", wURL, wVersion, wArch)))
 
 	var resp interface{}
 	resp = new(GetWorkloadsResponse)
-	targetURL := fmt.Sprintf("%vworkloads?workloadUrl=%v&version=%v&arch=%v", exURL, wURL, wVersion, wArch)
+
+	// Figure out which version to filter the search with. Could be "".
+	searchVersion, err := getSearchVersion(wVersion)
+	if err != nil {
+		return nil, err
+	}
+
+	// Search the exchange for the workload definition
+	targetURL := fmt.Sprintf("%vworkloads?workloadUrl=%v&arch=%v", exURL, wURL, wArch)
+	if searchVersion != "" {
+		targetURL = fmt.Sprintf("%vworkloads?workloadUrl=%v&version=%v&arch=%v", exURL, wURL, searchVersion, wArch)
+	}
+
 	for {
 		if err, tpErr := InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "GET", targetURL, id, token, nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
@@ -602,14 +641,41 @@ func GetWorkload(wURL string, wVersion string, wArch string, exURL string, id st
 			continue
 		} else {
 			workloadMetadata := resp.(*GetWorkloadsResponse).Workloads
-			if len(workloadMetadata) != 1 {
-				glog.Errorf(rpclogString(fmt.Sprintf("expecting 1 result in GET workloads response: %v", resp)))
-				return nil, errors.New(fmt.Sprintf("expecting 1 result in GET workloads response, got %v", len(workloadMetadata)))
-			} else {
-				for _, workloadDef := range workloadMetadata {
-					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v", &workloadDef)))
-					return &workloadDef, nil
+
+			// If the caller wanted a specific version, check for 1 result.
+			if searchVersion != "" {
+				if len(workloadMetadata) != 1 {
+					glog.Errorf(rpclogString(fmt.Sprintf("expecting 1 result in GET workloads response: %v", resp)))
+					return nil, errors.New(fmt.Sprintf("expecting 1 result in GET workloads response, got %v", len(workloadMetadata)))
+				} else {
+					for _, workloadDef := range workloadMetadata {
+						glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v", &workloadDef)))
+						return &workloadDef, nil
+					}
 				}
+			} else {
+				// The caller wants the highest version in the input version range. If no range was specified then
+				// they will get the highest of all available versions.
+				vRange, _ := policy.Version_Expression_Factory("0.0.0")
+				if wVersion != "" {
+					vRange, _ = policy.Version_Expression_Factory(wVersion)
+				}
+
+				highest := ""
+				var resWDef *WorkloadDefinition
+				for _, wDef := range workloadMetadata {
+					if inRange, err := vRange.Is_within_range(wDef.Version); err != nil {
+						return nil, errors.New(fmt.Sprintf("unable to verify that %v is within %v, error %v", wDef.Version, vRange, err))
+					} else if inRange {
+						glog.V(5).Infof(rpclogString(fmt.Sprintf("found workload version %v within acceptable range", wDef.Version)))
+						if strings.Compare(highest, wDef.Version) == -1 {
+							highest = wDef.Version
+							resWDef = &wDef
+						}
+					}
+				}
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v for %v", resWDef, wURL)))
+				return resWDef, nil
 			}
 		}
 	}
@@ -621,7 +687,19 @@ func GetMicroservice(mURL string, mVersion string, mArch string, exURL string, i
 
 	var resp interface{}
 	resp = new(GetMicroservicesResponse)
-	targetURL := fmt.Sprintf("%vmicroservices?specRef=%v&version=%v&arch=%v", exURL, mURL, mVersion, mArch)
+
+	// Figure out which version to filter the search with. Could be "".
+	searchVersion, err := getSearchVersion(mVersion)
+	if err != nil {
+		return nil, err
+	}
+
+	// Search the exchange for the microservice definition
+	targetURL := fmt.Sprintf("%vmicroservices?specRef=%v&arch=%v", exURL, mURL, mArch)
+	if searchVersion != "" {
+		targetURL = fmt.Sprintf("%vmicroservices?specRef=%v&version=%v&arch=%v", exURL, mURL, searchVersion, mArch)
+	}
+
 	for {
 		if err, tpErr := InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "GET", targetURL, id, token, nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
@@ -633,14 +711,42 @@ func GetMicroservice(mURL string, mVersion string, mArch string, exURL string, i
 		} else {
 			glog.V(5).Infof(rpclogString(fmt.Sprintf("found microservice %v.", resp)))
 			msMetadata := resp.(*GetMicroservicesResponse).Microservices
-			if len(msMetadata) != 1 {
-				glog.Errorf(rpclogString(fmt.Sprintf("expecting 1 result in GET microservces response: %v", resp)))
-				return nil, errors.New(fmt.Sprintf("expecting 1 result in GET microservces response, got %v", len(msMetadata)))
-			} else {
-				for _, msDef := range msMetadata {
-					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v", &msDef)))
-					return &msDef, nil
+
+			// If the caller wanted a specific version, check for 1 result.
+			if searchVersion != "" {
+				if len(msMetadata) != 1 {
+					glog.Errorf(rpclogString(fmt.Sprintf("expecting 1 result in GET microservces response: %v", resp)))
+					return nil, errors.New(fmt.Sprintf("expecting 1 result in GET microservces response, got %v", len(msMetadata)))
+				} else {
+					for _, msDef := range msMetadata {
+						glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v", &msDef)))
+						return &msDef, nil
+					}
 				}
+
+			} else {
+				// The caller wants the highest version in the input version range. If no range was specified then
+				// they will get the highest of all available versions.
+				vRange, _ := policy.Version_Expression_Factory("0.0.0")
+				if mVersion != "" {
+					vRange, _ = policy.Version_Expression_Factory(mVersion)
+				}
+
+				highest := ""
+				var resMsDef *MicroserviceDefinition
+				for _, msDef := range msMetadata {
+					if inRange, err := vRange.Is_within_range(msDef.Version); err != nil {
+						return nil, errors.New(fmt.Sprintf("unable to verify that %v is within %v, error %v", msDef.Version, vRange, err))
+					} else if inRange {
+						glog.V(5).Infof(rpclogString(fmt.Sprintf("found microservice version %v within acceptable range", msDef.Version)))
+						if strings.Compare(highest, msDef.Version) == -1 {
+							highest = msDef.Version
+							resMsDef = &msDef
+						}
+					}
+				}
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v for %v", resMsDef, mURL)))
+				return resMsDef, nil
 			}
 		}
 	}
@@ -654,16 +760,32 @@ func WorkloadResolver(wURL string, wVersion string, wArch string, exURL string, 
 
 	glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving workload %v %v %v", wURL, wVersion, wArch)))
 
+	// Get a version specific workload definition.
 	if workload, err := GetWorkload(wURL, wVersion, wArch, exURL, id, token); err != nil {
 		return nil, err
 	} else if len(workload.Workloads) != 1 {
 		return nil, errors.New(fmt.Sprintf("expecting 1 element in the workloads array of %v, have %v", workload, len(workload.Workloads)))
 	} else {
+
+		// We found the workload definition. Microservices are referred to within a workload definition by
+		// URL, architecture, and version range. Microservice definitions in the exchange arent queryable by version range,
+		// so we will have to do the version filtering.  We're looking for the highest version microservice definition that
+		// is within the range defined by the workload.  See ./policy/version.go for an explanation of version syntax and
+		// version ranges. The GetMicroservices() function is smart enough to return the microservice we're looking for as
+		// long as we give it a range to search within.
+
 		if resolveMicroservices {
 			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving microservices for %v %v %v", wURL, wVersion, wArch)))
 			for _, apiSpec := range workload.APISpecs {
-				if _, err := GetMicroservice(apiSpec.SpecRef, apiSpec.Version, apiSpec.Arch, exURL, id, token); err != nil {
+
+				// Convert version to a version range expression (if it's not already an expression) so that GetMicroservice()
+				// will return us something in the range required by the workload.
+				if vExp, err := policy.Version_Expression_Factory(apiSpec.Version); err != nil {
+					return nil, errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", apiSpec.Version, err))
+				} else if ms, err := GetMicroservice(apiSpec.SpecRef, vExp.Get_expression(), apiSpec.Arch, exURL, id, token); err != nil {
 					return nil, err
+				} else if ms == nil {
+					return nil, errors.New(fmt.Sprintf("unable to find microservice %v within %v", apiSpec, vExp))
 				}
 			}
 			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved microservices for %v %v %v", wURL, wVersion, wArch)))

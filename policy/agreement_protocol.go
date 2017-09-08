@@ -144,7 +144,7 @@ func (a *AgreementProtocol) IsValid() error {
 	return nil
 }
 
-// Used to figoure out what protocol version to use for the initial agreement message. All subsequent
+// Used to figure out what protocol version to use for the initial agreement message. All subsequent
 // messages MUST use the same protocol version. Anax will store the protocol version of the initial
 // message for the agreement and will use the stored version for all future messages.
 func (a *AgreementProtocol) MinimumProtocolVersion(other *AgreementProtocol, maxSupportedVersion int) int {
@@ -205,11 +205,9 @@ func (self *AgreementProtocolList) Intersects_With(other *AgreementProtocolList)
 				if bcIntersect, err := sub_ele.Blockchains.Intersects_With(&other_ele.Blockchains, RequiresBlockchainType(sub_ele.Name)); err != nil {
 					return nil, errors.New(fmt.Sprintf("Agreement Protocol Intersection Error on blockchains: %v was not found in %v", (*self), (*other)))
 				} else {
-					new_ele := AgreementProtocol{
-						Name: sub_ele.Name,
-						Blockchains: *bcIntersect,
-					}
-					(*inter) = append(*inter, new_ele)
+					new_ele := AgreementProtocol_Factory(sub_ele.Name)
+					new_ele.Blockchains = *bcIntersect
+					(*inter) = append(*inter, *new_ele)
 				}
 			}
 		}

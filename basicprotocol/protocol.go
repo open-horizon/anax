@@ -35,7 +35,6 @@ func NewProtocolHandler(pm *policy.PolicyManager) *ProtocolHandler {
 // The implementation of this protocol method has no extensions to the base abstraction.
 func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 	producerPolicy *policy.Policy,
-	originalProducerPolicy string,
 	consumerPolicy *policy.Policy,
 	myId string,
 	messageTarget interface{},
@@ -44,7 +43,7 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 	defaultNoData uint64,
 	sendMessage func(msgTarget interface{}, pay []byte) error) (abstractprotocol.Proposal, error) {
 
-	if bp, err := abstractprotocol.CreateProposal(p, agreementId, producerPolicy, originalProducerPolicy, consumerPolicy, PROTOCOL_CURRENT_VERSION, myId, workload, defaultPW, defaultNoData); err != nil {
+	if bp, err := abstractprotocol.CreateProposal(p, agreementId, producerPolicy, consumerPolicy, PROTOCOL_CURRENT_VERSION, myId, workload, defaultPW, defaultNoData); err != nil {
 		return nil, err
 	} else {
 
@@ -149,7 +148,7 @@ func (p *ProtocolHandler) RecordAgreement(newProposal abstractprotocol.Proposal,
 	return nil
 }
 
-func (p *ProtocolHandler) TerminateAgreement(policy *policy.Policy,
+func (p *ProtocolHandler) TerminateAgreement(policies []policy.Policy,
 	counterParty string,
 	agreementId string,
 	reason uint,
@@ -164,7 +163,7 @@ func (p *ProtocolHandler) TerminateAgreement(policy *policy.Policy,
 	}
 
 	// Tell the policy manager that we're terminating this agreement
-	if cerr := abstractprotocol.TerminateAgreement(p, policy, agreementId, reason); cerr != nil {
+	if cerr := abstractprotocol.TerminateAgreement(p, policies, agreementId, reason); cerr != nil {
 		glog.Errorf(fmt.Sprintf("Protocol %v error cancelling agreement %v in PM %v", p.Name(), agreementId, cerr))
 	}
 

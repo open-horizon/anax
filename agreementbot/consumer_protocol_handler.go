@@ -46,7 +46,7 @@ type ConsumerProtocolHandler interface {
 	GetTerminationCode(reason string) uint
 	GetTerminationReason(code uint) string
 	GetSendMessage() func(mt interface{}, pay []byte) error
-	RecordConsumerAgreementState(agreementId string, workloadID string, state string, workerID string) error
+	RecordConsumerAgreementState(agreementId string, pol *policy.Policy, state string, workerID string) error
 	DeleteMessage(msgId int) error
 	CreateMeteringNotification(mp policy.Meter, agreement *Agreement) (*metering.MeteringNotification, error)
 	TerminateAgreement(agreement *Agreement, reason uint, workerId string)
@@ -345,7 +345,6 @@ func (b *BaseConsumerProtocolHandler) HandleMakeAgreement(cmd *MakeAgreementComm
 	agreementWork := InitiateAgreement{
 		workType:               INITIATE,
 		ProducerPolicy:         cmd.ProducerPolicy,
-		OriginalProducerPolicy: cmd.OriginalProducerPolicy,
 		ConsumerPolicy:         cmd.ConsumerPolicy,
 		Device:                 cmd.Device,
 	}
@@ -365,7 +364,7 @@ func (b *BaseConsumerProtocolHandler) PersistBaseAgreement(wi *InitiateAgreement
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", proposal, err)))
 
 	// Record that the agreement was initiated, in the exchange
-	} else if err := b.RecordConsumerAgreementState(proposal.AgreementId(), wi.ConsumerPolicy.APISpecs[0].SpecRef, "Formed Proposal", workerID); err != nil {
+	} else if err := b.RecordConsumerAgreementState(proposal.AgreementId(), pol, "Formed Proposal", workerID); err != nil {
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error setting agreement state for %v", proposal.AgreementId())))
 	}
 	return nil
@@ -380,12 +379,18 @@ func (b *BaseConsumerProtocolHandler) PersistReply(reply abstractprotocol.Propos
 
 }
 
-func (b *BaseConsumerProtocolHandler) RecordConsumerAgreementState(agreementId string, workloadID string, state string, workerID string) error {
+func (b *BaseConsumerProtocolHandler) RecordConsumerAgreementState(agreementId string, pol *policy.Policy, state string, workerID string) error {
 
-	glog.V(5).Infof(BCPHlogstring2(workerID, fmt.Sprintf("setting agreement %v state to %v", agreementId, state)))
+	// Use the workload URL for MS split policies. Use the APIspec for old style policies.
+	workload := pol.Workloads[0].WorkloadURL
+	if pol.Workloads[0].WorkloadURL == "" {
+		workload = pol.APISpecs[0].SpecRef
+	}
+
+	glog.V(5).Infof(BCPHlogstring2(workerID, fmt.Sprintf("setting agreement %v for workload %v state to %v", agreementId, workload, state)))
 
 	as := new(exchange.PutAgbotAgreementState)
-	as.Workload = workloadID
+	as.Workload = workload
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
@@ -419,7 +424,7 @@ func (b *BaseConsumerProtocolHandler) TerminateAgreement(ag *Agreement, reason u
 		bcType, bcName := cph.GetKnownBlockchain(ag)
 		if aph := cph.AgreementProtocolHandler(bcType, bcName); aph == nil {
 			glog.Warningf(BCPHlogstring2(workerId, fmt.Sprintf("for %v agreement protocol handler not ready", ag.CurrentAgreementId)))
-		} else if err := aph.TerminateAgreement(pol, ag.CounterPartyAddress, ag.CurrentAgreementId, reason, mt, b.GetSendMessage()); err != nil {
+		} else if err := aph.TerminateAgreement([]policy.Policy{*pol}, ag.CounterPartyAddress, ag.CurrentAgreementId, reason, mt, b.GetSendMessage()); err != nil {
 			glog.Errorf(BCPHlogstring2(workerId, fmt.Sprintf("error terminating agreement %v on the blockchain: %v", ag.CurrentAgreementId, err)))
 		}
 	}

@@ -225,7 +225,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				// device requirements not being met. This will cause agreement cancellation to try the highest priority workload again
 				// even if retries have been disabled.
 				if err := wi.ProducerPolicy.APISpecs.Supports(*asl); err != nil {
-					glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("skipping workload %v because device %v cant support it", workload, wi.Device.Id)))
+					glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("skipping workload %v because device %v cant support it: %v", workload, wi.Device.Id, err)))
 
 					if !workload.HasEmptyPriority() {
 						// If this is not the first time through the loop, update the workload usage record, otherwise create it.
@@ -285,7 +285,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating message target: %v", err)))
 
 	// Initiate the protocol
-	} else if proposal, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, wi.OriginalProducerPolicy, &wi.ConsumerPolicy, cph.ExchangeId(), mt, workload, b.config.AgreementBot.DefaultWorkloadPW, b.config.AgreementBot.NoDataIntervalS, cph.GetSendMessage()); err != nil {
+	} else if proposal, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, &wi.ConsumerPolicy, cph.ExchangeId(), mt, workload, b.config.AgreementBot.DefaultWorkloadPW, b.config.AgreementBot.NoDataIntervalS, cph.GetSendMessage()); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error initiating agreement: %v", err)))
 
 		// Remove pending agreement from database
@@ -343,7 +343,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 		} else if err := cph.PersistReply(reply, pol, workerId); err != nil {
 			glog.Errorf(err.Error())
 
-		} else if err := cph.RecordConsumerAgreementState(reply.AgreementId(), pol.APISpecs[0].SpecRef, "Producer agreed", b.workerID); err != nil {
+		} else if err := cph.RecordConsumerAgreementState(reply.AgreementId(), pol, "Producer agreed", b.workerID); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error setting agreement state for %v", reply.AgreementId())))
 
 		// We need to send a reply ack and write the info to the blockchain

@@ -861,7 +861,7 @@ func (w *GovernanceWorker) finalizeAgreement(agreement persistence.EstablishedAg
 		return errors.New(logString(fmt.Sprintf("could not hydrate proposal, error: %v", err)))
 	} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 		return errors.New(logString(fmt.Sprintf("error demarshalling TsAndCs policy for agreement %v, error %v", agreement.CurrentAgreementId, err)))
-	} else if err := recordProducerAgreementState(w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, agreement.CurrentAgreementId, tcPolicy.APISpecs[0].SpecRef, "Finalized Agreement"); err != nil {
+	} else if err := recordProducerAgreementState(w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, agreement.CurrentAgreementId, &tcPolicy.APISpecs, "Finalized Agreement"); err != nil {
 		return errors.New(logString(fmt.Sprintf("error setting agreement %v finalized state in exchange: %v", agreement.CurrentAgreementId, err)))
 	}
 
@@ -877,7 +877,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		// Update the state in the exchange
 	} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 		return errors.New(logString(fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
-	} else if err := recordProducerAgreementState(w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, proposal.AgreementId(), tcPolicy.APISpecs[0].SpecRef, "Agree to proposal"); err != nil {
+	} else if err := recordProducerAgreementState(w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, proposal.AgreementId(), &tcPolicy.APISpecs, "Agree to proposal"); err != nil {
 		return errors.New(logString(fmt.Sprintf("received error setting state for agreement %v", err)))
 	} else {
 		// Publish the "agreement reached" event to the message bus so that torrent can start downloading the workload
@@ -917,7 +917,6 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 				if envAdds, err = w.GetWorkloadConfig(workload.WorkloadURL, workload.Version); err != nil {
 					glog.Errorf("Error: %v", err)
 				}
-				envAdds[config.ENVVAR_PREFIX+"HASH"] = workload.WorkloadPassword
 				// The workload config we have might be from a lower version of the workload. Go to the exchange and
 				// get the metadata for the version we are running and then add in any unset default user inputs.
 				if exWkld, err := exchange.GetWorkload(workload.WorkloadURL, workload.Version, workload.Arch, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken); err != nil {
@@ -935,6 +934,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 
 			envAdds[config.ENVVAR_PREFIX+"AGREEMENTID"] = proposal.AgreementId()
 			envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = w.deviceId
+			envAdds[config.ENVVAR_PREFIX+"HASH"] = workload.WorkloadPassword
 
 			// Add in the exchange URL so that the workload knows which ecosystem its part of
 			envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = w.Config.Edge.ExchangeURL
@@ -942,7 +942,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			lc.EnvironmentAdditions = &envAdds
 			lc.AgreementProtocol = protocol
 
-			// get a list of microservices associated with this agreements and store them in the AgreementLaunchContext
+			// get a list of microservices associated with this agreement and store them in the AgreementLaunchContext
 			ms_specs := []events.MicroserviceSpec{}
 			for _, as := range tcPolicy.APISpecs {
 				if msdef, err := persistence.FindMicroserviceDef(w.db, as.SpecRef, as.Version); err != nil {
@@ -982,14 +982,20 @@ func (w *GovernanceWorker) GetWorkloadPreference(url string) (map[string]string,
 }
 
 // Get the environmental variables for the workload for MS split workloads. The workload config
-// record we have might not match the version of the workload being started so we will use the most
-// current config we have that is not newer than the workload version being started.
+// record has a version range. The workload has to fall within that range inorder for us to apply
+// the configuration to the workload. If there are multiple configs in the version range, we will
+// use the most current config we have.
 func (w *GovernanceWorker) GetWorkloadConfig(url string, version string) (map[string]string, error) {
 
-	// Filter to return workload configs with versions less than or equal to the input workload version
+	// Filter to return workload configs with versions less than or equal to the input workload version range
 	OlderWorkloadWCFilter := func(workload_url string, version string) persistence.WCFilter {
 		return func(e persistence.WorkloadConfig) bool {
-			if e.WorkloadURL == workload_url && strings.Compare(e.Version, version) <= 0 {
+			// if e.WorkloadURL == workload_url && strings.Compare(e.Version, version) <= 0 {
+			if vExp, err := policy.Version_Expression_Factory(e.VersionExpression); err != nil {
+				return false
+			} else if inRange, err := vExp.Is_within_range(version); err != nil {
+				return false
+			} else if e.WorkloadURL == workload_url && inRange {
 				return true
 			} else {
 				return false
@@ -1008,16 +1014,17 @@ func (w *GovernanceWorker) GetWorkloadConfig(url string, version string) (map[st
 	// Sort them by version, oldest to newest
 	sort.Sort(persistence.WorkloadConfigByVersion(cfgs))
 
+	// Configure the env map with the newest config that is within the version range.
 	return persistence.ConfigToEnvvarMap(w.db, &cfgs[len(cfgs)-1], config.ENVVAR_PREFIX)
 
 }
 
-func recordProducerAgreementState(url string, deviceId string, token string, agreementId string, microservice string, state string) error {
+func recordProducerAgreementState(url string, deviceId string, token string, agreementId string, apiSpecs *policy.APISpecList, state string) error {
 
 	glog.V(5).Infof(logString(fmt.Sprintf("setting agreement %v state to %v", agreementId, state)))
 
 	as := new(exchange.PutAgreementState)
-	as.Microservice = microservice
+	as.Microservices = apiSpecs.AsStringArray()
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)

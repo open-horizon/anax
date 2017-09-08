@@ -21,7 +21,7 @@ func Test_Payloadmanager_init_success1(t *testing.T) {
 			t.Errorf("Did not find policy by name.")
 		} else if pm.AgreementCounts["find test policy"].Count != 0 || len(pm.AgreementCounts["find test policy"].AgreementIds) != 0 {
 			t.Errorf("Contract Count map is not initialized correctly %v", pm)
-		} else if atMax, err := pm.ReachedMaxAgreements(pm.Policies[0]); err != nil {
+		} else if atMax, err := pm.ReachedMaxAgreements(pm.GetAllPolicies()); err != nil {
 			t.Error(err)
 		} else if atMax {
 			t.Errorf("Policy max agreements is %v, should not be reporting reached max contracts.", pm.Policies[0].MaxAgreements)
@@ -49,47 +49,47 @@ func Test_contractCounter_success(t *testing.T) {
 		}
 
 		pol := pm.GetPolicy("find policy2")
-		if atMax, err := pm.ReachedMaxAgreements(pol); err != nil {
+		if atMax, err := pm.ReachedMaxAgreements([]Policy{*pol}); err != nil {
 			t.Error(err)
 		} else if atMax {
 			t.Errorf("Policy max agreements is %v, should not be reporting reached max contracts.", pol.MaxAgreements)
 		}
 
-		if err := pm.AttemptingAgreement(pol, "0x12345a"); err != nil {
+		if err := pm.AttemptingAgreement([]Policy{*pol}, "0x12345a"); err != nil {
 			t.Error(err)
-		} else if atMax, err := pm.ReachedMaxAgreements(pol); err != nil {
-			t.Error(err)
-		} else if atMax {
-			t.Errorf("Policy max agreements is %v, should not be reporting reached max contracts.", pol.MaxAgreements)
-		} else if err := pm.AttemptingAgreement(pol, "0x12345b"); err != nil {
-			t.Error(err)
-		} else if atMax, err := pm.ReachedMaxAgreements(pol); err != nil {
+		} else if atMax, err := pm.ReachedMaxAgreements([]Policy{*pol}); err != nil {
 			t.Error(err)
 		} else if atMax {
 			t.Errorf("Policy max agreements is %v, should not be reporting reached max contracts.", pol.MaxAgreements)
-		} else if err := pm.AttemptingAgreement(pol, "0x12345c"); err != nil {
+		} else if err := pm.AttemptingAgreement([]Policy{*pol}, "0x12345b"); err != nil {
 			t.Error(err)
-		} else if atMax, err := pm.ReachedMaxAgreements(pol); err != nil {
+		} else if atMax, err := pm.ReachedMaxAgreements([]Policy{*pol}); err != nil {
 			t.Error(err)
-		} else if !atMax {
-			t.Errorf("Policy max agreements is %v, should be reporting reached max contracts.", pol.MaxAgreements)
-		} else if err := pm.FinalAgreement(pol, "0x12345a"); err != nil {
+		} else if atMax {
+			t.Errorf("Policy max agreements is %v, should not be reporting reached max contracts.", pol.MaxAgreements)
+		} else if err := pm.AttemptingAgreement([]Policy{*pol}, "0x12345c"); err != nil {
 			t.Error(err)
-		} else if err := pm.FinalAgreement(pol, "0x12345b"); err != nil {
-			t.Error(err)
-		} else if err := pm.FinalAgreement(pol, "0x12345c"); err != nil {
-			t.Error(err)
-		} else if atMax, err := pm.ReachedMaxAgreements(pol); err != nil {
+		} else if atMax, err := pm.ReachedMaxAgreements([]Policy{*pol}); err != nil {
 			t.Error(err)
 		} else if !atMax {
 			t.Errorf("Policy max agreements is %v, should be reporting reached max contracts.", pol.MaxAgreements)
-		} else if err := pm.CancelAgreement(pol, "0x12345a"); err != nil {
+		} else if err := pm.FinalAgreement([]Policy{*pol}, "0x12345a"); err != nil {
 			t.Error(err)
-		} else if err := pm.CancelAgreement(pol, "0x12345b"); err != nil {
+		} else if err := pm.FinalAgreement([]Policy{*pol}, "0x12345b"); err != nil {
 			t.Error(err)
-		} else if err := pm.CancelAgreement(pol, "0x12345c"); err != nil {
+		} else if err := pm.FinalAgreement([]Policy{*pol}, "0x12345c"); err != nil {
 			t.Error(err)
-		} else if atMax, err := pm.ReachedMaxAgreements(pol); err != nil {
+		} else if atMax, err := pm.ReachedMaxAgreements([]Policy{*pol}); err != nil {
+			t.Error(err)
+		} else if !atMax {
+			t.Errorf("Policy max agreements is %v, should be reporting reached max contracts.", pol.MaxAgreements)
+		} else if err := pm.CancelAgreement([]Policy{*pol}, "0x12345a"); err != nil {
+			t.Error(err)
+		} else if err := pm.CancelAgreement([]Policy{*pol}, "0x12345b"); err != nil {
+			t.Error(err)
+		} else if err := pm.CancelAgreement([]Policy{*pol}, "0x12345c"); err != nil {
+			t.Error(err)
+		} else if atMax, err := pm.ReachedMaxAgreements([]Policy{*pol}); err != nil {
 			t.Error(err)
 		} else if atMax {
 			t.Errorf("Policy max agreements is %v, should NOT be reporting reached max contracts.", pol.MaxAgreements)
@@ -117,13 +117,13 @@ func Test_contractCounter_failure1(t *testing.T) {
 		t.Error(err)
 	} else {
 
-		if err := pm.AttemptingAgreement(wrongPol, "0x12345a"); err == nil {
+		if err := pm.AttemptingAgreement([]Policy{*wrongPol}, "0x12345a"); err == nil {
 			t.Errorf("Should have returned error attempting agreement on unknown policy.")
-		} else if err := pm.FinalAgreement(wrongPol, "0x12345a"); err == nil {
+		} else if err := pm.FinalAgreement([]Policy{*wrongPol}, "0x12345a"); err == nil {
 			t.Errorf("Should have returned error finalizing agreement on unknown policy.")
-		} else if err := pm.CancelAgreement(wrongPol, "0x12345a"); err == nil {
+		} else if err := pm.CancelAgreement([]Policy{*wrongPol}, "0x12345a"); err == nil {
 			t.Errorf("Should have returned error cancelling agreement on unknown policy.")
-		} else if atMax, err := pm.ReachedMaxAgreements(wrongPol); err == nil {
+		} else if atMax, err := pm.ReachedMaxAgreements([]Policy{*wrongPol}); err == nil {
 			t.Errorf("Should have returned error checking for max agreement on unknown policy.")
 		} else if atMax {
 			t.Errorf("Should have returned false when checking for max agreement due to error.")
@@ -137,45 +137,45 @@ func Test_contractCounter_failure1(t *testing.T) {
 			t.Errorf("Should have returned error checking for max agreement on nil policy.")
 		} else if atMax {
 			t.Errorf("Should have returned false when checking for max agreement due to error.")
-		} else if err := pm.AttemptingAgreement(wrongPol, ""); err == nil {
+		} else if err := pm.AttemptingAgreement([]Policy{*wrongPol}, ""); err == nil {
 			t.Errorf("Should have returned error attempting agreement with empty contract address.")
-		} else if err := pm.FinalAgreement(wrongPol, ""); err == nil {
+		} else if err := pm.FinalAgreement([]Policy{*wrongPol}, ""); err == nil {
 			t.Errorf("Should have returned error finalizing agreement with empty contract address.")
-		} else if err := pm.CancelAgreement(wrongPol, ""); err == nil {
+		} else if err := pm.CancelAgreement([]Policy{*wrongPol}, ""); err == nil {
 			t.Errorf("Should have returned error cancelling agreement with empty contract address.")
 		}
 
 		// Grab the right policy
 		pol := pm.GetPolicy("find policy2")
-		if err := pm.AttemptingAgreement(pol, "0x12345a"); err != nil {
+		if err := pm.AttemptingAgreement([]Policy{*pol}, "0x12345a"); err != nil {
 			t.Error(err)
-		} else if err := pm.AttemptingAgreement(pol, "0x12345a"); err == nil {
+		} else if err := pm.AttemptingAgreement([]Policy{*pol}, "0x12345a"); err == nil {
 			t.Errorf("Should have returned error attempting agreement twice on same contract.")
-		} else if err := pm.AttemptingAgreement(pol, "0x12345b"); err != nil {
+		} else if err := pm.AttemptingAgreement([]Policy{*pol}, "0x12345b"); err != nil {
 			t.Error(err)
-		} else if err := pm.AttemptingAgreement(pol, "0x12345c"); err != nil {
+		} else if err := pm.AttemptingAgreement([]Policy{*pol}, "0x12345c"); err != nil {
 			t.Error(err)
-		} else if max, err := pm.ReachedMaxAgreements(pol); !max || err != nil {
+		} else if max, err := pm.ReachedMaxAgreements([]Policy{*pol}); !max || err != nil {
 			t.Errorf("Should have returned true, reached max agreements of %v.", pol.MaxAgreements)
-		} else if err := pm.FinalAgreement(pol, "0x12345d"); err == nil {
+		} else if err := pm.FinalAgreement([]Policy{*pol}, "0x12345d"); err == nil {
 			t.Errorf("Should have returned error attempting to finalize non-existent agreement %v.", pm)
-		} else if err := pm.FinalAgreement(pol, "0x12345c"); err != nil {
+		} else if err := pm.FinalAgreement([]Policy{*pol}, "0x12345c"); err != nil {
 			t.Error(err)
-		} else if err := pm.FinalAgreement(pol, "0x12345c"); err == nil {
+		} else if err := pm.FinalAgreement([]Policy{*pol}, "0x12345c"); err == nil {
 			t.Errorf("Should have returned error attempting to finalize already final agreement %v.", pm)
-		} else if err := pm.CancelAgreement(pol, "0x12345d"); err == nil {
+		} else if err := pm.CancelAgreement([]Policy{*pol}, "0x12345d"); err == nil {
 			t.Errorf("Should have returned error cancelling non-existent agreement %v.", pol.MaxAgreements)
-		} else if err := pm.CancelAgreement(pol, "0x12345b"); err != nil {
+		} else if err := pm.CancelAgreement([]Policy{*pol}, "0x12345b"); err != nil {
 			t.Error(err)
-		} else if atMax, err := pm.ReachedMaxAgreements(pol); err != nil {
+		} else if atMax, err := pm.ReachedMaxAgreements([]Policy{*pol}); err != nil {
 			t.Error(err)
 		} else if atMax {
 			t.Errorf("Policy max agreements is %v, should NOT be reporting reached max contracts.", pol.MaxAgreements)
-		} else if err := pm.AttemptingAgreement(pol, "0x12345b"); err != nil {
+		} else if err := pm.AttemptingAgreement([]Policy{*pol}, "0x12345b"); err != nil {
 			t.Error(err)
-		} else if err := pm.FinalAgreement(pol, "0x12345b"); err != nil {
+		} else if err := pm.FinalAgreement([]Policy{*pol}, "0x12345b"); err != nil {
 			t.Error(err)
-		} else if atMax, err := pm.ReachedMaxAgreements(pol); err != nil {
+		} else if atMax, err := pm.ReachedMaxAgreements([]Policy{*pol}); err != nil {
 			t.Error(err)
 		} else if !atMax {
 			t.Errorf("Policy max agreements is %v, should be reporting reached max contracts.", pol.MaxAgreements)
@@ -189,19 +189,19 @@ func Test_find_by_apispec1(t *testing.T) {
 		t.Error(err)
 	} else {
 		searchURL := "http://mycompany.com/dm/gps"
-		pols := pm.GetPolicyByURL(searchURL)
-		if len(pols) != 1 {
-			t.Errorf("Expected to find 1 policy, found %v", len(pols))
+		pols := pm.GetPolicyByURL(searchURL,"1.0.0")
+		if len(pols) != 0 {
+			t.Errorf("Expected to find 0 policy, found %v", len(pols))
 		}
 
 		searchURL = "http://mycompany.com/dm/cpu_temp"
-		pols = pm.GetPolicyByURL(searchURL)
-		if len(pols) != 2 {
-			t.Errorf("Expected to find 2 policies, found %v", len(pols))
+		pols = pm.GetPolicyByURL(searchURL,"1.0.1")
+		if len(pols) != 1 {
+			t.Errorf("Expected to find 1 policies, found %v", len(pols))
 		}
 
 		searchURL = ""
-		pols = pm.GetPolicyByURL(searchURL)
+		pols = pm.GetPolicyByURL(searchURL,"1.0.0")
 		if len(pols) != 0 {
 			t.Errorf("Expected to find 0 policies, found %v", len(pols))
 		}
@@ -286,5 +286,83 @@ func Test_add_policy(t *testing.T) {
 			}
 		}
 
+	}
+}
+
+func Test_MergeAllProducers1(t *testing.T) {
+
+	pa := `{"header":{"name":"ms1 policy","version": "2.0"},` +
+		`"apiSpec":[{"specRef":"http://mycompany.com/dm/ms1","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}],` +
+		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
+		`"dataVerification":{"enabled":true,"URL":"","interval":0,"metering":{"tokens":2,"per_time_unit":"hour","notification_interval":3600}},` +
+		`"maxAgreements":1}`
+	pb := `{"header":{"name":"ms2 policy","version": "2.0"},` +
+		`"apiSpec":[{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}],` +
+		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
+		`"dataVerification":{"enabled":true,"URL":"","interval":0,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":120}},` +
+		`"maxAgreements":1}`
+
+	pc := `{"header":{"name":"ms1 policy merged with ms2 policy","version":"2.0"},` +
+		`"apiSpec":[{"specRef":"http://mycompany.com/dm/ms1","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"},{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}],` +
+		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
+		`"dataVerification":{"enabled":true,"URL":"","interval":600,"metering":{"tokens":60,"per_time_unit":"hour","notification_interval":120}},` +
+		`"maxAgreements":1}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 := create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
+	} else if p3 := create_Policy(pc, t); p3 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p3, pc)
+	} else {
+		policies := []Policy{*p1, *p2}
+		pm := PolicyManager_Factory()
+		if mergedPol, err := pm.MergeAllProducers(&policies, p3); err != nil {
+			t.Errorf("Error: %v merging %v and %v\n", err, p1, p2)
+		} else  if _, err := Are_Compatible_Producers(p3, mergedPol, 600); err != nil {
+			t.Errorf("Error: %v merging %v and %v are not compatible\n", err, p3, mergedPol)
+		} else {
+			t.Logf("Merged Policy from 2 producer policies: %v", mergedPol)
+		}
+	}
+}
+
+func Test_MergeAllProducers2(t *testing.T) {
+	var p3 *Policy
+	policies := []Policy{}
+	pm := PolicyManager_Factory()
+	if _, err := pm.MergeAllProducers(&policies, p3); err == nil {
+		t.Errorf("No policies, should return an error\n")
+	}
+}
+
+func Test_MergeAllProducers3(t *testing.T) {
+
+	pa := `{"header":{"name":"ms1 policy","version": "2.0"},` +
+		`"apiSpec":[{"specRef":"http://mycompany.com/dm/ms1","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}],` +
+		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
+		`"dataVerification":{"enabled":true,"URL":"","interval":0,"metering":{"tokens":2,"per_time_unit":"hour","notification_interval":3600}},` +
+		`"maxAgreements":1}`
+
+	pc := `{"header":{"name":"ms1 policy","version": "2.0"},` +
+		`"apiSpec":[{"specRef":"http://mycompany.com/dm/ms1","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}],` +
+		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
+		`"dataVerification":{"enabled":true,"URL":"","interval":600,"metering":{"tokens":2,"per_time_unit":"hour","notification_interval":3600}},` +
+		`"maxAgreements":1}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p3 := create_Policy(pc, t); p3 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p3, pc)
+	} else {
+		policies := []Policy{*p1}
+		pm := PolicyManager_Factory()
+		if mergedPol, err := pm.MergeAllProducers(&policies, p3); err != nil {
+			t.Errorf("Error: %v merging %v with nothing\n", err, p1)
+		} else  if _, err := Are_Compatible_Producers(p3, mergedPol, 600); err != nil {
+			t.Errorf("Error: %v merging %v and %v are not compatible\n", err, p3, mergedPol)
+		} else {
+			t.Logf("Merged Policy from 1 producer policies: %v", mergedPol)
+		}
 	}
 }

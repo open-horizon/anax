@@ -6,14 +6,9 @@
     "apiSpec": [
         {
             "specRef": "http://mycompany.com/dm/cpu_temp",
-            "version": "[1.0.0,2.0.0)",
+            "version": "1.0.1",
             "exclusiveAccess": true,
             "arch": "amd64"
-        },
-        {
-            "specRef": "http://mycompany.com/dm/gps",
-            "version": "[1.0.0,2.0.0)",
-            "exclusiveAccess": false
         }
     ],
     "agreementProtocols": [

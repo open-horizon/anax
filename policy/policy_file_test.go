@@ -24,7 +24,7 @@ func Test_reads_and_writes_file(t *testing.T) {
 	} else if pf.ResourceLimits.CPUs != 2 {
 		t.Errorf("Demarshalled file has incorrect ResourceLimits section: %v", pf.ResourceLimits.CPUs)
 	} else if pf.DataVerify.Interval != 300 {
-		t.Errorf("Demarshalled file has incorrect DataVerifiy section, interval: %v", pf.DataVerify.Interval)
+		t.Errorf("Demarshalled file has incorrect DataVerify section, interval: %v", pf.DataVerify.Interval)
 	} else if pf.ProposalReject.Number != 5 {
 		t.Errorf("Demarshalled file has incorrect Proposal Rejections: %v", pf.ProposalReject.Number)
 	} else {
@@ -291,7 +291,7 @@ func Test_Policy_Merge(t *testing.T) {
 }
 
 // Now let's try a compatibility test between 2 producers.
-func Test_Producer_Policy_Compatible(t *testing.T) {
+func Test_Producer_Policy_Compatible_basic(t *testing.T) {
 
 	if _, err := os.Stat("./test/pfcompat2/merged.policy"); !os.IsNotExist(err) {
 		os.Remove("./test/pfcompat2/merged.policy")
@@ -301,7 +301,7 @@ func Test_Producer_Policy_Compatible(t *testing.T) {
 		t.Error(err)
 	} else if pf_prod2, err := ReadPolicyFile("./test/pfcompat2/device2.policy"); err != nil {
 		t.Error(err)
-	} else if pf_merged, err := Are_Compatible_Producers(pf_prod1, pf_prod2); err != nil {
+	} else if pf_merged, err := Are_Compatible_Producers(pf_prod1, pf_prod2, 600); err != nil {
 		t.Error(err)
 	} else if err := WritePolicyFile(pf_merged, "./test/pfcompat2/merged.policy"); err != nil {
 		t.Error(err)
@@ -396,7 +396,7 @@ func Test_MinimumProtocolVersion(t *testing.T) {
 	if p1 = create_Policy(pa, t); p1 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
 	} else if p2 = create_Policy(pb, t); p2 == nil {
-		t.Errorf("Error: returned %v, should have returned %v\n", p2, pa)
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
 	} else if pv := p1.MinimumProtocolVersion(CitizenScientist, p2, 2); pv != 1 {
 		t.Errorf("Error: the min version should be 1 but was %v\n", pv)
 	}
@@ -407,7 +407,7 @@ func Test_MinimumProtocolVersion(t *testing.T) {
 	if p1 = create_Policy(pa, t); p1 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
 	} else if p2 = create_Policy(pb, t); p2 == nil {
-		t.Errorf("Error: returned %v, should have returned %v\n", p2, pa)
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
 	} else if pv := p1.MinimumProtocolVersion(CitizenScientist, p2, 1); pv != 1 {
 		t.Errorf("Error: the min version should be 1 but was %v\n", pv)
 	}
@@ -418,7 +418,7 @@ func Test_MinimumProtocolVersion(t *testing.T) {
 	if p1 = create_Policy(pa, t); p1 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
 	} else if p2 = create_Policy(pb, t); p2 == nil {
-		t.Errorf("Error: returned %v, should have returned %v\n", p2, pa)
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
 	} else if pv := p1.MinimumProtocolVersion(CitizenScientist, p2, 2); pv != 2 {
 		t.Errorf("Error: the min version should be 2 but was %v\n", pv)
 	}
@@ -429,7 +429,7 @@ func Test_MinimumProtocolVersion(t *testing.T) {
 	if p1 = create_Policy(pa, t); p1 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
 	} else if p2 = create_Policy(pb, t); p2 == nil {
-		t.Errorf("Error: returned %v, should have returned %v\n", p2, pa)
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
 	} else if pv := p1.MinimumProtocolVersion(CitizenScientist, p2, 4); pv != 3 {
 		t.Errorf("Error: the min version should be 3 but was %v\n", pv)
 	}
@@ -440,11 +440,247 @@ func Test_MinimumProtocolVersion(t *testing.T) {
 	if p1 = create_Policy(pa, t); p1 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
 	} else if p2 = create_Policy(pb, t); p2 == nil {
-		t.Errorf("Error: returned %v, should have returned %v\n", p2, pa)
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
 	} else if pv := p1.MinimumProtocolVersion(CitizenScientist, p2, 5); pv != 2 {
 		t.Errorf("Error: the min version should be 2 but was %v\n", pv)
 	}
 
+}
+
+// Additional producer policy compatibility tests
+func Test_ProducerPolicy_empty_apiSpecs(t *testing.T) {
+
+	pa := `{"apiSpec":[]}`
+	pb := `{"apiSpec":[]}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 := create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
+	} else if pf_merged, err := Are_Compatible_Producers(p1, p2, 600); err != nil {
+		t.Error(err)
+	} else if len(pf_merged.APISpecs) != 0 {
+		t.Errorf("Error: returned %v, should have returned %v\n", len(pf_merged.APISpecs), 0)
+	}
+
+}
+
+func Test_ProducerPolicy_empty_apiSpec1(t *testing.T) {
+
+	pa := `{"apiSpec":[]}`
+	pb := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 := create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
+	} else if pf_merged, err := Are_Compatible_Producers(p1, p2, 600); err != nil {
+		t.Error(err)
+	} else if len(pf_merged.APISpecs) != 1 {
+		t.Errorf("Error: returned %v, should have returned %v\n", len(pf_merged.APISpecs), 1)
+	}
+
+}
+
+func Test_ProducerPolicy_empty_apiSpec2(t *testing.T) {
+
+	pa := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+	pb := `{"apiSpec":[]}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 := create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
+	} else if pf_merged, err := Are_Compatible_Producers(p1, p2, 600); err != nil {
+		t.Error(err)
+	} else if len(pf_merged.APISpecs) != 1 {
+		t.Errorf("Error: returned %v, should have returned %v\n", len(pf_merged.APISpecs), 1)
+	}
+
+}
+
+func Test_ProducerPolicy_dup_apiSpec1(t *testing.T) {
+
+	pa := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+	pb := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 := create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
+	} else if pf_merged, err := Are_Compatible_Producers(p1, p2, 600); err != nil {
+		t.Error(err)
+	} else if len(pf_merged.APISpecs) != 1 {
+		t.Errorf("Error: returned %v, should have returned %v\n", len(pf_merged.APISpecs), 1)
+	}
+
+}
+
+func Test_ProducerPolicy_dup_apiSpec2(t *testing.T) {
+
+	pa := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms1","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"},{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+	pb := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 := create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
+	} else if pf_merged, err := Are_Compatible_Producers(p1, p2, 600); err != nil {
+		t.Error(err)
+	} else if len(pf_merged.APISpecs) != 2 {
+		t.Errorf("Error: returned %v, should have returned %v\n", len(pf_merged.APISpecs), 2)
+	}
+
+}
+
+func Test_ProducerPolicy_dup_apiSpec3(t *testing.T) {
+
+	pa := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms1","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"},{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+	pb := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms1","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"},{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 := create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
+	} else if pf_merged, err := Are_Compatible_Producers(p1, p2, 600); err != nil {
+		t.Error(err)
+	} else if len(pf_merged.APISpecs) != 2 {
+		t.Errorf("Error: returned %v, should have returned %v\n", len(pf_merged.APISpecs), 2)
+	}
+
+}
+
+func Test_ProducerPolicy_dup_apiSpec4(t *testing.T) {
+
+	pa := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+	pb := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms1","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"},{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 := create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
+	} else if pf_merged, err := Are_Compatible_Producers(p1, p2, 600); err != nil {
+		t.Error(err)
+	} else if len(pf_merged.APISpecs) != 2 {
+		t.Errorf("Error: returned %v, should have returned %v\n", len(pf_merged.APISpecs), 2)
+	}
+
+}
+
+func Test_ProducerPolicy_dup_apiSpec5(t *testing.T) {
+
+	pa := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+	pb := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"},{"specRef":"http://mycompany.com/dm/ms1","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 := create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
+	} else if pf_merged, err := Are_Compatible_Producers(p1, p2, 600); err != nil {
+		t.Error(err)
+	} else if len(pf_merged.APISpecs) != 2 {
+		t.Errorf("Error: returned %v, should have returned %v\n", len(pf_merged.APISpecs), 2)
+	}
+
+}
+
+func Test_ProducerPolicy_dup_apiSpec6(t *testing.T) {
+
+	pa := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+	pb := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms1","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 := create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
+	} else if pf_merged, err := Are_Compatible_Producers(p1, p2, 600); err != nil {
+		t.Error(err)
+	} else if len(pf_merged.APISpecs) != 2 {
+		t.Errorf("Error: returned %v, should have returned %v\n", len(pf_merged.APISpecs), 2)
+	}
+
+}
+
+func Test_ProducerPolicy_dup_apiSpec7(t *testing.T) {
+
+	pa := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms1","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"},{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"},{"specRef":"http://mycompany.com/dm/ms3","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+	pb := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"},{"specRef":"http://mycompany.com/dm/ms4","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 := create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
+	} else if pf_merged, err := Are_Compatible_Producers(p1, p2, 600); err != nil {
+		t.Error(err)
+	} else if len(pf_merged.APISpecs) != 4 {
+		t.Errorf("Error: returned %v, should have returned %v\n", len(pf_merged.APISpecs), 4)
+	}
+
+}
+
+func Test_ProducerPolicy_dup_apiSpec8(t *testing.T) {
+
+	pa := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms1","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"},{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"},{"specRef":"http://mycompany.com/dm/ms3","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+	pb := `{"apiSpec":[{"specRef":"http://mycompany.com/dm/ms1","version":"2.0.0","exclusiveAccess":true,"arch":"amd64"},{"specRef":"http://mycompany.com/dm/ms4","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 := create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
+	} else if pf_merged, err := Are_Compatible_Producers(p1, p2, 600); err != nil {
+		t.Error(err)
+	} else if len(pf_merged.APISpecs) != 5 {
+		t.Errorf("Error: returned %v, should have returned %v\n", len(pf_merged.APISpecs), 5)
+	}
+
+}
+
+// Merge 2 producer policies and then create a TsAndCs policy
+func Test_Merge_Producers_Create_TsAndCs1(t *testing.T) {
+
+	pa := `{"header":{"name":"ms1 policy","version": "2.0"},` +
+		`"apiSpec":[{"specRef":"http://mycompany.com/dm/ms1","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}],` +
+		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
+		`"dataVerification":{"enabled":true,"URL":"","interval":0,"metering":{"tokens":2,"per_time_unit":"hour","notification_interval":3600}},` +
+		`"maxAgreements":1}`
+	pb := `{"header":{"name":"ms2 policy","version": "2.0"},` +
+		`"apiSpec":[{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}],` +
+		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
+		`"dataVerification":{"enabled":true,"URL":"","interval":0,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":120}},` +
+		`"maxAgreements":1}`
+
+	pc := `{"header":{"name":"split netspeed policy","version":"2.0"},` +
+		`"agreementProtocols":[{"name":"Basic"}],` +
+		`"workloads":[{"workloadUrl":"https://bluehorizon.network/workloads/netspeed","version":"2.3.0","arch":"amd64"}],` +
+		`"dataVerification":{"enabled":true,"URL":"","interval":600,"metering":{"tokens":4,"per_time_unit":"min","notification_interval":30}},` +
+		`"maxAgreements":2}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 := create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
+	} else if p3 := create_Policy(pc, t); p3 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p3, pc)
+	} else if pf_merged, err := Are_Compatible_Producers(p1, p2, 600); err != nil {
+		t.Error(err)
+	} else if len(pf_merged.APISpecs) != 2 {
+		t.Errorf("Error: returned %v, should have returned %v\n", len(pf_merged.APISpecs), 2)
+	} else if pf_merged.DataVerify.Metering.Tokens != 60 {
+		t.Errorf("Error: returned DataVerify.Tokens %v, should have returned %v\n", pf_merged.DataVerify.Metering.Tokens, 60)
+	} else {
+		// The runtime does this before creating terms and conditions
+		p3.APISpecs = pf_merged.APISpecs
+
+		if tcPolicy, err := Create_Terms_And_Conditions(pf_merged, p3, &p3.Workloads[0], "agreementId", "defaultPW", 600, 1); err != nil {
+			t.Error(err)
+		} else if tcPolicy.DataVerify.Metering.Tokens != 240 {
+			t.Errorf("Error: returned DataVerify.Tokens %v, should have returned %v\n", tcPolicy.DataVerify.Metering.Tokens, 240)
+		} else if len(tcPolicy.APISpecs) != 2 {
+			t.Errorf("Error: returned %v APISpecs, should have returned %v\n", len(tcPolicy.APISpecs), 2)
+		} else {
+			t.Logf("Merged Policy from 2 producer policies: %v", tcPolicy)
+		}
+	}
 }
 
 // ================================================================================================================

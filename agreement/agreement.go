@@ -390,17 +390,22 @@ func (w *AgreementWorker) syncOnInit() error {
 				glog.Errorf(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v, error %v", ag.CurrentAgreementId, err)))
 			} else if pol, err := policy.DemarshalPolicy(proposal.ProducerPolicy()); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
-			} else if existingPol := w.pm.GetPolicy(pol.Header.Name); existingPol == nil {
-				glog.Errorf(logString(fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
+
+			} else if policies, err := w.pm.GetPolicyList(pol); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to get policy list for producer policy in agrement %v, error: %v", ag.CurrentAgreementId, err)))
 				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
 
-			} else if err := w.pm.MatchesMine(pol); err != nil {
-				glog.Warningf(logString(fmt.Sprintf("agreement %v has a policy %v that has changed.", ag.CurrentAgreementId, pol.Header.Name)))
+			} else if mergedPolicy, err := w.pm.MergeAllProducers(&policies, pol); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to merge producer policies for agreement %v, error: %v", ag.CurrentAgreementId, err)))
 				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
 
-			} else if err := w.pm.AttemptingAgreement(existingPol, ag.CurrentAgreementId); err != nil {
+			} else if _, err := policy.Are_Compatible_Producers(mergedPolicy, pol, uint64(pol.DataVerify.Interval)); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to verify merged policy %v and %v for agreement %v, error: %v", mergedPolicy, pol, ag.CurrentAgreementId, err)))
+				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
+
+			} else if err := w.pm.AttemptingAgreement(policies, ag.CurrentAgreementId); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
-			} else if err := w.pm.FinalAgreement(existingPol, ag.CurrentAgreementId); err != nil {
+			} else if err := w.pm.FinalAgreement(policies, ag.CurrentAgreementId); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
 
 				// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
@@ -416,7 +421,7 @@ func (w *AgreementWorker) syncOnInit() error {
 					} else {
 						state = "unknown"
 					}
-					w.recordAgreementState(ag.CurrentAgreementId, pol.APISpecs[0].SpecRef, state)
+					w.recordAgreementState(ag.CurrentAgreementId, &pol.APISpecs, state)
 				}
 				glog.V(3).Infof(logString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))
 			}
@@ -520,9 +525,20 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 		for _, p := range policies {
 			newMS := new(exchange.Microservice)
 			newMS.Url = p.APISpecs[0].SpecRef
+
+			// The version property needs special handling
+			newProp := &exchange.MSProp{
+						Name:     "version",
+						Value:    p.APISpecs[0].Version,
+						PropType: "version",
+						Op:       "in",
+					}
+			newMS.Properties = append(newMS.Properties, *newProp)
+
 			newMS.NumAgreements = p.MaxAgreements
 
 			p.DataVerify.Obscure()
+
 			if pBytes, err := json.Marshal(p); err != nil {
 				return errors.New(fmt.Sprintf("AgreementWorker received error marshalling policy: %v", err))
 			} else {
@@ -593,12 +609,12 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 	return nil
 }
 
-func (w *AgreementWorker) recordAgreementState(agreementId string, microservice string, state string) error {
+func (w *AgreementWorker) recordAgreementState(agreementId string, apiSpecs *policy.APISpecList, state string) error {
 
 	glog.V(5).Infof(logString(fmt.Sprintf("setting agreement %v state to %v", agreementId, state)))
 
 	as := new(exchange.PutAgreementState)
-	as.Microservice = microservice
+	as.Microservices = apiSpecs.AsStringArray()
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)

@@ -6,7 +6,7 @@
     "apiSpec": [
         {
             "specRef": "http://mycompany.com/dm/cpu_temp",
-            "version": "1.0.1",
+            "version": "[1.0.0,2)",
             "exclusiveAccess": true,
             "arch": "amd64"
         }
@@ -21,7 +21,6 @@
         {
             "deployment": "Deployment instructions",
             "deployment_signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "deployment_user_info": "",
             "torrent": {
                 "url": "torrent://the.system.com",
                 "images": [
@@ -31,21 +30,10 @@
                     }
                 ]
             },
-            "workload_password": "",
-            "priority": {
-                "priority_value": 0,
-                "retries": 0,
-                "retry_durations": 0,
-                "verified_durations": 0
-            }
+            "priority": {}
         }
     ],
-    "valueExchange": {
-        "type": "",
-        "value": "",
-        "paymentRate": 0,
-        "token": ""
-    },
+    "valueExchange": {},
     "resourceLimits": {
         "networkUpload": 1024,
         "networkDownload": 1024,
@@ -55,20 +43,10 @@
     "dataVerification": {
         "enabled": true,
         "URL": "http://data.receipt.system.com",
-        "URLUser": "",
-        "URLPassword": "",
         "interval": 300,
-        "check_rate": 0,
-        "metering": {
-            "tokens": 0,
-            "per_time_unit": "",
-            "notification_interval": 0
-        }
+        "metering": {}
     },
-    "proposalRejection": {
-        "number": 0,
-        "duration": 0
-    },
+    "proposalRejection": {},
     "properties": [
         {
             "name": "conprop1",
@@ -96,7 +74,5 @@
         }
     ],
     "requiredWorkload": "http://mycompany.com/workload1",
-    "ha_group": {
-        "partners": null
-    }
+    "ha_group": {}
 }

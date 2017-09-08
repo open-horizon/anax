@@ -62,32 +62,6 @@ func APISpecification_Factory(ref string, vers string, arch string) *APISpecific
 	return a
 }
 
-// This function compares 2 APISpecification arrays, returning no error if one of them
-// is a subset (or equal to) the other.
-func (self *APISpecList) Is_Subset_Of(super_set *APISpecList) error {
-
-	for _, sub_ele := range *self {
-		found := false
-		for _, super_ele := range *super_set {
-			if sub_ele.SpecRef == super_ele.SpecRef && sub_ele.Arch == super_ele.Arch {
-				if super_ver, err := Version_Expression_Factory(super_ele.Version); err != nil {
-					continue
-				} else if ok, err := super_ver.Is_within_range(sub_ele.Version); err != nil {
-					continue
-				} else if ok {
-					found = true
-					break
-				}
-			}
-		}
-		if !found {
-			return errors.New(fmt.Sprintf("APISpec Subset Error: %v was not found in superset %v", sub_ele, super_set))
-		}
-	}
-
-	return nil
-}
-
 // This function merges 2 API spec lists into one list, there should never be duplicates in the input list.
 func (self *APISpecList) Concatenate(new_list *APISpecList) {
 	for _, new_ele := range *new_list {
@@ -107,9 +81,9 @@ func (self *APISpecList) Add_API_Spec(new_ele *APISpecification) error {
 }
 
 // This function return true if an api spec list contains the input spec ref url
-func (self APISpecList) ContainsSpecRef(url string) bool {
+func (self APISpecList) ContainsSpecRef(url string, version string) bool {
 	for _, ele := range self {
-		if ele.SpecRef == url {
+		if ele.SpecRef == url && ele.Version == version {
 			return true
 		}
 	}
@@ -117,8 +91,14 @@ func (self APISpecList) ContainsSpecRef(url string) bool {
 }
 
 // This function compares 2 APISpecification arrays, returning no error if the APISpec list
-// meets the requirements of input APISpec list.
+// meets the requirements of input APISpec list. Usually the self list is from a producer and
+// the required list is from a consumer (i.e. workload).
 func (self APISpecList) Supports(required APISpecList) error {
+
+	// If nothing is required then self supports required, by definition.
+	if len(required) == 0 {
+		return nil
+	}
 
 	if len(self) != len(required) {
 		return errors.New(fmt.Sprintf("API Spec lists are different lengths, self: %v and required: %v", self, required))
@@ -144,4 +124,49 @@ func (self APISpecList) Supports(required APISpecList) error {
 	}
 
 	return nil
+}
+
+// This function merges 2 APISpecification arrays, returning the merged list.
+func (self *APISpecList) MergeWith(other *APISpecList) APISpecList {
+
+	merged := new(APISpecList)
+
+	// If both lists are empty then they are really easy to merge
+	if len(*self) == 0 && len(*other) == 0 {
+		return *merged
+	}
+
+	// If one list is empty use the other list
+	if len(*self) == 0 {
+		(*merged) = append(*merged, (*other)...)
+		return *merged
+	} else if len(*other) == 0 {
+		(*merged) = append(*merged, (*self)...)
+		return *merged
+	}
+
+	// Neither list is empty, so merge them
+	(*merged) = append(*merged, (*self)...)
+	for _, other_ele := range *other {
+		found := false
+		for _, sub_ele := range *self {
+			if sub_ele.IsSame(other_ele, true) {
+				found = true
+			}
+		}
+		if !found {
+			(*merged) = append(*merged, other_ele)
+		}
+	}
+
+	return *merged
+}
+
+// This function extracts the APISpec URLs from a list of API Specs and returns the URLs in an array.
+func (self *APISpecList) AsStringArray() []string {
+	res := make([]string, 0, 10)
+	for _, apiSpec := range (*self) {
+		res = append(res, apiSpec.SpecRef)
+	}
+	return res
 }

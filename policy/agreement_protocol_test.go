@@ -177,6 +177,68 @@ func Test_AgreementProtocolList_intersects(t *testing.T) {
 		}
 	}
 
+	// Now test with the protocol names that we actually support
+	p1 = `[{"name":"Basic","protocolVersion":1}]`
+	p2 = `[{"name":"Basic","protocolVersion":1}]`
+	if pl1 = create_AgreementProtocolList(p1, t); pl1 != nil {
+		if pl2 = create_AgreementProtocolList(p2, t); pl2 != nil {
+			if pl3, err := pl1.Intersects_With(pl2); err != nil {
+				t.Errorf("Error: %v intersects with %v, error was %v\n", p1, p2, err)
+			} else if len(*pl3) != 1 {
+				t.Errorf("Error: Intersection of %v with %v should have produced 1 intersections, produced %v\n", p1, p2, len(*pl3))
+			} else if (*pl3)[0].ProtocolVersion != 1 {
+				t.Errorf("Error: Intersection of %v with %v should have produced protocol version 1, produced %v\n", p1, p2, (*pl3)[0].ProtocolVersion)
+			}
+		}
+	}
+
+	// Now test with the protocol names that we actually support
+	p1 = `[{"name":"Basic","protocolVersion":1}]`
+	p2 = `[{"name":"Basic"}]`
+	if pl1 = create_AgreementProtocolList(p1, t); pl1 != nil {
+		if pl2 = create_AgreementProtocolList(p2, t); pl2 != nil {
+			if pl3, err := pl1.Intersects_With(pl2); err != nil {
+				t.Errorf("Error: %v intersects with %v, error was %v\n", p1, p2, err)
+			} else if len(*pl3) != 1 {
+				t.Errorf("Error: Intersection of %v with %v should have produced 1 intersections, produced %v\n", p1, p2, len(*pl3))
+			} else if (*pl3)[0].ProtocolVersion != 1 {
+				t.Errorf("Error: Intersection of %v with %v should have produced protocol version 1, produced %v\n", p1, p2, (*pl3)[0].ProtocolVersion)
+			}
+		}
+	}
+
+	// Now test with the protocol names that we actually support
+	p1 = `[{"name":"Citizen Scientist","protocolVersion":2}]`
+	p2 = `[{"name":"Citizen Scientist"}]`
+	if pl1 = create_AgreementProtocolList(p1, t); pl1 != nil {
+		if pl2 = create_AgreementProtocolList(p2, t); pl2 != nil {
+			if pl3, err := pl1.Intersects_With(pl2); err != nil {
+				t.Errorf("Error: %v intersects with %v, error was %v\n", p1, p2, err)
+			} else if len(*pl3) != 1 {
+				t.Errorf("Error: Intersection of %v with %v should have produced 1 intersections, produced %v\n", p1, p2, len(*pl3))
+			} else if (*pl3)[0].ProtocolVersion != 2 {
+				t.Errorf("Error: Intersection of %v with %v should have produced protocol version 1, produced %v\n", p1, p2, (*pl3)[0].ProtocolVersion)
+			}
+		}
+	}
+
+	// Now test with the protocol names that we actually support
+	p1 = `[{"name":"Citizen Scientist","protocolVersion":2,"blockchains":[{"type":"ethereum","name":"bc2"},{"type":"ethereum","name":"bc1"}]}]`
+	p2 = `[{"name":"Citizen Scientist"}]`
+	if pl1 = create_AgreementProtocolList(p1, t); pl1 != nil {
+		if pl2 = create_AgreementProtocolList(p2, t); pl2 != nil {
+			if pl3, err := pl1.Intersects_With(pl2); err != nil {
+				t.Errorf("Error: %v intersects with %v, error was %v\n", p1, p2, err)
+			} else if len(*pl3) != 1 {
+				t.Errorf("Error: Intersection of %v with %v should have produced 1 intersections, produced %v\n", p1, p2, len(*pl3))
+			} else if (*pl3)[0].ProtocolVersion != 2 {
+				t.Errorf("Error: Intersection of %v with %v should have produced protocol version 1, produced %v\n", p1, p2, (*pl3)[0].ProtocolVersion)
+			} else if len((*pl3)[0].Blockchains) != 2 {
+				t.Errorf("Error: Intersection of %v with %v should have produced 2 blockchains, produced %v\n", p1, p2, len((*pl3)[0].Blockchains))
+			}
+		}
+	}
+
 }
 
 // Second, some tests where the lists are incompatible

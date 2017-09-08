@@ -6,9 +6,9 @@ import (
 )
 
 type Meter struct {
-	Tokens                uint64 `json:"tokens"`                // The number of tokens per time_unit
-	PerTimeUnit           string `json:"per_time_unit"`         // The per time units: min, hour and day are supported
-	NotificationIntervalS int    `json:"notification_interval"` // The number of seconds between metering notifications
+	Tokens                uint64 `json:"tokens,omitempty"`                // The number of tokens per time_unit
+	PerTimeUnit           string `json:"per_time_unit,omitempty"`         // The per time units: min, hour and day are supported
+	NotificationIntervalS int    `json:"notification_interval,omitempty"` // The number of seconds between metering notifications
 }
 
 func (m Meter) String() string {
@@ -125,6 +125,71 @@ func (m Meter) MergeWith(otherMeter Meter, dvCheckRate int) Meter {
 	return ret
 }
 
+// Merge 2 producer meter policies. This function does not do the same thing as the MergeWith function.
+func (m *Meter) ProducerMergeWith(otherMeter *Meter, dvCheckRate int) Meter {
+	ret := Meter{}
+
+	if m.IsEmpty() && otherMeter.IsEmpty() {
+		return ret
+	}
+
+	// Pick the time unit
+	chosenTimeUnit := "min"
+	if m.PerTimeUnit == "day" || otherMeter.PerTimeUnit == "day" {
+		chosenTimeUnit = "day"
+	} else if m.PerTimeUnit == "hour" || otherMeter.PerTimeUnit == "hour" {
+		chosenTimeUnit = "hour"
+	}
+	ret.PerTimeUnit = chosenTimeUnit
+
+	// Normalize the token values to a per day total.
+	var myTokens, otherTokens uint64
+	if !m.IsEmpty() {
+		myTokens = normalizeTokens(m.Tokens, m.PerTimeUnit)
+	}
+	if !otherMeter.IsEmpty() {
+		otherTokens = normalizeTokens(otherMeter.Tokens, otherMeter.PerTimeUnit)
+	}
+
+	// Choose the greater of the 2 token amounts
+	ret.Tokens = maxOfUint64(myTokens, otherTokens)
+
+	// Convert tokens back to the chosen time unit.
+	divisors := map[string]uint64{"min":1440, "hour":24, "day":1}
+	ret.Tokens = ret.Tokens / divisors[chosenTimeUnit]
+
+	// Choose the notification interval, shorter of both or the default
+	min := minOf(m.NotificationIntervalS, otherMeter.NotificationIntervalS)
+	max := maxOf(m.NotificationIntervalS, otherMeter.NotificationIntervalS)
+
+	if min == 0 && max == 0 {
+		// choose default based on other policy
+		if dvCheckRate == 0 {
+			ret.NotificationIntervalS = 10
+		} else if dvCheckRate <= 10 {
+			ret.NotificationIntervalS = 10
+		} else {
+			ret.NotificationIntervalS = dvCheckRate
+		}
+
+	} else if min != 0 && max != 0 {
+		ret.NotificationIntervalS = min
+	} else if min == 0 {
+		ret.NotificationIntervalS = max
+	}
+
+	return ret
+}
+
+// This function determines if 2 producer policies can be reconciled.
+func (m Meter) IsCompatibleWith(otherMeter Meter) bool {
+
+	// There are no aspects of Metering policy that cant be reconciled between
+	// 2 producers.
+	return true
+
+}
+
 // Convert tokens per x time into tokens per day
 func normalizeTokens(amt uint64, timeUnit string) uint64 {
 	multipliers := map[string]uint64{"min":1440, "hour":24, "day":1}
@@ -147,13 +212,21 @@ func maxOf(x int, y int) int {
 	}
 }
 
+func maxOfUint64(x uint64, y uint64) uint64 {
+	if x > y {
+		return x
+	} else {
+		return y
+	}
+}
+
 type DataVerification struct {
-	Enabled     bool   `json:"enabled"`            // Whether or not data verification is enabled
-	URL         string `json:"URL"`                // The URL to be used for data receipt verification
-	URLUser     string `json:"URLUser"`            // The user id to use when calling the verification URL
-	URLPassword string `json:"URLPassword"`        // The password to use when calling the verification URL
-	Interval    int    `json:"interval"`           // The number of seconds to check for data before deciding there isnt any data
-	CheckRate   int    `json:"check_rate"`         // The number of seconds between checks for valid data being received
+	Enabled     bool   `json:"enabled,omitempty"`            // Whether or not data verification is enabled
+	URL         string `json:"URL,omitempty"`                // The URL to be used for data receipt verification
+	URLUser     string `json:"URLUser,omitempty"`            // The user id to use when calling the verification URL
+	URLPassword string `json:"URLPassword,omitempty"`        // The password to use when calling the verification URL
+	Interval    int    `json:"interval,omitempty"`           // The number of seconds to check for data before deciding there isnt any data
+	CheckRate   int    `json:"check_rate,omitempty"`         // The number of seconds between checks for valid data being received
 	Metering    Meter  `json:"metering,omitempty"` // The metering configuration
 }
 
@@ -198,19 +271,126 @@ func (d *DataVerification) Obscure() {
 	}
 }
 
-// Two policies are compatible if they dont conflict with each other
+// Two policies are compatible if they dont conflict with each other such that the
+// compare policy satisfies the requirements of the d or "self" policy.
 func (d DataVerification) IsCompatibleWith(compare DataVerification) bool {
-	if d.IsSame(compare) {
-		return true
-	} else {
-		if (d.Enabled && compare.Enabled && d.URL != "" && compare.URL != "" && d.URL != compare.URL) ||
-		   (d.Enabled && compare.Enabled && d.URLUser != "" && compare.URLUser != "" && d.URLUser != compare.URLUser) {
-			return false
-		} else if d.Enabled && compare.Enabled {
-			return d.Metering.IsSatisfiedBy(compare.Metering)
-		}
+	// If the DV sections are compatible then check the metering section.
+	if (&d).internalCompatibleWith(&compare) {
+		return d.Metering.IsSatisfiedBy(compare.Metering)
+	}
+	return false
+}
+
+func (d *DataVerification) internalCompatibleWith(compare *DataVerification) bool {
+	// single out the case where 2 DV sections are not compatible; both sections are
+	// enabled they want to use different URLs and/or Users to verify. That difference
+	// cannot be reconciled and therefore the sections are incompatible.
+	if (d.Enabled && compare.Enabled && d.URL != "" && compare.URL != "" && d.URL != compare.URL) ||
+	   (d.Enabled && compare.Enabled && d.URLUser != "" && compare.URLUser != "" && d.URLUser != compare.URLUser) {
+		return false
 	}
 	return true
+}
+
+// Two producer policies are compatible with each other if the difference are reconcileable
+// as producers.
+func (d DataVerification) IsProducerCompatible(compare DataVerification) bool {
+	// If the DV sections are compatible then check the metering section.
+	if (&d).internalCompatibleWith(&compare) {
+		return d.Metering.IsCompatibleWith(compare.Metering)
+	}
+	return false
+}
+
+// Common logic for merging the interval value of 2 DV sections.
+func (ret *DataVerification) internalMergeInterval(d *DataVerification, other *DataVerification, configInterval uint64) {
+
+	// Choose the no data interval, shorter of both or the default
+	thisInterval := 0
+	if d.Enabled {
+		thisInterval = d.Interval
+	}
+	otherInterval := 0
+	if other.Enabled {
+		otherInterval = other.Interval
+	}
+	min := minOf(thisInterval, otherInterval)
+	max := maxOf(thisInterval, otherInterval)
+
+	if min == 0 && max == 0 {
+		if d.Enabled || other.Enabled {
+			ret.Interval = int(configInterval)
+		} else {
+			ret.Interval = 0
+		}
+	} else if min != 0 && max != 0 {
+		ret.Interval = min
+	} else if min == 0 {
+		ret.Interval = max
+	}
+}
+
+// Common logic for merging the CheckRate value of 2 DV sections.
+func (ret *DataVerification) internalMergeCheckRate(d *DataVerification, other *DataVerification) {
+
+	// Choose the check rate, shorter of both or the default
+	thisCheckRate := 0
+	if d.Enabled {
+		thisCheckRate = d.CheckRate
+	}
+	otherCheckRate := 0
+	if other.Enabled {
+		otherCheckRate = other.CheckRate
+	}
+	min := minOf(thisCheckRate, otherCheckRate)
+	max := maxOf(thisCheckRate, otherCheckRate)
+
+	if min == 0 && max == 0 {
+		ret.CheckRate = 0
+	} else if min != 0 && max != 0 {
+		ret.CheckRate = min
+	} else if min == 0 {
+		ret.CheckRate = max
+	}
+}
+
+// Merge 2 producer DV sections. This is different from merging sections from a producer and
+// consumer because 2 producer sections just have to be reconciled, one does not have to
+// satisfy the other as in the consumer/producer relationship. Further this function
+// assumes that IsProducerCompatible() has already been called for these 2 sections so they
+// are already compatible.
+func (d DataVerification) ProducerMergeWith(other DataVerification, configInterval uint64) DataVerification {
+	ret := DataVerification{}
+
+	// If one policy is enabled then the merge is enabled
+	if d.Enabled || other.Enabled {
+		ret.Enabled = true
+	}
+
+	// If there is a URL and User in one of the policies, use it. If there is a URL or User
+	// in both, they will be the same because a previous compat check is assumed.
+	if d.Enabled && d.URL != "" {
+		ret.URL = d.URL
+	} else if other.Enabled && other.URL != "" {
+		ret.URL = other.URL
+	}
+
+	if d.Enabled && d.URLUser != "" {
+		ret.URLUser = d.URLUser
+		ret.URLPassword = d.URLPassword
+	} else if other.Enabled && other.URLUser != "" {
+		ret.URLUser = other.URLUser
+		ret.URLPassword = other.URLPassword
+	}
+
+	(&ret).internalMergeInterval(&d, &other, configInterval)
+
+	(&ret).internalMergeCheckRate(&d, &other)
+
+	// Merge the metering policy
+	ret.Metering = (&d.Metering).ProducerMergeWith(&other.Metering, ret.CheckRate)
+
+	return ret
 }
 
 // Produce a merged data verification section. Both policies are assumed to be valid and compatible.
@@ -242,49 +422,9 @@ func (d DataVerification) MergeWith(other DataVerification, configInterval uint6
 		ret.URLUser = other.URLUser
 	}
 
-	// Choose the no data interval, shorter of both or the default
-	thisInterval := 0
-	if d.Enabled {
-		thisInterval = d.Interval
-	}
-	otherInterval := 0
-	if other.Enabled {
-		otherInterval = other.Interval
-	}
-	min := minOf(thisInterval, otherInterval)
-	max := maxOf(thisInterval, otherInterval)
+	(&ret).internalMergeInterval(&d, &other, configInterval)
 
-	if min == 0 && max == 0 {
-		if d.Enabled || other.Enabled {
-			ret.Interval = int(configInterval)
-		} else {
-			ret.Interval = 0
-		}
-	} else if min != 0 && max != 0 {
-		ret.Interval = min
-	} else if min == 0 {
-		ret.Interval = max
-	}
-
-	// Choose the check rate, shorter of both or the default
-	thisCheckRate := 0
-	if d.Enabled {
-		thisCheckRate = d.CheckRate
-	}
-	otherCheckRate := 0
-	if other.Enabled {
-		otherCheckRate = other.CheckRate
-	}
-	min = minOf(thisCheckRate, otherCheckRate)
-	max = maxOf(thisCheckRate, otherCheckRate)
-
-	if min == 0 && max == 0 {
-		ret.CheckRate = 0
-	} else if min != 0 && max != 0 {
-		ret.CheckRate = min
-	} else if min == 0 {
-		ret.CheckRate = max
-	}
+	(&ret).internalMergeCheckRate(&d, &other)
 
 	// Merge the metering policy
 	if d.Enabled && other.Enabled {

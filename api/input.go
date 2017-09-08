@@ -452,7 +452,7 @@ func deserializeAttributes(w http.ResponseWriter, attrs []Attribute) ([]persiste
 // This section is for handling the workloadConfig API input
 type WorkloadConfig struct {
 	WorkloadURL string                 `json:"workload_url"`
-	Version     string                 `json:"workload_version"`
+	Version     string                 `json:"workload_version"` // This is a version range
 	Variables   map[string]interface{} `json:"variables"`
 }
 

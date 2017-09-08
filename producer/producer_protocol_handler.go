@@ -166,7 +166,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 }
 
 func (w *BaseProducerProtocolHandler) PersistProposal(proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, tcPolicy *policy.Policy, protocolMsg string) {
-	if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, w.Name(), proposal.Version(), tcPolicy.APISpecs[0].SpecRef, "", proposal.ConsumerId(), "", ""); err != nil {
+	if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, w.Name(), proposal.Version(), (&tcPolicy.APISpecs).AsStringArray(), "", proposal.ConsumerId(), "", ""); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId(), err)))
 	}
 }
@@ -180,7 +180,9 @@ func (w *BaseProducerProtocolHandler) TerminateAgreement(ag *persistence.Establi
 		bcType, bcName := pph.GetKnownBlockchain(ag)
 		if aph := pph.AgreementProtocolHandler(bcType, bcName); aph == nil {
 			glog.Warningf(BPPHlogString(w.Name(), fmt.Sprintf("cannot terminate agreement %v, agreement protocol handler doesnt exist yet.", ag.CurrentAgreementId)))
-		} else if err := aph.TerminateAgreement(pPolicy, ag.CounterPartyAddress, ag.CurrentAgreementId, reason, mt, pph.GetSendMessage()); err != nil {
+		} else if policies, err := w.pm.GetPolicyList(pPolicy); err != nil {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("agreement %v error getting policy list: %v", ag.CurrentAgreementId, err)))
+		} else if err := aph.TerminateAgreement(policies, ag.CounterPartyAddress, ag.CurrentAgreementId, reason, mt, pph.GetSendMessage()); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error terminating agreement %v on the blockchain: %v", ag.CurrentAgreementId, err)))
 		}
 	}

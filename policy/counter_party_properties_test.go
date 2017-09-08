@@ -612,6 +612,78 @@ func Test_merge1(t *testing.T) {
 	}
 }
 
+func Test_merge2(t *testing.T) {
+
+	var rp1 *RequiredProperty
+	var rp2 *RequiredProperty
+
+	simple1 := `{}`
+	simple2 := `{}`
+	if rp1 = create_RP(simple1, t); rp1 != nil {
+		if rp2 = create_RP(simple2, t); rp2 != nil {
+			if rp3 := rp1.Merge(rp2); rp3 == nil {
+				t.Errorf("Error: Merged RequiredProperty expression not returned.\n")
+			} else if len(*rp3) != 0 {
+				t.Errorf("Error: Merged RequiredProperty should be empty, is %v.\n", *rp3)
+			}
+		}
+	}
+}
+
+func Test_merge3(t *testing.T) {
+
+	var rp1 *RequiredProperty
+	var rp2 *RequiredProperty
+
+	simple1 := `{"and":[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2"}]}`
+	simple2 := `{}`
+	if rp1 = create_RP(simple1, t); rp1 != nil {
+		if rp2 = create_RP(simple2, t); rp2 != nil {
+			if rp3 := rp1.Merge(rp2); rp3 == nil {
+				t.Errorf("Error: Merged RequiredProperty expression not returned.\n")
+			} else if len(*rp3) != 1 {
+				t.Errorf("Error: Merged RequiredProperty should have 1 element, but it has %v.\n", len(*rp3))
+			} else {
+				var pa *[]Property
+				prop_list := `[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2"}]`
+
+				if pa = create_property_list(prop_list, t); pa != nil {
+					if err := rp3.IsSatisfiedBy(*pa); err != nil {
+						t.Error(err)
+					}
+				}
+			}
+		}
+	}
+}
+
+func Test_merge4(t *testing.T) {
+
+	var rp1 *RequiredProperty
+	var rp2 *RequiredProperty
+
+	simple1 := `{}`
+	simple2 := `{"and":[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2"}]}`
+	if rp1 = create_RP(simple1, t); rp1 != nil {
+		if rp2 = create_RP(simple2, t); rp2 != nil {
+			if rp3 := rp1.Merge(rp2); rp3 == nil {
+				t.Errorf("Error: Merged RequiredProperty expression not returned.\n")
+			} else if len(*rp3) != 1 {
+				t.Errorf("Error: Merged RequiredProperty should have 1 element, but it has %v.\n", len(*rp3))
+			} else {
+				var pa *[]Property
+				prop_list := `[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2"}]`
+
+				if pa = create_property_list(prop_list, t); pa != nil {
+					if err := rp3.IsSatisfiedBy(*pa); err != nil {
+						t.Error(err)
+					}
+				}
+			}
+		}
+	}
+}
+
 // ================================================================================================================
 // Helper functions used by all tests
 //

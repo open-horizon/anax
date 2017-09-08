@@ -39,35 +39,12 @@
             ]
         }
     ],
-    "valueExchange": {
-        "type": "",
-        "value": "",
-        "paymentRate": 0,
-        "token": ""
-    },
-    "resourceLimits": {
-        "networkUpload": 0,
-        "networkDownload": 0,
-        "memory": 0,
-        "cpus": 0
-    },
+    "valueExchange": {},
+    "resourceLimits": {},
     "dataVerification": {
-        "enabled": false,
-        "URL": "",
-        "URLUser": "",
-        "URLPassword": "",
-        "interval": 0,
-        "check_rate": 0,
-        "metering": {
-            "tokens": 0,
-            "per_time_unit": "",
-            "notification_interval": 0
-        }
+        "metering": {}
     },
-    "proposalRejection": {
-        "number": 0,
-        "duration": 0
-    },
+    "proposalRejection": {},
     "properties": [
         {
             "name": "rpiprop1",
@@ -90,7 +67,5 @@
             "value": "rpival5"
         }
     ],
-    "ha_group": {
-        "partners": null
-    }
+    "ha_group": {}
 }

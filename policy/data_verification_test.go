@@ -626,6 +626,7 @@ func Test_isSatisfiedBy_meter(t *testing.T) {
 
 }
 
+// Tests for merging a producer and consumer metering section
 func Test_merge_with_meter(t *testing.T) {
 
     // Time unit and token calculations
@@ -742,6 +743,67 @@ func Test_merge_with_meter(t *testing.T) {
     m2 = Meter{Tokens: 0, PerTimeUnit: "", NotificationIntervalS: 0}
     mm = Meter{Tokens: 0, PerTimeUnit: "", NotificationIntervalS: 0}
     if am := m1.MergeWith(m2, 30); !am.IsSame(mm)  {
+        t.Errorf("Meter %v was not merged correclty, expecting %v\n", am, mm)
+    }
+
+}
+
+// Tests for merging 2 producer metering sections.
+func Test_merge_with_meter2(t *testing.T) {
+
+    m1 := Meter{Tokens: 2, PerTimeUnit: "min", NotificationIntervalS: 60}
+    m2 := Meter{Tokens: 3, PerTimeUnit: "min", NotificationIntervalS: 40}
+    mm := Meter{Tokens: 3, PerTimeUnit: "min", NotificationIntervalS: 40}
+    if am := m1.ProducerMergeWith(&m2, 30); !am.IsSame(mm)  {
+        t.Errorf("Meter %v was not merged correclty, expecting %v\n", am, mm)
+    }
+
+    m1 = Meter{Tokens: 3, PerTimeUnit: "min", NotificationIntervalS: 40}
+    m2 = Meter{Tokens: 2, PerTimeUnit: "min", NotificationIntervalS: 60}
+    mm = Meter{Tokens: 3, PerTimeUnit: "min", NotificationIntervalS: 40}
+    if am := m1.ProducerMergeWith(&m2, 30); !am.IsSame(mm)  {
+        t.Errorf("Meter %v was not merged correclty, expecting %v\n", am, mm)
+    }
+
+    m1 = Meter{Tokens: 0, PerTimeUnit: "min", NotificationIntervalS: 40}
+    m2 = Meter{Tokens: 0, PerTimeUnit: "min", NotificationIntervalS: 60}
+    mm = Meter{Tokens: 0, PerTimeUnit: "min", NotificationIntervalS: 40}
+    if am := m1.ProducerMergeWith(&m2, 30); !am.IsSame(mm)  {
+        t.Errorf("Meter %v was not merged correclty, expecting %v\n", am, mm)
+    }
+
+    m1 = Meter{}
+    m2 = Meter{}
+    mm = Meter{}
+    if am := m1.ProducerMergeWith(&m2, 30); !am.IsSame(mm)  {
+        t.Errorf("Meter %v was not merged correclty, expecting %v\n", am, mm)
+    }
+
+    m1 = Meter{}
+    m2 = Meter{Tokens: 1, PerTimeUnit: "min", NotificationIntervalS: 60}
+    mm = Meter{Tokens: 1, PerTimeUnit: "min", NotificationIntervalS: 60}
+    if am := m1.ProducerMergeWith(&m2, 30); !am.IsSame(mm)  {
+        t.Errorf("Meter %v was not merged correclty, expecting %v\n", am, mm)
+    }
+
+    m1 = Meter{Tokens: 1, PerTimeUnit: "min", NotificationIntervalS: 60}
+    m2 = Meter{}
+    mm = Meter{Tokens: 1, PerTimeUnit: "min", NotificationIntervalS: 60}
+    if am := m1.ProducerMergeWith(&m2, 30); !am.IsSame(mm)  {
+        t.Errorf("Meter %v was not merged correclty, expecting %v\n", am, mm)
+    }
+
+    m1 = Meter{Tokens: 1, PerTimeUnit: "min", NotificationIntervalS: 80}
+    m2 = Meter{Tokens: 1, PerTimeUnit: "hour", NotificationIntervalS: 60}
+    mm = Meter{Tokens: 60, PerTimeUnit: "hour", NotificationIntervalS: 60}
+    if am := m1.ProducerMergeWith(&m2, 30); !am.IsSame(mm)  {
+        t.Errorf("Meter %v was not merged correclty, expecting %v\n", am, mm)
+    }
+
+    m1 = Meter{Tokens: 1, PerTimeUnit: "day", NotificationIntervalS: 40}
+    m2 = Meter{Tokens: 1, PerTimeUnit: "hour", NotificationIntervalS: 60}
+    mm = Meter{Tokens: 24, PerTimeUnit: "day", NotificationIntervalS: 40}
+    if am := m1.ProducerMergeWith(&m2, 30); !am.IsSame(mm)  {
         t.Errorf("Meter %v was not merged correclty, expecting %v\n", am, mm)
     }
 

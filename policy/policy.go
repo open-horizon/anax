@@ -102,7 +102,6 @@ func RetrieveAllProperties(policy *Policy) (*PropertyList, error) {
 		*pl = append(*pl, p)
 	}
 
-	*pl = append(*pl, Property{Name: "version", Value: policy.APISpecs[0].Version})
 	*pl = append(*pl, Property{Name: "arch", Value: policy.APISpecs[0].Arch})
 	*pl = append(*pl, Property{Name: "agreementProtocols", Value: policy.AgreementProtocols.As_String_Array()})
 

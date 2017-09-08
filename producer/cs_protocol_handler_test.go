@@ -112,7 +112,7 @@ func createAgreement(proposal string, pol string, agpVersion int, bcType string,
 
     ag := &persistence.EstablishedAgreement{
         Name:                            "",
-        SensorUrl:                       "",
+        SensorUrl:                       []string{""},
         Archived:                        false,
         CurrentAgreementId:              "",
         ConsumerId:                      "",
