@@ -121,3 +121,89 @@ func Test_isValidFor_API(t *testing.T) {
 		t.Errorf("Service2 is valid for infrastructure, %v", serv2)
 	}
 }
+
+func Test_RemoveEnvVar_success1(t *testing.T) {
+
+	e1 := "a=b"
+	e2 := "c=d"
+	e3 := "e=f"
+
+	eList := []string{e1,e2,e3}
+
+	removeDuplicateVariable(&eList, "c=5")
+	if eList[0] != e1 && eList[1] != e3 {
+		t.Errorf("Env var list should contain %v %v, but is %v\n", e1, e3, eList)
+	}
+
+}
+
+func Test_RemoveEnvVar_success2(t *testing.T) {
+
+	e1 := "a=b"
+	e2 := "c=d"
+	e3 := "e=f"
+
+	eList := []string{e1,e2,e3}
+
+	removeDuplicateVariable(&eList, "a=2")
+	if eList[0] != e2 && eList[1] != e3 {
+		t.Errorf("Env var list should contain %v %v, but is %v\n", e2, e3, eList)
+	}
+
+}
+
+func Test_RemoveEnvVar_success3(t *testing.T) {
+
+	e1 := "a=b"
+	e2 := "c=d"
+	e3 := "e=f"
+
+	eList := []string{e1,e2,e3}
+
+	removeDuplicateVariable(&eList, "e=11")
+	if eList[0] != e1 && eList[1] != e2 {
+		t.Errorf("Env var list should contain %v %v, but is %v\n", e1, e2, eList)
+	}
+
+}
+
+func Test_RemoveEnvVar_nothing1(t *testing.T) {
+
+	e1 := "a=b"
+	e2 := "c=d"
+	e3 := "e=f"
+
+	eList := []string{e1,e2,e3}
+
+	removeDuplicateVariable(&eList, "b=3")
+	if eList[0] != e1 && eList[1] != e2 && eList[2] != e3 {
+		t.Errorf("Env var list should contain %v %v %v, but is %v\n", e1, e2, e3, eList)
+	}
+
+}
+
+func Test_RemoveEnvVar_nothing2(t *testing.T) {
+
+	eList := []string{}
+
+	removeDuplicateVariable(&eList, "b=3")
+	if len(eList) != 0 {
+		t.Errorf("Env var list should be empty, but is %v\n", eList)
+	}
+
+}
+
+func Test_RemoveEnvVar_nothing3(t *testing.T) {
+
+	e1 := "a=b"
+	e2 := "c=d"
+	e3 := "e=f"
+
+	eList := []string{e1,e2,e3}
+
+	removeDuplicateVariable(&eList, "ab=3")
+	if eList[0] != e1 && eList[1] != e2 && eList[2] != e3 {
+		t.Errorf("Env var list should contain %v %v %v, but is %v\n", e1, e2, e3, eList)
+	}
+
+}

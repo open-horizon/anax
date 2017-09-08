@@ -74,6 +74,7 @@ type DeploymentDescription struct {
 	Services       map[string]*Service `json:"services"`
 	ServicePattern Pattern             `json:"service_pattern"`
 	Infrastructure bool                `json:"infrastructure"`
+	Overrides      map[string]*Service `json:"overrides"`
 }
 
 var invalidDeploymentOptions = map[string][]string{
@@ -349,6 +350,21 @@ func hashService(service *Service) (string, error) {
 	return base64.URLEncoding.EncodeToString(h.Sum(nil)), nil
 }
 
+// This function will remove an env var that is already in the array. This function
+// modifies the input array.
+func removeDuplicateVariable(existingArray *[]string, newVar string) {
+
+	// Match the variable name and remove it from the array. We dont care about the value of the variable.
+	for ix, v := range *existingArray {
+		envvar := v[:strings.Index(v, "=")]
+		if envvar == newVar[:strings.Index(newVar, "=")] {
+			(*existingArray) = append((*existingArray)[:ix], (*existingArray)[ix+1:]...)
+			return
+		}
+	}
+
+}
+
 func finalizeDeployment(agreementId string, deployment *DeploymentDescription, environmentAdditions map[string]string, workloadROStorageDir string, cpuSet string) (map[string]servicePair, error) {
 
 	// final structure
@@ -452,9 +468,24 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 			serviceConfig.Config.Env = append(serviceConfig.Config.Env, fmt.Sprintf("%s=%v", k, v))
 		}
 
+		// add the environment variables from the deployment definition
 		for _, v := range service.Environment {
 			// skip this one b/c it's dangerous
 			if !strings.HasPrefix(config.ENVVAR_PREFIX+"ETHEREUM_ACCOUNT", v) {
+				serviceConfig.Config.Env = append(serviceConfig.Config.Env, v)
+			}
+		}
+
+		// add the environment variable overrides
+		if len(deployment.Overrides) == 0 {
+			// nothing
+		} else if _, ok := deployment.Overrides[serviceName]; !ok {
+			// nothing
+		} else {
+			for _, v := range deployment.Overrides[serviceName].Environment {
+				// If the env var array already has the variable then we need to remove it before
+				// we add the new one.
+				removeDuplicateVariable(&serviceConfig.Config.Env, v)
 				serviceConfig.Config.Env = append(serviceConfig.Config.Env, v)
 			}
 		}
@@ -1322,6 +1353,17 @@ func (b *ContainerWorker) start() {
 							b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
 						}
 
+						// Add the deployment overrides to the deployment description, if there are any
+						if len(cmd.AgreementLaunchContext.Configure.Overrides) != 0 {
+							overrideDD := new(DeploymentDescription)
+							if err := json.Unmarshal([]byte(cmd.AgreementLaunchContext.Configure.Overrides), &overrideDD); err != nil {
+								glog.Errorf("Error Unmarshalling deployment override string %v for agreement %v, error: %v", cmd.AgreementLaunchContext.Configure.Overrides, agreementId, err)
+								continue
+							} else {
+								deploymentDesc.Overrides = overrideDD.Services
+							}
+						}
+
 						// Dynamically add in a filesystem mapping so that the workload container has a RO filesystem.
 						for serviceName, service := range deploymentDesc.Services {
 							dir := ""
@@ -1521,7 +1563,7 @@ func (b *ContainerWorker) start() {
 
 							// ask governer to record it into the db
 							u, _ := url.Parse("")
-							cc := events.NewContainerConfig(*u, make(map[string]string), make(map[string]string), "", "", "")
+							cc := events.NewContainerConfig(*u, make(map[string]string), make(map[string]string), "", "", "", "")
 							ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey)
 							b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *ll, "", "")
 						}

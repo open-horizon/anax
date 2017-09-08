@@ -128,13 +128,14 @@ type ContainerConfig struct {
 	Deployment          string            `json:"deployment"`       // JSON docker-compose like
 	DeploymentSignature string            `json:"deployment_signature"`
 	DeploymentUserInfo  string            `json:"deployment_user_info"`
+	Overrides           string            `json:"overrides"`
 }
 
 func (c ContainerConfig) String() string {
-	return fmt.Sprintf("TorrentURL: %v, ImageHashes: %v, ImageSignatures: %v, Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v", c.TorrentURL.String(), c.ImageHashes, c.ImageSignatures, c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo)
+	return fmt.Sprintf("TorrentURL: %v, ImageHashes: %v, ImageSignatures: %v, Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, Overrides: %v", c.TorrentURL.String(), c.ImageHashes, c.ImageSignatures, c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo, c.Overrides)
 }
 
-func NewContainerConfig(torrentURL url.URL, imageHashes map[string]string, imageSignatures map[string]string, deployment string, deploymentSignature string, deploymentUserInfo string) *ContainerConfig {
+func NewContainerConfig(torrentURL url.URL, imageHashes map[string]string, imageSignatures map[string]string, deployment string, deploymentSignature string, deploymentUserInfo string, overrides string) *ContainerConfig {
 	return &ContainerConfig{
 		TorrentURL:          torrentURL,
 		ImageHashes:         imageHashes,
@@ -142,6 +143,7 @@ func NewContainerConfig(torrentURL url.URL, imageHashes map[string]string, image
 		Deployment:          deployment,
 		DeploymentSignature: deploymentSignature,
 		DeploymentUserInfo:  deploymentUserInfo,
+		Overrides:           overrides,
 	}
 }
 
