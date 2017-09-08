@@ -965,7 +965,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		if url, err := url.Parse(workload.Torrent.Url); err != nil {
 			return errors.New(fmt.Sprintf("Ill-formed URL: %v", workload.Torrent.Url))
 		} else {
-			cc := events.NewContainerConfig(*url, hashes, signatures, workload.Deployment, workload.DeploymentSignature, workload.DeploymentUserInfo)
+			cc := events.NewContainerConfig(*url, hashes, signatures, workload.Deployment, workload.DeploymentSignature, workload.DeploymentUserInfo, workload.DeploymentOverrides)
 
 			lc := new(events.AgreementLaunchContext)
 			lc.Configure = *cc
@@ -1260,7 +1260,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string) error {
 					return fmt.Errorf(logString(fmt.Sprintf("Error persisting microservice instance for %v %v %v.", msdef.SpecRef, msdef.Version, ms_key)))
 				} else {
 					// Fire an event to the torrent worker so that it will download the container
-					cc := events.NewContainerConfig(*url, hashes, signatures, ms_workload.Deployment, ms_workload.DeploymentSignature, ms_workload.DeploymentUserInfo)
+					cc := events.NewContainerConfig(*url, hashes, signatures, ms_workload.Deployment, ms_workload.DeploymentSignature, ms_workload.DeploymentUserInfo, "")
 
 					// convert the user input from the service attributes to env variables
 					if attrs, err := persistence.FindApplicableAttributes(w.db, msdef.SpecRef); err != nil {
