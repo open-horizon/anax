@@ -166,6 +166,7 @@ func (a *API) listen(apiListen string) {
 		router.HandleFunc("/publickey", a.publickey).Methods("GET", "OPTIONS")
 		router.HandleFunc("/publickey/{filename}", a.publickey).Methods("GET", "PUT", "DELETE", "OPTIONS")
 		router.HandleFunc("/workloadconfig", a.workloadConfig).Methods("GET", "POST", "DELETE", "OPTIONS")
+		router.HandleFunc("/microservice", a.microservice).Methods("GET", "OPTIONS")
 
 		// redirect to index.html because SPA
 		router.HandleFunc(`/{p:[\w\/]+}`, func(w http.ResponseWriter, r *http.Request) {
@@ -556,12 +557,6 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		var msdef *persistence.MicroserviceDefinition
 		if service.SensorVersion != nil {
 
-			// validate the version string
-			if !policy.IsVersionString(*service.SensorVersion) {
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "sensor_version", Error: fmt.Sprintf("sensor_version %v is not a valid version string", *service.SensorVersion)})
-				return
-			}
-
 			// convert the sensor version to a version expression
 			vExp, err := policy.Version_Expression_Factory(*service.SensorVersion)
 			if err != nil {
@@ -577,11 +572,28 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Unable to find the microservice definition for '%v' on the exchange. Please verify sensor_url and sensor_version.", *service.SensorName)})
 				return
 			}
-			msdef = microservice.ConvertToPersistent(e_msdef)
+			// conver it to persistent format so that it can be saved to the db.
+			msdef, err = microservice.ConvertToPersistent(e_msdef)
+			if err != nil {
+				glog.Errorf("Error converting the microservice metadata to persistent.MicroserviceDefinition for %v version %v. %v", e_msdef.SpecRef, e_msdef.Version, err)
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Error converting the microservice metadata to persistent.MicroserviceDefinition for %v version %v. %v", e_msdef.SpecRef, e_msdef.Version, err)})
+				return
+
+			}
+			// save some of the items in the MicroserviceDefinition object for use in the upgrading process.
+			msdef.Name = *service.SensorName
+			msdef.UpgradeVersionRange = *service.SensorVersion
+			if service.AutoUpgrade != nil {
+				msdef.AutoUpgrade = *service.AutoUpgrade
+			}
+			if service.ActiveUpgrade != nil {
+				msdef.ActiveUpgrade = *service.ActiveUpgrade
+			}
+
 			*service.SensorVersion = msdef.Version
 
 			// check if the microservice has been registered or not (currently only support one microservice per workload)
-			if pms, err := persistence.FindMicroserviceDefs(a.db, []persistence.MSFilter{persistence.AllDefsForUrlMSFilter(*service.SensorUrl)}); err != nil {
+			if pms, err := persistence.FindMicroserviceDefs(a.db, []persistence.MSFilter{persistence.UrlMSFilter(*service.SensorUrl)}); err != nil {
 				glog.Errorf("Error accessing db to find microservice definition: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
@@ -839,11 +851,19 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 
 		// Fire event to load the microservice container
 		if service.SensorVersion != nil {
-			a.Messages() <- events.NewStartMicroserviceMessage(events.START_MICROSERVICE, msdef.GetKey())
+			a.Messages() <- events.NewStartMicroserviceMessage(events.START_MICROSERVICE, msdef.Id)
 		}
 
+		// use nil as version for old behaviour befor the ms split.
+		// for miceroservice, use the hightest available microservice version within range gotten from the exchange.
+		var vstring *string
+		if service.SensorVersion != nil {
+			vstring = &(msdef.Version)
+		} else {
+			vstring = nil
+		}
 		// Generate a policy based on all the attributes and the service definition
-		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorUrl, *service.SensorName, service.SensorVersion, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, a.Config.Edge.PolicyPath); genErr != nil {
+		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorUrl, *service.SensorName, vstring, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, a.Config.Edge.PolicyPath); genErr != nil {
 			glog.Errorf("Error: %v", genErr)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -1594,6 +1614,91 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, POST, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *API) microservice(w http.ResponseWriter, r *http.Request) {
+
+	switch r.Method {
+	case "GET":
+		pathVars := mux.Vars(r)
+		id := pathVars["id"]
+
+		// we don't support getting just one yet
+		if id != "" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		msinsts, err := persistence.FindMicroserviceInstances(a.db, []persistence.MIFilter{})
+		if err != nil {
+			glog.Error(err)
+			http.Error(w, fmt.Sprintf("Internal server error: $v", err), http.StatusInternalServerError)
+			return
+		}
+
+		msdefs, err := persistence.FindMicroserviceDefs(a.db, []persistence.MSFilter{})
+		if err != nil {
+			glog.Error(err)
+			http.Error(w, fmt.Sprintf("Internal server error: $v", err), http.StatusInternalServerError)
+			return
+		}
+
+		var msinstKey = "instances"
+		var msdefKey = "definitions"
+		var archivedKey = "archived"
+		var activeKey = "active"
+
+		wrap := make(map[string]map[string][]interface{}, 0)
+
+		wrap[msinstKey] = make(map[string][]interface{}, 0)
+		wrap[msinstKey][archivedKey] = []interface{}{}
+		wrap[msinstKey][activeKey] = []interface{}{}
+
+		wrap[msdefKey] = make(map[string][]interface{}, 0)
+		wrap[msdefKey][archivedKey] = make([]interface{}, 0)
+		wrap[msdefKey][activeKey] = make([]interface{}, 0)
+
+		for _, msinst := range msinsts {
+			if msinst.Archived {
+				wrap[msinstKey][archivedKey] = append(wrap[msinstKey][archivedKey], msinst)
+			} else {
+				wrap[msinstKey][activeKey] = append(wrap[msinstKey][activeKey], msinst)
+			}
+		}
+
+		for _, msdef := range msdefs {
+			if msdef.Archived {
+				wrap[msdefKey][archivedKey] = append(wrap[msdefKey][archivedKey], msdef)
+			} else {
+				wrap[msdefKey][activeKey] = append(wrap[msdefKey][activeKey], msdef)
+			}
+		}
+
+		// do sorts
+		sort.Sort(MicroserviceInstanceByMicroserviceDefId(wrap[msinstKey][activeKey]))
+		sort.Sort(MicroserviceInstanceByCleanupStartTime(wrap[msinstKey][archivedKey]))
+		sort.Sort(MicroserviceDefById(wrap[msdefKey][activeKey]))
+		sort.Sort(MicroserviceDefByUpgradeStartTime(wrap[msdefKey][archivedKey]))
+
+		serial, err := json.Marshal(wrap)
+		if err != nil {
+			glog.Infof("Error serializing microservice output: %v", err)
+			http.Error(w, fmt.Sprintf("Internal server error: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if _, err := w.Write(serial); err != nil {
+			glog.Infof("Error writing response: %v", err)
+			http.Error(w, fmt.Sprintf("Internal server error: %v", err), http.StatusInternalServerError)
+			return
+		}
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
 		w.WriteHeader(http.StatusOK)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)

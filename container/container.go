@@ -1497,8 +1497,8 @@ func (b *ContainerWorker) start() {
 						glog.Errorf("Error retrieving microservice instance from database for %v, error: %v", cmd.MsInstKey, err)
 					} else if msinst == nil {
 						glog.Errorf("Cannot find microservice instance record from database for %v.", cmd.MsInstKey)
-					} else if serviceNames, err := b.findMicroserviceDefContainerNames(msinst.SpecRef, msinst.Version); err != nil {
-						glog.Errorf("Error retrieving microservice definition from database for %v, error: %v", cmd.MsInstKey, err)
+					} else if serviceNames, err := b.findMicroserviceDefContainerNames(msinst.SpecRef, msinst.Version, msinst.MicroserviceDefId); err != nil {
+						glog.Errorf("Error retrieving microservice contianers for %v, error: %v", cmd.MsInstKey, err)
 					} else if serviceNames != nil && len(serviceNames) > 0 {
 
 						report := func(container *docker.APIContainers, instance_key string) error {
@@ -1896,18 +1896,18 @@ func (b *ContainerWorker) ContainersMatchingAgreement(agreements []string, inclu
 }
 
 // find the microservice definition from the db
-func (b *ContainerWorker) findMicroserviceDefContainerNames(api_spec string, version string) ([]string, error) {
+func (b *ContainerWorker) findMicroserviceDefContainerNames(api_spec string, version string, msdef_key string) ([]string, error) {
 
 	container_names := make([]string, 0)
 	// find the ms from the local db, it is okay if the ms def is not found. this is old behavious befor the ms split.
-	if msdef, err := persistence.FindMicroserviceDef(b.db, api_spec, version); err != nil {
-		return nil, fmt.Errorf("Error finding microservice definition from the local db for %v version %v. %v", api_spec, version, err)
+	if msdef, err := persistence.FindMicroserviceDefWithKey(b.db, msdef_key); err != nil {
+		return nil, fmt.Errorf("Error finding microservice definition from the local db for %v version %v key %v. %v", api_spec, version, msdef_key, err)
 	} else if msdef != nil && msdef.Workloads != nil && len(msdef.Workloads) > 0 {
 		// get the service name from the ms def
 		for _, wl := range msdef.Workloads {
 			deploymentDesc := new(DeploymentDescription)
 			if err := json.Unmarshal([]byte(wl.Deployment), &deploymentDesc); err != nil {
-				return nil, fmt.Errorf("Error Unmarshalling deployment string %v for microservice %vversion %v. %v", wl.Deployment, api_spec, version, err)
+				return nil, fmt.Errorf("Error Unmarshalling deployment string %v for microservice %v version %v. %v", wl.Deployment, api_spec, version, err)
 			} else {
 				for serviceName, _ := range deploymentDesc.Services {
 					container_names = append(container_names, serviceName)
@@ -1928,11 +1928,8 @@ func (b *ContainerWorker) findMsContainersAndUpdateMsInstance(agreementId string
 	} else {
 		for _, api_spec := range microservices {
 			// find the ms from the local db,
-			if msc_names, err := b.findMicroserviceDefContainerNames(api_spec.SpecRef, api_spec.Version); err != nil {
+			if msc_names, err := b.findMicroserviceDefContainerNames(api_spec.SpecRef, api_spec.Version, api_spec.MsdefId); err != nil {
 				return nil, fmt.Errorf("Error finding microservice definition from the local db for %v. %v", api_spec, err)
-			} else if msc_names == nil || len(msc_names) == 0 {
-				glog.V(5).Infof("No containers defined for microdevice %v", api_spec)
-				continue
 			} else if msinsts, err := persistence.FindMicroserviceInstances(b.db, []persistence.MIFilter{persistence.AllInstancesMIFilter(api_spec.SpecRef, api_spec.Version), persistence.UnarchivedMIFilter()}); err != nil {
 				return nil, fmt.Errorf("Error retrieving microservice instances for %v version %v from database, error: %v", api_spec.SpecRef, api_spec.Version, err)
 			} else if msinsts == nil || len(msinsts) == 0 {
@@ -1944,6 +1941,10 @@ func (b *ContainerWorker) findMsContainersAndUpdateMsInstance(agreementId string
 				// save the agreement id to the microservice instance
 				if persistence.UpdateMSInstanceAssociaedAgreements(b.db, ms_instance.GetKey(), true, agreementId); err != nil {
 					return nil, fmt.Errorf("Error saving associated agreement id %v to microservice instances %v in the db, error: %v", agreementId, ms_instance.GetKey(), err)
+				}
+
+				if msc_names == nil || len(msc_names) == 0 {
+					continue
 				}
 
 				// get the service name from the ms def

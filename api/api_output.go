@@ -51,3 +51,59 @@ func (s WorkloadConfigByWorkloadURLAndVersion) Less(i, j int) bool {
 
 	return (strings.Compare(s[i].WorkloadURL, s[j].WorkloadURL) == -1) && (strings.Compare(first, second) == -1)
 }
+
+type MicroserviceDefById []interface{}
+
+func (s MicroserviceDefById) Len() int {
+	return len(s)
+}
+
+func (s MicroserviceDefById) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s MicroserviceDefById) Less(i, j int) bool {
+	return s[i].(persistence.MicroserviceDefinition).Id < s[j].(persistence.MicroserviceDefinition).Id
+}
+
+type MicroserviceDefByUpgradeStartTime []interface{}
+
+func (s MicroserviceDefByUpgradeStartTime) Len() int {
+	return len(s)
+}
+
+func (s MicroserviceDefByUpgradeStartTime) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s MicroserviceDefByUpgradeStartTime) Less(i, j int) bool {
+	return s[i].(persistence.MicroserviceDefinition).UpgradeStartTime < s[j].(persistence.MicroserviceDefinition).UpgradeStartTime
+}
+
+type MicroserviceInstanceByMicroserviceDefId []interface{}
+
+func (s MicroserviceInstanceByMicroserviceDefId) Len() int {
+	return len(s)
+}
+
+func (s MicroserviceInstanceByMicroserviceDefId) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s MicroserviceInstanceByMicroserviceDefId) Less(i, j int) bool {
+	return s[i].(persistence.MicroserviceInstance).MicroserviceDefId < s[j].(persistence.MicroserviceInstance).MicroserviceDefId
+}
+
+type MicroserviceInstanceByCleanupStartTime []interface{}
+
+func (s MicroserviceInstanceByCleanupStartTime) Len() int {
+	return len(s)
+}
+
+func (s MicroserviceInstanceByCleanupStartTime) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s MicroserviceInstanceByCleanupStartTime) Less(i, j int) bool {
+	return s[i].(persistence.MicroserviceInstance).CleanupStartTime < s[j].(persistence.MicroserviceInstance).CleanupStartTime
+}

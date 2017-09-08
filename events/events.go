@@ -87,9 +87,9 @@ type LaunchContext interface {
 }
 
 type MicroserviceSpec struct {
-	SpecRef string
-	Version string
-	Arch    string
+	SpecRef  string
+	Version  string
+	MsdefId  string
 }
 
 type AgreementLaunchContext struct {
@@ -154,7 +154,7 @@ type ContainerLaunchContext struct {
 	Configure            ContainerConfig
 	EnvironmentAdditions *map[string]string
 	Blockchain           BlockchainConfig
-	Name                 string // used as the docker network name and part of container name
+	Name                 string // used as the docker network name and part of container name. For microservice it is the ms instance key
 }
 
 func (c ContainerLaunchContext) String() string {

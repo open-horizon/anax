@@ -110,23 +110,24 @@ func (w *GovernanceWorker) NewStartMicroserviceCommand(key string) *StartMicrose
 }
 
 // ==============================================================================================================
-type UpdateMicroserviceInstanceCommand struct {
+type UpdateMicroserviceCommand struct {
 	MsInstKey            string // the name that was passed into the ContainerLaunchContext, it is the key to the MicroserviceInstance table.
 	ExecutionStarted     bool
 	ExecutionFailureCode uint
 	ExecutionFailureDesc string
 }
 
-func (c UpdateMicroserviceInstanceCommand) ShortString() string {
-	return fmt.Sprintf("UpdateMicroserviceInstanceCommand: MsInstKey %v, ExecutionStarted %v, ExecutionFailureCode %v, ExecutionFailureDesc %v",
+func (c UpdateMicroserviceCommand) ShortString() string {
+	return fmt.Sprintf("UpdateMicroserviceCommand: MsInstKey %v, ExecutionStarted %v, ExecutionFailureCode %v, ExecutionFailureDesc %v",
 		c.MsInstKey, c.ExecutionStarted, c.ExecutionFailureCode, c.ExecutionFailureDesc)
 }
 
-func (w *GovernanceWorker) NewUpdateMicroserviceInstanceCommand(key string, started bool, failure_code uint, failure_desc string) *UpdateMicroserviceInstanceCommand {
-	return &UpdateMicroserviceInstanceCommand{
+func (w *GovernanceWorker) NewUpdateMicroserviceCommand(key string, started bool, failure_code uint, failure_desc string) *UpdateMicroserviceCommand {
+	return &UpdateMicroserviceCommand{
 		MsInstKey:            key,
 		ExecutionStarted:     started,
 		ExecutionFailureCode: failure_code,
 		ExecutionFailureDesc: failure_desc,
 	}
 }
+

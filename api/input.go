@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"net/http"
 	"reflect"
+	"strconv"
 )
 
 type HorizonAccount struct {
@@ -66,15 +67,29 @@ type Service struct {
 	SensorUrl     *string      `json:"sensor_url"`     // uniquely identifying
 	SensorName    *string      `json:"sensor_name"`    // may not be uniquely identifying
 	SensorVersion *string      `json:"sensor_version"` // added for ms split. It is only used for microsevice. If it is omitted, old behavior is asumed.
+	AutoUpgrade   *bool        `json:"auto_upgrade"`   // added for ms split. The default is false. If the sensor (microservice) should be automatically upgraded when new versions become available.
+	ActiveUpgrade *bool        `json:"active_upgrade"` // added for ms split. The default is false. If horizon should actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade.
 	Attributes    *[]Attribute `json:"attributes"`
 }
 
 func (s *Service) String() string {
 	version := ""
+	auto_upgrade := ""
+	active_upgrade := ""
+
 	if s.SensorVersion != nil {
 		version = *s.SensorVersion
 	}
-	return fmt.Sprintf("SensorUrl: %v, SensorName: %v, SensorVersion Attributes: %s", *s.SensorUrl, *s.SensorName, version, s.Attributes)
+
+	if s.AutoUpgrade != nil {
+		auto_upgrade = strconv.FormatBool(*s.AutoUpgrade)
+	}
+
+	if s.ActiveUpgrade != nil {
+		active_upgrade = strconv.FormatBool(*s.ActiveUpgrade)
+	}
+
+	return fmt.Sprintf("SensorUrl: %v, SensorName: %v, SensorVersion: %v, AutoUpgrade: %v, ActiveUpgrade: %v, Attributes: %s", *s.SensorUrl, *s.SensorName, version, auto_upgrade, active_upgrade, s.Attributes)
 }
 
 func attributesContains(given []persistence.ServiceAttribute, sensorUrl string, typeString string) *persistence.ServiceAttribute {
