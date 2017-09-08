@@ -322,10 +322,10 @@ func Test_AgreementProtocolList_single_element(t *testing.T) {
 			}
 		}
 
-		p1 = `[{"name":"ap1"},{"name":"Basic"}]`
-		if pl1 = create_AgreementProtocolList(p1, t); pl1 != nil {
-			if pl2 := pl1.Single_Element(); !pl2.IsSame(*pb1) {
-				t.Errorf("Error: returned %v, should have returned %v\n", pl2, pb1)
+		p1a := `[{"name":"ap1"},{"name":"Basic"}]`
+		if pl1a := create_AgreementProtocolList(p1a, t); pl1 != nil {
+			if pl2 := pl1a.Single_Element(); !pl2.IsSame(*pl1) {
+				t.Errorf("Error: returned %v, should have returned %v\n", pl2, pl1)
 			}
 		}
 	}
