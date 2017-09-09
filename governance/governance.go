@@ -45,7 +45,6 @@ const STATUS_AG_PROTOCOL_TERMINATED = 501
 type GovernanceWorker struct {
 	worker.Worker // embedded field
 	db            *bolt.DB
-	httpClient    *http.Client
 	bc            *ethblockchain.BaseContracts
 	deviceId      string
 	deviceToken   string
@@ -76,7 +75,6 @@ func NewGovernanceWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.Poli
 		},
 
 		db:          db,
-		httpClient:  &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
 		pm:          pm,
 		deviceId:    id,
 		deviceToken: token,
@@ -449,7 +447,7 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 
 	// Delete from the exchange
 	if ag != nil && ag.AgreementAcceptedTime != 0 {
-		if err := deleteProducerAgreement(w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, agreementId); err != nil {
+		if err := deleteProducerAgreement(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, agreementId); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("error deleting agreement %v in exchange: %v", agreementId, err)))
 		}
 	}
@@ -929,7 +927,7 @@ func (w *GovernanceWorker) finalizeAgreement(agreement persistence.EstablishedAg
 		return errors.New(logString(fmt.Sprintf("could not hydrate proposal, error: %v", err)))
 	} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 		return errors.New(logString(fmt.Sprintf("error demarshalling TsAndCs policy for agreement %v, error %v", agreement.CurrentAgreementId, err)))
-	} else if err := recordProducerAgreementState(w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, agreement.CurrentAgreementId, &tcPolicy.APISpecs, "Finalized Agreement"); err != nil {
+	} else if err := recordProducerAgreementState(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, agreement.CurrentAgreementId, &tcPolicy.APISpecs, "Finalized Agreement"); err != nil {
 		return errors.New(logString(fmt.Sprintf("error setting agreement %v finalized state in exchange: %v", agreement.CurrentAgreementId, err)))
 	}
 
@@ -945,7 +943,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		// Update the state in the exchange
 	} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 		return errors.New(logString(fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
-	} else if err := recordProducerAgreementState(w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, proposal.AgreementId(), &tcPolicy.APISpecs, "Agree to proposal"); err != nil {
+	} else if err := recordProducerAgreementState(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, proposal.AgreementId(), &tcPolicy.APISpecs, "Agree to proposal"); err != nil {
 		return errors.New(logString(fmt.Sprintf("received error setting state for agreement %v", err)))
 	} else {
 		// Publish the "agreement reached" event to the message bus so that torrent can start downloading the workload
@@ -987,7 +985,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 				}
 				// The workload config we have might be from a lower version of the workload. Go to the exchange and
 				// get the metadata for the version we are running and then add in any unset default user inputs.
-				if exWkld, err := exchange.GetWorkload(workload.WorkloadURL, workload.Version, workload.Arch, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken); err != nil {
+				if exWkld, err := exchange.GetWorkload(w.Config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Version, workload.Arch, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken); err != nil {
 					return errors.New(logString(fmt.Sprintf("received error querying excahnge for workload metadata, error %v", err)))
 				} else {
 					for _, ui := range exWkld.UserInputs {
@@ -1101,7 +1099,7 @@ func (w *GovernanceWorker) GetWorkloadConfig(url string, version string) (map[st
 
 }
 
-func recordProducerAgreementState(url string, deviceId string, token string, agreementId string, apiSpecs *policy.APISpecList, state string) error {
+func recordProducerAgreementState(httpClient *http.Client, url string, deviceId string, token string, agreementId string, apiSpecs *policy.APISpecList, state string) error {
 
 	glog.V(5).Infof(logString(fmt.Sprintf("setting agreement %v state to %v", agreementId, state)))
 
@@ -1112,7 +1110,7 @@ func recordProducerAgreementState(url string, deviceId string, token string, agr
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := url + "devices/" + deviceId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "PUT", targetURL, deviceId, token, &as, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(httpClient, "PUT", targetURL, deviceId, token, &as, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
@@ -1127,7 +1125,7 @@ func recordProducerAgreementState(url string, deviceId string, token string, agr
 
 }
 
-func deleteProducerAgreement(url string, deviceId string, token string, agreementId string) error {
+func deleteProducerAgreement(httpClient *http.Client, url string, deviceId string, token string, agreementId string) error {
 
 	glog.V(5).Infof(logString(fmt.Sprintf("deleting agreement %v in exchange", agreementId)))
 
@@ -1135,7 +1133,7 @@ func deleteProducerAgreement(url string, deviceId string, token string, agreemen
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := url + "devices/" + deviceId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(httpClient, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
@@ -1155,7 +1153,7 @@ func (w *GovernanceWorker) deleteMessage(msg *exchange.DeviceMessage) error {
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/msgs/" + strconv.Itoa(msg.MsgId)
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.httpClient, "DELETE", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "DELETE", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
 			glog.Errorf(err.Error())
 			return err
 		} else if tpErr != nil {
@@ -1174,7 +1172,7 @@ func (w *GovernanceWorker) messageInExchange(msgId int) (bool, error) {
 	resp = new(exchange.GetDeviceMessageResponse)
 	targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/msgs"
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
 			glog.Errorf(err.Error())
 			return false, err
 		} else if tpErr != nil {
@@ -1382,7 +1380,7 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 	unregError = microservice.RemoveMicroservicePolicy(msdef.SpecRef, msdef.Version, msdef.Id, w.Config.Edge.PolicyPath, w.pm)
 	if unregError != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to remove microservice policy for microservice def %v version %v. %v", msdef.SpecRef, msdef.Version, unregError)))
-	} else if unregError = microservice.UnregisterMicroserviceExchange(msdef.SpecRef, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, w.db); unregError != nil {
+	} else if unregError = microservice.UnregisterMicroserviceExchange(msdef.SpecRef, w.Config.Collaborators.HTTPClientFactory, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, w.db); unregError != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to unregister microservice from the exchange for microservice def %v. %v", msdef.SpecRef, unregError)))
 	}
 	// update msdef UpgradeMsUnregisteredTime
@@ -1479,7 +1477,7 @@ func (w *GovernanceWorker) RollbackMicroservice(old_msdef *persistence.Microserv
 	if new_msdef.UpgradeMsReregisteredTime > 0 {
 		if err := microservice.RemoveMicroservicePolicy(new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, w.Config.Edge.PolicyPath, w.pm); err != nil {
 			return fmt.Errorf(logString(fmt.Sprintf("Failed to remove microservice policy for microservice def %v version %v key %d. %v", new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
-		} else if err := microservice.UnregisterMicroserviceExchange(new_msdef.SpecRef, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, w.db); err != nil {
+		} else if err := microservice.UnregisterMicroserviceExchange(new_msdef.SpecRef, w.Config.Collaborators.HTTPClientFactory, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, w.db); err != nil {
 			return fmt.Errorf(logString(fmt.Sprintf("Failed to unregister microservice from the exchange for microservice def %v. %v", new_msdef.SpecRef, err)))
 		}
 	}
@@ -1510,7 +1508,7 @@ func (w *GovernanceWorker) HandleMicroserviceUpgrade(msdef_id string, inactiveOn
 		glog.Errorf(logString(fmt.Sprintf("error getting microservice definitions %v from db. %v", msdef_id, err)))
 	} else if ((!inactiveOnly) || (!msdef.ActiveUpgrade)) && microservice.MicroserviceReadyForUpgrade(msdef, w.db) {
 		// find the new ms def to upgrade to
-		if new_msdef, err := microservice.GetUpgadeMicroserviceDef(msdef, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, w.db); err != nil {
+		if new_msdef, err := microservice.GetUpgradeMicroserviceDef(msdef, w.Config.Collaborators.HTTPClientFactory, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, w.db); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("Error finding the new microservice definition to upgrade to for %v version. %v", msdef.SpecRef, msdef.Version, err)))
 		} else if new_msdef == nil {
 			glog.V(5).Infof(logString(fmt.Sprintf("No changes for microservice definition %v, no need to upgrade.", msdef.SpecRef)))

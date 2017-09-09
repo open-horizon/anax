@@ -13,9 +13,7 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
-	"net/http"
 	"os"
-	"time"
 )
 
 type BlockchainState struct {
@@ -35,17 +33,18 @@ type CSProtocolHandler struct {
 
 func NewCSProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, deviceId string, token string) *CSProtocolHandler {
 	if name == citizenscientist.PROTOCOL_NAME {
+
 		return &CSProtocolHandler{
 			BaseProducerProtocolHandler: &BaseProducerProtocolHandler{
 				name:       name,
 				pm:         pm,
 				db:         db,
 				config:     cfg,
+				httpClient: cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 				deviceId:   deviceId,
 				token:      token,
-				httpClient: &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
 			},
-			genericAgreementPH: citizenscientist.NewProtocolHandler(pm),
+			genericAgreementPH: citizenscientist.NewProtocolHandler(cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil), pm),
 			bcState:            make(map[string]map[string]*BlockchainState),
 		}
 	} else {
@@ -223,6 +222,8 @@ func (c *CSProtocolHandler) SetBlockchainWritable(cmd *BCWritableCommand) {
 
 	nameMap := c.getBCNameMap(cmd.Msg.BlockchainType())
 
+	httpClient := c.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil)
+
 	_, ok := nameMap[cmd.Msg.BlockchainInstance()]
 	if !ok {
 		nameMap[cmd.Msg.BlockchainInstance()] = &BlockchainState{
@@ -231,7 +232,7 @@ func (c *CSProtocolHandler) SetBlockchainWritable(cmd *BCWritableCommand) {
 			service:     cmd.Msg.ServiceName(),
 			servicePort: cmd.Msg.ServicePort(),
 			colonusDir:  cmd.Msg.ColonusDir(),
-			agreementPH: citizenscientist.NewProtocolHandler(c.pm),
+			agreementPH: citizenscientist.NewProtocolHandler(httpClient, c.pm),
 		}
 	} else {
 		nameMap[cmd.Msg.BlockchainInstance()].ready = true
@@ -239,7 +240,7 @@ func (c *CSProtocolHandler) SetBlockchainWritable(cmd *BCWritableCommand) {
 		nameMap[cmd.Msg.BlockchainInstance()].service = cmd.Msg.ServiceName()
 		nameMap[cmd.Msg.BlockchainInstance()].servicePort = cmd.Msg.ServicePort()
 		nameMap[cmd.Msg.BlockchainInstance()].colonusDir = cmd.Msg.ColonusDir()
-		nameMap[cmd.Msg.BlockchainInstance()].agreementPH = citizenscientist.NewProtocolHandler(c.pm)
+		nameMap[cmd.Msg.BlockchainInstance()].agreementPH = citizenscientist.NewProtocolHandler(httpClient, c.pm)
 	}
 
 	glog.V(3).Infof(PPHlogString(fmt.Sprintf("initializing agreement protocol handler for %v", cmd)))

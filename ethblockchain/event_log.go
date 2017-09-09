@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
 	"os"
 	"reflect"
 	"strconv"
@@ -83,7 +84,7 @@ func (self *Event_Log) Get_current_stable_block() string {
 }
 
 // A factory function used to create Event_Log instances
-func Event_Log_Factory(rpcClient *RPC_Client, contractAddress string) *Event_Log {
+func Event_Log_Factory(httpClientFactory *config.HTTPClientFactory, rpcClient *RPC_Client, contractAddress string) *Event_Log {
 
 	var err error
 
@@ -97,7 +98,7 @@ func Event_Log_Factory(rpcClient *RPC_Client, contractAddress string) *Event_Log
 
 	rpcc := rpcClient
 	if rpcc == nil {
-		if rpcc = getRPCClient(); rpcc == nil {
+		if rpcc = getRPCClient(httpClientFactory); rpcc == nil {
 			return nil
 		}
 	}
@@ -290,13 +291,13 @@ func (self *Event_Log) remove_Filter() error {
 	}
 }
 
-func getRPCClient() *RPC_Client {
+func getRPCClient(httpClientFactory *config.HTTPClientFactory) *RPC_Client {
 	var rpcc *RPC_Client
 
 	if con := RPC_Connection_Factory("", 0, "http://localhost:8545"); con == nil {
 		glog.Errorf("RPC Connection not created")
 		return nil
-	} else if rpcc = RPC_Client_Factory(con); rpcc == nil {
+	} else if rpcc = RPC_Client_Factory(httpClientFactory, con); rpcc == nil {
 		glog.Errorf("RPC Client not created")
 		return nil
 	}

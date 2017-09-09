@@ -10,9 +10,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/satori/go.uuid"
 	"math/rand"
-	"net/http"
 	"runtime"
-	"time"
 )
 
 type CSAgreementWorker struct {
@@ -29,7 +27,7 @@ func NewCSAgreementWorker(c *CSProtocolHandler, cfg *config.HorizonConfig, db *b
 			config:     cfg,
 			alm:        alm,
 			workerID:   uuid.NewV4().String(),
-			httpClient: &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
+			httpClient: cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 		},
 		protocolHandler: c,
 	}

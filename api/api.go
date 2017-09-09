@@ -566,7 +566,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// verify with the exchange to make sure the service exists
-			e_msdef, err := exchange.GetMicroservice(*service.SensorUrl, vExp.Get_expression(), cutil.ArchString(), a.Config.Edge.ExchangeURL, existingDevice.Id, existingDevice.Token)
+			e_msdef, err := exchange.GetMicroservice(a.Config.Collaborators.HTTPClientFactory, *service.SensorUrl, vExp.Get_expression(), cutil.ArchString(), a.Config.Edge.ExchangeURL, existingDevice.Id, existingDevice.Token)
 			if err != nil || e_msdef == nil {
 				glog.Errorf("Unable to find the microservice definition in the exchange: %v", err)
 				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Unable to find the microservice definition for '%v' on the exchange. Please verify sensor_url and sensor_version.", *service.SensorName)})
@@ -1474,7 +1474,7 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Get the workload metadata from the exchange and verify the userInput against the variables in the POST body.
-		workloadDef, err := exchange.GetWorkload(cfg.WorkloadURL, vExp.Get_expression(), cutil.ArchString(), a.Config.Edge.ExchangeURL, existingDevice.Id, existingDevice.Token)
+		workloadDef, err := exchange.GetWorkload(a.Config.Collaborators.HTTPClientFactory, cfg.WorkloadURL, vExp.Get_expression(), cutil.ArchString(), a.Config.Edge.ExchangeURL, existingDevice.Id, existingDevice.Token)
 		if err != nil || workloadDef == nil {
 			glog.Errorf("Unable to find the workload definition using version %v in the exchange: %v", vExp.Get_expression(), err)
 			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Unable to find the workload definition using version %v in the exchange.", vExp.Get_expression())})

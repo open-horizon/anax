@@ -211,7 +211,7 @@ func (a *API) policyUpgrade(w http.ResponseWriter, r *http.Request) {
 		glog.V(3).Infof(APIlogString(fmt.Sprintf("handling POST of policy: %v", policyName)))
 
 		workloadResolver := func(wURL string, wVersion string, wArch string) (*policy.APISpecList, error) {
-			asl, err := exchange.WorkloadResolver(wURL, wVersion, wArch, a.Config.AgreementBot.ExchangeURL, a.Config.AgreementBot.ExchangeId, a.Config.AgreementBot.ExchangeToken)
+			asl, err := exchange.WorkloadResolver(a.Config.Collaborators.HTTPClientFactory, wURL, wVersion, wArch, a.Config.AgreementBot.ExchangeURL, a.Config.AgreementBot.ExchangeId, a.Config.AgreementBot.ExchangeToken)
 			if err != nil {
 				glog.Errorf(APIlogString(fmt.Sprintf("unable to resolve workload, error %v", err)))
 			}

@@ -54,9 +54,9 @@ type BaseProducerProtocolHandler struct {
 	pm         *policy.PolicyManager
 	db         *bolt.DB
 	config     *config.HorizonConfig
+	httpClient *http.Client
 	deviceId   string
 	token      string
-	httpClient *http.Client
 }
 
 func (w *BaseProducerProtocolHandler) GetSendMessage() func(mt interface{}, pay []byte) error {
@@ -108,7 +108,7 @@ func (w *BaseProducerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 		resp = new(exchange.PostDeviceResponse)
 		targetURL := w.config.Edge.ExchangeURL + "agbots/" + messageTarget.ReceiverExchangeId + "/msgs"
 		for {
-			if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.deviceId, w.token, pm, &resp); err != nil {
+			if err, tpErr := exchange.InvokeExchange(w.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "POST", targetURL, w.deviceId, w.token, pm, &resp); err != nil {
 				return err
 			} else if tpErr != nil {
 				glog.Warningf(tpErr.Error())
@@ -130,7 +130,7 @@ func (w *BaseProducerProtocolHandler) GetWorkloadResolver() func(wURL string, wV
 
 func (w *BaseProducerProtocolHandler) workloadResolver(wURL string, wVersion string, wArch string) (*policy.APISpecList, error) {
 
-	asl, err := exchange.WorkloadResolver(wURL, wVersion, wArch, w.config.Edge.ExchangeURL, w.deviceId, w.token)
+	asl, err := exchange.WorkloadResolver(w.config.Collaborators.HTTPClientFactory, wURL, wVersion, wArch, w.config.Edge.ExchangeURL, w.deviceId, w.token)
 	if err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("unable to resolve workload, error %v", err)))
 	}
@@ -209,7 +209,7 @@ func (w *BaseProducerProtocolHandler) getAgbot(agbotId string, url string, devic
 	resp = new(exchange.GetAgbotsResponse)
 	targetURL := url + "agbots/" + agbotId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "GET", targetURL, deviceId, token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "GET", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf(err.Error())))
 			return nil, err
 		} else if tpErr != nil {

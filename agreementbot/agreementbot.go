@@ -25,7 +25,7 @@ import (
 type AgreementBotWorker struct {
 	worker.Worker // embedded field
 	db            *bolt.DB
-	httpClient    *http.Client
+	httpClient    *http.Client // a shared HTTP client instance for this worker
 	agbotId       string
 	token         string
 	pm            *policy.PolicyManager
@@ -48,7 +48,7 @@ func NewAgreementBotWorker(cfg *config.HorizonConfig, db *bolt.DB) *AgreementBot
 		},
 
 		db:         db,
-		httpClient: &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
+		httpClient: cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 		agbotId:    cfg.AgreementBot.ExchangeId,
 		token:      cfg.AgreementBot.ExchangeToken,
 		consumerPH: make(map[string]ConsumerProtocolHandler),
@@ -221,7 +221,7 @@ func (w *AgreementBotWorker) start() {
 
 		// Begin heartbeating with the exchange.
 		targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/heartbeat"
-		go exchange.Heartbeat(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, targetURL, w.agbotId, w.token, w.Worker.Manager.Config.AgreementBot.ExchangeHeartbeat)
+		go exchange.Heartbeat(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), targetURL, w.agbotId, w.token, w.Worker.Manager.Config.AgreementBot.ExchangeHeartbeat)
 
 		// Start the governance routines.
 		go w.GovernAgreements()
@@ -615,7 +615,7 @@ func RetrieveAllProperties(version string, arch string, pol *policy.Policy) (*po
 	return pl, nil
 }
 
-func DeleteConsumerAgreement(url string, agbotId string, token string, agreementId string) error {
+func DeleteConsumerAgreement(httpClient *http.Client, url string, agbotId string, token string, agreementId string) error {
 
 	logString := func(v interface{}) string {
 		return fmt.Sprintf("AgreementBot Governance: %v", v)
@@ -627,7 +627,7 @@ func DeleteConsumerAgreement(url string, agbotId string, token string, agreement
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := url + "agbots/" + agbotId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "DELETE", targetURL, agbotId, token, nil, &resp); err != nil && !strings.Contains(err.Error(), "not found") {
+		if err, tpErr := exchange.InvokeExchange(httpClient, "DELETE", targetURL, agbotId, token, nil, &resp); err != nil && !strings.Contains(err.Error(), "not found") {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
@@ -672,7 +672,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy) (*[]exchange.Sea
 	// device.
 	if pol.Workloads[0].WorkloadURL != "" {
 		for _, workload := range pol.Workloads {
-			if workload, err := exchange.GetWorkload(workload.WorkloadURL, workload.Version, workload.Arch, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+			if workload, err := exchange.GetWorkload(w.Config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Version, workload.Arch, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
 				return nil, errors.New(fmt.Sprintf("AgreementBotWorker received error retrieving workload definition for %v, error: %v", workload, err))
 			} else {
 				for _, apiSpec := range workload.APISpecs {
@@ -781,7 +781,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 					} else if existingPol := w.pm.GetPolicy(pol.Header.Name); existingPol == nil {
 						glog.Errorf(AWlogString(fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
 						// Update state in exchange
-						if err := DeleteConsumerAgreement(w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId); err != nil {
+						if err := DeleteConsumerAgreement(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId); err != nil {
 							glog.Errorf(AWlogString(fmt.Sprintf("error deleting agreement %v in exchange: %v", ag.CurrentAgreementId, err)))
 						}
 						// Remove any workload usage records so that a new agreement will be made starting from the highest priority workload
@@ -885,7 +885,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 
 func (w *AgreementBotWorker) cleanupAgreement(ag *Agreement) {
 	// Update state in exchange
-	if err := DeleteConsumerAgreement(w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId); err != nil {
+	if err := DeleteConsumerAgreement(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId); err != nil {
 		glog.Errorf(AWlogString(fmt.Sprintf("error deleting agreement %v in exchange: %v", ag.CurrentAgreementId, err)))
 	}
 
@@ -948,7 +948,7 @@ func (w *AgreementBotWorker) incompleteHAGroup(dev exchange.SearchResultDevice, 
 		// Make sure all partners are in the exchange
 		for _, partnerId := range producerPolicy.HAGroup.Partners {
 
-			if _, err := getTheDevice(partnerId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+			if _, err := getTheDevice(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), partnerId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
 				glog.Warningf(AWlogString(fmt.Sprintf("could not obtain device %v from the exchange: %v", partnerId, err)))
 				return err
 			}
@@ -958,7 +958,7 @@ func (w *AgreementBotWorker) incompleteHAGroup(dev exchange.SearchResultDevice, 
 	}
 }
 
-func getTheDevice(deviceId string, url string, agbotId string, token string) (*exchange.Device, error) {
+func getTheDevice(httpClient *http.Client, deviceId string, url string, agbotId string, token string) (*exchange.Device, error) {
 
 	glog.V(5).Infof(AWlogString(fmt.Sprintf("retrieving device %v from exchange", deviceId)))
 
@@ -966,7 +966,7 @@ func getTheDevice(deviceId string, url string, agbotId string, token string) (*e
 	resp = new(exchange.GetDevicesResponse)
 	targetURL := url + "devices/" + deviceId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(httpClient, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
 			glog.Errorf(AWlogString(fmt.Sprintf(err.Error())))
 			return nil, err
 		} else if tpErr != nil {
@@ -1029,7 +1029,8 @@ func (w *AgreementBotWorker) registerPublicKey() error {
 
 func (w *AgreementBotWorker) workloadResolver(wURL string, wVersion string, wArch string) (*policy.APISpecList, error) {
 
-	asl, err := exchange.WorkloadResolver(wURL, wVersion, wArch, w.Config.AgreementBot.ExchangeURL, w.Config.AgreementBot.ExchangeId, w.Config.AgreementBot.ExchangeToken)
+	// TODO: do we need a dedicated HTTP client instance here or can we use the shared one?
+	asl, err := exchange.WorkloadResolver(w.Config.Collaborators.HTTPClientFactory, wURL, wVersion, wArch, w.Config.AgreementBot.ExchangeURL, w.Config.AgreementBot.ExchangeId, w.Config.AgreementBot.ExchangeToken)
 	if err != nil {
 		glog.Errorf(AWlogString(fmt.Sprintf("unable to resolve workload, error %v", err)))
 	}

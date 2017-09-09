@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
-	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/metering"
 	"github.com/open-horizon/anax/policy"
 	"net/http"
-	"time"
 )
 
 const PROTOCOL_NAME = "Basic"
@@ -20,11 +18,11 @@ type ProtocolHandler struct {
 	*abstractprotocol.BaseProtocolHandler
 }
 
-func NewProtocolHandler(pm *policy.PolicyManager) *ProtocolHandler {
+func NewProtocolHandler(httpClient *http.Client, pm *policy.PolicyManager) *ProtocolHandler {
 
 	bph := abstractprotocol.NewBaseProtocolHandler(PROTOCOL_NAME,
 		PROTOCOL_CURRENT_VERSION,
-		&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
+		httpClient,
 		pm)
 
 	return &ProtocolHandler{

@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/golang/glog"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -19,7 +20,7 @@ type Collaborators struct {
 }
 
 func NewCollaborators(hConfig HorizonConfig) (*Collaborators, error) {
-	httpClientFactory, err := NewHTTPClientFactory(hConfig)
+	httpClientFactory, err := newHTTPClientFactory(hConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +38,8 @@ type HTTPClientFactory struct {
 	NewHTTPClient func(overrideTimeoutS *uint) *http.Client
 }
 
-func NewHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
+// TODO: use a pool of clients instead of creating them forevar
+func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 	var caBytes []byte
 
 	if hConfig.Edge.CACertsPath != "" {
@@ -46,14 +48,30 @@ func NewHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Failed to read CACertsFile: %v", hConfig.Edge.CACertsPath)
 		}
+		glog.V(4).Infof("Read CA certs from provided file %v", hConfig.Edge.CACertsPath)
 	}
 
 	var tls tls.Config
 	tls.InsecureSkipVerify = false
 
-	certPool := x509.NewCertPool()
+	var certPool *x509.CertPool
+
+	if hConfig.Edge.TrustSystemCACerts {
+		var err error
+		certPool, err = x509.SystemCertPool()
+		if err != nil {
+			return nil, err
+		}
+		glog.V(4).Info("Added distribution-provided CA Certs to trust")
+
+	} else {
+		certPool = x509.NewCertPool()
+	}
+
 	certPool.AppendCertsFromPEM(caBytes)
 	tls.RootCAs = certPool
+
+	glog.V(5).Infof("Full HTTP client CA Cert trust list subject names: %v", certPool.Subjects())
 
 	tls.BuildNameToCertificate()
 

@@ -43,8 +43,8 @@ type BCInstanceState struct {
 // The worker is single threaded so there are no multi-thread concerns. Events that cause changes to instance state
 // need to be dispatched to the worker thread as commands.
 type EthBlockchainWorker struct {
-	worker.Worker     // embedded field
-	httpClient        *http.Client
+	worker.Worker                  // embedded field
+	httpClient        *http.Client // a shared HTTP client for this worker
 	exchangeURL       string
 	exchangeId        string
 	exchangeToken     string
@@ -67,7 +67,7 @@ func NewEthBlockchainWorker(cfg *config.HorizonConfig) *EthBlockchainWorker {
 			Commands: commands,
 		},
 
-		httpClient:        &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
+		httpClient:        cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 		horizonPubKeyFile: cfg.Edge.PublicKeyPath,
 		instances:         make(map[string]*BCInstanceState),
 		neededBCs:         make(map[string]uint64),
@@ -459,7 +459,7 @@ func (w *EthBlockchainWorker) getEthContainer(name string) error {
 func (w *EthBlockchainWorker) getBCMetadata(name string) (string, *exchange.BlockchainDetails, error) {
 
 	// Get blockchain metadata from the exchange
-	if bcMetadata, err := exchange.GetEthereumClient(w.exchangeURL, name, CHAIN_TYPE, w.exchangeId, w.exchangeToken); err != nil {
+	if bcMetadata, err := exchange.GetEthereumClient(w.Config.Collaborators.HTTPClientFactory, w.exchangeURL, name, CHAIN_TYPE, w.exchangeId, w.exchangeToken); err != nil {
 		return "", nil, errors.New(logString(fmt.Sprintf("unable to get eth client metadata, error: %v", err)))
 	} else if len(bcMetadata) == 0 {
 		glog.Errorf(logString(fmt.Sprintf("no metadata for container %v, giving up on it.", name)))
@@ -591,10 +591,10 @@ func (w *EthBlockchainWorker) initBlockchainEventListener(name string) {
 	if conn := RPC_Connection_Factory("", 0, gethURL); conn == nil {
 		glog.Errorf(logString(fmt.Sprintf("unable to create connection")))
 		return
-	} else if rpc := RPC_Client_Factory(conn); rpc == nil {
+	} else if rpc := RPC_Client_Factory(w.Config.Collaborators.HTTPClientFactory, conn); rpc == nil {
 		glog.Errorf(logString(fmt.Sprintf("unable to create RPC client")))
 		return
-	} else if el := Event_Log_Factory(rpc, bcState.bc.Agreements.Get_contract_address()); el == nil {
+	} else if el := Event_Log_Factory(w.Config.Collaborators.HTTPClientFactory, rpc, bcState.bc.Agreements.Get_contract_address()); el == nil {
 		glog.Errorf(logString(fmt.Sprintf("unable to create blockchain event log")))
 		return
 	} else {

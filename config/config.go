@@ -27,7 +27,8 @@ type Config struct {
 	DefaultServiceRegistrationRAM int64
 	StaticWebContent              string
 	PublicKeyPath                 string
-	CACertsPath                   string
+	TrustSystemCACerts            bool   // If equal to true, the HTTP client factory will set up clients that trust CA certs provided by a Linux distribution (see https://golang.org/pkg/crypto/x509/#SystemCertPool)
+	CACertsPath                   string // Path to a file containing PEM-encoded x509 certs HTTP clients in Anax will trust (additive to the configuration option "TrustSystemCACerts")
 	ExchangeURL                   string
 	DefaultHTTPClientTimeoutS     uint
 	PolicyPath                    string
@@ -110,8 +111,12 @@ func Read(file string) (*HorizonConfig, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Unable to read config file: %s. Error: %v", file, err)
 	} else {
-		// instantiate empty which will be filled
-		config := HorizonConfig{}
+		// instantiate mostly empty which will be filled. Values here are defaults that can be overridden by the user
+		config := HorizonConfig{
+			Edge: Config{
+				DefaultHTTPClientTimeoutS: 20,
+			},
+		}
 
 		err := json.NewDecoder(path).Decode(&config)
 		if err != nil {
