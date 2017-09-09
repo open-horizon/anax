@@ -11,8 +11,9 @@ import (
 const ExchangeURLEnvvarName = "HZN_EXCHANGE_URL"
 
 type HorizonConfig struct {
-	Edge         Config
-	AgreementBot AGConfig
+	Edge          Config
+	AgreementBot  AGConfig
+	Collaborators Collaborators
 }
 
 // This is the configuration options for Edge component flavor of Anax
@@ -28,6 +29,7 @@ type Config struct {
 	PublicKeyPath                 string
 	CACertsPath                   string
 	ExchangeURL                   string
+	DefaultHTTPClientTimeoutS     uint
 	PolicyPath                    string
 	ExchangeHeartbeat             int    // Seconds between heartbeats
 	AgreementTimeoutS             uint64 // Number of seconds to wait before declaring agreement not finalized in blockchain
@@ -121,6 +123,14 @@ func Read(file string) (*HorizonConfig, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Unable to enrich content of config file with envvars: %v", err)
 		}
+
+		// now make collaborators instance and assign it to member in this config
+		collaborators, err := NewCollaborators(config)
+		if err != nil {
+			return nil, err
+		}
+
+		config.Collaborators = *collaborators
 
 		// success at last!
 		return &config, nil
