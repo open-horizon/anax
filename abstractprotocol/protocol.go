@@ -272,7 +272,7 @@ func DecideOnProposal(p ProtocolHandler,
 	if err != nil {
 		replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error getting policy list: %v", p.Name(), err))
 
-	// Tell the policy manager that we're going to attempt an agreement
+		// Tell the policy manager that we're going to attempt an agreement
 	} else if err := p.PolicyManager().AttemptingAgreement(policies, proposal.AgreementId()); err != nil {
 		replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error saving agreement count: %v", p.Name(), err))
 	}
@@ -285,19 +285,19 @@ func DecideOnProposal(p ProtocolHandler,
 		if mergedPolicy, err := p.PolicyManager().MergeAllProducers(&policies, producerPolicy); err != nil {
 			replyErr = errors.New(fmt.Sprintf("Protocol %v unable to merge producer policies, error: %v", p.Name(), err))
 
-		// Now that we successfully merged our policies, make sure that the input producer policy is compatible with
-		// the result of our merge
+			// Now that we successfully merged our policies, make sure that the input producer policy is compatible with
+			// the result of our merge
 		} else if _, err := policy.Are_Compatible_Producers(mergedPolicy, producerPolicy, uint64(producerPolicy.DataVerify.Interval)); err != nil {
 			replyErr = errors.New(fmt.Sprintf("Protocol %v error verifying merged policy %v and %v, error: %v", p.Name(), mergedPolicy, producerPolicy, err))
 
-		// And make sure we havent exceeded the maxAgreements in any of our policies.
+			// And make sure we havent exceeded the maxAgreements in any of our policies.
 		} else if maxedOut, err := p.PolicyManager().ReachedMaxAgreements(policies); maxedOut {
 			replyErr = errors.New(fmt.Sprintf("Protocol %v max agreements reached: %v", p.Name(), p.PolicyManager().AgreementCountString()))
 		} else if err != nil {
 			replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error getting number of agreements, rejecting proposal: %v", p.Name(), err))
 
-		// Now check to make sure that the merged policy is acceptable. The policy is not acceptable if the terms and conditions are not
-		// compatible with the producer's policy.
+			// Now check to make sure that the merged policy is acceptable. The policy is not acceptable if the terms and conditions are not
+			// compatible with the producer's policy.
 		} else if err := policy.Are_Compatible(producerPolicy, termsAndConditions); err != nil {
 			replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error, T and C policy is not compatible, rejecting proposal: %v", p.Name(), err))
 		} else if err := p.PolicyManager().FinalAgreement(policies, proposal.AgreementId()); err != nil {
@@ -534,14 +534,14 @@ func ValidateCancel(can string) (Cancel, error) {
 
 func DemarshalProposal(proposal string) (Proposal, error) {
 
-    // attempt deserialization of the proposal
-    prop := new(BaseProposal)
+	// attempt deserialization of the proposal
+	prop := new(BaseProposal)
 
-    if err := json.Unmarshal([]byte(proposal), &prop); err != nil {
-        return nil, errors.New(fmt.Sprintf("Error deserializing proposal: %s, error: %v", proposal, err))
-    } else {
-        return prop, nil
-    }
+	if err := json.Unmarshal([]byte(proposal), &prop); err != nil {
+		return nil, errors.New(fmt.Sprintf("Error deserializing proposal: %s, error: %v", proposal, err))
+	} else {
+		return prop, nil
+	}
 
 }
 

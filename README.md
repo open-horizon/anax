@@ -31,6 +31,14 @@ Related Projects:
 
     make lint
 
+#### Format code
+
+    make format
+
+#### Execute both unit and integration tests
+
+    make check
+
 #### Execute unit tests
 
     make test

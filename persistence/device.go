@@ -44,7 +44,7 @@ func (e ExchangeDevice) String() string {
 }
 
 // TODO: removed check for email set temporarily until the new account mgmt. stuff is released
-func newExchangeDevice(token string, name string, tokenLastValidTime uint64, ha bool,  account *ExchangeAccount) (*ExchangeDevice, error) {
+func newExchangeDevice(token string, name string, tokenLastValidTime uint64, ha bool, account *ExchangeAccount) (*ExchangeDevice, error) {
 	if token == "" || name == "" || tokenLastValidTime == 0 || account == nil || account.Id == "" {
 		return nil, errors.New("Cannot create exchange account, illegal arguments")
 	}

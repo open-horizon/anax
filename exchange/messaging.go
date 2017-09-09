@@ -14,8 +14,8 @@ import (
 	"github.com/golang/glog"
 	"golang.org/x/crypto/sha3"
 	"io/ioutil"
-	"path"
 	"os"
+	"path"
 )
 
 // This module is used to construct a message that can be sent over an insecure transport
@@ -27,7 +27,7 @@ import (
 // Horizon Exchange Message Broker. The APIs in this module are used to create and deconstruct
 // ExchangeMessages.
 
-type EncryptedWrappedMessage  []byte
+type EncryptedWrappedMessage []byte
 type EncryptedSymmetricValues []byte
 
 type ExchangeMessage struct {
@@ -49,9 +49,9 @@ func (self ExchangeMessage) String() string {
 }
 
 type WrappedMessage struct {
-	Msg             []byte `json:"msg"`
-	Signature       []byte `json:"signature"`
-	SignerPubKey    []byte `json:"signerPubkey"`
+	Msg          []byte `json:"msg"`
+	Signature    []byte `json:"signature"`
+	SignerPubKey []byte `json:"signerPubkey"`
 }
 
 type SymmetricValues struct {
@@ -90,7 +90,7 @@ func ConstructExchangeMessage(message []byte, senderPublicKey *rsa.PublicKey, se
 
 	// 2. Sign the hash (digest).
 	// Signing the message gives the sender the assurance that its message cannot be altered
-	// by a third party. 
+	// by a third party.
 	var signature []byte
 	if signature, err = rsa.SignPSS(rand.Reader, senderPrivateKey, crypto.SHA3_256, digest[:], &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthAuto}); err != nil {
 		return nil, errors.New(fmt.Sprintf("Error signing the message, error: %v", err))
@@ -182,7 +182,7 @@ func ConstructExchangeMessage(message []byte, senderPublicKey *rsa.PublicKey, se
 }
 
 // Here is an overview of what happens in order to deconstruct a secure ExchangeMessage. To more deeply
-// understand message security implemented here, read the ConstructExchangeMessage function. The 
+// understand message security implemented here, read the ConstructExchangeMessage function. The
 // Deconstruct function is just the reverse operations. Here is the sequence:
 // 1. receive the encrypted WrappedMessage and SymmetricValues
 // 2. decrypt the symmetric values using the receiver's private key
@@ -380,7 +380,6 @@ func GetKeys(keyPath string) (*rsa.PublicKey, *rsa.PrivateKey, error) {
 		return gPublicKey, gPrivateKey, nil
 	}
 
-
 	privFileName := "privateMessagingKey.pem"
 	pubFileName := "publicMessagingKey.pem"
 
@@ -416,9 +415,9 @@ func GetKeys(keyPath string) (*rsa.PublicKey, *rsa.PrivateKey, error) {
 			}
 
 			privEnc := &pem.Block{
-					Type:    "RSA PRIVATE KEY",
-					Headers: nil,
-					Bytes:   x509.MarshalPKCS1PrivateKey(privateKey)}
+				Type:    "RSA PRIVATE KEY",
+				Headers: nil,
+				Bytes:   x509.MarshalPKCS1PrivateKey(privateKey)}
 			if err := pem.Encode(privFile, privEnc); err != nil {
 				return nil, nil, errors.New(fmt.Sprintf("Could not encode private key to file, error %v", err))
 			} else {

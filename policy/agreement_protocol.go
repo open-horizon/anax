@@ -11,19 +11,19 @@ const BasicProtocol = "Basic"
 
 var AllProtocols = []string{CitizenScientist, BasicProtocol}
 
-var RequiresBCType = map[string]string{CitizenScientist:Ethereum_bc}
+var RequiresBCType = map[string]string{CitizenScientist: Ethereum_bc}
 
-func SupportedAgreementProtocol(name string)  bool {
-    for _, p := range AllProtocols {
-        if p == name {
-            return true
-        }
-    }
-    return false
+func SupportedAgreementProtocol(name string) bool {
+	for _, p := range AllProtocols {
+		if p == name {
+			return true
+		}
+	}
+	return false
 }
 
 func AllAgreementProtocols() []string {
-    return AllProtocols
+	return AllProtocols
 }
 
 func RequiresBlockchainType(protocolName string) string {
@@ -99,9 +99,9 @@ func ConvertToAgreementProtocolList(list []interface{}) (*[]AgreementProtocol, e
 }
 
 type AgreementProtocol struct {
-	Name            string         `json:"name"` // The name of the agreement protocol to be used
+	Name            string         `json:"name"`                      // The name of the agreement protocol to be used
 	ProtocolVersion int            `json:"protocolVersion,omitempty"` // The max protocol version supported
-	Blockchains     BlockchainList `json:"blockchains,omitempty"` // The blockchain to be used if the protocol requires one.
+	Blockchains     BlockchainList `json:"blockchains,omitempty"`     // The blockchain to be used if the protocol requires one.
 }
 
 func (a AgreementProtocol) IsSame(compare AgreementProtocol) bool {
@@ -148,14 +148,14 @@ func (a *AgreementProtocol) IsValid() error {
 // messages MUST use the same protocol version. Anax will store the protocol version of the initial
 // message for the agreement and will use the stored version for all future messages.
 func (a *AgreementProtocol) MinimumProtocolVersion(other *AgreementProtocol, maxSupportedVersion int) int {
-	if a.ProtocolVersion == 0 { 	// old Anax, before it always exported a protocol version in policy files.
+	if a.ProtocolVersion == 0 { // old Anax, before it always exported a protocol version in policy files.
 		return 1
-	} else if other.ProtocolVersion != 0 && other.ProtocolVersion <= a.ProtocolVersion { 	// Agbot policy file specified something lower than what device supports
+	} else if other.ProtocolVersion != 0 && other.ProtocolVersion <= a.ProtocolVersion { // Agbot policy file specified something lower than what device supports
 		return other.ProtocolVersion
-	} else if other.ProtocolVersion == 0 && maxSupportedVersion < a.ProtocolVersion { 	// For agbot policy files that dont specify a protocol version
+	} else if other.ProtocolVersion == 0 && maxSupportedVersion < a.ProtocolVersion { // For agbot policy files that dont specify a protocol version
 		return maxSupportedVersion
 	} else {
-		return a.ProtocolVersion 	// Producer always exports a protocol version at 2 or higher.
+		return a.ProtocolVersion // Producer always exports a protocol version at 2 or higher.
 	}
 }
 
@@ -167,7 +167,7 @@ func AgreementProtocol_Factory(name string) *AgreementProtocol {
 	if name == CitizenScientist {
 		a.ProtocolVersion = 2
 	} else {
-		a.ProtocolVersion = 1 	// this might have to be zero
+		a.ProtocolVersion = 1 // this might have to be zero
 	}
 	return a
 }

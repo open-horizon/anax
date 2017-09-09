@@ -109,9 +109,9 @@ func NewWorkloadUpgradeCommand(msg events.ABApiWorkloadUpgradeMessage) *Workload
 
 // ==============================================================================================================
 type MakeAgreementCommand struct {
-	ProducerPolicy         policy.Policy               // the producer policy received from the exchange
-	ConsumerPolicy         policy.Policy               // the consumer policy we're matched up with
-	Device                 exchange.SearchResultDevice // the device entry in the exchange
+	ProducerPolicy policy.Policy               // the producer policy received from the exchange
+	ConsumerPolicy policy.Policy               // the consumer policy we're matched up with
+	Device         exchange.SearchResultDevice // the device entry in the exchange
 }
 
 func (e MakeAgreementCommand) ShortString() string {
@@ -120,9 +120,9 @@ func (e MakeAgreementCommand) ShortString() string {
 
 func NewMakeAgreementCommand(pPol policy.Policy, cPol policy.Policy, dev exchange.SearchResultDevice) *MakeAgreementCommand {
 	return &MakeAgreementCommand{
-		ProducerPolicy:         pPol,
-		ConsumerPolicy:         cPol,
-		Device:                 dev,
+		ProducerPolicy: pPol,
+		ConsumerPolicy: cPol,
+		Device:         dev,
 	}
 }
 
@@ -131,13 +131,13 @@ type ClientInitializedCommand struct {
 	Msg events.BlockchainClientInitializedMessage
 }
 
-func (e  ClientInitializedCommand) ShortString() string {
+func (e ClientInitializedCommand) ShortString() string {
 	return e.Msg.ShortString()
 }
 
-func NewClientInitializedCommand(msg *events.BlockchainClientInitializedMessage) * ClientInitializedCommand {
-	return & ClientInitializedCommand{
-		Msg:         *msg,
+func NewClientInitializedCommand(msg *events.BlockchainClientInitializedMessage) *ClientInitializedCommand {
+	return &ClientInitializedCommand{
+		Msg: *msg,
 	}
 }
 
@@ -146,13 +146,13 @@ type ClientStoppingCommand struct {
 	Msg events.BlockchainClientStoppingMessage
 }
 
-func (e  ClientStoppingCommand) ShortString() string {
+func (e ClientStoppingCommand) ShortString() string {
 	return e.Msg.ShortString()
 }
 
-func NewClientStoppingCommand(msg *events.BlockchainClientStoppingMessage) * ClientStoppingCommand {
-	return & ClientStoppingCommand{
-		Msg:         *msg,
+func NewClientStoppingCommand(msg *events.BlockchainClientStoppingMessage) *ClientStoppingCommand {
+	return &ClientStoppingCommand{
+		Msg: *msg,
 	}
 }
 
@@ -167,6 +167,6 @@ func (e AccountFundedCommand) ShortString() string {
 
 func NewAccountFundedCommand(msg *events.AccountFundedMessage) *AccountFundedCommand {
 	return &AccountFundedCommand{
-		Msg:         *msg,
+		Msg: *msg,
 	}
 }

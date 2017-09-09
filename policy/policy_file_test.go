@@ -365,7 +365,7 @@ func Test_Policy_Workload_obscure1(t *testing.T) {
 		t.Error(err)
 	} else {
 		pf_prod1.Workloads[0].WorkloadPassword = "abcdefg"
-		if err := pf_prod1.ObscureWorkloadPWs("123456",""); err != nil {
+		if err := pf_prod1.ObscureWorkloadPWs("123456", ""); err != nil {
 			t.Error(err)
 		} else if pf_prod1.Workloads[0].WorkloadPassword == "abcdefg" {
 			t.Errorf("Password was not obscured in %v", pf_prod1.Workloads[0])
@@ -378,7 +378,7 @@ func Test_Policy_Workload_obscure2(t *testing.T) {
 		t.Error(err)
 	} else {
 		pf_prod1.Workloads[0].WorkloadPassword = "abcdefg"
-		if err := pf_prod1.ObscureWorkloadPWs("","098765"); err != nil {
+		if err := pf_prod1.ObscureWorkloadPWs("", "098765"); err != nil {
 			t.Error(err)
 		} else if pf_prod1.Workloads[0].WorkloadPassword == "abcdefg" {
 			t.Errorf("Password was not obscured in %v", pf_prod1.Workloads[0])
@@ -388,10 +388,10 @@ func Test_Policy_Workload_obscure2(t *testing.T) {
 
 func Test_MinimumProtocolVersion(t *testing.T) {
 
-	var p1,p2 *Policy
+	var p1, p2 *Policy
 
-	pa := `{"agreementProtocols":[{"name":"`+CitizenScientist+`","blockchains":[{"name":"fred"}]}]}`
-	pb := `{"agreementProtocols":[{"name":"`+CitizenScientist+`","blockchains":[{"name":"fred"}]}]}`
+	pa := `{"agreementProtocols":[{"name":"` + CitizenScientist + `","blockchains":[{"name":"fred"}]}]}`
+	pb := `{"agreementProtocols":[{"name":"` + CitizenScientist + `","blockchains":[{"name":"fred"}]}]}`
 
 	if p1 = create_Policy(pa, t); p1 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
@@ -401,8 +401,8 @@ func Test_MinimumProtocolVersion(t *testing.T) {
 		t.Errorf("Error: the min version should be 1 but was %v\n", pv)
 	}
 
-	pa = `{"agreementProtocols":[{"name":"`+CitizenScientist+`","protocolVersion":2}]}`
-	pb = `{"agreementProtocols":[{"name":"`+CitizenScientist+`","protocolVersion":1}]}`
+	pa = `{"agreementProtocols":[{"name":"` + CitizenScientist + `","protocolVersion":2}]}`
+	pb = `{"agreementProtocols":[{"name":"` + CitizenScientist + `","protocolVersion":1}]}`
 
 	if p1 = create_Policy(pa, t); p1 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
@@ -412,8 +412,8 @@ func Test_MinimumProtocolVersion(t *testing.T) {
 		t.Errorf("Error: the min version should be 1 but was %v\n", pv)
 	}
 
-	pa = `{"agreementProtocols":[{"name":"`+CitizenScientist+`","protocolVersion":3}]}`
-	pb = `{"agreementProtocols":[{"name":"`+CitizenScientist+`"}]}`
+	pa = `{"agreementProtocols":[{"name":"` + CitizenScientist + `","protocolVersion":3}]}`
+	pb = `{"agreementProtocols":[{"name":"` + CitizenScientist + `"}]}`
 
 	if p1 = create_Policy(pa, t); p1 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
@@ -423,8 +423,8 @@ func Test_MinimumProtocolVersion(t *testing.T) {
 		t.Errorf("Error: the min version should be 2 but was %v\n", pv)
 	}
 
-	pa = `{"agreementProtocols":[{"name":"`+CitizenScientist+`","protocolVersion":3}]}`
-	pb = `{"agreementProtocols":[{"name":"`+CitizenScientist+`"}]}`
+	pa = `{"agreementProtocols":[{"name":"` + CitizenScientist + `","protocolVersion":3}]}`
+	pb = `{"agreementProtocols":[{"name":"` + CitizenScientist + `"}]}`
 
 	if p1 = create_Policy(pa, t); p1 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
@@ -434,8 +434,8 @@ func Test_MinimumProtocolVersion(t *testing.T) {
 		t.Errorf("Error: the min version should be 3 but was %v\n", pv)
 	}
 
-	pa = `{"agreementProtocols":[{"name":"`+CitizenScientist+`","protocolVersion":2}]}`
-	pb = `{"agreementProtocols":[{"name":"`+CitizenScientist+`","protocolVersion":4}]}`
+	pa = `{"agreementProtocols":[{"name":"` + CitizenScientist + `","protocolVersion":2}]}`
+	pb = `{"agreementProtocols":[{"name":"` + CitizenScientist + `","protocolVersion":4}]}`
 
 	if p1 = create_Policy(pa, t); p1 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)

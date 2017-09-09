@@ -65,6 +65,9 @@ install:
 		cp -apv ./vendor/github.com/open-horizon/go-solidity/contracts/. $(CDIR)/
 	find $(CDIR)/ \( -name "Makefile" -or -iname ".git*" \) -exec rm {} \;
 
+format:
+	find . -name '*.go' -not -path './vendor/*' -exec gofmt -l -w {} \;
+
 lint:
 	-cd api/static && \
 		jshint -c ./.jshintrc --verbose ./js/
@@ -82,6 +85,8 @@ test-integration: deps
 	cd $(PKGPATH)/anax && \
 		GOPATH=$(TMPGOPATH) go test -v -cover -tags=integration $(PKGS)
 
+check: test test-integration
+
 # build sequence diagrams
 diagrams:
 	java -jar $(plantuml_path)/plantuml.jar ./citizenscientist/diagrams/horizonSequenceDiagram.txt
@@ -91,4 +96,4 @@ diagrams:
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/protocolSequenceDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/horizonSequenceDiagram.txt
 
-.PHONY: clean deps gopathlinks install lint pull test test-integration
+.PHONY: check clean deps format gopathlinks install lint pull test test-integration

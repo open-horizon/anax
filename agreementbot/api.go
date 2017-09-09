@@ -3,9 +3,9 @@ package agreementbot
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"

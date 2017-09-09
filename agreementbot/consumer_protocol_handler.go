@@ -74,7 +74,7 @@ type BaseConsumerProtocolHandler struct {
 	httpClient       *http.Client
 	agbotId          string
 	token            string
-	deferredCommands []AgreementWork   // The agreement related work that has to be deferred and retried
+	deferredCommands []AgreementWork // The agreement related work that has to be deferred and retried
 	messages         chan events.Message
 }
 
@@ -343,10 +343,10 @@ func (b *BaseConsumerProtocolHandler) HandleWorkloadUpgrade(cmd *WorkloadUpgrade
 func (b *BaseConsumerProtocolHandler) HandleMakeAgreement(cmd *MakeAgreementCommand, cph ConsumerProtocolHandler) {
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received make agreement command.")))
 	agreementWork := InitiateAgreement{
-		workType:               INITIATE,
-		ProducerPolicy:         cmd.ProducerPolicy,
-		ConsumerPolicy:         cmd.ConsumerPolicy,
-		Device:                 cmd.Device,
+		workType:       INITIATE,
+		ProducerPolicy: cmd.ProducerPolicy,
+		ConsumerPolicy: cmd.ConsumerPolicy,
+		Device:         cmd.Device,
 	}
 	cph.WorkQueue() <- agreementWork
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued make agreement command.")))
@@ -363,7 +363,7 @@ func (b *BaseConsumerProtocolHandler) PersistBaseAgreement(wi *InitiateAgreement
 	} else if _, err := AgreementUpdate(b.db, proposal.AgreementId(), string(pBytes), string(polBytes), pol.DataVerify, b.config.AgreementBot.ProcessGovernanceIntervalS, hash, sig, b.Name(), proposal.Version()); err != nil {
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", proposal, err)))
 
-	// Record that the agreement was initiated, in the exchange
+		// Record that the agreement was initiated, in the exchange
 	} else if err := b.RecordConsumerAgreementState(proposal.AgreementId(), pol, "Formed Proposal", workerID); err != nil {
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error setting agreement state for %v", proposal.AgreementId())))
 	}
@@ -451,7 +451,7 @@ func (b *BaseConsumerProtocolHandler) getDevice(deviceId string, workerId string
 	resp = new(exchange.GetDevicesResponse)
 	targetURL := b.config.AgreementBot.ExchangeURL + "devices/" + deviceId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "GET", targetURL, b.agbotId, b.token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "GET", targetURL, b.agbotId, b.token, nil, &resp); err != nil {
 			glog.Errorf(BCPHlogstring2(workerId, fmt.Sprintf(err.Error())))
 			return nil, err
 		} else if tpErr != nil {
@@ -489,11 +489,11 @@ func (b *BaseConsumerProtocolHandler) HandleExtensionMessage(cmd *NewProtocolMes
 }
 
 func (c *BaseConsumerProtocolHandler) SetBlockchainClientAvailable(ev *events.BlockchainClientInitializedMessage) {
-    return
+	return
 }
 
 func (c *BaseConsumerProtocolHandler) SetBlockchainClientNotAvailable(ev *events.BlockchainClientStoppingMessage) {
-    return
+	return
 }
 
 func (c *BaseConsumerProtocolHandler) AlreadyReceivedReply(ag *Agreement) bool {

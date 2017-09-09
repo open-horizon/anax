@@ -23,21 +23,21 @@ func Test_APISpecification_contains_specref(t *testing.T) {
 
 	searchURL = "http://mycompany.com/dm/net"
 	if as1 = create_APISpecification(asString, t); as1 != nil {
-		if !(*as1).ContainsSpecRef(searchURL,"1.0.0") {
+		if !(*as1).ContainsSpecRef(searchURL, "1.0.0") {
 			t.Errorf("Error: %v is in %v.\n", searchURL, *as1)
 		}
 	}
 
 	searchURL = "http://mycompany.com/dm/gps"
 	if as1 = create_APISpecification(asString, t); as1 != nil {
-		if !(*as1).ContainsSpecRef(searchURL,"1.0.0") {
+		if !(*as1).ContainsSpecRef(searchURL, "1.0.0") {
 			t.Errorf("Error: %v is in %v.\n", searchURL, *as1)
 		}
 	}
 
 	searchURL = "http://mycompany.com/dm/cpu"
 	if as1 = create_APISpecification(asString, t); as1 != nil {
-		if !(*as1).ContainsSpecRef(searchURL,"1.0.0") {
+		if !(*as1).ContainsSpecRef(searchURL, "1.0.0") {
 			t.Errorf("Error: %v is in %v.\n", searchURL, *as1)
 		}
 	}
@@ -50,7 +50,7 @@ func Test_APISpecification_not_contains_specref(t *testing.T) {
 
 	searchURL := "http://mycompany.com/dm/net"
 	if as1 = create_APISpecification(asString, t); as1 != nil {
-		if (*as1).ContainsSpecRef(searchURL,"1.0.0") {
+		if (*as1).ContainsSpecRef(searchURL, "1.0.0") {
 			t.Errorf("Error: %v is not in %v.\n", searchURL, *as1)
 		}
 	}
@@ -61,21 +61,21 @@ func Test_APISpecification_not_contains_specref(t *testing.T) {
 
 	searchURL = "http://mycompany.com/dm/nit"
 	if as1 = create_APISpecification(asString, t); as1 != nil {
-		if (*as1).ContainsSpecRef(searchURL,"1.0.0") {
+		if (*as1).ContainsSpecRef(searchURL, "1.0.0") {
 			t.Errorf("Error: %v is not in %v.\n", searchURL, *as1)
 		}
 	}
 
 	searchURL = "http://mycompany.com/dm/gps"
 	if as1 = create_APISpecification(asString, t); as1 != nil {
-		if (*as1).ContainsSpecRef(searchURL,"2.0.0") {
+		if (*as1).ContainsSpecRef(searchURL, "2.0.0") {
 			t.Errorf("Error: %v is not in %v.\n", searchURL, *as1)
 		}
 	}
 
 	searchURL = ""
 	if as1 = create_APISpecification(asString, t); as1 != nil {
-		if (*as1).ContainsSpecRef(searchURL,"1.0.0") {
+		if (*as1).ContainsSpecRef(searchURL, "1.0.0") {
 			t.Errorf("Error: %v is not in %v.\n", searchURL, *as1)
 		}
 	}
@@ -84,7 +84,7 @@ func Test_APISpecification_not_contains_specref(t *testing.T) {
 
 	searchURL = "http://mycompany.com/dm/nit"
 	if as1 = create_APISpecification(asString, t); as1 != nil {
-		if (*as1).ContainsSpecRef(searchURL,"1.0.0") {
+		if (*as1).ContainsSpecRef(searchURL, "1.0.0") {
 			t.Errorf("Error: %v is not in %v.\n", searchURL, *as1)
 		}
 	}

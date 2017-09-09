@@ -171,7 +171,6 @@ func Test_IntersectsWith(t *testing.T) {
 		}
 	}
 
-
 }
 
 func Test_NonIntersectsWith(t *testing.T) {

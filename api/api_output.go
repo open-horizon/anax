@@ -46,8 +46,8 @@ func (s WorkloadConfigByWorkloadURLAndVersion) Swap(i, j int) {
 func (s WorkloadConfigByWorkloadURLAndVersion) Less(i, j int) bool {
 
 	// Just compare the starting version in the two ranges
-	first := s[i].VersionExpression[1:strings.Index(s[i].VersionExpression,",")]
-	second := s[j].VersionExpression[1:strings.Index(s[j].VersionExpression,",")]
+	first := s[i].VersionExpression[1:strings.Index(s[i].VersionExpression, ",")]
+	second := s[j].VersionExpression[1:strings.Index(s[j].VersionExpression, ",")]
 
 	return (strings.Compare(s[i].WorkloadURL, s[j].WorkloadURL) == -1) && (strings.Compare(first, second) == -1)
 }

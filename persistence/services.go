@@ -217,7 +217,7 @@ func (a MappedAttributes) GetGenericMappings() map[string]interface{} {
 
 type AgreementProtocolAttributes struct {
 	Meta      *AttributeMeta `json:"meta"`
-	Protocols interface{}  `json:"protocols"`
+	Protocols interface{}    `json:"protocols"`
 }
 
 func (a AgreementProtocolAttributes) GetMeta() *AttributeMeta {
@@ -397,7 +397,7 @@ func AttributesToEnvvarMap(attributes []ServiceAttribute, prefix string) (map[st
 
 		case HAAttributes:
 			s := serv.(HAAttributes)
-			writePrefix("HA_PARTNERS", strings.Join(s.Partners,","))
+			writePrefix("HA_PARTNERS", strings.Join(s.Partners, ","))
 
 		case MeteringAttributes:
 			// Nothing to do

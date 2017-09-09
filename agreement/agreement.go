@@ -58,13 +58,13 @@ func NewAgreementWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.Polic
 			Commands: commands,
 		},
 
-		db:                  db,
-		httpClient:          &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)},
-		protocols:           make(map[string]bool),
-		pm:                  pm,
-		deviceId:            id,
-		deviceToken:         token,
-		producerPH:          make(map[string]producer.ProducerProtocolHandler),
+		db:          db,
+		httpClient:  &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
+		protocols:   make(map[string]bool),
+		pm:          pm,
+		deviceId:    id,
+		deviceToken: token,
+		producerPH:  make(map[string]producer.ProducerProtocolHandler),
 	}
 
 	glog.Info("Starting Agreement worker")
@@ -190,7 +190,7 @@ func (w *AgreementWorker) start() {
 		if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
 		}
-		
+
 		// Handle agreement processor commands
 		for {
 			glog.V(2).Infof(logString(fmt.Sprintf("blocking for commands")))
@@ -373,17 +373,17 @@ func (w *AgreementWorker) syncOnInit() error {
 				}
 				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, reason, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
 
-			// If the agreement's protocol requires that it is recorded externally in some way, verify that it is present there (e.g. a blockchain).
-			// Make sure the external state agrees with our local DB state for this agreement. If not, then we might need to cancel the agreement.
-			// Anax could have been down for a long time (or inoperable), and the external state may have changed.
+				// If the agreement's protocol requires that it is recorded externally in some way, verify that it is present there (e.g. a blockchain).
+				// Make sure the external state agrees with our local DB state for this agreement. If not, then we might need to cancel the agreement.
+				// Anax could have been down for a long time (or inoperable), and the external state may have changed.
 			} else if ok, err := w.verifyAgreement(&ag, w.producerPH[ag.AgreementProtocol], bcType, bcName); err != nil {
 				return errors.New(logString(fmt.Sprintf("unable to check for agreement %v in blockchain, error %v", ag.CurrentAgreementId, err)))
 			} else if !ok {
 				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_AGBOT_REQUESTED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
 
-			// If the agreement has been started then we just need to make sure that the policy manager's agreement counts
-			// are correct. Even for already timedout agreements, the governance process will cleanup old and outdated agreements,
-			// so we don't need to do anything here.
+				// If the agreement has been started then we just need to make sure that the policy manager's agreement counts
+				// are correct. Even for already timedout agreements, the governance process will cleanup old and outdated agreements,
+				// so we don't need to do anything here.
 
 			} else if proposal, err := w.producerPH[ag.AgreementProtocol].AgreementProtocolHandler("", "").DemarshalProposal(ag.Proposal); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v, error %v", ag.CurrentAgreementId, err)))
@@ -434,7 +434,6 @@ func (w *AgreementWorker) syncOnInit() error {
 				w.Messages() <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, typeName, instName, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken)
 			}
 		}
-
 
 	} else {
 		return errors.New(logString(fmt.Sprintf("error searching database: %v", err)))
@@ -527,11 +526,11 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 
 			// The version property needs special handling
 			newProp := &exchange.MSProp{
-						Name:     "version",
-						Value:    p.APISpecs[0].Version,
-						PropType: "version",
-						Op:       "in",
-					}
+				Name:     "version",
+				Value:    p.APISpecs[0].Version,
+				PropType: "version",
+				Op:       "in",
+			}
 			newMS.Properties = append(newMS.Properties, *newProp)
 
 			newMS.NumAgreements = p.MaxAgreements
@@ -642,7 +641,7 @@ func deleteProducerAgreement(url string, deviceId string, token string, agreemen
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := url + "devices/" + deviceId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {

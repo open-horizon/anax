@@ -548,7 +548,6 @@ func (w *WorkloadDefinition) GetUserInputName(name string) *UserInput {
 	return nil
 }
 
-
 type GetWorkloadsResponse struct {
 	Workloads map[string]WorkloadDefinition `json:"workloads"`
 	LastIndex int                           `json:"lastIndex"`
@@ -751,7 +750,6 @@ func GetMicroservice(mURL string, mVersion string, mArch string, exURL string, i
 		}
 	}
 }
-
 
 // The purpose of this function is to verify that a given workload URL, version and architecture, is defined in the exchange
 // as well as all of its API spec dependencies. This function also returns the API dependencies converted into

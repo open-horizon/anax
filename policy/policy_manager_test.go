@@ -189,19 +189,19 @@ func Test_find_by_apispec1(t *testing.T) {
 		t.Error(err)
 	} else {
 		searchURL := "http://mycompany.com/dm/gps"
-		pols := pm.GetPolicyByURL(searchURL,"1.0.0")
+		pols := pm.GetPolicyByURL(searchURL, "1.0.0")
 		if len(pols) != 0 {
 			t.Errorf("Expected to find 0 policy, found %v", len(pols))
 		}
 
 		searchURL = "http://mycompany.com/dm/cpu_temp"
-		pols = pm.GetPolicyByURL(searchURL,"1.0.1")
+		pols = pm.GetPolicyByURL(searchURL, "1.0.1")
 		if len(pols) != 1 {
 			t.Errorf("Expected to find 1 policies, found %v", len(pols))
 		}
 
 		searchURL = ""
-		pols = pm.GetPolicyByURL(searchURL,"1.0.0")
+		pols = pm.GetPolicyByURL(searchURL, "1.0.0")
 		if len(pols) != 0 {
 			t.Errorf("Expected to find 0 policies, found %v", len(pols))
 		}
@@ -319,7 +319,7 @@ func Test_MergeAllProducers1(t *testing.T) {
 		pm := PolicyManager_Factory()
 		if mergedPol, err := pm.MergeAllProducers(&policies, p3); err != nil {
 			t.Errorf("Error: %v merging %v and %v\n", err, p1, p2)
-		} else  if _, err := Are_Compatible_Producers(p3, mergedPol, 600); err != nil {
+		} else if _, err := Are_Compatible_Producers(p3, mergedPol, 600); err != nil {
 			t.Errorf("Error: %v merging %v and %v are not compatible\n", err, p3, mergedPol)
 		} else {
 			t.Logf("Merged Policy from 2 producer policies: %v", mergedPol)
@@ -359,7 +359,7 @@ func Test_MergeAllProducers3(t *testing.T) {
 		pm := PolicyManager_Factory()
 		if mergedPol, err := pm.MergeAllProducers(&policies, p3); err != nil {
 			t.Errorf("Error: %v merging %v with nothing\n", err, p1)
-		} else  if _, err := Are_Compatible_Producers(p3, mergedPol, 600); err != nil {
+		} else if _, err := Are_Compatible_Producers(p3, mergedPol, 600); err != nil {
 			t.Errorf("Error: %v merging %v and %v are not compatible\n", err, p3, mergedPol)
 		} else {
 			t.Logf("Merged Policy from 1 producer policies: %v", mergedPol)

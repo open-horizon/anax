@@ -70,23 +70,23 @@ func Test_generatePermittedStringDynamic(t *testing.T) {
 func Test_isValidFor_API(t *testing.T) {
 
 	serv1 := Service{
-		Image: "an image",
-		VariationLabel: "label",
-		Privileged: true,
-		Environment: []string{"a=1","b=2"},
-		CapAdd: []string{"a","b"},
-		Command: []string{"start"},
-		Devices: []string{},
-		Ports: []Port{},
+		Image:            "an image",
+		VariationLabel:   "label",
+		Privileged:       true,
+		Environment:      []string{"a=1", "b=2"},
+		CapAdd:           []string{"a", "b"},
+		Command:          []string{"start"},
+		Devices:          []string{},
+		Ports:            []Port{},
 		NetworkIsolation: NetworkIsolation{},
-		Binds: []string{"/tmp/geth:/root"},
+		Binds:            []string{"/tmp/geth:/root"},
 	}
 
 	services := make(map[string]*Service)
 	services["geth"] = &serv1
 
 	desc := DeploymentDescription{
-		Services: services,
+		Services:       services,
 		ServicePattern: Pattern{},
 	}
 
@@ -97,21 +97,21 @@ func Test_isValidFor_API(t *testing.T) {
 	}
 
 	serv2 := Service{
-		Image: "an image",
-		VariationLabel: "label",
-		Privileged: true,
-		Environment: []string{"a=1","b=2"},
-		CapAdd: []string{"a","b"},
-		Command: []string{"start"},
-		Devices: []string{},
-		Ports: []Port{},
+		Image:            "an image",
+		VariationLabel:   "label",
+		Privileged:       true,
+		Environment:      []string{"a=1", "b=2"},
+		CapAdd:           []string{"a", "b"},
+		Command:          []string{"start"},
+		Devices:          []string{},
+		Ports:            []Port{},
 		NetworkIsolation: NetworkIsolation{},
-		SpecificPorts: []docker.PortBinding{{HostIP:"0.0.0.0", HostPort:"8545"}},
+		SpecificPorts:    []docker.PortBinding{{HostIP: "0.0.0.0", HostPort: "8545"}},
 	}
 
 	services["geth"] = &serv2
 	desc2 := DeploymentDescription{
-		Services: services,
+		Services:       services,
 		ServicePattern: Pattern{},
 	}
 
@@ -128,7 +128,7 @@ func Test_RemoveEnvVar_success1(t *testing.T) {
 	e2 := "c=d"
 	e3 := "e=f"
 
-	eList := []string{e1,e2,e3}
+	eList := []string{e1, e2, e3}
 
 	removeDuplicateVariable(&eList, "c=5")
 	if eList[0] != e1 && eList[1] != e3 {
@@ -143,7 +143,7 @@ func Test_RemoveEnvVar_success2(t *testing.T) {
 	e2 := "c=d"
 	e3 := "e=f"
 
-	eList := []string{e1,e2,e3}
+	eList := []string{e1, e2, e3}
 
 	removeDuplicateVariable(&eList, "a=2")
 	if eList[0] != e2 && eList[1] != e3 {
@@ -158,7 +158,7 @@ func Test_RemoveEnvVar_success3(t *testing.T) {
 	e2 := "c=d"
 	e3 := "e=f"
 
-	eList := []string{e1,e2,e3}
+	eList := []string{e1, e2, e3}
 
 	removeDuplicateVariable(&eList, "e=11")
 	if eList[0] != e1 && eList[1] != e2 {
@@ -173,7 +173,7 @@ func Test_RemoveEnvVar_nothing1(t *testing.T) {
 	e2 := "c=d"
 	e3 := "e=f"
 
-	eList := []string{e1,e2,e3}
+	eList := []string{e1, e2, e3}
 
 	removeDuplicateVariable(&eList, "b=3")
 	if eList[0] != e1 && eList[1] != e2 && eList[2] != e3 {
@@ -199,7 +199,7 @@ func Test_RemoveEnvVar_nothing3(t *testing.T) {
 	e2 := "c=d"
 	e3 := "e=f"
 
-	eList := []string{e1,e2,e3}
+	eList := []string{e1, e2, e3}
 
 	removeDuplicateVariable(&eList, "ab=3")
 	if eList[0] != e1 && eList[1] != e2 && eList[2] != e3 {
