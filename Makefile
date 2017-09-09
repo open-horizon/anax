@@ -7,13 +7,15 @@ ifneq ("$(wildcard ./rules.env)","")
 	export $(shell sed 's/=.*//' rules.env)
 endif
 
-export TMPGOPATH := $(TMPDIR)anax-gopath
-export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon
+EXECUTABLE = $(shell basename $$PWD)
+
+export TMPGOPATH := $(TMPDIR)$(EXECUTABLE)
+export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon/$(EXECUTABLE)
 export PATH := $(TMPGOPATH)/bin:$(PATH)
 
 SHELL := /bin/bash
 ARCH = $(shell uname -m)
-PKGS=$(shell cd $(PKGPATH)/anax; GOPATH=$(TMPGOPATH) go list ./... | gawk '$$1 !~ /vendor\// {print $$1}')
+PKGS=$(shell cd $(PKGPATH); GOPATH=$(TMPGOPATH) go list ./... | gawk '$$1 !~ /vendor\// {print $$1}')
 
 COMPILE_ARGS := CGO_ENABLED=0
 # TODO: handle other ARM architectures on build boxes too
@@ -21,32 +23,46 @@ ifeq ($(ARCH),armv7l)
 	COMPILE_ARGS +=  GOARCH=arm GOARM=7
 endif
 
-all: anax
+all: $(EXECUTABLE)
+
+ifndef verbose
+.SILENT:
+endif
 
 # will always run b/c deps target is PHONY
-anax: $(shell find . -name '*.go' -not -path './vendor/*') deps
-	cd $(PKGPATH)/anax && \
+$(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') deps
+	@echo "Producing $(EXECUTABLE)"
+	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
-	    $(COMPILE_ARGS) go build -o anax
+	    $(COMPILE_ARGS) go build -o $(EXECUTABLE)
 
-clean:
+clean: mostlyclean
+	@echo "Clean"
 	find ./vendor -maxdepth 1 -not -path ./vendor -and -not -iname "vendor.json" -print0 | xargs -0 rm -Rf
-	rm -f anax
 ifneq ($(TMPGOPATH),$(GOPATH))
 	rm -rf $(TMPGOPATH)
 endif
 	rm -rf ./contracts
 
+mostlyclean:
+	@echo "Mostlyclean"
+	rm -f $(EXECUTABLE)
+
 # let this run on every build to ensure newest deps are pulled
 deps: $(TMPGOPATH)/bin/govendor
+	@echo "Fetching dependencies"
 ifneq ($(GOPATH_CACHE),)
-	-[ ! -e $(TMPGOPATH)/.cache ] && [ -e $(GOPATH_CACHE) ] && ln -s $(GOPATH_CACHE) $(TMPGOPATH)/.cache
+	if [ ! -d $(TMPGOPATH)/.cache ] && [ -e $(GOPATH_CACHE) ]; then \
+		ln -s $(GOPATH_CACHE) $(TMPGOPATH)/.cache; \
+  fi
 endif
-	cd $(PKGPATH)/anax && \
-	  export GOPATH=$(TMPGOPATH); \
-			govendor sync
+	cd $(PKGPATH) && \
+    export GOPATH=$(TMPGOPATH); \
+      govendor sync
+
 
 $(TMPGOPATH)/bin/govendor: gopathlinks
+	@echo "Fetching govendor"
 	mkdir -p $(TMPGOPATH)/bin
 	-export GOPATH=$(TMPGOPATH); \
 	  go get -u github.com/kardianos/govendor
@@ -54,21 +70,27 @@ $(TMPGOPATH)/bin/govendor: gopathlinks
 # this is a symlink to facilitate building outside of user's GOPATH
 gopathlinks:
 ifneq ($(GOPATH),$(TMPGOPATH))
-	mkdir -p $(PKGPATH)
-	-[ ! -e $(PKGPATH)/anax ] && ln -s $(CURDIR) $(PKGPATH)/anax
+	if [ ! -h $(PKGPATH) ]; then \
+		mkdir -p $(shell dirname $(PKGPATH)); \
+		ln -s $(CURDIR) $(PKGPATH); \
+	fi
 endif
+
 
 CDIR=$(DESTDIR)/go/src/github.com/open-horizon/go-solidity/contracts
 install:
-	mkdir -p $(DESTDIR)/bin && cp anax $(DESTDIR)/bin
+	@echo "Installing $(EXECUTABLE) in $(DESTDIR)/bin"
+	mkdir -p $(DESTDIR)/bin && cp $(EXECUTABLE) $(DESTDIR)/bin
 	mkdir -p $(CDIR) && \
 		cp -apv ./vendor/github.com/open-horizon/go-solidity/contracts/. $(CDIR)/
 	find $(CDIR)/ \( -name "Makefile" -or -iname ".git*" \) -exec rm {} \;
 
 format:
+	@echo "Formatting all Golang source code with gofmt"
 	find . -name '*.go' -not -path './vendor/*' -exec gofmt -l -w {} \;
 
 lint:
+	@echo "Checking source code for style issues and statically-determinable errors"
 	-cd api/static && \
 		jshint -c ./.jshintrc --verbose ./js/
 	-golint ./... | grep -v "vendor/"
@@ -78,12 +100,14 @@ pull: deps
 
 # only unit tests
 test: deps
-	cd $(PKGPATH)/anax && \
-		GOPATH=$(TMPGOPATH) go test -v -cover $(PKGS)
+	@echo "Executing unit tests"
+	cd $(PKGPATH) && \
+    GOPATH=$(TMPGOPATH) go test -v -cover $(PKGS)
 
 test-integration: deps
-	cd $(PKGPATH)/anax && \
-		GOPATH=$(TMPGOPATH) go test -v -cover -tags=integration $(PKGS)
+	@echo "Executing integration tests"
+	cd $(PKGPATH) && \
+    GOPATH=$(TMPGOPATH) go test -v -cover -tags=integration $(PKGS)
 
 check: lint test test-integration
 
@@ -96,4 +120,4 @@ diagrams:
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/protocolSequenceDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/horizonSequenceDiagram.txt
 
-.PHONY: check clean deps format gopathlinks install lint pull test test-integration
+.PHONY: check clean deps format gopathlinks install lint mostlyclean pull test test-integration

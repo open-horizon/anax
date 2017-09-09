@@ -19,9 +19,13 @@ Related Projects:
 
 ### Preconditions
 
-* To execute the lint and other code checkers (`make lint`), you must install: `go vet`, `golint`, and `jshint`
+* To execute the lint and other code checkers (`make lint` or `make check`), you must install: `go vet`, `golint`, and `jshint`
 
 ### Operations
+
+Note that the Makefile silences a lot of its output by default. If you want to see more output from build steps, execute a build like this:
+
+    make mostlyclean check verbose=y
 
 #### Build executable
 
@@ -55,4 +59,4 @@ Related Projects:
 
 #### Development Environment
 
-Note that the Makefile constructs its own `GOPATH` and builds from it; this is a convenience that can sometimes cause problems for development tooling that expects a project to be in a subdirector of `$GOPATH/src`. To use the Makefile to build the project inside your user's `GOPATH`, set the `TMPGOPATH` variable to your `GOPATH` and execute make like this: `make deps TMPGOPATH=$GOPATH`
+Note that this Makefile can construct its own `GOPATH` and build from it; this is a convenience that can sometimes cause problems for development tooling that expects a project to be in a subdirector of `$GOPATH/src`. To get full tool support clone this project as `$GOPATH/src/github.com/open-horizon/anax`.
