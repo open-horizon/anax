@@ -85,7 +85,7 @@ test-integration: deps
 	cd $(PKGPATH)/anax && \
 		GOPATH=$(TMPGOPATH) go test -v -cover -tags=integration $(PKGS)
 
-check: test test-integration
+check: lint test test-integration
 
 # build sequence diagrams
 diagrams:
