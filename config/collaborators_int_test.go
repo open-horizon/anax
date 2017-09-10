@@ -93,7 +93,7 @@ sh5/kd46V/jJbNBiporBuz/kVJTXrvFrZNnKgYv2BVC7jQfgOv6gkkQI4tHvuStE
 DuvdvPhYKonxjjLv
 -----END PRIVATE KEY-----`
 
-func setupTesting(listenerCert string, listenerKey string, t *testing.T) (string, net.Listener) {
+func setupTesting(listenerCert string, listenerKey string, trustSystemCerts bool, t *testing.T) (string, net.Listener) {
 	err := os.Setenv("GODEBUG", "1")
 	if err != nil {
 		t.Error(err)
@@ -117,7 +117,7 @@ func setupTesting(listenerCert string, listenerKey string, t *testing.T) (string
 
 	config := &HorizonConfig{
 		Edge: Config{
-			TrustSystemCACerts: false,
+			TrustSystemCACerts: trustSystemCerts,
 			CACertsPath:        certPath,
 		},
 	}
@@ -169,8 +169,8 @@ func setupTesting(listenerCert string, listenerKey string, t *testing.T) (string
 func Test_HTTPClientFactory_Suite(t *testing.T) {
 	timeoutS := uint(2)
 
-	setupForTest := func(listenerCert, listenerKey string) (*HorizonConfig, string) {
-		dir, listener := setupTesting(listenerCert, listenerKey, t)
+	setupForTest := func(listenerCert, listenerKey string, trustSystemCerts bool) (*HorizonConfig, string) {
+		dir, listener := setupTesting(listenerCert, listenerKey, trustSystemCerts, t)
 
 		t.Logf("listening on %s", listener.Addr().String())
 
@@ -181,7 +181,7 @@ func Test_HTTPClientFactory_Suite(t *testing.T) {
 		return cfg, strings.Split(listener.Addr().String(), ":")[1]
 	}
 
-	cfg, port := setupForTest(collaboratorsTestCert, collaboratorsTestKey)
+	cfg, port := setupForTest(collaboratorsTestCert, collaboratorsTestKey, false)
 	t.Run("HTTP client rejects trusted cert for wrong domain", func(t *testing.T) {
 
 		client := cfg.Collaborators.HTTPClientFactory.NewHTTPClient(&timeoutS)
@@ -220,10 +220,9 @@ func Test_HTTPClientFactory_Suite(t *testing.T) {
 			}
 		}
 	})
-
 	t.Run("HTTP client rejects untrusted cert", func(t *testing.T) {
 		// need a new config and setup
-		cfg, port := setupForTest(collaboratorsOtherTestCert, collaboratorsOtherTestKey)
+		cfg, port := setupForTest(collaboratorsOtherTestCert, collaboratorsOtherTestKey, false)
 
 		client := cfg.Collaborators.HTTPClientFactory.NewHTTPClient(&timeoutS)
 		// this should fail b/c even though we're sending a request to a trusted domain, the CA trust doesn't contain the cert
@@ -231,5 +230,12 @@ func Test_HTTPClientFactory_Suite(t *testing.T) {
 		if err == nil {
 			t.Error("Expected TLS error for sending request to untrusted domain")
 		}
+	})
+
+	t.Run("HTTP client trusts system certs", func(t *testing.T) {
+		// important that the cert and key match for setup to succeed even though that's not what we're testing
+		setupForTest(collaboratorsTestCert, collaboratorsTestKey, true)
+
+		// if we got this far we're ok (an error gets raised during setup if the system ca certs couldn't be loaded)
 	})
 }

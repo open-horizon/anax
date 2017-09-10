@@ -87,6 +87,8 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 		return &http.Client{
 			Timeout: time.Second * time.Duration(timeoutS),
 			Transport: &http.Transport{
+				MaxIdleConns:    MaxHTTPIdleConnections,
+				IdleConnTimeout: HTTPIdleConnectionTimeoutS * time.Second,
 				TLSClientConfig: &tls,
 			},
 		}

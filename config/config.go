@@ -27,7 +27,7 @@ type Config struct {
 	DefaultServiceRegistrationRAM int64
 	StaticWebContent              string
 	PublicKeyPath                 string
-	TrustSystemCACerts            bool   // If equal to true, the HTTP client factory will set up clients that trust CA certs provided by a Linux distribution (see https://golang.org/pkg/crypto/x509/#SystemCertPool)
+	TrustSystemCACerts            bool   // If equal to true, the HTTP client factory will set up clients that trust CA certs provided by a Linux distribution (see https://golang.org/pkg/crypto/x509/#SystemCertPool and https://golang.org/src/crypto/x509/root_linux.go)
 	CACertsPath                   string // Path to a file containing PEM-encoded x509 certs HTTP clients in Anax will trust (additive to the configuration option "TrustSystemCACerts")
 	ExchangeURL                   string
 	DefaultHTTPClientTimeoutS     uint
