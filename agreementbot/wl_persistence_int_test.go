@@ -33,7 +33,7 @@ func Test_SaveNewRecord1(t *testing.T) {
 	deviceid := "an12345"
 	pName := "test policy"
 
-	if err := NewWorkloadUsage(testDb, deviceid, []string{}, "{some json serialized policy file}", pName, 1, 30, 180, "AG1"); err != nil {
+	if err := NewWorkloadUsage(testDb, deviceid, []string{}, "{some json serialized policy file}", pName, 1, 30, 180, false, "AG1"); err != nil {
 		t.Errorf("Received error creating new workload usage: %v", err)
 	} else if wlu, err := FindSingleWorkloadUsageByDeviceAndPolicyName(testDb, deviceid, pName); err != nil {
 		t.Errorf("Received error finding new record: %v", err)
@@ -41,7 +41,7 @@ func Test_SaveNewRecord1(t *testing.T) {
 		t.Errorf("Record received on read does not have the right priority, expecting 1, was %v", wlu.Priority)
 	}
 
-	if err := NewWorkloadUsage(testDb, deviceid, []string{}, "{some json serialized policy file}", pName, 1, 30, 180, "AG1"); err == nil {
+	if err := NewWorkloadUsage(testDb, deviceid, []string{}, "{some json serialized policy file}", pName, 1, 30, 180, false, "AG1"); err == nil {
 		t.Errorf("Should have received error creating duplicate record")
 	}
 
@@ -59,7 +59,7 @@ func Test_SaveNewRecord2(t *testing.T) {
 	deviceid := "an67890"
 	pName := "test policy"
 
-	if err := NewWorkloadUsage(testDb, deviceid, []string{}, "{some json serialized policy file}", pName, 2, 30, 180, "AG1"); err != nil {
+	if err := NewWorkloadUsage(testDb, deviceid, []string{}, "{some json serialized policy file}", pName, 2, 30, 180, false, "AG1"); err != nil {
 		t.Errorf("Received error creating new workload usage: %v", err)
 	} else if wlu, err := FindSingleWorkloadUsageByDeviceAndPolicyName(testDb, deviceid, pName); err != nil {
 		t.Errorf("Received error finding new record: %v", err)
