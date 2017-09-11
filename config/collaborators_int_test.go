@@ -1,4 +1,5 @@
 // +build integration
+// +build go1.9
 
 package config
 
