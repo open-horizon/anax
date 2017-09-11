@@ -1477,7 +1477,7 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 		workloadDef, err := exchange.GetWorkload(cfg.WorkloadURL, vExp.Get_expression(), cutil.ArchString(), a.Config.Edge.ExchangeURL, existingDevice.Id, existingDevice.Token)
 		if err != nil || workloadDef == nil {
 			glog.Errorf("Unable to find the workload definition using version %v in the exchange: %v", vExp.Get_expression(), err)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Unable to find the workload definition using version %v in the exchange.",vExp.Get_expression())})
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Unable to find the workload definition using version %v in the exchange.", vExp.Get_expression())})
 			return
 		}
 

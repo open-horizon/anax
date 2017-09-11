@@ -39,7 +39,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 			protocolHandler := w.consumerPH[agp]
 
 			// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized on blockchain.
-			if agreements, err := FindAgreements(w.db, []AFilter{notYetFinalFilter(),UnarchivedAFilter()}, agp); err == nil {
+			if agreements, err := FindAgreements(w.db, []AFilter{notYetFinalFilter(), UnarchivedAFilter()}, agp); err == nil {
 				activeDataVerification := true
 				allActiveAgreements := make(map[string][]string)
 				for _, ag := range agreements {
@@ -79,7 +79,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 
 							} else if activeDataVerification {
 								// Otherwise make sure the device is still sending data
-								if ag.DataVerifiedTime + uint64(ag.DataVerificationCheckRate) > now {
+								if ag.DataVerifiedTime+uint64(ag.DataVerificationCheckRate) > now {
 									// It's not time to check again
 									continue
 								} else if activeAgreements, err := GetActiveAgreements(allActiveAgreements, ag, &w.Worker.Manager.Config.AgreementBot); err != nil {
@@ -108,7 +108,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 									mp := policy.Meter{Tokens: ag.MeteringTokens, PerTimeUnit: ag.MeteringPerTimeUnit, NotificationIntervalS: ag.MeteringNotificationInterval}
 									if mp.IsEmpty() {
 										continue
-									} else if ag.MeteringNotificationSent == 0 || (ag.MeteringNotificationSent != 0 && (ag.MeteringNotificationSent + uint64(ag.MeteringNotificationInterval)) <= now) {
+									} else if ag.MeteringNotificationSent == 0 || (ag.MeteringNotificationSent != 0 && (ag.MeteringNotificationSent+uint64(ag.MeteringNotificationInterval)) <= now) {
 										// Grab the blockchain info from the agreement if there is any
 
 										bcType, bcName := protocolHandler.GetKnownBlockchain(&ag)
@@ -135,8 +135,8 @@ func (w *AgreementBotWorker) GovernAgreements() {
 									if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(w.db, ag.DeviceId, ag.PolicyName); err != nil {
 										glog.Errorf(logString(fmt.Sprintf("unable to find workload usage record, error: %v", err)))
 									} else if wlUsage != nil && !wlUsage.DisableRetry {
-										if wlUsage.VerifiedDurationS == 0 || (wlUsage.VerifiedDurationS != 0 && ag.DataNotificationSent != 0 && ag.DataVerifiedTime != ag.AgreementCreationTime && (ag.DataVerifiedTime > ag.DataNotificationSent) && ((ag.DataVerifiedTime-ag.DataNotificationSent) >= uint64(wlUsage.VerifiedDurationS))) {
-											glog.V(5).Infof(logString(fmt.Sprintf("disabling workload rollback for %v after %v seconds", ag.CurrentAgreementId, (ag.DataVerifiedTime-ag.DataNotificationSent))))
+										if wlUsage.VerifiedDurationS == 0 || (wlUsage.VerifiedDurationS != 0 && ag.DataNotificationSent != 0 && ag.DataVerifiedTime != ag.AgreementCreationTime && (ag.DataVerifiedTime > ag.DataNotificationSent) && ((ag.DataVerifiedTime - ag.DataNotificationSent) >= uint64(wlUsage.VerifiedDurationS))) {
+											glog.V(5).Infof(logString(fmt.Sprintf("disabling workload rollback for %v after %v seconds", ag.CurrentAgreementId, (ag.DataVerifiedTime - ag.DataNotificationSent))))
 											if _, err := DisableRollbackChecking(w.db, ag.DeviceId, ag.PolicyName); err != nil {
 												glog.Errorf(logString(fmt.Sprintf("unable to disable workload rollback retries, error: %v", err)))
 											}
@@ -179,7 +179,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 		glog.V(5).Infof(logString(fmt.Sprintf("checking for HA partners needing a workload upgrade.")))
 
 		HAPartnerUpgradeWUFilter := func() WUFilter {
-		    return func(a WorkloadUsage) bool { return len(a.HAPartners) != 0 && a.PendingUpgradeTime != 0 }
+			return func(a WorkloadUsage) bool { return len(a.HAPartners) != 0 && a.PendingUpgradeTime != 0 }
 		}
 
 		if upgrades, err := FindWorkloadUsages(w.db, []WUFilter{HAPartnerUpgradeWUFilter()}); err != nil {
@@ -289,7 +289,7 @@ func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *WorkloadUsa
 
 		if dev, err := getDevice(partnerWLU.DeviceId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("error obtaining device %v heartbeat state: %v", partnerWLU.DeviceId, err)))
-		} else if len(dev.LastHeartbeat) != 0 && (uint64(timeInSeconds(dev.LastHeartbeat) + 300) > uint64(time.Now().Unix())) {
+		} else if len(dev.LastHeartbeat) != 0 && (uint64(timeInSeconds(dev.LastHeartbeat)+300) > uint64(time.Now().Unix())) {
 			// If the device is still alive (heart beat received in the last 5 mins), then assume this partner is trying to make an
 			// agreement. Exit the partner loop because no one else can safely upgrade right now. The upgrade might be bad.
 			glog.V(5).Infof(logString(fmt.Sprintf("HA group member %v is upgrading, has partners %v %v.", partnerWLU.DeviceId, currentWLU.HAPartners, currentWLU.DeviceId)))
@@ -307,7 +307,7 @@ func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *WorkloadUsa
 		if pol, err := policy.DemarshalPolicy(partnerWLU.Policy); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for workload usage %v, error %v", partnerWLU, err)))
 		} else {
-			workload := pol.NextHighestPriorityWorkload(0,0,0)
+			workload := pol.NextHighestPriorityWorkload(0, 0, 0)
 			if partnerWLU.Priority == workload.Priority.PriorityValue {
 				glog.V(5).Infof(logString(fmt.Sprintf("HA group member %v has upgraded, has partners %v %v.", partnerWLU.DeviceId, currentWLU.HAPartners, currentWLU.DeviceId)))
 				upgradedPartnerFound = partnerWLU.DeviceId
@@ -323,7 +323,7 @@ func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *WorkloadUsa
 }
 
 func timeInSeconds(timestamp string) int64 {
-	timeFormat := "2006-01-02T15:04:05.999Z[MST]"  // exchange time format
+	timeFormat := "2006-01-02T15:04:05.999Z[MST]" // exchange time format
 
 	if t, err := time.Parse(timeFormat, timestamp); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error converting heartbeat time %v into seconds, error: %v", timestamp, err)))
@@ -332,8 +332,6 @@ func timeInSeconds(timestamp string) int64 {
 		return t.Unix()
 	}
 }
-
-
 
 func (w *AgreementBotWorker) TerminateAgreement(ag *Agreement, reason uint) {
 	// Start timing out the agreement
@@ -356,7 +354,7 @@ func getDevice(deviceId string, url string, agbotId string, token string) (*exch
 	resp = new(exchange.GetDevicesResponse)
 	targetURL := url + "devices/" + deviceId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(err.Error()))
 			return nil, err
 		} else if tpErr != nil {
@@ -400,7 +398,7 @@ func (w *AgreementBotWorker) GovernArchivedAgreements() {
 		// A filter for limiting the returned set of agreements to just those that are too old.
 		agedOutFilter := func(now int64, limitH int) AFilter {
 			return func(a Agreement) bool {
-				return a.AgreementTimedout != 0 && (a.AgreementTimedout + uint64(limitH * 3600) <= uint64(now))
+				return a.AgreementTimedout != 0 && (a.AgreementTimedout+uint64(limitH*3600) <= uint64(now))
 			}
 		}
 
@@ -452,7 +450,7 @@ func (w *AgreementBotWorker) GovernBlockchainNeeds() {
 				if agreements, err := FindAgreements(w.db, []AFilter{UnarchivedAFilter()}, agp); err == nil {
 					for _, ag := range agreements {
 						_, bcName := w.consumerPH[agp].GetKnownBlockchain(&ag)
-						if  bcName != "" {
+						if bcName != "" {
 							neededBCs[bcName] = true
 						}
 					}

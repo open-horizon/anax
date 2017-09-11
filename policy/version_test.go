@@ -311,18 +311,18 @@ func TestVersionExpressionFailure(t *testing.T) {
 	}
 }
 
-// This test tests if the version string is a valide string. 
+// This test tests if the version string is a valide string.
 func TestIsVersionString(t *testing.T) {
 	v_good := []string{"1.0", "1.2", "1.234.567", "3.0.0", "234"}
-	for _, v := range(v_good) {
-		if ! IsVersionString(v){
+	for _, v := range v_good {
+		if !IsVersionString(v) {
 			t.Errorf("Version string %v is valid, however the IsVersionString function returned false.\n", v)
 		}
 	}
 
 	v_bad := []string{"1.0.0.1", "1.2.3a", "[1.2, 1.3]", "1.2.3-abc", "1.2.03"}
-	for _, v := range(v_bad) {
-		if IsVersionString(v){
+	for _, v := range v_bad {
+		if IsVersionString(v) {
 			t.Errorf("Version string %v is invalid, however the IsVersionString function returned true.\n", v)
 		}
 	}

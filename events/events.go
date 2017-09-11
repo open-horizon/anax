@@ -87,9 +87,9 @@ type LaunchContext interface {
 }
 
 type MicroserviceSpec struct {
-	SpecRef  string
-	Version  string
-	MsdefId  string
+	SpecRef string
+	Version string
+	MsdefId string
 }
 
 type AgreementLaunchContext struct {

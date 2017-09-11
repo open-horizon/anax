@@ -26,7 +26,7 @@ type EstablishedAgreement struct {
 	CounterPartyAddress             string                   `json:"counterparty_address"`
 	AgreementCreationTime           uint64                   `json:"agreement_creation_time"`
 	AgreementAcceptedTime           uint64                   `json:"agreement_accepted_time"`
-	AgreementBCUpdateAckTime        uint64                   `json:"agreement_bc_update_ack_time"`  // V2 protocol - time when consumer acks our blockchain update
+	AgreementBCUpdateAckTime        uint64                   `json:"agreement_bc_update_ack_time"` // V2 protocol - time when consumer acks our blockchain update
 	AgreementFinalizedTime          uint64                   `json:"agreement_finalized_time"`
 	AgreementTerminatedTime         uint64                   `json:"agreement_terminated_time"`
 	AgreementForceTerminatedTime    uint64                   `json:"agreement_force_terminated_time"`
@@ -41,37 +41,37 @@ type EstablishedAgreement struct {
 	TerminatedDescription           string                   `json:"terminated_description"` // a string form of the reason that the agreement was terminated
 	AgreementProtocolTerminatedTime uint64                   `json:"agreement_protocol_terminated_time"`
 	WorkloadTerminatedTime          uint64                   `json:"workload_terminated_time"`
-	MeteringNotificationMsg         MeteringNotification     `json:"metering_notification,omitempty"`  // the most recent metering notification received
-	BlockchainType                  string                   `json:"blockchain_type,omitempty"` // the name of the type of the blockchain
-	BlockchainName                  string                   `json:"blockchain_name,omitempty"` // the name of the blockchain instance
+	MeteringNotificationMsg         MeteringNotification     `json:"metering_notification,omitempty"` // the most recent metering notification received
+	BlockchainType                  string                   `json:"blockchain_type,omitempty"`       // the name of the type of the blockchain
+	BlockchainName                  string                   `json:"blockchain_name,omitempty"`       // the name of the blockchain instance
 }
 
 func (c EstablishedAgreement) String() string {
 
-	return fmt.Sprintf("Name: %v, " +
-		"SensorUrl: %v, " +
-		"Archived: %v, " +
-		"CurrentAgreementId: %v, " +
-		"ConsumerId: %v, " +
-		"CounterPartyAddress: %v, " +
-		"CurrentDeployment (service names): %v, " +
-		"Proposal Signature: %v, " +
-		"AgreementCreationTime: %v, " +
-		"AgreementExecutionStartTime: %v, " +
-		"AgreementAcceptedTime: %v, " +
-		"AgreementBCUpdateAckTime: %v, " +
-		"AgreementFinalizedTime: %v, " +
-		"AgreementDataReceivedTime: %v, " +
-		"AgreementTerminatedTime: %v, " +
-		"AgreementForceTerminatedTime: %v, " +
-		"TerminatedReason: %v, " +
-		"TerminatedDescription: %v, " +
-		"Agreement Protocol: %v, " +
-		"Agreement ProtocolVersion: %v, " +
-		"AgreementProtocolTerminatedTime : %v, " +
-		"WorkloadTerminatedTime: %v, " +
-		"MeteringNotificationMsg: %v, " +
-		"BlockchainType: %v, " +
+	return fmt.Sprintf("Name: %v, "+
+		"SensorUrl: %v, "+
+		"Archived: %v, "+
+		"CurrentAgreementId: %v, "+
+		"ConsumerId: %v, "+
+		"CounterPartyAddress: %v, "+
+		"CurrentDeployment (service names): %v, "+
+		"Proposal Signature: %v, "+
+		"AgreementCreationTime: %v, "+
+		"AgreementExecutionStartTime: %v, "+
+		"AgreementAcceptedTime: %v, "+
+		"AgreementBCUpdateAckTime: %v, "+
+		"AgreementFinalizedTime: %v, "+
+		"AgreementDataReceivedTime: %v, "+
+		"AgreementTerminatedTime: %v, "+
+		"AgreementForceTerminatedTime: %v, "+
+		"TerminatedReason: %v, "+
+		"TerminatedDescription: %v, "+
+		"Agreement Protocol: %v, "+
+		"Agreement ProtocolVersion: %v, "+
+		"AgreementProtocolTerminatedTime : %v, "+
+		"WorkloadTerminatedTime: %v, "+
+		"MeteringNotificationMsg: %v, "+
+		"BlockchainType: %v, "+
 		"BlockchainName: %v",
 		c.Name, c.SensorUrl, c.Archived, c.CurrentAgreementId, c.ConsumerId, c.CounterPartyAddress, ServiceConfigNames(&c.CurrentDeployment),
 		c.ProposalSig,
@@ -337,28 +337,28 @@ func persistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 				// This code is running in a database transaction. Within the tx, the current record is
 				// read and then updated according to the updates within the input update record. It is critical
 				// to check for correct data transitions within the tx.
-				if !mod.Archived {				// 1 transition from false to true
+				if !mod.Archived { // 1 transition from false to true
 					mod.Archived = update.Archived
 				}
 				if len(mod.CounterPartyAddress) == 0 { // 1 transition from empty to non-empty
 					mod.CounterPartyAddress = update.CounterPartyAddress
 				}
-				if mod.AgreementAcceptedTime == 0 {		// 1 transition from zero to non-zero
+				if mod.AgreementAcceptedTime == 0 { // 1 transition from zero to non-zero
 					mod.AgreementAcceptedTime = update.AgreementAcceptedTime
 				}
-				if mod.AgreementBCUpdateAckTime == 0 {       // 1 transition from zero to non-zero
+				if mod.AgreementBCUpdateAckTime == 0 { // 1 transition from zero to non-zero
 					mod.AgreementBCUpdateAckTime = update.AgreementBCUpdateAckTime
 				}
-				if mod.AgreementFinalizedTime == 0 { 	// 1 transition from zero to non-zero
+				if mod.AgreementFinalizedTime == 0 { // 1 transition from zero to non-zero
 					mod.AgreementFinalizedTime = update.AgreementFinalizedTime
 				}
-				if mod.AgreementTerminatedTime == 0 {	// 1 transition from zero to non-zero
+				if mod.AgreementTerminatedTime == 0 { // 1 transition from zero to non-zero
 					mod.AgreementTerminatedTime = update.AgreementTerminatedTime
 				}
 				if mod.AgreementForceTerminatedTime < update.AgreementForceTerminatedTime { // always moves forward
 					mod.AgreementForceTerminatedTime = update.AgreementForceTerminatedTime
 				}
-				if mod.AgreementExecutionStartTime == 0 {	// 1 transition from zero to non-zero
+				if mod.AgreementExecutionStartTime == 0 { // 1 transition from zero to non-zero
 					mod.AgreementExecutionStartTime = update.AgreementExecutionStartTime
 				}
 				if mod.AgreementDataReceivedTime < update.AgreementDataReceivedTime { // always moves forward
@@ -368,28 +368,28 @@ func persistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 				if (len(mod.CurrentDeployment) == 0 && len(update.CurrentDeployment) != 0) || (len(mod.CurrentDeployment) != 0 && len(update.CurrentDeployment) == 0) {
 					mod.CurrentDeployment = update.CurrentDeployment
 				}
-				if mod.TerminatedReason == 0 {			// 1 transition from zero to non-zero
+				if mod.TerminatedReason == 0 { // 1 transition from zero to non-zero
 					mod.TerminatedReason = update.TerminatedReason
 				}
-				if mod.TerminatedDescription == "" {	// 1 transition from empty to non-empty
+				if mod.TerminatedDescription == "" { // 1 transition from empty to non-empty
 					mod.TerminatedDescription = update.TerminatedDescription
 				}
-				if mod.AgreementProtocolTerminatedTime == 0 {	// 1 transition from zero to non-zero
+				if mod.AgreementProtocolTerminatedTime == 0 { // 1 transition from zero to non-zero
 					mod.AgreementProtocolTerminatedTime = update.AgreementProtocolTerminatedTime
 				}
-				if mod.WorkloadTerminatedTime == 0 {			// 1 transition from zero to non-zero
+				if mod.WorkloadTerminatedTime == 0 { // 1 transition from zero to non-zero
 					mod.WorkloadTerminatedTime = update.WorkloadTerminatedTime
 				}
 				if update.MeteringNotificationMsg != (MeteringNotification{}) { // only save non-empty values
 					mod.MeteringNotificationMsg = update.MeteringNotificationMsg
 				}
-				if mod.BlockchainType == "" {	// 1 transition from empty to non-empty
+				if mod.BlockchainType == "" { // 1 transition from empty to non-empty
 					mod.BlockchainType = update.BlockchainType
 				}
-				if mod.BlockchainName == "" {	// 1 transition from empty to non-empty
+				if mod.BlockchainName == "" { // 1 transition from empty to non-empty
 					mod.BlockchainName = update.BlockchainName
 				}
-				if mod.ProposalSig == "" {		// 1 transition from empty to non-empty
+				if mod.ProposalSig == "" { // 1 transition from empty to non-empty
 					mod.ProposalSig = update.ProposalSig
 				}
 
@@ -477,30 +477,30 @@ func FindEstablishedAgreementsAllProtocols(db *bolt.DB, protocols []string, filt
 //
 
 type MeteringNotification struct {
-    Amount                 uint64 `json:"amount"` // The number of tokens granted by this notification, rounded to the nearest minute
-    StartTime              uint64 `json:"start_time"` // The time when the agreement started, in seconds since 1970.
-    CurrentTime            uint64 `json:"current_time"` // The time when the notification was sent, in seconds since 1970.
-    MissedTime             uint64 `json:"missed_time"`  // The amount of time in seconds that the consumer detected missing data
-    ConsumerMeterSignature string `json:"consumer_meter_signature"` // The consumer's signature of the meter (amount, current time, agreement Id)
-    AgreementHash          string `json:"agreement_hash"` // The 32 byte SHA3 FIPS 202 hash of the proposal for the agreement.
-    ConsumerSignature      string `json:"consumer_agreement_signature"` // The consumer's signature of the agreement hash.
-    ConsumerAddress        string `json:"consumer_address"` // The consumer's blockchain account/address.
-    ProducerSignature      string `json:"producer_agreement_signature"` // The producer's signature of the agreement
-    BlockchainType         string `json:"blockchain_type"` // The type of the blockchain that this notification is intended to work with
+	Amount                 uint64 `json:"amount"`                       // The number of tokens granted by this notification, rounded to the nearest minute
+	StartTime              uint64 `json:"start_time"`                   // The time when the agreement started, in seconds since 1970.
+	CurrentTime            uint64 `json:"current_time"`                 // The time when the notification was sent, in seconds since 1970.
+	MissedTime             uint64 `json:"missed_time"`                  // The amount of time in seconds that the consumer detected missing data
+	ConsumerMeterSignature string `json:"consumer_meter_signature"`     // The consumer's signature of the meter (amount, current time, agreement Id)
+	AgreementHash          string `json:"agreement_hash"`               // The 32 byte SHA3 FIPS 202 hash of the proposal for the agreement.
+	ConsumerSignature      string `json:"consumer_agreement_signature"` // The consumer's signature of the agreement hash.
+	ConsumerAddress        string `json:"consumer_address"`             // The consumer's blockchain account/address.
+	ProducerSignature      string `json:"producer_agreement_signature"` // The producer's signature of the agreement
+	BlockchainType         string `json:"blockchain_type"`              // The type of the blockchain that this notification is intended to work with
 }
 
 func (m MeteringNotification) String() string {
-    return fmt.Sprintf("Amount: %v, " +
-        "StartTime: %v, " +
-        "CurrentTime: %v, " +
-        "Missed Time: %v, " +
-        "ConsumerMeterSignature: %v, " +
-        "AgreementHash: %v, " +
-        "ConsumerSignature: %v, " +
-        "ConsumerAddress: %v, " +
-        "ProducerSignature: %v, " +
-        "BlockchainType: %v",
-        m.Amount, m.StartTime, m.CurrentTime, m.MissedTime, m.ConsumerMeterSignature,
-        m.AgreementHash, m.ConsumerSignature, m.ConsumerAddress, m.ProducerSignature,
-        m.BlockchainType)
+	return fmt.Sprintf("Amount: %v, "+
+		"StartTime: %v, "+
+		"CurrentTime: %v, "+
+		"Missed Time: %v, "+
+		"ConsumerMeterSignature: %v, "+
+		"AgreementHash: %v, "+
+		"ConsumerSignature: %v, "+
+		"ConsumerAddress: %v, "+
+		"ProducerSignature: %v, "+
+		"BlockchainType: %v",
+		m.Amount, m.StartTime, m.CurrentTime, m.MissedTime, m.ConsumerMeterSignature,
+		m.AgreementHash, m.ConsumerSignature, m.ConsumerAddress, m.ProducerSignature,
+		m.BlockchainType)
 }

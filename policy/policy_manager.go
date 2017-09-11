@@ -528,7 +528,7 @@ func (self *PolicyManager) MergeAllProducers(policies *[]Policy, previouslyMerge
 
 	// Merge all the input policies together
 	var mergedPolicy *Policy
-	for _, pol := range (*policies) {
+	for _, pol := range *policies {
 		if mergedPolicy == nil {
 			mergedPolicy = &pol
 		} else if newPolicy, err := Are_Compatible_Producers(mergedPolicy, &pol, uint64(previouslyMerged.DataVerify.Interval)); err != nil {

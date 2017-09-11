@@ -20,11 +20,11 @@ func (m Meter) IsValid() bool {
 	if (m.Tokens != 0 && m.PerTimeUnit == "") || (m.Tokens == 0 && m.PerTimeUnit != "") {
 		return false
 
-	// Notification interval requires both Token and PerTimeUnit to be specified
+		// Notification interval requires both Token and PerTimeUnit to be specified
 	} else if m.NotificationIntervalS != 0 && (m.Tokens == 0 || m.PerTimeUnit == "") {
 		return false
 
-	// PerTimeUnit must be a valid value
+		// PerTimeUnit must be a valid value
 	} else if m.PerTimeUnit != "min" && m.PerTimeUnit != "hour" && m.PerTimeUnit != "day" && m.PerTimeUnit != "" {
 		return false
 	}
@@ -99,7 +99,7 @@ func (m Meter) MergeWith(otherMeter Meter, dvCheckRate int) Meter {
 	}
 
 	// Convert tokens back to the chosen time unit.
-	divisors := map[string]uint64{"min":1440, "hour":24, "day":1}
+	divisors := map[string]uint64{"min": 1440, "hour": 24, "day": 1}
 	ret.Tokens = ret.Tokens / divisors[chosenTimeUnit]
 
 	// Choose the notification interval, shorter of both or the default
@@ -155,7 +155,7 @@ func (m *Meter) ProducerMergeWith(otherMeter *Meter, dvCheckRate int) Meter {
 	ret.Tokens = maxOfUint64(myTokens, otherTokens)
 
 	// Convert tokens back to the chosen time unit.
-	divisors := map[string]uint64{"min":1440, "hour":24, "day":1}
+	divisors := map[string]uint64{"min": 1440, "hour": 24, "day": 1}
 	ret.Tokens = ret.Tokens / divisors[chosenTimeUnit]
 
 	// Choose the notification interval, shorter of both or the default
@@ -192,7 +192,7 @@ func (m Meter) IsCompatibleWith(otherMeter Meter) bool {
 
 // Convert tokens per x time into tokens per day
 func normalizeTokens(amt uint64, timeUnit string) uint64 {
-	multipliers := map[string]uint64{"min":1440, "hour":24, "day":1}
+	multipliers := map[string]uint64{"min": 1440, "hour": 24, "day": 1}
 	return amt * multipliers[timeUnit]
 }
 
@@ -221,26 +221,26 @@ func maxOfUint64(x uint64, y uint64) uint64 {
 }
 
 type DataVerification struct {
-	Enabled     bool   `json:"enabled,omitempty"`            // Whether or not data verification is enabled
-	URL         string `json:"URL,omitempty"`                // The URL to be used for data receipt verification
-	URLUser     string `json:"URLUser,omitempty"`            // The user id to use when calling the verification URL
-	URLPassword string `json:"URLPassword,omitempty"`        // The password to use when calling the verification URL
-	Interval    int    `json:"interval,omitempty"`           // The number of seconds to check for data before deciding there isnt any data
-	CheckRate   int    `json:"check_rate,omitempty"`         // The number of seconds between checks for valid data being received
-	Metering    Meter  `json:"metering,omitempty"` // The metering configuration
+	Enabled     bool   `json:"enabled,omitempty"`     // Whether or not data verification is enabled
+	URL         string `json:"URL,omitempty"`         // The URL to be used for data receipt verification
+	URLUser     string `json:"URLUser,omitempty"`     // The user id to use when calling the verification URL
+	URLPassword string `json:"URLPassword,omitempty"` // The password to use when calling the verification URL
+	Interval    int    `json:"interval,omitempty"`    // The number of seconds to check for data before deciding there isnt any data
+	CheckRate   int    `json:"check_rate,omitempty"`  // The number of seconds between checks for valid data being received
+	Metering    Meter  `json:"metering,omitempty"`    // The metering configuration
 }
 
 func DataVerification_Factory(url string, urluser string, urlpw string, interval int, checkRate int, meterPolicy Meter) *DataVerification {
-    d := new(DataVerification)
-    d.Enabled = true
-    d.URL = url
-    d.URLUser = urluser
-    d.URLPassword = urlpw
-    d.Interval = interval
-    d.CheckRate = checkRate
-    d.Metering = meterPolicy
+	d := new(DataVerification)
+	d.Enabled = true
+	d.URL = url
+	d.URLUser = urluser
+	d.URLPassword = urlpw
+	d.Interval = interval
+	d.CheckRate = checkRate
+	d.Metering = meterPolicy
 
-    return d
+	return d
 }
 
 func (d DataVerification) IsValid() (bool, error) {
@@ -254,11 +254,11 @@ func (d DataVerification) IsValid() (bool, error) {
 
 func (d DataVerification) IsSame(compare DataVerification) bool {
 	return d.Enabled == compare.Enabled &&
-			d.URL == compare.URL &&
-			d.URLUser == compare.URLUser &&
-			d.Interval == compare.Interval &&
-			d.CheckRate == compare.CheckRate &&
-			d.Metering.IsSame(compare.Metering)
+		d.URL == compare.URL &&
+		d.URLUser == compare.URLUser &&
+		d.Interval == compare.Interval &&
+		d.CheckRate == compare.CheckRate &&
+		d.Metering.IsSame(compare.Metering)
 }
 
 func (d DataVerification) String() string {
@@ -286,7 +286,7 @@ func (d *DataVerification) internalCompatibleWith(compare *DataVerification) boo
 	// enabled they want to use different URLs and/or Users to verify. That difference
 	// cannot be reconciled and therefore the sections are incompatible.
 	if (d.Enabled && compare.Enabled && d.URL != "" && compare.URL != "" && d.URL != compare.URL) ||
-	   (d.Enabled && compare.Enabled && d.URLUser != "" && compare.URLUser != "" && d.URLUser != compare.URLUser) {
+		(d.Enabled && compare.Enabled && d.URLUser != "" && compare.URLUser != "" && d.URLUser != compare.URLUser) {
 		return false
 	}
 	return true

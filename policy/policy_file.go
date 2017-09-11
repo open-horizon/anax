@@ -428,7 +428,7 @@ func (self *Policy) NextHighestPriorityWorkload(currentPriority int, retryCount 
 			// If/when we find the workload entry at the same priority as the input priority, check to see if the
 			// retry count and time since first try indicate that we should stay with the current priority workload.
 			if wl.Priority.PriorityValue == currentPriority {
-				if wl.Priority.Retries > retryCount || now - retryStartTime > uint64(wl.Priority.RetryDurationS) {
+				if wl.Priority.Retries > retryCount || now-retryStartTime > uint64(wl.Priority.RetryDurationS) {
 					nextWorkload = ix
 					foundSomething = true
 					break
@@ -443,7 +443,7 @@ func (self *Policy) NextHighestPriorityWorkload(currentPriority int, retryCount 
 			}
 
 			// If this workload is possibly the next highest priority workload, then remember it.
-			if smallestDelta == 0 || wl.Priority.PriorityValue - currentPriority < smallestDelta {
+			if smallestDelta == 0 || wl.Priority.PriorityValue-currentPriority < smallestDelta {
 				smallestDelta = wl.Priority.PriorityValue - currentPriority
 				nextWorkload = ix
 				foundSomething = true
@@ -465,9 +465,9 @@ func (self *Policy) NextHighestPriorityWorkload(currentPriority int, retryCount 
 
 func (p *Policy) MinimumProtocolVersion(name string, other *Policy, maxSupportedVersion int) int {
 	pv := maxSupportedVersion
-	if prodAGP := p.AgreementProtocols.FindByName(name); prodAGP == nil { 	// This should never happen
+	if prodAGP := p.AgreementProtocols.FindByName(name); prodAGP == nil { // This should never happen
 		return pv
-	} else if conAGP := other.AgreementProtocols.FindByName(name); conAGP == nil { 	// This should never happen
+	} else if conAGP := other.AgreementProtocols.FindByName(name); conAGP == nil { // This should never happen
 		return pv
 	} else {
 		return prodAGP.MinimumProtocolVersion(conAGP, maxSupportedVersion)
@@ -476,7 +476,9 @@ func (p *Policy) MinimumProtocolVersion(name string, other *Policy, maxSupported
 }
 
 func (p *Policy) RequiresDefaultBC(protocol string) bool {
-	if protocol != CitizenScientist { return false }
+	if protocol != CitizenScientist {
+		return false
+	}
 
 	if prodAGP := p.AgreementProtocols.FindByName(protocol); prodAGP == nil {
 		return false
@@ -487,7 +489,9 @@ func (p *Policy) RequiresDefaultBC(protocol string) bool {
 }
 
 func (p *Policy) RequiresKnownBC(protocol string) (string, string) {
-	if protocol != CitizenScientist { return "", "" }
+	if protocol != CitizenScientist {
+		return "", ""
+	}
 
 	if prodAGP := p.AgreementProtocols.FindByName(protocol); prodAGP == nil {
 		return "", ""
@@ -558,12 +562,12 @@ func newWatchEntry(fi os.FileInfo, p *Policy) *WatchEntry {
 // - fileError is called when an error occurs trying to demarshal a file into a policy object
 
 func PolicyFileChangeWatcher(homePath string,
-		contents map[string]*WatchEntry,
-		fileChanged func(fileName string, policy *Policy),
-		fileDeleted func(fileName string, policy *Policy),
-		fileError func(fileName string, err error),
-		workloadResolver func(wURL string, wVersion string, wArch string) (*APISpecList, error),
-		checkInterval int) (map[string]*WatchEntry, error) {
+	contents map[string]*WatchEntry,
+	fileChanged func(fileName string, policy *Policy),
+	fileDeleted func(fileName string, policy *Policy),
+	fileError func(fileName string, err error),
+	workloadResolver func(wURL string, wVersion string, wArch string) (*APISpecList, error),
+	checkInterval int) (map[string]*WatchEntry, error) {
 
 	// contents is the map that holds info on every policy file in the policy directory
 
@@ -607,7 +611,7 @@ func PolicyFileChangeWatcher(homePath string,
 						break
 					}
 				}
-				// If there is another file with our policy in it, then we can skip the delete event but we still have to 
+				// If there is another file with our policy in it, then we can skip the delete event but we still have to
 				// remove the file entry from the contents map.
 				if !found {
 					fileDeleted(homePath+we.FInfo.Name(), we.Pol)

@@ -237,7 +237,7 @@ func IsVersionString(expr string) bool {
 	nums := strings.Split(expr, numberSeperator)
 	if len(nums) == 0 || len(nums) > 3 {
 		return false
-	}  else {
+	} else {
 		for _, val := range nums {
 			if val == "" {
 				return false
@@ -286,7 +286,9 @@ func IsVersionExpression(expr string) bool {
 // Return a normalized version string containing all 3 version numbers. The input version string is ASSUMED to
 // be a valid version string. For example, an input version string of 1 will be returned as 1.0.0
 func normalize(expr string) string {
-	if expr == INF { return expr }
+	if expr == INF {
+		return expr
+	}
 	result := expr
 	nums := strings.Split(expr, numberSeperator)
 	if len(nums) < 3 {

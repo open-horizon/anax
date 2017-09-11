@@ -7,8 +7,8 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/citizenscientist"
-	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/metering"
@@ -22,11 +22,11 @@ import (
 )
 
 type BlockchainState struct {
-	ready       bool   // the blockchain is ready
-	writable    bool   // the blockchain is writable
-	service     string // the network endpoint name of the container
-	servicePort string // the port of the network endpoint for the container
-	colonusDir  string // the anax side filesystem location for this BC instance
+	ready       bool                              // the blockchain is ready
+	writable    bool                              // the blockchain is writable
+	service     string                            // the network endpoint name of the container
+	servicePort string                            // the port of the network endpoint for the container
+	colonusDir  string                            // the anax side filesystem location for this BC instance
 	agreementPH *citizenscientist.ProtocolHandler // CS Protocolhandler for this blockchain client
 }
 
@@ -218,11 +218,11 @@ func (c *CSProtocolHandler) TerminateAgreement(ag *Agreement, reason uint, worke
 	// any given agreement. This means we can fake up a message target for the TerminateAgreement call
 	// because we know that the CS implementation of the agreement protocol wont be sending a message.
 	fakeMT := &exchange.ExchangeMessageTarget{
-			ReceiverExchangeId:     "",
-			ReceiverPublicKeyObj:   nil,
-			ReceiverPublicKeyBytes: []byte(""),
-			ReceiverMsgEndPoint:    "",
-			}
+		ReceiverExchangeId:     "",
+		ReceiverPublicKeyObj:   nil,
+		ReceiverPublicKeyBytes: []byte(""),
+		ReceiverMsgEndPoint:    "",
+	}
 	c.BaseConsumerProtocolHandler.TerminateAgreement(ag, reason, fakeMT, workerId, c)
 	glog.V(5).Infof(CPHlogString(fmt.Sprintf("terminated agreement %v", ag.CurrentAgreementId)))
 }
@@ -256,7 +256,8 @@ func (c *CSProtocolHandler) GetTerminationReason(code uint) string {
 	return citizenscientist.DecodeReasonCode(uint64(code))
 }
 
-func (c *CSProtocolHandler) SetBlockchainClientAvailable(ev *events.BlockchainClientInitializedMessage) {}
+func (c *CSProtocolHandler) SetBlockchainClientAvailable(ev *events.BlockchainClientInitializedMessage) {
+}
 
 func (c *CSProtocolHandler) SetBlockchainClientNotAvailable(ev *events.BlockchainClientStoppingMessage) {
 	c.bcStateLock.Lock()
@@ -276,13 +277,13 @@ func (c *CSProtocolHandler) SetBlockchainWritable(ev *events.AccountFundedMessag
 	_, ok := nameMap[ev.BlockchainInstance()]
 	if !ok {
 		nameMap[ev.BlockchainInstance()] = &BlockchainState{
-											ready:       true,
-											writable:    true,
-											service:     ev.ServiceName(),
-											servicePort: ev.ServicePort(),
-											colonusDir:  ev.ColonusDir(),
-											agreementPH: citizenscientist.NewProtocolHandler(c.pm),
-										}
+			ready:       true,
+			writable:    true,
+			service:     ev.ServiceName(),
+			servicePort: ev.ServicePort(),
+			colonusDir:  ev.ColonusDir(),
+			agreementPH: citizenscientist.NewProtocolHandler(c.pm),
+		}
 	} else {
 		nameMap[ev.BlockchainInstance()].ready = true
 		nameMap[ev.BlockchainInstance()].writable = true
@@ -310,7 +311,7 @@ func (c *CSProtocolHandler) updateProducers() {
 	}
 
 	// Find all agreements that are in progress, waiting for the blockchain to come up.
-	if agreements, err := FindAgreements(c.db, []AFilter{notYetUpFilter(),UnarchivedAFilter()}, c.Name()); err != nil {
+	if agreements, err := FindAgreements(c.db, []AFilter{notYetUpFilter(), UnarchivedAFilter()}, c.Name()); err != nil {
 		glog.Errorf(CPHlogString(fmt.Sprintf("failed to get agreements for %v from the database, error: %v", c.Name(), err)))
 	} else {
 
@@ -390,11 +391,13 @@ func (c *CSProtocolHandler) IsBlockchainReady(typeName string, name string) bool
 }
 
 func (c *CSProtocolHandler) CanCancelNow(ag *Agreement) bool {
-    if ag == nil { return true }
+	if ag == nil {
+		return true
+	}
 
 	bcType, bcName := c.GetKnownBlockchain(ag)
 
-    c.bcStateLock.Lock()
+	c.bcStateLock.Lock()
 	defer c.bcStateLock.Unlock()
 
 	nameMap := c.getBCNameMap(bcType)
@@ -408,11 +411,13 @@ func (c *CSProtocolHandler) CanCancelNow(ag *Agreement) bool {
 }
 
 func (c *CSProtocolHandler) getColonusDir(ag *Agreement) string {
-    if ag == nil { return "" }
+	if ag == nil {
+		return ""
+	}
 
 	bcType, bcName := c.GetKnownBlockchain(ag)
 
-    c.bcStateLock.Lock()
+	c.bcStateLock.Lock()
 	defer c.bcStateLock.Unlock()
 
 	nameMap := c.getBCNameMap(bcType)
@@ -435,11 +440,11 @@ func (c *CSProtocolHandler) getBCNameMap(typeName string) map[string]*Blockchain
 }
 
 func (c *CSProtocolHandler) HandleDeferredCommands() {
-    cmds := c.BaseConsumerProtocolHandler.GetDeferredCommands()
-    for _, aw := range cmds {
+	cmds := c.BaseConsumerProtocolHandler.GetDeferredCommands()
+	for _, aw := range cmds {
 		c.Work <- aw
 		glog.V(5).Infof(CPHlogString(fmt.Sprintf("queued deferred agreement work %v for a CS worker", aw)))
-    }
+	}
 }
 
 func (c *CSProtocolHandler) PostReply(agreementId string, proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, consumerPolicy *policy.Policy, workerId string) error {
@@ -548,6 +553,7 @@ func (c *CSProtocolHandler) GetKnownBlockchain(ag *Agreement) (string, string) {
 func (c *CSProtocolHandler) CanSendMeterRecord(ag *Agreement) bool {
 	return ag.ProposalSig != "" && ag.ConsumerProposalSig != ""
 }
+
 // ==========================================================================================================
 // Utility functions
 

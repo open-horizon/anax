@@ -31,9 +31,9 @@ func (a APISpecList) IsSame(compare APISpecList, checkVersion bool) bool {
 }
 
 type APISpecification struct {
-	SpecRef          string `json:"specRef"`          // A URL pointing to the definition of the API spec
-	Version          string `json:"version"`          // The version of the API spec in OSGI version format
-	ExclusiveAccess  bool   `json:"exclusiveAccess"`  // Whether or not exclusive access to this API spec is required
+	SpecRef         string `json:"specRef"`         // A URL pointing to the definition of the API spec
+	Version         string `json:"version"`         // The version of the API spec in OSGI version format
+	ExclusiveAccess bool   `json:"exclusiveAccess"` // Whether or not exclusive access to this API spec is required
 	// API will allow. For a Consumer (agbot), this is likely to be 1.
 	// For a Producer, if this is zero, then no agreements, if 1 then
 	// then it's essentially exclusive access. For more than 1, then it's
@@ -165,7 +165,7 @@ func (self *APISpecList) MergeWith(other *APISpecList) APISpecList {
 // This function extracts the APISpec URLs from a list of API Specs and returns the URLs in an array.
 func (self *APISpecList) AsStringArray() []string {
 	res := make([]string, 0, 10)
-	for _, apiSpec := range (*self) {
+	for _, apiSpec := range *self {
 		res = append(res, apiSpec.SpecRef)
 	}
 	return res

@@ -23,19 +23,19 @@ import (
 
 // must be safely-constructed!!
 type AgreementBotWorker struct {
-	worker.Worker   // embedded field
-	db              *bolt.DB
-	httpClient      *http.Client
-	agbotId         string
-	token           string
-	pm              *policy.PolicyManager
-	consumerPH      map[string]ConsumerProtocolHandler
-	ready           bool
+	worker.Worker // embedded field
+	db            *bolt.DB
+	httpClient    *http.Client
+	agbotId       string
+	token         string
+	pm            *policy.PolicyManager
+	consumerPH    map[string]ConsumerProtocolHandler
+	ready         bool
 }
 
 func NewAgreementBotWorker(cfg *config.HorizonConfig, db *bolt.DB) *AgreementBotWorker {
-	messages := make(chan events.Message, 100)   // The channel for outbound messages to the anax wide bus
-	commands := make(chan worker.Command, 100)   // The channel for commands into the agreement bot worker
+	messages := make(chan events.Message, 100) // The channel for outbound messages to the anax wide bus
+	commands := make(chan worker.Command, 100) // The channel for commands into the agreement bot worker
 
 	worker := &AgreementBotWorker{
 		Worker: worker.Worker{
@@ -47,12 +47,12 @@ func NewAgreementBotWorker(cfg *config.HorizonConfig, db *bolt.DB) *AgreementBot
 			Commands: commands,
 		},
 
-		db:              db,
-		httpClient:      &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)},
-		agbotId:         cfg.AgreementBot.ExchangeId,
-		token:           cfg.AgreementBot.ExchangeToken,
-		consumerPH:      make(map[string]ConsumerProtocolHandler),
-		ready:           false,
+		db:         db,
+		httpClient: &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
+		agbotId:    cfg.AgreementBot.ExchangeId,
+		token:      cfg.AgreementBot.ExchangeToken,
+		consumerPH: make(map[string]ConsumerProtocolHandler),
+		ready:      false,
 	}
 
 	glog.Info("Starting AgreementBot worker")
@@ -221,7 +221,7 @@ func (w *AgreementBotWorker) start() {
 
 		// Begin heartbeating with the exchange.
 		targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/heartbeat"
-		go exchange.Heartbeat(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, targetURL, w.agbotId, w.token, w.Worker.Manager.Config.AgreementBot.ExchangeHeartbeat)
+		go exchange.Heartbeat(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, targetURL, w.agbotId, w.token, w.Worker.Manager.Config.AgreementBot.ExchangeHeartbeat)
 
 		// Start the governance routines.
 		go w.GovernAgreements()
@@ -457,7 +457,7 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 					if producerPolicy, err := w.MergeAllProducerPolicies(&dev); err != nil {
 						glog.Errorf("AgreementBotWorker unable to merge microservice policies, error: %v", err)
 
-					// Check to see if the device's policy is compatible
+						// Check to see if the device's policy is compatible
 
 					} else if err := policy.Are_Compatible(producerPolicy, &consumerPolicy); err != nil {
 						glog.Errorf("AgreementBotWorker received error comparing %v and %v, error: %v", *producerPolicy, consumerPolicy, err)
@@ -485,7 +485,7 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 						} else if bcType != "" && !w.consumerPH[protocol].IsBlockchainWritable(bcType, bcName) {
 							// Older devices assume that the agbot has the blockchain up and running before an agreement can be made.
 							// Get that blockchain running if it isn't up.
-							glog.V(5).Infof("AgreementBotWorker skipping device id %v, requires blockchain %v %v that isnt ready yet.", dev.Id,  bcType, bcName)
+							glog.V(5).Infof("AgreementBotWorker skipping device id %v, requires blockchain %v %v that isnt ready yet.", dev.Id, bcType, bcName)
 							w.Worker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, bcType, bcName, w.Manager.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
 							continue
 						} else if !w.consumerPH[protocol].AcceptCommand(cmd) {
@@ -627,7 +627,7 @@ func DeleteConsumerAgreement(url string, agbotId string, token string, agreement
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := url + "agbots/" + agbotId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "DELETE", targetURL, agbotId, token, nil, &resp); err != nil && !strings.Contains(err.Error(), "not found") {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "DELETE", targetURL, agbotId, token, nil, &resp); err != nil && !strings.Contains(err.Error(), "not found") {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
@@ -749,7 +749,6 @@ func (w *AgreementBotWorker) makeNewMSSearchElement(specRef string, version stri
 	}
 	return newMS, nil
 }
-
 
 func (w *AgreementBotWorker) syncOnInit() error {
 	glog.V(3).Infof(AWlogString("beginning sync up."))
@@ -942,7 +941,7 @@ func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, po
 func (w *AgreementBotWorker) incompleteHAGroup(dev exchange.SearchResultDevice, producerPolicy *policy.Policy) error {
 
 	// If the HA group specification is empty, there is nothing to check.
-	if len(producerPolicy.HAGroup.Partners) == 0  {
+	if len(producerPolicy.HAGroup.Partners) == 0 {
 		return nil
 	} else {
 
@@ -967,7 +966,7 @@ func getTheDevice(deviceId string, url string, agbotId string, token string) (*e
 	resp = new(exchange.GetDevicesResponse)
 	targetURL := url + "devices/" + deviceId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT*time.Millisecond)}, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
 			glog.Errorf(AWlogString(fmt.Sprintf(err.Error())))
 			return nil, err
 		} else if tpErr != nil {
