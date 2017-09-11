@@ -29,8 +29,11 @@ type DeviceEntry struct {
 	Agreements []AgreementEntry `json:"contracts"`
 }
 
-func GetActiveAgreements(in_devices map[string][]string, agreement Agreement, config *config.AGConfig) ([]string, error) {
+func GetActiveAgreements(in_devices map[string][]string, agreement Agreement, hConfig *config.HorizonConfig) ([]string, error) {
 	err := error(nil)
+
+	httpClient := hConfig.Collaborators.HTTPClientFactory.NewHTTPClient(nil)
+	config := hConfig.AgreementBot
 
 	// If the agreement record was created with the ActiveContractsURL field, then it means that the policy which created the
 	// agreement specified a specific data verification URL. If not, then the default data verification URL is used from
@@ -65,7 +68,7 @@ func GetActiveAgreements(in_devices map[string][]string, agreement Agreement, co
 		// error to the caller.
 		retries := 0
 		for {
-			if err = Invoke_rest("GET", activeAgreementsURL, activeAgreementsUser, activeAgreementsPW, nil, &response); err != nil {
+			if err = Invoke_rest(httpClient, "GET", activeAgreementsURL, activeAgreementsUser, activeAgreementsPW, nil, &response); err != nil {
 				glog.Errorf("Error getting active agreements: %v", err)
 				if retries == 2 {
 					break
@@ -108,7 +111,7 @@ func ActiveAgreementsContains(activeAgreements []string, agreement Agreement, pr
 	return false
 }
 
-func Invoke_rest(method string, url string, user string, pw string, body []byte, outstruct interface{}) error {
+func Invoke_rest(client *http.Client, method string, url string, user string, pw string, body []byte, outstruct interface{}) error {
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 	if user != "" && pw != "" {
@@ -117,7 +120,6 @@ func Invoke_rest(method string, url string, user string, pw string, body []byte,
 
 	req.Close = true // work around to ensure that Go doesn't get connections confused. Supposed to be fixed in Go 1.6.
 
-	client := &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}
 	rawresp, err := client.Do(req)
 	if err != nil {
 		return err

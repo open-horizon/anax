@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 )
 
 type RPC_Client struct {
@@ -21,7 +20,7 @@ type RPC_Client struct {
 	httpClient *http.Client
 }
 
-func RPC_Client_Factory(connection *RPC_Connection) *RPC_Client {
+func RPC_Client_Factory(httpClientFactory *config.HTTPClientFactory, connection *RPC_Connection) *RPC_Client {
 	if connection == nil {
 		glog.Errorf("Input connection is nil")
 		return nil
@@ -33,16 +32,16 @@ func RPC_Client_Factory(connection *RPC_Connection) *RPC_Client {
 		rpcc.body["jsonrpc"] = "2.0"
 		rpcc.body["id"] = "1"
 
-		var rpc_timeout time.Duration
+		var rpc_timeoutS *uint
+		// TODO: can we use the configurable, general timeout instead of this?
 		if rpc_t, err := strconv.Atoi(os.Getenv("bh_rpc_timeout")); err != nil || rpc_t == 0 {
-			rpc_timeout = time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)
+			rpc_timeoutS = nil
 		} else {
-			rpc_timeout = time.Duration(time.Duration(rpc_t) * time.Second)
+			t := uint(rpc_t)
+			rpc_timeoutS = &t
 		}
 
-		rpcc.httpClient = &http.Client{
-			Timeout: time.Duration(rpc_timeout),
-		}
+		rpcc.httpClient = httpClientFactory.NewHTTPClient(rpc_timeoutS)
 		return rpcc
 	}
 }

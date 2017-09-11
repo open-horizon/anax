@@ -71,7 +71,7 @@ type BaseConsumerProtocolHandler struct {
 	pm               *policy.PolicyManager
 	db               *bolt.DB
 	config           *config.HorizonConfig
-	httpClient       *http.Client
+	httpClient       *http.Client // shared HTTP client instance
 	agbotId          string
 	token            string
 	deferredCommands []AgreementWork // The agreement related work that has to be deferred and retried
@@ -451,7 +451,7 @@ func (b *BaseConsumerProtocolHandler) getDevice(deviceId string, workerId string
 	resp = new(exchange.GetDevicesResponse)
 	targetURL := b.config.AgreementBot.ExchangeURL + "devices/" + deviceId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "GET", targetURL, b.agbotId, b.token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "GET", targetURL, b.agbotId, b.token, nil, &resp); err != nil {
 			glog.Errorf(BCPHlogstring2(workerId, fmt.Sprintf(err.Error())))
 			return nil, err
 		} else if tpErr != nil {

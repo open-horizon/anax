@@ -13,7 +13,6 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"golang.org/x/crypto/sha3"
-	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -158,13 +157,13 @@ func MicroserviceNeedsRollback(msdef *persistence.MicroserviceDefinition) bool {
 // Get the new microservice def that the given msdef need to upgrade to.
 // This function gets the latest madef from the exchange and compare the version and content with the current msdef and decide if it needs to upgrade.
 // It returns the new msdef if the old one needs to upgrade, otherwide return nil
-func GetUpgadeMicroserviceDef(msdef *persistence.MicroserviceDefinition, exchURL string, deviceId string, deviceToken string, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
+func GetUpgradeMicroserviceDef(msdef *persistence.MicroserviceDefinition, httpClientFactory *config.HTTPClientFactory, exchURL string, deviceId string, deviceToken string, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
 	glog.V(3).Infof("Get new microservice def for upgrading microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
 
 	// convert the sensor version to a version expression
 	if vExp, err := policy.Version_Expression_Factory(msdef.UpgradeVersionRange); err != nil {
 		return nil, fmt.Errorf("Unable to convert %v to a version expression, error %v", msdef.UpgradeVersionRange, err)
-	} else if e_msdef, err := exchange.GetMicroservice(msdef.SpecRef, vExp.Get_expression(), msdef.Arch, exchURL, deviceId, deviceToken); err != nil {
+	} else if e_msdef, err := exchange.GetMicroservice(httpClientFactory, msdef.SpecRef, vExp.Get_expression(), msdef.Arch, exchURL, deviceId, deviceToken); err != nil {
 		return nil, fmt.Errorf("Filed to find a highest version for microservice %v version range %v: %v", msdef.SpecRef, msdef.UpgradeVersionRange, err)
 	} else if new_msdef, err := ConvertToPersistent(e_msdef); err != nil {
 		return nil, fmt.Errorf("Failed to convert microservice metadata to persistent.MicroserviceDefinition for %v. %v", msdef.SpecRef, err)
@@ -267,7 +266,7 @@ func RestoreMicroservicePolicyFile(spec_ref string, version string, msdef_id str
 	return fullFileName, nil
 }
 
-func getExchangeDevice(deviceId string, deviceToken string, exchangeUrl string) (*exchange.Device, error) {
+func getExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId string, deviceToken string, exchangeUrl string) (*exchange.Device, error) {
 
 	glog.V(3).Infof("retrieving device %v from exchange", deviceId)
 
@@ -275,7 +274,7 @@ func getExchangeDevice(deviceId string, deviceToken string, exchangeUrl string) 
 	resp = new(exchange.GetDevicesResponse)
 	targetURL := exchangeUrl + "devices/" + deviceId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "GET", targetURL, deviceId, deviceToken, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, deviceId, deviceToken, nil, &resp); err != nil {
 			glog.Errorf(err.Error())
 			return nil, err
 		} else if tpErr != nil {
@@ -389,7 +388,7 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 }
 
 // Unregisters the given microservice from the exchange
-func UnregisterMicroserviceExchange(spec_ref string, exchange_url string, device_id string, device_token string, db *bolt.DB) error {
+func UnregisterMicroserviceExchange(spec_ref string, httpClientFactory *config.HTTPClientFactory, exchange_url string, device_id string, device_token string, db *bolt.DB) error {
 	glog.V(3).Infof("Unregister microservice from exchange for %v.", spec_ref)
 
 	var deviceName string
@@ -402,7 +401,7 @@ func UnregisterMicroserviceExchange(spec_ref string, exchange_url string, device
 		deviceName = dev.Name
 	}
 
-	if eDevice, err := getExchangeDevice(device_id, device_token, exchange_url); err != nil {
+	if eDevice, err := getExchangeDevice(httpClientFactory, device_id, device_token, exchange_url); err != nil {
 		return fmt.Errorf("Error getting device from the exchange. %v", err)
 	} else if eDevice.RegisteredMicroservices == nil || len(eDevice.RegisteredMicroservices) == 0 {
 		return nil // no registered miceroservices, nothing to do
@@ -425,7 +424,7 @@ func UnregisterMicroserviceExchange(spec_ref string, exchange_url string, device
 		glog.V(3).Infof("Unregistering microservices: %v at %v", pdr.ShortString(), targetURL)
 
 		for {
-			if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "PUT", targetURL, device_id, device_token, pdr, &resp); err != nil {
+			if err, tpErr := exchange.InvokeExchange(httpClientFactory.NewHTTPClient(nil), "PUT", targetURL, device_id, device_token, pdr, &resp); err != nil {
 				return err
 			} else if tpErr != nil {
 				glog.Warningf(tpErr.Error())

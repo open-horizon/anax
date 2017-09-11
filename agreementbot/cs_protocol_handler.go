@@ -15,7 +15,6 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
 	"math/rand"
-	"net/http"
 	"os"
 	"sync"
 	"time"
@@ -46,13 +45,13 @@ func NewCSProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB, p
 				pm:               pm,
 				db:               db,
 				config:           cfg,
-				httpClient:       &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
+				httpClient:       cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 				agbotId:          cfg.AgreementBot.ExchangeId,
 				token:            cfg.AgreementBot.ExchangeToken,
 				deferredCommands: make([]AgreementWork, 0, 10),
 				messages:         messages,
 			},
-			genericAgreementPH: citizenscientist.NewProtocolHandler(pm),
+			genericAgreementPH: citizenscientist.NewProtocolHandler(cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil), pm),
 			Work:               make(chan AgreementWork),
 			bcState:            make(map[string]map[string]*BlockchainState),
 			bcStateLock:        sync.Mutex{},
@@ -282,7 +281,7 @@ func (c *CSProtocolHandler) SetBlockchainWritable(ev *events.AccountFundedMessag
 			service:     ev.ServiceName(),
 			servicePort: ev.ServicePort(),
 			colonusDir:  ev.ColonusDir(),
-			agreementPH: citizenscientist.NewProtocolHandler(c.pm),
+			agreementPH: citizenscientist.NewProtocolHandler(c.httpClient, c.pm),
 		}
 	} else {
 		nameMap[ev.BlockchainInstance()].ready = true
@@ -290,7 +289,7 @@ func (c *CSProtocolHandler) SetBlockchainWritable(ev *events.AccountFundedMessag
 		nameMap[ev.BlockchainInstance()].service = ev.ServiceName()
 		nameMap[ev.BlockchainInstance()].servicePort = ev.ServicePort()
 		nameMap[ev.BlockchainInstance()].colonusDir = ev.ColonusDir()
-		nameMap[ev.BlockchainInstance()].agreementPH = citizenscientist.NewProtocolHandler(c.pm)
+		nameMap[ev.BlockchainInstance()].agreementPH = citizenscientist.NewProtocolHandler(c.httpClient, c.pm)
 	}
 
 	glog.V(3).Infof(CPHlogString(fmt.Sprintf("initializing agreement protocol handler for %v", ev)))

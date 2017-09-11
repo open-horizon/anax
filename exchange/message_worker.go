@@ -45,7 +45,7 @@ func NewExchangeMessageWorker(cfg *config.HorizonConfig, db *bolt.DB) *ExchangeM
 			Commands: commands,
 		},
 		db:         db,
-		httpClient: &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
+		httpClient: cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 		id:         id,
 		token:      token,
 	}

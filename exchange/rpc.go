@@ -417,7 +417,7 @@ func Heartbeat(h *http.Client, url string, id string, token string, interval int
 
 }
 
-func GetEthereumClient(url string, chainName string, chainType string, deviceId string, token string) (string, error) {
+func GetEthereumClient(httpClientFactory *config.HTTPClientFactory, url string, chainName string, chainType string, deviceId string, token string) (string, error) {
 
 	glog.V(5).Infof(rpclogString(fmt.Sprintf("getting ethereum client metadata for chain %v", chainName)))
 
@@ -425,7 +425,7 @@ func GetEthereumClient(url string, chainName string, chainType string, deviceId 
 	resp = new(GetEthereumClientResponse)
 	targetURL := url + "bctypes/" + chainType + "/blockchains/" + chainName
 	for {
-		if err, tpErr := InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "GET", targetURL, deviceId, token, nil, &resp); err != nil {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
 			return "", err
 		} else if tpErr != nil {
@@ -611,7 +611,7 @@ func getSearchVersion(version string) (string, error) {
 	return searchVersion, nil
 }
 
-func GetWorkload(wURL string, wVersion string, wArch string, exURL string, id string, token string) (*WorkloadDefinition, error) {
+func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wVersion string, wArch string, exURL string, id string, token string) (*WorkloadDefinition, error) {
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting workload definition %v %v %v", wURL, wVersion, wArch)))
 
@@ -631,7 +631,7 @@ func GetWorkload(wURL string, wVersion string, wArch string, exURL string, id st
 	}
 
 	for {
-		if err, tpErr := InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "GET", targetURL, id, token, nil, &resp); err != nil {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, id, token, nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
 			return nil, err
 		} else if tpErr != nil {
@@ -680,7 +680,7 @@ func GetWorkload(wURL string, wVersion string, wArch string, exURL string, id st
 	}
 }
 
-func GetMicroservice(mURL string, mVersion string, mArch string, exURL string, id string, token string) (*MicroserviceDefinition, error) {
+func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, mVersion string, mArch string, exURL string, id string, token string) (*MicroserviceDefinition, error) {
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting microservice definition %v %v %v", mURL, mVersion, mArch)))
 
@@ -700,7 +700,7 @@ func GetMicroservice(mURL string, mVersion string, mArch string, exURL string, i
 	}
 
 	for {
-		if err, tpErr := InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "GET", targetURL, id, token, nil, &resp); err != nil {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, id, token, nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
 			return nil, err
 		} else if tpErr != nil {
@@ -754,13 +754,13 @@ func GetMicroservice(mURL string, mVersion string, mArch string, exURL string, i
 // The purpose of this function is to verify that a given workload URL, version and architecture, is defined in the exchange
 // as well as all of its API spec dependencies. This function also returns the API dependencies converted into
 // policy types so that the caller can use those types to do policy compatibility checks if they want to.
-func WorkloadResolver(wURL string, wVersion string, wArch string, exURL string, id string, token string) (*policy.APISpecList, error) {
+func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, wVersion string, wArch string, exURL string, id string, token string) (*policy.APISpecList, error) {
 	resolveMicroservices := true
 
 	glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving workload %v %v %v", wURL, wVersion, wArch)))
 
 	// Get a version specific workload definition.
-	if workload, err := GetWorkload(wURL, wVersion, wArch, exURL, id, token); err != nil {
+	if workload, err := GetWorkload(httpClientFactory, wURL, wVersion, wArch, exURL, id, token); err != nil {
 		return nil, err
 	} else if len(workload.Workloads) != 1 {
 		return nil, errors.New(fmt.Sprintf("expecting 1 element in the workloads array of %v, have %v", workload, len(workload.Workloads)))
@@ -781,7 +781,7 @@ func WorkloadResolver(wURL string, wVersion string, wArch string, exURL string, 
 				// will return us something in the range required by the workload.
 				if vExp, err := policy.Version_Expression_Factory(apiSpec.Version); err != nil {
 					return nil, errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", apiSpec.Version, err))
-				} else if ms, err := GetMicroservice(apiSpec.SpecRef, vExp.Get_expression(), apiSpec.Arch, exURL, id, token); err != nil {
+				} else if ms, err := GetMicroservice(httpClientFactory, apiSpec.SpecRef, vExp.Get_expression(), apiSpec.Arch, exURL, id, token); err != nil {
 					return nil, err
 				} else if ms == nil {
 					return nil, errors.New(fmt.Sprintf("unable to find microservice %v within %v", apiSpec, vExp))

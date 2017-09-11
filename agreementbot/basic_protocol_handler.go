@@ -13,7 +13,6 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
 	"math/rand"
-	"net/http"
 	"time"
 )
 
@@ -31,13 +30,12 @@ func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB
 				pm:               pm,
 				db:               db,
 				config:           cfg,
-				httpClient:       &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
 				agbotId:          cfg.AgreementBot.ExchangeId,
 				token:            cfg.AgreementBot.ExchangeToken,
 				deferredCommands: nil,
 				messages:         messages,
 			},
-			agreementPH: basicprotocol.NewProtocolHandler(pm),
+			agreementPH: basicprotocol.NewProtocolHandler(cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil), pm),
 			Work:        make(chan AgreementWork),
 		}
 	} else {

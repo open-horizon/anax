@@ -26,7 +26,7 @@ import (
 type AgreementWorker struct {
 	worker.Worker            // embedded field
 	db                       *bolt.DB
-	httpClient               *http.Client
+	httpClient               *http.Client // a shared http client
 	userId                   string
 	deviceId                 string
 	deviceToken              string
@@ -59,7 +59,7 @@ func NewAgreementWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.Polic
 		},
 
 		db:          db,
-		httpClient:  &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
+		httpClient:  cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 		protocols:   make(map[string]bool),
 		pm:          pm,
 		deviceId:    id,
@@ -338,7 +338,7 @@ func (w *AgreementWorker) syncOnInit() error {
 			} else if len(agreements) == 0 {
 				glog.V(3).Infof(logString(fmt.Sprintf("found agreement %v in the exchange that is not in our DB.", exchangeAg)))
 				// Delete the agreement from the exchange.
-				if err := deleteProducerAgreement(w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, exchangeAg); err != nil {
+				if err := deleteProducerAgreement(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, exchangeAg); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error deleting agreement %v in exchange: %v", exchangeAg, err)))
 				}
 			}
@@ -633,7 +633,7 @@ func (w *AgreementWorker) recordAgreementState(agreementId string, apiSpecs *pol
 
 }
 
-func deleteProducerAgreement(url string, deviceId string, token string, agreementId string) error {
+func deleteProducerAgreement(httpClient *http.Client, url string, deviceId string, token string, agreementId string) error {
 
 	glog.V(5).Infof(logString(fmt.Sprintf("deleting agreement %v in exchange", agreementId)))
 
@@ -641,7 +641,7 @@ func deleteProducerAgreement(url string, deviceId string, token string, agreemen
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := url + "devices/" + deviceId + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(&http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)}, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(httpClient, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {

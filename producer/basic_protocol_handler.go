@@ -11,8 +11,6 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
-	"net/http"
-	"time"
 )
 
 type BasicProtocolHandler struct {
@@ -24,15 +22,14 @@ func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB
 	if name == basicprotocol.PROTOCOL_NAME {
 		return &BasicProtocolHandler{
 			BaseProducerProtocolHandler: &BaseProducerProtocolHandler{
-				name:       name,
-				pm:         pm,
-				db:         db,
-				config:     cfg,
-				deviceId:   deviceId,
-				token:      token,
-				httpClient: &http.Client{Timeout: time.Duration(config.HTTPDEFAULTTIMEOUT * time.Millisecond)},
+				name:     name,
+				pm:       pm,
+				db:       db,
+				config:   cfg,
+				deviceId: deviceId,
+				token:    token,
 			},
-			agreementPH: basicprotocol.NewProtocolHandler(pm),
+			agreementPH: basicprotocol.NewProtocolHandler(cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil), pm),
 		}
 	} else {
 		return nil
