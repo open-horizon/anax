@@ -1,7 +1,8 @@
+// +build unit
+
 package ethblockchain
 
 import (
-	// "fmt"
 	"testing"
 )
 

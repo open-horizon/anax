@@ -1,7 +1,8 @@
+// +build unit
+
 package policy
 
 import (
-	// "fmt"
 	"testing"
 )
 

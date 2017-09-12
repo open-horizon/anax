@@ -1,11 +1,11 @@
+// +build unit
+
 package policy
 
 import (
 	"encoding/json"
-	// "runtime"
 	"strings"
 	"testing"
-	// "time"
 )
 
 func Test_Payloadmanager_init_success1(t *testing.T) {
