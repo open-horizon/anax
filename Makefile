@@ -91,23 +91,22 @@ format:
 
 lint:
 	@echo "Checking source code for style issues and statically-determinable errors"
-	-cd api/static && \
-		jshint -c ./.jshintrc --verbose ./js/
 	-golint ./... | grep -v "vendor/"
-	-go vet ./... 2>&1 | grep -vP "exit\ status|vendor/"
+	-cd $(PKGPATH) && \
+		GOPATH=$(TMPGOPATH) go vet $(shell find . -not -path './vendor/*' -iname '*.go' -print | xargs dirname | sort | uniq | xargs) 2>&1 | grep -vP "^exit.*"
 
 pull: deps
 
 # only unit tests
 test: deps
 	@echo "Executing unit tests"
-	cd $(PKGPATH) && \
-    GOPATH=$(TMPGOPATH) go test -v -cover $(PKGS)
+	-@cd $(PKGPATH) && \
+    GOPATH=$(TMPGOPATH) go test -cover -tags=unit $(PKGS)
 
 test-integration: deps
 	@echo "Executing integration tests"
-	cd $(PKGPATH) && \
-    GOPATH=$(TMPGOPATH) go test -v -cover -tags=integration $(PKGS)
+	-@cd $(PKGPATH) && \
+    GOPATH=$(TMPGOPATH) go test -cover -tags=integration $(PKGS)
 
 check: lint test test-integration
 
