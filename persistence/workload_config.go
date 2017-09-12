@@ -16,7 +16,7 @@ const WORKLOAD_CONFIG = "workload_config"
 
 type WorkloadConfig struct {
 	WorkloadURL       string                 `json:"workload_url"`
-	VersionExpression string                 `json:"version"` // This is a version range
+	VersionExpression string                 `json:"workload_version"` // This is a version range
 	Variables         map[string]interface{} `json:"variables"`
 }
 
