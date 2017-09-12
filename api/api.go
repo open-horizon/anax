@@ -13,7 +13,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
-	"github.com/open-horizon/anax/device"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/microservice"
@@ -285,19 +284,19 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeResponse := func(exDevice *persistence.ExchangeDevice, successStatusCode int) (*HorizonDevice, bool) {
-		id, _ := device.Id()
 
 		var outModel *HorizonDevice
 
 		if exDevice == nil {
+			device_id := os.Getenv("CMTN_DEVICE_ID")
 			outModel = &HorizonDevice{
-				Id: &id,
+				Id: &device_id,
 			}
 		} else {
 			// assume input struct is well-formed, should come from persisted record
 			outModel = &HorizonDevice{
 				Name:               &exDevice.Name,
-				Id:                 &id,
+				Id:                 &exDevice.Id,
 				TokenValid:         &exDevice.TokenValid,
 				TokenLastValidTime: &exDevice.TokenLastValidTime,
 				HADevice:           &exDevice.HADevice,
@@ -364,6 +363,20 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "device.token", Error: "null and must not be"})
 			return
 		}
+
+		if device.Id == nil || *device.Id == "" {
+			device_id := os.Getenv("CMTN_DEVICE_ID")
+			if device_id == "" {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "device.id", Error: "Either setup CMTN_DEVICE_ID environmental variable or specify device.id."})
+				return
+			}
+			device.Id = &device_id
+		} else {
+			if bail := checkInputString(w, "device.id", device.Name); bail {
+				return
+			}
+		}
+
 		// don't bother sanitizing token data; we *never* output it, and we *never* compute it
 
 		existing, fetchErrWritten := fetch(&device)
@@ -383,14 +396,14 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			haDevice = true
 		}
 
-		exDev, err := persistence.SaveNewExchangeDevice(a.db, *device.Token, *device.Name, *device.Account.Id, *device.Account.Email, haDevice)
+		exDev, err := persistence.SaveNewExchangeDevice(a.db, *device.Id, *device.Token, *device.Name, *device.Account.Id, *device.Account.Email, haDevice)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			glog.Errorf("Error persisting new exchange device: %v", err)
 			return
 		}
 
-		a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, *device.Token)
+		a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, *device.Id, *device.Token)
 		writeResponse(exDev, http.StatusCreated)
 
 	case "PATCH":
@@ -1538,7 +1551,7 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 				cfg.Variables[ui.Name] = ui.DefaultValue
 			} else {
 				// User Input variable is not defined in the workload config request and doesnt have a default, that's a problem.
-				glog.Errorf("WorkloadConfig does not set %v, which has no default value in the workload", ui.Name, cfg.WorkloadURL, ui)
+				glog.Errorf("WorkloadConfig does not set %v, which has no default value in the workload", ui.Name)
 				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("WorkloadConfig does not set %v, which has no default value", ui.Name)})
 				return
 			}
@@ -1636,14 +1649,14 @@ func (a *API) microservice(w http.ResponseWriter, r *http.Request) {
 		msinsts, err := persistence.FindMicroserviceInstances(a.db, []persistence.MIFilter{})
 		if err != nil {
 			glog.Error(err)
-			http.Error(w, fmt.Sprintf("Internal server error: $v", err), http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("Internal server error: %v", err), http.StatusInternalServerError)
 			return
 		}
 
 		msdefs, err := persistence.FindMicroserviceDefs(a.db, []persistence.MSFilter{})
 		if err != nil {
 			glog.Error(err)
-			http.Error(w, fmt.Sprintf("Internal server error: $v", err), http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("Internal server error: %v", err), http.StatusInternalServerError)
 			return
 		}
 

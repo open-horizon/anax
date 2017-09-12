@@ -231,7 +231,7 @@ func RemoveMicroservicePolicy(spec_ref string, version string, msdef_id string, 
 
 				// rename the policy file
 				if err := os.Rename(fullFileName, fullFileName+"."+msdef_id); err != nil {
-					return fmt.Errorf("Failed to rename the policy file %v to $v. %v", fullFileName, fullFileName+"."+msdef_id, err)
+					return fmt.Errorf("Failed to rename the policy file %v to %v. %v", fullFileName, fullFileName+"."+msdef_id, err)
 				}
 
 				return nil
@@ -253,7 +253,7 @@ func RestoreMicroservicePolicyFile(spec_ref string, version string, msdef_id str
 
 	// rename the policy file
 	if err := os.Rename(fullFileName+"."+msdef_id, fullFileName); err != nil {
-		return "", fmt.Errorf("Failed to rename the policy file %v to $v. %v", fullFileName+"."+msdef_id, fullFileName, err)
+		return "", fmt.Errorf("Failed to rename the policy file %v to %v. %v", fullFileName+"."+msdef_id, fullFileName, err)
 	}
 
 	// read the policy file
@@ -436,5 +436,4 @@ func UnregisterMicroserviceExchange(spec_ref string, httpClientFactory *config.H
 			}
 		}
 	}
-	return nil
 }

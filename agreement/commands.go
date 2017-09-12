@@ -8,16 +8,18 @@ import (
 // Commands supported by the Agreement Worker
 
 type DeviceRegisteredCommand struct {
-	Token string
+	DeviceId string
+	Token    string
 }
 
 func (d DeviceRegisteredCommand) ShortString() string {
 	return fmt.Sprintf("%v", d)
 }
 
-func NewDeviceRegisteredCommand(token string) *DeviceRegisteredCommand {
+func NewDeviceRegisteredCommand(device_id string, token string) *DeviceRegisteredCommand {
 	return &DeviceRegisteredCommand{
-		Token: token,
+		DeviceId: device_id,
+		Token:    token,
 	}
 }
 

@@ -8,7 +8,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/device"
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -56,11 +55,11 @@ func NewGovernanceWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.Poli
 	messages := make(chan events.Message)
 	commands := make(chan worker.Command, 200)
 
-	id, _ := device.Id()
-
+	id := ""
 	token := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
 		token = dev.Token
+		id = dev.Id
 	}
 
 	worker := &GovernanceWorker{
@@ -94,6 +93,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 	switch incoming.(type) {
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
+		w.deviceId = msg.DeviceId()
 		w.deviceToken = msg.Token()
 
 	case *events.WorkloadMessage:
@@ -374,9 +374,9 @@ func (w *GovernanceWorker) governMicroservices() {
 					// check if ms is ready for rollback for those execution did not start within certian time
 					if microservice.MicroserviceNeedsRollback(&ms) {
 						if old_msdef, err := microservice.GetRollbackMicroserviceDef(&ms, w.db); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("Error finding the old microservice definition to rollback to for %v version key %v. %v", ms.SpecRef, ms.Version, ms.Id, err)))
+							glog.Errorf(logString(fmt.Sprintf("Error finding the old microservice definition to rollback to for %v version %v key %v. %v", ms.SpecRef, ms.Version, ms.Id, err)))
 						} else if old_msdef == nil {
-							glog.Errorf(logString(fmt.Sprintf("Unable to find the old microservice definition to rollback to for %v version key %v. %v", ms.SpecRef, ms.Version, ms.Id, err)))
+							glog.Errorf(logString(fmt.Sprintf("Unable to find the old microservice definition to rollback to for %v version %v key %v. %v", ms.SpecRef, ms.Version, ms.Id, err)))
 						} else if err := w.RollbackMicroservice(old_msdef, &ms); err != nil {
 							glog.Errorf(logString(fmt.Sprintf("Failed to rollback %v from version %v key %v to version %v key %v. %v", ms.SpecRef, ms.Version, ms.Id, old_msdef.Version, old_msdef.Id, err)))
 						}
@@ -1022,7 +1022,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 					if vExp, err := policy.Version_Expression_Factory(as.Version); err != nil {
 						return errors.New(logString(fmt.Sprintf("Error converting APISpec version %v for %v to version range. %v", as.Version, as.SpecRef, err)))
 					} else if inRange, err := vExp.Is_within_range(msdef.Version); err != nil {
-						return errors.New(logString(fmt.Sprintf("Error checking if microservice version %v is within APISpec version range for %v. %v", msdef.Version, vExp, as.SpecRef, err)))
+						return errors.New(logString(fmt.Sprintf("Error checking if microservice version %v is within APISpec version range %v for %v. %v", msdef.Version, vExp, as.SpecRef, err)))
 					} else if !inRange {
 						return errors.New(logString(fmt.Sprintf("Current microservice %v version %v is not within the APISpec version range %v. %v", msdef.SpecRef, msdef.Version, vExp, err)))
 					}
@@ -1399,7 +1399,7 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 	var ms_insts []persistence.MicroserviceInstance
 	eClearError = nil
 	if ms_insts, eClearError = persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.AllInstancesMIFilter(msdef.SpecRef, msdef.Version), persistence.UnarchivedMIFilter()}); eClearError != nil {
-		glog.Errorf(logString(fmt.Sprintf("Error retrieving all the microservice instaces from db for %v version %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, eClearError)))
+		glog.Errorf(logString(fmt.Sprintf("Error retrieving all the microservice instaces from db for %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, eClearError)))
 	} else if ms_insts != nil && len(ms_insts) > 0 {
 		for _, msi := range ms_insts {
 			if msi.MicroserviceDefId == msdef.Id {
@@ -1462,7 +1462,7 @@ func (w *GovernanceWorker) RollbackMicroservice(old_msdef *persistence.Microserv
 
 	// clean up new microservice
 	if ms_insts, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.AllInstancesMIFilter(new_msdef.SpecRef, new_msdef.Version), persistence.UnarchivedMIFilter()}); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Error retrieving all the microservice instaces from db for %v version %v. %v", new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
+		glog.Errorf(logString(fmt.Sprintf("Error retrieving all the microservice instaces from db for %v version %v key %v. %v", new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
 	} else if ms_insts != nil && len(ms_insts) > 0 {
 		for _, msi := range ms_insts {
 			if msi.MicroserviceDefId == new_msdef.Id {
@@ -1509,7 +1509,7 @@ func (w *GovernanceWorker) HandleMicroserviceUpgrade(msdef_id string, inactiveOn
 	} else if ((!inactiveOnly) || (!msdef.ActiveUpgrade)) && microservice.MicroserviceReadyForUpgrade(msdef, w.db) {
 		// find the new ms def to upgrade to
 		if new_msdef, err := microservice.GetUpgradeMicroserviceDef(msdef, w.Config.Collaborators.HTTPClientFactory, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, w.db); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Error finding the new microservice definition to upgrade to for %v version. %v", msdef.SpecRef, msdef.Version, err)))
+			glog.Errorf(logString(fmt.Sprintf("Error finding the new microservice definition to upgrade to for %v version %v. %v", msdef.SpecRef, msdef.Version, err)))
 		} else if new_msdef == nil {
 			glog.V(5).Infof(logString(fmt.Sprintf("No changes for microservice definition %v, no need to upgrade.", msdef.SpecRef)))
 		} else if err := w.UpgradeMicroservice(msdef, new_msdef); err != nil {

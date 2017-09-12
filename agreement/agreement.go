@@ -8,7 +8,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/device"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
@@ -41,11 +40,11 @@ func NewAgreementWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.Polic
 	messages := make(chan events.Message)
 	commands := make(chan worker.Command, 100)
 
-	id, _ := device.Id()
-
+	id := ""
 	token := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
 		token = dev.Token
+		id = dev.Id
 	}
 
 	worker := &AgreementWorker{
@@ -81,7 +80,7 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 	switch incoming.(type) {
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
-		w.Commands <- NewDeviceRegisteredCommand(msg.Token())
+		w.Commands <- NewDeviceRegisteredCommand(msg.DeviceId(), msg.Token())
 
 	case *events.PolicyCreatedMessage:
 		msg, _ := incoming.(*events.PolicyCreatedMessage)
@@ -293,6 +292,7 @@ func (w *AgreementWorker) start() {
 
 func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
+	w.deviceId = cmd.DeviceId
 	w.deviceToken = cmd.Token
 
 	if len(w.producerPH) == 0 {
@@ -334,7 +334,7 @@ func (w *AgreementWorker) syncOnInit() error {
 		// but the reverse should not occur normally. Agreements in the exchange must have a record on our local DB.
 		for exchangeAg, _ := range exchangeDeviceAgreements {
 			if agreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.IdEAFilter(exchangeAg), persistence.UnarchivedEAFilter()}); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("error searching for agreement %v from exchange agreements", exchangeAg, err)))
+				glog.Errorf(logString(fmt.Sprintf("error searching for agreement %v from exchange agreements. %v", exchangeAg, err)))
 			} else if len(agreements) == 0 {
 				glog.V(3).Infof(logString(fmt.Sprintf("found agreement %v in the exchange that is not in our DB.", exchangeAg)))
 				// Delete the agreement from the exchange.

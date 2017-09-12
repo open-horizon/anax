@@ -7,7 +7,6 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/device"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/worker"
@@ -28,11 +27,11 @@ func NewExchangeMessageWorker(cfg *config.HorizonConfig, db *bolt.DB) *ExchangeM
 	messages := make(chan events.Message)
 	commands := make(chan worker.Command, 200)
 
-	id, _ := device.Id()
-
+	id := ""
 	token := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
 		token = dev.Token
+		id = dev.Id
 	}
 
 	worker := &ExchangeMessageWorker{
@@ -62,6 +61,7 @@ func (w *ExchangeMessageWorker) NewEvent(incoming events.Message) {
 	switch incoming.(type) {
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
+		w.id = msg.DeviceId()
 		w.token = msg.Token()
 
 	default: //nothing

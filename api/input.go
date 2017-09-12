@@ -89,7 +89,7 @@ func (s *Service) String() string {
 		active_upgrade = strconv.FormatBool(*s.ActiveUpgrade)
 	}
 
-	return fmt.Sprintf("SensorUrl: %v, SensorName: %v, SensorVersion: %v, AutoUpgrade: %v, ActiveUpgrade: %v, Attributes: %s", *s.SensorUrl, *s.SensorName, version, auto_upgrade, active_upgrade, s.Attributes)
+	return fmt.Sprintf("SensorUrl: %v, SensorName: %v, SensorVersion: %v, AutoUpgrade: %v, ActiveUpgrade: %v, Attributes: %v", *s.SensorUrl, *s.SensorName, version, auto_upgrade, active_upgrade, s.Attributes)
 }
 
 func attributesContains(given []persistence.ServiceAttribute, sensorUrl string, typeString string) *persistence.ServiceAttribute {
@@ -375,7 +375,7 @@ func deserializeAttributes(w http.ResponseWriter, attrs []Attribute) ([]persiste
 					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "counterpartyproperty.mappings.expression", Error: "could not construct RequiredProperty"})
 					return nil, nil, true
 				} else if err := rp.Initialize(&exp); err != nil {
-					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "counterpartyproperty.mappings.expression", Error: fmt.Sprintf("could not initialize RequiredProperty", err)})
+					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "counterpartyproperty.mappings.expression", Error: fmt.Sprintf("could not initialize RequiredProperty: %v", err)})
 					return nil, nil, true
 				} else if err := rp.IsValid(); err != nil {
 					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "counterpartyproperty.mappings.expression", Error: fmt.Sprintf("not a valid expression: %v", err)})

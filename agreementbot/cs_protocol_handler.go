@@ -512,7 +512,7 @@ func (c *CSProtocolHandler) HandleExtensionMessage(cmd *NewProtocolMessageComman
 		glog.V(5).Infof(CPHlogString(fmt.Sprintf("queued consumer update ack message")))
 
 	} else {
-		glog.V(5).Infof(CPHlogString(fmt.Sprintf("ignoring  message: %v because it is an unknown type %v", string(cmd.Message))))
+		glog.V(5).Infof(CPHlogString(fmt.Sprintf("ignoring  message: %v because it is an unknown type", string(cmd.Message))))
 		return errors.New(CPHlogString(fmt.Sprintf("unknown protocol msg %s", cmd.Message)))
 	}
 	return nil

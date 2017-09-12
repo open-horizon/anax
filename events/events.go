@@ -342,12 +342,13 @@ func NewPolicyDeletedMessage(id EventId, policyFileName string, policyName strin
 
 // This event indicates that the edge device has been registered in the exchange
 type EdgeRegisteredExchangeMessage struct {
-	event Event
-	token string
+	event     Event
+	device_id string
+	token     string
 }
 
 func (e EdgeRegisteredExchangeMessage) String() string {
-	return fmt.Sprintf("event: %v, token: %v", e.event, e.token)
+	return fmt.Sprintf("event: %v, device_id: %v, token: %v", e.event, e.device_id, e.token)
 }
 
 func (e EdgeRegisteredExchangeMessage) ShortString() string {
@@ -358,17 +359,22 @@ func (e *EdgeRegisteredExchangeMessage) Event() Event {
 	return e.event
 }
 
+func (e *EdgeRegisteredExchangeMessage) DeviceId() string {
+	return e.device_id
+}
+
 func (e *EdgeRegisteredExchangeMessage) Token() string {
 	return e.token
 }
 
-func NewEdgeRegisteredExchangeMessage(evId EventId, token string) *EdgeRegisteredExchangeMessage {
+func NewEdgeRegisteredExchangeMessage(evId EventId, device_id string, token string) *EdgeRegisteredExchangeMessage {
 
 	return &EdgeRegisteredExchangeMessage{
 		event: Event{
 			Id: evId,
 		},
-		token: token,
+		device_id: device_id,
+		token:     token,
 	}
 }
 
