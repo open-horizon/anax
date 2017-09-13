@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
-	anaxdevice "github.com/open-horizon/anax/device"
 	"time"
 )
 
@@ -21,7 +20,6 @@ func (e ExchangeAccount) String() string {
 	return fmt.Sprintf("Id: %v, Email: %v", e.Id, e.Email)
 }
 
-// as of v2.1.0, id will always be what device.Id() returns
 type ExchangeDevice struct {
 	Id                 string          `json:"id"`
 	Account            ExchangeAccount `json:"account"`
@@ -44,12 +42,10 @@ func (e ExchangeDevice) String() string {
 }
 
 // TODO: removed check for email set temporarily until the new account mgmt. stuff is released
-func newExchangeDevice(token string, name string, tokenLastValidTime uint64, ha bool, account *ExchangeAccount) (*ExchangeDevice, error) {
-	if token == "" || name == "" || tokenLastValidTime == 0 || account == nil || account.Id == "" {
+func newExchangeDevice(id string, token string, name string, tokenLastValidTime uint64, ha bool, account *ExchangeAccount) (*ExchangeDevice, error) {
+	if id == "" || token == "" || name == "" || tokenLastValidTime == 0 || account == nil || account.Id == "" {
 		return nil, errors.New("Cannot create exchange account, illegal arguments")
 	}
-
-	id, _ := anaxdevice.Id()
 
 	return &ExchangeDevice{
 		Id:                 id,
@@ -140,9 +136,9 @@ func updateExchangeDeviceToken(db *bolt.DB, accountId string, token string) (*Ex
 }
 
 // always assumed the given token is valid at the time of call
-func SaveNewExchangeDevice(db *bolt.DB, token string, name string, accountId string, accountEmail string, ha bool) (*ExchangeDevice, error) {
+func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, accountId string, accountEmail string, ha bool) (*ExchangeDevice, error) {
 
-	if token == "" || name == "" || accountId == "" {
+	if id == "" || token == "" || name == "" || accountId == "" {
 		return nil, errors.New("Argument null and must not be")
 	}
 
@@ -164,7 +160,7 @@ func SaveNewExchangeDevice(db *bolt.DB, token string, name string, accountId str
 		return nil, fmt.Errorf("Duplicate record found in devices for %v.", name)
 	}
 
-	exDevice, err := newExchangeDevice(token, name, uint64(time.Now().Unix()), ha, &ExchangeAccount{
+	exDevice, err := newExchangeDevice(id, token, name, uint64(time.Now().Unix()), ha, &ExchangeAccount{
 		Id:    accountId,
 		Email: accountEmail,
 	})
@@ -186,7 +182,6 @@ func SaveNewExchangeDevice(db *bolt.DB, token string, name string, accountId str
 		} else {
 			return b.Put([]byte(DEVICES), serial)
 		}
-		return nil
 	})
 
 	return exDevice, writeErr

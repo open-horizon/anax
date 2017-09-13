@@ -194,7 +194,7 @@ func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMe
 	} else if exerr := cph.HandleExtensionMessage(cmd); exerr == nil {
 		// nothing to do
 	} else {
-		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("ignoring  message: %v because it is an unknown type %v", string(cmd.Message))))
+		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("ignoring  message: %v because it is an unknown type", string(cmd.Message))))
 		return errors.New(BCPHlogstring(b.Name(), fmt.Sprintf("unexpected protocol msg %v", cmd.Message)))
 	}
 	return nil

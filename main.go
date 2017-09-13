@@ -9,7 +9,6 @@ import (
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/container"
-	"github.com/open-horizon/anax/device"
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -93,13 +92,6 @@ func main() {
 	}
 	glog.V(2).Infof("Using config: %v", cfg)
 	glog.V(2).Infof("GOMAXPROCS: %v", runtime.GOMAXPROCS(-1))
-
-	// check device identity, bail if not specified
-	if len(cfg.Edge.DBPath) != 0 {
-		if _, err := device.Id(); err != nil {
-			panic(err)
-		}
-	}
 
 	// open edge DB if necessary
 	var db *bolt.DB
