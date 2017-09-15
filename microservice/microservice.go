@@ -305,7 +305,7 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 	props := make(map[string]interface{})
 
 	// parse the service attributes and assign them to the correct variables defined above
-	handleServiceAttributes := func(attributes []persistence.ServiceAttribute) {
+	handleServiceAttributes := func(attributes []persistence.Attribute) {
 		for _, attr := range attributes {
 			switch attr.(type) {
 			case persistence.ComputeAttributes:
@@ -355,8 +355,8 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 		return fmt.Errorf("Failed to get the microservice attributes for %v from db. %v", msdef.SpecRef, err)
 	} else {
 		// device the attributes into 2 groups, common and specific
-		common_attribs := make([]persistence.ServiceAttribute, 0)
-		specific_attribs := make([]persistence.ServiceAttribute, 0)
+		common_attribs := make([]persistence.Attribute, 0)
+		specific_attribs := make([]persistence.Attribute, 0)
 
 		for _, attr := range orig_attributes {
 			sensorUrls := attr.GetMeta().SensorUrls
