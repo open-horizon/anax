@@ -675,7 +675,7 @@ func UpdateMSInstanceExecutionState(db *bolt.DB, key string, started bool, failu
 }
 
 // add or delete an associated agreement id to/from the microservice instance in the db
-func UpdateMSInstanceAssociaedAgreements(db *bolt.DB, key string, add bool, agreement_id string) (*MicroserviceInstance, error) {
+func UpdateMSInstanceAssociatedAgreements(db *bolt.DB, key string, add bool, agreement_id string) (*MicroserviceInstance, error) {
 	return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
 		if c.AssociatedAgreements == nil {
 			c.AssociatedAgreements = make([]string, 0)
@@ -788,7 +788,7 @@ func DeleteAsscAgmtsFromMSInstances(db *bolt.DB, agreement_id string) error {
 			if msi.AssociatedAgreements != nil && len(msi.AssociatedAgreements) > 0 {
 				for _, id := range msi.AssociatedAgreements {
 					if id == agreement_id {
-						if _, err := UpdateMSInstanceAssociaedAgreements(db, msi.GetKey(), false, agreement_id); err != nil {
+						if _, err := UpdateMSInstanceAssociatedAgreements(db, msi.GetKey(), false, agreement_id); err != nil {
 							return err
 						}
 						break

@@ -14,7 +14,8 @@ import (
 // If it is nil, it will have the old behaviour befor the ms split. The version will be default to 1.0.0.
 // If it is not nil, it will have the new behaviour that the user is registering a microservice. The version value will be used. An empty version means that it
 // can take any version.
-func GeneratePolicy(e chan events.Message, sensorUrl string, sensorName string, sensorVersion *string, arch string, props *map[string]interface{}, haPartners []string, meterPolicy Meter, counterPartyProperties RequiredProperty, agps []AgreementProtocol, filePath string) error {
+// maxAgreements: 0 means unlimited.
+func GeneratePolicy(e chan events.Message, sensorUrl string, sensorName string, sensorVersion *string, arch string, props *map[string]interface{}, haPartners []string, meterPolicy Meter, counterPartyProperties RequiredProperty, agps []AgreementProtocol, maxAgreements int, filePath string) error {
 
 	glog.V(5).Infof("Generating policy for %v", sensorName)
 
@@ -71,8 +72,7 @@ func GeneratePolicy(e chan events.Message, sensorUrl string, sensorName string, 
 		p.Add_CounterPartyProperties(&counterPartyProperties)
 	}
 
-	// Default the max agreements to 1
-	p.MaxAgreements = 1
+	p.MaxAgreements = maxAgreements
 
 	// Store the policy on the filesystem
 	fullFileName := filePath + fileName + ".policy"

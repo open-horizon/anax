@@ -95,21 +95,6 @@ func NewAsyncTerminationCommand(agreementId string, agreementProtocol string, re
 }
 
 // ==============================================================================================================
-type StartMicroserviceCommand struct {
-	MsDefKey string
-}
-
-func (c StartMicroserviceCommand) ShortString() string {
-	return fmt.Sprintf("StartMicroserviceCommand: MsDefKey %v", c.MsDefKey)
-}
-
-func (w *GovernanceWorker) NewStartMicroserviceCommand(key string) *StartMicroserviceCommand {
-	return &StartMicroserviceCommand{
-		MsDefKey: key,
-	}
-}
-
-// ==============================================================================================================
 type UpdateMicroserviceCommand struct {
 	MsInstKey            string // the name that was passed into the ContainerLaunchContext, it is the key to the MicroserviceInstance table.
 	ExecutionStarted     bool

@@ -53,8 +53,14 @@ func ConvertToPersistent(ems *exchange.MicroserviceDefinition) (*persistence.Mic
 	pms.SpecRef = ems.SpecRef
 	pms.Version = ems.Version
 	pms.Arch = ems.Arch
-	pms.Sharable = ems.Sharable
 	pms.DownloadURL = ems.DownloadURL
+
+	pms.Sharable = strings.ToLower(ems.Sharable)
+	if pms.Sharable != exchange.MS_SHARING_MODE_EXCLUSIVE &&
+		pms.Sharable != exchange.MS_SHARING_MODE_SINGLE &&
+		pms.Sharable != exchange.MS_SHARING_MODE_MULTIPLE {
+		pms.Sharable = exchange.MS_SHARING_MODE_EXCLUSIVE // default
+	}
 
 	hwmatch := persistence.NewHardwareMatch(ems.MatchHardware.USBDeviceIds, ems.MatchHardware.Devfiles)
 	pms.MatchHardware = *hwmatch
@@ -114,7 +120,7 @@ func MicroserviceReadyForUpgrade(msdef *persistence.MicroserviceDefinition, db *
 	}
 
 	// in the middle of a upgrade, do not disturb
-	if msdef.UpgradeStartTime != 0 && msdef.UpgradeExecutionStartTime == 0 && msdef.UpgradeFailedTime == 0 {
+	if msdef.UpgradeStartTime != 0 && msdef.UpgradeMsReregisteredTime == 0 && msdef.UpgradeFailedTime == 0 {
 		return false
 	}
 
@@ -256,13 +262,6 @@ func RestoreMicroservicePolicyFile(spec_ref string, version string, msdef_id str
 		return "", fmt.Errorf("Failed to rename the policy file %v to %v. %v", fullFileName+"."+msdef_id, fullFileName, err)
 	}
 
-	// read the policy file
-	//if policy, err := policy.ReadPolicyFile(fullFileName); err != nil {
-	//	return "", fmt.Errorf("Faid ro read the policy from the policy file %v for %v version %v key %v. %v", fullFileName, spec_ref, version, msdef_id, err)
-	//} //else if pm.AddPolicy(policy); err != nil {
-	//	return "", fmt.Errorf("Failed to add the given policy to the policy manager for %v version %v key %v", spec_ref, version, msdef_id)
-	//}
-
 	return fullFileName, nil
 }
 
@@ -379,7 +378,12 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 		}
 
 		//Generate a policy based on all the attributes and the service definition
-		if err := policy.GeneratePolicy(e, msdef.SpecRef, msdef.Name, &msdef.Version, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *list, policyPath); err != nil {
+		maxAgreements := 1
+		if msdef.Sharable == exchange.MS_SHARING_MODE_SINGLE || msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE {
+			maxAgreements = 2 // hard coded 2 for now, will change to 0 later
+		}
+
+		if err := policy.GeneratePolicy(e, msdef.SpecRef, msdef.Name, &msdef.Version, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *list, maxAgreements, policyPath); err != nil {
 			return fmt.Errorf("Failed to generate policy for %v version %v. Error: %v", msdef.SpecRef, msdef.Version, err)
 		}
 	}

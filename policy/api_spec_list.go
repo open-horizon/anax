@@ -34,11 +34,7 @@ type APISpecification struct {
 	SpecRef         string `json:"specRef"`         // A URL pointing to the definition of the API spec
 	Version         string `json:"version"`         // The version of the API spec in OSGI version format
 	ExclusiveAccess bool   `json:"exclusiveAccess"` // Whether or not exclusive access to this API spec is required
-	// API will allow. For a Consumer (agbot), this is likely to be 1.
-	// For a Producer, if this is zero, then no agreements, if 1 then
-	// then it's essentially exclusive access. For more than 1, then it's
-	// shared access. Added in version 2.
-	Arch string `json:"arch"` // The hardware architecture of the API spec impl. Added in version 2.
+	Arch            string `json:"arch"`            // The hardware architecture of the API spec impl. Added in version 2.
 }
 
 func (a APISpecification) IsSame(compare APISpecification, checkVersion bool) bool {
