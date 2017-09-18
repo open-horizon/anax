@@ -19,7 +19,6 @@ import (
 	"github.com/open-horizon/anax/worker"
 	"net/http"
 	"net/url"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -59,7 +58,7 @@ func NewGovernanceWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.Poli
 	token := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
 		token = dev.Token
-		id = dev.Id
+		id = fmt.Sprintf("%v/%v", dev.Account.Org, dev.Id)
 	}
 
 	worker := &GovernanceWorker{
@@ -93,7 +92,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 	switch incoming.(type) {
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
-		w.deviceId = msg.DeviceId()
+		w.deviceId = fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId())
 		w.deviceToken = msg.Token()
 
 	case *events.WorkloadMessage:
@@ -211,21 +210,21 @@ func (w *GovernanceWorker) governAgreements() {
 
 		// If there are agreements in the database then we will assume that the device is already registered
 		for _, ag := range establishedAgreements {
-			bcType, bcName := w.producerPH[ag.AgreementProtocol].GetKnownBlockchain(&ag)
-			protocolHandler := w.producerPH[ag.AgreementProtocol].AgreementProtocolHandler(bcType, bcName)
+			bcType, bcName, bcOrg := w.producerPH[ag.AgreementProtocol].GetKnownBlockchain(&ag)
+			protocolHandler := w.producerPH[ag.AgreementProtocol].AgreementProtocolHandler(bcType, bcName, bcOrg)
 			if ag.AgreementFinalizedTime == 0 { // TODO: might need to change this to be a protocol specific check
 
 				// Cancel the agreement if finalization doesn't occur before the timeout
 				glog.V(5).Infof(logString(fmt.Sprintf("checking agreement %v for finalization.", ag.CurrentAgreementId)))
 
 				// Check to see if we need to update the consumer with our blockchain specific pieces of the agreement
-				if w.producerPH[ag.AgreementProtocol].IsBlockchainClientAvailable(bcType, bcName) && ag.AgreementBCUpdateAckTime == 0 {
+				if w.producerPH[ag.AgreementProtocol].IsBlockchainClientAvailable(bcType, bcName, bcOrg) && ag.AgreementBCUpdateAckTime == 0 {
 					w.producerPH[ag.AgreementProtocol].UpdateConsumer(&ag)
 				}
 
 				// Check to see if the agreement is in the blockchain. This call to the blockchain should be very fast if the client is up and running.
 				// Remember, the device might have been down for some time and/or restarted, causing it to miss events on the blockchain.
-				if w.producerPH[ag.AgreementProtocol].IsBlockchainClientAvailable(bcType, bcName) && w.producerPH[ag.AgreementProtocol].IsAgreementVerifiable(&ag) {
+				if w.producerPH[ag.AgreementProtocol].IsBlockchainClientAvailable(bcType, bcName, bcOrg) && w.producerPH[ag.AgreementProtocol].IsAgreementVerifiable(&ag) {
 
 					if recorded, err := protocolHandler.VerifyAgreement(ag.CurrentAgreementId, ag.CounterPartyAddress, ag.ProposalSig); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("encountered error verifying agreement %v on blockchain, error %v", ag.CurrentAgreementId, err)))
@@ -329,13 +328,16 @@ func (w *GovernanceWorker) reportBlockchains() {
 					continue
 				} else {
 
-					// Make a map of all blockchain names that we need to have running
-					neededBCs := make(map[string]bool)
+					// Make a map of all blockchain orgs and names that we need to have running
+					neededBCs := make(map[string]map[string]bool)
 					if agreements, err := persistence.FindEstablishedAgreements(w.db, agp, []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err == nil {
 						for _, ag := range agreements {
-							_, bcName := w.producerPH[agp].GetKnownBlockchain(&ag)
+							_, bcName, bcOrg := w.producerPH[agp].GetKnownBlockchain(&ag)
 							if bcName != "" {
-								neededBCs[bcName] = true
+								if _, ok := neededBCs[bcOrg]; !ok {
+									neededBCs[bcOrg] = make(map[string]bool)
+								}
+								neededBCs[bcOrg][bcName] = true
 							}
 						}
 
@@ -462,10 +464,10 @@ func (w *GovernanceWorker) externalTermination(ag *persistence.EstablishedAgreem
 		// If there are metering notifications, write them onto the blockchain also
 		if ag.MeteringNotificationMsg != (persistence.MeteringNotification{}) && !ag.Archived {
 			glog.V(3).Infof(logString(fmt.Sprintf("Writing Metering Notification %v to the blockchain for %v.", ag.MeteringNotificationMsg, agreementId)))
-			bcType, bcName := w.producerPH[agreementProtocol].GetKnownBlockchain(ag)
+			bcType, bcName, bcOrg := w.producerPH[agreementProtocol].GetKnownBlockchain(ag)
 			if mn := metering.ConvertFromPersistent(ag.MeteringNotificationMsg, agreementId); mn == nil {
 				glog.Errorf(logString(fmt.Sprintf("error converting from persistent Metering Notification %v for %v, returned nil.", ag.MeteringNotificationMsg, agreementId)))
-			} else if aph := w.producerPH[agreementProtocol].AgreementProtocolHandler(bcType, bcName); aph == nil {
+			} else if aph := w.producerPH[agreementProtocol].AgreementProtocolHandler(bcType, bcName, bcOrg); aph == nil {
 				glog.Warningf(logString(fmt.Sprintf("cannot write meter record for %v, agreement protocol handler is not ready.", agreementId)))
 			} else if err := aph.RecordMeter(agreementId, mn); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error writing meter %v for agreement %v on the blockchain: %v", ag.MeteringNotificationMsg, agreementId, err)))
@@ -576,7 +578,7 @@ func (w *GovernanceWorker) start() {
 					} else {
 
 						deleteMessage = false
-						protocolHandler := w.producerPH[msgProtocol].AgreementProtocolHandler("", "")
+						protocolHandler := w.producerPH[msgProtocol].AgreementProtocolHandler("", "", "")
 						// ReplyAck messages could indicate that the agbot has decided not to pursue the agreement any longer.
 						if replyAck, err := protocolHandler.ValidateReplyAck(protocolMsg); err != nil {
 							glog.V(5).Infof(logString(fmt.Sprintf("ReplyAck handler ignoring non-reply ack message: %s due to %v", cmd.Msg.ShortProtocolMessage(), err)))
@@ -724,7 +726,7 @@ func (w *GovernanceWorker) start() {
 								glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, agreement %v is terminating", ags[0].CurrentAgreementId)))
 
 								// Finalize the agreement
-							} else if err := w.finalizeAgreement(ags[0], w.producerPH[protocol].AgreementProtocolHandler(ags[0].BlockchainType, ags[0].BlockchainName)); err != nil {
+							} else if err := w.finalizeAgreement(ags[0], w.producerPH[protocol].AgreementProtocolHandler(ags[0].BlockchainType, ags[0].BlockchainName, ags[0].BlockchainOrg)); err != nil {
 								glog.Errorf(err.Error())
 							}
 						}
@@ -937,7 +939,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 				}
 				// The workload config we have might be from a lower version of the workload. Go to the exchange and
 				// get the metadata for the version we are running and then add in any unset default user inputs.
-				if exWkld, err := exchange.GetWorkload(w.Config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Version, workload.Arch, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken); err != nil {
+				if exWkld, err := exchange.GetWorkload(w.Config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken); err != nil {
 					return errors.New(logString(fmt.Sprintf("received error querying excahnge for workload metadata, error %v", err)))
 				} else {
 					for _, ui := range exWkld.UserInputs {
@@ -951,7 +953,8 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			}
 
 			envAdds[config.ENVVAR_PREFIX+"AGREEMENTID"] = proposal.AgreementId()
-			envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = w.deviceId
+			envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = exchange.GetId(w.deviceId)
+			envAdds[config.ENVVAR_PREFIX+"ORGANIZATION"] = exchange.GetOrg(w.deviceId)
 			envAdds[config.ENVVAR_PREFIX+"HASH"] = workload.WorkloadPassword
 
 			// Add in the exchange URL so that the workload knows which ecosystem its part of
@@ -996,12 +999,8 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		}
 
 		// Tell the BC worker to start the BC client container(s) if we need to.
-		if ag.BlockchainType != "" && ag.BlockchainName != "" {
-			if overrideName := os.Getenv("CMTN_BLOCKCHAIN"); ag.BlockchainType == policy.Ethereum_bc && overrideName != "" {
-				w.Worker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, overrideName, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken)
-			} else {
-				w.Worker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, ag.BlockchainType, ag.BlockchainName, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken)
-			}
+		if ag.BlockchainType != "" && ag.BlockchainName != "" && ag.BlockchainOrg != "" {
+			w.Worker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken)
 		}
 	}
 
@@ -1066,7 +1065,7 @@ func recordProducerAgreementState(httpClient *http.Client, url string, deviceId 
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := url + "devices/" + deviceId + "/agreements/" + agreementId
+	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/devices/" + exchange.GetId(deviceId) + "/agreements/" + agreementId
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClient, "PUT", targetURL, deviceId, token, &as, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
@@ -1089,7 +1088,7 @@ func deleteProducerAgreement(httpClient *http.Client, url string, deviceId strin
 
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := url + "devices/" + deviceId + "/agreements/" + agreementId
+	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/devices/" + exchange.GetId(deviceId) + "/agreements/" + agreementId
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClient, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
@@ -1109,7 +1108,7 @@ func deleteProducerAgreement(httpClient *http.Client, url string, deviceId strin
 func (w *GovernanceWorker) deleteMessage(msg *exchange.DeviceMessage) error {
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/msgs/" + strconv.Itoa(msg.MsgId)
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" + exchange.GetId(w.deviceId) + "/msgs/" + strconv.Itoa(msg.MsgId)
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "DELETE", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
 			glog.Errorf(err.Error())
@@ -1128,7 +1127,7 @@ func (w *GovernanceWorker) deleteMessage(msg *exchange.DeviceMessage) error {
 func (w *GovernanceWorker) messageInExchange(msgId int) (bool, error) {
 	var resp interface{}
 	resp = new(exchange.GetDeviceMessageResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/msgs"
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" + exchange.GetId(w.deviceId) + "/msgs"
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
 			glog.Errorf(err.Error())
@@ -1224,7 +1223,8 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string) (*persistence.Micros
 					} else if envAdds, err := persistence.AttributesToEnvvarMap(attrs, config.ENVVAR_PREFIX); err != nil {
 						return nil, fmt.Errorf(logString(fmt.Sprintf("Failed to convert microservice preferences to environmental variables for %v. Err: %v", msdef.SpecRef, err)))
 					} else {
-						envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = w.deviceId
+						envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = exchange.GetId(w.deviceId)
+						envAdds[config.ENVVAR_PREFIX+"ORGANIZATION"] = exchange.GetOrg(w.deviceId)
 						envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = w.Config.Edge.ExchangeURL
 						// Add in any default variables from the microservice userInputs that havent been overridden
 						for _, ui := range msdef.UserInputs {
@@ -1338,7 +1338,7 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 	// unregister the old ms from exchange
 	var unregError error
 	unregError = nil
-	unregError = microservice.RemoveMicroservicePolicy(msdef.SpecRef, msdef.Version, msdef.Id, w.Config.Edge.PolicyPath, w.pm)
+	unregError = microservice.RemoveMicroservicePolicy(msdef.SpecRef, msdef.Org, msdef.Version, msdef.Id, w.Config.Edge.PolicyPath, w.pm)
 	if unregError != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to remove microservice policy for microservice def %v version %v. %v", msdef.SpecRef, msdef.Version, unregError)))
 	} else if unregError = microservice.UnregisterMicroserviceExchange(msdef.SpecRef, w.Config.Collaborators.HTTPClientFactory, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, w.db); unregError != nil {
@@ -1437,7 +1437,7 @@ func (w *GovernanceWorker) RollbackMicroservice(old_msdef *persistence.Microserv
 
 	// unregister the new ms from exchange
 	if new_msdef.UpgradeMsReregisteredTime > 0 {
-		if err := microservice.RemoveMicroservicePolicy(new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, w.Config.Edge.PolicyPath, w.pm); err != nil {
+		if err := microservice.RemoveMicroservicePolicy(new_msdef.SpecRef, new_msdef.Org, new_msdef.Version, new_msdef.Id, w.Config.Edge.PolicyPath, w.pm); err != nil {
 			return fmt.Errorf(logString(fmt.Sprintf("Failed to remove microservice policy for microservice def %v version %v key %d. %v", new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
 		} else if err := microservice.UnregisterMicroserviceExchange(new_msdef.SpecRef, w.Config.Collaborators.HTTPClientFactory, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, w.db); err != nil {
 			return fmt.Errorf(logString(fmt.Sprintf("Failed to unregister microservice from the exchange for microservice def %v. %v", new_msdef.SpecRef, err)))
@@ -1566,9 +1566,9 @@ func (w *GovernanceWorker) handleMicroserviceUpgradeExecStateChange(msdef *persi
 	if needs_rollback {
 		// rollback to the old microservice
 		if old_msdef, err := microservice.GetRollbackMicroserviceDef(msdef, w.db); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Error finding the old microservice definition to rollback to for %v version key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
+			glog.Errorf(logString(fmt.Sprintf("Error finding the old microservice definition to rollback to for %v %v version key %v. error: %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
 		} else if old_msdef == nil {
-			glog.Errorf(logString(fmt.Sprintf("Unable to find the old microservice definition to rollback to for %v version key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
+			glog.Errorf(logString(fmt.Sprintf("Unable to find the old microservice definition to rollback to for %v %v version key %v. error: %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
 		} else if err := w.RollbackMicroservice(old_msdef, msdef); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("Failed to rollback %v from version %v key %v to version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, old_msdef.Version, old_msdef.Id, err)))
 		}

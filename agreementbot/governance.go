@@ -97,7 +97,7 @@ func (w *AgreementBotWorker) GovernAgreements() {
 											glog.Errorf(logString(fmt.Sprintf("error obtaining message target for data notification: %v", err)))
 										} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
 											glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
-										} else if err := protocolHandler.AgreementProtocolHandler("", "").NotifyDataReceipt(ag.CurrentAgreementId, mt, protocolHandler.GetSendMessage()); err != nil {
+										} else if err := protocolHandler.AgreementProtocolHandler("", "", "").NotifyDataReceipt(ag.CurrentAgreementId, mt, protocolHandler.GetSendMessage()); err != nil {
 											glog.Errorf(logString(fmt.Sprintf("unable to send data notification, error: %v", err)))
 										}
 									}
@@ -110,18 +110,18 @@ func (w *AgreementBotWorker) GovernAgreements() {
 									} else if ag.MeteringNotificationSent == 0 || (ag.MeteringNotificationSent != 0 && (ag.MeteringNotificationSent+uint64(ag.MeteringNotificationInterval)) <= now) {
 										// Grab the blockchain info from the agreement if there is any
 
-										bcType, bcName := protocolHandler.GetKnownBlockchain(&ag)
+										bcType, bcName, bcOrg := protocolHandler.GetKnownBlockchain(&ag)
 										glog.V(5).Info(logString(fmt.Sprintf("metering on %v %v", bcType, bcName)))
 
 										// If we can write to the blockchain then we have all the info we need to do metering.
-										if protocolHandler.IsBlockchainWritable(bcType, bcName) && protocolHandler.CanSendMeterRecord(&ag) {
+										if protocolHandler.IsBlockchainWritable(bcType, bcName, bcOrg) && protocolHandler.CanSendMeterRecord(&ag) {
 											if mn, err := protocolHandler.CreateMeteringNotification(mp, &ag); err != nil {
 												glog.Errorf(logString(fmt.Sprintf("unable to create metering notification, error: %v", err)))
 											} else if whisperTo, pubkeyTo, err := protocolHandler.GetDeviceMessageEndpoint(ag.DeviceId, "Governance"); err != nil {
 												glog.Errorf(logString(fmt.Sprintf("error obtaining message target for metering notification: %v", err)))
 											} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
 												glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
-											} else if msg, err := protocolHandler.AgreementProtocolHandler(bcType, bcName).NotifyMetering(ag.CurrentAgreementId, mn, mt, protocolHandler.GetSendMessage()); err != nil {
+											} else if msg, err := protocolHandler.AgreementProtocolHandler(bcType, bcName, bcOrg).NotifyMetering(ag.CurrentAgreementId, mn, mt, protocolHandler.GetSendMessage()); err != nil {
 												glog.Errorf(logString(fmt.Sprintf("unable to send metering notification, error: %v", err)))
 											} else if _, err := MeteringNotification(w.db, ag.CurrentAgreementId, agp, msg); err != nil {
 												glog.Errorf(logString(fmt.Sprintf("unable to record metering notification, error: %v", err)))
@@ -265,8 +265,6 @@ func (w *AgreementBotWorker) GovernAgreements() {
 		time.Sleep(time.Duration(waitTime) * time.Second)
 	}
 
-	glog.Info(logString(fmt.Sprintf("terminated agreement governance")))
-
 }
 
 // This function is used to determine if a device is actively trying to make an agreement. This is important to know because
@@ -351,7 +349,7 @@ func getDevice(httpClient *http.Client, deviceId string, url string, agbotId str
 
 	var resp interface{}
 	resp = new(exchange.GetDevicesResponse)
-	targetURL := url + "devices/" + deviceId
+	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/devices/" + exchange.GetId(deviceId)
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClient, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(err.Error()))
@@ -445,12 +443,15 @@ func (w *AgreementBotWorker) GovernBlockchainNeeds() {
 			} else {
 
 				// Make a map of all blockchain names that we need to have running
-				neededBCs := make(map[string]bool)
+				neededBCs := make(map[string]map[string]bool)
 				if agreements, err := FindAgreements(w.db, []AFilter{UnarchivedAFilter()}, agp); err == nil {
 					for _, ag := range agreements {
-						_, bcName := w.consumerPH[agp].GetKnownBlockchain(&ag)
+						_, bcName, bcOrg := w.consumerPH[agp].GetKnownBlockchain(&ag)
 						if bcName != "" {
-							neededBCs[bcName] = true
+							if _, ok := neededBCs[bcOrg]; !ok {
+								neededBCs[bcOrg] = make(map[string]bool)
+							}
+							neededBCs[bcOrg][bcName] = true
 						}
 					}
 

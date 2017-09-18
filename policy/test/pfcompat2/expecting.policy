@@ -6,12 +6,14 @@
     "apiSpec": [
         {
             "specRef": "http://mycompany.com/dm/ms1",
+            "organization": "myorg",
             "version": "1.0.0",
             "exclusiveAccess": true,
             "arch": "amd64"
         },
         {
             "specRef": "http://mycompany.com/dm/ms2",
+            "organization": "myorg2",
             "version": "1.0.0",
             "exclusiveAccess": true,
             "arch": "amd64"

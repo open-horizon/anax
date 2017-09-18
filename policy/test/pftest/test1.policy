@@ -6,6 +6,7 @@
     "apiSpec": [
         {
             "specRef": "http://mycompany.com/policy",
+            "organization": "myorg",
             "version": "[1.0.0,2.0.0)",
             "exclusiveAccess": false,
             "arch": ""

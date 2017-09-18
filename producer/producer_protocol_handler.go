@@ -13,7 +13,6 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
-	"net/http"
 	"time"
 )
 
@@ -30,7 +29,7 @@ type ProducerProtocolHandler interface {
 	Initialize()
 	Name() string
 	AcceptCommand(cmd worker.Command) bool
-	AgreementProtocolHandler(typeName string, name string) abstractprotocol.ProtocolHandler
+	AgreementProtocolHandler(typeName string, name string, org string) abstractprotocol.ProtocolHandler
 	HandleProposalMessage(proposal abstractprotocol.Proposal, protocolMsg string, exchangeMsg *exchange.DeviceMessage) bool
 	HandleBlockchainEventMessage(cmd *BlockchainEventCommand) (string, bool, uint64, bool, error)
 	TerminateAgreement(agreement *persistence.EstablishedAgreement, reason uint)
@@ -39,14 +38,14 @@ type ProducerProtocolHandler interface {
 	GetTerminationReason(code uint) string
 	SetBlockchainClientAvailable(cmd *BCInitializedCommand)
 	SetBlockchainClientNotAvailable(cmd *BCStoppingCommand)
-	IsBlockchainClientAvailable(typeName string, name string) bool
+	IsBlockchainClientAvailable(typeName string, name string, org string) bool
 	SetBlockchainWritable(cmd *BCWritableCommand)
 	IsBlockchainWritable(agreement *persistence.EstablishedAgreement) bool
 	IsAgreementVerifiable(agreement *persistence.EstablishedAgreement) bool
 	HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, error)
 	UpdateConsumer(ag *persistence.EstablishedAgreement)
 	UpdateConsumers()
-	GetKnownBlockchain(ag *persistence.EstablishedAgreement) (string, string)
+	GetKnownBlockchain(ag *persistence.EstablishedAgreement) (string, string, string)
 }
 
 type BaseProducerProtocolHandler struct {
@@ -54,7 +53,6 @@ type BaseProducerProtocolHandler struct {
 	pm         *policy.PolicyManager
 	db         *bolt.DB
 	config     *config.HorizonConfig
-	httpClient *http.Client
 	deviceId   string
 	token      string
 }
@@ -106,7 +104,7 @@ func (w *BaseProducerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 		pm := exchange.CreatePostMessage(msgBody, w.config.Edge.ExchangeMessageTTL)
 		var resp interface{}
 		resp = new(exchange.PostDeviceResponse)
-		targetURL := w.config.Edge.ExchangeURL + "agbots/" + messageTarget.ReceiverExchangeId + "/msgs"
+		targetURL := w.config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(messageTarget.ReceiverExchangeId) + "/agbots/" + exchange.GetId(messageTarget.ReceiverExchangeId) + "/msgs"
 		for {
 			if err, tpErr := exchange.InvokeExchange(w.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "POST", targetURL, w.deviceId, w.token, pm, &resp); err != nil {
 				return err
@@ -120,24 +118,22 @@ func (w *BaseProducerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 			}
 		}
 	}
-
-	return nil
 }
 
-func (w *BaseProducerProtocolHandler) GetWorkloadResolver() func(wURL string, wVersion string, wArch string) (*policy.APISpecList, error) {
+func (w *BaseProducerProtocolHandler) GetWorkloadResolver() func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
 	return w.workloadResolver
 }
 
-func (w *BaseProducerProtocolHandler) workloadResolver(wURL string, wVersion string, wArch string) (*policy.APISpecList, error) {
+func (w *BaseProducerProtocolHandler) workloadResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
 
-	asl, err := exchange.WorkloadResolver(w.config.Collaborators.HTTPClientFactory, wURL, wVersion, wArch, w.config.Edge.ExchangeURL, w.deviceId, w.token)
+	asl, err := exchange.WorkloadResolver(w.config.Collaborators.HTTPClientFactory, wURL, wOrg, wVersion, wArch, w.config.Edge.ExchangeURL, w.deviceId, w.token)
 	if err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("unable to resolve workload, error %v", err)))
 	}
 	return asl, err
 }
 
-func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.ProtocolHandler, proposal abstractprotocol.Proposal, protocolMsg string, runningBCs []string, exchangeMsg *exchange.DeviceMessage) (bool, abstractprotocol.ProposalReply, *policy.Policy) {
+func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.ProtocolHandler, proposal abstractprotocol.Proposal, protocolMsg string, runningBCs []map[string]string, exchangeMsg *exchange.DeviceMessage) (bool, abstractprotocol.ProposalReply, *policy.Policy) {
 
 	handled := false
 
@@ -192,19 +188,19 @@ func (w *BaseProducerProtocolHandler) FindAgreementWithSameWorkload(ph abstractp
 }
 
 func (w *BaseProducerProtocolHandler) PersistProposal(proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, tcPolicy *policy.Policy, protocolMsg string) {
-	if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, w.Name(), proposal.Version(), (&tcPolicy.APISpecs).AsStringArray(), "", proposal.ConsumerId(), "", ""); err != nil {
+	if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, w.Name(), proposal.Version(), (&tcPolicy.APISpecs).AsStringArray(), "", proposal.ConsumerId(), "", "", ""); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId(), err)))
 	}
 }
 
 func (w *BaseProducerProtocolHandler) TerminateAgreement(ag *persistence.EstablishedAgreement, reason uint, mt interface{}, pph ProducerProtocolHandler) {
-	if proposal, err := pph.AgreementProtocolHandler("", "").DemarshalProposal(ag.Proposal); err != nil {
+	if proposal, err := pph.AgreementProtocolHandler("", "", "").DemarshalProposal(ag.Proposal); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error demarshalling agreement %v proposal: %v", ag.CurrentAgreementId, err)))
 	} else if pPolicy, err := policy.DemarshalPolicy(proposal.ProducerPolicy()); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error demarshalling agreement %v Producer Policy: %v", ag.CurrentAgreementId, err)))
 	} else {
-		bcType, bcName := pph.GetKnownBlockchain(ag)
-		if aph := pph.AgreementProtocolHandler(bcType, bcName); aph == nil {
+		bcType, bcName, bcOrg := pph.GetKnownBlockchain(ag)
+		if aph := pph.AgreementProtocolHandler(bcType, bcName, bcOrg); aph == nil {
 			glog.Warningf(BPPHlogString(w.Name(), fmt.Sprintf("cannot terminate agreement %v, agreement protocol handler doesnt exist yet.", ag.CurrentAgreementId)))
 		} else if policies, err := w.pm.GetPolicyList(pPolicy); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("agreement %v error getting policy list: %v", ag.CurrentAgreementId, err)))
@@ -233,7 +229,7 @@ func (w *BaseProducerProtocolHandler) getAgbot(agbotId string, url string, devic
 
 	var resp interface{}
 	resp = new(exchange.GetAgbotsResponse)
-	targetURL := url + "agbots/" + agbotId
+	targetURL := url + "orgs/" + exchange.GetOrg(agbotId) + "/agbots/" + exchange.GetId(agbotId)
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "GET", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf(err.Error())))
@@ -271,8 +267,8 @@ func (c *BaseProducerProtocolHandler) SetBlockchainClientNotAvailable(cmd *BCSto
 	return
 }
 
-func (c *BaseProducerProtocolHandler) GetKnownBlockchain(ag *persistence.EstablishedAgreement) (string, string) {
-	return "", ""
+func (c *BaseProducerProtocolHandler) GetKnownBlockchain(ag *persistence.EstablishedAgreement) (string, string, string) {
+	return "", "", ""
 }
 
 // The list of termination reasons that should be supported by all agreement protocols. The caller can pass these into

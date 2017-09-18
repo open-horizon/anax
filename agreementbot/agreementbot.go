@@ -220,7 +220,7 @@ func (w *AgreementBotWorker) start() {
 		w.ready = true
 
 		// Begin heartbeating with the exchange.
-		targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/heartbeat"
+		targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId) + "/heartbeat"
 		go exchange.Heartbeat(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), targetURL, w.agbotId, w.token, w.Worker.Manager.Config.AgreementBot.ExchangeHeartbeat)
 
 		// Start the governance routines.
@@ -264,7 +264,7 @@ func (w *AgreementBotWorker) start() {
 
 						glog.V(5).Infof("AgreementBotWorker about to update policy in PM.")
 						// Update the policy in the policy manager.
-						w.pm.UpdatePolicy(pol)
+						w.pm.UpdatePolicy(cmd.Msg.Org(), pol)
 						glog.V(5).Infof("AgreementBotWorker updated policy in PM.")
 
 						for _, agp := range pol.AgreementProtocols {
@@ -297,7 +297,7 @@ func (w *AgreementBotWorker) start() {
 
 						glog.V(5).Infof("AgreementBotWorker about to delete policy from PM.")
 						// Update the policy in the policy manager.
-						w.pm.DeletePolicy(pol)
+						w.pm.DeletePolicy(cmd.Msg.Org(), pol)
 						glog.V(5).Infof("AgreementBotWorker deleted policy from PM.")
 
 						// Queue the command to the correct protocol worker pool(s) for further processing. The deleted policy
@@ -423,81 +423,75 @@ func (w *AgreementBotWorker) start() {
 // Search the exchange and make agreements with any device that is eligible based on the policies we have and
 // agreement protocols that we support.
 func (w *AgreementBotWorker) findAndMakeAgreements() {
-	// Get a copy of all policies in the policy manager so that we can safely iterate it
-	policies := w.pm.GetAllAvailablePolicies()
-	for _, consumerPolicy := range policies {
 
-		if devices, err := w.searchExchange(&consumerPolicy); err != nil {
-			glog.Errorf("AgreementBotWorker received error searching for %v, error: %v", &consumerPolicy, err)
-		} else {
+	// Get a list of all the orgs we are serving
+	allOrgs := w.pm.GetAllPolicyOrgs()
 
-			for _, dev := range *devices {
+	for _, org := range allOrgs {
+		// Get a copy of all policies in the policy manager so that we can safely iterate it
+		policies := w.pm.GetAllAvailablePolicies(org)
+		for _, consumerPolicy := range policies {
 
-				glog.V(3).Infof("AgreementBotWorker picked up %v", dev.ShortString())
-				glog.V(5).Infof("AgreementBotWorker picked up %v", dev)
+			if devices, err := w.searchExchange(&consumerPolicy, org); err != nil {
+				glog.Errorf("AgreementBotWorker received error searching for %v, error: %v", &consumerPolicy, err)
+			} else {
 
-				// If this device is advertising a property that we are supposed to ignore, then skip it.
-				if ignore, err := w.ignoreDevice(dev); err != nil {
-					glog.Errorf("AgreementBotWorker received error checking for ignored device %v, error: %v", dev, err)
-				} else if ignore {
-					glog.V(5).Infof("AgreementBotWorker skipping device %v, advertises ignored property", dev)
-					continue
-				}
+				for _, dev := range *devices {
 
-				// Check for agreements already in progress with this device
-				if found, err := w.alreadyMakingAgreementWith(&dev, &consumerPolicy); err != nil {
-					glog.Errorf("AgreementBotWorker received error trying to find pending agreements: %v", err)
-				} else if found {
-					glog.V(5).Infof("AgreementBotWorker skipping device id %v, agreement attempt already in progress with %v", dev.Id, consumerPolicy.Header.Name)
-					continue
-				} else {
+					glog.V(3).Infof("AgreementBotWorker picked up %v", dev.ShortString())
+					glog.V(5).Infof("AgreementBotWorker picked up %v", dev)
 
-					// For every microservice required by the workload, deserialize the JSON policy blob into a policy object and
-					// then merge them all together.
-					if producerPolicy, err := w.MergeAllProducerPolicies(&dev); err != nil {
-						glog.Errorf("AgreementBotWorker unable to merge microservice policies, error: %v", err)
+					// If this device is advertising a property that we are supposed to ignore, then skip it.
+					if ignore, err := w.ignoreDevice(dev); err != nil {
+						glog.Errorf("AgreementBotWorker received error checking for ignored device %v, error: %v", dev, err)
+					} else if ignore {
+						glog.V(5).Infof("AgreementBotWorker skipping device %v, advertises ignored property", dev)
+						continue
+					}
 
-						// Check to see if the device's policy is compatible
-
-					} else if err := policy.Are_Compatible(producerPolicy, &consumerPolicy); err != nil {
-						glog.Errorf("AgreementBotWorker received error comparing %v and %v, error: %v", *producerPolicy, consumerPolicy, err)
-					} else if err := w.incompleteHAGroup(dev, producerPolicy); err != nil {
-						glog.Warningf("AgreementBotWorker received error checking HA group %v completeness for device %v, error: %v", producerPolicy.HAGroup, dev.Id, err)
+					// Check for agreements already in progress with this device
+					if found, err := w.alreadyMakingAgreementWith(&dev, &consumerPolicy); err != nil {
+						glog.Errorf("AgreementBotWorker received error trying to find pending agreements: %v", err)
+					} else if found {
+						glog.V(5).Infof("AgreementBotWorker skipping device id %v, agreement attempt already in progress with %v", dev.Id, consumerPolicy.Header.Name)
+						continue
 					} else {
-						protocol := policy.Select_Protocol(producerPolicy, &consumerPolicy)
-						cmd := NewMakeAgreementCommand(*producerPolicy, consumerPolicy, dev)
 
-						bcType := ""
-						bcName := ""
-						if producerPolicy.RequiresDefaultBC(protocol) {
-							bcType = policy.Ethereum_bc
-							bcName = policy.Default_Blockchain_name
+						// For every microservice required by the workload, deserialize the JSON policy blob into a policy object and
+						// then merge them all together.
+						if producerPolicy, err := w.MergeAllProducerPolicies(&dev); err != nil {
+							glog.Errorf("AgreementBotWorker unable to merge microservice policies, error: %v", err)
+
+							// Check to see if the device's policy is compatible
+
+						} else if err := policy.Are_Compatible(producerPolicy, &consumerPolicy); err != nil {
+							glog.Errorf("AgreementBotWorker received error comparing %v and %v, error: %v", *producerPolicy, consumerPolicy, err)
+						} else if err := w.incompleteHAGroup(dev, producerPolicy); err != nil {
+							glog.Warningf("AgreementBotWorker received error checking HA group %v completeness for device %v, error: %v", producerPolicy.HAGroup, dev.Id, err)
 						} else {
-							bcType, bcName = producerPolicy.RequiresKnownBC(protocol)
-						}
+							protocol := policy.Select_Protocol(producerPolicy, &consumerPolicy)
+							cmd := NewMakeAgreementCommand(*producerPolicy, consumerPolicy, org, dev)
 
-						if overrideName := os.Getenv("CMTN_BLOCKCHAIN"); overrideName != "" {
-							bcName = overrideName
-						}
+							bcType, bcName, bcOrg := producerPolicy.RequiresKnownBC(protocol)
 
-						if _, ok := w.consumerPH[protocol]; !ok {
-							glog.Errorf("AgreementBotWorker unable to find protocol handler for %v.", protocol)
-						} else if bcType != "" && !w.consumerPH[protocol].IsBlockchainWritable(bcType, bcName) {
-							// Older devices assume that the agbot has the blockchain up and running before an agreement can be made.
-							// Get that blockchain running if it isn't up.
-							glog.V(5).Infof("AgreementBotWorker skipping device id %v, requires blockchain %v %v that isnt ready yet.", dev.Id, bcType, bcName)
-							w.Worker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, bcType, bcName, w.Manager.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
-							continue
-						} else if !w.consumerPH[protocol].AcceptCommand(cmd) {
-							glog.Errorf("AgreementBotWorker protocol handler for %v not accepting new agreement commands.", protocol)
-						} else {
-							w.consumerPH[protocol].HandleMakeAgreement(cmd, w.consumerPH[protocol])
-							glog.V(5).Infof("AgreementBoWorker queued agreement attempt for policy %v and protocol %v", consumerPolicy.Header.Name, protocol)
+							if _, ok := w.consumerPH[protocol]; !ok {
+								glog.Errorf("AgreementBotWorker unable to find protocol handler for %v.", protocol)
+							} else if bcType != "" && !w.consumerPH[protocol].IsBlockchainWritable(bcType, bcName, bcOrg) {
+								// Get that blockchain running if it isn't up.
+								glog.V(5).Infof("AgreementBotWorker skipping device id %v, requires blockchain %v %v %v that isnt ready yet.", dev.Id, bcType, bcName, bcOrg)
+								w.Worker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, bcType, bcName, bcOrg, w.Manager.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
+								continue
+							} else if !w.consumerPH[protocol].AcceptCommand(cmd) {
+								glog.Errorf("AgreementBotWorker protocol handler for %v not accepting new agreement commands.", protocol)
+							} else {
+								w.consumerPH[protocol].HandleMakeAgreement(cmd, w.consumerPH[protocol])
+								glog.V(5).Infof("AgreementBoWorker queued agreement attempt for policy %v and protocol %v", consumerPolicy.Header.Name, protocol)
+							}
 						}
 					}
 				}
-			}
 
+			}
 		}
 	}
 }
@@ -552,32 +546,32 @@ func (w *AgreementBotWorker) MergeAllProducerPolicies(dev *exchange.SearchResult
 }
 
 // Functions called by the policy watcher
-func (w *AgreementBotWorker) changedPolicy(fileName string, pol *policy.Policy) {
+func (w *AgreementBotWorker) changedPolicy(org string, fileName string, pol *policy.Policy) {
 	glog.V(3).Infof(fmt.Sprintf("AgreementBotWorker detected changed policy file %v containing %v", fileName, pol))
 	if policyString, err := policy.MarshalPolicy(pol); err != nil {
 		glog.Errorf(fmt.Sprintf("AgreementBotWorker error trying to marshal policy %v error: %v", pol, err))
 	} else {
-		w.Messages() <- events.NewPolicyChangedMessage(events.CHANGED_POLICY, fileName, pol.Header.Name, policyString)
+		w.Messages() <- events.NewPolicyChangedMessage(events.CHANGED_POLICY, fileName, pol.Header.Name, org, policyString)
 	}
 }
 
-func (w *AgreementBotWorker) deletedPolicy(fileName string, pol *policy.Policy) {
+func (w *AgreementBotWorker) deletedPolicy(org string, fileName string, pol *policy.Policy) {
 	glog.V(3).Infof(fmt.Sprintf("AgreementBotWorker detected deleted policy file %v containing %v", fileName, pol))
 	if policyString, err := policy.MarshalPolicy(pol); err != nil {
 		glog.Errorf(fmt.Sprintf("AgreementBotWorker error trying to marshal policy %v error: %v", pol, err))
 	} else {
-		w.Messages() <- events.NewPolicyDeletedMessage(events.DELETED_POLICY, fileName, pol.Header.Name, policyString)
+		w.Messages() <- events.NewPolicyDeletedMessage(events.DELETED_POLICY, fileName, pol.Header.Name, org, policyString)
 	}
 }
 
-func (w *AgreementBotWorker) errorPolicy(fileName string, err error) {
-	glog.Errorf(fmt.Sprintf("AgreementBotWorker tried to read policy file %v, encountered error: %v", fileName, err))
+func (w *AgreementBotWorker) errorPolicy(org string, fileName string, err error) {
+	glog.Errorf(fmt.Sprintf("AgreementBotWorker tried to read policy file %v/%v, encountered error: %v", org, fileName, err))
 }
 
 func (w *AgreementBotWorker) getMessages() ([]exchange.AgbotMessage, error) {
 	var resp interface{}
 	resp = new(exchange.GetAgbotMessageResponse)
-	targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/msgs"
+	targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId) + "/msgs"
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.agbotId, w.token, nil, &resp); err != nil {
 			glog.Errorf(err.Error())
@@ -625,7 +619,7 @@ func DeleteConsumerAgreement(httpClient *http.Client, url string, agbotId string
 
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := url + "agbots/" + agbotId + "/agreements/" + agreementId
+	targetURL := url + "orgs/" + exchange.GetOrg(agbotId) + "/agbots/" + exchange.GetId(agbotId) + "/agreements/" + agreementId
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClient, "DELETE", targetURL, agbotId, token, nil, &resp); err != nil && !strings.Contains(err.Error(), "not found") {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
@@ -645,7 +639,7 @@ func DeleteConsumerAgreement(httpClient *http.Client, url string, agbotId string
 func DeleteMessage(msgId int, agbotId, agbotToken, exchangeURL string, httpClient *http.Client) error {
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := exchangeURL + "agbots/" + agbotId + "/msgs/" + strconv.Itoa(msgId)
+	targetURL := exchangeURL + "orgs/" + exchange.GetOrg(agbotId) + "/agbots/" + exchange.GetId(agbotId) + "/msgs/" + strconv.Itoa(msgId)
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClient, "DELETE", targetURL, agbotId, agbotToken, nil, &resp); err != nil {
 			glog.Errorf(err.Error())
@@ -661,7 +655,7 @@ func DeleteMessage(msgId int, agbotId, agbotToken, exchangeURL string, httpClien
 	}
 }
 
-func (w *AgreementBotWorker) searchExchange(pol *policy.Policy) (*[]exchange.SearchResultDevice, error) {
+func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, searchOrg string) (*[]exchange.SearchResultDevice, error) {
 
 	// Collect the API specs to search over into a map so that duplicates are automatically removed
 	msMap := make(map[string]*exchange.Microservice)
@@ -670,29 +664,18 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy) (*[]exchange.Sea
 	// from all workloads and search for devices that can satisfy all the workloads in the policy file. If a device
 	// can't satisfy all the workloads then workload rollback cant work so we shouldnt make an agreement with this
 	// device.
-	if pol.Workloads[0].WorkloadURL != "" {
-		for _, workload := range pol.Workloads {
-			if workload, err := exchange.GetWorkload(w.Config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Version, workload.Arch, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
-				return nil, errors.New(fmt.Sprintf("AgreementBotWorker received error retrieving workload definition for %v, error: %v", workload, err))
-			} else {
-				for _, apiSpec := range workload.APISpecs {
-					if newMS, err := w.makeNewMSSearchElement(apiSpec.SpecRef, "", apiSpec.Arch, pol); err != nil {
-						return nil, err
-					} else {
-						msMap[apiSpec.SpecRef] = newMS
-					}
+
+	for _, workload := range pol.Workloads {
+		if workload, err := exchange.GetWorkload(w.Config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+			return nil, errors.New(fmt.Sprintf("AgreementBotWorker received error retrieving workload definition for %v, error: %v", workload, err))
+		} else {
+			for _, apiSpec := range workload.APISpecs {
+				if newMS, err := w.makeNewMSSearchElement(apiSpec.SpecRef, apiSpec.Org, "", apiSpec.Arch, pol); err != nil {
+					return nil, err
+				} else {
+					msMap[apiSpec.SpecRef] = newMS
 				}
 			}
-		}
-
-	} else {
-		// Working with an old style policy file.
-		// Convert the policy into a microservice object that the exchange can search on
-
-		if newMS, err := w.makeNewMSSearchElement(pol.APISpecs[0].SpecRef, pol.APISpecs[0].Version, pol.APISpecs[0].Arch, pol); err != nil {
-			return nil, err
-		} else {
-			msMap[pol.APISpecs[0].SpecRef] = newMS
 		}
 	}
 
@@ -710,7 +693,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy) (*[]exchange.Sea
 	// Invoke the exchange
 	var resp interface{}
 	resp = new(exchange.SearchExchangeResponse)
-	targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "search/devices"
+	targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + searchOrg + "/search/devices"
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, ser, &resp); err != nil {
 			if !strings.Contains(err.Error(), "status: 404") {
@@ -731,7 +714,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy) (*[]exchange.Sea
 	}
 }
 
-func (w *AgreementBotWorker) makeNewMSSearchElement(specRef string, version string, arch string, pol *policy.Policy) (*exchange.Microservice, error) {
+func (w *AgreementBotWorker) makeNewMSSearchElement(specRef string, org string, version string, arch string, pol *policy.Policy) (*exchange.Microservice, error) {
 	newMS := new(exchange.Microservice)
 	newMS.Url = specRef
 	newMS.NumAgreements = 1
@@ -759,18 +742,21 @@ func (w *AgreementBotWorker) syncOnInit() error {
 		// Loop through our database and check each record for accuracy with the exchange and the blockchain
 		if agreements, err := FindAgreements(w.db, []AFilter{UnarchivedAFilter()}, agp); err == nil {
 
-			neededBCInstances := make(map[string]map[string]bool)
+			neededBCInstances := make(map[string]map[string]map[string]bool)
 
 			for _, ag := range agreements {
 
 				// Make a list of all blockchain instances in use by agreements in our DB so that we can make sure there is a
 				// blockchain client running for each instance.
-				bcType, bcName := w.consumerPH[ag.AgreementProtocol].GetKnownBlockchain(&ag)
+				bcType, bcName, bcOrg := w.consumerPH[ag.AgreementProtocol].GetKnownBlockchain(&ag)
 
-				if len(neededBCInstances[bcType]) == 0 {
-					neededBCInstances[bcType] = make(map[string]bool)
+				if len(neededBCInstances[bcOrg]) == 0 {
+					neededBCInstances[bcOrg] = make(map[string]map[string]bool)
 				}
-				neededBCInstances[bcType][bcName] = true
+				if len(neededBCInstances[bcOrg][bcType]) == 0 {
+					neededBCInstances[bcOrg][bcType] = make(map[string]bool)
+				}
+				neededBCInstances[bcOrg][bcType][bcName] = true
 
 				// If the agreement has received a reply then we just need to make sure that the policy manager's agreement counts
 				// are correct. Even for already timedout agreements, the governance process will cleanup old and outdated agreements,
@@ -778,7 +764,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 				if ag.AgreementCreationTime != 0 {
 					if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
 						glog.Errorf(AWlogString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
-					} else if existingPol := w.pm.GetPolicy(pol.Header.Name); existingPol == nil {
+					} else if existingPol := w.pm.GetPolicy(ag.Org, pol.Header.Name); existingPol == nil {
 						glog.Errorf(AWlogString(fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
 						// Update state in exchange
 						if err := DeleteConsumerAgreement(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId); err != nil {
@@ -793,7 +779,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 							glog.Errorf(AWlogString(fmt.Sprintf("error marking agreement %v terminated: %v", ag.CurrentAgreementId, err)))
 						}
 						w.consumerPH[agp].HandleAgreementTimeout(NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, w.consumerPH[agp].GetTerminationCode(TERM_REASON_POLICY_CHANGED)), w.consumerPH[agp])
-					} else if err := w.pm.MatchesMine(pol); err != nil {
+					} else if err := w.pm.MatchesMine(ag.Org, pol); err != nil {
 						glog.Warningf(AWlogString(fmt.Sprintf("agreement %v has a policy %v that has changed: %v", ag.CurrentAgreementId, pol.Header.Name, err)))
 
 						// Remove any workload usage records (non-HA) or mark for pending upgrade (HA). There might not be a workload usage record
@@ -826,7 +812,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 						var exchangeAgreement map[string]exchange.AgbotAgreement
 						var resp interface{}
 						resp = new(exchange.AllAgbotAgreementsResponse)
-						targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/agreements/" + ag.CurrentAgreementId
+						targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId) + "/agreements/" + ag.CurrentAgreementId
 
 						if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.agbotId, w.token, nil, &resp); err != nil || tpErr != nil {
 							glog.Errorf(AWlogString(fmt.Sprintf("encountered error getting agbot info from exchange, error %v, transport error %v", err, tpErr)))
@@ -868,9 +854,11 @@ func (w *AgreementBotWorker) syncOnInit() error {
 			// Fire off start requests for each BC client that we need running. The blockchain worker and the container worker will tolerate
 			// a start request for containers that are already running.
 			glog.V(3).Infof(AWlogString(fmt.Sprintf("discovered BC instances in DB %v", neededBCInstances)))
-			for typeName, instMap := range neededBCInstances {
-				for instName, _ := range instMap {
-					w.Messages() <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, typeName, instName, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
+			for org, typeMap := range neededBCInstances {
+				for typeName, instMap := range typeMap {
+					for instName, _ := range instMap {
+						w.Messages() <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, typeName, instName, org, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
+					}
 				}
 			}
 
@@ -917,7 +905,7 @@ func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, po
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId + "/agreements/" + agreementId
+	targetURL := w.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId) + "/agreements/" + agreementId
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.agbotId, w.token, &as, &resp); err != nil {
 			glog.Errorf(err.Error())
@@ -964,7 +952,7 @@ func getTheDevice(httpClient *http.Client, deviceId string, url string, agbotId 
 
 	var resp interface{}
 	resp = new(exchange.GetDevicesResponse)
-	targetURL := url + "devices/" + deviceId
+	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/devices/" + exchange.GetId(deviceId)
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClient, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
 			glog.Errorf(AWlogString(fmt.Sprintf(err.Error())))
@@ -1011,7 +999,7 @@ func (w *AgreementBotWorker) registerPublicKey() error {
 	as := exchange.CreateAgbotPublicKeyPatch(w.Config.AgreementBot.MessageKeyPath)
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.Config.AgreementBot.ExchangeURL + "agbots/" + w.agbotId
+	targetURL := w.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId)
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PATCH", targetURL, w.agbotId, w.token, &as, &resp); err != nil {
 			glog.Errorf(err.Error())
@@ -1027,10 +1015,10 @@ func (w *AgreementBotWorker) registerPublicKey() error {
 	}
 }
 
-func (w *AgreementBotWorker) workloadResolver(wURL string, wVersion string, wArch string) (*policy.APISpecList, error) {
+func (w *AgreementBotWorker) workloadResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
 
 	// TODO: do we need a dedicated HTTP client instance here or can we use the shared one?
-	asl, err := exchange.WorkloadResolver(w.Config.Collaborators.HTTPClientFactory, wURL, wVersion, wArch, w.Config.AgreementBot.ExchangeURL, w.Config.AgreementBot.ExchangeId, w.Config.AgreementBot.ExchangeToken)
+	asl, err := exchange.WorkloadResolver(w.Config.Collaborators.HTTPClientFactory, wURL, wOrg, wVersion, wArch, w.Config.AgreementBot.ExchangeURL, w.Config.AgreementBot.ExchangeId, w.Config.AgreementBot.ExchangeToken)
 	if err != nil {
 		glog.Errorf(AWlogString(fmt.Sprintf("unable to resolve workload, error %v", err)))
 	}

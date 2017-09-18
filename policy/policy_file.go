@@ -251,7 +251,7 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 	}
 }
 
-func (self *Policy) Is_Self_Consistent(keyPath string, userKeys string, workloadResolver func(wURL string, wVersion string, wArch string) (*APISpecList, error)) error {
+func (self *Policy) Is_Self_Consistent(keyPath string, userKeys string, workloadResolver func(wURL string, wOrg string, wVersion string, wArch string) (*APISpecList, error)) error {
 
 	// Check validity of the Data verification section
 	if ok, err := self.DataVerify.IsValid(); !ok {
@@ -289,18 +289,27 @@ func (self *Policy) Is_Self_Consistent(keyPath string, userKeys string, workload
 			return errors.New(fmt.Sprintf("Workload section has mix of policy forms, element 0 has workloadUrl %v, element %v has %v", self.Workloads[0].WorkloadURL, ix, workload.WorkloadURL))
 		}
 
+		if (workload.Org != "" && workload.WorkloadURL == "") || (workload.Org == "" && workload.WorkloadURL != "") {
+			return errors.New(fmt.Sprintf("Workload section has mix of policy forms, org is %v and workload URL is %v. Both must be specified or neither.", workload.Org, workload.WorkloadURL))
+		}
+
+		// If the policy file workloads dont reference the same org, return the error
+		if (self.Workloads[0].Org != workload.Org) {
+			return errors.New(fmt.Sprintf("Workload section has mix of organizations, element 0 has org %v, element %v has %v", self.Workloads[0].Org, ix, workload.Org))
+		}
+
 		// If the workloads use different API specs, return the error. API specs can differ by version from one workload to
 		// another but they cant differ by architecture, nor can one workload require an API spec that is not required
 		// by another workload in this policy file.
 		if workloadResolver != nil && workload.WorkloadURL != "" && workload.Deployment == "" {
 			if ix == 0 {
-				if firstASRL, err := workloadResolver(workload.WorkloadURL, workload.Version, workload.Arch); err != nil {
+				if firstASRL, err := workloadResolver(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
 					return errors.New(fmt.Sprintf("Workload %v does not resolve, error: %v", workload, err))
 				} else {
 					referencedApiSpecRefs = firstASRL
 				}
 			} else {
-				if secondASRL, err := workloadResolver(workload.WorkloadURL, workload.Version, workload.Arch); err != nil {
+				if secondASRL, err := workloadResolver(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
 					return errors.New(fmt.Sprintf("Workload %v does not resolve, error: %v", workload, err))
 				} else if !(*referencedApiSpecRefs).IsSame(*secondASRL, false) {
 					return errors.New(fmt.Sprintf("Workload section has workloads that use different API specs %v and %v", *referencedApiSpecRefs, *secondASRL))
@@ -488,17 +497,17 @@ func (p *Policy) RequiresDefaultBC(protocol string) bool {
 	return false
 }
 
-func (p *Policy) RequiresKnownBC(protocol string) (string, string) {
+func (p *Policy) RequiresKnownBC(protocol string) (string, string, string) {
 	if protocol != CitizenScientist {
-		return "", ""
+		return "", "", ""
 	}
 
 	if prodAGP := p.AgreementProtocols.FindByName(protocol); prodAGP == nil {
-		return "", ""
+		return "", "", ""
 	} else if prodAGP.ProtocolVersion < 2 && len(prodAGP.Blockchains) != 0 {
-		return prodAGP.Blockchains[0].Type, prodAGP.Blockchains[0].Name
+		return prodAGP.Blockchains[0].Type, prodAGP.Blockchains[0].Name, prodAGP.Blockchains[0].Org
 	}
-	return "", ""
+	return "", "", ""
 }
 
 // These are functions that operate on policy files in the file system.
@@ -548,9 +557,78 @@ func newWatchEntry(fi os.FileInfo, p *Policy) *WatchEntry {
 	return &WatchEntry{FInfo: fi, Pol: p}
 }
 
+func (w *WatchEntry) String() string {
+	return fmt.Sprintf("Watch Entry, Filename: %v Policy Name: %v ", w.FInfo.Name(), w.Pol.Header.Name)
+}
+
+type Contents struct {
+	AllWatches map[string]map[string]*WatchEntry
+}
+
+func NewContents() *Contents {
+	return &Contents{
+		AllWatches: make(map[string]map[string]*WatchEntry),
+	}
+}
+
+func (c *Contents) String() string {
+	res := "Policy Watch Contents: "
+	for org, orgMap := range c.AllWatches {
+		res += fmt.Sprintf("Org: %v ", org)
+		for _, we := range orgMap {
+			res += fmt.Sprintf("%v", we)
+		}
+	}
+	return res
+}
+
+func (c *Contents) HasOrg(org string) bool {
+	if _, ok := c.AllWatches[org]; !ok {
+		return false
+	}
+	return true
+}
+
+func (c *Contents) HasFile(org string, filename string) bool {
+	if !c.HasOrg(org) {
+		return false
+	} else if _, ok := c.AllWatches[org][filename]; !ok {
+		return false
+	}
+	return true
+}
+
+func (c *Contents) AddWatchEntry(org string, fInfo os.FileInfo, pol *Policy) {
+	if !c.HasOrg(org) {
+		c.AllWatches[org] = make(map[string]*WatchEntry)
+	}
+	c.AllWatches[org][fInfo.Name()] = newWatchEntry(fInfo, pol)
+}
+
+func (c *Contents) UpdateWatchEntry(org string, fInfo os.FileInfo, pol *Policy) {
+	if c.HasFile(org, fInfo.Name()) {
+		c.AllWatches[org][fInfo.Name()] = newWatchEntry(fInfo, pol)
+	}
+}
+
+func (c *Contents) RemoveWatchEntry(org string, filename string) {
+	if c.HasFile(org, filename) {
+		delete(c.AllWatches[org], filename)
+	}
+}
+
+func (c *Contents) GetPolicyName(org, filename string) string {
+	if c.HasFile(org, filename) {
+		return c.AllWatches[org][filename].Pol.Header.Name
+	}
+	return ""
+}
+
 // This is the policy file watcher function. It can be called once, to be notified of all policy files
 // when the system starts up. Or, it can be dispatched as a go routine that wakes up on the invoker's
-// interval to check for changes in the policy directory.
+// interval to check for changes in the policy directory. The directory is subdivided into organizations
+// by directories with the organization name. In each of these directories is where the policy files
+// can be found.
 //
 // Humans are devious and can make all kinds of different changes to the policy files. Changes like renaming
 // files, changing the contents of a file, changing a policy name within the file, adding new files, deleting
@@ -562,32 +640,46 @@ func newWatchEntry(fi os.FileInfo, p *Policy) *WatchEntry {
 // - fileError is called when an error occurs trying to demarshal a file into a policy object
 
 func PolicyFileChangeWatcher(homePath string,
-	contents map[string]*WatchEntry,
-	fileChanged func(fileName string, policy *Policy),
-	fileDeleted func(fileName string, policy *Policy),
-	fileError func(fileName string, err error),
-	workloadResolver func(wURL string, wVersion string, wArch string) (*APISpecList, error),
-	checkInterval int) (map[string]*WatchEntry, error) {
+	contents *Contents,
+	fileChanged func(org string, fileName string, policy *Policy),
+	fileDeleted func(org string, fileName string, policy *Policy),
+	fileError func(org string, fileName string, err error),
+	workloadResolver func(wURL string, wOrg string, wVersion string, wArch string) (*APISpecList, error),
+	checkInterval int) (*Contents, error) {
 
-	// contents is the map that holds info on every policy file in the policy directory
+	// contents is the map that holds info on every policy file in every org in the policy directory
 
 	// The main loop that monitors the policy directory.
 	for {
-		// Get a list of all policy files in the directory
-		if files, err := getPolicyFiles(homePath); err != nil {
-			return contents, errors.New(fmt.Sprintf("Policy File Watcher unable to get list of policy files in %v, error: %v", homePath, err))
-		} else {
+
+		dirs, err := getPolicyDirectories(homePath)
+		if err != nil {
+			return contents, errors.New(fmt.Sprintf("Policy File Watcher unable to get list of policy directories in %v, error: %v", homePath, err))
+		}
+
+		// Get a list of all directories in the policy directory
+		for _, dirInfo := range dirs {
+			org := dirInfo.Name()
+			glog.V(5).Infof("Policy File Watcher reading directory %v", dirInfo)
+
+			// Get a list of all policy files in the directory
+			orgPath := homePath + "/" + org + "/"
+			files, err := getPolicyFiles(orgPath)
+			if err != nil {
+				return contents, errors.New(fmt.Sprintf("Policy File Watcher unable to get list of policy files in %v, error: %v", orgPath, err))
+			}
+
 			// For each file, if we dont have a record of it, read in the file and create an entry in the map.
 			for _, fileInfo := range files {
-				if _, ok := contents[fileInfo.Name()]; !ok {
-					if policy, err := ReadPolicyFile(homePath + fileInfo.Name()); err != nil {
-						fileError(homePath+fileInfo.Name(), err)
+				if !contents.HasFile(org, fileInfo.Name()) {
+					if policy, err := ReadPolicyFile(orgPath + fileInfo.Name()); err != nil {
+						fileError(org, orgPath+fileInfo.Name(), err)
 					} else if err := policy.Is_Self_Consistent("", "", workloadResolver); err != nil {
-						fileError(homePath+fileInfo.Name(), errors.New(fmt.Sprintf("Policy file not self consistent %v, error: %v", homePath, err)))
+						fileError(org, orgPath+fileInfo.Name(), errors.New(fmt.Sprintf("Policy file not self consistent %v, error: %v", orgPath, err)))
 					} else {
-						contents[fileInfo.Name()] = newWatchEntry(fileInfo, policy)
-						fileChanged(homePath+fileInfo.Name(), policy)
-						glog.V(5).Infof("Policy File Watcher Adding file %v", homePath+fileInfo.Name())
+						contents.AddWatchEntry(org, fileInfo, policy)
+						fileChanged(org, orgPath+fileInfo.Name(), policy)
+						glog.V(5).Infof("Policy File Watcher Adding file %v", org+fileInfo.Name())
 					}
 				}
 			}
@@ -595,49 +687,52 @@ func PolicyFileChangeWatcher(homePath string,
 
 		// For each file that we know about (this includes any new files discovered above), check to see
 		// if the file has changed or has been deleted.
-		for _, we := range contents {
-			if newStat, err := os.Stat(homePath + we.FInfo.Name()); err != nil && !os.IsNotExist(err) {
-				fileError(homePath+we.FInfo.Name(), err)
-			} else if err != nil && os.IsNotExist(err) {
-				// A file that is deleted might actually have been renamed. To check this, we need to look at
-				// all the other policies we captured to see if there is another file with our policy in it. If so,
-				// we can skip the delete notification.
-				found := false
-				for key, val := range contents {
-					if key == we.FInfo.Name() {
-						continue
-					} else if val.Pol.Header.Name == we.Pol.Header.Name {
-						found = true
-						break
+		for org, orgMap := range contents.AllWatches {
+			orgPath := homePath + "/" + org + "/"
+			for _, we := range orgMap {
+				if newStat, err := os.Stat(orgPath + we.FInfo.Name()); err != nil && !os.IsNotExist(err) {
+					fileError(org, orgPath+we.FInfo.Name(), err)
+				} else if err != nil && os.IsNotExist(err) {
+					// A file that is deleted might actually have been renamed. To check this, we need to look at
+					// all the other policies we captured to see if there is another file with our policy in it. If so,
+					// we can skip the delete notification.
+					found := false
+					for key, val := range orgMap {
+						if key == we.FInfo.Name() {
+							continue
+						} else if val.Pol.Header.Name == we.Pol.Header.Name {
+							found = true
+							break
+						}
 					}
-				}
-				// If there is another file with our policy in it, then we can skip the delete event but we still have to
-				// remove the file entry from the contents map.
-				if !found {
-					fileDeleted(homePath+we.FInfo.Name(), we.Pol)
-					glog.V(5).Infof("Policy File Watcher detected deleted file %v", homePath+we.FInfo.Name())
-				}
-				key := we.FInfo.Name()
-				delete(contents, key)
-			} else if newStat.ModTime().After(we.FInfo.ModTime()) {
-				// A changed file could be a new policy and a deleted policy if it's the policy name that was changed.
-				if policy, err := ReadPolicyFile(homePath + we.FInfo.Name()); err != nil {
-					fileError(homePath+we.FInfo.Name(), err)
-				} else if err := policy.Is_Self_Consistent("", "", workloadResolver); err != nil {
-					fileError(homePath+we.FInfo.Name(), errors.New(fmt.Sprintf("Policy file not self consistent %v, error: %v", homePath, err)))
-				} else if policy.Header.Name != we.Pol.Header.Name {
-					// Contents of the file changed the policy name, so this means we have a new policy and a deleted policy at the same time.
-					// Inform the world about the deleted policy.
-					fileDeleted(homePath+we.FInfo.Name(), we.Pol)
-					glog.V(5).Infof("Policy File Watcher detected deleted policy in existing file %v", homePath+we.FInfo.Name())
-					// Inform the world about the new policy and save a reference to it.
-					fileChanged(homePath+we.FInfo.Name(), policy)
-					glog.V(5).Infof("Policy File Watcher Stats detected new policy in existing file %v", homePath+we.FInfo.Name())
-					contents[we.FInfo.Name()] = newWatchEntry(newStat, policy)
-				} else {
-					fileChanged(homePath+we.FInfo.Name(), policy)
-					glog.V(5).Infof("Policy File Watcher Stats detected changed file %v", homePath+we.FInfo.Name())
-					contents[we.FInfo.Name()] = newWatchEntry(newStat, policy)
+					// If there is another file with our policy in it, then we can skip the delete event but we still have to
+					// remove the file entry from the contents map.
+					if !found {
+						fileDeleted(org, orgPath+we.FInfo.Name(), we.Pol)
+						glog.V(5).Infof("Policy File Watcher detected deleted file %v", orgPath+we.FInfo.Name())
+					}
+					contents.RemoveWatchEntry(org, we.FInfo.Name())
+
+				} else if newStat.ModTime().After(we.FInfo.ModTime()) {
+					// A changed file could be a new policy and a deleted policy if it's the policy name that was changed.
+					if policy, err := ReadPolicyFile(orgPath + we.FInfo.Name()); err != nil {
+						fileError(org, orgPath+we.FInfo.Name(), err)
+					} else if err := policy.Is_Self_Consistent("", "", workloadResolver); err != nil {
+						fileError(org, orgPath+we.FInfo.Name(), errors.New(fmt.Sprintf("Policy file not self consistent %v, error: %v", orgPath+we.FInfo.Name(), err)))
+					} else if policy.Header.Name != we.Pol.Header.Name {
+						// Contents of the file changed the policy name, so this means we have a new policy and a deleted policy at the same time.
+						// Inform the world about the deleted policy.
+						fileDeleted(org, orgPath+we.FInfo.Name(), we.Pol)
+						glog.V(5).Infof("Policy File Watcher detected deleted policy in existing file %v", orgPath+we.FInfo.Name())
+						// Inform the world about the new policy and save a reference to it.
+						fileChanged(org, orgPath+we.FInfo.Name(), policy)
+						glog.V(5).Infof("Policy File Watcher Stats detected new policy in existing file %v", orgPath+we.FInfo.Name())
+						contents.AddWatchEntry(org, newStat, policy)
+					} else {
+						fileChanged(org, orgPath+we.FInfo.Name(), policy)
+						glog.V(5).Infof("Policy File Watcher Stats detected changed file %v", orgPath+we.FInfo.Name())
+						contents.UpdateWatchEntry(org, newStat, policy)
+					}
 				}
 			}
 		}
@@ -664,6 +759,22 @@ func getPolicyFiles(homePath string) ([]os.FileInfo, error) {
 	} else {
 		for _, fileInfo := range files {
 			if strings.HasSuffix(fileInfo.Name(), ".policy") && !fileInfo.IsDir() {
+				res = append(res, fileInfo)
+			}
+		}
+		return res, nil
+	}
+}
+
+// This is an internal function used to find all directories in the policy directory. It only returns directories.
+func getPolicyDirectories(homePath string) ([]os.FileInfo, error) {
+	res := make([]os.FileInfo, 0, 10)
+
+	if files, err := ioutil.ReadDir(homePath); err != nil {
+		return nil, errors.New(fmt.Sprintf("Unable to get list of policy directories in %v, error: %v", homePath, err))
+	} else {
+		for _, fileInfo := range files {
+			if fileInfo.IsDir() {
 				res = append(res, fileInfo)
 			}
 		}

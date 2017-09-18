@@ -1527,7 +1527,7 @@ func (b *ContainerWorker) start() {
 					}
 
 					// send the event to let others know that the workload clean up has been processed
-					b.Messages() <- events.NewContainerShutdownMessage(events.CONTAINER_DESTROYED, cmd.Msg.ContainerName)
+					b.Messages() <- events.NewContainerShutdownMessage(events.CONTAINER_DESTROYED, cmd.Msg.ContainerName, cmd.Msg.Org)
 
 				case *MaintainMicroserviceCommand:
 					cmd := command.(*MaintainMicroserviceCommand)

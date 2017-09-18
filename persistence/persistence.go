@@ -44,6 +44,7 @@ type EstablishedAgreement struct {
 	MeteringNotificationMsg         MeteringNotification     `json:"metering_notification,omitempty"` // the most recent metering notification received
 	BlockchainType                  string                   `json:"blockchain_type,omitempty"`       // the name of the type of the blockchain
 	BlockchainName                  string                   `json:"blockchain_name,omitempty"`       // the name of the blockchain instance
+	BlockchainOrg                   string                   `json:"blockchain_org,omitempty"`       // the org of the blockchain instance
 }
 
 func (c EstablishedAgreement) String() string {
@@ -72,13 +73,14 @@ func (c EstablishedAgreement) String() string {
 		"WorkloadTerminatedTime: %v, "+
 		"MeteringNotificationMsg: %v, "+
 		"BlockchainType: %v, "+
-		"BlockchainName: %v",
+		"BlockchainName: %v, "+
+		"BlockchainOrg: %v",
 		c.Name, c.SensorUrl, c.Archived, c.CurrentAgreementId, c.ConsumerId, c.CounterPartyAddress, ServiceConfigNames(&c.CurrentDeployment),
 		c.ProposalSig,
 		c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementBCUpdateAckTime, c.AgreementFinalizedTime,
 		c.AgreementDataReceivedTime, c.AgreementTerminatedTime, c.AgreementForceTerminatedTime, c.TerminatedReason, c.TerminatedDescription,
 		c.AgreementProtocol, c.ProtocolVersion, c.AgreementProtocolTerminatedTime, c.WorkloadTerminatedTime,
-		c.MeteringNotificationMsg, c.BlockchainType, c.BlockchainName)
+		c.MeteringNotificationMsg, c.BlockchainType, c.BlockchainName, c.BlockchainOrg)
 
 }
 
@@ -104,7 +106,7 @@ func (c ServiceConfig) String() string {
 	return fmt.Sprintf("Config: %v, HostConfig: %v", c.Config, c.HostConfig)
 }
 
-func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consumerId string, proposal string, protocol string, protocolVersion int, sensorUrl []string, signature string, address string, bcType string, bcName string) (*EstablishedAgreement, error) {
+func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consumerId string, proposal string, protocol string, protocolVersion int, sensorUrl []string, signature string, address string, bcType string, bcName string, bcOrg string) (*EstablishedAgreement, error) {
 
 	if name == "" || agreementId == "" || consumerId == "" || proposal == "" || protocol == "" || protocolVersion == 0 {
 		return nil, errors.New("Agreement id, consumer id, proposal, protocol, or protocol version are empty, cannot persist")
@@ -147,6 +149,7 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 		MeteringNotificationMsg:         MeteringNotification{},
 		BlockchainType:                  bcType,
 		BlockchainName:                  bcName,
+		BlockchainOrg:                   bcOrg,
 	}
 
 	return newAg, db.Update(func(tx *bolt.Tx) error {
@@ -388,6 +391,9 @@ func persistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 				}
 				if mod.BlockchainName == "" { // 1 transition from empty to non-empty
 					mod.BlockchainName = update.BlockchainName
+				}
+				if mod.BlockchainOrg == "" { // 1 transition from empty to non-empty
+					mod.BlockchainOrg = update.BlockchainOrg
 				}
 				if mod.ProposalSig == "" { // 1 transition from empty to non-empty
 					mod.ProposalSig = update.ProposalSig

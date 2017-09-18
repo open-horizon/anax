@@ -111,17 +111,19 @@ func NewWorkloadUpgradeCommand(msg events.ABApiWorkloadUpgradeMessage) *Workload
 type MakeAgreementCommand struct {
 	ProducerPolicy policy.Policy               // the producer policy received from the exchange
 	ConsumerPolicy policy.Policy               // the consumer policy we're matched up with
+	Org            string                      // the org of the consumer policy
 	Device         exchange.SearchResultDevice // the device entry in the exchange
 }
 
 func (e MakeAgreementCommand) ShortString() string {
-	return fmt.Sprintf("Produder Policy: %v, ConsumerPolicy: %v, Device: %v", e.ProducerPolicy.Header.Name, e.ConsumerPolicy.Header.Name, e.Device)
+	return fmt.Sprintf("Produder Policy: %v, ConsumerPolicy: %v, Org: %v, Device: %v", e.ProducerPolicy.Header.Name, e.ConsumerPolicy.Header.Name, e.Org, e.Device)
 }
 
-func NewMakeAgreementCommand(pPol policy.Policy, cPol policy.Policy, dev exchange.SearchResultDevice) *MakeAgreementCommand {
+func NewMakeAgreementCommand(pPol policy.Policy, cPol policy.Policy, org string, dev exchange.SearchResultDevice) *MakeAgreementCommand {
 	return &MakeAgreementCommand{
 		ProducerPolicy: pPol,
 		ConsumerPolicy: cPol,
+		Org:            org,
 		Device:         dev,
 	}
 }

@@ -13,7 +13,6 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
-	"os"
 )
 
 type BlockchainState struct {
@@ -28,7 +27,7 @@ type BlockchainState struct {
 type CSProtocolHandler struct {
 	*BaseProducerProtocolHandler
 	genericAgreementPH *citizenscientist.ProtocolHandler
-	bcState            map[string]map[string]*BlockchainState
+	bcState            map[string]map[string]map[string]*BlockchainState
 }
 
 func NewCSProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, deviceId string, token string) *CSProtocolHandler {
@@ -40,12 +39,11 @@ func NewCSProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB, p
 				pm:         pm,
 				db:         db,
 				config:     cfg,
-				httpClient: cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 				deviceId:   deviceId,
 				token:      token,
 			},
 			genericAgreementPH: citizenscientist.NewProtocolHandler(cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil), pm),
-			bcState:            make(map[string]map[string]*BlockchainState),
+			bcState:            make(map[string]map[string]map[string]*BlockchainState),
 		}
 	} else {
 		return nil
@@ -66,12 +64,12 @@ func (c *CSProtocolHandler) String() string {
 		c.name, c.deviceId, c.token, c.pm, c.db, c.genericAgreementPH)
 }
 
-func (c *CSProtocolHandler) AgreementProtocolHandler(typeName string, name string) abstractprotocol.ProtocolHandler {
-	if typeName == "" && name == "" {
+func (c *CSProtocolHandler) AgreementProtocolHandler(typeName string, name string, org string) abstractprotocol.ProtocolHandler {
+	if typeName == "" && name == "" && org == "" {
 		return c.genericAgreementPH
 	}
 
-	nameMap := c.getBCNameMap(typeName)
+	nameMap := c.getBCNameMap(org, typeName)
 	namedBC, ok := nameMap[name]
 	if ok && namedBC.ready {
 		return namedBC.agreementPH
@@ -85,7 +83,7 @@ func (c *CSProtocolHandler) AcceptCommand(cmd worker.Command) bool {
 	switch cmd.(type) {
 	case *BlockchainEventCommand:
 		bcc := cmd.(*BlockchainEventCommand)
-		if c.IsBlockchainClientAvailable(policy.Ethereum_bc, bcc.Msg.Name()) {
+		if c.IsBlockchainClientAvailable(policy.Ethereum_bc, bcc.Msg.Name(), bcc.Msg.Org()) {
 			return true
 		} else {
 			return false
@@ -101,12 +99,17 @@ func (c *CSProtocolHandler) HandleProposalMessage(proposal abstractprotocol.Prop
 		return true
 	}
 
-	// Grab the list of running BCs that we know about
-	runningBCs := make([]string, 0, 5)
-	ethBCs := c.getBCNameMap(policy.Ethereum_bc)
-	for name, bc := range ethBCs {
-		if bc.ready {
-			runningBCs = append(runningBCs, name)
+	// Grab the list of running BCs that we know about for the ethereum type
+	runningBCs := make([]map[string]string, 0, 5)
+	for org, typeMap := range c.bcState {
+		for bcType, nameMap := range typeMap {
+			if bcType == policy.Ethereum_bc {
+				for name, bc := range nameMap {
+					if bc.ready {
+						runningBCs = append(runningBCs, map[string]string{"name":name, "org":org})
+					}
+				}
+			}
 		}
 	}
 
@@ -123,10 +126,10 @@ func (c *CSProtocolHandler) HandleProposalMessage(proposal abstractprotocol.Prop
 
 func (c *CSProtocolHandler) PersistProposal(p abstractprotocol.Proposal, r abstractprotocol.ProposalReply, tcPolicy *policy.Policy, protocolMsg string) {
 	if reply, ok := r.(*citizenscientist.CSProposalReply); !ok {
-		glog.Errorf(PPHlogString(fmt.Sprintf("unable to cast reply %v to %v Proposal Reply, is %T", r, c.Name, r)))
+		glog.Errorf(PPHlogString(fmt.Sprintf("unable to cast reply %v to %v Proposal Reply, is %T", r, c.Name(), r)))
 	} else if proposal, ok := p.(*citizenscientist.CSProposal); !ok {
-		glog.Errorf(PPHlogString(fmt.Sprintf("unable to cast proposal %v to %v Proposal, is %T", p, c.Name, p)))
-	} else if _, err := persistence.NewEstablishedAgreement(c.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, c.Name(), proposal.Version(), (&tcPolicy.APISpecs).AsStringArray(), reply.Signature, proposal.Address, reply.BlockchainType, reply.BlockchainName); err != nil {
+		glog.Errorf(PPHlogString(fmt.Sprintf("unable to cast proposal %v to %v Proposal, is %T", p, c.Name(), p)))
+	} else if _, err := persistence.NewEstablishedAgreement(c.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, c.Name(), proposal.Version(), (&tcPolicy.APISpecs).AsStringArray(), reply.Signature, proposal.Address, reply.BlockchainType, reply.BlockchainName, reply.BlockchainOrg); err != nil {
 		glog.Errorf(PPHlogString(fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId(), err)))
 	}
 }
@@ -198,8 +201,8 @@ func (c *CSProtocolHandler) GetTerminationReason(code uint) string {
 
 func (c *CSProtocolHandler) SetBlockchainClientAvailable(cmd *BCInitializedCommand) {}
 
-func (c *CSProtocolHandler) IsBlockchainClientAvailable(typeName string, name string) bool {
-	nameMap := c.getBCNameMap(typeName)
+func (c *CSProtocolHandler) IsBlockchainClientAvailable(typeName string, name string, org string) bool {
+	nameMap := c.getBCNameMap(org, typeName)
 
 	namedBC, ok := nameMap[name]
 	if !ok {
@@ -210,17 +213,17 @@ func (c *CSProtocolHandler) IsBlockchainClientAvailable(typeName string, name st
 }
 
 func (c *CSProtocolHandler) SetBlockchainClientNotAvailable(cmd *BCStoppingCommand) {
-	nameMap := c.getBCNameMap(policy.Ethereum_bc)
+	nameMap := c.getBCNameMap(cmd.Msg.BlockchainOrg(), policy.Ethereum_bc)
 
 	delete(nameMap, cmd.Msg.BlockchainInstance())
 
-	glog.V(3).Infof(PPHlogString(fmt.Sprintf("agreement protocol handler for %v cannot use blockchain because it is stopping.", cmd.Msg.BlockchainInstance())))
+	glog.V(3).Infof(PPHlogString(fmt.Sprintf("agreement protocol handler for %v %v cannot use blockchain because it is stopping.", cmd.Msg.BlockchainOrg(), cmd.Msg.BlockchainInstance())))
 
 }
 
 func (c *CSProtocolHandler) SetBlockchainWritable(cmd *BCWritableCommand) {
 
-	nameMap := c.getBCNameMap(cmd.Msg.BlockchainType())
+	nameMap := c.getBCNameMap(cmd.Msg.BlockchainOrg(), cmd.Msg.BlockchainType())
 
 	httpClient := c.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil)
 
@@ -282,14 +285,14 @@ func (c *CSProtocolHandler) UpdateConsumer(ag *persistence.EstablishedAgreement)
 			glog.Errorf(PPHlogString(fmt.Sprintf("unable to demarshal proposal for agreement %v from database", ag.CurrentAgreementId)))
 			return
 		} else {
-			ph := c.AgreementProtocolHandler(ag.BlockchainType, ag.BlockchainName)
+			ph := c.AgreementProtocolHandler(ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg)
 			if csph, ok := ph.(*citizenscientist.ProtocolHandler); ok {
 				if _, sig, err := csph.SignProposal(proposal); err != nil {
-					glog.Errorf(PPHlogString(fmt.Sprintf("Protocol %v agreement %v error signing proposal, error %v, %v", c.Name(), ag.CurrentAgreementId, err)))
+					glog.Errorf(PPHlogString(fmt.Sprintf("Protocol %v agreement %v error signing proposal, error %v", c.Name(), ag.CurrentAgreementId, err)))
 				} else {
 					signature = sig
 					if _, err := persistence.AgreementStateProposalSigned(c.db, ag.CurrentAgreementId, c.Name(), signature); err != nil {
-						glog.Errorf(PPHlogString(fmt.Sprintf("Protocol %v agreement %v error saving signature, error %v, %v", c.Name(), ag.CurrentAgreementId, err)))
+						glog.Errorf(PPHlogString(fmt.Sprintf("Protocol %v agreement %v error saving signature, error %v", c.Name(), ag.CurrentAgreementId, err)))
 					}
 				}
 			} else {
@@ -305,7 +308,7 @@ func (c *CSProtocolHandler) UpdateConsumer(ag *persistence.EstablishedAgreement)
 	} else if mt, err := exchange.CreateMessageTarget(ag.ConsumerId, nil, pubKey, ""); err != nil {
 		glog.Errorf(PPHlogString(fmt.Sprintf("for agreement %v error creating message target %v", ag.CurrentAgreementId, err)))
 	} else {
-		ph := c.AgreementProtocolHandler(ag.BlockchainType, ag.BlockchainName)
+		ph := c.AgreementProtocolHandler(ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg)
 		if csph, ok := ph.(*citizenscientist.ProtocolHandler); !ok {
 			glog.Errorf(PPHlogString(fmt.Sprintf("for agreement %v, error casting protocol handler to CS protocol handler, is %T", ag.CurrentAgreementId, ph)))
 		} else if err := csph.SendBlockchainProducerUpdate(ag.CurrentAgreementId, signature, mt, c.GetSendMessage()); err != nil {
@@ -320,9 +323,9 @@ func (c *CSProtocolHandler) IsBlockchainWritable(ag *persistence.EstablishedAgre
 		return true
 	}
 
-	bcType, bcName := c.GetKnownBlockchain(ag)
+	bcType, bcName, bcOrg := c.GetKnownBlockchain(ag)
 
-	nameMap := c.getBCNameMap(bcType)
+	nameMap := c.getBCNameMap(bcOrg, bcType)
 
 	namedBC, ok := nameMap[bcName]
 	if !ok {
@@ -333,11 +336,17 @@ func (c *CSProtocolHandler) IsBlockchainWritable(ag *persistence.EstablishedAgre
 
 }
 
-func (c *CSProtocolHandler) getBCNameMap(typeName string) map[string]*BlockchainState {
-	nameMap, ok := c.bcState[typeName]
+func (c *CSProtocolHandler) getBCNameMap(org string, typeName string) map[string]*BlockchainState {
+	orgMap, ok := c.bcState[org]
 	if !ok {
-		c.bcState[typeName] = make(map[string]*BlockchainState)
-		nameMap = c.bcState[typeName]
+		c.bcState[org] = make(map[string]map[string]*BlockchainState)
+		orgMap = c.bcState[org]
+	}
+
+	nameMap, ok := orgMap[typeName]
+	if !ok {
+		orgMap[typeName] = make(map[string]*BlockchainState)
+		nameMap = orgMap[typeName]
 	}
 	return nameMap
 }
@@ -364,7 +373,7 @@ func (c *CSProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDeviceMe
 		} else if mt, err := exchange.CreateMessageTarget(exchangeMsg.AgbotId, nil, exchangeMsg.AgbotPubKey, ""); err != nil {
 			glog.Errorf(PPHlogString(fmt.Sprintf("for agreement %v error creating message target %v", ags[0].CurrentAgreementId, err)))
 		} else {
-			ph := c.AgreementProtocolHandler(ags[0].BlockchainType, ags[0].BlockchainName)
+			ph := c.AgreementProtocolHandler(ags[0].BlockchainType, ags[0].BlockchainName, ags[0].BlockchainOrg)
 			if csph, ok := ph.(*citizenscientist.ProtocolHandler); !ok {
 				glog.Errorf(PPHlogString(fmt.Sprintf("for agreement %v, error casting protocol handler to CS protocol handler, is %T", update.AgreementId(), ph)))
 			} else if err := csph.SendBlockchainConsumerUpdateAck(ags[0].CurrentAgreementId, mt, c.GetSendMessage()); err != nil {
@@ -389,27 +398,8 @@ func (c *CSProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDeviceMe
 	return deleteMessage, nil
 }
 
-func (c *CSProtocolHandler) GetKnownBlockchain(ag *persistence.EstablishedAgreement) (string, string) {
-	bcType := ag.BlockchainType
-	bcName := ag.BlockchainName
-	if ag.AgreementProtocol == policy.CitizenScientist && ag.ProtocolVersion < 2 {
-		if overrideName := os.Getenv("CMTN_BLOCKCHAIN"); overrideName != "" {
-			return policy.Ethereum_bc, overrideName
-		} else if proposal, err := c.genericAgreementPH.DemarshalProposal(ag.Proposal); err != nil {
-			glog.Errorf(PPHlogString(fmt.Sprintf("error demarshalling proposal from agreement %v, error: %v", ag.CurrentAgreementId, err)))
-		} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
-			glog.Errorf(PPHlogString(fmt.Sprintf("error demarshalling tsandcs policy from agreement %v, error: %v", ag.CurrentAgreementId, err)))
-		} else {
-			agp := pol.AgreementProtocols[0]
-			if agp.Blockchains == nil || len(agp.Blockchains) == 0 {
-				return policy.Ethereum_bc, policy.Default_Blockchain_name
-			} else {
-				bcType = agp.Blockchains[0].Type
-				bcName = agp.Blockchains[0].Name
-			}
-		}
-	}
-	return bcType, bcName
+func (c *CSProtocolHandler) GetKnownBlockchain(ag *persistence.EstablishedAgreement) (string, string, string) {
+	return ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg
 }
 
 // ==========================================================================================================

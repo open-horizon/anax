@@ -14,6 +14,7 @@ const DEVICES = "devices"
 type ExchangeAccount struct {
 	Id    string `json:"id"`
 	Email string `json:"email"`
+	Org   string `json:"organization"`
 }
 
 func (e ExchangeAccount) String() string {
@@ -39,6 +40,10 @@ func (e ExchangeDevice) String() string {
 	}
 
 	return fmt.Sprintf("Account: %v, Token: <%s>, Name: %v, TokenLastValidTime: %v, TokenValid: %v", e.Account, tokenShadow, e.Name, e.TokenLastValidTime, e.TokenValid)
+}
+
+func (e ExchangeDevice) GetId() string {
+	return fmt.Sprintf("%v/%v", e.Account.Org, e.Id)
 }
 
 // TODO: removed check for email set temporarily until the new account mgmt. stuff is released
@@ -136,7 +141,7 @@ func updateExchangeDeviceToken(db *bolt.DB, accountId string, token string) (*Ex
 }
 
 // always assumed the given token is valid at the time of call
-func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, accountId string, accountEmail string, ha bool) (*ExchangeDevice, error) {
+func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, accountId string, accountEmail string, ha bool, organization string) (*ExchangeDevice, error) {
 
 	if id == "" || token == "" || name == "" || accountId == "" {
 		return nil, errors.New("Argument null and must not be")
@@ -163,6 +168,7 @@ func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, ac
 	exDevice, err := newExchangeDevice(id, token, name, uint64(time.Now().Unix()), ha, &ExchangeAccount{
 		Id:    accountId,
 		Email: accountEmail,
+		Org:   organization,
 	})
 
 	if err != nil {

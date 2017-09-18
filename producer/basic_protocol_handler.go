@@ -50,7 +50,7 @@ func (c *BasicProtocolHandler) String() string {
 		c.name, c.deviceId, c.token, c.pm, c.db, c.agreementPH)
 }
 
-func (c *BasicProtocolHandler) AgreementProtocolHandler(typeName string, name string) abstractprotocol.ProtocolHandler {
+func (c *BasicProtocolHandler) AgreementProtocolHandler(typeName string, name string, org string) abstractprotocol.ProtocolHandler {
 	return c.agreementPH
 }
 
@@ -61,7 +61,7 @@ func (c *BasicProtocolHandler) AcceptCommand(cmd worker.Command) bool {
 
 func (c *BasicProtocolHandler) HandleProposalMessage(proposal abstractprotocol.Proposal, protocolMsg string, exchangeMsg *exchange.DeviceMessage) bool {
 
-	if handled, reply, tcPolicy := c.HandleProposal(c.agreementPH, proposal, protocolMsg, []string{}, exchangeMsg); handled {
+	if handled, reply, tcPolicy := c.HandleProposal(c.agreementPH, proposal, protocolMsg, []map[string]string{}, exchangeMsg); handled {
 		if reply != nil {
 			c.PersistProposal(proposal, reply, tcPolicy, protocolMsg)
 		}
@@ -117,7 +117,7 @@ func (c *BasicProtocolHandler) GetTerminationReason(code uint) string {
 	return basicprotocol.DecodeReasonCode(uint64(code))
 }
 
-func (c *BasicProtocolHandler) IsBlockchainClientAvailable(typeName string, name string) bool {
+func (c *BasicProtocolHandler) IsBlockchainClientAvailable(typeName string, name string, org string) bool {
 	return true
 }
 

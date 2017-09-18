@@ -31,7 +31,7 @@ func NewExchangeMessageWorker(cfg *config.HorizonConfig, db *bolt.DB) *ExchangeM
 	token := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
 		token = dev.Token
-		id = dev.Id
+		id = fmt.Sprintf("%v/%v", dev.Account.Org, dev.Id)
 	}
 
 	worker := &ExchangeMessageWorker{
@@ -63,6 +63,7 @@ func (w *ExchangeMessageWorker) NewEvent(incoming events.Message) {
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
 		w.id = msg.DeviceId()
 		w.token = msg.Token()
+		w.id = fmt.Sprintf("%v/%v", msg.Org(), w.id)
 
 	default: //nothing
 
@@ -119,7 +120,7 @@ func (w *ExchangeMessageWorker) pollIncoming() {
 func (w *ExchangeMessageWorker) getMessages() ([]DeviceMessage, error) {
 	var resp interface{}
 	resp = new(GetDeviceMessageResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.id + "/msgs"
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + GetOrg(w.id) + "/devices/" + GetId(w.id) + "/msgs"
 	for {
 		if err, tpErr := InvokeExchange(w.httpClient, "GET", targetURL, w.id, w.token, nil, &resp); err != nil {
 			glog.Errorf(err.Error())

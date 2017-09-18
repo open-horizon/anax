@@ -14,6 +14,7 @@ import (
 type HorizonAccount struct {
 	Id    *string `json:"id"`
 	Email *string `json:"email"`
+	Org   *string `json:"organization"`
 }
 
 func (h HorizonAccount) String() string {
@@ -62,9 +63,10 @@ func (a Attribute) String() string {
 		getString(a.Id), getString(a.ShortType), getString(a.SensorUrls), getString(a.Label), getString(a.Publishable), getString(a.Mappings))
 }
 
-// uses pointers for members b/c it allows nil-checking at deserialization; !Important!: the json field names here must not change w/out changing the error messages returned from the API, they are not programmatically dete  rmined
+// uses pointers for members b/c it allows nil-checking at deserialization; !Important!: the json field names here must not change w/out changing the error messages returned from the API, they are not programmatically determined
 type Service struct {
 	SensorUrl     *string      `json:"sensor_url"`     // uniquely identifying
+	SensorOrg     *string      `json:"sensor_org"`     // The org that holds the ms definition
 	SensorName    *string      `json:"sensor_name"`    // may not be uniquely identifying
 	SensorVersion *string      `json:"sensor_version"` // added for ms split. It is only used for microsevice. If it is omitted, old behavior is asumed.
 	AutoUpgrade   *bool        `json:"auto_upgrade"`   // added for ms split. The default is false. If the sensor (microservice) should be automatically upgraded when new versions become available.
@@ -73,12 +75,27 @@ type Service struct {
 }
 
 func (s *Service) String() string {
-	version := ""
+	sURL := ""
+	sOrg := ""
+	sName := ""
+	sVersion := ""
 	auto_upgrade := ""
 	active_upgrade := ""
 
+	if s.SensorUrl != nil {
+		sURL = *s.SensorUrl
+	}
+
+	if s.SensorOrg != nil {
+		sOrg = *s.SensorOrg
+	}
+
+	if s.SensorName != nil {
+		sName = *s.SensorName
+	}
+
 	if s.SensorVersion != nil {
-		version = *s.SensorVersion
+		sVersion = *s.SensorVersion
 	}
 
 	if s.AutoUpgrade != nil {
@@ -89,7 +106,7 @@ func (s *Service) String() string {
 		active_upgrade = strconv.FormatBool(*s.ActiveUpgrade)
 	}
 
-	return fmt.Sprintf("SensorUrl: %v, SensorName: %v, SensorVersion: %v, AutoUpgrade: %v, ActiveUpgrade: %v, Attributes: %v", *s.SensorUrl, *s.SensorName, version, auto_upgrade, active_upgrade, s.Attributes)
+	return fmt.Sprintf("SensorUrl: %v, SensorOrg: %v, SensorName: %v, SensorVersion: %v, AutoUpgrade: %v, ActiveUpgrade: %v, Attributes: %v", sURL, sOrg, sName, sVersion, auto_upgrade, active_upgrade, s.Attributes)
 }
 
 func attributesContains(given []persistence.ServiceAttribute, sensorUrl string, typeString string) *persistence.ServiceAttribute {
@@ -423,6 +440,9 @@ func deserializeAttributes(w http.ResponseWriter, attrs []Attribute) ([]persiste
 									} else if _, ok := bcDef["name"].(string); bcDef["name"] != nil && !ok {
 										writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain.name", Error: fmt.Sprintf("blockchain name is not string, it is %T", bcDef["name"])})
 										return nil, nil, true
+									} else if _, ok := bcDef["organization"].(string); bcDef["organization"] != nil && !ok {
+										writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain.organization", Error: fmt.Sprintf("blockchain organization is not string, it is %T", bcDef["organization"])})
+										return nil, nil, true
 									} else if bcDef["type"] != nil && bcDef["type"].(string) != "" && bcDef["type"].(string) != policy.RequiresBlockchainType(protocolName) {
 										writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain.type", Error: fmt.Sprintf("blockchain type %v is not supported for protocol %v", bcDef["type"].(string), protocolName)})
 										return nil, nil, true
@@ -435,7 +455,11 @@ func deserializeAttributes(w http.ResponseWriter, attrs []Attribute) ([]persiste
 										if bcDef["name"] != nil {
 											bcName = bcDef["name"].(string)
 										}
-										(&agp.Blockchains).Add_Blockchain(policy.Blockchain_Factory(bcType, bcName))
+										bcOrg := ""
+										if bcDef["organization"] != nil {
+											bcOrg = bcDef["organization"].(string)
+										}
+										(&agp.Blockchains).Add_Blockchain(policy.Blockchain_Factory(bcType, bcName, bcOrg))
 									}
 								}
 								agp.Initialize()
@@ -467,13 +491,15 @@ func deserializeAttributes(w http.ResponseWriter, attrs []Attribute) ([]persiste
 // This section is for handling the workloadConfig API input
 type WorkloadConfig struct {
 	WorkloadURL string                 `json:"workload_url"`
+	Org         string                 `json:"organization"`
 	Version     string                 `json:"workload_version"` // This is a version range
 	Variables   map[string]interface{} `json:"variables"`
 }
 
 func (w WorkloadConfig) String() string {
 	return fmt.Sprintf("WorkloadURL: %v, "+
+		"Org: %v, "+
 		"Version: %v, "+
 		"Variables: %v",
-		w.WorkloadURL, w.Version, w.Variables)
+		w.WorkloadURL,  w.Org, w.Version, w.Variables)
 }

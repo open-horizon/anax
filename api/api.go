@@ -303,6 +303,7 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 				Account: &HorizonAccount{
 					Id:    &exDevice.Account.Id,
 					Email: &exDevice.Account.Email,
+					Org:   &exDevice.Account.Org,
 				},
 			}
 		}
@@ -356,6 +357,9 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 		if bail := checkInputString(w, "device.account.email", device.Account.Email); bail {
 			return
 		}
+		if bail := checkInputString(w, "device.account.organization", device.Account.Org); bail {
+			return
+		}
 		if bail := checkInputString(w, "device.name", device.Name); bail {
 			return
 		}
@@ -379,6 +383,15 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 
 		// don't bother sanitizing token data; we *never* output it, and we *never* compute it
 
+		// Verify that the input organization exists in the exchange
+		deviceId := fmt.Sprintf("%v/%v", *device.Account.Org, *device.Id)
+		if _, err := exchange.GetOrganization(a.Config.Collaborators.HTTPClientFactory, *device.Account.Org, a.Config.Edge.ExchangeURL, deviceId, *device.Token); err != nil {
+			glog.Errorf("Organization %v not found in exchange, error: %v", *device.Account.Org, err)
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "organization", Error: fmt.Sprintf("organization %v not found in exchange, error: %v", *device.Account.Org, err)})
+			return
+		}
+
+		// Check for the device already in the local database
 		existing, fetchErrWritten := fetch(&device)
 		if fetchErrWritten {
 			// errors already written to response writer by fetch function call
@@ -396,14 +409,15 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			haDevice = true
 		}
 
-		exDev, err := persistence.SaveNewExchangeDevice(a.db, *device.Id, *device.Token, *device.Name, *device.Account.Id, *device.Account.Email, haDevice)
+		exDev, err := persistence.SaveNewExchangeDevice(a.db, *device.Id, *device.Token, *device.Name, *device.Account.Id, *device.Account.Email, haDevice, *device.Account.Org)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			glog.Errorf("Error persisting new exchange device: %v", err)
 			return
 		}
 
-		a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, *device.Id, *device.Token)
+		a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, *device.Id, *device.Token, *device.Account.Org)
+
 		writeResponse(exDev, http.StatusCreated)
 
 	case "PATCH":
@@ -489,27 +503,30 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 
 		outServices := make(map[string]interface{}, 0)
 
-		allPolicies := a.pm.GetAllPolicies()
+		allOrgs := a.pm.GetAllPolicyOrgs()
+		for _, org := range allOrgs {
 
-		for _, pol := range allPolicies {
+			allPolicies := a.pm.GetAllPolicies(org)
+			for _, pol := range allPolicies {
 
-			var applicable []persistence.ServiceAttribute
+				var applicable []persistence.ServiceAttribute
 
-			for _, apiSpec := range pol.APISpecs {
-				pAttr, err := persistence.FindApplicableAttributes(a.db, apiSpec.SpecRef)
-				if err != nil {
-					glog.Errorf("Failed fetching attributes. Error: %v", err)
-					http.Error(w, "Internal server error", http.StatusInternalServerError)
-					return
+				for _, apiSpec := range pol.APISpecs {
+					pAttr, err := persistence.FindApplicableAttributes(a.db, apiSpec.SpecRef)
+					if err != nil {
+						glog.Errorf("Failed fetching attributes. Error: %v", err)
+						http.Error(w, "Internal server error", http.StatusInternalServerError)
+						return
+					}
+
+					applicable = append(applicable, findAdditions(applicable, pAttr)...)
 				}
 
-				applicable = append(applicable, findAdditions(applicable, pAttr)...)
-			}
-
-			// TODO: consider sorting the attributes returned
-			outServices[pol.Header.Name] = outServiceWrapper{
-				Policy:     pol,
-				Attributes: applicable,
+				// TODO: consider sorting the attributes returned
+				outServices[pol.Header.Name] = outServiceWrapper{
+					Policy:     pol,
+					Attributes: applicable,
+				}
 			}
 		}
 
@@ -566,57 +583,68 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// this is new behaviour after ms split
-		var msdef *persistence.MicroserviceDefinition
-		if service.SensorVersion != nil {
-
-			// convert the sensor version to a version expression
-			vExp, err := policy.Version_Expression_Factory(*service.SensorVersion)
-			if err != nil {
-				glog.Errorf("Unable to convert %v to a version expression, error %v", *service.SensorVersion, err)
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "sensor_version", Error: fmt.Sprintf("sensor_version %v cannot be converted to a version expression, error %v", *service.SensorVersion, err)})
-				return
-			}
-
-			// verify with the exchange to make sure the service exists
-			e_msdef, err := exchange.GetMicroservice(a.Config.Collaborators.HTTPClientFactory, *service.SensorUrl, vExp.Get_expression(), cutil.ArchString(), a.Config.Edge.ExchangeURL, existingDevice.Id, existingDevice.Token)
-			if err != nil || e_msdef == nil {
-				glog.Errorf("Unable to find the microservice definition in the exchange: %v", err)
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Unable to find the microservice definition for '%v' on the exchange. Please verify sensor_url and sensor_version.", *service.SensorName)})
-				return
-			}
-			// conver it to persistent format so that it can be saved to the db.
-			msdef, err = microservice.ConvertToPersistent(e_msdef)
-			if err != nil {
-				glog.Errorf("Error converting the microservice metadata to persistent.MicroserviceDefinition for %v version %v. %v", e_msdef.SpecRef, e_msdef.Version, err)
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Error converting the microservice metadata to persistent.MicroserviceDefinition for %v version %v. %v", e_msdef.SpecRef, e_msdef.Version, err)})
-				return
-
-			}
-			// save some of the items in the MicroserviceDefinition object for use in the upgrading process.
-			msdef.Name = *service.SensorName
-			msdef.UpgradeVersionRange = *service.SensorVersion
-			if service.AutoUpgrade != nil {
-				msdef.AutoUpgrade = *service.AutoUpgrade
-			}
-			if service.ActiveUpgrade != nil {
-				msdef.ActiveUpgrade = *service.ActiveUpgrade
-			}
-
-			*service.SensorVersion = msdef.Version
-
-			// check if the microservice has been registered or not (currently only support one microservice per workload)
-			if pms, err := persistence.FindMicroserviceDefs(a.db, []persistence.MSFilter{persistence.UrlMSFilter(*service.SensorUrl)}); err != nil {
-				glog.Errorf("Error accessing db to find microservice definition: %v", err)
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			} else if pms != nil && len(pms) > 0 {
-				glog.Errorf("Duplicate registration for %v. Anax only supports one registration for each microservice now.", *service.SensorUrl)
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Duplicate registration for %v. Anax only supports one registration for each microservice now.", *service.SensorUrl)})
-				return
-			}
+		// Default sensor version if not specified
+		if service.SensorVersion == nil {
+			def := "0.0.0"
+			service.SensorVersion = &def
 		}
 
+		// Convert the sensor version to a version expression
+		vExp, err := policy.Version_Expression_Factory(*service.SensorVersion)
+		if err != nil {
+			glog.Errorf("Unable to convert %v to a version expression, error %v", *service.SensorVersion, err)
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "sensor_version", Error: fmt.Sprintf("sensor_version %v cannot be converted to a version expression, error %v", *service.SensorVersion, err)})
+			return
+		}
+
+		// Use the device's org if org not specified in the POST body.
+		if service.SensorOrg == nil {
+			service.SensorOrg = &existingDevice.Account.Org
+		} else if bail := checkInputString(w, "sensor_org", service.SensorOrg); bail {
+			return
+		}
+
+		var msdef *persistence.MicroserviceDefinition
+
+		// Verify with the exchange to make sure the service exists
+		e_msdef, err := exchange.GetMicroservice(a.Config.Collaborators.HTTPClientFactory, *service.SensorUrl, *service.SensorOrg, vExp.Get_expression(), cutil.ArchString(), a.Config.Edge.ExchangeURL, existingDevice.GetId(), existingDevice.Token)
+		if err != nil || e_msdef == nil {
+			glog.Errorf("Unable to find the microservice definition in the exchange: %v", err)
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Unable to find the microservice definition for '%v' on the exchange. Please verify sensor_url and sensor_version.", *service.SensorName)})
+			return
+		}
+		// Convert it to persistent format so that it can be saved to the db.
+		msdef, err = microservice.ConvertToPersistent(e_msdef, *service.SensorOrg)
+		if err != nil {
+			glog.Errorf("Error converting the microservice metadata to persistent.MicroserviceDefinition for %v version %v. %v", e_msdef.SpecRef, e_msdef.Version, err)
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Error converting the microservice metadata to persistent.MicroserviceDefinition for %v version %v. %v", e_msdef.SpecRef, e_msdef.Version, err)})
+			return
+
+		}
+		// Save some of the items in the MicroserviceDefinition object for use in the upgrading process.
+		msdef.Name = *service.SensorName
+		msdef.UpgradeVersionRange = *service.SensorVersion
+		if service.AutoUpgrade != nil {
+			msdef.AutoUpgrade = *service.AutoUpgrade
+		}
+		if service.ActiveUpgrade != nil {
+			msdef.ActiveUpgrade = *service.ActiveUpgrade
+		}
+
+		service.SensorVersion = &msdef.Version
+
+		// Check if the microservice has been registered or not (currently only support one microservice registration)
+		if pms, err := persistence.FindMicroserviceDefs(a.db, []persistence.MSFilter{persistence.UrlMSFilter(*service.SensorUrl)}); err != nil {
+			glog.Errorf("Error accessing db to find microservice definition: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		} else if pms != nil && len(pms) > 0 {
+			glog.Errorf("Duplicate registration for %v. Anax only supports one registration for each microservice now.", *service.SensorUrl)
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Duplicate registration for %v. Anax only supports one registration for each microservice now.", *service.SensorUrl)})
+			return
+		}
+
+		// Handle attributes in the POST body, specific to this microservice registration
 		var attributes []persistence.ServiceAttribute
 		if service.Attributes != nil {
 			// build a serviceAttribute for each one
@@ -633,7 +661,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		// check for errors in attribute input, like specifying a sensorUrl or specifying HA Partner on a non-HA device
+		// Check for errors in attribute input, like specifying a sensorUrl or specifying HA Partner on a non-HA device
 		for _, attr := range attributes {
 			if len(attr.GetMeta().SensorUrls) != 0 {
 				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].sensor_urls", Error: "sensor_urls not permitted on attributes specified on a service"})
@@ -653,7 +681,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 						case []string:
 							partners := attr.GetGenericMappings()["partnerID"].([]string)
 							for _, partner := range partners {
-								if partner == existingDevice.Id {
+								if partner == existingDevice.GetId() {
 									glog.Errorf("HA device %v cannot refer to itself in partner list %v", existingDevice, partners)
 									writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].ha", Error: "partner list cannot refer to itself."})
 									return
@@ -679,7 +707,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
-			// now make sure we add our own sensorUrl to each attribute
+			// Now make sure we add our own sensorUrl to each attribute
 			attr.GetMeta().AppendSensorUrl(*service.SensorUrl)
 			glog.Infof("SensorUrls for %v: %v", attr.GetMeta().Id, attr.GetMeta().SensorUrls)
 		}
@@ -719,7 +747,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 
-		// what's advertised
+		// Information advertised in the edge node policy file
 		var policyArch string
 		var haPartner []string
 		var meterPolicy policy.Meter
@@ -853,34 +881,22 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			agpList = list
 		}
 
-		// save ms def in local db
-		if service.SensorVersion != nil {
-			if err := persistence.SaveOrUpdateMicroserviceDef(a.db, msdef); err != nil { // save to db
-				glog.Errorf("Error saving microservice definition %v into db: %v", *msdef, err)
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
+		// Save ms def in local db
+		if err := persistence.SaveOrUpdateMicroserviceDef(a.db, msdef); err != nil { // save to db
+			glog.Errorf("Error saving microservice definition %v into db: %v", *msdef, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 
-		// use nil as version for old behaviour befor the ms split.
-		// for miceroservice, use the hightest available microservice version within range gotten from the exchange.
-		var vstring *string
-		if service.SensorVersion != nil {
-			vstring = &(msdef.Version)
-		} else {
-			vstring = nil
-		}
-
-		// get max number of agreements for policy
+		// Get max number of agreements for policy
 		maxAgreements := 1
-		if service.SensorVersion != nil {
-			if msdef.Sharable == exchange.MS_SHARING_MODE_SINGLE || msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE {
-				maxAgreements = 2 // hard coded to 2 for now. will change to 0 later
-			}
+		if msdef.Sharable == exchange.MS_SHARING_MODE_SINGLE || msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE {
+			maxAgreements = 2 // hard coded to 2 for now. will change to 0 later
 		}
 
 		// Generate a policy based on all the attributes and the service definition
-		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorUrl, *service.SensorName, vstring, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, maxAgreements, a.Config.Edge.PolicyPath); genErr != nil {
+		filePath := a.Config.Edge.PolicyPath + "/" + existingDevice.Account.Org + "/"
+		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorUrl, *service.SensorOrg, *service.SensorName, *service.SensorVersion, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList,  maxAgreements, filePath); genErr != nil {
 			glog.Errorf("Error: %v", genErr)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -996,7 +1012,7 @@ func (a *API) serviceAttribute(w http.ResponseWriter, r *http.Request) {
 						case []string:
 							partners := attr.GetGenericMappings()["partnerID"].([]string)
 							for _, partner := range partners {
-								if partner == existingDevice.Id {
+								if partner == existingDevice.GetId() {
 									glog.Errorf("HA device %v cannot refer to itself in partner list %v", existingDevice, partners)
 									writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].ha", Error: "partner list cannot refer to itself."})
 									return
@@ -1478,6 +1494,16 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Use the device org if not explicitly specified. Otherwise verify that the specified org exists.
+		org := cfg.Org
+		if cfg.Org == "" {
+			org = existingDevice.Account.Org
+		} else if _, err := exchange.GetOrganization(a.Config.Collaborators.HTTPClientFactory, org, a.Config.Edge.ExchangeURL, existingDevice.GetId(), existingDevice.Token); err != nil {
+			glog.Errorf("WorkloadConfig organization %v not found in exchange, error: %v", cfg.Org, err)
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "organization", Error: fmt.Sprintf("organization %v not found in exchange, error: %v", cfg.Org, err)})
+			return
+		}
+
 		// Reject the POST if there is already a config for this workload and version range
 		existingCfg, err := persistence.FindWorkloadConfig(a.db, cfg.WorkloadURL, vExp.Get_expression())
 		if err != nil {
@@ -1491,7 +1517,7 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Get the workload metadata from the exchange and verify the userInput against the variables in the POST body.
-		workloadDef, err := exchange.GetWorkload(a.Config.Collaborators.HTTPClientFactory, cfg.WorkloadURL, vExp.Get_expression(), cutil.ArchString(), a.Config.Edge.ExchangeURL, existingDevice.Id, existingDevice.Token)
+		workloadDef, err := exchange.GetWorkload(a.Config.Collaborators.HTTPClientFactory, cfg.WorkloadURL, org, vExp.Get_expression(), cutil.ArchString(), a.Config.Edge.ExchangeURL, existingDevice.GetId(), existingDevice.Token)
 		if err != nil || workloadDef == nil {
 			glog.Errorf("Unable to find the workload definition using version %v in the exchange: %v", vExp.Get_expression(), err)
 			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Unable to find the workload definition using version %v in the exchange.", vExp.Get_expression())})

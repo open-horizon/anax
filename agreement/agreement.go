@@ -44,7 +44,7 @@ func NewAgreementWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.Polic
 	token := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
 		token = dev.Token
-		id = dev.Id
+		id = fmt.Sprintf("%v/%v", dev.Account.Org, dev.Id)
 	}
 
 	worker := &AgreementWorker{
@@ -80,7 +80,7 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 	switch incoming.(type) {
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
-		w.Commands <- NewDeviceRegisteredCommand(msg.DeviceId(), msg.Token())
+		w.Commands <- NewDeviceRegisteredCommand(msg)
 
 	case *events.PolicyCreatedMessage:
 		msg, _ := incoming.(*events.PolicyCreatedMessage)
@@ -180,7 +180,7 @@ func (w *AgreementWorker) start() {
 
 			// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
 			// start heartbeating when the registration event comes in.
-			targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/heartbeat"
+			targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" + exchange.GetId(w.deviceId) + "/heartbeat"
 			go exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
 
 		}
@@ -213,7 +213,7 @@ func (w *AgreementWorker) start() {
 				if newPolicy, err := policy.ReadPolicyFile(cmd.PolicyFile); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to read policy file %v into memory, error: %v", cmd.PolicyFile, err)))
 				} else {
-					w.pm.UpdatePolicy(newPolicy)
+					w.pm.UpdatePolicy(exchange.GetOrg(w.deviceId), newPolicy)
 
 					// Publish what we have for the world to see
 					if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
@@ -245,7 +245,7 @@ func (w *AgreementWorker) start() {
 					glog.Errorf(logString(fmt.Sprintf("unable to extract agreement protocol name from message %v", protocolMsg)))
 				} else if _, ok := w.producerPH[msgProtocol]; !ok {
 					glog.Infof(logString(fmt.Sprintf("unable to direct exchange message %v to a protocol handler, deleting it.", protocolMsg)))
-				} else if p, err := w.producerPH[msgProtocol].AgreementProtocolHandler("", "").ValidateProposal(protocolMsg); err != nil {
+				} else if p, err := w.producerPH[msgProtocol].AgreementProtocolHandler("", "", "").ValidateProposal(protocolMsg); err != nil {
 					glog.V(5).Infof(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %s due to %v", cmd.Msg.ShortProtocolMessage(), err)))
 					deleteMessage = false
 				} else {
@@ -292,8 +292,8 @@ func (w *AgreementWorker) start() {
 
 func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
-	w.deviceId = cmd.DeviceId
-	w.deviceToken = cmd.Token
+	w.deviceId = fmt.Sprintf("%v/%v", cmd.Msg.Org(), cmd.Msg.DeviceId())
+	w.deviceToken = cmd.Msg.Token()
 
 	if len(w.producerPH) == 0 {
 		// Establish agreement protocol handlers
@@ -305,7 +305,7 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 	}
 
 	// Start the go thread that heartbeats to the exchange
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/heartbeat"
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) +  "/devices/" + exchange.GetId(w.deviceId) + "/heartbeat"
 	go exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
 
 }
@@ -350,19 +350,22 @@ func (w *AgreementWorker) syncOnInit() error {
 	// and the blockchain.
 	if agreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err == nil {
 
-		neededBCInstances := make(map[string]map[string]bool)
+		neededBCInstances := make(map[string]map[string]map[string]bool)
 
 		// If there are agreemens in the database then we will assume that the device is already registered
 		for _, ag := range agreements {
 
 			// Make a list of all blockchain instances in use by agreements in our DB so that we can make sure there is a
 			// blockchain client running for each instance.
-			bcType, bcName := w.producerPH[ag.AgreementProtocol].GetKnownBlockchain(&ag)
+			bcType, bcName, bcOrg := w.producerPH[ag.AgreementProtocol].GetKnownBlockchain(&ag)
 
-			if len(neededBCInstances[bcType]) == 0 {
-				neededBCInstances[bcType] = make(map[string]bool)
+			if len(neededBCInstances[bcOrg]) == 0 {
+				neededBCInstances[bcOrg] = make(map[string]map[string]bool)
 			}
-			neededBCInstances[bcType][bcName] = true
+			if len(neededBCInstances[bcOrg][bcType]) == 0 {
+				neededBCInstances[bcOrg][bcType] = make(map[string]bool)
+			}
+			neededBCInstances[bcOrg][bcType][bcName] = true
 
 			// If there is an active agreement that is marked as terminated, then anax was restarted in the middle of
 			// termination processing, and therefore we dont know how far it got. Initiate a cancel again to clean it up.
@@ -376,7 +379,7 @@ func (w *AgreementWorker) syncOnInit() error {
 				// If the agreement's protocol requires that it is recorded externally in some way, verify that it is present there (e.g. a blockchain).
 				// Make sure the external state agrees with our local DB state for this agreement. If not, then we might need to cancel the agreement.
 				// Anax could have been down for a long time (or inoperable), and the external state may have changed.
-			} else if ok, err := w.verifyAgreement(&ag, w.producerPH[ag.AgreementProtocol], bcType, bcName); err != nil {
+			} else if ok, err := w.verifyAgreement(&ag, w.producerPH[ag.AgreementProtocol], bcType, bcName, bcOrg); err != nil {
 				return errors.New(logString(fmt.Sprintf("unable to check for agreement %v in blockchain, error %v", ag.CurrentAgreementId, err)))
 			} else if !ok {
 				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_AGBOT_REQUESTED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
@@ -385,7 +388,7 @@ func (w *AgreementWorker) syncOnInit() error {
 				// are correct. Even for already timedout agreements, the governance process will cleanup old and outdated agreements,
 				// so we don't need to do anything here.
 
-			} else if proposal, err := w.producerPH[ag.AgreementProtocol].AgreementProtocolHandler("", "").DemarshalProposal(ag.Proposal); err != nil {
+			} else if proposal, err := w.producerPH[ag.AgreementProtocol].AgreementProtocolHandler("", "", "").DemarshalProposal(ag.Proposal); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v, error %v", ag.CurrentAgreementId, err)))
 			} else if pol, err := policy.DemarshalPolicy(proposal.ProducerPolicy()); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
@@ -429,9 +432,11 @@ func (w *AgreementWorker) syncOnInit() error {
 
 		// Fire off start requests for each BC client that we need running. The blockchain worker and the container worker will tolerate
 		// a start request for containers that are already running.
-		for typeName, instMap := range neededBCInstances {
-			for instName, _ := range instMap {
-				w.Messages() <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, typeName, instName, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken)
+		for org, typeMap := range neededBCInstances {
+			for typeName, instMap := range typeMap {
+				for instName, _ := range instMap {
+					w.Messages() <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, typeName, instName, org, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken)
+				}
 			}
 		}
 
@@ -447,21 +452,21 @@ func (w *AgreementWorker) syncOnInit() error {
 // This function verifies that an agreement is present in the blockchain. An agreement might not be present for a variety of reasons,
 // some of which are legitimate. The purpose of this routine is to figure out whether or not an agreement cancellation
 // has occurred. It returns false if the agreement needs to be cancelled, or if there was an error.
-func (w *AgreementWorker) verifyAgreement(ag *persistence.EstablishedAgreement, pph producer.ProducerProtocolHandler, bcType string, bcName string) (bool, error) {
+func (w *AgreementWorker) verifyAgreement(ag *persistence.EstablishedAgreement, pph producer.ProducerProtocolHandler, bcType string, bcName string, bcOrg string) (bool, error) {
 
 	// Agreements that havent been accepted yet by the device will not be in any external store so it's ok if they aren't there,
 	// so return true.
 	if ag.AgreementAcceptedTime == 0 {
 		return true, nil
-	} else if !pph.IsBlockchainClientAvailable(bcType, bcName) || !pph.IsAgreementVerifiable(ag) {
+	} else if !pph.IsBlockchainClientAvailable(bcType, bcName, bcOrg) || !pph.IsAgreementVerifiable(ag) {
 		glog.Warningf(logString(fmt.Sprintf("for %v unable to verify agreement, agreement protocol handler is not ready", ag.CurrentAgreementId)))
 		return true, nil
 	}
 
 	// Check to see if the agreement is in an external store.
-	if pph.AgreementProtocolHandler(bcType, bcName) == nil {
+	if pph.AgreementProtocolHandler(bcType, bcName, bcOrg) == nil {
 		glog.Errorf(logString(fmt.Sprintf("for %v unable to verify agreement, agreement protocol handler is not ready", ag.CurrentAgreementId)))
-	} else if recorded, err := pph.AgreementProtocolHandler(bcType, bcName).VerifyAgreement(ag.CurrentAgreementId, ag.CounterPartyAddress, ag.ProposalSig); err != nil {
+	} else if recorded, err := pph.AgreementProtocolHandler(bcType, bcName, bcOrg).VerifyAgreement(ag.CurrentAgreementId, ag.CounterPartyAddress, ag.ProposalSig); err != nil {
 		return false, errors.New(logString(fmt.Sprintf("encountered error verifying agreement %v on blockchain, error %v", ag.CurrentAgreementId, err)))
 	} else if !recorded {
 		// A finalized agreement should be in the external store.
@@ -480,7 +485,7 @@ func (w *AgreementWorker) getAllAgreements() (map[string]exchange.DeviceAgreemen
 	var resp interface{}
 	resp = new(exchange.AllDeviceAgreementsResponse)
 
-	targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/agreements"
+	targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" + exchange.GetId(w.deviceId) + "/agreements"
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
 			glog.Errorf(err.Error())
@@ -515,8 +520,7 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 		deviceName = dev.Name
 	}
 
-	w.pm.UpgradeAgreementProtocols()
-	policies := w.pm.GetAllPolicies()
+	policies := w.pm.GetAllPolicies(exchange.GetOrg(w.deviceId))
 
 	if len(policies) > 0 {
 		ms := make([]exchange.Microservice, 0, 10)
@@ -586,7 +590,7 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 		pdr.RegisteredMicroservices = ms
 		var resp interface{}
 		resp = new(exchange.PutDeviceResponse)
-		targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId
+		targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" + exchange.GetId(w.deviceId)
 
 		glog.V(3).Infof("AgreementWorker Registering microservices: %v at %v", pdr.ShortString(), targetURL)
 
@@ -616,7 +620,7 @@ func (w *AgreementWorker) recordAgreementState(agreementId string, apiSpecs *pol
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/agreements/" + agreementId
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" +exchange.GetId(w.deviceId) + "/agreements/" + agreementId
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.deviceId, w.deviceToken, as, &resp); err != nil {
 			glog.Errorf(err.Error())
@@ -639,7 +643,7 @@ func deleteProducerAgreement(httpClient *http.Client, url string, deviceId strin
 
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := url + "devices/" + deviceId + "/agreements/" + agreementId
+	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/devices/" + exchange.GetId(deviceId) + "/agreements/" + agreementId
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClient, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
@@ -659,7 +663,7 @@ func deleteProducerAgreement(httpClient *http.Client, url string, deviceId strin
 func (w *AgreementWorker) deleteMessage(msg *exchange.DeviceMessage) error {
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/msgs/" + strconv.Itoa(msg.MsgId)
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" + exchange.GetId(w.deviceId) + "/msgs/" + strconv.Itoa(msg.MsgId)
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "DELETE", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
 			glog.Errorf(err.Error())
@@ -678,7 +682,7 @@ func (w *AgreementWorker) deleteMessage(msg *exchange.DeviceMessage) error {
 func (w *AgreementWorker) messageInExchange(msgId int) (bool, error) {
 	var resp interface{}
 	resp = new(exchange.GetDeviceMessageResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "devices/" + w.deviceId + "/msgs"
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" + exchange.GetId(w.deviceId) + "/msgs"
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
 			glog.Errorf(err.Error())

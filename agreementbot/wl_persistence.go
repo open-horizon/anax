@@ -51,13 +51,13 @@ func (w WorkloadUsage) String() string {
 }
 
 // private factory method for workloadusage w/out persistence safety:
-func workloadUsage(deviceid string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) (*WorkloadUsage, error) {
+func workloadUsage(deviceId string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) (*WorkloadUsage, error) {
 
-	if deviceid == "" || policyName == "" || priority == 0 || retryDurationS == 0 || agid == "" {
-		return nil, errors.New("Illegal input: one of deviceid, policy, policyName, priority, retryDurationS, retryLimit or agreement id is empty")
+	if deviceId == "" || policyName == "" || priority == 0 || retryDurationS == 0 || agid == "" {
+		return nil, errors.New("Illegal input: one of deviceId, policy, policyName, priority, retryDurationS, retryLimit or agreement id is empty")
 	} else {
 		return &WorkloadUsage{
-			DeviceId:           deviceid,
+			DeviceId:           deviceId,
 			HAPartners:         hapartners,
 			PendingUpgradeTime: 0,
 			Policy:             policy,
@@ -75,13 +75,13 @@ func workloadUsage(deviceid string, hapartners []string, policy string, policyNa
 	}
 }
 
-func NewWorkloadUsage(db *bolt.DB, deviceid string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) error {
-	if wlUsage, err := workloadUsage(deviceid, hapartners, policy, policyName, priority, retryDurationS, verifiedDurationS, reqsNotMet, agid); err != nil {
+func NewWorkloadUsage(db *bolt.DB, deviceId string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) error {
+	if wlUsage, err := workloadUsage(deviceId, hapartners, policy, policyName, priority, retryDurationS, verifiedDurationS, reqsNotMet, agid); err != nil {
 		return err
-	} else if existing, err := FindSingleWorkloadUsageByDeviceAndPolicyName(db, deviceid, policyName); err != nil {
+	} else if existing, err := FindSingleWorkloadUsageByDeviceAndPolicyName(db, deviceId, policyName); err != nil {
 		return err
 	} else if existing != nil {
-		return fmt.Errorf("Workload usage record with device id %v and policy name %v already exists.", deviceid, policyName)
+		return fmt.Errorf("Workload usage record for device %v and policy name %v already exists.", deviceId, policyName)
 	} else if err := WUPersistNew(db, wuBucketName(), wlUsage); err != nil {
 		return err
 	} else {

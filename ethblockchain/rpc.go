@@ -61,8 +61,6 @@ func (self *RPC_Client) Get_block_number() (uint64, error) {
 	} else {
 		return block, nil
 	}
-
-	return 0, nil
 }
 
 func (self *RPC_Client) Get_balance(address string) (*big.Int, error) {
@@ -137,7 +135,7 @@ func (self *RPC_Client) Invoke(method string, params interface{}) (string, *RPCE
 		} else {
 			defer resp.Body.Close()
 			if outBytes, e := ioutil.ReadAll(resp.Body); e != nil {
-				err = &RPCError{fmt.Sprintf("RPC invocation of %v failed reading response message, error: %v", method, outBytes, e.Error())}
+				err = &RPCError{fmt.Sprintf("RPC invocation of %v failed reading response message %v, error: %v", method, outBytes, e.Error())}
 			} else {
 				out = string(outBytes)
 				glog.V(5).Infof("Response to %v is %v", self.body, out)
