@@ -1156,34 +1156,6 @@ func NewDeviceContainersSyncedMessage(id EventId, completed bool) *DeviceContain
 	}
 }
 
-// Anax device side fires this event when it needs to start a microservice.
-type StartMicroserviceMessage struct {
-	event    Event
-	MsDefKey string
-}
-
-func (e StartMicroserviceMessage) String() string {
-	return fmt.Sprintf("event: %v, MsDefKey: %v", e.event, e.MsDefKey)
-}
-
-func (e StartMicroserviceMessage) ShortString() string {
-	return e.String()
-}
-
-func (e *StartMicroserviceMessage) Event() Event {
-	return e.event
-}
-
-func NewStartMicroserviceMessage(id EventId, key string) *StartMicroserviceMessage {
-
-	return &StartMicroserviceMessage{
-		event: Event{
-			Id: id,
-		},
-		MsDefKey: key,
-	}
-}
-
 type MicroserviceMaintenanceMessage struct {
 	event     Event
 	MsInstKey string // the key to the microservice instance, it is used for network id and part of container name

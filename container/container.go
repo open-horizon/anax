@@ -1977,12 +1977,25 @@ func (b *ContainerWorker) findMsContainersAndUpdateMsInstance(agreementId string
 			} else if msinsts == nil || len(msinsts) == 0 {
 				return nil, fmt.Errorf("Microservice instance has not be initiated for microservice  %v yet.", api_spec)
 			} else {
-				// use the first instance for now, assuming there is a single instance for ms.  Will change after the ms muti instance support.
-				ms_instance := msinsts[0]
+				// find the ms instance that has the agreement id in it
+				var ms_instance *persistence.MicroserviceInstance
+				ms_instance = nil
+				for _, msi := range msinsts {
+					if msi.AssociatedAgreements != nil && len(msi.AssociatedAgreements) > 0 {
+						for _, id := range msi.AssociatedAgreements {
+							if id == agreementId {
+								ms_instance = &msi
+								break
+							}
+						}
+					}
+					if ms_instance != nil {
+						break
+					}
+				}
 
-				// save the agreement id to the microservice instance
-				if persistence.UpdateMSInstanceAssociaedAgreements(b.db, ms_instance.GetKey(), true, agreementId); err != nil {
-					return nil, fmt.Errorf("Error saving associated agreement id %v to microservice instances %v in the db, error: %v", agreementId, ms_instance.GetKey(), err)
+				if ms_instance == nil {
+					return nil, fmt.Errorf("Microservice instance has not be initiated for microservice %v yet.", api_spec)
 				}
 
 				if msc_names == nil || len(msc_names) == 0 {

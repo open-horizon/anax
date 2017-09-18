@@ -17,6 +17,11 @@ import (
 	"time"
 )
 
+// microservice sharing mode
+const MS_SHARING_MODE_EXCLUSIVE = "exclusive"
+const MS_SHARING_MODE_SINGLE = "single"
+const MS_SHARING_MODE_MULTIPLE = "multiple"
+
 // Structs used to invoke the exchange API
 type MSProp struct {
 	Name     string `json:"name"`
@@ -661,7 +666,7 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wVers
 				}
 
 				highest := ""
-				var resWDef *WorkloadDefinition
+				var resWDef WorkloadDefinition
 				for _, wDef := range workloadMetadata {
 					if inRange, err := vRange.Is_within_range(wDef.Version); err != nil {
 						return nil, errors.New(fmt.Sprintf("unable to verify that %v is within %v, error %v", wDef.Version, vRange, err))
@@ -669,12 +674,12 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wVers
 						glog.V(5).Infof(rpclogString(fmt.Sprintf("found workload version %v within acceptable range", wDef.Version)))
 						if strings.Compare(highest, wDef.Version) == -1 {
 							highest = wDef.Version
-							resWDef = &wDef
+							resWDef = wDef
 						}
 					}
 				}
 				glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v for %v", resWDef, wURL)))
-				return resWDef, nil
+				return &resWDef, nil
 			}
 		}
 	}
@@ -732,7 +737,7 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 				}
 
 				highest := ""
-				var resMsDef *MicroserviceDefinition
+				var resMsDef MicroserviceDefinition
 				for _, msDef := range msMetadata {
 					if inRange, err := vRange.Is_within_range(msDef.Version); err != nil {
 						return nil, errors.New(fmt.Sprintf("unable to verify that %v is within %v, error %v", msDef.Version, vRange, err))
@@ -740,12 +745,12 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 						glog.V(5).Infof(rpclogString(fmt.Sprintf("found microservice version %v within acceptable range", msDef.Version)))
 						if strings.Compare(highest, msDef.Version) == -1 {
 							highest = msDef.Version
-							resMsDef = &msDef
+							resMsDef = msDef
 						}
 					}
 				}
 				glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v for %v", resMsDef, mURL)))
-				return resMsDef, nil
+				return &resMsDef, nil
 			}
 		}
 	}

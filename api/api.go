@@ -862,11 +862,6 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		// Fire event to load the microservice container
-		if service.SensorVersion != nil {
-			a.Messages() <- events.NewStartMicroserviceMessage(events.START_MICROSERVICE, msdef.Id)
-		}
-
 		// use nil as version for old behaviour befor the ms split.
 		// for miceroservice, use the hightest available microservice version within range gotten from the exchange.
 		var vstring *string
@@ -875,8 +870,17 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		} else {
 			vstring = nil
 		}
+
+		// get max number of agreements for policy
+		maxAgreements := 1
+		if service.SensorVersion != nil {
+			if msdef.Sharable == exchange.MS_SHARING_MODE_SINGLE || msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE {
+				maxAgreements = 2 // hard coded to 2 for now. will change to 0 later
+			}
+		}
+
 		// Generate a policy based on all the attributes and the service definition
-		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorUrl, *service.SensorName, vstring, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, a.Config.Edge.PolicyPath); genErr != nil {
+		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorUrl, *service.SensorName, vstring, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, maxAgreements, a.Config.Edge.PolicyPath); genErr != nil {
 			glog.Errorf("Error: %v", genErr)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
