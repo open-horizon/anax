@@ -12,7 +12,6 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"math/rand"
 	"net/http"
-	"os"
 )
 
 // These structs are the event bodies that flows from the processor to the agreement workers
@@ -32,12 +31,13 @@ type InitiateAgreement struct {
 	ProducerPolicy         policy.Policy               // the producer policy received from the exchange - demarshalled
 	OriginalProducerPolicy string                      // the producer policy received from the exchange - original in string form to be sent back
 	ConsumerPolicy         policy.Policy               // the consumer policy we're matched up with - this is a copy so that we can modify/augment it
+	Org                    string                      // the org from which the consumer policy originated
 	Device                 exchange.SearchResultDevice // the device entry in the exchange
 }
 
 func (c InitiateAgreement) String() string {
 	res := ""
-	res += fmt.Sprintf("Workitem: %v\n", c.workType)
+	res += fmt.Sprintf("Workitem: %v,  Org: %v\n", c.workType, c.Org)
 	res += fmt.Sprintf("Producer Policy: %v\n", c.ProducerPolicy)
 	res += fmt.Sprintf("Consumer Policy: %v\n", c.ConsumerPolicy)
 	res += fmt.Sprintf("Device: %v", c.Device)
@@ -140,27 +140,10 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	agreementIdString := hex.EncodeToString(agreementId)
 	glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("using AgreementId %v", agreementIdString)))
 
-	// If we're dealing with a device that is not running CS protocol version 2 then we might know the BC we need and thus which
-	// agreement protocol handler to use.
-	bcType := ""
-	bcName := ""
-	if (&wi.ProducerPolicy).RequiresDefaultBC(cph.Name()) {
-		bcType = policy.Ethereum_bc
-		bcName = policy.Default_Blockchain_name
-	} else {
-		bcType, bcName = (&wi.ProducerPolicy).RequiresKnownBC(cph.Name())
-	}
+	bcType, bcName, bcOrg := (&wi.ProducerPolicy).RequiresKnownBC(cph.Name())
 
-	if bcType != "" {
-		if overrideName := os.Getenv("CMTN_BLOCKCHAIN"); overrideName != "" {
-			bcName = overrideName
-		}
-	} else {
-		bcName = ""
-	}
-
-	// Use the override blockchain name to choose the handler, even though the agreement will be based on the name in the policy.
-	protocolHandler := cph.AgreementProtocolHandler(bcType, bcName)
+	// Use the blockchain name to choose the handler
+	protocolHandler := cph.AgreementProtocolHandler(bcType, bcName, bcOrg)
 	if protocolHandler == nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("agreement protocol handler is not ready yet for %v %v", bcType, bcName)))
 		return
@@ -210,7 +193,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		// version API specs, then we will try the next workload.
 		if workload.WorkloadURL != "" {
 
-			if workloadDetails, err := exchange.GetWorkload(b.config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Version, workload.Arch, b.config.AgreementBot.ExchangeURL, cph.ExchangeId(), cph.ExchangeToken()); err != nil {
+			if workloadDetails, err := exchange.GetWorkload(b.config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, b.config.AgreementBot.ExchangeURL, cph.ExchangeId(), cph.ExchangeToken()); err != nil {
 				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for workload details %v, error: %v", workload, err)))
 				return
 			} else {
@@ -218,7 +201,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				// Convert the workload details APISpec list to policy types
 				asl := new(policy.APISpecList)
 				for _, apiSpec := range workloadDetails.APISpecs {
-					(*asl) = append((*asl), (*policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Version, apiSpec.Arch)))
+					(*asl) = append((*asl), (*policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch)))
 				}
 
 				// If the device doesnt support the workload requirements, then remember that we rejected a higher priority workload because of
@@ -251,7 +234,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 					// The device seems to support the required API specs, so augment the consumer policy file with the workload
 					// details that match what the producer can support.
 					for _, apiSpec := range workloadDetails.APISpecs {
-						wi.ConsumerPolicy.APISpecs = append(wi.ConsumerPolicy.APISpecs, *policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Version, apiSpec.Arch))
+						wi.ConsumerPolicy.APISpecs = append(wi.ConsumerPolicy.APISpecs, *policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch))
 					}
 
 					// The agbot rejects workload definitions that dont have exactly 1 workload element in the workloads array so it is
@@ -277,7 +260,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	}
 
 	// Create pending agreement in database
-	if err := AgreementAttempt(b.db, agreementIdString, wi.Device.Id, wi.ConsumerPolicy.Header.Name, bcType, bcName, cph.Name()); err != nil {
+	if err := AgreementAttempt(b.db, agreementIdString, wi.Org, wi.Device.Id, wi.ConsumerPolicy.Header.Name, bcType, bcName, bcOrg, cph.Name()); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error persisting agreement attempt: %v", err)))
 
 		// Create message target for protocol message
@@ -305,7 +288,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, wi *HandleReply, workerId string) bool {
 
 	reply := wi.Reply
-	protocolHandler := cph.AgreementProtocolHandler("", "") // Use the generic protocol handler
+	protocolHandler := cph.AgreementProtocolHandler("", "", "") // Use the generic protocol handler
 
 	// The reply message is usually deleted before recording on the blockchain. For now assume it will be deleted at the end. Early exit from
 	// this function is NOT allowed.
@@ -453,7 +436,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 
 func (b *BaseAgreementWorker) HandleDataReceivedAck(cph ConsumerProtocolHandler, wi *HandleDataReceivedAck, workerId string) {
 
-	protocolHandler := cph.AgreementProtocolHandler("", "") // Use the generic protocol handler
+	protocolHandler := cph.AgreementProtocolHandler("", "", "") // Use the generic protocol handler
 
 	if d, err := protocolHandler.ValidateDataReceivedAck(wi.Ack); err != nil {
 		glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("discarding message: %v", wi.Ack)))
@@ -585,7 +568,7 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 			b.DoAsyncCancel(cph, ag, reason, workerId)
 		}
 
-		if ag.AgreementProtocolVersion < 2 || (ag.BlockchainType != "" && !cph.IsBlockchainWritable(ag.BlockchainType, ag.BlockchainName)) {
+		if ag.AgreementProtocolVersion < 2 || (ag.BlockchainType != "" && !cph.IsBlockchainWritable(ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg)) {
 			// create deferred termination command
 			glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("deferring blockchain cancel for %v", agreementId)))
 			cph.DeferCommand(AsyncCancelAgreement{
@@ -614,14 +597,10 @@ func (b *BaseAgreementWorker) ExternalCancel(cph ConsumerProtocolHandler, agreem
 	} else if ag == nil {
 		glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("nothing to terminate for agreement %v, no database record.", agreementId)))
 	} else {
-		bcType, bcName := cph.GetKnownBlockchain(ag)
-		if cph.IsBlockchainWritable(bcType, bcName) {
+		bcType, bcName, bcOrg := cph.GetKnownBlockchain(ag)
+		if cph.IsBlockchainWritable(bcType, bcName, bcOrg) {
 			b.DoAsyncCancel(cph, ag, reason, workerId)
 
-			// Archive the record
-			// if _, err := ArchiveAgreement(b.db, ag.CurrentAgreementId, cph.Name(), reason, cph.GetTerminationReason(reason)); err != nil {
-			// 	glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error archiving terminated agreement: %v, error: %v", ag.CurrentAgreementId, err)))
-			// }
 		} else {
 			glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("deferring blockchain cancel for %v", agreementId)))
 			cph.DeferCommand(AsyncCancelAgreement{

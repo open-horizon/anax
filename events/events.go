@@ -150,6 +150,7 @@ func NewContainerConfig(torrentURL url.URL, imageHashes map[string]string, image
 type BlockchainConfig struct {
 	Type string
 	Name string
+	Org  string
 }
 
 type ContainerLaunchContext struct {
@@ -258,10 +259,11 @@ type PolicyChangedMessage struct {
 	fileName string
 	name     string
 	policy   string
+	org      string
 }
 
 func (e PolicyChangedMessage) String() string {
-	return fmt.Sprintf("event: %v, file: %v, name: %v, policy: %v", e.event, e.fileName, e.name, e.policy)
+	return fmt.Sprintf("event: %v, file: %v, name: %v, org: %v, policy: %v", e.event, e.fileName, e.name, e.org, e.policy)
 }
 
 func (e PolicyChangedMessage) ShortString() string {
@@ -280,11 +282,15 @@ func (e *PolicyChangedMessage) PolicyName() string {
 	return e.name
 }
 
+func (e *PolicyChangedMessage) Org() string {
+	return e.org
+}
+
 func (e *PolicyChangedMessage) PolicyString() string {
 	return e.policy
 }
 
-func NewPolicyChangedMessage(id EventId, policyFileName string, policyName string, policy string) *PolicyChangedMessage {
+func NewPolicyChangedMessage(id EventId, policyFileName string, policyName string, org string, policy string) *PolicyChangedMessage {
 
 	return &PolicyChangedMessage{
 		event: Event{
@@ -293,6 +299,7 @@ func NewPolicyChangedMessage(id EventId, policyFileName string, policyName strin
 		fileName: policyFileName,
 		name:     policyName,
 		policy:   policy,
+		org:      org,
 	}
 }
 
@@ -302,10 +309,11 @@ type PolicyDeletedMessage struct {
 	fileName string
 	name     string
 	policy   string
+	org      string
 }
 
 func (e PolicyDeletedMessage) String() string {
-	return fmt.Sprintf("event: %v, file: %v, name: %v, policy: %v", e.event, e.fileName, e.name, e.policy)
+	return fmt.Sprintf("event: %v, file: %v, name: %v, org: %v, policy: %v", e.event, e.fileName, e.name, e.org, e.policy)
 }
 
 func (e PolicyDeletedMessage) ShortString() string {
@@ -324,11 +332,15 @@ func (e *PolicyDeletedMessage) PolicyName() string {
 	return e.name
 }
 
+func (e *PolicyDeletedMessage) Org() string {
+	return e.org
+}
+
 func (e *PolicyDeletedMessage) PolicyString() string {
 	return e.policy
 }
 
-func NewPolicyDeletedMessage(id EventId, policyFileName string, policyName string, policy string) *PolicyDeletedMessage {
+func NewPolicyDeletedMessage(id EventId, policyFileName string, policyName string, org string, policy string) *PolicyDeletedMessage {
 
 	return &PolicyDeletedMessage{
 		event: Event{
@@ -337,6 +349,7 @@ func NewPolicyDeletedMessage(id EventId, policyFileName string, policyName strin
 		fileName: policyFileName,
 		name:     policyName,
 		policy:   policy,
+		org:      org,
 	}
 }
 
@@ -345,10 +358,11 @@ type EdgeRegisteredExchangeMessage struct {
 	event     Event
 	device_id string
 	token     string
+	org       string
 }
 
 func (e EdgeRegisteredExchangeMessage) String() string {
-	return fmt.Sprintf("event: %v, device_id: %v, token: %v", e.event, e.device_id, e.token)
+	return fmt.Sprintf("event: %v, device_id: %v, token: %v, org: %v", e.event, e.device_id, e.token, e.org)
 }
 
 func (e EdgeRegisteredExchangeMessage) ShortString() string {
@@ -367,7 +381,11 @@ func (e *EdgeRegisteredExchangeMessage) Token() string {
 	return e.token
 }
 
-func NewEdgeRegisteredExchangeMessage(evId EventId, device_id string, token string) *EdgeRegisteredExchangeMessage {
+func (e *EdgeRegisteredExchangeMessage) Org() string {
+	return e.org
+}
+
+func NewEdgeRegisteredExchangeMessage(evId EventId, device_id string, token string, org string) *EdgeRegisteredExchangeMessage {
 
 	return &EdgeRegisteredExchangeMessage{
 		event: Event{
@@ -375,6 +393,7 @@ func NewEdgeRegisteredExchangeMessage(evId EventId, device_id string, token stri
 		},
 		device_id: device_id,
 		token:     token,
+		org:       org,
 	}
 }
 
@@ -572,10 +591,11 @@ func NewContainerMessage(id EventId, lc ContainerLaunchContext, serviceName stri
 type ContainerStopMessage struct {
 	event         Event
 	ContainerName string
+	Org           string
 }
 
 func (m ContainerStopMessage) String() string {
-	return fmt.Sprintf("event: %v, ContainerName: %v", m.event.Id, m.ContainerName)
+	return fmt.Sprintf("event: %v, ContainerName: %v, Org: %v", m.event.Id, m.ContainerName, m.Org)
 }
 
 func (m ContainerStopMessage) ShortString() string {
@@ -586,13 +606,14 @@ func (b ContainerStopMessage) Event() Event {
 	return b.event
 }
 
-func NewContainerStopMessage(id EventId, containerName string) *ContainerStopMessage {
+func NewContainerStopMessage(id EventId, containerName string, org string) *ContainerStopMessage {
 
 	return &ContainerStopMessage{
 		event: Event{
 			Id: id,
 		},
 		ContainerName: containerName,
+		Org:           org,
 	}
 }
 
@@ -600,10 +621,11 @@ func NewContainerStopMessage(id EventId, containerName string) *ContainerStopMes
 type ContainerShutdownMessage struct {
 	event         Event
 	ContainerName string
+	Org           string
 }
 
 func (m ContainerShutdownMessage) String() string {
-	return fmt.Sprintf("event: %v, ContainerName: %v", m.event.Id, m.ContainerName)
+	return fmt.Sprintf("event: %v, ContainerName: %v, Org: %v", m.event.Id, m.ContainerName, m.Org)
 }
 
 func (m ContainerShutdownMessage) ShortString() string {
@@ -614,13 +636,14 @@ func (b ContainerShutdownMessage) Event() Event {
 	return b.event
 }
 
-func NewContainerShutdownMessage(id EventId, containerName string) *ContainerShutdownMessage {
+func NewContainerShutdownMessage(id EventId, containerName string, org string) *ContainerShutdownMessage {
 
 	return &ContainerShutdownMessage{
 		event: Event{
 			Id: id,
 		},
 		ContainerName: containerName,
+		Org:           org,
 	}
 }
 
@@ -758,6 +781,7 @@ type AccountFundedMessage struct {
 	Time        uint64
 	bcType      string
 	bcInstance  string
+	bcOrg       string
 	serviceName string
 	servicePort string
 	colonusDir  string
@@ -768,7 +792,7 @@ func (m *AccountFundedMessage) Event() Event {
 }
 
 func (m AccountFundedMessage) String() string {
-	return fmt.Sprintf("Event: %v, Account: %v, Time: %v, Type: %v, Instance: %v, ServiceName: %v, ServicePort: %v, ColonusDir: %v", m.event, m.Account, m.Time, m.bcType, m.bcInstance, m.serviceName, m.servicePort, m.colonusDir)
+	return fmt.Sprintf("Event: %v, Account: %v, Time: %v, Type: %v, Instance: %v, Org: %v, ServiceName: %v, ServicePort: %v, ColonusDir: %v", m.event, m.Account, m.Time, m.bcType, m.bcInstance, m.bcOrg, m.serviceName, m.servicePort, m.colonusDir)
 }
 
 func (m AccountFundedMessage) ShortString() string {
@@ -783,6 +807,10 @@ func (m AccountFundedMessage) BlockchainInstance() string {
 	return m.bcInstance
 }
 
+func (m AccountFundedMessage) BlockchainOrg() string {
+	return m.bcOrg
+}
+
 func (m AccountFundedMessage) ServiceName() string {
 	return m.serviceName
 }
@@ -795,7 +823,7 @@ func (m AccountFundedMessage) ColonusDir() string {
 	return m.colonusDir
 }
 
-func NewAccountFundedMessage(id EventId, acct string, bcType string, bcName string, serviceName string, servicePort string, colonusDir string) *AccountFundedMessage {
+func NewAccountFundedMessage(id EventId, acct string, bcType string, bcName string, bcOrg string, serviceName string, servicePort string, colonusDir string) *AccountFundedMessage {
 	return &AccountFundedMessage{
 		event: Event{
 			Id: id,
@@ -804,6 +832,7 @@ func NewAccountFundedMessage(id EventId, acct string, bcType string, bcName stri
 		Time:        uint64(time.Now().Unix()),
 		bcType:      bcType,
 		bcInstance:  bcName,
+		bcOrg:       bcOrg,
 		serviceName: serviceName,
 		servicePort: servicePort,
 		colonusDir:  colonusDir,
@@ -816,6 +845,7 @@ type BlockchainClientInitializedMessage struct {
 	Time        uint64
 	bcType      string
 	bcInstance  string
+	bcOrg       string
 	serviceName string
 	servicePort string
 	colonusDir  string
@@ -826,7 +856,7 @@ func (m *BlockchainClientInitializedMessage) Event() Event {
 }
 
 func (m BlockchainClientInitializedMessage) String() string {
-	return fmt.Sprintf("Event: %v, Time: %v, Type: %v, Instance: %v, ServiceName: %v, ServicePort: %v, ColonusDir: %v", m.event, m.Time, m.bcType, m.bcInstance, m.serviceName, m.servicePort, m.colonusDir)
+	return fmt.Sprintf("Event: %v, Time: %v, Type: %v, Instance: %v, Org: %v, ServiceName: %v, ServicePort: %v, ColonusDir: %v", m.event, m.Time, m.bcType, m.bcInstance, m.bcOrg, m.serviceName, m.servicePort, m.colonusDir)
 }
 
 func (m BlockchainClientInitializedMessage) ShortString() string {
@@ -841,6 +871,10 @@ func (m BlockchainClientInitializedMessage) BlockchainInstance() string {
 	return m.bcInstance
 }
 
+func (m BlockchainClientInitializedMessage) BlockchainOrg() string {
+	return m.bcOrg
+}
+
 func (m BlockchainClientInitializedMessage) ServiceName() string {
 	return m.serviceName
 }
@@ -853,7 +887,7 @@ func (m BlockchainClientInitializedMessage) ColonusDir() string {
 	return m.colonusDir
 }
 
-func NewBlockchainClientInitializedMessage(id EventId, bcType string, bcName string, serviceName string, servicePort string, colonusDir string) *BlockchainClientInitializedMessage {
+func NewBlockchainClientInitializedMessage(id EventId, bcType string, bcName string, bcOrg string, serviceName string, servicePort string, colonusDir string) *BlockchainClientInitializedMessage {
 	return &BlockchainClientInitializedMessage{
 		event: Event{
 			Id: id,
@@ -861,6 +895,7 @@ func NewBlockchainClientInitializedMessage(id EventId, bcType string, bcName str
 		Time:        uint64(time.Now().Unix()),
 		bcType:      bcType,
 		bcInstance:  bcName,
+		bcOrg:       bcOrg,
 		serviceName: serviceName,
 		servicePort: servicePort,
 		colonusDir:  colonusDir,
@@ -873,6 +908,7 @@ type BlockchainClientStoppingMessage struct {
 	Time       uint64
 	bcType     string
 	bcInstance string
+	bcOrg      string
 }
 
 func (m *BlockchainClientStoppingMessage) Event() Event {
@@ -880,7 +916,7 @@ func (m *BlockchainClientStoppingMessage) Event() Event {
 }
 
 func (m BlockchainClientStoppingMessage) String() string {
-	return fmt.Sprintf("Event: %v, Time: %v, Type: %v, Instance: %v", m.event, m.Time, m.bcType, m.bcInstance)
+	return fmt.Sprintf("Event: %v, Time: %v, Type: %v, Instance: %v, Org: %v", m.event, m.Time, m.bcType, m.bcInstance, m.bcOrg)
 }
 
 func (m BlockchainClientStoppingMessage) ShortString() string {
@@ -895,7 +931,11 @@ func (m BlockchainClientStoppingMessage) BlockchainInstance() string {
 	return m.bcInstance
 }
 
-func NewBlockchainClientStoppingMessage(id EventId, bcType string, bcName string) *BlockchainClientStoppingMessage {
+func (m BlockchainClientStoppingMessage) BlockchainOrg() string {
+	return m.bcOrg
+}
+
+func NewBlockchainClientStoppingMessage(id EventId, bcType string, bcName string, org string) *BlockchainClientStoppingMessage {
 	return &BlockchainClientStoppingMessage{
 		event: Event{
 			Id: id,
@@ -903,6 +943,7 @@ func NewBlockchainClientStoppingMessage(id EventId, bcType string, bcName string
 		Time:       uint64(time.Now().Unix()),
 		bcType:     bcType,
 		bcInstance: bcName,
+		bcOrg:      org,
 	}
 }
 
@@ -911,7 +952,7 @@ type ReportNeededBlockchainsMessage struct {
 	event     Event
 	Time      uint64
 	bcType    string
-	neededBCs map[string]bool
+	neededBCs map[string]map[string]bool
 }
 
 func (m *ReportNeededBlockchainsMessage) Event() Event {
@@ -930,11 +971,11 @@ func (m ReportNeededBlockchainsMessage) BlockchainType() string {
 	return m.bcType
 }
 
-func (m ReportNeededBlockchainsMessage) NeededBlockchains() map[string]bool {
+func (m ReportNeededBlockchainsMessage) NeededBlockchains() map[string]map[string]bool {
 	return m.neededBCs
 }
 
-func NewReportNeededBlockchainsMessage(id EventId, bcType string, neededBCs map[string]bool) *ReportNeededBlockchainsMessage {
+func NewReportNeededBlockchainsMessage(id EventId, bcType string, neededBCs map[string]map[string]bool) *ReportNeededBlockchainsMessage {
 	return &ReportNeededBlockchainsMessage{
 		event: Event{
 			Id: id,
@@ -951,6 +992,7 @@ type EthBlockchainEventMessage struct {
 	rawEvent string
 	protocol string
 	name     string
+	org      string
 	Time     uint64
 }
 
@@ -966,15 +1008,19 @@ func (m *EthBlockchainEventMessage) Name() string {
 	return m.name
 }
 
+func (m *EthBlockchainEventMessage) Org() string {
+	return m.org
+}
+
 func (m EthBlockchainEventMessage) String() string {
-	return fmt.Sprintf("Event: %v, Name: %v, Protocol: %v, Raw Event: %v, Time: %v", m.event, m.name, m.protocol, m.rawEvent, m.Time)
+	return fmt.Sprintf("Event: %v, Name: %v, Org: %v, Protocol: %v, Raw Event: %v, Time: %v", m.event, m.name, m.org, m.protocol, m.rawEvent, m.Time)
 }
 
 func (m EthBlockchainEventMessage) ShortString() string {
-	return fmt.Sprintf("Event: %v, Name: %v, Protocol: %v, Time: %v", m.event, m.name, m.protocol, m.Time)
+	return fmt.Sprintf("Event: %v, Name: %v, Org: %v, Protocol: %v, Time: %v", m.event, m.name, m.org, m.protocol, m.Time)
 }
 
-func NewEthBlockchainEventMessage(id EventId, ev string, name string, protocol string) *EthBlockchainEventMessage {
+func NewEthBlockchainEventMessage(id EventId, ev string, name string, org string, protocol string) *EthBlockchainEventMessage {
 	return &EthBlockchainEventMessage{
 		event: Event{
 			Id: id,
@@ -982,6 +1028,7 @@ func NewEthBlockchainEventMessage(id EventId, ev string, name string, protocol s
 		rawEvent: ev,
 		protocol: protocol,
 		name:     name,
+		org:      org,
 		Time:     uint64(time.Now().Unix()),
 	}
 }
@@ -1041,6 +1088,7 @@ type NewBCContainerMessage struct {
 	exchangeToken string
 	instance      string
 	typeName      string
+	org           string
 	Time          uint64
 }
 
@@ -1068,15 +1116,19 @@ func (m *NewBCContainerMessage) TypeName() string {
 	return m.typeName
 }
 
+func (m *NewBCContainerMessage) Org() string {
+	return m.org
+}
+
 func (m NewBCContainerMessage) String() string {
-	return fmt.Sprintf("Event: %v, Type: %v, Instance: %v, Time: %v, ExchangeURL: %v, ExchangeId: %v, ExchangeToken: %v", m.event, m.typeName, m.instance, m.Time, m.exchangeURL, m.exchangeId, m.exchangeToken)
+	return fmt.Sprintf("Event: %v, Type: %v, Instance: %v, Org: %v, Time: %v, ExchangeURL: %v, ExchangeId: %v, ExchangeToken: %v", m.event, m.typeName, m.instance, m.org, m.Time, m.exchangeURL, m.exchangeId, m.exchangeToken)
 }
 
 func (m NewBCContainerMessage) ShortString() string {
 	return m.String()
 }
 
-func NewNewBCContainerMessage(id EventId, typeName string, instance string, exchangeURL string, exchangeId string, exchangeToken string) *NewBCContainerMessage {
+func NewNewBCContainerMessage(id EventId, typeName string, instance string, org string, exchangeURL string, exchangeId string, exchangeToken string) *NewBCContainerMessage {
 	return &NewBCContainerMessage{
 		event: Event{
 			Id: id,
@@ -1086,6 +1138,7 @@ func NewNewBCContainerMessage(id EventId, typeName string, instance string, exch
 		exchangeToken: exchangeToken,
 		instance:      instance,
 		typeName:      typeName,
+		org:           org,
 		Time:          uint64(time.Now().Unix()),
 	}
 }

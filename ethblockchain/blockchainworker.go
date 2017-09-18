@@ -34,6 +34,7 @@ type BCInstanceState struct {
 	notifiedReady  bool
 	notifiedFunded bool
 	name           string
+	org            string
 	serviceName    string
 	servicePort    string
 	colonusDir     string
@@ -50,7 +51,7 @@ type EthBlockchainWorker struct {
 	exchangeToken     string
 	horizonPubKeyFile string
 	instances         map[string]*BCInstanceState
-	neededBCs         map[string]uint64 // time stamp last time this BC was reported as needed
+	neededBCs         map[string]map[string]uint64 // time stamp last time this BC was reported as needed
 }
 
 func NewEthBlockchainWorker(cfg *config.HorizonConfig) *EthBlockchainWorker {
@@ -70,7 +71,7 @@ func NewEthBlockchainWorker(cfg *config.HorizonConfig) *EthBlockchainWorker {
 		httpClient:        cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 		horizonPubKeyFile: cfg.Edge.PublicKeyPath,
 		instances:         make(map[string]*BCInstanceState),
-		neededBCs:         make(map[string]uint64),
+		neededBCs:         make(map[string]map[string]uint64),
 	}
 
 	glog.Info(logString("starting worker"))
@@ -149,13 +150,14 @@ func (w *EthBlockchainWorker) NewEvent(incoming events.Message) {
 	return
 }
 
-func (w *EthBlockchainWorker) NewBCInstanceState(name string) *BCInstanceState {
+func (w *EthBlockchainWorker) NewBCInstanceState(name string, org string) *BCInstanceState {
 
 	if _, ok := w.instances[name]; ok {
 		return nil
 	} else {
 		i := new(BCInstanceState)
 		i.name = name
+		i.org = org
 		w.instances[name] = i
 		return i
 	}
@@ -188,8 +190,10 @@ func (w *EthBlockchainWorker) DeleteBCInstance(name string) {
 	}
 }
 
-func (w *EthBlockchainWorker) NeedContainer(name string) bool {
-	if ts, ok := w.neededBCs[name]; ok {
+func (w *EthBlockchainWorker) NeedContainer(org string, name string) bool {
+	if _, ok := w.neededBCs[org]; !ok {
+		return false
+	} else if ts, ok := w.neededBCs[org][name]; ok {
 		if ts == 0 || (uint64(time.Now().Unix()) <= (ts + uint64(300))) {
 			return true
 		} else {
@@ -201,20 +205,21 @@ func (w *EthBlockchainWorker) NeedContainer(name string) bool {
 
 func (w *EthBlockchainWorker) RestartContainer(cmd *ContainerShutdownCommand) {
 
-	if !w.NeedContainer(cmd.Msg.ContainerName) {
+	if !w.NeedContainer(cmd.Msg.ContainerName, cmd.Msg.Org) {
 		return
 	}
 
-	glog.V(5).Infof(logString(fmt.Sprintf("restarting %v", cmd.Msg.ContainerName)))
+	glog.V(5).Infof(logString(fmt.Sprintf("restarting %v/%v",  cmd.Msg.Org, cmd.Msg.ContainerName)))
 
 	if _, ok := w.instances[cmd.Msg.ContainerName]; ok {
 		// Remove the old state from the last instance of the container
 		i := new(BCInstanceState)
 		i.name = cmd.Msg.ContainerName
+		i.org = cmd.Msg.Org
 		w.instances[cmd.Msg.ContainerName] = i
 
 		// Create a new eth container message to begin the process of loading the eth container
-		newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, cmd.Msg.ContainerName, w.exchangeURL, w.exchangeId, w.exchangeToken)
+		newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, cmd.Msg.ContainerName, cmd.Msg.Org, w.exchangeURL, w.exchangeId, w.exchangeToken)
 		ncmd := NewNewClientCommand(*newMsg)
 		w.Commands <- ncmd
 	}
@@ -222,9 +227,14 @@ func (w *EthBlockchainWorker) RestartContainer(cmd *ContainerShutdownCommand) {
 
 func (w *EthBlockchainWorker) UpdatedNeededBlockchains(cmd *ReportNeededBlockchainsCommand) {
 
-	for name, _ := range cmd.Msg.NeededBlockchains() {
-		w.neededBCs[name] = uint64(time.Now().Unix())
-		glog.V(5).Infof(logString(fmt.Sprintf("blockchain %v is still needed", name)))
+	for org, nameMap := range cmd.Msg.NeededBlockchains() {
+		for name, _ := range nameMap {
+			if _, ok := w.neededBCs[org]; !ok {
+				w.neededBCs[org] = make(map[string]uint64)
+			}
+			w.neededBCs[org][name] = uint64(time.Now().Unix())
+			glog.V(5).Infof(logString(fmt.Sprintf("blockchain %v %v is still needed", org, name)))
+		}
 	}
 
 }
@@ -256,7 +266,7 @@ func (w *EthBlockchainWorker) start() {
 					w.SetInstanceNotStarted(cmd.Msg.LaunchContext.Blockchain.Name)
 
 					// fake up a new eth container message to restart the process of loading the eth container
-					newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, cmd.Msg.LaunchContext.Blockchain.Name, w.exchangeURL, w.exchangeId, w.exchangeToken)
+					newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, cmd.Msg.LaunchContext.Blockchain.Name, cmd.Msg.LaunchContext.Blockchain.Org, w.exchangeURL, w.exchangeId, w.exchangeToken)
 					ncmd := NewNewClientCommand(*newMsg)
 					w.Commands <- ncmd
 
@@ -266,7 +276,7 @@ func (w *EthBlockchainWorker) start() {
 					w.SetInstanceNotStarted(lc.Blockchain.Name)
 
 					// fake up a new eth container message to restart the process of loading the eth container
-					newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, lc.Blockchain.Name, w.exchangeURL, w.exchangeId, w.exchangeToken)
+					newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, lc.Blockchain.Name, lc.Blockchain.Org, w.exchangeURL, w.exchangeId, w.exchangeToken)
 					ncmd := NewNewClientCommand(*newMsg)
 					w.Commands <- ncmd
 
@@ -327,11 +337,12 @@ func (w *EthBlockchainWorker) CheckStatus() {
 					glog.V(3).Infof(logString(fmt.Sprintf("detected %v API is down. Error was %v", name, err)))
 					i := new(BCInstanceState)
 					i.name = name
+					saveOrg := w.instances[name].org
 					w.instances[name] = i
-					w.Messages() <- events.NewBlockchainClientStoppingMessage(events.BC_CLIENT_STOPPING, policy.Ethereum_bc, name)
+					w.Messages() <- events.NewBlockchainClientStoppingMessage(events.BC_CLIENT_STOPPING, policy.Ethereum_bc, name, saveOrg)
 					// If we dont need this container any more then dont restart it.
-					if w.NeedContainer(name) {
-						newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, name, w.exchangeURL, w.exchangeId, w.exchangeToken)
+					if w.NeedContainer(name, saveOrg) {
+						newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, name, saveOrg, w.exchangeURL, w.exchangeId, w.exchangeToken)
 						ncmd := NewNewClientCommand(*newMsg)
 						w.Commands <- ncmd
 					} else {
@@ -347,7 +358,7 @@ func (w *EthBlockchainWorker) CheckStatus() {
 					// geth initialzed
 					bcState.notifiedReady = true
 					glog.V(3).Infof(logString(fmt.Sprintf("sending blockchain %v client initialized event", name)))
-					w.Messages() <- events.NewBlockchainClientInitializedMessage(events.BC_CLIENT_INITIALIZED, policy.Ethereum_bc, name, bcState.serviceName, bcState.servicePort, bcState.colonusDir)
+					w.Messages() <- events.NewBlockchainClientInitializedMessage(events.BC_CLIENT_INITIALIZED, policy.Ethereum_bc, name, w.instances[name].org, bcState.serviceName, bcState.servicePort, bcState.colonusDir)
 				}
 
 				if !funded {
@@ -356,7 +367,7 @@ func (w *EthBlockchainWorker) CheckStatus() {
 					bcState.notifiedFunded = true
 					glog.V(3).Infof(logString(fmt.Sprintf("sending acct %v funded event for %v", acct, name)))
 					w.initBlockchainEventListener(name)
-					w.Messages() <- events.NewAccountFundedMessage(events.ACCOUNT_FUNDED, acct, policy.Ethereum_bc, name, bcState.serviceName, bcState.servicePort, bcState.colonusDir)
+					w.Messages() <- events.NewAccountFundedMessage(events.ACCOUNT_FUNDED, acct, policy.Ethereum_bc, name, w.instances[name].org, bcState.serviceName, bcState.servicePort, bcState.colonusDir)
 				} else if funded {
 					glog.V(3).Infof(logString(fmt.Sprintf("%v still funded for %v", acct, name)))
 				}
@@ -365,15 +376,15 @@ func (w *EthBlockchainWorker) CheckStatus() {
 
 		// Check to see if the blockchain def in the exchange has changed
 		if !w.instances[name].needsRestart && w.instances[name].started && len(w.instances[name].metadataHash) != 0 {
-			if bcMetadata, _, err := w.getBCMetadata(name); err == nil {
+			if bcMetadata, _, err := w.getBCMetadata(name, w.instances[name].org); err == nil {
 				hash := sha3.Sum256([]byte(bcMetadata))
 				if !bytes.Equal(w.instances[name].metadataHash, hash[:]) {
 					// BC metadata has changed, restart the container
 					glog.V(3).Infof(logString(fmt.Sprintf("exchange metadata for %v has changed, restarting eth.", name)))
 
 					w.instances[name].needsRestart = true
-					w.Messages() <- events.NewBlockchainClientStoppingMessage(events.BC_CLIENT_STOPPING, policy.Ethereum_bc, name)
-					w.Messages() <- events.NewContainerStopMessage(events.CONTAINER_STOPPING, name)
+					w.Messages() <- events.NewBlockchainClientStoppingMessage(events.BC_CLIENT_STOPPING, policy.Ethereum_bc, name, w.instances[name].org)
+					w.Messages() <- events.NewContainerStopMessage(events.CONTAINER_STOPPING, name, w.instances[name].org)
 
 					// The next phase in the restart occurs after the shutdown message arrives back at this worker
 
@@ -386,7 +397,7 @@ func (w *EthBlockchainWorker) CheckStatus() {
 			if events, _, err := bcState.el.Get_Next_Raw_Event_Batch(getFilter(), 0); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to get event batch for %v, error %v", err, name)))
 			} else {
-				w.handleEvents(events, name)
+				w.handleEvents(events, name, w.instances[name].org)
 			}
 		}
 	}
@@ -402,7 +413,7 @@ func (w *EthBlockchainWorker) handleNewClient(cmd *NewClientCommand) {
 	}
 
 	// Make sure we are tracking this new instance.
-	w.NewBCInstanceState(cmd.Msg.Instance())
+	w.NewBCInstanceState(cmd.Msg.Instance(), cmd.Msg.Org())
 
 	bcState := w.instances[cmd.Msg.Instance()]
 
@@ -416,7 +427,7 @@ func (w *EthBlockchainWorker) handleNewClient(cmd *NewClientCommand) {
 		}
 
 	} else {
-		glog.V(3).Infof(logString(fmt.Sprintf("ignoring duplicate request to start eth container %v", cmd.Msg.Instance())))
+		glog.V(3).Infof(logString(fmt.Sprintf("ignoring duplicate request to start eth container %v/%v", cmd.Msg.Org(), cmd.Msg.Instance())))
 	}
 
 }
@@ -424,7 +435,7 @@ func (w *EthBlockchainWorker) handleNewClient(cmd *NewClientCommand) {
 // This function is used to start the process of starting the ethereum container
 func (w *EthBlockchainWorker) getEthContainer(name string) error {
 
-	if bcMetadata, detailsObj, err := w.getBCMetadata(name); err != nil {
+	if bcMetadata, detailsObj, err := w.getBCMetadata(name, w.instances[name].org); err != nil {
 		return err
 	} else {
 		// Search for the architecture we're running on
@@ -456,10 +467,10 @@ func (w *EthBlockchainWorker) getEthContainer(name string) error {
 
 }
 
-func (w *EthBlockchainWorker) getBCMetadata(name string) (string, *exchange.BlockchainDetails, error) {
+func (w *EthBlockchainWorker) getBCMetadata(name string, org string) (string, *exchange.BlockchainDetails, error) {
 
 	// Get blockchain metadata from the exchange
-	if bcMetadata, err := exchange.GetEthereumClient(w.Config.Collaborators.HTTPClientFactory, w.exchangeURL, name, CHAIN_TYPE, w.exchangeId, w.exchangeToken); err != nil {
+	if bcMetadata, err := exchange.GetEthereumClient(w.Config.Collaborators.HTTPClientFactory, w.exchangeURL, org, name, CHAIN_TYPE, w.exchangeId, w.exchangeToken); err != nil {
 		return "", nil, errors.New(logString(fmt.Sprintf("unable to get eth client metadata, error: %v", err)))
 	} else if len(bcMetadata) == 0 {
 		glog.Errorf(logString(fmt.Sprintf("no metadata for container %v, giving up on it.", name)))
@@ -620,21 +631,21 @@ func (w *EthBlockchainWorker) initBlockchainEventListener(name string) {
 			glog.Errorf(logString(fmt.Sprintf("unable to get initial event batch, error %v", err)))
 			return
 		} else {
-			w.handleEvents(events, name)
+			w.handleEvents(events, name, bcState.org)
 		}
 
 	}
 }
 
 // Process each event in the list
-func (w *EthBlockchainWorker) handleEvents(newEvents []Raw_Event, name string) {
+func (w *EthBlockchainWorker) handleEvents(newEvents []Raw_Event, name string, org string) {
 	for _, ev := range newEvents {
 		if evBytes, err := json.Marshal(ev); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("unable to marshal event %v, error %v", ev, err)))
 		} else {
 			rawEvent := string(evBytes)
 			glog.V(3).Info(logString(fmt.Sprintf("found event: %v", rawEvent)))
-			w.Messages() <- events.NewEthBlockchainEventMessage(events.BC_EVENT, rawEvent, name, policy.CitizenScientist)
+			w.Messages() <- events.NewEthBlockchainEventMessage(events.BC_EVENT, rawEvent, name, org, policy.CitizenScientist)
 		}
 	}
 }

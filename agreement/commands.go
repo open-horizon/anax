@@ -1,6 +1,7 @@
 package agreement
 
 import (
+	"github.com/open-horizon/anax/events"
 	"fmt"
 )
 
@@ -8,18 +9,16 @@ import (
 // Commands supported by the Agreement Worker
 
 type DeviceRegisteredCommand struct {
-	DeviceId string
-	Token    string
+	Msg *events.EdgeRegisteredExchangeMessage
 }
 
 func (d DeviceRegisteredCommand) ShortString() string {
 	return fmt.Sprintf("%v", d)
 }
 
-func NewDeviceRegisteredCommand(device_id string, token string) *DeviceRegisteredCommand {
+func NewDeviceRegisteredCommand(msg *events.EdgeRegisteredExchangeMessage) *DeviceRegisteredCommand {
 	return &DeviceRegisteredCommand{
-		DeviceId: device_id,
-		Token:    token,
+		Msg: msg,
 	}
 }
 

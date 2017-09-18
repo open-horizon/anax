@@ -210,8 +210,19 @@ func (a *API) policyUpgrade(w http.ResponseWriter, r *http.Request) {
 		}
 		glog.V(3).Infof(APIlogString(fmt.Sprintf("handling POST of policy: %v", policyName)))
 
-		workloadResolver := func(wURL string, wVersion string, wArch string) (*policy.APISpecList, error) {
-			asl, err := exchange.WorkloadResolver(a.Config.Collaborators.HTTPClientFactory, wURL, wVersion, wArch, a.Config.AgreementBot.ExchangeURL, a.Config.AgreementBot.ExchangeId, a.Config.AgreementBot.ExchangeToken)
+		// Demarshal the input body and verify it.
+		var upgrade UpgradeDevice
+		body, _ := ioutil.ReadAll(r.Body)
+		if err := json.Unmarshal(body, &upgrade); err != nil {
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "body", Error: fmt.Sprintf("user submitted data couldn't be deserialized to struct: %v. Error: %v", string(body), err)})
+			return
+		} else if ok, msg := upgrade.IsValid(); !ok {
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "body", Error: msg})
+			return
+		}
+
+		workloadResolver := func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
+			asl, err := exchange.WorkloadResolver(a.Config.Collaborators.HTTPClientFactory, wURL, wOrg, wVersion, wArch, a.Config.AgreementBot.ExchangeURL, a.Config.AgreementBot.ExchangeId, a.Config.AgreementBot.ExchangeToken)
 			if err != nil {
 				glog.Errorf(APIlogString(fmt.Sprintf("unable to resolve workload, error %v", err)))
 			}
@@ -225,16 +236,11 @@ func (a *API) policyUpgrade(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		} else {
-			if pol := pm.GetPolicy(policyName); pol != nil {
+			if pol := pm.GetPolicy(upgrade.Org, policyName); pol != nil {
 				found = true
-			} else {
-				for fileName, _ := range pm.WatcherContent {
-					if fileName == policyName {
-						policyName = pm.WatcherContent[fileName].Pol.Header.Name
-						found = true
-						break
-					}
-				}
+			} else if name := pm.WatcherContent.GetPolicyName(upgrade.Org, policyName); name != "" {
+				found = true
+				policyName = name
 			}
 		}
 
@@ -243,62 +249,50 @@ func (a *API) policyUpgrade(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Demarshal the input body and verify it.
-		var upgrade UpgradeDevice
-		body, _ := ioutil.ReadAll(r.Body)
-		if err := json.Unmarshal(body, &upgrade); err != nil {
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "body", Error: fmt.Sprintf("user submitted data couldn't be deserialized to struct: %v. Error: %v", string(body), err)})
-			return
-		} else if ok, msg := upgrade.IsValid(); !ok {
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "body", Error: msg})
-			return
-		} else {
-
-			protocol := ""
-			// The body is syntacticly correct, verify that the agreement id matches up with the device id and policy name.
-			if upgrade.AgreementId != "" {
-				if ag, err := FindSingleAgreementByAgreementIdAllProtocols(a.db, upgrade.AgreementId, policy.AllAgreementProtocols(), []AFilter{UnarchivedAFilter()}); err != nil {
-					glog.Error(APIlogString(fmt.Sprintf("error finding agreement %v, error: %v", upgrade.AgreementId, err)))
-					w.WriteHeader(http.StatusInternalServerError)
-					return
-				} else if ag == nil {
-					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementId", Error: "agreement id not found"})
-					return
-				} else if ag.AgreementTimedout != 0 {
-					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementId", Error: fmt.Sprintf("agreement %v not upgraded, already timed out at %v", upgrade.AgreementId, ag.AgreementTimedout)})
-					return
-				} else if upgrade.Device != "" && ag.DeviceId != upgrade.Device {
-					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementId", Error: fmt.Sprintf("agreement %v not upgraded, not with specified device id %v", upgrade.AgreementId, upgrade.Device)})
-					return
-				} else if ag.PolicyName != policyName {
-					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementId", Error: fmt.Sprintf("agreement %v not upgraded, not using policy %v", upgrade.AgreementId, policyName)})
-					return
-				} else {
-					// We have a valid agreement. Make sure we get the device id to pass along in the event if it isnt in the input.
-					if upgrade.Device == "" {
-						upgrade.Device = ag.DeviceId
-					}
-					protocol = ag.AgreementProtocol
+		protocol := ""
+		// The body is syntacticly correct, verify that the agreement id matches up with the device id and policy name.
+		if upgrade.AgreementId != "" {
+			if ag, err := FindSingleAgreementByAgreementIdAllProtocols(a.db, upgrade.AgreementId, policy.AllAgreementProtocols(), []AFilter{UnarchivedAFilter()}); err != nil {
+				glog.Error(APIlogString(fmt.Sprintf("error finding agreement %v, error: %v", upgrade.AgreementId, err)))
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			} else if ag == nil {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementId", Error: "agreement id not found"})
+				return
+			} else if ag.AgreementTimedout != 0 {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementId", Error: fmt.Sprintf("agreement %v not upgraded, already timed out at %v", upgrade.AgreementId, ag.AgreementTimedout)})
+				return
+			} else if upgrade.Device != "" && ag.DeviceId != upgrade.Device {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementId", Error: fmt.Sprintf("agreement %v not upgraded, not with specified device id %v", upgrade.AgreementId, upgrade.Device)})
+				return
+			} else if ag.PolicyName != policyName {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementId", Error: fmt.Sprintf("agreement %v not upgraded, not using policy %v", upgrade.AgreementId, policyName)})
+				return
+			} else {
+				// We have a valid agreement. Make sure we get the device id to pass along in the event if it isnt in the input.
+				if upgrade.Device == "" {
+					upgrade.Device = ag.DeviceId
 				}
-
+				protocol = ag.AgreementProtocol
 			}
 
-			// Verfiy that the device is using the workload rollback feature
-			if upgrade.Device != "" {
-				if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(a.db, upgrade.Device, policyName); err != nil {
-					glog.Error(APIlogString(fmt.Sprintf("error finding workload usage record for %v with policy %v, error: %v", upgrade.AgreementId, policyName, err)))
-					w.WriteHeader(http.StatusInternalServerError)
-					return
-				} else if wlUsage == nil {
-					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "device", Error: fmt.Sprintf("device %v with policy %v is not using the workload rollback feature", upgrade.Device, policyName)})
-					return
-				}
-			}
-
-			// If we got this far, begin workload upgrade processing.
-			a.Messages() <- events.NewABApiWorkloadUpgradeMessage(events.WORKLOAD_UPGRADE, protocol, upgrade.AgreementId, upgrade.Device, policyName)
-			w.WriteHeader(http.StatusOK)
 		}
+
+		// Verfiy that the device is using the workload rollback feature
+		if upgrade.Device != "" {
+			if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(a.db, upgrade.Device, policyName); err != nil {
+				glog.Error(APIlogString(fmt.Sprintf("error finding workload usage record for %v with policy %v, error: %v", upgrade.AgreementId, policyName, err)))
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			} else if wlUsage == nil {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "device", Error: fmt.Sprintf("device %v with policy %v is not using the workload rollback feature", upgrade.Device, policyName)})
+				return
+			}
+		}
+
+		// If we got this far, begin workload upgrade processing.
+		a.Messages() <- events.NewABApiWorkloadUpgradeMessage(events.WORKLOAD_UPGRADE, protocol, upgrade.AgreementId, upgrade.Device, policyName)
+		w.WriteHeader(http.StatusOK)
 
 	case "OPTIONS":
 		w.Header().Set("Allow", "POST, OPTIONS")
@@ -417,6 +411,7 @@ var APIlogString = func(v interface{}) string {
 type UpgradeDevice struct {
 	Device      string `json:"device"`
 	AgreementId string `json:"agreementId"`
+	Org         string `json:"org"`
 }
 
 func (b *UpgradeDevice) IsValid() (bool, string) {

@@ -6,12 +6,14 @@
     "apiSpec": [
         {
             "specRef": "http://mycompany.com/dm/cpu_temp",
+            "organization": "myorg",
             "version": "1.0.0",
             "exclusiveAccess": true,
             "arch": "arm"
         },
         {
             "specRef": "http://mycompany.com/dm/gps",
+            "organization": "myorg",
             "version": "1.0.0",
             "exclusiveAccess": true,
             "arch": "arm"
@@ -24,7 +26,8 @@
             "blockchains": [
                 {
                     "type": "ethereum",
-                    "name": "bc1"
+                    "name": "bc1",
+                    "organization": "myorg"
                 }
             ]
         },
@@ -34,7 +37,8 @@
             "blockchains": [
                 {
                     "type": "ethereum",
-                    "name": "bc2"
+                    "name": "bc2",
+                    "organization": "myorg"
                 }
             ]
         }

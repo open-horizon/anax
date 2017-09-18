@@ -228,7 +228,7 @@ func (a *CSAgreementWorker) ExternalWrite(cph ConsumerProtocolHandler, agreement
 		glog.V(3).Infof(logstring(workerID, fmt.Sprintf("agreement %v no longer active, cancelling deferred write.", agreementId)))
 	} else if ag.AgreementTimedout != 0 {
 		glog.V(3).Infof(logstring(workerID, fmt.Sprintf("agreement %v terminating, cancelling deferred write.", agreementId)))
-	} else if cph.IsBlockchainWritable(ag.BlockchainType, ag.BlockchainName) && ag.CounterPartyAddress != "" {
+	} else if cph.IsBlockchainWritable(ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg) && ag.CounterPartyAddress != "" {
 
 		// Recording the agreement on the blockchain could take a long time.
 		go a.DoAsyncWrite(cph, ag, workerID)
@@ -245,11 +245,11 @@ func (a *CSAgreementWorker) ExternalWrite(cph ConsumerProtocolHandler, agreement
 }
 
 func (a *CSAgreementWorker) DoAsyncWrite(cph ConsumerProtocolHandler, ag *Agreement, workerID string) {
-	if proposal, err := cph.AgreementProtocolHandler(ag.BlockchainType, ag.BlockchainName).DemarshalProposal(ag.Proposal); err != nil {
+	if proposal, err := cph.AgreementProtocolHandler(ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg).DemarshalProposal(ag.Proposal); err != nil {
 		glog.Errorf(logstring(workerID, fmt.Sprintf("error demarshalling proposal from pending agreement %v, error: %v", ag.CurrentAgreementId, err)))
 	} else if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
 		glog.Errorf(logstring(workerID, fmt.Sprintf("error demarshalling tsandcs policy from pending agreement %v, error: %v", ag.CurrentAgreementId, err)))
-	} else if err := cph.AgreementProtocolHandler(ag.BlockchainType, ag.BlockchainName).RecordAgreement(proposal, nil, ag.CounterPartyAddress, ag.ProposalSig, pol); err != nil {
+	} else if err := cph.AgreementProtocolHandler(ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg).RecordAgreement(proposal, nil, ag.CounterPartyAddress, ag.ProposalSig, pol); err != nil {
 		glog.Errorf(logstring(workerID, fmt.Sprintf("error trying to record agreement in blockchain, %v", err)))
 		a.CancelAgreementWithLock(cph, ag.CurrentAgreementId, cph.GetTerminationCode(TERM_REASON_CANCEL_BC_WRITE_FAILED), workerID)
 	} else {
@@ -273,7 +273,7 @@ func (a *CSAgreementWorker) SendBCUpdate(ph ConsumerProtocolHandler, agreementId
 		glog.V(3).Infof(logstring(workerID, fmt.Sprintf("agreement %v terminating, cancelling deferred update.", agreementId)))
 	} else if ag.BCUpdateAckTime != 0 {
 		glog.V(3).Infof(logstring(workerID, fmt.Sprintf("agreement %v received update ack, cancelling deferred update.", agreementId)))
-	} else if cph.IsBlockchainReady(ag.BlockchainType, ag.BlockchainName) && ag.BCUpdateAckTime == 0 {
+	} else if cph.IsBlockchainReady(ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg) && ag.BCUpdateAckTime == 0 {
 		cph.UpdateProducer(ag)
 		// create deferred update command as a mechanism to retry the update if messaging fails to deliver the message.
 		cph.DeferCommand(AsyncUpdateAgreement{

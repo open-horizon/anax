@@ -65,6 +65,7 @@ type MicroserviceDefinition struct {
 	Label                        string               `json:"label"`
 	Description                  string               `json:"description"`
 	SpecRef                      string               `json:"specRef"`
+	Org                          string               `json:"organization"`
 	Version                      string               `json:"version"`
 	Arch                         string               `json:"arch"`
 	Sharable                     string               `json:"sharable"`
@@ -96,6 +97,7 @@ func (w MicroserviceDefinition) String() string {
 		"Label: %v, "+
 		"Description: %v, "+
 		"SpecRef: %v, "+
+		"Org: %v, "+
 		"Version: %v, "+
 		"Arch: %v, "+
 		"Sharable: %v, "+
@@ -119,7 +121,7 @@ func (w MicroserviceDefinition) String() string {
 		"UngradeFailureDescription: %v, "+
 		"UpgradeNewMsId: %v, "+
 		"MetadataHash: %v",
-		w.Owner, w.Label, w.Description, w.SpecRef, w.Version, w.Arch, w.Sharable, w.DownloadURL,
+		w.Owner, w.Label, w.Description, w.SpecRef, w.Org, w.Version, w.Arch, w.Sharable, w.DownloadURL,
 		w.MatchHardware, w.UserInputs, w.Workloads, w.LastUpdated,
 		w.Archived, w.Name, w.UpgradeVersionRange, w.AutoUpgrade, w.ActiveUpgrade,
 		w.UpgradeStartTime, w.UpgradeMsUnregisteredTime, w.UpgradeAgreementsClearedTime, w.UpgradeExecutionStartTime, w.UpgradeMsReregisteredTime,
@@ -131,6 +133,7 @@ func (w MicroserviceDefinition) ShortString() string {
 		"Label: %v, "+
 		"Description: %v, "+
 		"SpecRef: %v, "+
+		"Org: %v, "+
 		"Version: %v, "+
 		"Arch: %v, "+
 		"Archived: %v, "+
@@ -148,7 +151,7 @@ func (w MicroserviceDefinition) ShortString() string {
 		"UngradeFailureDescription: %v, "+
 		"UpgradeNewMsId: %v, "+
 		"MetadataHash: %v",
-		w.Owner, w.Label, w.Description, w.SpecRef, w.Version, w.Arch,
+		w.Owner, w.Label, w.Description, w.SpecRef, w.Org, w.Version, w.Arch,
 		w.Archived, w.Name, w.UpgradeVersionRange, w.AutoUpgrade, w.ActiveUpgrade,
 		w.UpgradeStartTime, w.UpgradeMsUnregisteredTime, w.UpgradeAgreementsClearedTime, w.UpgradeExecutionStartTime, w.UpgradeMsReregisteredTime,
 		w.UpgradeFailedTime, w.UngradeFailureReason, w.UngradeFailureDescription, w.UpgradeNewMsId, w.MetadataHash)

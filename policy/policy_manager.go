@@ -14,11 +14,11 @@ import (
 // for reusable functions.
 
 type PolicyManager struct {
-	Policies        []*Policy                       // The policies in effect at this time
-	PolicyLock      sync.Mutex                      // The lock that protects modification of the Policy array
+	Policies        map[string][]*Policy            // The policies in effect at this time, by organization
+	PolicyLock      sync.Mutex                      // The lock that protects modification of the Policies
 	ALock           sync.Mutex                      // The lock that protects the contract counts map
 	AgreementCounts map[string]*AgreementCountEntry // A map of all policies (by name) that have an agreement with a given device
-	WatcherContent  map[string]*WatchEntry          // The contents of the policy file watcher
+	WatcherContent  *Contents                       // The contents of the policy file watcher
 }
 
 // The ContractCountEntry is used to track which device addresses (contract addresses) are in agreement for a given policy name. The
@@ -43,8 +43,11 @@ func (self *PolicyManager) AgreementCountString() string {
 
 func (self *PolicyManager) String() string {
 	res := ""
-	for _, pol := range self.Policies {
-		res += fmt.Sprintf("Name: %v Workload: %v\n", pol.Header.Name, pol.Workloads)
+	for org, orgArray := range self.Policies {
+		res += fmt.Sprintf("Org: %v ", org)
+		for _, pol := range orgArray {
+			res += fmt.Sprintf("Name: %v Workload: %v\n", pol.Header.Name, pol.Workloads)
+		}
 	}
 	res += self.AgreementCountString()
 	return res
@@ -63,6 +66,7 @@ func (self *AgreementCountEntry) String() string {
 // This function creates AgreementProtocol objects
 func PolicyManager_Factory() *PolicyManager {
 	pm := new(PolicyManager)
+	pm.Policies = make(map[string][]*Policy)
 	pm.AgreementCounts = make(map[string]*AgreementCountEntry)
 
 	return pm
@@ -70,21 +74,28 @@ func PolicyManager_Factory() *PolicyManager {
 
 // Add a new policy to the policy manager. If the policy is already there (by name), an error is returned.
 // The caller might be ok ignoring the error.
-func (self *PolicyManager) AddPolicy(newPolicy *Policy) error {
+func (self *PolicyManager) AddPolicy(org string, newPolicy *Policy) error {
 	self.PolicyLock.Lock()
 	defer self.PolicyLock.Unlock()
 
-	return self.addPolicy(newPolicy)
+	return self.addPolicy(org, newPolicy)
 }
 
-func (self *PolicyManager) addPolicy(newPolicy *Policy) error {
+func (self *PolicyManager) addPolicy(org string, newPolicy *Policy) error {
 
-	for _, pol := range self.Policies {
+	orgArray, ok := self.Policies[org]
+	if !ok {
+		self.Policies[org] = make([]*Policy, 0, 10)
+		orgArray = self.Policies[org]
+	}
+
+	for _, pol := range orgArray {
 		if pol.Header.Name == newPolicy.Header.Name {
 			return errors.New(fmt.Sprintf("Policy already known to the PolicyManager"))
 		}
 	}
-	self.Policies = append(self.Policies, newPolicy)
+
+	self.Policies[org] = append(self.Policies[org], newPolicy)
 	agc := make(map[string]string)
 	cce := new(AgreementCountEntry)
 	cce.AgreementIds = agc
@@ -93,53 +104,51 @@ func (self *PolicyManager) addPolicy(newPolicy *Policy) error {
 }
 
 // Update a policy in the policy manager. If the policy is already there (by name), update it, otherwise it is just added.
-func (self *PolicyManager) UpdatePolicy(newPolicy *Policy) {
+func (self *PolicyManager) UpdatePolicy(org string, newPolicy *Policy) {
 	self.PolicyLock.Lock()
 	defer self.PolicyLock.Unlock()
 
-	for ix, pol := range self.Policies {
+	orgArray, ok := self.Policies[org]
+	if !ok {
+		self.Policies[org] = make([]*Policy, 0, 10)
+		orgArray = self.Policies[org]
+	}
+
+	for ix, pol := range orgArray {
 		if pol.Header.Name == newPolicy.Header.Name {
 			// Replace existing policy
-			self.Policies[ix] = newPolicy
+			orgArray[ix] = newPolicy
 			return
 		}
 	}
-	self.addPolicy(newPolicy)
+	self.addPolicy(org, newPolicy)
 	return
 }
 
 // Delete a policy in the policy manager (by name).
-func (self *PolicyManager) DeletePolicy(delPolicy *Policy) {
+func (self *PolicyManager) DeletePolicy(org string, delPolicy *Policy) {
 	self.PolicyLock.Lock()
 	defer self.PolicyLock.Unlock()
 
-	for ix, pol := range self.Policies {
+	orgArray, ok := self.Policies[org]
+	if !ok {
+		return
+	}
+
+	for ix, pol := range orgArray {
 		if pol.Header.Name == delPolicy.Header.Name {
 			// Remove existing policy
-			self.Policies = append(self.Policies[:ix], self.Policies[ix+1:]...)
+			orgArray = append(orgArray[:ix], orgArray[ix+1:]...)
+			self.Policies[org] = orgArray
 			return
 		}
 	}
 	return
 }
 
-func (self *PolicyManager) UpgradeAgreementProtocols() {
-	self.PolicyLock.Lock()
-	defer self.PolicyLock.Unlock()
-
-	for pix, pol := range self.Policies {
-		for aix, agp := range pol.AgreementProtocols {
-			if agp.Name == CitizenScientist && agp.ProtocolVersion != 2 {
-				self.Policies[pix].AgreementProtocols[aix].ProtocolVersion = 2
-			}
-		}
-	}
-
-}
-
 // This function is used to get the policy manager up and running. When this function returns, all the current policies
 // have been read into memory. It can be used instead of the factory method for convenience.
-func Initialize(policyPath string, workloadResolver func(wURL string, wVersion string, wArch string) (*APISpecList, error)) (*PolicyManager, error) {
+func Initialize(policyPath string, workloadResolver func(wURL string, wOrg string, wVersion string, wArch string) (*APISpecList, error)) (*PolicyManager, error) {
 
 	glog.V(1).Infof("Initializing Policy Manager with %v.", policyPath)
 	pm := PolicyManager_Factory()
@@ -147,38 +156,38 @@ func Initialize(policyPath string, workloadResolver func(wURL string, wVersion s
 
 	// Setup the callback functions for the policy file watcher. The change notification is the only callback
 	// that should be invoked at this time.
-	changeNotify := func(fileName string, policy *Policy) {
+	changeNotify := func(org string, fileName string, policy *Policy) {
 		numberFiles += 1
-		pm.AddPolicy(policy)
-		glog.V(3).Infof("Found policy file %v containing %v.", fileName, policy.Header.Name)
+		pm.AddPolicy(org, policy)
+		glog.V(3).Infof("Found policy file %v/%v containing %v.", org, fileName, policy.Header.Name)
 	}
 
-	deleteNotify := func(fileName string, policy *Policy) {
-		glog.Errorf("Policy Watcher detected file %v deletion during initialization.", fileName)
+	deleteNotify := func(org string, fileName string, policy *Policy) {
+		glog.Errorf("Policy Watcher detected file %v/%v deletion during initialization.", org, fileName)
 	}
 
-	errorNotify := func(fileName string, err error) {
-		glog.Errorf("Policy Watcher detected error consuming policy file %v during initialization, error: %v", fileName, err)
+	errorNotify := func(org string, fileName string, err error) {
+		glog.Errorf("Policy Watcher detected error consuming policy file %v/%v during initialization, error: %v", org, fileName, err)
 	}
 
 	// Call the policy file watcher once to load up the initial set of policy files
-	contents := make(map[string]*WatchEntry)
+	contents := NewContents()
 	if cons, err := PolicyFileChangeWatcher(policyPath, contents, changeNotify, deleteNotify, errorNotify, workloadResolver, 0); err != nil {
 		return nil, err
-	} else if len(pm.Policies) != numberFiles {
-		return nil, errors.New(fmt.Sprintf("Policy Names must be unique, found %v files, but %v unique policies", numberFiles, len(pm.Policies)))
+	} else if  pm.NumberPolicies() != numberFiles {
+		return nil, errors.New(fmt.Sprintf("Policy Names must be unique, found %v files, but %v unique policies", numberFiles, pm.NumberPolicies()))
 	} else {
 		pm.WatcherContent = cons
 		return pm, nil
 	}
 }
 
-func (self *PolicyManager) MatchesMine(matchPolicy *Policy) error {
+func (self *PolicyManager) MatchesMine(org string, matchPolicy *Policy) error {
 
 	self.PolicyLock.Lock()
 	defer self.PolicyLock.Unlock()
 
-	if matches, err := self.hasPolicy(matchPolicy); err != nil {
+	if matches, err := self.hasPolicy(org, matchPolicy); err != nil {
 		return errors.New(fmt.Sprintf("Policy matching %v not found in %v, error is %v", matchPolicy, self.Policies, err))
 	} else if matches {
 		return nil
@@ -190,10 +199,16 @@ func (self *PolicyManager) MatchesMine(matchPolicy *Policy) error {
 
 // This function runs unlocked so that APIs in this module can manage the locks. It returns true
 // if the policy manager already has this policy.
-func (self *PolicyManager) hasPolicy(matchPolicy *Policy) (bool, error) {
+func (self *PolicyManager) hasPolicy(org string, matchPolicy *Policy) (bool, error) {
 
 	errString := ""
-	for _, pol := range self.Policies {
+
+	orgArray, ok := self.Policies[org]
+	if !ok {
+		return false, errors.New(fmt.Sprintf("organization %v not found", org))
+	}
+
+	for _, pol := range orgArray {
 		if errString != "" {
 			glog.V(5).Infof("Policy Manager: Previous search loop returned: %v", errString)
 		}
@@ -378,13 +393,19 @@ func (self *PolicyManager) unlockedReachedMaxAgreements(policy *Policy, current 
 	}
 }
 
-// This function returns an array of json serialized policies in the PM, as strings.
-func (self *PolicyManager) GetSerializedPolicies() (map[string]string, error) {
+// This function returns a map of json serialized policies in the PM, as strings.
+func (self *PolicyManager) GetSerializedPolicies(org string) (map[string]string, error) {
 
 	res := make(map[string]string)
 	self.PolicyLock.Lock()
 	defer self.PolicyLock.Unlock()
-	for _, pol := range self.Policies {
+
+	orgArray, ok := self.Policies[org]
+	if !ok {
+		return res, errors.New(fmt.Sprintf("organization %v not found", org))
+	}
+
+	for _, pol := range orgArray {
 		if serialPol, err := json.Marshal(pol); err != nil {
 			return res, errors.New(fmt.Sprintf("Failed to serialize policy %v. Error: %v", *pol, err))
 		} else {
@@ -395,11 +416,17 @@ func (self *PolicyManager) GetSerializedPolicies() (map[string]string, error) {
 }
 
 // This function returns the policy object of a given name.
-func (self *PolicyManager) GetPolicy(name string) *Policy {
+func (self *PolicyManager) GetPolicy(org string, name string) *Policy {
 
 	self.PolicyLock.Lock()
 	defer self.PolicyLock.Unlock()
-	for _, pol := range self.Policies {
+
+	orgArray, ok := self.Policies[org]
+	if !ok {
+		return nil
+	}
+
+	for _, pol := range orgArray {
 		if pol.Header.Name == name {
 			return pol
 		}
@@ -407,76 +434,93 @@ func (self *PolicyManager) GetPolicy(name string) *Policy {
 	return nil
 }
 
-// This function returns the set of policy objects that contain the input API spec URL.
+// This function returns the first policy object that contains the input API spec URL.
 // It runs outside the PM lock to make it reusable. It should ONLY be used by functions
 // that already hold the PM lock.
-func (self *PolicyManager) unlockedGetPolicyByURL(url string, version string) *Policy {
+func (self *PolicyManager) unlockedGetPolicyByURL(url string, org string, version string) *Policy {
 
-	for _, pol := range self.Policies {
-		if pol.APISpecs.ContainsSpecRef(url, version) {
+	orgArray, ok := self.Policies[org]
+	if !ok {
+		return nil
+	}
+
+	for _, pol := range orgArray {
+		if pol.APISpecs.ContainsSpecRef(url, org, version) {
 			return pol
 		}
 	}
 	return nil
 }
 
-// This function returns the set of policy objects that contain the input API spec URL.
+// This function returns the first policy objects that contains the input API spec URL.
 // It returns copies so that the caller doesnt have to worry about them changing
 // underneath him.
-func (self *PolicyManager) GetPolicyByURL(url string, version string) []Policy {
+func (self *PolicyManager) GetPolicyByURL(url string, org string, version string) []Policy {
 
 	self.PolicyLock.Lock()
 	defer self.PolicyLock.Unlock()
 	res := make([]Policy, 0, 10)
-	pol := self.unlockedGetPolicyByURL(url, version)
+	pol := self.unlockedGetPolicyByURL(url, org, version)
 	if pol != nil {
 		res = append(res, *pol)
 	}
 	return res
 }
 
-// This function deletes a policy by URL
-func (self *PolicyManager) DeletePolicyByURL(url string, version string) error {
-
-	self.PolicyLock.Lock()
-	defer self.PolicyLock.Unlock()
-	for _, pol := range self.Policies {
-		if pol.APISpecs.ContainsSpecRef(url, version) {
-			// save the policy name
-			// Delete this policy - compress the array
-			// Remove the agreement counts by policy name
-		}
-	}
-	return errors.New("Not implemented yet")
-}
-
 func (self *PolicyManager) GetAllAgreementProtocols() map[string]BlockchainList {
 	protocols := make(map[string]BlockchainList)
 	self.PolicyLock.Lock()
 	defer self.PolicyLock.Unlock()
-	for _, pol := range self.Policies {
-		for _, agp := range pol.AgreementProtocols {
-			protocols[agp.Name] = agp.Blockchains
+
+	for _, orgArray := range self.Policies {
+		for _, pol := range orgArray {
+			for _, agp := range pol.AgreementProtocols {
+				protocols[agp.Name] = agp.Blockchains
+			}
 		}
 	}
 	return protocols
 }
 
-func (self *PolicyManager) GetAllPolicies() []Policy {
+func (self *PolicyManager) GetAllPolicies(org string) []Policy {
 	policies := make([]Policy, 0, 10)
 	self.PolicyLock.Lock()
 	defer self.PolicyLock.Unlock()
-	for _, pol := range self.Policies {
+
+	orgArray, ok := self.Policies[org]
+	if !ok {
+		return policies
+	}
+
+	for _, pol := range orgArray {
 		policies = append(policies, *pol)
 	}
 	return policies
 }
 
-func (self *PolicyManager) GetAllAvailablePolicies() []Policy {
+func (self *PolicyManager) GetAllPolicyOrgs() []string {
+	orgs := make([]string, 0, 10)
+	self.PolicyLock.Lock()
+	defer self.PolicyLock.Unlock()
+
+	for org, _ := range self.Policies {
+		orgs = append(orgs, org)
+	}
+
+	return orgs
+}
+
+func (self *PolicyManager) GetAllAvailablePolicies(org string) []Policy {
 	policies := make([]Policy, 0, 10)
 	self.PolicyLock.Lock()
 	defer self.PolicyLock.Unlock()
-	for _, pol := range self.Policies {
+
+	orgArray, ok := self.Policies[org]
+	if !ok {
+		return policies
+	}
+
+	for _, pol := range orgArray {
 		if self.unlockedReachedMaxAgreements(pol, self.AgreementCounts[pol.Header.Name].Count) {
 			glog.V(3).Infof("Skipping policy %v, reached maximum of %v agreements.", pol.Header.Name, self.AgreementCounts[pol.Header.Name].Count)
 		} else {
@@ -489,7 +533,11 @@ func (self *PolicyManager) GetAllAvailablePolicies() []Policy {
 func (self *PolicyManager) NumberPolicies() int {
 	self.PolicyLock.Lock()
 	defer self.PolicyLock.Unlock()
-	return len(self.Policies)
+	res := 0
+	for _, orgMap := range self.Policies {
+		res += len(orgMap)
+	}
+	return res
 }
 
 // This function is used by a producer to find the original policies that make up
@@ -506,11 +554,11 @@ func (self *PolicyManager) GetPolicyList(inPolicy *Policy) ([]Policy, error) {
 	// microservice.
 	if len(inPolicy.APISpecs) > 1 {
 		for _, apiSpec := range inPolicy.APISpecs {
-			pol := self.unlockedGetPolicyByURL(apiSpec.SpecRef, apiSpec.Version)
+			pol := self.unlockedGetPolicyByURL(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version)
 			if pol != nil {
 				res = append(res, *pol)
 			} else {
-				return nil, errors.New(fmt.Sprintf("could not find policy for %v %v", apiSpec.SpecRef, apiSpec.Version))
+				return nil, errors.New(fmt.Sprintf("could not find policy for %v %v %v", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version))
 			}
 		}
 	} else {

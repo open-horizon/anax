@@ -14,6 +14,7 @@ const AGREEMENTS = "agreements"
 
 type Agreement struct {
 	CurrentAgreementId             string   `json:"current_agreement_id"`              // unique
+	Org                            string   `json:"org"`                               // the org in which the policy exists that was used to make this agreement
 	DeviceId                       string   `json:"device_id"`                         // the device id we are working with, immutable after construction
 	HAPartners                     []string `json:"ha_partners"`                       // list of HA partner device IDs
 	AgreementProtocol              string   `json:"agreement_protocol"`                // immutable after construction - name of protocol in use
@@ -48,12 +49,14 @@ type Agreement struct {
 	TerminatedDescription          string   `json:"terminated_description"`            // The description of why the agreement was terminated
 	BlockchainType                 string   `json:"blockchain_type"`                   // The name of the blockchain type that is being used (new V2 protocol)
 	BlockchainName                 string   `json:"blockchain_name"`                   // The name of the blockchain being used (new V2 protocol)
+	BlockchainOrg                  string   `json:"blockchain_org"`                    // The name of the blockchain org being used (new V2 protocol)
 	BCUpdateAckTime                uint64   `json:"blockchain_update_ack_time"`        // The time when the producer ACked our update ot him (new V2 protocol)
 }
 
 func (a Agreement) String() string {
 	return fmt.Sprintf("Archived: %v, "+
 		"CurrentAgreementId: %v, "+
+		"Org: %v, "+
 		"AgreementProtocol: %v, "+
 		"AgreementProtocolVersion: %v, "+
 		"DeviceId: %v, "+
@@ -84,23 +87,25 @@ func (a Agreement) String() string {
 		"TerminatedDescription: %v, "+
 		"BlockchainType: %v, "+
 		"BlockchainName: %v, "+
+		"BlockchainOrg: %v, "+
 		"BCUpdateAckTime: %v",
-		a.Archived, a.CurrentAgreementId, a.AgreementProtocol, a.AgreementProtocolVersion, a.DeviceId, a.HAPartners,
+		a.Archived, a.CurrentAgreementId, a.Org, a.AgreementProtocol, a.AgreementProtocolVersion, a.DeviceId, a.HAPartners,
 		a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime,
 		a.AgreementTimedout, a.ProposalSig, a.ProposalHash, a.ConsumerProposalSig, a.PolicyName, a.CounterPartyAddress,
 		a.DataVerificationURL, a.DataVerificationUser, a.DataVerificationCheckRate, a.DataVerificationMissedCount, a.DataVerificationNoDataInterval,
 		a.DisableDataVerificationChecks, a.DataVerifiedTime, a.DataNotificationSent,
 		a.MeteringTokens, a.MeteringPerTimeUnit, a.MeteringNotificationInterval, a.MeteringNotificationSent, a.MeteringNotificationMsgs,
-		a.TerminatedReason, a.TerminatedDescription, a.BlockchainType, a.BlockchainName, a.BCUpdateAckTime)
+		a.TerminatedReason, a.TerminatedDescription, a.BlockchainType, a.BlockchainName, a.BlockchainOrg, a.BCUpdateAckTime)
 }
 
 // private factory method for agreement w/out persistence safety:
-func agreement(agreementid string, deviceid string, policyName string, bcType string, bcName string, agreementProto string) (*Agreement, error) {
+func agreement(agreementid string, org string, deviceid string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string) (*Agreement, error) {
 	if agreementid == "" || agreementProto == "" {
 		return nil, errors.New("Illegal input: agreement id or agreement protocol is empty")
 	} else {
 		return &Agreement{
 			CurrentAgreementId:             agreementid,
+			Org:                            org,
 			DeviceId:                       deviceid,
 			HAPartners:                     []string{},
 			AgreementProtocol:              agreementProto,
@@ -134,13 +139,14 @@ func agreement(agreementid string, deviceid string, policyName string, bcType st
 			TerminatedDescription:          "",
 			BlockchainType:                 bcType,
 			BlockchainName:                 bcName,
+			BlockchainOrg:                  bcOrg,
 			BCUpdateAckTime:                0,
 		}, nil
 	}
 }
 
-func AgreementAttempt(db *bolt.DB, agreementid string, deviceid string, policyName string, bcType string, bcName string, agreementProto string) error {
-	if agreement, err := agreement(agreementid, deviceid, policyName, bcType, bcName, agreementProto); err != nil {
+func AgreementAttempt(db *bolt.DB, agreementid string, org string, deviceid string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string) error {
+	if agreement, err := agreement(agreementid, org, deviceid, policyName, bcType, bcName, bcOrg, agreementProto); err != nil {
 		return err
 	} else if err := PersistNew(db, agreement.CurrentAgreementId, bucketName(agreementProto), &agreement); err != nil {
 		return err
@@ -180,13 +186,14 @@ func AgreementUpdate(db *bolt.DB, agreementid string, proposal string, policy st
 	}
 }
 
-func AgreementMade(db *bolt.DB, agreementId string, counterParty string, signature string, protocol string, hapartners []string, bcType string, bcName string) (*Agreement, error) {
+func AgreementMade(db *bolt.DB, agreementId string, counterParty string, signature string, protocol string, hapartners []string, bcType string, bcName string, bcOrg string) (*Agreement, error) {
 	if agreement, err := singleAgreementUpdate(db, agreementId, protocol, func(a Agreement) *Agreement {
 		a.CounterPartyAddress = counterParty
 		a.ProposalSig = signature
 		a.HAPartners = hapartners
 		a.BlockchainType = bcType
 		a.BlockchainName = bcName
+		a.BlockchainOrg = bcOrg
 		return &a
 	}); err != nil {
 		return nil, err
@@ -452,6 +459,9 @@ func persistUpdatedAgreement(db *bolt.DB, agreementid string, protocol string, u
 				}
 				if mod.BlockchainName == "" { // 1 transition from empty to non-empty
 					mod.BlockchainName = update.BlockchainName
+				}
+				if mod.BlockchainOrg == "" { // 1 transition from empty to non-empty
+					mod.BlockchainOrg = update.BlockchainOrg
 				}
 				if mod.AgreementProtocolVersion == 0 { // 1 transition from empty to non-empty
 					mod.AgreementProtocolVersion = update.AgreementProtocolVersion

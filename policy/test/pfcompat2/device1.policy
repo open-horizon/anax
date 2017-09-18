@@ -6,6 +6,7 @@
     "apiSpec": [
         {
             "specRef": "http://mycompany.com/dm/ms1",
+            "organization": "myorg",
             "version": "1.0.0",
             "exclusiveAccess": true,
             "arch": "amd64"

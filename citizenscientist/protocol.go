@@ -14,7 +14,6 @@ import (
 	"github.com/open-horizon/go-solidity/contract_api"
 	"golang.org/x/crypto/sha3"
 	"net/http"
-	"os"
 	"strconv"
 )
 
@@ -59,14 +58,15 @@ type CSProposalReply struct {
 	Address        string `json:"address"`
 	BlockchainType string `json:"blockchainType"` // the type of the blockchain that was chosen - v2 field
 	BlockchainName string `json:"blockchainName"` // the name of the blockchain that was chosen - V2 field
+	BlockchainOrg  string `json:"blockchainOrg"`  // the name of the blockchain that was chosen - V2 field
 }
 
 func (pr *CSProposalReply) String() string {
-	return pr.BaseProposalReply.String() + fmt.Sprintf(", Address: %v, Signature: %v, BlockchainType: %v, BlockchainName: %v", pr.Address, pr.Signature, pr.BlockchainType, pr.BlockchainName)
+	return pr.BaseProposalReply.String() + fmt.Sprintf(", Address: %v, Signature: %v, BlockchainType: %v, BlockchainName: %v, BlockchainOrg: %v", pr.Address, pr.Signature, pr.BlockchainType, pr.BlockchainName, pr.BlockchainOrg)
 }
 
 func (pr *CSProposalReply) ShortString() string {
-	return pr.BaseProposalReply.ShortString() + fmt.Sprintf(", Address: %v, Signature: %v, BlockchainType: %v, BlockchainName: %v", pr.Address, pr.Signature, pr.BlockchainType, pr.BlockchainName)
+	return pr.BaseProposalReply.ShortString() + fmt.Sprintf(", Address: %v, Signature: %v, BlockchainType: %v, BlockchainName: %v, BlockchainOrg: %v", pr.Address, pr.Signature, pr.BlockchainType, pr.BlockchainName, pr.BlockchainOrg)
 }
 
 // Remember that a reply may contain none of the expected fields (other than the base fields) if the device's decision was NO (or false).
@@ -82,18 +82,20 @@ func (pr *CSProposalReply) SetAddress(a string) {
 	pr.Address = a
 }
 
-func (pr *CSProposalReply) SetBlockchain(t string, n string) {
+func (pr *CSProposalReply) SetBlockchain(t string, n string, o string) {
 	pr.BlockchainType = t
 	pr.BlockchainName = n
+	pr.BlockchainOrg  = o
 }
 
-func NewCSProposalReply(bp *abstractprotocol.BaseProposalReply, sig string, myAddress string, bcType string, bcName string) *CSProposalReply {
+func NewCSProposalReply(bp *abstractprotocol.BaseProposalReply, sig string, myAddress string, bcType string, bcName string, bcOrg string) *CSProposalReply {
 	return &CSProposalReply{
 		BaseProposalReply: bp,
 		Signature:         sig,
 		Address:           myAddress,
 		BlockchainType:    bcType,
 		BlockchainName:    bcName,
+		BlockchainOrg:     bcOrg,
 	}
 }
 
@@ -305,50 +307,27 @@ func (p *ProtocolHandler) SignProposal(newProposal abstractprotocol.Proposal) (s
 // of the proposal from the producer.
 func (p *ProtocolHandler) DecideOnProposal(proposal abstractprotocol.Proposal,
 	myId string,
-	runningBlockchains []string,
+	runningBlockchains []map[string]string,
 	messageTarget interface{},
 	sendMessage func(mt interface{}, pay []byte) error) (abstractprotocol.ProposalReply, error) {
 
 	reply, replyErr := abstractprotocol.DecideOnProposal(p, proposal, myId)
-	newReply := NewCSProposalReply(reply, "", "", "", "")
+	newReply := NewCSProposalReply(reply, "", "", "", "", "")
 
 	if replyErr == nil {
-		if proposal.Version() == 1 {
 
-			// The proposal reply is set to decision == true at this point. If any of the extended processing done in this
-			// function encounters an error then we need to change the decision to false so that the other party will
-			// know what we decided.
-
-			hash := sha3.Sum256([]byte(proposal.TsAndCs()))
-			glog.V(5).Infof(fmt.Sprintf("Protocol %v decide on proposal using hash %v with agreement %v", p.Name(), hex.EncodeToString(hash[:]), proposal.AgreementId()))
-
-			if sig, err := ethblockchain.SignHash(hex.EncodeToString(hash[:]), p.ColonusDir, p.GethURL); err != nil {
-				replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error signing hash %v, error %v", p.Name(), hex.EncodeToString(hash[:]), err))
-				newReply.DoNotAcceptProposal()
-			} else if len(sig) > 2 {
-				newReply.SetSignature(sig[2:])
-				newReply.SetAddress(p.MyAddress)
-			} else {
-				replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received incorrect signature %v from eth_sign.", p.Name(), sig))
-				newReply.DoNotAcceptProposal()
+		// Based on the list of already running blockchains, choose 1 of them if possible.
+		if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
+			replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error demarshalling TsAndCs, %v", p.Name(), err))
+			newReply.DoNotAcceptProposal()
+		} else {
+			bcChoices := tcPolicy.AgreementProtocols[0].Blockchains
+			bcRunning := (*new(policy.BlockchainList))
+			for _, bc := range runningBlockchains {
+				bcRunning.Add_Blockchain(policy.Blockchain_Factory(policy.Ethereum_bc, bc["name"], bc["org"]))
 			}
-		} else if proposal.Version() == 2 {
-			// Based on the list of already running blockchains, choose 1 of them if possible.
-			if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
-				replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error demarshalling TsAndCs, %v", p.Name(), err))
-				newReply.DoNotAcceptProposal()
-			} else if overrideName := os.Getenv("CMTN_BLOCKCHAIN"); overrideName != "" {
-				newReply.SetBlockchain(policy.Ethereum_bc, overrideName)
-			} else {
-				bcChoices := tcPolicy.AgreementProtocols[0].Blockchains
-				bcRunning := (*new(policy.BlockchainList))
-				for _, bc := range runningBlockchains {
-					bcRunning.Add_Blockchain(policy.Blockchain_Factory(policy.Ethereum_bc, bc))
-				}
-				bcIntersect, _ := bcRunning.Intersects_With(&bcChoices, policy.Ethereum_bc)
-				newReply.SetBlockchain(policy.Ethereum_bc, (*bcIntersect)[0].Name)
-			}
-
+			bcIntersect, _ := bcRunning.Intersects_With(&bcChoices, policy.Ethereum_bc, policy.Default_Blockchain_org)
+			newReply.SetBlockchain(policy.Ethereum_bc, (*bcIntersect)[0].Name, (*bcIntersect)[0].Org)
 		}
 
 	}
@@ -709,7 +688,6 @@ func (p *ProtocolHandler) VerifyAgreement(agreementId string,
 		}
 	}
 
-	return false, nil
 }
 
 func (p *ProtocolHandler) RecordMeter(agreementId string, mn *metering.MeteringNotification) error {

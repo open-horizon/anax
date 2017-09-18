@@ -105,7 +105,7 @@ type ProtocolHandler interface {
 
 	DecideOnProposal(proposal Proposal,
 		myId string,
-		runningBlockchains []string,
+		runningBlockchains []map[string]string,
 		messageTarget interface{},
 		sendMessage func(mt interface{}, pay []byte) error) (ProposalReply, error)
 

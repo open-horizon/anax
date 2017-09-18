@@ -82,6 +82,7 @@ type Workload struct {
 	WorkloadPassword             string           `json:"workload_password,omitempty"`              // The password used to create the bcrypt hash that is passed to the workload so that the workload can verify the caller
 	Priority                     WorkloadPriority `json:"priority,omitempty"`                       // The highest priority workload is tried first for an agrement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
 	WorkloadURL                  string           `json:"workloadUrl,omitempty"`                    // Added with MS split, refers to a workload definition in the exchange
+	Org                          string           `json:"organization,omitempty"`                   // Added woth org support, refers to the organization where the workload is defined
 	Version                      string           `json:"version,omitempty"`                        // Added with MS split, refers to the version of the workload
 	Arch                         string           `json:"arch,omitempty"`                           // Added with MS split, refers to the hardware architecture of the workload definition
 	DeploymentOverrides          string           `json:"deployment_overrides,omitempty"`           // Added with MS split, env var overrides for the workload
@@ -96,12 +97,13 @@ func (w Workload) String() string {
 		"Torrent: %v, "+
 		"Workload Password: %v, "+
 		"Workload URL: %v, "+
+		"Org: %v, "+
 		"Version: %v, "+
 		"Arch: %v, "+
 		"Deployment Overrides: %v, "+
 		"Deployment Overrides Signature: %v",
 		w.Priority, w.Deployment, w.DeploymentSignature, w.DeploymentUserInfo, w.Torrent, w.WorkloadPassword,
-		w.WorkloadURL, w.Version, w.Arch, w.DeploymentOverrides, w.DeploymentOverridesSignature)
+		w.WorkloadURL, w.Org, w.Version, w.Arch, w.DeploymentOverrides, w.DeploymentOverridesSignature)
 }
 
 func (w Workload) ShortString() string {
@@ -133,6 +135,7 @@ func (wl Workload) IsSame(compare Workload) bool {
 	} else {
 		return wl.WorkloadURL == compare.WorkloadURL &&
 			wl.Version == compare.Version &&
+			wl.Org == compare.Org &&
 			wl.Arch == compare.Arch &&
 			wl.DeploymentOverrides == compare.DeploymentOverrides &&
 			wl.DeploymentOverridesSignature == compare.DeploymentOverridesSignature

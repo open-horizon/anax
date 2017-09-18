@@ -15,16 +15,38 @@ func Test_Payloadmanager_init_success1(t *testing.T) {
 	} else {
 
 		stringDump := pm.String()
-		if !strings.Contains(stringDump, "Name: find test policy Workload:") {
+		if !strings.Contains(stringDump, "Org: testorg Name: find test policy Workload:") {
 			t.Errorf("String format of policy manager is incorrect, returned %v", stringDump)
-		} else if pm.GetPolicy("find test policy") == nil {
+		} else if pm.GetPolicy("testorg","find test policy") == nil {
 			t.Errorf("Did not find policy by name.")
 		} else if pm.AgreementCounts["find test policy"].Count != 0 || len(pm.AgreementCounts["find test policy"].AgreementIds) != 0 {
 			t.Errorf("Contract Count map is not initialized correctly %v", pm)
-		} else if atMax, err := pm.ReachedMaxAgreements(pm.GetAllPolicies()); err != nil {
+		} else if atMax, err := pm.ReachedMaxAgreements(pm.GetAllPolicies("testorg")); err != nil {
 			t.Error(err)
 		} else if atMax {
-			t.Errorf("Policy max agreements is %v, should not be reporting reached max contracts.", pm.Policies[0].MaxAgreements)
+			t.Errorf("Policy max agreements is %v, should not be reporting reached max contracts.", pm.Policies["testorg"][0].MaxAgreements)
+		}
+
+	}
+}
+
+func Test_Payloadmanager_init_success2(t *testing.T) {
+
+	if pm, err := Initialize("./test/pfmultiorg/", nil); err != nil {
+		t.Error(err)
+	} else {
+
+		stringDump := pm.String()
+		if !strings.Contains(stringDump, "Org: testorg Name: find test policy Workload:") {
+			t.Errorf("String format of policy manager is incorrect, returned %v", stringDump)
+		} else if pm.GetPolicy("testorg","find test policy") == nil {
+			t.Errorf("Did not find policy by name.")
+		} else if pm.GetPolicy("testorg2","find test policy") == nil {
+			t.Errorf("Did not find policy by name.")
+		} else if num := pm.NumberPolicies(); num != 3 {
+			t.Errorf("Did not find 3 policies, found %v", num)
+		} else if orgs := pm.GetAllPolicyOrgs(); len(orgs) != 2 {
+			t.Errorf("Expected 2 orgs, but got %v", len(orgs))
 		}
 
 	}
@@ -42,13 +64,13 @@ func Test_contractCounter_success(t *testing.T) {
 		t.Error(err)
 	} else {
 
-		if serialPol, err := pm.GetSerializedPolicies(); err != nil {
+		if serialPol, err := pm.GetSerializedPolicies("testorg"); err != nil {
 			t.Error(err)
 		} else if len(serialPol) != 3 {
 			t.Errorf("There should be 3 policies, there are only %v returned.", len(serialPol))
 		}
 
-		pol := pm.GetPolicy("find policy2")
+		pol := pm.GetPolicy("testorg", "find policy2")
 		if atMax, err := pm.ReachedMaxAgreements([]Policy{*pol}); err != nil {
 			t.Error(err)
 		} else if atMax {
@@ -105,7 +127,7 @@ func Test_contractCounter_failure1(t *testing.T) {
 	} else {
 		// Grab the wrong policy so that we can do error tests
 		// Simple match, one attribute for a single group
-		wrongPol = pm.GetPolicy("find test policy")
+		wrongPol = pm.GetPolicy("testorg", "find test policy")
 
 	}
 
@@ -146,7 +168,7 @@ func Test_contractCounter_failure1(t *testing.T) {
 		}
 
 		// Grab the right policy
-		pol := pm.GetPolicy("find policy2")
+		pol := pm.GetPolicy("testorg", "find policy2")
 		if err := pm.AttemptingAgreement([]Policy{*pol}, "0x12345a"); err != nil {
 			t.Error(err)
 		} else if err := pm.AttemptingAgreement([]Policy{*pol}, "0x12345a"); err == nil {
@@ -189,19 +211,19 @@ func Test_find_by_apispec1(t *testing.T) {
 		t.Error(err)
 	} else {
 		searchURL := "http://mycompany.com/dm/gps"
-		pols := pm.GetPolicyByURL(searchURL, "1.0.0")
+		pols := pm.GetPolicyByURL(searchURL, "testorg", "1.0.0")
 		if len(pols) != 0 {
 			t.Errorf("Expected to find 0 policy, found %v", len(pols))
 		}
 
 		searchURL = "http://mycompany.com/dm/cpu_temp"
-		pols = pm.GetPolicyByURL(searchURL, "1.0.1")
+		pols = pm.GetPolicyByURL(searchURL, "testorg", "1.0.1")
 		if len(pols) != 1 {
 			t.Errorf("Expected to find 1 policies, found %v", len(pols))
 		}
 
 		searchURL = ""
-		pols = pm.GetPolicyByURL(searchURL, "1.0.0")
+		pols = pm.GetPolicyByURL(searchURL, "testorg", "1.0.0")
 		if len(pols) != 0 {
 			t.Errorf("Expected to find 0 policies, found %v", len(pols))
 		}
@@ -218,9 +240,9 @@ func Test_add_policy(t *testing.T) {
 		newPolicy := new(Policy)
 		if err := json.Unmarshal([]byte(newPolicyContent), newPolicy); err != nil {
 			t.Errorf("Error demarshalling new policy: %v", err)
-		} else if err := pm.AddPolicy(newPolicy); err != nil {
+		} else if err := pm.AddPolicy("testorg", newPolicy); err != nil {
 			t.Errorf("Error adding new policy: %v", err)
-		} else if err := pm.AddPolicy(newPolicy); err == nil {
+		} else if err := pm.AddPolicy("testorg", newPolicy); err == nil {
 			t.Errorf("Should have been an error adding duplicate policy: %v", err)
 		} else if num := pm.NumberPolicies(); num != 2 {
 			t.Errorf("Expecting 2 policies, have %v", num)
@@ -232,7 +254,7 @@ func Test_add_policy(t *testing.T) {
 		if err := json.Unmarshal([]byte(newPolicyContent), newPolicy); err != nil {
 			t.Errorf("Error demarshalling new policy: %v", err)
 		} else {
-			pm.UpdatePolicy(newPolicy)
+			pm.UpdatePolicy("testorg", newPolicy)
 			if num := pm.NumberPolicies(); num != 2 {
 				t.Errorf("Expecting 2 policies, have %v", num)
 			}
@@ -244,7 +266,7 @@ func Test_add_policy(t *testing.T) {
 		if err := json.Unmarshal([]byte(newPolicyContent), newPolicy); err != nil {
 			t.Errorf("Error demarshalling new policy: %v", err)
 		} else {
-			pm.UpdatePolicy(newPolicy)
+			pm.UpdatePolicy("testorg", newPolicy)
 			if num := pm.NumberPolicies(); num != 3 {
 				t.Errorf("Expecting 3 policies, have %v", num)
 			}
@@ -256,7 +278,7 @@ func Test_add_policy(t *testing.T) {
 		if err := json.Unmarshal([]byte(newPolicyContent), newPolicy); err != nil {
 			t.Errorf("Error demarshalling new policy: %v", err)
 		} else {
-			pm.DeletePolicy(newPolicy)
+			pm.DeletePolicy("testorg", newPolicy)
 			if num := pm.NumberPolicies(); num != 3 {
 				t.Errorf("Expecting 3 policies, have %v", num)
 			}
@@ -268,7 +290,7 @@ func Test_add_policy(t *testing.T) {
 		if err := json.Unmarshal([]byte(newPolicyContent), newPolicy); err != nil {
 			t.Errorf("Error demarshalling new policy: %v", err)
 		} else {
-			pm.DeletePolicy(newPolicy)
+			pm.DeletePolicy("testorg", newPolicy)
 			if num := pm.NumberPolicies(); num != 2 {
 				t.Errorf("Expecting 2 policies, have %v", num)
 			}
@@ -280,7 +302,7 @@ func Test_add_policy(t *testing.T) {
 		if err := json.Unmarshal([]byte(newPolicyContent), newPolicy); err != nil {
 			t.Errorf("Error demarshalling new policy: %v", err)
 		} else {
-			pm.DeletePolicy(newPolicy)
+			pm.DeletePolicy("testorg", newPolicy)
 			if num := pm.NumberPolicies(); num != 1 {
 				t.Errorf("Expecting 1 policies, have %v", num)
 			}

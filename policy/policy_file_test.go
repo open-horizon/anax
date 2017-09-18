@@ -95,23 +95,31 @@ func Test_PolicyFileChangeWatcher(t *testing.T) {
 	var errorDetected = 0
 	var checkInterval = 1
 
-	changeNotify := func(fileName string, policy *Policy) {
-		changeDetected += 1
-		// fmt.Printf("Change to %v\n", fileName)
+	changeNotify := func(org string, fileName string, policy *Policy) {
+		if org != "testorg" {
+			errorDetected += 1
+			fmt.Printf("Error for %v %v, wrong org\n", org, fileName)
+		} else {
+			changeDetected += 1
+		}
 	}
 
-	deleteNotify := func(fileName string, policy *Policy) {
-		deleteDetected += 1
-		// fmt.Printf("Delete for %v\n", fileName)
+	deleteNotify := func(org string, fileName string, policy *Policy) {
+		if org != "testorg" {
+			errorDetected += 1
+			fmt.Printf("Error for %v %v, wrong org\n", org, fileName)
+		} else {
+			deleteDetected += 1
+		}
 	}
 
-	errorNotify := func(fileName string, err error) {
+	errorNotify := func(org string, fileName string, err error) {
 		errorDetected += 1
-		fmt.Printf("Error for %v error %v\n", fileName, err)
+		fmt.Printf("Error for %v %v error %v\n", org, fileName, err)
 	}
 
 	// Test a single call into the watcher
-	contents := make(map[string]*WatchEntry)
+	contents := NewContents()
 	if _, err := PolicyFileChangeWatcher("./test/pfwatchtest/", contents, changeNotify, deleteNotify, errorNotify, nil, 0); err != nil {
 		t.Error(err)
 	} else if changeDetected != 1 || deleteDetected != 0 || errorDetected != 0 {
@@ -121,7 +129,7 @@ func Test_PolicyFileChangeWatcher(t *testing.T) {
 	}
 
 	// Test a continously running watcher
-	contents = make(map[string]*WatchEntry)
+	contents = NewContents()
 	go PolicyFileChangeWatcher("./test/pfwatchtest/", contents, changeNotify, deleteNotify, errorNotify, nil, checkInterval)
 
 	// Give the watcher a chance to read the contents of the pfwatchtest directory and fire events
@@ -132,7 +140,7 @@ func Test_PolicyFileChangeWatcher(t *testing.T) {
 	newPolicy := new(Policy)
 	if err := json.Unmarshal([]byte(newPolicyContent), newPolicy); err != nil {
 		t.Errorf("Error demarshalling new policy: %v", err)
-	} else if err := WritePolicyFile(newPolicy, "./test/pfwatchtest/new.policy"); err != nil {
+	} else if err := WritePolicyFile(newPolicy, "./test/pfwatchtest/testorg/new.policy"); err != nil {
 		t.Errorf("Error writing new policy: %v", err)
 	}
 
@@ -140,7 +148,7 @@ func Test_PolicyFileChangeWatcher(t *testing.T) {
 	time.Sleep(3 * time.Second)
 
 	// Change the newly created file
-	if err := WritePolicyFile(newPolicy, "./test/pfwatchtest/new.policy"); err != nil {
+	if err := WritePolicyFile(newPolicy, "./test/pfwatchtest/testorg/new.policy"); err != nil {
 		t.Errorf("Error writing new policy: %v", err)
 	}
 
@@ -152,7 +160,7 @@ func Test_PolicyFileChangeWatcher(t *testing.T) {
 	newPolicy = new(Policy)
 	if err := json.Unmarshal([]byte(newPolicyContent), newPolicy); err != nil {
 		t.Errorf("Error demarshalling new policy: %v", err)
-	} else if err := WritePolicyFile(newPolicy, "./test/pfwatchtest/new.policy"); err != nil {
+	} else if err := WritePolicyFile(newPolicy, "./test/pfwatchtest/testorg/new.policy"); err != nil {
 		t.Errorf("Error writing new policy: %v", err)
 	}
 
@@ -160,7 +168,7 @@ func Test_PolicyFileChangeWatcher(t *testing.T) {
 	time.Sleep(3 * time.Second)
 
 	// Remove the new file and give the watcher a chance to see it
-	os.Remove("./test/pfwatchtest/new.policy")
+	os.Remove("./test/pfwatchtest/testorg/new.policy")
 	time.Sleep(3 * time.Second)
 
 	if changeDetected != 4 || deleteDetected != 2 || errorDetected != 0 {
@@ -175,17 +183,17 @@ func Test_PolicyFileChangeWatcher_Empty(t *testing.T) {
 	var changeDetected = 0
 	var errorDetected = 0
 
-	changeNotify := func(fileName string, policy *Policy) {
+	changeNotify := func(org string, fileName string, policy *Policy) {
 		changeDetected += 1
 		// fmt.Printf("Change to %v\n", fileName)
 	}
 
-	deleteNotify := func(fileName string, policy *Policy) {
+	deleteNotify := func(org string, fileName string, policy *Policy) {
 		deleteDetected += 1
 		// fmt.Printf("Delete for %v\n", fileName)
 	}
 
-	errorNotify := func(fileName string, err error) {
+	errorNotify := func(org string, fileName string, err error) {
 		errorDetected += 1
 		// fmt.Printf("Error for %v error %v\n", fileName, err)
 	}
@@ -199,7 +207,7 @@ func Test_PolicyFileChangeWatcher_Empty(t *testing.T) {
 	}
 
 	// Test a single call into the watcher
-	contents := make(map[string]*WatchEntry)
+	contents := NewContents()
 	if _, err := PolicyFileChangeWatcher("/tmp/pfempty", contents, changeNotify, deleteNotify, errorNotify, nil, 0); err != nil {
 		t.Error(err)
 	} else if changeDetected != 0 || deleteDetected != 0 || errorDetected != 0 {
@@ -213,23 +221,23 @@ func Test_PolicyFileChangeWatcher_NoDir(t *testing.T) {
 	var changeDetected = 0
 	var errorDetected = 0
 
-	changeNotify := func(fileName string, policy *Policy) {
+	changeNotify := func(org string, fileName string, policy *Policy) {
 		changeDetected += 1
 		// fmt.Printf("Change to %v\n", fileName)
 	}
 
-	deleteNotify := func(fileName string, policy *Policy) {
+	deleteNotify := func(org string, fileName string, policy *Policy) {
 		deleteDetected += 1
 		// fmt.Printf("Delete for %v\n", fileName)
 	}
 
-	errorNotify := func(fileName string, err error) {
+	errorNotify := func(org string, fileName string, err error) {
 		errorDetected += 1
 		// fmt.Printf("Error for %v error %v\n", fileName, err)
 	}
 
 	// Test a single call into the watcher
-	contents := make(map[string]*WatchEntry)
+	contents := NewContents()
 	if _, err := PolicyFileChangeWatcher("./test/notexist/", contents, changeNotify, deleteNotify, errorNotify, nil, 0); err == nil {
 		t.Error("Expected 'no such directory error', but no error was returned.")
 	} else if !strings.Contains(err.Error(), "no such file or directory") {
@@ -241,9 +249,9 @@ func Test_PolicyFileChangeWatcher_NoDir(t *testing.T) {
 // Let's start with a compatible test between a producer and consumer.
 func Test_Policy_Compatible(t *testing.T) {
 
-	if pf_prod, err := ReadPolicyFile("./test/pfcompat1/device.policy"); err != nil {
+	if pf_prod, err := ReadPolicyFile("./test/pfcompat1/testorg/device.policy"); err != nil {
 		t.Error(err)
-	} else if pf_con, err := ReadPolicyFile("./test/pfcompat1/agbot.policy"); err != nil {
+	} else if pf_con, err := ReadPolicyFile("./test/pfcompat1/testorg/agbot.policy"); err != nil {
 		t.Error(err)
 	} else if err := Are_Compatible(pf_prod, pf_con); err != nil {
 		t.Error(err)
@@ -329,14 +337,14 @@ func Test_Policy_Creation(t *testing.T) {
 
 	pf_created := Policy_Factory("test creation")
 
-	pf_created.Add_API_Spec(APISpecification_Factory("http://mycompany.com/dm/cpu_temp", "1.0.0", "arm"))
-	pf_created.Add_API_Spec(APISpecification_Factory("http://mycompany.com/dm/gps", "1.0.0", "arm"))
+	pf_created.Add_API_Spec(APISpecification_Factory("http://mycompany.com/dm/cpu_temp", "myorg", "1.0.0", "arm"))
+	pf_created.Add_API_Spec(APISpecification_Factory("http://mycompany.com/dm/gps", "myorg", "1.0.0", "arm"))
 
 	agp1 := AgreementProtocol_Factory(CitizenScientist)
-	agp1.Blockchains.Add_Blockchain(Blockchain_Factory(Ethereum_bc, "bc1"))
+	agp1.Blockchains.Add_Blockchain(Blockchain_Factory(Ethereum_bc, "bc1", "myorg"))
 	pf_created.Add_Agreement_Protocol(agp1)
 	agp2 := AgreementProtocol_Factory("2Party Bitcoin")
-	agp2.Blockchains.Add_Blockchain(Blockchain_Factory(Ethereum_bc, "bc2"))
+	agp2.Blockchains.Add_Blockchain(Blockchain_Factory(Ethereum_bc, "bc2", "myorg"))
 	pf_created.Add_Agreement_Protocol(agp2)
 
 	pf_created.Add_Property(Property_Factory("rpiprop1", "rpival1"))
@@ -721,6 +729,20 @@ func create_BlockchainList(jsonString string, t *testing.T) *BlockchainList {
 
 	if err := json.Unmarshal([]byte(jsonString), &bl); err != nil {
 		t.Errorf("Error unmarshalling BlockchainList json string: %v error:%v\n", jsonString, err)
+		return nil
+	} else {
+		return bl
+	}
+}
+
+// Create a Blockchain object from a JSON serialization. The JSON serialization
+// does not have to be a valid Blockchain serialization, just has to be a valid
+// JSON serialization.
+func create_Blockchain(jsonString string, t *testing.T) *Blockchain {
+	bl := new(Blockchain)
+
+	if err := json.Unmarshal([]byte(jsonString), &bl); err != nil {
+		t.Errorf("Error unmarshalling Blockchain json string: %v error:%v\n", jsonString, err)
 		return nil
 	} else {
 		return bl

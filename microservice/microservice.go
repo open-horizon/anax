@@ -44,13 +44,14 @@ func DecodeReasonCode(code uint64) string {
 // Currently the MicroserviceDefiniton structures in exchange and persistence packages are identical.
 // But we need to make them separate structures in case we need to put more in persistence structure.
 // This function converts the structure from exchange to persistence.
-func ConvertToPersistent(ems *exchange.MicroserviceDefinition) (*persistence.MicroserviceDefinition, error) {
+func ConvertToPersistent(ems *exchange.MicroserviceDefinition, org string) (*persistence.MicroserviceDefinition, error) {
 	pms := new(persistence.MicroserviceDefinition)
 
 	pms.Owner = ems.Owner
 	pms.Label = ems.Label
 	pms.Description = ems.Description
 	pms.SpecRef = ems.SpecRef
+	pms.Org = org
 	pms.Version = ems.Version
 	pms.Arch = ems.Arch
 	pms.DownloadURL = ems.DownloadURL
@@ -161,17 +162,17 @@ func MicroserviceNeedsRollback(msdef *persistence.MicroserviceDefinition) bool {
 }
 
 // Get the new microservice def that the given msdef need to upgrade to.
-// This function gets the latest madef from the exchange and compare the version and content with the current msdef and decide if it needs to upgrade.
-// It returns the new msdef if the old one needs to upgrade, otherwide return nil
+// This function gets the latest msdef from the exchange and compare the version and content with the current msdef and decide if it needs to upgrade.
+// It returns the new msdef if the old one needs to upgrade, otherwide return nil.
 func GetUpgradeMicroserviceDef(msdef *persistence.MicroserviceDefinition, httpClientFactory *config.HTTPClientFactory, exchURL string, deviceId string, deviceToken string, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
 	glog.V(3).Infof("Get new microservice def for upgrading microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
 
 	// convert the sensor version to a version expression
 	if vExp, err := policy.Version_Expression_Factory(msdef.UpgradeVersionRange); err != nil {
 		return nil, fmt.Errorf("Unable to convert %v to a version expression, error %v", msdef.UpgradeVersionRange, err)
-	} else if e_msdef, err := exchange.GetMicroservice(httpClientFactory, msdef.SpecRef, vExp.Get_expression(), msdef.Arch, exchURL, deviceId, deviceToken); err != nil {
+	} else if e_msdef, err := exchange.GetMicroservice(httpClientFactory, msdef.SpecRef, msdef.Org, vExp.Get_expression(), msdef.Arch, exchURL, deviceId, deviceToken); err != nil {
 		return nil, fmt.Errorf("Filed to find a highest version for microservice %v version range %v: %v", msdef.SpecRef, msdef.UpgradeVersionRange, err)
-	} else if new_msdef, err := ConvertToPersistent(e_msdef); err != nil {
+	} else if new_msdef, err := ConvertToPersistent(e_msdef, msdef.Org); err != nil {
 		return nil, fmt.Errorf("Failed to convert microservice metadata to persistent.MicroserviceDefinition for %v. %v", msdef.SpecRef, err)
 	} else {
 		// if the newer version is smaller than the old one, do nothing
@@ -181,7 +182,7 @@ func GetUpgradeMicroserviceDef(msdef *persistence.MicroserviceDefinition, httpCl
 			return nil, nil // no change, do nothing
 		} else if msdef.UpgradeNewMsId != "" {
 			if msdefs, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UrlVersionMSFilter(new_msdef.SpecRef, new_msdef.Version), persistence.ArchivedMSFilter()}); err != nil {
-				return nil, fmt.Errorf("Filed to get archived microservice definition for %v version %v. %v", msdef.SpecRef, msdef.Version, err)
+				return nil, fmt.Errorf("Failed to get archived microservice definition for %v version %v. %v", msdef.SpecRef, msdef.Version, err)
 			} else if msdefs != nil && len(msdefs) > 0 {
 				for _, ms := range msdefs {
 					if msdef.UpgradeNewMsId == ms.Id && bytes.Equal(ms.MetadataHash, new_msdef.MetadataHash) {
@@ -219,21 +220,21 @@ func GetRollbackMicroserviceDef(msdef *persistence.MicroserviceDefinition, db *b
 }
 
 // Remove the policy for the given microservice and rename the policy file name.
-func RemoveMicroservicePolicy(spec_ref string, version string, msdef_id string, policy_path string, pm *policy.PolicyManager) error {
+func RemoveMicroservicePolicy(spec_ref string, org string, version string, msdef_id string, policy_path string, pm *policy.PolicyManager) error {
 
-	glog.V(3).Infof("Remove policy for %v version %v, key %v", spec_ref, version, msdef_id)
+	glog.V(3).Infof("Remove policy for %v/%v version %v, key %v", org, spec_ref, version, msdef_id)
 
-	policies := pm.GetAllPolicies()
+	policies := pm.GetAllPolicies(org)
 	if len(policies) > 0 {
 		for _, pol := range policies {
 			apiSpec := pol.APISpecs[0]
-			if apiSpec.SpecRef == spec_ref && apiSpec.Version == version {
-				pm.DeletePolicy(&pol)
+			if apiSpec.SpecRef == spec_ref && apiSpec.Org == org && apiSpec.Version == version {
+				pm.DeletePolicy(org, &pol)
 
 				// get the policy file name
 				a_tmp := strings.Split(spec_ref, "/")
 				fileName := a_tmp[len(a_tmp)-1]
-				fullFileName := policy_path + fileName + ".policy"
+				fullFileName := policy_path + "/" + org + "/" + fileName + ".policy"
 
 				// rename the policy file
 				if err := os.Rename(fullFileName, fullFileName+"."+msdef_id); err != nil {
@@ -271,7 +272,7 @@ func getExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 
 	var resp interface{}
 	resp = new(exchange.GetDevicesResponse)
-	targetURL := exchangeUrl + "devices/" + deviceId
+	targetURL := exchangeUrl + "orgs/" + exchange.GetOrg(deviceId) + "/devices/" + exchange.GetId(deviceId)
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, deviceId, deviceToken, nil, &resp); err != nil {
 			glog.Errorf(err.Error())
@@ -383,7 +384,7 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 			maxAgreements = 2 // hard coded 2 for now, will change to 0 later
 		}
 
-		if err := policy.GeneratePolicy(e, msdef.SpecRef, msdef.Name, &msdef.Version, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *list, maxAgreements, policyPath); err != nil {
+		if err := policy.GeneratePolicy(e, msdef.SpecRef, msdef.Org, msdef.Name, msdef.Version, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *list, maxAgreements, policyPath); err != nil {
 			return fmt.Errorf("Failed to generate policy for %v version %v. Error: %v", msdef.SpecRef, msdef.Version, err)
 		}
 	}
@@ -393,7 +394,7 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 
 // Unregisters the given microservice from the exchange
 func UnregisterMicroserviceExchange(spec_ref string, httpClientFactory *config.HTTPClientFactory, exchange_url string, device_id string, device_token string, db *bolt.DB) error {
-	glog.V(3).Infof("Unregister microservice from exchange for %v.", spec_ref)
+	glog.V(3).Infof("Unregister microservice %v from exchange for %v.", spec_ref, device_id)
 
 	var deviceName string
 
@@ -406,9 +407,9 @@ func UnregisterMicroserviceExchange(spec_ref string, httpClientFactory *config.H
 	}
 
 	if eDevice, err := getExchangeDevice(httpClientFactory, device_id, device_token, exchange_url); err != nil {
-		return fmt.Errorf("Error getting device from the exchange. %v", err)
+		return fmt.Errorf("Error getting device %v from the exchange. %v", device_id, err)
 	} else if eDevice.RegisteredMicroservices == nil || len(eDevice.RegisteredMicroservices) == 0 {
-		return nil // no registered miceroservices, nothing to do
+		return nil // no registered microservices, nothing to do
 	} else {
 		// remove the microservice with the given spec_ref
 		ms_put := make([]exchange.Microservice, 0, 10)
@@ -423,7 +424,7 @@ func UnregisterMicroserviceExchange(spec_ref string, httpClientFactory *config.H
 		pdr.RegisteredMicroservices = ms_put
 		var resp interface{}
 		resp = new(exchange.PutDeviceResponse)
-		targetURL := exchange_url + "devices/" + device_id
+		targetURL := exchange_url + "orgs/" + exchange.GetOrg(device_id) + "/devices/" + exchange.GetId(device_id)
 
 		glog.V(3).Infof("Unregistering microservices: %v at %v", pdr.ShortString(), targetURL)
 
@@ -435,7 +436,7 @@ func UnregisterMicroserviceExchange(spec_ref string, httpClientFactory *config.H
 				time.Sleep(10 * time.Second)
 				continue
 			} else {
-				glog.V(3).Infof("Adviticed policies without microservice %v in exchange: %v", spec_ref, resp)
+				glog.V(3).Infof("Unregistered microservice %v in exchange: %v", spec_ref, resp)
 				return nil
 			}
 		}

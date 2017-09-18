@@ -59,7 +59,7 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 // This is an implementation of the Decide on proposal API, it has no extensions.
 func (p *ProtocolHandler) DecideOnProposal(proposal abstractprotocol.Proposal,
 	myId string,
-	ignore []string,
+	ignore []map[string]string,
 	messageTarget interface{},
 	sendMessage func(mt interface{}, pay []byte) error) (abstractprotocol.ProposalReply, error) {
 

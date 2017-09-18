@@ -30,6 +30,7 @@ func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB
 				pm:               pm,
 				db:               db,
 				config:           cfg,
+				httpClient:       cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 				agbotId:          cfg.AgreementBot.ExchangeId,
 				token:            cfg.AgreementBot.ExchangeToken,
 				deferredCommands: nil,
@@ -68,7 +69,7 @@ func (c *BasicProtocolHandler) Initialize() {
 
 }
 
-func (c *BasicProtocolHandler) AgreementProtocolHandler(typeName string, name string) abstractprotocol.ProtocolHandler {
+func (c *BasicProtocolHandler) AgreementProtocolHandler(typeName string, name string, org string) abstractprotocol.ProtocolHandler {
 	return c.agreementPH
 }
 
@@ -161,7 +162,7 @@ func (c *BasicProtocolHandler) SetBlockchainWritable(ev *events.AccountFundedMes
 	return
 }
 
-func (c *BasicProtocolHandler) IsBlockchainWritable(typeName string, name string) bool {
+func (c *BasicProtocolHandler) IsBlockchainWritable(typeName string, name string, org string) bool {
 	return true
 }
 

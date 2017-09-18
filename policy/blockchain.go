@@ -11,6 +11,7 @@ import (
 
 const Ethereum_bc = "ethereum"
 const Default_Blockchain_name = "bluehorizon"
+const Default_Blockchain_org = "IBM"
 
 // This struct indicates the type and instance of blockchain to be used by the policy
 type BlockchainList []Blockchain
@@ -19,7 +20,7 @@ func (a BlockchainList) IsSame(compare BlockchainList) bool {
 	for _, bc := range a {
 		found := false
 		for _, compareBC := range compare {
-			if bc.Same_Blockchain(&compareBC, "") {
+			if bc.Same_Blockchain(&compareBC, "", "") {
 				found = true
 				break
 			}
@@ -33,22 +34,23 @@ func (a BlockchainList) IsSame(compare BlockchainList) bool {
 
 type Blockchain struct {
 	Type string `json:"type"` // The type of blockchain
-	Name string `json:"name"` // The name of the blockchain instance in the exchange
-	// in this field is specific to the value of the type
+	Name string `json:"name"` // The name of the blockchain instance in the exchange,it is specific to the value of the type
+	Org  string `json:"organization"` // The organization that owns the blockchain definition
 }
 
 // This function creates Blockchain objects
-func Blockchain_Factory(bc_type string, name string) *Blockchain {
+func Blockchain_Factory(bc_type string, name string, org string) *Blockchain {
 	b := new(Blockchain)
 	b.Type = bc_type
 	b.Name = name
+	b.Org = org
 
 	return b
 }
 
 // This function compares 2 BlockchainList arrays, returning all the blockchains that intersect
 // between the 2 lists.
-func (self *BlockchainList) Intersects_With(other *BlockchainList, defaultType string) (*BlockchainList, error) {
+func (self *BlockchainList) Intersects_With(other *BlockchainList, defaultType string, defaultOrg string) (*BlockchainList, error) {
 	inter := new(BlockchainList)
 
 	// If both lists are empty then they intersect on the empty list, which is legal
@@ -68,7 +70,7 @@ func (self *BlockchainList) Intersects_With(other *BlockchainList, defaultType s
 	// If the lists are not empty then we need to find an intersection
 	for _, sub_ele := range *self {
 		for _, other_ele := range *other {
-			if sub_ele.Same_Blockchain(&other_ele, defaultType) {
+			if sub_ele.Same_Blockchain(&other_ele, defaultType, defaultOrg) {
 				(*inter) = append(*inter, sub_ele)
 			}
 		}
@@ -86,7 +88,7 @@ func (self *BlockchainList) Concatenate(new_list *BlockchainList) {
 	for _, new_ele := range *new_list {
 		found := false
 		for _, self_ele := range *self {
-			if new_ele.Same_Blockchain(&self_ele, "") {
+			if new_ele.Same_Blockchain(&self_ele, "", "") {
 				found = true
 				break
 			}
@@ -108,35 +110,54 @@ func (self *BlockchainList) Single_Element() *BlockchainList {
 // This function compares 2 Blockchain objects to see if they are equal. If the caller
 // wants this function to consider absent default for the type, then they can pass in
 // the actual default for comparison. If defaultType is the empty string then
-// an exact match will be performed.
-func (self *Blockchain) Same_Blockchain(second *Blockchain, defaultType string) bool {
+// an exact match will be performed. Same is true for the default Org.
+func (self *Blockchain) Same_Blockchain(second *Blockchain, defaultType string, defaultOrg string) bool {
 
 	if self.Name != second.Name {
 		return false
-	} else if self.Type != second.Type {
+	}
+
+	if self.Type != second.Type {
 		// The types might be different because one of them is not specified and the other has
 		// the default value specified. The default type is defined by the agreement protocol.
 		if defaultType != "" {
 			if self.Type == "" && defaultType == second.Type {
-				return true
+				// continue
 			} else if second.Type == "" && defaultType == self.Type {
+				// continue
+			} else {
+				return false
+			}
+		} else {
+			return false
+		}
+	}
+
+	if self.Org != second.Org {
+		// The orgs might be different because one of them is not specified and the other has
+		// the default value specified. The default org is system wide.
+		if defaultOrg != "" {
+			if self.Org == "" && defaultOrg == second.Org {
+				return true
+			} else if second.Org == "" && defaultOrg == self.Org {
 				return true
 			}
 		}
 		return false
 	}
+
 	return true
 
 }
 
 func (self Blockchain) String() string {
-	return fmt.Sprintf("BC Name: %v, BC Type: %v", self.Name, self.Type)
+	return fmt.Sprintf("BC Name: %v, BC Type: %v, BC Org: %v", self.Name, self.Type, self.Org)
 }
 
 // This function adds a blockchain object to the list. Return an error if there are duplicates.
 func (self *BlockchainList) Add_Blockchain(new_ele *Blockchain) error {
 	for _, ele := range *self {
-		if ele.Same_Blockchain(new_ele, "") {
+		if ele.Same_Blockchain(new_ele, "", "") {
 			return errors.New(fmt.Sprintf("Blockchain %v already has the element being added: %v", *self, *new_ele))
 		}
 	}

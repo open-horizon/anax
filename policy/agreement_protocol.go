@@ -12,6 +12,7 @@ const BasicProtocol = "Basic"
 var AllProtocols = []string{CitizenScientist, BasicProtocol}
 
 var RequiresBCType = map[string]string{CitizenScientist: Ethereum_bc}
+var DefaultBCOrg = map[string]string{CitizenScientist: Default_Blockchain_org}
 
 func SupportedAgreementProtocol(name string) bool {
 	for _, p := range AllProtocols {
@@ -29,6 +30,13 @@ func AllAgreementProtocols() []string {
 func RequiresBlockchainType(protocolName string) string {
 	if bctype, ok := RequiresBCType[protocolName]; ok {
 		return bctype
+	}
+	return ""
+}
+
+func HasDefaultBCOrg(protocolName string) string {
+	if bcorg, ok := DefaultBCOrg[protocolName]; ok {
+		return bcorg
 	}
 	return ""
 }
@@ -79,7 +87,11 @@ func ConvertToAgreementProtocolList(list []interface{}) (*[]AgreementProtocol, e
 							if bc["name"] != nil {
 								bcName = bc["name"].(string)
 							}
-							(&newAGP.Blockchains).Add_Blockchain(Blockchain_Factory(bcType, bcName))
+							bcOrg := ""
+							if bc["organization"] != nil {
+								bcOrg = bc["organization"].(string)
+							}
+							(&newAGP.Blockchains).Add_Blockchain(Blockchain_Factory(bcType, bcName, bcOrg))
 						} else {
 							return nil, errors.New(fmt.Sprintf("could not convert blockchain list element to map[string]interface{}, %v is %T", bcDef, bcDef))
 						}
@@ -110,14 +122,17 @@ func (a AgreementProtocol) IsSame(compare AgreementProtocol) bool {
 
 func (a *AgreementProtocol) Initialize() {
 	if a.Name == CitizenScientist && len(a.Blockchains) == 0 {
-		a.Blockchains.Add_Blockchain(Blockchain_Factory("", ""))
+		a.Blockchains.Add_Blockchain(Blockchain_Factory("", "", ""))
 	}
 	for ix, bc := range a.Blockchains {
 		if a.Name == CitizenScientist && bc.Type == "" {
 			a.Blockchains[ix].Type = Ethereum_bc
 		}
 		if a.Name == CitizenScientist && bc.Name == "" {
-			a.Blockchains[ix].Name = "bluehorizon"
+			a.Blockchains[ix].Name = Default_Blockchain_name
+		}
+		if a.Name == CitizenScientist && bc.Org == "" {
+			a.Blockchains[ix].Org = Default_Blockchain_org
 		}
 	}
 }
@@ -202,7 +217,7 @@ func (self *AgreementProtocolList) Intersects_With(other *AgreementProtocolList)
 	for _, sub_ele := range *self {
 		for _, other_ele := range *other {
 			if sub_ele.Name == other_ele.Name {
-				if bcIntersect, err := sub_ele.Blockchains.Intersects_With(&other_ele.Blockchains, RequiresBlockchainType(sub_ele.Name)); err != nil {
+				if bcIntersect, err := sub_ele.Blockchains.Intersects_With(&other_ele.Blockchains, RequiresBlockchainType(sub_ele.Name), HasDefaultBCOrg(sub_ele.Name)); err != nil {
 					return nil, errors.New(fmt.Sprintf("Agreement Protocol Intersection Error on blockchains: %v was not found in %v", (*self), (*other)))
 				} else {
 					new_ele := AgreementProtocol_Factory(sub_ele.Name)

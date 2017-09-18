@@ -62,7 +62,7 @@ type AGConfig struct {
 	IgnoreContractWithAttribs    string // A comma seperated list of contract attributes. If set, the contracts that contain one or more of the attributes will be ignored. The default is "ethereum_account".
 	ExchangeURL                  string // The URL of the Horizon exchange. If not configured, the exchange will not be used.
 	ExchangeHeartbeat            int    // Seconds between heartbeats to the exchange
-	ExchangeId                   string // The id of the agbot, not the userid of the exchange user
+	ExchangeId                   string // The id of the agbot, not the userid of the exchange user. Must be org qualified.
 	ExchangeToken                string // The agbot's authentication token
 	DVPrefix                     string // When looking for agreement ids in the data verification API response, look for agreement ids with this prefix.
 	ActiveDeviceTimeoutS         int    // The amount of time a device can go without heartbeating and still be considered active for the purposes of search

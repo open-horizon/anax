@@ -22,6 +22,15 @@ const MS_SHARING_MODE_EXCLUSIVE = "exclusive"
 const MS_SHARING_MODE_SINGLE = "single"
 const MS_SHARING_MODE_MULTIPLE = "multiple"
 
+// Helper functions for dealing with exchangeIds that are already prefixed with the org name and then "/".
+func GetOrg(id string) string {
+	return id[:strings.Index(id, "/")]
+}
+
+func GetId(id string) string {
+	return id[strings.Index(id, "/")+1:]
+}
+
 // Structs used to invoke the exchange API
 type MSProp struct {
 	Name     string `json:"name"`
@@ -148,7 +157,7 @@ func (a DeviceAgreement) String() string {
 }
 
 type AllAgbotAgreementsResponse struct {
-	Agreements map[string]AgbotAgreement `json:"agreements`
+	Agreements map[string]AgbotAgreement `json:"agreements"`
 	LastIndex  int                       `json:"lastIndex"`
 }
 
@@ -157,7 +166,7 @@ func (a AllAgbotAgreementsResponse) String() string {
 }
 
 type AllDeviceAgreementsResponse struct {
-	Agreements map[string]DeviceAgreement `json:"agreements`
+	Agreements map[string]DeviceAgreement `json:"agreements"`
 	LastIndex  int                        `json:"lastIndex"`
 }
 
@@ -255,7 +264,7 @@ func CreatePostMessage(msg []byte, ttl int) *PostMessage {
 }
 
 type ExchangeMessageTarget struct {
-	ReceiverExchangeId     string
+	ReceiverExchangeId     string  // in the form org/id
 	ReceiverPublicKeyObj   *rsa.PublicKey
 	ReceiverPublicKeyBytes []byte
 	ReceiverMsgEndPoint    string
@@ -422,13 +431,13 @@ func Heartbeat(h *http.Client, url string, id string, token string, interval int
 
 }
 
-func GetEthereumClient(httpClientFactory *config.HTTPClientFactory, url string, chainName string, chainType string, deviceId string, token string) (string, error) {
+func GetEthereumClient(httpClientFactory *config.HTTPClientFactory, url string, org string, chainName string, chainType string, deviceId string, token string) (string, error) {
 
-	glog.V(5).Infof(rpclogString(fmt.Sprintf("getting ethereum client metadata for chain %v", chainName)))
+	glog.V(5).Infof(rpclogString(fmt.Sprintf("getting ethereum client metadata for chain %v/%v", org, chainName)))
 
 	var resp interface{}
 	resp = new(GetEthereumClientResponse)
-	targetURL := url + "bctypes/" + chainType + "/blockchains/" + chainName
+	targetURL := url + "orgs/" + org + "/bctypes/" + chainType + "/blockchains/" + chainName
 	for {
 		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
@@ -497,6 +506,7 @@ func ConvertPropertyToExchangeFormat(prop *policy.Property) (*MSProp, error) {
 // Functions related to working with workloads and microservices in the exchange
 type APISpec struct {
 	SpecRef string `json:"specRef"`
+	Org     string `json:"org"`
 	Version string `json:"version"`
 	Arch    string `json:"arch"`
 }
@@ -616,9 +626,9 @@ func getSearchVersion(version string) (string, error) {
 	return searchVersion, nil
 }
 
-func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wVersion string, wArch string, exURL string, id string, token string) (*WorkloadDefinition, error) {
+func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg string, wVersion string, wArch string, exURL string, id string, token string) (*WorkloadDefinition, error) {
 
-	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting workload definition %v %v %v", wURL, wVersion, wArch)))
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting workload definition %v %v %v %v", wURL, wOrg, wVersion, wArch)))
 
 	var resp interface{}
 	resp = new(GetWorkloadsResponse)
@@ -630,9 +640,9 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wVers
 	}
 
 	// Search the exchange for the workload definition
-	targetURL := fmt.Sprintf("%vworkloads?workloadUrl=%v&arch=%v", exURL, wURL, wArch)
+	targetURL := fmt.Sprintf("%vorgs/%v/workloads?workloadUrl=%v&arch=%v", exURL, wOrg, wURL, wArch)
 	if searchVersion != "" {
-		targetURL = fmt.Sprintf("%vworkloads?workloadUrl=%v&version=%v&arch=%v", exURL, wURL, searchVersion, wArch)
+		targetURL = fmt.Sprintf("%vorgs/%v/workloads?workloadUrl=%v&version=%v&arch=%v", exURL, wOrg, wURL, searchVersion, wArch)
 	}
 
 	for {
@@ -658,6 +668,11 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wVers
 					}
 				}
 			} else {
+				if len(workloadMetadata) == 0 {
+					glog.V(3).Infof(rpclogString(fmt.Sprintf("no workload definition found for %v", wURL)))
+					return nil, nil
+				}
+
 				// The caller wants the highest version in the input version range. If no range was specified then
 				// they will get the highest of all available versions.
 				vRange, _ := policy.Version_Expression_Factory("0.0.0")
@@ -685,9 +700,9 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wVers
 	}
 }
 
-func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, mVersion string, mArch string, exURL string, id string, token string) (*MicroserviceDefinition, error) {
+func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, mOrg string, mVersion string, mArch string, exURL string, id string, token string) (*MicroserviceDefinition, error) {
 
-	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting microservice definition %v %v %v", mURL, mVersion, mArch)))
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting microservice definition %v %v %v %v", mURL, mOrg, mVersion, mArch)))
 
 	var resp interface{}
 	resp = new(GetMicroservicesResponse)
@@ -699,9 +714,9 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 	}
 
 	// Search the exchange for the microservice definition
-	targetURL := fmt.Sprintf("%vmicroservices?specRef=%v&arch=%v", exURL, mURL, mArch)
+	targetURL := fmt.Sprintf("%vorgs/%v/microservices?specRef=%v&arch=%v", exURL, mOrg, mURL, mArch)
 	if searchVersion != "" {
-		targetURL = fmt.Sprintf("%vmicroservices?specRef=%v&version=%v&arch=%v", exURL, mURL, searchVersion, mArch)
+		targetURL = fmt.Sprintf("%vorgs/%v/microservices?specRef=%v&version=%v&arch=%v", exURL, mOrg, mURL, searchVersion, mArch)
 	}
 
 	for {
@@ -759,13 +774,13 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 // The purpose of this function is to verify that a given workload URL, version and architecture, is defined in the exchange
 // as well as all of its API spec dependencies. This function also returns the API dependencies converted into
 // policy types so that the caller can use those types to do policy compatibility checks if they want to.
-func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, wVersion string, wArch string, exURL string, id string, token string) (*policy.APISpecList, error) {
+func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg string, wVersion string, wArch string, exURL string, id string, token string) (*policy.APISpecList, error) {
 	resolveMicroservices := true
 
-	glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving workload %v %v %v", wURL, wVersion, wArch)))
+	glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving workload %v %v %v %v", wURL, wOrg, wVersion, wArch)))
 
 	// Get a version specific workload definition.
-	if workload, err := GetWorkload(httpClientFactory, wURL, wVersion, wArch, exURL, id, token); err != nil {
+	if workload, err := GetWorkload(httpClientFactory, wURL, wOrg, wVersion, wArch, exURL, id, token); err != nil {
 		return nil, err
 	} else if len(workload.Workloads) != 1 {
 		return nil, errors.New(fmt.Sprintf("expecting 1 element in the workloads array of %v, have %v", workload, len(workload.Workloads)))
@@ -779,28 +794,72 @@ func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, 
 		// long as we give it a range to search within.
 
 		if resolveMicroservices {
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving microservices for %v %v %v", wURL, wVersion, wArch)))
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving microservices for %v %v %v %v", wURL, wOrg, wVersion, wArch)))
 			for _, apiSpec := range workload.APISpecs {
 
 				// Convert version to a version range expression (if it's not already an expression) so that GetMicroservice()
 				// will return us something in the range required by the workload.
 				if vExp, err := policy.Version_Expression_Factory(apiSpec.Version); err != nil {
 					return nil, errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", apiSpec.Version, err))
-				} else if ms, err := GetMicroservice(httpClientFactory, apiSpec.SpecRef, vExp.Get_expression(), apiSpec.Arch, exURL, id, token); err != nil {
+				} else if ms, err := GetMicroservice(httpClientFactory, apiSpec.SpecRef, apiSpec.Org, vExp.Get_expression(), apiSpec.Arch, exURL, id, token); err != nil {
 					return nil, err
 				} else if ms == nil {
 					return nil, errors.New(fmt.Sprintf("unable to find microservice %v within %v", apiSpec, vExp))
 				}
 			}
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved microservices for %v %v %v", wURL, wVersion, wArch)))
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved microservices for %v %v %v %v", wURL, wOrg, wVersion, wArch)))
 		}
 		res := new(policy.APISpecList)
 		for _, apiSpec := range workload.APISpecs {
-			(*res) = append((*res), (*policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Version, apiSpec.Arch)))
+			(*res) = append((*res), (*policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch)))
 		}
-		glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved workload %v %v %v", wURL, wVersion, wArch)))
+		glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved workload %v %v %v %v", wURL, wOrg, wVersion, wArch)))
 		return res, nil
 
+	}
+
+}
+
+// Functions and types for working with organizations in the exchange
+type Organization struct {
+	Label         string `json:"label"`
+	Description   string `json:"description"`
+	LastUpdated   string `json:"lastUpdated"`
+}
+
+type GetOrganizationResponse struct {
+	Orgs      map[string]Organization `json:"orgs"`
+	LastIndex int                     `json:"lastIndex"`
+}
+
+// Get the metadata for a specific organization.
+func GetOrganization(httpClientFactory *config.HTTPClientFactory, org string, exURL string, id string, token string) (*Organization, error) {
+
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting organization definition %v", org)))
+
+	var resp interface{}
+	resp = new(GetOrganizationResponse)
+
+	// Search the exchange for the organization definition
+	targetURL := fmt.Sprintf("%vorgs/%v", exURL, org)
+
+	for {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, id, token, nil, &resp); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			orgs := resp.(*GetOrganizationResponse).Orgs
+			if theOrg, ok := orgs[org]; !ok {
+				return nil, errors.New(fmt.Sprintf("organization %v not found", org))
+			} else {
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("found organization %v definition %v", org, theOrg)))
+				return &theOrg, nil
+			}
+		}
 	}
 
 }
@@ -920,6 +979,9 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 						return nil, nil
 
 					case *GetMicroservicesResponse:
+						return nil, nil
+
+					case *GetOrganizationResponse:
 						return nil, nil
 
 					default:

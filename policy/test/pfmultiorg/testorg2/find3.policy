@@ -1,26 +1,24 @@
 {
     "header": {
-        "name": "test policy",
+        "name": "find test policy3",
         "version": "2.0"
     },
     "apiSpec": [
         {
             "specRef": "http://mycompany.com/policy",
-            "organization": "myorg",
             "version": "[1.0.0,2.0.0)",
-            "exclusiveAccess": false,
-            "arch": ""
+            "exclusiveAccess": false
         }
     ],
     "agreementProtocols": [
         {
-            "name": "2PartyDataUse"
+            "name": "Basic"
         }
     ],
-    "workloads": [
+    "workloads":[
         {
-            "deployment": "Deployment instructions",
-            "deployment_signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "deployment": "Deployment 1",
+            "deployment_signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ1",
             "torrent": {
                 "url": "torrent://the.system.com",
                 "images": [
@@ -29,8 +27,7 @@
                         "signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     }
                 ]
-            },
-            "priority": {}
+            }
         }
     ],
     "deviceType": "12345-54321-abcdef-fedcba",
@@ -48,12 +45,10 @@
     "dataVerification": {
         "enabled": true,
         "URL": "http://data.receipt.system.com",
-        "interval": 300,
-        "metering": {}
+        "interval": 300
     },
     "proposalRejection": {
         "number": 5,
         "duration": 86400
-    },
-    "ha_group": {}
+    }
 }

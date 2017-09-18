@@ -178,9 +178,10 @@ body:
 | name | type | description |
 | ---- | ---- | ----------- |
 | agreementId | string | the agreement id of an agreement between the given policy and the device to be upgraded. |
-| device      | string | the device id of the device to be upgraded.
+| org         | string | the organization in which the policy exists that you want to upgrade. |
+| device      | string | the device id of the device to be upgraded. |
 
-Note: At least one of the body parameters MUST be specified.
+Note: At least one of agreementId or device MUST be specified. Organization is always required.
 
 **Response:**
 code:

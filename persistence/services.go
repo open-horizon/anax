@@ -342,10 +342,8 @@ func FindApplicableAttributes(db *bolt.DB, serviceUrl string) ([]ServiceAttribut
 			return nil
 		})
 
-		return nil
 	})
 
-	return filteredAttrs, nil
 }
 
 // this will include *all* values, include those marked to not publish

@@ -32,13 +32,14 @@ func (a APISpecList) IsSame(compare APISpecList, checkVersion bool) bool {
 
 type APISpecification struct {
 	SpecRef         string `json:"specRef"`         // A URL pointing to the definition of the API spec
+	Org             string `json:"organization"`    // The organization where the microservice is defined
 	Version         string `json:"version"`         // The version of the API spec in OSGI version format
 	ExclusiveAccess bool   `json:"exclusiveAccess"` // Whether or not exclusive access to this API spec is required
 	Arch            string `json:"arch"`            // The hardware architecture of the API spec impl. Added in version 2.
 }
 
 func (a APISpecification) IsSame(compare APISpecification, checkVersion bool) bool {
-	if a.SpecRef != compare.SpecRef || a.ExclusiveAccess != compare.ExclusiveAccess || a.Arch != compare.Arch {
+	if a.SpecRef != compare.SpecRef || a.Org != compare.Org || a.ExclusiveAccess != compare.ExclusiveAccess || a.Arch != compare.Arch {
 		return false
 	} else if checkVersion {
 		return a.Version == compare.Version
@@ -48,9 +49,10 @@ func (a APISpecification) IsSame(compare APISpecification, checkVersion bool) bo
 }
 
 // This function creates API Spec objects
-func APISpecification_Factory(ref string, vers string, arch string) *APISpecification {
+func APISpecification_Factory(ref string, org string, vers string, arch string) *APISpecification {
 	a := new(APISpecification)
 	a.SpecRef = ref
+	a.Org = org
 	a.Version = vers
 	a.ExclusiveAccess = true
 	a.Arch = arch
@@ -77,9 +79,9 @@ func (self *APISpecList) Add_API_Spec(new_ele *APISpecification) error {
 }
 
 // This function return true if an api spec list contains the input spec ref url
-func (self APISpecList) ContainsSpecRef(url string, version string) bool {
+func (self APISpecList) ContainsSpecRef(url string, org string, version string) bool {
 	for _, ele := range self {
-		if ele.SpecRef == url && ele.Version == version {
+		if ele.SpecRef == url && ele.Version == version && ele.Org == org {
 			return true
 		}
 	}
@@ -103,7 +105,7 @@ func (self APISpecList) Supports(required APISpecList) error {
 	for _, sub_ele := range self {
 		found := false
 		for _, req_ele := range required {
-			if sub_ele.SpecRef == req_ele.SpecRef && sub_ele.Arch == req_ele.Arch {
+			if sub_ele.SpecRef == req_ele.SpecRef && sub_ele.Org == req_ele.Org && sub_ele.Arch == req_ele.Arch {
 				if req_ver, err := Version_Expression_Factory(req_ele.Version); err != nil {
 					continue
 				} else if ok, err := req_ver.Is_within_range(sub_ele.Version); err != nil {
