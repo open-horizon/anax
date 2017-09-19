@@ -296,15 +296,11 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			// assume input struct is well-formed, should come from persisted record
 			outModel = &HorizonDevice{
 				Name:               &exDevice.Name,
+				Org:                &exDevice.Org,
 				Id:                 &exDevice.Id,
 				TokenValid:         &exDevice.TokenValid,
 				TokenLastValidTime: &exDevice.TokenLastValidTime,
 				HADevice:           &exDevice.HADevice,
-				Account: &HorizonAccount{
-					Id:    &exDevice.Account.Id,
-					Email: &exDevice.Account.Email,
-					Org:   &exDevice.Account.Org,
-				},
 			}
 		}
 
@@ -347,17 +343,7 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		if device.Account == nil {
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "account", Error: "null and must not be"})
-			return
-		}
-		if bail := checkInputString(w, "device.account.id", device.Account.Id); bail {
-			return
-		}
-		if bail := checkInputString(w, "device.account.email", device.Account.Email); bail {
-			return
-		}
-		if bail := checkInputString(w, "device.account.organization", device.Account.Org); bail {
+		if bail := checkInputString(w, "device.organization", device.Org); bail {
 			return
 		}
 		if bail := checkInputString(w, "device.name", device.Name); bail {
@@ -384,10 +370,10 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 		// don't bother sanitizing token data; we *never* output it, and we *never* compute it
 
 		// Verify that the input organization exists in the exchange
-		deviceId := fmt.Sprintf("%v/%v", *device.Account.Org, *device.Id)
-		if _, err := exchange.GetOrganization(a.Config.Collaborators.HTTPClientFactory, *device.Account.Org, a.Config.Edge.ExchangeURL, deviceId, *device.Token); err != nil {
-			glog.Errorf("Organization %v not found in exchange, error: %v", *device.Account.Org, err)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "organization", Error: fmt.Sprintf("organization %v not found in exchange, error: %v", *device.Account.Org, err)})
+		deviceId := fmt.Sprintf("%v/%v", *device.Org, *device.Id)
+		if _, err := exchange.GetOrganization(a.Config.Collaborators.HTTPClientFactory, *device.Org, a.Config.Edge.ExchangeURL, deviceId, *device.Token); err != nil {
+			glog.Errorf("Organization %v not found in exchange, error: %v", *device.Org, err)
+			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "organization", Error: fmt.Sprintf("organization %v not found in exchange, error: %v", *device.Org, err)})
 			return
 		}
 
@@ -409,14 +395,14 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			haDevice = true
 		}
 
-		exDev, err := persistence.SaveNewExchangeDevice(a.db, *device.Id, *device.Token, *device.Name, *device.Account.Id, *device.Account.Email, haDevice, *device.Account.Org)
+		exDev, err := persistence.SaveNewExchangeDevice(a.db, *device.Id, *device.Token, *device.Name, haDevice, *device.Org)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			glog.Errorf("Error persisting new exchange device: %v", err)
 			return
 		}
 
-		a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, *device.Id, *device.Token, *device.Account.Org)
+		a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, *device.Id, *device.Token, *device.Org)
 
 		writeResponse(exDev, http.StatusCreated)
 
@@ -429,11 +415,7 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		if device.Account == nil {
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "account", Error: "null and must not be"})
-			return
-		}
-		if bail := checkInputString(w, "device.account.id", device.Account.Id); bail {
+		if bail := checkInputString(w, "device.id", device.Id); bail {
 			return
 		}
 		if device.Token == nil {
@@ -452,7 +434,7 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		updatedDevice, err := persistence.SetExchangeDeviceToken(a.db, *device.Account.Id, *device.Token)
+		updatedDevice, err := persistence.SetExchangeDeviceToken(a.db, *device.Id, *device.Token)
 		if err != nil {
 			glog.Errorf("Error doing token update on horizon device object: %v. Error: %v", existing, err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -599,7 +581,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 
 		// Use the device's org if org not specified in the POST body.
 		if service.SensorOrg == nil {
-			service.SensorOrg = &existingDevice.Account.Org
+			service.SensorOrg = &existingDevice.Org
 		} else if bail := checkInputString(w, "sensor_org", service.SensorOrg); bail {
 			return
 		}
@@ -895,8 +877,8 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Generate a policy based on all the attributes and the service definition
-		filePath := a.Config.Edge.PolicyPath + "/" + existingDevice.Account.Org + "/"
-		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorUrl, *service.SensorOrg, *service.SensorName, *service.SensorVersion, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList,  maxAgreements, filePath); genErr != nil {
+		filePath := a.Config.Edge.PolicyPath + "/" + existingDevice.Org + "/"
+		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorUrl, *service.SensorOrg, *service.SensorName, *service.SensorVersion, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, maxAgreements, filePath); genErr != nil {
 			glog.Errorf("Error: %v", genErr)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -1497,7 +1479,7 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 		// Use the device org if not explicitly specified. Otherwise verify that the specified org exists.
 		org := cfg.Org
 		if cfg.Org == "" {
-			org = existingDevice.Account.Org
+			org = existingDevice.Org
 		} else if _, err := exchange.GetOrganization(a.Config.Collaborators.HTTPClientFactory, org, a.Config.Edge.ExchangeURL, existingDevice.GetId(), existingDevice.Token); err != nil {
 			glog.Errorf("WorkloadConfig organization %v not found in exchange, error: %v", cfg.Org, err)
 			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "organization", Error: fmt.Sprintf("organization %v not found in exchange, error: %v", cfg.Org, err)})

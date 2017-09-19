@@ -17,7 +17,7 @@ func Test_Payloadmanager_init_success1(t *testing.T) {
 		stringDump := pm.String()
 		if !strings.Contains(stringDump, "Org: testorg Name: find test policy Workload:") {
 			t.Errorf("String format of policy manager is incorrect, returned %v", stringDump)
-		} else if pm.GetPolicy("testorg","find test policy") == nil {
+		} else if pm.GetPolicy("testorg", "find test policy") == nil {
 			t.Errorf("Did not find policy by name.")
 		} else if pm.AgreementCounts["find test policy"].Count != 0 || len(pm.AgreementCounts["find test policy"].AgreementIds) != 0 {
 			t.Errorf("Contract Count map is not initialized correctly %v", pm)
@@ -39,9 +39,9 @@ func Test_Payloadmanager_init_success2(t *testing.T) {
 		stringDump := pm.String()
 		if !strings.Contains(stringDump, "Org: testorg Name: find test policy Workload:") {
 			t.Errorf("String format of policy manager is incorrect, returned %v", stringDump)
-		} else if pm.GetPolicy("testorg","find test policy") == nil {
+		} else if pm.GetPolicy("testorg", "find test policy") == nil {
 			t.Errorf("Did not find policy by name.")
-		} else if pm.GetPolicy("testorg2","find test policy") == nil {
+		} else if pm.GetPolicy("testorg2", "find test policy") == nil {
 			t.Errorf("Did not find policy by name.")
 		} else if num := pm.NumberPolicies(); num != 3 {
 			t.Errorf("Did not find 3 policies, found %v", num)

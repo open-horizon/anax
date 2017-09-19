@@ -11,24 +11,14 @@ import (
 
 const DEVICES = "devices"
 
-type ExchangeAccount struct {
-	Id    string `json:"id"`
-	Email string `json:"email"`
-	Org   string `json:"organization"`
-}
-
-func (e ExchangeAccount) String() string {
-	return fmt.Sprintf("Id: %v, Email: %v", e.Id, e.Email)
-}
-
 type ExchangeDevice struct {
-	Id                 string          `json:"id"`
-	Account            ExchangeAccount `json:"account"`
-	Name               string          `json:"name"`
-	Token              string          `json:"token"`
-	TokenLastValidTime uint64          `json:"token_last_valid_time"`
-	TokenValid         bool            `json:"token_valid"`
-	HADevice           bool            `json:"ha_device"`
+	Id                 string `json:"id"`
+	Org                string `json:"organization"`
+	Name               string `json:"name"`
+	Token              string `json:"token"`
+	TokenLastValidTime uint64 `json:"token_last_valid_time"`
+	TokenValid         bool   `json:"token_valid"`
+	HADevice           bool   `json:"ha_device"`
 }
 
 func (e ExchangeDevice) String() string {
@@ -39,17 +29,16 @@ func (e ExchangeDevice) String() string {
 		tokenShadow = "unset"
 	}
 
-	return fmt.Sprintf("Account: %v, Token: <%s>, Name: %v, TokenLastValidTime: %v, TokenValid: %v", e.Account, tokenShadow, e.Name, e.TokenLastValidTime, e.TokenValid)
+	return fmt.Sprintf("Org: %v, Token: <%s>, Name: %v, TokenLastValidTime: %v, TokenValid: %v", e.Org, tokenShadow, e.Name, e.TokenLastValidTime, e.TokenValid)
 }
 
 func (e ExchangeDevice) GetId() string {
-	return fmt.Sprintf("%v/%v", e.Account.Org, e.Id)
+	return fmt.Sprintf("%v/%v", e.Org, e.Id)
 }
 
-// TODO: removed check for email set temporarily until the new account mgmt. stuff is released
-func newExchangeDevice(id string, token string, name string, tokenLastValidTime uint64, ha bool, account *ExchangeAccount) (*ExchangeDevice, error) {
-	if id == "" || token == "" || name == "" || tokenLastValidTime == 0 || account == nil || account.Id == "" {
-		return nil, errors.New("Cannot create exchange account, illegal arguments")
+func newExchangeDevice(id string, token string, name string, tokenLastValidTime uint64, ha bool, org string) (*ExchangeDevice, error) {
+	if id == "" || token == "" || name == "" || tokenLastValidTime == 0 || org == "" {
+		return nil, errors.New("Cannot create exchange device, illegal arguments")
 	}
 
 	return &ExchangeDevice{
@@ -59,7 +48,7 @@ func newExchangeDevice(id string, token string, name string, tokenLastValidTime 
 		TokenLastValidTime: tokenLastValidTime,
 		TokenValid:         true,
 		HADevice:           ha,
-		Account:            *account,
+		Org:                org,
 	}, nil
 }
 
@@ -70,22 +59,22 @@ func InvalidateExchangeToken(db *bolt.DB) (*ExchangeDevice, error) {
 		return nil, err
 	}
 
-	return updateExchangeDeviceToken(db, exchDev.Account.Id, "")
+	return updateExchangeDeviceToken(db, exchDev.Id, "")
 }
 
-func SetExchangeDeviceToken(db *bolt.DB, accountId string, token string) (*ExchangeDevice, error) {
-	if accountId == "" || token == "" {
+func SetExchangeDeviceToken(db *bolt.DB, deviceId string, token string) (*ExchangeDevice, error) {
+	if deviceId == "" || token == "" {
 		return nil, errors.New("Argument null and mustn't be")
 	}
 
-	return updateExchangeDeviceToken(db, accountId, token)
+	return updateExchangeDeviceToken(db, deviceId, token)
 }
 
 // always assumed the given token is valid at the time of call
-func updateExchangeDeviceToken(db *bolt.DB, accountId string, token string) (*ExchangeDevice, error) {
+func updateExchangeDeviceToken(db *bolt.DB, deviceId string, token string) (*ExchangeDevice, error) {
 	// TODO: factor out duplication b/n serialization here and in SaveNewExchangeDevice
 
-	if accountId == "" {
+	if deviceId == "" {
 		return nil, fmt.Errorf("Illegal arguments specified.")
 	}
 
@@ -101,14 +90,14 @@ func updateExchangeDeviceToken(db *bolt.DB, accountId string, token string) (*Ex
 		current := b.Get([]byte(DEVICES))
 
 		if current == nil {
-			return fmt.Errorf("No device with given account id to update: %v", accountId)
+			return fmt.Errorf("No device with given device id to update: %v", deviceId)
 		} else if err := json.Unmarshal(current, &mod); err != nil {
 			return fmt.Errorf("Failed to unmarshal device data: %v. Error: %v", string(current), err)
 		} else {
 
-			// a little weird since there is only one key in the bucket, but we want to make sure the token update is for the right account since that's the association that is made in the exchange
-			if mod.Account.Id != accountId {
-				return fmt.Errorf("No device with given account id to update: %v", accountId)
+			// a little weird since there is only one key in the bucket, but we want to make sure the token update is for the right device
+			if mod.Id != deviceId {
+				return fmt.Errorf("No device with given device id to update: %v", deviceId)
 			}
 
 			// invalidate
@@ -141,9 +130,9 @@ func updateExchangeDeviceToken(db *bolt.DB, accountId string, token string) (*Ex
 }
 
 // always assumed the given token is valid at the time of call
-func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, accountId string, accountEmail string, ha bool, organization string) (*ExchangeDevice, error) {
+func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, ha bool, organization string) (*ExchangeDevice, error) {
 
-	if id == "" || token == "" || name == "" || accountId == "" {
+	if id == "" || token == "" || name == "" || organization == "" {
 		return nil, errors.New("Argument null and must not be")
 	}
 
@@ -165,11 +154,7 @@ func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, ac
 		return nil, fmt.Errorf("Duplicate record found in devices for %v.", name)
 	}
 
-	exDevice, err := newExchangeDevice(id, token, name, uint64(time.Now().Unix()), ha, &ExchangeAccount{
-		Id:    accountId,
-		Email: accountEmail,
-		Org:   organization,
-	})
+	exDevice, err := newExchangeDevice(id, token, name, uint64(time.Now().Unix()), ha, organization)
 
 	if err != nil {
 		return nil, err

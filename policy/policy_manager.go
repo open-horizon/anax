@@ -174,7 +174,7 @@ func Initialize(policyPath string, workloadResolver func(wURL string, wOrg strin
 	contents := NewContents()
 	if cons, err := PolicyFileChangeWatcher(policyPath, contents, changeNotify, deleteNotify, errorNotify, workloadResolver, 0); err != nil {
 		return nil, err
-	} else if  pm.NumberPolicies() != numberFiles {
+	} else if pm.NumberPolicies() != numberFiles {
 		return nil, errors.New(fmt.Sprintf("Policy Names must be unique, found %v files, but %v unique policies", numberFiles, pm.NumberPolicies()))
 	} else {
 		pm.WatcherContent = cons

@@ -14,7 +14,7 @@ func Test_agreement_success1(t *testing.T) {
 
 	expectedType := policy.Ethereum_bc
 	expectedName := policy.Default_Blockchain_name
-	expectedOrg  := policy.Default_Blockchain_org
+	expectedOrg := policy.Default_Blockchain_org
 
 	testProposal := `{"address":"123456","producerPolicy":"policy","consumerId":"ag12345","type":"proposal","protocol":"Citizen Scientist","version":1,"agreementId":"deadbeef"}`
 	testPolicy := `{"header":{"name":"testpolicy","version":"1.0"},"agreementProtocols":[{"name":"Citizen Scientist"}]}`

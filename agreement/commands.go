@@ -1,8 +1,8 @@
 package agreement
 
 import (
-	"github.com/open-horizon/anax/events"
 	"fmt"
+	"github.com/open-horizon/anax/events"
 )
 
 // ===============================================================================================

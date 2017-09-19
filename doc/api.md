@@ -86,23 +86,19 @@ body:
 | token_valid | bool| whether the device token is valid or not |
 | token_last_valid_time | uint64 | the time stamp when the device token was last valid. |
 | ha_device | bool | whether the device is part of an HA group or not |
-| account | json | the account information for the user who owns this device. |
-| account.id | string |  the user id on the account.   |
-| account.email | string | the user email on the account. |
+| organization | string | the organization this device belongs to. |
+
 
 **Example:**
 ```
 curl -s http://localhost/horizondevice |jq '.'
 {
   "id": "000000002175f7a9",
-  "account": {
-    "id": "myname",
-    "email": "myname@mycomany.com"
-  },
   "name": "mydevice1",
   "token_last_valid_time": 1481310188,
   "token_valid": true,
-  "ha_device": false
+  "ha_device": false,
+  "organization": "mycompany"
 }
 
 ```
@@ -130,13 +126,10 @@ none
 **Example:**
 ```
 curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
-      "account": {
-        "id": "user1",
-        "email": "'$EMAIL'"
-      },
-      "id": "'$DEVICE_ID'",
-      "name": "'$DEVICE_NAME'",
-      "token": "'$DEVICE_TOKEN'"
+      "id": "mydevice",
+      "name": "mydevice",
+      "token": "dfjskjdsfkj",
+      "organization": "mycompany"
     }'  http://localhost/horizondevice
 
 ```
@@ -163,11 +156,8 @@ none
 **Example:**
 ```
 curl -s -w "%{http_code}" -X PATCH-H 'Content-Type: application/json'  -d '{
-      "account": {
-      "id": "user1"
-      },
-      "name": "'$DEVICE_NAME'",
-      "token": "'$DEVICE_TOKEN'"
+      "id": "mydevice",
+      "token": "kj123idifdfjsklj"
     }'  http://localhost/horizondevice
 
 ```

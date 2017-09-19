@@ -35,12 +35,12 @@ func NewCSProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB, p
 
 		return &CSProtocolHandler{
 			BaseProducerProtocolHandler: &BaseProducerProtocolHandler{
-				name:       name,
-				pm:         pm,
-				db:         db,
-				config:     cfg,
-				deviceId:   deviceId,
-				token:      token,
+				name:     name,
+				pm:       pm,
+				db:       db,
+				config:   cfg,
+				deviceId: deviceId,
+				token:    token,
 			},
 			genericAgreementPH: citizenscientist.NewProtocolHandler(cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil), pm),
 			bcState:            make(map[string]map[string]map[string]*BlockchainState),
@@ -106,7 +106,7 @@ func (c *CSProtocolHandler) HandleProposalMessage(proposal abstractprotocol.Prop
 			if bcType == policy.Ethereum_bc {
 				for name, bc := range nameMap {
 					if bc.ready {
-						runningBCs = append(runningBCs, map[string]string{"name":name, "org":org})
+						runningBCs = append(runningBCs, map[string]string{"name": name, "org": org})
 					}
 				}
 			}

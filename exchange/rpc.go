@@ -264,7 +264,7 @@ func CreatePostMessage(msg []byte, ttl int) *PostMessage {
 }
 
 type ExchangeMessageTarget struct {
-	ReceiverExchangeId     string  // in the form org/id
+	ReceiverExchangeId     string // in the form org/id
 	ReceiverPublicKeyObj   *rsa.PublicKey
 	ReceiverPublicKeyBytes []byte
 	ReceiverMsgEndPoint    string
@@ -822,9 +822,9 @@ func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, 
 
 // Functions and types for working with organizations in the exchange
 type Organization struct {
-	Label         string `json:"label"`
-	Description   string `json:"description"`
-	LastUpdated   string `json:"lastUpdated"`
+	Label       string `json:"label"`
+	Description string `json:"description"`
+	LastUpdated string `json:"lastUpdated"`
 }
 
 type GetOrganizationResponse struct {

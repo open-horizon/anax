@@ -58,7 +58,7 @@ func NewGovernanceWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.Poli
 	token := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
 		token = dev.Token
-		id = fmt.Sprintf("%v/%v", dev.Account.Org, dev.Id)
+		id = fmt.Sprintf("%v/%v", dev.Org, dev.Id)
 	}
 
 	worker := &GovernanceWorker{

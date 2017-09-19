@@ -11,24 +11,14 @@ import (
 	"strconv"
 )
 
-type HorizonAccount struct {
-	Id    *string `json:"id"`
-	Email *string `json:"email"`
-	Org   *string `json:"organization"`
-}
-
-func (h HorizonAccount) String() string {
-	return fmt.Sprintf("Id: %v, Email: %v", *h.Id, *h.Email)
-}
-
 type HorizonDevice struct {
-	Id                 *string         `json:"id"`
-	Account            *HorizonAccount `json:"account,omitempty"`
-	Name               *string         `json:"name,omitempty"`
-	Token              *string         `json:"token,omitempty"`
-	TokenLastValidTime *uint64         `json:"token_last_valid_time,omitempty"`
-	TokenValid         *bool           `json:"token_valid,omitempty"`
-	HADevice           *bool           `json:"ha_device,omitempty"`
+	Id                 *string `json:"id"`
+	Org                *string `json:"organization"`
+	Name               *string `json:"name,omitempty"`
+	Token              *string `json:"token,omitempty"`
+	TokenLastValidTime *uint64 `json:"token_last_valid_time,omitempty"`
+	TokenValid         *bool   `json:"token_valid,omitempty"`
+	HADevice           *bool   `json:"ha_device,omitempty"`
 }
 
 func (h HorizonDevice) String() string {
@@ -37,7 +27,7 @@ func (h HorizonDevice) String() string {
 		cred = "set"
 	}
 
-	return fmt.Sprintf("Account: %v, Id: %v, Name: %v, Token: [%v], TokenLastValidTime: %v, TokenValid: %v", *h.Account, h.Id, h.Name, cred, h.TokenLastValidTime, h.TokenValid)
+	return fmt.Sprintf("Id: %v, Org: %v, Name: %v, Token: [%v], TokenLastValidTime: %v, TokenValid: %v", h.Id, h.Org, h.Name, cred, h.TokenLastValidTime, h.TokenValid)
 }
 
 type Attribute struct {
@@ -501,5 +491,5 @@ func (w WorkloadConfig) String() string {
 		"Org: %v, "+
 		"Version: %v, "+
 		"Variables: %v",
-		w.WorkloadURL,  w.Org, w.Version, w.Variables)
+		w.WorkloadURL, w.Org, w.Version, w.Variables)
 }

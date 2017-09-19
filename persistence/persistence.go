@@ -44,7 +44,7 @@ type EstablishedAgreement struct {
 	MeteringNotificationMsg         MeteringNotification     `json:"metering_notification,omitempty"` // the most recent metering notification received
 	BlockchainType                  string                   `json:"blockchain_type,omitempty"`       // the name of the type of the blockchain
 	BlockchainName                  string                   `json:"blockchain_name,omitempty"`       // the name of the blockchain instance
-	BlockchainOrg                   string                   `json:"blockchain_org,omitempty"`       // the org of the blockchain instance
+	BlockchainOrg                   string                   `json:"blockchain_org,omitempty"`        // the org of the blockchain instance
 }
 
 func (c EstablishedAgreement) String() string {

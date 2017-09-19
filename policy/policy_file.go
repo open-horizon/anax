@@ -294,7 +294,7 @@ func (self *Policy) Is_Self_Consistent(keyPath string, userKeys string, workload
 		}
 
 		// If the policy file workloads dont reference the same org, return the error
-		if (self.Workloads[0].Org != workload.Org) {
+		if self.Workloads[0].Org != workload.Org {
 			return errors.New(fmt.Sprintf("Workload section has mix of organizations, element 0 has org %v, element %v has %v", self.Workloads[0].Org, ix, workload.Org))
 		}
 

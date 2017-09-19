@@ -44,7 +44,7 @@ func NewAgreementWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.Polic
 	token := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
 		token = dev.Token
-		id = fmt.Sprintf("%v/%v", dev.Account.Org, dev.Id)
+		id = fmt.Sprintf("%v/%v", dev.Org, dev.Id)
 	}
 
 	worker := &AgreementWorker{
@@ -305,7 +305,7 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 	}
 
 	// Start the go thread that heartbeats to the exchange
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) +  "/devices/" + exchange.GetId(w.deviceId) + "/heartbeat"
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" + exchange.GetId(w.deviceId) + "/heartbeat"
 	go exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
 
 }
@@ -620,7 +620,7 @@ func (w *AgreementWorker) recordAgreementState(agreementId string, apiSpecs *pol
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" +exchange.GetId(w.deviceId) + "/agreements/" + agreementId
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" + exchange.GetId(w.deviceId) + "/agreements/" + agreementId
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.deviceId, w.deviceToken, as, &resp); err != nil {
 			glog.Errorf(err.Error())

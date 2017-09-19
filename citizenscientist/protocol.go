@@ -85,7 +85,7 @@ func (pr *CSProposalReply) SetAddress(a string) {
 func (pr *CSProposalReply) SetBlockchain(t string, n string, o string) {
 	pr.BlockchainType = t
 	pr.BlockchainName = n
-	pr.BlockchainOrg  = o
+	pr.BlockchainOrg = o
 }
 
 func NewCSProposalReply(bp *abstractprotocol.BaseProposalReply, sig string, myAddress string, bcType string, bcName string, bcOrg string) *CSProposalReply {
