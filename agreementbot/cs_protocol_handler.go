@@ -31,7 +31,7 @@ type BlockchainState struct {
 type CSProtocolHandler struct {
 	*BaseConsumerProtocolHandler
 	genericAgreementPH *citizenscientist.ProtocolHandler
-	Work               chan AgreementWork // outgoing commands for the workers
+	Work               chan AgreementWork                                // outgoing commands for the workers
 	bcState            map[string]map[string]map[string]*BlockchainState // org, name, type
 	bcStateLock        sync.Mutex
 }

@@ -49,12 +49,12 @@ type ProducerProtocolHandler interface {
 }
 
 type BaseProducerProtocolHandler struct {
-	name       string
-	pm         *policy.PolicyManager
-	db         *bolt.DB
-	config     *config.HorizonConfig
-	deviceId   string
-	token      string
+	name     string
+	pm       *policy.PolicyManager
+	db       *bolt.DB
+	config   *config.HorizonConfig
+	deviceId string
+	token    string
 }
 
 func (w *BaseProducerProtocolHandler) GetSendMessage() func(mt interface{}, pay []byte) error {

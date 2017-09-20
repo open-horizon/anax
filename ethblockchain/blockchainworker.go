@@ -209,7 +209,7 @@ func (w *EthBlockchainWorker) RestartContainer(cmd *ContainerShutdownCommand) {
 		return
 	}
 
-	glog.V(5).Infof(logString(fmt.Sprintf("restarting %v/%v",  cmd.Msg.Org, cmd.Msg.ContainerName)))
+	glog.V(5).Infof(logString(fmt.Sprintf("restarting %v/%v", cmd.Msg.Org, cmd.Msg.ContainerName)))
 
 	if _, ok := w.instances[cmd.Msg.ContainerName]; ok {
 		// Remove the old state from the last instance of the container

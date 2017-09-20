@@ -33,8 +33,8 @@ func (a BlockchainList) IsSame(compare BlockchainList) bool {
 }
 
 type Blockchain struct {
-	Type string `json:"type"` // The type of blockchain
-	Name string `json:"name"` // The name of the blockchain instance in the exchange,it is specific to the value of the type
+	Type string `json:"type"`         // The type of blockchain
+	Name string `json:"name"`         // The name of the blockchain instance in the exchange,it is specific to the value of the type
 	Org  string `json:"organization"` // The organization that owns the blockchain definition
 }
 
