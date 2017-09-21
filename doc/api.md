@@ -193,7 +193,7 @@ policy
 | name | type | description |
 | ---- | ---- | ---------------- |
 | header | json|  the header of the policy. It includes the name and the version of the policy. |
-| apiSpec | array | an array of api specifications. Each one includes a URL pointing to the definition of the API spec, the version of the API spec in OSGI version format, whether or not exclusive access to this API spec is required and the hardware architecture of the API spec implementation. | 
+| apiSpec | array | an array of api specifications. Each one includes a URL pointing to the definition of the API spec, the version of the API spec in OSGI version format, the organization that implements the API spec, whether or not exclusive access to this API spec is required and the hardware architecture of the API spec implementation. | 
 | agreementProtocols | array | an array of agreement protocols. Each one includes the name of the agreement protocol.|
 | maxAgreements| int | the maximum number of agreements allowed to make. |
 | properties | array | an array of name value pairs that the current party have. |
@@ -217,48 +217,33 @@ service attribute
 curl -s -w %{http_code}  http://localhost/service | jq  '.'
 {
   "services": {
-    "Policy for netspeed": {
+    "Policy for network": {
       "policy": {
         "header": {
-          "name": "Policy for netspeed",
+          "name": "Policy for network",
           "version": "2.0"
         },
         "apiSpec": [
           {
-            "specRef": "https://bluehorizon.network/documentation/netspeed-device-api",
-            "version": "1.0.0",
+            "specRef": "https://bluehorizon.network/microservices/network",
+            "organization": "mycompany",
+            "version": "1.0.1",
             "exclusiveAccess": true,
-            "arch": "arm"
+            "arch": "amd64"
           }
         ],
         "agreementProtocols": [
           {
-            "name": "Citizen Scientist"
+            "name": "Basic",
+            "protocolVersion": 1
           }
         ],
-        "valueExchange": {
-          "type": "",
-          "value": "",
-          "paymentRate": 0,
-          "token": ""
-        },
-        "resourceLimits": {
-          "networkUpload": 0,
-          "networkDownload": 0,
-          "memory": 0,
-          "cpus": 0
-        },
+        "valueExchange": {},
+        "resourceLimits": {},
         "dataVerification": {
-          "enabled": false,
-          "URL": "",
-          "URLUser": "",
-          "URLPassword": "",
-          "interval": 0
+          "metering": {}
         },
-        "proposalRejection": {
-          "number": 0,
-          "duration": 0
-        },
+        "proposalRejection": {},
         "maxAgreements": 1,
         "properties": [
           {
@@ -267,50 +252,51 @@ curl -s -w %{http_code}  http://localhost/service | jq  '.'
           },
           {
             "name": "ram",
-            "value": "0"
+            "value": "128"
           }
-        ]
+        ],
+        "ha_group": {}
       },
       "attributes": [
         {
           "meta": {
-            "id": "app",
-            "sensor_urls": [
-              "https://bluehorizon.network/documentation/netspeed-device-api"
-            ],
-            "label": "app",
+            "id": "agreementprotocol",
+            "sensor_urls": [],
+            "label": "Agreement Protocol",
             "publishable": true,
-            "type": "persistence.MappedAttributes"
+            "type": "persistence.AgreementProtocolAttributes"
           },
-          "mappings": {
-            "MTN_IS_BANDWIDTH_TEST_ENABLED": "true",
-            "MTN_TARGET_SERVER": "closest"
-          }
+          "protocols": [
+            {
+              "name": "Basic",
+              "protocolVersion": 1
+            }
+          ]
         },
         {
           "meta": {
             "id": "architecture",
             "sensor_urls": [
-              "https://bluehorizon.network/documentation/netspeed-device-api"
+              "https://bluehorizon.network/microservices/network"
             ],
             "label": "Architecture",
             "publishable": true,
             "type": "persistence.ArchitectureAttributes"
           },
-          "architecture": "arm"
+          "architecture": "amd64"
         },
         {
           "meta": {
             "id": "compute",
             "sensor_urls": [
-              "https://bluehorizon.network/documentation/netspeed-device-api"
+              "https://bluehorizon.network/microservices/network"
             ],
-            "label": "Compute Resources",
+            "label": "network microservice",
             "publishable": true,
             "type": "persistence.ComputeAttributes"
           },
           "cpus": 1,
-          "ram": 0
+          "ram": 128
         },
         {
           "meta": {
@@ -320,15 +306,13 @@ curl -s -w %{http_code}  http://localhost/service | jq  '.'
             "publishable": false,
             "type": "persistence.LocationAttributes"
           },
-          "lat": "41.5861",
-          "lon": "-73.883",
+          "lat": "40.4273",
+          "lon": "-111.898",
           "user_provided_coords": true,
           "use_gps": false
         }
       ]
     }
-  }
-}
 ```
 
 
@@ -341,9 +325,12 @@ Register a service.
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| sensor_url  | string | the url for the service. |
-| sensor_name  | string | the name of the service. |
-| sensor_version  | string | the version of the service. It should comply with the OSGI version specification. |
+| sensor_url  | string | the url for the microservice specification. |
+| sensor_name  | string | the name of the microservice. |
+| sensor_version  | string | the version range of the microsservice. It should comply with the OSGI version specification. |
+| sensor_org  | string | the organization that holds the microservice definition. |
+| auto_upgrade  | bool | If the microservice should be automatically upgraded when new versions become available. |
+| active_upgrade  | bool | If horizon should actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade. |
 | attributes | array | an array of attributes.  Please refer to the response body for the GET /service/attribute api for the fields of an attribute.  |
 
 **Response:**
@@ -359,18 +346,21 @@ none
 **Example:**
 ```
 curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
-  "sensor_url": "https://bluehorizon.network/documentation/netspeed-device-api",
-  "sensor_name": "netspeed",
-  "sensor_version": "2.3.1",
+  "sensor_url": "https://bluehorizon.network/microservices/network",
+  "sensor_name": "network",
+  "sensor_org": "mycompany",
+  "sensor_version": "1.0.0",
+  "auto_upgrade": true,
+  "active_upgrade": true,
   "attributes": [
     {
-      "id": "app",
-      "short_type": "mapped",
-      "label": "app",
+      "id": "compute",
+      "short_type": "compute",
+      "label": "network microservice",
       "publishable": true,
       "mappings": {
-        "MTN_IS_BANDWIDTH_TEST_ENABLED": "true",
-        "MTN_TARGET_SERVER": "closest"
+        "ram": 128,
+        "cpus": 1
       }
     }
   ]
@@ -749,7 +739,172 @@ curl -s http://localhost/workload |jq '.'
 ```
 
 
-### 6. Public Keys for Workload Image Verification
+### 6. Microservice
+
+#### **API:** GET  /microservice
+---
+
+Get the detailed information for all the registered microservices for this device. It includes microservice definitions and the microservice instances. 
+
+A microservice definition contains the microservice specification url, version as well as the deployment information. It also contains the upgrade progress status if it was upgraded from a lower version. A microservice instance is an instance of the microservice execution. It contains information about the microservice execution status and its associated agreements. There may be multiple instances for a microservice definition.
+
+**Parameters:**
+none
+
+**Response:**
+
+The response contains the microservice definitions and microservice instances that are currently actively used by the device as well as the archived ones. The *archived* microservice definitions are the ones that the current were upgraded from. The *archived* microservice instances are the ones that were holding the old microservice execution status and old agreements. A response has the following structure:
+
+```
+{
+  "definitions": {
+    "active": [],
+    "archived": []
+  },
+  "instances": {
+    "active": [],
+    "archived": []
+  }
+}
+
+```
+
+A microservice definition has the following fields:
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| record_id | string | a record id in the db |
+| owner | string | the owner of this microservice. The format is company/user. |
+| label | string | a simple label for this microservice. |
+| description | string | the description. |
+| specRef | string | the microservice specification reference url. |
+| version | string | the implementation version. |
+| arch | string | the machine architecture this microservice implementation can run at. |
+| organization | string | the company what owns this microservice. |
+| sharable | string | the sharing mode for the microservice containers. The valid values are: exclusive, single and multiple, where single means 1 instance shared by x workloads, multiple means x instances each supporting a workload. |
+| downloadUrl | string | not used yet. |
+| matchHardware | json | match hardware. |
+| userInput | array | an array of user input definitions, each containing name, lable, date type and default value. |
+| workloads | array | an array of container deployment information, each containing deployment images, deployment signature etc. |
+| lastUpdated | string | the last time the record was updated in the exchange. |
+| archived | bool | whether it is archived or not. |
+| name | string | a short name used for policy file name. it is from the user request where the user registers a microservice through the /service api. |
+| upgrade_version_range | string | a version range. it is from the user request where the user registers a microservice through the /service api. |
+| auto_upgrade | bool | if the microservice should be automatically upgraded when new versions become available. it is from the user request where the user registers a microservice through the /service api.|
+| active_upgrade | bool | horizon to actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade. it is from the user request where the user registers a microservice through the /service api. |
+| upgrade_start_time | uint64 | microservice upgrading start time |
+| upgrade_ms_unregistered_time | uint64 | the time when microservice was temporally unregistered during the upgrade process.  |
+| upgrade_agreements_cleared_time | uint64 | the time when all the associated agreements were deleted during the upgrade process. |
+| upgrade_execution_start_time | uint64 | the time when microservice containers are up and running during the upgrade process. |
+| upgrade_ms_reregistered_time | uint64 | the time when the microservice was reregisterd in the exchange during the upgrade process.  |
+| upgrade_failed_time | uint64 | upgrade failed time. |
+| upgrade_failure_reason | uint64 | upgrade failure reason code. |
+| upgrade_failure_description | string | detailed description for the upgrade failure. |
+| upgrade_new_ms_id | string | the record id for the new microservice definition that this one will upgrade to. |
+| metadata_hash | string | a hash of the record in the exchange for this microservice definition. |
+
+
+A microservice instance has the following fields:
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| ref_url | string | the specification reference url |
+| version | string | the implementation version.of the microservice. |
+| arch | string | the machine architecture this microservice implementation can run at. |
+| instance_id | string | the record id. |
+| archived | bool | archived or not |
+| instance_creation_time | uint64 | the creation time for this microservice instance. |
+| execution_start_time | uint64 | the time when the microservice containers are up and running. |
+| execution_failure_code | uint64 | microservice instance execution failure code. |
+| execution_failure_desc | string | the description for the microservice instance execution failure|
+| cleanup_start_time | uint64 | the time when the microservice instance started the cleanup process before getting archived. |
+| associated_agreements | array | an array of agreement ids that are currently associated with this microservice instance. |
+| microservicedef_id | string | the record id of the microservice definition that this instance is for. |
+
+
+**Example:**
+```
+{
+  "definitions": {
+    "active": [
+      {
+        "record_id": "1",
+        "owner": "mycompany/privateagbot",
+        "label": "GPS for x86_64",
+        "description": "blah blah",
+        "specRef": "https://bluehorizon.network/microservices/gps",
+        "organization": "mycompany",
+        "version": "2.0.4",
+        "arch": "amd64",
+        "sharable": "exclusive",
+        "downloadUrl": "not used yet",
+        "matchHardware": {
+          "usbDeviceIds": "1546:01a7",
+          "devFiles": "/dev/ttyUSB*,/dev/ttyACM*"
+        },
+        "userInput": [
+          {
+            "name": "foo",
+            "label": "The Foo Value",
+            "type": "string",
+            "defaultValue": "bar"
+          }
+        ],
+        "workloads": [
+          {
+            "deployment": "{\"services\":{\"gps\":{\"image\":\"summit.hovitos.engineering/x86/gps:2.0.4\",\"privileged\":true,\"devices\":[\"/dev/bus/usb/001/001:/dev/bus/usb/001/001\"]}}}",
+            "deployment_signature": "jdpwhOdX2ZIPSAfdBVtzQ6pRrlagbs0qcgM8uT6NjQcpeKMh",
+            "torrent": "{\"url\":\"https://images.bluehorizon.network/ee8683d1f816a2e.torrent\",\"images\":[{\"file\":\"ee8683d1f816a2ed.tar.gz\",\"signature\":\"bGM3feIbVSwfUgfkxEsZbAM\"}]}"
+          }
+        ],
+        "lastUpdated": "2017-09-19T13:58:12.369Z[UTC]",
+        "archived": false,
+        "name": "gps",
+        "upgrade_version_range": "2.0.3",
+        "auto_upgrade": true,
+        "active_upgrade": true,
+        "upgrade_start_time": 0,
+        "upgrade_ms_unregistered_time": 0,
+        "upgrade_agreements_cleared_time": 0,
+        "upgrade_execution_start_time": 0,
+        "upgrade_ms_reregistered_time": 0,
+        "upgrade_failed_time": 0,
+        "upgrade_failure_reason": 0,
+        "upgrade_failure_description": "",
+        "upgrade_new_ms_id": "",
+        "metadata_hash": "KR5aoUid309r8QPStMB9k9ckfUHwRPp1FhU63wL4o2Y="
+      }
+    ],
+    "archived": []
+  },
+  "instances": {
+    "active": [
+      {
+        "ref_url": "https://bluehorizon.network/microservices/gps",
+        "version": "2.0.4",
+        "arch": "amd64",
+        "instance_id": "78a98f1f-2eed-467c-aea2-278fb8161595",
+        "archived": false,
+        "instance_creation_time": 1505939791,
+        "execution_start_time": 1505939809,
+        "execution_failure_code": 0,
+        "execution_failure_desc": "",
+        "cleanup_start_time": 0,
+        "associated_agreements": [
+          "ed79fbc23f4e6a93d97dbfb81d7464a6704f177d232d7c6406ea8a86db112628"
+        ],
+        "microservicedef_id": "1"
+      }
+    ],
+    "archived": []
+  }
+}
+
+```
+
+
+
+### 7. Public Keys for Workload Image Verification
 
 #### **API:** GET  /publickey
 ---
