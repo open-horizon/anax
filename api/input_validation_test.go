@@ -14,11 +14,15 @@ func Test_InputIsIllegal(t *testing.T) {
 		return false
 	}
 
-	if b, _ := InputIsIllegal("Fo_o ()2, .@"); b != "" {
+	if fails("Fo_o ()2, .@ +") {
 		t.Errorf("Input found to be illegal but isn't")
 	}
 
-	if !fails("z00!") || !fails("fro{") || !fails("go[") || !fails(">oog") {
+	if fails("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!&()@?_-*+.") {
+		t.Errorf("Input found to be illegal but isn't (this is the superset of the legal character collections for WIoTP API tokens, orgs and device / type ids)")
+	}
+
+	if !fails("fro{") || !fails("go[") || !fails(">oog") {
 		t.Errorf("Input found to be legal but isn't")
 	}
 

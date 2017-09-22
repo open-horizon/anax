@@ -7,7 +7,7 @@ import (
 	"regexp"
 )
 
-var IllegalInputCharRegex = `[^-() _\w\d.@,:/\\]`
+var IllegalInputCharRegex = `[^-*+()?&! _\w\d.@,:/\\]`
 
 // "input" is flexible; could be a field name or other. Note: this is intended to be consumed by humans, either API consumers or developers of the UI. Add enum codes if these are to be evaluated in frontend code
 type APIUserInputError struct {
