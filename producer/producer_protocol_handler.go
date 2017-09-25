@@ -157,7 +157,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error creating message target: %v", err)))
 	} else {
 		handled = true
-		if r, err := ph.DecideOnProposal(proposal, w.deviceId, runningBCs, messageTarget, w.sendMessage); err != nil {
+		if r, err := ph.DecideOnProposal(proposal, w.deviceId, exchange.GetOrg(w.deviceId), runningBCs, messageTarget, w.sendMessage); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("respond to proposal with error: %v", err)))
 		} else {
 			return handled, r, tcPolicy
@@ -170,7 +170,13 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 // Check if there are current unarchived agreements that have the same workload.
 func (w *BaseProducerProtocolHandler) FindAgreementWithSameWorkload(ph abstractprotocol.ProtocolHandler, tcpol_name string) (bool, error) {
 
-	if ags, err := persistence.FindEstablishedAgreements(w.db, w.Name(), []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err != nil {
+	notTerminated := func() persistence.EAFilter {
+		return func(a persistence.EstablishedAgreement) bool {
+			return a.AgreementTerminatedTime == 0
+		}
+	}
+
+	if ags, err := persistence.FindEstablishedAgreements(w.db, w.Name(), []persistence.EAFilter{notTerminated(), persistence.UnarchivedEAFilter()}); err != nil {
 		return false, fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error retrieving unarchived agreements from db: %v", err)))
 	} else {
 		for _, ag := range ags {
@@ -204,7 +210,7 @@ func (w *BaseProducerProtocolHandler) TerminateAgreement(ag *persistence.Establi
 			glog.Warningf(BPPHlogString(w.Name(), fmt.Sprintf("cannot terminate agreement %v, agreement protocol handler doesnt exist yet.", ag.CurrentAgreementId)))
 		} else if policies, err := w.pm.GetPolicyList(pPolicy); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("agreement %v error getting policy list: %v", ag.CurrentAgreementId, err)))
-		} else if err := aph.TerminateAgreement(policies, ag.CounterPartyAddress, ag.CurrentAgreementId, reason, mt, pph.GetSendMessage()); err != nil {
+		} else if err := aph.TerminateAgreement(policies, ag.CounterPartyAddress, ag.CurrentAgreementId, exchange.GetOrg(w.deviceId), reason, mt, pph.GetSendMessage()); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error terminating agreement %v on the blockchain: %v", ag.CurrentAgreementId, err)))
 		}
 	}

@@ -23,14 +23,15 @@ import (
 
 // must be safely-constructed!!
 type AgreementBotWorker struct {
-	worker.Worker // embedded field
-	db            *bolt.DB
-	httpClient    *http.Client // a shared HTTP client instance for this worker
-	agbotId       string
-	token         string
-	pm            *policy.PolicyManager
-	consumerPH    map[string]ConsumerProtocolHandler
-	ready         bool
+	worker.Worker  // embedded field
+	db             *bolt.DB
+	httpClient     *http.Client // a shared HTTP client instance for this worker
+	agbotId        string
+	token          string
+	pm             *policy.PolicyManager
+	consumerPH     map[string]ConsumerProtocolHandler
+	ready          bool
+	PatternManager *PatternManager
 }
 
 func NewAgreementBotWorker(cfg *config.HorizonConfig, db *bolt.DB) *AgreementBotWorker {
@@ -47,12 +48,13 @@ func NewAgreementBotWorker(cfg *config.HorizonConfig, db *bolt.DB) *AgreementBot
 			Commands: commands,
 		},
 
-		db:         db,
-		httpClient: cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
-		agbotId:    cfg.AgreementBot.ExchangeId,
-		token:      cfg.AgreementBot.ExchangeToken,
-		consumerPH: make(map[string]ConsumerProtocolHandler),
-		ready:      false,
+		db:             db,
+		httpClient:     cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
+		agbotId:        cfg.AgreementBot.ExchangeId,
+		token:          cfg.AgreementBot.ExchangeToken,
+		consumerPH:     make(map[string]ConsumerProtocolHandler),
+		ready:          false,
+		PatternManager: NewPatternManager(),
 	}
 
 	glog.Info("Starting AgreementBot worker")
@@ -173,10 +175,16 @@ func (w *AgreementBotWorker) start() {
 			return
 		}
 
+		// Query the exchange for patterns that this agbot is supposed to serve and generate a policy for each one.
+		if err := w.GeneratePolicyFromPatterns(0); err != nil {
+			glog.Errorf("AgreementBotWorker cannot read patterns from the exchange, error %v, terminating.", err)
+			return
+		}
+
 		// Give the policy manager a chance to read in all the policies. The agbot worker will not proceed past this point
 		// until it has some policies to work with.
 		for {
-			if policyManager, err := policy.Initialize(w.Worker.Manager.Config.AgreementBot.PolicyPath, w.workloadResolver); err != nil {
+			if policyManager, err := policy.Initialize(w.Worker.Manager.Config.AgreementBot.PolicyPath, w.workloadResolver, false); err != nil {
 				glog.Errorf("AgreementBotWorker unable to initialize policy manager, error: %v", err)
 			} else if policyManager.NumberPolicies() != 0 {
 				w.pm = policyManager
@@ -229,6 +237,7 @@ func (w *AgreementBotWorker) start() {
 		go w.GovernBlockchainNeeds()
 		if w.Config.AgreementBot.CheckUpdatedPolicyS != 0 {
 			go policy.PolicyFileChangeWatcher(w.Config.AgreementBot.PolicyPath, w.pm.WatcherContent, w.changedPolicy, w.deletedPolicy, w.errorPolicy, w.workloadResolver, w.Config.AgreementBot.CheckUpdatedPolicyS)
+			go w.GeneratePolicyFromPatterns(w.Config.AgreementBot.CheckUpdatedPolicyS)
 		}
 
 		// Enter the command processing loop. Initialization is complete so wait for commands to
@@ -461,6 +470,8 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 						// then merge them all together.
 						if producerPolicy, err := w.MergeAllProducerPolicies(&dev); err != nil {
 							glog.Errorf("AgreementBotWorker unable to merge microservice policies, error: %v", err)
+						} else if producerPolicy == nil {
+							glog.Errorf("AgreementBotWorker unable to created merged policy from producer %v", dev)
 
 							// Check to see if the device's policy is compatible
 
@@ -527,18 +538,27 @@ func (w *AgreementBotWorker) MergeAllProducerPolicies(dev *exchange.SearchResult
 
 	var producerPolicy *policy.Policy
 
-	for _, msDef := range dev.Microservices {
-		tempPolicy := new(policy.Policy)
-		if len(msDef.Policy) == 0 {
-			return nil, errors.New(fmt.Sprintf("empty policy blob for %v, skipping this device.", msDef.Url))
-		} else if err := json.Unmarshal([]byte(msDef.Policy), tempPolicy); err != nil {
-			return nil, errors.New(fmt.Sprintf("error demarshalling policy blob %v, error: %v", msDef.Policy, err))
-		} else if producerPolicy == nil {
-			producerPolicy = tempPolicy
-		} else if newPolicy, err := policy.Are_Compatible_Producers(producerPolicy, tempPolicy, w.Config.AgreementBot.NoDataIntervalS); err != nil {
-			return nil, errors.New(fmt.Sprintf("error merging policies %v and %v, error: %v", producerPolicy, tempPolicy, err))
-		} else {
-			producerPolicy = newPolicy
+	// The only reason for no microservices in the device search result is because the search was pattern based. In this case
+	// there will not be any policies from the producer side to merge. The agbot assumes that device side anax will not allow
+	// microservice registration that is incompatible with the pattern.
+	if len(dev.Microservices) == 0 {
+		producerPolicy = policy.Policy_Factory("empty")
+
+	} else {
+
+		for _, msDef := range dev.Microservices {
+			tempPolicy := new(policy.Policy)
+			if len(msDef.Policy) == 0 {
+				return nil, errors.New(fmt.Sprintf("empty policy blob for %v, skipping this device.", msDef.Url))
+			} else if err := json.Unmarshal([]byte(msDef.Policy), tempPolicy); err != nil {
+				return nil, errors.New(fmt.Sprintf("error demarshalling policy blob %v, error: %v", msDef.Policy, err))
+			} else if producerPolicy == nil {
+				producerPolicy = tempPolicy
+			} else if newPolicy, err := policy.Are_Compatible_Producers(producerPolicy, tempPolicy, w.Config.AgreementBot.NoDataIntervalS); err != nil {
+				return nil, errors.New(fmt.Sprintf("error merging policies %v and %v, error: %v", producerPolicy, tempPolicy, err))
+			} else {
+				producerPolicy = newPolicy
+			}
 		}
 	}
 
@@ -655,61 +675,104 @@ func DeleteMessage(msgId int, agbotId, agbotToken, exchangeURL string, httpClien
 	}
 }
 
+// Search the exchange for devices to make agreements with. The system should be operating such that devices are
+// not returned from the exchange (for any given set of search criteria) once an agreement which includes those
+// criteria has been reached. This prevents the agbot from continually sending proposals to devices that are
+// already in an agreement.
+//
+// There are 2 ways to search the exchange; (a) by pattern and workload URL, or (b) by list of microservices.
+// If the agbot is working with a policy file that was generated from a pattern, then it will do searches by
+// pattern. If the agbot is working with a manually created policy file, then it will do searches by list of
+// microservices.
 func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, searchOrg string) (*[]exchange.SearchResultDevice, error) {
 
-	// Collect the API specs to search over into a map so that duplicates are automatically removed
-	msMap := make(map[string]*exchange.Microservice)
+	// If it is a pattern based policy, search by worload URL and pattern.
+	if pol.PatternId != "" {
 
-	// For policy files that point to the exchange for workload details, we need to get all the referred to API specs
-	// from all workloads and search for devices that can satisfy all the workloads in the policy file. If a device
-	// can't satisfy all the workloads then workload rollback cant work so we shouldnt make an agreement with this
-	// device.
+		// Setup the search request body
+		ser := exchange.CreateSearchPatternRequest()
+		ser.SecondsStale = w.Config.AgreementBot.ActiveDeviceTimeoutS
+		ser.WorkloadURL = pol.Workloads[0].WorkloadURL
 
-	for _, workload := range pol.Workloads {
-		if workload, err := exchange.GetWorkload(w.Config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
-			return nil, errors.New(fmt.Sprintf("AgreementBotWorker received error retrieving workload definition for %v, error: %v", workload, err))
-		} else {
-			for _, apiSpec := range workload.APISpecs {
-				if newMS, err := w.makeNewMSSearchElement(apiSpec.SpecRef, apiSpec.Org, "", apiSpec.Arch, pol); err != nil {
+		// Invoke the exchange
+		var resp interface{}
+		resp = new(exchange.SearchExchangePatternResponse)
+		targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + searchOrg + "/patterns/" + exchange.GetId(pol.PatternId) + "/search"
+		for {
+			if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, ser, &resp); err != nil {
+				if !strings.Contains(err.Error(), "status: 404") {
 					return nil, err
 				} else {
-					msMap[apiSpec.SpecRef] = newMS
+					empty := make([]exchange.SearchResultDevice, 0, 0)
+					return &empty, nil
+				}
+			} else if tpErr != nil {
+				glog.Warningf(tpErr.Error())
+				time.Sleep(10 * time.Second)
+				continue
+			} else {
+				glog.V(3).Infof("AgreementBotWorker found %v devices in exchange.", len(resp.(*exchange.SearchExchangePatternResponse).Devices))
+				dev := resp.(*exchange.SearchExchangePatternResponse).Devices
+				return &dev, nil
+			}
+		}
+
+	} else {
+
+		// Search the exchange based on a list of microservices.
+		// Collect the API specs to search over into a map so that duplicates are automatically removed.
+		msMap := make(map[string]*exchange.Microservice)
+
+		// For policy files that point to the exchange for workload details, we need to get all the referred to API specs
+		// from all workloads and search for devices that can satisfy all the workloads in the policy file. If a device
+		// can't satisfy all the workloads then workload rollback cant work so we shouldnt make an agreement with this
+		// device.
+		for _, workload := range pol.Workloads {
+			if workload, err := exchange.GetWorkload(w.Config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+				return nil, errors.New(fmt.Sprintf("AgreementBotWorker received error retrieving workload definition for %v, error: %v", workload, err))
+			} else {
+				for _, apiSpec := range workload.APISpecs {
+					if newMS, err := w.makeNewMSSearchElement(apiSpec.SpecRef, apiSpec.Org, "", apiSpec.Arch, pol); err != nil {
+						return nil, err
+					} else {
+						msMap[apiSpec.SpecRef] = newMS
+					}
 				}
 			}
 		}
-	}
 
-	// Convert the collected API specs into an array for the search request body
-	desiredMS := make([]exchange.Microservice, 0, 10)
-	for _, ms := range msMap {
-		desiredMS = append(desiredMS, *ms)
-	}
+		// Convert the collected API specs into an array for the search request body
+		desiredMS := make([]exchange.Microservice, 0, 10)
+		for _, ms := range msMap {
+			desiredMS = append(desiredMS, *ms)
+		}
 
-	// Setup the search request body
-	ser := exchange.CreateSearchRequest()
-	ser.SecondsStale = w.Config.AgreementBot.ActiveDeviceTimeoutS
-	ser.DesiredMicroservices = desiredMS
+		// Setup the search request body
+		ser := exchange.CreateSearchMSRequest()
+		ser.SecondsStale = w.Config.AgreementBot.ActiveDeviceTimeoutS
+		ser.DesiredMicroservices = desiredMS
 
-	// Invoke the exchange
-	var resp interface{}
-	resp = new(exchange.SearchExchangeResponse)
-	targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + searchOrg + "/search/devices"
-	for {
-		if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, ser, &resp); err != nil {
-			if !strings.Contains(err.Error(), "status: 404") {
-				return nil, err
+		// Invoke the exchange
+		var resp interface{}
+		resp = new(exchange.SearchExchangeMSResponse)
+		targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + searchOrg + "/search/nodes"
+		for {
+			if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, ser, &resp); err != nil {
+				if !strings.Contains(err.Error(), "status: 404") {
+					return nil, err
+				} else {
+					empty := make([]exchange.SearchResultDevice, 0, 0)
+					return &empty, nil
+				}
+			} else if tpErr != nil {
+				glog.Warningf(tpErr.Error())
+				time.Sleep(10 * time.Second)
+				continue
 			} else {
-				empty := make([]exchange.SearchResultDevice, 0, 0)
-				return &empty, nil
+				glog.V(3).Infof("AgreementBotWorker found %v devices in exchange.", len(resp.(*exchange.SearchExchangeMSResponse).Devices))
+				dev := resp.(*exchange.SearchExchangeMSResponse).Devices
+				return &dev, nil
 			}
-		} else if tpErr != nil {
-			glog.Warningf(tpErr.Error())
-			time.Sleep(10 * time.Second)
-			continue
-		} else {
-			glog.V(3).Infof("AgreementBotWorker found %v devices in exchange.", len(resp.(*exchange.SearchExchangeResponse).Devices))
-			dev := resp.(*exchange.SearchExchangeResponse).Devices
-			return &dev, nil
 		}
 	}
 }
@@ -801,9 +864,9 @@ func (w *AgreementBotWorker) syncOnInit() error {
 							// Non-HA device or agrement without workload priority in the policy, re-make the agreement
 							w.cleanupAgreement(&ag)
 						}
-					} else if err := w.pm.AttemptingAgreement([]policy.Policy{*existingPol}, ag.CurrentAgreementId); err != nil {
+					} else if err := w.pm.AttemptingAgreement([]policy.Policy{*existingPol}, ag.CurrentAgreementId, ag.Org); err != nil {
 						glog.Errorf(AWlogString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
-					} else if err := w.pm.FinalAgreement([]policy.Policy{*existingPol}, ag.CurrentAgreementId); err != nil {
+					} else if err := w.pm.FinalAgreement([]policy.Policy{*existingPol}, ag.CurrentAgreementId, ag.Org); err != nil {
 						glog.Errorf(AWlogString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
 
 						// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
@@ -833,7 +896,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 								} else {
 									state = "unknown"
 								}
-								w.recordConsumerAgreementState(ag.CurrentAgreementId, pol, state)
+								w.recordConsumerAgreementState(ag.CurrentAgreementId, pol, ag.Org, state)
 							}
 						}
 						glog.V(3).Infof(AWlogString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))
@@ -890,18 +953,18 @@ func (w *AgreementBotWorker) cleanupAgreement(ag *Agreement) {
 	w.consumerPH[ag.AgreementProtocol].HandleAgreementTimeout(NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, w.consumerPH[ag.AgreementProtocol].GetTerminationCode(TERM_REASON_POLICY_CHANGED)), w.consumerPH[ag.AgreementProtocol])
 }
 
-func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, pol *policy.Policy, state string) error {
+func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, pol *policy.Policy, org string, state string) error {
 
-	// Use the workload URL for MS split policies. Use the APIspec for old style policies.
 	workload := pol.Workloads[0].WorkloadURL
-	if pol.Workloads[0].WorkloadURL == "" {
-		workload = pol.APISpecs[0].SpecRef
-	}
 
 	glog.V(5).Infof(AWlogString(fmt.Sprintf("setting agreement %v for workload %v state to %v", agreementId, workload, state)))
 
 	as := new(exchange.PutAgbotAgreementState)
-	as.Workload = workload
+	as.Workload = exchange.WorkloadAgreement{
+		Org:     exchange.GetOrg(pol.PatternId),
+		Pattern: exchange.GetId(pol.PatternId),
+		URL:     workload,
+	}
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
@@ -952,7 +1015,7 @@ func getTheDevice(httpClient *http.Client, deviceId string, url string, agbotId 
 
 	var resp interface{}
 	resp = new(exchange.GetDevicesResponse)
-	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/devices/" + exchange.GetId(deviceId)
+	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId)
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClient, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
 			glog.Errorf(AWlogString(fmt.Sprintf(err.Error())))
@@ -974,7 +1037,15 @@ func getTheDevice(httpClient *http.Client, deviceId string, url string, agbotId 
 
 }
 
+// Legacy function. Ignore devices that export specificly known configured properties.
 func (w *AgreementBotWorker) ignoreDevice(dev exchange.SearchResultDevice) (bool, error) {
+
+	// Devices without microservices in the search result are being managed by patterns, so the search
+	// result wont contain te microservices they are supporting.
+	if len(dev.Microservices) == 0 {
+		return false, nil
+	}
+
 	for _, prop := range dev.Microservices[0].Properties {
 		if listContains(w.Config.AgreementBot.IgnoreContractWithAttribs, prop.Name) {
 			return true, nil
@@ -1023,6 +1094,89 @@ func (w *AgreementBotWorker) workloadResolver(wURL string, wOrg string, wVersion
 		glog.Errorf(AWlogString(fmt.Sprintf("unable to resolve workload, error %v", err)))
 	}
 	return asl, err
+}
+
+// Generate policy files based on pattern metadata in the exchange. If checkInterval is zero,
+// this function will perform a single pass through the exchange metadata, and generate policy files.
+// A non-zero value will cause this function to remain in a loop checking every checkInterval seconds
+// for new metadata and updating the policy file(s) accordingly.
+func (w *AgreementBotWorker) GeneratePolicyFromPatterns(checkInterval int) error {
+	for {
+
+		glog.V(5).Infof(AWlogString(fmt.Sprintf("scanning patterns for updates")))
+		err := w.internalGeneratePolicyFromPatterns()
+
+		// Terminate now if necessary
+		if checkInterval == 0 {
+			return err
+		} else {
+			if err != nil {
+				glog.Errorf(AWlogString(fmt.Sprintf("unable to process patterns, error %v", err)))
+			}
+			time.Sleep(time.Duration(checkInterval) * time.Second)
+		}
+	}
+}
+
+// Generate policy files based on pattern metadata in the exchange. A list of orgs and patterns is
+// configured for the agbot to serve. Policy files are created, updated and deleted based on this
+// metadata and based on the pattern metadata itself. This function assumes that the
+// PolicyFileChangeWatcher will observe changes to policy files made by this function and act as usual
+// to make or cancel agreements.
+func (w *AgreementBotWorker) internalGeneratePolicyFromPatterns() error {
+
+	// Get the configured org/pattern pairs for this agbot.
+	agbot, err := w.getAgbot()
+	if err != nil {
+		return errors.New(fmt.Sprintf("unable to retrieve agbot metadata, error %v", err))
+	}
+
+	// Consume the configured org/pattern pairs into the PatternManager
+	if err := w.PatternManager.SetCurrentPatterns(&agbot.Patterns, w.Config.AgreementBot.PolicyPath); err != nil {
+		return errors.New(fmt.Sprintf("unable to process agbot served patterns metadata %v, error %v", agbot.Patterns, err))
+	}
+
+	// Iterate over each org in the PatternManager and process all the patterns in that org
+	for org, _ := range w.PatternManager.OrgPatterns {
+
+		// Query exchange for all patterns in the org
+		if exchangePatternMetadata, err := exchange.GetPatterns(w.Config.Collaborators.HTTPClientFactory, org, "", w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+			return errors.New(fmt.Sprintf("unable to get patterns for org %v, error %v", org, err))
+
+			// Check for pattern metadata changes and update policy files accordingly
+		} else if err := w.PatternManager.UpdatePatternPolicies(org, exchangePatternMetadata, w.Config.AgreementBot.PolicyPath); err != nil {
+			return errors.New(fmt.Sprintf("unable to update policies for org %v, error %v", org, err))
+		}
+	}
+
+	return nil
+
+}
+
+func (w *AgreementBotWorker) getAgbot() (*exchange.Agbot, error) {
+
+	var resp interface{}
+	resp = new(exchange.GetAgbotsResponse)
+	targetURL := w.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId)
+	for {
+		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.agbotId, w.token, nil, &resp); err != nil {
+			glog.Errorf(AWlogString(err.Error()))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(AWlogString(tpErr.Error()))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			ags := resp.(*exchange.GetAgbotsResponse).Agbots
+			if ag, there := ags[w.agbotId]; !there {
+				return nil, errors.New(fmt.Sprintf("agbot %v not in GET response %v as expected", w.agbotId, ags))
+			} else {
+				glog.V(5).Infof(AWlogString(fmt.Sprintf("retrieved agbot %v from exchange %v", w.agbotId, ag)))
+				return &ag, nil
+			}
+		}
+	}
+
 }
 
 // ==========================================================================================================

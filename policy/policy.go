@@ -1,11 +1,8 @@
 package policy
 
 import (
-	"errors"
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/events"
-	"os"
 	"strings"
 )
 
@@ -16,7 +13,7 @@ import (
 // can take any version.
 // maxAgreements: 0 means unlimited.
 
-func GeneratePolicy(e chan events.Message, sensorUrl string, sensorOrg string, sensorName string, sensorVersion string, arch string, props *map[string]interface{}, haPartners []string, meterPolicy Meter, counterPartyProperties RequiredProperty, agps []AgreementProtocol, maxAgreements int, filePath string) error {
+func GeneratePolicy(e chan events.Message, sensorUrl string, sensorOrg string, sensorName string, sensorVersion string, arch string, props *map[string]interface{}, haPartners []string, meterPolicy Meter, counterPartyProperties RequiredProperty, agps []AgreementProtocol, maxAgreements int, filePath string, deviceOrg string) error {
 
 	glog.V(5).Infof("Generating policy for %v", sensorUrl)
 
@@ -56,20 +53,18 @@ func GeneratePolicy(e chan events.Message, sensorUrl string, sensorOrg string, s
 	p.MaxAgreements = maxAgreements
 
 	// Store the policy on the filesystem
-	fullFileName := filePath + fileName + ".policy"
-	if err := os.MkdirAll(filePath, 0644); err != nil {
-		return errors.New(fmt.Sprintf("Error writing policy file, cannot create file path %v", filePath))
-	} else if err := WritePolicyFile(p, fullFileName); err != nil {
-		return errors.New(fmt.Sprintf("Error writing out policy file %v, to %v, error: %v", *p, fullFileName, err))
+	if fullFileName, err := CreatePolicyFile(filePath, deviceOrg, fileName, p); err != nil {
+		return err
+	} else {
+
+		// Fire an event
+		glog.V(5).Infof("About to fire event for policy %v", fullFileName)
+		e <- events.NewPolicyCreatedMessage(events.NEW_POLICY, fullFileName)
+
+		glog.V(5).Infof("Queued policy %v for event handler", fullFileName)
+
+		return nil
 	}
-
-	// Fire an event
-	glog.V(5).Infof("About to fire event for policy %v", fullFileName)
-	e <- events.NewPolicyCreatedMessage(events.NEW_POLICY, fullFileName)
-
-	glog.V(5).Infof("Queued policy %v for event handler", fullFileName)
-
-	return nil
 }
 
 func RetrieveAllProperties(policy *Policy) (*PropertyList, error) {

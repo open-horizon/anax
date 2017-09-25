@@ -4,6 +4,7 @@ package exchange
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 )
 
@@ -24,4 +25,147 @@ func Test_Blockchain_Demarshal(t *testing.T) {
 		}
 	}
 
+}
+
+func Test_ConvertPattern0(t *testing.T) {
+
+	org := "testorg"
+	name := "testpattern"
+
+	pa := `{"label":"Weather","description":"a weather pattern","public":true,` +
+		`"workloads":[],` +
+		`"agreementProtocols":[{"name":"Basic"}]}`
+
+	if p1 := create_Pattern(pa, t); p1 == nil {
+		t.Errorf("Pattern not created from %v\n", pa)
+	} else if pols, err := ConvertToPolicies(fmt.Sprintf("%v/%v", org, name), p1); err != nil {
+		t.Errorf("Error: %v converting %v to a policy\n", err, pa)
+	} else if len(pols) != 0 {
+		t.Errorf("Error: should be 0 policies in the pattern, there are %v\n", len(pols))
+	}
+
+}
+
+func Test_ConvertPattern1(t *testing.T) {
+
+	org := "testorg"
+	name := "testpattern"
+
+	pn := makePolicyName(name, "https://bluehorizon.network/workloads/weather", org, "amd64")
+
+	pa := `{"label":"Weather","description":"a weather pattern","public":true,` +
+		`"workloads":[` +
+		`{"workloadUrl":"https://bluehorizon.network/workloads/weather","workloadOrgid":"testorg","workloadArch":"amd64","workloadVersions":` +
+		`[{"version":"1.5.0",` +
+		`"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"upgradePolicy":{}},` +
+		`{"version":"1.5.0",` +
+		`"priority":{"priority_value":2,"retries":1,"retry_durations":3600,"verified_durations": 52},` +
+		`"upgradePolicy":{}}],` +
+		`"dataVerification":{"enabled":true,"user":"","password":"","URL":"myURL","interval":240,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}}}` +
+		`],` +
+		`"agreementProtocols":[{"name":"Basic"}]}`
+
+	if p1 := create_Pattern(pa, t); p1 == nil {
+		t.Errorf("Pattern not created from %v\n", pa)
+	} else if pols, err := ConvertToPolicies(fmt.Sprintf("%v/%v", org, name), p1); err != nil {
+		t.Errorf("Error: %v converting %v to a policy\n", err, pa)
+	} else if pols[0].Header.Name != pn {
+		t.Errorf("Error: wrong header name generated, was %v\n", pols[0].Header.Name)
+	} else if len(pols) != 1 {
+		t.Errorf("Error: should be 1 policies in the pattern, there are %v\n", len(pols))
+	} else if len(pols[0].AgreementProtocols) != 1 {
+		t.Errorf("Error: should be 1 agreement protocol, but there are %v\n", len(pols[0].AgreementProtocols))
+	} else if pols[0].DataVerify.URL != "myURL" {
+		t.Errorf("Error: Data verification didnt get setup correctly, is %v\n", pols[0].DataVerify)
+	}
+
+}
+
+func Test_ConvertPattern2(t *testing.T) {
+
+	org := "testorg"
+	name := "testpattern"
+
+	pn := makePolicyName(name, "https://bluehorizon.network/workloads/weather", org, "amd64")
+
+	pa := `{"label":"Weather","description":"a weather pattern","public":true,` +
+		`"workloads":[` +
+		`{"workloadUrl":"https://bluehorizon.network/workloads/weather","workloadOrgid":"testorg","workloadArch":"amd64","workloadVersions":` +
+		`[{"version":"1.5.0",` +
+		`"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"upgradePolicy":{}},` +
+		`{"version":"1.5.0",` +
+		`"priority":{"priority_value":2,"retries":1,"retry_durations":3600,"verified_durations": 52},` +
+		`"upgradePolicy":{}}],` +
+		`"dataVerification":{"enabled":true,"user":"","password":"","URL":"myURL","interval":240,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}}},` +
+		`{"workloadUrl":"https://bluehorizon.network/workloads/netspeed","workloadOrgid":"testorg","workloadArch":"amd64","workloadVersions":` +
+		`[{"version":"1.5.0",` +
+		`"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"upgradePolicy":{}},` +
+		`{"version":"1.5.0",` +
+		`"priority":{"priority_value":2,"retries":1,"retry_durations":3600,"verified_durations": 52},` +
+		`"upgradePolicy":{}}],` +
+		`"dataVerification":{"enabled":true,"user":"","password":"","URL":"myURL","interval":240,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}}}` +
+		`],` +
+		`"agreementProtocols":[{"name":"Basic"}]}`
+
+	if p1 := create_Pattern(pa, t); p1 == nil {
+		t.Errorf("Pattern not created from %v\n", pa)
+	} else if pols, err := ConvertToPolicies(fmt.Sprintf("%v/%v", org, name), p1); err != nil {
+		t.Errorf("Error: %v converting %v to a policy\n", err, pa)
+	} else if pols[0].Header.Name != pn {
+		t.Errorf("Error: wrong header name generated, was %v\n", pols[0].Header.Name)
+	} else if len(pols) != 2 {
+		t.Errorf("Error: should be 2 policies in the pattern, there are %v\n", len(pols))
+	} else if len(pols[0].AgreementProtocols) != 1 {
+		t.Errorf("Error: should be 1 agreement protocol, but there are %v\n", len(pols[0].AgreementProtocols))
+	} else if pols[0].DataVerify.URL != "myURL" {
+		t.Errorf("Error: Data verification didnt get setup correctly, is %v\n", pols[0].DataVerify)
+	}
+
+}
+
+func Test_makePolicyName1(t *testing.T) {
+
+	pat := "pat1"
+	url := "http://mydomain.com"
+	org := "myorg"
+	arch := "amd64"
+
+	expected := fmt.Sprintf("%v_%v_%v_%v", pat, "mydomain.com", org, arch)
+
+	if res := makePolicyName(pat, url, org, arch); res != expected {
+		t.Errorf("Error: expecting %v got %v\n", expected, res)
+	}
+
+}
+
+func Test_makePolicyName2(t *testing.T) {
+
+	pat := "pat1"
+	url := ""
+	org := "myorg"
+	arch := "amd64"
+
+	expected := fmt.Sprintf("%v_%v_%v_%v", pat, "", org, arch)
+
+	if res := makePolicyName(pat, url, org, arch); res != expected {
+		t.Errorf("Error: expecting %v got %v\n", expected, res)
+	}
+
+}
+
+// Create a Pattern object from a JSON serialization. The JSON serialization
+// does not have to be a valid pattern serialization, just has to be a valid
+// JSON serialization.
+func create_Pattern(jsonString string, t *testing.T) *Pattern {
+	wl := new(Pattern)
+
+	if err := json.Unmarshal([]byte(jsonString), &wl); err != nil {
+		t.Errorf("Error unmarshalling pattern json string: %v error:%v\n", jsonString, err)
+		return nil
+	} else {
+		return wl
+	}
 }

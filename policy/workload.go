@@ -18,6 +18,20 @@ import (
 	"strings"
 )
 
+type WorkloadList []Workload
+
+// This function adds a workload to the list. Return an error if there are duplicates.
+func (self *WorkloadList) Add_Workload(new_ele *Workload) error {
+	for _, ele := range *self {
+		if ele.IsSame(*new_ele) {
+			return errors.New(fmt.Sprintf("WorkloadList %v already has the element being added: %v", *self, *new_ele))
+		}
+	}
+	(*self) = append(*self, *new_ele)
+	return nil
+}
+
+// Types for dealing with the workload image metadata
 type Image struct {
 	File      string `json:"file"`
 	Signature string `json:"signature"`
@@ -28,8 +42,8 @@ func (i Image) IsSame(compare Image) bool {
 }
 
 type Torrent struct {
-	Url    string  `json:"url"`
-	Images []Image `json:"images"`
+	Url    string  `json:"url,omitempty"`
+	Images []Image `json:"images,omitempty"`
 }
 
 func (t Torrent) IsSame(compare Torrent) bool {
@@ -67,6 +81,16 @@ func (wp WorkloadPriority) String() string {
 		wp.PriorityValue, wp.Retries, wp.RetryDurationS, wp.VerifiedDurationS)
 }
 
+// This function creates workload priority objects
+func Workload_Priority_Factory(priority int, retries int, retryDur int, verifiedDur int) *WorkloadPriority {
+	w := new(WorkloadPriority)
+	w.PriorityValue = priority
+	w.Retries = retries
+	w.RetryDurationS = retryDur
+	w.VerifiedDurationS = verifiedDur
+	return w
+}
+
 func (wp WorkloadPriority) IsSame(compare WorkloadPriority) bool {
 	return wp.PriorityValue == compare.PriorityValue &&
 		wp.Retries == compare.Retries &&
@@ -75,10 +99,10 @@ func (wp WorkloadPriority) IsSame(compare WorkloadPriority) bool {
 }
 
 type Workload struct {
-	Deployment                   string           `json:"deployment"`
-	DeploymentSignature          string           `json:"deployment_signature"`
+	Deployment                   string           `json:"deployment,omitempty"`
+	DeploymentSignature          string           `json:"deployment_signature,omitempty"`
 	DeploymentUserInfo           string           `json:"deployment_user_info,omitempty"`
-	Torrent                      Torrent          `json:"torrent"`
+	Torrent                      Torrent          `json:"torrent,omitempty"`
 	WorkloadPassword             string           `json:"workload_password,omitempty"`              // The password used to create the bcrypt hash that is passed to the workload so that the workload can verify the caller
 	Priority                     WorkloadPriority `json:"priority,omitempty"`                       // The highest priority workload is tried first for an agrement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
 	WorkloadURL                  string           `json:"workloadUrl,omitempty"`                    // Added with MS split, refers to a workload definition in the exchange
@@ -107,11 +131,23 @@ func (w Workload) String() string {
 }
 
 func (w Workload) ShortString() string {
-	return fmt.Sprintf("Priority: %v, "+
+	return fmt.Sprintf(
 		"Workload URL: %v, "+
-		"Version: %v, "+
-		"Deployment: %v",
-		w.Priority, w.WorkloadURL, w.Version, w.Deployment)
+			"Version: %v, "+
+			"Org: %v, "+
+			"Priority: %v, "+
+			"Deployment: %v",
+		w.WorkloadURL, w.Version, w.Org, w.Priority, w.Deployment)
+}
+
+// This function creates workload objects
+func Workload_Factory(url string, org string, version string, arch string) *Workload {
+	w := new(Workload)
+	w.WorkloadURL = url
+	w.Org = org
+	w.Version = version
+	w.Arch = arch
+	return w
 }
 
 // This function compares 2 workload objects for sameness. This is slightly complicated because 2 workloads can be

@@ -56,7 +56,7 @@ func (a *BasicAgreementWorker) start(work chan AgreementWork, random *rand.Rand)
 					// Update state in exchange
 				} else if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
 					glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error demarshalling policy from agreement %v, error: %v", wi.Reply.AgreementId(), err)))
-				} else if err := a.protocolHandler.RecordConsumerAgreementState(wi.Reply.AgreementId(), pol, "Finalized Agreement", a.workerID); err != nil {
+				} else if err := a.protocolHandler.RecordConsumerAgreementState(wi.Reply.AgreementId(), pol, ag.Org, "Finalized Agreement", a.workerID); err != nil {
 					glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error setting agreement %v finalized state in exchange: %v", wi.Reply.AgreementId(), err)))
 				}
 			}

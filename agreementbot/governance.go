@@ -284,7 +284,7 @@ func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *WorkloadUsa
 		// Check to make sure the partner is heart-beating to the exchange. This should tell us if we can expect this device to
 		// complete an agreement at some time, or not.
 
-		if dev, err := getDevice(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), partnerWLU.DeviceId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+		if dev, err := GetDevice(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), partnerWLU.DeviceId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("error obtaining device %v heartbeat state: %v", partnerWLU.DeviceId, err)))
 		} else if len(dev.LastHeartbeat) != 0 && (uint64(timeInSeconds(dev.LastHeartbeat)+300) > uint64(time.Now().Unix())) {
 			// If the device is still alive (heart beat received in the last 5 mins), then assume this partner is trying to make an
@@ -343,13 +343,13 @@ func (w *AgreementBotWorker) TerminateAgreement(ag *Agreement, reason uint) {
 	w.consumerPH[ag.AgreementProtocol].HandleAgreementTimeout(NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, reason), w.consumerPH[ag.AgreementProtocol])
 }
 
-func getDevice(httpClient *http.Client, deviceId string, url string, agbotId string, token string) (*exchange.Device, error) {
+func GetDevice(httpClient *http.Client, deviceId string, url string, agbotId string, token string) (*exchange.Device, error) {
 
 	glog.V(5).Infof(logString(fmt.Sprintf("retrieving device %v from exchange", deviceId)))
 
 	var resp interface{}
 	resp = new(exchange.GetDevicesResponse)
-	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/devices/" + exchange.GetId(deviceId)
+	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId)
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClient, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(err.Error()))

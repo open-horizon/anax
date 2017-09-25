@@ -14,6 +14,7 @@ import (
 type HorizonDevice struct {
 	Id                 *string `json:"id"`
 	Org                *string `json:"organization"`
+	Pattern            *string `json:"pattern"` // a simple name, not prefixed with the org
 	Name               *string `json:"name,omitempty"`
 	Token              *string `json:"token,omitempty"`
 	TokenLastValidTime *uint64 `json:"token_last_valid_time,omitempty"`

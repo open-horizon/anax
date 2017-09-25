@@ -388,6 +388,22 @@ func Test_nexthighestpriority_workload2(t *testing.T) {
 
 }
 
+func Test_WorkloadFactory(t *testing.T) {
+
+	wl := Workload_Factory("myurl", "myorg", "1.0.0", "armhf")
+	if wl.WorkloadURL != "myurl" || wl.Org != "myorg" || wl.Version != "1.0.0" || wl.Arch != "armhf" {
+		t.Errorf("Workload %v was not created correctly.", wl)
+	}
+}
+
+func Test_WorkloadPriority_Factory(t *testing.T) {
+
+	wl := Workload_Priority_Factory(50, 2, 120, 240)
+	if wl.PriorityValue != 50 || wl.Retries != 2 || wl.RetryDurationS != 120 || wl.VerifiedDurationS != 240 {
+		t.Errorf("Workload priority %v was not created correctly.", wl)
+	}
+}
+
 // Create a Workload section from a JSON serialization. The JSON serialization
 // does not have to be a valid Workload serialization, just has to be a valid
 // JSON serialization.

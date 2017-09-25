@@ -346,6 +346,12 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 		if bail := checkInputString(w, "device.organization", device.Org); bail {
 			return
 		}
+		// Device pattern is optional
+		if device.Pattern != nil && *device.Pattern != "" {
+			if bail := checkInputString(w, "device.pattern", device.Pattern); bail {
+				return
+			}
+		}
 		if bail := checkInputString(w, "device.name", device.Name); bail {
 			return
 		}
@@ -376,6 +382,19 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Verify that the input pattern is defined in the exchange. A device (or node) canonly use patterns that are defined within its own org.
+		if device.Pattern != nil && *device.Pattern != "" {
+			if patternDefs, err := exchange.GetPatterns(a.Config.Collaborators.HTTPClientFactory, *device.Org, *device.Pattern, a.Config.Edge.ExchangeURL, deviceId, *device.Token); err != nil {
+				glog.Errorf("Error searching for pattern %v for %v in exchange, error: %v", *device.Pattern, *device.Org, err)
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "pattern", Error: fmt.Sprintf("error searching for pattern %v in exchange, error: %v", *device.Pattern, err)})
+				return
+			} else if _, ok := patternDefs[fmt.Sprintf("%v/%v", *device.Org, *device.Pattern)]; !ok {
+				glog.Errorf("Pattern %v for %v not found in exchange, error: %v", *device.Pattern, *device.Org, err)
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "pattern", Error: fmt.Sprintf("pattern %v not found in exchange, error: %v", *device.Pattern, err)})
+				return
+			}
+		}
+
 		// Check for the device already in the local database
 		existing, fetchErrWritten := fetch(&device)
 		if fetchErrWritten {
@@ -394,14 +413,14 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			haDevice = true
 		}
 
-		exDev, err := persistence.SaveNewExchangeDevice(a.db, *device.Id, *device.Token, *device.Name, haDevice, *device.Org)
+		exDev, err := persistence.SaveNewExchangeDevice(a.db, *device.Id, *device.Token, *device.Name, haDevice, *device.Org, *device.Pattern)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			glog.Errorf("Error persisting new exchange device: %v", err)
 			return
 		}
 
-		a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, *device.Id, *device.Token, *device.Org)
+		a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, *device.Id, *device.Token, *device.Org, *device.Pattern)
 
 		writeResponse(exDev, http.StatusCreated)
 
@@ -673,6 +692,16 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
+			// If the device declared itself to be using a pattern, then it CANNOT specify any attributes that generate policy
+			// settings . All policy is controlled by the pattern definition.
+			if existingDevice.Pattern != "" {
+				if attr.GetMeta().Id == "metering" || attr.GetMeta().Id == "property" || attr.GetMeta().Id == "counterpartyproperty" || attr.GetMeta().Id == "agreementprotocol" {
+					glog.Errorf("device is using a pattern %v, policy attributes are not supported.", existingDevice.Pattern)
+					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].Id", Error: fmt.Sprintf("device is using a pattern %v, policy attributes are not supported.", existingDevice.Pattern)})
+					return
+				}
+			}
+
 			// Verfiy that all non-defaulted userInput variables in the microservice definition are specified in a mapped property attribute
 			// of this service invocation.
 			if msdef != nil && attr.GetMeta().Type == "persistence.MappedAttributes" {
@@ -753,34 +782,38 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 					glog.V(5).Infof("Found default global ha attribute %v", attr)
 				}
 
-				// Extract global metering property
-				if attr.GetMeta().Id == "metering" && len(attr.GetMeta().SensorUrls) == 0 {
-					// found a global metering entry
-					meterPolicy = policy.Meter{
-						Tokens:                attr.(persistence.MeteringAttributes).Tokens,
-						PerTimeUnit:           attr.(persistence.MeteringAttributes).PerTimeUnit,
-						NotificationIntervalS: attr.(persistence.MeteringAttributes).NotificationIntervalS,
+				// Global policy attributes are ignored for devices that are using a pattern. All policy is controlled
+				// by the pattern definition.
+				if existingDevice.Pattern == "" {
+					// Extract global metering property
+					if attr.GetMeta().Id == "metering" && len(attr.GetMeta().SensorUrls) == 0 {
+						// found a global metering entry
+						meterPolicy = policy.Meter{
+							Tokens:                attr.(persistence.MeteringAttributes).Tokens,
+							PerTimeUnit:           attr.(persistence.MeteringAttributes).PerTimeUnit,
+							NotificationIntervalS: attr.(persistence.MeteringAttributes).NotificationIntervalS,
+						}
+						glog.V(5).Infof("Found default global metering attribute %v", attr)
 					}
-					glog.V(5).Infof("Found default global metering attribute %v", attr)
-				}
 
-				// Extract global counterparty property
-				if attr.GetMeta().Id == "counterpartyproperty" && len(attr.GetMeta().SensorUrls) == 0 {
-					counterPartyProperties = attr.(persistence.CounterPartyPropertyAttributes).Expression
-					glog.V(5).Infof("Found default global counterpartyproperty attribute %v", attr)
-				}
+					// Extract global counterparty property
+					if attr.GetMeta().Id == "counterpartyproperty" && len(attr.GetMeta().SensorUrls) == 0 {
+						counterPartyProperties = attr.(persistence.CounterPartyPropertyAttributes).Expression
+						glog.V(5).Infof("Found default global counterpartyproperty attribute %v", attr)
+					}
 
-				// Extract global properties
-				if attr.GetMeta().Id == "property" && len(attr.GetMeta().SensorUrls) == 0 {
-					properties = attr.(persistence.PropertyAttributes).Mappings
-					glog.V(5).Infof("Found default global properties %v", properties)
-				}
+					// Extract global properties
+					if attr.GetMeta().Id == "property" && len(attr.GetMeta().SensorUrls) == 0 {
+						properties = attr.(persistence.PropertyAttributes).Mappings
+						glog.V(5).Infof("Found default global properties %v", properties)
+					}
 
-				// Extract global agreement protocol attribute
-				if attr.GetMeta().Id == "agreementprotocol" && len(attr.GetMeta().SensorUrls) == 0 {
-					agpl := attr.(persistence.AgreementProtocolAttributes).Protocols
-					globalAgreementProtocols = agpl.([]interface{})
-					glog.V(5).Infof("Found default global agreement protocol attribute %v", globalAgreementProtocols)
+					// Extract global agreement protocol attribute
+					if attr.GetMeta().Id == "agreementprotocol" && len(attr.GetMeta().SensorUrls) == 0 {
+						agpl := attr.(persistence.AgreementProtocolAttributes).Protocols
+						globalAgreementProtocols = agpl.([]interface{})
+						glog.V(5).Infof("Found default global agreement protocol attribute %v", globalAgreementProtocols)
+					}
 				}
 			}
 		}
@@ -876,8 +909,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Generate a policy based on all the attributes and the service definition
-		filePath := a.Config.Edge.PolicyPath + "/" + existingDevice.Org + "/"
-		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorUrl, *service.SensorOrg, *service.SensorName, *service.SensorVersion, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, maxAgreements, filePath); genErr != nil {
+		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorUrl, *service.SensorOrg, *service.SensorName, *service.SensorVersion, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, maxAgreements, a.Config.Edge.PolicyPath, existingDevice.Org); genErr != nil {
 			glog.Errorf("Error: %v", genErr)
 			w.WriteHeader(http.StatusInternalServerError)
 			return

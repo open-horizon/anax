@@ -49,9 +49,10 @@ type ProposalRejection struct {
 // This is the main struct that defines the Policy object
 type Policy struct {
 	Header                 PolicyHeader          `json:"header"`
-	APISpecs               APISpecList           `json:"apiSpec"`
+	PatternId              string                `json:"paternId,omitempty"` // Manually created policy files should NOT use this field.
+	APISpecs               APISpecList           `json:"apiSpec,omitempty"`
 	AgreementProtocols     AgreementProtocolList `json:"agreementProtocols,omitempty"`
-	Workloads              []Workload            `json:"workloads,omitempty"`
+	Workloads              WorkloadList          `json:"workloads,omitempty"`
 	DeviceType             string                `json:"deviceType,omitempty"`
 	ValueEx                ValueExchange         `json:"valueExchange,omitempty"`
 	ResourceLimits         ResourceLimit         `json:"resourceLimits,omitempty"`
@@ -122,6 +123,14 @@ func (self *Policy) Add_CounterPartyProperties(r *RequiredProperty) error {
 		return nil
 	} else {
 		return errors.New(fmt.Sprintf("Add_CounterPartyProperties Error: input is nil."))
+	}
+}
+
+func (self *Policy) Add_Workload(w *Workload) error {
+	if w != nil {
+		return self.Workloads.Add_Workload(w)
+	} else {
+		return errors.New(fmt.Sprintf("Add_Workload Error: input is nil."))
 	}
 }
 
@@ -228,6 +237,10 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		merged_pol := new(Policy)
 		merged_pol.Header.Name = producer_policy.Header.Name + " merged with " + consumer_policy.Header.Name
 		merged_pol.Header.Version = CurrentVersion
+
+		// Propagate the pattern id
+		merged_pol.PatternId = consumer_policy.PatternId
+
 		// The consumer policy object has already been augmented with the microservices from the producer
 		merged_pol.APISpecs = append(merged_pol.APISpecs, consumer_policy.APISpecs...)
 
@@ -341,14 +354,13 @@ func (self *Policy) String() string {
 	res += fmt.Sprintf("Agreement Protocol: %v\n", self.AgreementProtocols)
 	res += "Workloads:\n"
 	for _, wl := range self.Workloads {
-		res += fmt.Sprintf("Deployment: %v DeploymentSignature: %v DeploymentUserInfo: %v Torrent: %v\n", wl.Deployment, wl.DeploymentSignature, wl.DeploymentUserInfo, wl.Torrent)
+		res += wl.ShortString() + "\n"
 	}
 	res += "Properties:\n"
 	for _, p := range self.Properties {
 		res += fmt.Sprintf("Name: %v Value: %v\n", p.Name, p.Value)
 	}
 	res += fmt.Sprintf("CounterPartyProperties: %v\n", self.CounterPartyProperties)
-	res += fmt.Sprintf("Resource Limits: %v\n", self.ResourceLimits)
 	res += fmt.Sprintf("Data Verification: %v\n", self.DataVerify)
 
 	return res
@@ -622,6 +634,38 @@ func (c *Contents) GetPolicyName(org, filename string) string {
 		return c.AllWatches[org][filename].Pol.Header.Name
 	}
 	return ""
+}
+
+func CreatePolicyFile(filepath string, org string, name string, p *Policy) (string, error) {
+
+	// Store the policy on the filesystem in an org based hierarchy
+	fullFilePath := fmt.Sprintf("%v%v/", filepath, org)
+	fullFileName := fmt.Sprintf("%v%v.policy", fullFilePath, name)
+	if err := os.MkdirAll(fullFilePath, 0764); err != nil {
+		return "", errors.New(fmt.Sprintf("Error writing policy file, cannot create file path %v", fullFilePath))
+	} else if err := WritePolicyFile(p, fullFileName); err != nil {
+		return "", errors.New(fmt.Sprintf("Error writing out policy file %v, to %v, error: %v", *p, fullFileName, err))
+	}
+	return fullFileName, nil
+
+}
+
+func RenamePolicyFile(filepath string, org string, name string, newSuffix string) error {
+
+	fullFilePath := fmt.Sprintf("%v%v/", filepath, org)
+	fullFileName := fmt.Sprintf("%v%v.policy", fullFilePath, name)
+	if err := os.Rename(fullFileName, fullFileName+newSuffix); err != nil {
+		return fmt.Errorf("Failed to rename the policy file %v to %v, error %v", fullFileName, fullFileName+newSuffix, err)
+	}
+	return nil
+
+}
+
+func DeletePolicyFile(name string) error {
+	if err := os.Remove(name); err != nil {
+		return fmt.Errorf("Failed to remove the policy file %v, error %v", name, err)
+	}
+	return nil
 }
 
 // This is the policy file watcher function. It can be called once, to be notified of all policy files

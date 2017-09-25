@@ -253,6 +253,7 @@ func (p *ProtocolHandler) InitBlockchain(ev *events.AccountFundedMessage) error 
 func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 	producerPolicy *policy.Policy,
 	consumerPolicy *policy.Policy,
+	org string,
 	myId string,
 	messageTarget interface{},
 	workload *policy.Workload,
@@ -277,7 +278,7 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 	// Send the proposal to the other party
 	glog.V(5).Infof("Protocol %v sending proposal %s", p.Name(), newProposal)
 
-	if err := abstractprotocol.SendProposal(p, newProposal, consumerPolicy, messageTarget, sendMessage); err != nil {
+	if err := abstractprotocol.SendProposal(p, newProposal, consumerPolicy, org, messageTarget, sendMessage); err != nil {
 		return nil, err
 	}
 	return newProposal, nil
@@ -307,11 +308,12 @@ func (p *ProtocolHandler) SignProposal(newProposal abstractprotocol.Proposal) (s
 // of the proposal from the producer.
 func (p *ProtocolHandler) DecideOnProposal(proposal abstractprotocol.Proposal,
 	myId string,
+	myOrg string,
 	runningBlockchains []map[string]string,
 	messageTarget interface{},
 	sendMessage func(mt interface{}, pay []byte) error) (abstractprotocol.ProposalReply, error) {
 
-	reply, replyErr := abstractprotocol.DecideOnProposal(p, proposal, myId)
+	reply, replyErr := abstractprotocol.DecideOnProposal(p, proposal, myId, myOrg)
 	newReply := NewCSProposalReply(reply, "", "", "", "", "")
 
 	if replyErr == nil {
@@ -333,7 +335,7 @@ func (p *ProtocolHandler) DecideOnProposal(proposal abstractprotocol.Proposal,
 	}
 
 	// Always respond to the Proposer
-	return abstractprotocol.SendResponse(p, proposal, newReply, replyErr, messageTarget, sendMessage)
+	return abstractprotocol.SendResponse(p, proposal, newReply, myOrg, replyErr, messageTarget, sendMessage)
 
 }
 
@@ -584,7 +586,8 @@ func (p *ProtocolHandler) RecordAgreement(newProposal abstractprotocol.Proposal,
 	reply abstractprotocol.ProposalReply,
 	addr string,
 	sig string,
-	consumerPolicy *policy.Policy) error {
+	consumerPolicy *policy.Policy,
+	org string) error {
 
 	address := ""
 	signature := ""
@@ -603,7 +606,7 @@ func (p *ProtocolHandler) RecordAgreement(newProposal abstractprotocol.Proposal,
 	} else {
 
 		// Tell the policy manager that we're in this agreement
-		if cerr := abstractprotocol.RecordAgreement(p, newProposal, consumerPolicy); cerr != nil {
+		if cerr := abstractprotocol.RecordAgreement(p, newProposal, consumerPolicy, org); cerr != nil {
 			glog.Errorf(fmt.Sprintf("Error finalizing agreement %v in PM %v", newProposal.AgreementId(), cerr))
 		}
 
@@ -628,6 +631,7 @@ func (p *ProtocolHandler) RecordAgreement(newProposal abstractprotocol.Proposal,
 func (p *ProtocolHandler) TerminateAgreement(policies []policy.Policy,
 	counterParty string,
 	agreementId string,
+	org string,
 	reason uint,
 	messageTarget interface{},
 	sendMessage func(mt interface{}, pay []byte) error) error {
@@ -637,7 +641,7 @@ func (p *ProtocolHandler) TerminateAgreement(policies []policy.Policy,
 	} else {
 
 		// Tell the policy manager that we're terminating this agreement
-		if cerr := abstractprotocol.TerminateAgreement(p, policies, agreementId, reason); cerr != nil {
+		if cerr := abstractprotocol.TerminateAgreement(p, policies, agreementId, org, reason); cerr != nil {
 			glog.Warningf(fmt.Sprintf("Unable to cancel agreement %v in PM %v", agreementId, cerr))
 		}
 

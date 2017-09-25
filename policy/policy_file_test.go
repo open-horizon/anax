@@ -693,6 +693,56 @@ func Test_Merge_Producers_Create_TsAndCs1(t *testing.T) {
 	}
 }
 
+// Merge an empty producer policy with a pattern generated policy
+func Test_Merge_EmptyProducer_and_Create_TsAndCs1(t *testing.T) {
+
+	pa := `{"header":{"name":"producer","version": "2.0"}}`
+	pb := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
+		`"paternId": "e2edev/pws",` +
+		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
+		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
+		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
+		`],"valueExchange":{},"resourceLimits":{},` +
+		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
+		`"proposalRejection":{},"ha_group":{}}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 := create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
+	} else if err := Are_Compatible(p1, p2); err != nil {
+		t.Errorf(err.Error())
+	} else if mergedPF, err := Create_Terms_And_Conditions(p1, p2, &p2.Workloads[0], "agreementId", "defaultPW", 300, 1); err != nil {
+		t.Errorf(err.Error())
+	} else {
+		t.Log(mergedPF)
+	}
+}
+
+// Add a workload to a policy object
+func Test_Add_Workload1(t *testing.T) {
+
+	pa := `{"header":{"name":"policy1","version": "2.0"},` +
+		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
+		`"dataVerification":{"enabled":true,"URL":"","interval":0,"metering":{"tokens":2,"per_time_unit":"hour","notification_interval":3600}},` +
+		`"maxAgreements":1}`
+
+	wa := `{"workloadUrl":"url1","organization":"myorg","version":"1.0.0","arch":"amd64"}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if w1 := create_Workload(wa, t); w1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", w1, wa)
+	} else if err := p1.Add_Workload(w1); err != nil {
+		t.Errorf("Error: %v adding workload %v to %v\n", err, wa, p1)
+	} else if len(p1.Workloads) != 1 {
+		t.Errorf("Error: workload list length should be 1, but is %v\n", len(p1.Workloads))
+	} else if err := p1.Add_Workload(w1); err == nil {
+		t.Errorf("Duplicate add should have raised an error for %v and %v", wa, p1)
+	}
+}
+
 // ================================================================================================================
 // Helper functions
 //
@@ -771,6 +821,20 @@ func create_AgreementProtocolList(jsonString string, t *testing.T) *AgreementPro
 
 	if err := json.Unmarshal([]byte(jsonString), &pl); err != nil {
 		t.Errorf("Error unmarshalling AgreementProtocolList json string: %v error:%v\n", jsonString, err)
+		return nil
+	} else {
+		return pl
+	}
+}
+
+// Create a workload array from a JSON serialization. The JSON serialization
+// does not have to be a valid workload serialization, just has to be a valid
+// JSON serialization.
+func create_WorkloadList(jsonString string, t *testing.T) *WorkloadList {
+	pl := new(WorkloadList)
+
+	if err := json.Unmarshal([]byte(jsonString), &pl); err != nil {
+		t.Errorf("Error unmarshalling WorkloadList json string: %v error:%v\n", jsonString, err)
 		return nil
 	} else {
 		return pl

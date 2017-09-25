@@ -234,11 +234,9 @@ func RemoveMicroservicePolicy(spec_ref string, org string, version string, msdef
 				// get the policy file name
 				a_tmp := strings.Split(spec_ref, "/")
 				fileName := a_tmp[len(a_tmp)-1]
-				fullFileName := policy_path + "/" + org + "/" + fileName + ".policy"
 
-				// rename the policy file
-				if err := os.Rename(fullFileName, fullFileName+"."+msdef_id); err != nil {
-					return fmt.Errorf("Failed to rename the policy file %v to %v. %v", fullFileName, fullFileName+"."+msdef_id, err)
+				if err := policy.RenamePolicyFile(policy_path, org, fileName, "."+msdef_id); err != nil {
+					return err
 				}
 
 				return nil
@@ -272,7 +270,7 @@ func getExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 
 	var resp interface{}
 	resp = new(exchange.GetDevicesResponse)
-	targetURL := exchangeUrl + "orgs/" + exchange.GetOrg(deviceId) + "/devices/" + exchange.GetId(deviceId)
+	targetURL := exchangeUrl + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId)
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, deviceId, deviceToken, nil, &resp); err != nil {
 			glog.Errorf(err.Error())
@@ -294,7 +292,7 @@ func getExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 }
 
 // Generate a new policy file for given ms and the register the microservice on the exchange.
-func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath string, db *bolt.DB, e chan events.Message) error {
+func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath string, db *bolt.DB, e chan events.Message, deviceOrg string) error {
 	glog.V(3).Infof("Genarate policy for the given microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
 
 	var policyArch string
@@ -384,7 +382,7 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 			maxAgreements = 2 // hard coded 2 for now, will change to 0 later
 		}
 
-		if err := policy.GeneratePolicy(e, msdef.SpecRef, msdef.Org, msdef.Name, msdef.Version, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *list, maxAgreements, policyPath); err != nil {
+		if err := policy.GeneratePolicy(e, msdef.SpecRef, msdef.Org, msdef.Name, msdef.Version, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *list, maxAgreements, policyPath, deviceOrg); err != nil {
 			return fmt.Errorf("Failed to generate policy for %v version %v. Error: %v", msdef.SpecRef, msdef.Version, err)
 		}
 	}
@@ -424,7 +422,7 @@ func UnregisterMicroserviceExchange(spec_ref string, httpClientFactory *config.H
 		pdr.RegisteredMicroservices = ms_put
 		var resp interface{}
 		resp = new(exchange.PutDeviceResponse)
-		targetURL := exchange_url + "orgs/" + exchange.GetOrg(device_id) + "/devices/" + exchange.GetId(device_id)
+		targetURL := exchange_url + "orgs/" + exchange.GetOrg(device_id) + "/nodes/" + exchange.GetId(device_id)
 
 		glog.V(3).Infof("Unregistering microservices: %v at %v", pdr.ShortString(), targetURL)
 
