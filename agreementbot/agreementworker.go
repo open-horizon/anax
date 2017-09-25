@@ -198,10 +198,34 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				return
 			} else {
 
-				// Convert the workload details APISpec list to policy types
+				// If the device resulted from a pattern based search then the policies are not returned in the search. Go to the
+				// exchange to get the device's policies.
+				var dev *exchange.Device
+				var derr error
+				if wi.ConsumerPolicy.PatternId != "" {
+					if dev, derr = GetDevice(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), wi.Device.Id, b.config.AgreementBot.ExchangeURL, cph.ExchangeId(), cph.ExchangeToken()); derr != nil {
+						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error getting device %v policies, error: %v", wi.Device.Id, err)))
+						return
+					}
+				}
+
+				// Convert the workload details APISpec list to policy types, and save the device side microservice details.
 				asl := new(policy.APISpecList)
 				for _, apiSpec := range workloadDetails.APISpecs {
 					(*asl) = append((*asl), (*policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch)))
+					if wi.ConsumerPolicy.PatternId != "" {
+						for _, devMS := range dev.RegisteredMicroservices {
+							// Find the device's microservice definition based on the microservices needed by the workload.
+							if devMS.Url == apiSpec.SpecRef {
+								if pol, err := policy.DemarshalPolicy(devMS.Policy); err != nil {
+									glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error demarshalling device %v policy, error: %v", wi.Device.Id, err)))
+									return
+								} else {
+									wi.ProducerPolicy.APISpecs = append(wi.ProducerPolicy.APISpecs, *policy.APISpecification_Factory(pol.APISpecs[0].SpecRef, pol.APISpecs[0].Org, pol.APISpecs[0].Version, pol.APISpecs[0].Arch))
+								}
+							}
+						}
+					}
 				}
 
 				// If the device doesnt support the workload requirements, then remember that we rejected a higher priority workload because of
@@ -268,7 +292,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating message target: %v", err)))
 
 		// Initiate the protocol
-	} else if proposal, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, &wi.ConsumerPolicy, cph.ExchangeId(), mt, workload, b.config.AgreementBot.DefaultWorkloadPW, b.config.AgreementBot.NoDataIntervalS, cph.GetSendMessage()); err != nil {
+	} else if proposal, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, &wi.ConsumerPolicy, wi.Org, cph.ExchangeId(), mt, workload, b.config.AgreementBot.DefaultWorkloadPW, b.config.AgreementBot.NoDataIntervalS, cph.GetSendMessage()); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error initiating agreement: %v", err)))
 
 		// Remove pending agreement from database
@@ -326,7 +350,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 		} else if err := cph.PersistReply(reply, pol, workerId); err != nil {
 			glog.Errorf(err.Error())
 
-		} else if err := cph.RecordConsumerAgreementState(reply.AgreementId(), pol, "Producer agreed", b.workerID); err != nil {
+		} else if err := cph.RecordConsumerAgreementState(reply.AgreementId(), pol, agreement.Org, "Producer agreed", b.workerID); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error setting agreement state for %v", reply.AgreementId())))
 
 			// We need to send a reply ack and write the info to the blockchain
@@ -394,7 +418,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 				droppedLock = true
 				lock.Unlock()
 
-				if err := cph.PostReply(reply.AgreementId(), proposal, reply, consumerPolicy, workerId); err != nil {
+				if err := cph.PostReply(reply.AgreementId(), proposal, reply, consumerPolicy, agreement.Org, workerId); err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error trying to record agreement in blockchain, %v", err)))
 					b.CancelAgreementWithLock(cph, reply.AgreementId(), cph.GetTerminationCode(TERM_REASON_CANCEL_BC_WRITE_FAILED), workerId)
 					ackReplyAsValid = false

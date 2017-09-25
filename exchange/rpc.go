@@ -24,11 +24,19 @@ const MS_SHARING_MODE_MULTIPLE = "multiple"
 
 // Helper functions for dealing with exchangeIds that are already prefixed with the org name and then "/".
 func GetOrg(id string) string {
-	return id[:strings.Index(id, "/")]
+	if ix := strings.Index(id, "/"); ix < 0 {
+		return ""
+	} else {
+		return id[:ix]
+	}
 }
 
 func GetId(id string) string {
-	return id[strings.Index(id, "/")+1:]
+	if ix := strings.Index(id, "/"); ix < 0 {
+		return ""
+	} else {
+		return id[ix+1:]
+	}
 }
 
 // Structs used to invoke the exchange API
@@ -58,7 +66,8 @@ func (m Microservice) ShortString() string {
 	return fmt.Sprintf("URL: %v, NumAgreements: %v, Properties: %v", m.Url, m.NumAgreements, m.Properties)
 }
 
-type SearchExchangeRequest struct {
+// structs and types for working with microservice based exchange searches
+type SearchExchangeMSRequest struct {
 	DesiredMicroservices []Microservice `json:"desiredMicroservices"`
 	SecondsStale         int            `json:"secondsStale"`
 	PropertiesToReturn   []string       `json:"propertiesToReturn"`
@@ -66,7 +75,7 @@ type SearchExchangeRequest struct {
 	NumEntries           int            `json:"numEntries"`
 }
 
-func (a SearchExchangeRequest) String() string {
+func (a SearchExchangeMSRequest) String() string {
 	return fmt.Sprintf("Microservices: %v, SecondsStale: %v, PropertiesToReturn: %v, StartIndex: %v, NumEntries: %v", a.DesiredMicroservices, a.SecondsStale, a.PropertiesToReturn, a.StartIndex, a.NumEntries)
 }
 
@@ -90,19 +99,42 @@ func (d SearchResultDevice) ShortString() string {
 	return str
 }
 
-type SearchExchangeResponse struct {
-	Devices   []SearchResultDevice `json:"devices"`
+type SearchExchangeMSResponse struct {
+	Devices   []SearchResultDevice `json:"nodes"`
 	LastIndex int                  `json:"lastIndex"`
 }
 
-func (r SearchExchangeResponse) String() string {
+func (r SearchExchangeMSResponse) String() string {
 	return fmt.Sprintf("Devices: %v, LastIndex: %v", r.Devices, r.LastIndex)
 }
 
+// Structs and types for working with pattern based exchange searches
+type SearchExchangePatternRequest struct {
+	WorkloadURL  string `json:"workloadUrl"`
+	SecondsStale int    `json:"secondsStale"`
+	StartIndex   int    `json:"startIndex"`
+	NumEntries   int    `json:"numEntries"`
+}
+
+func (a SearchExchangePatternRequest) String() string {
+	return fmt.Sprintf("WorkloadURL: %v, SecondsStale: %v, StartIndex: %v, NumEntries: %v", a.WorkloadURL, a.SecondsStale, a.StartIndex, a.NumEntries)
+}
+
+type SearchExchangePatternResponse struct {
+	Devices   []SearchResultDevice `json:"nodes"`
+	LastIndex int                  `json:"lastIndex"`
+}
+
+func (r SearchExchangePatternResponse) String() string {
+	return fmt.Sprintf("Devices: %v, LastIndex: %v", r.Devices, r.LastIndex)
+}
+
+// Structs and types for interacting with the device (node) object in the exchange
 type Device struct {
 	Token                   string          `json:"token"`
 	Name                    string          `json:"name"`
 	Owner                   string          `json:"owner"`
+	Pattern                 string          `json:"pattern"`
 	RegisteredMicroservices []Microservice  `json:"registeredMicroservices"`
 	MsgEndPoint             string          `json:"msgEndPoint"`
 	SoftwareVersions        SoftwareVersion `json:"softwareVersions"`
@@ -111,17 +143,23 @@ type Device struct {
 }
 
 type GetDevicesResponse struct {
-	Devices   map[string]Device `json:"devices"`
+	Devices   map[string]Device `json:"nodes"`
 	LastIndex int               `json:"lastIndex"`
 }
 
+type ServedPatterns struct {
+	Org     string `json:"orgid"`
+	Pattern string `json:"pattern"`
+}
+
 type Agbot struct {
-	Token         string `json:"token"`
-	Name          string `json:"name"`
-	Owner         string `json:"owner"`
-	MsgEndPoint   string `json:"msgEndPoint"`
-	LastHeartbeat string `json:"lastHeartbeat"`
-	PublicKey     []byte `json:"publicKey"`
+	Token         string           `json:"token"`
+	Name          string           `json:"name"`
+	Owner         string           `json:"owner"`
+	Patterns      []ServedPatterns `json:"patterns"`
+	MsgEndPoint   string           `json:"msgEndPoint"`
+	LastHeartbeat string           `json:"lastHeartbeat"`
+	PublicKey     []byte           `json:"publicKey"`
 }
 
 func (a Agbot) String() string {
@@ -133,7 +171,8 @@ func (a Agbot) ShortString() string {
 }
 
 type GetAgbotsResponse struct {
-	Agbots map[string]Agbot `json:"agbots"`
+	Agbots    map[string]Agbot `json:"agbots"`
+	LastIndex int              `json:"lastIndex"`
 }
 
 type AgbotAgreement struct {
@@ -147,9 +186,10 @@ func (a AgbotAgreement) String() string {
 }
 
 type DeviceAgreement struct {
-	Microservice string `json:"microservice"`
-	State        string `json:"state"`
-	LastUpdated  string `json:"lastUpdated"`
+	Microservice []MSAgreementState `json:"microservices"`
+	State        string             `json:"state"`
+	Workload     WorkloadAgreement  `json:"workload"`
+	LastUpdated  string             `json:"lastUpdated"`
 }
 
 func (a DeviceAgreement) String() string {
@@ -181,14 +221,26 @@ type PostDeviceResponse struct {
 	Msg  string `json:"msg"`
 }
 
+type WorkloadAgreement struct {
+	Org     string `json:"orgid"`   // the org of the pattern
+	Pattern string `json:"pattern"` // pattern - without the org prefix on it
+	URL     string `json:"url"`     // workload URL
+}
+
 type PutAgbotAgreementState struct {
-	Workload string `json:"workload"`
-	State    string `json:"state"`
+	Workload WorkloadAgreement `json:"workload"`
+	State    string            `json:"state"`
+}
+
+type MSAgreementState struct {
+	Org string `json:"orgid"`
+	URL string `json:"url"`
 }
 
 type PutAgreementState struct {
-	Microservices []string `json:"microservices"`
-	State         string   `json:"state"`
+	Microservices []MSAgreementState `json:"microservices"`
+	State         string             `json:"state"`
+	Workload      WorkloadAgreement  `json:"workload"`
 }
 
 type SoftwareVersion map[string]string
@@ -196,6 +248,7 @@ type SoftwareVersion map[string]string
 type PutDeviceRequest struct {
 	Token                   string          `json:"token"`
 	Name                    string          `json:"name"`
+	Pattern                 string          `json:"pattern"`
 	RegisteredMicroservices []Microservice  `json:"registeredMicroservices"`
 	MsgEndPoint             string          `json:"msgEndPoint"`
 	SoftwareVersions        SoftwareVersion `json:"softwareVersions"`
@@ -304,8 +357,8 @@ type GetDeviceMessageResponse struct {
 
 type AgbotMessage struct {
 	MsgId        int    `json:"msgId"`
-	DeviceId     string `json:"deviceId"`
-	DevicePubKey []byte `json:"devicePubKey"`
+	DeviceId     string `json:"nodeId"`
+	DevicePubKey []byte `json:"nodePubKey"`
 	Message      []byte `json:"message"`
 	TimeSent     string `json:"timeSent"`
 	TimeExpires  string `json:"timeExpires"`
@@ -360,9 +413,20 @@ type BlockchainDetails struct {
 }
 
 // This function creates the exchange search message body.
-func CreateSearchRequest() *SearchExchangeRequest {
+func CreateSearchMSRequest() *SearchExchangeMSRequest {
 
-	ser := &SearchExchangeRequest{
+	ser := &SearchExchangeMSRequest{
+		StartIndex: 0,
+		NumEntries: 100,
+	}
+
+	return ser
+}
+
+// This function creates the exchange search message body.
+func CreateSearchPatternRequest() *SearchExchangePatternRequest {
+
+	ser := &SearchExchangePatternRequest{
 		StartIndex: 0,
 		NumEntries: 100,
 	}
@@ -864,6 +928,191 @@ func GetOrganization(httpClientFactory *config.HTTPClientFactory, org string, ex
 
 }
 
+// Function and types related to working with patterns
+
+type WorkloadPriority struct {
+	PriorityValue     int `json:"priority_value,omitempty"`     // The priority of the workload
+	Retries           int `json:"retries,omitempty"`            // The number of retries before giving up and moving to the next priority
+	RetryDurationS    int `json:"retry_durations,omitempty"`    // The number of seconds in which the specified number of retries must occur in order for the next priority workload to be attempted.
+	VerifiedDurationS int `json:"verified_durations,omitempty"` // The number of second in which verified data must exist before the rollback retry feature is turned off
+}
+
+type UpgradePolicy struct {
+	Lifecycle string `json:"lifecycle,omitempty"` // immediate, never, agreement
+	Time      string `json:"time,omitempty"`      // the time of the upgrade
+}
+
+type WorkloadChoice struct {
+	Version                      string           `json:"version,omitempty"`  // the version of the workload
+	Priority                     WorkloadPriority `json:"priority,omitempty"` // the highest priority workload is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
+	Upgrade                      UpgradePolicy    `json:"upgradePolicy,omitempty"`
+	DeploymentOverrides          string           `json:"deployment_overrides,omitempty"`           // env var overrides for the workload
+	DeploymentOverridesSignature string           `json:"deployment_overrides_signature,omitempty"` // signature of env var overrides
+}
+
+type WorkloadReference struct {
+	WorkloadURL      string           `json:"workloadUrl,omitempty"`      // refers to a workload definition in the exchange
+	WorkloadOrg      string           `json:"workloadOrgid,omitempty"`    // the org holding the workload definition
+	WorkloadArch     string           `json:"workloadArch,omitempty"`     // the hardware architecture of the workload definition
+	WorkloadVersions []WorkloadChoice `json:"workloadVersions,omitempty"` // a list of workload version for rollback
+	DataVerify       DataVerification `json:"dataVerification"`
+}
+
+type Meter struct {
+	Tokens                uint64 `json:"tokens,omitempty"`                // The number of tokens per time_unit
+	PerTimeUnit           string `json:"per_time_unit,omitempty"`         // The per time units: min, hour and day are supported
+	NotificationIntervalS int    `json:"notification_interval,omitempty"` // The number of seconds between metering notifications
+}
+
+type DataVerification struct {
+	Enabled     bool   `json:"enabled,omitempty"`    // Whether or not data verification is enabled
+	URL         string `json:"URL,omitempty"`        // The URL to be used for data receipt verification
+	URLUser     string `json:"user,omitempty"`       // The user id to use when calling the verification URL
+	URLPassword string `json:"password,omitempty"`   // The password to use when calling the verification URL
+	Interval    int    `json:"interval,omitempty"`   // The number of seconds to check for data before deciding there isnt any data
+	CheckRate   int    `json:"check_rate,omitempty"` // The number of seconds between checks for valid data being received
+	Metering    Meter  `json:"metering,omitempty"`   // The metering configuration
+}
+
+type Blockchain struct {
+	Type string `json:"type,omitempty"`         // The type of blockchain
+	Name string `json:"name,omitempty"`         // The name of the blockchain instance in the exchange,it is specific to the value of the type
+	Org  string `json:"organization,omitempty"` // The organization that owns the blockchain definition
+}
+
+type BlockchainList []Blockchain
+
+type AgreementProtocol struct {
+	Name            string         `json:"name,omitempty"`            // The name of the agreement protocol to be used
+	ProtocolVersion int            `json:"protocolVersion,omitempty"` // The max protocol version supported
+	Blockchains     BlockchainList `json:"blockchains,omitempty"`     // The blockchain to be used if the protocol requires one.
+}
+
+type Pattern struct {
+	Label              string              `json:"label"`
+	Description        string              `json:"description"`
+	Public             bool                `json:"public"`
+	Workloads          []WorkloadReference `json:"workloads"`
+	AgreementProtocols []AgreementProtocol `json:"agreementProtocols"`
+}
+
+type GetPatternResponse struct {
+	Patterns  map[string]Pattern `json:"patterns,omitempty"` // map of all defined patterns
+	LastIndex int                `json:"lastIndex.omitempty"`
+}
+
+// Get all the pattern metadata for a specific organization, and pattern if specified.
+func GetPatterns(httpClientFactory *config.HTTPClientFactory, org string, pattern string, exURL string, id string, token string) (map[string]Pattern, error) {
+
+	if pattern == "" {
+		glog.V(3).Infof(rpclogString(fmt.Sprintf("getting pattern definitions for %v", org)))
+	} else {
+		glog.V(3).Infof(rpclogString(fmt.Sprintf("getting pattern definitions for %v and %v", org, pattern)))
+	}
+
+	var resp interface{}
+	resp = new(GetPatternResponse)
+
+	// Search the exchange for the pattern definitions
+	targetURL := ""
+	if pattern == "" {
+		targetURL = fmt.Sprintf("%vorgs/%v/patterns", exURL, org)
+	} else {
+		targetURL = fmt.Sprintf("%vorgs/%v/patterns/%v", exURL, org, pattern)
+	}
+
+	for {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, id, token, nil, &resp); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			pats := resp.(*GetPatternResponse).Patterns
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("found patterns for %v, %v", org, pats)))
+			return pats, nil
+		}
+	}
+
+}
+
+// Create a name for the generated policy that should be unique within the org.
+func makePolicyName(patternName string, workloadURL string, workloadOrg string, workloadArch string) string {
+
+	url := ""
+	pieces := strings.SplitN(workloadURL, "/", 3)
+	if len(pieces) >= 2 {
+		url = strings.TrimSuffix(pieces[2], "/")
+		url = strings.Replace(url, "/", "-", -1)
+	}
+
+	return fmt.Sprintf("%v_%v_%v_%v", patternName, url, workloadOrg, workloadArch)
+
+}
+
+// Convert a pattern to a list of policy objects. Each pattern contains 1 or more workloads,
+// which will each be translated to a policy.
+func ConvertToPolicies(patternId string, p *Pattern) ([]*policy.Policy, error) {
+
+	name := GetId(patternId)
+
+	policies := make([]*policy.Policy, 0, 10)
+
+	// Each pattern contains a list of workloads that needs to be converted to a policy
+	for _, workload := range p.Workloads {
+
+		policyName := makePolicyName(name, workload.WorkloadURL, workload.WorkloadOrg, workload.WorkloadArch)
+
+		pol := policy.Policy_Factory(fmt.Sprintf("%v", policyName))
+
+		// Copy Agreement protocol metadata into the policy
+		for _, agp := range p.AgreementProtocols {
+			newAGP := policy.AgreementProtocol_Factory(agp.Name)
+			newAGP.Initialize()
+			for _, bc := range agp.Blockchains {
+				newBC := policy.Blockchain_Factory(bc.Type, bc.Name, bc.Org)
+				(&newAGP.Blockchains).Add_Blockchain(newBC)
+			}
+			pol.Add_Agreement_Protocol(newAGP)
+		}
+
+		// Copy workload metadata into the policy
+		for _, wl := range workload.WorkloadVersions {
+			newWL := policy.Workload_Factory(workload.WorkloadURL, workload.WorkloadOrg, wl.Version, workload.WorkloadArch)
+			newWL.Priority = (*policy.Workload_Priority_Factory(wl.Priority.PriorityValue, wl.Priority.Retries, wl.Priority.RetryDurationS, wl.Priority.VerifiedDurationS))
+			newWL.DeploymentOverrides = wl.DeploymentOverrides
+			newWL.DeploymentOverridesSignature = wl.DeploymentOverridesSignature
+			pol.Add_Workload(newWL)
+		}
+
+		// Copy Data Verification metadata into the policy
+		if workload.DataVerify.Enabled {
+			mp := policy.Meter{
+				Tokens:                workload.DataVerify.Metering.Tokens,
+				PerTimeUnit:           workload.DataVerify.Metering.PerTimeUnit,
+				NotificationIntervalS: workload.DataVerify.Metering.NotificationIntervalS,
+			}
+			d := policy.DataVerification_Factory(workload.DataVerify.URL, workload.DataVerify.URLUser, workload.DataVerify.URLPassword, workload.DataVerify.Interval, workload.DataVerify.CheckRate, mp)
+			pol.Add_DataVerification(d)
+		}
+
+		// Indicate that this is a pattern based policy file. Manually created policy files should not use this field.
+		pol.PatternId = patternId
+
+		// Unlimited number of devices can get this workload
+		pol.MaxAgreements = 0
+
+		glog.V(3).Infof(rpclogString(fmt.Sprintf("converted %v into %v", workload, pol)))
+		policies = append(policies, pol)
+
+	}
+
+	return policies, nil
+
+}
+
 // This function is used to invoke an exchange API
 func InvokeExchange(httpClient *http.Client, method string, url string, user string, pw string, params interface{}, resp *interface{}) (error, error) {
 
@@ -875,7 +1124,12 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 		return errors.New(fmt.Sprintf("Error invoking exchange, response object must be specified")), nil
 	}
 
-	glog.V(5).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, url, params)))
+	if reflect.ValueOf(params).Kind() == reflect.Ptr {
+		paramValue := reflect.Indirect(reflect.ValueOf(params))
+		glog.V(5).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, url, paramValue)))
+	} else {
+		glog.V(5).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, url, params)))
+	}
 
 	requestBody := bytes.NewBuffer(nil)
 	if params != nil {
@@ -951,7 +1205,10 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 							return nil, nil
 						}
 
-					case *SearchExchangeResponse:
+					case *SearchExchangeMSResponse:
+						return nil, nil
+
+					case *SearchExchangePatternResponse:
 						return nil, nil
 
 					case *GetDevicesResponse:
@@ -982,6 +1239,9 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 						return nil, nil
 
 					case *GetOrganizationResponse:
+						return nil, nil
+
+					case *GetPatternResponse:
 						return nil, nil
 
 					default:

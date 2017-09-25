@@ -451,7 +451,7 @@ func (c *CSProtocolHandler) HandleDeferredCommands() {
 	}
 }
 
-func (c *CSProtocolHandler) PostReply(agreementId string, proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, consumerPolicy *policy.Policy, workerId string) error {
+func (c *CSProtocolHandler) PostReply(agreementId string, proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, consumerPolicy *policy.Policy, org string, workerId string) error {
 
 	agreement, err := FindSingleAgreementByAgreementId(c.db, agreementId, c.Name(), []AFilter{UnarchivedAFilter()})
 	if err != nil {
@@ -459,7 +459,7 @@ func (c *CSProtocolHandler) PostReply(agreementId string, proposal abstractproto
 	} else if agreement.AgreementProtocolVersion < 2 {
 		if aph := c.AgreementProtocolHandler(agreement.BlockchainType, agreement.BlockchainName, agreement.BlockchainOrg); aph == nil {
 			glog.Errorf(CPHlogStringW(workerId, fmt.Sprintf("for %v agreement protocol handler not ready", agreementId)))
-		} else if err := aph.RecordAgreement(proposal, reply, "", "", consumerPolicy); err != nil {
+		} else if err := aph.RecordAgreement(proposal, reply, "", "", consumerPolicy, org); err != nil {
 			return err
 		} else {
 			glog.V(3).Infof(CPHlogStringW(workerId, fmt.Sprintf("recorded agreement %v", agreementId)))

@@ -34,6 +34,7 @@ func NewProtocolHandler(httpClient *http.Client, pm *policy.PolicyManager) *Prot
 func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 	producerPolicy *policy.Policy,
 	consumerPolicy *policy.Policy,
+	org string,
 	myId string,
 	messageTarget interface{},
 	workload *policy.Workload,
@@ -48,7 +49,7 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 		// Send the proposal to the other party
 		glog.V(5).Infof("Protocol %v sending proposal %s", p.Name(), bp)
 
-		if err := abstractprotocol.SendProposal(p, bp, consumerPolicy, messageTarget, sendMessage); err != nil {
+		if err := abstractprotocol.SendProposal(p, bp, consumerPolicy, org, messageTarget, sendMessage); err != nil {
 			return nil, err
 		}
 		return bp, nil
@@ -59,14 +60,15 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 // This is an implementation of the Decide on proposal API, it has no extensions.
 func (p *ProtocolHandler) DecideOnProposal(proposal abstractprotocol.Proposal,
 	myId string,
+	myOrg string,
 	ignore []map[string]string,
 	messageTarget interface{},
 	sendMessage func(mt interface{}, pay []byte) error) (abstractprotocol.ProposalReply, error) {
 
-	reply, replyErr := abstractprotocol.DecideOnProposal(p, proposal, myId)
+	reply, replyErr := abstractprotocol.DecideOnProposal(p, proposal, myId, myOrg)
 
 	// Always respond to the Proposer
-	return abstractprotocol.SendResponse(p, proposal, reply, replyErr, messageTarget, sendMessage)
+	return abstractprotocol.SendResponse(p, proposal, reply, myOrg, replyErr, messageTarget, sendMessage)
 
 }
 
@@ -136,10 +138,11 @@ func (p *ProtocolHandler) RecordAgreement(newProposal abstractprotocol.Proposal,
 	reply abstractprotocol.ProposalReply,
 	addr string,
 	sig string,
-	consumerPolicy *policy.Policy) error {
+	consumerPolicy *policy.Policy,
+	org string) error {
 
 	// Tell the policy manager that we're in this agreement
-	if cerr := abstractprotocol.RecordAgreement(p, newProposal, consumerPolicy); cerr != nil {
+	if cerr := abstractprotocol.RecordAgreement(p, newProposal, consumerPolicy, org); cerr != nil {
 		glog.Errorf(fmt.Sprintf("Error finalizing agreement %v in PM %v", newProposal.AgreementId(), cerr))
 	}
 
@@ -149,6 +152,7 @@ func (p *ProtocolHandler) RecordAgreement(newProposal abstractprotocol.Proposal,
 func (p *ProtocolHandler) TerminateAgreement(policies []policy.Policy,
 	counterParty string,
 	agreementId string,
+	org string,
 	reason uint,
 	messageTarget interface{},
 	sendMessage func(mt interface{}, pay []byte) error) error {
@@ -161,7 +165,7 @@ func (p *ProtocolHandler) TerminateAgreement(policies []policy.Policy,
 	}
 
 	// Tell the policy manager that we're terminating this agreement
-	if cerr := abstractprotocol.TerminateAgreement(p, policies, agreementId, reason); cerr != nil {
+	if cerr := abstractprotocol.TerminateAgreement(p, policies, agreementId, org, reason); cerr != nil {
 		glog.Errorf(fmt.Sprintf("Protocol %v error cancelling agreement %v in PM %v", p.Name(), agreementId, cerr))
 	}
 

@@ -168,7 +168,7 @@ func (a *CSAgreementWorker) start(work chan AgreementWork, random *rand.Rand) {
 				// Update state in exchange
 				if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
 					glog.Errorf(logstring(a.workerID, fmt.Sprintf("error demarshalling policy from agreement %v, error: %v", wi.AgreementId, err)))
-				} else if err := a.protocolHandler.RecordConsumerAgreementState(wi.AgreementId, pol, "Finalized Agreement", a.workerID); err != nil {
+				} else if err := a.protocolHandler.RecordConsumerAgreementState(wi.AgreementId, pol, ag.Org, "Finalized Agreement", a.workerID); err != nil {
 					glog.Errorf(logstring(a.workerID, fmt.Sprintf("error setting agreement %v finalized state in exchange: %v", wi.AgreementId, err)))
 				}
 			}
@@ -249,7 +249,7 @@ func (a *CSAgreementWorker) DoAsyncWrite(cph ConsumerProtocolHandler, ag *Agreem
 		glog.Errorf(logstring(workerID, fmt.Sprintf("error demarshalling proposal from pending agreement %v, error: %v", ag.CurrentAgreementId, err)))
 	} else if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
 		glog.Errorf(logstring(workerID, fmt.Sprintf("error demarshalling tsandcs policy from pending agreement %v, error: %v", ag.CurrentAgreementId, err)))
-	} else if err := cph.AgreementProtocolHandler(ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg).RecordAgreement(proposal, nil, ag.CounterPartyAddress, ag.ProposalSig, pol); err != nil {
+	} else if err := cph.AgreementProtocolHandler(ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg).RecordAgreement(proposal, nil, ag.CounterPartyAddress, ag.ProposalSig, pol, ag.Org); err != nil {
 		glog.Errorf(logstring(workerID, fmt.Sprintf("error trying to record agreement in blockchain, %v", err)))
 		a.CancelAgreementWithLock(cph, ag.CurrentAgreementId, cph.GetTerminationCode(TERM_REASON_CANCEL_BC_WRITE_FAILED), workerID)
 	} else {

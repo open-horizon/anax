@@ -46,7 +46,7 @@ type ConsumerProtocolHandler interface {
 	GetTerminationCode(reason string) uint
 	GetTerminationReason(code uint) string
 	GetSendMessage() func(mt interface{}, pay []byte) error
-	RecordConsumerAgreementState(agreementId string, pol *policy.Policy, state string, workerID string) error
+	RecordConsumerAgreementState(agreementId string, pol *policy.Policy, org string, state string, workerID string) error
 	DeleteMessage(msgId int) error
 	CreateMeteringNotification(mp policy.Meter, agreement *Agreement) (*metering.MeteringNotification, error)
 	TerminateAgreement(agreement *Agreement, reason uint, workerId string)
@@ -58,7 +58,7 @@ type ConsumerProtocolHandler interface {
 	CanCancelNow(agreement *Agreement) bool
 	DeferCommand(cmd AgreementWork)
 	HandleDeferredCommands()
-	PostReply(agreementId string, proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, consumerPolicy *policy.Policy, workerId string) error
+	PostReply(agreementId string, proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, consumerPolicy *policy.Policy, org string, workerId string) error
 	UpdateProducer(ag *Agreement)
 	HandleExtensionMessage(cmd *NewProtocolMessageCommand) error
 	AlreadyReceivedReply(ag *Agreement) bool
@@ -133,7 +133,7 @@ func (w *BaseConsumerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 		pm := exchange.CreatePostMessage(msgBody, w.config.AgreementBot.ExchangeMessageTTL)
 		var resp interface{}
 		resp = new(exchange.PostDeviceResponse)
-		targetURL := w.config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(messageTarget.ReceiverExchangeId) + "/devices/" + exchange.GetId(messageTarget.ReceiverExchangeId) + "/msgs"
+		targetURL := w.config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(messageTarget.ReceiverExchangeId) + "/nodes/" + exchange.GetId(messageTarget.ReceiverExchangeId) + "/msgs"
 		for {
 			if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, pm, &resp); err != nil {
 				return err
@@ -364,7 +364,7 @@ func (b *BaseConsumerProtocolHandler) PersistBaseAgreement(wi *InitiateAgreement
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", proposal, err)))
 
 		// Record that the agreement was initiated, in the exchange
-	} else if err := b.RecordConsumerAgreementState(proposal.AgreementId(), pol, "Formed Proposal", workerID); err != nil {
+	} else if err := b.RecordConsumerAgreementState(proposal.AgreementId(), pol, wi.Org, "Formed Proposal", workerID); err != nil {
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error setting agreement state for %v", proposal.AgreementId())))
 	}
 	return nil
@@ -379,18 +379,19 @@ func (b *BaseConsumerProtocolHandler) PersistReply(reply abstractprotocol.Propos
 
 }
 
-func (b *BaseConsumerProtocolHandler) RecordConsumerAgreementState(agreementId string, pol *policy.Policy, state string, workerID string) error {
+func (b *BaseConsumerProtocolHandler) RecordConsumerAgreementState(agreementId string, pol *policy.Policy, org string, state string, workerID string) error {
 
-	// Use the workload URL for MS split policies. Use the APIspec for old style policies.
 	workload := pol.Workloads[0].WorkloadURL
-	if pol.Workloads[0].WorkloadURL == "" {
-		workload = pol.APISpecs[0].SpecRef
-	}
 
-	glog.V(5).Infof(BCPHlogstring2(workerID, fmt.Sprintf("setting agreement %v for workload %v state to %v", agreementId, workload, state)))
+	glog.V(5).Infof(BCPHlogstring2(workerID, fmt.Sprintf("setting agreement %v for workload %v/%v state to %v", agreementId, org, workload, state)))
 
 	as := new(exchange.PutAgbotAgreementState)
-	as.Workload = workload
+
+	as.Workload = exchange.WorkloadAgreement{
+		Org:     exchange.GetOrg(pol.PatternId),
+		Pattern: exchange.GetId(pol.PatternId),
+		URL:     workload,
+	}
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
@@ -424,7 +425,7 @@ func (b *BaseConsumerProtocolHandler) TerminateAgreement(ag *Agreement, reason u
 		bcType, bcName, bcOrg := cph.GetKnownBlockchain(ag)
 		if aph := cph.AgreementProtocolHandler(bcType, bcName, bcOrg); aph == nil {
 			glog.Warningf(BCPHlogstring2(workerId, fmt.Sprintf("for %v agreement protocol handler not ready", ag.CurrentAgreementId)))
-		} else if err := aph.TerminateAgreement([]policy.Policy{*pol}, ag.CounterPartyAddress, ag.CurrentAgreementId, reason, mt, b.GetSendMessage()); err != nil {
+		} else if err := aph.TerminateAgreement([]policy.Policy{*pol}, ag.CounterPartyAddress, ag.CurrentAgreementId, ag.Org, reason, mt, b.GetSendMessage()); err != nil {
 			glog.Errorf(BCPHlogstring2(workerId, fmt.Sprintf("error terminating agreement %v on the blockchain: %v", ag.CurrentAgreementId, err)))
 		}
 	}
@@ -449,7 +450,7 @@ func (b *BaseConsumerProtocolHandler) getDevice(deviceId string, workerId string
 
 	var resp interface{}
 	resp = new(exchange.GetDevicesResponse)
-	targetURL := b.config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(deviceId) + "/devices/" + exchange.GetId(deviceId)
+	targetURL := b.config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId)
 	for {
 		if err, tpErr := exchange.InvokeExchange(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "GET", targetURL, b.agbotId, b.token, nil, &resp); err != nil {
 			glog.Errorf(BCPHlogstring2(workerId, fmt.Sprintf(err.Error())))

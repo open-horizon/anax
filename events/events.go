@@ -359,10 +359,11 @@ type EdgeRegisteredExchangeMessage struct {
 	device_id string
 	token     string
 	org       string
+	pattern   string
 }
 
 func (e EdgeRegisteredExchangeMessage) String() string {
-	return fmt.Sprintf("event: %v, device_id: %v, token: %v, org: %v", e.event, e.device_id, e.token, e.org)
+	return fmt.Sprintf("event: %v, device_id: %v, token: %v, org: %v, pattern: %v", e.event, e.device_id, e.token, e.org, e.pattern)
 }
 
 func (e EdgeRegisteredExchangeMessage) ShortString() string {
@@ -385,7 +386,11 @@ func (e *EdgeRegisteredExchangeMessage) Org() string {
 	return e.org
 }
 
-func NewEdgeRegisteredExchangeMessage(evId EventId, device_id string, token string, org string) *EdgeRegisteredExchangeMessage {
+func (e *EdgeRegisteredExchangeMessage) Pattern() string {
+	return e.pattern
+}
+
+func NewEdgeRegisteredExchangeMessage(evId EventId, device_id string, token string, org string, pattern string) *EdgeRegisteredExchangeMessage {
 
 	return &EdgeRegisteredExchangeMessage{
 		event: Event{
@@ -394,6 +399,7 @@ func NewEdgeRegisteredExchangeMessage(evId EventId, device_id string, token stri
 		device_id: device_id,
 		token:     token,
 		org:       org,
+		pattern:   pattern,
 	}
 }
 

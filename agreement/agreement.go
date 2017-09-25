@@ -29,6 +29,7 @@ type AgreementWorker struct {
 	userId                   string
 	deviceId                 string
 	deviceToken              string
+	devicePattern            string
 	protocols                map[string]bool
 	pm                       *policy.PolicyManager
 	containerSyncUpEvent     bool
@@ -42,9 +43,11 @@ func NewAgreementWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.Polic
 
 	id := ""
 	token := ""
+	pattern := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
 		token = dev.Token
 		id = fmt.Sprintf("%v/%v", dev.Org, dev.Id)
+		pattern = dev.Pattern
 	}
 
 	worker := &AgreementWorker{
@@ -57,13 +60,14 @@ func NewAgreementWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.Polic
 			Commands: commands,
 		},
 
-		db:          db,
-		httpClient:  cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
-		protocols:   make(map[string]bool),
-		pm:          pm,
-		deviceId:    id,
-		deviceToken: token,
-		producerPH:  make(map[string]producer.ProducerProtocolHandler),
+		db:            db,
+		httpClient:    cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
+		protocols:     make(map[string]bool),
+		pm:            pm,
+		deviceId:      id,
+		deviceToken:   token,
+		devicePattern: pattern,
+		producerPH:    make(map[string]producer.ProducerProtocolHandler),
 	}
 
 	glog.Info("Starting Agreement worker")
@@ -180,7 +184,7 @@ func (w *AgreementWorker) start() {
 
 			// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
 			// start heartbeating when the registration event comes in.
-			targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" + exchange.GetId(w.deviceId) + "/heartbeat"
+			targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/heartbeat"
 			go exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
 
 		}
@@ -294,6 +298,7 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
 	w.deviceId = fmt.Sprintf("%v/%v", cmd.Msg.Org(), cmd.Msg.DeviceId())
 	w.deviceToken = cmd.Msg.Token()
+	w.devicePattern = cmd.Msg.Pattern()
 
 	if len(w.producerPH) == 0 {
 		// Establish agreement protocol handlers
@@ -305,7 +310,7 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 	}
 
 	// Start the go thread that heartbeats to the exchange
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" + exchange.GetId(w.deviceId) + "/heartbeat"
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/heartbeat"
 	go exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
 
 }
@@ -405,9 +410,9 @@ func (w *AgreementWorker) syncOnInit() error {
 				glog.Errorf(logString(fmt.Sprintf("unable to verify merged policy %v and %v for agreement %v, error: %v", mergedPolicy, pol, ag.CurrentAgreementId, err)))
 				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
 
-			} else if err := w.pm.AttemptingAgreement(policies, ag.CurrentAgreementId); err != nil {
+			} else if err := w.pm.AttemptingAgreement(policies, ag.CurrentAgreementId, exchange.GetOrg(w.deviceId)); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
-			} else if err := w.pm.FinalAgreement(policies, ag.CurrentAgreementId); err != nil {
+			} else if err := w.pm.FinalAgreement(policies, ag.CurrentAgreementId, exchange.GetOrg(w.deviceId)); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
 
 				// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
@@ -423,7 +428,7 @@ func (w *AgreementWorker) syncOnInit() error {
 					} else {
 						state = "unknown"
 					}
-					w.recordAgreementState(ag.CurrentAgreementId, &pol.APISpecs, state)
+					w.recordAgreementState(ag.CurrentAgreementId, pol, state)
 				}
 				glog.V(3).Infof(logString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))
 			}
@@ -485,7 +490,7 @@ func (w *AgreementWorker) getAllAgreements() (map[string]exchange.DeviceAgreemen
 	var resp interface{}
 	resp = new(exchange.AllDeviceAgreementsResponse)
 
-	targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" + exchange.GetId(w.deviceId) + "/agreements"
+	targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/agreements"
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
 			glog.Errorf(err.Error())
@@ -507,19 +512,49 @@ func (w *AgreementWorker) getAllAgreements() (map[string]exchange.DeviceAgreemen
 // Utility functions
 //
 
+func (w *AgreementWorker) registerNode(dev *persistence.ExchangeDevice, ms *[]exchange.Microservice) error {
+
+	pdr := exchange.CreateDevicePut(w.deviceToken, dev.Name)
+	if ms != nil {
+		pdr.RegisteredMicroservices = *ms
+	}
+
+	if dev.Pattern != "" {
+		pdr.Pattern = fmt.Sprintf("%v/%v", dev.Org, dev.Pattern)
+	}
+
+	var resp interface{}
+	resp = new(exchange.PutDeviceResponse)
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId)
+
+	glog.V(3).Infof("AgreementWorker Registering microservices: %v at %v", pdr.ShortString(), targetURL)
+
+	for {
+		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.deviceId, w.deviceToken, pdr, &resp); err != nil {
+			return err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(3).Infof(logString(fmt.Sprintf("advertised policies for device %v in exchange: %v", w.deviceId, resp)))
+			return nil
+		}
+	}
+}
+
 func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 
 	var pType, pValue, pCompare string
-	var deviceName string
 
-	if dev, err := persistence.FindExchangeDevice(w.db); err != nil {
+	dev, err := persistence.FindExchangeDevice(w.db)
+	if err != nil {
 		return errors.New(fmt.Sprintf("AgreementWorker received error getting device name: %v", err))
 	} else if dev == nil {
 		return errors.New("AgreementWorker could not get device name because no device was registered yet.")
-	} else {
-		deviceName = dev.Name
 	}
 
+	// Advertise the microservices that this device is offering
 	policies := w.pm.GetAllPolicies(exchange.GetOrg(w.deviceId))
 
 	if len(policies) > 0 {
@@ -586,41 +621,39 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 
 		}
 
-		pdr := exchange.CreateDevicePut(w.deviceToken, deviceName)
-		pdr.RegisteredMicroservices = ms
-		var resp interface{}
-		resp = new(exchange.PutDeviceResponse)
-		targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" + exchange.GetId(w.deviceId)
-
-		glog.V(3).Infof("AgreementWorker Registering microservices: %v at %v", pdr.ShortString(), targetURL)
-
-		for {
-			if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.deviceId, w.deviceToken, pdr, &resp); err != nil {
-				return err
-			} else if tpErr != nil {
-				glog.Warningf(tpErr.Error())
-				time.Sleep(10 * time.Second)
-				continue
-			} else {
-				glog.V(3).Infof(logString(fmt.Sprintf("advertised policies for device %v in exchange: %v", w.deviceId, resp)))
-				return nil
-			}
+		if err := w.registerNode(dev, &ms); err != nil {
+			return err
 		}
+
 	}
 
 	return nil
 }
 
-func (w *AgreementWorker) recordAgreementState(agreementId string, apiSpecs *policy.APISpecList, state string) error {
+func (w *AgreementWorker) recordAgreementState(agreementId string, pol *policy.Policy, state string) error {
 
 	glog.V(5).Infof(logString(fmt.Sprintf("setting agreement %v state to %v", agreementId, state)))
 
 	as := new(exchange.PutAgreementState)
-	as.Microservices = apiSpecs.AsStringArray()
+	for _, apiSpec := range pol.APISpecs {
+		as.Microservices = append(as.Microservices, exchange.MSAgreementState{
+			Org: apiSpec.Org,
+			URL: apiSpec.SpecRef,
+		})
+	}
+
+	if w.devicePattern != "" {
+		as.Workload = exchange.WorkloadAgreement{
+			Org:     exchange.GetOrg(w.deviceId),
+			Pattern: w.devicePattern,
+			URL:     pol.Workloads[0].WorkloadURL,
+		}
+	}
+
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" + exchange.GetId(w.deviceId) + "/agreements/" + agreementId
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/agreements/" + agreementId
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.deviceId, w.deviceToken, as, &resp); err != nil {
 			glog.Errorf(err.Error())
@@ -643,7 +676,7 @@ func deleteProducerAgreement(httpClient *http.Client, url string, deviceId strin
 
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/devices/" + exchange.GetId(deviceId) + "/agreements/" + agreementId
+	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId) + "/agreements/" + agreementId
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClient, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
@@ -663,7 +696,7 @@ func deleteProducerAgreement(httpClient *http.Client, url string, deviceId strin
 func (w *AgreementWorker) deleteMessage(msg *exchange.DeviceMessage) error {
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" + exchange.GetId(w.deviceId) + "/msgs/" + strconv.Itoa(msg.MsgId)
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/msgs/" + strconv.Itoa(msg.MsgId)
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "DELETE", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
 			glog.Errorf(err.Error())
@@ -682,7 +715,7 @@ func (w *AgreementWorker) deleteMessage(msg *exchange.DeviceMessage) error {
 func (w *AgreementWorker) messageInExchange(msgId int) (bool, error) {
 	var resp interface{}
 	resp = new(exchange.GetDeviceMessageResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/devices/" + exchange.GetId(w.deviceId) + "/msgs"
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/msgs"
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
 			glog.Errorf(err.Error())

@@ -174,9 +174,9 @@ func (c *BasicProtocolHandler) HandleDeferredCommands() {
 	return
 }
 
-func (b *BasicProtocolHandler) PostReply(agreementId string, proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, consumerPolicy *policy.Policy, workerId string) error {
+func (b *BasicProtocolHandler) PostReply(agreementId string, proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, consumerPolicy *policy.Policy, org string, workerId string) error {
 
-	if err := b.agreementPH.RecordAgreement(proposal, reply, "", "", consumerPolicy); err != nil {
+	if err := b.agreementPH.RecordAgreement(proposal, reply, "", "", consumerPolicy, org); err != nil {
 		return err
 	} else {
 		glog.V(3).Infof(BCPHlogstring2(workerId, fmt.Sprintf("recorded agreement %v", agreementId)))

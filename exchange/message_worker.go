@@ -21,6 +21,7 @@ type ExchangeMessageWorker struct {
 	httpClient    *http.Client
 	id            string // device id
 	token         string // device token
+	pattern       string // device pattern
 }
 
 func NewExchangeMessageWorker(cfg *config.HorizonConfig, db *bolt.DB) *ExchangeMessageWorker {
@@ -29,9 +30,11 @@ func NewExchangeMessageWorker(cfg *config.HorizonConfig, db *bolt.DB) *ExchangeM
 
 	id := ""
 	token := ""
+	pattern := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
 		token = dev.Token
 		id = fmt.Sprintf("%v/%v", dev.Org, dev.Id)
+		pattern = dev.Pattern
 	}
 
 	worker := &ExchangeMessageWorker{
@@ -47,6 +50,7 @@ func NewExchangeMessageWorker(cfg *config.HorizonConfig, db *bolt.DB) *ExchangeM
 		httpClient: cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 		id:         id,
 		token:      token,
+		pattern:    pattern,
 	}
 
 	worker.start()
@@ -64,6 +68,7 @@ func (w *ExchangeMessageWorker) NewEvent(incoming events.Message) {
 		w.id = msg.DeviceId()
 		w.token = msg.Token()
 		w.id = fmt.Sprintf("%v/%v", msg.Org(), w.id)
+		w.pattern = msg.Pattern()
 
 	default: //nothing
 
@@ -120,7 +125,7 @@ func (w *ExchangeMessageWorker) pollIncoming() {
 func (w *ExchangeMessageWorker) getMessages() ([]DeviceMessage, error) {
 	var resp interface{}
 	resp = new(GetDeviceMessageResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + GetOrg(w.id) + "/devices/" + GetId(w.id) + "/msgs"
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + GetOrg(w.id) + "/nodes/" + GetId(w.id) + "/msgs"
 	for {
 		if err, tpErr := InvokeExchange(w.httpClient, "GET", targetURL, w.id, w.token, nil, &resp); err != nil {
 			glog.Errorf(err.Error())

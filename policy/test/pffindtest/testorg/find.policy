@@ -5,7 +5,7 @@
     },
     "apiSpec": [
         {
-            "specRef": "http://mycompany.com/policy",
+            "specRef": "http://mycompany.com/microservice/spec",
             "version": "[1.0.0,2.0.0)",
             "exclusiveAccess": false
         }
