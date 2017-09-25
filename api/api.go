@@ -361,10 +361,9 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			device.Id = &device_id
-		} else {
-			if bail := checkInputString(w, "device.id", device.Name); bail {
-				return
-			}
+		}
+		if bail := checkInputString(w, "device.id", device.Id); bail {
+			return
 		}
 
 		// don't bother sanitizing token data; we *never* output it, and we *never* compute it
