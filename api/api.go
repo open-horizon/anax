@@ -850,13 +850,42 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			return false, nil
 		}
 
+		patternedDeviceAttributeVerifier := func(w http.ResponseWriter, attr persistence.Attribute) (bool, error) {
+			// If the device declared itself to be using a pattern, then it CANNOT specify any attributes that generate policy
+			// settings . All policy is controlled by the pattern definition.
+			if existingDevice.Pattern != "" {
+				if attr.GetMeta().Type == "MeteringAttributes" || attr.GetMeta().Type == "PropertyAttributes" || attr.GetMeta().Type == "CounterPartyPropertyAttributes" || attr.GetMeta().Type == "AgreementProtocolAttributes" {
+					glog.Errorf("device is using a pattern %v, policy attributes are not supported.", existingDevice.Pattern)
+					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].Id", Error: fmt.Sprintf("device is using a pattern %v, policy attributes are not supported.", existingDevice.Pattern)})
+					return true, nil
+				}
+			}
+
+			// Verfiy that all non-defaulted userInput variables in the microservice definition are specified in a mapped property attribute
+			// of this service invocation.
+			if msdef != nil && attr.GetMeta().Type == "MappedAttributes" {
+				for _, ui := range msdef.UserInputs {
+					if ui.DefaultValue != "" {
+						continue
+					} else if _, ok := attr.GetGenericMappings()[ui.Name]; !ok {
+						// There is a config variable missing from the generic mapped attributes
+						glog.Errorf("Variable %v defined in microservice %v %v is missing from the service definition.", ui.Name, msdef.SpecRef, msdef.Version)
+						writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].mapped", Error: fmt.Sprintf("variable %v is missing from mappings", ui.Name)})
+						return true, nil
+					}
+				}
+			}
+
+			return false, nil
+		}
+
 		var attributes []persistence.Attribute
 		if service.Attributes != nil {
 			// build a serviceAttribute for each one
 			var err error
 			var inputErrWritten bool
 
-			attributes, inputErrWritten, err = toPersistedAttributesAttachedToService(w, existingDevice, a.Config.Edge.DefaultServiceRegistrationRAM, *service.Attributes, *service.SensorUrl, []AttributeVerifier{msdefAttributeVerifier})
+			attributes, inputErrWritten, err = toPersistedAttributesAttachedToService(w, existingDevice, a.Config.Edge.DefaultServiceRegistrationRAM, *service.Attributes, *service.SensorUrl, []AttributeVerifier{msdefAttributeVerifier, patternedDeviceAttributeVerifier})
 
 			// log even if there was an inputErr already written to the response
 			if err != nil {
