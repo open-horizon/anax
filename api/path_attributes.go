@@ -341,22 +341,22 @@ func parseAgreementProtocol(w http.ResponseWriter, permitEmpty bool, given *Attr
 					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.protocolName", Error: fmt.Sprintf("protocol name %v is not supported", protocolName)})
 					return nil, true, nil
 				} else if bcDefArray, ok := bcValue.([]interface{}); !ok {
-					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain", Error: fmt.Sprintf("blockchain value is not []interface{}, it is %T  ", bcValue)})
+					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain", Error: fmt.Sprintf("blockchain value is not []interface{}, it is %T", bcValue)})
 					return nil, true, nil
 				} else {
 					agp := policy.AgreementProtocol_Factory(protocolName)
 					for _, bcEle := range bcDefArray {
 						if bcDef, ok := bcEle.(map[string]interface{}); !ok {
-							writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain", Error: fmt.Sprintf("blockchain array element is not map[str  ing]interface{}, it is %T", bcEle)})
+							writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain", Error: fmt.Sprintf("blockchain array element is not map[string]interface{}, it is %T", bcEle)})
 							return nil, true, nil
 						} else if _, ok := bcDef["type"].(string); bcDef["type"] != nil && !ok {
-							writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain.type", Error: fmt.Sprintf("blockchain type is not string, it   is %T", bcDef["type"])})
+							writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain.type", Error: fmt.Sprintf("blockchain type is not string, it is %T", bcDef["type"])})
 							return nil, true, nil
 						} else if _, ok := bcDef["name"].(string); bcDef["name"] != nil && !ok {
-							writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain.name", Error: fmt.Sprintf("blockchain name is not string, it   is %T", bcDef["name"])})
+							writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain.name", Error: fmt.Sprintf("blockchain name is not string, it is %T", bcDef["name"])})
 							return nil, true, nil
 						} else if bcDef["type"] != nil && bcDef["type"].(string) != "" && bcDef["type"].(string) != policy.RequiresBlockchainType(protocolName) {
-							writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain.type", Error: fmt.Sprintf("blockchain type %v is not supporte  d for protocol %v", bcDef["type"].(string), protocolName)})
+							writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain.type", Error: fmt.Sprintf("blockchain type %v is not supported for protocol %v", bcDef["type"].(string), protocolName)})
 							return nil, true, nil
 						} else {
 							bcType := ""
