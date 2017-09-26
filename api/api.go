@@ -7,6 +7,17 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"os"
+	"reflect"
+	"sort"
+	"strconv"
+	"strings"
+	"sync"
+
 	"github.com/boltdb/bolt"
 	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
@@ -19,16 +30,6 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-	"os"
-	"reflect"
-	"sort"
-	"strconv"
-	"strings"
-	"sync"
 )
 
 type API struct {
@@ -856,15 +857,15 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			var inputErrWritten bool
 
 			attributes, inputErrWritten, err = toPersistedAttributesAttachedToService(w, existingDevice, a.Config.Edge.DefaultServiceRegistrationRAM, *service.Attributes, *service.SensorUrl, []AttributeVerifier{msdefAttributeVerifier})
-			// log no matter what
+
+			// log even if there was an inputErr already written to the response
 			if err != nil {
 				glog.Errorf("Failure deserializing attributes: %v", err)
-			}
-
-			if !inputErrWritten {
 				w.WriteHeader(http.StatusInternalServerError)
 				return
-			} else {
+			}
+
+			if inputErrWritten {
 				return
 			}
 		}

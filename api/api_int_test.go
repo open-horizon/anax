@@ -8,14 +8,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/adams-sarah/test2doc/test"
-	"github.com/boltdb/bolt"
-	"github.com/golang/glog"
-	"github.com/gorilla/mux"
-	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/persistence"
-	"github.com/open-horizon/anax/worker"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -24,6 +16,15 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/adams-sarah/test2doc/test"
+	"github.com/boltdb/bolt"
+	"github.com/golang/glog"
+	"github.com/gorilla/mux"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/worker"
+	"github.com/stretchr/testify/assert"
 )
 
 func init() {
@@ -128,10 +129,85 @@ func simpleMod(t *testing.T, method string, pp *url.URL, expectedCode int, paylo
 		assert.Nil(t, err)
 
 		return attr
-	} else {
-		return nil
 	}
+
+	return nil
 }
+
+// TODO: fix this test after refactor of service: needs a mock exchange
+
+//func Test_API_service_attribute_Suite(suite *testing.T) {
+//	_, db, err := setup()
+//	if err != nil {
+//		suite.Error(err)
+//	}
+//	// we construct our own API instance so we can set route facts
+//	api := &API{
+//		Manager: worker.Manager{
+//			Config:   &config.HorizonConfig{},
+//			Messages: nil,
+//		},
+//
+//		db:          db,
+//		pm:          nil,
+//		bcState:     make(map[string]map[string]BlockchainState),
+//		bcStateLock: sync.Mutex{},
+//	}
+//
+//	router := api.router(false)
+//
+//	// TODO: replace this with a recording server after the destination files are determined not to conflict b/n suites in the same package
+//	server := httptest.NewServer(router)
+//
+//	// register first
+//	_, err = persistence.SaveNewExchangeDevice(db, "device-22", "tokenval", "Device 22", false, "myorg", ".*")
+//	assert.Nil(suite, err)
+//
+//	suite.Run("POST to /service with attributes is accepted", func(t *testing.T) {
+//		payload := `{
+//  "sensor_url": "https://bluehorizon.network/microservices/no-such-service",
+//  "sensor_name": "no-such",
+//  "sensor_version": "1.0.0",
+//  "attributes": [
+//    {
+//      "type": "AgreementProtocolAttributes",
+//      "label": "Agreement Protocols",
+//      "publishable": true,
+//      "host_only": false,
+//      "mappings": {
+//        "protocols": [
+//          {
+//            "Citizen Scientist": [
+//              {
+//                  "name": "hl2",
+//                  "type": "ethereum",
+//                  "organization": "IBM"
+//              }
+//            ]
+//          }
+//        ]
+//      }
+//    }
+//  ]
+//}`
+//
+//		pp, _ := url.Parse(fmt.Sprintf("%s/%s", server.URL, "service"))
+//		client := http.Client{}
+//
+//		req, err := http.NewRequest(http.MethodPost, pp.String(), bytes.NewReader([]byte(payload)))
+//		assert.Nil(t, err)
+//		assert.NotNil(t, req)
+//
+//		req.Header.Add("Content-Type", "application/json; charset=utf-8")
+//
+//		resp, err := client.Do(req)
+//		fmt.Printf("******** %v", err.Error())
+//		assert.Nil(t, err)
+//		assert.NotNil(t, resp)
+//		//assert.EqualValues(t, http.StatusOK, resp.StatusCode)
+//	})
+//
+//}
 
 func Test_API_attribute_Suite(suite *testing.T) {
 	_, db, err := setup()

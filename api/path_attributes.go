@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"reflect"
+
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"reflect"
 )
 
 func attributesContains(given []persistence.Attribute, sensorURL string, typeString string) *persistence.Attribute {
@@ -397,9 +398,12 @@ func toPersistedAttributesAttachedToService(w http.ResponseWriter, persistedDevi
 
 	additionalVerifiers = append(additionalVerifiers, func(w http.ResponseWriter, attr persistence.Attribute) (bool, error) {
 		// can't specify sensorURLs in attributes that are a part of a service
-		if attr.GetMeta().SensorUrls != nil {
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].sensor_urls", Error: "sensor_urls not permitted on attributes specified on a service"})
-			return true, nil
+		sensorURLs := attr.GetMeta().SensorUrls
+		if sensorURLs != nil {
+			if len(sensorURLs) > 1 || (len(sensorURLs) == 1 && sensorURLs[0] != sensorURL) {
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].sensor_urls", Error: "sensor_urls not permitted on attributes specified on a service"})
+				return true, nil
+			}
 		}
 
 		return false, nil
