@@ -25,6 +25,30 @@
 			"revisionTime": "2016-06-01T11:32:10Z"
 		},
 		{
+			"checksumSHA1": "FOUagU+J4Fl9e+gLOIAhxRDlQ5Y=",
+			"path": "github.com/adams-sarah/test2doc",
+			"revision": "35497a3ca876aa1e2706b607be878ce7fa67d4fb",
+			"revisionTime": "2017-09-19T18:22:39Z"
+		},
+		{
+			"checksumSHA1": "wkshdkOVVga8x8JQ6pgaLcQETbk=",
+			"path": "github.com/adams-sarah/test2doc/doc",
+			"revision": "35497a3ca876aa1e2706b607be878ce7fa67d4fb",
+			"revisionTime": "2017-09-19T18:22:39Z"
+		},
+		{
+			"checksumSHA1": "RYWeSn3ami/3Uh7IHqavyMgsImY=",
+			"path": "github.com/adams-sarah/test2doc/doc/parse",
+			"revision": "35497a3ca876aa1e2706b607be878ce7fa67d4fb",
+			"revisionTime": "2017-09-19T18:22:39Z"
+		},
+		{
+			"checksumSHA1": "9/4WD6CnV5xEY/Ebnq+19lYlE78=",
+			"path": "github.com/adams-sarah/test2doc/test",
+			"revision": "35497a3ca876aa1e2706b607be878ce7fa67d4fb",
+			"revisionTime": "2017-09-19T18:22:39Z"
+		},
+		{
 			"checksumSHA1": "+Eixo6EoWB4U0YfEay/FFuZS598=",
 			"path": "github.com/anacrolix/missinggo",
 			"revision": "2524d6356f6cc748cebe6d63c97ffb3ee0f4abea",
@@ -101,6 +125,12 @@
 			"path": "github.com/coreos/go-iptables/iptables",
 			"revision": "fbb73372b87f6e89951c2b6b31470c2c9d5cfae3",
 			"revisionTime": "2016-03-31T14:02:05Z"
+		},
+		{
+			"checksumSHA1": "mrz/kicZiUaHxkyfvC/DyQcr8Do=",
+			"path": "github.com/davecgh/go-spew/spew",
+			"revision": "a476722483882dd40b8111f0eb64e1d7f43f56e4",
+			"revisionTime": "2017-08-29T19:49:58Z"
 		},
 		{
 			"checksumSHA1": "nwx4Gx1U+hLq9djdtIJb/8t87Zk=",
@@ -530,6 +560,12 @@
 			"revisionTime": "2016-02-16T16:37:10Z"
 		},
 		{
+			"checksumSHA1": "LuFv4/jlrmFNnDb/5SCSEPAM9vU=",
+			"path": "github.com/pmezard/go-difflib/difflib",
+			"revision": "792786c7400a136282c1664665ae0a8db921c6c2",
+			"revisionTime": "2016-01-10T10:55:54Z"
+		},
+		{
 			"checksumSHA1": "yHKH8wkoEdlrviUvoUXtkSIg1VA=",
 			"path": "github.com/ryszard/goskiplist/skiplist",
 			"revision": "2dfbae5fcf46374f166f8969cb07e167f1be6273",
@@ -540,6 +576,12 @@
 			"path": "github.com/satori/go.uuid",
 			"revision": "b061729afc07e77a8aa4fad0a2fd840958f1942a",
 			"revisionTime": "2016-09-27T10:08:44Z"
+		},
+		{
+			"checksumSHA1": "mGbTYZ8dHVTiPTTJu3ktp+84pPI=",
+			"path": "github.com/stretchr/testify/assert",
+			"revision": "890a5c3458b43e6104ff5da8dfa139d013d77544",
+			"revisionTime": "2017-07-05T02:17:15Z"
 		},
 		{
 			"checksumSHA1": "kjorOzs6WaQDe7wnPITdQaacET0=",

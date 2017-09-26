@@ -12,8 +12,6 @@ import (
 	"time"
 )
 
-// TODO: why does the persistence package need importing here even though this file is in the same package
-
 var testDb *bolt.DB
 
 func TestMain(m *testing.M) {
@@ -32,6 +30,17 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
+var pT *bool
+var pF *bool
+
+func init() {
+	t := true
+	pT = &(t)
+
+	f := false
+	pF = &(f)
+}
+
 func Test_SaveArchitectureAttributes(t *testing.T) {
 
 	// TODO: make a factory so the types don't have to be added by caller here
@@ -40,15 +49,15 @@ func Test_SaveArchitectureAttributes(t *testing.T) {
 			Id:          "arch",
 			SensorUrls:  []string{},
 			Label:       "Supported Architecture",
-			Publishable: true,
-			Type:        reflect.TypeOf(ArchitectureAttributes{}).String(),
+			Publishable: pT,
+			Type:        reflect.TypeOf(ArchitectureAttributes{}).Name(),
 		},
 		Architecture: "armhf",
 	}
 
 	attr.GetMeta().AppendSensorUrl("zoo").AppendSensorUrl("boo")
 
-	_, err := SaveOrUpdateServiceAttribute(testDb, attr)
+	_, err := SaveOrUpdateAttribute(testDb, attr, "", true)
 	if err != nil {
 		panic(err)
 	}
@@ -77,13 +86,13 @@ func Test_SaveArchitectureAttributes(t *testing.T) {
 }
 
 func Test_DiscriminateSavedAttributes(t *testing.T) {
-	pub := func(attr ServiceAttribute, url ...string) {
+	pub := func(attr Attribute, url ...string) {
 		for _, u := range url {
 			attr.GetMeta().AppendSensorUrl(u)
 		}
 
 		// db is shared, ok for now
-		_, err := SaveOrUpdateServiceAttribute(testDb, attr)
+		_, err := SaveOrUpdateAttribute(testDb, attr, "", true)
 		if err != nil {
 			panic(err)
 		}
@@ -97,8 +106,8 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 			Id:          "architecture",
 			SensorUrls:  []string{},
 			Label:       "Supported Architecture",
-			Publishable: true,
-			Type:        reflect.TypeOf(ArchitectureAttributes{}).String(),
+			Publishable: pT,
+			Type:        reflect.TypeOf(ArchitectureAttributes{}).Name(),
 		},
 		Architecture: "amd64",
 	}
@@ -110,8 +119,8 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 			Id:          "compute",
 			SensorUrls:  []string{},
 			Label:       "Compute Resources",
-			Publishable: true,
-			Type:        reflect.TypeOf(ComputeAttributes{}).String(),
+			Publishable: pT,
+			Type:        reflect.TypeOf(ComputeAttributes{}).Name(),
 		},
 		CPUs: 4,
 		RAM:  1024,
@@ -124,8 +133,8 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 			Id:          "compute",
 			SensorUrls:  []string{},
 			Label:       "Compute Resources",
-			Publishable: true,
-			Type:        reflect.TypeOf(ComputeAttributes{}).String(),
+			Publishable: pT,
+			Type:        reflect.TypeOf(ComputeAttributes{}).Name(),
 		},
 		CPUs: 2,
 		RAM:  2048,
@@ -138,8 +147,8 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 			Id:          "location",
 			SensorUrls:  []string{},
 			Label:       "Location",
-			Publishable: false,
-			Type:        reflect.TypeOf(LocationAttributes{}).String(),
+			Publishable: pF,
+			Type:        reflect.TypeOf(LocationAttributes{}).Name(),
 		},
 		Lat: "-140.03",
 		Lon: "20.12",
@@ -152,8 +161,8 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 		Meta: &AttributeMeta{
 			Id:          "misc",
 			SensorUrls:  []string{},
-			Publishable: true,
-			Type:        reflect.TypeOf(MappedAttributes{}).String(),
+			Publishable: pT,
+			Type:        reflect.TypeOf(MappedAttributes{}).Name(),
 		},
 		Mappings: map[string]string{
 			"x": "xoo",
@@ -168,8 +177,8 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 		Meta: &AttributeMeta{
 			Id:          "credentials",
 			SensorUrls:  []string{},
-			Publishable: false,
-			Type:        reflect.TypeOf(MappedAttributes{}).String(),
+			Publishable: pF,
+			Type:        reflect.TypeOf(MappedAttributes{}).Name(),
 		},
 		Mappings: map[string]string{
 			"user":         "fred",
@@ -207,7 +216,7 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 		case LocationAttributes:
 			k := serv.(LocationAttributes)
 			kLoc = &k
-			if kLoc.GetMeta().Publishable {
+			if *kLoc.GetMeta().Publishable {
 				t.Errorf("wrong pub fact")
 			}
 		case ArchitectureAttributes:

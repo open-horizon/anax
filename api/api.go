@@ -7,6 +7,17 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"os"
+	"reflect"
+	"sort"
+	"strconv"
+	"strings"
+	"sync"
+
 	"github.com/boltdb/bolt"
 	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
@@ -19,15 +30,6 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"reflect"
-	"sort"
-	"strconv"
-	"strings"
-	"sync"
 )
 
 type API struct {
@@ -133,6 +135,43 @@ func (a *API) getBCNameMap(typeName string) map[string]BlockchainState {
 	return nameMap
 }
 
+func (a *API) router(includeStaticRedirects bool) *mux.Router {
+	router := mux.NewRouter()
+
+	router.HandleFunc("/attribute", a.attribute).Methods("OPTIONS", "HEAD", "GET", "POST")
+	router.HandleFunc("/attribute/{id}", a.attribute).Methods("OPTIONS", "HEAD", "GET", "PUT", "PATCH", "DELETE")
+
+	router.HandleFunc("/agreement", a.agreement).Methods("GET", "OPTIONS")
+	router.HandleFunc("/agreement/{id}", a.agreement).Methods("GET", "DELETE", "OPTIONS")
+
+	// N.B. the following two paths are the primary registration endpoints as of v2.1.0; these notions
+	// get split apart when a proper microservice / workload prefs split is established in the future
+
+	// for declaring microservices (just opting into using it, it's defined elsewhere (in exchange)); variables need to be set on the microservice in the exchange; the values of the variables need to be filled in by the caller
+	router.HandleFunc("/service", a.service).Methods("GET", "POST", "OPTIONS")
+
+	router.HandleFunc("/microservice", a.microservice).Methods("GET", "OPTIONS")
+
+	router.HandleFunc("/status", a.status).Methods("GET", "OPTIONS")
+	router.HandleFunc("/token/random", tokenRandom).Methods("GET", "OPTIONS")
+	router.HandleFunc("/horizondevice", a.horizonDevice).Methods("GET", "POST", "PATCH", "OPTIONS")
+	router.HandleFunc("/workload", a.workload).Methods("GET", "OPTIONS") // for getting running stuff info
+	router.HandleFunc("/publickey", a.publickey).Methods("GET", "OPTIONS")
+	router.HandleFunc("/publickey/{filename}", a.publickey).Methods("GET", "PUT", "DELETE", "OPTIONS")
+	router.HandleFunc("/workloadconfig", a.workloadConfig).Methods("GET", "POST", "DELETE", "OPTIONS")
+
+	if includeStaticRedirects {
+		// redirect to index.html because SPA
+		router.HandleFunc(`/{p:[\w\/]+}`, func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		})
+		router.PathPrefix("/").Handler(http.FileServer(http.Dir(a.Config.Edge.StaticWebContent)))
+		glog.Infof("Include static redirects: %v", includeStaticRedirects)
+		glog.Infof("Serving static web content from: %v", a.Config.Edge.StaticWebContent)
+	}
+	return router
+}
+
 func (a *API) listen(apiListen string) {
 	glog.Info("Starting Anax API server")
 
@@ -148,33 +187,7 @@ func (a *API) listen(apiListen string) {
 	}
 
 	go func() {
-		router := mux.NewRouter()
-
-		router.HandleFunc("/agreement", a.agreement).Methods("GET", "OPTIONS")
-		router.HandleFunc("/agreement/{id}", a.agreement).Methods("GET", "DELETE", "OPTIONS")
-
-		// N.B. the following two paths are the primary registration endpoints as of v2.1.0; these notions
-		// get split apart when a proper microservice / workload prefs split is established in the future
-		router.HandleFunc("/service", a.service).Methods("GET", "POST", "OPTIONS")
-		router.HandleFunc("/service/attribute", a.serviceAttribute).Methods("GET", "POST", "DELETE", "OPTIONS")
-
-		router.HandleFunc("/status", a.status).Methods("GET", "OPTIONS")
-		router.HandleFunc("/token/random", tokenRandom).Methods("GET", "OPTIONS")
-		router.HandleFunc("/horizondevice", a.horizonDevice).Methods("GET", "POST", "PATCH", "OPTIONS")
-		router.HandleFunc("/workload", a.workload).Methods("GET", "OPTIONS")
-		router.HandleFunc("/publickey", a.publickey).Methods("GET", "OPTIONS")
-		router.HandleFunc("/publickey/{filename}", a.publickey).Methods("GET", "PUT", "DELETE", "OPTIONS")
-		router.HandleFunc("/workloadconfig", a.workloadConfig).Methods("GET", "POST", "DELETE", "OPTIONS")
-		router.HandleFunc("/microservice", a.microservice).Methods("GET", "OPTIONS")
-
-		// redirect to index.html because SPA
-		router.HandleFunc(`/{p:[\w\/]+}`, func(w http.ResponseWriter, r *http.Request) {
-			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-		})
-		router.PathPrefix("/").Handler(http.FileServer(http.Dir(a.Config.Edge.StaticWebContent)))
-
-		glog.Infof("Serving static web content from: %v", a.Config.Edge.StaticWebContent)
-		http.ListenAndServe(apiListen, nocache(router))
+		http.ListenAndServe(apiListen, nocache(a.router(true)))
 	}()
 }
 
@@ -269,6 +282,36 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func serializeResponse(w http.ResponseWriter, payload interface{}) ([]byte, bool) {
+	glog.V(6).Infof("response payload before serialization (%T): %v", payload, payload)
+
+	serial, err := json.Marshal(payload)
+	if err != nil {
+		glog.Error(err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return nil, true
+	}
+
+	return serial, false
+}
+
+func writeResponse(w http.ResponseWriter, payload interface{}, successStatusCode int) {
+
+	serial, errWritten := serializeResponse(w, payload)
+	if errWritten {
+		return
+	}
+
+	w.WriteHeader(successStatusCode)
+	w.Header().Set("Content-Type", "application/json")
+
+	if _, err := w.Write(serial); err != nil {
+		glog.Error(err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
 func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 
 	// returns existing device ref and boolean if error occured during fetch (error output handled by this func)
@@ -283,7 +326,7 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 		return existing, false
 	}
 
-	writeResponse := func(exDevice *persistence.ExchangeDevice, successStatusCode int) (*HorizonDevice, bool) {
+	writeDevice := func(exDevice *persistence.ExchangeDevice, successStatusCode int) {
 
 		var outModel *HorizonDevice
 
@@ -304,35 +347,17 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		serial, err := json.Marshal(outModel)
-		if err != nil {
-			glog.Error(err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return nil, true
-		}
-
-		w.WriteHeader(successStatusCode)
-		w.Header().Set("Content-Type", "application/json")
-
-		if _, err := w.Write(serial); err != nil {
-			glog.Error(err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return nil, true
-		}
-
-		return outModel, false
+		writeResponse(w, outModel, successStatusCode)
 	}
 
 	switch r.Method {
 	case "GET":
-		existingDevice, err := persistence.FindExchangeDevice(a.db)
-		if err != nil {
-			glog.Errorf("Failed fetching existing exchange device. Error: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		existingDevice, errWritten := a.existingDeviceOrError(w)
+		if errWritten {
 			return
 		}
 
-		writeResponse(existingDevice, http.StatusOK)
+		writeDevice(existingDevice, http.StatusOK)
 
 	case "POST":
 		var device HorizonDevice
@@ -422,7 +447,7 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 
 		a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, *device.Id, *device.Token, *device.Org, *device.Pattern)
 
-		writeResponse(exDev, http.StatusCreated)
+		writeDevice(exDev, http.StatusCreated)
 
 	case "PATCH":
 		var device HorizonDevice
@@ -458,7 +483,7 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 		}
 
-		writeResponse(updatedDevice, http.StatusOK)
+		writeDevice(updatedDevice, http.StatusOK)
 
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, POST, PATCH, OPTIONS")
@@ -468,13 +493,181 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (a *API) existingDeviceOrError(w http.ResponseWriter) (*persistence.ExchangeDevice, bool) {
+
+	var statusWritten bool
+	existingDevice, err := persistence.FindExchangeDevice(a.db)
+
+	if err != nil {
+		glog.Errorf("Failed fetching existing exchange device. Error: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		statusWritten = true
+	} else if existingDevice == nil {
+		writeInputErr(w, http.StatusFailedDependency, &APIUserInputError{Error: "Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API's /horizondevice path."})
+		statusWritten = true
+	}
+
+	return existingDevice, statusWritten
+}
+
+func (a *API) attribute(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	glog.V(5).Infof("Attribute vars: %v", vars)
+	id := vars["id"]
+
+	existingDevice, errWritten := a.existingDeviceOrError(w)
+	if errWritten {
+		return
+	}
+
+	var decodedID string
+	if id != "" {
+		var err error
+		decodedID, err = url.PathUnescape(id)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
+	// shared logic between payload-handling update functions
+	handlePayload := func(permitPartial bool, doModifications func(permitPartial bool, attr persistence.Attribute)) {
+		defer r.Body.Close()
+
+		if attrs, inputErr, err := payloadToAttributes(w, r.Body, permitPartial, existingDevice); err != nil {
+			glog.Error("Error processing incoming attributes. ", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		} else if !inputErr {
+			glog.V(6).Infof("persistent-type attributes: %v", attrs)
+
+			if len(attrs) != 1 {
+				// only one attr may be specified to add at a time
+				w.WriteHeader(http.StatusBadRequest)
+			} else {
+				doModifications(permitPartial, attrs[0])
+			}
+		}
+	}
+
+	handleUpdateFn := func() func(bool, persistence.Attribute) {
+		return func(permitPartial bool, attr persistence.Attribute) {
+			if added, err := persistence.SaveOrUpdateAttribute(a.db, attr, decodedID, permitPartial); err != nil {
+				switch err.(type) {
+				case *persistence.OverwriteCandidateNotFound:
+					glog.V(3).Infof("User attempted attribute update but there isn't a matching persisting attribute to modify.")
+					w.WriteHeader(http.StatusNotFound)
+				default:
+					glog.Error("Error persisting attribute. ", err)
+					w.WriteHeader(http.StatusInternalServerError)
+				}
+			} else if added != nil {
+				writeResponse(w, toOutModel(*added), http.StatusOK)
+			} else {
+				glog.Error("Attribute was not successfully persisted but no error was returned from persistence module")
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+		}
+	}
+
+	switch r.Method {
+	case "OPTIONS":
+		w.Header().Set("Allow", "OPTIONS, HEAD, GET, POST, PUT, PATCH, DELETE")
+
+	case "HEAD":
+		returned, err := persistence.FindAttributeByKey(a.db, decodedID)
+		if err != nil {
+			glog.Error("Attribute was not successfully deleted. ", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		out := wrapAttributesForOutput([]persistence.Attribute{*returned}, decodedID)
+
+		if serial, errWritten := serializeResponse(w, out); !errWritten {
+			w.Header().Add("Content-Length", strconv.Itoa(len(serial)))
+			w.WriteHeader(http.StatusOK)
+		}
+
+	case "GET":
+		out, err := FindAndWrapAttributesForOutput(a.db, decodedID)
+		glog.V(5).Infof("returning %v for query of %v", out, decodedID)
+		if err != nil {
+			glog.Error("Error reading persisted attributes", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			writeResponse(w, out, http.StatusOK)
+		}
+
+	case "POST":
+		// can't POST with an id, POST is only for new records
+		if decodedID != "" {
+			w.WriteHeader(http.StatusBadRequest)
+		} else {
+
+			// call handlePayload with function to do additions
+			handlePayload(false, func(permitPartial bool, attr persistence.Attribute) {
+
+				if added, err := persistence.SaveOrUpdateAttribute(a.db, attr, decodedID, permitPartial); err != nil {
+					glog.Infof("Got error from attempted save: <%T>, %v", err, err == nil)
+					switch err.(type) {
+					case *persistence.ConflictingAttributeFound:
+						w.WriteHeader(http.StatusConflict)
+					default:
+						glog.Error("Error persisting attribute. ", err)
+						w.WriteHeader(http.StatusInternalServerError)
+					}
+				} else if added != nil {
+					writeResponse(w, toOutModel(*added), http.StatusCreated)
+				} else {
+					glog.Error("Attribute was not successfully persisted but no error was returned from persistence module")
+					w.WriteHeader(http.StatusInternalServerError)
+				}
+			})
+		}
+
+	case "PUT":
+		// must PUT with an id, this is a complete replacement of the document body
+		if decodedID == "" {
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			// call handlePayload with function to do updates but prohibit partial updates
+			handlePayload(false, handleUpdateFn())
+		}
+
+	case "PATCH":
+		if decodedID == "" {
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			// call handlePayload with function to do updates and allow partial updates
+			handlePayload(true, handleUpdateFn())
+		}
+
+	case "DELETE":
+		if decodedID == "" {
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			deleted, err := persistence.DeleteAttribute(a.db, decodedID)
+			if err != nil {
+				glog.Error("Attribute was not successfully deleted. ", err)
+				w.WriteHeader(http.StatusInternalServerError)
+			} else if deleted == nil {
+				// nothing deleted, 200 w/ no return
+				w.WriteHeader(http.StatusOK)
+			} else {
+				writeResponse(w, toOutModel(*deleted), http.StatusOK)
+			}
+		}
+
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
 // for registering what *should* be microservices but as of v2.1.0, are more
 // like the old contracts
 func (a *API) service(w http.ResponseWriter, r *http.Request) {
 
-	findAdditions := func(attrs []persistence.ServiceAttribute, incoming []persistence.ServiceAttribute) []persistence.ServiceAttribute {
+	findAdditions := func(attrs []persistence.Attribute, incoming []persistence.Attribute) []persistence.Attribute {
 
-		toAdd := []persistence.ServiceAttribute{}
+		toAdd := []persistence.Attribute{}
 
 		for _, in := range incoming {
 			c := false
@@ -497,8 +690,8 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		type outServiceWrapper struct {
-			Policy     policy.Policy                  `json:"policy"`
-			Attributes []persistence.ServiceAttribute `json:"attributes"`
+			Policy     policy.Policy           `json:"policy"`
+			Attributes []persistence.Attribute `json:"attributes"`
 		}
 
 		outServices := make(map[string]interface{}, 0)
@@ -509,7 +702,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			allPolicies := a.pm.GetAllPolicies(org)
 			for _, pol := range allPolicies {
 
-				var applicable []persistence.ServiceAttribute
+				var applicable []persistence.Attribute
 
 				for _, apiSpec := range pol.APISpecs {
 					pAttr, err := persistence.FindApplicableAttributes(a.db, apiSpec.SpecRef)
@@ -548,19 +741,12 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		}
 
 	case "POST":
-		existingDevice, err := persistence.FindExchangeDevice(a.db)
-		if err != nil {
-			glog.Errorf("Failed fetching existing exchange device. Error: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		existingDevice, errWritten := a.existingDeviceOrError(w)
+		if errWritten {
 			return
 		}
 
-		if existingDevice == nil {
-			writeInputErr(w, http.StatusFailedDependency, &APIUserInputError{Error: "Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API's /horizondevice path."})
-			return
-		}
-
-		// input should be: Service type w/ zero or more ServiceAttribute types
+		// input should be: Service type w/ zero or more Attribute types
 		var service Service
 		body, _ := ioutil.ReadAll(r.Body)
 
@@ -644,63 +830,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Handle attributes in the POST body, specific to this microservice registration
-		var attributes []persistence.ServiceAttribute
-		if service.Attributes != nil {
-			// build a serviceAttribute for each one
-			var err error
-			var inputErrWritten bool
-			attributes, err, inputErrWritten = deserializeAttributes(w, *service.Attributes)
-			if err != nil {
-				glog.Errorf("Failure deserializing attributes: %v", err)
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			} else if inputErrWritten {
-				// signifies an already-written user api error
-				return
-			}
-		}
-
-		// Check for errors in attribute input, like specifying a sensorUrl or specifying HA Partner on a non-HA device
-		for _, attr := range attributes {
-			if len(attr.GetMeta().SensorUrls) != 0 {
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].sensor_urls", Error: "sensor_urls not permitted on attributes specified on a service"})
-				return
-			}
-
-			if attr.GetMeta().Id == "ha" {
-				// if the device is not HA enabled then the HA partner attribute is illegal
-				if !existingDevice.HADevice {
-					glog.Errorf("Non-HA device %v does not support HA enabled service %v", existingDevice, service)
-					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].Id", Error: "HA partner not permitted on non-HA devices"})
-					return
-				} else {
-					// Make sure that a device doesnt specify itself in the HA partner list
-					if _, ok := attr.GetGenericMappings()["partnerID"]; ok {
-						switch attr.GetGenericMappings()["partnerID"].(type) {
-						case []string:
-							partners := attr.GetGenericMappings()["partnerID"].([]string)
-							for _, partner := range partners {
-								if partner == existingDevice.GetId() {
-									glog.Errorf("HA device %v cannot refer to itself in partner list %v", existingDevice, partners)
-									writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].ha", Error: "partner list cannot refer to itself."})
-									return
-								}
-							}
-						}
-					}
-				}
-			}
-
-			// If the device declared itself to be using a pattern, then it CANNOT specify any attributes that generate policy
-			// settings . All policy is controlled by the pattern definition.
-			if existingDevice.Pattern != "" {
-				if attr.GetMeta().Id == "metering" || attr.GetMeta().Id == "property" || attr.GetMeta().Id == "counterpartyproperty" || attr.GetMeta().Id == "agreementprotocol" {
-					glog.Errorf("device is using a pattern %v, policy attributes are not supported.", existingDevice.Pattern)
-					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].Id", Error: fmt.Sprintf("device is using a pattern %v, policy attributes are not supported.", existingDevice.Pattern)})
-					return
-				}
-			}
+		msdefAttributeVerifier := func(w http.ResponseWriter, attr persistence.Attribute) (bool, error) {
 
 			// Verfiy that all non-defaulted userInput variables in the microservice definition are specified in a mapped property attribute
 			// of this service invocation.
@@ -712,49 +842,61 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 						// There is a config variable missing from the generic mapped attributes
 						glog.Errorf("Variable %v defined in microservice %v %v is missing from the service definition.", ui.Name, msdef.SpecRef, msdef.Version)
 						writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].mapped", Error: fmt.Sprintf("variable %v is missing from mappings", ui.Name)})
-						return
+						return true, nil
 					}
 				}
 			}
 
-			// Now make sure we add our own sensorUrl to each attribute
-			attr.GetMeta().AppendSensorUrl(*service.SensorUrl)
-			glog.Infof("SensorUrls for %v: %v", attr.GetMeta().Id, attr.GetMeta().SensorUrls)
+			return false, nil
 		}
 
-		// check for required
-		cType := reflect.TypeOf(persistence.ComputeAttributes{}).String()
-		if attributesContains(attributes, *service.SensorUrl, cType) == nil {
-			// make a default
-			// TODO: create a factory for this
-			attributes = append(attributes, persistence.ComputeAttributes{
-				Meta: &persistence.AttributeMeta{
-					Id:          "compute",
-					SensorUrls:  []string{*service.SensorUrl},
-					Label:       "Compute Resources",
-					Publishable: true,
-					Type:        cType,
-				},
-				CPUs: 1,
-				RAM:  a.Config.Edge.DefaultServiceRegistrationRAM,
-			})
+		patternedDeviceAttributeVerifier := func(w http.ResponseWriter, attr persistence.Attribute) (bool, error) {
+			// If the device declared itself to be using a pattern, then it CANNOT specify any attributes that generate policy
+			// settings . All policy is controlled by the pattern definition.
+			if existingDevice.Pattern != "" {
+				if attr.GetMeta().Type == "MeteringAttributes" || attr.GetMeta().Type == "PropertyAttributes" || attr.GetMeta().Type == "CounterPartyPropertyAttributes" || attr.GetMeta().Type == "AgreementProtocolAttributes" {
+					glog.Errorf("device is using a pattern %v, policy attributes are not supported.", existingDevice.Pattern)
+					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].Id", Error: fmt.Sprintf("device is using a pattern %v, policy attributes are not supported.", existingDevice.Pattern)})
+					return true, nil
+				}
+			}
+
+			// Verfiy that all non-defaulted userInput variables in the microservice definition are specified in a mapped property attribute
+			// of this service invocation.
+			if msdef != nil && attr.GetMeta().Type == "MappedAttributes" {
+				for _, ui := range msdef.UserInputs {
+					if ui.DefaultValue != "" {
+						continue
+					} else if _, ok := attr.GetGenericMappings()[ui.Name]; !ok {
+						// There is a config variable missing from the generic mapped attributes
+						glog.Errorf("Variable %v defined in microservice %v %v is missing from the service definition.", ui.Name, msdef.SpecRef, msdef.Version)
+						writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].mapped", Error: fmt.Sprintf("variable %v is missing from mappings", ui.Name)})
+						return true, nil
+					}
+				}
+			}
+
+			return false, nil
 		}
 
-		aType := reflect.TypeOf(persistence.ArchitectureAttributes{}).String()
-		// a little weird; could a user give us an alternate architecture than the one we're going to publising in the prop?
-		if attributesContains(attributes, *service.SensorUrl, aType) == nil {
-			// make a default
+		var attributes []persistence.Attribute
+		if service.Attributes != nil {
+			// build a serviceAttribute for each one
+			var err error
+			var inputErrWritten bool
 
-			attributes = append(attributes, persistence.ArchitectureAttributes{
-				Meta: &persistence.AttributeMeta{
-					Id:          "architecture",
-					SensorUrls:  []string{*service.SensorUrl},
-					Label:       "Architecture",
-					Publishable: true,
-					Type:        aType,
-				},
-				Architecture: cutil.ArchString(),
-			})
+			attributes, inputErrWritten, err = toPersistedAttributesAttachedToService(w, existingDevice, a.Config.Edge.DefaultServiceRegistrationRAM, *service.Attributes, *service.SensorUrl, []AttributeVerifier{msdefAttributeVerifier, patternedDeviceAttributeVerifier})
+
+			// log even if there was an inputErr already written to the response
+			if err != nil {
+				glog.Errorf("Failure deserializing attributes: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			if inputErrWritten {
+				return
+			}
 		}
 
 		// Information advertised in the edge node policy file
@@ -777,7 +919,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			for _, attr := range allAttrs {
 
 				// Extract ha property
-				if attr.GetMeta().Id == "ha" && len(attr.GetMeta().SensorUrls) == 0 {
+				if attr.GetMeta().Type == "HAAttributes" && len(attr.GetMeta().SensorUrls) == 0 {
 					haPartner = attr.(persistence.HAAttributes).Partners
 					glog.V(5).Infof("Found default global ha attribute %v", attr)
 				}
@@ -786,7 +928,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 				// by the pattern definition.
 				if existingDevice.Pattern == "" {
 					// Extract global metering property
-					if attr.GetMeta().Id == "metering" && len(attr.GetMeta().SensorUrls) == 0 {
+					if attr.GetMeta().Type == "MeteringAttributes" && len(attr.GetMeta().SensorUrls) == 0 {
 						// found a global metering entry
 						meterPolicy = policy.Meter{
 							Tokens:                attr.(persistence.MeteringAttributes).Tokens,
@@ -797,19 +939,19 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 					}
 
 					// Extract global counterparty property
-					if attr.GetMeta().Id == "counterpartyproperty" && len(attr.GetMeta().SensorUrls) == 0 {
+					if attr.GetMeta().Type == "CounterPartyPropertyAttributes" && len(attr.GetMeta().SensorUrls) == 0 {
 						counterPartyProperties = attr.(persistence.CounterPartyPropertyAttributes).Expression
 						glog.V(5).Infof("Found default global counterpartyproperty attribute %v", attr)
 					}
 
 					// Extract global properties
-					if attr.GetMeta().Id == "property" && len(attr.GetMeta().SensorUrls) == 0 {
+					if attr.GetMeta().Type == "PropertyAttributes" && len(attr.GetMeta().SensorUrls) == 0 {
 						properties = attr.(persistence.PropertyAttributes).Mappings
 						glog.V(5).Infof("Found default global properties %v", properties)
 					}
 
 					// Extract global agreement protocol attribute
-					if attr.GetMeta().Id == "agreementprotocol" && len(attr.GetMeta().SensorUrls) == 0 {
+					if attr.GetMeta().Type == "AgreementProtocolAttributes" && len(attr.GetMeta().SensorUrls) == 0 {
 						agpl := attr.(persistence.AgreementProtocolAttributes).Protocols
 						globalAgreementProtocols = agpl.([]interface{})
 						glog.V(5).Infof("Found default global agreement protocol attribute %v", globalAgreementProtocols)
@@ -819,7 +961,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// ha device has no ha attribute from either device wide or service wide attributes
-		haType := reflect.TypeOf(persistence.HAAttributes{}).String()
+		haType := reflect.TypeOf(persistence.HAAttributes{}).Name()
 		if existingDevice.HADevice && len(haPartner) == 0 {
 			if attr := attributesContains(attributes, *service.SensorUrl, haType); attr == nil {
 				glog.Errorf("HA device %v can only support HA enabled services %v", existingDevice, service)
@@ -832,7 +974,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		// persist all prefs; while we're at it, fetch the props we want to publish and the arch
 		for _, attr := range attributes {
 
-			_, err := persistence.SaveOrUpdateServiceAttribute(a.db, attr)
+			_, err := persistence.SaveOrUpdateAttribute(a.db, attr, "", false)
 			if err != nil {
 				glog.Errorf("Error saving attribute: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)
@@ -926,149 +1068,6 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// for editing prefs used by one or more workloads *and* pushing shared attributes (like location)
-func (a *API) serviceAttribute(w http.ResponseWriter, r *http.Request) {
-
-	toOutModel := func(persisted persistence.ServiceAttribute) *Attribute {
-		mappings := persisted.GetGenericMappings()
-
-		return &Attribute{
-			Id:          &persisted.GetMeta().Id,
-			SensorUrls:  &persisted.GetMeta().SensorUrls,
-			Label:       &persisted.GetMeta().Label,
-			Publishable: &persisted.GetMeta().Publishable,
-			Mappings:    &mappings,
-		}
-	}
-
-	switch r.Method {
-	case "GET":
-		// empty string to match all
-		serviceAttributes, err := persistence.FindApplicableAttributes(a.db, "")
-		if err != nil {
-			glog.Errorf("Failed fetching existing service attributes. Error: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		outAttrs := []Attribute{}
-
-		for _, persisted := range serviceAttributes {
-			// convert persistence model to API model
-
-			outAttr := toOutModel(persisted)
-			outAttrs = append(outAttrs, *outAttr)
-		}
-
-		wrap := map[string][]Attribute{}
-		wrap["attributes"] = outAttrs
-
-		serial, err := json.Marshal(wrap)
-		if err != nil {
-			glog.Infof("Error serializing agreement output: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		if _, err := w.Write(serial); err != nil {
-			glog.Infof("Error writing response: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-	case "POST":
-		existingDevice, err := persistence.FindExchangeDevice(a.db)
-		if err != nil {
-			glog.Errorf("Failed fetching existing exchange device. Error: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		if existingDevice == nil {
-			writeInputErr(w, http.StatusFailedDependency, &APIUserInputError{Error: "Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API's /horizondevice path."})
-			return
-		}
-
-		body, _ := ioutil.ReadAll(r.Body)
-		decoder := json.NewDecoder(bytes.NewReader(body))
-		decoder.UseNumber()
-
-		var attribute Attribute
-		if err := decoder.Decode(&attribute); err != nil {
-			glog.Errorf("User submitted data that couldn't be deserialized to attribute: %v. Error: %v", string(body), err)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "attribute", Error: fmt.Sprintf("could not be demarshalled, error: %v", err)})
-			return
-		}
-
-		serviceAttrs, err, inputErr := deserializeAttributes(w, []Attribute{attribute})
-		if inputErr {
-			return
-		}
-		if err != nil {
-			glog.Errorf("Error deserializing attributes: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-
-		// verify ha attribute
-		for _, attr := range serviceAttrs {
-			if attr.GetMeta().Id == "ha" {
-				// if the device is not HA enabled then the HA partner attribute is illegal
-				if !existingDevice.HADevice {
-					glog.Errorf("Non-HA device %v does not support HA attribute", existingDevice)
-					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].Id", Error: "HA partner not permitted on non-HA devices"})
-					return
-				} else {
-					// Make sure that a device doesnt specify itself in the HA partner list
-					if _, ok := attr.GetGenericMappings()["partnerID"]; ok {
-						switch attr.GetGenericMappings()["partnerID"].(type) {
-						case []string:
-							partners := attr.GetGenericMappings()["partnerID"].([]string)
-							for _, partner := range partners {
-								if partner == existingDevice.GetId() {
-									glog.Errorf("HA device %v cannot refer to itself in partner list %v", existingDevice, partners)
-									writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].ha", Error: "partner list cannot refer to itself."})
-									return
-								}
-							}
-						}
-					}
-				}
-			}
-
-		}
-
-		// save to db; we know there was only one
-		saved, err := persistence.SaveOrUpdateServiceAttribute(a.db, serviceAttrs[0])
-		if err != nil {
-			glog.Errorf("Error deserializing attributes: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-
-		outAttr := toOutModel(*saved)
-		serial, err := json.Marshal(outAttr)
-		if err != nil {
-			glog.Error(err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusCreated)
-		w.Header().Set("Content-Type", "application/json")
-
-		if _, err := w.Write(serial); err != nil {
-			glog.Error(err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-	case "OPTIONS":
-		w.Header().Set("Allow", "GET, POST, OPTIONS")
-		w.WriteHeader(http.StatusOK)
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	}
-}
-
 func (a *API) status(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
@@ -1093,17 +1092,7 @@ func (a *API) status(w http.ResponseWriter, r *http.Request) {
 			info.AddGeth(geth)
 		}
 
-		if serial, err := json.Marshal(info); err != nil {
-			glog.Errorf("Failed to serialize status object: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-		} else {
-			w.Header().Set("Content-Type", "application/json")
-
-			if _, err := w.Write(serial); err != nil {
-				glog.Errorf("Failed to write response: %v", err)
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
-			}
-		}
+		writeResponse(w, info, http.StatusOK)
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, OPTIONS")
 		w.WriteHeader(http.StatusOK)
@@ -1475,11 +1464,8 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 
 		glog.V(5).Infof("WorkloadConfig POST input: %v", &cfg)
 
-		// Grab the device identity
-		existingDevice, err := persistence.FindExchangeDevice(a.db)
-		if err != nil {
-			glog.Errorf("Failed fetching existing exchange device. Error: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		existingDevice, errWritten := a.existingDeviceOrError(w)
+		if errWritten {
 			return
 		}
 
