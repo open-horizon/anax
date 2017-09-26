@@ -197,7 +197,7 @@ func Test_HTTPClientFactory_Suite(t *testing.T) {
 
 		client := cfg.Collaborators.HTTPClientFactory.NewHTTPClient(&timeoutS)
 		// all of these should pass b/c they are the subjectAltNames of the cert (either names or IPs) note that Golang doesn't verify the CA of the cert if it's localhost or an IP
-		for _, dom := range []string{listenOn, "localhost", "localhost.localdomain"} {
+		for _, dom := range []string{listenOn, "localhost"} {
 
 			resp, err := client.Get(fmt.Sprintf("https://%s:%s/boosh", dom, port))
 
