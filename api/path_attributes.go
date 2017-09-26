@@ -414,7 +414,7 @@ func toPersistedAttributesAttachedToService(w http.ResponseWriter, persistedDevi
 		return persistenceAttrs, inputErr, err
 	}
 
-	finalizeAttributesSpecifiedInService(defaultRAM, sensorURL, persistenceAttrs)
+	persistenceAttrs = finalizeAttributesSpecifiedInService(defaultRAM, sensorURL, persistenceAttrs)
 
 	return persistenceAttrs, inputErr, err
 }
@@ -563,7 +563,7 @@ func toOutModel(persisted persistence.Attribute) *Attribute {
 	}
 }
 
-func finalizeAttributesSpecifiedInService(defaultRAM int64, sensorURL string, attributes []persistence.Attribute) {
+func finalizeAttributesSpecifiedInService(defaultRAM int64, sensorURL string, attributes []persistence.Attribute) []persistence.Attribute {
 
 	// check for required
 	cType := reflect.TypeOf(persistence.ComputeAttributes{}).Name()
@@ -605,6 +605,9 @@ func finalizeAttributesSpecifiedInService(defaultRAM int64, sensorURL string, at
 		attr.GetMeta().AppendSensorUrl(sensorURL)
 		glog.Infof("SensorUrls for %v: %v", attr.GetMeta().Id, attr.GetMeta().SensorUrls)
 	}
+
+	// return updated
+	return attributes
 }
 
 func validateConcreteAttributes(w http.ResponseWriter, persistedDevice *persistence.ExchangeDevice, attributes []persistence.Attribute, additionalVerifiers []AttributeVerifier) (bool, error) {
