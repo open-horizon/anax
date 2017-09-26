@@ -889,7 +889,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			for _, attr := range allAttrs {
 
 				// Extract ha property
-				if attr.GetMeta().Id == "ha" && len(attr.GetMeta().SensorUrls) == 0 {
+				if attr.GetMeta().Type == "HAAttributes" && len(attr.GetMeta().SensorUrls) == 0 {
 					haPartner = attr.(persistence.HAAttributes).Partners
 					glog.V(5).Infof("Found default global ha attribute %v", attr)
 				}
@@ -898,7 +898,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 				// by the pattern definition.
 				if existingDevice.Pattern == "" {
 					// Extract global metering property
-					if attr.GetMeta().Id == "metering" && len(attr.GetMeta().SensorUrls) == 0 {
+					if attr.GetMeta().Type == "MeteringAttributes" && len(attr.GetMeta().SensorUrls) == 0 {
 						// found a global metering entry
 						meterPolicy = policy.Meter{
 							Tokens:                attr.(persistence.MeteringAttributes).Tokens,
@@ -909,19 +909,19 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 					}
 
 					// Extract global counterparty property
-					if attr.GetMeta().Id == "counterpartyproperty" && len(attr.GetMeta().SensorUrls) == 0 {
+					if attr.GetMeta().Type == "CounterPartyPropertyAttributes" && len(attr.GetMeta().SensorUrls) == 0 {
 						counterPartyProperties = attr.(persistence.CounterPartyPropertyAttributes).Expression
 						glog.V(5).Infof("Found default global counterpartyproperty attribute %v", attr)
 					}
 
 					// Extract global properties
-					if attr.GetMeta().Id == "property" && len(attr.GetMeta().SensorUrls) == 0 {
+					if attr.GetMeta().Type == "PropertyAttributes" && len(attr.GetMeta().SensorUrls) == 0 {
 						properties = attr.(persistence.PropertyAttributes).Mappings
 						glog.V(5).Infof("Found default global properties %v", properties)
 					}
 
 					// Extract global agreement protocol attribute
-					if attr.GetMeta().Id == "agreementprotocol" && len(attr.GetMeta().SensorUrls) == 0 {
+					if attr.GetMeta().Type == "AgreementProtocolAttributes" && len(attr.GetMeta().SensorUrls) == 0 {
 						agpl := attr.(persistence.AgreementProtocolAttributes).Protocols
 						globalAgreementProtocols = agpl.([]interface{})
 						glog.V(5).Infof("Found default global agreement protocol attribute %v", globalAgreementProtocols)
@@ -931,7 +931,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// ha device has no ha attribute from either device wide or service wide attributes
-		haType := reflect.TypeOf(persistence.HAAttributes{}).String()
+		haType := reflect.TypeOf(persistence.HAAttributes{}).Name()
 		if existingDevice.HADevice && len(haPartner) == 0 {
 			if attr := attributesContains(attributes, *service.SensorUrl, haType); attr == nil {
 				glog.Errorf("HA device %v can only support HA enabled services %v", existingDevice, service)
