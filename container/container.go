@@ -1563,7 +1563,7 @@ func (b *ContainerWorker) start() {
 
 							// ask governer to record it into the db
 							u, _ := url.Parse("")
-							cc := events.NewContainerConfig(*u, make(map[string]string), make(map[string]string), "", "", "", "")
+							cc := events.NewContainerConfig(*u, "", "", "", "")
 							ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey)
 							b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *ll, "", "")
 						}

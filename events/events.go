@@ -81,8 +81,7 @@ type Message interface {
 
 type LaunchContext interface {
 	URL() url.URL
-	Hashes() map[string]string
-	Signatures() map[string]string
+	Signature() string
 	ShortString() string
 }
 
@@ -113,33 +112,21 @@ func (c AgreementLaunchContext) URL() url.URL {
 	return c.Configure.TorrentURL
 }
 
-func (c AgreementLaunchContext) Hashes() map[string]string {
-	return c.Configure.ImageHashes
-}
-
-func (c AgreementLaunchContext) Signatures() map[string]string {
-	return c.Configure.ImageSignatures
-}
-
 type ContainerConfig struct {
-	TorrentURL          url.URL           `json:"torrent_url"`
-	ImageHashes         map[string]string `json:"image_hashes"`
-	ImageSignatures     map[string]string `json:"image_signatures"` // cryptographic signatures per-image
-	Deployment          string            `json:"deployment"`       // JSON docker-compose like
-	DeploymentSignature string            `json:"deployment_signature"`
-	DeploymentUserInfo  string            `json:"deployment_user_info"`
-	Overrides           string            `json:"overrides"`
+	TorrentURL          url.URL `json:"torrent_url"`
+	Deployment          string  `json:"deployment"` // JSON docker-compose like
+	DeploymentSignature string  `json:"deployment_signature"`
+	DeploymentUserInfo  string  `json:"deployment_user_info"`
+	Overrides           string  `json:"overrides"`
 }
 
 func (c ContainerConfig) String() string {
-	return fmt.Sprintf("TorrentURL: %v, ImageHashes: %v, ImageSignatures: %v, Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, Overrides: %v", c.TorrentURL.String(), c.ImageHashes, c.ImageSignatures, c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo, c.Overrides)
+	return fmt.Sprintf("TorrentURL: %v, Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, Overrides: %v", c.TorrentURL.String(), c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo, c.Overrides)
 }
 
-func NewContainerConfig(torrentURL url.URL, imageHashes map[string]string, imageSignatures map[string]string, deployment string, deploymentSignature string, deploymentUserInfo string, overrides string) *ContainerConfig {
+func NewContainerConfig(torrentURL url.URL, deployment string, deploymentSignature string, deploymentUserInfo string, overrides string) *ContainerConfig {
 	return &ContainerConfig{
 		TorrentURL:          torrentURL,
-		ImageHashes:         imageHashes,
-		ImageSignatures:     imageSignatures,
 		Deployment:          deployment,
 		DeploymentSignature: deploymentSignature,
 		DeploymentUserInfo:  deploymentUserInfo,
@@ -170,14 +157,6 @@ func (c ContainerLaunchContext) ShortString() string {
 
 func (c ContainerLaunchContext) URL() url.URL {
 	return c.Configure.TorrentURL
-}
-
-func (c ContainerLaunchContext) Hashes() map[string]string {
-	return c.Configure.ImageHashes
-}
-
-func (c ContainerLaunchContext) Signatures() map[string]string {
-	return c.Configure.ImageSignatures
 }
 
 func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]string, bc BlockchainConfig, name string) *ContainerLaunchContext {
