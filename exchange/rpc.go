@@ -3,6 +3,7 @@ package exchange
 import (
 	"bytes"
 	"crypto/rsa"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -1148,7 +1149,7 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 			req.Header.Add("Content-Type", "application/json")
 		}
 		if user != "" && pw != "" {
-			req.Header.Add("Authorization", "Basic "+user+":"+pw)
+			req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(user+":"+pw))))
 		}
 		glog.V(5).Infof(rpclogString(fmt.Sprintf("Invoking exchange with headers: %v", req.Header)))
 		// If the exchange is down, this call will return an error.
