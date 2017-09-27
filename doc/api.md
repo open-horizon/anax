@@ -82,11 +82,12 @@ body:
 | name | type | description |
 | ---- | ---- | ---------------- |
 | id   | string | the unique id of the device. |
+| organization | string | the organization this device belongs to. |
+| pattern | string | the pattern that will be deployed on the device. |
 | name | string | the user readable name for the device  |
 | token_valid | bool| whether the device token is valid or not |
 | token_last_valid_time | uint64 | the time stamp when the device token was last valid. |
 | ha_device | bool | whether the device is part of an HA group or not |
-| organization | string | the organization this device belongs to. |
 
 
 **Example:**
@@ -94,11 +95,12 @@ body:
 curl -s http://localhost/horizondevice |jq '.'
 {
   "id": "000000002175f7a9",
+  "organization": "ibm.com",
+  "pattern": "pat3",
   "name": "mydevice1",
   "token_last_valid_time": 1481310188,
   "token_valid": true,
-  "ha_device": false,
-  "organization": "mycompany"
+  "ha_device": false
 }
 
 ```
@@ -127,9 +129,10 @@ none
 ```
 curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
       "id": "mydevice",
+      "organization": "mycompany",
+      "pattern": "pat3",
       "name": "mydevice",
-      "token": "dfjskjdsfkj",
-      "organization": "mycompany"
+      "token": "dfjskjdsfkj"
     }'  http://localhost/horizondevice
 
 ```
@@ -217,25 +220,19 @@ service attribute
 curl -s -w %{http_code}  http://localhost/service | jq  '.'
 {
   "services": {
-    "Policy for network": {
+    "Policy for airpollutionms": {
       "policy": {
         "header": {
-          "name": "Policy for network",
+          "name": "Policy for airpollutionms",
           "version": "2.0"
         },
         "apiSpec": [
           {
-            "specRef": "https://bluehorizon.network/microservices/network",
-            "organization": "mycompany",
-            "version": "1.0.1",
+            "specRef": "https://bluehorizon.network/microservices/airpollutionms",
+            "organization": "ling.com",
+            "version": "1.0.0",
             "exclusiveAccess": true,
             "arch": "amd64"
-          }
-        ],
-        "agreementProtocols": [
-          {
-            "name": "Basic",
-            "protocolVersion": 1
           }
         ],
         "valueExchange": {},
@@ -245,26 +242,45 @@ curl -s -w %{http_code}  http://localhost/service | jq  '.'
         },
         "proposalRejection": {},
         "maxAgreements": 1,
-        "properties": [
-          {
-            "name": "cpus",
-            "value": "1"
-          },
-          {
-            "name": "ram",
-            "value": "128"
-          }
-        ],
         "ha_group": {}
       },
       "attributes": [
         {
           "meta": {
-            "id": "agreementprotocol",
+            "id": "38596bf5-6713-422a-ad87-5892b819ba7a",
+            "type": "LocationAttributes",
+            "sensor_urls": [],
+            "label": "Registered Location Facts",
+            "host_only": false,
+            "publishable": false
+          },
+          "lat": "40.4273",
+          "lon": "-111.898",
+          "user_provided_coords": true,
+          "use_gps": false
+        },
+        {
+          "meta": {
+            "id": "6abefdea-3bf6-47a6-9909-46766feb1588",
+            "type": "ComputeAttributes",
+            "sensor_urls": [
+              "https://bluehorizon.network/microservices/airpollutionms"
+            ],
+            "label": "PurpleAir (air pollution sensing)",
+            "host_only": false,
+            "publishable": true
+          },
+          "cpus": 1,
+          "ram": 128
+        },
+        {
+          "meta": {
+            "id": "cce6681d-cc50-480d-ab3c-36cf2f1b10a5",
+            "type": "AgreementProtocolAttributes",
             "sensor_urls": [],
             "label": "Agreement Protocol",
-            "publishable": true,
-            "type": "persistence.AgreementProtocolAttributes"
+            "host_only": false,
+            "publishable": true
           },
           "protocols": [
             {
@@ -275,44 +291,21 @@ curl -s -w %{http_code}  http://localhost/service | jq  '.'
         },
         {
           "meta": {
-            "id": "architecture",
+            "id": "d33f0a80-5861-4464-9b2d-c3af35024b3a",
+            "type": "ArchitectureAttributes",
             "sensor_urls": [
-              "https://bluehorizon.network/microservices/network"
+              "https://bluehorizon.network/microservices/airpollutionms"
             ],
             "label": "Architecture",
-            "publishable": true,
-            "type": "persistence.ArchitectureAttributes"
+            "host_only": false,
+            "publishable": true
           },
           "architecture": "amd64"
-        },
-        {
-          "meta": {
-            "id": "compute",
-            "sensor_urls": [
-              "https://bluehorizon.network/microservices/network"
-            ],
-            "label": "network microservice",
-            "publishable": true,
-            "type": "persistence.ComputeAttributes"
-          },
-          "cpus": 1,
-          "ram": 128
-        },
-        {
-          "meta": {
-            "id": "location",
-            "sensor_urls": [],
-            "label": "Registered Location Facts",
-            "publishable": false,
-            "type": "persistence.LocationAttributes"
-          },
-          "lat": "40.4273",
-          "lon": "-111.898",
-          "user_provided_coords": true,
-          "use_gps": false
         }
       ]
-    }
+    } 
+  ]
+}
 ```
 
 
@@ -331,7 +324,7 @@ Register a service.
 | sensor_org  | string | the organization that holds the microservice definition. |
 | auto_upgrade  | bool | If the microservice should be automatically upgraded when new versions become available. |
 | active_upgrade  | bool | If horizon should actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade. |
-| attributes | array | an array of attributes.  Please refer to the response body for the GET /service/attribute api for the fields of an attribute.  |
+| attributes | array | an array of attributes.  Please refer to the response body for the GET /attribute api for the fields of an attribute.  |
 
 **Response:**
 
@@ -354,10 +347,10 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
   "active_upgrade": true,
   "attributes": [
     {
-      "id": "compute",
-      "short_type": "compute",
+      "type": "ComputeAttributes",
       "label": "network microservice",
       "publishable": true,
+      "host_only": false,
       "mappings": {
         "ram": 128,
         "cpus": 1
@@ -368,7 +361,7 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
 
 ```
 
-#### **API:** GET  /service/attribute
+#### **API:** GET  /attribute
 ---
 
 Get all the attributes for the registered services. 
@@ -389,65 +382,98 @@ body:
 
 attribute 
 
-| id | string| the id of the attribute. |
+| name | type| description |
 | ---- | ---- | ---------------- |
+| id | string| the id of the attribute. |
 | label | string | the user readable name of the attribute |
-| short_type| string | the short type name of the service. This filed is omitted if it is empty. Supported attribute types are: architecture, compute, location, mapped, ha, property, counterpartyproperty, metering, agreementprotocol, etc. |
+| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, MappedAttributes, HAAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, AgreementProtocolAttributes and ArchitectureAttributes. |
 | sensor_urls | array | an array of sensor url. It applies to all services if it is empty. |
 | publishable| bool | whether the attribute can be made public or not. |
+| host_only | bool | whether or not the attribute will be passed to the workload. |
 | mappings | map | a list of key value pairs. |
 
 
 **Example:**
 ```
- curl -s -w %{http_code}  http://localhost/service/attribute | jq  '.'
+curl -s http//localhost/attribute | jq '.'
 {
   "attributes": [
     {
-      "id": "app",
-      "sensor_urls": [
-        "https://bluehorizon.network/documentation/netspeed-device-api"
-      ],
-      "label": "app",
-      "publishable": true,
-      "mappings": {
-        "MTN_IS_BANDWIDTH_TEST_ENABLED": "true",
-        "MTN_TARGET_SERVER": "closest"
-      }
-    },
-    {
-      "id": "architecture",
-      "sensor_urls": [
-        "https://bluehorizon.network/documentation/netspeed-device-api"
-      ],
-      "label": "Architecture",
-      "publishable": true,
-      "mappings": {
-        "architecture": "arm"
-      }
-    },
-    {
-      "id": "compute",
-      "sensor_urls": [
-        "https://bluehorizon.network/documentation/netspeed-device-api"
-      ],
-      "label": "Compute Resources",
-      "publishable": true,
-      "mappings": {
-        "cpus": 1,
-        "ram": 0
-      }
-    },
-    {
-      "id": "location",
+      "id": "38596bf5-6713-422a-ad87-5892b819ba7a",
+      "type": "LocationAttributes",
       "sensor_urls": [],
       "label": "Registered Location Facts",
       "publishable": false,
       "mappings": {
-        "lat": "41.5861",
-        "lon": "-73.883",
+        "lat": "40.4273",
+        "lon": "-111.898",
         "use_gps": false,
         "user_provided_coords": true
+      }
+    },
+    {
+      "id": "55fc2373-d47c-48bc-9934-22f3e2e4de78",
+      "type": "ArchitectureAttributes",
+      "sensor_urls": [
+        "https://bluehorizon.network/microservices/network"
+      ],
+      "label": "Architecture",
+      "publishable": true,
+      "mappings": {
+        "architecture": "amd64"
+      }
+    },
+    {
+      "id": "692d375b-031c-4c90-95ef-c1a038c0b551",
+      "type": "ComputeAttributes",
+      "sensor_urls": [
+        "https://bluehorizon.network/microservices/gps"
+      ],
+      "label": "gps microservice",
+      "publishable": true,
+      "mappings": {
+        "cpus": 1,
+        "ram": 128
+      }
+    },
+    {
+      "id": "9aeea17c-73cf-48b7-ba65-a678c60c2637",
+      "type": "ArchitectureAttributes",
+      "sensor_urls": [
+        "https://bluehorizon.network/microservices/gps"
+      ],
+      "label": "Architecture",
+      "publishable": true,
+      "mappings": {
+        "architecture": "amd64"
+      }
+    },
+    {
+      "id": "cce6681d-cc50-480d-ab3c-36cf2f1b10a5",
+      "type": "AgreementProtocolAttributes",
+      "sensor_urls": [],
+      "label": "Agreement Protocol",
+      "publishable": true,
+      "mappings": {
+        "protocols": [
+          {
+            "name": "Basic",
+            "protocolVersion": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "ed356f2c-7c4d-432e-80e8-82064b5703bd",
+      "type": "ComputeAttributes",
+      "sensor_urls": [
+        "https://bluehorizon.network/microservices/network"
+      ],
+      "label": "network microservice",
+      "publishable": true,
+      "mappings": {
+        "cpus": 1,
+        "ram": 128
       }
     }
   ]
@@ -455,7 +481,7 @@ attribute
 
 ```
 
-#### **API:** POST  /service/attribute
+#### **API:** POST  /attribute
 ---
 
 Register an attribute for a service. If the sensor_url is omitted, the attribute applies to all the services.
@@ -464,7 +490,7 @@ Register an attribute for a service. If the sensor_url is omitted, the attribute
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| attribute | json | Please refer to the response body for the GET /service/attribute api for the fields of an attribute.  |
+| attribute | json | Please refer to the response body for the GET /attribute api for the fields of an attribute.  |
 
 **Response:**
 
@@ -479,17 +505,18 @@ none
 **Example:**
 ```
 curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json' -d '{
-    "id": "compute",
-    "short_type": "compute",
+    "type": "ComputeAttributes",
     "label": "Compute Resources",
     "publishable": true,
+    "host_only": false,
     "mappings": {
       "ram": 256,
       "cpus": 1
     }
-  }'  http://localhost/service/attribute
+  }'  http://localhost/attribute
 
 ```
+
 
 ### 4. Agreement
 
@@ -902,9 +929,106 @@ A microservice instance has the following fields:
 
 ```
 
+### 7. Workload configuration
+
+#### **API:** GET  /workloadconfig
+---
+
+Get the configuration data that will be passed to the workload as environmental variables. 
+
+**Parameters:**
+none
+
+**Response:**
+
+code: 
+* 200 -- success
+
+body:
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| active | array | an array of all the workload configurations. |
+
+configuration: 
+
+| name | type| description |
+| ---- | ---- | ---------------- |
+| workload_url | string | the specification url for the workload. |
+| workload_version| string | the version range for the workload. |
+| variables | map | a list of key value pairs that will be passed to the workload as environmental variables. |
 
 
-### 7. Public Keys for Workload Image Verification
+
+**Example:**
+```
+curl -s http//localhost/workloadconfig | jq '.'
+{
+  "active": [
+    {
+      "workload_url": "https://bluehorizon.network/workloads/location",
+      "workload_version": "[2.0,INFINITY)",
+      "variables": {
+        "foo": "bar"
+      }
+    },
+    {
+      "workload_url": "https://bluehorizon.network/workloads/netspeed",
+      "workload_version": "[2.5,INFINITY)",
+      "variables": {
+        "HZN_TARGET_SERVER": "closest"
+      }
+    },
+    {
+      "workload_url": "https://bluehorizon.network/workloads/pws",
+      "workload_version": "[1.8,INFINITY)",
+      "variables": {
+        "HZN_PWS_MODEL": "LaCrosse WS2516",
+        "HZN_WUGNAME": "my pws in grandby ca"
+      }
+    }
+  ]
+}
+
+```
+
+#### **API:** POST  /workloadconfig
+---
+
+Set up the workload configuration datat that will be passed to the workload as environmental variables.
+
+**Parameters:**
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| workloadconfig | json | Please refer to the response body for the GET /workloadconfig api for the fields of an workload configuration.  |
+
+**Response:**
+
+code: 
+
+* 201 -- success
+
+body: 
+
+none
+
+**Example:**
+```
+curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json' -d '{
+  "workload_url": "https://bluehorizon.network/workloads/pws",
+  "workload_version": "1.8",
+  "variables": {
+      "HZN_WUGNAME": "my pws at new york",
+      "HZN_PWS_MODEL": "LaCrosse WS2516""
+  }
+}
+'  http://localhost/workloadconfig
+
+```
+
+
+### 8. Public Keys for Workload Image Verification
 
 #### **API:** GET  /publickey
 ---
