@@ -548,6 +548,18 @@
 			"tree": true
 		},
 		{
+			"checksumSHA1": "DpDCeJ5NUzqQuRQ3JfvTeqDLLH0=",
+			"path": "github.com/open-horizon/horizon-pkg-fetch",
+			"revision": "266a7200b74d19b40f34e764be255acf6d5d7d87",
+			"revisionTime": "2017-09-27T18:36:01Z"
+		},
+		{
+			"checksumSHA1": "RyA64Y5+znkhKUwOhvXUUHtSf4g=",
+			"path": "github.com/open-horizon/horizon-pkg-fetch/horizonpkg",
+			"revision": "266a7200b74d19b40f34e764be255acf6d5d7d87",
+			"revisionTime": "2017-09-27T18:36:01Z"
+		},
+		{
 			"checksumSHA1": "3AoPMXlmVq2+iWMpsdJZkcUKHB8=",
 			"path": "github.com/opencontainers/runc/libcontainer/user",
 			"revision": "6c485e6902bb9dd77b8234042b8f00e20ef87a18",
