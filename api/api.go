@@ -340,6 +340,7 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			outModel = &HorizonDevice{
 				Name:               &exDevice.Name,
 				Org:                &exDevice.Org,
+				Pattern:            &exDevice.Pattern,
 				Id:                 &exDevice.Id,
 				TokenValid:         &exDevice.TokenValid,
 				TokenLastValidTime: &exDevice.TokenLastValidTime,
