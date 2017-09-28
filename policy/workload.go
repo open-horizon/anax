@@ -31,19 +31,9 @@ func (self *WorkloadList) Add_Workload(new_ele *Workload) error {
 	return nil
 }
 
-// Types for dealing with the workload image metadata
-type Image struct {
-	File      string `json:"file"`
-	Signature string `json:"signature"`
-}
-
-func (i Image) IsSame(compare Image) bool {
-	return i.File == compare.File && i.Signature == compare.Signature
-}
-
 type Torrent struct {
 	Url       string `json:"url,omitempty"`
-	Signature string `json:"signature:"signature,omitempty"`
+	Signature string `json:"signature,omitempty"`
 }
 
 func (t Torrent) IsSame(compare Torrent) bool {
