@@ -23,13 +23,7 @@
             "deployment": "Deployment instructions",
             "deployment_signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
             "torrent": {
-                "url": "torrent://the.system.com",
-                "images": [
-                    {
-                        "file": "a_file.tar.gz",
-                        "signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                    }
-                ]
+                "url": "torrent://the.system.com"
             },
             "priority": {}
         }
