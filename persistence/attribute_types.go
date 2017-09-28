@@ -223,3 +223,35 @@ func (a AgreementProtocolAttributes) GetGenericMappings() map[string]interface{}
 func (a AgreementProtocolAttributes) Update(other Attribute) error {
 	return fmt.Errorf("Update not implemented for type: %T", a)
 }
+
+type HTTPSBasicAuthAttributes struct {
+	Meta     *AttributeMeta `json:"meta"`
+	Username string         `json:"username"`
+	Password string         `json:"password"`
+}
+
+func (a HTTPSBasicAuthAttributes) GetMeta() *AttributeMeta {
+	return a.Meta
+}
+
+func (a HTTPSBasicAuthAttributes) GetGenericMappings() map[string]interface{} {
+	return map[string]interface{}{
+		"username": a.Username,
+		"password": a.Password,
+	}
+}
+
+func (a HTTPSBasicAuthAttributes) Update(other Attribute) error {
+	switch other.(type) {
+	case *HTTPSBasicAuthAttributes:
+		o := other.(*HTTPSBasicAuthAttributes)
+		a.GetMeta().Update(*o.GetMeta())
+
+		a.Username = o.Username
+		a.Password = o.Password
+	default:
+		return fmt.Errorf("Concrete type of attribute (%T) provided to Update() is incompatible with this Attribute's type (%T)", a, other)
+	}
+
+	return nil
+}

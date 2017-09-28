@@ -162,7 +162,7 @@ func main() {
 	workers.Add("agreementBot", agreementbot.NewAgreementBotWorker(cfg, agbotdb))
 	workers.Add("agapi", agreementbot.NewAPIListener(cfg, agbotdb))
 	workers.Add("eth blockchain", ethblockchain.NewEthBlockchainWorker(cfg))
-	workers.Add("torrent", torrent.NewTorrentWorker(cfg))
+	workers.Add("torrent", torrent.NewTorrentWorker(cfg, db))
 
 	if db != nil {
 		workers.Add("api", api.NewAPIListener(cfg, db, pm))
