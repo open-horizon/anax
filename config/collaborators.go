@@ -38,6 +38,15 @@ type HTTPClientFactory struct {
 	NewHTTPClient func(overrideTimeoutS *uint) *http.Client
 }
 
+// WrappedHTTPClient is a function producer that wraps an HTTPClient's
+// NewHTTPClient method in a generic function call for compatibilty with
+// external callers.
+func (f *HTTPClientFactory) WrappedNewHTTPClient() func(*uint) *http.Client {
+	return func(overrideTimeoutS *uint) *http.Client {
+		return f.NewHTTPClient(overrideTimeoutS)
+	}
+}
+
 // TODO: use a pool of clients instead of creating them forevar
 func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 	var caBytes []byte
@@ -70,8 +79,6 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 
 	certPool.AppendCertsFromPEM(caBytes)
 	tls.RootCAs = certPool
-
-	glog.V(5).Infof("Full HTTP client CA Cert trust list subject names: %v", certPool.Subjects())
 
 	tls.BuildNameToCertificate()
 

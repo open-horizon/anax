@@ -6,7 +6,6 @@ import (
 	"github.com/golang/glog"
 	"os"
 	"path"
-	"strings"
 )
 
 func listImages(client *dockerclient.Client) ([]dockerclient.APIImages, error) {
@@ -42,25 +41,20 @@ func rem(dir string) {
 	}
 }
 
-func loadImages(client *dockerclient.Client, torrentDir string, imageFiles []string) error {
+func loadImages(client *dockerclient.Client, imageFiles []string) error {
 	if len(imageFiles) == 0 {
 		return errors.New("Received zero-length imageFiles spec")
 	}
 
 	for _, imageFile := range imageFiles {
-		_, file := path.Split(imageFile)
-		fname := strings.Split(file, ".")[0]
-
-		if loaded, err := isLoaded(client, fname); err != nil {
+		if loaded, err := isLoaded(client, imageFile); err != nil {
 			return err
 		} else if !loaded {
 			// do load
 
 			glog.Infof("Doing docker load of image file: %v", imageFile)
 
-			originalImagePath := path.Join(torrentDir, imageFile)
-
-			processedImage, err := ProcessTar(originalImagePath)
+			processedImage, err := ProcessTar(imageFile)
 			if err != nil {
 				return err
 			}

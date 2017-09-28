@@ -21,7 +21,6 @@ import (
 	"net/url"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -907,22 +906,11 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 	} else {
 		// Publish the "agreement reached" event to the message bus so that torrent can start downloading the workload
 		// hash is same as filename w/out extension
-		hashes := make(map[string]string, 0)
-		signatures := make(map[string]string, 0)
 		workload := tcPolicy.NextHighestPriorityWorkload(0, 0, 0)
-		for _, image := range workload.Torrent.Images {
-			bits := strings.Split(image.File, ".")
-			if len(bits) < 2 {
-				return errors.New(fmt.Sprintf("Ill-formed image filename: %v", bits))
-			} else {
-				hashes[image.File] = bits[0]
-			}
-			signatures[image.File] = image.Signature
-		}
 		if url, err := url.Parse(workload.Torrent.Url); err != nil {
 			return errors.New(fmt.Sprintf("Ill-formed URL: %v", workload.Torrent.Url))
 		} else {
-			cc := events.NewContainerConfig(*url, hashes, signatures, workload.Deployment, workload.DeploymentSignature, workload.DeploymentUserInfo, workload.DeploymentOverrides)
+			cc := events.NewContainerConfig(*url, workload.Torrent.Signature, workload.Deployment, workload.DeploymentSignature, workload.DeploymentUserInfo, workload.DeploymentOverrides)
 
 			lc := new(events.AgreementLaunchContext)
 			lc.Configure = *cc
@@ -1212,18 +1200,6 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string) (*persistence.Micros
 			if url, err := url.Parse(torrent.Url); err != nil {
 				return nil, fmt.Errorf("ill-formed URL: %v, error %v", torrent.Url, err)
 			} else {
-				hashes := make(map[string]string, 0)
-				signatures := make(map[string]string, 0)
-
-				for _, image := range torrent.Images {
-					bits := strings.Split(image.File, ".")
-					if len(bits) < 2 {
-						return nil, fmt.Errorf("found ill-formed image filename: %v, no file suffix found", bits)
-					} else {
-						hashes[image.File] = bits[0]
-					}
-					signatures[image.File] = image.Signature
-				}
 
 				// Verify the deployment signature
 				if err := ms_workload.HasValidSignature(w.Config.Edge.PublicKeyPath, w.Config.UserPublicKeyPath()); err != nil {
@@ -1235,7 +1211,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string) (*persistence.Micros
 					return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting microservice instance for %v %v %v.", msdef.SpecRef, msdef.Version, ms_key)))
 				} else {
 					// Fire an event to the torrent worker so that it will download the container
-					cc := events.NewContainerConfig(*url, hashes, signatures, ms_workload.Deployment, ms_workload.DeploymentSignature, ms_workload.DeploymentUserInfo, "")
+					cc := events.NewContainerConfig(*url, ms_workload.Torrent.Signature, ms_workload.Deployment, ms_workload.DeploymentSignature, ms_workload.DeploymentUserInfo, "")
 
 					// convert the user input from the service attributes to env variables
 					if attrs, err := persistence.FindApplicableAttributes(w.db, msdef.SpecRef); err != nil {

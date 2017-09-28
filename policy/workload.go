@@ -42,28 +42,12 @@ func (i Image) IsSame(compare Image) bool {
 }
 
 type Torrent struct {
-	Url    string  `json:"url,omitempty"`
-	Images []Image `json:"images,omitempty"`
+	Url       string `json:"url,omitempty"`
+	Signature string `json:"signature:"signature,omitempty"`
 }
 
 func (t Torrent) IsSame(compare Torrent) bool {
-	if t.Url != compare.Url {
-		return false
-	} else {
-		for _, i := range t.Images {
-			found := false
-			for _, compareI := range compare.Images {
-				if i.IsSame(compareI) {
-					found = true
-					break
-				}
-			}
-			if !found {
-				return false
-			}
-		}
-		return true
-	}
+	return t.Url == compare.Url && t.Signature == compare.Signature
 }
 
 type WorkloadPriority struct {
@@ -236,14 +220,17 @@ func VerifyWorkload(pubKeyFile string, signature string, hasher hash.Hash, userK
 		signatureBytes = decoded
 	}
 
-	// Compute the public key directory based on the configured platform public key file location.
-	pubKeyDir := pubKeyFile[:strings.LastIndex(pubKeyFile, "/")]
+	// only check these keys too if pubKeyFile was specified (this is behavior to accomodate legacy config)
+	if pubKeyFile != "" {
+		// Compute the public key directory based on the configured platform public key file location.
+		pubKeyDir := pubKeyFile[:strings.LastIndex(pubKeyFile, "/")]
 
-	// Grab all PEM files from that location and try to verify the signature against each one.
-	if pemFiles, err := getPemFiles(pubKeyDir); err != nil {
-		return false, err
-	} else if checkAllKeys(pubKeyDir, pemFiles, hasher, signatureBytes) {
-		return true, nil
+		// Grab all PEM files from that location and try to verify the signature against each one.
+		if pemFiles, err := getPemFiles(pubKeyDir); err != nil {
+			return false, err
+		} else if checkAllKeys(pubKeyDir, pemFiles, hasher, signatureBytes) {
+			return true, nil
+		}
 	}
 
 	// Grab all PEM files from that location and try to verify the signature against each one.

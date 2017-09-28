@@ -491,18 +491,6 @@ func (w *EthBlockchainWorker) fireStartEvent(details *exchange.ChainDetails, nam
 	if url, err := url.Parse(details.DeploymentDesc.Torrent.Url); err != nil {
 		return errors.New(logString(fmt.Sprintf("ill-formed URL: %v, error %v", details.DeploymentDesc.Torrent.Url, err)))
 	} else {
-		hashes := make(map[string]string, 0)
-		signatures := make(map[string]string, 0)
-
-		for _, image := range details.DeploymentDesc.Torrent.Images {
-			bits := strings.Split(image.File, ".")
-			if len(bits) < 2 {
-				return errors.New(logString(fmt.Sprintf("found ill-formed image filename: %v, no file suffix found", bits)))
-			} else {
-				hashes[image.File] = bits[0]
-			}
-			signatures[image.File] = image.Signature
-		}
 
 		// Verify the deployment signature
 		if err := details.DeploymentDesc.HasValidSignature(w.horizonPubKeyFile, w.Config.UserPublicKeyPath()); err != nil {
@@ -510,7 +498,7 @@ func (w *EthBlockchainWorker) fireStartEvent(details *exchange.ChainDetails, nam
 		}
 
 		// Fire an event to the torrent worker so that it will download the container
-		cc := events.NewContainerConfig(*url, hashes, signatures, details.DeploymentDesc.Deployment, details.DeploymentDesc.DeploymentSignature, details.DeploymentDesc.DeploymentUserInfo, "")
+		cc := events.NewContainerConfig(*url, details.DeploymentDesc.Torrent.Signature, details.DeploymentDesc.Deployment, details.DeploymentDesc.DeploymentSignature, details.DeploymentDesc.DeploymentUserInfo, "")
 		envAdds := w.computeEnvVarsForContainer(details)
 		w.SetColonusDir(name, envAdds["COLONUS_DIR"])
 		lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{Type: CHAIN_TYPE, Name: name}, name)

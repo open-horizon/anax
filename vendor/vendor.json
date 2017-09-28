@@ -7,18 +7,6 @@
 			"revision": ""
 		},
 		{
-			"checksumSHA1": "MYQ/IySTORm2ihDiPY/WpLgYKL0=",
-			"path": "github.com/Microsoft/go-winio",
-			"revision": "4f1a71750d95a5a8a46c40a67ffbed8129c2f138",
-			"revisionTime": "2016-05-20T00:05:29Z"
-		},
-		{
-			"checksumSHA1": "6AA6DQAn3KIYrkzfIkweN+V4G0k=",
-			"path": "github.com/RoaringBitmap/roaring",
-			"revision": "dda1914bb020fa3297225d809c53aaad4a2894c1",
-			"revisionTime": "2016-03-03T19:36:54Z"
-		},
-		{
 			"checksumSHA1": "htjvdG/znrHmFYRQBqA2vHrJsF4=",
 			"path": "github.com/Sirupsen/logrus",
 			"revision": "f3cfb454f4c209e6668c95216c4744b8fddb2356",
@@ -49,76 +37,10 @@
 			"revisionTime": "2017-09-19T18:22:39Z"
 		},
 		{
-			"checksumSHA1": "+Eixo6EoWB4U0YfEay/FFuZS598=",
-			"path": "github.com/anacrolix/missinggo",
-			"revision": "2524d6356f6cc748cebe6d63c97ffb3ee0f4abea",
-			"revisionTime": "2016-03-15T10:26:22Z"
-		},
-		{
-			"checksumSHA1": "cwfn+iaUVaZ2zlGZbpntk6ZIIAY=",
-			"path": "github.com/anacrolix/missinggo/bitmap",
-			"revision": "d5eb53821a982bb2f3c808bc7f7601046b980e81",
-			"revisionTime": "2016-03-21T21:31:03Z"
-		},
-		{
-			"checksumSHA1": "LhTBJjLIzlegZAqv9ovJ9dz7GNc=",
-			"path": "github.com/anacrolix/missinggo/itertools",
-			"revision": "2524d6356f6cc748cebe6d63c97ffb3ee0f4abea",
-			"revisionTime": "2016-03-15T10:26:22Z"
-		},
-		{
-			"checksumSHA1": "dimktWlezS0e3bBfvYqhIILqRh8=",
-			"path": "github.com/anacrolix/missinggo/orderedmap",
-			"revision": "2524d6356f6cc748cebe6d63c97ffb3ee0f4abea",
-			"revisionTime": "2016-03-15T10:26:22Z"
-		},
-		{
-			"checksumSHA1": "NoLyuDQXnJWmvc1ykQ4zaiOGvz4=",
-			"path": "github.com/anacrolix/missinggo/perf",
-			"revision": "2524d6356f6cc748cebe6d63c97ffb3ee0f4abea",
-			"revisionTime": "2016-03-15T10:26:22Z"
-		},
-		{
-			"checksumSHA1": "kWwPJO7iU0a19UBdj6AcMM7+Gbs=",
-			"path": "github.com/anacrolix/missinggo/pproffd",
-			"revision": "2524d6356f6cc748cebe6d63c97ffb3ee0f4abea",
-			"revisionTime": "2016-03-15T10:26:22Z"
-		},
-		{
-			"checksumSHA1": "CwRUI1JaojWawe0Q9M7mNNtHBTQ=",
-			"path": "github.com/anacrolix/missinggo/prioritybitmap",
-			"revision": "2524d6356f6cc748cebe6d63c97ffb3ee0f4abea",
-			"revisionTime": "2016-03-15T10:26:22Z"
-		},
-		{
-			"checksumSHA1": "mVt42VAt3k6p6bHRszFOGlMbUUE=",
-			"path": "github.com/anacrolix/missinggo/pubsub",
-			"revision": "2524d6356f6cc748cebe6d63c97ffb3ee0f4abea",
-			"revisionTime": "2016-03-15T10:26:22Z"
-		},
-		{
-			"checksumSHA1": "Yoha9Sj9nIIkPD4bCP3MdIjsIoc=",
-			"path": "github.com/anacrolix/sync",
-			"revision": "812602587b72df6a2a4f6e30536adc75394a374b",
-			"revisionTime": "2015-10-30T11:21:17Z"
-		},
-		{
-			"checksumSHA1": "+8kqknA2cEj9n1+3wmMfbTEUhtY=",
-			"path": "github.com/anacrolix/utp",
-			"revision": "0a78608853316110c36128d133e859b4a67a5c2a",
-			"revisionTime": "2016-03-15T10:32:06Z"
-		},
-		{
 			"checksumSHA1": "osfeW6W9qSb2p5LqwIGaGqYU3HM=",
 			"path": "github.com/boltdb/bolt",
 			"revision": "5d3cf801479c151f007912db7984f6225aa238be",
 			"revisionTime": "2016-03-22T17:34:05Z"
-		},
-		{
-			"checksumSHA1": "c1lrLhhegA7fiaMWAmTXKTWHvmY=",
-			"path": "github.com/bradfitz/iter",
-			"revision": "454541ec3da2a73fc34fd049b19ee5777bf19345",
-			"revisionTime": "2014-01-24T04:19:15Z"
 		},
 		{
 			"checksumSHA1": "u4FpRzbQoItl4TSuT+IhRb+g898=",
@@ -475,77 +397,23 @@
 			"revisionTime": "2016-04-07T17:41:26Z"
 		},
 		{
-			"checksumSHA1": "ZKSLqlFqUtWF6MdzuQ9v+jsUxBM=",
-			"path": "github.com/michaeldye/torrent",
-			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
-			"revisionTime": "2016-10-17T23:07:13Z"
-		},
-		{
-			"checksumSHA1": "qm5AFeVWRfMZoHKkgnOj8t+RCNE=",
-			"path": "github.com/michaeldye/torrent/bencode",
-			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
-			"revisionTime": "2016-10-17T23:07:13Z"
-		},
-		{
-			"checksumSHA1": "6IJxzWhzN8exkA6CZAUP0vHwjCM=",
-			"path": "github.com/michaeldye/torrent/data/file",
-			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
-			"revisionTime": "2016-10-17T23:07:13Z"
-		},
-		{
-			"checksumSHA1": "uW6IsPyNt3Vy2C8BG3VqDhUTY4A=",
-			"path": "github.com/michaeldye/torrent/dht",
-			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
-			"revisionTime": "2016-10-17T23:07:13Z"
-		},
-		{
-			"checksumSHA1": "PyeJqQbFiidP8K+2ddTODvarTQA=",
-			"path": "github.com/michaeldye/torrent/iplist",
-			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
-			"revisionTime": "2016-10-17T23:07:13Z"
-		},
-		{
-			"checksumSHA1": "w/wvFCrTNFBxYiysuT6EliSe2N8=",
-			"path": "github.com/michaeldye/torrent/logonce",
-			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
-			"revisionTime": "2016-10-17T23:07:13Z"
-		},
-		{
-			"checksumSHA1": "2WF+a+L4wIRxULzbgAcfYEm7SUA=",
-			"path": "github.com/michaeldye/torrent/metainfo",
-			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
-			"revisionTime": "2016-10-17T23:07:13Z"
-		},
-		{
-			"checksumSHA1": "hFPj/bfJKedvAG8W28JJ0g7qNqg=",
-			"path": "github.com/michaeldye/torrent/mse",
-			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
-			"revisionTime": "2016-10-17T23:07:13Z"
-		},
-		{
-			"checksumSHA1": "2OaDETrBQENaNqjJSbjUvkdWTJo=",
-			"path": "github.com/michaeldye/torrent/peer_protocol",
-			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
-			"revisionTime": "2016-10-17T23:07:13Z"
-		},
-		{
-			"checksumSHA1": "3o6x3mubIuV1vq80vAOYezNveTs=",
-			"path": "github.com/michaeldye/torrent/tracker",
-			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
-			"revisionTime": "2016-10-17T23:07:13Z"
-		},
-		{
-			"checksumSHA1": "mlKdKZA+bblGZeW+lcr3Qrv5RuU=",
-			"path": "github.com/michaeldye/torrent/util",
-			"revision": "9ab0eab0859355d175d3a15b3554689b97dd315d",
-			"revisionTime": "2016-10-17T23:07:13Z"
-		},
-		{
 			"checksumSHA1": "p23xyAjYsze9JjFeVPq7p4XcKK8=",
 			"path": "github.com/open-horizon/go-solidity",
 			"revision": "4fb00b46317dffd8e2c6d978f505119449b77088",
 			"revisionTime": "2017-04-13T12:01:04Z",
 			"tree": true
+		},
+		{
+			"checksumSHA1": "au+NqVLeF2b/TDYwz0yIS/7bGdA=",
+			"path": "github.com/open-horizon/horizon-pkg-fetch",
+			"revision": "b2dcd0e94b9bc02ab3fa62cf2133e3a73eef288d",
+			"revisionTime": "2017-09-28T00:22:05Z"
+		},
+		{
+			"checksumSHA1": "RyA64Y5+znkhKUwOhvXUUHtSf4g=",
+			"path": "github.com/open-horizon/horizon-pkg-fetch/horizonpkg",
+			"revision": "266a7200b74d19b40f34e764be255acf6d5d7d87",
+			"revisionTime": "2017-09-27T18:36:01Z"
 		},
 		{
 			"checksumSHA1": "3AoPMXlmVq2+iWMpsdJZkcUKHB8=",
