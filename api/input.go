@@ -32,6 +32,7 @@ type Attribute struct {
 	SensorUrls  *[]string               `json:"sensor_urls"`
 	Label       *string                 `json:"label"`
 	Publishable *bool                   `json:"publishable"`
+	HostOnly    *bool                   `json:"host_only"`
 	Mappings    *map[string]interface{} `json:"mappings"`
 }
 
@@ -45,8 +46,8 @@ func (a Attribute) String() string {
 		}
 	}
 
-	return fmt.Sprintf("Id: %v, Type: %v, SensorUrls: %v, Label: %v, Publishable: %v, Mappings: %v",
-		getString(a.Id), getString(a.Type), getString(a.SensorUrls), getString(a.Label), getString(a.Publishable), getString(a.Mappings))
+	return fmt.Sprintf("Id: %v, Type: %v, SensorUrls: %v, Label: %v, Publishable: %v, HostOnly: %v, Mappings: %v",
+		getString(a.Id), getString(a.Type), getString(a.SensorUrls), getString(a.Label), getString(a.Publishable), getString(a.HostOnly), getString(a.Mappings))
 }
 
 // uses pointers for members b/c it allows nil-checking at deserialization; !Important!: the json field names here must not change w/out changing the error messages returned from the API, they are not programmatically determined

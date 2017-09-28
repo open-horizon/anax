@@ -49,6 +49,7 @@ func generateAttributeMetadata(given Attribute, typeName string) *persistence.At
 		SensorUrls:  sensorUrls,
 		Label:       *given.Label,
 		Publishable: given.Publishable,
+		HostOnly:    given.HostOnly,
 		Type:        typeName,
 	}
 }
@@ -597,6 +598,7 @@ func toOutModel(persisted persistence.Attribute) *Attribute {
 		SensorUrls:  &persisted.GetMeta().SensorUrls,
 		Label:       &persisted.GetMeta().Label,
 		Publishable: persisted.GetMeta().Publishable,
+		HostOnly:    persisted.GetMeta().HostOnly,
 		Type:        &persisted.GetMeta().Type,
 		Mappings:    &mappings,
 	}
@@ -702,6 +704,7 @@ func payloadToAttributes(w http.ResponseWriter, body io.Reader, permitPartial bo
 		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "attribute", Error: fmt.Sprintf("could not be demarshalled, error: %v", err)})
 		return nil, true, err
 	}
+	glog.V(6).Infof("Decoded Attribute from payload: %v", attribute)
 
 	// N.B. remove the id from the input doc; it won't be checked and it shouldn't be trusted, prefer the path param id instead
 	attribute.Id = nil

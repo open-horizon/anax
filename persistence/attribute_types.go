@@ -230,14 +230,24 @@ type HTTPSBasicAuthAttributes struct {
 	Password string         `json:"password"`
 }
 
+func (a HTTPSBasicAuthAttributes) String() string {
+	return fmt.Sprintf("meta: %v, username: %v, password: <withheld>", a.GetMeta(), a.Username)
+}
+
 func (a HTTPSBasicAuthAttributes) GetMeta() *AttributeMeta {
 	return a.Meta
 }
 
 func (a HTTPSBasicAuthAttributes) GetGenericMappings() map[string]interface{} {
+	var obf string
+
+	if a.Password != "" {
+		obf = "**********"
+	}
+
 	return map[string]interface{}{
 		"username": a.Username,
-		"password": a.Password,
+		"password": obf,
 	}
 }
 
