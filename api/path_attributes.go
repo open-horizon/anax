@@ -570,7 +570,7 @@ func finalizeAttributesSpecifiedInService(defaultRAM int64, sensorURL string, at
 	if attributesContains(attributes, sensorURL, cType) == nil {
 		computePub := true
 
-		attributes = append(attributes, persistence.ComputeAttributes{
+		attributes = append(attributes, &persistence.ComputeAttributes{
 			Meta: &persistence.AttributeMeta{
 				Id:          "compute",
 				SensorUrls:  []string{sensorURL},
@@ -589,7 +589,7 @@ func finalizeAttributesSpecifiedInService(defaultRAM int64, sensorURL string, at
 		// make a default
 
 		archPub := true
-		attributes = append(attributes, persistence.ArchitectureAttributes{
+		attributes = append(attributes, &persistence.ArchitectureAttributes{
 			Meta: &persistence.AttributeMeta{
 				Id:          "architecture",
 				SensorUrls:  []string{sensorURL},

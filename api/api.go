@@ -835,7 +835,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 
 			// Verfiy that all non-defaulted userInput variables in the microservice definition are specified in a mapped property attribute
 			// of this service invocation.
-			if msdef != nil && attr.GetMeta().Type == "persistence.MappedAttributes" {
+			if msdef != nil && attr.GetMeta().Type == "MappedAttributes" {
 				for _, ui := range msdef.UserInputs {
 					if ui.DefaultValue != "" {
 						continue
@@ -859,21 +859,6 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 					glog.Errorf("device is using a pattern %v, policy attributes are not supported.", existingDevice.Pattern)
 					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].Id", Error: fmt.Sprintf("device is using a pattern %v, policy attributes are not supported.", existingDevice.Pattern)})
 					return true, nil
-				}
-			}
-
-			// Verfiy that all non-defaulted userInput variables in the microservice definition are specified in a mapped property attribute
-			// of this service invocation.
-			if msdef != nil && attr.GetMeta().Type == "MappedAttributes" {
-				for _, ui := range msdef.UserInputs {
-					if ui.DefaultValue != "" {
-						continue
-					} else if _, ok := attr.GetGenericMappings()[ui.Name]; !ok {
-						// There is a config variable missing from the generic mapped attributes
-						glog.Errorf("Variable %v defined in microservice %v %v is missing from the service definition.", ui.Name, msdef.SpecRef, msdef.Version)
-						writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].mapped", Error: fmt.Sprintf("variable %v is missing from mappings", ui.Name)})
-						return true, nil
-					}
 				}
 			}
 
@@ -983,32 +968,32 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			}
 
 			switch attr.(type) {
-			case persistence.ComputeAttributes:
-				compute := attr.(persistence.ComputeAttributes)
+			case *persistence.ComputeAttributes:
+				compute := attr.(*persistence.ComputeAttributes)
 				props["cpus"] = strconv.FormatInt(compute.CPUs, 10)
 				props["ram"] = strconv.FormatInt(compute.RAM, 10)
 
-			case persistence.ArchitectureAttributes:
-				policyArch = attr.(persistence.ArchitectureAttributes).Architecture
+			case *persistence.ArchitectureAttributes:
+				policyArch = attr.(*persistence.ArchitectureAttributes).Architecture
 
-			case persistence.HAAttributes:
-				haPartner = attr.(persistence.HAAttributes).Partners
+			case *persistence.HAAttributes:
+				haPartner = attr.(*persistence.HAAttributes).Partners
 
-			case persistence.MeteringAttributes:
+			case *persistence.MeteringAttributes:
 				meterPolicy = policy.Meter{
-					Tokens:                attr.(persistence.MeteringAttributes).Tokens,
-					PerTimeUnit:           attr.(persistence.MeteringAttributes).PerTimeUnit,
-					NotificationIntervalS: attr.(persistence.MeteringAttributes).NotificationIntervalS,
+					Tokens:                attr.(*persistence.MeteringAttributes).Tokens,
+					PerTimeUnit:           attr.(*persistence.MeteringAttributes).PerTimeUnit,
+					NotificationIntervalS: attr.(*persistence.MeteringAttributes).NotificationIntervalS,
 				}
 
-			case persistence.CounterPartyPropertyAttributes:
-				counterPartyProperties = attr.(persistence.CounterPartyPropertyAttributes).Expression
+			case *persistence.CounterPartyPropertyAttributes:
+				counterPartyProperties = attr.(*persistence.CounterPartyPropertyAttributes).Expression
 
-			case persistence.PropertyAttributes:
-				properties = attr.(persistence.PropertyAttributes).Mappings
+			case *persistence.PropertyAttributes:
+				properties = attr.(*persistence.PropertyAttributes).Mappings
 
-			case persistence.AgreementProtocolAttributes:
-				agpl := attr.(persistence.AgreementProtocolAttributes).Protocols
+			case *persistence.AgreementProtocolAttributes:
+				agpl := attr.(*persistence.AgreementProtocolAttributes).Protocols
 				serviceAgreementProtocols = agpl.([]policy.AgreementProtocol)
 
 			default:
