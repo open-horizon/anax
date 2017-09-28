@@ -82,7 +82,7 @@ func (b *TorrentWorker) start() {
 					// (could be here or bypass this worker altogether)
 					// (this is really important because we want to be able to delete the downloaded image files after docker load)
 
-					imageFiles, err := fetch.PkgFetch(b.Config.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), lc.URL(), lc.Signature(), b.Config.Edge.TorrentDir, b.Config.UserPublicKeyPath())
+					imageFiles, err := fetch.PkgFetch(b.Config.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), lc.URL(), lc.Signature(), b.Config.Edge.TorrentDir, b.Config.Edge.CACertsPath, b.Config.UserPublicKeyPath())
 
 					if err != nil {
 						b.Messages() <- events.NewTorrentMessage(events.TORRENT_FAILURE, make([]string, 0), lc)
