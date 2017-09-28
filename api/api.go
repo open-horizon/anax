@@ -302,8 +302,8 @@ func writeResponse(w http.ResponseWriter, payload interface{}, successStatusCode
 		return
 	}
 
-	w.WriteHeader(successStatusCode)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(successStatusCode)
 
 	if _, err := w.Write(serial); err != nil {
 		glog.Error(err)
