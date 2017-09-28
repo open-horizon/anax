@@ -80,8 +80,6 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 	certPool.AppendCertsFromPEM(caBytes)
 	tls.RootCAs = certPool
 
-	glog.V(5).Infof("Full HTTP client CA Cert trust list subject names: %v", certPool.Subjects())
-
 	tls.BuildNameToCertificate()
 
 	clientFunc := func(overrideTimeoutS *uint) *http.Client {

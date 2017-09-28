@@ -57,7 +57,7 @@ func Test_generatePermittedStringDynamic(t *testing.T) {
 
 	url, _ := url.Parse("http://goo.foo")
 
-	configure := NewConfigure("", *url, map[string]string{}, map[string]string{}, "", "", deploymentUserInfo)
+	configure := NewConfigure("", *url, "", "", deploymentUserInfo)
 
 	bytes, _ := json.Marshal(configure)
 

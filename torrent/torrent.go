@@ -77,13 +77,12 @@ func (b *TorrentWorker) start() {
 				} else {
 
 					glog.V(2).Infof("URL to fetch: %s\n", lc.URL())
+
 					// TODO: decide where the best place is to shortcut the fetch call if the docker images it names are already in the local repo
 					// (could be here or bypass this worker altogether)
 					// (this is really important because we want to be able to delete the downloaded image files after docker load)
 
-					// "true" for the third arg tells the fetcher that the signature of the pkg file has already been verified
-					url := lc.URL()
-					imageFiles, err := fetch.PkgFetch(b.Config.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), &url, true, b.Config.Edge.TorrentDir, b.Config.UserPublicKeyPath())
+					imageFiles, err := fetch.PkgFetch(b.Config.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), lc.URL(), lc.Signature(), b.Config.Edge.TorrentDir, b.Config.UserPublicKeyPath())
 
 					if err != nil {
 						b.Messages() <- events.NewTorrentMessage(events.TORRENT_FAILURE, make([]string, 0), lc)

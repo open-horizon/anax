@@ -404,10 +404,10 @@
 			"tree": true
 		},
 		{
-			"checksumSHA1": "DpDCeJ5NUzqQuRQ3JfvTeqDLLH0=",
+			"checksumSHA1": "au+NqVLeF2b/TDYwz0yIS/7bGdA=",
 			"path": "github.com/open-horizon/horizon-pkg-fetch",
-			"revision": "266a7200b74d19b40f34e764be255acf6d5d7d87",
-			"revisionTime": "2017-09-27T18:36:01Z"
+			"revision": "b2dcd0e94b9bc02ab3fa62cf2133e3a73eef288d",
+			"revisionTime": "2017-09-28T00:22:05Z"
 		},
 		{
 			"checksumSHA1": "RyA64Y5+znkhKUwOhvXUUHtSf4g=",

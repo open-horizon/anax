@@ -214,26 +214,22 @@ type WhisperProviderMsg struct {
 type Configure struct {
 	// embedded
 	WhisperProviderMsg
-	ConfigureNonce      string            `json:"configure_nonce"`
-	TorrentURL          url.URL           `json:"torrent_url"`
-	ImageHashes         map[string]string `json:"image_hashes"`
-	ImageSignatures     map[string]string `json:"image_signatures"` // cryptographic signatures per-image
-	Deployment          string            `json:"deployment"`       // JSON docker-compose like
-	DeploymentSignature string            `json:"deployment_signature"`
-	DeploymentUserInfo  string            `json:"deployment_user_info"`
+	ConfigureNonce      string  `json:"configure_nonce"`
+	TorrentURL          url.URL `json:"torrent_url"`
+	Deployment          string  `json:"deployment"` // JSON docker-compose like
+	DeploymentSignature string  `json:"deployment_signature"`
+	DeploymentUserInfo  string  `json:"deployment_user_info"`
 }
 
 func (c Configure) String() string {
-	return fmt.Sprintf("Type: %v, ConfigureNonce: %v, TorrentURL: %v, ImageHashes: %v, ImageSignatures: %v, Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v", c.Type, c.ConfigureNonce, c.TorrentURL.String(), c.ImageHashes, c.ImageSignatures, c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo)
+	return fmt.Sprintf("Type: %v, ConfigureNonce: %v, TorrentURL: %v, Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v", c.Type, c.ConfigureNonce, c.TorrentURL.String(), c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo)
 }
 
-func NewConfigure(configureNonce string, torrentURL url.URL, imageHashes map[string]string, imageSignatures map[string]string, deployment string, deploymentSignature string, deploymentUserInfo string) *Configure {
+func NewConfigure(configureNonce string, torrentURL url.URL, deployment string, deploymentSignature string, deploymentUserInfo string) *Configure {
 	return &Configure{
 		WhisperProviderMsg:  WhisperProviderMsg{Type: T_CONFIGURE},
 		ConfigureNonce:      configureNonce,
 		TorrentURL:          torrentURL,
-		ImageHashes:         imageHashes,
-		ImageSignatures:     imageSignatures,
 		Deployment:          deployment,
 		DeploymentSignature: deploymentSignature,
 		DeploymentUserInfo:  deploymentUserInfo,
@@ -1333,7 +1329,7 @@ func (b *ContainerWorker) start() {
 						if len(cmd.ImageFiles) == 0 {
 							glog.Infof("Command specified no new Docker images to load, expecting that the caller knows they're preloaded and this is not a bug. Skipping load operation")
 
-						} else if err := loadImages(b.client, b.Config.Edge.TorrentDir, cmd.ImageFiles); err != nil {
+						} else if err := loadImages(b.client, cmd.ImageFiles); err != nil {
 							glog.Errorf("Error loading image files: %v", err)
 
 							b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
@@ -1418,7 +1414,7 @@ func (b *ContainerWorker) start() {
 						glog.Errorf("Torrent configuration in deployment specified no new Docker images to load: %v, unable to load container", deploymentDesc)
 						b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 						continue
-					} else if err := loadImages(b.client, b.Config.Edge.TorrentDir, cmd.ImageFiles); err != nil {
+					} else if err := loadImages(b.client, cmd.ImageFiles); err != nil {
 						glog.Errorf("Error loading image files: %v", err)
 						b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 						continue
@@ -1563,7 +1559,7 @@ func (b *ContainerWorker) start() {
 
 							// ask governer to record it into the db
 							u, _ := url.Parse("")
-							cc := events.NewContainerConfig(*u, "", "", "", "")
+							cc := events.NewContainerConfig(*u, "", "", "", "", "")
 							ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey)
 							b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *ll, "", "")
 						}

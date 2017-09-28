@@ -42,28 +42,12 @@ func (i Image) IsSame(compare Image) bool {
 }
 
 type Torrent struct {
-	Url    string  `json:"url,omitempty"`
-	Images []Image `json:"images,omitempty"`
+	Url       string `json:"url,omitempty"`
+	Signature string `json:"signature:"signature,omitempty"`
 }
 
 func (t Torrent) IsSame(compare Torrent) bool {
-	if t.Url != compare.Url {
-		return false
-	} else {
-		for _, i := range t.Images {
-			found := false
-			for _, compareI := range compare.Images {
-				if i.IsSame(compareI) {
-					found = true
-					break
-				}
-			}
-			if !found {
-				return false
-			}
-		}
-		return true
-	}
+	return t.Url == compare.Url && t.Signature == compare.Signature
 }
 
 type WorkloadPriority struct {

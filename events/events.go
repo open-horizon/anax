@@ -114,6 +114,7 @@ func (c AgreementLaunchContext) URL() url.URL {
 
 type ContainerConfig struct {
 	TorrentURL          url.URL `json:"torrent_url"`
+	TorrentSignature    string  `json:"torrent_signature"`
 	Deployment          string  `json:"deployment"` // JSON docker-compose like
 	DeploymentSignature string  `json:"deployment_signature"`
 	DeploymentUserInfo  string  `json:"deployment_user_info"`
@@ -121,12 +122,13 @@ type ContainerConfig struct {
 }
 
 func (c ContainerConfig) String() string {
-	return fmt.Sprintf("TorrentURL: %v, Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, Overrides: %v", c.TorrentURL.String(), c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo, c.Overrides)
+	return fmt.Sprintf("TorrentURL: %v, TorrentSignature: %v, Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, Overrides: %v", c.TorrentURL.String(), c.TorrentSignature, c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo, c.Overrides)
 }
 
-func NewContainerConfig(torrentURL url.URL, deployment string, deploymentSignature string, deploymentUserInfo string, overrides string) *ContainerConfig {
+func NewContainerConfig(torrentURL url.URL, torrentSignature string, deployment string, deploymentSignature string, deploymentUserInfo string, overrides string) *ContainerConfig {
 	return &ContainerConfig{
 		TorrentURL:          torrentURL,
+		TorrentSignature:    torrentSignature,
 		Deployment:          deployment,
 		DeploymentSignature: deploymentSignature,
 		DeploymentUserInfo:  deploymentUserInfo,
