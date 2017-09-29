@@ -665,7 +665,7 @@ func validateConcreteAttributes(w http.ResponseWriter, persistedDevice *persiste
 			// if the device is not HA enabled then the HA partner attribute is illegal
 			if !persistedDevice.HADevice {
 				glog.Errorf("Non-HA device %v does not support HA enabled service", persistedDevice)
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].Id", Error: "HA partner not permitted on non-HA devices"})
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].type", Error: "HA partner not permitted on non-HA devices"})
 				return true, nil
 			}
 
@@ -677,7 +677,7 @@ func validateConcreteAttributes(w http.ResponseWriter, persistedDevice *persiste
 					for _, partner := range partners {
 						if partner == persistedDevice.Id {
 							glog.Errorf("HA device %v cannot refer to itself in partner list %v", persistedDevice, partners)
-							writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].ha", Error: "partner list cannot refer to itself."})
+							writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].mappings.partnerID", Error: "partner list cannot refer to itself."})
 							return true, nil
 						}
 					}

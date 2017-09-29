@@ -194,6 +194,8 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 		return nil, errors.New(fmt.Sprintf("Compatibility Error: Common Properties between %v and %v. Underlying error: %v", producer_policy1.Properties, producer_policy2.Properties, err))
 	} else if !producer_policy1.DataVerify.IsProducerCompatible(producer_policy2.DataVerify) {
 		return nil, errors.New(fmt.Sprintf("Compatibility Error: Data verification must be compatible between %v and %v.", producer_policy1.DataVerify, producer_policy2.DataVerify))
+	} else if !producer_policy1.HAGroup.Compatible_With(&producer_policy2.HAGroup) {
+		return nil, errors.New(fmt.Sprintf("Compatibility Error: HAGroups must be compatible between %v and %v.", producer_policy1.HAGroup, producer_policy2.HAGroup))
 	}
 
 	merged_pol := new(Policy)
@@ -212,6 +214,7 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 	// For now we will take the cowards way out and simply AND together the Counter Party Property expressions
 	// from both policies.
 	merged_pol.CounterPartyProperties = *((&producer_policy1.CounterPartyProperties).Merge(&producer_policy2.CounterPartyProperties))
+	merged_pol.HAGroup = *((&producer_policy1.HAGroup).Merge(&producer_policy2.HAGroup))
 	merged_pol.MaxAgreements = min(producer_policy1.MaxAgreements, producer_policy2.MaxAgreements)
 
 	return merged_pol, nil

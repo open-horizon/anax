@@ -437,7 +437,7 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 	allOrgs := w.pm.GetAllPolicyOrgs()
 
 	for _, org := range allOrgs {
-		// Get a copy of all policies in the policy manager so that we can safely iterate it
+		// Get a copy of all policies in the policy manager so that we can safely iterate the list
 		policies := w.pm.GetAllAvailablePolicies(org)
 		for _, consumerPolicy := range policies {
 
@@ -450,56 +450,66 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 					glog.V(3).Infof("AgreementBotWorker picked up %v", dev.ShortString())
 					glog.V(5).Infof("AgreementBotWorker picked up %v", dev)
 
-					// If this device is advertising a property that we are supposed to ignore, then skip it.
-					if ignore, err := w.ignoreDevice(dev); err != nil {
-						glog.Errorf("AgreementBotWorker received error checking for ignored device %v, error: %v", dev, err)
-					} else if ignore {
-						glog.V(5).Infof("AgreementBotWorker skipping device %v, advertises ignored property", dev)
-						continue
-					}
-
 					// Check for agreements already in progress with this device
 					if found, err := w.alreadyMakingAgreementWith(&dev, &consumerPolicy); err != nil {
 						glog.Errorf("AgreementBotWorker received error trying to find pending agreements: %v", err)
+						continue
 					} else if found {
 						glog.V(5).Infof("AgreementBotWorker skipping device id %v, agreement attempt already in progress with %v", dev.Id, consumerPolicy.Header.Name)
 						continue
-					} else {
+					}
+
+					// The only reason for no microservices in the device search result is because the search was pattern based.
+					// In this case there will not be any policies from the producer side to work with. The agbot assumes that
+					// device side anax will not allow microservice registration that is incompatible with the pattern.
+
+					// If there are no microservices in the returned device then we cant do any of the
+					// producer side policy merge and compatibility checks until we get the node's policies from the
+					// exchange. It is preferable to NOT call the exchange on the main agbot thread. So, make an
+					// agreement protocol choice based solely on the consumer side policy. Once the new agreement
+					// attempt gets on a worker thread, then we can perform the policy checks and merges.
+					producerPolicy := policy.Policy_Factory("empty")
+					err := error(nil)
+					if len(dev.Microservices) != 0 {
 
 						// For every microservice required by the workload, deserialize the JSON policy blob into a policy object and
 						// then merge them all together.
-						if producerPolicy, err := w.MergeAllProducerPolicies(&dev); err != nil {
+						if producerPolicy, err = w.MergeAllProducerPolicies(&dev); err != nil {
 							glog.Errorf("AgreementBotWorker unable to merge microservice policies, error: %v", err)
+							continue
 						} else if producerPolicy == nil {
-							glog.Errorf("AgreementBotWorker unable to created merged policy from producer %v", dev)
-
-							// Check to see if the device's policy is compatible
-
-						} else if err := policy.Are_Compatible(producerPolicy, &consumerPolicy); err != nil {
-							glog.Errorf("AgreementBotWorker received error comparing %v and %v, error: %v", *producerPolicy, consumerPolicy, err)
-						} else if err := w.incompleteHAGroup(dev, producerPolicy); err != nil {
-							glog.Warningf("AgreementBotWorker received error checking HA group %v completeness for device %v, error: %v", producerPolicy.HAGroup, dev.Id, err)
-						} else {
-							protocol := policy.Select_Protocol(producerPolicy, &consumerPolicy)
-							cmd := NewMakeAgreementCommand(*producerPolicy, consumerPolicy, org, dev)
-
-							bcType, bcName, bcOrg := producerPolicy.RequiresKnownBC(protocol)
-
-							if _, ok := w.consumerPH[protocol]; !ok {
-								glog.Errorf("AgreementBotWorker unable to find protocol handler for %v.", protocol)
-							} else if bcType != "" && !w.consumerPH[protocol].IsBlockchainWritable(bcType, bcName, bcOrg) {
-								// Get that blockchain running if it isn't up.
-								glog.V(5).Infof("AgreementBotWorker skipping device id %v, requires blockchain %v %v %v that isnt ready yet.", dev.Id, bcType, bcName, bcOrg)
-								w.Worker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, bcType, bcName, bcOrg, w.Manager.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
-								continue
-							} else if !w.consumerPH[protocol].AcceptCommand(cmd) {
-								glog.Errorf("AgreementBotWorker protocol handler for %v not accepting new agreement commands.", protocol)
-							} else {
-								w.consumerPH[protocol].HandleMakeAgreement(cmd, w.consumerPH[protocol])
-								glog.V(5).Infof("AgreementBoWorker queued agreement attempt for policy %v and protocol %v", consumerPolicy.Header.Name, protocol)
-							}
+							glog.Errorf("AgreementBotWorker unable to create merged policy from producer %v", dev)
+							continue
 						}
+
+						// Check to see if the device's merged policy is compatible with the consumer
+						if err := policy.Are_Compatible(producerPolicy, &consumerPolicy); err != nil {
+							glog.Errorf("AgreementBotWorker received error comparing %v and %v, error: %v", *producerPolicy, consumerPolicy, err)
+							continue
+						}
+
 					}
+
+					// Select a worker pool based on the agreement protocol that will be used.
+					protocol := policy.Select_Protocol(producerPolicy, &consumerPolicy)
+					cmd := NewMakeAgreementCommand(*producerPolicy, consumerPolicy, org, dev)
+
+					bcType, bcName, bcOrg := producerPolicy.RequiresKnownBC(protocol)
+
+					if _, ok := w.consumerPH[protocol]; !ok {
+						glog.Errorf("AgreementBotWorker unable to find protocol handler for %v.", protocol)
+					} else if bcType != "" && !w.consumerPH[protocol].IsBlockchainWritable(bcType, bcName, bcOrg) {
+						// Get that blockchain running if it isn't up.
+						glog.V(5).Infof("AgreementBotWorker skipping device id %v, requires blockchain %v %v %v that isnt ready yet.", dev.Id, bcType, bcName, bcOrg)
+						w.Worker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, bcType, bcName, bcOrg, w.Manager.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
+						continue
+					} else if !w.consumerPH[protocol].AcceptCommand(cmd) {
+						glog.Errorf("AgreementBotWorker protocol handler for %v not accepting new agreement commands.", protocol)
+					} else {
+						w.consumerPH[protocol].HandleMakeAgreement(cmd, w.consumerPH[protocol])
+						glog.V(5).Infof("AgreementBoWorker queued agreement attempt for policy %v and protocol %v", consumerPolicy.Header.Name, protocol)
+					}
+
 				}
 
 			}
@@ -538,27 +548,18 @@ func (w *AgreementBotWorker) MergeAllProducerPolicies(dev *exchange.SearchResult
 
 	var producerPolicy *policy.Policy
 
-	// The only reason for no microservices in the device search result is because the search was pattern based. In this case
-	// there will not be any policies from the producer side to merge. The agbot assumes that device side anax will not allow
-	// microservice registration that is incompatible with the pattern.
-	if len(dev.Microservices) == 0 {
-		producerPolicy = policy.Policy_Factory("empty")
-
-	} else {
-
-		for _, msDef := range dev.Microservices {
-			tempPolicy := new(policy.Policy)
-			if len(msDef.Policy) == 0 {
-				return nil, errors.New(fmt.Sprintf("empty policy blob for %v, skipping this device.", msDef.Url))
-			} else if err := json.Unmarshal([]byte(msDef.Policy), tempPolicy); err != nil {
-				return nil, errors.New(fmt.Sprintf("error demarshalling policy blob %v, error: %v", msDef.Policy, err))
-			} else if producerPolicy == nil {
-				producerPolicy = tempPolicy
-			} else if newPolicy, err := policy.Are_Compatible_Producers(producerPolicy, tempPolicy, w.Config.AgreementBot.NoDataIntervalS); err != nil {
-				return nil, errors.New(fmt.Sprintf("error merging policies %v and %v, error: %v", producerPolicy, tempPolicy, err))
-			} else {
-				producerPolicy = newPolicy
-			}
+	for _, msDef := range dev.Microservices {
+		tempPolicy := new(policy.Policy)
+		if len(msDef.Policy) == 0 {
+			return nil, errors.New(fmt.Sprintf("empty policy blob for %v, skipping this device.", msDef.Url))
+		} else if err := json.Unmarshal([]byte(msDef.Policy), tempPolicy); err != nil {
+			return nil, errors.New(fmt.Sprintf("error demarshalling policy blob %v, error: %v", msDef.Policy, err))
+		} else if producerPolicy == nil {
+			producerPolicy = tempPolicy
+		} else if newPolicy, err := policy.Are_Compatible_Producers(producerPolicy, tempPolicy, w.Config.AgreementBot.NoDataIntervalS); err != nil {
+			return nil, errors.New(fmt.Sprintf("error merging policies %v and %v, error: %v", producerPolicy, tempPolicy, err))
+		} else {
+			producerPolicy = newPolicy
 		}
 	}
 
@@ -983,75 +984,6 @@ func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, po
 		}
 	}
 
-}
-
-// This function checks the Exchange for every declared HA partner to verify that the partner is registered in the
-// exchange. As long as all partners are registered, agreements can be made. The partners dont have to be up and heart
-// beating, they just have to be registered. If not all partners are registered then no agreements will be attempted
-// with any of the registered partners.
-func (w *AgreementBotWorker) incompleteHAGroup(dev exchange.SearchResultDevice, producerPolicy *policy.Policy) error {
-
-	// If the HA group specification is empty, there is nothing to check.
-	if len(producerPolicy.HAGroup.Partners) == 0 {
-		return nil
-	} else {
-
-		// Make sure all partners are in the exchange
-		for _, partnerId := range producerPolicy.HAGroup.Partners {
-
-			if _, err := getTheDevice(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), partnerId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
-				glog.Warningf(AWlogString(fmt.Sprintf("could not obtain device %v from the exchange: %v", partnerId, err)))
-				return err
-			}
-		}
-		return nil
-
-	}
-}
-
-func getTheDevice(httpClient *http.Client, deviceId string, url string, agbotId string, token string) (*exchange.Device, error) {
-
-	glog.V(5).Infof(AWlogString(fmt.Sprintf("retrieving device %v from exchange", deviceId)))
-
-	var resp interface{}
-	resp = new(exchange.GetDevicesResponse)
-	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId)
-	for {
-		if err, tpErr := exchange.InvokeExchange(httpClient, "GET", targetURL, agbotId, token, nil, &resp); err != nil {
-			glog.Errorf(AWlogString(fmt.Sprintf(err.Error())))
-			return nil, err
-		} else if tpErr != nil {
-			glog.Warningf(tpErr.Error())
-			time.Sleep(10 * time.Second)
-			continue
-		} else {
-			devs := resp.(*exchange.GetDevicesResponse).Devices
-			if dev, there := devs[deviceId]; !there {
-				return nil, errors.New(fmt.Sprintf("device %v not in GET response %v as expected", deviceId, devs))
-			} else {
-				glog.V(5).Infof(AWlogString(fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev)))
-				return &dev, nil
-			}
-		}
-	}
-
-}
-
-// Legacy function. Ignore devices that export specificly known configured properties.
-func (w *AgreementBotWorker) ignoreDevice(dev exchange.SearchResultDevice) (bool, error) {
-
-	// Devices without microservices in the search result are being managed by patterns, so the search
-	// result wont contain te microservices they are supporting.
-	if len(dev.Microservices) == 0 {
-		return false, nil
-	}
-
-	for _, prop := range dev.Microservices[0].Properties {
-		if listContains(w.Config.AgreementBot.IgnoreContractWithAttribs, prop.Name) {
-			return true, nil
-		}
-	}
-	return false, nil
 }
 
 func listContains(list string, target string) bool {

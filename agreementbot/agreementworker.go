@@ -3,6 +3,7 @@ package agreementbot
 import (
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
@@ -154,12 +155,23 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	lock.Lock()
 	defer lock.Unlock()
 
-	// Determine which workload we should propose. This is based on the priority of each workload and
-	// whether or not this workload has been tried before. For policies that have the workload details embedded
-	// in them, we should exit this loop in 1 iteration. For policies that refer to the workload in the exchange,
-	// we should only iterate the loop more than once if we choose a workload entry that turns out to be
-	// unsupportable by the device.
+	// The device object we're working with might not include the policies for the microservices needed by the
+	// workload in the curent consumer policy. If that's the case, query the exchange to get all the device
+	// policies so we can merge them.
+	var exchangeDev *exchange.Device
+	if wi.ConsumerPolicy.PatternId != "" {
+		if theDev, err := GetDevice(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), wi.Device.Id, b.config.AgreementBot.ExchangeURL, cph.ExchangeId(), cph.ExchangeToken()); err != nil {
+			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error getting device %v policies, error: %v", wi.Device.Id, err)))
+			return
+		} else {
+			exchangeDev = theDev
+		}
+	}
 
+	// There could be more than 1 workload version in the consumer policy, and each version might NOT require the exact same
+	// microservices (and versions), so we first need to choose a workload. Choosing a workload is based on the priority of
+	// each workload and whether or not this workload has been tried before. Also, iterate the loop more than once if we choose
+	// a workload entry that turns out to be unsupportable by the device.
 	foundWorkload := false
 	var workload, lastWorkload *policy.Workload
 
@@ -187,100 +199,111 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			return
 		}
 
-		// If the workload in the consumer policy has a reference to the workload details, then we need to get the details so that we
+		// The workload in the consumer policy has a reference to the workload details. We need to get the details so that we
 		// can verify that the device has the right version API specs to run this workload. Then, we can store the workload details
-		// into the policy file. We have a copy of the consumer policy file that we can modify. If the device doesnt have the right
+		// into the consumer policy file. We have a copy of the consumer policy file that we can modify. If the device doesnt have the right
 		// version API specs, then we will try the next workload.
-		if workload.WorkloadURL != "" {
 
-			if workloadDetails, err := exchange.GetWorkload(b.config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, b.config.AgreementBot.ExchangeURL, cph.ExchangeId(), cph.ExchangeToken()); err != nil {
-				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for workload details %v, error: %v", workload, err)))
-				return
-			} else {
+		if workloadDetails, err := exchange.GetWorkload(b.config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, b.config.AgreementBot.ExchangeURL, cph.ExchangeId(), cph.ExchangeToken()); err != nil {
+			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for workload details %v, error: %v", workload, err)))
+			return
+		} else {
 
-				// If the device resulted from a pattern based search then the policies are not returned in the search. Go to the
-				// exchange to get the device's policies.
-				var dev *exchange.Device
-				var derr error
+			// Convert the workload details APISpec list to policy types, and merge the device side microservice policies if necessary.
+			var mergedProducer *policy.Policy
+			asl := new(policy.APISpecList)
+			for _, apiSpec := range workloadDetails.APISpecs {
+				(*asl) = append((*asl), (*policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch)))
 				if wi.ConsumerPolicy.PatternId != "" {
-					if dev, derr = GetDevice(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), wi.Device.Id, b.config.AgreementBot.ExchangeURL, cph.ExchangeId(), cph.ExchangeToken()); derr != nil {
-						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error getting device %v policies, error: %v", wi.Device.Id, err)))
-						return
-					}
-				}
-
-				// Convert the workload details APISpec list to policy types, and save the device side microservice details.
-				asl := new(policy.APISpecList)
-				for _, apiSpec := range workloadDetails.APISpecs {
-					(*asl) = append((*asl), (*policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch)))
-					if wi.ConsumerPolicy.PatternId != "" {
-						for _, devMS := range dev.RegisteredMicroservices {
-							// Find the device's microservice definition based on the microservices needed by the workload.
-							if devMS.Url == apiSpec.SpecRef {
-								if pol, err := policy.DemarshalPolicy(devMS.Policy); err != nil {
-									glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error demarshalling device %v policy, error: %v", wi.Device.Id, err)))
-									return
-								} else {
-									wi.ProducerPolicy.APISpecs = append(wi.ProducerPolicy.APISpecs, *policy.APISpecification_Factory(pol.APISpecs[0].SpecRef, pol.APISpecs[0].Org, pol.APISpecs[0].Version, pol.APISpecs[0].Arch))
-								}
-							}
-						}
-					}
-				}
-
-				// If the device doesnt support the workload requirements, then remember that we rejected a higher priority workload because of
-				// device requirements not being met. This will cause agreement cancellation to try the highest priority workload again
-				// even if retries have been disabled.
-				if err := wi.ProducerPolicy.APISpecs.Supports(*asl); err != nil {
-					glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("skipping workload %v because device %v cant support it: %v", workload, wi.Device.Id, err)))
-
-					if !workload.HasEmptyPriority() {
-						// If this is not the first time through the loop, update the workload usage record, otherwise create it.
-						if lastWorkload != nil {
-							if _, err := UpdatePriority(b.db, wi.Device.Id, wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, agreementIdString); err != nil {
-								glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating priority in persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+					for _, devMS := range exchangeDev.RegisteredMicroservices {
+						// Find the device's microservice definition based on the microservices needed by the workload.
+						if devMS.Url == apiSpec.SpecRef {
+							if pol, err := policy.DemarshalPolicy(devMS.Policy); err != nil {
+								glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error demarshalling device %v policy, error: %v", wi.Device.Id, err)))
 								return
+							} else if mergedProducer == nil {
+								mergedProducer = pol
+							} else if newPolicy, err := policy.Are_Compatible_Producers(mergedProducer, pol, b.config.AgreementBot.NoDataIntervalS); err != nil {
+								glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error merging policies %v and %v, error: %v", mergedProducer, pol, err)))
+								return
+							} else {
+								mergedProducer = newPolicy
 							}
-						} else if err := NewWorkloadUsage(b.db, wi.Device.Id, wi.ProducerPolicy.HAGroup.Partners, "", wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, true, agreementIdString); err != nil {
-							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
-							return
-						}
-
-						// Artificially bump up the retry count so that the loop will choose the next workload
-						if _, err := UpdateRetryCount(b.db, wi.Device.Id, wi.ConsumerPolicy.Header.Name, workload.Priority.Retries+1, agreementIdString); err != nil {
-							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating retry count persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
-							return
+							break
 						}
 					}
-				} else {
-
-					foundWorkload = true
-					// The device seems to support the required API specs, so augment the consumer policy file with the workload
-					// details that match what the producer can support.
-					for _, apiSpec := range workloadDetails.APISpecs {
-						wi.ConsumerPolicy.APISpecs = append(wi.ConsumerPolicy.APISpecs, *policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch))
-					}
-
-					// The agbot rejects workload definitions that dont have exactly 1 workload element in the workloads array so it is
-					// safe to directly access the first element.
-					workload.Deployment = workloadDetails.Workloads[0].Deployment
-					workload.DeploymentSignature = workloadDetails.Workloads[0].DeploymentSignature
-					torr := new(policy.Torrent)
-					if err := json.Unmarshal([]byte(workloadDetails.Workloads[0].Torrent), torr); err != nil {
-						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Unable to demarshal torrent info from %v, error: %v", workloadDetails, err)))
-						return
-					} else {
-						workload.Torrent = *torr
-					}
-					glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("workload %v is supported by device %v", workload, wi.Device.Id)))
 				}
-
 			}
 
-		} else {
-			foundWorkload = true
+			// Update the producer policy with a real merged policy based on the microservices required by the workload
+			if wi.ConsumerPolicy.PatternId != "" && mergedProducer != nil {
+				wi.ProducerPolicy = *mergedProducer
+			}
+
+			// If the device doesnt support the workload requirements, then remember that we rejected a higher priority workload because of
+			// device requirements not being met. This will cause agreement cancellation to try the highest priority workload again
+			// even if retries have been disabled.
+			if err := wi.ProducerPolicy.APISpecs.Supports(*asl); err != nil {
+				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("skipping workload %v because device %v cant support it: %v", workload, wi.Device.Id, err)))
+
+				if !workload.HasEmptyPriority() {
+					// If this is not the first time through the loop, update the workload usage record, otherwise create it.
+					if lastWorkload != nil {
+						if _, err := UpdatePriority(b.db, wi.Device.Id, wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, agreementIdString); err != nil {
+							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating priority in persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+							return
+						}
+					} else if err := NewWorkloadUsage(b.db, wi.Device.Id, wi.ProducerPolicy.HAGroup.Partners, "", wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, true, agreementIdString); err != nil {
+						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+						return
+					}
+
+					// Artificially bump up the retry count so that the loop will choose the next workload
+					if _, err := UpdateRetryCount(b.db, wi.Device.Id, wi.ConsumerPolicy.Header.Name, workload.Priority.Retries+1, agreementIdString); err != nil {
+						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating retry count persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+						return
+					}
+				}
+			} else {
+
+				foundWorkload = true
+				// The device seems to support the required API specs, so augment the consumer policy file with the workload
+				// details that match what the producer can support.
+				wi.ConsumerPolicy.APISpecs = (*asl)
+
+				// The agbot rejects workload definitions that dont have exactly 1 workload element in the workloads array so it is
+				// safe to directly access the first element.
+				workload.Deployment = workloadDetails.Workloads[0].Deployment
+				workload.DeploymentSignature = workloadDetails.Workloads[0].DeploymentSignature
+				torr := new(policy.Torrent)
+				if err := json.Unmarshal([]byte(workloadDetails.Workloads[0].Torrent), torr); err != nil {
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Unable to demarshal torrent info from %v, error: %v", workloadDetails, err)))
+					return
+				} else {
+					workload.Torrent = *torr
+				}
+				glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("workload %v is supported by device %v", workload, wi.Device.Id)))
+			}
+
 		}
+
 		lastWorkload = workload
+	}
+
+	// Call the exchange to make sure that all partners are registered in the exchange. We can do this check now that we know
+	// exactly what the merged producer policy looks like.
+	if err := b.incompleteHAGroup(cph, &wi.ProducerPolicy); err != nil {
+		glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("received error checking HA group %v completeness for device %v, error: %v", wi.ProducerPolicy.HAGroup, wi.Device.Id, err)))
+		return
+	}
+
+	// If this device is advertising a property that we are supposed to ignore, then skip it.
+	if ignore, err := b.ignoreDevice(&wi.ProducerPolicy); err != nil {
+		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("received error checking for ignored device %v, error: %v", wi.Device.Id, err)))
+		return
+	} else if ignore {
+		glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("skipping device %v, advertises ignored property", wi.Device.Id)))
+		return
 	}
 
 	// Create pending agreement in database
@@ -655,4 +678,38 @@ func generateAgreementId(random *rand.Rand) []byte {
 
 var BAWlogstring = func(workerID string, v interface{}) string {
 	return fmt.Sprintf("Base Agreement Worker (%v): %v", workerID, v)
+}
+
+// This function checks the Exchange for every declared HA partner to verify that the partner is registered in the
+// exchange. As long as all partners are registered, agreements can be made. The partners dont have to be up and heart
+// beating, they just have to be registered. If not all partners are registered then no agreements will be attempted
+// with any of the registered partners.
+func (b *BaseAgreementWorker) incompleteHAGroup(cph ConsumerProtocolHandler, producerPolicy *policy.Policy) error {
+
+	// If the HA group specification is empty, there is nothing to check.
+	if len(producerPolicy.HAGroup.Partners) == 0 {
+		return nil
+	} else {
+
+		// Make sure all partners are in the exchange
+		for _, partnerId := range producerPolicy.HAGroup.Partners {
+
+			if _, err := GetDevice(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), partnerId, b.config.AgreementBot.ExchangeURL, cph.ExchangeId(), cph.ExchangeToken()); err != nil {
+				return errors.New(fmt.Sprintf("could not obtain device %v from the exchange: %v", partnerId, err))
+			}
+		}
+		return nil
+
+	}
+}
+
+// Legacy function. Ignore devices that export specificly known configured properties.
+func (b *BaseAgreementWorker) ignoreDevice(pol *policy.Policy) (bool, error) {
+
+	for _, prop := range pol.Properties {
+		if listContains(b.config.AgreementBot.IgnoreContractWithAttribs, prop.Name) {
+			return true, nil
+		}
+	}
+	return false, nil
 }
