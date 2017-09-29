@@ -49,6 +49,7 @@ func generateAttributeMetadata(given Attribute, typeName string) *persistence.At
 		SensorUrls:  sensorUrls,
 		Label:       *given.Label,
 		Publishable: given.Publishable,
+		HostOnly:    given.HostOnly,
 		Type:        typeName,
 	}
 }
@@ -161,6 +162,38 @@ func parseMapped(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*pe
 	return &persistence.MappedAttributes{
 		Meta:     generateAttributeMetadata(*given, reflect.TypeOf(persistence.MappedAttributes{}).Name()),
 		Mappings: mappedStr,
+	}, false, nil
+}
+
+func parseHTTPSBasicAuth(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*persistence.HTTPSBasicAuthAttributes, bool, error) {
+	var ok bool
+
+	var username string
+	us, exists := (*given.Mappings)["username"]
+	if !exists {
+		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "httpsbasic.mappings.username", Error: "missing key"})
+		return nil, true, nil
+	}
+	if username, ok = us.(string); !ok {
+		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "httpsbasic.mappings.username", Error: "expected string"})
+		return nil, true, nil
+	}
+
+	var password string
+	pa, exists := (*given.Mappings)["password"]
+	if !exists {
+		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "httpsbasic.mappings.password", Error: "missing key"})
+		return nil, true, nil
+	}
+	if password, ok = pa.(string); !ok {
+		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "httpsbasic.mappings.password", Error: "expected string"})
+		return nil, true, nil
+	}
+
+	return &persistence.HTTPSBasicAuthAttributes{
+		Meta:     generateAttributeMetadata(*given, reflect.TypeOf(persistence.HTTPSBasicAuthAttributes{}).Name()),
+		Username: username,
+		Password: password,
 	}, false, nil
 }
 
@@ -535,6 +568,13 @@ func toPersistedAttributes(w http.ResponseWriter, permitEmpty bool, persistedDev
 				}
 				attributes = append(attributes, attr)
 
+			case reflect.TypeOf(persistence.HTTPSBasicAuthAttributes{}).Name():
+				attr, inputErr, err := parseHTTPSBasicAuth(w, permitEmpty, &given)
+				if err != nil || inputErr {
+					return attributes, inputErr, err
+				}
+				attributes = append(attributes, attr)
+
 			default:
 				glog.Errorf("Failed to find expected id for given input attribute: %v", given)
 				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "mappings", Error: "Unmappable id field"})
@@ -558,6 +598,7 @@ func toOutModel(persisted persistence.Attribute) *Attribute {
 		SensorUrls:  &persisted.GetMeta().SensorUrls,
 		Label:       &persisted.GetMeta().Label,
 		Publishable: persisted.GetMeta().Publishable,
+		HostOnly:    persisted.GetMeta().HostOnly,
 		Type:        &persisted.GetMeta().Type,
 		Mappings:    &mappings,
 	}
@@ -663,6 +704,7 @@ func payloadToAttributes(w http.ResponseWriter, body io.Reader, permitPartial bo
 		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "attribute", Error: fmt.Sprintf("could not be demarshalled, error: %v", err)})
 		return nil, true, err
 	}
+	glog.V(6).Infof("Decoded Attribute from payload: %v", attribute)
 
 	// N.B. remove the id from the input doc; it won't be checked and it shouldn't be trusted, prefer the path param id instead
 	attribute.Id = nil

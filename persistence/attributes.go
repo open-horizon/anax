@@ -173,8 +173,15 @@ func hydrateConcreteAttribute(v []byte) (Attribute, error) {
 		}
 		attr = agp
 
+	case "HTTPSBasicAuthAttributes":
+		var hba HTTPSBasicAuthAttributes
+		if err := json.Unmarshal(v, &hba); err != nil {
+			return nil, err
+		}
+		attr = hba
+
 	default:
-		return nil, fmt.Errorf("Unknown attr type: %v, just handling as meta", meta.GetMeta().Type)
+		return nil, fmt.Errorf("Unknown attr type: %v", meta.GetMeta().Type)
 	}
 
 	glog.V(5).Infof("Deserialized Attribute: %v", attr)
