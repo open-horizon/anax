@@ -66,7 +66,7 @@ func (w *TorrentWorker) NewEvent(incoming events.Message) {
 
 // TODO: extract this, make common via collaborators
 func authAttributes(db *bolt.DB) (map[string]map[string]string, error) {
-	var authAttrs map[string]map[string]string
+	authAttrs := make(map[string]map[string]string, 0)
 
 	// TODO: fill this with the device token, just need to know the URLs
 
