@@ -1033,7 +1033,11 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		// Get max number of agreements for policy
 		maxAgreements := 1
 		if msdef.Sharable == exchange.MS_SHARING_MODE_SINGLE || msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE {
-			maxAgreements = 2 // hard coded to 2 for now. will change to 0 later
+			if existingDevice.Pattern == "" {
+				maxAgreements = 2 // hard coded to 2 for now. will change to 0 later
+			} else {
+				maxAgreements = 0 // no limites for pattern
+			}
 		}
 
 		// Generate a policy based on all the attributes and the service definition
