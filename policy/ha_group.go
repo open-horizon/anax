@@ -1,7 +1,7 @@
 package policy
 
 import (
-    "fmt"
+	"fmt"
 )
 
 // The purpose of this file is to abstract the operations on the HA Group type.
@@ -19,7 +19,7 @@ func HAGroup_Factory(partners []string) *HighAvailabilityGroup {
 }
 
 func (g *HighAvailabilityGroup) String() string {
-    return fmt.Sprintf("HAGroup partners: %v", g.Partners)
+	return fmt.Sprintf("HAGroup partners: %v", g.Partners)
 }
 
 // Return true if 2 HAGroups are the same, meaning their partner lists contain the same
@@ -58,5 +58,5 @@ func (g *HighAvailabilityGroup) Compatible_With(other *HighAvailabilityGroup) bo
 // Merge 2 HA groups. This should be easy because compatibility is assumes and is defined to be
 // indentical.
 func (g *HighAvailabilityGroup) Merge(other *HighAvailabilityGroup) *HighAvailabilityGroup {
-    return g
+	return g
 }
