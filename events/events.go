@@ -113,7 +113,7 @@ func (c AgreementLaunchContext) URL() url.URL {
 }
 
 func (c AgreementLaunchContext) Signature() string {
-       return c.Configure.TorrentSignature
+	return c.Configure.TorrentSignature
 }
 
 type ContainerConfig struct {
@@ -166,7 +166,7 @@ func (c ContainerLaunchContext) URL() url.URL {
 }
 
 func (c ContainerLaunchContext) Signature() string {
-       return c.Configure.TorrentSignature
+	return c.Configure.TorrentSignature
 }
 
 func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]string, bc BlockchainConfig, name string) *ContainerLaunchContext {

@@ -857,7 +857,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 			if existingDevice.Pattern != "" {
 				if attr.GetMeta().Type == "MeteringAttributes" || attr.GetMeta().Type == "PropertyAttributes" || attr.GetMeta().Type == "CounterPartyPropertyAttributes" || attr.GetMeta().Type == "AgreementProtocolAttributes" {
 					glog.Errorf("device is using a pattern %v, policy attributes are not supported.", existingDevice.Pattern)
-					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].Id", Error: fmt.Sprintf("device is using a pattern %v, policy attributes are not supported.", existingDevice.Pattern)})
+					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].type", Error: fmt.Sprintf("device is using a pattern %v, policy attributes are not supported.", existingDevice.Pattern)})
 					return true, nil
 				}
 			}
@@ -951,7 +951,7 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		if existingDevice.HADevice && len(haPartner) == 0 {
 			if attr := attributesContains(attributes, *service.SensorUrl, haType); attr == nil {
 				glog.Errorf("HA device %v can only support HA enabled services %v", existingDevice, service)
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].ha", Error: "services on an HA device must specify an HA partner."})
+				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].type", Error: "services on an HA device must specify an HA partner."})
 				return
 			}
 		}

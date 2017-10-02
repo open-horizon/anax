@@ -652,11 +652,13 @@ func Test_Merge_Producers_Create_TsAndCs1(t *testing.T) {
 		`"apiSpec":[{"specRef":"http://mycompany.com/dm/ms1","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}],` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
 		`"dataVerification":{"enabled":true,"URL":"","interval":0,"metering":{"tokens":2,"per_time_unit":"hour","notification_interval":3600}},` +
+		`"ha_group":{"partners":["12345"]},` +
 		`"maxAgreements":1}`
 	pb := `{"header":{"name":"ms2 policy","version": "2.0"},` +
 		`"apiSpec":[{"specRef":"http://mycompany.com/dm/ms2","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}],` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
 		`"dataVerification":{"enabled":true,"URL":"","interval":0,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":120}},` +
+		`"ha_group":{"partners":["12345"]},` +
 		`"maxAgreements":1}`
 
 	pc := `{"header":{"name":"split netspeed policy","version":"2.0"},` +
@@ -675,6 +677,8 @@ func Test_Merge_Producers_Create_TsAndCs1(t *testing.T) {
 		t.Error(err)
 	} else if len(pf_merged.APISpecs) != 2 {
 		t.Errorf("Error: returned %v, should have returned %v\n", len(pf_merged.APISpecs), 2)
+	} else if len(pf_merged.HAGroup.Partners) != 1 {
+		t.Errorf("Error: HA group not merged, is %v\n", pf_merged.HAGroup.Partners)
 	} else if pf_merged.DataVerify.Metering.Tokens != 60 {
 		t.Errorf("Error: returned DataVerify.Tokens %v, should have returned %v\n", pf_merged.DataVerify.Metering.Tokens, 60)
 	} else {
