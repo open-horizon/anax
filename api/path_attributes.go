@@ -56,28 +56,28 @@ func generateAttributeMetadata(given Attribute, typeName string) *persistence.At
 
 func parseCompute(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*persistence.ComputeAttributes, bool, error) {
 	if permitEmpty {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "compute.mappings", Error: "partial update unsupported"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("partial update unsupported", "compute.mappings"))
 	}
 
 	var err error
 	var ram int64
 	r, exists := (*given.Mappings)["ram"]
 	if !exists {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "compute.mappings.ram", Error: "missing key"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("missing key", "compute.mappings.ram"))
 		return nil, true, nil
 	}
 	if ram, err = r.(json.Number).Int64(); err != nil {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "compute.mappings.ram", Error: "expected integer"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("expected integer", "compute.mappings.ram"))
 		return nil, true, nil
 	}
 	var cpus int64
 	c, exists := (*given.Mappings)["cpus"]
 	if !exists {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "compute.mappings.cpus", Error: "missing key"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("missing key", "compute.mappings.cpus"))
 		return nil, true, nil
 	}
 	if cpus, err = c.(json.Number).Int64(); err != nil {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "compute.mappings.cpus", Error: "expected integer"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("expected integer", "compute.mappings.cpus"))
 		return nil, true, nil
 	}
 
@@ -90,7 +90,7 @@ func parseCompute(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*p
 
 func parseLocation(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*persistence.LocationAttributes, bool, error) {
 	if permitEmpty {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "location.mappings", Error: "partial update unsupported"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("partial update unsupported", "location.mappings"))
 		return nil, true, nil
 	}
 	var ok bool
@@ -98,40 +98,40 @@ func parseLocation(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*
 	var lat string
 	la, exists := (*given.Mappings)["lat"]
 	if !exists {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "location.mappings.lat", Error: "missing key"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("missing key", "location.mappings.lat"))
 		return nil, true, nil
 	}
 	if lat, ok = la.(string); !ok {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "location.mappings.lat", Error: "expected string"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("expected string", "location.mappings.lat"))
 		return nil, true, nil
 	}
 	var lon string
 	lo, exists := (*given.Mappings)["lon"]
 	if !exists {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "location.mappings.lon", Error: "missing key"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("missing key", "location.mappings.lon"))
 		return nil, true, nil
 	}
 	if lon, ok = lo.(string); !ok {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "location.mappings.lon", Error: "expected string"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("expected string", "location.mappings.lon"))
 		return nil, true, nil
 	}
 
 	var userProvidedCoords bool
 	up, exists := (*given.Mappings)["user_provided_coords"]
 	if !exists {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "location.mappings.user_provided_coords", Error: "missing key"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("missing key", "location.mappings.user_provided_coords"))
 		return nil, true, nil
 	} else if userProvidedCoords, ok = up.(bool); !ok {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "location.mappings.user_provided_coords", Error: "non-boolean value"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("non-boolean value", "location.mappings.user_provided_coords"))
 		return nil, true, nil
 	}
 	var useGps bool
 	ug, exists := (*given.Mappings)["use_gps"]
 	if !exists {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "location.mappings.use_gps", Error: "missing key"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("missing key", "location.mappings.use_gps"))
 		return nil, true, nil
 	} else if useGps, ok = ug.(bool); !ok {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "location.mappings.use_gps", Error: "non-boolean value"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("non-boolean value", "location.mappings.use_gps"))
 		return nil, true, nil
 	}
 
@@ -150,7 +150,7 @@ func parseMapped(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*pe
 
 	if given.Mappings == nil {
 		if !permitEmpty {
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "mappings", Error: "missing mappings"})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("missing mappings", "mappings"))
 			return nil, true, nil
 		}
 	} else {
@@ -171,22 +171,22 @@ func parseHTTPSBasicAuth(w http.ResponseWriter, permitEmpty bool, given *Attribu
 	var username string
 	us, exists := (*given.Mappings)["username"]
 	if !exists {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "httpsbasic.mappings.username", Error: "missing key"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("missing key", "httpsbasic.mappings.username"))
 		return nil, true, nil
 	}
 	if username, ok = us.(string); !ok {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "httpsbasic.mappings.username", Error: "expected string"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("expected string", "httpsbasic.mappings.username"))
 		return nil, true, nil
 	}
 
 	var password string
 	pa, exists := (*given.Mappings)["password"]
 	if !exists {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "httpsbasic.mappings.password", Error: "missing key"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("missing key", "httpsbasic.mappings.password"))
 		return nil, true, nil
 	}
 	if password, ok = pa.(string); !ok {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "httpsbasic.mappings.password", Error: "expected string"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("expected string", "httpsbasic.mappings.password"))
 		return nil, true, nil
 	}
 
@@ -199,16 +199,16 @@ func parseHTTPSBasicAuth(w http.ResponseWriter, permitEmpty bool, given *Attribu
 
 func parseHA(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*persistence.HAAttributes, bool, error) {
 	if permitEmpty {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "ha.mappings", Error: "partial update unsupported"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("partial update unsupported", "ha.mappings"))
 		return nil, true, nil
 	}
 
 	pID, exists := (*given.Mappings)["partnerID"]
 	if !exists {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "ha.mappings.partnerID", Error: "missing key"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("missing key", "ha.mappings.partnerID"))
 		return nil, true, nil
 	} else if partnerIDs, ok := pID.([]interface{}); !ok {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "ha.mappings.partnerID", Error: fmt.Sprintf("expected []interface{} received %T", pID)})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("expected []interface{} received %T", pID), "ha.mappings.partnerID"))
 		return nil, true, nil
 	} else {
 		// convert partner values to proper array type
@@ -216,7 +216,7 @@ func parseHA(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*persis
 		for _, val := range partnerIDs {
 			p, ok := val.(string)
 			if !ok {
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "ha.mappings.partnerID", Error: fmt.Sprintf("array value is not a string, it is %T", val)})
+				writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("array value is not a string, it is %T", val), "ha.mappings.partnerID"))
 				return nil, true, nil
 			}
 			strPartners = append(strPartners, p)
@@ -231,7 +231,7 @@ func parseHA(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*persis
 
 func parseMetering(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*persistence.MeteringAttributes, bool, error) {
 	if permitEmpty {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings", Error: "partial update unsupported"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("partial update unsupported", "metering.mappings"))
 		return nil, true, nil
 	}
 
@@ -243,13 +243,13 @@ func parseMetering(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*
 	n, notificationIntervalExists := (*given.Mappings)["notificationInterval"]
 
 	if tokensExists && !perTimeUnitExists {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.perTimeUnit", Error: "missing key"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("missing key", "metering.mappings.perTimeUnit"))
 		return nil, true, nil
 	} else if !tokensExists && perTimeUnitExists {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.tokens", Error: "missing key"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("missing key", "metering.mappings.tokens"))
 		return nil, true, nil
 	} else if notificationIntervalExists && !tokensExists {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.notificationInterval", Error: "missing tokens and perTimeUnit keys"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("missing tokens and perTimeUnit keys", "metering.mappings.notificationInterval"))
 		return nil, true, nil
 	}
 
@@ -257,25 +257,25 @@ func parseMetering(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*
 	var ok bool
 	var tokens int64
 	if _, ok = t.(json.Number); !ok {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.tokens", Error: "expected integer"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("expected integer", "metering.mappings.tokens"))
 		return nil, true, nil
 	} else if tokens, err = t.(json.Number).Int64(); err != nil {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.tokens", Error: "could not convert to integer"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("could not convert to integer", "metering.mappings.tokens"))
 		return nil, true, nil
 	}
 
 	var perTimeUnit string
 	if perTimeUnit, ok = p.(string); !ok {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.perTimeUnit", Error: "expected string"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("expected string", "metering.mappings.perTimeUnit"))
 		return nil, true, nil
 	}
 
 	// Make sure the attribute values make sense together
 	if tokens == 0 && perTimeUnit != "" {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.tokens", Error: "must be non-zero"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("must be non-zero", "metering.mappings.tokens"))
 		return nil, true, nil
 	} else if tokens != 0 && perTimeUnit == "" {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.perTimeUnit", Error: "must be non-empty"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("must be non-empty", "metering.mappings.perTimeUnit"))
 		return nil, true, nil
 	}
 
@@ -283,15 +283,15 @@ func parseMetering(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*
 	var notificationInterval int64
 
 	if _, ok = n.(json.Number); !ok {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.notificationInterval", Error: "expected integer"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("expected integer", "metering.mappings.notificationInterval"))
 		return nil, true, nil
 	} else if notificationInterval, err = n.(json.Number).Int64(); err != nil {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.notificationInterval", Error: "could not convert to integer"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("could not convert to integer", "metering.mappings.notificationInterval"))
 		return nil, true, nil
 	}
 
 	if notificationInterval != 0 && tokens == 0 {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "metering.mappings.notificationInterval", Error: "cannot be non-zero without tokens and perTimeUnit"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("cannot be non-zero without tokens and perTimeUnit", "metering.mappings.notificationInterval"))
 		return nil, true, nil
 	}
 
@@ -305,7 +305,7 @@ func parseMetering(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*
 
 func parseProperty(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*persistence.PropertyAttributes, bool, error) {
 	if permitEmpty {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "property.mappings", Error: "partial update unsupported"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("partial update unsupported", "property.mappings"))
 		return nil, true, nil
 	}
 
@@ -316,27 +316,27 @@ func parseProperty(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*
 
 func parseCounterPartyProperty(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*persistence.CounterPartyPropertyAttributes, bool, error) {
 	if permitEmpty {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "counterpartyproperty.mappings", Error: "partial update unsupported"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("partial update unsupported", "counterpartyproperty.mappings"))
 		return nil, true, nil
 	}
 
 	rawExpression, exists := (*given.Mappings)["expression"]
 	if !exists {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "counterpartyproperty.mappings.expression", Error: "missing key"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("missing key", "counterpartyproperty.mappings.expression"))
 		return nil, true, nil
 	}
 
 	if exp, ok := rawExpression.(map[string]interface{}); !ok {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "counterpartyproperty.mappings.expression", Error: fmt.Sprintf("expected map[string]interface{}, is %T", rawExpression)})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("expected map[string]interface{}, is %T", rawExpression), "counterpartyproperty.mappings.expression"))
 		return nil, true, nil
 	} else if rp := policy.RequiredProperty_Factory(); rp == nil {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "counterpartyproperty.mappings.expression", Error: "could not construct RequiredProperty"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("could not construct RequiredProperty", "counterpartyproperty.mappings.expression"))
 		return nil, true, nil
 	} else if err := rp.Initialize(&exp); err != nil {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "counterpartyproperty.mappings.expression", Error: fmt.Sprintf("could not initialize RequiredProperty: %v", err)})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("could not initialize RequiredProperty: %v", err), "counterpartyproperty.mappings.expression"))
 		return nil, true, nil
 	} else if err := rp.IsValid(); err != nil {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "counterpartyproperty.mappings.expression", Error: fmt.Sprintf("not a valid expression: %v", err)})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("not a valid expression: %v", err), "counterpartyproperty.mappings.expression"))
 		return nil, true, nil
 	} else {
 		return &persistence.CounterPartyPropertyAttributes{
@@ -348,16 +348,16 @@ func parseCounterPartyProperty(w http.ResponseWriter, permitEmpty bool, given *A
 
 func parseAgreementProtocol(w http.ResponseWriter, permitEmpty bool, given *Attribute) (*persistence.AgreementProtocolAttributes, bool, error) {
 	if permitEmpty {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings", Error: "partial update unsupported"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("partial update unsupported", "agreementprotocol.mappings"))
 		return nil, true, nil
 	}
 
 	p, exists := (*given.Mappings)["protocols"]
 	if !exists {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols", Error: "missing key"})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("missing key", "agreementprotocol.mappings.protocols"))
 		return nil, true, nil
 	} else if protocols, ok := p.([]interface{}); !ok {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols", Error: fmt.Sprintf("expected []interface{} received %T", p)})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("expected []interface{} received %T", p), "agreementprotocol.mappings.protocols"))
 		return nil, true, nil
 	} else {
 		// convert protocol values to proper agreement protocol object
@@ -365,31 +365,31 @@ func parseAgreementProtocol(w http.ResponseWriter, permitEmpty bool, given *Attr
 		for _, val := range protocols {
 			protoDef, ok := val.(map[string]interface{})
 			if !ok {
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols", Error: fmt.Sprintf("array value is not a map[string]interface{}, it is %T", val)})
+				writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("array value is not a map[string]interface{}, it is %T", val), "agreementprotocol.mappings.protocols"))
 				return nil, true, nil
 			}
 
 			for protocolName, bcValue := range protoDef {
 				if !policy.SupportedAgreementProtocol(protocolName) {
-					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.protocolName", Error: fmt.Sprintf("protocol name %v is not supported", protocolName)})
+					writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("protocol name %v is not supported", protocolName), "agreementprotocol.mappings.protocols.protocolName"))
 					return nil, true, nil
 				} else if bcDefArray, ok := bcValue.([]interface{}); !ok {
-					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain", Error: fmt.Sprintf("blockchain value is not []interface{}, it is %T", bcValue)})
+					writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("blockchain value is not []interface{}, it is %T", bcValue), "agreementprotocol.mappings.protocols.blockchain"))
 					return nil, true, nil
 				} else {
 					agp := policy.AgreementProtocol_Factory(protocolName)
 					for _, bcEle := range bcDefArray {
 						if bcDef, ok := bcEle.(map[string]interface{}); !ok {
-							writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain", Error: fmt.Sprintf("blockchain array element is not map[string]interface{}, it is %T", bcEle)})
+							writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("blockchain array element is not map[string]interface{}, it is %T", bcEle), "agreementprotocol.mappings.protocols.blockchain"))
 							return nil, true, nil
 						} else if _, ok := bcDef["type"].(string); bcDef["type"] != nil && !ok {
-							writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain.type", Error: fmt.Sprintf("blockchain type is not string, it is %T", bcDef["type"])})
+							writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("blockchain type is not string, it is %T", bcDef["type"]), "agreementprotocol.mappings.protocols.blockchain.type"))
 							return nil, true, nil
 						} else if _, ok := bcDef["name"].(string); bcDef["name"] != nil && !ok {
-							writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain.name", Error: fmt.Sprintf("blockchain name is not string, it is %T", bcDef["name"])})
+							writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("blockchain name is not string, it is %T", bcDef["name"]), "agreementprotocol.mappings.protocols.blockchain.name"))
 							return nil, true, nil
 						} else if bcDef["type"] != nil && bcDef["type"].(string) != "" && bcDef["type"].(string) != policy.RequiresBlockchainType(protocolName) {
-							writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols.blockchain.type", Error: fmt.Sprintf("blockchain type %v is not supported for protocol %v", bcDef["type"].(string), protocolName)})
+							writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("blockchain type %v is not supported for protocol %v", bcDef["type"].(string), protocolName), "agreementprotocol.mappings.protocols.blockchain.type"))
 							return nil, true, nil
 						} else {
 							bcType := ""
@@ -413,7 +413,7 @@ func parseAgreementProtocol(w http.ResponseWriter, permitEmpty bool, given *Attr
 			}
 		}
 		if len(allProtocols) == 0 {
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "agreementprotocol.mappings.protocols", Error: "array value is empty"})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("array value is empty", "agreementprotocol.mappings.protocols"))
 			return nil, true, nil
 		}
 
@@ -434,7 +434,7 @@ func toPersistedAttributesAttachedToService(w http.ResponseWriter, persistedDevi
 		sensorURLs := attr.GetMeta().SensorUrls
 		if sensorURLs != nil {
 			if len(sensorURLs) > 1 || (len(sensorURLs) == 1 && sensorURLs[0] != sensorURL) {
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].sensor_urls", Error: "sensor_urls not permitted on attributes specified on a service"})
+				writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("sensor_urls not permitted on attributes specified on a service", "service.[attribute].sensor_urls"))
 				return true, nil
 			}
 		}
@@ -461,7 +461,7 @@ func toPersistedAttributes(w http.ResponseWriter, permitEmpty bool, persistedDev
 
 		if permitEmpty && given.Label == nil {
 			glog.V(4).Infof("Allowing unspecified label in partial update of %v", given)
-		} else if bail := checkInputString(w, "label", given.Label); bail {
+		} else if bail := checkInputString(GetHTTPErrorHandler(w), "label", given.Label); bail {
 			return nil, true, nil
 		}
 
@@ -469,7 +469,7 @@ func toPersistedAttributes(w http.ResponseWriter, permitEmpty bool, persistedDev
 			if permitEmpty {
 				glog.V(4).Infof("Allowing unspecified publishable flag in partial update of %v", given)
 			} else {
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "publishable", Error: "nil value"})
+				writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("nil value", "publishable"))
 				return nil, true, nil
 			}
 		}
@@ -477,7 +477,7 @@ func toPersistedAttributes(w http.ResponseWriter, permitEmpty bool, persistedDev
 		// always ok if this one is nil
 		if given.SensorUrls != nil {
 			for _, url := range *given.SensorUrls {
-				if bail := checkInputString(w, "sensorurl", &url); bail {
+				if bail := checkInputString(GetHTTPErrorHandler(w), "sensorurl", &url); bail {
 					return nil, true, nil
 				}
 			}
@@ -487,7 +487,7 @@ func toPersistedAttributes(w http.ResponseWriter, permitEmpty bool, persistedDev
 			if permitEmpty {
 				glog.V(4).Infof("Allowing unspecified mappings in partial update of %v", given)
 			} else {
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "mappings", Error: "nil value"})
+				writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("nil value", "mappings"))
 				return nil, true, nil
 			}
 		} else {
@@ -497,15 +497,15 @@ func toPersistedAttributes(w http.ResponseWriter, permitEmpty bool, persistedDev
 				w.WriteHeader(http.StatusBadRequest)
 				return nil, true, fmt.Errorf("Failed to check input: %v", err)
 			} else if inputErr != "" {
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: fmt.Sprintf("mappings.%v", value), Error: inputErr})
+				writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(inputErr, fmt.Sprintf("mappings.%v", value)))
 				return nil, true, nil
 			}
 		}
 
 		if given.Type == nil && permitEmpty {
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "type", Error: "partial update with missing type is not supported"})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("partial update with missing type is not supported", "type"))
 			return nil, true, nil
-		} else if bail := checkInputString(w, "type", given.Type); bail {
+		} else if bail := checkInputString(GetHTTPErrorHandler(w), "type", given.Type); bail {
 			return nil, true, nil
 		} else {
 
@@ -577,7 +577,7 @@ func toPersistedAttributes(w http.ResponseWriter, permitEmpty bool, persistedDev
 
 			default:
 				glog.Errorf("Failed to find expected id for given input attribute: %v", given)
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "mappings", Error: "Unmappable id field"})
+				writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("Unmappable id field", "mappings"))
 			}
 		}
 	}
@@ -665,7 +665,7 @@ func validateConcreteAttributes(w http.ResponseWriter, persistedDevice *persiste
 			// if the device is not HA enabled then the HA partner attribute is illegal
 			if !persistedDevice.HADevice {
 				glog.Errorf("Non-HA device %v does not support HA enabled service", persistedDevice)
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].type", Error: "HA partner not permitted on non-HA devices"})
+				writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("HA partner not permitted on non-HA devices", "service.[attribute].type"))
 				return true, nil
 			}
 
@@ -677,7 +677,7 @@ func validateConcreteAttributes(w http.ResponseWriter, persistedDevice *persiste
 					for _, partner := range partners {
 						if partner == persistedDevice.Id {
 							glog.Errorf("HA device %v cannot refer to itself in partner list %v", persistedDevice, partners)
-							writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].mappings.partnerID", Error: "partner list cannot refer to itself."})
+							writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("partner list cannot refer to itself.", "service.[attribute].mappings.partnerID"))
 							return true, nil
 						}
 					}
@@ -701,7 +701,7 @@ func payloadToAttributes(w http.ResponseWriter, body io.Reader, permitPartial bo
 	var attribute Attribute
 	if err := decoder.Decode(&attribute); err != nil {
 		glog.Errorf("User submitted data that couldn't be deserialized to attribute. Error: %v", err)
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "attribute", Error: fmt.Sprintf("could not be demarshalled, error: %v", err)})
+		writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("could not be demarshalled, error: %v", err), "attribute"))
 		return nil, true, err
 	}
 	glog.V(6).Infof("Decoded Attribute from payload: %v", attribute)

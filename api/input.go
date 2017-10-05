@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/open-horizon/anax/persistence"
 	"reflect"
 	"strconv"
 )
@@ -24,6 +25,20 @@ func (h HorizonDevice) String() string {
 	}
 
 	return fmt.Sprintf("Id: %v, Org: %v, Name: %v, Token: [%v], TokenLastValidTime: %v, TokenValid: %v", h.Id, h.Org, h.Name, cred, h.TokenLastValidTime, h.TokenValid)
+}
+
+// This is a type conversion function but note that the token field within the persistent
+// is explicitly omitted so that it's not exposed in the API.
+func ConvertFromPersistentHorizonDevice(pDevice *persistence.ExchangeDevice) *HorizonDevice {
+	return &HorizonDevice{
+		Id:                 &pDevice.Id,
+		Org:                &pDevice.Org,
+		Pattern:            &pDevice.Pattern,
+		Name:               &pDevice.Name,
+		TokenValid:         &pDevice.TokenValid,
+		TokenLastValidTime: &pDevice.TokenLastValidTime,
+		HADevice:           &pDevice.HADevice,
+	}
 }
 
 type Attribute struct {

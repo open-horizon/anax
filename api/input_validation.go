@@ -2,18 +2,12 @@ package api
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"net/http"
+	// "github.com/golang/glog"
+	// "net/http"
 	"regexp"
 )
 
 var IllegalInputCharRegex = `[^-*+()?&! _\w\d.@,:/\\]`
-
-// "input" is flexible; could be a field name or other. Note: this is intended to be consumed by humans, either API consumers or developers of the UI. Add enum codes if these are to be evaluated in frontend code
-type APIUserInputError struct {
-	Error string `json:"error"`
-	Input string `json:"input,omitempty"`
-}
 
 func InputIsIllegal(str string) (string, error) {
 	reg, err := regexp.Compile(IllegalInputCharRegex)
@@ -47,24 +41,52 @@ func MapInputIsIllegal(m map[string]interface{}) (string, string, error) {
 	return "", "", nil
 }
 
-func checkInputString(w http.ResponseWriter, fieldId string, input *string) bool {
+// func checkInputString(w http.ResponseWriter, fieldId string, input *string) bool {
+// 	nErrMsg := "null and must not be"
+
+// 	// if true, bail
+// 	if input == nil {
+// 		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: fieldId, Error: nErrMsg})
+// 		return true
+// 	}
+// 	inputErr, err := InputIsIllegal(*input)
+// 	if err != nil {
+// 		glog.Errorf("Failed to check input: %v", err)
+// 		w.WriteHeader(http.StatusBadRequest)
+// 		return true
+// 	}
+
+// 	if inputErr != "" {
+// 		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: fieldId, Error: inputErr})
+// 		return true
+// 	}
+
+// 	return false
+// }
+
+// Verify that the input string value is valid according to the list of supported characters. if there
+// is an error, this function returns true to indicate that there was an error.
+func checkInputString(errorHandler ErrorHandler, fieldId string, input *string) bool {
 	nErrMsg := "null and must not be"
 
 	// if true, bail
 	if input == nil {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: fieldId, Error: nErrMsg})
-		return true
+		return errorHandler(NewAPIUserInputError(nErrMsg, fieldId))
+		// writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: fieldId, Error: nErrMsg})
+		// return true
 	}
 	inputErr, err := InputIsIllegal(*input)
 	if err != nil {
-		glog.Errorf("Failed to check input: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		return true
+		return errorHandler(NewSystemError(fmt.Sprintf("Failed to check input: %v", err)))
+		// glog.Errorf("Failed to check input: %v", err)
+		// w.WriteHeader(http.StatusBadRequest)
+		// return true
 	}
 
 	if inputErr != "" {
-		writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: fieldId, Error: inputErr})
-		return true
+		return errorHandler(NewAPIUserInputError(inputErr, fieldId))
+		// writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: fieldId, Error: inputErr})
+		// return true
 	}
 
 	return false
