@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -26,7 +25,6 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/microservice"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
@@ -154,7 +152,8 @@ func (a *API) router(includeStaticRedirects bool) *mux.Router {
 
 	router.HandleFunc("/status", a.status).Methods("GET", "OPTIONS")
 	router.HandleFunc("/token/random", tokenRandom).Methods("GET", "OPTIONS")
-	router.HandleFunc("/horizondevice", a.horizonDevice).Methods("GET", "POST", "PATCH", "OPTIONS")
+	router.HandleFunc("/horizondevice", a.horizonDevice).Methods("GET", "HEAD", "POST", "PATCH", "OPTIONS")
+	router.HandleFunc("/horizondevice/configstate", a.configstate).Methods("GET", "HEAD", "PUT", "OPTIONS")
 	router.HandleFunc("/workload", a.workload).Methods("GET", "OPTIONS") // for getting running stuff info
 	router.HandleFunc("/publickey", a.publickey).Methods("GET", "OPTIONS")
 	router.HandleFunc("/publickey/{filename}", a.publickey).Methods("GET", "PUT", "DELETE", "OPTIONS")
@@ -314,162 +313,61 @@ func writeResponse(w http.ResponseWriter, payload interface{}, successStatusCode
 
 func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 
-	// returns existing device ref and boolean if error occured during fetch (error output handled by this func)
-	fetch := func(device *HorizonDevice) (*persistence.ExchangeDevice, bool) {
-		existing, err := persistence.FindExchangeDevice(a.db)
-		if err != nil {
-			glog.Errorf("Failed fetching existing exchange device. Error: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return nil, true
-		}
+	resource := "horizondevice"
 
-		return existing, false
-	}
-
-	writeDevice := func(exDevice *persistence.ExchangeDevice, successStatusCode int) {
-
-		var outModel *HorizonDevice
-
-		if exDevice == nil {
-			device_id := os.Getenv("CMTN_DEVICE_ID")
-			outModel = &HorizonDevice{
-				Id: &device_id,
-			}
-		} else {
-			// assume input struct is well-formed, should come from persisted record
-			outModel = &HorizonDevice{
-				Name:               &exDevice.Name,
-				Org:                &exDevice.Org,
-				Pattern:            &exDevice.Pattern,
-				Id:                 &exDevice.Id,
-				TokenValid:         &exDevice.TokenValid,
-				TokenLastValidTime: &exDevice.TokenLastValidTime,
-				HADevice:           &exDevice.HADevice,
-			}
-		}
-
-		writeResponse(w, outModel, successStatusCode)
-	}
+	errorHandler := GetHTTPErrorHandler(w)
 
 	switch r.Method {
 	case "GET":
-		existingDevice, errWritten := a.existingDeviceOrError(w)
-		if errWritten {
-			return
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		if out, err := FindHorizonDeviceForOutput(a.db); err != nil {
+			errorHandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
+		} else {
+			writeResponse(w, out, http.StatusOK)
 		}
 
-		writeDevice(existingDevice, http.StatusOK)
+	case "HEAD":
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		if out, err := FindHorizonDeviceForOutput(a.db); err != nil {
+			errorHandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
+		} else if serial, errWritten := serializeResponse(w, out); !errWritten {
+			w.Header().Add("Content-Length", strconv.Itoa(len(serial)))
+			w.WriteHeader(http.StatusOK)
+		}
 
 	case "POST":
-		var device HorizonDevice
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
+		orgHandler := GetHTTPExchangeOrgHandler(a)
+		patternHandler := GetHTTPExchangePatternHandler(a)
+
+		// Read in the HTTP body and pass the device registration off to be validated and created.
+		var newDevice HorizonDevice
 		body, _ := ioutil.ReadAll(r.Body)
-		if err := json.Unmarshal(body, &device); err != nil {
-			glog.Infof("User submitted data couldn't be deserialized to Device struct: %v. Error: %v", string(body), err)
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		if bail := checkInputString(w, "device.organization", device.Org); bail {
-			return
-		}
-		// Device pattern is optional
-		if device.Pattern != nil && *device.Pattern != "" {
-			if bail := checkInputString(w, "device.pattern", device.Pattern); bail {
-				return
-			}
-		}
-		if bail := checkInputString(w, "device.name", device.Name); bail {
-			return
-		}
-		if device.Token == nil {
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "device.token", Error: "null and must not be"})
+		if err := json.Unmarshal(body, &newDevice); err != nil {
+			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body couldn't be deserialized to %v object: %v, error: %v", resource, string(body), err), "device"))
 			return
 		}
 
-		if device.Id == nil || *device.Id == "" {
-			device_id := os.Getenv("CMTN_DEVICE_ID")
-			if device_id == "" {
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "device.id", Error: "Either setup CMTN_DEVICE_ID environmental variable or specify device.id."})
-				return
-			}
-			device.Id = &device_id
-		}
-		if bail := checkInputString(w, "device.id", device.Id); bail {
-			return
-		}
-
-		// don't bother sanitizing token data; we *never* output it, and we *never* compute it
-
-		// Verify that the input organization exists in the exchange
-		deviceId := fmt.Sprintf("%v/%v", *device.Org, *device.Id)
-		if _, err := exchange.GetOrganization(a.Config.Collaborators.HTTPClientFactory, *device.Org, a.Config.Edge.ExchangeURL, deviceId, *device.Token); err != nil {
-			glog.Errorf("Organization %v not found in exchange, error: %v", *device.Org, err)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "organization", Error: fmt.Sprintf("organization %v not found in exchange, error: %v", *device.Org, err)})
-			return
-		}
-
-		// Verify that the input pattern is defined in the exchange. A device (or node) canonly use patterns that are defined within its own org.
-		if device.Pattern != nil && *device.Pattern != "" {
-			if patternDefs, err := exchange.GetPatterns(a.Config.Collaborators.HTTPClientFactory, *device.Org, *device.Pattern, a.Config.Edge.ExchangeURL, deviceId, *device.Token); err != nil {
-				glog.Errorf("Error searching for pattern %v for %v in exchange, error: %v", *device.Pattern, *device.Org, err)
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "pattern", Error: fmt.Sprintf("error searching for pattern %v in exchange, error: %v", *device.Pattern, err)})
-				return
-			} else if _, ok := patternDefs[fmt.Sprintf("%v/%v", *device.Org, *device.Pattern)]; !ok {
-				glog.Errorf("Pattern %v for %v not found in exchange, error: %v", *device.Pattern, *device.Org, err)
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "pattern", Error: fmt.Sprintf("pattern %v not found in exchange, error: %v", *device.Pattern, err)})
-				return
-			}
-		}
-
-		// Check for the device already in the local database
-		existing, fetchErrWritten := fetch(&device)
-		if fetchErrWritten {
-			// errors already written to response writer by fetch function call
-			return
-		}
-
-		// handle conflict here; should never be a conflict in POST method, PATCH is for update
-		if existing != nil {
-			w.WriteHeader(http.StatusConflict)
-			return
-		}
-
-		haDevice := false
-		if device.HADevice != nil && *device.HADevice == true {
-			haDevice = true
-		}
-
-		exDev, err := persistence.SaveNewExchangeDevice(a.db, *device.Id, *device.Token, *device.Name, haDevice, *device.Org, *device.Pattern)
-		if err != nil {
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			glog.Errorf("Error persisting new exchange device: %v", err)
+		// Validate and create the new device registration.
+		errHandled, device, exDev := CreateHorizonDevice(&newDevice, errorHandler, orgHandler, patternHandler, a.db)
+		if errHandled {
 			return
 		}
 
 		a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, *device.Id, *device.Token, *device.Org, *device.Pattern)
 
-		writeDevice(exDev, http.StatusCreated)
+		writeResponse(w, exDev, http.StatusCreated)
 
 	case "PATCH":
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
 		var device HorizonDevice
 
-		body, _ := ioutil.ReadAll(r.Body)
-		if err := json.Unmarshal(body, &device); err != nil {
-			glog.Infof("User submitted data couldn't be deserialized to Device struct: %v. Error: %v", string(body), err)
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		if bail := checkInputString(w, "device.id", device.Id); bail {
-			return
-		}
-		if device.Token == nil {
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "device.token", Error: "null and must not be"})
-			return
-		}
-
-		existing, fetchErrWritten := fetch(&device)
-		if fetchErrWritten {
-			// errors already written to response writer by fetch function call
+		existing, errWritten := a.existingDeviceOrError(w)
+		if errWritten {
 			return
 		}
 
@@ -478,13 +376,94 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		updatedDevice, err := persistence.SetExchangeDeviceToken(a.db, *device.Id, *device.Token)
+		body, _ := ioutil.ReadAll(r.Body)
+		if err := json.Unmarshal(body, &device); err != nil {
+			glog.Infof("User submitted data couldn't be deserialized to Device struct: %v. Error: %v", string(body), err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		if bail := checkInputString(GetHTTPErrorHandler(w), "device.id", device.Id); bail {
+			return
+		}
+		if device.Token == nil {
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("null and must not be", "device.token"))
+			return
+		}
+
+		updatedDevice, err := existing.SetExchangeDeviceToken(a.db, *device.Id, *device.Token)
 		if err != nil {
 			glog.Errorf("Error doing token update on horizon device object: %v. Error: %v", existing, err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 		}
 
-		writeDevice(updatedDevice, http.StatusOK)
+		// writeDevice(updatedDevice, http.StatusOK)
+		writeResponse(w, updatedDevice, http.StatusOK)
+
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, POST, PATCH, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *API) configstate(w http.ResponseWriter, r *http.Request) {
+
+	resource := "configstate"
+
+	errorHandler := GetHTTPErrorHandler(w)
+
+	switch r.Method {
+	case "GET":
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		if out, err := FindConfigstateForOutput(a.db); err != nil {
+			errorHandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
+		} else {
+			writeResponse(w, out, http.StatusOK)
+		}
+
+	case "HEAD":
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		if out, err := FindConfigstateForOutput(a.db); err != nil {
+			errorHandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
+		} else if serial, errWritten := serializeResponse(w, out); !errWritten {
+			w.Header().Add("Content-Length", strconv.Itoa(len(serial)))
+			w.WriteHeader(http.StatusOK)
+		}
+
+	case "PUT":
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		orgHandler := GetHTTPExchangeOrgHandler(a)
+		microserviceHandler := GetHTTPMicroserviceHandler(a)
+		patternHandler := GetHTTPExchangePatternHandler(a)
+		workloadResolver := GetHTTPWorkloadResolverHandler(a)
+
+		// Read in the HTTP body and pass the device registration off to be validated and created.
+		var configState Configstate
+		body, _ := ioutil.ReadAll(r.Body)
+		if err := json.Unmarshal(body, &configState); err != nil {
+			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body couldn't be deserialized to %v object: %v, error: %v", resource, string(body), err), "configstate"))
+			return
+		}
+
+		// Validate and update the config state.
+		errHandled, cfg, msgs := UpdateConfigstate(&configState, errorHandler, orgHandler, microserviceHandler, patternHandler, workloadResolver, a.db, a.Config)
+		if errHandled {
+			return
+		}
+
+		// Send out all messages
+		for _, msg := range msgs {
+			a.Messages() <- msg
+		}
+
+		// Send out the config complete message that enables the device for agreements
+		a.Messages() <- events.NewEdgeConfigCompleteMessage(events.NEW_DEVICE_CONFIG_COMPLETE)
+
+		writeResponse(w, cfg, http.StatusCreated)
 
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, POST, PATCH, OPTIONS")
@@ -500,11 +479,11 @@ func (a *API) existingDeviceOrError(w http.ResponseWriter) (*persistence.Exchang
 	existingDevice, err := persistence.FindExchangeDevice(a.db)
 
 	if err != nil {
-		glog.Errorf("Failed fetching existing exchange device. Error: %v", err)
+		glog.Errorf(apiLogString(fmt.Sprintf("Failed fetching existing exchange device, error: %v", err)))
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		statusWritten = true
 	} else if existingDevice == nil {
-		writeInputErr(w, http.StatusFailedDependency, &APIUserInputError{Error: "Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API's /horizondevice path."})
+		writeInputErr(w, http.StatusFailedDependency, NewAPIUserInputError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API's /horizondevice path.", "horizondevice"))
 		statusWritten = true
 	}
 
@@ -512,6 +491,9 @@ func (a *API) existingDeviceOrError(w http.ResponseWriter) (*persistence.Exchang
 }
 
 func (a *API) attribute(w http.ResponseWriter, r *http.Request) {
+
+	errorhandler := GetHTTPErrorHandler(w)
+
 	vars := mux.Vars(r)
 	glog.V(5).Infof("Attribute vars: %v", vars)
 	id := vars["id"]
@@ -535,7 +517,7 @@ func (a *API) attribute(w http.ResponseWriter, r *http.Request) {
 	handlePayload := func(permitPartial bool, doModifications func(permitPartial bool, attr persistence.Attribute)) {
 		defer r.Body.Close()
 
-		if attrs, inputErr, err := payloadToAttributes(w, r.Body, permitPartial, existingDevice); err != nil {
+		if attrs, inputErr, err := payloadToAttributes(errorhandler, r.Body, permitPartial, existingDevice); err != nil {
 			glog.Error("Error processing incoming attributes. ", err)
 			w.WriteHeader(http.StatusInternalServerError)
 		} else if !inputErr {
@@ -662,9 +644,11 @@ func (a *API) attribute(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// for registering what *should* be microservices but as of v2.1.0, are more
-// like the old contracts
+// For working with a node's representation of a microservice, including the policy and input variables of the microservice.
 func (a *API) service(w http.ResponseWriter, r *http.Request) {
+
+	resource := "service"
+	errorhandler := GetHTTPErrorHandler(w)
 
 	findAdditions := func(attrs []persistence.Attribute, incoming []persistence.Attribute) []persistence.Attribute {
 
@@ -742,12 +726,11 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		}
 
 	case "POST":
-		existingDevice, errWritten := a.existingDeviceOrError(w)
-		if errWritten {
-			return
-		}
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
-		// input should be: Service type w/ zero or more Attribute types
+		getMicroservice := GetHTTPMicroserviceHandler(a)
+
+		// Input should be: Service type w/ zero or more Attribute types
 		var service Service
 		body, _ := ioutil.ReadAll(r.Body)
 
@@ -755,300 +738,24 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		decoder.UseNumber()
 
 		if err := decoder.Decode(&service); err != nil {
-			glog.Errorf("User submitted data that couldn't be deserialized to service: %v. Error: %v", string(body), err)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.attribute", Error: fmt.Sprintf("could not be demarshalled, error: %v", err)})
+			errorhandler(NewAPIUserInputError(fmt.Sprintf("Input body couldn't be deserialized to %v object: %v, error: %v", resource, string(body), err), "service"))
 			return
 		}
 
-		glog.V(5).Infof("Service POST: %v", &service)
-
-		if bail := checkInputString(w, "sensor_url", service.SensorUrl); bail {
+		// Validate and create the service object and all of the service specific attributes in the body
+		// of the request.
+		errHandled, newService, msg := CreateService(&service, errorhandler, getMicroservice, a.db, a.Config)
+		if errHandled {
 			return
 		}
 
-		if bail := checkInputString(w, "sensor_name", service.SensorName); bail {
-			return
+		// Send the policy created message to the internal bus.
+		if msg != nil {
+			a.Messages() <- msg
 		}
 
-		// Default sensor version if not specified
-		if service.SensorVersion == nil {
-			def := "0.0.0"
-			service.SensorVersion = &def
-		}
-
-		// Convert the sensor version to a version expression
-		vExp, err := policy.Version_Expression_Factory(*service.SensorVersion)
-		if err != nil {
-			glog.Errorf("Unable to convert %v to a version expression, error %v", *service.SensorVersion, err)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "sensor_version", Error: fmt.Sprintf("sensor_version %v cannot be converted to a version expression, error %v", *service.SensorVersion, err)})
-			return
-		}
-
-		// Use the device's org if org not specified in the POST body.
-		if service.SensorOrg == nil {
-			service.SensorOrg = &existingDevice.Org
-		} else if bail := checkInputString(w, "sensor_org", service.SensorOrg); bail {
-			return
-		}
-
-		var msdef *persistence.MicroserviceDefinition
-
-		// Verify with the exchange to make sure the service exists
-		e_msdef, err := exchange.GetMicroservice(a.Config.Collaborators.HTTPClientFactory, *service.SensorUrl, *service.SensorOrg, vExp.Get_expression(), cutil.ArchString(), a.Config.Edge.ExchangeURL, existingDevice.GetId(), existingDevice.Token)
-		if err != nil || e_msdef == nil {
-			glog.Errorf("Unable to find the microservice definition in the exchange: %v", err)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Unable to find the microservice definition for '%v' on the exchange. Please verify sensor_url and sensor_version.", *service.SensorName)})
-			return
-		}
-		// Convert it to persistent format so that it can be saved to the db.
-		msdef, err = microservice.ConvertToPersistent(e_msdef, *service.SensorOrg)
-		if err != nil {
-			glog.Errorf("Error converting the microservice metadata to persistent.MicroserviceDefinition for %v version %v. %v", e_msdef.SpecRef, e_msdef.Version, err)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Error converting the microservice metadata to persistent.MicroserviceDefinition for %v version %v. %v", e_msdef.SpecRef, e_msdef.Version, err)})
-			return
-
-		}
-		// Save some of the items in the MicroserviceDefinition object for use in the upgrading process.
-		msdef.Name = *service.SensorName
-		msdef.UpgradeVersionRange = *service.SensorVersion
-		if service.AutoUpgrade != nil {
-			msdef.AutoUpgrade = *service.AutoUpgrade
-		}
-		if service.ActiveUpgrade != nil {
-			msdef.ActiveUpgrade = *service.ActiveUpgrade
-		}
-
-		service.SensorVersion = &msdef.Version
-
-		// Check if the microservice has been registered or not (currently only support one microservice registration)
-		if pms, err := persistence.FindMicroserviceDefs(a.db, []persistence.MSFilter{persistence.UrlMSFilter(*service.SensorUrl)}); err != nil {
-			glog.Errorf("Error accessing db to find microservice definition: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		} else if pms != nil && len(pms) > 0 {
-			glog.Errorf("Duplicate registration for %v. Anax only supports one registration for each microservice now.", *service.SensorUrl)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Duplicate registration for %v. Anax only supports one registration for each microservice now.", *service.SensorUrl)})
-			return
-		}
-
-		msdefAttributeVerifier := func(w http.ResponseWriter, attr persistence.Attribute) (bool, error) {
-
-			// Verfiy that all non-defaulted userInput variables in the microservice definition are specified in a mapped property attribute
-			// of this service invocation.
-			if msdef != nil && attr.GetMeta().Type == "MappedAttributes" {
-				for _, ui := range msdef.UserInputs {
-					if ui.DefaultValue != "" {
-						continue
-					} else if _, ok := attr.GetGenericMappings()[ui.Name]; !ok {
-						// There is a config variable missing from the generic mapped attributes
-						glog.Errorf("Variable %v defined in microservice %v %v is missing from the service definition.", ui.Name, msdef.SpecRef, msdef.Version)
-						writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].mapped", Error: fmt.Sprintf("variable %v is missing from mappings", ui.Name)})
-						return true, nil
-					}
-				}
-			}
-
-			return false, nil
-		}
-
-		patternedDeviceAttributeVerifier := func(w http.ResponseWriter, attr persistence.Attribute) (bool, error) {
-			// If the device declared itself to be using a pattern, then it CANNOT specify any attributes that generate policy
-			// settings . All policy is controlled by the pattern definition.
-			if existingDevice.Pattern != "" {
-				if attr.GetMeta().Type == "MeteringAttributes" || attr.GetMeta().Type == "PropertyAttributes" || attr.GetMeta().Type == "CounterPartyPropertyAttributes" || attr.GetMeta().Type == "AgreementProtocolAttributes" {
-					glog.Errorf("device is using a pattern %v, policy attributes are not supported.", existingDevice.Pattern)
-					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].type", Error: fmt.Sprintf("device is using a pattern %v, policy attributes are not supported.", existingDevice.Pattern)})
-					return true, nil
-				}
-			}
-
-			return false, nil
-		}
-
-		var attributes []persistence.Attribute
-		if service.Attributes != nil {
-			// build a serviceAttribute for each one
-			var err error
-			var inputErrWritten bool
-
-			attributes, inputErrWritten, err = toPersistedAttributesAttachedToService(w, existingDevice, a.Config.Edge.DefaultServiceRegistrationRAM, *service.Attributes, *service.SensorUrl, []AttributeVerifier{msdefAttributeVerifier, patternedDeviceAttributeVerifier})
-
-			// log even if there was an inputErr already written to the response
-			if err != nil {
-				glog.Errorf("Failure deserializing attributes: %v", err)
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-
-			if inputErrWritten {
-				return
-			}
-		}
-
-		// Information advertised in the edge node policy file
-		var policyArch string
-		var haPartner []string
-		var meterPolicy policy.Meter
-		var counterPartyProperties policy.RequiredProperty
-		var properties map[string]interface{}
-		var globalAgreementProtocols []interface{}
-
-		// props to store in file; stuff that is enforced; need to convert from serviceattributes to props. *CAN NEVER BE* unpublishable ServiceAttributes
-		props := make(map[string]interface{})
-
-		// There might be device wide attributes. Check for them and grab the values to use as defaults.
-		if allAttrs, err := persistence.FindApplicableAttributes(a.db, ""); err != nil {
-			glog.Errorf("Unable to fetch workload preferences. Err: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		} else {
-			for _, attr := range allAttrs {
-
-				// Extract ha property
-				if attr.GetMeta().Type == "HAAttributes" && len(attr.GetMeta().SensorUrls) == 0 {
-					haPartner = attr.(persistence.HAAttributes).Partners
-					glog.V(5).Infof("Found default global ha attribute %v", attr)
-				}
-
-				// Global policy attributes are ignored for devices that are using a pattern. All policy is controlled
-				// by the pattern definition.
-				if existingDevice.Pattern == "" {
-					// Extract global metering property
-					if attr.GetMeta().Type == "MeteringAttributes" && len(attr.GetMeta().SensorUrls) == 0 {
-						// found a global metering entry
-						meterPolicy = policy.Meter{
-							Tokens:                attr.(persistence.MeteringAttributes).Tokens,
-							PerTimeUnit:           attr.(persistence.MeteringAttributes).PerTimeUnit,
-							NotificationIntervalS: attr.(persistence.MeteringAttributes).NotificationIntervalS,
-						}
-						glog.V(5).Infof("Found default global metering attribute %v", attr)
-					}
-
-					// Extract global counterparty property
-					if attr.GetMeta().Type == "CounterPartyPropertyAttributes" && len(attr.GetMeta().SensorUrls) == 0 {
-						counterPartyProperties = attr.(persistence.CounterPartyPropertyAttributes).Expression
-						glog.V(5).Infof("Found default global counterpartyproperty attribute %v", attr)
-					}
-
-					// Extract global properties
-					if attr.GetMeta().Type == "PropertyAttributes" && len(attr.GetMeta().SensorUrls) == 0 {
-						properties = attr.(persistence.PropertyAttributes).Mappings
-						glog.V(5).Infof("Found default global properties %v", properties)
-					}
-
-					// Extract global agreement protocol attribute
-					if attr.GetMeta().Type == "AgreementProtocolAttributes" && len(attr.GetMeta().SensorUrls) == 0 {
-						agpl := attr.(persistence.AgreementProtocolAttributes).Protocols
-						globalAgreementProtocols = agpl.([]interface{})
-						glog.V(5).Infof("Found default global agreement protocol attribute %v", globalAgreementProtocols)
-					}
-				}
-			}
-		}
-
-		// ha device has no ha attribute from either device wide or service wide attributes
-		haType := reflect.TypeOf(persistence.HAAttributes{}).Name()
-		if existingDevice.HADevice && len(haPartner) == 0 {
-			if attr := attributesContains(attributes, *service.SensorUrl, haType); attr == nil {
-				glog.Errorf("HA device %v can only support HA enabled services %v", existingDevice, service)
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "service.[attribute].type", Error: "services on an HA device must specify an HA partner."})
-				return
-			}
-		}
-
-		var serviceAgreementProtocols []policy.AgreementProtocol
-		// persist all prefs; while we're at it, fetch the props we want to publish and the arch
-		for _, attr := range attributes {
-
-			_, err := persistence.SaveOrUpdateAttribute(a.db, attr, "", false)
-			if err != nil {
-				glog.Errorf("Error saving attribute: %v", err)
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-
-			switch attr.(type) {
-			case *persistence.ComputeAttributes:
-				compute := attr.(*persistence.ComputeAttributes)
-				props["cpus"] = strconv.FormatInt(compute.CPUs, 10)
-				props["ram"] = strconv.FormatInt(compute.RAM, 10)
-
-			case *persistence.ArchitectureAttributes:
-				policyArch = attr.(*persistence.ArchitectureAttributes).Architecture
-
-			case *persistence.HAAttributes:
-				haPartner = attr.(*persistence.HAAttributes).Partners
-
-			case *persistence.MeteringAttributes:
-				meterPolicy = policy.Meter{
-					Tokens:                attr.(*persistence.MeteringAttributes).Tokens,
-					PerTimeUnit:           attr.(*persistence.MeteringAttributes).PerTimeUnit,
-					NotificationIntervalS: attr.(*persistence.MeteringAttributes).NotificationIntervalS,
-				}
-
-			case *persistence.CounterPartyPropertyAttributes:
-				counterPartyProperties = attr.(*persistence.CounterPartyPropertyAttributes).Expression
-
-			case *persistence.PropertyAttributes:
-				properties = attr.(*persistence.PropertyAttributes).Mappings
-
-			case *persistence.AgreementProtocolAttributes:
-				agpl := attr.(*persistence.AgreementProtocolAttributes).Protocols
-				serviceAgreementProtocols = agpl.([]policy.AgreementProtocol)
-
-			default:
-				glog.V(4).Infof("Unhandled attr type (%T): %v", attr, attr)
-			}
-		}
-
-		// add the PropertyAttributes to props
-		if len(properties) > 0 {
-			for key, val := range properties {
-				glog.V(5).Infof("Adding property %v=%v with value type %T", key, val, val)
-				props[key] = val
-			}
-		}
-
-		glog.V(5).Infof("Complete Attr list for registration of service %v: %v", *service.SensorUrl, attributes)
-
-		// Establish the correct agreement protocol list
-		var agpList *[]policy.AgreementProtocol
-		if len(serviceAgreementProtocols) != 0 {
-			agpList = &serviceAgreementProtocols
-		} else if list, err := policy.ConvertToAgreementProtocolList(globalAgreementProtocols); err != nil {
-			glog.Errorf("Error converting global agreement protocol list attribute %v to agreement protocol list, error: %v", globalAgreementProtocols, err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		} else {
-			agpList = list
-		}
-
-		// Save ms def in local db
-		if err := persistence.SaveOrUpdateMicroserviceDef(a.db, msdef); err != nil { // save to db
-			glog.Errorf("Error saving microservice definition %v into db: %v", *msdef, err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		// Get max number of agreements for policy
-		maxAgreements := 1
-		if msdef.Sharable == exchange.MS_SHARING_MODE_SINGLE || msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE {
-			if existingDevice.Pattern == "" {
-				maxAgreements = 2 // hard coded to 2 for now. will change to 0 later
-			} else {
-				maxAgreements = 0 // no limites for pattern
-			}
-		}
-
-		// Generate a policy based on all the attributes and the service definition
-		if genErr := policy.GeneratePolicy(a.Messages(), *service.SensorUrl, *service.SensorOrg, *service.SensorName, *service.SensorVersion, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, maxAgreements, a.Config.Edge.PolicyPath, existingDevice.Org); genErr != nil {
-			glog.Errorf("Error: %v", genErr)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		// TODO: when there is a way to represent services for output, write it out w/ the 201
-		w.WriteHeader(http.StatusCreated)
+		// Write the new service back to the caller.
+		writeResponse(w, newService, http.StatusCreated)
 
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, POST, OPTIONS")
@@ -1269,12 +976,10 @@ func (a *API) publickey(w http.ResponseWriter, r *http.Request) {
 		fileName := pathVars["filename"]
 
 		if fileName == "" {
-			glog.Errorf("APIWorker %v /publickey unable to upload, no file name specfied", r.Method)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "public key file", Error: "no filename specified"})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("no filename specified", "public key file"))
 			return
 		} else if !strings.HasSuffix(fileName, ".pem") {
-			glog.Errorf("APIWorker %v /publickey unable to upload, file must have .pem suffix", r.Method)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "public key file", Error: "filename must have .pem suffix"})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("filename must have .pem suffix", "public key file"))
 			return
 		}
 
@@ -1290,12 +995,10 @@ func (a *API) publickey(w http.ResponseWriter, r *http.Request) {
 			glog.Errorf("APIWorker %v /publickey unable to read uploaded public key file, error: %v", r.Method, err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 		} else if nkBlock, _ := pem.Decode(nkBytes); nkBlock == nil {
-			glog.Errorf("APIWorker %v /publickey unable to extract pem block from uploaded public key file", r.Method)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "public key file", Error: "not a pem encoded file"})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("not a pem encoded file", "public key file"))
 			return
 		} else if _, err := x509.ParsePKIXPublicKey(nkBlock.Bytes); err != nil {
-			glog.Errorf("APIWorker %v /publickey unable to parse uploaded public key, error: %v", r.Method, err)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "public key file", Error: "not a PKIX public key"})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("not a PKIX public key", "public key file"))
 			return
 		} else if err := os.MkdirAll(targetPath, 0644); err != nil {
 			glog.Errorf("APIWorker %v /publickey unable to create user key directory, error %v", r.Method, err)
@@ -1314,8 +1017,7 @@ func (a *API) publickey(w http.ResponseWriter, r *http.Request) {
 		fileName := pathVars["filename"]
 
 		if fileName == "" {
-			glog.Errorf("APIWorker %v /publickey unable to delete, no file name specfied", r.Method)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "public key file", Error: "no filename specified"})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("no filename specified", "public key file"))
 			return
 		}
 		glog.V(3).Infof("APIWorker %v /publickey of %v", r.Method, fileName)
@@ -1357,20 +1059,6 @@ func (a *API) publickey(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 
-}
-
-func writeInputErr(writer http.ResponseWriter, status int, inputErr *APIUserInputError) {
-	if serial, err := json.Marshal(inputErr); err != nil {
-		glog.Infof("Error serializing agreement output: %v", err)
-		http.Error(writer, "Internal server error", http.StatusInternalServerError)
-	} else {
-		writer.WriteHeader(status)
-		writer.Header().Set("Content-Type", "application/json")
-		if _, err := writer.Write(serial); err != nil {
-			glog.Infof("Error writing response: %v", err)
-			http.Error(writer, "Internal server error", http.StatusInternalServerError)
-		}
-	}
 }
 
 func getPemFiles(homePath string) ([]os.FileInfo, error) {
@@ -1447,8 +1135,7 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 		decoder.UseNumber()
 
 		if err := decoder.Decode(&cfg); err != nil {
-			glog.Errorf("User submitted data that couldn't be deserialized to workload config: %v. Error: %v", string(body), err)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "workloadConfig", Error: fmt.Sprintf("could not be demarshalled, error: %v", err)})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("could not be demarshalled, error: %v", err), "workloadConfig"))
 			return
 		}
 
@@ -1462,24 +1149,20 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 		// Validate the input strings. The variables map can be empty if the device owner wants
 		// the workload to use all default values, so we wont validate that map.
 		if cfg.WorkloadURL == "" {
-			glog.Errorf("WorkloadConfig workload_url is empty: %v", cfg)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "workload_url", Error: "not specified"})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("not specified", "workload_url"))
 			return
 		} else if cfg.Version == "" {
-			glog.Errorf("WorkloadConfig workload_version is empty: %v", cfg)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "workload_version", Error: "not specified"})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("not specified", "workload_version"))
 			return
 		} else if !policy.IsVersionString(cfg.Version) && !policy.IsVersionExpression(cfg.Version) {
-			glog.Errorf("WorkloadConfig workload_version is not a valid version string or expression: %v", cfg)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "workload_version", Error: fmt.Sprintf("workload_version %v is not a valid version string or expression", cfg.Version)})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("workload_version %v is not a valid version string or expression", cfg.Version), "workload_version"))
 			return
 		}
 
 		// Convert the input version to a full version expression if it is not already a full expression.
 		vExp, verr := policy.Version_Expression_Factory(cfg.Version)
 		if verr != nil {
-			glog.Errorf("WorkloadConfig workload_version %v error converting to full version expression, error: %v", cfg.Version, verr)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "workload_version", Error: fmt.Sprintf("workload_version %v error converting to full version expression, error: %v", cfg.Version, verr)})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("workload_version %v error converting to full version expression, error: %v", cfg.Version, verr), "workload_version"))
 			return
 		}
 
@@ -1488,8 +1171,7 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 		if cfg.Org == "" {
 			org = existingDevice.Org
 		} else if _, err := exchange.GetOrganization(a.Config.Collaborators.HTTPClientFactory, org, a.Config.Edge.ExchangeURL, existingDevice.GetId(), existingDevice.Token); err != nil {
-			glog.Errorf("WorkloadConfig organization %v not found in exchange, error: %v", cfg.Org, err)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "organization", Error: fmt.Sprintf("organization %v not found in exchange, error: %v", cfg.Org, err)})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("organization %v not found in exchange, error: %v", cfg.Org, err), "organization"))
 			return
 		}
 
@@ -1508,8 +1190,7 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 		// Get the workload metadata from the exchange and verify the userInput against the variables in the POST body.
 		workloadDef, err := exchange.GetWorkload(a.Config.Collaborators.HTTPClientFactory, cfg.WorkloadURL, org, vExp.Get_expression(), cutil.ArchString(), a.Config.Edge.ExchangeURL, existingDevice.GetId(), existingDevice.Token)
 		if err != nil || workloadDef == nil {
-			glog.Errorf("Unable to find the workload definition using version %v in the exchange: %v", vExp.Get_expression(), err)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Unable to find the workload definition using version %v in the exchange.", vExp.Get_expression())})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("Unable to find the workload definition using version %v in the exchange.", vExp.Get_expression()), "workload_url"))
 			return
 		}
 
@@ -1547,13 +1228,11 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 					errMsg = fmt.Sprintf("WorkloadConfig variable %v is type %T, but is an unexpected type.", varName, varValue)
 				}
 				if errMsg != "" {
-					glog.Error(errMsg)
-					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: errMsg})
+					writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(errMsg, "variables"))
 					return
 				}
 			} else {
-				glog.Errorf("Unable to find the workload config variable %v in workload definition userInputs: %v", varName, workloadDef.UserInputs)
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("Unable to find the workload config variable %v in workload definition", varName)})
+				writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("Unable to find the workload config variable %v in workload definition", varName), "variables"))
 				return
 			}
 		}
@@ -1570,8 +1249,7 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 				cfg.Variables[ui.Name] = ui.DefaultValue
 			} else {
 				// User Input variable is not defined in the workload config request and doesnt have a default, that's a problem.
-				glog.Errorf("WorkloadConfig does not set %v, which has no default value in the workload", ui.Name)
-				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Error: fmt.Sprintf("WorkloadConfig does not set %v, which has no default value", ui.Name)})
+				writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("WorkloadConfig does not set %v, which has no default value", ui.Name), "variables"))
 				return
 			}
 		}
@@ -1598,8 +1276,7 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 		decoder.UseNumber()
 
 		if err := decoder.Decode(&cfg); err != nil {
-			glog.Errorf("User submitted data that couldn't be deserialized to workload config: %v. Error: %v", string(body), err)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "workloadConfig", Error: fmt.Sprintf("could not be demarshalled, error: %v", err)})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("could not be demarshalled, error: %v", err), "workloadConfig"))
 			return
 		}
 
@@ -1607,24 +1284,20 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 
 		// Validate the input strings. The variables map is ignored.
 		if cfg.WorkloadURL == "" {
-			glog.Errorf("WorkloadConfig workload_url is empty: %v", cfg)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "workload_url", Error: "not specified"})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("not specified", "workload_url"))
 			return
 		} else if cfg.Version == "" {
-			glog.Errorf("WorkloadConfig workload_version is empty: %v", cfg)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "workload_version", Error: "not specified"})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("not specified", "workload_version"))
 			return
 		} else if !policy.IsVersionString(cfg.Version) && !policy.IsVersionExpression(cfg.Version) {
-			glog.Errorf("WorkloadConfig workload_version is not a valid version string: %v", cfg)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "workload_version", Error: fmt.Sprintf("workload_version %v is not a valid version string", cfg.Version)})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("workload_version %v is not a valid version string", cfg.Version), "workload_version"))
 			return
 		}
 
 		// Convert the input version to a full version expression if it is not already a full expression.
 		vExp, verr := policy.Version_Expression_Factory(cfg.Version)
 		if verr != nil {
-			glog.Errorf("WorkloadConfig workload_version %v error converting to full version expression, error: %v", cfg.Version, verr)
-			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "workload_version", Error: fmt.Sprintf("workload_version %v error converting to full version expression, error: %v", cfg.Version, verr)})
+			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("workload_version %v error converting to full version expression, error: %v", cfg.Version, verr), "workload_version"))
 			return
 		}
 
@@ -1735,4 +1408,8 @@ func (a *API) microservice(w http.ResponseWriter, r *http.Request) {
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
+}
+
+var apiLogString = func(v interface{}) string {
+	return fmt.Sprintf("API: %v", v)
 }

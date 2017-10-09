@@ -110,10 +110,10 @@ func (pm *PatternManager) hasPattern(org string, pattern string) bool {
 // Given a list of org/pattern pairs that this agbot is supported to be serving, take that list and
 // convert it to map of maps (keyed by org and pattern name) to hold all the pattern metadata. This
 // will allow the PatternManager to know when the pattern metadata changes.
-func (pm *PatternManager) SetCurrentPatterns(servedPatterns *[]exchange.ServedPatterns, policyPath string) error {
+func (pm *PatternManager) SetCurrentPatterns(servedPatterns map[string]exchange.ServedPattern, policyPath string) error {
 
 	// Exit early if nothing to do
-	if len(pm.OrgPatterns) == 0 && len(*servedPatterns) == 0 {
+	if len(pm.OrgPatterns) == 0 && len(servedPatterns) == 0 {
 		return nil
 	}
 
@@ -122,7 +122,7 @@ func (pm *PatternManager) SetCurrentPatterns(servedPatterns *[]exchange.ServedPa
 
 	// For each org/pattern pair that this agbot is supposed to be serving copy the map entries from the
 	// existing map or create new ones as necesssary.
-	for _, served := range *servedPatterns {
+	for _, served := range servedPatterns {
 
 		// If we have encountered a new org in the served pattern list, create a map of patterns for it.
 		if _, ok := newMap[served.Org]; !ok {

@@ -1020,7 +1020,6 @@ func (w *GovernanceWorker) GetWorkloadConfig(url string, version string) (map[st
 	// Filter to return workload configs with versions less than or equal to the input workload version range
 	OlderWorkloadWCFilter := func(workload_url string, version string) persistence.WCFilter {
 		return func(e persistence.WorkloadConfig) bool {
-			// if e.WorkloadURL == workload_url && strings.Compare(e.Version, version) <= 0 {
 			if vExp, err := policy.Version_Expression_Factory(e.VersionExpression); err != nil {
 				return false
 			} else if inRange, err := vExp.Is_within_range(version); err != nil {

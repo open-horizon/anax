@@ -148,19 +148,19 @@ type GetDevicesResponse struct {
 	LastIndex int               `json:"lastIndex"`
 }
 
-type ServedPatterns struct {
-	Org     string `json:"orgid"`
-	Pattern string `json:"pattern"`
+type ServedPattern struct {
+	Org         string `json:"patternOrgid"`
+	Pattern     string `json:"pattern"`
+	LastUpdated string `json:"lastUpdated"`
 }
 
 type Agbot struct {
-	Token         string           `json:"token"`
-	Name          string           `json:"name"`
-	Owner         string           `json:"owner"`
-	Patterns      []ServedPatterns `json:"patterns"`
-	MsgEndPoint   string           `json:"msgEndPoint"`
-	LastHeartbeat string           `json:"lastHeartbeat"`
-	PublicKey     []byte           `json:"publicKey"`
+	Token         string `json:"token"`
+	Name          string `json:"name"`
+	Owner         string `json:"owner"`
+	MsgEndPoint   string `json:"msgEndPoint"`
+	LastHeartbeat string `json:"lastHeartbeat"`
+	PublicKey     []byte `json:"publicKey"`
 }
 
 func (a Agbot) String() string {
@@ -174,6 +174,10 @@ func (a Agbot) ShortString() string {
 type GetAgbotsResponse struct {
 	Agbots    map[string]Agbot `json:"agbots"`
 	LastIndex int              `json:"lastIndex"`
+}
+
+type GetAgbotsPatternsResponse struct {
+	Patterns map[string]ServedPattern `json:"patterns"`
 }
 
 type AgbotAgreement struct {
@@ -438,6 +442,21 @@ func CreateSearchPatternRequest() *SearchExchangePatternRequest {
 // This function creates the device registration message body.
 func CreateDevicePut(token string, name string) *PutDeviceRequest {
 
+	pdr := &PutDeviceRequest{
+		Token:            token,
+		Name:             name,
+		MsgEndPoint:      "",
+		Pattern:          "",
+		SoftwareVersions: make(map[string]string),
+		PublicKey:        []byte(""),
+	}
+
+	return pdr
+}
+
+// This function creates the device registration complete message body.
+func CreatePatchDeviceKey() *PatchAgbotPublicKey {
+
 	keyBytes := func() []byte {
 		if pubKey, _, err := GetKeys(""); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf("Error getting keys %v", err)))
@@ -450,12 +469,9 @@ func CreateDevicePut(token string, name string) *PutDeviceRequest {
 		}
 	}
 
-	pdr := &PutDeviceRequest{
-		Token:            token,
-		Name:             name,
-		MsgEndPoint:      "",
-		SoftwareVersions: make(map[string]string),
-		PublicKey:        keyBytes(),
+	// Same request body structure for node and agbot.
+	pdr := &PatchAgbotPublicKey{
+		PublicKey: keyBytes(),
 	}
 
 	return pdr
@@ -844,6 +860,7 @@ func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, 
 
 	glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving workload %v %v %v %v", wURL, wOrg, wVersion, wArch)))
 
+	res := new(policy.APISpecList)
 	// Get a version specific workload definition.
 	if workload, err := GetWorkload(httpClientFactory, wURL, wOrg, wVersion, wArch, exURL, id, token); err != nil {
 		return nil, err
@@ -870,13 +887,15 @@ func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, 
 					return nil, err
 				} else if ms == nil {
 					return nil, errors.New(fmt.Sprintf("unable to find microservice %v within %v", apiSpec, vExp))
+				} else {
+					newAPISpec := policy.APISpecification_Factory(ms.SpecRef, apiSpec.Org, ms.Version, ms.Arch)
+					if ms.Sharable == MS_SHARING_MODE_SINGLE {
+						newAPISpec.ExclusiveAccess = false
+					}
+					(*res) = append((*res), (*newAPISpec))
 				}
 			}
 			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved microservices for %v %v %v %v", wURL, wOrg, wVersion, wArch)))
-		}
-		res := new(policy.APISpecList)
-		for _, apiSpec := range workload.APISpecs {
-			(*res) = append((*res), (*policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch)))
 		}
 		glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved workload %v %v %v %v", wURL, wOrg, wVersion, wArch)))
 		return res, nil
@@ -1044,7 +1063,7 @@ func makePolicyName(patternName string, workloadURL string, workloadOrg string, 
 
 	url := ""
 	pieces := strings.SplitN(workloadURL, "/", 3)
-	if len(pieces) >= 2 {
+	if len(pieces) >= 3 {
 		url = strings.TrimSuffix(pieces[2], "/")
 		url = strings.Replace(url, "/", "-", -1)
 	}
@@ -1243,6 +1262,9 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 						return nil, nil
 
 					case *GetPatternResponse:
+						return nil, nil
+
+					case *GetAgbotsPatternsResponse:
 						return nil, nil
 
 					default:

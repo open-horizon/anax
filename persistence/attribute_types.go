@@ -30,6 +30,10 @@ func (a LocationAttributes) Update(other Attribute) error {
 	return fmt.Errorf("Update not implemented for type: %T", a)
 }
 
+func (a LocationAttributes) String() string {
+	return fmt.Sprintf("meta: %v, lat: %v, lon: %v, UserProvidedCoords: %v, UseGps: %v", a.Meta, a.Lat, a.Lon, a.UserProvidedCoords, a.UseGps)
+}
+
 type ArchitectureAttributes struct {
 	Meta         *AttributeMeta `json:"meta"`
 	Architecture string         `json:"architecture"`
@@ -47,6 +51,10 @@ func (a ArchitectureAttributes) GetGenericMappings() map[string]interface{} {
 
 func (a ArchitectureAttributes) Update(other Attribute) error {
 	return fmt.Errorf("Update not implemented for type: %T", a)
+}
+
+func (a ArchitectureAttributes) String() string {
+	return fmt.Sprintf("Meta: %v, Arch: %v", a.Meta, a.Architecture)
 }
 
 type ComputeAttributes struct {
@@ -69,6 +77,10 @@ func (a ComputeAttributes) GetGenericMappings() map[string]interface{} {
 // TODO: duplicate this for the others too
 func (a ComputeAttributes) Update(other Attribute) error {
 	return fmt.Errorf("Update not implemented for type: %T", a)
+}
+
+func (a ComputeAttributes) String() string {
+	return fmt.Sprintf("Meta: %v, CPUs: %v, RAM: %v", a.Meta, a.CPUs, a.RAM)
 }
 
 type HAAttributes struct {
@@ -100,6 +112,10 @@ func (a HAAttributes) PartnersContains(id string) bool {
 	return false
 }
 
+func (a HAAttributes) String() string {
+	return fmt.Sprintf("Meta: %v, Partners: %v", a.Meta, a.Partners)
+}
+
 type MeteringAttributes struct {
 	Meta                  *AttributeMeta `json:"meta"`
 	Tokens                uint64         `json:"tokens"`
@@ -124,6 +140,10 @@ func (a MeteringAttributes) Update(other Attribute) error {
 	return fmt.Errorf("Update not implemented for type: %T", a)
 }
 
+func (a MeteringAttributes) String() string {
+	return fmt.Sprintf("Meta: %v, Tokens: %v, PerTimeUnit: %v, NotificationIntervalS: %v", a.Meta, a.Tokens, a.PerTimeUnit, a.NotificationIntervalS)
+}
+
 type CounterPartyPropertyAttributes struct {
 	Meta       *AttributeMeta         `json:"meta"`
 	Expression map[string]interface{} `json:"expression"`
@@ -142,6 +162,10 @@ func (a CounterPartyPropertyAttributes) GetGenericMappings() map[string]interfac
 // TODO: duplicate this for the others too
 func (a CounterPartyPropertyAttributes) Update(other Attribute) error {
 	return fmt.Errorf("Update not implemented for type: %T", a)
+}
+
+func (a CounterPartyPropertyAttributes) String() string {
+	return fmt.Sprintf("Meta: %v, Expression: %v", a.Meta, a.Expression)
 }
 
 type PropertyAttributes struct {
@@ -166,6 +190,10 @@ func (a PropertyAttributes) GetGenericMappings() map[string]interface{} {
 // TODO: duplicate this for the others too
 func (a PropertyAttributes) Update(other Attribute) error {
 	return fmt.Errorf("Update not implemented for type: %T", a)
+}
+
+func (a PropertyAttributes) String() string {
+	return fmt.Sprintf("Meta: %v, Mappings: %v", a.Meta, a.Mappings)
 }
 
 type MappedAttributes struct {
@@ -204,6 +232,10 @@ func (a MappedAttributes) Update(other Attribute) error {
 	return nil
 }
 
+func (a MappedAttributes) String() string {
+	return fmt.Sprintf("Meta: %v, Mappings: %v", a.Meta, a.Mappings)
+}
+
 type AgreementProtocolAttributes struct {
 	Meta      *AttributeMeta `json:"meta"`
 	Protocols interface{}    `json:"protocols"`
@@ -222,6 +254,10 @@ func (a AgreementProtocolAttributes) GetGenericMappings() map[string]interface{}
 // TODO: duplicate this for the others too
 func (a AgreementProtocolAttributes) Update(other Attribute) error {
 	return fmt.Errorf("Update not implemented for type: %T", a)
+}
+
+func (a AgreementProtocolAttributes) String() string {
+	return fmt.Sprintf("Meta: %v, Protocols: %v", a.Meta, a.Protocols)
 }
 
 type HTTPSBasicAuthAttributes struct {

@@ -51,3 +51,18 @@ func NewAdvertisePolicyCommand(fileName string) *AdvertisePolicyCommand {
 		PolicyFile: fileName,
 	}
 }
+
+// ==============================================================================================================
+type EdgeConfigCompleteCommand struct {
+	Msg *events.EdgeConfigCompleteMessage
+}
+
+func (d EdgeConfigCompleteCommand) ShortString() string {
+	return fmt.Sprintf("%v", d)
+}
+
+func NewEdgeConfigCompleteCommand(msg *events.EdgeConfigCompleteMessage) *EdgeConfigCompleteCommand {
+	return &EdgeConfigCompleteCommand{
+		Msg: msg,
+	}
+}

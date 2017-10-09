@@ -56,8 +56,9 @@ const (
 	DELETED_POLICY EventId = "DELETED_POLICY"
 
 	// exchange-related
-	NEW_DEVICE_REG EventId = "NEW_DEVICE_REG"
-	NEW_AGBOT_REG  EventId = "NEW_AGBOT_REG"
+	NEW_DEVICE_REG             EventId = "NEW_DEVICE_REG"
+	NEW_DEVICE_CONFIG_COMPLETE EventId = "NEW_DEVICE_CONFIG_COMPLETE"
+	NEW_AGBOT_REG              EventId = "NEW_AGBOT_REG"
 
 	// agreement-related
 	AGREEMENT_REACHED        EventId = "AGREEMENT_REACHED"
@@ -224,7 +225,7 @@ func (e PolicyCreatedMessage) ShortString() string {
 	return e.String()
 }
 
-func (e *PolicyCreatedMessage) Event() Event {
+func (e PolicyCreatedMessage) Event() Event {
 	return e.event
 }
 
@@ -389,6 +390,32 @@ func NewEdgeRegisteredExchangeMessage(evId EventId, device_id string, token stri
 		token:     token,
 		org:       org,
 		pattern:   pattern,
+	}
+}
+
+// This event indicates that the edge device configuration is complete
+type EdgeConfigCompleteMessage struct {
+	event Event
+}
+
+func (e EdgeConfigCompleteMessage) String() string {
+	return fmt.Sprintf("event: %v", e.event)
+}
+
+func (e EdgeConfigCompleteMessage) ShortString() string {
+	return e.String()
+}
+
+func (e *EdgeConfigCompleteMessage) Event() Event {
+	return e.event
+}
+
+func NewEdgeConfigCompleteMessage(evId EventId) *EdgeConfigCompleteMessage {
+
+	return &EdgeConfigCompleteMessage{
+		event: Event{
+			Id: evId,
+		},
 	}
 }
 

@@ -135,6 +135,13 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 			w.containerSyncUpEvent = true
 		}
 
+	case *events.EdgeConfigCompleteMessage:
+		msg, _ := incoming.(*events.EdgeConfigCompleteMessage)
+		switch msg.Event().Id {
+		case events.NEW_DEVICE_CONFIG_COMPLETE:
+			w.Commands <- NewEdgeConfigCompleteCommand(msg)
+		}
+
 	default: //nothing
 	}
 
@@ -278,6 +285,13 @@ func (w *AgreementWorker) start() {
 				cmd, _ := command.(*producer.BCWritableCommand)
 				for _, pph := range w.producerPH {
 					pph.SetBlockchainWritable(cmd)
+				}
+
+			case *EdgeConfigCompleteCommand:
+				if w.deviceToken == "" {
+					glog.Warningf(logString(fmt.Sprintf("ignoring config complete, device not registered: %v and %v", w.deviceId, w.deviceToken)))
+				} else {
+					w.patchNodeKey()
 				}
 
 			default:
@@ -543,6 +557,30 @@ func (w *AgreementWorker) registerNode(dev *persistence.ExchangeDevice, ms *[]ex
 	}
 }
 
+func (w *AgreementWorker) patchNodeKey() error {
+
+	pdr := exchange.CreatePatchDeviceKey()
+
+	var resp interface{}
+	resp = new(exchange.PutDeviceResponse)
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId)
+
+	glog.V(3).Infof(logString(fmt.Sprintf("patching messaging key to node entry: %v at %v", pdr, targetURL)))
+
+	for {
+		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PATCH", targetURL, w.deviceId, w.deviceToken, pdr, &resp); err != nil {
+			return err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(3).Infof(logString(fmt.Sprintf("patched node key for device %v in exchange: %v", w.deviceId, resp)))
+			return nil
+		}
+	}
+}
+
 func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 
 	var pType, pValue, pCompare string
@@ -621,6 +659,10 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 
 		}
 
+		// Register the node's microservices and policies in the exchange so that the agbot can see
+		// what's available on the node. However, the node's messaging key is published later, after the
+		// configstate API is called to complete configuration on the node. It is the presence of this key
+		// in the exchange that tells the agbot it can make an agreement with this device.
 		if err := w.registerNode(dev, &ms); err != nil {
 			return err
 		}

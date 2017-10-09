@@ -83,6 +83,7 @@ type Attribute interface {
 	GetMeta() *AttributeMeta
 	GetGenericMappings() map[string]interface{}
 	Update(other Attribute) error
+	String() string
 }
 
 type MetaAttributesOnly struct {

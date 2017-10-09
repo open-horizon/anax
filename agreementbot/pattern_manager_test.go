@@ -4,6 +4,7 @@ package agreementbot
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"github.com/open-horizon/anax/exchange"
 	"io/ioutil"
@@ -11,6 +12,12 @@ import (
 	"strings"
 	"testing"
 )
+
+func init() {
+	flag.Set("alsologtostderr", "true")
+	flag.Set("v", "7")
+	// no need to parse flags, that's done by test framework
+}
 
 func Test_pattern_entry_success1(t *testing.T) {
 
@@ -50,11 +57,11 @@ func Test_pattern_manager_success1(t *testing.T) {
 func Test_pattern_manager_setpatterns0(t *testing.T) {
 
 	policyPath := "/tmp/servedpatterntest/"
-	servedPatterns := []exchange.ServedPatterns{}
+	servedPatterns := map[string]exchange.ServedPattern{}
 
 	if np := NewPatternManager(); np == nil {
 		t.Errorf("Error: pattern manager not created")
-	} else if err := np.SetCurrentPatterns(&servedPatterns, policyPath); err != nil {
+	} else if err := np.SetCurrentPatterns(servedPatterns, policyPath); err != nil {
 		t.Errorf("Error %v consuming served patterns %v", err, servedPatterns)
 	} else if len(np.OrgPatterns) != 0 {
 		t.Errorf("Error: should have 0 org in the PatternManager, have %v", len(np.OrgPatterns))
@@ -68,8 +75,8 @@ func Test_pattern_manager_setpatterns0(t *testing.T) {
 func Test_pattern_manager_setpatterns1(t *testing.T) {
 
 	policyPath := "/tmp/servedpatterntest/"
-	servedPatterns := []exchange.ServedPatterns{
-		{
+	servedPatterns := map[string]exchange.ServedPattern{
+		"myorg1_pattern1": {
 			Org:     "myorg1",
 			Pattern: "pattern1",
 		},
@@ -77,7 +84,7 @@ func Test_pattern_manager_setpatterns1(t *testing.T) {
 
 	if np := NewPatternManager(); np == nil {
 		t.Errorf("Error: pattern manager not created")
-	} else if err := np.SetCurrentPatterns(&servedPatterns, policyPath); err != nil {
+	} else if err := np.SetCurrentPatterns(servedPatterns, policyPath); err != nil {
 		t.Errorf("Error %v consuming served patterns %v", err, servedPatterns)
 	} else if len(np.OrgPatterns) != 1 {
 		t.Errorf("Error: should have 1 org in the PatternManager, have %v", len(np.OrgPatterns))
@@ -96,15 +103,15 @@ func Test_pattern_manager_setpatterns2(t *testing.T) {
 	pattern1 := "pattern1"
 	pattern2 := "pattern2"
 
-	servedPatterns1 := []exchange.ServedPatterns{
-		{
+	servedPatterns1 := map[string]exchange.ServedPattern{
+		"myorg1_pattern1": {
 			Org:     myorg1,
 			Pattern: pattern1,
 		},
 	}
 
-	servedPatterns2 := []exchange.ServedPatterns{
-		{
+	servedPatterns2 := map[string]exchange.ServedPattern{
+		"myorg2_pattern2": {
 			Org:     myorg2,
 			Pattern: pattern2,
 		},
@@ -164,7 +171,7 @@ func Test_pattern_manager_setpatterns2(t *testing.T) {
 	// run test
 	if np := NewPatternManager(); np == nil {
 		t.Errorf("Error: pattern manager not created")
-	} else if err := np.SetCurrentPatterns(&servedPatterns1, policyPath); err != nil {
+	} else if err := np.SetCurrentPatterns(servedPatterns1, policyPath); err != nil {
 		t.Errorf("Error %v consuming served patterns %v", err, servedPatterns1)
 	} else if err := np.UpdatePatternPolicies(myorg1, definedPatterns1, policyPath); err != nil {
 		t.Errorf("Error: error updating pattern policies, %v", err)
@@ -174,7 +181,7 @@ func Test_pattern_manager_setpatterns2(t *testing.T) {
 		t.Errorf("Error: PM should have org %v but doesnt, has %v", myorg1, np)
 	} else if err := getPatternEntryFiles(np.OrgPatterns[myorg1][pattern1].PolicyFileNames); err != nil {
 		t.Errorf("Error getting pattern entry files for %v %v, %v", myorg1, pattern1, err)
-	} else if err := np.SetCurrentPatterns(&servedPatterns2, policyPath); err != nil {
+	} else if err := np.SetCurrentPatterns(servedPatterns2, policyPath); err != nil {
 		t.Errorf("Error %v consuming served patterns %v", err, servedPatterns2)
 	} else if err := np.UpdatePatternPolicies(myorg2, definedPatterns2, policyPath); err != nil {
 		t.Errorf("Error: error updating pattern policies, %v", err)
@@ -205,27 +212,27 @@ func Test_pattern_manager_setpatterns3(t *testing.T) {
 	pattern1 := "pattern1"
 	pattern2 := "pattern2"
 
-	servedPatterns1 := []exchange.ServedPatterns{
-		{
+	servedPatterns1 := map[string]exchange.ServedPattern{
+		"myorg1_pattern1": {
 			Org:     myorg1,
 			Pattern: pattern1,
 		},
-		{
+		"myorg1_pattern2": {
 			Org:     myorg1,
 			Pattern: pattern2,
 		},
-		{
+		"myorg2_pattern2": {
 			Org:     myorg2,
 			Pattern: pattern2,
 		},
 	}
 
-	servedPatterns2 := []exchange.ServedPatterns{
-		{
+	servedPatterns2 := map[string]exchange.ServedPattern{
+		"myorg2_pattern1": {
 			Org:     myorg2,
 			Pattern: pattern1,
 		},
-		{
+		"myorg2_pattern2": {
 			Org:     myorg2,
 			Pattern: pattern2,
 		},
@@ -325,7 +332,7 @@ func Test_pattern_manager_setpatterns3(t *testing.T) {
 	// run test
 	if np := NewPatternManager(); np == nil {
 		t.Errorf("Error: pattern manager not created")
-	} else if err := np.SetCurrentPatterns(&servedPatterns1, policyPath); err != nil {
+	} else if err := np.SetCurrentPatterns(servedPatterns1, policyPath); err != nil {
 		t.Errorf("Error %v consuming served patterns %v", err, servedPatterns1)
 	} else if err := np.UpdatePatternPolicies(myorg1, definedPatterns1, policyPath); err != nil {
 		t.Errorf("Error: error updating pattern policies, %v", err)
@@ -341,7 +348,7 @@ func Test_pattern_manager_setpatterns3(t *testing.T) {
 		t.Errorf("Error getting pattern entry files for %v %v, %v", myorg1, pattern2, err)
 	} else if err := getPatternEntryFiles(np.OrgPatterns[myorg2][pattern2].PolicyFileNames); err != nil {
 		t.Errorf("Error getting pattern entry files for %v %v, %v", myorg2, pattern2, err)
-	} else if err := np.SetCurrentPatterns(&servedPatterns2, policyPath); err != nil {
+	} else if err := np.SetCurrentPatterns(servedPatterns2, policyPath); err != nil {
 		t.Errorf("Error %v consuming served patterns %v", err, servedPatterns2)
 	} else if err := np.UpdatePatternPolicies(myorg2, definedPatterns2, policyPath); err != nil {
 		t.Errorf("Error: error updating pattern policies, %v", err)
@@ -374,31 +381,31 @@ func Test_pattern_manager_setpatterns4(t *testing.T) {
 	pattern1 := "pattern1"
 	pattern2 := "pattern2"
 
-	servedPatterns1 := []exchange.ServedPatterns{
-		{
+	servedPatterns1 := map[string]exchange.ServedPattern{
+		"myorg1_pattern1": {
 			Org:     myorg1,
 			Pattern: pattern1,
 		},
-		{
+		"myorg1_pattern2": {
 			Org:     myorg1,
 			Pattern: pattern2,
 		},
-		{
+		"myorg2_pattern2": {
 			Org:     myorg2,
 			Pattern: pattern2,
 		},
 	}
 
-	servedPatterns2 := []exchange.ServedPatterns{
-		{
+	servedPatterns2 := map[string]exchange.ServedPattern{
+		"myorg1_pattern1": {
 			Org:     myorg1,
 			Pattern: pattern1,
 		},
-		{
+		"myorg2_pattern1": {
 			Org:     myorg2,
 			Pattern: pattern1,
 		},
-		{
+		"myorg2_pattern2": {
 			Org:     myorg2,
 			Pattern: pattern2,
 		},
@@ -498,7 +505,7 @@ func Test_pattern_manager_setpatterns4(t *testing.T) {
 	// run the test
 	if np := NewPatternManager(); np == nil {
 		t.Errorf("Error: pattern manager not created")
-	} else if err := np.SetCurrentPatterns(&servedPatterns1, policyPath); err != nil {
+	} else if err := np.SetCurrentPatterns(servedPatterns1, policyPath); err != nil {
 		t.Errorf("Error %v consuming served patterns %v", err, servedPatterns1)
 	} else if err := np.UpdatePatternPolicies(myorg1, definedPatterns1, policyPath); err != nil {
 		t.Errorf("Error: error updating pattern policies, %v", err)
@@ -516,7 +523,7 @@ func Test_pattern_manager_setpatterns4(t *testing.T) {
 		t.Errorf("Error getting pattern entry files for %v %v, %v", myorg1, pattern2, err)
 	} else if err := getPatternEntryFiles(np.OrgPatterns[myorg2][pattern2].PolicyFileNames); err != nil {
 		t.Errorf("Error getting pattern entry files for %v %v, %v", myorg2, pattern2, err)
-	} else if err := np.SetCurrentPatterns(&servedPatterns2, policyPath); err != nil {
+	} else if err := np.SetCurrentPatterns(servedPatterns2, policyPath); err != nil {
 		t.Errorf("Error %v consuming served patterns %v", err, servedPatterns2)
 	} else if err := np.UpdatePatternPolicies(myorg1, definedPatterns1, policyPath); err != nil {
 		t.Errorf("Error: error updating pattern policies, %v", err)
