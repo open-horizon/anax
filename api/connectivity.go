@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/cutil"
 	"net"
 	"time"
 )
@@ -26,7 +27,7 @@ func checkConnectivity(host string) error {
 func WriteConnectionStatus(info *Info) error {
 	connect := make(map[string]bool, 0)
 	for _, host := range HORIZON_SERVERS {
-		if err := checkConnectivity(host); err != nil {
+		if err := cutil.CheckConnectivity(host); err != nil {
 			glog.Infof("Error checking connectivity for %s: %v", host, err)
 			connect[host] = false
 		} else {

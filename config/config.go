@@ -39,6 +39,7 @@ type Config struct {
 	ExchangeMessageTTL            int    // The number of seconds the exchange will keep this message before automatically deleting it
 	TorrentListenAddr             string // Override the torrent listen address just in case there are conflicts, syntax is "host:port"
 	UserPublicKeyPath             string // The location to store user keys uploaded through the REST API
+	ReportDeviceStatus            bool   // whether to report the device status to the exchange or not.
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string

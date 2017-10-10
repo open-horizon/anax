@@ -3,7 +3,9 @@ package cutil
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"net"
 	"runtime"
+	"time"
 )
 
 func FirstN(n int, ss []string) []string {
@@ -32,4 +34,17 @@ func SecureRandomString() (string, error) {
 
 func ArchString() string {
 	return runtime.GOARCH
+}
+
+// Check if the device has internect connection to the given host or not.
+func CheckConnectivity(host string) error {
+	var err error
+	for i := 0; i < 3; i++ {
+		_, err = net.LookupHost(host)
+		if err == nil {
+			return nil
+		}
+		time.Sleep(1 * time.Second)
+	}
+	return err
 }
