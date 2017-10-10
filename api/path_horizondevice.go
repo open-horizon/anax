@@ -120,3 +120,41 @@ func CreateHorizonDevice(device *HorizonDevice,
 	return false, device, exDev
 
 }
+
+// Handles the PATCH verb on this resource. Only the exchange token is updateable.
+func UpdateHorizonDevice(device *HorizonDevice,
+	errorhandler ErrorHandler,
+	db *bolt.DB) (bool, *HorizonDevice, *HorizonDevice) {
+
+	// Check for the device in the local database. If there are errors, they will be written
+	// to the HTTP response.
+	pDevice, err := persistence.FindExchangeDevice(db)
+	if err != nil {
+		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read horizondevice object, error %v", err))), nil, nil
+	} else if pDevice == nil {
+		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API.")), nil, nil
+	}
+
+	// Verify that the input id is ok.
+	if bail := checkInputString(errorhandler, "device.id", device.Id); bail {
+		return true, nil, nil
+	}
+
+	// We dont compute the token so there is no need to try to check it.
+
+	// If there is no token, that's an errir
+	if device.Token == nil {
+		return errorhandler(NewAPIUserInputError("null and must not be", "device.token")), nil, nil
+	}
+
+	updatedDev, err := pDevice.SetExchangeDeviceToken(db, *device.Id, *device.Token)
+	if err != nil {
+		return errorhandler(NewSystemError(fmt.Sprintf("error persisting token update on horizondevice object: %v", err))), nil, nil
+	}
+
+	// Return 2 device objects, the first is the fully populated newly updated device object. The second is a device
+	// object suitable for output (external consumption). Specifically the token is omitted.
+	exDev := ConvertFromPersistentHorizonDevice(updatedDev)
+	return false, device, exDev
+
+}

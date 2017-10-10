@@ -82,6 +82,36 @@ func NewConflictError(err string) *ConflictError {
 	}
 }
 
+// Bad Requests are expected, since they can occur as the result of incorrect usage of the API.
+type BadRequestError struct {
+	msg string
+}
+
+func (e BadRequestError) Error() string {
+	return e.msg
+}
+
+func NewBadRequestError(err string) *BadRequestError {
+	return &BadRequestError{
+		msg: err,
+	}
+}
+
+// Not Found errors are expected, since they can occur as the result of incorrect usage of the API.
+type NotFoundError struct {
+	msg string
+}
+
+func (e NotFoundError) Error() string {
+	return e.msg
+}
+
+func NewNotFoundError(err string) *NotFoundError {
+	return &NotFoundError{
+		msg: err,
+	}
+}
+
 // System Errors are generally unexpected, infrastructural problems that just need to be reported out to the caller.
 type SystemError struct {
 	msg string
@@ -138,6 +168,16 @@ func GetHTTPErrorHandler(w http.ResponseWriter) ErrorHandler {
 				conErr := err.(*ConflictError)
 				glog.Errorf(apiLogString(conErr.Error()))
 				http.Error(w, conErr.Error(), http.StatusConflict)
+
+			case *BadRequestError:
+				badErr := err.(*BadRequestError)
+				glog.Errorf(apiLogString(badErr.Error()))
+				http.Error(w, badErr.Error(), http.StatusBadRequest)
+
+			case *NotFoundError:
+				notErr := err.(*NotFoundError)
+				glog.Errorf(apiLogString(notErr.Error()))
+				http.Error(w, notErr.Error(), http.StatusNotFound)
 
 			default:
 				glog.Errorf(apiLogString(fmt.Sprintf("unknown error (%T) %v", err, err.Error())))

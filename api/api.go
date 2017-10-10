@@ -192,87 +192,52 @@ func (a *API) listen(apiListen string) {
 
 func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 
+	resource := "agreement"
+	errorhandler := GetHTTPErrorHandler(w)
+
 	switch r.Method {
 	case "GET":
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 		pathVars := mux.Vars(r)
 		id := pathVars["id"]
 
 		// we don't support getting just one yet
 		if id != "" {
-			w.WriteHeader(http.StatusBadRequest)
+			errorhandler(NewBadRequestError(fmt.Sprintf("path variables not suported on GET %v", resource)))
 			return
 		}
 
-		agreements, err := persistence.FindEstablishedAgreementsAllProtocols(a.db, policy.AllAgreementProtocols(), []persistence.EAFilter{})
-		if err != nil {
-			glog.Error(err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
+		// Gather all the agreements from the local database and format them for output.
+		if out, err := FindAgreementsForOutput(a.db); err != nil {
+			errorhandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
+		} else {
+			writeResponse(w, out, http.StatusOK)
 		}
 
-		var agreementsKey = "agreements"
-		var archivedKey = "archived"
-		var activeKey = "active"
-
-		wrap := make(map[string]map[string][]persistence.EstablishedAgreement, 0)
-		wrap[agreementsKey] = make(map[string][]persistence.EstablishedAgreement, 0)
-		wrap[agreementsKey][archivedKey] = []persistence.EstablishedAgreement{}
-		wrap[agreementsKey][activeKey] = []persistence.EstablishedAgreement{}
-
-		for _, agreement := range agreements {
-			// The archived agreements and the agreements being terminated are returned as archived.
-			if agreement.Archived || agreement.AgreementTerminatedTime != 0 {
-				wrap[agreementsKey][archivedKey] = append(wrap[agreementsKey][archivedKey], agreement)
-			} else {
-				wrap[agreementsKey][activeKey] = append(wrap[agreementsKey][activeKey], agreement)
-			}
-		}
-
-		// do sorts
-		sort.Sort(EstablishedAgreementsByAgreementCreationTime(wrap[agreementsKey][activeKey]))
-		sort.Sort(EstablishedAgreementsByAgreementTerminatedTime(wrap[agreementsKey][archivedKey]))
-
-		serial, err := json.Marshal(wrap)
-		if err != nil {
-			glog.Infof("Error serializing agreement output: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		if _, err := w.Write(serial); err != nil {
-			glog.Infof("Error writing response: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
 	case "DELETE":
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 		pathVars := mux.Vars(r)
 		id := pathVars["id"]
 
 		if id == "" {
-			w.WriteHeader(http.StatusBadRequest)
+			errorhandler(NewBadRequestError(fmt.Sprintf("path variable missing on DELETE %v", resource)))
 			return
 		}
-		glog.V(3).Infof("Handling DELETE of agreement: %v", r)
 
-		var filters []persistence.EAFilter
-		filters = append(filters, persistence.UnarchivedEAFilter())
-		filters = append(filters, persistence.IdEAFilter(id))
-
-		if agreements, err := persistence.FindEstablishedAgreementsAllProtocols(a.db, policy.AllAgreementProtocols(), filters); err != nil {
-			glog.Error(err)
-			w.WriteHeader(http.StatusInternalServerError)
-		} else if len(agreements) == 0 {
-			w.WriteHeader(http.StatusNotFound)
-		} else {
-			// write message
-			ct := agreements[0]
-			if ct.AgreementTerminatedTime == 0 {
-				a.Messages() <- events.NewApiAgreementCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ct.AgreementProtocol, ct.CurrentAgreementId, ct.CurrentDeployment)
-			}
-			w.WriteHeader(http.StatusOK)
-
+		// Gather all the agreements from the local database and format them for output.
+		errHandled, msg := DeleteAgreement(errorhandler, id, a.db)
+		if errHandled {
+			return
 		}
+
+		if msg != nil {
+			a.Messages() <- msg
+		}
+
+		w.WriteHeader(http.StatusOK)
+		// TODO: Is NoContent more correct for a response to DELETE
+		//w.WriteHeader(http.StatusNoContent)
+
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, DELETE, OPTIONS")
 		w.WriteHeader(http.StatusOK)
@@ -365,39 +330,20 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
 		var device HorizonDevice
-
-		existing, errWritten := a.existingDeviceOrError(w)
-		if errWritten {
-			return
-		}
-
-		if existing == nil {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &device); err != nil {
-			glog.Infof("User submitted data couldn't be deserialized to Device struct: %v. Error: %v", string(body), err)
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		if bail := checkInputString(GetHTTPErrorHandler(w), "device.id", device.Id); bail {
-			return
-		}
-		if device.Token == nil {
-			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("null and must not be", "device.token"))
+			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body couldn't be deserialized to %v object: %v, error: %v", resource, string(body), err), "device"))
 			return
 		}
 
-		updatedDevice, err := existing.SetExchangeDeviceToken(a.db, *device.Id, *device.Token)
-		if err != nil {
-			glog.Errorf("Error doing token update on horizon device object: %v. Error: %v", existing, err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		// Validate the PATCH input and update the object in the database.
+		errHandled, _, exDev := UpdateHorizonDevice(&device, errorHandler, a.db)
+		if errHandled {
+			return
 		}
 
 		// writeDevice(updatedDevice, http.StatusOK)
-		writeResponse(w, updatedDevice, http.StatusOK)
+		writeResponse(w, exDev, http.StatusOK)
 
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, POST, PATCH, OPTIONS")

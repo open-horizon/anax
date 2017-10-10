@@ -323,6 +323,11 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 		}
 	}
 
+	// Do a quick sync to clean out old agreements in the exchange.
+	if err := w.syncOnInit(); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error during sync up of agreements, error: %v", err)))
+	}
+
 	// Start the go thread that heartbeats to the exchange
 	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/heartbeat"
 	go exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
