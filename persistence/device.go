@@ -11,15 +11,25 @@ import (
 
 const DEVICES = "devices"
 
+type Configstate struct {
+	State          string `json:"state"`
+	LastUpdateTime uint64 `json:"last_update_time"`
+}
+
+func (c Configstate) String() string {
+	return fmt.Sprintf("State: %v, Time: %v", c.State, c.LastUpdateTime)
+}
+
 type ExchangeDevice struct {
-	Id                 string `json:"id"`
-	Org                string `json:"organization"`
-	Pattern            string `json:"pattern"`
-	Name               string `json:"name"`
-	Token              string `json:"token"`
-	TokenLastValidTime uint64 `json:"token_last_valid_time"`
-	TokenValid         bool   `json:"token_valid"`
-	HADevice           bool   `json:"ha_device"`
+	Id                 string      `json:"id"`
+	Org                string      `json:"organization"`
+	Pattern            string      `json:"pattern"`
+	Name               string      `json:"name"`
+	Token              string      `json:"token"`
+	TokenLastValidTime uint64      `json:"token_last_valid_time"`
+	TokenValid         bool        `json:"token_valid"`
+	HADevice           bool        `json:"ha_device"`
+	Config             Configstate `json:"configstate"`
 }
 
 func (e ExchangeDevice) String() string {
@@ -30,16 +40,21 @@ func (e ExchangeDevice) String() string {
 		tokenShadow = "unset"
 	}
 
-	return fmt.Sprintf("Org: %v, Token: <%s>, Name: %v, TokenLastValidTime: %v, TokenValid: %v, Pattern: %v", e.Org, tokenShadow, e.Name, e.TokenLastValidTime, e.TokenValid, e.Pattern)
+	return fmt.Sprintf("Org: %v, Token: <%s>, Name: %v, TokenLastValidTime: %v, TokenValid: %v, Pattern: %v, %v", e.Org, tokenShadow, e.Name, e.TokenLastValidTime, e.TokenValid, e.Pattern, e.Config)
 }
 
 func (e ExchangeDevice) GetId() string {
 	return fmt.Sprintf("%v/%v", e.Org, e.Id)
 }
 
-func newExchangeDevice(id string, token string, name string, tokenLastValidTime uint64, ha bool, org string, pattern string) (*ExchangeDevice, error) {
+func newExchangeDevice(id string, token string, name string, tokenLastValidTime uint64, ha bool, org string, pattern string, configstate string) (*ExchangeDevice, error) {
 	if id == "" || token == "" || name == "" || tokenLastValidTime == 0 || org == "" {
 		return nil, errors.New("Cannot create exchange device, illegal arguments")
+	}
+
+	cfg := Configstate{
+		State:          configstate,
+		LastUpdateTime: uint64(time.Now().Unix()),
 	}
 
 	return &ExchangeDevice{
@@ -51,34 +66,52 @@ func newExchangeDevice(id string, token string, name string, tokenLastValidTime 
 		HADevice:           ha,
 		Org:                org,
 		Pattern:            pattern,
+		Config:             cfg,
 	}, nil
 }
 
 // a convenience function b/c we know there is really only one device
-func InvalidateExchangeToken(db *bolt.DB) (*ExchangeDevice, error) {
+func (e *ExchangeDevice) InvalidateExchangeToken(db *bolt.DB) (*ExchangeDevice, error) {
 	exchDev, err := FindExchangeDevice(db)
 	if err != nil {
 		return nil, err
 	}
 
-	return updateExchangeDeviceToken(db, exchDev.Id, "")
+	return updateExchangeDevice(db, e, exchDev.Id, true, func(d ExchangeDevice) *ExchangeDevice {
+		d.Token = ""
+		return &d
+	})
 }
 
-func SetExchangeDeviceToken(db *bolt.DB, deviceId string, token string) (*ExchangeDevice, error) {
+func (e *ExchangeDevice) SetExchangeDeviceToken(db *bolt.DB, deviceId string, token string) (*ExchangeDevice, error) {
 	if deviceId == "" || token == "" {
 		return nil, errors.New("Argument null and mustn't be")
 	}
 
-	return updateExchangeDeviceToken(db, deviceId, token)
+	return updateExchangeDevice(db, e, deviceId, false, func(d ExchangeDevice) *ExchangeDevice {
+		d.Token = token
+		return &d
+	})
 }
 
-// always assumed the given token is valid at the time of call
-func updateExchangeDeviceToken(db *bolt.DB, deviceId string, token string) (*ExchangeDevice, error) {
-	// TODO: factor out duplication b/n serialization here and in SaveNewExchangeDevice
+func (e *ExchangeDevice) SetConfigstate(db *bolt.DB, deviceId string, state string) (*ExchangeDevice, error) {
+	if deviceId == "" || state == "" {
+		return nil, errors.New("Argument null and mustn't be")
+	}
 
+	return updateExchangeDevice(db, e, deviceId, false, func(d ExchangeDevice) *ExchangeDevice {
+		d.Config.State = state
+		d.Config.LastUpdateTime = uint64(time.Now().Unix())
+		return &d
+	})
+}
+
+func updateExchangeDevice(db *bolt.DB, self *ExchangeDevice, deviceId string, invalidateToken bool, fn func(d ExchangeDevice) *ExchangeDevice) (*ExchangeDevice, error) {
 	if deviceId == "" {
 		return nil, fmt.Errorf("Illegal arguments specified.")
 	}
+
+	update := fn(*self)
 
 	var mod ExchangeDevice
 
@@ -97,23 +130,26 @@ func updateExchangeDeviceToken(db *bolt.DB, deviceId string, token string) (*Exc
 			return fmt.Errorf("Failed to unmarshal device data: %v. Error: %v", string(current), err)
 		} else {
 
-			// a little weird since there is only one key in the bucket, but we want to make sure the token update is for the right device
+			// Even though there is only one key in the bucket, make sure the update is for the right device
 			if mod.Id != deviceId {
 				return fmt.Errorf("No device with given device id to update: %v", deviceId)
 			}
 
-			// invalidate
-			if token == "" {
+			// Differentiate token invalidation from updating a token.
+			if invalidateToken {
 				mod.Token = ""
 				mod.TokenValid = false
 
-			} else {
-				// store, assume valid
-
-				// write updates only to the fields we expect should be updateable
-				mod.Token = token
+			} else if update.Token != mod.Token && update.Token != "" {
+				mod.Token = update.Token
 				mod.TokenValid = true
 				mod.TokenLastValidTime = uint64(time.Now().Unix())
+			}
+
+			// Write updates only to the fields we expect should be updateable
+			if mod.Config.State != update.Config.State {
+				mod.Config.State = update.Config.State
+				mod.Config.LastUpdateTime = update.Config.LastUpdateTime
 			}
 
 			// note: DEVICES is used as the key b/c we only want to store one value in this bucket
@@ -132,9 +168,9 @@ func updateExchangeDeviceToken(db *bolt.DB, deviceId string, token string) (*Exc
 }
 
 // always assumed the given token is valid at the time of call
-func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, ha bool, organization string, pattern string) (*ExchangeDevice, error) {
+func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, ha bool, organization string, pattern string, configstate string) (*ExchangeDevice, error) {
 
-	if id == "" || token == "" || name == "" || organization == "" {
+	if id == "" || token == "" || name == "" || organization == "" || configstate == "" {
 		return nil, errors.New("Argument null and must not be")
 	}
 
@@ -156,7 +192,7 @@ func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, ha
 		return nil, fmt.Errorf("Duplicate record found in devices for %v.", name)
 	}
 
-	exDevice, err := newExchangeDevice(id, token, name, uint64(time.Now().Unix()), ha, organization, pattern)
+	exDevice, err := newExchangeDevice(id, token, name, uint64(time.Now().Unix()), ha, organization, pattern, configstate)
 
 	if err != nil {
 		return nil, err

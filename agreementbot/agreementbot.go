@@ -459,6 +459,12 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 						continue
 					}
 
+					// If the device is not ready to make agreements yet, then skip it.
+					if len(dev.PublicKey) == 0 || string(dev.PublicKey) == "" {
+						glog.V(5).Infof("AgreementBotWorker skipping device id %v, node is not ready to exchange messages", dev.Id)
+						continue
+					}
+
 					// The only reason for no microservices in the device search result is because the search was pattern based.
 					// In this case there will not be any policies from the producer side to work with. The agbot assumes that
 					// device side anax will not allow microservice registration that is incompatible with the pattern.
@@ -1058,14 +1064,14 @@ func (w *AgreementBotWorker) GeneratePolicyFromPatterns(checkInterval int) error
 func (w *AgreementBotWorker) internalGeneratePolicyFromPatterns() error {
 
 	// Get the configured org/pattern pairs for this agbot.
-	agbot, err := w.getAgbot()
+	pats, err := w.getAgbotPatterns()
 	if err != nil {
-		return errors.New(fmt.Sprintf("unable to retrieve agbot metadata, error %v", err))
+		return errors.New(fmt.Sprintf("unable to retrieve agbot pattern metadata, error %v", err))
 	}
 
 	// Consume the configured org/pattern pairs into the PatternManager
-	if err := w.PatternManager.SetCurrentPatterns(&agbot.Patterns, w.Config.AgreementBot.PolicyPath); err != nil {
-		return errors.New(fmt.Sprintf("unable to process agbot served patterns metadata %v, error %v", agbot.Patterns, err))
+	if err := w.PatternManager.SetCurrentPatterns(pats, w.Config.AgreementBot.PolicyPath); err != nil {
+		return errors.New(fmt.Sprintf("unable to process agbot served patterns metadata %v, error %v", pats, err))
 	}
 
 	// Iterate over each org in the PatternManager and process all the patterns in that org
@@ -1085,11 +1091,11 @@ func (w *AgreementBotWorker) internalGeneratePolicyFromPatterns() error {
 
 }
 
-func (w *AgreementBotWorker) getAgbot() (*exchange.Agbot, error) {
+func (w *AgreementBotWorker) getAgbotPatterns() (map[string]exchange.ServedPattern, error) {
 
 	var resp interface{}
-	resp = new(exchange.GetAgbotsResponse)
-	targetURL := w.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId)
+	resp = new(exchange.GetAgbotsPatternsResponse)
+	targetURL := w.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId) + "/patterns"
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.agbotId, w.token, nil, &resp); err != nil {
 			glog.Errorf(AWlogString(err.Error()))
@@ -1099,13 +1105,9 @@ func (w *AgreementBotWorker) getAgbot() (*exchange.Agbot, error) {
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
-			ags := resp.(*exchange.GetAgbotsResponse).Agbots
-			if ag, there := ags[w.agbotId]; !there {
-				return nil, errors.New(fmt.Sprintf("agbot %v not in GET response %v as expected", w.agbotId, ags))
-			} else {
-				glog.V(5).Infof(AWlogString(fmt.Sprintf("retrieved agbot %v from exchange %v", w.agbotId, ag)))
-				return &ag, nil
-			}
+			pats := resp.(*exchange.GetAgbotsPatternsResponse).Patterns
+			glog.V(5).Infof(AWlogString(fmt.Sprintf("retrieved agbot patterns from exchange %v", pats)))
+			return pats, nil
 		}
 	}
 

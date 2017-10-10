@@ -2,28 +2,97 @@ package api
 
 import (
 	"fmt"
+	"github.com/open-horizon/anax/persistence"
 	"reflect"
 	"strconv"
 )
 
+type Configstate struct {
+	State          *string `json:"state"`
+	LastUpdateTime *uint64 `json:"last_update_time,omitempty"`
+}
+
+func (c *Configstate) String() string {
+	if c == nil {
+		return "Configstate: not set"
+	} else {
+		return fmt.Sprintf("State: %v, Time: %v", *c.State, *c.LastUpdateTime)
+	}
+}
+
 type HorizonDevice struct {
-	Id                 *string `json:"id"`
-	Org                *string `json:"organization"`
-	Pattern            *string `json:"pattern"` // a simple name, not prefixed with the org
-	Name               *string `json:"name,omitempty"`
-	Token              *string `json:"token,omitempty"`
-	TokenLastValidTime *uint64 `json:"token_last_valid_time,omitempty"`
-	TokenValid         *bool   `json:"token_valid,omitempty"`
-	HADevice           *bool   `json:"ha_device,omitempty"`
+	Id                 *string      `json:"id"`
+	Org                *string      `json:"organization"`
+	Pattern            *string      `json:"pattern"` // a simple name, not prefixed with the org
+	Name               *string      `json:"name,omitempty"`
+	Token              *string      `json:"token,omitempty"`
+	TokenLastValidTime *uint64      `json:"token_last_valid_time,omitempty"`
+	TokenValid         *bool        `json:"token_valid,omitempty"`
+	HADevice           *bool        `json:"ha_device,omitempty"`
+	Config             *Configstate `json:"configstate,omitempty"`
 }
 
 func (h HorizonDevice) String() string {
+
+	id := "not set"
+	if h.Id != nil {
+		id = *h.Id
+	}
+
+	org := "not set"
+	if h.Org != nil {
+		org = *h.Org
+	}
+
+	pat := "not set"
+	if h.Pattern != nil {
+		pat = *h.Pattern
+	}
+
+	name := "not set"
+	if h.Name != nil {
+		name = *h.Name
+	}
+
 	cred := "not set"
 	if h.Token != nil && *h.Token != "" {
 		cred = "set"
 	}
 
-	return fmt.Sprintf("Id: %v, Org: %v, Name: %v, Token: [%v], TokenLastValidTime: %v, TokenValid: %v", h.Id, h.Org, h.Name, cred, h.TokenLastValidTime, h.TokenValid)
+	tlvt := uint64(0)
+	if h.TokenLastValidTime != nil {
+		tlvt = *h.TokenLastValidTime
+	}
+
+	tv := false
+	if h.TokenValid != nil {
+		tv = *h.TokenValid
+	}
+
+	ha := false
+	if h.HADevice != nil {
+		ha = *h.HADevice
+	}
+
+	return fmt.Sprintf("Id: %v, Org: %v, Pattern: %v, Name: %v, Token: [%v], TokenLastValidTime: %v, TokenValid: %v, HA: %v, %v", id, org, pat, name, cred, tlvt, tv, ha, h.Config)
+}
+
+// This is a type conversion function but note that the token field within the persistent
+// is explicitly omitted so that it's not exposed in the API.
+func ConvertFromPersistentHorizonDevice(pDevice *persistence.ExchangeDevice) *HorizonDevice {
+	return &HorizonDevice{
+		Id:                 &pDevice.Id,
+		Org:                &pDevice.Org,
+		Pattern:            &pDevice.Pattern,
+		Name:               &pDevice.Name,
+		TokenValid:         &pDevice.TokenValid,
+		TokenLastValidTime: &pDevice.TokenLastValidTime,
+		HADevice:           &pDevice.HADevice,
+		Config: &Configstate{
+			State:          &pDevice.Config.State,
+			LastUpdateTime: &pDevice.Config.LastUpdateTime,
+		},
+	}
 }
 
 type Attribute struct {
@@ -94,6 +163,22 @@ func (s *Service) String() string {
 	}
 
 	return fmt.Sprintf("SensorUrl: %v, SensorOrg: %v, SensorName: %v, SensorVersion: %v, AutoUpgrade: %v, ActiveUpgrade: %v, Attributes: %v", sURL, sOrg, sName, sVersion, auto_upgrade, active_upgrade, s.Attributes)
+}
+
+// Constructor used to create service objects for programmatic creation of services.
+func NewService(url string, org string, name string, v string) *Service {
+	autoUpgrade := true
+	activeUpgrade := true
+
+	return &Service{
+		SensorUrl:     &url,
+		SensorOrg:     &org,
+		SensorName:    &name,
+		SensorVersion: &v,
+		AutoUpgrade:   &autoUpgrade,
+		ActiveUpgrade: &activeUpgrade,
+		Attributes:    &[]Attribute{},
+	}
 }
 
 // This section is for handling the workloadConfig API input

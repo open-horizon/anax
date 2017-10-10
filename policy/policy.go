@@ -13,7 +13,7 @@ import (
 // can take any version.
 // maxAgreements: 0 means unlimited.
 
-func GeneratePolicy(e chan events.Message, sensorUrl string, sensorOrg string, sensorName string, sensorVersion string, arch string, props *map[string]interface{}, haPartners []string, meterPolicy Meter, counterPartyProperties RequiredProperty, agps []AgreementProtocol, maxAgreements int, filePath string, deviceOrg string) error {
+func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, sensorVersion string, arch string, props *map[string]interface{}, haPartners []string, meterPolicy Meter, counterPartyProperties RequiredProperty, agps []AgreementProtocol, maxAgreements int, filePath string, deviceOrg string) (*events.PolicyCreatedMessage, error) {
 
 	glog.V(5).Infof("Generating policy for %v", sensorUrl)
 
@@ -54,16 +54,12 @@ func GeneratePolicy(e chan events.Message, sensorUrl string, sensorOrg string, s
 
 	// Store the policy on the filesystem
 	if fullFileName, err := CreatePolicyFile(filePath, deviceOrg, fileName, p); err != nil {
-		return err
+		return nil, err
 	} else {
 
-		// Fire an event
-		glog.V(5).Infof("About to fire event for policy %v", fullFileName)
-		e <- events.NewPolicyCreatedMessage(events.NEW_POLICY, fullFileName)
-
-		glog.V(5).Infof("Queued policy %v for event handler", fullFileName)
-
-		return nil
+		// Create the new policy event
+		msg := events.NewPolicyCreatedMessage(events.NEW_POLICY, fullFileName)
+		return msg, nil
 	}
 }
 

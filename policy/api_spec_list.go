@@ -3,6 +3,7 @@ package policy
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 // The purpose of this file is to provide APIs for working with the API spec list in a Policy.
@@ -34,7 +35,7 @@ type APISpecification struct {
 	SpecRef         string `json:"specRef"`         // A URL pointing to the definition of the API spec
 	Org             string `json:"organization"`    // The organization where the microservice is defined
 	Version         string `json:"version"`         // The version of the API spec in OSGI version format
-	ExclusiveAccess bool   `json:"exclusiveAccess"` // Whether or not exclusive access to this API spec is required
+	ExclusiveAccess bool   `json:"exclusiveAccess"` // Whether or not exclusive access to this API spec is required. True means sharing is one of the single usage options.
 	Arch            string `json:"arch"`            // The hardware architecture of the API spec impl. Added in version 2.
 }
 
@@ -167,4 +168,23 @@ func (self *APISpecList) AsStringArray() []string {
 		res = append(res, apiSpec.SpecRef)
 	}
 	return res
+}
+
+// This function compares the 2 API spec lists and replaces a higher version singleton shared entry
+// from the other list into the self list.
+func (self *APISpecList) ReplaceHigherSharedSingleton(other *APISpecList) {
+
+	if len(*other) == 0 {
+		return
+	}
+
+	for ix, apiSpec := range *self {
+		for _, newApiSpec := range *other {
+			if newApiSpec.SpecRef == apiSpec.SpecRef && newApiSpec.Org == apiSpec.Org && newApiSpec.ExclusiveAccess == false && newApiSpec.ExclusiveAccess == apiSpec.ExclusiveAccess {
+				if strings.Compare(newApiSpec.Version, apiSpec.Version) == 1 {
+					(*self)[ix] = newApiSpec
+				}
+			}
+		}
+	}
 }
