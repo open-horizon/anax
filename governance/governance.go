@@ -48,6 +48,7 @@ type GovernanceWorker struct {
 	devicePattern string
 	pm            *policy.PolicyManager
 	producerPH    map[string]producer.ProducerProtocolHandler
+	deviceStatus  *DeviceStatus
 }
 
 func NewGovernanceWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *GovernanceWorker {
@@ -80,6 +81,7 @@ func NewGovernanceWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.Poli
 		deviceToken:   token,
 		devicePattern: pattern,
 		producerPH:    make(map[string]producer.ProducerProtocolHandler),
+		deviceStatus:  NewDeviceStatus(),
 	}
 
 	worker.start()
@@ -115,6 +117,9 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			cmd := w.NewCleanupStatusCommand(msg.AgreementProtocol, msg.AgreementId, STATUS_WORKLOAD_DESTROYED)
 			w.Commands <- cmd
 		}
+
+		cmd := w.NewReportDeviceStatusCommand()
+		w.Commands <- cmd
 
 	case *events.TorrentMessage:
 		msg, _ := incoming.(*events.TorrentMessage)
@@ -176,6 +181,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			cmd := producer.NewExchangeMessageCommand(*msg)
 			w.Commands <- cmd
 		}
+
 	case *events.ContainerMessage:
 		msg, _ := incoming.(*events.ContainerMessage)
 		if msg.LaunchContext.Blockchain.Name == "" { // microservice case
@@ -187,7 +193,14 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 				cmd := w.NewUpdateMicroserviceCommand(msg.LaunchContext.Name, false, 1, "Failed to launch containers.")
 				w.Commands <- cmd
 			}
+
+			cmd := w.NewReportDeviceStatusCommand()
+			w.Commands <- cmd
 		}
+	case *events.MicroserviceContainersDestroyedMessage:
+
+		cmd := w.NewReportDeviceStatusCommand()
+		w.Commands <- cmd
 
 	default: //nothing
 	}
@@ -487,6 +500,8 @@ func (w *GovernanceWorker) start() {
 		// Fire up the eth container after the device is registered.
 		for {
 			if w.deviceToken != "" {
+				// report the device status to the exchange
+				w.ReportDeviceStatus()
 				break
 			} else {
 				glog.V(3).Infof("GovernanceWorker command processor waiting for device registration")
@@ -510,6 +525,7 @@ func (w *GovernanceWorker) start() {
 		// Fire up the microservice governor
 		w.governMicroservices()
 
+		//handle commands
 		deferredCommands := make([]worker.Command, 0, 10)
 
 		// Fire up the command processor
@@ -836,6 +852,11 @@ func (w *GovernanceWorker) start() {
 							}
 						}
 					}
+				case *ReportDeviceStatusCommand:
+					cmd, _ := command.(*ReportDeviceStatusCommand)
+
+					glog.V(5).Infof(logString(fmt.Sprintf("Report device status command %v", cmd)))
+					w.ReportDeviceStatus()
 
 				default:
 					glog.Errorf("GovernanceWorker received unknown command (%T): %v", command, command)
@@ -1570,7 +1591,7 @@ func (w *GovernanceWorker) handleMicroserviceUpgradeExecStateChange(msdef *persi
 	}
 }
 
-// process microservice execution start or failure for  the upgrade process. Rollback if necessary.
+// process microservice instance after an agreement is ended.
 func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string) {
 	glog.V(3).Infof(logString(fmt.Sprintf("handle microservice instance for agreement %v ended.", agreementId)))
 

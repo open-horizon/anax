@@ -1577,6 +1577,9 @@ func (b *ContainerWorker) start() {
 						glog.Errorf("Error removing resources: %v", err)
 					}
 
+					// send the event to let others know that the microservice clean up has been processed
+					b.Messages() <- events.NewMicroserviceContainersDestroyedMessage(events.CONTAINER_DESTROYED, cmd.MsInstKey)
+
 				default:
 					glog.Errorf("Unsupported command: %v", command)
 

@@ -115,3 +115,15 @@ func (w *GovernanceWorker) NewUpdateMicroserviceCommand(key string, started bool
 		ExecutionFailureDesc: failure_desc,
 	}
 }
+
+// ==============================================================================================================
+type ReportDeviceStatusCommand struct {
+}
+
+func (c ReportDeviceStatusCommand) ShortString() string {
+	return fmt.Sprintf("ReportDeviceStatusCommand")
+}
+
+func (w *GovernanceWorker) NewReportDeviceStatusCommand() *ReportDeviceStatusCommand {
+	return &ReportDeviceStatusCommand{}
+}

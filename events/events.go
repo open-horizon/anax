@@ -1282,3 +1282,29 @@ func NewMicroserviceCancellationMessage(id EventId, key string) *MicroserviceCan
 		MsInstKey: key,
 	}
 }
+
+type MicroserviceContainersDestroyedMessage struct {
+	event     Event
+	MsInstKey string // the key to the microservice instance
+}
+
+func (m *MicroserviceContainersDestroyedMessage) Event() Event {
+	return m.event
+}
+
+func (m MicroserviceContainersDestroyedMessage) String() string {
+	return m.ShortString()
+}
+
+func (m MicroserviceContainersDestroyedMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v, MsInstKey: %v", m.event, m.MsInstKey)
+}
+
+func NewMicroserviceContainersDestroyedMessage(id EventId, key string) *MicroserviceContainersDestroyedMessage {
+	return &MicroserviceContainersDestroyedMessage{
+		event: Event{
+			Id: id,
+		},
+		MsInstKey: key,
+	}
+}

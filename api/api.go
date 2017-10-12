@@ -1116,9 +1116,6 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 		org := cfg.Org
 		if cfg.Org == "" {
 			org = existingDevice.Org
-		} else if _, err := exchange.GetOrganization(a.Config.Collaborators.HTTPClientFactory, org, a.Config.Edge.ExchangeURL, existingDevice.GetId(), existingDevice.Token); err != nil {
-			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("organization %v not found in exchange, error: %v", cfg.Org, err), "organization"))
-			return
 		}
 
 		// Reject the POST if there is already a config for this workload and version range
