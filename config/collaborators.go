@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"time"
 )
@@ -92,11 +93,21 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 		}
 
 		return &http.Client{
+			// remember that this timouet is for the whole request, including
+			// body reading. This means that you must set the timeout according
+			// to the total payload size you expect
 			Timeout: time.Second * time.Duration(timeoutS),
 			Transport: &http.Transport{
-				MaxIdleConns:    MaxHTTPIdleConnections,
-				IdleConnTimeout: HTTPIdleConnectionTimeoutS * time.Second,
-				TLSClientConfig: &tls,
+				Dial: (&net.Dialer{
+					Timeout:   60 * time.Second,
+					KeepAlive: 120 * time.Second,
+				}).Dial,
+				TLSHandshakeTimeout:   20 * time.Second,
+				ResponseHeaderTimeout: 20 * time.Second,
+				ExpectContinueTimeout: 8 * time.Second,
+				MaxIdleConns:          MaxHTTPIdleConnections,
+				IdleConnTimeout:       HTTPIdleConnectionTimeoutS * time.Second,
+				TLSClientConfig:       &tls,
 			},
 		}
 	}
