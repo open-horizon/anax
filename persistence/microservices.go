@@ -218,6 +218,15 @@ func FindMicroserviceDefWithKey(db *bolt.DB, key string) (*MicroserviceDefinitio
 	}
 }
 
+func (m *MicroserviceDefinition) NeedsUserInput() string {
+	for _, ui := range m.UserInputs {
+		if ui.DefaultValue == "" {
+			return ui.Name
+		}
+	}
+	return ""
+}
+
 // filter on MicroserviceDefinition
 type MSFilter func(MicroserviceDefinition) bool
 
