@@ -99,6 +99,13 @@ func CreateService(service *Service,
 		return errorhandler(NewDuplicateServiceError(fmt.Sprintf("Duplicate registration for %v. Only one registration per microservice is supported.", *service.SensorUrl), "service")), nil, nil
 	}
 
+	// If there are no attributes associated with this request but the MS requires some configuration, return an error.
+	if service.Attributes == nil || (service.Attributes != nil && len(*service.Attributes) == 0) {
+		if varname := msdef.NeedsUserInput(); varname != "" {
+			return errorhandler(NewMSMissingVariableConfigError(fmt.Sprintf("variable %v is missing from mappings", varname), "service.[attribute].mapped")), nil, nil
+		}
+	}
+
 	// Validate any attributes specified in the attribute list and convert them to persistent objects.
 	// This attribute verifier makes sure that there is a mapped attribute which specifies values for all the non-default
 	// user inputs in the specific microservice selected earlier.

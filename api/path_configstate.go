@@ -148,7 +148,7 @@ func UpdateConfigstate(cfg *Configstate,
 			if errHandled {
 				switch createServiceError.(type) {
 				case *MSMissingVariableConfigError:
-					msErr := err.(*MSMissingVariableConfigError)
+					msErr := createServiceError.(*MSMissingVariableConfigError)
 					// Cannot autoconfig this microservice because it has variables that need to be configured.
 					return errorhandler(NewAPIUserInputError(fmt.Sprintf("Configstate autoconfig, microservice %v %v %v, %v", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, msErr.Err), "configstate.state")), nil, nil
 
