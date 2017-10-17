@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/cutil"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -49,7 +50,7 @@ type ProposalRejection struct {
 // This is the main struct that defines the Policy object
 type Policy struct {
 	Header                 PolicyHeader          `json:"header"`
-	PatternId              string                `json:"paternId,omitempty"` // Manually created policy files should NOT use this field.
+	PatternId              string                `json:"patternId,omitempty"` // Manually created policy files should NOT use this field.
 	APISpecs               APISpecList           `json:"apiSpec,omitempty"`
 	AgreementProtocols     AgreementProtocolList `json:"agreementProtocols,omitempty"`
 	Workloads              WorkloadList          `json:"workloads,omitempty"`
@@ -63,6 +64,7 @@ type Policy struct {
 	CounterPartyProperties RequiredProperty      `json:"counterPartyProperties,omitempty"` // Version 2.0
 	RequiredWorkload       string                `json:"requiredWorkload,omitempty"`       // Version 2.0
 	HAGroup                HighAvailabilityGroup `json:"ha_group,omitempty"`               // Version 2.0
+	NodeH                  NodeHealth            `json:"nodeHealth,omitempty"`             // Version 2.0
 }
 
 // These functions are used to create Policy objects. You can create the base object
@@ -131,6 +133,15 @@ func (self *Policy) Add_Workload(w *Workload) error {
 		return self.Workloads.Add_Workload(w)
 	} else {
 		return errors.New(fmt.Sprintf("Add_Workload Error: input is nil."))
+	}
+}
+
+func (self *Policy) Add_NodeHealth(nh *NodeHealth) error {
+	if nh != nil {
+		self.NodeH = *nh
+		return nil
+	} else {
+		return errors.New(fmt.Sprintf("Add_NodeHealth Error: input is nil."))
 	}
 }
 
@@ -215,16 +226,9 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 	// from both policies.
 	merged_pol.CounterPartyProperties = *((&producer_policy1.CounterPartyProperties).Merge(&producer_policy2.CounterPartyProperties))
 	merged_pol.HAGroup = *((&producer_policy1.HAGroup).Merge(&producer_policy2.HAGroup))
-	merged_pol.MaxAgreements = min(producer_policy1.MaxAgreements, producer_policy2.MaxAgreements)
+	merged_pol.MaxAgreements = cutil.Min(producer_policy1.MaxAgreements, producer_policy2.MaxAgreements)
 
 	return merged_pol, nil
-}
-
-func min(first int, second int) int {
-	if first < second {
-		return first
-	}
-	return second
 }
 
 // This function creates a merged policy file from a producer policy and a consumer policy, which will eventually
@@ -262,6 +266,7 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		(&merged_pol.Properties).Concatenate(&producer_policy.Properties)
 		merged_pol.RequiredWorkload = producer_policy.RequiredWorkload
 		merged_pol.HAGroup = producer_policy.HAGroup
+		merged_pol.NodeH = consumer_policy.NodeH
 
 		return merged_pol, nil
 	}
@@ -365,6 +370,7 @@ func (self *Policy) String() string {
 	}
 	res += fmt.Sprintf("CounterPartyProperties: %v\n", self.CounterPartyProperties)
 	res += fmt.Sprintf("Data Verification: %v\n", self.DataVerify)
+	res += fmt.Sprintf("Node Health: %v\n", self.NodeH)
 
 	return res
 }
@@ -381,12 +387,8 @@ func (self *Policy) ShortString() string {
 	for _, wl := range self.Workloads {
 		res += fmt.Sprintf("Deployment: %v ", wl.Deployment)
 	}
-	res += ", Properties: "
-	for _, p := range self.Properties {
-		res += fmt.Sprintf("Name: %v Value: %v ", p.Name, p.Value)
-	}
-	res += fmt.Sprintf(", Resource Limits: %v", self.ResourceLimits)
 	res += fmt.Sprintf(", Data Verification: %v", self.DataVerify)
+	res += fmt.Sprintf(", Node Health: %v", self.NodeH)
 
 	return res
 }

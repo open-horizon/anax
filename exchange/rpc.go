@@ -439,16 +439,36 @@ func CreateSearchPatternRequest() *SearchExchangePatternRequest {
 	return ser
 }
 
+// This function will cause the messaging key to be created if it doesnt already exist.
+func keyBytes() []byte {
+	if pubKey, _, err := GetKeys(""); err != nil {
+		glog.Errorf(rpclogString(fmt.Sprintf("Error getting keys %v", err)))
+		return []byte(`none`)
+	} else if b, err := MarshalPublicKey(pubKey); err != nil {
+		glog.Errorf(rpclogString(fmt.Sprintf("Error marshalling device public key %v, error %v", pubKey, err)))
+		return []byte(`none`)
+	} else {
+		return b
+	}
+}
+
 // This function creates the device registration message body.
 func CreateDevicePut(token string, name string) *PutDeviceRequest {
 
+	// If we have a messaging key, pass it on the PUT.
+	pkBytes := []byte("")
+	if HasKeys() {
+		pkBytes = keyBytes()
+	}
+
+	// Create the PUT node body.
 	pdr := &PutDeviceRequest{
 		Token:            token,
 		Name:             name,
 		MsgEndPoint:      "",
 		Pattern:          "",
 		SoftwareVersions: make(map[string]string),
-		PublicKey:        []byte(""),
+		PublicKey:        pkBytes,
 	}
 
 	return pdr
@@ -456,18 +476,6 @@ func CreateDevicePut(token string, name string) *PutDeviceRequest {
 
 // This function creates the device registration complete message body.
 func CreatePatchDeviceKey() *PatchAgbotPublicKey {
-
-	keyBytes := func() []byte {
-		if pubKey, _, err := GetKeys(""); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf("Error getting keys %v", err)))
-			return []byte(`none`)
-		} else if b, err := MarshalPublicKey(pubKey); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf("Error marshalling device public key %v, error %v", pubKey, err)))
-			return []byte(`none`)
-		} else {
-			return b
-		}
-	}
 
 	// Same request body structure for node and agbot.
 	pdr := &PatchAgbotPublicKey{
@@ -642,6 +650,15 @@ func (w *WorkloadDefinition) GetUserInputName(name string) *UserInput {
 		}
 	}
 	return nil
+}
+
+func (w *WorkloadDefinition) NeedsUserInput() bool {
+	for _, ui := range w.UserInputs {
+		if ui.DefaultValue == "" {
+			return true
+		}
+	}
+	return false
 }
 
 type GetWorkloadsResponse struct {
@@ -855,17 +872,18 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 // The purpose of this function is to verify that a given workload URL, version and architecture, is defined in the exchange
 // as well as all of its API spec dependencies. This function also returns the API dependencies converted into
 // policy types so that the caller can use those types to do policy compatibility checks if they want to.
-func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg string, wVersion string, wArch string, exURL string, id string, token string) (*policy.APISpecList, error) {
+func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg string, wVersion string, wArch string, exURL string, id string, token string) (*policy.APISpecList, *WorkloadDefinition, error) {
 	resolveMicroservices := true
 
 	glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving workload %v %v %v %v", wURL, wOrg, wVersion, wArch)))
 
 	res := new(policy.APISpecList)
 	// Get a version specific workload definition.
-	if workload, err := GetWorkload(httpClientFactory, wURL, wOrg, wVersion, wArch, exURL, id, token); err != nil {
-		return nil, err
+	workload, werr := GetWorkload(httpClientFactory, wURL, wOrg, wVersion, wArch, exURL, id, token)
+	if werr != nil {
+		return nil, nil, werr
 	} else if len(workload.Workloads) != 1 {
-		return nil, errors.New(fmt.Sprintf("expecting 1 element in the workloads array of %v, have %v", workload, len(workload.Workloads)))
+		return nil, nil, errors.New(fmt.Sprintf("expecting 1 element in the workloads array of %v, have %v", workload, len(workload.Workloads)))
 	} else {
 
 		// We found the workload definition. Microservices are referred to within a workload definition by
@@ -882,11 +900,11 @@ func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, 
 				// Convert version to a version range expression (if it's not already an expression) so that GetMicroservice()
 				// will return us something in the range required by the workload.
 				if vExp, err := policy.Version_Expression_Factory(apiSpec.Version); err != nil {
-					return nil, errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", apiSpec.Version, err))
+					return nil, nil, errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", apiSpec.Version, err))
 				} else if ms, err := GetMicroservice(httpClientFactory, apiSpec.SpecRef, apiSpec.Org, vExp.Get_expression(), apiSpec.Arch, exURL, id, token); err != nil {
-					return nil, err
+					return nil, nil, err
 				} else if ms == nil {
-					return nil, errors.New(fmt.Sprintf("unable to find microservice %v within %v", apiSpec, vExp))
+					return nil, nil, errors.New(fmt.Sprintf("unable to find microservice %v within %v", apiSpec, vExp))
 				} else {
 					newAPISpec := policy.APISpecification_Factory(ms.SpecRef, apiSpec.Org, ms.Version, ms.Arch)
 					if ms.Sharable == MS_SHARING_MODE_SINGLE {
@@ -898,7 +916,7 @@ func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, 
 			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved microservices for %v %v %v %v", wURL, wOrg, wVersion, wArch)))
 		}
 		glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved workload %v %v %v %v", wURL, wOrg, wVersion, wArch)))
-		return res, nil
+		return res, workload, nil
 
 	}
 
@@ -975,7 +993,8 @@ type WorkloadReference struct {
 	WorkloadOrg      string           `json:"workloadOrgid,omitempty"`    // the org holding the workload definition
 	WorkloadArch     string           `json:"workloadArch,omitempty"`     // the hardware architecture of the workload definition
 	WorkloadVersions []WorkloadChoice `json:"workloadVersions,omitempty"` // a list of workload version for rollback
-	DataVerify       DataVerification `json:"dataVerification"`
+	DataVerify       DataVerification `json:"dataVerification"`           // policy for verifying that the node is sending data
+	NodeH            NodeHealth       `json:"nodeHealth"`                 // policy for determining when a node's health is violating its agreements
 }
 
 type Meter struct {
@@ -992,6 +1011,11 @@ type DataVerification struct {
 	Interval    int    `json:"interval,omitempty"`   // The number of seconds to check for data before deciding there isnt any data
 	CheckRate   int    `json:"check_rate,omitempty"` // The number of seconds between checks for valid data being received
 	Metering    Meter  `json:"metering,omitempty"`   // The metering configuration
+}
+
+type NodeHealth struct {
+	MissingHBInterval    int `json:"missing_heartbeat_interval,omitempty"` // How long a heartbeat can be missing until it is considered missing (in seconds)
+	CheckAgreementStatus int `json:"check_agreement_status,omitempty"`     // How often to check that the node agreement entry still exists in the exchange (in seconds)
 }
 
 type Blockchain struct {
@@ -1124,12 +1148,74 @@ func ConvertToPolicies(patternId string, p *Pattern) ([]*policy.Policy, error) {
 		// Unlimited number of devices can get this workload
 		pol.MaxAgreements = 0
 
+		// Copy over the node health policy
+		nh := policy.NodeHealth_Factory(workload.NodeH.MissingHBInterval, workload.NodeH.CheckAgreementStatus)
+		pol.Add_NodeHealth(nh)
+
 		glog.V(3).Infof(rpclogString(fmt.Sprintf("converted %v into %v", workload, pol)))
 		policies = append(policies, pol)
 
 	}
 
 	return policies, nil
+
+}
+
+// This section is for types related to querying the exchange for node health
+
+type AgreementObject struct {
+}
+
+type NodeInfo struct {
+	LastHeartbeat string                     `json:"lastHeartbeat"`
+	Agreements    map[string]AgreementObject `json:"agreements"`
+}
+
+func (n NodeInfo) String() string {
+	return fmt.Sprintf("LastHeartbeat: %v, Agreements: %v", n.LastHeartbeat, n.Agreements)
+}
+
+type NodeHealthStatus struct {
+	Nodes map[string]NodeInfo `json:"nodes"`
+}
+
+type NodeHealthStatusRequest struct {
+	LastCall string `json:"lastTime"`
+}
+
+// Return the current status of nodes in a given pattern. This function can return nil and no error if the exchange has no
+// updated status to return.
+func GetNodeHealthStatus(httpClientFactory *config.HTTPClientFactory, pattern string, org string, lastCallTime string, exURL string, id string, token string) (*NodeHealthStatus, error) {
+
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting node health status for %v", pattern)))
+
+	params := &NodeHealthStatusRequest{
+		LastCall: lastCallTime,
+	}
+
+	var resp interface{}
+	resp = new(NodeHealthStatus)
+
+	// Search the exchange for the node health status
+	targetURL := fmt.Sprintf("%vorgs/%v/search/nodehealth", exURL, org)
+	if pattern != "" {
+		targetURL = fmt.Sprintf("%vorgs/%v/patterns/%v/nodehealth", exURL, GetOrg(pattern), GetId(pattern))
+	}
+
+	for {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "POST", targetURL, id, token, &params, &resp); err != nil && !strings.Contains(err.Error(), "status: 404") {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			status := resp.(*NodeHealthStatus)
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("found nodehealth status for %v, status %v", pattern, status)))
+			return status, nil
+		}
+	}
 
 }
 
@@ -1265,6 +1351,9 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 						return nil, nil
 
 					case *GetAgbotsPatternsResponse:
+						return nil, nil
+
+					case *NodeHealthStatus:
 						return nil, nil
 
 					default:

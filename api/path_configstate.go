@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"strings"
@@ -120,9 +121,17 @@ func UpdateConfigstate(cfg *Configstate,
 			// Each workload in the pattern can specify rollback workload versions, so to get a fully qualified workload URL,
 			// we need to iterate each workload choice to grab the version.
 			for _, workloadChoice := range workload.WorkloadVersions {
-				apiSpecList, err := resolveWorkload(workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, thisArch, pDevice.GetId(), pDevice.Token)
+				apiSpecList, workloadDef, err := resolveWorkload(workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, thisArch, pDevice.GetId(), pDevice.Token)
 				if err != nil {
 					return errorhandler(NewSystemError(fmt.Sprintf("Error resolving workload %v %v %v %v, error %v", workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, thisArch, err))), nil, nil
+				}
+
+				// The workload might have variables that need to be configured. If so, find all relevant workloadconfig objects to make sure
+				// there is a workload config available.
+				if present, err := workloadConfigPresent(workloadDef, workload.WorkloadURL, workloadChoice.Version, db); err != nil {
+					return errorhandler(NewSystemError(fmt.Sprintf("Error checking workload config, error %v", err))), nil, nil
+				} else if !present {
+					return errorhandler(NewMSMissingVariableConfigError(fmt.Sprintf("Workload config for %v %v is missing", workload.WorkloadURL, workloadChoice.Version), "configstate.state")), nil, nil
 				}
 
 				// Microservices that are defined as being shared singletons can only appear once in the complete API spec list. If there
@@ -146,6 +155,7 @@ func UpdateConfigstate(cfg *Configstate,
 			service := NewService(apiSpec.SpecRef, apiSpec.Org, makeServiceName(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version), apiSpec.Version)
 			errHandled, newService, msg := CreateService(service, passthruHandler, getMicroservice, db, config)
 			if errHandled {
+				glog.Errorf(apiLogString(fmt.Sprintf("Configstate autoconfig received error (%T) %v", createServiceError, createServiceError)))
 				switch createServiceError.(type) {
 				case *MSMissingVariableConfigError:
 					msErr := createServiceError.(*MSMissingVariableConfigError)
@@ -182,6 +192,44 @@ func UpdateConfigstate(cfg *Configstate,
 
 }
 
+// This function verifies that if the given workload needs variable configuration, that there is a workloadconfig
+// object holding that config.
+func workloadConfigPresent(workloadDef *exchange.WorkloadDefinition, wUrl string, wVersion string, db *bolt.DB) (bool, error) {
+
+	// If the workload needs no config, exit early.
+	if !workloadDef.NeedsUserInput() {
+		return true, nil
+	}
+
+	// Filter to return workload configs with versions less than or equal to the input workload version range
+	OlderWorkloadWCFilter := func(workload_url string, version string) persistence.WCFilter {
+		return func(e persistence.WorkloadConfig) bool {
+			if vExp, err := policy.Version_Expression_Factory(e.VersionExpression); err != nil {
+				return false
+			} else if inRange, err := vExp.Is_within_range(version); err != nil {
+				return false
+			} else if e.WorkloadURL == workload_url && inRange {
+				return true
+			} else {
+				return false
+			}
+		}
+	}
+
+	// Find the eligible workload config objects. We know that the /workloadconfig API validates that all required
+	// variables are set BEFORE saving the config, so if we find any matching config objects, we can assume the
+	// workload is configured.
+	cfgs, err := persistence.FindWorkloadConfigs(db, []persistence.WCFilter{OlderWorkloadWCFilter(wUrl, wVersion)})
+	if err != nil {
+		return false, errors.New(fmt.Sprintf("unable to read workload config objects %v %v, error: %v", wUrl, wVersion, err))
+	} else if len(cfgs) == 0 {
+		return false, nil
+	}
+	return true, nil
+
+}
+
+// Generate a name for the autoconfigured services.
 func makeServiceName(msURL string, msOrg string, msVersion string) string {
 
 	url := ""

@@ -1,12 +1,14 @@
 package producer
 
 import (
+	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/basicprotocol"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -86,6 +88,32 @@ func (c *BasicProtocolHandler) TerminateAgreement(ag *persistence.EstablishedAgr
 		messageTarget = mt
 	}
 	c.BaseProducerProtocolHandler.TerminateAgreement(ag, reason, messageTarget, c)
+}
+
+func (c *BasicProtocolHandler) VerifyAgreement(ag *persistence.EstablishedAgreement) (bool, error) {
+	if _, pubkey, err := c.BaseProducerProtocolHandler.GetAgbotMessageEndpoint(ag.ConsumerId); err != nil {
+		return false, errors.New(BPHlogString(fmt.Sprintf("error getting agbot message target: %v", err)))
+	} else if mt, err := exchange.CreateMessageTarget(ag.ConsumerId, nil, pubkey, ""); err != nil {
+		return false, errors.New(BPHlogString(fmt.Sprintf("error creating message target: %v", err)))
+	} else if recorded, err := c.agreementPH.VerifyAgreement(ag.CurrentAgreementId, ag.CounterPartyAddress, ag.ProposalSig, mt, c.GetSendMessage()); err != nil {
+		return false, errors.New(BPHlogString(fmt.Sprintf("encountered error verifying agreement %v, error %v", ag.CurrentAgreementId, err)))
+	} else {
+		return recorded, nil
+	}
+}
+
+// Returns 2 booleans, first is whether or not the message was handled, the second is whether or not to cancel the agreement in the protocol msg.
+func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, bool, string, error) {
+
+	// The agreement verification reply indicates whether or not the consumer thinks the agreement is still valid.
+	if verify, err := c.agreementPH.ValidateAgreementVerifyReply(msg.ProtocolMessage()); err != nil {
+		glog.V(5).Infof(BPHlogString(fmt.Sprintf("extension message handler ignoring non-agreement verify reply message: %s due to %v", msg.ShortProtocolMessage(), err)))
+	} else {
+		glog.V(5).Infof(BPHlogString(fmt.Sprintf("extension handler handled agreement verification reply for %v", verify.AgreementId())))
+		return true, !verify.Exists, verify.AgreementId(), nil
+	}
+
+	return false, false, "", nil
 }
 
 func (c *BasicProtocolHandler) GetTerminationCode(reason string) uint {

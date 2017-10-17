@@ -49,5 +49,6 @@
         "number": 5,
         "duration": 86400
     },
-    "ha_group": {}
+    "ha_group": {},
+    "nodeHealth": {}
 }

@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/basicprotocol"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
 	"github.com/satori/go.uuid"
 	"math/rand"
@@ -31,6 +33,36 @@ func NewBasicAgreementWorker(c *BasicProtocolHandler, cfg *config.HorizonConfig,
 	}
 
 	return p
+}
+
+// These are work items that represent extensions to the protocol.
+const AGREEMENT_VERIFICATION = "AGREEMENT_VERIFY"
+
+type BAgreementVerification struct {
+	workType     string
+	Verify       basicprotocol.BAgreementVerify
+	From         string // deprecated whisper address
+	SenderId     string // exchange Id of sender
+	SenderPubKey []byte
+	MessageId    int
+}
+
+func (b BAgreementVerification) Type() string {
+	return b.workType
+}
+
+func (b BAgreementVerification) String() string {
+	pkey := "not set"
+	if len(b.SenderPubKey) != 0 {
+		pkey = "set"
+	}
+	return fmt.Sprintf("WorkType: %v, "+
+		"Verify: %v, "+
+		"MsgEndpoint: %v, "+
+		"SenderId: %v, "+
+		"SenderPubKey: %v, "+
+		"MessageId: %v",
+		b.workType, b.Verify, b.From, b.SenderId, pkey, b.MessageId)
 }
 
 // This function receives an event to "make a new agreement" from the Process function, and then synchronously calls a function
@@ -77,6 +109,36 @@ func (a *BasicAgreementWorker) start(work chan AgreementWork, random *rand.Rand)
 		} else if workItem.Type() == ASYNC_CANCEL {
 			wi := workItem.(AsyncCancelAgreement)
 			a.ExternalCancel(a.protocolHandler, wi.AgreementId, wi.Reason, a.workerID)
+
+		} else if workItem.Type() == AGREEMENT_VERIFICATION {
+			wi := workItem.(BAgreementVerification)
+
+			// Archived and terminating agreements are considered to be non-existent.
+			agreement, err := FindSingleAgreementByAgreementId(a.db, wi.Verify.AgreementId(), a.protocolHandler.Name(), []AFilter{UnarchivedAFilter()})
+			if err != nil {
+				glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error querying agreement %v, error: %v", wi.Verify.AgreementId(), err)))
+			}
+
+			exists := false
+			if agreement != nil && agreement.AgreementTimedout == 0 {
+				exists = true
+			}
+
+			// Reply to the sender with our decision on the agreement.
+			if mt, err := exchange.CreateMessageTarget(wi.SenderId, nil, wi.SenderPubKey, wi.From); err != nil {
+				glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error creating message target: %v", err)))
+			} else if aph, ok := a.protocolHandler.AgreementProtocolHandler("", "", "").(*basicprotocol.ProtocolHandler); !ok {
+				glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error casting to basic protocol handler (%T): %v", a.protocolHandler.AgreementProtocolHandler("", "", ""), err)))
+			} else if err := aph.SendAgreementVerificationReply(wi.Verify.AgreementId(), exists, mt, a.protocolHandler.GetSendMessage()); err != nil {
+				glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error trying to send agreement verification reply for %v to %v, error: %v", wi.Verify.AgreementId(), mt, err)))
+			}
+
+			// Get rid of the original agreement validation request message.
+			if wi.MessageId != 0 {
+				if err := a.protocolHandler.DeleteMessage(wi.MessageId); err != nil {
+					glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error deleting message %v from exchange", wi.MessageId)))
+				}
+			}
 
 		} else {
 			glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("received unknown work request: %v", workItem)))

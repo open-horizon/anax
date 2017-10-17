@@ -222,7 +222,7 @@ func (a *API) policyUpgrade(w http.ResponseWriter, r *http.Request) {
 		}
 
 		workloadResolver := func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
-			asl, err := exchange.WorkloadResolver(a.Config.Collaborators.HTTPClientFactory, wURL, wOrg, wVersion, wArch, a.Config.AgreementBot.ExchangeURL, a.Config.AgreementBot.ExchangeId, a.Config.AgreementBot.ExchangeToken)
+			asl, _, err := exchange.WorkloadResolver(a.Config.Collaborators.HTTPClientFactory, wURL, wOrg, wVersion, wArch, a.Config.AgreementBot.ExchangeURL, a.Config.AgreementBot.ExchangeId, a.Config.AgreementBot.ExchangeToken)
 			if err != nil {
 				glog.Errorf(APIlogString(fmt.Sprintf("unable to resolve workload, error %v", err)))
 			}

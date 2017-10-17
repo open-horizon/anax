@@ -118,7 +118,6 @@ func CreateService(service *Service,
 				if ui.DefaultValue != "" {
 					continue
 				} else if _, ok := attr.GetGenericMappings()[ui.Name]; !ok {
-					// return errorhandler(NewAPIUserInputError(fmt.Sprintf("variable %v is missing from mappings", ui.Name), "service.[attribute].mapped")), nil
 					return errorhandler(NewMSMissingVariableConfigError(fmt.Sprintf("variable %v is missing from mappings", ui.Name), "service.[attribute].mapped")), nil
 				}
 			}

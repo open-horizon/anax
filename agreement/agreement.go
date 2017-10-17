@@ -490,12 +490,12 @@ func (w *AgreementWorker) verifyAgreement(ag *persistence.EstablishedAgreement, 
 	// Check to see if the agreement is in an external store.
 	if pph.AgreementProtocolHandler(bcType, bcName, bcOrg) == nil {
 		glog.Errorf(logString(fmt.Sprintf("for %v unable to verify agreement, agreement protocol handler is not ready", ag.CurrentAgreementId)))
-	} else if recorded, err := pph.AgreementProtocolHandler(bcType, bcName, bcOrg).VerifyAgreement(ag.CurrentAgreementId, ag.CounterPartyAddress, ag.ProposalSig); err != nil {
-		return false, errors.New(logString(fmt.Sprintf("encountered error verifying agreement %v on blockchain, error %v", ag.CurrentAgreementId, err)))
+	} else if recorded, err := pph.VerifyAgreement(ag); err != nil {
+		return false, errors.New(logString(fmt.Sprintf("encountered error verifying agreement %v, error %v", ag.CurrentAgreementId, err)))
 	} else if !recorded {
 		// A finalized agreement should be in the external store.
 		if ag.AgreementFinalizedTime != 0 && ag.AgreementTerminatedTime == 0 {
-			glog.V(3).Infof(logString(fmt.Sprintf("agreement %v is not in the blockchain, cancelling.", ag.CurrentAgreementId)))
+			glog.V(3).Infof(logString(fmt.Sprintf("agreement %v is not known externally, cancelling.", ag.CurrentAgreementId)))
 			return false, nil
 		}
 	}

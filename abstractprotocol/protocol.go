@@ -146,7 +146,9 @@ type ProtocolHandler interface {
 
 	VerifyAgreement(agreementId string,
 		counterParty string,
-		expectedSignature string) (bool, error)
+		expectedSignature string,
+		messageTarget interface{},
+		sendMessage func(mt interface{}, pay []byte) error) (bool, error)
 
 	RecordMeter(agreementId string,
 		mn *metering.MeteringNotification) error

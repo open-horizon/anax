@@ -14,7 +14,7 @@ func init() {
 
 func Test_FindAgreementsForOutput0(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -35,7 +35,7 @@ func Test_FindAgreementsForOutput0(t *testing.T) {
 
 func Test_FindAgreementsForOutput1(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -68,7 +68,7 @@ func Test_FindAgreementsForOutput1(t *testing.T) {
 
 func Test_DeleteAgreement0(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -103,7 +103,7 @@ func Test_DeleteAgreement0(t *testing.T) {
 
 func Test_DeleteAgreement1(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -136,7 +136,7 @@ func Test_DeleteAgreement1(t *testing.T) {
 
 func Test_DeleteAgreement2(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -169,7 +169,7 @@ func Test_DeleteAgreement2(t *testing.T) {
 
 func Test_DeleteAgreement3(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}

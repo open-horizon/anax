@@ -79,5 +79,6 @@
             }
         ]
     },
-    "ha_group": {}
+    "ha_group": {},
+    "nodeHealth": {}
 }

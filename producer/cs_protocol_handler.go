@@ -355,7 +355,21 @@ func (c *CSProtocolHandler) IsAgreementVerifiable(ag *persistence.EstablishedAgr
 	return (ag.ProtocolVersion == 0 || ag.ProtocolVersion == 1) || (ag.ProtocolVersion == 2 && ag.CounterPartyAddress != "")
 }
 
-func (c *CSProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, error) {
+func (c *CSProtocolHandler) VerifyAgreement(ag *persistence.EstablishedAgreement) (bool, error) {
+	// This protocol doesnt send a message to verify agreements, so we can use a fake message target.
+	fakeMT := &exchange.ExchangeMessageTarget{
+		ReceiverExchangeId:     "",
+		ReceiverPublicKeyObj:   nil,
+		ReceiverPublicKeyBytes: []byte(""),
+		ReceiverMsgEndPoint:    "",
+	}
+	bcType, bcName, bcOrg := c.GetKnownBlockchain(ag)
+	ph := c.AgreementProtocolHandler(bcType, bcName, bcOrg)
+	return ph.VerifyAgreement(ag.CurrentAgreementId, ag.CounterPartyAddress, ag.ProposalSig, fakeMT, c.GetSendMessage())
+
+}
+
+func (c *CSProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, bool, string, error) {
 
 	deleteMessage := false
 
@@ -395,7 +409,7 @@ func (c *CSProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDeviceMe
 		}
 	}
 
-	return deleteMessage, nil
+	return deleteMessage, false, "", nil
 }
 
 func (c *CSProtocolHandler) GetKnownBlockchain(ag *persistence.EstablishedAgreement) (string, string, string) {

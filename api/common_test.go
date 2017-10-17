@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
@@ -15,8 +16,8 @@ import (
 // These are functions which are used across the set of API unit tests
 
 func getDummyWorkloadResolver() WorkloadResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*policy.APISpecList, error) {
-		return nil, nil
+	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*policy.APISpecList, *exchange.WorkloadDefinition, error) {
+		return nil, nil, nil
 	}
 }
 
@@ -51,8 +52,82 @@ func getDummyGetPatterns() PatternHandler {
 	}
 }
 
-func setup() (string, *bolt.DB, error) {
-	dir, err := ioutil.TempDir("", "horizondevice-")
+// Use these variable functions when you need the business logic to do something specific and you need to verify something specific.
+func getVariablePatternHandler(workload exchange.WorkloadReference) func(org string, pattern string, id string, token string) (map[string]exchange.Pattern, error) {
+	return func(org string, pattern string, id string, token string) (map[string]exchange.Pattern, error) {
+		patid := fmt.Sprintf("%v/%v", org, pattern)
+		return map[string]exchange.Pattern{
+			patid: exchange.Pattern{
+				Label:              "label",
+				Description:        "desc",
+				Public:             true,
+				Workloads:          []exchange.WorkloadReference{workload},
+				AgreementProtocols: []exchange.AgreementProtocol{},
+			},
+		}, nil
+	}
+}
+
+func getVariableWorkloadResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange.UserInput) func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*policy.APISpecList, *exchange.WorkloadDefinition, error) {
+	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*policy.APISpecList, *exchange.WorkloadDefinition, error) {
+		sl := policy.APISpecList{
+			policy.APISpecification{
+				SpecRef:         mUrl,
+				Org:             mOrg,
+				Version:         mVersion,
+				ExclusiveAccess: true,
+				Arch:            mArch,
+			},
+		}
+		es := exchange.APISpec{
+			SpecRef: mUrl,
+			Org:     mOrg,
+			Version: mVersion,
+			Arch:    mArch,
+		}
+		uis := []exchange.UserInput{}
+		if ui != nil {
+			uis = []exchange.UserInput{*ui}
+		}
+		wl := exchange.WorkloadDefinition{
+			Owner:       "owner",
+			Label:       "label",
+			Description: "desc",
+			WorkloadURL: wUrl,
+			Version:     wVersion,
+			Arch:        wArch,
+			DownloadURL: "",
+			APISpecs:    []exchange.APISpec{es},
+			UserInputs:  uis,
+			Workloads:   []exchange.WorkloadDeployment{},
+			LastUpdated: "updated",
+		}
+		return &sl, &wl, nil
+	}
+}
+
+func getVariableMicroserviceHandler(mUserInput exchange.UserInput) func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*exchange.MicroserviceDefinition, error) {
+	return func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*exchange.MicroserviceDefinition, error) {
+		md := exchange.MicroserviceDefinition{
+			Owner:         "owner",
+			Label:         "label",
+			Description:   "desc",
+			SpecRef:       mUrl,
+			Version:       mVersion,
+			Arch:          mArch,
+			Sharable:      exchange.MS_SHARING_MODE_EXCLUSIVE,
+			DownloadURL:   "",
+			MatchHardware: exchange.HardwareMatch{},
+			UserInputs:    []exchange.UserInput{mUserInput},
+			Workloads:     []exchange.WorkloadDeployment{},
+			LastUpdated:   "today",
+		}
+		return &md, nil
+	}
+}
+
+func utsetup() (string, *bolt.DB, error) {
+	dir, err := ioutil.TempDir("", "utdb-")
 	if err != nil {
 		return "", nil, err
 	}

@@ -36,10 +36,10 @@ func GetHTTPMicroserviceHandler(a *API) MicroserviceHandler {
 }
 
 // A handler for resolving workload references in the exchange.
-type WorkloadResolverHandler func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*policy.APISpecList, error)
+type WorkloadResolverHandler func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*policy.APISpecList, *exchange.WorkloadDefinition, error)
 
 func GetHTTPWorkloadResolverHandler(a *API) WorkloadResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*policy.APISpecList, error) {
+	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*policy.APISpecList, *exchange.WorkloadDefinition, error) {
 		return exchange.WorkloadResolver(a.Config.Collaborators.HTTPClientFactory, wUrl, wOrg, wVersion, wArch, a.Config.Edge.ExchangeURL, id, token)
 	}
 }

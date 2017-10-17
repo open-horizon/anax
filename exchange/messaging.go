@@ -374,6 +374,13 @@ func symmetricallyDecrypt(data []byte, key []byte, nonce []byte) ([]byte, error)
 var gPublicKey *rsa.PublicKey
 var gPrivateKey *rsa.PrivateKey
 
+func HasKeys() bool {
+	if gPublicKey != nil {
+		return true
+	}
+	return false
+}
+
 func GetKeys(keyPath string) (*rsa.PublicKey, *rsa.PrivateKey, error) {
 
 	if gPublicKey != nil {

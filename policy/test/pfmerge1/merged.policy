@@ -69,5 +69,6 @@
         }
     ],
     "requiredWorkload": "http://mycompany.com/workload1",
-    "ha_group": {}
+    "ha_group": {},
+    "nodeHealth": {}
 }
