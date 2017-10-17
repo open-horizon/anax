@@ -88,19 +88,24 @@ body:
 | token_valid | bool| whether the device token is valid or not |
 | token_last_valid_time | uint64 | the time stamp when the device token was last valid. |
 | ha_device | bool | whether the device is part of an HA group or not |
-
+| configstate | json | the current confiuration state of the device. It contains the state and the last_update_time. The valid values for the state are "configuring" and "configured" |
+.
 
 **Example:**
 ```
 curl -s http://localhost/horizondevice |jq '.'
 {
-  "id": "000000002175f7a9",
-  "organization": "ibm.com",
-  "pattern": "pat3",
-  "name": "mydevice1",
-  "token_last_valid_time": 1481310188,
+  "id": "myvs1",
+  "organization": "mycompany",
+  "pattern": "netspeed-amd64",
+  "name": "mydevice",
+  "token_last_valid_time": 1508174346,
   "token_valid": true,
-  "ha_device": false
+  "ha_device": false,
+  "configstate": {
+    "state": "configured",
+    "last_update_time": 1508174348
+  }
 }
 
 ```
@@ -137,6 +142,7 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
 
 ```
 
+
 #### **API:** PATCH  /horizondevice
 ---
 
@@ -158,12 +164,44 @@ none
 
 **Example:**
 ```
-curl -s -w "%{http_code}" -X PATCH-H 'Content-Type: application/json'  -d '{
+curl -s -w "%{http_code}" -X PATCH -H 'Content-Type: application/json'  -d '{
       "id": "mydevice",
       "token": "kj123idifdfjsklj"
     }'  http://localhost/horizondevice
 
 ```
+
+
+#### **API:** PUT  /horizondevice/configstate
+---
+
+Change the configuration statue of the device. The valid values for the state are "configuring" and "configured". The device starts with "configuring" state. You can change the state to "configured" after you have input the device pattern through /horizondevice api and all the microservice and workload attributes through /service and /workloadconfig apis. The device will advertise these information on the exchange once it enters the "configured" state.
+
+**Parameters:**
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| state  | string | the device configuration state. The valid values are "configuring" and "configured".|
+
+
+**Response:**
+
+code: 
+
+* 200 -- success
+
+body: 
+
+none
+
+**Example:**
+```
+curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json'  -d '{
+       "state": "configured"
+    }'  http://localhost/horizondevice/configstate
+
+```
+
 
 ### 3. Service
 
