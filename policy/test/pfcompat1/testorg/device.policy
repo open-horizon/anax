@@ -6,7 +6,7 @@
     "apiSpec": [
         {
             "specRef": "http://mycompany.com/dm/cpu_temp",
-            "organization": "testorg",
+            "organization": "otherorg",
             "version": "1.0.1",
             "exclusiveAccess": false
         }

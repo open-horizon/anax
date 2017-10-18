@@ -352,7 +352,7 @@ func (self *Policy) String() string {
 	res += fmt.Sprintf("Name: %v Version: %v\n", self.Header.Name, self.Header.Version)
 	res += "API Specifications\n"
 	for _, apiSpec := range self.APISpecs {
-		res += fmt.Sprintf("Ref: %v Version: %v Exclusive: %v Arch: %v\n", apiSpec.SpecRef, apiSpec.Version, apiSpec.ExclusiveAccess, apiSpec.Arch)
+		res += fmt.Sprintf("Ref: %v Org: %v Version: %v Exclusive: %v Arch: %v\n", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.ExclusiveAccess, apiSpec.Arch)
 	}
 	res += fmt.Sprintf("Agreement Protocol: %v\n", self.AgreementProtocols)
 	res += "Workloads:\n"
@@ -374,7 +374,7 @@ func (self *Policy) ShortString() string {
 	res += fmt.Sprintf("Name: %v Version: %v", self.Header.Name, self.Header.Version)
 	res += ", API Specifications "
 	for _, apiSpec := range self.APISpecs {
-		res += fmt.Sprintf("Ref: %v Version: %v Exclusive: %v Arch: %v ", apiSpec.SpecRef, apiSpec.Version, apiSpec.ExclusiveAccess, apiSpec.Arch)
+		res += fmt.Sprintf("Ref: %v Org: %v Version: %v Exclusive: %v Arch: %v ", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.ExclusiveAccess, apiSpec.Arch)
 	}
 	res += fmt.Sprintf(", Agreement Protocol: %v", self.AgreementProtocols)
 	res += ", Workloads: "

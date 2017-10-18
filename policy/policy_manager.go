@@ -492,9 +492,9 @@ func (self *PolicyManager) GetPolicy(org string, name string) *Policy {
 // This function returns the first policy object that contains the input API spec URL.
 // It runs outside the PM lock to make it reusable. It should ONLY be used by functions
 // that already hold the PM lock.
-func (self *PolicyManager) unlockedGetPolicyByURL(url string, org string, version string) *Policy {
+func (self *PolicyManager) unlockedGetPolicyByURL(homeOrg string, url string, org string, version string) *Policy {
 
-	orgArray, ok := self.Policies[org]
+	orgArray, ok := self.Policies[homeOrg]
 	if !ok {
 		return nil
 	}
@@ -510,12 +510,12 @@ func (self *PolicyManager) unlockedGetPolicyByURL(url string, org string, versio
 // This function returns the first policy objects that contains the input API spec URL.
 // It returns copies so that the caller doesnt have to worry about them changing
 // underneath him.
-func (self *PolicyManager) GetPolicyByURL(url string, org string, version string) []Policy {
+func (self *PolicyManager) GetPolicyByURL(homeOrg string, url string, org string, version string) []Policy {
 
 	self.PolicyLock.Lock()
 	defer self.PolicyLock.Unlock()
 	res := make([]Policy, 0, 10)
-	pol := self.unlockedGetPolicyByURL(url, org, version)
+	pol := self.unlockedGetPolicyByURL(homeOrg, url, org, version)
 	if pol != nil {
 		res = append(res, *pol)
 	}
@@ -602,8 +602,9 @@ func (self *PolicyManager) NumberPolicies() int {
 }
 
 // This function is used by a producer to find the original policies that make up
-// a merged policy that it received from a consumer.
-func (self *PolicyManager) GetPolicyList(inPolicy *Policy) ([]Policy, error) {
+// a merged policy that it received from a consumer. This function is only usable
+// from a producer node.
+func (self *PolicyManager) GetPolicyList(homeOrg string, inPolicy *Policy) ([]Policy, error) {
 
 	self.PolicyLock.Lock()
 	defer self.PolicyLock.Unlock()
@@ -613,17 +614,13 @@ func (self *PolicyManager) GetPolicyList(inPolicy *Policy) ([]Policy, error) {
 	// Policies that have more than 1 APISpec are policies that have been merged together from more than
 	// 1 individual policy. These are producer side policies that represent a request for more than 1
 	// microservice.
-	if len(inPolicy.APISpecs) > 1 {
-		for _, apiSpec := range inPolicy.APISpecs {
-			pol := self.unlockedGetPolicyByURL(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version)
-			if pol != nil {
-				res = append(res, *pol)
-			} else {
-				return nil, errors.New(fmt.Sprintf("could not find policy for %v %v %v", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version))
-			}
+	for _, apiSpec := range inPolicy.APISpecs {
+		pol := self.unlockedGetPolicyByURL(homeOrg, apiSpec.SpecRef, apiSpec.Org, apiSpec.Version)
+		if pol != nil {
+			res = append(res, *pol)
+		} else {
+			return nil, errors.New(fmt.Sprintf("could not find policy for %v %v %v", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version))
 		}
-	} else {
-		res = append(res, *inPolicy)
 	}
 	return res, nil
 }
