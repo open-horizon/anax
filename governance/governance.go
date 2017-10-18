@@ -500,8 +500,6 @@ func (w *GovernanceWorker) start() {
 		// Fire up the eth container after the device is registered.
 		for {
 			if w.deviceToken != "" {
-				// report the device status to the exchange
-				w.ReportDeviceStatus()
 				break
 			} else {
 				glog.V(3).Infof("GovernanceWorker command processor waiting for device registration")
@@ -515,6 +513,9 @@ func (w *GovernanceWorker) start() {
 			pph.Initialize()
 			w.producerPH[protocolName] = pph
 		}
+
+		// report the device status to the exchange
+		w.ReportDeviceStatus()
 
 		// Fire up the container governor
 		w.governContainers()
