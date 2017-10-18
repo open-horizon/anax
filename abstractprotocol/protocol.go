@@ -274,7 +274,7 @@ func DecideOnProposal(p ProtocolHandler,
 	}
 
 	// Get all the local policies that make up the producer policy.
-	policies, err := p.PolicyManager().GetPolicyList(producerPolicy)
+	policies, err := p.PolicyManager().GetPolicyList(myOrg, producerPolicy)
 	if err != nil {
 		replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error getting policy list: %v", p.Name(), err))
 
@@ -336,7 +336,7 @@ func SendResponse(p ProtocolHandler,
 		glog.Errorf(AAPlogString(p.Name(), replyErr.Error()))
 		producerPolicy, _ := policy.DemarshalPolicy(proposal.ProducerPolicy())
 		if producerPolicy != nil {
-			if policies, err := p.PolicyManager().GetPolicyList(producerPolicy); err != nil {
+			if policies, err := p.PolicyManager().GetPolicyList(myOrg, producerPolicy); err != nil {
 				glog.Errorf(AAPlogString(p.Name(), fmt.Sprintf("Error getting policy list: %v for agreement %v", err, proposal.AgreementId())))
 			} else if cerr := p.PolicyManager().CancelAgreement(policies, proposal.AgreementId(), myOrg); cerr != nil {
 				glog.Errorf(AAPlogString(p.Name(), fmt.Sprintf("Error cancelling agreement %v in PM %v", proposal.AgreementId(), cerr)))

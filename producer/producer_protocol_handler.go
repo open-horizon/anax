@@ -208,7 +208,7 @@ func (w *BaseProducerProtocolHandler) TerminateAgreement(ag *persistence.Establi
 		bcType, bcName, bcOrg := pph.GetKnownBlockchain(ag)
 		if aph := pph.AgreementProtocolHandler(bcType, bcName, bcOrg); aph == nil {
 			glog.Warningf(BPPHlogString(w.Name(), fmt.Sprintf("cannot terminate agreement %v, agreement protocol handler doesnt exist yet.", ag.CurrentAgreementId)))
-		} else if policies, err := w.pm.GetPolicyList(pPolicy); err != nil {
+		} else if policies, err := w.pm.GetPolicyList(exchange.GetOrg(w.deviceId), pPolicy); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("agreement %v error getting policy list: %v", ag.CurrentAgreementId, err)))
 		} else if err := aph.TerminateAgreement(policies, ag.CounterPartyAddress, ag.CurrentAgreementId, exchange.GetOrg(w.deviceId), reason, mt, pph.GetSendMessage()); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error terminating agreement %v on the blockchain: %v", ag.CurrentAgreementId, err)))

@@ -211,19 +211,19 @@ func Test_find_by_apispec1(t *testing.T) {
 		t.Error(err)
 	} else {
 		searchURL := "http://mycompany.com/dm/gps"
-		pols := pm.GetPolicyByURL(searchURL, "testorg", "1.0.0")
+		pols := pm.GetPolicyByURL("testorg", searchURL, "otherorg", "1.0.0")
 		if len(pols) != 0 {
 			t.Errorf("Expected to find 0 policy, found %v", len(pols))
 		}
 
 		searchURL = "http://mycompany.com/dm/cpu_temp"
-		pols = pm.GetPolicyByURL(searchURL, "testorg", "1.0.1")
+		pols = pm.GetPolicyByURL("testorg", searchURL, "otherorg", "1.0.1")
 		if len(pols) != 1 {
 			t.Errorf("Expected to find 1 policies, found %v", len(pols))
 		}
 
 		searchURL = ""
-		pols = pm.GetPolicyByURL(searchURL, "testorg", "1.0.0")
+		pols = pm.GetPolicyByURL("testorg", searchURL, "otherorg", "1.0.0")
 		if len(pols) != 0 {
 			t.Errorf("Expected to find 0 policies, found %v", len(pols))
 		}

@@ -175,15 +175,16 @@ func (w *AgreementBotWorker) start() {
 			return
 		}
 
-		// Query the exchange for patterns that this agbot is supposed to serve and generate a policy for each one.
-		if err := w.GeneratePolicyFromPatterns(0); err != nil {
-			glog.Errorf("AgreementBotWorker cannot read patterns from the exchange, error %v, terminating.", err)
-			return
-		}
-
 		// Give the policy manager a chance to read in all the policies. The agbot worker will not proceed past this point
 		// until it has some policies to work with.
 		for {
+
+			// Query the exchange for patterns that this agbot is supposed to serve and generate a policy for each one.
+			if err := w.GeneratePolicyFromPatterns(0); err != nil {
+				glog.Errorf("AgreementBotWorker cannot read patterns from the exchange, error %v, terminating.", err)
+				return
+			}
+
 			if policyManager, err := policy.Initialize(w.Worker.Manager.Config.AgreementBot.PolicyPath, w.workloadResolver, false); err != nil {
 				glog.Errorf("AgreementBotWorker unable to initialize policy manager, error: %v", err)
 			} else if policyManager.NumberPolicies() != 0 {
@@ -191,7 +192,7 @@ func (w *AgreementBotWorker) start() {
 				break
 			}
 			glog.V(3).Infof("AgreementBotWorker waiting for policies to appear")
-			time.Sleep(time.Duration(1) * time.Minute)
+			time.Sleep(time.Duration(w.Worker.Manager.Config.AgreementBot.CheckUpdatedPolicyS) * time.Second)
 		}
 
 		glog.Info("AgreementBot worker started")

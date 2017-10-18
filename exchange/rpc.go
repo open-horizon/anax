@@ -741,7 +741,7 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg 
 			if searchVersion != "" {
 				if len(workloadMetadata) != 1 {
 					glog.Errorf(rpclogString(fmt.Sprintf("expecting 1 result in GET workloads response: %v", resp)))
-					return nil, errors.New(fmt.Sprintf("expecting 1 result in GET workloads response, got %v", len(workloadMetadata)))
+					return nil, errors.New(fmt.Sprintf("expecting 1 result, got %v", len(workloadMetadata)))
 				} else {
 					for _, workloadDef := range workloadMetadata {
 						glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v", &workloadDef)))
@@ -815,8 +815,8 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 			// If the caller wanted a specific version, check for 1 result.
 			if searchVersion != "" {
 				if len(msMetadata) != 1 {
-					glog.Errorf(rpclogString(fmt.Sprintf("expecting 1 result in GET microservces response: %v", resp)))
-					return nil, errors.New(fmt.Sprintf("expecting 1 result in GET microservces response, got %v", len(msMetadata)))
+					glog.Errorf(rpclogString(fmt.Sprintf("expecting 1 microservice %v %v %v response: %v", mURL, mOrg, mVersion, resp)))
+					return nil, errors.New(fmt.Sprintf("expecting 1 microservice %v %v %v, got %v", mURL, mOrg, mVersion, len(msMetadata)))
 				} else {
 					for _, msDef := range msMetadata {
 						glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v", &msDef)))
@@ -825,6 +825,9 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 				}
 
 			} else {
+				if len(msMetadata) == 0 {
+					return nil, errors.New(fmt.Sprintf("expecting at least 1 microservce %v %v %v, got %v", mURL, mOrg, mVersion, len(msMetadata)))
+				}
 				// The caller wants the highest version in the input version range. If no range was specified then
 				// they will get the highest of all available versions.
 				vRange, _ := policy.Version_Expression_Factory("0.0.0")
