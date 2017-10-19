@@ -1,6 +1,7 @@
 package agreementbot
 
 import (
+	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
@@ -149,6 +150,10 @@ func (c *BasicProtocolHandler) GetTerminationCode(reason string) uint {
 		return basicprotocol.AB_CANCEL_FORCED_UPGRADE
 	// case TERM_REASON_CANCEL_BC_WRITE_FAILED:
 	//     return basicprotocol.AB_CANCEL_BC_WRITE_FAILED
+	case TERM_REASON_NODE_HEARTBEAT:
+		return basicprotocol.AB_CANCEL_NODE_HEARTBEAT
+	case TERM_REASON_AG_MISSING:
+		return basicprotocol.AB_CANCEL_AG_MISSING
 	default:
 		return 999
 	}
@@ -184,6 +189,27 @@ func (b *BasicProtocolHandler) PostReply(agreementId string, proposal abstractpr
 
 	return nil
 
+}
+
+func (b *BasicProtocolHandler) HandleExtensionMessage(cmd *NewProtocolMessageCommand) error {
+	glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("received inbound exchange message.")))
+	// Figure out what kind of message this is
+	if verify, perr := b.agreementPH.ValidateAgreementVerify(string(cmd.Message)); perr == nil {
+		agreementWork := BAgreementVerification{
+			workType:     AGREEMENT_VERIFICATION,
+			Verify:       *verify,
+			SenderId:     cmd.From,
+			SenderPubKey: cmd.PubKey,
+			MessageId:    cmd.MessageId,
+		}
+		b.WorkQueue() <- agreementWork
+		glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("queued agreement verify message")))
+
+	} else {
+		glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("ignoring  message: %v because it is an unknown type", string(cmd.Message))))
+		return errors.New(BsCPHlogString(fmt.Sprintf("unknown protocol msg %s", cmd.Message)))
+	}
+	return nil
 }
 
 // ==========================================================================================================

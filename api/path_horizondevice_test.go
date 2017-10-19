@@ -21,7 +21,7 @@ func init() {
 // Create output device object based on env var setting
 func Test_FindHDForOutput0(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -52,7 +52,7 @@ func Test_FindHDForOutput0(t *testing.T) {
 // Create output device object based on object in the DB
 func Test_FindHDForOutput1(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -83,7 +83,7 @@ func Test_FindHDForOutput1(t *testing.T) {
 // no device id
 func Test_CreateHorizonDevice_NoDeviceid(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -115,7 +115,7 @@ func Test_CreateHorizonDevice_NoDeviceid(t *testing.T) {
 // Invalid characters in id
 func Test_CreateHorizonDevice_IllegalId(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -147,7 +147,7 @@ func Test_CreateHorizonDevice_IllegalId(t *testing.T) {
 // Invalid characters in org
 func Test_CreateHorizonDevice_IllegalOrg(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -178,7 +178,7 @@ func Test_CreateHorizonDevice_IllegalOrg(t *testing.T) {
 // Invalid characters in pattern
 func Test_CreateHorizonDevice_IllegalPattern(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -209,7 +209,7 @@ func Test_CreateHorizonDevice_IllegalPattern(t *testing.T) {
 // Invalid characters in name
 func Test_CreateHorizonDevice_IllegalName(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -241,7 +241,7 @@ func Test_CreateHorizonDevice_IllegalName(t *testing.T) {
 // empty token field
 func Test_CreateHorizonDevice_IllegalToken(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -272,7 +272,7 @@ func Test_CreateHorizonDevice_IllegalToken(t *testing.T) {
 // Successful create, everything works
 func Test_CreateHorizonDevice0(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -330,7 +330,7 @@ func Test_CreateHorizonDevice0(t *testing.T) {
 // device id from env var
 func Test_CreateHorizonDevice_EnvVarDeviceid(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -393,7 +393,7 @@ func Test_CreateHorizonDevice_EnvVarDeviceid(t *testing.T) {
 // Failed create, device already registered
 func Test_CreateHorizonDevice_alreadythere(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -458,7 +458,7 @@ func Test_CreateHorizonDevice_alreadythere(t *testing.T) {
 // Org doesnt exist
 func Test_CreateHorizonDevice_badorg(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -518,7 +518,7 @@ func Test_CreateHorizonDevice_badorg(t *testing.T) {
 // Org doesnt exist
 func Test_CreateHorizonDevice_badpattern(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}

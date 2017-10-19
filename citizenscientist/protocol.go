@@ -668,7 +668,9 @@ func (p *ProtocolHandler) TerminateAgreement(policies []policy.Policy,
 
 func (p *ProtocolHandler) VerifyAgreement(agreementId string,
 	counterPartyAddress string,
-	expectedSignature string) (bool, error) {
+	expectedSignature string,
+	messageTarget interface{},
+	sendMessage func(mt interface{}, pay []byte) error) (bool, error) {
 
 	if binaryAgreementId, err := hex.DecodeString(agreementId); err != nil {
 		return false, errors.New(fmt.Sprintf("Error converting agreement ID %v to binary, error: %v", agreementId, err))
@@ -781,6 +783,8 @@ const AB_CANCEL_DISCOVERED = 205 // xcd
 const AB_USER_REQUESTED = 206
 const AB_CANCEL_FORCED_UPGRADE = 207
 const AB_CANCEL_BC_WRITE_FAILED = 208 // xd0
+const AB_CANCEL_NODE_HEARTBEAT = 209
+const AB_CANCEL_AG_MISSING = 210
 
 func DecodeReasonCode(code uint64) string {
 
@@ -801,7 +805,9 @@ func DecodeReasonCode(code uint64) string {
 		AB_CANCEL_DISCOVERED:            "agreement bot discovered cancellation from producer",
 		AB_USER_REQUESTED:               "agreement bot user requested",
 		AB_CANCEL_FORCED_UPGRADE:        "agreement bot user requested workload upgrade",
-		AB_CANCEL_BC_WRITE_FAILED:       "agreement bot agreement write failed"}
+		AB_CANCEL_BC_WRITE_FAILED:       "agreement bot agreement write failed",
+		AB_CANCEL_NODE_HEARTBEAT:        "agreement bot detected node heartbeat stopped",
+		AB_CANCEL_AG_MISSING:            "agreement bot detected agreement missing from node"}
 
 	if reasonString, ok := codeMeanings[code]; !ok {
 		return "unknown reason code, device might be downlevel"

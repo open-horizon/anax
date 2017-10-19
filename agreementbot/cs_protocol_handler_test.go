@@ -49,7 +49,7 @@ func createEmptyPH() *CSProtocolHandler {
 }
 
 func createAgreement(proposal string, pol string, agpVersion int, bcType string, bcName string, bcOrg string) (*Agreement, error) {
-	if ag, err := agreement("testagid", "testorg", "deviceid", "testpolicy", bcType, bcName, bcOrg, "Citizen Scientist"); err != nil {
+	if ag, err := agreement("testagid", "testorg", "deviceid", "testpolicy", bcType, bcName, bcOrg, "Citizen Scientist", "apattern", policy.NodeHealth{}); err != nil {
 		return nil, err
 	} else {
 		prop := new(citizenscientist.CSProposal)

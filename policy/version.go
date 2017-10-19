@@ -57,18 +57,16 @@ func Version_Expression_Factory(ver_string string) (*Version_Expression, error) 
 	expr := ver_string
 	if strings.Contains(expr, " ") {
 		errorString := fmt.Sprintf("Version_Expression: Whitespace is not permitted in %v.", expr)
-		// glog.Errorf(errorString)
 		return nil, errors.New(errorString)
 	}
 
 	if singleVersion(ver_string) {
 		if !IsVersionString(ver_string) {
 			errorString := fmt.Sprintf("Version_Expression: %v is not a valid version string.", ver_string)
-			// glog.Errorf(errorString)
 			return nil, errors.New(errorString)
 		}
 		expr = "[" + ver_string + "," + INF + ")"
-		glog.V(5).Infof("Version_Expression: Detected single version input, converted to %v", expr)
+		glog.V(6).Infof("Version_Expression: Detected single version input, converted to %v", expr)
 	}
 
 	versions := expr
@@ -76,7 +74,6 @@ func Version_Expression_Factory(ver_string string) (*Version_Expression, error) 
 		versions = versions[1:]
 	} else {
 		errorString := fmt.Sprintf("Version_Expression: %v does not begin with an inclusion or exclusion directive.", ver_string)
-		// glog.Errorf(errorString)
 		return nil, errors.New(errorString)
 	}
 
@@ -84,22 +81,19 @@ func Version_Expression_Factory(ver_string string) (*Version_Expression, error) 
 		versions = versions[:len(versions)-1]
 	} else {
 		errorString := fmt.Sprintf("Version_Expression: %v does not end with an inclusion or exclusion directive.", ver_string)
-		// glog.Errorf(errorString)
 		return nil, errors.New(errorString)
 	}
 
 	vers := strings.Split(versions, versionSeperator)
 	if len(vers) != 2 || vers[0] == "" || vers[1] == "" {
 		errorString := fmt.Sprintf("Version_Expression: Incorrect number of versions in expression: %v.", expr)
-		// glog.Errorf(errorString)
 		return nil, errors.New(errorString)
 	}
 
-	glog.V(5).Infof("Version_Expression: Seperated expression into %v %v", vers[0], vers[1])
+	glog.V(6).Infof("Version_Expression: Seperated expression into %v %v", vers[0], vers[1])
 
 	if !IsVersionString(vers[0]) {
 		errorString := fmt.Sprintf("Version_Expression: %v is not a valid version string.", vers[0])
-		// glog.Errorf(errorString)
 		return nil, errors.New(errorString)
 	} else {
 		startVersion = normalize(vers[0])
@@ -107,7 +101,6 @@ func Version_Expression_Factory(ver_string string) (*Version_Expression, error) 
 
 	if !IsVersionString(vers[1]) {
 		errorString := fmt.Sprintf("Version_Expression: %v is not a valid version string.", vers[1])
-		// glog.Errorf(errorString)
 		return nil, errors.New(errorString)
 	} else {
 		endVersion = normalize(vers[1])
@@ -121,7 +114,7 @@ func Version_Expression_Factory(ver_string string) (*Version_Expression, error) 
 		end_inclusive:   rightIncluded(expr),
 	}
 
-	glog.V(4).Infof("Version_Expression: Created %v from %v", ve, expr)
+	glog.V(6).Infof("Version_Expression: Created %v from %v", ve, expr)
 
 	return ve, nil
 }
@@ -138,7 +131,6 @@ func (self *Version_Expression) Get_expression() string {
 func (self *Version_Expression) Is_within_range(expr string) (bool, error) {
 	if !IsVersionString(expr) {
 		errorString := fmt.Sprintf("Version_Expression: %v is not a valid version string.", expr)
-		// glog.Errorf(errorString)
 		return false, errors.New(errorString)
 	}
 
@@ -187,7 +179,6 @@ func (self *Version_Expression) Is_within_range(expr string) (bool, error) {
 
 	// Should never get here
 	errorString := fmt.Sprintf("Version_Expression: Unable to compare versions %v %v.", expr, self)
-	// glog.Errorf(errorString)
 	return false, errors.New(errorString)
 }
 
@@ -270,7 +261,7 @@ func IsVersionExpression(expr string) bool {
 		return false
 	}
 
-	glog.V(5).Infof("Version_Expression: Seperated expression into %v %v", vers[0], vers[1])
+	glog.V(6).Infof("Version_Expression: Seperated expression into %v %v", vers[0], vers[1])
 
 	if !IsVersionString(vers[0][1:]) {
 		return false

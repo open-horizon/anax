@@ -3,6 +3,8 @@ package cutil
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
+	"github.com/golang/glog"
 	"net"
 	"runtime"
 	"time"
@@ -47,4 +49,42 @@ func CheckConnectivity(host string) error {
 		time.Sleep(1 * time.Second)
 	}
 	return err
+}
+
+// Exchange time format. Golang requires the format string to be in reference to the specific time as shown.
+// This is so that the formatter and parser can figure out what goes where in the string.
+const ExchangeTimeFormat = "2006-01-02T15:04:05.999Z[MST]"
+
+func TimeInSeconds(timestamp string) int64 {
+	if t, err := time.Parse(ExchangeTimeFormat, timestamp); err != nil {
+		glog.Errorf(fmt.Sprintf("error converting time %v into seconds, error: %v", timestamp, err))
+		return 0
+	} else {
+		return t.Unix()
+	}
+}
+
+func FormattedTime() string {
+	return time.Now().Format(ExchangeTimeFormat)
+}
+
+func Min(first int, second int) int {
+	if first < second {
+		return first
+	}
+	return second
+}
+
+func Minuint64(first uint64, second uint64) uint64 {
+	if first < second {
+		return first
+	}
+	return second
+}
+
+func Maxuint64(first uint64, second uint64) uint64 {
+	if first > second {
+		return first
+	}
+	return second
 }

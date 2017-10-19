@@ -524,6 +524,8 @@ const TERM_REASON_NEGATIVE_REPLY = "NegativeReply"
 const TERM_REASON_CANCEL_DISCOVERED = "CancelDiscovered"
 const TERM_REASON_CANCEL_FORCED_UPGRADE = "ForceUpgrade"
 const TERM_REASON_CANCEL_BC_WRITE_FAILED = "WriteFailed"
+const TERM_REASON_NODE_HEARTBEAT = "NodeHeartbeat"
+const TERM_REASON_AG_MISSING = "AgreementMissing"
 
 var BCPHlogstring = func(p string, v interface{}) string {
 	return fmt.Sprintf("Base Consumer Protocol Handler (%v) %v", p, v)

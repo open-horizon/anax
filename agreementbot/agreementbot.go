@@ -32,6 +32,7 @@ type AgreementBotWorker struct {
 	consumerPH     map[string]ConsumerProtocolHandler
 	ready          bool
 	PatternManager *PatternManager
+	NHManager      *NodeHealthManager
 }
 
 func NewAgreementBotWorker(cfg *config.HorizonConfig, db *bolt.DB) *AgreementBotWorker {
@@ -55,6 +56,7 @@ func NewAgreementBotWorker(cfg *config.HorizonConfig, db *bolt.DB) *AgreementBot
 		consumerPH:     make(map[string]ConsumerProtocolHandler),
 		ready:          false,
 		PatternManager: NewPatternManager(),
+		NHManager:      NewNodeHealthManager(),
 	}
 
 	glog.Info("Starting AgreementBot worker")
@@ -1028,7 +1030,7 @@ func (w *AgreementBotWorker) registerPublicKey() error {
 func (w *AgreementBotWorker) workloadResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
 
 	// TODO: do we need a dedicated HTTP client instance here or can we use the shared one?
-	asl, err := exchange.WorkloadResolver(w.Config.Collaborators.HTTPClientFactory, wURL, wOrg, wVersion, wArch, w.Config.AgreementBot.ExchangeURL, w.Config.AgreementBot.ExchangeId, w.Config.AgreementBot.ExchangeToken)
+	asl, _, err := exchange.WorkloadResolver(w.Config.Collaborators.HTTPClientFactory, wURL, wOrg, wVersion, wArch, w.Config.AgreementBot.ExchangeURL, w.Config.AgreementBot.ExchangeId, w.Config.AgreementBot.ExchangeToken)
 	if err != nil {
 		glog.Errorf(AWlogString(fmt.Sprintf("unable to resolve workload, error %v", err)))
 	}

@@ -279,7 +279,7 @@ func Test_API_attribute_Suite(suite *testing.T) {
 		simpleGET(t, pp, http.StatusFailedDependency, false)
 	})
 
-	_, err = persistence.SaveNewExchangeDevice(db, "device-22", "tokenval", "Device 22", false, "myorg", ".*")
+	_, err = persistence.SaveNewExchangeDevice(db, "device-22", "tokenval", "Device 22", false, "myorg", ".*", CONFIGSTATE_CONFIGURING)
 	assert.Nil(suite, err)
 
 	suite.Run("OPTIONS returns methods", func(t *testing.T) {

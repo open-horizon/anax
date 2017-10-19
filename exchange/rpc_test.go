@@ -62,7 +62,8 @@ func Test_ConvertPattern1(t *testing.T) {
 		`{"version":"1.5.0",` +
 		`"priority":{"priority_value":2,"retries":1,"retry_durations":3600,"verified_durations": 52},` +
 		`"upgradePolicy":{}}],` +
-		`"dataVerification":{"enabled":true,"user":"","password":"","URL":"myURL","interval":240,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}}}` +
+		`"dataVerification":{"enabled":true,"user":"","password":"","URL":"myURL","interval":240,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
+		`"nodeHealth":{"missing_heartbeat_interval":480}}` +
 		`],` +
 		`"agreementProtocols":[{"name":"Basic"}]}`
 
@@ -78,6 +79,8 @@ func Test_ConvertPattern1(t *testing.T) {
 		t.Errorf("Error: should be 1 agreement protocol, but there are %v\n", len(pols[0].AgreementProtocols))
 	} else if pols[0].DataVerify.URL != "myURL" {
 		t.Errorf("Error: Data verification didnt get setup correctly, is %v\n", pols[0].DataVerify)
+	} else if pols[0].NodeH.MissingHBInterval != 480 {
+		t.Errorf("Error: Node health policy not converted correctly, is %v", pols[0].NodeH)
 	}
 
 }

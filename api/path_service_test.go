@@ -4,6 +4,7 @@ package api
 
 import (
 	"flag"
+	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"testing"
 )
@@ -16,7 +17,7 @@ func init() {
 
 func Test_CreateService0(t *testing.T) {
 
-	dir, db, err := setup()
+	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
 	}
@@ -47,7 +48,8 @@ func Test_CreateService0(t *testing.T) {
 
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
-	errHandled, newService, msg := CreateService(service, errorhandler, getSingleMicroserviceHandler, db, getBasicConfig())
+	msHandler := getVariableMicroserviceHandler(exchange.UserInput{})
+	errHandled, newService, msg := CreateService(service, errorhandler, msHandler, db, getBasicConfig())
 	if errHandled {
 		t.Errorf("unexpected error (%T) %v", myError, myError)
 	} else if newService == nil {

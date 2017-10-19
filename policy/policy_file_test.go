@@ -353,6 +353,8 @@ func Test_Policy_Creation(t *testing.T) {
 	pf_created.Add_Property(Property_Factory("rpiprop4", "rpival4"))
 	pf_created.Add_Property(Property_Factory("rpiprop5", "rpival5"))
 
+	pf_created.Add_NodeHealth(NodeHealth_Factory(600, 30))
+
 	if err := WritePolicyFile(pf_created, "./test/pfcreate/created.policy"); err != nil {
 		t.Error(err)
 	} else if mpPolicy, err := os.Open("./test/pfcreate/created.policy"); err != nil {
@@ -665,7 +667,7 @@ func Test_Merge_Producers_Create_TsAndCs1(t *testing.T) {
 		`"agreementProtocols":[{"name":"Basic"}],` +
 		`"workloads":[{"workloadUrl":"https://bluehorizon.network/workloads/netspeed","version":"2.3.0","arch":"amd64"}],` +
 		`"dataVerification":{"enabled":true,"URL":"","interval":600,"metering":{"tokens":4,"per_time_unit":"min","notification_interval":30}},` +
-		`"maxAgreements":2}`
+		`"maxAgreements":2,"nodeHealth":{"missing_heartbeat_interval":600,"check_agreement_status":15}}`
 
 	if p1 := create_Policy(pa, t); p1 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
@@ -691,6 +693,8 @@ func Test_Merge_Producers_Create_TsAndCs1(t *testing.T) {
 			t.Errorf("Error: returned DataVerify.Tokens %v, should have returned %v\n", tcPolicy.DataVerify.Metering.Tokens, 240)
 		} else if len(tcPolicy.APISpecs) != 2 {
 			t.Errorf("Error: returned %v APISpecs, should have returned %v\n", len(tcPolicy.APISpecs), 2)
+		} else if tcPolicy.NodeH.MissingHBInterval != 600 {
+			t.Errorf("Error: missing heartbeat interval, should be %v but is %v", 600, tcPolicy.NodeH.MissingHBInterval)
 		} else {
 			t.Logf("Merged Policy from 2 producer policies: %v", tcPolicy)
 		}

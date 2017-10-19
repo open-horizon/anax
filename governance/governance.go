@@ -243,7 +243,7 @@ func (w *GovernanceWorker) governAgreements() {
 				// Remember, the device might have been down for some time and/or restarted, causing it to miss events on the blockchain.
 				if w.producerPH[ag.AgreementProtocol].IsBlockchainClientAvailable(bcType, bcName, bcOrg) && w.producerPH[ag.AgreementProtocol].IsAgreementVerifiable(&ag) {
 
-					if recorded, err := protocolHandler.VerifyAgreement(ag.CurrentAgreementId, ag.CounterPartyAddress, ag.ProposalSig); err != nil {
+					if recorded, err := w.producerPH[ag.AgreementProtocol].VerifyAgreement(&ag); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("encountered error verifying agreement %v on blockchain, error %v", ag.CurrentAgreementId, err)))
 					} else if recorded {
 						if err := w.finalizeAgreement(ag, protocolHandler); err != nil {
@@ -692,9 +692,27 @@ func (w *GovernanceWorker) start() {
 						}
 
 						// Allow the message extension handler to see the message
-						if handled, err := w.producerPH[msgProtocol].HandleExtensionMessages(&cmd.Msg, exchangeMsg); err != nil {
+						handled, cancel, agid, err := w.producerPH[msgProtocol].HandleExtensionMessages(&cmd.Msg, exchangeMsg)
+						if err != nil {
 							glog.Errorf(logString(fmt.Sprintf("unable to handle extension message %v , error: %v", protocolMsg, err)))
-						} else if handled {
+						}
+						if cancel {
+							reason := w.producerPH[msgProtocol].GetTerminationCode(producer.TERM_REASON_AGBOT_REQUESTED)
+
+							if ags, err := persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agid)}); err != nil {
+								glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agid, err)))
+							} else if len(ags) != 1 {
+								glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", agid, err)))
+								deleteMessage = true
+							} else {
+								w.cancelAgreement(agid, msgProtocol, reason, w.producerPH[msgProtocol].GetTerminationReason(reason))
+								// cleanup workloads if needed
+								w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, msgProtocol, agid, ags[0].CurrentDeployment)
+								// clean up microservice instances if needed
+								w.handleMicroserviceInstForAgEnded(agid)
+							}
+						}
+						if handled {
 							deleteMessage = handled
 						}
 

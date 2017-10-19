@@ -42,10 +42,11 @@ type ProducerProtocolHandler interface {
 	SetBlockchainWritable(cmd *BCWritableCommand)
 	IsBlockchainWritable(agreement *persistence.EstablishedAgreement) bool
 	IsAgreementVerifiable(agreement *persistence.EstablishedAgreement) bool
-	HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, error)
+	HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, bool, string, error)
 	UpdateConsumer(ag *persistence.EstablishedAgreement)
 	UpdateConsumers()
 	GetKnownBlockchain(ag *persistence.EstablishedAgreement) (string, string, string)
+	VerifyAgreement(ag *persistence.EstablishedAgreement) (bool, error)
 }
 
 type BaseProducerProtocolHandler struct {
@@ -126,7 +127,7 @@ func (w *BaseProducerProtocolHandler) GetWorkloadResolver() func(wURL string, wO
 
 func (w *BaseProducerProtocolHandler) workloadResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
 
-	asl, err := exchange.WorkloadResolver(w.config.Collaborators.HTTPClientFactory, wURL, wOrg, wVersion, wArch, w.config.Edge.ExchangeURL, w.deviceId, w.token)
+	asl, _, err := exchange.WorkloadResolver(w.config.Collaborators.HTTPClientFactory, wURL, wOrg, wVersion, wArch, w.config.Edge.ExchangeURL, w.deviceId, w.token)
 	if err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("unable to resolve workload, error %v", err)))
 	}
@@ -257,8 +258,8 @@ func (w *BaseProducerProtocolHandler) getAgbot(agbotId string, url string, devic
 
 }
 
-func (b *BaseProducerProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, error) {
-	return false, nil
+func (b *BaseProducerProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, bool, string, error) {
+	return false, false, "", nil
 }
 
 func (b *BaseProducerProtocolHandler) UpdateConsumer(ag *persistence.EstablishedAgreement) {}

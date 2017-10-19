@@ -51,6 +51,10 @@ type Agreement struct {
 	BlockchainName                 string   `json:"blockchain_name"`                   // The name of the blockchain being used (new V2 protocol)
 	BlockchainOrg                  string   `json:"blockchain_org"`                    // The name of the blockchain org being used (new V2 protocol)
 	BCUpdateAckTime                uint64   `json:"blockchain_update_ack_time"`        // The time when the producer ACked our update ot him (new V2 protocol)
+	NHMissingHBInterval            int      `json:"missing_heartbeat_interval"`        // How long a heartbeat can be missing until it is considered missing (in seconds)
+	NHCheckAgreementStatus         int      `json:"check_agreement_status"`            // How often to check that the node agreement entry still exists in the exchange (in seconds)
+	Pattern                        string   `json:"pattern"`                           // The pattern used to make the agreement
+
 }
 
 func (a Agreement) String() string {
@@ -88,18 +92,22 @@ func (a Agreement) String() string {
 		"BlockchainType: %v, "+
 		"BlockchainName: %v, "+
 		"BlockchainOrg: %v, "+
-		"BCUpdateAckTime: %v",
+		"BCUpdateAckTime: %v, "+
+		"NHMissingHBInterval: %v, "+
+		"NHCheckAgreementStatus: %v, "+
+		"Pattern: %v",
 		a.Archived, a.CurrentAgreementId, a.Org, a.AgreementProtocol, a.AgreementProtocolVersion, a.DeviceId, a.HAPartners,
 		a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime,
 		a.AgreementTimedout, a.ProposalSig, a.ProposalHash, a.ConsumerProposalSig, a.PolicyName, a.CounterPartyAddress,
 		a.DataVerificationURL, a.DataVerificationUser, a.DataVerificationCheckRate, a.DataVerificationMissedCount, a.DataVerificationNoDataInterval,
 		a.DisableDataVerificationChecks, a.DataVerifiedTime, a.DataNotificationSent,
 		a.MeteringTokens, a.MeteringPerTimeUnit, a.MeteringNotificationInterval, a.MeteringNotificationSent, a.MeteringNotificationMsgs,
-		a.TerminatedReason, a.TerminatedDescription, a.BlockchainType, a.BlockchainName, a.BlockchainOrg, a.BCUpdateAckTime)
+		a.TerminatedReason, a.TerminatedDescription, a.BlockchainType, a.BlockchainName, a.BlockchainOrg, a.BCUpdateAckTime,
+		a.NHMissingHBInterval, a.NHCheckAgreementStatus, a.Pattern)
 }
 
 // private factory method for agreement w/out persistence safety:
-func agreement(agreementid string, org string, deviceid string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string) (*Agreement, error) {
+func agreement(agreementid string, org string, deviceid string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string, pattern string, nhPolicy policy.NodeHealth) (*Agreement, error) {
 	if agreementid == "" || agreementProto == "" {
 		return nil, errors.New("Illegal input: agreement id or agreement protocol is empty")
 	} else {
@@ -141,12 +149,15 @@ func agreement(agreementid string, org string, deviceid string, policyName strin
 			BlockchainName:                 bcName,
 			BlockchainOrg:                  bcOrg,
 			BCUpdateAckTime:                0,
+			NHMissingHBInterval:            nhPolicy.MissingHBInterval,
+			NHCheckAgreementStatus:         nhPolicy.CheckAgreementStatus,
+			Pattern:                        pattern,
 		}, nil
 	}
 }
 
-func AgreementAttempt(db *bolt.DB, agreementid string, org string, deviceid string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string) error {
-	if agreement, err := agreement(agreementid, org, deviceid, policyName, bcType, bcName, bcOrg, agreementProto); err != nil {
+func AgreementAttempt(db *bolt.DB, agreementid string, org string, deviceid string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string, pattern string, nhPolicy policy.NodeHealth) error {
+	if agreement, err := agreement(agreementid, org, deviceid, policyName, bcType, bcName, bcOrg, agreementProto, pattern, nhPolicy); err != nil {
 		return err
 	} else if err := PersistNew(db, agreement.CurrentAgreementId, bucketName(agreementProto), &agreement); err != nil {
 		return err
@@ -296,6 +307,15 @@ func MeteringNotification(db *bolt.DB, agreementid string, protocol string, mn s
 	} else {
 		return agreement, nil
 	}
+}
+
+func (a *Agreement) NodeHealthInUse() bool {
+	return a.NHMissingHBInterval != 0 || a.NHCheckAgreementStatus != 0
+}
+
+func (a *Agreement) FinalizedWithinTolerance(tolerance uint64) bool {
+	tolerate := uint64(time.Now().Unix()) - tolerance
+	return a.AgreementFinalizedTime > tolerate
 }
 
 func ArchiveAgreement(db *bolt.DB, agreementid string, protocol string, reason uint, desc string) (*Agreement, error) {

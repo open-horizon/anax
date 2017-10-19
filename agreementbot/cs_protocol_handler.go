@@ -245,6 +245,10 @@ func (c *CSProtocolHandler) GetTerminationCode(reason string) uint {
 		return citizenscientist.AB_CANCEL_FORCED_UPGRADE
 	case TERM_REASON_CANCEL_BC_WRITE_FAILED:
 		return citizenscientist.AB_CANCEL_BC_WRITE_FAILED
+	case TERM_REASON_NODE_HEARTBEAT:
+		return citizenscientist.AB_CANCEL_NODE_HEARTBEAT
+	case TERM_REASON_AG_MISSING:
+		return citizenscientist.AB_CANCEL_AG_MISSING
 	default:
 		return 999
 	}

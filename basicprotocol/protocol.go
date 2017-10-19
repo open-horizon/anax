@@ -1,6 +1,8 @@
 package basicprotocol
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
@@ -11,6 +13,61 @@ import (
 
 const PROTOCOL_NAME = "Basic"
 const PROTOCOL_CURRENT_VERSION = 1
+
+// Protocol specific extension messages go here.
+
+// Extended message types
+const MsgTypeVerifyAgreement = "basicagreementverification"
+const MsgTypeVerifyAgreementReply = "basicagreementverificationreply"
+
+// This message enables a producer to ask the consumer to verify that a specific agreement still exists. If the
+// consumer replies with NO (false), the producer can cancel the agreement.
+type BAgreementVerify struct {
+	*abstractprotocol.BaseProtocolMessage
+}
+
+func (b *BAgreementVerify) String() string {
+	return b.BaseProtocolMessage.String()
+}
+
+func (b *BAgreementVerify) ShortString() string {
+	return b.BaseProtocolMessage.ShortString()
+}
+
+func (b *BAgreementVerify) IsValid() bool {
+	return b.BaseProtocolMessage.IsValid() && b.MsgType == MsgTypeVerifyAgreement
+}
+
+func NewBAgreementVerify(bp *abstractprotocol.BaseProtocolMessage) *BAgreementVerify {
+	return &BAgreementVerify{
+		BaseProtocolMessage: bp,
+	}
+}
+
+// This message is the reply from the consumer confirming or denying the existence of the agreement.
+type BAgreementVerifyReply struct {
+	*abstractprotocol.BaseProtocolMessage
+	Exists bool `json:"exists"` // whether or not the agreement id exists on that consumer.
+}
+
+func (b *BAgreementVerifyReply) String() string {
+	return b.BaseProtocolMessage.String() + fmt.Sprintf(", Exists: %v", b.Exists)
+}
+
+func (b *BAgreementVerifyReply) ShortString() string {
+	return b.BaseProtocolMessage.ShortString() + fmt.Sprintf(", Exists: %v", b.Exists)
+}
+
+func (b *BAgreementVerifyReply) IsValid() bool {
+	return b.BaseProtocolMessage.IsValid() && b.MsgType == MsgTypeVerifyAgreementReply
+}
+
+func NewBAgreementVerifyReply(bp *abstractprotocol.BaseProtocolMessage, exists bool) *BAgreementVerifyReply {
+	return &BAgreementVerifyReply{
+		BaseProtocolMessage: bp,
+		Exists:              exists,
+	}
+}
 
 // This is the object which users of the agreement protocol use to get access to the protocol functions. It MUST
 // implement all the functions in the abstract ProtocolHandler interface.
@@ -72,6 +129,50 @@ func (p *ProtocolHandler) DecideOnProposal(proposal abstractprotocol.Proposal,
 
 }
 
+// Functions to send the protocol messages which are extensions to the base protocol.
+func (p *ProtocolHandler) SendAgreementVerification(
+	agreementId string,
+	messageTarget interface{},
+	sendMessage func(mt interface{}, pay []byte) error) error {
+
+	verify := NewBAgreementVerify(&abstractprotocol.BaseProtocolMessage{
+		MsgType:   MsgTypeVerifyAgreement,
+		AProtocol: p.Name(),
+		AVersion:  PROTOCOL_CURRENT_VERSION,
+		AgreeId:   agreementId,
+	},
+	)
+
+	// Send the message
+	if err := abstractprotocol.SendProtocolMessage(messageTarget, verify, sendMessage); err != nil {
+		return errors.New(fmt.Sprintf("Protocol %v error sending agreement verification request %v, %v", p.Name(), verify, err))
+	}
+	return nil
+
+}
+
+func (p *ProtocolHandler) SendAgreementVerificationReply(
+	agreementId string,
+	exists bool,
+	messageTarget interface{},
+	sendMessage func(mt interface{}, pay []byte) error) error {
+
+	verify := NewBAgreementVerifyReply(&abstractprotocol.BaseProtocolMessage{
+		MsgType:   MsgTypeVerifyAgreementReply,
+		AProtocol: p.Name(),
+		AVersion:  PROTOCOL_CURRENT_VERSION,
+		AgreeId:   agreementId,
+	},
+		exists)
+
+	// Send the message
+	if err := abstractprotocol.SendProtocolMessage(messageTarget, verify, sendMessage); err != nil {
+		return errors.New(fmt.Sprintf("Protocol %v error sending agreement verification reply %v, %v", p.Name(), verify, err))
+	}
+	return nil
+
+}
+
 // The following methods dont implement any extensions to the base agreement protocol.
 func (p *ProtocolHandler) Confirm(replyValid bool,
 	agreementId string,
@@ -130,6 +231,36 @@ func (p *ProtocolHandler) ValidateCancel(can string) (abstractprotocol.Cancel, e
 	return abstractprotocol.ValidateCancel(can)
 }
 
+func (p *ProtocolHandler) ValidateAgreementVerify(verify string) (*BAgreementVerify, error) {
+
+	// attempt deserialization of message
+	vObj := new(BAgreementVerify)
+
+	if err := json.Unmarshal([]byte(verify), vObj); err != nil {
+		return nil, errors.New(fmt.Sprintf("Error deserializing agreement verification request: %s, error: %v", verify, err))
+	} else if !vObj.IsValid() {
+		return nil, errors.New(fmt.Sprintf("Message is not an agreement verification request."))
+	} else {
+		return vObj, nil
+	}
+
+}
+
+func (p *ProtocolHandler) ValidateAgreementVerifyReply(verify string) (*BAgreementVerifyReply, error) {
+
+	// attempt deserialization of message
+	vObj := new(BAgreementVerifyReply)
+
+	if err := json.Unmarshal([]byte(verify), vObj); err != nil {
+		return nil, errors.New(fmt.Sprintf("Error deserializing agreement verification reply: %s, error: %v", verify, err))
+	} else if !vObj.IsValid() {
+		return nil, errors.New(fmt.Sprintf("Message is not an agreement verification reply."))
+	} else {
+		return vObj, nil
+	}
+
+}
+
 func (p *ProtocolHandler) DemarshalProposal(proposal string) (abstractprotocol.Proposal, error) {
 	return abstractprotocol.DemarshalProposal(proposal)
 }
@@ -173,9 +304,18 @@ func (p *ProtocolHandler) TerminateAgreement(policies []policy.Policy,
 
 }
 
+// This protocol function exploits a protocol extension to send a verification request to the consumer.
 func (p *ProtocolHandler) VerifyAgreement(agreementId string,
 	counterPartyAddress string,
-	expectedSignature string) (bool, error) {
+	expectedSignature string,
+	messageTarget interface{},
+	sendMessage func(mt interface{}, pay []byte) error) (bool, error) {
+
+	if messageTarget != nil {
+		if err := p.SendAgreementVerification(agreementId, messageTarget, sendMessage); err != nil {
+			return false, err
+		}
+	}
 
 	return true, nil
 }
@@ -206,6 +346,8 @@ const AB_CANCEL_POLICY_CHANGED = 204
 const AB_CANCEL_DISCOVERED = 205 // xcd
 const AB_USER_REQUESTED = 206
 const AB_CANCEL_FORCED_UPGRADE = 207
+const AB_CANCEL_NODE_HEARTBEAT = 208
+const AB_CANCEL_AG_MISSING = 209
 
 // const AB_CANCEL_BC_WRITE_FAILED       = 208  // xd0
 
@@ -226,8 +368,10 @@ func DecodeReasonCode(code uint64) string {
 		AB_CANCEL_POLICY_CHANGED:   "agreement bot policy changed",
 		AB_CANCEL_DISCOVERED:       "agreement bot discovered cancellation from producer",
 		AB_USER_REQUESTED:          "agreement bot user requested",
-		AB_CANCEL_FORCED_UPGRADE:   "agreement bot user requested workload upgrade"}
-	// AB_CANCEL_BC_WRITE_FAILED:       "agreement bot agreement write failed"}
+		AB_CANCEL_FORCED_UPGRADE:   "agreement bot user requested workload upgrade",
+		// AB_CANCEL_BC_WRITE_FAILED:       "agreement bot agreement write failed"}
+		AB_CANCEL_NODE_HEARTBEAT: "agreement bot detected node heartbeat stopped",
+		AB_CANCEL_AG_MISSING:     "agreement bot detected agreement missing from node"}
 
 	if reasonString, ok := codeMeanings[code]; !ok {
 		return "unknown reason code, device might be downlevel"
