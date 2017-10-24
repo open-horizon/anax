@@ -433,7 +433,7 @@ attribute
 
 **Example:**
 ```
-curl -s http//localhost/attribute | jq '.'
+curl -s http://localhost/attribute | jq '.'
 {
   "attributes": [
     {
