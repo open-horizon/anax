@@ -1435,6 +1435,7 @@ func (b *ContainerWorker) start() {
 							if !deploymentDesc.Services[serviceName].hasSpecificPortBinding() { // Add compatibility config - assume eth container
 								deploymentDesc.Services[serviceName].addSpecificPortBinding(docker.PortBinding{HostIP: "127.0.0.1", HostPort: "8545"})
 							}
+						    deploymentDesc.Services[serviceName].Privileged = true
 						} else { // microservice case
 							// Dynamically add in a filesystem mapping so that the workload container has a RO filesystem.
 							dir := ""
@@ -1445,7 +1446,6 @@ func (b *ContainerWorker) start() {
 							}
 							deploymentDesc.Services[serviceName].addFilesystemBinding(fmt.Sprintf("%v:%v:ro", dir, "/workload_config"))
 						}
-						deploymentDesc.Services[serviceName].Privileged = true
 					}
 
 					// Indicate that this deployment description is part of the infrastructure
