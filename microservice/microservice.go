@@ -19,19 +19,25 @@ import (
 	"time"
 )
 
-// microservice failure code
+// microservice instance termiated reason code
 const MS_UNREG_EXCH_FAILED = 200
 const MS_CLEAR_OLD_AGS_FAILED = 201
 const MS_EXEC_FAILED = 202
 const MS_REREG_EXCH_FAILED = 203
+const MS_IMAGE_LOAD_FAILED = 204
+const MS_DELETED_BY_UPGRADE_PROCESS = 205
+const MS_DELETED_FOR_AG_ENDED = 206
 
 func DecodeReasonCode(code uint64) string {
-	// microservice failure description
+	// microservice termiated deccription
 	codeMeanings := map[uint64]string{
-		MS_UNREG_EXCH_FAILED:    "Unregistering microservice on exchange failed",
-		MS_CLEAR_OLD_AGS_FAILED: "Clearing old agreements failed",
-		MS_EXEC_FAILED:          "Execution failed",
-		MS_REREG_EXCH_FAILED:    "Reregistering microservice on exchange failed",
+		MS_UNREG_EXCH_FAILED:          "Unregistering microservice on exchange failed",
+		MS_CLEAR_OLD_AGS_FAILED:       "Clearing old agreements failed",
+		MS_EXEC_FAILED:                "Execution failed",
+		MS_REREG_EXCH_FAILED:          "Reregistering microservice on exchange failed",
+		MS_IMAGE_LOAD_FAILED:          "Image loading failed",
+		MS_DELETED_BY_UPGRADE_PROCESS: "Deleted by upgrading process",
+		MS_DELETED_FOR_AG_ENDED:       "Deleted for agreement ended",
 	}
 
 	if reasonString, ok := codeMeanings[code]; !ok {

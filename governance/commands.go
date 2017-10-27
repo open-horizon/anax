@@ -110,8 +110,8 @@ func (c UpdateMicroserviceCommand) ShortString() string {
 func (w *GovernanceWorker) NewUpdateMicroserviceCommand(key string, started bool, failure_code uint, failure_desc string) *UpdateMicroserviceCommand {
 	return &UpdateMicroserviceCommand{
 		MsInstKey:            key,
-		ExecutionStarted:     started,
-		ExecutionFailureCode: failure_code,
+		ExecutionStarted:     started,      // true for EXECUTION_BEGUN, false for EXECUTION_FAILED and CONTAINER_DESTROYED case
+		ExecutionFailureCode: failure_code, // 0 for EXECUTION_BEGUN and CONTAINER_DESTROYED case
 		ExecutionFailureDesc: failure_desc,
 	}
 }

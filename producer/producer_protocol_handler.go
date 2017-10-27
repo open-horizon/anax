@@ -283,12 +283,20 @@ func (c *BaseProducerProtocolHandler) GetKnownBlockchain(ag *persistence.Establi
 const TERM_REASON_POLICY_CHANGED = "PolicyChanged"
 const TERM_REASON_AGBOT_REQUESTED = "ConsumerCancelled"
 const TERM_REASON_CONTAINER_FAILURE = "ContainerFailure"
-const TERM_REASON_TORRENT_FAILURE = "TorrentFailure"
+
+//const TERM_REASON_TORRENT_FAILURE = "TorrentFailure"
 const TERM_REASON_USER_REQUESTED = "UserRequested"
 const TERM_REASON_NOT_FINALIZED_TIMEOUT = "NotFinalized"
 const TERM_REASON_NO_REPLY_ACK = "NoReplyAck"
 const TERM_REASON_NOT_EXECUTED_TIMEOUT = "NotExecuted"
 const TERM_REASON_MICROSERVICE_FAILURE = "MicroserviceFailure"
+const TERM_REASON_WL_IMAGE_LOAD_FAILURE = "WorkloadImageLoadFailure"
+const TERM_REASON_MS_IMAGE_LOAD_FAILURE = "MicroserviceImageLoadFailure"
+const TERM_REASON_MS_UPGRADE_REQUIRED = "MicroserviceUpgradeRequired"
+const TERM_REASON_IMAGE_DATA_ERROR = "ImageDataError"
+const TERM_REASON_IMAGE_FETCH_FAILURE = "ImageFetchFailure"
+const TERM_REASON_IMAGE_FETCH_AUTH_FAILURE = "ImageFetchAuthorizationFailure"
+const TERM_REASON_IMAGE_SIG_VERIF_FAILURE = "ImageSignatureVerificationFailure"
 
 // ==============================================================================================================
 type ExchangeMessageCommand struct {

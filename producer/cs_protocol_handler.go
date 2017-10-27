@@ -178,8 +178,8 @@ func (c *CSProtocolHandler) GetTerminationCode(reason string) uint {
 		return citizenscientist.CANCEL_AGBOT_REQUESTED
 	case TERM_REASON_CONTAINER_FAILURE:
 		return citizenscientist.CANCEL_CONTAINER_FAILURE
-	case TERM_REASON_TORRENT_FAILURE:
-		return citizenscientist.CANCEL_TORRENT_FAILURE
+	//case TERM_REASON_TORRENT_FAILURE:
+	//	return citizenscientist.CANCEL_TORRENT_FAILURE
 	case TERM_REASON_USER_REQUESTED:
 		return citizenscientist.CANCEL_USER_REQUESTED
 	case TERM_REASON_NOT_FINALIZED_TIMEOUT:
@@ -190,6 +190,20 @@ func (c *CSProtocolHandler) GetTerminationCode(reason string) uint {
 		return citizenscientist.CANCEL_NOT_EXECUTED_TIMEOUT
 	case TERM_REASON_MICROSERVICE_FAILURE:
 		return citizenscientist.CANCEL_MICROSERVICE_FAILURE
+	case TERM_REASON_WL_IMAGE_LOAD_FAILURE:
+		return citizenscientist.CANCEL_WL_IMAGE_LOAD_FAILURE
+	case TERM_REASON_MS_IMAGE_LOAD_FAILURE:
+		return citizenscientist.CANCEL_MS_IMAGE_LOAD_FAILURE
+	case TERM_REASON_MS_UPGRADE_REQUIRED:
+		return citizenscientist.CANCEL_MS_UPGRADE_REQUIRED
+	case TERM_REASON_IMAGE_DATA_ERROR:
+		return citizenscientist.CANCEL_IMAGE_DATA_ERROR
+	case TERM_REASON_IMAGE_FETCH_FAILURE:
+		return citizenscientist.CANCEL_IMAGE_FETCH_FAILURE
+	case TERM_REASON_IMAGE_FETCH_AUTH_FAILURE:
+		return citizenscientist.CANCEL_IMAGE_FETCH_AUTH_FAILURE
+	case TERM_REASON_IMAGE_SIG_VERIF_FAILURE:
+		return citizenscientist.CANCEL_IMAGE_SIG_VERIF_FAILURE
 	default:
 		return 999
 	}
