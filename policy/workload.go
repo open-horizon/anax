@@ -230,40 +230,51 @@ func VerifyWorkload(pubKeyFile string, signature string, hasher hash.Hash, userK
 		return true, nil
 	}
 
-	return false, fmt.Errorf("No keys found to verify signature %v", signature)
+	return false, fmt.Errorf("Failed to find keys to verify signature %v", signature)
 
 }
 
 func checkAllKeys(pubKeyDir string, pemFiles []os.FileInfo, hasher hash.Hash, signatureBytes []byte) bool {
+
+	count := len(pemFiles)
+	trynext_str := " Trying the next key."
+
 	for _, fileInfo := range pemFiles {
 		fName := pubKeyDir + "/" + fileInfo.Name()
-		if publicKey := isValidPublickKey(fName); publicKey == nil {
+
+		count = count - 1
+		if count == 0 {
+			trynext_str = ""
+		}
+
+		if publicKey, err := isValidPublickKey(fName); err != nil {
+			glog.Warningf("%v.%v", err, trynext_str)
 			continue
 		} else {
 			// Given a valid public key file, try to verify the signature.
 			glog.V(3).Infof("Using RSA pubkey file: %v and key: %v", fName, publicKey)
 
 			if err := rsa.VerifyPSS(publicKey.(*rsa.PublicKey), crypto.SHA256, hasher.Sum(nil), signatureBytes, nil); err == nil {
+				glog.Infof("Verification successful with RSA pubkey file: %v", fName)
 				return true
 			} else {
-				glog.Warningf("Unable to verify signature using pubkey file: %v, error %v", fName, err)
+				glog.Warningf("Unable to verify signature using pubkey file: %v, error %v.%v", fName, err, trynext_str)
 			}
 		}
 	}
 	return false
 }
 
-func isValidPublickKey(fName string) interface{} {
+func isValidPublickKey(fName string) (interface{}, error) {
 	if pubKeyData, err := ioutil.ReadFile(fName); err != nil {
-		glog.Warningf("Unable to read key file: %v, error: %v", fName, err)
+		return nil, fmt.Errorf("Unable to read key file: %v, error: %v", fName, err)
 	} else if block, _ := pem.Decode(pubKeyData); block == nil {
-		glog.Warningf("Unable to decode key file: %v as PEM encoded file", fName)
+		return nil, fmt.Errorf("Unable to decode key file: %v as PEM encoded file", fName)
 	} else if publicKey, err := x509.ParsePKIXPublicKey(block.Bytes); err != nil {
-		glog.Warningf("Unable to parse key file: %v, as a public key, error: %v", fName, err)
+		return nil, fmt.Errorf("Unable to parse key file: %v, as a public key, error: %v", fName, err)
 	} else {
-		return publicKey
+		return publicKey, nil
 	}
-	return nil
 }
 
 func getPemFiles(homePath string) ([]os.FileInfo, error) {

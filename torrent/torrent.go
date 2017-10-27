@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/worker"
 	fetch "github.com/open-horizon/horizon-pkg-fetch"
+	"github.com/open-horizon/horizon-pkg-fetch/fetcherrors"
 )
 
 type TorrentWorker struct {
@@ -123,10 +124,27 @@ func (b *TorrentWorker) start() {
 						imageFiles, err := fetch.PkgFetch(b.Config.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), lc.URL(), lc.Signature(), b.Config.Edge.TorrentDir, b.Config.Edge.CACertsPath, b.Config.UserPublicKeyPath(), authAttribs)
 
 						if err != nil {
-							b.Messages() <- events.NewTorrentMessage(events.TORRENT_FAILURE, make([]string, 0), lc)
+							var id events.EventId
+							switch err.(type) {
+							case fetcherrors.PkgMetaError, fetcherrors.PkgSourceError, fetcherrors.PkgPrecheckError:
+								id = events.IMAGE_DATA_ERROR
+
+							case fetcherrors.PkgSourceFetchError:
+								id = events.IMAGE_FETCH_ERROR
+
+							case fetcherrors.PkgSourceFetchAuthError:
+								id = events.IMAGE_FETCH_AUTH_ERROR
+
+							case fetcherrors.PkgSignatureVerificationError:
+								id = events.IMAGE_SIG_VERIF_ERROR
+
+							default:
+								id = events.IMAGE_FETCH_ERROR
+							}
+							b.Messages() <- events.NewTorrentMessage(id, make([]string, 0), lc)
 							glog.Errorf("Failed to fetch image files: %v", err)
 						} else {
-							b.Messages() <- events.NewTorrentMessage(events.TORRENT_FETCHED, imageFiles, lc)
+							b.Messages() <- events.NewTorrentMessage(events.IMAGE_FETCHED, imageFiles, lc)
 						}
 					}
 				}

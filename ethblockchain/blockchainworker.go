@@ -121,7 +121,7 @@ func (w *EthBlockchainWorker) NewEvent(incoming events.Message) {
 	case *events.TorrentMessage:
 		msg, _ := incoming.(*events.TorrentMessage)
 		switch msg.Event().Id {
-		case events.TORRENT_FAILURE:
+		case events.IMAGE_DATA_ERROR, events.IMAGE_FETCH_ERROR, events.IMAGE_FETCH_AUTH_ERROR, events.IMAGE_SIG_VERIF_ERROR:
 			noBCCOnfig := events.BlockchainConfig{}
 
 			switch msg.LaunchContext.(type) {

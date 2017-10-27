@@ -621,8 +621,8 @@ func (w *ContainerWorker) NewEvent(incoming events.Message) {
 	case *events.TorrentMessage:
 		msg, _ := incoming.(*events.TorrentMessage)
 		switch msg.Event().Id {
-		case events.TORRENT_FETCHED:
-			glog.Infof("Fetched image files from torrent: %v", msg.ImageFiles)
+		case events.IMAGE_FETCHED:
+			glog.Infof("Fetched image files: %v", msg.ImageFiles)
 			switch msg.LaunchContext.(type) {
 			case *events.AgreementLaunchContext:
 				lc := msg.LaunchContext.(*events.AgreementLaunchContext)
@@ -1332,7 +1332,7 @@ func (b *ContainerWorker) start() {
 						} else if err := loadImages(b.client, cmd.ImageFiles); err != nil {
 							glog.Errorf("Error loading image files: %v", err)
 
-							b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
+							b.Messages() <- events.NewWorkloadMessage(events.IMAGE_LOAD_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
 
 							continue
 						}
@@ -1411,12 +1411,12 @@ func (b *ContainerWorker) start() {
 
 					// Proceed to load the docker image.
 					if len(cmd.ImageFiles) == 0 {
-						glog.Errorf("Torrent configuration in deployment specified no new Docker images to load: %v, unable to load container", deploymentDesc)
+						glog.Errorf("Image configuration in deployment specified no new Docker images to load: %v, unable to load container", deploymentDesc)
 						b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 						continue
 					} else if err := loadImages(b.client, cmd.ImageFiles); err != nil {
 						glog.Errorf("Error loading image files: %v", err)
-						b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
+						b.Messages() <- events.NewContainerMessage(events.IMAGE_LOAD_FAILED, *cmd.ContainerLaunchContext, "", "")
 						continue
 					}
 

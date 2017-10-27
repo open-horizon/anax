@@ -124,8 +124,8 @@ func (c *BasicProtocolHandler) GetTerminationCode(reason string) uint {
 		return basicprotocol.CANCEL_AGBOT_REQUESTED
 	case TERM_REASON_CONTAINER_FAILURE:
 		return basicprotocol.CANCEL_CONTAINER_FAILURE
-	case TERM_REASON_TORRENT_FAILURE:
-		return basicprotocol.CANCEL_TORRENT_FAILURE
+	//case TERM_REASON_TORRENT_FAILURE:
+	//	return basicprotocol.CANCEL_TORRENT_FAILURE
 	case TERM_REASON_USER_REQUESTED:
 		return basicprotocol.CANCEL_USER_REQUESTED
 	// case TERM_REASON_NOT_FINALIZED_TIMEOUT:
@@ -136,6 +136,20 @@ func (c *BasicProtocolHandler) GetTerminationCode(reason string) uint {
 		return basicprotocol.CANCEL_NOT_EXECUTED_TIMEOUT
 	case TERM_REASON_MICROSERVICE_FAILURE:
 		return basicprotocol.CANCEL_MICROSERVICE_FAILURE
+	case TERM_REASON_WL_IMAGE_LOAD_FAILURE:
+		return basicprotocol.CANCEL_WL_IMAGE_LOAD_FAILURE
+	case TERM_REASON_MS_IMAGE_LOAD_FAILURE:
+		return basicprotocol.CANCEL_MS_IMAGE_LOAD_FAILURE
+	case TERM_REASON_MS_UPGRADE_REQUIRED:
+		return basicprotocol.CANCEL_MS_UPGRADE_REQUIRED
+	case TERM_REASON_IMAGE_DATA_ERROR:
+		return basicprotocol.CANCEL_IMAGE_DATA_ERROR
+	case TERM_REASON_IMAGE_FETCH_FAILURE:
+		return basicprotocol.CANCEL_IMAGE_FETCH_FAILURE
+	case TERM_REASON_IMAGE_FETCH_AUTH_FAILURE:
+		return basicprotocol.CANCEL_IMAGE_FETCH_AUTH_FAILURE
+	case TERM_REASON_IMAGE_SIG_VERIF_FAILURE:
+		return basicprotocol.CANCEL_IMAGE_SIG_VERIF_FAILURE
 	default:
 		return 999
 	}

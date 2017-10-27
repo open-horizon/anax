@@ -765,13 +765,21 @@ func (p *ProtocolHandler) GetReasonCode(ev *ethblockchain.Raw_Event) (uint64, er
 // constants indicating why an agreement is cancelled by the producer
 const CANCEL_NOT_FINALIZED_TIMEOUT = 100 // x64
 const CANCEL_POLICY_CHANGED = 101
-const CANCEL_TORRENT_FAILURE = 102
+
+//const CANCEL_TORRENT_FAILURE = 102  it is subdivided into IMAGE code now
 const CANCEL_CONTAINER_FAILURE = 103
 const CANCEL_NOT_EXECUTED_TIMEOUT = 104
 const CANCEL_USER_REQUESTED = 105
 const CANCEL_AGBOT_REQUESTED = 106 // x6a
 const CANCEL_NO_REPLY_ACK = 107
 const CANCEL_MICROSERVICE_FAILURE = 108
+const CANCEL_WL_IMAGE_LOAD_FAILURE = 109
+const CANCEL_MS_IMAGE_LOAD_FAILURE = 110
+const CANCEL_MS_UPGRADE_REQUIRED = 111
+const CANCEL_IMAGE_DATA_ERROR = 112
+const CANCEL_IMAGE_FETCH_FAILURE = 113
+const CANCEL_IMAGE_FETCH_AUTH_FAILURE = 114
+const CANCEL_IMAGE_SIG_VERIF_FAILURE = 115
 
 // These constants represent consumer cancellation reason codes
 const AB_CANCEL_NOT_FINALIZED_TIMEOUT = 200 // xc8
@@ -789,14 +797,20 @@ const AB_CANCEL_AG_MISSING = 210
 func DecodeReasonCode(code uint64) string {
 
 	codeMeanings := map[uint64]string{CANCEL_NOT_FINALIZED_TIMEOUT: "agreement never appeared on the blockchain",
-		CANCEL_POLICY_CHANGED:           "producer policy changed",
-		CANCEL_TORRENT_FAILURE:          "torrent failed to download",
+		CANCEL_POLICY_CHANGED: "producer policy changed",
+		// CANCEL_TORRENT_FAILURE:          "torrent failed to download",
 		CANCEL_CONTAINER_FAILURE:        "workload terminated",
 		CANCEL_NOT_EXECUTED_TIMEOUT:     "workload start timeout",
 		CANCEL_USER_REQUESTED:           "user requested",
 		CANCEL_AGBOT_REQUESTED:          "agbot requested",
 		CANCEL_NO_REPLY_ACK:             "agreement protocol incomplete, no reply ack received",
 		CANCEL_MICROSERVICE_FAILURE:     "microservice failed",
+		CANCEL_WL_IMAGE_LOAD_FAILURE:    "workload image loading failed",
+		CANCEL_MS_UPGRADE_REQUIRED:      "required by microservice upgrade process",
+		CANCEL_IMAGE_DATA_ERROR:         "image data error",
+		CANCEL_IMAGE_FETCH_FAILURE:      "image fetching failed",
+		CANCEL_IMAGE_FETCH_AUTH_FAILURE: "authorization failed for image fetching",
+		CANCEL_IMAGE_SIG_VERIF_FAILURE:  "image signature verification failed",
 		AB_CANCEL_NOT_FINALIZED_TIMEOUT: "agreement bot never detected agreement on the blockchain",
 		AB_CANCEL_NO_REPLY:              "agreement bot never received reply to proposal",
 		AB_CANCEL_NEGATIVE_REPLY:        "agreement bot received negative reply",
