@@ -76,7 +76,7 @@ func Test_GetContainerStatus(t *testing.T) {
 	status, err = GetContainerStatus(deployment, agreementId, false, containers)
 
 	assert.Nil(t, err)
-	assert.Equal(t, exp_status, status, "The elements should be the same.")
+	assert.True(t, statusArrayIsSame(exp_status, status), "The elements should be the same.")
 
 	// test with containers that does not have the agreement
 	containers = []docker.APIContainers{c3, c4}
@@ -87,7 +87,7 @@ func Test_GetContainerStatus(t *testing.T) {
 	status, err = GetContainerStatus(deployment, agreementId, false, containers)
 
 	assert.Nil(t, err)
-	assert.Equal(t, exp_status, status, "The elements should be the same.")
+	assert.True(t, statusArrayIsSame(exp_status, status), "The elements should be the same.")
 
 	// test with empty containers
 	deployment = "{\"services\":{\"netspeed5\":{\"image\":\"mycompany/x86/netspeed5:v2.5\",\"environment\":[\"FOO=bar\"]}, \"test\":{\"image\":\"mycompany/x86/test:v1.0\"}}}"
@@ -97,7 +97,7 @@ func Test_GetContainerStatus(t *testing.T) {
 	status, err = GetContainerStatus(deployment, agreementId, false, make([]docker.APIContainers, 0))
 
 	assert.Nil(t, err)
-	assert.Equal(t, exp_status, status, "The elements should be the same.")
+	assert.True(t, statusArrayIsSame(exp_status, status), "The elements should be the same.")
 
 	// test microservice containers succeeded
 	key := "bluehorizon.network-microservices-gps_2.0.3_52df00"
@@ -108,6 +108,26 @@ func Test_GetContainerStatus(t *testing.T) {
 	status, err = GetContainerStatus(deployment, key, true, containers)
 
 	assert.Nil(t, err)
-	assert.Equal(t, exp_status, status, "The elements should be the same.")
+	assert.True(t, statusArrayIsSame(exp_status, status), "The elements should be the same.")
+}
 
+// Compare 2 ContainerStatus array contents without considering the order
+func statusArrayIsSame(a1 []ContainerStatus, a2 []ContainerStatus) bool {
+	if len(a1) != len(a2) {
+		return false
+	} else {
+		for _, item1 := range a1 {
+			found := false
+			for _, item2 := range a2 {
+				if item1 == item2 {
+					found = true
+				}
+			}
+			if !found {
+				return false
+			}
+		}
+	}
+
+	return true
 }
