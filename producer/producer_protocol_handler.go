@@ -148,6 +148,12 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 	} else if err := tcPolicy.Is_Self_Consistent(w.config.Edge.PublicKeyPath, w.config.UserPublicKeyPath(), w.GetWorkloadResolver()); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking self consistency of TsAndCs, %v", err)))
 		handled = true
+	} else if pmatch, err := w.MatchPattern(tcPolicy); err != nil {
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking pattern name match, %v", err)))
+		handled = true
+	} else if !pmatch {
+		glog.Errorf(BPPHlogString(w.Name(), "pattern name matching failed, ignoring proposal"))
+		handled = true
 	} else if found, err := w.FindAgreementWithSameWorkload(ph, tcPolicy.Header.Name); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error finding agreement with TsAndCs name '%v', error %v", tcPolicy.Header.Name, err)))
 		handled = true
@@ -166,6 +172,32 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 	}
 	return handled, nil, nil
 
+}
+
+// check if the proposal has the same pattern
+func (w *BaseProducerProtocolHandler) MatchPattern(tcPolicy *policy.Policy) (bool, error) {
+	// get the pattern reg from the device
+	if dev, err := persistence.FindExchangeDevice(w.db); err != nil {
+		return false, fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error retrieving device from db: %v", err)))
+	} else if dev == nil {
+		return false, fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("device is not configured to accept agreement yet.")))
+	} else {
+		// the patter id from the proposal is in the format of org/pattern,
+		// we need to compose the same thing from device in order to compare
+		device_pattern := dev.Pattern
+		if dev.Pattern != "" {
+			device_pattern = fmt.Sprintf("%v/%v", dev.Org, dev.Pattern)
+		}
+
+		// compare the patterns from the propodal and device
+		if tcPolicy.PatternId != device_pattern {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("pattern from the proposal: '%v' does not match the pattern on the device: '%v'.", tcPolicy.PatternId, device_pattern)))
+			return false, nil
+		} else {
+			glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("pattern from the proposal: '%v' matches the pattern on the device: '%v'.", tcPolicy.PatternId, device_pattern)))
+			return true, nil
+		}
+	}
 }
 
 // Check if there are current unarchived agreements that have the same workload.
