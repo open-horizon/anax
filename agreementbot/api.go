@@ -18,11 +18,12 @@ import (
 
 type API struct {
 	worker.Manager // embedded field
+	name           string
 	db             *bolt.DB
 	pm             *policy.PolicyManager
 }
 
-func NewAPIListener(config *config.HorizonConfig, db *bolt.DB) *API {
+func NewAPIListener(name string, config *config.HorizonConfig, db *bolt.DB) *API {
 	messages := make(chan events.Message)
 
 	listener := &API{
@@ -31,7 +32,8 @@ func NewAPIListener(config *config.HorizonConfig, db *bolt.DB) *API {
 			Messages: messages,
 		},
 
-		db: db,
+		name: name,
+		db:   db,
 	}
 
 	listener.listen(config.AgreementBot.APIListen)
@@ -44,11 +46,23 @@ func (a *API) Messages() chan events.Message {
 }
 
 func (a *API) NewEvent(ev events.Message) {
-	if a.Config.AgreementBot.APIListen == "" {
-		return
+
+	switch ev.(type) {
+	case *events.NodeShutdownCompleteMessage:
+		// Now remove myself from the worker dispatch list. When the anax process terminates,
+		// the socket listener will terminate also. This is done on a separate thread so that
+		// the message dispatcher doesnt get blocked. This worker isnt actually a full blown
+		// worker and doesnt have a command thread that it can run on.
+		go func() {
+			a.Messages() <- events.NewWorkerStopMessage(events.WORKER_STOP, a.GetName())
+		}()
 	}
 
 	return
+}
+
+func (a *API) GetName() string {
+	return a.name
 }
 
 func (a *API) listen(apiListen string) {
@@ -74,6 +88,8 @@ func (a *API) listen(apiListen string) {
 		})
 	}
 
+	// This routine does not need to be a subworker because it will terminate on its own when the main
+	// anax process terminates.
 	go func() {
 		router := mux.NewRouter()
 

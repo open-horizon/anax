@@ -14,6 +14,7 @@ import (
 	"strings"
 )
 
+const CONFIGSTATE_UNCONFIGURING = "unconfiguring"
 const CONFIGSTATE_CONFIGURING = "configuring"
 const CONFIGSTATE_CONFIGURED = "configured"
 

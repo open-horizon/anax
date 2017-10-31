@@ -30,6 +30,7 @@ const (
 	BC_CLIENT_STOPPING    EventId = "BC_CLIENT_STOPPING"
 	BC_EVENT              EventId = "BC_EVENT"
 	BC_NEEDED             EventId = "BC_NEEDED"
+	ALL_STOP              EventId = "ALL_STOP"
 
 	// exchange related
 	RECEIVED_EXCHANGE_DEV_MSG EventId = "RECEIVED_EXCHANGE_DEV_MSG"
@@ -69,6 +70,11 @@ const (
 	DEVICE_AGREEMENTS_SYNCED EventId = "DEVICE_AGREEMENTS_SYNCED"
 	DEVICE_CONTAINERS_SYNCED EventId = "DEVICE_CONTAINERS_SYNCED"
 	WORKLOAD_UPGRADE         EventId = "WORKLOAD_UPGRADE"
+
+	// Node related
+	START_UNCONFIGURE    EventId = "UNCONFIGURE_NODE"
+	UNCONFIGURE_COMPLETE EventId = "UNCONFIGURE_COMPLETE"
+	WORKER_STOP          EventId = "WORKER_STOP"
 )
 
 type EndContractCause string
@@ -1310,5 +1316,127 @@ func NewMicroserviceContainersDestroyedMessage(id EventId, key string) *Microser
 			Id: id,
 		},
 		MsInstKey: key,
+	}
+}
+
+// Node lifecycle events
+type NodeShutdownMessage struct {
+	event      Event
+	block      bool
+	removeNode bool
+}
+
+func (n *NodeShutdownMessage) Event() Event {
+	return n.event
+}
+
+func (n NodeShutdownMessage) String() string {
+	return n.ShortString()
+}
+
+func (n NodeShutdownMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v, Blocking: %v, RemoveNode: %v", n.event, n.block, n.removeNode)
+}
+
+func (n NodeShutdownMessage) Blocking() bool {
+	return n.block
+}
+
+func (n NodeShutdownMessage) RemoveNode() bool {
+	return n.removeNode
+}
+
+func NewNodeShutdownMessage(id EventId, blocking bool, removeNode bool) *NodeShutdownMessage {
+	return &NodeShutdownMessage{
+		event: Event{
+			Id: id,
+		},
+		block:      blocking,
+		removeNode: removeNode,
+	}
+}
+
+type NodeShutdownCompleteMessage struct {
+	event Event
+	err   string
+}
+
+func (n *NodeShutdownCompleteMessage) Event() Event {
+	return n.event
+}
+
+func (n NodeShutdownCompleteMessage) String() string {
+	return n.ShortString()
+}
+
+func (n NodeShutdownCompleteMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v, Error: %v", n.event, n.err)
+}
+
+func (n NodeShutdownCompleteMessage) Err() string {
+	return n.err
+}
+
+func NewNodeShutdownCompleteMessage(id EventId, errorMsg string) *NodeShutdownCompleteMessage {
+	return &NodeShutdownCompleteMessage{
+		event: Event{
+			Id: id,
+		},
+		err: errorMsg,
+	}
+}
+
+// This is a special message that the message dispatcher knows about.
+type WorkerStopMessage struct {
+	event Event
+	name  string
+}
+
+func (w *WorkerStopMessage) Event() Event {
+	return w.event
+}
+
+func (w *WorkerStopMessage) String() string {
+	return w.ShortString()
+}
+
+func (w *WorkerStopMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v, Worker Name: %v", w.event, w.name)
+}
+
+func (w *WorkerStopMessage) Name() string {
+	return w.name
+}
+
+func NewWorkerStopMessage(id EventId, name string) *WorkerStopMessage {
+	return &WorkerStopMessage{
+		event: Event{
+			Id: id,
+		},
+		name: name,
+	}
+}
+
+type AllBlockchainShutdownMessage struct {
+	event Event
+}
+
+func (w *AllBlockchainShutdownMessage) Event() Event {
+	return w.event
+}
+
+func (w *AllBlockchainShutdownMessage) String() string {
+	return w.ShortString()
+}
+
+func (w *AllBlockchainShutdownMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v", w.event)
+}
+
+func NewAllBlockchainShutdownMessage(id EventId) *AllBlockchainShutdownMessage {
+	return &AllBlockchainShutdownMessage{
+		event: Event{
+			Id: id,
+		},
 	}
 }

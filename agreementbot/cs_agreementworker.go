@@ -158,6 +158,7 @@ func (a *CSAgreementWorker) start(work chan AgreementWork, random *rand.Rand) {
 			} else if ag.Archived || ag.AgreementTimedout != 0 {
 				// The agreement could be cancelled BEFORE it is written to the blockchain. If we find a BC recorded event for an archived
 				// or timed out agreement then we know this occurred. Cancel the agreement again so that the device will see the cancel.
+				// This routine does not need to be a subworker because it will terminate on its own.
 				go a.DoAsyncCancel(a.protocolHandler, ag, ag.TerminatedReason, a.workerID)
 			} else {
 				// Update state in the database
@@ -231,6 +232,7 @@ func (a *CSAgreementWorker) ExternalWrite(cph ConsumerProtocolHandler, agreement
 	} else if cph.IsBlockchainWritable(ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg) && ag.CounterPartyAddress != "" {
 
 		// Recording the agreement on the blockchain could take a long time.
+		// This routine does not need to be a subworker because it will terminate on its own.
 		go a.DoAsyncWrite(cph, ag, workerID)
 
 	} else {

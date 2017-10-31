@@ -381,14 +381,14 @@ func HasKeys() bool {
 	return false
 }
 
+var privFileName = "privateMessagingKey.pem"
+var pubFileName = "publicMessagingKey.pem"
+
 func GetKeys(keyPath string) (*rsa.PublicKey, *rsa.PrivateKey, error) {
 
 	if gPublicKey != nil {
 		return gPublicKey, gPrivateKey, nil
 	}
-
-	privFileName := "privateMessagingKey.pem"
-	pubFileName := "publicMessagingKey.pem"
 
 	privFilepath := path.Join(os.Getenv("SNAP_COMMON"), keyPath, privFileName)
 	pubFilepath := path.Join(os.Getenv("SNAP_COMMON"), keyPath, pubFileName)
@@ -460,4 +460,27 @@ func GetKeys(keyPath string) (*rsa.PublicKey, *rsa.PrivateKey, error) {
 	}
 
 	return gPublicKey, gPrivateKey, nil
+}
+
+func DeleteKeys(keyPath string) error {
+	// Construct the full file path name
+	privFilepath := path.Join(os.Getenv("SNAP_COMMON"), keyPath, privFileName)
+	pubFilepath := path.Join(os.Getenv("SNAP_COMMON"), keyPath, pubFileName)
+
+	glog.V(5).Infof("Removing private key path %v, and public key path %v", privFilepath, pubFilepath)
+
+	// Delete both the private and public key files
+	if _, ferr := os.Stat(privFilepath); !os.IsNotExist(ferr) {
+		if err := os.Remove(privFilepath); err != nil {
+			return err
+		}
+	}
+
+	if _, ferr := os.Stat(pubFilepath); !os.IsNotExist(ferr) {
+		if err := os.Remove(pubFilepath); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

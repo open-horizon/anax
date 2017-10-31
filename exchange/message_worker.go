@@ -11,22 +11,19 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/worker"
 	"net/http"
-	"runtime"
 	"time"
 )
 
 type ExchangeMessageWorker struct {
-	worker.Worker // embedded field
-	db            *bolt.DB
-	httpClient    *http.Client
-	id            string // device id
-	token         string // device token
-	pattern       string // device pattern
+	worker.BaseWorker // embedded field
+	db                *bolt.DB
+	httpClient        *http.Client
+	id                string // device id
+	token             string // device token
+	pattern           string // device pattern
 }
 
-func NewExchangeMessageWorker(cfg *config.HorizonConfig, db *bolt.DB) *ExchangeMessageWorker {
-	messages := make(chan events.Message)
-	commands := make(chan worker.Command, 200)
+func NewExchangeMessageWorker(name string, cfg *config.HorizonConfig, db *bolt.DB) *ExchangeMessageWorker {
 
 	id := ""
 	token := ""
@@ -38,14 +35,7 @@ func NewExchangeMessageWorker(cfg *config.HorizonConfig, db *bolt.DB) *ExchangeM
 	}
 
 	worker := &ExchangeMessageWorker{
-		Worker: worker.Worker{
-			Manager: worker.Manager{
-				Config:   cfg,
-				Messages: messages,
-			},
-
-			Commands: commands,
-		},
+		BaseWorker: worker.NewBaseWorker(name, cfg),
 		db:         db,
 		httpClient: cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 		id:         id,
@@ -53,12 +43,12 @@ func NewExchangeMessageWorker(cfg *config.HorizonConfig, db *bolt.DB) *ExchangeM
 		pattern:    pattern,
 	}
 
-	worker.start()
+	worker.Start(worker, 10)
 	return worker
 }
 
 func (w *ExchangeMessageWorker) Messages() chan events.Message {
-	return w.Worker.Manager.Messages
+	return w.BaseWorker.Manager.Messages
 }
 
 func (w *ExchangeMessageWorker) NewEvent(incoming events.Message) {
@@ -70,14 +60,21 @@ func (w *ExchangeMessageWorker) NewEvent(incoming events.Message) {
 		w.id = fmt.Sprintf("%v/%v", msg.Org(), w.id)
 		w.pattern = msg.Pattern()
 
+	case *events.NodeShutdownCompleteMessage:
+		msg, _ := incoming.(*events.NodeShutdownCompleteMessage)
+		switch msg.Event().Id {
+		case events.UNCONFIGURE_COMPLETE:
+			w.Commands <- worker.NewTerminateCommand("shutdown")
+		}
+
 	default: //nothing
 
 	}
 }
 
-func (w *ExchangeMessageWorker) pollIncoming() {
+func (w *ExchangeMessageWorker) Initialize() bool {
 
-	// Dont pull message until the device si registered
+	// Dont pull messages until the device is registered
 	for {
 		if w.token != "" {
 			break
@@ -86,38 +83,38 @@ func (w *ExchangeMessageWorker) pollIncoming() {
 			time.Sleep(5 * time.Second)
 		}
 	}
+	return true
+}
 
+func (w *ExchangeMessageWorker) NoWorkHandler() {
 	// Pull messages from the exchange and send them out as individual events.
-	for {
-		glog.V(5).Infof(logString(fmt.Sprintf("retrieving messages from the exchange")))
+	glog.V(5).Infof(logString(fmt.Sprintf("retrieving messages from the exchange")))
 
-		if msgs, err := w.getMessages(); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("unable to retrieve exchange messages, error: %v", err)))
-		} else {
-			// Loop through all the returned messages and process them
-			for _, msg := range msgs {
+	if msgs, err := w.getMessages(); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("unable to retrieve exchange messages, error: %v", err)))
+	} else {
+		// Loop through all the returned messages and process them
+		for _, msg := range msgs {
 
-				glog.V(3).Infof(logString(fmt.Sprintf("reading message %v from the exchange", msg.MsgId)))
+			glog.V(3).Infof(logString(fmt.Sprintf("reading message %v from the exchange", msg.MsgId)))
 
-				// First get my own keys
-				_, myPrivKey, _ := GetKeys("")
+			// First get my own keys
+			_, myPrivKey, _ := GetKeys("")
 
-				// Deconstruct and decrypt the message.
-				if protocolMessage, receivedPubKey, err := DeconstructExchangeMessage(msg.Message, myPrivKey); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("unable to deconstruct exchange message %v, error %v", msg, err)))
-				} else if serializedPubKey, err := MarshalPublicKey(receivedPubKey); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("unable to marshal the key from the encrypted message %v, error %v", receivedPubKey, err)))
-				} else if bytes.Compare(msg.AgbotPubKey, serializedPubKey) != 0 {
-					glog.Errorf(logString(fmt.Sprintf("sender public key from exchange %v is not the same as the sender public key in the encrypted message %v", msg.AgbotPubKey, serializedPubKey)))
-				} else if mBytes, err := json.Marshal(msg); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("error marshalling message %v, error: %v", msg, err)))
-				} else {
-					em := events.NewExchangeDeviceMessage(events.RECEIVED_EXCHANGE_DEV_MSG, mBytes, string(protocolMessage))
-					w.Messages() <- em
-				}
+			// Deconstruct and decrypt the message.
+			if protocolMessage, receivedPubKey, err := DeconstructExchangeMessage(msg.Message, myPrivKey); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to deconstruct exchange message %v, error %v", msg, err)))
+			} else if serializedPubKey, err := MarshalPublicKey(receivedPubKey); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to marshal the key from the encrypted message %v, error %v", receivedPubKey, err)))
+			} else if bytes.Compare(msg.AgbotPubKey, serializedPubKey) != 0 {
+				glog.Errorf(logString(fmt.Sprintf("sender public key from exchange %v is not the same as the sender public key in the encrypted message %v", msg.AgbotPubKey, serializedPubKey)))
+			} else if mBytes, err := json.Marshal(msg); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error marshalling message %v, error: %v", msg, err)))
+			} else {
+				em := events.NewExchangeDeviceMessage(events.RECEIVED_EXCHANGE_DEV_MSG, mBytes, string(protocolMessage))
+				w.Messages() <- em
 			}
 		}
-		time.Sleep(10 * time.Second)
 	}
 
 }
@@ -140,23 +137,6 @@ func (w *ExchangeMessageWorker) getMessages() ([]DeviceMessage, error) {
 			return msgs, nil
 		}
 	}
-}
-
-func (w *ExchangeMessageWorker) start() {
-
-	go func() {
-		for {
-			glog.V(2).Infof(logString("command processor blocking for commands"))
-			command := <-w.Commands
-			glog.V(2).Infof(logString(fmt.Sprintf("received command: %v", command)))
-
-			glog.V(5).Infof(logString("handled command"))
-			runtime.Gosched()
-		}
-	}()
-
-	// start polling for incoming messages
-	go w.pollIncoming()
 }
 
 var logString = func(v interface{}) string {

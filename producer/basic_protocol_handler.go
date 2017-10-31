@@ -150,6 +150,8 @@ func (c *BasicProtocolHandler) GetTerminationCode(reason string) uint {
 		return basicprotocol.CANCEL_IMAGE_FETCH_AUTH_FAILURE
 	case TERM_REASON_IMAGE_SIG_VERIF_FAILURE:
 		return basicprotocol.CANCEL_IMAGE_SIG_VERIF_FAILURE
+	case TERM_REASON_NODE_SHUTDOWN:
+		return basicprotocol.CANCEL_NODE_SHUTDOWN
 	default:
 		return 999
 	}

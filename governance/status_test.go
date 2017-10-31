@@ -121,6 +121,7 @@ func statusArrayIsSame(a1 []ContainerStatus, a2 []ContainerStatus) bool {
 			for _, item2 := range a2 {
 				if item1 == item2 {
 					found = true
+					break
 				}
 			}
 			if !found {
