@@ -193,7 +193,9 @@ func (w *AgreementBotWorker) Initialize() bool {
 	for {
 
 		// Query the exchange for patterns that this agbot is supposed to serve and generate a policy for each one.
-		w.GeneratePolicyFromPatterns()
+		if agbotNotConfigured := w.GeneratePolicyFromPatterns(); agbotNotConfigured == -1 {
+			return false
+		}
 
 		if policyManager, err := policy.Initialize(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, w.workloadResolver, false); err != nil {
 			glog.Errorf("AgreementBotWorker unable to initialize policy manager, error: %v", err)
@@ -1052,15 +1054,14 @@ func (w *AgreementBotWorker) workloadResolver(wURL string, wOrg string, wVersion
 	return asl, err
 }
 
-// Generate policy files based on pattern metadata in the exchange. If checkInterval is zero,
-// this function will perform a single pass through the exchange metadata, and generate policy files.
-// A non-zero value will cause this function to remain in a loop checking every checkInterval seconds
-// for new metadata and updating the policy file(s) accordingly.
+// Generate policy files based on pattern metadata in the exchange. The return value from this function is
+// the length of time the caller should wait before calling again. If -1 is returned, there was an error.
 func (w *AgreementBotWorker) GeneratePolicyFromPatterns() int {
 
 	glog.V(5).Infof(AWlogString(fmt.Sprintf("scanning patterns for updates")))
 	if err := w.internalGeneratePolicyFromPatterns(); err != nil {
 		glog.Errorf(AWlogString(fmt.Sprintf("unable to process patterns, error %v", err)))
+		return -1
 	}
 
 	return 0

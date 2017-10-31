@@ -359,7 +359,7 @@ func (w *BaseWorker) DispatchSubworker(name string, runSubWorker func() int, int
 				return
 			case <-time.After(time.Duration(nextWaitTime) * time.Second):
 				returnedWait := runSubWorker()
-				if returnedWait != 0 {
+				if returnedWait > 0 {
 					nextWaitTime = returnedWait
 				}
 
