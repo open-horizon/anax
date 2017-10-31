@@ -213,7 +213,7 @@ func (w *GovernanceWorker) getWorkloadStatus(containers []docker.APIContainers) 
 			}
 
 			if ag.Proposal != "" {
-				protocolHandler := w.producerPH[ag.AgreementProtocol].AgreementProtocolHandler(ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg)
+				protocolHandler := w.producerPH[ag.AgreementProtocol].AgreementProtocolHandler("", "", "")
 				if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
 					return nil, fmt.Errorf(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v from database, error %v", ag.CurrentAgreementId, err)))
 				} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
