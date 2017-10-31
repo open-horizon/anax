@@ -125,7 +125,6 @@ func main() {
 		workers.Add(agreementbot.NewAPIListener("AgBot API", cfg, agbotdb))
 	}
 	workers.Add(ethblockchain.NewEthBlockchainWorker("Blockchain", cfg))
-	workers.Add(torrent.NewTorrentWorker("Torrent", cfg, db))
 
 	if db != nil {
 		workers.Add(api.NewAPIListener("API", cfg, db, pm))
@@ -133,8 +132,10 @@ func main() {
 		workers.Add(governance.NewGovernanceWorker("Governance", cfg, db, pm))
 		workers.Add(exchange.NewExchangeMessageWorker("Exchange", cfg, db))
 		workers.Add(container.NewContainerWorker("Container", cfg, db))
+		workers.Add(torrent.NewTorrentWorker("Torrent", cfg, db))
 	} else {
 		workers.Add(container.NewContainerWorker("Container", cfg, agbotdb))
+		workers.Add(torrent.NewTorrentWorker("Torrent", cfg, agbotdb))
 	}
 
 	// Get into the event processing loop until anax shuts itself down.
