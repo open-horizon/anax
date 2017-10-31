@@ -2,6 +2,7 @@ package governance
 
 import (
 	"fmt"
+	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 )
 
@@ -126,4 +127,19 @@ func (c ReportDeviceStatusCommand) ShortString() string {
 
 func (w *GovernanceWorker) NewReportDeviceStatusCommand() *ReportDeviceStatusCommand {
 	return &ReportDeviceStatusCommand{}
+}
+
+// ==============================================================================================================
+type NodeShutdownCommand struct {
+	Msg *events.NodeShutdownMessage
+}
+
+func (n NodeShutdownCommand) ShortString() string {
+	return fmt.Sprintf("NodeShutdownCommand Msg: %v", n.Msg)
+}
+
+func (w *GovernanceWorker) NewNodeShutdownCommand(msg *events.NodeShutdownMessage) *NodeShutdownCommand {
+	return &NodeShutdownCommand{
+		Msg: msg,
+	}
 }

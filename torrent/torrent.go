@@ -2,7 +2,6 @@ package torrent
 
 import (
 	"fmt"
-	"runtime"
 
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
@@ -15,32 +14,23 @@ import (
 )
 
 type TorrentWorker struct {
-	worker.Worker // embedded field
-	db            *bolt.DB
+	worker.BaseWorker // embedded field
+	db                *bolt.DB
 }
 
-func NewTorrentWorker(config *config.HorizonConfig, db *bolt.DB) *TorrentWorker {
-	messages := make(chan events.Message)
-	commands := make(chan worker.Command, 200)
+func NewTorrentWorker(name string, config *config.HorizonConfig, db *bolt.DB) *TorrentWorker {
 
 	worker := &TorrentWorker{
-		worker.Worker{
-			Manager: worker.Manager{
-				Config:   config,
-				Messages: messages,
-			},
-
-			Commands: commands,
-		},
-		db,
+		BaseWorker: worker.NewBaseWorker(name, config),
+		db:         db,
 	}
 
-	worker.start()
+	worker.Start(worker, 0)
 	return worker
 }
 
 func (w *TorrentWorker) Messages() chan events.Message {
-	return w.Worker.Manager.Messages
+	return w.BaseWorker.Manager.Messages
 }
 
 func (w *TorrentWorker) NewEvent(incoming events.Message) {
@@ -57,6 +47,13 @@ func (w *TorrentWorker) NewEvent(incoming events.Message) {
 
 		fCmd := w.NewFetchCommand(msg.LaunchContext())
 		w.Commands <- fCmd
+
+	case *events.NodeShutdownCompleteMessage:
+		msg, _ := incoming.(*events.NodeShutdownCompleteMessage)
+		switch msg.Event().Id {
+		case events.UNCONFIGURE_COMPLETE:
+			w.Commands <- worker.NewTerminateCommand("shutdown")
+		}
 
 	default: //nothing
 
@@ -95,64 +92,59 @@ func authAttributes(db *bolt.DB) (map[string]map[string]string, error) {
 	return authAttrs, nil
 }
 
-func (b *TorrentWorker) start() {
-	go func() {
-		for {
-			glog.V(4).Infof("FetchWorker command processor blocking waiting to receive incoming commands")
+func (b *TorrentWorker) CommandHandler(command worker.Command) bool {
 
-			command := <-b.Commands
-			glog.V(3).Infof("FetchWorker received command: %v", command)
+	switch command.(type) {
+	case *FetchCommand:
 
-			switch command.(type) {
-			case *FetchCommand:
+		authAttribs, err := authAttributes(b.db)
+		if err != nil {
+			glog.Error(err)
+		} else {
 
-				authAttribs, err := authAttributes(b.db)
+			cmd := command.(*FetchCommand)
+			if lc := b.getLaunchContext(cmd.LaunchContext); lc == nil {
+				glog.Errorf("Incoming event was not a known launch context: %T", cmd.LaunchContext)
+			} else {
+				glog.V(2).Infof("URL to fetch: %s\n", lc.URL())
+
+				// TODO: decide where the best place is to shortcut the fetch call if the docker images it names are already in the local repo
+				// (could be here or bypass this worker altogether)
+				// (this is really important because we want to be able to delete the downloaded image files after docker load)
+
+				imageFiles, err := fetch.PkgFetch(b.Config.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), lc.URL(), lc.Signature(), b.Config.Edge.TorrentDir, b.Config.Edge.CACertsPath, b.Config.UserPublicKeyPath(), authAttribs)
+
 				if err != nil {
-					glog.Error(err)
-				} else {
+					var id events.EventId
+					switch err.(type) {
+					case fetcherrors.PkgMetaError, fetcherrors.PkgSourceError, fetcherrors.PkgPrecheckError:
+						id = events.IMAGE_DATA_ERROR
 
-					cmd := command.(*FetchCommand)
-					if lc := b.getLaunchContext(cmd.LaunchContext); lc == nil {
-						glog.Errorf("Incoming event was not a known launch context: %T", cmd.LaunchContext)
-					} else {
-						glog.V(2).Infof("URL to fetch: %s\n", lc.URL())
+					case fetcherrors.PkgSourceFetchError:
+						id = events.IMAGE_FETCH_ERROR
 
-						// TODO: decide where the best place is to shortcut the fetch call if the docker images it names are already in the local repo
-						// (could be here or bypass this worker altogether)
-						// (this is really important because we want to be able to delete the downloaded image files after docker load)
+					case fetcherrors.PkgSourceFetchAuthError:
+						id = events.IMAGE_FETCH_AUTH_ERROR
 
-						imageFiles, err := fetch.PkgFetch(b.Config.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), lc.URL(), lc.Signature(), b.Config.Edge.TorrentDir, b.Config.Edge.CACertsPath, b.Config.UserPublicKeyPath(), authAttribs)
+					case fetcherrors.PkgSignatureVerificationError:
+						id = events.IMAGE_SIG_VERIF_ERROR
 
-						if err != nil {
-							var id events.EventId
-							switch err.(type) {
-							case fetcherrors.PkgMetaError, fetcherrors.PkgSourceError, fetcherrors.PkgPrecheckError:
-								id = events.IMAGE_DATA_ERROR
-
-							case fetcherrors.PkgSourceFetchError:
-								id = events.IMAGE_FETCH_ERROR
-
-							case fetcherrors.PkgSourceFetchAuthError:
-								id = events.IMAGE_FETCH_AUTH_ERROR
-
-							case fetcherrors.PkgSignatureVerificationError:
-								id = events.IMAGE_SIG_VERIF_ERROR
-
-							default:
-								id = events.IMAGE_FETCH_ERROR
-							}
-							b.Messages() <- events.NewTorrentMessage(id, make([]string, 0), lc)
-							glog.Errorf("Failed to fetch image files: %v", err)
-						} else {
-							b.Messages() <- events.NewTorrentMessage(events.IMAGE_FETCHED, imageFiles, lc)
-						}
+					default:
+						id = events.IMAGE_FETCH_ERROR
 					}
+					b.Messages() <- events.NewTorrentMessage(id, make([]string, 0), lc)
+					glog.Errorf("Failed to fetch image files: %v", err)
+				} else {
+					b.Messages() <- events.NewTorrentMessage(events.IMAGE_FETCHED, imageFiles, lc)
 				}
 			}
-
-			runtime.Gosched()
 		}
-	}()
+
+	default:
+		return false
+	}
+	return true
+
 }
 
 type FetchCommand struct {

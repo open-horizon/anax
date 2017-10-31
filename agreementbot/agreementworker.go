@@ -15,7 +15,7 @@ import (
 	"net/http"
 )
 
-// These structs are the event bodies that flows from the processor to the agreement workers
+// These structs are the event bodies that flow from the processor to the agreement workers
 const INITIATE = "INITIATE_AGREEMENT"
 const REPLY = "AGREEMENT_REPLY"
 const CANCEL = "AGREEMENT_CANCEL"
@@ -663,6 +663,7 @@ func (b *BaseAgreementWorker) ExternalCancel(cph ConsumerProtocolHandler, agreem
 func (b *BaseAgreementWorker) DoAsyncCancel(cph ConsumerProtocolHandler, ag *Agreement, reason uint, workerId string) {
 
 	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("starting async cancel for %v", ag.CurrentAgreementId)))
+	// This routine does not need to be a subworker because it will terminate on its own.
 	go cph.TerminateAgreement(ag, reason, workerId)
 
 }

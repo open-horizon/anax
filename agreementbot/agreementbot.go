@@ -15,40 +15,44 @@ import (
 	"github.com/open-horizon/anax/worker"
 	"net/http"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
 )
 
-// must be safely-constructed!!
-type AgreementBotWorker struct {
-	worker.Worker  // embedded field
-	db             *bolt.DB
-	httpClient     *http.Client // a shared HTTP client instance for this worker
-	agbotId        string
-	token          string
-	pm             *policy.PolicyManager
-	consumerPH     map[string]ConsumerProtocolHandler
-	ready          bool
-	PatternManager *PatternManager
-	NHManager      *NodeHealthManager
+// for identifying the subworkers used by this worker
+const HEARTBEAT = "AgbotHeartBeat"
+const GOVERN_AGREEMENTS = "AgBotGovernAgreements"
+const GOVERN_ARCHIVED_AGREEMENTS = "AgBotGovernArchivedAgreements"
+const GOVERN_BC_NEEDS = "AgBotGovernBlockchain"
+const POLICY_WATCHER = "AgBotPolicyWatcher"
+const GENERATE_POLICY = "AgBotPolicyGenerator"
+
+// Agreement governance timing state. Used in the GovernAgreements subworker.
+type DVState struct {
+	dvSkip uint64
+	nhSkip uint64
 }
 
-func NewAgreementBotWorker(cfg *config.HorizonConfig, db *bolt.DB) *AgreementBotWorker {
-	messages := make(chan events.Message, 100) // The channel for outbound messages to the anax wide bus
-	commands := make(chan worker.Command, 100) // The channel for commands into the agreement bot worker
+// must be safely-constructed!!
+type AgreementBotWorker struct {
+	worker.BaseWorker // embedded field
+	db                *bolt.DB
+	httpClient        *http.Client // a shared HTTP client instance for this worker
+	agbotId           string
+	token             string
+	pm                *policy.PolicyManager
+	consumerPH        map[string]ConsumerProtocolHandler
+	ready             bool
+	PatternManager    *PatternManager
+	NHManager         *NodeHealthManager
+	GovTiming         DVState
+}
+
+func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db *bolt.DB) *AgreementBotWorker {
 
 	worker := &AgreementBotWorker{
-		Worker: worker.Worker{
-			Manager: worker.Manager{
-				Config:   cfg,
-				Messages: messages,
-			},
-
-			Commands: commands,
-		},
-
+		BaseWorker:     worker.NewBaseWorker(name, cfg),
 		db:             db,
 		httpClient:     cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 		agbotId:        cfg.AgreementBot.ExchangeId,
@@ -57,15 +61,16 @@ func NewAgreementBotWorker(cfg *config.HorizonConfig, db *bolt.DB) *AgreementBot
 		ready:          false,
 		PatternManager: NewPatternManager(),
 		NHManager:      NewNodeHealthManager(),
+		GovTiming:      DVState{},
 	}
 
 	glog.Info("Starting AgreementBot worker")
-	worker.start()
+	worker.Start(worker, int(cfg.AgreementBot.NewContractIntervalS))
 	return worker
 }
 
 func (w *AgreementBotWorker) Messages() chan events.Message {
-	return w.Worker.Manager.Messages
+	return w.BaseWorker.Manager.Messages
 }
 
 func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
@@ -149,6 +154,14 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 			}
 		}
 
+	case *events.NodeShutdownCompleteMessage:
+		msg, _ := incoming.(*events.NodeShutdownCompleteMessage)
+		switch msg.Event().Id {
+		case events.UNCONFIGURE_COMPLETE:
+			w.Commands <- worker.NewBeginShutdownCommand()
+			w.Commands <- worker.NewTerminateCommand("shutdown")
+		}
+
 	default: //nothing
 
 	}
@@ -156,279 +169,264 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 	return
 }
 
-func (w *AgreementBotWorker) start() {
+func (w *AgreementBotWorker) Initialize() bool {
 
-	go func() {
+	glog.Info("AgreementBot worker initializing")
 
-		glog.Info("AgreementBot worker initializing")
+	// If there is no Agbot config, we will terminate
+	if w.Config.AgreementBot == (config.AGConfig{}) {
+		glog.Errorf("AgreementBotWorker terminating, no AgreementBot config.")
+		return false
+	} else if w.db == nil {
+		glog.Errorf("AgreementBotWorker terminating, no AgreementBot database configured.")
+		return false
+	}
 
-		// If there is no Agbot config, we will terminate
-		if w.Config.AgreementBot == (config.AGConfig{}) {
-			glog.Errorf("AgreementBotWorker terminating, no AgreementBot config.")
-			return
-		} else if w.db == nil {
-			glog.Errorf("AgreementBotWorker terminating, no AgreementBot database configured.")
-			return
+	// Make sure the policy directory is in place
+	if err := os.MkdirAll(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, 0644); err != nil {
+		glog.Errorf("AgreementBotWorker cannot create agreement bot policy file path %v, terminating.", w.BaseWorker.Manager.Config.AgreementBot.PolicyPath)
+		return false
+	}
+
+	// Give the policy manager a chance to read in all the policies. The agbot worker will not proceed past this point
+	// until it has some policies to work with.
+	for {
+
+		// Query the exchange for patterns that this agbot is supposed to serve and generate a policy for each one.
+		w.GeneratePolicyFromPatterns()
+
+		if policyManager, err := policy.Initialize(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, w.workloadResolver, false); err != nil {
+			glog.Errorf("AgreementBotWorker unable to initialize policy manager, error: %v", err)
+		} else if policyManager.NumberPolicies() != 0 {
+			w.pm = policyManager
+			break
 		}
+		glog.V(3).Infof("AgreementBotWorker waiting for policies to appear")
+		time.Sleep(time.Duration(w.BaseWorker.Manager.Config.AgreementBot.CheckUpdatedPolicyS) * time.Second)
+	}
 
-		// Make sure the policy directory is in place
-		if err := os.MkdirAll(w.Worker.Manager.Config.AgreementBot.PolicyPath, 0644); err != nil {
-			glog.Errorf("AgreementBotWorker cannot create agreement bot policy file path %v, terminating.", w.Worker.Manager.Config.AgreementBot.PolicyPath)
-			return
+	glog.Info("AgreementBot worker started")
+
+	// Make sure that our public key is registered in the exchange so that other parties
+	// can send us messages.
+	if err := w.registerPublicKey(); err != nil {
+		glog.Errorf("AgreementBotWorker unable to register public key, error: %v", err)
+		return false
+	}
+
+	// For each agreement protocol in the current list of configured policies, startup a processor
+	// to initiate the protocol.
+	for protocolName, _ := range w.pm.GetAllAgreementProtocols() {
+		if policy.SupportedAgreementProtocol(protocolName) {
+			cph := CreateConsumerPH(protocolName, w.BaseWorker.Manager.Config, w.db, w.pm, w.BaseWorker.Manager.Messages)
+			cph.Initialize()
+			w.consumerPH[protocolName] = cph
+		} else {
+			glog.Errorf("AgreementBotWorker ignoring agreement protocol %v, not supported.", protocolName)
 		}
+	}
 
-		// Give the policy manager a chance to read in all the policies. The agbot worker will not proceed past this point
-		// until it has some policies to work with.
-		for {
+	// Sync up between what's in our database versus what's in the exchange, and make sure that the policy manager's
+	// agreement counts are correct. The governance routine will cancel any agreements whose state might have changed
+	// while the agbot was down. We will also check to make sure that policies havent changed. If they have, then
+	// we will cancel agreements and allow them to re-negotiate.
+	if err := w.syncOnInit(); err != nil {
+		glog.Errorf("AgreementBotWorker Terminating, unable to sync up, error: %v", err)
+		return false
+	}
 
-			// Query the exchange for patterns that this agbot is supposed to serve and generate a policy for each one.
-			if err := w.GeneratePolicyFromPatterns(0); err != nil {
-				glog.Errorf("AgreementBotWorker cannot read patterns from the exchange, error %v, terminating.", err)
-				return
+	// The agbot worker is now ready to handle incoming messages
+	w.ready = true
+
+	// Start the go thread that heartbeats to the exchange
+	w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.AgreementBot.ExchangeHeartbeat)
+
+	// Start the governance routines using the subworker APIs.
+	w.DispatchSubworker(GOVERN_AGREEMENTS, w.GovernAgreements, int(w.BaseWorker.Manager.Config.AgreementBot.ProcessGovernanceIntervalS))
+	w.DispatchSubworker(GOVERN_ARCHIVED_AGREEMENTS, w.GovernArchivedAgreements, 1800)
+	w.DispatchSubworker(GOVERN_BC_NEEDS, w.GovernBlockchainNeeds, 60)
+	if w.Config.AgreementBot.CheckUpdatedPolicyS != 0 {
+		// Use custom subworker APIs for the policy watcher because it is stateful and already does its own time management.
+		ch := w.AddSubworker(POLICY_WATCHER)
+		go w.policyWatcher(POLICY_WATCHER, ch)
+
+		w.DispatchSubworker(GENERATE_POLICY, w.GeneratePolicyFromPatterns, int(w.Config.AgreementBot.CheckUpdatedPolicyS))
+	}
+
+	return true
+}
+
+func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
+
+	// Enter the command processing loop. Initialization is complete so wait for commands to
+	// perform. Commands are created as the result of events that are triggered elsewhere
+	// in the system. This function also wakes up periodically and looks for messages on
+	// its exchange message queue.
+
+	switch command.(type) {
+	case *BlockchainEventCommand:
+		cmd, _ := command.(*BlockchainEventCommand)
+		// Put command on each protocol worker's command queue
+		for _, ch := range w.consumerPH {
+			if ch.AcceptCommand(cmd) {
+				ch.HandleBlockchainEvent(cmd)
 			}
-
-			if policyManager, err := policy.Initialize(w.Worker.Manager.Config.AgreementBot.PolicyPath, w.workloadResolver, false); err != nil {
-				glog.Errorf("AgreementBotWorker unable to initialize policy manager, error: %v", err)
-			} else if policyManager.NumberPolicies() != 0 {
-				w.pm = policyManager
-				break
-			}
-			glog.V(3).Infof("AgreementBotWorker waiting for policies to appear")
-			time.Sleep(time.Duration(w.Worker.Manager.Config.AgreementBot.CheckUpdatedPolicyS) * time.Second)
 		}
 
-		glog.Info("AgreementBot worker started")
+	case *PolicyChangedCommand:
+		cmd := command.(*PolicyChangedCommand)
 
-		// Make sure that our public key is registered in the exchange so that other parties
-		// can send us messages.
-		if err := w.registerPublicKey(); err != nil {
-			glog.Errorf("AgreementBotWorker unable to register public key, error: %v", err)
-			return
-		}
+		if pol, err := policy.DemarshalPolicy(cmd.Msg.PolicyString()); err != nil {
+			glog.Errorf(fmt.Sprintf("AgreementBotWorker error demarshalling change event policy %v, error: %v", cmd.Msg.PolicyString(), err))
+		} else {
+			// We know that all agreement protocols in the policy are supported by this runtime. If not, then this
+			// event would not have occurred.
 
-		// For each agreement protocol in the current list of configured policies, startup a processor
-		// to initiate the protocol.
-		for protocolName, _ := range w.pm.GetAllAgreementProtocols() {
-			if policy.SupportedAgreementProtocol(protocolName) {
-				cph := CreateConsumerPH(protocolName, w.Worker.Manager.Config, w.db, w.pm, w.Worker.Manager.Messages)
-				cph.Initialize()
-				w.consumerPH[protocolName] = cph
-			} else {
-				glog.Errorf("AgreementBotWorker ignoring agreement protocol %v, not supported.", protocolName)
-			}
-		}
+			glog.V(5).Infof("AgreementBotWorker about to update policy in PM.")
+			// Update the policy in the policy manager.
+			w.pm.UpdatePolicy(cmd.Msg.Org(), pol)
+			glog.V(5).Infof("AgreementBotWorker updated policy in PM.")
 
-		// Sync up between what's in our database versus what's in the exchange, and make sure that the policy manager's
-		// agreement counts are correct. The governance routine will cancel any agreements whose state might have changed
-		// while the agbot was down. We will also check to make sure that policies havent changed. If they have, then
-		// we will cancel agreements and allow them to re-negotiate.
-		if err := w.syncOnInit(); err != nil {
-			glog.Errorf("AgreementBotWorker Terminating, unable to sync up, error: %v", err)
-			return
-		}
-
-		// The agbot worker is now ready to handle incoming messages
-		w.ready = true
-
-		// Begin heartbeating with the exchange.
-		targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId) + "/heartbeat"
-		go exchange.Heartbeat(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), targetURL, w.agbotId, w.token, w.Worker.Manager.Config.AgreementBot.ExchangeHeartbeat)
-
-		// Start the governance routines.
-		go w.GovernAgreements()
-		go w.GovernArchivedAgreements()
-		go w.GovernBlockchainNeeds()
-		if w.Config.AgreementBot.CheckUpdatedPolicyS != 0 {
-			go policy.PolicyFileChangeWatcher(w.Config.AgreementBot.PolicyPath, w.pm.WatcherContent, w.changedPolicy, w.deletedPolicy, w.errorPolicy, w.workloadResolver, w.Config.AgreementBot.CheckUpdatedPolicyS)
-			go w.GeneratePolicyFromPatterns(w.Config.AgreementBot.CheckUpdatedPolicyS)
-		}
-
-		// Enter the command processing loop. Initialization is complete so wait for commands to
-		// perform. Commands are created as the result of events that are triggered elsewhere
-		// in the system. This function also wakes up periodically and looks for messages on
-		// its exchnage message queue.
-
-		nonBlockDuration := w.Config.AgreementBot.NewContractIntervalS
-		for {
-			glog.V(2).Infof("AgreementBotWorker non-blocking for commands")
-			select {
-			case command := <-w.Commands:
-				glog.V(2).Infof("AgreementBotWorker received command: %v", command)
-
-				switch command.(type) {
-				case *BlockchainEventCommand:
-					cmd, _ := command.(*BlockchainEventCommand)
-					// Put command on each protocol worker's command queue
-					for _, ch := range w.consumerPH {
-						if ch.AcceptCommand(cmd) {
-							ch.HandleBlockchainEvent(cmd)
-						}
-					}
-
-				case *PolicyChangedCommand:
-					cmd := command.(*PolicyChangedCommand)
-
-					if pol, err := policy.DemarshalPolicy(cmd.Msg.PolicyString()); err != nil {
-						glog.Errorf(fmt.Sprintf("AgreementBotWorker error demarshalling change event policy %v, error: %v", cmd.Msg.PolicyString(), err))
-					} else {
-						// We know that all agreement protocols in the policy are supported by this runtime. If not, then this
-						// event would not have occurred.
-
-						glog.V(5).Infof("AgreementBotWorker about to update policy in PM.")
-						// Update the policy in the policy manager.
-						w.pm.UpdatePolicy(cmd.Msg.Org(), pol)
-						glog.V(5).Infof("AgreementBotWorker updated policy in PM.")
-
-						for _, agp := range pol.AgreementProtocols {
-							// Update the protocol handler map and make sure there are workers available if the policy has a new protocol in it.
-							if _, ok := w.consumerPH[agp.Name]; !ok {
-								glog.V(3).Infof("AgreementBotWorker creating worker pool for new agreement protocol %v", agp.Name)
-								cph := CreateConsumerPH(agp.Name, w.Worker.Manager.Config, w.db, w.pm, w.Worker.Manager.Messages)
-								cph.Initialize()
-								w.consumerPH[agp.Name] = cph
-							}
-						}
-
-						// Send the policy change command to all protocol handlers just in case an agreement protocol was
-						// deleted from the new policy file.
-						for agp, _ := range w.consumerPH {
-							// Queue the command to the relevant protocol handler for further processing.
-							if w.consumerPH[agp].AcceptCommand(cmd) {
-								w.consumerPH[agp].HandlePolicyChanged(cmd, w.consumerPH[agp])
-							}
-						}
-
-					}
-
-				case *PolicyDeletedCommand:
-					cmd := command.(*PolicyDeletedCommand)
-
-					if pol, err := policy.DemarshalPolicy(cmd.Msg.PolicyString()); err != nil {
-						glog.Errorf(fmt.Sprintf("AgreementBotWorker error demarshalling change event policy %v, error: %v", cmd.Msg.PolicyString(), err))
-					} else {
-
-						glog.V(5).Infof("AgreementBotWorker about to delete policy from PM.")
-						// Update the policy in the policy manager.
-						w.pm.DeletePolicy(cmd.Msg.Org(), pol)
-						glog.V(5).Infof("AgreementBotWorker deleted policy from PM.")
-
-						// Queue the command to the correct protocol worker pool(s) for further processing. The deleted policy
-						// might not contain a supported protocol, so we need to check that first.
-						for _, agp := range pol.AgreementProtocols {
-							if _, ok := w.consumerPH[agp.Name]; ok {
-								if w.consumerPH[agp.Name].AcceptCommand(cmd) {
-									w.consumerPH[agp.Name].HandlePolicyDeleted(cmd, w.consumerPH[agp.Name])
-								}
-							} else {
-								glog.Infof("AgreementBotWorker ignoring policy deleted command for unsupported agreement protocol %v", agp.Name)
-							}
-						}
-					}
-
-				case *AgreementTimeoutCommand:
-					cmd, _ := command.(*AgreementTimeoutCommand)
-					if _, ok := w.consumerPH[cmd.Protocol]; !ok {
-						glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to process agreement timeout command %v due to unknown agreement protocol", cmd))
-					} else {
-						if w.consumerPH[cmd.Protocol].AcceptCommand(cmd) {
-							w.consumerPH[cmd.Protocol].HandleAgreementTimeout(cmd, w.consumerPH[cmd.Protocol])
-						}
-					}
-
-				case *WorkloadUpgradeCommand:
-					cmd, _ := command.(*WorkloadUpgradeCommand)
-					// The workload upgrade request might not involve a specific agreement, so we can't know precisely which agreement
-					// protocol might be relevant. Therefore we will send this upgrade to all protocol worker pools.
-					for _, ch := range w.consumerPH {
-						if ch.AcceptCommand(cmd) {
-							ch.HandleWorkloadUpgrade(cmd, ch)
-						}
-					}
-
-				case *AccountFundedCommand:
-					cmd, _ := command.(*AccountFundedCommand)
-					for _, cph := range w.consumerPH {
-						cph.SetBlockchainWritable(&cmd.Msg)
-					}
-
-				case *ClientInitializedCommand:
-					cmd, _ := command.(*ClientInitializedCommand)
-					for _, cph := range w.consumerPH {
-						cph.SetBlockchainClientAvailable(&cmd.Msg)
-					}
-
-				case *ClientStoppingCommand:
-					cmd, _ := command.(*ClientStoppingCommand)
-					for _, cph := range w.consumerPH {
-						cph.SetBlockchainClientNotAvailable(&cmd.Msg)
-					}
-
-				default:
-					glog.Errorf("AgreementBotWorker Unknown command (%T): %v", command, command)
+			for _, agp := range pol.AgreementProtocols {
+				// Update the protocol handler map and make sure there are workers available if the policy has a new protocol in it.
+				if _, ok := w.consumerPH[agp.Name]; !ok {
+					glog.V(3).Infof("AgreementBotWorker creating worker pool for new agreement protocol %v", agp.Name)
+					cph := CreateConsumerPH(agp.Name, w.BaseWorker.Manager.Config, w.db, w.pm, w.BaseWorker.Manager.Messages)
+					cph.Initialize()
+					w.consumerPH[agp.Name] = cph
 				}
+			}
 
-				glog.V(5).Infof("AgreementBotWorker handled command %v", command)
-
-				glog.V(4).Infof("AgreementBotWorker queueing deferred commands")
-				for _, cph := range w.consumerPH {
-					cph.HandleDeferredCommands()
+			// Send the policy change command to all protocol handlers just in case an agreement protocol was
+			// deleted from the new policy file.
+			for agp, _ := range w.consumerPH {
+				// Queue the command to the relevant protocol handler for further processing.
+				if w.consumerPH[agp].AcceptCommand(cmd) {
+					w.consumerPH[agp].HandlePolicyChanged(cmd, w.consumerPH[agp])
 				}
-				glog.V(4).Infof("AgreementBotWorker done queueing deferred commands")
+			}
 
-			case <-time.After(time.Duration(nonBlockDuration) * time.Second):
-				glog.V(5).Infof(fmt.Sprintf("AgreementBotWorker retrieving messages from the exchange"))
+		}
 
-				if msgs, err := w.getMessages(); err != nil {
-					glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to retrieve exchange messages, error: %v", err))
+	case *PolicyDeletedCommand:
+		cmd := command.(*PolicyDeletedCommand)
+
+		if pol, err := policy.DemarshalPolicy(cmd.Msg.PolicyString()); err != nil {
+			glog.Errorf(fmt.Sprintf("AgreementBotWorker error demarshalling change event policy %v, error: %v", cmd.Msg.PolicyString(), err))
+		} else {
+
+			glog.V(5).Infof("AgreementBotWorker about to delete policy from PM.")
+			// Update the policy in the policy manager.
+			w.pm.DeletePolicy(cmd.Msg.Org(), pol)
+			glog.V(5).Infof("AgreementBotWorker deleted policy from PM.")
+
+			// Queue the command to the correct protocol worker pool(s) for further processing. The deleted policy
+			// might not contain a supported protocol, so we need to check that first.
+			for _, agp := range pol.AgreementProtocols {
+				if _, ok := w.consumerPH[agp.Name]; ok {
+					if w.consumerPH[agp.Name].AcceptCommand(cmd) {
+						w.consumerPH[agp.Name].HandlePolicyDeleted(cmd, w.consumerPH[agp.Name])
+					}
 				} else {
-					// Loop through all the returned messages and process them
-					for _, msg := range msgs {
-
-						glog.V(3).Infof(fmt.Sprintf("AgreementBotWorker reading message %v from the exchange", msg.MsgId))
-						// First get my own keys
-						_, myPrivKey, _ := exchange.GetKeys(w.Config.AgreementBot.MessageKeyPath)
-
-						// Deconstruct and decrypt the message. Then process it.
-						if protocolMessage, receivedPubKey, err := exchange.DeconstructExchangeMessage(msg.Message, myPrivKey); err != nil {
-							glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to deconstruct exchange message %v, error %v", msg, err))
-						} else if serializedPubKey, err := exchange.MarshalPublicKey(receivedPubKey); err != nil {
-							glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to marshal the key from the encrypted message %v, error %v", receivedPubKey, err))
-						} else if bytes.Compare(msg.DevicePubKey, serializedPubKey) != 0 {
-							glog.Errorf(fmt.Sprintf("AgreementBotWorker sender public key from exchange %x is not the same as the sender public key in the encrypted message %x", msg.DevicePubKey, serializedPubKey))
-						} else if msgProtocol, err := abstractprotocol.ExtractProtocol(string(protocolMessage)); err != nil {
-							glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to extract agreement protocol name from message %v", protocolMessage))
-						} else if _, ok := w.consumerPH[msgProtocol]; !ok {
-							glog.Infof(fmt.Sprintf("AgreementBotWorker unable to direct exchange message %v to a protocol handler, deleting it.", protocolMessage))
-							DeleteMessage(msg.MsgId, w.agbotId, w.token, w.Config.AgreementBot.ExchangeURL, w.httpClient)
-						} else {
-							cmd := NewNewProtocolMessageCommand(protocolMessage, msg.MsgId, msg.DeviceId, msg.DevicePubKey)
-							if !w.consumerPH[msgProtocol].AcceptCommand(cmd) {
-								glog.Infof(fmt.Sprintf("AgreementBotWorker protocol handler for %v not accepting exchange messages, deleting msg.", msgProtocol))
-								DeleteMessage(msg.MsgId, w.agbotId, w.token, w.Config.AgreementBot.ExchangeURL, w.httpClient)
-							} else if err := w.consumerPH[msgProtocol].DispatchProtocolMessage(cmd, w.consumerPH[msgProtocol]); err != nil {
-								DeleteMessage(msg.MsgId, w.agbotId, w.token, w.Config.AgreementBot.ExchangeURL, w.httpClient)
-							}
-						}
-					}
+					glog.Infof("AgreementBotWorker ignoring policy deleted command for unsupported agreement protocol %v", agp.Name)
 				}
-				glog.V(5).Infof(fmt.Sprintf("AgreementBotWorker done processing messages"))
-
-				glog.V(4).Infof("AgreementBotWorker Polling Exchange.")
-				w.findAndMakeAgreements()
-				glog.V(4).Infof("AgreementBotWorker Done Polling Exchange.")
-
-				glog.V(4).Infof("AgreementBotWorker queueing deferred commands")
-				for _, cph := range w.consumerPH {
-					cph.HandleDeferredCommands()
-				}
-				glog.V(4).Infof("AgreementBotWorker done queueing deferred commands")
-
 			}
-			runtime.Gosched()
 		}
-	}()
 
-	glog.Info("AgreementBotWorker waiting for commands.")
+	case *AgreementTimeoutCommand:
+		cmd, _ := command.(*AgreementTimeoutCommand)
+		if _, ok := w.consumerPH[cmd.Protocol]; !ok {
+			glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to process agreement timeout command %v due to unknown agreement protocol", cmd))
+		} else {
+			if w.consumerPH[cmd.Protocol].AcceptCommand(cmd) {
+				w.consumerPH[cmd.Protocol].HandleAgreementTimeout(cmd, w.consumerPH[cmd.Protocol])
+			}
+		}
+
+	case *WorkloadUpgradeCommand:
+		cmd, _ := command.(*WorkloadUpgradeCommand)
+		// The workload upgrade request might not involve a specific agreement, so we can't know precisely which agreement
+		// protocol might be relevant. Therefore we will send this upgrade to all protocol worker pools.
+		for _, ch := range w.consumerPH {
+			if ch.AcceptCommand(cmd) {
+				ch.HandleWorkloadUpgrade(cmd, ch)
+			}
+		}
+
+	case *AccountFundedCommand:
+		cmd, _ := command.(*AccountFundedCommand)
+		for _, cph := range w.consumerPH {
+			cph.SetBlockchainWritable(&cmd.Msg)
+		}
+
+	case *ClientInitializedCommand:
+		cmd, _ := command.(*ClientInitializedCommand)
+		for _, cph := range w.consumerPH {
+			cph.SetBlockchainClientAvailable(&cmd.Msg)
+		}
+
+	case *ClientStoppingCommand:
+		cmd, _ := command.(*ClientStoppingCommand)
+		for _, cph := range w.consumerPH {
+			cph.SetBlockchainClientNotAvailable(&cmd.Msg)
+		}
+
+	default:
+		return false
+	}
+
+	return true
+
+}
+
+func (w *AgreementBotWorker) NoWorkHandler() {
+
+	glog.V(4).Infof("AgreementBotWorker queueing deferred commands")
+	for _, cph := range w.consumerPH {
+		cph.HandleDeferredCommands()
+	}
+	glog.V(4).Infof("AgreementBotWorker done queueing deferred commands")
+
+	glog.V(5).Infof(fmt.Sprintf("AgreementBotWorker retrieving messages from the exchange"))
+
+	if msgs, err := w.getMessages(); err != nil {
+		glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to retrieve exchange messages, error: %v", err))
+	} else {
+		// Loop through all the returned messages and process them
+		for _, msg := range msgs {
+
+			glog.V(3).Infof(fmt.Sprintf("AgreementBotWorker reading message %v from the exchange", msg.MsgId))
+			// First get my own keys
+			_, myPrivKey, _ := exchange.GetKeys(w.Config.AgreementBot.MessageKeyPath)
+
+			// Deconstruct and decrypt the message. Then process it.
+			if protocolMessage, receivedPubKey, err := exchange.DeconstructExchangeMessage(msg.Message, myPrivKey); err != nil {
+				glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to deconstruct exchange message %v, error %v", msg, err))
+			} else if serializedPubKey, err := exchange.MarshalPublicKey(receivedPubKey); err != nil {
+				glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to marshal the key from the encrypted message %v, error %v", receivedPubKey, err))
+			} else if bytes.Compare(msg.DevicePubKey, serializedPubKey) != 0 {
+				glog.Errorf(fmt.Sprintf("AgreementBotWorker sender public key from exchange %x is not the same as the sender public key in the encrypted message %x", msg.DevicePubKey, serializedPubKey))
+			} else if msgProtocol, err := abstractprotocol.ExtractProtocol(string(protocolMessage)); err != nil {
+				glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to extract agreement protocol name from message %v", protocolMessage))
+			} else if _, ok := w.consumerPH[msgProtocol]; !ok {
+				glog.Infof(fmt.Sprintf("AgreementBotWorker unable to direct exchange message %v to a protocol handler, deleting it.", protocolMessage))
+				DeleteMessage(msg.MsgId, w.agbotId, w.token, w.Config.AgreementBot.ExchangeURL, w.httpClient)
+			} else {
+				cmd := NewNewProtocolMessageCommand(protocolMessage, msg.MsgId, msg.DeviceId, msg.DevicePubKey)
+				if !w.consumerPH[msgProtocol].AcceptCommand(cmd) {
+					glog.Infof(fmt.Sprintf("AgreementBotWorker protocol handler for %v not accepting exchange messages, deleting msg.", msgProtocol))
+					DeleteMessage(msg.MsgId, w.agbotId, w.token, w.Config.AgreementBot.ExchangeURL, w.httpClient)
+				} else if err := w.consumerPH[msgProtocol].DispatchProtocolMessage(cmd, w.consumerPH[msgProtocol]); err != nil {
+					DeleteMessage(msg.MsgId, w.agbotId, w.token, w.Config.AgreementBot.ExchangeURL, w.httpClient)
+				}
+			}
+		}
+	}
+	glog.V(5).Infof(fmt.Sprintf("AgreementBotWorker done processing messages"))
+
+	glog.V(4).Infof("AgreementBotWorker Polling Exchange.")
+	w.findAndMakeAgreements()
+	glog.V(4).Infof("AgreementBotWorker Done Polling Exchange.")
 
 }
 
@@ -510,7 +508,7 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 					} else if bcType != "" && !w.consumerPH[protocol].IsBlockchainWritable(bcType, bcName, bcOrg) {
 						// Get that blockchain running if it isn't up.
 						glog.V(5).Infof("AgreementBotWorker skipping device id %v, requires blockchain %v %v %v that isnt ready yet.", dev.Id, bcType, bcName, bcOrg)
-						w.Worker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, bcType, bcName, bcOrg, w.Manager.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
+						w.BaseWorker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, bcType, bcName, bcOrg, w.Manager.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
 						continue
 					} else if !w.consumerPH[protocol].AcceptCommand(cmd) {
 						glog.Errorf("AgreementBotWorker protocol handler for %v not accepting new agreement commands.", protocol)
@@ -573,6 +571,23 @@ func (w *AgreementBotWorker) MergeAllProducerPolicies(dev *exchange.SearchResult
 	}
 
 	return producerPolicy, nil
+}
+
+func (w *AgreementBotWorker) policyWatcher(name string, quit chan bool) {
+
+	// create a place for the policy watcher to save state between iterations.
+	contents := policy.NewContents()
+
+	select {
+	case <-quit:
+		w.Commands <- worker.NewSubWorkerTerminationCommand(name)
+		glog.V(3).Infof(fmt.Sprintf("AgreementBotWorker %v exiting the subworker", name))
+		return
+
+	case <-time.After(time.Duration(w.Config.AgreementBot.CheckUpdatedPolicyS) * time.Second):
+		contents, _ = policy.PolicyFileChangeWatcher(w.Config.AgreementBot.PolicyPath, contents, w.changedPolicy, w.deletedPolicy, w.errorPolicy, w.workloadResolver, 0)
+	}
+
 }
 
 // Functions called by the policy watcher
@@ -707,7 +722,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, searchOrg string
 		// Invoke the exchange
 		var resp interface{}
 		resp = new(exchange.SearchExchangePatternResponse)
-		targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + searchOrg + "/patterns/" + exchange.GetId(pol.PatternId) + "/search"
+		targetURL := w.BaseWorker.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + searchOrg + "/patterns/" + exchange.GetId(pol.PatternId) + "/search"
 		for {
 			if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, ser, &resp); err != nil {
 				if !strings.Contains(err.Error(), "status: 404") {
@@ -765,7 +780,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, searchOrg string
 		// Invoke the exchange
 		var resp interface{}
 		resp = new(exchange.SearchExchangeMSResponse)
-		targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + searchOrg + "/search/nodes"
+		targetURL := w.BaseWorker.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + searchOrg + "/search/nodes"
 		for {
 			if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, ser, &resp); err != nil {
 				if !strings.Contains(err.Error(), "status: 404") {
@@ -885,7 +900,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 						var exchangeAgreement map[string]exchange.AgbotAgreement
 						var resp interface{}
 						resp = new(exchange.AllAgbotAgreementsResponse)
-						targetURL := w.Worker.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId) + "/agreements/" + ag.CurrentAgreementId
+						targetURL := w.BaseWorker.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId) + "/agreements/" + ag.CurrentAgreementId
 
 						if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.agbotId, w.token, nil, &resp); err != nil || tpErr != nil {
 							glog.Errorf(AWlogString(fmt.Sprintf("encountered error getting agbot info from exchange, error %v, transport error %v", err, tpErr)))
@@ -1041,22 +1056,14 @@ func (w *AgreementBotWorker) workloadResolver(wURL string, wOrg string, wVersion
 // this function will perform a single pass through the exchange metadata, and generate policy files.
 // A non-zero value will cause this function to remain in a loop checking every checkInterval seconds
 // for new metadata and updating the policy file(s) accordingly.
-func (w *AgreementBotWorker) GeneratePolicyFromPatterns(checkInterval int) error {
-	for {
+func (w *AgreementBotWorker) GeneratePolicyFromPatterns() int {
 
-		glog.V(5).Infof(AWlogString(fmt.Sprintf("scanning patterns for updates")))
-		err := w.internalGeneratePolicyFromPatterns()
-
-		// Terminate now if necessary
-		if checkInterval == 0 {
-			return err
-		} else {
-			if err != nil {
-				glog.Errorf(AWlogString(fmt.Sprintf("unable to process patterns, error %v", err)))
-			}
-			time.Sleep(time.Duration(checkInterval) * time.Second)
-		}
+	glog.V(5).Infof(AWlogString(fmt.Sprintf("scanning patterns for updates")))
+	if err := w.internalGeneratePolicyFromPatterns(); err != nil {
+		glog.Errorf(AWlogString(fmt.Sprintf("unable to process patterns, error %v", err)))
 	}
+
+	return 0
 }
 
 // Generate policy files based on pattern metadata in the exchange. A list of orgs and patterns is
@@ -1114,6 +1121,13 @@ func (w *AgreementBotWorker) getAgbotPatterns() (map[string]exchange.ServedPatte
 		}
 	}
 
+}
+
+// Heartbeat to the exchange. This function is called by the heartbeat subworker.
+func (w *AgreementBotWorker) heartBeat() int {
+	targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId) + "/heartbeat"
+	exchange.Heartbeat(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), targetURL, w.agbotId, w.token)
+	return 0
 }
 
 // ==========================================================================================================

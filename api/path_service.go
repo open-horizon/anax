@@ -92,7 +92,7 @@ func CreateService(service *Service,
 	service.SensorVersion = &msdef.Version
 
 	// Check if the microservice has been registered or not (currently only support one microservice registration)
-	if pms, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UrlMSFilter(*service.SensorUrl)}); err != nil {
+	if pms, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UnarchivedMSFilter(), persistence.UrlMSFilter(*service.SensorUrl)}); err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("Error accessing db to find microservice definition: %v", err))), nil, nil
 	} else if pms != nil && len(pms) > 0 {
 		//return errorhandler(NewAPIUserInputError(fmt.Sprintf("Duplicate registration for %v. Only one registration per microservice is supported.", *service.SensorUrl), "service")), nil, nil

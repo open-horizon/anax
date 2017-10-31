@@ -3,7 +3,6 @@ package microservice
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
@@ -270,33 +269,6 @@ func RestoreMicroservicePolicyFile(spec_ref string, version string, msdef_id str
 	return fullFileName, nil
 }
 
-func getExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId string, deviceToken string, exchangeUrl string) (*exchange.Device, error) {
-
-	glog.V(3).Infof("retrieving device %v from exchange", deviceId)
-
-	var resp interface{}
-	resp = new(exchange.GetDevicesResponse)
-	targetURL := exchangeUrl + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId)
-	for {
-		if err, tpErr := exchange.InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, deviceId, deviceToken, nil, &resp); err != nil {
-			glog.Errorf(err.Error())
-			return nil, err
-		} else if tpErr != nil {
-			glog.Warningf(tpErr.Error())
-			time.Sleep(10 * time.Second)
-			continue
-		} else {
-			devs := resp.(*exchange.GetDevicesResponse).Devices
-			if dev, there := devs[deviceId]; !there {
-				return nil, errors.New(fmt.Sprintf("device %v not in GET response %v as expected", deviceId, devs))
-			} else {
-				glog.V(5).Infof("retrieved device %v from exchange %v", deviceId, dev)
-				return &dev, nil
-			}
-		}
-	}
-}
-
 // Generate a new policy file for given ms and the register the microservice on the exchange.
 func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath string, db *bolt.DB, e chan events.Message, deviceOrg string) error {
 	glog.V(3).Infof("Genarate policy for the given microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
@@ -412,7 +384,7 @@ func UnregisterMicroserviceExchange(spec_ref string, httpClientFactory *config.H
 		deviceName = dev.Name
 	}
 
-	if eDevice, err := getExchangeDevice(httpClientFactory, device_id, device_token, exchange_url); err != nil {
+	if eDevice, err := exchange.GetExchangeDevice(httpClientFactory, device_id, device_token, exchange_url); err != nil {
 		return fmt.Errorf("Error getting device %v from the exchange. %v", device_id, err)
 	} else if eDevice.RegisteredMicroservices == nil || len(eDevice.RegisteredMicroservices) == 0 {
 		return nil // no registered microservices, nothing to do

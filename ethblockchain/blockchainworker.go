@@ -44,7 +44,7 @@ type BCInstanceState struct {
 // The worker is single threaded so there are no multi-thread concerns. Events that cause changes to instance state
 // need to be dispatched to the worker thread as commands.
 type EthBlockchainWorker struct {
-	worker.Worker                  // embedded field
+	worker.BaseWorker              // embedded field
 	httpClient        *http.Client // a shared HTTP client for this worker
 	exchangeURL       string
 	exchangeId        string
@@ -54,20 +54,10 @@ type EthBlockchainWorker struct {
 	neededBCs         map[string]map[string]uint64 // time stamp last time this BC was reported as needed
 }
 
-func NewEthBlockchainWorker(cfg *config.HorizonConfig) *EthBlockchainWorker {
-	messages := make(chan events.Message)      // The channel for outbound messages to the anax wide bus
-	commands := make(chan worker.Command, 100) // The channel for commands into the agreement bot worker
+func NewEthBlockchainWorker(name string, cfg *config.HorizonConfig) *EthBlockchainWorker {
 
 	worker := &EthBlockchainWorker{
-		Worker: worker.Worker{
-			Manager: worker.Manager{
-				Config:   cfg,
-				Messages: messages,
-			},
-
-			Commands: commands,
-		},
-
+		BaseWorker:        worker.NewBaseWorker(name, cfg),
 		httpClient:        cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 		horizonPubKeyFile: cfg.Edge.PublicKeyPath,
 		instances:         make(map[string]*BCInstanceState),
@@ -75,12 +65,13 @@ func NewEthBlockchainWorker(cfg *config.HorizonConfig) *EthBlockchainWorker {
 	}
 
 	glog.Info(logString("starting worker"))
-	worker.start()
+	nonBlockDuration := 15
+	worker.Start(worker, nonBlockDuration)
 	return worker
 }
 
 func (w *EthBlockchainWorker) Messages() chan events.Message {
-	return w.Worker.Manager.Messages
+	return w.BaseWorker.Manager.Messages
 }
 
 func (w *EthBlockchainWorker) NewEvent(incoming events.Message) {
@@ -142,6 +133,27 @@ func (w *EthBlockchainWorker) NewEvent(incoming events.Message) {
 		case events.CONTAINER_DESTROYED:
 			cmd := NewContainerShutdownCommand(msg)
 			w.Commands <- cmd
+		}
+
+	case *events.NodeShutdownMessage:
+		msg, _ := incoming.(*events.NodeShutdownMessage)
+		switch msg.Event().Id {
+		case events.START_UNCONFIGURE:
+			w.Commands <- worker.NewBeginShutdownCommand()
+		}
+
+	case *events.AllBlockchainShutdownMessage:
+		msg, _ := incoming.(*events.AllBlockchainShutdownMessage)
+		switch msg.Event().Id {
+		case events.ALL_STOP:
+			w.Commands <- NewAllBlockchainsShutdownCommand(msg)
+		}
+
+	case *events.NodeShutdownCompleteMessage:
+		msg, _ := incoming.(*events.NodeShutdownCompleteMessage)
+		switch msg.Event().Id {
+		case events.UNCONFIGURE_COMPLETE:
+			w.Commands <- NewShutdownWorkerCommand()
 		}
 
 	default: //nothing
@@ -239,76 +251,77 @@ func (w *EthBlockchainWorker) UpdatedNeededBlockchains(cmd *ReportNeededBlockcha
 
 }
 
-func (w *EthBlockchainWorker) start() {
-	glog.Info(logString("worker started"))
+func (w *EthBlockchainWorker) CommandHandler(command worker.Command) bool {
 
-	go func() {
+	switch command.(type) {
+	case *NewClientCommand:
+		cmd := command.(*NewClientCommand)
+		w.handleNewClient(cmd)
 
-		nonBlockDuration := 15
+	case *ContainerExecutingCommand:
+		cmd := command.(*ContainerExecutingCommand)
+		w.SetServiceStarted(cmd.Msg.LaunchContext.Blockchain.Name, cmd.Msg.ServiceName, cmd.Msg.ServicePort)
+		glog.V(3).Infof(logString(fmt.Sprintf("started service %v %v %v", cmd.Msg.LaunchContext.Blockchain.Name, cmd.Msg.ServiceName, cmd.Msg.ServicePort)))
 
-		for {
-			glog.V(5).Infof(logString(fmt.Sprintf("about to select command (non-blocking)")))
+	case *ContainerNotExecutingCommand:
+		cmd := command.(*ContainerNotExecutingCommand)
+		w.SetInstanceNotStarted(cmd.Msg.LaunchContext.Blockchain.Name)
 
-			select {
-			case command := <-w.Commands:
-				switch command.(type) {
-				case *NewClientCommand:
-					cmd := command.(*NewClientCommand)
-					w.handleNewClient(cmd)
+		// fake up a new eth container message to restart the process of loading the eth container
+		newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, cmd.Msg.LaunchContext.Blockchain.Name, cmd.Msg.LaunchContext.Blockchain.Org, w.exchangeURL, w.exchangeId, w.exchangeToken)
+		ncmd := NewNewClientCommand(*newMsg)
+		w.Commands <- ncmd
 
-				case *ContainerExecutingCommand:
-					cmd := command.(*ContainerExecutingCommand)
-					w.SetServiceStarted(cmd.Msg.LaunchContext.Blockchain.Name, cmd.Msg.ServiceName, cmd.Msg.ServicePort)
-					glog.V(3).Infof(logString(fmt.Sprintf("started service %v %v %v", cmd.Msg.LaunchContext.Blockchain.Name, cmd.Msg.ServiceName, cmd.Msg.ServicePort)))
+	case *TorrentFailureCommand:
+		cmd := command.(*TorrentFailureCommand)
+		lc := cmd.Msg.LaunchContext.(*events.ContainerLaunchContext)
+		w.SetInstanceNotStarted(lc.Blockchain.Name)
 
-				case *ContainerNotExecutingCommand:
-					cmd := command.(*ContainerNotExecutingCommand)
-					w.SetInstanceNotStarted(cmd.Msg.LaunchContext.Blockchain.Name)
+		// fake up a new eth container message to restart the process of loading the eth container
+		newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, lc.Blockchain.Name, lc.Blockchain.Org, w.exchangeURL, w.exchangeId, w.exchangeToken)
+		ncmd := NewNewClientCommand(*newMsg)
+		w.Commands <- ncmd
 
-					// fake up a new eth container message to restart the process of loading the eth container
-					newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, cmd.Msg.LaunchContext.Blockchain.Name, cmd.Msg.LaunchContext.Blockchain.Org, w.exchangeURL, w.exchangeId, w.exchangeToken)
-					ncmd := NewNewClientCommand(*newMsg)
-					w.Commands <- ncmd
-
-				case *TorrentFailureCommand:
-					cmd := command.(*TorrentFailureCommand)
-					lc := cmd.Msg.LaunchContext.(*events.ContainerLaunchContext)
-					w.SetInstanceNotStarted(lc.Blockchain.Name)
-
-					// fake up a new eth container message to restart the process of loading the eth container
-					newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, lc.Blockchain.Name, lc.Blockchain.Org, w.exchangeURL, w.exchangeId, w.exchangeToken)
-					ncmd := NewNewClientCommand(*newMsg)
-					w.Commands <- ncmd
-
-				case *ContainerShutdownCommand:
-					cmd := command.(*ContainerShutdownCommand)
-					w.RestartContainer(cmd)
-
-				case *ReportNeededBlockchainsCommand:
-					cmd := command.(*ReportNeededBlockchainsCommand)
-					w.UpdatedNeededBlockchains(cmd)
-
-				default:
-					glog.Errorf(logString(fmt.Sprintf("unknown command (%T): %v", command, command)))
-				}
-				glog.V(5).Infof(logString(fmt.Sprintf("handled command %v", command)))
-
-				// If all commands have been handled, give ther status check function a chance to run.
-				if len(w.Commands) == 0 {
-					w.CheckStatus()
-				}
-
-			case <-time.After(time.Duration(nonBlockDuration) * time.Second):
-				w.CheckStatus()
-
-			}
-
-			runtime.Gosched()
+	case *ContainerShutdownCommand:
+		cmd := command.(*ContainerShutdownCommand)
+		if w.IsWorkerShuttingDown() {
+			delete(w.instances, cmd.Msg.ContainerName)
+		} else {
+			w.RestartContainer(cmd)
 		}
 
-	}()
+	case *ReportNeededBlockchainsCommand:
+		cmd := command.(*ReportNeededBlockchainsCommand)
+		w.UpdatedNeededBlockchains(cmd)
 
-	glog.Info(logString("ready for commands."))
+	case *AllBlockchainsShutdownCommand:
+		w.SetWorkerShuttingDown()
+		w.StopAllBlockchains()
+
+	case *ShutdownWorkerCommand:
+		cmd := command.(*ShutdownWorkerCommand)
+		if w.AllBlockchainContainersStopped() {
+			// Terminate this worker
+			w.Commands <- worker.NewTerminateCommand("shutdown")
+		} else {
+			w.AddDeferredCommand(cmd)
+		}
+
+	default:
+		return false
+	}
+
+	// If all commands have been handled, give the status check function a chance to run.
+	if len(w.Commands) == 0 {
+		w.CheckStatus()
+	}
+	return true
+}
+
+func (w *EthBlockchainWorker) NoWorkHandler() {
+	if !w.IsWorkerShuttingDown() {
+		w.CheckStatus()
+	}
 }
 
 func (w *EthBlockchainWorker) CheckStatus() {
@@ -502,7 +515,7 @@ func (w *EthBlockchainWorker) fireStartEvent(details *exchange.ChainDetails, nam
 		envAdds := w.computeEnvVarsForContainer(details)
 		w.SetColonusDir(name, envAdds["COLONUS_DIR"])
 		lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{Type: CHAIN_TYPE, Name: name}, name)
-		w.Worker.Manager.Messages <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
+		w.BaseWorker.Manager.Messages <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
 
 		return nil
 	}
@@ -567,6 +580,23 @@ func getInstanceValue(name string, value string) string {
 		res = "/tmp/geth.log"
 	}
 	return res
+}
+
+// This function stops all running blockchain containers
+func (w *EthBlockchainWorker) StopAllBlockchains() {
+	// Clear out the list of needed containers. None are needed. This should prevent
+	// the worker from restarting them.
+	w.neededBCs = make(map[string]map[string]uint64)
+
+	// For each container, tell the container worker to get rid of it.
+	for name, _ := range w.instances {
+		w.Messages() <- events.NewContainerStopMessage(events.CONTAINER_STOPPING, name, w.instances[name].org)
+	}
+}
+
+// Verify that all the containers are stopped
+func (w *EthBlockchainWorker) AllBlockchainContainersStopped() bool {
+	return len(w.instances) == 0
 }
 
 // This function sets up the blockchain event listener
@@ -726,6 +756,35 @@ func NewReportNeededBlockchainsCommand(msg *events.ReportNeededBlockchainsMessag
 	return &ReportNeededBlockchainsCommand{
 		Msg: *msg,
 	}
+}
+
+type AllBlockchainsShutdownCommand struct {
+	Msg events.AllBlockchainShutdownMessage
+}
+
+func (c AllBlockchainsShutdownCommand) ShortString() string {
+	return c.Msg.ShortString()
+}
+
+func NewAllBlockchainsShutdownCommand(msg *events.AllBlockchainShutdownMessage) *AllBlockchainsShutdownCommand {
+	return &AllBlockchainsShutdownCommand{
+		Msg: *msg,
+	}
+}
+
+type ShutdownWorkerCommand struct {
+}
+
+func (c ShutdownWorkerCommand) ShortString() string {
+	return "ShutdownWorkerCommand"
+}
+
+func (c ShutdownWorkerCommand) String() string {
+	return c.ShortString()
+}
+
+func NewShutdownWorkerCommand() *ShutdownWorkerCommand {
+	return &ShutdownWorkerCommand{}
 }
 
 // ==========================================================================================================

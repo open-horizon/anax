@@ -24,10 +24,8 @@ import (
 	"os"
 	"path"
 	"reflect"
-	"runtime"
 	"strconv"
 	"strings"
-	"time"
 )
 
 const LABEL_PREFIX = "network.bluehorizon.colonus"
@@ -564,16 +562,14 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 }
 
 type ContainerWorker struct {
-	worker.Worker // embedded field
-	db            *bolt.DB
-	client        *docker.Client
-	iptables      *iptables.IPTables
-	inAgbot       bool
+	worker.BaseWorker // embedded field
+	db                *bolt.DB
+	client            *docker.Client
+	iptables          *iptables.IPTables
+	inAgbot           bool
 }
 
-func NewContainerWorker(config *config.HorizonConfig, db *bolt.DB) *ContainerWorker {
-	messages := make(chan events.Message)
-	commands := make(chan worker.Command, 200)
+func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB) *ContainerWorker {
 
 	inAgbot := false
 	if config.Edge.WorkloadROStorage == "" && config.Edge.DBPath == "" {
@@ -593,26 +589,21 @@ func NewContainerWorker(config *config.HorizonConfig, db *bolt.DB) *ContainerWor
 		panic("Unable to instantiate docker Client")
 	} else {
 		worker := &ContainerWorker{
-			Worker: worker.Worker{
-				Manager: worker.Manager{
-					Config:   config,
-					Messages: messages,
-				},
-				Commands: commands,
-			},
-			db:       db,
-			client:   client,
-			iptables: ipt,
-			inAgbot:  inAgbot,
+			BaseWorker: worker.NewBaseWorker(name, config),
+			db:         db,
+			client:     client,
+			iptables:   ipt,
+			inAgbot:    inAgbot,
 		}
+		worker.SetDeferredDelay(15)
 
-		worker.start()
+		worker.Start(worker, 0)
 		return worker
 	}
 }
 
 func (w *ContainerWorker) Messages() chan events.Message {
-	return w.Worker.Manager.Messages
+	return w.BaseWorker.Manager.Messages
 }
 
 func (w *ContainerWorker) NewEvent(incoming events.Message) {
@@ -679,6 +670,13 @@ func (w *ContainerWorker) NewEvent(incoming events.Message) {
 		case events.CANCEL_MICROSERVICE:
 			containerCmd := w.NewShutdownMicroserviceCommand(msg.MsInstKey)
 			w.Commands <- containerCmd
+		}
+
+	case *events.NodeShutdownCompleteMessage:
+		msg, _ := incoming.(*events.NodeShutdownCompleteMessage)
+		switch msg.Event().Id {
+		case events.UNCONFIGURE_COMPLETE:
+			w.Commands <- worker.NewTerminateCommand("shutdown")
 		}
 
 	default: // nothing
@@ -1275,329 +1273,307 @@ func (b *ContainerWorker) resourcesCreate(agreementId string, configure *events.
 	return &ret, nil
 }
 
-func (b *ContainerWorker) start() {
+func (b *ContainerWorker) Initialize() bool {
+	b.syncupResources()
+	return true
+}
 
-	go func() {
+func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
-		b.syncupResources()
+	switch command.(type) {
+	case *WorkloadConfigureCommand:
+		cmd := command.(*WorkloadConfigureCommand)
 
-		deferredCommands := make([]worker.Command, 0, 10)
+		glog.V(3).Infof("ContainerWorker received workload configure command: %v", cmd)
 
-		// Now we can drop into the main command processing loop
-		for {
-			glog.V(4).Infof("ContainerWorker command processor blocking waiting to receive incoming commands")
+		agreementId := cmd.AgreementLaunchContext.AgreementId
 
-			select {
-			case command := <-b.Commands:
+		if ags, err := persistence.FindEstablishedAgreements(b.db, cmd.AgreementLaunchContext.AgreementProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)}); err != nil {
+			glog.Errorf("Unable to retrieve agreement %v from database, error %v", agreementId, err)
+		} else if len(ags) != 1 {
+			glog.Infof("Ignoring the configure event for agreement %v, the agreement is archived.", agreementId)
+		} else if ags[0].AgreementTerminatedTime != 0 {
+			glog.Infof("Receved configure command for agreement %v. Ignoring it because this agreement has been terminated.", agreementId)
+		} else if ags[0].AgreementExecutionStartTime != 0 {
+			glog.Infof("Receved configure command for agreement %v. Ignoring it because the containers for this agreement has been configured.", agreementId)
+		} else if ms_containers, err := b.findMsContainersAndUpdateMsInstance(agreementId, cmd.AgreementLaunchContext.Microservices); err != nil {
+			glog.Errorf("Error checking microservice containers: %v", err)
 
-				switch command.(type) {
-				case *WorkloadConfigureCommand:
-					cmd := command.(*WorkloadConfigureCommand)
+			// requeue the command
+			b.AddDeferredCommand(cmd)
+			return true
+		} else {
 
-					glog.V(3).Infof("ContainerWorker received workload configure command: %v", cmd)
-
-					agreementId := cmd.AgreementLaunchContext.AgreementId
-
-					if ags, err := persistence.FindEstablishedAgreements(b.db, cmd.AgreementLaunchContext.AgreementProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)}); err != nil {
-						glog.Errorf("Unable to retrieve agreement %v from database, error %v", agreementId, err)
-					} else if len(ags) != 1 {
-						glog.Infof("Ignoring the configure event for agreement %v, the agreement is archived.", agreementId)
-					} else if ags[0].AgreementTerminatedTime != 0 {
-						glog.Infof("Receved configure command for agreement %v. Ignoring it because this agreement has been terminated.", agreementId)
-					} else if ags[0].AgreementExecutionStartTime != 0 {
-						glog.Infof("Receved configure command for agreement %v. Ignoring it because the containers for this agreement has been configured.", agreementId)
-					} else if ms_containers, err := b.findMsContainersAndUpdateMsInstance(agreementId, cmd.AgreementLaunchContext.Microservices); err != nil {
-						glog.Errorf("Error checking microservice containers: %v", err)
-
-						// requeue the command
-						deferredCommands = append(deferredCommands, cmd)
-						continue
-					} else {
-
-						// get a list of microservice network ids to be added to all the workload containers
-						glog.V(5).Infof("Microservice containers for this workload are: %v", ms_containers)
-						ms_networks := make(map[string]docker.ContainerNetwork)
-						if ms_containers != nil && len(ms_containers) > 0 {
-							for _, msc := range ms_containers {
-								for nw_name, nw := range msc.Networks.Networks {
-									ms_networks[nw_name] = nw
-								}
-							}
-						}
-
-						// load the image
-						if len(cmd.ImageFiles) == 0 {
-							glog.Infof("Command specified no new Docker images to load, expecting that the caller knows they're preloaded and this is not a bug. Skipping load operation")
-
-						} else if err := loadImages(b.client, cmd.ImageFiles); err != nil {
-							glog.Errorf("Error loading image files: %v", err)
-
-							b.Messages() <- events.NewWorkloadMessage(events.IMAGE_LOAD_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
-
-							continue
-						}
-
-						// We support capabilities in the deployment string that not all container deployments should be able
-						// to exploit, e.g. file system mapping from host to container. This check ensures that workloads dont try
-						// to do something dangerous.
-						deploymentDesc := new(DeploymentDescription)
-						if err := json.Unmarshal([]byte(cmd.AgreementLaunchContext.Configure.Deployment), &deploymentDesc); err != nil {
-							glog.Errorf("Error Unmarshalling deployment string %v for agreement %v, error: %v", cmd.AgreementLaunchContext.Configure.Deployment, agreementId, err)
-							continue
-						} else if valid := deploymentDesc.isValidFor("workload"); !valid {
-							glog.Errorf("Deployment config %v contains unsupported capability for a workload", cmd.AgreementLaunchContext.Configure.Deployment)
-							b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
-						}
-
-						// Add the deployment overrides to the deployment description, if there are any
-						if len(cmd.AgreementLaunchContext.Configure.Overrides) != 0 {
-							overrideDD := new(DeploymentDescription)
-							if err := json.Unmarshal([]byte(cmd.AgreementLaunchContext.Configure.Overrides), &overrideDD); err != nil {
-								glog.Errorf("Error Unmarshalling deployment override string %v for agreement %v, error: %v", cmd.AgreementLaunchContext.Configure.Overrides, agreementId, err)
-								continue
-							} else {
-								deploymentDesc.Overrides = overrideDD.Services
-							}
-						}
-
-						// Dynamically add in a filesystem mapping so that the workload container has a RO filesystem.
-						for serviceName, service := range deploymentDesc.Services {
-							dir := ""
-							if deploymentDesc.ServicePattern.isShared("singleton", serviceName) {
-								dir = b.workloadStorageDir(fmt.Sprintf("%v-%v-%v", "singleton", serviceName, service.VariationLabel))
-							} else {
-								dir = b.workloadStorageDir(agreementId)
-							}
-							deploymentDesc.Services[serviceName].addFilesystemBinding(fmt.Sprintf("%v:%v:ro", dir, "/workload_config"))
-						}
-
-						// Create the docker configuration and launch the containers.
-						if deployment, err := b.resourcesCreate(agreementId, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_networks); err != nil {
-							glog.Errorf("Error starting containers: %v", err)
-							var dep map[string]persistence.ServiceConfig
-							if deployment != nil {
-								dep = *deployment
-							}
-							b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, dep) // still using deployment here, need it to shutdown containers
-
-						} else {
-							glog.Infof("Success starting pattern for agreement: %v, protocol: %v, serviceNames: %v", agreementId, cmd.AgreementLaunchContext.AgreementProtocol, persistence.ServiceConfigNames(deployment))
-
-							// perhaps add the tc info to the container message so it can be enforced
-							b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_BEGUN, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, *deployment)
-						}
+			// get a list of microservice network ids to be added to all the workload containers
+			glog.V(5).Infof("Microservice containers for this workload are: %v", ms_containers)
+			ms_networks := make(map[string]docker.ContainerNetwork)
+			if ms_containers != nil && len(ms_containers) > 0 {
+				for _, msc := range ms_containers {
+					for nw_name, nw := range msc.Networks.Networks {
+						ms_networks[nw_name] = nw
 					}
-
-				case *ContainerConfigureCommand:
-					cmd := command.(*ContainerConfigureCommand)
-
-					glog.V(3).Infof("ContainerWorker received container configure command: %v", cmd)
-
-					// We support capabilities in the deployment string that not all container deployments should be able
-					// to exploit, e.g. file system mapping from host to container. This check ensures that infrastructure
-					// containers dont try to do something unsupported.
-					deploymentDesc := new(DeploymentDescription)
-					if err := json.Unmarshal([]byte(cmd.ContainerLaunchContext.Configure.Deployment), &deploymentDesc); err != nil {
-						glog.Errorf("Error Unmarshalling deployment string %v, error: %v", cmd.ContainerLaunchContext.Configure.Deployment, err)
-						b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
-						continue
-					} else if valid := deploymentDesc.isValidFor("infrastructure"); !valid {
-						glog.Errorf("Deployment config %v contains unsupported capability for infrastructure container", cmd.ContainerLaunchContext.Configure.Deployment)
-						b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
-						continue
-					}
-
-					serviceNames := deploymentDesc.serviceNames()
-
-					// Proceed to load the docker image.
-					if len(cmd.ImageFiles) == 0 {
-						glog.Errorf("Image configuration in deployment specified no new Docker images to load: %v, unable to load container", deploymentDesc)
-						b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
-						continue
-					} else if err := loadImages(b.client, cmd.ImageFiles); err != nil {
-						glog.Errorf("Error loading image files: %v", err)
-						b.Messages() <- events.NewContainerMessage(events.IMAGE_LOAD_FAILED, *cmd.ContainerLaunchContext, "", "")
-						continue
-					}
-
-					for serviceName, service := range deploymentDesc.Services {
-						if cmd.ContainerLaunchContext.Blockchain.Name != "" { // for etherum case
-							// Dynamically add in a filesystem mapping so that the infrastructure container can write files that will
-							// be saveable or observable to the host system. Also turn on the privileged flag for this container.
-							dir := ""
-							// NON_SNAP_COMMON is used for testing purposes only
-							if altDir := os.Getenv("NON_SNAP_COMMON"); len(altDir) != 0 {
-								dir = altDir + ":/root"
-							} else {
-								dir = path.Join(os.Getenv("SNAP_COMMON")) + ":/root"
-							}
-							deploymentDesc.Services[serviceName].addFilesystemBinding(dir)
-							if !deploymentDesc.Services[serviceName].hasSpecificPortBinding() { // Add compatibility config - assume eth container
-								deploymentDesc.Services[serviceName].addSpecificPortBinding(docker.PortBinding{HostIP: "127.0.0.1", HostPort: "8545"})
-							}
-						    deploymentDesc.Services[serviceName].Privileged = true
-						} else { // microservice case
-							// Dynamically add in a filesystem mapping so that the workload container has a RO filesystem.
-							dir := ""
-							if deploymentDesc.ServicePattern.isShared("singleton", serviceName) {
-								dir = b.workloadStorageDir(fmt.Sprintf("%v-%v-%v", "singleton", serviceName, service.VariationLabel))
-							} else {
-								dir = b.workloadStorageDir(cmd.ContainerLaunchContext.Name)
-							}
-							deploymentDesc.Services[serviceName].addFilesystemBinding(fmt.Sprintf("%v:%v:ro", dir, "/workload_config"))
-						}
-					}
-
-					// Indicate that this deployment description is part of the infrastructure
-					deploymentDesc.Infrastructure = true
-
-					// Get the container started.
-					if deployment, err := b.resourcesCreate(cmd.ContainerLaunchContext.Name, &cmd.ContainerLaunchContext.Configure, deploymentDesc, []byte(""), *cmd.ContainerLaunchContext.EnvironmentAdditions, nil); err != nil {
-						glog.Errorf("Error starting containers: %v", err)
-						b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
-
-					} else {
-						glog.Infof("Success starting pattern for serviceNames: %v", persistence.ServiceConfigNames(deployment))
-
-						// perhaps add the tc info to the container message so it can be enforced
-						if ov := os.Getenv("CMTN_SERVICEOVERRIDE"); ov != "" {
-							b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, *cmd.ContainerLaunchContext, serviceNames[0], deploymentDesc.Services[serviceNames[0]].getSpecificContainerPortBinding())
-						} else {
-							b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, *cmd.ContainerLaunchContext, deploymentDesc.Services[serviceNames[0]].getSpecificHostBinding(), deploymentDesc.Services[serviceNames[0]].getSpecificHostPortBinding())
-						}
-					}
-
-				case *ContainerMaintenanceCommand:
-					cmd := command.(*ContainerMaintenanceCommand)
-					glog.V(3).Infof("ContainerWorker received maintenance command: %v", cmd)
-
-					cMatches := make([]docker.APIContainers, 0)
-
-					serviceNames := persistence.ServiceConfigNames(&cmd.Deployment)
-
-					report := func(container *docker.APIContainers, agreementId string) error {
-
-						for _, name := range serviceNames {
-							if container.Labels[LABEL_PREFIX+".service_name"] == name {
-								cMatches = append(cMatches, *container)
-								glog.V(4).Infof("Matching container instance for agreement %v: %v", agreementId, container)
-							}
-						}
-						return nil
-					}
-
-					b.ContainersMatchingAgreement([]string{cmd.AgreementId}, true, report)
-
-					if len(serviceNames) == len(cMatches) {
-						glog.V(4).Infof("Found expected count of running containers for agreement %v: %v", cmd.AgreementId, len(cMatches))
-					} else {
-						glog.Errorf("Insufficient running containers found for agreement %v. Found: %v", cmd.AgreementId, cMatches)
-
-						// ask governer to cancel the agreement
-						b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementProtocol, cmd.AgreementId, cmd.Deployment)
-					}
-
-				case *WorkloadShutdownCommand:
-					cmd := command.(*WorkloadShutdownCommand)
-
-					agreements := cmd.Agreements
-					if cmd.CurrentAgreementId != "" {
-						glog.Infof("ContainerWorker received shutdown command w/ current agreement id: %v. Shutting down resources", cmd.CurrentAgreementId)
-						glog.V(5).Infof("Shutdown command for agreement id %v: %v", cmd.CurrentAgreementId, cmd)
-						agreements = append(agreements, cmd.CurrentAgreementId)
-					}
-
-					if err := b.resourcesRemove(agreements); err != nil {
-						glog.Errorf("Error removing resources: %v", err)
-					}
-
-					// send the event to let others know that the workload clean up has been processed
-					b.Messages() <- events.NewWorkloadMessage(events.WORKLOAD_DESTROYED, cmd.AgreementProtocol, cmd.CurrentAgreementId, nil)
-
-				case *ContainerStopCommand:
-					cmd := command.(*ContainerStopCommand)
-
-					glog.V(3).Infof("ContainerWorker received infrastructure container stop command: %v", cmd)
-					if err := b.resourcesRemove([]string{cmd.Msg.ContainerName}); err != nil {
-						glog.Errorf("Error removing resources: %v", err)
-					}
-
-					// send the event to let others know that the workload clean up has been processed
-					b.Messages() <- events.NewContainerShutdownMessage(events.CONTAINER_DESTROYED, cmd.Msg.ContainerName, cmd.Msg.Org)
-
-				case *MaintainMicroserviceCommand:
-					cmd := command.(*MaintainMicroserviceCommand)
-					glog.V(3).Infof("ContainerWorker received microservice maintenance command: %v", cmd)
-
-					cMatches := make([]docker.APIContainers, 0)
-
-					if msinst, err := persistence.FindMicroserviceInstanceWithKey(b.db, cmd.MsInstKey); err != nil {
-						glog.Errorf("Error retrieving microservice instance from database for %v, error: %v", cmd.MsInstKey, err)
-					} else if msinst == nil {
-						glog.Errorf("Cannot find microservice instance record from database for %v.", cmd.MsInstKey)
-					} else if serviceNames, err := b.findMicroserviceDefContainerNames(msinst.SpecRef, msinst.Version, msinst.MicroserviceDefId); err != nil {
-						glog.Errorf("Error retrieving microservice contianers for %v, error: %v", cmd.MsInstKey, err)
-					} else if serviceNames != nil && len(serviceNames) > 0 {
-
-						report := func(container *docker.APIContainers, instance_key string) error {
-
-							for _, name := range serviceNames {
-								if container.Labels[LABEL_PREFIX+".service_name"] == name {
-									cMatches = append(cMatches, *container)
-									glog.V(4).Infof("Matching container instance for microservice instance %v: %v", instance_key, container)
-								}
-							}
-							return nil
-						}
-
-						b.ContainersMatchingAgreement([]string{cmd.MsInstKey}, true, report)
-
-						if len(serviceNames) == len(cMatches) {
-							glog.V(4).Infof("Found expected count of running containers for microservice instance %v: %v", cmd.MsInstKey, len(cMatches))
-						} else {
-							glog.Errorf("Insufficient running containers found for miceroservice instance %v. Found: %v", cmd.MsInstKey, cMatches)
-
-							// ask governer to record it into the db
-							u, _ := url.Parse("")
-							cc := events.NewContainerConfig(*u, "", "", "", "", "")
-							ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey)
-							b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *ll, "", "")
-						}
-					}
-				case *ShutdownMicroserviceCommand:
-					cmd := command.(*ShutdownMicroserviceCommand)
-
-					agreements := make([]string, 0)
-					if cmd.MsInstKey != "" {
-						glog.Infof("ContainerWorker received shutdown command for microservice %v. Shutting down resources", cmd.MsInstKey)
-						agreements = append(agreements, cmd.MsInstKey)
-					}
-
-					if err := b.resourcesRemove(agreements); err != nil {
-						glog.Errorf("Error removing resources: %v", err)
-					}
-
-					// send the event to let others know that the microservice clean up has been processed
-					b.Messages() <- events.NewMicroserviceContainersDestroyedMessage(events.CONTAINER_DESTROYED, cmd.MsInstKey)
-
-				default:
-					glog.Errorf("Unsupported command: %v", command)
-
 				}
-			case <-time.After(time.Duration(15) * time.Second):
-				// Any commands that have been deferred should be written back to the command queue now. The commands have been
-				// accumulating and have endured at least a 15 second break since they were last tried (because we are executing
-				// in the channel timeout path).
-				glog.V(5).Infof("Container requeue-ing deferred commands")
-				for _, c := range deferredCommands {
-					b.Commands <- c
-				}
-				deferredCommands = make([]worker.Command, 0, 10)
 			}
 
-			runtime.Gosched()
+			// load the image
+			if len(cmd.ImageFiles) == 0 {
+				glog.Infof("Command specified no new Docker images to load, expecting that the caller knows they're preloaded and this is not a bug. Skipping load operation")
+
+			} else if err := loadImages(b.client, cmd.ImageFiles); err != nil {
+				glog.Errorf("Error loading image files: %v", err)
+
+				b.Messages() <- events.NewWorkloadMessage(events.IMAGE_LOAD_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
+				return true
+			}
+
+			// We support capabilities in the deployment string that not all container deployments should be able
+			// to exploit, e.g. file system mapping from host to container. This check ensures that workloads dont try
+			// to do something dangerous.
+			deploymentDesc := new(DeploymentDescription)
+			if err := json.Unmarshal([]byte(cmd.AgreementLaunchContext.Configure.Deployment), &deploymentDesc); err != nil {
+				glog.Errorf("Error Unmarshalling deployment string %v for agreement %v, error: %v", cmd.AgreementLaunchContext.Configure.Deployment, agreementId, err)
+				return true
+			} else if valid := deploymentDesc.isValidFor("workload"); !valid {
+				glog.Errorf("Deployment config %v contains unsupported capability for a workload", cmd.AgreementLaunchContext.Configure.Deployment)
+				b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
+			}
+
+			// Add the deployment overrides to the deployment description, if there are any
+			if len(cmd.AgreementLaunchContext.Configure.Overrides) != 0 {
+				overrideDD := new(DeploymentDescription)
+				if err := json.Unmarshal([]byte(cmd.AgreementLaunchContext.Configure.Overrides), &overrideDD); err != nil {
+					glog.Errorf("Error Unmarshalling deployment override string %v for agreement %v, error: %v", cmd.AgreementLaunchContext.Configure.Overrides, agreementId, err)
+					return true
+				} else {
+					deploymentDesc.Overrides = overrideDD.Services
+				}
+			}
+
+			// Dynamically add in a filesystem mapping so that the workload container has a RO filesystem.
+			for serviceName, service := range deploymentDesc.Services {
+				dir := ""
+				if deploymentDesc.ServicePattern.isShared("singleton", serviceName) {
+					dir = b.workloadStorageDir(fmt.Sprintf("%v-%v-%v", "singleton", serviceName, service.VariationLabel))
+				} else {
+					dir = b.workloadStorageDir(agreementId)
+				}
+				deploymentDesc.Services[serviceName].addFilesystemBinding(fmt.Sprintf("%v:%v:ro", dir, "/workload_config"))
+			}
+
+			// Create the docker configuration and launch the containers.
+			if deployment, err := b.resourcesCreate(agreementId, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_networks); err != nil {
+				glog.Errorf("Error starting containers: %v", err)
+				var dep map[string]persistence.ServiceConfig
+				if deployment != nil {
+					dep = *deployment
+				}
+				b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, dep) // still using deployment here, need it to shutdown containers
+
+			} else {
+				glog.Infof("Success starting pattern for agreement: %v, protocol: %v, serviceNames: %v", agreementId, cmd.AgreementLaunchContext.AgreementProtocol, persistence.ServiceConfigNames(deployment))
+
+				// perhaps add the tc info to the container message so it can be enforced
+				b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_BEGUN, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, *deployment)
+			}
 		}
-	}()
+
+	case *ContainerConfigureCommand:
+		cmd := command.(*ContainerConfigureCommand)
+
+		glog.V(3).Infof("ContainerWorker received container configure command: %v", cmd)
+
+		// We support capabilities in the deployment string that not all container deployments should be able
+		// to exploit, e.g. file system mapping from host to container. This check ensures that infrastructure
+		// containers dont try to do something unsupported.
+		deploymentDesc := new(DeploymentDescription)
+		if err := json.Unmarshal([]byte(cmd.ContainerLaunchContext.Configure.Deployment), &deploymentDesc); err != nil {
+			glog.Errorf("Error Unmarshalling deployment string %v, error: %v", cmd.ContainerLaunchContext.Configure.Deployment, err)
+			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
+			return true
+		} else if valid := deploymentDesc.isValidFor("infrastructure"); !valid {
+			glog.Errorf("Deployment config %v contains unsupported capability for infrastructure container", cmd.ContainerLaunchContext.Configure.Deployment)
+			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
+			return true
+		}
+
+		serviceNames := deploymentDesc.serviceNames()
+
+		// Proceed to load the docker image.
+		if len(cmd.ImageFiles) == 0 {
+			glog.Errorf("Torrent configuration in deployment specified no new Docker images to load: %v, unable to load container", deploymentDesc)
+			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
+			return true
+		} else if err := loadImages(b.client, cmd.ImageFiles); err != nil {
+			glog.Errorf("Error loading image files: %v", err)
+			b.Messages() <- events.NewContainerMessage(events.IMAGE_LOAD_FAILED, *cmd.ContainerLaunchContext, "", "")
+			return true
+		}
+
+		for serviceName, service := range deploymentDesc.Services {
+			if cmd.ContainerLaunchContext.Blockchain.Name != "" { // for etherum case
+				// Dynamically add in a filesystem mapping so that the infrastructure container can write files that will
+				// be saveable or observable to the host system. Also turn on the privileged flag for this container.
+				dir := ""
+				// NON_SNAP_COMMON is used for testing purposes only
+				if altDir := os.Getenv("NON_SNAP_COMMON"); len(altDir) != 0 {
+					dir = altDir + ":/root"
+				} else {
+					dir = path.Join(os.Getenv("SNAP_COMMON")) + ":/root"
+				}
+				deploymentDesc.Services[serviceName].addFilesystemBinding(dir)
+				if !deploymentDesc.Services[serviceName].hasSpecificPortBinding() { // Add compatibility config - assume eth container
+					deploymentDesc.Services[serviceName].addSpecificPortBinding(docker.PortBinding{HostIP: "127.0.0.1", HostPort: "8545"})
+				}
+				deploymentDesc.Services[serviceName].Privileged = true
+			} else { // microservice case
+				// Dynamically add in a filesystem mapping so that the workload container has a RO filesystem.
+				dir := ""
+				if deploymentDesc.ServicePattern.isShared("singleton", serviceName) {
+					dir = b.workloadStorageDir(fmt.Sprintf("%v-%v-%v", "singleton", serviceName, service.VariationLabel))
+				} else {
+					dir = b.workloadStorageDir(cmd.ContainerLaunchContext.Name)
+				}
+				deploymentDesc.Services[serviceName].addFilesystemBinding(fmt.Sprintf("%v:%v:ro", dir, "/workload_config"))
+			}
+		}
+
+		// Indicate that this deployment description is part of the infrastructure
+		deploymentDesc.Infrastructure = true
+
+		// Get the container started.
+		if deployment, err := b.resourcesCreate(cmd.ContainerLaunchContext.Name, &cmd.ContainerLaunchContext.Configure, deploymentDesc, []byte(""), *cmd.ContainerLaunchContext.EnvironmentAdditions, nil); err != nil {
+			glog.Errorf("Error starting containers: %v", err)
+			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
+
+		} else {
+			glog.Infof("Success starting pattern for serviceNames: %v", persistence.ServiceConfigNames(deployment))
+
+			// perhaps add the tc info to the container message so it can be enforced
+			if ov := os.Getenv("CMTN_SERVICEOVERRIDE"); ov != "" {
+				b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, *cmd.ContainerLaunchContext, serviceNames[0], deploymentDesc.Services[serviceNames[0]].getSpecificContainerPortBinding())
+			} else {
+				b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, *cmd.ContainerLaunchContext, deploymentDesc.Services[serviceNames[0]].getSpecificHostBinding(), deploymentDesc.Services[serviceNames[0]].getSpecificHostPortBinding())
+			}
+		}
+
+	case *ContainerMaintenanceCommand:
+		cmd := command.(*ContainerMaintenanceCommand)
+		glog.V(3).Infof("ContainerWorker received maintenance command: %v", cmd)
+
+		cMatches := make([]docker.APIContainers, 0)
+
+		serviceNames := persistence.ServiceConfigNames(&cmd.Deployment)
+
+		report := func(container *docker.APIContainers, agreementId string) error {
+
+			for _, name := range serviceNames {
+				if container.Labels[LABEL_PREFIX+".service_name"] == name {
+					cMatches = append(cMatches, *container)
+					glog.V(4).Infof("Matching container instance for agreement %v: %v", agreementId, container)
+				}
+			}
+			return nil
+		}
+
+		b.ContainersMatchingAgreement([]string{cmd.AgreementId}, true, report)
+
+		if len(serviceNames) == len(cMatches) {
+			glog.V(4).Infof("Found expected count of running containers for agreement %v: %v", cmd.AgreementId, len(cMatches))
+		} else {
+			glog.Errorf("Insufficient running containers found for agreement %v. Found: %v", cmd.AgreementId, cMatches)
+
+			// ask governer to cancel the agreement
+			b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementProtocol, cmd.AgreementId, cmd.Deployment)
+		}
+
+	case *WorkloadShutdownCommand:
+		cmd := command.(*WorkloadShutdownCommand)
+
+		agreements := cmd.Agreements
+		if cmd.CurrentAgreementId != "" {
+			glog.Infof("ContainerWorker received shutdown command w/ current agreement id: %v. Shutting down resources", cmd.CurrentAgreementId)
+			glog.V(5).Infof("Shutdown command for agreement id %v: %v", cmd.CurrentAgreementId, cmd)
+			agreements = append(agreements, cmd.CurrentAgreementId)
+		}
+
+		if err := b.resourcesRemove(agreements); err != nil {
+			glog.Errorf("Error removing resources: %v", err)
+		}
+
+		// send the event to let others know that the workload clean up has been processed
+		b.Messages() <- events.NewWorkloadMessage(events.WORKLOAD_DESTROYED, cmd.AgreementProtocol, cmd.CurrentAgreementId, nil)
+
+	case *ContainerStopCommand:
+		cmd := command.(*ContainerStopCommand)
+
+		glog.V(3).Infof("ContainerWorker received infrastructure container stop command: %v", cmd)
+		if err := b.resourcesRemove([]string{cmd.Msg.ContainerName}); err != nil {
+			glog.Errorf("Error removing resources: %v", err)
+		}
+
+		// send the event to let others know that the workload clean up has been processed
+		b.Messages() <- events.NewContainerShutdownMessage(events.CONTAINER_DESTROYED, cmd.Msg.ContainerName, cmd.Msg.Org)
+
+	case *MaintainMicroserviceCommand:
+		cmd := command.(*MaintainMicroserviceCommand)
+		glog.V(3).Infof("ContainerWorker received microservice maintenance command: %v", cmd)
+
+		cMatches := make([]docker.APIContainers, 0)
+
+		if msinst, err := persistence.FindMicroserviceInstanceWithKey(b.db, cmd.MsInstKey); err != nil {
+			glog.Errorf("Error retrieving microservice instance from database for %v, error: %v", cmd.MsInstKey, err)
+		} else if msinst == nil {
+			glog.Errorf("Cannot find microservice instance record from database for %v.", cmd.MsInstKey)
+		} else if serviceNames, err := b.findMicroserviceDefContainerNames(msinst.SpecRef, msinst.Version, msinst.MicroserviceDefId); err != nil {
+			glog.Errorf("Error retrieving microservice contianers for %v, error: %v", cmd.MsInstKey, err)
+		} else if serviceNames != nil && len(serviceNames) > 0 {
+
+			report := func(container *docker.APIContainers, instance_key string) error {
+
+				for _, name := range serviceNames {
+					if container.Labels[LABEL_PREFIX+".service_name"] == name {
+						cMatches = append(cMatches, *container)
+						glog.V(4).Infof("Matching container instance for microservice instance %v: %v", instance_key, container)
+					}
+				}
+				return nil
+			}
+
+			b.ContainersMatchingAgreement([]string{cmd.MsInstKey}, true, report)
+
+			if len(serviceNames) == len(cMatches) {
+				glog.V(4).Infof("Found expected count of running containers for microservice instance %v: %v", cmd.MsInstKey, len(cMatches))
+			} else {
+				glog.Errorf("Insufficient running containers found for miceroservice instance %v. Found: %v", cmd.MsInstKey, cMatches)
+
+				// ask governer to record it into the db
+				u, _ := url.Parse("")
+				cc := events.NewContainerConfig(*u, "", "", "", "", "")
+				ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey)
+				b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *ll, "", "")
+			}
+		}
+	case *ShutdownMicroserviceCommand:
+		cmd := command.(*ShutdownMicroserviceCommand)
+
+		agreements := make([]string, 0)
+		if cmd.MsInstKey != "" {
+			glog.Infof("ContainerWorker received shutdown command for microservice %v. Shutting down resources", cmd.MsInstKey)
+			agreements = append(agreements, cmd.MsInstKey)
+		}
+
+		if err := b.resourcesRemove(agreements); err != nil {
+			glog.Errorf("Error removing resources: %v", err)
+		}
+
+		// send the event to let others know that the microservice clean up has been processed
+		b.Messages() <- events.NewMicroserviceContainersDestroyedMessage(events.CONTAINER_DESTROYED, cmd.MsInstKey)
+
+	default:
+		return false
+	}
+	return true
+
 }
 
 // Before we let the worker do anything, we need to sync up the running containers, networks, etc with the

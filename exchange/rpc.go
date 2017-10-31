@@ -148,6 +148,33 @@ type GetDevicesResponse struct {
 	LastIndex int               `json:"lastIndex"`
 }
 
+func GetExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId string, deviceToken string, exchangeUrl string) (*Device, error) {
+
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("retrieving device %v from exchange", deviceId)))
+
+	var resp interface{}
+	resp = new(GetDevicesResponse)
+	targetURL := exchangeUrl + "orgs/" + GetOrg(deviceId) + "/nodes/" + GetId(deviceId)
+	for {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, deviceId, deviceToken, nil, &resp); err != nil {
+			glog.Errorf(err.Error())
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			devs := resp.(*GetDevicesResponse).Devices
+			if dev, there := devs[deviceId]; !there {
+				return nil, errors.New(fmt.Sprintf("device %v not in GET response %v as expected", deviceId, devs))
+			} else {
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev)))
+				return &dev, nil
+			}
+		}
+	}
+}
+
 type ServedPattern struct {
 	Org         string `json:"patternOrgid"`
 	Pattern     string `json:"pattern"`
@@ -494,28 +521,24 @@ func ConvertToString(a []string) string {
 	return r
 }
 
-func Heartbeat(h *http.Client, url string, id string, token string, interval int) {
+func Heartbeat(h *http.Client, url string, id string, token string) {
 
+	glog.V(5).Infof(rpclogString(fmt.Sprintf("Heartbeating to exchange: %v", url)))
+
+	var resp interface{}
+	resp = new(PostDeviceResponse)
 	for {
-		glog.V(5).Infof(rpclogString(fmt.Sprintf("Heartbeating to exchange: %v", url)))
-
-		var resp interface{}
-		resp = new(PostDeviceResponse)
-		for {
-			if err, tpErr := InvokeExchange(h, "POST", url, id, token, nil, &resp); err != nil {
-				glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
-				break
-			} else if tpErr != nil {
-				glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
-				time.Sleep(10 * time.Second)
-				continue
-			} else {
-				glog.V(5).Infof(rpclogString(fmt.Sprintf("Sent heartbeat %v: %v", url, resp)))
-				break
-			}
+		if err, tpErr := InvokeExchange(h, "POST", url, id, token, nil, &resp); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			break
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("Sent heartbeat %v: %v", url, resp)))
+			break
 		}
-
-		time.Sleep(time.Duration(interval) * time.Second)
 	}
 
 }

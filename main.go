@@ -10,7 +10,6 @@ import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/ethblockchain"
-	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/governance"
 	"github.com/open-horizon/anax/policy"
@@ -24,47 +23,6 @@ import (
 	"syscall"
 	"time"
 )
-
-// This function combines all messages (events) from workers into a single global message queue. From this
-// global queue, each message will get delivered to each worker by the event handler function.
-//
-func mux(workers *worker.MessageHandlerRegistry) chan events.Message {
-
-	muxed := make(chan events.Message)
-
-	go func() {
-		// continually combine input from each by writing Messages to 'muxed' shared channel
-
-		for {
-			for _, w := range workers.Handlers {
-				select {
-				case ev := <-(*w).Messages():
-					muxed <- ev
-				default: // nothing
-				}
-			}
-			time.Sleep(100 * time.Millisecond)
-		}
-	}() // immediately invoked, start operating on input
-
-	return muxed
-}
-
-// eventHandler Main control flow area: receives incoming Message messages and operates on them by pushing them
-// out to each worker. Workers then receive messages and, for messages they care about, the worker pushes out as commands
-// onto their own channels to operate on them.
-//
-func eventHandler(incoming events.Message, workers *worker.MessageHandlerRegistry) (string, error) {
-	successMsg := "propagated event to all workers"
-
-	for name, worker := range workers.Handlers {
-		glog.V(5).Infof("Delivering message to %v", name)
-		(*worker).NewEvent(incoming)
-		glog.V(5).Infof("Delivered message to %v", name)
-	}
-
-	return successMsg, nil
-}
 
 // The core of anax is an event handling system that distributes events to workers, where the workers
 // process events that they are about. However, to get started, anax needs to do a bunch of initialization
@@ -126,6 +84,9 @@ func main() {
 	control := make(chan os.Signal, 1)
 	signal.Notify(control, os.Interrupt)
 	signal.Notify(control, syscall.SIGTERM)
+
+	// This routine does not need to be a subworker because it has no parent worker and it will terminate on its own
+	// when the main anax process terminates.
 	go func() {
 		<-control
 		glog.Infof("Closing up shop.")
@@ -159,45 +120,33 @@ func main() {
 	// start workers
 	workers := worker.NewMessageHandlerRegistry()
 
-	workers.Add("agreementBot", agreementbot.NewAgreementBotWorker(cfg, agbotdb))
-	workers.Add("agapi", agreementbot.NewAPIListener(cfg, agbotdb))
-	workers.Add("eth blockchain", ethblockchain.NewEthBlockchainWorker(cfg))
-	workers.Add("torrent", torrent.NewTorrentWorker(cfg, db))
+	workers.Add(agreementbot.NewAgreementBotWorker("AgBot", cfg, agbotdb))
+	if cfg.AgreementBot.APIListen != "" {
+		workers.Add(agreementbot.NewAPIListener("AgBot API", cfg, agbotdb))
+	}
+	workers.Add(ethblockchain.NewEthBlockchainWorker("Blockchain", cfg))
+	workers.Add(torrent.NewTorrentWorker("Torrent", cfg, db))
 
 	if db != nil {
-		workers.Add("api", api.NewAPIListener(cfg, db, pm))
-		workers.Add("agreement", agreement.NewAgreementWorker(cfg, db, pm))
-		workers.Add("governance", governance.NewGovernanceWorker(cfg, db, pm))
-		workers.Add("exchange", exchange.NewExchangeMessageWorker(cfg, db))
-		workers.Add("container", container.NewContainerWorker(cfg, db))
+		workers.Add(api.NewAPIListener("API", cfg, db, pm))
+		workers.Add(agreement.NewAgreementWorker("Agreement", cfg, db, pm))
+		workers.Add(governance.NewGovernanceWorker("Governance", cfg, db, pm))
+		workers.Add(exchange.NewExchangeMessageWorker("Exchange", cfg, db))
+		workers.Add(container.NewContainerWorker("Container", cfg, db))
 	} else {
-		workers.Add("container", container.NewContainerWorker(cfg, agbotdb))
+		workers.Add(container.NewContainerWorker("Container", cfg, agbotdb))
 	}
 
-	messageStream := mux(workers)
+	// Get into the event processing loop until anax shuts itself down.
+	workers.ProcessEventMessages()
 
-	last := int64(0)
-
-	for {
-		select {
-		case msg := <-messageStream:
-			glog.V(3).Infof("Handling Message (%T): %v\n", msg, msg.ShortString())
-			glog.V(5).Infof("Handling Message (%T): %v\n", msg, msg)
-
-			if successMsg, err := eventHandler(msg, workers); err != nil {
-				// error! do some barfing and then continue
-				glog.Errorf("Error occurred handling message: %s, Error: %v\n", msg, err)
-			} else {
-				glog.V(2).Infof("Success handling message: %s\n", successMsg)
-			}
-		default:
-			now := time.Now().Unix()
-			if now-last > 30 {
-				glog.V(5).Infof("No incoming messages for router to handle")
-				last = now
-			}
-		}
-
-		time.Sleep(400 * time.Millisecond)
+	if db != nil {
+		db.Close()
 	}
+	if agbotdb != nil {
+		agbotdb.Close()
+	}
+
+	glog.Info("Main process terminating")
+
 }

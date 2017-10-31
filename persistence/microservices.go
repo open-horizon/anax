@@ -629,6 +629,10 @@ func UnarchivedMIFilter() MIFilter {
 	return func(e MicroserviceInstance) bool { return !e.Archived }
 }
 
+func NotCleanedUpMIFilter() MIFilter {
+	return func(e MicroserviceInstance) bool { return e.CleanupStartTime == 0 }
+}
+
 // find the microservice instance from the db
 func FindMicroserviceInstances(db *bolt.DB, filters []MIFilter) ([]MicroserviceInstance, error) {
 	ms_instances := make([]MicroserviceInstance, 0)

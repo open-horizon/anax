@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"os"
+	"time"
 )
 
 func FindHorizonDeviceForOutput(db *bolt.DB) (*HorizonDevice, error) {
@@ -133,6 +135,8 @@ func UpdateHorizonDevice(device *HorizonDevice,
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read horizondevice object, error %v", err))), nil, nil
 	} else if pDevice == nil {
 		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API.")), nil, nil
+	} else if pDevice.IsState(CONFIGSTATE_UNCONFIGURING) {
+		return errorhandler(NewBadRequestError(fmt.Sprintf("The node is already unconfiguring. The GET API will return HTTP status 404 when unconfiguration is complete."))), nil, nil
 	}
 
 	// Verify that the input id is ok.
@@ -156,5 +160,69 @@ func UpdateHorizonDevice(device *HorizonDevice,
 	// object suitable for output (external consumption). Specifically the token is omitted.
 	exDev := ConvertFromPersistentHorizonDevice(updatedDev)
 	return false, device, exDev
+
+}
+
+// Handles the DELETE verb on this resource.
+func DeleteHorizonDevice(removeNode string,
+	block string,
+	em *events.EventStateManager,
+	msgQueue chan events.Message,
+	errorhandler ErrorHandler,
+	db *bolt.DB) bool {
+
+	// Check for the device in the local database. If there are errors, they will be written
+	// to the HTTP response.
+	pDevice, err := persistence.FindExchangeDevice(db)
+	if err != nil {
+		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read horizondevice object, error %v", err)))
+	} else if pDevice == nil {
+		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API."))
+	} else if pDevice.IsState(CONFIGSTATE_UNCONFIGURING) {
+		return errorhandler(NewBadRequestError(fmt.Sprintf("The node is already unconfiguring. The GET API will return HTTP status 404 when unconfiguration is complete.")))
+	}
+
+	// Verify optional input
+	if removeNode != "" && removeNode != "true" && removeNode != "false" {
+		return errorhandler(NewAPIUserInputError("%v is an incorrect value for removeNode", "url.removeNode"))
+	}
+
+	if block != "" && block != "true" && block != "false" {
+		return errorhandler(NewAPIUserInputError("%v is an incorrect value for block", "url.block"))
+	}
+
+	// Establish defaults for optional inputs
+	rNode := false
+	if removeNode == "true" {
+		rNode = true
+	}
+	blocking := true
+	if block == "false" {
+		blocking = false
+	}
+
+	// Mark the device as "unconfigure in progress"
+	_, err = pDevice.SetDeviceState(db, CONFIGSTATE_UNCONFIGURING)
+	if err != nil {
+		return errorhandler(NewSystemError(fmt.Sprintf("error persisting unconfiguring on horizondevice object: %v", err)))
+	}
+
+	// Fire the NodeShutdown event to get the node to quiesce itself.
+	ns := events.NewNodeShutdownMessage(events.START_UNCONFIGURE, blocking, rNode)
+	msgQueue <- ns
+
+	// Wait (if allowed) for the ShutdownComplete event
+	if blocking {
+		se := events.NewNodeShutdownCompleteMessage(events.UNCONFIGURE_COMPLETE, "")
+		for {
+			if em.ReceivedEvent(se, nil) {
+				break
+			}
+			glog.V(5).Infof(apiLogString(fmt.Sprintf("Waiting for node shutdown to complete")))
+			time.Sleep(5 * time.Second)
+		}
+	}
+
+	return false
 
 }

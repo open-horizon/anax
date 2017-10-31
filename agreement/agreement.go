@@ -16,14 +16,16 @@ import (
 	"github.com/open-horizon/anax/worker"
 	"net/http"
 	"reflect"
-	"runtime"
 	"strconv"
 	"time"
 )
 
+// for identifying the subworkers used by this worker
+const HEARTBEAT = "HeartBeat"
+
 // must be safely-constructed!!
 type AgreementWorker struct {
-	worker.Worker            // embedded field
+	worker.BaseWorker        // embedded field
 	db                       *bolt.DB
 	httpClient               *http.Client // a shared http client
 	userId                   string
@@ -37,9 +39,7 @@ type AgreementWorker struct {
 	producerPH               map[string]producer.ProducerProtocolHandler
 }
 
-func NewAgreementWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *AgreementWorker {
-	messages := make(chan events.Message)
-	commands := make(chan worker.Command, 100)
+func NewAgreementWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *AgreementWorker {
 
 	id := ""
 	token := ""
@@ -51,15 +51,7 @@ func NewAgreementWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.Polic
 	}
 
 	worker := &AgreementWorker{
-		Worker: worker.Worker{
-			Manager: worker.Manager{
-				Config:   cfg,
-				Messages: messages,
-			},
-
-			Commands: commands,
-		},
-
+		BaseWorker:    worker.NewBaseWorker(name, cfg),
 		db:            db,
 		httpClient:    cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 		protocols:     make(map[string]bool),
@@ -71,12 +63,12 @@ func NewAgreementWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.Polic
 	}
 
 	glog.Info("Starting Agreement worker")
-	worker.start()
+	worker.Start(worker, 0)
 	return worker
 }
 
 func (w *AgreementWorker) Messages() chan events.Message {
-	return w.Worker.Manager.Messages
+	return w.BaseWorker.Manager.Messages
 }
 
 func (w *AgreementWorker) NewEvent(incoming events.Message) {
@@ -142,169 +134,174 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 			w.Commands <- NewEdgeConfigCompleteCommand(msg)
 		}
 
+	case *events.NodeShutdownMessage:
+		msg, _ := incoming.(*events.NodeShutdownMessage)
+		switch msg.Event().Id {
+		case events.START_UNCONFIGURE:
+			w.Commands <- worker.NewBeginShutdownCommand()
+		}
+
+	case *events.NodeShutdownCompleteMessage:
+		msg, _ := incoming.(*events.NodeShutdownCompleteMessage)
+		switch msg.Event().Id {
+		case events.UNCONFIGURE_COMPLETE:
+			w.Commands <- worker.NewTerminateCommand("shutdown")
+		}
+
 	default: //nothing
 	}
 
 	return
 }
 
-func (w *AgreementWorker) start() {
+// Initialize the agreement worker before it begins processing commands.
+func (w *AgreementWorker) Initialize() bool {
 
 	glog.Info(logString(fmt.Sprintf("started")))
 
-	// Enter the command processing loop. Initialization is complete so wait for commands to
-	// perform. Commands are created as the result of events that are triggered elsewhere
-	// in the system.
-	go func() {
+	// Block for the container syncup message, to make sure the docker state matches our local DB.
+	for {
+		if w.containerSyncUpEvent == false {
+			time.Sleep(time.Duration(5) * time.Second)
+			glog.V(3).Infof("AgreementWorker waiting for container syncup to be done.")
+		} else if w.containerSyncUpSucessful {
+			break
+		} else {
+			panic(logString(fmt.Sprintf("Terminating, unable to sync up containers")))
+		}
+	}
 
-		// Block for the container syncup message, to make sure the docker state matches our local DB.
-		for {
-			if w.containerSyncUpEvent == false {
-				time.Sleep(time.Duration(5) * time.Second)
-				glog.V(3).Infof("AgreementWorker waiting for container syncup to be done.")
-			} else if w.containerSyncUpSucessful {
-				break
-			} else {
-				panic(logString(fmt.Sprintf("Terminating, unable to sync up containers")))
-			}
+	if w.deviceToken != "" {
+
+		// Establish agreement protocol handlers
+		for _, protocolName := range policy.AllAgreementProtocols() {
+			pph := producer.CreateProducerPH(protocolName, w.BaseWorker.Manager.Config, w.db, w.pm, w.deviceId, w.deviceToken)
+			pph.Initialize()
+			w.producerPH[protocolName] = pph
 		}
 
-		if w.deviceToken != "" {
-
-			// Establish agreement protocol handlers
-			for _, protocolName := range policy.AllAgreementProtocols() {
-				pph := producer.CreateProducerPH(protocolName, w.Worker.Manager.Config, w.db, w.pm, w.deviceId, w.deviceToken)
-				pph.Initialize()
-				w.producerPH[protocolName] = pph
-			}
-
-			// Sync up between what's in our database versus what's in the exchange, and make sure that the policy manager's
-			// agreement counts are correct. This function will cancel any agreements whose state might have changed
-			// while the device was down. We will also check to make sure that policies havent changed. If they have, then
-			// we will cancel agreements and allow them to re-negotiate.
-			if err := w.syncOnInit(); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("Terminating, unable to sync up, error: %v", err)))
-				panic(logString(fmt.Sprintf("Terminating, unable to complete agreement sync up, error: %v", err)))
-			} else {
-				w.Messages() <- events.NewDeviceAgreementsSyncedMessage(events.DEVICE_AGREEMENTS_SYNCED, true)
-			}
-
-			// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
-			// start heartbeating when the registration event comes in.
-			targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/heartbeat"
-			go exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
-
+		// Sync up between what's in our database versus what's in the exchange, and make sure that the policy manager's
+		// agreement counts are correct. This function will cancel any agreements whose state might have changed
+		// while the device was down. We will also check to make sure that policies havent changed. If they have, then
+		// we will cancel agreements and allow them to re-negotiate.
+		if err := w.syncOnInit(); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Terminating, unable to sync up, error: %v", err)))
+			panic(logString(fmt.Sprintf("Terminating, unable to complete agreement sync up, error: %v", err)))
+		} else {
+			w.Messages() <- events.NewDeviceAgreementsSyncedMessage(events.DEVICE_AGREEMENTS_SYNCED, true)
 		}
 
-		// Publish what we have for the world to see
-		if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
-		}
+		// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
+		// start heartbeating when the registration event comes in.
+		w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat)
 
-		// Handle agreement processor commands
-		for {
-			glog.V(2).Infof(logString(fmt.Sprintf("blocking for commands")))
-			command := <-w.Commands
-			glog.V(2).Infof(logString(fmt.Sprintf("received command: %v", command.ShortString())))
-			glog.V(5).Infof(logString(fmt.Sprintf("received command: %v", command)))
+	}
 
-			switch command.(type) {
-			case *DeviceRegisteredCommand:
-				cmd, _ := command.(*DeviceRegisteredCommand)
-				w.handleDeviceRegistered(cmd)
-
-			case *TerminateCommand:
-				cmd, _ := command.(*TerminateCommand)
-				glog.Errorf(logString(fmt.Sprintf("terminating, reason: %v", cmd.reason)))
-				return
-
-			case *AdvertisePolicyCommand:
-				cmd, _ := command.(*AdvertisePolicyCommand)
-
-				if newPolicy, err := policy.ReadPolicyFile(cmd.PolicyFile); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("unable to read policy file %v into memory, error: %v", cmd.PolicyFile, err)))
-				} else {
-					w.pm.UpdatePolicy(exchange.GetOrg(w.deviceId), newPolicy)
-
-					// Publish what we have for the world to see
-					if err := w.advertiseAllPolicies(w.Worker.Manager.Config.Edge.PolicyPath); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
-					}
-				}
-
-			case *producer.ExchangeMessageCommand:
-				cmd, _ := command.(*producer.ExchangeMessageCommand)
-				exchangeMsg := new(exchange.DeviceMessage)
-				if err := json.Unmarshal(cmd.Msg.ExchangeMessage(), &exchangeMsg); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("unable to demarshal exchange device message %v, error %v", cmd.Msg.ExchangeMessage(), err)))
-				} else if there, err := w.messageInExchange(exchangeMsg.MsgId); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("unable to get messages from the exchange, error %v", err)))
-					continue
-				} else if !there {
-					glog.V(3).Infof(logString(fmt.Sprintf("ignoring message %v, already deleted from the exchange.", exchangeMsg.MsgId)))
-					continue
-				}
-
-				protocolMsg := cmd.Msg.ProtocolMessage()
-
-				glog.V(3).Infof(logString(fmt.Sprintf("received message %v from the exchange", exchangeMsg.MsgId)))
-
-				// Process the message if it's a proposal.
-				deleteMessage := true
-
-				if msgProtocol, err := abstractprotocol.ExtractProtocol(protocolMsg); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("unable to extract agreement protocol name from message %v", protocolMsg)))
-				} else if _, ok := w.producerPH[msgProtocol]; !ok {
-					glog.Infof(logString(fmt.Sprintf("unable to direct exchange message %v to a protocol handler, deleting it.", protocolMsg)))
-				} else if p, err := w.producerPH[msgProtocol].AgreementProtocolHandler("", "", "").ValidateProposal(protocolMsg); err != nil {
-					glog.V(5).Infof(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %s due to %v", cmd.Msg.ShortProtocolMessage(), err)))
-					deleteMessage = false
-				} else {
-					deleteMessage = w.producerPH[msgProtocol].HandleProposalMessage(p, protocolMsg, exchangeMsg)
-				}
-
-				if deleteMessage {
-					if err := w.deleteMessage(exchangeMsg); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("error deleting exchange message %v, error %v", exchangeMsg.MsgId, err)))
-					}
-				}
-
-			case *producer.BCInitializedCommand:
-				cmd, _ := command.(*producer.BCInitializedCommand)
-				for _, pph := range w.producerPH {
-					pph.SetBlockchainClientAvailable(cmd)
-				}
-
-			case *producer.BCStoppingCommand:
-				cmd, _ := command.(*producer.BCStoppingCommand)
-				for _, pph := range w.producerPH {
-					pph.SetBlockchainClientNotAvailable(cmd)
-				}
-
-			case *producer.BCWritableCommand:
-				cmd, _ := command.(*producer.BCWritableCommand)
-				for _, pph := range w.producerPH {
-					pph.SetBlockchainWritable(cmd)
-				}
-
-			case *EdgeConfigCompleteCommand:
-				if w.deviceToken == "" {
-					glog.Warningf(logString(fmt.Sprintf("ignoring config complete, device not registered: %v and %v", w.deviceId, w.deviceToken)))
-				} else {
-					w.patchNodeKey()
-				}
-
-			default:
-				glog.Errorf("Unknown command (%T): %v", command, command)
-			}
-
-			glog.V(5).Infof(logString(fmt.Sprintf("handled command")))
-			runtime.Gosched()
-		}
-
-	}()
+	// Publish what we have for the world to see
+	if err := w.advertiseAllPolicies(w.BaseWorker.Manager.Config.Edge.PolicyPath); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
+	}
 
 	glog.Info(logString(fmt.Sprintf("waiting for commands.")))
+
+	return true
+
+}
+
+// Enter the command processing loop. Initialization is complete so wait for commands to
+// perform. Commands are created as the result of events that are triggered elsewhere
+// in the system. This function returns ture if the command was handled, false if not.
+func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
+
+	// Handle the domain specific commands
+	switch command.(type) {
+	case *DeviceRegisteredCommand:
+		cmd, _ := command.(*DeviceRegisteredCommand)
+		w.handleDeviceRegistered(cmd)
+
+	case *AdvertisePolicyCommand:
+		cmd, _ := command.(*AdvertisePolicyCommand)
+
+		if newPolicy, err := policy.ReadPolicyFile(cmd.PolicyFile); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("unable to read policy file %v into memory, error: %v", cmd.PolicyFile, err)))
+		} else {
+			w.pm.UpdatePolicy(exchange.GetOrg(w.deviceId), newPolicy)
+
+			// Publish what we have for the world to see
+			if err := w.advertiseAllPolicies(w.BaseWorker.Manager.Config.Edge.PolicyPath); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
+			}
+		}
+
+	case *producer.ExchangeMessageCommand:
+		cmd, _ := command.(*producer.ExchangeMessageCommand)
+		exchangeMsg := new(exchange.DeviceMessage)
+		if err := json.Unmarshal(cmd.Msg.ExchangeMessage(), &exchangeMsg); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("unable to demarshal exchange device message %v, error %v", cmd.Msg.ExchangeMessage(), err)))
+		} else if there, err := w.messageInExchange(exchangeMsg.MsgId); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("unable to get messages from the exchange, error %v", err)))
+			return true
+		} else if !there {
+			glog.V(3).Infof(logString(fmt.Sprintf("ignoring message %v, already deleted from the exchange.", exchangeMsg.MsgId)))
+			return true
+		}
+
+		protocolMsg := cmd.Msg.ProtocolMessage()
+
+		glog.V(3).Infof(logString(fmt.Sprintf("received message %v from the exchange", exchangeMsg.MsgId)))
+
+		// Process the message if it's a proposal.
+		deleteMessage := true
+
+		if msgProtocol, err := abstractprotocol.ExtractProtocol(protocolMsg); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("unable to extract agreement protocol name from message %v", protocolMsg)))
+		} else if _, ok := w.producerPH[msgProtocol]; !ok {
+			glog.Infof(logString(fmt.Sprintf("unable to direct exchange message %v to a protocol handler, deleting it.", protocolMsg)))
+		} else if p, err := w.producerPH[msgProtocol].AgreementProtocolHandler("", "", "").ValidateProposal(protocolMsg); err != nil {
+			glog.V(5).Infof(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %s due to %v", cmd.Msg.ShortProtocolMessage(), err)))
+			deleteMessage = false
+		} else {
+			deleteMessage = w.producerPH[msgProtocol].HandleProposalMessage(p, protocolMsg, exchangeMsg)
+		}
+
+		if deleteMessage {
+			if err := w.deleteMessage(exchangeMsg); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error deleting exchange message %v, error %v", exchangeMsg.MsgId, err)))
+			}
+		}
+
+	case *producer.BCInitializedCommand:
+		cmd, _ := command.(*producer.BCInitializedCommand)
+		for _, pph := range w.producerPH {
+			pph.SetBlockchainClientAvailable(cmd)
+		}
+
+	case *producer.BCStoppingCommand:
+		cmd, _ := command.(*producer.BCStoppingCommand)
+		for _, pph := range w.producerPH {
+			pph.SetBlockchainClientNotAvailable(cmd)
+		}
+
+	case *producer.BCWritableCommand:
+		cmd, _ := command.(*producer.BCWritableCommand)
+		for _, pph := range w.producerPH {
+			pph.SetBlockchainWritable(cmd)
+		}
+
+	case *EdgeConfigCompleteCommand:
+		if w.deviceToken == "" {
+			glog.Warningf(logString(fmt.Sprintf("ignoring config complete, device not registered: %v and %v", w.deviceId, w.deviceToken)))
+		} else {
+			w.patchNodeKey()
+		}
+
+	default:
+		// Unexpected commands are not handled.
+		return false
+	}
+
+	// Assume the command was handled.
+	return true
 
 }
 
@@ -317,7 +314,7 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 	if len(w.producerPH) == 0 {
 		// Establish agreement protocol handlers
 		for _, protocolName := range policy.AllAgreementProtocols() {
-			pph := producer.CreateProducerPH(protocolName, w.Worker.Manager.Config, w.db, w.pm, w.deviceId, w.deviceToken)
+			pph := producer.CreateProducerPH(protocolName, w.BaseWorker.Manager.Config, w.db, w.pm, w.deviceId, w.deviceToken)
 			pph.Initialize()
 			w.producerPH[protocolName] = pph
 		}
@@ -329,9 +326,15 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 	}
 
 	// Start the go thread that heartbeats to the exchange
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/heartbeat"
-	go exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken, w.Worker.Manager.Config.Edge.ExchangeHeartbeat)
+	w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat)
 
+}
+
+// Heartbeat to the exchange. This function is called by the heartbeat subworker.
+func (w *AgreementWorker) heartBeat() int {
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/heartbeat"
+	exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken)
+	return 0
 }
 
 // This function is only called when anax device side initializes. The agbot has it's own initialization checking.
@@ -509,7 +512,7 @@ func (w *AgreementWorker) getAllAgreements() (map[string]exchange.DeviceAgreemen
 	var resp interface{}
 	resp = new(exchange.AllDeviceAgreementsResponse)
 
-	targetURL := w.Worker.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/agreements"
+	targetURL := w.BaseWorker.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/agreements"
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
 			glog.Errorf(err.Error())

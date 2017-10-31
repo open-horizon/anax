@@ -32,10 +32,13 @@ import (
 
 type API struct {
 	worker.Manager // embedded field
+	name           string
 	db             *bolt.DB
 	pm             *policy.PolicyManager
+	em             *events.EventStateManager
 	bcState        map[string]map[string]BlockchainState
 	bcStateLock    sync.Mutex
+	shutdownError  string
 }
 
 type BlockchainState struct {
@@ -45,7 +48,7 @@ type BlockchainState struct {
 	servicePort string // the network port of the container
 }
 
-func NewAPIListener(config *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *API {
+func NewAPIListener(name string, config *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *API {
 	messages := make(chan events.Message)
 
 	listener := &API{
@@ -54,8 +57,10 @@ func NewAPIListener(config *config.HorizonConfig, db *bolt.DB, pm *policy.Policy
 			Messages: messages,
 		},
 
+		name:        name,
 		db:          db,
 		pm:          pm,
+		em:          events.NewEventStateManager(),
 		bcState:     make(map[string]map[string]BlockchainState),
 		bcStateLock: sync.Mutex{},
 	}
@@ -87,9 +92,24 @@ func (a *API) NewEvent(incoming events.Message) {
 			a.handleStoppingBC(msg)
 			glog.V(3).Infof("API Worker processed BC stopping for %v", msg)
 		}
-	}
 
+	case *events.NodeShutdownCompleteMessage:
+		msg, _ := incoming.(*events.NodeShutdownCompleteMessage)
+		a.em.RecordEvent(msg, func(m events.Message) { a.saveShutdownError(m) })
+		// Now remove myself from the worker dispatch list. When the anax process terminates,
+		// the socket listener will terminate also. This is done on a separate thread so that
+		// the message dispatcher doesnt get blocked. This worker isnt actually a full blown
+		// worker and doesnt have a command thread that it can run on.
+		go func() {
+			a.Messages() <- events.NewWorkerStopMessage(events.WORKER_STOP, a.GetName())
+		}()
+
+	}
 	return
+}
+
+func (a *API) GetName() string {
+	return a.name
 }
 
 func (a *API) handleNewBCInit(ev *events.BlockchainClientInitializedMessage) {
@@ -133,6 +153,14 @@ func (a *API) getBCNameMap(typeName string) map[string]BlockchainState {
 	return nameMap
 }
 
+func (a *API) saveShutdownError(msg events.Message) {
+	switch msg.(type) {
+	case *events.NodeShutdownCompleteMessage:
+		m, _ := msg.(*events.NodeShutdownCompleteMessage)
+		a.shutdownError = m.Err()
+	}
+}
+
 func (a *API) router(includeStaticRedirects bool) *mux.Router {
 	router := mux.NewRouter()
 
@@ -152,7 +180,7 @@ func (a *API) router(includeStaticRedirects bool) *mux.Router {
 
 	router.HandleFunc("/status", a.status).Methods("GET", "OPTIONS")
 	router.HandleFunc("/token/random", tokenRandom).Methods("GET", "OPTIONS")
-	router.HandleFunc("/horizondevice", a.horizonDevice).Methods("GET", "HEAD", "POST", "PATCH", "OPTIONS")
+	router.HandleFunc("/horizondevice", a.horizonDevice).Methods("GET", "HEAD", "POST", "PATCH", "DELETE", "OPTIONS")
 	router.HandleFunc("/horizondevice/configstate", a.configstate).Methods("GET", "HEAD", "PUT", "OPTIONS")
 	router.HandleFunc("/workload", a.workload).Methods("GET", "OPTIONS") // for getting running stuff info
 	router.HandleFunc("/publickey", a.publickey).Methods("GET", "OPTIONS")
@@ -185,6 +213,8 @@ func (a *API) listen(apiListen string) {
 		})
 	}
 
+	// This routine does not need to be a subworker because there is no way to terminate. It will terminate when
+	// the main anax process goes away.
 	go func() {
 		http.ListenAndServe(apiListen, nocache(a.router(true)))
 	}()
@@ -342,8 +372,29 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// writeDevice(updatedDevice, http.StatusOK)
 		writeResponse(w, exDev, http.StatusOK)
+
+	case "DELETE":
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		// Retrieve the optional query parameter
+		removeNode := r.URL.Query().Get("removeNode")
+		block := r.URL.Query().Get("block")
+
+		// Validate the DELETE request and delete the object from the database.
+		errHandled := DeleteHorizonDevice(removeNode, block, a.em, a.Messages(), errorHandler, a.db)
+		if errHandled {
+			return
+		}
+
+		if a.shutdownError != "" {
+			errorHandler(NewSystemError(fmt.Sprintf("received error handling %v on resource %v, error: %v", r.Method, resource, a.shutdownError)))
+			return
+		}
+
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handled %v on resource %v", r.Method, resource)))
+
+		w.WriteHeader(http.StatusNoContent)
 
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, POST, PATCH, OPTIONS")
@@ -596,6 +647,11 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 	resource := "service"
 	errorhandler := GetHTTPErrorHandler(w)
 
+	_, errWritten := a.existingDeviceOrError(w)
+	if errWritten {
+		return
+	}
+
 	findAdditions := func(attrs []persistence.Attribute, incoming []persistence.Attribute) []persistence.Attribute {
 
 		toAdd := []persistence.Attribute{}
@@ -780,6 +836,12 @@ func tokenRandom(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) workload(w http.ResponseWriter, r *http.Request) {
+
+	_, errWritten := a.existingDeviceOrError(w)
+	if errWritten {
+		return
+	}
+
 	switch r.Method {
 	case "GET":
 		if client, err := dockerclient.NewClient(a.Config.Edge.DockerEndpoint); err != nil {
@@ -826,6 +888,11 @@ func (a *API) workload(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) publickey(w http.ResponseWriter, r *http.Request) {
+
+	_, errWritten := a.existingDeviceOrError(w)
+	if errWritten {
+		return
+	}
 
 	switch r.Method {
 	case "GET":
@@ -1035,6 +1102,12 @@ func getPemFiles(homePath string) ([]os.FileInfo, error) {
 }
 
 func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
+
+	_, errWritten := a.existingDeviceOrError(w)
+	if errWritten {
+		return
+	}
+
 	switch r.Method {
 	case "GET":
 
@@ -1269,6 +1342,11 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) microservice(w http.ResponseWriter, r *http.Request) {
+
+	_, errWritten := a.existingDeviceOrError(w)
+	if errWritten {
+		return
+	}
 
 	switch r.Method {
 	case "GET":

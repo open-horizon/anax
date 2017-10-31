@@ -39,21 +39,25 @@ const MAX_AGREEMENT_ACCEPTANCE_WAIT_TIME_M = 20
 const STATUS_WORKLOAD_DESTROYED = 500
 const STATUS_AG_PROTOCOL_TERMINATED = 501
 
+// for identifying the subworkers used by this worker
+const CONTAINER_GOVERNOR = "ContainerGovernor"
+const MICROSERVICE_GOVERNOR = "MicroserviceGovernor"
+const BC_GOVERNOR = "BlockchainGovernor"
+
 type GovernanceWorker struct {
-	worker.Worker // embedded field
-	db            *bolt.DB
-	bc            *ethblockchain.BaseContracts
-	deviceId      string
-	deviceToken   string
-	devicePattern string
-	pm            *policy.PolicyManager
-	producerPH    map[string]producer.ProducerProtocolHandler
-	deviceStatus  *DeviceStatus
+	worker.BaseWorker // embedded field
+	db                *bolt.DB
+	bc                *ethblockchain.BaseContracts
+	deviceId          string
+	deviceToken       string
+	devicePattern     string
+	pm                *policy.PolicyManager
+	producerPH        map[string]producer.ProducerProtocolHandler
+	deviceStatus      *DeviceStatus
+	ShuttingDownCmd   *NodeShutdownCommand
 }
 
-func NewGovernanceWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *GovernanceWorker {
-	messages := make(chan events.Message)
-	commands := make(chan worker.Command, 200)
+func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *GovernanceWorker {
 
 	id := ""
 	token := ""
@@ -65,31 +69,23 @@ func NewGovernanceWorker(cfg *config.HorizonConfig, db *bolt.DB, pm *policy.Poli
 	}
 
 	worker := &GovernanceWorker{
-
-		Worker: worker.Worker{
-			Manager: worker.Manager{
-				Config:   cfg,
-				Messages: messages,
-			},
-
-			Commands: commands,
-		},
-
-		db:            db,
-		pm:            pm,
-		deviceId:      id,
-		deviceToken:   token,
-		devicePattern: pattern,
-		producerPH:    make(map[string]producer.ProducerProtocolHandler),
-		deviceStatus:  NewDeviceStatus(),
+		BaseWorker:      worker.NewBaseWorker(name, cfg),
+		db:              db,
+		pm:              pm,
+		deviceId:        id,
+		deviceToken:     token,
+		devicePattern:   pattern,
+		producerPH:      make(map[string]producer.ProducerProtocolHandler),
+		deviceStatus:    NewDeviceStatus(),
+		ShuttingDownCmd: nil,
 	}
 
-	worker.start()
+	worker.Start(worker, 10)
 	return worker
 }
 
 func (w *GovernanceWorker) Messages() chan events.Message {
-	return w.Worker.Manager.Messages
+	return w.BaseWorker.Manager.Messages
 }
 
 func (w *GovernanceWorker) NewEvent(incoming events.Message) {
@@ -232,6 +228,19 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 		cmd := w.NewReportDeviceStatusCommand()
 		w.Commands <- cmd
 
+	case *events.NodeShutdownMessage:
+
+		msg, _ := incoming.(*events.NodeShutdownMessage)
+		cmd := w.NewNodeShutdownCommand(msg)
+		w.Commands <- cmd
+
+	case *events.NodeShutdownCompleteMessage:
+		msg, _ := incoming.(*events.NodeShutdownCompleteMessage)
+		switch msg.Event().Id {
+		case events.UNCONFIGURE_COMPLETE:
+			w.Commands <- worker.NewTerminateCommand("shutdown")
+		}
+
 	default: //nothing
 	}
 
@@ -285,7 +294,7 @@ func (w *GovernanceWorker) governAgreements() {
 				}
 				// If we fall through to here, then the agreement is Not finalized yet, check for a timeout.
 				now := uint64(time.Now().Unix())
-				if ag.AgreementCreationTime+w.Worker.Manager.Config.Edge.AgreementTimeoutS < now {
+				if ag.AgreementCreationTime+w.BaseWorker.Manager.Config.Edge.AgreementTimeoutS < now {
 					// Start timing out the agreement
 					glog.V(3).Infof(logString(fmt.Sprintf("detected agreement %v timed out.", ag.CurrentAgreementId)))
 
@@ -299,7 +308,7 @@ func (w *GovernanceWorker) governAgreements() {
 					w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
 
 					// clean up microservice instances if needed
-					w.handleMicroserviceInstForAgEnded(ag.CurrentAgreementId)
+					w.handleMicroserviceInstForAgEnded(ag.CurrentAgreementId, false)
 				}
 
 			} else {
@@ -313,7 +322,7 @@ func (w *GovernanceWorker) governAgreements() {
 						// cleanup workloads if needed
 						w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
 						// clean up microservice instances if needed
-						w.handleMicroserviceInstForAgEnded(ag.CurrentAgreementId)
+						w.handleMicroserviceInstForAgEnded(ag.CurrentAgreementId, false)
 					}
 				}
 			}
@@ -321,138 +330,115 @@ func (w *GovernanceWorker) governAgreements() {
 	}
 }
 
-func (w *GovernanceWorker) governContainers() {
+// Make sure the workload containers are all running, by asking the container worker to verify.
+func (w *GovernanceWorker) governContainers() int {
 
 	// go govern
-	go func() {
+	glog.V(4).Infof(logString(fmt.Sprintf("governing containers")))
 
-		for {
-			glog.V(4).Infof(logString(fmt.Sprintf("governing containers")))
+	// Create a new filter for unfinalized agreements
+	runningFilter := func() persistence.EAFilter {
+		return func(a persistence.EstablishedAgreement) bool {
+			return a.AgreementExecutionStartTime != 0 && a.AgreementTerminatedTime == 0 && a.CounterPartyAddress != ""
+		}
+	}
 
-			// Create a new filter for unfinalized agreements
-			runningFilter := func() persistence.EAFilter {
-				return func(a persistence.EstablishedAgreement) bool {
-					return a.AgreementExecutionStartTime != 0 && a.AgreementTerminatedTime == 0 && a.CounterPartyAddress != ""
+	if establishedAgreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), runningFilter()}); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Unable to retrieve running agreements from database, error: %v", err)))
+	} else {
+		for _, ag := range establishedAgreements {
+
+			// Make sure containers are still running.
+			glog.V(3).Infof(logString(fmt.Sprintf("fire event to ensure containers are still up for agreement %v.", ag.CurrentAgreementId)))
+
+			// current contract, ensure workloads still running
+			w.Messages() <- events.NewGovernanceMaintenanceMessage(events.CONTAINER_MAINTAIN, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
+
+		}
+	}
+	return 0
+}
+
+func (w *GovernanceWorker) reportBlockchains() int {
+
+	// go govern
+	glog.Info(logString(fmt.Sprintf("started blockchain need governance")))
+
+	// Find all agreements that need a blockchain by searching through all the agreement protocol DB buckets
+	for _, agp := range policy.AllAgreementProtocols() {
+
+		// If the agreement protocol doesnt require a blockchain then we can skip it.
+		if bcType := policy.RequiresBlockchainType(agp); bcType == "" {
+			continue
+		} else {
+
+			// Make a map of all blockchain orgs and names that we need to have running
+			neededBCs := make(map[string]map[string]bool)
+			if agreements, err := persistence.FindEstablishedAgreements(w.db, agp, []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err == nil {
+				for _, ag := range agreements {
+					_, bcName, bcOrg := w.producerPH[agp].GetKnownBlockchain(&ag)
+					if bcName != "" {
+						if _, ok := neededBCs[bcOrg]; !ok {
+							neededBCs[bcOrg] = make(map[string]bool)
+						}
+						neededBCs[bcOrg][bcName] = true
+					}
 				}
-			}
 
-			if establishedAgreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), runningFilter()}); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("Unable to retrieve running agreements from database, error: %v", err)))
+				// If we captured any needed blockchains, inform the blockchain worker
+				if len(neededBCs) != 0 {
+					w.Messages() <- events.NewReportNeededBlockchainsMessage(events.BC_NEEDED, bcType, neededBCs)
+				}
+
 			} else {
-				for _, ag := range establishedAgreements {
-
-					// Make sure containers are still running.
-					glog.V(3).Infof(logString(fmt.Sprintf("fire event to ensure containers are still up for agreement %v.", ag.CurrentAgreementId)))
-
-					// current contract, ensure workloads still running
-					w.Messages() <- events.NewGovernanceMaintenanceMessage(events.CONTAINER_MAINTAIN, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
-
-				}
+				glog.Errorf(logString(fmt.Sprintf("unable to read agreements from database for protocol %v, error: %v", agp, err)))
 			}
 
-			time.Sleep(1 * time.Minute)
 		}
-	}()
+	}
+	return 0
 }
 
-func (w *GovernanceWorker) reportBlockchains() {
+func (w *GovernanceWorker) governMicroservices() int {
 
-	// go govern
-	go func() {
-
-		for {
-
-			glog.Info(logString(fmt.Sprintf("started blockchain need governance")))
-
-			// This is the amount of time for the governance routine to wait.
-			waitTime := uint64(60)
-
-			// Find all agreements that need a blockchain by searching through all the agreement protocol DB buckets
-			for _, agp := range policy.AllAgreementProtocols() {
-
-				// If the agreement protocol doesnt require a blockchain then we can skip it.
-				if bcType := policy.RequiresBlockchainType(agp); bcType == "" {
-					continue
-				} else {
-
-					// Make a map of all blockchain orgs and names that we need to have running
-					neededBCs := make(map[string]map[string]bool)
-					if agreements, err := persistence.FindEstablishedAgreements(w.db, agp, []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err == nil {
-						for _, ag := range agreements {
-							_, bcName, bcOrg := w.producerPH[agp].GetKnownBlockchain(&ag)
-							if bcName != "" {
-								if _, ok := neededBCs[bcOrg]; !ok {
-									neededBCs[bcOrg] = make(map[string]bool)
-								}
-								neededBCs[bcOrg][bcName] = true
-							}
-						}
-
-						// If we captured any needed blockchains, inform the blockchain worker
-						if len(neededBCs) != 0 {
-							w.Messages() <- events.NewReportNeededBlockchainsMessage(events.BC_NEEDED, bcType, neededBCs)
-						}
-
-					} else {
-						glog.Errorf(logString(fmt.Sprintf("unable to read agreements from database for protocol %v, error: %v", agp, err)))
-					}
-
+	// handle microservice upgrade and rollback. The upgrade includes inactive upgrades if the associated agreements happen to be 0.
+	glog.V(4).Infof(logString(fmt.Sprintf("governing microservice upgrades")))
+	if ms_defs, err := persistence.FindMicroserviceDefs(w.db, []persistence.MSFilter{persistence.UnarchivedMSFilter()}); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Error getting microservice definitions from db. %v", err)))
+	} else if ms_defs != nil && len(ms_defs) > 0 {
+		for _, ms := range ms_defs {
+			// check if ms is ready for rollback for those execution did not start within certian time
+			if microservice.MicroserviceNeedsRollback(&ms) {
+				if old_msdef, err := microservice.GetRollbackMicroserviceDef(&ms, w.db); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("Error finding the old microservice definition to rollback to for %v version %v key %v. %v", ms.SpecRef, ms.Version, ms.Id, err)))
+				} else if old_msdef == nil {
+					glog.Errorf(logString(fmt.Sprintf("Unable to find the old microservice definition to rollback to for %v version %v key %v. %v", ms.SpecRef, ms.Version, ms.Id, err)))
+				} else if err := w.RollbackMicroservice(old_msdef, &ms); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("Failed to rollback %v from version %v key %v to version %v key %v. %v", ms.SpecRef, ms.Version, ms.Id, old_msdef.Version, old_msdef.Id, err)))
 				}
+			} else {
+				// upgrade the microserice if needed
+				w.HandleMicroserviceUpgrade(ms.Id, false)
 			}
-
-			// Sleep
-			glog.V(5).Infof(logString(fmt.Sprintf("blockchain need governance sleeping for %v seconds.", waitTime)))
-			time.Sleep(time.Duration(waitTime) * time.Second)
-
 		}
-	}()
-}
+	}
 
-func (w *GovernanceWorker) governMicroservices() {
+	// handle microservice instance containers down and
+	glog.V(4).Infof(logString(fmt.Sprintf("governing microservice containers")))
+	if ms_instances, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.AllMIFilter(), persistence.UnarchivedMIFilter()}); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Error retrieving all microservice instances from database, error: %v", err)))
+	} else if ms_instances != nil {
+		for _, msi := range ms_instances {
+			// only check the ones that has containers started already and not in the middle of cleanup
+			if hasWL, _ := msi.HasWorkload(w.db); hasWL && msi.ExecutionStartTime != 0 && msi.CleanupStartTime == 0 {
+				glog.V(3).Infof(logString(fmt.Sprintf("fire event to ensure microservice containers are still up for microservice instance %v.", msi.GetKey())))
 
-	go func() {
-		for {
-			// handle microservice upgrade and rollback. The upgrade includes inactive upgrades if the associated agreements happen to be 0.
-			glog.V(4).Infof(logString(fmt.Sprintf("governing microservice upgrades")))
-			if ms_defs, err := persistence.FindMicroserviceDefs(w.db, []persistence.MSFilter{persistence.UnarchivedMSFilter()}); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("Error getting microservice definitions from db. %v", err)))
-			} else if ms_defs != nil && len(ms_defs) > 0 {
-				for _, ms := range ms_defs {
-					// check if ms is ready for rollback for those execution did not start within certian time
-					if microservice.MicroserviceNeedsRollback(&ms) {
-						if old_msdef, err := microservice.GetRollbackMicroserviceDef(&ms, w.db); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("Error finding the old microservice definition to rollback to for %v version %v key %v. %v", ms.SpecRef, ms.Version, ms.Id, err)))
-						} else if old_msdef == nil {
-							glog.Errorf(logString(fmt.Sprintf("Unable to find the old microservice definition to rollback to for %v version %v key %v. %v", ms.SpecRef, ms.Version, ms.Id, err)))
-						} else if err := w.RollbackMicroservice(old_msdef, &ms); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("Failed to rollback %v from version %v key %v to version %v key %v. %v", ms.SpecRef, ms.Version, ms.Id, old_msdef.Version, old_msdef.Id, err)))
-						}
-					} else {
-						// upgrade the microserice if needed
-						w.HandleMicroserviceUpgrade(ms.Id, false)
-					}
-				}
+				// ensure containers are still running
+				w.Messages() <- events.NewMicroserviceMaintenanceMessage(events.CONTAINER_MAINTAIN, msi.GetKey())
 			}
-
-			// handle microservice instance containers down and
-			glog.V(4).Infof(logString(fmt.Sprintf("governing microservice containers")))
-			if ms_instances, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.AllMIFilter(), persistence.UnarchivedMIFilter()}); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("Error retrieving all microservice instances from database, error: %v", err)))
-			} else if ms_instances != nil {
-				for _, msi := range ms_instances {
-					// only check the ones that has containers started already and not in the middle of cleanup
-					if hasWL, _ := msi.HasWorkload(w.db); hasWL && msi.ExecutionStartTime != 0 && msi.CleanupStartTime == 0 {
-						glog.V(3).Infof(logString(fmt.Sprintf("fire event to ensure microservice containers are still up for microservice instance %v.", msi.GetKey())))
-
-						// ensure containers are still running
-						w.Messages() <- events.NewMicroserviceMaintenanceMessage(events.CONTAINER_MAINTAIN, msi.GetKey())
-					}
-				}
-			}
-
-			time.Sleep(1 * time.Minute)
 		}
-	}()
+	}
+	return 0
 }
 
 // It cancels the given agreement. Please take note that the system is very asynchronous. It is
@@ -490,6 +476,7 @@ func (w *GovernanceWorker) externalTermination(ag *persistence.EstablishedAgreem
 	// routine will be waiting for a blockchain cancel to run. In general it will take around 30 seconds, but could be
 	// double or triple that time. This will free up the governance thread to handle other protocol messages.
 
+	// This routine does not need to be a subworker because it will terminate on its own.
 	go func() {
 
 		// Get the policy we used in the agreement and then cancel, just in case.
@@ -507,6 +494,8 @@ func (w *GovernanceWorker) externalTermination(ag *persistence.EstablishedAgreem
 	// Concurrently write out the metering record. This is done in its own go routine for the same reason that
 	// the blockchain cancel is done in a separate go routine. This go routine can complete after the agreement is
 	// archived without any side effects.
+
+	// This routine does not need to be a subworker because it will terminate on its own.
 	go func() {
 		// If there are metering notifications, write them onto the blockchain also
 		if ag.MeteringNotificationMsg != (persistence.MeteringNotification{}) && !ag.Archived {
@@ -524,421 +513,430 @@ func (w *GovernanceWorker) externalTermination(ag *persistence.EstablishedAgreem
 
 }
 
-func (w *GovernanceWorker) start() {
-	go func() {
+func (w *GovernanceWorker) Initialize() bool {
 
-		// Fire up the eth container after the device is registered.
-		for {
-			if w.deviceToken != "" {
-				break
+	// Wait for the device to be registered.
+	for {
+		if w.deviceToken != "" {
+			break
+		} else {
+			glog.V(3).Infof("GovernanceWorker command processor waiting for device registration")
+			time.Sleep(time.Duration(5) * time.Second)
+		}
+	}
+
+	// Establish agreement protocol handlers
+	for _, protocolName := range policy.AllAgreementProtocols() {
+		pph := producer.CreateProducerPH(protocolName, w.BaseWorker.Manager.Config, w.db, w.pm, w.deviceId, w.deviceToken)
+		pph.Initialize()
+		w.producerPH[protocolName] = pph
+	}
+
+	// report the device status to the exchange
+	w.ReportDeviceStatus()
+
+	// Fire up the container governor
+	w.DispatchSubworker(CONTAINER_GOVERNOR, w.governContainers, 60)
+
+	// Fire up the blockchain reporter
+	w.DispatchSubworker(BC_GOVERNOR, w.reportBlockchains, 60)
+
+	// Fire up the microservice governor
+	w.DispatchSubworker(MICROSERVICE_GOVERNOR, w.governMicroservices, 60)
+
+	return true
+
+}
+
+func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
+
+	// Handle the domain specific commands
+	// TODO: consolidate DB update cases
+	switch command.(type) {
+	case *StartGovernExecutionCommand:
+		// TODO: update db start time and tc so it can be governed
+		cmd, _ := command.(*StartGovernExecutionCommand)
+		glog.V(3).Infof("Starting governance on resources in agreement: %v", cmd.AgreementId)
+
+		if _, err := persistence.AgreementStateExecutionStarted(w.db, cmd.AgreementId, cmd.AgreementProtocol, &cmd.Deployment); err != nil {
+			glog.Errorf("Failed to update local contract record to start governing Agreement: %v. Error: %v", cmd.AgreementId, err)
+		}
+
+	case *CleanupExecutionCommand:
+		cmd, _ := command.(*CleanupExecutionCommand)
+
+		agreementId := cmd.AgreementId
+		if ags, err := persistence.FindEstablishedAgreements(w.db, cmd.AgreementProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)}); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agreementId, err)))
+		} else if len(ags) != 1 {
+			glog.V(5).Infof(logString(fmt.Sprintf("ignoring the event, unable to retrieve unarchived single agreement %v from the database.", agreementId)))
+		} else if ags[0].AgreementTerminatedTime != 0 && ags[0].AgreementForceTerminatedTime == 0 {
+			glog.V(3).Infof(logString(fmt.Sprintf("ignoring the event, agreement %v is already terminating", agreementId)))
+		} else {
+			glog.V(3).Infof("Ending the agreement: %v", agreementId)
+			w.cancelAgreement(agreementId, cmd.AgreementProtocol, cmd.Reason, w.producerPH[cmd.AgreementProtocol].GetTerminationReason(cmd.Reason))
+
+			// send the event to the container in case it has started the workloads.
+			w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, cmd.AgreementProtocol, agreementId, cmd.Deployment)
+			// clean up microservice instances if needed
+			w.handleMicroserviceInstForAgEnded(agreementId, false)
+		}
+
+	case *producer.ExchangeMessageCommand:
+		cmd, _ := command.(*producer.ExchangeMessageCommand)
+
+		exchangeMsg := new(exchange.DeviceMessage)
+		if err := json.Unmarshal(cmd.Msg.ExchangeMessage(), &exchangeMsg); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("unable to demarshal exchange device message %v, error %v", cmd.Msg.ExchangeMessage(), err)))
+			return true
+		} else if there, err := w.messageInExchange(exchangeMsg.MsgId); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("unable to get messages from the exchange, error %v", err)))
+			return true
+		} else if !there {
+			glog.V(3).Infof(logString(fmt.Sprintf("ignoring message %v, already deleted from the exchange.", exchangeMsg.MsgId)))
+			return true
+		}
+
+		glog.V(3).Infof(logString(fmt.Sprintf("received message %v from the exchange", exchangeMsg.MsgId)))
+
+		deleteMessage := true
+		protocolMsg := cmd.Msg.ProtocolMessage()
+
+		// Pull the agreement protocol out of the message
+		if msgProtocol, err := abstractprotocol.ExtractProtocol(protocolMsg); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("unable to extract agreement protocol name from message %v", protocolMsg)))
+		} else if _, ok := w.producerPH[msgProtocol]; !ok {
+			glog.Infof(logString(fmt.Sprintf("unable to direct exchange message %v to a protocol handler, deleting it.", protocolMsg)))
+		} else {
+
+			deleteMessage = false
+			protocolHandler := w.producerPH[msgProtocol].AgreementProtocolHandler("", "", "")
+			// ReplyAck messages could indicate that the agbot has decided not to pursue the agreement any longer.
+			if replyAck, err := protocolHandler.ValidateReplyAck(protocolMsg); err != nil {
+				glog.V(5).Infof(logString(fmt.Sprintf("ReplyAck handler ignoring non-reply ack message: %s due to %v", cmd.Msg.ShortProtocolMessage(), err)))
+			} else if ags, err := persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(replyAck.AgreementId())}); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", replyAck.AgreementId(), err)))
+			} else if len(ags) != 1 {
+				glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database.", replyAck.AgreementId())))
+				deleteMessage = true
+			} else if replyAck.ReplyAgreementStillValid() {
+				if ags[0].AgreementAcceptedTime != 0 || ags[0].AgreementTerminatedTime != 0 {
+					glog.V(5).Infof(logString(fmt.Sprintf("ignoring replyack for %v because we already received one or are cancelling", replyAck.AgreementId())))
+					deleteMessage = true
+				} else if proposal, err := protocolHandler.DemarshalProposal(ags[0].Proposal); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v from database", replyAck.AgreementId())))
+				} else if err := w.RecordReply(proposal, msgProtocol); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("unable to record reply %v, error: %v", replyAck, err)))
+				} else {
+					deleteMessage = true
+				}
 			} else {
-				glog.V(3).Infof("GovernanceWorker command processor waiting for device registration")
-				time.Sleep(time.Duration(5) * time.Second)
+				deleteMessage = true
+				w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, ags[0].CurrentDeployment)
+				reason := w.producerPH[msgProtocol].GetTerminationCode(producer.TERM_REASON_AGBOT_REQUESTED)
+				w.cancelAgreement(replyAck.AgreementId(), msgProtocol, reason, w.producerPH[msgProtocol].GetTerminationReason(reason))
+				// clean up microservice instances if needed
+				w.handleMicroserviceInstForAgEnded(replyAck.AgreementId(), false)
+			}
+
+			// Data notification message indicates that the agbot has found that data is being received from the workload.
+			if dataReceived, err := protocolHandler.ValidateDataReceived(protocolMsg); err != nil {
+				glog.V(5).Infof(logString(fmt.Sprintf("DataReceived handler ignoring non-data received message: %v due to %v", cmd.Msg.ShortProtocolMessage(), err)))
+			} else if ags, err := persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(dataReceived.AgreementId())}); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", dataReceived.AgreementId(), err)))
+			} else if len(ags) != 1 {
+				glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", dataReceived.AgreementId(), err)))
+				deleteMessage = true
+			} else if _, err := persistence.AgreementStateDataReceived(w.db, dataReceived.AgreementId(), msgProtocol); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to update data received time for %v, error: %v", dataReceived.AgreementId(), err)))
+			} else if messageTarget, err := exchange.CreateMessageTarget(exchangeMsg.AgbotId, nil, exchangeMsg.AgbotPubKey, ""); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
+			} else if err := protocolHandler.NotifyDataReceiptAck(dataReceived.AgreementId(), messageTarget, w.producerPH[msgProtocol].GetSendMessage()); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to send data received ack for %v, error: %v", dataReceived.AgreementId(), err)))
+			} else {
+				deleteMessage = true
+			}
+
+			// Metering notification messages indicate that the agbot is metering data sent to the data ingest.
+			if mnReceived, err := protocolHandler.ValidateMeterNotification(protocolMsg); err != nil {
+				glog.V(5).Infof(logString(fmt.Sprintf("Meter Notification handler ignoring non-metering message: %v due to %v", cmd.Msg.ShortProtocolMessage(), err)))
+			} else if ags, err := persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(mnReceived.AgreementId())}); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", mnReceived.AgreementId(), err)))
+			} else if len(ags) != 1 {
+				glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", mnReceived.AgreementId(), err)))
+				deleteMessage = true
+			} else if ags[0].AgreementTerminatedTime != 0 {
+				glog.V(5).Infof(logString(fmt.Sprintf("ignoring metering notification, agreement %v is terminating", mnReceived.AgreementId())))
+				deleteMessage = true
+			} else if mn, err := metering.ConvertToPersistent(mnReceived.Meter()); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to convert metering notification string %v to persistent metering notification for %v, error: %v", mnReceived.Meter(), mnReceived.AgreementId(), err)))
+				deleteMessage = true
+			} else if _, err := persistence.MeteringNotificationReceived(w.db, mnReceived.AgreementId(), *mn, msgProtocol); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to update metering notification for %v, error: %v", mnReceived.AgreementId(), err)))
+				deleteMessage = true
+			} else {
+				deleteMessage = true
+			}
+
+			// Cancel messages indicate that the agbot wants to get rid of the agreement.
+			if canReceived, err := protocolHandler.ValidateCancel(protocolMsg); err != nil {
+				glog.V(5).Infof(logString(fmt.Sprintf("Cancel handler ignoring non-cancel message: %v due to %v", cmd.Msg.ShortProtocolMessage(), err)))
+			} else if ags, err := persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(canReceived.AgreementId())}); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", canReceived.AgreementId(), err)))
+			} else if len(ags) != 1 {
+				glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", canReceived.AgreementId(), err)))
+				deleteMessage = true
+			} else if exchangeMsg.AgbotId != ags[0].ConsumerId {
+				glog.Warningf(logString(fmt.Sprintf("cancel ignored, cancel message for %v came from id %v but agreement is with %v", canReceived.AgreementId(), exchangeMsg.AgbotId, ags[0].ConsumerId)))
+				deleteMessage = true
+			} else if ags[0].AgreementTerminatedTime != 0 {
+				glog.V(5).Infof(logString(fmt.Sprintf("ignoring cancel, agreement %v is terminating", canReceived.AgreementId())))
+				deleteMessage = true
+			} else {
+				w.cancelAgreement(canReceived.AgreementId(), msgProtocol, canReceived.Reason(), w.producerPH[msgProtocol].GetTerminationReason(canReceived.Reason()))
+				// cleanup workloads if needed
+				w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, ags[0].CurrentDeployment)
+				// clean up microservice instances if needed
+				w.handleMicroserviceInstForAgEnded(ags[0].CurrentAgreementId, false)
+				deleteMessage = true
+
+			}
+
+			// Allow the message extension handler to see the message
+			handled, cancel, agid, err := w.producerPH[msgProtocol].HandleExtensionMessages(&cmd.Msg, exchangeMsg)
+			if err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to handle extension message %v , error: %v", protocolMsg, err)))
+			}
+			if cancel {
+				reason := w.producerPH[msgProtocol].GetTerminationCode(producer.TERM_REASON_AGBOT_REQUESTED)
+
+				if ags, err := persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agid)}); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agid, err)))
+				} else if len(ags) != 1 {
+					glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", agid, err)))
+					deleteMessage = true
+				} else {
+					w.cancelAgreement(agid, msgProtocol, reason, w.producerPH[msgProtocol].GetTerminationReason(reason))
+					// cleanup workloads if needed
+					w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, msgProtocol, agid, ags[0].CurrentDeployment)
+					// clean up microservice instances if needed
+					w.handleMicroserviceInstForAgEnded(agid, false)
+				}
+			}
+			if handled {
+				deleteMessage = handled
+			}
+
+		}
+
+		// Get rid of the exchange message when we're done with it
+		if deleteMessage {
+			if err := w.deleteMessage(exchangeMsg); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error deleting exchange message %v, error %v", exchangeMsg.MsgId, err)))
 			}
 		}
 
-		// Establish agreement protocol handlers
-		for _, protocolName := range policy.AllAgreementProtocols() {
-			pph := producer.CreateProducerPH(protocolName, w.Worker.Manager.Config, w.db, w.pm, w.deviceId, w.deviceToken)
-			pph.Initialize()
-			w.producerPH[protocolName] = pph
+	case *producer.BlockchainEventCommand:
+		cmd, _ := command.(*producer.BlockchainEventCommand)
+
+		for _, protocol := range policy.AllAgreementProtocols() {
+			if !w.producerPH[protocol].AcceptCommand(cmd) {
+				continue
+			}
+
+			if agreementId, termination, reason, creation, err := w.producerPH[protocol].HandleBlockchainEventMessage(cmd); err != nil {
+				glog.Errorf(err.Error())
+			} else if termination {
+
+				// If we have that agreement in our DB, then cancel it
+				if ags, err := persistence.FindEstablishedAgreements(w.db, protocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)}); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agreementId, err)))
+				} else if len(ags) != 1 {
+					glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, not our agreement id")))
+				} else if ags[0].AgreementTerminatedTime != 0 {
+					glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, agreement %v is already terminating", ags[0].CurrentAgreementId)))
+				} else {
+					glog.Infof(logString(fmt.Sprintf("terminating agreement %v because it has been cancelled on the blockchain.", ags[0].CurrentAgreementId)))
+					w.cancelAgreement(ags[0].CurrentAgreementId, ags[0].AgreementProtocol, uint(reason), w.producerPH[protocol].GetTerminationReason(uint(reason)))
+					// cleanup workloads if needed
+					w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, ags[0].CurrentDeployment)
+					// clean up microservice instances if needed
+					w.handleMicroserviceInstForAgEnded(ags[0].CurrentAgreementId, false)
+				}
+
+				// If the event is an agreement created event
+			} else if creation {
+
+				// If we have that agreement in our DB and it's not already terminating, then finalize it
+				if ags, err := persistence.FindEstablishedAgreements(w.db, protocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)}); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agreementId, err)))
+				} else if len(ags) != 1 {
+					glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, not our agreement id")))
+				} else if ags[0].AgreementTerminatedTime != 0 {
+					glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, agreement %v is terminating", ags[0].CurrentAgreementId)))
+
+					// Finalize the agreement
+				} else if err := w.finalizeAgreement(ags[0], w.producerPH[protocol].AgreementProtocolHandler(ags[0].BlockchainType, ags[0].BlockchainName, ags[0].BlockchainOrg)); err != nil {
+					glog.Errorf(err.Error())
+				}
+			}
 		}
 
-		// report the device status to the exchange
+	case *CleanupStatusCommand:
+		cmd, _ := command.(*CleanupStatusCommand)
+
+		glog.V(5).Infof(logString(fmt.Sprintf("Received CleanupStatusCommand: %v.", cmd)))
+		if ags, err := persistence.FindEstablishedAgreements(w.db, cmd.AgreementProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(cmd.AgreementId)}); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", cmd.AgreementId, err)))
+		} else if len(ags) != 1 {
+			glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, not our agreement id")))
+		} else if ags[0].AgreementAcceptedTime == 0 {
+			// The only place the agreement is known is in the DB, so we can just delete the record. In the situation where
+			// the agbot changes its mind about the proposal, we don't want to create an archived agreement because an
+			// agreement was never really established.
+			if err := persistence.DeleteEstablishedAgreement(w.db, cmd.AgreementId, cmd.AgreementProtocol); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to delete record for agreement %v, error: %v", cmd.AgreementId, err)))
+			}
+		} else {
+			// writes the cleanup status into the db
+			var archive = false
+			switch cmd.Status {
+			case STATUS_WORKLOAD_DESTROYED:
+				if agreement, err := persistence.AgreementStateWorkloadTerminated(w.db, cmd.AgreementId, cmd.AgreementProtocol); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error marking agreement %v workload terminated: %v", cmd.AgreementId, err)))
+				} else if agreement.AgreementProtocolTerminatedTime != 0 {
+					archive = true
+				}
+			case STATUS_AG_PROTOCOL_TERMINATED:
+				if agreement, err := persistence.AgreementStateAgreementProtocolTerminated(w.db, cmd.AgreementId, cmd.AgreementProtocol); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error marking agreement %v agreement protocol terminated: %v", cmd.AgreementId, err)))
+				} else if agreement.WorkloadTerminatedTime != 0 {
+					archive = true
+				}
+			default:
+				glog.Errorf(logString(fmt.Sprintf("The cleanup status %v is not supported for agreement %v.", cmd.Status, cmd.AgreementId)))
+			}
+
+			// archive the agreement if all the cleanup processes are done
+			if archive {
+				glog.V(5).Infof(logString(fmt.Sprintf("archiving agreement %v", cmd.AgreementId)))
+				if _, err := persistence.ArchiveEstablishedAgreement(w.db, cmd.AgreementId, cmd.AgreementProtocol); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("error archiving terminated agreement: %v, error: %v", cmd.AgreementId, err)))
+				}
+			}
+		}
+
+	case *producer.BCInitializedCommand:
+		cmd, _ := command.(*producer.BCInitializedCommand)
+		for _, pph := range w.producerPH {
+			pph.SetBlockchainClientAvailable(cmd)
+		}
+
+	case *producer.BCStoppingCommand:
+		cmd, _ := command.(*producer.BCStoppingCommand)
+		for _, pph := range w.producerPH {
+			pph.SetBlockchainClientNotAvailable(cmd)
+		}
+
+	case *producer.BCWritableCommand:
+		cmd, _ := command.(*producer.BCWritableCommand)
+		for _, pph := range w.producerPH {
+			pph.SetBlockchainWritable(cmd)
+			pph.UpdateConsumers()
+		}
+
+	case *AsyncTerminationCommand:
+		cmd, _ := command.(*AsyncTerminationCommand)
+		if ags, err := persistence.FindEstablishedAgreements(w.db, cmd.AgreementProtocol, []persistence.EAFilter{persistence.IdEAFilter(cmd.AgreementId)}); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", cmd.AgreementId, err)))
+		} else if len(ags) != 1 {
+			glog.V(5).Infof(logString(fmt.Sprintf("ignoring command, not our agreement id")))
+		} else if w.producerPH[cmd.AgreementProtocol].IsBlockchainWritable(&ags[0]) {
+			glog.Infof(logString(fmt.Sprintf("external agreement termination of %v reason %v.", cmd.AgreementId, cmd.Reason)))
+			w.externalTermination(&ags[0], cmd.AgreementId, cmd.AgreementProtocol, cmd.Reason)
+		} else {
+			w.AddDeferredCommand(cmd)
+		}
+	case *UpdateMicroserviceCommand:
+		cmd, _ := command.(*UpdateMicroserviceCommand)
+
+		glog.V(5).Infof(logString(fmt.Sprintf("Updating microservice execution status %v", cmd)))
+
+		if cmd.ExecutionStarted == false && cmd.ExecutionFailureCode == 0 {
+			// the miceroservice containers were destroyed, just archive the ms instance it if it not already done
+			// this part is from the CONTAINER_DESTROYED event id which was originally
+			if _, err := persistence.ArchiveMicroserviceInstance(w.db, cmd.MsInstKey); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Error archiving microservice instance %v. %v", cmd.MsInstKey, err)))
+			}
+		} else {
+			// microservice execution started or failed
+			// this part is from EXECUTION_FAILED or EXECUTION_BEGUN event id
+
+			// update the execution status for microservice instance
+			if msinst, err := persistence.UpdateMSInstanceExecutionState(w.db, cmd.MsInstKey, cmd.ExecutionStarted, cmd.ExecutionFailureCode, cmd.ExecutionFailureDesc); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Error updating microservice execution status. %v", err)))
+			} else if msinst != nil {
+				if msdef, err := persistence.FindMicroserviceDefWithKey(w.db, msinst.MicroserviceDefId); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("Error finding microserivce definition fron db for %v version %v key %v. %v", msinst.SpecRef, msinst.Version, msinst.MicroserviceDefId, err)))
+				} else if msdef == nil {
+					glog.Errorf(logString(fmt.Sprintf("No microserivce definition record in db for %v version %v key %v. %v", msinst.SpecRef, msinst.Version, msinst.MicroserviceDefId, err)))
+				} else {
+					if msdef.UpgradeStartTime != 0 && msdef.UpgradeExecutionStartTime == 0 && msdef.UpgradeFailedTime == 0 {
+						// handle the rest of the microservice upgrade process
+						w.handleMicroserviceUpgradeExecStateChange(msdef, cmd.MsInstKey, cmd.ExecutionStarted)
+					} else if !cmd.ExecutionStarted && msinst.CleanupStartTime == 0 { // if this is not part of the ms instance cleanup process
+						// for execution failure, need to delete the ms instance and clean the agreemens. New agreements will come and new ms instances will be started
+						if err := w.CleanupMicroservice(msinst.SpecRef, msinst.Version, cmd.MsInstKey, cmd.ExecutionFailureCode); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("Error cleanup microservice instance %v. %v", cmd.MsInstKey, err)))
+						}
+					}
+				}
+			}
+		}
+	case *ReportDeviceStatusCommand:
+		cmd, _ := command.(*ReportDeviceStatusCommand)
+
+		glog.V(5).Infof(logString(fmt.Sprintf("Report device status command %v", cmd)))
 		w.ReportDeviceStatus()
 
-		// Fire up the container governor
-		w.governContainers()
+	case *NodeShutdownCommand:
+		cmd, _ := command.(*NodeShutdownCommand)
+		glog.V(5).Infof(logString(fmt.Sprintf("Node shutdown command %v", cmd)))
 
-		// Fire up the blockchain reporter
-		w.reportBlockchains()
+		// Remember the command until we need it again.
+		w.SetWorkerShuttingDown()
+		w.ShuttingDownCmd = cmd
 
-		// Fire up the microservice governor
-		w.governMicroservices()
+		// Shutdown the governance subworkers. We do this to ensure that none of them wake up to do
+		// something when we're shutting down (which could cause problems) because we dont need them
+		// to complete the shutdown procedure.
+		w.TerminateSubworkers()
 
-		//handle commands
-		deferredCommands := make([]worker.Command, 0, 10)
+	default:
+		return false
+	}
+	return true
+}
 
-		// Fire up the command processor
-		for {
+func (w *GovernanceWorker) NoWorkHandler() {
 
-			glog.V(3).Infof("GovernanceWorker command processor about to select command (non-blocking)")
+	// Make sure that all known agreements are maintained, if we're not shutting down.
+	if !w.IsWorkerShuttingDown() {
+		w.governAgreements()
+	}
 
-			select {
-			case command := <-w.Commands:
-				glog.V(2).Infof("GovernanceWorker received command: %v", command.ShortString())
-				glog.V(5).Infof("GovernanceWorker received command: %v", command)
-				glog.V(4).Infof(logString(fmt.Sprintf("command channel length %v removed", len(w.Commands))))
-
-				// TODO: consolidate DB update cases
-				switch command.(type) {
-				case *StartGovernExecutionCommand:
-					// TODO: update db start time and tc so it can be governed
-					cmd, _ := command.(*StartGovernExecutionCommand)
-					glog.V(3).Infof("Starting governance on resources in agreement: %v", cmd.AgreementId)
-
-					if _, err := persistence.AgreementStateExecutionStarted(w.db, cmd.AgreementId, cmd.AgreementProtocol, &cmd.Deployment); err != nil {
-						glog.Errorf("Failed to update local contract record to start governing Agreement: %v. Error: %v", cmd.AgreementId, err)
-					}
-
-				case *CleanupExecutionCommand:
-					cmd, _ := command.(*CleanupExecutionCommand)
-
-					agreementId := cmd.AgreementId
-					if ags, err := persistence.FindEstablishedAgreements(w.db, cmd.AgreementProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)}); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agreementId, err)))
-					} else if len(ags) != 1 {
-						glog.V(5).Infof(logString(fmt.Sprintf("ignoring the event, unable to retrieve unarchived single agreement %v from the database.", agreementId)))
-					} else if ags[0].AgreementTerminatedTime != 0 && ags[0].AgreementForceTerminatedTime == 0 {
-						glog.V(3).Infof(logString(fmt.Sprintf("ignoring the event, agreement %v is already terminating", agreementId)))
-					} else {
-						glog.V(3).Infof("Ending the agreement: %v", agreementId)
-						w.cancelAgreement(agreementId, cmd.AgreementProtocol, cmd.Reason, w.producerPH[cmd.AgreementProtocol].GetTerminationReason(cmd.Reason))
-
-						// send the event to the container in case it has started the workloads.
-						w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, cmd.AgreementProtocol, agreementId, cmd.Deployment)
-						// clean up microservice instances if needed
-						w.handleMicroserviceInstForAgEnded(agreementId)
-					}
-
-				case *producer.ExchangeMessageCommand:
-					cmd, _ := command.(*producer.ExchangeMessageCommand)
-
-					exchangeMsg := new(exchange.DeviceMessage)
-					if err := json.Unmarshal(cmd.Msg.ExchangeMessage(), &exchangeMsg); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("unable to demarshal exchange device message %v, error %v", cmd.Msg.ExchangeMessage(), err)))
-						continue
-					} else if there, err := w.messageInExchange(exchangeMsg.MsgId); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("unable to get messages from the exchange, error %v", err)))
-						continue
-					} else if !there {
-						glog.V(3).Infof(logString(fmt.Sprintf("ignoring message %v, already deleted from the exchange.", exchangeMsg.MsgId)))
-						continue
-					}
-
-					glog.V(3).Infof(logString(fmt.Sprintf("received message %v from the exchange", exchangeMsg.MsgId)))
-
-					deleteMessage := true
-					protocolMsg := cmd.Msg.ProtocolMessage()
-
-					// Pull the agreement protocol out of the message
-					if msgProtocol, err := abstractprotocol.ExtractProtocol(protocolMsg); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("unable to extract agreement protocol name from message %v", protocolMsg)))
-					} else if _, ok := w.producerPH[msgProtocol]; !ok {
-						glog.Infof(logString(fmt.Sprintf("unable to direct exchange message %v to a protocol handler, deleting it.", protocolMsg)))
-					} else {
-
-						deleteMessage = false
-						protocolHandler := w.producerPH[msgProtocol].AgreementProtocolHandler("", "", "")
-						// ReplyAck messages could indicate that the agbot has decided not to pursue the agreement any longer.
-						if replyAck, err := protocolHandler.ValidateReplyAck(protocolMsg); err != nil {
-							glog.V(5).Infof(logString(fmt.Sprintf("ReplyAck handler ignoring non-reply ack message: %s due to %v", cmd.Msg.ShortProtocolMessage(), err)))
-						} else if ags, err := persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(replyAck.AgreementId())}); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", replyAck.AgreementId(), err)))
-						} else if len(ags) != 1 {
-							glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database.", replyAck.AgreementId())))
-							deleteMessage = true
-						} else if replyAck.ReplyAgreementStillValid() {
-							if ags[0].AgreementAcceptedTime != 0 || ags[0].AgreementTerminatedTime != 0 {
-								glog.V(5).Infof(logString(fmt.Sprintf("ignoring replyack for %v because we already received one or are cancelling", replyAck.AgreementId())))
-								deleteMessage = true
-							} else if proposal, err := protocolHandler.DemarshalProposal(ags[0].Proposal); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("unable to demarshal proposal for agreement %v from database", replyAck.AgreementId())))
-							} else if err := w.RecordReply(proposal, msgProtocol); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("unable to record reply %v, error: %v", replyAck, err)))
-							} else {
-								deleteMessage = true
-							}
-						} else {
-							deleteMessage = true
-							w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, ags[0].CurrentDeployment)
-							reason := w.producerPH[msgProtocol].GetTerminationCode(producer.TERM_REASON_AGBOT_REQUESTED)
-							w.cancelAgreement(replyAck.AgreementId(), msgProtocol, reason, w.producerPH[msgProtocol].GetTerminationReason(reason))
-							// clean up microservice instances if needed
-							w.handleMicroserviceInstForAgEnded(replyAck.AgreementId())
-						}
-
-						// Data notification message indicates that the agbot has found that data is being received from the workload.
-						if dataReceived, err := protocolHandler.ValidateDataReceived(protocolMsg); err != nil {
-							glog.V(5).Infof(logString(fmt.Sprintf("DataReceived handler ignoring non-data received message: %v due to %v", cmd.Msg.ShortProtocolMessage(), err)))
-						} else if ags, err := persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(dataReceived.AgreementId())}); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", dataReceived.AgreementId(), err)))
-						} else if len(ags) != 1 {
-							glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", dataReceived.AgreementId(), err)))
-							deleteMessage = true
-						} else if _, err := persistence.AgreementStateDataReceived(w.db, dataReceived.AgreementId(), msgProtocol); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("unable to update data received time for %v, error: %v", dataReceived.AgreementId(), err)))
-						} else if messageTarget, err := exchange.CreateMessageTarget(exchangeMsg.AgbotId, nil, exchangeMsg.AgbotPubKey, ""); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
-						} else if err := protocolHandler.NotifyDataReceiptAck(dataReceived.AgreementId(), messageTarget, w.producerPH[msgProtocol].GetSendMessage()); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("unable to send data received ack for %v, error: %v", dataReceived.AgreementId(), err)))
-						} else {
-							deleteMessage = true
-						}
-
-						// Metering notification messages indicate that the agbot is metering data sent to the data ingest.
-						if mnReceived, err := protocolHandler.ValidateMeterNotification(protocolMsg); err != nil {
-							glog.V(5).Infof(logString(fmt.Sprintf("Meter Notification handler ignoring non-metering message: %v due to %v", cmd.Msg.ShortProtocolMessage(), err)))
-						} else if ags, err := persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(mnReceived.AgreementId())}); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", mnReceived.AgreementId(), err)))
-						} else if len(ags) != 1 {
-							glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", mnReceived.AgreementId(), err)))
-							deleteMessage = true
-						} else if ags[0].AgreementTerminatedTime != 0 {
-							glog.V(5).Infof(logString(fmt.Sprintf("ignoring metering notification, agreement %v is terminating", mnReceived.AgreementId())))
-							deleteMessage = true
-						} else if mn, err := metering.ConvertToPersistent(mnReceived.Meter()); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("unable to convert metering notification string %v to persistent metering notification for %v, error: %v", mnReceived.Meter(), mnReceived.AgreementId(), err)))
-							deleteMessage = true
-						} else if _, err := persistence.MeteringNotificationReceived(w.db, mnReceived.AgreementId(), *mn, msgProtocol); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("unable to update metering notification for %v, error: %v", mnReceived.AgreementId(), err)))
-							deleteMessage = true
-						} else {
-							deleteMessage = true
-						}
-
-						// Cancel messages indicate that the agbot wants to get rid of the agreement.
-						if canReceived, err := protocolHandler.ValidateCancel(protocolMsg); err != nil {
-							glog.V(5).Infof(logString(fmt.Sprintf("Cancel handler ignoring non-cancel message: %v due to %v", cmd.Msg.ShortProtocolMessage(), err)))
-						} else if ags, err := persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(canReceived.AgreementId())}); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", canReceived.AgreementId(), err)))
-						} else if len(ags) != 1 {
-							glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", canReceived.AgreementId(), err)))
-							deleteMessage = true
-						} else if exchangeMsg.AgbotId != ags[0].ConsumerId {
-							glog.Warningf(logString(fmt.Sprintf("cancel ignored, cancel message for %v came from id %v but agreement is with %v", canReceived.AgreementId(), exchangeMsg.AgbotId, ags[0].ConsumerId)))
-							deleteMessage = true
-						} else if ags[0].AgreementTerminatedTime != 0 {
-							glog.V(5).Infof(logString(fmt.Sprintf("ignoring cancel, agreement %v is terminating", canReceived.AgreementId())))
-							deleteMessage = true
-						} else {
-							w.cancelAgreement(canReceived.AgreementId(), msgProtocol, canReceived.Reason(), w.producerPH[msgProtocol].GetTerminationReason(canReceived.Reason()))
-							// cleanup workloads if needed
-							w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, ags[0].CurrentDeployment)
-							// clean up microservice instances if needed
-							w.handleMicroserviceInstForAgEnded(ags[0].CurrentAgreementId)
-							deleteMessage = true
-
-						}
-
-						// Allow the message extension handler to see the message
-						handled, cancel, agid, err := w.producerPH[msgProtocol].HandleExtensionMessages(&cmd.Msg, exchangeMsg)
-						if err != nil {
-							glog.Errorf(logString(fmt.Sprintf("unable to handle extension message %v , error: %v", protocolMsg, err)))
-						}
-						if cancel {
-							reason := w.producerPH[msgProtocol].GetTerminationCode(producer.TERM_REASON_AGBOT_REQUESTED)
-
-							if ags, err := persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agid)}); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agid, err)))
-							} else if len(ags) != 1 {
-								glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", agid, err)))
-								deleteMessage = true
-							} else {
-								w.cancelAgreement(agid, msgProtocol, reason, w.producerPH[msgProtocol].GetTerminationReason(reason))
-								// cleanup workloads if needed
-								w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, msgProtocol, agid, ags[0].CurrentDeployment)
-								// clean up microservice instances if needed
-								w.handleMicroserviceInstForAgEnded(agid)
-							}
-						}
-						if handled {
-							deleteMessage = handled
-						}
-
-					}
-
-					// Get rid of the exchange message when we're done with it
-					if deleteMessage {
-						if err := w.deleteMessage(exchangeMsg); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("error deleting exchange message %v, error %v", exchangeMsg.MsgId, err)))
-						}
-					}
-
-				case *producer.BlockchainEventCommand:
-					cmd, _ := command.(*producer.BlockchainEventCommand)
-
-					for _, protocol := range policy.AllAgreementProtocols() {
-						if !w.producerPH[protocol].AcceptCommand(cmd) {
-							continue
-						}
-
-						if agreementId, termination, reason, creation, err := w.producerPH[protocol].HandleBlockchainEventMessage(cmd); err != nil {
-							glog.Errorf(err.Error())
-						} else if termination {
-
-							// If we have that agreement in our DB, then cancel it
-							if ags, err := persistence.FindEstablishedAgreements(w.db, protocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)}); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agreementId, err)))
-							} else if len(ags) != 1 {
-								glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, not our agreement id")))
-							} else if ags[0].AgreementTerminatedTime != 0 {
-								glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, agreement %v is already terminating", ags[0].CurrentAgreementId)))
-							} else {
-								glog.Infof(logString(fmt.Sprintf("terminating agreement %v because it has been cancelled on the blockchain.", ags[0].CurrentAgreementId)))
-								w.cancelAgreement(ags[0].CurrentAgreementId, ags[0].AgreementProtocol, uint(reason), w.producerPH[protocol].GetTerminationReason(uint(reason)))
-								// cleanup workloads if needed
-								w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, ags[0].CurrentDeployment)
-								// clean up microservice instances if needed
-								w.handleMicroserviceInstForAgEnded(ags[0].CurrentAgreementId)
-							}
-
-							// If the event is an agreement created event
-						} else if creation {
-
-							// If we have that agreement in our DB and it's not already terminating, then finalize it
-							if ags, err := persistence.FindEstablishedAgreements(w.db, protocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)}); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agreementId, err)))
-							} else if len(ags) != 1 {
-								glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, not our agreement id")))
-							} else if ags[0].AgreementTerminatedTime != 0 {
-								glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, agreement %v is terminating", ags[0].CurrentAgreementId)))
-
-								// Finalize the agreement
-							} else if err := w.finalizeAgreement(ags[0], w.producerPH[protocol].AgreementProtocolHandler(ags[0].BlockchainType, ags[0].BlockchainName, ags[0].BlockchainOrg)); err != nil {
-								glog.Errorf(err.Error())
-							}
-						}
-					}
-
-				case *CleanupStatusCommand:
-					cmd, _ := command.(*CleanupStatusCommand)
-
-					glog.V(5).Infof(logString(fmt.Sprintf("Received CleanupStatusCommand: %v.", cmd)))
-					if ags, err := persistence.FindEstablishedAgreements(w.db, cmd.AgreementProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(cmd.AgreementId)}); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", cmd.AgreementId, err)))
-					} else if len(ags) != 1 {
-						glog.V(5).Infof(logString(fmt.Sprintf("ignoring event, not our agreement id")))
-					} else if ags[0].AgreementAcceptedTime == 0 {
-						// The only place the agreement is known is in the DB, so we can just delete the record. In the situation where
-						// the agbot changes its mind about the proposal, we don't want to create an archived agreement because an
-						// agreement was never really established.
-						if err := persistence.DeleteEstablishedAgreement(w.db, cmd.AgreementId, cmd.AgreementProtocol); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("unable to delete record for agreement %v, error: %v", cmd.AgreementId, err)))
-						}
-					} else {
-						// writes the cleanup status into the db
-						var archive = false
-						switch cmd.Status {
-						case STATUS_WORKLOAD_DESTROYED:
-							if agreement, err := persistence.AgreementStateWorkloadTerminated(w.db, cmd.AgreementId, cmd.AgreementProtocol); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("error marking agreement %v workload terminated: %v", cmd.AgreementId, err)))
-							} else if agreement.AgreementProtocolTerminatedTime != 0 {
-								archive = true
-							}
-						case STATUS_AG_PROTOCOL_TERMINATED:
-							if agreement, err := persistence.AgreementStateAgreementProtocolTerminated(w.db, cmd.AgreementId, cmd.AgreementProtocol); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("error marking agreement %v agreement protocol terminated: %v", cmd.AgreementId, err)))
-							} else if agreement.WorkloadTerminatedTime != 0 {
-								archive = true
-							}
-						default:
-							glog.Errorf(logString(fmt.Sprintf("The cleanup status %v is not supported for agreement %v.", cmd.Status, cmd.AgreementId)))
-						}
-
-						// archive the agreement if all the cleanup processes are done
-						if archive {
-							glog.V(5).Infof(logString(fmt.Sprintf("archiving agreement %v", cmd.AgreementId)))
-							if _, err := persistence.ArchiveEstablishedAgreement(w.db, cmd.AgreementId, cmd.AgreementProtocol); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("error archiving terminated agreement: %v, error: %v", cmd.AgreementId, err)))
-							}
-						}
-					}
-
-				case *producer.BCInitializedCommand:
-					cmd, _ := command.(*producer.BCInitializedCommand)
-					for _, pph := range w.producerPH {
-						pph.SetBlockchainClientAvailable(cmd)
-					}
-
-				case *producer.BCStoppingCommand:
-					cmd, _ := command.(*producer.BCStoppingCommand)
-					for _, pph := range w.producerPH {
-						pph.SetBlockchainClientNotAvailable(cmd)
-					}
-
-				case *producer.BCWritableCommand:
-					cmd, _ := command.(*producer.BCWritableCommand)
-					for _, pph := range w.producerPH {
-						pph.SetBlockchainWritable(cmd)
-						pph.UpdateConsumers()
-					}
-
-				case *AsyncTerminationCommand:
-					cmd, _ := command.(*AsyncTerminationCommand)
-					if ags, err := persistence.FindEstablishedAgreements(w.db, cmd.AgreementProtocol, []persistence.EAFilter{persistence.IdEAFilter(cmd.AgreementId)}); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", cmd.AgreementId, err)))
-					} else if len(ags) != 1 {
-						glog.V(5).Infof(logString(fmt.Sprintf("ignoring command, not our agreement id")))
-					} else if w.producerPH[cmd.AgreementProtocol].IsBlockchainWritable(&ags[0]) {
-						glog.Infof(logString(fmt.Sprintf("external agreement termination of %v reason %v.", cmd.AgreementId, cmd.Reason)))
-						w.externalTermination(&ags[0], cmd.AgreementId, cmd.AgreementProtocol, cmd.Reason)
-					} else {
-						deferredCommands = append(deferredCommands, cmd)
-					}
-				case *UpdateMicroserviceCommand:
-					cmd, _ := command.(*UpdateMicroserviceCommand)
-
-					glog.V(5).Infof(logString(fmt.Sprintf("Updating microservice command %v", cmd)))
-
-					if cmd.ExecutionStarted == false && cmd.ExecutionFailureCode == 0 {
-						// the miceroservice containers were destroyed, just archive the ms instance it if it not already done
-						// this part is from the CONTAINER_DESTROYED event id which was originally
-						if _, err := persistence.ArchiveMicroserviceInstance(w.db, cmd.MsInstKey); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("Error archiving microservice instance %v. %v", cmd.MsInstKey, err)))
-						}
-					} else {
-						// microservice execution started or failed
-						// this part is from EXECUTION_FAILED or EXECUTION_BEGUN event id
-
-						// update the execution status for microservice instance
-						if msinst, err := persistence.UpdateMSInstanceExecutionState(w.db, cmd.MsInstKey, cmd.ExecutionStarted, cmd.ExecutionFailureCode, cmd.ExecutionFailureDesc); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("Error updating microservice execution status. %v", err)))
-						} else if msinst != nil {
-							if msdef, err := persistence.FindMicroserviceDefWithKey(w.db, msinst.MicroserviceDefId); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("Error finding microserivce definition fron db for %v version %v key %v. %v", msinst.SpecRef, msinst.Version, msinst.MicroserviceDefId, err)))
-							} else if msdef == nil {
-								glog.Errorf(logString(fmt.Sprintf("No microserivce definition record in db for %v version %v key %v. %v", msinst.SpecRef, msinst.Version, msinst.MicroserviceDefId, err)))
-							} else {
-								if msdef.UpgradeStartTime != 0 && msdef.UpgradeExecutionStartTime == 0 && msdef.UpgradeFailedTime == 0 {
-									// handle the rest of the microservice upgrade process
-									w.handleMicroserviceUpgradeExecStateChange(msdef, cmd.MsInstKey, cmd.ExecutionStarted)
-								} else if !cmd.ExecutionStarted && msinst.CleanupStartTime == 0 { // if this is not part of the ms instance cleanup process
-									// for execution failure, need to delete the ms instance and clean the agreemens. New agreements will come and new ms instances will be started
-									if err := w.CleanupMicroservice(msinst.SpecRef, msinst.Version, cmd.MsInstKey, cmd.ExecutionFailureCode); err != nil {
-										glog.Errorf(logString(fmt.Sprintf("Error cleanup microservice instance %v. %v", cmd.MsInstKey, err)))
-									}
-								}
-							}
-						}
-					}
-				case *ReportDeviceStatusCommand:
-					cmd, _ := command.(*ReportDeviceStatusCommand)
-
-					glog.V(5).Infof(logString(fmt.Sprintf("Report device status command %v", cmd)))
-					w.ReportDeviceStatus()
-
-				default:
-					glog.Errorf("GovernanceWorker received unknown command (%T): %v", command, command)
-				}
-				glog.V(5).Infof("GovernanceWorker handled command")
-
-			case <-time.After(time.Duration(10) * time.Second):
-				// Make sure that all known agreements are maintained
-				w.governAgreements()
-
-				// Any commands that have been deferred should be written back to the command queue now. The commands have been
-				// accumulating and have endured at least a 10 second break since they were last tried (because we are executing
-				// in the channel timeout path).
-				glog.V(5).Infof("GovernanceWorker requeue-ing deferred commands")
-				for _, c := range deferredCommands {
-					w.Commands <- c
-				}
-				deferredCommands = make([]worker.Command, 0, 10)
-			}
-
+	// When all subworkers are down, start the shutdown process.
+	if w.IsWorkerShuttingDown() && w.ShuttingDownCmd != nil {
+		if w.AreAllSubworkersTerminated() {
+			cmd := w.ShuttingDownCmd
+			// This is one of the few go routines that should NOT be abstracted as a subworker.
+			go w.nodeShutdown(cmd)
+			w.ShuttingDownCmd = nil
+		} else {
+			glog.V(5).Infof("GovernanceWorker waiting for subworkers to terminate.")
 		}
-	}()
+	}
+
 }
 
 // This function encapsulates finalization of an agreement for re-use
@@ -1069,12 +1067,12 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			}
 			lc.Microservices = ms_specs
 
-			w.Worker.Manager.Messages <- events.NewAgreementMessage(events.AGREEMENT_REACHED, lc)
+			w.BaseWorker.Manager.Messages <- events.NewAgreementMessage(events.AGREEMENT_REACHED, lc)
 		}
 
 		// Tell the BC worker to start the BC client container(s) if we need to.
 		if ag.BlockchainType != "" && ag.BlockchainName != "" && ag.BlockchainOrg != "" {
-			w.Worker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken)
+			w.BaseWorker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken)
 		}
 	}
 
@@ -1665,7 +1663,7 @@ func (w *GovernanceWorker) handleMicroserviceUpgradeExecStateChange(msdef *persi
 }
 
 // process microservice instance after an agreement is ended.
-func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string) {
+func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, skipUpgrade bool) {
 	glog.V(3).Infof(logString(fmt.Sprintf("handle microservice instance for agreement %v ended.", agreementId)))
 
 	// delete the agreement from the microservice instance and upgrade the microservice if needed
@@ -1695,7 +1693,9 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string) 
 						}
 
 						// handle inactive microservice upgrade, upgrade the microservice if needed
-						w.HandleMicroserviceUpgrade(msi.MicroserviceDefId, true)
+						if !skipUpgrade {
+							w.HandleMicroserviceUpgrade(msi.MicroserviceDefId, true)
+						}
 						break
 					}
 				}

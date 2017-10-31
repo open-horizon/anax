@@ -798,6 +798,47 @@ func PolicyFileChangeWatcher(homePath string,
 	return contents, nil
 }
 
+// Delete all policy files. This function does not try to update the policy manager, it is a low level function
+// that simply removes all the policy files.
+func DeleteAllPolicyFiles(homePath string) error {
+
+	dirs, err := getPolicyDirectories(homePath)
+	if err != nil {
+		return errors.New(fmt.Sprintf("unable to get list of policy directories in %v, error: %v", homePath, err))
+	}
+
+	// Each directory can have policy files in it. On a node, there is only 1 policy directory.
+	for _, dirInfo := range dirs {
+		org := dirInfo.Name()
+		glog.V(5).Infof("Deleting policies from directory %v", org)
+
+		// Get a list of all policy files in the directory
+		orgPath := homePath + "/" + org + "/"
+		files, err := getPolicyFiles(orgPath)
+		if err != nil {
+			return errors.New(fmt.Sprintf("unable to get list of policy files in %v, error: %v", orgPath, err))
+		}
+
+		// For each file, if we dont have a record of it, read in the file and create an entry in the map.
+		for _, fileInfo := range files {
+
+			name := orgPath + fileInfo.Name()
+			glog.V(5).Infof("Deleting policy file %v", name)
+			if err := DeletePolicyFile(name); err != nil {
+				return errors.New(fmt.Sprintf("error deleting policy files %v, error: %v", name, err))
+			}
+
+		}
+
+		// Remove the parent org directory.
+		pDir := homePath + "/" + org
+		if err := os.Remove(pDir); err != nil {
+			glog.Errorf("Error removing policy directory %v, error: %v", pDir, err)
+		}
+	}
+	return nil
+}
+
 // This is an internal function used to find all policy files in the policy directory. Files that don't end in
 // .policy are ignored. Directories are also ignored.
 func getPolicyFiles(homePath string) ([]os.FileInfo, error) {

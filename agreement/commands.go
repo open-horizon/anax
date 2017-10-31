@@ -23,21 +23,6 @@ func NewDeviceRegisteredCommand(msg *events.EdgeRegisteredExchangeMessage) *Devi
 }
 
 // ==============================================================================================================
-type TerminateCommand struct {
-	reason string
-}
-
-func (t TerminateCommand) ShortString() string {
-	return fmt.Sprintf("%v", t)
-}
-
-func NewTerminateCommand(reason string) *TerminateCommand {
-	return &TerminateCommand{
-		reason: reason,
-	}
-}
-
-// ==============================================================================================================
 type AdvertisePolicyCommand struct {
 	PolicyFile string
 }

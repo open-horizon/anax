@@ -106,6 +106,18 @@ func (e *ExchangeDevice) SetConfigstate(db *bolt.DB, deviceId string, state stri
 	})
 }
 
+func (e *ExchangeDevice) SetDeviceState(db *bolt.DB, state string) (*ExchangeDevice, error) {
+	return updateExchangeDevice(db, e, e.Id, false, func(d ExchangeDevice) *ExchangeDevice {
+		d.Config.State = state
+		d.Config.LastUpdateTime = uint64(time.Now().Unix())
+		return &d
+	})
+}
+
+func (e *ExchangeDevice) IsState(state string) bool {
+	return e.Config.State == state
+}
+
 func updateExchangeDevice(db *bolt.DB, self *ExchangeDevice, deviceId string, invalidateToken bool, fn func(d ExchangeDevice) *ExchangeDevice) (*ExchangeDevice, error) {
 	if deviceId == "" {
 		return nil, fmt.Errorf("Illegal arguments specified.")
@@ -247,5 +259,26 @@ func FindExchangeDevice(db *bolt.DB) (*ExchangeDevice, error) {
 		return &devices[0], nil
 	} else {
 		return nil, nil
+	}
+}
+
+func DeleteExchangeDevice(db *bolt.DB) error {
+
+	if dev, err := FindExchangeDevice(db); err != nil {
+		return err
+	} else if dev == nil {
+		return fmt.Errorf("could not find record for device")
+	} else {
+
+		return db.Update(func(tx *bolt.Tx) error {
+
+			if b, err := tx.CreateBucketIfNotExists([]byte(DEVICES)); err != nil {
+				return err
+			} else if err := b.Delete([]byte(DEVICES)); err != nil {
+				return fmt.Errorf("Unable to delete horizon device object: %v", err)
+			} else {
+				return nil
+			}
+		})
 	}
 }

@@ -204,6 +204,8 @@ func (c *CSProtocolHandler) GetTerminationCode(reason string) uint {
 		return citizenscientist.CANCEL_IMAGE_FETCH_AUTH_FAILURE
 	case TERM_REASON_IMAGE_SIG_VERIF_FAILURE:
 		return citizenscientist.CANCEL_IMAGE_SIG_VERIF_FAILURE
+	case TERM_REASON_NODE_SHUTDOWN:
+		return citizenscientist.CANCEL_NODE_SHUTDOWN
 	default:
 		return 999
 	}
