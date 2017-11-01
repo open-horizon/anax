@@ -56,7 +56,7 @@ func DeleteAgreement(errorhandler ErrorHandler, agreementId string, db *bolt.DB)
 	if err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("unable to read agreement objects, error %v", err))), nil
 	} else if len(agreements) == 0 {
-		return errorhandler(NewNotFoundError(fmt.Sprintf("no agreements in local database"))), nil
+		return errorhandler(NewNotFoundError(fmt.Sprintf("no agreements in local database"), "agreement")), nil
 	}
 
 	// Deletion is actually handled asynchronously. If the agreement is already terminating there is nothing to do.

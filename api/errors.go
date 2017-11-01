@@ -99,16 +99,18 @@ func NewBadRequestError(err string) *BadRequestError {
 
 // Not Found errors are expected, since they can occur as the result of incorrect usage of the API.
 type NotFoundError struct {
-	msg string
+	Err   string `json:"error"`
+	Input string `json:"input,omitempty"`
 }
 
 func (e NotFoundError) Error() string {
-	return e.msg
+	return fmt.Sprintf("Input: %v, Error: %v", e.Input, e.Err)
 }
 
-func NewNotFoundError(err string) *NotFoundError {
+func NewNotFoundError(err string, input string) *NotFoundError {
 	return &NotFoundError{
-		msg: err,
+		Err:   err,
+		Input: input,
 	}
 }
 
@@ -176,8 +178,8 @@ func GetHTTPErrorHandler(w http.ResponseWriter) ErrorHandler {
 
 			case *NotFoundError:
 				notErr := err.(*NotFoundError)
-				glog.Errorf(apiLogString(notErr.Error()))
-				http.Error(w, notErr.Error(), http.StatusNotFound)
+				apiErr := NewAPIUserInputError(notErr.Err, notErr.Input)
+				writeInputErr(w, http.StatusNotFound, apiErr)
 
 			default:
 				glog.Errorf(apiLogString(fmt.Sprintf("unknown error (%T) %v", err, err.Error())))

@@ -69,7 +69,7 @@ func UpdateConfigstate(cfg *Configstate,
 	if err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read horizondevice object, error %v", err))), nil, nil
 	} else if pDevice == nil {
-		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API's /horizondevice path.")), nil, nil
+		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API's /horizondevice path.", "horizondevice")), nil, nil
 	}
 
 	glog.V(3).Infof(apiLogString(fmt.Sprintf("Update configstate: device in local database: %v", pDevice)))

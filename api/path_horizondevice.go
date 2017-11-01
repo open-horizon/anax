@@ -134,7 +134,7 @@ func UpdateHorizonDevice(device *HorizonDevice,
 	if err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read horizondevice object, error %v", err))), nil, nil
 	} else if pDevice == nil {
-		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API.")), nil, nil
+		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API.", "horizondevice")), nil, nil
 	} else if pDevice.IsState(CONFIGSTATE_UNCONFIGURING) {
 		return errorhandler(NewBadRequestError(fmt.Sprintf("The node is already unconfiguring. The GET API will return HTTP status 404 when unconfiguration is complete."))), nil, nil
 	}
@@ -177,7 +177,7 @@ func DeleteHorizonDevice(removeNode string,
 	if err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read horizondevice object, error %v", err)))
 	} else if pDevice == nil {
-		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API."))
+		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API.", "horizondevice"))
 	} else if pDevice.IsState(CONFIGSTATE_UNCONFIGURING) {
 		return errorhandler(NewBadRequestError(fmt.Sprintf("The node is already unconfiguring. The GET API will return HTTP status 404 when unconfiguration is complete.")))
 	}
