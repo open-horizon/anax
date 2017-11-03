@@ -13,11 +13,18 @@ import (
 
 
 func main() {
-	// Command flags and args
+	// Command flags and args - see https://github.com/alecthomas/kingpin
 	app := kingpin.New("hzn", "Command line interface for Horizon agent.")
 	cliutils.Opts.Verbose = app.Flag("verbose", "Verbose output.").Short('v').Bool()
 
 	registerCmd := app.Command("register", "Register this edge node with Horizon.")
+	userPw := registerCmd.Flag("user-pw", "User credentials (user:pw) to create the node resource in the Horizon exchange if it does not already exist.").Short('u').String()
+	inputFile := registerCmd.Flag("input-file", "A JSON file that sets or overrides variables needed by the workloads and microservices that are part of this pattern.").Short('f').String()
+	org := registerCmd.Arg("organization", "The Horizon exchange organization ID.").Required().String()
+	nodeId := registerCmd.Arg("nodeid", "The Horizon exchange node ID. Must be unique within the organization. Suggestions are machine serial number or fully qualified hostname. If it does not yet exist, you must also specify the -u flag").Required().String()
+	nodeToken := registerCmd.Arg("nodetoken", "The Horizon exchange node token.").Required().String()
+	pattern := registerCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node.").Required().String()
+
 	importkeyCmd := app.Command("importkey", "Import a public key to verify signed microservices and workloads.")
 
 	showCmd := app.Command("show", "Display information about this Horizon edge node.")
@@ -33,7 +40,7 @@ func main() {
 	// Decide which command to run
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 	case registerCmd.FullCommand():
-		register.DoIt()
+		register.DoIt(*org, *nodeId, *nodeToken, *pattern, *userPw, *inputFile)
 	case importkeyCmd.FullCommand():
 		importkey.DoIt()
 	//case showCmd.FullCommand():   // <- I'd like to just show usage for hzn show, but don't know how to do that yet

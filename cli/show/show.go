@@ -61,13 +61,13 @@ func (n *NodeAndStatus) CopyStatusInto(status *api.Info) {
 func Node() {
 	// Get the horizondevice info
 	horDevice := api.HorizonDevice{}
-	cliutils.HorizonGet("horizondevice", &horDevice)
+	cliutils.HorizonGet("horizondevice", 200, &horDevice)
 	nodeInfo := NodeAndStatus{}		// the structure we will output
 	nodeInfo.CopyNodeInto(&horDevice)
 
 	// Get the horizon status info
 	status := api.Info{}
-	cliutils.HorizonGet("status", &status)
+	cliutils.HorizonGet("status", 200, &status)
 	nodeInfo.CopyStatusInto(&status)
 
 	// Output the combined info
@@ -142,7 +142,7 @@ func (a *ArchivedAgreement) CopyAgreementInto(agreement persistence.EstablishedA
 func Agreements() {
 	// Get horizon api agreement output and drill down to the category we want
 	apiOutput := make(map[string]map[string][]persistence.EstablishedAgreement, 0)
-	cliutils.HorizonGet("agreement", &apiOutput)
+	cliutils.HorizonGet("agreement", 200, &apiOutput)
 	var ok bool
 	if _, ok = apiOutput["agreements"]; !ok { cliutils.Fatal(3, "horizon api agreement output did not include 'agreements' key") }
 	whichAgreements := "active"
