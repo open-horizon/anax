@@ -7,3 +7,5 @@ agreementbot/build/docker-exec
 agreementbot/build/docker/fs/root/.ssh/id*
 anax/doc/*.png
 **/*.apib
+/cli/hzn
+/.idea
