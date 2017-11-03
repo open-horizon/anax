@@ -347,7 +347,7 @@ func (a *API) horizonDevice(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Validate and create the new device registration.
-		errHandled, device, exDev := CreateHorizonDevice(&newDevice, errorHandler, orgHandler, patternHandler, a.db)
+		errHandled, device, exDev := CreateHorizonDevice(&newDevice, errorHandler, orgHandler, patternHandler, a.em, a.db)
 		if errHandled {
 			return
 		}

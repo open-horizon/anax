@@ -40,7 +40,14 @@ func CreateHorizonDevice(device *HorizonDevice,
 	errorhandler ErrorHandler,
 	getOrg OrgHandler,
 	getPatterns PatternHandler,
+	em *events.EventStateManager,
 	db *bolt.DB) (bool, *HorizonDevice, *HorizonDevice) {
+
+	// Reject the call if the node is restarting.
+	se := events.NewNodeShutdownCompleteMessage(events.UNCONFIGURE_COMPLETE, "")
+	if em.ReceivedEvent(se, nil) {
+		return errorhandler(NewAPIUserInputError("Node is restarting, please wait a few seconds and try again.", "horizondevice")), nil, nil
+	}
 
 	// Check for the device in the local database. If there are errors, they will be written
 	// to the HTTP response.
@@ -146,7 +153,7 @@ func UpdateHorizonDevice(device *HorizonDevice,
 
 	// We dont compute the token so there is no need to try to check it.
 
-	// If there is no token, that's an errir
+	// If there is no token, that's an error
 	if device.Token == nil {
 		return errorhandler(NewAPIUserInputError("null and must not be", "device.token")), nil, nil
 	}
