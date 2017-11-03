@@ -5,7 +5,7 @@ import (
 	"os"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/show"
-	"gopkg.in/alecthomas/kingpin.v2"	//todo: put go get gopkg.in/alecthomas/kingpin.v2 in Makefile
+	"gopkg.in/alecthomas/kingpin.v2"
 	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/cli/importkey"
 	"github.com/open-horizon/anax/cli/wipe"
@@ -23,6 +23,7 @@ func main() {
 	showCmd := app.Command("show", "Display information about this Horizon edge node.")
 	showNodeCmd := showCmd.Command("node", "Show general information about this Horizon edge node.")
 	showAgreementsCmd := showCmd.Command("agreements", "Show the active or archived agreements this edge node has made with a Horizon agreement bot.")
+	cliutils.Opts.ArchivedAgreements = showAgreementsCmd.Flag("archived", "Show archived agreements instead of the active agreements.").Short('r').Bool()
 	showMeteringCmd := showCmd.Command("metering", "Show metering (payment) information for the active or archived agreements.")
 	showKeysCmd := showCmd.Command("keys", "Show the public signing keys that have been imported to this Horizon edge node.")
 
@@ -36,7 +37,7 @@ func main() {
 	case importkeyCmd.FullCommand():
 		importkey.DoIt()
 	//case showCmd.FullCommand():   // <- I'd like to just show usage for hzn show, but don't know how to do that yet
-	//	showCmd.
+	//	showCmd.?
 	case showNodeCmd.FullCommand():
 		show.Node()
 	case showAgreementsCmd.FullCommand():
