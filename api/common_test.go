@@ -126,6 +126,35 @@ func getVariableMicroserviceHandler(mUserInput exchange.UserInput) func(mUrl str
 	}
 }
 
+func getVariableWorkload(mUrl, mOrg, mVersion, mArch string, ui *exchange.UserInput) func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*exchange.WorkloadDefinition, error) {
+	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*exchange.WorkloadDefinition, error) {
+		es := exchange.APISpec{
+			SpecRef: mUrl,
+			Org:     mOrg,
+			Version: mVersion,
+			Arch:    mArch,
+		}
+		uis := []exchange.UserInput{}
+		if ui != nil {
+			uis = []exchange.UserInput{*ui}
+		}
+		wl := exchange.WorkloadDefinition{
+			Owner:       "owner",
+			Label:       "label",
+			Description: "desc",
+			WorkloadURL: mUrl,
+			Version:     mVersion,
+			Arch:        mArch,
+			DownloadURL: "",
+			APISpecs:    []exchange.APISpec{es},
+			UserInputs:  uis,
+			Workloads:   []exchange.WorkloadDeployment{},
+			LastUpdated: "updated",
+		}
+		return &wl, nil
+	}
+}
+
 func utsetup() (string, *bolt.DB, error) {
 	dir, err := ioutil.TempDir("", "utdb-")
 	if err != nil {

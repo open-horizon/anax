@@ -24,7 +24,6 @@ import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
-	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
@@ -1103,48 +1102,31 @@ func getPemFiles(homePath string) ([]os.FileInfo, error) {
 
 func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 
-	_, errWritten := a.existingDeviceOrError(w)
+	existingDevice, errWritten := a.existingDeviceOrError(w)
 	if errWritten {
 		return
 	}
 
+	resource := "workloadconfig"
+	errorhandler := GetHTTPErrorHandler(w)
+
 	switch r.Method {
 	case "GET":
 
-		// Only "get all" is supported
-		wrap := make(map[string][]persistence.WorkloadConfig)
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
-		// Retrieve all workload configs from the db
-		cfgs, err := persistence.FindWorkloadConfigs(a.db, []persistence.WCFilter{})
-		if err != nil {
-			glog.Error(err)
-			http.Error(w, fmt.Sprintf("Internal server error: %v", err), http.StatusInternalServerError)
-			return
-		}
-
-		wrap["active"] = cfgs
-
-		// Sort the output by workload URL and then within that by version
-		sort.Sort(WorkloadConfigByWorkloadURLAndVersion(wrap["active"]))
-
-		// Create the response body and send it back
-		serial, err := json.Marshal(wrap)
-		if err != nil {
-			glog.Infof("Error serializing agreement output: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		glog.V(5).Infof("WorkloadConfig GET returns: %v", string(serial))
-
-		w.Header().Set("Content-Type", "application/json")
-		if _, err := w.Write(serial); err != nil {
-			glog.Infof("Error writing response: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
+		// Gather all the agreements from the local database and format them for output.
+		if out, err := FindWorkloadConfigForOutput(a.db); err != nil {
+			errorhandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
+		} else {
+			writeResponse(w, out, http.StatusOK)
 		}
 
 	case "POST":
+
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		getWorkload := GetHTTPWorkloadHandler(a)
 
 		// Demarshal the input body
 		var cfg WorkloadConfig
@@ -1154,135 +1136,24 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 		decoder.UseNumber()
 
 		if err := decoder.Decode(&cfg); err != nil {
-			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("could not be demarshalled, error: %v", err), "workloadConfig"))
+			errorhandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be demarshalled, error: %v", err), "workloadConfig"))
 			return
 		}
 
-		glog.V(5).Infof("WorkloadConfig POST input: %v", &cfg)
-
-		existingDevice, errWritten := a.existingDeviceOrError(w)
-		if errWritten {
+		// Validate and create the workloadconfig object in the body of the request.
+		errHandled, newWC := CreateWorkloadconfig(&cfg, existingDevice, errorhandler, getWorkload, a.db)
+		if errHandled {
 			return
 		}
 
-		// Validate the input strings. The variables map can be empty if the device owner wants
-		// the workload to use all default values, so we wont validate that map.
-		if cfg.WorkloadURL == "" {
-			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("not specified", "workload_url"))
-			return
-		} else if cfg.Version == "" {
-			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("not specified", "workload_version"))
-			return
-		} else if !policy.IsVersionString(cfg.Version) && !policy.IsVersionExpression(cfg.Version) {
-			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("workload_version %v is not a valid version string or expression", cfg.Version), "workload_version"))
-			return
-		}
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handled %v on resource %v", r.Method, resource)))
 
-		// Convert the input version to a full version expression if it is not already a full expression.
-		vExp, verr := policy.Version_Expression_Factory(cfg.Version)
-		if verr != nil {
-			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("workload_version %v error converting to full version expression, error: %v", cfg.Version, verr), "workload_version"))
-			return
-		}
-
-		// Use the device org if not explicitly specified. Otherwise verify that the specified org exists.
-		org := cfg.Org
-		if cfg.Org == "" {
-			org = existingDevice.Org
-		}
-
-		// Reject the POST if there is already a config for this workload and version range
-		existingCfg, err := persistence.FindWorkloadConfig(a.db, cfg.WorkloadURL, vExp.Get_expression())
-		if err != nil {
-			glog.Error(err)
-			http.Error(w, fmt.Sprintf("Internal server error: %v", err), http.StatusInternalServerError)
-			return
-		} else if existingCfg != nil {
-			glog.Errorf("WorkloadConfig workload config already exists: %v", cfg)
-			http.Error(w, "Resource already exists", http.StatusConflict)
-			return
-		}
-
-		// Get the workload metadata from the exchange and verify the userInput against the variables in the POST body.
-		workloadDef, err := exchange.GetWorkload(a.Config.Collaborators.HTTPClientFactory, cfg.WorkloadURL, org, vExp.Get_expression(), cutil.ArchString(), a.Config.Edge.ExchangeURL, existingDevice.GetId(), existingDevice.Token)
-		if err != nil || workloadDef == nil {
-			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("Unable to find the workload definition using version %v in the exchange.", vExp.Get_expression()), "workload_url"))
-			return
-		}
-
-		// Loop through each input variable and verify that it is defined in the workload's user input section, and that the
-		// type matches.
-		for varName, varValue := range cfg.Variables {
-			glog.V(5).Infof("WorkloadConfig checking input variable: %v", varName)
-			if ui := workloadDef.GetUserInputName(varName); ui != nil {
-				errMsg := ""
-				switch varValue.(type) {
-				case string:
-					if ui.Type != "string" {
-						errMsg = fmt.Sprintf("WorkloadConfig variable %v is type %T, expecting %v", varName, varValue, ui.Type)
-					}
-				case json.Number:
-					strNum := varValue.(json.Number).String()
-					if ui.Type != "int" && ui.Type != "float" {
-						errMsg = fmt.Sprintf("WorkloadConfig variable %v is a number, expecting %v", varName, ui.Type)
-					} else if strings.Contains(strNum, ".") && ui.Type == "int" {
-						errMsg = fmt.Sprintf("WorkloadConfig variable %v is a float, expecting int", varName)
-					}
-					cfg.Variables[varName] = strNum
-				case []interface{}:
-					if ui.Type != "list of strings" {
-						errMsg = fmt.Sprintf("WorkloadConfig variable %v is type %T, expecting %v", varName, varValue, ui.Type)
-					} else {
-						for _, e := range varValue.([]interface{}) {
-							if _, ok := e.(string); !ok {
-								errMsg = fmt.Sprintf("WorkloadConfig variable %v is not []string", varName)
-								break
-							}
-						}
-					}
-				default:
-					errMsg = fmt.Sprintf("WorkloadConfig variable %v is type %T, but is an unexpected type.", varName, varValue)
-				}
-				if errMsg != "" {
-					writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(errMsg, "variables"))
-					return
-				}
-			} else {
-				writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("Unable to find the workload config variable %v in workload definition", varName), "variables"))
-				return
-			}
-		}
-
-		// Loop through each userInput variable in the workload definition to make sure variables without default values have been set.
-		for _, ui := range workloadDef.UserInputs {
-			glog.V(5).Infof("WorkloadConfig checking workload userInput: %v", ui)
-			if _, ok := cfg.Variables[ui.Name]; ok {
-				// User Input variable is defined in the workload config request
-				continue
-			} else if !ok && ui.DefaultValue != "" {
-				// User Input variable is not defined in the workload config request but it has a default in the workload definition. Save
-				// the default into the workload config so that we dont have to query the exchange for the value when the workload starts.
-				cfg.Variables[ui.Name] = ui.DefaultValue
-			} else {
-				// User Input variable is not defined in the workload config request and doesnt have a default, that's a problem.
-				writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("WorkloadConfig does not set %v, which has no default value", ui.Name), "variables"))
-				return
-			}
-		}
-
-		// Persist the workload configuration to the database
-		glog.V(5).Infof("WorkloadConfig persisting variables: %v", cfg.Variables)
-
-		_, err = persistence.NewWorkloadConfig(a.db, cfg.WorkloadURL, vExp.Get_expression(), cfg.Variables)
-		if err != nil {
-			glog.Error(err)
-			http.Error(w, fmt.Sprintf("Internal server error: %v", err), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusCreated)
+		// Write the new workloadconfig back to the caller.
+		writeResponse(w, newWC, http.StatusCreated)
 
 	case "DELETE":
+
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
 		// Demarshal the input body. Use the same body as the POST but ignore the variables section.
 		var cfg WorkloadConfig
@@ -1292,46 +1163,19 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 		decoder.UseNumber()
 
 		if err := decoder.Decode(&cfg); err != nil {
-			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("could not be demarshalled, error: %v", err), "workloadConfig"))
+			errorhandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be demarshalled, error: %v", err), "workloadConfig"))
 			return
 		}
 
-		glog.V(5).Infof("WorkloadConfig DELETE: %v", &cfg)
-
-		// Validate the input strings. The variables map is ignored.
-		if cfg.WorkloadURL == "" {
-			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("not specified", "workload_url"))
-			return
-		} else if cfg.Version == "" {
-			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError("not specified", "workload_version"))
-			return
-		} else if !policy.IsVersionString(cfg.Version) && !policy.IsVersionExpression(cfg.Version) {
-			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("workload_version %v is not a valid version string", cfg.Version), "workload_version"))
+		// Validate and create the workloadconfig object in the body of the request.
+		errHandled := DeleteWorkloadconfig(&cfg, errorhandler, a.db)
+		if errHandled {
 			return
 		}
 
-		// Convert the input version to a full version expression if it is not already a full expression.
-		vExp, verr := policy.Version_Expression_Factory(cfg.Version)
-		if verr != nil {
-			writeInputErr(w, http.StatusBadRequest, NewAPIUserInputError(fmt.Sprintf("workload_version %v error converting to full version expression, error: %v", cfg.Version, verr), "workload_version"))
-			return
-		}
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handled %v on resource %v", r.Method, resource)))
 
-		// Find the target record
-		existingCfg, err := persistence.FindWorkloadConfig(a.db, cfg.WorkloadURL, vExp.Get_expression())
-		if err != nil {
-			glog.Error(err)
-			http.Error(w, fmt.Sprintf("Internal server error: %v", err), http.StatusInternalServerError)
-			return
-		} else if existingCfg == nil {
-			http.Error(w, "WorkloadConfig not found", http.StatusNotFound)
-			return
-		} else {
-			glog.V(5).Infof("WorkloadConfig deleting: %v", &cfg)
-			persistence.DeleteWorkloadConfig(a.db, cfg.WorkloadURL, vExp.Get_expression())
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
+		w.WriteHeader(http.StatusNoContent)
 
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, POST, OPTIONS")
