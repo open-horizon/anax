@@ -21,6 +21,7 @@ const (
 type Options struct {
 	Verbose *bool
 	ArchivedAgreements *bool
+	ArchivedMetering *bool
 }
 var Opts Options
 

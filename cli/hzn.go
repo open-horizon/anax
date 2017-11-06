@@ -32,9 +32,10 @@ func main() {
 	showAgreementsCmd := showCmd.Command("agreements", "Show the active or archived agreements this edge node has made with a Horizon agreement bot.")
 	cliutils.Opts.ArchivedAgreements = showAgreementsCmd.Flag("archived", "Show archived agreements instead of the active agreements.").Short('r').Bool()
 	showMeteringCmd := showCmd.Command("metering", "Show metering (payment) information for the active or archived agreements.")
+	cliutils.Opts.ArchivedMetering = showMeteringCmd.Flag("archived", "Show archived agreement metering information instead of metering for the active agreements.").Short('r').Bool()
 	showKeysCmd := showCmd.Command("keys", "Show the public signing keys that have been imported to this Horizon edge node.")
 
-	wipeCmd := app.Command("wipe", "unregister and reset this Horizon edge node so that it is ready to be registered again.")
+	wipeCmd := app.Command("wipe", "Unregister and reset this Horizon edge node so that it is ready to be registered again.")
 	app.Version("0.0.1")	//todo: get the real version of anax
 
 	// Decide which command to run
