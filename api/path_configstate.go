@@ -147,6 +147,11 @@ func UpdateConfigstate(cfg *Configstate,
 
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Configstate resolved pattern to APISpecs %v", *completeAPISpecList)))
 
+		// If the pattern search doesnt find any microservices then there is a problem.
+		if len(*completeAPISpecList) == 0 {
+			return errorhandler(NewAPIUserInputError(fmt.Sprintf("No microservices found for %v %v.", patId, thisArch), "configstate.state")), nil, nil
+		}
+
 		// Using the list of APISpec objects, we can create a service (microservice) on this node automatically, for each microservice
 		// that already has configuration or which doesnt need it.
 		var createServiceError error

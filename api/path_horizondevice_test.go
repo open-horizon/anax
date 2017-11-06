@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"os"
@@ -96,7 +97,7 @@ func Test_CreateHorizonDevice_NoDeviceid(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -128,7 +129,7 @@ func Test_CreateHorizonDevice_IllegalId(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -159,7 +160,7 @@ func Test_CreateHorizonDevice_IllegalOrg(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -190,7 +191,7 @@ func Test_CreateHorizonDevice_IllegalPattern(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -222,7 +223,7 @@ func Test_CreateHorizonDevice_IllegalName(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -253,7 +254,7 @@ func Test_CreateHorizonDevice_IllegalToken(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -313,7 +314,7 @@ func Test_CreateHorizonDevice0(t *testing.T) {
 		}
 	}
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, events.NewEventStateManager(), db)
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
@@ -374,7 +375,7 @@ func Test_CreateHorizonDevice_EnvVarDeviceid(t *testing.T) {
 		}
 	}
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, events.NewEventStateManager(), db)
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
@@ -434,12 +435,12 @@ func Test_CreateHorizonDevice_alreadythere(t *testing.T) {
 		}
 	}
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, events.NewEventStateManager(), db)
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
 	}
 
-	errHandled, device, exDevice = CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, db)
+	errHandled, device, exDevice = CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -499,7 +500,7 @@ func Test_CreateHorizonDevice_badorg(t *testing.T) {
 		}
 	}
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -559,7 +560,7 @@ func Test_CreateHorizonDevice_badpattern(t *testing.T) {
 		}
 	}
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -571,6 +572,44 @@ func Test_CreateHorizonDevice_badpattern(t *testing.T) {
 		t.Errorf("device should not be returned")
 	} else if exDevice != nil {
 		t.Errorf("output device should not be returned")
+	}
+
+}
+
+// Non-blocking delete of horizondevice
+func Test_DeleteHorizonDevice_success(t *testing.T) {
+
+	dir, db, err := utsetup()
+	if err != nil {
+		t.Error(err)
+	}
+	defer cleanTestDir(dir)
+
+	myOrg := "testOrg"
+	myPattern := "testPattern"
+	device := getBasicDevice(myOrg, myPattern)
+
+	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, CONFIGSTATE_CONFIGURING)
+	if err != nil {
+		t.Errorf("unexpected error creating device %v", err)
+	}
+
+	var myError error
+	errorhandler := GetPassThroughErrorHandler(&myError)
+
+	removeNode := "false"
+	blocking := "false"
+	msgQueue := make(chan events.Message, 10)
+	errHandled := DeleteHorizonDevice(removeNode, blocking, events.NewEventStateManager(), msgQueue, errorhandler, db)
+
+	if errHandled {
+		t.Errorf("unexpected error %v", myError)
+	} else if len(msgQueue) != 1 {
+		t.Errorf("there should be a message on the queue")
+	} else if dev, err := FindHorizonDeviceForOutput(db); err != nil {
+		t.Errorf("failed to find device in db, error %v", err)
+	} else if *dev.Config.State != CONFIGSTATE_UNCONFIGURING {
+		t.Errorf("config state is incorrect: %v, should be unconfiguring")
 	}
 
 }

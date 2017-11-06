@@ -43,3 +43,12 @@ func GetHTTPWorkloadResolverHandler(a *API) WorkloadResolverHandler {
 		return exchange.WorkloadResolver(a.Config.Collaborators.HTTPClientFactory, wUrl, wOrg, wVersion, wArch, a.Config.Edge.ExchangeURL, id, token)
 	}
 }
+
+// A handler for getting workload metadata from the exchange.
+type WorkloadHandler func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*exchange.WorkloadDefinition, error)
+
+func GetHTTPWorkloadHandler(a *API) WorkloadHandler {
+	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*exchange.WorkloadDefinition, error) {
+		return exchange.GetWorkload(a.Config.Collaborators.HTTPClientFactory, wUrl, wOrg, wVersion, wArch, a.Config.Edge.ExchangeURL, id, token)
+	}
+}

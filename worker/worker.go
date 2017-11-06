@@ -436,30 +436,24 @@ func eventHandler(incoming events.Message, workers *MessageHandlerRegistry) (str
 // This function combines all messages (events) from workers into a single global message queue. From this
 // global queue, each message will get delivered to each worker by the event handler function.
 //
-func mux(workers *MessageHandlerRegistry) chan events.Message {
+func mux(workers *MessageHandlerRegistry, muxed chan events.Message) chan events.Message {
 
-	muxed := make(chan events.Message)
-
-	go func() {
-		// continually combine input from each by writing Messages to 'muxed' shared channel
-
-		for {
-			for _, w := range workers.Handlers {
-				select {
-				case ev := <-(*w).Messages():
-					muxed <- ev
-				default: // nothing
-				}
-			}
-			time.Sleep(100 * time.Millisecond)
+	for _, w := range workers.Handlers {
+		select {
+		case ev := <-(*w).Messages():
+			muxed <- ev
+		default: // nothing
 		}
-	}() // immediately invoked, start operating on input
+	}
 
 	return muxed
 }
 
 func (workers *MessageHandlerRegistry) ProcessEventMessages() {
-	messageStream := mux(workers)
+
+	// 200 messages should be plenty. We will never get more than 1 message from every worker each time
+	// we write into this stream.
+	messageStream := make(chan events.Message, 200)
 
 	last := int64(0)
 
@@ -470,12 +464,16 @@ func (workers *MessageHandlerRegistry) ProcessEventMessages() {
 			break
 		}
 
+		// Grab messages that are outbound from the workers.
+		messageStream = mux(workers, messageStream)
+
 		// Process any new messages on the combined worker message queue.
 		select {
 		case msg := <-messageStream:
 			glog.V(3).Infof(mdLogString(fmt.Sprintf("Handling Message (%T): %v\n", msg, msg.ShortString())))
 			glog.V(5).Infof(mdLogString(fmt.Sprintf("Handling Message (%T): %v\n", msg, msg)))
 
+			// Push outbound messages into each worker.
 			if successMsg, err := eventHandler(msg, workers); err != nil {
 				// error! do some barfing and then continue
 				glog.Errorf(mdLogString(fmt.Sprintf("Error occurred handling message: %s, Error: %v\n", msg, err)))
@@ -490,7 +488,7 @@ func (workers *MessageHandlerRegistry) ProcessEventMessages() {
 			}
 		}
 
-		time.Sleep(400 * time.Millisecond)
+		time.Sleep(200 * time.Millisecond)
 	}
 
 	// Brief delay just in case.

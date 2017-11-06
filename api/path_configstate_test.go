@@ -4,6 +4,7 @@ package api
 
 import (
 	"flag"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"strings"
@@ -119,8 +120,30 @@ func Test_UpdateConfigstate2(t *testing.T) {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
 
-	patternHandler := getVariablePatternHandler(exchange.WorkloadReference{})
-	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, getDummyGetOrg(), getDummyMicroserviceHandler(), patternHandler, getDummyWorkloadResolver(), db, getBasicConfig())
+	wc := exchange.WorkloadChoice{
+		Version:                      "1.0.0",
+		Priority:                     exchange.WorkloadPriority{},
+		Upgrade:                      exchange.UpgradePolicy{},
+		DeploymentOverrides:          "",
+		DeploymentOverridesSignature: "",
+	}
+
+	wref := exchange.WorkloadReference{
+		WorkloadURL:      "wurl",
+		WorkloadOrg:      myOrg,
+		WorkloadArch:     cutil.ArchString(),
+		WorkloadVersions: []exchange.WorkloadChoice{wc},
+		DataVerify:       exchange.DataVerification{},
+		NodeH:            exchange.NodeHealth{},
+	}
+
+	mURL := "http://utest.com/mservice"
+	mVersion := "1.0.0"
+	mArch := cutil.ArchString()
+	wlResolver := getVariableWorkloadResolver(mURL, myOrg, mVersion, mArch, nil)
+
+	patternHandler := getVariablePatternHandler(wref)
+	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, getDummyGetOrg(), getVariableMicroserviceHandler(exchange.UserInput{}), patternHandler, wlResolver, db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
@@ -160,8 +183,30 @@ func Test_UpdateConfigstate_Illegal_state_change(t *testing.T) {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
 
-	patternHandler := getVariablePatternHandler(exchange.WorkloadReference{})
-	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, getDummyGetOrg(), getDummyMicroserviceHandler(), patternHandler, getDummyWorkloadResolver(), db, getBasicConfig())
+	wc := exchange.WorkloadChoice{
+		Version:                      "1.0.0",
+		Priority:                     exchange.WorkloadPriority{},
+		Upgrade:                      exchange.UpgradePolicy{},
+		DeploymentOverrides:          "",
+		DeploymentOverridesSignature: "",
+	}
+
+	wref := exchange.WorkloadReference{
+		WorkloadURL:      "wurl",
+		WorkloadOrg:      myOrg,
+		WorkloadArch:     cutil.ArchString(),
+		WorkloadVersions: []exchange.WorkloadChoice{wc},
+		DataVerify:       exchange.DataVerification{},
+		NodeH:            exchange.NodeHealth{},
+	}
+
+	mURL := "http://utest.com/mservice"
+	mVersion := "1.0.0"
+	mArch := cutil.ArchString()
+	wlResolver := getVariableWorkloadResolver(mURL, myOrg, mVersion, mArch, nil)
+
+	patternHandler := getVariablePatternHandler(wref)
+	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, getDummyGetOrg(), getVariableMicroserviceHandler(exchange.UserInput{}), patternHandler, wlResolver, db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
@@ -216,8 +261,30 @@ func Test_UpdateConfigstate_no_state_change(t *testing.T) {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
 
-	patternHandler := getVariablePatternHandler(exchange.WorkloadReference{})
-	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, getDummyGetOrg(), getDummyMicroserviceHandler(), patternHandler, getDummyWorkloadResolver(), db, getBasicConfig())
+	wc := exchange.WorkloadChoice{
+		Version:                      "1.0.0",
+		Priority:                     exchange.WorkloadPriority{},
+		Upgrade:                      exchange.UpgradePolicy{},
+		DeploymentOverrides:          "",
+		DeploymentOverridesSignature: "",
+	}
+
+	wref := exchange.WorkloadReference{
+		WorkloadURL:      "wurl",
+		WorkloadOrg:      myOrg,
+		WorkloadArch:     cutil.ArchString(),
+		WorkloadVersions: []exchange.WorkloadChoice{wc},
+		DataVerify:       exchange.DataVerification{},
+		NodeH:            exchange.NodeHealth{},
+	}
+
+	mURL := "http://utest.com/mservice"
+	mVersion := "1.0.0"
+	mArch := cutil.ArchString()
+	wlResolver := getVariableWorkloadResolver(mURL, myOrg, mVersion, mArch, nil)
+
+	patternHandler := getVariablePatternHandler(wref)
+	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, getDummyGetOrg(), getVariableMicroserviceHandler(exchange.UserInput{}), patternHandler, wlResolver, db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
