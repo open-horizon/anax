@@ -116,6 +116,7 @@ func UpdateConfigstate(cfg *Configstate,
 
 			// Ignore workloads that don't match this node's hardware architecture.
 			if workload.WorkloadArch != thisArch {
+				glog.Infof(apiLogString(fmt.Sprintf("Configstate skipping workload because it is for a different hardware architecture, this node is %v. Skipped workload is: %v", thisArch, workload)))
 				continue
 			}
 
