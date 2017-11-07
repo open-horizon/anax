@@ -272,7 +272,7 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 	}
 }
 
-func (self *Policy) Is_Self_Consistent(keyPath string, userKeys string, workloadResolver func(wURL string, wOrg string, wVersion string, wArch string) (*APISpecList, error)) error {
+func (self *Policy) Is_Self_Consistent(keyFileNames []string, workloadResolver func(wURL string, wOrg string, wVersion string, wArch string) (*APISpecList, error)) error {
 
 	// Check validity of the Data verification section
 	if ok, err := self.DataVerify.IsValid(); !ok {
@@ -290,8 +290,8 @@ func (self *Policy) Is_Self_Consistent(keyPath string, userKeys string, workload
 	usedPriorities := make(map[int]bool)
 	var referencedApiSpecRefs *APISpecList
 	for ix, workload := range self.Workloads {
-		if len(keyPath) != 0 {
-			if err := workload.HasValidSignature(keyPath, userKeys); err != nil {
+		if keyFileNames != nil {
+			if err := workload.HasValidSignature(keyFileNames); err != nil {
 				return err
 			}
 		}
@@ -723,7 +723,7 @@ func PolicyFileChangeWatcher(homePath string,
 				if !contents.HasFile(org, fileInfo.Name()) {
 					if policy, err := ReadPolicyFile(orgPath + fileInfo.Name()); err != nil {
 						fileError(org, orgPath+fileInfo.Name(), err)
-					} else if err := policy.Is_Self_Consistent("", "", workloadResolver); err != nil {
+					} else if err := policy.Is_Self_Consistent(nil, workloadResolver); err != nil {
 						fileError(org, orgPath+fileInfo.Name(), errors.New(fmt.Sprintf("Policy file not self consistent %v, error: %v", orgPath, err)))
 					} else {
 						contents.AddWatchEntry(org, fileInfo, policy)
@@ -766,7 +766,7 @@ func PolicyFileChangeWatcher(homePath string,
 					// A changed file could be a new policy and a deleted policy if it's the policy name that was changed.
 					if policy, err := ReadPolicyFile(orgPath + we.FInfo.Name()); err != nil {
 						fileError(org, orgPath+we.FInfo.Name(), err)
-					} else if err := policy.Is_Self_Consistent("", "", workloadResolver); err != nil {
+					} else if err := policy.Is_Self_Consistent(nil, workloadResolver); err != nil {
 						fileError(org, orgPath+we.FInfo.Name(), errors.New(fmt.Sprintf("Policy file not self consistent %v, error: %v", orgPath+we.FInfo.Name(), err)))
 					} else if policy.Header.Name != we.Pol.Header.Name {
 						// Contents of the file changed the policy name, so this means we have a new policy and a deleted policy at the same time.

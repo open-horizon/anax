@@ -3,11 +3,14 @@ package config
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"github.com/golang/glog"
 	"io/ioutil"
 	"net"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -17,7 +20,8 @@ import (
 // concrete interfaces here.
 
 type Collaborators struct {
-	HTTPClientFactory *HTTPClientFactory
+	HTTPClientFactory   *HTTPClientFactory
+	KeyFileNamesFetcher *KeyFileNamesFetcher
 }
 
 func NewCollaborators(hConfig HorizonConfig) (*Collaborators, error) {
@@ -26,17 +30,30 @@ func NewCollaborators(hConfig HorizonConfig) (*Collaborators, error) {
 		return nil, err
 	}
 
+	keyFileNameFetcher, err := newKeyFileNamesFetcher(hConfig)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Collaborators{
-		HTTPClientFactory: httpClientFactory,
+		HTTPClientFactory:   httpClientFactory,
+		KeyFileNamesFetcher: keyFileNameFetcher,
 	}, nil
 }
 
 func (c *Collaborators) String() string {
-	return fmt.Sprintf("HTTPClientFactory: %v", c.HTTPClientFactory)
+	return fmt.Sprintf("HTTPClientFactory: %v, KeyFileNamesFetcher: %v", c.HTTPClientFactory, c.KeyFileNamesFetcher)
 }
 
 type HTTPClientFactory struct {
 	NewHTTPClient func(overrideTimeoutS *uint) *http.Client
+}
+
+type KeyFileNamesFetcher struct {
+	// get all the pem file names from the pulic key path and user key path.
+	// if the publicKeyPath is a file name all the *.pem files within the same directory will be returned.
+	// userkeyPath is always a directory.
+	GetKeyFileNames func(publicKeyPath, userKeyPath string) ([]string, error)
 }
 
 // WrappedHTTPClient is a function producer that wraps an HTTPClient's
@@ -114,5 +131,60 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 
 	return &HTTPClientFactory{
 		NewHTTPClient: clientFunc,
+	}, nil
+}
+
+func newKeyFileNamesFetcher(hConfig HorizonConfig) (*KeyFileNamesFetcher, error) {
+
+	// get all the *.pem files under the given directory
+	getPemFiles := func(homePath string) ([]string, error) {
+		pemFileNames := make([]string, 0, 10)
+
+		if files, err := ioutil.ReadDir(homePath); err != nil && !os.IsNotExist(err) {
+			return nil, errors.New(fmt.Sprintf("Unable to get list of PEM files in %v, error: %v", homePath, err))
+		} else if os.IsNotExist(err) {
+			return pemFileNames, nil
+		} else {
+			for _, fileInfo := range files {
+				if strings.HasSuffix(fileInfo.Name(), ".pem") && !fileInfo.IsDir() {
+					pemFileNames = append(pemFileNames, fmt.Sprintf("%v/%v", homePath, fileInfo.Name()))
+				}
+			}
+			return pemFileNames, nil
+		}
+	}
+
+	// get the pem file names from the pulic key path and user key path.
+	// if the publicKeyPath is a file name all the *.pem files within the same directory will be returned.
+	// userkeyPath is always a directory.
+	getKeyFilesFunc := func(publicKeyPath, userKeyPath string) ([]string, error) {
+		keyFileNames := make([]string, 0)
+
+		// only check these keys too if publicKeyPath was specified (this is behavior to accomodate legacy config)
+		if publicKeyPath != "" {
+			// Compute the public key directory based on the configured platform public key file location.
+			pubKeyDir := publicKeyPath[:strings.LastIndex(publicKeyPath, "/")]
+
+			// Grab all PEM files from that location and try to verify the signature against each one.
+			if pemFiles, err := getPemFiles(pubKeyDir); err != nil {
+				return keyFileNames, err
+			} else {
+				keyFileNames = append(keyFileNames, pemFiles...)
+			}
+		}
+
+		// Grab all PEM files from userKeyPath
+		if userKeyPath != "" {
+			if pemFiles, err := getPemFiles(userKeyPath); err != nil {
+				return keyFileNames, err
+			} else {
+				keyFileNames = append(keyFileNames, pemFiles...)
+			}
+		}
+		return keyFileNames, nil
+	}
+
+	return &KeyFileNamesFetcher{
+		GetKeyFileNames: getKeyFilesFunc,
 	}, nil
 }

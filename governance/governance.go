@@ -1280,7 +1280,9 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string) (*persistence.Micros
 			} else {
 
 				// Verify the deployment signature
-				if err := ms_workload.HasValidSignature(w.Config.Edge.PublicKeyPath, w.Config.UserPublicKeyPath()); err != nil {
+				if pemFiles, err := w.Config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.Config.Edge.PublicKeyPath, w.Config.UserPublicKeyPath()); err != nil {
+					return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting pem key files: %v", err)))
+				} else if err := ms_workload.HasValidSignature(pemFiles); err != nil {
 					return nil, fmt.Errorf(logString(fmt.Sprintf("microservice container has invalid deployment signature %v for %v", ms_workload.DeploymentSignature, ms_workload.Deployment)))
 				}
 

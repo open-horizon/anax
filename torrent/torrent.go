@@ -112,30 +112,36 @@ func (b *TorrentWorker) CommandHandler(command worker.Command) bool {
 				// (could be here or bypass this worker altogether)
 				// (this is really important because we want to be able to delete the downloaded image files after docker load)
 
-				imageFiles, err := fetch.PkgFetch(b.Config.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), lc.URL(), lc.Signature(), b.Config.Edge.TorrentDir, b.Config.Edge.CACertsPath, b.Config.UserPublicKeyPath(), authAttribs)
-
+				pemFiles, err := b.Config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(b.Config.Edge.CACertsPath, b.Config.UserPublicKeyPath())
 				if err != nil {
-					var id events.EventId
-					switch err.(type) {
-					case fetcherrors.PkgMetaError, fetcherrors.PkgSourceError, fetcherrors.PkgPrecheckError:
-						id = events.IMAGE_DATA_ERROR
-
-					case fetcherrors.PkgSourceFetchError:
-						id = events.IMAGE_FETCH_ERROR
-
-					case fetcherrors.PkgSourceFetchAuthError:
-						id = events.IMAGE_FETCH_AUTH_ERROR
-
-					case fetcherrors.PkgSignatureVerificationError:
-						id = events.IMAGE_SIG_VERIF_ERROR
-
-					default:
-						id = events.IMAGE_FETCH_ERROR
-					}
-					b.Messages() <- events.NewTorrentMessage(id, make([]string, 0), lc)
-					glog.Errorf("Failed to fetch image files: %v", err)
+					glog.Errorf("Received error getting pem key files: %v", err)
+					b.Messages() <- events.NewTorrentMessage(events.IMAGE_SIG_VERIF_ERROR, make([]string, 0), lc)
 				} else {
-					b.Messages() <- events.NewTorrentMessage(events.IMAGE_FETCHED, imageFiles, lc)
+					imageFiles, err := fetch.PkgFetch(b.Config.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), lc.URL(), lc.Signature(), b.Config.Edge.TorrentDir, pemFiles, authAttribs)
+
+					if err != nil {
+						var id events.EventId
+						switch err.(type) {
+						case fetcherrors.PkgMetaError, fetcherrors.PkgSourceError, fetcherrors.PkgPrecheckError:
+							id = events.IMAGE_DATA_ERROR
+
+						case fetcherrors.PkgSourceFetchError:
+							id = events.IMAGE_FETCH_ERROR
+
+						case fetcherrors.PkgSourceFetchAuthError:
+							id = events.IMAGE_FETCH_AUTH_ERROR
+
+						case fetcherrors.PkgSignatureVerificationError:
+							id = events.IMAGE_SIG_VERIF_ERROR
+
+						default:
+							id = events.IMAGE_FETCH_ERROR
+						}
+						glog.Errorf("Failed to fetch image files: %v", err)
+						b.Messages() <- events.NewTorrentMessage(id, make([]string, 0), lc)
+					} else {
+						b.Messages() <- events.NewTorrentMessage(events.IMAGE_FETCHED, imageFiles, lc)
+					}
 				}
 			}
 		}

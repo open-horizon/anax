@@ -404,10 +404,10 @@
 			"tree": true
 		},
 		{
-			"checksumSHA1": "PHUY9+BCfHjSHrDu62tllgN6ZwM=",
+			"checksumSHA1": "WI1TPSeBYUfrrmOoOp8gKhej3sg=",
 			"path": "github.com/open-horizon/horizon-pkg-fetch",
-			"revision": "265dd9db3be56266a6452b094b5c21791de49566",
-			"revisionTime": "2017-10-25T18:26:11Z"
+			"revision": "9307c901b6c296b776313fcc5ddb157669f47716",
+			"revisionTime": "2017-11-08T19:09:05Z"
 		},
 		{
 			"checksumSHA1": "7TaYmWpXydU8XjqcnYeJme/oV48=",
@@ -420,6 +420,12 @@
 			"path": "github.com/open-horizon/horizon-pkg-fetch/horizonpkg",
 			"revision": "9fe96f86b9a4ae6d9c1c97d84b31e646d8079d63",
 			"revisionTime": "2017-09-29T04:46:40Z"
+		},
+		{
+			"checksumSHA1": "VUNbvSnk5sCRMPopbBqaKYM3ZUc=",
+			"path": "github.com/open-horizon/rsapss-tool/verify",
+			"revision": "d48d3dbcb9ddb13d4e241041965d94b35ee16628",
+			"revisionTime": "2017-11-08T18:52:45Z"
 		},
 		{
 			"checksumSHA1": "3AoPMXlmVq2+iWMpsdJZkcUKHB8=",

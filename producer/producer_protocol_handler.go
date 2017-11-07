@@ -145,7 +145,9 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 		handled = true
 	} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
-	} else if err := tcPolicy.Is_Self_Consistent(w.config.Edge.PublicKeyPath, w.config.UserPublicKeyPath(), w.GetWorkloadResolver()); err != nil {
+	} else if pemFiles, err := w.config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.config.Edge.PublicKeyPath, w.config.UserPublicKeyPath()); err != nil {
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting pem key files: %v", err)))
+	} else if err := tcPolicy.Is_Self_Consistent(pemFiles, w.GetWorkloadResolver()); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking self consistency of TsAndCs, %v", err)))
 		handled = true
 	} else if pmatch, err := w.MatchPattern(tcPolicy); err != nil {

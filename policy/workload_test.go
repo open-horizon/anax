@@ -169,7 +169,7 @@ func Test_workload_signature(t *testing.T) {
 				wl1 := `{"deployment":"teststring","deployment_signature":"","deployment_user_info":"","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
 				if wla := create_Workload(wl1, t); wla != nil {
 					wla.DeploymentSignature = strSig
-					if err := wla.HasValidSignature("/tmp/temppolicytestkey.pem", ""); err != nil {
+					if err := wla.HasValidSignature([]string{"/tmp/temppolicytestkey.pem"}); err != nil {
 						t.Errorf("Could not verify signed deployment, error %v\n", err)
 					}
 				}
@@ -237,7 +237,7 @@ func Test_workload_signature_invalid(t *testing.T) {
 				wl1 := `{"deployment":"teststring","deployment_signature":"","deployment_user_info":"","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
 				if wla := create_Workload(wl1, t); wla != nil {
 					wla.DeploymentSignature = strSig
-					if err := wla.HasValidSignature("/tmp/temppolicytestkey.pem", ""); err == nil {
+					if err := wla.HasValidSignature([]string{"/tmp/temppolicytestkey.pem"}); err == nil {
 						t.Errorf("Should not have been able to verify signed deployment, error %v\n", err)
 					}
 				}
