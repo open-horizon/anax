@@ -1,0 +1,34 @@
+{
+	"global": [
+		{
+			"type": "LocationAttributes",
+			"variables": {
+				"lat": "43.123",
+				"lon": "-72.123",
+				"user_provided_coords": true,
+				"use_gps": false
+			}
+		}
+	],
+	"workloads": [
+		{
+			"org": "IBM",
+			"url": "https://bluehorizon.network/workloads/netspeed",
+			"versionRange": "[0.0.0,INFINITY)",
+			"variables": {
+				"HZN_TARGET_SERVER": "closest"
+			}
+		}
+	],
+	"microservices": [
+		{
+			"org": "IBM",
+			"url": "https://bluehorizon.network/microservices/gps",
+			"versionRange": "[0.0.0,INFINITY)",
+			"variables": {
+				"HZN_USE_GPS": false,
+				"HZN_USER_PROVIDED_COORDS": true
+			}
+		}
+	]
+}

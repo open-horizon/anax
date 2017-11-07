@@ -8,7 +8,9 @@ import (
 	"encoding/json"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 )
+
 
 //~~~~~~~~~~~~~~~~ show node ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -71,10 +73,11 @@ func Node() {
 	nodeInfo.CopyStatusInto(&status)
 
 	// Output the combined info
-	jsonBytes, err := json.MarshalIndent(nodeInfo, "", "  ")
-	if err != nil { cliutils.Fatal(3, "failed to marshaling 'show node' output: %v", err) }
+	jsonBytes, err := json.MarshalIndent(nodeInfo, "", cliutils.JSON_INDENT)
+	if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show node' output: %v", err) }
 	fmt.Printf("%s\n", jsonBytes)		//todo: is there a way to output with json syntax highlighting like jq does?
 }
+
 
 //~~~~~~~~~~~~~~~~ show agreements ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -140,36 +143,37 @@ func (a *ArchivedAgreement) CopyAgreementInto(agreement persistence.EstablishedA
 	a.TerminatedDescription = agreement.TerminatedDescription
 }
 
-func Agreements() {
+func Agreements(archivedAgreements bool) {
 	// Get horizon api agreement output and drill down to the category we want
 	apiOutput := make(map[string]map[string][]persistence.EstablishedAgreement, 0)
 	cliutils.HorizonGet("agreement", 200, &apiOutput)
 	var ok bool
-	if _, ok = apiOutput["agreements"]; !ok { cliutils.Fatal(3, "horizon api agreement output did not include 'agreements' key") }
+	if _, ok = apiOutput["agreements"]; !ok { cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include 'agreements' key") }
 	whichAgreements := "active"
-	if *cliutils.Opts.ArchivedAgreements { whichAgreements = "archived" }
+	if archivedAgreements { whichAgreements = "archived" }
 	var apiAgreements []persistence.EstablishedAgreement
-	if apiAgreements, ok = apiOutput["agreements"][whichAgreements]; !ok { cliutils.Fatal(3, "horizon api agreement output did not include '%s' key", whichAgreements) }
+	if apiAgreements, ok = apiOutput["agreements"][whichAgreements]; !ok { cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include '%s' key", whichAgreements) }
 
 	// Go thru the apiAgreements and convert into our output struct and then print
-	if !*cliutils.Opts.ArchivedAgreements {
+	if !archivedAgreements {
 		agreements := make([]ActiveAgreement, len(apiAgreements))
 		for i := range apiAgreements {
 			agreements[i].CopyAgreementInto(apiAgreements[i])
 		}
-		jsonBytes, err := json.MarshalIndent(agreements, "", "  ")
-		if err != nil { cliutils.Fatal(3, "failed to marshaling 'show agreements' output: %v", err) }
+		jsonBytes, err := json.MarshalIndent(agreements, "", cliutils.JSON_INDENT)
+		if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show agreements' output: %v", err) }
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
 		agreements := make([]ArchivedAgreement, len(apiAgreements))
 		for i := range apiAgreements {
 			agreements[i].CopyAgreementInto(apiAgreements[i])
 		}
-		jsonBytes, err := json.MarshalIndent(agreements, "", "  ")
-		if err != nil { cliutils.Fatal(3, "failed to marshaling 'show agreements' output: %v", err) }
+		jsonBytes, err := json.MarshalIndent(agreements, "", cliutils.JSON_INDENT)
+		if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show agreements' output: %v", err) }
 		fmt.Printf("%s\n", jsonBytes)
 	}
 }
+
 
 //~~~~~~~~~~~~~~~~ show metering ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -254,46 +258,147 @@ func (a *ArchivedMetering) CopyAgreementInto(agreement persistence.EstablishedAg
 	a.MeteringNotificationMsg.CopyMeteringInto(agreement.MeteringNotificationMsg)
 }
 
-func Metering() {
-	// Get horizon api agreement output and drill down to the category we want
+func Metering(archivedMetering bool) {
 	apiOutput := make(map[string]map[string][]persistence.EstablishedAgreement, 0)
 	cliutils.HorizonGet("agreement", 200, &apiOutput)
 	var ok bool
-	if _, ok = apiOutput["agreements"]; !ok { cliutils.Fatal(3, "horizon api agreement output did not include 'agreements' key") }
+	if _, ok = apiOutput["agreements"]; !ok { cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include 'agreements' key") }
 	whichAgreements := "active"
-	if *cliutils.Opts.ArchivedMetering { whichAgreements = "archived" }
+	if archivedMetering { whichAgreements = "archived" }
 	var apiAgreements []persistence.EstablishedAgreement
-	if apiAgreements, ok = apiOutput["agreements"][whichAgreements]; !ok { cliutils.Fatal(3, "horizon api agreement output did not include '%s' key", whichAgreements) }
+	if apiAgreements, ok = apiOutput["agreements"][whichAgreements]; !ok { cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include '%s' key", whichAgreements) }
 
 	// Go thru the apiAgreements and convert into our output struct and then print
-	if !*cliutils.Opts.ArchivedMetering {
+	if !archivedMetering {
 		metering := make([]ActiveMetering, len(apiAgreements))
 		for i := range apiAgreements {
 			metering[i].CopyAgreementInto(apiAgreements[i])
 		}
-		jsonBytes, err := json.MarshalIndent(metering, "", "  ")
-		if err != nil { cliutils.Fatal(3, "failed to marshaling 'show metering' output: %v", err) }
+		jsonBytes, err := json.MarshalIndent(metering, "", cliutils.JSON_INDENT)
+		if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show metering' output: %v", err) }
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
 		metering := make([]ArchivedMetering, len(apiAgreements))
 		for i := range apiAgreements {
 			metering[i].CopyAgreementInto(apiAgreements[i])
 		}
-		jsonBytes, err := json.MarshalIndent(metering, "", "  ")
-		if err != nil { cliutils.Fatal(3, "failed to marshaling 'show metering' output: %v", err) }
+		jsonBytes, err := json.MarshalIndent(metering, "", cliutils.JSON_INDENT)
+		if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show metering' output: %v", err) }
 		fmt.Printf("%s\n", jsonBytes)
 	}
 }
 
+
 //~~~~~~~~~~~~~~~~ show keys ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 func Keys() {
-	// Get horizon api agreement output and drill down to the category we want
 	apiOutput := make(map[string][]string, 0)
 	cliutils.HorizonGet("publickey", 200, &apiOutput)
 	var ok bool
-	if _, ok = apiOutput["pem"]; !ok { cliutils.Fatal(3, "horizon api publickey output did not include 'pem' key") }
-	jsonBytes, err := json.MarshalIndent(apiOutput["pem"], "", "  ")
-	if err != nil { cliutils.Fatal(3, "failed to marshaling 'show pem' output: %v", err) }
+	if _, ok = apiOutput["pem"]; !ok { cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api publickey output did not include 'pem' key") }
+	jsonBytes, err := json.MarshalIndent(apiOutput["pem"], "", cliutils.JSON_INDENT)
+	if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show pem' output: %v", err) }
+	fmt.Printf("%s\n", jsonBytes)
+}
+
+
+//~~~~~~~~~~~~~~~~ show attributes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+// Our form of the attributes output
+type OurAttributes struct {
+	Type        string                 `json:"type"`
+	//SensorUrls  []string               `json:"sensor_urls"`
+	Label string `json:"label"`
+	Variables    map[string]interface{} `json:"variables"`
+}
+
+func Attributes() {
+	// Get the attributes
+	apiOutput := map[string][]api.Attribute{}
+	cliutils.HorizonGet("attribute", 200, &apiOutput)
+	var ok bool
+	if _, ok = apiOutput["attributes"]; !ok { cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api attributes output did not include 'attributes' key") }
+	apiAttrs := apiOutput["attributes"]
+
+	// Only include interesting fields in our output
+	var attrs []OurAttributes
+	for _, a := range apiAttrs {
+		if len(*a.SensorUrls) == 0 {
+			attrs = append(attrs, OurAttributes{Type: *a.Type, Label: *a.Label, Variables: *a.Mappings})
+		}
+	}
+
+	// Convert to json and output
+	jsonBytes, err := json.MarshalIndent(attrs, "", cliutils.JSON_INDENT)
+	if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show attributes' output: %v", err) }
+	fmt.Printf("%s\n", jsonBytes)
+}
+
+//~~~~~~~~~~~~~~~~ show services ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+type ServiceAttribute struct {
+	Mappings map[string]interface{}   `json:"mappings"`
+	// leaving out all of the other stuff we don't care about
+}
+
+type ServiceWrapper struct {
+	Policy     policy.Policy           `json:"policy"`
+	Attributes []ServiceAttribute `json:"attributes"`
+}
+
+type OurService struct {
+	APISpecs     policy.APISpecList           `json:"apiSpec,omitempty"`
+	Variables    map[string]interface{}   `json:"variables"`
+}
+
+func Services() {
+	// Get the services
+	apiOutput := map[string]map[string]ServiceWrapper{}
+	cliutils.HorizonGet("service", 200, &apiOutput)
+	var ok bool
+	if _, ok = apiOutput["services"]; !ok { cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api services output did not include 'services' key") }
+	apiServices := apiOutput["services"]
+
+	// Go thru the services and pull out interesting fields
+	services := make([]OurService, 0)
+	for _, s := range apiServices {
+		serv := OurService{Variables: make(map[string]interface{})}
+		serv.APISpecs = s.Policy.APISpecs
+		for _, a := range s.Attributes {
+			for k, v := range a.Mappings {
+				serv.Variables[k] = v
+			}
+		}
+		services = append(services, serv)
+	}
+
+	// Convert to json and output
+	jsonBytes, err := json.MarshalIndent(services, "", cliutils.JSON_INDENT)
+	if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show services' output: %v", err) }
+	fmt.Printf("%s\n", jsonBytes)
+}
+
+//~~~~~~~~~~~~~~~~ show workloads ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+func Workloads() {
+	// Get the workloads
+	apiOutput := map[string][]persistence.WorkloadConfig{}
+	cliutils.HorizonGet("workloadconfig", 200, &apiOutput)
+	var ok bool
+	if _, ok = apiOutput["active"]; !ok { cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api workload output did not include 'active' key") }
+	apiWorkloads := apiOutput["active"]
+
+	// Only include interesting fields in our output
+	workloads := make([]api.WorkloadConfig, len(apiWorkloads))
+	for i := range apiWorkloads {
+		workloads[i].Org = "???"		//todo: the anax api doesn't return this
+		workloads[i].WorkloadURL = apiWorkloads[i].WorkloadURL
+		workloads[i].Version = apiWorkloads[i].VersionExpression
+		workloads[i].Variables = apiWorkloads[i].Variables
+	}
+
+	// Convert to json and output
+	jsonBytes, err := json.MarshalIndent(workloads, "", cliutils.JSON_INDENT)
+	if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show workloads' output: %v", err) }
 	fmt.Printf("%s\n", jsonBytes)
 }

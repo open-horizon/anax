@@ -8,7 +8,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/cli/importkey"
-	"github.com/open-horizon/anax/cli/wipe"
+	"github.com/open-horizon/anax/cli/unregister"
 )
 
 
@@ -30,12 +30,15 @@ func main() {
 	showCmd := app.Command("show", "Display information about this Horizon edge node.")
 	showNodeCmd := showCmd.Command("node", "Show general information about this Horizon edge node.")
 	showAgreementsCmd := showCmd.Command("agreements", "Show the active or archived agreements this edge node has made with a Horizon agreement bot.")
-	cliutils.Opts.ArchivedAgreements = showAgreementsCmd.Flag("archived", "Show archived agreements instead of the active agreements.").Short('r').Bool()
+	archivedAgreements := showAgreementsCmd.Flag("archived", "Show archived agreements instead of the active agreements.").Short('r').Bool()
 	showMeteringCmd := showCmd.Command("metering", "Show metering (payment) information for the active or archived agreements.")
-	cliutils.Opts.ArchivedMetering = showMeteringCmd.Flag("archived", "Show archived agreement metering information instead of metering for the active agreements.").Short('r').Bool()
+	archivedMetering := showMeteringCmd.Flag("archived", "Show archived agreement metering information instead of metering for the active agreements.").Short('r').Bool()
 	showKeysCmd := showCmd.Command("keys", "Show the public signing keys that have been imported to this Horizon edge node.")
+	showAttributesCmd := showCmd.Command("attributes", "Show the global attributes that are currently registered on this Horizon edge node.")
+	showServicesCmd := showCmd.Command("services", "Show the microservices that are currently registered on this Horizon edge node.")
+	showWorkloadsCmd := showCmd.Command("workloads", "Show the workloads that are currently registered on this Horizon edge node.")
 
-	wipeCmd := app.Command("wipe", "Unregister and reset this Horizon edge node so that it is ready to be registered again.")
+	unregisterCmd := app.Command("unregister", "Unregister and reset this Horizon edge node so that it is ready to be registered again. Warning: this will stop all the Horizon workloads running on this edge node, and delete the Horizon DB.")
 	app.Version("0.0.1")	//todo: get the real version of anax
 
 	// Decide which command to run
@@ -49,12 +52,18 @@ func main() {
 	case showNodeCmd.FullCommand():
 		show.Node()
 	case showAgreementsCmd.FullCommand():
-		show.Agreements()
+		show.Agreements(*archivedAgreements)
 	case showMeteringCmd.FullCommand():
-		show.Metering()
+		show.Metering(*archivedMetering)
 	case showKeysCmd.FullCommand():
 		show.Keys()
-	case wipeCmd.FullCommand():
-		wipe.DoIt()
+	case showAttributesCmd.FullCommand():
+		show.Attributes()
+	case showServicesCmd.FullCommand():
+		show.Services()
+	case showWorkloadsCmd.FullCommand():
+		show.Workloads()
+	case unregisterCmd.FullCommand():
+		unregister.DoIt()
 	}
 }

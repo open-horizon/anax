@@ -11,19 +11,27 @@ import (
 	"encoding/base64"
 	"bytes"
 	"github.com/open-horizon/anax/exchange"
+	"io"
+	"os/exec"
 )
 
 const (
 	HZN_API = "http://localhost"
+	JSON_INDENT = "  "
+
+	// Exit Codes
+	CLI_INPUT_ERROR = 1		// we actually don't have control over the usage exit code
+	JSON_PARSING_ERROR = 3
+	READ_FILE_ERROR = 4
+	HTTP_ERROR = 5
+	EXEC_CMD_ERROR = 6
 )
 
 // Holds the cmd line flags that were set so other pkgs can access
-type Options struct {
+type GlobalOptions struct {
 	Verbose *bool
-	ArchivedAgreements *bool
-	ArchivedMetering *bool
 }
-var Opts Options
+var Opts GlobalOptions
 
 
 func Verbose(msg string, args ...interface{}) {
@@ -33,7 +41,6 @@ func Verbose(msg string, args ...interface{}) {
 }
 
 
-//todo: how should we handle exit codes? A different 1 for every error? (too complicated) Defined categories of errors?
 func Fatal(exitCode int, msg string, args ...interface{}) {
 	if !strings.HasSuffix(msg, "\n") { msg += "\n"}
 	fmt.Fprintf(os.Stderr, "Error: "+msg, args...)
@@ -57,22 +64,93 @@ func GetHorizonUrlBase() string {
 }
 
 
+// GetRespBodyString converts an http response body to a string
+func GetRespBodyString(responseBody io.ReadCloser) string {
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(responseBody)
+	return buf.String()
+}
+
+
 // HorizonGet runs a GET on the anax api and fills in the specified json structure.
 // If goodHttp is non-zero and does not match the actual http code, it will exit with an error. Otherwise the actual code is returned.
 func HorizonGet(urlSuffix string, goodHttp int, structure interface{}) (httpCode int) {
 	url := GetHorizonUrlBase() + "/" + urlSuffix
-	apiMsg := "GET " + url
+	apiMsg := http.MethodGet + " " + url
 	Verbose(apiMsg)
 	resp, err := http.Get(url)
-	if err != nil { Fatal(3, "%s failed: %v", apiMsg, err) }
+	if err != nil { Fatal(HTTP_ERROR, "%s failed: %v", apiMsg, err) }
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
-	if goodHttp > 0 && httpCode != goodHttp { Fatal(3, "bad HTTP code from %s: %d", apiMsg, httpCode) }
+	if goodHttp > 0 && httpCode != goodHttp { Fatal(HTTP_ERROR, "bad HTTP code from %s: %d", apiMsg, httpCode) }
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil { Fatal(3, "failed to read body response for %s: %v", apiMsg, err) }
+	if err != nil { Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err) }
 	err = json.Unmarshal(bodyBytes, structure)
-	if err != nil { Fatal(3, "failed to unmarshal body response for %s: %v", apiMsg, err) }
+	if err != nil { Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err) }
+	return
+}
+
+
+/* Not needed at the moment...
+// HorizonDelete runs a DELETE on the anax api.
+// If goodHttp is non-zero and does not match the actual http code, it will exit with an error. Otherwise the actual code is returned.
+func HorizonDelete(urlSuffix string, goodHttpCodes []int) (httpCode int) {
+	url := GetHorizonUrlBase() + "/" + urlSuffix
+	apiMsg := http.MethodDelete + " " + url
+	Verbose(apiMsg)
+	httpClient := &http.Client{}
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil { Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err) }
+	resp, err := httpClient.Do(req)
+	if err != nil { Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err) }
+	defer resp.Body.Close()
+	httpCode = resp.StatusCode
+	Verbose("HTTP code: %d", httpCode)
+	if len(goodHttpCodes) > 0  {
+		foundCode := false
+		for _, code := range goodHttpCodes {
+			if code == httpCode {
+				foundCode = true
+				break
+			}
+		}
+		if !foundCode { Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyString(resp.Body)) }
+	}
+	return
+}
+*/
+
+
+// HorizonPutPost runs a PUT or POST to the anax api to create of update a resource.
+// If the list of goodHttps is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
+func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body interface{}) (httpCode int) {
+	url := GetHorizonUrlBase() + "/" + urlSuffix
+	apiMsg := method + " " + url
+	Verbose(apiMsg)
+	httpClient := &http.Client{}
+	jsonBytes, err := json.Marshal(body)
+	if err != nil { Fatal(JSON_PARSING_ERROR, "failed to marshal body for %s: %v", apiMsg, err) }
+	requestBody := bytes.NewBuffer(jsonBytes)
+	req, err := http.NewRequest(method, url, requestBody)
+	if err != nil { Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err) }
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
+	resp, err := httpClient.Do(req)
+	if err != nil { Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err) }
+	defer resp.Body.Close()
+	httpCode = resp.StatusCode
+	Verbose("HTTP code: %d", httpCode)
+	if len(goodHttpCodes) > 0  {
+		foundCode := false
+		for _, code := range goodHttpCodes {
+			if code == httpCode {
+				foundCode = true
+				break
+			}
+		}
+		if !foundCode { Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyString(resp.Body)) }
+	}
 	return
 }
 
@@ -81,24 +159,24 @@ func HorizonGet(urlSuffix string, goodHttp int, structure interface{}) (httpCode
 // If goodHttp is non-zero and does not match the actual http code, it will exit with an error. Otherwise the actual code is returned.
 func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttp int, structure interface{}) (httpCode int) {
 	url := urlBase + "/" + urlSuffix
-	apiMsg := "GET " + url
+	apiMsg := http.MethodGet + " " + url
 	Verbose(apiMsg)
 	httpClient := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil { Fatal(3, "%s new request failed: %v", apiMsg, err) }
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil { Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err) }
 	req.Header.Add("Accept", "application/json")
 	//req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
 	resp, err := httpClient.Do(req)
-	if err != nil { Fatal(3, "%s request failed: %v", apiMsg, err) }
+	if err != nil { Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err) }
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
-	if goodHttp > 0 && httpCode != goodHttp { Fatal(3, "bad HTTP code from %s: %d", apiMsg, httpCode) }
+	if goodHttp > 0 && httpCode != goodHttp { Fatal(HTTP_ERROR, "bad HTTP code from %s: %d", apiMsg, httpCode) }
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil { Fatal(3, "failed to read body response for %s: %v", apiMsg, err) }
+	if err != nil { Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err) }
 	err = json.Unmarshal(bodyBytes, structure)
-	if err != nil { Fatal(3, "failed to unmarshal body response for %s: %v", apiMsg, err) }
+	if err != nil { Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err) }
 	return
 }
 
@@ -111,25 +189,25 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 	Verbose(apiMsg)
 	httpClient := &http.Client{}
 	jsonBytes, err := json.Marshal(body)
-	if err != nil { Fatal(3, "failed to marshal body for %s: %v", apiMsg, err) }
+	if err != nil { Fatal(JSON_PARSING_ERROR, "failed to marshal body for %s: %v", apiMsg, err) }
 	requestBody := bytes.NewBuffer(jsonBytes)
 	req, err := http.NewRequest(method, url, requestBody)
-	if err != nil { Fatal(3, "%s new request failed: %v", apiMsg, err) }
+	if err != nil { Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err) }
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
 	resp, err := httpClient.Do(req)
-	if err != nil { Fatal(3, "%s request failed: %v", apiMsg, err) }
+	if err != nil { Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err) }
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
 	if goodHttp > 0 && httpCode != goodHttp {
 		bodyBytes, err := ioutil.ReadAll(resp.Body)
-		if err != nil { Fatal(3, "failed to read body response for %s: %v", apiMsg, err) }
+		if err != nil { Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err) }
 		respMsg := exchange.PostDeviceResponse{}
 		err = json.Unmarshal(bodyBytes, &respMsg)
-		if err != nil { Fatal(3, "failed to unmarshal body response for %s: %v", apiMsg, err) }
-		Fatal(3, "bad HTTP code %d from %s: %s, %s", httpCode, apiMsg, respMsg.Code, respMsg.Msg)
+		if err != nil { Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err) }
+		Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s, %s", httpCode, apiMsg, respMsg.Code, respMsg.Msg)
 	}
 	return
 }
@@ -138,3 +216,73 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 func ConvertTime(unixSecond uint64) string {
 	 return time.Unix(int64(unixSecond), 0).String()
 }
+
+
+// Run a command with optional stdin and args, and return stdout, stderr
+func RunCmd(stdinBytes []byte, commandString string, args ...string) ([]byte, []byte) {
+	// For debug, build the full cmd string
+	cmdStr := commandString
+	for _, a := range args {
+		cmdStr += " " + a
+	}
+	if stdinBytes != nil { cmdStr += " < stdin" }
+	Verbose("running: %v\n", cmdStr)
+
+	// Create the command object with its args
+	cmd := exec.Command(commandString, args...)
+	if cmd == nil { Fatal(EXEC_CMD_ERROR, "did not get a command object") }
+
+	var stdin io.WriteCloser
+	//var jInbytes []byte
+	var err error
+	if stdinBytes != nil {
+		// Create the std in pipe
+		stdin, err = cmd.StdinPipe()
+		if err != nil { Fatal(EXEC_CMD_ERROR, "Could not get Stdin pipe, error: %v", err) }
+		// Read the input file
+		//jInbytes, err = ioutil.ReadFile(stdinFilename)
+		//if err != nil { Fatal(EXEC_CMD_ERROR,"Unable to read " + stdinFilename + " file, error: %v", err) }
+	}
+	// Create the stdout pipe to hold the output from the command
+	stdout, err := cmd.StdoutPipe()
+	if err != nil { Fatal(EXEC_CMD_ERROR,"could not retrieve output from command, error: %v", err) }
+	// Create the stderr pipe to hold the errors from the command
+	stderr, err := cmd.StderrPipe()
+	if err != nil { Fatal(EXEC_CMD_ERROR,"could not retrieve stderr from command, error: %v", err) }
+
+	// Start the command, which will block for input from stdin if the cmd reads from it
+	err = cmd.Start()
+	if err != nil { Fatal(EXEC_CMD_ERROR,"Unable to start command, error: %v", err) }
+
+	if stdinBytes != nil {
+		// Send in the std in bytes
+		_, err = stdin.Write(stdinBytes)
+		if err != nil { Fatal(EXEC_CMD_ERROR, "Unable to write to stdin of command, error: %v", err) }
+		// Close std in so that the command will begin to execute
+		err = stdin.Close()
+		if err != nil { Fatal(EXEC_CMD_ERROR, "Unable to close stdin, error: %v", err) }
+	}
+
+	err = error(nil)
+	// Read the output from stdout and stderr into byte arrays
+	// stdoutBytes, err := readPipe(stdout)
+	stdoutBytes, err := ioutil.ReadAll(stdout)
+	if err != nil { Fatal(EXEC_CMD_ERROR,"could not read stdout, error: %v", err) }
+	// stderrBytes, err := readPipe(stderr)
+	stderrBytes, err := ioutil.ReadAll(stderr)
+	if err != nil { Fatal(EXEC_CMD_ERROR,"could not read stderr, error: %v", err) }
+
+	// Now block waiting for the command to complete
+	err = cmd.Wait()
+	if err != nil { Fatal(EXEC_CMD_ERROR, "command failed: %v, stderr: %s", err, string(stderrBytes)) }
+
+	return stdoutBytes, stderrBytes
+}
+
+
+/* Will probably need this....
+func getString(v interface{}) string {
+	if reflect.ValueOf(v).IsNil() { return "" }
+	return fmt.Sprintf("%v", reflect.Indirect(reflect.ValueOf(v)))
+}
+*/
