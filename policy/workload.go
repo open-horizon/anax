@@ -1,21 +1,11 @@
 package policy
 
 import (
-	"crypto"
-	"crypto/rsa"
-	"crypto/sha256"
-	"crypto/x509"
-	"encoding/base64"
-	"encoding/pem"
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/rsapss-tool/verify"
 	"golang.org/x/crypto/bcrypt"
-	"hash"
-	"io"
-	"io/ioutil"
-	"os"
-	"strings"
 )
 
 type WorkloadList []Workload
@@ -174,124 +164,28 @@ func (w *Workload) Obscure(agreementId string, defaultPW string) error {
 	}
 }
 
-func (w Workload) HasValidSignature(pubKeyFile string, userKeys string) error {
-	glog.V(3).Infof("Verifying workload signature")
+func (w Workload) HasValidSignature(keyFileNames []string) error {
+	glog.V(3).Infof("Verifying workload signature with keys: %v", keyFileNames)
 
 	if w.Deployment != "" {
-		hasher := sha256.New()
-		if _, err := io.WriteString(hasher, w.Deployment); err != nil {
-			return errors.New(fmt.Sprintf("Error hashing deployment string: %v, Error: %v", w.Deployment, err))
-		} else if _, err := VerifyWorkload(pubKeyFile, w.DeploymentSignature, hasher, userKeys); err != nil {
-			return errors.New(fmt.Sprintf("Error verifying deployment signature: %v for deployment: %v, Error: %v", w.DeploymentSignature, w.Deployment, err))
+		if verified, fn_success, failed_map := verify.InputVerifiedByAnyKey(keyFileNames, w.DeploymentSignature, []byte(w.Deployment)); !verified {
+			return fmt.Errorf("Error verifying deployment signature: %v for deployment: %v, Error: %v", w.DeploymentSignature, w.Deployment, failed_map)
+		} else {
+			glog.Infof("Deployment verification successful with RSA pubkey file: %v", fn_success)
 		}
 	}
 
 	if w.DeploymentOverrides == "" {
 		return nil
 	} else {
-		hasher := sha256.New()
-		if _, err := io.WriteString(hasher, w.DeploymentOverrides); err != nil {
-			return errors.New(fmt.Sprintf("Error hashing deployment overrides string: %v, Error: %v", w.DeploymentOverrides, err))
-		} else if _, err := VerifyWorkload(pubKeyFile, w.DeploymentOverridesSignature, hasher, userKeys); err != nil {
-			return errors.New(fmt.Sprintf("Error verifying deployment overrides signature: %v for deployment: %v, Error: %v", w.DeploymentOverridesSignature, w.DeploymentOverrides, err))
+		if verified, fn_success, failed_map := verify.InputVerifiedByAnyKey(keyFileNames, w.DeploymentOverridesSignature, []byte(w.DeploymentOverrides)); !verified {
+			return fmt.Errorf("Error verifying deployment overrides signature: %v for deployment: %v, Error: %v", w.DeploymentOverridesSignature, w.DeploymentOverrides, failed_map)
+		} else {
+			glog.Infof("Deployment overrides verification successful with RSA pubkey file: %v", fn_success)
 		}
 		return nil
 	}
 
-}
-
-func VerifyWorkload(pubKeyFile string, signature string, hasher hash.Hash, userKeys string) (bool, error) {
-
-	// Decode the signature into its binary form.
-	var signatureBytes []byte
-	if decoded, err := base64.StdEncoding.DecodeString(signature); err != nil {
-		return false, fmt.Errorf("Unable to base64 decode signature %v, error: %v", signature, err)
-	} else {
-		signatureBytes = decoded
-	}
-
-	// only check these keys too if pubKeyFile was specified (this is behavior to accomodate legacy config)
-	if pubKeyFile != "" {
-		// Compute the public key directory based on the configured platform public key file location.
-		pubKeyDir := pubKeyFile[:strings.LastIndex(pubKeyFile, "/")]
-
-		// Grab all PEM files from that location and try to verify the signature against each one.
-		if pemFiles, err := getPemFiles(pubKeyDir); err != nil {
-			return false, err
-		} else if checkAllKeys(pubKeyDir, pemFiles, hasher, signatureBytes) {
-			return true, nil
-		}
-	}
-
-	// Grab all PEM files from that location and try to verify the signature against each one.
-	if pemFiles, err := getPemFiles(userKeys); err != nil {
-		return false, err
-	} else if checkAllKeys(userKeys, pemFiles, hasher, signatureBytes) {
-		return true, nil
-	}
-
-	return false, fmt.Errorf("Failed to find keys to verify signature %v", signature)
-
-}
-
-func checkAllKeys(pubKeyDir string, pemFiles []os.FileInfo, hasher hash.Hash, signatureBytes []byte) bool {
-
-	count := len(pemFiles)
-	trynext_str := " Trying the next key."
-
-	for _, fileInfo := range pemFiles {
-		fName := pubKeyDir + "/" + fileInfo.Name()
-
-		count = count - 1
-		if count == 0 {
-			trynext_str = ""
-		}
-
-		if publicKey, err := isValidPublickKey(fName); err != nil {
-			glog.Warningf("%v.%v", err, trynext_str)
-			continue
-		} else {
-			// Given a valid public key file, try to verify the signature.
-			glog.V(3).Infof("Using RSA pubkey file: %v and key: %v", fName, publicKey)
-
-			if err := rsa.VerifyPSS(publicKey.(*rsa.PublicKey), crypto.SHA256, hasher.Sum(nil), signatureBytes, nil); err == nil {
-				glog.Infof("Verification successful with RSA pubkey file: %v", fName)
-				return true
-			} else {
-				glog.Warningf("Unable to verify signature using pubkey file: %v, error %v.%v", fName, err, trynext_str)
-			}
-		}
-	}
-	return false
-}
-
-func isValidPublickKey(fName string) (interface{}, error) {
-	if pubKeyData, err := ioutil.ReadFile(fName); err != nil {
-		return nil, fmt.Errorf("Unable to read key file: %v, error: %v", fName, err)
-	} else if block, _ := pem.Decode(pubKeyData); block == nil {
-		return nil, fmt.Errorf("Unable to decode key file: %v as PEM encoded file", fName)
-	} else if publicKey, err := x509.ParsePKIXPublicKey(block.Bytes); err != nil {
-		return nil, fmt.Errorf("Unable to parse key file: %v, as a public key, error: %v", fName, err)
-	} else {
-		return publicKey, nil
-	}
-}
-
-func getPemFiles(homePath string) ([]os.FileInfo, error) {
-	res := make([]os.FileInfo, 0, 10)
-
-	if files, err := ioutil.ReadDir(homePath); err != nil && !os.IsNotExist(err) {
-		return nil, errors.New(fmt.Sprintf("Unable to get list of PEM files in %v, error: %v", homePath, err))
-	} else if os.IsNotExist(err) {
-		return res, nil
-	} else {
-		for _, fileInfo := range files {
-			if strings.HasSuffix(fileInfo.Name(), ".pem") && !fileInfo.IsDir() {
-				res = append(res, fileInfo)
-			}
-		}
-		return res, nil
-	}
 }
 
 func (w Workload) HasEmptyPriority() bool {

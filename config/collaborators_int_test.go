@@ -116,10 +116,18 @@ func setupTesting(listenerCert string, listenerKey string, trustSystemCerts bool
 		t.Error(err)
 	}
 
+	// add the public key path, since we are only interested in the file names in the test for
+	// the key file fetcher, no real data are in the public key files.
+	pubKeyPath := filepath.Join(dir, "mtn-PublicKey.pem")
+	if err := ioutil.WriteFile(pubKeyPath, []byte("hello"), 0660); err != nil {
+		t.Error(err)
+	}
+
 	config := &HorizonConfig{
 		Edge: Config{
 			TrustSystemCACerts: trustSystemCerts,
 			CACertsPath:        certPath,
+			PublicKeyPath:      pubKeyPath,
 		},
 	}
 
@@ -167,10 +175,17 @@ func setupTesting(listenerCert string, listenerKey string, trustSystemCerts bool
 	return dir, listener
 }
 
+func cleanup(dir string, t *testing.T) {
+
+	if err := os.RemoveAll(dir); err != nil {
+		t.Error(err)
+	}
+}
+
 func Test_HTTPClientFactory_Suite(t *testing.T) {
 	timeoutS := uint(2)
 
-	setupForTest := func(listenerCert, listenerKey string, trustSystemCerts bool) (*HorizonConfig, string) {
+	setupForTest := func(listenerCert, listenerKey string, trustSystemCerts bool) (*HorizonConfig, string, string) {
 		dir, listener := setupTesting(listenerCert, listenerKey, trustSystemCerts, t)
 
 		t.Logf("listening on %s", listener.Addr().String())
@@ -179,10 +194,10 @@ func Test_HTTPClientFactory_Suite(t *testing.T) {
 		if err != nil {
 			t.Error(nil)
 		}
-		return cfg, strings.Split(listener.Addr().String(), ":")[1]
+		return cfg, strings.Split(listener.Addr().String(), ":")[1], dir
 	}
 
-	cfg, port := setupForTest(collaboratorsTestCert, collaboratorsTestKey, false)
+	cfg, port, dir := setupForTest(collaboratorsTestCert, collaboratorsTestKey, false)
 	t.Run("HTTP client rejects trusted cert for wrong domain", func(t *testing.T) {
 
 		client := cfg.Collaborators.HTTPClientFactory.NewHTTPClient(&timeoutS)
@@ -220,10 +235,12 @@ func Test_HTTPClientFactory_Suite(t *testing.T) {
 				}
 			}
 		}
+
+		cleanup(dir, t)
 	})
 	t.Run("HTTP client rejects untrusted cert", func(t *testing.T) {
 		// need a new config and setup
-		cfg, port := setupForTest(collaboratorsOtherTestCert, collaboratorsOtherTestKey, false)
+		cfg, port, dir := setupForTest(collaboratorsOtherTestCert, collaboratorsOtherTestKey, false)
 
 		client := cfg.Collaborators.HTTPClientFactory.NewHTTPClient(&timeoutS)
 		// this should fail b/c even though we're sending a request to a trusted domain, the CA trust doesn't contain the cert
@@ -231,12 +248,115 @@ func Test_HTTPClientFactory_Suite(t *testing.T) {
 		if err == nil {
 			t.Error("Expected TLS error for sending request to untrusted domain")
 		}
+
+		cleanup(dir, t)
 	})
 
 	t.Run("HTTP client trusts system certs", func(t *testing.T) {
 		// important that the cert and key match for setup to succeed even though that's not what we're testing
 		setupForTest(collaboratorsTestCert, collaboratorsTestKey, true)
+		cleanup(dir, t)
 
 		// if we got this far we're ok (an error gets raised during setup if the system ca certs couldn't be loaded)
+	})
+}
+
+func Test_KeyFileNamesFetcher_Suite(t *testing.T) {
+	setupForTest := func(listenerCert, listenerKey string, trustSystemCerts bool) (string, *HorizonConfig) {
+		dir, _ := setupTesting(listenerCert, listenerKey, trustSystemCerts, t)
+
+		cfg, err := Read(filepath.Join(dir, "config.json"))
+		if err != nil {
+			t.Error(nil)
+		}
+
+		err = os.Setenv("SNAP_COMMON", dir)
+		if err != nil {
+			t.Error(err)
+		}
+
+		cfg.Edge.PublicKeyPath = filepath.Join(dir, "/trusted/keyfile1.pem")
+		return dir, cfg
+	}
+
+	dir, cfg := setupForTest(collaboratorsTestCert, collaboratorsTestKey, false)
+
+	t.Run("Test zero *.pem files under user key path", func(t *testing.T) {
+
+		fnames, err := cfg.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(cfg.Edge.PublicKeyPath, cfg.UserPublicKeyPath())
+		if err != nil {
+			t.Error("Got error but should not.")
+		}
+		if len(fnames) != 0 {
+			t.Error("Number of files should be 0 but got %v.", len(fnames))
+		}
+	})
+
+	t.Run("Test filter out non .pem files", func(t *testing.T) {
+		userKeyPath := cfg.UserPublicKeyPath()
+		if err := os.Mkdir(userKeyPath, 0777); err != nil {
+			t.Error(err)
+		}
+
+		if err := os.Mkdir(dir+"/trusted", 0777); err != nil {
+			t.Error(err)
+		}
+
+		nonpemfile1 := filepath.Join(dir, "/trusted/non_pem_file1")
+		if err := ioutil.WriteFile(nonpemfile1, []byte("hello from non pem file 1"), 0660); err != nil {
+			t.Error(err)
+		}
+
+		nonpemfile2 := filepath.Join(userKeyPath, "/non_pem_file2")
+		if err := ioutil.WriteFile(nonpemfile2, []byte("hello from non pem file 2"), 0660); err != nil {
+			t.Error(err)
+		}
+
+		fnames, err := cfg.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(cfg.Edge.PublicKeyPath, userKeyPath)
+		if err != nil {
+			t.Error("Got error but should not.")
+		}
+		if len(fnames) != 0 {
+			t.Error("Number of files should be 0 but got %v.", len(fnames))
+		}
+	})
+
+	t.Run("Test getting pem files", func(t *testing.T) {
+		userKeyPath := cfg.UserPublicKeyPath()
+
+		pemfile1 := filepath.Join(dir, "/trusted/realfile1.pem")
+		if err := ioutil.WriteFile(pemfile1, []byte("hello from pem file 1"), 0660); err != nil {
+			t.Error(err)
+		}
+		pemfile2 := filepath.Join(dir, "/trusted/realfile2.pem")
+		if err := ioutil.WriteFile(pemfile2, []byte("hello from pem file 2"), 0660); err != nil {
+			t.Error(err)
+		}
+		pemfile3 := filepath.Join(userKeyPath, "realfile3.pem")
+		if err := ioutil.WriteFile(pemfile3, []byte("hello from pem file 3"), 0660); err != nil {
+			t.Error(err)
+		}
+		pemfile4 := filepath.Join(userKeyPath, "realfile4.pem")
+		if err := ioutil.WriteFile(pemfile4, []byte("hello from pem file 4"), 0660); err != nil {
+			t.Error(err)
+		}
+
+		fnames, err := cfg.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(cfg.Edge.PublicKeyPath, userKeyPath)
+		if err != nil {
+			t.Error("Got error but should not.")
+		}
+		if len(fnames) != 4 {
+			t.Error("Number of files should be 4 but got %v.", len(fnames))
+		} else {
+			for _, fn := range fnames {
+				if !strings.Contains(fn, "realfile") {
+					t.Error("File %v should not be returned as a pem file.", fn)
+				}
+			}
+		}
+	})
+
+	t.Run("Cleaning up", func(t *testing.T) {
+		cleanup(dir, t)
 	})
 }

@@ -506,7 +506,9 @@ func (w *EthBlockchainWorker) fireStartEvent(details *exchange.ChainDetails, nam
 	} else {
 
 		// Verify the deployment signature
-		if err := details.DeploymentDesc.HasValidSignature(w.horizonPubKeyFile, w.Config.UserPublicKeyPath()); err != nil {
+		if pemFiles, err := w.Config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.horizonPubKeyFile, w.Config.UserPublicKeyPath()); err != nil {
+			return errors.New(logString(fmt.Sprintf("received error getting pem key files: %v", err)))
+		} else if err := details.DeploymentDesc.HasValidSignature(pemFiles); err != nil {
 			return errors.New(logString(fmt.Sprintf("eth container has invalid deployment signature %v for %v", details.DeploymentDesc.DeploymentSignature, details.DeploymentDesc.Deployment)))
 		}
 
