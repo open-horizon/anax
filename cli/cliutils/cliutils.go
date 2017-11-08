@@ -213,8 +213,9 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 }
 
 
-func ConvertTime(unixSecond uint64) string {
-	 return time.Unix(int64(unixSecond), 0).String()
+func ConvertTime(unixSeconds uint64) string {
+	if unixSeconds == 0 { return "" }
+	return time.Unix(int64(unixSeconds), 0).String()
 }
 
 

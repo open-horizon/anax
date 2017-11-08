@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"encoding/json"
+	"net/http"
+	"regexp"
 )
 
 type HorizonDevice struct {
@@ -42,8 +44,11 @@ type InputFile struct {
 func readInputFile(filePath string, inputFileStruct *InputFile) {
 	fileBytes, err := ioutil.ReadFile(filePath)
 	if err != nil { cliutils.Fatal(cliutils.READ_FILE_ERROR, "reading %s failed: %v", filePath, err) }
-	//todo: remove comments from file
-	err = json.Unmarshal(fileBytes, inputFileStruct)
+	// remove /* */ comments
+	re := regexp.MustCompile(`(?s)/\*.*?\*/`)
+	newBytes := re.ReplaceAll(fileBytes, nil)
+
+	err = json.Unmarshal(newBytes, inputFileStruct)
 	if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", filePath, err) }
 }
 
@@ -68,6 +73,10 @@ type Service struct {
 	Attributes    []Attribute `json:"attributes"`
 }
 
+type Configstate struct {
+	State          string `json:"state"`
+}
+
 
 // DoIt registers this node to Horizon with a pattern
 func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw string, inputFile string) {
@@ -80,12 +89,11 @@ func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw st
 	// See if the node exists in the exchange, and create if it doesn't
 	node := exchange.GetDevicesResponse{}
 	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+nodeId+":"+nodeToken, 0, &node)
-	//cliutils.Verbose("node: %v", node)
 	if httpCode != 200 {
 		if userPw == "" { cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node %s/%s does not exist in the exchange and the -u flag was not specified to provide exchange user credentials to create it.", org, nodeId) }
 		fmt.Printf("Node %s/%s does not exists in the exchange, creating it...\n", org, nodeId)
 		putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeId, SoftwareVersions: make(map[string]string), PublicKey: []byte("")}		// we only need to set the token
-		cliutils.ExchangePutPost("PUT", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+userPw, 201, putNodeReq)
+		cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+userPw, 201, putNodeReq)
 	} else {
 		fmt.Printf("Node %s/%s exists in the exchange\n", org, nodeId)
 	}
@@ -93,7 +101,7 @@ func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw st
 	// Initialize the Horizon device (node)
 	fmt.Println("Initializing the Horizon node...")
 	hd := HorizonDevice{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HADevice: false}	//todo: support HA config
-	cliutils.HorizonPutPost("POST", "horizondevice", []int{201,200}, hd)
+	cliutils.HorizonPutPost(http.MethodPost, "horizondevice", []int{201,200}, hd)
 
 	// Read input file and call /attribute, /service, and /workloadconfig to set the specified variables
 	if inputFile != "" {
@@ -105,11 +113,12 @@ func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw st
 		fmt.Println("Setting global variables...")
 		attr := Attribute{SensorUrls: []string{}, Label: "Global variables", Publishable: false, HostOnly: false}	// we reuse this for each GlobalSet
 		for _, g := range inputFileStruct.Global {
-			//todo: in input file change the LocationAttributes to MappedAttributes (and only HZN_LAT and HZN_LON)
+			//todo: in input file global LocationAttributes section, change to only HZN_LAT and HZN_LON
 			attr.Type = g.Type
 			attr.Mappings = g.Variables
-			cliutils.HorizonPutPost("POST", "attribute", []int{201,200}, attr)
+			cliutils.HorizonPutPost(http.MethodPost, "attribute", []int{201,200}, attr)
 		}
+		//todo: support types: HTTPSBasicAuthAttributes, AgreementProtocolAttributes
 
 		// Set the microservice variables
 		fmt.Println("Setting microservice variables...")
@@ -121,14 +130,14 @@ func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw st
 			service.SensorVersion = m.VersionRange
 			attr.Mappings = m.Variables
 			service.Attributes[0] = attr
-			cliutils.HorizonPutPost("POST", "service", []int{201,200}, service)
+			cliutils.HorizonPutPost(http.MethodPost, "service", []int{201,200}, service)
 		}
 
 		// Set the workload variables
 		fmt.Println("Setting workload variables...")
 		for _, w := range inputFileStruct.Workloads {
 			workload := api.WorkloadConfig{Org: w.Org, WorkloadURL: w.Url, Version: w.VersionRange, Variables: w.Variables}
-			cliutils.HorizonPutPost("POST", "workloadconfig", []int{201,200}, workload)
+			cliutils.HorizonPutPost(http.MethodPost, "workloadconfig", []int{201,200}, workload)
 		}
 
 	} else {
@@ -137,5 +146,9 @@ func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw st
 	}
 
 	// Set the pattern and register the node
-	fmt.Println("Note: the implementation of register is not yet complete. At this point it should set configstate to configured to register this node with Horizon.")
+	fmt.Println("Changing Horizon state to configured to register this node with Horizon...")
+	config := Configstate{State: "configured"}
+	cliutils.HorizonPutPost(http.MethodPut, "horizondevice/configstate", []int{201,200}, config)
+
+	fmt.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn show agreements' to view.")
 }

@@ -391,7 +391,7 @@ func Workloads() {
 	// Only include interesting fields in our output
 	workloads := make([]api.WorkloadConfig, len(apiWorkloads))
 	for i := range apiWorkloads {
-		workloads[i].Org = "???"		//todo: the anax api doesn't return this
+		workloads[i].Org = "???"		//todo: when anax issue 412 is fixed, get this from aanx
 		workloads[i].WorkloadURL = apiWorkloads[i].WorkloadURL
 		workloads[i].Version = apiWorkloads[i].VersionExpression
 		workloads[i].Variables = apiWorkloads[i].Variables

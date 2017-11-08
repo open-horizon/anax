@@ -8,6 +8,7 @@ ifneq ("$(wildcard ./rules.env)","")
 endif
 
 EXECUTABLE = $(shell basename $$PWD)
+CLI_EXECUTABLE = cli/hzn
 
 export TMPGOPATH := $(TMPDIR)$(EXECUTABLE)
 export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon/$(EXECUTABLE)
@@ -30,11 +31,14 @@ ifndef verbose
 endif
 
 # will always run b/c deps target is PHONY
-$(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') deps
+$(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') deps $(CLI_EXECUTABLE)
 	@echo "Producing $(EXECUTABLE)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
 	    $(COMPILE_ARGS) go build -o $(EXECUTABLE)
+
+$(CLI_EXECUTABLE): $(shell find cli -name '*.go') deps
+	go build -o $(CLI_EXECUTABLE) $(CLI_EXECUTABLE).go
 
 clean: mostlyclean
 	@echo "Clean"
