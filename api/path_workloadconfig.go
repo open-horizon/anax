@@ -64,14 +64,14 @@ func CreateWorkloadconfig(cfg *WorkloadConfig,
 	}
 
 	// Use the device org if not explicitly specified. We cant verify whether or not the org exists because the node
-	// we are running on migh tnot have authority to read other orgs in the exchange.
+	// we are running on might not have authority to read other orgs in the exchange.
 	org := cfg.Org
 	if cfg.Org == "" {
 		org = existingDevice.Org
 	}
 
 	// Reject the POST if there is already a config for this workload and version range
-	existingCfg, err := persistence.FindWorkloadConfig(db, cfg.WorkloadURL, vExp.Get_expression())
+	existingCfg, err := persistence.FindWorkloadConfig(db, cfg.WorkloadURL, org, vExp.Get_expression())
 	if err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read workloadconfig object, error %v", err))), nil
 	} else if existingCfg != nil {
@@ -144,7 +144,7 @@ func CreateWorkloadconfig(cfg *WorkloadConfig,
 	// Persist the workload configuration to the database
 	glog.V(5).Infof("WorkloadConfig persisting variables: %v", cfg.Variables)
 
-	wc, err := persistence.NewWorkloadConfig(db, cfg.WorkloadURL, vExp.Get_expression(), cfg.Variables)
+	wc, err := persistence.NewWorkloadConfig(db, cfg.WorkloadURL, org, vExp.Get_expression(), cfg.Variables)
 	if err != nil {
 		glog.Error(err)
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to save workloadconfig object, error: %v", err))), nil
@@ -176,14 +176,14 @@ func DeleteWorkloadconfig(cfg *WorkloadConfig,
 	}
 
 	// Find the target record
-	existingCfg, err := persistence.FindWorkloadConfig(db, cfg.WorkloadURL, vExp.Get_expression())
+	existingCfg, err := persistence.FindWorkloadConfig(db, cfg.WorkloadURL, cfg.Org, vExp.Get_expression())
 	if err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read workloadconfig object, error: %v", err)))
 	} else if existingCfg == nil {
 		return errorhandler(NewNotFoundError("WorkloadConfig not found", "workloadconfig"))
 	} else {
 		glog.V(5).Infof("WorkloadConfig deleting: %v", &cfg)
-		persistence.DeleteWorkloadConfig(db, cfg.WorkloadURL, vExp.Get_expression())
+		persistence.DeleteWorkloadConfig(db, cfg.WorkloadURL, cfg.Org, vExp.Get_expression())
 		return false
 	}
 

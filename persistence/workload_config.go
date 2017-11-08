@@ -16,15 +16,17 @@ const WORKLOAD_CONFIG = "workload_config"
 
 type WorkloadConfig struct {
 	WorkloadURL       string                 `json:"workload_url"`
+	Org               string                 `json:"organization"`
 	VersionExpression string                 `json:"workload_version"` // This is a version range
 	Variables         map[string]interface{} `json:"variables"`
 }
 
 func (w WorkloadConfig) String() string {
 	return fmt.Sprintf("WorkloadURL: %v, "+
+		"Org: %v, "+
 		"VersionExpression: %v, "+
 		"Variables: %v",
-		w.WorkloadURL, w.VersionExpression, w.Variables)
+		w.WorkloadURL, w.Org, w.VersionExpression, w.Variables)
 }
 
 func (w *WorkloadConfig) GetKey() string {
@@ -34,26 +36,28 @@ func (w *WorkloadConfig) GetKey() string {
 
 	var sb bytes.Buffer
 	sb.WriteString(catNull(w.WorkloadURL))
+	sb.WriteString(catNull(w.Org))
 	sb.WriteString(w.VersionExpression)
 
 	return sb.String()
 }
 
 // create a new workload config object and save it to db.
-func NewWorkloadConfig(db *bolt.DB, workloadURL string, version string, variables map[string]interface{}) (*WorkloadConfig, error) {
+func NewWorkloadConfig(db *bolt.DB, workloadURL string, org string, version string, variables map[string]interface{}) (*WorkloadConfig, error) {
 
-	if workloadURL == "" || version == "" {
-		return nil, errors.New("WorkloadConfig, workload URL or version is empty, cannot persist")
+	if workloadURL == "" || org == "" || version == "" {
+		return nil, errors.New("WorkloadConfig, workload URL, organization, or version is empty, cannot persist")
 	}
 
-	if wcfg, err := FindWorkloadConfig(db, workloadURL, version); err != nil {
+	if wcfg, err := FindWorkloadConfig(db, workloadURL, org, version); err != nil {
 		return nil, err
 	} else if wcfg != nil {
-		return nil, fmt.Errorf("Not expecting any records with WorkloadURL %v, and version %v, found %v", workloadURL, version, wcfg)
+		return nil, fmt.Errorf("Not expecting any records with WorkloadURL %v, org %v, and version %v, found %v", workloadURL, org, version, wcfg)
 	}
 
 	new_cfg := &WorkloadConfig{
 		WorkloadURL:       workloadURL,
+		Org:               org,
 		VersionExpression: version,
 		Variables:         variables,
 	}
@@ -72,7 +76,7 @@ func NewWorkloadConfig(db *bolt.DB, workloadURL string, version string, variable
 }
 
 // find the workload config variables in the db
-func FindWorkloadConfig(db *bolt.DB, url string, version string) (*WorkloadConfig, error) {
+func FindWorkloadConfig(db *bolt.DB, url string, org string, version string) (*WorkloadConfig, error) {
 	var cfg *WorkloadConfig
 	cfg = nil
 
@@ -86,7 +90,7 @@ func FindWorkloadConfig(db *bolt.DB, url string, version string) (*WorkloadConfi
 
 				if err := json.Unmarshal(v, &w); err != nil {
 					glog.Errorf("Unable to deserialize workload config db record: %v", v)
-				} else if w.WorkloadURL == url && w.VersionExpression == version {
+				} else if w.WorkloadURL == url && w.Org == org && w.VersionExpression == version {
 					cfg = &w
 					return nil
 				}
@@ -113,9 +117,9 @@ func AllWCFilter() WCFilter {
 }
 
 // filter for all the workload config objects for the given url
-func AllWorkloadWCFilter(workload_url string) WCFilter {
+func AllWorkloadWCFilter(workload_url string, org string) WCFilter {
 	return func(e WorkloadConfig) bool {
-		if e.WorkloadURL == workload_url {
+		if e.WorkloadURL == workload_url && e.Org == org {
 			return true
 		} else {
 			return false
@@ -163,13 +167,13 @@ func FindWorkloadConfigs(db *bolt.DB, filters []WCFilter) ([]WorkloadConfig, err
 	}
 }
 
-func DeleteWorkloadConfig(db *bolt.DB, url string, version string) error {
+func DeleteWorkloadConfig(db *bolt.DB, url string, org string, version string) error {
 
 	if url == "" || version == "" {
 		return errors.New("workload URL or version is empty, cannot delete")
 	} else {
 
-		if cfg, err := FindWorkloadConfig(db, url, version); err != nil {
+		if cfg, err := FindWorkloadConfig(db, url, org, version); err != nil {
 			return err
 		} else if cfg == nil {
 			return fmt.Errorf("could not find record for %v and %v", url, version)
