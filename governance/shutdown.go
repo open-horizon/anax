@@ -275,7 +275,7 @@ func (w *GovernanceWorker) deleteWorkloadconfig() error {
 	}
 
 	for _, wc := range wcs {
-		if err := persistence.DeleteWorkloadConfig(w.db, wc.WorkloadURL, wc.VersionExpression); err != nil {
+		if err := persistence.DeleteWorkloadConfig(w.db, wc.WorkloadURL, wc.Org, wc.VersionExpression); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("error deleting workload config object %v, error: %v", wc, err)))
 		}
 	}
