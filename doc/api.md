@@ -146,7 +146,7 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
 #### **API:** PATCH  /horizondevice
 ---
 
-Update the information for the current device. The information should have been registered on the exchange.
+Update the information for the current device. Currently it only supports changing the device token.
 
 **Parameters:**
 
@@ -171,6 +171,66 @@ curl -s -w "%{http_code}" -X PATCH -H 'Content-Type: application/json'  -d '{
 
 ```
 
+#### **API:** DELETE  /horizondevice
+---
+
+Unconfigure the device so that it can be re-registered.
+
+**Parameters:**
+
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| block | bool | If true, the API blocks until the node is quiesced. If false, the caller will get control back quickly while the quiesce happens in the background. While this is occurring, the caller should call GET /horizondevice until they receive an HTTP status 404. The default is true. |
+| removeNode | bool | If true, the node’s entry in the currently configured exchange is also deleted, instead of just being sanitized. The default is false. |
+
+**Response:**
+
+code: 
+
+* 204 -- success
+
+body: 
+
+none
+
+**Example:**
+```
+curl -s -w "%{http_code}" -X DELETE "http://localhost/horizondevice?block=true&removeNode=false"
+
+```
+
+
+#### **API:** GET  /horizondevice/configstate
+---
+
+Get current configuration state of the device.
+
+**Parameters:**
+none
+
+**Response:**
+
+code: 
+* 200 -- success
+
+body:
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| state   | string | Current confiuration state of the device. Valid values are "configuring" and "configured". |
+| last_update_time | uint64 | timestamp when it was last updated. |
+
+**Example:**
+
+```
+curl -s http://localhost/horizondevice/configstate |jq '.'
+{
+  "state": "configured",
+  "last_update_time": 1510174292
+}
+```
+
 
 #### **API:** PUT  /horizondevice/configstate
 ---
@@ -188,7 +248,7 @@ Change the configuration statue of the device. The valid values for the state ar
 
 code: 
 
-* 200 -- success
+* 201 -- success
 
 body: 
 
@@ -399,6 +459,8 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
 
 ```
 
+### 4. Attributes
+
 #### **API:** GET  /attribute
 ---
 
@@ -556,7 +618,129 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json' -d '{
 ```
 
 
-### 4. Agreement
+#### **API:** GET  /attribute/{id}
+---
+
+Get the attribute with the given id
+
+**Parameters:**
+none
+
+**Response:**
+
+code: 
+* 200 -- success
+
+body:
+
+| name | type| description |
+| ---- | ---- | ---------------- |
+| id | string| the id of the attribute. |
+| label | string | the user readable name of the attribute |
+| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, MappedAttributes, HAAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, AgreementProtocolAttributes and ArchitectureAttributes. |
+| sensor_urls | array | an array of sensor url. It applies to all services if it is empty. |
+| publishable| bool | whether the attribute can be made public or not. |
+| host_only | bool | whether or not the attribute will be passed to the workload. |
+| mappings | map | a list of key value pairs. |
+
+
+**Example:**
+```
+curl -s -w "%{http_code}" http://localhost/attribute/0d5762bf-67a6-49ff-8ff9-c0fd32a8699f |jq '.'
+{
+  "attributes": [
+    {
+      "id": "0d5762bf-67a6-49ff-8ff9-c0fd32a8699f",
+      "type": "MappedAttributes",
+      "sensor_urls": [
+        "https://bluehorizon.network/microservices/gps"
+      ],
+      "label": "app",
+      "publishable": false,
+      "host_only": false,
+      "mappings": {
+        "foo": "hello"
+      }
+    }
+  ]
+}
+200
+
+```
+
+
+#### **API:** PUT, PATCH  /attribute/{id}
+---
+
+Modify an attribute for a service. If the sensor_url is omitted, the attribute applies to all the services.
+
+**Parameters:**
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| attribute | json | Please refer to the response body for the GET /attribute/{id} api for the fields of an attribute.  |
+
+**Response:**
+
+code: 
+
+* 200 -- success
+
+body: 
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| attribute | json | Please refer to the response body for the GET /attribute/{id} api for the fields of an attribute.  |
+
+
+**Example:**
+```
+curl -s -w "%{http_code}" -X PUT -d '{
+      "id": "0d5762bf-67a6-49ff-8ff9-c0fd32a8699f",
+      "type": "MappedAttributes",
+      "sensor_urls": [
+        "https://bluehorizon.network/microservices/gps"
+      ],
+      "label": "app",
+      "publishable": false,
+      "host_only": false,
+      "mappings": {
+        "foo": "bar"
+      }
+    }' http://localhost/attribute/0d5762bf-67a6-49ff-8ff9-c0fd32a8699f |jq '.'
+
+```
+
+
+#### **API:** DELETE /attribute/{id}
+---
+
+Modify an attribute for a service. If the sensor_url is omitted, the attribute applies to all the services.
+
+**Parameters:**
+
+none
+
+**Response:**
+
+code: 
+
+* 200 -- success
+
+body: 
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| attribute | json | Please refer to the response body for the GET /attribute/{id} api for the fields of an attribute.  |
+
+
+**Example:**
+```
+curl -s -w "%{http_code}" -X DELETE http://localhost/attribute/0d5762bf-67a6-49ff-8ff9-c0fd32a8699f |jq '.'
+
+```
+
+### 5. Agreement
 
 #### **API:** GET  /agreement
 ---
@@ -714,7 +898,7 @@ curl -X DELETE -s http://localhost/agreement/a70042dd17d2c18fa0c9f354bf1b560061d
 
 ```
 
-### 5. Workload
+### 6. Workload
 
 #### **API:** GET  /workload
 ---
@@ -804,7 +988,7 @@ curl -s http://localhost/workload |jq '.'
 ```
 
 
-### 6. Microservice
+### 7. Microservice
 
 #### **API:** GET  /microservice
 ---
@@ -967,7 +1151,7 @@ A microservice instance has the following fields:
 
 ```
 
-### 7. Workload configuration
+### 8. Workload configuration
 
 #### **API:** GET  /workloadconfig
 ---
@@ -994,46 +1178,34 @@ configuration:
 | ---- | ---- | ---------------- |
 | workload_url | string | the specification url for the workload. |
 | workload_version| string | the version range for the workload. |
+| organization | string | the organization the workload belongs to. |
 | variables | map | a list of key value pairs that will be passed to the workload as environmental variables. |
 
 
 
 **Example:**
 ```
-curl -s http//localhost/workloadconfig | jq '.'
+curl -s http://localhost/workloadconfig | jq '.'
 {
   "active": [
     {
       "workload_url": "https://bluehorizon.network/workloads/location",
-      "workload_version": "[2.0,INFINITY)",
+      "organization": "IBM",
+      "workload_version": "[0.0.0,INFINITY)",
       "variables": {
         "foo": "bar"
-      }
-    },
-    {
-      "workload_url": "https://bluehorizon.network/workloads/netspeed",
-      "workload_version": "[2.5,INFINITY)",
-      "variables": {
-        "HZN_TARGET_SERVER": "closest"
-      }
-    },
-    {
-      "workload_url": "https://bluehorizon.network/workloads/pws",
-      "workload_version": "[1.8,INFINITY)",
-      "variables": {
-        "HZN_PWS_MODEL": "LaCrosse WS2516",
-        "HZN_WUGNAME": "my pws in grandby ca"
       }
     }
   ]
 }
+
 
 ```
 
 #### **API:** POST  /workloadconfig
 ---
 
-Set up the workload configuration datat that will be passed to the workload as environmental variables.
+Set up the workload configuration data that will be passed to the workload as environmental variables.
 
 **Parameters:**
 
@@ -1047,7 +1219,12 @@ code:
 
 * 201 -- success
 
-body: 
+body:
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| workloadconfig | json | Please refer to the response body for the GET /workloadconfig api for the fields of an workload configuration.  |
+
 
 none
 
@@ -1055,10 +1232,11 @@ none
 ```
 curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json' -d '{
   "workload_url": "https://bluehorizon.network/workloads/pws",
+  "organization": "IBM",
   "workload_version": "1.8",
   "variables": {
       "HZN_WUGNAME": "my pws at new york",
-      "HZN_PWS_MODEL": "LaCrosse WS2516""
+      "HZN_PWS_MODEL": "LaCrosse WS2516"
   }
 }
 '  http://localhost/workloadconfig
@@ -1066,7 +1244,42 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json' -d '{
 ```
 
 
-### 8. Public Keys for Workload Image Verification
+#### **API:** DELETE  /workloadconfig
+---
+
+Delete the workload configuration data.
+
+**Parameters:**
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| workloadconfig | json | Please refer to the response body for the GET /workloadconfig api for the fields of an workload configuration.  |
+
+**Response:**
+
+code: 
+
+* 204 -- success
+
+body: 
+
+none
+
+**Example:**
+```
+curl -s -w "%{http_code}" -X DELETE -H 'Content-Type: application/json' -d '{
+  "workload_url": "https://bluehorizon.network/workloads/pws",
+  "organization": "IBM",
+  "workload_version": "1.8",
+  "variables": {
+  }
+}
+'  http://localhost/workloadconfig
+
+```
+
+
+### 9. Public Keys for Workload Image Verification
 
 #### **API:** GET  /publickey
 ---
