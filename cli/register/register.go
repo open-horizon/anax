@@ -113,7 +113,6 @@ func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw st
 		fmt.Println("Setting global variables...")
 		attr := Attribute{SensorUrls: []string{}, Label: "Global variables", Publishable: false, HostOnly: false}	// we reuse this for each GlobalSet
 		for _, g := range inputFileStruct.Global {
-			//todo: in input file global LocationAttributes section, change to only HZN_LAT and HZN_LON
 			attr.Type = g.Type
 			attr.Mappings = g.Variables
 			cliutils.HorizonPutPost(http.MethodPost, "attribute", []int{201,200}, attr)
