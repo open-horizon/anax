@@ -150,8 +150,8 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 			Publishable: pF,
 			Type:        reflect.TypeOf(LocationAttributes{}).Name(),
 		},
-		Lat: "-140.03",
-		Lon: "20.12",
+		Lat: -140.03,
+		Lon: 20.12,
 	}
 
 	// no sensors URLs in meta means apply to all

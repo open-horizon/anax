@@ -88,44 +88,47 @@ func parseLocation(errorhandler ErrorHandler, permitEmpty bool, given *Attribute
 		return nil, errorhandler(NewAPIUserInputError("partial update unsupported", "location.mappings")), nil
 	}
 	var ok bool
+	var err error
 
-	var lat string
+	var lat float64
 	la, exists := (*given.Mappings)["lat"]
 	if !exists {
 		return nil, errorhandler(NewAPIUserInputError("missing key", "location.mappings.lat")), nil
 	}
-	if lat, ok = la.(string); !ok {
-		return nil, errorhandler(NewAPIUserInputError("expected string", "location.mappings.lat")), nil
+	if lat, err = la.(json.Number).Float64(); err != nil {
+		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("expected float but is %T", la), "location.mappings.lat")), nil
 	}
-	var lon string
+
+	var lon float64
 	lo, exists := (*given.Mappings)["lon"]
 	if !exists {
 		return nil, errorhandler(NewAPIUserInputError("missing key", "location.mappings.lon")), nil
 	}
-	if lon, ok = lo.(string); !ok {
-		return nil, errorhandler(NewAPIUserInputError("expected string", "location.mappings.lon")), nil
+	if lon, err = lo.(json.Number).Float64(); err != nil {
+		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("expected float but is %T", lo), "location.mappings.lon")), nil
 	}
 
-	var userProvidedCoords bool
-	up, exists := (*given.Mappings)["user_provided_coords"]
-	if !exists {
-		return nil, errorhandler(NewAPIUserInputError("missing key", "location.mappings.user_provided_coords")), nil
-	} else if userProvidedCoords, ok = up.(bool); !ok {
-		return nil, errorhandler(NewAPIUserInputError("non-boolean value", "location.mappings.user_provided_coords")), nil
+	var locationAccuracyKM float64
+	lacc, exists := (*given.Mappings)["location_accuracy_km"]
+	if exists {
+		if locationAccuracyKM, err = lacc.(json.Number).Float64(); err != nil {
+			return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("expected float but is %T", lacc), "location.mappings.location_accuracy_km")), nil
+		}
 	}
+
 	var useGps bool
 	ug, exists := (*given.Mappings)["use_gps"]
-	if !exists {
-		return nil, errorhandler(NewAPIUserInputError("missing key", "location.mappings.use_gps")), nil
-	} else if useGps, ok = ug.(bool); !ok {
-		return nil, errorhandler(NewAPIUserInputError("non-boolean value", "location.mappings.use_gps")), nil
+	if exists {
+		if useGps, ok = ug.(bool); !ok {
+			return nil, errorhandler(NewAPIUserInputError("non-boolean value", "location.mappings.use_gps")), nil
+		}
 	}
 
 	return &persistence.LocationAttributes{
 		Meta:               generateAttributeMetadata(*given, reflect.TypeOf(persistence.LocationAttributes{}).Name()),
 		Lat:                lat,
 		Lon:                lon,
-		UserProvidedCoords: userProvidedCoords,
+		LocationAccuracyKM: locationAccuracyKM,
 		UseGps:             useGps,
 	}, false, nil
 }
