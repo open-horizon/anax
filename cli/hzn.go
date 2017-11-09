@@ -38,7 +38,10 @@ func main() {
 	showServicesCmd := showCmd.Command("services", "Show the microservices that are currently registered on this Horizon edge node.")
 	showWorkloadsCmd := showCmd.Command("workloads", "Show the workloads that are currently registered on this Horizon edge node.")
 
-	unregisterCmd := app.Command("unregister", "Unregister and reset this Horizon edge node so that it is ready to be registered again. Warning: this will stop all the Horizon workloads running on this edge node, and delete the Horizon DB.")
+	unregisterCmd := app.Command("unregister", "Unregister and reset this Horizon edge node so that it is ready to be registered again. Warning: this will stop all the Horizon workloads running on this edge node, and restart the Horizon agent.")
+	forceUnregister := unregisterCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
+	removeNodeUnregister := unregisterCmd.Flag("remove", "Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).").Short('r').Bool()
+
 	app.Version("0.0.1")	//todo: get the real version of anax
 
 	// Decide which command to run
@@ -64,6 +67,6 @@ func main() {
 	case showWorkloadsCmd.FullCommand():
 		show.Workloads()
 	case unregisterCmd.FullCommand():
-		unregister.DoIt()
+		unregister.DoIt(*forceUnregister, *removeNodeUnregister)
 	}
 }

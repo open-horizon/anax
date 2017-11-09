@@ -12,7 +12,6 @@ import (
 	"bytes"
 	"github.com/open-horizon/anax/exchange"
 	"io"
-	"os/exec"
 )
 
 const (
@@ -24,7 +23,7 @@ const (
 	JSON_PARSING_ERROR = 3
 	READ_FILE_ERROR = 4
 	HTTP_ERROR = 5
-	EXEC_CMD_ERROR = 6
+	//EXEC_CMD_ERROR = 6
 )
 
 // Holds the cmd line flags that were set so other pkgs can access
@@ -92,7 +91,6 @@ func HorizonGet(urlSuffix string, goodHttp int, structure interface{}) (httpCode
 }
 
 
-/* Not needed at the moment...
 // HorizonDelete runs a DELETE on the anax api.
 // If goodHttp is non-zero and does not match the actual http code, it will exit with an error. Otherwise the actual code is returned.
 func HorizonDelete(urlSuffix string, goodHttpCodes []int) (httpCode int) {
@@ -119,7 +117,6 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int) (httpCode int) {
 	}
 	return
 }
-*/
 
 
 // HorizonPutPost runs a PUT or POST to the anax api to create of update a resource.
@@ -219,6 +216,7 @@ func ConvertTime(unixSeconds uint64) string {
 }
 
 
+/* Do not need at the moment, but keeping for reference...
 // Run a command with optional stdin and args, and return stdout, stderr
 func RunCmd(stdinBytes []byte, commandString string, args ...string) ([]byte, []byte) {
 	// For debug, build the full cmd string
@@ -279,6 +277,7 @@ func RunCmd(stdinBytes []byte, commandString string, args ...string) ([]byte, []
 
 	return stdoutBytes, stderrBytes
 }
+*/
 
 
 /* Will probably need this....
