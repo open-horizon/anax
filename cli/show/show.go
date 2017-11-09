@@ -371,6 +371,7 @@ func Services() {
 		}
 		services = append(services, serv)
 	}
+	//todo: should we mix in any info from /microservice?
 
 	// Convert to json and output
 	jsonBytes, err := json.MarshalIndent(services, "", cliutils.JSON_INDENT)
@@ -391,11 +392,12 @@ func Workloads() {
 	// Only include interesting fields in our output
 	workloads := make([]api.WorkloadConfig, len(apiWorkloads))
 	for i := range apiWorkloads {
-		workloads[i].Org = "???"		//todo: when anax issue 412 is fixed, get this from aanx
+		workloads[i].Org = apiWorkloads[i].Org
 		workloads[i].WorkloadURL = apiWorkloads[i].WorkloadURL
 		workloads[i].Version = apiWorkloads[i].VersionExpression
 		workloads[i].Variables = apiWorkloads[i].Variables
 	}
+	//todo: should we mix in any info from /workload?
 
 	// Convert to json and output
 	jsonBytes, err := json.MarshalIndent(workloads, "", cliutils.JSON_INDENT)
