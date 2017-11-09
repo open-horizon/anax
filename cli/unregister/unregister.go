@@ -3,18 +3,17 @@ package unregister
 import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
-	"strings"
 	"os"
+	"strings"
 )
 
 type ApiAttribute struct {
-	Id string	`json:"id"`
+	Id string `json:"id"`
 }
 
 type ApiAttributes struct {
-	Attributes []ApiAttribute	`json:"attributes"`
+	Attributes []ApiAttribute `json:"attributes"`
 }
-
 
 // DoIt unregisters this Horizon edge node and resets it so it can be registered again
 func DoIt(forceUnregister, removeNodeUnregister bool) {
@@ -32,9 +31,11 @@ func DoIt(forceUnregister, removeNodeUnregister bool) {
 	fmt.Println("Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...")
 
 	removeNodeOption := ""
-	if removeNodeUnregister { removeNodeOption = "&removeNode=true" }
+	if removeNodeUnregister {
+		removeNodeOption = "&removeNode=true"
+	}
 
-	cliutils.HorizonDelete("horizondevice?block=true"+removeNodeOption, []int{200,204})
+	cliutils.HorizonDelete("horizondevice?block=true"+removeNodeOption, []int{200, 204})
 	fmt.Println("Horizon node unregistered.")
 
 	/* This does the same thing more manually. Want to keep for reference...

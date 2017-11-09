@@ -2,15 +2,14 @@
 package main
 
 import (
-	"os"
 	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/cli/show"
-	"gopkg.in/alecthomas/kingpin.v2"
-	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/cli/importkey"
+	"github.com/open-horizon/anax/cli/register"
+	"github.com/open-horizon/anax/cli/show"
 	"github.com/open-horizon/anax/cli/unregister"
+	"gopkg.in/alecthomas/kingpin.v2"
+	"os"
 )
-
 
 func main() {
 	// Command flags and args - see https://github.com/alecthomas/kingpin
@@ -42,7 +41,7 @@ func main() {
 	forceUnregister := unregisterCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 	removeNodeUnregister := unregisterCmd.Flag("remove", "Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).").Short('r').Bool()
 
-	app.Version("0.0.1")	//todo: get the real version of anax
+	app.Version("0.0.1") //todo: get the real version of anax
 
 	// Decide which command to run
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {

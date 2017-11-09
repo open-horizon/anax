@@ -1,57 +1,59 @@
 package register
 
 import (
-	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/api"
-	"strings"
-	"github.com/open-horizon/anax/exchange"
-	"fmt"
-	"io/ioutil"
 	"encoding/json"
+	"fmt"
+	"github.com/open-horizon/anax/api"
+	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/exchange"
+	"io/ioutil"
 	"net/http"
 	"regexp"
+	"strings"
 )
 
 type HorizonDevice struct {
-	Id                 string      `json:"id"`
-	Org                string      `json:"organization"`
-	Pattern            string      `json:"pattern"` // a simple name, not prefixed with the org
-	Name               string      `json:"name,omitempty"`
-	Token              string      `json:"token,omitempty"`
-	HADevice           bool        `json:"ha_device,omitempty"`
+	Id       string `json:"id"`
+	Org      string `json:"organization"`
+	Pattern  string `json:"pattern"` // a simple name, not prefixed with the org
+	Name     string `json:"name,omitempty"`
+	Token    string `json:"token,omitempty"`
+	HADevice bool   `json:"ha_device,omitempty"`
 }
 
 type GlobalSet struct {
-	Type string `json:"type"`
+	Type      string                 `json:"type"`
 	Variables map[string]interface{} `json:"variables"`
 }
 
 // Use for both microservices and workloads
 type MicroWork struct {
-	Org string `json:"org"`
-	Url string `json:"url"`
-	VersionRange string `json:"versionRange"`
-	Variables map[string]interface{} `json:"variables"`
+	Org          string                 `json:"org"`
+	Url          string                 `json:"url"`
+	VersionRange string                 `json:"versionRange"`
+	Variables    map[string]interface{} `json:"variables"`
 }
 
 type InputFile struct {
-	Global []GlobalSet `json:"global"`
-	Microservices []MicroWork     `json:"microservices"`
-	Workloads []MicroWork     `json:"workloads"`
+	Global        []GlobalSet `json:"global"`
+	Microservices []MicroWork `json:"microservices"`
+	Workloads     []MicroWork `json:"workloads"`
 }
-
 
 func readInputFile(filePath string, inputFileStruct *InputFile) {
 	fileBytes, err := ioutil.ReadFile(filePath)
-	if err != nil { cliutils.Fatal(cliutils.READ_FILE_ERROR, "reading %s failed: %v", filePath, err) }
+	if err != nil {
+		cliutils.Fatal(cliutils.READ_FILE_ERROR, "reading %s failed: %v", filePath, err)
+	}
 	// remove /* */ comments
 	re := regexp.MustCompile(`(?s)/\*.*?\*/`)
 	newBytes := re.ReplaceAll(fileBytes, nil)
 
 	err = json.Unmarshal(newBytes, inputFileStruct)
-	if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", filePath, err) }
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", filePath, err)
+	}
 }
-
 
 // Note: a structure like this exists in the api pkg, but has the id and everything is ptrs, so it is not convenient to use
 type Attribute struct {
@@ -74,9 +76,8 @@ type Service struct {
 }
 
 type Configstate struct {
-	State          string `json:"state"`
+	State string `json:"state"`
 }
-
 
 // DoIt registers this node to Horizon with a pattern
 func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw string, inputFile string) {
@@ -90,9 +91,11 @@ func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw st
 	node := exchange.GetDevicesResponse{}
 	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+nodeId+":"+nodeToken, 0, &node)
 	if httpCode != 200 {
-		if userPw == "" { cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node %s/%s does not exist in the exchange and the -u flag was not specified to provide exchange user credentials to create it.", org, nodeId) }
+		if userPw == "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node %s/%s does not exist in the exchange and the -u flag was not specified to provide exchange user credentials to create it.", org, nodeId)
+		}
 		fmt.Printf("Node %s/%s does not exists in the exchange, creating it...\n", org, nodeId)
-		putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeId, SoftwareVersions: make(map[string]string), PublicKey: []byte("")}		// we only need to set the token
+		putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeId, SoftwareVersions: make(map[string]string), PublicKey: []byte("")} // we only need to set the token
 		cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+userPw, 201, putNodeReq)
 	} else {
 		fmt.Printf("Node %s/%s exists in the exchange\n", org, nodeId)
@@ -100,8 +103,8 @@ func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw st
 
 	// Initialize the Horizon device (node)
 	fmt.Println("Initializing the Horizon node...")
-	hd := HorizonDevice{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HADevice: false}	//todo: support HA config
-	cliutils.HorizonPutPost(http.MethodPost, "horizondevice", []int{201,200}, hd)
+	hd := HorizonDevice{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HADevice: false} //todo: support HA config
+	cliutils.HorizonPutPost(http.MethodPost, "horizondevice", []int{201, 200}, hd)
 
 	// Read input file and call /attribute, /service, and /workloadconfig to set the specified variables
 	if inputFile != "" {
@@ -111,17 +114,17 @@ func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw st
 
 		// Set the global variables as attributes with no url
 		fmt.Println("Setting global variables...")
-		attr := Attribute{SensorUrls: []string{}, Label: "Global variables", Publishable: false, HostOnly: false}	// we reuse this for each GlobalSet
+		attr := Attribute{SensorUrls: []string{}, Label: "Global variables", Publishable: false, HostOnly: false} // we reuse this for each GlobalSet
 		for _, g := range inputFileStruct.Global {
 			attr.Type = g.Type
 			attr.Mappings = g.Variables
-			cliutils.HorizonPutPost(http.MethodPost, "attribute", []int{201,200}, attr)
+			cliutils.HorizonPutPost(http.MethodPost, "attribute", []int{201, 200}, attr)
 		}
 		//todo: support types: HTTPSBasicAuthAttributes, AgreementProtocolAttributes
 
 		// Set the microservice variables
 		fmt.Println("Setting microservice variables...")
-		attr = Attribute{Type: "MappedAttributes", SensorUrls: []string{}, Label: "app", Publishable: false, HostOnly: false}	// we reuse this for each microservice
+		attr = Attribute{Type: "MappedAttributes", SensorUrls: []string{}, Label: "app", Publishable: false, HostOnly: false} // we reuse this for each microservice
 		service := Service{Attributes: []Attribute{attr}}
 		for _, m := range inputFileStruct.Microservices {
 			service.SensorOrg = m.Org
@@ -129,14 +132,14 @@ func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw st
 			service.SensorVersion = m.VersionRange
 			attr.Mappings = m.Variables
 			service.Attributes[0] = attr
-			cliutils.HorizonPutPost(http.MethodPost, "service", []int{201,200}, service)
+			cliutils.HorizonPutPost(http.MethodPost, "service", []int{201, 200}, service)
 		}
 
 		// Set the workload variables
 		fmt.Println("Setting workload variables...")
 		for _, w := range inputFileStruct.Workloads {
 			workload := api.WorkloadConfig{Org: w.Org, WorkloadURL: w.Url, Version: w.VersionRange, Variables: w.Variables}
-			cliutils.HorizonPutPost(http.MethodPost, "workloadconfig", []int{201,200}, workload)
+			cliutils.HorizonPutPost(http.MethodPost, "workloadconfig", []int{201, 200}, workload)
 		}
 
 	} else {
@@ -147,7 +150,7 @@ func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw st
 	// Set the pattern and register the node
 	fmt.Println("Changing Horizon state to configured to register this node with Horizon...")
 	config := Configstate{State: "configured"}
-	cliutils.HorizonPutPost(http.MethodPut, "horizondevice/configstate", []int{201,200}, config)
+	cliutils.HorizonPutPost(http.MethodPut, "horizondevice/configstate", []int{201, 200}, config)
 
 	fmt.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn show agreements' to view.")
 }

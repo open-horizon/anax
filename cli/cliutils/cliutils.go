@@ -1,28 +1,28 @@
 package cliutils
 
 import (
-	"strings"
-	"fmt"
-	"os"
-	"net/http"
-	"io/ioutil"
-	"encoding/json"
-	"time"
-	"encoding/base64"
 	"bytes"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"github.com/open-horizon/anax/exchange"
 	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"strings"
+	"time"
 )
 
 const (
-	HZN_API = "http://localhost"
+	HZN_API     = "http://localhost"
 	JSON_INDENT = "  "
 
 	// Exit Codes
-	CLI_INPUT_ERROR = 1		// we actually don't have control over the usage exit code
+	CLI_INPUT_ERROR    = 1 // we actually don't have control over the usage exit code
 	JSON_PARSING_ERROR = 3
-	READ_FILE_ERROR = 4
-	HTTP_ERROR = 5
+	READ_FILE_ERROR    = 4
+	HTTP_ERROR         = 5
 	//EXEC_CMD_ERROR = 6
 )
 
@@ -30,18 +30,23 @@ const (
 type GlobalOptions struct {
 	Verbose *bool
 }
+
 var Opts GlobalOptions
 
-
 func Verbose(msg string, args ...interface{}) {
-	if !*Opts.Verbose { return }
-	if !strings.HasSuffix(msg, "\n") { msg += "\n"}
-	fmt.Fprintf(os.Stderr, "[verbose] "+msg, args...)	// send to stderr so it doesn't mess up stdout if they are piping that to jq or something like that
+	if !*Opts.Verbose {
+		return
+	}
+	if !strings.HasSuffix(msg, "\n") {
+		msg += "\n"
+	}
+	fmt.Fprintf(os.Stderr, "[verbose] "+msg, args...) // send to stderr so it doesn't mess up stdout if they are piping that to jq or something like that
 }
 
-
 func Fatal(exitCode int, msg string, args ...interface{}) {
-	if !strings.HasSuffix(msg, "\n") { msg += "\n"}
+	if !strings.HasSuffix(msg, "\n") {
+		msg += "\n"
+	}
 	fmt.Fprintf(os.Stderr, "Error: "+msg, args...)
 	os.Exit(exitCode)
 }
@@ -52,7 +57,6 @@ func GetShortBinaryName() string {
 }
 */
 
-
 // GetHorizonUrlBase returns the base part of the horizon api url (which can be overridden by env var HORIZON_URL_BASE)
 func GetHorizonUrlBase() string {
 	envVar := os.Getenv("HORIZON_URL_BASE")
@@ -62,14 +66,12 @@ func GetHorizonUrlBase() string {
 	return HZN_API
 }
 
-
 // GetRespBodyString converts an http response body to a string
 func GetRespBodyString(responseBody io.ReadCloser) string {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(responseBody)
 	return buf.String()
 }
-
 
 // HorizonGet runs a GET on the anax api and fills in the specified json structure.
 // If goodHttp is non-zero and does not match the actual http code, it will exit with an error. Otherwise the actual code is returned.
@@ -78,18 +80,25 @@ func HorizonGet(urlSuffix string, goodHttp int, structure interface{}) (httpCode
 	apiMsg := http.MethodGet + " " + url
 	Verbose(apiMsg)
 	resp, err := http.Get(url)
-	if err != nil { Fatal(HTTP_ERROR, "%s failed: %v", apiMsg, err) }
+	if err != nil {
+		Fatal(HTTP_ERROR, "%s failed: %v", apiMsg, err)
+	}
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
-	if goodHttp > 0 && httpCode != goodHttp { Fatal(HTTP_ERROR, "bad HTTP code from %s: %d", apiMsg, httpCode) }
+	if goodHttp > 0 && httpCode != goodHttp {
+		Fatal(HTTP_ERROR, "bad HTTP code from %s: %d", apiMsg, httpCode)
+	}
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil { Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err) }
+	if err != nil {
+		Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err)
+	}
 	err = json.Unmarshal(bodyBytes, structure)
-	if err != nil { Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err) }
+	if err != nil {
+		Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err)
+	}
 	return
 }
-
 
 // HorizonDelete runs a DELETE on the anax api.
 // If goodHttp is non-zero and does not match the actual http code, it will exit with an error. Otherwise the actual code is returned.
@@ -99,13 +108,17 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int) (httpCode int) {
 	Verbose(apiMsg)
 	httpClient := &http.Client{}
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
-	if err != nil { Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err) }
+	if err != nil {
+		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
+	}
 	resp, err := httpClient.Do(req)
-	if err != nil { Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err) }
+	if err != nil {
+		Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err)
+	}
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
-	if len(goodHttpCodes) > 0  {
+	if len(goodHttpCodes) > 0 {
 		foundCode := false
 		for _, code := range goodHttpCodes {
 			if code == httpCode {
@@ -113,11 +126,12 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int) (httpCode int) {
 				break
 			}
 		}
-		if !foundCode { Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyString(resp.Body)) }
+		if !foundCode {
+			Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyString(resp.Body))
+		}
 	}
 	return
 }
-
 
 // HorizonPutPost runs a PUT or POST to the anax api to create of update a resource.
 // If the list of goodHttps is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
@@ -127,18 +141,24 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 	Verbose(apiMsg)
 	httpClient := &http.Client{}
 	jsonBytes, err := json.Marshal(body)
-	if err != nil { Fatal(JSON_PARSING_ERROR, "failed to marshal body for %s: %v", apiMsg, err) }
+	if err != nil {
+		Fatal(JSON_PARSING_ERROR, "failed to marshal body for %s: %v", apiMsg, err)
+	}
 	requestBody := bytes.NewBuffer(jsonBytes)
 	req, err := http.NewRequest(method, url, requestBody)
-	if err != nil { Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err) }
+	if err != nil {
+		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
+	}
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
 	resp, err := httpClient.Do(req)
-	if err != nil { Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err) }
+	if err != nil {
+		Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err)
+	}
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
-	if len(goodHttpCodes) > 0  {
+	if len(goodHttpCodes) > 0 {
 		foundCode := false
 		for _, code := range goodHttpCodes {
 			if code == httpCode {
@@ -146,11 +166,12 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 				break
 			}
 		}
-		if !foundCode { Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyString(resp.Body)) }
+		if !foundCode {
+			Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyString(resp.Body))
+		}
 	}
 	return
 }
-
 
 // ExchangeGet runs a GET to the exchange api and fills in the specified json structure.
 // If goodHttp is non-zero and does not match the actual http code, it will exit with an error. Otherwise the actual code is returned.
@@ -160,23 +181,32 @@ func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttp 
 	Verbose(apiMsg)
 	httpClient := &http.Client{}
 	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil { Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err) }
+	if err != nil {
+		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
+	}
 	req.Header.Add("Accept", "application/json")
 	//req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
 	resp, err := httpClient.Do(req)
-	if err != nil { Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err) }
+	if err != nil {
+		Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err)
+	}
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
-	if goodHttp > 0 && httpCode != goodHttp { Fatal(HTTP_ERROR, "bad HTTP code from %s: %d", apiMsg, httpCode) }
+	if goodHttp > 0 && httpCode != goodHttp {
+		Fatal(HTTP_ERROR, "bad HTTP code from %s: %d", apiMsg, httpCode)
+	}
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil { Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err) }
+	if err != nil {
+		Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err)
+	}
 	err = json.Unmarshal(bodyBytes, structure)
-	if err != nil { Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err) }
+	if err != nil {
+		Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err)
+	}
 	return
 }
-
 
 // ExchangePutPost runs a PUT or POST to the exchange api to create of update a resource.
 // If goodHttp is non-zero and does not match the actual http code, it will exit with an error. Otherwise the actual code is returned.
@@ -186,35 +216,45 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 	Verbose(apiMsg)
 	httpClient := &http.Client{}
 	jsonBytes, err := json.Marshal(body)
-	if err != nil { Fatal(JSON_PARSING_ERROR, "failed to marshal body for %s: %v", apiMsg, err) }
+	if err != nil {
+		Fatal(JSON_PARSING_ERROR, "failed to marshal body for %s: %v", apiMsg, err)
+	}
 	requestBody := bytes.NewBuffer(jsonBytes)
 	req, err := http.NewRequest(method, url, requestBody)
-	if err != nil { Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err) }
+	if err != nil {
+		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
+	}
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
 	resp, err := httpClient.Do(req)
-	if err != nil { Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err) }
+	if err != nil {
+		Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err)
+	}
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
 	if goodHttp > 0 && httpCode != goodHttp {
 		bodyBytes, err := ioutil.ReadAll(resp.Body)
-		if err != nil { Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err) }
+		if err != nil {
+			Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err)
+		}
 		respMsg := exchange.PostDeviceResponse{}
 		err = json.Unmarshal(bodyBytes, &respMsg)
-		if err != nil { Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err) }
+		if err != nil {
+			Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err)
+		}
 		Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s, %s", httpCode, apiMsg, respMsg.Code, respMsg.Msg)
 	}
 	return
 }
 
-
 func ConvertTime(unixSeconds uint64) string {
-	if unixSeconds == 0 { return "" }
+	if unixSeconds == 0 {
+		return ""
+	}
 	return time.Unix(int64(unixSeconds), 0).String()
 }
-
 
 /* Do not need at the moment, but keeping for reference...
 // Run a command with optional stdin and args, and return stdout, stderr
@@ -278,7 +318,6 @@ func RunCmd(stdinBytes []byte, commandString string, args ...string) ([]byte, []
 	return stdoutBytes, stderrBytes
 }
 */
-
 
 /* Will probably need this....
 func getString(v interface{}) string {

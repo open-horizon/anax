@@ -3,38 +3,37 @@
 package show
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/api"
-	"encoding/json"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 )
 
-
 //~~~~~~~~~~~~~~~~ show node ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 type Configstate struct {
 	State          *string `json:"state"`
-	LastUpdateTime string `json:"last_update_time,omitempty"`
+	LastUpdateTime string  `json:"last_update_time,omitempty"`
 }
 
 // This is a combo of anax's HorizonDevice and Info (status) structs
 type NodeAndStatus struct {
 	// from api.HorizonDevice
-	Id                 *string      `json:"id"`
-	Org                *string      `json:"organization"`
-	Pattern            *string      `json:"pattern"` // a simple name, not prefixed with the org
-	Name               *string      `json:"name,omitempty"`
-	Token              *string      `json:"token,omitempty"`
+	Id                 *string     `json:"id"`
+	Org                *string     `json:"organization"`
+	Pattern            *string     `json:"pattern"` // a simple name, not prefixed with the org
+	Name               *string     `json:"name,omitempty"`
+	Token              *string     `json:"token,omitempty"`
 	TokenLastValidTime string      `json:"token_last_valid_time,omitempty"`
-	TokenValid         *bool        `json:"token_valid,omitempty"`
-	HADevice           *bool        `json:"ha_device,omitempty"`
+	TokenValid         *bool       `json:"token_valid,omitempty"`
+	HADevice           *bool       `json:"ha_device,omitempty"`
 	Config             Configstate `json:"configstate,omitempty"`
 	// from api.Info
-	Geths         []api.Geth          `json:"geth"`
-	Configuration *api.Configuration  `json:"configuration"`
-	Connectivity  map[string]bool `json:"connectivity"`
+	Geths         []api.Geth         `json:"geth"`
+	Configuration *api.Configuration `json:"configuration"`
+	Connectivity  map[string]bool    `json:"connectivity"`
 }
 
 // CopyNodeInto copies the horizondevice info into our output struct and converts times in the process
@@ -59,12 +58,11 @@ func (n *NodeAndStatus) CopyStatusInto(status *api.Info) {
 	n.Connectivity = status.Connectivity
 }
 
-
 func Node() {
 	// Get the horizondevice info
 	horDevice := api.HorizonDevice{}
 	cliutils.HorizonGet("horizondevice", 200, &horDevice)
-	nodeInfo := NodeAndStatus{}		// the structure we will output
+	nodeInfo := NodeAndStatus{} // the structure we will output
 	nodeInfo.CopyNodeInto(&horDevice)
 
 	// Get the horizon status info
@@ -74,23 +72,24 @@ func Node() {
 
 	// Output the combined info
 	jsonBytes, err := json.MarshalIndent(nodeInfo, "", cliutils.JSON_INDENT)
-	if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show node' output: %v", err) }
-	fmt.Printf("%s\n", jsonBytes)		//todo: is there a way to output with json syntax highlighting like jq does?
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show node' output: %v", err)
+	}
+	fmt.Printf("%s\n", jsonBytes) //todo: is there a way to output with json syntax highlighting like jq does?
 }
-
 
 //~~~~~~~~~~~~~~~~ show agreements ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 type ActiveAgreement struct {
-	Name                            string                   `json:"name"`
-	CurrentAgreementId              string                   `json:"current_agreement_id"`
-	ConsumerId                      string                   `json:"consumer_id"`
-	AgreementCreationTime           string                   `json:"agreement_creation_time"`
-	AgreementAcceptedTime           string                   `json:"agreement_accepted_time"`
-	AgreementFinalizedTime          string                   `json:"agreement_finalized_time"`
-	AgreementExecutionStartTime     string                   `json:"agreement_execution_start_time"`
-	AgreementDataReceivedTime       string                   `json:"agreement_data_received_time"`
-	AgreementProtocol               string                   `json:"agreement_protocol"`     // the agreement protocol being used. It is also in the proposal.
+	Name                        string `json:"name"`
+	CurrentAgreementId          string `json:"current_agreement_id"`
+	ConsumerId                  string `json:"consumer_id"`
+	AgreementCreationTime       string `json:"agreement_creation_time"`
+	AgreementAcceptedTime       string `json:"agreement_accepted_time"`
+	AgreementFinalizedTime      string `json:"agreement_finalized_time"`
+	AgreementExecutionStartTime string `json:"agreement_execution_start_time"`
+	AgreementDataReceivedTime   string `json:"agreement_data_received_time"`
+	AgreementProtocol           string `json:"agreement_protocol"` // the agreement protocol being used. It is also in the proposal.
 }
 
 // CopyAgreementInto copies the agreement info into our output struct
@@ -110,19 +109,19 @@ func (a *ActiveAgreement) CopyAgreementInto(agreement persistence.EstablishedAgr
 }
 
 type ArchivedAgreement struct {
-	Name                            string                   `json:"name"`
-	CurrentAgreementId              string                   `json:"current_agreement_id"`
-	ConsumerId                      string                   `json:"consumer_id"`
-	AgreementCreationTime           string                   `json:"agreement_creation_time"`
-	AgreementAcceptedTime           string                   `json:"agreement_accepted_time"`
-	AgreementFinalizedTime          string                   `json:"agreement_finalized_time"`
-	AgreementExecutionStartTime     string                   `json:"agreement_execution_start_time"`
-	AgreementDataReceivedTime       string                   `json:"agreement_data_received_time"`
-	AgreementProtocol               string                   `json:"agreement_protocol"`     // the agreement protocol being used. It is also in the proposal.
+	Name                        string `json:"name"`
+	CurrentAgreementId          string `json:"current_agreement_id"`
+	ConsumerId                  string `json:"consumer_id"`
+	AgreementCreationTime       string `json:"agreement_creation_time"`
+	AgreementAcceptedTime       string `json:"agreement_accepted_time"`
+	AgreementFinalizedTime      string `json:"agreement_finalized_time"`
+	AgreementExecutionStartTime string `json:"agreement_execution_start_time"`
+	AgreementDataReceivedTime   string `json:"agreement_data_received_time"`
+	AgreementProtocol           string `json:"agreement_protocol"` // the agreement protocol being used. It is also in the proposal.
 
-	AgreementTerminatedTime         string                   `json:"agreement_terminated_time"`
-	TerminatedReason                uint64                   `json:"terminated_reason"`      // the reason that the agreement was terminated
-	TerminatedDescription           string                   `json:"terminated_description"` // a string form of the reason that the agreement was terminated
+	AgreementTerminatedTime string `json:"agreement_terminated_time"`
+	TerminatedReason        uint64 `json:"terminated_reason"`      // the reason that the agreement was terminated
+	TerminatedDescription   string `json:"terminated_description"` // a string form of the reason that the agreement was terminated
 }
 
 // CopyAgreementInto copies the agreement info into our output struct
@@ -148,11 +147,17 @@ func Agreements(archivedAgreements bool) {
 	apiOutput := make(map[string]map[string][]persistence.EstablishedAgreement, 0)
 	cliutils.HorizonGet("agreement", 200, &apiOutput)
 	var ok bool
-	if _, ok = apiOutput["agreements"]; !ok { cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include 'agreements' key") }
+	if _, ok = apiOutput["agreements"]; !ok {
+		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include 'agreements' key")
+	}
 	whichAgreements := "active"
-	if archivedAgreements { whichAgreements = "archived" }
+	if archivedAgreements {
+		whichAgreements = "archived"
+	}
 	var apiAgreements []persistence.EstablishedAgreement
-	if apiAgreements, ok = apiOutput["agreements"][whichAgreements]; !ok { cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include '%s' key", whichAgreements) }
+	if apiAgreements, ok = apiOutput["agreements"][whichAgreements]; !ok {
+		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include '%s' key", whichAgreements)
+	}
 
 	// Go thru the apiAgreements and convert into our output struct and then print
 	if !archivedAgreements {
@@ -161,7 +166,9 @@ func Agreements(archivedAgreements bool) {
 			agreements[i].CopyAgreementInto(apiAgreements[i])
 		}
 		jsonBytes, err := json.MarshalIndent(agreements, "", cliutils.JSON_INDENT)
-		if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show agreements' output: %v", err) }
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show agreements' output: %v", err)
+		}
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
 		agreements := make([]ArchivedAgreement, len(apiAgreements))
@@ -169,11 +176,12 @@ func Agreements(archivedAgreements bool) {
 			agreements[i].CopyAgreementInto(apiAgreements[i])
 		}
 		jsonBytes, err := json.MarshalIndent(agreements, "", cliutils.JSON_INDENT)
-		if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show agreements' output: %v", err) }
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show agreements' output: %v", err)
+		}
 		fmt.Printf("%s\n", jsonBytes)
 	}
 }
-
 
 //~~~~~~~~~~~~~~~~ show metering ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -205,13 +213,13 @@ func (m *MeteringNotification) CopyMeteringInto(metering persistence.MeteringNot
 }
 
 type ActiveMetering struct {
-	Name                            string                   `json:"name"`
-	CurrentAgreementId              string                   `json:"current_agreement_id"`
-	ConsumerId                      string                   `json:"consumer_id"`
-	AgreementFinalizedTime          string                   `json:"agreement_finalized_time"`
-	AgreementDataReceivedTime       string                   `json:"agreement_data_received_time"`
-	AgreementProtocol               string                   `json:"agreement_protocol"`     // the agreement protocol being used. It is also in the proposal.
-	MeteringNotificationMsg         MeteringNotification     `json:"metering_notification,omitempty"` // the most recent metering notification received
+	Name                      string               `json:"name"`
+	CurrentAgreementId        string               `json:"current_agreement_id"`
+	ConsumerId                string               `json:"consumer_id"`
+	AgreementFinalizedTime    string               `json:"agreement_finalized_time"`
+	AgreementDataReceivedTime string               `json:"agreement_data_received_time"`
+	AgreementProtocol         string               `json:"agreement_protocol"`              // the agreement protocol being used. It is also in the proposal.
+	MeteringNotificationMsg   MeteringNotification `json:"metering_notification,omitempty"` // the most recent metering notification received
 }
 
 // CopyAgreementInto copies the agreement info into our output struct
@@ -227,18 +235,18 @@ func (a *ActiveMetering) CopyAgreementInto(agreement persistence.EstablishedAgre
 }
 
 type ArchivedMetering struct {
-	Name                            string                   `json:"name"`
-	CurrentAgreementId              string                   `json:"current_agreement_id"`
-	ConsumerId                      string                   `json:"consumer_id"`
-	AgreementFinalizedTime          string                   `json:"agreement_finalized_time"`
-	AgreementDataReceivedTime       string                   `json:"agreement_data_received_time"`
-	AgreementProtocol               string                   `json:"agreement_protocol"`     // the agreement protocol being used. It is also in the proposal.
+	Name                      string `json:"name"`
+	CurrentAgreementId        string `json:"current_agreement_id"`
+	ConsumerId                string `json:"consumer_id"`
+	AgreementFinalizedTime    string `json:"agreement_finalized_time"`
+	AgreementDataReceivedTime string `json:"agreement_data_received_time"`
+	AgreementProtocol         string `json:"agreement_protocol"` // the agreement protocol being used. It is also in the proposal.
 
-	AgreementTerminatedTime         string                   `json:"agreement_terminated_time"`
-	TerminatedReason                uint64                   `json:"terminated_reason"`      // the reason that the agreement was terminated
-	TerminatedDescription           string                   `json:"terminated_description"` // a string form of the reason that the agreement was terminated
+	AgreementTerminatedTime string `json:"agreement_terminated_time"`
+	TerminatedReason        uint64 `json:"terminated_reason"`      // the reason that the agreement was terminated
+	TerminatedDescription   string `json:"terminated_description"` // a string form of the reason that the agreement was terminated
 
-	MeteringNotificationMsg         MeteringNotification     `json:"metering_notification,omitempty"` // the most recent metering notification received
+	MeteringNotificationMsg MeteringNotification `json:"metering_notification,omitempty"` // the most recent metering notification received
 }
 
 // CopyAgreementInto copies the agreement info into our output struct
@@ -262,11 +270,17 @@ func Metering(archivedMetering bool) {
 	apiOutput := make(map[string]map[string][]persistence.EstablishedAgreement, 0)
 	cliutils.HorizonGet("agreement", 200, &apiOutput)
 	var ok bool
-	if _, ok = apiOutput["agreements"]; !ok { cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include 'agreements' key") }
+	if _, ok = apiOutput["agreements"]; !ok {
+		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include 'agreements' key")
+	}
 	whichAgreements := "active"
-	if archivedMetering { whichAgreements = "archived" }
+	if archivedMetering {
+		whichAgreements = "archived"
+	}
 	var apiAgreements []persistence.EstablishedAgreement
-	if apiAgreements, ok = apiOutput["agreements"][whichAgreements]; !ok { cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include '%s' key", whichAgreements) }
+	if apiAgreements, ok = apiOutput["agreements"][whichAgreements]; !ok {
+		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include '%s' key", whichAgreements)
+	}
 
 	// Go thru the apiAgreements and convert into our output struct and then print
 	if !archivedMetering {
@@ -275,7 +289,9 @@ func Metering(archivedMetering bool) {
 			metering[i].CopyAgreementInto(apiAgreements[i])
 		}
 		jsonBytes, err := json.MarshalIndent(metering, "", cliutils.JSON_INDENT)
-		if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show metering' output: %v", err) }
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show metering' output: %v", err)
+		}
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
 		metering := make([]ArchivedMetering, len(apiAgreements))
@@ -283,11 +299,12 @@ func Metering(archivedMetering bool) {
 			metering[i].CopyAgreementInto(apiAgreements[i])
 		}
 		jsonBytes, err := json.MarshalIndent(metering, "", cliutils.JSON_INDENT)
-		if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show metering' output: %v", err) }
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show metering' output: %v", err)
+		}
 		fmt.Printf("%s\n", jsonBytes)
 	}
 }
-
 
 //~~~~~~~~~~~~~~~~ show keys ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -295,21 +312,24 @@ func Keys() {
 	apiOutput := make(map[string][]string, 0)
 	cliutils.HorizonGet("publickey", 200, &apiOutput)
 	var ok bool
-	if _, ok = apiOutput["pem"]; !ok { cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api publickey output did not include 'pem' key") }
+	if _, ok = apiOutput["pem"]; !ok {
+		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api publickey output did not include 'pem' key")
+	}
 	jsonBytes, err := json.MarshalIndent(apiOutput["pem"], "", cliutils.JSON_INDENT)
-	if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show pem' output: %v", err) }
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show pem' output: %v", err)
+	}
 	fmt.Printf("%s\n", jsonBytes)
 }
-
 
 //~~~~~~~~~~~~~~~~ show attributes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // Our form of the attributes output
 type OurAttributes struct {
-	Type        string                 `json:"type"`
+	Type string `json:"type"`
 	//SensorUrls  []string               `json:"sensor_urls"`
-	Label string `json:"label"`
-	Variables    map[string]interface{} `json:"variables"`
+	Label     string                 `json:"label"`
+	Variables map[string]interface{} `json:"variables"`
 }
 
 func Attributes() {
@@ -317,7 +337,9 @@ func Attributes() {
 	apiOutput := map[string][]api.Attribute{}
 	cliutils.HorizonGet("attribute", 200, &apiOutput)
 	var ok bool
-	if _, ok = apiOutput["attributes"]; !ok { cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api attributes output did not include 'attributes' key") }
+	if _, ok = apiOutput["attributes"]; !ok {
+		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api attributes output did not include 'attributes' key")
+	}
 	apiAttrs := apiOutput["attributes"]
 
 	// Only include interesting fields in our output
@@ -330,25 +352,27 @@ func Attributes() {
 
 	// Convert to json and output
 	jsonBytes, err := json.MarshalIndent(attrs, "", cliutils.JSON_INDENT)
-	if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show attributes' output: %v", err) }
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show attributes' output: %v", err)
+	}
 	fmt.Printf("%s\n", jsonBytes)
 }
 
 //~~~~~~~~~~~~~~~~ show services ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 type ServiceAttribute struct {
-	Mappings map[string]interface{}   `json:"mappings"`
+	Mappings map[string]interface{} `json:"mappings"`
 	// leaving out all of the other stuff we don't care about
 }
 
 type ServiceWrapper struct {
-	Policy     policy.Policy           `json:"policy"`
+	Policy     policy.Policy      `json:"policy"`
 	Attributes []ServiceAttribute `json:"attributes"`
 }
 
 type OurService struct {
-	APISpecs     policy.APISpecList           `json:"apiSpec,omitempty"`
-	Variables    map[string]interface{}   `json:"variables"`
+	APISpecs  policy.APISpecList     `json:"apiSpec,omitempty"`
+	Variables map[string]interface{} `json:"variables"`
 }
 
 func Services() {
@@ -356,7 +380,9 @@ func Services() {
 	apiOutput := map[string]map[string]ServiceWrapper{}
 	cliutils.HorizonGet("service", 200, &apiOutput)
 	var ok bool
-	if _, ok = apiOutput["services"]; !ok { cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api services output did not include 'services' key") }
+	if _, ok = apiOutput["services"]; !ok {
+		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api services output did not include 'services' key")
+	}
 	apiServices := apiOutput["services"]
 
 	// Go thru the services and pull out interesting fields
@@ -375,7 +401,9 @@ func Services() {
 
 	// Convert to json and output
 	jsonBytes, err := json.MarshalIndent(services, "", cliutils.JSON_INDENT)
-	if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show services' output: %v", err) }
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show services' output: %v", err)
+	}
 	fmt.Printf("%s\n", jsonBytes)
 }
 
@@ -386,7 +414,9 @@ func Workloads() {
 	apiOutput := map[string][]persistence.WorkloadConfig{}
 	cliutils.HorizonGet("workloadconfig", 200, &apiOutput)
 	var ok bool
-	if _, ok = apiOutput["active"]; !ok { cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api workload output did not include 'active' key") }
+	if _, ok = apiOutput["active"]; !ok {
+		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api workload output did not include 'active' key")
+	}
 	apiWorkloads := apiOutput["active"]
 
 	// Only include interesting fields in our output
@@ -401,6 +431,8 @@ func Workloads() {
 
 	// Convert to json and output
 	jsonBytes, err := json.MarshalIndent(workloads, "", cliutils.JSON_INDENT)
-	if err != nil { cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show workloads' output: %v", err) }
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show workloads' output: %v", err)
+	}
 	fmt.Printf("%s\n", jsonBytes)
 }
