@@ -227,9 +227,9 @@ func Test_API_attribute_Suite(suite *testing.T) {
 			Publishable: &bF,
 			Type:        "LocationAttributes",
 		},
-		Lat:                "40",
-		Lon:                "0.55",
-		UserProvidedCoords: true,
+		Lat:                40,
+		Lon:                0.55,
+		LocationAccuracyKM: 1,
 		UseGps:             true,
 	}, "", true)
 	assert.Nil(suite, err)

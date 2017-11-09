@@ -7,9 +7,9 @@ import (
 // particular service preferences
 type LocationAttributes struct {
 	Meta               *AttributeMeta `json:"meta"`
-	Lat                string         `json:"lat"`
-	Lon                string         `json:"lon"`
-	UserProvidedCoords bool           `json:"user_provided_coords"` // if true, the lat / lon could have been edited by the user
+	Lat                float64        `json:"lat"`
+	Lon                float64        `json:"lon"`
+	LocationAccuracyKM float64        `json:"location_accuracy_km"` // a fudge factor so as not to reveal exact lat lon location
 	UseGps             bool           `json:"use_gps"`              // a statement of preference; does not indicate that there is a GPS device
 }
 
@@ -21,7 +21,7 @@ func (a LocationAttributes) GetGenericMappings() map[string]interface{} {
 	return map[string]interface{}{
 		"lat": a.Lat,
 		"lon": a.Lon,
-		"user_provided_coords": a.UserProvidedCoords,
+		"location_accuracy_km": a.LocationAccuracyKM,
 		"use_gps":              a.UseGps,
 	}
 }
@@ -31,7 +31,7 @@ func (a LocationAttributes) Update(other Attribute) error {
 }
 
 func (a LocationAttributes) String() string {
-	return fmt.Sprintf("meta: %v, lat: %v, lon: %v, UserProvidedCoords: %v, UseGps: %v", a.Meta, a.Lat, a.Lon, a.UserProvidedCoords, a.UseGps)
+	return fmt.Sprintf("meta: %v, lat: %v, lon: %v, LocationAccuracyKM: %v, UseGps: %v", a.Meta, a.Lat, a.Lon, a.LocationAccuracyKM, a.UseGps)
 }
 
 type ArchitectureAttributes struct {

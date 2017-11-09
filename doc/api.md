@@ -310,7 +310,7 @@ service attribute
 | name | type | description |
 | ---- | ---- | ---------------- |
 | meta | json |  the metadata that describes the attribute. It includes the id, the sensor_url, the label, the data type and weather or not the attribute is publishable or not. If the sensor_url is empty, the attribute is applied to all services. |
-| {name, value} |  | The names and values. Each type has a different set of name and value pairs. Supported attribute types are: architecture (architecture), compute (cpu, ram), location (lat, lon, user_provided_coords, use_gps), mapped (mappings). ha (partners),  property (mappings), counterpartyproperty (expression), agreementprotocol (protocols), etc. |
+| {name, value} |  | The names and values. Each type has a different set of name and value pairs. Supported attribute types are: architecture (architecture), compute (cpu, ram), location (lat, lon, location_accuracy_km, use_gps), mapped (mappings). ha (partners),  property (mappings), counterpartyproperty (expression), agreementprotocol (protocols), etc. |
 
 
 **Example:**
@@ -352,9 +352,9 @@ curl -s -w %{http_code}  http://localhost/service | jq  '.'
             "host_only": false,
             "publishable": false
           },
-          "lat": "40.4273",
-          "lon": "-111.898",
-          "user_provided_coords": true,
+          "lat": 40.4273,
+          "lon": -111.898,
+          "location_accuracy_km": 0.5,
           "use_gps": false
         },
         {
@@ -505,10 +505,10 @@ curl -s http://localhost/attribute | jq '.'
       "label": "Registered Location Facts",
       "publishable": false,
       "mappings": {
-        "lat": "40.4273",
-        "lon": "-111.898",
+        "lat": 40.4273,
+        "lon": -111.898,
         "use_gps": false,
-        "user_provided_coords": true
+        "location_accuracy_km": 0.5
       }
     },
     {

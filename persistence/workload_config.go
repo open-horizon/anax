@@ -234,8 +234,8 @@ func ConfigToEnvvarMap(db *bolt.DB, cfg *WorkloadConfig, prefix string) (map[str
 			switch attr.(type) {
 			case LocationAttributes:
 				s := attr.(LocationAttributes)
-				envvars[pf("LAT", prefix)] = s.Lat
-				envvars[pf("LON", prefix)] = s.Lon
+				envvars[pf("LAT", prefix)] = strconv.FormatFloat(s.Lat, 'f', 6, 64)
+				envvars[pf("LON", prefix)] = strconv.FormatFloat(s.Lon, 'f', 6, 64)
 			case ComputeAttributes:
 				s := attr.(ComputeAttributes)
 				envvars[pf("CPUS", prefix)] = strconv.FormatInt(s.CPUs, 10)
