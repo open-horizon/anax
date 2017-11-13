@@ -38,7 +38,10 @@ $(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') deps $(CLI_E
 	    $(COMPILE_ARGS) go build -o $(EXECUTABLE)
 
 $(CLI_EXECUTABLE): $(shell find cli -name '*.go') deps
-	go build -o $(CLI_EXECUTABLE) $(CLI_EXECUTABLE).go
+	@echo "Producing $(CLI_EXECUTABLE)"
+	cd $(PKGPATH) && \
+	  export GOPATH=$(TMPGOPATH); \
+	    $(COMPILE_ARGS) go build -o $(CLI_EXECUTABLE) $(CLI_EXECUTABLE).go
 
 clean: mostlyclean
 	@echo "Clean"
