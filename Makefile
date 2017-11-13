@@ -84,7 +84,10 @@ endif
 CDIR=$(DESTDIR)/go/src/github.com/open-horizon/go-solidity/contracts
 install:
 	@echo "Installing $(EXECUTABLE) in $(DESTDIR)/bin"
-	mkdir -p $(DESTDIR)/bin && cp $(EXECUTABLE) $(DESTDIR)/bin
+	mkdir -p $(DESTDIR)/bin && \
+		cp $(EXECUTABLE) $(DESTDIR)/bin && \
+		cp $(CLI_EXECUTABLE) $(DESTDIR)/bin
+	cp -Rapv cli/samples $(DESTDIR)
 	mkdir -p $(CDIR) && \
 		cp -apv ./vendor/github.com/open-horizon/go-solidity/contracts/. $(CDIR)/
 	find $(CDIR)/ \( -name "Makefile" -or -iname ".git*" \) -exec rm {} \;
