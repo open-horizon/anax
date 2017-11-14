@@ -18,7 +18,7 @@ func main() {
 
 	registerCmd := app.Command("register", "Register this edge node with Horizon.")
 	userPw := registerCmd.Flag("user-pw", "User credentials (user:pw) to create the node resource in the Horizon exchange if it does not already exist.").Short('u').String()
-	inputFile := registerCmd.Flag("input-file", "A JSON file that sets or overrides variables needed by the workloads and microservices that are part of this pattern. See https://github.com/open-horizon/anax/tree/master/cli/samples/input.json").Short('f').String()
+	inputFile := registerCmd.Flag("input-file", "A JSON file that sets or overrides variables needed by the workloads and microservices that are part of this pattern. See /usr/horizon/samples/input.json").Short('f').String()
 	org := registerCmd.Arg("organization", "The Horizon exchange organization ID.").Required().String()
 	nodeId := registerCmd.Arg("nodeid", "The Horizon exchange node ID. Must be unique within the organization. Suggestions are machine serial number or fully qualified hostname. If it does not yet exist, you must also specify the -u flag").Required().String()
 	nodeToken := registerCmd.Arg("nodetoken", "The Horizon exchange node token.").Required().String()
