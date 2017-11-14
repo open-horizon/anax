@@ -55,7 +55,7 @@ func readInputFile(filePath string, inputFileStruct *InputFile) {
 	}
 }
 
-// Note: a structure like this exists in the api pkg, but has the id and everything is ptrs, so it is not convenient to use
+// Note: a structure like this exists in the api pkg, but has the id and everything as ptrs, so it is not convenient to use
 type Attribute struct {
 	Type        string                 `json:"type"`
 	SensorUrls  []string               `json:"sensor_urls"`
@@ -81,6 +81,13 @@ type Configstate struct {
 
 // DoIt registers this node to Horizon with a pattern
 func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw string, inputFile string) {
+	// Read input file 1st, so we don't get half way thru registration before finding the problem
+	inputFileStruct := InputFile{}
+	if inputFile != "" {
+		fmt.Printf("Reading input file %s...\n", inputFile)
+		readInputFile(inputFile, &inputFileStruct)
+	}
+
 	// Get the exchange url from the anax api
 	status := api.Info{}
 	cliutils.HorizonGet("status", 200, &status)
@@ -106,12 +113,8 @@ func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw st
 	hd := HorizonDevice{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HADevice: false} //todo: support HA config
 	cliutils.HorizonPutPost(http.MethodPost, "horizondevice", []int{201, 200}, hd)
 
-	// Read input file and call /attribute, /service, and /workloadconfig to set the specified variables
+	// Process the input file and call /attribute, /service, and /workloadconfig to set the specified variables
 	if inputFile != "" {
-		fmt.Printf("Reading input file %s...\n", inputFile)
-		inputFileStruct := InputFile{}
-		readInputFile(inputFile, &inputFileStruct)
-
 		// Set the global variables as attributes with no url
 		fmt.Println("Setting global variables...")
 		attr := Attribute{SensorUrls: []string{}, Label: "Global variables", Publishable: false, HostOnly: false} // we reuse this for each GlobalSet
