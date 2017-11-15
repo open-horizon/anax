@@ -128,7 +128,7 @@ func UpdateConfigstate(cfg *Configstate,
 			// Each workload in the pattern can specify rollback workload versions, so to get a fully qualified workload URL,
 			// we need to iterate each workload choice to grab the version.
 			for _, workloadChoice := range workload.WorkloadVersions {
-				apiSpecList, workloadDef, err := resolveWorkload(workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, thisArch, pDevice.GetId(), pDevice.Token)
+				_, workloadDef, err := resolveWorkload(workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, thisArch, pDevice.GetId(), pDevice.Token)
 				if err != nil {
 					return errorhandler(NewSystemError(fmt.Sprintf("Error resolving workload %v %v %v %v, error %v", workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, thisArch, err))), nil, nil
 				}
@@ -141,9 +141,16 @@ func UpdateConfigstate(cfg *Configstate,
 					return errorhandler(NewMSMissingVariableConfigError(fmt.Sprintf("Workload config for %v %v is missing", workload.WorkloadURL, workloadChoice.Version), "configstate.state")), nil, nil
 				}
 
+				// get the ms references from the workload, the version here is a version range.
+				apiSpecList := new(policy.APISpecList)
+				for _, apiSpec := range workloadDef.APISpecs {
+					newAPISpec := policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch)
+					(*apiSpecList) = append((*apiSpecList), (*newAPISpec))
+				}
+
 				// Microservices that are defined as being shared singletons can only appear once in the complete API spec list. If there
 				// are 2 versions of the same shared singleton microservice, the higher version of the 2 will be auto configured.
-				completeAPISpecList.ReplaceHigherSharedSingleton(apiSpecList)
+				//completeAPISpecList.ReplaceHigherSharedSingleton(apiSpecList)
 
 				// MergeWith will omit exact duplicates when merging the 2 lists.
 				(*completeAPISpecList) = completeAPISpecList.MergeWith(apiSpecList)
@@ -156,13 +163,26 @@ func UpdateConfigstate(cfg *Configstate,
 		// If the pattern search doesnt find any microservices then there is a problem.
 		if len(*completeAPISpecList) == 0 {
 			return errorhandler(NewAPIUserInputError(fmt.Sprintf("No microservices found for %v %v.", patId, thisArch), "configstate.state")), nil, nil
+		} 
+		
+		// for now, anax only allow one microservice version, so we need to get the common version range for each microservice.	
+		common_apispec_list, err := completeAPISpecList.GetCommonVersionRanges()
+		if err != nil {
+			return errorhandler(NewAPIUserInputError(fmt.Sprintf("Error resolving microservice version ranges for %v %v.", patId, thisArch), "configstate.state")), nil, nil
 		}
+
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Configstate resolved microservice version ranges to %v", *common_apispec_list)))
+
+		if len(*common_apispec_list) == 0 {
+			return errorhandler(NewAPIUserInputError(fmt.Sprintf("No microservices have the common version ranges for %v %v.", patId, thisArch), "configstate.state")), nil, nil
+		}
+
 
 		// Using the list of APISpec objects, we can create a service (microservice) on this node automatically, for each microservice
 		// that already has configuration or which doesnt need it.
 		var createServiceError error
 		passthruHandler := GetPassThroughErrorHandler(&createServiceError)
-		for _, apiSpec := range *completeAPISpecList {
+		for _, apiSpec := range *common_apispec_list {
 
 			service := NewService(apiSpec.SpecRef, apiSpec.Org, makeServiceName(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version), apiSpec.Version)
 			errHandled, newService, msg := CreateService(service, passthruHandler, getMicroservice, db, config)
@@ -252,6 +272,12 @@ func makeServiceName(msURL string, msOrg string, msVersion string) string {
 		url = strings.Replace(url, "/", "-", -1)
 	}
 
-	return fmt.Sprintf("%v_%v_%v", url, msOrg, msVersion)
+	version := ""
+	vExp, err := policy.Version_Expression_Factory(msVersion)
+	if err == nil {
+		version = fmt.Sprintf("%v-%v", vExp.Get_start_version(), vExp.Get_end_version())
+	}
+
+	return fmt.Sprintf("%v_%v_%v", url, msOrg, version)
 
 }

@@ -3,7 +3,9 @@
 package policy
 
 import (
+	"fmt"
 	"testing"
+	"github.com/stretchr/testify/assert"
 )
 
 // This series of tests verifies that constructor works correctly, by handling invalid input
@@ -327,4 +329,90 @@ func TestIsVersionString(t *testing.T) {
 			t.Errorf("Version string %v is invalid, however the IsVersionString function returned true.\n", v)
 		}
 	}
+}
+
+// This series of tests verifies recalc_expression updates the full_expression of a version range.
+func TestReCalcExpression(t *testing.T) {
+	v1, err := Version_Expression_Factory("[1,INFINITY)")
+	if err != nil {
+		t.Errorf("Factory returned nil, but should not. Error: %v \n", err)
+	}
+	v1.recalc_expression()
+	assert.Equal(t, "[1.0.0,INFINITY)", v1.Get_expression(), "")
+
+	// change a memeber and test
+	v1.start = "2.0"
+	assert.NotEqual(t, "[2.0.0,INFINITY)", v1.Get_expression(), "")
+
+	v1.recalc_expression()
+	assert.Equal(t, "[2.0.0,INFINITY)", v1.Get_expression(), "")
+
+	v1.end = "3"
+	v1.end_inclusive = true
+	assert.NotEqual(t, "[2.0.0,3.0.0", v1.Get_expression(), "")
+
+	v1.recalc_expression()
+	assert.Equal(t, "[2.0.0,3.0.0]", v1.Get_expression(), "")
+
+}
+
+// This series of tests verifies IntersectsWith gets the intersection between the two version ranges.
+func TestIntersectsWith(t *testing.T) {
+	v1, err := Version_Expression_Factory("[1,INFINITY)")
+	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
+	v2, err := Version_Expression_Factory("(2.1,INFINITY)")
+	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
+	err = v1.IntersectsWith(v2)
+	assert.Nil(t, err, "Shold return no error")
+	v_result, err := Version_Expression_Factory("(2.1,INFINITY)")
+	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
+	assert.Equal(t, v_result, v1, "Intersection should be [1,INFINITY).")
+
+
+	v3, err := Version_Expression_Factory("[0.0,2.1]")
+	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
+	v4, err := Version_Expression_Factory("(1.0,3.1)")
+	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
+	err = v3.IntersectsWith(v4)
+	assert.Nil(t, err, "Shold return no error")
+	v_result, err = Version_Expression_Factory("(1.0,2.1]")
+	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
+	assert.Equal(t, v_result, v3, "Intersection should be (1.0,2.1].")
+
+	v5, err := Version_Expression_Factory("[2.0,INFINITY)")
+	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
+	v6, err := Version_Expression_Factory("(1.0,3.1)")
+	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
+	err = v5.IntersectsWith(v6)
+	assert.Nil(t, err, "Shold return no error")
+	v_result, err = Version_Expression_Factory("[2.0,3.1)")
+	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
+	assert.Equal(t, v_result, v5, "Intersection should be [2.0,3.1).")
+
+	// no intersction, should return error
+	v7, err := Version_Expression_Factory("[4.0,5.0)")
+	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
+	v8, err := Version_Expression_Factory("(1.0,2.1)")
+	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
+	err = v7.IntersectsWith(v8)
+	assert.NotNil(t, v7, "Should return error.")
+
+	// no intersction, should return error
+	v9, err := Version_Expression_Factory("[4.0,5.0)")
+	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
+	v10, err := Version_Expression_Factory("(5.0,6.0]")
+	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
+	err = v9.IntersectsWith(v10)
+	assert.NotNil(t, v9, "Should return error.")
+
+	// exact same versions
+	v11, err := Version_Expression_Factory("2.0")
+	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
+	v12, err := Version_Expression_Factory("2.0")
+	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
+	err = v11.IntersectsWith(v12)
+	assert.Nil(t, err, "Shold return no error")
+	v_result, err = Version_Expression_Factory("[2.0,INFINITY)")
+	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
+	assert.Equal(t, v_result, v11, "Intersection should be [2.0,INFINITY).")
 }

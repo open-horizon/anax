@@ -482,6 +482,7 @@ func Test_APISpecification_replacesharedsingleton_success5(t *testing.T) {
 	}
 }
 
+// test intersection
 func Test_APISpecification_replacesharedsingleton_success6(t *testing.T) {
 	var prod_as *APISpecList
 	var con_as *APISpecList
@@ -493,6 +494,83 @@ func Test_APISpecification_replacesharedsingleton_success6(t *testing.T) {
 			prod_as.ReplaceHigherSharedSingleton(con_as)
 			if (*prod_as)[0].Version != "1.0.0" && (*prod_as)[1].Version != "2.0.0" {
 				t.Errorf("Error: should have version 1.0.0 and 2.0.0, but is %v\n", *prod_as)
+			}
+		}
+	}
+}
+
+// test no intersection
+func Test_APISpecification_GetCommonVersionRanges_success1(t *testing.T) {
+	var apiSpecList *APISpecList
+
+	prod := `[{"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"2.0.3","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"[1.0.0,3.0]","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/network","organization":"myorg","version":"[1.0.0,3.0)","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/network","organization":"myorg","version":"[2.1,5.0)","exclusiveAccess":false,"arch":"amd64"}]`
+	if apiSpecList = create_APISpecification(prod, t); apiSpecList != nil {
+		common_apispec_list, err := apiSpecList.GetCommonVersionRanges()
+		if err != nil {
+			t.Errorf("Error: got error but shoulg not be. %v\n", err)
+		} else {
+			for _, as := range(*common_apispec_list) {
+				if as.SpecRef == "http://mycompany.com/dm/gps" && as.Version != "[2.0.3,3.0.0]" {
+					t.Errorf("Error: should have version range [2.0.3,5.0.0], but is %v\n", as)
+				}
+                
+                if as.SpecRef == "http://mycompany.com/dm/network" && as.Version != "[2.1.0,3.0.0)" {
+					t.Errorf("Error: should have version range [2.1.0,3.0.0), but is %v\n", as)
+				}
+			}
+		}
+	}
+}
+
+func Test_APISpecification_GetCommonVersionRanges_success2(t *testing.T) {
+	var apiSpecList *APISpecList
+
+	prod := `[{"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"2.0.3","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"[1.0.0,3.0]","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"[4.0.0,5.0]","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/network","organization":"myorg","version":"5.0","exclusiveAccess":false,"arch":"amd64"}]`
+	if apiSpecList = create_APISpecification(prod, t); apiSpecList != nil {
+		common_apispec_list, err := apiSpecList.GetCommonVersionRanges()
+		if err != nil {
+			t.Errorf("Error: got error but shoulg not be. %v\n", err)
+		} else {
+			for _, as := range(*common_apispec_list) {
+				if as.SpecRef == "http://mycompany.com/dm/gps"  {
+					t.Errorf("Error: should not have have gps, but has %v\n", as)
+
+				}
+			}
+		}
+	}
+}
+
+// test different org
+func Test_APISpecification_GetCommonVersionRanges_success3(t *testing.T) {
+	var apiSpecList *APISpecList
+
+	prod := `[{"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"2.0.3","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"[1.0.0,3.0]","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/gps","organization":"myorg1","version":"[4.0.0,5.0]","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/network","organization":"myorg","version":"5.0","exclusiveAccess":false,"arch":"amd64"}]`
+	if apiSpecList = create_APISpecification(prod, t); apiSpecList != nil {
+		common_apispec_list, err := apiSpecList.GetCommonVersionRanges()
+		if err != nil {
+			t.Errorf("Error: got error but shoulg not be. %v\n", err)
+		} else {
+			for _, as := range(*common_apispec_list) {
+				if as.SpecRef == "http://mycompany.com/dm/gps" && as.Org == "myorg" && as.Version != "[2.0.3,3.0.0]" {
+					t.Errorf("Error: should have version range [2.0.3,5.0.0], but is %v\n", as)
+				}
+				if as.SpecRef == "http://mycompany.com/dm/gps" && as.Org == "myorg1" && as.Version != "[4.0.0,5.0.0]" {
+					t.Errorf("Error: should have version range [4.0.0,5.0.0], but is %v\n", as)
+				}
+				if as.SpecRef == "http://mycompany.com/dm/network" && as.Version != "[5.0.0,INFINITY)" {
+					t.Errorf("Error: should have version range 5.0.0,INFINITY), but is %v\n", as)
+				}
+
 			}
 		}
 	}
