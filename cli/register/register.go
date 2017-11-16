@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/exchange"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
-	"os"
 )
 
 type HorizonDevice struct {
@@ -24,9 +24,9 @@ type HorizonDevice struct {
 }
 
 type GlobalSet struct {
-	Type      string                 `json:"type"`
-	SensorUrls  []string               `json:"sensor_urls"`
-	Variables map[string]interface{} `json:"variables"`
+	Type       string                 `json:"type"`
+	SensorUrls []string               `json:"sensor_urls"`
+	Variables  map[string]interface{} `json:"variables"`
 }
 
 // Use for both microservices and workloads
@@ -88,7 +88,6 @@ type Configstate struct {
 	State string `json:"state"`
 }
 
-
 // DoIt registers this node to Horizon with a pattern
 func DoIt(org string, pattern string, nodeIdTok string, userPw string, inputFile string) {
 	// Read input file 1st, so we don't get half way thru registration before finding the problem
@@ -106,7 +105,7 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, inputFile
 
 	// See if the node exists in the exchange, and create if it doesn't
 	parts := strings.SplitN(nodeIdTok, ":", 2)
-	nodeId := parts[0]		// SplitN will always at least return 1 element
+	nodeId := parts[0] // SplitN will always at least return 1 element
 	nodeToken := ""
 	if len(parts) >= 2 {
 		nodeToken = parts[1]

@@ -80,7 +80,7 @@ func GetRespBodyAsString(responseBody io.ReadCloser) string {
 
 func isGoodCode(actualHttpCode int, goodHttpCodes []int) bool {
 	if len(goodHttpCodes) == 0 {
-		return true		// passing in an empty list of good codes means anything is ok
+		return true // passing in an empty list of good codes means anything is ok
 	}
 	for _, code := range goodHttpCodes {
 		if code == actualHttpCode {

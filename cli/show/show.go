@@ -17,7 +17,7 @@ const MUST_REGISTER_FIRST = "this command can not be run before running 'hzn reg
 
 type Configstate struct {
 	State          *string `json:"state"`
-	LastUpdateTime string  `json:"last_update_time"`   // removed omitempty
+	LastUpdateTime string  `json:"last_update_time"` // removed omitempty
 }
 
 // This is a combo of anax's HorizonDevice and Info (status) structs
@@ -25,13 +25,13 @@ type NodeAndStatus struct {
 	// from api.HorizonDevice
 	Id                 *string     `json:"id"`
 	Org                *string     `json:"organization"`
-	Pattern            *string     `json:"pattern"` // a simple name, not prefixed with the org
-	Name               *string     `json:"name"`   // removed omitempty
-	Token              *string     `json:"token"`   // removed omitempty
-	TokenLastValidTime string      `json:"token_last_valid_time"`   // removed omitempty
-	TokenValid         *bool       `json:"token_valid"`   // removed omitempty
-	HADevice           *bool       `json:"ha_device"`   // removed omitempty
-	Config             Configstate `json:"configstate"`   // removed omitempty
+	Pattern            *string     `json:"pattern"`               // a simple name, not prefixed with the org
+	Name               *string     `json:"name"`                  // removed omitempty
+	Token              *string     `json:"token"`                 // removed omitempty
+	TokenLastValidTime string      `json:"token_last_valid_time"` // removed omitempty
+	TokenValid         *bool       `json:"token_valid"`           // removed omitempty
+	HADevice           *bool       `json:"ha_device"`             // removed omitempty
+	Config             Configstate `json:"configstate"`           // removed omitempty
 	// from api.Info
 	Geths         []api.Geth         `json:"geth"`
 	Configuration *api.Configuration `json:"configuration"`
@@ -337,9 +337,9 @@ const HTTPSBasicAuthAttributes = "HTTPSBasicAuthAttributes"
 type OurAttributes struct {
 	Type string `json:"type"`
 	//SensorUrls  []string               `json:"sensor_urls"`
-	Label     string                 `json:"label"`
-	SensorUrls  []string               `json:"sensor_urls,omitempty"`
-	Variables map[string]interface{} `json:"variables"`
+	Label      string                 `json:"label"`
+	SensorUrls []string               `json:"sensor_urls,omitempty"`
+	Variables  map[string]interface{} `json:"variables"`
 }
 
 func Attributes() {
@@ -386,7 +386,7 @@ type ServiceWrapper struct {
 }
 
 type OurService struct {
-	APISpecs  policy.APISpecList     `json:"apiSpec"`   // removed omitempty
+	APISpecs  policy.APISpecList     `json:"apiSpec"` // removed omitempty
 	Variables map[string]interface{} `json:"variables"`
 }
 
