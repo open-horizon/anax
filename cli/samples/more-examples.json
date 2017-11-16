@@ -14,6 +14,24 @@ This sample will work as-is with the IBM netspeed pattern.
 				"use_gps": false,    /* true if you have, and want to use, an attached GPS sensor. Passed to each container as HZN_USE_GPS. */
 				"location_accuracy_km": 0.0   /* Make the node location inaccurate by this number of KM to protect privacy. */
 			}
+		},
+		{
+			"type": "HTTPSBasicAuthAttributes",   /* use if the image svr requires authentication */
+			"sensor_urls": [
+				"https://mycompany.com/api/horizon/images"
+			],
+			"variables": {
+				"password": "MYPASSWORDVALUE",
+				"username": "MYUSERNAMEVALUE"
+			}
+		},
+		{
+			"type": "AgreementProtocolAttributes",   /* This will not have any effect when a pattern is being used. You can use this when not using a pattern to specify that you want to record the agreement on ethereum blockchain */
+			"variables": {
+				"protocols": [
+					{"Citizen Scientist":[]}
+				]
+			}
 		}
 	],
 	/* You only need to list the workloads that need input from you the edge node owner */

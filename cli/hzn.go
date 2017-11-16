@@ -17,14 +17,14 @@ func main() {
 	cliutils.Opts.Verbose = app.Flag("verbose", "Verbose output.").Short('v').Bool()
 
 	registerCmd := app.Command("register", "Register this edge node with Horizon.")
-	userPw := registerCmd.Flag("user-pw", "User credentials (user:pw) to create the node resource in the Horizon exchange if it does not already exist.").Short('u').String()
-	inputFile := registerCmd.Flag("input-file", "A JSON file that sets or overrides variables needed by the workloads and microservices that are part of this pattern. See /usr/horizon/samples/input.json").Short('f').String()
+	nodeIdTok := registerCmd.Flag("node-id-tok", "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.").Short('n').PlaceHolder("ID:TOK").String()
+	userPw := registerCmd.Flag("user-pw", "User credentials to create the node resource in the Horizon exchange if it does not already exist.").Short('u').PlaceHolder("USER:PW").String()
+	inputFile := registerCmd.Flag("input-file", "A JSON file that sets or overrides variables needed by the node, workloads, and microservices that are part of this pattern. See /usr/horizon/samples/input.json. Specify -f- to read from stdin.").Short('f').String()
 	org := registerCmd.Arg("organization", "The Horizon exchange organization ID.").Required().String()
-	nodeId := registerCmd.Arg("nodeid", "The Horizon exchange node ID. Must be unique within the organization. Suggestions are machine serial number or fully qualified hostname. If it does not yet exist, you must also specify the -u flag").Required().String()
-	nodeToken := registerCmd.Arg("nodetoken", "The Horizon exchange node token.").Required().String()
 	pattern := registerCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node.").Required().String()
 
 	importkeyCmd := app.Command("importkey", "Import a public key to verify signed microservices and workloads.")
+	keyFile := importkeyCmd.Arg("keyfile", "The public PEM file.").Required().String()
 
 	showCmd := app.Command("show", "Display information about this Horizon edge node.")
 	showNodeCmd := showCmd.Command("node", "Show general information about this Horizon edge node.")
@@ -41,14 +41,14 @@ func main() {
 	forceUnregister := unregisterCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 	removeNodeUnregister := unregisterCmd.Flag("remove", "Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).").Short('r').Bool()
 
-	app.Version("0.0.1") //todo: get the real version of anax
+	app.Version("0.0.2") //todo: get the real version of anax
 
 	// Decide which command to run
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 	case registerCmd.FullCommand():
-		register.DoIt(*org, *nodeId, *nodeToken, *pattern, *userPw, *inputFile)
+		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *inputFile)
 	case importkeyCmd.FullCommand():
-		importkey.DoIt()
+		importkey.DoIt(*keyFile)
 	//case showCmd.FullCommand():   // <- I'd like to just show usage for hzn show, but don't know how to do that yet
 	//	showCmd.?
 	case showNodeCmd.FullCommand():

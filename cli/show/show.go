@@ -11,11 +11,13 @@ import (
 	"github.com/open-horizon/anax/policy"
 )
 
+const MUST_REGISTER_FIRST = "this command can not be run before running 'hzn register'"
+
 //~~~~~~~~~~~~~~~~ show node ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 type Configstate struct {
 	State          *string `json:"state"`
-	LastUpdateTime string  `json:"last_update_time,omitempty"`
+	LastUpdateTime string  `json:"last_update_time"`   // removed omitempty
 }
 
 // This is a combo of anax's HorizonDevice and Info (status) structs
@@ -24,12 +26,12 @@ type NodeAndStatus struct {
 	Id                 *string     `json:"id"`
 	Org                *string     `json:"organization"`
 	Pattern            *string     `json:"pattern"` // a simple name, not prefixed with the org
-	Name               *string     `json:"name,omitempty"`
-	Token              *string     `json:"token,omitempty"`
-	TokenLastValidTime string      `json:"token_last_valid_time,omitempty"`
-	TokenValid         *bool       `json:"token_valid,omitempty"`
-	HADevice           *bool       `json:"ha_device,omitempty"`
-	Config             Configstate `json:"configstate,omitempty"`
+	Name               *string     `json:"name"`   // removed omitempty
+	Token              *string     `json:"token"`   // removed omitempty
+	TokenLastValidTime string      `json:"token_last_valid_time"`   // removed omitempty
+	TokenValid         *bool       `json:"token_valid"`   // removed omitempty
+	HADevice           *bool       `json:"ha_device"`   // removed omitempty
+	Config             Configstate `json:"configstate"`   // removed omitempty
 	// from api.Info
 	Geths         []api.Geth         `json:"geth"`
 	Configuration *api.Configuration `json:"configuration"`
@@ -44,10 +46,14 @@ func (n *NodeAndStatus) CopyNodeInto(horDevice *api.HorizonDevice) {
 	n.Pattern = horDevice.Pattern
 	n.Name = horDevice.Name
 	n.Token = horDevice.Token
-	n.TokenLastValidTime = cliutils.ConvertTime(*horDevice.TokenLastValidTime)
+	if horDevice.TokenLastValidTime != nil {
+		n.TokenLastValidTime = cliutils.ConvertTime(*horDevice.TokenLastValidTime)
+	}
 	n.HADevice = horDevice.HADevice
 	n.Config.State = horDevice.Config.State
-	n.Config.LastUpdateTime = cliutils.ConvertTime(*horDevice.Config.LastUpdateTime)
+	if horDevice.Config.LastUpdateTime != nil {
+		n.Config.LastUpdateTime = cliutils.ConvertTime(*horDevice.Config.LastUpdateTime)
+	}
 }
 
 // CopyStatusInto copies the status info into our output struct
@@ -61,13 +67,13 @@ func (n *NodeAndStatus) CopyStatusInto(status *api.Info) {
 func Node() {
 	// Get the horizondevice info
 	horDevice := api.HorizonDevice{}
-	cliutils.HorizonGet("horizondevice", 200, &horDevice)
+	cliutils.HorizonGet("horizondevice", []int{200}, &horDevice)
 	nodeInfo := NodeAndStatus{} // the structure we will output
 	nodeInfo.CopyNodeInto(&horDevice)
 
 	// Get the horizon status info
 	status := api.Info{}
-	cliutils.HorizonGet("status", 200, &status)
+	cliutils.HorizonGet("status", []int{200}, &status)
 	nodeInfo.CopyStatusInto(&status)
 
 	// Output the combined info
@@ -145,7 +151,7 @@ func (a *ArchivedAgreement) CopyAgreementInto(agreement persistence.EstablishedA
 func Agreements(archivedAgreements bool) {
 	// Get horizon api agreement output and drill down to the category we want
 	apiOutput := make(map[string]map[string][]persistence.EstablishedAgreement, 0)
-	cliutils.HorizonGet("agreement", 200, &apiOutput)
+	cliutils.HorizonGet("agreement", []int{200}, &apiOutput)
 	var ok bool
 	if _, ok = apiOutput["agreements"]; !ok {
 		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include 'agreements' key")
@@ -268,7 +274,7 @@ func (a *ArchivedMetering) CopyAgreementInto(agreement persistence.EstablishedAg
 
 func Metering(archivedMetering bool) {
 	apiOutput := make(map[string]map[string][]persistence.EstablishedAgreement, 0)
-	cliutils.HorizonGet("agreement", 200, &apiOutput)
+	cliutils.HorizonGet("agreement", []int{200}, &apiOutput)
 	var ok bool
 	if _, ok = apiOutput["agreements"]; !ok {
 		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include 'agreements' key")
@@ -310,7 +316,8 @@ func Metering(archivedMetering bool) {
 
 func Keys() {
 	apiOutput := make(map[string][]string, 0)
-	cliutils.HorizonGet("publickey", 200, &apiOutput)
+	// Note: it is allowed to get /publickey before post /node is called, so we don't have to check for that error
+	cliutils.HorizonGet("publickey", []int{200}, &apiOutput)
 	var ok bool
 	if _, ok = apiOutput["pem"]; !ok {
 		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api publickey output did not include 'pem' key")
@@ -324,18 +331,24 @@ func Keys() {
 
 //~~~~~~~~~~~~~~~~ show attributes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+const HTTPSBasicAuthAttributes = "HTTPSBasicAuthAttributes"
+
 // Our form of the attributes output
 type OurAttributes struct {
 	Type string `json:"type"`
 	//SensorUrls  []string               `json:"sensor_urls"`
 	Label     string                 `json:"label"`
+	SensorUrls  []string               `json:"sensor_urls,omitempty"`
 	Variables map[string]interface{} `json:"variables"`
 }
 
 func Attributes() {
 	// Get the attributes
 	apiOutput := map[string][]api.Attribute{}
-	cliutils.HorizonGet("attribute", 200, &apiOutput)
+	httpCode := cliutils.HorizonGet("attribute", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput)
+	if httpCode == cliutils.ANAX_NOT_CONFIGURED_YET {
+		cliutils.Fatal(cliutils.HTTP_ERROR, MUST_REGISTER_FIRST)
+	}
 	var ok bool
 	if _, ok = apiOutput["attributes"]; !ok {
 		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api attributes output did not include 'attributes' key")
@@ -347,6 +360,8 @@ func Attributes() {
 	for _, a := range apiAttrs {
 		if len(*a.SensorUrls) == 0 {
 			attrs = append(attrs, OurAttributes{Type: *a.Type, Label: *a.Label, Variables: *a.Mappings})
+		} else if *a.Type == HTTPSBasicAuthAttributes {
+			attrs = append(attrs, OurAttributes{Type: *a.Type, Label: *a.Label, SensorUrls: *a.SensorUrls, Variables: *a.Mappings})
 		}
 	}
 
@@ -371,14 +386,17 @@ type ServiceWrapper struct {
 }
 
 type OurService struct {
-	APISpecs  policy.APISpecList     `json:"apiSpec,omitempty"`
+	APISpecs  policy.APISpecList     `json:"apiSpec"`   // removed omitempty
 	Variables map[string]interface{} `json:"variables"`
 }
 
 func Services() {
 	// Get the services
 	apiOutput := map[string]map[string]ServiceWrapper{}
-	cliutils.HorizonGet("service", 200, &apiOutput)
+	httpCode := cliutils.HorizonGet("service", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput)
+	if httpCode == cliutils.ANAX_NOT_CONFIGURED_YET {
+		cliutils.Fatal(cliutils.HTTP_ERROR, MUST_REGISTER_FIRST)
+	}
 	var ok bool
 	if _, ok = apiOutput["services"]; !ok {
 		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api services output did not include 'services' key")
@@ -412,7 +430,10 @@ func Services() {
 func Workloads() {
 	// Get the workloads
 	apiOutput := map[string][]persistence.WorkloadConfig{}
-	cliutils.HorizonGet("workloadconfig", 200, &apiOutput)
+	httpCode := cliutils.HorizonGet("workloadconfig", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput)
+	if httpCode == cliutils.ANAX_NOT_CONFIGURED_YET {
+		cliutils.Fatal(cliutils.HTTP_ERROR, MUST_REGISTER_FIRST)
+	}
 	var ok bool
 	if _, ok = apiOutput["active"]; !ok {
 		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api workload output did not include 'active' key")
