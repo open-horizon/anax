@@ -78,8 +78,10 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 		glog.V(4).Infof("Read CA certs from provided file %v", hConfig.Edge.CACertsPath)
 	}
 
-	var tls tls.Config
-	tls.InsecureSkipVerify = false
+	var tlsConf tls.Config
+	tlsConf.InsecureSkipVerify = false
+	// do not allow negotiation to previous versions of TLS
+	tlsConf.MinVersion = tls.VersionTLS12
 
 	var certPool *x509.CertPool
 
@@ -96,9 +98,9 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 	}
 
 	certPool.AppendCertsFromPEM(caBytes)
-	tls.RootCAs = certPool
+	tlsConf.RootCAs = certPool
 
-	tls.BuildNameToCertificate()
+	tlsConf.BuildNameToCertificate()
 
 	clientFunc := func(overrideTimeoutS *uint) *http.Client {
 		var timeoutS uint
@@ -124,7 +126,7 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 				ExpectContinueTimeout: 8 * time.Second,
 				MaxIdleConns:          MaxHTTPIdleConnections,
 				IdleConnTimeout:       HTTPIdleConnectionTimeoutS * time.Second,
-				TLSClientConfig:       &tls,
+				TLSClientConfig:       &tlsConf,
 			},
 		}
 	}
