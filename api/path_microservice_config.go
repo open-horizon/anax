@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
@@ -14,6 +15,52 @@ import (
 	"reflect"
 	"strconv"
 )
+
+func FindServiceConfigForOutput(pm *policy.PolicyManager, db *bolt.DB) (map[string][]MicroserviceConfig, error) {
+
+	outConfig := make([]MicroserviceConfig, 0, 10)
+
+	// Get all the policies so that we can grab the pieces we need from there
+	policies, err := FindPoliciesForOutput(pm)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("unable to get local policies, error %v", err))
+	}
+
+	// Each policy has some data we need for creating the output object. There is also data
+	// in the microservice definition database and the attibutes in the attribute database.
+	for _, pol := range policies {
+		msURL := pol.APISpecs[0].SpecRef
+		msOrg := pol.APISpecs[0].Org
+		msVer := pol.APISpecs[0].Version
+		mc := NewMicroserviceConfig(msURL, msOrg, msVer)
+
+		// Find the microservice definition in our database so that we can get the upgrade settings.
+		msDefs, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UrlOrgVersionMSFilter(msURL, msOrg, msVer)})
+		if err != nil {
+			return nil, errors.New(fmt.Sprintf("unable to get microservice definitions from the database, error %v", err))
+		} else if len(msDefs) != 1 {
+			return nil, errors.New(fmt.Sprintf("expected 1 microservice definition in the database, received %v", msDefs))
+		}
+
+		mc.AutoUpgrade = msDefs[0].AutoUpgrade
+		mc.ActiveUpgrade = msDefs[0].ActiveUpgrade
+
+		// Get the attributes for this service from the attributes database
+		if attrs, err := persistence.FindApplicableAttributes(db, msURL); err != nil {
+			return nil, errors.New(fmt.Sprintf("unable to get microservice attributes from the database, error %v", err))
+		} else {
+			mc.Attributes = attrs
+		}
+
+		// Add the microservice config to the output array
+		outConfig = append(outConfig, *mc)
+	}
+
+	out := make(map[string][]MicroserviceConfig)
+	out["config"] = outConfig
+
+	return out, nil
+}
 
 // Given a demarshalled Service object, validate it and save it, returning any errors.
 func CreateService(service *Service,
@@ -68,7 +115,7 @@ func CreateService(service *Service,
 	var msdef *persistence.MicroserviceDefinition
 	e_msdef, err := getMicroservice(*service.SensorUrl, *service.SensorOrg, vExp.Get_expression(), cutil.ArchString(), pDevice.GetId(), pDevice.Token)
 	if err != nil || e_msdef == nil {
-		return errorhandler(NewAPIUserInputError(fmt.Sprintf("Unable to find the microservice definition for '%v' on the exchange. Please verify sensor_url and sensor_version.", *service.SensorName), "service")), nil, nil
+		return errorhandler(NewAPIUserInputError(fmt.Sprintf("Unable to find the microservice definition using  %v %v %v %v in the exchange.", *service.SensorUrl, *service.SensorOrg, vExp.Get_expression(), cutil.ArchString()), "service")), nil, nil
 	}
 
 	// Convert the microservice definition to a persistent format so that it can be saved to the db.
@@ -96,7 +143,7 @@ func CreateService(service *Service,
 		return errorhandler(NewSystemError(fmt.Sprintf("Error accessing db to find microservice definition: %v", err))), nil, nil
 	} else if pms != nil && len(pms) > 0 {
 		//return errorhandler(NewAPIUserInputError(fmt.Sprintf("Duplicate registration for %v. Only one registration per microservice is supported.", *service.SensorUrl), "service")), nil, nil
-		return errorhandler(NewDuplicateServiceError(fmt.Sprintf("Duplicate registration for %v. Only one registration per microservice is supported.", *service.SensorUrl), "service")), nil, nil
+		return errorhandler(NewDuplicateServiceError(fmt.Sprintf("Duplicate registration for %v %v %v %v. Only one registration per microservice is supported.", *service.SensorUrl, *service.SensorOrg, vExp.Get_expression(), cutil.ArchString()), "service")), nil, nil
 	}
 
 	// If there are no attributes associated with this request but the MS requires some configuration, return an error.
@@ -113,7 +160,7 @@ func CreateService(service *Service,
 
 		// Verfiy that all non-defaulted userInput variables in the microservice definition are specified in a mapped property attribute
 		// of this service invocation.
-		if msdef != nil && attr.GetMeta().Type == "MappedAttributes" {
+		if msdef != nil && attr.GetMeta().Type == "UserInputAttributes" {
 			for _, ui := range msdef.UserInputs {
 				if ui.DefaultValue != "" {
 					continue
@@ -218,7 +265,7 @@ func CreateService(service *Service,
 	// If an HA device has no HA attribute from either node wide or service wide attributes, then the configuration is invalid.
 	// This verification cannot be done in the attribute verifier above because those verifiers dont know about global attributes.
 	haType := reflect.TypeOf(persistence.HAAttributes{}).Name()
-	if pDevice.HADevice && len(haPartner) == 0 {
+	if pDevice.HA && len(haPartner) == 0 {
 		if attr := attributesContains(attributes, *service.SensorUrl, haType); attr == nil {
 			return errorhandler(NewAPIUserInputError("services on an HA device must specify an HA partner.", "service.[attribute].type")), nil, nil
 		}
@@ -264,7 +311,7 @@ func CreateService(service *Service,
 			serviceAgreementProtocols = agpl.([]policy.AgreementProtocol)
 
 		default:
-			glog.V(4).Infof("Unhandled attr type (%T): %v", attr, attr)
+			glog.V(4).Infof(apiLogString(fmt.Sprintf("Unhandled attr type (%T): %v", attr, attr)))
 		}
 	}
 

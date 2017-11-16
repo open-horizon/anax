@@ -15,12 +15,12 @@ import (
 )
 
 type HorizonDevice struct {
-	Id       string `json:"id"`
-	Org      string `json:"organization"`
-	Pattern  string `json:"pattern"` // a simple name, not prefixed with the org
-	Name     string `json:"name,omitempty"`
-	Token    string `json:"token,omitempty"`
-	HADevice bool   `json:"ha_device,omitempty"`
+	Id      string `json:"id"`
+	Org     string `json:"organization"`
+	Pattern string `json:"pattern"` // a simple name, not prefixed with the org
+	Name    string `json:"name,omitempty"`
+	Token   string `json:"token,omitempty"`
+	HA      bool   `json:"ha,omitempty"`
 }
 
 type GlobalSet struct {
@@ -141,15 +141,15 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, inputFile
 
 	// Initialize the Horizon device (node)
 	fmt.Println("Initializing the Horizon node...")
-	hd := HorizonDevice{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HADevice: false} //todo: support HA config
-	httpCode = cliutils.HorizonPutPost(http.MethodPost, "horizondevice", []int{201, 200, cliutils.ANAX_ALREADY_CONFIGURED}, hd)
+	hd := HorizonDevice{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HA: false} //todo: support HA config
+	httpCode = cliutils.HorizonPutPost(http.MethodPost, "node", []int{201, 200, cliutils.ANAX_ALREADY_CONFIGURED}, hd)
 	if httpCode == cliutils.ANAX_ALREADY_CONFIGURED {
 		// Note: I wanted to make `hzn register` idempotent, but the anax api doesn't support changing existing settings once in configuring state (to maintain internal consistency).
 		//		And i can't query ALL the existing settings to make sure they are what we were going to set, because i can't query the node token.
 		cliutils.Fatal(cliutils.HTTP_ERROR, "this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first.")
 	}
 
-	// Process the input file and call /attribute, /service, and /workloadconfig to set the specified variables
+	// Process the input file and call /attribute, /microservice/config, and /workload/config to set the specified variables
 	if inputFile != "" {
 		// Set the global variables as attributes with no url (or in the case of HTTPSBasicAuthAttributes, with url equal to image svr)
 		// Technically the AgreementProtocolAttributes can be set, but it has no effect on anax if a pattern is being used.
@@ -164,7 +164,7 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, inputFile
 
 		// Set the microservice variables
 		fmt.Println("Setting microservice variables...")
-		attr = Attribute{Type: "MappedAttributes", SensorUrls: []string{}, Label: "app", Publishable: false, HostOnly: false} // we reuse this for each microservice
+		attr = Attribute{Type: "UserInputAttributes", SensorUrls: []string{}, Label: "app", Publishable: false, HostOnly: false} // we reuse this for each microservice
 		service := Service{Attributes: []Attribute{attr}}
 		for _, m := range inputFileStruct.Microservices {
 			service.SensorOrg = m.Org
@@ -172,14 +172,16 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, inputFile
 			service.SensorVersion = m.VersionRange
 			attr.Mappings = m.Variables
 			service.Attributes[0] = attr
-			cliutils.HorizonPutPost(http.MethodPost, "service", []int{201, 200}, service)
+			cliutils.HorizonPutPost(http.MethodPost, "microservice/config", []int{201, 200}, service)
 		}
 
 		// Set the workload variables
 		fmt.Println("Setting workload variables...")
+		apiAttr := api.NewAttribute("UserInputAttributes", []string{}, "workload", false, false, map[string]interface{}{})
 		for _, w := range inputFileStruct.Workloads {
-			workload := api.WorkloadConfig{Org: w.Org, WorkloadURL: w.Url, Version: w.VersionRange, Variables: w.Variables}
-			cliutils.HorizonPutPost(http.MethodPost, "workloadconfig", []int{201, 200}, workload)
+			apiAttr.Mappings = &w.Variables
+			workload := api.WorkloadConfig{Org: w.Org, WorkloadURL: w.Url, Version: w.VersionRange, Attributes: []api.Attribute{*apiAttr}}
+			cliutils.HorizonPutPost(http.MethodPost, "workload/config", []int{201, 200}, workload)
 		}
 
 	} else {
@@ -190,7 +192,7 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, inputFile
 	// Set the pattern and register the node
 	fmt.Println("Changing Horizon state to configured to register this node with Horizon...")
 	config := Configstate{State: "configured"}
-	cliutils.HorizonPutPost(http.MethodPut, "horizondevice/configstate", []int{201, 200}, config)
+	cliutils.HorizonPutPost(http.MethodPut, "node/configstate", []int{201, 200}, config)
 
 	fmt.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn show agreements' to view.")
 }

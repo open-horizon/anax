@@ -46,7 +46,7 @@ func FindAgreementsForOutput(db *bolt.DB) (map[string]map[string][]persistence.E
 
 func DeleteAgreement(errorhandler ErrorHandler, agreementId string, db *bolt.DB) (bool, *events.ApiAgreementCancelationMessage) {
 
-	glog.V(3).Infof("Handling DELETE of agreement: %v", agreementId)
+	glog.V(3).Infof(apiLogString(fmt.Sprintf("Handling DELETE of agreement: %v", agreementId)))
 
 	var filters []persistence.EAFilter
 	filters = append(filters, persistence.UnarchivedEAFilter())

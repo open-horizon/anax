@@ -5,8 +5,10 @@ package show
 import (
 	"encoding/json"
 	"fmt"
+	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 )
@@ -30,7 +32,7 @@ type NodeAndStatus struct {
 	Token              *string     `json:"token"`                 // removed omitempty
 	TokenLastValidTime string      `json:"token_last_valid_time"` // removed omitempty
 	TokenValid         *bool       `json:"token_valid"`           // removed omitempty
-	HADevice           *bool       `json:"ha_device"`             // removed omitempty
+	HA                 *bool       `json:"ha"`                    // removed omitempty
 	Config             Configstate `json:"configstate"`           // removed omitempty
 	// from api.Info
 	Geths         []api.Geth         `json:"geth"`
@@ -49,7 +51,7 @@ func (n *NodeAndStatus) CopyNodeInto(horDevice *api.HorizonDevice) {
 	if horDevice.TokenLastValidTime != nil {
 		n.TokenLastValidTime = cliutils.ConvertTime(*horDevice.TokenLastValidTime)
 	}
-	n.HADevice = horDevice.HADevice
+	n.HA = horDevice.HA
 	n.Config.State = horDevice.Config.State
 	if horDevice.Config.LastUpdateTime != nil {
 		n.Config.LastUpdateTime = cliutils.ConvertTime(*horDevice.Config.LastUpdateTime)
@@ -67,7 +69,7 @@ func (n *NodeAndStatus) CopyStatusInto(status *api.Info) {
 func Node() {
 	// Get the horizondevice info
 	horDevice := api.HorizonDevice{}
-	cliutils.HorizonGet("horizondevice", []int{200}, &horDevice)
+	cliutils.HorizonGet("node", []int{200}, &horDevice)
 	nodeInfo := NodeAndStatus{} // the structure we will output
 	nodeInfo.CopyNodeInto(&horDevice)
 
@@ -375,14 +377,10 @@ func Attributes() {
 
 //~~~~~~~~~~~~~~~~ show services ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-type ServiceAttribute struct {
-	Mappings map[string]interface{} `json:"mappings"`
-	// leaving out all of the other stuff we don't care about
-}
-
-type ServiceWrapper struct {
-	Policy     policy.Policy      `json:"policy"`
-	Attributes []ServiceAttribute `json:"attributes"`
+type APIMicroservices struct {
+	Config      []api.APIMicroserviceConfig `json:"config"`      // the microservice configurations
+	Instances   map[string][]interface{}    `json:"instances"`   // the microservice instances that are running
+	Definitions map[string][]interface{}    `json:"definitions"` // the definitions of microservices from the exchange
 }
 
 type OurService struct {
@@ -392,30 +390,30 @@ type OurService struct {
 
 func Services() {
 	// Get the services
-	apiOutput := map[string]map[string]ServiceWrapper{}
-	httpCode := cliutils.HorizonGet("service", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput)
+	var apiOutput APIMicroservices
+	httpCode := cliutils.HorizonGet("microservice", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput)
 	if httpCode == cliutils.ANAX_NOT_CONFIGURED_YET {
 		cliutils.Fatal(cliutils.HTTP_ERROR, MUST_REGISTER_FIRST)
 	}
-	var ok bool
-	if _, ok = apiOutput["services"]; !ok {
-		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api services output did not include 'services' key")
-	}
-	apiServices := apiOutput["services"]
+	apiServices := apiOutput.Config
 
 	// Go thru the services and pull out interesting fields
 	services := make([]OurService, 0)
 	for _, s := range apiServices {
 		serv := OurService{Variables: make(map[string]interface{})}
-		serv.APISpecs = s.Policy.APISpecs
+		asl := new(policy.APISpecList)
+		asl.Add_API_Spec(policy.APISpecification_Factory(s.SensorUrl, s.SensorOrg, s.SensorVersion, cutil.ArchString()))
+		serv.APISpecs = *asl
 		for _, a := range s.Attributes {
-			for k, v := range a.Mappings {
-				serv.Variables[k] = v
+			if a.Mappings != nil {
+				for k, v := range *a.Mappings {
+					serv.Variables[k] = v
+				}
 			}
 		}
 		services = append(services, serv)
 	}
-	//todo: should we mix in any info from /microservice?
+	//todo: should we mix in any info from /microservice/policy?
 
 	// Convert to json and output
 	jsonBytes, err := json.MarshalIndent(services, "", cliutils.JSON_INDENT)
@@ -427,28 +425,29 @@ func Services() {
 
 //~~~~~~~~~~~~~~~~ show workloads ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+type APIWorkloads struct {
+	Config     []persistence.WorkloadConfigOnly `json:"config"`     // the workload configurations
+	Containers *[]dockerclient.APIContainers    `json:"containers"` // the docker info for a running container
+}
+
 func Workloads() {
 	// Get the workloads
-	apiOutput := map[string][]persistence.WorkloadConfig{}
-	httpCode := cliutils.HorizonGet("workloadconfig", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput)
+	var apiOutput APIWorkloads
+	httpCode := cliutils.HorizonGet("workload", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput)
 	if httpCode == cliutils.ANAX_NOT_CONFIGURED_YET {
 		cliutils.Fatal(cliutils.HTTP_ERROR, MUST_REGISTER_FIRST)
 	}
-	var ok bool
-	if _, ok = apiOutput["active"]; !ok {
-		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api workload output did not include 'active' key")
-	}
-	apiWorkloads := apiOutput["active"]
+	apiWorkloads := apiOutput.Config
 
 	// Only include interesting fields in our output
-	workloads := make([]api.WorkloadConfig, len(apiWorkloads))
+	workloads := make([]persistence.WorkloadConfigOnly, len(apiWorkloads))
 	for i := range apiWorkloads {
 		workloads[i].Org = apiWorkloads[i].Org
 		workloads[i].WorkloadURL = apiWorkloads[i].WorkloadURL
-		workloads[i].Version = apiWorkloads[i].VersionExpression
-		workloads[i].Variables = apiWorkloads[i].Variables
+		workloads[i].VersionExpression = apiWorkloads[i].VersionExpression
+		workloads[i].Attributes = apiWorkloads[i].Attributes
 	}
-	//todo: should we mix in any info from /workload?
+	//todo: should we mix in any other info from /workload?
 
 	// Convert to json and output
 	jsonBytes, err := json.MarshalIndent(workloads, "", cliutils.JSON_INDENT)

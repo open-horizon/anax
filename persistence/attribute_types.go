@@ -196,16 +196,16 @@ func (a PropertyAttributes) String() string {
 	return fmt.Sprintf("Meta: %v, Mappings: %v", a.Meta, a.Mappings)
 }
 
-type MappedAttributes struct {
-	Meta     *AttributeMeta    `json:"meta"`
-	Mappings map[string]string `json:"mappings"`
+type UserInputAttributes struct {
+	Meta     *AttributeMeta         `json:"meta"`
+	Mappings map[string]interface{} `json:"mappings"`
 }
 
-func (a MappedAttributes) GetMeta() *AttributeMeta {
+func (a UserInputAttributes) GetMeta() *AttributeMeta {
 	return a.Meta
 }
 
-func (a MappedAttributes) GetGenericMappings() map[string]interface{} {
+func (a UserInputAttributes) GetGenericMappings() map[string]interface{} {
 	out := map[string]interface{}{}
 
 	for k, v := range a.Mappings {
@@ -215,10 +215,10 @@ func (a MappedAttributes) GetGenericMappings() map[string]interface{} {
 	return out
 }
 
-func (a MappedAttributes) Update(other Attribute) error {
+func (a UserInputAttributes) Update(other Attribute) error {
 	switch other.(type) {
-	case *MappedAttributes:
-		o := other.(*MappedAttributes)
+	case *UserInputAttributes:
+		o := other.(*UserInputAttributes)
 		a.GetMeta().Update(*o.GetMeta())
 		// update a's members with any in o that are specified
 
@@ -232,7 +232,7 @@ func (a MappedAttributes) Update(other Attribute) error {
 	return nil
 }
 
-func (a MappedAttributes) String() string {
+func (a UserInputAttributes) String() string {
 	return fmt.Sprintf("Meta: %v, Mappings: %v", a.Meta, a.Mappings)
 }
 

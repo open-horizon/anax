@@ -28,7 +28,7 @@ type HorizonDevice struct {
 	Token              *string      `json:"token,omitempty"`
 	TokenLastValidTime *uint64      `json:"token_last_valid_time,omitempty"`
 	TokenValid         *bool        `json:"token_valid,omitempty"`
-	HADevice           *bool        `json:"ha_device,omitempty"`
+	HA                 *bool        `json:"ha,omitempty"`
 	Config             *Configstate `json:"configstate,omitempty"`
 }
 
@@ -70,8 +70,8 @@ func (h HorizonDevice) String() string {
 	}
 
 	ha := false
-	if h.HADevice != nil {
-		ha = *h.HADevice
+	if h.HA != nil {
+		ha = *h.HA
 	}
 
 	return fmt.Sprintf("Id: %v, Org: %v, Pattern: %v, Name: %v, Token: [%v], TokenLastValidTime: %v, TokenValid: %v, HA: %v, %v", id, org, pat, name, cred, tlvt, tv, ha, h.Config)
@@ -87,7 +87,7 @@ func ConvertFromPersistentHorizonDevice(pDevice *persistence.ExchangeDevice) *Ho
 		Name:               &pDevice.Name,
 		TokenValid:         &pDevice.TokenValid,
 		TokenLastValidTime: &pDevice.TokenLastValidTime,
-		HADevice:           &pDevice.HADevice,
+		HA:                 &pDevice.HA,
 		Config: &Configstate{
 			State:          &pDevice.Config.State,
 			LastUpdateTime: &pDevice.Config.LastUpdateTime,
@@ -117,6 +117,17 @@ func (a Attribute) String() string {
 
 	return fmt.Sprintf("Id: %v, Type: %v, SensorUrls: %v, Label: %v, Publishable: %v, HostOnly: %v, Mappings: %v",
 		getString(a.Id), getString(a.Type), getString(a.SensorUrls), getString(a.Label), getString(a.Publishable), getString(a.HostOnly), getString(a.Mappings))
+}
+
+func NewAttribute(t string, sURLs []string, l string, publishable bool, hostOnly bool, mappings map[string]interface{}) *Attribute {
+	return &Attribute{
+		Type:        &t,
+		SensorUrls:  &sURLs,
+		Label:       &l,
+		Publishable: &publishable,
+		HostOnly:    &hostOnly,
+		Mappings:    &mappings,
+	}
 }
 
 // uses pointers for members b/c it allows nil-checking at deserialization; !Important!: the json field names here must not change w/out changing the error messages returned from the API, they are not programmatically determined
@@ -167,7 +178,7 @@ func (s *Service) String() string {
 
 // Constructor used to create service objects for programmatic creation of services.
 func NewService(url string, org string, name string, v string) *Service {
-	autoUpgrade := true
+	autoUpgrade := false
 	activeUpgrade := true
 
 	return &Service{
@@ -183,16 +194,16 @@ func NewService(url string, org string, name string, v string) *Service {
 
 // This section is for handling the workloadConfig API input
 type WorkloadConfig struct {
-	WorkloadURL string                 `json:"workload_url"`
-	Org         string                 `json:"organization"`
-	Version     string                 `json:"workload_version"` // This is a version range
-	Variables   map[string]interface{} `json:"variables"`
+	WorkloadURL string      `json:"workload_url"`
+	Org         string      `json:"organization"`
+	Version     string      `json:"workload_version"` // This is a version range
+	Attributes  []Attribute `json:"attributes"`
 }
 
 func (w WorkloadConfig) String() string {
 	return fmt.Sprintf("WorkloadURL: %v, "+
 		"Org: %v, "+
 		"Version: %v, "+
-		"Variables: %v",
-		w.WorkloadURL, w.Org, w.Version, w.Variables)
+		"Attributes: %v",
+		w.WorkloadURL, w.Org, w.Version, w.Attributes)
 }

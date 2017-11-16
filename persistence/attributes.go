@@ -25,7 +25,15 @@ type AttributeMeta struct {
 }
 
 func (a AttributeMeta) String() string {
-	return fmt.Sprintf("Id: %v, Type: %v, SensorUrls (%p): %v, Label: %v, HostOnly: %v, Publishable: %v", a.Id, a.Type, a.SensorUrls, a.SensorUrls, a.Label, a.HostOnly, a.Publishable)
+	ho := "true"
+	if !*a.HostOnly {
+		ho = "false"
+	}
+	pub := "true"
+	if !*a.Publishable {
+		pub = "false"
+	}
+	return fmt.Sprintf("Id: %v, Type: %v, SensorUrls: %v, Label: %v, HostOnly: %v, Publishable: %v", a.Id, a.Type, a.SensorUrls, a.Label, ho, pub)
 }
 
 // important to use this for additions to prevent duplicates and keep slice ordered
@@ -125,12 +133,12 @@ func hydrateConcreteAttribute(v []byte) (Attribute, error) {
 		}
 		attr = arch
 
-	case "MappedAttributes":
-		var mapped MappedAttributes
-		if err := json.Unmarshal(v, &mapped); err != nil {
+	case "UserInputAttributes":
+		var ui UserInputAttributes
+		if err := json.Unmarshal(v, &ui); err != nil {
 			return nil, err
 		}
-		attr = mapped
+		attr = ui
 
 	case "ComputeAttributes":
 		var compute ComputeAttributes
@@ -298,10 +306,37 @@ func AttributesToEnvvarMap(attributes []Attribute, prefix string) (map[string]st
 			writePrefix("CPUS", strconv.FormatInt(s.CPUs, 10))
 			writePrefix("RAM", strconv.FormatInt(s.RAM, 10))
 
-		case MappedAttributes:
-			s := serv.(MappedAttributes)
+		case UserInputAttributes:
+			s := serv.(UserInputAttributes)
 			for k, v := range s.Mappings {
-				write(k, v, true)
+				switch v.(type) {
+				case bool:
+					write(k, strconv.FormatBool(v.(bool)), true)
+				case string:
+					write(k, v.(string), true)
+				case float64:
+					write(k, strconv.FormatFloat(v.(float64), 'f', 6, 64), true)
+				case int:
+					write(k, strconv.FormatInt(v.(int64), 10), true)
+				case []string:
+					los := ""
+					for _, e := range v.([]string) {
+						los = los + e + " "
+					}
+					los = los[:len(los)-1]
+					write(k, los, true)
+				case []interface{}:
+					los := ""
+					for _, e := range v.([]interface{}) {
+						if _, ok := e.(string); ok {
+							los = los + e.(string) + " "
+						}
+					}
+					los = los[:len(los)-1]
+					write(k, los, true)
+				default:
+					return nil, fmt.Errorf("Unhandled UserInputAttribute variable %v type %T", k, v)
+				}
 			}
 
 		case LocationAttributes:

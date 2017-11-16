@@ -133,23 +133,17 @@ func parseLocation(errorhandler ErrorHandler, permitEmpty bool, given *Attribute
 	}, false, nil
 }
 
-func parseMapped(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.MappedAttributes, bool, error) {
-	// convert all to string representations
-	mappedStr := map[string]string{}
+func parseUserInput(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.UserInputAttributes, bool, error) {
 
 	if given.Mappings == nil {
 		if !permitEmpty {
 			return nil, errorhandler(NewAPIUserInputError("missing mappings", "mappings")), nil
 		}
-	} else {
-		for k, v := range *given.Mappings {
-			mappedStr[k] = fmt.Sprintf("%v", v)
-		}
 	}
 
-	return &persistence.MappedAttributes{
-		Meta:     generateAttributeMetadata(*given, reflect.TypeOf(persistence.MappedAttributes{}).Name()),
-		Mappings: mappedStr,
+	return &persistence.UserInputAttributes{
+		Meta:     generateAttributeMetadata(*given, reflect.TypeOf(persistence.UserInputAttributes{}).Name()),
+		Mappings: (*given.Mappings),
 	}, false, nil
 }
 
@@ -409,14 +403,14 @@ func toPersistedAttributes(errorhandler ErrorHandler, permitEmpty bool, persiste
 		// ----------------------
 
 		if permitEmpty && given.Label == nil {
-			glog.V(4).Infof("Allowing unspecified label in partial update of %v", given)
+			glog.V(4).Infof(apiLogString(fmt.Sprintf("Allowing unspecified label in partial update of %v", given)))
 		} else if bail := checkInputString(errorhandler, "label", given.Label); bail {
 			return nil, true, nil
 		}
 
 		if given.Publishable == nil {
 			if permitEmpty {
-				glog.V(4).Infof("Allowing unspecified publishable flag in partial update of %v", given)
+				glog.V(4).Infof(apiLogString(fmt.Sprintf("Allowing unspecified publishable flag in partial update of %v", given)))
 			} else {
 				return nil, errorhandler(NewAPIUserInputError("nil value", "publishable")), nil
 			}
@@ -433,7 +427,7 @@ func toPersistedAttributes(errorhandler ErrorHandler, permitEmpty bool, persiste
 
 		if given.Mappings == nil {
 			if permitEmpty {
-				glog.V(4).Infof("Allowing unspecified mappings in partial update of %v", given)
+				glog.V(4).Infof(apiLogString(fmt.Sprintf("Allowing unspecified mappings in partial update of %v", given)))
 			} else {
 				return nil, errorhandler(NewAPIUserInputError("nil value", "mappings")), nil
 			}
@@ -470,8 +464,8 @@ func toPersistedAttributes(errorhandler ErrorHandler, permitEmpty bool, persiste
 				}
 				attributes = append(attributes, attr)
 
-			case reflect.TypeOf(persistence.MappedAttributes{}).Name():
-				attr, inputErr, err := parseMapped(errorhandler, permitEmpty, &given)
+			case reflect.TypeOf(persistence.UserInputAttributes{}).Name():
+				attr, inputErr, err := parseUserInput(errorhandler, permitEmpty, &given)
 				if err != nil || inputErr {
 					return nil, inputErr, err
 				}
@@ -587,7 +581,7 @@ func finalizeAttributesSpecifiedInService(defaultRAM int64, sensorURL string, at
 
 	for _, attr := range attributes {
 		attr.GetMeta().AppendSensorUrl(sensorURL)
-		glog.Infof("SensorUrls for %v: %v", attr.GetMeta().Id, attr.GetMeta().SensorUrls)
+		glog.Infof(apiLogString(fmt.Sprintf("SensorUrls for %v: %v", attr.GetMeta().Id, attr.GetMeta().SensorUrls)))
 	}
 
 	// return updated
@@ -606,7 +600,7 @@ func validateConcreteAttributes(errorhandler ErrorHandler, persistedDevice *pers
 
 		if attr.GetMeta().Type == reflect.TypeOf(persistence.HAAttributes{}).Name() {
 			// if the device is not HA enabled then the HA partner attribute is illegal
-			if !persistedDevice.HADevice {
+			if !persistedDevice.HA {
 				return errorhandler(NewAPIUserInputError("HA partner not permitted on non-HA devices", "service.[attribute].type")), nil
 			}
 
@@ -641,7 +635,7 @@ func payloadToAttributes(errorhandler ErrorHandler, body io.Reader, permitPartia
 	if err := decoder.Decode(&attribute); err != nil {
 		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("attribute could not be demarshalled, error: %v", err), "attribute")), err
 	}
-	glog.V(6).Infof("Decoded Attribute from payload: %v", attribute)
+	glog.V(6).Infof(apiLogString(fmt.Sprintf("Decoded Attribute from payload: %v", attribute)))
 
 	// N.B. remove the id from the input doc; it won't be checked and it shouldn't be trusted, prefer the path param id instead
 	attribute.Id = nil

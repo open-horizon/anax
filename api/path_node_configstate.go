@@ -210,7 +210,7 @@ func workloadConfigPresent(workloadDef *exchange.WorkloadDefinition, wUrl string
 
 	// Filter to return workload configs with versions less than or equal to the input workload version range
 	OlderWorkloadWCFilter := func(workload_url string, version string) persistence.WCFilter {
-		return func(e persistence.WorkloadConfig) bool {
+		return func(e persistence.WorkloadConfigOnly) bool {
 			if vExp, err := policy.Version_Expression_Factory(e.VersionExpression); err != nil {
 				return false
 			} else if inRange, err := vExp.Is_within_range(version); err != nil {
@@ -223,7 +223,7 @@ func workloadConfigPresent(workloadDef *exchange.WorkloadDefinition, wUrl string
 		}
 	}
 
-	// Find the eligible workload config objects. We know that the /workloadconfig API validates that all required
+	// Find the eligible workload config objects. We know that the /workload/config API validates that all required
 	// variables are set BEFORE saving the config, so if we find any matching config objects, we can assume the
 	// workload is configured.
 	cfgs, err := persistence.FindWorkloadConfigs(db, []persistence.WCFilter{OlderWorkloadWCFilter(wUrl, wVersion)})

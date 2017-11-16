@@ -28,7 +28,7 @@ type ExchangeDevice struct {
 	Token              string      `json:"token"`
 	TokenLastValidTime uint64      `json:"token_last_valid_time"`
 	TokenValid         bool        `json:"token_valid"`
-	HADevice           bool        `json:"ha_device"`
+	HA                 bool        `json:"ha"`
 	Config             Configstate `json:"configstate"`
 }
 
@@ -63,7 +63,7 @@ func newExchangeDevice(id string, token string, name string, tokenLastValidTime 
 		Token:              token,
 		TokenLastValidTime: tokenLastValidTime,
 		TokenValid:         true,
-		HADevice:           ha,
+		HA:                 ha,
 		Org:                org,
 		Pattern:            pattern,
 		Config:             cfg,

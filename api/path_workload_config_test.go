@@ -1,3 +1,5 @@
+// +build unit
+
 package api
 
 import (
@@ -14,6 +16,7 @@ func init() {
 }
 
 func Test_FindWorkloadConfigForOutput0(t *testing.T) {
+
 	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
@@ -25,12 +28,17 @@ func Test_FindWorkloadConfigForOutput0(t *testing.T) {
 	// Now test the GET /agreements function.
 	if wcsout, err := FindWorkloadConfigForOutput(db); err != nil {
 		t.Errorf("error finding workloadconfigs: %v", err)
-	} else if len(wcsout["active"]) != 0 {
-		t.Errorf("expecting 0 active workloadconfigs have %v", wcsout["active"])
+	} else if len(wcsout["config"]) != 0 {
+		t.Errorf("expecting 0 active workloadconfigs have %v", wcsout["config"])
+	} else if len(wcsout) != 1 {
+		t.Errorf("should always be 1 key in the output, %v", wcsout)
+	} else if _, ok := wcsout["config"]; !ok {
+		t.Errorf("should always have config key in the output, %v", wcsout)
 	}
 }
 
 func Test_CreateWorkloadConfig_success(t *testing.T) {
+
 	dir, db, err := utsetup()
 	if err != nil {
 		t.Error(err)
@@ -48,11 +56,13 @@ func Test_CreateWorkloadConfig_success(t *testing.T) {
 		myvar: "ethel",
 	}
 
+	attr := NewAttribute("UserInputAttributes", []string{}, "label", false, false, vars)
+
 	cfg := WorkloadConfig{
 		WorkloadURL: myurl,
 		Org:         myorg,
 		Version:     myversion,
-		Variables:   vars,
+		Attributes:  []Attribute{*attr},
 	}
 
 	existingDevice := persistence.ExchangeDevice{
@@ -63,7 +73,7 @@ func Test_CreateWorkloadConfig_success(t *testing.T) {
 		Token:              "abc",
 		TokenLastValidTime: 0,
 		TokenValid:         true,
-		HADevice:           false,
+		HA:                 false,
 		Config: persistence.Configstate{
 			State:          CONFIGSTATE_CONFIGURING,
 			LastUpdateTime: 0,
@@ -88,7 +98,7 @@ func Test_CreateWorkloadConfig_success(t *testing.T) {
 		t.Errorf("unexpected error %v", myError)
 	} else if newWC == nil {
 		t.Errorf("expected non-nil workloadconfig object")
-	} else if newWC.Variables[myvar] != "ethel" {
+	} else if newWC.Attributes[0].GetGenericMappings()[myvar] != "ethel" {
 		t.Errorf("expected %v to be in workloadconfig variables: %v", myvar, newWC)
 	} else if newWC.VersionExpression != "[0.0.0,INFINITY)" {
 		t.Errorf("version not defaulted correctly, expected %v, but is %v", "[0.0.0,INFINITY)", newWC)
@@ -109,11 +119,13 @@ func Test_CreateWorkloadConfig_fail(t *testing.T) {
 	myversion := ""
 	myarch := "amd64"
 
+	attr := NewAttribute("UserInputAttributes", []string{}, "label", false, false, map[string]interface{}{})
+
 	cfg := WorkloadConfig{
 		WorkloadURL: myurl,
 		Org:         myorg,
 		Version:     myversion,
-		Variables:   make(map[string]interface{}),
+		Attributes:  []Attribute{*attr},
 	}
 
 	existingDevice := persistence.ExchangeDevice{
@@ -124,7 +136,7 @@ func Test_CreateWorkloadConfig_fail(t *testing.T) {
 		Token:              "abc",
 		TokenLastValidTime: 0,
 		TokenValid:         true,
-		HADevice:           false,
+		HA:                 false,
 		Config: persistence.Configstate{
 			State:          CONFIGSTATE_CONFIGURING,
 			LastUpdateTime: 0,

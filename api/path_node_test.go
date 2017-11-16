@@ -621,12 +621,12 @@ func getBasicDevice(org string, pattern string) *HorizonDevice {
 	myHA := false
 
 	hd := &HorizonDevice{
-		Id:       &myId,
-		Org:      &org,
-		Pattern:  &pattern,
-		Name:     &myName,
-		Token:    &myToken,
-		HADevice: &myHA,
+		Id:      &myId,
+		Org:     &org,
+		Pattern: &pattern,
+		Name:    &myName,
+		Token:   &myToken,
+		HA:      &myHA,
 	}
 	return hd
 }
