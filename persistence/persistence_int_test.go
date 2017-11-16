@@ -157,14 +157,14 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 	// no sensors URLs in meta means apply to all
 	pub(loc)
 
-	misc := &MappedAttributes{
+	misc := &UserInputAttributes{
 		Meta: &AttributeMeta{
 			Id:          "misc",
 			SensorUrls:  []string{},
 			Publishable: pT,
-			Type:        reflect.TypeOf(MappedAttributes{}).Name(),
+			Type:        reflect.TypeOf(UserInputAttributes{}).Name(),
 		},
-		Mappings: map[string]string{
+		Mappings: map[string]interface{}{
 			"x": "xoo",
 			"y": "yoo",
 			"z": "zoo",
@@ -173,14 +173,14 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 
 	pub(misc, illZ)
 
-	creds := &MappedAttributes{
+	creds := &UserInputAttributes{
 		Meta: &AttributeMeta{
 			Id:          "credentials",
 			SensorUrls:  []string{},
 			Publishable: pF,
-			Type:        reflect.TypeOf(MappedAttributes{}).Name(),
+			Type:        reflect.TypeOf(UserInputAttributes{}).Name(),
 		},
-		Mappings: map[string]string{
+		Mappings: map[string]interface{}{
 			"user":         "fred",
 			"pass":         "pinkfloydfan4ever",
 			"device_label": "home",
@@ -195,7 +195,7 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 	}
 
 	var kComp *ComputeAttributes
-	var kCreds *MappedAttributes
+	var kCreds *UserInputAttributes
 	var kArch *ArchitectureAttributes
 	var kLoc *LocationAttributes
 
@@ -207,8 +207,8 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 			if kComp.CPUs != 2 {
 				t.Errorf("wrong CPU count")
 			}
-		case MappedAttributes:
-			k := serv.(MappedAttributes)
+		case UserInputAttributes:
+			k := serv.(UserInputAttributes)
 			kCreds = &k
 			if it, ok := kCreds.Mappings["device_label"]; !ok || it != "home" {
 				t.Errorf("wrong cred fact")

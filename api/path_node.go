@@ -112,7 +112,7 @@ func CreateHorizonDevice(device *HorizonDevice,
 
 	// So far everything checks out and verifies, so save the registration to the local database.
 	haDevice := false
-	if device.HADevice != nil && *device.HADevice == true {
+	if device.HA != nil && *device.HA == true {
 		haDevice = true
 	}
 

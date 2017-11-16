@@ -35,7 +35,7 @@ func DoIt(forceUnregister, removeNodeUnregister bool) {
 		removeNodeOption = "&removeNode=true"
 	}
 
-	cliutils.HorizonDelete("horizondevice?block=true"+removeNodeOption, []int{200, 204})
+	cliutils.HorizonDelete("node?block=true"+removeNodeOption, []int{200, 204})
 	fmt.Println("Horizon node unregistered.")
 
 	/* This does the same thing more manually. Want to keep for reference...

@@ -250,6 +250,13 @@ func UrlVersionMSFilter(spec_url string, version string) MSFilter {
 	return func(e MicroserviceDefinition) bool { return (e.SpecRef == spec_url && e.Version == version) }
 }
 
+// filter on the url + version + org
+func UrlOrgVersionMSFilter(spec_url string, org string, version string) MSFilter {
+	return func(e MicroserviceDefinition) bool {
+		return (e.SpecRef == spec_url && e.Org == org && e.Version == version)
+	}
+}
+
 // filter for all the microservice defs for the given url
 func UrlMSFilter(spec_url string) MSFilter {
 	return func(e MicroserviceDefinition) bool { return (e.SpecRef == spec_url) }

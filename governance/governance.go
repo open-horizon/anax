@@ -1004,10 +1004,12 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 				sensorUrl := tcPolicy.APISpecs[0].SpecRef
 				if envAdds, err = w.GetWorkloadPreference(sensorUrl); err != nil {
 					glog.Errorf("Error: %v", err)
+					return err
 				}
 			} else {
 				if envAdds, err = w.GetWorkloadConfig(workload.WorkloadURL, workload.Version); err != nil {
 					glog.Errorf("Error: %v", err)
+					return err
 				}
 				// The workload config we have might be from a lower version of the workload. Go to the exchange and
 				// get the metadata for the version we are running and then add in any unset default user inputs.
@@ -1098,7 +1100,7 @@ func (w *GovernanceWorker) GetWorkloadConfig(url string, version string) (map[st
 
 	// Filter to return workload configs with versions less than or equal to the input workload version range
 	OlderWorkloadWCFilter := func(workload_url string, version string) persistence.WCFilter {
-		return func(e persistence.WorkloadConfig) bool {
+		return func(e persistence.WorkloadConfigOnly) bool {
 			if vExp, err := policy.Version_Expression_Factory(e.VersionExpression); err != nil {
 				return false
 			} else if inRange, err := vExp.Is_within_range(version); err != nil {

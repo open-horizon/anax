@@ -234,16 +234,16 @@ func Test_API_attribute_Suite(suite *testing.T) {
 	}, "", true)
 	assert.Nil(suite, err)
 
-	_, err = persistence.SaveOrUpdateAttribute(db, &persistence.MappedAttributes{
+	_, err = persistence.SaveOrUpdateAttribute(db, &persistence.UserInputAttributes{
 		Meta: &persistence.AttributeMeta{
 			Id:          "",
 			SensorUrls:  []string{sensorUrl},
 			Label:       "Defs",
 			HostOnly:    &bF,
 			Publishable: &bF,
-			Type:        "MappedAttributes",
+			Type:        "UserInputAttributes",
 		},
-		Mappings: map[string]string{
+		Mappings: map[string]interface{}{
 			"SAMPLE_INTERVAL": "5s",
 		},
 	}, "", false)
@@ -333,7 +333,7 @@ func Test_API_attribute_Suite(suite *testing.T) {
 	})
 
 	pubMapping := []byte(`{
-			"type": "MappedAttributes",
+			"type": "UserInputAttributes",
 			"label": "Application Mappings",
 			"SensorUrls": ["https://foo", "https://goo"],
 			"publishable":	false,
@@ -366,7 +366,7 @@ func Test_API_attribute_Suite(suite *testing.T) {
 		pp, _ := url.Parse(fmt.Sprintf("%s/%s/%s", recordingServer.URL, "attribute", url.PathEscape(pubMappingId)))
 		responseAttr := simpleMod(t, http.MethodPut, pp, http.StatusOK, []byte(`
 			{
-            "type": "MappedAttributes",
+            "type": "UserInputAttributes",
             "label": "Application Mappings",
 			"sensor_urls": ["https://zoo"],
             "publishable":  false,
@@ -385,7 +385,7 @@ func Test_API_attribute_Suite(suite *testing.T) {
 		dbAttr, err := persistence.FindAttributeByKey(db, pubMappingId)
 		assert.Nil(t, err)
 
-		dbM := (*dbAttr).(persistence.MappedAttributes).Mappings
+		dbM := (*dbAttr).(persistence.UserInputAttributes).Mappings
 		dbVal, exists := dbM["KEY"]
 		assert.True(t, exists)
 		assert.EqualValues(t, "NEWVALUE", dbVal)
@@ -415,7 +415,7 @@ func Test_API_attribute_Suite(suite *testing.T) {
 		pp, _ := url.Parse(fmt.Sprintf("%s/%s/%s", recordingServer.URL, "attribute", url.PathEscape(pubMappingId)))
 		responseAttr := simpleMod(t, http.MethodPatch, pp, http.StatusOK, []byte(`
 			{
-			"type": "MappedAttributes",
+			"type": "UserInputAttributes",
 			"label": "New Application Mappings",
 			"publishable": true
 			}
