@@ -24,6 +24,11 @@ const (
 	READ_FILE_ERROR    = 4
 	HTTP_ERROR         = 5
 	//EXEC_CMD_ERROR = 6
+	INTERNAL_ERROR = 99
+
+	// Anax API HTTP Codes
+	ANAX_ALREADY_CONFIGURED = 409
+	ANAX_NOT_CONFIGURED_YET = 424
 )
 
 // Holds the cmd line flags that were set so other pkgs can access
@@ -66,16 +71,29 @@ func GetHorizonUrlBase() string {
 	return HZN_API
 }
 
-// GetRespBodyString converts an http response body to a string
-func GetRespBodyString(responseBody io.ReadCloser) string {
+// GetRespBodyAsString converts an http response body to a string
+func GetRespBodyAsString(responseBody io.ReadCloser) string {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(responseBody)
 	return buf.String()
 }
 
-// HorizonGet runs a GET on the anax api and fills in the specified json structure.
-// If goodHttp is non-zero and does not match the actual http code, it will exit with an error. Otherwise the actual code is returned.
-func HorizonGet(urlSuffix string, goodHttp int, structure interface{}) (httpCode int) {
+func isGoodCode(actualHttpCode int, goodHttpCodes []int) bool {
+	if len(goodHttpCodes) == 0 {
+		return true // passing in an empty list of good codes means anything is ok
+	}
+	for _, code := range goodHttpCodes {
+		if code == actualHttpCode {
+			return true
+		}
+	}
+	return false
+}
+
+// HorizonGet runs a GET on the anax api and fills in the specified structure with the json.
+// If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
+// Only if the actual code matches the 1st element in goodHttpCodes, will it parse the body into the specified structure.
+func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}) (httpCode int) {
 	url := GetHorizonUrlBase() + "/" + urlSuffix
 	apiMsg := http.MethodGet + " " + url
 	Verbose(apiMsg)
@@ -86,22 +104,24 @@ func HorizonGet(urlSuffix string, goodHttp int, structure interface{}) (httpCode
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
-	if goodHttp > 0 && httpCode != goodHttp {
+	if !isGoodCode(httpCode, goodHttpCodes) {
 		Fatal(HTTP_ERROR, "bad HTTP code from %s: %d", apiMsg, httpCode)
 	}
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err)
-	}
-	err = json.Unmarshal(bodyBytes, structure)
-	if err != nil {
-		Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err)
+	if httpCode == goodHttpCodes[0] {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err)
+		}
+		err = json.Unmarshal(bodyBytes, structure)
+		if err != nil {
+			Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err)
+		}
 	}
 	return
 }
 
 // HorizonDelete runs a DELETE on the anax api.
-// If goodHttp is non-zero and does not match the actual http code, it will exit with an error. Otherwise the actual code is returned.
+// If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
 func HorizonDelete(urlSuffix string, goodHttpCodes []int) (httpCode int) {
 	url := GetHorizonUrlBase() + "/" + urlSuffix
 	apiMsg := http.MethodDelete + " " + url
@@ -118,23 +138,14 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int) (httpCode int) {
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
-	if len(goodHttpCodes) > 0 {
-		foundCode := false
-		for _, code := range goodHttpCodes {
-			if code == httpCode {
-				foundCode = true
-				break
-			}
-		}
-		if !foundCode {
-			Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyString(resp.Body))
-		}
+	if !isGoodCode(httpCode, goodHttpCodes) {
+		Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyAsString(resp.Body))
 	}
 	return
 }
 
 // HorizonPutPost runs a PUT or POST to the anax api to create of update a resource.
-// If the list of goodHttps is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
+// If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
 func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body interface{}) (httpCode int) {
 	url := GetHorizonUrlBase() + "/" + urlSuffix
 	apiMsg := method + " " + url
@@ -158,24 +169,15 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
-	if len(goodHttpCodes) > 0 {
-		foundCode := false
-		for _, code := range goodHttpCodes {
-			if code == httpCode {
-				foundCode = true
-				break
-			}
-		}
-		if !foundCode {
-			Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyString(resp.Body))
-		}
+	if !isGoodCode(httpCode, goodHttpCodes) {
+		Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyAsString(resp.Body))
 	}
 	return
 }
 
 // ExchangeGet runs a GET to the exchange api and fills in the specified json structure.
-// If goodHttp is non-zero and does not match the actual http code, it will exit with an error. Otherwise the actual code is returned.
-func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttp int, structure interface{}) (httpCode int) {
+// If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
+func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, structure interface{}) (httpCode int) {
 	url := urlBase + "/" + urlSuffix
 	apiMsg := http.MethodGet + " " + url
 	Verbose(apiMsg)
@@ -194,7 +196,7 @@ func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttp 
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
-	if goodHttp > 0 && httpCode != goodHttp {
+	if !isGoodCode(httpCode, goodHttpCodes) {
 		Fatal(HTTP_ERROR, "bad HTTP code from %s: %d", apiMsg, httpCode)
 	}
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
@@ -209,8 +211,8 @@ func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttp 
 }
 
 // ExchangePutPost runs a PUT or POST to the exchange api to create of update a resource.
-// If goodHttp is non-zero and does not match the actual http code, it will exit with an error. Otherwise the actual code is returned.
-func ExchangePutPost(method string, urlBase string, urlSuffix string, credentials string, goodHttp int, body interface{}) (httpCode int) {
+// If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
+func ExchangePutPost(method string, urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, body interface{}) (httpCode int) {
 	url := urlBase + "/" + urlSuffix
 	apiMsg := method + " " + url
 	Verbose(apiMsg)
@@ -234,7 +236,7 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
-	if goodHttp > 0 && httpCode != goodHttp {
+	if !isGoodCode(httpCode, goodHttpCodes) {
 		bodyBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err)

@@ -2,6 +2,6 @@ package importkey
 
 import "fmt"
 
-func DoIt() {
-	fmt.Println("implement me")
+func DoIt(keyFile string) {
+	fmt.Println("Not implemented yet.") //todo: implement
 }

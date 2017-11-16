@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -22,8 +24,9 @@ type HorizonDevice struct {
 }
 
 type GlobalSet struct {
-	Type      string                 `json:"type"`
-	Variables map[string]interface{} `json:"variables"`
+	Type       string                 `json:"type"`
+	SensorUrls []string               `json:"sensor_urls"`
+	Variables  map[string]interface{} `json:"variables"`
 }
 
 // Use for both microservices and workloads
@@ -41,7 +44,13 @@ type InputFile struct {
 }
 
 func readInputFile(filePath string, inputFileStruct *InputFile) {
-	fileBytes, err := ioutil.ReadFile(filePath)
+	var fileBytes []byte
+	var err error
+	if filePath == "-" {
+		fileBytes, err = ioutil.ReadAll(os.Stdin)
+	} else {
+		fileBytes, err = ioutil.ReadFile(filePath)
+	}
 	if err != nil {
 		cliutils.Fatal(cliutils.READ_FILE_ERROR, "reading %s failed: %v", filePath, err)
 	}
@@ -55,7 +64,7 @@ func readInputFile(filePath string, inputFileStruct *InputFile) {
 	}
 }
 
-// Note: a structure like this exists in the api pkg, but has the id and everything as ptrs, so it is not convenient to use
+// Note: a structure like this exists in the api pkg, but has the id and everything as ptrs, and there are several sub-types with an interface.
 type Attribute struct {
 	Type        string                 `json:"type"`
 	SensorUrls  []string               `json:"sensor_urls"`
@@ -80,7 +89,7 @@ type Configstate struct {
 }
 
 // DoIt registers this node to Horizon with a pattern
-func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw string, inputFile string) {
+func DoIt(org string, pattern string, nodeIdTok string, userPw string, inputFile string) {
 	// Read input file 1st, so we don't get half way thru registration before finding the problem
 	inputFileStruct := InputFile{}
 	if inputFile != "" {
@@ -90,20 +99,42 @@ func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw st
 
 	// Get the exchange url from the anax api
 	status := api.Info{}
-	cliutils.HorizonGet("status", 200, &status)
+	cliutils.HorizonGet("status", []int{200}, &status)
 	exchUrlBase := strings.TrimSuffix(status.Configuration.ExchangeAPI, "/")
 	fmt.Printf("Horizon Exchange base URL: %s\n", exchUrlBase)
 
 	// See if the node exists in the exchange, and create if it doesn't
+	parts := strings.SplitN(nodeIdTok, ":", 2)
+	nodeId := parts[0] // SplitN will always at least return 1 element
+	nodeToken := ""
+	if len(parts) >= 2 {
+		nodeToken = parts[1]
+	}
+	if nodeId == "" {
+		// Get the id from anax
+		horDevice := api.HorizonDevice{}
+		cliutils.HorizonGet("horizondevice", []int{200}, &horDevice)
+		nodeId = *horDevice.Id
+		fmt.Printf("Using node ID '%s' from the Horizon agent\n", nodeId)
+	}
+	if nodeToken == "" {
+		// Create a random token
+		var err error
+		nodeToken, err = cutil.SecureRandomString()
+		if err != nil {
+			cliutils.Fatal(cliutils.INTERNAL_ERROR, "could not create a random token")
+		}
+		fmt.Println("Generated random node token")
+	}
 	node := exchange.GetDevicesResponse{}
-	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+nodeId+":"+nodeToken, 0, &node)
+	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+nodeId+":"+nodeToken, nil, &node)
 	if httpCode != 200 {
 		if userPw == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node %s/%s does not exist in the exchange and the -u flag was not specified to provide exchange user credentials to create it.", org, nodeId)
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node %s/%s does not exist in the exchange with the specified token and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId)
 		}
-		fmt.Printf("Node %s/%s does not exists in the exchange, creating it...\n", org, nodeId)
+		fmt.Printf("Node %s/%s does not exists in the exchange with the specified token, creating/updating it...\n", org, nodeId)
 		putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeId, SoftwareVersions: make(map[string]string), PublicKey: []byte("")} // we only need to set the token
-		cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+userPw, 201, putNodeReq)
+		cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+userPw, []int{201}, putNodeReq)
 	} else {
 		fmt.Printf("Node %s/%s exists in the exchange\n", org, nodeId)
 	}
@@ -111,19 +142,25 @@ func DoIt(org string, nodeId string, nodeToken string, pattern string, userPw st
 	// Initialize the Horizon device (node)
 	fmt.Println("Initializing the Horizon node...")
 	hd := HorizonDevice{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HADevice: false} //todo: support HA config
-	cliutils.HorizonPutPost(http.MethodPost, "horizondevice", []int{201, 200}, hd)
+	httpCode = cliutils.HorizonPutPost(http.MethodPost, "horizondevice", []int{201, 200, cliutils.ANAX_ALREADY_CONFIGURED}, hd)
+	if httpCode == cliutils.ANAX_ALREADY_CONFIGURED {
+		// Note: I wanted to make `hzn register` idempotent, but the anax api doesn't support changing existing settings once in configuring state (to maintain internal consistency).
+		//		And i can't query ALL the existing settings to make sure they are what we were going to set, because i can't query the node token.
+		cliutils.Fatal(cliutils.HTTP_ERROR, "this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first.")
+	}
 
 	// Process the input file and call /attribute, /service, and /workloadconfig to set the specified variables
 	if inputFile != "" {
-		// Set the global variables as attributes with no url
+		// Set the global variables as attributes with no url (or in the case of HTTPSBasicAuthAttributes, with url equal to image svr)
+		// Technically the AgreementProtocolAttributes can be set, but it has no effect on anax if a pattern is being used.
 		fmt.Println("Setting global variables...")
 		attr := Attribute{SensorUrls: []string{}, Label: "Global variables", Publishable: false, HostOnly: false} // we reuse this for each GlobalSet
 		for _, g := range inputFileStruct.Global {
 			attr.Type = g.Type
+			attr.SensorUrls = g.SensorUrls
 			attr.Mappings = g.Variables
 			cliutils.HorizonPutPost(http.MethodPost, "attribute", []int{201, 200}, attr)
 		}
-		//todo: support types: HTTPSBasicAuthAttributes, AgreementProtocolAttributes
 
 		// Set the microservice variables
 		fmt.Println("Setting microservice variables...")
