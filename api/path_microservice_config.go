@@ -35,7 +35,7 @@ func FindServiceConfigForOutput(pm *policy.PolicyManager, db *bolt.DB) (map[stri
 		mc := NewMicroserviceConfig(msURL, msOrg, msVer)
 
 		// Find the microservice definition in our database so that we can get the upgrade settings.
-		msDefs, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UrlOrgVersionMSFilter(msURL, msOrg, msVer)})
+		msDefs, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UrlOrgVersionMSFilter(msURL, msOrg, msVer), persistence.UnarchivedMSFilter()})
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("unable to get microservice definitions from the database, error %v", err))
 		} else if len(msDefs) != 1 {
