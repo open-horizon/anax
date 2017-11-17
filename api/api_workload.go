@@ -67,7 +67,7 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
-		getWorkload := GetHTTPWorkloadHandler(a)
+		getWorkload := a.exchHandlers.GetHTTPWorkloadHandler()
 
 		// Demarshal the input body
 		var cfg WorkloadConfig

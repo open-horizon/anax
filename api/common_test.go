@@ -15,13 +15,13 @@ import (
 // ========================================================================================
 // These are functions which are used across the set of API unit tests
 
-func getDummyWorkloadResolver() WorkloadResolverHandler {
+func getDummyWorkloadResolver() exchange.WorkloadResolverHandler {
 	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*policy.APISpecList, *exchange.WorkloadDefinition, error) {
 		return nil, nil, nil
 	}
 }
 
-func getDummyMicroserviceHandler() MicroserviceHandler {
+func getDummyMicroserviceHandler() exchange.MicroserviceHandler {
 	return func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*exchange.MicroserviceDefinition, error) {
 		return nil, nil
 	}
@@ -40,13 +40,13 @@ func getBasicConfig() *config.HorizonConfig {
 	}
 }
 
-func getDummyGetOrg() OrgHandler {
+func getDummyGetOrg() exchange.OrgHandler {
 	return func(org string, id string, token string) (*exchange.Organization, error) {
 		return nil, nil
 	}
 }
 
-func getDummyGetPatterns() PatternHandler {
+func getDummyGetPatterns() exchange.PatternHandler {
 	return func(org string, pattern string, id string, token string) (map[string]exchange.Pattern, error) {
 		return nil, nil
 	}

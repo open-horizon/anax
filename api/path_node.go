@@ -6,6 +6,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"os"
 	"time"
@@ -38,8 +39,8 @@ func FindHorizonDeviceForOutput(db *bolt.DB) (*HorizonDevice, error) {
 // Given a demarshalled HorizonDevice object, validate it and save it, returning any errors.
 func CreateHorizonDevice(device *HorizonDevice,
 	errorhandler ErrorHandler,
-	getOrg OrgHandler,
-	getPatterns PatternHandler,
+	getOrg exchange.OrgHandler,
+	getPatterns exchange.PatternHandler,
 	em *events.EventStateManager,
 	db *bolt.DB) (bool, *HorizonDevice, *HorizonDevice) {
 

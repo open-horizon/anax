@@ -56,10 +56,10 @@ func FindConfigstateForOutput(db *bolt.DB) (*Configstate, error) {
 // Given a demarshalled Configstate object, validate it and save, returning any errors.
 func UpdateConfigstate(cfg *Configstate,
 	errorhandler ErrorHandler,
-	getOrg OrgHandler,
-	getMicroservice MicroserviceHandler,
-	getPatterns PatternHandler,
-	resolveWorkload WorkloadResolverHandler,
+	getOrg exchange.OrgHandler,
+	getMicroservice exchange.MicroserviceHandler,
+	getPatterns exchange.PatternHandler,
+	resolveWorkload exchange.WorkloadResolverHandler,
 	db *bolt.DB,
 	config *config.HorizonConfig) (bool, *Configstate, []*events.PolicyCreatedMessage) {
 
