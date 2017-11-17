@@ -124,7 +124,7 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, inputFile
 		// Set the global variables as attributes with no url (or in the case of HTTPSBasicAuthAttributes, with url equal to image svr)
 		// Technically the AgreementProtocolAttributes can be set, but it has no effect on anax if a pattern is being used.
 		fmt.Println("Setting global variables...")
-		attr := api.NewAttribute("", []string{},"Global variables", false, false, map[string]interface{}{}) // we reuse this for each GlobalSet
+		attr := api.NewAttribute("", []string{}, "Global variables", false, false, map[string]interface{}{}) // we reuse this for each GlobalSet
 		for _, g := range inputFileStruct.Global {
 			attr.Type = &g.Type
 			attr.SensorUrls = &g.SensorUrls
@@ -136,7 +136,7 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, inputFile
 		fmt.Println("Setting microservice variables...")
 		attr = api.NewAttribute("UserInputAttributes", []string{}, "microservice", false, false, map[string]interface{}{}) // we reuse this for each microservice
 		emptyStr := ""
-		service := api.Service{SensorName: &emptyStr}	// we reuse this too
+		service := api.Service{SensorName: &emptyStr} // we reuse this too
 		for _, m := range inputFileStruct.Microservices {
 			service.SensorOrg = &m.Org
 			service.SensorUrl = &m.Url

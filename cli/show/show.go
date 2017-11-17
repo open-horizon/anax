@@ -51,6 +51,7 @@ func (n *NodeAndStatus) CopyNodeInto(horDevice *api.HorizonDevice) {
 	if horDevice.TokenLastValidTime != nil {
 		n.TokenLastValidTime = cliutils.ConvertTime(*horDevice.TokenLastValidTime)
 	}
+	n.TokenValid = horDevice.TokenValid
 	n.HA = horDevice.HA
 	n.Config.State = horDevice.Config.State
 	if horDevice.Config.LastUpdateTime != nil {
@@ -337,7 +338,7 @@ const HTTPSBasicAuthAttributes = "HTTPSBasicAuthAttributes"
 
 // Our form of the attributes output
 type OurAttributes struct {
-	Type string `json:"type"`
+	Type       string                 `json:"type"`
 	Label      string                 `json:"label"`
 	SensorUrls []string               `json:"sensor_urls,omitempty"`
 	Variables  map[string]interface{} `json:"variables"`
@@ -428,23 +429,23 @@ func Services() {
 
 // Can't use the api and persistence structs because the Attributes type isn't detailed enough to drill down into it
 type WorkloadConfigOnly struct {
-	WorkloadURL       string                   `json:"workload_url"`
-	Org               string                   `json:"organization"`
-	VersionExpression string                   `json:"workload_version"` // This is a version range
+	WorkloadURL       string                              `json:"workload_url"`
+	Org               string                              `json:"organization"`
+	VersionExpression string                              `json:"workload_version"` // This is a version range
 	Attributes        []map[string]map[string]interface{} `json:"attributes"`
 }
 
 type APIWorkloads struct {
-	Config     []WorkloadConfigOnly `json:"config"`     // the workload configurations
-	Containers *[]dockerclient.APIContainers    `json:"containers"` // the docker info for a running container
+	Config     []WorkloadConfigOnly          `json:"config"`     // the workload configurations
+	Containers *[]dockerclient.APIContainers `json:"containers"` // the docker info for a running container
 }
 
 // What we will output. Need our own structure because we want to pick and choose what we output.
 type OurWorkload struct {
-	WorkloadURL       string                   `json:"workload_url"`
-	Org               string                   `json:"organization"`
-	VersionExpression string                   `json:"workload_version"` // This is a version range
-	Variables        map[string]interface{} `json:"variables"`
+	WorkloadURL       string                 `json:"workload_url"`
+	Org               string                 `json:"organization"`
+	VersionExpression string                 `json:"workload_version"` // This is a version range
+	Variables         map[string]interface{} `json:"variables"`
 }
 
 func Workloads() {
