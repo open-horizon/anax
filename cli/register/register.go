@@ -14,15 +14,7 @@ import (
 	"strings"
 )
 
-type HorizonDevice struct {
-	Id      string `json:"id"`
-	Org     string `json:"organization"`
-	Pattern string `json:"pattern"` // a simple name, not prefixed with the org
-	Name    string `json:"name,omitempty"`
-	Token   string `json:"token,omitempty"`
-	HA      bool   `json:"ha,omitempty"`
-}
-
+// These structs are used to parse the registration input file
 type GlobalSet struct {
 	Type       string                 `json:"type"`
 	SensorUrls []string               `json:"sensor_urls"`
@@ -64,30 +56,6 @@ func readInputFile(filePath string, inputFileStruct *InputFile) {
 	}
 }
 
-// Note: a structure like this exists in the api pkg, but has the id and everything as ptrs, and there are several sub-types with an interface.
-type Attribute struct {
-	Type        string                 `json:"type"`
-	SensorUrls  []string               `json:"sensor_urls"`
-	Label       string                 `json:"label"`
-	Publishable bool                   `json:"publishable"`
-	HostOnly    bool                   `json:"host_only"`
-	Mappings    map[string]interface{} `json:"mappings"`
-}
-
-type Service struct {
-	SensorUrl     string      `json:"sensor_url"`
-	SensorOrg     string      `json:"sensor_org"`
-	SensorName    string      `json:"sensor_name"`
-	SensorVersion string      `json:"sensor_version"`
-	AutoUpgrade   bool        `json:"auto_upgrade"`
-	ActiveUpgrade bool        `json:"active_upgrade"`
-	Attributes    []Attribute `json:"attributes"`
-}
-
-type Configstate struct {
-	State string `json:"state"`
-}
-
 // DoIt registers this node to Horizon with a pattern
 func DoIt(org string, pattern string, nodeIdTok string, userPw string, inputFile string) {
 	// Read input file 1st, so we don't get half way thru registration before finding the problem
@@ -113,7 +81,7 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, inputFile
 	if nodeId == "" {
 		// Get the id from anax
 		horDevice := api.HorizonDevice{}
-		cliutils.HorizonGet("horizondevice", []int{200}, &horDevice)
+		cliutils.HorizonGet("node", []int{200}, &horDevice)
 		nodeId = *horDevice.Id
 		fmt.Printf("Using node ID '%s' from the Horizon agent\n", nodeId)
 	}
@@ -141,8 +109,10 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, inputFile
 
 	// Initialize the Horizon device (node)
 	fmt.Println("Initializing the Horizon node...")
-	hd := HorizonDevice{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HA: false} //todo: support HA config
-	httpCode = cliutils.HorizonPutPost(http.MethodPost, "node", []int{201, 200, cliutils.ANAX_ALREADY_CONFIGURED}, hd)
+	//nd := Node{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HA: false}
+	falseVal := false
+	nd := api.HorizonDevice{Id: &nodeId, Token: &nodeToken, Org: &org, Pattern: &pattern, Name: &nodeId, HA: &falseVal} //todo: support HA config
+	httpCode = cliutils.HorizonPutPost(http.MethodPost, "node", []int{201, 200, cliutils.ANAX_ALREADY_CONFIGURED}, nd)
 	if httpCode == cliutils.ANAX_ALREADY_CONFIGURED {
 		// Note: I wanted to make `hzn register` idempotent, but the anax api doesn't support changing existing settings once in configuring state (to maintain internal consistency).
 		//		And i can't query ALL the existing settings to make sure they are what we were going to set, because i can't query the node token.
@@ -154,33 +124,35 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, inputFile
 		// Set the global variables as attributes with no url (or in the case of HTTPSBasicAuthAttributes, with url equal to image svr)
 		// Technically the AgreementProtocolAttributes can be set, but it has no effect on anax if a pattern is being used.
 		fmt.Println("Setting global variables...")
-		attr := Attribute{SensorUrls: []string{}, Label: "Global variables", Publishable: false, HostOnly: false} // we reuse this for each GlobalSet
+		attr := api.NewAttribute("", []string{},"Global variables", false, false, map[string]interface{}{}) // we reuse this for each GlobalSet
 		for _, g := range inputFileStruct.Global {
-			attr.Type = g.Type
-			attr.SensorUrls = g.SensorUrls
-			attr.Mappings = g.Variables
+			attr.Type = &g.Type
+			attr.SensorUrls = &g.SensorUrls
+			attr.Mappings = &g.Variables
 			cliutils.HorizonPutPost(http.MethodPost, "attribute", []int{201, 200}, attr)
 		}
 
 		// Set the microservice variables
 		fmt.Println("Setting microservice variables...")
-		attr = Attribute{Type: "UserInputAttributes", SensorUrls: []string{}, Label: "app", Publishable: false, HostOnly: false} // we reuse this for each microservice
-		service := Service{Attributes: []Attribute{attr}}
+		attr = api.NewAttribute("UserInputAttributes", []string{}, "microservice", false, false, map[string]interface{}{}) // we reuse this for each microservice
+		emptyStr := ""
+		service := api.Service{SensorName: &emptyStr}	// we reuse this too
 		for _, m := range inputFileStruct.Microservices {
-			service.SensorOrg = m.Org
-			service.SensorUrl = m.Url
-			service.SensorVersion = m.VersionRange
-			attr.Mappings = m.Variables
-			service.Attributes[0] = attr
+			service.SensorOrg = &m.Org
+			service.SensorUrl = &m.Url
+			service.SensorVersion = &m.VersionRange
+			attr.Mappings = &m.Variables
+			attrSlice := []api.Attribute{*attr}
+			service.Attributes = &attrSlice
 			cliutils.HorizonPutPost(http.MethodPost, "microservice/config", []int{201, 200}, service)
 		}
 
 		// Set the workload variables
 		fmt.Println("Setting workload variables...")
-		apiAttr := api.NewAttribute("UserInputAttributes", []string{}, "workload", false, false, map[string]interface{}{})
+		attr = api.NewAttribute("UserInputAttributes", []string{}, "workload", false, false, map[string]interface{}{})
 		for _, w := range inputFileStruct.Workloads {
-			apiAttr.Mappings = &w.Variables
-			workload := api.WorkloadConfig{Org: w.Org, WorkloadURL: w.Url, Version: w.VersionRange, Attributes: []api.Attribute{*apiAttr}}
+			attr.Mappings = &w.Variables
+			workload := api.WorkloadConfig{Org: w.Org, WorkloadURL: w.Url, Version: w.VersionRange, Attributes: []api.Attribute{*attr}}
 			cliutils.HorizonPutPost(http.MethodPost, "workload/config", []int{201, 200}, workload)
 		}
 
@@ -191,7 +163,8 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, inputFile
 
 	// Set the pattern and register the node
 	fmt.Println("Changing Horizon state to configured to register this node with Horizon...")
-	config := Configstate{State: "configured"}
+	configuredStr := "configured"
+	config := api.Configstate{State: &configuredStr}
 	cliutils.HorizonPutPost(http.MethodPut, "node/configstate", []int{201, 200}, config)
 
 	fmt.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn show agreements' to view.")

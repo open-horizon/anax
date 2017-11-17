@@ -40,7 +40,7 @@ type NodeAndStatus struct {
 	Connectivity  map[string]bool    `json:"connectivity"`
 }
 
-// CopyNodeInto copies the horizondevice info into our output struct and converts times in the process
+// CopyNodeInto copies the node info into our output struct and converts times in the process
 func (n *NodeAndStatus) CopyNodeInto(horDevice *api.HorizonDevice) {
 	//todo: I don't like having to repeat all of these fields, hard to maintain. Maybe use reflection?
 	n.Id = horDevice.Id
@@ -67,7 +67,7 @@ func (n *NodeAndStatus) CopyStatusInto(status *api.Info) {
 }
 
 func Node() {
-	// Get the horizondevice info
+	// Get the node info
 	horDevice := api.HorizonDevice{}
 	cliutils.HorizonGet("node", []int{200}, &horDevice)
 	nodeInfo := NodeAndStatus{} // the structure we will output
@@ -338,7 +338,6 @@ const HTTPSBasicAuthAttributes = "HTTPSBasicAuthAttributes"
 // Our form of the attributes output
 type OurAttributes struct {
 	Type string `json:"type"`
-	//SensorUrls  []string               `json:"sensor_urls"`
 	Label      string                 `json:"label"`
 	SensorUrls []string               `json:"sensor_urls,omitempty"`
 	Variables  map[string]interface{} `json:"variables"`
@@ -391,6 +390,7 @@ type OurService struct {
 func Services() {
 	// Get the services
 	var apiOutput APIMicroservices
+	// Note: intentionally querying /microservice, instead of just /microservice/config, because in the future we will probably want to mix in some key runtime info
 	httpCode := cliutils.HorizonGet("microservice", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput)
 	if httpCode == cliutils.ANAX_NOT_CONFIGURED_YET {
 		cliutils.Fatal(cliutils.HTTP_ERROR, MUST_REGISTER_FIRST)
@@ -404,6 +404,7 @@ func Services() {
 		asl := new(policy.APISpecList)
 		asl.Add_API_Spec(policy.APISpecification_Factory(s.SensorUrl, s.SensorOrg, s.SensorVersion, cutil.ArchString()))
 		serv.APISpecs = *asl
+		// Copy all of the variables from each Mappings into our Variables map
 		for _, a := range s.Attributes {
 			if a.Mappings != nil {
 				for k, v := range *a.Mappings {
@@ -425,14 +426,31 @@ func Services() {
 
 //~~~~~~~~~~~~~~~~ show workloads ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+// Can't use the api and persistence structs because the Attributes type isn't detailed enough to drill down into it
+type WorkloadConfigOnly struct {
+	WorkloadURL       string                   `json:"workload_url"`
+	Org               string                   `json:"organization"`
+	VersionExpression string                   `json:"workload_version"` // This is a version range
+	Attributes        []map[string]map[string]interface{} `json:"attributes"`
+}
+
 type APIWorkloads struct {
-	Config     []persistence.WorkloadConfigOnly `json:"config"`     // the workload configurations
+	Config     []WorkloadConfigOnly `json:"config"`     // the workload configurations
 	Containers *[]dockerclient.APIContainers    `json:"containers"` // the docker info for a running container
+}
+
+// What we will output. Need our own structure because we want to pick and choose what we output.
+type OurWorkload struct {
+	WorkloadURL       string                   `json:"workload_url"`
+	Org               string                   `json:"organization"`
+	VersionExpression string                   `json:"workload_version"` // This is a version range
+	Variables        map[string]interface{} `json:"variables"`
 }
 
 func Workloads() {
 	// Get the workloads
 	var apiOutput APIWorkloads
+	// Note: intentionally querying /workload, instead of just /workload/config, because in the future we will probably want to mix in some key runtime info
 	httpCode := cliutils.HorizonGet("workload", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput)
 	if httpCode == cliutils.ANAX_NOT_CONFIGURED_YET {
 		cliutils.Fatal(cliutils.HTTP_ERROR, MUST_REGISTER_FIRST)
@@ -440,12 +458,20 @@ func Workloads() {
 	apiWorkloads := apiOutput.Config
 
 	// Only include interesting fields in our output
-	workloads := make([]persistence.WorkloadConfigOnly, len(apiWorkloads))
+	workloads := make([]OurWorkload, len(apiWorkloads))
 	for i := range apiWorkloads {
 		workloads[i].Org = apiWorkloads[i].Org
 		workloads[i].WorkloadURL = apiWorkloads[i].WorkloadURL
 		workloads[i].VersionExpression = apiWorkloads[i].VersionExpression
-		workloads[i].Attributes = apiWorkloads[i].Attributes
+		// Copy all of the variables from each Mappings into our Variables map
+		workloads[i].Variables = make(map[string]interface{})
+		for _, a := range apiWorkloads[i].Attributes {
+			if m, ok := a["mappings"]; ok {
+				for k, v := range m {
+					workloads[i].Variables[k] = v
+				}
+			}
+		}
 	}
 	//todo: should we mix in any other info from /workload?
 
