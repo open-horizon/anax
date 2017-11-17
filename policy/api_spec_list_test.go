@@ -512,12 +512,12 @@ func Test_APISpecification_GetCommonVersionRanges_success1(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error: got error but shoulg not be. %v\n", err)
 		} else {
-			for _, as := range(*common_apispec_list) {
+			for _, as := range *common_apispec_list {
 				if as.SpecRef == "http://mycompany.com/dm/gps" && as.Version != "[2.0.3,3.0.0]" {
 					t.Errorf("Error: should have version range [2.0.3,5.0.0], but is %v\n", as)
 				}
-                
-                if as.SpecRef == "http://mycompany.com/dm/network" && as.Version != "[2.1.0,3.0.0)" {
+
+				if as.SpecRef == "http://mycompany.com/dm/network" && as.Version != "[2.1.0,3.0.0)" {
 					t.Errorf("Error: should have version range [2.1.0,3.0.0), but is %v\n", as)
 				}
 			}
@@ -537,8 +537,8 @@ func Test_APISpecification_GetCommonVersionRanges_success2(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error: got error but shoulg not be. %v\n", err)
 		} else {
-			for _, as := range(*common_apispec_list) {
-				if as.SpecRef == "http://mycompany.com/dm/gps"  {
+			for _, as := range *common_apispec_list {
+				if as.SpecRef == "http://mycompany.com/dm/gps" {
 					t.Errorf("Error: should not have have gps, but has %v\n", as)
 
 				}
@@ -560,7 +560,7 @@ func Test_APISpecification_GetCommonVersionRanges_success3(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error: got error but shoulg not be. %v\n", err)
 		} else {
-			for _, as := range(*common_apispec_list) {
+			for _, as := range *common_apispec_list {
 				if as.SpecRef == "http://mycompany.com/dm/gps" && as.Org == "myorg" && as.Version != "[2.0.3,3.0.0]" {
 					t.Errorf("Error: should have version range [2.0.3,5.0.0], but is %v\n", as)
 				}

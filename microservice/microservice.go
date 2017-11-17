@@ -173,10 +173,10 @@ func GetUpgradeVersionRange(msdef *persistence.MicroserviceDefinition, httpClien
 	if devicePattern == "" {
 		if vExp, err := policy.Version_Expression_Factory(msdef.UpgradeVersionRange); err != nil {
 			return "", fmt.Errorf("Unable to convert %v to a version expression, error %v", msdef.UpgradeVersionRange, err)
-	    } else {
-	    	return vExp.Get_expression(), nil
-	    }
-	} 
+		} else {
+			return vExp.Get_expression(), nil
+		}
+	}
 
 	// now handle the pattern case
 	patterns, err := exchange.GetPatterns(httpClientFactory, exchange.GetOrg(deviceId), devicePattern, exchURL, deviceId, deviceToken)
@@ -231,9 +231,9 @@ func GetUpgradeVersionRange(msdef *persistence.MicroserviceDefinition, httpClien
 	if len(*completeAPISpecList) == 0 {
 		glog.Infof("No microservices %v found from pattern %v.", msdef.SpecRef, devicePattern)
 		return "", nil
-	} 
-		
-	// for now, anax only allow one microservice version, so we need to get the common version range for each microservice.	
+	}
+
+	// for now, anax only allow one microservice version, so we need to get the common version range for each microservice.
 	common_apispec_list, err := completeAPISpecList.GetCommonVersionRanges()
 	if err != nil {
 		glog.Infof("Could not find a version range for microservice %v that is good for all the workloads in the pattern %v.", msdef.SpecRef, devicePattern)
@@ -245,13 +245,11 @@ func GetUpgradeVersionRange(msdef *persistence.MicroserviceDefinition, httpClien
 	return (*common_apispec_list)[0].Version, nil
 }
 
-
 // Get the new microservice def that the given msdef need to upgrade to.
 // This function gets the latest msdef from the exchange and compare the version and content with the current msdef and decide if it needs to upgrade.
 // It returns the new msdef if the old one needs to upgrade, otherwide return nil.
 func GetUpgradeMicroserviceDef(msdef *persistence.MicroserviceDefinition, httpClientFactory *config.HTTPClientFactory, exchURL string, deviceId string, deviceToken string, devicePattern string, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
 	glog.V(3).Infof("Get new microservice def for upgrading microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
- 
 
 	// convert the sensor version to a version expression
 	if vr, err := GetUpgradeVersionRange(msdef, httpClientFactory, exchURL, deviceId, deviceToken, devicePattern); err != nil {
@@ -261,10 +259,7 @@ func GetUpgradeMicroserviceDef(msdef *persistence.MicroserviceDefinition, httpCl
 	} else if new_msdef, err := ConvertToPersistent(e_msdef, msdef.Org); err != nil {
 		return nil, fmt.Errorf("Failed to convert microservice metadata to persistent.MicroserviceDefinition for %v. %v", msdef.SpecRef, err)
 	} else {
-		// if the newer version is smaller than the old one, do nothing
-		if strings.Compare(e_msdef.Version, msdef.Version) < 0 {
-			return nil, nil
-		} else if strings.Compare(e_msdef.Version, msdef.Version) == 0 && bytes.Equal(msdef.MetadataHash, new_msdef.MetadataHash) {
+		if strings.Compare(e_msdef.Version, msdef.Version) == 0 && bytes.Equal(msdef.MetadataHash, new_msdef.MetadataHash) {
 			return nil, nil // no change, do nothing
 		} else if msdef.UpgradeNewMsId != "" {
 			if msdefs, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UrlVersionMSFilter(new_msdef.SpecRef, new_msdef.Version), persistence.ArchivedMSFilter()}); err != nil {
@@ -280,7 +275,7 @@ func GetUpgradeMicroserviceDef(msdef *persistence.MicroserviceDefinition, httpCl
 
 		// copy some attributes from the old over to the new
 		new_msdef.Name = msdef.Name
-		new_msdef.UpgradeVersionRange = msdef.UpgradeVersionRange
+		new_msdef.UpgradeVersionRange = vr
 		new_msdef.AutoUpgrade = msdef.AutoUpgrade
 		new_msdef.ActiveUpgrade = msdef.ActiveUpgrade
 

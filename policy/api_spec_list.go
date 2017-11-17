@@ -207,7 +207,7 @@ func (self *APISpecList) GetCommonVersionRanges() (*APISpecList, error) {
 
 				// ignore if previous has no intersection
 				if apiSpec.Version == NO_INTERSECTION {
-					break;
+					break
 				}
 
 				// get the intersection of the two version ranges
@@ -227,7 +227,7 @@ func (self *APISpecList) GetCommonVersionRanges() (*APISpecList, error) {
 		}
 
 		if !found {
-			// convert the version string to version range string 
+			// convert the version string to version range string
 			if vr, err := Version_Expression_Factory(apiSpec.Version); err != nil {
 				return nil, fmt.Errorf("Failed to convert the version string %v to version range. %v", apiSpec.Version, err)
 			} else {
@@ -241,7 +241,7 @@ func (self *APISpecList) GetCommonVersionRanges() (*APISpecList, error) {
 	new_list1 := new(APISpecList)
 	for _, newApiSpec := range *new_list {
 		if newApiSpec.Version != NO_INTERSECTION {
-			(*new_list1) = append((*new_list1), newApiSpec)	
+			(*new_list1) = append((*new_list1), newApiSpec)
 		}
 	}
 

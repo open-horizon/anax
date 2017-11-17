@@ -4,8 +4,8 @@ package policy
 
 import (
 	"fmt"
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 // This series of tests verifies that constructor works correctly, by handling invalid input
@@ -367,7 +367,6 @@ func TestIntersectsWith(t *testing.T) {
 	v_result, err := Version_Expression_Factory("(2.1,INFINITY)")
 	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
 	assert.Equal(t, v_result, v1, "Intersection should be [1,INFINITY).")
-
 
 	v3, err := Version_Expression_Factory("[0.0,2.1]")
 	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))

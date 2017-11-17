@@ -163,9 +163,9 @@ func UpdateConfigstate(cfg *Configstate,
 		// If the pattern search doesnt find any microservices then there is a problem.
 		if len(*completeAPISpecList) == 0 {
 			return errorhandler(NewAPIUserInputError(fmt.Sprintf("No microservices found for %v %v.", patId, thisArch), "configstate.state")), nil, nil
-		} 
-		
-		// for now, anax only allow one microservice version, so we need to get the common version range for each microservice.	
+		}
+
+		// for now, anax only allow one microservice version, so we need to get the common version range for each microservice.
 		common_apispec_list, err := completeAPISpecList.GetCommonVersionRanges()
 		if err != nil {
 			return errorhandler(NewAPIUserInputError(fmt.Sprintf("Error resolving microservice version ranges for %v %v.", patId, thisArch), "configstate.state")), nil, nil
@@ -176,7 +176,6 @@ func UpdateConfigstate(cfg *Configstate,
 		if len(*common_apispec_list) == 0 {
 			return errorhandler(NewAPIUserInputError(fmt.Sprintf("No microservices have the common version ranges for %v %v.", patId, thisArch), "configstate.state")), nil, nil
 		}
-
 
 		// Using the list of APISpec objects, we can create a service (microservice) on this node automatically, for each microservice
 		// that already has configuration or which doesnt need it.

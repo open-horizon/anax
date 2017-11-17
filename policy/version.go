@@ -123,26 +123,25 @@ func Version_Expression_Factory(ver_string string) (*Version_Expression, error) 
 }
 
 // Re caculate the full expression for this version range
-func (self *Version_Expression) recalc_expression()  {
+func (self *Version_Expression) recalc_expression() {
 	expr := ""
 
 	if self.start_inclusive {
-		expr = leftInc 
+		expr = leftInc
 	} else {
-		expr =  leftEx
+		expr = leftEx
 	}
-	
-	expr =  expr + normalize(self.start) + versionSeperator + normalize(self.end)
+
+	expr = expr + normalize(self.start) + versionSeperator + normalize(self.end)
 
 	if self.end_inclusive {
-		expr =  expr + rightInc
+		expr = expr + rightInc
 	} else {
-		expr =  expr + rightEx 
+		expr = expr + rightEx
 	}
 
 	self.full_expression = expr
 }
-
 
 // Return the version expression that was used as input to create this object
 //
@@ -227,15 +226,15 @@ func (self *Version_Expression) IntersectsWith(other *Version_Expression) error 
 		if self.start_inclusive != other.start_inclusive {
 			self.start_inclusive = false
 		}
-	} else if strings.Compare(self.start, other.start) == -1  {
+	} else if strings.Compare(self.start, other.start) == -1 {
 		self.start = other.start
 		self.start_inclusive = other.start_inclusive
 	}
 
 	// compare the end part
-	if strings.Compare(self.end, other.end) == 0  {
+	if strings.Compare(self.end, other.end) == 0 {
 		if self.end_inclusive != other.end_inclusive {
-			self.end_inclusive = false	
+			self.end_inclusive = false
 		}
 	} else if self.end == INF || strings.Compare(self.end, other.end) == 1 {
 		self.end = other.end
@@ -246,9 +245,9 @@ func (self *Version_Expression) IntersectsWith(other *Version_Expression) error 
 	if self.end != INF {
 		if comp := strings.Compare(self.start, self.end); comp == 0 {
 			if !self.start_inclusive && !self.end_inclusive {
-				return fmt.Errorf("No intersection found.")	
+				return fmt.Errorf("No intersection found.")
 			}
-		} else if (comp == 1) {
+		} else if comp == 1 {
 			return fmt.Errorf("No intersection found.")
 		}
 	}
@@ -258,7 +257,6 @@ func (self *Version_Expression) IntersectsWith(other *Version_Expression) error 
 	return nil
 }
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                    
 // ================================================================================================
 // Utility functions
 
@@ -364,5 +362,3 @@ func normalize(expr string) string {
 	}
 	return result
 }
-
-
