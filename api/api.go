@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
@@ -25,6 +26,7 @@ type API struct {
 	bcState        map[string]map[string]BlockchainState
 	bcStateLock    sync.Mutex
 	shutdownError  string
+	exchHandlers   *exchange.ExchangeApiHandlers
 }
 
 type BlockchainState struct {
@@ -43,12 +45,13 @@ func NewAPIListener(name string, config *config.HorizonConfig, db *bolt.DB, pm *
 			Messages: messages,
 		},
 
-		name:        name,
-		db:          db,
-		pm:          pm,
-		em:          events.NewEventStateManager(),
-		bcState:     make(map[string]map[string]BlockchainState),
-		bcStateLock: sync.Mutex{},
+		name:         name,
+		db:           db,
+		pm:           pm,
+		em:           events.NewEventStateManager(),
+		bcState:      make(map[string]map[string]BlockchainState),
+		bcStateLock:  sync.Mutex{},
+		exchHandlers: exchange.NewExchangeApiHandlers(config),
 	}
 
 	listener.listen(config.Edge.APIListen)
