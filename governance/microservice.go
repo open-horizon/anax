@@ -294,7 +294,6 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 // Rollback the Microservice
 func (w *GovernanceWorker) RollbackMicroservice(old_msdef *persistence.MicroserviceDefinition, new_msdef *persistence.MicroserviceDefinition) error {
 	glog.V(3).Infof(logString(fmt.Sprintf("Start rolling back microservice %v from version %v to version %v", new_msdef.SpecRef, new_msdef.Version, old_msdef.Version)))
-	glog.V(3).Infof(logString(fmt.Sprintf("Start rolling back microservice from %v to %v", new_msdef, old_msdef)))
 
 	// archive the new ms def and unarchive the new one to db
 	if _, err := persistence.MsDefArchived(w.db, new_msdef.Id); err != nil {
@@ -348,7 +347,7 @@ func (w *GovernanceWorker) HandleMicroserviceUpgrade(msdef_id string, inactiveOn
 		glog.Errorf(logString(fmt.Sprintf("error getting microservice definitions %v from db. %v", msdef_id, err)))
 	} else if ((!inactiveOnly) || (!msdef.ActiveUpgrade)) && microservice.MicroserviceReadyForUpgrade(msdef, w.db) {
 		// find the new ms def to upgrade to
-		if new_msdef, err := microservice.GetUpgradeMicroserviceDef(msdef, w.Config.Collaborators.HTTPClientFactory, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, w.db); err != nil {
+		if new_msdef, err := microservice.GetUpgradeMicroserviceDef(msdef, w.Config.Collaborators.HTTPClientFactory, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, w.devicePattern, w.db); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("Error finding the new microservice definition to upgrade to for %v version %v. %v", msdef.SpecRef, msdef.Version, err)))
 		} else if new_msdef == nil {
 			glog.V(5).Infof(logString(fmt.Sprintf("No changes for microservice definition %v, no need to upgrade.", msdef.SpecRef)))

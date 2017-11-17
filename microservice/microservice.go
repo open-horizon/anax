@@ -166,16 +166,97 @@ func MicroserviceNeedsRollback(msdef *persistence.MicroserviceDefinition) bool {
 	return false
 }
 
+// Get the version range that the microservice should be in. Assuming there is one microservice version on the node at a time.
+// This function, for the pattern case, get a list of microservice references from all the workloads, it then gets the intersection
+// of the version ranges. For the non-pattern case, it gets the version range from the user input from the /servcie api.
+func GetUpgradeVersionRange(msdef *persistence.MicroserviceDefinition, httpClientFactory *config.HTTPClientFactory, exchURL string, deviceId string, deviceToken string, devicePattern string) (string, error) {
+	if devicePattern == "" {
+		if vExp, err := policy.Version_Expression_Factory(msdef.UpgradeVersionRange); err != nil {
+			return "", fmt.Errorf("Unable to convert %v to a version expression, error %v", msdef.UpgradeVersionRange, err)
+	    } else {
+	    	return vExp.Get_expression(), nil
+	    }
+	} 
+
+	// now handle the pattern case
+	patterns, err := exchange.GetPatterns(httpClientFactory, exchange.GetOrg(deviceId), devicePattern, exchURL, deviceId, deviceToken)
+	if err != nil {
+		return "", fmt.Errorf("Unable to read pattern object %v from exchange, error %v", devicePattern, err)
+	} else if len(patterns) != 1 {
+		return "", fmt.Errorf("Expected only 1 pattern from exchange, received %v", len(patterns))
+	}
+
+	patId := fmt.Sprintf("%v/%v", exchange.GetOrg(deviceId), devicePattern)
+	patternDef, ok := patterns[patId]
+	if !ok {
+		return "", fmt.Errorf("Expected pattern id %v not found in GET pattern response: %v", patId, patterns)
+	}
+	glog.V(5).Infof("pattern definition %v", patternDef)
+
+	// For each workload in the pattern, resolve the workload to a list of required microservices.
+	completeAPISpecList := new(policy.APISpecList)
+	for _, workload := range patternDef.Workloads {
+
+		// Ignore workloads that don't match this node's hardware architecture.
+		if workload.WorkloadArch != msdef.Arch {
+			glog.Infof("Skipping workload because it is for a different hardware architecture, this node is %v. Skipped workload is: %v", msdef.Arch, workload)
+			continue
+		}
+
+		// Each workload in the pattern can specify rollback workload versions, so to get a fully qualified workload URL,
+		// we need to iterate each workload choice to grab the version.
+		for _, workloadChoice := range workload.WorkloadVersions {
+			workloadDef, err := exchange.GetWorkload(httpClientFactory, workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, workload.WorkloadArch, exchURL, deviceId, deviceToken)
+			if err != nil {
+				return "", fmt.Errorf("Error getting workload %v %v %v %v, error %v", workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, workload.WorkloadArch, err)
+			}
+
+			// get the ms references from the workload, the version here is a version range.
+			apiSpecList := new(policy.APISpecList)
+			for _, apiSpec := range workloadDef.APISpecs {
+				if apiSpec.SpecRef == msdef.SpecRef && apiSpec.Org == msdef.Org && apiSpec.Arch == msdef.Arch {
+					newAPISpec := policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch)
+					(*apiSpecList) = append((*apiSpecList), (*newAPISpec))
+				}
+			}
+
+			// MergeWith will omit exact duplicates when merging the 2 lists.
+			(*completeAPISpecList) = completeAPISpecList.MergeWith(apiSpecList)
+		}
+	}
+
+	glog.V(5).Infof("Resolved pattern to microservice APISpecs %v", *completeAPISpecList)
+
+	// If the pattern search doesnt find any microservices then the microservice is no longer needed
+	if len(*completeAPISpecList) == 0 {
+		glog.Infof("No microservices %v found from pattern %v.", msdef.SpecRef, devicePattern)
+		return "", nil
+	} 
+		
+	// for now, anax only allow one microservice version, so we need to get the common version range for each microservice.	
+	common_apispec_list, err := completeAPISpecList.GetCommonVersionRanges()
+	if err != nil {
+		glog.Infof("Could not find a version range for microservice %v that is good for all the workloads in the pattern %v.", msdef.SpecRef, devicePattern)
+		return "", nil
+	}
+
+	glog.V(5).Infof("Resolved microservice version ranges to %v", (*common_apispec_list)[0])
+
+	return (*common_apispec_list)[0].Version, nil
+}
+
+
 // Get the new microservice def that the given msdef need to upgrade to.
 // This function gets the latest msdef from the exchange and compare the version and content with the current msdef and decide if it needs to upgrade.
 // It returns the new msdef if the old one needs to upgrade, otherwide return nil.
-func GetUpgradeMicroserviceDef(msdef *persistence.MicroserviceDefinition, httpClientFactory *config.HTTPClientFactory, exchURL string, deviceId string, deviceToken string, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
+func GetUpgradeMicroserviceDef(msdef *persistence.MicroserviceDefinition, httpClientFactory *config.HTTPClientFactory, exchURL string, deviceId string, deviceToken string, devicePattern string, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
 	glog.V(3).Infof("Get new microservice def for upgrading microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
+ 
 
 	// convert the sensor version to a version expression
-	if vExp, err := policy.Version_Expression_Factory(msdef.UpgradeVersionRange); err != nil {
-		return nil, fmt.Errorf("Unable to convert %v to a version expression, error %v", msdef.UpgradeVersionRange, err)
-	} else if e_msdef, err := exchange.GetMicroservice(httpClientFactory, msdef.SpecRef, msdef.Org, vExp.Get_expression(), msdef.Arch, exchURL, deviceId, deviceToken); err != nil {
+	if vr, err := GetUpgradeVersionRange(msdef, httpClientFactory, exchURL, deviceId, deviceToken, devicePattern); err != nil {
+		return nil, fmt.Errorf("Unable to get new version range for the microservice. %v", err)
+	} else if e_msdef, err := exchange.GetMicroservice(httpClientFactory, msdef.SpecRef, msdef.Org, vr, msdef.Arch, exchURL, deviceId, deviceToken); err != nil {
 		return nil, fmt.Errorf("Filed to find a highest version for microservice %v version range %v: %v", msdef.SpecRef, msdef.UpgradeVersionRange, err)
 	} else if new_msdef, err := ConvertToPersistent(e_msdef, msdef.Org); err != nil {
 		return nil, fmt.Errorf("Failed to convert microservice metadata to persistent.MicroserviceDefinition for %v. %v", msdef.SpecRef, err)
