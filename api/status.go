@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -14,6 +15,7 @@ import (
 
 type Configuration struct {
 	ExchangeAPI string `json:"exchange_api"`
+	Arch        string `json:"architecture"`
 }
 
 type Info struct {
@@ -27,6 +29,7 @@ func NewInfo(config *config.HorizonConfig) *Info {
 		Geths: []Geth{},
 		Configuration: &Configuration{
 			ExchangeAPI: config.Edge.ExchangeURL,
+			Arch:        runtime.GOARCH,
 		},
 		Connectivity: map[string]bool{},
 	}
