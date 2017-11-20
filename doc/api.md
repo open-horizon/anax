@@ -11,7 +11,7 @@ curl -s http://<ip>/status | jq '.'
 #### **API:** GET  /status
 ---
 
-Get the connectivity and blockchain status on the node. The output includes the status of all blockchain containers, agent configuration and the node's connectivity. The only blockchain currently supported by Horizon is ethereum.
+Get the connectivity, configuration, and blockchain status on the node. The output includes the status of all blockchain containers, agent configuration and the node's connectivity. The only blockchain currently supported by Horizon is ethereum.
 
 **Parameters:**
 
@@ -28,13 +28,14 @@ body:
 | ---- | ---- | ---------------- |
 | geth   | json | the information about the ethereum client. |
 | geth.net_peer_count | int64 |  the number of peers that the ethereum client is actively contacting. |
-| geth.eth_syncing | boolean |  whether the ethereum client is syncing with the blockchain or not.   |
+| geth.eth_syncing | boolean |  whether the ethereum client is syncing with the blockchain or not. |
 | geth.eth_block_number | int64 | the latest block number that the client has imported. |
 | geth.eth_balance| string | the current ether balance of the ethereum account. |
 | geth.eth_accounts | array | an array of ethereum account numbers for this agent. |
 | configuration| json| the configuration data.  |
-| configuration.exchange_api | string | the url for the exchange being used by the Horizon agent.  |
-| connectivity | json | whether or not the node has network connectivity with some remote sites.  |
+| configuration.exchange_api | string | the url for the exchange being used by the Horizon agent. |
+| configuration.architecture | string | the hardware architecture of the node as returned from the Go language API runtime.GOARCH. |
+| connectivity | json | whether or not the node has network connectivity with some remote sites. |
 
 
 **Example:**
@@ -52,7 +53,8 @@ curl -s http://localhost/status | jq '.'
       "eth_balance": "0x1bc16d674ec80000"
     },
     "configuration": {
-      "exchange_api": "https://exchange.staging.bluehorizon.network/api/v1/"
+      "exchange_api": "https://exchange.staging.bluehorizon.network/api/v1/",
+      "architecture": "amd64"
     },
     "connectivity": {
       "firmware.bluehorizon.network": true,
