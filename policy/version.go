@@ -257,6 +257,31 @@ func (self *Version_Expression) IntersectsWith(other *Version_Expression) error 
 	return nil
 }
 
+
+// change the ceiling of this version range.
+func (self *Version_Expression) ChangeCeiling(ceiling_version string, inclusive bool) error {
+	if ceiling_version == INF {
+		self.end = INF
+		// always set the false, ignore the inclusive input
+		self.end_inclusive = false 
+	} else if ! IsVersionString(ceiling_version) {
+		return fmt.Errorf("The input string %v is no a version string.", ceiling_version)
+	} else {
+		
+		if strings.Compare(ceiling_version, self.start) < 0 {
+			return fmt.Errorf("The input string %v is no a version string.", ceiling_version)
+		}
+
+		self.end = ceiling_version
+		self.end_inclusive = inclusive
+	}
+
+	self.recalc_expression()
+
+	return nil
+}
+
+
 // ================================================================================================
 // Utility functions
 

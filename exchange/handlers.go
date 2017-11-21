@@ -62,3 +62,21 @@ func (e *ExchangeApiHandlers) GetHTTPWorkloadHandler() WorkloadHandler {
 		return GetWorkload(e.Config.Collaborators.HTTPClientFactory, wUrl, wOrg, wVersion, wArch, e.Config.Edge.ExchangeURL, id, token)
 	}
 }
+
+// a handler for getting the device information from the exchange
+type DeviceHandler func(deviceId string, deviceToken string) (*Device, error)
+
+func (e *ExchangeApiHandlers) GetHTTPDeviceHandler() DeviceHandler {
+	return func(id string, token string) (*Device, error) {
+		return GetExchangeDevice(e.Config.Collaborators.HTTPClientFactory, id, token, e.Config.Edge.ExchangeURL)
+	}
+}
+
+// a handler for modifying the device information on the exchange
+type PutDeviceHandler func(deviceId string, deviceToken string, pdr *PutDeviceRequest) (*PutDeviceResponse, error)
+
+func (e *ExchangeApiHandlers) GetHTTPPutDeviceHandler() PutDeviceHandler {
+	return func(id string, token string, pdr *PutDeviceRequest) (*PutDeviceResponse, error) {
+		return PutExchangeDevice(e.Config.Collaborators.HTTPClientFactory, id, token, e.Config.Edge.ExchangeURL, pdr)
+	}
+}

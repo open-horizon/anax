@@ -14,31 +14,22 @@ import (
 	"net/url"
 )
 
+// This function runs periodically in a separate process. It checks if the microservice containers are up and running and 
+// if new microservice versions are available for upgrade.
 func (w *GovernanceWorker) governMicroservices() int {
 
-	// handle microservice upgrade and rollback. The upgrade includes inactive upgrades if the associated agreements happen to be 0.
+	// handle microservice upgrade. The upgrade includes inactive upgrades if the associated agreements happen to be 0.
 	glog.V(4).Infof(logString(fmt.Sprintf("governing microservice upgrades")))
 	if ms_defs, err := persistence.FindMicroserviceDefs(w.db, []persistence.MSFilter{persistence.UnarchivedMSFilter()}); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Error getting microservice definitions from db. %v", err)))
 	} else if ms_defs != nil && len(ms_defs) > 0 {
 		for _, ms := range ms_defs {
-			// check if ms is ready for rollback for those execution did not start within certian time
-			if microservice.MicroserviceNeedsRollback(&ms) {
-				if old_msdef, err := microservice.GetRollbackMicroserviceDef(&ms, w.db); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("Error finding the old microservice definition to rollback to for %v version %v key %v. %v", ms.SpecRef, ms.Version, ms.Id, err)))
-				} else if old_msdef == nil {
-					glog.Errorf(logString(fmt.Sprintf("Unable to find the old microservice definition to rollback to for %v version %v key %v. %v", ms.SpecRef, ms.Version, ms.Id, err)))
-				} else if err := w.RollbackMicroservice(old_msdef, &ms); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("Failed to rollback %v from version %v key %v to version %v key %v. %v", ms.SpecRef, ms.Version, ms.Id, old_msdef.Version, old_msdef.Id, err)))
-				}
-			} else {
-				// upgrade the microserice if needed
-				w.HandleMicroserviceUpgrade(ms.Id, false)
-			}
+			// upgrade the microserice if needed
+			w.handleMicroserviceUpgrade(ms.Id, false)
 		}
 	}
 
-	// handle microservice instance containers down and
+	// check if microservice instance containers are down
 	glog.V(4).Infof(logString(fmt.Sprintf("governing microservice containers")))
 	if ms_instances, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.AllMIFilter(), persistence.UnarchivedMIFilter()}); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Error retrieving all microservice instances from database, error: %v", err)))
@@ -56,7 +47,7 @@ func (w *GovernanceWorker) governMicroservices() int {
 	return 0
 }
 
-// create microservice instance and loads the containers for the given microservice def
+// It creates microservice instance and loads the containers for the given microservice def
 func (w *GovernanceWorker) StartMicroservice(ms_key string) (*persistence.MicroserviceInstance, error) {
 	glog.V(5).Infof(logString(fmt.Sprintf("Starting microservice instance for %v", ms_key)))
 	if msdef, err := persistence.FindMicroserviceDefWithKey(w.db, ms_key); err != nil {
@@ -141,7 +132,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string) (*persistence.Micros
 	return nil, nil
 }
 
-// cleans the microservice instance with its associated agreements
+// It cleans the microservice instance and its associated agreements
 func (w *GovernanceWorker) CleanupMicroservice(spec_ref string, version string, inst_key string, ms_reason_code uint) error {
 	glog.V(5).Infof(logString(fmt.Sprintf("Deleting microservice instance %v", inst_key)))
 
@@ -200,10 +191,10 @@ func (w *GovernanceWorker) CleanupMicroservice(spec_ref string, version string, 
 	return nil
 }
 
-// Upgrade the given microservice, assuming the given microservice is ready for a upgrade.
+// It changes the current running microservice from the old to new, assuming the given microservice is ready for a change.
 // One can check it by calling microservice.MicroserviceReadyForUpgrade to find out.
 func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDefinition, new_msdef *persistence.MicroserviceDefinition) error {
-	glog.V(3).Infof(logString(fmt.Sprintf("Start upgrading microservice %v from version %v to version %v", msdef.SpecRef, msdef.Version, new_msdef.Version)))
+	glog.V(3).Infof(logString(fmt.Sprintf("Start changing microservice %v from version %v to version %v", msdef.SpecRef, msdef.Version, new_msdef.Version)))
 
 	// archive the old ms def and save the new one to db
 	if _, err := persistence.MsDefArchived(w.db, msdef.Id); err != nil {
@@ -222,7 +213,7 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 	unregError = microservice.RemoveMicroservicePolicy(msdef.SpecRef, msdef.Org, msdef.Version, msdef.Id, w.Config.Edge.PolicyPath, w.pm)
 	if unregError != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to remove microservice policy for microservice def %v version %v. %v", msdef.SpecRef, msdef.Version, unregError)))
-	} else if unregError = microservice.UnregisterMicroserviceExchange(msdef.SpecRef, w.Config.Collaborators.HTTPClientFactory, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, w.db); unregError != nil {
+	} else if unregError = microservice.UnregisterMicroserviceExchange(w.exchHandlers.GetHTTPDeviceHandler(), w.exchHandlers.GetHTTPPutDeviceHandler(), msdef.SpecRef, w.deviceId, w.deviceToken, w.db); unregError != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to unregister microservice from the exchange for microservice def %v. %v", msdef.SpecRef, unregError)))
 	}
 	// update msdef UpgradeMsUnregisteredTime
@@ -262,7 +253,8 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 		}
 	}
 
-	// start new microservice containers
+	// start new microservice containers to check if it will be succesful or not. 
+	// 
 	if _, err := w.StartMicroservice(new_msdef.Id); err != nil {
 		return fmt.Errorf(logString(fmt.Sprintf("Error starting microservice instaces for microservice def %v version %v key %v. %v", new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
 	}
@@ -284,86 +276,35 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 			}
 		}
 
-		glog.V(3).Infof(logString(fmt.Sprintf("End upgrading microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)))
+		// done for the microservices without containers.
+		glog.V(3).Infof(logString(fmt.Sprintf("End changing microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)))
 	} else {
-		glog.V(3).Infof(logString(fmt.Sprintf("End phase 1/2 of upgrading microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)))
+		// for the microservices with containers, an event will be sent by the container module and caught by governance once the containers are up or fail.
+		// the second part of the upgrading process are handled in handleMicroserviceUpgradeExecStateChange function. 
+		glog.V(3).Infof(logString(fmt.Sprintf("End phase 1/2 of changing microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)))
 	}
 	return nil
 }
 
-// Rollback the Microservice
-func (w *GovernanceWorker) RollbackMicroservice(old_msdef *persistence.MicroserviceDefinition, new_msdef *persistence.MicroserviceDefinition) error {
-	glog.V(3).Infof(logString(fmt.Sprintf("Start rolling back microservice %v from version %v to version %v", new_msdef.SpecRef, new_msdef.Version, old_msdef.Version)))
-
-	// archive the new ms def and unarchive the new one to db
-	if _, err := persistence.MsDefArchived(w.db, new_msdef.Id); err != nil {
-		return fmt.Errorf(logString(fmt.Sprintf("Failed to archived microservice definition %v. %v", new_msdef, err)))
-	} else if _, err := persistence.MsDefUnarchived(w.db, old_msdef.Id); err != nil {
-		return fmt.Errorf(logString(fmt.Sprintf("Failed to un-archived microservice definition %v. %v", old_msdef, err)))
-	}
-
-	// clean up new microservice
-	if ms_insts, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.AllInstancesMIFilter(new_msdef.SpecRef, new_msdef.Version), persistence.UnarchivedMIFilter()}); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Error retrieving all the microservice instaces from db for %v version %v key %v. %v", new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
-	} else if ms_insts != nil && len(ms_insts) > 0 {
-		for _, msi := range ms_insts {
-			if msi.MicroserviceDefId == new_msdef.Id {
-				if err := w.CleanupMicroservice(new_msdef.SpecRef, new_msdef.Version, msi.GetKey(), microservice.MS_DELETED_BY_UPGRADE_PROCESS); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("Error cleanup microservice instaces %v. %v", msi.GetKey(), err)))
-				}
-			}
-		}
-	}
-
-	// unregister the new ms from exchange
-	if new_msdef.UpgradeMsReregisteredTime > 0 {
-		if err := microservice.RemoveMicroservicePolicy(new_msdef.SpecRef, new_msdef.Org, new_msdef.Version, new_msdef.Id, w.Config.Edge.PolicyPath, w.pm); err != nil {
-			return fmt.Errorf(logString(fmt.Sprintf("Failed to remove microservice policy for microservice def %v version %v key %d. %v", new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
-		} else if err := microservice.UnregisterMicroserviceExchange(new_msdef.SpecRef, w.Config.Collaborators.HTTPClientFactory, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, w.db); err != nil {
-			return fmt.Errorf(logString(fmt.Sprintf("Failed to unregister microservice from the exchange for microservice def %v. %v", new_msdef.SpecRef, err)))
-		}
-	}
-
-	// no need to start the old ms containers here becuase they will be started right before the workload containers are up
-
-	// restore the old policy and fire an event to register the old policy
-	if new_msdef.UpgradeMsUnregisteredTime > 0 {
-		if fullFileName, err := microservice.RestoreMicroservicePolicyFile(old_msdef.SpecRef, old_msdef.Version, old_msdef.Id, w.Config.Edge.PolicyPath, w.pm); err != nil {
-			return fmt.Errorf(logString(fmt.Sprintf("Error restoring old microservice policy for microservice def %v version %v key %v. %v", old_msdef.SpecRef, old_msdef.Version, old_msdef.Id, err)))
-		} else {
-			w.Messages() <- events.NewPolicyCreatedMessage(events.NEW_POLICY, fullFileName)
-		}
-	}
-
-	glog.V(3).Infof(logString(fmt.Sprintf("End rolling back microservice %v from version %v to version %v", old_msdef.SpecRef, new_msdef.Version, old_msdef.Version)))
-
-	return nil
-}
-
-// given a microservice id and check if it is set for upgrade, if yes do the upgrade
-func (w *GovernanceWorker) HandleMicroserviceUpgrade(msdef_id string, inactiveOnly bool) {
-	glog.V(3).Infof(logString(fmt.Sprintf("handling microserivce upgrade for microservice id %v", msdef_id)))
-	if msdef, err := persistence.FindMicroserviceDefWithKey(w.db, msdef_id); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("error getting microservice definitions %v from db. %v", msdef_id, err)))
-	} else if ((!inactiveOnly) || (!msdef.ActiveUpgrade)) && microservice.MicroserviceReadyForUpgrade(msdef, w.db) {
-		// find the new ms def to upgrade to
-		if new_msdef, err := microservice.GetUpgradeMicroserviceDef(msdef, w.Config.Collaborators.HTTPClientFactory, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, w.devicePattern, w.db); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Error finding the new microservice definition to upgrade to for %v version %v. %v", msdef.SpecRef, msdef.Version, err)))
-		} else if new_msdef == nil {
-			glog.V(5).Infof(logString(fmt.Sprintf("No changes for microservice definition %v, no need to upgrade.", msdef.SpecRef)))
+// Get the next highest microservice version and rollback to it. Tryer even lower version if it fails
+func (w *GovernanceWorker) RollbackMicroservice(msdef *persistence.MicroserviceDefinition) error {
+	for true {
+		// get next lower version
+		if new_msdef, err := microservice.GetRollbackMicroserviceDef(w.exchHandlers.GetHTTPMicroserviceHandler(), msdef, w.deviceId, w.deviceToken, w.db); err != nil {
+			return fmt.Errorf(logString(fmt.Sprintf("Error finding the new microservice definition to downgrade to for %v %v version key %v. error: %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
+		} else if new_msdef == nil { //no more to try, exit out
+			return fmt.Errorf(logString(fmt.Sprintf("Unable to find the microservice definition to downgrade to for %v %v version key %v. error: %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
 		} else if err := w.UpgradeMicroservice(msdef, new_msdef); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Error upgrading microservice %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
-			// upgrade failed, will rollback
-			if new_msdef1, err := persistence.FindMicroserviceDefWithKey(w.db, new_msdef.Id); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("error getting microservice definitions %v from db. %v", new_msdef.Id, err)))
-			} else if err := w.RollbackMicroservice(msdef, new_msdef1); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("Failed to rollback %v from version %v key %v to version %v key %v. %v", new_msdef1.SpecRef, new_msdef1.Version, new_msdef1.Id, msdef.Version, msdef.Id, err)))
-			}
+			glog.Errorf(logString(fmt.Sprintf("Failed to downgrade %v from version %v key %v to version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, new_msdef.Version, new_msdef.Id, err)))
+		} else {
+			return nil
 		}
 	}
+
+	return nil
 }
 
-// starts an microservice instance for the given agreement according to the microservice sharing mode
+// start an microservice instance for the given agreement according to the microservice sharing mode
 func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.MicroserviceDefinition, agreementId string) error {
 	glog.V(3).Infof(logString(fmt.Sprintf("start microserivce instance %v for agreement %v", msdef.SpecRef, agreementId)))
 
@@ -398,7 +339,83 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 	return nil
 }
 
-// process microservice execution start or failure for  the upgrade process. Rollback if necessary.
+// process microservice instance after an agreement is ended.
+func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, skipUpgrade bool) {
+	glog.V(3).Infof(logString(fmt.Sprintf("handle microservice instance for agreement %v ended.", agreementId)))
+
+	// delete the agreement from the microservice instance and upgrade the microservice if needed
+	if ms_instances, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.UnarchivedMIFilter()}); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error retrieving all microservice instances from database, error: %v", err)))
+	} else if ms_instances != nil {
+		for _, msi := range ms_instances {
+			if msi.AssociatedAgreements != nil && len(msi.AssociatedAgreements) > 0 {
+				for _, id := range msi.AssociatedAgreements {
+					if id == agreementId {
+						if msd, err := persistence.FindMicroserviceDefWithKey(w.db, msi.MicroserviceDefId); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("Error retrieving microservice definition %v version %v key %v from database, error: %v", msi.SpecRef, msi.Version, msi.MicroserviceDefId, err)))
+							// delete the microservice instance if the sharing mode is "multiple"
+						} else if msd.Sharable == exchange.MS_SHARING_MODE_MULTIPLE {
+							// mark the ms clean up started and remove all the microservice containers if any
+							if _, err := persistence.MicroserviceInstanceCleanupStarted(w.db, msi.GetKey()); err != nil {
+								glog.Errorf(logString(fmt.Sprintf("Error setting cleanup start time for microservice instance %v. %v", msi.GetKey(), err)))
+							} else if has_wl, err := msi.HasWorkload(w.db); err != nil {
+								glog.Errorf(logString(fmt.Sprintf("Error checking if the microservice %v has workload. %v", msi.GetKey(), err)))
+							} else if has_wl {
+								glog.V(5).Infof(logString(fmt.Sprintf("Removing all the containers for %v", msi.GetKey())))
+								w.Messages() <- events.NewMicroserviceCancellationMessage(events.CANCEL_MICROSERVICE, msi.GetKey())
+							}
+							//remove the agreement from the microservice instance
+						} else if _, err := persistence.UpdateMSInstanceAssociatedAgreements(w.db, msi.GetKey(), false, agreementId); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("error removing agreement id %v from the microservice db: %v", agreementId, err)))
+						}
+
+						// handle inactive microservice upgrade, upgrade the microservice if needed
+						if !skipUpgrade {
+							w.handleMicroserviceUpgrade(msi.MicroserviceDefId, true)
+						}
+						break
+					}
+				}
+			}
+		}
+	}
+}
+
+// This is the case where the agreement is made but the microservices containers fail.
+// This function will try a new microservice with lower version.
+func (w *GovernanceWorker) handleMicroserviceExecFailure(msdef *persistence.MicroserviceDefinition, msinst_key string) {
+	glog.V(3).Infof(logString(fmt.Sprintf("handle microservice execution failure for %v", msinst_key)))
+
+	// rollback the microservice to lower version
+	if err := w.RollbackMicroservice(msdef); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Error downgrading microservice %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))	
+	}
+}
+
+// Given a microservice id and check if it is set for upgrade, if yes do the upgrade
+func (w *GovernanceWorker) handleMicroserviceUpgrade(msdef_id string, inactiveOnly bool) {
+	glog.V(3).Infof(logString(fmt.Sprintf("handling microserivce upgrade for microservice id %v", msdef_id)))
+	if msdef, err := persistence.FindMicroserviceDefWithKey(w.db, msdef_id); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error getting microservice definitions %v from db. %v", msdef_id, err)))
+	} else if ((!inactiveOnly) || (!msdef.ActiveUpgrade)) && microservice.MicroserviceReadyForUpgrade(msdef, w.db) {
+		// find the new ms def to upgrade to
+		if new_msdef, err := microservice.GetUpgradeMicroserviceDef(w.exchHandlers.GetHTTPMicroserviceHandler(), msdef, w.deviceId, w.deviceToken, w.db); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Error finding the new microservice definition to upgrade to for %v version %v. %v", msdef.SpecRef, msdef.Version, err)))
+		} else if new_msdef == nil {
+			glog.V(5).Infof(logString(fmt.Sprintf("No changes for microservice definition %v, no need to upgrade.", msdef.SpecRef)))
+		} else if err := w.UpgradeMicroservice(msdef, new_msdef); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Error upgrading microservice %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
+			
+			// rollback the microservice to lower version
+			if err := w.RollbackMicroservice(new_msdef); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Error downgrading microservice %v version %v key %v. %v", new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))	
+			}
+		}
+	}
+}
+
+// This is part 2 of the microservice chaning process. It handles the microservice execution start or failure event for the upgrade process. 
+// Rollback if the upgrade process fails.
 func (w *GovernanceWorker) handleMicroserviceUpgradeExecStateChange(msdef *persistence.MicroserviceDefinition, msinst_key string, exec_started bool) {
 	glog.V(3).Infof(logString(fmt.Sprintf("handle microservice instance execution status change for %v. Execution started: %v", msinst_key, exec_started)))
 
@@ -433,7 +450,7 @@ func (w *GovernanceWorker) handleMicroserviceUpgradeExecStateChange(msdef *persi
 			}
 		}
 
-		glog.V(3).Infof(logString(fmt.Sprintf("End phase 2/2 of upgrading microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)))
+		glog.V(3).Infof(logString(fmt.Sprintf("End phase 2/2 of changing microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)))
 	} else {
 		// upgrade msdef with error info if it is a microservice upgrade process
 		if _, err := persistence.MSDefUpgradeFailed(w.db, msdef.Id, microservice.MS_EXEC_FAILED, microservice.DecodeReasonCode(microservice.MS_EXEC_FAILED)); err != nil {
@@ -444,55 +461,9 @@ func (w *GovernanceWorker) handleMicroserviceUpgradeExecStateChange(msdef *persi
 	}
 
 	if needs_rollback {
-		// rollback to the old microservice
-		if old_msdef, err := microservice.GetRollbackMicroserviceDef(msdef, w.db); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Error finding the old microservice definition to rollback to for %v %v version key %v. error: %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
-		} else if old_msdef == nil {
-			glog.Errorf(logString(fmt.Sprintf("Unable to find the old microservice definition to rollback to for %v %v version key %v. error: %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
-		} else if err := w.RollbackMicroservice(old_msdef, msdef); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Failed to rollback %v from version %v key %v to version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, old_msdef.Version, old_msdef.Id, err)))
-		}
-	}
-}
-
-// process microservice instance after an agreement is ended.
-func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, skipUpgrade bool) {
-	glog.V(3).Infof(logString(fmt.Sprintf("handle microservice instance for agreement %v ended.", agreementId)))
-
-	// delete the agreement from the microservice instance and upgrade the microservice if needed
-	if ms_instances, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.UnarchivedMIFilter()}); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("error retrieving all microservice instances from database, error: %v", err)))
-	} else if ms_instances != nil {
-		for _, msi := range ms_instances {
-			if msi.AssociatedAgreements != nil && len(msi.AssociatedAgreements) > 0 {
-				for _, id := range msi.AssociatedAgreements {
-					if id == agreementId {
-						if msd, err := persistence.FindMicroserviceDefWithKey(w.db, msi.MicroserviceDefId); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("Error retrieving microservice definition %v version %v key %v from database, error: %v", msi.SpecRef, msi.Version, msi.MicroserviceDefId, err)))
-							// delete the microservice instance if the sharing mode is "multiple"
-						} else if msd.Sharable == exchange.MS_SHARING_MODE_MULTIPLE {
-							// mark the ms clean up started and remove all the microservice containers if any
-							if _, err := persistence.MicroserviceInstanceCleanupStarted(w.db, msi.GetKey()); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("Error setting cleanup start time for microservice instance %v. %v", msi.GetKey(), err)))
-							} else if has_wl, err := msi.HasWorkload(w.db); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("Error checking if the microservice %v has workload. %v", msi.GetKey(), err)))
-							} else if has_wl {
-								glog.V(5).Infof(logString(fmt.Sprintf("Removing all the containers for %v", msi.GetKey())))
-								w.Messages() <- events.NewMicroserviceCancellationMessage(events.CANCEL_MICROSERVICE, msi.GetKey())
-							}
-							//remove the agreement from the microservice instance
-						} else if _, err := persistence.UpdateMSInstanceAssociatedAgreements(w.db, msi.GetKey(), false, agreementId); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("error removing agreement id %v from the microservice db: %v", agreementId, err)))
-						}
-
-						// handle inactive microservice upgrade, upgrade the microservice if needed
-						if !skipUpgrade {
-							w.HandleMicroserviceUpgrade(msi.MicroserviceDefId, true)
-						}
-						break
-					}
-				}
-			}
+		// rollback the microservice to lower version
+		if err := w.RollbackMicroservice(msdef); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Error downgrading microservice %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))	
 		}
 	}
 }

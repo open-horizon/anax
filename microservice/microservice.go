@@ -6,16 +6,13 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
-	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"golang.org/x/crypto/sha3"
-	"os"
 	"strconv"
 	"strings"
-	"time"
 )
 
 // microservice instance termiated reason code
@@ -150,26 +147,14 @@ func MicroserviceReadyForUpgrade(msdef *persistence.MicroserviceDefinition, db *
 	return true
 }
 
-// check if the given msdef needs rollback
-func MicroserviceNeedsRollback(msdef *persistence.MicroserviceDefinition) bool {
-	glog.V(5).Infof("Check if microservice needs to rollback: %v.", msdef)
-
-	if msdef.UpgradeStartTime == 0 { // upgrade never happened
-		return false
-	} else if msdef.UpgradeExecutionStartTime == 0 { // in the middle of an upgrade
-		now := uint64(time.Now().Unix())
-		if now-msdef.UpgradeStartTime > config.MICROSERVICE_EXEC_TIMEOUT { // the containers are not up within time limit
-			return true
-		}
-	}
-
-	return false
-}
-
 // Get the version range that the microservice should be in. Assuming there is one microservice version on the node at a time.
 // This function, for the pattern case, get a list of microservice references from all the workloads, it then gets the intersection
 // of the version ranges. For the non-pattern case, it gets the version range from the user input from the /servcie api.
-func GetUpgradeVersionRange(msdef *persistence.MicroserviceDefinition, httpClientFactory *config.HTTPClientFactory, exchURL string, deviceId string, deviceToken string, devicePattern string) (string, error) {
+func GetMicroserviceUpgradeVersionRange(getWorkload exchange.WorkloadHandler,
+	getPatterns exchange.PatternHandler,
+	msdef *persistence.MicroserviceDefinition,
+	deviceId string, deviceToken string, devicePattern string) (string, error) {
+
 	if devicePattern == "" {
 		if vExp, err := policy.Version_Expression_Factory(msdef.UpgradeVersionRange); err != nil {
 			return "", fmt.Errorf("Unable to convert %v to a version expression, error %v", msdef.UpgradeVersionRange, err)
@@ -179,7 +164,7 @@ func GetUpgradeVersionRange(msdef *persistence.MicroserviceDefinition, httpClien
 	}
 
 	// now handle the pattern case
-	patterns, err := exchange.GetPatterns(httpClientFactory, exchange.GetOrg(deviceId), devicePattern, exchURL, deviceId, deviceToken)
+	patterns, err := getPatterns(exchange.GetOrg(deviceId), devicePattern, deviceId, deviceToken)
 	if err != nil {
 		return "", fmt.Errorf("Unable to read pattern object %v from exchange, error %v", devicePattern, err)
 	} else if len(patterns) != 1 {
@@ -206,7 +191,7 @@ func GetUpgradeVersionRange(msdef *persistence.MicroserviceDefinition, httpClien
 		// Each workload in the pattern can specify rollback workload versions, so to get a fully qualified workload URL,
 		// we need to iterate each workload choice to grab the version.
 		for _, workloadChoice := range workload.WorkloadVersions {
-			workloadDef, err := exchange.GetWorkload(httpClientFactory, workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, workload.WorkloadArch, exchURL, deviceId, deviceToken)
+			workloadDef, err := getWorkload(workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, workload.WorkloadArch, deviceId, deviceToken)
 			if err != nil {
 				return "", fmt.Errorf("Error getting workload %v %v %v %v, error %v", workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, workload.WorkloadArch, err)
 			}
@@ -246,27 +231,31 @@ func GetUpgradeVersionRange(msdef *persistence.MicroserviceDefinition, httpClien
 }
 
 // Get the new microservice def that the given msdef need to upgrade to.
-// This function gets the latest msdef from the exchange and compare the version and content with the current msdef and decide if it needs to upgrade.
-// It returns the new msdef if the old one needs to upgrade, otherwide return nil.
-func GetUpgradeMicroserviceDef(msdef *persistence.MicroserviceDefinition, httpClientFactory *config.HTTPClientFactory, exchURL string, deviceId string, deviceToken string, devicePattern string, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
+// This function gets the msdef with highest version within defined version range from the exchange and 
+// compare the version and content with the current msdef and decide if it needs to upgrade.
+// It returns the new msdef if the old one needs to be upgraded, otherwide return nil.
+func GetUpgradeMicroserviceDef(getMicroservice exchange.MicroserviceHandler, msdef *persistence.MicroserviceDefinition, deviceId string, deviceToken string, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
 	glog.V(3).Infof("Get new microservice def for upgrading microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
 
 	// convert the sensor version to a version expression
-	if vr, err := GetUpgradeVersionRange(msdef, httpClientFactory, exchURL, deviceId, deviceToken, devicePattern); err != nil {
-		return nil, fmt.Errorf("Unable to get new version range for the microservice. %v", err)
-	} else if e_msdef, err := exchange.GetMicroservice(httpClientFactory, msdef.SpecRef, msdef.Org, vr, msdef.Arch, exchURL, deviceId, deviceToken); err != nil {
+	if vExp, err := policy.Version_Expression_Factory(msdef.UpgradeVersionRange); err != nil {
+		return nil, fmt.Errorf("Unable to convert %v to a version expression, error %v", msdef.UpgradeVersionRange, err)
+	} else if e_msdef, err := getMicroservice(msdef.SpecRef, msdef.Org, vExp.Get_expression(), msdef.Arch, deviceId, deviceToken); err != nil {
 		return nil, fmt.Errorf("Filed to find a highest version for microservice %v version range %v: %v", msdef.SpecRef, msdef.UpgradeVersionRange, err)
 	} else if new_msdef, err := ConvertToPersistent(e_msdef, msdef.Org); err != nil {
 		return nil, fmt.Errorf("Failed to convert microservice metadata to persistent.MicroserviceDefinition for %v. %v", msdef.SpecRef, err)
 	} else {
-		if strings.Compare(e_msdef.Version, msdef.Version) == 0 && bytes.Equal(msdef.MetadataHash, new_msdef.MetadataHash) {
+		// if the newer version is smaller than the old one, do nothing
+		if strings.Compare(e_msdef.Version, msdef.Version) < 0 {
+			return nil, nil
+		} else if strings.Compare(e_msdef.Version, msdef.Version) == 0 && bytes.Equal(msdef.MetadataHash, new_msdef.MetadataHash) {
 			return nil, nil // no change, do nothing
-		} else if msdef.UpgradeNewMsId != "" {
+		} else {
 			if msdefs, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UrlVersionMSFilter(new_msdef.SpecRef, new_msdef.Version), persistence.ArchivedMSFilter()}); err != nil {
 				return nil, fmt.Errorf("Failed to get archived microservice definition for %v version %v. %v", msdef.SpecRef, msdef.Version, err)
 			} else if msdefs != nil && len(msdefs) > 0 {
 				for _, ms := range msdefs {
-					if msdef.UpgradeNewMsId == ms.Id && bytes.Equal(ms.MetadataHash, new_msdef.MetadataHash) {
+					if msdef.UpgradeNewMsId != "" && bytes.Equal(ms.MetadataHash, new_msdef.MetadataHash) {
 						return nil, nil // do nothing because upgrade failed before
 					}
 				}
@@ -275,7 +264,7 @@ func GetUpgradeMicroserviceDef(msdef *persistence.MicroserviceDefinition, httpCl
 
 		// copy some attributes from the old over to the new
 		new_msdef.Name = msdef.Name
-		new_msdef.UpgradeVersionRange = vr
+		new_msdef.UpgradeVersionRange = msdef.UpgradeVersionRange
 		new_msdef.AutoUpgrade = msdef.AutoUpgrade
 		new_msdef.ActiveUpgrade = msdef.ActiveUpgrade
 
@@ -283,21 +272,29 @@ func GetUpgradeMicroserviceDef(msdef *persistence.MicroserviceDefinition, httpCl
 	}
 }
 
-// Get the old microservice def that the given msdef need to rollback to.
-func GetRollbackMicroserviceDef(msdef *persistence.MicroserviceDefinition, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
-	glog.V(3).Infof("Get old microservice def for rolling back microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
+// Get a msdef with a lower version compared to the given msdef version and return the new microservice def.
+func GetRollbackMicroserviceDef(getMicroservice exchange.MicroserviceHandler, msdef *persistence.MicroserviceDefinition, deviceId string, deviceToken string, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
+	glog.V(3).Infof("Get next highest microservice def for rolling back microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
 
-	if msdefs, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UrlMSFilter(msdef.SpecRef), persistence.ArchivedMSFilter()}); err != nil {
-		return nil, fmt.Errorf("Filed to get archived microservice definition for %v. %v", msdef.SpecRef, err)
-	} else if msdefs != nil && len(msdefs) > 0 {
-		for _, ms := range msdefs {
-			if ms.UpgradeNewMsId == msdef.Id {
-				return &ms, nil // found it
-			}
-		}
+	// convert the sensor version to a version expression
+	if vExp, err := policy.Version_Expression_Factory(msdef.UpgradeVersionRange); err != nil {
+		return nil, fmt.Errorf("Unable to convert %v to a version expression, error %v", msdef.UpgradeVersionRange, err)
+	} else if err := vExp.ChangeCeiling(msdef.Version, false); err != nil { //modify the version range in order to searh for new ms
+		return nil, fmt.Errorf("Unable to limit the version range ceiling to %v for version range %v. %v", msdef.Version, vExp.Get_expression(), err)
+	} else if e_msdef, err := getMicroservice(msdef.SpecRef, msdef.Org, vExp.Get_expression(), msdef.Arch, deviceId, deviceToken); err != nil {
+		return nil, fmt.Errorf("Filed to find a highest version for microservice %v version range %v: %v", msdef.SpecRef, vExp.Get_expression(), err)
+	} else if new_msdef, err := ConvertToPersistent(e_msdef, msdef.Org); err != nil {
+		return nil, fmt.Errorf("Failed to convert microservice metadata to persistent.MicroserviceDefinition for %v. %v", msdef.SpecRef, err)
+	} else {
+
+		// copy some attributes from the old over to the new
+		new_msdef.Name = msdef.Name
+		new_msdef.UpgradeVersionRange = msdef.UpgradeVersionRange
+		new_msdef.AutoUpgrade = msdef.AutoUpgrade
+		new_msdef.ActiveUpgrade = msdef.ActiveUpgrade
+
+		return new_msdef, nil
 	}
-
-	return nil, nil
 }
 
 // Remove the policy for the given microservice and rename the policy file name.
@@ -325,24 +322,6 @@ func RemoveMicroservicePolicy(spec_ref string, org string, version string, msdef
 		}
 	}
 	return nil
-}
-
-// Restore the given policy and save it to a policy file.
-func RestoreMicroservicePolicyFile(spec_ref string, version string, msdef_id string, policy_path string, pm *policy.PolicyManager) (string, error) {
-
-	glog.V(3).Infof("Restore policy for %v version %v. key", spec_ref, version, msdef_id)
-
-	// get the policy file name
-	a_tmp := strings.Split(spec_ref, "/")
-	fileName := a_tmp[len(a_tmp)-1]
-	fullFileName := policy_path + fileName + ".policy"
-
-	// rename the policy file
-	if err := os.Rename(fullFileName+"."+msdef_id, fullFileName); err != nil {
-		return "", fmt.Errorf("Failed to rename the policy file %v to %v. %v", fullFileName+"."+msdef_id, fullFileName, err)
-	}
-
-	return fullFileName, nil
 }
 
 // Generate a new policy file for given ms and the register the microservice on the exchange.
@@ -447,7 +426,10 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 }
 
 // Unregisters the given microservice from the exchange
-func UnregisterMicroserviceExchange(spec_ref string, httpClientFactory *config.HTTPClientFactory, exchange_url string, device_id string, device_token string, db *bolt.DB) error {
+func UnregisterMicroserviceExchange(getExchangeDevice exchange.DeviceHandler,
+	putExchangeDevice exchange.PutDeviceHandler,
+	spec_ref string, device_id string, device_token string, db *bolt.DB) error {
+
 	glog.V(3).Infof("Unregister microservice %v from exchange for %v.", spec_ref, device_id)
 
 	var deviceName string
@@ -460,7 +442,7 @@ func UnregisterMicroserviceExchange(spec_ref string, httpClientFactory *config.H
 		deviceName = dev.Name
 	}
 
-	if eDevice, err := exchange.GetExchangeDevice(httpClientFactory, device_id, device_token, exchange_url); err != nil {
+	if eDevice, err := getExchangeDevice(device_id, device_token); err != nil {
 		return fmt.Errorf("Error getting device %v from the exchange. %v", device_id, err)
 	} else if eDevice.RegisteredMicroservices == nil || len(eDevice.RegisteredMicroservices) == 0 {
 		return nil // no registered microservices, nothing to do
@@ -476,23 +458,14 @@ func UnregisterMicroserviceExchange(spec_ref string, httpClientFactory *config.H
 		// create PUT body
 		pdr := exchange.CreateDevicePut(device_token, deviceName)
 		pdr.RegisteredMicroservices = ms_put
-		var resp interface{}
-		resp = new(exchange.PutDeviceResponse)
-		targetURL := exchange_url + "orgs/" + exchange.GetOrg(device_id) + "/nodes/" + exchange.GetId(device_id)
 
-		glog.V(3).Infof("Unregistering microservices: %v at %v", pdr.ShortString(), targetURL)
+		glog.V(3).Infof("Unregistering microservice: %v", spec_ref)
 
-		for {
-			if err, tpErr := exchange.InvokeExchange(httpClientFactory.NewHTTPClient(nil), "PUT", targetURL, device_id, device_token, pdr, &resp); err != nil {
-				return err
-			} else if tpErr != nil {
-				glog.Warningf(tpErr.Error())
-				time.Sleep(10 * time.Second)
-				continue
-			} else {
-				glog.V(3).Infof("Unregistered microservice %v in exchange: %v", spec_ref, resp)
-				return nil
-			}
+		if resp, err := putExchangeDevice(device_id, device_token, pdr); err != nil {
+			return fmt.Errorf("Received error unregistering microservice %v from the exchange: %v", spec_ref, err)
+		} else {
+			glog.V(3).Infof("Unregistered microservice %v in exchange: %v", spec_ref, resp)
 		}
 	}
+	return nil
 }

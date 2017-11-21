@@ -175,6 +175,27 @@ func GetExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 	}
 }
 
+// modify the the device
+func PutExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId string, deviceToken string, exchangeUrl string, pdr *PutDeviceRequest) (*PutDeviceResponse, error) {
+	// create PUT body
+	var resp interface{}
+	resp = new(PutDeviceResponse)
+	targetURL := exchangeUrl + "orgs/" + GetOrg(deviceId) + "/nodes/" + GetId(deviceId)
+
+	for {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "PUT", targetURL, deviceId, deviceToken, pdr, &resp); err != nil {
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("put device %v to exchange %v", deviceId, pdr)))
+			return resp.(*PutDeviceResponse), nil
+		}
+	}
+}
+
 type ServedPattern struct {
 	Org         string `json:"patternOrgid"`
 	Pattern     string `json:"pattern"`

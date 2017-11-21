@@ -415,3 +415,25 @@ func TestIntersectsWith(t *testing.T) {
 	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
 	assert.Equal(t, v_result, v11, "Intersection should be [2.0,INFINITY).")
 }
+
+// This series of tests verifies the ChangeCeiling function
+func TestLimitCeiling(t *testing.T) {
+	v1, err := Version_Expression_Factory("[1,INFINITY)")
+	assert.Nil(t, err, fmt.Sprintf("Factory returned nil, but should not. Error: %v \n", err))
+
+	err = v1.ChangeCeiling("2.0", false)
+	assert.Nil(t, err, fmt.Sprintf("ChangeCeiling returned error, but should not. Error: %v \n", err))
+	assert.Equal(t, "[1.0.0,2.0.0)", v1.Get_expression(), "Version range should be [1.0.0,2.0.0)")
+
+	err = v1.ChangeCeiling("2.0", true)
+	assert.Nil(t, err, fmt.Sprintf("ChangeCeiling returned error, but should not. Error: %v \n", err))
+	assert.Equal(t, "[1.0.0,2.0.0]", v1.Get_expression(), "Version range should be [1.0.0,2.0.0]")
+
+	err = v1.ChangeCeiling("INFINITY", false)
+	assert.Nil(t, err, fmt.Sprintf("ChangeCeiling returned error, but should not. Error: %v \n", err))
+	assert.Equal(t, "[1.0.0,INFINITY)", v1.Get_expression(), "Version range should be [1.0.0,INFINITY)")
+
+	err = v1.ChangeCeiling("0.1", false)
+	assert.NotNil(t, err, "ChangeCeiling shold return error, but it did not. %v", v1.Get_expression())
+
+}

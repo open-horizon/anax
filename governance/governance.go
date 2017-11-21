@@ -55,6 +55,7 @@ type GovernanceWorker struct {
 	producerPH        map[string]producer.ProducerProtocolHandler
 	deviceStatus      *DeviceStatus
 	ShuttingDownCmd   *NodeShutdownCommand
+	exchHandlers      *exchange.ExchangeApiHandlers
 }
 
 func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *GovernanceWorker {
@@ -78,6 +79,7 @@ func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm
 		producerPH:      make(map[string]producer.ProducerProtocolHandler),
 		deviceStatus:    NewDeviceStatus(),
 		ShuttingDownCmd: nil,
+		exchHandlers:    exchange.NewExchangeApiHandlers(cfg),
 	}
 
 	worker.Start(worker, 10)
@@ -845,10 +847,8 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 						// handle the rest of the microservice upgrade process
 						w.handleMicroserviceUpgradeExecStateChange(msdef, cmd.MsInstKey, cmd.ExecutionStarted)
 					} else if !cmd.ExecutionStarted && msinst.CleanupStartTime == 0 { // if this is not part of the ms instance cleanup process
-						// for execution failure, need to delete the ms instance and clean the agreemens. New agreements will come and new ms instances will be started
-						if err := w.CleanupMicroservice(msinst.SpecRef, msinst.Version, cmd.MsInstKey, cmd.ExecutionFailureCode); err != nil {
-							glog.Errorf(logString(fmt.Sprintf("Error cleanup microservice instance %v. %v", cmd.MsInstKey, err)))
-						}
+						// this is the case where agreement are made but microservice containers are failed 
+						w.handleMicroserviceExecFailure(msdef, cmd.MsInstKey,)
 					}
 				}
 			}
