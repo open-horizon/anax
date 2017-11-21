@@ -11,18 +11,27 @@ import (
 	"time"
 )
 
+// Global "static" field to remember that unconfig is in progress. We can't tell from the configstate in the node
+// object because it eventually gets deleted at the end of unconfiguration.
+var Unconfiguring bool
+
 func FindHorizonDeviceForOutput(db *bolt.DB) (*HorizonDevice, error) {
 
 	var device *HorizonDevice
 
 	pDevice, err := persistence.FindExchangeDevice(db)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("unable to read horizondevice object, error %v", err))
+		return nil, errors.New(fmt.Sprintf("unable to read node object, error %v", err))
 	} else if pDevice == nil {
 		device_id := os.Getenv("CMTN_DEVICE_ID")
-		state := CONFIGSTATE_CONFIGURING
+		state := CONFIGSTATE_UNCONFIGURED
+		if Unconfiguring {
+			state = CONFIGSTATE_UNCONFIGURING
+		}
+		lut := uint64(0)
 		cfg := &Configstate{
-			State: &state,
+			State:          &state,
+			LastUpdateTime: &lut,
 		}
 		device = &HorizonDevice{
 			Id:     &device_id,
@@ -46,19 +55,21 @@ func CreateHorizonDevice(device *HorizonDevice,
 	// Reject the call if the node is restarting.
 	se := events.NewNodeShutdownCompleteMessage(events.UNCONFIGURE_COMPLETE, "")
 	if em.ReceivedEvent(se, nil) {
-		return errorhandler(NewAPIUserInputError("Node is restarting, please wait a few seconds and try again.", "horizondevice")), nil, nil
+		return errorhandler(NewAPIUserInputError("Node is restarting, please wait a few seconds and try again.", "node")), nil, nil
 	}
 
 	// Check for the device in the local database. If there are errors, they will be written
 	// to the HTTP response.
 
 	if pDevice, err := persistence.FindExchangeDevice(db); err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("unable to read horizondevice object, error %v", err))), nil, nil
+		return errorhandler(NewSystemError(fmt.Sprintf("unable to read node object, error %v", err))), nil, nil
 	} else if pDevice != nil {
 		return errorhandler(NewConflictError("device is already registered")), nil, nil
+	} else if Unconfiguring {
+		return errorhandler(NewAPIUserInputError("Node is restarting, please wait a few seconds and try again.", "node")), nil, nil
 	}
 
-	glog.V(5).Infof(apiLogString(fmt.Sprintf("Create horizondevice payload: %v", device)))
+	glog.V(5).Infof(apiLogString(fmt.Sprintf("Create node payload: %v", device)))
 
 	// There is no existing device registration in the database, so proceed to verifying the input device object.
 	if device.Id == nil || *device.Id == "" {
@@ -121,7 +132,7 @@ func CreateHorizonDevice(device *HorizonDevice,
 		return errorhandler(NewSystemError(fmt.Sprintf("error persisting new device registration: %v", err))), nil, nil
 	}
 
-	glog.V(5).Infof(apiLogString(fmt.Sprintf("Create horizondevice updated: %v", pDev)))
+	glog.V(5).Infof(apiLogString(fmt.Sprintf("Create node updated: %v", pDev)))
 
 	// Return 2 device objects, the first is the fully populated newly created device object. The second is a device
 	// object suitable for output (external consumption). Specifically the token is omitted.
@@ -139,11 +150,11 @@ func UpdateHorizonDevice(device *HorizonDevice,
 	// to the HTTP response.
 	pDevice, err := persistence.FindExchangeDevice(db)
 	if err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read horizondevice object, error %v", err))), nil, nil
+		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err))), nil, nil
 	} else if pDevice == nil {
-		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API.", "horizondevice")), nil, nil
-	} else if pDevice.IsState(CONFIGSTATE_UNCONFIGURING) {
-		return errorhandler(NewBadRequestError(fmt.Sprintf("The node is already unconfiguring. The GET API will return HTTP status 404 when unconfiguration is complete."))), nil, nil
+		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API.", "node")), nil, nil
+	} else if !pDevice.IsState(CONFIGSTATE_CONFIGURING) {
+		return errorhandler(NewBadRequestError(fmt.Sprintf("The node must be in configuring state in order to PATCH."))), nil, nil
 	}
 
 	// Verify that the input id is ok.
@@ -160,7 +171,7 @@ func UpdateHorizonDevice(device *HorizonDevice,
 
 	updatedDev, err := pDevice.SetExchangeDeviceToken(db, *device.Id, *device.Token)
 	if err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("error persisting token update on horizondevice object: %v", err))), nil, nil
+		return errorhandler(NewSystemError(fmt.Sprintf("error persisting token update on node object: %v", err))), nil, nil
 	}
 
 	// Return 2 device objects, the first is the fully populated newly updated device object. The second is a device
@@ -182,11 +193,11 @@ func DeleteHorizonDevice(removeNode string,
 	// to the HTTP response.
 	pDevice, err := persistence.FindExchangeDevice(db)
 	if err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read horizondevice object, error %v", err)))
+		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err)))
 	} else if pDevice == nil {
-		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API.", "horizondevice"))
-	} else if pDevice.IsState(CONFIGSTATE_UNCONFIGURING) {
-		return errorhandler(NewBadRequestError(fmt.Sprintf("The node is already unconfiguring. The GET API will return HTTP status 404 when unconfiguration is complete.")))
+		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API.", "node"))
+	} else if !pDevice.IsState(CONFIGSTATE_CONFIGURED) && !pDevice.IsState(CONFIGSTATE_CONFIGURING) {
+		return errorhandler(NewBadRequestError(fmt.Sprintf("The node must be in configured or configuring state in order to unconfigure it.")))
 	}
 
 	// Verify optional input
@@ -211,8 +222,11 @@ func DeleteHorizonDevice(removeNode string,
 	// Mark the device as "unconfigure in progress"
 	_, err = pDevice.SetDeviceState(db, CONFIGSTATE_UNCONFIGURING)
 	if err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("error persisting unconfiguring on horizondevice object: %v", err)))
+		return errorhandler(NewSystemError(fmt.Sprintf("error persisting unconfiguring on node object: %v", err)))
 	}
+
+	// Remember that unconfiguration is in progress.
+	Unconfiguring = true
 
 	// Fire the NodeShutdown event to get the node to quiesce itself.
 	ns := events.NewNodeShutdownMessage(events.START_UNCONFIGURE, blocking, rNode)

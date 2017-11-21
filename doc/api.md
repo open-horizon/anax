@@ -92,7 +92,7 @@ body:
 | token_valid | bool| whether the agent's exchange token is valid or not. |
 | token_last_valid_time | uint64 | the time stamp when the agent's token was last valid. |
 | ha | bool | whether the node is part of an HA group or not. |
-| configstate | json | the current configuration state of the agent. It contains the state and the last_update_time. The valid values for the state are "configuring", "configured", and "unconfigured". |
+| configstate | json | the current configuration state of the agent. It contains the state and the last_update_time. The valid values for the state are "configuring", "configured", "unconfiguring", and "unconfigured". |
 
 **Example:**
 ```
@@ -117,7 +117,7 @@ curl -s http://localhost/node | jq '.'
 #### **API:** POST  /node
 ---
 
-Configure the Horizon agent. This API assumes that the agent's node has already been registered in the exchange.
+Configure the Horizon agent. This API assumes that the agent's node has already been registered in the exchange. The configstate of the agent is changed to "configuring" after calling this API.
 
 **Parameters:**
 
@@ -154,7 +154,7 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
 #### **API:** PATCH  /node
 ---
 
-Update the agent's exchange token.
+Update the agent's exchange token. This API can only be called when configstate is "configuring".
 
 **Parameters:**
 
@@ -183,7 +183,7 @@ curl -s -w "%{http_code}" -X PATCH -H 'Content-Type: application/json'  -d '{
 #### **API:** DELETE  /node
 ---
 
-Unconfigure the agent so that it can be re-configured. All agreements are cancelled, workloads, microservices and blockchain containers are stopped. The API could take minutes to send a respone if invoked with block=true.
+Unconfigure the agent so that it can be re-configured. All agreements are cancelled, workloads, microservices and blockchain containers are stopped. The API could take minutes to send a respone if invoked with block=true. This API can only be called when configstate is "configured" or "configuring". After calling this API, configstate will be changed to "unconfiguring" while the agent quiesces, and then it will become "unconfigured".
 
 **Parameters:**
 
@@ -226,7 +226,7 @@ body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| state   | string | Current configuration state of the agent. Valid values are "configuring", "configured", and "unconfigured". |
+| state   | string | Current configuration state of the agent. Valid values are "configuring", "configured", "unconfiguring", and "unconfigured". |
 | last_update_time | uint64 | timestamp when the state was last updated. |
 
 **Example:**

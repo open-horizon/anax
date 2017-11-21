@@ -42,7 +42,7 @@ func Test_FindHDForOutput0(t *testing.T) {
 		t.Errorf("id is not set correctly, is %v", *dev)
 	} else if dev.Config == nil {
 		t.Errorf("config state should be initialized, is %v", *dev)
-	} else if *dev.Config.State != CONFIGSTATE_CONFIGURING {
+	} else if *dev.Config.State != CONFIGSTATE_UNCONFIGURED {
 		t.Errorf("config state has wrong state %v", *dev)
 	}
 
@@ -589,7 +589,7 @@ func Test_DeleteHorizonDevice_success(t *testing.T) {
 	myPattern := "testPattern"
 	device := getBasicDevice(myOrg, myPattern)
 
-	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, CONFIGSTATE_CONFIGURING)
+	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, CONFIGSTATE_CONFIGURED)
 	if err != nil {
 		t.Errorf("unexpected error creating device %v", err)
 	}
@@ -610,6 +610,90 @@ func Test_DeleteHorizonDevice_success(t *testing.T) {
 		t.Errorf("failed to find device in db, error %v", err)
 	} else if *dev.Config.State != CONFIGSTATE_UNCONFIGURING {
 		t.Errorf("config state is incorrect: %v, should be unconfiguring")
+	}
+
+}
+
+// Delete of horizondevice fails because its in the wrong state
+func Test_DeleteHorizonDevice_fail1(t *testing.T) {
+
+	dir, db, err := utsetup()
+	if err != nil {
+		t.Error(err)
+	}
+	defer cleanTestDir(dir)
+
+	myOrg := "testOrg"
+	myPattern := "testPattern"
+	device := getBasicDevice(myOrg, myPattern)
+
+	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, CONFIGSTATE_UNCONFIGURED)
+	if err != nil {
+		t.Errorf("unexpected error creating device %v", err)
+	}
+
+	var myError error
+	errorhandler := GetPassThroughErrorHandler(&myError)
+
+	removeNode := "false"
+	blocking := "false"
+	msgQueue := make(chan events.Message, 10)
+	errHandled := DeleteHorizonDevice(removeNode, blocking, events.NewEventStateManager(), msgQueue, errorhandler, db)
+
+	if !errHandled {
+		t.Errorf("expected error")
+	} else if _, ok := myError.(*BadRequestError); !ok {
+		t.Errorf("myError has the wrong type (%T)", myError)
+	} else if len(msgQueue) != 0 {
+		t.Errorf("there should not be a message on the queue")
+	} else if dev, err := FindHorizonDeviceForOutput(db); err != nil {
+		t.Errorf("failed to find device in db, error %v", err)
+	} else if *dev.Config.State != CONFIGSTATE_UNCONFIGURED {
+		t.Errorf("config state is incorrect: %v, should be configuring", *dev.Config.State)
+	}
+
+}
+
+// Patch of horizondevice fails because its in the wrong state
+func Test_PatchHorizonDevice_fail1(t *testing.T) {
+
+	dir, db, err := utsetup()
+	if err != nil {
+		t.Error(err)
+	}
+	defer cleanTestDir(dir)
+
+	myOrg := "testOrg"
+	myPattern := "testPattern"
+	device := getBasicDevice(myOrg, myPattern)
+
+	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, CONFIGSTATE_CONFIGURED)
+	if err != nil {
+		t.Errorf("unexpected error creating device %v", err)
+	}
+
+	myId := "testid"
+	myToken := "testToken"
+	hd := &HorizonDevice{
+		Id:    &myId,
+		Token: &myToken,
+	}
+
+	var myError error
+	errorhandler := GetPassThroughErrorHandler(&myError)
+
+	errHandled, dev1, dev2 := UpdateHorizonDevice(hd, errorhandler, db)
+
+	if !errHandled {
+		t.Errorf("expected error")
+	} else if _, ok := myError.(*BadRequestError); !ok {
+		t.Errorf("myError has the wrong type (%T)", myError)
+	} else if dev, err := FindHorizonDeviceForOutput(db); err != nil {
+		t.Errorf("failed to find device in db, error %v", err)
+	} else if *dev.Config.State != CONFIGSTATE_CONFIGURED {
+		t.Errorf("config state is incorrect: %v, should be configuring")
+	} else if dev1 != nil || dev2 != nil {
+		t.Errorf("returned non-nil response devices objects: %v %v", *dev1, *dev2)
 	}
 
 }

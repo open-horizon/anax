@@ -214,7 +214,7 @@ func (a *API) existingDeviceOrError(w http.ResponseWriter) (*persistence.Exchang
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		statusWritten = true
 	} else if existingDevice == nil {
-		writeInputErr(w, http.StatusFailedDependency, NewAPIUserInputError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API's /horizondevice path.", "horizondevice"))
+		writeInputErr(w, http.StatusFailedDependency, NewAPIUserInputError("Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path.", "node"))
 		statusWritten = true
 	}
 

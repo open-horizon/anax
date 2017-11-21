@@ -27,7 +27,7 @@ func Test_FindCSForOutput0(t *testing.T) {
 
 	if cfg, err := FindConfigstateForOutput(db); err != nil {
 		t.Errorf("failed to find device in db, error %v", err)
-	} else if *cfg.State != CONFIGSTATE_CONFIGURING {
+	} else if *cfg.State != CONFIGSTATE_UNCONFIGURED {
 		t.Errorf("incorrect configstate found: %v", *cfg)
 	}
 
