@@ -15,6 +15,7 @@ import (
 )
 
 const CONFIGSTATE_UNCONFIGURING = "unconfiguring"
+const CONFIGSTATE_UNCONFIGURED = "unconfigured"
 const CONFIGSTATE_CONFIGURING = "configuring"
 const CONFIGSTATE_CONFIGURED = "configured"
 
@@ -38,9 +39,12 @@ func FindConfigstateForOutput(db *bolt.DB) (*Configstate, error) {
 
 	pDevice, err := persistence.FindExchangeDevice(db)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("unable to read horizondevice object, error %v", err))
+		return nil, errors.New(fmt.Sprintf("unable to read node object, error %v", err))
 	} else if pDevice == nil {
-		state := CONFIGSTATE_CONFIGURING
+		state := CONFIGSTATE_UNCONFIGURED
+		if Unconfiguring {
+			state = CONFIGSTATE_UNCONFIGURING
+		}
 		cfg := &Configstate{
 			State: &state,
 		}
@@ -67,16 +71,17 @@ func UpdateConfigstate(cfg *Configstate,
 	// to the HTTP response.
 	pDevice, err := persistence.FindExchangeDevice(db)
 	if err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read horizondevice object, error %v", err))), nil, nil
+		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err))), nil, nil
 	} else if pDevice == nil {
-		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API's /horizondevice path.", "horizondevice")), nil, nil
+		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path.", "node")), nil, nil
 	}
 
 	glog.V(3).Infof(apiLogString(fmt.Sprintf("Update configstate: device in local database: %v", pDevice)))
 	msgs := make([]*events.PolicyCreatedMessage, 0, 10)
 
 	// Device registration is in the database, so verify that the requested state change is suported.
-	// The only (valid) state transition that is currently unsupported is configured to configuring.
+	// The only (valid) state transition that is currently unsupported is configuring to configured. The state
+	// transition of unconfigured to configuring occurs when POST /node is called.
 	// If the caller is requesting a state change that is a noop, just return the current state.
 	if *cfg.State != CONFIGSTATE_CONFIGURING && *cfg.State != CONFIGSTATE_CONFIGURED {
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("Supported state values are '%v' and '%v'.", CONFIGSTATE_CONFIGURING, CONFIGSTATE_CONFIGURED), "configstate.state")), nil, nil
