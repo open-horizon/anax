@@ -9,6 +9,7 @@ endif
 
 EXECUTABLE = $(shell basename $$PWD)
 CLI_EXECUTABLE = cli/hzn
+DEFAULT_UI = api/static/index.html
 
 export TMPGOPATH := $(TMPDIR)$(EXECUTABLE)
 export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon/$(EXECUTABLE)
@@ -86,10 +87,12 @@ endif
 
 CDIR=$(DESTDIR)/go/src/github.com/open-horizon/go-solidity/contracts
 install:
-	@echo "Installing $(EXECUTABLE) in $(DESTDIR)/bin"
+	@echo "Installing $(EXECUTABLE) and $(CLI_EXECUTABLE) in $(DESTDIR)/bin"
 	mkdir -p $(DESTDIR)/bin && \
 		cp $(EXECUTABLE) $(DESTDIR)/bin && \
 		cp $(CLI_EXECUTABLE) $(DESTDIR)/bin
+	mkdir -p $(DESTDIR)/web && \
+		cp $(DEFAULT_UI) $(DESTDIR)/web
 	cp -Rapv cli/samples $(DESTDIR)
 	mkdir -p $(CDIR) && \
 		cp -apv ./vendor/github.com/open-horizon/go-solidity/contracts/. $(CDIR)/
