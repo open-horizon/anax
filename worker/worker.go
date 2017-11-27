@@ -319,14 +319,11 @@ func (w *BaseWorker) TerminateSubworker(name string) {
 }
 
 func (w *BaseWorker) TerminateSubworkers() {
-	for name, sw := range w.SubWorkers {
-		if !w.IsSubworkerTerminated(name) {
-			glog.V(5).Infof(cdLogString(fmt.Sprintf("telling subworker %v %v to terminate", name, sw)))
-			sw.TermChan <- true
-		}
+	for name, _ := range w.SubWorkers {
+		w.TerminateSubworker(name)
 	}
 	glog.V(5).Infof(cdLogString(fmt.Sprintf("done telling subworkers of %v to terminate", w.GetName())))
-	runtime.Gosched()
+	// runtime.Gosched()
 }
 
 func (w *BaseWorker) IsSubworkerTerminated(name string) bool {

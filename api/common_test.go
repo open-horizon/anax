@@ -32,6 +32,8 @@ func getBasicConfig() *config.HorizonConfig {
 		Edge: config.Config{
 			DefaultServiceRegistrationRAM: 256,
 			PolicyPath:                    "/tmp/",
+			DockerEndpoint:                "unix:///var/run/docker.sock",
+			UserPublicKeyPath:             "/tmp/",
 		},
 		AgreementBot: config.AGConfig{},
 		Collaborators: config.Collaborators{
@@ -126,7 +128,7 @@ func getVariableMicroserviceHandler(mUserInput exchange.UserInput) func(mUrl str
 	}
 }
 
-func getVariableWorkload(mUrl, mOrg, mVersion, mArch string, ui *exchange.UserInput) func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*exchange.WorkloadDefinition, error) {
+func getVariableWorkload(mUrl, mOrg, mVersion, mArch string, ui []exchange.UserInput) func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*exchange.WorkloadDefinition, error) {
 	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*exchange.WorkloadDefinition, error) {
 		es := exchange.APISpec{
 			SpecRef: mUrl,
@@ -136,7 +138,7 @@ func getVariableWorkload(mUrl, mOrg, mVersion, mArch string, ui *exchange.UserIn
 		}
 		uis := []exchange.UserInput{}
 		if ui != nil {
-			uis = []exchange.UserInput{*ui}
+			uis = ui
 		}
 		wl := exchange.WorkloadDefinition{
 			Owner:       "owner",

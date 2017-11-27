@@ -64,6 +64,79 @@ func Test_One_worker(t *testing.T) {
 	}
 }
 
+// One worker with blocking command selection
+func Test_One_worker_non_blocking(t *testing.T) {
+
+	// Setup the worker handler registry
+	mhr := NewMessageHandlerRegistry()
+
+	// Init the worker and tell it to run some number of times
+	expectedCommandCount := 3
+	w := NewTestWorker("blockingtest", getBasicConfig(), expectedCommandCount, 0)
+
+	// Add the worker to registry
+	mhr.Add(w)
+
+	// Monitor the test to make sure it doesnt get stuck in a wait loop.
+	monitorWaitTime := 10
+	testEnded := false
+	go monitorTest(t, &testEnded, monitorWaitTime)
+
+	// Wait for all commands to be run. If they dont get run, then the
+	// test monitor will timeout the test.
+	go func() {
+		for {
+			// Verify that the correct number of comands were handled.
+			if w.CommandCount == expectedCommandCount {
+				// Tell the monitor the test is done.
+				testEnded = true
+
+				// Shutdown the test worker
+				w.Commands <- NewBeginShutdownCommand()
+				w.Commands <- NewTerminateCommand("shutdown")
+
+				break
+			}
+			time.Sleep(200 * time.Millisecond)
+		}
+	}()
+
+	// Start the event handler
+	mhr.ProcessEventMessages()
+
+}
+
+// Worker doesnt initialize
+func Test_One_worker_no_init(t *testing.T) {
+
+	// Setup the worker handler registry
+	mhr := NewMessageHandlerRegistry()
+
+	// Init the worker and tell it to run some number of times
+	expectedCommandCount := 0
+	w := NewTestWorker("testworker", getBasicConfig(), 1, 0)
+	w.setFailInit()
+
+	// Add the worker to registry
+	mhr.Add(w)
+
+	// Monitor the test to make sure it doesnt get stuck in a wait loop.
+	monitorWaitTime := 10
+	testEnded := false
+	go monitorTest(t, &testEnded, monitorWaitTime)
+
+	// Start the event handler
+	mhr.ProcessEventMessages()
+
+	// Tell the monitor the test is done.
+	testEnded = true
+
+	// Verify that the correct number of comands were handled. Should be no commands.
+	if w.CommandCount != expectedCommandCount {
+		t.Errorf("command count is %v, should be %v", w.CommandCount, expectedCommandCount)
+	}
+}
+
 func Test_two_workers(t *testing.T) {
 
 	// Setup the worker handler registry
@@ -168,6 +241,7 @@ func monitorTest(t *testing.T, state *bool, wait int) {
 		wc += 1
 		if wc >= wait {
 			t.Errorf("test monitor timeout, test failed.")
+			fmt.Println("Test monitor timeout, test failed.")
 			os.Exit(1)
 		}
 	}
@@ -180,6 +254,7 @@ type TestWorker struct {
 	CommandCount     int
 	ExpectedCommands int
 	NumSubworkers    int
+	FailInit         bool
 }
 
 func (t *TestWorker) Messages() chan events.Message {
@@ -203,6 +278,11 @@ func (t *TestWorker) NewEvent(incoming events.Message) {
 
 // This function is called one time, when the worker first starts.
 func (t *TestWorker) Initialize() bool {
+
+	if t.FailInit {
+		return false
+	}
+
 	subWorkerName := "sub1"
 
 	// Put some messages on the queue to handle
@@ -261,6 +341,11 @@ func (t *TestWorker) NoWorkHandler() {
 	t.Commands <- NewTerminateCommand("shutdown")
 }
 
+// Tell the test worker to fail during init
+func (t *TestWorker) setFailInit() {
+	t.FailInit = true
+}
+
 // Subworker functions
 func (t *TestWorker) startSubWorker(name string, quit chan bool) {
 	glog.V(2).Infof(testLogString("entering the subworker"))
@@ -278,12 +363,15 @@ func (t *TestWorker) startSubWorker(name string, quit chan bool) {
 
 func (t *TestWorker) runSubWorker() int {
 	glog.V(2).Infof(testLogString("executing in the subworker"))
-	return 0
+	return 1
 }
 
 func NewTestWorker(name string, cfg *config.HorizonConfig, cc int, startSub int) *TestWorker {
 
 	nonBlockDuration := 3
+	if name == "blockingtest" {
+		nonBlockDuration = 0
+	}
 
 	worker := &TestWorker{
 		BaseWorker:       NewBaseWorker(name, cfg),
