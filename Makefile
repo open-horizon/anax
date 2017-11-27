@@ -7,38 +7,44 @@ ifneq ("$(wildcard ./rules.env)","")
 	export $(shell sed 's/=.*//' rules.env)
 endif
 
-EXECUTABLE = $(shell basename $$PWD)
-CLI_EXECUTABLE = cli/hzn
+SHELL := /bin/bash
+EXECUTABLE := $(shell basename $$PWD)
+CLI_EXECUTABLE := cli/hzn
 DEFAULT_UI = api/static/index.html
 
-export TMPGOPATH := $(TMPDIR)$(EXECUTABLE)
+export TMPGOPATH ?= $(TMPDIR)$(EXECUTABLE)-gopath
 export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon/$(EXECUTABLE)
 export PATH := $(TMPGOPATH)/bin:$(PATH)
 
-SHELL := /bin/bash
-ARCH = $(shell uname -m)
-PKGS=$(shell cd $(PKGPATH); GOPATH=$(TMPGOPATH) go list ./... | gawk '$$1 !~ /vendor\// {print $$1}')
+# we use a script that will give us the debian arch version since that's what the packaging system inputs
+arch ?= $(shell tools/arch-tag)
 
-COMPILE_ARGS := CGO_ENABLED=0
+COMPILE_ARGS := CGO_ENABLED=0 GOOS=linux
 # TODO: handle other ARM architectures on build boxes too
-ifeq ($(ARCH),armv7l)
+ifeq ($(arch),armhf)
 	COMPILE_ARGS +=  GOARCH=arm GOARM=7
+else ifeq ($(arch),arm64)
+	COMPILE_ARGS +=  GOARCH=arm64
+else ifeq ($(arch),amd64)
+	COMPILE_ARGS +=  GOARCH=amd64
+else ifeq ($(arch),ppc64el)
+	COMPILE_ARGS +=  GOARCH=ppc64le
 endif
-
-all: $(EXECUTABLE)
 
 ifndef verbose
 .SILENT:
 endif
 
-# will always run b/c deps target is PHONY
-$(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') deps $(CLI_EXECUTABLE)
-	@echo "Producing $(EXECUTABLE)"
+all: deps all-nodeps
+all-nodeps: gopathlinks $(EXECUTABLE) $(CLI_EXECUTABLE)
+
+$(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') $(CLI_EXECUTABLE)
+	@echo "Producing $(EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
 	    $(COMPILE_ARGS) go build -o $(EXECUTABLE)
 
-$(CLI_EXECUTABLE): $(shell find cli -name '*.go') deps
+$(CLI_EXECUTABLE): $(shell find cli -name '*.go')
 	@echo "Producing $(CLI_EXECUTABLE)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
@@ -56,34 +62,39 @@ mostlyclean:
 	@echo "Mostlyclean"
 	rm -f $(EXECUTABLE)
 
-# let this run on every build to ensure newest deps are pulled
 deps: $(TMPGOPATH)/bin/govendor
 	@echo "Fetching dependencies"
-ifneq ($(GOPATH_CACHE),)
-	if [ ! -d $(TMPGOPATH)/.cache ] && [ -e $(GOPATH_CACHE) ]; then \
-		ln -s $(GOPATH_CACHE) $(TMPGOPATH)/.cache; \
-  fi
-endif
 	cd $(PKGPATH) && \
-    export GOPATH=$(TMPGOPATH); \
-      govendor sync
-
+		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
+			govendor sync
 
 $(TMPGOPATH)/bin/govendor: gopathlinks
-	@echo "Fetching govendor"
-	mkdir -p $(TMPGOPATH)/bin
-	-export GOPATH=$(TMPGOPATH); \
-	  go get -u github.com/kardianos/govendor
+	if [ ! -e "$(TMPGOPATH)/bin/govendor" ]; then \
+		echo "Fetching govendor"; \
+		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
+			go get -u github.com/kardianos/govendor; \
+	fi
 
-# this is a symlink to facilitate building outside of user's GOPATH
 gopathlinks:
+# unfortunately the .cache directory has to be copied b/c of https://github.com/kardianos/govendor/issues/274
 ifneq ($(GOPATH),$(TMPGOPATH))
-	if [ ! -h $(PKGPATH) ]; then \
-		mkdir -p $(shell dirname $(PKGPATH)); \
-		ln -s $(CURDIR) $(PKGPATH); \
+	if [ -d "$(PKGPATH)" ] && [ "$(readlink -- "$(PKGPATH)")" != "$(CURDIR)" ]; then \
+		rm $(PKGPATH); \
+	fi
+	if [ ! -L "$(PKGPATH)" ]; then \
+		mkdir -p $(shell dirname "$(PKGPATH)"); \
+		ln -s "$(CURDIR)" "$(PKGPATH)"; \
+	fi
+	for d in bin pkg; do \
+		if [ ! -L "$(TMPGOPATH)/$$d" ]; then \
+			ln -s $(GOPATH)/$$d $(TMPGOPATH)/$$d; \
+		fi; \
+	done
+	if [ ! -L "$(TMPGOPATH)/.cache" ] && [ -d "$(GOPATH)/.cache" ]; then \
+		cp -Rfpa $(GOPATH)/.cache $(TMPGOPATH)/.cache; \
 	fi
 endif
-
+PKGS=$(shell cd $(PKGPATH); GOPATH=$(TMPGOPATH) go list ./... | gawk '$$1 !~ /vendor\// {print $$1}')
 
 CDIR=$(DESTDIR)/go/src/github.com/open-horizon/go-solidity/contracts
 install:
@@ -111,17 +122,17 @@ lint:
 pull: deps
 
 # only unit tests
-test: deps
+test:
 	@echo "Executing unit tests"
 	-@cd $(PKGPATH) && \
-    GOPATH=$(TMPGOPATH) go test -cover -tags=unit $(PKGS)
+		GOPATH=$(TMPGOPATH) go test -cover -tags=unit $(PKGS)
 
-test-integration: deps
+test-integration:
 	@echo "Executing integration tests"
 	-@cd $(PKGPATH) && \
-    GOPATH=$(TMPGOPATH) go test -cover -tags=integration $(PKGS)
+		GOPATH=$(TMPGOPATH) go test -cover -tags=integration $(PKGS)
 
-check: lint test test-integration
+check: deps lint test test-integration
 
 # build sequence diagrams
 diagrams:

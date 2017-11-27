@@ -1,0 +1,17 @@
+#!/bin/bash -e
+
+uname="$(uname -m)"
+
+if [[ "$uname" =~ "aarch64" ]]; then
+  echo "arm64"
+elif [[ "$uname" =~ "arm" ]]; then
+  echo "armhf"
+elif [[ "$uname" == "x86_64" ]]; then
+  echo "amd64"
+elif [[ "$uname" == "ppc64le" ]]; then
+  # the power8 architecture is ppc64 little endian and corresponds to debian / ubuntu arch designation "ppc64el"
+  echo "ppc64el"
+else
+  (>&2 echo "Unknown architecture $uname")
+  exit 1
+fi
