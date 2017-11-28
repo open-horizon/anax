@@ -45,7 +45,7 @@ $(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') $(CLI_EXECUT
 	    $(COMPILE_ARGS) go build -o $(EXECUTABLE)
 
 $(CLI_EXECUTABLE): $(shell find cli -name '*.go')
-	@echo "Producing $(CLI_EXECUTABLE)"
+	@echo "Producing $(CLI_EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
 	    $(COMPILE_ARGS) go build -o $(CLI_EXECUTABLE) $(CLI_EXECUTABLE).go
