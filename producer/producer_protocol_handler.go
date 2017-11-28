@@ -229,7 +229,9 @@ func (w *BaseProducerProtocolHandler) FindAgreementWithSameWorkload(ph abstractp
 }
 
 func (w *BaseProducerProtocolHandler) PersistProposal(proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, tcPolicy *policy.Policy, protocolMsg string) {
-	if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, w.Name(), proposal.Version(), (&tcPolicy.APISpecs).AsStringArray(), "", proposal.ConsumerId(), "", "", ""); err != nil {
+	if wi, err := persistence.NewWorkloadInfo(tcPolicy.Workloads[0].WorkloadURL, tcPolicy.Workloads[0].Org, tcPolicy.Workloads[0].Version, tcPolicy.Workloads[0].Arch); err != nil {
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error creating workload info object from %v, error: %v", tcPolicy.Workloads[0], err)))
+	} else if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, w.Name(), proposal.Version(), (&tcPolicy.APISpecs).AsStringArray(), "", proposal.ConsumerId(), "", "", "", wi); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId(), err)))
 	}
 }

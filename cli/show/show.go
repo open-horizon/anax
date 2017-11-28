@@ -90,15 +90,16 @@ func Node() {
 //~~~~~~~~~~~~~~~~ show agreements ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 type ActiveAgreement struct {
-	Name                        string `json:"name"`
-	CurrentAgreementId          string `json:"current_agreement_id"`
-	ConsumerId                  string `json:"consumer_id"`
-	AgreementCreationTime       string `json:"agreement_creation_time"`
-	AgreementAcceptedTime       string `json:"agreement_accepted_time"`
-	AgreementFinalizedTime      string `json:"agreement_finalized_time"`
-	AgreementExecutionStartTime string `json:"agreement_execution_start_time"`
-	AgreementDataReceivedTime   string `json:"agreement_data_received_time"`
-	AgreementProtocol           string `json:"agreement_protocol"` // the agreement protocol being used. It is also in the proposal.
+	Name                        string                   `json:"name"`
+	CurrentAgreementId          string                   `json:"current_agreement_id"`
+	ConsumerId                  string                   `json:"consumer_id"`
+	AgreementCreationTime       string                   `json:"agreement_creation_time"`
+	AgreementAcceptedTime       string                   `json:"agreement_accepted_time"`
+	AgreementFinalizedTime      string                   `json:"agreement_finalized_time"`
+	AgreementExecutionStartTime string                   `json:"agreement_execution_start_time"`
+	AgreementDataReceivedTime   string                   `json:"agreement_data_received_time"`
+	AgreementProtocol           string                   `json:"agreement_protocol"` // the agreement protocol being used. It is also in the proposal.
+	Workload                    persistence.WorkloadInfo `json:"workload_to_run"`
 }
 
 // CopyAgreementInto copies the agreement info into our output struct
@@ -115,18 +116,21 @@ func (a *ActiveAgreement) CopyAgreementInto(agreement persistence.EstablishedAgr
 	a.AgreementDataReceivedTime = cliutils.ConvertTime(agreement.AgreementDataReceivedTime)
 
 	a.AgreementProtocol = agreement.AgreementProtocol
+
+	a.Workload = agreement.RunningWorkload
 }
 
 type ArchivedAgreement struct {
-	Name                        string `json:"name"`
-	CurrentAgreementId          string `json:"current_agreement_id"`
-	ConsumerId                  string `json:"consumer_id"`
-	AgreementCreationTime       string `json:"agreement_creation_time"`
-	AgreementAcceptedTime       string `json:"agreement_accepted_time"`
-	AgreementFinalizedTime      string `json:"agreement_finalized_time"`
-	AgreementExecutionStartTime string `json:"agreement_execution_start_time"`
-	AgreementDataReceivedTime   string `json:"agreement_data_received_time"`
-	AgreementProtocol           string `json:"agreement_protocol"` // the agreement protocol being used. It is also in the proposal.
+	Name                        string                   `json:"name"`
+	CurrentAgreementId          string                   `json:"current_agreement_id"`
+	ConsumerId                  string                   `json:"consumer_id"`
+	AgreementCreationTime       string                   `json:"agreement_creation_time"`
+	AgreementAcceptedTime       string                   `json:"agreement_accepted_time"`
+	AgreementFinalizedTime      string                   `json:"agreement_finalized_time"`
+	AgreementExecutionStartTime string                   `json:"agreement_execution_start_time"`
+	AgreementDataReceivedTime   string                   `json:"agreement_data_received_time"`
+	AgreementProtocol           string                   `json:"agreement_protocol"` // the agreement protocol being used. It is also in the proposal.
+	Workload                    persistence.WorkloadInfo `json:"workload_to_run"`
 
 	AgreementTerminatedTime string `json:"agreement_terminated_time"`
 	TerminatedReason        uint64 `json:"terminated_reason"`      // the reason that the agreement was terminated
@@ -145,6 +149,7 @@ func (a *ArchivedAgreement) CopyAgreementInto(agreement persistence.EstablishedA
 	a.AgreementExecutionStartTime = cliutils.ConvertTime(agreement.AgreementExecutionStartTime)
 	a.AgreementDataReceivedTime = cliutils.ConvertTime(agreement.AgreementDataReceivedTime)
 	a.AgreementProtocol = agreement.AgreementProtocol
+	a.Workload = agreement.RunningWorkload
 
 	a.AgreementTerminatedTime = cliutils.ConvertTime(agreement.AgreementTerminatedTime)
 	a.TerminatedReason = agreement.TerminatedReason

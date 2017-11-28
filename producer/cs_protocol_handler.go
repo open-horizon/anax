@@ -129,7 +129,9 @@ func (c *CSProtocolHandler) PersistProposal(p abstractprotocol.Proposal, r abstr
 		glog.Errorf(PPHlogString(fmt.Sprintf("unable to cast reply %v to %v Proposal Reply, is %T", r, c.Name(), r)))
 	} else if proposal, ok := p.(*citizenscientist.CSProposal); !ok {
 		glog.Errorf(PPHlogString(fmt.Sprintf("unable to cast proposal %v to %v Proposal, is %T", p, c.Name(), p)))
-	} else if _, err := persistence.NewEstablishedAgreement(c.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, c.Name(), proposal.Version(), (&tcPolicy.APISpecs).AsStringArray(), reply.Signature, proposal.Address, reply.BlockchainType, reply.BlockchainName, reply.BlockchainOrg); err != nil {
+	} else if wi, err := persistence.NewWorkloadInfo(tcPolicy.Workloads[0].WorkloadURL, tcPolicy.Workloads[0].Org, tcPolicy.Workloads[0].Version, tcPolicy.Workloads[0].Arch); err != nil {
+		glog.Errorf(PPHlogString(fmt.Sprintf("error creating workload info object from %v, error: %v", tcPolicy.Workloads[0], err)))
+	} else if _, err := persistence.NewEstablishedAgreement(c.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, c.Name(), proposal.Version(), (&tcPolicy.APISpecs).AsStringArray(), reply.Signature, proposal.Address, reply.BlockchainType, reply.BlockchainName, reply.BlockchainOrg, wi); err != nil {
 		glog.Errorf(PPHlogString(fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId(), err)))
 	}
 }
