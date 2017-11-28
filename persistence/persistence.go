@@ -7,6 +7,7 @@ import (
 	"github.com/boltdb/bolt"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/cutil"
 	"time"
 )
 
@@ -14,6 +15,31 @@ import (
 const E_AGREEMENTS = "established_agreements" // may or may not be in agreements
 
 const DEVMODE = "devmode"
+
+type WorkloadInfo struct {
+	URL     string `json:"url,omitempty"`
+	Org     string `json:"org,omitempty"`
+	Version string `json:"version,omitempty"`
+	Arch    string `json:"arch,omitempty"`
+}
+
+func NewWorkloadInfo(url string, org string, version string, arch string) (*WorkloadInfo, error) {
+	if url == "" || org == "" || version == "" {
+		return nil, errors.New("url, org and version must be non-empty")
+	}
+
+	useArch := arch
+	if useArch == "" {
+		useArch = cutil.ArchString()
+	}
+
+	return &WorkloadInfo{
+		URL:     url,
+		Org:     org,
+		Version: version,
+		Arch:    useArch,
+	}, nil
+}
 
 // N.B. Important!! Ensure new values are handled in Update function below
 // This struct is for persisting agreements
@@ -45,6 +71,7 @@ type EstablishedAgreement struct {
 	BlockchainType                  string                   `json:"blockchain_type,omitempty"`       // the name of the type of the blockchain
 	BlockchainName                  string                   `json:"blockchain_name,omitempty"`       // the name of the blockchain instance
 	BlockchainOrg                   string                   `json:"blockchain_org,omitempty"`        // the org of the blockchain instance
+	RunningWorkload                 WorkloadInfo             `json:"workload_to_run,omitempty"`       // For display purposes, a copy of the workload info that this agreement is managing. It should be the same info that is buried inside the proposal.
 }
 
 func (c EstablishedAgreement) String() string {
@@ -106,7 +133,7 @@ func (c ServiceConfig) String() string {
 	return fmt.Sprintf("Config: %v, HostConfig: %v", c.Config, c.HostConfig)
 }
 
-func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consumerId string, proposal string, protocol string, protocolVersion int, sensorUrl []string, signature string, address string, bcType string, bcName string, bcOrg string) (*EstablishedAgreement, error) {
+func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consumerId string, proposal string, protocol string, protocolVersion int, sensorUrl []string, signature string, address string, bcType string, bcName string, bcOrg string, wi *WorkloadInfo) (*EstablishedAgreement, error) {
 
 	if name == "" || agreementId == "" || consumerId == "" || proposal == "" || protocol == "" || protocolVersion == 0 {
 		return nil, errors.New("Agreement id, consumer id, proposal, protocol, or protocol version are empty, cannot persist")
@@ -150,6 +177,7 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 		BlockchainType:                  bcType,
 		BlockchainName:                  bcName,
 		BlockchainOrg:                   bcOrg,
+		RunningWorkload:                 *wi,
 	}
 
 	return newAg, db.Update(func(tx *bolt.Tx) error {

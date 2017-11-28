@@ -70,7 +70,7 @@ func tConfig() *config.HorizonConfig {
 }
 
 func tWorker(config *config.HorizonConfig, db *bolt.DB) *ContainerWorker {
-	cw := NewContainerWorker(config, db)
+	cw := NewContainerWorker("cworker", config, db)
 	cw.inAgbot = true
 	return cw
 }
@@ -237,7 +237,8 @@ func commonPatterned(t *testing.T, db *bolt.DB, agreementId string, tFn func(wor
 
 	protocol := "Citizen Scientist"
 
-	_, err := persistence.NewEstablishedAgreement(db, "ctest fake policy", myAgreementId, "consumerId", "{}", protocol, 1, []string{}, "signature", "address", "bcType", "bcName", "bcOrg")
+	wi, _ := persistence.NewWorkloadInfo("url", "org", "version", "")
+	_, err := persistence.NewEstablishedAgreement(db, "ctest fake policy", myAgreementId, "consumerId", "{}", protocol, 1, []string{}, "signature", "address", "bcType", "bcName", "bcOrg", wi)
 	if err != nil {
 		t.Error(err)
 	}
@@ -288,7 +289,8 @@ func Test_resourcesCreate_failLoad(t *testing.T) {
 	agreementId := fmt.Sprintf("ctest-%v", time.Now().UnixNano())
 	protocol := "Citizen Scientist"
 
-	_, err = persistence.NewEstablishedAgreement(db, "ctest fake policy", agreementId, "consumerId", "{}", protocol, 1, []string{}, "signature", "address", "bcType", "bcName", "bcOrg")
+	wi, _ := persistence.NewWorkloadInfo("url", "org", "version", "")
+	_, err = persistence.NewEstablishedAgreement(db, "ctest fake policy", agreementId, "consumerId", "{}", protocol, 1, []string{}, "signature", "address", "bcType", "bcName", "bcOrg", wi)
 	if err != nil {
 		t.Error(err)
 	}
