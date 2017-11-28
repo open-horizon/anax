@@ -132,7 +132,12 @@ test-integration:
 	-@cd $(PKGPATH) && \
 		GOPATH=$(TMPGOPATH) go test -cover -tags=integration $(PKGS)
 
-check: deps lint test test-integration
+test-ci:
+	@echo "Executing integration tests intended for CI systems with special configuration"
+	-@cd $(PKGPATH) && \
+		GOPATH=$(TMPGOPATH) go test -cover -tags=ci $(PKGS)
+
+check: deps lint test test-integration test-ci
 
 # build sequence diagrams
 diagrams:

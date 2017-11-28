@@ -39,6 +39,12 @@ Note that the Makefile silences a lot of its output by default. If you want to s
 
     make format
 
+#### Fetch dependencies
+
+    make deps
+
+Note that this target is automatically executed when executing targets `check` and `all`. It is not automatically executed when executing `test`, `test-integration`, and generating specific executables.
+
 #### Execute both unit and integration tests
 
     make check
