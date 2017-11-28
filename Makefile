@@ -137,7 +137,8 @@ test-ci:
 	-@cd $(PKGPATH) && \
 		GOPATH=$(TMPGOPATH) go test -cover -tags=ci $(PKGS)
 
-check: deps lint test test-integration test-ci
+# N.B. this doesn't run ci tests, the ones that require CI system setup
+check: deps lint test test-integration
 
 # build sequence diagrams
 diagrams:
