@@ -208,9 +208,9 @@ type GetAgbotsPatternsResponse struct {
 }
 
 type AgbotAgreement struct {
-	Workload    string `json:"workload"`
-	State       string `json:"state"`
-	LastUpdated string `json:"lastUpdated"`
+	Workload    WorkloadAgreement `json:"workload"`
+	State       string            `json:"state"`
+	LastUpdated string            `json:"lastUpdated"`
 }
 
 func (a AgbotAgreement) String() string {
