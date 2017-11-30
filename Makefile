@@ -19,7 +19,7 @@ export PATH := $(TMPGOPATH)/bin:$(PATH)
 # we use a script that will give us the debian arch version since that's what the packaging system inputs
 arch ?= $(shell tools/arch-tag)
 
-COMPILE_ARGS := CGO_ENABLED=0 GOOS=linux
+COMPILE_ARGS := CGO_ENABLED=0
 # TODO: handle other ARM architectures on build boxes too
 ifeq ($(arch),armhf)
 	COMPILE_ARGS +=  GOARCH=arm GOARM=7
@@ -29,6 +29,12 @@ else ifeq ($(arch),amd64)
 	COMPILE_ARGS +=  GOARCH=amd64
 else ifeq ($(arch),ppc64el)
 	COMPILE_ARGS +=  GOARCH=ppc64le
+endif
+
+ifeq ($(shell uname -s),Linux)
+	COMPILE_ARGS += GOOS=linux
+else ifeq ($(shell uname -s),Darwin)
+	COMPILE_ARGS += GOOS=darwin
 endif
 
 ifndef verbose
