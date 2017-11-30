@@ -23,17 +23,21 @@ const MS_REREG_EXCH_FAILED = 203
 const MS_IMAGE_LOAD_FAILED = 204
 const MS_DELETED_BY_UPGRADE_PROCESS = 205
 const MS_DELETED_FOR_AG_ENDED = 206
+const MS_IMAGE_FETCH_FAILED = 207
+const MS_DELETED_BY_DOWNGRADE_PROCESS = 208
 
 func DecodeReasonCode(code uint64) string {
 	// microservice termiated deccription
 	codeMeanings := map[uint64]string{
-		MS_UNREG_EXCH_FAILED:          "Unregistering microservice on exchange failed",
-		MS_CLEAR_OLD_AGS_FAILED:       "Clearing old agreements failed",
-		MS_EXEC_FAILED:                "Execution failed",
-		MS_REREG_EXCH_FAILED:          "Reregistering microservice on exchange failed",
-		MS_IMAGE_LOAD_FAILED:          "Image loading failed",
-		MS_DELETED_BY_UPGRADE_PROCESS: "Deleted by upgrading process",
-		MS_DELETED_FOR_AG_ENDED:       "Deleted for agreement ended",
+		MS_UNREG_EXCH_FAILED:            "Unregistering microservice on exchange failed",
+		MS_CLEAR_OLD_AGS_FAILED:         "Clearing old agreements failed",
+		MS_EXEC_FAILED:                  "Execution failed",
+		MS_REREG_EXCH_FAILED:            "Reregistering microservice on exchange failed",
+		MS_IMAGE_LOAD_FAILED:            "Image loading failed",
+		MS_DELETED_BY_UPGRADE_PROCESS:   "Deleted by upgrading process",
+		MS_DELETED_BY_DOWNGRADE_PROCESS: "Deleted by downgrading process",
+		MS_DELETED_FOR_AG_ENDED:         "Deleted for agreement ended",
+		MS_IMAGE_FETCH_FAILED:           "Image fetching failed",
 	}
 
 	if reasonString, ok := codeMeanings[code]; !ok {
@@ -95,8 +99,8 @@ func ConvertToPersistent(ems *exchange.MicroserviceDefinition, org string) (*per
 
 	pms.Name = ""
 	pms.UpgradeVersionRange = "0.0.0"
-	pms.AutoUpgrade = false
-	pms.ActiveUpgrade = true
+	pms.AutoUpgrade = true
+	pms.ActiveUpgrade = false
 
 	// Hash the metadata and save it
 	if serial, err := json.Marshal(*ems); err != nil {
@@ -231,7 +235,7 @@ func GetMicroserviceUpgradeVersionRange(getWorkload exchange.WorkloadHandler,
 }
 
 // Get the new microservice def that the given msdef need to upgrade to.
-// This function gets the msdef with highest version within defined version range from the exchange and 
+// This function gets the msdef with highest version within defined version range from the exchange and
 // compare the version and content with the current msdef and decide if it needs to upgrade.
 // It returns the new msdef if the old one needs to be upgraded, otherwide return nil.
 func GetUpgradeMicroserviceDef(getMicroservice exchange.MicroserviceHandler, msdef *persistence.MicroserviceDefinition, deviceId string, deviceToken string, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
@@ -255,7 +259,7 @@ func GetUpgradeMicroserviceDef(getMicroservice exchange.MicroserviceHandler, msd
 				return nil, fmt.Errorf("Failed to get archived microservice definition for %v version %v. %v", msdef.SpecRef, msdef.Version, err)
 			} else if msdefs != nil && len(msdefs) > 0 {
 				for _, ms := range msdefs {
-					if msdef.UpgradeNewMsId != "" && bytes.Equal(ms.MetadataHash, new_msdef.MetadataHash) {
+					if ms.UpgradeNewMsId != "" && bytes.Equal(ms.MetadataHash, new_msdef.MetadataHash) {
 						return nil, nil // do nothing because upgrade failed before
 					}
 				}
@@ -268,6 +272,7 @@ func GetUpgradeMicroserviceDef(getMicroservice exchange.MicroserviceHandler, msd
 		new_msdef.AutoUpgrade = msdef.AutoUpgrade
 		new_msdef.ActiveUpgrade = msdef.ActiveUpgrade
 
+		glog.V(5).Infof("New upgrade msdef is %v", new_msdef)
 		return new_msdef, nil
 	}
 }
@@ -293,6 +298,7 @@ func GetRollbackMicroserviceDef(getMicroservice exchange.MicroserviceHandler, ms
 		new_msdef.AutoUpgrade = msdef.AutoUpgrade
 		new_msdef.ActiveUpgrade = msdef.ActiveUpgrade
 
+		glog.V(5).Infof("New rollback msdef is %v", new_msdef)
 		return new_msdef, nil
 	}
 }

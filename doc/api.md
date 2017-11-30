@@ -345,10 +345,10 @@ A microservice definition has the following fields:
 | workloads | array | an array of container deployment information, each containing deployment images, deployment signature etc. |
 | lastUpdated | string | the last time the record was updated in the exchange. |
 | archived | bool | whether it is archived or not. |
-| name | string | a short name used for policy file name. it is from the user request where the user registers a microservice through the /service api. |
-| upgrade_version_range | string | a version range. it is from the user request where the user registers a microservice through the /service api. |
-| auto_upgrade | bool | if the microservice should be automatically upgraded when new versions become available. it is from the user request where the user registers a microservice through the /service api.|
-| active_upgrade | bool | horizon to actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade. it is from the user request where the user registers a microservice through the /service api. |
+| name | string | a short name used for policy file name. it is from the user request where the user registers a microservice through the /microservice/config api. |
+| upgrade_version_range | string | a version range. it is from the user request where the user registers a microservice through the /microservice/config api. |
+| auto_upgrade | bool | if the microservice should be automatically upgraded when new versions become available. it is from the user request where the user registers a microservice through the /microservice/config api.|
+| active_upgrade | bool | horizon to actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade. it is from the user request where the user registers a microservice through the /microservice/config api. |
 | upgrade_start_time | uint64 | microservice upgrading start time |
 | upgrade_ms_unregistered_time | uint64 | the time when microservice was temporally unregistered during the upgrade process.  |
 | upgrade_agreements_cleared_time | uint64 | the time when all the associated agreements were deleted during the upgrade process. |
@@ -655,8 +655,8 @@ body:
 | sensor_name  | string | the name of the microservice. |
 | sensor_version  | string | the version range of the microservice. It should comply with the OSGI version specification. |
 | sensor_org  | string | the organization that holds the microservice definition. |
-| auto_upgrade  | bool | If the microservice should be automatically upgraded when new versions become available. |
-| active_upgrade  | bool | If horizon should actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade. |
+| auto_upgrade  | bool | If the microservice should be automatically upgraded when new versions become available. The default is true. |
+| active_upgrade  | bool | If horizon should actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade. The default is false. |
 | attributes | array | an array of attributes.  Please refer to the response body for the GET /attribute api for the fields of an attribute.  |
 
 **Response:**

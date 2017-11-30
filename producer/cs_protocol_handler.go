@@ -196,8 +196,12 @@ func (c *CSProtocolHandler) GetTerminationCode(reason string) uint {
 		return citizenscientist.CANCEL_WL_IMAGE_LOAD_FAILURE
 	case TERM_REASON_MS_IMAGE_LOAD_FAILURE:
 		return citizenscientist.CANCEL_MS_IMAGE_LOAD_FAILURE
+	case TERM_REASON_MS_IMAGE_FETCH_FAILURE:
+		return citizenscientist.CANCEL_MS_IMAGE_FETCH_FAILURE
 	case TERM_REASON_MS_UPGRADE_REQUIRED:
 		return citizenscientist.CANCEL_MS_UPGRADE_REQUIRED
+	case TERM_REASON_MS_DOWNGRADE_REQUIRED:
+		return citizenscientist.CANCEL_MS_DOWNGRADE_REQUIRED
 	case TERM_REASON_IMAGE_DATA_ERROR:
 		return citizenscientist.CANCEL_IMAGE_DATA_ERROR
 	case TERM_REASON_IMAGE_FETCH_FAILURE:

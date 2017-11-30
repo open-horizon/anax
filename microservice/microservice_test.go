@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-// This series of tests verifies 
+// This series of tests verifies
 func TestConvertToPersistent(t *testing.T) {
-	
+
 }

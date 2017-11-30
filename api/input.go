@@ -136,7 +136,7 @@ type Service struct {
 	SensorOrg     *string      `json:"sensor_org"`     // The org that holds the ms definition
 	SensorName    *string      `json:"sensor_name"`    // may not be uniquely identifying
 	SensorVersion *string      `json:"sensor_version"` // added for ms split. It is only used for microsevice. If it is omitted, old behavior is asumed.
-	AutoUpgrade   *bool        `json:"auto_upgrade"`   // added for ms split. The default is false. If the sensor (microservice) should be automatically upgraded when new versions become available.
+	AutoUpgrade   *bool        `json:"auto_upgrade"`   // added for ms split. The default is true. If the sensor (microservice) should be automatically upgraded when new versions become available.
 	ActiveUpgrade *bool        `json:"active_upgrade"` // added for ms split. The default is false. If horizon should actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade.
 	Attributes    *[]Attribute `json:"attributes"`
 }
@@ -178,8 +178,8 @@ func (s *Service) String() string {
 
 // Constructor used to create service objects for programmatic creation of services.
 func NewService(url string, org string, name string, v string) *Service {
-	autoUpgrade := false
-	activeUpgrade := true
+	autoUpgrade := true
+	activeUpgrade := false
 
 	return &Service{
 		SensorUrl:     &url,

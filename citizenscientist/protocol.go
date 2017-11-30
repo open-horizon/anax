@@ -781,6 +781,8 @@ const CANCEL_IMAGE_FETCH_FAILURE = 113
 const CANCEL_IMAGE_FETCH_AUTH_FAILURE = 114
 const CANCEL_IMAGE_SIG_VERIF_FAILURE = 115
 const CANCEL_NODE_SHUTDOWN = 116 // x74
+const CANCEL_MS_IMAGE_FETCH_FAILURE = 117
+const CANCEL_MS_DOWNGRADE_REQUIRED = 118
 
 // These constants represent consumer cancellation reason codes
 const AB_CANCEL_NOT_FINALIZED_TIMEOUT = 200 // xc8
@@ -807,7 +809,10 @@ func DecodeReasonCode(code uint64) string {
 		CANCEL_NO_REPLY_ACK:             "agreement protocol incomplete, no reply ack received",
 		CANCEL_MICROSERVICE_FAILURE:     "microservice failed",
 		CANCEL_WL_IMAGE_LOAD_FAILURE:    "workload image loading failed",
+		CANCEL_MS_IMAGE_LOAD_FAILURE:    "microservice image loading failed",
+		CANCEL_MS_IMAGE_FETCH_FAILURE:   "microservice image fetching failed",
 		CANCEL_MS_UPGRADE_REQUIRED:      "required by microservice upgrade process",
+		CANCEL_MS_DOWNGRADE_REQUIRED:    "required by microservice downgrade process",
 		CANCEL_IMAGE_DATA_ERROR:         "image data error",
 		CANCEL_IMAGE_FETCH_FAILURE:      "image fetching failed",
 		CANCEL_IMAGE_FETCH_AUTH_FAILURE: "authorization failed for image fetching",

@@ -147,6 +147,10 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 				}
 				cmd := w.NewCleanupExecutionCommand(lc.AgreementProtocol, lc.AgreementId, reason, nil)
 				w.Commands <- cmd
+			case *events.ContainerLaunchContext:
+				lc := msg.LaunchContext.(*events.ContainerLaunchContext)
+				cmd := w.NewUpdateMicroserviceCommand(lc.Name, false, microservice.MS_IMAGE_FETCH_FAILED, microservice.DecodeReasonCode(microservice.MS_IMAGE_FETCH_FAILED))
+				w.Commands <- cmd
 			}
 		}
 
@@ -847,8 +851,8 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 						// handle the rest of the microservice upgrade process
 						w.handleMicroserviceUpgradeExecStateChange(msdef, cmd.MsInstKey, cmd.ExecutionStarted)
 					} else if !cmd.ExecutionStarted && msinst.CleanupStartTime == 0 { // if this is not part of the ms instance cleanup process
-						// this is the case where agreement are made but microservice containers are failed 
-						w.handleMicroserviceExecFailure(msdef, cmd.MsInstKey,)
+						// this is the case where agreement are made but microservice containers are failed
+						w.handleMicroserviceExecFailure(msdef, cmd.MsInstKey)
 					}
 				}
 			}
@@ -1004,6 +1008,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 				if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, as.SpecRef); err != nil {
 					return errors.New(logString(fmt.Sprintf("Error finding microservice definition from the local db for %v version range %v. %v", as.SpecRef, as.Version, err)))
 				} else if msdefs != nil && len(msdefs) > 0 { // if msdefs is nil or empty then it is old behaviour before the ms split
+					glog.V(5).Infof("All avaialbe msdefs: %v", msdefs)
 					// assuming there is only one msdef for a microservice at any time
 					msdef := msdefs[0]
 
@@ -1021,7 +1026,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 					ms_specs = append(ms_specs, msspec)
 
 					// now we can start the microservice
-					if err := w.startMicroserviceInstForAgreement(&msdef, proposal.AgreementId()); err != nil {
+					if err := w.startMicroserviceInstForAgreement(&msdef, proposal.AgreementId(), protocol); err != nil {
 						return errors.New(logString(fmt.Sprintf("Failed to start microservice instance for %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
 					}
 
