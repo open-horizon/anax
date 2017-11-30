@@ -278,12 +278,14 @@ func (w *GovernanceWorker) governAgreements() {
 					w.producerPH[ag.AgreementProtocol].UpdateConsumer(&ag)
 				}
 
-				// Check to see if the agreement is in the blockchain. This call to the blockchain should be very fast if the client is up and running.
+				// Check to see if the agreement is valid. For agreement on the blockchain, we check the blockchain directly. This call to the blockchain
+				// should be very fast if the client is up and running. For other agreements, send a message to the agbot to get the agbot's opinion
+				// on the agreement.
 				// Remember, the device might have been down for some time and/or restarted, causing it to miss events on the blockchain.
 				if w.producerPH[ag.AgreementProtocol].IsBlockchainClientAvailable(bcType, bcName, bcOrg) && w.producerPH[ag.AgreementProtocol].IsAgreementVerifiable(&ag) {
 
 					if recorded, err := w.producerPH[ag.AgreementProtocol].VerifyAgreement(&ag); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("encountered error verifying agreement %v on blockchain, error %v", ag.CurrentAgreementId, err)))
+						glog.Errorf(logString(fmt.Sprintf("encountered error verifying agreement %v, error %v", ag.CurrentAgreementId, err)))
 					} else if recorded {
 						if err := w.finalizeAgreement(ag, protocolHandler); err != nil {
 							glog.Errorf(err.Error())

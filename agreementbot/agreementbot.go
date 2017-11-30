@@ -580,14 +580,17 @@ func (w *AgreementBotWorker) policyWatcher(name string, quit chan bool) {
 	// create a place for the policy watcher to save state between iterations.
 	contents := policy.NewContents()
 
-	select {
-	case <-quit:
-		w.Commands <- worker.NewSubWorkerTerminationCommand(name)
-		glog.V(3).Infof(fmt.Sprintf("AgreementBotWorker %v exiting the subworker", name))
-		return
+	for {
+		glog.V(5).Infof(fmt.Sprintf("AgreementBotWorker checking for new or updated policy files"))
+		select {
+		case <-quit:
+			w.Commands <- worker.NewSubWorkerTerminationCommand(name)
+			glog.V(3).Infof(fmt.Sprintf("AgreementBotWorker %v exiting the subworker", name))
+			return
 
-	case <-time.After(time.Duration(w.Config.AgreementBot.CheckUpdatedPolicyS) * time.Second):
-		contents, _ = policy.PolicyFileChangeWatcher(w.Config.AgreementBot.PolicyPath, contents, w.changedPolicy, w.deletedPolicy, w.errorPolicy, w.workloadResolver, 0)
+		case <-time.After(time.Duration(w.Config.AgreementBot.CheckUpdatedPolicyS) * time.Second):
+			contents, _ = policy.PolicyFileChangeWatcher(w.Config.AgreementBot.PolicyPath, contents, w.changedPolicy, w.deletedPolicy, w.errorPolicy, w.workloadResolver, 0)
+		}
 	}
 
 }
