@@ -66,7 +66,7 @@ endif
 
 mostlyclean:
 	@echo "Mostlyclean"
-	rm -f $(EXECUTABLE)
+	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE)
 
 deps: $(TMPGOPATH)/bin/govendor
 	@echo "Fetching dependencies"
