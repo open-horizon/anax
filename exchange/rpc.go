@@ -521,7 +521,7 @@ func ConvertToString(a []string) string {
 	return r
 }
 
-func Heartbeat(h *http.Client, url string, id string, token string) {
+func Heartbeat(h *http.Client, url string, id string, token string) error {
 
 	glog.V(5).Infof(rpclogString(fmt.Sprintf("Heartbeating to exchange: %v", url)))
 
@@ -530,7 +530,7 @@ func Heartbeat(h *http.Client, url string, id string, token string) {
 	for {
 		if err, tpErr := InvokeExchange(h, "POST", url, id, token, nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
-			break
+			return err
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			time.Sleep(10 * time.Second)
@@ -540,6 +540,7 @@ func Heartbeat(h *http.Client, url string, id string, token string) {
 			break
 		}
 	}
+	return nil
 
 }
 

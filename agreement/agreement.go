@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -333,7 +334,13 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 // Heartbeat to the exchange. This function is called by the heartbeat subworker.
 func (w *AgreementWorker) heartBeat() int {
 	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/heartbeat"
-	exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken)
+	err := exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken)
+
+	// If the heartbeat fails because the node entry is gone then initiate a full node quiesce
+	if err != nil && strings.Contains(err.Error(), "status: 401") {
+		w.Messages() <- events.NewNodeShutdownMessage(events.START_UNCONFIGURE, false, false)
+	}
+
 	return 0
 }
 

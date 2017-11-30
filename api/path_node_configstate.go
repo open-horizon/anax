@@ -167,14 +167,15 @@ func UpdateConfigstate(cfg *Configstate,
 			service := NewService(apiSpec.SpecRef, apiSpec.Org, makeServiceName(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version), apiSpec.Version)
 			errHandled, newService, msg := CreateService(service, passthruHandler, getMicroservice, db, config)
 			if errHandled {
-				glog.Errorf(apiLogString(fmt.Sprintf("Configstate autoconfig received error (%T) %v", createServiceError, createServiceError)))
 				switch createServiceError.(type) {
 				case *MSMissingVariableConfigError:
+					glog.Errorf(apiLogString(fmt.Sprintf("Configstate autoconfig received error (%T) %v", createServiceError, createServiceError)))
 					msErr := createServiceError.(*MSMissingVariableConfigError)
 					// Cannot autoconfig this microservice because it has variables that need to be configured.
 					return errorhandler(NewAPIUserInputError(fmt.Sprintf("Configstate autoconfig, microservice %v %v %v, %v", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, msErr.Err), "configstate.state")), nil, nil
 
 				case *DuplicateServiceError:
+					glog.V(3).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig found duplicate microservice %v %v %v, continuing.", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version)))
 					// If the microservice is already registered, that's ok because the node user is allowed to configure any of the
 					// required microservices before calling the configstate API.
 

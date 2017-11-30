@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/producer"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -104,8 +105,12 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 
 // Clear out the registered microservices and the configured pattern for the node.
 func (w *GovernanceWorker) clearNodePatternAndMS() error {
+
+	// If the node entry has already been removed form the exchange, skip this step.
 	exDev, err := exchange.GetExchangeDevice(w.Config.Collaborators.HTTPClientFactory, w.deviceId, w.deviceToken, w.Config.Edge.ExchangeURL)
-	if err != nil {
+	if err != nil && strings.Contains(err.Error(), "status: 401") {
+		return nil
+	} else if err != nil {
 		return errors.New(fmt.Sprintf("error reading node from exchange: %v", err))
 	}
 
@@ -229,7 +234,7 @@ func (w *GovernanceWorker) terminateMicroservices() error {
 	return nil
 }
 
-// Remove the messaging key so that no one tries to communicate with the node.
+// Remove the messaging key so that no one tries to communicate with the node. If the node is already gone from the exchange, ignore the error.
 func (w *GovernanceWorker) patchNodeKey() error {
 
 	pdr := exchange.CreatePatchDeviceKey()
@@ -243,7 +248,11 @@ func (w *GovernanceWorker) patchNodeKey() error {
 
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "PATCH", targetURL, w.deviceId, w.deviceToken, pdr, &resp); err != nil {
-			return err
+			if strings.Contains(err.Error(), "status: 401") {
+				break
+			} else {
+				return err
+			}
 		} else if tpErr != nil {
 			glog.Warningf(tpErr.Error())
 			time.Sleep(10 * time.Second)
