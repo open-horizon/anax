@@ -7,6 +7,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"sort"
@@ -37,7 +38,7 @@ func FindWorkloadConfigForOutput(db *bolt.DB) (map[string][]persistence.Workload
 func CreateWorkloadconfig(cfg *WorkloadConfig,
 	existingDevice *persistence.ExchangeDevice,
 	errorhandler ErrorHandler,
-	getWorkload WorkloadHandler,
+	getWorkload exchange.WorkloadHandler,
 	db *bolt.DB) (bool, *persistence.WorkloadConfig) {
 
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("WorkloadConfig POST input: %v", cfg)))
