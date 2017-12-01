@@ -170,7 +170,7 @@ func (w *GovernanceWorker) CleanupMicroservice(spec_ref string, version string, 
 			ag_reason_text := w.producerPH[ag.AgreementProtocol].GetTerminationReason(ag_reason_code)
 
 			// end the agreements
-			glog.V(3).Infof("Ending the agreement: %v because microservice %v is deleted", ag.CurrentAgreementId, inst_key)
+			glog.V(3).Infof(logString(fmt.Sprintf("Ending the agreement: %v because microservice %v is deleted", ag.CurrentAgreementId, inst_key)))
 			w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, ag_reason_code, ag_reason_text)
 		}
 
@@ -333,12 +333,12 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 		if msi, inst_err = w.StartMicroservice(msdef.Id); inst_err != nil {
 
 			// try to downgrade the microservice to a lower version
-			glog.V(3).Infof("Ending the agreement: %v because microservice %v failed to start", agreementId, msdef.SpecRef)
+			glog.V(3).Infof(logString(fmt.Sprintf("Ending the agreement: %v because microservice %v failed to start", agreementId, msdef.SpecRef)))
 			ag_reason_code := w.producerPH[protocol].GetTerminationCode(producer.TERM_REASON_MS_DOWNGRADE_REQUIRED)
 			ag_reason_text := w.producerPH[protocol].GetTerminationReason(ag_reason_code)
 			w.cancelAgreement(agreementId, protocol, ag_reason_code, ag_reason_text)
 
-			glog.V(3).Infof("Downgrading microservice %v because version %v key %v failed to start. Error: %v", msdef.SpecRef, msdef.Version, msdef.Id, inst_err)
+			glog.V(3).Infof(logString(fmt.Sprintf("Downgrading microservice %v because version %v key %v failed to start. Error: %v", msdef.SpecRef, msdef.Version, msdef.Id, inst_err)))
 			if err := w.RollbackMicroservice(msdef); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("Error downgrading microservice %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
 			}

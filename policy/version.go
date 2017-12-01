@@ -264,11 +264,11 @@ func (self *Version_Expression) ChangeCeiling(ceiling_version string, inclusive 
 		// always set the false, ignore the inclusive input
 		self.end_inclusive = false
 	} else if !IsVersionString(ceiling_version) {
-		return fmt.Errorf("The input string %v is no a version string.", ceiling_version)
+		return fmt.Errorf("The input string %v is not a version string.", ceiling_version)
 	} else {
 
 		if strings.Compare(ceiling_version, self.start) < 0 {
-			return fmt.Errorf("The input string %v is no a version string.", ceiling_version)
+			return fmt.Errorf("The input ceiling version %v is lower than the start version %v.", ceiling_version, self.start)
 		}
 
 		self.end = ceiling_version

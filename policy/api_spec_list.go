@@ -3,7 +3,6 @@ package policy
 import (
 	"errors"
 	"fmt"
-	"strings"
 )
 
 // The purpose of this file is to provide APIs for working with the API spec list in a Policy.
@@ -170,25 +169,6 @@ func (self *APISpecList) AsStringArray() []string {
 	return res
 }
 
-// This function compares the 2 API spec lists and replaces a higher version singleton shared entry
-// from the other list into the self list.
-func (self *APISpecList) ReplaceHigherSharedSingleton(other *APISpecList) {
-
-	if len(*other) == 0 {
-		return
-	}
-
-	for ix, apiSpec := range *self {
-		for _, newApiSpec := range *other {
-			if newApiSpec.SpecRef == apiSpec.SpecRef && newApiSpec.Org == apiSpec.Org && newApiSpec.ExclusiveAccess == false && newApiSpec.ExclusiveAccess == apiSpec.ExclusiveAccess {
-				if strings.Compare(newApiSpec.Version, apiSpec.Version) == 1 {
-					(*self)[ix] = newApiSpec
-				}
-			}
-		}
-	}
-}
-
 // For each microservice url, get the version range intersection among all occurances in the list.
 func (self *APISpecList) GetCommonVersionRanges() (*APISpecList, error) {
 	const NO_INTERSECTION = "NO_INTERSECTION"
@@ -204,11 +184,6 @@ func (self *APISpecList) GetCommonVersionRanges() (*APISpecList, error) {
 		for i, newApiSpec := range *new_list {
 			if newApiSpec.SpecRef == apiSpec.SpecRef && newApiSpec.Org == apiSpec.Org && newApiSpec.Arch == apiSpec.Arch {
 				found = true
-
-				// ignore if previous has no intersection
-				if apiSpec.Version == NO_INTERSECTION {
-					break
-				}
 
 				// get the intersection of the two version ranges
 				if v, err := Version_Expression_Factory(apiSpec.Version); err != nil {

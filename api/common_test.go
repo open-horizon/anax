@@ -55,7 +55,7 @@ func getDummyGetPatterns() exchange.PatternHandler {
 }
 
 // Use these variable functions when you need the business logic to do something specific and you need to verify something specific.
-func getVariablePatternHandler(workload exchange.WorkloadReference) func(org string, pattern string, id string, token string) (map[string]exchange.Pattern, error) {
+func getVariablePatternHandler(workload exchange.WorkloadReference) exchange.PatternHandler {
 	return func(org string, pattern string, id string, token string) (map[string]exchange.Pattern, error) {
 		patid := fmt.Sprintf("%v/%v", org, pattern)
 		return map[string]exchange.Pattern{
@@ -70,7 +70,7 @@ func getVariablePatternHandler(workload exchange.WorkloadReference) func(org str
 	}
 }
 
-func getVariableWorkloadResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange.UserInput) func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*policy.APISpecList, *exchange.WorkloadDefinition, error) {
+func getVariableWorkloadResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange.UserInput) exchange.WorkloadResolverHandler {
 	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*policy.APISpecList, *exchange.WorkloadDefinition, error) {
 		sl := policy.APISpecList{
 			policy.APISpecification{
@@ -108,7 +108,7 @@ func getVariableWorkloadResolver(mUrl, mOrg, mVersion, mArch string, ui *exchang
 	}
 }
 
-func getVariableMicroserviceHandler(mUserInput exchange.UserInput) func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*exchange.MicroserviceDefinition, error) {
+func getVariableMicroserviceHandler(mUserInput exchange.UserInput) exchange.MicroserviceHandler {
 	return func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*exchange.MicroserviceDefinition, error) {
 		md := exchange.MicroserviceDefinition{
 			Owner:         "owner",
@@ -128,7 +128,7 @@ func getVariableMicroserviceHandler(mUserInput exchange.UserInput) func(mUrl str
 	}
 }
 
-func getVariableWorkload(mUrl, mOrg, mVersion, mArch string, ui []exchange.UserInput) func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*exchange.WorkloadDefinition, error) {
+func getVariableWorkload(mUrl, mOrg, mVersion, mArch string, ui []exchange.UserInput) exchange.WorkloadHandler {
 	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*exchange.WorkloadDefinition, error) {
 		es := exchange.APISpec{
 			SpecRef: mUrl,

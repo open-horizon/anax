@@ -104,7 +104,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 
 		switch msg.Event().Id {
 		case events.EXECUTION_BEGUN:
-			glog.Infof("Begun execution of containers according to agreement %v", msg.AgreementId)
+			glog.Infof(logString(fmt.Sprintf("Begun execution of containers according to agreement %v", msg.AgreementId)))
 
 			cmd := w.NewStartGovernExecutionCommand(msg.Deployment, msg.AgreementProtocol, msg.AgreementId)
 			w.Commands <- cmd
@@ -294,7 +294,7 @@ func (w *GovernanceWorker) governAgreements() {
 						glog.Errorf(logString(fmt.Sprintf("encountered error verifying agreement %v, error %v", ag.CurrentAgreementId, err)))
 					} else if recorded {
 						if err := w.finalizeAgreement(ag, protocolHandler); err != nil {
-							glog.Errorf(err.Error())
+							glog.Errorf(logString(err.Error()))
 						} else {
 							continue
 						}
@@ -486,7 +486,7 @@ func (w *GovernanceWorker) Initialize() bool {
 		if w.deviceToken != "" {
 			break
 		} else {
-			glog.V(3).Infof("GovernanceWorker command processor waiting for device registration")
+			glog.V(3).Infof(logString(fmt.Sprintf("GovernanceWorker command processor waiting for device registration")))
 			time.Sleep(time.Duration(5) * time.Second)
 		}
 	}
@@ -522,10 +522,10 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 	case *StartGovernExecutionCommand:
 		// TODO: update db start time and tc so it can be governed
 		cmd, _ := command.(*StartGovernExecutionCommand)
-		glog.V(3).Infof("Starting governance on resources in agreement: %v", cmd.AgreementId)
+		glog.V(3).Infof(logString(fmt.Sprintf("Starting governance on resources in agreement: %v", cmd.AgreementId)))
 
 		if _, err := persistence.AgreementStateExecutionStarted(w.db, cmd.AgreementId, cmd.AgreementProtocol, &cmd.Deployment); err != nil {
-			glog.Errorf("Failed to update local contract record to start governing Agreement: %v. Error: %v", cmd.AgreementId, err)
+			glog.Errorf(logString(fmt.Sprintf("Failed to update local contract record to start governing Agreement: %v. Error: %v", cmd.AgreementId, err)))
 		}
 
 	case *CleanupExecutionCommand:
@@ -539,7 +539,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 		} else if ags[0].AgreementTerminatedTime != 0 && ags[0].AgreementForceTerminatedTime == 0 {
 			glog.V(3).Infof(logString(fmt.Sprintf("ignoring the event, agreement %v is already terminating", agreementId)))
 		} else {
-			glog.V(3).Infof("Ending the agreement: %v", agreementId)
+			glog.V(3).Infof(logString(fmt.Sprintf("Ending the agreement: %v", agreementId)))
 			w.cancelAgreement(agreementId, cmd.AgreementProtocol, cmd.Reason, w.producerPH[cmd.AgreementProtocol].GetTerminationReason(cmd.Reason))
 
 			// send the event to the container in case it has started the workloads.
@@ -711,7 +711,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 			}
 
 			if agreementId, termination, reason, creation, err := w.producerPH[protocol].HandleBlockchainEventMessage(cmd); err != nil {
-				glog.Errorf(err.Error())
+				glog.Errorf(logString(err.Error()))
 			} else if termination {
 
 				// If we have that agreement in our DB, then cancel it
@@ -743,7 +743,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 
 					// Finalize the agreement
 				} else if err := w.finalizeAgreement(ags[0], w.producerPH[protocol].AgreementProtocolHandler(ags[0].BlockchainType, ags[0].BlockchainName, ags[0].BlockchainOrg)); err != nil {
-					glog.Errorf(err.Error())
+					glog.Errorf(logString(err.Error()))
 				}
 			}
 		}
@@ -897,7 +897,7 @@ func (w *GovernanceWorker) NoWorkHandler() {
 			go w.nodeShutdown(cmd)
 			w.ShuttingDownCmd = nil
 		} else {
-			glog.V(5).Infof("GovernanceWorker waiting for subworkers to terminate.")
+			glog.V(5).Infof(logString(fmt.Sprintf("GovernanceWorker waiting for subworkers to terminate.")))
 		}
 	}
 
@@ -967,12 +967,12 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			if workload.WorkloadURL == "" {
 				sensorUrl := tcPolicy.APISpecs[0].SpecRef
 				if envAdds, err = w.GetWorkloadPreference(sensorUrl); err != nil {
-					glog.Errorf("Error: %v", err)
+					glog.Errorf(logString(fmt.Sprintf("Error: %v", err)))
 					return err
 				}
 			} else {
 				if envAdds, err = w.GetWorkloadConfig(workload.WorkloadURL, workload.Version); err != nil {
-					glog.Errorf("Error: %v", err)
+					glog.Errorf(logString(fmt.Sprintf("Error: %v", err)))
 					return err
 				}
 				// The workload config we have might be from a lower version of the workload. Go to the exchange and
@@ -1008,7 +1008,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 				if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, as.SpecRef); err != nil {
 					return errors.New(logString(fmt.Sprintf("Error finding microservice definition from the local db for %v version range %v. %v", as.SpecRef, as.Version, err)))
 				} else if msdefs != nil && len(msdefs) > 0 { // if msdefs is nil or empty then it is old behaviour before the ms split
-					glog.V(5).Infof("All avaialbe msdefs: %v", msdefs)
+					glog.V(5).Infof(logString(fmt.Sprintf("All avaialbe msdefs: %v", msdefs)))
 					// assuming there is only one msdef for a microservice at any time
 					msdef := msdefs[0]
 
@@ -1124,7 +1124,7 @@ func recordProducerAgreementState(httpClient *http.Client, url string, deviceId 
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
-			glog.Warningf(tpErr.Error())
+			glog.Warningf(logString(tpErr.Error()))
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
@@ -1147,7 +1147,7 @@ func deleteProducerAgreement(httpClient *http.Client, url string, deviceId strin
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
-			glog.Warningf(tpErr.Error())
+			glog.Warningf(logString(tpErr.Error()))
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
@@ -1164,10 +1164,10 @@ func (w *GovernanceWorker) deleteMessage(msg *exchange.DeviceMessage) error {
 	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/msgs/" + strconv.Itoa(msg.MsgId)
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "DELETE", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
-			glog.Errorf(err.Error())
+			glog.Errorf(logString(err.Error()))
 			return err
 		} else if tpErr != nil {
-			glog.Warningf(tpErr.Error())
+			glog.Warningf(logString(tpErr.Error()))
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
@@ -1183,10 +1183,10 @@ func (w *GovernanceWorker) messageInExchange(msgId int) (bool, error) {
 	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/msgs"
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
-			glog.Errorf(err.Error())
+			glog.Errorf(logString(err.Error()))
 			return false, err
 		} else if tpErr != nil {
-			glog.Warningf(tpErr.Error())
+			glog.Warningf(logString(tpErr.Error()))
 			time.Sleep(10 * time.Second)
 			continue
 		} else {

@@ -148,10 +148,6 @@ func UpdateConfigstate(cfg *Configstate,
 					(*apiSpecList) = append((*apiSpecList), (*newAPISpec))
 				}
 
-				// Microservices that are defined as being shared singletons can only appear once in the complete API spec list. If there
-				// are 2 versions of the same shared singleton microservice, the higher version of the 2 will be auto configured.
-				//completeAPISpecList.ReplaceHigherSharedSingleton(apiSpecList)
-
 				// MergeWith will omit exact duplicates when merging the 2 lists.
 				(*completeAPISpecList) = completeAPISpecList.MergeWith(apiSpecList)
 			}
@@ -168,7 +164,7 @@ func UpdateConfigstate(cfg *Configstate,
 		// for now, anax only allow one microservice version, so we need to get the common version range for each microservice.
 		common_apispec_list, err := completeAPISpecList.GetCommonVersionRanges()
 		if err != nil {
-			return errorhandler(NewAPIUserInputError(fmt.Sprintf("Error resolving microservice version ranges for %v %v.", patId, thisArch), "configstate.state")), nil, nil
+			return errorhandler(NewAPIUserInputError(fmt.Sprintf("Error resolving the common version ranges for the referenced microservices for %v %v. %v", patId, thisArch, err), "configstate.state")), nil, nil
 		}
 
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Configstate resolved microservice version ranges to %v", *common_apispec_list)))
