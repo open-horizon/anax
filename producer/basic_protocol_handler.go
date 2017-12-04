@@ -140,8 +140,12 @@ func (c *BasicProtocolHandler) GetTerminationCode(reason string) uint {
 		return basicprotocol.CANCEL_WL_IMAGE_LOAD_FAILURE
 	case TERM_REASON_MS_IMAGE_LOAD_FAILURE:
 		return basicprotocol.CANCEL_MS_IMAGE_LOAD_FAILURE
+	case TERM_REASON_MS_IMAGE_FETCH_FAILURE:
+		return basicprotocol.CANCEL_MS_IMAGE_FETCH_FAILURE
 	case TERM_REASON_MS_UPGRADE_REQUIRED:
 		return basicprotocol.CANCEL_MS_UPGRADE_REQUIRED
+	case TERM_REASON_MS_DOWNGRADE_REQUIRED:
+		return basicprotocol.CANCEL_MS_DOWNGRADE_REQUIRED
 	case TERM_REASON_IMAGE_DATA_ERROR:
 		return basicprotocol.CANCEL_IMAGE_DATA_ERROR
 	case TERM_REASON_IMAGE_FETCH_FAILURE:

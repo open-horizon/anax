@@ -74,7 +74,7 @@ func (a *API) microserviceconfig(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
-		getMicroservice := GetHTTPMicroserviceHandler(a)
+		getMicroservice := a.exchHandlers.GetHTTPMicroserviceHandler()
 
 		// Input should be: Service type w/ zero or more Attribute types
 		var service Service

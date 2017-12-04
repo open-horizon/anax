@@ -3,7 +3,6 @@ package policy
 import (
 	"errors"
 	"fmt"
-	"strings"
 )
 
 // The purpose of this file is to provide APIs for working with the API spec list in a Policy.
@@ -170,21 +169,56 @@ func (self *APISpecList) AsStringArray() []string {
 	return res
 }
 
-// This function compares the 2 API spec lists and replaces a higher version singleton shared entry
-// from the other list into the self list.
-func (self *APISpecList) ReplaceHigherSharedSingleton(other *APISpecList) {
+// For each microservice url, get the version range intersection among all occurances in the list.
+func (self *APISpecList) GetCommonVersionRanges() (*APISpecList, error) {
+	const NO_INTERSECTION = "NO_INTERSECTION"
 
-	if len(*other) == 0 {
-		return
+	new_list := new(APISpecList)
+
+	if len(*self) == 0 {
+		return new_list, nil
 	}
 
-	for ix, apiSpec := range *self {
-		for _, newApiSpec := range *other {
-			if newApiSpec.SpecRef == apiSpec.SpecRef && newApiSpec.Org == apiSpec.Org && newApiSpec.ExclusiveAccess == false && newApiSpec.ExclusiveAccess == apiSpec.ExclusiveAccess {
-				if strings.Compare(newApiSpec.Version, apiSpec.Version) == 1 {
-					(*self)[ix] = newApiSpec
+	for _, apiSpec := range *self {
+		found := false
+		for i, newApiSpec := range *new_list {
+			if newApiSpec.SpecRef == apiSpec.SpecRef && newApiSpec.Org == apiSpec.Org && newApiSpec.Arch == apiSpec.Arch {
+				found = true
+
+				// get the intersection of the two version ranges
+				if v, err := Version_Expression_Factory(apiSpec.Version); err != nil {
+					return nil, fmt.Errorf("Error creating version range for %v, %v", apiSpec.SpecRef, apiSpec.Version)
+				} else if v_new, err := Version_Expression_Factory(newApiSpec.Version); err != nil {
+					return nil, fmt.Errorf("Error creating version range for %v, %v", newApiSpec.SpecRef, newApiSpec.Version)
+				} else if err := v.IntersectsWith(v_new); err != nil {
+					// no intersection found, remove the microservice from the list.
+					(*new_list)[i].Version = NO_INTERSECTION
+				} else {
+					(*new_list)[i].Version = v.Get_expression()
 				}
+
+				break
+			}
+		}
+
+		if !found {
+			// convert the version string to version range string
+			if vr, err := Version_Expression_Factory(apiSpec.Version); err != nil {
+				return nil, fmt.Errorf("Failed to convert the version string %v to version range. %v", apiSpec.Version, err)
+			} else {
+				apiSpec.Version = vr.Get_expression()
+				(*new_list) = append((*new_list), apiSpec)
 			}
 		}
 	}
+
+	// remove the ones that have no intersecton
+	new_list1 := new(APISpecList)
+	for _, newApiSpec := range *new_list {
+		if newApiSpec.Version != NO_INTERSECTION {
+			(*new_list1) = append((*new_list1), newApiSpec)
+		}
+	}
+
+	return new_list1, nil
 }

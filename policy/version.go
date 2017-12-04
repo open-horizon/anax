@@ -114,15 +114,51 @@ func Version_Expression_Factory(ver_string string) (*Version_Expression, error) 
 		end_inclusive:   rightIncluded(expr),
 	}
 
+	// nomalize the versions in the expression
+	ve.recalc_expression()
+
 	glog.V(6).Infof("Version_Expression: Created %v from %v", ve, expr)
 
 	return ve, nil
+}
+
+// Re caculate the full expression for this version range
+func (self *Version_Expression) recalc_expression() {
+	expr := ""
+
+	if self.start_inclusive {
+		expr = leftInc
+	} else {
+		expr = leftEx
+	}
+
+	expr = expr + normalize(self.start) + versionSeperator + normalize(self.end)
+
+	if self.end_inclusive {
+		expr = expr + rightInc
+	} else {
+		expr = expr + rightEx
+	}
+
+	self.full_expression = expr
 }
 
 // Return the version expression that was used as input to create this object
 //
 func (self *Version_Expression) Get_expression() string {
 	return self.full_expression
+}
+
+// Return the start version
+//
+func (self *Version_Expression) Get_start_version() string {
+	return self.start
+}
+
+// Return the end version
+//
+func (self *Version_Expression) Get_end_version() string {
+	return self.end
 }
 
 // Return true if the input version string in a valid version string and
@@ -180,6 +216,68 @@ func (self *Version_Expression) Is_within_range(expr string) (bool, error) {
 	// Should never get here
 	errorString := fmt.Sprintf("Version_Expression: Unable to compare versions %v %v.", expr, self)
 	return false, errors.New(errorString)
+}
+
+// make this version equals to the intersection of self and the given version
+func (self *Version_Expression) IntersectsWith(other *Version_Expression) error {
+
+	// compare the start part
+	if strings.Compare(self.start, other.start) == 0 {
+		if self.start_inclusive != other.start_inclusive {
+			self.start_inclusive = false
+		}
+	} else if strings.Compare(self.start, other.start) == -1 {
+		self.start = other.start
+		self.start_inclusive = other.start_inclusive
+	}
+
+	// compare the end part
+	if strings.Compare(self.end, other.end) == 0 {
+		if self.end_inclusive != other.end_inclusive {
+			self.end_inclusive = false
+		}
+	} else if self.end == INF || strings.Compare(self.end, other.end) == 1 {
+		self.end = other.end
+		self.end_inclusive = other.end_inclusive
+	}
+
+	// make sure start is smaller or equal to the end
+	if self.end != INF {
+		if comp := strings.Compare(self.start, self.end); comp == 0 {
+			if !self.start_inclusive && !self.end_inclusive {
+				return fmt.Errorf("No intersection found.")
+			}
+		} else if comp == 1 {
+			return fmt.Errorf("No intersection found.")
+		}
+	}
+
+	self.recalc_expression()
+
+	return nil
+}
+
+// change the ceiling of this version range.
+func (self *Version_Expression) ChangeCeiling(ceiling_version string, inclusive bool) error {
+	if ceiling_version == INF {
+		self.end = INF
+		// always set the false, ignore the inclusive input
+		self.end_inclusive = false
+	} else if !IsVersionString(ceiling_version) {
+		return fmt.Errorf("The input string %v is not a version string.", ceiling_version)
+	} else {
+
+		if strings.Compare(ceiling_version, self.start) < 0 {
+			return fmt.Errorf("The input ceiling version %v is lower than the start version %v.", ceiling_version, self.start)
+		}
+
+		self.end = ceiling_version
+		self.end_inclusive = inclusive
+	}
+
+	self.recalc_expression()
+
+	return nil
 }
 
 // ================================================================================================

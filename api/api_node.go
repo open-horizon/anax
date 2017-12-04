@@ -40,8 +40,8 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
-		orgHandler := GetHTTPExchangeOrgHandler(a)
-		patternHandler := GetHTTPExchangePatternHandler(a)
+		orgHandler := a.exchHandlers.GetHTTPExchangeOrgHandler()
+		patternHandler := a.exchHandlers.GetHTTPExchangePatternHandler()
 
 		// Read in the HTTP body and pass the device registration off to be validated and created.
 		var newDevice HorizonDevice
@@ -138,10 +138,10 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 	case "PUT":
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
-		orgHandler := GetHTTPExchangeOrgHandler(a)
-		microserviceHandler := GetHTTPMicroserviceHandler(a)
-		patternHandler := GetHTTPExchangePatternHandler(a)
-		workloadResolver := GetHTTPWorkloadResolverHandler(a)
+		orgHandler := a.exchHandlers.GetHTTPExchangeOrgHandler()
+		microserviceHandler := a.exchHandlers.GetHTTPMicroserviceHandler()
+		patternHandler := a.exchHandlers.GetHTTPExchangePatternHandler()
+		workloadResolver := a.exchHandlers.GetHTTPWorkloadResolverHandler()
 
 		// Read in the HTTP body and pass the device registration off to be validated and created.
 		var configState Configstate

@@ -384,115 +384,78 @@ func Test_APISpecification_notsupports6(t *testing.T) {
 	}
 }
 
-func Test_APISpecification_replacesharedsingleton_success0(t *testing.T) {
-	var prod_as *APISpecList
-	var con_as *APISpecList
+// test no intersection
+func Test_APISpecification_GetCommonVersionRanges_success1(t *testing.T) {
+	var apiSpecList *APISpecList
 
-	prod1 := `[{"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"1.0.0","exclusiveAccess":false,"arch":"amd64"}]`
-	con1 := `[]`
-	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
-		if con_as = create_APISpecification(con1, t); con_as != nil {
-			prod_as.ReplaceHigherSharedSingleton(con_as)
-			if (*prod_as)[0].Version != "1.0.0" {
-				t.Errorf("Error: should have version 2.0.0, but is %v\n", *prod_as)
+	prod := `[{"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"2.0.3","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"[1.0.0,3.0]","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/network","organization":"myorg","version":"[1.0.0,3.0)","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/network","organization":"myorg","version":"[2.1,5.0)","exclusiveAccess":false,"arch":"amd64"}]`
+	if apiSpecList = create_APISpecification(prod, t); apiSpecList != nil {
+		common_apispec_list, err := apiSpecList.GetCommonVersionRanges()
+		if err != nil {
+			t.Errorf("Error: got error but shoulg not be. %v\n", err)
+		} else {
+			for _, as := range *common_apispec_list {
+				if as.SpecRef == "http://mycompany.com/dm/gps" && as.Version != "[2.0.3,3.0.0]" {
+					t.Errorf("Error: should have version range [2.0.3,5.0.0], but is %v\n", as)
+				}
+
+				if as.SpecRef == "http://mycompany.com/dm/network" && as.Version != "[2.1.0,3.0.0)" {
+					t.Errorf("Error: should have version range [2.1.0,3.0.0), but is %v\n", as)
+				}
 			}
 		}
 	}
 }
 
-func Test_APISpecification_replacesharedsingleton_success1(t *testing.T) {
-	var prod_as *APISpecList
-	var con_as *APISpecList
+func Test_APISpecification_GetCommonVersionRanges_success2(t *testing.T) {
+	var apiSpecList *APISpecList
 
-	prod1 := `[]`
-	con1 := `[]`
-	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
-		if con_as = create_APISpecification(con1, t); con_as != nil {
-			prod_as.ReplaceHigherSharedSingleton(con_as)
-			if len(*prod_as) != 0 {
-				t.Errorf("Error: should be empty, but is %v\n", *prod_as)
+	prod := `[{"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"2.0.3","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"[1.0.0,3.0]","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"[4.0.0,5.0]","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/network","organization":"myorg","version":"5.0","exclusiveAccess":false,"arch":"amd64"}]`
+	if apiSpecList = create_APISpecification(prod, t); apiSpecList != nil {
+		common_apispec_list, err := apiSpecList.GetCommonVersionRanges()
+		if err != nil {
+			t.Errorf("Error: got error but shoulg not be. %v\n", err)
+		} else {
+			for _, as := range *common_apispec_list {
+				if as.SpecRef == "http://mycompany.com/dm/gps" {
+					t.Errorf("Error: should not have have gps, but has %v\n", as)
+
+				}
 			}
 		}
 	}
 }
 
-func Test_APISpecification_replacesharedsingleton_success2(t *testing.T) {
-	var prod_as *APISpecList
-	var con_as *APISpecList
+// test different org
+func Test_APISpecification_GetCommonVersionRanges_success3(t *testing.T) {
+	var apiSpecList *APISpecList
 
-	prod1 := `[{"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"1.0.0","exclusiveAccess":false,"arch":"amd64"}]`
-	con1 := `[{"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"2.0.0","exclusiveAccess":false,"arch":"amd64"}]`
-	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
-		if con_as = create_APISpecification(con1, t); con_as != nil {
-			prod_as.ReplaceHigherSharedSingleton(con_as)
-			if (*prod_as)[0].Version != "2.0.0" {
-				t.Errorf("Error: should have version 2.0.0, but is %v\n", *prod_as)
-			}
-		}
-	}
-}
+	prod := `[{"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"2.0.3","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"[1.0.0,3.0]","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/gps","organization":"myorg1","version":"[4.0.0,5.0]","exclusiveAccess":false,"arch":"amd64"},
+	          {"specRef":"http://mycompany.com/dm/network","organization":"myorg","version":"5.0","exclusiveAccess":false,"arch":"amd64"}]`
+	if apiSpecList = create_APISpecification(prod, t); apiSpecList != nil {
+		common_apispec_list, err := apiSpecList.GetCommonVersionRanges()
+		if err != nil {
+			t.Errorf("Error: got error but shoulg not be. %v\n", err)
+		} else {
+			for _, as := range *common_apispec_list {
+				if as.SpecRef == "http://mycompany.com/dm/gps" && as.Org == "myorg" && as.Version != "[2.0.3,3.0.0]" {
+					t.Errorf("Error: should have version range [2.0.3,5.0.0], but is %v\n", as)
+				}
+				if as.SpecRef == "http://mycompany.com/dm/gps" && as.Org == "myorg1" && as.Version != "[4.0.0,5.0.0]" {
+					t.Errorf("Error: should have version range [4.0.0,5.0.0], but is %v\n", as)
+				}
+				if as.SpecRef == "http://mycompany.com/dm/network" && as.Version != "[5.0.0,INFINITY)" {
+					t.Errorf("Error: should have version range 5.0.0,INFINITY), but is %v\n", as)
+				}
 
-func Test_APISpecification_replacesharedsingleton_success3(t *testing.T) {
-	var prod_as *APISpecList
-	var con_as *APISpecList
-
-	prod1 := `[{"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"1.0.0","exclusiveAccess":true,"arch":"amd64"}]`
-	con1 := `[{"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"2.0.0","exclusiveAccess":false,"arch":"amd64"}]`
-	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
-		if con_as = create_APISpecification(con1, t); con_as != nil {
-			prod_as.ReplaceHigherSharedSingleton(con_as)
-			if (*prod_as)[0].Version != "1.0.0" {
-				t.Errorf("Error: should have version 2.0.0, but is %v\n", *prod_as)
-			}
-		}
-	}
-}
-
-func Test_APISpecification_replacesharedsingleton_success4(t *testing.T) {
-	var prod_as *APISpecList
-	var con_as *APISpecList
-
-	prod1 := `[{"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"1.0.0","exclusiveAccess":false,"arch":"amd64"}]`
-	con1 := `[{"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"2.0.0","exclusiveAccess":true,"arch":"amd64"}]`
-	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
-		if con_as = create_APISpecification(con1, t); con_as != nil {
-			prod_as.ReplaceHigherSharedSingleton(con_as)
-			if (*prod_as)[0].Version != "1.0.0" {
-				t.Errorf("Error: should have version 2.0.0, but is %v\n", *prod_as)
-			}
-		}
-	}
-}
-
-func Test_APISpecification_replacesharedsingleton_success5(t *testing.T) {
-	var prod_as *APISpecList
-	var con_as *APISpecList
-
-	prod1 := `[{"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"1.0.0","exclusiveAccess":false,"arch":"amd64"}]`
-	con1 := `[{"specRef":"http://mycompany.com/dm/gps2","organization":"myorg","version":"2.0.0","exclusiveAccess":false,"arch":"amd64"}]`
-	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
-		if con_as = create_APISpecification(con1, t); con_as != nil {
-			prod_as.ReplaceHigherSharedSingleton(con_as)
-			if (*prod_as)[0].Version != "1.0.0" {
-				t.Errorf("Error: should have version 2.0.0, but is %v\n", *prod_as)
-			} else if (*prod_as)[0].SpecRef != "http://mycompany.com/dm/gps" {
-				t.Errorf("Error: should be 2 entries in the array, but is %v\n", *prod_as)
-			}
-		}
-	}
-}
-
-func Test_APISpecification_replacesharedsingleton_success6(t *testing.T) {
-	var prod_as *APISpecList
-	var con_as *APISpecList
-
-	prod1 := `[{"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"1.0.0","exclusiveAccess":false,"arch":"amd64"},{"specRef":"http://mycompany.com/dm/gps2","organization":"myorg","version":"1.0.0","exclusiveAccess":false,"arch":"amd64"}]`
-	con1 := `[{"specRef":"http://mycompany.com/dm/gps","organization":"myorg","version":"1.0.0","exclusiveAccess":false,"arch":"amd64"},{"specRef":"http://mycompany.com/dm/gps2","organization":"myorg","version":"2.0.0","exclusiveAccess":false,"arch":"amd64"}]`
-	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
-		if con_as = create_APISpecification(con1, t); con_as != nil {
-			prod_as.ReplaceHigherSharedSingleton(con_as)
-			if (*prod_as)[0].Version != "1.0.0" && (*prod_as)[1].Version != "2.0.0" {
-				t.Errorf("Error: should have version 1.0.0 and 2.0.0, but is %v\n", *prod_as)
 			}
 		}
 	}

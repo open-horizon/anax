@@ -65,7 +65,7 @@ func FindServiceConfigForOutput(pm *policy.PolicyManager, db *bolt.DB) (map[stri
 // Given a demarshalled Service object, validate it and save it, returning any errors.
 func CreateService(service *Service,
 	errorhandler ErrorHandler,
-	getMicroservice MicroserviceHandler,
+	getMicroservice exchange.MicroserviceHandler,
 	db *bolt.DB,
 	config *config.HorizonConfig) (bool, *Service, *events.PolicyCreatedMessage) {
 
