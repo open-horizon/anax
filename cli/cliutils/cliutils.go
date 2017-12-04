@@ -17,9 +17,10 @@ import (
 const (
 	HZN_API     = "http://localhost"
 	JSON_INDENT = "  "
+	MUST_REGISTER_FIRST = "this command can not be run before running 'hzn register'"
 
 	// Exit Codes
-	CLI_INPUT_ERROR    = 1 // we actually don't have control over the usage exit code
+	CLI_INPUT_ERROR    = 1 // we actually don't have control over the usage exit code that kingpin returns, so use the same code for input errors we catch ourselves
 	JSON_PARSING_ERROR = 3
 	READ_FILE_ERROR    = 4
 	HTTP_ERROR         = 5
@@ -61,6 +62,17 @@ func GetShortBinaryName() string {
 	return path.Base(os.Args[0])
 }
 */
+
+// SplitIdToken splits an id:token or user:pw and return the parts.
+func SplitIdToken(idToken string) (id, token string) {
+	parts := strings.SplitN(idToken, ":", 2)
+	id = parts[0] // SplitN will always at least return 1 element
+	token = ""
+	if len(parts) >= 2 {
+		token = parts[1]
+	}
+	return
+}
 
 // GetHorizonUrlBase returns the base part of the horizon api url (which can be overridden by env var HORIZON_URL_BASE)
 func GetHorizonUrlBase() string {
@@ -228,7 +240,9 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 	}
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
+	if credentials != "" {
+		req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
+	}   // else it is an anonymous call
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err)
