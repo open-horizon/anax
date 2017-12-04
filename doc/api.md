@@ -19,7 +19,7 @@ none
 
 **Response:**
 
-code: 
+code:
 * 200 -- success
 
 body:
@@ -78,7 +78,7 @@ none
 
 **Response:**
 
-code: 
+code:
 * 200 -- success
 
 body:
@@ -134,7 +134,7 @@ body:
 
 **Response:**
 
-code: 
+code:
 
 * 201 -- success
 
@@ -167,7 +167,7 @@ body:
 
 **Response:**
 
-code: 
+code:
 
 * 200 -- success
 
@@ -194,11 +194,11 @@ Unconfigure the agent so that it can be re-configured. All agreements are cancel
 
 **Response:**
 
-code: 
+code:
 
 * 204 -- success
 
-body: 
+body:
 
 none
 
@@ -219,7 +219,7 @@ none
 
 **Response:**
 
-code: 
+code:
 * 200 -- success
 
 body:
@@ -256,11 +256,11 @@ body:
 
 **Response:**
 
-code: 
+code:
 
 * 201 -- success
 
-body: 
+body:
 
 none
 
@@ -288,7 +288,7 @@ none
 
 **Response:**
 
-code: 
+code:
 * 200 -- success
 
 body:
@@ -661,11 +661,11 @@ body:
 
 **Response:**
 
-code: 
+code:
 
 * 201 -- success
 
-body: 
+body:
 
 none
 
@@ -698,7 +698,7 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
 #### **API:** GET  /attribute
 ---
 
-Get all the attributes for the registered services. 
+Get all the attributes for the registered services.
 
 **Parameters:**
 
@@ -706,7 +706,7 @@ none
 
 **Response:**
 
-code: 
+code:
 * 200 -- success
 
 body:
@@ -715,7 +715,7 @@ body:
 | ---- | ---- | ---------------- |
 | attributes | array | an array of all the attributes for all the services. The fields of an attribute are defined in the following. |
 
-attribute 
+attribute
 
 | name | type| description |
 | ---- | ---- | ---------------- |
@@ -830,11 +830,11 @@ body:
 
 **Response:**
 
-code: 
+code:
 
 * 201 -- success
 
-body: 
+body:
 
 none
 
@@ -865,7 +865,7 @@ none
 
 **Response:**
 
-code: 
+code:
 * 200 -- success
 
 body:
@@ -921,11 +921,11 @@ body:
 
 **Response:**
 
-code: 
+code:
 
 * 200 -- success
 
-body: 
+body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
@@ -961,11 +961,11 @@ none
 
 **Response:**
 
-code: 
+code:
 
 * 200 -- success
 
-body: 
+body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
@@ -991,7 +991,7 @@ none
 
 **Response:**
 
-code: 
+code:
 * 200 -- success
 
 body:
@@ -999,8 +999,8 @@ body:
 | name | type | description |
 | ---- | ---- | ---------------- |
 | agreements  | json | contains active and archived agreements |
-| active | array | an array of current agreements. The attributes of each agreement are defined in the following rows. | 
-| archived | array | an array of canceled agreements. The attributes of each agreement are defined in the following rows. | 
+| active | array | an array of current agreements. The attributes of each agreement are defined in the following rows. |
+| archived | array | an array of canceled agreements. The attributes of each agreement are defined in the following rows. |
 | name | string |  the name of the policies used to make the agreement.  |
 | current_agreement_id | string | the id of the agreement. |
 | counterparty_address | string |  the ethereum account of the agbot. |
@@ -1121,13 +1121,13 @@ Delete an agreement. The agbot will start a new agreement negotiation with the a
 
 **Response:**
 
-code: 
+code:
 
 * 200 -- success
 * 404 -- the agreement does not exist.
 
 
-body: 
+body:
 
 none
 
@@ -1225,7 +1225,7 @@ none
 
 **Response:**
 
-code: 
+code:
 
 * 200 -- success
 
@@ -1235,7 +1235,7 @@ body:
 | ---- | ---- | ---------------- |
 | config | array | a list of workload configurations for workloads that can run on the node. |
 
-configuration: 
+configuration:
 
 | name | type| description |
 | ---- | ---- | ---------------- |
@@ -1294,7 +1294,7 @@ body:
 
 **Response:**
 
-code: 
+code:
 
 * 201 -- success
 
@@ -1335,7 +1335,7 @@ body:
 
 **Response:**
 
-code: 
+code:
 
 * 204 -- success
 
@@ -1371,7 +1371,7 @@ body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| pem  | json | an array of public key files that have previously been PUT to the agent. |
+| pem  | json | an array of public key files or x509 certs that have previously been PUT to the agent. |
 
 **Example:**
 ```
@@ -1385,7 +1385,7 @@ curl -s http://localhost/publickey | jq  '.'
 #### **API:** GET  /publickey/{filename}
 ---
 
-Get the content of the user public key from a file that has been previously stored to the agent.
+Get the content of the user public key or x509 cert from a file that has been previously stored to the agent.
 
 **Parameters:**
 
@@ -1411,7 +1411,7 @@ curl -s http://localhost/publickey/akeyfile.pem > akeyfile.pem
 #### **API:** PUT  /publickey/{filename}
 ---
 
-Put a user public key to the agent for container image verification.
+Put a user public key or cert to the agent for container image verification.
 
 **Parameters:**
 
@@ -1430,14 +1430,14 @@ none
 
 **Example:**
 ```
-curl -T publickey.pem http://localhost/publickey/mynewworkloadkey.pem
+curl -T ~/.rsapsstool/keypairs/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem http://localhost/publickey/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem
 
 ```
 
 #### **API:** DELETE  /publickey/{filename}
 ---
 
-Delete a user public key from the agent.
+Delete a user public key or x509 cert from the agent.
 
 **Parameters:**
 
@@ -1456,6 +1456,6 @@ none
 
 **Example:**
 ```
-curl -s -X DELETE http://localhost/publickey/mynewworkloadkey.pem
+curl -s -X DELETE http://localhost/publickey/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem
 
 ```

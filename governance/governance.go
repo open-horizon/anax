@@ -1531,7 +1531,7 @@ func (w *GovernanceWorker) RollbackMicroservice(old_msdef *persistence.Microserv
 	// unregister the new ms from exchange
 	if new_msdef.UpgradeMsReregisteredTime > 0 {
 		if err := microservice.RemoveMicroservicePolicy(new_msdef.SpecRef, new_msdef.Org, new_msdef.Version, new_msdef.Id, w.Config.Edge.PolicyPath, w.pm); err != nil {
-			return fmt.Errorf(logString(fmt.Sprintf("Failed to remove microservice policy for microservice def %v version %v key %d. %v", new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
+			return fmt.Errorf(logString(fmt.Sprintf("Failed to remove microservice policy for microservice def %v version %v key %s. %v", new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
 		} else if err := microservice.UnregisterMicroserviceExchange(new_msdef.SpecRef, w.Config.Collaborators.HTTPClientFactory, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, w.db); err != nil {
 			return fmt.Errorf(logString(fmt.Sprintf("Failed to unregister microservice from the exchange for microservice def %v. %v", new_msdef.SpecRef, err)))
 		}

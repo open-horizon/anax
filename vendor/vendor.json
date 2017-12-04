@@ -440,10 +440,16 @@
 			"revisionTime": "2017-09-29T04:46:40Z"
 		},
 		{
-			"checksumSHA1": "VUNbvSnk5sCRMPopbBqaKYM3ZUc=",
+			"checksumSHA1": "h28o0+CEghkJELsf/KRNqGXZ7LA=",
+			"path": "github.com/open-horizon/rsapss-tool/constants",
+			"revision": "469316935456edc0922b0772646e64113524f593",
+			"revisionTime": "2017-12-03T22:19:37Z"
+		},
+		{
+			"checksumSHA1": "i1xawajFZ6Pcg7g3K8GaZMRvWws=",
 			"path": "github.com/open-horizon/rsapss-tool/verify",
-			"revision": "d48d3dbcb9ddb13d4e241041965d94b35ee16628",
-			"revisionTime": "2017-11-08T18:52:45Z"
+			"revision": "469316935456edc0922b0772646e64113524f593",
+			"revisionTime": "2017-12-03T22:19:37Z"
 		},
 		{
 			"checksumSHA1": "3AoPMXlmVq2+iWMpsdJZkcUKHB8=",

@@ -61,7 +61,7 @@ func (a *API) attribute(w http.ResponseWriter, r *http.Request) {
 					glog.V(3).Infof(apiLogString(fmt.Sprintf("User attempted attribute update but there isn't a matching persisting attribute to modify.")))
 					w.WriteHeader(http.StatusNotFound)
 				default:
-					glog.Error(apiLogString(fmt.Sprintf("Error persisting attribute. ", err)))
+					glog.Error(apiLogString(fmt.Sprintf("Error persisting attribute: %v", err)))
 					w.WriteHeader(http.StatusInternalServerError)
 				}
 			} else if added != nil {
@@ -115,7 +115,7 @@ func (a *API) attribute(w http.ResponseWriter, r *http.Request) {
 					case *persistence.ConflictingAttributeFound:
 						w.WriteHeader(http.StatusConflict)
 					default:
-						glog.Error(apiLogString(fmt.Sprintf("Error persisting attribute. ", err)))
+						glog.Error(apiLogString(fmt.Sprintf("Error persisting attribute: %v", err)))
 						w.WriteHeader(http.StatusInternalServerError)
 					}
 				} else if added != nil {

@@ -165,13 +165,13 @@ func (w *Workload) Obscure(agreementId string, defaultPW string) error {
 }
 
 func (w Workload) HasValidSignature(keyFileNames []string) error {
-	glog.V(3).Infof("Verifying workload signature with keys: %v", keyFileNames)
+	glog.V(3).Infof("Verifying workload signature with keys (bare or wrapped in x509 cert): %v", keyFileNames)
 
 	if w.Deployment != "" {
 		if verified, fn_success, failed_map := verify.InputVerifiedByAnyKey(keyFileNames, w.DeploymentSignature, []byte(w.Deployment)); !verified {
 			return fmt.Errorf("Error verifying deployment signature: %v for deployment: %v, Error: %v", w.DeploymentSignature, w.Deployment, failed_map)
 		} else {
-			glog.Infof("Deployment verification successful with RSA pubkey file: %v", fn_success)
+			glog.Infof("Deployment verification successful with RSA pubkey in file: %v", fn_success)
 		}
 	}
 
@@ -181,7 +181,7 @@ func (w Workload) HasValidSignature(keyFileNames []string) error {
 		if verified, fn_success, failed_map := verify.InputVerifiedByAnyKey(keyFileNames, w.DeploymentOverridesSignature, []byte(w.DeploymentOverrides)); !verified {
 			return fmt.Errorf("Error verifying deployment overrides signature: %v for deployment: %v, Error: %v", w.DeploymentOverridesSignature, w.DeploymentOverrides, failed_map)
 		} else {
-			glog.Infof("Deployment overrides verification successful with RSA pubkey file: %v", fn_success)
+			glog.Infof("Deployment overrides verification successful with RSA pubkey in file: %v", fn_success)
 		}
 		return nil
 	}
