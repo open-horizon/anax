@@ -108,8 +108,8 @@ install:
 	mkdir -p $(DESTDIR)/bin && \
 		cp $(EXECUTABLE) $(DESTDIR)/bin && \
 		cp $(CLI_EXECUTABLE) $(DESTDIR)/bin
-	mkdir -p $(DESTDIR)/web && \
-		cp $(DEFAULT_UI) $(DESTDIR)/web
+	# mkdir -p $(DESTDIR)/web && \
+	#	cp $(DEFAULT_UI) $(DESTDIR)/web
 	cp -Rapv cli/samples $(DESTDIR)
 	mkdir -p $(CDIR) && \
 		cp -apv ./vendor/github.com/open-horizon/go-solidity/contracts/. $(CDIR)/
