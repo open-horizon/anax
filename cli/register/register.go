@@ -182,5 +182,5 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, email str
 	config := api.Configstate{State: &configuredStr}
 	cliutils.HorizonPutPost(http.MethodPut, "node/configstate", []int{201, 200}, config)
 
-	fmt.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn show agreements' to view.")
+	fmt.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
 }
