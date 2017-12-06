@@ -2,12 +2,12 @@
 
 ## Introduction
 
-This project contains the Horizon client system source code. To learn more about the Horizon system, including how to try the Blue Horizon instance of it, please browse to http://bluehorizon.network. Note that the **HEAD** of this repository's `master` branch includes alpha-grade code under current development. Stable versions of this application are bundled in Ubuntu Snaps (cf. https://www.ubuntu.com/desktop/snappy), consult the `bluehorizon-snap` project listed below to learn more.
+This project contains the Horizon client system source code. To learn more about the Horizon system, including how to try the Blue Horizon instance of it, please browse to http://bluehorizon.network. Note that the **HEAD** of this repository's `master` branch includes alpha-grade code under current development. Stable versions of this application are packaged for many Debian-based distributions. They are available for download at http://pkg.bluehorizon.network/linux/. To build the packages yourself, consult https://github.com/open-horizon/horizon-deb-packager.
 
 Related Projects:
 
 * `anax-ui` (http://github.com/open-horizon/anax-ui): The source for the Anax web UI
-* `horizon-pkg` (http://github.com/open-horizon/horizon-pkg): A system for packaging Horizon system `deb`s for multiple distributions and architectures. It also produces Ubuntu snaps
+* `horizon-deb-packager` (https://github.com/open-horizon/horizon-deb-packager): A system for packaging Horizon system `deb`s for multiple distributions and architectures. It also produces Ubuntu snaps
  * `raspbian-image` (http://github.com/open-horizon/raspbian-image): The Raspbian image builder for Raspberry Pi 2 and 3 models dedicated to Horizon
 
 ## Documentation
@@ -61,7 +61,7 @@ Note that this target is automatically executed when executing targets `check` a
 
 * Add `"ANAX_LOG_LEVEL=5"` to the `Environment=` configuration in the systemd unit file `/etc/systemd/system/snap.bluehorizon.anax.service`. Note that the value `5` is the classification of most debug log messages, `6` is used for even more granular log messages, something like a 'trace' level.
 * Reload the systemd unit file with `systemctl daemon-reload`.
-* Restart the anax process with `systemctl restart snap.bluehorizon.anax.service`.
+* Restart the anax process with `systemctl restart horizon.service`.
 
 #### Development Environment
 
