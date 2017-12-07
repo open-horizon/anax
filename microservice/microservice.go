@@ -163,6 +163,8 @@ func GetUpgradeMicroserviceDef(getMicroservice exchange.MicroserviceHandler, msd
 		return nil, fmt.Errorf("Unable to convert %v to a version expression, error %v", msdef.UpgradeVersionRange, err)
 	} else if e_msdef, err := getMicroservice(msdef.SpecRef, msdef.Org, vExp.Get_expression(), msdef.Arch, deviceId, deviceToken); err != nil {
 		return nil, fmt.Errorf("Filed to find a highest version for microservice %v version range %v: %v", msdef.SpecRef, msdef.UpgradeVersionRange, err)
+	} else if e_msdef == nil {
+		return nil, fmt.Errorf("Could not find any microservices for %v within the version range %v.", msdef.SpecRef, msdef.UpgradeVersionRange)
 	} else if new_msdef, err := ConvertToPersistent(e_msdef, msdef.Org); err != nil {
 		return nil, fmt.Errorf("Failed to convert microservice metadata to persistent.MicroserviceDefinition for %v. %v", msdef.SpecRef, err)
 	} else {
@@ -205,6 +207,8 @@ func GetRollbackMicroserviceDef(getMicroservice exchange.MicroserviceHandler, ms
 		return nil, fmt.Errorf("Unable to limit the version range ceiling to %v for version range %v. %v", msdef.Version, vExp.Get_expression(), err)
 	} else if e_msdef, err := getMicroservice(msdef.SpecRef, msdef.Org, vExp.Get_expression(), msdef.Arch, deviceId, deviceToken); err != nil {
 		return nil, fmt.Errorf("Filed to find a highest version for microservice %v version range %v: %v", msdef.SpecRef, vExp.Get_expression(), err)
+	} else if e_msdef == nil {
+		return nil, fmt.Errorf("Could not find any microservices for %v within the version range %v.", msdef.SpecRef, msdef.UpgradeVersionRange)
 	} else if new_msdef, err := ConvertToPersistent(e_msdef, msdef.Org); err != nil {
 		return nil, fmt.Errorf("Failed to convert microservice metadata to persistent.MicroserviceDefinition for %v. %v", msdef.SpecRef, err)
 	} else {

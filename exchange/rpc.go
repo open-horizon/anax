@@ -824,6 +824,8 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg 
 				}
 
 				highest := ""
+				// resWDef has to be the object instead of pointer to the object because onece the pointer points to &wDef,
+				// the content of it will get changed when the content of wDef gets changed in the loop
 				var resWDef WorkloadDefinition
 				for _, wDef := range workloadMetadata {
 					if inRange, err := vRange.Is_within_range(wDef.Version); err != nil {
@@ -836,8 +838,15 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg 
 						}
 					}
 				}
-				glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v for %v", resWDef, wURL)))
-				return &resWDef, nil
+
+				if highest == "" {
+					// when highest is empty, it means that there were no data in workloadMetadata, hence return nil.
+					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v for %v", nil, wURL)))
+					return nil, nil
+				} else {
+					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v for %v", resWDef, wURL)))
+					return &resWDef, nil
+				}
 			}
 		}
 	}
@@ -898,6 +907,8 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 				}
 
 				highest := ""
+				// resMsDef has to be the object instead of pointer to the object because onece the pointer points to &msDef,
+				// the content of it will get changed when the content of msDef gets changed in the loop
 				var resMsDef MicroserviceDefinition
 				for _, msDef := range msMetadata {
 					if inRange, err := vRange.Is_within_range(msDef.Version); err != nil {
@@ -910,8 +921,15 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 						}
 					}
 				}
-				glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v for %v", resMsDef, mURL)))
-				return &resMsDef, nil
+
+				if highest == "" {
+					// when highest is empty, it means that there were no data in msMetadata, hence return nil.
+					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v for %v", nil, mURL)))
+					return nil, nil
+				} else {
+					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v for %v", resMsDef, mURL)))
+					return &resMsDef, nil
+				}
 			}
 		}
 	}
@@ -930,6 +948,8 @@ func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, 
 	workload, werr := GetWorkload(httpClientFactory, wURL, wOrg, wVersion, wArch, exURL, id, token)
 	if werr != nil {
 		return nil, nil, werr
+	} else if workload == nil {
+		return nil, nil, errors.New(fmt.Sprintf("unable to find workload %v %v %v %v on the exchange.", wURL, wOrg, wVersion, wArch))
 	} else if len(workload.Workloads) != 1 {
 		return nil, nil, errors.New(fmt.Sprintf("expecting 1 element in the workloads array of %v, have %v", workload, len(workload.Workloads)))
 	} else {
@@ -955,7 +975,7 @@ func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, 
 				} else if ms, err := GetMicroservice(httpClientFactory, apiSpec.SpecRef, apiSpec.Org, vExp.Get_expression(), apiSpec.Arch, exURL, id, token); err != nil {
 					return nil, nil, err
 				} else if ms == nil {
-					return nil, nil, errors.New(fmt.Sprintf("unable to find microservice %v within %v", apiSpec, vExp))
+					return nil, nil, errors.New(fmt.Sprintf("unable to find microservice %v within version range %v in the exchange.", apiSpec, vExp))
 				} else {
 					newAPISpec := policy.APISpecification_Factory(ms.SpecRef, apiSpec.Org, ms.Version, ms.Arch)
 					if ms.Sharable == MS_SHARING_MODE_SINGLE {
