@@ -1230,4 +1230,3 @@ func (w *GovernanceWorker) FindEstablishedAgreementsWithIds(agreementIds []strin
 	filters = append(filters, multiIdFilter(agreementIds))
 	return persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), filters)
 }
-

@@ -945,9 +945,12 @@ func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, 
 			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving microservices for %v %v %v %v", wURL, wOrg, wVersion, wArch)))
 			for _, apiSpec := range workload.APISpecs {
 
+				// Make sure the microservice has the same arch as the workload
 				// Convert version to a version range expression (if it's not already an expression) so that GetMicroservice()
 				// will return us something in the range required by the workload.
-				if vExp, err := policy.Version_Expression_Factory(apiSpec.Version); err != nil {
+				if apiSpec.Arch != wArch {
+					return nil, nil, errors.New(fmt.Sprintf("microservice %v has a different architecture from the workload.", apiSpec))
+				} else if vExp, err := policy.Version_Expression_Factory(apiSpec.Version); err != nil {
 					return nil, nil, errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", apiSpec.Version, err))
 				} else if ms, err := GetMicroservice(httpClientFactory, apiSpec.SpecRef, apiSpec.Org, vExp.Get_expression(), apiSpec.Arch, exURL, id, token); err != nil {
 					return nil, nil, err
