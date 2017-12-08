@@ -93,7 +93,7 @@ func pullImageFromRepos(config config.Config, authConfigs *docker.AuthConfigurat
 					case *docker.Error:
 						dErr := err.(*docker.Error)
 						if dErr.Status == 500 && strings.Contains(dErr.Message, "cred") {
-							return fetcherrors.PkgSourceFetchAuthError{msg, dErr}
+							return fetcherrors.PkgSourceFetchAuthError{Msg: msg, InternalError: dErr}
 						} else {
 							glog.Infof("Docker client error occurred %v", err)
 							return err

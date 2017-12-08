@@ -308,7 +308,7 @@ type BXDockerRegistryAuthAttributes struct {
 }
 
 func (a BXDockerRegistryAuthAttributes) String() string {
-	return fmt.Sprintf("meta: %v, token: <withheld>", a.GetMeta(), a.Token)
+	return fmt.Sprintf("meta: %v, token: <withheld>", a.GetMeta())
 }
 
 func (a BXDockerRegistryAuthAttributes) GetMeta() *AttributeMeta {
