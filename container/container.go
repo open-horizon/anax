@@ -396,16 +396,16 @@ func (w *ContainerWorker) NewEvent(incoming events.Message) {
 		msg, _ := incoming.(*events.TorrentMessage)
 		switch msg.Event().Id {
 		case events.IMAGE_FETCHED:
-			glog.Infof("Fetched image files: %v", msg.ImageFiles)
+			glog.Infof("Fetched image files in deployment description for services: %v", msg.DeploymentDescription.ServiceNames())
 			switch msg.LaunchContext.(type) {
 			case *events.AgreementLaunchContext:
 				lc := msg.LaunchContext.(*events.AgreementLaunchContext)
-				cCmd := w.NewWorkloadConfigureCommand(msg.ImageFiles, lc)
+				cCmd := w.NewWorkloadConfigureCommand(msg.DeploymentDescription, lc)
 				w.Commands <- cCmd
 
 			case *events.ContainerLaunchContext:
 				lc := msg.LaunchContext.(*events.ContainerLaunchContext)
-				cCmd := w.NewContainerConfigureCommand(msg.ImageFiles, lc)
+				cCmd := w.NewContainerConfigureCommand(msg.DeploymentDescription, lc)
 				w.Commands <- cCmd
 			}
 		}
@@ -1219,9 +1219,9 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 			// perhaps add the tc info to the container message so it can be enforced
 			if ov := os.Getenv("CMTN_SERVICEOVERRIDE"); ov != "" {
-				b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, *cmd.ContainerLaunchContext, serviceNames[0], deploymentDesc.Services[serviceNames[0]].getSpecificContainerPortBinding())
+				b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, *cmd.ContainerLaunchContext, serviceNames[0], deploymentDesc.Services[serviceNames[0]].GetSpecificContainerPortBinding())
 			} else {
-				b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, *cmd.ContainerLaunchContext, deploymentDesc.Services[serviceNames[0]].getSpecificHostBinding(), deploymentDesc.Services[serviceNames[0]].getSpecificHostPortBinding())
+				b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, *cmd.ContainerLaunchContext, deploymentDesc.Services[serviceNames[0]].GetSpecificHostBinding(), deploymentDesc.Services[serviceNames[0]].GetSpecificHostPortBinding())
 			}
 		}
 
