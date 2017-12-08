@@ -1,10 +1,10 @@
 package workload
 
 import (
-	"github.com/open-horizon/anax/cli/cliutils"
 	"encoding/json"
 	"fmt"
 	dockerclient "github.com/fsouza/go-dockerclient"
+	"github.com/open-horizon/anax/cli/cliutils"
 )
 
 // Can't use the api and persistence structs because the Attributes type isn't detailed enough to drill down into it

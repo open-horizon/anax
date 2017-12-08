@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/exchange"
 	"io"
 	"io/ioutil"
@@ -15,8 +16,8 @@ import (
 )
 
 const (
-	HZN_API     = "http://localhost"
-	JSON_INDENT = "  "
+	HZN_API             = "http://localhost"
+	JSON_INDENT         = "  "
 	MUST_REGISTER_FIRST = "this command can not be run before running 'hzn register'"
 
 	// Exit Codes
@@ -38,6 +39,12 @@ type GlobalOptions struct {
 }
 
 var Opts GlobalOptions
+
+type UserExchangeReq struct {
+	Password string `json:"password"`
+	Admin    bool   `json:"admin"`
+	Email    string `json:"email"`
+}
 
 func Verbose(msg string, args ...interface{}) {
 	if !*Opts.Verbose {
@@ -187,7 +194,14 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 	return
 }
 
-// ExchangeGet runs a GET to the exchange api and fills in the specified json structure.
+// GetExchangeUrl returns the exchange url from the anax api
+func GetExchangeUrl() string {
+	status := api.Info{}
+	HorizonGet("status", []int{200}, &status)
+	return strings.TrimSuffix(status.Configuration.ExchangeAPI, "/")
+}
+
+// ExchangeGet runs a GET to the exchange api and fills in the specified json structure. If the structure is just a string, fill in the raw json.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
 func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, structure interface{}) (httpCode int) {
 	url := urlBase + "/" + urlSuffix
@@ -215,9 +229,25 @@ func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttpC
 	if err != nil {
 		Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err)
 	}
-	err = json.Unmarshal(bodyBytes, structure)
-	if err != nil {
-		Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err)
+
+	switch s := structure.(type) {
+	case *string:
+		// If the structure to fill in is just a string, unmarshal/remarshal it to get it in json indented form, and then return as a string
+		var jsonStruct interface{}
+		err = json.Unmarshal(bodyBytes, &jsonStruct)
+		if err != nil {
+			Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err)
+		}
+		jsonBytes, err := json.MarshalIndent(jsonStruct, "", JSON_INDENT)
+		if err != nil {
+			Fatal(JSON_PARSING_ERROR, "failed to marshal 'show pem' output: %v", err)
+		}
+		*s = string(jsonBytes)
+	default:
+		err = json.Unmarshal(bodyBytes, structure)
+		if err != nil {
+			Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err)
+		}
 	}
 	return
 }
@@ -242,7 +272,7 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 	req.Header.Add("Content-Type", "application/json")
 	if credentials != "" {
 		req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
-	}   // else it is an anonymous call
+	} // else it is an anonymous call
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err)

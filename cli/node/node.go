@@ -1,10 +1,10 @@
 package node
 
 import (
-	"github.com/open-horizon/anax/cli/cliutils"
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/api"
+	"github.com/open-horizon/anax/cli/cliutils"
 )
 
 type Configstate struct {
@@ -15,10 +15,10 @@ type Configstate struct {
 // This is a combo of anax's HorizonDevice and Info (status) structs
 type NodeAndStatus struct {
 	// from api.HorizonDevice
-	Id                 *string     `json:"id"`
-	Org                *string     `json:"organization"`
-	Pattern            *string     `json:"pattern"`               // a simple name, not prefixed with the org
-	Name               *string     `json:"name"`                  // removed omitempty
+	Id      *string `json:"id"`
+	Org     *string `json:"organization"`
+	Pattern *string `json:"pattern"` // a simple name, not prefixed with the org
+	Name    *string `json:"name"`    // removed omitempty
 	//Token              *string     `json:"token"`                 // removed omitempty
 	TokenLastValidTime string      `json:"token_last_valid_time"` // removed omitempty
 	TokenValid         *bool       `json:"token_valid"`           // removed omitempty

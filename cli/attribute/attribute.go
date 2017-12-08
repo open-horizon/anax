@@ -1,10 +1,10 @@
 package attribute
 
 import (
-	"github.com/open-horizon/anax/cli/cliutils"
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/api"
+	"github.com/open-horizon/anax/cli/cliutils"
 )
 
 const HTTPSBasicAuthAttributes = "HTTPSBasicAuthAttributes"

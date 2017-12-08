@@ -1,10 +1,10 @@
 package service
 
 import (
-	"github.com/open-horizon/anax/cli/cliutils"
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/api"
+	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cutil"
 )
 
@@ -16,10 +16,10 @@ type APIMicroservices struct {
 
 // Not using policy.APISpecification, because it includes a field ExclusiveAccess that is filled in in various parts of the code that we can't easily duplicate
 type APISpecification struct {
-	SpecRef         string `json:"specRef"`         // A URL pointing to the definition of the API spec
-	Org             string `json:"organization"`    // The organization where the microservice is defined
-	Version         string `json:"version"`         // The version of the API spec in OSGI version format
-	Arch            string `json:"arch"`            // The hardware architecture of the API spec impl. Added in version 2.
+	SpecRef string `json:"specRef"`      // A URL pointing to the definition of the API spec
+	Org     string `json:"organization"` // The organization where the microservice is defined
+	Version string `json:"version"`      // The version of the API spec in OSGI version format
+	Arch    string `json:"arch"`         // The hardware architecture of the API spec impl. Added in version 2.
 }
 
 type OurService struct {
