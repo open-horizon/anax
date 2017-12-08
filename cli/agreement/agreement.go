@@ -1,9 +1,9 @@
 package agreement
 
 import (
-	"github.com/open-horizon/anax/cli/cliutils"
 	"encoding/json"
 	"fmt"
+	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/persistence"
 )
 
@@ -74,7 +74,6 @@ func (a *ArchivedAgreement) CopyAgreementInto(agreement persistence.EstablishedA
 	a.TerminatedDescription = agreement.TerminatedDescription
 }
 
-
 func getAgreements(archivedAgreements bool) (apiAgreements []persistence.EstablishedAgreement) {
 	// Get horizon api agreement output and drill down to the category we want
 	apiOutput := make(map[string]map[string][]persistence.EstablishedAgreement, 0)
@@ -92,7 +91,6 @@ func getAgreements(archivedAgreements bool) (apiAgreements []persistence.Establi
 	}
 	return
 }
-
 
 func List(archivedAgreements bool) {
 	apiAgreements := getAgreements(archivedAgreements)
@@ -120,7 +118,6 @@ func List(archivedAgreements bool) {
 		fmt.Printf("%s\n", jsonBytes)
 	}
 }
-
 
 func Cancel(agreementId string, allAgreements bool) {
 	// Put the agreement ids in a slice

@@ -2,24 +2,47 @@
 package main
 
 import (
+	"github.com/open-horizon/anax/cli/agreement"
+	"github.com/open-horizon/anax/cli/attribute"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cli/exchange"
+	"github.com/open-horizon/anax/cli/key"
+	"github.com/open-horizon/anax/cli/metering"
+	"github.com/open-horizon/anax/cli/node"
 	"github.com/open-horizon/anax/cli/register"
+	"github.com/open-horizon/anax/cli/service"
 	"github.com/open-horizon/anax/cli/unregister"
+	"github.com/open-horizon/anax/cli/workload"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"os"
-	"github.com/open-horizon/anax/cli/key"
-	"github.com/open-horizon/anax/cli/node"
-	"github.com/open-horizon/anax/cli/agreement"
-	"github.com/open-horizon/anax/cli/metering"
-	"github.com/open-horizon/anax/cli/attribute"
-	"github.com/open-horizon/anax/cli/service"
-	"github.com/open-horizon/anax/cli/workload"
 )
 
 func main() {
 	// Command flags and args - see https://github.com/alecthomas/kingpin
 	app := kingpin.New("hzn", "Command line interface for Horizon agent.")
 	cliutils.Opts.Verbose = app.Flag("verbose", "Verbose output.").Short('v').Bool()
+
+	exchangeCmd := app.Command("exchange", "List and manage Horizon Exchange resources.")
+	exOrg := exchangeCmd.Flag("org", "The Horizon exchange organization ID.").Short('o').Default("public").String()
+
+	userCmd := exchangeCmd.Command("user", "List and manage users in the Horizon Exchange")
+	exUserPw := userCmd.Flag("user-pw", "User credentials in the Horizon exchange.").Short('u').PlaceHolder("USER:PW").Required().String()
+	userListCmd := userCmd.Command("list", "Display the user resource from the Horizon Exchange.")
+	userCreateCmd := userCmd.Command("create", "Create the user resource in the Horizon Exchange.")
+	userCreateEmail := userCreateCmd.Flag("email", "Your email address that should be associated with this user account when creating it in the Horizon exchange.").Short('e').Required().String()
+
+	exNodeCmd := exchangeCmd.Command("node", "List and manage nodes in the Horizon Exchange")
+	exNodeIdTok := exNodeCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token. The node ID must be unique within the organization.").Short('n').PlaceHolder("ID:TOK").Required().String()
+	exNodeListCmd := exNodeCmd.Command("list", "Display the node resource from the Horizon Exchange.")
+	exNodeCreateCmd := exNodeCmd.Command("create", "Create the node resource in the Horizon Exchange.")
+	exNodeUserPw := exNodeCreateCmd.Flag("user-pw", "User credentials to create the node resource in the Horizon exchange.").Short('u').PlaceHolder("USER:PW").Required().String()
+	exNodeEmail := exNodeCreateCmd.Flag("email", "Your email address. Only needs to be specified if: the user specified in the -u flag does not exist, and you specified is the 'public' org. If these things are true we will create the user and include this value as the email attribute.").Short('e').String()
+
+	exPatternCmd := exchangeCmd.Command("pattern", "List and manage patterns in the Horizon Exchange")
+	exPatNodeIdTok := exPatternCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to use to query the exchange. Create with 'hzn exchange node create'.").Short('n').PlaceHolder("ID:TOK").Required().String()
+	exPatternListCmd := exPatternCmd.Command("list", "Display the pattern resources from the Horizon Exchange.")
+	exPattern := exPatternListCmd.Arg("pattern", "List just this one pattern.").String()
+	exPatternNames := exPatternListCmd.Flag("names-only", "Only list the names (IDs) of the patterns.").Bool()
 
 	registerCmd := app.Command("register", "Register this edge node with Horizon.")
 	nodeIdTok := registerCmd.Flag("node-id-tok", "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.").Short('n').PlaceHolder("ID:TOK").String()
@@ -63,6 +86,16 @@ func main() {
 
 	// Decide which command to run
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
+	case userListCmd.FullCommand():
+		exchange.UserList(*exOrg, *exUserPw)
+	case userCreateCmd.FullCommand():
+		exchange.UserCreate(*exOrg, *exUserPw, *userCreateEmail)
+	case exNodeListCmd.FullCommand():
+		exchange.NodeList(*exOrg, *exNodeIdTok)
+	case exNodeCreateCmd.FullCommand():
+		exchange.NodeCreate(*exOrg, *exNodeIdTok, *exNodeUserPw, *exNodeEmail)
+	case exPatternListCmd.FullCommand():
+		exchange.PatternList(*exOrg, *exPatNodeIdTok, *exPattern, *exPatternNames)
 	case registerCmd.FullCommand():
 		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *email, *inputFile)
 	case keyListCmd.FullCommand():

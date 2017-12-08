@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"regexp"
-	"strings"
 )
 
 // These structs are used to parse the registration input file
@@ -35,12 +34,6 @@ type InputFile struct {
 	Workloads     []MicroWork `json:"workloads"`
 }
 
-type UserExchangeReq struct {
-	Password string `json:"password"`
-	Admin bool `json:"admin"`
-	Email string `json:"email"`
-}
-
 func readInputFile(filePath string, inputFileStruct *InputFile) {
 	var fileBytes []byte
 	var err error
@@ -62,7 +55,6 @@ func readInputFile(filePath string, inputFileStruct *InputFile) {
 	}
 }
 
-
 // DoIt registers this node to Horizon with a pattern
 func DoIt(org string, pattern string, nodeIdTok string, userPw string, email string, inputFile string) {
 	// Read input file 1st, so we don't get half way thru registration before finding the problem
@@ -73,9 +65,7 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, email str
 	}
 
 	// Get the exchange url from the anax api
-	status := api.Info{}
-	cliutils.HorizonGet("status", []int{200}, &status)
-	exchUrlBase := strings.TrimSuffix(status.Configuration.ExchangeAPI, "/")
+	exchUrlBase := cliutils.GetExchangeUrl()
 	fmt.Printf("Horizon Exchange base URL: %s\n", exchUrlBase)
 
 	// See if the node exists in the exchange, and create if it doesn't
@@ -104,13 +94,13 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, email str
 		}
 		fmt.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...\n", org, nodeId)
 		putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeId, SoftwareVersions: make(map[string]string), PublicKey: []byte("")} // we only need to set the token
-		httpCode = cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+userPw, []int{201,401}, putNodeReq)
+		httpCode = cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+userPw, []int{201, 401}, putNodeReq)
 		if httpCode == 401 {
 			user, pw := cliutils.SplitIdToken(userPw)
 			if org == "public" && email != "" {
 				// In the public org we can create a user anonymously, so try that
 				fmt.Printf("User %s/%s does not exist in the exchange with the specified password, creating it...\n", org, user)
-				postUserReq := UserExchangeReq{Password: pw, Admin: false, Email: email}
+				postUserReq := cliutils.UserExchangeReq{Password: pw, Admin: false, Email: email}
 				httpCode = cliutils.ExchangePutPost(http.MethodPost, exchUrlBase, "orgs/"+org+"/users/"+user, "", []int{201}, postUserReq)
 				fmt.Printf("Trying again to create/update %s/%s ...\n", org, nodeId)
 				httpCode = cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+userPw, []int{201}, putNodeReq)

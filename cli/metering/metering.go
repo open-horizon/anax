@@ -1,9 +1,9 @@
 package metering
 
 import (
-	"github.com/open-horizon/anax/cli/cliutils"
 	"encoding/json"
 	"fmt"
+	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/persistence"
 )
 

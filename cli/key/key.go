@@ -1,9 +1,9 @@
 package key
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
-	"encoding/json"
 )
 
 func List() {
@@ -16,7 +16,7 @@ func List() {
 	}
 	jsonBytes, err := json.MarshalIndent(apiOutput["pem"], "", cliutils.JSON_INDENT)
 	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show pem' output: %v", err)
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'key list' output: %v", err)
 	}
 	fmt.Printf("%s\n", jsonBytes)
 }
