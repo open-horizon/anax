@@ -5,6 +5,7 @@ package container
 import (
 	"encoding/json"
 	docker "github.com/fsouza/go-dockerclient"
+	"github.com/open-horizon/anax/containermessage"
 	"net/url"
 	"testing"
 )
@@ -16,25 +17,25 @@ func Test_UnmarshalNetworkIsolation(t *testing.T) {
 		}
 	`
 
-	var n NetworkIsolation
+	var n containermessage.NetworkIsolation
 
 	if err := json.Unmarshal([]byte(s), &n); err != nil {
 		t.Error(err)
 	} else {
-		obj := n.OutboundPermitOnly[2].(DynamicOutboundPermitValue)
+		obj := n.OutboundPermitOnly[2].(containermessage.DynamicOutboundPermitValue)
 
-		if obj.DdKey != "goo" || obj.Encoding != JSON {
+		if obj.DdKey != "goo" || obj.Encoding != containermessage.JSON {
 			t.Error("Ill-formed network isolation member")
 		}
 	}
 }
 
 func Test_generatePermittedStringDynamic(t *testing.T) {
-	isolation := &NetworkIsolation{
-		OutboundPermitOnly: []OutboundPermitValue{
-			StaticOutboundPermitValue("198.60.81.209/28"),
-			StaticOutboundPermitValue("4.2.2.2"),
-			DynamicOutboundPermitValue{
+	isolation := &containermessage.NetworkIsolation{
+		OutboundPermitOnly: []containermessage.OutboundPermitValue{
+			containermessage.StaticOutboundPermitValue("198.60.81.209/28"),
+			containermessage.StaticOutboundPermitValue("4.2.2.2"),
+			containermessage.DynamicOutboundPermitValue{
 				DdKey:    "deployment_user_info",
 				Encoding: "JSON",
 				Path:     "quarks.externalBrokerHost",
@@ -71,7 +72,7 @@ func Test_generatePermittedStringDynamic(t *testing.T) {
 
 func Test_isValidFor_API(t *testing.T) {
 
-	serv1 := Service{
+	serv1 := containermessage.Service{
 		Image:            "an image",
 		VariationLabel:   "label",
 		Privileged:       true,
@@ -79,26 +80,26 @@ func Test_isValidFor_API(t *testing.T) {
 		CapAdd:           []string{"a", "b"},
 		Command:          []string{"start"},
 		Devices:          []string{},
-		Ports:            []Port{},
-		NetworkIsolation: NetworkIsolation{},
+		Ports:            []containermessage.Port{},
+		NetworkIsolation: containermessage.NetworkIsolation{},
 		Binds:            []string{"/tmp/geth:/root"},
 	}
 
-	services := make(map[string]*Service)
+	services := make(map[string]*containermessage.Service)
 	services["geth"] = &serv1
 
-	desc := DeploymentDescription{
+	desc := containermessage.DeploymentDescription{
 		Services:       services,
-		ServicePattern: Pattern{},
+		ServicePattern: containermessage.Pattern{},
 	}
 
-	if valid := desc.isValidFor("workload"); valid {
+	if valid := desc.IsValidFor("workload"); valid {
 		t.Errorf("Service1 is not valid for a workload, %v", serv1)
-	} else if valid := desc.isValidFor("infrastructure"); !valid {
+	} else if valid := desc.IsValidFor("infrastructure"); !valid {
 		t.Errorf("Service1 is valid for infrastructure, %v", serv1)
 	}
 
-	serv2 := Service{
+	serv2 := containermessage.Service{
 		Image:            "an image",
 		VariationLabel:   "label",
 		Privileged:       true,
@@ -106,20 +107,20 @@ func Test_isValidFor_API(t *testing.T) {
 		CapAdd:           []string{"a", "b"},
 		Command:          []string{"start"},
 		Devices:          []string{},
-		Ports:            []Port{},
-		NetworkIsolation: NetworkIsolation{},
+		Ports:            []containermessage.Port{},
+		NetworkIsolation: containermessage.NetworkIsolation{},
 		SpecificPorts:    []docker.PortBinding{{HostIP: "0.0.0.0", HostPort: "8545"}},
 	}
 
 	services["geth"] = &serv2
-	desc2 := DeploymentDescription{
+	desc2 := containermessage.DeploymentDescription{
 		Services:       services,
-		ServicePattern: Pattern{},
+		ServicePattern: containermessage.Pattern{},
 	}
 
-	if valid := desc2.isValidFor("workload"); valid {
+	if valid := desc2.IsValidFor("workload"); valid {
 		t.Errorf("Service2 is not valid for a workload, %v", serv2)
-	} else if valid := desc2.isValidFor("infrastructure"); !valid {
+	} else if valid := desc2.IsValidFor("infrastructure"); !valid {
 		t.Errorf("Service2 is valid for infrastructure, %v", serv2)
 	}
 }

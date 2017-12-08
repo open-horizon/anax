@@ -2,6 +2,7 @@ package events
 
 import (
 	"fmt"
+	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/persistence"
 	"net/url"
 	"time"
@@ -91,8 +92,7 @@ type Message interface {
 }
 
 type LaunchContext interface {
-	URL() url.URL
-	Signature() string
+	ContainerConfig() ContainerConfig
 	ShortString() string
 }
 
@@ -119,12 +119,8 @@ func (c AgreementLaunchContext) ShortString() string {
 	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v", c.AgreementProtocol, c.AgreementId)
 }
 
-func (c AgreementLaunchContext) URL() url.URL {
-	return c.Configure.TorrentURL
-}
-
-func (c AgreementLaunchContext) Signature() string {
-	return c.Configure.TorrentSignature
+func (c AgreementLaunchContext) ContainerConfig() ContainerConfig {
+	return c.Configure
 }
 
 type ContainerConfig struct {
@@ -172,12 +168,8 @@ func (c ContainerLaunchContext) ShortString() string {
 	return c.String()
 }
 
-func (c ContainerLaunchContext) URL() url.URL {
-	return c.Configure.TorrentURL
-}
-
-func (c ContainerLaunchContext) Signature() string {
-	return c.Configure.TorrentSignature
+func (c ContainerLaunchContext) ContainerConfig() ContainerConfig {
+	return c.Configure
 }
 
 func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]string, bc BlockchainConfig, name string) *ContainerLaunchContext {
@@ -463,9 +455,9 @@ func NewAgreementMessage(id EventId, lc *AgreementLaunchContext) *AgreementReach
 }
 
 type TorrentMessage struct {
-	event         Event
-	ImageFiles    []string
-	LaunchContext interface{}
+	event                 Event
+	DeploymentDescription *containermessage.DeploymentDescription
+	LaunchContext         interface{}
 }
 
 // fulfill interface of events.Message
@@ -474,21 +466,21 @@ func (b *TorrentMessage) Event() Event {
 }
 
 func (b *TorrentMessage) String() string {
-	return fmt.Sprintf("event: %v, imageFiles: %v, launchContext: %v", b.event, b.ImageFiles, b.LaunchContext)
+	return fmt.Sprintf("event: %v, deploymentDescription: %v, launchContext: %v", b.event, b.DeploymentDescription, b.LaunchContext)
 }
 
 func (b *TorrentMessage) ShortString() string {
-	return fmt.Sprintf("event: %v, imageFiles: %v, launchContext: %v", b.event, b.ImageFiles, b.LaunchContext)
+	return fmt.Sprintf("event: %v, deploymentDescription: %v, launchContext: %v", b.event, b.DeploymentDescription, b.LaunchContext)
 }
 
-func NewTorrentMessage(id EventId, imageFiles []string, launchContext interface{}) *TorrentMessage {
+func NewTorrentMessage(id EventId, deploymentDescription *containermessage.DeploymentDescription, launchContext interface{}) *TorrentMessage {
 
 	return &TorrentMessage{
 		event: Event{
 			Id: id,
 		},
-		ImageFiles:    imageFiles,
-		LaunchContext: launchContext,
+		DeploymentDescription: deploymentDescription,
+		LaunchContext:         launchContext,
 	}
 }
 

@@ -2,10 +2,14 @@ package torrent
 
 import (
 	"fmt"
+	"net/url"
 
+	"encoding/json"
 	"github.com/boltdb/bolt"
+	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/worker"
@@ -16,13 +20,21 @@ import (
 type TorrentWorker struct {
 	worker.BaseWorker // embedded field
 	db                *bolt.DB
+	client            *docker.Client
 }
 
 func NewTorrentWorker(name string, config *config.HorizonConfig, db *bolt.DB) *TorrentWorker {
 
+	cl, err := docker.NewClient(config.Edge.DockerEndpoint)
+	if err != nil {
+		glog.Errorf("Failed to instantiate docker Client: %v", err)
+		panic("Unable to instantiate docker Client")
+	}
+
 	worker := &TorrentWorker{
 		BaseWorker: worker.NewBaseWorker(name, config),
 		db:         db,
+		client:     cl,
 	}
 
 	worker.Start(worker, 0)
@@ -62,16 +74,18 @@ func (w *TorrentWorker) NewEvent(incoming events.Message) {
 	return
 }
 
-// TODO: extract this, make common via collaborators
-func authAttributes(db *bolt.DB) (map[string]map[string]string, error) {
-	authAttrs := make(map[string]map[string]string, 0)
+func authAttributes(db *bolt.DB) (map[string]map[string]string, *docker.AuthConfigurations, error) {
+	httpAuthAttrs := make(map[string]map[string]string, 0)
+	dockerAuthConfigurations := make(map[string]docker.AuthConfiguration, 0)
 
-	// TODO: fill this with the device token, just need to know the URLs
+	wrapDockerAuth := func() *docker.AuthConfigurations {
+		return &docker.AuthConfigurations{Configs: dockerAuthConfigurations}
+	}
 
 	// assemble credentials from attributes
 	attributes, err := persistence.FindApplicableAttributes(db, "")
 	if err != nil {
-		return nil, fmt.Errorf("Error fetching attributes. Error: %v", err)
+		return httpAuthAttrs, wrapDockerAuth(), fmt.Errorf("Error fetching attributes. Error: %v", err)
 	}
 	for _, attr := range attributes {
 		if attr.GetMeta().Type == "HTTPSBasicAuthAttributes" {
@@ -80,16 +94,79 @@ func authAttributes(db *bolt.DB) (map[string]map[string]string, error) {
 				"username": a.Username,
 				"password": a.Password,
 			}
-			//cred := fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(a.Username+":"+a.Password)))
 
 			// we don't care about apply-all settings, they're a security problem (TODO: add an API check for this case)
 			for _, url := range attr.GetMeta().SensorUrls {
-				authAttrs[url] = cred
+				httpAuthAttrs[url] = cred
+			}
+		} else if attr.GetMeta().Type == "BXDockerRegistryAuthAttributes" {
+			a := attr.(persistence.BXDockerRegistryAuthAttributes)
+
+			for _, url := range attr.GetMeta().SensorUrls {
+				// TODO: replace this string business with whatever is parsed out of a docker config file
+				dockerAuthConfigurations[url] = docker.AuthConfiguration{
+					Email:         "",
+					Username:      "token",
+					Password:      a.Token,
+					ServerAddress: url,
+				}
 			}
 		}
 	}
 
-	return authAttrs, nil
+	return httpAuthAttrs, wrapDockerAuth(), nil
+}
+
+func processDeployment(cfg *config.HorizonConfig, containerConfig events.ContainerConfig) ([]string, *containermessage.DeploymentDescription, error) {
+	var pemFiles []string
+	var err error
+
+	pemFiles, err = cfg.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(cfg.Edge.PublicKeyPath, cfg.Edge.UserPublicKeyPath)
+	if err != nil {
+		return pemFiles, nil, fmt.Errorf("Unable to read pemFiles from KeyFileNamesFetcher. Error: %v", err)
+	}
+
+	glog.V(3).Infof("Deployment signature for deployment %v validated, continuing to process deployment", containerConfig.Deployment)
+
+	var deploymentDesc containermessage.DeploymentDescription
+	if err := json.Unmarshal([]byte(containerConfig.Deployment), &deploymentDesc); err != nil {
+		return pemFiles, nil, fmt.Errorf("Error Unmarshalling deployment string %v, error: %v", containerConfig.Deployment, err)
+	}
+
+	return pemFiles, &deploymentDesc, nil
+}
+
+func processFetch(cfg *config.HorizonConfig, client *docker.Client, db *bolt.DB, pemFiles []string, deploymentDesc *containermessage.DeploymentDescription, torrentUrl url.URL, torrentSig string) error {
+	httpAuth, dockerAuth, err := authAttributes(db)
+	if err != nil {
+		glog.Errorf("Failed to fetch authentication facts before processing packages and / or Docker pulls: %v. Continuing anyway", err)
+	}
+
+	// N.B. Using fetcherrors types even for docker pull errors
+	var fetchErr error
+
+	skipCheckFn := skipCheckFn(client)
+	if torrentUrl.String() == "" && torrentSig == "" {
+		// using Docker pull (newer option, uses docker client to pull images from repos in image names in deployment description)
+		// Note: we don't want to make this a fallback option, it's a potential security vector
+		glog.V(3).Infof("Empty torrent URL '%v' and Signature '%v' provided in LaunchContext, using Docker pull mechanism to retrieve and load Docker images into local registry", torrentUrl.String(), torrentSig)
+
+		fetchErr = pullImageFromRepos(cfg.Edge, dockerAuth, client, &skipCheckFn, deploymentDesc)
+
+	} else {
+		// using Pkg fetch and image load (traditional option, content of images is packaged completely, all content is checked for signature)
+		// imageFiles is of form {<repotag>: <part abspath> or empty string}
+		var imageFiles map[string]string
+
+		imageFiles, fetchErr = fetch.PkgFetch(cfg.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), &skipCheckFn, torrentUrl, torrentSig, cfg.Edge.TorrentDir, pemFiles, httpAuth)
+
+		if fetchErr == nil {
+			// now load those imageFiles using Docker client
+			fetchErr = loadImagesFromPkgParts(client, imageFiles)
+		}
+	}
+
+	return fetchErr
 }
 
 func (b *TorrentWorker) CommandHandler(command worker.Command) bool {
@@ -97,53 +174,43 @@ func (b *TorrentWorker) CommandHandler(command worker.Command) bool {
 	switch command.(type) {
 	case *FetchCommand:
 
-		authAttribs, err := authAttributes(b.db)
-		if err != nil {
-			glog.Error(err)
+		cmd := command.(*FetchCommand)
+		if lc := b.getLaunchContext(cmd.LaunchContext); lc == nil {
+			glog.Errorf("Incoming event was not a known launch context: %T", cmd.LaunchContext)
 		} else {
+			glog.V(5).Infof("LaunchContext(%T): %v", lc, lc)
 
-			cmd := command.(*FetchCommand)
-			if lc := b.getLaunchContext(cmd.LaunchContext); lc == nil {
-				glog.Errorf("Incoming event was not a known launch context: %T", cmd.LaunchContext)
-			} else {
-				glog.V(2).Infof("URL to fetch: %s\n", lc.URL())
-
-				// TODO: decide where the best place is to shortcut the fetch call if the docker images it names are already in the local repo
-				// (could be here or bypass this worker altogether)
-				// (this is really important because we want to be able to delete the downloaded image files after docker load)
-
-				pemFiles, err := b.Config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(b.Config.Edge.CACertsPath, b.Config.UserPublicKeyPath())
-				if err != nil {
-					glog.Errorf("Received error getting pem key files: %v", err)
-					b.Messages() <- events.NewTorrentMessage(events.IMAGE_SIG_VERIF_ERROR, make([]string, 0), lc)
-				} else {
-					imageFiles, err := fetch.PkgFetch(b.Config.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), lc.URL(), lc.Signature(), b.Config.Edge.TorrentDir, pemFiles, authAttribs)
-
-					if err != nil {
-						var id events.EventId
-						switch err.(type) {
-						case fetcherrors.PkgMetaError, fetcherrors.PkgSourceError, fetcherrors.PkgPrecheckError:
-							id = events.IMAGE_DATA_ERROR
-
-						case fetcherrors.PkgSourceFetchError:
-							id = events.IMAGE_FETCH_ERROR
-
-						case fetcherrors.PkgSourceFetchAuthError:
-							id = events.IMAGE_FETCH_AUTH_ERROR
-
-						case fetcherrors.PkgSignatureVerificationError:
-							id = events.IMAGE_SIG_VERIF_ERROR
-
-						default:
-							id = events.IMAGE_FETCH_ERROR
-						}
-						glog.Errorf("Failed to fetch image files: %v", err)
-						b.Messages() <- events.NewTorrentMessage(id, make([]string, 0), lc)
-					} else {
-						b.Messages() <- events.NewTorrentMessage(events.IMAGE_FETCHED, imageFiles, lc)
-					}
-				}
+			pemFiles, deploymentDesc, err := processDeployment(b.Config, lc.ContainerConfig())
+			if err != nil {
+				glog.Errorf("Failed to process deployment description and signature after agreement negotiation: %v", err)
+				b.Messages() <- events.NewTorrentMessage(events.IMAGE_FETCHED, deploymentDesc, lc)
+				return true
 			}
+
+			if fetchErr := processFetch(b.Config, b.client, b.db, pemFiles, deploymentDesc, lc.ContainerConfig().TorrentURL, lc.ContainerConfig().TorrentSignature); fetchErr != nil {
+				var id events.EventId
+				switch fetchErr.(type) {
+				case fetcherrors.PkgMetaError, fetcherrors.PkgSourceError, fetcherrors.PkgPrecheckError:
+					id = events.IMAGE_DATA_ERROR
+
+				case fetcherrors.PkgSourceFetchError:
+					id = events.IMAGE_FETCH_ERROR
+
+				case fetcherrors.PkgSourceFetchAuthError:
+					id = events.IMAGE_FETCH_AUTH_ERROR
+
+				case fetcherrors.PkgSignatureVerificationError:
+					id = events.IMAGE_SIG_VERIF_ERROR
+
+				default:
+					id = events.IMAGE_FETCH_ERROR
+				}
+				glog.Errorf("Failed to fetch image files: %v", fetchErr)
+				b.Messages() <- events.NewTorrentMessage(id, deploymentDesc, lc)
+			} else {
+				b.Messages() <- events.NewTorrentMessage(events.IMAGE_FETCHED, deploymentDesc, lc)
+			}
+
 		}
 
 	default:

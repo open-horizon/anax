@@ -12,6 +12,7 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -23,7 +24,6 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"reflect"
 	"strconv"
 	"strings"
 )
@@ -68,140 +68,6 @@ const IPT_COLONUS_ISOLATED_CHAIN = "COLONUS-ISOLATION"
  * }
  */
 
-type DeploymentDescription struct {
-	Services       map[string]*Service `json:"services"`
-	ServicePattern Pattern             `json:"service_pattern"`
-	Infrastructure bool                `json:"infrastructure"`
-	Overrides      map[string]*Service `json:"overrides"`
-}
-
-var invalidDeploymentOptions = map[string][]string{
-	"workload":       []string{"Binds", "SpecificPorts"},
-	"infrastructure": []string{},
-}
-
-func (d DeploymentDescription) isValidFor(context string) bool {
-	for _, service := range d.Services {
-		for _, invalidField := range invalidDeploymentOptions[context] {
-			v := reflect.ValueOf(*service)
-			fv := v.FieldByName(invalidField)
-			switch fv.Type().String() {
-			case "[]string":
-				if fv.Len() != reflect.Zero(fv.Type()).Len() {
-					return false
-				}
-			case "[]docker.PortBinding":
-				if fv.Len() != reflect.Zero(fv.Type()).Len() {
-					return false
-				}
-			case "bool":
-				if fv.Bool() {
-					return false
-				}
-			}
-		}
-	}
-	return true
-}
-
-func (d DeploymentDescription) serviceNames() []string {
-	names := []string{}
-
-	if d.Services != nil {
-		for name, _ := range d.Services {
-			names = append(names, name)
-		}
-	}
-
-	return names
-}
-
-type Pattern struct {
-	Shared map[string][]string `json:"shared"`
-}
-
-type Encoding string
-
-const (
-	JSON Encoding = "JSON"
-)
-
-type DynamicOutboundPermitValue struct {
-	DdKey    string   `json:"dd_key"`
-	Encoding Encoding `json:"encoding"`
-	Path     string   `json:"path"`
-}
-
-func (d *DynamicOutboundPermitValue) String() string {
-	return fmt.Sprintf("ddKey: %v, path: %v", d.DdKey, d.Path)
-}
-
-type StaticOutboundPermitValue string
-
-type OutboundPermitOnlyIgnore string
-
-const (
-	ETH_ACCT_SPECIFIED OutboundPermitOnlyIgnore = "ETH_ACCT_SPECIFIED"
-)
-
-type OutboundPermitValue interface{}
-
-type NetworkIsolation struct {
-	OutboundPermitOnlyIgnore OutboundPermitOnlyIgnore `json:"outbound_permit_only_ignore"`
-	OutboundPermitOnly       []OutboundPermitValue    `json:"outbound_permit_only"`
-}
-
-func (n *NetworkIsolation) UnmarshalJSON(data []byte) error {
-	type polyNType struct {
-		OutboundPermitOnlyIgnore OutboundPermitOnlyIgnore `json:"outbound_permit_only_ignore,omitempty"`
-		OutboundPermitOnly       []json.RawMessage        `json:"outbound_permit_only"`
-	}
-
-	var polyN polyNType
-
-	dec := json.NewDecoder(bytes.NewReader(data))
-	if err := dec.Decode(&polyN); err != nil {
-		return err
-	}
-
-	n.OutboundPermitOnlyIgnore = polyN.OutboundPermitOnlyIgnore
-
-	// dumb way you have to handle polymorphic types in golang
-	for _, permit := range polyN.OutboundPermitOnly {
-
-		var o OutboundPermitValue
-		var d DynamicOutboundPermitValue
-
-		dec := json.NewDecoder(bytes.NewReader(permit))
-		if err := dec.Decode(&d); err != nil {
-			var s StaticOutboundPermitValue
-			if err := json.Unmarshal(permit, &s); err != nil {
-				return err
-			}
-			o = s
-		} else {
-			o = d
-		}
-
-		n.OutboundPermitOnly = append(n.OutboundPermitOnly, o)
-	}
-
-	return nil
-}
-
-func (p *Pattern) isShared(tp string, serviceName string) bool {
-	entries, defined := p.Shared[tp]
-	if defined {
-		for _, n := range entries {
-			if n == serviceName {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
 const T_CONFIGURE = "CONFIGURE"
 
 type WhisperProviderMsg struct {
@@ -235,96 +101,13 @@ func NewConfigure(configureNonce string, torrentURL url.URL, deployment string, 
 
 }
 
-// Service Only those marked "omitempty" may be omitted
-type Service struct {
-	Image            string               `json:"image"`
-	VariationLabel   string               `json:"variation_label,omitempty"`
-	Privileged       bool                 `json:"privileged"`
-	Environment      []string             `json:"environment,omitempty"`
-	CapAdd           []string             `json:"cap_add,omitempty"`
-	Command          []string             `json:"command,omitempty"`
-	Devices          []string             `json:"devices,omitempty"`
-	Ports            []Port               `json:"ports,omitempty"`
-	NetworkIsolation NetworkIsolation     `json:"network_isolation,omitempty"`
-	Binds            []string             `json:"binds,omitempty"`          // Only used by infrastructure containers
-	SpecificPorts    []docker.PortBinding `json:"specific_ports,omitempty"` // Only used by infrastructure containers
-}
-
-func (s *Service) addFilesystemBinding(bind string) {
-	if s.Binds == nil {
-		s.Binds = make([]string, 0, 10)
-	}
-	s.Binds = append(s.Binds, bind)
-}
-
-func (s *Service) hasSpecificPortBinding() bool {
-	if s.SpecificPorts == nil {
-		return false
-	}
-	if len(s.SpecificPorts) != 0 {
-		return true
-	}
-	return false
-}
-
-func (s *Service) getSpecificHostPortBinding() string {
-	if s.SpecificPorts == nil {
-		return ""
-	} else if len(s.SpecificPorts) == 0 {
-		return ""
-	} else {
-		p := strings.Split(s.SpecificPorts[0].HostPort, ":")
-		port := strings.Split(p[0], "/")[0]
-		return port
-	}
-}
-
-func (s *Service) getSpecificContainerPortBinding() string {
-	if s.SpecificPorts == nil {
-		return ""
-	} else if len(s.SpecificPorts) == 0 {
-		return ""
-	} else {
-		p := strings.Split(s.SpecificPorts[0].HostPort, ":")
-		if len(p) < 2 {
-			port := strings.Split(p[0], "/")[0]
-			return port
-		} else {
-			port := strings.Split(p[1], "/")[0]
-			return port
-		}
-	}
-}
-
-func (s *Service) getSpecificHostBinding() string {
-	if s.SpecificPorts == nil {
-		return ""
-	} else if len(s.SpecificPorts) == 0 {
-		return ""
-	} else {
-		return s.SpecificPorts[0].HostIP
-	}
-}
-
-func (s *Service) addSpecificPortBinding(b docker.PortBinding) {
-	if s.SpecificPorts == nil {
-		s.SpecificPorts = make([]docker.PortBinding, 0, 5)
-	}
-	s.SpecificPorts = append(s.SpecificPorts, b)
-}
-
-type Port struct {
-	LocalhostOnly   bool   `json:"localhost_only"`
-	PortAndProtocol string `json:"port_and_protocol"`
-}
-
 // an internal convenience type
 type servicePair struct {
-	service       *Service                   // the external type
+	service       *containermessage.Service  // the external type
 	serviceConfig *persistence.ServiceConfig // the internal type
 }
 
-func hashService(service *Service) (string, error) {
+func hashService(service *containermessage.Service) (string, error) {
 	if service == nil {
 		return "", errors.New("required service ref not provided")
 	}
@@ -359,7 +142,7 @@ func removeDuplicateVariable(existingArray *[]string, newVar string) {
 
 }
 
-func finalizeDeployment(agreementId string, deployment *DeploymentDescription, environmentAdditions map[string]string, workloadROStorageDir string, cpuSet string) (map[string]servicePair, error) {
+func finalizeDeployment(agreementId string, deployment *containermessage.DeploymentDescription, environmentAdditions map[string]string, workloadROStorageDir string, cpuSet string) (map[string]servicePair, error) {
 
 	// final structure
 	services := make(map[string]servicePair, 0)
@@ -405,7 +188,7 @@ func finalizeDeployment(agreementId string, deployment *DeploymentDescription, e
 
 		var logConfig docker.LogConfig
 
-		if !deployment.ServicePattern.isShared("singleton", serviceName) {
+		if !deployment.ServicePattern.IsShared("singleton", serviceName) {
 			labels[LABEL_PREFIX+".agreement_id"] = agreementId
 			logConfig = docker.LogConfig{
 				Type: "syslog",
@@ -613,16 +396,16 @@ func (w *ContainerWorker) NewEvent(incoming events.Message) {
 		msg, _ := incoming.(*events.TorrentMessage)
 		switch msg.Event().Id {
 		case events.IMAGE_FETCHED:
-			glog.Infof("Fetched image files: %v", msg.ImageFiles)
+			glog.Infof("Fetched image files in deployment description for services: %v", msg.DeploymentDescription.ServiceNames())
 			switch msg.LaunchContext.(type) {
 			case *events.AgreementLaunchContext:
 				lc := msg.LaunchContext.(*events.AgreementLaunchContext)
-				cCmd := w.NewWorkloadConfigureCommand(msg.ImageFiles, lc)
+				cCmd := w.NewWorkloadConfigureCommand(msg.DeploymentDescription, lc)
 				w.Commands <- cCmd
 
 			case *events.ContainerLaunchContext:
 				lc := msg.LaunchContext.(*events.ContainerLaunchContext)
-				cCmd := w.NewContainerConfigureCommand(msg.ImageFiles, lc)
+				cCmd := w.NewContainerConfigureCommand(msg.DeploymentDescription, lc)
 				w.Commands <- cCmd
 			}
 		}
@@ -862,22 +645,22 @@ func existingShared(client *docker.Client, serviceName string, servicePair *serv
 	return nil, nil, nil
 }
 
-func generatePermittedString(isolation *NetworkIsolation, network docker.ContainerNetwork, configureRaw []byte) (string, error) {
+func generatePermittedString(isolation *containermessage.NetworkIsolation, network docker.ContainerNetwork, configureRaw []byte) (string, error) {
 
 	permittedString := ""
 
 	for _, permitted := range isolation.OutboundPermitOnly {
-		var permittedValue OutboundPermitValue
+		var permittedValue containermessage.OutboundPermitValue
 
 		switch permitted.(type) {
-		case StaticOutboundPermitValue:
-			permittedValue = permitted.(StaticOutboundPermitValue)
+		case containermessage.StaticOutboundPermitValue:
+			permittedValue = permitted.(containermessage.StaticOutboundPermitValue)
 
-		case DynamicOutboundPermitValue:
-			p := permitted.(DynamicOutboundPermitValue)
+		case containermessage.DynamicOutboundPermitValue:
+			p := permitted.(containermessage.DynamicOutboundPermitValue)
 			// do specialized ad-hoc deserialization of the configure whisper message in order to read the dynamic permit value
 			var configureUnstruct map[string]interface{}
-			if p.Encoding != JSON {
+			if p.Encoding != containermessage.JSON {
 				return "", fmt.Errorf("Unsupported encoding: %v", p.Encoding)
 			} else if err := json.Unmarshal(configureRaw, &configureUnstruct); err != nil {
 				return "", err
@@ -911,7 +694,7 @@ func generatePermittedString(isolation *NetworkIsolation, network docker.Contain
 	return fmt.Sprintf("%v%v/%v", permittedString, network.IPAddress, network.IPPrefixLen), nil
 }
 
-func processPostCreate(ipt *iptables.IPTables, client *docker.Client, agreementId string, deployment DeploymentDescription, configureRaw []byte, hasSpecifiedEthAccount bool, containers []interface{}, fail func(container *docker.Container, name string, err error) error) error {
+func processPostCreate(ipt *iptables.IPTables, client *docker.Client, agreementId string, deployment containermessage.DeploymentDescription, configureRaw []byte, hasSpecifiedEthAccount bool, containers []interface{}, fail func(container *docker.Container, name string, err error) error) error {
 
 	rules, err := ipt.List("filter", IPT_COLONUS_ISOLATED_CHAIN)
 	if err != nil {
@@ -989,7 +772,7 @@ func processPostCreate(ipt *iptables.IPTables, client *docker.Client, agreementI
 				}
 
 				if isolation.OutboundPermitOnly != nil {
-					if isolation.OutboundPermitOnlyIgnore == ETH_ACCT_SPECIFIED && hasSpecifiedEthAccount {
+					if isolation.OutboundPermitOnlyIgnore == containermessage.ETH_ACCT_SPECIFIED && hasSpecifiedEthAccount {
 						glog.Infof("Skipping application of network isolation rules b/c OutboundPermitOnlyIgnore specified and conditions met")
 					} else {
 						// reject for this address if rules below don't specifically allow
@@ -1056,7 +839,7 @@ func (b *ContainerWorker) workloadStorageDir(agreementId string) string {
 	return path.Join(b.Config.Edge.WorkloadROStorage, agreementId)
 }
 
-func (b *ContainerWorker) resourcesCreate(agreementId string, configure *events.ContainerConfig, deployment *DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]docker.ContainerNetwork) (*map[string]persistence.ServiceConfig, error) {
+func (b *ContainerWorker) resourcesCreate(agreementId string, configure *events.ContainerConfig, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]docker.ContainerNetwork) (*map[string]persistence.ServiceConfig, error) {
 
 	// local helpers
 	fail := func(container *docker.Container, name string, err error) error {
@@ -1144,7 +927,7 @@ func (b *ContainerWorker) resourcesCreate(agreementId string, configure *events.
 		}
 
 		// need to examine original deploymentDescription to determine which containers are "shared" or in other special patterns
-		if deployment.ServicePattern.isShared("singleton", serviceName) {
+		if deployment.ServicePattern.IsShared("singleton", serviceName) {
 			shared[serviceName] = servicePair
 		} else {
 			private[serviceName] = servicePair
@@ -1315,32 +1098,18 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				}
 			}
 
-			// load the image
-			if len(cmd.ImageFiles) == 0 {
-				glog.Infof("Command specified no new Docker images to load, expecting that the caller knows they're preloaded and this is not a bug. Skipping load operation")
-
-			} else if err := loadImages(b.client, cmd.ImageFiles); err != nil {
-				glog.Errorf("Error loading image files: %v", err)
-
-				b.Messages() <- events.NewWorkloadMessage(events.IMAGE_LOAD_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
-				return true
-			}
-
 			// We support capabilities in the deployment string that not all container deployments should be able
 			// to exploit, e.g. file system mapping from host to container. This check ensures that workloads dont try
 			// to do something dangerous.
-			deploymentDesc := new(DeploymentDescription)
-			if err := json.Unmarshal([]byte(cmd.AgreementLaunchContext.Configure.Deployment), &deploymentDesc); err != nil {
-				glog.Errorf("Error Unmarshalling deployment string %v for agreement %v, error: %v", cmd.AgreementLaunchContext.Configure.Deployment, agreementId, err)
-				return true
-			} else if valid := deploymentDesc.isValidFor("workload"); !valid {
+			deploymentDesc := cmd.DeploymentDescription
+			if valid := deploymentDesc.IsValidFor("workload"); !valid {
 				glog.Errorf("Deployment config %v contains unsupported capability for a workload", cmd.AgreementLaunchContext.Configure.Deployment)
 				b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
 			}
 
 			// Add the deployment overrides to the deployment description, if there are any
 			if len(cmd.AgreementLaunchContext.Configure.Overrides) != 0 {
-				overrideDD := new(DeploymentDescription)
+				overrideDD := new(containermessage.DeploymentDescription)
 				if err := json.Unmarshal([]byte(cmd.AgreementLaunchContext.Configure.Overrides), &overrideDD); err != nil {
 					glog.Errorf("Error Unmarshalling deployment override string %v for agreement %v, error: %v", cmd.AgreementLaunchContext.Configure.Overrides, agreementId, err)
 					return true
@@ -1352,12 +1121,12 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			// Dynamically add in a filesystem mapping so that the workload container has a RO filesystem.
 			for serviceName, service := range deploymentDesc.Services {
 				dir := ""
-				if deploymentDesc.ServicePattern.isShared("singleton", serviceName) {
+				if deploymentDesc.ServicePattern.IsShared("singleton", serviceName) {
 					dir = b.workloadStorageDir(fmt.Sprintf("%v-%v-%v", "singleton", serviceName, service.VariationLabel))
 				} else {
 					dir = b.workloadStorageDir(agreementId)
 				}
-				deploymentDesc.Services[serviceName].addFilesystemBinding(fmt.Sprintf("%v:%v:ro", dir, "/workload_config"))
+				deploymentDesc.Services[serviceName].AddFilesystemBinding(fmt.Sprintf("%v:%v:ro", dir, "/workload_config"))
 			}
 
 			// Create the docker configuration and launch the containers.
@@ -1385,29 +1154,18 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		// We support capabilities in the deployment string that not all container deployments should be able
 		// to exploit, e.g. file system mapping from host to container. This check ensures that infrastructure
 		// containers dont try to do something unsupported.
-		deploymentDesc := new(DeploymentDescription)
+		deploymentDesc := new(containermessage.DeploymentDescription)
 		if err := json.Unmarshal([]byte(cmd.ContainerLaunchContext.Configure.Deployment), &deploymentDesc); err != nil {
 			glog.Errorf("Error Unmarshalling deployment string %v, error: %v", cmd.ContainerLaunchContext.Configure.Deployment, err)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 			return true
-		} else if valid := deploymentDesc.isValidFor("infrastructure"); !valid {
+		} else if valid := deploymentDesc.IsValidFor("infrastructure"); !valid {
 			glog.Errorf("Deployment config %v contains unsupported capability for infrastructure container", cmd.ContainerLaunchContext.Configure.Deployment)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 			return true
 		}
 
-		serviceNames := deploymentDesc.serviceNames()
-
-		// Proceed to load the docker image.
-		if len(cmd.ImageFiles) == 0 {
-			glog.Errorf("Torrent configuration in deployment specified no new Docker images to load: %v, unable to load container", deploymentDesc)
-			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
-			return true
-		} else if err := loadImages(b.client, cmd.ImageFiles); err != nil {
-			glog.Errorf("Error loading image files: %v", err)
-			b.Messages() <- events.NewContainerMessage(events.IMAGE_LOAD_FAILED, *cmd.ContainerLaunchContext, "", "")
-			return true
-		}
+		serviceNames := deploymentDesc.ServiceNames()
 
 		for serviceName, service := range deploymentDesc.Services {
 			if cmd.ContainerLaunchContext.Blockchain.Name != "" { // for etherum case
@@ -1420,20 +1178,20 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				} else {
 					dir = path.Join(os.Getenv("SNAP_COMMON")) + ":/root"
 				}
-				deploymentDesc.Services[serviceName].addFilesystemBinding(dir)
-				if !deploymentDesc.Services[serviceName].hasSpecificPortBinding() { // Add compatibility config - assume eth container
-					deploymentDesc.Services[serviceName].addSpecificPortBinding(docker.PortBinding{HostIP: "127.0.0.1", HostPort: "8545"})
+				deploymentDesc.Services[serviceName].AddFilesystemBinding(dir)
+				if !deploymentDesc.Services[serviceName].HasSpecificPortBinding() { // Add compatibility config - assume eth container
+					deploymentDesc.Services[serviceName].AddSpecificPortBinding(docker.PortBinding{HostIP: "127.0.0.1", HostPort: "8545"})
 				}
 				deploymentDesc.Services[serviceName].Privileged = true
 			} else { // microservice case
 				// Dynamically add in a filesystem mapping so that the workload container has a RO filesystem.
 				dir := ""
-				if deploymentDesc.ServicePattern.isShared("singleton", serviceName) {
+				if deploymentDesc.ServicePattern.IsShared("singleton", serviceName) {
 					dir = b.workloadStorageDir(fmt.Sprintf("%v-%v-%v", "singleton", serviceName, service.VariationLabel))
 				} else {
 					dir = b.workloadStorageDir(cmd.ContainerLaunchContext.Name)
 				}
-				deploymentDesc.Services[serviceName].addFilesystemBinding(fmt.Sprintf("%v:%v:ro", dir, "/workload_config"))
+				deploymentDesc.Services[serviceName].AddFilesystemBinding(fmt.Sprintf("%v:%v:ro", dir, "/workload_config"))
 			}
 		}
 
@@ -1450,9 +1208,9 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 			// perhaps add the tc info to the container message so it can be enforced
 			if ov := os.Getenv("CMTN_SERVICEOVERRIDE"); ov != "" {
-				b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, *cmd.ContainerLaunchContext, serviceNames[0], deploymentDesc.Services[serviceNames[0]].getSpecificContainerPortBinding())
+				b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, *cmd.ContainerLaunchContext, serviceNames[0], deploymentDesc.Services[serviceNames[0]].GetSpecificContainerPortBinding())
 			} else {
-				b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, *cmd.ContainerLaunchContext, deploymentDesc.Services[serviceNames[0]].getSpecificHostBinding(), deploymentDesc.Services[serviceNames[0]].getSpecificHostPortBinding())
+				b.Messages() <- events.NewContainerMessage(events.EXECUTION_BEGUN, *cmd.ContainerLaunchContext, deploymentDesc.Services[serviceNames[0]].GetSpecificHostBinding(), deploymentDesc.Services[serviceNames[0]].GetSpecificHostPortBinding())
 			}
 		}
 
@@ -1922,7 +1680,7 @@ func (b *ContainerWorker) findMicroserviceDefContainerNames(api_spec string, ver
 	} else if msdef != nil && msdef.Workloads != nil && len(msdef.Workloads) > 0 {
 		// get the service name from the ms def
 		for _, wl := range msdef.Workloads {
-			deploymentDesc := new(DeploymentDescription)
+			deploymentDesc := new(containermessage.DeploymentDescription)
 			if err := json.Unmarshal([]byte(wl.Deployment), &deploymentDesc); err != nil {
 				return nil, fmt.Errorf("Error Unmarshalling deployment string %v for microservice %v version %v. %v", wl.Deployment, api_spec, version, err)
 			} else {

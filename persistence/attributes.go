@@ -189,6 +189,13 @@ func hydrateConcreteAttribute(v []byte) (Attribute, error) {
 		}
 		attr = hba
 
+	case "BXDockerRegistryAuthAttributes":
+		var dra BXDockerRegistryAuthAttributes
+		if err := json.Unmarshal(v, &dra); err != nil {
+			return nil, err
+		}
+		attr = dra
+
 	default:
 		return nil, fmt.Errorf("Unknown attr type: %v", meta.GetMeta().Type)
 	}

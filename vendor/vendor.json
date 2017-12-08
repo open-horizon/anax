@@ -422,22 +422,22 @@
 			"tree": true
 		},
 		{
-			"checksumSHA1": "WI1TPSeBYUfrrmOoOp8gKhej3sg=",
+			"checksumSHA1": "da+YEJY+nMqad6J7sFQVh2Wed1c=",
 			"path": "github.com/open-horizon/horizon-pkg-fetch",
-			"revision": "9307c901b6c296b776313fcc5ddb157669f47716",
-			"revisionTime": "2017-11-08T19:09:05Z"
+			"revision": "e26ba540ae0e0f608487bbb38650749a3b739313",
+			"revisionTime": "2017-12-08T00:46:31Z"
 		},
 		{
 			"checksumSHA1": "7TaYmWpXydU8XjqcnYeJme/oV48=",
 			"path": "github.com/open-horizon/horizon-pkg-fetch/fetcherrors",
-			"revision": "265dd9db3be56266a6452b094b5c21791de49566",
-			"revisionTime": "2017-10-25T18:26:11Z"
+			"revision": "e26ba540ae0e0f608487bbb38650749a3b739313",
+			"revisionTime": "2017-12-08T00:46:31Z"
 		},
 		{
 			"checksumSHA1": "RyA64Y5+znkhKUwOhvXUUHtSf4g=",
 			"path": "github.com/open-horizon/horizon-pkg-fetch/horizonpkg",
-			"revision": "9fe96f86b9a4ae6d9c1c97d84b31e646d8079d63",
-			"revisionTime": "2017-09-29T04:46:40Z"
+			"revision": "e26ba540ae0e0f608487bbb38650749a3b739313",
+			"revisionTime": "2017-12-08T00:46:31Z"
 		},
 		{
 			"checksumSHA1": "h28o0+CEghkJELsf/KRNqGXZ7LA=",
@@ -446,10 +446,22 @@
 			"revisionTime": "2017-12-03T22:19:37Z"
 		},
 		{
-			"checksumSHA1": "i1xawajFZ6Pcg7g3K8GaZMRvWws=",
+			"checksumSHA1": "6Ejtwv2PlXR8sT203iR38S7Y5qQ=",
+			"path": "github.com/open-horizon/rsapss-tool/sign",
+			"revision": "8bd9fec0aa8747031080a9ca8440558582df790a",
+			"revisionTime": "2017-12-08T17:19:55Z"
+		},
+		{
+			"checksumSHA1": "PXZR8EO7d4Hafp7s+CNvptNbIJM=",
+			"path": "github.com/open-horizon/rsapss-tool/utility",
+			"revision": "8bd9fec0aa8747031080a9ca8440558582df790a",
+			"revisionTime": "2017-12-08T17:19:55Z"
+		},
+		{
+			"checksumSHA1": "/7ZAE4bvI5zztf4UoegSau4VkoE=",
 			"path": "github.com/open-horizon/rsapss-tool/verify",
-			"revision": "469316935456edc0922b0772646e64113524f593",
-			"revisionTime": "2017-12-03T22:19:37Z"
+			"revision": "8bd9fec0aa8747031080a9ca8440558582df790a",
+			"revisionTime": "2017-12-08T17:19:55Z"
 		},
 		{
 			"checksumSHA1": "3AoPMXlmVq2+iWMpsdJZkcUKHB8=",

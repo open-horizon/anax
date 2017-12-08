@@ -6,6 +6,7 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/container"
+	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
@@ -247,7 +248,7 @@ func GetContainerStatus(deployment string, key string, infrastructure bool, cont
 
 	status := make([]ContainerStatus, 0)
 
-	deploymentDesc := new(container.DeploymentDescription)
+	deploymentDesc := new(containermessage.DeploymentDescription)
 	if err := json.Unmarshal([]byte(deployment), &deploymentDesc); err != nil {
 		return nil, fmt.Errorf(logString(fmt.Sprintf("Error Unmarshalling deployment string %v. %v", deployment, err)))
 	} else {

@@ -2,6 +2,7 @@ package container
 
 import (
 	"fmt"
+	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
@@ -9,42 +10,42 @@ import (
 
 // ==============================================================================================================
 type WorkloadConfigureCommand struct {
-	ImageFiles             []string
+	DeploymentDescription  *containermessage.DeploymentDescription
 	AgreementLaunchContext *events.AgreementLaunchContext
 }
 
 func (c WorkloadConfigureCommand) String() string {
-	return fmt.Sprintf("AgreementLaunchContext: %v, ImageFiles: %v", c.AgreementLaunchContext, c.ImageFiles)
+	return fmt.Sprintf("AgreementLaunchContext: %v, DeploymentDescription: %v", c.AgreementLaunchContext, c.DeploymentDescription)
 }
 
 func (c WorkloadConfigureCommand) ShortString() string {
 	return c.String()
 }
 
-func (b *ContainerWorker) NewWorkloadConfigureCommand(imageFiles []string, agreementLaunchContext *events.AgreementLaunchContext) *WorkloadConfigureCommand {
+func (b *ContainerWorker) NewWorkloadConfigureCommand(deploymentDescription *containermessage.DeploymentDescription, agreementLaunchContext *events.AgreementLaunchContext) *WorkloadConfigureCommand {
 	return &WorkloadConfigureCommand{
-		ImageFiles:             imageFiles,
+		DeploymentDescription:  deploymentDescription,
 		AgreementLaunchContext: agreementLaunchContext,
 	}
 }
 
 // ==============================================================================================================
 type ContainerConfigureCommand struct {
-	ImageFiles             []string
+	DeploymentDescription  *containermessage.DeploymentDescription
 	ContainerLaunchContext *events.ContainerLaunchContext
 }
 
 func (c ContainerConfigureCommand) String() string {
-	return fmt.Sprintf("ContainerLaunchContext: %v, ImageFiles: %v", c.ContainerLaunchContext, c.ImageFiles)
+	return fmt.Sprintf("ContainerLaunchContext: %v, DeploymentDescription: %v", c.ContainerLaunchContext, c.DeploymentDescription)
 }
 
 func (c ContainerConfigureCommand) ShortString() string {
 	return c.String()
 }
 
-func (b *ContainerWorker) NewContainerConfigureCommand(imageFiles []string, containerLaunchContext *events.ContainerLaunchContext) *ContainerConfigureCommand {
+func (b *ContainerWorker) NewContainerConfigureCommand(deploymentDescription *containermessage.DeploymentDescription, containerLaunchContext *events.ContainerLaunchContext) *ContainerConfigureCommand {
 	return &ContainerConfigureCommand{
-		ImageFiles:             imageFiles,
+		DeploymentDescription:  deploymentDescription,
 		ContainerLaunchContext: containerLaunchContext,
 	}
 }
