@@ -1154,29 +1154,18 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		// We support capabilities in the deployment string that not all container deployments should be able
 		// to exploit, e.g. file system mapping from host to container. This check ensures that infrastructure
 		// containers dont try to do something unsupported.
-		deploymentDesc := new(DeploymentDescription)
+		deploymentDesc := new(containermessage.DeploymentDescription)
 		if err := json.Unmarshal([]byte(cmd.ContainerLaunchContext.Configure.Deployment), &deploymentDesc); err != nil {
 			glog.Errorf("Error Unmarshalling deployment string %v, error: %v", cmd.ContainerLaunchContext.Configure.Deployment, err)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 			return true
-		} else if valid := deploymentDesc.isValidFor("infrastructure"); !valid {
+		} else if valid := deploymentDesc.IsValidFor("infrastructure"); !valid {
 			glog.Errorf("Deployment config %v contains unsupported capability for infrastructure container", cmd.ContainerLaunchContext.Configure.Deployment)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 			return true
 		}
 
-		serviceNames := deploymentDesc.serviceNames()
-
-		// Proceed to load the docker image.
-		if len(cmd.ImageFiles) == 0 {
-			glog.Errorf("Torrent configuration in deployment specified no new Docker images to load: %v, unable to load container", deploymentDesc)
-			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
-			return true
-		} else if err := loadImages(b.client, cmd.ImageFiles); err != nil {
-			glog.Errorf("Error loading image files: %v", err)
-			b.Messages() <- events.NewContainerMessage(events.IMAGE_LOAD_FAILED, *cmd.ContainerLaunchContext, "", "")
-			return true
-		}
+		serviceNames := deploymentDesc.ServiceNames()
 
 		for serviceName, service := range deploymentDesc.Services {
 			if cmd.ContainerLaunchContext.Blockchain.Name != "" { // for etherum case
