@@ -175,6 +175,24 @@ func parseHTTPSBasicAuth(errorhandler ErrorHandler, permitEmpty bool, given *Att
 	}, false, nil
 }
 
+func parseBXDockerRegistryAuth(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.BXDockerRegistryAuthAttributes, bool, error) {
+	var ok bool
+
+	var token string
+	tk, exists := (*given.Mappings)["token"]
+	if !exists {
+		return nil, errorhandler(NewAPIUserInputError("missing key", "dockerregistry.mappings.token")), nil
+	}
+	if token, ok = tk.(string); !ok {
+		return nil, errorhandler(NewAPIUserInputError("expected string", "dockerregistry.mappings.token")), nil
+	}
+
+	return &persistence.BXDockerRegistryAuthAttributes{
+		Meta:  generateAttributeMetadata(*given, reflect.TypeOf(persistence.BXDockerRegistryAuthAttributes{}).Name()),
+		Token: token,
+	}, false, nil
+}
+
 func parseHA(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.HAAttributes, bool, error) {
 	if permitEmpty {
 		return nil, errorhandler(NewAPIUserInputError("partial update unsupported", "ha.mappings")), nil
@@ -508,6 +526,13 @@ func toPersistedAttributes(errorhandler ErrorHandler, permitEmpty bool, persiste
 
 			case reflect.TypeOf(persistence.HTTPSBasicAuthAttributes{}).Name():
 				attr, inputErr, err := parseHTTPSBasicAuth(errorhandler, permitEmpty, &given)
+				if err != nil || inputErr {
+					return attributes, inputErr, err
+				}
+				attributes = append(attributes, attr)
+
+			case reflect.TypeOf(persistence.BXDockerRegistryAuthAttributes{}).Name():
+				attr, inputErr, err := parseBXDockerRegistryAuth(errorhandler, permitEmpty, &given)
 				if err != nil || inputErr {
 					return attributes, inputErr, err
 				}

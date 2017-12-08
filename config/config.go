@@ -23,6 +23,7 @@ type Config struct {
 	APIListen                     string
 	DBPath                        string
 	DockerEndpoint                string
+	DockerCredFilePath            string
 	DefaultCPUSet                 string
 	DefaultServiceRegistrationRAM int64
 	StaticWebContent              string

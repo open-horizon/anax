@@ -301,3 +301,42 @@ func (a HTTPSBasicAuthAttributes) Update(other Attribute) error {
 
 	return nil
 }
+
+type BXDockerRegistryAuthAttributes struct {
+	Meta  *AttributeMeta `json:"meta"`
+	Token string         `json:"token"`
+}
+
+func (a BXDockerRegistryAuthAttributes) String() string {
+	return fmt.Sprintf("meta: %v, token: <withheld>", a.GetMeta(), a.Token)
+}
+
+func (a BXDockerRegistryAuthAttributes) GetMeta() *AttributeMeta {
+	return a.Meta
+}
+
+func (a BXDockerRegistryAuthAttributes) GetGenericMappings() map[string]interface{} {
+	var obf string
+
+	if a.Token != "" {
+		obf = "**********"
+	}
+
+	return map[string]interface{}{
+		"token": obf,
+	}
+}
+
+func (a BXDockerRegistryAuthAttributes) Update(other Attribute) error {
+	switch other.(type) {
+	case *BXDockerRegistryAuthAttributes:
+		o := other.(*BXDockerRegistryAuthAttributes)
+		a.GetMeta().Update(*o.GetMeta())
+
+		a.Token = o.Token
+	default:
+		return fmt.Errorf("Concrete type of attribute (%T) provided to Update() is incompatible with this Attribute's type (%T)", a, other)
+	}
+
+	return nil
+}
