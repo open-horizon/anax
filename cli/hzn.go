@@ -5,6 +5,7 @@ import (
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/attribute"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cli/dev"
 	"github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/key"
 	"github.com/open-horizon/anax/cli/metering"
@@ -82,6 +83,27 @@ func main() {
 	forceUnregister := unregisterCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 	removeNodeUnregister := unregisterCmd.Flag("remove", "Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).").Short('r').Bool()
 
+	devCmd := app.Command("dev", "Developmnt tools for creation of workloads and microservices.")
+	devHomeDirectory := devCmd.Flag("directory", "Directory containing Horizon project metadata.").Short('d').String()
+
+	devWorkloadCmd := devCmd.Command("workload", "For working with a workload project.")
+	devWorkloadNewCmd := devWorkloadCmd.Command("new", "Create a new workload project.")
+	devWorkloadTestCmd := devWorkloadCmd.Command("test", "Run a workload in a mocked Horizon Agent environment.")
+	devWorkloadUserInputFile := devWorkloadTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
+	devWorkloadDeployCmd := devWorkloadCmd.Command("deploy", "Deploy a workload to a Horizon Exchange.")
+	devWorkloadValidateCmd := devWorkloadCmd.Command("verify", "Validate the project for completeness and schema compliance.")
+
+	devMicroserviceCmd := devCmd.Command("microservice", "For working with a microservice project.")
+	devMicroserviceNewCmd := devMicroserviceCmd.Command("new", "Create a new microservice project.")
+	devMicroserviceTestCmd := devMicroserviceCmd.Command("test", "Run a microservice in a mocked Horizon Agent environment.")
+	devMicroserviceUserInputFile := devMicroserviceTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
+	devMicroserviceDeployCmd := devMicroserviceCmd.Command("deploy", "Deploy a microservice to a Horizon Exchange.")
+	devMicroserviceValidateCmd := devMicroserviceCmd.Command("verify", "Validate the project for completeness and schema compliance.")
+
+	devDependencyCmd := devCmd.Command("dependency", "For working with project dependencies.")
+	devDependencyFetchCmd := devDependencyCmd.Command("fetch", "Retrieving Horizon metadata for a new dependency.")
+	devDependencyListCmd := devDependencyCmd.Command("list", "List all dependencies.")
+
 	app.Version("0.0.3") //todo: get the real version of anax
 
 	// Decide which command to run
@@ -118,5 +140,25 @@ func main() {
 		workload.List()
 	case unregisterCmd.FullCommand():
 		unregister.DoIt(*forceUnregister, *removeNodeUnregister)
+	case devWorkloadNewCmd.FullCommand():
+		dev.WorkloadNew(*devHomeDirectory)
+	case devWorkloadTestCmd.FullCommand():
+		dev.WorkloadTest(*devHomeDirectory, *devWorkloadUserInputFile)
+	case devWorkloadValidateCmd.FullCommand():
+		dev.WorkloadValidate(*devHomeDirectory)
+	case devWorkloadDeployCmd.FullCommand():
+		dev.WorkloadDeploy(*devHomeDirectory)
+	case devMicroserviceNewCmd.FullCommand():
+		dev.MicroserviceNew(*devHomeDirectory)
+	case devMicroserviceTestCmd.FullCommand():
+		dev.MicroserviceTest(*devHomeDirectory, *devMicroserviceUserInputFile)
+	case devMicroserviceValidateCmd.FullCommand():
+		dev.MicroserviceValidate(*devHomeDirectory)
+	case devMicroserviceDeployCmd.FullCommand():
+		dev.MicroserviceDeploy(*devHomeDirectory)
+	case devDependencyFetchCmd.FullCommand():
+		dev.DependencyFetch(*devHomeDirectory)
+	case devDependencyListCmd.FullCommand():
+		dev.DependencyList(*devHomeDirectory)
 	}
 }
