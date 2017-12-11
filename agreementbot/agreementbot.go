@@ -758,10 +758,12 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, searchOrg string
 		// can't satisfy all the workloads then workload rollback cant work so we shouldnt make an agreement with this
 		// device.
 		for _, workload := range pol.Workloads {
-			if workload, err := exchange.GetWorkload(w.Config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+			if e_workload, err := exchange.GetWorkload(w.Config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
 				return nil, errors.New(fmt.Sprintf("AgreementBotWorker received error retrieving workload definition for %v, error: %v", workload, err))
+			} else if e_workload == nil {
+				return nil, errors.New(fmt.Sprintf("AgreementBotWorker could not find workload definition for %v", workload))
 			} else {
-				for _, apiSpec := range workload.APISpecs {
+				for _, apiSpec := range e_workload.APISpecs {
 					if newMS, err := w.makeNewMSSearchElement(apiSpec.SpecRef, apiSpec.Org, "", apiSpec.Arch, pol); err != nil {
 						return nil, err
 					} else {

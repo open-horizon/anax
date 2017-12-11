@@ -979,6 +979,8 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 				// get the metadata for the version we are running and then add in any unset default user inputs.
 				if exWkld, err := exchange.GetWorkload(w.Config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken); err != nil {
 					return errors.New(logString(fmt.Sprintf("received error querying excahnge for workload metadata, error %v", err)))
+				} else if exWkld == nil {
+					return errors.New(logString(fmt.Sprintf("cound not find workload metadata for %v.", workload)))
 				} else {
 					for _, ui := range exWkld.UserInputs {
 						if ui.DefaultValue != "" {

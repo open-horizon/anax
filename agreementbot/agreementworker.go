@@ -207,6 +207,9 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		if workloadDetails, err := exchange.GetWorkload(b.config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, b.config.AgreementBot.ExchangeURL, cph.ExchangeId(), cph.ExchangeToken()); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for workload details %v, error: %v", workload, err)))
 			return
+		} else if workloadDetails == nil {
+			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to find workload %v on the exchange.", workload)))
+			return
 		} else {
 
 			// Convert the workload details APISpec list to policy types, and merge the device side microservice policies if necessary.
