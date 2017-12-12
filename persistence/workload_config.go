@@ -8,7 +8,6 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"strconv"
-	"strings"
 )
 
 // workload variable configuration table name
@@ -250,25 +249,6 @@ func DeleteWorkloadConfig(db *bolt.DB, url string, org string, version string) e
 			})
 		}
 	}
-}
-
-// Sorting functions used with the sort package
-type WorkloadConfigByVersion []WorkloadConfig
-
-func (s WorkloadConfigByVersion) Len() int {
-	return len(s)
-}
-
-func (s WorkloadConfigByVersion) Swap(i, j int) {
-	s[i], s[j] = s[j], s[i]
-}
-
-func (s WorkloadConfigByVersion) Less(i, j int) bool {
-
-	// Just compare the starting version in the two ranges
-	first := s[i].VersionExpression[1:strings.Index(s[i].VersionExpression, ",")]
-	second := s[j].VersionExpression[1:strings.Index(s[j].VersionExpression, ",")]
-	return strings.Compare(first, second) == -1
 }
 
 // Grab configured userInput variables for the workload and pass them into the
