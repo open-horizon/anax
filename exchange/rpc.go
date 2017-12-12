@@ -832,7 +832,19 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg 
 						return nil, errors.New(fmt.Sprintf("unable to verify that %v is within %v, error %v", wDef.Version, vRange, err))
 					} else if inRange {
 						glog.V(5).Infof(rpclogString(fmt.Sprintf("found workload version %v within acceptable range", wDef.Version)))
-						if strings.Compare(highest, wDef.Version) == -1 {
+
+						// cannot pass in "" in the CompareVersions because it checks for invalid version strings.
+						var c int
+						var err error
+						if highest == "" {
+							c, err = policy.CompareVersions("0.0.0", wDef.Version)
+						} else {
+							c, err = policy.CompareVersions(highest, wDef.Version)
+						}
+
+						if err != nil {
+							glog.Errorf(rpclogString(fmt.Sprintf("error compairing version %v with version %v. %v", highest, wDef.Version, err)))
+						} else if c == -1 {
 							highest = wDef.Version
 							resWDef = wDef
 						}
@@ -915,7 +927,19 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 						return nil, errors.New(fmt.Sprintf("unable to verify that %v is within %v, error %v", msDef.Version, vRange, err))
 					} else if inRange {
 						glog.V(5).Infof(rpclogString(fmt.Sprintf("found microservice version %v within acceptable range", msDef.Version)))
-						if strings.Compare(highest, msDef.Version) == -1 {
+
+						// cannot pass in "" in the CompareVersions because it checks for invalid version strings.
+						var c int
+						var err error
+
+						if highest == "" {
+							c, err = policy.CompareVersions("0.0.0", msDef.Version)
+						} else {
+							c, err = policy.CompareVersions(highest, msDef.Version)
+						}
+						if err != nil {
+							glog.Errorf(rpclogString(fmt.Sprintf("error compairing version %v with version %v. %v", highest, msDef.Version, err)))
+						} else if c == -1 {
 							highest = msDef.Version
 							resMsDef = msDef
 						}

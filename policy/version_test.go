@@ -437,3 +437,76 @@ func TestLimitCeiling(t *testing.T) {
 	assert.NotNil(t, err, "ChangeCeiling shold return error, but it did not. %v", v1.Get_expression())
 
 }
+
+// This series of tests version comparison
+func TestCompareVersions(t *testing.T) {
+	v1 := "1"
+	v2 := "2"
+	c, err := CompareVersions(v1, v2)
+	assert.Nil(t, err, fmt.Sprintf("Error should be nil, but got:%v \n", err))
+	assert.Equal(t, -1, c, fmt.Sprintf("%v should be lower than %v.", v1, v2))
+	c, err = CompareVersions(v2, v1)
+	assert.Nil(t, err, fmt.Sprintf("Error should be nil, but got:%v \n", err))
+	assert.Equal(t, 1, c, fmt.Sprintf("%v should be higher than %v.", v2, v1))
+
+	v1 = "1.5"
+	v2 = "2.0.5"
+	c, err = CompareVersions(v1, v2)
+	assert.Nil(t, err, fmt.Sprintf("Error should be nil, but got:%v \n", err))
+	assert.Equal(t, -1, c, fmt.Sprintf("%v should be lowers than %v.", v1, v2))
+	c, err = CompareVersions(v2, v1)
+	assert.Nil(t, err, fmt.Sprintf("Error should be nil, but got:%v \n", err))
+	assert.Equal(t, 1, c, fmt.Sprintf("%v should be higher than %v.", v2, v1))
+
+	v1 = "0.9"
+	v2 = "0.10"
+	c, err = CompareVersions(v1, v2)
+	assert.Nil(t, err, fmt.Sprintf("Error should be nil, but got:%v \n", err))
+	assert.Equal(t, -1, c, fmt.Sprintf("%v should be lowers than %v.", v1, v2))
+	c, err = CompareVersions(v2, v1)
+	assert.Nil(t, err, fmt.Sprintf("Error should be nil, but got:%v \n", err))
+	assert.Equal(t, 1, c, fmt.Sprintf("%v should be higher than %v.", v2, v1))
+
+	v1 = "1.0.9"
+	v2 = "1.0.10"
+	c, err = CompareVersions(v1, v2)
+	assert.Nil(t, err, fmt.Sprintf("Error should be nil, but got:%v \n", err))
+	assert.Equal(t, -1, c, fmt.Sprintf("%v should be lowers than %v.", v1, v2))
+	c, err = CompareVersions(v2, v1)
+	assert.Nil(t, err, fmt.Sprintf("Error should be nil, but got:%v \n", err))
+	assert.Equal(t, 1, c, fmt.Sprintf("%v should be lower than %v.", v1, v2))
+
+	v1 = "1.0.9"
+	v2 = "INFINITY"
+	c, err = CompareVersions(v1, v2)
+	assert.Nil(t, err, fmt.Sprintf("Error should be nil, but got:%v \n", err))
+	assert.Equal(t, -1, c, fmt.Sprintf("%v should be lowers than %v.", v1, v2))
+	c, err = CompareVersions(v2, v1)
+	assert.Nil(t, err, fmt.Sprintf("Error should be nil, but got:%v \n", err))
+	assert.Equal(t, 1, c, fmt.Sprintf("%v should be lower than %v.", v1, v2))
+
+	v1 = "INFINITY"
+	v2 = "INFINITY"
+	c, err = CompareVersions(v1, v2)
+	assert.Nil(t, err, fmt.Sprintf("Error should be nil, but got:%v \n", err))
+	assert.Equal(t, 0, c, fmt.Sprintf("%v should be equal to %v.", v1, v2))
+
+	v1 = "2.0"
+	v2 = "2.0.0"
+	c, err = CompareVersions(v1, v2)
+	assert.Nil(t, err, fmt.Sprintf("Error should be nil, but got:%v \n", err))
+	assert.Equal(t, 0, c, fmt.Sprintf("%v should be equal to %v.", v1, v2))
+	c, err = CompareVersions(v2, v1)
+	assert.Nil(t, err, fmt.Sprintf("Error should be nil, but got:%v \n", err))
+	assert.Equal(t, 0, c, fmt.Sprintf("%v should be equal to %v.", v1, v2))
+
+	v1 = "2.0.x"
+	v2 = "2.0.0"
+	c, err = CompareVersions(v1, v2)
+	assert.NotNil(t, err, fmt.Sprintf("Should get error, but did not. \n"))
+
+	v1 = "[2.0, 1.1)"
+	v2 = "2.0.0"
+	c, err = CompareVersions(v1, v2)
+	assert.NotNil(t, err, fmt.Sprintf("Should get error, but did not. \n"))
+}

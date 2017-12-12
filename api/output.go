@@ -3,6 +3,7 @@ package api
 import (
 	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 	"strings"
 )
 
@@ -116,7 +117,8 @@ func (s WorkloadConfigByWorkloadURLAndVersion) Less(i, j int) bool {
 	first := s[i].VersionExpression[1:strings.Index(s[i].VersionExpression, ",")]
 	second := s[j].VersionExpression[1:strings.Index(s[j].VersionExpression, ",")]
 
-	return (strings.Compare(s[i].WorkloadURL, s[j].WorkloadURL) == -1) && (strings.Compare(first, second) == -1)
+	c, _ := policy.CompareVersions(first, second)
+	return (strings.Compare(s[i].WorkloadURL, s[j].WorkloadURL) == -1) && (c == -1)
 }
 
 type MicroserviceDefById []interface{}
