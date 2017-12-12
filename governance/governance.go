@@ -1089,7 +1089,7 @@ func (w *GovernanceWorker) GetWorkloadConfig(url string, version string) (map[st
 	}
 
 	// Sort them by version, oldest to newest
-	sort.Sort(persistence.WorkloadConfigByVersion(cfgs))
+	sort.Sort(WorkloadConfigByVersion(cfgs))
 
 	// Configure the env map with the newest config that is within the version range.
 	return persistence.ConfigToEnvvarMap(w.db, &cfgs[len(cfgs)-1], config.ENVVAR_PREFIX)
