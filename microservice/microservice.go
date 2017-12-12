@@ -169,9 +169,11 @@ func GetUpgradeMicroserviceDef(getMicroservice exchange.MicroserviceHandler, msd
 		return nil, fmt.Errorf("Failed to convert microservice metadata to persistent.MicroserviceDefinition for %v. %v", msdef.SpecRef, err)
 	} else {
 		// if the newer version is smaller than the old one, do nothing
-		if strings.Compare(e_msdef.Version, msdef.Version) < 0 {
+		if c, err := policy.CompareVersions(e_msdef.Version, msdef.Version); err != nil {
+			return nil, fmt.Errorf("error compairing version %v with version %v. %v", e_msdef.Version, msdef.Version, err)
+		} else if c < 0 {
 			return nil, nil
-		} else if strings.Compare(e_msdef.Version, msdef.Version) == 0 && bytes.Equal(msdef.MetadataHash, new_msdef.MetadataHash) {
+		} else if c == 0 && bytes.Equal(msdef.MetadataHash, new_msdef.MetadataHash) {
 			return nil, nil // no change, do nothing
 		} else {
 			if msdefs, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UrlVersionMSFilter(new_msdef.SpecRef, new_msdef.Version), persistence.ArchivedMSFilter()}); err != nil {

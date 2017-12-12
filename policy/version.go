@@ -222,32 +222,38 @@ func (self *Version_Expression) Is_within_range(expr string) (bool, error) {
 func (self *Version_Expression) IntersectsWith(other *Version_Expression) error {
 
 	// compare the start part
-	if strings.Compare(self.start, other.start) == 0 {
+	if c, err := CompareVersions(self.start, other.start); err != nil {
+		return err
+	} else if c == 0 {
 		if self.start_inclusive != other.start_inclusive {
 			self.start_inclusive = false
 		}
-	} else if strings.Compare(self.start, other.start) == -1 {
+	} else if c == -1 {
 		self.start = other.start
 		self.start_inclusive = other.start_inclusive
 	}
 
 	// compare the end part
-	if strings.Compare(self.end, other.end) == 0 {
+	if c, err := CompareVersions(self.end, other.end); err != nil {
+		return err
+	} else if c == 0 {
 		if self.end_inclusive != other.end_inclusive {
 			self.end_inclusive = false
 		}
-	} else if self.end == INF || strings.Compare(self.end, other.end) == 1 {
+	} else if self.end == INF || c == 1 {
 		self.end = other.end
 		self.end_inclusive = other.end_inclusive
 	}
 
 	// make sure start is smaller or equal to the end
 	if self.end != INF {
-		if comp := strings.Compare(self.start, self.end); comp == 0 {
+		if c, err := CompareVersions(self.start, self.end); err != nil {
+			return err
+		} else if c == 0 {
 			if !self.start_inclusive && !self.end_inclusive {
 				return fmt.Errorf("No intersection found.")
 			}
-		} else if comp == 1 {
+		} else if c == 1 {
 			return fmt.Errorf("No intersection found.")
 		}
 	}
@@ -267,7 +273,9 @@ func (self *Version_Expression) ChangeCeiling(ceiling_version string, inclusive 
 		return fmt.Errorf("The input string %v is not a version string.", ceiling_version)
 	} else {
 
-		if strings.Compare(ceiling_version, self.start) < 0 {
+		if c, err := CompareVersions(ceiling_version, self.start); err != nil {
+			return err
+		} else if c < 0 {
 			return fmt.Errorf("The input ceiling version %v is lower than the start version %v.", ceiling_version, self.start)
 		}
 
@@ -384,4 +392,54 @@ func normalize(expr string) string {
 		result += strings.Repeat(".0", 3-len(nums))
 	}
 	return result
+}
+
+// Return 1 if the input version v1 is higher than v2
+//        0 if the input version v1 equals to v2
+//        -1 if the input version v1 is lower than v2
+//        error if v1 or v2 is no a valid sigle version string
+func CompareVersions(v1 string, v2 string) (int, error) {
+	// make sure it is a single version string
+	if !IsVersionString(v1) || !IsVersionString(v1) {
+		return 0, fmt.Errorf("Input version string %v or %v is not a valid single version string.", v1, v2)
+	}
+
+	// same version
+	if strings.Compare(v1, v2) == 0 {
+		return 0, nil
+	}
+
+	// check for infinity
+	if v1 == INF {
+		return 1, nil
+	}
+
+	if v2 == INF {
+		return -1, nil
+	}
+
+	// make each has 3 fields
+	v1n := normalize(v1)
+	v2n := normalize(v2)
+
+	// convert each field into integer and then compare
+	v1s := strings.Split(v1n, numberSeperator)
+	v2s := strings.Split(v2n, numberSeperator)
+
+	for i := 0; i < 3; i++ {
+		if v1s[i] == v2s[i] {
+			continue
+		}
+
+		n1, _ := strconv.Atoi(v1s[i])
+		n2, _ := strconv.Atoi(v2s[i])
+
+		if n1 < n2 {
+			return -1, nil
+		} else if n1 > n2 {
+			return 1, nil
+		}
+	}
+
+	return 0, nil
 }
