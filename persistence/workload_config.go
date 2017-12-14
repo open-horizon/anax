@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
-	"strconv"
 )
 
 // workload variable configuration table name
@@ -249,79 +248,4 @@ func DeleteWorkloadConfig(db *bolt.DB, url string, org string, version string) e
 			})
 		}
 	}
-}
-
-// Grab configured userInput variables for the workload and pass them into the
-// workload container. The namespace of these env vars is defined by the workload
-// so there is no need for us to prefix them with the HZN prefix.
-func ConfigToEnvvarMap(db *bolt.DB, cfg *WorkloadConfig, prefix string) (map[string]string, error) {
-
-	pf := func(str string, prefix string) string {
-		return fmt.Sprintf("%v%v", prefix, str)
-	}
-
-	envvars := map[string]string{}
-
-	// Get the location attributes and set them into the envvar map. We think this is a
-	// temporary measure until all workloads are taught to use a GPS microservice.
-	if allAttrs, err := FindApplicableAttributes(db, ""); err != nil {
-		return nil, err
-	} else {
-		for _, attr := range allAttrs {
-
-			// Extract location property
-			switch attr.(type) {
-			case LocationAttributes:
-				s := attr.(LocationAttributes)
-				envvars[pf("LAT", prefix)] = strconv.FormatFloat(s.Lat, 'f', 6, 64)
-				envvars[pf("LON", prefix)] = strconv.FormatFloat(s.Lon, 'f', 6, 64)
-			case ComputeAttributes:
-				s := attr.(ComputeAttributes)
-				envvars[pf("CPUS", prefix)] = strconv.FormatInt(s.CPUs, 10)
-				envvars[pf("RAM", prefix)] = strconv.FormatInt(s.RAM, 10)
-			case ArchitectureAttributes:
-				s := attr.(ArchitectureAttributes)
-				envvars[pf("ARCH", prefix)] = s.Architecture
-			}
-		}
-	}
-
-	if cfg == nil {
-		return envvars, nil
-	}
-
-	// Workload config values are saved as their native types.
-	for _, attr := range cfg.Attributes {
-		if attr.GetMeta().Type == "UserInputAttributes" {
-			for v, varValue := range attr.GetGenericMappings() {
-				glog.Infof("workload UI var %v is type %T", v, varValue)
-				switch varValue.(type) {
-				case bool:
-					envvars[v] = strconv.FormatBool(varValue.(bool))
-				case string:
-					envvars[v] = varValue.(string)
-				// floats and ints come here
-				case float64:
-					if float64(int64(varValue.(float64))) == varValue.(float64) {
-						envvars[v] = strconv.FormatInt(int64(varValue.(float64)), 10)
-					} else {
-						envvars[v] = strconv.FormatFloat(varValue.(float64), 'f', 6, 64)
-					}
-				case []interface{}:
-					los := ""
-					for _, e := range varValue.([]interface{}) {
-						if _, ok := e.(string); ok {
-							los = los + e.(string) + " "
-						}
-					}
-					los = los[:len(los)-1]
-					envvars[v] = los
-				default:
-					return nil, errors.New(fmt.Sprintf("unknown UserInputAttribute variable %v type %T", v, varValue))
-				}
-			}
-		}
-	}
-
-	return envvars, nil
 }

@@ -88,15 +88,17 @@ func main() {
 
 	devWorkloadCmd := devCmd.Command("workload", "For working with a workload project.")
 	devWorkloadNewCmd := devWorkloadCmd.Command("new", "Create a new workload project.")
-	devWorkloadTestCmd := devWorkloadCmd.Command("test", "Run a workload in a mocked Horizon Agent environment.")
-	devWorkloadUserInputFile := devWorkloadTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
+	devWorkloadStartTestCmd := devWorkloadCmd.Command("start", "Run a workload in a mocked Horizon Agent environment.")
+	devWorkloadUserInputFile := devWorkloadStartTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
+	devWorkloadStopTestCmd := devWorkloadCmd.Command("stop", "Stop a workload that is running in a mocked Horizon Agent environment.")
 	devWorkloadDeployCmd := devWorkloadCmd.Command("deploy", "Deploy a workload to a Horizon Exchange.")
 	devWorkloadValidateCmd := devWorkloadCmd.Command("verify", "Validate the project for completeness and schema compliance.")
 
 	devMicroserviceCmd := devCmd.Command("microservice", "For working with a microservice project.")
 	devMicroserviceNewCmd := devMicroserviceCmd.Command("new", "Create a new microservice project.")
-	devMicroserviceTestCmd := devMicroserviceCmd.Command("test", "Run a microservice in a mocked Horizon Agent environment.")
-	devMicroserviceUserInputFile := devMicroserviceTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
+	devMicroserviceStartTestCmd := devMicroserviceCmd.Command("start", "Run a microservice in a mocked Horizon Agent environment.")
+	devMicroserviceUserInputFile := devMicroserviceStartTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
+	devMicroserviceStopTestCmd := devMicroserviceCmd.Command("stop", "Stop a microservice that is running in a mocked Horizon Agent environment.")
 	devMicroserviceDeployCmd := devMicroserviceCmd.Command("deploy", "Deploy a microservice to a Horizon Exchange.")
 	devMicroserviceValidateCmd := devMicroserviceCmd.Command("verify", "Validate the project for completeness and schema compliance.")
 
@@ -142,16 +144,20 @@ func main() {
 		unregister.DoIt(*forceUnregister, *removeNodeUnregister)
 	case devWorkloadNewCmd.FullCommand():
 		dev.WorkloadNew(*devHomeDirectory)
-	case devWorkloadTestCmd.FullCommand():
-		dev.WorkloadTest(*devHomeDirectory, *devWorkloadUserInputFile)
+	case devWorkloadStartTestCmd.FullCommand():
+		dev.WorkloadStartTest(*devHomeDirectory, *devWorkloadUserInputFile)
+	case devWorkloadStopTestCmd.FullCommand():
+		dev.WorkloadStopTest(*devHomeDirectory)
 	case devWorkloadValidateCmd.FullCommand():
 		dev.WorkloadValidate(*devHomeDirectory)
 	case devWorkloadDeployCmd.FullCommand():
 		dev.WorkloadDeploy(*devHomeDirectory)
 	case devMicroserviceNewCmd.FullCommand():
 		dev.MicroserviceNew(*devHomeDirectory)
-	case devMicroserviceTestCmd.FullCommand():
-		dev.MicroserviceTest(*devHomeDirectory, *devMicroserviceUserInputFile)
+	case devMicroserviceStartTestCmd.FullCommand():
+		dev.MicroserviceStartTest(*devHomeDirectory, *devMicroserviceUserInputFile)
+	case devMicroserviceStopTestCmd.FullCommand():
+		dev.MicroserviceStopTest(*devHomeDirectory)
 	case devMicroserviceValidateCmd.FullCommand():
 		dev.MicroserviceValidate(*devHomeDirectory)
 	case devMicroserviceDeployCmd.FullCommand():

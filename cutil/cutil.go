@@ -3,6 +3,7 @@ package cutil
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"github.com/golang/glog"
 	"net"
@@ -32,6 +33,17 @@ func SecureRandomString() (string, error) {
 	} else {
 		return base64.URLEncoding.EncodeToString(bytes), nil
 	}
+}
+
+func GenerateAgreementId() (string, error) {
+
+	bytes := make([]byte, 32, 32)
+	agreementIdString := ""
+	_, err := rand.Read(bytes)
+	if err == nil {
+		agreementIdString = hex.EncodeToString(bytes)
+	}
+	return agreementIdString, err
 }
 
 func ArchString() string {

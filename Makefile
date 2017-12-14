@@ -50,7 +50,7 @@ $(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') $(CLI_EXECUT
 	  export GOPATH=$(TMPGOPATH); \
 	    $(COMPILE_ARGS) go build -o $(EXECUTABLE)
 
-$(CLI_EXECUTABLE): $(shell find cli -name '*.go')
+$(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*')
 	@echo "Producing $(CLI_EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \

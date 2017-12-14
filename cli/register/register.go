@@ -34,7 +34,7 @@ type InputFile struct {
 	Workloads     []MicroWork `json:"workloads"`
 }
 
-func readInputFile(filePath string, inputFileStruct *InputFile) {
+func ReadInputFile(filePath string, inputFileStruct *InputFile) {
 	var fileBytes []byte
 	var err error
 	if filePath == "-" {
@@ -61,7 +61,7 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, email str
 	inputFileStruct := InputFile{}
 	if inputFile != "" {
 		fmt.Printf("Reading input file %s...\n", inputFile)
-		readInputFile(inputFile, &inputFileStruct)
+		ReadInputFile(inputFile, &inputFileStruct)
 	}
 
 	// Get the exchange url from the anax api

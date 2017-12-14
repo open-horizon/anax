@@ -1,7 +1,6 @@
 package agreementbot
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
 	"math/rand"
@@ -137,8 +137,11 @@ func (b *BaseAgreementWorker) AgreementLockManager() *AgreementLockManager {
 func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, wi *InitiateAgreement, random *rand.Rand, workerId string) {
 
 	// Generate an agreement ID
-	agreementId := generateAgreementId(random)
-	agreementIdString := hex.EncodeToString(agreementId)
+	agreementIdString, aerr := cutil.GenerateAgreementId()
+	if aerr != nil {
+		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error generating agreement id %v", aerr)))
+		return
+	}
 	glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("using AgreementId %v", agreementIdString)))
 
 	bcType, bcName, bcOrg := (&wi.ProducerPolicy).RequiresKnownBC(cph.Name())
@@ -669,15 +672,6 @@ func (b *BaseAgreementWorker) DoAsyncCancel(cph ConsumerProtocolHandler, ag *Agr
 	// This routine does not need to be a subworker because it will terminate on its own.
 	go cph.TerminateAgreement(ag, reason, workerId)
 
-}
-
-func generateAgreementId(random *rand.Rand) []byte {
-
-	b := make([]byte, 32, 32)
-	for i := range b {
-		b[i] = byte(random.Intn(256))
-	}
-	return b
 }
 
 var BAWlogstring = func(workerID string, v interface{}) string {

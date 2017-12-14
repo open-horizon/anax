@@ -662,6 +662,7 @@ type WorkloadDefinition struct {
 	Owner       string               `json:"owner"`
 	Label       string               `json:"label"`
 	Description string               `json:"description"`
+	Public      bool                 `json:"public"`
 	WorkloadURL string               `json:"workloadUrl"`
 	Version     string               `json:"version"`
 	Arch        string               `json:"arch"`
@@ -720,6 +721,7 @@ type MicroserviceDefinition struct {
 	Owner         string               `json:"owner"`
 	Label         string               `json:"label"`
 	Description   string               `json:"description"`
+	Public        bool                 `json:"public"`
 	SpecRef       string               `json:"specRef"`
 	Version       string               `json:"version"`
 	Arch          string               `json:"arch"`
@@ -1079,8 +1081,8 @@ type WorkloadChoice struct {
 	Version                      string           `json:"version,omitempty"`  // the version of the workload
 	Priority                     WorkloadPriority `json:"priority,omitempty"` // the highest priority workload is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
 	Upgrade                      UpgradePolicy    `json:"upgradePolicy,omitempty"`
-	DeploymentOverrides          string           `json:"deployment_overrides,omitempty"`           // env var overrides for the workload
-	DeploymentOverridesSignature string           `json:"deployment_overrides_signature,omitempty"` // signature of env var overrides
+	DeploymentOverrides          string           `json:"deployment_overrides"`           // env var overrides for the workload
+	DeploymentOverridesSignature string           `json:"deployment_overrides_signature"` // signature of env var overrides
 }
 
 type WorkloadReference struct {
@@ -1128,6 +1130,7 @@ type AgreementProtocol struct {
 }
 
 type Pattern struct {
+	Owner              string              `json:"owner"`
 	Label              string              `json:"label"`
 	Description        string              `json:"description"`
 	Public             bool                `json:"public"`
