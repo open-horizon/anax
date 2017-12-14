@@ -59,7 +59,7 @@ func List() {
 	// Convert to json and output
 	jsonBytes, err := json.MarshalIndent(workloads, "", cliutils.JSON_INDENT)
 	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show workloads' output: %v", err)
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn workload list' output: %v", err)
 	}
 	fmt.Printf("%s\n", jsonBytes)
 }

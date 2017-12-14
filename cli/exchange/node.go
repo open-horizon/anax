@@ -5,13 +5,39 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
 	"net/http"
+	"encoding/json"
 )
 
-func NodeList(org string, nodeIdTok string) {
-	nodeId, _ := cliutils.SplitIdToken(nodeIdTok)
-	var output string
-	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, org+"/"+nodeIdTok, []int{200}, &output)
-	fmt.Println(output)
+
+// We only care about handling the microservice names, so the rest is left as interface{} and will be passed from the exchange to the display
+type ExchangeNodes struct {
+	LastIndex int                    `json:"lastIndex"`
+	Nodes  map[string]interface{} `json:"nodes"`
+}
+
+func NodeList(org string, userPw string, node string, namesOnly bool) {
+	if node != "" {
+		node = "/" + node
+	}
+	if namesOnly {
+		// Only display the names
+		var resp ExchangeNodes
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+node, org+"/"+userPw, []int{200}, &resp)
+		var nodes []string
+		for n := range resp.Nodes {
+			nodes = append(nodes, n)
+		}
+		jsonBytes, err := json.MarshalIndent(nodes, "", cliutils.JSON_INDENT)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'exchange node list' output: %v", err)
+		}
+		fmt.Printf("%s\n", jsonBytes)
+	} else {
+		// Display the full resources
+		var output string
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+node, org+"/"+userPw, []int{200}, &output)
+		fmt.Println(output)
+	}
 }
 
 func NodeCreate(org string, nodeIdTok string, userPw string, email string) {

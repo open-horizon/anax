@@ -103,7 +103,7 @@ func List(archivedAgreements bool) {
 		}
 		jsonBytes, err := json.MarshalIndent(agreements, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show agreements' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn agreement list' output: %v", err)
 		}
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
@@ -113,7 +113,7 @@ func List(archivedAgreements bool) {
 		}
 		jsonBytes, err := json.MarshalIndent(agreements, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show agreements' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn agreement list' output: %v", err)
 		}
 		fmt.Printf("%s\n", jsonBytes)
 	}
