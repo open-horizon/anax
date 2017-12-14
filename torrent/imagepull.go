@@ -9,7 +9,6 @@ import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/containermessage"
 	"os"
-
 	"fmt"
 	"time"
 )
@@ -39,17 +38,28 @@ func dockerCredsFromConfigFile(configFilePath string) (*docker.AuthConfiguration
 func pullImageFromRepos(config config.Config, authConfigs *docker.AuthConfigurations, client *docker.Client, skipPartFetchFn *func(repotag string) (bool, error), deploymentDesc *containermessage.DeploymentDescription) error {
 
 	// auth from creds file
+	file_name := ""
 	if config.DockerCredFilePath != "" {
-		glog.V(5).Infof("Using auth config file: %v", config.DockerCredFilePath)
-		authFromFile, err := dockerCredsFromConfigFile(config.DockerCredFilePath)
-		if err != nil {
-			glog.Errorf("Failed to read creds file %v. Error: %v", config.DockerCredFilePath, err)
+		file_name = config.DockerCredFilePath
+	} else {
+		// if the config does not exist, use default provided the default file is there
+		default_cred_fn := "/root/.docker/config.json"
+		if _, err := os.Stat(default_cred_fn); err == nil {
+			file_name = default_cred_fn
 		}
+	}
 
-		// do not overwrite incoming authconfigs entries, only augment them
-		for k, v := range authFromFile.Configs {
-			if _, exists := authConfigs.Configs[k]; !exists {
-				authConfigs.Configs[k] = v
+	if file_name != "" {
+		glog.V(5).Infof("Using auth config file: %v", file_name)
+		authFromFile, err := dockerCredsFromConfigFile(file_name)
+		if err != nil {
+			glog.Errorf("Failed to read creds file %v. Error: %v", file_name, err)
+		} else {
+			// do not overwrite incoming authconfigs entries, only augment them
+			for k, v := range authFromFile.Configs {
+				if _, exists := authConfigs.Configs[k]; !exists {
+					authConfigs.Configs[k] = v
+				}
 			}
 		}
 	}
