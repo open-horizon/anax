@@ -20,7 +20,7 @@ import (
 
 func main() {
 	// Command flags and args - see https://github.com/alecthomas/kingpin
-	app := kingpin.New("hzn", "Command line interface for Horizon agent.")
+	app := kingpin.New("hzn", "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost. Set HORIZON_URL_BASE to override this, which can facilitate using a remote Horizon Agent via an ssh tunnel. The 'hzn exchange' sub-commands will use HORIZON_EXCHANGE_URL_BASE, if set, to communicate with the exchange without having to ask the Horizon Agent for the URL.")
 	cliutils.Opts.Verbose = app.Flag("verbose", "Verbose output.").Short('v').Bool()
 
 	exchangeCmd := app.Command("exchange", "List and manage Horizon Exchange resources.")
@@ -49,7 +49,11 @@ func main() {
 	exPatternNames := exPatternListCmd.Flag("names-only", "Only list the names (IDs) of the patterns.").Short('N').Bool()
 	exPatternPublishCmd := exPatternCmd.Command("publish", "Sign and create/update the pattern resource in the Horizon Exchange.")
 	exPatJsonFile := exPatternPublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the pattern in the Horizon exchange. See /usr/horizon/samples/pattern.json. Specify -f- to read from stdin.").Short('f').Required().String()
-	exPatKeyFile := exPatternPublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the microservice. ").Short('k').Required().String()
+	exPatKeyFile := exPatternPublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the pattern. ").Short('k').Required().String()
+	exPatternAddWorkCmd := exPatternCmd.Command("insertworkload", "Add or replace a workload in an existing pattern resource in the Horizon Exchange.")
+	exPatAddWork := exPatternAddWorkCmd.Arg("pattern", "The existing pattern that the workload should be inserted into.").Required().String()
+	exPatAddWorkJsonFile := exPatternAddWorkCmd.Flag("json-file", "The path of a JSON file containing the additional workload metadata. See /usr/horizon/samples/insert-workload-into-pattern.json. Specify -f- to read from stdin.").Short('f').Required().String()
+	exPatAddWorkKeyFile := exPatternAddWorkCmd.Flag("private-key-file", "The path of a private key file to be used to sign the inserted workload. ").Short('k').Required().String()
 
 	exWorkloadCmd := exchangeCmd.Command("workload", "List and manage workloads in the Horizon Exchange")
 	//exWorkNodeIdTok := exWorkloadCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to use to query the exchange. Create with 'hzn exchange node create'.").Short('n').PlaceHolder("ID:TOK").Required().String()
@@ -58,7 +62,7 @@ func main() {
 	exWorkloadNames := exWorkloadListCmd.Flag("names-only", "Only list the names (IDs) of the workloads.").Short('N').Bool()
 	exWorkloadPublishCmd := exWorkloadCmd.Command("publish", "Sign and create/update the workload resource in the Horizon Exchange.")
 	exWorkJsonFile := exWorkloadPublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the workload in the Horizon exchange. See /usr/horizon/samples/workload.json. Specify -f- to read from stdin.").Short('f').Required().String()
-	exWorkKeyFile := exWorkloadPublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the microservice. ").Short('k').Required().String()
+	exWorkKeyFile := exWorkloadPublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the workload. ").Short('k').Required().String()
 
 	exMicroserviceCmd := exchangeCmd.Command("microservice", "List and manage microservices in the Horizon Exchange")
 	//exMicroNodeIdTok := exMicroserviceCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to use to query the exchange. Create with 'hzn exchange node create'.").Short('n').PlaceHolder("ID:TOK").Required().String()
@@ -144,6 +148,8 @@ func main() {
 		exchange.PatternList(*exOrg, *exUserPw, *exPattern, *exPatternNames)
 	case exPatternPublishCmd.FullCommand():
 		exchange.PatternPublish(*exOrg, *exUserPw, *exPatJsonFile, *exPatKeyFile)
+	case exPatternAddWorkCmd.FullCommand():
+		exchange.PatternAddWorkload(*exOrg, *exUserPw, *exPatAddWork, *exPatAddWorkJsonFile, *exPatAddWorkKeyFile)
 	case exWorkloadListCmd.FullCommand():
 		exchange.WorkloadList(*exOrg, *exUserPw, *exWorkload, *exWorkloadNames)
 	case exWorkloadPublishCmd.FullCommand():

@@ -22,7 +22,8 @@ type PatternOutput struct {
 	Label              string              `json:"label"`
 	Description        string              `json:"description"`
 	Public             bool                `json:"public"`
-	Workloads          []exchange.WorkloadReference `json:"workloads"`
+	//Workloads          []exchange.WorkloadReference `json:"workloads"`
+	Workloads          []WorkloadReference `json:"workloads"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
 	LastUpdated   string               `json:"lastUpdated"`
 }
@@ -84,7 +85,7 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 
 // PatternPublish signs the MS def and puts it in the exchange
 func PatternPublish(org string, userPw string, jsonFilePath string, keyFilePath string) {
-	// Read in the MS metadata
+	// Read in the pattern metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
 	var patInput PatternInput
 	err := json.Unmarshal(newBytes, &patInput)
@@ -119,4 +120,68 @@ func PatternPublish(org string, userPw string, jsonFilePath string, keyFilePath 
 		fmt.Printf("Creating %s in the exchange...\n", exchId)
 		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+exchId, org+"/"+userPw, []int{201}, patInput)
 	}
+}
+
+
+/*
+func copyPatternOutputToInput(output *PatternOutput, input *PatternInput) {
+	input.Label = output.Label
+	input.Description = output.Description
+	input.Public = output.Public
+	input.AgreementProtocols = output.AgreementProtocols
+	//input.Workloads = output.Workloads
+}
+*/
+
+
+// PatternAddWorkload reads json for 1 element of the workloads array of a pattern, gets the named pattern from the
+// exchange, and then either replaces that workload array element (if it already exists), or adds it.
+func PatternAddWorkload(org string, userPw string, pattern string, workloadFilePath string, keyFilePath string) {
+	// Read in the workload metadata
+	newBytes := cliutils.ReadJsonFile(workloadFilePath)
+	var workInput WorkloadReference
+	err := json.Unmarshal(newBytes, &workInput)
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", workloadFilePath, err)
+	}
+
+	// Get the pattern from the exchange
+	var output ExchangePatterns
+	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, org+"/"+userPw, []int{200}, &output)
+	key := org+"/"+pattern
+	if _, ok := output.Patterns[key]; !ok {
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, "horizon exchange api pattern output did not include '%s' key", pattern)
+	}
+	// Convert it to the structure to put it back into the exchange
+	patInput := PatternInput{Label: output.Patterns[key].Label, Description: output.Patterns[key].Description, Public: output.Patterns[key].Public, Workloads: output.Patterns[key].Workloads, AgreementProtocols: output.Patterns[key].AgreementProtocols}
+
+	// Sign the workload being added
+	for i := range workInput.WorkloadVersions {
+		cliutils.Verbose("signing deployment_overrides string in workloadVersion element number %d", i+1)
+		var err error
+		workInput.WorkloadVersions[i].DeploymentOverridesSignature, err = sign.Input(keyFilePath, []byte(workInput.WorkloadVersions[i].DeploymentOverrides))
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment_overrides string with %s: %v", keyFilePath, err)
+		}
+	}
+
+	// Find the workload entry in the pattern that matches the 1 being added (if any)
+	foundMatch := false
+	for i := range patInput.Workloads {
+		if patInput.Workloads[i].WorkloadOrg == workInput.WorkloadOrg && patInput.Workloads[i].WorkloadURL == workInput.WorkloadURL && patInput.Workloads[i].WorkloadArch == workInput.WorkloadArch {
+			// Found it, replace this entry
+			fmt.Printf("Replacing workload element number %d\n", i+1)
+			patInput.Workloads[i] = workInput
+			foundMatch = true
+		}
+	}
+	if !foundMatch {
+		// Didn't find a matching element above, so append it
+		fmt.Println("Adding workload to the end of the workload array")
+		patInput.Workloads = append(patInput.Workloads, workInput)
+	}
+
+	// Finally put it back in the exchange
+	fmt.Printf("Updating %s in the exchange...\n", pattern)
+	cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, org+"/"+userPw, []int{201}, patInput)
 }
