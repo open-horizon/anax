@@ -13,6 +13,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"regexp"
 )
 
 const (
@@ -26,6 +27,7 @@ const (
 	READ_FILE_ERROR    = 4
 	HTTP_ERROR         = 5
 	//EXEC_CMD_ERROR = 6
+	CLI_GENERAL_ERROR = 7
 	INTERNAL_ERROR = 99
 
 	// Anax API HTTP Codes
@@ -79,6 +81,37 @@ func SplitIdToken(idToken string) (id, token string) {
 		token = parts[1]
 	}
 	return
+}
+
+// FormExchangeId combines url, version, arch the same way the exchange does to form the resource ID.
+func FormExchangeId(url, version, arch string) string {
+	// Remove the https:// from the beginning of workloadUrl and replace troublesome chars with a dash.
+	//val workloadUrl2 = """^[A-Za-z0-9+.-]*?://""".r replaceFirstIn (url, "")
+	//val workloadUrl3 = """[$!*,;/?@&~=%]""".r replaceAllIn (workloadUrl2, "-")     // I think possible chars in valid urls are: $_.+!*,;/?:@&~=%-
+	//return OrgAndId(orgid, workloadUrl3 + "_" + version + "_" + arch).toString
+	re := regexp.MustCompile(`^[A-Za-z0-9+.-]*?://`)
+	url2 := re.ReplaceAllLiteralString(url, "")
+	re = regexp.MustCompile(`[$!*,;/?@&~=%]`)
+	url3 := re.ReplaceAllLiteralString(url2, "-")
+	return url3 + "_" + version + "_" + arch
+}
+
+// ReadJsonFile reads a json from a file or stdin, eliminates comments, and returns it.
+func ReadJsonFile(filePath string) []byte {
+	var fileBytes []byte
+	var err error
+	if filePath == "-" {
+		fileBytes, err = ioutil.ReadAll(os.Stdin)
+	} else {
+		fileBytes, err = ioutil.ReadFile(filePath)
+	}
+	if err != nil {
+		Fatal(READ_FILE_ERROR, "reading %s failed: %v", filePath, err)
+	}
+	// remove /* */ comments
+	re := regexp.MustCompile(`(?s)/\*.*?\*/`)
+	newBytes := re.ReplaceAll(fileBytes, nil)
+	return newBytes
 }
 
 // GetHorizonUrlBase returns the base part of the horizon api url (which can be overridden by env var HORIZON_URL_BASE)
@@ -194,11 +227,16 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 	return
 }
 
-// GetExchangeUrl returns the exchange url from the anax api
+// GetExchangeUrl returns the exchange url from the env var or anax api
 func GetExchangeUrl() string {
-	status := api.Info{}
-	HorizonGet("status", []int{200}, &status)
-	return strings.TrimSuffix(status.Configuration.ExchangeAPI, "/")
+	exchUrl := os.Getenv("HORIZON_EXCHANGE_URL_BASE")
+	if exchUrl == "" {
+		// Get it from anax
+		status := api.Info{}
+		HorizonGet("status", []int{200}, &status)
+		exchUrl = status.Configuration.ExchangeAPI
+	}
+	return strings.TrimSuffix(exchUrl, "/")
 }
 
 // ExchangeGet runs a GET to the exchange api and fills in the specified json structure. If the structure is just a string, fill in the raw json.
@@ -220,19 +258,20 @@ func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttpC
 		Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err)
 	}
 	defer resp.Body.Close()
-	httpCode = resp.StatusCode
-	Verbose("HTTP code: %d", httpCode)
-	if !isGoodCode(httpCode, goodHttpCodes) {
-		Fatal(HTTP_ERROR, "bad HTTP code from %s: %d", apiMsg, httpCode)
-	}
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err)
+	}
+	httpCode = resp.StatusCode
+	Verbose("HTTP code: %d", httpCode)
+	if !isGoodCode(httpCode, goodHttpCodes) {
+		Fatal(HTTP_ERROR, "bad HTTP code %d from %s, output: %s", httpCode, apiMsg, string(bodyBytes))
 	}
 
 	switch s := structure.(type) {
 	case *string:
 		// If the structure to fill in is just a string, unmarshal/remarshal it to get it in json indented form, and then return as a string
+		//todo: this gets it in json indented form, but also returns the fields in random order (because they were interpreted as a map)
 		var jsonStruct interface{}
 		err = json.Unmarshal(bodyBytes, &jsonStruct)
 		if err != nil {
@@ -240,7 +279,7 @@ func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttpC
 		}
 		jsonBytes, err := json.MarshalIndent(jsonStruct, "", JSON_INDENT)
 		if err != nil {
-			Fatal(JSON_PARSING_ERROR, "failed to marshal 'show pem' output: %v", err)
+			Fatal(JSON_PARSING_ERROR, "failed to marshal exchange output: %v", err)
 		}
 		*s = string(jsonBytes)
 	default:
@@ -252,16 +291,24 @@ func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttpC
 	return
 }
 
-// ExchangePutPost runs a PUT or POST to the exchange api to create of update a resource.
+// ExchangePutPost runs a PUT or POST to the exchange api to create of update a resource. If body is a string, it will be given to the exchange
+// as json. Otherwise the struct will be marshaled to json.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
 func ExchangePutPost(method string, urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, body interface{}) (httpCode int) {
 	url := urlBase + "/" + urlSuffix
 	apiMsg := method + " " + url
 	Verbose(apiMsg)
 	httpClient := &http.Client{}
-	jsonBytes, err := json.Marshal(body)
-	if err != nil {
-		Fatal(JSON_PARSING_ERROR, "failed to marshal body for %s: %v", apiMsg, err)
+	var jsonBytes []byte
+	switch b := body.(type) {
+	case string:
+		jsonBytes = []byte(b)
+	default:
+		var err error
+		jsonBytes, err = json.Marshal(body)
+		if err != nil {
+			Fatal(JSON_PARSING_ERROR, "failed to marshal body for %s: %v", apiMsg, err)
+		}
 	}
 	requestBody := bytes.NewBuffer(jsonBytes)
 	req, err := http.NewRequest(method, url, requestBody)

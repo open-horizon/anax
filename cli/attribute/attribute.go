@@ -43,7 +43,7 @@ func List() {
 	// Convert to json and output
 	jsonBytes, err := json.MarshalIndent(attrs, "", cliutils.JSON_INDENT)
 	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show attributes' output: %v", err)
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn attribute list' output: %v", err)
 	}
 	fmt.Printf("%s\n", jsonBytes)
 }

@@ -1,0 +1,19 @@
+{
+  "label": "CPU for x86_64",
+  "description": "Provides a REST API to query the CPU load",
+  "public": true,
+  "specRef": "https://internetofthings.ibmcloud.com/microservices/cpu",
+  "version": "1.2.2",
+  "arch": "amd64",
+  "sharable": "single",
+  "downloadUrl": "not used yet",
+  "matchHardware": {},
+  "userInput": [],
+  "workloads": [
+    {
+      "deployment": "{\"services\":{\"cpu\":{\"image\":\"openhorizon/example_ms_x86_cpu:1.2.2\"}}}",
+      "deployment_signature": "",
+      "torrent": "{\"url\":\"\",\"signature\":\"\"}"
+    }
+  ]
+}

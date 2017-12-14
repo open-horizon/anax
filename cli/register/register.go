@@ -7,10 +7,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
-	"io/ioutil"
 	"net/http"
-	"os"
-	"regexp"
 )
 
 // These structs are used to parse the registration input file
@@ -35,21 +32,9 @@ type InputFile struct {
 }
 
 func readInputFile(filePath string, inputFileStruct *InputFile) {
-	var fileBytes []byte
-	var err error
-	if filePath == "-" {
-		fileBytes, err = ioutil.ReadAll(os.Stdin)
-	} else {
-		fileBytes, err = ioutil.ReadFile(filePath)
-	}
-	if err != nil {
-		cliutils.Fatal(cliutils.READ_FILE_ERROR, "reading %s failed: %v", filePath, err)
-	}
-	// remove /* */ comments
-	re := regexp.MustCompile(`(?s)/\*.*?\*/`)
-	newBytes := re.ReplaceAll(fileBytes, nil)
+	newBytes := cliutils.ReadJsonFile(filePath)
 
-	err = json.Unmarshal(newBytes, inputFileStruct)
+	err := json.Unmarshal(newBytes, inputFileStruct)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", filePath, err)
 	}
