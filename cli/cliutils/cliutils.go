@@ -18,6 +18,7 @@ import (
 
 const (
 	HZN_API             = "http://localhost"
+	AGBOT_HZN_API       = "http://localhost:8046"
 	JSON_INDENT         = "  "
 	MUST_REGISTER_FIRST = "this command can not be run before running 'hzn register'"
 

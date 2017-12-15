@@ -5,11 +5,11 @@ import (
 	"github.com/open-horizon/horizon-pkg-fetch/fetcherrors"
 	"strings"
 
+	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/containermessage"
 	"os"
-	"fmt"
 	"time"
 )
 

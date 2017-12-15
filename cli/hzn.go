@@ -3,6 +3,7 @@ package main
 
 import (
 	"github.com/open-horizon/anax/cli/agreement"
+	"github.com/open-horizon/anax/cli/agreementbot"
 	"github.com/open-horizon/anax/cli/attribute"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/dev"
@@ -132,6 +133,16 @@ func main() {
 	devDependencyFetchCmd := devDependencyCmd.Command("fetch", "Retrieving Horizon metadata for a new dependency.")
 	devDependencyListCmd := devDependencyCmd.Command("list", "List all dependencies.")
 
+	agbotCmd := app.Command("agbot", "List and manage Horizon agreement bot resources.")
+
+	agbotAgreementCmd := agbotCmd.Command("agreement", "List or manage the active or archived agreements this Horizon agreement bot has with edge nodes.")
+	agbotAgreementListCmd := agbotAgreementCmd.Command("list", "List the active or archived agreements this Horizon agreement bot has with edge nodes.")
+	agbotlistArchivedAgreements := agbotAgreementListCmd.Flag("archived", "List archived agreements instead of the active agreements.").Short('r').Bool()
+	agbotAgreement := agbotAgreementListCmd.Arg("agreement", "List just this one agreement.").String()
+	agbotAgreementCancelCmd := agbotAgreementCmd.Command("cancel", "Cancel 1 or all of the active agreements this Horizon agreement bot has with edge nodes. Usually an agbot will immediately negotiated a new agreement. ")
+	agbotCancelAllAgreements := agbotAgreementCancelCmd.Flag("all", "Cancel all of the current agreements.").Short('a').Bool()
+	agbotCancelAgreementId := agbotAgreementCancelCmd.Arg("agreement", "The active agreement to cancel.").String()
+
 	app.Version("0.0.3") //todo: get the real version of anax
 
 	// Decide which command to run
@@ -200,5 +211,9 @@ func main() {
 		dev.DependencyFetch(*devHomeDirectory)
 	case devDependencyListCmd.FullCommand():
 		dev.DependencyList(*devHomeDirectory)
+	case agbotAgreementListCmd.FullCommand():
+		agreementbot.AgreementList(*agbotlistArchivedAgreements, *agbotAgreement)
+	case agbotAgreementCancelCmd.FullCommand():
+		agreementbot.AgreementCancel(*agbotCancelAgreementId, *agbotCancelAllAgreements)
 	}
 }
