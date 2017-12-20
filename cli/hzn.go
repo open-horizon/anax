@@ -21,12 +21,19 @@ import (
 
 func main() {
 	// Command flags and args - see https://github.com/alecthomas/kingpin
-	app := kingpin.New("hzn", "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost. Set HORIZON_URL_BASE to override this, which can facilitate using a remote Horizon Agent via an ssh tunnel. The 'hzn exchange' sub-commands will use HORIZON_EXCHANGE_URL_BASE, if set, to communicate with the exchange without having to ask the Horizon Agent for the URL.")
+	app := kingpin.New("hzn", `Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).
+
+Environment Variables:
+  HORIZON_URL_BASE: Override the URL at which hzn contacts the Horizon Agent API. This can facilitate using a remote Horizon Agent via an ssh tunnel.
+  HORIZON_EXCHANGE_URL_BASE:  Override the URL that the 'hzn exchange' sub-commands use to communicate with the Horizon Exchange, for example https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the Horizon Agent for the URL.)
+  USING_API_KEY:  Set this to "1" to indicate that the credential passed into the 'hzn exchange -u' flag is an WIoTP API key/token, not a Horizon Exchange user/password.
+`)
+	app.HelpFlag.Short('h')
 	cliutils.Opts.Verbose = app.Flag("verbose", "Verbose output.").Short('v').Bool()
 
 	exchangeCmd := app.Command("exchange", "List and manage Horizon Exchange resources.")
 	exOrg := exchangeCmd.Flag("org", "The Horizon exchange organization ID.").Short('o').Default("public").String()
-	exUserPw := exchangeCmd.Flag("user-pw", "Horizon Exchange user credentials to query and create exchange resources.").Short('u').PlaceHolder("USER:PW").Required().String()
+	exUserPw := exchangeCmd.Flag("user-pw", "Horizon Exchange user credentials to query and create exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.").Short('u').PlaceHolder("USER:PW").Required().String()
 
 	userCmd := exchangeCmd.Command("user", "List and manage users in the Horizon Exchange")
 	//exUserPw := userCmd.Flag("user-pw", "User credentials in the Horizon exchange.").Short('u').PlaceHolder("USER:PW").Required().String()

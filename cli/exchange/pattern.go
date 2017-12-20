@@ -59,7 +59,7 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 	if namesOnly {
 		// Only display the names
 		var resp ExchangePatterns
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+pattern, org+"/"+userPw, []int{200}, &resp)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+pattern, cliutils.OrgAndCreds(org,userPw), []int{200}, &resp)
 		var patterns []string
 		for p := range resp.Patterns {
 			patterns = append(patterns, p)
@@ -73,7 +73,7 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 		// Display the full resources
 		//var output string
 		var output ExchangePatterns
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+pattern, org+"/"+userPw, []int{200}, &output)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+pattern, cliutils.OrgAndCreds(org,userPw), []int{200}, &output)
 		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange pattern list' output: %v", err)
@@ -110,15 +110,15 @@ func PatternPublish(org string, userPw string, jsonFilePath string, keyFilePath 
 	exchId := filepath.Base(jsonFilePath)	// remove the leading path
 	exchId = strings.TrimSuffix(exchId, filepath.Ext(exchId))   // strip suffix if there
 	var output string
-	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+exchId, org+"/"+userPw, []int{200,404}, &output)
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+exchId, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &output)
 	if httpCode == 200 {
 		// Pattern exists, update it
 		fmt.Printf("Updating %s in the exchange...\n", exchId)
-		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+exchId, org+"/"+userPw, []int{201}, patInput)
+		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+exchId, cliutils.OrgAndCreds(org,userPw), []int{201}, patInput)
 	} else {
 		// Pattern not there, create it
 		fmt.Printf("Creating %s in the exchange...\n", exchId)
-		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+exchId, org+"/"+userPw, []int{201}, patInput)
+		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+exchId, cliutils.OrgAndCreds(org,userPw), []int{201}, patInput)
 	}
 }
 
@@ -147,7 +147,7 @@ func PatternAddWorkload(org string, userPw string, pattern string, workloadFileP
 
 	// Get the pattern from the exchange
 	var output ExchangePatterns
-	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, org+"/"+userPw, []int{200}, &output)
+	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org,userPw), []int{200}, &output)
 	key := org+"/"+pattern
 	if _, ok := output.Patterns[key]; !ok {
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, "horizon exchange api pattern output did not include '%s' key", pattern)
@@ -183,5 +183,5 @@ func PatternAddWorkload(org string, userPw string, pattern string, workloadFileP
 
 	// Finally put it back in the exchange
 	fmt.Printf("Updating %s in the exchange...\n", pattern)
-	cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, org+"/"+userPw, []int{201}, patInput)
+	cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org,userPw), []int{201}, patInput)
 }

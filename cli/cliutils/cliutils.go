@@ -84,6 +84,18 @@ func SplitIdToken(idToken string) (id, token string) {
 	return
 }
 
+// OrgAndCreds prepends the org to creds (separated by /) unless creds already has an org prepended
+func OrgAndCreds(org, creds string) string {
+	if os.Getenv("USING_API_KEY") == "1" {
+		return creds	// WIoTP API keys are globally unique and shouldn't be prepended with the org
+	}
+	id, _ := SplitIdToken(creds)	// only look for the / in the id, because the token is more likely to have special chars
+	if strings.Contains(id, "/") {
+		return creds	// already has the org at the beginning
+	}
+	return org+"/"+creds
+}
+
 // FormExchangeId combines url, version, arch the same way the exchange does to form the resource ID.
 func FormExchangeId(url, version, arch string) string {
 	// Remove the https:// from the beginning of workloadUrl and replace troublesome chars with a dash.
@@ -237,7 +249,12 @@ func GetExchangeUrl() string {
 		HorizonGet("status", []int{200}, &status)
 		exchUrl = status.Configuration.ExchangeAPI
 	}
-	return strings.TrimSuffix(exchUrl, "/")
+	exchUrl = strings.TrimSuffix(exchUrl, "/")	// anax puts a trailing slash on it
+	if os.Getenv("USING_API_KEY") == "1" {
+		re := regexp.MustCompile(`edgenode$`)
+		exchUrl = re.ReplaceAllLiteralString(exchUrl, "edge")
+	}
+	return exchUrl
 }
 
 // ExchangeGet runs a GET to the exchange api and fills in the specified json structure. If the structure is just a string, fill in the raw json.

@@ -10,7 +10,7 @@ func UserList(org string, userPw string) {
 	exchUrlBase := cliutils.GetExchangeUrl()
 	user, _ := cliutils.SplitIdToken(userPw)
 	var output string
-	cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/users/"+user, org+"/"+userPw, []int{200}, &output)
+	cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org,userPw), []int{200}, &output)
 	fmt.Println(output)
 }
 

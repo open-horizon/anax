@@ -51,7 +51,7 @@ func WorkloadList(org string, userPw string, workload string, namesOnly bool) {
 	if namesOnly {
 		// Only display the names
 		var resp ExchangeWorkloads
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, org+"/"+userPw, []int{200}, &resp)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, cliutils.OrgAndCreds(org,userPw), []int{200}, &resp)
 		var workloads []string
 		for k := range resp.Workloads {
 			workloads = append(workloads, k)
@@ -65,7 +65,7 @@ func WorkloadList(org string, userPw string, workload string, namesOnly bool) {
 		// Display the full resources
 		//var output string
 		var output ExchangeWorkloads
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, org+"/"+userPw, []int{200}, &output)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, cliutils.OrgAndCreds(org,userPw), []int{200}, &output)
 		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange workload list' output: %v", err)
@@ -94,6 +94,7 @@ func WorkloadPublish(org string, userPw string, jsonFilePath string, keyFilePath
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment string with %s: %v", keyFilePath, err)
 		}
+		//todo: gather the docker image paths to instruct to docker push at the end
 
 		// Verify the torrent field is the form necessary for the containers that are stored in a docker registry (because that is all we support right now)
 		torrentErrorString := `currently the torrent field must be like this to indicate the images are stored in a docker registry: {\"url\":\"\",\"signature\":\"\"}`
@@ -116,14 +117,14 @@ func WorkloadPublish(org string, userPw string, jsonFilePath string, keyFilePath
 	// Create of update resource in the exchange
 	exchId := cliutils.FormExchangeId(workInput.WorkloadURL, workInput.Version, workInput.Arch)
 	var output string
-	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+exchId, org+"/"+userPw, []int{200,404}, &output)
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+exchId, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &output)
 	if httpCode == 200 {
 		// Workload exists, update it
 		fmt.Printf("Updating %s in the exchange...\n", exchId)
-		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+exchId, org+"/"+userPw, []int{201}, workInput)
+		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+exchId, cliutils.OrgAndCreds(org,userPw), []int{201}, workInput)
 	} else {
 		// Workload not there, create it
 		fmt.Printf("Creating %s in the exchange...\n", exchId)
-		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads", org+"/"+userPw, []int{201}, workInput)
+		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads", cliutils.OrgAndCreds(org,userPw), []int{201}, workInput)
 	}
 }
