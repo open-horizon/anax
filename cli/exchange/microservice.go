@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/rsapss-tool/sign"
+	"strings"
 )
 
 type ExchangeMicroservices struct {
@@ -52,7 +53,7 @@ func MicroserviceList(org string, userPw string, microservice string, namesOnly 
 	if namesOnly {
 		// Only display the names
 		var resp ExchangeMicroservices
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices"+microservice, cliutils.OrgAndCreds(org,userPw), []int{200}, &resp)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices"+microservice, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &resp)
 		var microservices []string
 		for k := range resp.Microservices {
 			microservices = append(microservices, k)
@@ -66,12 +67,34 @@ func MicroserviceList(org string, userPw string, microservice string, namesOnly 
 		// Display the full resources
 		//var output string
 		var output ExchangeMicroservices
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices"+microservice, cliutils.OrgAndCreds(org,userPw), []int{200}, &output)
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices"+microservice, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &output)
+		if httpCode == 404 && microservice != "" {
+			cliutils.Fatal(cliutils.NOT_FOUND, "microservice '%s' not found in org %s", strings.TrimPrefix(microservice, "/"), org)
+		}
 		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange microservice list' output: %v", err)
 		}
 		fmt.Println(string(jsonBytes))
+	}
+}
+
+
+func CheckTorrentField(torrent string, index int) {
+	// Verify the torrent field is the form necessary for the containers that are stored in a docker registry (because that is all we support right now)
+	torrentErrorString := `currently the torrent field must be like this to indicate the images are stored in a docker registry: {\"url\":\"\",\"signature\":\"\"}`
+	if torrent == "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, torrentErrorString)
+	}
+	var torrentMap map[string]string
+	if err := json.Unmarshal([]byte(torrent), &torrentMap); err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "failed to unmarshal torrent string number %d: %v", index+1, err)
+	}
+	if url, ok := torrentMap["url"]; !ok || url != "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, torrentErrorString)
+	}
+	if signature, ok := torrentMap["signature"]; !ok || signature != "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, torrentErrorString)
 	}
 }
 
@@ -97,21 +120,7 @@ func MicroservicePublish(org string, userPw string, jsonFilePath string, keyFile
 		}
 		//todo: gather the docker image paths to instruct to docker push at the end
 
-		// Verify the torrent field is the form necessary for the containers that are stored in a docker registry (because that is all we support right now)
-		torrentErrorString := `currently the torrent field must be like this to indicate the images are stored in a docker registry: {\"url\":\"\",\"signature\":\"\"}`
-		if microInput.Workloads[i].Torrent == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, torrentErrorString)
-		}
-		var torrentMap map[string]string
-		if err := json.Unmarshal([]byte(microInput.Workloads[i].Torrent), torrentMap); err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "failed to unmarshal torrent string number %d: %v", i+1, err)
-		}
-		if url, ok := torrentMap["url"]; !ok || url != "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, torrentErrorString)
-		}
-		if signature, ok := torrentMap["signature"]; !ok || signature != "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, torrentErrorString)
-		}
+		CheckTorrentField(microInput.Workloads[i].Torrent, i)
 	}
 
 	// Create of update resource in the exchange

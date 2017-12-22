@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"net/http"
 	"encoding/json"
+	"strings"
 )
 
 
@@ -22,7 +23,7 @@ func NodeList(org string, userPw string, node string, namesOnly bool) {
 	if namesOnly {
 		// Only display the names
 		var resp ExchangeNodes
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+node, cliutils.OrgAndCreds(org,userPw), []int{200}, &resp)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+node, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &resp)
 		var nodes []string
 		for n := range resp.Nodes {
 			nodes = append(nodes, n)
@@ -35,7 +36,10 @@ func NodeList(org string, userPw string, node string, namesOnly bool) {
 	} else {
 		// Display the full resources
 		var output string
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+node, cliutils.OrgAndCreds(org,userPw), []int{200}, &output)
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+node, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &output)
+		if httpCode == 404 && node != "" {
+			cliutils.Fatal(cliutils.NOT_FOUND, "node '%s' not found in org %s", strings.TrimPrefix(node, "/"), org)
+		}
 		fmt.Println(output)
 	}
 }

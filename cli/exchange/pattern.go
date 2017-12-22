@@ -59,7 +59,7 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 	if namesOnly {
 		// Only display the names
 		var resp ExchangePatterns
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+pattern, cliutils.OrgAndCreds(org,userPw), []int{200}, &resp)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+pattern, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &resp)
 		var patterns []string
 		for p := range resp.Patterns {
 			patterns = append(patterns, p)
@@ -73,7 +73,10 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 		// Display the full resources
 		//var output string
 		var output ExchangePatterns
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+pattern, cliutils.OrgAndCreds(org,userPw), []int{200}, &output)
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+pattern, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &output)
+		if httpCode == 404 && pattern != "" {
+			cliutils.Fatal(cliutils.NOT_FOUND, "pattern '%s' not found in org %s", strings.TrimPrefix(pattern, "/"), org)
+		}
 		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange pattern list' output: %v", err)
@@ -185,3 +188,5 @@ func PatternAddWorkload(org string, userPw string, pattern string, workloadFileP
 	fmt.Printf("Updating %s in the exchange...\n", pattern)
 	cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org,userPw), []int{201}, patInput)
 }
+
+//todo: add PatternRemoveWorkload()

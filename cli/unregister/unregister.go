@@ -36,7 +36,7 @@ func DoIt(forceUnregister, removeNodeUnregister bool) {
 	}
 
 	cliutils.HorizonDelete("node?block=true"+removeNodeOption, []int{200, 204})
-	fmt.Println("Horizon node unregistered.")
+	fmt.Println("Horizon node unregistered. You may now run 'hzn register ...' again, if desired.")
 
 	/* This does the same thing more manually. Want to keep for reference...
 	fmt.Println("Stopping horizon...")

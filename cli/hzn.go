@@ -42,13 +42,30 @@ Environment Variables:
 	userCreateEmail := userCreateCmd.Flag("email", "Your email address that should be associated with this user account when creating it in the Horizon exchange.").Short('e').Required().String()
 
 	exNodeCmd := exchangeCmd.Command("node", "List and manage nodes in the Horizon Exchange")
-	exNodeListCmd := exNodeCmd.Command("list", "Display the node resource from the Horizon Exchange.")
+	exNodeListCmd := exNodeCmd.Command("list", "Display the node resources from the Horizon Exchange.")
 	exNode := exNodeListCmd.Arg("node", "List just this one node.").String()
 	exNodeNames := exNodeListCmd.Flag("names-only", "Only list the names (IDs) of the nodes.").Short('N').Bool()
 	exNodeCreateCmd := exNodeCmd.Command("create", "Create the node resource in the Horizon Exchange.")
 	exNodeIdTok := exNodeCreateCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token. The node ID must be unique within the organization.").Short('n').PlaceHolder("ID:TOK").Required().String()
 	//exNodeUserPw := exNodeCreateCmd.Flag("user-pw", "User credentials to create the node resource in the Horizon exchange.").Short('u').PlaceHolder("USER:PW").Required().String()
 	exNodeEmail := exNodeCreateCmd.Flag("email", "Your email address. Only needs to be specified if: the user specified in the -u flag does not exist, and you specified is the 'public' org. If these things are true we will create the user and include this value as the email attribute.").Short('e').String()
+
+	exAgbotCmd := exchangeCmd.Command("agbot", "List and manage agbots in the Horizon Exchange")
+	exAgbotListCmd := exAgbotCmd.Command("list", "Display the agbot resources from the Horizon Exchange.")
+	exAgbot := exAgbotListCmd.Arg("agbot", "List just this one agbot.").String()
+	exAgbotNames := exAgbotListCmd.Flag("names-only", "Only list the names (IDs) of the agbots.").Short('N').Bool()
+	exAgbotListPatsCmd := exAgbotCmd.Command("listpattern", "Display the patterns that this agbot is serving.")
+	exAgbotLP := exAgbotListPatsCmd.Arg("agbot", "The agbot to list the patterns for.").Required().String()
+	exAgbotLPPatOrg := exAgbotListPatsCmd.Arg("patternorg", "The organization of the 1 pattern to list.").String()
+	exAgbotLPPat := exAgbotListPatsCmd.Arg("pattern", "The name of the 1 pattern to list.").String()
+	exAgbotAddPatCmd := exAgbotCmd.Command("addpattern", "Add this pattern to the list of patterns this agbot is serving.")
+	exAgbotAP := exAgbotAddPatCmd.Arg("agbot", "The agbot to add the pattern to.").Required().String()
+	exAgbotAPPatOrg := exAgbotAddPatCmd.Arg("patternorg", "The organization of the pattern to add.").Required().String()
+	exAgbotAPPat := exAgbotAddPatCmd.Arg("pattern", "The name of the pattern to add.").Required().String()
+	exAgbotDelPatCmd := exAgbotCmd.Command("removepattern", "Remove this pattern from the list of patterns this agbot is serving.")
+	exAgbotDP := exAgbotDelPatCmd.Arg("agbot", "The agbot to remove the pattern from.").Required().String()
+	exAgbotDPPatOrg := exAgbotDelPatCmd.Arg("patternorg", "The organization of the pattern to remove.").Required().String()
+	exAgbotDPPat := exAgbotDelPatCmd.Arg("pattern", "The name of the pattern to remove.").Required().String()
 
 	exPatternCmd := exchangeCmd.Command("pattern", "List and manage patterns in the Horizon Exchange")
 	//exPatNodeIdTok := exPatternCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to use to query the exchange. Create with 'hzn exchange node create'.").Short('n').PlaceHolder("ID:TOK").Required().String()
@@ -162,6 +179,14 @@ Environment Variables:
 		exchange.NodeList(*exOrg, *exUserPw, *exNode, *exNodeNames)
 	case exNodeCreateCmd.FullCommand():
 		exchange.NodeCreate(*exOrg, *exNodeIdTok, *exUserPw, *exNodeEmail)
+	case exAgbotListCmd.FullCommand():
+		exchange.AgbotList(*exOrg, *exUserPw, *exAgbot, *exAgbotNames)
+	case exAgbotListPatsCmd.FullCommand():
+		exchange.AgbotListPatterns(*exOrg, *exUserPw, *exAgbotLP, *exAgbotLPPatOrg, *exAgbotLPPat)
+	case exAgbotAddPatCmd.FullCommand():
+		exchange.AgbotAddPattern(*exOrg, *exUserPw, *exAgbotAP, *exAgbotAPPatOrg, *exAgbotAPPat)
+	case exAgbotDelPatCmd.FullCommand():
+		exchange.AgbotDeletePattern(*exOrg, *exUserPw, *exAgbotDP, *exAgbotDPPatOrg, *exAgbotDPPat)
 	case exPatternListCmd.FullCommand():
 		exchange.PatternList(*exOrg, *exUserPw, *exPattern, *exPatternNames)
 	case exPatternPublishCmd.FullCommand():

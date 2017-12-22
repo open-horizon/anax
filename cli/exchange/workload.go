@@ -7,6 +7,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/rsapss-tool/sign"
 	"net/http"
+	"strings"
 )
 
 // We only care about the workload names, so the rest is left as interface{}
@@ -51,7 +52,7 @@ func WorkloadList(org string, userPw string, workload string, namesOnly bool) {
 	if namesOnly {
 		// Only display the names
 		var resp ExchangeWorkloads
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, cliutils.OrgAndCreds(org,userPw), []int{200}, &resp)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &resp)
 		var workloads []string
 		for k := range resp.Workloads {
 			workloads = append(workloads, k)
@@ -65,7 +66,10 @@ func WorkloadList(org string, userPw string, workload string, namesOnly bool) {
 		// Display the full resources
 		//var output string
 		var output ExchangeWorkloads
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, cliutils.OrgAndCreds(org,userPw), []int{200}, &output)
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &output)
+		if httpCode == 404 && workload != "" {
+			cliutils.Fatal(cliutils.NOT_FOUND, "workload '%s' not found in org %s", strings.TrimPrefix(workload, "/"), org)
+		}
 		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange workload list' output: %v", err)
@@ -96,22 +100,7 @@ func WorkloadPublish(org string, userPw string, jsonFilePath string, keyFilePath
 		}
 		//todo: gather the docker image paths to instruct to docker push at the end
 
-		// Verify the torrent field is the form necessary for the containers that are stored in a docker registry (because that is all we support right now)
-		torrentErrorString := `currently the torrent field must be like this to indicate the images are stored in a docker registry: {\"url\":\"\",\"signature\":\"\"}`
-		if workInput.Workloads[i].Torrent == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, torrentErrorString)
-		}
-		//fmt.Printf(" torrent: %s\n", workInput.Workloads[i].Torrent)
-		var torrentMap map[string]string
-		if err := json.Unmarshal([]byte(workInput.Workloads[i].Torrent), &torrentMap); err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "failed to unmarshal torrent string number %d: %v", i+1, err)
-		}
-		if url, ok := torrentMap["url"]; !ok || url != "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, torrentErrorString)
-		}
-		if signature, ok := torrentMap["signature"]; !ok || signature != "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, torrentErrorString)
-		}
+		CheckTorrentField(workInput.Workloads[i].Torrent, i)
 	}
 
 	// Create of update resource in the exchange

@@ -10,7 +10,10 @@ func UserList(org string, userPw string) {
 	exchUrlBase := cliutils.GetExchangeUrl()
 	user, _ := cliutils.SplitIdToken(userPw)
 	var output string
-	cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org,userPw), []int{200}, &output)
+	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &output)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "user '%s' not found in org %s", user, org)
+	}
 	fmt.Println(output)
 }
 
