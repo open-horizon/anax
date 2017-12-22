@@ -29,6 +29,7 @@ const (
 	HTTP_ERROR         = 5
 	//EXEC_CMD_ERROR = 6
 	CLI_GENERAL_ERROR = 7
+	NOT_FOUND = 8
 	INTERNAL_ERROR = 99
 
 	// Anax API HTTP Codes
@@ -82,6 +83,18 @@ func SplitIdToken(idToken string) (id, token string) {
 		token = parts[1]
 	}
 	return
+}
+
+// OrgAndCreds prepends the org to creds (separated by /) unless creds already has an org prepended
+func OrgAndCreds(org, creds string) string {
+	if os.Getenv("USING_API_KEY") == "1" {
+		return creds	// WIoTP API keys are globally unique and shouldn't be prepended with the org
+	}
+	id, _ := SplitIdToken(creds)	// only look for the / in the id, because the token is more likely to have special chars
+	if strings.Contains(id, "/") {
+		return creds	// already has the org at the beginning
+	}
+	return org+"/"+creds
 }
 
 // FormExchangeId combines url, version, arch the same way the exchange does to form the resource ID.
@@ -143,6 +156,14 @@ func isGoodCode(actualHttpCode int, goodHttpCodes []int) bool {
 	return false
 }
 
+func printHorizonRestError(apiMethod string, err error) {
+	if os.Getenv("HORIZON_URL_BASE") == "" {
+		Fatal(HTTP_ERROR, "Can't connect to the Horizon REST API to run %s. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL_BASE to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMethod, err)
+	} else {
+		Fatal(HTTP_ERROR, "Can't connect to the Horizon REST API to run %s. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: %v", apiMethod, err)
+	}
+}
+
 // HorizonGet runs a GET on the anax api and fills in the specified structure with the json.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
 // Only if the actual code matches the 1st element in goodHttpCodes, will it parse the body into the specified structure.
@@ -152,7 +173,7 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}) (h
 	Verbose(apiMsg)
 	resp, err := http.Get(url)
 	if err != nil {
-		Fatal(HTTP_ERROR, "%s failed: %v", apiMsg, err)
+		printHorizonRestError(apiMsg, err)
 	}
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
@@ -186,7 +207,7 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int) (httpCode int) {
 	}
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err)
+		printHorizonRestError(apiMsg, err)
 	}
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
@@ -217,7 +238,7 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 	req.Header.Add("Content-Type", "application/json")
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err)
+		printHorizonRestError(apiMsg, err)
 	}
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
@@ -237,7 +258,20 @@ func GetExchangeUrl() string {
 		HorizonGet("status", []int{200}, &status)
 		exchUrl = status.Configuration.ExchangeAPI
 	}
-	return strings.TrimSuffix(exchUrl, "/")
+	exchUrl = strings.TrimSuffix(exchUrl, "/")	// anax puts a trailing slash on it
+	if os.Getenv("USING_API_KEY") == "1" {
+		re := regexp.MustCompile(`edgenode$`)
+		exchUrl = re.ReplaceAllLiteralString(exchUrl, "edge")
+	}
+	return exchUrl
+}
+
+func printHorizonExchRestError(apiMethod string, err error) {
+	if os.Getenv("HORIZON_EXCHANGE_URL_BASE") == "" {
+		Fatal(HTTP_ERROR, "Can't connect to the Horizon Exchange REST API to run %s. Set HORIZON_EXCHANGE_URL_BASE to use an Exchange other than the one the Horizon Agent is currently configured for. Specific error is: %v", apiMethod, err)
+	} else {
+		Fatal(HTTP_ERROR, "Can't connect to the Horizon Exchange REST API to run %s. Maybe HORIZON_EXCHANGE_URL_BASE is set incorrectly? Or unset HORIZON_EXCHANGE_URL_BASE to use the Exchange that the Horizon Agent is configured for. Specific error is: %v", apiMethod, err)
+	}
 }
 
 // ExchangeGet runs a GET to the exchange api and fills in the specified json structure. If the structure is just a string, fill in the raw json.
@@ -256,7 +290,7 @@ func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttpC
 	req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err)
+		printHorizonExchRestError(apiMsg, err)
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
@@ -323,7 +357,7 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 	} // else it is an anonymous call
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		Fatal(HTTP_ERROR, "%s request failed: %v", apiMsg, err)
+		printHorizonExchRestError(apiMsg, err)
 	}
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
@@ -339,6 +373,31 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 			Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err)
 		}
 		Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s, %s", httpCode, apiMsg, respMsg.Code, respMsg.Msg)
+	}
+	return
+}
+
+// ExchangeDelete deletes a resource via the exchange api.
+// If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
+func ExchangeDelete(urlBase string, urlSuffix string, credentials string, goodHttpCodes []int) (httpCode int) {
+	url := urlBase + "/" + urlSuffix
+	apiMsg := http.MethodDelete + " " + url
+	Verbose(apiMsg)
+	httpClient := &http.Client{}
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
+	}
+	req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		printHorizonExchRestError(apiMsg, err)
+	}
+	// delete never returns a body
+	httpCode = resp.StatusCode
+	Verbose("HTTP code: %d", httpCode)
+	if !isGoodCode(httpCode, goodHttpCodes) {
+		Fatal(HTTP_ERROR, "bad HTTP code %d from %s", httpCode, apiMsg)
 	}
 	return
 }
