@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -992,13 +993,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 				}
 			}
 
-			envAdds[config.ENVVAR_PREFIX+"AGREEMENTID"] = proposal.AgreementId()
-			envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = exchange.GetId(w.deviceId)
-			envAdds[config.ENVVAR_PREFIX+"ORGANIZATION"] = exchange.GetOrg(w.deviceId)
-			envAdds[config.ENVVAR_PREFIX+"HASH"] = workload.WorkloadPassword
-
-			// Add in the exchange URL so that the workload knows which ecosystem its part of
-			envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = w.Config.Edge.ExchangeURL
+			container.SetPlatformEnvvars(envAdds, proposal.AgreementId(), exchange.GetId(w.deviceId), exchange.GetOrg(w.deviceId), workload.WorkloadPassword, w.Config.Edge.ExchangeURL)
 
 			lc.EnvironmentAdditions = &envAdds
 			lc.AgreementProtocol = protocol
@@ -1085,15 +1080,89 @@ func (w *GovernanceWorker) GetWorkloadConfig(url string, version string) (map[st
 	if err != nil {
 		return nil, fmt.Errorf("Unable to fetch post split workload preferences. Err: %v", err)
 	} else if len(cfgs) == 0 {
-		return persistence.ConfigToEnvvarMap(w.db, nil, config.ENVVAR_PREFIX)
+		return w.ConfigToEnvvarMap(w.db, nil, config.ENVVAR_PREFIX)
 	}
 
 	// Sort them by version, oldest to newest
 	sort.Sort(WorkloadConfigByVersion(cfgs))
 
 	// Configure the env map with the newest config that is within the version range.
-	return persistence.ConfigToEnvvarMap(w.db, &cfgs[len(cfgs)-1], config.ENVVAR_PREFIX)
+	return w.ConfigToEnvvarMap(w.db, &cfgs[len(cfgs)-1], config.ENVVAR_PREFIX)
 
+}
+
+// Grab configured userInput variables for the workload and pass them into the
+// workload container. The namespace of these env vars is defined by the workload
+// so there is no need for us to prefix them with the HZN prefix.
+func (w *GovernanceWorker) ConfigToEnvvarMap(db *bolt.DB, cfg *persistence.WorkloadConfig, prefix string) (map[string]string, error) {
+
+	var lat, lon, cpus, ram, arch string
+
+	// Get the location attributes and set them into the envvar map. We think this is a
+	// temporary measure until all workloads are taught to use a GPS microservice.
+	if allAttrs, err := persistence.FindApplicableAttributes(db, ""); err != nil {
+		return nil, err
+	} else {
+		for _, attr := range allAttrs {
+
+			// Extract location property
+			switch attr.(type) {
+			case persistence.LocationAttributes:
+				s := attr.(persistence.LocationAttributes)
+				lat = strconv.FormatFloat(s.Lat, 'f', 6, 64)
+				lon = strconv.FormatFloat(s.Lon, 'f', 6, 64)
+			case persistence.ComputeAttributes:
+				s := attr.(persistence.ComputeAttributes)
+				cpus = strconv.FormatInt(s.CPUs, 10)
+				ram = strconv.FormatInt(s.RAM, 10)
+			case persistence.ArchitectureAttributes:
+				s := attr.(persistence.ArchitectureAttributes)
+				arch = s.Architecture
+			}
+		}
+	}
+
+	envvars := map[string]string{}
+	container.SetSystemEnvvars(envvars, lat, lon, cpus, ram, arch)
+
+	if cfg == nil {
+		return envvars, nil
+	}
+
+	// Workload config values are saved as their native types.
+	for _, attr := range cfg.Attributes {
+		if attr.GetMeta().Type == "UserInputAttributes" {
+			for v, varValue := range attr.GetGenericMappings() {
+				glog.Infof("workload UI var %v is type %T", v, varValue)
+				switch varValue.(type) {
+				case bool:
+					envvars[v] = strconv.FormatBool(varValue.(bool))
+				case string:
+					envvars[v] = varValue.(string)
+				// floats and ints come here
+				case float64:
+					if float64(int64(varValue.(float64))) == varValue.(float64) {
+						envvars[v] = strconv.FormatInt(int64(varValue.(float64)), 10)
+					} else {
+						envvars[v] = strconv.FormatFloat(varValue.(float64), 'f', 6, 64)
+					}
+				case []interface{}:
+					los := ""
+					for _, e := range varValue.([]interface{}) {
+						if _, ok := e.(string); ok {
+							los = los + e.(string) + " "
+						}
+					}
+					los = los[:len(los)-1]
+					envvars[v] = los
+				default:
+					return nil, errors.New(fmt.Sprintf("unknown UserInputAttribute variable %v type %T", v, varValue))
+				}
+			}
+		}
+	}
+
+	return envvars, nil
 }
 
 func recordProducerAgreementState(httpClient *http.Client, url string, deviceId string, token string, pattern string, agreementId string, pol *policy.Policy, state string) error {

@@ -31,9 +31,8 @@ type InputFile struct {
 	Workloads     []MicroWork `json:"workloads"`
 }
 
-func readInputFile(filePath string, inputFileStruct *InputFile) {
+func ReadInputFile(filePath string, inputFileStruct *InputFile) {
 	newBytes := cliutils.ReadJsonFile(filePath)
-
 	err := json.Unmarshal(newBytes, inputFileStruct)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", filePath, err)
@@ -46,7 +45,7 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, email str
 	inputFileStruct := InputFile{}
 	if inputFile != "" {
 		fmt.Printf("Reading input file %s...\n", inputFile)
-		readInputFile(inputFile, &inputFileStruct)
+		ReadInputFile(inputFile, &inputFileStruct)
 	}
 
 	// Get the exchange url from the anax api

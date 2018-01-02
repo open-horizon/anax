@@ -24,6 +24,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"runtime"
 	"strconv"
 	"strings"
 )
@@ -350,6 +351,25 @@ type ContainerWorker struct {
 	client            *docker.Client
 	iptables          *iptables.IPTables
 	inAgbot           bool
+}
+
+func (cw *ContainerWorker) GetClient() *docker.Client {
+	return cw.client
+}
+func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, error) {
+	dockerEP := "unix:///var/run/docker.sock"
+	client, derr := docker.NewClient(dockerEP)
+	if derr != nil {
+		return nil, derr
+	}
+
+	return &ContainerWorker{
+		BaseWorker: worker.NewBaseWorker("mock", config),
+		db:         nil,
+		client:     client,
+		iptables:   nil,
+		inAgbot:    true,
+	}, nil
 }
 
 func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB) *ContainerWorker {
@@ -696,54 +716,56 @@ func generatePermittedString(isolation *containermessage.NetworkIsolation, netwo
 
 func processPostCreate(ipt *iptables.IPTables, client *docker.Client, agreementId string, deployment containermessage.DeploymentDescription, configureRaw []byte, hasSpecifiedEthAccount bool, containers []interface{}, fail func(container *docker.Container, name string, err error) error) error {
 
-	rules, err := ipt.List("filter", IPT_COLONUS_ISOLATED_CHAIN)
-	if err != nil {
-		// could be that it just isn't created, try that
-
-		err := ipt.NewChain("filter", IPT_COLONUS_ISOLATED_CHAIN)
+	if ipt != nil {
+		rules, err := ipt.List("filter", IPT_COLONUS_ISOLATED_CHAIN)
 		if err != nil {
-			return fail(nil, "<unknown>", fmt.Errorf("Unable to manipulate IPTables rules in container post-creation step: Error: %v", err))
-		}
+			// could be that it just isn't created, try that
 
-		rules, err = ipt.List("filter", IPT_COLONUS_ISOLATED_CHAIN)
-		if err != nil {
-			return fail(nil, "<unknown>", fmt.Errorf("Unable to manipulate IPTables rules in container post-creation step: Error: %v", err))
-		}
-	}
+			err := ipt.NewChain("filter", IPT_COLONUS_ISOLATED_CHAIN)
+			if err != nil {
+				return fail(nil, "<unknown>", fmt.Errorf("Unable to manipulate IPTables rules in container post-creation step: Error: %v", err))
+			}
 
-	foundReturn := false
-	for _, rule := range rules {
-		if rule == fmt.Sprintf("-A %v -j RETURN", IPT_COLONUS_ISOLATED_CHAIN) {
-			foundReturn = true
-		}
-	}
-
-	if !foundReturn {
-		err = ipt.Insert("filter", IPT_COLONUS_ISOLATED_CHAIN, 1, "-j", "RETURN")
-		if err != nil {
-			return fail(nil, "<unknown>", fmt.Errorf("Unable to manipulate IPTables rules in container post-creation step: Error: %v", err))
-		}
-	}
-
-	rules, err = ipt.List("filter", "FORWARD")
-
-	if err != nil {
-		return fail(nil, "<unknown>", fmt.Errorf("Unable to manipulate IPTables rules in container post-creation step: Error: %v", err))
-	}
-	for _, rule := range rules {
-		if rule == fmt.Sprintf("-A FORWARD -j %v", IPT_COLONUS_ISOLATED_CHAIN) {
-			glog.Infof("rule: %v", rule)
-			err := ipt.Delete("filter", "FORWARD", "-j", IPT_COLONUS_ISOLATED_CHAIN)
+			rules, err = ipt.List("filter", IPT_COLONUS_ISOLATED_CHAIN)
 			if err != nil {
 				return fail(nil, "<unknown>", fmt.Errorf("Unable to manipulate IPTables rules in container post-creation step: Error: %v", err))
 			}
 		}
-	}
 
-	// need to always insert this at the head of the chain; if this fails, there will be no isolation security but normal container traffic will be allowed
-	err = ipt.Insert("filter", "FORWARD", 1, "-j", IPT_COLONUS_ISOLATED_CHAIN)
-	if err != nil {
-		return fail(nil, "<unknown>", fmt.Errorf("Unable to manipulate IPTables rules in container post-creation step: Error: %v", err))
+		foundReturn := false
+		for _, rule := range rules {
+			if rule == fmt.Sprintf("-A %v -j RETURN", IPT_COLONUS_ISOLATED_CHAIN) {
+				foundReturn = true
+			}
+		}
+
+		if !foundReturn {
+			err = ipt.Insert("filter", IPT_COLONUS_ISOLATED_CHAIN, 1, "-j", "RETURN")
+			if err != nil {
+				return fail(nil, "<unknown>", fmt.Errorf("Unable to manipulate IPTables rules in container post-creation step: Error: %v", err))
+			}
+		}
+
+		rules, err = ipt.List("filter", "FORWARD")
+
+		if err != nil {
+			return fail(nil, "<unknown>", fmt.Errorf("Unable to manipulate IPTables rules in container post-creation step: Error: %v", err))
+		}
+		for _, rule := range rules {
+			if rule == fmt.Sprintf("-A FORWARD -j %v", IPT_COLONUS_ISOLATED_CHAIN) {
+				glog.Infof("rule: %v", rule)
+				err := ipt.Delete("filter", "FORWARD", "-j", IPT_COLONUS_ISOLATED_CHAIN)
+				if err != nil {
+					return fail(nil, "<unknown>", fmt.Errorf("Unable to manipulate IPTables rules in container post-creation step: Error: %v", err))
+				}
+			}
+		}
+
+		// need to always insert this at the head of the chain; if this fails, there will be no isolation security but normal container traffic will be allowed
+		err = ipt.Insert("filter", "FORWARD", 1, "-j", IPT_COLONUS_ISOLATED_CHAIN)
+		if err != nil {
+			return fail(nil, "<unknown>", fmt.Errorf("Unable to manipulate IPTables rules in container post-creation step: Error: %v", err))
+		}
 	}
 
 	comment := fmt.Sprintf("agreement_id=%v", agreementId)
@@ -839,7 +861,7 @@ func (b *ContainerWorker) workloadStorageDir(agreementId string) string {
 	return path.Join(b.Config.Edge.WorkloadROStorage, agreementId)
 }
 
-func (b *ContainerWorker) resourcesCreate(agreementId string, configure *events.ContainerConfig, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]docker.ContainerNetwork) (*map[string]persistence.ServiceConfig, error) {
+func (b *ContainerWorker) ResourcesCreate(agreementId string, configure *events.ContainerConfig, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]docker.ContainerNetwork) (*map[string]persistence.ServiceConfig, error) {
 
 	// local helpers
 	fail := func(container *docker.Container, name string, err error) error {
@@ -849,7 +871,7 @@ func (b *ContainerWorker) resourcesCreate(agreementId string, configure *events.
 
 		glog.Errorf("Failed to set up %v. Attempting to remove other resources in agreement (%v) before returning control to caller. Error: %v", name, agreementId, err)
 
-		rErr := b.resourcesRemove([]string{agreementId})
+		rErr := b.ResourcesRemove([]string{agreementId})
 		if rErr != nil {
 			glog.Errorf("Following error setting up patterned deployment, failed to clean up other resources for agreement: %v. Error: %v", agreementId, rErr)
 		}
@@ -1051,7 +1073,7 @@ func (b *ContainerWorker) resourcesCreate(agreementId string, configure *events.
 	}
 
 	for name, _ := range ret {
-		glog.Infof("Created service %v in agreement %v", name, agreementId)
+		glog.V(1).Infof("Created service %v in agreement %v", name, agreementId)
 	}
 	return &ret, nil
 }
@@ -1130,7 +1152,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			}
 
 			// Create the docker configuration and launch the containers.
-			if deployment, err := b.resourcesCreate(agreementId, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_networks); err != nil {
+			if deployment, err := b.ResourcesCreate(agreementId, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_networks); err != nil {
 				glog.Errorf("Error starting containers: %v", err)
 				var dep map[string]persistence.ServiceConfig
 				if deployment != nil {
@@ -1199,7 +1221,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		deploymentDesc.Infrastructure = true
 
 		// Get the container started.
-		if deployment, err := b.resourcesCreate(cmd.ContainerLaunchContext.Name, &cmd.ContainerLaunchContext.Configure, deploymentDesc, []byte(""), *cmd.ContainerLaunchContext.EnvironmentAdditions, nil); err != nil {
+		if deployment, err := b.ResourcesCreate(cmd.ContainerLaunchContext.Name, &cmd.ContainerLaunchContext.Configure, deploymentDesc, []byte(""), *cmd.ContainerLaunchContext.EnvironmentAdditions, nil); err != nil {
 			glog.Errorf("Error starting containers: %v", err)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 
@@ -1254,7 +1276,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			agreements = append(agreements, cmd.CurrentAgreementId)
 		}
 
-		if err := b.resourcesRemove(agreements); err != nil {
+		if err := b.ResourcesRemove(agreements); err != nil {
 			glog.Errorf("Error removing resources: %v", err)
 		}
 
@@ -1265,7 +1287,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		cmd := command.(*ContainerStopCommand)
 
 		glog.V(3).Infof("ContainerWorker received infrastructure container stop command: %v", cmd)
-		if err := b.resourcesRemove([]string{cmd.Msg.ContainerName}); err != nil {
+		if err := b.ResourcesRemove([]string{cmd.Msg.ContainerName}); err != nil {
 			glog.Errorf("Error removing resources: %v", err)
 		}
 
@@ -1320,7 +1342,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			agreements = append(agreements, cmd.MsInstKey)
 		}
 
-		if err := b.resourcesRemove(agreements); err != nil {
+		if err := b.ResourcesRemove(agreements); err != nil {
 			glog.Errorf("Error removing resources: %v", err)
 		}
 
@@ -1460,7 +1482,7 @@ func (b *ContainerWorker) syncupResources() {
 
 			// remove the leftovers
 			glog.V(5).Infof("ContainerWorker found leftover pieces of agreements: %v", agreementList)
-			if err := b.resourcesRemove(agreementList); err != nil {
+			if err := b.ResourcesRemove(agreementList); err != nil {
 				fail(fmt.Sprintf("ContainerWorker unable to get rid of left over resources, error: %v", err))
 			}
 		}
@@ -1472,7 +1494,7 @@ func (b *ContainerWorker) syncupResources() {
 	b.Messages() <- events.NewDeviceContainersSyncedMessage(events.DEVICE_CONTAINERS_SYNCED, outcome)
 }
 
-func (b *ContainerWorker) resourcesRemove(agreements []string) error {
+func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 	glog.V(5).Infof("Killing and removing resources in agreements: %v", agreements)
 
 	// remove old workspaceROStorage dir
@@ -1563,7 +1585,7 @@ func (b *ContainerWorker) resourcesRemove(agreements []string) error {
 		if destroyed, err := serviceDestroy(b.client, agreementId, container.ID); err != nil {
 			glog.Errorf("Service %v in agreement %v could not be removed. Error: %v", serviceName, agreementId, err)
 		} else if destroyed {
-			glog.Infof("Service %v in agreement %v stopped and removed", serviceName, agreementId)
+			glog.V(1).Infof("Service %v in agreement %v stopped and removed", serviceName, agreementId)
 		} else {
 			glog.V(5).Infof("Service %v in agreement %v already removed", serviceName, agreementId)
 		}
@@ -1608,32 +1630,34 @@ func (b *ContainerWorker) resourcesRemove(agreements []string) error {
 		if err := b.client.RemoveNetwork(net.ID); err != nil {
 			glog.Errorf("Failure removing network: %v. Error: %v", net.ID, err)
 		} else {
-			glog.Infof("Succeeded removing unused network: %v", net.ID)
+			glog.V(1).Infof("Succeeded removing unused network: %v", net.ID)
 		}
 	}
 
 	// the primary rule
-	if exists, err := b.iptables.Exists("filter", IPT_COLONUS_ISOLATED_CHAIN, "-j", "RETURN"); err != nil {
-		return fmt.Errorf("Unable to interrogate iptables on host. Error: %v", err)
-	} else if !exists {
-		glog.V(3).Infof("Primary redirect rule missing from %v chain. Skipping agreement rule deletion", IPT_COLONUS_ISOLATED_CHAIN)
-	} else {
-		// free iptables rules for this agreement (will hose access to shared too)
-		rules, err := b.iptables.List("filter", IPT_COLONUS_ISOLATED_CHAIN)
-		if err != nil {
-			return fmt.Errorf("Unable to list rules in %v. Error: %v", IPT_COLONUS_ISOLATED_CHAIN, err)
-		}
+	if b.iptables != nil {
+		if exists, err := b.iptables.Exists("filter", IPT_COLONUS_ISOLATED_CHAIN, "-j", "RETURN"); err != nil {
+			return fmt.Errorf("Unable to interrogate iptables on host. Error: %v", err)
+		} else if !exists {
+			glog.V(3).Infof("Primary redirect rule missing from %v chain. Skipping agreement rule deletion", IPT_COLONUS_ISOLATED_CHAIN)
+		} else {
+			// free iptables rules for this agreement (will hose access to shared too)
+			rules, err := b.iptables.List("filter", IPT_COLONUS_ISOLATED_CHAIN)
+			if err != nil {
+				return fmt.Errorf("Unable to list rules in %v. Error: %v", IPT_COLONUS_ISOLATED_CHAIN, err)
+			}
 
-		for _, agreementId := range agreements {
-			glog.V(4).Infof("Removing iptables isolation rules for agreement %v", agreementId)
+			for _, agreementId := range agreements {
+				glog.V(4).Infof("Removing iptables isolation rules for agreement %v", agreementId)
 
-			// count backwards so we don't have to adjust the indices b/c they change w/ each ipt delete
-			for ix := len(rules) - 1; ix >= 0; ix-- {
-				if strings.Contains(rules[ix], fmt.Sprintf("agreement_id=%v", agreementId)) {
+				// count backwards so we don't have to adjust the indices b/c they change w/ each ipt delete
+				for ix := len(rules) - 1; ix >= 0; ix-- {
+					if strings.Contains(rules[ix], fmt.Sprintf("agreement_id=%v", agreementId)) {
 
-					glog.V(3).Infof("Deleting isolation rule: %v", rules[ix])
-					if err := b.iptables.Delete("filter", IPT_COLONUS_ISOLATED_CHAIN, strconv.Itoa(ix)); err != nil {
-						return err
+						glog.V(3).Infof("Deleting isolation rule: %v", rules[ix])
+						if err := b.iptables.Delete("filter", IPT_COLONUS_ISOLATED_CHAIN, strconv.Itoa(ix)); err != nil {
+							return err
+						}
 					}
 				}
 			}
@@ -1758,4 +1782,44 @@ func (b *ContainerWorker) findMsContainersAndUpdateMsInstance(agreementId string
 		}
 	}
 	return ms_containers, nil
+}
+
+// This function may seem simple but since it is shared with the hzn dev CLI, an update to it will cause a compile error in the CLI
+// code. This will prevent us from adding a new platform env var but forgetting to update the CLI.
+func SetPlatformEnvvars(envAdds map[string]string, agreementId string, deviceId string, org string, workloadPW string, exchangeURL string) {
+
+	// The agreement id that is controlling the lifecycel of this container.
+	envAdds[config.ENVVAR_PREFIX+"AGREEMENTID"] = agreementId
+
+	// The exchange id of the node that is running the container.
+	envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = deviceId
+
+	// The exchange organization that the node belongs.
+	envAdds[config.ENVVAR_PREFIX+"ORGANIZATION"] = org
+
+	// Deprecated workload password, used only by legacy POC workloads.
+	envAdds[config.ENVVAR_PREFIX+"HASH"] = workloadPW
+
+	// Add in the exchange URL so that the workload knows which ecosystem its part of
+	envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = exchangeURL
+}
+
+// This function is similar to the above, for env vars that are system related.
+func SetSystemEnvvars(envAdds map[string]string, lat string, lon string, cpus string, ram string, arch string) {
+
+	// The latitude and longitude of the node are provided.
+	envAdds[config.ENVVAR_PREFIX+"LAT"] = lat
+	envAdds[config.ENVVAR_PREFIX+"LON"] = lon
+
+	// The number of CPUs and amount of RAM to allocate.
+	envAdds[config.ENVVAR_PREFIX+"CPUS"] = cpus
+	envAdds[config.ENVVAR_PREFIX+"RAM"] = ram
+
+	// Set the hardware architecture
+	if arch == "" {
+		envAdds[config.ENVVAR_PREFIX+"ARCH"] = runtime.GOARCH
+	} else {
+		envAdds[config.ENVVAR_PREFIX+"ARCH"] = arch
+	}
+
 }
