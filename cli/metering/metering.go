@@ -112,7 +112,7 @@ func List(archivedMetering bool) {
 		}
 		jsonBytes, err := json.MarshalIndent(metering, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show metering' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn metering list' output: %v", err)
 		}
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
@@ -122,7 +122,7 @@ func List(archivedMetering bool) {
 		}
 		jsonBytes, err := json.MarshalIndent(metering, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show metering' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn metering list' output: %v", err)
 		}
 		fmt.Printf("%s\n", jsonBytes)
 	}

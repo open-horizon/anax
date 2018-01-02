@@ -72,7 +72,7 @@ func List() {
 	// Output the combined info
 	jsonBytes, err := json.MarshalIndent(nodeInfo, "", cliutils.JSON_INDENT)
 	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'show node' output: %v", err)
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn node list' output: %v", err)
 	}
 	fmt.Printf("%s\n", jsonBytes) //todo: is there a way to output with json syntax highlighting like jq does?
 }
