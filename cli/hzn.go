@@ -87,7 +87,11 @@ Environment Variables:
 	exWorkloadNames := exWorkloadListCmd.Flag("names-only", "Only list the names (IDs) of the workloads.").Short('N').Bool()
 	exWorkloadPublishCmd := exWorkloadCmd.Command("publish", "Sign and create/update the workload resource in the Horizon Exchange.")
 	exWorkJsonFile := exWorkloadPublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the workload in the Horizon exchange. See /usr/horizon/samples/workload.json. Specify -f- to read from stdin.").Short('f').Required().String()
-	exWorkKeyFile := exWorkloadPublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the workload. ").Short('k').Required().String()
+	exWorkPrivKeyFile := exWorkloadPublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the workload. ").Short('k').Required().ExistingFile()
+	//todo: add remove workload from exchange
+	exWorkloadVerifyCmd := exWorkloadCmd.Command("verify", "Verify the signatures of the workload resource in the Horizon Exchange.")
+	exVerWorkload := exWorkloadVerifyCmd.Arg("workload", "The workload to verify.").Required().String()
+	exWorkPubKeyFile := exWorkloadVerifyCmd.Flag("public-key-file", "The path of a pem public key file to be used to verify the workload. ").Short('k').Required().ExistingFile()
 
 	exMicroserviceCmd := exchangeCmd.Command("microservice", "List and manage microservices in the Horizon Exchange")
 	//exMicroNodeIdTok := exMicroserviceCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to use to query the exchange. Create with 'hzn exchange node create'.").Short('n').PlaceHolder("ID:TOK").Required().String()
@@ -107,7 +111,14 @@ Environment Variables:
 	pattern := registerCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node.").Required().String()
 
 	keyCmd := app.Command("key", "List and manage keys for signing and verifying services.")
-	keyListCmd := keyCmd.Command("list", "List the signing keys.")
+	keyListCmd := keyCmd.Command("list", "List the signing keys that have been imported into this Horizon agent.")
+	keyCreateCmd := keyCmd.Command("create", "Generate a signing key pair.")
+	keyX509Org := keyCreateCmd.Arg("x509-org", "x509 certificate Organization (O) field (preferrably a company name or other organization's name).").Required().String()
+	keyX509CN := keyCreateCmd.Arg("x509-cn", "x509 certificate Common Name (CN) field (preferrably an email address issued by x509org).").Required().String()
+	keyOutputDir := keyCreateCmd.Flag("output-dir", "The directory to put the key pair files in. Defaults to the current directory.").Short('d').Default(".").ExistingDir()
+	keyLength := keyCreateCmd.Flag("length", "The directory to put the key pair files in. Defaults to the current directory.").Short('l').Default("8192").Int()
+	keyDaysValid := keyCreateCmd.Flag("days-valid", "x509 certificate validity (Validity > Not After) expressed in days from the day of generation.").Default("1461").Int()
+	//todo: add import option
 
 	nodeCmd := app.Command("node", "List and manage general information about this Horizon edge node.")
 	nodeListCmd := nodeCmd.Command("list", "Display general information about this Horizon edge node.")
@@ -198,7 +209,9 @@ Environment Variables:
 	case exWorkloadListCmd.FullCommand():
 		exchange.WorkloadList(*exOrg, *exUserPw, *exWorkload, *exWorkloadNames)
 	case exWorkloadPublishCmd.FullCommand():
-		exchange.WorkloadPublish(*exOrg, *exUserPw, *exWorkJsonFile, *exWorkKeyFile)
+		exchange.WorkloadPublish(*exOrg, *exUserPw, *exWorkJsonFile, *exWorkPrivKeyFile)
+	case exWorkloadVerifyCmd.FullCommand():
+		exchange.WorkloadVerify(*exOrg, *exUserPw, *exVerWorkload, *exWorkPubKeyFile)
 	case exMicroserviceListCmd.FullCommand():
 		exchange.MicroserviceList(*exOrg, *exUserPw, *exMicroservice, *exMicroserviceNames)
 	case exMicroservicePublishCmd.FullCommand():
@@ -209,6 +222,8 @@ Environment Variables:
 		key.List()
 	//case keyCmd.FullCommand():   // <- I'd like to just default to list in this case, but don't know how to do that yet
 	//	keyCmd.List()
+	case keyCreateCmd.FullCommand():
+		key.Create(*keyX509Org, *keyX509CN, *keyOutputDir, *keyLength, *keyDaysValid)
 	case nodeListCmd.FullCommand():
 		node.List()
 	case agreementListCmd.FullCommand():

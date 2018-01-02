@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/rsapss-tool/generatekeys"
+	"time"
 )
 
 func List() {
@@ -19,4 +21,19 @@ func List() {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'key list' output: %v", err)
 	}
 	fmt.Printf("%s\n", jsonBytes)
+}
+
+
+// Create generates a private/public key pair
+func Create(x509Org, x509CN, outputDir string, keyLength, daysValid int) {
+	// Note: the cli parse already verifies outputDir exists and keyLength and daysValid are ints
+	fmt.Println("Creating key pair...")
+	newKeys, err := generatekeys.Write(outputDir, keyLength, x509CN, x509Org, time.Now().AddDate(0, 0, daysValid))
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "failed to create a new key pair: %v", err)
+	}
+	fmt.Println("Created keys:")
+	for _, key := range newKeys {
+		fmt.Printf("\t%v\n", key)
+	}
 }

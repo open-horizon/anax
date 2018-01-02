@@ -8,6 +8,8 @@ import (
 	"github.com/open-horizon/rsapss-tool/sign"
 	"net/http"
 	"strings"
+	"github.com/open-horizon/rsapss-tool/verify"
+	"os"
 )
 
 // We only care about the workload names, so the rest is left as interface{}
@@ -45,7 +47,7 @@ type WorkloadInput struct {
 	Workloads   []exchange.WorkloadDeployment `json:"workloads"`
 }
 
-func WorkloadList(org string, userPw string, workload string, namesOnly bool) {
+func WorkloadList(org, userPw, workload string, namesOnly bool) {
 	if workload != "" {
 		workload = "/" + workload
 	}
@@ -80,7 +82,7 @@ func WorkloadList(org string, userPw string, workload string, namesOnly bool) {
 
 
 // WorkloadPublish signs the MS def and puts it in the exchange
-func WorkloadPublish(org string, userPw string, jsonFilePath string, keyFilePath string) {
+func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath string) {
 	// Read in the workload metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
 	var workInput WorkloadInput
@@ -96,7 +98,7 @@ func WorkloadPublish(org string, userPw string, jsonFilePath string, keyFilePath
 		var err error
 		workInput.Workloads[i].DeploymentSignature, err = sign.Input(keyFilePath, []byte(workInput.Workloads[i].Deployment))
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment string with %s: %v", keyFilePath, err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing deployment string %d with %s: %v", i+1, keyFilePath, err)
 		}
 		//todo: gather the docker image paths to instruct to docker push at the end
 
@@ -115,5 +117,40 @@ func WorkloadPublish(org string, userPw string, jsonFilePath string, keyFilePath
 		// Workload not there, create it
 		fmt.Printf("Creating %s in the exchange...\n", exchId)
 		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads", cliutils.OrgAndCreds(org,userPw), []int{201}, workInput)
+	}
+}
+
+
+// WorkloadVerify verifies the deployment strings of the specified workload resource in the exchange.
+func WorkloadVerify(org, userPw, workload, keyFilePath string) {
+	// Get workload resource from exchange
+	var output ExchangeWorkloads
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+workload, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &output)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "workload '%s' not found in org %s", workload, org)
+	}
+
+	// Loop thru workloads array, checking the deployment string signature
+	work, ok := output.Workloads[org+"/"+workload]
+	if !ok {
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, "key '%s' not found in resources returned from exchange", org+"/"+workload)
+	}
+	someInvalid := false
+	for i := range work.Workloads {
+		cliutils.Verbose("verifying deployment string %d", i+1)
+		verified, err := verify.Input(keyFilePath, work.Workloads[i].DeploymentSignature, []byte(work.Workloads[i].Deployment))
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem verifying deployment string %d with %s: %v", i+1, keyFilePath, err)
+		} else if !verified {
+			fmt.Printf("Deployment string %d was not signed with the private key associated with this public key.\n", i+1)
+			someInvalid = true
+		}
+		// else if they all turned out to be valid, we will tell them that at the end
+	}
+
+	if someInvalid {
+		os.Exit(cliutils.SIGNATURE_INVALID)
+	} else {
+		fmt.Println("All signatures verified")
 	}
 }
