@@ -4,44 +4,46 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
-	"net/http"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/rsapss-tool/sign"
+	"github.com/open-horizon/rsapss-tool/verify"
+	"net/http"
+	"os"
 	"strings"
 )
 
 type ExchangeMicroservices struct {
-	Microservices  map[string]MicroserviceOutput `json:"microservices"`
-	LastIndex int                    `json:"lastIndex"`
+	Microservices map[string]MicroserviceOutput `json:"microservices"`
+	LastIndex     int                           `json:"lastIndex"`
 }
 
 //todo: the only thing keeping me from using exchange.MicroserviceDefinition is dave adding the Public field to it
 type MicroserviceOutput struct {
-	Owner         string               `json:"owner"`
-	Label         string               `json:"label"`
-	Description   string               `json:"description"`
-	Public   bool               `json:"public"`
-	SpecRef       string               `json:"specRef"`
-	Version       string               `json:"version"`
-	Arch          string               `json:"arch"`
-	Sharable      string               `json:"sharable"`
-	DownloadURL   string               `json:"downloadUrl"`
-	MatchHardware map[string]string        `json:"matchHardware"`
+	Owner         string                        `json:"owner"`
+	Label         string                        `json:"label"`
+	Description   string                        `json:"description"`
+	Public        bool                          `json:"public"`
+	SpecRef       string                        `json:"specRef"`
+	Version       string                        `json:"version"`
+	Arch          string                        `json:"arch"`
+	Sharable      string                        `json:"sharable"`
+	DownloadURL   string                        `json:"downloadUrl"`
+	MatchHardware map[string]string             `json:"matchHardware"`
 	UserInputs    []exchange.UserInput          `json:"userInput"`
 	Workloads     []exchange.WorkloadDeployment `json:"workloads"`
-	LastUpdated   string               `json:"lastUpdated"`
+	LastUpdated   string                        `json:"lastUpdated"`
 }
 
 type MicroserviceInput struct {
-	Label         string               `json:"label"`
-	Description   string               `json:"description"`
-	Public   bool               `json:"public"`
-	SpecRef       string               `json:"specRef"`
-	Version       string               `json:"version"`
-	Arch          string               `json:"arch"`
-	Sharable      string               `json:"sharable"`
-	DownloadURL   string               `json:"downloadUrl"`
-	MatchHardware map[string]string        `json:"matchHardware"`
+	Label         string                        `json:"label"`
+	Description   string                        `json:"description"`
+	Public        bool                          `json:"public"`
+	SpecRef       string                        `json:"specRef"`
+	Version       string                        `json:"version"`
+	Arch          string                        `json:"arch"`
+	Sharable      string                        `json:"sharable"`
+	DownloadURL   string                        `json:"downloadUrl"`
+	MatchHardware map[string]string             `json:"matchHardware"`
 	UserInputs    []exchange.UserInput          `json:"userInput"`
 	Workloads     []exchange.WorkloadDeployment `json:"workloads"`
 }
@@ -53,7 +55,7 @@ func MicroserviceList(org string, userPw string, microservice string, namesOnly 
 	if namesOnly {
 		// Only display the names
 		var resp ExchangeMicroservices
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices"+microservice, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &resp)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices"+microservice, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
 		var microservices []string
 		for k := range resp.Microservices {
 			microservices = append(microservices, k)
@@ -67,7 +69,7 @@ func MicroserviceList(org string, userPw string, microservice string, namesOnly 
 		// Display the full resources
 		//var output string
 		var output ExchangeMicroservices
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices"+microservice, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &output)
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices"+microservice, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 		if httpCode == 404 && microservice != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, "microservice '%s' not found in org %s", strings.TrimPrefix(microservice, "/"), org)
 		}
@@ -78,7 +80,6 @@ func MicroserviceList(org string, userPw string, microservice string, namesOnly 
 		fmt.Println(string(jsonBytes))
 	}
 }
-
 
 func CheckTorrentField(torrent string, index int) {
 	// Verify the torrent field is the form necessary for the containers that are stored in a docker registry (because that is all we support right now)
@@ -97,7 +98,6 @@ func CheckTorrentField(torrent string, index int) {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, torrentErrorString)
 	}
 }
-
 
 // MicroservicePublish signs the MS def and puts it in the exchange
 func MicroservicePublish(org string, userPw string, jsonFilePath string, keyFilePath string) {
@@ -126,14 +126,59 @@ func MicroservicePublish(org string, userPw string, jsonFilePath string, keyFile
 	// Create of update resource in the exchange
 	exchId := cliutils.FormExchangeId(microInput.SpecRef, microInput.Version, microInput.Arch)
 	var output string
-	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+exchId, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &output)
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 200 {
 		// MS exists, update it
 		fmt.Printf("Updating %s in the exchange...\n", exchId)
-		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+exchId, cliutils.OrgAndCreds(org,userPw), []int{201}, microInput)
+		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, microInput)
 	} else {
 		// MS not there, create it
 		fmt.Printf("Creating %s in the exchange...\n", exchId)
-		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices", cliutils.OrgAndCreds(org,userPw), []int{201}, microInput)
+		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices", cliutils.OrgAndCreds(org, userPw), []int{201}, microInput)
+	}
+}
+
+// MicroserviceVerify verifies the deployment strings of the specified microservice resource in the exchange.
+func MicroserviceVerify(org, userPw, microservice, keyFilePath string) {
+	// Get microservice resource from exchange
+	var output ExchangeMicroservices
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+microservice, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "microservice '%s' not found in org %s", microservice, org)
+	}
+
+	// Loop thru microservices array, checking the deployment string signature
+	micro, ok := output.Microservices[org+"/"+microservice]
+	if !ok {
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, "key '%s' not found in resources returned from exchange", org+"/"+microservice)
+	}
+	someInvalid := false
+	for i := range micro.Workloads {
+		cliutils.Verbose("verifying deployment string %d", i+1)
+		verified, err := verify.Input(keyFilePath, micro.Workloads[i].DeploymentSignature, []byte(micro.Workloads[i].Deployment))
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem verifying deployment string %d with %s: %v", i+1, keyFilePath, err)
+		} else if !verified {
+			fmt.Printf("Deployment string %d was not signed with the private key associated with this public key.\n", i+1)
+			someInvalid = true
+		}
+		// else if they all turned out to be valid, we will tell them that at the end
+	}
+
+	if someInvalid {
+		os.Exit(cliutils.SIGNATURE_INVALID)
+	} else {
+		fmt.Println("All signatures verified")
+	}
+}
+
+func MicroserviceRemove(org, userPw, microservice string, force bool) {
+	if !force {
+		cliutils.ConfirmRemove("Are you sure you want to remove microservice '" + org + "/" + microservice + "' from the Horizon Exchange?")
+	}
+
+	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+microservice, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "microservice '%s' not found in org %s", microservice, org)
 	}
 }

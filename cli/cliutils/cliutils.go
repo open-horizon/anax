@@ -11,9 +11,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
-	"regexp"
 )
 
 const (
@@ -29,8 +30,9 @@ const (
 	HTTP_ERROR         = 5
 	//EXEC_CMD_ERROR = 6
 	CLI_GENERAL_ERROR = 7
-	NOT_FOUND = 8
-	INTERNAL_ERROR = 99
+	NOT_FOUND         = 8
+	SIGNATURE_INVALID = 9
+	INTERNAL_ERROR    = 99
 
 	// Anax API HTTP Codes
 	ANAX_ALREADY_CONFIGURED = 409
@@ -88,13 +90,13 @@ func SplitIdToken(idToken string) (id, token string) {
 // OrgAndCreds prepends the org to creds (separated by /) unless creds already has an org prepended
 func OrgAndCreds(org, creds string) string {
 	if os.Getenv("USING_API_KEY") == "1" {
-		return creds	// WIoTP API keys are globally unique and shouldn't be prepended with the org
+		return creds // WIoTP API keys are globally unique and shouldn't be prepended with the org
 	}
-	id, _ := SplitIdToken(creds)	// only look for the / in the id, because the token is more likely to have special chars
+	id, _ := SplitIdToken(creds) // only look for the / in the id, because the token is more likely to have special chars
 	if strings.Contains(id, "/") {
-		return creds	// already has the org at the beginning
+		return creds // already has the org at the beginning
 	}
-	return org+"/"+creds
+	return org + "/" + creds
 }
 
 // FormExchangeId combines url, version, arch the same way the exchange does to form the resource ID.
@@ -110,7 +112,22 @@ func FormExchangeId(url, version, arch string) string {
 	return url3 + "_" + version + "_" + arch
 }
 
-// ReadJsonFile reads a json from a file or stdin, eliminates comments, and returns it.
+// ReadFile reads from a file or stdin, and returns it as a byte array.
+func ReadFile(filePath string) []byte {
+	var fileBytes []byte
+	var err error
+	if filePath == "-" {
+		fileBytes, err = ioutil.ReadAll(os.Stdin)
+	} else {
+		fileBytes, err = ioutil.ReadFile(filePath)
+	}
+	if err != nil {
+		Fatal(READ_FILE_ERROR, "reading %s failed: %v", filePath, err)
+	}
+	return fileBytes
+}
+
+// ReadJsonFile reads json from a file or stdin, eliminates comments, and returns it.
 func ReadJsonFile(filePath string) []byte {
 	var fileBytes []byte
 	var err error
@@ -126,6 +143,18 @@ func ReadJsonFile(filePath string) []byte {
 	re := regexp.MustCompile(`(?s)/\*.*?\*/`)
 	newBytes := re.ReplaceAll(fileBytes, nil)
 	return newBytes
+}
+
+// ConfirmRemove prompts the user to confirm they want to run the destructive cmd
+func ConfirmRemove(question string) {
+	// Prompt the user to make sure he/she wants to do this
+	fmt.Print(question + " [y/N]: ")
+	var response string
+	fmt.Scanln(&response)
+	if strings.TrimSpace(response) != "y" {
+		fmt.Println("Exiting.")
+		os.Exit(0)
+	}
 }
 
 // GetHorizonUrlBase returns the base part of the horizon api url (which can be overridden by env var HORIZON_URL_BASE)
@@ -186,9 +215,16 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}) (h
 		if err != nil {
 			Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err)
 		}
-		err = json.Unmarshal(bodyBytes, structure)
-		if err != nil {
-			Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err)
+		switch s := structure.(type) {
+		case *string:
+			// Just return the unprocessed response body
+			*s = string(bodyBytes)
+		default:
+			// Put the response body in the specified struct
+			err = json.Unmarshal(bodyBytes, structure)
+			if err != nil {
+				Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err)
+			}
 		}
 	}
 	return
@@ -218,28 +254,52 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int) (httpCode int) {
 	return
 }
 
-// HorizonPutPost runs a PUT or POST to the anax api to create of update a resource.
+// HorizonPutPost runs a PUT or POST to the anax api to create or update a resource.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
 func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body interface{}) (httpCode int) {
 	url := GetHorizonUrlBase() + "/" + urlSuffix
 	apiMsg := method + " " + url
 	Verbose(apiMsg)
 	httpClient := &http.Client{}
-	jsonBytes, err := json.Marshal(body)
-	if err != nil {
-		Fatal(JSON_PARSING_ERROR, "failed to marshal body for %s: %v", apiMsg, err)
+
+	// Prepare body
+	var jsonBytes []byte
+	bodyIsBytes := false
+	switch b := body.(type) {
+	// If the body is a byte array or string, we treat it like a file being uploaded (not multi-part)
+	case []byte:
+		jsonBytes = b
+		bodyIsBytes = true
+	case string:
+		jsonBytes = []byte(b)
+		bodyIsBytes = true
+	// Else it is a struct so assume it should be sent as json
+	default:
+		var err error
+		jsonBytes, err = json.Marshal(body)
+		if err != nil {
+			Fatal(JSON_PARSING_ERROR, "failed to marshal body for %s: %v", apiMsg, err)
+		}
 	}
 	requestBody := bytes.NewBuffer(jsonBytes)
+
+	// Create the request and run it
 	req, err := http.NewRequest(method, url, requestBody)
 	if err != nil {
 		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
 	}
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Content-Type", "application/json")
+	if bodyIsBytes {
+		req.Header.Add("Content-Length", strconv.Itoa(len(jsonBytes)))
+	} else {
+		req.Header.Add("Content-Type", "application/json")
+	}
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		printHorizonRestError(apiMsg, err)
 	}
+
+	// Process the response
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
@@ -258,7 +318,7 @@ func GetExchangeUrl() string {
 		HorizonGet("status", []int{200}, &status)
 		exchUrl = status.Configuration.ExchangeAPI
 	}
-	exchUrl = strings.TrimSuffix(exchUrl, "/")	// anax puts a trailing slash on it
+	exchUrl = strings.TrimSuffix(exchUrl, "/") // anax puts a trailing slash on it
 	if os.Getenv("USING_API_KEY") == "1" {
 		re := regexp.MustCompile(`edgenode$`)
 		exchUrl = re.ReplaceAllLiteralString(exchUrl, "edge")
