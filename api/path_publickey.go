@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/rsapss-tool/verify"
 )
 
 func FindPublicKeyForOutput(fileName string, config *config.HorizonConfig) (string, error) {
@@ -65,14 +66,13 @@ func UploadPublicKey(filename string,
 	targetPath := config.UserPublicKeyPath()
 	targetFile := path.Join(targetPath, filename)
 
-	// Receive the uploaded file content and verify that it is a valid public key. If it's valid then
-	// save it into the configured PublicKeyPath location from the config. The name of the uploaded file
-	// is specified on the HTTP PUT. It does not have to have the same file name used by the HTTP caller.
+	// Receive the uploaded file content and verify that it is a valid public key or x509 cert. If it's
+	// valid then save it into the configured PublicKeyPath location from the config. The name of the
+	// uploaded file is specified on the HTTP PUT. It does not have to have the same file name used
+	// by the HTTP caller.
 
-	if nkBlock, _ := pem.Decode(inBytes); nkBlock == nil {
-		return errorhandler(NewAPIUserInputError("not a pem encoded file", "public key file"))
-	} else if _, err := x509.ParsePKIXPublicKey(nkBlock.Bytes); err != nil {
-		return errorhandler(NewAPIUserInputError("not a PKIX public key", "public key file"))
+	if _, err := verify.ValidKeyOrCert(inBytes); err != nil {
+		return errorhandler(NewAPIUserInputError("provided public key or cert is not valid", "public key file"))
 	} else if err := os.MkdirAll(targetPath, 0644); err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("unable to create user key directory %v, error %v", targetPath, err)))
 	} else if err := ioutil.WriteFile(targetFile, inBytes, 0644); err != nil {
