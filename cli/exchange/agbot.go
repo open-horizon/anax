@@ -80,7 +80,7 @@ func AgbotAddPattern(org, userPw, agbot, patternOrg, pattern string) {
 }
 
 
-func AgbotDeletePattern(org, userPw, agbot, patternOrg, pattern string) {
+func AgbotRemovePattern(org, userPw, agbot, patternOrg, pattern string) {
 	patternId := formPatternId(patternOrg, pattern)
 	cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/patterns/"+patternId, cliutils.OrgAndCreds(org,userPw), []int{204})
 }

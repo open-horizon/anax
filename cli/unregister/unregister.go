@@ -3,8 +3,6 @@ package unregister
 import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
-	"os"
-	"strings"
 )
 
 type ApiAttribute struct {
@@ -18,14 +16,7 @@ type ApiAttributes struct {
 // DoIt unregisters this Horizon edge node and resets it so it can be registered again
 func DoIt(forceUnregister, removeNodeUnregister bool) {
 	if !forceUnregister {
-		// Prompt the user to make sure he/she wants to do this
-		fmt.Print("Are you sure you want to unregister this Horizon node? [y/N]: ")
-		var response string
-		fmt.Scanln(&response)
-		if strings.TrimSpace(response) != "y" {
-			fmt.Println("Exiting.")
-			os.Exit(0)
-		}
+		cliutils.ConfirmRemove("Are you sure you want to unregister this Horizon node?")
 	}
 
 	fmt.Println("Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...")

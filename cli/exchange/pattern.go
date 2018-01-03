@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"github.com/open-horizon/rsapss-tool/verify"
+	"os"
 )
 
 //todo: only using these instead of exchange.GetPatternResponse because exchange.Pattern is missing the Owner and LastUpdated fields
@@ -126,6 +128,55 @@ func PatternPublish(org string, userPw string, jsonFilePath string, keyFilePath 
 }
 
 
+func PatternVerify(org, userPw, pattern, keyFilePath string) {
+	// Get pattern resource from exchange
+	var output ExchangePatterns
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &output)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "pattern '%s' not found in org %s", pattern, org)
+	}
+
+	// Loop thru workloads array, checking the deployment string signature
+	pat, ok := output.Patterns[org+"/"+pattern]
+	if !ok {
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, "key '%s' not found in resources returned from exchange", org+"/"+pattern)
+	}
+	someInvalid := false
+	for i := range pat.Workloads {
+		for j := range pat.Workloads[i].WorkloadVersions {
+			cliutils.Verbose("verifying deployment_overrides string in workload %d, workloadVersion number %d", i+1, j+1)
+			//pat.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature, err = sign.Input(keyFilePath, []byte(pat.Workloads[i].WorkloadVersions[j].DeploymentOverrides))
+			verified, err := verify.Input(keyFilePath, pat.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature, []byte(pat.Workloads[i].WorkloadVersions[j].DeploymentOverrides))
+			if err != nil {
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem verifying deployment_overrides string in workload %d, workloadVersion number %d with %s: %v", i+1, j+1, keyFilePath, err)
+			} else if !verified {
+				fmt.Printf("Deployment_overrides string in workload %d, workloadVersion number %d was not signed with the private key associated with this public key.\n", i+1, j+1)
+				someInvalid = true
+			}
+			// else if they all turned out to be valid, we will tell them that at the end
+		}
+	}
+
+	if someInvalid {
+		os.Exit(cliutils.SIGNATURE_INVALID)
+	} else {
+		fmt.Println("All signatures verified")
+	}
+}
+
+
+func PatternRemove(org, userPw, pattern string, force bool) {
+	if !force {
+		cliutils.ConfirmRemove("Are you sure you want to remove pattern '"+org+"/"+pattern+"' from the Horizon Exchange?")
+	}
+
+	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org,userPw), []int{204,404})
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "pattern '%s' not found in org %s", pattern, org)
+	}
+}
+
+
 /*
 func copyPatternOutputToInput(output *PatternOutput, input *PatternInput) {
 	input.Label = output.Label
@@ -188,5 +239,3 @@ func PatternAddWorkload(org string, userPw string, pattern string, workloadFileP
 	fmt.Printf("Updating %s in the exchange...\n", pattern)
 	cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org,userPw), []int{201}, patInput)
 }
-
-//todo: add PatternRemoveWorkload()

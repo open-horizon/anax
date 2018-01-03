@@ -154,3 +154,15 @@ func WorkloadVerify(org, userPw, workload, keyFilePath string) {
 		fmt.Println("All signatures verified")
 	}
 }
+
+
+func WorkloadRemove(org, userPw, workload string, force bool) {
+	if !force {
+		cliutils.ConfirmRemove("Are you sure you want to remove workload '"+org+"/"+workload+"' from the Horizon Exchange?")
+	}
+
+	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+workload, cliutils.OrgAndCreds(org,userPw), []int{204,404})
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "workload '%s' not found in org %s", workload, org)
+	}
+}

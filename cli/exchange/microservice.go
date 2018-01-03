@@ -8,6 +8,8 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/rsapss-tool/sign"
 	"strings"
+	"github.com/open-horizon/rsapss-tool/verify"
+	"os"
 )
 
 type ExchangeMicroservices struct {
@@ -135,5 +137,52 @@ func MicroservicePublish(org string, userPw string, jsonFilePath string, keyFile
 		// MS not there, create it
 		fmt.Printf("Creating %s in the exchange...\n", exchId)
 		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices", cliutils.OrgAndCreds(org,userPw), []int{201}, microInput)
+	}
+}
+
+
+// MicroserviceVerify verifies the deployment strings of the specified microservice resource in the exchange.
+func MicroserviceVerify(org, userPw, microservice, keyFilePath string) {
+	// Get microservice resource from exchange
+	var output ExchangeMicroservices
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+microservice, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &output)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "microservice '%s' not found in org %s", microservice, org)
+	}
+
+	// Loop thru microservices array, checking the deployment string signature
+	micro, ok := output.Microservices[org+"/"+microservice]
+	if !ok {
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, "key '%s' not found in resources returned from exchange", org+"/"+microservice)
+	}
+	someInvalid := false
+	for i := range micro.Workloads {
+		cliutils.Verbose("verifying deployment string %d", i+1)
+		verified, err := verify.Input(keyFilePath, micro.Workloads[i].DeploymentSignature, []byte(micro.Workloads[i].Deployment))
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem verifying deployment string %d with %s: %v", i+1, keyFilePath, err)
+		} else if !verified {
+			fmt.Printf("Deployment string %d was not signed with the private key associated with this public key.\n", i+1)
+			someInvalid = true
+		}
+		// else if they all turned out to be valid, we will tell them that at the end
+	}
+
+	if someInvalid {
+		os.Exit(cliutils.SIGNATURE_INVALID)
+	} else {
+		fmt.Println("All signatures verified")
+	}
+}
+
+
+func MicroserviceRemove(org, userPw, microservice string, force bool) {
+	if !force {
+		cliutils.ConfirmRemove("Are you sure you want to remove microservice '"+org+"/"+microservice+"' from the Horizon Exchange?")
+	}
+
+	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+microservice, cliutils.OrgAndCreds(org,userPw), []int{204,404})
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "microservice '%s' not found in org %s", microservice, org)
 	}
 }

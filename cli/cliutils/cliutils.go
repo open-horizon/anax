@@ -145,6 +145,18 @@ func ReadJsonFile(filePath string) []byte {
 	return newBytes
 }
 
+// ConfirmRemove prompts the user to confirm they want to run the destructive cmd
+func ConfirmRemove(question string) {
+	// Prompt the user to make sure he/she wants to do this
+	fmt.Print(question + " [y/N]: ")
+	var response string
+	fmt.Scanln(&response)
+	if strings.TrimSpace(response) != "y" {
+		fmt.Println("Exiting.")
+		os.Exit(0)
+	}
+}
+
 // GetHorizonUrlBase returns the base part of the horizon api url (which can be overridden by env var HORIZON_URL_BASE)
 func GetHorizonUrlBase() string {
 	envVar := os.Getenv("HORIZON_URL_BASE")
