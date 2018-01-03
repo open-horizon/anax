@@ -112,13 +112,19 @@ Environment Variables:
 
 	keyCmd := app.Command("key", "List and manage keys for signing and verifying services.")
 	keyListCmd := keyCmd.Command("list", "List the signing keys that have been imported into this Horizon agent.")
+	keyName := keyListCmd.Arg("key-name", "The name of a specific key to show.").String()
+	// Note: we don't need a --names-only flag because anax only supports showing the names if a specific key name is not specified.
 	keyCreateCmd := keyCmd.Command("create", "Generate a signing key pair.")
-	keyX509Org := keyCreateCmd.Arg("x509-org", "x509 certificate Organization (O) field (preferrably a company name or other organization's name).").Required().String()
-	keyX509CN := keyCreateCmd.Arg("x509-cn", "x509 certificate Common Name (CN) field (preferrably an email address issued by x509org).").Required().String()
+	keyX509Org := keyCreateCmd.Arg("x509-org", "x509 certificate Organization (O) field (preferably a company name or other organization's name).").Required().String()
+	keyX509CN := keyCreateCmd.Arg("x509-cn", "x509 certificate Common Name (CN) field (preferably an email address issued by x509org).").Required().String()
 	keyOutputDir := keyCreateCmd.Flag("output-dir", "The directory to put the key pair files in. Defaults to the current directory.").Short('d').Default(".").ExistingDir()
 	keyLength := keyCreateCmd.Flag("length", "The directory to put the key pair files in. Defaults to the current directory.").Short('l').Default("8192").Int()
 	keyDaysValid := keyCreateCmd.Flag("days-valid", "x509 certificate validity (Validity > Not After) expressed in days from the day of generation.").Default("1461").Int()
-	//todo: add import option
+	keyImportFlag := keyCreateCmd.Flag("import", "Automatically import the created public key into the local Horizon agent.").Short('i').Bool()
+	keyImportCmd := keyCmd.Command("import", "Imports a signing public key into the Horizon agent.")
+	keyImportPubKeyFile := keyImportCmd.Flag("public-key-file", "The path of a pem public key file to be imported. The base name in the path is also used as the key name in the Horizon agent. ").Short('k').Required().ExistingFile()
+	keyDelCmd := keyCmd.Command("remove", "Remove the specified signing key from this Horizon agent.")
+	keyDelName := keyDelCmd.Arg("key-name", "The name of a specific key to remove.").Required().String()
 
 	nodeCmd := app.Command("node", "List and manage general information about this Horizon edge node.")
 	nodeListCmd := nodeCmd.Command("list", "Display general information about this Horizon edge node.")
@@ -219,11 +225,15 @@ Environment Variables:
 	case registerCmd.FullCommand():
 		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *email, *inputFile)
 	case keyListCmd.FullCommand():
-		key.List()
+		key.List(*keyName)
 	//case keyCmd.FullCommand():   // <- I'd like to just default to list in this case, but don't know how to do that yet
 	//	keyCmd.List()
 	case keyCreateCmd.FullCommand():
-		key.Create(*keyX509Org, *keyX509CN, *keyOutputDir, *keyLength, *keyDaysValid)
+		key.Create(*keyX509Org, *keyX509CN, *keyOutputDir, *keyLength, *keyDaysValid, *keyImportFlag)
+	case keyImportCmd.FullCommand():
+		key.Import(*keyImportPubKeyFile)
+	case keyDelCmd.FullCommand():
+		key.Remove(*keyDelName)
 	case nodeListCmd.FullCommand():
 		node.List()
 	case agreementListCmd.FullCommand():

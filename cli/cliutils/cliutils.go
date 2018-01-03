@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 	"regexp"
+	"strconv"
 )
 
 const (
@@ -111,7 +112,22 @@ func FormExchangeId(url, version, arch string) string {
 	return url3 + "_" + version + "_" + arch
 }
 
-// ReadJsonFile reads a json from a file or stdin, eliminates comments, and returns it.
+// ReadFile reads from a file or stdin, and returns it as a byte array.
+func ReadFile(filePath string) []byte {
+	var fileBytes []byte
+	var err error
+	if filePath == "-" {
+		fileBytes, err = ioutil.ReadAll(os.Stdin)
+	} else {
+		fileBytes, err = ioutil.ReadFile(filePath)
+	}
+	if err != nil {
+		Fatal(READ_FILE_ERROR, "reading %s failed: %v", filePath, err)
+	}
+	return fileBytes
+}
+
+// ReadJsonFile reads json from a file or stdin, eliminates comments, and returns it.
 func ReadJsonFile(filePath string) []byte {
 	var fileBytes []byte
 	var err error
@@ -187,9 +203,16 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}) (h
 		if err != nil {
 			Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err)
 		}
-		err = json.Unmarshal(bodyBytes, structure)
-		if err != nil {
-			Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err)
+		switch s := structure.(type) {
+		case *string:
+			// Just return the unprocessed response body
+			*s = string(bodyBytes)
+		default:
+			// Put the response body in the specified struct
+			err = json.Unmarshal(bodyBytes, structure)
+			if err != nil {
+				Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err)
+			}
 		}
 	}
 	return
@@ -219,28 +242,52 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int) (httpCode int) {
 	return
 }
 
-// HorizonPutPost runs a PUT or POST to the anax api to create of update a resource.
+// HorizonPutPost runs a PUT or POST to the anax api to create or update a resource.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
 func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body interface{}) (httpCode int) {
 	url := GetHorizonUrlBase() + "/" + urlSuffix
 	apiMsg := method + " " + url
 	Verbose(apiMsg)
 	httpClient := &http.Client{}
-	jsonBytes, err := json.Marshal(body)
-	if err != nil {
-		Fatal(JSON_PARSING_ERROR, "failed to marshal body for %s: %v", apiMsg, err)
+
+	// Prepare body
+	var jsonBytes []byte
+	bodyIsBytes := false
+	switch b := body.(type) {
+	// If the body is a byte array or string, we treat it like a file being uploaded (not multi-part)
+	case []byte:
+		jsonBytes = b
+		bodyIsBytes = true
+	case string:
+		jsonBytes = []byte(b)
+		bodyIsBytes = true
+	// Else it is a struct so assume it should be sent as json
+	default:
+		var err error
+		jsonBytes, err = json.Marshal(body)
+		if err != nil {
+			Fatal(JSON_PARSING_ERROR, "failed to marshal body for %s: %v", apiMsg, err)
+		}
 	}
 	requestBody := bytes.NewBuffer(jsonBytes)
+
+	// Create the request and run it
 	req, err := http.NewRequest(method, url, requestBody)
 	if err != nil {
 		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
 	}
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Content-Type", "application/json")
+	if bodyIsBytes {
+		req.Header.Add("Content-Length", strconv.Itoa(len(jsonBytes)))
+	} else {
+		req.Header.Add("Content-Type", "application/json")
+	}
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		printHorizonRestError(apiMsg, err)
 	}
+
+	// Process the response
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
