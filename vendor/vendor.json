@@ -458,10 +458,10 @@
 			"revisionTime": "2017-12-08T17:19:55Z"
 		},
 		{
-			"checksumSHA1": "/7ZAE4bvI5zztf4UoegSau4VkoE=",
+			"checksumSHA1": "HgF+lKPTjnzAx5/1GTDmpuPomxg=",
 			"path": "github.com/open-horizon/rsapss-tool/verify",
-			"revision": "8bd9fec0aa8747031080a9ca8440558582df790a",
-			"revisionTime": "2017-12-08T17:19:55Z"
+			"revision": "2d2b7b3968950e47a333ca9f9f191d255304ddfc",
+			"revisionTime": "2018-01-03T13:54:01Z"
 		},
 		{
 			"checksumSHA1": "3AoPMXlmVq2+iWMpsdJZkcUKHB8=",

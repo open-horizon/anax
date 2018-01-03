@@ -210,7 +210,7 @@ func simpleMod(t *testing.T, method string, pp *url.URL, expectedCode int, paylo
 //}
 
 func Test_API_attribute_Suite(suite *testing.T) {
-	_, db, err := setup()
+	dir, db, err := setup()
 	if err != nil {
 		suite.Error(err)
 	}
@@ -252,7 +252,9 @@ func Test_API_attribute_Suite(suite *testing.T) {
 	// we construct our own API instance so we can set route facts
 	api := &API{
 		Manager: worker.Manager{
-			Config:   &config.HorizonConfig{},
+			Config: &config.HorizonConfig{
+				Edge: config.Config{
+					UserPublicKeyPath: dir}},
 			Messages: nil,
 		},
 
@@ -458,6 +460,41 @@ func Test_API_attribute_Suite(suite *testing.T) {
 		dbAttr, err := persistence.FindAttributeByKey(db, (*loc).GetMeta().Id)
 		assert.Nil(t, err)
 		assert.Nil(t, *dbAttr)
+	})
+
+	suite.Run("Upload using PUT /publickey/{filename} succeeds with x509 certificate", func(t *testing.T) {
+		pp, _ := url.Parse(fmt.Sprintf("%s/%s/%s", recordingServer.URL, "publickey", "foo.pem"))
+		client := http.Client{}
+
+		payload := []byte(`-----BEGIN CERTIFICATE-----
+MIICHTCCAYagAwIBAgIUYqKtvgqzrCoAUi0aX6WViO/RpOYwDQYJKoZIhvcNAQEL
+BQAwOjEeMBwGA1UEChMVUlNBUFNTIFRvb2wgdGVzdCBjZXJ0MRgwFgYDVQQDEw9k
+ZXZlbG9wbWVudC1vbmUwHhcNMTcxMjAyMTk1ODMyWhcNMjcxMTMwMDc1ODMyWjA6
+MR4wHAYDVQQKExVSU0FQU1MgVG9vbCB0ZXN0IGNlcnQxGDAWBgNVBAMTD2RldmVs
+b3BtZW50LW9uZTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAwMyVHvDKw6Th
+bvLiU9qyi6NKYnNH5LA58ukUbMynkRers/HsKfc06Mf2XCwKO6v10QqLNyzMX+2q
+F3T2NpYr8Jru0tAr43Jp8Tq2RrR+5sMvi7OVClieZz2XmaFqIDKH0CcpoKX18lQA
+ZuwJyLgNoR0I5qhaqcXIxYtkS3Om4WsCAwEAAaMgMB4wDgYDVR0PAQH/BAQDAgeA
+MAwGA1UdEwEB/wQCMAAwDQYJKoZIhvcNAQELBQADgYEAcs5DAT+frZfJsoSKEMOu
+WJh0S/UVYC+InMv9iUnPF3f0KjVBXTE45GDG1zxY6SFLpOVskNp9mMkH9PLqDMrb
+kWsF7xOtgBrzIaibDeEhhcQvvHb6Yct1bSgYxWpS1oGKicXA9PFyXxigUW2e8+DH
+SoxItJkxfl2adAjY2DVzdhY=
+-----END CERTIFICATE-----`)
+
+		req, err := http.NewRequest(http.MethodPut, pp.String(), bytes.NewReader(payload))
+		assert.Nil(t, err)
+		assert.NotNil(t, req)
+
+		glog.Infof("Request: %v", req)
+		resp, err := client.Do(req)
+		glog.Infof("Response: %v", resp)
+
+		b, err := handleResp(resp, http.StatusOK)
+		assert.Nil(t, err)
+
+		if resp.StatusCode-400 > 0 {
+			t.Errorf("Unexpected status code returned from API: %v. Response data: %v", resp.StatusCode, b)
+		}
 	})
 
 	// shutdown

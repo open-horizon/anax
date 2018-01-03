@@ -1,4 +1,5 @@
-// +build unit
+// +build integration
+// +build ci
 
 package api
 
