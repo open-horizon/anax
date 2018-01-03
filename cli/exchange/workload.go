@@ -6,42 +6,42 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/rsapss-tool/sign"
-	"net/http"
-	"strings"
 	"github.com/open-horizon/rsapss-tool/verify"
+	"net/http"
 	"os"
+	"strings"
 )
 
 // We only care about the workload names, so the rest is left as interface{}
 type ExchangeWorkloads struct {
-	Workloads  map[string]WorkloadOutput `json:"workloads"`
-	LastIndex int                    `json:"lastIndex"`
+	Workloads map[string]WorkloadOutput `json:"workloads"`
+	LastIndex int                       `json:"lastIndex"`
 }
 
 //todo: the only thing keeping me from using exchange.WorkloadDefinition is dave adding the Public field to it
 type WorkloadOutput struct {
-	Owner       string               `json:"owner"`
-	Label       string               `json:"label"`
-	Description string               `json:"description"`
-	Public   bool               `json:"public"`
-	WorkloadURL string               `json:"workloadUrl"`
-	Version     string               `json:"version"`
-	Arch        string               `json:"arch"`
-	DownloadURL string               `json:"downloadUrl"`
+	Owner       string                        `json:"owner"`
+	Label       string                        `json:"label"`
+	Description string                        `json:"description"`
+	Public      bool                          `json:"public"`
+	WorkloadURL string                        `json:"workloadUrl"`
+	Version     string                        `json:"version"`
+	Arch        string                        `json:"arch"`
+	DownloadURL string                        `json:"downloadUrl"`
 	APISpecs    []exchange.APISpec            `json:"apiSpec"`
 	UserInputs  []exchange.UserInput          `json:"userInput"`
 	Workloads   []exchange.WorkloadDeployment `json:"workloads"`
-	LastUpdated string               `json:"lastUpdated"`
+	LastUpdated string                        `json:"lastUpdated"`
 }
 
 type WorkloadInput struct {
-	Label       string               `json:"label"`
-	Description string               `json:"description"`
-	Public   bool               `json:"public"`
-	WorkloadURL string               `json:"workloadUrl"`
-	Version     string               `json:"version"`
-	Arch        string               `json:"arch"`
-	DownloadURL string               `json:"downloadUrl"`
+	Label       string                        `json:"label"`
+	Description string                        `json:"description"`
+	Public      bool                          `json:"public"`
+	WorkloadURL string                        `json:"workloadUrl"`
+	Version     string                        `json:"version"`
+	Arch        string                        `json:"arch"`
+	DownloadURL string                        `json:"downloadUrl"`
 	APISpecs    []exchange.APISpec            `json:"apiSpec"`
 	UserInputs  []exchange.UserInput          `json:"userInput"`
 	Workloads   []exchange.WorkloadDeployment `json:"workloads"`
@@ -54,7 +54,7 @@ func WorkloadList(org, userPw, workload string, namesOnly bool) {
 	if namesOnly {
 		// Only display the names
 		var resp ExchangeWorkloads
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &resp)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
 		var workloads []string
 		for k := range resp.Workloads {
 			workloads = append(workloads, k)
@@ -68,7 +68,7 @@ func WorkloadList(org, userPw, workload string, namesOnly bool) {
 		// Display the full resources
 		//var output string
 		var output ExchangeWorkloads
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &output)
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 		if httpCode == 404 && workload != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, "workload '%s' not found in org %s", strings.TrimPrefix(workload, "/"), org)
 		}
@@ -79,7 +79,6 @@ func WorkloadList(org, userPw, workload string, namesOnly bool) {
 		fmt.Println(string(jsonBytes))
 	}
 }
-
 
 // WorkloadPublish signs the MS def and puts it in the exchange
 func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath string) {
@@ -108,24 +107,23 @@ func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath string) {
 	// Create of update resource in the exchange
 	exchId := cliutils.FormExchangeId(workInput.WorkloadURL, workInput.Version, workInput.Arch)
 	var output string
-	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+exchId, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &output)
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 200 {
 		// Workload exists, update it
 		fmt.Printf("Updating %s in the exchange...\n", exchId)
-		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+exchId, cliutils.OrgAndCreds(org,userPw), []int{201}, workInput)
+		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, workInput)
 	} else {
 		// Workload not there, create it
 		fmt.Printf("Creating %s in the exchange...\n", exchId)
-		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads", cliutils.OrgAndCreds(org,userPw), []int{201}, workInput)
+		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads", cliutils.OrgAndCreds(org, userPw), []int{201}, workInput)
 	}
 }
-
 
 // WorkloadVerify verifies the deployment strings of the specified workload resource in the exchange.
 func WorkloadVerify(org, userPw, workload, keyFilePath string) {
 	// Get workload resource from exchange
 	var output ExchangeWorkloads
-	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+workload, cliutils.OrgAndCreds(org,userPw), []int{200,404}, &output)
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+workload, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "workload '%s' not found in org %s", workload, org)
 	}
@@ -155,13 +153,12 @@ func WorkloadVerify(org, userPw, workload, keyFilePath string) {
 	}
 }
 
-
 func WorkloadRemove(org, userPw, workload string, force bool) {
 	if !force {
-		cliutils.ConfirmRemove("Are you sure you want to remove workload '"+org+"/"+workload+"' from the Horizon Exchange?")
+		cliutils.ConfirmRemove("Are you sure you want to remove workload '" + org + "/" + workload + "' from the Horizon Exchange?")
 	}
 
-	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+workload, cliutils.OrgAndCreds(org,userPw), []int{204,404})
+	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+workload, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "workload '%s' not found in org %s", workload, org)
 	}

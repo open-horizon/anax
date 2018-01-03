@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/rsapss-tool/generatekeys"
-	"time"
 	"net/http"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 func List(keyName string) {
@@ -34,7 +34,6 @@ func List(keyName string) {
 	}
 }
 
-
 // Create generates a private/public key pair
 func Create(x509Org, x509CN, outputDir string, keyLength, daysValid int, importKey bool) {
 	// Note: the cli parse already verifies outputDir exists and keyLength and daysValid are ints
@@ -43,11 +42,11 @@ func Create(x509Org, x509CN, outputDir string, keyLength, daysValid int, importK
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "failed to create a new key pair: %v", err)
 	}
-	var pubKeyName string 		// capture this in case they want us to import it
+	var pubKeyName string // capture this in case they want us to import it
 	fmt.Println("Created keys:")
 	for _, key := range newKeys {
 		fmt.Printf("\t%v\n", key)
-		if strings.Contains(key, "public") {	// this seems like a better check than blindly getting the 2nd key in the list
+		if strings.Contains(key, "public") { // this seems like a better check than blindly getting the 2nd key in the list
 			pubKeyName = key
 		}
 	}
@@ -62,14 +61,12 @@ func Create(x509Org, x509CN, outputDir string, keyLength, daysValid int, importK
 	}
 }
 
-
 func Import(pubKeyFile string) {
 	// Note: the CLI framework already verified the file exists
 	bodyBytes := cliutils.ReadFile(pubKeyFile)
 	baseName := filepath.Base(pubKeyFile)
 	cliutils.HorizonPutPost(http.MethodPut, "publickey/"+baseName, []int{201, 200}, bodyBytes)
 }
-
 
 func Remove(keyName string) {
 	cliutils.HorizonDelete("publickey/"+keyName, []int{200, 204})

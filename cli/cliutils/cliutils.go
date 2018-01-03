@@ -11,10 +11,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
-	"time"
 	"regexp"
 	"strconv"
+	"strings"
+	"time"
 )
 
 const (
@@ -30,9 +30,9 @@ const (
 	HTTP_ERROR         = 5
 	//EXEC_CMD_ERROR = 6
 	CLI_GENERAL_ERROR = 7
-	NOT_FOUND = 8
+	NOT_FOUND         = 8
 	SIGNATURE_INVALID = 9
-	INTERNAL_ERROR = 99
+	INTERNAL_ERROR    = 99
 
 	// Anax API HTTP Codes
 	ANAX_ALREADY_CONFIGURED = 409
@@ -90,13 +90,13 @@ func SplitIdToken(idToken string) (id, token string) {
 // OrgAndCreds prepends the org to creds (separated by /) unless creds already has an org prepended
 func OrgAndCreds(org, creds string) string {
 	if os.Getenv("USING_API_KEY") == "1" {
-		return creds	// WIoTP API keys are globally unique and shouldn't be prepended with the org
+		return creds // WIoTP API keys are globally unique and shouldn't be prepended with the org
 	}
-	id, _ := SplitIdToken(creds)	// only look for the / in the id, because the token is more likely to have special chars
+	id, _ := SplitIdToken(creds) // only look for the / in the id, because the token is more likely to have special chars
 	if strings.Contains(id, "/") {
-		return creds	// already has the org at the beginning
+		return creds // already has the org at the beginning
 	}
-	return org+"/"+creds
+	return org + "/" + creds
 }
 
 // FormExchangeId combines url, version, arch the same way the exchange does to form the resource ID.
@@ -318,7 +318,7 @@ func GetExchangeUrl() string {
 		HorizonGet("status", []int{200}, &status)
 		exchUrl = status.Configuration.ExchangeAPI
 	}
-	exchUrl = strings.TrimSuffix(exchUrl, "/")	// anax puts a trailing slash on it
+	exchUrl = strings.TrimSuffix(exchUrl, "/") // anax puts a trailing slash on it
 	if os.Getenv("USING_API_KEY") == "1" {
 		re := regexp.MustCompile(`edgenode$`)
 		exchUrl = re.ReplaceAllLiteralString(exchUrl, "edge")
