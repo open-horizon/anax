@@ -712,6 +712,8 @@ type GetWorkloadsResponse struct {
 	LastIndex int                           `json:"lastIndex"`
 }
 
+//todo: should use map[string]string instead of HardwareMatch struct, because MatchHardware is intended to be free-form
+//		(contain whatever key/values that the microservice script needs to determine if the node can run it.)
 type HardwareMatch struct {
 	USBDeviceIds string `json:"usbDeviceIds"`
 	Devfiles     string `json:"devFiles"`

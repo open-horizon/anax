@@ -12,28 +12,6 @@ import (
 	"strings"
 )
 
-// We only care about the workload names, so the rest is left as interface{}
-type ExchangeWorkloads struct {
-	Workloads map[string]WorkloadOutput `json:"workloads"`
-	LastIndex int                       `json:"lastIndex"`
-}
-
-//todo: the only thing keeping me from using exchange.WorkloadDefinition is dave adding the Public field to it
-type WorkloadOutput struct {
-	Owner       string                        `json:"owner"`
-	Label       string                        `json:"label"`
-	Description string                        `json:"description"`
-	Public      bool                          `json:"public"`
-	WorkloadURL string                        `json:"workloadUrl"`
-	Version     string                        `json:"version"`
-	Arch        string                        `json:"arch"`
-	DownloadURL string                        `json:"downloadUrl"`
-	APISpecs    []exchange.APISpec            `json:"apiSpec"`
-	UserInputs  []exchange.UserInput          `json:"userInput"`
-	Workloads   []exchange.WorkloadDeployment `json:"workloads"`
-	LastUpdated string                        `json:"lastUpdated"`
-}
-
 type WorkloadInput struct {
 	Label       string                        `json:"label"`
 	Description string                        `json:"description"`
@@ -53,7 +31,7 @@ func WorkloadList(org, userPw, workload string, namesOnly bool) {
 	}
 	if namesOnly && workload == "" {
 		// Only display the names
-		var resp ExchangeWorkloads
+		var resp exchange.GetWorkloadsResponse
 		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
 		workloads := []string{}
 		for k := range resp.Workloads {
@@ -67,7 +45,7 @@ func WorkloadList(org, userPw, workload string, namesOnly bool) {
 	} else {
 		// Display the full resources
 		//var output string
-		var output ExchangeWorkloads
+		var output exchange.GetWorkloadsResponse
 		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 		if httpCode == 404 && workload != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, "workload '%s' not found in org %s", strings.TrimPrefix(workload, "/"), org)
@@ -134,7 +112,7 @@ func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath string) {
 // WorkloadVerify verifies the deployment strings of the specified workload resource in the exchange.
 func WorkloadVerify(org, userPw, workload, keyFilePath string) {
 	// Get workload resource from exchange
-	var output ExchangeWorkloads
+	var output exchange.GetWorkloadsResponse
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+workload, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "workload '%s' not found in org %s", workload, org)
