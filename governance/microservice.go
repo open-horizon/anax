@@ -71,8 +71,12 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string) (*persistence.Micros
 		for _, wl := range wls {
 			// convert the torrent string to a structure
 			var torrent policy.Torrent
-			if err := json.Unmarshal([]byte(wl.Torrent), &torrent); err != nil {
-				return nil, fmt.Errorf(logString(fmt.Sprintf("The torrent definition for microservice %v has error: %v", msdef.SpecRef, err)))
+
+			// convert to torrent structure only if the torrent string exists on the exchange
+			if wl.Torrent != "" {
+				if err := json.Unmarshal([]byte(wl.Torrent), &torrent); err != nil {
+					return nil, fmt.Errorf(logString(fmt.Sprintf("The torrent definition for microservice %v has error: %v", msdef.SpecRef, err)))
+				}
 			}
 
 			// convert workload to policy workload structure
