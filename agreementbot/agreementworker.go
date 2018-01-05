@@ -282,12 +282,14 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				workload.Deployment = workloadDetails.Workloads[0].Deployment
 				workload.DeploymentSignature = workloadDetails.Workloads[0].DeploymentSignature
 				torr := new(policy.Torrent)
-				if err := json.Unmarshal([]byte(workloadDetails.Workloads[0].Torrent), torr); err != nil {
-					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Unable to demarshal torrent info from %v, error: %v", workloadDetails, err)))
-					return
-				} else {
-					workload.Torrent = *torr
+				if workloadDetails.Workloads[0].Torrent != "" {
+					if err := json.Unmarshal([]byte(workloadDetails.Workloads[0].Torrent), torr); err != nil {
+						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Unable to demarshal torrent info from %v, error: %v", workloadDetails, err)))
+						return
+					}
 				}
+				workload.Torrent = *torr
+
 				glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("workload %v is supported by device %v", workload, wi.Device.Id)))
 			}
 
