@@ -62,7 +62,7 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 		// Only display the names
 		var resp ExchangePatterns
 		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+pattern, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
-		patterns := []string{}	// this is important (instead of leaving it nil) so json marshaling displays it as [] instead of null
+		patterns := []string{} // this is important (instead of leaving it nil) so json marshaling displays it as [] instead of null
 		for p := range resp.Patterns {
 			patterns = append(patterns, p)
 		}
@@ -234,7 +234,6 @@ func PatternAddWorkload(org, userPw, pattern, workloadFilePath, keyFilePath stri
 	fmt.Printf("Updating %s in the exchange...\n", pattern)
 	cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org, userPw), []int{201}, patInput)
 }
-
 
 func PatternDelWorkload(org, userPw, pattern, workloadOrg, workloadUrl, workloadArch string) {
 	// Get the pattern from the exchange

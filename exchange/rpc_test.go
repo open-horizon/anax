@@ -159,6 +159,30 @@ func Test_makePolicyName2(t *testing.T) {
 
 }
 
+func Test_IsTraportError(t *testing.T) {
+	error1 := fmt.Errorf("Time is out")
+	error2 := fmt.Errorf("connection is refused")
+	error3 := fmt.Errorf("connection reset by the peer")
+	error3 := fmt.Errorf("something is wrong")
+
+	if !isTransportError(error1) {
+		t.Errorf("Error: expection isTransportError return true for %v but got false", error1)
+	}
+
+	if !isTransportError(error2) {
+		t.Errorf("Error: expection isTransportError return true for %v but got false", error2)
+	}
+
+	if !isTransportError(error3) {
+		t.Errorf("Error: expection isTransportError return true for %v but got false", error3)
+	}
+
+	if isTransportError(error4) {
+		t.Errorf("Error: expection isTransportError return false for %v but got true", error4)
+	}
+
+}
+
 // Create a Pattern object from a JSON serialization. The JSON serialization
 // does not have to be a valid pattern serialization, just has to be a valid
 // JSON serialization.
