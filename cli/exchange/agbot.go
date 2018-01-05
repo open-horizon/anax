@@ -18,11 +18,11 @@ func AgbotList(org string, userPw string, agbot string, namesOnly bool) {
 	if agbot != "" {
 		agbot = "/" + agbot
 	}
-	if namesOnly {
+	if namesOnly && agbot == "" {
 		// Only display the names
 		var resp ExchangeAgbots
 		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots"+agbot, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
-		var agbots []string
+		agbots := []string{}
 		for a := range resp.Agbots {
 			agbots = append(agbots, a)
 		}

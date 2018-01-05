@@ -51,11 +51,11 @@ func WorkloadList(org, userPw, workload string, namesOnly bool) {
 	if workload != "" {
 		workload = "/" + workload
 	}
-	if namesOnly {
+	if namesOnly && workload == "" {
 		// Only display the names
 		var resp ExchangeWorkloads
 		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
-		var workloads []string
+		workloads := []string{}
 		for k := range resp.Workloads {
 			workloads = append(workloads, k)
 		}
@@ -92,6 +92,7 @@ func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath string) {
 
 	// Loop thru the workloads array and sign the deployment strings
 	fmt.Println("Signing workload...")
+	var imageList []string
 	for i := range workInput.Workloads {
 		cliutils.Verbose("signing deployment string %d", i+1)
 		var err error
@@ -99,7 +100,9 @@ func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath string) {
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing deployment string %d with %s: %v", i+1, keyFilePath, err)
 		}
-		//todo: gather the docker image paths to instruct to docker push at the end
+
+		// Gather the docker image paths to instruct to docker push at the end
+		imageList = AppendImagesFromDeploymentField(workInput.Workloads[i].Deployment, i+1, imageList)
 
 		CheckTorrentField(workInput.Workloads[i].Torrent, i)
 	}
@@ -116,6 +119,15 @@ func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath string) {
 		// Workload not there, create it
 		fmt.Printf("Creating %s in the exchange...\n", exchId)
 		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads", cliutils.OrgAndCreds(org, userPw), []int{201}, workInput)
+	}
+
+	// Tell the to push the images to the docker registry
+	if len(imageList) > 0 {
+		//todo: should we just push the docker images for them?
+		fmt.Println("If you haven't already, push your docker images to the registry:")
+		for _, image := range imageList {
+			fmt.Printf("  docker push %s\n", image)
+		}
 	}
 }
 

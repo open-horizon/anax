@@ -37,14 +37,15 @@ Environment Variables:
 
 	userCmd := exchangeCmd.Command("user", "List and manage users in the Horizon Exchange")
 	//exUserPw := userCmd.Flag("user-pw", "User credentials in the Horizon exchange.").Short('u').PlaceHolder("USER:PW").Required().String()
-	userListCmd := userCmd.Command("list", "Display the user resource from the Horizon Exchange.")
+	userListCmd := userCmd.Command("list", "Display the user resource from the Horizon Exchange. (You can only display your own user. If the user does not exist, you will get an invalid credentials error.)")
 	userCreateCmd := userCmd.Command("create", "Create the user resource in the Horizon Exchange.")
 	userCreateEmail := userCreateCmd.Flag("email", "Your email address that should be associated with this user account when creating it in the Horizon exchange.").Short('e').Required().String()
 
 	exNodeCmd := exchangeCmd.Command("node", "List and manage nodes in the Horizon Exchange")
 	exNodeListCmd := exNodeCmd.Command("list", "Display the node resources from the Horizon Exchange.")
 	exNode := exNodeListCmd.Arg("node", "List just this one node.").String()
-	exNodeNames := exNodeListCmd.Flag("names-only", "Only list the names (IDs) of the nodes.").Short('N').Bool()
+	//exNodeNames := exNodeListCmd.Flag("names-only", "Only list the names (IDs) of the nodes.").Short('N').Bool()
+	exNodeLong := exNodeListCmd.Flag("long", "When listing all of the nodes, show the entire resource of each nodes, instead of just the name.").Short('l').Bool()
 	exNodeCreateCmd := exNodeCmd.Command("create", "Create the node resource in the Horizon Exchange.")
 	exNodeIdTok := exNodeCreateCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token. The node ID must be unique within the organization.").Short('n').PlaceHolder("ID:TOK").Required().String()
 	//exNodeUserPw := exNodeCreateCmd.Flag("user-pw", "User credentials to create the node resource in the Horizon exchange.").Short('u').PlaceHolder("USER:PW").Required().String()
@@ -53,7 +54,8 @@ Environment Variables:
 	exAgbotCmd := exchangeCmd.Command("agbot", "List and manage agbots in the Horizon Exchange")
 	exAgbotListCmd := exAgbotCmd.Command("list", "Display the agbot resources from the Horizon Exchange.")
 	exAgbot := exAgbotListCmd.Arg("agbot", "List just this one agbot.").String()
-	exAgbotNames := exAgbotListCmd.Flag("names-only", "Only list the names (IDs) of the agbots.").Short('N').Bool()
+	//exAgbotNames := exAgbotListCmd.Flag("names-only", "Only list the names (IDs) of the agbots.").Short('N').Bool()
+	exAgbotLong := exAgbotListCmd.Flag("long", "When listing all of the agbots, show the entire resource of each agbots, instead of just the name.").Short('l').Bool()
 	exAgbotListPatsCmd := exAgbotCmd.Command("listpattern", "Display the patterns that this agbot is serving.")
 	exAgbotLP := exAgbotListPatsCmd.Arg("agbot", "The agbot to list the patterns for.").Required().String()
 	exAgbotLPPatOrg := exAgbotListPatsCmd.Arg("patternorg", "The organization of the 1 pattern to list.").String()
@@ -71,7 +73,8 @@ Environment Variables:
 	//exPatNodeIdTok := exPatternCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to use to query the exchange. Create with 'hzn exchange node create'.").Short('n').PlaceHolder("ID:TOK").Required().String()
 	exPatternListCmd := exPatternCmd.Command("list", "Display the pattern resources from the Horizon Exchange.")
 	exPattern := exPatternListCmd.Arg("pattern", "List just this one pattern.").String()
-	exPatternNames := exPatternListCmd.Flag("names-only", "Only list the names (IDs) of the patterns.").Short('N').Bool()
+	//exPatternNames := exPatternListCmd.Flag("names-only", "Only list the names (IDs) of the patterns.").Short('N').Bool()
+	exPatternLong := exPatternListCmd.Flag("long", "When listing all of the patterns, show the entire resource of each pattern, instead of just the name.").Short('l').Bool()
 	exPatternPublishCmd := exPatternCmd.Command("publish", "Sign and create/update the pattern resource in the Horizon Exchange.")
 	exPatJsonFile := exPatternPublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the pattern in the Horizon exchange. See /usr/horizon/samples/pattern.json. Specify -f- to read from stdin.").Short('f').Required().String()
 	exPatKeyFile := exPatternPublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the pattern. ").Short('k').Required().ExistingFile()
@@ -85,13 +88,18 @@ Environment Variables:
 	exPatAddWork := exPatternAddWorkCmd.Arg("pattern", "The existing pattern that the workload should be inserted into.").Required().String()
 	exPatAddWorkJsonFile := exPatternAddWorkCmd.Flag("json-file", "The path of a JSON file containing the additional workload metadata. See /usr/horizon/samples/insert-workload-into-pattern.json. Specify -f- to read from stdin.").Short('f').Required().String()
 	exPatAddWorkKeyFile := exPatternAddWorkCmd.Flag("private-key-file", "The path of a private key file to be used to sign the inserted workload. ").Short('k').Required().ExistingFile()
-	//todo: add pattern removeworkload
+	exPatternDelWorkCmd := exPatternCmd.Command("removeworkload", "Remove a workload from an existing pattern resource in the Horizon Exchange.")
+	exPatDelWorkPat := exPatternDelWorkCmd.Arg("pattern", "The existing pattern that the workload should be removed from.").Required().String()
+	exPatDelWorkOrg := exPatternDelWorkCmd.Arg("workload-org", "The org of the workload to remove.").Required().String()
+	exPatDelWorkUrl := exPatternDelWorkCmd.Arg("workload-url", "The URL of the workload to remove.").Required().String()
+	exPatDelWorkArch := exPatternDelWorkCmd.Arg("workload-arch", "The arch of the workload to remove.").Required().String()
 
 	exWorkloadCmd := exchangeCmd.Command("workload", "List and manage workloads in the Horizon Exchange")
 	//exWorkNodeIdTok := exWorkloadCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to use to query the exchange. Create with 'hzn exchange node create'.").Short('n').PlaceHolder("ID:TOK").Required().String()
 	exWorkloadListCmd := exWorkloadCmd.Command("list", "Display the workload resources from the Horizon Exchange.")
 	exWorkload := exWorkloadListCmd.Arg("workload", "List just this one workload.").String()
-	exWorkloadNames := exWorkloadListCmd.Flag("names-only", "Only list the names (IDs) of the workloads.").Short('N').Bool()
+	//exWorkloadNames := exWorkloadListCmd.Flag("names-only", "Only list the names (IDs) of the workloads.").Short('N').Bool()
+	exWorkloadLong := exWorkloadListCmd.Flag("long", "When listing all of the workloads, show the entire resource of each workloads, instead of just the name.").Short('l').Bool()
 	exWorkloadPublishCmd := exWorkloadCmd.Command("publish", "Sign and create/update the workload resource in the Horizon Exchange.")
 	exWorkJsonFile := exWorkloadPublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the workload in the Horizon exchange. See /usr/horizon/samples/workload.json. Specify -f- to read from stdin.").Short('f').Required().String()
 	exWorkPrivKeyFile := exWorkloadPublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the workload. ").Short('k').Required().ExistingFile()
@@ -106,7 +114,8 @@ Environment Variables:
 	//exMicroNodeIdTok := exMicroserviceCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to use to query the exchange. Create with 'hzn exchange node create'.").Short('n').PlaceHolder("ID:TOK").Required().String()
 	exMicroserviceListCmd := exMicroserviceCmd.Command("list", "Display the microservice resources from the Horizon Exchange.")
 	exMicroservice := exMicroserviceListCmd.Arg("microservice", "List just this one microservice.").String()
-	exMicroserviceNames := exMicroserviceListCmd.Flag("names-only", "Only list the names (IDs) of the microservices.").Short('N').Bool()
+	//exMicroserviceNames := exMicroserviceListCmd.Flag("names-only", "Only list the names (IDs) of the microservices.").Short('N').Bool()
+	exMicroserviceLong := exMicroserviceListCmd.Flag("long", "When listing all of the microservices, show the entire resource of each microservices, instead of just the name.").Short('l').Bool()
 	exMicroservicePublishCmd := exMicroserviceCmd.Command("publish", "Sign and create/update the microservice resource in the Horizon Exchange.")
 	exMicroJsonFile := exMicroservicePublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the microservice in the Horizon exchange. See /usr/horizon/samples/microservice.json. Specify -f- to read from stdin.").Short('f').Required().String()
 	exMicroKeyFile := exMicroservicePublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the microservice. ").Short('k').Required().ExistingFile()
@@ -210,11 +219,11 @@ Environment Variables:
 	case userCreateCmd.FullCommand():
 		exchange.UserCreate(*exOrg, *exUserPw, *userCreateEmail)
 	case exNodeListCmd.FullCommand():
-		exchange.NodeList(*exOrg, *exUserPw, *exNode, *exNodeNames)
+		exchange.NodeList(*exOrg, *exUserPw, *exNode, !*exNodeLong)
 	case exNodeCreateCmd.FullCommand():
 		exchange.NodeCreate(*exOrg, *exNodeIdTok, *exUserPw, *exNodeEmail)
 	case exAgbotListCmd.FullCommand():
-		exchange.AgbotList(*exOrg, *exUserPw, *exAgbot, *exAgbotNames)
+		exchange.AgbotList(*exOrg, *exUserPw, *exAgbot, !*exAgbotLong)
 	case exAgbotListPatsCmd.FullCommand():
 		exchange.AgbotListPatterns(*exOrg, *exUserPw, *exAgbotLP, *exAgbotLPPatOrg, *exAgbotLPPat)
 	case exAgbotAddPatCmd.FullCommand():
@@ -222,7 +231,7 @@ Environment Variables:
 	case exAgbotDelPatCmd.FullCommand():
 		exchange.AgbotRemovePattern(*exOrg, *exUserPw, *exAgbotDP, *exAgbotDPPatOrg, *exAgbotDPPat)
 	case exPatternListCmd.FullCommand():
-		exchange.PatternList(*exOrg, *exUserPw, *exPattern, *exPatternNames)
+		exchange.PatternList(*exOrg, *exUserPw, *exPattern, !*exPatternLong)
 	case exPatternPublishCmd.FullCommand():
 		exchange.PatternPublish(*exOrg, *exUserPw, *exPatJsonFile, *exPatKeyFile)
 	case exPatternVerifyCmd.FullCommand():
@@ -231,8 +240,10 @@ Environment Variables:
 		exchange.PatternRemove(*exOrg, *exUserPw, *exDelPat, *exPatDelForce)
 	case exPatternAddWorkCmd.FullCommand():
 		exchange.PatternAddWorkload(*exOrg, *exUserPw, *exPatAddWork, *exPatAddWorkJsonFile, *exPatAddWorkKeyFile)
+	case exPatternDelWorkCmd.FullCommand():
+		exchange.PatternDelWorkload(*exOrg, *exUserPw, *exPatDelWorkPat, *exPatDelWorkOrg, *exPatDelWorkUrl, *exPatDelWorkArch)
 	case exWorkloadListCmd.FullCommand():
-		exchange.WorkloadList(*exOrg, *exUserPw, *exWorkload, *exWorkloadNames)
+		exchange.WorkloadList(*exOrg, *exUserPw, *exWorkload, !*exWorkloadLong)
 	case exWorkloadPublishCmd.FullCommand():
 		exchange.WorkloadPublish(*exOrg, *exUserPw, *exWorkJsonFile, *exWorkPrivKeyFile)
 	case exWorkloadVerifyCmd.FullCommand():
@@ -240,7 +251,7 @@ Environment Variables:
 	case exWorkDelCmd.FullCommand():
 		exchange.WorkloadRemove(*exOrg, *exUserPw, *exDelWork, *exWorkDelForce)
 	case exMicroserviceListCmd.FullCommand():
-		exchange.MicroserviceList(*exOrg, *exUserPw, *exMicroservice, *exMicroserviceNames)
+		exchange.MicroserviceList(*exOrg, *exUserPw, *exMicroservice, !*exMicroserviceLong)
 	case exMicroservicePublishCmd.FullCommand():
 		exchange.MicroservicePublish(*exOrg, *exUserPw, *exMicroJsonFile, *exMicroKeyFile)
 	case exMicroVerifyCmd.FullCommand():

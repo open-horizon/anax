@@ -19,11 +19,11 @@ func NodeList(org string, userPw string, node string, namesOnly bool) {
 	if node != "" {
 		node = "/" + node
 	}
-	if namesOnly {
+	if namesOnly && node == "" {
 		// Only display the names
 		var resp ExchangeNodes
 		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+node, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
-		var nodes []string
+		nodes := []string{}
 		for n := range resp.Nodes {
 			nodes = append(nodes, n)
 		}
