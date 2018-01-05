@@ -58,11 +58,11 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 	if pattern != "" {
 		pattern = "/" + pattern
 	}
-	if namesOnly {
+	if namesOnly && pattern == "" {
 		// Only display the names
 		var resp ExchangePatterns
 		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+pattern, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
-		var patterns []string
+		patterns := []string{}	// this is important (instead of leaving it nil) so json marshaling displays it as [] instead of null
 		for p := range resp.Patterns {
 			patterns = append(patterns, p)
 		}
@@ -185,7 +185,7 @@ func copyPatternOutputToInput(output *PatternOutput, input *PatternInput) {
 
 // PatternAddWorkload reads json for 1 element of the workloads array of a pattern, gets the named pattern from the
 // exchange, and then either replaces that workload array element (if it already exists), or adds it.
-func PatternAddWorkload(org string, userPw string, pattern string, workloadFilePath string, keyFilePath string) {
+func PatternAddWorkload(org, userPw, pattern, workloadFilePath, keyFilePath string) {
 	// Read in the workload metadata
 	newBytes := cliutils.ReadJsonFile(workloadFilePath)
 	var workInput WorkloadReference
@@ -228,6 +228,40 @@ func PatternAddWorkload(org string, userPw string, pattern string, workloadFileP
 		// Didn't find a matching element above, so append it
 		fmt.Println("Adding workload to the end of the workload array")
 		patInput.Workloads = append(patInput.Workloads, workInput)
+	}
+
+	// Finally put it back in the exchange
+	fmt.Printf("Updating %s in the exchange...\n", pattern)
+	cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org, userPw), []int{201}, patInput)
+}
+
+
+func PatternDelWorkload(org, userPw, pattern, workloadOrg, workloadUrl, workloadArch string) {
+	// Get the pattern from the exchange
+	var output ExchangePatterns
+	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org, userPw), []int{200}, &output)
+	key := org + "/" + pattern
+	if _, ok := output.Patterns[key]; !ok {
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, "horizon exchange api pattern output did not include '%s' key", pattern)
+	}
+	// Convert it to the structure to put it back into the exchange
+	patInput := PatternInput{Label: output.Patterns[key].Label, Description: output.Patterns[key].Description, Public: output.Patterns[key].Public, Workloads: output.Patterns[key].Workloads, AgreementProtocols: output.Patterns[key].AgreementProtocols}
+
+	// Find the workload entry in the pattern
+	matchIndex := -1
+	for i := range patInput.Workloads {
+		if patInput.Workloads[i].WorkloadOrg == workloadOrg && patInput.Workloads[i].WorkloadURL == workloadUrl && patInput.Workloads[i].WorkloadArch == workloadArch {
+			// Found it, record which one
+			matchIndex = i
+		}
+	}
+
+	// Delete it if we found it
+	if matchIndex >= 0 {
+		fmt.Printf("Deleting workload element number %d\n", matchIndex+1)
+		patInput.Workloads = append(patInput.Workloads[:matchIndex], patInput.Workloads[matchIndex+1:]...)
+	} else {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "did not find the specified workload in the pattern")
 	}
 
 	// Finally put it back in the exchange

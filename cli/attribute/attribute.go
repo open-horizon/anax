@@ -31,7 +31,7 @@ func List() {
 	apiAttrs := apiOutput["attributes"]
 
 	// Only include interesting fields in our output
-	var attrs []OurAttributes
+	attrs := []OurAttributes{}
 	for _, a := range apiAttrs {
 		if len(*a.SensorUrls) == 0 {
 			attrs = append(attrs, OurAttributes{Type: *a.Type, Label: *a.Label, Variables: *a.Mappings})
