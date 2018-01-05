@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"net/http"
+	cliexchange "github.com/open-horizon/anax/cli/exchange"
 )
 
 // These structs are used to parse the registration input file
@@ -52,7 +53,7 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, email str
 	exchUrlBase := cliutils.GetExchangeUrl()
 	fmt.Printf("Horizon Exchange base URL: %s\n", exchUrlBase)
 
-	// See if the node exists in the exchange, and create if it doesn't
+	// Default node id and token if necessary
 	nodeId, nodeToken := cliutils.SplitIdToken(nodeIdTok)
 	if nodeId == "" {
 		// Get the id from anax
@@ -70,6 +71,8 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, email str
 		}
 		fmt.Println("Generated random node token")
 	}
+
+	// See if the node exists in the exchange, and create if it doesn't
 	node := exchange.GetDevicesResponse{}
 	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+nodeId+":"+nodeToken, nil, &node)
 	if httpCode != 200 {
@@ -77,6 +80,8 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, email str
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node '%s/%s' does not exist in the exchange with the specified token and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId)
 		}
 		fmt.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...\n", org, nodeId)
+		cliexchange.NodeCreate(org, nodeIdTok, userPw, email)
+		/* this is now done in NodeCreate() above...
 		putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeId, SoftwareVersions: make(map[string]string), PublicKey: []byte("")} // we only need to set the token
 		httpCode = cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+userPw, []int{201, 401}, putNodeReq)
 		if httpCode == 401 {
@@ -92,6 +97,7 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, email str
 				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node '%s/%s' does not exist in the exchange with the specified token and user '%s/%s' does not exist with the specified password.", org, nodeId, org, user)
 			}
 		}
+		*/
 	} else {
 		fmt.Printf("Node %s/%s exists in the exchange\n", org, nodeId)
 	}

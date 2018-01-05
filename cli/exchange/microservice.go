@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"github.com/open-horizon/anax/containermessage"
 )
 
 type ExchangeMicroservices struct {
@@ -81,22 +82,19 @@ func MicroserviceList(org string, userPw string, microservice string, namesOnly 
 	}
 }
 
+type DeploymentConfig struct {
+	Services map[string]containermessage.Service `json:"services"`
+}
+
 func AppendImagesFromDeploymentField(deployment string, deploymentNum int, imageList []string) []string {
 	// The deployment string should include: "deployment": "{"services":{"cpu2wiotp":{"image":"openhorizon/example_wl_x86_cpu2wiotp:1.1.2",...}}}"
-	var deploymentMap map[string]map[string]map[string]interface{}
-	if err := json.Unmarshal([]byte(deployment), &deploymentMap); err != nil {
+	var deploymentStr DeploymentConfig
+	if err := json.Unmarshal([]byte(deployment), &deploymentStr); err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "failed to unmarshal deployment string number %d: %v", deploymentNum+1, err)
 	}
-	if services, ok := deploymentMap["services"]; ok {
-		for s := range services {
-			if image, ok := services[s]["image"]; ok {
-				switch s := image.(type) {
-				case string:
-					imageList = append(imageList, s)
-				default:
-					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "in the deployment string, the value of the image key of %s is not of type string", s)
-				}
-			}
+	for _, s := range deploymentStr.Services {
+		if s.Image != "" {
+			imageList = append(imageList, s.Image)
 		}
 	}
 	return imageList
