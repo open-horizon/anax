@@ -17,6 +17,7 @@ import (
 	"github.com/open-horizon/anax/cli/workload"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"os"
+	"github.com/open-horizon/anax/cutil"
 )
 
 func main() {
@@ -35,11 +36,14 @@ Environment Variables:
 	exOrg := exchangeCmd.Flag("org", "The Horizon exchange organization ID.").Short('o').Default("public").String()
 	exUserPw := exchangeCmd.Flag("user-pw", "Horizon Exchange user credentials to query and create exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.").Short('u').PlaceHolder("USER:PW").Required().String()
 
-	userCmd := exchangeCmd.Command("user", "List and manage users in the Horizon Exchange")
-	//exUserPw := userCmd.Flag("user-pw", "User credentials in the Horizon exchange.").Short('u').PlaceHolder("USER:PW").Required().String()
-	userListCmd := userCmd.Command("list", "Display the user resource from the Horizon Exchange. (You can only display your own user. If the user does not exist, you will get an invalid credentials error.)")
-	userCreateCmd := userCmd.Command("create", "Create the user resource in the Horizon Exchange.")
-	userCreateEmail := userCreateCmd.Flag("email", "Your email address that should be associated with this user account when creating it in the Horizon exchange.").Short('e').Required().String()
+	exUserCmd := exchangeCmd.Command("user", "List and manage users in the Horizon Exchange")
+	//exUserPw := exUserCmd.Flag("user-pw", "User credentials in the Horizon exchange.").Short('u').PlaceHolder("USER:PW").Required().String()
+	exUserListCmd := exUserCmd.Command("list", "Display the user resource from the Horizon Exchange. (You can only display your own user. If the user does not exist, you will get an invalid credentials error.)")
+	exUserCreateCmd := exUserCmd.Command("create", "Create the user resource in the Horizon Exchange.")
+	exUserCreateEmail := exUserCreateCmd.Flag("email", "Your email address that should be associated with this user account when creating it in the Horizon exchange.").Short('e').Required().String()
+	exUserDelCmd := exUserCmd.Command("remove", "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, microservices, workloads, patterns, etc).")
+	exDelUser := exUserDelCmd.Arg("user", "The user to remove.").Required().String()
+	exUserDelForce := exUserDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 
 	exNodeCmd := exchangeCmd.Command("node", "List and manage nodes in the Horizon Exchange")
 	exNodeListCmd := exNodeCmd.Command("list", "Display the node resources from the Horizon Exchange.")
@@ -50,6 +54,9 @@ Environment Variables:
 	exNodeIdTok := exNodeCreateCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token. The node ID must be unique within the organization.").Short('n').PlaceHolder("ID:TOK").Required().String()
 	//exNodeUserPw := exNodeCreateCmd.Flag("user-pw", "User credentials to create the node resource in the Horizon exchange.").Short('u').PlaceHolder("USER:PW").Required().String()
 	exNodeEmail := exNodeCreateCmd.Flag("email", "Your email address. Only needs to be specified if: the user specified in the -u flag does not exist, and you specified is the 'public' org. If these things are true we will create the user and include this value as the email attribute.").Short('e').String()
+	exNodeDelCmd := exNodeCmd.Command("remove", "Remove a node resource from the Horizon Exchange. Do NOT do this when an edge node is registered with this node id.")
+	exDelNode := exNodeDelCmd.Arg("node", "The node to remove.").Required().String()
+	exNodeDelForce := exNodeDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 
 	exAgbotCmd := exchangeCmd.Command("agbot", "List and manage agbots in the Horizon Exchange")
 	exAgbotListCmd := exAgbotCmd.Command("list", "Display the agbot resources from the Horizon Exchange.")
@@ -125,6 +132,13 @@ Environment Variables:
 	exMicroDelCmd := exMicroserviceCmd.Command("remove", "Remove a microservice resource from the Horizon Exchange.")
 	exDelMicro := exMicroDelCmd.Arg("microservice", "The microservice to remove.").Required().String()
 	exMicroDelForce := exMicroDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
+
+	regInputCmd := app.Command("reginput", "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the workloads and microservices that the specified pattern uses, and determines the node owner input that is required for them.")
+	regInputNodeIdTok := regInputCmd.Flag("node-id-tok", "The Horizon exchange node ID and token (it must already exist).").Short('n').PlaceHolder("ID:TOK").Required().String()
+	regInputInputFile := regInputCmd.Flag("input-file", "The JSON input template file name that should be created. This file will contain placeholders for you to fill in user input values.").Short('f').Required().String()
+	regInputOrg := regInputCmd.Arg("organization", "The Horizon exchange organization ID.").Required().String()
+	regInputPattern := regInputCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node.").Required().String()
+	regInputArch := regInputCmd.Arg("arch", "The architecture to write the template file for. (Horizon ignores workloads in patterns whose architecture is different from the target system.) The architecture must be what is returned by 'hzn node list' on the target system.").Default(cutil.ArchString()).String()
 
 	registerCmd := app.Command("register", "Register this edge node with Horizon.")
 	nodeIdTok := registerCmd.Flag("node-id-tok", "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.").Short('n').PlaceHolder("ID:TOK").String()
@@ -214,14 +228,18 @@ Environment Variables:
 
 	// Decide which command to run
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
-	case userListCmd.FullCommand():
+	case exUserListCmd.FullCommand():
 		exchange.UserList(*exOrg, *exUserPw)
-	case userCreateCmd.FullCommand():
-		exchange.UserCreate(*exOrg, *exUserPw, *userCreateEmail)
+	case exUserCreateCmd.FullCommand():
+		exchange.UserCreate(*exOrg, *exUserPw, *exUserCreateEmail)
+	case exUserDelCmd.FullCommand():
+		exchange.UserRemove(*exOrg, *exUserPw, *exDelUser, *exUserDelForce)
 	case exNodeListCmd.FullCommand():
 		exchange.NodeList(*exOrg, *exUserPw, *exNode, !*exNodeLong)
 	case exNodeCreateCmd.FullCommand():
 		exchange.NodeCreate(*exOrg, *exNodeIdTok, *exUserPw, *exNodeEmail)
+	case exNodeDelCmd.FullCommand():
+		exchange.NodeRemove(*exOrg, *exUserPw, *exDelNode, *exNodeDelForce)
 	case exAgbotListCmd.FullCommand():
 		exchange.AgbotList(*exOrg, *exUserPw, *exAgbot, !*exAgbotLong)
 	case exAgbotListPatsCmd.FullCommand():
@@ -258,6 +276,8 @@ Environment Variables:
 		exchange.MicroserviceVerify(*exOrg, *exUserPw, *exVerMicro, *exMicroPubKeyFile)
 	case exMicroDelCmd.FullCommand():
 		exchange.MicroserviceRemove(*exOrg, *exUserPw, *exDelMicro, *exMicroDelForce)
+	case regInputCmd.FullCommand():
+		register.CreateInputFile(*regInputOrg, *regInputPattern, *regInputArch, *regInputNodeIdTok, *regInputInputFile)
 	case registerCmd.FullCommand():
 		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *email, *inputFile)
 	case keyListCmd.FullCommand():

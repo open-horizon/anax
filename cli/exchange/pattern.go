@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-//todo: only using these instead of exchange.GetPatternResponse because exchange.Pattern is missing the Owner and LastUpdated fields
+//todo: only using these instead of exchange.GetPatternResponse because exchange.Pattern is missing the LastUpdated field
 type ExchangePatterns struct {
 	Patterns  map[string]PatternOutput `json:"patterns"`
 	LastIndex int                      `json:"lastIndex"`

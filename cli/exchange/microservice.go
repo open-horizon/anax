@@ -13,28 +13,6 @@ import (
 	"github.com/open-horizon/anax/containermessage"
 )
 
-type ExchangeMicroservices struct {
-	Microservices map[string]MicroserviceOutput `json:"microservices"`
-	LastIndex     int                           `json:"lastIndex"`
-}
-
-//todo: the only thing keeping me from using exchange.MicroserviceDefinition is dave adding the Public field to it
-type MicroserviceOutput struct {
-	Owner         string                        `json:"owner"`
-	Label         string                        `json:"label"`
-	Description   string                        `json:"description"`
-	Public        bool                          `json:"public"`
-	SpecRef       string                        `json:"specRef"`
-	Version       string                        `json:"version"`
-	Arch          string                        `json:"arch"`
-	Sharable      string                        `json:"sharable"`
-	DownloadURL   string                        `json:"downloadUrl"`
-	MatchHardware map[string]string             `json:"matchHardware"`
-	UserInputs    []exchange.UserInput          `json:"userInput"`
-	Workloads     []exchange.WorkloadDeployment `json:"workloads"`
-	LastUpdated   string                        `json:"lastUpdated"`
-}
-
 type MicroserviceInput struct {
 	Label         string                        `json:"label"`
 	Description   string                        `json:"description"`
@@ -55,7 +33,7 @@ func MicroserviceList(org string, userPw string, microservice string, namesOnly 
 	}
 	if namesOnly && microservice == "" {
 		// Only display the names
-		var resp ExchangeMicroservices
+		var resp exchange.GetMicroservicesResponse
 		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices"+microservice, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
 		microservices := []string{}
 		for k := range resp.Microservices {
@@ -69,7 +47,7 @@ func MicroserviceList(org string, userPw string, microservice string, namesOnly 
 	} else {
 		// Display the full resources
 		//var output string
-		var output ExchangeMicroservices
+		var output exchange.GetMicroservicesResponse
 		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices"+microservice, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 		if httpCode == 404 && microservice != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, "microservice '%s' not found in org %s", strings.TrimPrefix(microservice, "/"), org)
@@ -172,7 +150,7 @@ func MicroservicePublish(org string, userPw string, jsonFilePath string, keyFile
 // MicroserviceVerify verifies the deployment strings of the specified microservice resource in the exchange.
 func MicroserviceVerify(org, userPw, microservice, keyFilePath string) {
 	// Get microservice resource from exchange
-	var output ExchangeMicroservices
+	var output exchange.GetMicroservicesResponse
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+microservice, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "microservice '%s' not found in org %s", microservice, org)

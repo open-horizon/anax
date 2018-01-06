@@ -26,7 +26,7 @@ const (
 	// Exit Codes
 	CLI_INPUT_ERROR    = 1 // we actually don't have control over the usage exit code that kingpin returns, so use the same code for input errors we catch ourselves
 	JSON_PARSING_ERROR = 3
-	READ_FILE_ERROR    = 4
+	FILE_IO_ERROR      = 4
 	HTTP_ERROR         = 5
 	//EXEC_CMD_ERROR = 6
 	CLI_GENERAL_ERROR = 7
@@ -122,7 +122,7 @@ func ReadFile(filePath string) []byte {
 		fileBytes, err = ioutil.ReadFile(filePath)
 	}
 	if err != nil {
-		Fatal(READ_FILE_ERROR, "reading %s failed: %v", filePath, err)
+		Fatal(FILE_IO_ERROR, "reading %s failed: %v", filePath, err)
 	}
 	return fileBytes
 }
@@ -137,7 +137,7 @@ func ReadJsonFile(filePath string) []byte {
 		fileBytes, err = ioutil.ReadFile(filePath)
 	}
 	if err != nil {
-		Fatal(READ_FILE_ERROR, "reading %s failed: %v", filePath, err)
+		Fatal(FILE_IO_ERROR, "reading %s failed: %v", filePath, err)
 	}
 	// remove /* */ comments
 	re := regexp.MustCompile(`(?s)/\*.*?\*/`)
@@ -213,7 +213,7 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}) (h
 	if httpCode == goodHttpCodes[0] {
 		bodyBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err)
+			Fatal(HTTP_ERROR, "failed to read body response from %s: %v", apiMsg, err)
 		}
 		switch s := structure.(type) {
 		case *string:
@@ -223,7 +223,7 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}) (h
 			// Put the response body in the specified struct
 			err = json.Unmarshal(bodyBytes, structure)
 			if err != nil {
-				Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err)
+				Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response from %s: %v", apiMsg, err)
 			}
 		}
 	}
@@ -355,7 +355,7 @@ func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttpC
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err)
+		Fatal(HTTP_ERROR, "failed to read body response from %s: %v", apiMsg, err)
 	}
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
@@ -370,17 +370,17 @@ func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttpC
 		var jsonStruct interface{}
 		err = json.Unmarshal(bodyBytes, &jsonStruct)
 		if err != nil {
-			Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err)
+			Fatal(JSON_PARSING_ERROR, "failed to unmarshal exchange body response from %s: %v", apiMsg, err)
 		}
 		jsonBytes, err := json.MarshalIndent(jsonStruct, "", JSON_INDENT)
 		if err != nil {
-			Fatal(JSON_PARSING_ERROR, "failed to marshal exchange output: %v", err)
+			Fatal(JSON_PARSING_ERROR, "failed to marshal exchange output from %s: %v", apiMsg, err)
 		}
 		*s = string(jsonBytes)
 	default:
 		err = json.Unmarshal(bodyBytes, structure)
 		if err != nil {
-			Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err)
+			Fatal(JSON_PARSING_ERROR, "failed to unmarshal exchange body response from %s: %v", apiMsg, err)
 		}
 	}
 	return
@@ -402,7 +402,7 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 		var err error
 		jsonBytes, err = json.Marshal(body)
 		if err != nil {
-			Fatal(JSON_PARSING_ERROR, "failed to marshal body for %s: %v", apiMsg, err)
+			Fatal(JSON_PARSING_ERROR, "failed to marshal exchange body for %s: %v", apiMsg, err)
 		}
 	}
 	requestBody := bytes.NewBuffer(jsonBytes)
@@ -425,12 +425,12 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 	if !isGoodCode(httpCode, goodHttpCodes) {
 		bodyBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			Fatal(HTTP_ERROR, "failed to read body response for %s: %v", apiMsg, err)
+			Fatal(HTTP_ERROR, "failed to read exchange body response from %s: %v", apiMsg, err)
 		}
 		respMsg := exchange.PostDeviceResponse{}
 		err = json.Unmarshal(bodyBytes, &respMsg)
 		if err != nil {
-			Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response for %s: %v", apiMsg, err)
+			Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, string(bodyBytes))
 		}
 		Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s, %s", httpCode, apiMsg, respMsg.Code, respMsg.Msg)
 	}
