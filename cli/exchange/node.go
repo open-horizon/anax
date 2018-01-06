@@ -77,3 +77,14 @@ func NodeCreate(org string, nodeIdTok string, userPw string, email string) {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "can not update existing node %s because it is owned by another user (%s)", nodeId, ourNode.Owner)
 	}
 }
+
+func NodeRemove(org, userPw, node string, force bool) {
+	if !force {
+		cliutils.ConfirmRemove("Are you sure you want to remove node '" + org + "/" + node + "' from the Horizon Exchange (should not be done while an edge node is registered with this node id)?")
+	}
+
+	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "node '%s' not found in org %s", node, org)
+	}
+}

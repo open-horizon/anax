@@ -85,7 +85,7 @@ func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath string) {
 		CheckTorrentField(workInput.Workloads[i].Torrent, i)
 	}
 
-	// Create of update resource in the exchange
+	// Create or update resource in the exchange
 	exchId := cliutils.FormExchangeId(workInput.WorkloadURL, workInput.Version, workInput.Arch)
 	var output string
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)

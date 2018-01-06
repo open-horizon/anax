@@ -9,9 +9,10 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"net/http"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
+	"io/ioutil"
 )
 
-// These structs are used to parse the registration input file
+// These structs are used to parse the registration input file. These are also used by the hzn dev code.
 type GlobalSet struct {
 	Type       string                 `json:"type"`
 	SensorUrls []string               `json:"sensor_urls"`
@@ -27,9 +28,9 @@ type MicroWork struct {
 }
 
 type InputFile struct {
-	Global        []GlobalSet `json:"global"`
-	Microservices []MicroWork `json:"microservices"`
-	Workloads     []MicroWork `json:"workloads"`
+	Global        []GlobalSet `json:"global,omitempty"`
+	Microservices []MicroWork `json:"microservices,omitempty"`
+	Workloads     []MicroWork `json:"workloads,omitempty"`
 }
 
 func ReadInputFile(filePath string, inputFileStruct *InputFile) {
@@ -41,7 +42,7 @@ func ReadInputFile(filePath string, inputFileStruct *InputFile) {
 }
 
 // DoIt registers this node to Horizon with a pattern
-func DoIt(org string, pattern string, nodeIdTok string, userPw string, email string, inputFile string) {
+func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 	// Read input file 1st, so we don't get half way thru registration before finding the problem
 	inputFileStruct := InputFile{}
 	if inputFile != "" {
@@ -71,13 +72,14 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, email str
 		}
 		fmt.Println("Generated random node token")
 	}
+	nodeIdTok = nodeId+":"+nodeToken
 
 	// See if the node exists in the exchange, and create if it doesn't
 	node := exchange.GetDevicesResponse{}
-	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+nodeId+":"+nodeToken, nil, &node)
+	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+nodeIdTok, nil, &node)
 	if httpCode != 200 {
 		if userPw == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node '%s/%s' does not exist in the exchange with the specified token and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId)
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node '%s/%s' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId)
 		}
 		fmt.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...\n", org, nodeId)
 		cliexchange.NodeCreate(org, nodeIdTok, userPw, email)
@@ -163,4 +165,87 @@ func DoIt(org string, pattern string, nodeIdTok string, userPw string, email str
 	cliutils.HorizonPutPost(http.MethodPut, "node/configstate", []int{201, 200}, config)
 
 	fmt.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
+}
+
+
+// CreateInputFile runs thru the workloads and microservices used by this pattern and collects the user input needed
+func CreateInputFile(org, pattern, arch, nodeIdTok, inputFile string) {
+	// Get the pattern
+	exchangeUrl := cliutils.GetExchangeUrl()
+	var patOutput exchange.GetPatternResponse
+	cliutils.ExchangeGet(exchangeUrl, "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org, nodeIdTok), []int{200}, &patOutput)
+	patKey := cliutils.OrgAndCreds(org, pattern)
+	if _, ok := patOutput.Patterns[patKey]; !ok {
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, "did not find pattern '%s' as expected", patKey)
+	}
+
+	// Loop thru the workloads gathering their user input and microservices
+	templateFile := InputFile{Global: []GlobalSet{{Type: "LocationAttributes", Variables: map[string]interface{} {"lat": 0.0, "lon": 0.0, "use_gps": false, "location_accuracy_km": 0.0}}}}
+	if arch == "" {
+		arch = cutil.ArchString()
+	}
+	for _, work := range patOutput.Patterns[patKey].Workloads {
+		if work.WorkloadArch != arch { // filter out workloads that are not our arch
+			fmt.Printf("Ignoring workload that is a different architecture: %s, %s, %s\n", work.WorkloadOrg, work.WorkloadURL, work.WorkloadArch)
+			continue
+		}
+
+		for _, workVersion := range work.WorkloadVersions {
+			// Get the workload
+			exchId := cliutils.FormExchangeId(work.WorkloadURL, workVersion.Version, work.WorkloadArch)
+			var workOutput exchange.GetWorkloadsResponse
+			cliutils.ExchangeGet(exchangeUrl, "orgs/"+work.WorkloadOrg+"/workloads/"+exchId, cliutils.OrgAndCreds(org, nodeIdTok), []int{200}, &workOutput)
+			workKey := cliutils.OrgAndCreds(work.WorkloadOrg, exchId)
+			if _, ok := workOutput.Workloads[workKey]; !ok {
+				cliutils.Fatal(cliutils.INTERNAL_ERROR, "did not find workload '%s' as expected", workKey)
+			}
+
+			// Get the user input from this workload
+			userInputs := workOutput.Workloads[workKey].UserInputs
+			if len(userInputs) > 0 {
+				workInput := MicroWork{Org: work.WorkloadOrg, Url: work.WorkloadURL, VersionRange: "[0.0.0,INFINITY)", Variables: make(map[string]interface{})}
+				for _, u := range userInputs {
+					workInput.Variables[u.Name] = u.DefaultValue
+				}
+				templateFile.Workloads = append(templateFile.Workloads, workInput)
+			}
+
+			// Loop thru this workload's microservices
+			micros := workOutput.Workloads[workKey].APISpecs
+			for _, m := range micros {
+				//todo: filter out duplicate microservices
+				// Get the microservice
+				//todo: handle version range
+				exchId := cliutils.FormExchangeId(m.SpecRef, m.Version, m.Arch)
+				var microOutput exchange.GetMicroservicesResponse
+				cliutils.ExchangeGet(exchangeUrl, "orgs/"+m.Org+"/microservices/"+exchId, cliutils.OrgAndCreds(org, nodeIdTok), []int{200}, &microOutput)
+				microKey := cliutils.OrgAndCreds(m.Org, exchId)
+				if _, ok := microOutput.Microservices[microKey]; !ok {
+					cliutils.Fatal(cliutils.INTERNAL_ERROR, "did not find microservice '%s' as expected", microKey)
+				}
+
+				// Get the user input from this microservice
+				userInputs2 := microOutput.Microservices[microKey].UserInputs
+				if len(userInputs2) > 0 {
+					microInput := MicroWork{Org: m.Org, Url: m.SpecRef, VersionRange: "[0.0.0,INFINITY)", Variables: make(map[string]interface{})}
+					for _, u := range userInputs2 {
+						microInput.Variables[u.Name] = u.DefaultValue
+					}
+					templateFile.Microservices = append(templateFile.Microservices, microInput)
+				}
+			}
+		}
+	}
+
+	// Output the template file
+	jsonBytes, err := json.MarshalIndent(templateFile, "", cliutils.JSON_INDENT)
+	if err != nil {
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, "failed to marshal the user input template file: %v", err)
+	}
+	//fmt.Printf("Would write to %s\n", inputFile)
+	//fmt.Println(string(jsonBytes))
+	if err := ioutil.WriteFile(inputFile, jsonBytes, 0644); err != nil {
+		cliutils.Fatal(cliutils.FILE_IO_ERROR, "problem writing the user input template file: %v", err)
+	}
+	fmt.Printf("Wrote %s\n", inputFile)
 }

@@ -25,3 +25,14 @@ func UserCreate(org string, userPw string, email string) {
 	postUserReq := cliutils.UserExchangeReq{Password: pw, Admin: false, Email: email}
 	cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/users/"+user, "", []int{201}, postUserReq)
 }
+
+func UserRemove(org, userPw, user string, force bool) {
+	if !force {
+		cliutils.ConfirmRemove("Warning: this will also delete all Exchange resources owned by this user (nodes, microservices, workloads, patterns, etc). Are you sure you want to remove user '" + org + "/" + user + "' from the Horizon Exchange?")
+	}
+
+	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "user '%s' not found in org %s", user, org)
+	}
+}
