@@ -10,6 +10,7 @@ import (
 	"net/http"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"io/ioutil"
+	"github.com/open-horizon/anax/policy"
 )
 
 // These structs are used to parse the registration input file. These are also used by the hzn dev code.
@@ -168,6 +169,50 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 }
 
 
+// GetHighestMicroservice queries the exchange for all versions of this MS and returns the highest version, or an error
+func GetHighestMicroservice(exchangeUrl, credOrg, nodeIdTok, org, url, versionRange, arch string) exchange.MicroserviceDefinition {
+	route := "orgs/"+org+"/microservices?specRef="+url+"&arch="+arch	// get all MS of this org, url, and arch
+	var microOutput exchange.GetMicroservicesResponse
+	cliutils.ExchangeGet(exchangeUrl, route, cliutils.OrgAndCreds(credOrg, nodeIdTok), []int{200}, &microOutput)
+	if len(microOutput.Microservices) == 0 {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "found no microservices in the exchange matched: org=%s, specRef=%s, arch=%s", org, url, arch)
+	}
+
+	//microKey := cliutils.OrgAndCreds(m.Org, exchId)
+	//if _, ok := microOutput.Microservices[microKey]; !ok {
+	// Loop thru the returned MSs and pick out the highest version that is within versionRange range
+	highestKey := ""	// key to the MS def in the map that so far has the highest valid version
+	vRange, err := policy.Version_Expression_Factory(versionRange)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "invalid version range '%s': %v", versionRange, err)
+	}
+	for microKey, micro := range microOutput.Microservices {
+		if inRange, err := vRange.Is_within_range(micro.Version); err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "unable to verify that %v is within %v, error %v", micro.Version, vRange, err)
+		} else if !inRange {
+			continue	// not within the specified version range, so ignore it
+		}
+		if highestKey == "" {
+			highestKey = microKey	// 1st MS found within the range
+			continue
+		}
+		// else see if this version is higher than the previous highest version
+		c, err := policy.CompareVersions(microOutput.Microservices[highestKey].Version, micro.Version)
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR,"error compairing version %v with version %v. %v", microOutput.Microservices[highestKey], micro.Version, err)
+		} else if c == -1 {
+			highestKey = microKey
+		}
+	}
+
+	if highestKey == "" {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "found no microservices in the exchange matched: org=%s, specRef=%s, version range=%s, arch=%s", org, url, versionRange, arch)
+	}
+	cliutils.Verbose("selected %s for version range %s", highestKey, versionRange)
+	return microOutput.Microservices[highestKey]
+}
+
+
 // CreateInputFile runs thru the workloads and microservices used by this pattern and collects the user input needed
 func CreateInputFile(org, pattern, arch, nodeIdTok, inputFile string) {
 	// Get the pattern
@@ -184,6 +229,7 @@ func CreateInputFile(org, pattern, arch, nodeIdTok, inputFile string) {
 	if arch == "" {
 		arch = cutil.ArchString()
 	}
+	completeAPISpecList := new(policy.APISpecList)		// list of all MSs the workloads require (will filter out MS refs with exact same version range, but not overlapping ranges (that comes later)
 	for _, work := range patOutput.Patterns[patKey].Workloads {
 		if work.WorkloadArch != arch { // filter out workloads that are not our arch
 			fmt.Printf("Ignoring workload that is a different architecture: %s, %s, %s\n", work.WorkloadOrg, work.WorkloadURL, work.WorkloadArch)
@@ -210,30 +256,35 @@ func CreateInputFile(org, pattern, arch, nodeIdTok, inputFile string) {
 				templateFile.Workloads = append(templateFile.Workloads, workInput)
 			}
 
-			// Loop thru this workload's microservices
+			// Loop thru this workload's microservices, adding them to our list
 			micros := workOutput.Workloads[workKey].APISpecs
+			apiSpecList := new(policy.APISpecList)
 			for _, m := range micros {
-				//todo: filter out duplicate microservices
-				// Get the microservice
-				//todo: handle version range
-				exchId := cliutils.FormExchangeId(m.SpecRef, m.Version, m.Arch)
-				var microOutput exchange.GetMicroservicesResponse
-				cliutils.ExchangeGet(exchangeUrl, "orgs/"+m.Org+"/microservices/"+exchId, cliutils.OrgAndCreds(org, nodeIdTok), []int{200}, &microOutput)
-				microKey := cliutils.OrgAndCreds(m.Org, exchId)
-				if _, ok := microOutput.Microservices[microKey]; !ok {
-					cliutils.Fatal(cliutils.INTERNAL_ERROR, "did not find microservice '%s' as expected", microKey)
-				}
-
-				// Get the user input from this microservice
-				userInputs2 := microOutput.Microservices[microKey].UserInputs
-				if len(userInputs2) > 0 {
-					microInput := MicroWork{Org: m.Org, Url: m.SpecRef, VersionRange: "[0.0.0,INFINITY)", Variables: make(map[string]interface{})}
-					for _, u := range userInputs2 {
-						microInput.Variables[u.Name] = u.DefaultValue
-					}
-					templateFile.Microservices = append(templateFile.Microservices, microInput)
-				}
+				newAPISpec := policy.APISpecification_Factory(m.SpecRef, m.Org, m.Version, m.Arch)
+				*apiSpecList = append(*apiSpecList, *newAPISpec)
 			}
+			// MergeWith will will filter out MS refs with exact same version range, but not overlapping ranges (that comes later)
+			*completeAPISpecList = completeAPISpecList.MergeWith(apiSpecList)
+		}
+	}
+
+	// Loop thru the referenced MSs, get the highest version of each range, and then get the user input for it
+	// For now, anax only allows one microservice version, so we need to get the common version range for each microservice.
+	common_apispec_list, err := completeAPISpecList.GetCommonVersionRanges()
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem getting the common list of microservice version ranges: %v", err)
+	}
+	for _, m := range *common_apispec_list {
+		micro := GetHighestMicroservice(exchangeUrl, org, nodeIdTok, m.Org, m.SpecRef, m.Version, m.Arch)
+
+		// Get the user input from this microservice
+		userInputs2 := micro.UserInputs
+		if len(userInputs2) > 0 {
+			microInput := MicroWork{Org: m.Org, Url: m.SpecRef, VersionRange: "[0.0.0,INFINITY)", Variables: make(map[string]interface{})}
+			for _, u := range userInputs2 {
+				microInput.Variables[u.Name] = u.DefaultValue
+			}
+			templateFile.Microservices = append(templateFile.Microservices, microInput)
 		}
 	}
 

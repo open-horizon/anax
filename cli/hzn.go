@@ -21,6 +21,10 @@ import (
 )
 
 func main() {
+	// Shut off the Anax runtime logging, so functions reused from anax don't fight with the kingpin parsing of args/flags.
+	// Also, in the reused code need to change any calls like glog.Infof("some string") to glog.V(3).Infof("some string")
+	//flag.Set("v", "0")
+
 	// Command flags and args - see https://github.com/alecthomas/kingpin
 	app := kingpin.New("hzn", `Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).
 
