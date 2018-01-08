@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/rsapss-tool/sign"
 	"github.com/open-horizon/rsapss-tool/verify"
 	"net/http"
 	"os"
 	"strings"
-	"github.com/open-horizon/anax/containermessage"
 )
 
 type MicroserviceInput struct {

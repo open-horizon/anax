@@ -1,29 +1,30 @@
 // +build unit
 
-package persistence
+package governance
 
 import (
+	"github.com/open-horizon/anax/persistence"
 	"sort"
 	"testing"
 )
 
 func Test_WorkloadConfig_sort1(t *testing.T) {
 
-	wcList := make([]WorkloadConfig, 0, 10)
+	wcList := make([]persistence.WorkloadConfig, 0, 10)
 
-	wcList = append(wcList, WorkloadConfig{
+	wcList = append(wcList, persistence.WorkloadConfig{
 		WorkloadURL:       "url1",
 		VersionExpression: "[1.2.4,INFINITY)"})
 
-	wcList = append(wcList, WorkloadConfig{
+	wcList = append(wcList, persistence.WorkloadConfig{
 		WorkloadURL:       "url1",
 		VersionExpression: "[1.1.3,2.0.0)"})
 
-	wcList = append(wcList, WorkloadConfig{
+	wcList = append(wcList, persistence.WorkloadConfig{
 		WorkloadURL:       "url1",
 		VersionExpression: "(1.2.3,INFINITY)"})
 
-	wcList = append(wcList, WorkloadConfig{
+	wcList = append(wcList, persistence.WorkloadConfig{
 		WorkloadURL:       "url1",
 		VersionExpression: "(1.2.3,2.0.0)"})
 
