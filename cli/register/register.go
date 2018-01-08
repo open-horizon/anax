@@ -162,8 +162,8 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 	// Set the pattern and register the node
 	fmt.Println("Changing Horizon state to configured to register this node with Horizon...")
 	configuredStr := "configured"
-	config := api.Configstate{State: &configuredStr}
-	cliutils.HorizonPutPost(http.MethodPut, "node/configstate", []int{201, 200}, config)
+	configState := api.Configstate{State: &configuredStr}
+	cliutils.HorizonPutPost(http.MethodPut, "node/configstate", []int{201, 200}, configState)
 
 	fmt.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
 }
@@ -178,8 +178,6 @@ func GetHighestMicroservice(exchangeUrl, credOrg, nodeIdTok, org, url, versionRa
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "found no microservices in the exchange matched: org=%s, specRef=%s, arch=%s", org, url, arch)
 	}
 
-	//microKey := cliutils.OrgAndCreds(m.Org, exchId)
-	//if _, ok := microOutput.Microservices[microKey]; !ok {
 	// Loop thru the returned MSs and pick out the highest version that is within versionRange range
 	highestKey := ""	// key to the MS def in the map that so far has the highest valid version
 	vRange, err := policy.Version_Expression_Factory(versionRange)
@@ -274,8 +272,24 @@ func CreateInputFile(org, pattern, arch, nodeIdTok, inputFile string) {
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem getting the common list of microservice version ranges: %v", err)
 	}
+	// these 2 lines are for GetMicroservice()
+	//nodeId, nodeToken := cliutils.SplitIdToken(nodeIdTok)
+	//httpClientFactory := &config.HTTPClientFactory{NewHTTPClient: func(overrideTimeoutS *uint) *http.Client { return &http.Client{} }}
 	for _, m := range *common_apispec_list {
 		micro := GetHighestMicroservice(exchangeUrl, org, nodeIdTok, m.Org, m.SpecRef, m.Version, m.Arch)
+		/* we could use exchange.GetMicroservice() instead of GetHighestMicroservice(), but it assumes an anax context so logs errors in a way not clear for hzn users...
+		var versionRangeStr string		// need to expand the version string to a full version range, but still as a string
+		if versionRange, err := policy.Version_Expression_Factory(m.Version); err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem creating version expression of %s: %v", m.Version, err)
+		} else {
+			versionRangeStr = versionRange.Get_expression()
+		}
+		micro, err := exchange.GetMicroservice(httpClientFactory, m.SpecRef, m.Org, versionRangeStr, m.Arch, exchangeUrl+"/", cliutils.OrgAndCreds(org, nodeId), nodeToken)
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem getting the highest version microservice for %s %s %s: %v", m.Org, m.SpecRef, m.Arch, err)
+		}
+		cliutils.Verbose("for %s %s %s selected %s for version range %s", m.Org, m.SpecRef, m.Arch, micro.Version, m.Version)
+		*/
 
 		// Get the user input from this microservice
 		userInputs2 := micro.UserInputs
