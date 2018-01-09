@@ -25,6 +25,28 @@ type WorkloadInput struct {
 	Workloads   []exchange.WorkloadDeployment `json:"workloads"`
 }
 
+// Convert default user inputs to environment variables in a map. The input map is modified
+// by this function. If a variable is already in the input map, it is not modified.
+func (w *WorkloadInput) AddDefaultUserInputs(envmap map[string]string) {
+	for _, ui := range w.UserInputs {
+		if ui.Name != "" && ui.DefaultValue != "" {
+			if _, ok := envmap[ui.Name]; !ok {
+				envmap[ui.Name] = ui.DefaultValue
+			}
+		}
+	}
+}
+
+// Returns true if the workload definition userinputs define the variable.
+func (w *WorkloadInput) DefinesVariable(name string) string {
+	for _, ui := range w.UserInputs {
+		if ui.Name == name && ui.Type != "" {
+			return ui.Type
+		}
+	}
+	return ""
+}
+
 func WorkloadList(org, userPw, workload string, namesOnly bool) {
 	if workload != "" {
 		workload = "/" + workload
@@ -34,6 +56,7 @@ func WorkloadList(org, userPw, workload string, namesOnly bool) {
 		var resp exchange.GetWorkloadsResponse
 		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
 		workloads := []string{}
+
 		for k := range resp.Workloads {
 			workloads = append(workloads, k)
 		}
@@ -46,6 +69,7 @@ func WorkloadList(org, userPw, workload string, namesOnly bool) {
 		// Display the full resources
 		//var output string
 		var output exchange.GetWorkloadsResponse
+
 		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 		if httpCode == 404 && workload != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, "workload '%s' not found in org %s", strings.TrimPrefix(workload, "/"), org)

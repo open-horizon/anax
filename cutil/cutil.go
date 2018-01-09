@@ -4,10 +4,14 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/golang/glog"
 	"net"
 	"runtime"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -99,4 +103,110 @@ func Maxuint64(first uint64, second uint64) uint64 {
 		return first
 	}
 	return second
+}
+
+// Convert a native typed user input variable to a string so that the value can be passed as an
+// environment variable to a container. This function modifies the input env var map and it will
+// modify map keys that already exist in the map.
+func NativeToEnvVariableMap(envMap map[string]string, varName string, varValue interface{}) error {
+	switch varValue.(type) {
+	case bool:
+		envMap[varName] = strconv.FormatBool(varValue.(bool))
+	case string:
+		envMap[varName] = varValue.(string)
+	// floats and ints come here
+	case float64:
+		if float64(int64(varValue.(float64))) == varValue.(float64) {
+			envMap[varName] = strconv.FormatInt(int64(varValue.(float64)), 10)
+		} else {
+			envMap[varName] = strconv.FormatFloat(varValue.(float64), 'f', 6, 64)
+		}
+	case []interface{}:
+		los := ""
+		for _, e := range varValue.([]interface{}) {
+			if _, ok := e.(string); ok {
+				los = los + e.(string) + " "
+			}
+		}
+		los = los[:len(los)-1]
+		envMap[varName] = los
+	default:
+		return errors.New(fmt.Sprintf("unknown variable type %T for variable %v", varValue, varName))
+	}
+	return nil
+}
+
+// This function checks the input variable value against the expected exchange variable type and returns an error if
+// there is no match. This function assumes the varValue was parsed with json decoder set to UseNumber().
+func VerifyWorkloadVarTypes(varValue interface{}, expectedType string) error {
+	switch varValue.(type) {
+	case bool:
+		if expectedType != "bool" && expectedType != "boolean" {
+			return errors.New(fmt.Sprintf("type %T, expecting %v", varValue, expectedType))
+		}
+	case string:
+		if expectedType != "string" {
+			return errors.New(fmt.Sprintf("type %T, expecting %v", varValue, expectedType))
+		}
+	case json.Number:
+		strNum := varValue.(json.Number).String()
+		if expectedType != "int" && expectedType != "float" {
+			return errors.New(fmt.Sprintf("type json.Number, expecting %v", expectedType))
+		} else if strings.Contains(strNum, ".") && expectedType == "int" {
+			return errors.New(fmt.Sprintf("type float, expecting int"))
+		}
+	case []interface{}:
+		if expectedType != "list of strings" {
+			return errors.New(fmt.Sprintf("type %T, expecting %v", varValue, expectedType))
+		} else {
+			for _, e := range varValue.([]interface{}) {
+				if _, ok := e.(string); !ok {
+					return errors.New(fmt.Sprintf("type %T, expecting []string", varValue))
+				}
+			}
+		}
+	default:
+		return errors.New(fmt.Sprintf("type %T, is an unexpected type.", varValue))
+	}
+	return nil
+}
+
+// This function may seem simple but since it is shared with the hzn dev CLI, an update to it will cause a compile error in the CLI
+// code. This will prevent us from adding a new platform env var but forgetting to update the CLI.
+func SetPlatformEnvvars(envAdds map[string]string, prefix string, agreementId string, deviceId string, org string, workloadPW string, exchangeURL string) {
+
+	// The agreement id that is controlling the lifecycel of this container.
+	envAdds[prefix+"AGREEMENTID"] = agreementId
+
+	// The exchange id of the node that is running the container.
+	envAdds[prefix+"DEVICE_ID"] = deviceId
+
+	// The exchange organization that the node belongs.
+	envAdds[prefix+"ORGANIZATION"] = org
+
+	// Deprecated workload password, used only by legacy POC workloads.
+	envAdds[prefix+"HASH"] = workloadPW
+
+	// Add in the exchange URL so that the workload knows which ecosystem its part of
+	envAdds[prefix+"EXCHANGE_URL"] = exchangeURL
+}
+
+// This function is similar to the above, for env vars that are system related.
+func SetSystemEnvvars(envAdds map[string]string, prefix string, lat string, lon string, cpus string, ram string, arch string) {
+
+	// The latitude and longitude of the node are provided.
+	envAdds[prefix+"LAT"] = lat
+	envAdds[prefix+"LON"] = lon
+
+	// The number of CPUs and amount of RAM to allocate.
+	envAdds[prefix+"CPUS"] = cpus
+	envAdds[prefix+"RAM"] = ram
+
+	// Set the hardware architecture
+	if arch == "" {
+		envAdds[prefix+"ARCH"] = runtime.GOARCH
+	} else {
+		envAdds[prefix+"ARCH"] = arch
+	}
+
 }

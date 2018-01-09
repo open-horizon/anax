@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
@@ -11,7 +10,6 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"sort"
-	"strings"
 )
 
 func FindWorkloadConfigForOutput(db *bolt.DB) (map[string][]persistence.WorkloadConfig, error) {
@@ -97,39 +95,8 @@ func CreateWorkloadconfig(cfg *WorkloadConfig,
 			for varName, varValue := range attr.GetGenericMappings() {
 				glog.V(5).Infof(apiLogString(fmt.Sprintf("WorkloadConfig checking input variable: %v", varName)))
 				if ui := workloadDef.GetUserInputName(varName); ui != nil {
-					errMsg := ""
-					switch varValue.(type) {
-					case bool:
-						if ui.Type != "bool" && ui.Type != "boolean" {
-							errMsg = fmt.Sprintf("WorkloadConfig variable %v is type %T, expecting %v", varName, varValue, ui.Type)
-						}
-					case string:
-						if ui.Type != "string" {
-							errMsg = fmt.Sprintf("WorkloadConfig variable %v is type %T, expecting %v", varName, varValue, ui.Type)
-						}
-					case json.Number:
-						strNum := varValue.(json.Number).String()
-						if ui.Type != "int" && ui.Type != "float" {
-							errMsg = fmt.Sprintf("WorkloadConfig variable %v is a number, expecting %v", varName, ui.Type)
-						} else if strings.Contains(strNum, ".") && ui.Type == "int" {
-							errMsg = fmt.Sprintf("WorkloadConfig variable %v is a float, expecting int", varName)
-						}
-					case []interface{}:
-						if ui.Type != "list of strings" {
-							errMsg = fmt.Sprintf("WorkloadConfig variable %v is type %T, expecting %v", varName, varValue, ui.Type)
-						} else {
-							for _, e := range varValue.([]interface{}) {
-								if _, ok := e.(string); !ok {
-									errMsg = fmt.Sprintf("WorkloadConfig variable %v is not []string", varName)
-									break
-								}
-							}
-						}
-					default:
-						errMsg = fmt.Sprintf("WorkloadConfig variable %v is type %T, but is an unexpected type.", varName, varValue)
-					}
-					if errMsg != "" {
-						return errorhandler(NewAPIUserInputError(errMsg, "variables")), nil
+					if err := cutil.VerifyWorkloadVarTypes(varValue, ui.Type); err != nil {
+						return errorhandler(NewAPIUserInputError(fmt.Sprintf("WorkloadConfig variable %v is %v", varName, err), "variables")), nil
 					}
 				} else {
 					return errorhandler(NewAPIUserInputError(fmt.Sprintf("unable to find the workload config variable %v in workload definition %v %v %v %v", varName, cfg.WorkloadURL, org, vExp.Get_expression(), cutil.ArchString()), "variables")), nil

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/satori/go.uuid"
 	"reflect"
 	"sort"
@@ -26,11 +28,11 @@ type AttributeMeta struct {
 
 func (a AttributeMeta) String() string {
 	ho := "true"
-	if !*a.HostOnly {
+	if a.HostOnly == nil {
 		ho = "false"
 	}
 	pub := "true"
-	if !*a.Publishable {
+	if a.Publishable == nil {
 		pub = "false"
 	}
 	return fmt.Sprintf("Id: %v, Type: %v, SensorUrls: %v, Label: %v, HostOnly: %v, Publishable: %v", a.Id, a.Type, a.SensorUrls, a.Label, ho, pub)
@@ -278,7 +280,32 @@ func FindApplicableAttributes(db *bolt.DB, serviceUrl string) ([]Attribute, erro
 	})
 }
 
-// this will include *all* values for which HostOnly is false, include those marked to not publish
+// Workloads dont see the same system level env vars that microservices see. This function picks out just
+// the attributes that are applicable to workloads.
+func ConvertWorkloadPersistentNativeToEnv(allAttrs []Attribute, envvars map[string]string) {
+	var lat, lon, cpus, ram, arch string
+	for _, attr := range allAttrs {
+
+		// Extract location property
+		switch attr.(type) {
+		case LocationAttributes:
+			s := attr.(LocationAttributes)
+			lat = strconv.FormatFloat(s.Lat, 'f', 6, 64)
+			lon = strconv.FormatFloat(s.Lon, 'f', 6, 64)
+		case ComputeAttributes:
+			s := attr.(ComputeAttributes)
+			cpus = strconv.FormatInt(s.CPUs, 10)
+			ram = strconv.FormatInt(s.RAM, 10)
+		case ArchitectureAttributes:
+			s := attr.(ArchitectureAttributes)
+			arch = s.Architecture
+		}
+	}
+	cutil.SetSystemEnvvars(envvars, config.ENVVAR_PREFIX, lat, lon, cpus, ram, arch)
+}
+
+// This function is used to convert the persistent attributes for a microservice to an env var map.
+// This will include *all* values for which HostOnly is false, include those marked to not publish.
 func AttributesToEnvvarMap(attributes []Attribute, prefix string) (map[string]string, error) {
 	envvars := map[string]string{}
 

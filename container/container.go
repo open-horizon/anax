@@ -24,7 +24,6 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"runtime"
 	"strconv"
 	"strings"
 )
@@ -793,7 +792,7 @@ func processPostCreate(ipt *iptables.IPTables, client *docker.Client, agreementI
 					comment = comment + ",service_pattern.shared=singleton"
 				}
 
-				if isolation.OutboundPermitOnly != nil {
+				if isolation != nil && isolation.OutboundPermitOnly != nil {
 					if isolation.OutboundPermitOnlyIgnore == containermessage.ETH_ACCT_SPECIFIED && hasSpecifiedEthAccount {
 						glog.Infof("Skipping application of network isolation rules b/c OutboundPermitOnlyIgnore specified and conditions met")
 					} else {
@@ -808,7 +807,7 @@ func processPostCreate(ipt *iptables.IPTables, client *docker.Client, agreementI
 
 							newContainerIPs = append(newContainerIPs, network.IPAddress)
 
-							permittedString, err := generatePermittedString(&isolation, network, configureRaw)
+							permittedString, err := generatePermittedString(isolation, network, configureRaw)
 							if err != nil {
 								return fail(nil, serviceName, fmt.Errorf("Unable to determine network permit string for service. Error: %v", err))
 							}
@@ -1782,44 +1781,4 @@ func (b *ContainerWorker) findMsContainersAndUpdateMsInstance(agreementId string
 		}
 	}
 	return ms_containers, nil
-}
-
-// This function may seem simple but since it is shared with the hzn dev CLI, an update to it will cause a compile error in the CLI
-// code. This will prevent us from adding a new platform env var but forgetting to update the CLI.
-func SetPlatformEnvvars(envAdds map[string]string, agreementId string, deviceId string, org string, workloadPW string, exchangeURL string) {
-
-	// The agreement id that is controlling the lifecycel of this container.
-	envAdds[config.ENVVAR_PREFIX+"AGREEMENTID"] = agreementId
-
-	// The exchange id of the node that is running the container.
-	envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = deviceId
-
-	// The exchange organization that the node belongs.
-	envAdds[config.ENVVAR_PREFIX+"ORGANIZATION"] = org
-
-	// Deprecated workload password, used only by legacy POC workloads.
-	envAdds[config.ENVVAR_PREFIX+"HASH"] = workloadPW
-
-	// Add in the exchange URL so that the workload knows which ecosystem its part of
-	envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = exchangeURL
-}
-
-// This function is similar to the above, for env vars that are system related.
-func SetSystemEnvvars(envAdds map[string]string, lat string, lon string, cpus string, ram string, arch string) {
-
-	// The latitude and longitude of the node are provided.
-	envAdds[config.ENVVAR_PREFIX+"LAT"] = lat
-	envAdds[config.ENVVAR_PREFIX+"LON"] = lon
-
-	// The number of CPUs and amount of RAM to allocate.
-	envAdds[config.ENVVAR_PREFIX+"CPUS"] = cpus
-	envAdds[config.ENVVAR_PREFIX+"RAM"] = ram
-
-	// Set the hardware architecture
-	if arch == "" {
-		envAdds[config.ENVVAR_PREFIX+"ARCH"] = runtime.GOARCH
-	} else {
-		envAdds[config.ENVVAR_PREFIX+"ARCH"] = arch
-	}
-
 }

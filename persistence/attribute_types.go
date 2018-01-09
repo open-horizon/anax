@@ -31,7 +31,7 @@ func (a LocationAttributes) Update(other Attribute) error {
 }
 
 func (a LocationAttributes) String() string {
-	return fmt.Sprintf("meta: %v, lat: %v, lon: %v, LocationAccuracyKM: %v, UseGps: %v", a.Meta, a.Lat, a.Lon, a.LocationAccuracyKM, a.UseGps)
+	return fmt.Sprintf("Meta: %v, lat: %v, lon: %v, LocationAccuracyKM: %v, UseGps: %v", a.Meta, a.Lat, a.Lon, a.LocationAccuracyKM, a.UseGps)
 }
 
 type ArchitectureAttributes struct {

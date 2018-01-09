@@ -8,7 +8,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/container"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -993,7 +993,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 				}
 			}
 
-			container.SetPlatformEnvvars(envAdds, proposal.AgreementId(), exchange.GetId(w.deviceId), exchange.GetOrg(w.deviceId), workload.WorkloadPassword, w.Config.Edge.ExchangeURL)
+			cutil.SetPlatformEnvvars(envAdds, config.ENVVAR_PREFIX, proposal.AgreementId(), exchange.GetId(w.deviceId), exchange.GetOrg(w.deviceId), workload.WorkloadPassword, w.Config.Edge.ExchangeURL)
 
 			lc.EnvironmentAdditions = &envAdds
 			lc.AgreementProtocol = protocol
@@ -1096,34 +1096,15 @@ func (w *GovernanceWorker) GetWorkloadConfig(url string, version string) (map[st
 // so there is no need for us to prefix them with the HZN prefix.
 func (w *GovernanceWorker) ConfigToEnvvarMap(db *bolt.DB, cfg *persistence.WorkloadConfig, prefix string) (map[string]string, error) {
 
-	var lat, lon, cpus, ram, arch string
+	envvars := map[string]string{}
 
 	// Get the location attributes and set them into the envvar map. We think this is a
 	// temporary measure until all workloads are taught to use a GPS microservice.
 	if allAttrs, err := persistence.FindApplicableAttributes(db, ""); err != nil {
 		return nil, err
 	} else {
-		for _, attr := range allAttrs {
-
-			// Extract location property
-			switch attr.(type) {
-			case persistence.LocationAttributes:
-				s := attr.(persistence.LocationAttributes)
-				lat = strconv.FormatFloat(s.Lat, 'f', 6, 64)
-				lon = strconv.FormatFloat(s.Lon, 'f', 6, 64)
-			case persistence.ComputeAttributes:
-				s := attr.(persistence.ComputeAttributes)
-				cpus = strconv.FormatInt(s.CPUs, 10)
-				ram = strconv.FormatInt(s.RAM, 10)
-			case persistence.ArchitectureAttributes:
-				s := attr.(persistence.ArchitectureAttributes)
-				arch = s.Architecture
-			}
-		}
+		persistence.ConvertWorkloadPersistentNativeToEnv(allAttrs, envvars)
 	}
-
-	envvars := map[string]string{}
-	container.SetSystemEnvvars(envvars, lat, lon, cpus, ram, arch)
 
 	if cfg == nil {
 		return envvars, nil
@@ -1133,30 +1114,9 @@ func (w *GovernanceWorker) ConfigToEnvvarMap(db *bolt.DB, cfg *persistence.Workl
 	for _, attr := range cfg.Attributes {
 		if attr.GetMeta().Type == "UserInputAttributes" {
 			for v, varValue := range attr.GetGenericMappings() {
-				glog.Infof("workload UI var %v is type %T", v, varValue)
-				switch varValue.(type) {
-				case bool:
-					envvars[v] = strconv.FormatBool(varValue.(bool))
-				case string:
-					envvars[v] = varValue.(string)
-				// floats and ints come here
-				case float64:
-					if float64(int64(varValue.(float64))) == varValue.(float64) {
-						envvars[v] = strconv.FormatInt(int64(varValue.(float64)), 10)
-					} else {
-						envvars[v] = strconv.FormatFloat(varValue.(float64), 'f', 6, 64)
-					}
-				case []interface{}:
-					los := ""
-					for _, e := range varValue.([]interface{}) {
-						if _, ok := e.(string); ok {
-							los = los + e.(string) + " "
-						}
-					}
-					los = los[:len(los)-1]
-					envvars[v] = los
-				default:
-					return nil, errors.New(fmt.Sprintf("unknown UserInputAttribute variable %v type %T", v, varValue))
+				glog.V(3).Infof("workload UI var %v is type %T", v, varValue)
+				if err := cutil.NativeToEnvVariableMap(envvars, v, varValue); err != nil {
+					return nil, err
 				}
 			}
 		}

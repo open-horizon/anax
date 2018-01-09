@@ -81,7 +81,7 @@ func Test_isValidFor_API(t *testing.T) {
 		Command:          []string{"start"},
 		Devices:          []string{},
 		Ports:            []containermessage.Port{},
-		NetworkIsolation: containermessage.NetworkIsolation{},
+		NetworkIsolation: &containermessage.NetworkIsolation{},
 		Binds:            []string{"/tmp/geth:/root"},
 	}
 
@@ -108,7 +108,7 @@ func Test_isValidFor_API(t *testing.T) {
 		Command:          []string{"start"},
 		Devices:          []string{},
 		Ports:            []containermessage.Port{},
-		NetworkIsolation: containermessage.NetworkIsolation{},
+		NetworkIsolation: &containermessage.NetworkIsolation{},
 		SpecificPorts:    []docker.PortBinding{{HostIP: "0.0.0.0", HostPort: "8545"}},
 	}
 

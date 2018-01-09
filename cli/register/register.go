@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliutils"
+	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
-	"net/http"
-	cliexchange "github.com/open-horizon/anax/cli/exchange"
-	"io/ioutil"
 	"github.com/open-horizon/anax/policy"
+	"io/ioutil"
+	"net/http"
 )
 
 // These structs are used to parse the registration input file. These are also used by the hzn dev code.
@@ -73,7 +73,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 		}
 		fmt.Println("Generated random node token")
 	}
-	nodeIdTok = nodeId+":"+nodeToken
+	nodeIdTok = nodeId + ":" + nodeToken
 
 	// See if the node exists in the exchange, and create if it doesn't
 	node := exchange.GetDevicesResponse{}
@@ -168,10 +168,9 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 	fmt.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
 }
 
-
 // GetHighestMicroservice queries the exchange for all versions of this MS and returns the highest version, or an error
 func GetHighestMicroservice(exchangeUrl, credOrg, nodeIdTok, org, url, versionRange, arch string) exchange.MicroserviceDefinition {
-	route := "orgs/"+org+"/microservices?specRef="+url+"&arch="+arch	// get all MS of this org, url, and arch
+	route := "orgs/" + org + "/microservices?specRef=" + url + "&arch=" + arch // get all MS of this org, url, and arch
 	var microOutput exchange.GetMicroservicesResponse
 	cliutils.ExchangeGet(exchangeUrl, route, cliutils.OrgAndCreds(credOrg, nodeIdTok), []int{200}, &microOutput)
 	if len(microOutput.Microservices) == 0 {
@@ -179,7 +178,7 @@ func GetHighestMicroservice(exchangeUrl, credOrg, nodeIdTok, org, url, versionRa
 	}
 
 	// Loop thru the returned MSs and pick out the highest version that is within versionRange range
-	highestKey := ""	// key to the MS def in the map that so far has the highest valid version
+	highestKey := "" // key to the MS def in the map that so far has the highest valid version
 	vRange, err := policy.Version_Expression_Factory(versionRange)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "invalid version range '%s': %v", versionRange, err)
@@ -188,16 +187,16 @@ func GetHighestMicroservice(exchangeUrl, credOrg, nodeIdTok, org, url, versionRa
 		if inRange, err := vRange.Is_within_range(micro.Version); err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "unable to verify that %v is within %v, error %v", micro.Version, vRange, err)
 		} else if !inRange {
-			continue	// not within the specified version range, so ignore it
+			continue // not within the specified version range, so ignore it
 		}
 		if highestKey == "" {
-			highestKey = microKey	// 1st MS found within the range
+			highestKey = microKey // 1st MS found within the range
 			continue
 		}
 		// else see if this version is higher than the previous highest version
 		c, err := policy.CompareVersions(microOutput.Microservices[highestKey].Version, micro.Version)
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR,"error compairing version %v with version %v. %v", microOutput.Microservices[highestKey], micro.Version, err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "error compairing version %v with version %v. %v", microOutput.Microservices[highestKey], micro.Version, err)
 		} else if c == -1 {
 			highestKey = microKey
 		}
@@ -209,7 +208,6 @@ func GetHighestMicroservice(exchangeUrl, credOrg, nodeIdTok, org, url, versionRa
 	cliutils.Verbose("selected %s for version range %s", highestKey, versionRange)
 	return microOutput.Microservices[highestKey]
 }
-
 
 // CreateInputFile runs thru the workloads and microservices used by this pattern and collects the user input needed
 func CreateInputFile(org, pattern, arch, nodeIdTok, inputFile string) {
@@ -223,11 +221,11 @@ func CreateInputFile(org, pattern, arch, nodeIdTok, inputFile string) {
 	}
 
 	// Loop thru the workloads gathering their user input and microservices
-	templateFile := InputFile{Global: []GlobalSet{{Type: "LocationAttributes", Variables: map[string]interface{} {"lat": 0.0, "lon": 0.0, "use_gps": false, "location_accuracy_km": 0.0}}}}
+	templateFile := InputFile{Global: []GlobalSet{{Type: "LocationAttributes", Variables: map[string]interface{}{"lat": 0.0, "lon": 0.0, "use_gps": false, "location_accuracy_km": 0.0}}}}
 	if arch == "" {
 		arch = cutil.ArchString()
 	}
-	completeAPISpecList := new(policy.APISpecList)		// list of all MSs the workloads require (will filter out MS refs with exact same version range, but not overlapping ranges (that comes later)
+	completeAPISpecList := new(policy.APISpecList) // list of all MSs the workloads require (will filter out MS refs with exact same version range, but not overlapping ranges (that comes later)
 	for _, work := range patOutput.Patterns[patKey].Workloads {
 		if work.WorkloadArch != arch { // filter out workloads that are not our arch
 			fmt.Printf("Ignoring workload that is a different architecture: %s, %s, %s\n", work.WorkloadOrg, work.WorkloadURL, work.WorkloadArch)

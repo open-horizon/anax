@@ -27,6 +27,16 @@ type MicroserviceInput struct {
 	Workloads     []exchange.WorkloadDeployment `json:"workloads"`
 }
 
+// Returns true if the microservice definition userinputs define the variable.
+func (w *MicroserviceInput) DefinesVariable(name string) string {
+	for _, ui := range w.UserInputs {
+		if ui.Name == name && ui.Type != "" {
+			return ui.Type
+		}
+	}
+	return ""
+}
+
 func MicroserviceList(org string, userPw string, microservice string, namesOnly bool) {
 	if microservice != "" {
 		microservice = "/" + microservice

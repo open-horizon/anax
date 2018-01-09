@@ -408,140 +408,151 @@ func toPersistedAttributesAttachedToService(errorhandler ErrorHandler, persisted
 		return persistenceAttrs, inputErr, err
 	}
 
-	persistenceAttrs = finalizeAttributesSpecifiedInService(defaultRAM, sensorURL, persistenceAttrs)
+	persistenceAttrs = FinalizeAttributesSpecifiedInService(defaultRAM, sensorURL, persistenceAttrs)
 
 	return persistenceAttrs, inputErr, err
 }
 
+func ValidateAndConvertAPIAttribute(errorhandler ErrorHandler, permitEmpty bool, given Attribute) (persistence.Attribute, bool, error) {
+	var attribute persistence.Attribute
+
+	// ----------------------
+
+	if permitEmpty && given.Label == nil {
+		glog.V(4).Infof(apiLogString(fmt.Sprintf("Allowing unspecified label in partial update of %v", given)))
+	} else if bail := checkInputString(errorhandler, "label", given.Label); bail {
+		return nil, true, nil
+	}
+
+	if given.Publishable == nil {
+		if permitEmpty {
+			glog.V(4).Infof(apiLogString(fmt.Sprintf("Allowing unspecified publishable flag in partial update of %v", given)))
+		} else {
+			return nil, errorhandler(NewAPIUserInputError("nil value", "publishable")), nil
+		}
+	}
+
+	// always ok if this one is nil
+	if given.SensorUrls != nil {
+		for _, url := range *given.SensorUrls {
+			if bail := checkInputString(errorhandler, "sensorurl", &url); bail {
+				return nil, true, nil
+			}
+		}
+	}
+
+	if given.Mappings == nil {
+		if permitEmpty {
+			glog.V(4).Infof(apiLogString(fmt.Sprintf("Allowing unspecified mappings in partial update of %v", given)))
+		} else {
+			return nil, errorhandler(NewAPIUserInputError("nil value", "mappings")), nil
+		}
+	} else {
+
+		// check each mapping
+		if value, inputErr, err := MapInputIsIllegal(*given.Mappings); err != nil {
+			return nil, true, fmt.Errorf("Failed to check input: %v", err)
+		} else if inputErr != "" {
+			return nil, errorhandler(NewAPIUserInputError(inputErr, fmt.Sprintf("mappings.%v", value))), nil
+		}
+	}
+
+	if given.Type == nil && permitEmpty {
+		return nil, errorhandler(NewAPIUserInputError("partial update with missing type is not supported", "type")), nil
+	} else if bail := checkInputString(errorhandler, "type", given.Type); bail {
+		return nil, true, nil
+	} else {
+
+		// attribute meta is good, deserialize (except architecture, we add our own for that)
+		switch *given.Type {
+
+		case reflect.TypeOf(persistence.ComputeAttributes{}).Name():
+			attr, inputErr, err := parseCompute(errorhandler, permitEmpty, &given)
+			if err != nil || inputErr {
+				return nil, inputErr, err
+			}
+			attribute = attr
+
+		case reflect.TypeOf(persistence.LocationAttributes{}).Name():
+			attr, inputErr, err := parseLocation(errorhandler, permitEmpty, &given)
+			if err != nil || inputErr {
+				return nil, inputErr, err
+			}
+			attribute = attr
+
+		case reflect.TypeOf(persistence.UserInputAttributes{}).Name():
+			attr, inputErr, err := parseUserInput(errorhandler, permitEmpty, &given)
+			if err != nil || inputErr {
+				return nil, inputErr, err
+			}
+			attribute = attr
+
+		case reflect.TypeOf(persistence.HAAttributes{}).Name():
+			attr, inputErr, err := parseHA(errorhandler, permitEmpty, &given)
+			if err != nil || inputErr {
+				return nil, inputErr, err
+			}
+			attribute = attr
+
+		case reflect.TypeOf(persistence.MeteringAttributes{}).Name():
+			attr, inputErr, err := parseMetering(errorhandler, permitEmpty, &given)
+			if err != nil || inputErr {
+				return nil, inputErr, err
+			}
+			attribute = attr
+
+		case reflect.TypeOf(persistence.PropertyAttributes{}).Name():
+			attr, inputErr, err := parseProperty(errorhandler, permitEmpty, &given)
+			if err != nil || inputErr {
+				return attribute, inputErr, err
+			}
+			attribute = attr
+
+		case reflect.TypeOf(persistence.CounterPartyPropertyAttributes{}).Name():
+			attr, inputErr, err := parseCounterPartyProperty(errorhandler, permitEmpty, &given)
+			if err != nil || inputErr {
+				return attribute, inputErr, err
+			}
+			attribute = attr
+
+		case reflect.TypeOf(persistence.AgreementProtocolAttributes{}).Name():
+			attr, inputErr, err := parseAgreementProtocol(errorhandler, permitEmpty, &given)
+			if err != nil || inputErr {
+				return attribute, inputErr, err
+			}
+			attribute = attr
+
+		case reflect.TypeOf(persistence.HTTPSBasicAuthAttributes{}).Name():
+			attr, inputErr, err := parseHTTPSBasicAuth(errorhandler, permitEmpty, &given)
+			if err != nil || inputErr {
+				return attribute, inputErr, err
+			}
+			attribute = attr
+
+		case reflect.TypeOf(persistence.BXDockerRegistryAuthAttributes{}).Name():
+			attr, inputErr, err := parseBXDockerRegistryAuth(errorhandler, permitEmpty, &given)
+			if err != nil || inputErr {
+				return attribute, inputErr, err
+			}
+			attribute = attr
+
+		default:
+			return nil, errorhandler(NewAPIUserInputError("Unmappable type field", "mappings")), nil
+		}
+	}
+	return attribute, false, nil
+}
+
 func toPersistedAttributes(errorhandler ErrorHandler, permitEmpty bool, persistedDevice *persistence.ExchangeDevice, attrs []Attribute, additionalVerifiers []AttributeVerifier) ([]persistence.Attribute, bool, error) {
+
 	attributes := []persistence.Attribute{}
 
 	for _, given := range attrs {
-
-		// ----------------------
-
-		if permitEmpty && given.Label == nil {
-			glog.V(4).Infof(apiLogString(fmt.Sprintf("Allowing unspecified label in partial update of %v", given)))
-		} else if bail := checkInputString(errorhandler, "label", given.Label); bail {
-			return nil, true, nil
+		attr, errorHandled, err := ValidateAndConvertAPIAttribute(errorhandler, permitEmpty, given)
+		if errorHandled || err != nil {
+			return nil, errorHandled, err
 		}
-
-		if given.Publishable == nil {
-			if permitEmpty {
-				glog.V(4).Infof(apiLogString(fmt.Sprintf("Allowing unspecified publishable flag in partial update of %v", given)))
-			} else {
-				return nil, errorhandler(NewAPIUserInputError("nil value", "publishable")), nil
-			}
-		}
-
-		// always ok if this one is nil
-		if given.SensorUrls != nil {
-			for _, url := range *given.SensorUrls {
-				if bail := checkInputString(errorhandler, "sensorurl", &url); bail {
-					return nil, true, nil
-				}
-			}
-		}
-
-		if given.Mappings == nil {
-			if permitEmpty {
-				glog.V(4).Infof(apiLogString(fmt.Sprintf("Allowing unspecified mappings in partial update of %v", given)))
-			} else {
-				return nil, errorhandler(NewAPIUserInputError("nil value", "mappings")), nil
-			}
-		} else {
-
-			// check each mapping
-			if value, inputErr, err := MapInputIsIllegal(*given.Mappings); err != nil {
-				return nil, true, fmt.Errorf("Failed to check input: %v", err)
-			} else if inputErr != "" {
-				return nil, errorhandler(NewAPIUserInputError(inputErr, fmt.Sprintf("mappings.%v", value))), nil
-			}
-		}
-
-		if given.Type == nil && permitEmpty {
-			return nil, errorhandler(NewAPIUserInputError("partial update with missing type is not supported", "type")), nil
-		} else if bail := checkInputString(errorhandler, "type", given.Type); bail {
-			return nil, true, nil
-		} else {
-
-			// attribute meta is good, deserialize (except architecture, we add our own for that)
-			switch *given.Type {
-
-			case reflect.TypeOf(persistence.ComputeAttributes{}).Name():
-				attr, inputErr, err := parseCompute(errorhandler, permitEmpty, &given)
-				if err != nil || inputErr {
-					return nil, inputErr, err
-				}
-				attributes = append(attributes, attr)
-
-			case reflect.TypeOf(persistence.LocationAttributes{}).Name():
-				attr, inputErr, err := parseLocation(errorhandler, permitEmpty, &given)
-				if err != nil || inputErr {
-					return nil, inputErr, err
-				}
-				attributes = append(attributes, attr)
-
-			case reflect.TypeOf(persistence.UserInputAttributes{}).Name():
-				attr, inputErr, err := parseUserInput(errorhandler, permitEmpty, &given)
-				if err != nil || inputErr {
-					return nil, inputErr, err
-				}
-				attributes = append(attributes, attr)
-
-			case reflect.TypeOf(persistence.HAAttributes{}).Name():
-				attr, inputErr, err := parseHA(errorhandler, permitEmpty, &given)
-				if err != nil || inputErr {
-					return nil, inputErr, err
-				}
-				attributes = append(attributes, attr)
-
-			case reflect.TypeOf(persistence.MeteringAttributes{}).Name():
-				attr, inputErr, err := parseMetering(errorhandler, permitEmpty, &given)
-				if err != nil || inputErr {
-					return nil, inputErr, err
-				}
-				attributes = append(attributes, attr)
-
-			case reflect.TypeOf(persistence.PropertyAttributes{}).Name():
-				attr, inputErr, err := parseProperty(errorhandler, permitEmpty, &given)
-				if err != nil || inputErr {
-					return attributes, inputErr, err
-				}
-				attributes = append(attributes, attr)
-
-			case reflect.TypeOf(persistence.CounterPartyPropertyAttributes{}).Name():
-				attr, inputErr, err := parseCounterPartyProperty(errorhandler, permitEmpty, &given)
-				if err != nil || inputErr {
-					return attributes, inputErr, err
-				}
-				attributes = append(attributes, attr)
-
-			case reflect.TypeOf(persistence.AgreementProtocolAttributes{}).Name():
-				attr, inputErr, err := parseAgreementProtocol(errorhandler, permitEmpty, &given)
-				if err != nil || inputErr {
-					return attributes, inputErr, err
-				}
-				attributes = append(attributes, attr)
-
-			case reflect.TypeOf(persistence.HTTPSBasicAuthAttributes{}).Name():
-				attr, inputErr, err := parseHTTPSBasicAuth(errorhandler, permitEmpty, &given)
-				if err != nil || inputErr {
-					return attributes, inputErr, err
-				}
-				attributes = append(attributes, attr)
-
-			case reflect.TypeOf(persistence.BXDockerRegistryAuthAttributes{}).Name():
-				attr, inputErr, err := parseBXDockerRegistryAuth(errorhandler, permitEmpty, &given)
-				if err != nil || inputErr {
-					return attributes, inputErr, err
-				}
-				attributes = append(attributes, attr)
-
-			default:
-				return nil, errorhandler(NewAPIUserInputError("Unmappable type field", "mappings")), nil
-			}
-		}
+		attributes = append(attributes, attr)
 	}
 
 	// do validation on concrete types (make sure conflicting options aren't specified, etc.)
@@ -566,7 +577,7 @@ func toOutModel(persisted persistence.Attribute) *Attribute {
 	}
 }
 
-func finalizeAttributesSpecifiedInService(defaultRAM int64, sensorURL string, attributes []persistence.Attribute) []persistence.Attribute {
+func FinalizeAttributesSpecifiedInService(defaultRAM int64, sensorURL string, attributes []persistence.Attribute) []persistence.Attribute {
 
 	// check for required
 	cType := reflect.TypeOf(persistence.ComputeAttributes{}).Name()
@@ -606,7 +617,7 @@ func finalizeAttributesSpecifiedInService(defaultRAM int64, sensorURL string, at
 
 	for _, attr := range attributes {
 		attr.GetMeta().AppendSensorUrl(sensorURL)
-		glog.Infof(apiLogString(fmt.Sprintf("SensorUrls for %v: %v", attr.GetMeta().Id, attr.GetMeta().SensorUrls)))
+		glog.V(3).Infof(apiLogString(fmt.Sprintf("SensorUrls for %v: %v", attr.GetMeta().Id, attr.GetMeta().SensorUrls)))
 	}
 
 	// return updated

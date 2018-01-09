@@ -127,9 +127,9 @@ type Service struct {
 	Command          []string             `json:"command,omitempty"`
 	Devices          []string             `json:"devices,omitempty"`
 	Ports            []Port               `json:"ports,omitempty"`
-	NetworkIsolation NetworkIsolation     `json:"network_isolation,omitempty"`
-	Binds            []string             `json:"binds,omitempty"`          // Only used by infrastructure containers
-	SpecificPorts    []docker.PortBinding `json:"specific_ports,omitempty"` // Only used by infrastructure containers
+	NetworkIsolation *NetworkIsolation    `json:"network_isolation,omitempty"` // Changed to pointer so that the hzn dev CLI doesnt generate this struct into the deployment config skeleton
+	Binds            []string             `json:"binds,omitempty"`             // Only used by infrastructure containers
+	SpecificPorts    []docker.PortBinding `json:"specific_ports,omitempty"`    // Only used by infrastructure containers
 }
 
 func (s *Service) AddFilesystemBinding(bind string) {
