@@ -5,33 +5,81 @@ import (
 	"flag"
 	"fmt"
 	docker "github.com/fsouza/go-dockerclient"
+	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/cli/register"
+	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/persistence"
 	"os"
-	"reflect"
 	"strconv"
 )
 
+const WORKLOAD_CREATION_COMMAND = "new"
+const WORKLOAD_VERIFY_COMMAND = "verify"
+
+// Create skeletal horizon metadata files to establish a new workload project.
 func WorkloadNew(homeDirectory string) {
-	cliutils.Fatal(cliutils.INTERNAL_ERROR, "'workload new' not supported yet.")
+
+	// Verify that env vars are set properly and determine the working directory.
+	dir, err := VerifyEnvironment(homeDirectory, false)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload %v' %v", WORKLOAD_CREATION_COMMAND, err)
+	}
+
+	// Create the working directory.
+	if err := CreateWorkingDir(dir); err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload %v' %v", WORKLOAD_CREATION_COMMAND, err)
+	}
+
+	// If there are any horizon metadata files already in the directory then we wont create any files.
+	cmd := fmt.Sprintf("workload %v", WORKLOAD_CREATION_COMMAND)
+	FileNotExist(dir, cmd, DEPLOYMENT_CONFIG_FILE, DeploymentConfigExists)
+	FileNotExist(dir, cmd, USERINPUT_FILE, UserInputExists)
+	FileNotExist(dir, cmd, WORKLOAD_DEFINITION_FILE, WorkloadDefinitionExists)
+	FileNotExist(dir, cmd, DEPENDENCIES_FILE, DependenciesExists)
+
+	// Create the metadata files.
+	if err := CreateDeploymentConfig(dir); err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload %v' %v", WORKLOAD_CREATION_COMMAND, err)
+	} else if err := CreateUserInputs(dir, true); err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload %v' %v", WORKLOAD_CREATION_COMMAND, err)
+	} else if err := CreateWorkloadDefinition(dir); err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload %v' %v", WORKLOAD_CREATION_COMMAND, err)
+	} else if err := CreateDependencies(dir); err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload %v' %v", WORKLOAD_CREATION_COMMAND, err)
+	}
+
+	cliutils.Verbose("Created horizon metadata files. Edit these files to define and configure your new workload.")
+
 }
 
 func WorkloadStartTest(homeDirectory string, userInputFile string) {
 
+	// Run verification before trying to start anything
+	WorkloadValidate(homeDirectory, userInputFile)
+
 	// Get the setup info and context for running the command.
-	dir, dc, err := setup(homeDirectory)
+	dir, err := setup(homeDirectory, true)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload start' %v", err)
+	}
+
+	// Get the setup info and context for executing a container.
+	dc, err := setupToExecute(dir)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload start' %v", err)
 	}
 
 	// Get the workload definition, so that we can look at the user input variable definitions.
+	workloadDef, wderr := GetWorkloadDefinition(dir)
+	if wderr != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload start' %v", wderr)
+	}
 
 	// Get the userinput file, so that we can get the userinput variables.
-	userInputs, uierr := GetUserInputs(dir, userInputFile)
+	userInputs, _, uierr := GetUserInputs(dir, userInputFile)
 	if uierr != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload start' %v", uierr)
 	}
@@ -49,7 +97,7 @@ func WorkloadStartTest(homeDirectory string, userInputFile string) {
 	}
 
 	// Create the set of environment variables that are passed into the container.
-	environmentAdditions, enverr := createEnvVarMap(agreementId, userInputs)
+	environmentAdditions, enverr := createEnvVarMap(agreementId, userInputs, workloadDef)
 	if enverr != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload start' unable to create environment variables, %v", enverr)
 	}
@@ -70,7 +118,7 @@ func WorkloadStartTest(homeDirectory string, userInputFile string) {
 	// Start the workload container image
 	_, startErr := cw.ResourcesCreate(agreementId, nil, deployment, []byte(""), environmentAdditions, ms_networks)
 	if startErr != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload start' unable to start workload container, %v", startErr)
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload start' unable to start workload container using %v %v, %v", DEPLOYMENT_CONFIG_FILE, dc.CLIString(), startErr)
 	}
 
 	fmt.Printf("Running workload.\n")
@@ -80,9 +128,15 @@ func WorkloadStartTest(homeDirectory string, userInputFile string) {
 func WorkloadStopTest(homeDirectory string) {
 
 	// Get the setup info and context for running the command.
-	_, dc, err := setup(homeDirectory)
+	dir, err := setup(homeDirectory, true)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload stop' %v", err)
+	}
+
+	// Get the setup info and context for executing a container.
+	dc, err := setupToExecute(dir)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload start' %v", err)
 	}
 
 	// Create the containerWorker that we can use to remove the running workload
@@ -120,8 +174,40 @@ func WorkloadStopTest(homeDirectory string) {
 
 }
 
-func WorkloadValidate(homeDirectory string) {
-	cliutils.Fatal(cliutils.INTERNAL_ERROR, "'workload verify' not supported yet.")
+func WorkloadValidate(homeDirectory string, userInputFile string) {
+
+	// Get the setup info and context for running the command.
+	dir, err := setup(homeDirectory, true)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload %v' %v", WORKLOAD_VERIFY_COMMAND, err)
+	}
+
+	// Validate Workload Definition
+	if verr := ValidateWorkloadDefinition(dir); verr != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload %v' project does not validate. %v ", WORKLOAD_VERIFY_COMMAND, verr)
+	}
+
+	// Validate Deployment config
+	if dcerr := ValidateDeploymentConfig(dir); dcerr != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload %v' project does not validate. %v", WORKLOAD_VERIFY_COMMAND, dcerr)
+	}
+
+	// Validate Dependencies
+	if derr := ValidateDependencies(dir); derr != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload %v' project does not validate. %v", WORKLOAD_VERIFY_COMMAND, derr)
+	}
+
+	// Get the Userinput file, so that we can validate it.
+	userInputs, userInputsFilePath, uierr := GetUserInputs(dir, userInputFile)
+	if uierr != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload %v' %v", WORKLOAD_VERIFY_COMMAND, uierr)
+	}
+
+	if verr := userInputs.Validate(dir, userInputsFilePath); verr != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'workload %v' project does not validate. %v ", WORKLOAD_VERIFY_COMMAND, verr)
+	}
+
+	fmt.Printf("Workload project verified.\n")
 }
 
 func WorkloadDeploy(homeDirectory string) {
@@ -131,40 +217,44 @@ func WorkloadDeploy(homeDirectory string) {
 // ========================= private functions ======================================================
 
 // Common setup processing for handling workload related commands.
-func setup(homeDirectory string) (string, *DeploymentConfig, error) {
-
-	// Make sure the env vars needed by the dev tools are setup
-	if os.Getenv(DEVTOOL_HZN_ORG) == "" {
-		return "", nil, errors.New(fmt.Sprintf("Environment variable %v must be set to use the 'workload start/stop' commands.", DEVTOOL_HZN_ORG))
-	} else if os.Getenv(DEVTOOL_HZN_EXCHANGE_URL) == "" {
-		return "", nil, errors.New(fmt.Sprintf("Environment variable %v must be set to use the 'workload start/stop' commands.", DEVTOOL_HZN_EXCHANGE_URL))
-	}
-
-	// Get the directory we're working in
-	dir, err := GetWorkingDir(homeDirectory)
-	if err != nil {
-		return "", nil, errors.New(fmt.Sprintf("cannot determine working directory, error: %v", err))
-	}
-
-	cliutils.Verbose("Reading Horizon metadata from %s", dir)
-
-	// Open the deployment config and verify that it can be used to start a workload container.
-	dc, err := GetDeploymentConfig(dir)
-	if err != nil {
-		return "", nil, errors.New(fmt.Sprintf("cannot read deployment config file, %v", err))
-	} else if err := dc.CanStartStop(); err != nil {
-		return "", nil, errors.New(fmt.Sprintf("cannot start/stop workload, %v", err))
-	}
+func setup(homeDirectory string, mustExist bool) (string, error) {
 
 	// Shut off the Anax runtime logging.
 	flag.Set("v", "0")
 
-	return dir, dc, nil
+	// Verify that the environment and inputs are usable.
+	dir, err := VerifyEnvironment(homeDirectory, mustExist)
+	if err != nil {
+		return "", err
+	}
+
+	cliutils.Verbose("Reading Horizon metadata from %s", dir)
+
+	// Verify that the project is a workload project.
+	if !IsWorkloadProject(dir) {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "project in %v is not a workload project.", dir)
+	}
+
+	return dir, nil
+}
+
+// Get the deployment config
+func setupToExecute(directory string) (*DeploymentConfig, error) {
+
+	// Open the deployment config and verify that it can be used to start a workload container.
+	dc, err := GetDeploymentConfig(directory)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("cannot read deployment config file, %v", err))
+	} else if err := dc.CanStartStop(); err != nil {
+		return nil, errors.New(fmt.Sprintf("cannot start/stop workload, %v", err))
+	}
+
+	return dc, nil
 }
 
 // Create the environment variable map needed by the container worker to hold the environment variables that are passed to the
 // workload container.
-func createEnvVarMap(agreementId string, userInputs *register.InputFile) (map[string]string, error) {
+func createEnvVarMap(agreementId string, userInputs *InputFile, workloadDef *cliexchange.WorkloadInput) (map[string]string, error) {
 
 	// First add in the Horizon platform env vars.
 	environmentAdditions := make(map[string]string)
@@ -172,45 +262,51 @@ func createEnvVarMap(agreementId string, userInputs *register.InputFile) (map[st
 	org := os.Getenv(DEVTOOL_HZN_ORG)
 	workloadPW := "deprecated"
 	exchangeURL := os.Getenv(DEVTOOL_HZN_EXCHANGE_URL)
-	container.SetPlatformEnvvars(environmentAdditions, agreementId, testDeviceId, org, workloadPW, exchangeURL)
+	cutil.SetPlatformEnvvars(environmentAdditions, config.ENVVAR_PREFIX, agreementId, testDeviceId, org, workloadPW, exchangeURL)
 
-	// Now add the Horizon system env vars. Some of these can come from the global section of the user inputs file.
-	var lat, lon, cpus, ram string
-	ram = "128"
-	cpus = "1"
-	for _, g := range userInputs.Global {
-		if g.Type == reflect.TypeOf(persistence.LocationAttributes{}).Name() {
-			if fs, err := floatVariableToString(g.Variables, "lat"); err != nil {
-				return environmentAdditions, errors.New(fmt.Sprintf("in %v %v: %v", USERINPUT_FILE, reflect.TypeOf(persistence.LocationAttributes{}).Name(), err))
-			} else {
-				lat = fs
-			}
-			if fs, err := floatVariableToString(g.Variables, "lon"); err != nil {
-				return environmentAdditions, errors.New(fmt.Sprintf("in %v %v: %v", USERINPUT_FILE, reflect.TypeOf(persistence.LocationAttributes{}).Name(), err))
-			} else {
-				lon = fs
-			}
-		} else if g.Type == reflect.TypeOf(persistence.ComputeAttributes{}).Name() {
-			if is, err := intVariableToString(g.Variables, "ram"); err != nil {
-				return environmentAdditions, errors.New(fmt.Sprintf("in %v %v: %v", USERINPUT_FILE, reflect.TypeOf(persistence.ComputeAttributes{}).Name(), err))
-			} else {
-				ram = is
-			}
-			if is, err := intVariableToString(g.Variables, "cpus"); err != nil {
-				return environmentAdditions, errors.New(fmt.Sprintf("in %v %v: %v", USERINPUT_FILE, reflect.TypeOf(persistence.ComputeAttributes{}).Name(), err))
-			} else {
-				cpus = is
-			}
-		}
-
+	// Now add the Horizon system env vars. Some of these can come from the global section of the user inputs file. To do this we have to
+	// convert the attributes in the userinput file into API attributes so that they can be validity checked. Then they are converted to
+	// persistence attributes so that they can be further converted to environment variables. This is the progression that anax uses when
+	// running real workloads so the same progression is used here.
+	attrs, err := userInputs.GlobalSetAsAttributes()
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("%v has error: %v ", USERINPUT_FILE, err))
 	}
 
-	// The last parameter is the hardware architecture. Let it default for the test environment.
-	// This function is used to set the system env vars so that if an anax developer tries to add more
-	// env vars, the CLI will not compile, alerting the anax developer to update the CLI with the new env var.
-	container.SetSystemEnvvars(environmentAdditions, lat, lon, cpus, ram, "")
+	// Add in default system attributes if not already present.
+	attrs = api.FinalizeAttributesSpecifiedInService(1024, "", attrs)
 
-	// The add in the userInputs from the project.
+	cliutils.Verbose("Final Attributes: %v", attrs)
+
+	// The conversion to persistent attributes produces an array of pointers to attributes, we need a by-value
+	// array of attributes because that's what the functions which convert attributes to env vars expect. This is
+	// because at runtime, the attributes are serialized to a database and then read out again before converting to env vars.
+
+	byValueAttrs := make([]persistence.Attribute, 0, 10)
+	for _, a := range attrs {
+		switch a.(type) {
+		case *persistence.LocationAttributes:
+			p := a.(*persistence.LocationAttributes)
+			byValueAttrs = append(byValueAttrs, *p)
+		case *persistence.ComputeAttributes:
+			p := a.(*persistence.ComputeAttributes)
+			byValueAttrs = append(byValueAttrs, *p)
+		case *persistence.ArchitectureAttributes:
+			p := a.(*persistence.ArchitectureAttributes)
+			byValueAttrs = append(byValueAttrs, *p)
+		}
+	}
+
+	// Convert all attributes to system env vars.
+	persistence.ConvertWorkloadPersistentNativeToEnv(byValueAttrs, environmentAdditions)
+
+	// Now that the system and attribute based env vars are in place, we can convert the workload defined variables to env
+	// vars and add them into the env var map.
+	// Add in default variables from the workload definition.
+	workloadDef.AddDefaultUserInputs(environmentAdditions)
+
+	// Then add in the configured variable values from the workload section of the user input file.
+	userInputs.AddWorkloadUserInputs(workloadDef, environmentAdditions)
 
 	return environmentAdditions, nil
 }

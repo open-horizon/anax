@@ -1,11 +1,9 @@
 package dev
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/open-horizon/anax/containermessage"
-	"io/ioutil"
 	"path"
 )
 
@@ -28,16 +26,35 @@ func (dc DeploymentConfig) CLIString() string {
 // deployment config file.
 func GetDeploymentConfig(directory string) (*DeploymentConfig, error) {
 
-	filePath := path.Join(directory, DEPLOYMENT_CONFIG_FILE)
-
 	res := new(DeploymentConfig)
-	if fileBytes, err := ioutil.ReadFile(filePath); err != nil {
-		return nil, errors.New(fmt.Sprintf("reading %s failed: %v", filePath, err))
-	} else if err := json.Unmarshal(fileBytes, res); err != nil {
-		return nil, errors.New(fmt.Sprintf("failed to unmarshal %s as deployment config file, error: %v", filePath, err))
+
+	// GetFile will write to the res object, demarshalling the bytes into a json object that can be returned.
+	if err := GetFile(directory, DEPLOYMENT_CONFIG_FILE, res); err != nil {
+		return nil, err
 	}
 	return res, nil
+}
 
+// Sort of like a constructor, it creates a skeletal deployment config object and writes it to the project
+// in the file system.
+func CreateDeploymentConfig(directory string) error {
+
+	// Create a skeletal deployment config object with fillins/place-holders for configuration.
+	res := new(DeploymentConfig)
+	res.Services = make(map[string]*containermessage.Service)
+	res.Services[""] = &containermessage.Service{
+		Image:       "",
+		Environment: []string{"ENV_VAR_HERE=SOME_VALUE"},
+	}
+
+	// Convert the object to JSON and write it into the project.
+	return CreateFile(directory, DEPLOYMENT_CONFIG_FILE, res)
+
+}
+
+// Check for the existence of the deployment config file in the project.
+func DeploymentConfigExists(directory string) (bool, error) {
+	return FileExists(directory, DEPLOYMENT_CONFIG_FILE)
 }
 
 // A validation method. Is there enough info in the deployment config to start a container? If not, the
@@ -47,8 +64,10 @@ func (self *DeploymentConfig) CanStartStop() error {
 		return errors.New(fmt.Sprintf("no services defined"))
 	} else {
 		for serviceName, service := range self.Services {
-			if len(service.Image) == 0 {
-				return errors.New(fmt.Sprintf("no image for service %s", serviceName))
+			if len(serviceName) == 0 {
+				return errors.New(fmt.Sprintf("no service name"))
+			} else if len(service.Image) == 0 {
+				return errors.New(fmt.Sprintf("no docker image for service %s", serviceName))
 			}
 		}
 	}
@@ -65,4 +84,20 @@ func (self *DeploymentConfig) ConvertToDeploymentDescription() (*containermessag
 		Infrastructure: false,
 		Overrides:      map[string]*containermessage.Service{},
 	}, nil
+}
+
+// Validate that the deployment config file is complete and coherent with the rest of the definitions in the project.
+// If the file is not valid the reason will be returned in the error.
+func ValidateDeploymentConfig(directory string) error {
+
+	dc, dcerr := GetDeploymentConfig(directory)
+	if dcerr != nil {
+		return dcerr
+	}
+
+	filePath := path.Join(directory, DEPLOYMENT_CONFIG_FILE)
+	if err := dc.CanStartStop(); err != nil {
+		return errors.New(fmt.Sprintf("%v: %v", filePath, err))
+	}
+	return nil
 }

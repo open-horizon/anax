@@ -15,9 +15,9 @@ import (
 	"github.com/open-horizon/anax/cli/service"
 	"github.com/open-horizon/anax/cli/unregister"
 	"github.com/open-horizon/anax/cli/workload"
+	"github.com/open-horizon/anax/cutil"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"os"
-	"github.com/open-horizon/anax/cutil"
 )
 
 func main() {
@@ -205,6 +205,7 @@ Environment Variables:
 	devWorkloadStopTestCmd := devWorkloadCmd.Command("stop", "Stop a workload that is running in a mocked Horizon Agent environment.")
 	devWorkloadDeployCmd := devWorkloadCmd.Command("deploy", "Deploy a workload to a Horizon Exchange.")
 	devWorkloadValidateCmd := devWorkloadCmd.Command("verify", "Validate the project for completeness and schema compliance.")
+	devWorkloadVerifyUserInputFile := devWorkloadValidateCmd.Flag("userInputFile", "File containing user input values for verification of a project.").Short('f').String()
 
 	devMicroserviceCmd := devCmd.Command("microservice", "For working with a microservice project.")
 	devMicroserviceNewCmd := devMicroserviceCmd.Command("new", "Create a new microservice project.")
@@ -213,6 +214,7 @@ Environment Variables:
 	devMicroserviceStopTestCmd := devMicroserviceCmd.Command("stop", "Stop a microservice that is running in a mocked Horizon Agent environment.")
 	devMicroserviceDeployCmd := devMicroserviceCmd.Command("deploy", "Deploy a microservice to a Horizon Exchange.")
 	devMicroserviceValidateCmd := devMicroserviceCmd.Command("verify", "Validate the project for completeness and schema compliance.")
+	devMicroserviceVerifyUserInputFile := devMicroserviceValidateCmd.Flag("userInputFile", "File containing user input values for verification of a project.").Short('f').String()
 
 	devDependencyCmd := devCmd.Command("dependency", "For working with project dependencies.")
 	devDependencyFetchCmd := devDependencyCmd.Command("fetch", "Retrieving Horizon metadata for a new dependency.")
@@ -317,7 +319,7 @@ Environment Variables:
 	case devWorkloadStopTestCmd.FullCommand():
 		dev.WorkloadStopTest(*devHomeDirectory)
 	case devWorkloadValidateCmd.FullCommand():
-		dev.WorkloadValidate(*devHomeDirectory)
+		dev.WorkloadValidate(*devHomeDirectory, *devWorkloadVerifyUserInputFile)
 	case devWorkloadDeployCmd.FullCommand():
 		dev.WorkloadDeploy(*devHomeDirectory)
 	case devMicroserviceNewCmd.FullCommand():
@@ -327,7 +329,7 @@ Environment Variables:
 	case devMicroserviceStopTestCmd.FullCommand():
 		dev.MicroserviceStopTest(*devHomeDirectory)
 	case devMicroserviceValidateCmd.FullCommand():
-		dev.MicroserviceValidate(*devHomeDirectory)
+		dev.MicroserviceValidate(*devHomeDirectory, *devMicroserviceVerifyUserInputFile)
 	case devMicroserviceDeployCmd.FullCommand():
 		dev.MicroserviceDeploy(*devHomeDirectory)
 	case devDependencyFetchCmd.FullCommand():

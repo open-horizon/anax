@@ -163,7 +163,7 @@ func Test_IsTraportError(t *testing.T) {
 	error1 := fmt.Errorf("Time is out")
 	error2 := fmt.Errorf("connection is refused")
 	error3 := fmt.Errorf("connection reset by the peer")
-	error3 := fmt.Errorf("something is wrong")
+	error4 := fmt.Errorf("something is wrong")
 
 	if !isTransportError(error1) {
 		t.Errorf("Error: expection isTransportError return true for %v but got false", error1)

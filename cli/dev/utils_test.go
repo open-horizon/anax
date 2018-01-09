@@ -4,24 +4,51 @@ package dev
 
 import (
 	"os"
+	"path"
 	"strings"
 	"testing"
 )
 
-// pwd is /tmp, no input path.
-func Test_workingdir_success_nodashd(t *testing.T) {
+// pwd is /tmp, no input path, use the default which exists.
+func Test_workingdir_success_nodashd1(t *testing.T) {
 
 	tempDir := "/tmp"
+	workingDir := path.Join(tempDir, DEFAULT_WORKING_DIR)
+
+	if err := os.MkdirAll(workingDir, 0755); err != nil {
+		t.Errorf("error creating working dir %v", err)
+	}
 
 	if err := os.Chdir(tempDir); err != nil {
 		t.Errorf("error %v changing to temp dir", err)
 	}
 
 	inputDir := ""
-	if dir, err := GetWorkingDir(inputDir); err != nil {
+	if dir, err := GetWorkingDir(inputDir, true); err != nil {
 		t.Errorf("error getting working dir: %v", err)
-	} else if dir != tempDir {
-		t.Errorf("returned wrong dir, shoiuld be %v, was %v", tempDir, dir)
+	} else if dir != workingDir {
+		t.Errorf("returned wrong dir, shoiuld be %v, was %v", workingDir, dir)
+	}
+
+	os.Remove(DEFAULT_WORKING_DIR)
+
+}
+
+// pwd is /tmp, no input path, use the default which does not exist.
+func Test_workingdir_success_nodashd2(t *testing.T) {
+
+	tempDir := "/tmp"
+	workingDir := path.Join(tempDir, DEFAULT_WORKING_DIR)
+
+	if err := os.Chdir(tempDir); err != nil {
+		t.Errorf("error %v changing to temp dir", err)
+	}
+
+	inputDir := ""
+	if dir, err := GetWorkingDir(inputDir, false); err != nil {
+		t.Errorf("error getting working dir: %v", err)
+	} else if dir != workingDir {
+		t.Errorf("returned wrong dir, shoiuld be %v, was %v", workingDir, dir)
 	}
 
 }
@@ -31,7 +58,7 @@ func Test_workingdir_success_dashd_abs(t *testing.T) {
 
 	inputDir := "/tmp"
 
-	if dir, err := GetWorkingDir(inputDir); err != nil {
+	if dir, err := GetWorkingDir(inputDir, true); err != nil {
 		t.Errorf("error getting working dir: %v", err)
 	} else if dir != inputDir {
 		t.Errorf("returned wrong dir, should be %v, was %v", inputDir, dir)
@@ -50,7 +77,7 @@ func Test_workingdir_success_dashd_rel(t *testing.T) {
 
 	inputDir := ".."
 
-	if dir, err := GetWorkingDir(inputDir); err != nil {
+	if dir, err := GetWorkingDir(inputDir, true); err != nil {
 		t.Errorf("error getting working dir: %v", err)
 	} else if dir != "/" {
 		t.Errorf("returned wrong dir, should be %v, was %v", "/", dir)
@@ -63,7 +90,7 @@ func Test_workingdir_bad_dashd_abs(t *testing.T) {
 
 	tempDir := "/tmp/doesnotexist"
 
-	if dir, err := GetWorkingDir(tempDir); err == nil {
+	if dir, err := GetWorkingDir(tempDir, true); err == nil {
 		t.Errorf("expected error getting working dir")
 	} else if dir != "" {
 		t.Errorf("expected empty string for directory, but was %v", dir)
@@ -84,7 +111,7 @@ func Test_workingdir_bad_dashd_rel(t *testing.T) {
 
 	inputDir := "../doesnotexist"
 
-	if dir, err := GetWorkingDir(inputDir); err == nil {
+	if dir, err := GetWorkingDir(inputDir, true); err == nil {
 		t.Errorf("expected error getting working dir")
 	} else if dir != "" {
 		t.Errorf("expected empty string for directory, but was %v", dir)
