@@ -11,11 +11,13 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/version"
 )
 
 type Configuration struct {
-	ExchangeAPI string `json:"exchange_api"`
-	Arch        string `json:"architecture"`
+	ExchangeAPI    string `json:"exchange_api"`
+	Arch           string `json:"architecture"`
+	HorizonVersion string `json:"horizon_version"`
 }
 
 type Info struct {
@@ -28,8 +30,9 @@ func NewInfo(config *config.HorizonConfig) *Info {
 	return &Info{
 		Geths: []Geth{},
 		Configuration: &Configuration{
-			ExchangeAPI: config.Edge.ExchangeURL,
-			Arch:        runtime.GOARCH,
+			ExchangeAPI:    config.Edge.ExchangeURL,
+			Arch:           runtime.GOARCH,
+			HorizonVersion: version.HORIZON_VERSION,
 		},
 		Connectivity: map[string]bool{},
 	}
