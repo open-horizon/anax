@@ -77,7 +77,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 
 	// See if the node exists in the exchange, and create if it doesn't
 	node := exchange.GetDevicesResponse{}
-	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+nodeIdTok, nil, &node)
+	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, &node)
 	if httpCode != 200 {
 		if userPw == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node '%s/%s' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId)
@@ -86,7 +86,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 		cliexchange.NodeCreate(org, nodeIdTok, userPw, email)
 		/* this is now done in NodeCreate() above...
 		putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeId, SoftwareVersions: make(map[string]string), PublicKey: []byte("")} // we only need to set the token
-		httpCode = cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+userPw, []int{201, 401}, putNodeReq)
+		httpCode = cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401}, putNodeReq)
 		if httpCode == 401 {
 			user, pw := cliutils.SplitIdToken(userPw)
 			if org == "public" && email != "" {
@@ -95,7 +95,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 				postUserReq := cliutils.UserExchangeReq{Password: pw, Admin: false, Email: email}
 				httpCode = cliutils.ExchangePutPost(http.MethodPost, exchUrlBase, "orgs/"+org+"/users/"+user, "", []int{201}, postUserReq)
 				fmt.Printf("Trying again to create/update %s/%s ...\n", org, nodeId)
-				httpCode = cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, org+"/"+userPw, []int{201}, putNodeReq)
+				httpCode = cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201}, putNodeReq)
 			} else {
 				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node '%s/%s' does not exist in the exchange with the specified token and user '%s/%s' does not exist with the specified password.", org, nodeId, org, user)
 			}
