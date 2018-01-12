@@ -440,12 +440,6 @@
 			"revisionTime": "2017-12-08T00:46:31Z"
 		},
 		{
-			"checksumSHA1": "CQMLo1CWcHndUImATQWheKZTsuM=",
-			"path": "github.com/open-horizon/rsapss-tool",
-			"revision": "8bd9fec0aa8747031080a9ca8440558582df790a",
-			"revisionTime": "2017-12-08T17:19:55Z"
-		},
-		{
 			"checksumSHA1": "h28o0+CEghkJELsf/KRNqGXZ7LA=",
 			"path": "github.com/open-horizon/rsapss-tool/constants",
 			"revision": "469316935456edc0922b0772646e64113524f593",
@@ -458,10 +452,12 @@
 			"revisionTime": "2017-12-08T17:19:55Z"
 		},
 		{
-			"checksumSHA1": "JlYgQV3zst/bIKfDRl2pLfuHud8=",
+			"checksumSHA1": "ojqYnlGfGuduc/0DF53+q2zx5qc=",
 			"path": "github.com/open-horizon/rsapss-tool/listkeys",
-			"revision": "8bd9fec0aa8747031080a9ca8440558582df790a",
-			"revisionTime": "2017-12-08T17:19:55Z"
+			"revision": "201823c7cf209e92e58159d3571a7d3aa4a25fea",
+			"revisionTime": "2018-01-12T21:16:10Z",
+			"version": "=feature/expose-readkey",
+			"versionExact": "feature/expose-readkey"
 		},
 		{
 			"checksumSHA1": "6Ejtwv2PlXR8sT203iR38S7Y5qQ=",
@@ -476,10 +472,12 @@
 			"revisionTime": "2017-12-08T17:19:55Z"
 		},
 		{
-			"checksumSHA1": "HgF+lKPTjnzAx5/1GTDmpuPomxg=",
+			"checksumSHA1": "xNByXJDmg34A1Fc/yeikYxZdkcc=",
 			"path": "github.com/open-horizon/rsapss-tool/verify",
-			"revision": "2d2b7b3968950e47a333ca9f9f191d255304ddfc",
-			"revisionTime": "2018-01-03T13:54:01Z"
+			"revision": "201823c7cf209e92e58159d3571a7d3aa4a25fea",
+			"revisionTime": "2018-01-12T21:16:10Z",
+			"version": "=feature/expose-readkey",
+			"versionExact": "feature/expose-readkey"
 		},
 		{
 			"checksumSHA1": "3AoPMXlmVq2+iWMpsdJZkcUKHB8=",

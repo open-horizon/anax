@@ -80,7 +80,7 @@ func Test_PKTest1(t *testing.T) {
 		t.Errorf("wrong file name returned: %v", filename)
 	}
 
-	keys, err := FindPublicKeysForOutput(cfg)
+	keys, err := FindPublicKeysForOutput(cfg, false)
 	if err != nil {
 		t.Errorf("unexpected error %v", err)
 	} else if len(keys) != 1 {
@@ -103,7 +103,7 @@ func Test_PKTest1(t *testing.T) {
 		t.Errorf("unexpected error %v", myError)
 	}
 
-	keys, err = FindPublicKeysForOutput(cfg)
+	keys, err = FindPublicKeysForOutput(cfg, false)
 	if err != nil {
 		t.Errorf("unexpected error %v", err)
 	} else if len(keys) != 1 {

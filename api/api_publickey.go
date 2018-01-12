@@ -24,6 +24,7 @@ func (a *API) publickey(w http.ResponseWriter, r *http.Request) {
 
 		pathVars := mux.Vars(r)
 		fileName := pathVars["filename"]
+		verbose := r.FormValue("verbose")
 
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v/%v", r.Method, resource, fileName)))
 
@@ -34,7 +35,7 @@ func (a *API) publickey(w http.ResponseWriter, r *http.Request) {
 				errorHandler(NewSystemError(fmt.Sprintf("Error returning content of %v/%v, error %v", resource, fileName, err)))
 			}
 		} else {
-			if out, err := FindPublicKeysForOutput(a.Config); err != nil {
+			if out, err := FindPublicKeysForOutput(a.Config, verbose != ""); err != nil {
 				errorHandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
 			} else {
 				writeResponse(w, out, http.StatusOK)
@@ -50,7 +51,7 @@ func (a *API) publickey(w http.ResponseWriter, r *http.Request) {
 
 		nkBytes, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			errorHandler(NewSystemError(fmt.Sprintf("unable to read uploaded public key file %v, error: %v", fileName, err)))
+			errorHandler(NewSystemError(fmt.Sprintf("Unable to read uploaded trusted cert file %v, error: %v", fileName, err)))
 			return
 		}
 

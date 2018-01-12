@@ -15,11 +15,11 @@ func List(keyName string) {
 	if keyName == "" {
 		// Getting all of the keys only returns the names
 		apiOutput := make(map[string][]string, 0)
-		// Note: it is allowed to get /publickey before post /node is called, so we don't have to check for that error
-		cliutils.HorizonGet("publickey", []int{200}, &apiOutput)
+		// Note: it is allowed to get /trust before post /node is called, so we don't have to check for that error
+		cliutils.HorizonGet("trust", []int{200}, &apiOutput)
 		var ok bool
 		if _, ok = apiOutput["pem"]; !ok {
-			cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api publickey output did not include 'pem' key")
+			cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api trust output did not include 'pem' key")
 		}
 		jsonBytes, err := json.MarshalIndent(apiOutput["pem"], "", cliutils.JSON_INDENT)
 		if err != nil {
@@ -29,7 +29,7 @@ func List(keyName string) {
 	} else {
 		// Get the content of 1 key, which is not json
 		var apiOutput string
-		cliutils.HorizonGet("publickey/"+keyName, []int{200}, &apiOutput)
+		cliutils.HorizonGet("trust/"+keyName, []int{200}, &apiOutput)
 		fmt.Printf("%s", apiOutput)
 	}
 }
@@ -65,10 +65,10 @@ func Import(pubKeyFile string) {
 	// Note: the CLI framework already verified the file exists
 	bodyBytes := cliutils.ReadFile(pubKeyFile)
 	baseName := filepath.Base(pubKeyFile)
-	cliutils.HorizonPutPost(http.MethodPut, "publickey/"+baseName, []int{201, 200}, bodyBytes)
+	cliutils.HorizonPutPost(http.MethodPut, "trust/"+baseName, []int{201, 200}, bodyBytes)
 }
 
 func Remove(keyName string) {
-	cliutils.HorizonDelete("publickey/"+keyName, []int{200, 204})
+	cliutils.HorizonDelete("trust/"+keyName, []int{200, 204})
 	fmt.Printf("Public key '%s' removed from the Horizon agent.\n", keyName)
 }
