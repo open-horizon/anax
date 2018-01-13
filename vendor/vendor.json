@@ -442,42 +442,38 @@
 		{
 			"checksumSHA1": "h28o0+CEghkJELsf/KRNqGXZ7LA=",
 			"path": "github.com/open-horizon/rsapss-tool/constants",
-			"revision": "469316935456edc0922b0772646e64113524f593",
-			"revisionTime": "2017-12-03T22:19:37Z"
+			"revision": "6ba7332b69320cf75832769fa63a439b8bb56767",
+			"revisionTime": "2018-01-12T22:35:35Z"
 		},
 		{
 			"checksumSHA1": "MHPzwVcYlCJOKBWkLrCinoi4UWs=",
 			"path": "github.com/open-horizon/rsapss-tool/generatekeys",
-			"revision": "8bd9fec0aa8747031080a9ca8440558582df790a",
-			"revisionTime": "2017-12-08T17:19:55Z"
+			"revision": "6ba7332b69320cf75832769fa63a439b8bb56767",
+			"revisionTime": "2018-01-12T22:35:35Z"
 		},
 		{
 			"checksumSHA1": "ojqYnlGfGuduc/0DF53+q2zx5qc=",
 			"path": "github.com/open-horizon/rsapss-tool/listkeys",
-			"revision": "201823c7cf209e92e58159d3571a7d3aa4a25fea",
-			"revisionTime": "2018-01-12T21:16:10Z",
-			"version": "=feature/expose-readkey",
-			"versionExact": "feature/expose-readkey"
+			"revision": "6ba7332b69320cf75832769fa63a439b8bb56767",
+			"revisionTime": "2018-01-12T22:35:35Z"
 		},
 		{
 			"checksumSHA1": "6Ejtwv2PlXR8sT203iR38S7Y5qQ=",
 			"path": "github.com/open-horizon/rsapss-tool/sign",
-			"revision": "8bd9fec0aa8747031080a9ca8440558582df790a",
-			"revisionTime": "2017-12-08T17:19:55Z"
+			"revision": "6ba7332b69320cf75832769fa63a439b8bb56767",
+			"revisionTime": "2018-01-12T22:35:35Z"
 		},
 		{
 			"checksumSHA1": "PXZR8EO7d4Hafp7s+CNvptNbIJM=",
 			"path": "github.com/open-horizon/rsapss-tool/utility",
-			"revision": "8bd9fec0aa8747031080a9ca8440558582df790a",
-			"revisionTime": "2017-12-08T17:19:55Z"
+			"revision": "6ba7332b69320cf75832769fa63a439b8bb56767",
+			"revisionTime": "2018-01-12T22:35:35Z"
 		},
 		{
 			"checksumSHA1": "xNByXJDmg34A1Fc/yeikYxZdkcc=",
 			"path": "github.com/open-horizon/rsapss-tool/verify",
-			"revision": "201823c7cf209e92e58159d3571a7d3aa4a25fea",
-			"revisionTime": "2018-01-12T21:16:10Z",
-			"version": "=feature/expose-readkey",
-			"versionExact": "feature/expose-readkey"
+			"revision": "6ba7332b69320cf75832769fa63a439b8bb56767",
+			"revisionTime": "2018-01-12T22:35:35Z"
 		},
 		{
 			"checksumSHA1": "3AoPMXlmVq2+iWMpsdJZkcUKHB8=",
