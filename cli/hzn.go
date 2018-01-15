@@ -35,7 +35,7 @@ Environment Variables:
 `)
 	app.HelpFlag.Short('h')
 	cliutils.Opts.Verbose = app.Flag("verbose", "Verbose output.").Short('v').Bool()
-	//version := app.Flag("vers", "Show the application version.").Bool()  // <- isn't working
+	cliutils.Opts.IsDryRun = app.Flag("dry-run", "When calling the Horizon or Exchange API, do GETs, but don't do PUTs, POSTs, or DELETEs.").Bool()
 
 	versionCmd := app.Command("version", "Show the Horizon version.")	// using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
 

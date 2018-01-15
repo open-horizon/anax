@@ -42,6 +42,7 @@ const (
 // Holds the cmd line flags that were set so other pkgs can access
 type GlobalOptions struct {
 	Verbose *bool
+	IsDryRun *bool
 	UsingApiKey bool	// should go away soon
 }
 
@@ -69,6 +70,10 @@ func Fatal(exitCode int, msg string, args ...interface{}) {
 	}
 	fmt.Fprintf(os.Stderr, "Error: "+msg, args...)
 	os.Exit(exitCode)
+}
+
+func IsDryRun() bool {
+	return *Opts.IsDryRun
 }
 
 /*
@@ -253,6 +258,9 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int) (httpCode int) {
 	url := GetHorizonUrlBase() + "/" + urlSuffix
 	apiMsg := http.MethodDelete + " " + url
 	Verbose(apiMsg)
+	if IsDryRun() {
+		return 204
+	}
 	httpClient := &http.Client{}
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
@@ -277,6 +285,9 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 	url := GetHorizonUrlBase() + "/" + urlSuffix
 	apiMsg := method + " " + url
 	Verbose(apiMsg)
+	if IsDryRun() {
+		return 201
+	}
 	httpClient := &http.Client{}
 
 	// Prepare body
@@ -410,6 +421,9 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 	url := urlBase + "/" + urlSuffix
 	apiMsg := method + " " + url
 	Verbose(apiMsg)
+	if IsDryRun() {
+		return 201
+	}
 	httpClient := &http.Client{}
 	var jsonBytes []byte
 	switch b := body.(type) {
@@ -460,6 +474,9 @@ func ExchangeDelete(urlBase string, urlSuffix string, credentials string, goodHt
 	url := urlBase + "/" + urlSuffix
 	apiMsg := http.MethodDelete + " " + url
 	Verbose(apiMsg)
+	if IsDryRun() {
+		return 204
+	}
 	httpClient := &http.Client{}
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {

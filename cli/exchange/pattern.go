@@ -199,6 +199,16 @@ func PatternAddWorkload(org, userPw, pattern, workloadFilePath, keyFilePath stri
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", workloadFilePath, err)
 	}
 
+	// Check that the critical values in the workload are not empty
+	if workInput.WorkloadOrg == "" || workInput.WorkloadURL == "" || workInput.WorkloadArch == "" || len(workInput.WorkloadVersions) == 0 {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the workloadOrgid, workloadUrl, workloadArch, or workloadVersions field can not be empty.")
+	}
+	for _, wv := range workInput.WorkloadVersions {
+		if wv.Version == "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "none of the workloadVersions.version fields can be.")
+		}
+	}
+
 	// Get the pattern from the exchange
 	var output ExchangePatterns
 	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org, userPw), []int{200}, &output)
