@@ -16,6 +16,7 @@ type ExchangeNodes struct {
 }
 
 func NodeList(org string, userPw string, node string, namesOnly bool) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	if node != "" {
 		node = "/" + node
 	}
@@ -44,6 +45,7 @@ func NodeList(org string, userPw string, node string, namesOnly bool) {
 }
 
 func NodeCreate(org string, nodeIdTok string, userPw string, email string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	nodeId, nodeToken := cliutils.SplitIdToken(nodeIdTok)
 	exchUrlBase := cliutils.GetExchangeUrl()
 
@@ -79,6 +81,7 @@ func NodeCreate(org string, nodeIdTok string, userPw string, email string) {
 }
 
 func NodeRemove(org, userPw, node string, force bool) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	if !force {
 		cliutils.ConfirmRemove("Are you sure you want to remove node '" + org + "/" + node + "' from the Horizon Exchange (should not be done while an edge node is registered with this node id)?")
 	}

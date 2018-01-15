@@ -15,6 +15,7 @@ type ExchangeAgbots struct {
 }
 
 func AgbotList(org string, userPw string, agbot string, namesOnly bool) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	if agbot != "" {
 		agbot = "/" + agbot
 	}
@@ -47,6 +48,7 @@ func formPatternId(patternOrg, pattern string) string {
 }
 
 func AgbotListPatterns(org, userPw, agbot, patternOrg, pattern string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	var patternId string
 	if patternOrg != "" || pattern != "" {
 		if patternOrg == "" || pattern == "" {
@@ -69,12 +71,14 @@ type ServedPattern struct {
 }
 
 func AgbotAddPattern(org, userPw, agbot, patternOrg, pattern string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	patternId := formPatternId(patternOrg, pattern)
 	input := ServedPattern{Org: patternOrg, Pattern: pattern}
 	cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/patterns/"+patternId, cliutils.OrgAndCreds(org, userPw), []int{201}, input)
 }
 
 func AgbotRemovePattern(org, userPw, agbot, patternOrg, pattern string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	patternId := formPatternId(patternOrg, pattern)
 	cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/patterns/"+patternId, cliutils.OrgAndCreds(org, userPw), []int{204})
 }

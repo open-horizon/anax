@@ -44,6 +44,7 @@ func ReadInputFile(filePath string, inputFileStruct *InputFile) {
 
 // DoIt registers this node to Horizon with a pattern
 func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read input file 1st, so we don't get half way thru registration before finding the problem
 	inputFileStruct := InputFile{}
 	if inputFile != "" {

@@ -31,10 +31,13 @@ func main() {
 Environment Variables:
   HORIZON_URL_BASE: Override the URL at which hzn contacts the Horizon Agent API. This can facilitate using a remote Horizon Agent via an ssh tunnel.
   HORIZON_EXCHANGE_URL_BASE:  Override the URL that the 'hzn exchange' sub-commands use to communicate with the Horizon Exchange, for example https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the Horizon Agent for the URL.)
-  USING_API_KEY:  Set this to "1" to indicate that the credential passed into the 'hzn exchange -u' flag is an WIoTP API key/token, not a Horizon Exchange user/password.
+  USING_API_KEY:  Set this to "0" to indicate that even though the credential passed into the 'hzn exchange -u' flag looks like an WIoTP API key/token, it is not so Horizon should not interpret as such.
 `)
 	app.HelpFlag.Short('h')
 	cliutils.Opts.Verbose = app.Flag("verbose", "Verbose output.").Short('v').Bool()
+	cliutils.Opts.IsDryRun = app.Flag("dry-run", "When calling the Horizon or Exchange API, do GETs, but don't do PUTs, POSTs, or DELETEs.").Bool()
+
+	versionCmd := app.Command("version", "Show the Horizon version.")	// using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
 
 	exchangeCmd := app.Command("exchange", "List and manage Horizon Exchange resources.")
 	exOrg := exchangeCmd.Flag("org", "The Horizon exchange organization ID.").Short('o').Default("public").String()
@@ -173,6 +176,7 @@ Environment Variables:
 
 	agreementCmd := app.Command("agreement", "List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.")
 	agreementListCmd := agreementCmd.Command("list", "List the active or archived agreements this edge node has made with a Horizon agreement bot.")
+	listAgreementId := agreementListCmd.Arg("agreement-id", "Show the details of this active or archived agreement.").String()
 	listArchivedAgreements := agreementListCmd.Flag("archived", "List archived agreements instead of the active agreements.").Short('r').Bool()
 	agreementCancelCmd := agreementCmd.Command("cancel", "Cancel 1 or all of the active agreements this edge node has made with a Horizon agreement bot. Usually an agbot will immediately negotiated a new agreement. If you want to cancel all agreements and not have this edge accept new agreements, run 'hzn unregister'.")
 	cancelAllAgreements := agreementCancelCmd.Flag("all", "Cancel all of the current agreements.").Short('a').Bool()
@@ -186,7 +190,8 @@ Environment Variables:
 	attributeListCmd := attributeCmd.Command("list", "List the global attributes that are currently registered on this Horizon edge node.")
 
 	serviceCmd := app.Command("service", "List or manage the microservices that are currently registered on this Horizon edge node.")
-	serviceListCmd := serviceCmd.Command("list", "List the microservices that are currently registered on this Horizon edge node.")
+	serviceListCmd := serviceCmd.Command("list", "List the microservices variable configuration that has been done on this Horizon edge node.")
+	serviceRegisteredCmd := serviceCmd.Command("registered", "List the microservices that are currently registered on this Horizon edge node.")
 
 	workloadCmd := app.Command("workload", "List or manage the workloads that are currently registered on this Horizon edge node.")
 	workloadListCmd := workloadCmd.Command("list", "List the workloads that are currently registered on this Horizon edge node.")
@@ -230,10 +235,19 @@ Environment Variables:
 	agbotCancelAllAgreements := agbotAgreementCancelCmd.Flag("all", "Cancel all of the current agreements.").Short('a').Bool()
 	agbotCancelAgreementId := agbotAgreementCancelCmd.Arg("agreement", "The active agreement to cancel.").String()
 
-	app.Version("0.0.3") //todo: get the real version of anax
+	app.Version("Run 'hzn version' to see the Horizon version.")
+	/*
+	fmt.Printf("version: %v\n", *version)
+	if *version {
+		node.Version()
+		os.Exit(0)
+	}
+	*/
 
 	// Decide which command to run
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
+	case versionCmd.FullCommand():
+		node.Version()
 	case exUserListCmd.FullCommand():
 		exchange.UserList(*exOrg, *exUserPw)
 	case exUserCreateCmd.FullCommand():
@@ -299,7 +313,7 @@ Environment Variables:
 	case nodeListCmd.FullCommand():
 		node.List()
 	case agreementListCmd.FullCommand():
-		agreement.List(*listArchivedAgreements)
+		agreement.List(*listArchivedAgreements, *listAgreementId)
 	case agreementCancelCmd.FullCommand():
 		agreement.Cancel(*cancelAgreementId, *cancelAllAgreements)
 	case meteringListCmd.FullCommand():
@@ -308,6 +322,8 @@ Environment Variables:
 		attribute.List()
 	case serviceListCmd.FullCommand():
 		service.List()
+	case serviceRegisteredCmd.FullCommand():
+		service.Registered()
 	case workloadListCmd.FullCommand():
 		workload.List()
 	case unregisterCmd.FullCommand():
