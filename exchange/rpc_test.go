@@ -129,6 +129,107 @@ func Test_ConvertPattern2(t *testing.T) {
 
 }
 
+func Test_ConvertPattern3(t *testing.T) {
+
+	org := "testorg"
+	name := "testpattern"
+
+	pa_no_wlurl := `{"label":"Weather","description":"a weather pattern","public":true,` +
+		`"workloads":[` +
+		`{"workloadUrl":"","workloadOrgid":"testorg","workloadArch":"amd64","workloadVersions":` +
+		`[{"version":"1.5.0",` +
+		`"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"upgradePolicy":{}},` +
+		`{"version":"1.5.0",` +
+		`"priority":{"priority_value":2,"retries":1,"retry_durations":3600,"verified_durations": 52},` +
+		`"upgradePolicy":{}}],` +
+		`"dataVerification":{"enabled":true,"user":"","password":"","URL":"myURL","interval":240,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
+		`"nodeHealth":{"missing_heartbeat_interval":480}}` +
+		`],` +
+		`"agreementProtocols":[{"name":"Basic"}]}`
+
+	pa_no_wlarch := `{"label":"Weather","description":"a weather pattern","public":true,` +
+		`"workloads":[` +
+		`{"workloadUrl":"https://bluehorizon.network/workloads/weather","workloadOrgid":"testorg","workloadArch":"","workloadVersions":` +
+		`[{"version":"1.5.0",` +
+		`"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"upgradePolicy":{}},` +
+		`{"version":"1.5.0",` +
+		`"priority":{"priority_value":2,"retries":1,"retry_durations":3600,"verified_durations": 52},` +
+		`"upgradePolicy":{}}],` +
+		`"dataVerification":{"enabled":true,"user":"","password":"","URL":"myURL","interval":240,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
+		`"nodeHealth":{"missing_heartbeat_interval":480}}` +
+		`],` +
+		`"agreementProtocols":[{"name":"Basic"}]}`
+
+	pa_no_wlorg := `{"label":"Weather","description":"a weather pattern","public":true,` +
+		`"workloads":[` +
+		`{"workloadUrl":"https://bluehorizon.network/workloads/weather","workloadOrgid":"","workloadArch":"amd64","workloadVersions":` +
+		`[{"version":"1.5.0",` +
+		`"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"upgradePolicy":{}},` +
+		`{"version":"1.5.0",` +
+		`"priority":{"priority_value":2,"retries":1,"retry_durations":3600,"verified_durations": 52},` +
+		`"upgradePolicy":{}}],` +
+		`"dataVerification":{"enabled":true,"user":"","password":"","URL":"myURL","interval":240,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
+		`"nodeHealth":{"missing_heartbeat_interval":480}}` +
+		`],` +
+		`"agreementProtocols":[{"name":"Basic"}]}`
+
+	pa_empty_wl_versions := `{"label":"Weather","description":"a weather pattern","public":true,` +
+		`"workloads":[` +
+		`{"workloadUrl":"https://bluehorizon.network/workloads/weather","workloadOrgid":"testorg","workloadArch":"amd64","workloadVersions":` +
+		`[],` +
+		`"dataVerification":{"enabled":true,"user":"","password":"","URL":"myURL","interval":240,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
+		`"nodeHealth":{"missing_heartbeat_interval":480}}` +
+		`],` +
+		`"agreementProtocols":[{"name":"Basic"}]}`
+
+	pa_no_wlversion := `{"label":"Weather","description":"a weather pattern","public":true,` +
+		`"workloads":[` +
+		`{"workloadUrl":"https://bluehorizon.network/workloads/weather","workloadOrgid":"testorg","workloadArch":"amd64","workloadVersions":` +
+		`[{"version":"",` +
+		`"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"upgradePolicy":{}},` +
+		`{"version":"1.5.0",` +
+		`"priority":{"priority_value":2,"retries":1,"retry_durations":3600,"verified_durations": 52},` +
+		`"upgradePolicy":{}}],` +
+		`"dataVerification":{"enabled":true,"user":"","password":"","URL":"myURL","interval":240,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
+		`"nodeHealth":{"missing_heartbeat_interval":480}}` +
+		`],` +
+		`"agreementProtocols":[{"name":"Basic"}]}`
+
+	if p_no_wlurl := create_Pattern(pa_no_wlurl, t); p_no_wlurl == nil {
+		t.Errorf("Pattern not created from %v\n", pa_no_wlurl)
+	} else if _, err := ConvertToPolicies(fmt.Sprintf("%v/%v", org, name), p_no_wlurl); err == nil {
+		t.Errorf("Error: Should get error for converting %v to a policy, but did not\n", pa_no_wlurl)
+	}
+
+	if p_no_wlarch := create_Pattern(pa_no_wlarch, t); p_no_wlarch == nil {
+		t.Errorf("Pattern not created from %v\n", pa_no_wlarch)
+	} else if _, err := ConvertToPolicies(fmt.Sprintf("%v/%v", org, name), p_no_wlarch); err == nil {
+		t.Errorf("Error: Should get error for converting %v to a policy, but did not\n", pa_no_wlarch)
+	}
+
+	if p_no_wlorg := create_Pattern(pa_no_wlorg, t); p_no_wlorg == nil {
+		t.Errorf("Pattern not created from %v\n", pa_no_wlarch)
+	} else if _, err := ConvertToPolicies(fmt.Sprintf("%v/%v", org, name), p_no_wlorg); err == nil {
+		t.Errorf("Error: Should get error for converting %v to a policy, but did not\n", pa_no_wlorg)
+	}
+
+	if p_empty_wl_versions := create_Pattern(pa_empty_wl_versions, t); p_empty_wl_versions == nil {
+		t.Errorf("Pattern not created from %v\n", pa_empty_wl_versions)
+	} else if _, err := ConvertToPolicies(fmt.Sprintf("%v/%v", org, name), p_empty_wl_versions); err == nil {
+		t.Errorf("Error: Should get error for converting %v to a policy, but did not\n", pa_empty_wl_versions)
+	}
+
+	if p_no_wlversion := create_Pattern(pa_no_wlversion, t); p_no_wlversion == nil {
+		t.Errorf("Pattern not created from %v\n", pa_no_wlarch)
+	} else if _, err := ConvertToPolicies(fmt.Sprintf("%v/%v", org, name), p_no_wlversion); err == nil {
+		t.Errorf("Error: Should get error for converting %v to a policy, but did not\n", pa_no_wlversion)
+	}
+}
+
 func Test_makePolicyName1(t *testing.T) {
 
 	pat := "pat1"
