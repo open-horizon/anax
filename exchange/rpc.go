@@ -1207,6 +1207,13 @@ func ConvertToPolicies(patternId string, p *Pattern) ([]*policy.Policy, error) {
 	// Each pattern contains a list of workloads that needs to be converted to a policy
 	for _, workload := range p.Workloads {
 
+		// make sure required fields are not empty
+		if workload.WorkloadURL == "" || workload.WorkloadOrg == "" || workload.WorkloadArch == "" {
+			return nil, fmt.Errorf("workloadUrl, workloadOrgid or workloadArch is empty string in pattern %v.", name)
+		} else if workload.WorkloadVersions == nil || len(workload.WorkloadVersions) == 0 {
+			return nil, fmt.Errorf("The workloadVersions array is empty in pattern %v.", name)
+		}
+
 		policyName := makePolicyName(name, workload.WorkloadURL, workload.WorkloadOrg, workload.WorkloadArch)
 
 		pol := policy.Policy_Factory(fmt.Sprintf("%v", policyName))
@@ -1224,6 +1231,9 @@ func ConvertToPolicies(patternId string, p *Pattern) ([]*policy.Policy, error) {
 
 		// Copy workload metadata into the policy
 		for _, wl := range workload.WorkloadVersions {
+			if wl.Version == "" {
+				return nil, fmt.Errorf("The version for workload %v arch %v is empty in pattern %v.", workload.WorkloadURL, workload.WorkloadArch, name)
+			}
 			newWL := policy.Workload_Factory(workload.WorkloadURL, workload.WorkloadOrg, wl.Version, workload.WorkloadArch)
 			newWL.Priority = (*policy.Workload_Priority_Factory(wl.Priority.PriorityValue, wl.Priority.Retries, wl.Priority.RetryDurationS, wl.Priority.VerifiedDurationS))
 			newWL.DeploymentOverrides = wl.DeploymentOverrides
