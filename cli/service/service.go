@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/policy"
 )
 
 type APIMicroservices struct {
@@ -32,6 +33,7 @@ func List() {
 	var apiOutput APIMicroservices
 	// Note: intentionally querying /microservice, instead of just /microservice/config, because in the future we will probably want to mix in some key runtime info
 	httpCode := cliutils.HorizonGet("microservice", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput)
+	//todo: i think config can be queried even before the node is registered?
 	if httpCode == cliutils.ANAX_NOT_CONFIGURED_YET {
 		cliutils.Fatal(cliutils.HTTP_ERROR, cliutils.MUST_REGISTER_FIRST)
 	}
@@ -55,12 +57,28 @@ func List() {
 		}
 		services = append(services, serv)
 	}
-	//todo: should we mix in any info from /microservice/policy?
 
 	// Convert to json and output
 	jsonBytes, err := json.MarshalIndent(services, "", cliutils.JSON_INDENT)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn service list' output: %v", err)
+	}
+	fmt.Printf("%s\n", jsonBytes)
+}
+
+
+func Registered() {
+	// The registered microservices are listed as policies
+	apiOutput := make(map[string]policy.Policy)
+	httpCode := cliutils.HorizonGet("microservice/policy", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput)
+	if httpCode == cliutils.ANAX_NOT_CONFIGURED_YET {
+		cliutils.Fatal(cliutils.HTTP_ERROR, cliutils.MUST_REGISTER_FIRST)
+	}
+
+	// Convert to json and output
+	jsonBytes, err := json.MarshalIndent(apiOutput, "", cliutils.JSON_INDENT)
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn service registered' output: %v", err)
 	}
 	fmt.Printf("%s\n", jsonBytes)
 }

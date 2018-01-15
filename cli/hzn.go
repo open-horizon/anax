@@ -190,7 +190,8 @@ Environment Variables:
 	attributeListCmd := attributeCmd.Command("list", "List the global attributes that are currently registered on this Horizon edge node.")
 
 	serviceCmd := app.Command("service", "List or manage the microservices that are currently registered on this Horizon edge node.")
-	serviceListCmd := serviceCmd.Command("list", "List the microservices that are currently registered on this Horizon edge node.")
+	serviceListCmd := serviceCmd.Command("list", "List the microservices variable configuration that has been done on this Horizon edge node.")
+	serviceRegisteredCmd := serviceCmd.Command("registered", "List the microservices that are currently registered on this Horizon edge node.")
 
 	workloadCmd := app.Command("workload", "List or manage the workloads that are currently registered on this Horizon edge node.")
 	workloadListCmd := workloadCmd.Command("list", "List the workloads that are currently registered on this Horizon edge node.")
@@ -321,6 +322,8 @@ Environment Variables:
 		attribute.List()
 	case serviceListCmd.FullCommand():
 		service.List()
+	case serviceRegisteredCmd.FullCommand():
+		service.Registered()
 	case workloadListCmd.FullCommand():
 		workload.List()
 	case unregisterCmd.FullCommand():
