@@ -48,6 +48,7 @@ func (w *WorkloadInput) DefinesVariable(name string) string {
 }
 
 func WorkloadList(org, userPw, workload string, namesOnly bool) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	if workload != "" {
 		workload = "/" + workload
 	}
@@ -84,6 +85,7 @@ func WorkloadList(org, userPw, workload string, namesOnly bool) {
 
 // WorkloadPublish signs the MS def and puts it in the exchange
 func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the workload metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
 	var workInput WorkloadInput
@@ -135,6 +137,7 @@ func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath string) {
 
 // WorkloadVerify verifies the deployment strings of the specified workload resource in the exchange.
 func WorkloadVerify(org, userPw, workload, keyFilePath string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	// Get workload resource from exchange
 	var output exchange.GetWorkloadsResponse
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+workload, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
@@ -168,6 +171,7 @@ func WorkloadVerify(org, userPw, workload, keyFilePath string) {
 }
 
 func WorkloadRemove(org, userPw, workload string, force bool) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	if !force {
 		cliutils.ConfirmRemove("Are you sure you want to remove workload '" + org + "/" + workload + "' from the Horizon Exchange?")
 	}

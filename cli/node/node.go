@@ -76,3 +76,9 @@ func List() {
 	}
 	fmt.Printf("%s\n", jsonBytes) //todo: is there a way to output with json syntax highlighting like jq does?
 }
+
+func Version() {
+	status := api.Info{}
+	cliutils.HorizonGet("status", []int{200}, &status)
+	fmt.Println(status.Configuration.HorizonVersion)
+}

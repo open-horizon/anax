@@ -42,6 +42,7 @@ const (
 // Holds the cmd line flags that were set so other pkgs can access
 type GlobalOptions struct {
 	Verbose *bool
+	UsingApiKey bool	// should go away soon
 }
 
 var Opts GlobalOptions
@@ -87,9 +88,25 @@ func SplitIdToken(idToken string) (id, token string) {
 	return
 }
 
+// SetWhetherUsingApiKey is a hack that will hopefully go away when the wiotp exchange api is consistent whether access via
+// an api key or device id/token.
+func SetWhetherUsingApiKey(creds string) {
+	if os.Getenv("USING_API_KEY") == "0" {
+		return		// this is their way of telling us that even though the creds look like an api key it isn't
+	}
+	// WIoTP API keys start with: a-<6charorgid>-
+	if matched, err := regexp.MatchString(`^a-[A-Za-z0-9]{6}-`, creds); err != nil {
+		Fatal(INTERNAL_ERROR, "problem testing api key match: %v", err)
+	} else if matched {
+		Opts.UsingApiKey = true
+		Verbose("Using API key")
+	}
+}
+
 // OrgAndCreds prepends the org to creds (separated by /) unless creds already has an org prepended
 func OrgAndCreds(org, creds string) string {
-	if os.Getenv("USING_API_KEY") == "1" {
+	// org is the org of the resource being accessed, so if they want to use creds from a different org, the prepend that org to creds before calling this
+	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" {
 		return creds // WIoTP API keys are globally unique and shouldn't be prepended with the org
 	}
 	id, _ := SplitIdToken(creds) // only look for the / in the id, because the token is more likely to have special chars
@@ -319,7 +336,7 @@ func GetExchangeUrl() string {
 		exchUrl = status.Configuration.ExchangeAPI
 	}
 	exchUrl = strings.TrimSuffix(exchUrl, "/") // anax puts a trailing slash on it
-	if os.Getenv("USING_API_KEY") == "1" {
+	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" {
 		re := regexp.MustCompile(`edgenode$`)
 		exchUrl = re.ReplaceAllLiteralString(exchUrl, "edge")
 	}

@@ -38,6 +38,7 @@ func (w *MicroserviceInput) DefinesVariable(name string) string {
 }
 
 func MicroserviceList(org string, userPw string, microservice string, namesOnly bool) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	if microservice != "" {
 		microservice = "/" + microservice
 	}
@@ -109,6 +110,7 @@ func CheckTorrentField(torrent string, index int) {
 
 // MicroservicePublish signs the MS def and puts it in the exchange
 func MicroservicePublish(org string, userPw string, jsonFilePath string, keyFilePath string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the MS metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
 	var microInput MicroserviceInput
@@ -159,6 +161,7 @@ func MicroservicePublish(org string, userPw string, jsonFilePath string, keyFile
 
 // MicroserviceVerify verifies the deployment strings of the specified microservice resource in the exchange.
 func MicroserviceVerify(org, userPw, microservice, keyFilePath string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	// Get microservice resource from exchange
 	var output exchange.GetMicroservicesResponse
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+microservice, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
@@ -192,6 +195,7 @@ func MicroserviceVerify(org, userPw, microservice, keyFilePath string) {
 }
 
 func MicroserviceRemove(org, userPw, microservice string, force bool) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	if !force {
 		cliutils.ConfirmRemove("Are you sure you want to remove microservice '" + org + "/" + microservice + "' from the Horizon Exchange?")
 	}

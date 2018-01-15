@@ -92,30 +92,48 @@ func getAgreements(archivedAgreements bool) (apiAgreements []persistence.Establi
 	return
 }
 
-func List(archivedAgreements bool) {
+func List(archivedAgreements bool, agreementId string) {
 	apiAgreements := getAgreements(archivedAgreements)
 
-	// Go thru the apiAgreements and convert into our output struct and then print
-	if !archivedAgreements {
-		agreements := make([]ActiveAgreement, len(apiAgreements))
+	if agreementId != "" {
+		// Look for our agreement id. This works for either active or archived
 		for i := range apiAgreements {
-			agreements[i].CopyAgreementInto(apiAgreements[i])
+			if agreementId == apiAgreements[i].CurrentAgreementId {
+				// Found it
+				jsonBytes, err := json.MarshalIndent(apiAgreements[i], "", cliutils.JSON_INDENT)
+				if err != nil {
+					cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal agreement with index %d: %v", i, err)
+				}
+				fmt.Printf("%s\n", jsonBytes)
+				return
+			}
 		}
-		jsonBytes, err := json.MarshalIndent(agreements, "", cliutils.JSON_INDENT)
-		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn agreement list' output: %v", err)
-		}
-		fmt.Printf("%s\n", jsonBytes)
+		// Did not find it
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "agreement id %s not found", agreementId)
 	} else {
-		agreements := make([]ArchivedAgreement, len(apiAgreements))
-		for i := range apiAgreements {
-			agreements[i].CopyAgreementInto(apiAgreements[i])
+		// Listing all active or archived agreements. Go thru apiAgreements and convert into our output struct and then print
+		if !archivedAgreements {
+			agreements := make([]ActiveAgreement, len(apiAgreements))
+			for i := range apiAgreements {
+				agreements[i].CopyAgreementInto(apiAgreements[i])
+			}
+			jsonBytes, err := json.MarshalIndent(agreements, "", cliutils.JSON_INDENT)
+			if err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn agreement list' output: %v", err)
+			}
+			fmt.Printf("%s\n", jsonBytes)
+		} else {
+			// Archived agreements
+			agreements := make([]ArchivedAgreement, len(apiAgreements))
+			for i := range apiAgreements {
+				agreements[i].CopyAgreementInto(apiAgreements[i])
+			}
+			jsonBytes, err := json.MarshalIndent(agreements, "", cliutils.JSON_INDENT)
+			if err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn agreement list' output: %v", err)
+			}
+			fmt.Printf("%s\n", jsonBytes)
 		}
-		jsonBytes, err := json.MarshalIndent(agreements, "", cliutils.JSON_INDENT)
-		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn agreement list' output: %v", err)
-		}
-		fmt.Printf("%s\n", jsonBytes)
 	}
 }
 

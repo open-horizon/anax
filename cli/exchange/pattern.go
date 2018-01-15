@@ -55,6 +55,7 @@ type PatternInput struct {
 }
 
 func PatternList(org string, userPw string, pattern string, namesOnly bool) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	if pattern != "" {
 		pattern = "/" + pattern
 	}
@@ -89,6 +90,7 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 
 // PatternPublish signs the MS def and puts it in the exchange
 func PatternPublish(org string, userPw string, jsonFilePath string, keyFilePath string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the pattern metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
 	var patInput PatternInput
@@ -127,6 +129,7 @@ func PatternPublish(org string, userPw string, jsonFilePath string, keyFilePath 
 }
 
 func PatternVerify(org, userPw, pattern, keyFilePath string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	// Get pattern resource from exchange
 	var output ExchangePatterns
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
@@ -163,6 +166,7 @@ func PatternVerify(org, userPw, pattern, keyFilePath string) {
 }
 
 func PatternRemove(org, userPw, pattern string, force bool) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	if !force {
 		cliutils.ConfirmRemove("Are you sure you want to remove pattern '" + org + "/" + pattern + "' from the Horizon Exchange?")
 	}
@@ -186,6 +190,7 @@ func copyPatternOutputToInput(output *PatternOutput, input *PatternInput) {
 // PatternAddWorkload reads json for 1 element of the workloads array of a pattern, gets the named pattern from the
 // exchange, and then either replaces that workload array element (if it already exists), or adds it.
 func PatternAddWorkload(org, userPw, pattern, workloadFilePath, keyFilePath string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the workload metadata
 	newBytes := cliutils.ReadJsonFile(workloadFilePath)
 	var workInput WorkloadReference
@@ -236,6 +241,7 @@ func PatternAddWorkload(org, userPw, pattern, workloadFilePath, keyFilePath stri
 }
 
 func PatternDelWorkload(org, userPw, pattern, workloadOrg, workloadUrl, workloadArch string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	// Get the pattern from the exchange
 	var output ExchangePatterns
 	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org, userPw), []int{200}, &output)
