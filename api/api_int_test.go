@@ -24,6 +24,7 @@ import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/worker"
+	"github.com/open-horizon/rsapss-tool/listkeys"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -134,81 +135,6 @@ func simpleMod(t *testing.T, method string, pp *url.URL, expectedCode int, paylo
 	return nil
 }
 
-// TODO: fix this test after refactor of service: needs a mock exchange
-
-//func Test_API_service_attribute_Suite(suite *testing.T) {
-//	_, db, err := setup()
-//	if err != nil {
-//		suite.Error(err)
-//	}
-//	// we construct our own API instance so we can set route facts
-//	api := &API{
-//		Manager: worker.Manager{
-//			Config:   &config.HorizonConfig{},
-//			Messages: nil,
-//		},
-//
-//		db:          db,
-//		pm:          nil,
-//		bcState:     make(map[string]map[string]BlockchainState),
-//		bcStateLock: sync.Mutex{},
-//	}
-//
-//	router := api.router(false)
-//
-//	// TODO: replace this with a recording server after the destination files are determined not to conflict b/n suites in the same package
-//	server := httptest.NewServer(router)
-//
-//	// register first
-//	_, err = persistence.SaveNewExchangeDevice(db, "device-22", "tokenval", "Device 22", false, "myorg", ".*")
-//	assert.Nil(suite, err)
-//
-//	suite.Run("POST to /service with attributes is accepted", func(t *testing.T) {
-//		payload := `{
-//  "sensor_url": "https://bluehorizon.network/microservices/no-such-service",
-//  "sensor_name": "no-such",
-//  "sensor_version": "1.0.0",
-//  "attributes": [
-//    {
-//      "type": "AgreementProtocolAttributes",
-//      "label": "Agreement Protocols",
-//      "publishable": true,
-//      "host_only": false,
-//      "mappings": {
-//        "protocols": [
-//          {
-//            "Citizen Scientist": [
-//              {
-//                  "name": "hl2",
-//                  "type": "ethereum",
-//                  "organization": "IBM"
-//              }
-//            ]
-//          }
-//        ]
-//      }
-//    }
-//  ]
-//}`
-//
-//		pp, _ := url.Parse(fmt.Sprintf("%s/%s", server.URL, "service"))
-//		client := http.Client{}
-//
-//		req, err := http.NewRequest(http.MethodPost, pp.String(), bytes.NewReader([]byte(payload)))
-//		assert.Nil(t, err)
-//		assert.NotNil(t, req)
-//
-//		req.Header.Add("Content-Type", "application/json; charset=utf-8")
-//
-//		resp, err := client.Do(req)
-//		fmt.Printf("******** %v", err.Error())
-//		assert.Nil(t, err)
-//		assert.NotNil(t, resp)
-//		//assert.EqualValues(t, http.StatusOK, resp.StatusCode)
-//	})
-//
-//}
-
 func Test_API_attribute_Suite(suite *testing.T) {
 	dir, db, err := setup()
 	if err != nil {
@@ -275,6 +201,51 @@ func Test_API_attribute_Suite(suite *testing.T) {
 
 	// another server, this one won't record
 	server := httptest.NewServer(router)
+
+	// setup: PUT x509 cert to anax for evaluation later
+	testKeyName := "Horizon-2111fe38d0aad1887dec4e1b7fb5e083fde3a393-public.pem"
+
+	putURL, _ := url.Parse(fmt.Sprintf("%s/%s/%s", server.URL, "trust", testKeyName))
+	req, err := http.NewRequest(http.MethodPut, putURL.String(), bytes.NewReader([]byte(`-----BEGIN CERTIFICATE-----
+MIIFJTCCAw2gAwIBAgIUIRH+ONCq0Yh97E4bf7Xgg/3jo5MwDQYJKoZIhvcNAQEL
+BQAwPDEQMA4GA1UEChMHSG9yaXpvbjEoMCYGA1UEAwwfZGV2ZWxvcG1lbnRAYmx1
+ZWhvcml6b24ubmV0d29yazAeFw0xNzEyMDgwNTIxMzhaFw0yMDAxMDcxNzIxMzVa
+MDwxEDAOBgNVBAoTB0hvcml6b24xKDAmBgNVBAMMH2RldmVsb3BtZW50QGJsdWVo
+b3Jpem9uLm5ldHdvcmswggIhMA0GCSqGSIb3DQEBAQUAA4ICDgAwggIJAoICAAsN
+jfwgD1eGct8Xewl7sk3qF1xPgovZPDi6OQxGU4VuOg15LyfS6hYK83kx205BMzb+
+eS1lvP2eLUD/73iheJ5dTUGb/L8DvywF/cYYROUxjxCUMYEKTlM6Y9s4Amyc21Fh
+NGH+ADpP9JieYA1A+zwqY+g5aa7/O5JmAIln1RBlNWPH84Qh5iq/jyY/uUDpJJzm
+Xd2XgCSR9hDagJQzJ1b6Y6d3wB+t7jXJL4usVBR9k+IjKPT9fTDlH85modWKA+fx
+jXD29W2iYcKR36QGJAf4+uW6j1ZHPqzDfnbuy5NCegWAFOnUZFo9TwpwMRfBzH9w
+zyaJvuuTwcW5JDRy+SJFuRWthLChIvZCC8RignFM05oFUjBTnZFWfOYVdioe3mqp
+15LpH4Rr11XvR8ZwFpl1s9zeugwQZAa9vnTzrCSOnqQ4JBZ6XrtuqsEwM+2NonCQ
+GX/B4ldB4QchiIys4PN+Qv35BCEYuCEvXpr3wv9Lnq4tkUF7sTnilMSYuTASCI1p
+leE1Bb+Iz4pwi0R4UmtAKlNsUjtmXDKNvIvAjMfLkFwWhoelsFXFdsi7CXGJpsyo
+y8el5I2ZF9HlZCla4L63Ye/vaAee6qXY+0Bt5Vb/++885d5Zq07ymJBbf18si0uK
+q7JSw4YB3ol3W5r8q3vxKQFssVl2DJpWxNm4GgaFAgMBAAGjIDAeMA4GA1UdDwEB
+/wQEAwIHgDAMBgNVHRMBAf8EAjAAMA0GCSqGSIb3DQEBCwUAA4ICAQAI3qc5KCnJ
+cxrAVHUVlEQ34L2g1w3OB3Y2IhzrDPwfZWyT/IUq4J2yIjgMt2UzfHlJD/V8cunb
+Hsz41pxr+Oqifnzj0uTXctX8eS0EsLYu6OG0nhgrx2Z6Q9sHk6GvWYfDHNfJ1ETo
+SpmcN1F2Ro/ngqt3N5nYsKYQub/x4VozK3FI1Lr245+6AF5BJBfZfZtCukNOgOnz
+5jgRJqNE2n5ADEwwIf0lsAckBM6uMMIWzqYRCZQe5n+h8e8avk8+9MOW5EKmExvq
+9TundbWDSOxJv28i8sEp5apVKWHgTCaQNb/xSXDEruKUQVDfm80F2HZPsQdUsFrK
+MyOV+rLKymN9UJxbbszi02X7q/+hVH7eCn4UJ970AgVKRTREOPwzZyQHBvUymnZQ
+1Gm/I8Z+zWcbpViYzNkmCdaQTVnSo60ewNDdeDBcbDyvJLs9VutQgVooHP5u2iWe
+5lZQlr6OBX+B5LRujJBNKD58quwAsKNFbuOx+yTNS4NbR9Gf4aQj5neUA2UPn+62
+RyutzM1amwOzzalhBcHJQaTiHR0QKQWyvvzlT3vDyg1DBZC2ReyDSmkT7CkJoC0O
+vTLlpah1Y8Dvd1Mg6DorvN7eHb+R9pRYz6m/ll84KeLHyX+ml9Yj9Xem+H7MMYh7
+6OPMAFGj9NP8jRVx/m71mKa1rIqqa+Wpew==
+-----END CERTIFICATE-----`)))
+	assert.Nil(suite, err)
+	assert.NotNil(suite, req)
+
+	client := http.Client{}
+	resp, err := client.Do(req)
+	assert.Nil(suite, err)
+
+	if resp.StatusCode-399 > 0 {
+		suite.Fatalf("Failure putting cert: %v", resp)
+	}
 
 	suite.Run("GET fails unless device is registered", func(t *testing.T) {
 		pp, _ := url.Parse(fmt.Sprintf("%s/%s", recordingServer.URL, "attribute"))
@@ -495,6 +466,45 @@ SoxItJkxfl2adAjY2DVzdhY=
 		if resp.StatusCode-400 > 0 {
 			t.Errorf("Unexpected status code returned from API: %v. Response data: %v", resp.StatusCode, b)
 		}
+	})
+
+	suite.Run("GET /trust returns array of cert / key filenames", func(t *testing.T) {
+		pp, _ := url.Parse(fmt.Sprintf("%s/%s", recordingServer.URL, "trust"))
+		resp, err := http.Get(pp.String())
+		assert.Nil(t, err)
+
+		b, err := handleResp(resp, http.StatusOK)
+		assert.Nil(t, err)
+
+		var certList map[string][]string
+		err = json.Unmarshal(b, &certList)
+		assert.Nil(t, err)
+
+		found := false
+		for _, certName := range certList["pem"] {
+			if certName == testKeyName {
+				found = true
+			}
+		}
+
+		if !found {
+			t.Errorf("Expected key name not found in returned list: %v. Complete return object: %v", testKeyName, certList)
+		}
+	})
+
+	suite.Run("GET /trust?verbose=true returns array of cert objects with detail", func(t *testing.T) {
+		pp, _ := url.Parse(fmt.Sprintf("%s/%s?verbose=true", recordingServer.URL, "trust"))
+		resp, err := http.Get(pp.String())
+		assert.Nil(t, err)
+
+		b, err := handleResp(resp, http.StatusOK)
+		assert.Nil(t, err)
+
+		var certList map[string][]listkeys.KeyPairSimple
+		err = json.Unmarshal(b, &certList)
+		assert.Nil(t, err)
+
+		assert.EqualValues(t, "21:11:fe:38:d0:aa:d1:88:7d:ec:4e:1b:7f:b5:e0:83:fd:e3:a3:93", certList["pem"][0].SerialNumber)
 	})
 
 	// shutdown

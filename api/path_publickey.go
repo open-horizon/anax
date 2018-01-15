@@ -1,8 +1,6 @@
 package api
 
 import (
-	"crypto/x509"
-	"encoding/pem"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -10,7 +8,10 @@ import (
 	"path"
 	"strings"
 
+	"github.com/golang/glog"
+
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/rsapss-tool/listkeys"
 	"github.com/open-horizon/rsapss-tool/verify"
 )
 
@@ -33,19 +34,34 @@ func FindPublicKeyForOutput(fileName string, config *config.HorizonConfig) (stri
 
 }
 
-func FindPublicKeysForOutput(config *config.HorizonConfig) (map[string][]string, error) {
+func FindPublicKeysForOutput(config *config.HorizonConfig, verbose bool) (map[string][]interface{}, error) {
 
 	// Get a list of all valid public key PEM files in the configured location
 	pubKeyDir := config.UserPublicKeyPath()
 	files, err := getPemFiles(pubKeyDir)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("unable to read public key directory %v, error: %v", pubKeyDir, err))
+		return nil, errors.New(fmt.Sprintf("unable to read trusted cert (public key) directory %v, error: %v", pubKeyDir, err))
 	}
 
-	response := make(map[string][]string)
-	response["pem"] = make([]string, 0, 10)
+	response := map[string][]interface{}{}
+	response["pem"] = make([]interface{}, 0, 10)
 	for _, pf := range files {
-		response["pem"] = append(response["pem"], pf.Name())
+
+		var value interface{}
+		if verbose {
+			keyPath := path.Join(pubKeyDir, pf.Name())
+			keyPair, err := listkeys.ReadKeyPair(keyPath)
+
+			if err != nil {
+				glog.Errorf("Error reading user x509 cert from file path: %v. Error: %v", keyPath, err)
+				continue
+			}
+			value = keyPair.ToKeyPairSimple()
+		} else {
+			value = pf.Name()
+		}
+
+		response["pem"] = append(response["pem"], value)
 	}
 
 	return response, nil
@@ -58,9 +74,9 @@ func UploadPublicKey(filename string,
 	errorhandler ErrorHandler) bool {
 
 	if filename == "" {
-		return errorhandler(NewAPIUserInputError("no filename specified", "public key file"))
+		return errorhandler(NewAPIUserInputError("no filename specified", "trusted cert file"))
 	} else if !strings.HasSuffix(filename, ".pem") {
-		return errorhandler(NewAPIUserInputError("filename must have .pem suffix", "public key file"))
+		return errorhandler(NewAPIUserInputError("filename must have .pem suffix", "trusted cert file"))
 	}
 
 	targetPath := config.UserPublicKeyPath()
@@ -72,11 +88,11 @@ func UploadPublicKey(filename string,
 	// by the HTTP caller.
 
 	if _, err := verify.ValidKeyOrCert(inBytes); err != nil {
-		return errorhandler(NewAPIUserInputError("provided public key or cert is not valid", "public key file"))
+		return errorhandler(NewAPIUserInputError(fmt.Sprintf("provided public key or cert is not valid; error: %v", err), "trusted cert file"))
 	} else if err := os.MkdirAll(targetPath, 0644); err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("unable to create user key directory %v, error %v", targetPath, err)))
+		return errorhandler(NewSystemError(fmt.Sprintf("unable to create trusted cert directory %v, error: %v", targetPath, err)))
 	} else if err := ioutil.WriteFile(targetFile, inBytes, 0644); err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("unable to write uploaded public key file %v, error: %v", targetFile, err)))
+		return errorhandler(NewSystemError(fmt.Sprintf("unable to write uploaded trusted cert file %v, error: %v", targetFile, err)))
 	}
 	return false
 }
@@ -86,14 +102,14 @@ func DeletePublicKey(fileName string,
 	errorhandler ErrorHandler) bool {
 
 	if fileName == "" {
-		return errorhandler(NewAPIUserInputError("no filename specified", "public key file"))
+		return errorhandler(NewAPIUserInputError("no filename specified", "trusted cert file"))
 	}
 
 	// Get a list of all valid public key PEM files in the configured location
 	pubKeyDir := config.UserPublicKeyPath()
 	files, err := getPemFiles(pubKeyDir)
 	if err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("unable to read public key directory %v, error: %v", pubKeyDir, err)))
+		return errorhandler(NewSystemError(fmt.Sprintf("unable to read trusted cert directory %v, error: %v", pubKeyDir, err)))
 	}
 
 	// If the input file name is not in the list of valid pem files, then return an error
@@ -110,7 +126,7 @@ func DeletePublicKey(fileName string,
 	// The input filename is present, remove it
 	err = os.Remove(pubKeyDir + "/" + fileName)
 	if err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("unable to delete public key file %v, error: %v", path.Join(pubKeyDir, fileName), err)))
+		return errorhandler(NewSystemError(fmt.Sprintf("unable to delete trusted cert file %v, error: %v", path.Join(pubKeyDir, fileName), err)))
 	}
 	return false
 
@@ -130,9 +146,7 @@ func getPemFiles(homePath string) ([]os.FileInfo, error) {
 				fName := homePath + "/" + fileInfo.Name()
 				if pubKeyData, err := ioutil.ReadFile(fName); err != nil {
 					continue
-				} else if block, _ := pem.Decode(pubKeyData); block == nil {
-					continue
-				} else if _, err := x509.ParsePKIXPublicKey(block.Bytes); err != nil {
+				} else if _, err := verify.ValidKeyOrCert(pubKeyData); err != nil {
 					continue
 				} else {
 					res = append(res, fileInfo)
