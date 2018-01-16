@@ -141,6 +141,8 @@ func (c *CSProtocolHandler) PersistAgreement(wi *InitiateAgreement, proposal abs
 	if proposal.Version() == 1 {
 		if ag, err := FindSingleAgreementByAgreementId(c.db, proposal.AgreementId(), c.Name(), []AFilter{UnarchivedAFilter()}); err != nil {
 			glog.Errorf(CPHlogStringW(workerID, fmt.Sprintf("error retrieving agreement %v from db, error: %v", proposal.AgreementId(), err)))
+		} else if ag == nil {
+			glog.Errorf(CPHlogStringW(workerID, fmt.Sprintf("cannot find agreement %v from db.", proposal.AgreementId())))
 		} else {
 			ph := c.AgreementProtocolHandler(ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg)
 			if csph, ok := ph.(*citizenscientist.ProtocolHandler); ok {
@@ -460,6 +462,8 @@ func (c *CSProtocolHandler) PostReply(agreementId string, proposal abstractproto
 	agreement, err := FindSingleAgreementByAgreementId(c.db, agreementId, c.Name(), []AFilter{UnarchivedAFilter()})
 	if err != nil {
 		glog.Errorf(CPHlogStringW(workerId, fmt.Sprintf("error querying agreement %v, error: %v", agreementId, err)))
+	} else if agreement == nil {
+		glog.Errorf(CPHlogStringW(workerId, fmt.Sprintf("cannot find agreement %v from db.", agreementId)))
 	} else if agreement.AgreementProtocolVersion < 2 {
 		if aph := c.AgreementProtocolHandler(agreement.BlockchainType, agreement.BlockchainName, agreement.BlockchainOrg); aph == nil {
 			glog.Errorf(CPHlogStringW(workerId, fmt.Sprintf("for %v agreement protocol handler not ready", agreementId)))
