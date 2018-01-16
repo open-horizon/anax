@@ -44,13 +44,13 @@ endif
 all: deps all-nodeps
 all-nodeps: gopathlinks $(EXECUTABLE) $(CLI_EXECUTABLE)
 
-$(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') $(CLI_EXECUTABLE)
+$(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') $(CLI_EXECUTABLE) gopathlinks
 	@echo "Producing $(EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
 	    $(COMPILE_ARGS) go build -o $(EXECUTABLE)
 
-$(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*')
+$(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathlinks
 	@echo "Producing $(CLI_EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
@@ -119,7 +119,7 @@ format:
 	@echo "Formatting all Golang source code with gofmt"
 	find . -name '*.go' -not -path './vendor/*' -exec gofmt -l -w {} \;
 
-lint:
+lint: gopathlinks
 	@echo "Checking source code for style issues and statically-determinable errors"
 	-golint ./... | grep -v "vendor/"
 	-cd $(PKGPATH) && \
@@ -128,17 +128,17 @@ lint:
 pull: deps
 
 # only unit tests
-test:
+test: gopathlinks
 	@echo "Executing unit tests"
 	-@cd $(PKGPATH) && \
 		GOPATH=$(TMPGOPATH) go test -cover -tags=unit $(PKGS)
 
-test-integration:
+test-integration: gopathlinks
 	@echo "Executing integration tests"
 	-@cd $(PKGPATH) && \
 		GOPATH=$(TMPGOPATH) go test -cover -tags=integration $(PKGS)
 
-test-ci:
+test-ci: gopathlinks
 	@echo "Executing integration tests intended for CI systems with special configuration"
 	-@cd $(PKGPATH) && \
 		GOPATH=$(TMPGOPATH) go test -cover -tags=ci $(PKGS)
