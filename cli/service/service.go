@@ -66,7 +66,6 @@ func List() {
 	fmt.Printf("%s\n", jsonBytes)
 }
 
-
 func Registered() {
 	// The registered microservices are listed as policies
 	apiOutput := make(map[string]policy.Policy)

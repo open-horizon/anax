@@ -20,6 +20,7 @@ import (
 const (
 	HZN_API             = "http://localhost"
 	AGBOT_HZN_API       = "http://localhost:8046"
+	WIOTP_BASE_URL      = "internetofthings.ibmcloud.com/api/v0002"
 	JSON_INDENT         = "  "
 	MUST_REGISTER_FIRST = "this command can not be run before running 'hzn register'"
 
@@ -41,9 +42,9 @@ const (
 
 // Holds the cmd line flags that were set so other pkgs can access
 type GlobalOptions struct {
-	Verbose *bool
-	IsDryRun *bool
-	UsingApiKey bool	// should go away soon
+	Verbose     *bool
+	IsDryRun    *bool
+	UsingApiKey bool // should go away soon
 }
 
 var Opts GlobalOptions
@@ -97,7 +98,7 @@ func SplitIdToken(idToken string) (id, token string) {
 // an api key or device id/token.
 func SetWhetherUsingApiKey(creds string) {
 	if os.Getenv("USING_API_KEY") == "0" {
-		return		// this is their way of telling us that even though the creds look like an api key it isn't
+		return // this is their way of telling us that even though the creds look like an api key it isn't
 	}
 	// WIoTP API keys start with: a-<6charorgid>-
 	if matched, err := regexp.MatchString(`^a-[A-Za-z0-9]{6}-`, creds); err != nil {
@@ -501,6 +502,71 @@ func ConvertTime(unixSeconds uint64) string {
 		return ""
 	}
 	return time.Unix(int64(unixSeconds), 0).String()
+}
+
+// GetWiotpUrl returns the wiotp url from the env var and org
+func GetWiotpUrl(org string) (url string) {
+	testEnv := os.Getenv("WIOTP_TEST_ENV")
+	if testEnv == "" {
+		url = "https://" + org + "." + WIOTP_BASE_URL
+	} else {
+		testEnv = strings.TrimPrefix(testEnv, ".") // in some contexts we required WIOTP_TEST_ENV to have a leading .
+		url = "https://" + org + "." + testEnv + "." + WIOTP_BASE_URL
+	}
+	return url
+}
+
+// WiotpGet runs a GET to the wiotp api and fills in the specified json structure. If the structure is just a string, fill in the raw json.
+// If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
+func WiotpGet(urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, structure interface{}) (httpCode int) {
+	url := urlBase + "/" + urlSuffix
+	apiMsg := http.MethodGet + " " + url
+	Verbose(apiMsg)
+	httpClient := &http.Client{}
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
+	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		Fatal(HTTP_ERROR, "Can't connect to the WIoTP REST API to run %s: %v", apiMsg, err)
+	}
+	defer resp.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		Fatal(HTTP_ERROR, "failed to read body response from %s: %v", apiMsg, err)
+	}
+	httpCode = resp.StatusCode
+	Verbose("HTTP code: %d", httpCode)
+	if !isGoodCode(httpCode, goodHttpCodes) {
+		Fatal(HTTP_ERROR, "bad HTTP code %d from %s, output: %s", httpCode, apiMsg, string(bodyBytes))
+	}
+
+	if httpCode == goodHttpCodes[0] {
+		switch s := structure.(type) {
+		case *string:
+			// If the structure to fill in is just a string, unmarshal/remarshal it to get it in json indented form, and then return as a string
+			//todo: this gets it in json indented form, but also returns the fields in random order (because they were interpreted as a map)
+			var jsonStruct interface{}
+			err = json.Unmarshal(bodyBytes, &jsonStruct)
+			if err != nil {
+				Fatal(JSON_PARSING_ERROR, "failed to unmarshal exchange body response from %s: %v", apiMsg, err)
+			}
+			jsonBytes, err := json.MarshalIndent(jsonStruct, "", JSON_INDENT)
+			if err != nil {
+				Fatal(JSON_PARSING_ERROR, "failed to marshal exchange output from %s: %v", apiMsg, err)
+			}
+			*s = string(jsonBytes)
+		default:
+			err = json.Unmarshal(bodyBytes, structure)
+			if err != nil {
+				Fatal(JSON_PARSING_ERROR, "failed to unmarshal exchange body response from %s: %v", apiMsg, err)
+			}
+		}
+	}
+	return
 }
 
 /* Do not need at the moment, but keeping for reference...

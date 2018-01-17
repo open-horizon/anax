@@ -14,6 +14,7 @@ import (
 	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/cli/service"
 	"github.com/open-horizon/anax/cli/unregister"
+	"github.com/open-horizon/anax/cli/wiotp"
 	"github.com/open-horizon/anax/cli/workload"
 	"github.com/open-horizon/anax/cutil"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -37,7 +38,7 @@ Environment Variables:
 	cliutils.Opts.Verbose = app.Flag("verbose", "Verbose output.").Short('v').Bool()
 	cliutils.Opts.IsDryRun = app.Flag("dry-run", "When calling the Horizon or Exchange API, do GETs, but don't do PUTs, POSTs, or DELETEs.").Bool()
 
-	versionCmd := app.Command("version", "Show the Horizon version.")	// using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
+	versionCmd := app.Command("version", "Show the Horizon version.") // using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
 
 	exchangeCmd := app.Command("exchange", "List and manage Horizon Exchange resources.")
 	exOrg := exchangeCmd.Flag("org", "The Horizon exchange organization ID.").Short('o').Default("public").String()
@@ -140,6 +141,19 @@ Environment Variables:
 	exDelMicro := exMicroDelCmd.Arg("microservice", "The microservice to remove.").Required().String()
 	exMicroDelForce := exMicroDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 
+	wiotpCmd := app.Command("wiotp", "List and manage WIoTP objects.")
+	wiotpOrg := wiotpCmd.Flag("org", "The WIoTP organization ID.").Required().Short('o').String()
+	wiotpApiKeyToken := wiotpCmd.Flag("apikey-token", "WIoTP API key and token to query and create WIoTP objects.").Short('A').PlaceHolder("APIKEY:TOKEN").Required().String()
+
+	wiotpTypeCmd := wiotpCmd.Command("type", "List and manage types in WIoTP")
+	wiotpTypeListCmd := wiotpTypeCmd.Command("list", "Display the type objects from WIoTP.")
+	wiotpType := wiotpTypeListCmd.Arg("type", "Show the details of this one type.").String()
+
+	wiotpDeviceCmd := wiotpCmd.Command("device", "List and manage devices/gateways of a particular type in WIoTP")
+	wiotpDevListCmd := wiotpDeviceCmd.Command("list", "Display the devices/gateways objects of the specified type from WIoTP.")
+	wiotpDevType := wiotpDevListCmd.Arg("type", "Show the devices/gateways of this type.").Required().String()
+	wiotpDevice := wiotpDevListCmd.Arg("device", "Show the details of this one device/gateway.").String()
+
 	regInputCmd := app.Command("reginput", "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the workloads and microservices that the specified pattern uses, and determines the node owner input that is required for them.")
 	regInputNodeIdTok := regInputCmd.Flag("node-id-tok", "The Horizon exchange node ID and token (it must already exist).").Short('n').PlaceHolder("ID:TOK").Required().String()
 	regInputInputFile := regInputCmd.Flag("input-file", "The JSON input template file name that should be created. This file will contain placeholders for you to fill in user input values.").Short('f').Required().String()
@@ -237,11 +251,11 @@ Environment Variables:
 
 	app.Version("Run 'hzn version' to see the Horizon version.")
 	/*
-	fmt.Printf("version: %v\n", *version)
-	if *version {
-		node.Version()
-		os.Exit(0)
-	}
+		fmt.Printf("version: %v\n", *version)
+		if *version {
+			node.Version()
+			os.Exit(0)
+		}
 	*/
 
 	// Decide which command to run
@@ -296,6 +310,10 @@ Environment Variables:
 		exchange.MicroserviceVerify(*exOrg, *exUserPw, *exVerMicro, *exMicroPubKeyFile)
 	case exMicroDelCmd.FullCommand():
 		exchange.MicroserviceRemove(*exOrg, *exUserPw, *exDelMicro, *exMicroDelForce)
+	case wiotpTypeListCmd.FullCommand():
+		wiotp.TypeList(*wiotpOrg, *wiotpApiKeyToken, *wiotpType)
+	case wiotpDevListCmd.FullCommand():
+		wiotp.DeviceList(*wiotpOrg, *wiotpApiKeyToken, *wiotpDevType, *wiotpDevice)
 	case regInputCmd.FullCommand():
 		register.CreateInputFile(*regInputOrg, *regInputPattern, *regInputArch, *regInputNodeIdTok, *regInputInputFile)
 	case registerCmd.FullCommand():
