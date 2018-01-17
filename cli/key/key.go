@@ -37,7 +37,7 @@ func List(keyName string) {
 // Create generates a private/public key pair
 func Create(x509Org, x509CN, outputDir string, keyLength, daysValid int, importKey bool) {
 	// Note: the cli parse already verifies outputDir exists and keyLength and daysValid are ints
-	fmt.Println("Creating key pair, this may take a minute...")
+	fmt.Println("Creating RSA PSS private and public keys, and an x509 certificate for distribution. This is a CPU-intensive operation and, depending on key length and platform, may take a while. Key generation on an amd64 or ppc64 system using the default key length will complete in less than 1 minute.")
 	newKeys, err := generatekeys.Write(outputDir, keyLength, x509CN, x509Org, time.Now().AddDate(0, 0, daysValid))
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "failed to create a new key pair: %v", err)
