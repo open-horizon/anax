@@ -446,16 +446,16 @@
 			"revisionTime": "2018-01-12T22:35:35Z"
 		},
 		{
-			"checksumSHA1": "MHPzwVcYlCJOKBWkLrCinoi4UWs=",
+			"checksumSHA1": "HNPzDhM7PdITnf8qwgGVTBj+C1c=",
 			"path": "github.com/open-horizon/rsapss-tool/generatekeys",
-			"revision": "6ba7332b69320cf75832769fa63a439b8bb56767",
-			"revisionTime": "2018-01-12T22:35:35Z"
+			"revision": "064e62a61118dc418ca20d119687580354856578",
+			"revisionTime": "2018-01-18T19:12:44Z"
 		},
 		{
-			"checksumSHA1": "ojqYnlGfGuduc/0DF53+q2zx5qc=",
+			"checksumSHA1": "J5hjBJsF7yJrRBAcPhIu7o2TIRM=",
 			"path": "github.com/open-horizon/rsapss-tool/listkeys",
-			"revision": "6ba7332b69320cf75832769fa63a439b8bb56767",
-			"revisionTime": "2018-01-12T22:35:35Z"
+			"revision": "064e62a61118dc418ca20d119687580354856578",
+			"revisionTime": "2018-01-18T19:12:44Z"
 		},
 		{
 			"checksumSHA1": "6Ejtwv2PlXR8sT203iR38S7Y5qQ=",
@@ -472,8 +472,8 @@
 		{
 			"checksumSHA1": "xNByXJDmg34A1Fc/yeikYxZdkcc=",
 			"path": "github.com/open-horizon/rsapss-tool/verify",
-			"revision": "6ba7332b69320cf75832769fa63a439b8bb56767",
-			"revisionTime": "2018-01-12T22:35:35Z"
+			"revision": "064e62a61118dc418ca20d119687580354856578",
+			"revisionTime": "2018-01-18T19:12:44Z"
 		},
 		{
 			"checksumSHA1": "3AoPMXlmVq2+iWMpsdJZkcUKHB8=",
