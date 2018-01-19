@@ -448,16 +448,20 @@ func (w *AgreementWorker) syncOnInit() error {
 			} else if ag.AgreementAcceptedTime != 0 && ag.AgreementTerminatedTime == 0 {
 
 				if _, there := exchangeDeviceAgreements[ag.CurrentAgreementId]; !there {
-					glog.V(3).Infof(logString(fmt.Sprintf("agreement %v missing from exchange, adding it back in.", ag.CurrentAgreementId)))
-					state := ""
-					if ag.AgreementFinalizedTime != 0 {
-						state = "Finalized Agreement"
-					} else if ag.AgreementAcceptedTime != 0 {
-						state = "Agree to proposal"
+					glog.Warningf(logString(fmt.Sprintf("agreement %v missing from exchange, adding it back in.", ag.CurrentAgreementId)))
+					if cpol, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("unable to demarshal consumer policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
 					} else {
-						state = "unknown"
+						state := ""
+						if ag.AgreementFinalizedTime != 0 {
+							state = "Finalized Agreement"
+						} else if ag.AgreementAcceptedTime != 0 {
+							state = "Agree to proposal"
+						} else {
+							state = "unknown"
+						}
+						w.recordAgreementState(ag.CurrentAgreementId, cpol, state)
 					}
-					w.recordAgreementState(ag.CurrentAgreementId, pol, state)
 				}
 				glog.V(3).Infof(logString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))
 			}
