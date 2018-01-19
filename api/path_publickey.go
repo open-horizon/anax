@@ -34,6 +34,12 @@ func FindPublicKeyForOutput(fileName string, config *config.HorizonConfig) (stri
 
 }
 
+type KeyPairSimpleRecord struct {
+	// embedded
+	listkeys.KeyPairSimple
+	ID string `json:"id"`
+}
+
 func FindPublicKeysForOutput(config *config.HorizonConfig, verbose bool) (map[string][]interface{}, error) {
 
 	// Get a list of all valid public key PEM files in the configured location
@@ -45,6 +51,7 @@ func FindPublicKeysForOutput(config *config.HorizonConfig, verbose bool) (map[st
 
 	response := map[string][]interface{}{}
 	response["pem"] = make([]interface{}, 0, 10)
+
 	for _, pf := range files {
 
 		var value interface{}
@@ -56,7 +63,20 @@ func FindPublicKeysForOutput(config *config.HorizonConfig, verbose bool) (map[st
 				glog.Errorf("Error reading user x509 cert from file path: %v. Error: %v", keyPath, err)
 				continue
 			}
-			value = keyPair.ToKeyPairSimple()
+
+			// right now, verbose entails including raw
+			kp, err := keyPair.ToKeyPairSimple(true)
+			if err != nil {
+				glog.Errorf("Error reading user x509 cert from file path: %v. Error: %v", keyPath, err)
+				continue
+			}
+
+			// add the filename as an id in the returned record (so that the REST part of the HTTP interface makes sense)
+			value = KeyPairSimpleRecord{
+				ID:            pf.Name(),
+				KeyPairSimple: *kp,
+			}
+
 		} else {
 			value = pf.Name()
 		}

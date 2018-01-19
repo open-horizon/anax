@@ -35,7 +35,7 @@ func (a *API) publickey(w http.ResponseWriter, r *http.Request) {
 				errorHandler(NewSystemError(fmt.Sprintf("Error returning content of %v/%v, error %v", resource, fileName, err)))
 			}
 		} else {
-			if out, err := FindPublicKeysForOutput(a.Config, verbose != ""); err != nil {
+			if out, err := FindPublicKeysForOutput(a.Config, verbose == "true"); err != nil {
 				errorHandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
 			} else {
 				writeResponse(w, out, http.StatusOK)

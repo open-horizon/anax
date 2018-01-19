@@ -3,6 +3,7 @@ package key
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/rsapss-tool/generatekeys"
 	"net/http"
@@ -11,17 +12,41 @@ import (
 	"time"
 )
 
+type KeyPairSimpleOutput struct {
+	ID               string `json:"id"`
+	CommonName       string `json:"common_name"`
+	OrganizationName string `json:"organization_name"`
+	SerialNumber     string `json:"serial_number"`
+	NotValidBefore   string `json:"not_valid_before"`
+	NotValidAfter    string `json:"not_valid_after"`
+}
+
 func List(keyName string) {
 	if keyName == "" {
 		// Getting all of the keys only returns the names
-		apiOutput := make(map[string][]string, 0)
+		var apiOutput map[string][]api.KeyPairSimpleRecord
 		// Note: it is allowed to get /trust before post /node is called, so we don't have to check for that error
-		cliutils.HorizonGet("trust", []int{200}, &apiOutput)
+		cliutils.HorizonGet("trust?verbose=true", []int{200}, &apiOutput)
+
+		var output interface{}
 		var ok bool
-		if _, ok = apiOutput["pem"]; !ok {
+		if output, ok = apiOutput["pem"]; !ok {
 			cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api trust output did not include 'pem' key")
 		}
-		jsonBytes, err := json.MarshalIndent(apiOutput["pem"], "", cliutils.JSON_INDENT)
+
+		var certsSimpleOutput []KeyPairSimpleOutput
+		for _, kps := range output.([]api.KeyPairSimpleRecord) {
+			certsSimpleOutput = append(certsSimpleOutput, KeyPairSimpleOutput{
+				ID:               kps.ID,
+				SerialNumber:     kps.SerialNumber,
+				CommonName:       kps.SubjectNames["commonName (CN)"].(string),
+				OrganizationName: kps.SubjectNames["organizationName (O)"].(string),
+				NotValidBefore:   kps.NotValidBefore.String(),
+				NotValidAfter:    kps.NotValidAfter.String(),
+			})
+		}
+
+		jsonBytes, err := json.MarshalIndent(certsSimpleOutput, "", cliutils.JSON_INDENT)
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'key list' output: %v", err)
 		}
