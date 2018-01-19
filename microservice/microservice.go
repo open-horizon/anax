@@ -15,6 +15,10 @@ import (
 	"strings"
 )
 
+// microservice defaults
+const MS_DEFAULT_AUTOUPGRADE = true
+const MS_DEFAULT_ACTIVEUPGRADE = false
+
 // microservice instance termiated reason code
 const MS_UNREG_EXCH_FAILED = 200
 const MS_CLEAR_OLD_AGS_FAILED = 201
@@ -99,8 +103,8 @@ func ConvertToPersistent(ems *exchange.MicroserviceDefinition, org string) (*per
 
 	pms.Name = ""
 	pms.UpgradeVersionRange = "0.0.0"
-	pms.AutoUpgrade = true
-	pms.ActiveUpgrade = false
+	pms.AutoUpgrade = MS_DEFAULT_AUTOUPGRADE
+	pms.ActiveUpgrade = MS_DEFAULT_ACTIVEUPGRADE
 
 	// Hash the metadata and save it
 	if serial, err := json.Marshal(*ems); err != nil {

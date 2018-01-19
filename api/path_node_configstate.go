@@ -190,9 +190,17 @@ func UpdateConfigstate(cfg *Configstate,
 					return errorhandler(NewAPIUserInputError(fmt.Sprintf("Configstate autoconfig, microservice %v %v %v, %v", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, msErr.Err), "configstate.state")), nil, nil
 
 				case *DuplicateServiceError:
-					glog.V(3).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig found duplicate microservice %v %v %v, continuing.", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version)))
 					// If the microservice is already registered, that's ok because the node user is allowed to configure any of the
 					// required microservices before calling the configstate API.
+					glog.V(3).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig found duplicate microservice %v %v, overwriting the version range to %v.", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version)))
+
+					// overwrite the UpgradeVersionRange for microservice definition. The user defined version range will be ignored in pattern case
+					if pmsdef, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UnarchivedMSFilter(), persistence.UrlMSFilter(apiSpec.SpecRef)}); err != nil {
+						return errorhandler(NewSystemError(fmt.Sprintf("Error accessing db to find microservice definition: %v", err))), nil, nil
+					} else if pmsdef != nil && len(pmsdef) > 0 {
+						// there is only one active msdef at a time
+						persistence.MSDefNewUpgradeVersionRange(db, pmsdef[0].Id, apiSpec.Version)
+					}
 
 				default:
 					return errorhandler(NewSystemError(fmt.Sprintf("unexpected error returned from service create (%T) %v", createServiceError, createServiceError))), nil, nil

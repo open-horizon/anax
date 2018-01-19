@@ -812,7 +812,7 @@ func DecodeReasonCode(code uint64) string {
 		CANCEL_MS_IMAGE_LOAD_FAILURE:    "microservice image loading failed",
 		CANCEL_MS_IMAGE_FETCH_FAILURE:   "microservice image fetching failed",
 		CANCEL_MS_UPGRADE_REQUIRED:      "required by microservice upgrade process",
-		CANCEL_MS_DOWNGRADE_REQUIRED:    "required by microservice downgrade process",
+		CANCEL_MS_DOWNGRADE_REQUIRED:    "microservice failed, need downgrading to lower version",
 		CANCEL_IMAGE_DATA_ERROR:         "image data error",
 		CANCEL_IMAGE_FETCH_FAILURE:      "image fetching failed",
 		CANCEL_IMAGE_FETCH_AUTH_FAILURE: "authorization failed for image fetching",

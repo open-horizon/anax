@@ -369,6 +369,13 @@ func MSDefUpgradeNewMsId(db *bolt.DB, key string, new_id string) (*MicroserviceD
 	})
 }
 
+func MSDefNewUpgradeVersionRange(db *bolt.DB, key string, version_range string) (*MicroserviceDefinition, error) {
+	return microserviceDefStateUpdate(db, key, func(c MicroserviceDefinition) *MicroserviceDefinition {
+		c.UpgradeVersionRange = version_range
+		return &c
+	})
+}
+
 // update the micorserive definition
 func microserviceDefStateUpdate(db *bolt.DB, key string, fn func(MicroserviceDefinition) *MicroserviceDefinition) (*MicroserviceDefinition, error) {
 
@@ -432,6 +439,10 @@ func persistUpdatedMicroserviceDef(db *bolt.DB, key string, update *Microservice
 
 				if mod.UpgradeNewMsId != update.UpgradeNewMsId {
 					mod.UpgradeNewMsId = update.UpgradeNewMsId
+				}
+
+				if mod.UpgradeVersionRange != update.UpgradeVersionRange {
+					mod.UpgradeVersionRange = update.UpgradeVersionRange
 				}
 
 				if serialized, err := json.Marshal(mod); err != nil {
