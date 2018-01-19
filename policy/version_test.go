@@ -436,6 +436,13 @@ func TestLimitCeiling(t *testing.T) {
 	err = v1.ChangeCeiling("0.1", false)
 	assert.NotNil(t, err, "ChangeCeiling shold return error, but it did not. %v", v1.Get_expression())
 
+	err = v1.ChangeCeiling("1.0", false)
+	assert.NotNil(t, err, "ChangeCeiling shold return error, but it did not. %v", v1.Get_expression())
+
+	err = v1.ChangeCeiling("1.0", true)
+	assert.Nil(t, err, fmt.Sprintf("ChangeCeiling returned error, but should not. Error: %v \n", err))
+	assert.Equal(t, "[1.0.0,1.0.0]", v1.Get_expression(), "Version range should be [1.0.0,1.0.0]")
+
 }
 
 // This series of tests version comparison

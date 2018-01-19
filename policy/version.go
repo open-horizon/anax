@@ -277,6 +277,10 @@ func (self *Version_Expression) ChangeCeiling(ceiling_version string, inclusive 
 			return err
 		} else if c < 0 {
 			return fmt.Errorf("The input ceiling version %v is lower than the start version %v.", ceiling_version, self.start)
+		} else if c == 0 {
+			if !(inclusive && self.start_inclusive) {
+				return fmt.Errorf("The input ceiling version %v is the same as the start version, but either the start or the end is not inclusive.", ceiling_version)
+			}
 		}
 
 		self.end = ceiling_version

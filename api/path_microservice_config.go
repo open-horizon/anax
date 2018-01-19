@@ -38,12 +38,14 @@ func FindServiceConfigForOutput(pm *policy.PolicyManager, db *bolt.DB) (map[stri
 		msDefs, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UrlOrgVersionMSFilter(msURL, msOrg, msVer), persistence.UnarchivedMSFilter()})
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("unable to get microservice definitions from the database, error %v", err))
-		} else if len(msDefs) != 1 {
-			return nil, errors.New(fmt.Sprintf("expected 1 microservice definition in the database, received %v", msDefs))
+		} else if msDefs != nil && len(msDefs) > 0 {
+			mc.AutoUpgrade = msDefs[0].AutoUpgrade
+			mc.ActiveUpgrade = msDefs[0].ActiveUpgrade
+		} else {
+			// take the default
+			mc.AutoUpgrade = microservice.MS_DEFAULT_AUTOUPGRADE
+			mc.ActiveUpgrade = microservice.MS_DEFAULT_ACTIVEUPGRADE
 		}
-
-		mc.AutoUpgrade = msDefs[0].AutoUpgrade
-		mc.ActiveUpgrade = msDefs[0].ActiveUpgrade
 
 		// Get the attributes for this service from the attributes database
 		if attrs, err := persistence.FindApplicableAttributes(db, msURL); err != nil {
@@ -86,7 +88,7 @@ func CreateService(service *Service,
 	}
 
 	// Use the device's org if org not specified in the service object.
-	if service.SensorOrg == nil {
+	if service.SensorOrg == nil || *service.SensorVersion == "" {
 		service.SensorOrg = &pDevice.Org
 	} else if bail := checkInputString(errorhandler, "service.sensor_org", service.SensorOrg); bail {
 		return true, nil, nil
@@ -100,7 +102,7 @@ func CreateService(service *Service,
 	// specific syntax and allows a subset of normally valid characters.
 
 	// Use a default sensor version that allows all version if not specified.
-	if service.SensorVersion == nil {
+	if service.SensorVersion == nil || *service.SensorVersion == "" {
 		def := "0.0.0"
 		service.SensorVersion = &def
 	}

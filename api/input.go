@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/open-horizon/anax/microservice"
 	"github.com/open-horizon/anax/persistence"
 	"reflect"
 	"strconv"
@@ -178,8 +179,8 @@ func (s *Service) String() string {
 
 // Constructor used to create service objects for programmatic creation of services.
 func NewService(url string, org string, name string, v string) *Service {
-	autoUpgrade := true
-	activeUpgrade := false
+	autoUpgrade := microservice.MS_DEFAULT_AUTOUPGRADE
+	activeUpgrade := microservice.MS_DEFAULT_ACTIVEUPGRADE
 
 	return &Service{
 		SensorUrl:     &url,
