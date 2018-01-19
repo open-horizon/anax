@@ -1351,16 +1351,18 @@ curl -s -w "%{http_code}" -X DELETE -H 'Content-Type: application/json' -d '{
 ```
 
 
-### 7. Public Keys for Workload Image Verification
+### 7. Trusted Certs for Service Image Verification
 
-#### **API:** GET  /publickey
+#### **API:** GET  /trust[?verbose=true]
 ---
 
-Get the user stored public keys for container image verification.
+Get the user stored x509 certificates for service container image verification.
 
 **Parameters:**
 
-none
+| name | type | description |
+| -----| ---- | ---------------- |
+| (query) verbose | string | (optional) parameter expands output type to include more detail about trusted certificates. Note, bare RSA PSS public keys (if trusted) are not included in detail output. |
 
 **Response:**
 
@@ -1371,27 +1373,71 @@ body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| pem  | json | an array of public key files or x509 certs that have previously been PUT to the agent. |
+| pem  | json | an array of x509 certs or public keys (if the 'verbose' query param is not supplied) that are trusted by the agent. A cert can be trusted using the PUT method in an HTTP request to the trust/ path). |
 
-**Example:**
+**Examples:**
 ```
-curl -s http://localhost/publickey | jq  '.'
+curl -s http://localhost/trust | jq  '.'
 {
-  "pem": ["akeyfile.pem"]
+  "pem": [
+    "Horizon-2111fe38d0aad1887dec4e1b7fb5e083fde3a393-public.pem",
+    "LULZ-1e0572c9f28c5e9a0dafa14741665c3cfd80b580-public.pem"
+  ]
 }
-
 ```
 
-#### **API:** GET  /publickey/{filename}
+Verbose output:
+```
+curl -s 'http://localhost/trust?verbose=true' | jq  '.'
+{
+  "pem": [
+    {
+      "type": "KeyPairSimple",
+      "serial_number": "1e:05:72:c9:f2:8c:5e:9a:0d:af:a1:47:41:66:5c:3c:fd:80:b5:80",
+      "subject_names": {
+        "commonName (CN)": "*",
+        "organizationName (O)": "LULZ"
+      },
+      "have_private_key": false,
+      "not_valid_before": "2018-01-15T13:09:00Z",
+      "not_valid_after": "2022-01-16T01:08:58Z",
+      "public_key": "-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQ...",
+      ...
+    },
+    ...
+  ]
+}
+```
+
+Retrieve RSA PSS public key from a particular enclosing x509 certificate suitable for shell redirection to a .pem file:
+```
+curl -s 'http://localhost/trust?verbose=true' | jq -r '.pem[] | select(.serial_number == "1e:05:72:c9:f2:8c:5e:9a:0d:af:a1:47:41:66:5c:3c:fd:80:b5:80")'
+-----BEGIN CERTIFICATE-----
+MIIE5DCCAsygAwIBAgIUHgVyyfKMXpoNr6FHQWZcPP2AtYAwDQYJKoZIhvcNAQEL
+BQAwGzENMAsGA1UEChMETFVMWjEKMAgGA1UEAxMBKjAeFw0xODAxMTUxMzA5MDBa
+Fw0yMjAxMTYwMTA4NThaMBsxDTALBgNVBAoTBExVTFoxCjAIBgNVBAMTASowggIi
+MA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCe8yFhGf699+iDwoO+LRPSH4Ce
+DICrG4SgFZ7/2/dGPduVmYUWGnu1Sb3lk1xEO+Wd4SJ3VvabzaAexgXUgup8bM2K
+FbHi5BMbf3G4on+gdxdRwTriwX3UTXKj3+D47sGZS3j8tJrqTx58hhuR9qTaBzAh
+rwhRtD1k7/NLIOCZ2xS5Tfb/mKgG378+xM5IQQ69P86fQN6V28qIYUIUIURRreE4
+HjJAFXpkpdDYqPclt/91S+hOnc1fWJah5jXuxdrrZ2jNl/b5IDA4F2/dKbHJNBEL
+3/9lg63USywzD6uP9OzB1Gkhyp6TrUHzQyBZU2kVH8Qx9Zz2eUeI5u7UmXMxEsXu
+...
+swRnEsXZy1Ssvmi9myJrKWc8GrkhotweVkAyAJFHJjusIR8Wm8lusZB2IFxwiuFI
+NzGgG2JMPK4=
+-----END CERTIFICATE-----
+```
+
+#### **API:** GET  /trust/{filename}
 ---
 
-Get the content of the user public key or x509 cert from a file that has been previously stored to the agent.
+Get the content of a trusted x509 cert from a file that has been previously stored by the agent.
 
 **Parameters:**
 
 | name | type | description |
 | -----| ---- | ---------------- |
-| filename | string | the name of the public key file to retrieve. |
+| filename | string | the name of the x509 cert file to retrieve. |
 
 **Response:**
 
@@ -1404,20 +1450,19 @@ The contents of the requested file.
 
 **Example:**
 ```
-curl -s http://localhost/publickey/akeyfile.pem > akeyfile.pem
-
+curl -s http://localhost/trust/Horizon-2111fe38d0aad1887dec4e1b7fb5e083fde3a393-public.pem > Horizon-2111fe38d0aad1887dec4e1b7fb5e083fde3a393-public.pem
 ```
 
-#### **API:** PUT  /publickey/{filename}
+#### **API:** PUT  /trust/{filename}
 ---
 
-Put a user public key or cert to the agent for container image verification.
+Trust an x509 cert; used in service container image verification.
 
 **Parameters:**
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| filename | string | the name of the public key file to upload. |
+| filename | string | the name of the x509 cert file to upload. |
 
 **Response:**
 
@@ -1430,20 +1475,20 @@ none
 
 **Example:**
 ```
-curl -T ~/.rsapsstool/keypairs/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem http://localhost/publickey/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem
+curl -T ~/.rsapsstool/keypairs/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem http://localhost/trust/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem
 
 ```
 
-#### **API:** DELETE  /publickey/{filename}
+#### **API:** DELETE  /trust/{filename}
 ---
 
-Delete a user public key or x509 cert from the agent.
+Delete an x509 cert from the agent; this is a revocation of trust for a particular certificate and enclosing RSA PSS key.
 
 **Parameters:**
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| filename | string | the name of the public key file to remove. |
+| filename | string | the name of the x509 cert file to remove. |
 
 **Response:**
 
@@ -1456,6 +1501,6 @@ none
 
 **Example:**
 ```
-curl -s -X DELETE http://localhost/publickey/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem
+curl -s -X DELETE http://localhost/trust/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem
 
 ```
