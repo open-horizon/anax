@@ -180,9 +180,22 @@ func ConfirmRemove(question string) {
 	}
 }
 
-// GetHorizonUrlBase returns the base part of the horizon api url (which can be overridden by env var HORIZON_URL_BASE)
+// RequiredWithDefaultEnvVar returns the specified flag ptr if it has a non-blank value, or the env var value.
+func RequiredWithDefaultEnvVar(flag *string, envVarName, errMsg string) *string {
+	if *flag != "" {
+		return flag
+	}
+	newFlag := os.Getenv(envVarName)
+	if newFlag != "" {
+		return &newFlag
+	}
+	Fatal(CLI_INPUT_ERROR, errMsg)
+	return flag 		// won't ever happen, here just to make intellij happy
+}
+
+// GetHorizonUrlBase returns the base part of the horizon api url (which can be overridden by env var HORIZON_URL)
 func GetHorizonUrlBase() string {
-	envVar := os.Getenv("HORIZON_URL_BASE")
+	envVar := os.Getenv("HORIZON_URL")
 	if envVar != "" {
 		return envVar
 	}
@@ -209,8 +222,8 @@ func isGoodCode(actualHttpCode int, goodHttpCodes []int) bool {
 }
 
 func printHorizonRestError(apiMethod string, err error) {
-	if os.Getenv("HORIZON_URL_BASE") == "" {
-		Fatal(HTTP_ERROR, "Can't connect to the Horizon REST API to run %s. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL_BASE to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMethod, err)
+	if os.Getenv("HORIZON_URL") == "" {
+		Fatal(HTTP_ERROR, "Can't connect to the Horizon REST API to run %s. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMethod, err)
 	} else {
 		Fatal(HTTP_ERROR, "Can't connect to the Horizon REST API to run %s. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: %v", apiMethod, err)
 	}
@@ -340,7 +353,7 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 
 // GetExchangeUrl returns the exchange url from the env var or anax api
 func GetExchangeUrl() string {
-	exchUrl := os.Getenv("HORIZON_EXCHANGE_URL_BASE")
+	exchUrl := os.Getenv("HZN_EXCHANGE_URL")
 	if exchUrl == "" {
 		// Get it from anax
 		status := api.Info{}
@@ -356,10 +369,10 @@ func GetExchangeUrl() string {
 }
 
 func printHorizonExchRestError(apiMethod string, err error) {
-	if os.Getenv("HORIZON_EXCHANGE_URL_BASE") == "" {
-		Fatal(HTTP_ERROR, "Can't connect to the Horizon Exchange REST API to run %s. Set HORIZON_EXCHANGE_URL_BASE to use an Exchange other than the one the Horizon Agent is currently configured for. Specific error is: %v", apiMethod, err)
+	if os.Getenv("HZN_EXCHANGE_URL") == "" {
+		Fatal(HTTP_ERROR, "Can't connect to the Horizon Exchange REST API to run %s. Set HZN_EXCHANGE_URL to use an Exchange other than the one the Horizon Agent is currently configured for. Specific error is: %v", apiMethod, err)
 	} else {
-		Fatal(HTTP_ERROR, "Can't connect to the Horizon Exchange REST API to run %s. Maybe HORIZON_EXCHANGE_URL_BASE is set incorrectly? Or unset HORIZON_EXCHANGE_URL_BASE to use the Exchange that the Horizon Agent is configured for. Specific error is: %v", apiMethod, err)
+		Fatal(HTTP_ERROR, "Can't connect to the Horizon Exchange REST API to run %s. Maybe HZN_EXCHANGE_URL is set incorrectly? Or unset HZN_EXCHANGE_URL to use the Exchange that the Horizon Agent is configured for. Specific error is: %v", apiMethod, err)
 	}
 }
 

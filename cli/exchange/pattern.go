@@ -30,6 +30,38 @@ type PatternOutput struct {
 	LastUpdated        string                       `json:"lastUpdated"`
 }
 
+// These 5 structs are used when reading json file the user gives us as input to create the pattern struct
+type ServiceOverrides struct {
+	Environment      []string             `json:"environment,omitempty"`
+}
+type DeploymentOverrides struct {
+	Services map[string]ServiceOverrides `json:"services"`
+}
+type WorkloadChoiceFile struct {
+	Version                      string                    `json:"version"`  // the version of the workload
+	Priority                     exchange.WorkloadPriority `json:"priority"` // the highest priority workload is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
+	Upgrade                      exchange.UpgradePolicy    `json:"upgradePolicy"`
+	DeploymentOverrides          DeploymentOverrides                    `json:"deployment_overrides"`           // env var overrides for the workload
+	DeploymentOverridesSignature string                    `json:"deployment_overrides_signature"` // signature of env var overrides
+}
+type WorkloadReferenceFile struct {
+	WorkloadURL      string                    `json:"workloadUrl"`      // refers to a workload definition in the exchange
+	WorkloadOrg      string                    `json:"workloadOrgid"`    // the org holding the workload definition
+	WorkloadArch     string                    `json:"workloadArch"`     // the hardware architecture of the workload definition
+	WorkloadVersions []WorkloadChoiceFile          `json:"workloadVersions"` // a list of workload version for rollback
+	DataVerify       exchange.DataVerification `json:"dataVerification"` // policy for verifying that the node is sending data
+	NodeH            exchange.NodeHealth       `json:"nodeHealth"`       // policy for determining when a node's health is violating its agreements
+}
+type PatternFile struct {
+	Org              string                       `json:"org"`   // optional
+	Label              string                       `json:"label"`
+	Description        string                       `json:"description"`
+	Public             bool                         `json:"public"`
+	Workloads          []WorkloadReferenceFile          `json:"workloads"`
+	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
+}
+
+// These 3 structs are used as the input to the exchange to create the pattern
 //todo: can't use exchange.Pattern (and some sub-structs) because it has omitempty on several fields required by the exchange
 type WorkloadChoice struct {
 	Version                      string                    `json:"version"`  // the version of the workload
@@ -89,23 +121,42 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 }
 
 // PatternPublish signs the MS def and puts it in the exchange
-func PatternPublish(org string, userPw string, jsonFilePath string, keyFilePath string) {
+func PatternPublish(org, userPw, jsonFilePath, keyFilePath string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the pattern metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
-	var patInput PatternInput
-	err := json.Unmarshal(newBytes, &patInput)
+	var patFile PatternFile
+	err := json.Unmarshal(newBytes, &patFile)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", jsonFilePath, err)
 	}
+	if patFile.Org != "" && patFile.Org != org {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", patFile.Org, org)
+	}
+	patInput := PatternInput{Label: patFile.Label, Description: patFile.Description, Public: patFile.Public, Workloads: make([]WorkloadReference, len(patFile.Workloads)), AgreementProtocols: patFile.AgreementProtocols}
 
 	// Loop thru the workloads array and the workloadVersions array and sign the deployment_overrides strings
 	fmt.Println("Signing pattern...")
-	for i := range patInput.Workloads {
-		for j := range patInput.Workloads[i].WorkloadVersions {
+	for i := range patFile.Workloads {
+		patInput.Workloads[i].WorkloadURL = patFile.Workloads[i].WorkloadURL
+		patInput.Workloads[i].WorkloadOrg = patFile.Workloads[i].WorkloadOrg
+		patInput.Workloads[i].WorkloadArch = patFile.Workloads[i].WorkloadArch
+		patInput.Workloads[i].WorkloadVersions = make([]WorkloadChoice, len(patFile.Workloads[i].WorkloadVersions))
+		patInput.Workloads[i].DataVerify = patFile.Workloads[i].DataVerify
+		patInput.Workloads[i].NodeH = patFile.Workloads[i].NodeH
+		for j := range patFile.Workloads[i].WorkloadVersions {
 			cliutils.Verbose("signing deployment_overrides string in workload %d, workloadVersion number %d", i+1, j+1)
+			patInput.Workloads[i].WorkloadVersions[j].Version = patFile.Workloads[i].WorkloadVersions[j].Version
+			patInput.Workloads[i].WorkloadVersions[j].Priority = patFile.Workloads[i].WorkloadVersions[j].Priority
+			patInput.Workloads[i].WorkloadVersions[j].Upgrade = patFile.Workloads[i].WorkloadVersions[j].Upgrade
 			var err error
-			patInput.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature, err = sign.Input(keyFilePath, []byte(patInput.Workloads[i].WorkloadVersions[j].DeploymentOverrides))
+			var deployment []byte
+			deployment, err = json.Marshal(patFile.Workloads[i].WorkloadVersions[j].DeploymentOverrides)
+			if err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment_overrides string in workload %d, workloadVersion number %d: %v", i+1, j+1, err)
+			}
+			patInput.Workloads[i].WorkloadVersions[j].DeploymentOverrides = string(deployment)
+			patInput.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature, err = sign.Input(keyFilePath, deployment)
 			if err != nil {
 				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment_overrides string with %s: %v", keyFilePath, err)
 			}
@@ -193,17 +244,17 @@ func PatternAddWorkload(org, userPw, pattern, workloadFilePath, keyFilePath stri
 	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the workload metadata
 	newBytes := cliutils.ReadJsonFile(workloadFilePath)
-	var workInput WorkloadReference
-	err := json.Unmarshal(newBytes, &workInput)
+	var workFile WorkloadReferenceFile
+	err := json.Unmarshal(newBytes, &workFile)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", workloadFilePath, err)
 	}
 
 	// Check that the critical values in the workload are not empty
-	if workInput.WorkloadOrg == "" || workInput.WorkloadURL == "" || workInput.WorkloadArch == "" || len(workInput.WorkloadVersions) == 0 {
+	if workFile.WorkloadOrg == "" || workFile.WorkloadURL == "" || workFile.WorkloadArch == "" || len(workFile.WorkloadVersions) == 0 {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the workloadOrgid, workloadUrl, workloadArch, or workloadVersions field can not be empty.")
 	}
-	for _, wv := range workInput.WorkloadVersions {
+	for _, wv := range workFile.WorkloadVersions {
 		if wv.Version == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "none of the workloadVersions.version fields can be.")
 		}
@@ -219,11 +270,27 @@ func PatternAddWorkload(org, userPw, pattern, workloadFilePath, keyFilePath stri
 	// Convert it to the structure to put it back into the exchange
 	patInput := PatternInput{Label: output.Patterns[key].Label, Description: output.Patterns[key].Description, Public: output.Patterns[key].Public, Workloads: output.Patterns[key].Workloads, AgreementProtocols: output.Patterns[key].AgreementProtocols}
 
-	// Sign the workload being added
-	for i := range workInput.WorkloadVersions {
+	// Make a copy of the workload, ready for input to the exchange, add sign it
+	var workInput WorkloadReference
+	workInput.WorkloadURL = workFile.WorkloadURL
+	workInput.WorkloadOrg = workFile.WorkloadOrg
+	workInput.WorkloadArch = workFile.WorkloadArch
+	workInput.WorkloadVersions = make([]WorkloadChoice, len(workFile.WorkloadVersions))
+	workInput.DataVerify = workFile.DataVerify
+	workInput.NodeH = workFile.NodeH
+	for i := range workFile.WorkloadVersions {
 		cliutils.Verbose("signing deployment_overrides string in workloadVersion element number %d", i+1)
+		workInput.WorkloadVersions[i].Version = workFile.WorkloadVersions[i].Version
+		workInput.WorkloadVersions[i].Priority = workFile.WorkloadVersions[i].Priority
+		workInput.WorkloadVersions[i].Upgrade = workFile.WorkloadVersions[i].Upgrade
 		var err error
-		workInput.WorkloadVersions[i].DeploymentOverridesSignature, err = sign.Input(keyFilePath, []byte(workInput.WorkloadVersions[i].DeploymentOverrides))
+		var deployment []byte
+		deployment, err = json.Marshal(workFile.WorkloadVersions[i].DeploymentOverrides)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment_overrides string in workloadVersion element number %d: %v", i+1, err)
+		}
+		workInput.WorkloadVersions[i].DeploymentOverrides = string(deployment)
+		workInput.WorkloadVersions[i].DeploymentOverridesSignature, err = sign.Input(keyFilePath, deployment)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment_overrides string with %s: %v", keyFilePath, err)
 		}

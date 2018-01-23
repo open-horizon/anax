@@ -65,7 +65,7 @@ func NewArchivedAgreement(agreement agbot.Agreement) *ArchivedAgreement {
 
 func getAgreements(archivedAgreements bool) (apiAgreements []agbot.Agreement) {
 	// set env to call agbot url
-	os.Setenv("HORIZON_URL_BASE", cliutils.AGBOT_HZN_API)
+	os.Setenv("HORIZON_URL", cliutils.AGBOT_HZN_API)
 
 	// Get horizon api agreement output and drill down to the category we want
 	apiOutput := make(map[string]map[string][]agbot.Agreement, 0)
@@ -131,7 +131,7 @@ func AgreementCancel(agreementId string, allAgreements bool) {
 	}
 
 	// Cancel the agreements
-	os.Setenv("HORIZON_URL_BASE", cliutils.AGBOT_HZN_API)
+	os.Setenv("HORIZON_URL", cliutils.AGBOT_HZN_API)
 	for _, id := range agrIds {
 		fmt.Printf("Canceling agreement %s ...\n", id)
 		cliutils.HorizonDelete("agreement/"+id, []int{200, 204})

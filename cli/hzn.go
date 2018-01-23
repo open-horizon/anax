@@ -19,6 +19,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -30,8 +31,11 @@ func main() {
 	app := kingpin.New("hzn", `Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).
 
 Environment Variables:
-  HORIZON_URL_BASE: Override the URL at which hzn contacts the Horizon Agent API. This can facilitate using a remote Horizon Agent via an ssh tunnel.
-  HORIZON_EXCHANGE_URL_BASE:  Override the URL that the 'hzn exchange' sub-commands use to communicate with the Horizon Exchange, for example https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the Horizon Agent for the URL.)
+  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API. This can facilitate using a remote Horizon Agent via an ssh tunnel.
+  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use to communicate with the Horizon Exchange, for example https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the Horizon Agent for the URL.)
+  HZN_ORG_ID:  default value for the 'hzn exchange -o' or 'hzn wiotp -o' flag, to specify the organization ID'.
+  HZN_EXCHANGE_USER_AUTH:  default value for the 'hzn exchange -u' or 'hzn register -u' flag, in the form '[org/]user:pw'.
+  HZN_EXCHANGE_API_AUTH:  default value for the 'hzn wiotp -A' flag, in the form 'apikey:apitoken'.
   USING_API_KEY:  Set this to "0" to indicate that even though the credential passed into the 'hzn exchange -u' flag looks like an WIoTP API key/token, it is not so Horizon should not interpret as such.
 `)
 	app.HelpFlag.Short('h')
@@ -41,11 +45,10 @@ Environment Variables:
 	versionCmd := app.Command("version", "Show the Horizon version.") // using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
 
 	exchangeCmd := app.Command("exchange", "List and manage Horizon Exchange resources.")
-	exOrg := exchangeCmd.Flag("org", "The Horizon exchange organization ID.").Short('o').Default("public").String()
-	exUserPw := exchangeCmd.Flag("user-pw", "Horizon Exchange user credentials to query and create exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.").Short('u').PlaceHolder("USER:PW").Required().String()
+	exOrg := exchangeCmd.Flag("org", "The Horizon exchange organization ID.").Short('o').String()
+	exUserPw := exchangeCmd.Flag("user-pw", "Horizon Exchange user credentials to query and create exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.").Short('u').PlaceHolder("USER:PW").String()
 
 	exUserCmd := exchangeCmd.Command("user", "List and manage users in the Horizon Exchange")
-	//exUserPw := exUserCmd.Flag("user-pw", "User credentials in the Horizon exchange.").Short('u').PlaceHolder("USER:PW").Required().String()
 	exUserListCmd := exUserCmd.Command("list", "Display the user resource from the Horizon Exchange. (You can only display your own user. If the user does not exist, you will get an invalid credentials error.)")
 	exUserCreateCmd := exUserCmd.Command("create", "Create the user resource in the Horizon Exchange.")
 	exUserCreateEmail := exUserCreateCmd.Flag("email", "Your email address that should be associated with this user account when creating it in the Horizon exchange.").Short('e').Required().String()
@@ -56,12 +59,10 @@ Environment Variables:
 	exNodeCmd := exchangeCmd.Command("node", "List and manage nodes in the Horizon Exchange")
 	exNodeListCmd := exNodeCmd.Command("list", "Display the node resources from the Horizon Exchange.")
 	exNode := exNodeListCmd.Arg("node", "List just this one node.").String()
-	//exNodeNames := exNodeListCmd.Flag("names-only", "Only list the names (IDs) of the nodes.").Short('N').Bool()
 	exNodeLong := exNodeListCmd.Flag("long", "When listing all of the nodes, show the entire resource of each nodes, instead of just the name.").Short('l').Bool()
 	exNodeCreateCmd := exNodeCmd.Command("create", "Create the node resource in the Horizon Exchange.")
 	exNodeIdTok := exNodeCreateCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token. The node ID must be unique within the organization.").Short('n').PlaceHolder("ID:TOK").Required().String()
-	//exNodeUserPw := exNodeCreateCmd.Flag("user-pw", "User credentials to create the node resource in the Horizon exchange.").Short('u').PlaceHolder("USER:PW").Required().String()
-	exNodeEmail := exNodeCreateCmd.Flag("email", "Your email address. Only needs to be specified if: the user specified in the -u flag does not exist, and you specified is the 'public' org. If these things are true we will create the user and include this value as the email attribute.").Short('e').String()
+	exNodeEmail := exNodeCreateCmd.Flag("email", "Your email address. Only needs to be specified if: the user specified in the -u flag does not exist, and you specified the 'public' org. If these things are true we will create the user and include this value as the email attribute.").Short('e').String()
 	exNodeDelCmd := exNodeCmd.Command("remove", "Remove a node resource from the Horizon Exchange. Do NOT do this when an edge node is registered with this node id.")
 	exDelNode := exNodeDelCmd.Arg("node", "The node to remove.").Required().String()
 	exNodeDelForce := exNodeDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
@@ -69,7 +70,6 @@ Environment Variables:
 	exAgbotCmd := exchangeCmd.Command("agbot", "List and manage agbots in the Horizon Exchange")
 	exAgbotListCmd := exAgbotCmd.Command("list", "Display the agbot resources from the Horizon Exchange.")
 	exAgbot := exAgbotListCmd.Arg("agbot", "List just this one agbot.").String()
-	//exAgbotNames := exAgbotListCmd.Flag("names-only", "Only list the names (IDs) of the agbots.").Short('N').Bool()
 	exAgbotLong := exAgbotListCmd.Flag("long", "When listing all of the agbots, show the entire resource of each agbots, instead of just the name.").Short('l').Bool()
 	exAgbotListPatsCmd := exAgbotCmd.Command("listpattern", "Display the patterns that this agbot is serving.")
 	exAgbotLP := exAgbotListPatsCmd.Arg("agbot", "The agbot to list the patterns for.").Required().String()
@@ -85,10 +85,8 @@ Environment Variables:
 	exAgbotDPPat := exAgbotDelPatCmd.Arg("pattern", "The name of the pattern to remove.").Required().String()
 
 	exPatternCmd := exchangeCmd.Command("pattern", "List and manage patterns in the Horizon Exchange")
-	//exPatNodeIdTok := exPatternCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to use to query the exchange. Create with 'hzn exchange node create'.").Short('n').PlaceHolder("ID:TOK").Required().String()
 	exPatternListCmd := exPatternCmd.Command("list", "Display the pattern resources from the Horizon Exchange.")
 	exPattern := exPatternListCmd.Arg("pattern", "List just this one pattern.").String()
-	//exPatternNames := exPatternListCmd.Flag("names-only", "Only list the names (IDs) of the patterns.").Short('N').Bool()
 	exPatternLong := exPatternListCmd.Flag("long", "When listing all of the patterns, show the entire resource of each pattern, instead of just the name.").Short('l').Bool()
 	exPatternPublishCmd := exPatternCmd.Command("publish", "Sign and create/update the pattern resource in the Horizon Exchange.")
 	exPatJsonFile := exPatternPublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the pattern in the Horizon exchange. See /usr/horizon/samples/pattern.json. Specify -f- to read from stdin.").Short('f').Required().String()
@@ -110,10 +108,8 @@ Environment Variables:
 	exPatDelWorkArch := exPatternDelWorkCmd.Arg("workload-arch", "The arch of the workload to remove.").Required().String()
 
 	exWorkloadCmd := exchangeCmd.Command("workload", "List and manage workloads in the Horizon Exchange")
-	//exWorkNodeIdTok := exWorkloadCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to use to query the exchange. Create with 'hzn exchange node create'.").Short('n').PlaceHolder("ID:TOK").Required().String()
 	exWorkloadListCmd := exWorkloadCmd.Command("list", "Display the workload resources from the Horizon Exchange.")
 	exWorkload := exWorkloadListCmd.Arg("workload", "List just this one workload.").String()
-	//exWorkloadNames := exWorkloadListCmd.Flag("names-only", "Only list the names (IDs) of the workloads.").Short('N').Bool()
 	exWorkloadLong := exWorkloadListCmd.Flag("long", "When listing all of the workloads, show the entire resource of each workloads, instead of just the name.").Short('l').Bool()
 	exWorkloadPublishCmd := exWorkloadCmd.Command("publish", "Sign and create/update the workload resource in the Horizon Exchange.")
 	exWorkJsonFile := exWorkloadPublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the workload in the Horizon exchange. See /usr/horizon/samples/workload.json. Specify -f- to read from stdin.").Short('f').Required().String()
@@ -126,10 +122,8 @@ Environment Variables:
 	exWorkDelForce := exWorkDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 
 	exMicroserviceCmd := exchangeCmd.Command("microservice", "List and manage microservices in the Horizon Exchange")
-	//exMicroNodeIdTok := exMicroserviceCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to use to query the exchange. Create with 'hzn exchange node create'.").Short('n').PlaceHolder("ID:TOK").Required().String()
 	exMicroserviceListCmd := exMicroserviceCmd.Command("list", "Display the microservice resources from the Horizon Exchange.")
 	exMicroservice := exMicroserviceListCmd.Arg("microservice", "List just this one microservice.").String()
-	//exMicroserviceNames := exMicroserviceListCmd.Flag("names-only", "Only list the names (IDs) of the microservices.").Short('N').Bool()
 	exMicroserviceLong := exMicroserviceListCmd.Flag("long", "When listing all of the microservices, show the entire resource of each microservices, instead of just the name.").Short('l').Bool()
 	exMicroservicePublishCmd := exMicroserviceCmd.Command("publish", "Sign and create/update the microservice resource in the Horizon Exchange.")
 	exMicroJsonFile := exMicroservicePublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the microservice in the Horizon exchange. See /usr/horizon/samples/microservice.json. Specify -f- to read from stdin.").Short('f').Required().String()
@@ -142,8 +136,8 @@ Environment Variables:
 	exMicroDelForce := exMicroDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 
 	wiotpCmd := app.Command("wiotp", "List and manage WIoTP objects.")
-	wiotpOrg := wiotpCmd.Flag("org", "The WIoTP organization ID.").Required().Short('o').String()
-	wiotpApiKeyToken := wiotpCmd.Flag("apikey-token", "WIoTP API key and token to query and create WIoTP objects.").Short('A').PlaceHolder("APIKEY:TOKEN").Required().String()
+	wiotpOrg := wiotpCmd.Flag("org", "The WIoTP organization ID.").Short('o').String()
+	wiotpApiKeyToken := wiotpCmd.Flag("apikey-token", "WIoTP API key and token to query and create WIoTP objects.").Short('A').PlaceHolder("APIKEY:TOKEN").String()
 
 	wiotpTypeCmd := wiotpCmd.Command("type", "List and manage types in WIoTP")
 	wiotpTypeListCmd := wiotpTypeCmd.Command("list", "Display the type objects from WIoTP.")
@@ -164,7 +158,7 @@ Environment Variables:
 	registerCmd := app.Command("register", "Register this edge node with Horizon.")
 	nodeIdTok := registerCmd.Flag("node-id-tok", "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.").Short('n').PlaceHolder("ID:TOK").String()
 	userPw := registerCmd.Flag("user-pw", "User credentials to create the node resource in the Horizon exchange if it does not already exist.").Short('u').PlaceHolder("USER:PW").String()
-	email := registerCmd.Flag("email", "Your email address. Only needs to be specified if: the node resource does not yet exist in the Horizon exchange, and the user specified in the -u flag does not exist, and you specified is the 'public' org. If all of these things are true we will create the user and include this value as the email attribute.").Short('e').String()
+	email := registerCmd.Flag("email", "Your email address. Only needs to be specified if: the node resource does not yet exist in the Horizon exchange, and the user specified in the -u flag does not exist, and you specified the 'public' org. If all of these things are true we will create the user and include this value as the email attribute.").Short('e').String()
 	inputFile := registerCmd.Flag("input-file", "A JSON file that sets or overrides variables needed by the node, workloads, and microservices that are part of this pattern. See /usr/horizon/samples/input.json and /usr/horizon/samples/more-examples.json. Specify -f- to read from stdin.").Short('f').String() // not using ExistingFile() because it can be - for stdin
 	org := registerCmd.Arg("organization", "The Horizon exchange organization ID.").Required().String()
 	pattern := registerCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node.").Required().String()
@@ -172,7 +166,6 @@ Environment Variables:
 	keyCmd := app.Command("key", "List and manage keys for signing and verifying services.")
 	keyListCmd := keyCmd.Command("list", "List the signing keys that have been imported into this Horizon agent.")
 	keyName := keyListCmd.Arg("key-name", "The name of a specific key to show.").String()
-	// Note: we don't need a --names-only flag because anax only supports showing the names if a specific key name is not specified.
 	keyCreateCmd := keyCmd.Command("create", "Generate a signing key pair.")
 	keyX509Org := keyCreateCmd.Arg("x509-org", "x509 certificate Organization (O) field (preferably a company name or other organization's name).").Required().String()
 	keyX509CN := keyCreateCmd.Arg("x509-cn", "x509 certificate Common Name (CN) field (preferably an email address issued by x509org).").Required().String()
@@ -250,7 +243,7 @@ Environment Variables:
 	agbotCancelAgreementId := agbotAgreementCancelCmd.Arg("agreement", "The active agreement to cancel.").String()
 
 	app.Version("Run 'hzn version' to see the Horizon version.")
-	/*
+	/* trying to override the base --version behavior does not work....
 		fmt.Printf("version: %v\n", *version)
 		if *version {
 			node.Version()
@@ -258,8 +251,23 @@ Environment Variables:
 		}
 	*/
 
+	// Parse cmd and apply env var defaults
+	fullCmd := kingpin.MustParse(app.Parse(os.Args[1:]))
+	cliutils.Verbose("Full command: %s", fullCmd)
+	if strings.HasPrefix(fullCmd, "exchange") {
+		exOrg = cliutils.RequiredWithDefaultEnvVar(exOrg, "HZN_ORG_ID", "organization ID must be specified with either the -o flag or HZN_ORG_ID")
+		exUserPw = cliutils.RequiredWithDefaultEnvVar(exUserPw, "HZN_EXCHANGE_USER_AUTH", "exchange user authenication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH")
+	}
+	if strings.HasPrefix(fullCmd, "wiotp") {
+		wiotpOrg = cliutils.RequiredWithDefaultEnvVar(wiotpOrg, "HZN_ORG_ID", "organization ID must be specified with either the -o flag or HZN_ORG_ID")
+		wiotpApiKeyToken = cliutils.RequiredWithDefaultEnvVar(wiotpApiKeyToken, "HZN_EXCHANGE_API_AUTH", "WIoTP API key authenication must be specified with either the -A flag or HZN_EXCHANGE_API_AUTH")
+	}
+	if strings.HasPrefix(fullCmd, "register") {
+		userPw = cliutils.RequiredWithDefaultEnvVar(userPw, "HZN_EXCHANGE_USER_AUTH", "exchange user authenication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH")
+	}
+
 	// Decide which command to run
-	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
+	switch fullCmd {
 	case versionCmd.FullCommand():
 		node.Version()
 	case exUserListCmd.FullCommand():

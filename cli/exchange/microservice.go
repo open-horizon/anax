@@ -13,6 +13,33 @@ import (
 	"strings"
 )
 
+type DeploymentConfig struct {
+	Services map[string]containermessage.Service `json:"services"`
+}
+
+// These 2 structs are used when reading json file the user gives us as input to create the microservice struct
+type WorkloadDeployment struct {
+	Deployment          DeploymentConfig `json:"deployment"`
+	DeploymentSignature string `json:"deployment_signature"`
+	Torrent             string `json:"torrent"`
+}
+
+type MicroserviceFile struct {
+	Org         string                        `json:"org"`		// optional
+	Label         string                        `json:"label"`
+	Description   string                        `json:"description"`
+	Public        bool                          `json:"public"`
+	SpecRef       string                        `json:"specRef"`
+	Version       string                        `json:"version"`
+	Arch          string                        `json:"arch"`
+	Sharable      string                        `json:"sharable"`
+	DownloadURL   string                        `json:"downloadUrl"`
+	MatchHardware map[string]string             `json:"matchHardware"`
+	UserInputs    []exchange.UserInput          `json:"userInput"`
+	Workloads     []WorkloadDeployment `json:"workloads"`
+}
+
+// This is used as the input to the exchange to create the microservice
 type MicroserviceInput struct {
 	Label         string                        `json:"label"`
 	Description   string                        `json:"description"`
@@ -71,17 +98,10 @@ func MicroserviceList(org string, userPw string, microservice string, namesOnly 
 	}
 }
 
-type DeploymentConfig struct {
-	Services map[string]containermessage.Service `json:"services"`
-}
-
-func AppendImagesFromDeploymentField(deployment string, deploymentNum int, imageList []string) []string {
-	// The deployment string should include: "deployment": "{"services":{"cpu2wiotp":{"image":"openhorizon/example_wl_x86_cpu2wiotp:1.1.2",...}}}"
-	var deploymentStr DeploymentConfig
-	if err := json.Unmarshal([]byte(deployment), &deploymentStr); err != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "failed to unmarshal deployment string number %d: %v", deploymentNum+1, err)
-	}
-	for _, s := range deploymentStr.Services {
+//func AppendImagesFromDeploymentField(deploymentStr string, deploymentNum int, imageList []string) []string {
+func AppendImagesFromDeploymentField(deployment DeploymentConfig, imageList []string) []string {
+	// The deployment string should include: {"services":{"cpu2wiotp":{"image":"openhorizon/example_wl_x86_cpu2wiotp:1.1.2",...}}}
+	for _, s := range deployment.Services {
 		if s.Image != "" {
 			imageList = append(imageList, s.Image)
 		}
@@ -109,28 +129,41 @@ func CheckTorrentField(torrent string, index int) {
 }
 
 // MicroservicePublish signs the MS def and puts it in the exchange
-func MicroservicePublish(org string, userPw string, jsonFilePath string, keyFilePath string) {
+func MicroservicePublish(org, userPw, jsonFilePath, keyFilePath string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the MS metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
-	var microInput MicroserviceInput
-	err := json.Unmarshal(newBytes, &microInput)
+	var microFile MicroserviceFile
+	err := json.Unmarshal(newBytes, &microFile)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", jsonFilePath, err)
 	}
+	if microFile.Org != "" && microFile.Org != org {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", microFile.Org, org)
+	}
+	microInput := MicroserviceInput{Label: microFile.Label, Description: microFile.Description, Public: microFile.Public, SpecRef: microFile.SpecRef, Version: microFile.Version, Arch: microFile.Arch, Sharable: microFile.Sharable, DownloadURL: microFile.DownloadURL, MatchHardware: microFile.MatchHardware, UserInputs: microFile.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(microFile.Workloads))}
 
 	// Loop thru the workloads array and sign the deployment strings
 	fmt.Println("Signing microservice...")
 	var imageList []string
-	for i := range microInput.Workloads {
+	for i := range microFile.Workloads {
+		//s := `a\"`; cliutils.Verbose("signing deployment string %d: %s: %s", i+1, s, microInput.Workloads[i].Deployment)
 		cliutils.Verbose("signing deployment string %d", i+1)
+		microInput.Workloads[i].Torrent = microFile.Workloads[i].Torrent
 		var err error
-		microInput.Workloads[i].DeploymentSignature, err = sign.Input(keyFilePath, []byte(microInput.Workloads[i].Deployment))
+		var deployment []byte
+		deployment, err = json.Marshal(microFile.Workloads[i].Deployment)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment string %d: %v", i+1, err)
+		}
+		microInput.Workloads[i].Deployment = string(deployment)
+		microInput.Workloads[i].DeploymentSignature, err = sign.Input(keyFilePath, deployment)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment string with %s: %v", keyFilePath, err)
 		}
+
 		// Gather the docker image paths to instruct to docker push at the end
-		imageList = AppendImagesFromDeploymentField(microInput.Workloads[i].Deployment, i+1, imageList)
+		imageList = AppendImagesFromDeploymentField(microFile.Workloads[i].Deployment, imageList)
 
 		CheckTorrentField(microInput.Workloads[i].Torrent, i)
 	}
