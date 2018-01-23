@@ -9,7 +9,6 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/satori/go.uuid"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -495,13 +494,7 @@ func (w MicroserviceInstance) String() string {
 // If SpecRef is https://bluehorizon.network/microservices/network, version is 2.3.1 and the instance id is "abcd1234"
 // the output string will be "bluehorizon.network-microservices-network_2.3.1_abcd1234"
 func (m MicroserviceInstance) GetKey() string {
-	s := m.SpecRef
-	if strings.Contains(m.SpecRef, "://") {
-		s = strings.Split(m.SpecRef, "://")[1]
-	}
-	new_s := strings.Replace(s, "/", "-", -1)
-
-	return fmt.Sprintf("%v_%v_%v", new_s, m.Version, m.InstanceId)
+	return cutil.MakeMSInstanceKey(m.SpecRef, m.Version, m.InstanceId)
 }
 
 // Check if this microservice instance has workload or not.

@@ -2,6 +2,7 @@ package exchange
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/containermessage"
@@ -14,32 +15,111 @@ import (
 )
 
 type DeploymentConfig struct {
-	Services map[string]containermessage.Service `json:"services"`
+	Services map[string]*containermessage.Service `json:"services"`
 }
 
-// These 2 structs are used when reading json file the user gives us as input to create the microservice struct
+func (dc DeploymentConfig) CLIString() string {
+	for serviceName, service := range dc.Services {
+		return fmt.Sprintf("service %v from image %v", serviceName, service.Image)
+	}
+	// This is for the compiler
+	return ""
+}
+
+func (dc DeploymentConfig) String() string {
+
+	res := ""
+	for serviceName, deployConfig := range dc.Services {
+		res += fmt.Sprintf("service: %v, config: %v", serviceName, deployConfig)
+	}
+
+	return res
+}
+
+func (self DeploymentConfig) HasAnyServices() bool {
+	if len(self.Services) == 0 {
+		return false
+	}
+	return true
+}
+
+// A validation method. Is there enough info in the deployment config to start a container? If not, the
+// missing info is returned in the error message. Note that when there is a complete absence of deployment
+// config metadata, that's ok too for microservices.
+func (self DeploymentConfig) CanStartStop() error {
+	if len(self.Services) == 0 {
+		return nil
+		// return errors.New(fmt.Sprintf("no services defined"))
+	} else {
+		for serviceName, service := range self.Services {
+			if len(serviceName) == 0 {
+				return errors.New(fmt.Sprintf("no service name"))
+			} else if len(service.Image) == 0 {
+				return errors.New(fmt.Sprintf("no docker image for service %s", serviceName))
+			}
+		}
+	}
+	return nil
+}
+
 type WorkloadDeployment struct {
 	Deployment          DeploymentConfig `json:"deployment"`
-	DeploymentSignature string `json:"deployment_signature"`
-	Torrent             string `json:"torrent"`
+	DeploymentSignature string           `json:"deployment_signature"`
+	Torrent             string           `json:"torrent"`
 }
 
 type MicroserviceFile struct {
-	Org         string                        `json:"org"`		// optional
-	Label         string                        `json:"label"`
-	Description   string                        `json:"description"`
-	Public        bool                          `json:"public"`
-	SpecRef       string                        `json:"specRef"`
-	Version       string                        `json:"version"`
-	Arch          string                        `json:"arch"`
-	Sharable      string                        `json:"sharable"`
-	DownloadURL   string                        `json:"downloadUrl"`
-	MatchHardware map[string]string             `json:"matchHardware"`
-	UserInputs    []exchange.UserInput          `json:"userInput"`
+	Org           string               `json:"org"` // optional
+	Label         string               `json:"label"`
+	Description   string               `json:"description"`
+	Public        bool                 `json:"public"`
+	SpecRef       string               `json:"specRef"`
+	Version       string               `json:"version"`
+	Arch          string               `json:"arch"`
+	Sharable      string               `json:"sharable"`
+	DownloadURL   string               `json:"downloadUrl"`
+	MatchHardware map[string]string    `json:"matchHardware"`
+	UserInputs    []exchange.UserInput `json:"userInput"`
 	Workloads     []WorkloadDeployment `json:"workloads"`
 }
 
-// This is used as the input to the exchange to create the microservice
+// Convert the first Deployment Configuration to a full Deployment Description.
+func (self *MicroserviceFile) ConvertToDeploymentDescription() (*DeploymentConfig, *containermessage.DeploymentDescription, error) {
+	for _, wl := range self.Workloads {
+		return &wl.Deployment, &containermessage.DeploymentDescription{
+			Services: wl.Deployment.Services,
+			ServicePattern: containermessage.Pattern{
+				Shared: map[string][]string{},
+			},
+			Infrastructure: true,
+			Overrides:      map[string]*containermessage.Service{},
+		}, nil
+	}
+	return nil, nil, errors.New(fmt.Sprintf("has no containers to execute"))
+}
+
+// Verify that non default user inputs are set in the input map.
+func (self *MicroserviceFile) RequiredVariablesAreSet(setVars map[string]interface{}) error {
+	for _, ui := range self.UserInputs {
+		if ui.DefaultValue == "" && ui.Name != "" {
+			if _, ok := setVars[ui.Name]; !ok {
+				return errors.New(fmt.Sprintf("user input %v has no default value and is not set", ui.Name))
+			}
+		}
+	}
+	return nil
+}
+
+// Returns true if the microservice definition userinputs define the variable.
+func (w *MicroserviceFile) DefinesVariable(name string) string {
+	for _, ui := range w.UserInputs {
+		if ui.Name == name && ui.Type != "" {
+			return ui.Type
+		}
+	}
+	return ""
+}
+
 type MicroserviceInput struct {
 	Label         string                        `json:"label"`
 	Description   string                        `json:"description"`
@@ -52,16 +132,6 @@ type MicroserviceInput struct {
 	MatchHardware map[string]string             `json:"matchHardware"`
 	UserInputs    []exchange.UserInput          `json:"userInput"`
 	Workloads     []exchange.WorkloadDeployment `json:"workloads"`
-}
-
-// Returns true if the microservice definition userinputs define the variable.
-func (w *MicroserviceInput) DefinesVariable(name string) string {
-	for _, ui := range w.UserInputs {
-		if ui.Name == name && ui.Type != "" {
-			return ui.Type
-		}
-	}
-	return ""
 }
 
 func MicroserviceList(org string, userPw string, microservice string, namesOnly bool) {
@@ -98,7 +168,6 @@ func MicroserviceList(org string, userPw string, microservice string, namesOnly 
 	}
 }
 
-//func AppendImagesFromDeploymentField(deploymentStr string, deploymentNum int, imageList []string) []string {
 func AppendImagesFromDeploymentField(deployment DeploymentConfig, imageList []string) []string {
 	// The deployment string should include: {"services":{"cpu2wiotp":{"image":"openhorizon/example_wl_x86_cpu2wiotp:1.1.2",...}}}
 	for _, s := range deployment.Services {
@@ -141,6 +210,12 @@ func MicroservicePublish(org, userPw, jsonFilePath, keyFilePath string) {
 	if microFile.Org != "" && microFile.Org != org {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", microFile.Org, org)
 	}
+
+	microFile.SignAndPublish(org, userPw, keyFilePath)
+}
+
+// Sign and publish the microservice definition. This is a function that is reusable across different hzn commands.
+func (microFile *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) {
 	microInput := MicroserviceInput{Label: microFile.Label, Description: microFile.Description, Public: microFile.Public, SpecRef: microFile.SpecRef, Version: microFile.Version, Arch: microFile.Arch, Sharable: microFile.Sharable, DownloadURL: microFile.DownloadURL, MatchHardware: microFile.MatchHardware, UserInputs: microFile.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(microFile.Workloads))}
 
 	// Loop thru the workloads array and sign the deployment strings
@@ -168,7 +243,7 @@ func MicroservicePublish(org, userPw, jsonFilePath, keyFilePath string) {
 		CheckTorrentField(microInput.Workloads[i].Torrent, i)
 	}
 
-	// Create of update resource in the exchange
+	// Create or update resource in the exchange
 	exchId := cliutils.FormExchangeId(microInput.SpecRef, microInput.Version, microInput.Arch)
 	var output string
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)

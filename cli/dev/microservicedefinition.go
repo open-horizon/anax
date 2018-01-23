@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
+	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"path"
@@ -16,9 +17,9 @@ const DEFAULT_MSDEF_URL = ""
 
 // Sort of like a constructor, it creates an in memory object except that it is created from the microservice definition config
 // file in the current project. This function assumes the caller has determined the exact location of the file.
-func GetMicroserviceDefinition(directory string) (*cliexchange.MicroserviceInput, error) {
+func GetMicroserviceDefinition(directory string) (*cliexchange.MicroserviceFile, error) {
 
-	res := new(cliexchange.MicroserviceInput)
+	res := new(cliexchange.MicroserviceFile)
 
 	// GetFile will write to the res object, demarshalling the bytes into a json object that can be returned.
 	if err := GetFile(directory, MICROSERVICE_DEFINITION_FILE, res); err != nil {
@@ -30,10 +31,10 @@ func GetMicroserviceDefinition(directory string) (*cliexchange.MicroserviceInput
 
 // Sort of like a constructor, it creates a skeletal microservice definition config object and writes it to the project
 // in the file system.
-func CreateMicroserviceDefinition(directory string) error {
+func CreateMicroserviceDefinition(directory string, org string) error {
 
 	// Create a skeletal microservice definition config object with fillins/place-holders for configuration.
-	res := new(cliexchange.MicroserviceInput)
+	res := new(cliexchange.MicroserviceFile)
 	res.Label = ""
 	res.Description = ""
 	res.SpecRef = DEFAULT_MSDEF_URL
@@ -50,7 +51,21 @@ func CreateMicroserviceDefinition(directory string) error {
 		},
 	}
 	res.MatchHardware = map[string]string{}
-	res.Workloads = []exchange.WorkloadDeployment{}
+	res.Workloads = []cliexchange.WorkloadDeployment{
+		cliexchange.WorkloadDeployment{
+			Deployment: cliexchange.DeploymentConfig{
+				Services: map[string]*containermessage.Service{
+					"": &containermessage.Service{
+						Image:       "",
+						Environment: []string{"ENV_VAR_HERE=SOME_VALUE"},
+					},
+				},
+			},
+			DeploymentSignature: "",
+			Torrent:             "",
+		},
+	}
+	res.Org = org
 
 	// Convert the object to JSON and write it into the project.
 	return CreateFile(directory, MICROSERVICE_DEFINITION_FILE, res)
@@ -76,6 +91,19 @@ func ValidateMicroserviceDefinition(directory string) error {
 		return errors.New(fmt.Sprintf("%v: specRef must be set.", filePath))
 	} else if msDef.Version == DEFAULT_MSDEF_SPECIFIC_VERSION || msDef.Version == "" {
 		return errors.New(fmt.Sprintf("%v: version must be set to a specific version, e.g. 1.0.0.", filePath))
+	} else if msDef.Org == "" {
+		return errors.New(fmt.Sprintf("%v: org must be set.", filePath))
+	} else {
+		for ix, wl := range msDef.Workloads {
+			if err := wl.Deployment.CanStartStop(); err != nil {
+				return errors.New(fmt.Sprintf("%v: workloads array element at index %v, %v", filePath, ix, err))
+			}
+		}
+		for ix, ui := range msDef.UserInputs {
+			if (ui.Name != "" && ui.Type == "") || (ui.Name == "" && (ui.Type != "" || ui.DefaultValue != "")) {
+				return errors.New(fmt.Sprintf("%v: userInput array index %v does not have name and type specified.", filePath, ix))
+			}
+		}
 	}
 	return nil
 }

@@ -1612,7 +1612,7 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 						if err != nil {
 							glog.Errorf("Failure disconnecting network: %v from container %v. Error: %v", netInfo.Name, container.Name, err)
 						} else {
-							glog.Infof("Succeeded disconnecting network: %v from container %v", netInfo.Name, container.Name)
+							glog.V(3).Infof("Succeeded disconnecting network: %v from container %v", netInfo.Name, container.Name)
 						}
 					}
 				}

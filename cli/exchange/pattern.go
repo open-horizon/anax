@@ -32,7 +32,7 @@ type PatternOutput struct {
 
 // These 5 structs are used when reading json file the user gives us as input to create the pattern struct
 type ServiceOverrides struct {
-	Environment      []string             `json:"environment,omitempty"`
+	Environment []string `json:"environment,omitempty"`
 }
 type DeploymentOverrides struct {
 	Services map[string]ServiceOverrides `json:"services"`
@@ -41,23 +41,23 @@ type WorkloadChoiceFile struct {
 	Version                      string                    `json:"version"`  // the version of the workload
 	Priority                     exchange.WorkloadPriority `json:"priority"` // the highest priority workload is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
 	Upgrade                      exchange.UpgradePolicy    `json:"upgradePolicy"`
-	DeploymentOverrides          DeploymentOverrides                    `json:"deployment_overrides"`           // env var overrides for the workload
+	DeploymentOverrides          DeploymentOverrides       `json:"deployment_overrides"`           // env var overrides for the workload
 	DeploymentOverridesSignature string                    `json:"deployment_overrides_signature"` // signature of env var overrides
 }
 type WorkloadReferenceFile struct {
 	WorkloadURL      string                    `json:"workloadUrl"`      // refers to a workload definition in the exchange
 	WorkloadOrg      string                    `json:"workloadOrgid"`    // the org holding the workload definition
 	WorkloadArch     string                    `json:"workloadArch"`     // the hardware architecture of the workload definition
-	WorkloadVersions []WorkloadChoiceFile          `json:"workloadVersions"` // a list of workload version for rollback
+	WorkloadVersions []WorkloadChoiceFile      `json:"workloadVersions"` // a list of workload version for rollback
 	DataVerify       exchange.DataVerification `json:"dataVerification"` // policy for verifying that the node is sending data
 	NodeH            exchange.NodeHealth       `json:"nodeHealth"`       // policy for determining when a node's health is violating its agreements
 }
 type PatternFile struct {
-	Org              string                       `json:"org"`   // optional
+	Org                string                       `json:"org"` // optional
 	Label              string                       `json:"label"`
 	Description        string                       `json:"description"`
 	Public             bool                         `json:"public"`
-	Workloads          []WorkloadReferenceFile          `json:"workloads"`
+	Workloads          []WorkloadReferenceFile      `json:"workloads"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
 }
 

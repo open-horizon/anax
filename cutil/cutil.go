@@ -175,8 +175,10 @@ func VerifyWorkloadVarTypes(varValue interface{}, expectedType string) error {
 // code. This will prevent us from adding a new platform env var but forgetting to update the CLI.
 func SetPlatformEnvvars(envAdds map[string]string, prefix string, agreementId string, deviceId string, org string, workloadPW string, exchangeURL string) {
 
-	// The agreement id that is controlling the lifecycel of this container.
-	envAdds[prefix+"AGREEMENTID"] = agreementId
+	// The agreement id that is controlling the lifecycle of this container.
+	if agreementId != "" {
+		envAdds[prefix+"AGREEMENTID"] = agreementId
+	}
 
 	// The exchange id of the node that is running the container.
 	envAdds[prefix+"DEVICE_ID"] = deviceId
@@ -185,7 +187,9 @@ func SetPlatformEnvvars(envAdds map[string]string, prefix string, agreementId st
 	envAdds[prefix+"ORGANIZATION"] = org
 
 	// Deprecated workload password, used only by legacy POC workloads.
-	envAdds[prefix+"HASH"] = workloadPW
+	if workloadPW != "" {
+		envAdds[prefix+"HASH"] = workloadPW
+	}
 
 	// Add in the exchange URL so that the workload knows which ecosystem its part of
 	envAdds[prefix+"EXCHANGE_URL"] = exchangeURL
@@ -209,4 +213,14 @@ func SetSystemEnvvars(envAdds map[string]string, prefix string, lat string, lon 
 		envAdds[prefix+"ARCH"] = arch
 	}
 
+}
+
+func MakeMSInstanceKey(specRef string, v string, id string) string {
+	s := specRef
+	if strings.Contains(specRef, "://") {
+		s = strings.Split(specRef, "://")[1]
+	}
+	new_s := strings.Replace(s, "/", "-", -1)
+
+	return fmt.Sprintf("%v_%v_%v", new_s, v, id)
 }

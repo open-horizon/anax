@@ -1050,7 +1050,7 @@ func (w *GovernanceWorker) GetWorkloadPreference(url string) (map[string]string,
 		return nil, fmt.Errorf("Unable to fetch workload preferences. Err: %v", err)
 	}
 
-	return persistence.AttributesToEnvvarMap(attrs, config.ENVVAR_PREFIX)
+	return persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX)
 
 }
 
@@ -1103,7 +1103,7 @@ func (w *GovernanceWorker) ConfigToEnvvarMap(db *bolt.DB, cfg *persistence.Workl
 	if allAttrs, err := persistence.FindApplicableAttributes(db, ""); err != nil {
 		return nil, err
 	} else {
-		persistence.ConvertWorkloadPersistentNativeToEnv(allAttrs, envvars)
+		persistence.ConvertWorkloadPersistentNativeToEnv(allAttrs, envvars, config.ENVVAR_PREFIX)
 	}
 
 	if cfg == nil {

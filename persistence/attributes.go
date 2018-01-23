@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
-	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/satori/go.uuid"
 	"reflect"
@@ -282,7 +281,7 @@ func FindApplicableAttributes(db *bolt.DB, serviceUrl string) ([]Attribute, erro
 
 // Workloads dont see the same system level env vars that microservices see. This function picks out just
 // the attributes that are applicable to workloads.
-func ConvertWorkloadPersistentNativeToEnv(allAttrs []Attribute, envvars map[string]string) {
+func ConvertWorkloadPersistentNativeToEnv(allAttrs []Attribute, envvars map[string]string, prefix string) (map[string]string, error) {
 	var lat, lon, cpus, ram, arch string
 	for _, attr := range allAttrs {
 
@@ -301,13 +300,13 @@ func ConvertWorkloadPersistentNativeToEnv(allAttrs []Attribute, envvars map[stri
 			arch = s.Architecture
 		}
 	}
-	cutil.SetSystemEnvvars(envvars, config.ENVVAR_PREFIX, lat, lon, cpus, ram, arch)
+	cutil.SetSystemEnvvars(envvars, prefix, lat, lon, cpus, ram, arch)
+	return envvars, nil
 }
 
 // This function is used to convert the persistent attributes for a microservice to an env var map.
 // This will include *all* values for which HostOnly is false, include those marked to not publish.
-func AttributesToEnvvarMap(attributes []Attribute, prefix string) (map[string]string, error) {
-	envvars := map[string]string{}
+func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, prefix string) (map[string]string, error) {
 
 	pf := func(str string, prefix string) string {
 		return fmt.Sprintf("%v%v", prefix, str)
