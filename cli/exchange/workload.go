@@ -12,6 +12,22 @@ import (
 	"strings"
 )
 
+// This is used when reading json file the user gives us as input to create the workload struct
+type WorkloadFile struct {
+	Org       string                        `json:"org"`    // optional
+	Label       string                        `json:"label"`
+	Description string                        `json:"description"`
+	Public      bool                          `json:"public"`
+	WorkloadURL string                        `json:"workloadUrl"`
+	Version     string                        `json:"version"`
+	Arch        string                        `json:"arch"`
+	DownloadURL string                        `json:"downloadUrl"`
+	APISpecs    []exchange.APISpec            `json:"apiSpec"`
+	UserInputs  []exchange.UserInput          `json:"userInput"`
+	Workloads   []WorkloadDeployment `json:"workloads"`
+}
+
+// This is used as the input to the exchange to create the workload
 type WorkloadInput struct {
 	Label       string                        `json:"label"`
 	Description string                        `json:"description"`
@@ -88,25 +104,36 @@ func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the workload metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
-	var workInput WorkloadInput
-	err := json.Unmarshal(newBytes, &workInput)
+	var workFile WorkloadFile
+	err := json.Unmarshal(newBytes, &workFile)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", jsonFilePath, err)
 	}
+	if workFile.Org != "" && workFile.Org != org {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", workFile.Org, org)
+	}
+	workInput := WorkloadInput{Label: workFile.Label, Description: workFile.Description, Public: workFile.Public, WorkloadURL: workFile.WorkloadURL, Version: workFile.Version, Arch: workFile.Arch, DownloadURL: workFile.DownloadURL, APISpecs: workFile.APISpecs, UserInputs: workFile.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(workFile.Workloads))}
 
 	// Loop thru the workloads array and sign the deployment strings
 	fmt.Println("Signing workload...")
 	var imageList []string
-	for i := range workInput.Workloads {
+	for i := range workFile.Workloads {
 		cliutils.Verbose("signing deployment string %d", i+1)
+		workInput.Workloads[i].Torrent = workFile.Workloads[i].Torrent
 		var err error
-		workInput.Workloads[i].DeploymentSignature, err = sign.Input(keyFilePath, []byte(workInput.Workloads[i].Deployment))
+		var deployment []byte
+		deployment, err = json.Marshal(workFile.Workloads[i].Deployment)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment string %d: %v", i+1, err)
+		}
+		workInput.Workloads[i].Deployment = string(deployment)
+		workInput.Workloads[i].DeploymentSignature, err = sign.Input(keyFilePath, deployment)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing deployment string %d with %s: %v", i+1, keyFilePath, err)
 		}
 
 		// Gather the docker image paths to instruct to docker push at the end
-		imageList = AppendImagesFromDeploymentField(workInput.Workloads[i].Deployment, i+1, imageList)
+		imageList = AppendImagesFromDeploymentField(workFile.Workloads[i].Deployment, imageList)
 
 		CheckTorrentField(workInput.Workloads[i].Torrent, i)
 	}
