@@ -41,6 +41,11 @@ func CreateWorkloadconfig(cfg *WorkloadConfig,
 
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("WorkloadConfig POST input: %v", cfg)))
 
+	// If the device is already set to use the service model, then return an error.
+	if existingDevice.IsServiceBased() {
+		return errorhandler(NewAPIUserInputError("The node is configured to use services, cannot configure a workload.", "workload")), nil
+	}
+
 	// Validate the input strings. The variables map can be empty if the device owner wants
 	// the workload to use all default values, so we wont validate that map.
 	if cfg.WorkloadURL == "" {
@@ -78,7 +83,7 @@ func CreateWorkloadconfig(cfg *WorkloadConfig,
 	}
 
 	// Get the workload metadata from the exchange
-	workloadDef, _, err := getWorkload(cfg.WorkloadURL, org, vExp.Get_expression(), cutil.ArchString(), existingDevice.GetId(), existingDevice.Token)
+	workloadDef, _, err := getWorkload(cfg.WorkloadURL, org, vExp.Get_expression(), cutil.ArchString())
 	if err != nil || workloadDef == nil {
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("unable to find the workload definition using %v %v %v %v in the exchange.", cfg.WorkloadURL, org, vExp.Get_expression(), cutil.ArchString()), "workload_url")), nil
 	}
@@ -143,6 +148,11 @@ func CreateWorkloadconfig(cfg *WorkloadConfig,
 	if err != nil {
 		glog.Error(apiLogString(err))
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to save workloadconfig object, error: %v", err))), nil
+	}
+
+	// Indicate that this node is workload/microservice based.
+	if _, err := existingDevice.SetWorkloadBased(db); err != nil {
+		return errorhandler(NewSystemError(fmt.Sprintf("Error setting workload mode on device object: %v", err))), nil
 	}
 
 	return false, wc

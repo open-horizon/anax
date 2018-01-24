@@ -62,6 +62,28 @@ func NewMicroserviceInstanceOutput(mi persistence.MicroserviceInstance, containe
 	}
 }
 
+func NewAgreementServiceInstanceOutput(ag *persistence.EstablishedAgreement, containers *[]dockerclient.APIContainers) *MicroserviceInstanceOutput {
+	mi := persistence.MicroserviceInstance{
+		SpecRef:              ag.RunningWorkload.URL,
+		Version:              ag.RunningWorkload.Version,
+		Arch:                 ag.RunningWorkload.Arch,
+		InstanceId:           ag.CurrentAgreementId,
+		Archived:             ag.Archived,
+		InstanceCreationTime: ag.AgreementCreationTime,
+		ExecutionStartTime:   ag.AgreementExecutionStartTime,
+		ExecutionFailureCode: uint(ag.TerminatedReason),
+		ExecutionFailureDesc: ag.TerminatedDescription,
+		CleanupStartTime:     ag.AgreementTerminatedTime,
+		AssociatedAgreements: []string{ag.CurrentAgreementId},
+		MicroserviceDefId:    "",
+	}
+
+	return &MicroserviceInstanceOutput{
+		MicroserviceInstance: mi,
+		Containers:           containers,
+	}
+}
+
 // The output format for GET workload
 type AllWorkloads struct {
 	Config     []persistence.WorkloadConfig  `json:"config"`     // the workload configurations
@@ -70,6 +92,21 @@ type AllWorkloads struct {
 
 func NewWorkloadOutput() *AllWorkloads {
 	return &AllWorkloads{}
+}
+
+// The output format for GET service
+type AllServices struct {
+	Config      []MicroserviceConfig     `json:"config"`      // the service configurations
+	Instances   map[string][]interface{} `json:"instances"`   // the mservice instances that are running
+	Definitions map[string][]interface{} `json:"definitions"` // the definitions of services from the exchange
+}
+
+func NewServiceOutput() *AllServices {
+	return &AllServices{
+		Config:      make([]MicroserviceConfig, 0, 10),
+		Instances:   make(map[string][]interface{}, 0),
+		Definitions: make(map[string][]interface{}, 0),
+	}
 }
 
 // Functions and types that plug into the go sorting feature

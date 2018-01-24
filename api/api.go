@@ -12,7 +12,6 @@ import (
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
-	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
@@ -27,7 +26,7 @@ type API struct {
 	bcState        map[string]map[string]apicommon.BlockchainState
 	bcStateLock    sync.Mutex
 	shutdownError  string
-	exchHandlers   *exchange.ExchangeApiHandlers
+	EC             *worker.BaseExchangeContext
 }
 
 type BlockchainState struct {
@@ -46,13 +45,13 @@ func NewAPIListener(name string, config *config.HorizonConfig, db *bolt.DB, pm *
 			Messages: messages,
 		},
 
-		name:         name,
-		db:           db,
-		pm:           pm,
-		em:           events.NewEventStateManager(),
-		bcState:      make(map[string]map[string]apicommon.BlockchainState),
-		bcStateLock:  sync.Mutex{},
-		exchHandlers: exchange.NewExchangeApiHandlers(config),
+		name:        name,
+		db:          db,
+		pm:          pm,
+		em:          events.NewEventStateManager(),
+		bcState:     make(map[string]map[string]apicommon.BlockchainState),
+		bcStateLock: sync.Mutex{},
+		EC:          nil,
 	}
 
 	listener.listen(config.Edge.APIListen)
@@ -74,6 +73,11 @@ func (a *API) router(includeStaticRedirects bool) *mux.Router {
 	router.HandleFunc("/microservice", a.microservice).Methods("GET", "OPTIONS")
 	router.HandleFunc("/microservice/config", a.microserviceconfig).Methods("GET", "POST", "OPTIONS")
 	router.HandleFunc("/microservice/policy", a.microservicepolicy).Methods("GET", "OPTIONS")
+
+	// For obtaining microservice info or configuring a microservice (sensor) userInput variables
+	router.HandleFunc("/service", a.service).Methods("GET", "OPTIONS")
+	router.HandleFunc("/service/config", a.serviceconfig).Methods("GET", "POST", "OPTIONS")
+	router.HandleFunc("/service/policy", a.servicepolicy).Methods("GET", "OPTIONS")
 
 	// Connectivity and blockchain status info
 	router.HandleFunc("/status", a.status).Methods("GET", "OPTIONS")
@@ -174,6 +178,47 @@ func (a *API) saveShutdownError(msg events.Message) {
 	case *events.NodeShutdownCompleteMessage:
 		m, _ := msg.(*events.NodeShutdownCompleteMessage)
 		a.shutdownError = m.Err()
+	}
+}
+
+// A local implementation of the ExchangeContext interface because the API object is not an anax worker.
+func (a *API) GetExchangeId() string {
+	if a.EC != nil {
+		return a.EC.Id
+	} else {
+		return ""
+	}
+}
+
+func (a *API) GetExchangeToken() string {
+	if a.EC != nil {
+		return a.EC.Token
+	} else {
+		return ""
+	}
+}
+
+func (a *API) GetExchangeURL() string {
+	if a.EC != nil {
+		return a.EC.URL
+	} else {
+		return ""
+	}
+}
+
+func (a *API) GetServiceBased() bool {
+	if a.EC != nil {
+		return a.EC.ServiceBased
+	} else {
+		return false
+	}
+}
+
+func (a *API) GetHTTPFactory() *config.HTTPClientFactory {
+	if a.EC != nil {
+		return a.EC.HTTPFactory
+	} else {
+		return a.Config.Collaborators.HTTPClientFactory
 	}
 }
 

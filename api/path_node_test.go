@@ -62,7 +62,7 @@ func Test_FindHDForOutput1(t *testing.T) {
 
 	theOrg := "myorg"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "apattern", CONFIGSTATE_CONFIGURING)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "apattern", CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -97,7 +97,7 @@ func Test_CreateHorizonDevice_NoDeviceid(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), events.NewEventStateManager(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -129,7 +129,7 @@ func Test_CreateHorizonDevice_IllegalId(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), events.NewEventStateManager(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -160,7 +160,7 @@ func Test_CreateHorizonDevice_IllegalOrg(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), events.NewEventStateManager(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -191,7 +191,7 @@ func Test_CreateHorizonDevice_IllegalPattern(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), events.NewEventStateManager(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -223,7 +223,7 @@ func Test_CreateHorizonDevice_IllegalName(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), events.NewEventStateManager(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -254,7 +254,7 @@ func Test_CreateHorizonDevice_IllegalToken(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatterns(), events.NewEventStateManager(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -589,7 +589,7 @@ func Test_DeleteHorizonDevice_success(t *testing.T) {
 	myPattern := "testPattern"
 	device := getBasicDevice(myOrg, myPattern)
 
-	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, CONFIGSTATE_CONFIGURED)
+	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, CONFIGSTATE_CONFIGURED, false, false)
 	if err != nil {
 		t.Errorf("unexpected error creating device %v", err)
 	}
@@ -627,7 +627,7 @@ func Test_DeleteHorizonDevice_fail1(t *testing.T) {
 	myPattern := "testPattern"
 	device := getBasicDevice(myOrg, myPattern)
 
-	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, CONFIGSTATE_UNCONFIGURED)
+	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, CONFIGSTATE_UNCONFIGURED, false, false)
 	if err != nil {
 		t.Errorf("unexpected error creating device %v", err)
 	}
@@ -667,7 +667,7 @@ func Test_PatchHorizonDevice_fail1(t *testing.T) {
 	myPattern := "testPattern"
 	device := getBasicDevice(myOrg, myPattern)
 
-	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, CONFIGSTATE_CONFIGURED)
+	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, CONFIGSTATE_CONFIGURED, false, false)
 	if err != nil {
 		t.Errorf("unexpected error creating device %v", err)
 	}

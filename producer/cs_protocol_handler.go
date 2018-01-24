@@ -30,17 +30,16 @@ type CSProtocolHandler struct {
 	bcState            map[string]map[string]map[string]*BlockchainState
 }
 
-func NewCSProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, deviceId string, token string) *CSProtocolHandler {
+func NewCSProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, ec exchange.ExchangeContext) *CSProtocolHandler {
 	if name == citizenscientist.PROTOCOL_NAME {
 
 		return &CSProtocolHandler{
 			BaseProducerProtocolHandler: &BaseProducerProtocolHandler{
-				name:     name,
-				pm:       pm,
-				db:       db,
-				config:   cfg,
-				deviceId: deviceId,
-				token:    token,
+				name:   name,
+				pm:     pm,
+				db:     db,
+				config: cfg,
+				ec:     ec,
 			},
 			genericAgreementPH: citizenscientist.NewProtocolHandler(cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil), pm),
 			bcState:            make(map[string]map[string]map[string]*BlockchainState),
@@ -61,7 +60,7 @@ func (c *CSProtocolHandler) String() string {
 		"PM: %v, "+
 		"DB: %v, "+
 		"Generic Agreement PH: %v",
-		c.name, c.deviceId, c.token, c.pm, c.db, c.genericAgreementPH)
+		c.name, c.ec.GetExchangeId(), c.ec.GetExchangeToken(), c.pm, c.db, c.genericAgreementPH)
 }
 
 func (c *CSProtocolHandler) AgreementProtocolHandler(typeName string, name string, org string) abstractprotocol.ProtocolHandler {

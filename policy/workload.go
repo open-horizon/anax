@@ -63,18 +63,19 @@ func (wp WorkloadPriority) IsSame(compare WorkloadPriority) bool {
 }
 
 type Workload struct {
-	Deployment                   string           `json:"deployment,omitempty"`
-	DeploymentSignature          string           `json:"deployment_signature,omitempty"`
-	DeploymentUserInfo           string           `json:"deployment_user_info,omitempty"`
-	Torrent                      Torrent          `json:"torrent,omitempty"`
-	WorkloadPassword             string           `json:"workload_password,omitempty"`              // The password used to create the bcrypt hash that is passed to the workload so that the workload can verify the caller
-	Priority                     WorkloadPriority `json:"priority,omitempty"`                       // The highest priority workload is tried first for an agrement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
-	WorkloadURL                  string           `json:"workloadUrl,omitempty"`                    // Added with MS split, refers to a workload definition in the exchange
-	Org                          string           `json:"organization,omitempty"`                   // Added woth org support, refers to the organization where the workload is defined
-	Version                      string           `json:"version,omitempty"`                        // Added with MS split, refers to the version of the workload
-	Arch                         string           `json:"arch,omitempty"`                           // Added with MS split, refers to the hardware architecture of the workload definition
-	DeploymentOverrides          string           `json:"deployment_overrides,omitempty"`           // Added with MS split, env var overrides for the workload
-	DeploymentOverridesSignature string           `json:"deployment_overrides_signature,omitempty"` // Added with MS split, signature of env var overrides
+	Deployment                   string                `json:"deployment,omitempty"`
+	DeploymentSignature          string                `json:"deployment_signature,omitempty"`
+	DeploymentUserInfo           string                `json:"deployment_user_info,omitempty"`
+	Torrent                      Torrent               `json:"torrent,omitempty"`
+	WorkloadPassword             string                `json:"workload_password,omitempty"`              // The password used to create the bcrypt hash that is passed to the workload so that the workload can verify the caller
+	Priority                     WorkloadPriority      `json:"priority,omitempty"`                       // The highest priority workload is tried first for an agrement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
+	WorkloadURL                  string                `json:"workloadUrl,omitempty"`                    // Added with MS split, refers to a workload definition in the exchange
+	Org                          string                `json:"organization,omitempty"`                   // Added woth org support, refers to the organization where the workload is defined
+	Version                      string                `json:"version,omitempty"`                        // Added with MS split, refers to the version of the workload
+	Arch                         string                `json:"arch,omitempty"`                           // Added with MS split, refers to the hardware architecture of the workload definition
+	DeploymentOverrides          string                `json:"deployment_overrides,omitempty"`           // Added with MS split, env var overrides for the workload
+	DeploymentOverridesSignature string                `json:"deployment_overrides_signature,omitempty"` // Added with MS split, signature of env var overrides
+	ImageStore                   ImplementationPackage `json:"imageStore,omitempty"`                     // Metadata describing how to get the implementation package in a ServiceDefinition
 }
 
 func (w Workload) String() string {
@@ -89,9 +90,10 @@ func (w Workload) String() string {
 		"Version: %v, "+
 		"Arch: %v, "+
 		"Deployment Overrides: %v, "+
-		"Deployment Overrides Signature: %v",
+		"Deployment Overrides Signature: %v, "+
+		"ImageStore: %v",
 		w.Priority, w.Deployment, w.DeploymentSignature, w.DeploymentUserInfo, w.Torrent, w.WorkloadPassword,
-		w.WorkloadURL, w.Org, w.Version, w.Arch, w.DeploymentOverrides, w.DeploymentOverridesSignature)
+		w.WorkloadURL, w.Org, w.Version, w.Arch, w.DeploymentOverrides, w.DeploymentOverridesSignature, w.ImageStore)
 }
 
 func (w Workload) ShortString() string {
@@ -193,4 +195,52 @@ func (w Workload) HasEmptyPriority() bool {
 		return true
 	}
 	return false
+}
+
+// This type is used to describe the package that implements the service. This type is identical to the same type
+// found in the exchange package. It is part of a ServiceDefinition. See that module for an explanation.
+const IMPL_PACKAGE_DISCRIMINATOR = "storeType"
+const IMPL_PACKAGE_CONTAINER = "dockerRegistry"
+const IMPL_PACKAGE_IMAGESERVER = "imageServer"
+const IMPL_PACKAGE_IMAGESERVER_URL = "url"
+const IMPL_PACKAGE_IMAGESERVER_SIG = "signature"
+
+type ImplementationPackage map[string]interface{}
+
+func (i ImplementationPackage) String() string {
+	res := "{"
+	for key, val := range i {
+		res += fmt.Sprintf("%v:%v, ", key, val)
+	}
+	if len(res) > 2 {
+		res = res[:len(res)-2] + "}"
+	} else {
+		res = "none"
+	}
+	return res
+}
+
+// The ImplementationPackage object can be converted to a Torrent type field when the implementation package
+// is using the image server packaging model. The ImplementationPackage object must specify the storeType of
+// the image server and it must include the image server fields; url and signature. If this function is unable
+// to convert to a Torrent object then an empty Torrent object is returned.
+func (i ImplementationPackage) ConvertToTorrent() Torrent {
+	res := Torrent{}
+
+	if storeType, ok := i[IMPL_PACKAGE_DISCRIMINATOR]; !ok || storeType != IMPL_PACKAGE_IMAGESERVER {
+		return res
+	} else if url, ok := i[IMPL_PACKAGE_IMAGESERVER_URL]; !ok {
+		return res
+	} else if urlString, ok := url.(string); !ok {
+		return res
+	} else if sig, ok := i[IMPL_PACKAGE_IMAGESERVER_SIG]; !ok {
+		return res
+	} else if sigString, ok := sig.(string); !ok {
+		return res
+	} else {
+		return Torrent{
+			Url:       urlString,
+			Signature: sigString,
+		}
+	}
 }

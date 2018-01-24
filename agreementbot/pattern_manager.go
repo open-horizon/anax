@@ -187,7 +187,7 @@ func createPolicyFiles(pe *PatternEntry, patternId string, pattern *exchange.Pat
 
 // For each org that the agbot is supporting, take the set of patterns defined within the org and save them into
 // the PatternManager. When new or updated patterns are discovered, generate policy files for each pattern so that
-// the agbot can start serving the workloads.
+// the agbot can start serving the workloads and services.
 func (pm *PatternManager) UpdatePatternPolicies(org string, definedPatterns map[string]exchange.Pattern, policyPath string) error {
 
 	// Exit early on error

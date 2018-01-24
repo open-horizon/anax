@@ -46,49 +46,75 @@ func NewWorkloadDeployment(deployment string, deploy_sig string, torrent string)
 	}
 }
 
-type HardwareMatch struct {
-	USBDeviceIds string `json:"usbDeviceIds"`
-	Devfiles     string `json:"devFiles"`
+type HardwareMatch map[string]interface{}
+
+type ServiceDependency struct {
+	URL     string `json:"url"`
+	Org     string `json:"org"`
+	Version string `json:"version"`
+	Arch    string `json:"arch"`
 }
 
-func NewHardwareMatch(usb_dev_ids string, dev_files string) *HardwareMatch {
-	return &HardwareMatch{
-		USBDeviceIds: usb_dev_ids,
-		Devfiles:     dev_files,
+func NewServiceDependency(url string, org string, version string, arch string) *ServiceDependency {
+	return &ServiceDependency{
+		URL:     url,
+		Org:     org,
+		Version: version,
+		Arch:    arch,
 	}
 }
 
+type ImplementationPackage map[string]interface{}
+
+func (i ImplementationPackage) String() string {
+	res := "{"
+	for key, val := range i {
+		res += fmt.Sprintf("%v:%v, ", key, val)
+	}
+	if len(res) > 2 {
+		res = res[:len(res)-2] + "}"
+	} else {
+		res = "none"
+	}
+	return res
+}
+
 type MicroserviceDefinition struct {
-	Id                           string               `json:"record_id"` // unique primary key for records
-	Owner                        string               `json:"owner"`
-	Label                        string               `json:"label"`
-	Description                  string               `json:"description"`
-	SpecRef                      string               `json:"specRef"`
-	Org                          string               `json:"organization"`
-	Version                      string               `json:"version"`
-	Arch                         string               `json:"arch"`
-	Sharable                     string               `json:"sharable"`
-	DownloadURL                  string               `json:"downloadUrl"`
-	MatchHardware                HardwareMatch        `json:"matchHardware"`
-	UserInputs                   []UserInput          `json:"userInput"`
-	Workloads                    []WorkloadDeployment `json:"workloads"`
-	LastUpdated                  string               `json:"lastUpdated"`
-	Archived                     bool                 `json:"archived"`
-	Name                         string               `json:"name"`                  //the sensor_name passed in from the POST /service call
-	RequestedArch                string               `json:"requested_arch"`        //the arch from user input or from the ms referenced by a workload, it can be a synonym of the node arch.
-	UpgradeVersionRange          string               `json:"upgrade_version_range"` //the sensor_version passed in from the POST service call
-	AutoUpgrade                  bool                 `json:"auto_upgrade"`          // passed in from the POST service call
-	ActiveUpgrade                bool                 `json:"active_upgrade"`        // passed in from the POST service call
-	UpgradeStartTime             uint64               `json:"upgrade_start_time"`
-	UpgradeMsUnregisteredTime    uint64               `json:"upgrade_ms_unregistered_time"`
-	UpgradeAgreementsClearedTime uint64               `json:"upgrade_agreements_cleared_time"`
-	UpgradeExecutionStartTime    uint64               `json:"upgrade_execution_start_time"`
-	UpgradeMsReregisteredTime    uint64               `json:"upgrade_ms_reregistered_time"`
-	UpgradeFailedTime            uint64               `json:"upgrade_failed_time"`
-	UngradeFailureReason         uint64               `json:"upgrade_failure_reason"`
-	UngradeFailureDescription    string               `json:"upgrade_failure_description"`
-	UpgradeNewMsId               string               `json:"upgrade_new_ms_id"`
-	MetadataHash                 []byte               `json:"metadata_hash"` // the hash of the whole exchange.MicroserviceDefinition
+	Id                           string                `json:"record_id"` // unique primary key for records
+	Owner                        string                `json:"owner"`
+	Label                        string                `json:"label"`
+	Description                  string                `json:"description"`
+	SpecRef                      string                `json:"specRef"`
+	Org                          string                `json:"organization"`
+	Version                      string                `json:"version"`
+	Arch                         string                `json:"arch"`
+	Sharable                     string                `json:"sharable"`
+	DownloadURL                  string                `json:"downloadUrl"`
+	MatchHardware                HardwareMatch         `json:"matchHardware"`
+	UserInputs                   []UserInput           `json:"userInput"`
+	Workloads                    []WorkloadDeployment  `json:"workloads"`            // Only used by old microservice definitions
+	Public                       bool                  `json:"public"`               // Used by only services, indicates if the definition is public or not.
+	RequiredServices             []ServiceDependency   `json:"requiredServices"`     // Used only by services, the list of services that this service depends on.
+	Deployment                   string                `json:"deployment"`           // Used only by services, the deployment configuration of the implementation packages.
+	DeploymentSignature          string                `json:"deployment_signature"` // Used only by services, the signature of the deployment configuration.
+	ImageStore                   ImplementationPackage `json:"imageStore"`           // Used by services, the metadata that describes how to get the service implementation package(s).
+	LastUpdated                  string                `json:"lastUpdated"`
+	Archived                     bool                  `json:"archived"`
+	Name                         string                `json:"name"`                  //the sensor_name passed in from the POST /service call
+	RequestedArch                string                `json:"requested_arch"`        //the arch from user input or from the ms referenced by a workload, it can be a synonym of the node arch.
+	UpgradeVersionRange          string                `json:"upgrade_version_range"` //the sensor_version passed in from the POST service call
+	AutoUpgrade                  bool                  `json:"auto_upgrade"`          // passed in from the POST service call
+	ActiveUpgrade                bool                  `json:"active_upgrade"`        // passed in from the POST service call
+	UpgradeStartTime             uint64                `json:"upgrade_start_time"`
+	UpgradeMsUnregisteredTime    uint64                `json:"upgrade_ms_unregistered_time"`
+	UpgradeAgreementsClearedTime uint64                `json:"upgrade_agreements_cleared_time"`
+	UpgradeExecutionStartTime    uint64                `json:"upgrade_execution_start_time"`
+	UpgradeMsReregisteredTime    uint64                `json:"upgrade_ms_reregistered_time"`
+	UpgradeFailedTime            uint64                `json:"upgrade_failed_time"`
+	UngradeFailureReason         uint64                `json:"upgrade_failure_reason"`
+	UngradeFailureDescription    string                `json:"upgrade_failure_description"`
+	UpgradeNewMsId               string                `json:"upgrade_new_ms_id"`
+	MetadataHash                 []byte                `json:"metadata_hash"` // the hash of the whole exchange.MicroserviceDefinition
 
 }
 
@@ -105,6 +131,11 @@ func (w MicroserviceDefinition) String() string {
 		"MatchHardware: %v, "+
 		"UserInputs: %v, "+
 		"Workloads: %v, "+
+		"Public: %v, "+
+		"RequiredServices: %v, "+
+		"Deployment: %v, "+
+		"DeploymentSignature: %v, "+
+		"ImageStore: %v, "+
 		"LastUpdated: %v, "+
 		"Archived: %v, "+
 		"Name: %v, "+
@@ -123,7 +154,7 @@ func (w MicroserviceDefinition) String() string {
 		"UpgradeNewMsId: %v, "+
 		"MetadataHash: %v",
 		w.Owner, w.Label, w.Description, w.SpecRef, w.Org, w.Version, w.Arch, w.Sharable, w.DownloadURL,
-		w.MatchHardware, w.UserInputs, w.Workloads, w.LastUpdated,
+		w.MatchHardware, w.UserInputs, w.Workloads, w.Public, w.RequiredServices, w.Deployment, w.DeploymentSignature, w.ImageStore, w.LastUpdated,
 		w.Archived, w.Name, w.RequestedArch, w.UpgradeVersionRange, w.AutoUpgrade, w.ActiveUpgrade,
 		w.UpgradeStartTime, w.UpgradeMsUnregisteredTime, w.UpgradeAgreementsClearedTime, w.UpgradeExecutionStartTime, w.UpgradeMsReregisteredTime,
 		w.UpgradeFailedTime, w.UngradeFailureReason, w.UngradeFailureDescription, w.UpgradeNewMsId, w.MetadataHash)
@@ -157,6 +188,27 @@ func (w MicroserviceDefinition) ShortString() string {
 		w.Archived, w.Name, w.RequestedArch, w.UpgradeVersionRange, w.AutoUpgrade, w.ActiveUpgrade,
 		w.UpgradeStartTime, w.UpgradeMsUnregisteredTime, w.UpgradeAgreementsClearedTime, w.UpgradeExecutionStartTime, w.UpgradeMsReregisteredTime,
 		w.UpgradeFailedTime, w.UngradeFailureReason, w.UngradeFailureDescription, w.UpgradeNewMsId, w.MetadataHash)
+}
+
+func (m *MicroserviceDefinition) HasDeployment() bool {
+	if (m.Workloads == nil || len(m.Workloads) == 0) && m.Deployment == "" {
+		return false
+	}
+	return true
+}
+
+// Returns the deployment string and signature of a ms def.
+func (m *MicroserviceDefinition) GetDeployment() (string, string, string) {
+	if m.HasDeployment() {
+		// Microservice definitions never have more than 1 element in the workloads array.
+		if m.Workloads != nil && len(m.Workloads) > 0 {
+			return m.Workloads[0].Deployment, m.Workloads[0].DeploymentSignature, m.Workloads[0].Torrent
+		} else if m.Deployment != "" {
+			// When services are in use, there is no torrent string.
+			return m.Deployment, m.DeploymentSignature, ""
+		}
+	}
+	return "", "", ""
 }
 
 // save the microservice record. update if it already exists in the db
@@ -500,12 +552,12 @@ func (m MicroserviceInstance) GetKey() string {
 	return cutil.MakeMSInstanceKey(m.SpecRef, m.Version, m.InstanceId)
 }
 
-// Check if this microservice instance has workload or not.
-// If it does not have workload, then there is no need to do the execution
+// Check if this microservice instance has a container dpeloyment.
+// If it does not, then there is no nothing to execute.
 func (m MicroserviceInstance) HasWorkload(db *bolt.DB) (bool, error) {
 	if msdef, err := FindMicroserviceDefWithKey(db, m.MicroserviceDefId); err != nil {
 		return false, err
-	} else if msdef.Workloads != nil && len(msdef.Workloads) > 0 {
+	} else if msdef.HasDeployment() {
 		return true, nil
 	}
 

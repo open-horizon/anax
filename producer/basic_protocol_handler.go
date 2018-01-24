@@ -20,16 +20,15 @@ type BasicProtocolHandler struct {
 	agreementPH *basicprotocol.ProtocolHandler
 }
 
-func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, deviceId string, token string) *BasicProtocolHandler {
+func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, ec exchange.ExchangeContext) *BasicProtocolHandler {
 	if name == basicprotocol.PROTOCOL_NAME {
 		return &BasicProtocolHandler{
 			BaseProducerProtocolHandler: &BaseProducerProtocolHandler{
-				name:     name,
-				pm:       pm,
-				db:       db,
-				config:   cfg,
-				deviceId: deviceId,
-				token:    token,
+				name:   name,
+				pm:     pm,
+				db:     db,
+				config: cfg,
+				ec:     ec,
 			},
 			agreementPH: basicprotocol.NewProtocolHandler(cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil), pm),
 		}
@@ -49,7 +48,7 @@ func (c *BasicProtocolHandler) String() string {
 		"PM: %v, "+
 		"DB: %v, "+
 		"Agreement PH: %v",
-		c.name, c.deviceId, c.token, c.pm, c.db, c.agreementPH)
+		c.name, c.ec.GetExchangeId(), c.ec.GetExchangeToken(), c.pm, c.db, c.agreementPH)
 }
 
 func (c *BasicProtocolHandler) AgreementProtocolHandler(typeName string, name string, org string) abstractprotocol.ProtocolHandler {

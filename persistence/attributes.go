@@ -27,11 +27,11 @@ type AttributeMeta struct {
 
 func (a AttributeMeta) String() string {
 	ho := "true"
-	if a.HostOnly == nil {
+	if a.HostOnly == nil || !*a.HostOnly {
 		ho = "false"
 	}
 	pub := "true"
-	if a.Publishable == nil {
+	if a.Publishable == nil || !*a.Publishable {
 		pub = "false"
 	}
 	return fmt.Sprintf("Id: %v, Type: %v, SensorUrls: %v, Label: %v, HostOnly: %v, Publishable: %v", a.Id, a.Type, a.SensorUrls, a.Label, ho, pub)
@@ -342,34 +342,7 @@ func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, pr
 		case UserInputAttributes:
 			s := serv.(UserInputAttributes)
 			for k, v := range s.Mappings {
-				switch v.(type) {
-				case bool:
-					write(k, strconv.FormatBool(v.(bool)), true)
-				case string:
-					write(k, v.(string), true)
-				case float64:
-					write(k, strconv.FormatFloat(v.(float64), 'f', 6, 64), true)
-				case int:
-					write(k, strconv.FormatInt(v.(int64), 10), true)
-				case []string:
-					los := ""
-					for _, e := range v.([]string) {
-						los = los + e + " "
-					}
-					los = los[:len(los)-1]
-					write(k, los, true)
-				case []interface{}:
-					los := ""
-					for _, e := range v.([]interface{}) {
-						if _, ok := e.(string); ok {
-							los = los + e.(string) + " "
-						}
-					}
-					los = los[:len(los)-1]
-					write(k, los, true)
-				default:
-					return nil, fmt.Errorf("Unhandled UserInputAttribute variable %v type %T", k, v)
-				}
+				cutil.NativeToEnvVariableMap(envvars, k, v)
 			}
 
 		case LocationAttributes:

@@ -344,7 +344,7 @@ func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *WorkloadUsa
 		// Check to make sure the partner is heart-beating to the exchange. This should tell us if we can expect this device to
 		// complete an agreement at some time, or not.
 
-		if dev, err := GetDevice(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), partnerWLU.DeviceId, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+		if dev, err := GetDevice(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), partnerWLU.DeviceId, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken()); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("error obtaining device %v heartbeat state: %v", partnerWLU.DeviceId, err)))
 		} else if len(dev.LastHeartbeat) != 0 && (uint64(cutil.TimeInSeconds(dev.LastHeartbeat)+300) > uint64(time.Now().Unix())) {
 			// If the device is still alive (heart beat received in the last 5 mins), then assume this partner is trying to make an
@@ -385,7 +385,7 @@ func (w *AgreementBotWorker) VerifyNodeHealth(ag *Agreement, cph ConsumerProtoco
 	finalizedTolerance := uint64(60)
 
 	nodeHealthHandler := func(pattern string, org string, lastCallTime string) (*exchange.NodeHealthStatus, error) {
-		return exchange.GetNodeHealthStatus(w.Config.Collaborators.HTTPClientFactory, pattern, org, lastCallTime, w.Config.Edge.ExchangeURL, w.agbotId, w.token)
+		return exchange.GetNodeHealthStatus(w.Config.Collaborators.HTTPClientFactory, pattern, org, lastCallTime, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
 	}
 
 	// If there is no node health policy configured, return quickly.

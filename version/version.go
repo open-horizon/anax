@@ -11,19 +11,19 @@ import (
 const HORIZON_VERSION = "local build"
 
 // the minimum exchange version
-const MINIMUM_EXCHANGE_VERSION = "1.46.0"
+const MINIMUM_EXCHANGE_VERSION = "1.49.0"
 
-// the preffered exchange version
-const PREFFERED_EXCHANGE_VERSION = "1.49.0"
+// the preferred exchange version
+const PREFERRED_EXCHANGE_VERSION = "1.49.0"
 
 // This function verifies the exchange version to make sure it meets the requirement.
 // It return nil if the exchange version is okay.
 // or error if there is an error or current version is not okay.
 // If a new feature needs the exchagne version higher than the minumum version, call this function with checkWithPreffered to true.
-func VerifyExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, checkWithPreffered bool) error {
+func VerifyExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, checkWithPreferred bool) error {
 	version_for_check := MINIMUM_EXCHANGE_VERSION
-	if checkWithPreffered {
-		version_for_check = PREFFERED_EXCHANGE_VERSION
+	if checkWithPreferred {
+		version_for_check = PREFERRED_EXCHANGE_VERSION
 	}
 
 	if exch_version, err := exchange.GetExchangeVersion(httpClientFactory, exchangeUrl); err != nil {

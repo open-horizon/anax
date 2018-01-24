@@ -18,14 +18,10 @@ import (
 	"time"
 )
 
-// microservice sharing mode
-const MS_SHARING_MODE_EXCLUSIVE = "exclusive"
-const MS_SHARING_MODE_SINGLE = "single"
-const MS_SHARING_MODE_MULTIPLE = "multiple"
-
+const PATTERN = "pattern"
 const MICROSERVICE = "microservce"
 const WORKLOAD = "workload"
-const PATTERN = "pattern"
+const SERVICE = "service"
 
 // Helper functions for dealing with exchangeIds that are already prefixed with the org name and then "/".
 func GetOrg(id string) string {
@@ -73,32 +69,32 @@ func (m Microservice) ShortString() string {
 
 // structs and types for working with microservice based exchange searches
 type SearchExchangeMSRequest struct {
-	DesiredMicroservices []Microservice `json:"desiredMicroservices"`
-	SecondsStale         int            `json:"secondsStale"`
-	PropertiesToReturn   []string       `json:"propertiesToReturn"`
-	StartIndex           int            `json:"startIndex"`
-	NumEntries           int            `json:"numEntries"`
+	DesiredServices    []Microservice `json:"desiredServices"`
+	SecondsStale       int            `json:"secondsStale"`
+	PropertiesToReturn []string       `json:"propertiesToReturn"`
+	StartIndex         int            `json:"startIndex"`
+	NumEntries         int            `json:"numEntries"`
 }
 
 func (a SearchExchangeMSRequest) String() string {
-	return fmt.Sprintf("Microservices: %v, SecondsStale: %v, PropertiesToReturn: %v, StartIndex: %v, NumEntries: %v", a.DesiredMicroservices, a.SecondsStale, a.PropertiesToReturn, a.StartIndex, a.NumEntries)
+	return fmt.Sprintf("Services: %v, SecondsStale: %v, PropertiesToReturn: %v, StartIndex: %v, NumEntries: %v", a.DesiredServices, a.SecondsStale, a.PropertiesToReturn, a.StartIndex, a.NumEntries)
 }
 
 type SearchResultDevice struct {
-	Id            string         `json:"id"`
-	Name          string         `json:"name"`
-	Microservices []Microservice `json:"microservices"`
-	MsgEndPoint   string         `json:"msgEndPoint"`
-	PublicKey     []byte         `json:"publicKey"`
+	Id          string         `json:"id"`
+	Name        string         `json:"name"`
+	Services    []Microservice `json:"services"`
+	MsgEndPoint string         `json:"msgEndPoint"`
+	PublicKey   []byte         `json:"publicKey"`
 }
 
 func (d SearchResultDevice) String() string {
-	return fmt.Sprintf("Id: %v, Name: %v, Microservices: %v, MsgEndPoint: %v", d.Id, d.Name, d.Microservices, d.MsgEndPoint)
+	return fmt.Sprintf("Id: %v, Name: %v, Services: %v, MsgEndPoint: %v", d.Id, d.Name, d.Services, d.MsgEndPoint)
 }
 
 func (d SearchResultDevice) ShortString() string {
-	str := fmt.Sprintf("Id: %v, Name: %v, MsgEndPoint: %v, Microservice URLs:", d.Id, d.Name, d.MsgEndPoint)
-	for _, ms := range d.Microservices {
+	str := fmt.Sprintf("Id: %v, Name: %v, MsgEndPoint: %v, Service URLs:", d.Id, d.Name, d.MsgEndPoint)
+	for _, ms := range d.Services {
 		str += fmt.Sprintf("%v,", ms.Url)
 	}
 	return str
@@ -115,14 +111,15 @@ func (r SearchExchangeMSResponse) String() string {
 
 // Structs and types for working with pattern based exchange searches
 type SearchExchangePatternRequest struct {
-	WorkloadURL  string `json:"workloadUrl"`
+	WorkloadURL  string `json:"workloadUrl,omitempty"`
+	ServiceURL   string `json:"serviceUrl,omitempty"`
 	SecondsStale int    `json:"secondsStale"`
 	StartIndex   int    `json:"startIndex"`
 	NumEntries   int    `json:"numEntries"`
 }
 
 func (a SearchExchangePatternRequest) String() string {
-	return fmt.Sprintf("WorkloadURL: %v, SecondsStale: %v, StartIndex: %v, NumEntries: %v", a.WorkloadURL, a.SecondsStale, a.StartIndex, a.NumEntries)
+	return fmt.Sprintf("ServiceURL: %v, WorkloadURL: %v, SecondsStale: %v, StartIndex: %v, NumEntries: %v", a.ServiceURL, a.WorkloadURL, a.SecondsStale, a.StartIndex, a.NumEntries)
 }
 
 type SearchExchangePatternResponse struct {
@@ -141,6 +138,7 @@ type Device struct {
 	Owner                   string          `json:"owner"`
 	Pattern                 string          `json:"pattern"`
 	RegisteredMicroservices []Microservice  `json:"registeredMicroservices"`
+	RegisteredServices      []Microservice  `json:"registeredServices"`
 	MsgEndPoint             string          `json:"msgEndPoint"`
 	SoftwareVersions        SoftwareVersion `json:"softwareVersions"`
 	LastHeartbeat           string          `json:"lastHeartbeat"`
@@ -233,24 +231,27 @@ type GetAgbotsPatternsResponse struct {
 }
 
 type AgbotAgreement struct {
-	Workload    WorkloadAgreement `json:"workload"`
+	Workload    WorkloadAgreement `json:"workload,omitempty"`
+	Service     WorkloadAgreement `json:"service,omitempty"`
 	State       string            `json:"state"`
 	LastUpdated string            `json:"lastUpdated"`
 }
 
 func (a AgbotAgreement) String() string {
-	return fmt.Sprintf("Workload: %v, State: %v, LastUpdated: %v", a.Workload, a.State, a.LastUpdated)
+	return fmt.Sprintf("Service: %v, Workload: %v, State: %v, LastUpdated: %v", a.Service, a.Workload, a.State, a.LastUpdated)
 }
 
 type DeviceAgreement struct {
-	Microservice []MSAgreementState `json:"microservices"`
-	State        string             `json:"state"`
-	Workload     WorkloadAgreement  `json:"workload"`
-	LastUpdated  string             `json:"lastUpdated"`
+	Microservice     []MSAgreementState `json:"microservices"`
+	Service          []MSAgreementState `json:"services"`
+	State            string             `json:"state"`
+	Workload         WorkloadAgreement  `json:"workload"`
+	AgreementService WorkloadAgreement  `json:"agrService"`
+	LastUpdated      string             `json:"lastUpdated"`
 }
 
 func (a DeviceAgreement) String() string {
-	return fmt.Sprintf("Microservice: %v, State: %v, LastUpdated: %v", a.Microservice, a.State, a.LastUpdated)
+	return fmt.Sprintf("AgreementService: %v, Service: %v, State: %v, Workload: %v, Microservice: %v, LastUpdated: %v", a.AgreementService, a.Service, a.State, a.Workload, a.Microservice, a.LastUpdated)
 }
 
 type AllAgbotAgreementsResponse struct {
@@ -279,13 +280,14 @@ type PostDeviceResponse struct {
 }
 
 type WorkloadAgreement struct {
-	Org     string `json:"orgid"`   // the org of the pattern
-	Pattern string `json:"pattern"` // pattern - without the org prefix on it
-	URL     string `json:"url"`     // workload URL
+	Org     string `json:"orgid,omitempty"`   // the org of the pattern
+	Pattern string `json:"pattern,omitempty"` // pattern - without the org prefix on it
+	URL     string `json:"url,omitempty"`     // workload URL
 }
 
 type PutAgbotAgreementState struct {
-	Workload WorkloadAgreement `json:"workload"`
+	Workload WorkloadAgreement `json:"workload,omitempty"`
+	Service  WorkloadAgreement `json:"service,omitempty"`
 	State    string            `json:"state"`
 }
 
@@ -295,9 +297,15 @@ type MSAgreementState struct {
 }
 
 type PutAgreementState struct {
-	Microservices []MSAgreementState `json:"microservices"`
-	State         string             `json:"state"`
-	Workload      WorkloadAgreement  `json:"workload"`
+	Microservices    []MSAgreementState `json:"microservices,omitempty"`
+	State            string             `json:"state"`
+	Workload         WorkloadAgreement  `json:"workload,omitempty"`
+	Services         []MSAgreementState `json:"services,omitempty"`
+	AgreementService WorkloadAgreement  `json:"agreementService,omitempty"`
+}
+
+func (p PutAgreementState) String() string {
+	return fmt.Sprintf("State: %v, Services: %v, AgreementService: %v, Microservices: %v, Workload: %v", p.State, p.Services, p.AgreementService, p.Microservices, p.Workload)
 }
 
 type SoftwareVersion map[string]string
@@ -307,18 +315,23 @@ type PutDeviceRequest struct {
 	Name                    string          `json:"name"`
 	Pattern                 string          `json:"pattern"`
 	RegisteredMicroservices []Microservice  `json:"registeredMicroservices"`
+	RegisteredServices      []Microservice  `json:"registeredServices"`
 	MsgEndPoint             string          `json:"msgEndPoint"`
 	SoftwareVersions        SoftwareVersion `json:"softwareVersions"`
 	PublicKey               []byte          `json:"publicKey"`
 }
 
 func (p PutDeviceRequest) String() string {
-	return fmt.Sprintf("Token: %v, Name: %v, RegisteredMicroservices %v, MsgEndPoint %v, SoftwareVersions %v, PublicKey %x", p.Token, p.Name, p.RegisteredMicroservices, p.MsgEndPoint, p.SoftwareVersions, p.PublicKey)
+	return fmt.Sprintf("Token: %v, Name: %v, RegisteredServices %v, RegisteredMicroservices %v, MsgEndPoint %v, SoftwareVersions %v, PublicKey %x", p.Token, p.Name, p.RegisteredServices, p.RegisteredMicroservices, p.MsgEndPoint, p.SoftwareVersions, p.PublicKey)
 }
 
 func (p PutDeviceRequest) ShortString() string {
 	str := fmt.Sprintf("Token: %v, Name: %v, MsgEndPoint %v, SoftwareVersions %v, Microservice URLs: ", p.Token, p.Name, p.MsgEndPoint, p.SoftwareVersions)
 	for _, ms := range p.RegisteredMicroservices {
+		str += fmt.Sprintf("%v,", ms.Url)
+	}
+	str += ", Service URLs: "
+	for _, ms := range p.RegisteredServices {
 		str += fmt.Sprintf("%v,", ms.Url)
 	}
 	return str
@@ -654,13 +667,6 @@ type APISpec struct {
 	Arch    string `json:"arch"`
 }
 
-type UserInput struct {
-	Name         string `json:"name"`
-	Label        string `json:"label"`
-	Type         string `json:"type"`
-	DefaultValue string `json:"defaultValue"`
-}
-
 type WorkloadDeployment struct {
 	Deployment          string `json:"deployment"`
 	DeploymentSignature string `json:"deployment_signature"`
@@ -716,17 +722,51 @@ func (w *WorkloadDefinition) NeedsUserInput() bool {
 	return false
 }
 
+func (w *WorkloadDefinition) PopulateDefaultUserInput(envAdds map[string]string) {
+	for _, ui := range w.UserInputs {
+		if ui.DefaultValue != "" {
+			if _, ok := envAdds[ui.Name]; !ok {
+				envAdds[ui.Name] = ui.DefaultValue
+			}
+		}
+	}
+}
+
+func (w *WorkloadDefinition) GetDeployment() string {
+	if len(w.Workloads) > 0 {
+		return w.Workloads[0].Deployment
+	}
+	return ""
+}
+
+func (w *WorkloadDefinition) GetDeploymentSignature() string {
+	if len(w.Workloads) > 0 {
+		return w.Workloads[0].DeploymentSignature
+	}
+	return ""
+}
+
+func (w *WorkloadDefinition) GetTorrent() string {
+	if len(w.Workloads) > 0 {
+		return w.Workloads[0].Torrent
+	}
+	return ""
+}
+
+func (w *WorkloadDefinition) GetImageStore() policy.ImplementationPackage {
+	return policy.ImplementationPackage{}
+}
+
+func (w *WorkloadDefinition) IsServiceBased() bool {
+	return false
+}
+
 type GetWorkloadsResponse struct {
 	Workloads map[string]WorkloadDefinition `json:"workloads"`
 	LastIndex int                           `json:"lastIndex"`
 }
 
-//todo: should use map[string]string instead of HardwareMatch struct, because MatchHardware is intended to be free-form
-//		(contain whatever key/values that the microservice script needs to determine if the node can run it.)
-type HardwareMatch struct {
-	USBDeviceIds string `json:"usbDeviceIds"`
-	Devfiles     string `json:"devFiles"`
-}
+type HardwareMatch map[string]interface{}
 
 type MicroserviceDefinition struct {
 	Owner         string               `json:"owner"`
@@ -766,23 +806,6 @@ type GetMicroservicesResponse struct {
 	LastIndex     int                               `json:"lastIndex"`
 }
 
-func getSearchVersion(version string) (string, error) {
-	// The caller could pass a specific version or a version range, in the version parameter. If it's a version range
-	// then it must be a full expression. That is, it must be expanded into the full syntax. For example; 1.2.3 is a specific
-	// version, and [4.5.6, INFINITY) is the full expression corresponding to the shorthand form of "4.5.6".
-	searchVersion := ""
-	if version == "" || policy.IsVersionExpression(version) {
-		// search for all versions
-	} else if policy.IsVersionString(version) {
-		// search for a specific version
-		searchVersion = version
-	} else {
-		return "", errors.New(fmt.Sprintf("input version %v is not a valid version string", version))
-	}
-	return searchVersion, nil
-}
-
-// Get workload and its exchange id for the given org, url, version and arch. If the the version string is version range, then the highest available workload within the range will be returned.
 func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg string, wVersion string, wArch string, exURL string, id string, token string) (*WorkloadDefinition, string, error) {
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting workload definition %v %v %v %v", wURL, wOrg, wVersion, wArch)))
@@ -816,7 +839,7 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg 
 			// If the caller wanted a specific version, check for 1 result.
 			if searchVersion != "" {
 				if len(workloadMetadata) != 1 {
-					glog.Errorf(rpclogString(fmt.Sprintf("expecting 1 result in GET workloads response: %v", resp)))
+					glog.Warningf(rpclogString(fmt.Sprintf("expecting 1 result in GET workloads response: %v", resp)))
 					return nil, "", errors.New(fmt.Sprintf("expecting 1 result, got %v", len(workloadMetadata)))
 				} else {
 					for wlId, workloadDef := range workloadMetadata {
@@ -1111,6 +1134,15 @@ type WorkloadReference struct {
 	NodeH            NodeHealth       `json:"nodeHealth"`                 // policy for determining when a node's health is violating its agreements
 }
 
+type ServiceReference struct {
+	ServiceURL      string           `json:"serviceUrl,omitempty"`      // refers to a service definition in the exchange
+	ServiceOrg      string           `json:"serviceOrgid,omitempty"`    // the org holding the service definition
+	ServiceArch     string           `json:"serviceArch,omitempty"`     // the hardware architecture of the service definition
+	ServiceVersions []WorkloadChoice `json:"serviceVersions,omitempty"` // a list of service version for rollback
+	DataVerify      DataVerification `json:"dataVerification"`          // policy for verifying that the node is sending data
+	NodeH           NodeHealth       `json:"nodeHealth"`                // policy for determining when a node's health is violating its agreements
+}
+
 type Meter struct {
 	Tokens                uint64 `json:"tokens,omitempty"`                // The number of tokens per time_unit
 	PerTimeUnit           string `json:"per_time_unit,omitempty"`         // The per time units: min, hour and day are supported
@@ -1151,8 +1183,16 @@ type Pattern struct {
 	Label              string              `json:"label"`
 	Description        string              `json:"description"`
 	Public             bool                `json:"public"`
-	Workloads          []WorkloadReference `json:"workloads"`
+	Workloads          []WorkloadReference `json:"workloads"` // A pattern either has workloads or services, never both.
+	Services           []ServiceReference  `json:"services"`
 	AgreementProtocols []AgreementProtocol `json:"agreementProtocols"`
+}
+
+func (p *Pattern) UsingServiceModel() bool {
+	if len(p.Workloads) == 0 {
+		return true
+	}
+	return false
 }
 
 type GetPatternResponse struct {
@@ -1211,7 +1251,7 @@ func makePolicyName(patternName string, workloadURL string, workloadOrg string, 
 
 }
 
-// Convert a pattern to a list of policy objects. Each pattern contains 1 or more workloads,
+// Convert a pattern to a list of policy objects. Each pattern contains 1 or more workloads or services,
 // which will each be translated to a policy.
 func ConvertToPolicies(patternId string, p *Pattern) ([]*policy.Policy, error) {
 
@@ -1219,71 +1259,128 @@ func ConvertToPolicies(patternId string, p *Pattern) ([]*policy.Policy, error) {
 
 	policies := make([]*policy.Policy, 0, 10)
 
-	// Each pattern contains a list of workloads that needs to be converted to a policy
-	for _, workload := range p.Workloads {
+	// Each pattern contains a list of workloads/services that need to be converted to a policy
+	if p.UsingServiceModel() {
+		for _, service := range p.Services {
 
-		// make sure required fields are not empty
-		if workload.WorkloadURL == "" || workload.WorkloadOrg == "" || workload.WorkloadArch == "" {
-			return nil, fmt.Errorf("workloadUrl, workloadOrgid or workloadArch is empty string in pattern %v.", name)
-		} else if workload.WorkloadVersions == nil || len(workload.WorkloadVersions) == 0 {
-			return nil, fmt.Errorf("The workloadVersions array is empty in pattern %v.", name)
-		}
-
-		policyName := makePolicyName(name, workload.WorkloadURL, workload.WorkloadOrg, workload.WorkloadArch)
-
-		pol := policy.Policy_Factory(fmt.Sprintf("%v", policyName))
-
-		// Copy Agreement protocol metadata into the policy
-		for _, agp := range p.AgreementProtocols {
-			newAGP := policy.AgreementProtocol_Factory(agp.Name)
-			newAGP.Initialize()
-			for _, bc := range agp.Blockchains {
-				newBC := policy.Blockchain_Factory(bc.Type, bc.Name, bc.Org)
-				(&newAGP.Blockchains).Add_Blockchain(newBC)
+			// make sure required fields are not empty
+			if service.ServiceURL == "" || service.ServiceOrg == "" || service.ServiceArch == "" {
+				return nil, fmt.Errorf("serviceUrl, serviceOrgid or serviceArch is empty string in pattern %v.", name)
+			} else if service.ServiceVersions == nil || len(service.ServiceVersions) == 0 {
+				return nil, fmt.Errorf("The serviceVersions array is empty in pattern %v.", name)
 			}
-			pol.Add_Agreement_Protocol(newAGP)
-		}
 
-		// Copy workload metadata into the policy
-		for _, wl := range workload.WorkloadVersions {
-			if wl.Version == "" {
-				return nil, fmt.Errorf("The version for workload %v arch %v is empty in pattern %v.", workload.WorkloadURL, workload.WorkloadArch, name)
+			policyName := makePolicyName(name, service.ServiceURL, service.ServiceOrg, service.ServiceArch)
+
+			pol := policy.Policy_Factory(fmt.Sprintf("%v", policyName))
+
+			// This is a service based policy file.
+			pol.ServiceBased = true
+
+			// Copy service metadata into the policy
+			for _, wl := range service.ServiceVersions {
+				if wl.Version == "" {
+					return nil, fmt.Errorf("The version for service %v arch %v is empty in pattern %v.", service.ServiceURL, service.ServiceArch, name)
+				}
+				ConvertChoice(wl, service.ServiceURL, service.ServiceOrg, service.ServiceArch, pol)
 			}
-			newWL := policy.Workload_Factory(workload.WorkloadURL, workload.WorkloadOrg, wl.Version, workload.WorkloadArch)
-			newWL.Priority = (*policy.Workload_Priority_Factory(wl.Priority.PriorityValue, wl.Priority.Retries, wl.Priority.RetryDurationS, wl.Priority.VerifiedDurationS))
-			newWL.DeploymentOverrides = wl.DeploymentOverrides
-			newWL.DeploymentOverridesSignature = wl.DeploymentOverridesSignature
-			pol.Add_Workload(newWL)
+
+			ConvertCommon(p, patternId, service.DataVerify, service.NodeH, pol)
+
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("converted %v into %v", service, pol)))
+			policies = append(policies, pol)
+
 		}
 
-		// Copy Data Verification metadata into the policy
-		if workload.DataVerify.Enabled {
-			mp := policy.Meter{
-				Tokens:                workload.DataVerify.Metering.Tokens,
-				PerTimeUnit:           workload.DataVerify.Metering.PerTimeUnit,
-				NotificationIntervalS: workload.DataVerify.Metering.NotificationIntervalS,
+	} else {
+
+		for _, workload := range p.Workloads {
+
+			// make sure required fields are not empty
+			if workload.WorkloadURL == "" || workload.WorkloadOrg == "" || workload.WorkloadArch == "" {
+				return nil, fmt.Errorf("workloadUrl, workloadOrgid or workloadArch is empty string in pattern %v.", name)
+			} else if workload.WorkloadVersions == nil || len(workload.WorkloadVersions) == 0 {
+				return nil, fmt.Errorf("The workloadVersions array is empty in pattern %v.", name)
 			}
-			d := policy.DataVerification_Factory(workload.DataVerify.URL, workload.DataVerify.URLUser, workload.DataVerify.URLPassword, workload.DataVerify.Interval, workload.DataVerify.CheckRate, mp)
-			pol.Add_DataVerification(d)
+
+			policyName := makePolicyName(name, workload.WorkloadURL, workload.WorkloadOrg, workload.WorkloadArch)
+
+			pol := policy.Policy_Factory(fmt.Sprintf("%v", policyName))
+
+			// Copy workload metadata into the policy
+			for _, wl := range workload.WorkloadVersions {
+				if wl.Version == "" {
+					return nil, fmt.Errorf("The version for workload %v arch %v is empty in pattern %v.", workload.WorkloadURL, workload.WorkloadArch, name)
+				}
+				ConvertChoice(wl, workload.WorkloadURL, workload.WorkloadOrg, workload.WorkloadArch, pol)
+			}
+
+			ConvertCommon(p, patternId, workload.DataVerify, workload.NodeH, pol)
+
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("converted %v into %v", workload, pol)))
+			policies = append(policies, pol)
+
 		}
-
-		// Indicate that this is a pattern based policy file. Manually created policy files should not use this field.
-		pol.PatternId = patternId
-
-		// Unlimited number of devices can get this workload
-		pol.MaxAgreements = 0
-
-		// Copy over the node health policy
-		nh := policy.NodeHealth_Factory(workload.NodeH.MissingHBInterval, workload.NodeH.CheckAgreementStatus)
-		pol.Add_NodeHealth(nh)
-
-		glog.V(3).Infof(rpclogString(fmt.Sprintf("converted %v into %v", workload, pol)))
-		policies = append(policies, pol)
-
 	}
 
 	return policies, nil
 
+}
+
+func ConvertChoice(wl WorkloadChoice, url string, org string, arch string, pol *policy.Policy) {
+	newWL := policy.Workload_Factory(url, org, wl.Version, arch)
+	newWL.Priority = (*policy.Workload_Priority_Factory(wl.Priority.PriorityValue, wl.Priority.Retries, wl.Priority.RetryDurationS, wl.Priority.VerifiedDurationS))
+	newWL.DeploymentOverrides = wl.DeploymentOverrides
+	newWL.DeploymentOverridesSignature = wl.DeploymentOverridesSignature
+	pol.Add_Workload(newWL)
+}
+
+func ConvertDataVerify(dv DataVerification, pol *policy.Policy) {
+	// Copy Data Verification metadata into the policy
+	if dv.Enabled {
+		mp := policy.Meter{
+			Tokens:                dv.Metering.Tokens,
+			PerTimeUnit:           dv.Metering.PerTimeUnit,
+			NotificationIntervalS: dv.Metering.NotificationIntervalS,
+		}
+		d := policy.DataVerification_Factory(dv.URL, dv.URLUser, dv.URLPassword, dv.Interval, dv.CheckRate, mp)
+		pol.Add_DataVerification(d)
+	}
+}
+
+func ConvertNodeHealth(nodeh NodeHealth, pol *policy.Policy) {
+	// Copy over the node health policy
+	nh := policy.NodeHealth_Factory(nodeh.MissingHBInterval, nodeh.CheckAgreementStatus)
+	pol.Add_NodeHealth(nh)
+}
+
+func ConvertAgreementProtocol(p *Pattern, pol *policy.Policy) {
+	// Copy Agreement protocol metadata into the policy
+	for _, agp := range p.AgreementProtocols {
+		newAGP := policy.AgreementProtocol_Factory(agp.Name)
+		newAGP.Initialize()
+		for _, bc := range agp.Blockchains {
+			newBC := policy.Blockchain_Factory(bc.Type, bc.Name, bc.Org)
+			(&newAGP.Blockchains).Add_Blockchain(newBC)
+		}
+		pol.Add_Agreement_Protocol(newAGP)
+	}
+}
+
+// Common conversion function calls
+func ConvertCommon(p *Pattern, patternId string, dv DataVerification, nodeh NodeHealth, pol *policy.Policy) {
+
+	ConvertDataVerify(dv, pol)
+
+	ConvertNodeHealth(nodeh, pol)
+
+	ConvertAgreementProtocol(p, pol)
+
+	// Indicate that this is a pattern based policy file. Manually created policy files should not use this field.
+	pol.PatternId = patternId
+
+	// Unlimited number of devices can get this service
+	pol.MaxAgreements = 0
 }
 
 // This section is for types related to querying the exchange for node health
@@ -1486,6 +1583,9 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 					case *GetMicroservicesResponse:
 						return nil, nil
 
+					case *GetServicesResponse:
+						return nil, nil
+
 					case *GetOrganizationResponse:
 						return nil, nil
 
@@ -1533,7 +1633,7 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 			//glog.Errorf(err.Error())
 			//return "", err
 			// temporary return a version for wiotp
-			return "1.46.0", nil
+			return "1.49.0", nil
 		} else if tpErr != nil {
 			glog.Warningf(tpErr.Error())
 			time.Sleep(10 * time.Second)
@@ -1550,10 +1650,9 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 	}
 }
 
-// This function gets the pattern/workload/microservice signing key names and their contents.
-// The oType is one of PATTERN, MICROSERVICE, WORKLOAD defined in the begining of this file.
-// When oType is PATTERN, the oURL is the pattern name and oVersion and oArch are ignored.
-func GetObjectSigningKeys(httpClientFactory *config.HTTPClientFactory, oType string, oURL string, oOrg string, oVersion string, oArch string, exURL string, id string, token string) (map[string]string, error) {
+// This function gets the pattern/service signing key names and their contents. The oType is one of PATTERN, or SERVICE
+// defined in the beginning of this file. When oType is PATTERN, the oURL is the pattern name and oVersion and oArch are ignored.
+func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg string, oVersion string, oArch string) (map[string]string, error) {
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting %v signing keys for %v %v %v %v", oType, oURL, oOrg, oVersion, oArch)))
 
@@ -1563,7 +1662,7 @@ func GetObjectSigningKeys(httpClientFactory *config.HTTPClientFactory, oType str
 
 	switch oType {
 	case PATTERN:
-		pat_resp, err := GetPatterns(httpClientFactory, oOrg, oURL, exURL, id, token)
+		pat_resp, err := GetPatterns(ec.GetHTTPFactory(), oOrg, oURL, ec.GetExchangeURL(), ec.GetExchangeId(), ec.GetExchangeToken())
 		if err != nil {
 			return nil, errors.New(rpclogString(fmt.Sprintf("failed to get the pattern %v/%v.%v", oOrg, oURL, err)))
 		} else if pat_resp == nil {
@@ -1571,7 +1670,7 @@ func GetObjectSigningKeys(httpClientFactory *config.HTTPClientFactory, oType str
 		}
 		for id, _ := range pat_resp {
 			oIndex = id
-			targetURL = fmt.Sprintf("%vorgs/%v/patterns/%v/keys", exURL, oOrg, GetId(oIndex))
+			targetURL = fmt.Sprintf("%vorgs/%v/patterns/%v/keys", ec.GetExchangeURL(), oOrg, GetId(oIndex))
 			break
 		}
 
@@ -1579,30 +1678,43 @@ func GetObjectSigningKeys(httpClientFactory *config.HTTPClientFactory, oType str
 		if oVersion == "" || !policy.IsVersionString(oVersion) {
 			return nil, errors.New(rpclogString(fmt.Sprintf("GetObjectSigningKeys got wrong version string %v. The version string should be a non-empy single version string.", oVersion)))
 		}
-		ms_resp, ms_id, err := GetMicroservice(httpClientFactory, oURL, oOrg, oVersion, oArch, exURL, id, token)
+		ms_resp, ms_id, err := GetMicroservice(ec.GetHTTPFactory(), oURL, oOrg, oVersion, oArch, ec.GetExchangeURL(), ec.GetExchangeId(), ec.GetExchangeToken())
 		if err != nil {
 			return nil, errors.New(rpclogString(fmt.Sprintf("failed to get the microservice %v %v %v %v.%v", oURL, oOrg, oVersion, oArch, err)))
 		} else if ms_resp == nil {
 			return nil, errors.New(rpclogString(fmt.Sprintf("unable to find the microservice %v %v %v %v.", oURL, oOrg, oVersion, oArch)))
 		}
 		oIndex = ms_id
-		targetURL = fmt.Sprintf("%vorgs/%v/microservices/%v/keys", exURL, oOrg, GetId(oIndex))
+		targetURL = fmt.Sprintf("%vorgs/%v/microservices/%v/keys", ec.GetExchangeURL(), oOrg, GetId(oIndex))
 
 	case WORKLOAD:
 		if oVersion == "" || !policy.IsVersionString(oVersion) {
 			return nil, errors.New(rpclogString(fmt.Sprintf("GetObjectSigningKeys got wrong version string %v. The version string should be a non-empy single version string.", oVersion)))
 		}
-		wl_resp, wl_id, err := GetWorkload(httpClientFactory, oURL, oOrg, oVersion, oArch, exURL, id, token)
+		wl_resp, wl_id, err := GetWorkload(ec.GetHTTPFactory(), oURL, oOrg, oVersion, oArch, ec.GetExchangeURL(), ec.GetExchangeId(), ec.GetExchangeToken())
 		if err != nil {
 			return nil, errors.New(rpclogString(fmt.Sprintf("failed to get the workload %v %v %v %v. %v", oURL, oOrg, oVersion, oArch, err)))
 		} else if wl_resp == nil {
 			return nil, errors.New(rpclogString(fmt.Sprintf("unable to find the workload %v %v %v %v.", oURL, oOrg, oVersion, oArch)))
 		}
 		oIndex = wl_id
-		targetURL = fmt.Sprintf("%vorgs/%v/workloads/%v/keys", exURL, oOrg, GetId(oIndex))
+		targetURL = fmt.Sprintf("%vorgs/%v/workloads/%v/keys", ec.GetExchangeURL(), oOrg, GetId(oIndex))
+
+	case SERVICE:
+		if oVersion == "" || !policy.IsVersionString(oVersion) {
+			return nil, errors.New(rpclogString(fmt.Sprintf("GetObjectSigningKeys got wrong version string %v. The version string should be a non-empy single version string.", oVersion)))
+		}
+		ms_resp, ms_id, err := GetService(ec, oURL, oOrg, oVersion, oArch)
+		if err != nil {
+			return nil, errors.New(rpclogString(fmt.Sprintf("failed to get the service %v %v %v %v.%v", oURL, oOrg, oVersion, oArch, err)))
+		} else if ms_resp == nil {
+			return nil, errors.New(rpclogString(fmt.Sprintf("unable to find the service %v %v %v %v.", oURL, oOrg, oVersion, oArch)))
+		}
+		oIndex = ms_id
+		targetURL = fmt.Sprintf("%vorgs/%v/services/%v/keys", ec.GetExchangeURL(), oOrg, GetId(oIndex))
 
 	default:
-		return nil, errors.New(rpclogString(fmt.Sprintf("GetObjectSigningKeys received wrong type parameter: %v. It should be one of %v, %v and %v.", oType, PATTERN, MICROSERVICE, WORKLOAD)))
+		return nil, errors.New(rpclogString(fmt.Sprintf("GetObjectSigningKeys received wrong type parameter: %v. It should be one of %v, or %v.", oType, PATTERN, SERVICE)))
 	}
 
 	// get all the singining key names for the object
@@ -1612,7 +1724,7 @@ func GetObjectSigningKeys(httpClientFactory *config.HTTPClientFactory, oType str
 	key_names := make([]string, 0)
 
 	for {
-		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, id, token, nil, &resp_KeyNames); err != nil {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp_KeyNames); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
 			return nil, err
 		} else if tpErr != nil {
@@ -1637,7 +1749,7 @@ func GetObjectSigningKeys(httpClientFactory *config.HTTPClientFactory, oType str
 		var resp_KeyContent interface{}
 		resp_KeyContent = ""
 		for {
-			if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", fmt.Sprintf("%v/%v", targetURL, key), id, token, nil, &resp_KeyContent); err != nil {
+			if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", fmt.Sprintf("%v/%v", targetURL, key), ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp_KeyContent); err != nil {
 				glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
 				return nil, err
 			} else if tpErr != nil {

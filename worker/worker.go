@@ -101,6 +101,73 @@ type Worker interface {
 	Initialize() bool                        // Called by the worker FW to allow the concrete worker to initialize itself before starting the command loop
 	CommandHandler(command Command) bool     // Called by the worker framework when there is a command for the worker to handle
 	NoWorkHandler()                          // Called by the worker framework when the worker has been idle for noWorkInterval seconds
+
+	// Methods that implement the ExchangeContext interface in the exchange package. The exchange package does not need
+	// to be imported for this to work. And in fact, doing so would create cyclical dependencies, which are forbidden in go.
+	GetExchangeId() string
+	GetExchangeToken() string
+	GetExchangeURL() string
+	GetServiceBased() bool
+	GetHTTPFactory() *config.HTTPClientFactory
+}
+
+type BaseExchangeContext struct {
+	Id           string
+	Token        string
+	URL          string
+	ServiceBased bool
+	HTTPFactory  *config.HTTPClientFactory
+}
+
+func NewExchangeContext(id string, token string, url string, sb bool, httpFactory *config.HTTPClientFactory) *BaseExchangeContext {
+	return &BaseExchangeContext{
+		Id:           id,
+		Token:        token,
+		URL:          url,
+		ServiceBased: sb,
+		HTTPFactory:  httpFactory,
+	}
+}
+
+// This function should return the id in the form org/id.
+func (w *BaseWorker) GetExchangeId() string {
+	if w.EC != nil {
+		return w.EC.Id
+	} else {
+		return ""
+	}
+}
+
+func (w *BaseWorker) GetExchangeToken() string {
+	if w.EC != nil {
+		return w.EC.Token
+	} else {
+		return ""
+	}
+}
+
+func (w *BaseWorker) GetExchangeURL() string {
+	if w.EC != nil {
+		return w.EC.URL
+	} else {
+		return ""
+	}
+}
+
+func (w *BaseWorker) GetServiceBased() bool {
+	if w.EC != nil {
+		return w.EC.ServiceBased
+	} else {
+		return false
+	}
+}
+
+func (w *BaseWorker) GetHTTPFactory() *config.HTTPClientFactory {
+	if w.EC != nil {
+		return w.EC.HTTPFactory
+	} else {
+		return w.Config.Collaborators.HTTPClientFactory
+	}
 }
 
 type BaseWorker struct {
@@ -111,9 +178,10 @@ type BaseWorker struct {
 	DeferredDelay    int                   // the number of seconds to delay before retrying
 	SubWorkers       map[string]*SubWorker // workers can have sub go routines that they own
 	ShuttingDown     bool
+	EC               *BaseExchangeContext // Holds the exchange context state
 }
 
-func NewBaseWorker(name string, cfg *config.HorizonConfig) BaseWorker {
+func NewBaseWorker(name string, cfg *config.HorizonConfig, ec *BaseExchangeContext) BaseWorker {
 	return BaseWorker{
 		Name: name,
 		Manager: Manager{
@@ -125,6 +193,7 @@ func NewBaseWorker(name string, cfg *config.HorizonConfig) BaseWorker {
 		DeferredDelay:    10,
 		SubWorkers:       make(map[string]*SubWorker),
 		ShuttingDown:     false,
+		EC:               ec,
 	}
 }
 

@@ -41,7 +41,7 @@ type ServiceFile struct {
 	UserInputs          []exchange.UserInput   `json:"userInput"`
 	Deployment          map[string]interface{} `json:"deployment"`
 	DeploymentSignature string                 `json:"deploymentSignature"`
-	Pkg                 map[string]interface{} `json:"pkg"`
+	ImageStore          map[string]interface{} `json:"imageStore"`
 }
 
 type GetServicesResponse struct {
@@ -64,7 +64,7 @@ type ServiceExch struct {
 	UserInputs          []exchange.UserInput   `json:"userInput"`
 	Deployment          string                 `json:"deployment"`
 	DeploymentSignature string                 `json:"deploymentSignature"`
-	Pkg                 map[string]interface{} `json:"pkg"`
+	ImageStore          map[string]interface{} `json:"imageStore"`
 	LastUpdated         string                 `json:"lastUpdated,omitempty"`
 }
 
@@ -225,7 +225,7 @@ func SignImagesFromDeploymentMap(deployment map[string]interface{}, dontTouchIma
 
 // Sign and publish the service definition. This is a function that is reusable across different hzn commands.
 func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath string, dontTouchImage bool) {
-	svcInput := ServiceExch{Label: sf.Label, Description: sf.Description, Public: sf.Public, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs, Pkg: sf.Pkg}
+	svcInput := ServiceExch{Label: sf.Label, Description: sf.Description, Public: sf.Public, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs, ImageStore: sf.ImageStore}
 
 	// Go thru the docker image paths to push/get sha256 tag and/or gather list of images that user needs to push
 	imageList := SignImagesFromDeploymentMap(sf.Deployment, dontTouchImage)
@@ -251,7 +251,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath s
 	// Gather the docker image paths to instruct the user to docker push at the end
 	//imageList = AppendImagesFromDeploymentMap(sf.Deployment, imageList)
 
-	//todo: when we support something in the Pkg map, process it here
+	//todo: when we support something in the ImageStore map, process it here
 
 	// Create or update resource in the exchange
 	exchId := cliutils.FormExchangeId(svcInput.URL, svcInput.Version, svcInput.Arch)

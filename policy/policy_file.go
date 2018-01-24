@@ -52,6 +52,7 @@ type ProposalRejection struct {
 type Policy struct {
 	Header                 PolicyHeader          `json:"header"`
 	PatternId              string                `json:"patternId,omitempty"` // Manually created policy files should NOT use this field.
+	ServiceBased           bool                  `json:"useServices"`         // Manually created policy files set this field when using the service model.
 	APISpecs               APISpecList           `json:"apiSpec,omitempty"`
 	AgreementProtocols     AgreementProtocolList `json:"agreementProtocols,omitempty"`
 	Workloads              WorkloadList          `json:"workloads,omitempty"`
@@ -246,6 +247,9 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		merged_pol.Header.Name = producer_policy.Header.Name + " merged with " + consumer_policy.Header.Name
 		merged_pol.Header.Version = CurrentVersion
 
+		// Propagate the service model indicator
+		merged_pol.ServiceBased = consumer_policy.ServiceBased
+
 		// Propagate the pattern id
 		merged_pol.PatternId = consumer_policy.PatternId
 
@@ -273,7 +277,9 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 	}
 }
 
-func (self *Policy) Is_Self_Consistent(keyFileNames []string, workloadResolver func(wURL string, wOrg string, wVersion string, wArch string) (*APISpecList, error)) error {
+func (self *Policy) Is_Self_Consistent(keyFileNames []string,
+	workloadResolver func(wURL string, wOrg string, wVersion string, wArch string) (*APISpecList, error),
+	serviceResolver func(sURL string, sOrg string, sVersion string, sArch string) (*APISpecList, error)) error {
 
 	// Check validity of the Data verification section
 	if ok, err := self.DataVerify.IsValid(); !ok {
@@ -323,17 +329,23 @@ func (self *Policy) Is_Self_Consistent(keyFileNames []string, workloadResolver f
 		// If the workloads use different API specs, return the error. API specs can differ by version from one workload to
 		// another but they cant differ by architecture, nor can one workload require an API spec that is not required
 		// by another workload in this policy file.
-		if workloadResolver != nil && workload.WorkloadURL != "" && workload.Deployment == "" {
+		if serviceResolver != nil && workloadResolver != nil && workload.WorkloadURL != "" && workload.Deployment == "" {
 			if ix == 0 {
-				if firstASRL, err := workloadResolver(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
-					return errors.New(fmt.Sprintf("Workload %v does not resolve, error: %v", workload, err))
-				} else {
+				if firstASRL, err := workloadResolver(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err == nil {
 					referencedApiSpecRefs = firstASRL
+				} else if firstASRL, err := serviceResolver(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err == nil {
+					referencedApiSpecRefs = firstASRL
+				} else {
+					return errors.New(fmt.Sprintf("Workload %v does not resolve, error: %v", workload, err))
 				}
 			} else {
-				if secondASRL, err := workloadResolver(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
-					return errors.New(fmt.Sprintf("Workload %v does not resolve, error: %v", workload, err))
-				} else if !(*referencedApiSpecRefs).IsSame(*secondASRL, false) {
+				secondASRL, err := workloadResolver(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
+				if err != nil {
+					if secondASRL, err = serviceResolver(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+						return errors.New(fmt.Sprintf("Workload %v does not resolve, error: %v", workload, err))
+					}
+				}
+				if !(*referencedApiSpecRefs).IsSame(*secondASRL, false) {
 					return errors.New(fmt.Sprintf("Workload section has workloads that use different API specs %v and %v", *referencedApiSpecRefs, *secondASRL))
 				}
 			}
@@ -541,6 +553,11 @@ func (p *Policy) ConvertSpecRefArchToGOARCH(arch_synonymns config.ArchSynonyms) 
 	}
 }
 
+// Return true if the policy is for a service based policy
+func (p *Policy) IsServiceBased() bool {
+	return p.ServiceBased
+}
+
 // These are functions that operate on policy files in the file system.
 //
 // This function reads a file and demarshals it into a Policy struct, which is returned to
@@ -727,6 +744,7 @@ func PolicyFileChangeWatcher(homePath string,
 	fileDeleted func(org string, fileName string, policy *Policy),
 	fileError func(org string, fileName string, err error),
 	workloadResolver func(wURL string, wOrg string, wVersion string, wArch string) (*APISpecList, error),
+	serviceResolver func(wURL string, wOrg string, wVersion string, wArch string) (*APISpecList, error),
 	checkInterval int) (*Contents, error) {
 
 	// contents is the map that holds info on every policy file in every org in the policy directory
@@ -756,14 +774,14 @@ func PolicyFileChangeWatcher(homePath string,
 				if !contents.HasFile(org, fileInfo.Name()) {
 					if policy, err := ReadPolicyFile(orgPath+fileInfo.Name(), arch_synonymns); err != nil {
 						fileError(org, orgPath+fileInfo.Name(), err)
-					} else if err := policy.Is_Self_Consistent(nil, workloadResolver); err != nil {
+					} else if err := policy.Is_Self_Consistent(nil, workloadResolver, serviceResolver); err != nil {
 						fileError(org, orgPath+fileInfo.Name(), errors.New(fmt.Sprintf("Policy file not self consistent %v, error: %v", orgPath, err)))
 					} else if fn := contents.ConflictsWithAlreadyTracked(org, policy); fn != "" {
 						fileError(org, orgPath+fileInfo.Name(), errors.New(fmt.Sprintf("Policy File Watcher cannot add policy file %v/%v because it has the same policy header name with the policy file %v/%v.", org, fileInfo.Name(), org, fn)))
 					} else {
 						contents.AddWatchEntry(org, fileInfo, policy)
 						fileChanged(org, orgPath+fileInfo.Name(), policy)
-						glog.V(5).Infof("Policy File Watcher Adding file %v", org+fileInfo.Name())
+						glog.V(5).Infof("Policy File Watcher Adding file %v", orgPath+fileInfo.Name())
 					}
 				}
 			}
@@ -801,7 +819,7 @@ func PolicyFileChangeWatcher(homePath string,
 					// A changed file could be a new policy and a deleted policy if it's the policy name that was changed.
 					if policy, err := ReadPolicyFile(orgPath+we.FInfo.Name(), arch_synonymns); err != nil {
 						fileError(org, orgPath+we.FInfo.Name(), err)
-					} else if err := policy.Is_Self_Consistent(nil, workloadResolver); err != nil {
+					} else if err := policy.Is_Self_Consistent(nil, workloadResolver, serviceResolver); err != nil {
 						fileError(org, orgPath+we.FInfo.Name(), errors.New(fmt.Sprintf("Policy file not self consistent %v, error: %v", orgPath+we.FInfo.Name(), err)))
 					} else if policy.Header.Name != we.Pol.Header.Name {
 						// Contents of the file changed the policy name, so this means we have a new policy and a deleted policy at the same time.

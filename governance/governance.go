@@ -46,42 +46,34 @@ const MICROSERVICE_GOVERNOR = "MicroserviceGovernor"
 const BC_GOVERNOR = "BlockchainGovernor"
 
 type GovernanceWorker struct {
-	worker.BaseWorker   // embedded field
-	db                  *bolt.DB
-	bc                  *ethblockchain.BaseContracts
-	deviceId            string
-	deviceToken         string
-	devicePattern       string
-	pm                  *policy.PolicyManager
-	producerPH          map[string]producer.ProducerProtocolHandler
-	deviceStatus        *DeviceStatus
-	ShuttingDownCmd     *NodeShutdownCommand
-	exchHandlers        *exchange.ExchangeApiHandlers
+	worker.BaseWorker // embedded field
+	db                *bolt.DB
+	bc                *ethblockchain.BaseContracts
+	devicePattern     string
+	pm                *policy.PolicyManager
+	producerPH        map[string]producer.ProducerProtocolHandler
+	deviceStatus      *DeviceStatus
+	ShuttingDownCmd   *NodeShutdownCommand
 	lastSvcUpgradeCheck int64
 }
 
 func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *GovernanceWorker {
 
-	id := ""
-	token := ""
+	var ec *worker.BaseExchangeContext
 	pattern := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
-		token = dev.Token
-		id = fmt.Sprintf("%v/%v", dev.Org, dev.Id)
+		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, cfg.Edge.ExchangeURL, dev.IsServiceBased(), cfg.Collaborators.HTTPClientFactory)
 		pattern = dev.Pattern
 	}
 
 	worker := &GovernanceWorker{
-		BaseWorker:          worker.NewBaseWorker(name, cfg),
-		db:                  db,
-		pm:                  pm,
-		deviceId:            id,
-		deviceToken:         token,
-		devicePattern:       pattern,
-		producerPH:          make(map[string]producer.ProducerProtocolHandler),
-		deviceStatus:        NewDeviceStatus(),
-		ShuttingDownCmd:     nil,
-		exchHandlers:        exchange.NewExchangeApiHandlers(cfg),
+		BaseWorker:      worker.NewBaseWorker(name, cfg, ec),
+		db:              db,
+		pm:              pm,
+		devicePattern:   pattern,
+		producerPH:      make(map[string]producer.ProducerProtocolHandler),
+		deviceStatus:    NewDeviceStatus(),
+		ShuttingDownCmd: nil,
 		lastSvcUpgradeCheck: time.Now().Unix(),
 	}
 
@@ -98,9 +90,12 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 	switch incoming.(type) {
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
-		w.deviceId = fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId())
-		w.deviceToken = msg.Token()
+		w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.GetServiceBased(), w.Config.Collaborators.HTTPClientFactory)
 		w.devicePattern = msg.Pattern()
+
+	case *events.EdgeConfigCompleteMessage:
+		msg, _ := incoming.(*events.EdgeConfigCompleteMessage)
+		w.EC.ServiceBased = msg.ServiceBased()
 
 	case *events.WorkloadMessage:
 		msg, _ := incoming.(*events.WorkloadMessage)
@@ -426,7 +421,7 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 
 	// Delete from the exchange
 	if ag != nil && ag.AgreementAcceptedTime != 0 {
-		if err := deleteProducerAgreement(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, agreementId); err != nil {
+		if err := deleteProducerAgreement(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), agreementId); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("error deleting agreement %v in exchange: %v", agreementId, err)))
 		}
 	}
@@ -486,7 +481,7 @@ func (w *GovernanceWorker) Initialize() bool {
 
 	// Wait for the device to be registered.
 	for {
-		if w.deviceToken != "" {
+		if w.GetExchangeToken() != "" {
 			break
 		} else {
 			glog.V(3).Infof(logString(fmt.Sprintf("GovernanceWorker command processor waiting for device registration")))
@@ -496,7 +491,7 @@ func (w *GovernanceWorker) Initialize() bool {
 
 	// Establish agreement protocol handlers
 	for _, protocolName := range policy.AllAgreementProtocols() {
-		pph := producer.CreateProducerPH(protocolName, w.BaseWorker.Manager.Config, w.db, w.pm, w.deviceId, w.deviceToken)
+		pph := producer.CreateProducerPH(protocolName, w.BaseWorker.Manager.Config, w.db, w.pm, w)
 		pph.Initialize()
 		w.producerPH[protocolName] = pph
 	}
@@ -938,7 +933,7 @@ func (w *GovernanceWorker) finalizeAgreement(agreement persistence.EstablishedAg
 		return errors.New(logString(fmt.Sprintf("could not hydrate proposal, error: %v", err)))
 	} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 		return errors.New(logString(fmt.Sprintf("error demarshalling TsAndCs policy for agreement %v, error %v", agreement.CurrentAgreementId, err)))
-	} else if err := recordProducerAgreementState(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, w.devicePattern, agreement.CurrentAgreementId, tcPolicy, "Finalized Agreement"); err != nil {
+	} else if err := recordProducerAgreementState(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), w.devicePattern, agreement.CurrentAgreementId, tcPolicy, "Finalized Agreement"); err != nil {
 		return errors.New(logString(fmt.Sprintf("error setting agreement %v finalized state in exchange: %v", agreement.CurrentAgreementId, err)))
 	}
 
@@ -947,18 +942,16 @@ func (w *GovernanceWorker) finalizeAgreement(agreement persistence.EstablishedAg
 
 func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, protocol string) error {
 
-	// Update the state in the database
+	// Update the agreement state in the database and in the exchange.
 	if ag, err := persistence.AgreementStateAccepted(w.db, proposal.AgreementId(), protocol); err != nil {
 		return errors.New(logString(fmt.Sprintf("received error updating database state, %v", err)))
-
-		// Update the state in the exchange
 	} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 		return errors.New(logString(fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
-	} else if err := recordProducerAgreementState(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken, w.devicePattern, proposal.AgreementId(), tcPolicy, "Agree to proposal"); err != nil {
+	} else if err := recordProducerAgreementState(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), w.devicePattern, proposal.AgreementId(), tcPolicy, "Agree to proposal"); err != nil {
 		return errors.New(logString(fmt.Sprintf("received error setting state for agreement %v", err)))
 	} else {
-		// Publish the "agreement reached" event to the message bus so that torrent can start downloading the workload
-		// hash is same as filename w/out extension
+
+		// Publish the "agreement reached" event to the message bus so that torrent can start downloading the workload.
 		workload := tcPolicy.NextHighestPriorityWorkload(0, 0, 0)
 		if url, err := url.Parse(workload.Torrent.Url); err != nil {
 			return errors.New(fmt.Sprintf("Ill-formed URL: %v", workload.Torrent.Url))
@@ -972,37 +965,24 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			// get environmental settings for the workload
 			envAdds := make(map[string]string)
 
-			// Before the ms split, the attributes assigned to the service (sensorUrl) are added to the workload.
-			// After the split, the workload config variables are stored in the workload config database.
-			if workload.WorkloadURL == "" {
-				sensorUrl := tcPolicy.APISpecs[0].SpecRef
-				if envAdds, err = w.GetWorkloadPreference(sensorUrl); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("Error: %v", err)))
-					return err
-				}
-			} else {
-				if envAdds, err = w.GetWorkloadConfig(workload.WorkloadURL, workload.Version); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("Error: %v", err)))
-					return err
-				}
-				// The workload config we have might be from a lower version of the workload. Go to the exchange and
-				// get the metadata for the version we are running and then add in any unset default user inputs.
-				if exWkld, _, err := exchange.GetWorkload(w.Config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken); err != nil {
-					return errors.New(logString(fmt.Sprintf("received error querying excahnge for workload metadata, error %v", err)))
-				} else if exWkld == nil {
-					return errors.New(logString(fmt.Sprintf("cound not find workload metadata for %v.", workload)))
-				} else {
-					for _, ui := range exWkld.UserInputs {
-						if ui.DefaultValue != "" {
-							if _, ok := envAdds[ui.Name]; !ok {
-								envAdds[ui.Name] = ui.DefaultValue
-							}
-						}
-					}
-				}
+			// The workload config variables are stored in the workload config database.
+			if envAdds, err = w.GetWorkloadConfig(workload.WorkloadURL, workload.Version, tcPolicy.IsServiceBased()); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Error: %v", err)))
+				return err
 			}
 
-			cutil.SetPlatformEnvvars(envAdds, config.ENVVAR_PREFIX, proposal.AgreementId(), exchange.GetId(w.deviceId), exchange.GetOrg(w.deviceId), workload.WorkloadPassword, w.Config.Edge.ExchangeURL)
+			// The workload config we have might be from a lower version of the workload. Go to the exchange and
+			// get the metadata for the version we are running and then add in any unset default user inputs.
+
+			if _, exDef, err := exchange.GetHTTPWorkloadOrServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+				return errors.New(logString(fmt.Sprintf("received error querying exchange for workload or service metadata: %v, error %v", workload, err)))
+			} else if exDef == nil {
+				return errors.New(logString(fmt.Sprintf("cound not find workload or service metadata for %v.", workload)))
+			} else {
+				exDef.PopulateDefaultUserInput(envAdds)
+			}
+
+			cutil.SetPlatformEnvvars(envAdds, config.ENVVAR_PREFIX, proposal.AgreementId(), exchange.GetId(w.GetExchangeId()), exchange.GetOrg(w.GetExchangeId()), workload.WorkloadPassword, w.GetExchangeURL())
 
 			lc.EnvironmentAdditions = &envAdds
 			lc.AgreementProtocol = protocol
@@ -1014,7 +994,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 				if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, as.SpecRef); err != nil {
 					return errors.New(logString(fmt.Sprintf("Error finding microservice definition from the local db for %v version range %v. %v", as.SpecRef, as.Version, err)))
 				} else if msdefs != nil && len(msdefs) > 0 { // if msdefs is nil or empty then it is old behaviour before the ms split
-					glog.V(5).Infof(logString(fmt.Sprintf("All avaialbe msdefs: %v", msdefs)))
+					glog.V(5).Infof(logString(fmt.Sprintf("All available msdefs: %v", msdefs)))
 					// assuming there is only one msdef for a microservice at any time
 					msdef := msdefs[0]
 
@@ -1045,7 +1025,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 
 		// Tell the BC worker to start the BC client container(s) if we need to.
 		if ag.BlockchainType != "" && ag.BlockchainName != "" && ag.BlockchainOrg != "" {
-			w.BaseWorker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken)
+			w.BaseWorker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
 		}
 	}
 
@@ -1056,7 +1036,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 func (w *GovernanceWorker) GetWorkloadPreference(url string) (map[string]string, error) {
 	attrs, err := persistence.FindApplicableAttributes(w.db, url)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to fetch workload preferences. Err: %v", err)
+		return nil, fmt.Errorf("Unable to fetch workload %v preferences. Err: %v", url, err)
 	}
 
 	return persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX)
@@ -1067,7 +1047,7 @@ func (w *GovernanceWorker) GetWorkloadPreference(url string) (map[string]string,
 // record has a version range. The workload has to fall within that range inorder for us to apply
 // the configuration to the workload. If there are multiple configs in the version range, we will
 // use the most current config we have.
-func (w *GovernanceWorker) GetWorkloadConfig(url string, version string) (map[string]string, error) {
+func (w *GovernanceWorker) GetWorkloadConfig(url string, version string, serviceModel bool) (map[string]string, error) {
 
 	// Filter to return workload configs with versions less than or equal to the input workload version range
 	OlderWorkloadWCFilter := func(workload_url string, version string) persistence.WCFilter {
@@ -1084,19 +1064,25 @@ func (w *GovernanceWorker) GetWorkloadConfig(url string, version string) (map[st
 		}
 	}
 
-	// Find the eligible workload config objects
+	// Find the eligible workload config objects. There might not be any if the workload we're starting is a service, or
+	// if the workload just doesnt need any config.
 	cfgs, err := persistence.FindWorkloadConfigs(w.db, []persistence.WCFilter{OlderWorkloadWCFilter(url, version)})
 	if err != nil {
-		return nil, fmt.Errorf("Unable to fetch post split workload preferences. Err: %v", err)
-	} else if len(cfgs) == 0 {
+		return nil, fmt.Errorf("Unable to fetch post split workload %v preferences. Err: %v", url, err)
+	} else if len(cfgs) != 0 {
+		// Sort them by version, oldest to newest
+		sort.Sort(WorkloadConfigByVersion(cfgs))
+
+		// Configure the env map with the newest config that is within the version range.
+		return w.ConfigToEnvvarMap(w.db, &cfgs[len(cfgs)-1], config.ENVVAR_PREFIX)
+	} else if !serviceModel {
+		// Configure the env map with an empty config.
 		return w.ConfigToEnvvarMap(w.db, nil, config.ENVVAR_PREFIX)
 	}
 
-	// Sort them by version, oldest to newest
-	sort.Sort(WorkloadConfigByVersion(cfgs))
-
-	// Configure the env map with the newest config that is within the version range.
-	return w.ConfigToEnvvarMap(w.db, &cfgs[len(cfgs)-1], config.ENVVAR_PREFIX)
+	// The workload being configured is a top level (agreement) service. In that case, if there are any
+	// user input variables configured, they will be found in the attributes database.
+	return w.GetWorkloadPreference(url)
 
 }
 
@@ -1138,24 +1124,35 @@ func recordProducerAgreementState(httpClient *http.Client, url string, deviceId 
 
 	glog.V(5).Infof(logString(fmt.Sprintf("setting agreement %v state to %v", agreementId, state)))
 
+	// Gather up the service and workload info about this agreement.
 	as := new(exchange.PutAgreementState)
+	services := make([]exchange.MSAgreementState, 0, 5)
+
 	for _, apiSpec := range pol.APISpecs {
-		as.Microservices = append(as.Microservices, exchange.MSAgreementState{
+		services = append(services, exchange.MSAgreementState{
 			Org: apiSpec.Org,
 			URL: apiSpec.SpecRef,
 		})
 	}
 
+	workload := exchange.WorkloadAgreement{}
 	if pattern != "" {
-		as.Workload = exchange.WorkloadAgreement{
-			Org:     exchange.GetOrg(deviceId),
-			Pattern: pattern,
-			URL:     pol.Workloads[0].WorkloadURL,
-		}
+		workload.Org = exchange.GetOrg(deviceId)
+		workload.Pattern = pattern
+		workload.URL = pol.Workloads[0].WorkloadURL // This is always 1 workload array element
 	}
 
+	// Configure the input object based on the service model or on the older workload model.
 	as.State = state
+	if pol.IsServiceBased() {
+		as.Services = services
+		as.AgreementService = workload
+	} else {
+		as.Microservices = services
+		as.Workload = workload
+	}
 
+	// Call the exchange API to set the agreement state.
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId) + "/agreements/" + agreementId
@@ -1201,9 +1198,9 @@ func deleteProducerAgreement(httpClient *http.Client, url string, deviceId strin
 func (w *GovernanceWorker) deleteMessage(msg *exchange.DeviceMessage) error {
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/msgs/" + strconv.Itoa(msg.MsgId)
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/msgs/" + strconv.Itoa(msg.MsgId)
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "DELETE", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "DELETE", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(logString(err.Error()))
 			return err
 		} else if tpErr != nil {
@@ -1220,9 +1217,9 @@ func (w *GovernanceWorker) deleteMessage(msg *exchange.DeviceMessage) error {
 func (w *GovernanceWorker) messageInExchange(msgId int) (bool, error) {
 	var resp interface{}
 	resp = new(exchange.GetDeviceMessageResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/msgs"
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/msgs"
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "GET", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "GET", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(logString(err.Error()))
 			return false, err
 		} else if tpErr != nil {

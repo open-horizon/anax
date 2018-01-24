@@ -89,12 +89,12 @@ func TestGetUpgradeMicroserviceDef(t *testing.T) {
 	// invalide verision range
 	saved_vr := pms.UpgradeVersionRange
 	pms.UpgradeVersionRange = "abc"
-	_, err = GetUpgradeMicroserviceDef(getVariableMicroserviceHandler("2.0"), pms, "mydevice", "mytoken", db)
+	_, err = GetUpgradeMicroserviceDef(getVariableMicroserviceHandler("2.0"), pms, db)
 	assert.NotNil(t, err, "Invalid version range fromat should result in error")
 	pms.UpgradeVersionRange = saved_vr
 
 	// higher version
-	new_ms, err := GetUpgradeMicroserviceDef(getVariableMicroserviceHandler("2.0"), pms, "mydevice", "mytoken", db)
+	new_ms, err := GetUpgradeMicroserviceDef(getVariableMicroserviceHandler("2.0"), pms, db)
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 	assert.NotNil(t, new_ms, "should return a new ms")
 	assert.Equal(t, "2.0", new_ms.Version, "should have a higher version")
@@ -104,12 +104,12 @@ func TestGetUpgradeMicroserviceDef(t *testing.T) {
 	assert.Equal(t, pms.UpgradeVersionRange, new_ms.UpgradeVersionRange, "")
 
 	// lower version
-	new_ms, err = GetUpgradeMicroserviceDef(getVariableMicroserviceHandler("0.5"), pms, "mydevice", "mytoken", db)
+	new_ms, err = GetUpgradeMicroserviceDef(getVariableMicroserviceHandler("0.5"), pms, db)
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 	assert.Nil(t, new_ms, fmt.Sprintf("should return a nil ms, but got this: %v", new_ms))
 
 	// same version but different hash
-	new_ms, err = GetUpgradeMicroserviceDef(getVariableMicroserviceHandler("1.0.0"), pms, "mydevice", "mytoken", db)
+	new_ms, err = GetUpgradeMicroserviceDef(getVariableMicroserviceHandler("1.0.0"), pms, db)
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 	assert.NotNil(t, new_ms, "should return a new ms")
 	assert.Equal(t, "1.0.0", new_ms.Version, "should have the same version")
@@ -127,12 +127,12 @@ func TestGetRollbackMicroserviceDef(t *testing.T) {
 	// invalide verision range
 	saved_vr := pms.UpgradeVersionRange
 	pms.UpgradeVersionRange = "abc"
-	_, err = GetRollbackMicroserviceDef(getVariableMicroserviceHandler("2.0"), pms, "mydevice", "mytoken", db)
+	_, err = GetRollbackMicroserviceDef(getVariableMicroserviceHandler("2.0"), pms, db)
 	assert.NotNil(t, err, "Invalid version range fromat should result in error")
 	pms.UpgradeVersionRange = saved_vr
 
 	// always return lower version
-	new_ms, err := GetRollbackMicroserviceDef(getVariableMicroserviceHandler("0.5"), pms, "mydevice", "mytoken", db)
+	new_ms, err := GetRollbackMicroserviceDef(getVariableMicroserviceHandler("0.5"), pms, db)
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 	assert.NotNil(t, new_ms, "should return a new ms")
 	assert.Equal(t, "0.5", new_ms.Version, "should have a lower version")
@@ -190,23 +190,91 @@ func TestUnregisterMicroserviceExchange(t *testing.T) {
 	device_name := "mydevicename"
 	url := "network"
 
-	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(mss),
+	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(mss, nil),
 		checkPutDeviceHandler(t, mss, url),
-		url, device_id, device_token, db)
+		url, false, device_id, device_token, db)
 	assert.NotNil(t, err, "Device not created in the db yet.")
 
 	// save device in db
-	_, err = persistence.SaveNewExchangeDevice(db, "mydevice", device_token, device_name, false, org, "netspeed-amd64", "configuring")
+	_, err = persistence.SaveNewExchangeDevice(db, "mydevice", device_token, device_name, false, org, "netspeed-amd64", "configuring", false, true)
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 
-	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil),
+	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, nil),
 		checkPutDeviceHandler(t, nil, url),
-		url, device_id, device_token, db)
+		url, false, device_id, device_token, db)
 	assert.Nil(t, err, "no registered ms, nothing to do")
 
-	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(mss),
+	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(mss, nil),
 		checkPutDeviceHandler(t, mss, url),
-		url, device_id, device_token, db)
+		url, false, device_id, device_token, db)
+	assert.Nil(t, err, "eveything should have worked")
+
+	err = cleanupDB(dir)
+	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
+}
+
+func TestUnregisterServiceExchange(t *testing.T) {
+
+	checkPutDeviceHandler := func(t *testing.T, mss []exchange.Microservice, url string) exchange.PutDeviceHandler {
+		return func(id string, token string, pdr *exchange.PutDeviceRequest) (*exchange.PutDeviceResponse, error) {
+
+			assert.Equal(t, len(mss)-1, len(pdr.RegisteredServices), "one service should have been removed")
+
+			for _, ms := range pdr.RegisteredServices {
+				assert.False(t, ms.Url == url, fmt.Sprintf("%v should have been removed", url))
+			}
+
+			pd := new(exchange.PutDeviceResponse)
+			return pd, nil
+		}
+	}
+
+	dir, db, err := setupDB()
+	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
+
+	m1 := exchange.Microservice{
+		Url:           "gps",
+		Properties:    nil,
+		NumAgreements: 0,
+		Policy:        "blahblah",
+	}
+	m2 := exchange.Microservice{
+		Url:           "network",
+		Properties:    nil,
+		NumAgreements: 0,
+		Policy:        "blahblah",
+	}
+	m3 := exchange.Microservice{
+		Url:           "pwsms",
+		Properties:    nil,
+		NumAgreements: 0,
+		Policy:        "blahblah",
+	}
+	mss := []exchange.Microservice{m1, m2, m3}
+
+	org := "myorg"
+	device_id := "mydevice"
+	device_token := "mytoken"
+	device_name := "mydevicename"
+	url := "network"
+
+	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, mss),
+		checkPutDeviceHandler(t, mss, url),
+		url, true, device_id, device_token, db)
+	assert.NotNil(t, err, "Device not created in the db yet.")
+
+	// save device in db
+	_, err = persistence.SaveNewExchangeDevice(db, "mydevice", device_token, device_name, false, org, "netspeed-amd64", "configuring", true, false)
+	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
+
+	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, nil),
+		checkPutDeviceHandler(t, nil, url),
+		url, true, device_id, device_token, db)
+	assert.Nil(t, err, "no registered ms, nothing to do")
+
+	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, mss),
+		checkPutDeviceHandler(t, mss, url),
+		url, true, device_id, device_token, db)
 	assert.Nil(t, err, "eveything should have worked")
 
 	err = cleanupDB(dir)
@@ -215,8 +283,8 @@ func TestUnregisterMicroserviceExchange(t *testing.T) {
 
 func createMicroservice(t *testing.T) *persistence.MicroserviceDefinition {
 	hwm := exchange.HardwareMatch{
-		USBDeviceIds: "1546:01a7",
-		Devfiles:     "/dev/ttyUSB*,/dev/ttyACM*",
+		"USBDeviceIds": "1546:01a7",
+		"Devfiles":     "/dev/ttyUSB*,/dev/ttyACM*",
 	}
 	ut1 := exchange.UserInput{
 		Name:         "foo1",
@@ -251,7 +319,7 @@ func createMicroservice(t *testing.T) *persistence.MicroserviceDefinition {
 		LastUpdated:   "2017-11-14T22:36:52.748Z[UTC]",
 	}
 
-	pms, err := ConvertToPersistent(&ems, "mycompany")
+	pms, err := ConvertMicroserviceToPersistent(&ems, "mycompany")
 
 	// check error
 	assert.Nil(t, err, fmt.Sprintf("Shold return no error, but got %v", err))
@@ -268,7 +336,7 @@ func createMicroservice(t *testing.T) *persistence.MicroserviceDefinition {
 }
 
 func getVariableMicroserviceHandler(version string) exchange.MicroserviceHandler {
-	return func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*exchange.MicroserviceDefinition, string, error) {
+	return func(mUrl string, mOrg string, mVersion string, mArch string) (*exchange.MicroserviceDefinition, string, error) {
 		md := exchange.MicroserviceDefinition{
 			Owner:         "owner",
 			Label:         "label",
@@ -287,7 +355,7 @@ func getVariableMicroserviceHandler(version string) exchange.MicroserviceHandler
 	}
 }
 
-func getVariableDeviceHandler(mss []exchange.Microservice) exchange.DeviceHandler {
+func getVariableDeviceHandler(mss []exchange.Microservice, ss []exchange.Microservice) exchange.DeviceHandler {
 	return func(id string, token string) (*exchange.Device, error) {
 		d := exchange.Device{
 			Token:                   token,
@@ -295,6 +363,7 @@ func getVariableDeviceHandler(mss []exchange.Microservice) exchange.DeviceHandle
 			Owner:                   "bob",
 			Pattern:                 "netspeed-amd64",
 			RegisteredMicroservices: mss,
+			RegisteredServices:      ss,
 			MsgEndPoint:             "",
 			SoftwareVersions:        nil,
 			LastHeartbeat:           "now",

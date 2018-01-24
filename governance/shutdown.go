@@ -34,9 +34,9 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 		return
 	}
 
-	// Clear the Pattern and RegisteredMicroservices array in the node’s exchange resource. We have to leave the public key
-	// so that the node can send messages to an agbot. Removing the pattern and RegisteredMicroservices will prevent the exchange
-	// from finding the node and thereby prevent agobts from trying to make new agreements.
+	// Clear the Pattern and RegisteredMicroservices/RegisteredServices array in the node’s exchange resource. We have to leave the
+	// public key so that the node can send messages to an agbot. Removing the pattern and RegisteredMicroservices/RegisteredServices
+	// will prevent the exchange from finding the node and thereby prevent agobts from trying to make new agreements.
 	if err := w.clearNodePatternAndMS(); err != nil {
 		w.completedWithError(logString(err.Error()))
 		return
@@ -103,32 +103,37 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 	glog.V(3).Infof(logString(fmt.Sprintf("node shutdown process complete.")))
 }
 
-// Clear out the registered microservices and the configured pattern for the node.
+// Clear out the registered microservices/services and the configured pattern for the node.
 func (w *GovernanceWorker) clearNodePatternAndMS() error {
 
 	// If the node entry has already been removed form the exchange, skip this step.
-	exDev, err := exchange.GetExchangeDevice(w.Config.Collaborators.HTTPClientFactory, w.deviceId, w.deviceToken, w.Config.Edge.ExchangeURL)
+	exDev, err := exchange.GetExchangeDevice(w.Config.Collaborators.HTTPClientFactory, w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL())
 	if err != nil && strings.Contains(err.Error(), "status: 401") {
 		return nil
 	} else if err != nil {
 		return errors.New(fmt.Sprintf("error reading node from exchange: %v", err))
 	}
 
-	// CreateDevicePut will include the existng message key in the returned object, and the Pattern field will be an empty string.
+	// CreateDevicePut will include the existing message key in the returned object, and the Pattern field will be an empty string.
 	// Preserve the rest of the existing fields on the PUT.
-	pdr := exchange.CreateDevicePut(w.deviceToken, exDev.Name)
-	pdr.RegisteredMicroservices = []exchange.Microservice{}
+	pdr := exchange.CreateDevicePut(w.GetExchangeToken(), exDev.Name)
+	if exDev.RegisteredMicroservices != nil && len(exDev.RegisteredMicroservices) != 0 {
+		pdr.RegisteredMicroservices = []exchange.Microservice{}
+	}
+	if exDev.RegisteredServices != nil && len(exDev.RegisteredServices) != 0 {
+		pdr.RegisteredServices = []exchange.Microservice{}
+	}
 	pdr.SoftwareVersions = exDev.SoftwareVersions
 	pdr.MsgEndPoint = exDev.MsgEndPoint
 
 	var resp interface{}
 	resp = new(exchange.PutDeviceResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId)
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId())
 
 	glog.V(3).Infof(logString(fmt.Sprintf("clearing node entry in exchange: %v", pdr.ShortString())))
 
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "PUT", targetURL, w.deviceId, w.deviceToken, pdr, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), pdr, &resp); err != nil {
 			return err
 		} else if tpErr != nil {
 			glog.Warningf(tpErr.Error())
@@ -211,7 +216,7 @@ func (w *GovernanceWorker) terminateMicroservices() error {
 		if err != nil {
 			return errors.New(fmt.Sprintf("unable to retrieve microservice instances from database, error: %v", err))
 		} else if remainingInstances != nil && len(remainingInstances) != 0 {
-			glog.V(3).Infof(logString(fmt.Sprintf("waiting for microservices to terminate, have %v", len(remainingInstances))))
+			glog.V(3).Infof(logString(fmt.Sprintf("waiting for microservices to terminate, have %v, %v", len(remainingInstances), remainingInstances)))
 			time.Sleep(15 * time.Second)
 		} else {
 			glog.V(3).Infof(logString(fmt.Sprintf("microservice instance termination complete")))
@@ -242,12 +247,12 @@ func (w *GovernanceWorker) patchNodeKey() error {
 
 	var resp interface{}
 	resp = new(exchange.PutDeviceResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId)
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId())
 
 	glog.V(3).Infof(logString(fmt.Sprintf("clearing messaging key in node entry: %v at %v", pdr, targetURL)))
 
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "PATCH", targetURL, w.deviceId, w.deviceToken, pdr, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "PATCH", targetURL, w.GetExchangeId(), w.GetExchangeToken(), pdr, &resp); err != nil {
 			if strings.Contains(err.Error(), "status: 401") {
 				break
 			} else {
@@ -258,7 +263,7 @@ func (w *GovernanceWorker) patchNodeKey() error {
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
-			glog.V(3).Infof(logString(fmt.Sprintf("cleared messaging key for device %v in exchange: %v", w.deviceId, resp)))
+			glog.V(3).Infof(logString(fmt.Sprintf("cleared messaging key for device %v in exchange: %v", w.GetExchangeId(), resp)))
 			break
 		}
 	}
@@ -338,12 +343,12 @@ func (w *GovernanceWorker) deleteNode() error {
 
 	var resp interface{}
 	resp = new(exchange.PutDeviceResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId)
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId())
 
-	glog.V(3).Infof(logString(fmt.Sprintf("deleting node %v from exchange", w.deviceId)))
+	glog.V(3).Infof(logString(fmt.Sprintf("deleting node %v from exchange", w.GetExchangeId())))
 
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "DELETE", targetURL, w.deviceId, w.deviceToken, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "DELETE", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
 			return err
 		} else if tpErr != nil {
 			glog.Warningf(tpErr.Error())

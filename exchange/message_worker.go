@@ -18,28 +18,22 @@ type ExchangeMessageWorker struct {
 	worker.BaseWorker // embedded field
 	db                *bolt.DB
 	httpClient        *http.Client
-	id                string // device id
-	token             string // device token
 	pattern           string // device pattern
 }
 
 func NewExchangeMessageWorker(name string, cfg *config.HorizonConfig, db *bolt.DB) *ExchangeMessageWorker {
 
-	id := ""
-	token := ""
+	var ec *worker.BaseExchangeContext
 	pattern := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
-		token = dev.Token
-		id = fmt.Sprintf("%v/%v", dev.Org, dev.Id)
+		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, cfg.Edge.ExchangeURL, dev.IsServiceBased(), cfg.Collaborators.HTTPClientFactory)
 		pattern = dev.Pattern
 	}
 
 	worker := &ExchangeMessageWorker{
-		BaseWorker: worker.NewBaseWorker(name, cfg),
+		BaseWorker: worker.NewBaseWorker(name, cfg, ec),
 		db:         db,
 		httpClient: cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
-		id:         id,
-		token:      token,
 		pattern:    pattern,
 	}
 
@@ -55,9 +49,7 @@ func (w *ExchangeMessageWorker) NewEvent(incoming events.Message) {
 	switch incoming.(type) {
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
-		w.id = msg.DeviceId()
-		w.token = msg.Token()
-		w.id = fmt.Sprintf("%v/%v", msg.Org(), w.id)
+		w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.GetServiceBased(), w.Config.Collaborators.HTTPClientFactory)
 		w.pattern = msg.Pattern()
 
 	case *events.NodeShutdownCompleteMessage:
@@ -76,7 +68,7 @@ func (w *ExchangeMessageWorker) Initialize() bool {
 
 	// Dont pull messages until the device is registered
 	for {
-		if w.token != "" {
+		if w.GetExchangeToken() != "" {
 			break
 		} else {
 			glog.V(5).Infof(logString(fmt.Sprintf("waiting for exchange registration")))
@@ -122,9 +114,9 @@ func (w *ExchangeMessageWorker) NoWorkHandler() {
 func (w *ExchangeMessageWorker) getMessages() ([]DeviceMessage, error) {
 	var resp interface{}
 	resp = new(GetDeviceMessageResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + GetOrg(w.id) + "/nodes/" + GetId(w.id) + "/msgs"
+	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + GetOrg(w.GetExchangeId()) + "/nodes/" + GetId(w.GetExchangeId()) + "/msgs"
 	for {
-		if err, tpErr := InvokeExchange(w.httpClient, "GET", targetURL, w.id, w.token, nil, &resp); err != nil {
+		if err, tpErr := InvokeExchange(w.httpClient, "GET", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(err.Error())
 			return nil, err
 		} else if tpErr != nil {

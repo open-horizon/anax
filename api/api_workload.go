@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/exchange"
 )
 
 func (a *API) workload(w http.ResponseWriter, r *http.Request) {
@@ -24,6 +25,14 @@ func (a *API) workload(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		// Get the persisted device to see if it's service or workload based.
+		if pDevice, errWritten := a.existingDeviceOrError(w); errWritten {
+			return
+		} else if !pDevice.IsWorkloadBased() {
+			writeResponse(w, *NewWorkloadOutput(), http.StatusOK)
+			return
+		}
 
 		// Gather all the agreements from the local database and format them for output.
 		if out, err := FindWorkloadForOutput(a.db, a.Config); err != nil {
@@ -67,7 +76,7 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
-		getWorkload := a.exchHandlers.GetHTTPWorkloadHandler()
+		getWorkload := exchange.GetHTTPWorkloadHandler(a)
 
 		// Demarshal the input body
 		var cfg WorkloadConfig

@@ -166,7 +166,11 @@ func (self *PolicyManager) DeletePolicy(org string, delPolicy *Policy) {
 
 // This function is used to get the policy manager up and running. When this function returns, all the current policies
 // have been read into memory. It can be used instead of the factory method for convenience.
-func Initialize(policyPath string, arch_synonymns config.ArchSynonyms, workloadResolver func(wURL string, wOrg string, wVersion string, wArch string) (*APISpecList, error), apiSpecCounts bool) (*PolicyManager, error) {
+func Initialize(policyPath string,
+	arch_synonymns config.ArchSynonyms,
+	workloadResolver func(wURL string, wOrg string, wVersion string, wArch string) (*APISpecList, error),
+	serviceResolver func(wURL string, wOrg string, wVersion string, wArch string) (*APISpecList, error),
+	apiSpecCounts bool) (*PolicyManager, error) {
 
 	glog.V(1).Infof("Initializing Policy Manager with %v.", policyPath)
 	pm := PolicyManager_Factory(apiSpecCounts)
@@ -190,7 +194,7 @@ func Initialize(policyPath string, arch_synonymns config.ArchSynonyms, workloadR
 
 	// Call the policy file watcher once to load up the initial set of policy files
 	contents := NewContents()
-	if cons, err := PolicyFileChangeWatcher(policyPath, contents, arch_synonymns, changeNotify, deleteNotify, errorNotify, workloadResolver, 0); err != nil {
+	if cons, err := PolicyFileChangeWatcher(policyPath, contents, arch_synonymns, changeNotify, deleteNotify, errorNotify, workloadResolver, serviceResolver, 0); err != nil {
 		return nil, err
 	} else if pm.NumberPolicies() != numberFiles {
 		return nil, errors.New(fmt.Sprintf("Policy Names must be unique, found %v files, but %v unique policies", numberFiles, pm.NumberPolicies()))

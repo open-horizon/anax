@@ -70,8 +70,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string) (*persistence.Micros
 	} else if msdef == nil {
 		return nil, fmt.Errorf(logString(fmt.Sprintf("No microserivce definition available for key %v.", ms_key)))
 	} else {
-		wls := msdef.Workloads
-		if wls == nil || len(wls) == 0 {
+		if !msdef.HasDeployment() {
 			glog.Infof(logString(fmt.Sprintf("No workload needed for microservice %v.", msdef.SpecRef)))
 			if mi, err := persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Version, ms_key); err != nil {
 				return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting microservice instance for %v %v %v.", msdef.SpecRef, msdef.Version, ms_key)))
@@ -83,95 +82,99 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string) (*persistence.Micros
 			}
 		}
 
-		for _, wl := range wls {
-			// convert the torrent string to a structure
-			var torrent policy.Torrent
+		deployment, deploymentSig, torr := msdef.GetDeployment()
 
-			// convert to torrent structure only if the torrent string exists on the exchange
-			if wl.Torrent != "" {
-				if err := json.Unmarshal([]byte(wl.Torrent), &torrent); err != nil {
-					return nil, fmt.Errorf(logString(fmt.Sprintf("The torrent definition for microservice %v has error: %v", msdef.SpecRef, err)))
+		// convert the torrent string to a structure
+		var torrent policy.Torrent
+
+		// convert to torrent structure only if the torrent string exists on the exchange
+		if torr != "" {
+			if err := json.Unmarshal([]byte(torr), &torrent); err != nil {
+				return nil, fmt.Errorf(logString(fmt.Sprintf("The torrent definition for microservice %v has error: %v", msdef.SpecRef, err)))
+			}
+		}
+
+		// convert workload to policy workload structure
+		var ms_workload policy.Workload
+		ms_workload.Deployment = deployment
+		ms_workload.DeploymentSignature = deploymentSig
+		ms_workload.Torrent = torrent
+		ms_workload.WorkloadPassword = ""
+		ms_workload.DeploymentUserInfo = ""
+
+		// verify torrent url
+		if url, err := url.Parse(torrent.Url); err != nil {
+			return nil, fmt.Errorf("ill-formed URL: %v, error %v", torrent.Url, err)
+		} else {
+			// get microservice/service keys and save it to the user keys.
+			if w.Config.Edge.TrustCertUpdatesFromOrg {
+				key_map, err := exchange.GetHTTPObjectSigningKeysHandler(w)(exchange.MICROSERVICE, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch)
+				if err == nil {
+					// No error means that we are working with a microservice.
+				} else if key_map, err = exchange.GetHTTPObjectSigningKeysHandler(w)(exchange.SERVICE, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch); err != nil {
+					return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting signing keys from the exchange: %v %v %v %v. %v", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, err)))
+				}
+
+				if key_map != nil {
+					errHandler := func(keyname string) api.ErrorHandler {
+						return func(err error) bool {
+							glog.Errorf(logString(fmt.Sprintf("received error when saving the signing key file %v to anax. %v", keyname, err)))
+							return true
+						}
+					}
+
+					for key, content := range key_map {
+						//add .pem the end of the keyname if it does not have none.
+						fn := key
+						if !strings.HasSuffix(key, ".pem") {
+							fn = fmt.Sprintf("%v.pem", key)
+						}
+
+						api.UploadPublicKey(fn, []byte(content), w.Config, errHandler(fn))
+					}
 				}
 			}
 
-			// convert workload to policy workload structure
-			var ms_workload policy.Workload
-			ms_workload.Deployment = wl.Deployment
-			ms_workload.DeploymentSignature = wl.DeploymentSignature
-			ms_workload.Torrent = torrent
-			ms_workload.WorkloadPassword = ""
-			ms_workload.DeploymentUserInfo = ""
+			// Verify the deployment signature
+			if pemFiles, err := w.Config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.Config.Edge.PublicKeyPath, w.Config.UserPublicKeyPath()); err != nil {
+				return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting pem key files: %v", err)))
+			} else if err := ms_workload.HasValidSignature(pemFiles); err != nil {
+				return nil, fmt.Errorf(logString(fmt.Sprintf("microservice container has invalid deployment signature %v for %v", ms_workload.DeploymentSignature, ms_workload.Deployment)))
+			}
 
-			// verify torrent url
-			if url, err := url.Parse(torrent.Url); err != nil {
-				return nil, fmt.Errorf("ill-formed URL: %v, error %v", torrent.Url, err)
+			// save the instance
+			if ms_instance, err := persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Version, ms_key); err != nil {
+				return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting microservice instance for %v %v %v.", msdef.SpecRef, msdef.Version, ms_key)))
 			} else {
-				// get microservice keys and save it to the user keys.
-				if w.Config.Edge.TrustCertUpdatesFromOrg {
-					if key_map, err := w.exchHandlers.GetHTTPObjectSigningKeysHandler()(exchange.MICROSERVICE, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, w.deviceId, w.deviceToken); err != nil {
-						return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting signing keys for the microservice from the exchange: %v %v %v %v. %v", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, err)))
-					} else if key_map != nil {
-						errHandler := func(keyname string) api.ErrorHandler {
-							return func(err error) bool {
-								glog.Errorf(logString(fmt.Sprintf("received error when saving the signing key file %v to anax. %v", keyname, err)))
-								return true
-							}
-						}
+				// Fire an event to the torrent worker so that it will download the container
+				cc := events.NewContainerConfig(*url, ms_workload.Torrent.Signature, ms_workload.Deployment, ms_workload.DeploymentSignature, ms_workload.DeploymentUserInfo, "")
 
-						for key, content := range key_map {
-							//add .pem the end of the keyname if it does not have none.
-							fn := key
-							if !strings.HasSuffix(key, ".pem") {
-								fn = fmt.Sprintf("%v.pem", key)
-							}
-
-							api.UploadPublicKey(fn, []byte(content), w.Config, errHandler(fn))
-						}
-					}
-				}
-
-				// Verify the deployment signature
-				if pemFiles, err := w.Config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.Config.Edge.PublicKeyPath, w.Config.UserPublicKeyPath()); err != nil {
-					return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting pem key files: %v", err)))
-				} else if err := ms_workload.HasValidSignature(pemFiles); err != nil {
-					return nil, fmt.Errorf(logString(fmt.Sprintf("microservice container has invalid deployment signature %v for %v", ms_workload.DeploymentSignature, ms_workload.Deployment)))
-				}
-
-				// save the instance
-				if ms_instance, err := persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Version, ms_key); err != nil {
-					return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting microservice instance for %v %v %v.", msdef.SpecRef, msdef.Version, ms_key)))
+				// convert the user input from the service attributes to env variables
+				if attrs, err := persistence.FindApplicableAttributes(w.db, msdef.SpecRef); err != nil {
+					return nil, fmt.Errorf(logString(fmt.Sprintf("Unable to fetch microservice preferences for %v. Err: %v", msdef.SpecRef, err)))
+				} else if envAdds, err := persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX); err != nil {
+					return nil, fmt.Errorf(logString(fmt.Sprintf("Failed to convert microservice preferences to environmental variables for %v. Err: %v", msdef.SpecRef, err)))
 				} else {
-					// Fire an event to the torrent worker so that it will download the container
-					cc := events.NewContainerConfig(*url, ms_workload.Torrent.Signature, ms_workload.Deployment, ms_workload.DeploymentSignature, ms_workload.DeploymentUserInfo, "")
-
-					// convert the user input from the service attributes to env variables
-					if attrs, err := persistence.FindApplicableAttributes(w.db, msdef.SpecRef); err != nil {
-						return nil, fmt.Errorf(logString(fmt.Sprintf("Unable to fetch microservice preferences for %v. Err: %v", msdef.SpecRef, err)))
-					} else if envAdds, err := persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX); err != nil {
-						return nil, fmt.Errorf(logString(fmt.Sprintf("Failed to convert microservice preferences to environmental variables for %v. Err: %v", msdef.SpecRef, err)))
-					} else {
-						envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = exchange.GetId(w.deviceId)
-						envAdds[config.ENVVAR_PREFIX+"ORGANIZATION"] = exchange.GetOrg(w.deviceId)
-						envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = w.Config.Edge.ExchangeURL
-						// Add in any default variables from the microservice userInputs that havent been overridden
-						for _, ui := range msdef.UserInputs {
-							if ui.DefaultValue != "" {
-								if _, ok := envAdds[ui.Name]; !ok {
-									envAdds[ui.Name] = ui.DefaultValue
-								}
+					envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = exchange.GetId(w.GetExchangeId())
+					envAdds[config.ENVVAR_PREFIX+"ORGANIZATION"] = exchange.GetOrg(w.GetExchangeId())
+					envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = w.Config.Edge.ExchangeURL
+					// Add in any default variables from the microservice userInputs that havent been overridden
+					for _, ui := range msdef.UserInputs {
+						if ui.DefaultValue != "" {
+							if _, ok := envAdds[ui.Name]; !ok {
+								envAdds[ui.Name] = ui.DefaultValue
 							}
 						}
-						lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey())
-						w.Messages() <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
 					}
-
-					return ms_instance, nil // assume there is only one workload for a microservice
+					lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey())
+					w.Messages() <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
 				}
+
+				return ms_instance, nil // assume there is only one workload for a microservice
 			}
 		}
 	}
 
-	return nil, nil
 }
 
 // It cleans the microservice instance and its associated agreements
@@ -286,7 +289,7 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 	unregError = microservice.RemoveMicroservicePolicy(msdef.SpecRef, msdef.Org, msdef.Version, msdef.Id, w.Config.Edge.PolicyPath, w.pm)
 	if unregError != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to remove microservice policy for microservice def %v version %v. %v", msdef.SpecRef, msdef.Version, unregError)))
-	} else if unregError = microservice.UnregisterMicroserviceExchange(w.exchHandlers.GetHTTPDeviceHandler(), w.exchHandlers.GetHTTPPutDeviceHandler(), msdef.SpecRef, w.deviceId, w.deviceToken, w.db); unregError != nil {
+	} else if unregError = microservice.UnregisterMicroserviceExchange(exchange.GetHTTPDeviceHandler(w), exchange.GetHTTPPutDeviceHandler(w), msdef.SpecRef, w.GetServiceBased(), w.GetExchangeId(), w.GetExchangeToken(), w.db); unregError != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to unregister microservice from the exchange for microservice def %v. %v", msdef.SpecRef, unregError)))
 	}
 	// update msdef UpgradeMsUnregisteredTime
@@ -306,13 +309,13 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 	}
 
 	// if the new microservice does not have containers, just mark containers are up.
-	if new_msdef.Workloads == nil || len(new_msdef.Workloads) == 0 {
+	if !new_msdef.HasDeployment() {
 		if _, err := persistence.MSDefUpgradeExecutionStarted(w.db, new_msdef.Id); err != nil {
 			return fmt.Errorf(logString(fmt.Sprintf("Failed to update the MSDefUpgradeExecutionStarted for microservice def %v version %v id %v. %v", new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
 		}
 
 		// create a new policy file and register the new microservice in exchange
-		if err := microservice.GenMicroservicePolicy(new_msdef, w.Config.Edge.PolicyPath, w.db, w.Messages(), exchange.GetOrg(w.deviceId)); err != nil {
+		if err := microservice.GenMicroservicePolicy(new_msdef, w.Config.Edge.PolicyPath, w.db, w.Messages(), exchange.GetOrg(w.GetExchangeId())); err != nil {
 			if _, err := persistence.MSDefUpgradeFailed(w.db, new_msdef.Id, microservice.MS_REREG_EXCH_FAILED, microservice.DecodeReasonCode(microservice.MS_REREG_EXCH_FAILED)); err != nil {
 				return fmt.Errorf(logString(fmt.Sprintf("Failed to update microservice upgrading failure reason for microservice def %v version %v id %v. %v", new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
 			}
@@ -336,7 +339,7 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 func (w *GovernanceWorker) RollbackMicroservice(msdef *persistence.MicroserviceDefinition) error {
 	for true {
 		// get next lower version
-		if new_msdef, err := microservice.GetRollbackMicroserviceDef(w.exchHandlers.GetHTTPMicroserviceHandler(), msdef, w.deviceId, w.deviceToken, w.db); err != nil {
+		if new_msdef, err := microservice.GetRollbackMicroserviceDef(exchange.GetHTTPMicroserviceHandler(w), msdef, w.db); err != nil {
 			return fmt.Errorf(logString(fmt.Sprintf("Error finding the new microservice definition to downgrade to for %v %v version key %v. error: %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
 		} else if new_msdef == nil { //no more to try, exit out
 			glog.Warningf(logString(fmt.Sprintf("Unable to find the microservice definition to downgrade to for %v %v version key %v. error: %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
@@ -468,7 +471,7 @@ func (w *GovernanceWorker) handleMicroserviceUpgrade(msdef_id string) {
 		glog.Errorf(logString(fmt.Sprintf("error getting microservice definitions %v from db. %v", msdef_id, err)))
 	} else if microservice.MicroserviceReadyForUpgrade(msdef, w.db) {
 		// find the new ms def to upgrade to
-		if new_msdef, err := microservice.GetUpgradeMicroserviceDef(w.exchHandlers.GetHTTPMicroserviceHandler(), msdef, w.deviceId, w.deviceToken, w.db); err != nil {
+		if new_msdef, err := microservice.GetUpgradeMicroserviceDef(exchange.GetHTTPMicroserviceHandler(w), msdef, w.db); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("Error finding the new microservice definition to upgrade to for %v version %v. %v", msdef.SpecRef, msdef.Version, err)))
 		} else if new_msdef == nil {
 			glog.V(5).Infof(logString(fmt.Sprintf("No changes for microservice definition %v, no need to upgrade.", msdef.SpecRef)))
@@ -507,7 +510,7 @@ func (w *GovernanceWorker) handleMicroserviceUpgradeExecStateChange(msdef *persi
 
 		// finish up part2 of the upgrade process:
 		// create a new policy file and register the new microservice in exchange
-		if err := microservice.GenMicroservicePolicy(msdef, w.Config.Edge.PolicyPath, w.db, w.Messages(), exchange.GetOrg(w.deviceId)); err != nil {
+		if err := microservice.GenMicroservicePolicy(msdef, w.Config.Edge.PolicyPath, w.db, w.Messages(), exchange.GetOrg(w.GetExchangeId())); err != nil {
 			if _, err := persistence.MSDefUpgradeFailed(w.db, msdef.Id, microservice.MS_REREG_EXCH_FAILED, microservice.DecodeReasonCode(microservice.MS_REREG_EXCH_FAILED)); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("Failed to update microservice upgrading failure reason for microservice def %v version %v id %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
 				needs_rollback = true

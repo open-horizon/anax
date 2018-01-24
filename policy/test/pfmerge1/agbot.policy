@@ -3,6 +3,7 @@
         "name": "agbot policy",
         "version": "2.0"
     },
+    "useServices": true,
     "apiSpec": [
         {
             "specRef": "http://mycompany.com/dm/cpu_temp",

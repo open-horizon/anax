@@ -48,8 +48,8 @@ func FindHorizonDeviceForOutput(db *bolt.DB) (*HorizonDevice, error) {
 // Given a demarshalled HorizonDevice object, validate it and save it, returning any errors.
 func CreateHorizonDevice(device *HorizonDevice,
 	errorhandler ErrorHandler,
-	getOrg exchange.OrgHandler,
-	getPatterns exchange.PatternHandler,
+	getOrg exchange.OrgHandlerWithContext,
+	getPatterns exchange.PatternHandlerWithContext,
 	em *events.EventStateManager,
 	db *bolt.DB) (bool, *HorizonDevice, *HorizonDevice) {
 
@@ -113,7 +113,7 @@ func CreateHorizonDevice(device *HorizonDevice,
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("organization %v not found in exchange, error: %v", *device.Org, err), "device.organization")), nil, nil
 	}
 
-	// Verify that the input pattern is defined in the exchange. A device (or node) canonly use patterns that are defined within its own org.
+	// Verify that the input pattern is defined in the exchange. A device (or node) can only use patterns that are defined within its own org.
 	if device.Pattern != nil && *device.Pattern != "" {
 		if patternDefs, err := getPatterns(*device.Org, *device.Pattern, deviceId, *device.Token); err != nil {
 			return errorhandler(NewAPIUserInputError(fmt.Sprintf("error searching for pattern %v in exchange, error: %v", *device.Pattern, err), "device.pattern")), nil, nil
@@ -128,7 +128,7 @@ func CreateHorizonDevice(device *HorizonDevice,
 		haDevice = true
 	}
 
-	pDev, err := persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, haDevice, *device.Org, *device.Pattern, CONFIGSTATE_CONFIGURING)
+	pDev, err := persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, haDevice, *device.Org, *device.Pattern, CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("error persisting new device registration: %v", err))), nil, nil
 	}
@@ -221,7 +221,7 @@ func DeleteHorizonDevice(removeNode string,
 	}
 
 	// Mark the device as "unconfigure in progress"
-	_, err = pDevice.SetDeviceState(db, CONFIGSTATE_UNCONFIGURING)
+	_, err = pDevice.SetConfigstate(db, pDevice.Id, CONFIGSTATE_UNCONFIGURING, pDevice.ServiceBased)
 	if err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("error persisting unconfiguring on node object: %v", err)))
 	}

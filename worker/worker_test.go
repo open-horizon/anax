@@ -373,8 +373,9 @@ func NewTestWorker(name string, cfg *config.HorizonConfig, cc int, startSub int)
 		nonBlockDuration = 0
 	}
 
+	ec := NewExchangeContext("myorg/myid", "token", cfg.Edge.ExchangeURL, false, cfg.Collaborators.HTTPClientFactory)
 	worker := &TestWorker{
-		BaseWorker:       NewBaseWorker(name, cfg),
+		BaseWorker:       NewBaseWorker(name, cfg, ec),
 		CommandCount:     0,
 		ExpectedCommands: cc,
 		NumSubworkers:    startSub,

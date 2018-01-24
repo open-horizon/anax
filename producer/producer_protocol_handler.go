@@ -18,10 +18,10 @@ import (
 	"time"
 )
 
-func CreateProducerPH(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, id string, token string) ProducerProtocolHandler {
-	if handler := NewCSProtocolHandler(name, cfg, db, pm, id, token); handler != nil {
+func CreateProducerPH(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, ec exchange.ExchangeContext) ProducerProtocolHandler {
+	if handler := NewCSProtocolHandler(name, cfg, db, pm, ec); handler != nil {
 		return handler
-	} else if handler := NewBasicProtocolHandler(name, cfg, db, pm, id, token); handler != nil {
+	} else if handler := NewBasicProtocolHandler(name, cfg, db, pm, ec); handler != nil {
 		return handler
 	} // Add new producer side protocol handlers here
 	return nil
@@ -52,12 +52,11 @@ type ProducerProtocolHandler interface {
 }
 
 type BaseProducerProtocolHandler struct {
-	name     string
-	pm       *policy.PolicyManager
-	db       *bolt.DB
-	config   *config.HorizonConfig
-	deviceId string
-	token    string
+	name   string
+	pm     *policy.PolicyManager
+	db     *bolt.DB
+	config *config.HorizonConfig
+	ec     exchange.ExchangeContext
 }
 
 func (w *BaseProducerProtocolHandler) GetSendMessage() func(mt interface{}, pay []byte) error {
@@ -109,7 +108,7 @@ func (w *BaseProducerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 		resp = new(exchange.PostDeviceResponse)
 		targetURL := w.config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(messageTarget.ReceiverExchangeId) + "/agbots/" + exchange.GetId(messageTarget.ReceiverExchangeId) + "/msgs"
 		for {
-			if err, tpErr := exchange.InvokeExchange(w.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "POST", targetURL, w.deviceId, w.token, pm, &resp); err != nil {
+			if err, tpErr := exchange.InvokeExchange(w.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "POST", targetURL, w.ec.GetExchangeId(), w.ec.GetExchangeToken(), pm, &resp); err != nil {
 				return err
 			} else if tpErr != nil {
 				glog.Warningf(tpErr.Error())
@@ -129,9 +128,22 @@ func (w *BaseProducerProtocolHandler) GetWorkloadResolver() func(wURL string, wO
 
 func (w *BaseProducerProtocolHandler) workloadResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
 
-	asl, _, err := exchange.WorkloadResolver(w.config.Collaborators.HTTPClientFactory, wURL, wOrg, wVersion, wArch, w.config.Edge.ExchangeURL, w.deviceId, w.token)
+	asl, _, err := exchange.GetHTTPWorkloadResolverHandler(w.ec)(wURL, wOrg, wVersion, wArch)
 	if err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("unable to resolve workload, error %v", err)))
+	}
+	return asl, err
+}
+
+func (w *BaseProducerProtocolHandler) GetServiceResolver() func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
+	return w.serviceResolver
+}
+
+func (w *BaseProducerProtocolHandler) serviceResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
+
+	asl, _, err := exchange.GetHTTPServiceResolverHandler(w.ec)(wURL, wOrg, wVersion, wArch)
+	if err != nil {
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("unable to resolve service, error %v", err)))
 	}
 	return asl, err
 }
@@ -153,7 +165,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 	} else if pemFiles, err := w.config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.config.Edge.PublicKeyPath, w.config.UserPublicKeyPath()); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting pem key files: %v", err)))
 		handled = true
-	} else if err := tcPolicy.Is_Self_Consistent(pemFiles, w.GetWorkloadResolver()); err != nil {
+	} else if err := tcPolicy.Is_Self_Consistent(pemFiles, w.GetWorkloadResolver(), w.GetServiceResolver()); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking self consistency of TsAndCs, %v", err)))
 		handled = true
 	} else if pmatch, err := w.MatchPattern(tcPolicy); err != nil {
@@ -172,7 +184,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error creating message target: %v", err)))
 	} else {
 		handled = true
-		if r, err := ph.DecideOnProposal(proposal, w.deviceId, exchange.GetOrg(w.deviceId), runningBCs, messageTarget, w.sendMessage); err != nil {
+		if r, err := ph.DecideOnProposal(proposal, w.ec.GetExchangeId(), exchange.GetOrg(w.ec.GetExchangeId()), runningBCs, messageTarget, w.sendMessage); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("respond to proposal with error: %v", err)))
 		} else {
 			return handled, r, tcPolicy
@@ -189,7 +201,7 @@ func (w *BaseProducerProtocolHandler) saveSigningKeys(pol *policy.Policy) error 
 		return nil
 	}
 
-	exchHandlers := exchange.NewExchangeApiHandlers(w.config)
+	objSigningHandler := exchange.GetHTTPObjectSigningKeysHandler(w.ec)
 	errHandler := func(keyname string) api.ErrorHandler {
 		return func(err error) bool {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error when saving the signing key file %v to anax. %v", keyname, err)))
@@ -199,7 +211,7 @@ func (w *BaseProducerProtocolHandler) saveSigningKeys(pol *policy.Policy) error 
 
 	// save signing keys for pattern
 	if pol.PatternId != "" {
-		if key_map, err := exchHandlers.GetHTTPObjectSigningKeysHandler()(exchange.PATTERN, exchange.GetId(pol.PatternId), exchange.GetOrg(pol.PatternId), "", "", w.deviceId, w.token); err != nil {
+		if key_map, err := objSigningHandler(exchange.PATTERN, exchange.GetId(pol.PatternId), exchange.GetOrg(pol.PatternId), "", ""); err != nil {
 			return fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting signing keys for pattern from the exchange: %v. %v", pol.PatternId, err)))
 		} else if key_map != nil {
 			for key, content := range key_map {
@@ -215,9 +227,28 @@ func (w *BaseProducerProtocolHandler) saveSigningKeys(pol *policy.Policy) error 
 	}
 
 	// save signing keys for workloads
-	if pol.Workloads != nil {
+	if pol.Workloads != nil && !pol.IsServiceBased() {
 		for _, wl := range pol.Workloads {
-			if key_map, err := exchHandlers.GetHTTPObjectSigningKeysHandler()(exchange.WORKLOAD, wl.WorkloadURL, wl.Org, wl.Version, wl.Arch, w.deviceId, w.token); err != nil {
+			if key_map, err := objSigningHandler(exchange.WORKLOAD, wl.WorkloadURL, wl.Org, wl.Version, wl.Arch); err != nil {
+				return fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting signing keys for workload from the exchange: %v %v %v %v. %v", wl.WorkloadURL, wl.Org, wl.Version, wl.Arch, err)))
+			} else if key_map != nil {
+				for key, content := range key_map {
+					//add .pem the end of the keyname if it does not have none.
+					fn := key
+					if !strings.HasSuffix(key, ".pem") {
+						fn = fmt.Sprintf("%v.pem", key)
+					}
+
+					api.UploadPublicKey(fn, []byte(content), w.config, errHandler(fn))
+				}
+			}
+		}
+	}
+
+	// save signing keys for services
+	if pol.Workloads != nil && pol.IsServiceBased() {
+		for _, wl := range pol.Workloads {
+			if key_map, err := objSigningHandler(exchange.SERVICE, wl.WorkloadURL, wl.Org, wl.Version, wl.Arch); err != nil {
 				return fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting signing keys for workload from the exchange: %v %v %v %v. %v", wl.WorkloadURL, wl.Org, wl.Version, wl.Arch, err)))
 			} else if key_map != nil {
 				for key, content := range key_map {
@@ -305,9 +336,9 @@ func (w *BaseProducerProtocolHandler) TerminateAgreement(ag *persistence.Establi
 		bcType, bcName, bcOrg := pph.GetKnownBlockchain(ag)
 		if aph := pph.AgreementProtocolHandler(bcType, bcName, bcOrg); aph == nil {
 			glog.Warningf(BPPHlogString(w.Name(), fmt.Sprintf("cannot terminate agreement %v, agreement protocol handler doesnt exist yet.", ag.CurrentAgreementId)))
-		} else if policies, err := w.pm.GetPolicyList(exchange.GetOrg(w.deviceId), pPolicy); err != nil {
+		} else if policies, err := w.pm.GetPolicyList(exchange.GetOrg(w.ec.GetExchangeId()), pPolicy); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("agreement %v error getting policy list: %v", ag.CurrentAgreementId, err)))
-		} else if err := aph.TerminateAgreement(policies, ag.CounterPartyAddress, ag.CurrentAgreementId, exchange.GetOrg(w.deviceId), reason, mt, pph.GetSendMessage()); err != nil {
+		} else if err := aph.TerminateAgreement(policies, ag.CounterPartyAddress, ag.CurrentAgreementId, exchange.GetOrg(w.ec.GetExchangeId()), reason, mt, pph.GetSendMessage()); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error terminating agreement %v on the blockchain: %v", ag.CurrentAgreementId, err)))
 		}
 	}
@@ -317,7 +348,7 @@ func (w *BaseProducerProtocolHandler) GetAgbotMessageEndpoint(agbotId string) (s
 
 	glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("retrieving agbot %v msg endpoint from exchange", agbotId)))
 
-	if ag, err := w.getAgbot(agbotId, w.config.Edge.ExchangeURL, w.deviceId, w.token); err != nil {
+	if ag, err := w.getAgbot(agbotId, w.ec.GetExchangeURL(), w.ec.GetExchangeId(), w.ec.GetExchangeToken()); err != nil {
 		return "", nil, err
 	} else {
 		glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("retrieved agbot %v msg endpoint from exchange %v", agbotId, ag.MsgEndPoint)))

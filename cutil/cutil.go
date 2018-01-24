@@ -273,3 +273,9 @@ func ParseDockerImagePath(imagePath string) (domain, path, tag, digest string) {
 	}
 	return
 }
+
+func CopyMap(m1 map[string]interface{}, m2 map[string]interface{}) {
+	for k, v := range m1 {
+		m2[k] = v
+	}
+}
