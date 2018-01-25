@@ -190,7 +190,7 @@ func RequiredWithDefaultEnvVar(flag *string, envVarName, errMsg string) *string 
 		return &newFlag
 	}
 	Fatal(CLI_INPUT_ERROR, errMsg)
-	return flag 		// won't ever happen, here just to make intellij happy
+	return flag // won't ever happen, here just to make intellij happy
 }
 
 // GetHorizonUrlBase returns the base part of the horizon api url (which can be overridden by env var HORIZON_URL)

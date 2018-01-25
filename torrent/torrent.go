@@ -183,7 +183,7 @@ func (b *TorrentWorker) CommandHandler(command worker.Command) bool {
 			pemFiles, deploymentDesc, err := processDeployment(b.Config, lc.ContainerConfig())
 			if err != nil {
 				glog.Errorf("Failed to process deployment description and signature after agreement negotiation: %v", err)
-				b.Messages() <- events.NewTorrentMessage(events.IMAGE_FETCHED, deploymentDesc, lc)
+				b.Messages() <- events.NewTorrentMessage(events.IMAGE_FETCH_ERROR, deploymentDesc, lc)
 				return true
 			}
 

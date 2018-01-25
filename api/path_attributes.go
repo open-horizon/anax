@@ -64,7 +64,9 @@ func parseCompute(errorhandler ErrorHandler, permitEmpty bool, given *Attribute)
 	if !exists {
 		return nil, errorhandler(NewAPIUserInputError("missing key", "compute.mappings.ram")), nil
 	}
-	if ram, err = r.(json.Number).Int64(); err != nil {
+	if _, ok := r.(json.Number); !ok {
+		return nil, errorhandler(NewAPIUserInputError("expected integer", "compute.mappings.ram")), nil
+	} else if ram, err = r.(json.Number).Int64(); err != nil {
 		return nil, errorhandler(NewAPIUserInputError("expected integer", "compute.mappings.ram")), nil
 	}
 	var cpus int64
@@ -72,7 +74,9 @@ func parseCompute(errorhandler ErrorHandler, permitEmpty bool, given *Attribute)
 	if !exists {
 		return nil, errorhandler(NewAPIUserInputError("missing key", "compute.mappings.cpus")), nil
 	}
-	if cpus, err = c.(json.Number).Int64(); err != nil {
+	if _, ok := c.(json.Number); !ok {
+		return nil, errorhandler(NewAPIUserInputError("expected integer", "compute.mappings.cpus")), nil
+	} else if cpus, err = c.(json.Number).Int64(); err != nil {
 		return nil, errorhandler(NewAPIUserInputError("expected integer", "compute.mappings.cpus")), nil
 	}
 
@@ -95,7 +99,9 @@ func parseLocation(errorhandler ErrorHandler, permitEmpty bool, given *Attribute
 	if !exists {
 		return nil, errorhandler(NewAPIUserInputError("missing key", "location.mappings.lat")), nil
 	}
-	if lat, err = la.(json.Number).Float64(); err != nil {
+	if _, ok := la.(json.Number); !ok {
+		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("expected float but is %T", la), "location.mappings.lat")), nil
+	} else if lat, err = la.(json.Number).Float64(); err != nil {
 		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("expected float but is %T", la), "location.mappings.lat")), nil
 	}
 
@@ -104,7 +110,9 @@ func parseLocation(errorhandler ErrorHandler, permitEmpty bool, given *Attribute
 	if !exists {
 		return nil, errorhandler(NewAPIUserInputError("missing key", "location.mappings.lon")), nil
 	}
-	if lon, err = lo.(json.Number).Float64(); err != nil {
+	if _, ok := lo.(json.Number); !ok {
+		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("expected float but is %T", la), "location.mappings.lon")), nil
+	} else if lon, err = lo.(json.Number).Float64(); err != nil {
 		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("expected float but is %T", lo), "location.mappings.lon")), nil
 	}
 

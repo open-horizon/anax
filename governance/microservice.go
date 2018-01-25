@@ -109,7 +109,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string) (*persistence.Micros
 					// convert the user input from the service attributes to env variables
 					if attrs, err := persistence.FindApplicableAttributes(w.db, msdef.SpecRef); err != nil {
 						return nil, fmt.Errorf(logString(fmt.Sprintf("Unable to fetch microservice preferences for %v. Err: %v", msdef.SpecRef, err)))
-					} else if envAdds, err := persistence.AttributesToEnvvarMap(attrs, config.ENVVAR_PREFIX); err != nil {
+					} else if envAdds, err := persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX); err != nil {
 						return nil, fmt.Errorf(logString(fmt.Sprintf("Failed to convert microservice preferences to environmental variables for %v. Err: %v", msdef.SpecRef, err)))
 					} else {
 						envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = exchange.GetId(w.deviceId)

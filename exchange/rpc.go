@@ -673,6 +673,10 @@ type WorkloadDefinition struct {
 	LastUpdated string               `json:"lastUpdated"`
 }
 
+func (u UserInput) String() string {
+	return fmt.Sprintf("Name: %v, Label: %v, Type: %v, DefaultValue: %v", u.Name, u.Label, u.Type, u.DefaultValue)
+}
+
 func (w *WorkloadDefinition) String() string {
 	return fmt.Sprintf("Owner: %v, "+
 		"Label: %v, "+

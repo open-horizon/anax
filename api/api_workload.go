@@ -56,7 +56,7 @@ func (a *API) workloadConfig(w http.ResponseWriter, r *http.Request) {
 
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
-		// Gather all the agreements from the local database and format them for output.
+		// Gather all the workload configs from the local database and format them for output.
 		if out, err := FindWorkloadConfigForOutput(a.db); err != nil {
 			errorhandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
 		} else {

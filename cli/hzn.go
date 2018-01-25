@@ -212,25 +212,38 @@ Environment Variables:
 
 	devWorkloadCmd := devCmd.Command("workload", "For working with a workload project.")
 	devWorkloadNewCmd := devWorkloadCmd.Command("new", "Create a new workload project.")
+	devWorkloadNewCmdOrg := devWorkloadNewCmd.Flag("org", "The Org id that the workload is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is ued.").Short('o').String()
 	devWorkloadStartTestCmd := devWorkloadCmd.Command("start", "Run a workload in a mocked Horizon Agent environment.")
 	devWorkloadUserInputFile := devWorkloadStartTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
 	devWorkloadStopTestCmd := devWorkloadCmd.Command("stop", "Stop a workload that is running in a mocked Horizon Agent environment.")
-	devWorkloadDeployCmd := devWorkloadCmd.Command("deploy", "Deploy a workload to a Horizon Exchange.")
+	devWorkloadDeployCmd := devWorkloadCmd.Command("publish", "Publish a workload to a Horizon Exchange.")
+	devWorkloadDeployCmdUserPw := devWorkloadDeployCmd.Flag("user-pw", "Horizon Exchange user credentials to create exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
+	devWorkloadKeyfile := devWorkloadDeployCmd.Flag("keyFile", "File containing a private key used to sign the deployment configuration.").Short('k').String()
 	devWorkloadValidateCmd := devWorkloadCmd.Command("verify", "Validate the project for completeness and schema compliance.")
 	devWorkloadVerifyUserInputFile := devWorkloadValidateCmd.Flag("userInputFile", "File containing user input values for verification of a project.").Short('f').String()
 
 	devMicroserviceCmd := devCmd.Command("microservice", "For working with a microservice project.")
 	devMicroserviceNewCmd := devMicroserviceCmd.Command("new", "Create a new microservice project.")
+	devMicroserviceNewCmdOrg := devMicroserviceNewCmd.Flag("org", "The Org id that the microservice is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is ued.").Short('o').String()
 	devMicroserviceStartTestCmd := devMicroserviceCmd.Command("start", "Run a microservice in a mocked Horizon Agent environment.")
 	devMicroserviceUserInputFile := devMicroserviceStartTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
 	devMicroserviceStopTestCmd := devMicroserviceCmd.Command("stop", "Stop a microservice that is running in a mocked Horizon Agent environment.")
-	devMicroserviceDeployCmd := devMicroserviceCmd.Command("deploy", "Deploy a microservice to a Horizon Exchange.")
+	devMicroserviceDeployCmd := devMicroserviceCmd.Command("publish", "Publish a microservice to a Horizon Exchange.")
+	devMicroserviceDeployCmdUserPw := devMicroserviceDeployCmd.Flag("user-pw", "Horizon Exchange user credentials to create exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
+	devMicroserviceKeyfile := devMicroserviceDeployCmd.Flag("keyFile", "File containing a private key used to sign the deployment configuration.").Short('k').String()
 	devMicroserviceValidateCmd := devMicroserviceCmd.Command("verify", "Validate the project for completeness and schema compliance.")
 	devMicroserviceVerifyUserInputFile := devMicroserviceValidateCmd.Flag("userInputFile", "File containing user input values for verification of a project.").Short('f').String()
 
 	devDependencyCmd := devCmd.Command("dependency", "For working with project dependencies.")
+	devDependencyCmdProject := devDependencyCmd.Flag("project", "Horizon project containing the definition of a dependency. Mutually exclusive with -s -o --ver -a.").Short('p').ExistingDir()
+	devDependencyCmdSpecRef := devDependencyCmd.Flag("specRef", "The URL of the microservice dependency in the exchange. Mutually exclusive with -p.").Short('s').String()
+	devDependencyCmdOrg := devDependencyCmd.Flag("org", "The Org of the microservice dependency in the exchange. Mutually exclusive with -p.").Short('o').String()
+	devDependencyCmdVersion := devDependencyCmd.Flag("ver", "(optional) The Version of the microservice dependency in the exchange. Mutually exclusive with -p.").String()
+	devDependencyCmdArch := devDependencyCmd.Flag("arch", "(optional) The hardware Architecture of the microservice dependency in the exchange. Mutually exclusive with -p.").Short('a').String()
 	devDependencyFetchCmd := devDependencyCmd.Command("fetch", "Retrieving Horizon metadata for a new dependency.")
+	devDependencyFetchCmdUserPw := devDependencyFetchCmd.Flag("user-pw", "Horizon Exchange user credentials to query exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
 	devDependencyListCmd := devDependencyCmd.Command("list", "List all dependencies.")
+	devDependencyRemoveCmd := devDependencyCmd.Command("remove", "Remove a project dependency.")
 
 	agbotCmd := app.Command("agbot", "List and manage Horizon agreement bot resources.")
 
@@ -244,11 +257,11 @@ Environment Variables:
 
 	app.Version("Run 'hzn version' to see the Horizon version.")
 	/* trying to override the base --version behavior does not work....
-		fmt.Printf("version: %v\n", *version)
-		if *version {
-			node.Version()
-			os.Exit(0)
-		}
+	fmt.Printf("version: %v\n", *version)
+	if *version {
+		node.Version()
+		os.Exit(0)
+	}
 	*/
 
 	// Parse cmd and apply env var defaults
@@ -355,7 +368,7 @@ Environment Variables:
 	case unregisterCmd.FullCommand():
 		unregister.DoIt(*forceUnregister, *removeNodeUnregister)
 	case devWorkloadNewCmd.FullCommand():
-		dev.WorkloadNew(*devHomeDirectory)
+		dev.WorkloadNew(*devHomeDirectory, *devWorkloadNewCmdOrg)
 	case devWorkloadStartTestCmd.FullCommand():
 		dev.WorkloadStartTest(*devHomeDirectory, *devWorkloadUserInputFile)
 	case devWorkloadStopTestCmd.FullCommand():
@@ -363,9 +376,9 @@ Environment Variables:
 	case devWorkloadValidateCmd.FullCommand():
 		dev.WorkloadValidate(*devHomeDirectory, *devWorkloadVerifyUserInputFile)
 	case devWorkloadDeployCmd.FullCommand():
-		dev.WorkloadDeploy(*devHomeDirectory)
+		dev.WorkloadDeploy(*devHomeDirectory, *devWorkloadKeyfile, *devWorkloadDeployCmdUserPw)
 	case devMicroserviceNewCmd.FullCommand():
-		dev.MicroserviceNew(*devHomeDirectory)
+		dev.MicroserviceNew(*devHomeDirectory, *devMicroserviceNewCmdOrg)
 	case devMicroserviceStartTestCmd.FullCommand():
 		dev.MicroserviceStartTest(*devHomeDirectory, *devMicroserviceUserInputFile)
 	case devMicroserviceStopTestCmd.FullCommand():
@@ -373,11 +386,13 @@ Environment Variables:
 	case devMicroserviceValidateCmd.FullCommand():
 		dev.MicroserviceValidate(*devHomeDirectory, *devMicroserviceVerifyUserInputFile)
 	case devMicroserviceDeployCmd.FullCommand():
-		dev.MicroserviceDeploy(*devHomeDirectory)
+		dev.MicroserviceDeploy(*devHomeDirectory, *devMicroserviceKeyfile, *devMicroserviceDeployCmdUserPw)
 	case devDependencyFetchCmd.FullCommand():
-		dev.DependencyFetch(*devHomeDirectory)
+		dev.DependencyFetch(*devHomeDirectory, *devDependencyCmdProject, *devDependencyCmdSpecRef, *devDependencyCmdOrg, *devDependencyCmdVersion, *devDependencyCmdArch, *devDependencyFetchCmdUserPw)
 	case devDependencyListCmd.FullCommand():
 		dev.DependencyList(*devHomeDirectory)
+	case devDependencyRemoveCmd.FullCommand():
+		dev.DependencyRemove(*devHomeDirectory, *devDependencyCmdSpecRef, *devDependencyCmdVersion, *devDependencyCmdArch)
 	case agbotAgreementListCmd.FullCommand():
 		agreementbot.AgreementList(*agbotlistArchivedAgreements, *agbotAgreement)
 	case agbotAgreementCancelCmd.FullCommand():

@@ -2,8 +2,10 @@ package exchange
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/rsapss-tool/sign"
 	"github.com/open-horizon/rsapss-tool/verify"
@@ -14,17 +16,54 @@ import (
 
 // This is used when reading json file the user gives us as input to create the workload struct
 type WorkloadFile struct {
-	Org       string                        `json:"org"`    // optional
-	Label       string                        `json:"label"`
-	Description string                        `json:"description"`
-	Public      bool                          `json:"public"`
-	WorkloadURL string                        `json:"workloadUrl"`
-	Version     string                        `json:"version"`
-	Arch        string                        `json:"arch"`
-	DownloadURL string                        `json:"downloadUrl"`
-	APISpecs    []exchange.APISpec            `json:"apiSpec"`
-	UserInputs  []exchange.UserInput          `json:"userInput"`
+	Org         string               `json:"org"` // optional
+	Label       string               `json:"label"`
+	Description string               `json:"description"`
+	Public      bool                 `json:"public"`
+	WorkloadURL string               `json:"workloadUrl"`
+	Version     string               `json:"version"`
+	Arch        string               `json:"arch"`
+	DownloadURL string               `json:"downloadUrl"`
+	APISpecs    []exchange.APISpec   `json:"apiSpec"`
+	UserInputs  []exchange.UserInput `json:"userInput"`
 	Workloads   []WorkloadDeployment `json:"workloads"`
+}
+
+// Returns true if the workload definition userinputs define the variable.
+func (w *WorkloadFile) DefinesVariable(name string) string {
+	for _, ui := range w.UserInputs {
+		if ui.Name == name && ui.Type != "" {
+			return ui.Type
+		}
+	}
+	return ""
+}
+
+// Convert the first Deployment Configuration to a full Deployment Description.
+func (self *WorkloadFile) ConvertToDeploymentDescription() (*DeploymentConfig, *containermessage.DeploymentDescription, error) {
+	for _, wl := range self.Workloads {
+		return &wl.Deployment, &containermessage.DeploymentDescription{
+			Services: wl.Deployment.Services,
+			ServicePattern: containermessage.Pattern{
+				Shared: map[string][]string{},
+			},
+			Infrastructure: true,
+			Overrides:      map[string]*containermessage.Service{},
+		}, nil
+	}
+	return nil, nil, errors.New(fmt.Sprintf("has no containers to execute"))
+}
+
+// Verify that non default user inputs are set in the input map.
+func (self *WorkloadFile) RequiredVariablesAreSet(setVars map[string]interface{}) error {
+	for _, ui := range self.UserInputs {
+		if ui.DefaultValue == "" && ui.Name != "" {
+			if _, ok := setVars[ui.Name]; !ok {
+				return errors.New(fmt.Sprintf("user input %v has no default value and is not set", ui.Name))
+			}
+		}
+	}
+	return nil
 }
 
 // This is used as the input to the exchange to create the workload
@@ -39,28 +78,6 @@ type WorkloadInput struct {
 	APISpecs    []exchange.APISpec            `json:"apiSpec"`
 	UserInputs  []exchange.UserInput          `json:"userInput"`
 	Workloads   []exchange.WorkloadDeployment `json:"workloads"`
-}
-
-// Convert default user inputs to environment variables in a map. The input map is modified
-// by this function. If a variable is already in the input map, it is not modified.
-func (w *WorkloadInput) AddDefaultUserInputs(envmap map[string]string) {
-	for _, ui := range w.UserInputs {
-		if ui.Name != "" && ui.DefaultValue != "" {
-			if _, ok := envmap[ui.Name]; !ok {
-				envmap[ui.Name] = ui.DefaultValue
-			}
-		}
-	}
-}
-
-// Returns true if the workload definition userinputs define the variable.
-func (w *WorkloadInput) DefinesVariable(name string) string {
-	for _, ui := range w.UserInputs {
-		if ui.Name == name && ui.Type != "" {
-			return ui.Type
-		}
-	}
-	return ""
 }
 
 func WorkloadList(org, userPw, workload string, namesOnly bool) {
@@ -112,6 +129,12 @@ func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath string) {
 	if workFile.Org != "" && workFile.Org != org {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", workFile.Org, org)
 	}
+	workFile.SignAndPublish(org, userPw, keyFilePath)
+
+}
+
+// Sign and publish the workload definition. This is a function that is reusable across different hzn commands.
+func (workFile *WorkloadFile) SignAndPublish(org, userPw, keyFilePath string) {
 	workInput := WorkloadInput{Label: workFile.Label, Description: workFile.Description, Public: workFile.Public, WorkloadURL: workFile.WorkloadURL, Version: workFile.Version, Arch: workFile.Arch, DownloadURL: workFile.DownloadURL, APISpecs: workFile.APISpecs, UserInputs: workFile.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(workFile.Workloads))}
 
 	// Loop thru the workloads array and sign the deployment strings
@@ -152,7 +175,7 @@ func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath string) {
 		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads", cliutils.OrgAndCreds(org, userPw), []int{201}, workInput)
 	}
 
-	// Tell the to push the images to the docker registry
+	// Tell the user to push the images to the docker registry
 	if len(imageList) > 0 {
 		//todo: should we just push the docker images for them?
 		fmt.Println("If you haven't already, push your docker images to the registry:")
