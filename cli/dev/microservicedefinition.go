@@ -95,7 +95,8 @@ func ValidateMicroserviceDefinition(directory string) error {
 		return errors.New(fmt.Sprintf("%v: org must be set.", filePath))
 	} else {
 		for ix, wl := range msDef.Workloads {
-			if err := wl.Deployment.CanStartStop(); err != nil {
+			depConfig := cliexchange.ConvertToDeploymentConfig(wl.Deployment)
+			if err := depConfig.CanStartStop(); err != nil {
 				return errors.New(fmt.Sprintf("%v: workloads array element at index %v, %v", filePath, ix, err))
 			}
 		}

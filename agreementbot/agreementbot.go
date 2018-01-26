@@ -175,7 +175,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 
 	// If there is no Agbot config, we will terminate
 	if w.Config.AgreementBot == (config.AGConfig{}) {
-		glog.Errorf("AgreementBotWorker terminating, no AgreementBot config.")
+		glog.Warningf("AgreementBotWorker terminating, no AgreementBot config.")
 		return false
 	} else if w.db == nil {
 		glog.Errorf("AgreementBotWorker terminating, no AgreementBot database configured.")

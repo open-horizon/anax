@@ -200,7 +200,7 @@ func (w *AgreementWorker) Initialize() bool {
 
 	// Publish what we have for the world to see
 	if err := w.advertiseAllPolicies(w.BaseWorker.Manager.Config.Edge.PolicyPath); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
+		glog.Warningf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
 	}
 
 	glog.Info(logString(fmt.Sprintf("waiting for commands.")))
@@ -230,7 +230,7 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 
 			// Publish what we have for the world to see
 			if err := w.advertiseAllPolicies(w.BaseWorker.Manager.Config.Edge.PolicyPath); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
+				glog.Warningf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
 			}
 		}
 

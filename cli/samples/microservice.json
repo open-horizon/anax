@@ -11,9 +11,15 @@
   "userInput": [],
   "workloads": [
     {
-      "deployment": "{\"services\":{\"cpu\":{\"image\":\"openhorizon/example_ms_x86_cpu:1.2.2\"}}}",
+      "deployment": {
+        "services": {
+          "cpu": {
+            "image": "openhorizon/example_ms_x86_cpu:1.2.2"
+          }
+        }
+      },
       "deployment_signature": "",
-      "torrent": "{\"url\":\"\",\"signature\":\"\"}"
+      "torrent": ""
     }
   ]
 }

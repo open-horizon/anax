@@ -20,11 +20,10 @@ type ExchangePatterns struct {
 }
 
 type PatternOutput struct {
-	Owner       string `json:"owner"`
-	Label       string `json:"label"`
-	Description string `json:"description"`
-	Public      bool   `json:"public"`
-	//Workloads          []exchange.WorkloadReference `json:"workloads"`
+	Owner              string                       `json:"owner"`
+	Label              string                       `json:"label"`
+	Description        string                       `json:"description"`
+	Public             bool                         `json:"public"`
 	Workloads          []WorkloadReference          `json:"workloads"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
 	LastUpdated        string                       `json:"lastUpdated"`
@@ -38,11 +37,12 @@ type DeploymentOverrides struct {
 	Services map[string]ServiceOverrides `json:"services"`
 }
 type WorkloadChoiceFile struct {
-	Version                      string                    `json:"version"`  // the version of the workload
-	Priority                     exchange.WorkloadPriority `json:"priority"` // the highest priority workload is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
-	Upgrade                      exchange.UpgradePolicy    `json:"upgradePolicy"`
-	DeploymentOverrides          DeploymentOverrides       `json:"deployment_overrides"`           // env var overrides for the workload
-	DeploymentOverridesSignature string                    `json:"deployment_overrides_signature"` // signature of env var overrides
+	Version  string                    `json:"version"`  // the version of the workload
+	Priority exchange.WorkloadPriority `json:"priority"` // the highest priority workload is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
+	Upgrade  exchange.UpgradePolicy    `json:"upgradePolicy"`
+	//DeploymentOverrides          DeploymentOverrides       `json:"deployment_overrides"`           // env var overrides for the workload
+	DeploymentOverrides          interface{} `json:"deployment_overrides"`           // env var overrides for the workload
+	DeploymentOverridesSignature string      `json:"deployment_overrides_signature"` // signature of env var overrides
 }
 type WorkloadReferenceFile struct {
 	WorkloadURL      string                    `json:"workloadUrl"`      // refers to a workload definition in the exchange
@@ -120,6 +120,35 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 	}
 }
 
+// Take the deployment overrides field, which we have told the json unmarshaller was unknown type (so we can handle both escaped string and struct)
+// and turn it into the DeploymentOverrides struct we really want.
+func ConvertToDeploymentOverrides(deployment interface{}) DeploymentOverrides {
+	var jsonBytes []byte
+	var err error
+
+	// Take whatever type the deployment field is and convert it to marshalled json bytes
+	switch d := deployment.(type) {
+	case string:
+		// In the original input file this was escaped json as a string, but the original unmarshal removed the escapes
+		jsonBytes = []byte(d)
+	default:
+		// The only other valid input is regular json in DeploymentConfig structure. Marshal it back to bytes so we can unmarshal it in a way that lets Go know it is a DeploymentConfig
+		jsonBytes, err = json.Marshal(d)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal body for %v: %v", d, err)
+		}
+	}
+
+	// Now unmarshal the bytes into the struct we have wanted all along
+	var depOver DeploymentOverrides
+	err = json.Unmarshal(jsonBytes, &depOver)
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json for deployment overrides field %s: %v", string(jsonBytes), err)
+	}
+
+	return depOver
+}
+
 // PatternPublish signs the MS def and puts it in the exchange
 func PatternPublish(org, userPw, jsonFilePath, keyFilePath string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
@@ -151,9 +180,10 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath string) {
 			patInput.Workloads[i].WorkloadVersions[j].Upgrade = patFile.Workloads[i].WorkloadVersions[j].Upgrade
 			var err error
 			var deployment []byte
-			deployment, err = json.Marshal(patFile.Workloads[i].WorkloadVersions[j].DeploymentOverrides)
+			depOver := ConvertToDeploymentOverrides(patFile.Workloads[i].WorkloadVersions[j].DeploymentOverrides)
+			deployment, err = json.Marshal(depOver)
 			if err != nil {
-				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment_overrides string in workload %d, workloadVersion number %d: %v", i+1, j+1, err)
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment_overrides field in workload %d, workloadVersion number %d: %v", i+1, j+1, err)
 			}
 			patInput.Workloads[i].WorkloadVersions[j].DeploymentOverrides = string(deployment)
 			patInput.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature, err = sign.Input(keyFilePath, deployment)
@@ -163,7 +193,7 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath string) {
 		}
 	}
 
-	// Create of update resource in the exchange
+	// Create or update resource in the exchange
 	exchId := filepath.Base(jsonFilePath)                     // remove the leading path
 	exchId = strings.TrimSuffix(exchId, filepath.Ext(exchId)) // strip suffix if there
 	var output string
@@ -197,7 +227,6 @@ func PatternVerify(org, userPw, pattern, keyFilePath string) {
 	for i := range pat.Workloads {
 		for j := range pat.Workloads[i].WorkloadVersions {
 			cliutils.Verbose("verifying deployment_overrides string in workload %d, workloadVersion number %d", i+1, j+1)
-			//pat.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature, err = sign.Input(keyFilePath, []byte(pat.Workloads[i].WorkloadVersions[j].DeploymentOverrides))
 			verified, err := verify.Input(keyFilePath, pat.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature, []byte(pat.Workloads[i].WorkloadVersions[j].DeploymentOverrides))
 			if err != nil {
 				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem verifying deployment_overrides string in workload %d, workloadVersion number %d with %s: %v", i+1, j+1, keyFilePath, err)
@@ -285,9 +314,10 @@ func PatternAddWorkload(org, userPw, pattern, workloadFilePath, keyFilePath stri
 		workInput.WorkloadVersions[i].Upgrade = workFile.WorkloadVersions[i].Upgrade
 		var err error
 		var deployment []byte
-		deployment, err = json.Marshal(workFile.WorkloadVersions[i].DeploymentOverrides)
+		depOver := ConvertToDeploymentOverrides(workFile.WorkloadVersions[i].DeploymentOverrides)
+		deployment, err = json.Marshal(depOver)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment_overrides string in workloadVersion element number %d: %v", i+1, err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment_overrides field in workloadVersion element number %d: %v", i+1, err)
 		}
 		workInput.WorkloadVersions[i].DeploymentOverrides = string(deployment)
 		workInput.WorkloadVersions[i].DeploymentOverridesSignature, err = sign.Input(keyFilePath, deployment)

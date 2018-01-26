@@ -30,8 +30,8 @@ type WorkloadFile struct {
 }
 
 // Returns true if the workload definition userinputs define the variable.
-func (w *WorkloadFile) DefinesVariable(name string) string {
-	for _, ui := range w.UserInputs {
+func (wf *WorkloadFile) DefinesVariable(name string) string {
+	for _, ui := range wf.UserInputs {
 		if ui.Name == name && ui.Type != "" {
 			return ui.Type
 		}
@@ -40,10 +40,11 @@ func (w *WorkloadFile) DefinesVariable(name string) string {
 }
 
 // Convert the first Deployment Configuration to a full Deployment Description.
-func (self *WorkloadFile) ConvertToDeploymentDescription() (*DeploymentConfig, *containermessage.DeploymentDescription, error) {
-	for _, wl := range self.Workloads {
-		return &wl.Deployment, &containermessage.DeploymentDescription{
-			Services: wl.Deployment.Services,
+func (wf *WorkloadFile) ConvertToDeploymentDescription() (*DeploymentConfig, *containermessage.DeploymentDescription, error) {
+	for _, wl := range wf.Workloads {
+		depConfig := ConvertToDeploymentConfig(wl.Deployment)
+		return &depConfig, &containermessage.DeploymentDescription{
+			Services: depConfig.Services,
 			ServicePattern: containermessage.Pattern{
 				Shared: map[string][]string{},
 			},
@@ -55,8 +56,8 @@ func (self *WorkloadFile) ConvertToDeploymentDescription() (*DeploymentConfig, *
 }
 
 // Verify that non default user inputs are set in the input map.
-func (self *WorkloadFile) RequiredVariablesAreSet(setVars map[string]interface{}) error {
-	for _, ui := range self.UserInputs {
+func (wf *WorkloadFile) RequiredVariablesAreSet(setVars map[string]interface{}) error {
+	for _, ui := range wf.UserInputs {
 		if ui.DefaultValue == "" && ui.Name != "" {
 			if _, ok := setVars[ui.Name]; !ok {
 				return errors.New(fmt.Sprintf("user input %v has no default value and is not set", ui.Name))
@@ -134,18 +135,18 @@ func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath string) {
 }
 
 // Sign and publish the workload definition. This is a function that is reusable across different hzn commands.
-func (workFile *WorkloadFile) SignAndPublish(org, userPw, keyFilePath string) {
-	workInput := WorkloadInput{Label: workFile.Label, Description: workFile.Description, Public: workFile.Public, WorkloadURL: workFile.WorkloadURL, Version: workFile.Version, Arch: workFile.Arch, DownloadURL: workFile.DownloadURL, APISpecs: workFile.APISpecs, UserInputs: workFile.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(workFile.Workloads))}
+func (wf *WorkloadFile) SignAndPublish(org, userPw, keyFilePath string) {
+	workInput := WorkloadInput{Label: wf.Label, Description: wf.Description, Public: wf.Public, WorkloadURL: wf.WorkloadURL, Version: wf.Version, Arch: wf.Arch, DownloadURL: wf.DownloadURL, APISpecs: wf.APISpecs, UserInputs: wf.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(wf.Workloads))}
 
 	// Loop thru the workloads array and sign the deployment strings
 	fmt.Println("Signing workload...")
 	var imageList []string
-	for i := range workFile.Workloads {
+	for i := range wf.Workloads {
 		cliutils.Verbose("signing deployment string %d", i+1)
-		workInput.Workloads[i].Torrent = workFile.Workloads[i].Torrent
 		var err error
 		var deployment []byte
-		deployment, err = json.Marshal(workFile.Workloads[i].Deployment)
+		depConfig := ConvertToDeploymentConfig(wf.Workloads[i].Deployment)
+		deployment, err = json.Marshal(depConfig)
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment string %d: %v", i+1, err)
 		}
@@ -154,9 +155,10 @@ func (workFile *WorkloadFile) SignAndPublish(org, userPw, keyFilePath string) {
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing deployment string %d with %s: %v", i+1, keyFilePath, err)
 		}
+		workInput.Workloads[i].Torrent = wf.Workloads[i].Torrent
 
 		// Gather the docker image paths to instruct to docker push at the end
-		imageList = AppendImagesFromDeploymentField(workFile.Workloads[i].Deployment, imageList)
+		imageList = AppendImagesFromDeploymentField(depConfig, imageList)
 
 		CheckTorrentField(workInput.Workloads[i].Torrent, i)
 	}

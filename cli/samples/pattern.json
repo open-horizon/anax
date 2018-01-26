@@ -10,7 +10,7 @@
       "workloadVersions": [
         {
           "version": "1.1.3",
-          "deployment_overrides": "",
+          "deployment_overrides": {},
           "deployment_overrides_signature": "",
           "priority": {},
           "upgradePolicy": {}
@@ -28,7 +28,7 @@
       "workloadVersions": [
         {
           "version": "1.1.3",
-          "deployment_overrides": "",
+          "deployment_overrides": {},
           "deployment_overrides_signature": "",
           "priority": {},
           "upgradePolicy": {}
