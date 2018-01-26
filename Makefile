@@ -48,7 +48,9 @@ $(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') $(CLI_EXECUT
 	@echo "Producing $(EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
-	    $(COMPILE_ARGS) go build -o $(EXECUTABLE)
+	    $(COMPILE_ARGS) go build -o $(EXECUTABLE); 
+	exch_ver=$(shell grep "REQUIRED_EXCHANGE_VERSION =" $(PKGPATH)/version/version.go | awk -F '"' '{print $$2}') && \
+	    echo "The required minimum exchange version is $$exch_ver"
 
 $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathlinks
 	@echo "Producing $(CLI_EXECUTABLE) given arch: $(arch)"

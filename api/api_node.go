@@ -9,6 +9,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/version"
 )
 
 func (a *API) node(w http.ResponseWriter, r *http.Request) {
@@ -40,6 +41,12 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
+		// make sure current exchange version meet the requirement
+		if err := version.VerifyExchangeVersion(a.Config.Collaborators.HTTPClientFactory, a.Config.Edge.ExchangeURL); err != nil {
+			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
+			return
+		}
+
 		orgHandler := a.exchHandlers.GetHTTPExchangeOrgHandler()
 		patternHandler := a.exchHandlers.GetHTTPExchangePatternHandler()
 
@@ -63,6 +70,12 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 
 	case "PATCH":
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		// make sure current exchange version meet the requirement
+		if err := version.VerifyExchangeVersion(a.Config.Collaborators.HTTPClientFactory, a.Config.Edge.ExchangeURL); err != nil {
+			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
+			return
+		}
 
 		var device HorizonDevice
 		body, _ := ioutil.ReadAll(r.Body)
@@ -137,6 +150,12 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 
 	case "PUT":
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		// make sure current exchange version meet the requirement
+		if err := version.VerifyExchangeVersion(a.Config.Collaborators.HTTPClientFactory, a.Config.Edge.ExchangeURL); err != nil {
+			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
+			return
+		}
 
 		orgHandler := a.exchHandlers.GetHTTPExchangeOrgHandler()
 		microserviceHandler := a.exchHandlers.GetHTTPMicroserviceHandler()

@@ -673,10 +673,6 @@ type WorkloadDefinition struct {
 	LastUpdated string               `json:"lastUpdated"`
 }
 
-func (u UserInput) String() string {
-	return fmt.Sprintf("Name: %v, Label: %v, Type: %v, DefaultValue: %v", u.Name, u.Label, u.Type, u.DefaultValue)
-}
-
 func (w *WorkloadDefinition) String() string {
 	return fmt.Sprintf("Owner: %v, "+
 		"Label: %v, "+
@@ -1410,6 +1406,14 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 			} else {
 				out := string(outBytes)
 				glog.V(5).Infof(rpclogString(fmt.Sprintf("Response to %v at %v is %v", method, url, out)))
+
+				// no need to Unmarshal the string output
+				switch (*resp).(type) {
+				case *string:
+					*resp = out
+					return nil, nil
+				}
+
 				if err := json.Unmarshal(outBytes, resp); err != nil {
 					return errors.New(fmt.Sprintf("Unable to demarshal response %v from invocation of %v at %v, error: %v", out, method, url, err)), nil
 				} else {
@@ -1491,4 +1495,31 @@ func isTransportError(err error) bool {
 
 var rpclogString = func(v interface{}) string {
 	return fmt.Sprintf("Exchange RPC %v", v)
+}
+
+func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl string) (string, error) {
+
+	glog.V(3).Infof(rpclogString("Get exchange version."))
+
+	var resp interface{}
+	resp = new(string)
+	targetURL := exchangeUrl + "admin/version"
+	for {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, "", "", nil, &resp); err != nil {
+			glog.Errorf(err.Error())
+			return "", err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			// remove last return charactor if any
+			v := resp.(string)
+			if strings.HasSuffix(v, "\n") {
+				v = v[:len(v)-1]
+			}
+
+			return v, nil
+		}
+	}
 }

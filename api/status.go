@@ -11,13 +11,16 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/version"
 )
 
 type Configuration struct {
-	ExchangeAPI    string `json:"exchange_api"`
-	Arch           string `json:"architecture"`
-	HorizonVersion string `json:"horizon_version"`
+	ExchangeAPI     string `json:"exchange_api"`
+	ExchangeVersion string `json:"exchange_version"`
+	ReqExchVersion  string `json:"required_exchange_version"`
+	Arch            string `json:"architecture"`
+	HorizonVersion  string `json:"horizon_version"`
 }
 
 type Info struct {
@@ -27,12 +30,20 @@ type Info struct {
 }
 
 func NewInfo(config *config.HorizonConfig) *Info {
+
+	exch_version, err := exchange.GetExchangeVersion(config.Collaborators.HTTPClientFactory, config.Edge.ExchangeURL)
+	if err != nil {
+		glog.Errorf("Failed to get exchange version: %v", err)
+	}
+
 	return &Info{
 		Geths: []Geth{},
 		Configuration: &Configuration{
-			ExchangeAPI:    config.Edge.ExchangeURL,
-			Arch:           runtime.GOARCH,
-			HorizonVersion: version.HORIZON_VERSION,
+			ExchangeAPI:     config.Edge.ExchangeURL,
+			ExchangeVersion: exch_version,
+			ReqExchVersion:  version.REQUIRED_EXCHANGE_VERSION,
+			Arch:            runtime.GOARCH,
+			HorizonVersion:  version.HORIZON_VERSION,
 		},
 		Connectivity: map[string]bool{},
 	}
