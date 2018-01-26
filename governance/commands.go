@@ -143,3 +143,19 @@ func (w *GovernanceWorker) NewNodeShutdownCommand(msg *events.NodeShutdownMessag
 		Msg: msg,
 	}
 }
+
+// ==============================================================================================================
+// Upgrade the given microservice if needed
+type UpgradeMicroserviceCommand struct {
+	MsDefId string
+}
+
+func (c UpgradeMicroserviceCommand) ShortString() string {
+	return fmt.Sprintf("UpgradeMicroserviceCommand: MsDefId %v", c.MsDefId)
+}
+
+func (w *GovernanceWorker) NewUpgradeMicroserviceCommand(msdef_id string) *UpgradeMicroserviceCommand {
+	return &UpgradeMicroserviceCommand{
+		MsDefId: msdef_id,
+	}
+}
