@@ -20,10 +20,10 @@ type ExchangePatterns struct {
 }
 
 type PatternOutput struct {
-	Owner       string `json:"owner"`
-	Label       string `json:"label"`
-	Description string `json:"description"`
-	Public      bool   `json:"public"`
+	Owner              string                       `json:"owner"`
+	Label              string                       `json:"label"`
+	Description        string                       `json:"description"`
+	Public             bool                         `json:"public"`
 	Workloads          []WorkloadReference          `json:"workloads"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
 	LastUpdated        string                       `json:"lastUpdated"`
@@ -37,12 +37,12 @@ type DeploymentOverrides struct {
 	Services map[string]ServiceOverrides `json:"services"`
 }
 type WorkloadChoiceFile struct {
-	Version                      string                    `json:"version"`  // the version of the workload
-	Priority                     exchange.WorkloadPriority `json:"priority"` // the highest priority workload is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
-	Upgrade                      exchange.UpgradePolicy    `json:"upgradePolicy"`
+	Version  string                    `json:"version"`  // the version of the workload
+	Priority exchange.WorkloadPriority `json:"priority"` // the highest priority workload is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
+	Upgrade  exchange.UpgradePolicy    `json:"upgradePolicy"`
 	//DeploymentOverrides          DeploymentOverrides       `json:"deployment_overrides"`           // env var overrides for the workload
-	DeploymentOverrides          interface{}       `json:"deployment_overrides"`           // env var overrides for the workload
-	DeploymentOverridesSignature string                    `json:"deployment_overrides_signature"` // signature of env var overrides
+	DeploymentOverrides          interface{} `json:"deployment_overrides"`           // env var overrides for the workload
+	DeploymentOverridesSignature string      `json:"deployment_overrides_signature"` // signature of env var overrides
 }
 type WorkloadReferenceFile struct {
 	WorkloadURL      string                    `json:"workloadUrl"`      // refers to a workload definition in the exchange

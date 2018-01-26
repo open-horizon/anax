@@ -64,9 +64,9 @@ func (dc DeploymentConfig) CanStartStop() error {
 
 type WorkloadDeployment struct {
 	//Deployment          DeploymentConfig `json:"deployment"`
-	Deployment          interface{}  `json:"deployment"`
-	DeploymentSignature string           `json:"deployment_signature"`
-	Torrent             string           `json:"torrent"`
+	Deployment          interface{} `json:"deployment"`
+	DeploymentSignature string      `json:"deployment_signature"`
+	Torrent             string      `json:"torrent"`
 }
 
 type MicroserviceFile struct {
