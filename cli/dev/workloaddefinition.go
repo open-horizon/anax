@@ -96,9 +96,10 @@ func ValidateWorkloadDefinition(directory string) error {
 		return errors.New(fmt.Sprintf("%v: must contain at least 1 workload deployment configuration.", filePath))
 	} else {
 		for ix, wl := range workloadDef.Workloads {
-			if len(wl.Deployment.Services) == 0 {
+			depConfig := cliexchange.ConvertToDeploymentConfig(wl.Deployment)
+			if len(depConfig.Services) == 0 {
 				return errors.New(fmt.Sprintf("%v: workloads array index %v must contain at least 1 deployment configuration.", filePath, ix))
-			} else if err := wl.Deployment.CanStartStop(); err != nil {
+			} else if err := depConfig.CanStartStop(); err != nil {
 				return errors.New(fmt.Sprintf("%v: Workloads index %v %v", filePath, ix, err))
 			}
 		}

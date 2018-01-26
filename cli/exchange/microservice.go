@@ -36,8 +36,8 @@ func (dc DeploymentConfig) String() string {
 	return res
 }
 
-func (self DeploymentConfig) HasAnyServices() bool {
-	if len(self.Services) == 0 {
+func (dc DeploymentConfig) HasAnyServices() bool {
+	if len(dc.Services) == 0 {
 		return false
 	}
 	return true
@@ -46,12 +46,12 @@ func (self DeploymentConfig) HasAnyServices() bool {
 // A validation method. Is there enough info in the deployment config to start a container? If not, the
 // missing info is returned in the error message. Note that when there is a complete absence of deployment
 // config metadata, that's ok too for microservices.
-func (self DeploymentConfig) CanStartStop() error {
-	if len(self.Services) == 0 {
+func (dc DeploymentConfig) CanStartStop() error {
+	if len(dc.Services) == 0 {
 		return nil
 		// return errors.New(fmt.Sprintf("no services defined"))
 	} else {
-		for serviceName, service := range self.Services {
+		for serviceName, service := range dc.Services {
 			if len(serviceName) == 0 {
 				return errors.New(fmt.Sprintf("no service name"))
 			} else if len(service.Image) == 0 {
@@ -63,7 +63,8 @@ func (self DeploymentConfig) CanStartStop() error {
 }
 
 type WorkloadDeployment struct {
-	Deployment          DeploymentConfig `json:"deployment"`
+	//Deployment          DeploymentConfig `json:"deployment"`
+	Deployment          interface{}  `json:"deployment"`
 	DeploymentSignature string           `json:"deployment_signature"`
 	Torrent             string           `json:"torrent"`
 }
@@ -83,11 +84,41 @@ type MicroserviceFile struct {
 	Workloads     []WorkloadDeployment `json:"workloads"`
 }
 
+// Take the deployment field, which we have told the json unmarshaller was unknown type (so we can handle both escaped string and struct)
+// and turn it into the DeploymentConfig struct we really want.
+func ConvertToDeploymentConfig(deployment interface{}) DeploymentConfig {
+	var jsonBytes []byte
+	var err error
+
+	// Take whatever type the deployment field is and convert it to marshalled json bytes
+	switch d := deployment.(type) {
+	case string:
+		// In the original input file this was escaped json as a string, but the original unmarshal removed the escapes
+		jsonBytes = []byte(d)
+	default:
+		// The only other valid input is regular json in DeploymentConfig structure. Marshal it back to bytes so we can unmarshal it in a way that lets Go know it is a DeploymentConfig
+		jsonBytes, err = json.Marshal(d)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal body for %v: %v", d, err)
+		}
+	}
+
+	// Now unmarshal the bytes into the struct we have wanted all along
+	var depConfig DeploymentConfig
+	err = json.Unmarshal(jsonBytes, &depConfig)
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json for deployment field %s: %v", string(jsonBytes), err)
+	}
+
+	return depConfig
+}
+
 // Convert the first Deployment Configuration to a full Deployment Description.
-func (self *MicroserviceFile) ConvertToDeploymentDescription() (*DeploymentConfig, *containermessage.DeploymentDescription, error) {
-	for _, wl := range self.Workloads {
-		return &wl.Deployment, &containermessage.DeploymentDescription{
-			Services: wl.Deployment.Services,
+func (mf *MicroserviceFile) ConvertToDeploymentDescription() (*DeploymentConfig, *containermessage.DeploymentDescription, error) {
+	for _, wl := range mf.Workloads {
+		depConfig := ConvertToDeploymentConfig(wl.Deployment)
+		return &depConfig, &containermessage.DeploymentDescription{
+			Services: depConfig.Services,
 			ServicePattern: containermessage.Pattern{
 				Shared: map[string][]string{},
 			},
@@ -99,8 +130,8 @@ func (self *MicroserviceFile) ConvertToDeploymentDescription() (*DeploymentConfi
 }
 
 // Verify that non default user inputs are set in the input map.
-func (self *MicroserviceFile) RequiredVariablesAreSet(setVars map[string]interface{}) error {
-	for _, ui := range self.UserInputs {
+func (mf *MicroserviceFile) RequiredVariablesAreSet(setVars map[string]interface{}) error {
+	for _, ui := range mf.UserInputs {
 		if ui.DefaultValue == "" && ui.Name != "" {
 			if _, ok := setVars[ui.Name]; !ok {
 				return errors.New(fmt.Sprintf("user input %v has no default value and is not set", ui.Name))
@@ -111,8 +142,8 @@ func (self *MicroserviceFile) RequiredVariablesAreSet(setVars map[string]interfa
 }
 
 // Returns true if the microservice definition userinputs define the variable.
-func (w *MicroserviceFile) DefinesVariable(name string) string {
-	for _, ui := range w.UserInputs {
+func (mf *MicroserviceFile) DefinesVariable(name string) string {
+	for _, ui := range mf.UserInputs {
 		if ui.Name == name && ui.Type != "" {
 			return ui.Type
 		}
@@ -215,19 +246,18 @@ func MicroservicePublish(org, userPw, jsonFilePath, keyFilePath string) {
 }
 
 // Sign and publish the microservice definition. This is a function that is reusable across different hzn commands.
-func (microFile *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) {
-	microInput := MicroserviceInput{Label: microFile.Label, Description: microFile.Description, Public: microFile.Public, SpecRef: microFile.SpecRef, Version: microFile.Version, Arch: microFile.Arch, Sharable: microFile.Sharable, DownloadURL: microFile.DownloadURL, MatchHardware: microFile.MatchHardware, UserInputs: microFile.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(microFile.Workloads))}
+func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) {
+	microInput := MicroserviceInput{Label: mf.Label, Description: mf.Description, Public: mf.Public, SpecRef: mf.SpecRef, Version: mf.Version, Arch: mf.Arch, Sharable: mf.Sharable, DownloadURL: mf.DownloadURL, MatchHardware: mf.MatchHardware, UserInputs: mf.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(mf.Workloads))}
 
-	// Loop thru the workloads array and sign the deployment strings
+	// Loop thru the workloads array, sign the deployment strings, and copy all 3 fields to microInput
 	fmt.Println("Signing microservice...")
 	var imageList []string
-	for i := range microFile.Workloads {
-		//s := `a\"`; cliutils.Verbose("signing deployment string %d: %s: %s", i+1, s, microInput.Workloads[i].Deployment)
+	for i := range mf.Workloads {
 		cliutils.Verbose("signing deployment string %d", i+1)
-		microInput.Workloads[i].Torrent = microFile.Workloads[i].Torrent
 		var err error
 		var deployment []byte
-		deployment, err = json.Marshal(microFile.Workloads[i].Deployment)
+		depConfig := ConvertToDeploymentConfig(mf.Workloads[i].Deployment)
+		deployment, err = json.Marshal(depConfig)
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment string %d: %v", i+1, err)
 		}
@@ -236,9 +266,10 @@ func (microFile *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath strin
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment string with %s: %v", keyFilePath, err)
 		}
+		microInput.Workloads[i].Torrent = mf.Workloads[i].Torrent
 
 		// Gather the docker image paths to instruct to docker push at the end
-		imageList = AppendImagesFromDeploymentField(microFile.Workloads[i].Deployment, imageList)
+		imageList = AppendImagesFromDeploymentField(depConfig, imageList)
 
 		CheckTorrentField(microInput.Workloads[i].Torrent, i)
 	}
@@ -257,7 +288,7 @@ func (microFile *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath strin
 		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices", cliutils.OrgAndCreds(org, userPw), []int{201}, microInput)
 	}
 
-	// Tell the to push the images to the docker registry
+	// Tell them to push the images to the docker registry
 	if len(imageList) > 0 {
 		//todo: should we just push the docker images for them?
 		fmt.Println("If you haven't already, push your docker images to the registry:")
