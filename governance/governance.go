@@ -858,6 +858,13 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				}
 			}
 		}
+	case *UpgradeMicroserviceCommand:
+		cmd, _ := command.(*UpgradeMicroserviceCommand)
+
+		glog.V(5).Infof(logString(fmt.Sprintf("Upgrade microservice if needed. %v", cmd)))
+
+		w.handleMicroserviceUpgrade(cmd.MsDefId)
+
 	case *ReportDeviceStatusCommand:
 		cmd, _ := command.(*ReportDeviceStatusCommand)
 
