@@ -812,27 +812,9 @@ func DeleteAllPolicyFiles(homePath string) error {
 		org := dirInfo.Name()
 		glog.V(5).Infof("Deleting policies from directory %v", org)
 
-		// Get a list of all policy files in the directory
-		orgPath := homePath + "/" + org + "/"
-		files, err := getPolicyFiles(orgPath)
-		if err != nil {
-			return errors.New(fmt.Sprintf("unable to get list of policy files in %v, error: %v", orgPath, err))
-		}
-
-		// For each file, if we dont have a record of it, read in the file and create an entry in the map.
-		for _, fileInfo := range files {
-
-			name := orgPath + fileInfo.Name()
-			glog.V(5).Infof("Deleting policy file %v", name)
-			if err := DeletePolicyFile(name); err != nil {
-				return errors.New(fmt.Sprintf("error deleting policy files %v, error: %v", name, err))
-			}
-
-		}
-
-		// Remove the parent org directory.
+		// Remove the org directory.
 		pDir := homePath + "/" + org
-		if err := os.Remove(pDir); err != nil {
+		if err := os.RemoveAll(pDir); err != nil {
 			glog.Errorf("Error removing policy directory %v, error: %v", pDir, err)
 		}
 	}
