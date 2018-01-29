@@ -180,6 +180,18 @@ func ConfirmRemove(question string) {
 	}
 }
 
+// WithDefaultEnvVar returns the specified flag ptr if it has a non-blank value, or the env var value.
+func WithDefaultEnvVar(flag *string, envVarName string) *string {
+	if *flag != "" {
+		return flag
+	}
+	newFlag := os.Getenv(envVarName)
+	if newFlag != "" {
+		return &newFlag
+	}
+	return flag // it is empty, but we did not find an env var value
+}
+
 // RequiredWithDefaultEnvVar returns the specified flag ptr if it has a non-blank value, or the env var value.
 func RequiredWithDefaultEnvVar(flag *string, envVarName, errMsg string) *string {
 	if *flag != "" {
