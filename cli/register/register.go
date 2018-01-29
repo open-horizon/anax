@@ -85,23 +85,6 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 		}
 		fmt.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...\n", org, nodeId)
 		cliexchange.NodeCreate(org, nodeIdTok, userPw, email)
-		/* this is now done in NodeCreate() above...
-		putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeId, SoftwareVersions: make(map[string]string), PublicKey: []byte("")} // we only need to set the token
-		httpCode = cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401}, putNodeReq)
-		if httpCode == 401 {
-			user, pw := cliutils.SplitIdToken(userPw)
-			if org == "public" && email != "" {
-				// In the public org we can create a user anonymously, so try that
-				fmt.Printf("User %s/%s does not exist in the exchange with the specified password, creating it...\n", org, user)
-				postUserReq := cliutils.UserExchangeReq{Password: pw, Admin: false, Email: email}
-				httpCode = cliutils.ExchangePutPost(http.MethodPost, exchUrlBase, "orgs/"+org+"/users/"+user, "", []int{201}, postUserReq)
-				fmt.Printf("Trying again to create/update %s/%s ...\n", org, nodeId)
-				httpCode = cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201}, putNodeReq)
-			} else {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node '%s/%s' does not exist in the exchange with the specified token and user '%s/%s' does not exist with the specified password.", org, nodeId, org, user)
-			}
-		}
-		*/
 	} else {
 		fmt.Printf("Node %s/%s exists in the exchange\n", org, nodeId)
 	}

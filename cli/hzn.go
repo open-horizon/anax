@@ -276,7 +276,7 @@ Environment Variables:
 		wiotpApiKeyToken = cliutils.RequiredWithDefaultEnvVar(wiotpApiKeyToken, "HZN_EXCHANGE_API_AUTH", "WIoTP API key authenication must be specified with either the -A flag or HZN_EXCHANGE_API_AUTH")
 	}
 	if strings.HasPrefix(fullCmd, "register") {
-		userPw = cliutils.RequiredWithDefaultEnvVar(userPw, "HZN_EXCHANGE_USER_AUTH", "exchange user authenication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH")
+		userPw = cliutils.WithDefaultEnvVar(userPw, "HZN_EXCHANGE_USER_AUTH")
 	}
 
 	// Decide which command to run
