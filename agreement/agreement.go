@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/producer"
+	"github.com/open-horizon/anax/version"
 	"github.com/open-horizon/anax/worker"
 	"net/http"
 	"reflect"
@@ -333,6 +334,13 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
 // Heartbeat to the exchange. This function is called by the heartbeat subworker.
 func (w *AgreementWorker) heartBeat() int {
+
+	// log error if the current exchange version does not meet the requirement
+	if err := version.VerifyExchangeVersion(w.Config.Collaborators.HTTPClientFactory, w.Config.Edge.ExchangeURL); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
+	}
+
+	// now do the hearbeat
 	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/heartbeat"
 	err := exchange.Heartbeat(w.httpClient, targetURL, w.deviceId, w.deviceToken)
 

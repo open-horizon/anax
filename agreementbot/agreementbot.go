@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/version"
 	"github.com/open-horizon/anax/worker"
 	"net/http"
 	"os"
@@ -179,6 +180,12 @@ func (w *AgreementBotWorker) Initialize() bool {
 		return false
 	} else if w.db == nil {
 		glog.Errorf("AgreementBotWorker terminating, no AgreementBot database configured.")
+		return false
+	}
+
+	// log error if the current exchange version does not meet the requirement
+	if err := version.VerifyExchangeVersion(w.Config.Collaborators.HTTPClientFactory, w.Manager.Config.AgreementBot.ExchangeURL); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
 		return false
 	}
 
@@ -1131,6 +1138,12 @@ func (w *AgreementBotWorker) getAgbotPatterns() (map[string]exchange.ServedPatte
 
 // Heartbeat to the exchange. This function is called by the heartbeat subworker.
 func (w *AgreementBotWorker) heartBeat() int {
+
+	// log error if the current exchange version does not meet the requirement
+	if err := version.VerifyExchangeVersion(w.Config.Collaborators.HTTPClientFactory, w.Manager.Config.AgreementBot.ExchangeURL); err != nil {
+		glog.Errorf(AWlogString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
+	}
+
 	targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId) + "/heartbeat"
 	exchange.Heartbeat(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), targetURL, w.agbotId, w.token)
 	return 0
