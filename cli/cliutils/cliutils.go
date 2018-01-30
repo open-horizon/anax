@@ -417,24 +417,26 @@ func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttpC
 		Fatal(HTTP_ERROR, "bad HTTP code %d from %s, output: %s", httpCode, apiMsg, string(bodyBytes))
 	}
 
-	switch s := structure.(type) {
-	case *string:
-		// If the structure to fill in is just a string, unmarshal/remarshal it to get it in json indented form, and then return as a string
-		//todo: this gets it in json indented form, but also returns the fields in random order (because they were interpreted as a map)
-		var jsonStruct interface{}
-		err = json.Unmarshal(bodyBytes, &jsonStruct)
-		if err != nil {
-			Fatal(JSON_PARSING_ERROR, "failed to unmarshal exchange body response from %s: %v", apiMsg, err)
-		}
-		jsonBytes, err := json.MarshalIndent(jsonStruct, "", JSON_INDENT)
-		if err != nil {
-			Fatal(JSON_PARSING_ERROR, "failed to marshal exchange output from %s: %v", apiMsg, err)
-		}
-		*s = string(jsonBytes)
-	default:
-		err = json.Unmarshal(bodyBytes, structure)
-		if err != nil {
-			Fatal(JSON_PARSING_ERROR, "failed to unmarshal exchange body response from %s: %v", apiMsg, err)
+	if len(bodyBytes) > 0 && structure != nil {  // the DP front-end of exchange will return nothing when auth problem
+		switch s := structure.(type) {
+		case *string:
+			// If the structure to fill in is just a string, unmarshal/remarshal it to get it in json indented form, and then return as a string
+			//todo: this gets it in json indented form, but also returns the fields in random order (because they were interpreted as a map)
+			var jsonStruct interface{}
+			err = json.Unmarshal(bodyBytes, &jsonStruct)
+			if err != nil {
+				Fatal(JSON_PARSING_ERROR, "failed to unmarshal exchange body response from %s: %v", apiMsg, err)
+			}
+			jsonBytes, err := json.MarshalIndent(jsonStruct, "", JSON_INDENT)
+			if err != nil {
+				Fatal(JSON_PARSING_ERROR, "failed to marshal exchange output from %s: %v", apiMsg, err)
+			}
+			*s = string(jsonBytes)
+		default:
+			err = json.Unmarshal(bodyBytes, structure)
+			if err != nil {
+				Fatal(JSON_PARSING_ERROR, "failed to unmarshal exchange body response from %s: %v", apiMsg, err)
+			}
 		}
 	}
 	return

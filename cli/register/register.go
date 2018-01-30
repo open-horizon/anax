@@ -44,7 +44,7 @@ func ReadInputFile(filePath string, inputFileStruct *InputFile) {
 
 // DoIt registers this node to Horizon with a pattern
 func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
-	cliutils.SetWhetherUsingApiKey(userPw)
+	cliutils.SetWhetherUsingApiKey(nodeIdTok)  // if we have to use userPw later in NodeCreate(), it will set this appropriately for userPw
 	// Read input file 1st, so we don't get half way thru registration before finding the problem
 	inputFileStruct := InputFile{}
 	if inputFile != "" {
@@ -77,8 +77,8 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 	nodeIdTok = nodeId + ":" + nodeToken
 
 	// See if the node exists in the exchange, and create if it doesn't
-	node := exchange.GetDevicesResponse{}
-	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, &node)
+	//node := exchange.GetDevicesResponse{}
+	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, nil)
 	if httpCode != 200 {
 		if userPw == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node '%s/%s' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId)
