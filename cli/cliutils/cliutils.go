@@ -417,7 +417,7 @@ func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttpC
 		Fatal(HTTP_ERROR, "bad HTTP code %d from %s, output: %s", httpCode, apiMsg, string(bodyBytes))
 	}
 
-	if len(bodyBytes) > 0 && structure != nil {  // the DP front-end of exchange will return nothing when auth problem
+	if len(bodyBytes) > 0 && structure != nil { // the DP front-end of exchange will return nothing when auth problem
 		switch s := structure.(type) {
 		case *string:
 			// If the structure to fill in is just a string, unmarshal/remarshal it to get it in json indented form, and then return as a string
