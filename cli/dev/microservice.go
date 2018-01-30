@@ -21,7 +21,7 @@ func MicroserviceNew(homeDirectory string, org string) {
 	// Verify that env vars are set properly and determine the working directory.
 	dir, err := VerifyEnvironment(homeDirectory, false, false, "")
 	if err != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'microservice %v' %v", MICROSERVICE_COMMAND, MICROSERVICE_CREATION_COMMAND, err)
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", MICROSERVICE_COMMAND, MICROSERVICE_CREATION_COMMAND, err)
 	}
 
 	if org == "" && os.Getenv(DEVTOOL_HZN_ORG) == "" {
@@ -30,11 +30,11 @@ func MicroserviceNew(homeDirectory string, org string) {
 
 	// Create the working directory.
 	if err := CreateWorkingDir(dir); err != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'microservice %v' %v", MICROSERVICE_COMMAND, MICROSERVICE_CREATION_COMMAND, err)
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", MICROSERVICE_COMMAND, MICROSERVICE_CREATION_COMMAND, err)
 	}
 
 	// If there are any horizon metadata files already in the directory then we wont create any files.
-	cmd := fmt.Sprintf("microservice %v %v", MICROSERVICE_COMMAND, MICROSERVICE_CREATION_COMMAND)
+	cmd := fmt.Sprintf("%v %v", MICROSERVICE_COMMAND, MICROSERVICE_CREATION_COMMAND)
 	FileNotExist(dir, cmd, USERINPUT_FILE, UserInputExists)
 	FileNotExist(dir, cmd, MICROSERVICE_DEFINITION_FILE, MicroserviceDefinitionExists)
 	FileNotExist(dir, cmd, DEPENDENCIES_FILE, DependenciesExists)
@@ -45,11 +45,11 @@ func MicroserviceNew(homeDirectory string, org string) {
 
 	// Create the metadata files.
 	if err := CreateUserInputs(dir, false, org); err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'microservice %v' %v", MICROSERVICE_COMMAND, MICROSERVICE_CREATION_COMMAND, err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", MICROSERVICE_COMMAND, MICROSERVICE_CREATION_COMMAND, err)
 	} else if err := CreateMicroserviceDefinition(dir, org); err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'microservice %v' %v", MICROSERVICE_COMMAND, MICROSERVICE_CREATION_COMMAND, err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", MICROSERVICE_COMMAND, MICROSERVICE_CREATION_COMMAND, err)
 	} else if err := CreateDependencies(dir); err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'microservice %v' %v", MICROSERVICE_COMMAND, MICROSERVICE_CREATION_COMMAND, err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", MICROSERVICE_COMMAND, MICROSERVICE_CREATION_COMMAND, err)
 	}
 
 	fmt.Printf("Created horizon metadata files in %v. Edit these files to define and configure your new %v.\n", dir, MICROSERVICE_COMMAND)
