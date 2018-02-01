@@ -404,7 +404,7 @@ func fetchLocalProjectDependency(homeDirectory string, project string) error {
 	newDep.Sharable = msDef.Sharable
 	newDep.UserInputs = msDef.UserInputs
 	for _, wl := range msDef.Workloads {
-		newDep.DeployConfig = cliexchange.ConvertToDeploymentConfig(wl.Deployment)
+		newDep.DeployConfig = *cliexchange.ConvertToDeploymentConfig(wl.Deployment)
 		break
 	}
 

@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/rsapss-tool/verify"
 	"net/http"
 	"os"
+	"reflect"
 	"strings"
 )
 
@@ -43,7 +44,7 @@ func (wf *WorkloadFile) DefinesVariable(name string) string {
 func (wf *WorkloadFile) ConvertToDeploymentDescription() (*DeploymentConfig, *containermessage.DeploymentDescription, error) {
 	for _, wl := range wf.Workloads {
 		depConfig := ConvertToDeploymentConfig(wl.Deployment)
-		return &depConfig, &containermessage.DeploymentDescription{
+		return depConfig, &containermessage.DeploymentDescription{
 			Services: depConfig.Services,
 			ServicePattern: containermessage.Pattern{
 				Shared: map[string][]string{},
@@ -142,22 +143,35 @@ func (wf *WorkloadFile) SignAndPublish(org, userPw, keyFilePath string) {
 	fmt.Println("Signing workload...")
 	var imageList []string
 	for i := range wf.Workloads {
-		cliutils.Verbose("signing deployment string %d", i+1)
 		var err error
 		var deployment []byte
 		depConfig := ConvertToDeploymentConfig(wf.Workloads[i].Deployment)
-		deployment, err = json.Marshal(depConfig)
-		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment string %d: %v", i+1, err)
+		if wf.Workloads[i].Deployment != nil && reflect.TypeOf(wf.Workloads[i].Deployment).String() == "string" && wf.Workloads[i].DeploymentSignature != "" {
+			workInput.Workloads[i].Deployment = wf.Workloads[i].Deployment.(string)
+			workInput.Workloads[i].DeploymentSignature = wf.Workloads[i].DeploymentSignature
+		} else if depConfig == nil {
+			workInput.Workloads[i].Deployment = ""
+			workInput.Workloads[i].DeploymentSignature = ""
+		} else {
+			cliutils.Verbose("signing deployment string %d", i+1)
+			deployment, err = json.Marshal(depConfig)
+			if err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment string %d: %v", i+1, err)
+			}
+			workInput.Workloads[i].Deployment = string(deployment)
+			// We know we need to sign the deployment config, so make sure a real key file was provided.
+			if keyFilePath == "" {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "must specify --private-key-file so that the deployment string can be signed")
+			}
+			workInput.Workloads[i].DeploymentSignature, err = sign.Input(keyFilePath, deployment)
+			if err != nil {
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing deployment string %d with %s: %v", i+1, keyFilePath, err)
+			}
 		}
-		workInput.Workloads[i].Deployment = string(deployment)
-		workInput.Workloads[i].DeploymentSignature, err = sign.Input(keyFilePath, deployment)
-		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing deployment string %d with %s: %v", i+1, keyFilePath, err)
-		}
+
 		workInput.Workloads[i].Torrent = wf.Workloads[i].Torrent
 
-		// Gather the docker image paths to instruct to docker push at the end
+		// Gather the docker image paths to instruct the user to docker push at the end
 		imageList = AppendImagesFromDeploymentField(depConfig, imageList)
 
 		CheckTorrentField(workInput.Workloads[i].Torrent, i)

@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 )
 
@@ -122,15 +123,20 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 
 // Take the deployment overrides field, which we have told the json unmarshaller was unknown type (so we can handle both escaped string and struct)
 // and turn it into the DeploymentOverrides struct we really want.
-func ConvertToDeploymentOverrides(deployment interface{}) DeploymentOverrides {
+func ConvertToDeploymentOverrides(deployment interface{}) *DeploymentOverrides {
 	var jsonBytes []byte
 	var err error
 
 	// Take whatever type the deployment field is and convert it to marshalled json bytes
 	switch d := deployment.(type) {
 	case string:
+		if len(d) == 0 {
+			return nil
+		}
 		// In the original input file this was escaped json as a string, but the original unmarshal removed the escapes
 		jsonBytes = []byte(d)
+	case nil:
+		return nil
 	default:
 		// The only other valid input is regular json in DeploymentConfig structure. Marshal it back to bytes so we can unmarshal it in a way that lets Go know it is a DeploymentConfig
 		jsonBytes, err = json.Marshal(d)
@@ -140,8 +146,8 @@ func ConvertToDeploymentOverrides(deployment interface{}) DeploymentOverrides {
 	}
 
 	// Now unmarshal the bytes into the struct we have wanted all along
-	var depOver DeploymentOverrides
-	err = json.Unmarshal(jsonBytes, &depOver)
+	depOver := new(DeploymentOverrides)
+	err = json.Unmarshal(jsonBytes, depOver)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json for deployment overrides field %s: %v", string(jsonBytes), err)
 	}
@@ -178,17 +184,32 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath string) {
 			patInput.Workloads[i].WorkloadVersions[j].Version = patFile.Workloads[i].WorkloadVersions[j].Version
 			patInput.Workloads[i].WorkloadVersions[j].Priority = patFile.Workloads[i].WorkloadVersions[j].Priority
 			patInput.Workloads[i].WorkloadVersions[j].Upgrade = patFile.Workloads[i].WorkloadVersions[j].Upgrade
+
 			var err error
 			var deployment []byte
 			depOver := ConvertToDeploymentOverrides(patFile.Workloads[i].WorkloadVersions[j].DeploymentOverrides)
-			deployment, err = json.Marshal(depOver)
-			if err != nil {
-				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment_overrides field in workload %d, workloadVersion number %d: %v", i+1, j+1, err)
-			}
-			patInput.Workloads[i].WorkloadVersions[j].DeploymentOverrides = string(deployment)
-			patInput.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature, err = sign.Input(keyFilePath, deployment)
-			if err != nil {
-				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment_overrides string with %s: %v", keyFilePath, err)
+			// If the input deployment overrides are already in string form and signed, then use them as is.
+			if patFile.Workloads[i].WorkloadVersions[j].DeploymentOverrides != nil && reflect.TypeOf(patFile.Workloads[i].WorkloadVersions[j].DeploymentOverrides).String() == "string" && patFile.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature != "" {
+				patInput.Workloads[i].WorkloadVersions[j].DeploymentOverrides = patFile.Workloads[i].WorkloadVersions[j].DeploymentOverrides.(string)
+				patInput.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature = patFile.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature
+			} else if depOver == nil {
+				// If the input deployment override is an object that is nil, then there are no overrides.
+				patInput.Workloads[i].WorkloadVersions[j].DeploymentOverrides = ""
+				patInput.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature = ""
+			} else {
+				deployment, err = json.Marshal(depOver)
+				if err != nil {
+					cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment_overrides field in workload %d, workloadVersion number %d: %v", i+1, j+1, err)
+				}
+				patInput.Workloads[i].WorkloadVersions[j].DeploymentOverrides = string(deployment)
+				// We know we need to sign the overrides, so make sure a real key file was provided.
+				if keyFilePath == "" {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "must specify --private-key-file so that the deployment_overrides can be signed")
+				}
+				patInput.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature, err = sign.Input(keyFilePath, deployment)
+				if err != nil {
+					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment_overrides string with %s: %v", keyFilePath, err)
+				}
 			}
 		}
 	}
@@ -312,17 +333,32 @@ func PatternAddWorkload(org, userPw, pattern, workloadFilePath, keyFilePath stri
 		workInput.WorkloadVersions[i].Version = workFile.WorkloadVersions[i].Version
 		workInput.WorkloadVersions[i].Priority = workFile.WorkloadVersions[i].Priority
 		workInput.WorkloadVersions[i].Upgrade = workFile.WorkloadVersions[i].Upgrade
+
 		var err error
 		var deployment []byte
 		depOver := ConvertToDeploymentOverrides(workFile.WorkloadVersions[i].DeploymentOverrides)
-		deployment, err = json.Marshal(depOver)
-		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment_overrides field in workloadVersion element number %d: %v", i+1, err)
-		}
-		workInput.WorkloadVersions[i].DeploymentOverrides = string(deployment)
-		workInput.WorkloadVersions[i].DeploymentOverridesSignature, err = sign.Input(keyFilePath, deployment)
-		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment_overrides string with %s: %v", keyFilePath, err)
+		// If the input deployment overrides are already in string form and signed, then use them as is.
+		if workFile.WorkloadVersions[i].DeploymentOverrides != nil && reflect.TypeOf(workFile.WorkloadVersions[i].DeploymentOverrides).String() == "string" && workFile.WorkloadVersions[i].DeploymentOverridesSignature != "" {
+			workInput.WorkloadVersions[i].DeploymentOverrides = workFile.WorkloadVersions[i].DeploymentOverrides.(string)
+			workInput.WorkloadVersions[i].DeploymentOverridesSignature = workFile.WorkloadVersions[i].DeploymentOverridesSignature
+		} else if depOver == nil {
+			// If the input deployment override is an object that is nil, then there are no overrides.
+			workInput.WorkloadVersions[i].DeploymentOverrides = ""
+			workInput.WorkloadVersions[i].DeploymentOverridesSignature = ""
+		} else {
+			deployment, err = json.Marshal(depOver)
+			if err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment_overrides field in workloadVersion element number %d: %v", i+1, err)
+			}
+			workInput.WorkloadVersions[i].DeploymentOverrides = string(deployment)
+			// We know we need to sign the overrides, so make sure a real key file was provided.
+			if keyFilePath == "" {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "must specify --private-key-file so that the deployment_overrides can be signed")
+			}
+			workInput.WorkloadVersions[i].DeploymentOverridesSignature, err = sign.Input(keyFilePath, deployment)
+			if err != nil {
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment_overrides string with %s: %v", keyFilePath, err)
+			}
 		}
 	}
 
