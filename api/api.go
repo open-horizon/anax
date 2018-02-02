@@ -9,6 +9,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
+	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -23,7 +24,7 @@ type API struct {
 	db             *bolt.DB
 	pm             *policy.PolicyManager
 	em             *events.EventStateManager
-	bcState        map[string]map[string]BlockchainState
+	bcState        map[string]map[string]apicommon.BlockchainState
 	bcStateLock    sync.Mutex
 	shutdownError  string
 	exchHandlers   *exchange.ExchangeApiHandlers
@@ -49,7 +50,7 @@ func NewAPIListener(name string, config *config.HorizonConfig, db *bolt.DB, pm *
 		db:           db,
 		pm:           pm,
 		em:           events.NewEventStateManager(),
-		bcState:      make(map[string]map[string]BlockchainState),
+		bcState:      make(map[string]map[string]apicommon.BlockchainState),
 		bcStateLock:  sync.Mutex{},
 		exchHandlers: exchange.NewExchangeApiHandlers(config),
 	}
@@ -137,7 +138,7 @@ func (a *API) NewEvent(incoming events.Message) {
 		msg, _ := incoming.(*events.BlockchainClientInitializedMessage)
 		switch msg.Event().Id {
 		case events.BC_CLIENT_INITIALIZED:
-			a.handleNewBCInit(msg)
+			apicommon.HandleNewBCInit(msg, a.bcState, &a.bcStateLock)
 			glog.V(3).Infof(apiLogString(fmt.Sprintf("API Worker processed BC initialization for %v", msg)))
 		}
 
@@ -145,7 +146,7 @@ func (a *API) NewEvent(incoming events.Message) {
 		msg, _ := incoming.(*events.BlockchainClientStoppingMessage)
 		switch msg.Event().Id {
 		case events.BC_CLIENT_STOPPING:
-			a.handleStoppingBC(msg)
+			apicommon.HandleStoppingBC(msg, a.bcState, &a.bcStateLock)
 			glog.V(3).Infof(apiLogString(fmt.Sprintf("API Worker processed BC stopping for %v", msg)))
 		}
 
@@ -222,48 +223,6 @@ func (a *API) existingDeviceOrError(w http.ResponseWriter) (*persistence.Exchang
 	}
 
 	return existingDevice, statusWritten
-}
-
-// Functions to manage the blockchain state events so that the status API has accurate info to display.
-func (a *API) handleNewBCInit(ev *events.BlockchainClientInitializedMessage) {
-
-	a.bcStateLock.Lock()
-	defer a.bcStateLock.Unlock()
-
-	nameMap := a.getBCNameMap(ev.BlockchainType())
-	namedBC, ok := nameMap[ev.BlockchainInstance()]
-	if !ok {
-		nameMap[ev.BlockchainInstance()] = BlockchainState{
-			ready:       true,
-			writable:    false,
-			service:     ev.ServiceName(),
-			servicePort: ev.ServicePort(),
-		}
-	} else {
-		namedBC.ready = true
-		namedBC.service = ev.ServiceName()
-		namedBC.servicePort = ev.ServicePort()
-	}
-
-}
-
-func (a *API) handleStoppingBC(ev *events.BlockchainClientStoppingMessage) {
-
-	a.bcStateLock.Lock()
-	defer a.bcStateLock.Unlock()
-
-	nameMap := a.getBCNameMap(ev.BlockchainType())
-	delete(nameMap, ev.BlockchainInstance())
-
-}
-
-func (a *API) getBCNameMap(typeName string) map[string]BlockchainState {
-	nameMap, ok := a.bcState[typeName]
-	if !ok {
-		a.bcState[typeName] = make(map[string]BlockchainState)
-		nameMap = a.bcState[typeName]
-	}
-	return nameMap
 }
 
 var apiLogString = func(v interface{}) string {

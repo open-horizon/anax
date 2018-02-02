@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/open-horizon/anax/api"
+	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/exchange"
 	"io"
 	"io/ioutil"
@@ -368,7 +368,7 @@ func GetExchangeUrl() string {
 	exchUrl := os.Getenv("HZN_EXCHANGE_URL")
 	if exchUrl == "" {
 		// Get it from anax
-		status := api.Info{}
+		status := apicommon.Info{}
 		HorizonGet("status", []int{200}, &status)
 		exchUrl = status.Configuration.ExchangeAPI
 	}
