@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/policy"
 )
 
@@ -12,9 +13,9 @@ func (a *API) status(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 
-		info := NewInfo(a.Config)
+		info := apicommon.NewInfo(a.Config.Collaborators.HTTPClientFactory, a.Config.Edge.ExchangeURL)
 
-		if err := WriteConnectionStatus(info); err != nil {
+		if err := apicommon.WriteConnectionStatus(info); err != nil {
 			glog.Errorf(apiLogString(fmt.Sprintf("Unable to get connectivity status: %v", err)))
 		}
 
@@ -22,10 +23,10 @@ func (a *API) status(w http.ResponseWriter, r *http.Request) {
 		defer a.bcStateLock.Unlock()
 
 		for _, bc := range a.bcState[policy.Ethereum_bc] {
-			geth := NewGeth()
+			geth := apicommon.NewGeth()
 
-			gethURL := fmt.Sprintf("http://%v:%v", bc.service, bc.servicePort)
-			if err := WriteGethStatus(gethURL, geth); err != nil {
+			gethURL := fmt.Sprintf("http://%v:%v", bc.GetService(), bc.GetServicePort())
+			if err := apicommon.WriteGethStatus(gethURL, geth); err != nil {
 				glog.Errorf(apiLogString(fmt.Sprintf("Unable to determine geth service facts: %v", err)))
 			}
 

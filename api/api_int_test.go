@@ -21,6 +21,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
+	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/worker"
@@ -186,7 +187,7 @@ func Test_API_attribute_Suite(suite *testing.T) {
 
 		db:          db,
 		pm:          nil,
-		bcState:     make(map[string]map[string]BlockchainState),
+		bcState:     make(map[string]map[string]apicommon.BlockchainState),
 		bcStateLock: sync.Mutex{},
 	}
 

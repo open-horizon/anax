@@ -255,6 +255,8 @@ Environment Variables:
 	agbotCancelAllAgreements := agbotAgreementCancelCmd.Flag("all", "Cancel all of the current agreements.").Short('a').Bool()
 	agbotCancelAgreementId := agbotAgreementCancelCmd.Arg("agreement", "The active agreement to cancel.").String()
 
+	agbotListCmd := agbotCmd.Command("list", "Display general information about this Horizon agbot node.")
+
 	app.Version("Run 'hzn version' to see the Horizon version.")
 	/* trying to override the base --version behavior does not work....
 	fmt.Printf("version: %v\n", *version)
@@ -397,5 +399,7 @@ Environment Variables:
 		agreementbot.AgreementList(*agbotlistArchivedAgreements, *agbotAgreement)
 	case agbotAgreementCancelCmd.FullCommand():
 		agreementbot.AgreementCancel(*agbotCancelAgreementId, *agbotCancelAllAgreements)
+	case agbotListCmd.FullCommand():
+		agreementbot.List()
 	}
 }

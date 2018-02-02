@@ -1,4 +1,4 @@
-package api
+package apicommon
 
 import (
 	"bytes"
@@ -8,9 +8,11 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/version"
 )
@@ -29,9 +31,9 @@ type Info struct {
 	Connectivity  map[string]bool `json:"connectivity"`
 }
 
-func NewInfo(config *config.HorizonConfig) *Info {
+func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string) *Info {
 
-	exch_version, err := exchange.GetExchangeVersion(config.Collaborators.HTTPClientFactory, config.Edge.ExchangeURL)
+	exch_version, err := exchange.GetExchangeVersion(httpClientFactory, exchangeUrl)
 	if err != nil {
 		glog.Errorf("Failed to get exchange version: %v", err)
 	}
@@ -39,7 +41,7 @@ func NewInfo(config *config.HorizonConfig) *Info {
 	return &Info{
 		Geths: []Geth{},
 		Configuration: &Configuration{
-			ExchangeAPI:     config.Edge.ExchangeURL,
+			ExchangeAPI:     exchangeUrl,
 			ExchangeVersion: exch_version,
 			ReqExchVersion:  version.REQUIRED_EXCHANGE_VERSION,
 			Arch:            runtime.GOARCH,
@@ -165,4 +167,61 @@ func WriteGethStatus(gethURL string, geth *Geth) error {
 	}
 
 	return nil
+}
+
+type BlockchainState struct {
+	ready       bool   // the blockchain is ready
+	writable    bool   // the blockchain is writable
+	service     string // the network endpoint name of the container
+	servicePort string // the network port of the container
+}
+
+func (b *BlockchainState) GetService() string {
+	return b.service
+}
+
+func (b *BlockchainState) GetServicePort() string {
+	return b.servicePort
+}
+
+// Functions to manage the blockchain state events so that the status API has accurate info to display.
+
+func HandleNewBCInit(ev *events.BlockchainClientInitializedMessage, bcState map[string]map[string]BlockchainState, bcStateLock *sync.Mutex) {
+
+	bcStateLock.Lock()
+	defer bcStateLock.Unlock()
+
+	nameMap := GetBCNameMap(ev.BlockchainType(), bcState)
+	namedBC, ok := nameMap[ev.BlockchainInstance()]
+	if !ok {
+		nameMap[ev.BlockchainInstance()] = BlockchainState{
+			ready:       true,
+			writable:    false,
+			service:     ev.ServiceName(),
+			servicePort: ev.ServicePort(),
+		}
+	} else {
+		namedBC.ready = true
+		namedBC.service = ev.ServiceName()
+		namedBC.servicePort = ev.ServicePort()
+	}
+
+}
+
+func HandleStoppingBC(ev *events.BlockchainClientStoppingMessage, bcState map[string]map[string]BlockchainState, bcStateLock *sync.Mutex) {
+
+	bcStateLock.Lock()
+	defer bcStateLock.Unlock()
+
+	nameMap := GetBCNameMap(ev.BlockchainType(), bcState)
+	delete(nameMap, ev.BlockchainInstance())
+}
+
+func GetBCNameMap(typeName string, bcState map[string]map[string]BlockchainState) map[string]BlockchainState {
+	nameMap, ok := bcState[typeName]
+	if !ok {
+		bcState[typeName] = make(map[string]BlockchainState)
+		nameMap = bcState[typeName]
+	}
+	return nameMap
 }
