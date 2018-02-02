@@ -302,7 +302,8 @@ func (w *GovernanceWorker) RollbackMicroservice(msdef *persistence.MicroserviceD
 		if new_msdef, err := microservice.GetRollbackMicroserviceDef(w.exchHandlers.GetHTTPMicroserviceHandler(), msdef, w.deviceId, w.deviceToken, w.db); err != nil {
 			return fmt.Errorf(logString(fmt.Sprintf("Error finding the new microservice definition to downgrade to for %v %v version key %v. error: %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
 		} else if new_msdef == nil { //no more to try, exit out
-			return fmt.Errorf(logString(fmt.Sprintf("Unable to find the microservice definition to downgrade to for %v %v version key %v. error: %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
+			glog.Warningf(logString(fmt.Sprintf("Unable to find the microservice definition to downgrade to for %v %v version key %v. error: %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
+			return nil
 		} else if err := w.UpgradeMicroservice(msdef, new_msdef, false); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("Failed to downgrade %v from version %v key %v to version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, new_msdef.Version, new_msdef.Id, err)))
 		} else {

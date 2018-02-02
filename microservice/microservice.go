@@ -210,11 +210,11 @@ func GetRollbackMicroserviceDef(getMicroservice exchange.MicroserviceHandler, ms
 	if vExp, err := policy.Version_Expression_Factory(msdef.UpgradeVersionRange); err != nil {
 		return nil, fmt.Errorf("Unable to convert %v to a version expression, error %v", msdef.UpgradeVersionRange, err)
 	} else if err := vExp.ChangeCeiling(msdef.Version, false); err != nil { //modify the version range in order to searh for new ms
-		return nil, fmt.Errorf("Unable to limit the version range ceiling to %v for version range %v. %v", msdef.Version, vExp.Get_expression(), err)
+		return nil, nil
 	} else if e_msdef, err := getMicroservice(msdef.SpecRef, msdef.Org, vExp.Get_expression(), msdef.Arch, deviceId, deviceToken); err != nil {
 		return nil, fmt.Errorf("Filed to find a highest version for microservice %v version range %v: %v", msdef.SpecRef, vExp.Get_expression(), err)
 	} else if e_msdef == nil {
-		return nil, fmt.Errorf("Could not find any microservices for %v within the version range %v.", msdef.SpecRef, msdef.UpgradeVersionRange)
+		return nil, nil
 	} else if new_msdef, err := ConvertToPersistent(e_msdef, msdef.Org); err != nil {
 		return nil, fmt.Errorf("Failed to convert microservice metadata to persistent.MicroserviceDefinition for %v. %v", msdef.SpecRef, err)
 	} else {
