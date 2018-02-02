@@ -346,7 +346,7 @@ func startMicroservice(deployment *containermessage.DeploymentDescription,
 	// Make an instance id the same way the runtime makes them.
 	msId := cutil.MakeMSInstanceKey(specRef, version, uuid.NewV4().String())
 
-	fmt.Printf("Starting microservice: %v with instance id %v\n", dc.CLIString(), msId)
+	fmt.Printf("Start microservice: %v with instance id prefix %v\n", dc.CLIString(), msId)
 
 	// Start the microservice container.
 	_, startErr := cw.ResourcesCreate(msId, nil, deployment, []byte(""), environmentAdditions, map[string]docker.ContainerNetwork{})
@@ -405,7 +405,7 @@ func stopMicroservice(dc *cliexchange.DeploymentConfig, cw *container.ContainerW
 		// Locate the microservice container and stop it.
 		for _, c := range containers {
 			msId := c.Labels[container.LABEL_PREFIX+".agreement_id"]
-			fmt.Printf("Stopping microservice: %v with id %v\n", dc.CLIString(), msId)
+			fmt.Printf("Stop microservice: %v with instance id prefix  %v\n", dc.CLIString(), msId)
 			cw.ResourcesRemove([]string{msId})
 		}
 	}

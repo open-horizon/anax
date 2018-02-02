@@ -19,11 +19,12 @@ type DeploymentConfig struct {
 }
 
 func (dc DeploymentConfig) CLIString() string {
-	for serviceName, service := range dc.Services {
-		return fmt.Sprintf("service %v from image %v", serviceName, service.Image)
+	servs := ""
+	for serviceName, _ := range dc.Services {
+		servs += serviceName + ", "
 	}
-	// This is for the compiler
-	return ""
+	servs = servs[:len(servs)-2]
+	return fmt.Sprintf("service(s) %v", servs)
 }
 
 func (dc DeploymentConfig) String() string {

@@ -117,6 +117,11 @@ func MicroserviceValidate(homeDirectory string, userInputFile string) {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", MICROSERVICE_COMMAND, MICROSERVICE_VERIFY_COMMAND, err)
 	}
 
+	// Make sure we're in a microservice project.
+	if !IsMicroserviceProject(dir) {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' current project is not a microservice project.", MICROSERVICE_COMMAND, MICROSERVICE_VERIFY_COMMAND)
+	}
+
 	// Validate Microservice Definition
 	if verr := ValidateMicroserviceDefinition(dir); verr != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' project does not validate. %v ", MICROSERVICE_COMMAND, MICROSERVICE_VERIFY_COMMAND, verr)

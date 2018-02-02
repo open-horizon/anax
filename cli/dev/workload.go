@@ -217,6 +217,11 @@ func WorkloadValidate(homeDirectory string, userInputFile string) {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", WORKLOAD_COMMAND, WORKLOAD_VERIFY_COMMAND, err)
 	}
 
+	// Make sure we're in a workload project.
+	if !IsWorkloadProject(dir) {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' current project is not a workload project.", WORKLOAD_COMMAND, WORKLOAD_VERIFY_COMMAND)
+	}
+
 	// Validate Workload Definition
 	if verr := ValidateWorkloadDefinition(dir); verr != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' project does not validate. %v ", WORKLOAD_COMMAND, WORKLOAD_VERIFY_COMMAND, verr)
