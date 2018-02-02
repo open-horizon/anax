@@ -323,15 +323,22 @@ func finalizeDeployment(agreementId string, deployment *containermessage.Deploym
 			serviceConfig.HostConfig.PortBindings[dPort] = append(serviceConfig.HostConfig.PortBindings[dPort], hMapping)
 		}
 
+		// The format of device mapping is: <host device name>:<contianer device name>:<cgroup permission>
+		// the cgoup permission can be omitted. It defaults to "rwm" when omitted.
 		for _, givenDevice := range service.Devices {
+			cgp := "rwm"
 			sp := strings.Split(givenDevice, ":")
-			if len(sp) != 2 {
+			if len(sp) == 3 {
+				// the cgroup permission
+				cgp = sp[2]
+			} else if len(sp) < 2 || len(sp) > 3 {
 				return nil, fmt.Errorf("Illegal device specified in deployment description: %v", givenDevice)
 			}
 
 			serviceConfig.HostConfig.Devices = append(serviceConfig.HostConfig.Devices, docker.Device{
-				PathOnHost:      sp[0],
-				PathInContainer: sp[1],
+				PathOnHost:        sp[0],
+				PathInContainer:   sp[1],
+				CgroupPermissions: cgp,
 			})
 		}
 
