@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/rsapss-tool/verify"
 	"net/http"
 	"os"
+	"reflect"
 	"strings"
 )
 
@@ -86,15 +87,20 @@ type MicroserviceFile struct {
 
 // Take the deployment field, which we have told the json unmarshaller was unknown type (so we can handle both escaped string and struct)
 // and turn it into the DeploymentConfig struct we really want.
-func ConvertToDeploymentConfig(deployment interface{}) DeploymentConfig {
+func ConvertToDeploymentConfig(deployment interface{}) *DeploymentConfig {
 	var jsonBytes []byte
 	var err error
 
 	// Take whatever type the deployment field is and convert it to marshalled json bytes
 	switch d := deployment.(type) {
 	case string:
+		if len(d) == 0 {
+			return nil
+		}
 		// In the original input file this was escaped json as a string, but the original unmarshal removed the escapes
 		jsonBytes = []byte(d)
+	case nil:
+		return nil
 	default:
 		// The only other valid input is regular json in DeploymentConfig structure. Marshal it back to bytes so we can unmarshal it in a way that lets Go know it is a DeploymentConfig
 		jsonBytes, err = json.Marshal(d)
@@ -104,8 +110,8 @@ func ConvertToDeploymentConfig(deployment interface{}) DeploymentConfig {
 	}
 
 	// Now unmarshal the bytes into the struct we have wanted all along
-	var depConfig DeploymentConfig
-	err = json.Unmarshal(jsonBytes, &depConfig)
+	depConfig := new(DeploymentConfig)
+	err = json.Unmarshal(jsonBytes, depConfig)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json for deployment field %s: %v", string(jsonBytes), err)
 	}
@@ -117,7 +123,7 @@ func ConvertToDeploymentConfig(deployment interface{}) DeploymentConfig {
 func (mf *MicroserviceFile) ConvertToDeploymentDescription() (*DeploymentConfig, *containermessage.DeploymentDescription, error) {
 	for _, wl := range mf.Workloads {
 		depConfig := ConvertToDeploymentConfig(wl.Deployment)
-		return &depConfig, &containermessage.DeploymentDescription{
+		return depConfig, &containermessage.DeploymentDescription{
 			Services: depConfig.Services,
 			ServicePattern: containermessage.Pattern{
 				Shared: map[string][]string{},
@@ -199,7 +205,7 @@ func MicroserviceList(org string, userPw string, microservice string, namesOnly 
 	}
 }
 
-func AppendImagesFromDeploymentField(deployment DeploymentConfig, imageList []string) []string {
+func AppendImagesFromDeploymentField(deployment *DeploymentConfig, imageList []string) []string {
 	// The deployment string should include: {"services":{"cpu2wiotp":{"image":"openhorizon/example_wl_x86_cpu2wiotp:1.1.2",...}}}
 	for _, s := range deployment.Services {
 		if s.Image != "" {
@@ -253,22 +259,35 @@ func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) {
 	fmt.Println("Signing microservice...")
 	var imageList []string
 	for i := range mf.Workloads {
-		cliutils.Verbose("signing deployment string %d", i+1)
 		var err error
 		var deployment []byte
 		depConfig := ConvertToDeploymentConfig(mf.Workloads[i].Deployment)
-		deployment, err = json.Marshal(depConfig)
-		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment string %d: %v", i+1, err)
+		if mf.Workloads[i].Deployment != nil && reflect.TypeOf(mf.Workloads[i].Deployment).String() == "string" && mf.Workloads[i].DeploymentSignature != "" {
+			microInput.Workloads[i].Deployment = mf.Workloads[i].Deployment.(string)
+			microInput.Workloads[i].DeploymentSignature = mf.Workloads[i].DeploymentSignature
+		} else if depConfig == nil {
+			microInput.Workloads[i].Deployment = ""
+			microInput.Workloads[i].DeploymentSignature = ""
+		} else {
+			cliutils.Verbose("signing deployment string %d", i+1)
+			deployment, err = json.Marshal(depConfig)
+			if err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment string %d: %v", i+1, err)
+			}
+			microInput.Workloads[i].Deployment = string(deployment)
+			// We know we need to sign the deployment config, so make sure a real key file was provided.
+			if keyFilePath == "" {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "must specify --private-key-file so that the deployment string can be signed")
+			}
+			microInput.Workloads[i].DeploymentSignature, err = sign.Input(keyFilePath, deployment)
+			if err != nil {
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment string with %s: %v", keyFilePath, err)
+			}
 		}
-		microInput.Workloads[i].Deployment = string(deployment)
-		microInput.Workloads[i].DeploymentSignature, err = sign.Input(keyFilePath, deployment)
-		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment string with %s: %v", keyFilePath, err)
-		}
+
 		microInput.Workloads[i].Torrent = mf.Workloads[i].Torrent
 
-		// Gather the docker image paths to instruct to docker push at the end
+		// Gather the docker image paths to instruct the user to docker push at the end
 		imageList = AppendImagesFromDeploymentField(depConfig, imageList)
 
 		CheckTorrentField(microInput.Workloads[i].Torrent, i)
