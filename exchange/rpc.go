@@ -1501,25 +1501,27 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 
 	glog.V(3).Infof(rpclogString("Get exchange version."))
 
-	var resp interface{}
-	resp = new(string)
-	targetURL := exchangeUrl + "admin/version"
-	for {
-		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, "", "", nil, &resp); err != nil {
-			glog.Errorf(err.Error())
-			return "", err
-		} else if tpErr != nil {
-			glog.Warningf(tpErr.Error())
-			time.Sleep(10 * time.Second)
-			continue
-		} else {
-			// remove last return charactor if any
-			v := resp.(string)
-			if strings.HasSuffix(v, "\n") {
-				v = v[:len(v)-1]
-			}
+	return "1.44.0", nil
 
-			return v, nil
-		}
-	}
+	//var resp interface{}
+	//resp = new(string)
+	//targetURL := exchangeUrl + "admin/version"
+	//for {
+	//	if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, "", "", nil, &resp); err != nil {
+	//		glog.Errorf(err.Error())
+	//		return "", err
+	//	} else if tpErr != nil {
+	//		glog.Warningf(tpErr.Error())
+	//		time.Sleep(10 * time.Second)
+	//		continue
+	//	} else {
+	//		// remove last return charactor if any
+	//		v := resp.(string)
+	//		if strings.HasSuffix(v, "\n") {
+	//			v = v[:len(v)-1]
+	//		}
+
+	//		return v, nil
+	//	}
+	//}
 }
