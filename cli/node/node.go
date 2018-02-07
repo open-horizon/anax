@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/api"
+	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/cli/cliutils"
 )
 
@@ -24,10 +25,10 @@ type NodeAndStatus struct {
 	TokenValid         *bool       `json:"token_valid"`           // removed omitempty
 	HA                 *bool       `json:"ha"`                    // removed omitempty
 	Config             Configstate `json:"configstate"`           // removed omitempty
-	// from api.Info
-	Geths         []api.Geth         `json:"geth"`
-	Configuration *api.Configuration `json:"configuration"`
-	Connectivity  map[string]bool    `json:"connectivity"`
+	// from apicommon.Info
+	Geths         []apicommon.Geth         `json:"geth"`
+	Configuration *apicommon.Configuration `json:"configuration"`
+	Connectivity  map[string]bool          `json:"connectivity"`
 }
 
 // CopyNodeInto copies the node info into our output struct and converts times in the process
@@ -50,7 +51,7 @@ func (n *NodeAndStatus) CopyNodeInto(horDevice *api.HorizonDevice) {
 }
 
 // CopyStatusInto copies the status info into our output struct
-func (n *NodeAndStatus) CopyStatusInto(status *api.Info) {
+func (n *NodeAndStatus) CopyStatusInto(status *apicommon.Info) {
 	//todo: I don't like having to repeat all of these fields, hard to maintain. Maybe use reflection?
 	n.Geths = status.Geths
 	n.Configuration = status.Configuration
@@ -65,7 +66,7 @@ func List() {
 	nodeInfo.CopyNodeInto(&horDevice)
 
 	// Get the horizon status info
-	status := api.Info{}
+	status := apicommon.Info{}
 	cliutils.HorizonGet("status", []int{200}, &status)
 	nodeInfo.CopyStatusInto(&status)
 
@@ -78,7 +79,7 @@ func List() {
 }
 
 func Version() {
-	status := api.Info{}
+	status := apicommon.Info{}
 	cliutils.HorizonGet("status", []int{200}, &status)
 	fmt.Println(status.Configuration.HorizonVersion)
 }

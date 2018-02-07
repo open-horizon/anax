@@ -6,6 +6,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
+	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -14,6 +15,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sort"
+	"sync"
 )
 
 type API struct {
@@ -21,6 +23,8 @@ type API struct {
 	name           string
 	db             *bolt.DB
 	pm             *policy.PolicyManager
+	bcState        map[string]map[string]apicommon.BlockchainState
+	bcStateLock    sync.Mutex
 }
 
 func NewAPIListener(name string, config *config.HorizonConfig, db *bolt.DB) *API {
@@ -48,6 +52,21 @@ func (a *API) Messages() chan events.Message {
 func (a *API) NewEvent(ev events.Message) {
 
 	switch ev.(type) {
+	case *events.BlockchainClientInitializedMessage:
+		msg, _ := ev.(*events.BlockchainClientInitializedMessage)
+		switch msg.Event().Id {
+		case events.BC_CLIENT_INITIALIZED:
+			apicommon.HandleNewBCInit(msg, a.bcState, &a.bcStateLock)
+			glog.V(3).Infof(APIlogString(fmt.Sprintf("API Worker processed BC initialization for %v", msg)))
+		}
+
+	case *events.BlockchainClientStoppingMessage:
+		msg, _ := ev.(*events.BlockchainClientStoppingMessage)
+		switch msg.Event().Id {
+		case events.BC_CLIENT_STOPPING:
+			apicommon.HandleStoppingBC(msg, a.bcState, &a.bcStateLock)
+			glog.V(3).Infof(APIlogString(fmt.Sprintf("API Worker processed BC stopping for %v", msg)))
+		}
 	case *events.NodeShutdownCompleteMessage:
 		// Now remove myself from the worker dispatch list. When the anax process terminates,
 		// the socket listener will terminate also. This is done on a separate thread so that
@@ -97,6 +116,8 @@ func (a *API) listen(apiListen string) {
 		router.HandleFunc("/agreement/{id}", a.agreement).Methods("GET", "DELETE", "OPTIONS")
 		router.HandleFunc("/policy/{name}/upgrade", a.policyUpgrade).Methods("POST", "OPTIONS")
 		router.HandleFunc("/workloadusage", a.workloadusage).Methods("GET", "OPTIONS")
+		router.HandleFunc("/status", a.status).Methods("GET", "OPTIONS")
+		router.HandleFunc("/node", a.node).Methods("GET", "OPTIONS")
 
 		http.ListenAndServe(apiListen, nocache(router))
 	}()
@@ -116,19 +137,8 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 			} else if ag == nil {
 				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "id", Error: "agreement id not found"})
 			} else {
-				serial, err := json.Marshal(*ag)
-				if err != nil {
-					glog.Errorf(APIlogString(fmt.Sprintf("error serializing agreement output %v, error: %v", *ag, err)))
-					http.Error(w, "Internal server error", http.StatusInternalServerError)
-					return
-				}
-
-				w.Header().Set("Content-Type", "application/json")
-				if _, err := w.Write(serial); err != nil {
-					glog.Infof(APIlogString(fmt.Sprintf("error writing response %v, error: %v", serial, err)))
-					http.Error(w, "Internal server error", http.StatusInternalServerError)
-					return
-				}
+				// write output
+				writeResponse(w, *ag, http.StatusOK)
 			}
 		} else {
 			var agreementsKey = "agreements"
@@ -163,19 +173,8 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 			sort.Sort(AgreementsByAgreementCreationTime(wrap[agreementsKey][activeKey]))
 			sort.Sort(AgreementsByAgreementTimeoutTime(wrap[agreementsKey][archivedKey]))
 
-			serial, err := json.Marshal(wrap)
-			if err != nil {
-				glog.Errorf(APIlogString(fmt.Sprintf("error serializing agreement output %v, error: %v", wrap, err)))
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
-				return
-			}
-
-			w.Header().Set("Content-Type", "application/json")
-			if _, err := w.Write(serial); err != nil {
-				glog.Infof(APIlogString(fmt.Sprintf("error writing response %v, error: %v", serial, err)))
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
-				return
-			}
+			// write output
+			writeResponse(w, wrap, http.StatusOK)
 		}
 
 	case "DELETE":
@@ -330,20 +329,67 @@ func (a *API) workloadusage(w http.ResponseWriter, r *http.Request) {
 			// do sort
 			sort.Sort(WorkloadUsagesByDeviceId(wlusages))
 
-			serial, err := json.Marshal(wlusages)
-			if err != nil {
-				glog.Errorf(APIlogString(fmt.Sprintf("error serializing workload usage output %v, error: %v", wlusages, err)))
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
-				return
+			// write output
+			writeResponse(w, wlusages, http.StatusOK)
+		}
+
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *API) status(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+
+		info := apicommon.NewInfo(a.Config.Collaborators.HTTPClientFactory, a.Config.AgreementBot.ExchangeURL)
+
+		if err := apicommon.WriteConnectionStatus(info); err != nil {
+			glog.Errorf(APIlogString(fmt.Sprintf("Unable to get connectivity status: %v", err)))
+		}
+
+		a.bcStateLock.Lock()
+		defer a.bcStateLock.Unlock()
+
+		for _, bc := range a.bcState[policy.Ethereum_bc] {
+			geth := apicommon.NewGeth()
+
+			gethURL := fmt.Sprintf("http://%v:%v", bc.GetService(), bc.GetServicePort())
+			if err := apicommon.WriteGethStatus(gethURL, geth); err != nil {
+				glog.Errorf(APIlogString(fmt.Sprintf("Unable to determine geth service facts: %v", err)))
 			}
 
-			w.Header().Set("Content-Type", "application/json")
-			if _, err := w.Write(serial); err != nil {
-				glog.Infof(APIlogString(fmt.Sprintf("error writing response %v, error: %v", serial, err)))
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
-				return
-			}
+			info.AddGeth(geth)
 		}
+
+		writeResponse(w, info, http.StatusOK)
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *API) node(w http.ResponseWriter, r *http.Request) {
+
+	resource := "node"
+
+	switch r.Method {
+	case "GET":
+		glog.V(5).Infof(APIlogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		id_org := a.Config.AgreementBot.ExchangeId
+		var id, org string
+		if id_org != "" {
+			id = exchange.GetId(id_org)
+			org = exchange.GetOrg(id_org)
+		}
+		agbot := NewHorizonAgbot(id, org)
+		writeResponse(w, agbot, http.StatusOK)
 
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, OPTIONS")
@@ -356,6 +402,22 @@ func (a *API) workloadusage(w http.ResponseWriter, r *http.Request) {
 // ==========================================================================================
 // Utility functions used by many of the API endpoints.
 //
+type HorizonAgbot struct {
+	Id  string `json:"agbot_id"`
+	Org string `json:"organization"`
+}
+
+func NewHorizonAgbot(id string, org string) *HorizonAgbot {
+	return &HorizonAgbot{
+		Id:  id,
+		Org: org,
+	}
+}
+
+func getAgbotInfo(config *config.HorizonConfig) {
+
+}
+
 type APIUserInputError struct {
 	Error string `json:"error"`
 	Input string `json:"input,omitempty"`
@@ -435,4 +497,35 @@ func (b *UpgradeDevice) IsValid() (bool, string) {
 		return false, "must specify either device or agreementId"
 	}
 	return true, ""
+}
+
+// Utility functions used by all the http handlers for each API path.
+func serializeResponse(w http.ResponseWriter, payload interface{}) ([]byte, bool) {
+	glog.V(6).Infof(APIlogString(fmt.Sprintf("response payload before serialization (%T): %v", payload, payload)))
+
+	serial, err := json.Marshal(payload)
+	if err != nil {
+		glog.Error(APIlogString(err))
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return nil, true
+	}
+
+	return serial, false
+}
+
+func writeResponse(w http.ResponseWriter, payload interface{}, successStatusCode int) {
+
+	serial, errWritten := serializeResponse(w, payload)
+	if errWritten {
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(successStatusCode)
+
+	if _, err := w.Write(serial); err != nil {
+		glog.Error(APIlogString(err))
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 }
