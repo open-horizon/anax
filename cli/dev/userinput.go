@@ -152,7 +152,6 @@ func AddConfiguredUserInputs(configVars map[string]interface{}, envvars map[stri
 			return err
 		}
 	}
-
 	return nil
 }
 
@@ -168,13 +167,11 @@ func GlobalSetAsAttributes(global []GlobalSet) ([]persistence.Attribute, error) 
 
 	// Run through each attribute in the global set of attributes and convert them into an API attributes, as if they are
 	// coming through the anax REST API.
-	apiAttrs := make([]api.Attribute, 0, 10)
 	for _, gs := range global {
 		attr := api.NewAttribute("", []string{}, "Global variables", false, false, map[string]interface{}{})
 		attr.Type = &gs.Type
 		attr.SensorUrls = &gs.SensorUrls
 		attr.Mappings = &gs.Variables
-		// apiAttrs = append(apiAttrs, *attr)
 		cliutils.Verbose("Converted userinput attribute: %v to API attribute: %v", gs, attr)
 
 		// Validate the attribute and convert to a persistent attribute.
@@ -187,7 +184,7 @@ func GlobalSetAsAttributes(global []GlobalSet) ([]persistence.Attribute, error) 
 		attributes = append(attributes, persistAttr)
 
 	}
-	cliutils.Verbose("Converted API Attributes: %v to persistent attributes: %v", apiAttrs, attributes)
+	cliutils.Verbose("Converted API Attributes: %v to persistent attributes: %v", global, attributes)
 
 	return attributes, nil
 }
@@ -221,11 +218,11 @@ func (i *InputFile) Validate(directory string, originalUserInputFilePath string)
 		for ix, wl := range i.Workloads {
 			// Validate the tuple identifiers.
 			if err := validateTuple(wl.Org, wl.VersionRange, wl.Url, workloadDef.WorkloadURL); err != nil {
-				return errors.New(fmt.Sprintf("%v: workload array element at index %v is %v %v", originalUserInputFilePath, ix, wl, err))
+				return errors.New(fmt.Sprintf("%v: workloads array element at index %v is %v %v", originalUserInputFilePath, ix, wl, err))
 			}
 			// For every variable that is set in the userinput file, make sure that variable is defined in the workload definition.
 			if err := validateConfiguredVariables(wl.Variables, workloadDef.DefinesVariable); err != nil {
-				return errors.New(fmt.Sprintf("%v: workload array element at index %v is %v %v", originalUserInputFilePath, ix, wl, err))
+				return errors.New(fmt.Sprintf("%v: workloads array element at index %v is %v %v", originalUserInputFilePath, ix, wl, err))
 			}
 			// For every variable that is defined without a default, make sure it is set.
 			if err := workloadDef.RequiredVariablesAreSet(wl.Variables); err != nil {
@@ -243,11 +240,11 @@ func (i *InputFile) Validate(directory string, originalUserInputFilePath string)
 		for ix, ms := range i.Microservices {
 			// Validate the tuple identifiers.
 			if err := validateTuple(ms.Org, ms.VersionRange, ms.Url, msDef.SpecRef); err != nil {
-				return errors.New(fmt.Sprintf("%v: microservice array element at index %v is %v %v", originalUserInputFilePath, ix, ms, err))
+				return errors.New(fmt.Sprintf("%v: microservices array element at index %v is %v %v", originalUserInputFilePath, ix, ms, err))
 			}
 			// For every variable that is set in the userinput file, make sure that variable is defined in the microservice definition.
 			if err := validateConfiguredVariables(ms.Variables, msDef.DefinesVariable); err != nil {
-				return errors.New(fmt.Sprintf("%v: microservice array element at index %v is %v %v", originalUserInputFilePath, ix, ms, err))
+				return errors.New(fmt.Sprintf("%v: microservices array element at index %v is %v %v", originalUserInputFilePath, ix, ms, err))
 			}
 			// For every variable that is defined without a default, make sure it is set.
 			if err := msDef.RequiredVariablesAreSet(ms.Variables); err != nil {

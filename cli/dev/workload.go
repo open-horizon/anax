@@ -122,7 +122,7 @@ func WorkloadStartTest(homeDirectory string, userInputFile string) {
 
 	// Now we can start the workload container.
 
-	// Get the variables intended to configure this dependency from this project's userinput file.
+	// Get the variables intended to configure this workload from this project's userinput file.
 	configVars := getConfiguredVariables(userInputs.Workloads, workloadDef.WorkloadURL)
 
 	environmentAdditions, enverr := createEnvVarMap(agreementId, "deprecated", userInputs.Global, configVars, workloadDef.UserInputs, workloadDef.Org, persistence.ConvertWorkloadPersistentNativeToEnv)

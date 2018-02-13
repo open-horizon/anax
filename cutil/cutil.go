@@ -114,13 +114,16 @@ func NativeToEnvVariableMap(envMap map[string]string, varName string, varValue i
 		envMap[varName] = strconv.FormatBool(varValue.(bool))
 	case string:
 		envMap[varName] = varValue.(string)
-	// floats and ints come here
+	// floats and ints come here when the json parser is not using the UseNumber() parsing flag
 	case float64:
 		if float64(int64(varValue.(float64))) == varValue.(float64) {
 			envMap[varName] = strconv.FormatInt(int64(varValue.(float64)), 10)
 		} else {
 			envMap[varName] = strconv.FormatFloat(varValue.(float64), 'f', 6, 64)
 		}
+	// floats and ints come here when the json parser is using the UseNumber() parsing flag
+	case json.Number:
+		envMap[varName] = varValue.(json.Number).String()
 	case []interface{}:
 		los := ""
 		for _, e := range varValue.([]interface{}) {

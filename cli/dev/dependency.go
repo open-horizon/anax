@@ -31,6 +31,10 @@ type MetadataReference struct {
 	Arch    string `json:"arch"`
 }
 
+func (m MetadataReference) ShortString() string {
+	return fmt.Sprintf("SpecRef: %v, Version: %v, Arch: %v", m.SpecRef, m.Version, m.Arch)
+}
+
 func (m MetadataReference) Validate() error {
 	if (m.Project != "") && (m.SpecRef != "" || m.Org != "" || m.Version != "" || m.Arch != "") {
 		return errors.New(fmt.Sprintf("can contain project or specRef and org, but not both"))
@@ -89,7 +93,7 @@ func (d Dependencies) AddNewDependency(id string, newDep *Dependency) error {
 }
 
 // This is the entry point for the hzn dev dependency fetch command.
-func DependencyFetch(homeDirectory string, project string, specRef string, org string, version string, arch string, userCreds string) {
+func DependencyFetch(homeDirectory string, project string, specRef string, org string, version string, arch string, userCreds string, keyFile string) {
 
 	// Check input parameters for correctness.
 	dir, err := verifyFetchInput(homeDirectory, project, specRef, org, version, arch, userCreds)
@@ -105,7 +109,7 @@ func DependencyFetch(homeDirectory string, project string, specRef string, org s
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'dependency %v' %v", DEPENDENCY_FETCH_COMMAND, err)
 		}
 	} else {
-		if err := fetchExchangeProjectDependency(dir, specRef, org, version, arch, userCreds); err != nil {
+		if err := fetchExchangeProjectDependency(dir, specRef, org, version, arch, userCreds, keyFile); err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'dependency %v' %v", DEPENDENCY_FETCH_COMMAND, err)
 		}
 		target = fmt.Sprintf("specRef: %v, org: %v", specRef, org)
@@ -467,7 +471,7 @@ func fetchLocalProjectDependency(homeDirectory string, project string) error {
 	return nil
 }
 
-func fetchExchangeProjectDependency(homeDirectory string, specRef string, org string, version string, arch string, userCreds string) error {
+func fetchExchangeProjectDependency(homeDirectory string, specRef string, org string, version string, arch string, userCreds string, keyFile string) error {
 
 	// Pull the metadata from the exchange.
 
@@ -487,9 +491,8 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 	if userCreds == "" {
 		userCreds = os.Getenv(DEVTOOL_HZN_USER)
 	}
-	cliutils.ExchangeGet(os.Getenv(DEVTOOL_HZN_EXCHANGE_URL), resSuffix, cliutils.OrgAndCreds(os.Getenv(DEVTOOL_HZN_ORG), userCreds), []int{200}, resp)
-
-	cliutils.Verbose("Response: %v", resp)
+	cliutils.SetWhetherUsingApiKey(userCreds)
+	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), resSuffix, cliutils.OrgAndCreds(os.Getenv(DEVTOOL_HZN_ORG), userCreds), []int{200}, resp)
 
 	// Parse the response and extract the 1 microservice definition or return an error if not 1 ms.
 	var microserviceDef exchange.MicroserviceDefinition
@@ -520,13 +523,28 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 		Arch:    arch,
 	}
 
-	// Get the dependency's deployment config.
+	cliutils.Verbose("Creating dependency %v, Org: %v", newDep.MetaRef.ShortString(), org)
+
+	// Get this project's userinputs.
+	currentUIs, _, err := GetUserInputs(homeDirectory, "")
+	if err != nil {
+		return err
+	}
+
+	// Get the dependency's deployment config and container package info (if any).
 	dc := new(cliexchange.DeploymentConfig)
 	for _, wl := range microserviceDef.Workloads {
 		if err := json.Unmarshal([]byte(wl.Deployment), dc); err != nil {
 			return errors.New(fmt.Sprintf("failed to unmarshal deployment %v: %v", microserviceDef.Workloads[0].Deployment, err))
 		}
 		newDep.DeployConfig = *dc
+
+		// Now that we have the deployment config, we can retrieve the container packages and download into docker.
+		if wl.Torrent != "" {
+			if err := downloadFromImageServer(wl.Torrent, keyFile, currentUIs); err != nil {
+				return err
+			}
+		}
 	}
 
 	// Fill in the parts of the dependency that come from the microservice definition.
@@ -536,8 +554,6 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 	newDep.Sharable = microserviceDef.Sharable
 	newDep.UserInputs = microserviceDef.UserInputs
 	newDep.Global = []GlobalSet{}
-
-	cliutils.Verbose("Found dependency %v, Org: %v", newDep.ShortString(), org)
 
 	// Harden the new dependency in the file.
 	if err := UpdateDependencyFile(homeDirectory, newDep, org); err != nil {
@@ -551,12 +567,6 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 	}
 
 	// Add skeletal userinputs to this project's userinput file.
-
-	// Get this project's userinputs.
-	currentUIs, _, err := GetUserInputs(homeDirectory, "")
-	if err != nil {
-		return err
-	}
 
 	// Loop through this project's microservice variable configurations and add skeletal non-default variables that
 	// are defined by the new dependency.

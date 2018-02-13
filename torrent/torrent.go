@@ -74,19 +74,8 @@ func (w *TorrentWorker) NewEvent(incoming events.Message) {
 	return
 }
 
-func authAttributes(db *bolt.DB) (map[string]map[string]string, *docker.AuthConfigurations, error) {
-	httpAuthAttrs := make(map[string]map[string]string, 0)
-	dockerAuthConfigurations := make(map[string]docker.AuthConfiguration, 0)
+func ExtractAuthAttributes(attributes []persistence.Attribute, httpAuthAttrs map[string]map[string]string, dockerAuthConfigurations map[string]docker.AuthConfiguration) (map[string]map[string]string, map[string]docker.AuthConfiguration, error) {
 
-	wrapDockerAuth := func() *docker.AuthConfigurations {
-		return &docker.AuthConfigurations{Configs: dockerAuthConfigurations}
-	}
-
-	// assemble credentials from attributes
-	attributes, err := persistence.FindApplicableAttributes(db, "")
-	if err != nil {
-		return httpAuthAttrs, wrapDockerAuth(), fmt.Errorf("Error fetching attributes. Error: %v", err)
-	}
 	for _, attr := range attributes {
 		if attr.GetMeta().Type == "HTTPSBasicAuthAttributes" {
 			a := attr.(persistence.HTTPSBasicAuthAttributes)
@@ -113,8 +102,26 @@ func authAttributes(db *bolt.DB) (map[string]map[string]string, *docker.AuthConf
 			}
 		}
 	}
+	return httpAuthAttrs, dockerAuthConfigurations, nil
+}
 
-	return httpAuthAttrs, wrapDockerAuth(), nil
+func authAttributes(db *bolt.DB) (map[string]map[string]string, *docker.AuthConfigurations, error) {
+
+	httpAuthAttrs := make(map[string]map[string]string, 0)
+	dockerAuthConfigurations := make(map[string]docker.AuthConfiguration, 0)
+
+	wrapDockerAuth := func() *docker.AuthConfigurations {
+		return &docker.AuthConfigurations{Configs: dockerAuthConfigurations}
+	}
+
+	// assemble credentials from attributes
+	attributes, err := persistence.FindApplicableAttributes(db, "")
+	if err != nil {
+		return httpAuthAttrs, wrapDockerAuth(), fmt.Errorf("Error fetching attributes. Error: %v", err)
+	}
+
+	httpAuthAttrs, dockerAuthConfigurations, err = ExtractAuthAttributes(attributes, httpAuthAttrs, dockerAuthConfigurations)
+	return httpAuthAttrs, wrapDockerAuth(), err
 }
 
 func processDeployment(cfg *config.HorizonConfig, containerConfig events.ContainerConfig) ([]string, *containermessage.DeploymentDescription, error) {
@@ -145,7 +152,7 @@ func processFetch(cfg *config.HorizonConfig, client *docker.Client, db *bolt.DB,
 	// N.B. Using fetcherrors types even for docker pull errors
 	var fetchErr error
 
-	skipCheckFn := skipCheckFn(client)
+	skipCheckFn := SkipCheckFn(client)
 	if torrentUrl.String() == "" && torrentSig == "" {
 		// using Docker pull (newer option, uses docker client to pull images from repos in image names in deployment description)
 		// Note: we don't want to make this a fallback option, it's a potential security vector
@@ -162,7 +169,7 @@ func processFetch(cfg *config.HorizonConfig, client *docker.Client, db *bolt.DB,
 
 		if fetchErr == nil {
 			// now load those imageFiles using Docker client
-			fetchErr = loadImagesFromPkgParts(client, imageFiles)
+			fetchErr = LoadImagesFromPkgParts(client, imageFiles)
 		}
 	}
 
