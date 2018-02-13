@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 )
 
@@ -43,18 +44,28 @@ func List() {
 	services := make([]OurService, 0)
 	for _, s := range apiServices {
 		serv := OurService{Variables: make(map[string]interface{})}
-		//asl := new(policy.APISpecList)
-		//asl.Add_API_Spec(policy.APISpecification_Factory(s.SensorUrl, s.SensorOrg, s.SensorVersion, cutil.ArchString()))
-		//serv.APISpecs = *asl
-		serv.APISpecs = append(serv.APISpecs, APISpecification{SpecRef: s.SensorUrl, Org: s.SensorOrg, Version: s.SensorVersion, Arch: cutil.ArchString()})
-		// Copy all of the variables from each Mappings into our Variables map
-		for _, a := range s.Attributes {
-			if a.Mappings != nil {
-				for k, v := range *a.Mappings {
-					serv.Variables[k] = v
+
+		arch := cutil.ArchString()
+		for _, attr := range s.Attributes {
+			if b_attr, err := json.Marshal(attr); err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal '/microservice/config' output attribute %v. %v", attr, err)
+				return
+			} else if a, err := persistence.HydrateConcreteAttribute(b_attr); err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to convert '/microservice/config' output attribute %v to its original type. %v", attr, err)
+				return
+			} else {
+				switch a.(type) {
+				case persistence.ArchitectureAttributes:
+					// get arch
+					arch = a.(persistence.ArchitectureAttributes).Architecture
+				case persistence.UserInputAttributes:
+					// get user input
+					serv.Variables = a.GetGenericMappings()
 				}
 			}
 		}
+
+		serv.APISpecs = append(serv.APISpecs, APISpecification{SpecRef: s.SensorUrl, Org: s.SensorOrg, Version: s.SensorVersion, Arch: arch})
 		services = append(services, serv)
 	}
 

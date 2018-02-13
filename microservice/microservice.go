@@ -196,6 +196,7 @@ func GetUpgradeMicroserviceDef(getMicroservice exchange.MicroserviceHandler, msd
 		new_msdef.UpgradeVersionRange = msdef.UpgradeVersionRange
 		new_msdef.AutoUpgrade = msdef.AutoUpgrade
 		new_msdef.ActiveUpgrade = msdef.ActiveUpgrade
+		new_msdef.RequestedArch = msdef.RequestedArch
 
 		glog.V(5).Infof("New upgrade msdef is %v", new_msdef)
 		return new_msdef, nil
@@ -224,6 +225,7 @@ func GetRollbackMicroserviceDef(getMicroservice exchange.MicroserviceHandler, ms
 		new_msdef.UpgradeVersionRange = msdef.UpgradeVersionRange
 		new_msdef.AutoUpgrade = msdef.AutoUpgrade
 		new_msdef.ActiveUpgrade = msdef.ActiveUpgrade
+		new_msdef.RequestedArch = msdef.RequestedArch
 
 		glog.V(5).Infof("New rollback msdef is %v", new_msdef)
 		return new_msdef, nil
@@ -348,7 +350,7 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 			maxAgreements = 2 // hard coded 2 for now, will change to 0 later
 		}
 
-		if msg, err := policy.GeneratePolicy(msdef.SpecRef, msdef.Org, msdef.Name, msdef.Version, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *list, maxAgreements, policyPath, deviceOrg); err != nil {
+		if msg, err := policy.GeneratePolicy(msdef.SpecRef, msdef.Org, msdef.Name, msdef.Version, msdef.RequestedArch, &props, haPartner, meterPolicy, counterPartyProperties, *list, maxAgreements, policyPath, deviceOrg); err != nil {
 			return fmt.Errorf("Failed to generate policy for %v version %v. Error: %v", msdef.SpecRef, msdef.Version, err)
 		} else {
 			e <- msg

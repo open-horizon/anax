@@ -97,80 +97,13 @@ func UpdateConfigstate(cfg *Configstate,
 
 		glog.V(3).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig of microservices starting")))
 
-		// Get the pattern definition from the exchange. There should only be one pattern returned in the map.
-		pattern, err := getPatterns(pDevice.Org, pDevice.Pattern, pDevice.GetId(), pDevice.Token)
+		common_apispec_list, err := getSpecRefsForPattern(pDevice.Pattern, pDevice.Org, pDevice.GetId(), pDevice.Token, getPatterns, resolveWorkload, db, config)
 		if err != nil {
-			return errorhandler(NewSystemError(fmt.Sprintf("Unable to read pattern object %v from exchange, error %v", pDevice.Pattern, err))), nil, nil
-		} else if len(pattern) != 1 {
-			return errorhandler(NewSystemError(fmt.Sprintf("Expected only 1 pattern from exchange, received %v", len(pattern)))), nil, nil
+			return errorhandler(err), nil, nil
 		}
 
-		// Get the pattern definition that we need to analyze.
-		patId := fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Pattern)
-		patternDef, ok := pattern[patId]
-		if !ok {
-			return errorhandler(NewSystemError(fmt.Sprintf("Expected pattern id not found in GET pattern response: %v", pattern))), nil, nil
-		}
-
-		glog.V(5).Infof(apiLogString(fmt.Sprintf("Configstate working with pattern definition %v", patternDef)))
-
-		// For each workload in the pattern, resolve the workload to a list of required microservices.
-		completeAPISpecList := new(policy.APISpecList)
-		thisArch := cutil.ArchString()
-		for _, workload := range patternDef.Workloads {
-
-			// Ignore workloads that don't match this node's hardware architecture.
-			if workload.WorkloadArch != thisArch {
-				glog.Infof(apiLogString(fmt.Sprintf("Configstate skipping workload because it is for a different hardware architecture, this node is %v. Skipped workload is: %v", thisArch, workload)))
-				continue
-			}
-
-			// Each workload in the pattern can specify rollback workload versions, so to get a fully qualified workload URL,
-			// we need to iterate each workload choice to grab the version.
-			for _, workloadChoice := range workload.WorkloadVersions {
-				_, workloadDef, err := resolveWorkload(workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, thisArch, pDevice.GetId(), pDevice.Token)
-				if err != nil {
-					return errorhandler(NewSystemError(fmt.Sprintf("Error resolving workload %v %v %v %v, error %v", workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, thisArch, err))), nil, nil
-				}
-
-				// The workload might have variables that need to be configured. If so, find all relevant workloadconfig objects to make sure
-				// there is a workload config available.
-				if present, err := workloadConfigPresent(workloadDef, workload.WorkloadURL, workloadChoice.Version, db); err != nil {
-					return errorhandler(NewSystemError(fmt.Sprintf("Error checking workload config, error %v", err))), nil, nil
-				} else if !present {
-					return errorhandler(NewMSMissingVariableConfigError(fmt.Sprintf("Workload config for %v %v is missing", workload.WorkloadURL, workloadChoice.Version), "configstate.state")), nil, nil
-				}
-
-				// get the ms references from the workload, the version here is a version range.
-				apiSpecList := new(policy.APISpecList)
-				for _, apiSpec := range workloadDef.APISpecs {
-					newAPISpec := policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch)
-					(*apiSpecList) = append((*apiSpecList), (*newAPISpec))
-				}
-
-				// MergeWith will omit exact duplicates when merging the 2 lists.
-				(*completeAPISpecList) = completeAPISpecList.MergeWith(apiSpecList)
-			}
-
-		}
-
-		glog.V(5).Infof(apiLogString(fmt.Sprintf("Configstate resolved pattern to APISpecs %v", *completeAPISpecList)))
-
-		// If the pattern search doesnt find any microservices then there is a problem.
-		if len(*completeAPISpecList) == 0 {
-			return errorhandler(NewAPIUserInputError(fmt.Sprintf("No microservices found for %v %v.", patId, thisArch), "configstate.state")), nil, nil
-		}
-
-		// for now, anax only allow one microservice version, so we need to get the common version range for each microservice.
-		common_apispec_list, err := completeAPISpecList.GetCommonVersionRanges()
-		if err != nil {
-			return errorhandler(NewAPIUserInputError(fmt.Sprintf("Error resolving the common version ranges for the referenced microservices for %v %v. %v", patId, thisArch, err), "configstate.state")), nil, nil
-		}
-
-		glog.V(5).Infof(apiLogString(fmt.Sprintf("Configstate resolved microservice version ranges to %v", *common_apispec_list)))
-
-		if len(*common_apispec_list) == 0 {
-			return errorhandler(NewAPIUserInputError(fmt.Sprintf("No microservices have the common version ranges for %v %v.", patId, thisArch), "configstate.state")), nil, nil
+		if common_apispec_list == nil || len(*common_apispec_list) == 0 {
+			return errorhandler(NewAPIUserInputError(fmt.Sprintf("No microservices have the common version ranges for %v %v.", pDevice.Pattern, pDevice.Org), "configstate.state")), nil, nil
 		}
 
 		// Using the list of APISpec objects, we can create a service (microservice) on this node automatically, for each microservice
@@ -179,8 +112,8 @@ func UpdateConfigstate(cfg *Configstate,
 		passthruHandler := GetPassThroughErrorHandler(&createServiceError)
 		for _, apiSpec := range *common_apispec_list {
 
-			service := NewService(apiSpec.SpecRef, apiSpec.Org, makeServiceName(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version), apiSpec.Version)
-			errHandled, newService, msg := CreateService(service, passthruHandler, getMicroservice, db, config)
+			service := NewService(apiSpec.SpecRef, apiSpec.Org, makeServiceName(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version), apiSpec.Arch, apiSpec.Version)
+			errHandled, newService, msg := CreateService(service, passthruHandler, getPatterns, resolveWorkload, getMicroservice, db, config, false)
 			if errHandled {
 				switch createServiceError.(type) {
 				case *MSMissingVariableConfigError:
@@ -193,14 +126,6 @@ func UpdateConfigstate(cfg *Configstate,
 					// If the microservice is already registered, that's ok because the node user is allowed to configure any of the
 					// required microservices before calling the configstate API.
 					glog.V(3).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig found duplicate microservice %v %v, overwriting the version range to %v.", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version)))
-
-					// overwrite the UpgradeVersionRange for microservice definition. The user defined version range will be ignored in pattern case
-					if pmsdef, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UnarchivedMSFilter(), persistence.UrlMSFilter(apiSpec.SpecRef)}); err != nil {
-						return errorhandler(NewSystemError(fmt.Sprintf("Error accessing db to find microservice definition: %v", err))), nil, nil
-					} else if pmsdef != nil && len(pmsdef) > 0 {
-						// there is only one active msdef at a time
-						persistence.MSDefNewUpgradeVersionRange(db, pmsdef[0].Id, apiSpec.Version)
-					}
 
 				default:
 					return errorhandler(NewSystemError(fmt.Sprintf("unexpected error returned from service create (%T) %v", createServiceError, createServiceError))), nil, nil
@@ -263,6 +188,92 @@ func workloadConfigPresent(workloadDef *exchange.WorkloadDefinition, wUrl string
 	}
 	return true, nil
 
+}
+
+func getSpecRefsForPattern(patName string,
+	patOrg string,
+	devId string,
+	devToken string,
+	getPatterns exchange.PatternHandler,
+	resolveWorkload exchange.WorkloadResolverHandler,
+	db *bolt.DB,
+	config *config.HorizonConfig) (*policy.APISpecList, error) {
+
+	glog.V(5).Infof(apiLogString(fmt.Sprintf("getSpecRefsForPattern %v org %v", patName, patOrg)))
+
+	// Get the pattern definition from the exchange. There should only be one pattern returned in the map.
+	pattern, err := getPatterns(patOrg, patName, devId, devToken)
+	if err != nil {
+		return nil, NewSystemError(fmt.Sprintf("Unable to read pattern object %v from exchange, error %v", patName, err))
+	} else if len(pattern) != 1 {
+		return nil, NewSystemError(fmt.Sprintf("Expected only 1 pattern from exchange, received %v", len(pattern)))
+	}
+
+	// Get the pattern definition that we need to analyze.
+	patId := fmt.Sprintf("%v/%v", patOrg, patName)
+	patternDef, ok := pattern[patId]
+	if !ok {
+		return nil, NewSystemError(fmt.Sprintf("Expected pattern id not found in GET pattern response: %v", pattern))
+	}
+
+	glog.V(5).Infof(apiLogString(fmt.Sprintf("working with pattern definition %v", patternDef)))
+
+	// For each workload in the pattern, resolve the workload to a list of required microservices.
+	completeAPISpecList := new(policy.APISpecList)
+	thisArch := cutil.ArchString()
+	for _, workload := range patternDef.Workloads {
+
+		// Ignore workloads that don't match this node's hardware architecture.
+		if workload.WorkloadArch != thisArch && config.ArchSynonyms.GetCanonicalArch(workload.WorkloadArch) != thisArch {
+			glog.Infof(apiLogString(fmt.Sprintf("skipping workload because it is for a different hardware architecture, this node is %v. Skipped workload is: %v", thisArch, workload)))
+			continue
+		}
+
+		// Each workload in the pattern can specify rollback workload versions, so to get a fully qualified workload URL,
+		// we need to iterate each workload choice to grab the version.
+		for _, workloadChoice := range workload.WorkloadVersions {
+			_, workloadDef, err := resolveWorkload(workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, workload.WorkloadArch, devId, devToken)
+			if err != nil {
+				return nil, NewSystemError(fmt.Sprintf("Error resolving workload %v %v %v %v, error %v", workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, thisArch, err))
+			}
+
+			// The workload might have variables that need to be configured. If so, find all relevant workloadconfig objects to make sure
+			// there is a workload config available.
+			if present, err := workloadConfigPresent(workloadDef, workload.WorkloadURL, workloadChoice.Version, db); err != nil {
+				return nil, NewSystemError(fmt.Sprintf("Error checking workload config, error %v", err))
+			} else if !present {
+				return nil, NewMSMissingVariableConfigError(fmt.Sprintf("Workload config for %v %v is missing", workload.WorkloadURL, workloadChoice.Version), "configstate.state")
+			}
+
+			// get the ms references from the workload, the version here is a version range.
+			apiSpecList := new(policy.APISpecList)
+			for _, apiSpec := range workloadDef.APISpecs {
+				if apiSpec.Arch != thisArch && config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch) != thisArch {
+					return nil, NewSystemError(fmt.Sprintf("The referenced microservice %v by workload %v has the hardware architecture that is not supported by this node.", apiSpec, workload.WorkloadURL))
+				}
+				newAPISpec := policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch)
+				(*apiSpecList) = append((*apiSpecList), (*newAPISpec))
+			}
+
+			// MergeWith will omit exact duplicates when merging the 2 lists.
+			(*completeAPISpecList) = completeAPISpecList.MergeWith(apiSpecList)
+		}
+
+	}
+
+	// If the pattern search doesnt find any microservices then there is a problem.
+	if len(*completeAPISpecList) == 0 {
+		return nil, nil
+	}
+
+	// for now, anax only allow one microservice version, so we need to get the common version range for each microservice.
+	common_apispec_list, err := completeAPISpecList.GetCommonVersionRanges()
+	if err != nil {
+		return nil, NewAPIUserInputError(fmt.Sprintf("Error resolving the common version ranges for the referenced microservices for %v %v. %v", patId, thisArch, err), "configstate.state")
+	}
+	glog.V(5).Infof(apiLogString(fmt.Sprintf("getSpecRefsForPattern resolved microservice version ranges to %v", *common_apispec_list)))
+
+	return common_apispec_list, nil
 }
 
 // Generate a name for the autoconfigured services.

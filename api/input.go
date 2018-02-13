@@ -136,6 +136,7 @@ type Service struct {
 	SensorUrl     *string      `json:"sensor_url"`     // uniquely identifying
 	SensorOrg     *string      `json:"sensor_org"`     // The org that holds the ms definition
 	SensorName    *string      `json:"sensor_name"`    // may not be uniquely identifying
+	SensorArch    *string      `json:"sensor_arch"`    // the arch of the microservice defined in the exchange
 	SensorVersion *string      `json:"sensor_version"` // added for ms split. It is only used for microsevice. If it is omitted, old behavior is asumed.
 	AutoUpgrade   *bool        `json:"auto_upgrade"`   // added for ms split. The default is true. If the sensor (microservice) should be automatically upgraded when new versions become available.
 	ActiveUpgrade *bool        `json:"active_upgrade"` // added for ms split. The default is false. If horizon should actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade.
@@ -146,6 +147,7 @@ func (s *Service) String() string {
 	sURL := ""
 	sOrg := ""
 	sName := ""
+	sArch := ""
 	sVersion := ""
 	auto_upgrade := ""
 	active_upgrade := ""
@@ -162,6 +164,10 @@ func (s *Service) String() string {
 		sName = *s.SensorName
 	}
 
+	if s.SensorArch != nil {
+		sArch = *s.SensorArch
+	}
+
 	if s.SensorVersion != nil {
 		sVersion = *s.SensorVersion
 	}
@@ -174,11 +180,11 @@ func (s *Service) String() string {
 		active_upgrade = strconv.FormatBool(*s.ActiveUpgrade)
 	}
 
-	return fmt.Sprintf("SensorUrl: %v, SensorOrg: %v, SensorName: %v, SensorVersion: %v, AutoUpgrade: %v, ActiveUpgrade: %v, Attributes: %v", sURL, sOrg, sName, sVersion, auto_upgrade, active_upgrade, s.Attributes)
+	return fmt.Sprintf("SensorUrl: %v, SensorOrg: %v, SensorName: %v, SensorArch: %v, SensorVersion: %v, AutoUpgrade: %v, ActiveUpgrade: %v, Attributes: %v", sURL, sOrg, sName, sArch, sVersion, auto_upgrade, active_upgrade, s.Attributes)
 }
 
 // Constructor used to create service objects for programmatic creation of services.
-func NewService(url string, org string, name string, v string) *Service {
+func NewService(url string, org string, name string, arch string, v string) *Service {
 	autoUpgrade := microservice.MS_DEFAULT_AUTOUPGRADE
 	activeUpgrade := microservice.MS_DEFAULT_ACTIVEUPGRADE
 
@@ -186,6 +192,7 @@ func NewService(url string, org string, name string, v string) *Service {
 		SensorUrl:     &url,
 		SensorOrg:     &org,
 		SensorName:    &name,
+		SensorArch:    &arch,
 		SensorVersion: &v,
 		AutoUpgrade:   &autoUpgrade,
 		ActiveUpgrade: &activeUpgrade,

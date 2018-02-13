@@ -75,6 +75,8 @@ func (a *API) microserviceconfig(w http.ResponseWriter, r *http.Request) {
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
 		getMicroservice := a.exchHandlers.GetHTTPMicroserviceHandler()
+		getPatterns := a.exchHandlers.GetHTTPExchangePatternHandler()
+		resolveWorkload := a.exchHandlers.GetHTTPWorkloadResolverHandler()
 
 		// Input should be: Service type w/ zero or more Attribute types
 		var service Service
@@ -90,7 +92,7 @@ func (a *API) microserviceconfig(w http.ResponseWriter, r *http.Request) {
 
 		// Validate and create the service object and all of the service specific attributes in the body
 		// of the request.
-		errHandled, newService, msg := CreateService(&service, errorhandler, getMicroservice, a.db, a.Config)
+		errHandled, newService, msg := CreateService(&service, errorhandler, getPatterns, resolveWorkload, getMicroservice, a.db, a.Config, true)
 		if errHandled {
 			return
 		}
@@ -128,7 +130,7 @@ func (a *API) microservicepolicy(w http.ResponseWriter, r *http.Request) {
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
 		// Gather all the policies from the local filesystem and format them for output.
-		if out, err := FindPoliciesForOutput(a.pm); err != nil {
+		if out, err := FindPoliciesForOutput(a.pm, a.db); err != nil {
 			errorhandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
 		} else {
 			writeResponse(w, out, http.StatusOK)

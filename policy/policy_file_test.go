@@ -17,7 +17,7 @@ func Test_reads_and_writes_file(t *testing.T) {
 
 	var saved_pf *Policy
 
-	if pf, err := ReadPolicyFile("./test/pftest/test1.policy"); err != nil {
+	if pf, err := ReadPolicyFile("./test/pftest/test1.policy", make(map[string]string)); err != nil {
 		t.Error(err)
 	} else if pf.Header.Name != "test policy" {
 		t.Errorf("Demarshalled file has incorrect name: %v", pf.Header.Name)
@@ -53,11 +53,33 @@ func Test_reads_and_writes_file(t *testing.T) {
 
 }
 
+func Test_ConvertSpecRefArchToGOARCH(t *testing.T) {
+
+	arch_synonyms := map[string]string{
+		"x86_64": "amd64",
+		"blah":   "amd64",
+		"armhf":  "arm",
+	}
+
+	if pf, err := ReadPolicyFile("./test/pftest/test2.policy", arch_synonyms); err != nil {
+		t.Error(err)
+	} else if pf.Header.Name != "test policy" {
+		t.Errorf("Demarshalled file has incorrect name: %v", pf.Header.Name)
+	} else if pf.DeviceType != "12345-54321-abcdef-fedcba" {
+		t.Errorf("Demarshalled file has incorrect DeviceType: %v", pf.DeviceType)
+	} else {
+		api_spec := pf.APISpecs[0]
+		if api_spec.Arch != "amd64" {
+			t.Errorf("Failed to convert the arch x86_64 in the spec ref to its canonical synonym amd64. %v", api_spec)
+		}
+	}
+}
+
 func Test_getPolicyFiles(t *testing.T) {
 
 	if files, err := getPolicyFiles("./test/pftest/"); err != nil {
 		t.Error(err)
-	} else if len(files) != 2 || files[0].Name() != "echo.policy" || files[1].Name() != "test1.policy" {
+	} else if len(files) != 3 || files[0].Name() != "echo.policy" || files[1].Name() != "test1.policy" || files[2].Name() != "test2.policy" {
 		t.Errorf("Did not see all policy files, saw %v", files)
 	}
 }
@@ -120,7 +142,7 @@ func Test_PolicyFileChangeWatcher(t *testing.T) {
 
 	// Test a single call into the watcher
 	contents := NewContents()
-	if _, err := PolicyFileChangeWatcher("./test/pfwatchtest/", contents, changeNotify, deleteNotify, errorNotify, nil, 0); err != nil {
+	if _, err := PolicyFileChangeWatcher("./test/pfwatchtest/", contents, make(map[string]string), changeNotify, deleteNotify, errorNotify, nil, 0); err != nil {
 		t.Error(err)
 	} else if changeDetected != 1 || deleteDetected != 0 || errorDetected != 0 {
 		t.Errorf("Incorrect number of events fired. Expected 1 change, saw %v, expected 0 deletes, saw %v, expected 0 errors, saw %v", changeDetected, deleteDetected, errorDetected)
@@ -130,7 +152,7 @@ func Test_PolicyFileChangeWatcher(t *testing.T) {
 
 	// Test a continously running watcher
 	contents = NewContents()
-	go PolicyFileChangeWatcher("./test/pfwatchtest/", contents, changeNotify, deleteNotify, errorNotify, nil, checkInterval)
+	go PolicyFileChangeWatcher("./test/pfwatchtest/", contents, make(map[string]string), changeNotify, deleteNotify, errorNotify, nil, checkInterval)
 
 	// Give the watcher a chance to read the contents of the pfwatchtest directory and fire events
 	time.Sleep(3 * time.Second)
@@ -208,7 +230,7 @@ func Test_PolicyFileChangeWatcher_Empty(t *testing.T) {
 
 	// Test a single call into the watcher
 	contents := NewContents()
-	if _, err := PolicyFileChangeWatcher("/tmp/pfempty", contents, changeNotify, deleteNotify, errorNotify, nil, 0); err != nil {
+	if _, err := PolicyFileChangeWatcher("/tmp/pfempty", contents, make(map[string]string), changeNotify, deleteNotify, errorNotify, nil, 0); err != nil {
 		t.Error(err)
 	} else if changeDetected != 0 || deleteDetected != 0 || errorDetected != 0 {
 		t.Errorf("Incorrect number of events fired. Expected 0 changes, saw %v, expected 0 deletes, saw %v, expected 0 errors, saw %v", changeDetected, deleteDetected, errorDetected)
@@ -238,7 +260,7 @@ func Test_PolicyFileChangeWatcher_NoDir(t *testing.T) {
 
 	// Test a single call into the watcher
 	contents := NewContents()
-	if _, err := PolicyFileChangeWatcher("./test/notexist/", contents, changeNotify, deleteNotify, errorNotify, nil, 0); err == nil {
+	if _, err := PolicyFileChangeWatcher("./test/notexist/", contents, make(map[string]string), changeNotify, deleteNotify, errorNotify, nil, 0); err == nil {
 		t.Error("Expected 'no such directory error', but no error was returned.")
 	} else if !strings.Contains(err.Error(), "no such file or directory") {
 		t.Errorf("Expected 'no such directory' error, but received %v", err)
@@ -249,9 +271,9 @@ func Test_PolicyFileChangeWatcher_NoDir(t *testing.T) {
 // Let's start with a compatible test between a producer and consumer.
 func Test_Policy_Compatible(t *testing.T) {
 
-	if pf_prod, err := ReadPolicyFile("./test/pfcompat1/testorg/device.policy"); err != nil {
+	if pf_prod, err := ReadPolicyFile("./test/pfcompat1/testorg/device.policy", make(map[string]string)); err != nil {
 		t.Error(err)
-	} else if pf_con, err := ReadPolicyFile("./test/pfcompat1/testorg/agbot.policy"); err != nil {
+	} else if pf_con, err := ReadPolicyFile("./test/pfcompat1/testorg/agbot.policy", make(map[string]string)); err != nil {
 		t.Error(err)
 	} else if err := Are_Compatible(pf_prod, pf_con); err != nil {
 		t.Error(err)
@@ -261,9 +283,9 @@ func Test_Policy_Compatible(t *testing.T) {
 // Let's try an incompatible test between a producer and consumer.
 func Test_Policy_Incompatible(t *testing.T) {
 
-	if pf_prod, err := ReadPolicyFile("./test/pfincompat1/device.policy"); err != nil {
+	if pf_prod, err := ReadPolicyFile("./test/pfincompat1/device.policy", make(map[string]string)); err != nil {
 		t.Error(err)
-	} else if pf_con, err := ReadPolicyFile("./test/pfincompat1/agbot.policy"); err != nil {
+	} else if pf_con, err := ReadPolicyFile("./test/pfincompat1/agbot.policy", make(map[string]string)); err != nil {
 		t.Error(err)
 	} else if err := Are_Compatible(pf_prod, pf_con); err == nil {
 		t.Errorf("Error: %v is not compatible with %v\n", pf_prod, pf_con)
@@ -279,9 +301,9 @@ func Test_Policy_Merge(t *testing.T) {
 		os.Remove("./test/pfmerge1/merged.policy")
 	}
 
-	if pf_prod, err := ReadPolicyFile("./test/pfmerge1/device.policy"); err != nil {
+	if pf_prod, err := ReadPolicyFile("./test/pfmerge1/device.policy", make(map[string]string)); err != nil {
 		t.Error(err)
-	} else if pf_con, err := ReadPolicyFile("./test/pfmerge1/agbot.policy"); err != nil {
+	} else if pf_con, err := ReadPolicyFile("./test/pfmerge1/agbot.policy", make(map[string]string)); err != nil {
 		t.Error(err)
 	} else if pf_merged, err := Create_Terms_And_Conditions(pf_prod, pf_con, &pf_con.Workloads[0], "12345", "", 600, 1); err != nil {
 		t.Error(err)
@@ -307,9 +329,9 @@ func Test_Producer_Policy_Compatible_basic(t *testing.T) {
 		os.Remove("./test/pfcompat2/merged.policy")
 	}
 
-	if pf_prod1, err := ReadPolicyFile("./test/pfcompat2/device1.policy"); err != nil {
+	if pf_prod1, err := ReadPolicyFile("./test/pfcompat2/device1.policy", make(map[string]string)); err != nil {
 		t.Error(err)
-	} else if pf_prod2, err := ReadPolicyFile("./test/pfcompat2/device2.policy"); err != nil {
+	} else if pf_prod2, err := ReadPolicyFile("./test/pfcompat2/device2.policy", make(map[string]string)); err != nil {
 		t.Error(err)
 	} else if pf_merged, err := Are_Compatible_Producers(pf_prod1, pf_prod2, 600); err != nil {
 		t.Error(err)
@@ -373,7 +395,7 @@ func Test_Policy_Creation(t *testing.T) {
 
 // Now let's make sure we are obscuring the workload password
 func Test_Policy_Workload_obscure1(t *testing.T) {
-	if pf_prod1, err := ReadPolicyFile("./test/pftest/test1.policy"); err != nil {
+	if pf_prod1, err := ReadPolicyFile("./test/pftest/test1.policy", make(map[string]string)); err != nil {
 		t.Error(err)
 	} else {
 		pf_prod1.Workloads[0].WorkloadPassword = "abcdefg"
@@ -386,7 +408,7 @@ func Test_Policy_Workload_obscure1(t *testing.T) {
 }
 
 func Test_Policy_Workload_obscure2(t *testing.T) {
-	if pf_prod1, err := ReadPolicyFile("./test/pftest/test1.policy"); err != nil {
+	if pf_prod1, err := ReadPolicyFile("./test/pftest/test1.policy", make(map[string]string)); err != nil {
 		t.Error(err)
 	} else {
 		pf_prod1.Workloads[0].WorkloadPassword = "abcdefg"

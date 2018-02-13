@@ -10,7 +10,7 @@ import (
 
 func Test_Payloadmanager_init_success1(t *testing.T) {
 
-	if pm, err := Initialize("./test/pffindtest/", nil, true); err != nil {
+	if pm, err := Initialize("./test/pffindtest/", make(map[string]string), nil, true); err != nil {
 		t.Error(err)
 	} else {
 
@@ -32,7 +32,7 @@ func Test_Payloadmanager_init_success1(t *testing.T) {
 
 func Test_Payloadmanager_init_success2(t *testing.T) {
 
-	if pm, err := Initialize("./test/pfmultiorg/", nil, true); err != nil {
+	if pm, err := Initialize("./test/pfmultiorg/", make(map[string]string), nil, true); err != nil {
 		t.Error(err)
 	} else {
 
@@ -54,13 +54,13 @@ func Test_Payloadmanager_init_success2(t *testing.T) {
 
 func Test_Payloadmanager_dup_policy_name(t *testing.T) {
 
-	if _, err := Initialize("./test/pfduptest/", nil, true); err == nil {
+	if _, err := Initialize("./test/pfduptest/", make(map[string]string), nil, true); err == nil {
 		t.Errorf("Should have found duplicate policy names but did not.")
 	}
 }
 
 func Test_contractCounter_success(t *testing.T) {
-	if pm, err := Initialize("./test/pfmatchtest/", nil, true); err != nil {
+	if pm, err := Initialize("./test/pfmatchtest/", make(map[string]string), nil, true); err != nil {
 		t.Error(err)
 	} else {
 
@@ -122,7 +122,7 @@ func Test_contractCounter_success(t *testing.T) {
 func Test_contractCounter_failure1(t *testing.T) {
 
 	var wrongPol *Policy
-	if pm, err := Initialize("./test/pffindtest/", nil, true); err != nil {
+	if pm, err := Initialize("./test/pffindtest/", make(map[string]string), nil, true); err != nil {
 		t.Error(err)
 	} else {
 		// Grab the wrong policy so that we can do error tests
@@ -135,7 +135,7 @@ func Test_contractCounter_failure1(t *testing.T) {
 		t.Errorf("Should have returned policy pointer.")
 	}
 
-	if pm, err := Initialize("./test/pfmatchtest/", nil, true); err != nil {
+	if pm, err := Initialize("./test/pfmatchtest/", make(map[string]string), nil, true); err != nil {
 		t.Error(err)
 	} else {
 
@@ -207,7 +207,7 @@ func Test_contractCounter_failure1(t *testing.T) {
 
 func Test_find_by_apispec1(t *testing.T) {
 
-	if pm, err := Initialize("./test/pfcompat1/", nil, true); err != nil {
+	if pm, err := Initialize("./test/pfcompat1/", make(map[string]string), nil, true); err != nil {
 		t.Error(err)
 	} else {
 		searchURL := "http://mycompany.com/dm/gps"
@@ -231,7 +231,7 @@ func Test_find_by_apispec1(t *testing.T) {
 }
 
 func Test_add_policy(t *testing.T) {
-	if pm, err := Initialize("./test/pffindtest/", nil, false); err != nil {
+	if pm, err := Initialize("./test/pffindtest/", make(map[string]string), nil, false); err != nil {
 		t.Error(err)
 	} else {
 

@@ -224,7 +224,7 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 	case *AdvertisePolicyCommand:
 		cmd, _ := command.(*AdvertisePolicyCommand)
 
-		if newPolicy, err := policy.ReadPolicyFile(cmd.PolicyFile); err != nil {
+		if newPolicy, err := policy.ReadPolicyFile(cmd.PolicyFile, w.Config.ArchSynonyms); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("unable to read policy file %v into memory, error: %v", cmd.PolicyFile, err)))
 		} else {
 			w.pm.UpdatePolicy(exchange.GetOrg(w.deviceId), newPolicy)

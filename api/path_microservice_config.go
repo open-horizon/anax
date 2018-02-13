@@ -21,7 +21,7 @@ func FindServiceConfigForOutput(pm *policy.PolicyManager, db *bolt.DB) (map[stri
 	outConfig := make([]MicroserviceConfig, 0, 10)
 
 	// Get all the policies so that we can grab the pieces we need from there
-	policies, err := FindPoliciesForOutput(pm)
+	policies, err := FindPoliciesForOutput(pm, db)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to get local policies, error %v", err))
 	}
@@ -67,9 +67,11 @@ func FindServiceConfigForOutput(pm *policy.PolicyManager, db *bolt.DB) (map[stri
 // Given a demarshalled Service object, validate it and save it, returning any errors.
 func CreateService(service *Service,
 	errorhandler ErrorHandler,
+	getPatterns exchange.PatternHandler,
+	resolveWorkload exchange.WorkloadResolverHandler,
 	getMicroservice exchange.MicroserviceHandler,
 	db *bolt.DB,
-	config *config.HorizonConfig) (bool, *Service, *events.PolicyCreatedMessage) {
+	config *config.HorizonConfig, from_user bool) (bool, *Service, *events.PolicyCreatedMessage) {
 
 	// Check for the device in the local database. If there are errors, they will be written
 	// to the HTTP response.
@@ -87,10 +89,42 @@ func CreateService(service *Service,
 		return true, nil, nil
 	}
 
+	// use the pattern arch and version range in the pattern case if this is a user config, ignore the arch and version range from the user input.
+	if pDevice.Pattern != "" && from_user {
+		common_apispec_list, err := getSpecRefsForPattern(pDevice.Pattern, pDevice.Org, pDevice.GetId(), pDevice.Token, getPatterns, resolveWorkload, db, config)
+		if err != nil {
+			return errorhandler(err), nil, nil
+		}
+
+		if common_apispec_list == nil || len(*common_apispec_list) == 0 {
+			return errorhandler(NewAPIUserInputError(fmt.Sprintf("No microservices have the common version ranges for %v %v.", pDevice.Pattern, pDevice.Org), "configstate.state")), nil, nil
+		}
+
+		for _, apiSpec := range *common_apispec_list {
+			if apiSpec.SpecRef == *service.SensorUrl {
+				service.SensorOrg = &apiSpec.Org
+				service.SensorVersion = &apiSpec.Version
+				service.SensorArch = &apiSpec.Arch
+				break
+			}
+		}
+	}
+
 	// Use the device's org if org not specified in the service object.
-	if service.SensorOrg == nil || *service.SensorVersion == "" {
+	if service.SensorOrg == nil || *service.SensorOrg == "" {
 		service.SensorOrg = &pDevice.Org
 	} else if bail := checkInputString(errorhandler, "service.sensor_org", service.SensorOrg); bail {
+		return true, nil, nil
+	}
+
+	// Return error if the arch in the service object is not a synonym of the node's arch.
+	// Use the device's arch if not specified in the service object.
+	thisArch := cutil.ArchString()
+	if service.SensorArch == nil || *service.SensorArch == "" {
+		service.SensorArch = &thisArch
+	} else if *service.SensorArch != thisArch && config.ArchSynonyms.GetCanonicalArch(*service.SensorArch) != thisArch {
+		return errorhandler(NewAPIUserInputError(fmt.Sprintf("sensor arch %v is not supported by this node.", *service.SensorArch), "service.sensor_arch")), nil, nil
+	} else if bail := checkInputString(errorhandler, "service.sensor_arch", service.SensorArch); bail {
 		return true, nil, nil
 	}
 
@@ -115,9 +149,20 @@ func CreateService(service *Service,
 
 	// Verify with the exchange to make sure the microservice definition is readable by this node.
 	var msdef *persistence.MicroserviceDefinition
-	e_msdef, err := getMicroservice(*service.SensorUrl, *service.SensorOrg, vExp.Get_expression(), cutil.ArchString(), pDevice.GetId(), pDevice.Token)
-	if err != nil || e_msdef == nil {
-		return errorhandler(NewAPIUserInputError(fmt.Sprintf("Unable to find the microservice definition using  %v %v %v %v in the exchange.", *service.SensorUrl, *service.SensorOrg, vExp.Get_expression(), cutil.ArchString()), "service")), nil, nil
+	var e_msdef *exchange.MicroserviceDefinition
+	var err1 error
+	e_msdef, err1 = getMicroservice(*service.SensorUrl, *service.SensorOrg, vExp.Get_expression(), *service.SensorArch, pDevice.GetId(), pDevice.Token)
+	if err1 != nil || e_msdef == nil {
+		if *service.SensorArch == thisArch {
+			// failed with user defined arch
+			return errorhandler(NewAPIUserInputError(fmt.Sprintf("Unable to find the microservice definition using  %v %v %v %v in the exchange.", *service.SensorUrl, *service.SensorOrg, vExp.Get_expression(), *service.SensorArch), "service")), nil, nil
+		} else {
+			// try node's arch
+			e_msdef, err1 = getMicroservice(*service.SensorUrl, *service.SensorOrg, vExp.Get_expression(), thisArch, pDevice.GetId(), pDevice.Token)
+			if err1 != nil || e_msdef == nil {
+				return errorhandler(NewAPIUserInputError(fmt.Sprintf("Unable to find the microservice definition using  %v %v %v %v in the exchange.", *service.SensorUrl, *service.SensorOrg, vExp.Get_expression(), thisArch), "service")), nil, nil
+			}
+		}
 	}
 
 	// Convert the microservice definition to a persistent format so that it can be saved to the db.
@@ -128,7 +173,8 @@ func CreateService(service *Service,
 
 	// Save some of the items in the MicroserviceDefinition object for use in the upgrading process.
 	msdef.Name = *service.SensorName
-	msdef.UpgradeVersionRange = *service.SensorVersion
+	msdef.RequestedArch = *service.SensorArch
+	msdef.UpgradeVersionRange = vExp.Get_expression()
 	if service.AutoUpgrade != nil {
 		msdef.AutoUpgrade = *service.AutoUpgrade
 	}
@@ -204,7 +250,7 @@ func CreateService(service *Service,
 	}
 
 	// Information advertised in the edge node policy file
-	var policyArch string
+	//var policyArch string
 	var haPartner []string
 	var meterPolicy policy.Meter
 	var counterPartyProperties policy.RequiredProperty
@@ -290,7 +336,14 @@ func CreateService(service *Service,
 			props["ram"] = strconv.FormatInt(compute.RAM, 10)
 
 		case *persistence.ArchitectureAttributes:
-			policyArch = attr.(*persistence.ArchitectureAttributes).Architecture
+			// save the sensor arch to db
+			if attr.(*persistence.ArchitectureAttributes).Architecture != *service.SensorArch {
+				attr.(*persistence.ArchitectureAttributes).Architecture = *service.SensorArch
+				_, err := persistence.SaveOrUpdateAttribute(db, attr, attr.GetMeta().Id, false)
+				if err != nil {
+					return errorhandler(NewSystemError(fmt.Sprintf("error saving attribute %v, error %v", attr, err))), nil, nil
+				}
+			}
 
 		case *persistence.HAAttributes:
 			haPartner = attr.(*persistence.HAAttributes).Partners
@@ -356,7 +409,7 @@ func CreateService(service *Service,
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("Create service: %v", service)))
 
 	// Generate a policy based on all the attributes and the service definition.
-	if msg, genErr := policy.GeneratePolicy(*service.SensorUrl, *service.SensorOrg, *service.SensorName, *service.SensorVersion, policyArch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, maxAgreements, config.Edge.PolicyPath, pDevice.Org); genErr != nil {
+	if msg, genErr := policy.GeneratePolicy(*service.SensorUrl, *service.SensorOrg, *service.SensorName, *service.SensorVersion, *service.SensorArch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, maxAgreements, config.Edge.PolicyPath, pDevice.Org); genErr != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("Error generating policy, error: %v", genErr))), nil, nil
 	} else {
 		return false, service, msg

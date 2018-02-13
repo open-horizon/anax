@@ -219,7 +219,12 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			var mergedProducer *policy.Policy
 			asl := new(policy.APISpecList)
 			for _, apiSpec := range workloadDetails.APISpecs {
-				(*asl) = append((*asl), (*policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch)))
+				arch := apiSpec.Arch
+				if arch != "" && b.config.ArchSynonyms.GetCanonicalArch(arch) != "" {
+					arch = b.config.ArchSynonyms.GetCanonicalArch(arch)
+				}
+
+				(*asl) = append((*asl), (*policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, arch)))
 				if wi.ConsumerPolicy.PatternId != "" {
 					for _, devMS := range exchangeDev.RegisteredMicroservices {
 						// Find the device's microservice definition based on the microservices needed by the workload.
