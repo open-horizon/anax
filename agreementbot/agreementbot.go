@@ -204,7 +204,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 			return false
 		}
 
-		if policyManager, err := policy.Initialize(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, w.workloadResolver, false); err != nil {
+		if policyManager, err := policy.Initialize(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, w.Config.ArchSynonyms, w.workloadResolver, false); err != nil {
 			glog.Errorf("AgreementBotWorker unable to initialize policy manager, error: %v", err)
 		} else if policyManager.NumberPolicies() != 0 {
 			w.pm = policyManager
@@ -596,7 +596,7 @@ func (w *AgreementBotWorker) policyWatcher(name string, quit chan bool) {
 			return
 
 		case <-time.After(time.Duration(w.Config.AgreementBot.CheckUpdatedPolicyS) * time.Second):
-			contents, _ = policy.PolicyFileChangeWatcher(w.Config.AgreementBot.PolicyPath, contents, w.changedPolicy, w.deletedPolicy, w.errorPolicy, w.workloadResolver, 0)
+			contents, _ = policy.PolicyFileChangeWatcher(w.Config.AgreementBot.PolicyPath, contents, w.Config.ArchSynonyms, w.changedPolicy, w.deletedPolicy, w.errorPolicy, w.workloadResolver, 0)
 		}
 	}
 
@@ -771,7 +771,13 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, searchOrg string
 				return nil, errors.New(fmt.Sprintf("AgreementBotWorker could not find workload definition for %v", workload))
 			} else {
 				for _, apiSpec := range e_workload.APISpecs {
-					if newMS, err := w.makeNewMSSearchElement(apiSpec.SpecRef, apiSpec.Org, "", apiSpec.Arch, pol); err != nil {
+					// convert the arch to GOARCH standard using synonyms defined in the config
+					arch := apiSpec.Arch
+					if arch != "" && w.Config.ArchSynonyms.GetCanonicalArch(arch) != "" {
+						arch = w.Config.ArchSynonyms.GetCanonicalArch(arch)
+					}
+
+					if newMS, err := w.makeNewMSSearchElement(apiSpec.SpecRef, apiSpec.Org, "", arch, pol); err != nil {
 						return nil, err
 					} else {
 						msMap[apiSpec.SpecRef] = newMS

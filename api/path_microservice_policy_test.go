@@ -33,8 +33,14 @@ func Test_FindPoliciesForOutput0(t *testing.T) {
 
 	pm := policy.PolicyManager_Factory(true)
 
+	dir, db, err := utsetup()
+	if err != nil {
+		t.Error(err)
+	}
+	defer cleanTestDir(dir)
+
 	// An empty PM should return no results
-	if out, err := FindPoliciesForOutput(pm); err != nil {
+	if out, err := FindPoliciesForOutput(pm, db); err != nil {
 		t.Errorf("unexpected err: %v", err)
 	} else if len(out) != 0 {
 		t.Errorf("expecting no policies in result, but got %v", out)
@@ -43,7 +49,7 @@ func Test_FindPoliciesForOutput0(t *testing.T) {
 	// Add 1 policy to the PM
 	pm.AddPolicy(org, newPolicy)
 
-	if out, err := FindPoliciesForOutput(pm); err != nil {
+	if out, err := FindPoliciesForOutput(pm, db); err != nil {
 		t.Errorf("unexpected err: %v", err)
 	} else if len(out) != 1 {
 		t.Errorf("expecting one policy in result, but got %v", out)
@@ -56,7 +62,7 @@ func Test_FindPoliciesForOutput0(t *testing.T) {
 	newPolicy.Add_API_Spec(spec2)
 	pm.AddPolicy(org, newPolicy)
 
-	if out, err := FindPoliciesForOutput(pm); err != nil {
+	if out, err := FindPoliciesForOutput(pm, db); err != nil {
 		t.Errorf("unexpected err: %v", err)
 	} else if len(out) != 2 {
 		t.Errorf("expecting one policy in result, but got %v", out)

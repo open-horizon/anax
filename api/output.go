@@ -18,12 +18,12 @@ type MicroserviceConfig struct {
 }
 
 type APIMicroserviceConfig struct {
-	SensorUrl     string      `json:"sensor_url"`     // uniquely identifying
-	SensorOrg     string      `json:"sensor_org"`     // The org that holds the ms definition
-	SensorVersion string      `json:"sensor_version"` // added for ms split. It is only used for microsevice. If it is omitted, old behavior is assumed.
-	AutoUpgrade   bool        `json:"auto_upgrade"`   // added for ms split. The default is true. If the sensor (microservice) should be automatically upgraded when new versions become available.
-	ActiveUpgrade bool        `json:"active_upgrade"` // added for ms split. The default is false. If horizon should actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade.
-	Attributes    []Attribute `json:"attributes"`
+	SensorUrl     string        `json:"sensor_url"`     // uniquely identifying
+	SensorOrg     string        `json:"sensor_org"`     // The org that holds the ms definition
+	SensorVersion string        `json:"sensor_version"` // added for ms split. It is only used for microsevice. If it is omitted, old behavior is assumed.
+	AutoUpgrade   bool          `json:"auto_upgrade"`   // added for ms split. The default is true. If the sensor (microservice) should be automatically upgraded when new versions become available.
+	ActiveUpgrade bool          `json:"active_upgrade"` // added for ms split. The default is false. If horizon should actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade.
+	Attributes    []interface{} `json:"attributes"`
 }
 
 func NewMicroserviceConfig(url string, org string, version string) *MicroserviceConfig {

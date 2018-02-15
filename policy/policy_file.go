@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"io/ioutil"
 	"os"
@@ -527,11 +528,24 @@ func (p *Policy) RequiresKnownBC(protocol string) (string, string, string) {
 	return "", "", ""
 }
 
+// convert the arch in the specref into GOARCH if it is a synonym of a GOARCH.
+// the synonyms are defined in the configuration file
+func (p *Policy) ConvertSpecRefArchToGOARCH(arch_synonymns config.ArchSynonyms) {
+	if p.APISpecs != nil {
+		for i := 0; i < len(p.APISpecs); i++ {
+			api_spec := &p.APISpecs[i]
+			if api_spec.Arch != "" && arch_synonymns.GetCanonicalArch(api_spec.Arch) != "" {
+				api_spec.Arch = arch_synonymns.GetCanonicalArch(api_spec.Arch)
+			}
+		}
+	}
+}
+
 // These are functions that operate on policy files in the file system.
 //
 // This function reads a file and demarshals it into a Policy struct, which is returned to
 // the caller.
-func ReadPolicyFile(name string) (*Policy, error) {
+func ReadPolicyFile(name string, arch_synonymns config.ArchSynonyms) (*Policy, error) {
 
 	if policyFile, err := os.Open(name); err != nil {
 		return nil, errors.New(fmt.Sprintf("Unable to open policy file %v, error: %v", name, err))
@@ -542,6 +556,8 @@ func ReadPolicyFile(name string) (*Policy, error) {
 		if err := json.Unmarshal(bytes, newPolicy); err != nil {
 			return nil, errors.New(fmt.Sprintf("Unable to demarshal policy file %v, error: %v", name, err))
 		} else {
+			newPolicy.ConvertSpecRefArchToGOARCH(arch_synonymns)
+
 			return newPolicy, nil
 		}
 	}
@@ -690,6 +706,7 @@ func DeletePolicyFile(name string) error {
 
 func PolicyFileChangeWatcher(homePath string,
 	contents *Contents,
+	arch_synonymns config.ArchSynonyms,
 	fileChanged func(org string, fileName string, policy *Policy),
 	fileDeleted func(org string, fileName string, policy *Policy),
 	fileError func(org string, fileName string, err error),
@@ -721,7 +738,7 @@ func PolicyFileChangeWatcher(homePath string,
 			// For each file, if we dont have a record of it, read in the file and create an entry in the map.
 			for _, fileInfo := range files {
 				if !contents.HasFile(org, fileInfo.Name()) {
-					if policy, err := ReadPolicyFile(orgPath + fileInfo.Name()); err != nil {
+					if policy, err := ReadPolicyFile(orgPath+fileInfo.Name(), arch_synonymns); err != nil {
 						fileError(org, orgPath+fileInfo.Name(), err)
 					} else if err := policy.Is_Self_Consistent(nil, workloadResolver); err != nil {
 						fileError(org, orgPath+fileInfo.Name(), errors.New(fmt.Sprintf("Policy file not self consistent %v, error: %v", orgPath, err)))
@@ -764,7 +781,7 @@ func PolicyFileChangeWatcher(homePath string,
 
 				} else if newStat.ModTime().After(we.FInfo.ModTime()) {
 					// A changed file could be a new policy and a deleted policy if it's the policy name that was changed.
-					if policy, err := ReadPolicyFile(orgPath + we.FInfo.Name()); err != nil {
+					if policy, err := ReadPolicyFile(orgPath+we.FInfo.Name(), arch_synonymns); err != nil {
 						fileError(org, orgPath+we.FInfo.Name(), err)
 					} else if err := policy.Is_Self_Consistent(nil, workloadResolver); err != nil {
 						fileError(org, orgPath+we.FInfo.Name(), errors.New(fmt.Sprintf("Policy file not self consistent %v, error: %v", orgPath+we.FInfo.Name(), err)))

@@ -14,6 +14,7 @@ type HorizonConfig struct {
 	Edge          Config
 	AgreementBot  AGConfig
 	Collaborators Collaborators
+	ArchSynonyms  ArchSynonyms
 }
 
 // This is the configuration options for Edge component flavor of Anax
@@ -138,6 +139,10 @@ func Read(file string) (*HorizonConfig, error) {
 		}
 
 		config.Collaborators = *collaborators
+
+		if config.ArchSynonyms == nil {
+			config.ArchSynonyms = NewArchSynonyms()
+		}
 
 		// success at last!
 		return &config, nil

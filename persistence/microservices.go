@@ -75,6 +75,7 @@ type MicroserviceDefinition struct {
 	LastUpdated                  string               `json:"lastUpdated"`
 	Archived                     bool                 `json:"archived"`
 	Name                         string               `json:"name"`                  //the sensor_name passed in from the POST /service call
+	RequestedArch                string               `json:"requested_arch"`        //the arch from user input or from the ms referenced by a workload, it can be a synonym of the node arch.
 	UpgradeVersionRange          string               `json:"upgrade_version_range"` //the sensor_version passed in from the POST service call
 	AutoUpgrade                  bool                 `json:"auto_upgrade"`          // passed in from the POST service call
 	ActiveUpgrade                bool                 `json:"active_upgrade"`        // passed in from the POST service call
@@ -107,6 +108,7 @@ func (w MicroserviceDefinition) String() string {
 		"LastUpdated: %v, "+
 		"Archived: %v, "+
 		"Name: %v, "+
+		"RequestedArch: %v, "+
 		"UpgradeVersionRange: %v, "+
 		"AutoUpgrade: %v, "+
 		"ActiveUpgrade: %v, "+
@@ -122,7 +124,7 @@ func (w MicroserviceDefinition) String() string {
 		"MetadataHash: %v",
 		w.Owner, w.Label, w.Description, w.SpecRef, w.Org, w.Version, w.Arch, w.Sharable, w.DownloadURL,
 		w.MatchHardware, w.UserInputs, w.Workloads, w.LastUpdated,
-		w.Archived, w.Name, w.UpgradeVersionRange, w.AutoUpgrade, w.ActiveUpgrade,
+		w.Archived, w.Name, w.RequestedArch, w.UpgradeVersionRange, w.AutoUpgrade, w.ActiveUpgrade,
 		w.UpgradeStartTime, w.UpgradeMsUnregisteredTime, w.UpgradeAgreementsClearedTime, w.UpgradeExecutionStartTime, w.UpgradeMsReregisteredTime,
 		w.UpgradeFailedTime, w.UngradeFailureReason, w.UngradeFailureDescription, w.UpgradeNewMsId, w.MetadataHash)
 }
@@ -137,6 +139,7 @@ func (w MicroserviceDefinition) ShortString() string {
 		"Arch: %v, "+
 		"Archived: %v, "+
 		"Name: %v, "+
+		"RequestedArch: %v, "+
 		"UpgradeVersionRange: %v, "+
 		"AutoUpgrade: %v, "+
 		"ActiveUpgrade: %v, "+
@@ -151,7 +154,7 @@ func (w MicroserviceDefinition) ShortString() string {
 		"UpgradeNewMsId: %v, "+
 		"MetadataHash: %v",
 		w.Owner, w.Label, w.Description, w.SpecRef, w.Org, w.Version, w.Arch,
-		w.Archived, w.Name, w.UpgradeVersionRange, w.AutoUpgrade, w.ActiveUpgrade,
+		w.Archived, w.Name, w.RequestedArch, w.UpgradeVersionRange, w.AutoUpgrade, w.ActiveUpgrade,
 		w.UpgradeStartTime, w.UpgradeMsUnregisteredTime, w.UpgradeAgreementsClearedTime, w.UpgradeExecutionStartTime, w.UpgradeMsReregisteredTime,
 		w.UpgradeFailedTime, w.UngradeFailureReason, w.UngradeFailureDescription, w.UpgradeNewMsId, w.MetadataHash)
 }

@@ -93,7 +93,7 @@ func hydrateWorkloadConfig(cfgOnly *WorkloadConfigOnly) (*WorkloadConfig, error)
 		if sa, err := json.Marshal(intf); err != nil {
 			glog.Errorf("Unable to serialize workload config attribute %v, error %v", intf, err)
 			return nil, err
-		} else if attr, err := hydrateConcreteAttribute(sa); err != nil {
+		} else if attr, err := HydrateConcreteAttribute(sa); err != nil {
 			glog.Errorf("Unable to hydrate workload config attribute %s, error %v", sa, err)
 			return nil, err
 		} else {

@@ -109,7 +109,7 @@ func (a MetaAttributesOnly) GetGenericMappings() map[string]interface{} {
 
 // N.B. The concrete attributes are to be found in a different file in this module
 
-func hydrateConcreteAttribute(v []byte) (Attribute, error) {
+func HydrateConcreteAttribute(v []byte) (Attribute, error) {
 	var meta MetaAttributesOnly // for easy deserialization
 
 	if err := json.Unmarshal(v, &meta); err != nil {
@@ -217,7 +217,7 @@ func FindAttributeByKey(db *bolt.DB, id string) (*Attribute, error) {
 			v := bucket.Get([]byte(id))
 			if v != nil {
 				var err error
-				attr, err = hydrateConcreteAttribute(v)
+				attr, err = HydrateConcreteAttribute(v)
 				if err != nil {
 					return err
 				}
@@ -252,7 +252,7 @@ func FindApplicableAttributes(db *bolt.DB, serviceUrl string) ([]Attribute, erro
 
 		return bucket.ForEach(func(k, v []byte) error {
 			// TODO: optimization: do this only if the sensorurls match
-			attr, err := hydrateConcreteAttribute(v)
+			attr, err := HydrateConcreteAttribute(v)
 			if err != nil {
 				return err
 			}

@@ -1,0 +1,54 @@
+{
+    "header": {
+        "name": "test policy",
+        "version": "2.0"
+    },
+    "apiSpec": [
+        {
+            "specRef": "http://mycompany.com/policy",
+            "organization": "myorg",
+            "version": "[1.0.0,2.0.0)",
+            "exclusiveAccess": false,
+            "arch": "x86_64"
+        }
+    ],
+    "agreementProtocols": [
+        {
+            "name": "2PartyDataUse"
+        }
+    ],
+    "workloads": [
+        {
+            "deployment": "Deployment instructions",
+            "deployment_signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "torrent": {
+                "url": "torrent://the.system.com"
+            },
+            "priority": {}
+        }
+    ],
+    "deviceType": "12345-54321-abcdef-fedcba",
+    "valueExchange": {
+        "type": "bacon",
+        "value": "100",
+        "paymentRate": 300
+    },
+    "resourceLimits": {
+        "networkUpload": 1024,
+        "networkDownload": 1024,
+        "memory": 2048,
+        "cpus": 2
+    },
+    "dataVerification": {
+        "enabled": true,
+        "URL": "http://data.receipt.system.com",
+        "interval": 300,
+        "metering": {}
+    },
+    "proposalRejection": {
+        "number": 5,
+        "duration": 86400
+    },
+    "ha_group": {},
+    "nodeHealth": {}
+}
