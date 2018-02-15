@@ -13,6 +13,7 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"path/filepath"
 )
 
 type DeploymentConfig struct {
@@ -207,6 +208,9 @@ func MicroserviceList(org string, userPw string, microservice string, namesOnly 
 
 func AppendImagesFromDeploymentField(deployment *DeploymentConfig, imageList []string) []string {
 	// The deployment string should include: {"services":{"cpu2wiotp":{"image":"openhorizon/example_wl_x86_cpu2wiotp:1.1.2",...}}}
+	if deployment == nil || deployment.Services == nil {
+		return imageList
+	}
 	for _, s := range deployment.Services {
 		if s.Image != "" {
 			imageList = append(imageList, s.Image)
@@ -235,7 +239,7 @@ func CheckTorrentField(torrent string, index int) {
 }
 
 // MicroservicePublish signs the MS def and puts it in the exchange
-func MicroservicePublish(org, userPw, jsonFilePath, keyFilePath string) {
+func MicroservicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the MS metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
@@ -248,16 +252,28 @@ func MicroservicePublish(org, userPw, jsonFilePath, keyFilePath string) {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", microFile.Org, org)
 	}
 
-	microFile.SignAndPublish(org, userPw, keyFilePath)
+	exchId := microFile.SignAndPublish(org, userPw, keyFilePath)
+
+	// Store the public key in the exchange, if they gave it to us
+	if pubKeyFilePath != "" {
+		// Note: the CLI framework already verified the file exists
+		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
+		baseName := filepath.Base(pubKeyFilePath)
+		fmt.Printf("Storing %s with the microservice in the exchange...\n", baseName)
+		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
+	}
 }
 
 // Sign and publish the microservice definition. This is a function that is reusable across different hzn commands.
-func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) {
+func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) (exchId string) {
 	microInput := MicroserviceInput{Label: mf.Label, Description: mf.Description, Public: mf.Public, SpecRef: mf.SpecRef, Version: mf.Version, Arch: mf.Arch, Sharable: mf.Sharable, DownloadURL: mf.DownloadURL, MatchHardware: mf.MatchHardware, UserInputs: mf.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(mf.Workloads))}
 
 	// Loop thru the workloads array, sign the deployment strings, and copy all 3 fields to microInput
 	fmt.Println("Signing microservice...")
 	var imageList []string
+	if len(mf.Workloads) > 1 {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the 'workloads' array can not have more than 1 element in it")
+	}
 	for i := range mf.Workloads {
 		var err error
 		var deployment []byte
@@ -294,7 +310,7 @@ func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) {
 	}
 
 	// Create or update resource in the exchange
-	exchId := cliutils.FormExchangeId(microInput.SpecRef, microInput.Version, microInput.Arch)
+	exchId = cliutils.FormExchangeId(microInput.SpecRef, microInput.Version, microInput.Arch)
 	var output string
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 200 {
@@ -315,6 +331,7 @@ func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) {
 			fmt.Printf("  docker push %s\n", image)
 		}
 	}
+	return
 }
 
 // MicroserviceVerify verifies the deployment strings of the specified microservice resource in the exchange.
@@ -361,5 +378,31 @@ func MicroserviceRemove(org, userPw, microservice string, force bool) {
 	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+microservice, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "microservice '%s' not found in org %s", microservice, org)
+	}
+}
+
+func MicroserviceListKey(org, userPw, microservice, keyName string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
+	if keyName == "" {
+		// Only display the names
+		var output string
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+microservice+"/keys", cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		fmt.Printf("%s\n", output)
+	} else {
+		// Display the content of the key
+		var output []byte
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+microservice+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		if httpCode == 404 && microservice != "" {
+			cliutils.Fatal(cliutils.NOT_FOUND, "key '%s' not found", keyName)
+		}
+		fmt.Printf("%s", string(output))
+	}
+}
+
+func MicroserviceRemoveKey(org, userPw, microservice, keyName string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
+	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+microservice+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "key '%s' not found", keyName)
 	}
 }

@@ -13,6 +13,7 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"path/filepath"
 )
 
 // This is used when reading json file the user gives us as input to create the workload struct
@@ -119,7 +120,7 @@ func WorkloadList(org, userPw, workload string, namesOnly bool) {
 }
 
 // WorkloadPublish signs the MS def and puts it in the exchange
-func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath string) {
+func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the workload metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
@@ -131,17 +132,28 @@ func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath string) {
 	if workFile.Org != "" && workFile.Org != org {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", workFile.Org, org)
 	}
-	workFile.SignAndPublish(org, userPw, keyFilePath)
+	exchId := workFile.SignAndPublish(org, userPw, keyFilePath)
 
+	// Store the public key in the exchange, if they gave it to us
+	if pubKeyFilePath != "" {
+		// Note: the CLI framework already verified the file exists
+		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
+		baseName := filepath.Base(pubKeyFilePath)
+		fmt.Printf("Storing %s with the workload in the exchange...\n", baseName)
+		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
+	}
 }
 
 // Sign and publish the workload definition. This is a function that is reusable across different hzn commands.
-func (wf *WorkloadFile) SignAndPublish(org, userPw, keyFilePath string) {
+func (wf *WorkloadFile) SignAndPublish(org, userPw, keyFilePath string) (exchId string) {
 	workInput := WorkloadInput{Label: wf.Label, Description: wf.Description, Public: wf.Public, WorkloadURL: wf.WorkloadURL, Version: wf.Version, Arch: wf.Arch, DownloadURL: wf.DownloadURL, APISpecs: wf.APISpecs, UserInputs: wf.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(wf.Workloads))}
 
 	// Loop thru the workloads array and sign the deployment strings
 	fmt.Println("Signing workload...")
 	var imageList []string
+	if len(wf.Workloads) > 1 {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the 'workloads' array can not have more than 1 element in it")
+	}
 	for i := range wf.Workloads {
 		var err error
 		var deployment []byte
@@ -178,7 +190,7 @@ func (wf *WorkloadFile) SignAndPublish(org, userPw, keyFilePath string) {
 	}
 
 	// Create or update resource in the exchange
-	exchId := cliutils.FormExchangeId(workInput.WorkloadURL, workInput.Version, workInput.Arch)
+	exchId = cliutils.FormExchangeId(workInput.WorkloadURL, workInput.Version, workInput.Arch)
 	var output string
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 200 {
@@ -199,6 +211,7 @@ func (wf *WorkloadFile) SignAndPublish(org, userPw, keyFilePath string) {
 			fmt.Printf("  docker push %s\n", image)
 		}
 	}
+	return
 }
 
 // WorkloadVerify verifies the deployment strings of the specified workload resource in the exchange.
@@ -245,5 +258,31 @@ func WorkloadRemove(org, userPw, workload string, force bool) {
 	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+workload, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "workload '%s' not found in org %s", workload, org)
+	}
+}
+
+func WorkloadListKey(org, userPw, workload, keyName string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
+	if keyName == "" {
+		// Only display the names
+		var output string
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+workload+"/keys", cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		fmt.Printf("%s\n", output)
+	} else {
+		// Display the content of the key
+		var output []byte
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+workload+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		if httpCode == 404 && workload != "" {
+			cliutils.Fatal(cliutils.NOT_FOUND, "key '%s' not found", keyName)
+		}
+		fmt.Printf("%s", string(output))
+	}
+}
+
+func WorkloadRemoveKey(org, userPw, workload, keyName string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
+	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+workload+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "key '%s' not found", keyName)
 	}
 }

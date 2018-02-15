@@ -73,6 +73,13 @@ func Fatal(exitCode int, msg string, args ...interface{}) {
 	os.Exit(exitCode)
 }
 
+func Warning(msg string, args ...interface{}) {
+	if !strings.HasSuffix(msg, "\n") {
+		msg += "\n"
+	}
+	fmt.Fprintf(os.Stderr, "Warning: "+msg, args...)
+}
+
 func IsDryRun() bool {
 	return *Opts.IsDryRun
 }
@@ -419,6 +426,9 @@ func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttpC
 
 	if len(bodyBytes) > 0 && structure != nil { // the DP front-end of exchange will return nothing when auth problem
 		switch s := structure.(type) {
+		case *[]byte:
+			// This is the signal that they want the raw body back
+			*s = bodyBytes
 		case *string:
 			// If the structure to fill in is just a string, unmarshal/remarshal it to get it in json indented form, and then return as a string
 			//todo: this gets it in json indented form, but also returns the fields in random order (because they were interpreted as a map)
@@ -453,8 +463,15 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 		return 201
 	}
 	httpClient := &http.Client{}
+
+	// Prepare body
 	var jsonBytes []byte
+	bodyIsBytes := false
 	switch b := body.(type) {
+	// If the body is a byte array, we treat it like a file being uploaded (not multi-part)
+	case []byte:
+		jsonBytes = b
+		bodyIsBytes = true
 	case string:
 		jsonBytes = []byte(b)
 	default:
@@ -465,12 +482,18 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 		}
 	}
 	requestBody := bytes.NewBuffer(jsonBytes)
+
+	// Create the request and run it
 	req, err := http.NewRequest(method, url, requestBody)
 	if err != nil {
 		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
 	}
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Content-Type", "application/json")
+	if bodyIsBytes {
+		req.Header.Add("Content-Length", strconv.Itoa(len(jsonBytes)))
+	} else {
+		req.Header.Add("Content-Type", "application/json")
+	}
 	if credentials != "" {
 		req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
 	} // else it is an anonymous call
