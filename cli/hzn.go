@@ -90,7 +90,8 @@ Environment Variables:
 	exPatternLong := exPatternListCmd.Flag("long", "When listing all of the patterns, show the entire resource of each pattern, instead of just the name.").Short('l').Bool()
 	exPatternPublishCmd := exPatternCmd.Command("publish", "Sign and create/update the pattern resource in the Horizon Exchange.")
 	exPatJsonFile := exPatternPublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the pattern in the Horizon exchange. See /usr/horizon/samples/pattern.json. Specify -f- to read from stdin.").Short('f').Required().String()
-	exPatKeyFile := exPatternPublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the pattern. ").Short('k').ExistingFile()
+	exPatKeyFile := exPatternPublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the pattern.").Short('k').ExistingFile()
+	exPatPubPubKeyFile := exPatternPublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
 	exPatternVerifyCmd := exPatternCmd.Command("verify", "Verify the signatures of a pattern resource in the Horizon Exchange.")
 	exVerPattern := exPatternVerifyCmd.Arg("pattern", "The pattern to verify.").Required().String()
 	exPatPubKeyFile := exPatternVerifyCmd.Flag("public-key-file", "The path of a pem public key file to be used to verify the pattern. ").Short('k').Required().ExistingFile()
@@ -101,11 +102,18 @@ Environment Variables:
 	exPatAddWork := exPatternAddWorkCmd.Arg("pattern", "The existing pattern that the workload should be inserted into.").Required().String()
 	exPatAddWorkJsonFile := exPatternAddWorkCmd.Flag("json-file", "The path of a JSON file containing the additional workload metadata. See /usr/horizon/samples/insert-workload-into-pattern.json. Specify -f- to read from stdin.").Short('f').Required().String()
 	exPatAddWorkKeyFile := exPatternAddWorkCmd.Flag("private-key-file", "The path of a private key file to be used to sign the inserted workload. ").Short('k').ExistingFile()
+	exPatAddWorkPubKeyFile := exPatternAddWorkCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
 	exPatternDelWorkCmd := exPatternCmd.Command("removeworkload", "Remove a workload from an existing pattern resource in the Horizon Exchange.")
 	exPatDelWorkPat := exPatternDelWorkCmd.Arg("pattern", "The existing pattern that the workload should be removed from.").Required().String()
 	exPatDelWorkOrg := exPatternDelWorkCmd.Arg("workload-org", "The org of the workload to remove.").Required().String()
 	exPatDelWorkUrl := exPatternDelWorkCmd.Arg("workload-url", "The URL of the workload to remove.").Required().String()
 	exPatDelWorkArch := exPatternDelWorkCmd.Arg("workload-arch", "The arch of the workload to remove.").Required().String()
+	exPatternListKeyCmd := exPatternCmd.Command("listkey", "List the signing public keys/certs for this pattern resource in the Horizon Exchange.")
+	exPatListKeyPat := exPatternListKeyCmd.Arg("pattern", "The existing pattern to list the keys for.").Required().String()
+	exPatListKeyKey := exPatternListKeyCmd.Arg("key-name", "The existing key name to see the contents of.").String()
+	exPatternRemKeyCmd := exPatternCmd.Command("removekey", "Remove a signing public key/cert for this pattern resource in the Horizon Exchange.")
+	exPatRemKeyPat := exPatternRemKeyCmd.Arg("pattern", "The existing pattern to remove the key from.").Required().String()
+	exPatRemKeyKey := exPatternRemKeyCmd.Arg("key-name", "The existing key name to remove.").Required().String()
 
 	exWorkloadCmd := exchangeCmd.Command("workload", "List and manage workloads in the Horizon Exchange")
 	exWorkloadListCmd := exWorkloadCmd.Command("list", "Display the workload resources from the Horizon Exchange.")
@@ -114,12 +122,19 @@ Environment Variables:
 	exWorkloadPublishCmd := exWorkloadCmd.Command("publish", "Sign and create/update the workload resource in the Horizon Exchange.")
 	exWorkJsonFile := exWorkloadPublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the workload in the Horizon exchange. See /usr/horizon/samples/workload.json. Specify -f- to read from stdin.").Short('f').Required().String()
 	exWorkPrivKeyFile := exWorkloadPublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the workload. ").Short('k').ExistingFile()
+	exWorkPubPubKeyFile := exWorkloadPublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the workload, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
 	exWorkloadVerifyCmd := exWorkloadCmd.Command("verify", "Verify the signatures of a workload resource in the Horizon Exchange.")
 	exVerWorkload := exWorkloadVerifyCmd.Arg("workload", "The workload to verify.").Required().String()
 	exWorkPubKeyFile := exWorkloadVerifyCmd.Flag("public-key-file", "The path of a pem public key file to be used to verify the workload. ").Short('k').Required().ExistingFile()
 	exWorkDelCmd := exWorkloadCmd.Command("remove", "Remove a workload resource from the Horizon Exchange.")
 	exDelWork := exWorkDelCmd.Arg("workload", "The workload to remove.").Required().String()
 	exWorkDelForce := exWorkDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
+	exWorkloadListKeyCmd := exWorkloadCmd.Command("listkey", "List the signing public keys/certs for this workload resource in the Horizon Exchange.")
+	exWorkListKeyWork := exWorkloadListKeyCmd.Arg("workload", "The existing workload to list the keys for.").Required().String()
+	exWorkListKeyKey := exWorkloadListKeyCmd.Arg("key-name", "The existing key name to see the contents of.").String()
+	exWorkloadRemKeyCmd := exWorkloadCmd.Command("removekey", "Remove a signing public key/cert for this workload resource in the Horizon Exchange.")
+	exWorkRemKeyWork := exWorkloadRemKeyCmd.Arg("workload", "The existing workload to remove the key from.").Required().String()
+	exWorkRemKeyKey := exWorkloadRemKeyCmd.Arg("key-name", "The existing key name to remove.").Required().String()
 
 	exMicroserviceCmd := exchangeCmd.Command("microservice", "List and manage microservices in the Horizon Exchange")
 	exMicroserviceListCmd := exMicroserviceCmd.Command("list", "Display the microservice resources from the Horizon Exchange.")
@@ -128,12 +143,40 @@ Environment Variables:
 	exMicroservicePublishCmd := exMicroserviceCmd.Command("publish", "Sign and create/update the microservice resource in the Horizon Exchange.")
 	exMicroJsonFile := exMicroservicePublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the microservice in the Horizon exchange. See /usr/horizon/samples/microservice.json. Specify -f- to read from stdin.").Short('f').Required().String()
 	exMicroKeyFile := exMicroservicePublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the microservice. ").Short('k').ExistingFile()
+	exMicroPubPubKeyFile := exMicroservicePublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the microservice, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
 	exMicroVerifyCmd := exMicroserviceCmd.Command("verify", "Verify the signatures of a microservice resource in the Horizon Exchange.")
 	exVerMicro := exMicroVerifyCmd.Arg("microservice", "The microservice to verify.").Required().String()
 	exMicroPubKeyFile := exMicroVerifyCmd.Flag("public-key-file", "The path of a pem public key file to be used to verify the microservice. ").Short('k').Required().ExistingFile()
 	exMicroDelCmd := exMicroserviceCmd.Command("remove", "Remove a microservice resource from the Horizon Exchange.")
 	exDelMicro := exMicroDelCmd.Arg("microservice", "The microservice to remove.").Required().String()
 	exMicroDelForce := exMicroDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
+	exMicroListKeyCmd := exMicroserviceCmd.Command("listkey", "List the signing public keys/certs for this microservice resource in the Horizon Exchange.")
+	exMicroListKeyMicro := exMicroListKeyCmd.Arg("microservice", "The existing microservice to list the keys for.").Required().String()
+	exMicroListKeyKey := exMicroListKeyCmd.Arg("key-name", "The existing key name to see the contents of.").String()
+	exMicroRemKeyCmd := exMicroserviceCmd.Command("removekey", "Remove a signing public key/cert for this microservice resource in the Horizon Exchange.")
+	exMicroRemKeyMicro := exMicroRemKeyCmd.Arg("microservice", "The existing microservice to remove the key from.").Required().String()
+	exMicroRemKeyKey := exMicroRemKeyCmd.Arg("key-name", "The existing key name to remove.").Required().String()
+
+	exServiceCmd := exchangeCmd.Command("service", "List and manage services in the Horizon Exchange")
+	exServiceListCmd := exServiceCmd.Command("list", "Display the service resources from the Horizon Exchange.")
+	exService := exServiceListCmd.Arg("service", "List just this one service.").String()
+	exServiceLong := exServiceListCmd.Flag("long", "When listing all of the services, show the entire resource of each services, instead of just the name.").Short('l').Bool()
+	exServicePublishCmd := exServiceCmd.Command("publish", "Sign and create/update the service resource in the Horizon Exchange.")
+	exSvcJsonFile := exServicePublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the service in the Horizon exchange. See /usr/horizon/samples/service.json. Specify -f- to read from stdin.").Short('f').Required().String()
+	exSvcPrivKeyFile := exServicePublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the service. ").Short('k').ExistingFile()
+	exSvcPubPubKeyFile := exServicePublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
+	exServiceVerifyCmd := exServiceCmd.Command("verify", "Verify the signatures of a service resource in the Horizon Exchange.")
+	exVerService := exServiceVerifyCmd.Arg("service", "The service to verify.").Required().String()
+	exSvcPubKeyFile := exServiceVerifyCmd.Flag("public-key-file", "The path of a pem public key file to be used to verify the service. ").Short('k').Required().ExistingFile()
+	exSvcDelCmd := exServiceCmd.Command("remove", "Remove a service resource from the Horizon Exchange.")
+	exDelSvc := exSvcDelCmd.Arg("service", "The service to remove.").Required().String()
+	exSvcDelForce := exSvcDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
+	exServiceListKeyCmd := exServiceCmd.Command("listkey", "List the signing public keys/certs for this service resource in the Horizon Exchange.")
+	exSvcListKeySvc := exServiceListKeyCmd.Arg("service", "The existing service to list the keys for.").Required().String()
+	exSvcListKeyKey := exServiceListKeyCmd.Arg("key-name", "The existing key name to see the contents of.").String()
+	exServiceRemKeyCmd := exServiceCmd.Command("removekey", "Remove a signing public key/cert for this service resource in the Horizon Exchange.")
+	exSvcRemKeySvc := exServiceRemKeyCmd.Arg("service", "The existing service to remove the key from.").Required().String()
+	exSvcRemKeyKey := exServiceRemKeyCmd.Arg("key-name", "The existing key name to remove.").Required().String()
 
 	wiotpCmd := app.Command("wiotp", "List and manage WIoTP objects.")
 	wiotpOrg := wiotpCmd.Flag("org", "The WIoTP organization ID.").Short('o').String()
@@ -170,7 +213,7 @@ Environment Variables:
 	keyX509Org := keyCreateCmd.Arg("x509-org", "x509 certificate Organization (O) field (preferably a company name or other organization's name).").Required().String()
 	keyX509CN := keyCreateCmd.Arg("x509-cn", "x509 certificate Common Name (CN) field (preferably an email address issued by x509org).").Required().String()
 	keyOutputDir := keyCreateCmd.Flag("output-dir", "The directory to put the key pair files in. Defaults to the current directory.").Short('d').Default(".").ExistingDir()
-	keyLength := keyCreateCmd.Flag("length", "The length of the key to create.").Short('l').Default("8192").Int()
+	keyLength := keyCreateCmd.Flag("length", "The length of the key to create.").Short('l').Default("4096").Int()
 	keyDaysValid := keyCreateCmd.Flag("days-valid", "x509 certificate validity (Validity > Not After) expressed in days from the day of generation.").Default("1461").Int()
 	keyImportFlag := keyCreateCmd.Flag("import", "Automatically import the created public key into the local Horizon agent.").Short('i').Bool()
 	keyImportCmd := keyCmd.Command("import", "Imports a signing public key into the Horizon agent.")
@@ -308,31 +351,55 @@ Environment Variables:
 	case exPatternListCmd.FullCommand():
 		exchange.PatternList(*exOrg, *exUserPw, *exPattern, !*exPatternLong)
 	case exPatternPublishCmd.FullCommand():
-		exchange.PatternPublish(*exOrg, *exUserPw, *exPatJsonFile, *exPatKeyFile)
+		exchange.PatternPublish(*exOrg, *exUserPw, *exPatJsonFile, *exPatKeyFile, *exPatPubPubKeyFile)
 	case exPatternVerifyCmd.FullCommand():
 		exchange.PatternVerify(*exOrg, *exUserPw, *exVerPattern, *exPatPubKeyFile)
 	case exPatDelCmd.FullCommand():
 		exchange.PatternRemove(*exOrg, *exUserPw, *exDelPat, *exPatDelForce)
 	case exPatternAddWorkCmd.FullCommand():
-		exchange.PatternAddWorkload(*exOrg, *exUserPw, *exPatAddWork, *exPatAddWorkJsonFile, *exPatAddWorkKeyFile)
+		exchange.PatternAddWorkload(*exOrg, *exUserPw, *exPatAddWork, *exPatAddWorkJsonFile, *exPatAddWorkKeyFile, *exPatAddWorkPubKeyFile)
 	case exPatternDelWorkCmd.FullCommand():
 		exchange.PatternDelWorkload(*exOrg, *exUserPw, *exPatDelWorkPat, *exPatDelWorkOrg, *exPatDelWorkUrl, *exPatDelWorkArch)
+	case exPatternListKeyCmd.FullCommand():
+		exchange.PatternListKey(*exOrg, *exUserPw, *exPatListKeyPat, *exPatListKeyKey)
+	case exPatternRemKeyCmd.FullCommand():
+		exchange.PatternRemoveKey(*exOrg, *exUserPw, *exPatRemKeyPat, *exPatRemKeyKey)
 	case exWorkloadListCmd.FullCommand():
 		exchange.WorkloadList(*exOrg, *exUserPw, *exWorkload, !*exWorkloadLong)
 	case exWorkloadPublishCmd.FullCommand():
-		exchange.WorkloadPublish(*exOrg, *exUserPw, *exWorkJsonFile, *exWorkPrivKeyFile)
+		exchange.WorkloadPublish(*exOrg, *exUserPw, *exWorkJsonFile, *exWorkPrivKeyFile, *exWorkPubPubKeyFile)
 	case exWorkloadVerifyCmd.FullCommand():
 		exchange.WorkloadVerify(*exOrg, *exUserPw, *exVerWorkload, *exWorkPubKeyFile)
 	case exWorkDelCmd.FullCommand():
 		exchange.WorkloadRemove(*exOrg, *exUserPw, *exDelWork, *exWorkDelForce)
+	case exWorkloadListKeyCmd.FullCommand():
+		exchange.WorkloadListKey(*exOrg, *exUserPw, *exWorkListKeyWork, *exWorkListKeyKey)
+	case exWorkloadRemKeyCmd.FullCommand():
+		exchange.WorkloadRemoveKey(*exOrg, *exUserPw, *exWorkRemKeyWork, *exWorkRemKeyKey)
 	case exMicroserviceListCmd.FullCommand():
 		exchange.MicroserviceList(*exOrg, *exUserPw, *exMicroservice, !*exMicroserviceLong)
 	case exMicroservicePublishCmd.FullCommand():
-		exchange.MicroservicePublish(*exOrg, *exUserPw, *exMicroJsonFile, *exMicroKeyFile)
+		exchange.MicroservicePublish(*exOrg, *exUserPw, *exMicroJsonFile, *exMicroKeyFile, *exMicroPubPubKeyFile)
 	case exMicroVerifyCmd.FullCommand():
 		exchange.MicroserviceVerify(*exOrg, *exUserPw, *exVerMicro, *exMicroPubKeyFile)
 	case exMicroDelCmd.FullCommand():
 		exchange.MicroserviceRemove(*exOrg, *exUserPw, *exDelMicro, *exMicroDelForce)
+	case exMicroListKeyCmd.FullCommand():
+		exchange.MicroserviceListKey(*exOrg, *exUserPw, *exMicroListKeyMicro, *exMicroListKeyKey)
+	case exMicroRemKeyCmd.FullCommand():
+		exchange.MicroserviceRemoveKey(*exOrg, *exUserPw, *exMicroRemKeyMicro, *exMicroRemKeyKey)
+	case exServiceListCmd.FullCommand():
+		exchange.ServiceList(*exOrg, *exUserPw, *exService, !*exServiceLong)
+	case exServicePublishCmd.FullCommand():
+		exchange.ServicePublish(*exOrg, *exUserPw, *exSvcJsonFile, *exSvcPrivKeyFile, *exSvcPubPubKeyFile)
+	case exServiceVerifyCmd.FullCommand():
+		exchange.ServiceVerify(*exOrg, *exUserPw, *exVerService, *exSvcPubKeyFile)
+	case exSvcDelCmd.FullCommand():
+		exchange.ServiceRemove(*exOrg, *exUserPw, *exDelSvc, *exSvcDelForce)
+	case exServiceListKeyCmd.FullCommand():
+		exchange.ServiceListKey(*exOrg, *exUserPw, *exSvcListKeySvc, *exSvcListKeyKey)
+	case exServiceRemKeyCmd.FullCommand():
+		exchange.ServiceRemoveKey(*exOrg, *exUserPw, *exSvcRemKeySvc, *exSvcRemKeyKey)
 	case wiotpTypeListCmd.FullCommand():
 		wiotp.TypeList(*wiotpOrg, *wiotpApiKeyToken, *wiotpType)
 	case wiotpDevListCmd.FullCommand():

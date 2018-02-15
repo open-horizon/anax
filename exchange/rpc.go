@@ -1501,7 +1501,7 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 
 	glog.V(3).Infof(rpclogString("Get exchange version."))
 
-	return "1.44.0", nil
+	return "1.46.0", nil
 
 	//var resp interface{}
 	//resp = new(string)

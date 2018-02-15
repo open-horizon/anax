@@ -156,7 +156,7 @@ func ConvertToDeploymentOverrides(deployment interface{}) *DeploymentOverrides {
 }
 
 // PatternPublish signs the MS def and puts it in the exchange
-func PatternPublish(org, userPw, jsonFilePath, keyFilePath string) {
+func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the pattern metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
@@ -228,6 +228,15 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath string) {
 		fmt.Printf("Creating %s in the exchange...\n", exchId)
 		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, patInput)
 	}
+
+	// Store the public key in the exchange, if they gave it to us
+	if pubKeyFilePath != "" {
+		// Note: the CLI framework already verified the file exists
+		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
+		baseName := filepath.Base(pubKeyFilePath)
+		fmt.Printf("Storing %s with the pattern in the exchange...\n", baseName)
+		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
+	}
 }
 
 func PatternVerify(org, userPw, pattern, keyFilePath string) {
@@ -290,7 +299,7 @@ func copyPatternOutputToInput(output *PatternOutput, input *PatternInput) {
 
 // PatternAddWorkload reads json for 1 element of the workloads array of a pattern, gets the named pattern from the
 // exchange, and then either replaces that workload array element (if it already exists), or adds it.
-func PatternAddWorkload(org, userPw, pattern, workloadFilePath, keyFilePath string) {
+func PatternAddWorkload(org, userPw, pattern, workloadFilePath, keyFilePath, pubKeyFilePath string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the workload metadata
 	newBytes := cliutils.ReadJsonFile(workloadFilePath)
@@ -381,6 +390,15 @@ func PatternAddWorkload(org, userPw, pattern, workloadFilePath, keyFilePath stri
 	// Finally put it back in the exchange
 	fmt.Printf("Updating %s in the exchange...\n", pattern)
 	cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org, userPw), []int{201}, patInput)
+
+	// Store the public key in the exchange, if they gave it to us
+	if pubKeyFilePath != "" {
+		// Note: the CLI framework already verified the file exists
+		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
+		baseName := filepath.Base(pubKeyFilePath)
+		fmt.Printf("Storing %s with the pattern in the exchange...\n", baseName)
+		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
+	}
 }
 
 func PatternDelWorkload(org, userPw, pattern, workloadOrg, workloadUrl, workloadArch string) {
@@ -415,4 +433,30 @@ func PatternDelWorkload(org, userPw, pattern, workloadOrg, workloadUrl, workload
 	// Finally put it back in the exchange
 	fmt.Printf("Updating %s in the exchange...\n", pattern)
 	cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org, userPw), []int{201}, patInput)
+}
+
+func PatternListKey(org, userPw, pattern, keyName string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
+	if keyName == "" {
+		// Only display the names
+		var output string
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern+"/keys", cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		fmt.Printf("%s\n", output)
+	} else {
+		// Display the content of the key
+		var output []byte
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		if httpCode == 404 && pattern != "" {
+			cliutils.Fatal(cliutils.NOT_FOUND, "key '%s' not found", keyName)
+		}
+		fmt.Printf("%s", string(output))
+	}
+}
+
+func PatternRemoveKey(org, userPw, pattern, keyName string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
+	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "key '%s' not found", keyName)
+	}
 }
