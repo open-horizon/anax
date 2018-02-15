@@ -11,7 +11,7 @@ import (
 const HORIZON_VERSION = "local build"
 
 // the required exchange version
-const REQUIRED_EXCHANGE_VERSION = "1.44.0"
+const REQUIRED_EXCHANGE_VERSION = "1.46.0"
 
 // This function verifies the exchange version to make sure it meets the requirement.
 // It return nil if the exchange version is okay.
