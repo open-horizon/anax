@@ -11,9 +11,9 @@ import (
 	"github.com/open-horizon/rsapss-tool/verify"
 	"net/http"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
-	"path/filepath"
 )
 
 type DeploymentConfig struct {
