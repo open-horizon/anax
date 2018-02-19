@@ -97,7 +97,7 @@ func UpdateConfigstate(cfg *Configstate,
 
 		glog.V(3).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig of microservices starting")))
 
-		common_apispec_list, err := getSpecRefsForPattern(pDevice.Pattern, pDevice.Org, pDevice.GetId(), pDevice.Token, getPatterns, resolveWorkload, db, config)
+		common_apispec_list, err := getSpecRefsForPattern(pDevice.Pattern, pDevice.Org, pDevice.GetId(), pDevice.Token, getPatterns, resolveWorkload, db, config, true)
 		if err != nil {
 			return errorhandler(err), nil, nil
 		}
@@ -190,6 +190,8 @@ func workloadConfigPresent(workloadDef *exchange.WorkloadDefinition, wUrl string
 
 }
 
+// this function returns the referenced microservices from a given pattern.
+// If the checkWorkloadConfig is true if will check if the user has given the correct input for the workload already.
 func getSpecRefsForPattern(patName string,
 	patOrg string,
 	devId string,
@@ -197,9 +199,9 @@ func getSpecRefsForPattern(patName string,
 	getPatterns exchange.PatternHandler,
 	resolveWorkload exchange.WorkloadResolverHandler,
 	db *bolt.DB,
-	config *config.HorizonConfig) (*policy.APISpecList, error) {
+	config *config.HorizonConfig, checkWorkloadConfig bool) (*policy.APISpecList, error) {
 
-	glog.V(5).Infof(apiLogString(fmt.Sprintf("getSpecRefsForPattern %v org %v", patName, patOrg)))
+	glog.V(5).Infof(apiLogString(fmt.Sprintf("getSpecRefsForPattern %v org %v. Check workload config: %v", patName, patOrg, checkWorkloadConfig)))
 
 	// Get the pattern definition from the exchange. There should only be one pattern returned in the map.
 	pattern, err := getPatterns(patOrg, patName, devId, devToken)
@@ -237,12 +239,14 @@ func getSpecRefsForPattern(patName string,
 				return nil, NewSystemError(fmt.Sprintf("Error resolving workload %v %v %v %v, error %v", workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, thisArch, err))
 			}
 
-			// The workload might have variables that need to be configured. If so, find all relevant workloadconfig objects to make sure
-			// there is a workload config available.
-			if present, err := workloadConfigPresent(workloadDef, workload.WorkloadURL, workloadChoice.Version, db); err != nil {
-				return nil, NewSystemError(fmt.Sprintf("Error checking workload config, error %v", err))
-			} else if !present {
-				return nil, NewMSMissingVariableConfigError(fmt.Sprintf("Workload config for %v %v is missing", workload.WorkloadURL, workloadChoice.Version), "configstate.state")
+			if checkWorkloadConfig {
+				// The workload might have variables that need to be configured. If so, find all relevant workloadconfig objects to make sure
+				// there is a workload config available.
+				if present, err := workloadConfigPresent(workloadDef, workload.WorkloadURL, workloadChoice.Version, db); err != nil {
+					return nil, NewSystemError(fmt.Sprintf("Error checking workload config, error %v", err))
+				} else if !present {
+					return nil, NewMSMissingVariableConfigError(fmt.Sprintf("Workload config for %v %v is missing", workload.WorkloadURL, workloadChoice.Version), "configstate.state")
+				}
 			}
 
 			// get the ms references from the workload, the version here is a version range.

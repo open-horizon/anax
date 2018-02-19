@@ -91,7 +91,7 @@ func CreateService(service *Service,
 
 	// use the pattern arch and version range in the pattern case if this is a user config, ignore the arch and version range from the user input.
 	if pDevice.Pattern != "" && from_user {
-		common_apispec_list, err := getSpecRefsForPattern(pDevice.Pattern, pDevice.Org, pDevice.GetId(), pDevice.Token, getPatterns, resolveWorkload, db, config)
+		common_apispec_list, err := getSpecRefsForPattern(pDevice.Pattern, pDevice.Org, pDevice.GetId(), pDevice.Token, getPatterns, resolveWorkload, db, config, false)
 		if err != nil {
 			return errorhandler(err), nil, nil
 		}

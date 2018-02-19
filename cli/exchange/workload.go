@@ -11,9 +11,9 @@ import (
 	"github.com/open-horizon/rsapss-tool/verify"
 	"net/http"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
-	"path/filepath"
 )
 
 // This is used when reading json file the user gives us as input to create the workload struct
