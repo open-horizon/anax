@@ -15,8 +15,12 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/torrent"
+	fetch "github.com/open-horizon/horizon-pkg-fetch"
 	"github.com/satori/go.uuid"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -26,6 +30,7 @@ import (
 const DEVTOOL_HZN_ORG = "HZN_ORG_ID"
 const DEVTOOL_HZN_USER = "HZN_EXCHANGE_USER_AUTH"
 const DEVTOOL_HZN_EXCHANGE_URL = "HZN_EXCHANGE_URL"
+const DEVTOOL_HZN_DEVICE_ID = "HZN_DEVICE_ID"
 
 const DEFAULT_WORKING_DIR = "horizon"
 
@@ -204,9 +209,36 @@ func setup(homeDirectory string, mustExist bool, needExchange bool, userCreds st
 	return dir, nil
 }
 
+func makeByValueAttributes(attrs []persistence.Attribute) []persistence.Attribute {
+	byValueAttrs := make([]persistence.Attribute, 0, 10)
+	for _, a := range attrs {
+		switch a.(type) {
+		case *persistence.LocationAttributes:
+			p := a.(*persistence.LocationAttributes)
+			byValueAttrs = append(byValueAttrs, *p)
+		case *persistence.ComputeAttributes:
+			p := a.(*persistence.ComputeAttributes)
+			byValueAttrs = append(byValueAttrs, *p)
+		case *persistence.ArchitectureAttributes:
+			p := a.(*persistence.ArchitectureAttributes)
+			byValueAttrs = append(byValueAttrs, *p)
+		case *persistence.HAAttributes:
+			p := a.(*persistence.HAAttributes)
+			byValueAttrs = append(byValueAttrs, *p)
+		case *persistence.HTTPSBasicAuthAttributes:
+			p := a.(*persistence.HTTPSBasicAuthAttributes)
+			byValueAttrs = append(byValueAttrs, *p)
+		case *persistence.BXDockerRegistryAuthAttributes:
+			p := a.(*persistence.BXDockerRegistryAuthAttributes)
+			byValueAttrs = append(byValueAttrs, *p)
+		}
+	}
+	return byValueAttrs
+}
+
+
 // Create the environment variable map needed by the container worker to hold the environment variables that are passed to the
 // workload container.
-//func createEnvVarMap(agreementId string, userInputs *InputFile, workloadDef *cliexchange.WorkloadInput) (map[string]string, error) {
 func createEnvVarMap(agreementId string,
 	workloadPW string,
 	global []GlobalSet,
@@ -217,7 +249,13 @@ func createEnvVarMap(agreementId string,
 
 	// First, add in the Horizon platform env vars.
 	envvars := make(map[string]string)
+
+	// Allow device id override if the env var is set.
 	testDeviceId, _ := os.Hostname()
+	if os.Getenv(DEVTOOL_HZN_DEVICE_ID) != "" {
+		testDeviceId = os.Getenv(DEVTOOL_HZN_DEVICE_ID)
+	}
+
 	exchangeURL := os.Getenv(DEVTOOL_HZN_EXCHANGE_URL)
 	cutil.SetPlatformEnvvars(envvars, config.ENVVAR_PREFIX, agreementId, testDeviceId, org, workloadPW, exchangeURL)
 
@@ -239,23 +277,7 @@ func createEnvVarMap(agreementId string,
 	// array of attributes because that's what the functions which convert attributes to env vars expect. This is
 	// because at runtime, the attributes are serialized to a database and then read out again before converting to env vars.
 
-	byValueAttrs := make([]persistence.Attribute, 0, 10)
-	for _, a := range attrs {
-		switch a.(type) {
-		case *persistence.LocationAttributes:
-			p := a.(*persistence.LocationAttributes)
-			byValueAttrs = append(byValueAttrs, *p)
-		case *persistence.ComputeAttributes:
-			p := a.(*persistence.ComputeAttributes)
-			byValueAttrs = append(byValueAttrs, *p)
-		case *persistence.ArchitectureAttributes:
-			p := a.(*persistence.ArchitectureAttributes)
-			byValueAttrs = append(byValueAttrs, *p)
-		case *persistence.HAAttributes:
-			p := a.(*persistence.HAAttributes)
-			byValueAttrs = append(byValueAttrs, *p)
-		}
-	}
+	byValueAttrs := makeByValueAttributes(attrs)
 
 	// Fourth, convert all attributes to system env vars.
 	var cerr error
@@ -270,7 +292,9 @@ func createEnvVarMap(agreementId string,
 	AddDefaultUserInputs(defaultVar, envvars)
 
 	// Then add in the configured variable values from the workload section of the user input file.
-	AddConfiguredUserInputs(configVar, envvars)
+	if err := AddConfiguredUserInputs(configVar, envvars); err != nil {
+		return nil, err
+	}
 
 	return envvars, nil
 }
@@ -346,7 +370,7 @@ func startMicroservice(deployment *containermessage.DeploymentDescription,
 	// Make an instance id the same way the runtime makes them.
 	msId := cutil.MakeMSInstanceKey(specRef, version, uuid.NewV4().String())
 
-	fmt.Printf("Starting microservice: %v with instance id %v\n", dc.CLIString(), msId)
+	fmt.Printf("Start microservice: %v with instance id prefix %v\n", dc.CLIString(), msId)
 
 	// Start the microservice container.
 	_, startErr := cw.ResourcesCreate(msId, nil, deployment, []byte(""), environmentAdditions, map[string]docker.ContainerNetwork{})
@@ -405,8 +429,89 @@ func stopMicroservice(dc *cliexchange.DeploymentConfig, cw *container.ContainerW
 		// Locate the microservice container and stop it.
 		for _, c := range containers {
 			msId := c.Labels[container.LABEL_PREFIX+".agreement_id"]
-			fmt.Printf("Stopping microservice: %v with id %v\n", dc.CLIString(), msId)
+			fmt.Printf("Stop microservice: %v with instance id prefix  %v\n", dc.CLIString(), msId)
 			cw.ResourcesRemove([]string{msId})
+		}
+	}
+	return nil
+}
+
+// For workloads and microservices that have their images on an image server, download the image(s)
+// and load them into the local docker.
+func downloadFromImageServer(torrentInfo string, keyFile string, currentUIs *InputFile) error {
+
+	torrObj := new(policy.Torrent)
+	if err := json.Unmarshal([]byte(torrentInfo), torrObj); err != nil {
+		return errors.New(fmt.Sprintf("failed to unmarshal torrent field: %v, error: %v", torrentInfo, err))
+	} else if torrObj.Url == "" {
+		return nil
+	} else if torrentUrl, err := url.Parse(torrObj.Url); err != nil {
+		return errors.New(fmt.Sprintf("failed to parse torrent.url %v, error: %v", torrObj, err))
+	} else if torrentUrl != nil {
+
+		fmt.Printf("Dependency has container images on an image server, downloading the images now.\n")
+		cliutils.Verbose("Downloading container images from image server: %s", torrentUrl)
+
+		torrentSig := torrObj.Signature
+
+		// Create a temporary anax config object to hold the HTTP config we need to contact the Image server.
+		cfg := &config.HorizonConfig{
+			Edge: config.Config{
+				TrustSystemCACerts: true,
+			},
+			AgreementBot:  config.AGConfig{},
+			Collaborators: config.Collaborators{},
+		}
+		col, _ := config.NewCollaborators(*cfg)
+		cfg.Collaborators = *col
+
+		// Create a docker client so that we can convert the downloaded images into docker images.
+		dockerEP := "unix:///var/run/docker.sock"
+		client, derr := docker.NewClient(dockerEP)
+		if derr != nil {
+			return errors.New(fmt.Sprintf("failed to create docker client, error: %v", derr))
+		}
+
+		// This function prevents a download for something that is already downloaded.
+		skipCheckFn := torrent.SkipCheckFn(client)
+
+		// This is the image server authentication configuration. First get any anax attributes and convert them into
+		// anax attributes.
+		attributes, err := GlobalSetAsAttributes(currentUIs.Global)
+		if err != nil {
+			return errors.New(fmt.Sprintf("failed to convert global attributes in %v, error: %v ", USERINPUT_FILE, err))
+		}
+		byValueAttrs := makeByValueAttributes(attributes)
+
+		// Then extract the HTTPS authentication attributes.
+		httpAuthAttrs := make(map[string]map[string]string, 0)
+		dockerAuthConfigurations := make(map[string]docker.AuthConfiguration, 0)
+		httpAuth, _, authErr := torrent.ExtractAuthAttributes(byValueAttrs, httpAuthAttrs, dockerAuthConfigurations)
+		if authErr != nil {
+			return errors.New(fmt.Sprintf("failed to extract authentication attribute from %v, error: %v ", USERINPUT_FILE, err))
+		}
+
+		cliutils.Verbose("Using HTTPS Basic authorization: %v", httpAuth)
+
+		// A public key is needed to verify the signature of the image parts.
+		pemFiles := []string{keyFile}
+
+		// Download to a temporary location.
+		torrentDir := "/tmp"
+
+		// Call the package fetcher library to download and verify the image parts.
+		imageFiles, fetchErr := fetch.PkgFetch(cfg.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), &skipCheckFn, *torrentUrl, torrentSig, torrentDir, pemFiles, httpAuth)
+		if fetchErr != nil {
+			return errors.New(fmt.Sprintf("failed to fetch %v, error: %v", torrentUrl, fetchErr))
+		}
+
+		fmt.Printf("Loading container images into docker.\n")
+		cliutils.Verbose("Loading container images into docker: %v", imageFiles)
+
+		// Now that the images are downloaded, load them into docker.
+		loadErr := torrent.LoadImagesFromPkgParts(client, imageFiles)
+		if loadErr != nil {
+			return errors.New(fmt.Sprintf("failed to load images %v from images server, error: %v", imageFiles, loadErr))
 		}
 	}
 	return nil

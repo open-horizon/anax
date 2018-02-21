@@ -122,7 +122,7 @@ func WorkloadStartTest(homeDirectory string, userInputFile string) {
 
 	// Now we can start the workload container.
 
-	// Get the variables intended to configure this dependency from this project's userinput file.
+	// Get the variables intended to configure this workload from this project's userinput file.
 	configVars := getConfiguredVariables(userInputs.Workloads, workloadDef.WorkloadURL)
 
 	environmentAdditions, enverr := createEnvVarMap(agreementId, "deprecated", userInputs.Global, configVars, workloadDef.UserInputs, workloadDef.Org, persistence.ConvertWorkloadPersistentNativeToEnv)
@@ -215,6 +215,11 @@ func WorkloadValidate(homeDirectory string, userInputFile string) {
 	dir, err := setup(homeDirectory, true, false, "")
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", WORKLOAD_COMMAND, WORKLOAD_VERIFY_COMMAND, err)
+	}
+
+	// Make sure we're in a workload project.
+	if !IsWorkloadProject(dir) {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' current project is not a workload project.", WORKLOAD_COMMAND, WORKLOAD_VERIFY_COMMAND)
 	}
 
 	// Validate Workload Definition

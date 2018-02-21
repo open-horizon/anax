@@ -22,7 +22,7 @@ func listImages(client *dockerclient.Client) ([]dockerclient.APIImages, error) {
 }
 
 // TODO: user needs to use image IDs instead of repotags to avoid overwriting or otherwise mistaken handling because of name collisions
-func skipCheckFn(client *dockerclient.Client) func(repotag string) (bool, error) {
+func SkipCheckFn(client *dockerclient.Client) func(repotag string) (bool, error) {
 
 	return func(repotag string) (bool, error) {
 		repotagParts := strings.Split(repotag, ":")
@@ -51,7 +51,7 @@ func rem(dir string) {
 }
 
 // imageFiles is a mapping of Pkg file path to docker image repotag
-func loadImagesFromPkgParts(client *dockerclient.Client, imageFiles map[string]string) error {
+func LoadImagesFromPkgParts(client *dockerclient.Client, imageFiles map[string]string) error {
 	if len(imageFiles) == 0 {
 		return errors.New("Received zero-length imageFiles spec")
 	}
@@ -62,7 +62,7 @@ func loadImagesFromPkgParts(client *dockerclient.Client, imageFiles map[string]s
 			continue
 		} else {
 
-			glog.Infof("Doing docker load of image file: %v as docker image: %v", abspath, repotag)
+			glog.V(3).Infof("Doing docker load of image file: %v as docker image: %v", abspath, repotag)
 
 			// wanna clean up the fetched file no matter what
 			defer rem(abspath)
