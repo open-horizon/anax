@@ -657,7 +657,7 @@ body:
 | sensor_org  | string | the organization that holds the microservice definition. |
 | auto_upgrade  | bool | If the microservice should be automatically upgraded when new versions become available. The default is true. |
 | active_upgrade  | bool | If horizon should actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade. The default is false. |
-| attributes | array | an array of attributes.  Please refer to the response body for the GET /attribute api for the fields of an attribute.  |
+| attributes | array | an array of attributes.  Please refer to [Attribute Definitions](https://github.com/open-horizon/anax/blob/master/doc/attributes.md) for a description of all attributes.  |
 
 **Response:**
 
@@ -826,7 +826,7 @@ body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| attribute | json | Please refer to the response body for the GET /attribute api for the fields of an attribute.  |
+| attribute | json | Please refer to [Attribute Definitions](https://github.com/open-horizon/anax/blob/master/doc/attributes.md) for a description of all attributes.  |
 
 **Response:**
 
@@ -874,7 +874,7 @@ body:
 | ---- | ---- | ---------------- |
 | id | string| the id of the attribute. |
 | label | string | the user readable name of the attribute |
-| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, UserInputAttributes, HAAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, AgreementProtocolAttributes and ArchitectureAttributes. |
+| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, UserInputAttributes, HAAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, and AgreementProtocolAttributes. |
 | sensor_urls | array | an array of sensor url. It applies to all microservices if it is empty. |
 | publishable| bool | whether the attribute can be made public or not. |
 | host_only | bool | whether or not the attribute will be passed to the microservice. |
