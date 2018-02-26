@@ -20,12 +20,20 @@ type GlobalSet struct {
 	Variables  map[string]interface{} `json:"variables"`
 }
 
+func (g GlobalSet) String() string {
+	return fmt.Sprintf("Global Array element, type: %v, sensor_urls: %v, variables: %v", g.Type, g.SensorUrls, g.Variables)
+}
+
 // Use for both microservices and workloads
 type MicroWork struct {
 	Org          string                 `json:"org"`
 	Url          string                 `json:"url"`
 	VersionRange string                 `json:"versionRange"`
 	Variables    map[string]interface{} `json:"variables"`
+}
+
+func (m MicroWork) String() string {
+	return fmt.Sprintf("Org: %v, URL: %v, VersionRange: %v, Variables: %v", m.Org, m.Url, m.VersionRange, m.Variables)
 }
 
 type InputFile struct {
