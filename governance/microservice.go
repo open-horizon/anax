@@ -331,6 +331,7 @@ func (w *GovernanceWorker) RollbackMicroservice(msdef *persistence.MicroserviceD
 			return nil
 		} else if err := w.UpgradeMicroservice(msdef, new_msdef, false); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("Failed to downgrade %v from version %v key %v to version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, new_msdef.Version, new_msdef.Id, err)))
+			msdef = new_msdef
 		} else {
 			return nil
 		}
