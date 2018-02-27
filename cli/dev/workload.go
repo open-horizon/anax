@@ -4,6 +4,7 @@ import (
 	"fmt"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/cli/cliutils"
+	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/persistence"
@@ -40,7 +41,7 @@ func WorkloadNew(homeDirectory string, org string) {
 	cmd := fmt.Sprintf("%v %v", WORKLOAD_COMMAND, WORKLOAD_CREATION_COMMAND)
 	FileNotExist(dir, cmd, USERINPUT_FILE, UserInputExists)
 	FileNotExist(dir, cmd, WORKLOAD_DEFINITION_FILE, WorkloadDefinitionExists)
-	FileNotExist(dir, cmd, DEPENDENCIES_FILE, DependenciesExists)
+	//FileNotExist(dir, cmd, DEPENDENCIES_FILE, DependenciesExists)
 
 	if org == "" {
 		org = os.Getenv(DEVTOOL_HZN_ORG)
@@ -51,9 +52,10 @@ func WorkloadNew(homeDirectory string, org string) {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", WORKLOAD_COMMAND, WORKLOAD_CREATION_COMMAND, err)
 	} else if err := CreateWorkloadDefinition(dir, org); err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", WORKLOAD_COMMAND, WORKLOAD_CREATION_COMMAND, err)
-	} else if err := CreateDependencies(dir); err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", WORKLOAD_COMMAND, WORKLOAD_CREATION_COMMAND, err)
 	}
+	// } else if err := CreateDependencies(dir); err != nil {
+	// 	cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", WORKLOAD_COMMAND, WORKLOAD_CREATION_COMMAND, err)
+	// }
 
 	fmt.Printf("Created horizon metadata files in %v. Edit these files to define and configure your new %v.\n", dir, WORKLOAD_COMMAND)
 
@@ -83,7 +85,7 @@ func WorkloadStartTest(homeDirectory string, userInputFile string) {
 	}
 
 	// Start any dependencies. Dependencies should be listed in the APISpec array of the workload definition and in
-	// the dependencies json file.
+	// the dependencies directory.
 
 	// Log the starting of dependencies if there are any.
 	if len(workloadDef.APISpecs) != 0 {
@@ -96,26 +98,35 @@ func WorkloadStartTest(homeDirectory string, userInputFile string) {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to get dependencies, %v", WORKLOAD_COMMAND, WORKLOAD_START_COMMAND, err)
 	}
 
-	for depId, dep := range deps {
+	for _, depDef := range deps {
 
-		if dep.DeployConfig.HasAnyServices() {
+		if len(depDef.Workloads) > 0 {
 			// Convert the deployment config into a full DeploymentDescription.
-			deployment, derr := dep.ConvertToDeploymentDescription()
-			if derr != nil {
-				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to create Deployment Description for dependency, %v", WORKLOAD_COMMAND, WORKLOAD_START_COMMAND, derr)
+			depConfig, deployment, derr := depDef.ConvertToDeploymentDescription()
+			var startErr error
+
+			if derr == nil && !depConfig.HasAnyServices() {
+				fmt.Printf("Skipping microservice because it has no services: %v\n", depConfig)
+				continue
+			} else if derr == nil {
+				ms_networks, startErr = startMicroservice(deployment, depDef.SpecRef, depDef.Version, userInputs.Global, depDef.UserInputs, userInputs, workloadDef.Org, depConfig, cw, ms_networks)
 			}
 
-			var err error
-			ms_networks, err = startMicroservice(deployment, dep.SpecRef, dep.Version, dep.Global, dep.UserInputs, userInputs, workloadDef.Org, &dep.DeployConfig, cw, ms_networks)
-			if err != nil {
+			// If there were errors, cleanup any microservices that are already started.
+			if startErr != nil || derr != nil {
 
 				// Stop any microservices that might already be started.
 				WorkloadStopTest(homeDirectory)
 
-				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v for dependency %v", WORKLOAD_COMMAND, WORKLOAD_START_COMMAND, err, dep)
+				if derr != nil {
+					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to create Deployment Description for dependency, %v", WORKLOAD_COMMAND, WORKLOAD_START_COMMAND, derr)
+				} else {
+					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v for dependency %v", WORKLOAD_COMMAND, WORKLOAD_START_COMMAND, startErr, depDef.SpecRef)
+				}
 			}
+
 		} else {
-			fmt.Printf("Skipping microservice %v because it has no deployment.\n", depId)
+			fmt.Printf("Skipping microservice %v because it has no deployment.\n", depDef.SpecRef)
 		}
 
 	}
@@ -125,7 +136,7 @@ func WorkloadStartTest(homeDirectory string, userInputFile string) {
 	// Get the variables intended to configure this workload from this project's userinput file.
 	configVars := getConfiguredVariables(userInputs.Workloads, workloadDef.WorkloadURL)
 
-	environmentAdditions, enverr := createEnvVarMap(agreementId, "deprecated", userInputs.Global, configVars, workloadDef.UserInputs, workloadDef.Org, persistence.ConvertWorkloadPersistentNativeToEnv)
+	environmentAdditions, enverr := createEnvVarMap(agreementId, "deprecated", userInputs.Global, "", configVars, workloadDef.UserInputs, workloadDef.Org, persistence.ConvertWorkloadPersistentNativeToEnv)
 	if enverr != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to create environment variables, %v", WORKLOAD_COMMAND, WORKLOAD_START_COMMAND, enverr)
 	}
@@ -154,16 +165,19 @@ func WorkloadStopTest(homeDirectory string) {
 	// Perform the common execution setup.
 	dir, _, cw := commonExecutionSetup(homeDirectory, "", WORKLOAD_COMMAND, WORKLOAD_STOP_COMMAND)
 
-	// Loop through each dependency to get the metadata we need to start the dependency.
+	// Loop through each dependency to get the metadata we need to stop the dependency.
 	deps, err := GetDependencies(dir)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to get dependencies, %v", WORKLOAD_COMMAND, WORKLOAD_STOP_COMMAND, err)
 	}
 
-	for _, dep := range deps {
-		err := stopMicroservice(&dep.DeployConfig, cw)
-		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v for dependency %v", WORKLOAD_COMMAND, WORKLOAD_STOP_COMMAND, err, dep)
+	for _, depDef := range deps {
+
+		if len(depDef.Workloads) > 0 {
+			depConfig := cliexchange.ConvertToDeploymentConfig(depDef.Workloads[0].Deployment)
+			if err := stopMicroservice(depConfig, cw); err != nil {
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v for dependency %v", WORKLOAD_COMMAND, WORKLOAD_STOP_COMMAND, err, depDef.SpecRef)
+			}
 		}
 	}
 

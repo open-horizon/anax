@@ -1,99 +1,29 @@
 package dev
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
-	"github.com/open-horizon/anax/containermessage"
+	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/exchange"
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
+	"strings"
 )
-
-const DEPENDENCIES_FILE = "dependency.definition.json"
 
 const DEPENDENCY_COMMAND = "dependency"
 const DEPENDENCY_FETCH_COMMAND = "fetch"
 const DEPENDENCY_LIST_COMMAND = "list"
 const DEPENDENCY_REMOVE_COMMAND = "remove"
 
-// Holds the parameters used to capture the dependency metadata so that the dependency can be refreshed.
-type MetadataReference struct {
-	Project string `json:"project"`
-	SpecRef string `json:"specRef"`
-	Version string `json:"version"`
-	Org     string `json:"org"`
-	Arch    string `json:"arch"`
-}
-
-func (m MetadataReference) ShortString() string {
-	return fmt.Sprintf("SpecRef: %v, Version: %v, Arch: %v", m.SpecRef, m.Version, m.Arch)
-}
-
-func (m MetadataReference) Validate() error {
-	if (m.Project != "") && (m.SpecRef != "" || m.Org != "" || m.Version != "" || m.Arch != "") {
-		return errors.New(fmt.Sprintf("can contain project or specRef and org, but not both"))
-	} else if (m.Project == "") && m.SpecRef == "" && m.Org == "" {
-		return errors.New(fmt.Sprintf("must contain either project or specRef and org"))
-	} else if (m.Project == "") && (m.SpecRef == "" || m.Org == "") {
-		return errors.New(fmt.Sprintf("must specify specRef and org"))
-	}
-	return nil
-}
-
-// Describes a service dependency.
-type Dependency struct {
-	SpecRef      string                       `json:"specRef"`
-	Version      string                       `json:"version"`
-	Arch         string                       `json:"arch"`
-	Sharable     string                       `json:"sharable"`
-	Global       []GlobalSet                  `json:"global"`
-	UserInputs   []exchange.UserInput         `json:"userInput"` // These come from the dependency's definition file, so they might not have a default.
-	DeployConfig cliexchange.DeploymentConfig `json:"deployment.config"`
-	MetaRef      MetadataReference            `json:"metadata.reference"`
-}
-
-func (d Dependency) String() string {
-	return fmt.Sprintf("SpecRef: %v, "+
-		"Version: %v, "+
-		"Arch: %v, "+
-		"Sharable: %v, "+
-		"Global: %v, "+
-		"UserInputs: %v, "+
-		"DeployConfig: %v",
-		d.SpecRef, d.Version, d.Arch, d.Sharable, d.Global, d.UserInputs, d.DeployConfig)
-}
-
-func (d Dependency) ShortString() string {
-	return fmt.Sprintf("SpecRef: %v, Version: %v, Arch: %v", d.SpecRef, d.Version, d.Arch)
-}
-
-func (d Dependency) ConvertToDeploymentDescription() (*containermessage.DeploymentDescription, error) {
-	return &containermessage.DeploymentDescription{
-		Services: d.DeployConfig.Services,
-		ServicePattern: containermessage.Pattern{
-			Shared: map[string][]string{},
-		},
-		Infrastructure: false,
-		Overrides:      map[string]*containermessage.Service{},
-	}, nil
-}
-
-// All the Horizon dependencies that this project has.
-type Dependencies map[string]Dependency
-
-func (d Dependencies) AddNewDependency(id string, newDep *Dependency) error {
-	d[id] = *newDep
-	return nil
-}
-
 // This is the entry point for the hzn dev dependency fetch command.
-func DependencyFetch(homeDirectory string, project string, specRef string, org string, version string, arch string, userCreds string, keyFile string) {
+func DependencyFetch(homeDirectory string, project string, specRef string, org string, version string, arch string, userCreds string, keyFile string, userInputFile string) {
 
 	// Check input parameters for correctness.
 	dir, err := verifyFetchInput(homeDirectory, project, specRef, org, version, arch, userCreds)
@@ -105,11 +35,11 @@ func DependencyFetch(homeDirectory string, project string, specRef string, org s
 
 	// Go get the dependency metadata.
 	if project != "" {
-		if err := fetchLocalProjectDependency(dir, project); err != nil {
+		if err := fetchLocalProjectDependency(dir, project, userInputFile); err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'dependency %v' %v", DEPENDENCY_FETCH_COMMAND, err)
 		}
 	} else {
-		if err := fetchExchangeProjectDependency(dir, specRef, org, version, arch, userCreds, keyFile); err != nil {
+		if err := fetchExchangeProjectDependency(dir, specRef, org, version, arch, userCreds, keyFile, userInputFile); err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'dependency %v' %v", DEPENDENCY_FETCH_COMMAND, err)
 		}
 		target = fmt.Sprintf("specRef: %v, org: %v", specRef, org)
@@ -140,7 +70,7 @@ func DependencyList(homeDirectory string) {
 	if jsonBytes, err := json.MarshalIndent(deps, "", "    "); err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "'%v %v' to create json object from dependencies, %v", DEPENDENCY_COMMAND, DEPENDENCY_LIST_COMMAND, err)
 	} else {
-		fmt.Printf("%v", string(jsonBytes))
+		fmt.Printf("%v\n", string(jsonBytes))
 	}
 
 }
@@ -154,50 +84,54 @@ func DependencyRemove(homeDirectory string, specRef string, version string, arch
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'dependency %v' %v", DEPENDENCY_REMOVE_COMMAND, err)
 	}
 
-	// Grab the dependency object from the filesystem.
-	deps, err := GetDependencies(dir)
+	// Grab the dependency files from the filesystem.
+	deps, err := GetDependencyFiles(dir)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", DEPENDENCY_COMMAND, DEPENDENCY_REMOVE_COMMAND, err)
 	}
 
 	// Make sure we can uniquely identify the dependency to be removed.
-	var theDep Dependency
-	var theDepKey string
+	var theDep *cliexchange.MicroserviceFile
+	var depFileInfo os.FileInfo
+
 	uniqueDep := true
-	for depKey, dep := range deps {
+	for _, fileInfo := range deps {
+
+		dep, err := GetMicroserviceDefinition(path.Join(dir, DEFAULT_DEPENDENCY_DIR), fileInfo.Name())
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", DEPENDENCY_COMMAND, DEPENDENCY_REMOVE_COMMAND, err)
+		}
+
 		if dep.SpecRef == specRef && (version == "" || (version != "" && dep.Version == version)) && (arch == "" || (arch != "" && dep.Arch == arch)) {
-			if theDep.SpecRef != "" {
+			if theDep != nil {
 				uniqueDep = false
 				break
 			}
 			theDep = dep
-			theDepKey = depKey
+			depFileInfo = fileInfo
 		}
 	}
 
 	// If we did not find the dependency, then return the error. If the input did not uniquely identify the dependency, then return
 	// the error. Otherwise remove the dependency.
-	if theDep.SpecRef == "" {
+	if theDep == nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'dependency %v' dependency not found.", DEPENDENCY_REMOVE_COMMAND)
 	} else if !uniqueDep {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'dependency %v' dependency %v is not unique. Please specify version and/or architecture to uniquely identify the dependency.", DEPENDENCY_REMOVE_COMMAND, specRef)
 	} else {
-		cliutils.Verbose("Found dependency: %v", theDep)
+		cliutils.Verbose("Found dependency: %v", depFileInfo.Name())
 
 		// We know which dependency to remove, so remove it.
-		delete(deps, theDepKey)
+		if err := os.Remove(path.Join(dir, DEFAULT_DEPENDENCY_DIR, depFileInfo.Name())); err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'dependency %v' dependency %v could not be removed, error: %v", DEPENDENCY_REMOVE_COMMAND, depFileInfo.Name(), err)
+		}
 
 		// Update the workload definition with the new dependencies.
-		if err := RefreshWorkloadDependencies(dir, deps); err != nil {
+		if err := RefreshWorkloadDependencies(dir); err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'dependency %v' error updating workload definition: %v", DEPENDENCY_REMOVE_COMMAND, err)
 		}
 
-		// Write out the new list of dependencies.
-		if err := CreateFile(dir, DEPENDENCIES_FILE, deps); err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'dependency %v' error updating dependency file: %v", DEPENDENCY_REMOVE_COMMAND, err)
-		}
-
-		cliutils.Verbose("Updated %v/%v for removed dependency.", dir, DEPENDENCIES_FILE)
+		cliutils.Verbose("Updated workload dependencies.")
 	}
 
 	// Construct meaningful completion message.
@@ -211,81 +145,76 @@ func DependencyRemove(homeDirectory string, specRef string, version string, arch
 	fmt.Printf("Removed dependency %v.\n", target)
 }
 
-// Sort of like a constructor, it creates an in memory object except that it is created from the dependency config
-// file in the current project. This function assumes the caller has determined the exact location of the file.
-func GetDependencies(directory string) (Dependencies, error) {
+// Returns an os.FileInfo object for each dependency file. This function assumes the caller has
+// determined the exact location of the files.
+func GetDependencyFiles(directory string) ([]os.FileInfo, error) {
 
-	res := make(Dependencies)
-
-	filePath := path.Join(directory, DEPENDENCIES_FILE)
-	fileBytes := cliutils.ReadJsonFile(filePath)
-
-	// We decode this JSON file using a decoder with the UseNumber flag set so that the attribute API code we reuse for parsing
-	// the GlobalSet attributes will have the right metadata.
-	decoder := json.NewDecoder(bytes.NewReader(fileBytes))
-	decoder.UseNumber()
-
-	if err := decoder.Decode(&res); err != nil {
-		return nil, errors.New(fmt.Sprintf("unable to demarshal %v file, error: %v", filePath, err))
+	res := make([]os.FileInfo, 0, 10)
+	depPath := path.Join(directory, DEFAULT_DEPENDENCY_DIR)
+	if files, err := ioutil.ReadDir(depPath); err != nil {
+		return res, errors.New(fmt.Sprintf("unable to get list of dependency files in %v, error: %v", depPath, err))
+	} else {
+		for _, fileInfo := range files {
+			if strings.HasSuffix(fileInfo.Name(), MICROSERVICE_DEFINITION_FILE) && !fileInfo.IsDir() {
+				res = append(res, fileInfo)
+			}
+		}
 	}
 
 	return res, nil
 
 }
 
-// Sort of like a constructor, it creates a skeletal dependency config object and writes it to the project
-// in the file system.
-func CreateDependencies(directory string) error {
-
-	// Create a skeletal dependency config object with fillins/place-holders for configuration.
-	res := make(Dependencies)
-
-	// Convert the object to JSON and write it into the project.
-	return CreateFile(directory, DEPENDENCIES_FILE, res)
-
-}
-
-// Check for the existence of the dependency config file in the project.
-func DependenciesExists(directory string) (bool, error) {
-	return FileExists(directory, DEPENDENCIES_FILE)
-}
-
-// Validate that the microservice definition file is complete and coherent with the rest of the definitions in the project.
-// If the file is not valid the reason will be returned in the error.
-func ValidateDependencies(directory string, userInputs *InputFile, userInputsFilePath string) error {
-
-	deps, deperr := GetDependencies(directory)
-	if deperr != nil {
-		return deperr
+func GetDependencies(directory string) ([]*cliexchange.MicroserviceFile, error) {
+	res := make([]*cliexchange.MicroserviceFile, 0, 10)
+	depFiles, err := GetDependencyFiles(directory)
+	if err != nil {
+		return res, err
 	}
 
-	// Loop through the entire dependency map structure and validate each entry.
-	for depId, dep := range deps {
-		if depId == "" {
-			return errors.New(fmt.Sprintf("dependency %v has an empty key", dep))
-		} else if err := dep.Validate(userInputs, userInputsFilePath); err != nil {
-			return errors.New(fmt.Sprintf("dependency %v has a validation error: %v", depId, err))
+	for _, fileInfo := range depFiles {
+		d, err := GetMicroserviceDefinition(path.Join(directory, DEFAULT_DEPENDENCY_DIR), fileInfo.Name())
+		if err != nil {
+			return res, err
+		} else {
+			res = append(res, d)
+		}
+	}
+
+	return res, nil
+}
+
+// Check for the existence of the dependency directory in the project.
+func DependenciesExists(directory string) (bool, error) {
+	return FileExists(directory, DEFAULT_DEPENDENCY_DIR)
+}
+
+// Validate that the dependencies are complete and coherent with the rest of the definitions in the project.
+// Any errors will be returned to the caller.
+func ValidateDependencies(directory string, userInputs *register.InputFile, userInputsFilePath string) error {
+
+	// For each definition file in the dependencies directory, verify it.
+	deps, err := GetDependencyFiles(directory)
+	if err != nil {
+		return err
+	}
+
+	for _, fileInfo := range deps {
+		if err := ValidateMicroserviceDefinition(path.Join(directory, DEFAULT_DEPENDENCY_DIR), fileInfo.Name()); err != nil {
+			return errors.New(fmt.Sprintf("dependency %v did not validate, error: %v", fileInfo.Name(), err))
+		} else if err := Validate(directory, fileInfo, userInputs, userInputsFilePath); err != nil {
+			return errors.New(fmt.Sprintf("dependency %v did not validate, error: %v", fileInfo.Name(), err))
 		}
 	}
 
 	return nil
 }
 
-func (d Dependency) Validate(userInputs *InputFile, userInputsFilePath string) error {
+func Validate(directory string, fInfo os.FileInfo, userInputs *register.InputFile, userInputsFilePath string) error {
 
-	// Validate the tuple info.
-	if d.SpecRef == "" {
-		return errors.New(fmt.Sprintf("specRef is empty"))
-	} else if d.Version == "" {
-		return errors.New(fmt.Sprintf("version is empty"))
-	} else if d.Arch == "" {
-		return errors.New(fmt.Sprintf("arch is empty"))
-	}
-
-	// Validate the global section by running it through the attribute converter.
-	_, err := GlobalSetAsAttributes(d.Global)
+	d, err := GetMicroserviceDefinition(path.Join(directory, DEFAULT_DEPENDENCY_DIR), fInfo.Name())
 	if err != nil {
-		return errors.New(fmt.Sprintf("dependency %v has an error in the global section: %v ", d, err))
+		return err
 	}
 
 	// Userinputs from the dependency without a default value must be set in the userinput file.
@@ -304,16 +233,6 @@ func (d Dependency) Validate(userInputs *InputFile, userInputsFilePath string) e
 				return errors.New(fmt.Sprintf("variable %v has no default and must be specified in %v", ui.Name, userInputsFilePath))
 			}
 		}
-	}
-
-	// Validate the inner deployment.config section.
-	if err := d.DeployConfig.CanStartStop(); err != nil {
-		return errors.New(fmt.Sprintf("dependency %v has an error in the deployment.config: %v", d, err))
-	}
-
-	// Validate the metadata reference.
-	if err := (&d.MetaRef).Validate(); err != nil {
-		return errors.New(fmt.Sprintf("dependency %v has an error in the metadata.reference: %v", d, err))
 	}
 
 	return nil
@@ -343,7 +262,7 @@ func verifyFetchInput(homeDirectory string, project string, specRef string, org 
 	if project != "" {
 		if !IsMicroserviceProject(project) {
 			return "", errors.New(fmt.Sprintf("-project %v does not contain Horizon microservice metadata.", project))
-		} else if err := ValidateMicroserviceDefinition(project); err != nil {
+		} else if err := ValidateMicroserviceDefinition(project, MICROSERVICE_DEFINITION_FILE); err != nil {
 			return "", err
 		}
 	}
@@ -374,70 +293,59 @@ func verifyRemoveInput(homeDirectory string, specRef string, version string, arc
 	return dir, nil
 }
 
-func fetchLocalProjectDependency(homeDirectory string, project string) error {
+func fetchLocalProjectDependency(homeDirectory string, project string, userInputFile string) error {
 
-	// If the dependency is a local project then we can validate it and extract the project metadata.
+	// If the dependency is a local project then we can validate it and copy the project metadata.
 
 	// If the dependent project is not validate-able then we cant reliably use it as a dependency. This function
 	// handles the 'hzn dev microservice verify' command so it will exit if there is an error.
 	MicroserviceValidate(project, "")
 
-	// Create a new dependency
-	newDep := new(Dependency)
-
 	// Pull the metadata from the dependent project.
-	// Save the full file path of the pointer to the source of the dependency.
 	if absProject, err := filepath.Abs(project); err != nil {
 		return err
 	} else {
-		newDep.MetaRef = MetadataReference{
-			Project: absProject,
-		}
 		cliutils.Verbose("Reading Horizon metadata from dependency: %v", absProject)
 	}
 
 	// Get the dependency's definition.
-	msDef, err := GetMicroserviceDefinition(project)
+	msDef, err := GetMicroserviceDefinition(project, MICROSERVICE_DEFINITION_FILE)
 	if err != nil {
 		return err
-	}
-
-	newDep.SpecRef = msDef.SpecRef
-	newDep.Version = msDef.Version
-	newDep.Arch = msDef.Arch
-	newDep.Sharable = msDef.Sharable
-	newDep.UserInputs = msDef.UserInputs
-	for _, wl := range msDef.Workloads {
-		newDep.DeployConfig = *cliexchange.ConvertToDeploymentConfig(wl.Deployment)
-		break
 	}
 
 	// Get the dependency's userinputs to get the global attribute settings and any variable configuration.
-	ui, _, err := GetUserInputs(project, "")
+	ui, _, err := GetUserInputs(project, userInputFile)
 	if err != nil {
 		return err
 	}
 
-	newDep.Global = ui.Global
-
-	cliutils.Verbose("Found dependency %v, Org: %v", newDep.ShortString(), msDef.Org)
+	cliutils.Verbose("Found dependency %v, Org: %v", msDef.SpecRef, msDef.Org)
 
 	// Harden the new dependency in the file.
-	if err := UpdateDependencyFile(homeDirectory, newDep, msDef.Org); err != nil {
+	if err := UpdateDependencyFile(homeDirectory, msDef); err != nil {
 		return err
 	}
 
 	// Update the workload definition dependencies to make sure the dependency is included. The APISpec array
 	// in the workload definition is rebuilt from the dependencies.
-	if err := RefreshWorkloadDependencies(homeDirectory, nil); err != nil {
+	if err := RefreshWorkloadDependencies(homeDirectory); err != nil {
 		return err
 	}
 
-	// Update this project's userinputs with variable configuration from the dependency's userinputs.
+	// Update this project's userinputs with variable configuration from the dependency's userinputs and with global
+	// attributes from the dependency.
+
+	// Get this project's userinputs.
+	currentUIs, _, err := GetUserInputs(homeDirectory, "")
+	if err != nil {
+		return err
+	}
+
 	// Find the configured variables for this dependency.
-	var depVarConfig MicroWork
+	var depVarConfig register.MicroWork
 	for _, depUI := range ui.Microservices {
-		if depUI.Url == newDep.SpecRef {
+		if depUI.Url == msDef.SpecRef {
 			depVarConfig = depUI
 			break
 		}
@@ -445,12 +353,6 @@ func fetchLocalProjectDependency(homeDirectory string, project string) error {
 
 	// If there are any user inputs, append them to this project's user inputs.
 	if depVarConfig.Url != "" {
-		// Get this project's userinputs.
-		currentUIs, _, err := GetUserInputs(homeDirectory, "")
-		if err != nil {
-			return err
-		}
-
 		found := false
 		for _, currentUI := range currentUIs.Microservices {
 			if currentUI.Url == depVarConfig.Url && currentUI.Org == depVarConfig.Org {
@@ -460,18 +362,41 @@ func fetchLocalProjectDependency(homeDirectory string, project string) error {
 		}
 		if !found {
 			currentUIs.Microservices = append(currentUIs.Microservices, depVarConfig)
-
-			if err := CreateFile(homeDirectory, USERINPUT_FILE, currentUIs); err != nil {
-				return err
-			}
-
-			cliutils.Verbose("Updated %v/%v with the dependency's variable configuration.", homeDirectory, USERINPUT_FILE)
 		}
 	}
+
+	// Find the global attributes in the dependency and move them into this project.
+	for _, depGlobal := range ui.Global {
+		found := false
+		for _, currentUIGlobal := range currentUIs.Global {
+			if currentUIGlobal.Type == depGlobal.Type && reflect.DeepEqual(currentUIGlobal.Variables, depGlobal.Variables) {
+				found = true
+				break
+			}
+		}
+		// If the global setting was already in the current project, then dont copy anything from the dependency.
+		if found {
+			continue
+		} else {
+			// Copy the global setting so that the dependency continues to work correctly. Also tag the global setting with the
+			// dependencies spec ref URL so that the system knows it only applies to this dependency.
+			if len(depGlobal.SensorUrls) == 0 {
+				depGlobal.SensorUrls = append(depGlobal.SensorUrls, msDef.SpecRef)
+			}
+			currentUIs.Global = append(currentUIs.Global, depGlobal)
+		}
+	}
+
+	if err := CreateFile(homeDirectory, USERINPUT_FILE, currentUIs); err != nil {
+		return err
+	}
+
+	cliutils.Verbose("Updated %v/%v with the dependency's variable and global attribute configuration.", homeDirectory, USERINPUT_FILE)
+
 	return nil
 }
 
-func fetchExchangeProjectDependency(homeDirectory string, specRef string, org string, version string, arch string, userCreds string, keyFile string) error {
+func fetchExchangeProjectDependency(homeDirectory string, specRef string, org string, version string, arch string, userCreds string, keyFile string, userInputFile string) error {
 
 	// Pull the metadata from the exchange.
 
@@ -512,18 +437,9 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 		}
 	}
 
-	// Create a new dependency object.
-	newDep := new(Dependency)
+	cliutils.Verbose("Creating dependency %v, Org: %v", microserviceDef, org)
 
-	// Save the source of the dependency.
-	newDep.MetaRef = MetadataReference{
-		SpecRef: specRef,
-		Org:     org,
-		Version: version,
-		Arch:    arch,
-	}
-
-	cliutils.Verbose("Creating dependency %v, Org: %v", newDep.MetaRef.ShortString(), org)
+	msDef := new(cliexchange.MicroserviceFile)
 
 	// Get this project's userinputs.
 	currentUIs, _, err := GetUserInputs(homeDirectory, "")
@@ -537,7 +453,6 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 		if err := json.Unmarshal([]byte(wl.Deployment), dc); err != nil {
 			return errors.New(fmt.Sprintf("failed to unmarshal deployment %v: %v", microserviceDef.Workloads[0].Deployment, err))
 		}
-		newDep.DeployConfig = *dc
 
 		// Now that we have the deployment config, we can retrieve the container packages and download into docker.
 		if wl.Torrent != "" {
@@ -548,21 +463,32 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 	}
 
 	// Fill in the parts of the dependency that come from the microservice definition.
-	newDep.SpecRef = microserviceDef.SpecRef
-	newDep.Version = microserviceDef.Version
-	newDep.Arch = microserviceDef.Arch
-	newDep.Sharable = microserviceDef.Sharable
-	newDep.UserInputs = microserviceDef.UserInputs
-	newDep.Global = []GlobalSet{}
+	msDef.Org = org
+	msDef.SpecRef = microserviceDef.SpecRef
+	msDef.Version = microserviceDef.Version
+	msDef.Arch = microserviceDef.Arch
+	msDef.Label = microserviceDef.Label
+	msDef.Description = microserviceDef.Description
+	msDef.Public = microserviceDef.Public
+	msDef.Sharable = microserviceDef.Sharable
+	msDef.DownloadURL = microserviceDef.DownloadURL
+	msDef.UserInputs = microserviceDef.UserInputs
+	msDef.Workloads = []cliexchange.WorkloadDeployment{
+		cliexchange.WorkloadDeployment{
+			Deployment:          dc,
+			DeploymentSignature: "",
+			Torrent:             "",
+		},
+	}
 
 	// Harden the new dependency in the file.
-	if err := UpdateDependencyFile(homeDirectory, newDep, org); err != nil {
+	if err := UpdateDependencyFile(homeDirectory, msDef); err != nil {
 		return err
 	}
 
 	// Update the workload definition dependencies to make sure the dependency is included. The APISpec array
 	// in the workload definition is rebuilt from the dependencies.
-	if err := RefreshWorkloadDependencies(homeDirectory, nil); err != nil {
+	if err := RefreshWorkloadDependencies(homeDirectory); err != nil {
 		return err
 	}
 
@@ -572,7 +498,7 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 	// are defined by the new dependency.
 	foundUIs := false
 	for _, currentUI := range currentUIs.Microservices {
-		if currentUI.Url == newDep.SpecRef && currentUI.Org == org && currentUI.VersionRange == newDep.Version {
+		if currentUI.Url == msDef.SpecRef && currentUI.Org == org && currentUI.VersionRange == msDef.Version {
 			// The new dependency already has userinputs configured in this project.
 			cliutils.Verbose("The current project already has userinputs defined for this dependency.")
 			foundUIs = true
@@ -580,11 +506,11 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 		}
 	}
 
-	// If there are no variables already defined, add skeletal variables.
+	// If there are no variables already defined, and there are non-defaulted variables, then add skeletal variables.
 	if !foundUIs {
 		foundNonDefault := false
 		vars := make(map[string]interface{})
-		for _, ui := range newDep.UserInputs {
+		for _, ui := range msDef.UserInputs {
 			if ui.DefaultValue == "" {
 				foundNonDefault = true
 				vars[ui.Name] = ""
@@ -592,10 +518,10 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 		}
 
 		if foundNonDefault {
-			skelVarConfig := MicroWork{
+			skelVarConfig := register.MicroWork{
 				Org:          org,
-				Url:          newDep.SpecRef,
-				VersionRange: newDep.Version,
+				Url:          msDef.SpecRef,
+				VersionRange: msDef.Version,
 				Variables:    vars,
 			}
 			currentUIs.Microservices = append(currentUIs.Microservices, skelVarConfig)
@@ -615,28 +541,17 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 	return nil
 }
 
-func UpdateDependencyFile(homeDirectory string, newDep *Dependency, org string) error {
+func UpdateDependencyFile(homeDirectory string, msDef *cliexchange.MicroserviceFile) error {
 
-	// Create the dependency key.
-	key := fmt.Sprintf("%v/%v", org, cliutils.FormExchangeId(newDep.SpecRef, newDep.Version, newDep.Arch))
+	// Create the dependency filename.
+	fileName := fmt.Sprintf("%v-%v.%v", msDef.Org, cliutils.FormExchangeId(msDef.SpecRef, msDef.Version, msDef.Arch), MICROSERVICE_DEFINITION_FILE)
 
-	// Get the current set of dependencies
-	deps, err := GetDependencies(homeDirectory)
-	if err != nil {
+	filePath := path.Join(homeDirectory, DEFAULT_DEPENDENCY_DIR)
+	if err := CreateFile(filePath, fileName, msDef); err != nil {
 		return err
 	}
 
-	// Add the new dependency.
-	if err := deps.AddNewDependency(key, newDep); err != nil {
-		return err
-	}
-
-	// Write file back to the project.
-	if err := CreateFile(homeDirectory, DEPENDENCIES_FILE, deps); err != nil {
-		return err
-	}
-
-	cliutils.Verbose("Updated %v/%v with the new dependency.", homeDirectory, DEPENDENCIES_FILE)
+	cliutils.Verbose("Created %v/%v as a new dependency.", filePath, fileName)
 
 	return nil
 }

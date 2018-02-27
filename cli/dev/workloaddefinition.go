@@ -9,7 +9,6 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"path"
-	"strings"
 )
 
 const WORKLOAD_DEFINITION_FILE = "workload.definition.json"
@@ -113,7 +112,7 @@ func ValidateWorkloadDefinition(directory string) error {
 }
 
 // Refresh the APISpec list dependencies in the definition. This is called when new dependencies are aded or removed.
-func RefreshWorkloadDependencies(homeDirectory string, deps Dependencies) error {
+func RefreshWorkloadDependencies(homeDirectory string) error {
 	// Update the workload definition dependencies to make sure the dependency is included. The APISpec array
 	// in the workload definition is rebuilt from the dependencies.
 	workloadDef, err := GetWorkloadDefinition(homeDirectory)
@@ -121,23 +120,18 @@ func RefreshWorkloadDependencies(homeDirectory string, deps Dependencies) error 
 		return err
 	}
 
-	// Get the current set of dependencies if not provided on input.
-	if deps == nil {
-		var err error
-		deps, err = GetDependencies(homeDirectory)
-		if err != nil {
-			return err
-		}
+	deps, err := GetDependencies(homeDirectory)
+	if err != nil {
+		return err
 	}
 
 	// Start with an empty array and then rebuild it.
 	workloadDef.APISpecs = make([]exchange.APISpec, 0, 10)
 
-	for id, dep := range deps {
-		org := strings.Split(id, "/")[0]
+	for _, dep := range deps {
 		newAPISpec := exchange.APISpec{
 			SpecRef: dep.SpecRef,
-			Org:     org,
+			Org:     dep.Org,
 			Version: dep.Version,
 			Arch:    dep.Arch,
 		}

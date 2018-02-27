@@ -9,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliutils"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
+	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/containermessage"
@@ -33,6 +34,7 @@ const DEVTOOL_HZN_EXCHANGE_URL = "HZN_EXCHANGE_URL"
 const DEVTOOL_HZN_DEVICE_ID = "HZN_DEVICE_ID"
 
 const DEFAULT_WORKING_DIR = "horizon"
+const DEFAULT_DEPENDENCY_DIR = "dependencies"
 
 // The current working directory could be specified via input (as an absolute or relative path) or
 // it could be defaulted if there is no input. If it must exist but does not, return an error.
@@ -56,14 +58,17 @@ func GetWorkingDir(dashD string, verifyExists bool) (string, error) {
 
 // Create the working directory if needed.
 func CreateWorkingDir(dir string) error {
-	// Create the working directory. If it already exists, just keep going.
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		if err := os.MkdirAll(dir, 0755); err != nil {
+	// Create the working directory with the dependencies directory in one shot. If it already exists, just keep going.
+
+	newDir := path.Join(dir, DEFAULT_DEPENDENCY_DIR)
+	if _, err := os.Stat(newDir); os.IsNotExist(err) {
+		if err := os.MkdirAll(newDir, 0755); err != nil {
 			return errors.New(fmt.Sprintf("could not create working directory %v, error: %v", dir, err))
 		}
 	} else if err != nil {
 		return errors.New(fmt.Sprintf("could not get status of working directory %v, error: %v", dir, err))
 	}
+
 	cliutils.Verbose("Using working directory: %v", dir)
 	return nil
 }
@@ -101,7 +106,7 @@ func GetFile(directory string, fileName string, obj interface{}) error {
 	return nil
 }
 
-// This function takes one of the project json objects and writes it to a file int he project.
+// This function takes one of the project json objects and writes it to a file in the project.
 func CreateFile(directory string, fileName string, obj interface{}) error {
 	// Convert the object to JSON and write it.
 	filePath := path.Join(directory, fileName)
@@ -177,7 +182,7 @@ func CommonProjectValidation(dir string, userInputFile string, projectType strin
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", projectType, cmd, uierr)
 	}
 
-	if verr := userInputs.Validate(dir, userInputsFilePath); verr != nil {
+	if verr := ValidateUserInput(userInputs, dir, userInputsFilePath); verr != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' project does not validate. %v ", projectType, cmd, verr)
 	}
 
@@ -236,12 +241,12 @@ func makeByValueAttributes(attrs []persistence.Attribute) []persistence.Attribut
 	return byValueAttrs
 }
 
-
 // Create the environment variable map needed by the container worker to hold the environment variables that are passed to the
 // workload container.
 func createEnvVarMap(agreementId string,
 	workloadPW string,
-	global []GlobalSet,
+	global []register.GlobalSet,
+	msURL string,
 	configVar map[string]interface{},
 	defaultVar []exchange.UserInput,
 	org string,
@@ -263,13 +268,24 @@ func createEnvVarMap(agreementId string,
 	// convert the attributes in the userinput file into API attributes so that they can be validity checked. Then they are converted to
 	// persistence attributes so that they can be further converted to environment variables. This is the progression that anax uses when
 	// running real workloads so the same progression is used here.
-	attrs, err := GlobalSetAsAttributes(global)
+
+	// The set of global attributes in the project's userinput file might not all be applicable to all microservices, so we will
+	// create a shortened list of global attribute that only apply to this microservice.
+	shortGlobals := make([]register.GlobalSet, 0, 10)
+	for _, inputGlobal := range global {
+		if len(inputGlobal.SensorUrls) == 0 || inputGlobal.SensorUrls[0] == msURL {
+			shortGlobals = append(shortGlobals, inputGlobal)
+		}
+	}
+
+	// Now convert the reduced global attribute set to API attributes.
+	attrs, err := GlobalSetAsAttributes(shortGlobals)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("%v has error: %v ", USERINPUT_FILE, err))
 	}
 
 	// Third, add in default system attributes if not already present.
-	attrs = api.FinalizeAttributesSpecifiedInService(1024, "", attrs)
+	attrs = api.FinalizeAttributesSpecifiedInService(1024, msURL, attrs)
 
 	cliutils.Verbose("Final Attributes: %v", attrs)
 
@@ -319,7 +335,7 @@ func createContainerWorker() (*container.ContainerWorker, error) {
 }
 
 // This function is used to setup context to execute a microservice or workload container.
-func commonExecutionSetup(homeDirectory string, userInputFile string, projectType string, cmd string) (string, *InputFile, *container.ContainerWorker) {
+func commonExecutionSetup(homeDirectory string, userInputFile string, projectType string, cmd string) (string, *register.InputFile, *container.ContainerWorker) {
 
 	// Get the setup info and context for running the command.
 	dir, err := setup(homeDirectory, true, false, "")
@@ -345,9 +361,9 @@ func commonExecutionSetup(homeDirectory string, userInputFile string, projectTyp
 func startMicroservice(deployment *containermessage.DeploymentDescription,
 	specRef string,
 	version string,
-	globals []GlobalSet, // API attributes
+	globals []register.GlobalSet, // API attributes
 	defUserInputs []exchange.UserInput, // indicates variable defaults
-	configUserInputs *InputFile, // indciates configured variables
+	configUserInputs *register.InputFile, // indciates configured variables
 	org string,
 	dc *cliexchange.DeploymentConfig,
 	cw *container.ContainerWorker,
@@ -358,7 +374,7 @@ func startMicroservice(deployment *containermessage.DeploymentDescription,
 	configVars := getConfiguredVariables(configUserInputs.Microservices, specRef)
 
 	// Now that we have the configured variables, turn everything into environment variables for the container.
-	environmentAdditions, enverr := createEnvVarMap("", "", globals, configVars, defUserInputs, org, persistence.AttributesToEnvvarMap)
+	environmentAdditions, enverr := createEnvVarMap("", "", globals, specRef, configVars, defUserInputs, org, persistence.AttributesToEnvvarMap)
 	if enverr != nil {
 		return nil, errors.New(fmt.Sprintf("unable to create environment variables"))
 	}
@@ -438,7 +454,7 @@ func stopMicroservice(dc *cliexchange.DeploymentConfig, cw *container.ContainerW
 
 // For workloads and microservices that have their images on an image server, download the image(s)
 // and load them into the local docker.
-func downloadFromImageServer(torrentInfo string, keyFile string, currentUIs *InputFile) error {
+func downloadFromImageServer(torrentInfo string, keyFile string, currentUIs *register.InputFile) error {
 
 	torrObj := new(policy.Torrent)
 	if err := json.Unmarshal([]byte(torrentInfo), torrObj); err != nil {

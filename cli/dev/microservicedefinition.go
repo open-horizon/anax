@@ -17,12 +17,12 @@ const DEFAULT_MSDEF_URL = ""
 
 // Sort of like a constructor, it creates an in memory object except that it is created from the microservice definition config
 // file in the current project. This function assumes the caller has determined the exact location of the file.
-func GetMicroserviceDefinition(directory string) (*cliexchange.MicroserviceFile, error) {
+func GetMicroserviceDefinition(directory string, name string) (*cliexchange.MicroserviceFile, error) {
 
 	res := new(cliexchange.MicroserviceFile)
 
 	// GetFile will write to the res object, demarshalling the bytes into a json object that can be returned.
-	if err := GetFile(directory, MICROSERVICE_DEFINITION_FILE, res); err != nil {
+	if err := GetFile(directory, name, res); err != nil {
 		return nil, err
 	}
 	return res, nil
@@ -79,14 +79,14 @@ func MicroserviceDefinitionExists(directory string) (bool, error) {
 
 // Validate that the microservice definition file is complete and coherent with the rest of the definitions in the project.
 // If the file is not valid the reason will be returned in the error.
-func ValidateMicroserviceDefinition(directory string) error {
+func ValidateMicroserviceDefinition(directory string, fileName string) error {
 
-	msDef, mserr := GetMicroserviceDefinition(directory)
+	msDef, mserr := GetMicroserviceDefinition(directory, fileName)
 	if mserr != nil {
 		return mserr
 	}
 
-	filePath := path.Join(directory, MICROSERVICE_DEFINITION_FILE)
+	filePath := path.Join(directory, fileName)
 	if msDef.SpecRef == DEFAULT_MSDEF_URL || msDef.SpecRef == "" {
 		return errors.New(fmt.Sprintf("%v: specRef must be set.", filePath))
 	} else if msDef.Version == DEFAULT_MSDEF_SPECIFIC_VERSION || msDef.Version == "" {
