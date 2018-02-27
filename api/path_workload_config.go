@@ -78,7 +78,7 @@ func CreateWorkloadconfig(cfg *WorkloadConfig,
 	}
 
 	// Get the workload metadata from the exchange
-	workloadDef, err := getWorkload(cfg.WorkloadURL, org, vExp.Get_expression(), cutil.ArchString(), existingDevice.GetId(), existingDevice.Token)
+	workloadDef, _, err := getWorkload(cfg.WorkloadURL, org, vExp.Get_expression(), cutil.ArchString(), existingDevice.GetId(), existingDevice.Token)
 	if err != nil || workloadDef == nil {
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("unable to find the workload definition using %v %v %v %v in the exchange.", cfg.WorkloadURL, org, vExp.Get_expression(), cutil.ArchString()), "workload_url")), nil
 	}

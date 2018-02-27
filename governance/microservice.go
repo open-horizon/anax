@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -12,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/producer"
 	"net/url"
+	"strings"
 )
 
 // This function runs periodically in a separate process. It checks if the microservice containers are up and running and
@@ -92,6 +94,29 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string) (*persistence.Micros
 			if url, err := url.Parse(torrent.Url); err != nil {
 				return nil, fmt.Errorf("ill-formed URL: %v, error %v", torrent.Url, err)
 			} else {
+				// get microservice keys and save it to the user keys.
+				if w.Config.Edge.TrustCertUpdatesFromOrg {
+					if key_map, err := w.exchHandlers.GetHTTPObjectSigningKeysHandler()(exchange.MICROSERVICE, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, w.deviceId, w.deviceToken); err != nil {
+						return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting signing keys for the microservice from the exchange: %v %v %v %v. %v", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, err)))
+					} else if key_map != nil {
+						errHandler := func(keyname string) api.ErrorHandler {
+							return func(err error) bool {
+								glog.Errorf(logString(fmt.Sprintf("received error when saving the signing key file %v to anax. %v", keyname, err)))
+								return true
+							}
+						}
+
+						for key, content := range key_map {
+							//add .pem the end of the keyname if it does not have none.
+							fn := key
+							if !strings.HasSuffix(key, ".pem") {
+								fn = fmt.Sprintf("%v.pem", key)
+							}
+
+							api.UploadPublicKey(fn, []byte(content), w.Config, errHandler(fn))
+						}
+					}
+				}
 
 				// Verify the deployment signature
 				if pemFiles, err := w.Config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.Config.Edge.PublicKeyPath, w.Config.UserPublicKeyPath()); err != nil {

@@ -22,8 +22,8 @@ func getDummyWorkloadResolver() exchange.WorkloadResolverHandler {
 }
 
 func getDummyMicroserviceHandler() exchange.MicroserviceHandler {
-	return func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*exchange.MicroserviceDefinition, error) {
-		return nil, nil
+	return func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*exchange.MicroserviceDefinition, string, error) {
+		return nil, "", nil
 	}
 }
 
@@ -109,7 +109,7 @@ func getVariableWorkloadResolver(mUrl, mOrg, mVersion, mArch string, ui *exchang
 }
 
 func getVariableMicroserviceHandler(mUserInput exchange.UserInput) exchange.MicroserviceHandler {
-	return func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*exchange.MicroserviceDefinition, error) {
+	return func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*exchange.MicroserviceDefinition, string, error) {
 		md := exchange.MicroserviceDefinition{
 			Owner:         "owner",
 			Label:         "label",
@@ -124,12 +124,12 @@ func getVariableMicroserviceHandler(mUserInput exchange.UserInput) exchange.Micr
 			Workloads:     []exchange.WorkloadDeployment{},
 			LastUpdated:   "today",
 		}
-		return &md, nil
+		return &md, "ms-id", nil
 	}
 }
 
 func getVariableWorkload(mUrl, mOrg, mVersion, mArch string, ui []exchange.UserInput) exchange.WorkloadHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*exchange.WorkloadDefinition, error) {
+	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*exchange.WorkloadDefinition, string, error) {
 		es := exchange.APISpec{
 			SpecRef: mUrl,
 			Org:     mOrg,
@@ -153,7 +153,7 @@ func getVariableWorkload(mUrl, mOrg, mVersion, mArch string, ui []exchange.UserI
 			Workloads:   []exchange.WorkloadDeployment{},
 			LastUpdated: "updated",
 		}
-		return &wl, nil
+		return &wl, "wl-id", nil
 	}
 }
 

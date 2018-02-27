@@ -207,7 +207,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		// into the consumer policy file. We have a copy of the consumer policy file that we can modify. If the device doesnt have the right
 		// version API specs, then we will try the next workload.
 
-		if workloadDetails, err := exchange.GetWorkload(b.config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, b.config.AgreementBot.ExchangeURL, cph.ExchangeId(), cph.ExchangeToken()); err != nil {
+		if workloadDetails, _, err := exchange.GetWorkload(b.config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, b.config.AgreementBot.ExchangeURL, cph.ExchangeId(), cph.ExchangeToken()); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for workload details %v, error: %v", workload, err)))
 			return
 		} else if workloadDetails == nil {

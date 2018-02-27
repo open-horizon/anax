@@ -42,6 +42,7 @@ type Config struct {
 	TorrentListenAddr             string // Override the torrent listen address just in case there are conflicts, syntax is "host:port"
 	UserPublicKeyPath             string // The location to store user keys uploaded through the REST API
 	ReportDeviceStatus            bool   // whether to report the device status to the exchange or not.
+	TrustCertUpdatesFromOrg       bool   // whether to trust the certs provided by the orgnization on the exchange or not. The default is true.
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string

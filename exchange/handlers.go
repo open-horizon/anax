@@ -37,10 +37,10 @@ func (e *ExchangeApiHandlers) GetHTTPExchangePatternHandler() PatternHandler {
 }
 
 // A handler for querying the exchange for microservices.
-type MicroserviceHandler func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*MicroserviceDefinition, error)
+type MicroserviceHandler func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*MicroserviceDefinition, string, error)
 
 func (e *ExchangeApiHandlers) GetHTTPMicroserviceHandler() MicroserviceHandler {
-	return func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*MicroserviceDefinition, error) {
+	return func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*MicroserviceDefinition, string, error) {
 		return GetMicroservice(e.Config.Collaborators.HTTPClientFactory, mUrl, mOrg, mVersion, mArch, e.Config.Edge.ExchangeURL, id, token)
 	}
 }
@@ -55,10 +55,10 @@ func (e *ExchangeApiHandlers) GetHTTPWorkloadResolverHandler() WorkloadResolverH
 }
 
 // A handler for getting workload metadata from the exchange.
-type WorkloadHandler func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*WorkloadDefinition, error)
+type WorkloadHandler func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*WorkloadDefinition, string, error)
 
 func (e *ExchangeApiHandlers) GetHTTPWorkloadHandler() WorkloadHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*WorkloadDefinition, error) {
+	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*WorkloadDefinition, string, error) {
 		return GetWorkload(e.Config.Collaborators.HTTPClientFactory, wUrl, wOrg, wVersion, wArch, e.Config.Edge.ExchangeURL, id, token)
 	}
 }
@@ -78,5 +78,14 @@ type PutDeviceHandler func(deviceId string, deviceToken string, pdr *PutDeviceRe
 func (e *ExchangeApiHandlers) GetHTTPPutDeviceHandler() PutDeviceHandler {
 	return func(id string, token string, pdr *PutDeviceRequest) (*PutDeviceResponse, error) {
 		return PutExchangeDevice(e.Config.Collaborators.HTTPClientFactory, id, token, e.Config.Edge.ExchangeURL, pdr)
+	}
+}
+
+// a handler for getting microservice keys from the exchange
+type ObjectSigningKeysHandler func(oType, oUrl string, oOrg string, oVersion string, oArch string, id string, token string) (map[string]string, error)
+
+func (e *ExchangeApiHandlers) GetHTTPObjectSigningKeysHandler() ObjectSigningKeysHandler {
+	return func(oType string, oUrl string, oOrg string, oVersion string, oArch string, id string, token string) (map[string]string, error) {
+		return GetObjectSigningKeys(e.Config.Collaborators.HTTPClientFactory, oType, oUrl, oOrg, oVersion, oArch, e.Config.Edge.ExchangeURL, id, token)
 	}
 }

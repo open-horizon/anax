@@ -23,6 +23,10 @@ const MS_SHARING_MODE_EXCLUSIVE = "exclusive"
 const MS_SHARING_MODE_SINGLE = "single"
 const MS_SHARING_MODE_MULTIPLE = "multiple"
 
+const MICROSERVICE = "microservce"
+const WORKLOAD = "workload"
+const PATTERN = "pattern"
+
 // Helper functions for dealing with exchangeIds that are already prefixed with the org name and then "/".
 func GetOrg(id string) string {
 	if ix := strings.Index(id, "/"); ix < 0 {
@@ -773,7 +777,8 @@ func getSearchVersion(version string) (string, error) {
 	return searchVersion, nil
 }
 
-func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg string, wVersion string, wArch string, exURL string, id string, token string) (*WorkloadDefinition, error) {
+// Get workload and its exchange id for the given org, url, version and arch. If the the version string is version range, then the highest available workload within the range will be returned.
+func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg string, wVersion string, wArch string, exURL string, id string, token string) (*WorkloadDefinition, string, error) {
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting workload definition %v %v %v %v", wURL, wOrg, wVersion, wArch)))
 
@@ -783,7 +788,7 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg 
 	// Figure out which version to filter the search with. Could be "".
 	searchVersion, err := getSearchVersion(wVersion)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	// Search the exchange for the workload definition
@@ -795,7 +800,7 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg 
 	for {
 		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, id, token, nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
-			return nil, err
+			return nil, "", err
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			time.Sleep(10 * time.Second)
@@ -807,17 +812,17 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg 
 			if searchVersion != "" {
 				if len(workloadMetadata) != 1 {
 					glog.Errorf(rpclogString(fmt.Sprintf("expecting 1 result in GET workloads response: %v", resp)))
-					return nil, errors.New(fmt.Sprintf("expecting 1 result, got %v", len(workloadMetadata)))
+					return nil, "", errors.New(fmt.Sprintf("expecting 1 result, got %v", len(workloadMetadata)))
 				} else {
-					for _, workloadDef := range workloadMetadata {
+					for wlId, workloadDef := range workloadMetadata {
 						glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v", &workloadDef)))
-						return &workloadDef, nil
+						return &workloadDef, wlId, nil
 					}
 				}
 			} else {
 				if len(workloadMetadata) == 0 {
 					glog.V(3).Infof(rpclogString(fmt.Sprintf("no workload definition found for %v", wURL)))
-					return nil, nil
+					return nil, "", nil
 				}
 
 				// The caller wants the highest version in the input version range. If no range was specified then
@@ -831,9 +836,10 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg 
 				// resWDef has to be the object instead of pointer to the object because onece the pointer points to &wDef,
 				// the content of it will get changed when the content of wDef gets changed in the loop
 				var resWDef WorkloadDefinition
-				for _, wDef := range workloadMetadata {
+				var resWId string
+				for wlId, wDef := range workloadMetadata {
 					if inRange, err := vRange.Is_within_range(wDef.Version); err != nil {
-						return nil, errors.New(fmt.Sprintf("unable to verify that %v is within %v, error %v", wDef.Version, vRange, err))
+						return nil, "", errors.New(fmt.Sprintf("unable to verify that %v is within %v, error %v", wDef.Version, vRange, err))
 					} else if inRange {
 						glog.V(5).Infof(rpclogString(fmt.Sprintf("found workload version %v within acceptable range", wDef.Version)))
 
@@ -851,6 +857,7 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg 
 						} else if c == -1 {
 							highest = wDef.Version
 							resWDef = wDef
+							resWId = wlId
 						}
 					}
 				}
@@ -858,17 +865,18 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg 
 				if highest == "" {
 					// when highest is empty, it means that there were no data in workloadMetadata, hence return nil.
 					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v for %v", nil, wURL)))
-					return nil, nil
+					return nil, "", nil
 				} else {
 					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v for %v", resWDef, wURL)))
-					return &resWDef, nil
+					return &resWDef, resWId, nil
 				}
 			}
 		}
 	}
 }
 
-func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, mOrg string, mVersion string, mArch string, exURL string, id string, token string) (*MicroserviceDefinition, error) {
+// Get microservice and its exchange id for the given org, url, version and arch. If the the version string is version range, then the highest available microservice within the range will be returned.
+func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, mOrg string, mVersion string, mArch string, exURL string, id string, token string) (*MicroserviceDefinition, string, error) {
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting microservice definition %v %v %v %v", mURL, mOrg, mVersion, mArch)))
 
@@ -878,7 +886,7 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 	// Figure out which version to filter the search with. Could be "".
 	searchVersion, err := getSearchVersion(mVersion)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	// Search the exchange for the microservice definition
@@ -890,7 +898,7 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 	for {
 		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, id, token, nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
-			return nil, err
+			return nil, "", err
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			time.Sleep(10 * time.Second)
@@ -903,17 +911,17 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 			if searchVersion != "" {
 				if len(msMetadata) != 1 {
 					glog.Errorf(rpclogString(fmt.Sprintf("expecting 1 microservice %v %v %v response: %v", mURL, mOrg, mVersion, resp)))
-					return nil, errors.New(fmt.Sprintf("expecting 1 microservice %v %v %v, got %v", mURL, mOrg, mVersion, len(msMetadata)))
+					return nil, "", errors.New(fmt.Sprintf("expecting 1 microservice %v %v %v, got %v", mURL, mOrg, mVersion, len(msMetadata)))
 				} else {
-					for _, msDef := range msMetadata {
+					for msId, msDef := range msMetadata {
 						glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v", &msDef)))
-						return &msDef, nil
+						return &msDef, msId, nil
 					}
 				}
 
 			} else {
 				if len(msMetadata) == 0 {
-					return nil, errors.New(fmt.Sprintf("expecting at least 1 microservce %v %v %v, got %v", mURL, mOrg, mVersion, len(msMetadata)))
+					return nil, "", errors.New(fmt.Sprintf("expecting at least 1 microservce %v %v %v, got %v", mURL, mOrg, mVersion, len(msMetadata)))
 				}
 				// The caller wants the highest version in the input version range. If no range was specified then
 				// they will get the highest of all available versions.
@@ -926,9 +934,10 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 				// resMsDef has to be the object instead of pointer to the object because onece the pointer points to &msDef,
 				// the content of it will get changed when the content of msDef gets changed in the loop
 				var resMsDef MicroserviceDefinition
-				for _, msDef := range msMetadata {
+				var resMsId string
+				for msId, msDef := range msMetadata {
 					if inRange, err := vRange.Is_within_range(msDef.Version); err != nil {
-						return nil, errors.New(fmt.Sprintf("unable to verify that %v is within %v, error %v", msDef.Version, vRange, err))
+						return nil, "", errors.New(fmt.Sprintf("unable to verify that %v is within %v, error %v", msDef.Version, vRange, err))
 					} else if inRange {
 						glog.V(5).Infof(rpclogString(fmt.Sprintf("found microservice version %v within acceptable range", msDef.Version)))
 
@@ -946,6 +955,7 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 						} else if c == -1 {
 							highest = msDef.Version
 							resMsDef = msDef
+							resMsId = msId
 						}
 					}
 				}
@@ -953,10 +963,10 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 				if highest == "" {
 					// when highest is empty, it means that there were no data in msMetadata, hence return nil.
 					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v for %v", nil, mURL)))
-					return nil, nil
+					return nil, "", nil
 				} else {
 					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v for %v", resMsDef, mURL)))
-					return &resMsDef, nil
+					return &resMsDef, resMsId, nil
 				}
 			}
 		}
@@ -973,7 +983,7 @@ func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, 
 
 	res := new(policy.APISpecList)
 	// Get a version specific workload definition.
-	workload, werr := GetWorkload(httpClientFactory, wURL, wOrg, wVersion, wArch, exURL, id, token)
+	workload, _, werr := GetWorkload(httpClientFactory, wURL, wOrg, wVersion, wArch, exURL, id, token)
 	if werr != nil {
 		return nil, nil, werr
 	} else if workload == nil {
@@ -1000,7 +1010,7 @@ func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, 
 					return nil, nil, errors.New(fmt.Sprintf("microservice %v has a different architecture from the workload.", apiSpec))
 				} else if vExp, err := policy.Version_Expression_Factory(apiSpec.Version); err != nil {
 					return nil, nil, errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", apiSpec.Version, err))
-				} else if ms, err := GetMicroservice(httpClientFactory, apiSpec.SpecRef, apiSpec.Org, vExp.Get_expression(), apiSpec.Arch, exURL, id, token); err != nil {
+				} else if ms, _, err := GetMicroservice(httpClientFactory, apiSpec.SpecRef, apiSpec.Org, vExp.Get_expression(), apiSpec.Arch, exURL, id, token); err != nil {
 					return nil, nil, err
 				} else if ms == nil {
 					return nil, nil, errors.New(fmt.Sprintf("unable to find microservice %v within version range %v in the exchange.", apiSpec, vExp))
@@ -1524,4 +1534,108 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 	//		return v, nil
 	//	}
 	//}
+}
+
+// This function gets the pattern/workload/microservice signing key names and their contents.
+// The oType is one of PATTERN, MICROSERVICE, WORKLOAD defined in the begining of this file.
+// When oType is PATTERN, the oURL is the pattern name and oVersion and oArch are ignored.
+func GetObjectSigningKeys(httpClientFactory *config.HTTPClientFactory, oType string, oURL string, oOrg string, oVersion string, oArch string, exURL string, id string, token string) (map[string]string, error) {
+
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting %v signing keys for %v %v %v %v", oType, oURL, oOrg, oVersion, oArch)))
+
+	// get object id and key target url
+	var oIndex string
+	var targetURL string
+
+	switch oType {
+	case PATTERN:
+		pat_resp, err := GetPatterns(httpClientFactory, oOrg, oURL, exURL, id, token)
+		if err != nil {
+			return nil, errors.New(rpclogString(fmt.Sprintf("failed to get the pattern %v/%v.%v", oOrg, oURL, err)))
+		} else if pat_resp == nil {
+			return nil, errors.New(rpclogString(fmt.Sprintf("unable to find the pattern %v/%v.%v", oOrg, oURL, err)))
+		}
+		for id, _ := range pat_resp {
+			oIndex = id
+			targetURL = fmt.Sprintf("%vorgs/%v/patterns/%v/keys", exURL, oOrg, GetId(oIndex))
+			break
+		}
+
+	case MICROSERVICE:
+		if oVersion == "" || !policy.IsVersionString(oVersion) {
+			return nil, errors.New(rpclogString(fmt.Sprintf("GetObjectSigningKeys got wrong version string %v. The version string should be a non-empy single version string.", oVersion)))
+		}
+		ms_resp, ms_id, err := GetMicroservice(httpClientFactory, oURL, oOrg, oVersion, oArch, exURL, id, token)
+		if err != nil {
+			return nil, errors.New(rpclogString(fmt.Sprintf("failed to get the microservice %v %v %v %v.%v", oURL, oOrg, oVersion, oArch, err)))
+		} else if ms_resp == nil {
+			return nil, errors.New(rpclogString(fmt.Sprintf("unable to find the microservice %v %v %v %v.", oURL, oOrg, oVersion, oArch)))
+		}
+		oIndex = ms_id
+		targetURL = fmt.Sprintf("%vorgs/%v/microservices/%v/keys", exURL, oOrg, GetId(oIndex))
+
+	case WORKLOAD:
+		if oVersion == "" || !policy.IsVersionString(oVersion) {
+			return nil, errors.New(rpclogString(fmt.Sprintf("GetObjectSigningKeys got wrong version string %v. The version string should be a non-empy single version string.", oVersion)))
+		}
+		wl_resp, wl_id, err := GetWorkload(httpClientFactory, oURL, oOrg, oVersion, oArch, exURL, id, token)
+		if err != nil {
+			return nil, errors.New(rpclogString(fmt.Sprintf("failed to get the workload %v %v %v %v. %v", oURL, oOrg, oVersion, oArch, err)))
+		} else if wl_resp == nil {
+			return nil, errors.New(rpclogString(fmt.Sprintf("unable to find the workload %v %v %v %v.", oURL, oOrg, oVersion, oArch)))
+		}
+		oIndex = wl_id
+		targetURL = fmt.Sprintf("%vorgs/%v/workloads/%v/keys", exURL, oOrg, GetId(oIndex))
+
+	default:
+		return nil, errors.New(rpclogString(fmt.Sprintf("GetObjectSigningKeys received wrong type parameter: %v. It should be one of %v, %v and %v.", oType, PATTERN, MICROSERVICE, WORKLOAD)))
+	}
+
+	// get all the singining key names for the object
+	var resp_KeyNames interface{}
+	resp_KeyNames = new(string)
+
+	key_names := make([]string, 0)
+
+	for {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, id, token, nil, &resp_KeyNames); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("found object signing keys %v.", resp_KeyNames)))
+
+			if err := json.Unmarshal([]byte(resp_KeyNames.(string)), &key_names); err != nil {
+				return nil, errors.New(fmt.Sprintf("Unable to demarshal pattern key list %v to string array, error: %v", resp_KeyNames, err))
+			}
+			break
+		}
+	}
+
+	// get the key contents
+	ret := make(map[string]string)
+
+	for _, key := range key_names {
+		var resp_KeyContent interface{}
+		resp_KeyContent = new(string)
+		for {
+			if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", fmt.Sprintf("%v/%v", targetURL, key), id, token, nil, &resp_KeyContent); err != nil {
+				glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+				return nil, err
+			} else if tpErr != nil {
+				glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+				time.Sleep(10 * time.Second)
+				continue
+			} else {
+				glog.V(5).Infof(rpclogString(fmt.Sprintf("found signing key content %v.", resp_KeyContent)))
+				ret[key] = resp_KeyContent.(string)
+				break
+			}
+		}
+	}
+
+	return ret, nil
 }

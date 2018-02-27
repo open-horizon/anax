@@ -7,12 +7,14 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
+	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
+	"strings"
 	"time"
 )
 
@@ -145,8 +147,12 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 		handled = true
 	} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
+	} else if err := w.saveSigningKeys(tcPolicy); err != nil {
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error handling signing keys from the exchange: %v", err)))
+		handled = true
 	} else if pemFiles, err := w.config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.config.Edge.PublicKeyPath, w.config.UserPublicKeyPath()); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting pem key files: %v", err)))
+		handled = true
 	} else if err := tcPolicy.Is_Self_Consistent(pemFiles, w.GetWorkloadResolver()); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking self consistency of TsAndCs, %v", err)))
 		handled = true
@@ -174,6 +180,60 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 	}
 	return handled, nil, nil
 
+}
+
+// This function gets the pattern and workload's signing keys and save them to anax
+func (w *BaseProducerProtocolHandler) saveSigningKeys(pol *policy.Policy) error {
+	// do nothing if the config does not allow using the certs from the org on the exchange
+	if !w.config.Edge.TrustCertUpdatesFromOrg {
+		return nil
+	}
+
+	exchHandlers := exchange.NewExchangeApiHandlers(w.config)
+	errHandler := func(keyname string) api.ErrorHandler {
+		return func(err error) bool {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error when saving the signing key file %v to anax. %v", keyname, err)))
+			return true
+		}
+	}
+
+	// save signing keys for pattern
+	if pol.PatternId != "" {
+		if key_map, err := exchHandlers.GetHTTPObjectSigningKeysHandler()(exchange.PATTERN, exchange.GetId(pol.PatternId), exchange.GetOrg(pol.PatternId), "", "", w.deviceId, w.token); err != nil {
+			return fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting signing keys for pattern from the exchange: %v. %v", pol.PatternId, err)))
+		} else if key_map != nil {
+			for key, content := range key_map {
+				//add .pem the end of the keyname if it does not have none.
+				fn := key
+				if !strings.HasSuffix(key, ".pem") {
+					fn = fmt.Sprintf("%v.pem", key)
+				}
+
+				api.UploadPublicKey(fn, []byte(content), w.config, errHandler(fn))
+			}
+		}
+	}
+
+	// save signing keys for workloads
+	if pol.Workloads != nil {
+		for _, wl := range pol.Workloads {
+			if key_map, err := exchHandlers.GetHTTPObjectSigningKeysHandler()(exchange.WORKLOAD, wl.WorkloadURL, wl.Org, wl.Version, wl.Arch, w.deviceId, w.token); err != nil {
+				return fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting signing keys for workload from the exchange: %v %v %v %v. %v", wl.WorkloadURL, wl.Org, wl.Version, wl.Arch, err)))
+			} else if key_map != nil {
+				for key, content := range key_map {
+					//add .pem the end of the keyname if it does not have none.
+					fn := key
+					if !strings.HasSuffix(key, ".pem") {
+						fn = fmt.Sprintf("%v.pem", key)
+					}
+
+					api.UploadPublicKey(fn, []byte(content), w.config, errHandler(fn))
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 // check if the proposal has the same pattern
