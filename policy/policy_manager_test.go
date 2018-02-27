@@ -54,8 +54,13 @@ func Test_Payloadmanager_init_success2(t *testing.T) {
 
 func Test_Payloadmanager_dup_policy_name(t *testing.T) {
 
-	if _, err := Initialize("./test/pfduptest/", make(map[string]string), nil, true); err == nil {
-		t.Errorf("Should have found duplicate policy names but did not.")
+	if pm, err := Initialize("./test/pfduptest/", make(map[string]string), nil, true); err != nil {
+		t.Errorf("Duplicate policies are handled by this function and it should not return error here. Error: %v.", err)
+	} else {
+		c := len(pm.WatcherContent.AllWatches["testorg"])
+		if c != 1 {
+			t.Errorf("Expecting 1 policy file added to the content watcher but got %v", c)
+		}
 	}
 }
 
