@@ -657,6 +657,22 @@ func (c *Contents) GetPolicyName(org, filename string) string {
 	return ""
 }
 
+// check if there is already a tracked policy file with a policy name that is the same as the new policy that we're trying to add.
+// It returns the name of the conflict file.
+func (c *Contents) ConflictsWithAlreadyTracked(org string, pol *Policy) string {
+	if !c.HasOrg(org) {
+		return ""
+	} else {
+		for fn, we := range c.AllWatches[org] {
+			if we.Pol.Header.Name == pol.Header.Name {
+				return fn
+			}
+		}
+
+	}
+	return ""
+}
+
 func CreatePolicyFile(filepath string, org string, name string, p *Policy) (string, error) {
 
 	// Store the policy on the filesystem in an org based hierarchy
@@ -742,6 +758,8 @@ func PolicyFileChangeWatcher(homePath string,
 						fileError(org, orgPath+fileInfo.Name(), err)
 					} else if err := policy.Is_Self_Consistent(nil, workloadResolver); err != nil {
 						fileError(org, orgPath+fileInfo.Name(), errors.New(fmt.Sprintf("Policy file not self consistent %v, error: %v", orgPath, err)))
+					} else if fn := contents.ConflictsWithAlreadyTracked(org, policy); fn != "" {
+						fileError(org, orgPath+fileInfo.Name(), errors.New(fmt.Sprintf("Policy File Watcher cannot add policy file %v/%v because it has the same policy header name with the policy file %v/%v.", org, fileInfo.Name(), org, fn)))
 					} else {
 						contents.AddWatchEntry(org, fileInfo, policy)
 						fileChanged(org, orgPath+fileInfo.Name(), policy)
