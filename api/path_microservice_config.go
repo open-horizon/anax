@@ -151,14 +151,14 @@ func CreateService(service *Service,
 	var msdef *persistence.MicroserviceDefinition
 	var e_msdef *exchange.MicroserviceDefinition
 	var err1 error
-	e_msdef, err1 = getMicroservice(*service.SensorUrl, *service.SensorOrg, vExp.Get_expression(), *service.SensorArch, pDevice.GetId(), pDevice.Token)
+	e_msdef, _, err1 = getMicroservice(*service.SensorUrl, *service.SensorOrg, vExp.Get_expression(), *service.SensorArch, pDevice.GetId(), pDevice.Token)
 	if err1 != nil || e_msdef == nil {
 		if *service.SensorArch == thisArch {
 			// failed with user defined arch
 			return errorhandler(NewAPIUserInputError(fmt.Sprintf("Unable to find the microservice definition using  %v %v %v %v in the exchange.", *service.SensorUrl, *service.SensorOrg, vExp.Get_expression(), *service.SensorArch), "service")), nil, nil
 		} else {
 			// try node's arch
-			e_msdef, err1 = getMicroservice(*service.SensorUrl, *service.SensorOrg, vExp.Get_expression(), thisArch, pDevice.GetId(), pDevice.Token)
+			e_msdef, _, err1 = getMicroservice(*service.SensorUrl, *service.SensorOrg, vExp.Get_expression(), thisArch, pDevice.GetId(), pDevice.Token)
 			if err1 != nil || e_msdef == nil {
 				return errorhandler(NewAPIUserInputError(fmt.Sprintf("Unable to find the microservice definition using  %v %v %v %v in the exchange.", *service.SensorUrl, *service.SensorOrg, vExp.Get_expression(), thisArch), "service")), nil, nil
 			}

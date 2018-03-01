@@ -268,7 +268,7 @@ func createMicroservice(t *testing.T) *persistence.MicroserviceDefinition {
 }
 
 func getVariableMicroserviceHandler(version string) exchange.MicroserviceHandler {
-	return func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*exchange.MicroserviceDefinition, error) {
+	return func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*exchange.MicroserviceDefinition, string, error) {
 		md := exchange.MicroserviceDefinition{
 			Owner:         "owner",
 			Label:         "label",
@@ -283,7 +283,7 @@ func getVariableMicroserviceHandler(version string) exchange.MicroserviceHandler
 			Workloads:     []exchange.WorkloadDeployment{},
 			LastUpdated:   "today",
 		}
-		return &md, nil
+		return &md, "ms-id", nil
 	}
 }
 

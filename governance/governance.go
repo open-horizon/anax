@@ -985,7 +985,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 				}
 				// The workload config we have might be from a lower version of the workload. Go to the exchange and
 				// get the metadata for the version we are running and then add in any unset default user inputs.
-				if exWkld, err := exchange.GetWorkload(w.Config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken); err != nil {
+				if exWkld, _, err := exchange.GetWorkload(w.Config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, w.Config.Edge.ExchangeURL, w.deviceId, w.deviceToken); err != nil {
 					return errors.New(logString(fmt.Sprintf("received error querying excahnge for workload metadata, error %v", err)))
 				} else if exWkld == nil {
 					return errors.New(logString(fmt.Sprintf("cound not find workload metadata for %v.", workload)))
