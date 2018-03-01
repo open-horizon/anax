@@ -285,7 +285,7 @@ Environment Variables:
 	devDependencyCmdArch := devDependencyCmd.Flag("arch", "(optional) The hardware Architecture of the microservice dependency in the exchange. Mutually exclusive with -p.").Short('a').String()
 	devDependencyFetchCmd := devDependencyCmd.Command("fetch", "Retrieving Horizon metadata for a new dependency.")
 	devDependencyFetchCmdUserPw := devDependencyFetchCmd.Flag("user-pw", "Horizon Exchange user credentials to query exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
-	devDependencyFetchCmdKeyFile := devDependencyFetchCmd.Flag("private-key-file", "The path of a public key file to be used to verify a signature.").Short('k').ExistingFile()
+	devDependencyFetchCmdKeyFile := devDependencyFetchCmd.Flag("public-key-file", "The path of a public key file to be used to verify a signature.").Short('k').ExistingFile()
 	devDependencyFetchCmdUserInputFile := devDependencyFetchCmd.Flag("userInputFile", "File containing user input values for configuring the new dependency.").Short('f').ExistingFile()
 	devDependencyListCmd := devDependencyCmd.Command("list", "List all dependencies.")
 	devDependencyRemoveCmd := devDependencyCmd.Command("remove", "Remove a project dependency.")
