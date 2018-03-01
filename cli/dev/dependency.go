@@ -14,6 +14,7 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"strings"
 )
 
@@ -544,7 +545,12 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 func UpdateDependencyFile(homeDirectory string, msDef *cliexchange.MicroserviceFile) error {
 
 	// Create the dependency filename.
-	fileName := fmt.Sprintf("%v-%v.%v", msDef.Org, cliutils.FormExchangeId(msDef.SpecRef, msDef.Version, msDef.Arch), MICROSERVICE_DEFINITION_FILE)
+	re := regexp.MustCompile(`^[A-Za-z0-9+.-]*?://`)
+	url2 := re.ReplaceAllLiteralString(msDef.SpecRef, "")
+	re = regexp.MustCompile(`[$!*,;/?@&~=%]`)
+	url3 := re.ReplaceAllLiteralString(url2, "-")
+
+	fileName := fmt.Sprintf("%v_%v.%v", url3, msDef.Version, MICROSERVICE_DEFINITION_FILE)
 
 	filePath := path.Join(homeDirectory, DEFAULT_DEPENDENCY_DIR)
 	if err := CreateFile(filePath, fileName, msDef); err != nil {
