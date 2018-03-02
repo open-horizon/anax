@@ -585,9 +585,14 @@ func GetEthereumClient(httpClientFactory *config.HTTPClientFactory, url string, 
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("found blockchain %v.", resp)))
-			clientMetadata := resp.(*GetEthereumClientResponse).Blockchains[chainName].Details
-			return clientMetadata, nil
+			if val, ok := resp.(*GetEthereumClientResponse).Blockchains[chainName]; ok {
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("found blockchain %v.", resp)))
+				clientMetadata := val.Details
+				return clientMetadata, nil
+			} else {
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("not found blockchain %v.", chainName)))
+				return "", nil
+			}
 		}
 	}
 
@@ -1340,6 +1345,7 @@ func GetNodeHealthStatus(httpClientFactory *config.HTTPClientFactory, pattern st
 }
 
 // This function is used to invoke an exchange API
+// For GET, the given resp parameter will be untouched when http returns code 404.
 func InvokeExchange(httpClient *http.Client, method string, url string, user string, pw string, params interface{}, resp *interface{}) (error, error) {
 
 	if len(method) == 0 {
@@ -1405,8 +1411,13 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 				return nil, errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, url, requestBody, err))
 			}
 
-			if method == "GET" && (httpResp.StatusCode != http.StatusOK && httpResp.StatusCode != http.StatusNotFound) {
-				return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil
+			if method == "GET" && httpResp.StatusCode != http.StatusOK {
+				if httpResp.StatusCode == http.StatusNotFound {
+					glog.V(5).Infof(rpclogString(fmt.Sprintf("Got %v. Response to %v at %v is %v", httpResp.StatusCode, method, url, string(outBytes))))
+					return nil, nil
+				} else {
+					return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil
+				}
 			} else if (method == "PUT" || method == "POST" || method == "PATCH") && httpResp.StatusCode != http.StatusCreated {
 				return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil
 			} else if method == "DELETE" && httpResp.StatusCode != http.StatusNoContent {
@@ -1419,7 +1430,7 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 
 				// no need to Unmarshal the string output
 				switch (*resp).(type) {
-				case *string:
+				case string:
 					*resp = out
 					return nil, nil
 				}
@@ -1427,6 +1438,9 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 				if err := json.Unmarshal(outBytes, resp); err != nil {
 					return errors.New(fmt.Sprintf("Unable to demarshal response %v from invocation of %v at %v, error: %v", out, method, url, err)), nil
 				} else {
+					if httpResp.StatusCode == http.StatusNotFound {
+						glog.V(5).Infof(rpclogString(fmt.Sprintf(" ---- Got %v. Response to %v at %v is %v", httpResp.StatusCode, method, url, *resp)))
+					}
 					switch (*resp).(type) {
 					case *PutDeviceResponse:
 						return nil, nil
@@ -1514,7 +1528,7 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 	return "1.46.0", nil
 
 	//var resp interface{}
-	//resp = new(string)
+	//resp = ""
 	//targetURL := exchangeUrl + "admin/version"
 	//for {
 	//	if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, "", "", nil, &resp); err != nil {
@@ -1525,7 +1539,7 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 	//		time.Sleep(10 * time.Second)
 	//		continue
 	//	} else {
-	//		// remove last return charactor if any
+	// remove last return charactor if any
 	//		v := resp.(string)
 	//		if strings.HasSuffix(v, "\n") {
 	//			v = v[:len(v)-1]
@@ -1593,7 +1607,7 @@ func GetObjectSigningKeys(httpClientFactory *config.HTTPClientFactory, oType str
 
 	// get all the singining key names for the object
 	var resp_KeyNames interface{}
-	resp_KeyNames = new(string)
+	resp_KeyNames = ""
 
 	key_names := make([]string, 0)
 
@@ -1606,10 +1620,11 @@ func GetObjectSigningKeys(httpClientFactory *config.HTTPClientFactory, oType str
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("found object signing keys %v.", resp_KeyNames)))
-
-			if err := json.Unmarshal([]byte(resp_KeyNames.(string)), &key_names); err != nil {
-				return nil, errors.New(fmt.Sprintf("Unable to demarshal pattern key list %v to string array, error: %v", resp_KeyNames, err))
+			if resp_KeyNames.(string) != "" {
+				glog.V(5).Infof(rpclogString(fmt.Sprintf("found object signing keys %v.", resp_KeyNames)))
+				if err := json.Unmarshal([]byte(resp_KeyNames.(string)), &key_names); err != nil {
+					return nil, errors.New(fmt.Sprintf("Unable to demarshal pattern key list %v to string array, error: %v", resp_KeyNames, err))
+				}
 			}
 			break
 		}
@@ -1620,7 +1635,7 @@ func GetObjectSigningKeys(httpClientFactory *config.HTTPClientFactory, oType str
 
 	for _, key := range key_names {
 		var resp_KeyContent interface{}
-		resp_KeyContent = new(string)
+		resp_KeyContent = ""
 		for {
 			if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", fmt.Sprintf("%v/%v", targetURL, key), id, token, nil, &resp_KeyContent); err != nil {
 				glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
@@ -1630,8 +1645,12 @@ func GetObjectSigningKeys(httpClientFactory *config.HTTPClientFactory, oType str
 				time.Sleep(10 * time.Second)
 				continue
 			} else {
-				glog.V(5).Infof(rpclogString(fmt.Sprintf("found signing key content %v.", resp_KeyContent)))
-				ret[key] = resp_KeyContent.(string)
+				if resp_KeyContent.(string) != "" {
+					glog.V(5).Infof(rpclogString(fmt.Sprintf("found signing key content for key %v: %v.", key, resp_KeyContent)))
+					ret[key] = resp_KeyContent.(string)
+				} else {
+					glog.Warningf(rpclogString(fmt.Sprintf("could not find key content for key %v", key)))
+				}
 				break
 			}
 		}
