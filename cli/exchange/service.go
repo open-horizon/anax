@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 // This can't be a const because a map literal isn't a const in go
@@ -109,13 +108,11 @@ func (sf *ServiceFile) RequiredVariablesAreSet(setVars map[string]interface{}) e
 
 func ServiceList(org, userPw, service string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
-	if service != "" {
-		service = "/" + service
-	}
+	org, service = cliutils.TrimOrg(org, service)
 	if namesOnly && service == "" {
 		// Only display the names
 		var resp GetServicesResponse
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+service, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
 		services := []string{}
 
 		for k := range resp.Services {
@@ -131,9 +128,9 @@ func ServiceList(org, userPw, service string, namesOnly bool) {
 		//var output string
 		var output GetServicesResponse
 
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+service, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 		if httpCode == 404 && service != "" {
-			cliutils.Fatal(cliutils.NOT_FOUND, "service '%s' not found in org %s", strings.TrimPrefix(service, "/"), org)
+			cliutils.Fatal(cliutils.NOT_FOUND, "service '%s' not found in org %s", service, org)
 		}
 		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
 		if err != nil {
@@ -269,6 +266,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath string) (exchId s
 // ServiceVerify verifies the deployment strings of the specified service resource in the exchange.
 func ServiceVerify(org, userPw, service, keyFilePath string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, service = cliutils.TrimOrg(org, service)
 	// Get service resource from exchange
 	var output GetServicesResponse
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
@@ -300,6 +298,7 @@ func ServiceVerify(org, userPw, service, keyFilePath string) {
 
 func ServiceRemove(org, userPw, service string, force bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, service = cliutils.TrimOrg(org, service)
 	if !force {
 		cliutils.ConfirmRemove("Are you sure you want to remove service '" + org + "/" + service + "' from the Horizon Exchange?")
 	}
@@ -312,6 +311,7 @@ func ServiceRemove(org, userPw, service string, force bool) {
 
 func ServiceListKey(org, userPw, service, keyName string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, service = cliutils.TrimOrg(org, service)
 	if keyName == "" {
 		// Only display the names
 		var output string
@@ -330,6 +330,7 @@ func ServiceListKey(org, userPw, service, keyName string) {
 
 func ServiceRemoveKey(org, userPw, service, keyName string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, service = cliutils.TrimOrg(org, service)
 	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "key '%s' not found", keyName)

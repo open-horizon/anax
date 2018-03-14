@@ -27,15 +27,16 @@ func List(keyName string) {
 		var apiOutput map[string][]api.KeyPairSimpleRecord
 		// Note: it is allowed to get /trust before post /node is called, so we don't have to check for that error
 		cliutils.HorizonGet("trust?verbose=true", []int{200}, &apiOutput)
+		cliutils.Verbose("apiOutput: %v", apiOutput)
 
-		var output interface{}
+		var output []api.KeyPairSimpleRecord
 		var ok bool
 		if output, ok = apiOutput["pem"]; !ok {
 			cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api trust output did not include 'pem' key")
 		}
 
-		var certsSimpleOutput []KeyPairSimpleOutput
-		for _, kps := range output.([]api.KeyPairSimpleRecord) {
+		certsSimpleOutput := []KeyPairSimpleOutput{}
+		for _, kps := range output {
 			certsSimpleOutput = append(certsSimpleOutput, KeyPairSimpleOutput{
 				ID:               kps.ID,
 				SerialNumber:     kps.SerialNumber,
@@ -82,7 +83,7 @@ func Create(x509Org, x509CN, outputDir string, keyLength, daysValid int, importK
 			cliutils.Fatal(cliutils.INTERNAL_ERROR, "asked to import the created public key, but can not determine the name.")
 		}
 		Import(pubKeyName)
-		fmt.Printf("%s imported to the Horizon agent", pubKeyName)
+		fmt.Printf("%s imported to the Horizon agent\n", pubKeyName)
 	}
 }
 

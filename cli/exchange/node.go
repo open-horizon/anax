@@ -6,7 +6,6 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
 	"net/http"
-	"strings"
 )
 
 // We only care about handling the node names, so the rest is left as interface{} and will be passed from the exchange to the display
@@ -17,13 +16,11 @@ type ExchangeNodes struct {
 
 func NodeList(org string, userPw string, node string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
-	if node != "" {
-		node = "/" + node
-	}
+	org, node = cliutils.TrimOrg(org, node)
 	if namesOnly && node == "" {
 		// Only display the names
 		var resp ExchangeNodes
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+node, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
 		nodes := []string{}
 		for n := range resp.Nodes {
 			nodes = append(nodes, n)
@@ -36,9 +33,9 @@ func NodeList(org string, userPw string, node string, namesOnly bool) {
 	} else {
 		// Display the full resources
 		var output string
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+node, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 		if httpCode == 404 && node != "" {
-			cliutils.Fatal(cliutils.NOT_FOUND, "node '%s' not found in org %s", strings.TrimPrefix(node, "/"), org)
+			cliutils.Fatal(cliutils.NOT_FOUND, "node '%s' not found in org %s", node, org)
 		}
 		fmt.Println(output)
 	}
@@ -82,6 +79,7 @@ func NodeCreate(org string, nodeIdTok string, userPw string, email string) {
 
 func NodeRemove(org, userPw, node string, force bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, node = cliutils.TrimOrg(org, node)
 	if !force {
 		cliutils.ConfirmRemove("Are you sure you want to remove node '" + org + "/" + node + "' from the Horizon Exchange (should not be done while an edge node is registered with this node id)?")
 	}

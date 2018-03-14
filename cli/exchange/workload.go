@@ -13,7 +13,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"strings"
 )
 
 // This is used when reading json file the user gives us as input to create the workload struct
@@ -85,13 +84,11 @@ type WorkloadInput struct {
 
 func WorkloadList(org, userPw, workload string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
-	if workload != "" {
-		workload = "/" + workload
-	}
+	org, workload = cliutils.TrimOrg(org, workload)
 	if namesOnly && workload == "" {
 		// Only display the names
 		var resp exchange.GetWorkloadsResponse
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+cliutils.AddSlash(workload), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
 		workloads := []string{}
 
 		for k := range resp.Workloads {
@@ -107,9 +104,9 @@ func WorkloadList(org, userPw, workload string, namesOnly bool) {
 		//var output string
 		var output exchange.GetWorkloadsResponse
 
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+workload, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+cliutils.AddSlash(workload), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 		if httpCode == 404 && workload != "" {
-			cliutils.Fatal(cliutils.NOT_FOUND, "workload '%s' not found in org %s", strings.TrimPrefix(workload, "/"), org)
+			cliutils.Fatal(cliutils.NOT_FOUND, "workload '%s' not found in org %s", workload, org)
 		}
 		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
 		if err != nil {
@@ -217,6 +214,7 @@ func (wf *WorkloadFile) SignAndPublish(org, userPw, keyFilePath string) (exchId 
 // WorkloadVerify verifies the deployment strings of the specified workload resource in the exchange.
 func WorkloadVerify(org, userPw, workload, keyFilePath string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, workload = cliutils.TrimOrg(org, workload)
 	// Get workload resource from exchange
 	var output exchange.GetWorkloadsResponse
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+workload, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
@@ -251,6 +249,7 @@ func WorkloadVerify(org, userPw, workload, keyFilePath string) {
 
 func WorkloadRemove(org, userPw, workload string, force bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, workload = cliutils.TrimOrg(org, workload)
 	if !force {
 		cliutils.ConfirmRemove("Are you sure you want to remove workload '" + org + "/" + workload + "' from the Horizon Exchange?")
 	}
@@ -263,6 +262,7 @@ func WorkloadRemove(org, userPw, workload string, force bool) {
 
 func WorkloadListKey(org, userPw, workload, keyName string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, workload = cliutils.TrimOrg(org, workload)
 	if keyName == "" {
 		// Only display the names
 		var output string
@@ -281,6 +281,7 @@ func WorkloadListKey(org, userPw, workload, keyName string) {
 
 func WorkloadRemoveKey(org, userPw, workload, keyName string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, workload = cliutils.TrimOrg(org, workload)
 	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads/"+workload+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "key '%s' not found", keyName)
