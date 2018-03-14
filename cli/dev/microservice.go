@@ -170,6 +170,11 @@ func MicroserviceDeploy(homeDirectory string, keyFile string, userCreds string) 
 	if userCreds == "" {
 		userCreds = os.Getenv(DEVTOOL_HZN_USER)
 	}
+
+	// Parse creds to figure out if an API key is in use
+	cliutils.SetWhetherUsingApiKey(userCreds)
+
+	// Invoke the re-usable part of hzn exchange microservice publish to actually do the publish.
 	microserviceDef.SignAndPublish(microserviceDef.Org, userCreds, keyFile)
 
 	fmt.Printf("Microservice project %v deployed.\n", dir)
