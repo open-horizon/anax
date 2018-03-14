@@ -399,7 +399,6 @@ func startMicroservice(deployment *containermessage.DeploymentDescription,
 	// Locate the microservice network(s) and return them so that a workload can be hooked in if necessary.
 	for serviceName, _ := range dc.Services {
 		dcService := docker.ListContainersOptions{
-			All: true,
 			Filters: map[string][]string{
 				"label": []string{
 					fmt.Sprintf("%v.service_name=%v", container.LABEL_PREFIX, serviceName),
