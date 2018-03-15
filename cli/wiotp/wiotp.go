@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
-	"strings"
 )
 
 // WIoTP API Reference: https://console.bluemix.net/docs/services/IoT/reference/api.html
@@ -20,13 +19,10 @@ type WiotpTypes struct {
 
 // TypeList returns a list of the type names, or if wType is specified, the details of that type.
 func TypeList(org, apiKeyTok, wType string) {
-	if wType != "" {
-		wType = "/" + wType
-	}
 	if wType == "" {
 		// Only display the names
 		var resp WiotpTypes
-		cliutils.WiotpGet(cliutils.GetWiotpUrl(org), "device/types"+wType, apiKeyTok, []int{200, 404}, &resp)
+		cliutils.WiotpGet(cliutils.GetWiotpUrl(org), "device/types"+cliutils.AddSlash(wType), apiKeyTok, []int{200, 404}, &resp)
 		wTypes := []string{}
 		for _, t := range resp.Results {
 			wTypes = append(wTypes, t.Id)
@@ -39,9 +35,9 @@ func TypeList(org, apiKeyTok, wType string) {
 	} else {
 		// Display the full resources
 		var output string
-		httpCode := cliutils.WiotpGet(cliutils.GetWiotpUrl(org), "device/types"+wType, apiKeyTok, []int{200, 404}, &output)
+		httpCode := cliutils.WiotpGet(cliutils.GetWiotpUrl(org), "device/types"+cliutils.AddSlash(wType), apiKeyTok, []int{200, 404}, &output)
 		if httpCode == 404 && wType != "" {
-			cliutils.Fatal(cliutils.NOT_FOUND, "type '%s' not found in org %s", strings.TrimPrefix(wType, "/"), org)
+			cliutils.Fatal(cliutils.NOT_FOUND, "type '%s' not found in org %s", wType, org)
 		}
 		fmt.Println(output)
 	}
@@ -60,13 +56,10 @@ type WiotpDevices struct {
 // DeviceList returns a list of the device/gateway names of this type, or if device is specified, the details of that device/gateway.
 func DeviceList(org, apiKeyTok, wType, device string) {
 	// Note: wType is a required arg
-	if device != "" {
-		device = "/" + device
-	}
 	if device == "" {
 		// Only display the names
 		var resp WiotpDevices
-		cliutils.WiotpGet(cliutils.GetWiotpUrl(org), "device/types/"+wType+"/devices"+device, apiKeyTok, []int{200, 404}, &resp)
+		cliutils.WiotpGet(cliutils.GetWiotpUrl(org), "device/types/"+wType+"/devices"+cliutils.AddSlash(device), apiKeyTok, []int{200, 404}, &resp)
 		devices := []string{}
 		for _, t := range resp.Results {
 			devices = append(devices, t.DeviceId)
@@ -79,9 +72,9 @@ func DeviceList(org, apiKeyTok, wType, device string) {
 	} else {
 		// Display the full resources
 		var output string
-		httpCode := cliutils.WiotpGet(cliutils.GetWiotpUrl(org), "device/types/"+wType+"/devices"+device, apiKeyTok, []int{200, 404}, &output)
+		httpCode := cliutils.WiotpGet(cliutils.GetWiotpUrl(org), "device/types/"+wType+"/devices"+cliutils.AddSlash(device), apiKeyTok, []int{200, 404}, &output)
 		if httpCode == 404 && device != "" {
-			cliutils.Fatal(cliutils.NOT_FOUND, "device '%s' of type '%s' not found in org %s", strings.TrimPrefix(device, "/"), wType, org)
+			cliutils.Fatal(cliutils.NOT_FOUND, "device '%s' of type '%s' not found in org %s", device, wType, org)
 		}
 		fmt.Println(output)
 	}

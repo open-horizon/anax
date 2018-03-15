@@ -13,7 +13,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"strings"
 )
 
 type DeploymentConfig struct {
@@ -22,7 +21,7 @@ type DeploymentConfig struct {
 
 func (dc DeploymentConfig) CLIString() string {
 	servs := ""
-	for serviceName, _ := range dc.Services {
+	for serviceName := range dc.Services {
 		servs += serviceName + ", "
 	}
 	servs = servs[:len(servs)-2]
@@ -175,13 +174,11 @@ type MicroserviceInput struct {
 
 func MicroserviceList(org string, userPw string, microservice string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
-	if microservice != "" {
-		microservice = "/" + microservice
-	}
+	org, microservice = cliutils.TrimOrg(org, microservice)
 	if namesOnly && microservice == "" {
 		// Only display the names
 		var resp exchange.GetMicroservicesResponse
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices"+microservice, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices"+cliutils.AddSlash(microservice), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
 		microservices := []string{}
 		for k := range resp.Microservices {
 			microservices = append(microservices, k)
@@ -195,9 +192,9 @@ func MicroserviceList(org string, userPw string, microservice string, namesOnly 
 		// Display the full resources
 		//var output string
 		var output exchange.GetMicroservicesResponse
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices"+microservice, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices"+cliutils.AddSlash(microservice), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 		if httpCode == 404 && microservice != "" {
-			cliutils.Fatal(cliutils.NOT_FOUND, "microservice '%s' not found in org %s", strings.TrimPrefix(microservice, "/"), org)
+			cliutils.Fatal(cliutils.NOT_FOUND, "microservice '%s' not found in org %s", microservice, org)
 		}
 		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
 		if err != nil {
@@ -270,7 +267,7 @@ func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) (exc
 	microInput := MicroserviceInput{Label: mf.Label, Description: mf.Description, Public: mf.Public, SpecRef: mf.SpecRef, Version: mf.Version, Arch: mf.Arch, Sharable: mf.Sharable, DownloadURL: mf.DownloadURL, MatchHardware: mf.MatchHardware, UserInputs: mf.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(mf.Workloads))}
 
 	// Loop thru the workloads array, sign the deployment strings, and copy all 3 fields to microInput
-	fmt.Println("Signing microservice...")
+	//fmt.Println("Signing microservice...")  // <- do not print this because it might be pre-signed
 	var imageList []string
 	if len(mf.Workloads) > 1 {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the 'workloads' array can not have more than 1 element in it")
@@ -286,7 +283,7 @@ func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) (exc
 			microInput.Workloads[i].Deployment = ""
 			microInput.Workloads[i].DeploymentSignature = ""
 		} else {
-			cliutils.Verbose("signing deployment string %d", i+1)
+			cliutils.Verbose("Signing deployment string %d", i+1)
 			deployment, err = json.Marshal(depConfig)
 			if err != nil {
 				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment string %d: %v", i+1, err)
@@ -338,6 +335,7 @@ func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) (exc
 // MicroserviceVerify verifies the deployment strings of the specified microservice resource in the exchange.
 func MicroserviceVerify(org, userPw, microservice, keyFilePath string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, microservice = cliutils.TrimOrg(org, microservice)
 	// Get microservice resource from exchange
 	var output exchange.GetMicroservicesResponse
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+microservice, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
@@ -372,6 +370,7 @@ func MicroserviceVerify(org, userPw, microservice, keyFilePath string) {
 
 func MicroserviceRemove(org, userPw, microservice string, force bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, microservice = cliutils.TrimOrg(org, microservice)
 	if !force {
 		cliutils.ConfirmRemove("Are you sure you want to remove microservice '" + org + "/" + microservice + "' from the Horizon Exchange?")
 	}
@@ -383,6 +382,7 @@ func MicroserviceRemove(org, userPw, microservice string, force bool) {
 }
 
 func MicroserviceListKey(org, userPw, microservice, keyName string) {
+	org, microservice = cliutils.TrimOrg(org, microservice)
 	cliutils.SetWhetherUsingApiKey(userPw)
 	if keyName == "" {
 		// Only display the names
@@ -402,6 +402,7 @@ func MicroserviceListKey(org, userPw, microservice, keyName string) {
 
 func MicroserviceRemoveKey(org, userPw, microservice, keyName string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, microservice = cliutils.TrimOrg(org, microservice)
 	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+microservice+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "key '%s' not found", keyName)

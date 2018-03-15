@@ -20,7 +20,8 @@ import (
 const (
 	HZN_API             = "http://localhost"
 	AGBOT_HZN_API       = "http://localhost:8046"
-	WIOTP_BASE_URL      = "internetofthings.ibmcloud.com/api/v0002"
+	WIOTP_DOMAIN      = "internetofthings.ibmcloud.com"
+	WIOTP_BASE_ROUTE      = "api/v0002"
 	JSON_INDENT         = "  "
 	MUST_REGISTER_FIRST = "this command can not be run before running 'hzn register'"
 
@@ -127,6 +128,28 @@ func OrgAndCreds(org, creds string) string {
 		return creds // already has the org at the beginning
 	}
 	return org + "/" + creds
+}
+
+// AddSlash prepends "/" to the id if it is not the empty string and returns it. This is useful when id is the last thing in the route.
+func AddSlash(id string) string {
+	if id == "" {
+		return id
+	}
+	return "/" + id
+}
+
+// TrimOrg returns id with the leading "<org>/" removed, if it was there. This is useful because in list sub-cmds id is shown with
+// the org prepended, but when the id is put in routes it can not have the org prepended, because org is already earlier in the route.
+func TrimOrg(org, id string) (string, string) {
+	substrings := strings.Split(id, "/")
+	if len(substrings) <= 1 {		// this means id was empty, or did not contain '/'
+		return org, id
+	} else if len(substrings) == 2 {
+		return substrings[0], substrings[1]		// in this case the org the prepended to the id will override the org they may have specified thru the -o flag or env var
+	} else {
+		Fatal(CLI_INPUT_ERROR, "the resource id can not contain more than 1 '/'")
+	}
+	return "", ""	// will never get here
 }
 
 // FormExchangeId combines url, version, arch the same way the exchange does to form the resource ID.
@@ -407,8 +430,7 @@ func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttpC
 		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
 	}
 	req.Header.Add("Accept", "application/json")
-	//req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
+	if credentials != "" { req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials)))) }
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		printHorizonExchRestError(apiMsg, err)
@@ -556,13 +578,11 @@ func ConvertTime(unixSeconds uint64) string {
 
 // GetWiotpUrl returns the wiotp url from the env var and org
 func GetWiotpUrl(org string) (url string) {
-	testEnv := os.Getenv("WIOTP_TEST_ENV")
-	if testEnv == "" {
-		url = "https://" + org + "." + WIOTP_BASE_URL
-	} else {
-		testEnv = strings.TrimPrefix(testEnv, ".") // in some contexts we required WIOTP_TEST_ENV to have a leading .
-		url = "https://" + org + "." + testEnv + "." + WIOTP_BASE_URL
+	domainEnv := os.Getenv("WIOTP_DOMAIN")
+	if domainEnv == "" {
+		domainEnv = WIOTP_DOMAIN
 	}
+	url = "https://" + org + "." + domainEnv + "/" + WIOTP_BASE_ROUTE
 	return url
 }
 

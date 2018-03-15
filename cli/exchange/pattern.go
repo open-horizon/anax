@@ -89,13 +89,11 @@ type PatternInput struct {
 
 func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
-	if pattern != "" {
-		pattern = "/" + pattern
-	}
+	org, pattern = cliutils.TrimOrg(org, pattern)
 	if namesOnly && pattern == "" {
 		// Only display the names
 		var resp ExchangePatterns
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+pattern, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
 		patterns := []string{} // this is important (instead of leaving it nil) so json marshaling displays it as [] instead of null
 		for p := range resp.Patterns {
 			patterns = append(patterns, p)
@@ -109,9 +107,9 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 		// Display the full resources
 		//var output string
 		var output ExchangePatterns
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+pattern, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 		if httpCode == 404 && pattern != "" {
-			cliutils.Fatal(cliutils.NOT_FOUND, "pattern '%s' not found in org %s", strings.TrimPrefix(pattern, "/"), org)
+			cliutils.Fatal(cliutils.NOT_FOUND, "pattern '%s' not found in org %s", pattern, org)
 		}
 		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
 		if err != nil {
@@ -241,6 +239,7 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 
 func PatternVerify(org, userPw, pattern, keyFilePath string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, pattern = cliutils.TrimOrg(org, pattern)
 	// Get pattern resource from exchange
 	var output ExchangePatterns
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
@@ -277,6 +276,7 @@ func PatternVerify(org, userPw, pattern, keyFilePath string) {
 
 func PatternRemove(org, userPw, pattern string, force bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, pattern = cliutils.TrimOrg(org, pattern)
 	if !force {
 		cliutils.ConfirmRemove("Are you sure you want to remove pattern '" + org + "/" + pattern + "' from the Horizon Exchange?")
 	}
@@ -301,6 +301,7 @@ func copyPatternOutputToInput(output *PatternOutput, input *PatternInput) {
 // exchange, and then either replaces that workload array element (if it already exists), or adds it.
 func PatternAddWorkload(org, userPw, pattern, workloadFilePath, keyFilePath, pubKeyFilePath string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, pattern = cliutils.TrimOrg(org, pattern)
 	// Read in the workload metadata
 	newBytes := cliutils.ReadJsonFile(workloadFilePath)
 	var workFile WorkloadReferenceFile
@@ -403,6 +404,7 @@ func PatternAddWorkload(org, userPw, pattern, workloadFilePath, keyFilePath, pub
 
 func PatternDelWorkload(org, userPw, pattern, workloadOrg, workloadUrl, workloadArch string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, pattern = cliutils.TrimOrg(org, pattern)
 	// Get the pattern from the exchange
 	var output ExchangePatterns
 	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org, userPw), []int{200}, &output)
@@ -437,6 +439,7 @@ func PatternDelWorkload(org, userPw, pattern, workloadOrg, workloadUrl, workload
 
 func PatternListKey(org, userPw, pattern, keyName string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, pattern = cliutils.TrimOrg(org, pattern)
 	if keyName == "" {
 		// Only display the names
 		var output string
@@ -455,6 +458,7 @@ func PatternListKey(org, userPw, pattern, keyName string) {
 
 func PatternRemoveKey(org, userPw, pattern, keyName string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+	org, pattern = cliutils.TrimOrg(org, pattern)
 	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "key '%s' not found", keyName)

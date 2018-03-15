@@ -45,10 +45,12 @@ Environment Variables:
 	versionCmd := app.Command("version", "Show the Horizon version.") // using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
 
 	exchangeCmd := app.Command("exchange", "List and manage Horizon Exchange resources.")
-	exOrg := exchangeCmd.Flag("org", "The Horizon exchange organization ID.").Short('o').String()
-	exUserPw := exchangeCmd.Flag("user-pw", "Horizon Exchange user credentials to query and create exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.").Short('u').PlaceHolder("USER:PW").String()
+	exOrg := exchangeCmd.Flag("org", "The Horizon exchange organization ID. If not specified, HZN_ORG_ID will be used as a default.").Short('o').String()
+	exUserPw := exchangeCmd.Flag("user-pw", "Horizon Exchange user credentials to query and create exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.").Short('u').PlaceHolder("USER:PW").String()
 
-	exUserCmd := exchangeCmd.Command("user", "List and manage users in the Horizon Exchange")
+	exVersionCmd := exchangeCmd.Command("version", "Display the version of the Horizon Exchange.")
+
+	exUserCmd := exchangeCmd.Command("user", "List and manage users in the Horizon Exchange.")
 	exUserListCmd := exUserCmd.Command("list", "Display the user resource from the Horizon Exchange. (You can only display your own user. If the user does not exist, you will get an invalid credentials error.)")
 	exUserCreateCmd := exUserCmd.Command("create", "Create the user resource in the Horizon Exchange.")
 	exUserCreateEmail := exUserCreateCmd.Flag("email", "Your email address that should be associated with this user account when creating it in the Horizon exchange.").Short('e').Required().String()
@@ -179,8 +181,8 @@ Environment Variables:
 	exSvcRemKeyKey := exServiceRemKeyCmd.Arg("key-name", "The existing key name to remove.").Required().String()
 
 	wiotpCmd := app.Command("wiotp", "List and manage WIoTP objects.")
-	wiotpOrg := wiotpCmd.Flag("org", "The WIoTP organization ID.").Short('o').String()
-	wiotpApiKeyToken := wiotpCmd.Flag("apikey-token", "WIoTP API key and token to query and create WIoTP objects.").Short('A').PlaceHolder("APIKEY:TOKEN").String()
+	wiotpOrg := wiotpCmd.Flag("org", "The WIoTP organization ID. If not specified, HZN_ORG_ID will be used as a default.").Short('o').String()
+	wiotpApiKeyToken := wiotpCmd.Flag("apikey-token", "WIoTP API key and token to query and create WIoTP objects. If not specified, HZN_EXCHANGE_API_AUTH will be used as a default.").Short('A').PlaceHolder("APIKEY:TOKEN").String()
 
 	wiotpTypeCmd := wiotpCmd.Command("type", "List and manage types in WIoTP")
 	wiotpTypeListCmd := wiotpTypeCmd.Command("list", "Display the type objects from WIoTP.")
@@ -313,14 +315,14 @@ Environment Variables:
 
 	// Parse cmd and apply env var defaults
 	fullCmd := kingpin.MustParse(app.Parse(os.Args[1:]))
-	cliutils.Verbose("Full command: %s", fullCmd)
+	//cliutils.Verbose("Full command: %s", fullCmd)
 	if strings.HasPrefix(fullCmd, "exchange") {
 		exOrg = cliutils.RequiredWithDefaultEnvVar(exOrg, "HZN_ORG_ID", "organization ID must be specified with either the -o flag or HZN_ORG_ID")
-		exUserPw = cliutils.RequiredWithDefaultEnvVar(exUserPw, "HZN_EXCHANGE_USER_AUTH", "exchange user authenication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH")
+		exUserPw = cliutils.RequiredWithDefaultEnvVar(exUserPw, "HZN_EXCHANGE_USER_AUTH", "exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH")
 	}
 	if strings.HasPrefix(fullCmd, "wiotp") {
 		wiotpOrg = cliutils.RequiredWithDefaultEnvVar(wiotpOrg, "HZN_ORG_ID", "organization ID must be specified with either the -o flag or HZN_ORG_ID")
-		wiotpApiKeyToken = cliutils.RequiredWithDefaultEnvVar(wiotpApiKeyToken, "HZN_EXCHANGE_API_AUTH", "WIoTP API key authenication must be specified with either the -A flag or HZN_EXCHANGE_API_AUTH")
+		wiotpApiKeyToken = cliutils.RequiredWithDefaultEnvVar(wiotpApiKeyToken, "HZN_EXCHANGE_API_AUTH", "WIoTP API key authentication must be specified with either the -A flag or HZN_EXCHANGE_API_AUTH")
 	}
 	if strings.HasPrefix(fullCmd, "register") {
 		userPw = cliutils.WithDefaultEnvVar(userPw, "HZN_EXCHANGE_USER_AUTH")
@@ -330,6 +332,8 @@ Environment Variables:
 	switch fullCmd {
 	case versionCmd.FullCommand():
 		node.Version()
+	case exVersionCmd.FullCommand():
+		exchange.Version()
 	case exUserListCmd.FullCommand():
 		exchange.UserList(*exOrg, *exUserPw)
 	case exUserCreateCmd.FullCommand():
