@@ -218,7 +218,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath string) (exchId s
 	fmt.Println("Signing service...")
 	var imageList []string
 	//cliutils.Verbose("signing deployment string %d", i+1)
-	//todo: i think treating the deployment field as type DeploymentConfig is too inflexible for future additions
+	// Convert the deployment field from map[string]interface{} to []byte (i think treating it as type DeploymentConfig is too inflexible for future additions)
 	deployment, err := json.Marshal(sf.Deployment)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment string: %v", err)

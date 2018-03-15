@@ -146,7 +146,7 @@ func (wf *WorkloadFile) SignAndPublish(org, userPw, keyFilePath string) (exchId 
 	workInput := WorkloadInput{Label: wf.Label, Description: wf.Description, Public: wf.Public, WorkloadURL: wf.WorkloadURL, Version: wf.Version, Arch: wf.Arch, DownloadURL: wf.DownloadURL, APISpecs: wf.APISpecs, UserInputs: wf.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(wf.Workloads))}
 
 	// Loop thru the workloads array and sign the deployment strings
-	fmt.Println("Signing workload...")
+	//fmt.Println("Signing workload...")  // <- do not print this because it might be pre-signed
 	var imageList []string
 	if len(wf.Workloads) > 1 {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the 'workloads' array can not have more than 1 element in it")
@@ -162,7 +162,7 @@ func (wf *WorkloadFile) SignAndPublish(org, userPw, keyFilePath string) (exchId 
 			workInput.Workloads[i].Deployment = ""
 			workInput.Workloads[i].DeploymentSignature = ""
 		} else {
-			cliutils.Verbose("signing deployment string %d", i+1)
+			cliutils.Verbose("Signing deployment string %d", i+1)
 			deployment, err = json.Marshal(depConfig)
 			if err != nil {
 				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment string %d: %v", i+1, err)
