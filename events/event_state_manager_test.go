@@ -91,7 +91,7 @@ func Test_functions_eventmanager1(t *testing.T) {
 	em.RecordEvent(ev, recorder)
 
 	if em.ReceivedEvent(ev, receiver) {
-		t.Errorf("event state manager receiver override should have responded with false: %v", ev, em)
+		t.Errorf("event state manager %v receiver override should have responded with false: %v", em, ev)
 	} else if recorderRan {
 		t.Errorf("somehow recorderRan got set")
 	} else if receiverRan {

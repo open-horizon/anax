@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"net"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -226,4 +227,49 @@ func MakeMSInstanceKey(specRef string, v string, id string) string {
 	new_s := strings.Replace(s, "/", "-", -1)
 
 	return fmt.Sprintf("%v_%v_%v", new_s, v, id)
+}
+
+// This function parsed the given image name to disfferent parts. The image name has the following format:
+// [[repo][:port]/][somedir/]image[:tag][@digest]
+// If the image path as an improper form (we could not parse it), path will be empty.
+func ParseDockerImagePath(imagePath string) (domain, path, tag, digest string) {
+	// image names can be domain.com/dir/dir:tag  or  domain.com/dir/dir@sha256:ac88f4...  or  domain.com/dir/dir:tag@sha256:ac88f4...
+	reDigest := regexp.MustCompile(`^(\S*)@(\S+)$`)
+	reTag := regexp.MustCompile(`^([^/ ]*)(\S*):([^:/ ]+)$`)
+	reNoTag := regexp.MustCompile(`^([^/ ]*)(\S*)$`)
+
+	var imagePath2 string
+
+	// take out the digest
+	if digestMatches := reDigest.FindStringSubmatch(imagePath); len(digestMatches) == 3 {
+		digest = digestMatches[2]
+		imagePath2 = digestMatches[1]
+	} else {
+		imagePath2 = imagePath
+	}
+
+	if imagePath2 == "" {
+		return // path being blank is the indication that it did not match our parsing
+	}
+
+	// match the rest
+	var matches []string
+	if matches = reTag.FindStringSubmatch(imagePath2); len(matches) == 4 {
+		path = matches[2]
+		tag = matches[3]
+	} else if matches = reNoTag.FindStringSubmatch(imagePath2); len(matches) == 3 {
+		path = matches[2]
+	} else {
+		return // path being blank is the indication that it did not match our parsing
+	}
+
+	domain = matches[1]
+	// An image in docker hub has no domain, the chars before the 1st / are part of the path
+	if !strings.ContainsAny(domain, ".:") {
+		path = domain + path
+		domain = ""
+	} else {
+		path = strings.TrimPrefix(path, "/")
+	}
+	return
 }

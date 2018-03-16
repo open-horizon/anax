@@ -263,7 +263,6 @@ func RemoveMicroservicePolicy(spec_ref string, org string, version string, msdef
 func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath string, db *bolt.DB, e chan events.Message, deviceOrg string) error {
 	glog.V(3).Infof("Genarate policy for the given microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
 
-	var policyArch string
 	var haPartner []string
 	var meterPolicy policy.Meter
 	var counterPartyProperties policy.RequiredProperty
@@ -280,9 +279,6 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 				compute := attr.(persistence.ComputeAttributes)
 				props["cpus"] = strconv.FormatInt(compute.CPUs, 10)
 				props["ram"] = strconv.FormatInt(compute.RAM, 10)
-
-			case persistence.ArchitectureAttributes:
-				policyArch = attr.(persistence.ArchitectureAttributes).Architecture
 
 			case persistence.HAAttributes:
 				haPartner = attr.(persistence.HAAttributes).Partners

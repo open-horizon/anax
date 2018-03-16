@@ -9,6 +9,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/containermessage"
+	"github.com/open-horizon/anax/cutil"
 	"os"
 	"time"
 )
@@ -69,19 +70,52 @@ func pullImageFromRepos(config config.Config, authConfigs *docker.AuthConfigurat
 		var pullAttempts int
 
 		glog.Infof("Pulling image %v for service %v", service.Image, name)
-		imageNameParts := strings.Split(service.Image, ":")
 
-		// TODO: check the on-disk image to make sure it still verifies
-		// N.B. It's possible to specify an outputstream here which means we could fetch a docker image and hash it, check the sig like we used to
-		opts := docker.PullImageOptions{
-			Repository: imageNameParts[0],
-			Tag:        imageNameParts[1],
+		var opts docker.PullImageOptions
+
+		domain, path, tag, digest := cutil.ParseDockerImagePath(service.Image)
+		if path == "" {
+			glog.Errorf("Invalid image name format specified: %v", service.Image)
+			return fmt.Errorf("Invalid image name format specified: %v", service.Image)
+		}
+
+		// the image name format is [[repo][:port]/][somedir/]image[:tag][@digest].
+		// tag and digest do not contain '/'
+		if digest != "" {
+			// this is the case where image repo digest is used, just put whole name there
+			opts = docker.PullImageOptions{
+				Repository: service.Image,
+			}
+		} else {
+			// this is case where image name:tag is used. The image repo may contain :, image tag itself cannot contain : or /.
+			// These are valid formats:
+			//  repo/a/b:tag
+			//  repo:port/a/b:tag
+			//  repo:port/a/b
+
+			var repo string
+			if domain == "" {
+				repo = path
+			} else {
+				repo = fmt.Sprintf("%v/%v", domain, path)
+			}
+
+			if tag == "" {
+				tag = "latest"
+			}
+
+			// TODO: check the on-disk image to make sure it still verifies
+			// N.B. It's possible to specify an outputstream here which means we could fetch a docker image and hash it, check the sig like we used to
+			opts = docker.PullImageOptions{
+				Repository: repo,
+				Tag:        tag,
+			}
 		}
 
 		var auth docker.AuthConfiguration
+
 		for domainName, creds := range authConfigs.Configs {
-			repName := strings.Split(imageNameParts[0], "/")
-			if repName[0] == domainName {
+			if domain != "" && domain == domainName {
 				auth = creds
 			}
 		}

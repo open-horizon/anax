@@ -609,7 +609,7 @@ func Test_DeleteHorizonDevice_success(t *testing.T) {
 	} else if dev, err := FindHorizonDeviceForOutput(db); err != nil {
 		t.Errorf("failed to find device in db, error %v", err)
 	} else if *dev.Config.State != CONFIGSTATE_UNCONFIGURING {
-		t.Errorf("config state is incorrect: %v, should be unconfiguring")
+		t.Errorf("config state is incorrect: %v, should be unconfiguring", *dev.Config.State)
 	}
 
 }
@@ -691,7 +691,7 @@ func Test_PatchHorizonDevice_fail1(t *testing.T) {
 	} else if dev, err := FindHorizonDeviceForOutput(db); err != nil {
 		t.Errorf("failed to find device in db, error %v", err)
 	} else if *dev.Config.State != CONFIGSTATE_CONFIGURED {
-		t.Errorf("config state is incorrect: %v, should be configuring")
+		t.Errorf("config state is incorrect: %v, should be configuring", *dev.Config.State)
 	} else if dev1 != nil || dev2 != nil {
 		t.Errorf("returned non-nil response devices objects: %v %v", *dev1, *dev2)
 	}

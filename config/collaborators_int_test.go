@@ -288,7 +288,7 @@ func Test_KeyFileNamesFetcher_Suite(t *testing.T) {
 			t.Error("Got error but should not.")
 		}
 		if len(fnames) != 0 {
-			t.Error("Number of files should be 0 but got %v.", len(fnames))
+			t.Errorf("Number of files should be 0 but got %v.", len(fnames))
 		}
 	})
 
@@ -317,7 +317,7 @@ func Test_KeyFileNamesFetcher_Suite(t *testing.T) {
 			t.Error("Got error but should not.")
 		}
 		if len(fnames) != 0 {
-			t.Error("Number of files should be 0 but got %v.", len(fnames))
+			t.Errorf("Number of files should be 0 but got %v.", len(fnames))
 		}
 	})
 
@@ -346,11 +346,11 @@ func Test_KeyFileNamesFetcher_Suite(t *testing.T) {
 			t.Error("Got error but should not.")
 		}
 		if len(fnames) != 4 {
-			t.Error("Number of files should be 4 but got %v.", len(fnames))
+			t.Errorf("Number of files should be 4 but got %v.", len(fnames))
 		} else {
 			for _, fn := range fnames {
 				if !strings.Contains(fn, "realfile") {
-					t.Error("File %v should not be returned as a pem file.", fn)
+					t.Errorf("File %v should not be returned as a pem file.", fn)
 				}
 			}
 		}
