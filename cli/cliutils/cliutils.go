@@ -20,8 +20,8 @@ import (
 const (
 	HZN_API             = "http://localhost"
 	AGBOT_HZN_API       = "http://localhost:8046"
-	WIOTP_DOMAIN      = "internetofthings.ibmcloud.com"
-	WIOTP_BASE_ROUTE      = "api/v0002"
+	WIOTP_DOMAIN        = "internetofthings.ibmcloud.com"
+	WIOTP_BASE_ROUTE    = "api/v0002"
 	JSON_INDENT         = "  "
 	MUST_REGISTER_FIRST = "this command can not be run before running 'hzn register'"
 
@@ -142,14 +142,14 @@ func AddSlash(id string) string {
 // the org prepended, but when the id is put in routes it can not have the org prepended, because org is already earlier in the route.
 func TrimOrg(org, id string) (string, string) {
 	substrings := strings.Split(id, "/")
-	if len(substrings) <= 1 {		// this means id was empty, or did not contain '/'
+	if len(substrings) <= 1 { // this means id was empty, or did not contain '/'
 		return org, id
 	} else if len(substrings) == 2 {
-		return substrings[0], substrings[1]		// in this case the org the prepended to the id will override the org they may have specified thru the -o flag or env var
+		return substrings[0], substrings[1] // in this case the org the prepended to the id will override the org they may have specified thru the -o flag or env var
 	} else {
 		Fatal(CLI_INPUT_ERROR, "the resource id can not contain more than 1 '/'")
 	}
-	return "", ""	// will never get here
+	return "", "" // will never get here
 }
 
 // FormExchangeId combines url, version, arch the same way the exchange does to form the resource ID.
@@ -430,7 +430,9 @@ func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttpC
 		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
 	}
 	req.Header.Add("Accept", "application/json")
-	if credentials != "" { req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials)))) }
+	if credentials != "" {
+		req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
+	}
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		printHorizonExchRestError(apiMsg, err)

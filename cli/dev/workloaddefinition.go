@@ -38,6 +38,7 @@ func CreateWorkloadDefinition(directory string, org string) error {
 	res := new(cliexchange.WorkloadFile)
 	res.Label = ""
 	res.Description = ""
+	res.Public = true
 	res.WorkloadURL = DEFAULT_WLDEF_URL
 	res.DownloadURL = "not used yet"
 	res.Version = DEFAULT_WLDEF_SPECIFIC_VERSION

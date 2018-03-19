@@ -37,6 +37,7 @@ func CreateMicroserviceDefinition(directory string, org string) error {
 	res := new(cliexchange.MicroserviceFile)
 	res.Label = ""
 	res.Description = ""
+	res.Public = true
 	res.SpecRef = DEFAULT_MSDEF_URL
 	res.DownloadURL = "not used yet"
 	res.Version = DEFAULT_MSDEF_SPECIFIC_VERSION
