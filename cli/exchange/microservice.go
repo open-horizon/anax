@@ -283,7 +283,7 @@ func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) (exc
 			microInput.Workloads[i].Deployment = ""
 			microInput.Workloads[i].DeploymentSignature = ""
 		} else {
-			cliutils.Verbose("Signing deployment string %d", i+1)
+			fmt.Printf("Signing deployment string %d\n", i+1)
 			deployment, err = json.Marshal(depConfig)
 			if err != nil {
 				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment string %d: %v", i+1, err)
