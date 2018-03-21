@@ -411,8 +411,11 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 								} else if has_wl, err := msi.HasWorkload(w.db); err != nil {
 									glog.Errorf(logString(fmt.Sprintf("Error checking if the microservice %v has workload. %v", msi.GetKey(), err)))
 								} else if has_wl {
+									// the ms instance will be archived after the microservice containers are destroyed.
 									glog.V(5).Infof(logString(fmt.Sprintf("Removing all the containers for %v", msi.GetKey())))
 									w.Messages() <- events.NewMicroserviceCancellationMessage(events.CANCEL_MICROSERVICE, msi.GetKey())
+								} else if _, err := persistence.ArchiveMicroserviceInstance(w.db, msi.GetKey()); err != nil {
+									glog.Errorf(logString(fmt.Sprintf("Error archiving microservice instance %v. %v", msi.GetKey(), err)))
 								}
 								//remove the agreement from the microservice instance
 							} else if _, err := persistence.UpdateMSInstanceAssociatedAgreements(w.db, msi.GetKey(), false, agreementId); err != nil {
