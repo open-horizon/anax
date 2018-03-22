@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/exchange"
@@ -204,18 +205,47 @@ func MicroserviceList(org string, userPw string, microservice string, namesOnly 
 	}
 }
 
-func AppendImagesFromDeploymentField(deployment *DeploymentConfig, imageList []string) []string {
-	// The deployment string should include: {"services":{"cpu2wiotp":{"image":"openhorizon/example_wl_x86_cpu2wiotp:1.1.2",...}}}
+
+/* SignImagesFromDeploymentField "signs" and pushes the docker images with these rules:
+  - if the tag is a regular tag and !dontTouchImage, it pushes the image to the registry, gets the repo digest value, and changes the tag to the digest value (this is the "signing" since it gets signed as part of the deployment string)
+  - if the tag is already the repo digest value, then do nothing (it must have already been pushed by the user to get the digest)
+  - if the tag is a regular tag and dontTouchImage set, add this image path to the returned list that the user needs to push themselves
+ */
+func SignImagesFromDeploymentField(deployment *DeploymentConfig, dontTouchImage bool) (imageList []string) {
 	if deployment == nil || deployment.Services == nil {
-		return imageList
+		return
 	}
-	for _, s := range deployment.Services {
-		if s.Image != "" {
-			imageList = append(imageList, s.Image)
+
+	for svcName := range deployment.Services {	// iterate over the keys of the map so we can change the elements if necessary
+		if deployment.Services[svcName] == nil { continue }
+		imagePath := deployment.Services[svcName].Image
+		if imagePath == "" {
+			fmt.Printf("Warning: no docker imagePath path specified in the 'deployment' field for service '%v'\n", svcName)
+			continue
 		}
+
+		domain, path, tag, _ := cutil.ParseDockerImagePath(imagePath)
+		cliutils.Verbose("%s parsed into: domain=%s, path=%s, tag=%s", imagePath, domain, path, tag)
+		if path == "" {
+			fmt.Printf("Warning: could not parse image path '%v'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.\n", imagePath)
+		} else if tag != "" {
+			if dontTouchImage {
+				imageList = append(imageList, imagePath) // tell them they have to push it themselves
+			} else {
+				// Push it, get the repo digest, and modify the imagePath to use the digest
+				digest := cliutils.PushDockerImage(domain, path, tag)
+				if domain != "" {
+					domain = domain + "/"
+				}
+				newImagePath := domain + path + "@" + digest
+				deployment.Services[svcName].Image = newImagePath
+			}
+		}
+		// else this is already an imagePath path with the repo digest, do not have to do anything (it must have already been pushed)
 	}
-	return imageList
+	return
 }
+
 
 func CheckTorrentField(torrent string, index int) {
 	// Verify the torrent field is the form necessary for the containers that are stored in a docker registry (because that is all we support from hzn right now)
@@ -302,7 +332,7 @@ func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) (exc
 		microInput.Workloads[i].Torrent = mf.Workloads[i].Torrent
 
 		// Gather the docker image paths to instruct the user to docker push at the end
-		imageList = AppendImagesFromDeploymentField(depConfig, imageList)
+		imageList = SignImagesFromDeploymentField(depConfig, false)	//todo: change
 
 		CheckTorrentField(microInput.Workloads[i].Torrent, i)
 	}

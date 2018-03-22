@@ -117,7 +117,7 @@ func WorkloadList(org, userPw, workload string, namesOnly bool) {
 }
 
 // WorkloadPublish signs the MS def and puts it in the exchange
-func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string) {
+func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the workload metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
@@ -129,7 +129,7 @@ func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath stri
 	if workFile.Org != "" && workFile.Org != org {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", workFile.Org, org)
 	}
-	exchId := workFile.SignAndPublish(org, userPw, keyFilePath)
+	exchId := workFile.SignAndPublish(org, userPw, keyFilePath, dontTouchImage)
 
 	// Store the public key in the exchange, if they gave it to us
 	if pubKeyFilePath != "" {
@@ -142,7 +142,7 @@ func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath stri
 }
 
 // Sign and publish the workload definition. This is a function that is reusable across different hzn commands.
-func (wf *WorkloadFile) SignAndPublish(org, userPw, keyFilePath string) (exchId string) {
+func (wf *WorkloadFile) SignAndPublish(org, userPw, keyFilePath string, dontTouchImage bool) (exchId string) {
 	workInput := WorkloadInput{Label: wf.Label, Description: wf.Description, Public: wf.Public, WorkloadURL: wf.WorkloadURL, Version: wf.Version, Arch: wf.Arch, DownloadURL: wf.DownloadURL, APISpecs: wf.APISpecs, UserInputs: wf.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(wf.Workloads))}
 
 	// Loop thru the workloads array and sign the deployment strings
@@ -162,6 +162,9 @@ func (wf *WorkloadFile) SignAndPublish(org, userPw, keyFilePath string) (exchId 
 			workInput.Workloads[i].Deployment = ""
 			workInput.Workloads[i].DeploymentSignature = ""
 		} else {
+			// Go thru the docker image paths to push/get sha256 tag and/or gather list of images that user needs to push
+			imageList = SignImagesFromDeploymentField(depConfig, dontTouchImage)
+
 			fmt.Printf("Signing deployment string %d\n", i+1)
 			deployment, err = json.Marshal(depConfig)
 			if err != nil {
@@ -179,9 +182,6 @@ func (wf *WorkloadFile) SignAndPublish(org, userPw, keyFilePath string) (exchId 
 		}
 
 		workInput.Workloads[i].Torrent = wf.Workloads[i].Torrent
-
-		// Gather the docker image paths to instruct the user to docker push at the end
-		imageList = AppendImagesFromDeploymentField(depConfig, imageList)
 
 		CheckTorrentField(workInput.Workloads[i].Torrent, i)
 	}

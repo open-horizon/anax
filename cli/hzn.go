@@ -125,6 +125,7 @@ Environment Variables:
 	exWorkJsonFile := exWorkloadPublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the workload in the Horizon exchange. See /usr/horizon/samples/workload.json. Specify -f- to read from stdin.").Short('f').Required().String()
 	exWorkPrivKeyFile := exWorkloadPublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the workload. ").Short('k').ExistingFile()
 	exWorkPubPubKeyFile := exWorkloadPublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the workload, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
+	exWorkPubDontTouchImage := exWorkloadPublishCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 values. This should only be used during development when testing new versions often.").Short('I').Bool()
 	exWorkloadVerifyCmd := exWorkloadCmd.Command("verify", "Verify the signatures of a workload resource in the Horizon Exchange.")
 	exVerWorkload := exWorkloadVerifyCmd.Arg("workload", "The workload to verify.").Required().String()
 	exWorkPubKeyFile := exWorkloadVerifyCmd.Flag("public-key-file", "The path of a pem public key file to be used to verify the workload. ").Short('k').Required().ExistingFile()
@@ -264,6 +265,7 @@ Environment Variables:
 	devWorkloadDeployCmd := devWorkloadCmd.Command("publish", "Publish a workload to a Horizon Exchange.")
 	devWorkloadDeployCmdUserPw := devWorkloadDeployCmd.Flag("user-pw", "Horizon Exchange user credentials to create exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
 	devWorkloadKeyfile := devWorkloadDeployCmd.Flag("keyFile", "File containing a private key used to sign the deployment configuration.").Short('k').String()
+	devWorkPubDontTouchImage := devWorkloadDeployCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 values. This should only be used during development when testing new versions often.").Short('I').Bool()
 	devWorkloadValidateCmd := devWorkloadCmd.Command("verify", "Validate the project for completeness and schema compliance.")
 	devWorkloadVerifyUserInputFile := devWorkloadValidateCmd.Flag("userInputFile", "File containing user input values for verification of a project.").Short('f').String()
 
@@ -373,7 +375,7 @@ Environment Variables:
 	case exWorkloadListCmd.FullCommand():
 		exchange.WorkloadList(*exOrg, *exUserPw, *exWorkload, !*exWorkloadLong)
 	case exWorkloadPublishCmd.FullCommand():
-		exchange.WorkloadPublish(*exOrg, *exUserPw, *exWorkJsonFile, *exWorkPrivKeyFile, *exWorkPubPubKeyFile)
+		exchange.WorkloadPublish(*exOrg, *exUserPw, *exWorkJsonFile, *exWorkPrivKeyFile, *exWorkPubPubKeyFile, *exWorkPubDontTouchImage)
 	case exWorkloadVerifyCmd.FullCommand():
 		exchange.WorkloadVerify(*exOrg, *exUserPw, *exVerWorkload, *exWorkPubKeyFile)
 	case exWorkDelCmd.FullCommand():
@@ -451,7 +453,7 @@ Environment Variables:
 	case devWorkloadValidateCmd.FullCommand():
 		dev.WorkloadValidate(*devHomeDirectory, *devWorkloadVerifyUserInputFile)
 	case devWorkloadDeployCmd.FullCommand():
-		dev.WorkloadDeploy(*devHomeDirectory, *devWorkloadKeyfile, *devWorkloadDeployCmdUserPw)
+		dev.WorkloadDeploy(*devHomeDirectory, *devWorkloadKeyfile, *devWorkloadDeployCmdUserPw, *devWorkPubDontTouchImage)
 	case devMicroserviceNewCmd.FullCommand():
 		dev.MicroserviceNew(*devHomeDirectory, *devMicroserviceNewCmdOrg)
 	case devMicroserviceStartTestCmd.FullCommand():

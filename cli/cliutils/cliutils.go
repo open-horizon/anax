@@ -15,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	dockerclient "github.com/fsouza/go-dockerclient"
+	"errors"
 )
 
 const (
@@ -115,6 +117,56 @@ func SetWhetherUsingApiKey(creds string) {
 		Opts.UsingApiKey = true
 		Verbose("Using API key")
 	}
+}
+
+// GetDockerAuth finds the docker credentials for this registry in ~/.docker/config.json
+func GetDockerAuth(domain string) (auth dockerclient.AuthConfiguration, err error) {
+	var auths *dockerclient.AuthConfigurations
+	if auths, err = dockerclient.NewAuthConfigurationsFromDockerCfg(); err != nil {
+		return
+	}
+
+	for domainName, creds := range auths.Configs {
+		Verbose("docker auth domainName: %v", domainName)
+		if (domainName == domain) || (domain == "" && strings.Contains(domainName, "docker.io/")) {
+			auth = creds
+			return
+		}
+	}
+
+	err = errors.New(fmt.Sprintf("unable to find docker credentials for %v", domain))
+	return
+}
+
+// PushDockerImage pushes the image to its docker registry, outputting progress to stdout.
+// It returns the repo digest. If there is an error, it prints the error and exits.
+func PushDockerImage(domain, path, tag string) (digest string) {
+	if domain == "" {
+		fmt.Printf("Pushing %v:%v...\n", path, tag)
+	} else {
+		fmt.Printf("Pushing %v/%v:%v...\n", domain, path, tag)
+	}
+
+	// Get the docker client object for this registry, and set the push options and creds
+	var client *dockerclient.Client
+	var err error
+	if client, err = dockerclient.NewClient(domain); err != nil {
+		Fatal(CLI_GENERAL_ERROR, "unable to create docker client for %v: %v", domain, err)
+	}
+	opts := dockerclient.PushImageOptions{Registry:domain, Name:path, Tag:tag, OutputStream:os.Stdout}	// do not set InactivityTimeout because the user will ctrl-c if they think something is wrong
+
+	var auth dockerclient.AuthConfiguration
+	if auth, err = GetDockerAuth(domain); err != nil {
+		Fatal(CLI_INPUT_ERROR, "could not get docker credentials from ~/.docker/config.json: %v. Maybe you need to run 'docker login ...' to provide credentials for the image registry.", err)
+	}
+
+	// Now actually push the image
+	if err = client.PushImage(opts, auth); err != nil {
+		Fatal(CLI_GENERAL_ERROR, "unable to push docker image %v to %v: %v", path+":"+tag, domain, err)
+	}
+
+	digest = "sha256:abcdefg"	//todo: use docker inspect to get digest
+	return
 }
 
 // OrgAndCreds prepends the org to creds (separated by /) unless creds already has an org prepended

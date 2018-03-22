@@ -194,7 +194,7 @@ func WorkloadStopTest(homeDirectory string) {
 	}
 
 	// Locate the containers that match the services in our deployment config.
-	for serviceName, _ := range dc.Services {
+	for serviceName := range dc.Services {
 		dcService := docker.ListContainersOptions{
 			All: true,
 			Filters: map[string][]string{
@@ -246,7 +246,7 @@ func WorkloadValidate(homeDirectory string, userInputFile string) {
 	fmt.Printf("Workload project %v verified.\n", dir)
 }
 
-func WorkloadDeploy(homeDirectory string, keyFile string, userCreds string) {
+func WorkloadDeploy(homeDirectory string, keyFile string, userCreds string, dontTouchImage bool) {
 
 	// Validate the inputs
 	if keyFile == "" {
@@ -287,7 +287,7 @@ func WorkloadDeploy(homeDirectory string, keyFile string, userCreds string) {
 	cliutils.SetWhetherUsingApiKey(userCreds)
 
 	// Invoke the re-usable part of hzn exchange workload publish to actually do the publish.
-	workloadDef.SignAndPublish(workloadDef.Org, userCreds, keyFile)
+	workloadDef.SignAndPublish(workloadDef.Org, userCreds, keyFile, dontTouchImage)
 
 	fmt.Printf("Workload project %v deployed.\n", dir)
 }
