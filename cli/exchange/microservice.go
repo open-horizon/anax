@@ -274,7 +274,7 @@ func CheckTorrentField(torrent string, index int) {
 }
 
 // MicroservicePublish signs the MS def and puts it in the exchange
-func MicroservicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string) {
+func MicroservicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the MS metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
@@ -287,7 +287,7 @@ func MicroservicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath 
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", microFile.Org, org)
 	}
 
-	exchId := microFile.SignAndPublish(org, userPw, keyFilePath)
+	exchId := microFile.SignAndPublish(org, userPw, keyFilePath, dontTouchImage)
 
 	// Store the public key in the exchange, if they gave it to us
 	if pubKeyFilePath != "" {
@@ -300,7 +300,7 @@ func MicroservicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath 
 }
 
 // Sign and publish the microservice definition. This is a function that is reusable across different hzn commands.
-func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) (exchId string) {
+func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string, dontTouchImage bool) (exchId string) {
 	microInput := MicroserviceInput{Label: mf.Label, Description: mf.Description, Public: mf.Public, SpecRef: mf.SpecRef, Version: mf.Version, Arch: mf.Arch, Sharable: mf.Sharable, DownloadURL: mf.DownloadURL, MatchHardware: mf.MatchHardware, UserInputs: mf.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(mf.Workloads))}
 
 	// Loop thru the workloads array, sign the deployment strings, and copy all 3 fields to microInput
@@ -320,6 +320,9 @@ func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) (exc
 			microInput.Workloads[i].Deployment = ""
 			microInput.Workloads[i].DeploymentSignature = ""
 		} else {
+			// Go thru the docker image paths to push/get sha256 tag and/or gather list of images that user needs to push
+			imageList = SignImagesFromDeploymentField(depConfig, dontTouchImage)
+
 			fmt.Printf("Signing deployment string %d\n", i+1)
 			deployment, err = json.Marshal(depConfig)
 			if err != nil {
@@ -337,9 +340,6 @@ func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) (exc
 		}
 
 		microInput.Workloads[i].Torrent = mf.Workloads[i].Torrent
-
-		// Gather the docker image paths to instruct the user to docker push at the end
-		imageList = SignImagesFromDeploymentField(depConfig, false)	//todo: change
 
 		CheckTorrentField(microInput.Workloads[i].Torrent, i)
 	}

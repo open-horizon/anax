@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"github.com/open-horizon/anax/cutil"
+	dockerclient "github.com/fsouza/go-dockerclient"
 )
 
 // This can't be a const because a map literal isn't a const in go
@@ -141,7 +143,7 @@ func ServiceList(org, userPw, service string, namesOnly bool) {
 }
 
 // ServicePublish signs the MS def and puts it in the exchange
-func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string) {
+func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the service metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
@@ -153,7 +155,7 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 	if svcFile.Org != "" && svcFile.Org != org {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", svcFile.Org, org)
 	}
-	exchId := svcFile.SignAndPublish(org, userPw, keyFilePath)
+	exchId := svcFile.SignAndPublish(org, userPw, keyFilePath, dontTouchImage)
 
 	// Store the public key in the exchange, if they gave it to us
 	if pubKeyFilePath != "" {
@@ -181,13 +183,14 @@ func CheckDeploymentService(svcName string, depSvc map[string]interface{}) {
 }
 
 // AppendImagesFromDeploymentMap finds the images in this deployment structure (if any) and appends them to the imageList
-func AppendImagesFromDeploymentMap(deployment map[string]interface{}, imageList []string) []string {
+func SignImagesFromDeploymentMap(deployment map[string]interface{}, dontTouchImage bool) (imageList []string) {
 	// The deployment string should include: {"services":{"cpu2wiotp":{"image":"openhorizon/example_wl_x86_cpu2wiotp:1.1.2",...}}}
 	// Since we have to parse the deployment structure anyway, we do some validity checking while we are at it
 	// Note: in the code below we are exploiting the golang map feature that it returns the zero value when a key does not exist in the map.
 	if len(deployment) == 0 {
 		return imageList // an empty deployment structure is valid
 	}
+	var client *dockerclient.Client
 	switch services := deployment["services"].(type) {
 	case map[string]interface{}:
 		for k, svc := range services {
@@ -196,8 +199,27 @@ func AppendImagesFromDeploymentMap(deployment map[string]interface{}, imageList 
 				CheckDeploymentService(k, s)
 				switch image := s["image"].(type) {
 				case string:
-					if image != "" {
-						imageList = append(imageList, image)
+					domain, path, tag, digest := cutil.ParseDockerImagePath(image)
+					cliutils.Verbose("%s parsed into: domain=%s, path=%s, tag=%s", image, domain, path, tag)
+					if path == "" {
+						fmt.Printf("Warning: could not parse image path '%v'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.\n", image)
+					} else if digest == "" {
+						// This image has a tag, or default tag
+						if dontTouchImage {
+							imageList = append(imageList, image)
+						} else {
+							// Push it, get the repo digest, and modify the imagePath to use the digest
+							if client == nil {
+								client = cliutils.NewDockerClient()
+							}
+							digest := cliutils.PushDockerImage(client, domain, path, tag)	// this will error out if the push fails or can't get the digest
+							if domain != "" {
+								domain = domain + "/"
+							}
+							newImage := domain + path + "@" + digest
+							fmt.Printf("Using '%s' in 'deployment' field instead of '%s'\n", newImage, image)
+							s["image"] = newImage
+						}
 					}
 				}
 			default:
@@ -207,16 +229,18 @@ func AppendImagesFromDeploymentMap(deployment map[string]interface{}, imageList 
 	default:
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the 'deployment' field must contain the 'services' field, whose value must be a json object (with strings as the keys)")
 	}
-	return imageList
+	return
 }
 
 // Sign and publish the service definition. This is a function that is reusable across different hzn commands.
-func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath string) (exchId string) {
+func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath string, dontTouchImage bool) (exchId string) {
 	svcInput := ServiceExch{Label: sf.Label, Description: sf.Description, Public: sf.Public, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs, Pkg: sf.Pkg}
+
+	// Go thru the docker image paths to push/get sha256 tag and/or gather list of images that user needs to push
+	imageList := SignImagesFromDeploymentMap(sf.Deployment, dontTouchImage)
 
 	// Marshal and sign the deployment string
 	fmt.Println("Signing service...")
-	var imageList []string
 	//cliutils.Verbose("signing deployment string %d", i+1)
 	// Convert the deployment field from map[string]interface{} to []byte (i think treating it as type DeploymentConfig is too inflexible for future additions)
 	deployment, err := json.Marshal(sf.Deployment)
@@ -234,7 +258,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath string) (exchId s
 	}
 
 	// Gather the docker image paths to instruct the user to docker push at the end
-	imageList = AppendImagesFromDeploymentMap(sf.Deployment, imageList)
+	//imageList = AppendImagesFromDeploymentMap(sf.Deployment, imageList)
 
 	//todo: when we support something in the Pkg map, process it here
 
