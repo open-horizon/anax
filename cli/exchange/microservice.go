@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	dockerclient "github.com/fsouza/go-dockerclient"
 )
 
 type DeploymentConfig struct {
@@ -215,6 +216,7 @@ func SignImagesFromDeploymentField(deployment *DeploymentConfig, dontTouchImage 
 	if deployment == nil || deployment.Services == nil {
 		return
 	}
+	var client *dockerclient.Client
 
 	for svcName := range deployment.Services {	// iterate over the keys of the map so we can change the elements if necessary
 		if deployment.Services[svcName] == nil { continue }
@@ -224,20 +226,25 @@ func SignImagesFromDeploymentField(deployment *DeploymentConfig, dontTouchImage 
 			continue
 		}
 
-		domain, path, tag, _ := cutil.ParseDockerImagePath(imagePath)
+		domain, path, tag, digest := cutil.ParseDockerImagePath(imagePath)
 		cliutils.Verbose("%s parsed into: domain=%s, path=%s, tag=%s", imagePath, domain, path, tag)
 		if path == "" {
 			fmt.Printf("Warning: could not parse image path '%v'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.\n", imagePath)
-		} else if tag != "" {
+		} else if digest == "" {
+			// This image has a tag, or default tag
 			if dontTouchImage {
 				imageList = append(imageList, imagePath) // tell them they have to push it themselves
 			} else {
 				// Push it, get the repo digest, and modify the imagePath to use the digest
-				digest := cliutils.PushDockerImage(domain, path, tag)
+				if client == nil {
+					client = cliutils.NewDockerClient()
+				}
+				digest := cliutils.PushDockerImage(client, domain, path, tag)	// this will error out if the push fails or can't get the digest
 				if domain != "" {
 					domain = domain + "/"
 				}
 				newImagePath := domain + path + "@" + digest
+				fmt.Printf("Using '%s' in 'deployment' field instead of '%s'\n", newImagePath, imagePath)
 				deployment.Services[svcName].Image = newImagePath
 			}
 		}
