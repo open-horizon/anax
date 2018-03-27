@@ -303,7 +303,7 @@ func Test_APISpecification_notsupports1(t *testing.T) {
 	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
 		if con_as = create_APISpecification(con1, t); con_as != nil {
 			if err := (*prod_as).Supports(*con_as); err == nil {
-				t.Errorf("Error: %v does not support %v\n", con1, prod1, err)
+				t.Errorf("Error: %v does not support %v\n", con1, prod1)
 			}
 		}
 	}
@@ -318,7 +318,7 @@ func Test_APISpecification_notsupports2(t *testing.T) {
 	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
 		if con_as = create_APISpecification(con1, t); con_as != nil {
 			if err := (*prod_as).Supports(*con_as); err == nil {
-				t.Errorf("Error: %v does not support %v\n", con1, prod1, err)
+				t.Errorf("Error: %v does not support %v\n", con1, prod1)
 			}
 		}
 	}
@@ -333,7 +333,7 @@ func Test_APISpecification_notsupports3(t *testing.T) {
 	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
 		if con_as = create_APISpecification(con1, t); con_as != nil {
 			if err := (*prod_as).Supports(*con_as); err == nil {
-				t.Errorf("Error: %v does not support %v\n", con1, prod1, err)
+				t.Errorf("Error: %v does not support %v\n", con1, prod1)
 			}
 		}
 	}
@@ -348,7 +348,7 @@ func Test_APISpecification_notsupports4(t *testing.T) {
 	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
 		if con_as = create_APISpecification(con1, t); con_as != nil {
 			if err := (*prod_as).Supports(*con_as); err == nil {
-				t.Errorf("Error: %v does not support %v\n", con1, prod1, err)
+				t.Errorf("Error: %v does not support %v\n", con1, prod1)
 			}
 		}
 	}
@@ -363,7 +363,7 @@ func Test_APISpecification_notsupports5(t *testing.T) {
 	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
 		if con_as = create_APISpecification(con1, t); con_as != nil {
 			if err := (*prod_as).Supports(*con_as); err == nil {
-				t.Errorf("Error: %v does not support %v\n", con1, prod1, err)
+				t.Errorf("Error: %v does not support %v\n", con1, prod1)
 			}
 		}
 	}
@@ -378,7 +378,7 @@ func Test_APISpecification_notsupports6(t *testing.T) {
 	if prod_as = create_APISpecification(prod1, t); prod_as != nil {
 		if con_as = create_APISpecification(con1, t); con_as != nil {
 			if err := (*prod_as).Supports(*con_as); err == nil {
-				t.Errorf("Error: %v does not support %v\n", con1, prod1, err)
+				t.Errorf("Error: %v does not support %v\n", con1, prod1)
 			}
 		}
 	}
