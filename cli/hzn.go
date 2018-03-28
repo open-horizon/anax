@@ -125,6 +125,7 @@ Environment Variables:
 	exWorkJsonFile := exWorkloadPublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the workload in the Horizon exchange. See /usr/horizon/samples/workload.json. Specify -f- to read from stdin.").Short('f').Required().String()
 	exWorkPrivKeyFile := exWorkloadPublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the workload. ").Short('k').ExistingFile()
 	exWorkPubPubKeyFile := exWorkloadPublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the workload, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
+	exWorkPubDontTouchImage := exWorkloadPublishCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. This should only be used during development when testing new versions often.").Short('I').Bool()
 	exWorkloadVerifyCmd := exWorkloadCmd.Command("verify", "Verify the signatures of a workload resource in the Horizon Exchange.")
 	exVerWorkload := exWorkloadVerifyCmd.Arg("workload", "The workload to verify.").Required().String()
 	exWorkPubKeyFile := exWorkloadVerifyCmd.Flag("public-key-file", "The path of a pem public key file to be used to verify the workload. ").Short('k').Required().ExistingFile()
@@ -146,6 +147,7 @@ Environment Variables:
 	exMicroJsonFile := exMicroservicePublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the microservice in the Horizon exchange. See /usr/horizon/samples/microservice.json. Specify -f- to read from stdin.").Short('f').Required().String()
 	exMicroKeyFile := exMicroservicePublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the microservice. ").Short('k').ExistingFile()
 	exMicroPubPubKeyFile := exMicroservicePublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the microservice, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
+	exMicroPubDontTouchImage := exMicroservicePublishCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. This should only be used during development when testing new versions often.").Short('I').Bool()
 	exMicroVerifyCmd := exMicroserviceCmd.Command("verify", "Verify the signatures of a microservice resource in the Horizon Exchange.")
 	exVerMicro := exMicroVerifyCmd.Arg("microservice", "The microservice to verify.").Required().String()
 	exMicroPubKeyFile := exMicroVerifyCmd.Flag("public-key-file", "The path of a pem public key file to be used to verify the microservice. ").Short('k').Required().ExistingFile()
@@ -167,6 +169,7 @@ Environment Variables:
 	exSvcJsonFile := exServicePublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the service in the Horizon exchange. See /usr/horizon/samples/service.json. Specify -f- to read from stdin.").Short('f').Required().String()
 	exSvcPrivKeyFile := exServicePublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the service. ").Short('k').ExistingFile()
 	exSvcPubPubKeyFile := exServicePublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
+	exSvcPubDontTouchImage := exServicePublishCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. This should only be used during development when testing new versions often.").Short('I').Bool()
 	exServiceVerifyCmd := exServiceCmd.Command("verify", "Verify the signatures of a service resource in the Horizon Exchange.")
 	exVerService := exServiceVerifyCmd.Arg("service", "The service to verify.").Required().String()
 	exSvcPubKeyFile := exServiceVerifyCmd.Flag("public-key-file", "The path of a pem public key file to be used to verify the service. ").Short('k').Required().ExistingFile()
@@ -264,6 +267,8 @@ Environment Variables:
 	devWorkloadDeployCmd := devWorkloadCmd.Command("publish", "Publish a workload to a Horizon Exchange.")
 	devWorkloadDeployCmdUserPw := devWorkloadDeployCmd.Flag("user-pw", "Horizon Exchange user credentials to create exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
 	devWorkloadKeyfile := devWorkloadDeployCmd.Flag("keyFile", "File containing a private key used to sign the deployment configuration.").Short('k').String()
+	devWorkPubKeyFile := devWorkloadDeployCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the workload, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
+	devWorkPubDontTouchImage := devWorkloadDeployCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 values. This should only be used during development when testing new versions often.").Short('I').Bool()
 	devWorkloadValidateCmd := devWorkloadCmd.Command("verify", "Validate the project for completeness and schema compliance.")
 	devWorkloadVerifyUserInputFile := devWorkloadValidateCmd.Flag("userInputFile", "File containing user input values for verification of a project.").Short('f').String()
 
@@ -276,6 +281,8 @@ Environment Variables:
 	devMicroserviceDeployCmd := devMicroserviceCmd.Command("publish", "Publish a microservice to a Horizon Exchange.")
 	devMicroserviceDeployCmdUserPw := devMicroserviceDeployCmd.Flag("user-pw", "Horizon Exchange user credentials to create exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
 	devMicroserviceKeyfile := devMicroserviceDeployCmd.Flag("keyFile", "File containing a private key used to sign the deployment configuration.").Short('k').String()
+	devMicroservicePubKeyFile := devMicroserviceDeployCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the microservice, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
+	devMicroservicePubDontTouchImage := devMicroserviceDeployCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. This should only be used during development when testing new versions often.").Short('I').Bool()
 	devMicroserviceValidateCmd := devMicroserviceCmd.Command("verify", "Validate the project for completeness and schema compliance.")
 	devMicroserviceVerifyUserInputFile := devMicroserviceValidateCmd.Flag("userInputFile", "File containing user input values for verification of a project.").Short('f').String()
 
@@ -373,7 +380,7 @@ Environment Variables:
 	case exWorkloadListCmd.FullCommand():
 		exchange.WorkloadList(*exOrg, *exUserPw, *exWorkload, !*exWorkloadLong)
 	case exWorkloadPublishCmd.FullCommand():
-		exchange.WorkloadPublish(*exOrg, *exUserPw, *exWorkJsonFile, *exWorkPrivKeyFile, *exWorkPubPubKeyFile)
+		exchange.WorkloadPublish(*exOrg, *exUserPw, *exWorkJsonFile, *exWorkPrivKeyFile, *exWorkPubPubKeyFile, *exWorkPubDontTouchImage)
 	case exWorkloadVerifyCmd.FullCommand():
 		exchange.WorkloadVerify(*exOrg, *exUserPw, *exVerWorkload, *exWorkPubKeyFile)
 	case exWorkDelCmd.FullCommand():
@@ -385,7 +392,7 @@ Environment Variables:
 	case exMicroserviceListCmd.FullCommand():
 		exchange.MicroserviceList(*exOrg, *exUserPw, *exMicroservice, !*exMicroserviceLong)
 	case exMicroservicePublishCmd.FullCommand():
-		exchange.MicroservicePublish(*exOrg, *exUserPw, *exMicroJsonFile, *exMicroKeyFile, *exMicroPubPubKeyFile)
+		exchange.MicroservicePublish(*exOrg, *exUserPw, *exMicroJsonFile, *exMicroKeyFile, *exMicroPubPubKeyFile, *exMicroPubDontTouchImage)
 	case exMicroVerifyCmd.FullCommand():
 		exchange.MicroserviceVerify(*exOrg, *exUserPw, *exVerMicro, *exMicroPubKeyFile)
 	case exMicroDelCmd.FullCommand():
@@ -397,7 +404,7 @@ Environment Variables:
 	case exServiceListCmd.FullCommand():
 		exchange.ServiceList(*exOrg, *exUserPw, *exService, !*exServiceLong)
 	case exServicePublishCmd.FullCommand():
-		exchange.ServicePublish(*exOrg, *exUserPw, *exSvcJsonFile, *exSvcPrivKeyFile, *exSvcPubPubKeyFile)
+		exchange.ServicePublish(*exOrg, *exUserPw, *exSvcJsonFile, *exSvcPrivKeyFile, *exSvcPubPubKeyFile, *exSvcPubDontTouchImage)
 	case exServiceVerifyCmd.FullCommand():
 		exchange.ServiceVerify(*exOrg, *exUserPw, *exVerService, *exSvcPubKeyFile)
 	case exSvcDelCmd.FullCommand():
@@ -451,7 +458,7 @@ Environment Variables:
 	case devWorkloadValidateCmd.FullCommand():
 		dev.WorkloadValidate(*devHomeDirectory, *devWorkloadVerifyUserInputFile)
 	case devWorkloadDeployCmd.FullCommand():
-		dev.WorkloadDeploy(*devHomeDirectory, *devWorkloadKeyfile, *devWorkloadDeployCmdUserPw)
+		dev.WorkloadDeploy(*devHomeDirectory, *devWorkloadKeyfile, *devWorkPubKeyFile, *devWorkloadDeployCmdUserPw, *devWorkPubDontTouchImage)
 	case devMicroserviceNewCmd.FullCommand():
 		dev.MicroserviceNew(*devHomeDirectory, *devMicroserviceNewCmdOrg)
 	case devMicroserviceStartTestCmd.FullCommand():
@@ -461,7 +468,7 @@ Environment Variables:
 	case devMicroserviceValidateCmd.FullCommand():
 		dev.MicroserviceValidate(*devHomeDirectory, *devMicroserviceVerifyUserInputFile)
 	case devMicroserviceDeployCmd.FullCommand():
-		dev.MicroserviceDeploy(*devHomeDirectory, *devMicroserviceKeyfile, *devMicroserviceDeployCmdUserPw)
+		dev.MicroserviceDeploy(*devHomeDirectory, *devMicroserviceKeyfile, *devMicroservicePubKeyFile, *devMicroserviceDeployCmdUserPw, *devMicroservicePubDontTouchImage)
 	case devDependencyFetchCmd.FullCommand():
 		dev.DependencyFetch(*devHomeDirectory, *devDependencyCmdProject, *devDependencyCmdSpecRef, *devDependencyCmdOrg, *devDependencyCmdVersion, *devDependencyCmdArch, *devDependencyFetchCmdUserPw, *devDependencyFetchCmdKeyFile, *devDependencyFetchCmdUserInputFile)
 	case devDependencyListCmd.FullCommand():

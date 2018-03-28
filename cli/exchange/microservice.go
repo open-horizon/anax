@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/containermessage"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/rsapss-tool/sign"
 	"github.com/open-horizon/rsapss-tool/verify"
@@ -204,17 +206,52 @@ func MicroserviceList(org string, userPw string, microservice string, namesOnly 
 	}
 }
 
-func AppendImagesFromDeploymentField(deployment *DeploymentConfig, imageList []string) []string {
-	// The deployment string should include: {"services":{"cpu2wiotp":{"image":"openhorizon/example_wl_x86_cpu2wiotp:1.1.2",...}}}
+/* SignImagesFromDeploymentField "signs" and pushes the docker images with these rules:
+- if the tag is a regular tag and !dontTouchImage, it pushes the image to the registry, gets the repo digest value, and changes the tag to the digest value (this is the "signing" since it gets signed as part of the deployment string)
+- if the tag is already the repo digest value, then do nothing (it must have already been pushed by the user to get the digest)
+- if the tag is a regular tag and dontTouchImage set, add this image path to the returned list that the user needs to push themselves
+*/
+func SignImagesFromDeploymentField(deployment *DeploymentConfig, dontTouchImage bool) (imageList []string) {
 	if deployment == nil || deployment.Services == nil {
-		return imageList
+		return
 	}
-	for _, s := range deployment.Services {
-		if s.Image != "" {
-			imageList = append(imageList, s.Image)
+	var client *dockerclient.Client
+
+	for svcName := range deployment.Services { // iterate over the keys of the map so we can change the elements if necessary
+		if deployment.Services[svcName] == nil {
+			continue
 		}
+		imagePath := deployment.Services[svcName].Image
+		if imagePath == "" {
+			fmt.Printf("Warning: no docker imagePath path specified in the 'deployment' field for service '%v'\n", svcName)
+			continue
+		}
+
+		domain, path, tag, digest := cutil.ParseDockerImagePath(imagePath)
+		cliutils.Verbose("%s parsed into: domain=%s, path=%s, tag=%s", imagePath, domain, path, tag)
+		if path == "" {
+			fmt.Printf("Warning: could not parse image path '%v'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.\n", imagePath)
+		} else if digest == "" {
+			// This image has a tag, or default tag
+			if dontTouchImage {
+				imageList = append(imageList, imagePath) // tell them they have to push it themselves
+			} else {
+				// Push it, get the repo digest, and modify the imagePath to use the digest
+				if client == nil {
+					client = cliutils.NewDockerClient()
+				}
+				digest := cliutils.PushDockerImage(client, domain, path, tag) // this will error out if the push fails or can't get the digest
+				if domain != "" {
+					domain = domain + "/"
+				}
+				newImagePath := domain + path + "@" + digest
+				fmt.Printf("Using '%s' in 'deployment' field instead of '%s'\n", newImagePath, imagePath)
+				deployment.Services[svcName].Image = newImagePath
+			}
+		}
+		// else this is already an imagePath path with the repo digest, do not have to do anything (it must have already been pushed)
 	}
-	return imageList
+	return
 }
 
 func CheckTorrentField(torrent string, index int) {
@@ -237,7 +274,7 @@ func CheckTorrentField(torrent string, index int) {
 }
 
 // MicroservicePublish signs the MS def and puts it in the exchange
-func MicroservicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string) {
+func MicroservicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the MS metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
@@ -250,20 +287,11 @@ func MicroservicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath 
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", microFile.Org, org)
 	}
 
-	exchId := microFile.SignAndPublish(org, userPw, keyFilePath)
-
-	// Store the public key in the exchange, if they gave it to us
-	if pubKeyFilePath != "" {
-		// Note: the CLI framework already verified the file exists
-		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
-		baseName := filepath.Base(pubKeyFilePath)
-		fmt.Printf("Storing %s with the microservice in the exchange...\n", baseName)
-		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
-	}
+	microFile.SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath, dontTouchImage)
 }
 
 // Sign and publish the microservice definition. This is a function that is reusable across different hzn commands.
-func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) (exchId string) {
+func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath string, dontTouchImage bool) {
 	microInput := MicroserviceInput{Label: mf.Label, Description: mf.Description, Public: mf.Public, SpecRef: mf.SpecRef, Version: mf.Version, Arch: mf.Arch, Sharable: mf.Sharable, DownloadURL: mf.DownloadURL, MatchHardware: mf.MatchHardware, UserInputs: mf.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(mf.Workloads))}
 
 	// Loop thru the workloads array, sign the deployment strings, and copy all 3 fields to microInput
@@ -283,6 +311,9 @@ func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) (exc
 			microInput.Workloads[i].Deployment = ""
 			microInput.Workloads[i].DeploymentSignature = ""
 		} else {
+			// Go thru the docker image paths to push/get sha256 tag and/or gather list of images that user needs to push
+			imageList = SignImagesFromDeploymentField(depConfig, dontTouchImage)
+
 			fmt.Printf("Signing deployment string %d\n", i+1)
 			deployment, err = json.Marshal(depConfig)
 			if err != nil {
@@ -301,14 +332,11 @@ func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) (exc
 
 		microInput.Workloads[i].Torrent = mf.Workloads[i].Torrent
 
-		// Gather the docker image paths to instruct the user to docker push at the end
-		imageList = AppendImagesFromDeploymentField(depConfig, imageList)
-
 		CheckTorrentField(microInput.Workloads[i].Torrent, i)
 	}
 
 	// Create or update resource in the exchange
-	exchId = cliutils.FormExchangeId(microInput.SpecRef, microInput.Version, microInput.Arch)
+	exchId := cliutils.FormExchangeId(microInput.SpecRef, microInput.Version, microInput.Arch)
 	var output string
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 200 {
@@ -319,6 +347,15 @@ func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string) (exc
 		// MS not there, create it
 		fmt.Printf("Creating %s in the exchange...\n", exchId)
 		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices", cliutils.OrgAndCreds(org, userPw), []int{201}, microInput)
+	}
+
+	// Store the public key in the exchange, if they gave it to us
+	if pubKeyFilePath != "" {
+		// Note: the CLI framework already verified the file exists
+		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
+		baseName := filepath.Base(pubKeyFilePath)
+		fmt.Printf("Storing %s with the microservice in the exchange...\n", baseName)
+		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
 	}
 
 	// Tell them to push the images to the docker registry

@@ -133,7 +133,7 @@ func MicroserviceValidate(homeDirectory string, userInputFile string) {
 	fmt.Printf("Microservice project %v verified.\n", dir)
 }
 
-func MicroserviceDeploy(homeDirectory string, keyFile string, userCreds string) {
+func MicroserviceDeploy(homeDirectory string, keyFile string, pubKeyFilePath string, userCreds string, dontTouchImage bool) {
 
 	// Validate the inputs
 	if keyFile == "" {
@@ -175,7 +175,7 @@ func MicroserviceDeploy(homeDirectory string, keyFile string, userCreds string) 
 	cliutils.SetWhetherUsingApiKey(userCreds)
 
 	// Invoke the re-usable part of hzn exchange microservice publish to actually do the publish.
-	microserviceDef.SignAndPublish(microserviceDef.Org, userCreds, keyFile)
+	microserviceDef.SignAndPublish(microserviceDef.Org, userCreds, keyFile, pubKeyFilePath, dontTouchImage)
 
 	fmt.Printf("Microservice project %v deployed.\n", dir)
 }

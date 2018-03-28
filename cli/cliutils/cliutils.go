@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
+	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/exchange"
 	"io"
@@ -115,6 +117,72 @@ func SetWhetherUsingApiKey(creds string) {
 		Opts.UsingApiKey = true
 		Verbose("Using API key")
 	}
+}
+
+func NewDockerClient() (client *dockerclient.Client) {
+	var err error
+	dockerEndpoint := "unix:///var/run/docker.sock" // if we need this to be user configurable someday, we can get it from an env var
+	if client, err = dockerclient.NewClient(dockerEndpoint); err != nil {
+		Fatal(CLI_GENERAL_ERROR, "unable to create docker client: %v", err)
+	}
+	return
+}
+
+// GetDockerAuth finds the docker credentials for this registry in ~/.docker/config.json
+func GetDockerAuth(domain string) (auth dockerclient.AuthConfiguration, err error) {
+	var auths *dockerclient.AuthConfigurations
+	if auths, err = dockerclient.NewAuthConfigurationsFromDockerCfg(); err != nil {
+		return
+	}
+
+	for domainName, creds := range auths.Configs {
+		Verbose("docker auth domainName: %v", domainName)
+		if (domainName == domain) || (domain == "" && strings.Contains(domainName, "docker.io/")) {
+			auth = creds
+			return
+		}
+	}
+
+	err = errors.New(fmt.Sprintf("unable to find docker credentials for %v", domain))
+	return
+}
+
+// PushDockerImage pushes the image to its docker registry, outputting progress to stdout. It returns the repo digest. If there is an error, it prints the error and exits.
+// We don't have to handle the case of a digest in the image name, because in that case we assume the image has already been pushed (that is the way to get the digest).
+func PushDockerImage(client *dockerclient.Client, domain, path, tag string) (digest string) {
+	var repository string // for PushImageOptions later on
+	if domain == "" {
+		repository = path
+	} else {
+		repository = domain + "/" + path
+	}
+	fmt.Printf("Pushing %v:%v...\n", repository, tag) // Note: tag can be the empty string
+
+	// Get the docker client object for this registry, and set the push options and creds
+	var buf bytes.Buffer
+	multiWriter := io.MultiWriter(os.Stdout, &buf)                                               // we want output of the push to go 2 places: stdout (for the user to see progess) and a variable (so we can get the digest value)
+	opts := dockerclient.PushImageOptions{Name: repository, Tag: tag, OutputStream: multiWriter} // do not set InactivityTimeout because the user will ctrl-c if they think something is wrong
+
+	var auth dockerclient.AuthConfiguration
+	var err error
+	if auth, err = GetDockerAuth(domain); err != nil {
+		Fatal(CLI_INPUT_ERROR, "could not get docker credentials from ~/.docker/config.json: %v. Maybe you need to run 'docker login ...' to provide credentials for the image registry.", err)
+	}
+
+	// Now actually push the image
+	if err = client.PushImage(opts, auth); err != nil {
+		Fatal(CLI_GENERAL_ERROR, "unable to push docker image %v: %v", repository+":"+tag, err)
+	}
+
+	// Get the digest value that docker calculated when pushing the image
+	//fmt.Printf("DEBUG: docker push output is: %s\n", buf.String())
+	reDigest := regexp.MustCompile(`\s+digest:\s+(\S+)\s+size:`)
+	var matches []string
+	if matches = reDigest.FindStringSubmatch(buf.String()); len(matches) < 2 {
+		Fatal(CLI_GENERAL_ERROR, "could not find the image digest in the docker push output")
+	}
+	digest = matches[1]
+	return
 }
 
 // OrgAndCreds prepends the org to creds (separated by /) unless creds already has an org prepended
