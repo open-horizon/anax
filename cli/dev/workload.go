@@ -246,7 +246,7 @@ func WorkloadValidate(homeDirectory string, userInputFile string) {
 	fmt.Printf("Workload project %v verified.\n", dir)
 }
 
-func WorkloadDeploy(homeDirectory string, keyFile string, userCreds string, dontTouchImage bool) {
+func WorkloadDeploy(homeDirectory string, keyFile string, pubKeyFilePath string, userCreds string, dontTouchImage bool) {
 
 	// Validate the inputs
 	if keyFile == "" {
@@ -287,7 +287,7 @@ func WorkloadDeploy(homeDirectory string, keyFile string, userCreds string, dont
 	cliutils.SetWhetherUsingApiKey(userCreds)
 
 	// Invoke the re-usable part of hzn exchange workload publish to actually do the publish.
-	workloadDef.SignAndPublish(workloadDef.Org, userCreds, keyFile, dontTouchImage)
+	workloadDef.SignAndPublish(workloadDef.Org, userCreds, keyFile, pubKeyFilePath, dontTouchImage)
 
 	fmt.Printf("Workload project %v deployed.\n", dir)
 }

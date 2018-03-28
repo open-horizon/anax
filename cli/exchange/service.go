@@ -155,16 +155,7 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 	if svcFile.Org != "" && svcFile.Org != org {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", svcFile.Org, org)
 	}
-	exchId := svcFile.SignAndPublish(org, userPw, keyFilePath, dontTouchImage)
-
-	// Store the public key in the exchange, if they gave it to us
-	if pubKeyFilePath != "" {
-		// Note: the CLI framesvc already verified the file exists
-		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
-		baseName := filepath.Base(pubKeyFilePath)
-		fmt.Printf("Storing %s with the service in the exchange...\n", baseName)
-		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
-	}
+	svcFile.SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath, dontTouchImage)
 }
 
 // CheckDeploymentService verifies it has the required 'image' key, and checks for keys we don't recognize.
@@ -233,7 +224,7 @@ func SignImagesFromDeploymentMap(deployment map[string]interface{}, dontTouchIma
 }
 
 // Sign and publish the service definition. This is a function that is reusable across different hzn commands.
-func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath string, dontTouchImage bool) (exchId string) {
+func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath string, dontTouchImage bool) {
 	svcInput := ServiceExch{Label: sf.Label, Description: sf.Description, Public: sf.Public, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs, Pkg: sf.Pkg}
 
 	// Go thru the docker image paths to push/get sha256 tag and/or gather list of images that user needs to push
@@ -263,7 +254,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath string, dontTouch
 	//todo: when we support something in the Pkg map, process it here
 
 	// Create or update resource in the exchange
-	exchId = cliutils.FormExchangeId(svcInput.URL, svcInput.Version, svcInput.Arch)
+	exchId := cliutils.FormExchangeId(svcInput.URL, svcInput.Version, svcInput.Arch)
 	var output string
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 200 {
@@ -274,6 +265,15 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath string, dontTouch
 		// Service not there, create it
 		fmt.Printf("Creating %s in the exchange...\n", exchId)
 		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/services", cliutils.OrgAndCreds(org, userPw), []int{201}, svcInput)
+	}
+
+	// Store the public key in the exchange, if they gave it to us
+	if pubKeyFilePath != "" {
+		// Note: the CLI framesvc already verified the file exists
+		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
+		baseName := filepath.Base(pubKeyFilePath)
+		fmt.Printf("Storing %s with the service in the exchange...\n", baseName)
+		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
 	}
 
 	// Tell the user to push the images to the docker registry

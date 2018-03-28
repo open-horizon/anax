@@ -287,20 +287,11 @@ func MicroservicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath 
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", microFile.Org, org)
 	}
 
-	exchId := microFile.SignAndPublish(org, userPw, keyFilePath, dontTouchImage)
-
-	// Store the public key in the exchange, if they gave it to us
-	if pubKeyFilePath != "" {
-		// Note: the CLI framework already verified the file exists
-		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
-		baseName := filepath.Base(pubKeyFilePath)
-		fmt.Printf("Storing %s with the microservice in the exchange...\n", baseName)
-		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
-	}
+	microFile.SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath, dontTouchImage)
 }
 
 // Sign and publish the microservice definition. This is a function that is reusable across different hzn commands.
-func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string, dontTouchImage bool) (exchId string) {
+func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath string, dontTouchImage bool) {
 	microInput := MicroserviceInput{Label: mf.Label, Description: mf.Description, Public: mf.Public, SpecRef: mf.SpecRef, Version: mf.Version, Arch: mf.Arch, Sharable: mf.Sharable, DownloadURL: mf.DownloadURL, MatchHardware: mf.MatchHardware, UserInputs: mf.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(mf.Workloads))}
 
 	// Loop thru the workloads array, sign the deployment strings, and copy all 3 fields to microInput
@@ -345,7 +336,7 @@ func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string, dont
 	}
 
 	// Create or update resource in the exchange
-	exchId = cliutils.FormExchangeId(microInput.SpecRef, microInput.Version, microInput.Arch)
+	exchId := cliutils.FormExchangeId(microInput.SpecRef, microInput.Version, microInput.Arch)
 	var output string
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 200 {
@@ -356,6 +347,15 @@ func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath string, dont
 		// MS not there, create it
 		fmt.Printf("Creating %s in the exchange...\n", exchId)
 		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices", cliutils.OrgAndCreds(org, userPw), []int{201}, microInput)
+	}
+
+	// Store the public key in the exchange, if they gave it to us
+	if pubKeyFilePath != "" {
+		// Note: the CLI framework already verified the file exists
+		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
+		baseName := filepath.Base(pubKeyFilePath)
+		fmt.Printf("Storing %s with the microservice in the exchange...\n", baseName)
+		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
 	}
 
 	// Tell them to push the images to the docker registry
