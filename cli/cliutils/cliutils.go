@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
+	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/exchange"
 	"io"
@@ -15,8 +17,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	dockerclient "github.com/fsouza/go-dockerclient"
-	"errors"
 )
 
 const (
@@ -121,7 +121,7 @@ func SetWhetherUsingApiKey(creds string) {
 
 func NewDockerClient() (client *dockerclient.Client) {
 	var err error
-	dockerEndpoint := "unix:///var/run/docker.sock"	 // if we need this to be user configurable someday, we can get it from an env var
+	dockerEndpoint := "unix:///var/run/docker.sock" // if we need this to be user configurable someday, we can get it from an env var
 	if client, err = dockerclient.NewClient(dockerEndpoint); err != nil {
 		Fatal(CLI_GENERAL_ERROR, "unable to create docker client: %v", err)
 	}
@@ -150,18 +150,18 @@ func GetDockerAuth(domain string) (auth dockerclient.AuthConfiguration, err erro
 // PushDockerImage pushes the image to its docker registry, outputting progress to stdout. It returns the repo digest. If there is an error, it prints the error and exits.
 // We don't have to handle the case of a digest in the image name, because in that case we assume the image has already been pushed (that is the way to get the digest).
 func PushDockerImage(client *dockerclient.Client, domain, path, tag string) (digest string) {
-	var repository string		// for PushImageOptions later on
+	var repository string // for PushImageOptions later on
 	if domain == "" {
 		repository = path
 	} else {
 		repository = domain + "/" + path
 	}
-	fmt.Printf("Pushing %v:%v...\n", repository, tag)	// Note: tag can be the empty string
+	fmt.Printf("Pushing %v:%v...\n", repository, tag) // Note: tag can be the empty string
 
 	// Get the docker client object for this registry, and set the push options and creds
 	var buf bytes.Buffer
-	multiWriter := io.MultiWriter(os.Stdout, &buf)	// we want output of the push to go 2 places: stdout (for the user to see progess) and a variable (so we can get the digest value)
-	opts := dockerclient.PushImageOptions{Name:repository, Tag:tag, OutputStream:multiWriter}	// do not set InactivityTimeout because the user will ctrl-c if they think something is wrong
+	multiWriter := io.MultiWriter(os.Stdout, &buf)                                               // we want output of the push to go 2 places: stdout (for the user to see progess) and a variable (so we can get the digest value)
+	opts := dockerclient.PushImageOptions{Name: repository, Tag: tag, OutputStream: multiWriter} // do not set InactivityTimeout because the user will ctrl-c if they think something is wrong
 
 	var auth dockerclient.AuthConfiguration
 	var err error
@@ -177,7 +177,7 @@ func PushDockerImage(client *dockerclient.Client, domain, path, tag string) (dig
 	// Get the digest value that docker calculated when pushing the image
 	//fmt.Printf("DEBUG: docker push output is: %s\n", buf.String())
 	reDigest := regexp.MustCompile(`\s+digest:\s+(\S+)\s+size:`)
-	var matches  []string
+	var matches []string
 	if matches = reDigest.FindStringSubmatch(buf.String()); len(matches) < 2 {
 		Fatal(CLI_GENERAL_ERROR, "could not find the image digest in the docker push output")
 	}

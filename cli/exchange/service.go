@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/rsapss-tool/sign"
 	"github.com/open-horizon/rsapss-tool/verify"
 	"net/http"
 	"os"
 	"path/filepath"
-	"github.com/open-horizon/anax/cutil"
-	dockerclient "github.com/fsouza/go-dockerclient"
 )
 
 // This can't be a const because a map literal isn't a const in go
@@ -203,7 +203,7 @@ func SignImagesFromDeploymentMap(deployment map[string]interface{}, dontTouchIma
 							if client == nil {
 								client = cliutils.NewDockerClient()
 							}
-							digest := cliutils.PushDockerImage(client, domain, path, tag)	// this will error out if the push fails or can't get the digest
+							digest := cliutils.PushDockerImage(client, domain, path, tag) // this will error out if the push fails or can't get the digest
 							if domain != "" {
 								domain = domain + "/"
 							}

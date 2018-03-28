@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/open-horizon/anax/cutil"
+	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/containermessage"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/rsapss-tool/sign"
 	"github.com/open-horizon/rsapss-tool/verify"
@@ -14,7 +15,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	dockerclient "github.com/fsouza/go-dockerclient"
 )
 
 type DeploymentConfig struct {
@@ -206,20 +206,21 @@ func MicroserviceList(org string, userPw string, microservice string, namesOnly 
 	}
 }
 
-
 /* SignImagesFromDeploymentField "signs" and pushes the docker images with these rules:
-  - if the tag is a regular tag and !dontTouchImage, it pushes the image to the registry, gets the repo digest value, and changes the tag to the digest value (this is the "signing" since it gets signed as part of the deployment string)
-  - if the tag is already the repo digest value, then do nothing (it must have already been pushed by the user to get the digest)
-  - if the tag is a regular tag and dontTouchImage set, add this image path to the returned list that the user needs to push themselves
- */
+- if the tag is a regular tag and !dontTouchImage, it pushes the image to the registry, gets the repo digest value, and changes the tag to the digest value (this is the "signing" since it gets signed as part of the deployment string)
+- if the tag is already the repo digest value, then do nothing (it must have already been pushed by the user to get the digest)
+- if the tag is a regular tag and dontTouchImage set, add this image path to the returned list that the user needs to push themselves
+*/
 func SignImagesFromDeploymentField(deployment *DeploymentConfig, dontTouchImage bool) (imageList []string) {
 	if deployment == nil || deployment.Services == nil {
 		return
 	}
 	var client *dockerclient.Client
 
-	for svcName := range deployment.Services {	// iterate over the keys of the map so we can change the elements if necessary
-		if deployment.Services[svcName] == nil { continue }
+	for svcName := range deployment.Services { // iterate over the keys of the map so we can change the elements if necessary
+		if deployment.Services[svcName] == nil {
+			continue
+		}
 		imagePath := deployment.Services[svcName].Image
 		if imagePath == "" {
 			fmt.Printf("Warning: no docker imagePath path specified in the 'deployment' field for service '%v'\n", svcName)
@@ -239,7 +240,7 @@ func SignImagesFromDeploymentField(deployment *DeploymentConfig, dontTouchImage 
 				if client == nil {
 					client = cliutils.NewDockerClient()
 				}
-				digest := cliutils.PushDockerImage(client, domain, path, tag)	// this will error out if the push fails or can't get the digest
+				digest := cliutils.PushDockerImage(client, domain, path, tag) // this will error out if the push fails or can't get the digest
 				if domain != "" {
 					domain = domain + "/"
 				}
@@ -252,7 +253,6 @@ func SignImagesFromDeploymentField(deployment *DeploymentConfig, dontTouchImage 
 	}
 	return
 }
-
 
 func CheckTorrentField(torrent string, index int) {
 	// Verify the torrent field is the form necessary for the containers that are stored in a docker registry (because that is all we support from hzn right now)
