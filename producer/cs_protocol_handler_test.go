@@ -22,7 +22,7 @@ func Test_agreement_success(t *testing.T) {
 	if ag, err := createAgreement(testProposal, testPolicy, 0, expectedType, expectedName, expectedOrg); err != nil {
 		t.Errorf("Error creating mock agreement, %v", err)
 	} else if bcType, bcName, bcOrg := createEmptyPH().GetKnownBlockchain(ag); bcType != expectedType || bcName != expectedName || bcOrg != expectedOrg {
-		t.Errorf("Wrong BC type %v and name %v returned, expecting %v %v", bcType, bcName, bcOrg, expectedType, expectedName, expectedOrg)
+		t.Errorf("Wrong BC type %v, name %v and org %v returned, expecting %v %v %v", bcType, bcName, bcOrg, expectedType, expectedName, expectedOrg)
 	}
 
 }

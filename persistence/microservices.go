@@ -692,6 +692,8 @@ func UpdateMSInstanceExecutionState(db *bolt.DB, key string, started bool, failu
 	if started {
 		return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
 			c.ExecutionStartTime = uint64(time.Now().Unix())
+			c.ExecutionFailureCode = 0
+			c.ExecutionFailureDesc = ""
 			return &c
 		})
 
