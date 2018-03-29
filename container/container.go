@@ -583,7 +583,7 @@ func serviceDestroy(client *docker.Client, agreementId string, containerId strin
 		if _, ok := err.(*docker.NoSuchContainer); ok {
 			return false, nil
 		} else {
-			return false, fmt.Errorf("Unable to kill container in agreement: %v. Error: %v", agreementId, err)
+			glog.Warningf("Unable to kill container in agreement: %v. Error: %v", agreementId, err)
 		}
 	}
 
@@ -1253,7 +1253,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		report := func(container *docker.APIContainers, agreementId string) error {
 
 			for _, name := range serviceNames {
-				if container.Labels[LABEL_PREFIX+".service_name"] == name {
+				if container.Labels[LABEL_PREFIX+".service_name"] == name && container.State == "running" {
 					cMatches = append(cMatches, *container)
 					glog.V(4).Infof("Matching container instance for agreement %v: %v", agreementId, container)
 				}
@@ -1318,6 +1318,13 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 				for _, name := range serviceNames {
 					if container.Labels[LABEL_PREFIX+".service_name"] == name {
+						if container.State != "running" {
+							// try to restart the container if it is down from some reason
+							if err := b.client.StartContainer(container.ID, nil); err != nil {
+								glog.Errorf("Container worker failed to restart microservice container %v. %v", container.ID, err)
+								continue
+							}
+						}
 						cMatches = append(cMatches, *container)
 						glog.V(4).Infof("Matching container instance for microservice instance %v: %v", instance_key, container)
 					}
@@ -1410,10 +1417,12 @@ func (b *ContainerWorker) syncupResources() {
 			agMap[agreement.CurrentAgreementId] = true
 		}
 
-		// Second, run through each container looking for containers that are leftover from old agreements. Be aware that there
+		glog.V(5).Infof("Container worker found active agreements: %v", agMap)
+
+		// Second, run through each container (active or inactive) looking for containers that are leftover from old agreements. Be aware that there
 		// could be other non-Horizon containers on this host, so we have to be careful to NOT terminate them.
-		if containers, err := b.client.ListContainers(docker.ListContainersOptions{}); err != nil {
-			fail(fmt.Sprintf("ContainerWorker unable to get list of running containers: %v", err))
+		if containers, err := b.client.ListContainers(docker.ListContainersOptions{All: true}); err != nil {
+			fail(fmt.Sprintf("ContainerWorker unable to get list of containers: %v", err))
 		} else {
 
 			// Look for orphaned containers.
@@ -1676,7 +1685,8 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 func (b *ContainerWorker) ContainersMatchingAgreement(agreements []string, includeShared bool, fn func(*docker.APIContainers, string) error) error {
 	var processingErr error
 
-	containers, err := b.client.ListContainers(docker.ListContainersOptions{})
+	// get all containers including the inactive ones.
+	containers, err := b.client.ListContainers(docker.ListContainersOptions{All: true})
 	if err != nil {
 		glog.Errorf("Unable to get list of running containers: %v", err)
 	} else {
