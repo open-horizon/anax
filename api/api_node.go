@@ -42,7 +42,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
 		// make sure current exchange version meet the requirement
-		if err := version.VerifyExchangeVersion(a.Config.Collaborators.HTTPClientFactory, a.Config.Edge.ExchangeURL); err != nil {
+		if err := version.VerifyExchangeVersion(a.Config.Collaborators.HTTPClientFactory, a.Config.Edge.ExchangeURL, false); err != nil {
 			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
 			return
 		}
@@ -72,7 +72,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
 		// make sure current exchange version meet the requirement
-		if err := version.VerifyExchangeVersion(a.Config.Collaborators.HTTPClientFactory, a.Config.Edge.ExchangeURL); err != nil {
+		if err := version.VerifyExchangeVersion(a.Config.Collaborators.HTTPClientFactory, a.Config.Edge.ExchangeURL, false); err != nil {
 			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
 			return
 		}
@@ -152,7 +152,7 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
 		// make sure current exchange version meet the requirement
-		if err := version.VerifyExchangeVersion(a.Config.Collaborators.HTTPClientFactory, a.Config.Edge.ExchangeURL); err != nil {
+		if err := version.VerifyExchangeVersion(a.Config.Collaborators.HTTPClientFactory, a.Config.Edge.ExchangeURL, false); err != nil {
 			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
 			return
 		}

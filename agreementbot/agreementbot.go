@@ -48,21 +48,23 @@ type AgreementBotWorker struct {
 	PatternManager    *PatternManager
 	NHManager         *NodeHealthManager
 	GovTiming         DVState
+	lastExchVerCheck  int64
 }
 
 func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db *bolt.DB) *AgreementBotWorker {
 
 	worker := &AgreementBotWorker{
-		BaseWorker:     worker.NewBaseWorker(name, cfg),
-		db:             db,
-		httpClient:     cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
-		agbotId:        cfg.AgreementBot.ExchangeId,
-		token:          cfg.AgreementBot.ExchangeToken,
-		consumerPH:     make(map[string]ConsumerProtocolHandler),
-		ready:          false,
-		PatternManager: NewPatternManager(),
-		NHManager:      NewNodeHealthManager(),
-		GovTiming:      DVState{},
+		BaseWorker:       worker.NewBaseWorker(name, cfg),
+		db:               db,
+		httpClient:       cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
+		agbotId:          cfg.AgreementBot.ExchangeId,
+		token:            cfg.AgreementBot.ExchangeToken,
+		consumerPH:       make(map[string]ConsumerProtocolHandler),
+		ready:            false,
+		PatternManager:   NewPatternManager(),
+		NHManager:        NewNodeHealthManager(),
+		GovTiming:        DVState{},
+		lastExchVerCheck: 0,
 	}
 
 	glog.Info("Starting AgreementBot worker")
@@ -184,7 +186,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 	}
 
 	// log error if the current exchange version does not meet the requirement
-	if err := version.VerifyExchangeVersion(w.Config.Collaborators.HTTPClientFactory, w.Manager.Config.AgreementBot.ExchangeURL); err != nil {
+	if err := version.VerifyExchangeVersion(w.Config.Collaborators.HTTPClientFactory, w.Manager.Config.AgreementBot.ExchangeURL, false); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
 		return false
 	}
@@ -1145,9 +1147,20 @@ func (w *AgreementBotWorker) getAgbotPatterns() (map[string]exchange.ServedPatte
 // Heartbeat to the exchange. This function is called by the heartbeat subworker.
 func (w *AgreementBotWorker) heartBeat() int {
 
-	// log error if the current exchange version does not meet the requirement
-	if err := version.VerifyExchangeVersion(w.Config.Collaborators.HTTPClientFactory, w.Manager.Config.AgreementBot.ExchangeURL); err != nil {
-		glog.Errorf(AWlogString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
+	if w.Config.AgreementBot.ExchangeVersionCheckIntervalM > 0 {
+		// get the exchange version check interval and change to seconds
+		check_interval := w.Manager.Config.AgreementBot.ExchangeVersionCheckIntervalM * 60
+
+		// check the exchange version when time is right
+		time_now := time.Now().Unix()
+		if w.lastExchVerCheck == 0 || time_now-w.lastExchVerCheck >= int64(check_interval) {
+			w.lastExchVerCheck = time_now
+
+			// log error if the current exchange version does not meet the requirement
+			if err := version.VerifyExchangeVersion(w.Config.Collaborators.HTTPClientFactory, w.Manager.Config.AgreementBot.ExchangeURL, false); err != nil {
+				glog.Errorf(AWlogString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
+			}
+		}
 	}
 
 	targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId) + "/heartbeat"

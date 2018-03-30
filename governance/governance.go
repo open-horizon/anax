@@ -46,17 +46,18 @@ const MICROSERVICE_GOVERNOR = "MicroserviceGovernor"
 const BC_GOVERNOR = "BlockchainGovernor"
 
 type GovernanceWorker struct {
-	worker.BaseWorker // embedded field
-	db                *bolt.DB
-	bc                *ethblockchain.BaseContracts
-	deviceId          string
-	deviceToken       string
-	devicePattern     string
-	pm                *policy.PolicyManager
-	producerPH        map[string]producer.ProducerProtocolHandler
-	deviceStatus      *DeviceStatus
-	ShuttingDownCmd   *NodeShutdownCommand
-	exchHandlers      *exchange.ExchangeApiHandlers
+	worker.BaseWorker   // embedded field
+	db                  *bolt.DB
+	bc                  *ethblockchain.BaseContracts
+	deviceId            string
+	deviceToken         string
+	devicePattern       string
+	pm                  *policy.PolicyManager
+	producerPH          map[string]producer.ProducerProtocolHandler
+	deviceStatus        *DeviceStatus
+	ShuttingDownCmd     *NodeShutdownCommand
+	exchHandlers        *exchange.ExchangeApiHandlers
+	lastSvcUpgradeCheck int64
 }
 
 func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *GovernanceWorker {
@@ -71,16 +72,17 @@ func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm
 	}
 
 	worker := &GovernanceWorker{
-		BaseWorker:      worker.NewBaseWorker(name, cfg),
-		db:              db,
-		pm:              pm,
-		deviceId:        id,
-		deviceToken:     token,
-		devicePattern:   pattern,
-		producerPH:      make(map[string]producer.ProducerProtocolHandler),
-		deviceStatus:    NewDeviceStatus(),
-		ShuttingDownCmd: nil,
-		exchHandlers:    exchange.NewExchangeApiHandlers(cfg),
+		BaseWorker:          worker.NewBaseWorker(name, cfg),
+		db:                  db,
+		pm:                  pm,
+		deviceId:            id,
+		deviceToken:         token,
+		devicePattern:       pattern,
+		producerPH:          make(map[string]producer.ProducerProtocolHandler),
+		deviceStatus:        NewDeviceStatus(),
+		ShuttingDownCmd:     nil,
+		exchHandlers:        exchange.NewExchangeApiHandlers(cfg),
+		lastSvcUpgradeCheck: time.Now().Unix(),
 	}
 
 	worker.Start(worker, 10)

@@ -14,21 +14,33 @@ import (
 	"github.com/open-horizon/anax/producer"
 	"net/url"
 	"strings"
+	"time"
 )
 
 // This function runs periodically in a separate process. It checks if the microservice containers are up and running and
 // if new microservice versions are available for upgrade.
 func (w *GovernanceWorker) governMicroservices() int {
 
-	// handle microservice upgrade. The upgrade includes inactive upgrades if the associated agreements happen to be 0.
-	glog.V(4).Infof(logString(fmt.Sprintf("governing microservice upgrades")))
-	if ms_defs, err := persistence.FindMicroserviceDefs(w.db, []persistence.MSFilter{persistence.UnarchivedMSFilter()}); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Error getting microservice definitions from db. %v", err)))
-	} else if ms_defs != nil && len(ms_defs) > 0 {
-		for _, ms := range ms_defs {
-			// upgrade the microserice if needed
-			cmd := w.NewUpgradeMicroserviceCommand(ms.Id)
-			w.Commands <- cmd
+	if w.Config.Edge.ServiceUpgradeCheckIntervalS > 0 {
+		// get the microservice upgrade check interval
+		check_interval := w.Config.Edge.ServiceUpgradeCheckIntervalS
+
+		// check for the new microservice version when time is right
+		time_now := time.Now().Unix()
+		if time_now-w.lastSvcUpgradeCheck >= int64(check_interval) {
+			w.lastSvcUpgradeCheck = time_now
+
+			// handle microservice upgrade. The upgrade includes inactive upgrades if the associated agreements happen to be 0.
+			glog.V(4).Infof(logString(fmt.Sprintf("governing microservice upgrades")))
+			if ms_defs, err := persistence.FindMicroserviceDefs(w.db, []persistence.MSFilter{persistence.UnarchivedMSFilter()}); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Error getting microservice definitions from db. %v", err)))
+			} else if ms_defs != nil && len(ms_defs) > 0 {
+				for _, ms := range ms_defs {
+					// upgrade the microserice if needed
+					cmd := w.NewUpgradeMicroserviceCommand(ms.Id)
+					w.Commands <- cmd
+				}
+			}
 		}
 	}
 
