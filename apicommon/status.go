@@ -21,7 +21,7 @@ type Configuration struct {
 	ExchangeAPI     string `json:"exchange_api"`
 	ExchangeVersion string `json:"exchange_version"`
 	MinExchVersion  string `json:"required_minimum_exchange_version"`
-	PrefExchVersion string `json:"preffered_exchange_version"`
+	PrefExchVersion string `json:"preferred_exchange_version"`
 	Arch            string `json:"architecture"`
 	HorizonVersion  string `json:"horizon_version"`
 }
@@ -45,7 +45,7 @@ func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string) *I
 			ExchangeAPI:     exchangeUrl,
 			ExchangeVersion: exch_version,
 			MinExchVersion:  version.MINIMUM_EXCHANGE_VERSION,
-			PrefExchVersion: version.PREFFERED_EXCHANGE_VERSION,
+			PrefExchVersion: version.PREFERRED_EXCHANGE_VERSION,
 			Arch:            runtime.GOARCH,
 			HorizonVersion:  version.HORIZON_VERSION,
 		},

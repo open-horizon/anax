@@ -9,7 +9,10 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/version"
+	"github.com/open-horizon/anax/worker"
 )
 
 func (a *API) node(w http.ResponseWriter, r *http.Request) {
@@ -47,8 +50,8 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		orgHandler := a.exchHandlers.GetHTTPExchangeOrgHandler()
-		patternHandler := a.exchHandlers.GetHTTPExchangePatternHandler()
+		orgHandler := exchange.GetHTTPExchangeOrgHandlerWithContext(a.Config)
+		patternHandler := exchange.GetHTTPExchangePatternHandlerWithContext(a.Config)
 
 		// Read in the HTTP body and pass the device registration off to be validated and created.
 		var newDevice HorizonDevice
@@ -63,6 +66,8 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		if errHandled {
 			return
 		}
+
+		a.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", *device.Org, *device.Id), *device.Token, a.Config.Edge.ExchangeURL, false, a.Config.Collaborators.HTTPClientFactory)
 
 		a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, *device.Id, *device.Token, *device.Org, *device.Pattern)
 
@@ -85,10 +90,12 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Validate the PATCH input and update the object in the database.
-		errHandled, _, exDev := UpdateHorizonDevice(&device, errorHandler, a.db)
+		errHandled, dev, exDev := UpdateHorizonDevice(&device, errorHandler, a.db)
 		if errHandled {
 			return
 		}
+
+		a.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", *device.Org, *device.Id), *dev.Token, a.Config.Edge.ExchangeURL, a.GetServiceBased(), a.Config.Collaborators.HTTPClientFactory)
 
 		writeResponse(w, exDev, http.StatusOK)
 
@@ -157,10 +164,11 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		orgHandler := a.exchHandlers.GetHTTPExchangeOrgHandler()
-		microserviceHandler := a.exchHandlers.GetHTTPMicroserviceHandler()
-		patternHandler := a.exchHandlers.GetHTTPExchangePatternHandler()
-		workloadResolver := a.exchHandlers.GetHTTPWorkloadResolverHandler()
+		microserviceHandler := exchange.GetHTTPMicroserviceHandler(a)
+		patternHandler := exchange.GetHTTPExchangePatternHandler(a)
+		workloadResolver := exchange.GetHTTPWorkloadResolverHandler(a)
+		serviceResolver := exchange.GetHTTPServiceResolverHandler(a)
+		getService := exchange.GetHTTPServiceHandler(a)
 
 		// Read in the HTTP body and pass the device registration off to be validated and created.
 		var configState Configstate
@@ -171,8 +179,14 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Validate and update the config state.
-		errHandled, cfg, msgs := UpdateConfigstate(&configState, errorHandler, orgHandler, microserviceHandler, patternHandler, workloadResolver, a.db, a.Config)
+		errHandled, cfg, msgs := UpdateConfigstate(&configState, errorHandler, microserviceHandler, patternHandler, workloadResolver, serviceResolver, getService, a.db, a.Config)
 		if errHandled {
+			return
+		}
+
+		pDevice, err := persistence.FindExchangeDevice(a.db)
+		if err != nil {
+			errorHandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err)))
 			return
 		}
 
@@ -182,7 +196,7 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Send out the config complete message that enables the device for agreements
-		a.Messages() <- events.NewEdgeConfigCompleteMessage(events.NEW_DEVICE_CONFIG_COMPLETE)
+		a.Messages() <- events.NewEdgeConfigCompleteMessage(events.NEW_DEVICE_CONFIG_COMPLETE, pDevice.IsServiceBased())
 
 		writeResponse(w, cfg, http.StatusCreated)
 

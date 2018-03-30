@@ -15,6 +15,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"math/rand"
 	"os"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -384,6 +385,65 @@ func Test_nexthighestpriority_workload2(t *testing.T) {
 			t.Errorf("Returned workload is not the next highest priority, returned %v", wl)
 		}
 
+	}
+
+}
+
+func Test_Workload_ConvertToTorrent(t *testing.T) {
+
+	ip := ImplementationPackage{}
+	torr := ip.ConvertToTorrent()
+	if !reflect.DeepEqual(torr, Torrent{}) {
+		t.Errorf("Implementation Package was not converted correctly, was %v, expecting %v", torr, Torrent{})
+	}
+
+	isURL := "http://image.server"
+	sig := "sigsig="
+
+	ip = ImplementationPackage{
+		IMPL_PACKAGE_DISCRIMINATOR:   IMPL_PACKAGE_IMAGESERVER,
+		IMPL_PACKAGE_IMAGESERVER_URL: isURL,
+		IMPL_PACKAGE_IMAGESERVER_SIG: sig,
+	}
+	torr = ip.ConvertToTorrent()
+	if !reflect.DeepEqual(torr, Torrent{Url: isURL, Signature: sig}) {
+		t.Errorf("Implementation Package was not converted correctly, was %v, expecting %v", torr, Torrent{})
+	}
+
+	ip = ImplementationPackage{
+		IMPL_PACKAGE_DISCRIMINATOR:   IMPL_PACKAGE_CONTAINER,
+		IMPL_PACKAGE_IMAGESERVER_URL: isURL,
+		IMPL_PACKAGE_IMAGESERVER_SIG: sig,
+	}
+	torr = ip.ConvertToTorrent()
+	if !reflect.DeepEqual(torr, Torrent{}) {
+		t.Errorf("Implementation Package was not converted correctly, was %v, expecting %v", torr, Torrent{})
+	}
+
+	ip = ImplementationPackage{
+		IMPL_PACKAGE_DISCRIMINATOR: IMPL_PACKAGE_IMAGESERVER,
+	}
+	torr = ip.ConvertToTorrent()
+	if !reflect.DeepEqual(torr, Torrent{}) {
+		t.Errorf("Implementation Package was not converted correctly, was %v, expecting %v", torr, Torrent{})
+	}
+
+	ip = ImplementationPackage{
+		IMPL_PACKAGE_DISCRIMINATOR:   IMPL_PACKAGE_IMAGESERVER,
+		IMPL_PACKAGE_IMAGESERVER_URL: isURL,
+	}
+	torr = ip.ConvertToTorrent()
+	if !reflect.DeepEqual(torr, Torrent{}) {
+		t.Errorf("Implementation Package was not converted correctly, was %v, expecting %v", torr, Torrent{})
+	}
+
+	ip = ImplementationPackage{
+		IMPL_PACKAGE_DISCRIMINATOR:   IMPL_PACKAGE_IMAGESERVER,
+		IMPL_PACKAGE_IMAGESERVER_SIG: sig,
+	}
+	torr = ip.ConvertToTorrent()
+	if !reflect.DeepEqual(torr, Torrent{}) {
+		t.Errorf("Implementation Package was not converted correctly, was %v, expecting %v", torr, Torrent{})
 	}
 
 }

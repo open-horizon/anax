@@ -98,7 +98,7 @@ func (self APISpecList) Supports(required APISpecList) error {
 		return nil
 	}
 
-	if len(self) != len(required) {
+	if len(self) < len(required) {
 		return errors.New(fmt.Sprintf("API Spec lists are different lengths, self: %v and required: %v", self, required))
 	}
 

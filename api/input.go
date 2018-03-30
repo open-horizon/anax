@@ -31,6 +31,8 @@ type HorizonDevice struct {
 	TokenValid         *bool        `json:"token_valid,omitempty"`
 	HA                 *bool        `json:"ha,omitempty"`
 	Config             *Configstate `json:"configstate,omitempty"`
+	ServiceBased       *bool        `json:"serviceBased,omitempty"`  // The device is service based if this flag is on, but the flag being off could mean that service or workload based is not yet known.
+	WorkloadBased      *bool        `json:"workloadBased,omitempty"` // The device is workload based if this flag is on, but the flag being off could mean that service or workload based is not yet known.
 }
 
 func (h HorizonDevice) String() string {
@@ -75,7 +77,17 @@ func (h HorizonDevice) String() string {
 		ha = *h.HA
 	}
 
-	return fmt.Sprintf("Id: %v, Org: %v, Pattern: %v, Name: %v, Token: [%v], TokenLastValidTime: %v, TokenValid: %v, HA: %v, %v", id, org, pat, name, cred, tlvt, tv, ha, h.Config)
+	sb := false
+	if h.ServiceBased != nil {
+		sb = *h.ServiceBased
+	}
+
+	wb := false
+	if h.WorkloadBased != nil {
+		wb = *h.WorkloadBased
+	}
+
+	return fmt.Sprintf("Id: %v, Org: %v, Pattern: %v, Name: %v, Token: [%v], TokenLastValidTime: %v, TokenValid: %v, HA: %v, ServiceBased: %v, WorkloadBased: %v, %v", id, org, pat, name, cred, tlvt, tv, ha, sb, wb, h.Config)
 }
 
 // This is a type conversion function but note that the token field within the persistent
@@ -93,6 +105,8 @@ func ConvertFromPersistentHorizonDevice(pDevice *persistence.ExchangeDevice) *Ho
 			State:          &pDevice.Config.State,
 			LastUpdateTime: &pDevice.Config.LastUpdateTime,
 		},
+		ServiceBased:  &pDevice.ServiceBased,
+		WorkloadBased: &pDevice.WorkloadBased,
 	}
 }
 
@@ -132,7 +146,7 @@ func NewAttribute(t string, sURLs []string, l string, publishable bool, hostOnly
 }
 
 // uses pointers for members b/c it allows nil-checking at deserialization; !Important!: the json field names here must not change w/out changing the error messages returned from the API, they are not programmatically determined
-type Service struct {
+type MicroService struct {
 	SensorUrl     *string      `json:"sensor_url"`     // uniquely identifying
 	SensorOrg     *string      `json:"sensor_org"`     // The org that holds the ms definition
 	SensorName    *string      `json:"sensor_name"`    // may not be uniquely identifying
@@ -143,7 +157,7 @@ type Service struct {
 	Attributes    *[]Attribute `json:"attributes"`
 }
 
-func (s *Service) String() string {
+func (s *MicroService) String() string {
 	sURL := ""
 	sOrg := ""
 	sName := ""
@@ -183,17 +197,86 @@ func (s *Service) String() string {
 	return fmt.Sprintf("SensorUrl: %v, SensorOrg: %v, SensorName: %v, SensorArch: %v, SensorVersion: %v, AutoUpgrade: %v, ActiveUpgrade: %v, Attributes: %v", sURL, sOrg, sName, sArch, sVersion, auto_upgrade, active_upgrade, s.Attributes)
 }
 
+// Constructor used to create microservice objects for programmatic creation of microservices.
+func NewMicroService(url string, org string, name string, arch string, v string) *MicroService {
+	autoUpgrade := microservice.MS_DEFAULT_AUTOUPGRADE
+	activeUpgrade := microservice.MS_DEFAULT_ACTIVEUPGRADE
+
+	return &MicroService{
+		SensorUrl:     &url,
+		SensorOrg:     &org,
+		SensorName:    &name,
+		SensorArch:    &arch,
+		SensorVersion: &v,
+		AutoUpgrade:   &autoUpgrade,
+		ActiveUpgrade: &activeUpgrade,
+		Attributes:    &[]Attribute{},
+	}
+}
+
+// uses pointers for members b/c it allows nil-checking at deserialization; !Important!: the json field names here must not change w/out changing the error messages returned from the API, they are not programmatically determined
+type Service struct {
+	Url           *string      `json:"url"`            // The URL of the service definition.
+	Org           *string      `json:"organization"`   // The org that holds the service definition.
+	Name          *string      `json:"name"`           // Optional, may not be uniquely identifying.
+	Arch          *string      `json:"arch"`           // The arch of the service to be configured, could be a synonym.
+	VersionRange  *string      `json:"versionRange"`   // The version range that the configuration applies to.
+	AutoUpgrade   *bool        `json:"auto_upgrade"`   // The default is true. If the service should be automatically upgraded when a new version becomes available.
+	ActiveUpgrade *bool        `json:"active_upgrade"` // The default is false. If horizon should actively terminate agreements when new versions become available (active) or wait for all the associated agreements to terminate before upgrading.
+	Attributes    *[]Attribute `json:"attributes"`
+}
+
+func (s *Service) String() string {
+	sURL := ""
+	sOrg := ""
+	sName := ""
+	sArch := ""
+	sVersion := ""
+	auto_upgrade := ""
+	active_upgrade := ""
+
+	if s.Url != nil {
+		sURL = *s.Url
+	}
+
+	if s.Org != nil {
+		sOrg = *s.Org
+	}
+
+	if s.Name != nil {
+		sName = *s.Name
+	}
+
+	if s.Arch != nil {
+		sArch = *s.Arch
+	}
+
+	if s.VersionRange != nil {
+		sVersion = *s.VersionRange
+	}
+
+	if s.AutoUpgrade != nil {
+		auto_upgrade = strconv.FormatBool(*s.AutoUpgrade)
+	}
+
+	if s.ActiveUpgrade != nil {
+		active_upgrade = strconv.FormatBool(*s.ActiveUpgrade)
+	}
+
+	return fmt.Sprintf("Url: %v, Org: %v, Name: %v, Arch: %v, VersionRange: %v, AutoUpgrade: %v, ActiveUpgrade: %v, Attributes: %v", sURL, sOrg, sName, sArch, sVersion, auto_upgrade, active_upgrade, s.Attributes)
+}
+
 // Constructor used to create service objects for programmatic creation of services.
 func NewService(url string, org string, name string, arch string, v string) *Service {
 	autoUpgrade := microservice.MS_DEFAULT_AUTOUPGRADE
 	activeUpgrade := microservice.MS_DEFAULT_ACTIVEUPGRADE
 
 	return &Service{
-		SensorUrl:     &url,
-		SensorOrg:     &org,
-		SensorName:    &name,
-		SensorArch:    &arch,
-		SensorVersion: &v,
+		Url:           &url,
+		Org:           &org,
+		Name:          &name,
+		Arch:          &arch,
+		VersionRange:  &v,
 		AutoUpgrade:   &autoUpgrade,
 		ActiveUpgrade: &activeUpgrade,
 		Attributes:    &[]Attribute{},

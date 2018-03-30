@@ -32,7 +32,7 @@ func NewTorrentWorker(name string, config *config.HorizonConfig, db *bolt.DB) *T
 	}
 
 	worker := &TorrentWorker{
-		BaseWorker: worker.NewBaseWorker(name, config),
+		BaseWorker: worker.NewBaseWorker(name, config, nil),
 		db:         db,
 		client:     cl,
 	}

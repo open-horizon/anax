@@ -10,11 +10,11 @@ import (
 	"sort"
 )
 
-// This API returns everything we know about microservices configured to and running on and
+// This API returns everything we know about microservices configured to and running on an
 // edge node. It includes microservice definition metadata that is cached from the exchange,
 // userInput variable config for each microservice, running containers for each microservice,
 // and the state of each microservice as it is being managed by anax.
-func FindServicesForOutput(pm *policy.PolicyManager,
+func FindMicroServicesForOutput(pm *policy.PolicyManager,
 	db *bolt.DB,
 	config *config.HorizonConfig) (*AllMicroservices, error) {
 
@@ -72,7 +72,7 @@ func FindServicesForOutput(pm *policy.PolicyManager,
 	sort.Sort(MicroserviceDefByUpgradeStartTime(wrap.Definitions[archivedKey]))
 
 	// Add the microservice config sub-object to the output
-	cfg, err := FindServiceConfigForOutput(pm, db)
+	cfg, err := FindMicroServiceConfigForOutput(pm, db)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to get microservice config, error %v", err))
 	}

@@ -126,7 +126,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 		fmt.Println("Setting microservice variables...")
 		attr = api.NewAttribute("UserInputAttributes", []string{}, "microservice", false, false, map[string]interface{}{}) // we reuse this for each microservice
 		emptyStr := ""
-		service := api.Service{SensorName: &emptyStr} // we reuse this too
+		service := api.MicroService{SensorName: &emptyStr} // we reuse this too
 		for _, m := range inputFileStruct.Microservices {
 			service.SensorOrg = &m.Org
 			service.SensorUrl = &m.Url

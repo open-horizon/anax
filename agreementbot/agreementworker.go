@@ -159,7 +159,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	defer lock.Unlock()
 
 	// The device object we're working with might not include the policies for the microservices needed by the
-	// workload in the curent consumer policy. If that's the case, query the exchange to get all the device
+	// workload in the current consumer policy. If that's the case, query the exchange to get all the device
 	// policies so we can merge them.
 	var exchangeDev *exchange.Device
 	if wi.ConsumerPolicy.PatternId != "" {
@@ -207,27 +207,28 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		// into the consumer policy file. We have a copy of the consumer policy file that we can modify. If the device doesnt have the right
 		// version API specs, then we will try the next workload.
 
-		if workloadDetails, _, err := exchange.GetWorkload(b.config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, b.config.AgreementBot.ExchangeURL, cph.ExchangeId(), cph.ExchangeToken()); err != nil {
+		if asl, workloadDetails, err := exchange.GetHTTPWorkloadOrServiceResolverHandler(cph)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for workload details %v, error: %v", workload, err)))
-			return
-		} else if workloadDetails == nil {
-			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to find workload %v on the exchange.", workload)))
 			return
 		} else {
 
-			// Convert the workload details APISpec list to policy types, and merge the device side microservice policies if necessary.
+			// Canonicalize the arch field in the API spec list, and then merge node policies together if they aren't already merged.
 			var mergedProducer *policy.Policy
-			asl := new(policy.APISpecList)
-			for _, apiSpec := range workloadDetails.APISpecs {
-				arch := apiSpec.Arch
-				if arch != "" && b.config.ArchSynonyms.GetCanonicalArch(arch) != "" {
-					arch = b.config.ArchSynonyms.GetCanonicalArch(arch)
+			for ix, apiSpec := range *asl {
+				if apiSpec.Arch != "" && b.config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch) != "" {
+					(*asl)[ix].Arch = b.config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch)
 				}
 
-				(*asl) = append((*asl), (*policy.APISpecification_Factory(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, arch)))
 				if wi.ConsumerPolicy.PatternId != "" {
-					for _, devMS := range exchangeDev.RegisteredMicroservices {
-						// Find the device's microservice definition based on the microservices needed by the workload.
+
+					services := exchangeDev.RegisteredServices
+					if !workloadDetails.IsServiceBased() {
+						services = exchangeDev.RegisteredMicroservices
+					}
+
+					// Run through all the services on the node that are required by this workload and merge those policies.
+					for _, devMS := range services {
+						// Find the device's service definition based on the services needed by the workload.
 						if devMS.Url == apiSpec.SpecRef {
 							if pol, err := policy.DemarshalPolicy(devMS.Policy); err != nil {
 								glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error demarshalling device %v policy, error: %v", wi.Device.Id, err)))
@@ -246,7 +247,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				}
 			}
 
-			// Update the producer policy with a real merged policy based on the microservices required by the workload
+			// Update the producer policy with a real merged policy based on the services required by the workload
 			if wi.ConsumerPolicy.PatternId != "" && mergedProducer != nil {
 				wi.ProducerPolicy = *mergedProducer
 			}
@@ -278,22 +279,29 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			} else {
 
 				foundWorkload = true
+
 				// The device seems to support the required API specs, so augment the consumer policy file with the workload
 				// details that match what the producer can support.
 				wi.ConsumerPolicy.APISpecs = (*asl)
 
-				// The agbot rejects workload definitions that dont have exactly 1 workload element in the workloads array so it is
-				// safe to directly access the first element.
-				workload.Deployment = workloadDetails.Workloads[0].Deployment
-				workload.DeploymentSignature = workloadDetails.Workloads[0].DeploymentSignature
-				torr := new(policy.Torrent)
-				if workloadDetails.Workloads[0].Torrent != "" {
-					if err := json.Unmarshal([]byte(workloadDetails.Workloads[0].Torrent), torr); err != nil {
+				// Save the deployment and implementation package details into the consumer policy so that the node knows how to run
+				// the workload/service in the policy.
+				workload.Deployment = workloadDetails.GetDeployment()
+				workload.DeploymentSignature = workloadDetails.GetDeploymentSignature()
+				workload.ImageStore = workloadDetails.GetImageStore()
+				if workloadDetails.GetTorrent() != "" {
+					torr := new(policy.Torrent)
+					if err := json.Unmarshal([]byte(workloadDetails.GetTorrent()), torr); err != nil {
 						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Unable to demarshal torrent info from %v, error: %v", workloadDetails, err)))
 						return
 					}
+					workload.Torrent = *torr
+				} else {
+					// Since the torrent field is empty, we can convert the Package implementation to a Torrent object. The conversion
+					// might result in an empty object which would be normal when the ImageStore field does not contain metadata
+					// pointing to an image server.
+					workload.Torrent = workload.ImageStore.ConvertToTorrent()
 				}
-				workload.Torrent = *torr
 
 				glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("workload %v is supported by device %v", workload, wi.Device.Id)))
 			}

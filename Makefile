@@ -51,8 +51,8 @@ $(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') $(CLI_EXECUT
 	    $(COMPILE_ARGS) go build -o $(EXECUTABLE); 
 	exch_min_ver=$(shell grep "MINIMUM_EXCHANGE_VERSION =" $(PKGPATH)/version/version.go | awk -F '"' '{print $$2}') && \
 	    echo "The required minimum exchange version is $$exch_min_ver";
-	exch_pref_ver=$(shell grep "PREFFERED_EXCHANGE_VERSION =" $(PKGPATH)/version/version.go | awk -F '"' '{print $$2}') && \
-	    echo "The preffered exchange version is $$exch_pref_ver"
+	exch_pref_ver=$(shell grep "PREFERRED_EXCHANGE_VERSION =" $(PKGPATH)/version/version.go | awk -F '"' '{print $$2}') && \
+	    echo "The preferred exchange version is $$exch_pref_ver"
 
 $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathlinks
 	@echo "Producing $(CLI_EXECUTABLE) given arch: $(arch)"

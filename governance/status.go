@@ -32,11 +32,11 @@ func (w ContainerStatus) String() string {
 }
 
 type MicroserviceStatus struct {
-	SpecRef    string            `json:"specRef"`
-	Org        string            `json:"orgid"`
-	Version    string            `json:"version"`
-	Arch       string            `json:"arch"`
-	Containers []ContainerStatus `json:"containerStatus"`
+	SpecRef    string            `json:"specRef,omitempty"`
+	Org        string            `json:"orgid,omitempty"`
+	Version    string            `json:"version,omitempty"`
+	Arch       string            `json:"arch,omitempty"`
+	Containers []ContainerStatus `json:"containerStatus,omitempty"`
 }
 
 func (w MicroserviceStatus) String() string {
@@ -50,27 +50,30 @@ func (w MicroserviceStatus) String() string {
 
 type WorkloadStatus struct {
 	AgreementId string            `json:"agreementId"`
-	WorkloadURL string            `json:"workloadUrl"`
-	Org         string            `json:"orgid"`
-	Version     string            `json:"version"`
-	Arch        string            `json:"arch"`
+	WorkloadURL string            `json:"workloadUrl,omitempty"`
+	ServiceURL  string            `json:"serviceUrl,omitempty"`
+	Org         string            `json:"orgid,omitempty"`
+	Version     string            `json:"version,omitempty"`
+	Arch        string            `json:"arch,omitempty"`
 	Containers  []ContainerStatus `json:"containerStatus"`
 }
 
 func (w WorkloadStatus) String() string {
 	return fmt.Sprintf("AgreementId: %v, "+
 		"WorkloadURL: %v, "+
+		"ServiceURL: %v, "+
 		"Org: %v, "+
 		"Version: %v, "+
 		"Arch: %v, "+
 		"Containers: %v",
-		w.AgreementId, w.WorkloadURL, w.Org, w.Version, w.Arch, w.Containers)
+		w.AgreementId, w.WorkloadURL, w.ServiceURL, w.Org, w.Version, w.Arch, w.Containers)
 }
 
 type DeviceStatus struct {
 	Connectivity  map[string]bool      `json:"connectivity"` //  hosts and whether this device can reach them or not
-	Microservices []MicroserviceStatus `json:"microservices"`
-	Workloads     []WorkloadStatus     `json:"workloads"`
+	Microservices []MicroserviceStatus `json:"microservices,omitempty"`
+	Workloads     []WorkloadStatus     `json:"workloads,omitempty"`
+	Services      []WorkloadStatus     `json:"services"`
 	LastUpdated   string               `json:"lastUpdated"`
 }
 
@@ -79,16 +82,13 @@ func (w DeviceStatus) String() string {
 		"Connectivity: %v, "+
 			"Microservices: %v, "+
 			"Workloads: %v,"+
+			"Services: %v,"+
 			"LastUpdated: %v",
-		w.Connectivity, w.Microservices, w.Workloads, w.LastUpdated)
+		w.Connectivity, w.Microservices, w.Workloads, w.Services, w.LastUpdated)
 }
 
 func NewDeviceStatus() *DeviceStatus {
-	var ds DeviceStatus
-	ds.Connectivity = make(map[string]bool, 0)
-	ds.Microservices = make([]MicroserviceStatus, 0)
-	ds.Workloads = make([]WorkloadStatus, 0)
-	return &ds
+	return &DeviceStatus{}
 }
 
 // Report the containers status and connectivity status to the exchange.
@@ -127,18 +127,27 @@ func (w *GovernanceWorker) ReportDeviceStatus() {
 		}
 	}
 
-	// get microservice status
-	if ms_status, err := w.getMicroserviceStatus(containers); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Error getting microservice container status: %v", err)))
+	if w.GetServiceBased() {
+		// get service status
+		if ms_status, err := w.getServiceStatus(containers); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Error getting service container status: %v", err)))
+		} else {
+			device_status.Services = ms_status
+		}
 	} else {
-		device_status.Microservices = ms_status
-	}
+		// get microservice status
+		if ms_status, err := w.getMicroserviceStatus(containers); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Error getting microservice container status: %v", err)))
+		} else {
+			device_status.Microservices = ms_status
+		}
 
-	// get workload status
-	if wl_status, err := w.getWorkloadStatus(containers); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Error getting microservice container status: %v", err)))
-	} else {
-		device_status.Workloads = wl_status
+		// get workload status
+		if wl_status, err := w.getWorkloadStatus(containers); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Error getting microservice container status: %v", err)))
+		} else {
+			device_status.Workloads = wl_status
+		}
 	}
 
 	// report the status to the exchange
@@ -154,6 +163,54 @@ func (w *GovernanceWorker) ReportDeviceStatus() {
 		}
 	}
 
+}
+
+// Find the status for all the Services.
+// TODO: Rewrite this code when we get rid of the workload/microservice functionality.
+func (w *GovernanceWorker) getServiceStatus(containers []docker.APIContainers) ([]WorkloadStatus, error) {
+
+	// Get all top level (agreement) services and related metadata.
+	tempWS, err := w.getWorkloadStatus(containers)
+	if err != nil {
+		return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving agreement services from database, error: %v", err)))
+	}
+
+	// Convert to service form.
+	for ix, ws := range tempWS {
+		tempWS[ix].ServiceURL = ws.WorkloadURL
+		tempWS[ix].WorkloadURL = ""
+	}
+
+	// Get all dependent services and related metadata.
+	tempMS, err := w.getMicroserviceStatus(containers)
+	if err != nil {
+		return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving services from database, error: %v", err)))
+	}
+
+	// Convert to service form.
+	for _, ms := range tempMS {
+		// In the services model, there will be duplicates in the microservice list and the workload list. Skip the duplicates
+		// from the microservice list, and prefer the service from the workload list.
+		duplicate := false
+		for _, ws := range tempWS {
+			if ws.ServiceURL == ms.SpecRef {
+				duplicate = true
+				break
+			}
+		}
+
+		if !duplicate {
+			var wl_status WorkloadStatus
+			wl_status.ServiceURL = ms.SpecRef
+			wl_status.Org = ms.Org
+			wl_status.Version = ms.Version
+			wl_status.Arch = ms.Arch
+			wl_status.Containers = ms.Containers
+			tempWS = append(tempWS, wl_status)
+		}
+	}
+
+	return tempWS, nil
 }
 
 // Find the status for all the microservices
@@ -182,13 +239,12 @@ func (w *GovernanceWorker) getMicroserviceStatus(containers []docker.APIContaine
 				return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving all microservice instances for %v from database, error: %v", msdef.SpecRef, err)))
 			} else if msinsts != nil {
 				for _, msi := range msinsts {
-					if msdef.Workloads != nil && len(msdef.Workloads) > 0 {
-						for _, wl := range msdef.Workloads {
-							if cstatus, err := GetContainerStatus(wl.Deployment, msi.GetKey(), true, containers); err != nil {
-								return nil, fmt.Errorf(logString(fmt.Sprintf("Error getting microservice container status for %v. %v", msdef.SpecRef, err)))
-							} else {
-								msdef_status.Containers = append(msdef_status.Containers, cstatus...)
-							}
+					deployment, _, _ := msdef.GetDeployment()
+					if deployment != "" {
+						if cstatus, err := GetContainerStatus(deployment, msi.GetKey(), true, containers); err != nil {
+							return nil, fmt.Errorf(logString(fmt.Sprintf("Error getting microservice container status for %v. %v", msdef.SpecRef, err)))
+						} else {
+							msdef_status.Containers = append(msdef_status.Containers, cstatus...)
 						}
 					}
 				}
@@ -287,10 +343,10 @@ func (w *GovernanceWorker) writeStatusToExchange(device_status *DeviceStatus) er
 	resp = new(exchange.PostDeviceResponse)
 
 	httpClient := w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil)
-	targetURL := w.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.deviceId) + "/nodes/" + exchange.GetId(w.deviceId) + "/status"
+	targetURL := w.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/status"
 
 	for {
-		if err, tpErr := exchange.InvokeExchange(httpClient, "PUT", targetURL, w.deviceId, w.deviceToken, device_status, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(httpClient, "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), device_status, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {

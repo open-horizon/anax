@@ -16,13 +16,25 @@ import (
 // These are functions which are used across the set of API unit tests
 
 func getDummyWorkloadResolver() exchange.WorkloadResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*policy.APISpecList, *exchange.WorkloadDefinition, error) {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *exchange.WorkloadDefinition, error) {
 		return nil, nil, nil
 	}
 }
 
+func getDummyServiceResolver() exchange.ServiceResolverHandler {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *exchange.ServiceDefinition, error) {
+		return nil, nil, nil
+	}
+}
+
+func getDummyServiceHandler() exchange.ServiceHandler {
+	return func(mUrl string, mOrg string, mVersion string, mArch string) (*exchange.ServiceDefinition, string, error) {
+		return nil, "", nil
+	}
+}
+
 func getDummyMicroserviceHandler() exchange.MicroserviceHandler {
-	return func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*exchange.MicroserviceDefinition, string, error) {
+	return func(mUrl string, mOrg string, mVersion string, mArch string) (*exchange.MicroserviceDefinition, string, error) {
 		return nil, "", nil
 	}
 }
@@ -42,36 +54,54 @@ func getBasicConfig() *config.HorizonConfig {
 	}
 }
 
-func getDummyGetOrg() exchange.OrgHandler {
+func getDummyGetOrg() exchange.OrgHandlerWithContext {
 	return func(org string, id string, token string) (*exchange.Organization, error) {
 		return nil, nil
 	}
 }
 
 func getDummyGetPatterns() exchange.PatternHandler {
+	return func(org string, pattern string) (map[string]exchange.Pattern, error) {
+		return nil, nil
+	}
+}
+
+func getDummyGetPatternsWithContext() exchange.PatternHandlerWithContext {
 	return func(org string, pattern string, id string, token string) (map[string]exchange.Pattern, error) {
 		return nil, nil
 	}
 }
 
 // Use these variable functions when you need the business logic to do something specific and you need to verify something specific.
-func getVariablePatternHandler(workload exchange.WorkloadReference) exchange.PatternHandler {
-	return func(org string, pattern string, id string, token string) (map[string]exchange.Pattern, error) {
+func getVariablePatternHandler(workload exchange.WorkloadReference, service exchange.ServiceReference) exchange.PatternHandler {
+	return func(org string, pattern string) (map[string]exchange.Pattern, error) {
 		patid := fmt.Sprintf("%v/%v", org, pattern)
-		return map[string]exchange.Pattern{
-			patid: exchange.Pattern{
-				Label:              "label",
-				Description:        "desc",
-				Public:             true,
-				Workloads:          []exchange.WorkloadReference{workload},
-				AgreementProtocols: []exchange.AgreementProtocol{},
-			},
-		}, nil
+		if len(workload.WorkloadVersions) != 0 {
+			return map[string]exchange.Pattern{
+				patid: exchange.Pattern{
+					Label:              "label",
+					Description:        "desc",
+					Public:             true,
+					Workloads:          []exchange.WorkloadReference{workload},
+					AgreementProtocols: []exchange.AgreementProtocol{},
+				},
+			}, nil
+		} else {
+			return map[string]exchange.Pattern{
+				patid: exchange.Pattern{
+					Label:              "label",
+					Description:        "desc",
+					Public:             true,
+					Services:           []exchange.ServiceReference{service},
+					AgreementProtocols: []exchange.AgreementProtocol{},
+				},
+			}, nil
+		}
 	}
 }
 
 func getVariableWorkloadResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange.UserInput) exchange.WorkloadResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*policy.APISpecList, *exchange.WorkloadDefinition, error) {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *exchange.WorkloadDefinition, error) {
 		sl := policy.APISpecList{
 			policy.APISpecification{
 				SpecRef:         mUrl,
@@ -109,7 +139,7 @@ func getVariableWorkloadResolver(mUrl, mOrg, mVersion, mArch string, ui *exchang
 }
 
 func getVariableMicroserviceHandler(mUserInput exchange.UserInput) exchange.MicroserviceHandler {
-	return func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*exchange.MicroserviceDefinition, string, error) {
+	return func(mUrl string, mOrg string, mVersion string, mArch string) (*exchange.MicroserviceDefinition, string, error) {
 		md := exchange.MicroserviceDefinition{
 			Owner:         "owner",
 			Label:         "label",
@@ -129,7 +159,7 @@ func getVariableMicroserviceHandler(mUserInput exchange.UserInput) exchange.Micr
 }
 
 func getVariableWorkload(mUrl, mOrg, mVersion, mArch string, ui []exchange.UserInput) exchange.WorkloadHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*exchange.WorkloadDefinition, string, error) {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (*exchange.WorkloadDefinition, string, error) {
 		es := exchange.APISpec{
 			SpecRef: mUrl,
 			Org:     mOrg,
@@ -154,6 +184,69 @@ func getVariableWorkload(mUrl, mOrg, mVersion, mArch string, ui []exchange.UserI
 			LastUpdated: "updated",
 		}
 		return &wl, "wl-id", nil
+	}
+}
+
+func getVariableServiceHandler(mUserInput exchange.UserInput) exchange.ServiceHandler {
+	return func(mUrl string, mOrg string, mVersion string, mArch string) (*exchange.ServiceDefinition, string, error) {
+		md := exchange.ServiceDefinition{
+			Owner:         "owner",
+			Label:         "label",
+			Description:   "desc",
+			URL:           mUrl,
+			Version:       mVersion,
+			Arch:          mArch,
+			Sharable:      exchange.MS_SHARING_MODE_EXCLUSIVE,
+			MatchHardware: exchange.HardwareRequirement{},
+			UserInputs:    []exchange.UserInput{mUserInput},
+			LastUpdated:   "today",
+		}
+		return &md, "service-id", nil
+	}
+}
+
+func getVariableServiceResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange.UserInput) exchange.ServiceResolverHandler {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *exchange.ServiceDefinition, error) {
+		sl := policy.APISpecList{}
+		sd := []exchange.ServiceDependency{}
+		if mUrl != "" {
+			sl = policy.APISpecList{
+				policy.APISpecification{
+					SpecRef:         mUrl,
+					Org:             mOrg,
+					Version:         mVersion,
+					ExclusiveAccess: true,
+					Arch:            mArch,
+				},
+			}
+			sd = append(sd, exchange.ServiceDependency{
+				URL:     mUrl,
+				Org:     mOrg,
+				Version: mVersion,
+				Arch:    mArch,
+			})
+		}
+		uis := []exchange.UserInput{}
+		if ui != nil {
+			uis = []exchange.UserInput{*ui}
+		}
+		wl := exchange.ServiceDefinition{
+			Owner:               "owner",
+			Label:               "label",
+			Description:         "desc",
+			Public:              false,
+			URL:                 wUrl,
+			Version:             wVersion,
+			Arch:                wArch,
+			Sharable:            "multiple",
+			RequiredServices:    sd,
+			UserInputs:          uis,
+			Deployment:          "",
+			DeploymentSignature: "",
+			ImageStore:          exchange.ImplementationPackage{},
+			LastUpdated:         "updated",
+		}
+		return &sl, &wl, nil
 	}
 }
 

@@ -40,8 +40,6 @@ type AgreementBotWorker struct {
 	worker.BaseWorker // embedded field
 	db                *bolt.DB
 	httpClient        *http.Client // a shared HTTP client instance for this worker
-	agbotId           string
-	token             string
 	pm                *policy.PolicyManager
 	consumerPH        map[string]ConsumerProtocolHandler
 	ready             bool
@@ -53,17 +51,18 @@ type AgreementBotWorker struct {
 
 func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db *bolt.DB) *AgreementBotWorker {
 
+	// An agbot is never service based, it supports both all the time, until we get rid of support for workloads.
+	ec := worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, false, cfg.Collaborators.HTTPClientFactory)
+
 	worker := &AgreementBotWorker{
-		BaseWorker:       worker.NewBaseWorker(name, cfg),
-		db:               db,
-		httpClient:       cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
-		agbotId:          cfg.AgreementBot.ExchangeId,
-		token:            cfg.AgreementBot.ExchangeToken,
-		consumerPH:       make(map[string]ConsumerProtocolHandler),
-		ready:            false,
-		PatternManager:   NewPatternManager(),
-		NHManager:        NewNodeHealthManager(),
-		GovTiming:        DVState{},
+		BaseWorker:     worker.NewBaseWorker(name, cfg, ec),
+		db:             db,
+		httpClient:     cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
+		consumerPH:     make(map[string]ConsumerProtocolHandler),
+		ready:          false,
+		PatternManager: NewPatternManager(),
+		NHManager:      NewNodeHealthManager(),
+		GovTiming:      DVState{},
 		lastExchVerCheck: 0,
 	}
 
@@ -181,7 +180,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 		glog.Warningf("AgreementBotWorker terminating, no AgreementBot config.")
 		return false
 	} else if w.db == nil {
-		glog.Errorf("AgreementBotWorker terminating, no AgreementBot database configured.")
+		glog.Warningf("AgreementBotWorker terminating, no AgreementBot database configured.")
 		return false
 	}
 
@@ -206,7 +205,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 			return false
 		}
 
-		if policyManager, err := policy.Initialize(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, w.Config.ArchSynonyms, w.workloadResolver, false); err != nil {
+		if policyManager, err := policy.Initialize(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, w.Config.ArchSynonyms, w.workloadResolver, w.serviceResolver, false); err != nil {
 			glog.Errorf("AgreementBotWorker unable to initialize policy manager, error: %v", err)
 		} else if policyManager.NumberPolicies() != 0 {
 			w.pm = policyManager
@@ -421,14 +420,14 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 				glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to extract agreement protocol name from message %v", protocolMessage))
 			} else if _, ok := w.consumerPH[msgProtocol]; !ok {
 				glog.Infof(fmt.Sprintf("AgreementBotWorker unable to direct exchange message %v to a protocol handler, deleting it.", protocolMessage))
-				DeleteMessage(msg.MsgId, w.agbotId, w.token, w.Config.AgreementBot.ExchangeURL, w.httpClient)
+				DeleteMessage(msg.MsgId, w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL(), w.httpClient)
 			} else {
 				cmd := NewNewProtocolMessageCommand(protocolMessage, msg.MsgId, msg.DeviceId, msg.DevicePubKey)
 				if !w.consumerPH[msgProtocol].AcceptCommand(cmd) {
 					glog.Infof(fmt.Sprintf("AgreementBotWorker protocol handler for %v not accepting exchange messages, deleting msg.", msgProtocol))
-					DeleteMessage(msg.MsgId, w.agbotId, w.token, w.Config.AgreementBot.ExchangeURL, w.httpClient)
+					DeleteMessage(msg.MsgId, w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL(), w.httpClient)
 				} else if err := w.consumerPH[msgProtocol].DispatchProtocolMessage(cmd, w.consumerPH[msgProtocol]); err != nil {
-					DeleteMessage(msg.MsgId, w.agbotId, w.token, w.Config.AgreementBot.ExchangeURL, w.httpClient)
+					DeleteMessage(msg.MsgId, w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL(), w.httpClient)
 				}
 			}
 		}
@@ -488,7 +487,7 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 					// attempt gets on a worker thread, then we can perform the policy checks and merges.
 					producerPolicy := policy.Policy_Factory("empty")
 					err := error(nil)
-					if len(dev.Microservices) != 0 {
+					if len(dev.Services) != 0 {
 
 						// For every microservice required by the workload, deserialize the JSON policy blob into a policy object and
 						// then merge them all together.
@@ -519,7 +518,7 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 					} else if bcType != "" && !w.consumerPH[protocol].IsBlockchainWritable(bcType, bcName, bcOrg) {
 						// Get that blockchain running if it isn't up.
 						glog.V(5).Infof("AgreementBotWorker skipping device id %v, requires blockchain %v %v %v that isnt ready yet.", dev.Id, bcType, bcName, bcOrg)
-						w.BaseWorker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, bcType, bcName, bcOrg, w.Manager.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
+						w.BaseWorker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, bcType, bcName, bcOrg, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
 						continue
 					} else if !w.consumerPH[protocol].AcceptCommand(cmd) {
 						glog.Errorf("AgreementBotWorker protocol handler for %v not accepting new agreement commands.", protocol)
@@ -566,7 +565,7 @@ func (w *AgreementBotWorker) MergeAllProducerPolicies(dev *exchange.SearchResult
 
 	var producerPolicy *policy.Policy
 
-	for _, msDef := range dev.Microservices {
+	for _, msDef := range dev.Services {
 		tempPolicy := new(policy.Policy)
 		if len(msDef.Policy) == 0 {
 			return nil, errors.New(fmt.Sprintf("empty policy blob for %v, skipping this device.", msDef.Url))
@@ -587,7 +586,7 @@ func (w *AgreementBotWorker) MergeAllProducerPolicies(dev *exchange.SearchResult
 func (w *AgreementBotWorker) policyWatcher(name string, quit chan bool) {
 
 	// create a place for the policy watcher to save state between iterations.
-	contents := policy.NewContents()
+	contents := w.pm.WatcherContent
 
 	for {
 		glog.V(5).Infof(fmt.Sprintf("AgreementBotWorker checking for new or updated policy files"))
@@ -598,7 +597,7 @@ func (w *AgreementBotWorker) policyWatcher(name string, quit chan bool) {
 			return
 
 		case <-time.After(time.Duration(w.Config.AgreementBot.CheckUpdatedPolicyS) * time.Second):
-			contents, _ = policy.PolicyFileChangeWatcher(w.Config.AgreementBot.PolicyPath, contents, w.Config.ArchSynonyms, w.changedPolicy, w.deletedPolicy, w.errorPolicy, w.workloadResolver, 0)
+			contents, _ = policy.PolicyFileChangeWatcher(w.Config.AgreementBot.PolicyPath, contents, w.Config.ArchSynonyms, w.changedPolicy, w.deletedPolicy, w.errorPolicy, w.workloadResolver, w.serviceResolver, 0)
 		}
 	}
 
@@ -630,9 +629,9 @@ func (w *AgreementBotWorker) errorPolicy(org string, fileName string, err error)
 func (w *AgreementBotWorker) getMessages() ([]exchange.AgbotMessage, error) {
 	var resp interface{}
 	resp = new(exchange.GetAgbotMessageResponse)
-	targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId) + "/msgs"
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/agbots/" + exchange.GetId(w.GetExchangeId()) + "/msgs"
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.agbotId, w.token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(err.Error())
 			return nil, err
 		} else if tpErr != nil {
@@ -719,9 +718,9 @@ func DeleteMessage(msgId int, agbotId, agbotToken, exchangeURL string, httpClien
 // criteria has been reached. This prevents the agbot from continually sending proposals to devices that are
 // already in an agreement.
 //
-// There are 2 ways to search the exchange; (a) by pattern and workload URL, or (b) by list of microservices.
-// If the agbot is working with a policy file that was generated from a pattern, then it will do searches by
-// pattern. If the agbot is working with a manually created policy file, then it will do searches by list of
+// There are 2 ways to search the exchange; (a) by pattern and service or workload URL, or (b) by list of service or
+// microservices. If the agbot is working with a policy file that was generated from a pattern, then it will do searches
+// by pattern. If the agbot is working with a manually created policy file, then it will do searches by list of
 // microservices.
 func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, searchOrg string) (*[]exchange.SearchResultDevice, error) {
 
@@ -731,14 +730,18 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, searchOrg string
 		// Setup the search request body
 		ser := exchange.CreateSearchPatternRequest()
 		ser.SecondsStale = w.Config.AgreementBot.ActiveDeviceTimeoutS
-		ser.WorkloadURL = pol.Workloads[0].WorkloadURL
+		if pol.IsServiceBased() {
+			ser.ServiceURL = pol.Workloads[0].WorkloadURL
+		} else {
+			ser.WorkloadURL = pol.Workloads[0].WorkloadURL
+		}
 
 		// Invoke the exchange
 		var resp interface{}
 		resp = new(exchange.SearchExchangePatternResponse)
-		targetURL := w.BaseWorker.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + searchOrg + "/patterns/" + exchange.GetId(pol.PatternId) + "/search"
+		targetURL := w.GetExchangeURL() + "orgs/" + searchOrg + "/patterns/" + exchange.GetId(pol.PatternId) + "/search"
 		for {
-			if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, ser, &resp); err != nil {
+			if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.GetExchangeId(), w.GetExchangeToken(), ser, &resp); err != nil {
 				if !strings.Contains(err.Error(), "status: 404") {
 					return nil, err
 				} else {
@@ -767,7 +770,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, searchOrg string
 		// can't satisfy all the workloads then workload rollback cant work so we shouldnt make an agreement with this
 		// device.
 		for _, workload := range pol.Workloads {
-			if e_workload, _, err := exchange.GetWorkload(w.Config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+			if e_workload, _, err := exchange.GetWorkload(w.Config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken()); err != nil {
 				return nil, errors.New(fmt.Sprintf("AgreementBotWorker received error retrieving workload definition for %v, error: %v", workload, err))
 			} else if e_workload == nil {
 				return nil, errors.New(fmt.Sprintf("AgreementBotWorker could not find workload definition for %v", workload))
@@ -797,14 +800,14 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, searchOrg string
 		// Setup the search request body
 		ser := exchange.CreateSearchMSRequest()
 		ser.SecondsStale = w.Config.AgreementBot.ActiveDeviceTimeoutS
-		ser.DesiredMicroservices = desiredMS
+		ser.DesiredServices = desiredMS
 
 		// Invoke the exchange
 		var resp interface{}
 		resp = new(exchange.SearchExchangeMSResponse)
-		targetURL := w.BaseWorker.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + searchOrg + "/search/nodes"
+		targetURL := w.GetExchangeURL() + "orgs/" + searchOrg + "/search/nodes"
 		for {
-			if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.agbotId, w.token, ser, &resp); err != nil {
+			if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.GetExchangeId(), w.GetExchangeToken(), ser, &resp); err != nil {
 				if !strings.Contains(err.Error(), "status: 404") {
 					return nil, err
 				} else {
@@ -877,7 +880,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 					} else if existingPol := w.pm.GetPolicy(ag.Org, pol.Header.Name); existingPol == nil {
 						glog.Errorf(AWlogString(fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
 						// Update state in exchange
-						if err := DeleteConsumerAgreement(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId); err != nil {
+						if err := DeleteConsumerAgreement(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), ag.CurrentAgreementId); err != nil {
 							glog.Errorf(AWlogString(fmt.Sprintf("error deleting agreement %v in exchange: %v", ag.CurrentAgreementId, err)))
 						}
 						// Remove any workload usage records so that a new agreement will be made starting from the highest priority workload
@@ -922,9 +925,9 @@ func (w *AgreementBotWorker) syncOnInit() error {
 						var exchangeAgreement map[string]exchange.AgbotAgreement
 						var resp interface{}
 						resp = new(exchange.AllAgbotAgreementsResponse)
-						targetURL := w.BaseWorker.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId) + "/agreements/" + ag.CurrentAgreementId
+						targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/agbots/" + exchange.GetId(w.GetExchangeId()) + "/agreements/" + ag.CurrentAgreementId
 
-						if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.agbotId, w.token, nil, &resp); err != nil || tpErr != nil {
+						if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil || tpErr != nil {
 							glog.Errorf(AWlogString(fmt.Sprintf("encountered error getting agbot info from exchange, error %v, transport error %v", err, tpErr)))
 							continue
 						} else {
@@ -967,7 +970,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 			for org, typeMap := range neededBCInstances {
 				for typeName, instMap := range typeMap {
 					for instName, _ := range instMap {
-						w.Messages() <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, typeName, instName, org, w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token)
+						w.Messages() <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, typeName, instName, org, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
 					}
 				}
 			}
@@ -983,7 +986,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 
 func (w *AgreementBotWorker) cleanupAgreement(ag *Agreement) {
 	// Update state in exchange
-	if err := DeleteConsumerAgreement(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token, ag.CurrentAgreementId); err != nil {
+	if err := DeleteConsumerAgreement(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), ag.CurrentAgreementId); err != nil {
 		glog.Errorf(AWlogString(fmt.Sprintf("error deleting agreement %v in exchange: %v", ag.CurrentAgreementId, err)))
 	}
 
@@ -1007,17 +1010,24 @@ func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, po
 	glog.V(5).Infof(AWlogString(fmt.Sprintf("setting agreement %v for workload %v state to %v", agreementId, workload, state)))
 
 	as := new(exchange.PutAgbotAgreementState)
-	as.Workload = exchange.WorkloadAgreement{
+	wa := exchange.WorkloadAgreement{
 		Org:     exchange.GetOrg(pol.PatternId),
 		Pattern: exchange.GetId(pol.PatternId),
 		URL:     workload,
 	}
+
+	if pol.IsServiceBased() {
+		as.Service = wa
+	} else {
+		as.Workload = wa
+	}
+
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId) + "/agreements/" + agreementId
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/agbots/" + exchange.GetId(w.GetExchangeId()) + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.agbotId, w.token, &as, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), &as, &resp); err != nil {
 			glog.Errorf(err.Error())
 			return err
 		} else if tpErr != nil {
@@ -1048,9 +1058,9 @@ func (w *AgreementBotWorker) registerPublicKey() error {
 	as := exchange.CreateAgbotPublicKeyPatch(w.Config.AgreementBot.MessageKeyPath)
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId)
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/agbots/" + exchange.GetId(w.GetExchangeId())
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PATCH", targetURL, w.agbotId, w.token, &as, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PATCH", targetURL, w.GetExchangeId(), w.GetExchangeToken(), &as, &resp); err != nil {
 			glog.Errorf(err.Error())
 			return err
 		} else if tpErr != nil {
@@ -1066,10 +1076,18 @@ func (w *AgreementBotWorker) registerPublicKey() error {
 
 func (w *AgreementBotWorker) workloadResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
 
-	// TODO: do we need a dedicated HTTP client instance here or can we use the shared one?
-	asl, _, err := exchange.WorkloadResolver(w.Config.Collaborators.HTTPClientFactory, wURL, wOrg, wVersion, wArch, w.Config.AgreementBot.ExchangeURL, w.Config.AgreementBot.ExchangeId, w.Config.AgreementBot.ExchangeToken)
+	asl, _, err := exchange.GetHTTPWorkloadResolverHandler(w)(wURL, wOrg, wVersion, wArch)
 	if err != nil {
 		glog.Errorf(AWlogString(fmt.Sprintf("unable to resolve workload, error %v", err)))
+	}
+	return asl, err
+}
+
+func (w *AgreementBotWorker) serviceResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
+
+	asl, _, err := exchange.GetHTTPServiceResolverHandler(w)(wURL, wOrg, wVersion, wArch)
+	if err != nil {
+		glog.Errorf(AWlogString(fmt.Sprintf("unable to resolve service, error %v", err)))
 	}
 	return asl, err
 }
@@ -1109,7 +1127,7 @@ func (w *AgreementBotWorker) internalGeneratePolicyFromPatterns() error {
 	for org, _ := range w.PatternManager.OrgPatterns {
 
 		// Query exchange for all patterns in the org
-		if exchangePatternMetadata, err := exchange.GetPatterns(w.Config.Collaborators.HTTPClientFactory, org, "", w.Config.AgreementBot.ExchangeURL, w.agbotId, w.token); err != nil {
+		if exchangePatternMetadata, err := exchange.GetPatterns(w.Config.Collaborators.HTTPClientFactory, org, "", w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken()); err != nil {
 			return errors.New(fmt.Sprintf("unable to get patterns for org %v, error %v", org, err))
 
 			// Check for pattern metadata changes and update policy files accordingly
@@ -1126,9 +1144,9 @@ func (w *AgreementBotWorker) getAgbotPatterns() (map[string]exchange.ServedPatte
 
 	var resp interface{}
 	resp = new(exchange.GetAgbotsPatternsResponse)
-	targetURL := w.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId) + "/patterns"
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/agbots/" + exchange.GetId(w.GetExchangeId()) + "/patterns"
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.agbotId, w.token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(AWlogString(err.Error()))
 			return nil, err
 		} else if tpErr != nil {
@@ -1163,8 +1181,10 @@ func (w *AgreementBotWorker) heartBeat() int {
 		}
 	}
 
-	targetURL := w.Manager.Config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(w.agbotId) + "/agbots/" + exchange.GetId(w.agbotId) + "/heartbeat"
-	exchange.Heartbeat(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), targetURL, w.agbotId, w.token)
+	// now do the hearbeat
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/agbots/" + exchange.GetId(w.GetExchangeId()) + "/heartbeat"
+	exchange.Heartbeat(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), targetURL, w.GetExchangeId(), w.GetExchangeToken())
+
 	return 0
 }
 

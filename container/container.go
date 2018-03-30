@@ -370,7 +370,7 @@ func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, e
 	}
 
 	return &ContainerWorker{
-		BaseWorker: worker.NewBaseWorker("mock", config),
+		BaseWorker: worker.NewBaseWorker("mock", config, nil),
 		db:         nil,
 		client:     client,
 		iptables:   nil,
@@ -398,7 +398,7 @@ func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB) 
 		panic("Unable to instantiate docker Client")
 	} else {
 		worker := &ContainerWorker{
-			BaseWorker: worker.NewBaseWorker(name, config),
+			BaseWorker: worker.NewBaseWorker(name, config, nil),
 			db:         db,
 			client:     client,
 			iptables:   ipt,
@@ -1717,16 +1717,15 @@ func (b *ContainerWorker) findMicroserviceDefContainerNames(api_spec string, ver
 	// find the ms from the local db, it is okay if the ms def is not found. this is old behavious befor the ms split.
 	if msdef, err := persistence.FindMicroserviceDefWithKey(b.db, msdef_key); err != nil {
 		return nil, fmt.Errorf("Error finding microservice definition from the local db for %v version %v key %v. %v", api_spec, version, msdef_key, err)
-	} else if msdef != nil && msdef.Workloads != nil && len(msdef.Workloads) > 0 {
+	} else if msdef != nil && msdef.HasDeployment() {
 		// get the service name from the ms def
-		for _, wl := range msdef.Workloads {
-			deploymentDesc := new(containermessage.DeploymentDescription)
-			if err := json.Unmarshal([]byte(wl.Deployment), &deploymentDesc); err != nil {
-				return nil, fmt.Errorf("Error Unmarshalling deployment string %v for microservice %v version %v. %v", wl.Deployment, api_spec, version, err)
-			} else {
-				for serviceName, _ := range deploymentDesc.Services {
-					container_names = append(container_names, serviceName)
-				}
+		deployment, _, _ := msdef.GetDeployment()
+		deploymentDesc := new(containermessage.DeploymentDescription)
+		if err := json.Unmarshal([]byte(deployment), &deploymentDesc); err != nil {
+			return nil, fmt.Errorf("Error Unmarshalling deployment string %v for microservice %v version %v. %v", deployment, api_spec, version, err)
+		} else {
+			for serviceName, _ := range deploymentDesc.Services {
+				container_names = append(container_names, serviceName)
 			}
 		}
 	}

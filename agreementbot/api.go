@@ -25,6 +25,7 @@ type API struct {
 	pm             *policy.PolicyManager
 	bcState        map[string]map[string]apicommon.BlockchainState
 	bcStateLock    sync.Mutex
+	EC             *worker.BaseExchangeContext
 }
 
 func NewAPIListener(name string, config *config.HorizonConfig, db *bolt.DB) *API {
@@ -38,6 +39,7 @@ func NewAPIListener(name string, config *config.HorizonConfig, db *bolt.DB) *API
 
 		name: name,
 		db:   db,
+		EC:   worker.NewExchangeContext(config.AgreementBot.ExchangeId, config.AgreementBot.ExchangeToken, config.AgreementBot.ExchangeURL, false, config.Collaborators.HTTPClientFactory),
 	}
 
 	listener.listen(config.AgreementBot.APIListen)
@@ -82,6 +84,47 @@ func (a *API) NewEvent(ev events.Message) {
 
 func (a *API) GetName() string {
 	return a.name
+}
+
+// A local implementation of the ExchangeContext interface because the API object is not an anax worker.
+func (a *API) GetExchangeId() string {
+	if a.EC != nil {
+		return a.EC.Id
+	} else {
+		return ""
+	}
+}
+
+func (a *API) GetExchangeToken() string {
+	if a.EC != nil {
+		return a.EC.Token
+	} else {
+		return ""
+	}
+}
+
+func (a *API) GetExchangeURL() string {
+	if a.EC != nil {
+		return a.EC.URL
+	} else {
+		return ""
+	}
+}
+
+func (a *API) GetServiceBased() bool {
+	if a.EC != nil {
+		return a.EC.ServiceBased
+	} else {
+		return false
+	}
+}
+
+func (a *API) GetHTTPFactory() *config.HTTPClientFactory {
+	if a.EC != nil {
+		return a.EC.HTTPFactory
+	} else {
+		return a.Config.Collaborators.HTTPClientFactory
+	}
 }
 
 func (a *API) listen(apiListen string) {
@@ -237,16 +280,25 @@ func (a *API) policyUpgrade(w http.ResponseWriter, r *http.Request) {
 		}
 
 		workloadResolver := func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
-			asl, _, err := exchange.WorkloadResolver(a.Config.Collaborators.HTTPClientFactory, wURL, wOrg, wVersion, wArch, a.Config.AgreementBot.ExchangeURL, a.Config.AgreementBot.ExchangeId, a.Config.AgreementBot.ExchangeToken)
+			asl, _, err := exchange.GetHTTPWorkloadResolverHandler(a)(wURL, wOrg, wVersion, wArch)
 			if err != nil {
 				glog.Errorf(APIlogString(fmt.Sprintf("unable to resolve workload, error %v", err)))
 			}
 			return asl, err
 		}
+
+		serviceResolver := func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
+			asl, _, err := exchange.GetHTTPServiceResolverHandler(a)(wURL, wOrg, wVersion, wArch)
+			if err != nil {
+				glog.Errorf(APIlogString(fmt.Sprintf("unable to resolve service, error %v", err)))
+			}
+			return asl, err
+		}
+
 		// Verify the input policy name. It can be either the name of the policy within the header of the policy file or the name
 		// of the file itself.
 		found := false
-		if pm, err := policy.Initialize(a.Config.AgreementBot.PolicyPath, a.Config.ArchSynonyms, workloadResolver, false); err != nil {
+		if pm, err := policy.Initialize(a.Config.AgreementBot.PolicyPath, a.Config.ArchSynonyms, workloadResolver, serviceResolver, false); err != nil {
 			glog.Error(APIlogString(fmt.Sprintf("error initializing policy manager, error: %v", err)))
 			w.WriteHeader(http.StatusInternalServerError)
 			return

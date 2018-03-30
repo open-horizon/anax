@@ -64,6 +64,11 @@ type ConsumerProtocolHandler interface {
 	AlreadyReceivedReply(ag *Agreement) bool
 	GetKnownBlockchain(ag *Agreement) (string, string, string)
 	CanSendMeterRecord(ag *Agreement) bool
+	GetExchangeId() string
+	GetExchangeToken() string
+	GetExchangeURL() string
+	GetServiceBased() bool
+	GetHTTPFactory() *config.HTTPClientFactory
 }
 
 type BaseConsumerProtocolHandler struct {
@@ -92,6 +97,26 @@ func (b *BaseConsumerProtocolHandler) ExchangeId() string {
 
 func (b *BaseConsumerProtocolHandler) ExchangeToken() string {
 	return b.token
+}
+
+func (b *BaseConsumerProtocolHandler) GetExchangeId() string {
+	return b.agbotId
+}
+
+func (b *BaseConsumerProtocolHandler) GetExchangeToken() string {
+	return b.token
+}
+
+func (b *BaseConsumerProtocolHandler) GetExchangeURL() string {
+	return b.config.AgreementBot.ExchangeURL
+}
+
+func (b *BaseConsumerProtocolHandler) GetServiceBased() bool {
+	return false
+}
+
+func (b *BaseConsumerProtocolHandler) GetHTTPFactory() *config.HTTPClientFactory {
+	return b.config.Collaborators.HTTPClientFactory
 }
 
 func (w *BaseConsumerProtocolHandler) sendMessage(mt interface{}, pay []byte) error {
@@ -389,11 +414,18 @@ func (b *BaseConsumerProtocolHandler) RecordConsumerAgreementState(agreementId s
 
 	as := new(exchange.PutAgbotAgreementState)
 
-	as.Workload = exchange.WorkloadAgreement{
+	wa := exchange.WorkloadAgreement{
 		Org:     exchange.GetOrg(pol.PatternId),
 		Pattern: exchange.GetId(pol.PatternId),
 		URL:     workload,
 	}
+
+	if pol.IsServiceBased() {
+		as.Service = wa
+	} else {
+		as.Workload = wa
+	}
+
 	as.State = state
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)

@@ -31,12 +31,11 @@ func Test_agreement_success(t *testing.T) {
 func createEmptyPH() *CSProtocolHandler {
 	return &CSProtocolHandler{
 		BaseProducerProtocolHandler: &BaseProducerProtocolHandler{
-			name:     "test",
-			pm:       nil,
-			db:       nil,
-			config:   nil,
-			deviceId: "an12345",
-			token:    "abcdefg",
+			name:   "test",
+			pm:     nil,
+			db:     nil,
+			config: nil,
+			ec:     nil,
 		},
 		genericAgreementPH: nil,
 		bcState:            nil,

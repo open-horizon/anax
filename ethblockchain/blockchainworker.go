@@ -46,9 +46,6 @@ type BCInstanceState struct {
 type EthBlockchainWorker struct {
 	worker.BaseWorker              // embedded field
 	httpClient        *http.Client // a shared HTTP client for this worker
-	exchangeURL       string
-	exchangeId        string
-	exchangeToken     string
 	horizonPubKeyFile string
 	instances         map[string]*BCInstanceState
 	neededBCs         map[string]map[string]uint64 // time stamp last time this BC was reported as needed
@@ -57,7 +54,7 @@ type EthBlockchainWorker struct {
 func NewEthBlockchainWorker(name string, cfg *config.HorizonConfig) *EthBlockchainWorker {
 
 	worker := &EthBlockchainWorker{
-		BaseWorker:        worker.NewBaseWorker(name, cfg),
+		BaseWorker:        worker.NewBaseWorker(name, cfg, nil),
 		httpClient:        cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 		horizonPubKeyFile: cfg.Edge.PublicKeyPath,
 		instances:         make(map[string]*BCInstanceState),
@@ -231,7 +228,7 @@ func (w *EthBlockchainWorker) RestartContainer(cmd *ContainerShutdownCommand) {
 		w.instances[cmd.Msg.ContainerName] = i
 
 		// Create a new eth container message to begin the process of loading the eth container
-		newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, cmd.Msg.ContainerName, cmd.Msg.Org, w.exchangeURL, w.exchangeId, w.exchangeToken)
+		newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, cmd.Msg.ContainerName, cmd.Msg.Org, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
 		ncmd := NewNewClientCommand(*newMsg)
 		w.Commands <- ncmd
 	}
@@ -268,7 +265,7 @@ func (w *EthBlockchainWorker) CommandHandler(command worker.Command) bool {
 		w.SetInstanceNotStarted(cmd.Msg.LaunchContext.Blockchain.Name)
 
 		// fake up a new eth container message to restart the process of loading the eth container
-		newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, cmd.Msg.LaunchContext.Blockchain.Name, cmd.Msg.LaunchContext.Blockchain.Org, w.exchangeURL, w.exchangeId, w.exchangeToken)
+		newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, cmd.Msg.LaunchContext.Blockchain.Name, cmd.Msg.LaunchContext.Blockchain.Org, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
 		ncmd := NewNewClientCommand(*newMsg)
 		w.Commands <- ncmd
 
@@ -278,7 +275,7 @@ func (w *EthBlockchainWorker) CommandHandler(command worker.Command) bool {
 		w.SetInstanceNotStarted(lc.Blockchain.Name)
 
 		// fake up a new eth container message to restart the process of loading the eth container
-		newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, lc.Blockchain.Name, lc.Blockchain.Org, w.exchangeURL, w.exchangeId, w.exchangeToken)
+		newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, lc.Blockchain.Name, lc.Blockchain.Org, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
 		ncmd := NewNewClientCommand(*newMsg)
 		w.Commands <- ncmd
 
@@ -355,7 +352,7 @@ func (w *EthBlockchainWorker) CheckStatus() {
 					w.Messages() <- events.NewBlockchainClientStoppingMessage(events.BC_CLIENT_STOPPING, policy.Ethereum_bc, name, saveOrg)
 					// If we dont need this container any more then dont restart it.
 					if w.NeedContainer(name, saveOrg) {
-						newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, name, saveOrg, w.exchangeURL, w.exchangeId, w.exchangeToken)
+						newMsg := events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, policy.Ethereum_bc, name, saveOrg, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
 						ncmd := NewNewClientCommand(*newMsg)
 						w.Commands <- ncmd
 					} else {
@@ -419,10 +416,8 @@ func (w *EthBlockchainWorker) CheckStatus() {
 func (w *EthBlockchainWorker) handleNewClient(cmd *NewClientCommand) {
 
 	// Grab the exchange metadata we need for all blockchain client requests.
-	if w.exchangeURL == "" {
-		w.exchangeURL = cmd.Msg.ExchangeURL()
-		w.exchangeId = cmd.Msg.ExchangeId()
-		w.exchangeToken = cmd.Msg.ExchangeToken()
+	if w.GetExchangeURL() == "" {
+		w.EC = worker.NewExchangeContext(cmd.Msg.ExchangeId(), cmd.Msg.ExchangeToken(), cmd.Msg.ExchangeURL(), false, w.Config.Collaborators.HTTPClientFactory)
 	}
 
 	// Make sure we are tracking this new instance.
@@ -483,7 +478,7 @@ func (w *EthBlockchainWorker) getEthContainer(name string) error {
 func (w *EthBlockchainWorker) getBCMetadata(name string, org string) (string, *exchange.BlockchainDetails, error) {
 
 	// Get blockchain metadata from the exchange
-	if bcMetadata, err := exchange.GetEthereumClient(w.Config.Collaborators.HTTPClientFactory, w.exchangeURL, org, name, CHAIN_TYPE, w.exchangeId, w.exchangeToken); err != nil {
+	if bcMetadata, err := exchange.GetEthereumClient(w.Config.Collaborators.HTTPClientFactory, w.GetExchangeURL(), org, name, CHAIN_TYPE, w.GetExchangeId(), w.GetExchangeToken()); err != nil {
 		return "", nil, errors.New(logString(fmt.Sprintf("unable to get eth client metadata, error: %v", err)))
 	} else if len(bcMetadata) == 0 {
 		glog.Errorf(logString(fmt.Sprintf("no metadata for container %v, giving up on it.", name)))

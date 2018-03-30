@@ -5,87 +5,132 @@ import (
 	"github.com/open-horizon/anax/policy"
 )
 
-// The handlers module defines replaceable functions that represent the API's external dependencies. These
+// The handlers module defines replaceable functions that represent the exchange API's external dependencies. These
 // handlers can be replaced by unit or integration tests to mock the external dependency.
 
-type ExchangeApiHandlers struct {
-	Config *config.HorizonConfig
-}
-
-func NewExchangeApiHandlers(config *config.HorizonConfig) *ExchangeApiHandlers {
-	return &ExchangeApiHandlers{
-		Config: config,
-	}
+type ExchangeContext interface {
+	GetExchangeId() string
+	GetExchangeToken() string
+	GetExchangeURL() string
+	GetServiceBased() bool
+	GetHTTPFactory() *config.HTTPClientFactory
 }
 
 // A handler for querying the exchange for an organization.
-type OrgHandler func(org string, id string, token string) (*Organization, error)
+type OrgHandler func(org string) (*Organization, error)
 
-func (e *ExchangeApiHandlers) GetHTTPExchangeOrgHandler() OrgHandler {
+func GetHTTPExchangeOrgHandler(ec ExchangeContext) OrgHandler {
+	return func(org string) (*Organization, error) {
+		return GetOrganization(ec.GetHTTPFactory(), org, ec.GetExchangeURL(), ec.GetExchangeId(), ec.GetExchangeToken())
+	}
+}
+
+// A handler for querying the exchange for an org when the caller doesnt have exchange identity at the time of creating the handler, but
+// can supply the exchange context when it's time to make the call. Only used by the API package when trying to register an edge device.
+type OrgHandlerWithContext func(org string, id string, token string) (*Organization, error)
+
+func GetHTTPExchangeOrgHandlerWithContext(cfg *config.HorizonConfig) OrgHandlerWithContext {
 	return func(org string, id string, token string) (*Organization, error) {
-		return GetOrganization(e.Config.Collaborators.HTTPClientFactory, org, e.Config.Edge.ExchangeURL, id, token)
+		return GetOrganization(cfg.Collaborators.HTTPClientFactory, org, cfg.Edge.ExchangeURL, id, token)
 	}
 }
 
 // A handler for querying the exchange for patterns.
-type PatternHandler func(org string, pattern string, id string, token string) (map[string]Pattern, error)
+type PatternHandler func(org string, pattern string) (map[string]Pattern, error)
 
-func (e *ExchangeApiHandlers) GetHTTPExchangePatternHandler() PatternHandler {
+func GetHTTPExchangePatternHandler(ec ExchangeContext) PatternHandler {
+	return func(org string, pattern string) (map[string]Pattern, error) {
+		return GetPatterns(ec.GetHTTPFactory(), org, pattern, ec.GetExchangeURL(), ec.GetExchangeId(), ec.GetExchangeToken())
+	}
+}
+
+// A handler for querying the exchange for patterns when the caller doesnt have exchange identity at the time of creating the handler, but
+// can supply the exchange context when it's time to make the call. Only used by the API package when trying to register an edge device.
+type PatternHandlerWithContext func(org string, pattern string, id string, token string) (map[string]Pattern, error)
+
+func GetHTTPExchangePatternHandlerWithContext(cfg *config.HorizonConfig) PatternHandlerWithContext {
 	return func(org string, pattern string, id string, token string) (map[string]Pattern, error) {
-		return GetPatterns(e.Config.Collaborators.HTTPClientFactory, org, pattern, e.Config.Edge.ExchangeURL, id, token)
+		return GetPatterns(cfg.Collaborators.HTTPClientFactory, org, pattern, cfg.Edge.ExchangeURL, id, token)
 	}
 }
 
 // A handler for querying the exchange for microservices.
-type MicroserviceHandler func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*MicroserviceDefinition, string, error)
+type MicroserviceHandler func(mUrl string, mOrg string, mVersion string, mArch string) (*MicroserviceDefinition, string, error)
 
-func (e *ExchangeApiHandlers) GetHTTPMicroserviceHandler() MicroserviceHandler {
-	return func(mUrl string, mOrg string, mVersion string, mArch string, id string, token string) (*MicroserviceDefinition, string, error) {
-		return GetMicroservice(e.Config.Collaborators.HTTPClientFactory, mUrl, mOrg, mVersion, mArch, e.Config.Edge.ExchangeURL, id, token)
+func GetHTTPMicroserviceHandler(ec ExchangeContext) MicroserviceHandler {
+	return func(mUrl string, mOrg string, mVersion string, mArch string) (*MicroserviceDefinition, string, error) {
+		return GetMicroservice(ec.GetHTTPFactory(), mUrl, mOrg, mVersion, mArch, ec.GetExchangeURL(), ec.GetExchangeId(), ec.GetExchangeToken())
 	}
 }
 
 // A handler for resolving workload references in the exchange.
-type WorkloadResolverHandler func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*policy.APISpecList, *WorkloadDefinition, error)
+type WorkloadResolverHandler func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *WorkloadDefinition, error)
 
-func (e *ExchangeApiHandlers) GetHTTPWorkloadResolverHandler() WorkloadResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*policy.APISpecList, *WorkloadDefinition, error) {
-		return WorkloadResolver(e.Config.Collaborators.HTTPClientFactory, wUrl, wOrg, wVersion, wArch, e.Config.Edge.ExchangeURL, id, token)
+func GetHTTPWorkloadResolverHandler(ec ExchangeContext) WorkloadResolverHandler {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *WorkloadDefinition, error) {
+		return WorkloadResolver(ec.GetHTTPFactory(), wUrl, wOrg, wVersion, wArch, ec.GetExchangeURL(), ec.GetExchangeId(), ec.GetExchangeToken())
 	}
 }
 
 // A handler for getting workload metadata from the exchange.
-type WorkloadHandler func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*WorkloadDefinition, string, error)
+type WorkloadHandler func(wUrl string, wOrg string, wVersion string, wArch string) (*WorkloadDefinition, string, error)
 
-func (e *ExchangeApiHandlers) GetHTTPWorkloadHandler() WorkloadHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string, id string, token string) (*WorkloadDefinition, string, error) {
-		return GetWorkload(e.Config.Collaborators.HTTPClientFactory, wUrl, wOrg, wVersion, wArch, e.Config.Edge.ExchangeURL, id, token)
+func GetHTTPWorkloadHandler(ec ExchangeContext) WorkloadHandler {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (*WorkloadDefinition, string, error) {
+		return GetWorkload(ec.GetHTTPFactory(), wUrl, wOrg, wVersion, wArch, ec.GetExchangeURL(), ec.GetExchangeId(), ec.GetExchangeToken())
 	}
 }
 
 // a handler for getting the device information from the exchange
-type DeviceHandler func(deviceId string, deviceToken string) (*Device, error)
+type DeviceHandler func(id string, token string) (*Device, error)
 
-func (e *ExchangeApiHandlers) GetHTTPDeviceHandler() DeviceHandler {
+func GetHTTPDeviceHandler(ec ExchangeContext) DeviceHandler {
 	return func(id string, token string) (*Device, error) {
-		return GetExchangeDevice(e.Config.Collaborators.HTTPClientFactory, id, token, e.Config.Edge.ExchangeURL)
+		return GetExchangeDevice(ec.GetHTTPFactory(), ec.GetExchangeId(), ec.GetExchangeToken(), ec.GetExchangeURL())
 	}
 }
 
 // a handler for modifying the device information on the exchange
 type PutDeviceHandler func(deviceId string, deviceToken string, pdr *PutDeviceRequest) (*PutDeviceResponse, error)
 
-func (e *ExchangeApiHandlers) GetHTTPPutDeviceHandler() PutDeviceHandler {
+func GetHTTPPutDeviceHandler(ec ExchangeContext) PutDeviceHandler {
 	return func(id string, token string, pdr *PutDeviceRequest) (*PutDeviceResponse, error) {
-		return PutExchangeDevice(e.Config.Collaborators.HTTPClientFactory, id, token, e.Config.Edge.ExchangeURL, pdr)
+		return PutExchangeDevice(ec.GetHTTPFactory(), ec.GetExchangeId(), ec.GetExchangeToken(), ec.GetExchangeURL(), pdr)
+	}
+}
+
+// A handler for resolving service references in the exchange.
+type ServiceResolverHandler func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *ServiceDefinition, error)
+
+func GetHTTPServiceResolverHandler(ec ExchangeContext) ServiceResolverHandler {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *ServiceDefinition, error) {
+		return ServiceResolver(wUrl, wOrg, wVersion, wArch, GetHTTPServiceHandler(ec))
+	}
+}
+
+// A handler for getting service metadata from the exchange.
+type ServiceHandler func(wUrl string, wOrg string, wVersion string, wArch string) (*ServiceDefinition, string, error)
+
+func GetHTTPServiceHandler(ec ExchangeContext) ServiceHandler {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (*ServiceDefinition, string, error) {
+		return GetService(ec, wUrl, wOrg, wVersion, wArch)
 	}
 }
 
 // a handler for getting microservice keys from the exchange
-type ObjectSigningKeysHandler func(oType, oUrl string, oOrg string, oVersion string, oArch string, id string, token string) (map[string]string, error)
+type ObjectSigningKeysHandler func(oType, oUrl string, oOrg string, oVersion string, oArch string) (map[string]string, error)
 
-func (e *ExchangeApiHandlers) GetHTTPObjectSigningKeysHandler() ObjectSigningKeysHandler {
-	return func(oType string, oUrl string, oOrg string, oVersion string, oArch string, id string, token string) (map[string]string, error) {
-		return GetObjectSigningKeys(e.Config.Collaborators.HTTPClientFactory, oType, oUrl, oOrg, oVersion, oArch, e.Config.Edge.ExchangeURL, id, token)
+func GetHTTPObjectSigningKeysHandler(ec ExchangeContext) ObjectSigningKeysHandler {
+	return func(oType string, oUrl string, oOrg string, oVersion string, oArch string) (map[string]string, error) {
+		return GetObjectSigningKeys(ec, oType, oUrl, oOrg, oVersion, oArch)
+	}
+}
+
+// A handler for resolving workload or service references in the exchange.
+type WorkloadOrServiceResolverHandler func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, ExchangeDefinition, error)
+
+func GetHTTPWorkloadOrServiceResolverHandler(ec ExchangeContext) WorkloadOrServiceResolverHandler {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, ExchangeDefinition, error) {
+		return GetWorkloadOrService(wUrl, wOrg, wVersion, wArch, GetHTTPWorkloadResolverHandler(ec), GetHTTPServiceHandler(ec))
 	}
 }

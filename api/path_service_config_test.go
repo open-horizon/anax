@@ -15,7 +15,7 @@ func init() {
 	// no need to parse flags, that's done by test framework
 }
 
-func Test_CreateMicroService0(t *testing.T) {
+func Test_CreateService0(t *testing.T) {
 
 	dir, db, err := utsetup()
 	if err != nil {
@@ -25,31 +25,29 @@ func Test_CreateMicroService0(t *testing.T) {
 
 	surl := "http://dummy.com"
 	myOrg := "myorg"
-	name := "name"
-	vers := "1.0.0"
+	vers := "[1.0.0,INFINITY)"
 	attrs := []Attribute{}
 	autoU := true
 	activeU := true
 
-	service := &MicroService{
-		SensorUrl:     &surl,
-		SensorOrg:     &myOrg,
-		SensorName:    &name,
-		SensorVersion: &vers,
+	service := &Service{
+		Url:           &surl,
+		Org:           &myOrg,
+		VersionRange:  &vers,
 		AutoUpgrade:   &autoU,
 		ActiveUpgrade: &activeU,
 		Attributes:    &attrs,
 	}
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, "apattern", CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, "apattern", CONFIGSTATE_CONFIGURING, true, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
 
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
-	msHandler := getVariableMicroserviceHandler(exchange.UserInput{})
-	errHandled, newService, msg := CreateMicroService(service, errorhandler, getDummyGetPatterns(), getDummyWorkloadResolver(), msHandler, db, getBasicConfig(), false)
+	sHandler := getVariableServiceHandler(exchange.UserInput{})
+	errHandled, newService, msg := CreateService(service, errorhandler, getDummyGetPatterns(), getDummyServiceResolver(), sHandler, db, getBasicConfig(), false)
 	if errHandled {
 		t.Errorf("unexpected error (%T) %v", myError, myError)
 	} else if newService == nil {
