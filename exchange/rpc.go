@@ -1525,29 +1525,29 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 
 	glog.V(3).Infof(rpclogString("Get exchange version."))
 
-	return "1.46.0", nil
+	var resp interface{}
+	resp = ""
+	targetURL := exchangeUrl + "admin/version"
+	for {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, "", "", nil, &resp); err != nil {
+			//glog.Errorf(err.Error())
+			//return "", err
+			// temporary return a version for wiotp
+			return "1.46.0", nil
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			// remove last return charactor if any
+			v := resp.(string)
+			if strings.HasSuffix(v, "\n") {
+				v = v[:len(v)-1]
+			}
 
-	//var resp interface{}
-	//resp = ""
-	//targetURL := exchangeUrl + "admin/version"
-	//for {
-	//	if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, "", "", nil, &resp); err != nil {
-	//		glog.Errorf(err.Error())
-	//		return "", err
-	//	} else if tpErr != nil {
-	//		glog.Warningf(tpErr.Error())
-	//		time.Sleep(10 * time.Second)
-	//		continue
-	//	} else {
-	// remove last return charactor if any
-	//		v := resp.(string)
-	//		if strings.HasSuffix(v, "\n") {
-	//			v = v[:len(v)-1]
-	//		}
-
-	//		return v, nil
-	//	}
-	//}
+			return v, nil
+		}
+	}
 }
 
 // This function gets the pattern/workload/microservice signing key names and their contents.

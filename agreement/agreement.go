@@ -39,6 +39,7 @@ type AgreementWorker struct {
 	containerSyncUpEvent     bool
 	containerSyncUpSucessful bool
 	producerPH               map[string]producer.ProducerProtocolHandler
+	lastExchVerCheck         int64
 }
 
 func NewAgreementWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *AgreementWorker {
@@ -53,15 +54,16 @@ func NewAgreementWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm 
 	}
 
 	worker := &AgreementWorker{
-		BaseWorker:    worker.NewBaseWorker(name, cfg),
-		db:            db,
-		httpClient:    cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
-		protocols:     make(map[string]bool),
-		pm:            pm,
-		deviceId:      id,
-		deviceToken:   token,
-		devicePattern: pattern,
-		producerPH:    make(map[string]producer.ProducerProtocolHandler),
+		BaseWorker:       worker.NewBaseWorker(name, cfg),
+		db:               db,
+		httpClient:       cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
+		protocols:        make(map[string]bool),
+		pm:               pm,
+		deviceId:         id,
+		deviceToken:      token,
+		devicePattern:    pattern,
+		producerPH:       make(map[string]producer.ProducerProtocolHandler),
+		lastExchVerCheck: 0,
 	}
 
 	glog.Info("Starting Agreement worker")
@@ -335,9 +337,20 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 // Heartbeat to the exchange. This function is called by the heartbeat subworker.
 func (w *AgreementWorker) heartBeat() int {
 
-	// log error if the current exchange version does not meet the requirement
-	if err := version.VerifyExchangeVersion(w.Config.Collaborators.HTTPClientFactory, w.Config.Edge.ExchangeURL); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
+	if w.Config.Edge.ExchangeVersionCheckIntervalM > 0 {
+		// get the exchange version check interval and change to seconds
+		check_interval := w.Config.Edge.ExchangeVersionCheckIntervalM * 60
+
+		// check the exchange version when time is right
+		time_now := time.Now().Unix()
+		if w.lastExchVerCheck == 0 || time_now-w.lastExchVerCheck >= int64(check_interval) {
+			w.lastExchVerCheck = time_now
+
+			// log error if the current exchange version does not meet the requirement
+			if err := version.VerifyExchangeVersion(w.Config.Collaborators.HTTPClientFactory, w.Config.Edge.ExchangeURL, false); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
+			}
+		}
 	}
 
 	// now do the hearbeat
