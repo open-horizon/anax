@@ -279,8 +279,6 @@ func DecideOnProposal(p ProtocolHandler,
 	policies, err := p.PolicyManager().GetPolicyList(myOrg, producerPolicy)
 	if err != nil {
 		replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error getting policy list: %v", p.Name(), err))
-
-		// Tell the policy manager that we're going to attempt an agreement
 	} else if err := p.PolicyManager().AttemptingAgreement(policies, proposal.AgreementId(), myOrg); err != nil {
 		replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error saving agreement count: %v", p.Name(), err))
 	}
@@ -288,6 +286,8 @@ func DecideOnProposal(p ProtocolHandler,
 	// The consumer will send 2 policies, one is the merged policy that represents the
 	// terms and conditions of the agreement. The other is a copy of my policy that he thinks
 	// he is matching. Let's make sure it is one of my policies or a valid merger of my policies.
+	// In the case of services, the agreement service might not have any dependent services and
+	// therefore, there is no producer policy (or it is empty).
 	if replyErr == nil {
 
 		if mergedPolicy, err := p.PolicyManager().MergeAllProducers(&policies, producerPolicy); err != nil {
@@ -333,7 +333,7 @@ func SendResponse(p ProtocolHandler,
 		replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error trying to send proposal response, error: %v", p.Name(), err))
 	}
 
-	// Log any error that occurred along the way and return it
+	// Log any error that occurred along the way and return it. Make sure the policy manager counts are kept in sync.
 	if replyErr != nil {
 		glog.Errorf(AAPlogString(p.Name(), replyErr.Error()))
 		producerPolicy, _ := policy.DemarshalPolicy(proposal.ProducerPolicy())

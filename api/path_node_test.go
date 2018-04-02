@@ -42,7 +42,7 @@ func Test_FindHDForOutput0(t *testing.T) {
 		t.Errorf("id is not set correctly, is %v", *dev)
 	} else if dev.Config == nil {
 		t.Errorf("config state should be initialized, is %v", *dev)
-	} else if *dev.Config.State != CONFIGSTATE_UNCONFIGURED {
+	} else if *dev.Config.State != persistence.CONFIGSTATE_UNCONFIGURED {
 		t.Errorf("config state has wrong state %v", *dev)
 	}
 
@@ -62,7 +62,7 @@ func Test_FindHDForOutput1(t *testing.T) {
 
 	theOrg := "myorg"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "apattern", CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "apattern", persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -75,7 +75,7 @@ func Test_FindHDForOutput1(t *testing.T) {
 		t.Errorf("token should not be returned, but is %v", *dev)
 	} else if dev.Config == nil {
 		t.Errorf("config state should be initialized, is %v", *dev)
-	} else if *dev.Config.State != CONFIGSTATE_CONFIGURING {
+	} else if *dev.Config.State != persistence.CONFIGSTATE_CONFIGURING {
 		t.Errorf("config state has wrong state %v", *dev)
 	}
 
@@ -589,7 +589,7 @@ func Test_DeleteHorizonDevice_success(t *testing.T) {
 	myPattern := "testPattern"
 	device := getBasicDevice(myOrg, myPattern)
 
-	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, CONFIGSTATE_CONFIGURED, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, persistence.CONFIGSTATE_CONFIGURED, false, false)
 	if err != nil {
 		t.Errorf("unexpected error creating device %v", err)
 	}
@@ -608,7 +608,7 @@ func Test_DeleteHorizonDevice_success(t *testing.T) {
 		t.Errorf("there should be a message on the queue")
 	} else if dev, err := FindHorizonDeviceForOutput(db); err != nil {
 		t.Errorf("failed to find device in db, error %v", err)
-	} else if *dev.Config.State != CONFIGSTATE_UNCONFIGURING {
+	} else if *dev.Config.State != persistence.CONFIGSTATE_UNCONFIGURING {
 		t.Errorf("config state is incorrect: %v, should be unconfiguring", *dev.Config.State)
 	}
 
@@ -627,7 +627,7 @@ func Test_DeleteHorizonDevice_fail1(t *testing.T) {
 	myPattern := "testPattern"
 	device := getBasicDevice(myOrg, myPattern)
 
-	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, CONFIGSTATE_UNCONFIGURED, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, persistence.CONFIGSTATE_UNCONFIGURED, false, false)
 	if err != nil {
 		t.Errorf("unexpected error creating device %v", err)
 	}
@@ -648,7 +648,7 @@ func Test_DeleteHorizonDevice_fail1(t *testing.T) {
 		t.Errorf("there should not be a message on the queue")
 	} else if dev, err := FindHorizonDeviceForOutput(db); err != nil {
 		t.Errorf("failed to find device in db, error %v", err)
-	} else if *dev.Config.State != CONFIGSTATE_UNCONFIGURED {
+	} else if *dev.Config.State != persistence.CONFIGSTATE_UNCONFIGURED {
 		t.Errorf("config state is incorrect: %v, should be configuring", *dev.Config.State)
 	}
 
@@ -667,7 +667,7 @@ func Test_PatchHorizonDevice_fail1(t *testing.T) {
 	myPattern := "testPattern"
 	device := getBasicDevice(myOrg, myPattern)
 
-	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, CONFIGSTATE_CONFIGURED, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, persistence.CONFIGSTATE_CONFIGURED, false, false)
 	if err != nil {
 		t.Errorf("unexpected error creating device %v", err)
 	}
@@ -690,7 +690,7 @@ func Test_PatchHorizonDevice_fail1(t *testing.T) {
 		t.Errorf("myError has the wrong type (%T)", myError)
 	} else if dev, err := FindHorizonDeviceForOutput(db); err != nil {
 		t.Errorf("failed to find device in db, error %v", err)
-	} else if *dev.Config.State != CONFIGSTATE_CONFIGURED {
+	} else if *dev.Config.State != persistence.CONFIGSTATE_CONFIGURED {
 		t.Errorf("config state is incorrect: %v, should be configuring", *dev.Config.State)
 	} else if dev1 != nil || dev2 != nil {
 		t.Errorf("returned non-nil response devices objects: %v %v", *dev1, *dev2)

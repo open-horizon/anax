@@ -158,7 +158,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	lock.Lock()
 	defer lock.Unlock()
 
-	// The device object we're working with might not include the policies for the microservices needed by the
+	// The device object we're working with might not include the policies for the services needed by the
 	// workload in the current consumer policy. If that's the case, query the exchange to get all the device
 	// policies so we can merge them.
 	var exchangeDev *exchange.Device
@@ -172,7 +172,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	}
 
 	// There could be more than 1 workload version in the consumer policy, and each version might NOT require the exact same
-	// microservices (and versions), so we first need to choose a workload. Choosing a workload is based on the priority of
+	// services/microservices (and versions), so we first need to choose a workload. Choosing a workload is based on the priority of
 	// each workload and whether or not this workload has been tried before. Also, iterate the loop more than once if we choose
 	// a workload entry that turns out to be unsupportable by the device.
 	foundWorkload := false
@@ -203,9 +203,9 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		}
 
 		// The workload in the consumer policy has a reference to the workload details. We need to get the details so that we
-		// can verify that the device has the right version API specs to run this workload. Then, we can store the workload details
+		// can verify that the device has the right version API specs (services) to run this workload. Then, we can store the workload details
 		// into the consumer policy file. We have a copy of the consumer policy file that we can modify. If the device doesnt have the right
-		// version API specs, then we will try the next workload.
+		// version API specs (services), then we will try the next workload.
 
 		if asl, workloadDetails, err := exchange.GetHTTPWorkloadOrServiceResolverHandler(cph)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for workload details %v, error: %v", workload, err)))

@@ -75,18 +75,6 @@ func Test_CreateDeleteWorkloadConfig_success(t *testing.T) {
 		t.Errorf("error decoding variable attribute %v", err)
 	}
 
-	// if err := json.Unmarshal([]byte(varss), &vars); err != nil {
-	// 	t.Errorf("Error unmarshalling variables json string: %v error:%v\n", varss, err)
-	// }
-
-	// vars := map[string]interface{}{
-	// 	mystr: "ethel",
-	// 	mybool: true,
-	// 	myint: 5,
-	// 	myfloat: 11.3,
-	// 	myastr: []string{"abc","123"},
-	// }
-
 	attr := NewAttribute("UserInputAttributes", []string{}, "label", false, false, vars)
 
 	cfg := WorkloadConfig{
@@ -96,19 +84,9 @@ func Test_CreateDeleteWorkloadConfig_success(t *testing.T) {
 		Attributes:  []Attribute{*attr},
 	}
 
-	existingDevice := persistence.ExchangeDevice{
-		Id:                 "12345",
-		Org:                myorg,
-		Pattern:            mypattern,
-		Name:               "fred",
-		Token:              "abc",
-		TokenLastValidTime: 0,
-		TokenValid:         true,
-		HA:                 false,
-		Config: persistence.Configstate{
-			State:          CONFIGSTATE_CONFIGURING,
-			LastUpdateTime: 0,
-		},
+	existingDevice, err := persistence.SaveNewExchangeDevice(db, "12345", "abc", "fred", false, myorg, mypattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
+	if err != nil {
+		t.Errorf("failed to create persisted device, error %v", err)
 	}
 
 	var myError error
@@ -149,7 +127,7 @@ func Test_CreateDeleteWorkloadConfig_success(t *testing.T) {
 
 	getWorkload := getVariableWorkload(myurl, myorg, myversion, myarch, ui)
 
-	errHandled, newWC := CreateWorkloadconfig(&cfg, &existingDevice, errorhandler, getWorkload, db)
+	errHandled, newWC := CreateWorkloadconfig(&cfg, existingDevice, errorhandler, getWorkload, db)
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
@@ -212,7 +190,7 @@ func Test_CreateWorkloadConfig_fail(t *testing.T) {
 		TokenValid:         true,
 		HA:                 false,
 		Config: persistence.Configstate{
-			State:          CONFIGSTATE_CONFIGURING,
+			State:          persistence.CONFIGSTATE_CONFIGURING,
 			LastUpdateTime: 0,
 		},
 	}

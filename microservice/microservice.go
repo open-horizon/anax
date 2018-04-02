@@ -238,7 +238,7 @@ func GetUpgradeMicroserviceDef(getMicroservice exchange.MicroserviceHandler, msd
 	if vExp, err := policy.Version_Expression_Factory(msdef.UpgradeVersionRange); err != nil {
 		return nil, fmt.Errorf("Unable to convert %v to a version expression, error %v", msdef.UpgradeVersionRange, err)
 	} else if e_msdef, _, err := getMicroservice(msdef.SpecRef, msdef.Org, vExp.Get_expression(), msdef.Arch); err != nil {
-		return nil, fmt.Errorf("Filed to find a highest version for microservice %v version range %v: %v", msdef.SpecRef, msdef.UpgradeVersionRange, err)
+		return nil, fmt.Errorf("Failed to find a highest version for microservice %v version range %v: %v", msdef.SpecRef, msdef.UpgradeVersionRange, err)
 	} else if e_msdef == nil {
 		return nil, fmt.Errorf("Could not find any microservices for %v within the version range %v.", msdef.SpecRef, msdef.UpgradeVersionRange)
 	} else if new_msdef, err := ConvertMicroserviceToPersistent(e_msdef, msdef.Org); err != nil {
@@ -285,7 +285,7 @@ func GetRollbackMicroserviceDef(getMicroservice exchange.MicroserviceHandler, ms
 	} else if err := vExp.ChangeCeiling(msdef.Version, false); err != nil { //modify the version range in order to searh for new ms
 		return nil, nil
 	} else if e_msdef, _, err := getMicroservice(msdef.SpecRef, msdef.Org, vExp.Get_expression(), msdef.Arch); err != nil {
-		return nil, fmt.Errorf("Filed to find a highest version for microservice %v version range %v: %v", msdef.SpecRef, vExp.Get_expression(), err)
+		return nil, fmt.Errorf("Failed to find a highest version for microservice %v version range %v: %v", msdef.SpecRef, vExp.Get_expression(), err)
 	} else if e_msdef == nil {
 		return nil, nil
 	} else if new_msdef, err := ConvertMicroserviceToPersistent(e_msdef, msdef.Org); err != nil {

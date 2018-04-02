@@ -31,7 +31,7 @@ func Test_FindPoliciesForOutput0(t *testing.T) {
 	newPolicy := policy.Policy_Factory(p1name)
 	newPolicy.Add_API_Spec(spec1)
 
-	pm := policy.PolicyManager_Factory(true)
+	pm := policy.PolicyManager_Factory(true, true)
 
 	dir, db, err := utsetup()
 	if err != nil {

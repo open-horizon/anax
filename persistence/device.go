@@ -11,6 +11,11 @@ import (
 
 const DEVICES = "devices"
 
+const CONFIGSTATE_UNCONFIGURING = "unconfiguring"
+const CONFIGSTATE_UNCONFIGURED = "unconfigured"
+const CONFIGSTATE_CONFIGURING = "configuring"
+const CONFIGSTATE_CONFIGURED = "configured"
+
 type Configstate struct {
 	State          string `json:"state"`
 	LastUpdateTime uint64 `json:"last_update_time"`
@@ -306,4 +311,31 @@ func DeleteExchangeDevice(db *bolt.DB) error {
 			}
 		})
 	}
+}
+
+// Migrate a device object if it is restarted ona newer level of code.
+func MigrateExchangeDevice(db *bolt.DB) (bool, error) {
+	usingPattern := false
+	// If the device object already exists, make sure its service or workload mode is set correctly. If not, set it.
+	// This code handles devices that upgrade to an anax runtime that supports service mode but the device is still
+	// using workloads.
+	if db != nil {
+		if dev, _ := FindExchangeDevice(db); dev != nil {
+			if dev.IsServiceBased() || dev.IsWorkloadBased() {
+				// nothing to do, one of the 2 mode flags is already set.
+			} else if dev.IsState(CONFIGSTATE_CONFIGURED) {
+				// The device is configured but needs to have its workload mode set. A device that exists but is not yet configured
+				// should not be touched until the config steps are complete.
+				if _, err := dev.SetWorkloadBased(db); err != nil {
+					return false, err
+				}
+			}
+
+			// If the existing device is using a pattern then we need to turn off agreement tracking when we create the policy manager.
+			if dev.Pattern != "" {
+				usingPattern = true
+			}
+		}
+	}
+	return usingPattern, nil
 }

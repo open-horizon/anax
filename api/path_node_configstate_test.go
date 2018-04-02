@@ -27,7 +27,7 @@ func Test_FindCSForOutput0(t *testing.T) {
 
 	if cfg, err := FindConfigstateForOutput(db); err != nil {
 		t.Errorf("failed to find device in db, error %v", err)
-	} else if *cfg.State != CONFIGSTATE_UNCONFIGURED {
+	} else if *cfg.State != persistence.CONFIGSTATE_UNCONFIGURED {
 		t.Errorf("incorrect configstate found: %v", *cfg)
 	}
 
@@ -44,14 +44,14 @@ func Test_FindCSForOutput1(t *testing.T) {
 
 	theOrg := "myorg"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "apattern", CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "apattern", persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
 
 	if cfg, err := FindConfigstateForOutput(db); err != nil {
 		t.Errorf("failed to find device in db, error %v", err)
-	} else if *cfg.State != CONFIGSTATE_CONFIGURING {
+	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURING {
 		t.Errorf("incorrect configstate, found: %v", *cfg)
 	} else if *cfg.LastUpdateTime == uint64(0) {
 		t.Errorf("incorrect last update time, found: %v", *cfg)
@@ -75,7 +75,7 @@ func Test_UpdateConfigstate1(t *testing.T) {
 
 	theOrg := "myorg"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "apattern", CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "apattern", persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -88,7 +88,7 @@ func Test_UpdateConfigstate1(t *testing.T) {
 		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
 	} else if cfg == nil {
 		t.Errorf("no configstate returned")
-	} else if *cfg.State != CONFIGSTATE_CONFIGURING {
+	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURING {
 		t.Errorf("wrong state field %v", *cfg)
 	} else if *cfg.LastUpdateTime == uint64(0) {
 		t.Errorf("last update time should be set, is %v", *cfg)
@@ -106,7 +106,7 @@ func Test_UpdateConfigstate2(t *testing.T) {
 	defer cleanTestDir(dir)
 
 	cs := getBasicConfigstate()
-	state := CONFIGSTATE_CONFIGURED
+	state := persistence.CONFIGSTATE_CONFIGURED
 	cs.State = &state
 
 	var myError error
@@ -115,7 +115,7 @@ func Test_UpdateConfigstate2(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -151,7 +151,7 @@ func Test_UpdateConfigstate2(t *testing.T) {
 		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
 	} else if cfg == nil {
 		t.Errorf("no configstate returned")
-	} else if *cfg.State != CONFIGSTATE_CONFIGURED {
+	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
 		t.Errorf("wrong state field %v", *cfg)
 	} else if *cfg.LastUpdateTime == uint64(0) {
 		t.Errorf("last update time should be set, is %v", *cfg)
@@ -171,7 +171,7 @@ func Test_UpdateConfigstate_Illegal_state_change(t *testing.T) {
 	defer cleanTestDir(dir)
 
 	cs := getBasicConfigstate()
-	state := CONFIGSTATE_CONFIGURED
+	state := persistence.CONFIGSTATE_CONFIGURED
 	cs.State = &state
 
 	var myError error
@@ -180,7 +180,7 @@ func Test_UpdateConfigstate_Illegal_state_change(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -216,7 +216,7 @@ func Test_UpdateConfigstate_Illegal_state_change(t *testing.T) {
 		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
 	} else if cfg == nil {
 		t.Errorf("no configstate returned")
-	} else if *cfg.State != CONFIGSTATE_CONFIGURED {
+	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
 		t.Errorf("wrong state field %v", *cfg)
 	} else if *cfg.LastUpdateTime == uint64(0) {
 		t.Errorf("last update time should be set, is %v", *cfg)
@@ -224,7 +224,7 @@ func Test_UpdateConfigstate_Illegal_state_change(t *testing.T) {
 		t.Errorf("there should be 1 message, received %v", len(msgs))
 	}
 
-	state = CONFIGSTATE_CONFIGURING
+	state = persistence.CONFIGSTATE_CONFIGURING
 	cs.State = &state
 
 	errHandled, cfg, _ = UpdateConfigstate(cs, errorhandler, getDummyMicroserviceHandler(), patternHandler, getDummyWorkloadResolver(), getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
@@ -251,7 +251,7 @@ func Test_UpdateConfigstate_no_state_change(t *testing.T) {
 	defer cleanTestDir(dir)
 
 	cs := getBasicConfigstate()
-	state := CONFIGSTATE_CONFIGURED
+	state := persistence.CONFIGSTATE_CONFIGURED
 	cs.State = &state
 
 	var myError error
@@ -260,7 +260,7 @@ func Test_UpdateConfigstate_no_state_change(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -296,7 +296,7 @@ func Test_UpdateConfigstate_no_state_change(t *testing.T) {
 		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
 	} else if cfg == nil {
 		t.Errorf("no configstate returned")
-	} else if *cfg.State != CONFIGSTATE_CONFIGURED {
+	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
 		t.Errorf("wrong state field %v", *cfg)
 	} else if *cfg.LastUpdateTime == uint64(0) {
 		t.Errorf("last update time should be set, is %v", *cfg)
@@ -312,7 +312,7 @@ func Test_UpdateConfigstate_no_state_change(t *testing.T) {
 		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
 	} else if cfg == nil {
 		t.Errorf("no configstate returned")
-	} else if *cfg.State != CONFIGSTATE_CONFIGURED {
+	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
 		t.Errorf("wrong state field %v", *cfg)
 	} else if *cfg.LastUpdateTime == uint64(0) {
 		t.Errorf("last update time should be set, is %v", *cfg)
@@ -340,7 +340,7 @@ func Test_UpdateConfigstate_unknown_state_change(t *testing.T) {
 
 	theOrg := "myorg"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "apattern", CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "apattern", persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -369,7 +369,7 @@ func Test_UpdateConfigstateWithMS(t *testing.T) {
 	defer cleanTestDir(dir)
 
 	cs := getBasicConfigstate()
-	state := CONFIGSTATE_CONFIGURED
+	state := persistence.CONFIGSTATE_CONFIGURED
 	cs.State = &state
 
 	var myError error
@@ -378,7 +378,7 @@ func Test_UpdateConfigstateWithMS(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -409,7 +409,7 @@ func Test_UpdateConfigstateWithMS(t *testing.T) {
 		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
 	} else if cfg == nil {
 		t.Errorf("no configstate returned")
-	} else if *cfg.State != CONFIGSTATE_CONFIGURED {
+	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
 		t.Errorf("wrong state field %v", *cfg)
 	} else if *cfg.LastUpdateTime == uint64(0) {
 		t.Errorf("last update time should be set, is %v", *cfg)
@@ -431,7 +431,7 @@ func Test_UpdateConfigstate_unconfig_ms(t *testing.T) {
 	defer cleanTestDir(dir)
 
 	cs := getBasicConfigstate()
-	state := CONFIGSTATE_CONFIGURED
+	state := persistence.CONFIGSTATE_CONFIGURED
 	cs.State = &state
 
 	var myError error
@@ -440,7 +440,7 @@ func Test_UpdateConfigstate_unconfig_ms(t *testing.T) {
 	theOrg := "myorg"
 	thePattern := "apattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, thePattern, CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, thePattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -495,7 +495,7 @@ func Test_UpdateConfigstate_unconfig_workload(t *testing.T) {
 	defer cleanTestDir(dir)
 
 	cs := getBasicConfigstate()
-	state := CONFIGSTATE_CONFIGURED
+	state := persistence.CONFIGSTATE_CONFIGURED
 	cs.State = &state
 
 	var myError error
@@ -504,7 +504,7 @@ func Test_UpdateConfigstate_unconfig_workload(t *testing.T) {
 	theOrg := "myorg"
 	thePattern := "apattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, thePattern, CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, thePattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -560,7 +560,7 @@ func Test_UpdateConfigstate2services(t *testing.T) {
 	defer cleanTestDir(dir)
 
 	cs := getBasicConfigstate()
-	state := CONFIGSTATE_CONFIGURED
+	state := persistence.CONFIGSTATE_CONFIGURED
 	cs.State = &state
 
 	var myError error
@@ -569,7 +569,7 @@ func Test_UpdateConfigstate2services(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -606,7 +606,7 @@ func Test_UpdateConfigstate2services(t *testing.T) {
 		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
 	} else if cfg == nil {
 		t.Errorf("no configstate returned")
-	} else if *cfg.State != CONFIGSTATE_CONFIGURED {
+	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
 		t.Errorf("wrong state field %v", *cfg)
 	} else if *cfg.LastUpdateTime == uint64(0) {
 		t.Errorf("last update time should be set, is %v", *cfg)
@@ -626,7 +626,7 @@ func Test_UpdateConfigstate2service_only(t *testing.T) {
 	defer cleanTestDir(dir)
 
 	cs := getBasicConfigstate()
-	state := CONFIGSTATE_CONFIGURED
+	state := persistence.CONFIGSTATE_CONFIGURED
 	cs.State = &state
 
 	var myError error
@@ -635,7 +635,7 @@ func Test_UpdateConfigstate2service_only(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -669,7 +669,7 @@ func Test_UpdateConfigstate2service_only(t *testing.T) {
 		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
 	} else if cfg == nil {
 		t.Errorf("no configstate returned")
-	} else if *cfg.State != CONFIGSTATE_CONFIGURED {
+	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
 		t.Errorf("wrong state field %v", *cfg)
 	} else if *cfg.LastUpdateTime == uint64(0) {
 		t.Errorf("last update time should be set, is %v", *cfg)
@@ -689,7 +689,7 @@ func Test_UpdateConfigstate_Illegal_state_change_services(t *testing.T) {
 	defer cleanTestDir(dir)
 
 	cs := getBasicConfigstate()
-	state := CONFIGSTATE_CONFIGURED
+	state := persistence.CONFIGSTATE_CONFIGURED
 	cs.State = &state
 
 	var myError error
@@ -698,7 +698,7 @@ func Test_UpdateConfigstate_Illegal_state_change_services(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -735,7 +735,7 @@ func Test_UpdateConfigstate_Illegal_state_change_services(t *testing.T) {
 		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
 	} else if cfg == nil {
 		t.Errorf("no configstate returned")
-	} else if *cfg.State != CONFIGSTATE_CONFIGURED {
+	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
 		t.Errorf("wrong state field %v", *cfg)
 	} else if *cfg.LastUpdateTime == uint64(0) {
 		t.Errorf("last update time should be set, is %v", *cfg)
@@ -743,7 +743,7 @@ func Test_UpdateConfigstate_Illegal_state_change_services(t *testing.T) {
 		t.Errorf("there should be 2 message, received %v", len(msgs))
 	}
 
-	state = CONFIGSTATE_CONFIGURING
+	state = persistence.CONFIGSTATE_CONFIGURING
 	cs.State = &state
 
 	errHandled, cfg, _ = UpdateConfigstate(cs, errorhandler, getDummyMicroserviceHandler(), patternHandler, getDummyWorkloadResolver(), getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
@@ -770,7 +770,7 @@ func Test_UpdateConfigstate_no_state_change_services(t *testing.T) {
 	defer cleanTestDir(dir)
 
 	cs := getBasicConfigstate()
-	state := CONFIGSTATE_CONFIGURED
+	state := persistence.CONFIGSTATE_CONFIGURED
 	cs.State = &state
 
 	var myError error
@@ -779,7 +779,7 @@ func Test_UpdateConfigstate_no_state_change_services(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -816,7 +816,7 @@ func Test_UpdateConfigstate_no_state_change_services(t *testing.T) {
 		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
 	} else if cfg == nil {
 		t.Errorf("no configstate returned")
-	} else if *cfg.State != CONFIGSTATE_CONFIGURED {
+	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
 		t.Errorf("wrong state field %v", *cfg)
 	} else if *cfg.LastUpdateTime == uint64(0) {
 		t.Errorf("last update time should be set, is %v", *cfg)
@@ -832,7 +832,7 @@ func Test_UpdateConfigstate_no_state_change_services(t *testing.T) {
 		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
 	} else if cfg == nil {
 		t.Errorf("no configstate returned")
-	} else if *cfg.State != CONFIGSTATE_CONFIGURED {
+	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
 		t.Errorf("wrong state field %v", *cfg)
 	} else if *cfg.LastUpdateTime == uint64(0) {
 		t.Errorf("last update time should be set, is %v", *cfg)
@@ -852,7 +852,7 @@ func Test_UpdateConfigstateWith_services(t *testing.T) {
 	defer cleanTestDir(dir)
 
 	cs := getBasicConfigstate()
-	state := CONFIGSTATE_CONFIGURED
+	state := persistence.CONFIGSTATE_CONFIGURED
 	cs.State = &state
 
 	var myError error
@@ -861,7 +861,7 @@ func Test_UpdateConfigstateWith_services(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -892,7 +892,7 @@ func Test_UpdateConfigstateWith_services(t *testing.T) {
 		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
 	} else if cfg == nil {
 		t.Errorf("no configstate returned")
-	} else if *cfg.State != CONFIGSTATE_CONFIGURED {
+	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
 		t.Errorf("wrong state field %v", *cfg)
 	} else if *cfg.LastUpdateTime == uint64(0) {
 		t.Errorf("last update time should be set, is %v", *cfg)
@@ -914,7 +914,7 @@ func Test_UpdateConfigstate_unconfig_services(t *testing.T) {
 	defer cleanTestDir(dir)
 
 	cs := getBasicConfigstate()
-	state := CONFIGSTATE_CONFIGURED
+	state := persistence.CONFIGSTATE_CONFIGURED
 	cs.State = &state
 
 	var myError error
@@ -923,7 +923,7 @@ func Test_UpdateConfigstate_unconfig_services(t *testing.T) {
 	theOrg := "myorg"
 	thePattern := "apattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, thePattern, CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, thePattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -978,7 +978,7 @@ func Test_UpdateConfigstate_unconfig_top_level_services(t *testing.T) {
 	defer cleanTestDir(dir)
 
 	cs := getBasicConfigstate()
-	state := CONFIGSTATE_CONFIGURED
+	state := persistence.CONFIGSTATE_CONFIGURED
 	cs.State = &state
 
 	var myError error
@@ -987,7 +987,7 @@ func Test_UpdateConfigstate_unconfig_top_level_services(t *testing.T) {
 	theOrg := "myorg"
 	thePattern := "apattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, thePattern, CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, thePattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -1033,7 +1033,7 @@ func Test_UpdateConfigstate_unconfig_top_level_services(t *testing.T) {
 }
 
 func getBasicConfigstate() *Configstate {
-	state := CONFIGSTATE_CONFIGURING
+	state := persistence.CONFIGSTATE_CONFIGURING
 	cs := &Configstate{
 		State: &state,
 	}
