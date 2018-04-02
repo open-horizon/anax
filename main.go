@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/governance"
+	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/torrent"
 	"github.com/open-horizon/anax/worker"
@@ -115,6 +116,23 @@ func main() {
 		panic(err)
 	} else {
 		pm = policyManager
+	}
+
+	// If the device object already exists, make sure its service or workload mode is set correctly. If not, set it.
+	// This code handles devices that upgrade to an anax runtime that supports service mode but the device is still
+	// using workloads.
+	if db != nil {
+		if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
+			if dev.IsServiceBased() || dev.IsWorkloadBased() {
+				// nothing to do, one of the 2 mode flags is already set.
+			} else if dev.IsState(api.CONFIGSTATE_CONFIGURED) {
+				// The device is configured but needs to have its workload mode set. A device that exists but is not yet configured
+				// should not be touched until the config steps are complete.
+				if _, err := dev.SetWorkloadBased(db); err != nil {
+					panic(err)
+				}
+			}
+		}
 	}
 
 	// start workers
