@@ -55,14 +55,14 @@ func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db *bolt.DB) 
 	ec := worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, false, cfg.Collaborators.HTTPClientFactory)
 
 	worker := &AgreementBotWorker{
-		BaseWorker:     worker.NewBaseWorker(name, cfg, ec),
-		db:             db,
-		httpClient:     cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
-		consumerPH:     make(map[string]ConsumerProtocolHandler),
-		ready:          false,
-		PatternManager: NewPatternManager(),
-		NHManager:      NewNodeHealthManager(),
-		GovTiming:      DVState{},
+		BaseWorker:       worker.NewBaseWorker(name, cfg, ec),
+		db:               db,
+		httpClient:       cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
+		consumerPH:       make(map[string]ConsumerProtocolHandler),
+		ready:            false,
+		PatternManager:   NewPatternManager(),
+		NHManager:        NewNodeHealthManager(),
+		GovTiming:        DVState{},
 		lastExchVerCheck: 0,
 	}
 
@@ -205,7 +205,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 			return false
 		}
 
-		if policyManager, err := policy.Initialize(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, w.Config.ArchSynonyms, w.workloadResolver, w.serviceResolver, false); err != nil {
+		if policyManager, err := policy.Initialize(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, w.Config.ArchSynonyms, w.workloadResolver, w.serviceResolver, true, false); err != nil {
 			glog.Errorf("AgreementBotWorker unable to initialize policy manager, error: %v", err)
 		} else if policyManager.NumberPolicies() != 0 {
 			w.pm = policyManager
@@ -485,7 +485,10 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 					// exchange. It is preferable to NOT call the exchange on the main agbot thread. So, make an
 					// agreement protocol choice based solely on the consumer side policy. Once the new agreement
 					// attempt gets on a worker thread, then we can perform the policy checks and merges.
-					producerPolicy := policy.Policy_Factory("empty")
+					producerPolicy := policy.Policy_Factory(consumerPolicy.Header.Name)
+					if consumerPolicy.IsServiceBased() {
+						producerPolicy.ServiceBased = true
+					}
 					err := error(nil)
 					if len(dev.Services) != 0 {
 

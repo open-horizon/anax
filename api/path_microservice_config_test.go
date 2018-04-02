@@ -41,7 +41,7 @@ func Test_CreateMicroService0(t *testing.T) {
 		Attributes:    &attrs,
 	}
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, "apattern", CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, "apattern", persistence.CONFIGSTATE_CONFIGURING, false, false)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}

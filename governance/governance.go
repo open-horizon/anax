@@ -46,14 +46,14 @@ const MICROSERVICE_GOVERNOR = "MicroserviceGovernor"
 const BC_GOVERNOR = "BlockchainGovernor"
 
 type GovernanceWorker struct {
-	worker.BaseWorker // embedded field
-	db                *bolt.DB
-	bc                *ethblockchain.BaseContracts
-	devicePattern     string
-	pm                *policy.PolicyManager
-	producerPH        map[string]producer.ProducerProtocolHandler
-	deviceStatus      *DeviceStatus
-	ShuttingDownCmd   *NodeShutdownCommand
+	worker.BaseWorker   // embedded field
+	db                  *bolt.DB
+	bc                  *ethblockchain.BaseContracts
+	devicePattern       string
+	pm                  *policy.PolicyManager
+	producerPH          map[string]producer.ProducerProtocolHandler
+	deviceStatus        *DeviceStatus
+	ShuttingDownCmd     *NodeShutdownCommand
 	lastSvcUpgradeCheck int64
 }
 
@@ -67,13 +67,13 @@ func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm
 	}
 
 	worker := &GovernanceWorker{
-		BaseWorker:      worker.NewBaseWorker(name, cfg, ec),
-		db:              db,
-		pm:              pm,
-		devicePattern:   pattern,
-		producerPH:      make(map[string]producer.ProducerProtocolHandler),
-		deviceStatus:    NewDeviceStatus(),
-		ShuttingDownCmd: nil,
+		BaseWorker:          worker.NewBaseWorker(name, cfg, ec),
+		db:                  db,
+		pm:                  pm,
+		devicePattern:       pattern,
+		producerPH:          make(map[string]producer.ProducerProtocolHandler),
+		deviceStatus:        NewDeviceStatus(),
+		ShuttingDownCmd:     nil,
 		lastSvcUpgradeCheck: time.Now().Unix(),
 	}
 

@@ -103,6 +103,13 @@ func main() {
 		os.Exit(0)
 	}()
 
+	// The anax runtime might have been upgraded an restarted with an existing database. If so, the
+	// device object might need to be upgraded.
+	usingPattern := false
+	if usingPattern, err = persistence.MigrateExchangeDevice(db); err != nil {
+		panic(err)
+	}
+
 	// Get the device side policy manager started early so that all the workers can use it.
 	// Make sure the policy directory is in place.
 	var pm *policy.PolicyManager
@@ -111,28 +118,11 @@ func main() {
 	} else if err := os.MkdirAll(cfg.Edge.PolicyPath, 0644); err != nil {
 		glog.Errorf("Cannot create edge policy file path %v, terminating.", cfg.Edge.PolicyPath)
 		panic(err)
-	} else if policyManager, err := policy.Initialize(cfg.Edge.PolicyPath, cfg.ArchSynonyms, nil, nil, true); err != nil {
+	} else if policyManager, err := policy.Initialize(cfg.Edge.PolicyPath, cfg.ArchSynonyms, nil, nil, !usingPattern, true); err != nil {
 		glog.Errorf("Unable to initialize policy manager, terminating.")
 		panic(err)
 	} else {
 		pm = policyManager
-	}
-
-	// If the device object already exists, make sure its service or workload mode is set correctly. If not, set it.
-	// This code handles devices that upgrade to an anax runtime that supports service mode but the device is still
-	// using workloads.
-	if db != nil {
-		if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
-			if dev.IsServiceBased() || dev.IsWorkloadBased() {
-				// nothing to do, one of the 2 mode flags is already set.
-			} else if dev.IsState(api.CONFIGSTATE_CONFIGURED) {
-				// The device is configured but needs to have its workload mode set. A device that exists but is not yet configured
-				// should not be touched until the config steps are complete.
-				if _, err := dev.SetWorkloadBased(db); err != nil {
-					panic(err)
-				}
-			}
-		}
 	}
 
 	// start workers

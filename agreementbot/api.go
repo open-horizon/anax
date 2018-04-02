@@ -298,7 +298,7 @@ func (a *API) policyUpgrade(w http.ResponseWriter, r *http.Request) {
 		// Verify the input policy name. It can be either the name of the policy within the header of the policy file or the name
 		// of the file itself.
 		found := false
-		if pm, err := policy.Initialize(a.Config.AgreementBot.PolicyPath, a.Config.ArchSynonyms, workloadResolver, serviceResolver, false); err != nil {
+		if pm, err := policy.Initialize(a.Config.AgreementBot.PolicyPath, a.Config.ArchSynonyms, workloadResolver, serviceResolver, false, false); err != nil {
 			glog.Error(APIlogString(fmt.Sprintf("error initializing policy manager, error: %v", err)))
 			w.WriteHeader(http.StatusInternalServerError)
 			return

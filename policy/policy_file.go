@@ -199,7 +199,9 @@ func Select_Protocol(producer_policy *Policy, consumer_policy *Policy) string {
 // compatible then an error will be returned.
 func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy, defaultNoData uint64) (*Policy, error) {
 
-	if !producer_policy1.Is_Version(producer_policy2.Header.Version) {
+	if producer_policy1 == nil {
+		return producer_policy2, nil
+	} else if !producer_policy1.Is_Version(producer_policy2.Header.Version) {
 		return nil, errors.New(fmt.Sprintf("Compatibility Error: Schema versions are not the same, Policy1: %v, Policy2 %v", producer_policy1.Header.Version, producer_policy2.Header.Version))
 	} else if _, err := (&producer_policy1.AgreementProtocols).Intersects_With(&producer_policy2.AgreementProtocols); err != nil {
 		return nil, errors.New(fmt.Sprintf("Compatibility Error: No common Agreement Protocols between %v and %v. Underlying error: %v", producer_policy1.AgreementProtocols, producer_policy2.AgreementProtocols, err))
@@ -367,7 +369,7 @@ func (self *Policy) Is_Version(v string) bool {
 
 func (self *Policy) String() string {
 	res := ""
-	res += fmt.Sprintf("Name: %v Version: %v\n", self.Header.Name, self.Header.Version)
+	res += fmt.Sprintf("Name: %v Version: %v, Pattern: %v, ServiceBased: %v\n", self.Header.Name, self.Header.Version, self.PatternId, self.ServiceBased)
 	res += "API Specifications\n"
 	for _, apiSpec := range self.APISpecs {
 		res += fmt.Sprintf("Ref: %v Org: %v Version: %v Exclusive: %v Arch: %v\n", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.ExclusiveAccess, apiSpec.Arch)
@@ -390,7 +392,7 @@ func (self *Policy) String() string {
 
 func (self *Policy) ShortString() string {
 	res := ""
-	res += fmt.Sprintf("Name: %v Version: %v", self.Header.Name, self.Header.Version)
+	res += fmt.Sprintf("Name: %v Version: %v, Pattern: %v, ServiceBased: %v", self.Header.Name, self.Header.Version, self.PatternId, self.ServiceBased)
 	res += ", API Specifications "
 	for _, apiSpec := range self.APISpecs {
 		res += fmt.Sprintf("Ref: %v Org: %v Version: %v Exclusive: %v Arch: %v ", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.ExclusiveAccess, apiSpec.Arch)

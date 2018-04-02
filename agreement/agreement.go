@@ -49,13 +49,13 @@ func NewAgreementWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm 
 	}
 
 	worker := &AgreementWorker{
-		BaseWorker:    worker.NewBaseWorker(name, cfg, ec),
-		db:            db,
-		httpClient:    cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
-		protocols:     make(map[string]bool),
-		pm:            pm,
-		devicePattern: pattern,
-		producerPH:    make(map[string]producer.ProducerProtocolHandler),
+		BaseWorker:       worker.NewBaseWorker(name, cfg, ec),
+		db:               db,
+		httpClient:       cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
+		protocols:        make(map[string]bool),
+		pm:               pm,
+		devicePattern:    pattern,
+		producerPH:       make(map[string]producer.ProducerProtocolHandler),
 		lastExchVerCheck: 0,
 	}
 
@@ -309,6 +309,11 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
 	w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", cmd.Msg.Org(), cmd.Msg.DeviceId()), cmd.Msg.Token(), w.Config.Edge.ExchangeURL, w.GetServiceBased(), w.Config.Collaborators.HTTPClientFactory)
 	w.devicePattern = cmd.Msg.Pattern()
+
+	// There is no need for agreement tracking on a node that is using patterns.
+	if cmd.Msg.Pattern() != "" {
+		w.pm.SetNoAgreementTracking()
+	}
 
 	if len(w.producerPH) == 0 {
 		// Establish agreement protocol handlers

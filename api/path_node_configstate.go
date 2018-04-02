@@ -14,11 +14,6 @@ import (
 	"strings"
 )
 
-const CONFIGSTATE_UNCONFIGURING = "unconfiguring"
-const CONFIGSTATE_UNCONFIGURED = "unconfigured"
-const CONFIGSTATE_CONFIGURING = "configuring"
-const CONFIGSTATE_CONFIGURED = "configured"
-
 func NoOpStateChange(from string, to string) bool {
 	if from == to {
 		return true
@@ -27,7 +22,7 @@ func NoOpStateChange(from string, to string) bool {
 }
 
 func ValidStateChange(from string, to string) bool {
-	if from == CONFIGSTATE_CONFIGURING && to == CONFIGSTATE_CONFIGURED {
+	if from == persistence.CONFIGSTATE_CONFIGURING && to == persistence.CONFIGSTATE_CONFIGURED {
 		return true
 	}
 	return false
@@ -41,9 +36,9 @@ func FindConfigstateForOutput(db *bolt.DB) (*Configstate, error) {
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to read node object, error %v", err))
 	} else if pDevice == nil {
-		state := CONFIGSTATE_UNCONFIGURED
+		state := persistence.CONFIGSTATE_UNCONFIGURED
 		if Unconfiguring {
-			state = CONFIGSTATE_UNCONFIGURING
+			state = persistence.CONFIGSTATE_UNCONFIGURING
 		}
 		cfg := &Configstate{
 			State: &state,
@@ -84,8 +79,8 @@ func UpdateConfigstate(cfg *Configstate,
 	// The only (valid) state transition that is currently unsupported is configuring to configured. The state
 	// transition of unconfigured to configuring occurs when POST /node is called.
 	// If the caller is requesting a state change that is a noop, just return the current state.
-	if *cfg.State != CONFIGSTATE_CONFIGURING && *cfg.State != CONFIGSTATE_CONFIGURED {
-		return errorhandler(NewAPIUserInputError(fmt.Sprintf("Supported state values are '%v' and '%v'.", CONFIGSTATE_CONFIGURING, CONFIGSTATE_CONFIGURED), "configstate.state")), nil, nil
+	if *cfg.State != persistence.CONFIGSTATE_CONFIGURING && *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
+		return errorhandler(NewAPIUserInputError(fmt.Sprintf("Supported state values are '%v' and '%v'.", persistence.CONFIGSTATE_CONFIGURING, persistence.CONFIGSTATE_CONFIGURED), "configstate.state")), nil, nil
 	} else if NoOpStateChange(pDevice.Config.State, *cfg.State) {
 		exDev := ConvertFromPersistentHorizonDevice(pDevice)
 		return false, exDev.Config, nil
