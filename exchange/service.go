@@ -22,6 +22,7 @@ type ExchangeDefinition interface {
 	GetTorrent() string
 	GetImageStore() policy.ImplementationPackage
 	IsServiceBased() bool
+	GetServiceDependencies() *[]ServiceDependency
 }
 
 // This type is used to abstract the various edge node hardware requirements. The schema is left wide open.
@@ -196,6 +197,10 @@ func (s *ServiceDefinition) IsServiceBased() bool {
 	return true
 }
 
+func (s *ServiceDefinition) GetServiceDependencies() *[]ServiceDependency {
+	return &s.RequiredServices
+}
+
 type GetServicesResponse struct {
 	Services  map[string]ServiceDefinition `json:"services"`
 	LastIndex int                          `json:"lastIndex"`
@@ -353,30 +358,37 @@ func ServiceResolver(wURL string, wOrg string, wVersion string, wArch string, se
 
 		if resolveRequiredServices {
 			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving required services for %v %v %v %v", wURL, wOrg, wVersion, wArch)))
-			for _, apiSpec := range tlService.RequiredServices {
+			for _, sDep := range tlService.RequiredServices {
 
 				// Make sure the required service has the same arch as the service.
-				// Convert version to a version range expression (if it's not already an expression) so that GetService()
+				// Convert version to a version range expression (if it's not already an expression) so that the underlying GetService
 				// will return us something in the range required by the service.
-				if apiSpec.Arch != wArch {
-					return nil, nil, errors.New(fmt.Sprintf("service %v has a different architecture than the top level service.", apiSpec))
-				} else if vExp, err := policy.Version_Expression_Factory(apiSpec.Version); err != nil {
-					return nil, nil, errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", apiSpec.Version, err))
-				} else if ms, _, err := serviceHandler(apiSpec.URL, apiSpec.Org, vExp.Get_expression(), apiSpec.Arch); err != nil {
+				var serviceDef *ServiceDefinition
+				if sDep.Arch != wArch {
+					return nil, nil, errors.New(fmt.Sprintf("service %v has a different architecture than the top level service.", sDep))
+				} else if vExp, err := policy.Version_Expression_Factory(sDep.Version); err != nil {
+					return nil, nil, errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", sDep.Version, err))
+				} else if apiSpecs, sd, err := ServiceResolver(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch, serviceHandler); err != nil {
 					return nil, nil, err
-				} else if ms == nil {
-					return nil, nil, errors.New(fmt.Sprintf("unable to find service %v within version range %v in the exchange.", apiSpec, vExp))
 				} else {
-					newAPISpec := policy.APISpecification_Factory(ms.URL, apiSpec.Org, ms.Version, ms.Arch)
-					if ms.Sharable == MS_SHARING_MODE_SINGLE {
-						newAPISpec.ExclusiveAccess = false
+					// Add all service dependencies to the running list of API specs.
+					serviceDef = sd
+					for _, as := range *apiSpecs {
+						// If the apiSpec is already in the list, ignore it by ignoring the returned error.
+						res.Add_API_Spec(&as)
 					}
-					(*res) = append((*res), (*newAPISpec))
 				}
+
+				// Capture the current service dependency as an API Spec object and add it to the running list of API specs.
+				newAPISpec := policy.APISpecification_Factory(sDep.URL, sDep.Org, sDep.Version, sDep.Arch)
+				if serviceDef.Sharable == MS_SHARING_MODE_SINGLE {
+					newAPISpec.ExclusiveAccess = false
+				}
+				res.Add_API_Spec(newAPISpec)
 			}
 			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved required services for %v %v %v %v", wURL, wOrg, wVersion, wArch)))
 		}
-		glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved service %v %v %v %v", wURL, wOrg, wVersion, wArch)))
+		glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved service %v %v %v %v, APISpecs: %v", wURL, wOrg, wVersion, wArch, *res)))
 		return res, tlService, nil
 
 	}

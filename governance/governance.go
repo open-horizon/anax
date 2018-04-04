@@ -971,11 +971,13 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			// The workload config we have might be from a lower version of the workload. Go to the exchange and
 			// get the metadata for the version we are running and then add in any unset default user inputs.
 
+			var serviceDef exchange.ExchangeDefinition
 			if _, exDef, err := exchange.GetHTTPWorkloadOrServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
 				return errors.New(logString(fmt.Sprintf("received error querying exchange for workload or service metadata: %v, error %v", workload, err)))
 			} else if exDef == nil {
 				return errors.New(logString(fmt.Sprintf("cound not find workload or service metadata for %v.", workload)))
 			} else {
+				serviceDef = exDef
 				exDef.PopulateDefaultUserInput(envAdds)
 			}
 
@@ -984,37 +986,46 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			lc.EnvironmentAdditions = &envAdds
 			lc.AgreementProtocol = protocol
 
-			// get a list of microservices associated with this agreement and store them in the AgreementLaunchContext
+			// Get a list of services/microservices associated with this agreement and store them in the AgreementLaunchContext. These are
+			// the services that are going to be network accessible to the workload container(s).
 			ms_specs := []events.MicroserviceSpec{}
-			for _, as := range tcPolicy.APISpecs {
-				// find the msdef with the url, any version.
-				if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, as.SpecRef); err != nil {
-					return errors.New(logString(fmt.Sprintf("Error finding microservice definition from the local db for %v version range %v. %v", as.SpecRef, as.Version, err)))
-				} else if msdefs != nil && len(msdefs) > 0 { // if msdefs is nil or empty then it is old behaviour before the ms split
-					glog.V(5).Infof(logString(fmt.Sprintf("All available msdefs: %v", msdefs)))
-					// assuming there is only one msdef for a microservice at any time
-					msdef := msdefs[0]
+
+			// Make a list of service dependencies for this workload. For sevices, it is just the top level dependencies. For
+			// the old workload model, it is a list of all dependencies.
+			deps := serviceDef.GetServiceDependencies()
+			if !serviceDef.IsServiceBased() {
+				for _, as := range tcPolicy.APISpecs {
+					sd := exchange.ServiceDependency{URL: as.SpecRef, Org: as.Org, Version: as.Version, Arch: as.Arch}
+					(*deps) = append((*deps), sd)
+				}
+			}
+
+			// Start each dependent service, one at a time.
+			for _, sDep := range *deps {
+
+				if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, sDep.URL); err != nil {
+					return errors.New(logString(fmt.Sprintf("Error finding service definition from the local db for %v version range %v. %v", sDep.URL, sDep.Version, err)))
+				} else if msdefs != nil && len(msdefs) > 0 {
+					glog.V(5).Infof(logString(fmt.Sprintf("found directly dependent service definition locally: %v", msdefs)))
+					msdef := msdefs[0] // assuming there is only one msdef for a service/microservice at any time
 
 					// validate the version range
-					if vExp, err := policy.Version_Expression_Factory(as.Version); err != nil {
-						return errors.New(logString(fmt.Sprintf("Error converting APISpec version %v for %v to version range. %v", as.Version, as.SpecRef, err)))
+					if vExp, err := policy.Version_Expression_Factory(sDep.Version); err != nil {
+						return errors.New(logString(fmt.Sprintf("Error converting APISpec version %v for %v to version range. %v", sDep.Version, sDep.URL, err)))
 					} else if inRange, err := vExp.Is_within_range(msdef.Version); err != nil {
-						return errors.New(logString(fmt.Sprintf("Error checking if microservice version %v is within APISpec version range %v for %v. %v", msdef.Version, vExp, as.SpecRef, err)))
+						return errors.New(logString(fmt.Sprintf("Error checking if microservice version %v is within APISpec version range %v for %v. %v", msdef.Version, vExp, sDep.URL, err)))
 					} else if !inRange {
 						return errors.New(logString(fmt.Sprintf("Current microservice %v version %v is not within the APISpec version range %v. %v", msdef.SpecRef, msdef.Version, vExp, err)))
 					}
 
-					// here we change to single version and choose a specific msdef for the container
 					msspec := events.MicroserviceSpec{SpecRef: msdef.SpecRef, Version: msdef.Version, MsdefId: msdef.Id}
 					ms_specs = append(ms_specs, msspec)
 
-					// now we can start the microservice
-					if err := w.startMicroserviceInstForAgreement(&msdef, proposal.AgreementId(), protocol); err != nil {
-						return errors.New(logString(fmt.Sprintf("Failed to start microservice instance for %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
-					}
-
+					// Recursively work down the dependency tree, starting leaf node dependencies first and then start their parents.
+					w.startDependentServices(&msdef, proposal.AgreementId(), protocol)
 				}
 			}
+
 			lc.Microservices = ms_specs
 
 			w.BaseWorker.Manager.Messages <- events.NewAgreementMessage(events.AGREEMENT_REACHED, lc)
@@ -1027,6 +1038,31 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 	}
 
 	return nil
+}
+
+// Recursive function that starts leaf node service dependencies before starting parents.
+func (w *GovernanceWorker) startDependentServices(msdef *persistence.MicroserviceDefinition, agreementId string, protocol string) error {
+
+	for _, dep := range msdef.RequiredServices {
+		if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, dep.URL); err != nil {
+			return errors.New(logString(fmt.Sprintf("Error finding service definition from the local db for %v version range %v. %v", dep.URL, dep.Version, err)))
+		} else if msdefs != nil && len(msdefs) > 0 {
+			glog.V(5).Infof(logString(fmt.Sprintf("found dependent service definition locally: %v", msdefs)))
+			msdef := msdefs[0]
+			// validate the version range
+			if vExp, err := policy.Version_Expression_Factory(dep.Version); err != nil {
+				return errors.New(logString(fmt.Sprintf("Error converting APISpec version %v for %v to version range. %v", dep.Version, dep.URL, err)))
+			} else if inRange, err := vExp.Is_within_range(msdef.Version); err != nil {
+				return errors.New(logString(fmt.Sprintf("Error checking if microservice version %v is within APISpec version range %v for %v. %v", msdef.Version, vExp, dep.URL, err)))
+			} else if !inRange {
+				return errors.New(logString(fmt.Sprintf("Current microservice %v version %v is not within the APISpec version range %v. %v", msdef.SpecRef, msdef.Version, vExp, err)))
+			}
+			w.startDependentServices(&msdef, agreementId, protocol)
+		}
+	}
+	glog.V(5).Infof(logString(fmt.Sprintf("starting dependency: %v", msdef)))
+	return w.startMicroserviceInstForAgreement(msdef, agreementId, protocol)
+
 }
 
 // get the environmental variables for the workload (this is about launching), pre MS split

@@ -63,7 +63,7 @@ func (w *GovernanceWorker) governMicroservices() int {
 }
 
 // It creates microservice instance and loads the containers for the given microservice def
-func (w *GovernanceWorker) StartMicroservice(ms_key string) (*persistence.MicroserviceInstance, error) {
+func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string) (*persistence.MicroserviceInstance, error) {
 	glog.V(5).Infof(logString(fmt.Sprintf("Starting microservice instance for %v", ms_key)))
 	if msdef, err := persistence.FindMicroserviceDefWithKey(w.db, ms_key); err != nil {
 		return nil, fmt.Errorf(logString(fmt.Sprintf("Error finding microserivce definition from db with key %v. %v", ms_key, err)))
@@ -142,6 +142,21 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string) (*persistence.Micros
 				return nil, fmt.Errorf(logString(fmt.Sprintf("microservice container has invalid deployment signature %v for %v", ms_workload.DeploymentSignature, ms_workload.Deployment)))
 			}
 
+			// Gather up the service dependencies, if there are any. Microservices in the workload/microservice model never have dependencies,
+			// but services can. It is important to use the correct version for the service dependency, which is the version we have
+			// in the local database, not necessarily the version in the dependency. The version we have in the local database should always
+			// be greater than the dependency version.
+			ms_specs := []events.MicroserviceSpec{}
+			for _, rs := range msdef.RequiredServices {
+				if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, rs.URL); err != nil {
+					return nil, fmt.Errorf(logString(fmt.Sprintf("received error reading microservice definition for %v: %v", rs.URL, err)))
+				} else {
+					// Assume the first msdef is the one we want.
+					msspec := events.MicroserviceSpec{SpecRef: rs.URL, Version: msdefs[0].Version, MsdefId: msdefs[0].Id}
+					ms_specs = append(ms_specs, msspec)
+				}
+			}
+
 			// save the instance
 			if ms_instance, err := persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Version, ms_key); err != nil {
 				return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting microservice instance for %v %v %v.", msdef.SpecRef, msdef.Version, ms_key)))
@@ -166,7 +181,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string) (*persistence.Micros
 							}
 						}
 					}
-					lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey())
+					lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey(), agreementId, ms_specs)
 					w.Messages() <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
 				}
 
@@ -346,18 +361,19 @@ func (w *GovernanceWorker) RollbackMicroservice(msdef *persistence.MicroserviceD
 	return nil
 }
 
-// start an microservice instance for the given agreement according to the microservice sharing mode
+// Start a servic/microservice instance for the given agreement according to the sharing mode.
 func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.MicroserviceDefinition, agreementId string, protocol string) error {
 	glog.V(3).Infof(logString(fmt.Sprintf("start microserivce instance %v for agreement %v", msdef.SpecRef, agreementId)))
 
 	var msi *persistence.MicroserviceInstance
 	needs_new_ms := false
 
-	// always start a new ms instance if the sharing mode is multiple
+	// Always start a new instance if the sharing mode is multiple.
 	if msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE {
 		needs_new_ms = true
-		// for other sharing mode, start a new ms instance only if there is no existing one
-		// the "exclusive" sharing mode is taken cared by the maxAgreements=1 so that there will no be more than one agreements to come at any time
+		// For other sharing modes, start a new instance only if there is no existing one.
+		// The "exclusive" sharing mode is handled by maxAgreements=1 in the node side policy file. This ensures that agbots and nodes will
+		// only support one agreement at any time.
 	} else if ms_insts, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.AllInstancesMIFilter(msdef.SpecRef, msdef.Version), persistence.UnarchivedMIFilter()}); err != nil {
 		return fmt.Errorf(logString(fmt.Sprintf("Error retrieving all the microservice instaces from db for %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
 	} else if ms_insts == nil || len(ms_insts) == 0 {
@@ -368,9 +384,9 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 
 	if needs_new_ms {
 		var inst_err error
-		if msi, inst_err = w.StartMicroservice(msdef.Id); inst_err != nil {
+		if msi, inst_err = w.StartMicroservice(msdef.Id, agreementId); inst_err != nil {
 
-			// try to downgrade the microservice to a lower version
+			// Try to downgrade the service/microservice to a lower version.
 			glog.V(3).Infof(logString(fmt.Sprintf("Ending the agreement: %v because microservice %v failed to start", agreementId, msdef.SpecRef)))
 			ag_reason_code := w.producerPH[protocol].GetTerminationCode(producer.TERM_REASON_MS_DOWNGRADE_REQUIRED)
 			ag_reason_text := w.producerPH[protocol].GetTerminationReason(ag_reason_code)
@@ -385,7 +401,7 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 		}
 	}
 
-	// add the agreement id into the msinstance so that the workload containers know which ms instance to associate with
+	// Add the agreement id into the instance so that the workload containers know which instance to associate with.
 	if _, err := persistence.UpdateMSInstanceAssociatedAgreements(w.db, msi.GetKey(), true, agreementId); err != nil {
 		return fmt.Errorf(logString(fmt.Sprintf("error adding agreement id %v to the microservice %v: %v", agreementId, msi.GetKey(), err)))
 	}

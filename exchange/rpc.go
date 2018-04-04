@@ -761,6 +761,10 @@ func (w *WorkloadDefinition) IsServiceBased() bool {
 	return false
 }
 
+func (s *WorkloadDefinition) GetServiceDependencies() *[]ServiceDependency {
+	return &[]ServiceDependency{}
+}
+
 type GetWorkloadsResponse struct {
 	Workloads map[string]WorkloadDefinition `json:"workloads"`
 	LastIndex int                           `json:"lastIndex"`
@@ -959,7 +963,7 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 				}
 
 				highest := ""
-				// resMsDef has to be the object instead of pointer to the object because onece the pointer points to &msDef,
+				// resMsDef has to be the object instead of pointer to the object because once the pointer points to &msDef,
 				// the content of it will get changed when the content of msDef gets changed in the loop
 				var resMsDef MicroserviceDefinition
 				var resMsId string

@@ -163,7 +163,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	// policies so we can merge them.
 	var exchangeDev *exchange.Device
 	if wi.ConsumerPolicy.PatternId != "" {
-		if theDev, err := GetDevice(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), wi.Device.Id, b.config.AgreementBot.ExchangeURL, cph.ExchangeId(), cph.ExchangeToken()); err != nil {
+		if theDev, err := GetDevice(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), wi.Device.Id, b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken()); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error getting device %v policies, error: %v", wi.Device.Id, err)))
 			return
 		} else {
@@ -336,7 +336,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating message target: %v", err)))
 
 		// Initiate the protocol
-	} else if proposal, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, &wi.ConsumerPolicy, wi.Org, cph.ExchangeId(), mt, workload, b.config.AgreementBot.DefaultWorkloadPW, b.config.AgreementBot.NoDataIntervalS, cph.GetSendMessage()); err != nil {
+	} else if proposal, err := protocolHandler.InitiateAgreement(agreementIdString, &wi.ProducerPolicy, &wi.ConsumerPolicy, wi.Org, cph.GetExchangeId(), mt, workload, b.config.AgreementBot.DefaultWorkloadPW, b.config.AgreementBot.NoDataIntervalS, cph.GetSendMessage()); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error initiating agreement: %v", err)))
 
 		// Remove pending agreement from database
@@ -454,7 +454,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 				// Delete the original reply message
 				if wi.MessageId != 0 {
 					if err := cph.DeleteMessage(wi.MessageId); err != nil {
-						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, cph.ExchangeId())))
+						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, cph.GetExchangeId())))
 					}
 				}
 
@@ -494,7 +494,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 	// Get rid of the exchange message if there is one
 	if wi.MessageId != 0 && !deletedMessage {
 		if err := cph.DeleteMessage(wi.MessageId); err != nil {
-			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, cph.ExchangeId())))
+			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, cph.GetExchangeId())))
 		}
 	}
 
@@ -532,7 +532,7 @@ func (b *BaseAgreementWorker) HandleDataReceivedAck(cph ConsumerProtocolHandler,
 	// Get rid of the exchange message if there is one
 	if wi.MessageId != 0 {
 		if err := cph.DeleteMessage(wi.MessageId); err != nil {
-			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, cph.ExchangeId())))
+			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, cph.GetExchangeId())))
 		}
 	}
 
@@ -603,7 +603,7 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 	}
 
 	// Update state in exchange
-	if err := DeleteConsumerAgreement(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), b.config.AgreementBot.ExchangeURL, cph.ExchangeId(), cph.ExchangeToken(), agreementId); err != nil {
+	if err := DeleteConsumerAgreement(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken(), agreementId); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting agreement %v in exchange: %v", agreementId, err)))
 	}
 
@@ -707,7 +707,7 @@ func (b *BaseAgreementWorker) incompleteHAGroup(cph ConsumerProtocolHandler, pro
 		// Make sure all partners are in the exchange
 		for _, partnerId := range producerPolicy.HAGroup.Partners {
 
-			if _, err := GetDevice(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), partnerId, b.config.AgreementBot.ExchangeURL, cph.ExchangeId(), cph.ExchangeToken()); err != nil {
+			if _, err := GetDevice(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), partnerId, b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken()); err != nil {
 				return errors.New(fmt.Sprintf("could not obtain device %v from the exchange: %v", partnerId, err))
 			}
 		}

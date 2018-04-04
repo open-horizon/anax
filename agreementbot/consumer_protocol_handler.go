@@ -29,8 +29,6 @@ func CreateConsumerPH(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *p
 type ConsumerProtocolHandler interface {
 	Initialize()
 	Name() string
-	ExchangeId() string
-	ExchangeToken() string
 	AcceptCommand(cmd worker.Command) bool
 	AgreementProtocolHandler(typeName string, name string, org string) abstractprotocol.ProtocolHandler
 	WorkQueue() chan AgreementWork
@@ -89,14 +87,6 @@ func (b *BaseConsumerProtocolHandler) GetSendMessage() func(mt interface{}, pay 
 
 func (b *BaseConsumerProtocolHandler) Name() string {
 	return b.name
-}
-
-func (b *BaseConsumerProtocolHandler) ExchangeId() string {
-	return b.agbotId
-}
-
-func (b *BaseConsumerProtocolHandler) ExchangeToken() string {
-	return b.token
 }
 
 func (b *BaseConsumerProtocolHandler) GetExchangeId() string {

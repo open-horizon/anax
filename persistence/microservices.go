@@ -119,7 +119,8 @@ type MicroserviceDefinition struct {
 }
 
 func (w MicroserviceDefinition) String() string {
-	return fmt.Sprintf("Owner: %v, "+
+	return fmt.Sprintf("ID: %v, "+
+		"Owner: %v, "+
 		"Label: %v, "+
 		"Description: %v, "+
 		"SpecRef: %v, "+
@@ -153,7 +154,7 @@ func (w MicroserviceDefinition) String() string {
 		"UngradeFailureDescription: %v, "+
 		"UpgradeNewMsId: %v, "+
 		"MetadataHash: %v",
-		w.Owner, w.Label, w.Description, w.SpecRef, w.Org, w.Version, w.Arch, w.Sharable, w.DownloadURL,
+		w.Id, w.Owner, w.Label, w.Description, w.SpecRef, w.Org, w.Version, w.Arch, w.Sharable, w.DownloadURL,
 		w.MatchHardware, w.UserInputs, w.Workloads, w.Public, w.RequiredServices, w.Deployment, w.DeploymentSignature, w.ImageStore, w.LastUpdated,
 		w.Archived, w.Name, w.RequestedArch, w.UpgradeVersionRange, w.AutoUpgrade, w.ActiveUpgrade,
 		w.UpgradeStartTime, w.UpgradeMsUnregisteredTime, w.UpgradeAgreementsClearedTime, w.UpgradeExecutionStartTime, w.UpgradeMsReregisteredTime,
@@ -209,6 +210,19 @@ func (m *MicroserviceDefinition) GetDeployment() (string, string, string) {
 		}
 	}
 	return "", "", ""
+}
+
+func (m *MicroserviceDefinition) NeedsUserInput() string {
+	for _, ui := range m.UserInputs {
+		if ui.DefaultValue == "" {
+			return ui.Name
+		}
+	}
+	return ""
+}
+
+func (m *MicroserviceDefinition) HasRequiredServices() bool {
+	return len(m.RequiredServices) != 0
 }
 
 // save the microservice record. update if it already exists in the db
@@ -270,15 +284,6 @@ func FindMicroserviceDefWithKey(db *bolt.DB, key string) (*MicroserviceDefinitio
 	} else {
 		return pms, nil
 	}
-}
-
-func (m *MicroserviceDefinition) NeedsUserInput() string {
-	for _, ui := range m.UserInputs {
-		if ui.DefaultValue == "" {
-			return ui.Name
-		}
-	}
-	return ""
 }
 
 // filter on MicroserviceDefinition

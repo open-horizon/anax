@@ -4,6 +4,7 @@ package exchange
 
 import (
 	"errors"
+	"flag"
 	"github.com/open-horizon/anax/policy"
 	"reflect"
 	"testing"
@@ -800,7 +801,11 @@ func TestServiceResolver2(t *testing.T) {
 		},
 	}
 
-	sh := getVariableServiceHandler([]UserInput{}, sDep)
+	// Establish service dependencies that the mock service handler will provide.
+	sdMap := make(map[string][]ServiceDependency)
+	sdMap[myURL] = sDep
+
+	sh := getRecursiveVariableServiceHandler([]UserInput{}, sdMap)
 	apiSpecList, sd, err := ServiceResolver(myURL, myOrg, myVersion, myArch, sh)
 
 	if err != nil {
@@ -883,6 +888,161 @@ func Test_ResolveWorkloadOrService_withError(t *testing.T) {
 	}
 }
 
+func Test_RecursiveServiceResolver_1level(t *testing.T) {
+
+	flag.Set("alsologtostderr", "true")
+	flag.Set("v", "7")
+
+	myURL := "http://service1"
+	myOrg := "test"
+	myVersion := "1.0.0"
+	myArch := "amd64"
+
+	sDep := []ServiceDependency{
+		ServiceDependency{
+			URL:     "http://my.com/ms/ms1",
+			Org:     "otherOrg",
+			Version: "1.5.0",
+			Arch:    "amd64",
+		},
+		ServiceDependency{
+			URL:     "http://my.com/ms/ms2",
+			Org:     "thirdOrg",
+			Version: "1.5.0",
+			Arch:    "amd64",
+		},
+	}
+
+	// Establish service dependencies that the mock service handler will provide.
+	sdMap := make(map[string][]ServiceDependency)
+	sdMap[myURL] = sDep
+
+	sh := getRecursiveVariableServiceHandler([]UserInput{}, sdMap)
+
+	// Test the resolver API
+	apiSpecs, sd, err := ServiceResolver(myURL, myOrg, myVersion, myArch, sh)
+
+	if err != nil {
+		t.Errorf("should not have returned err: %v", err)
+	} else if len(*apiSpecs) != len(sDep) {
+		t.Errorf("there should be api specs returned")
+	} else if sd == nil {
+		t.Errorf("should have returned a service def")
+	}
+
+}
+
+func Test_RecursiveServiceResolver_2level(t *testing.T) {
+
+	flag.Set("alsologtostderr", "true")
+	flag.Set("v", "7")
+
+	myURL := "http://service1"
+	myOrg := "test"
+	myVersion := "1.0.0"
+	myArch := "amd64"
+
+	// Dependencies of top level service
+	sDep1 := []ServiceDependency{
+		ServiceDependency{
+			URL:     "http://my.com/ms/ms1",
+			Org:     "otherOrg",
+			Version: "1.5.0",
+			Arch:    "amd64",
+		},
+		ServiceDependency{
+			URL:     "http://my.com/ms/ms2",
+			Org:     "thirdOrg",
+			Version: "1.5.0",
+			Arch:    "amd64",
+		},
+	}
+
+	// Dependencies of top level dependency: ms1
+	sDep21 := []ServiceDependency{
+		ServiceDependency{
+			URL:     "http://my.com/ms/msa",
+			Org:     "otherOrg",
+			Version: "2.7.0",
+			Arch:    "amd64",
+		},
+		ServiceDependency{
+			URL:     "http://my.com/ms/msb",
+			Org:     "otherOrg",
+			Version: "1.0.0",
+			Arch:    "amd64",
+		},
+	}
+
+	// Dependencies of top level dependency: ms2
+	sDep22 := []ServiceDependency{
+		ServiceDependency{
+			URL:     "http://my.com/ms/msx",
+			Org:     "thirdOrg",
+			Version: "2.7.0",
+			Arch:    "amd64",
+		},
+		ServiceDependency{
+			URL:     "http://my.com/ms/msa",
+			Org:     "otherOrg",
+			Version: "2.0.0",
+			Arch:    "amd64",
+		},
+	}
+
+	// Establish service dependencies that the mock service handler will provide.
+	sdMap := make(map[string][]ServiceDependency)
+	sdMap[myURL] = sDep1
+	sdMap[sDep1[0].URL] = sDep21
+	sdMap[sDep1[1].URL] = sDep22
+
+	sh := getRecursiveVariableServiceHandler([]UserInput{}, sdMap)
+
+	// Test the resolver API
+	apiSpecs, sd, err := ServiceResolver(myURL, myOrg, myVersion, myArch, sh)
+
+	//number of unique API specs returned. -1 is applied because there is a dup ms1->msa and ms2->msa.
+	num := len(sDep1) + len(sDep21) + len(sDep22) - 1
+
+	if err != nil {
+		t.Errorf("should not have returned err: %v", err)
+	} else if len(*apiSpecs) != num {
+		t.Errorf("there should %v api specs returned", num)
+	} else if sd == nil {
+		t.Errorf("should have returned a service def")
+	}
+
+}
+
+func getRecursiveVariableServiceHandler(mUserInput []UserInput, mRequiredServices map[string][]ServiceDependency) ServiceHandler {
+	return func(mUrl string, mOrg string, mVersion string, mArch string) (*ServiceDefinition, string, error) {
+
+		reqServ, ok := mRequiredServices[mUrl]
+		if !ok {
+			reqServ = []ServiceDependency{}
+		}
+
+		md := ServiceDefinition{
+			Owner:               "testOwner",
+			Label:               "service def",
+			Description:         "a test",
+			Public:              false,
+			URL:                 mUrl,
+			Version:             mVersion,
+			Arch:                mArch,
+			Sharable:            MS_SHARING_MODE_EXCLUSIVE,
+			MatchHardware:       HardwareRequirement{},
+			RequiredServices:    reqServ,
+			UserInputs:          mUserInput,
+			Deployment:          `{"services":{}}`,
+			DeploymentSignature: "xyzpdq=",
+			ImageStore:          ImplementationPackage{},
+			LastUpdated:         "today",
+		}
+		return &md, "service-id", nil
+	}
+}
+
 func getVariableServiceHandler(mUserInput []UserInput, mRequiredServices []ServiceDependency) ServiceHandler {
 	return func(mUrl string, mOrg string, mVersion string, mArch string) (*ServiceDefinition, string, error) {
 		md := ServiceDefinition{
@@ -946,7 +1106,7 @@ func getVariableWorkloadResolver(mUrl, mOrg, mVersion, mArch string, ui *UserInp
 
 func getErrorWorkloadResolver() WorkloadResolverHandler {
 	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *WorkloadDefinition, error) {
-		return nil, nil, errors.New("worklaod error")
+		return nil, nil, errors.New("workload error")
 	}
 }
 
