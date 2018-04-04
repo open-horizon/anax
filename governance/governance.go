@@ -845,10 +845,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				} else if msdef == nil {
 					glog.Errorf(logString(fmt.Sprintf("No microserivce definition record in db for %v version %v key %v. %v", msinst.SpecRef, msinst.Version, msinst.MicroserviceDefId, err)))
 				} else {
-					if msdef.UpgradeStartTime != 0 && msdef.UpgradeExecutionStartTime == 0 && msdef.UpgradeFailedTime == 0 {
-						// handle the rest of the microservice upgrade process
-						w.handleMicroserviceUpgradeExecStateChange(msdef, cmd.MsInstKey, cmd.ExecutionStarted)
-					} else if !cmd.ExecutionStarted && msinst.CleanupStartTime == 0 { // if this is not part of the ms instance cleanup process
+					if !cmd.ExecutionStarted && msinst.CleanupStartTime == 0 { // if this is not part of the ms instance cleanup process
 						// this is the case where agreement are made but microservice containers are failed
 						w.handleMicroserviceExecFailure(msdef, cmd.MsInstKey)
 					}
