@@ -53,11 +53,27 @@ type WorkloadReferenceFile struct {
 	DataVerify       exchange.DataVerification `json:"dataVerification"` // policy for verifying that the node is sending data
 	NodeH            exchange.NodeHealth       `json:"nodeHealth"`       // policy for determining when a node's health is violating its agreements
 }
+type ServiceChoiceFile struct {
+	Version  string                    `json:"version"`  // the version of the service
+	Priority exchange.ServicePriority `json:"priority"` // the highest priority service is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
+	Upgrade  exchange.UpgradePolicy    `json:"upgradePolicy"`
+	DeploymentOverrides          interface{} `json:"deployment_overrides"`           // env var overrides for the service
+	DeploymentOverridesSignature string      `json:"deployment_overrides_signature"` // signature of env var overrides
+}
+type ServiceReferenceFile struct {
+	ServiceURL      string                    `json:"serviceUrl"`      // refers to a service definition in the exchange
+	ServiceOrg      string                    `json:"serviceOrgid"`    // the org holding the service definition
+	ServiceArch     string                    `json:"serviceArch"`     // the hardware architecture of the service definition
+	ServiceVersions []ServiceChoiceFile      `json:"serviceVersions"` // a list of service version for rollback
+	DataVerify       exchange.DataVerification `json:"dataVerification"` // policy for verifying that the node is sending data
+	NodeH            exchange.NodeHealth       `json:"nodeHealth"`       // policy for determining when a node's health is violating its agreements
+}
 type PatternFile struct {
 	Org                string                       `json:"org"` // optional
 	Label              string                       `json:"label"`
 	Description        string                       `json:"description"`
 	Public             bool                         `json:"public"`
+	Services          []ServiceReferenceFile      `json:"services"`
 	Workloads          []WorkloadReferenceFile      `json:"workloads"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
 }
