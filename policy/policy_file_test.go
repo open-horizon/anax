@@ -779,6 +779,239 @@ func Test_Add_Workload1(t *testing.T) {
 	}
 }
 
+// Delete policy files for a pattern
+func Test_DeletePolicyFilesForPattern(t *testing.T) {
+
+	policyPath := "/tmp/policyfiletest/"
+
+	// setup test
+	if err := cleanTestDir(policyPath); err != nil {
+		t.Errorf(err.Error())
+	}
+
+	pa := `{"header":{"name":"producer","version": "2.0"}}`
+	pb := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
+		`"patternId": "e2edev/pws1",` +
+		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
+		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
+		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
+		`],"valueExchange":{},"resourceLimits":{},` +
+		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
+		`"proposalRejection":{},"ha_group":{}}`
+	pc := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
+		`"patternId": "IBM/pws2",` +
+		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
+		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
+		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
+		`],"valueExchange":{},"resourceLimits":{},` +
+		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
+		`"proposalRejection":{},"ha_group":{}}`
+
+	pd := `{"header":{"name":"split netspeed policy","version":"2.0"},` +
+		`"agreementProtocols":[{"name":"Basic"}],` +
+		`"workloads":[{"workloadUrl":"https://bluehorizon.network/workloads/netspeed","version":"2.3.0","arch":"amd64"}],` +
+		`"dataVerification":{"enabled":true,"URL":"","interval":600,"metering":{"tokens":4,"per_time_unit":"min","notification_interval":30}},` +
+		`"maxAgreements":2,"nodeHealth":{"missing_heartbeat_interval":600,"check_agreement_status":15}}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 := create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
+	} else if p3 := create_Policy(pc, t); p3 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p3, pc)
+	} else if p4 := create_Policy(pd, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p4, pd)
+	} else if file_pa, err := CreatePolicyFile(policyPath, "e2edev", "pa", p1); err != nil {
+		t.Errorf("Error save the policy pa to a file. %v", err)
+	} else if file_pb, err := CreatePolicyFile(policyPath, "e2edev", "pb", p2); err != nil {
+		t.Errorf("Error save the policy pa to a file. %v", err)
+	} else if file_pc, err := CreatePolicyFile(policyPath, "IBM", "pc", p3); err != nil {
+		t.Errorf("Error save the policy pa to a file. %v", err)
+	} else if file_pd, err := CreatePolicyFile(policyPath, "IBM", "pd", p4); err != nil {
+		t.Errorf("Error save the policy pa to a file. %v", err)
+	} else if _, err := os.Stat(file_pa); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not.", file_pa)
+	} else if _, err := os.Stat(file_pb); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not.", file_pb)
+	} else if _, err := os.Stat(file_pc); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not.", file_pc)
+	} else if _, err := os.Stat(file_pd); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not.", file_pd)
+	} else if err := DeletePolicyFilesForPattern(policyPath, "e2edev", "pws1"); err != nil {
+		t.Errorf("Failed to delete the policy file %v. %v", file_pb, err)
+	} else if _, err := os.Stat(file_pb); !os.IsNotExist(err) {
+		t.Errorf("File %v should have been deleted but not", file_pb)
+	} else if _, err := os.Stat(file_pa); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not", file_pa)
+	} else if err := DeletePolicyFilesForPattern(policyPath, "e2edev", "pws2"); err != nil {
+		t.Errorf("Failed to delete the policy file %v/%v. %v", "e2edev", "pws2", err)
+	} else if _, err := os.Stat(file_pc); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not", file_pc)
+	}
+}
+
+// Delete all pilicy files for an org
+func Test_DeletePolicyFilesForOrg(t *testing.T) {
+
+	policyPath := "/tmp/policyfiletest/"
+
+	// setup test
+	if err := cleanTestDir(policyPath); err != nil {
+		t.Errorf(err.Error())
+	}
+
+	pa := `{"header":{"name":"producer","version": "2.0"}}`
+	pb := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
+		`"patternId": "e2edev/pws1",` +
+		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
+		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
+		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
+		`],"valueExchange":{},"resourceLimits":{},` +
+		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
+		`"proposalRejection":{},"ha_group":{}}`
+	pc := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
+		`"patternId": "IBM/pws2",` +
+		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
+		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
+		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
+		`],"valueExchange":{},"resourceLimits":{},` +
+		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
+		`"proposalRejection":{},"ha_group":{}}`
+
+	pd := `{"header":{"name":"split netspeed policy","version":"2.0"},` +
+		`"agreementProtocols":[{"name":"Basic"}],` +
+		`"workloads":[{"workloadUrl":"https://bluehorizon.network/workloads/netspeed","version":"2.3.0","arch":"amd64"}],` +
+		`"dataVerification":{"enabled":true,"URL":"","interval":600,"metering":{"tokens":4,"per_time_unit":"min","notification_interval":30}},` +
+		`"maxAgreements":2,"nodeHealth":{"missing_heartbeat_interval":600,"check_agreement_status":15}}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 := create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
+	} else if p3 := create_Policy(pc, t); p3 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p3, pc)
+	} else if p4 := create_Policy(pd, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p4, pd)
+	} else if file_pa, err := CreatePolicyFile(policyPath, "e2edev", "pa", p1); err != nil {
+		t.Errorf("Error save the policy pa to a file. %v", err)
+	} else if file_pb, err := CreatePolicyFile(policyPath, "e2edev", "pb", p2); err != nil {
+		t.Errorf("Error save the policy pa to a file. %v", err)
+	} else if file_pc, err := CreatePolicyFile(policyPath, "IBM", "pc", p3); err != nil {
+		t.Errorf("Error save the policy pa to a file. %v", err)
+	} else if file_pd, err := CreatePolicyFile(policyPath, "IBM", "pd", p4); err != nil {
+		t.Errorf("Error save the policy pa to a file. %v", err)
+	} else if _, err := os.Stat(file_pa); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not.", file_pa)
+	} else if _, err := os.Stat(file_pb); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not.", file_pb)
+	} else if _, err := os.Stat(file_pc); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not.", file_pc)
+	} else if _, err := os.Stat(file_pd); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not.", file_pd)
+		// delete pattern based policy files
+	} else if err := DeletePolicyFilesForOrg(policyPath, "e2edev", true); err != nil {
+		t.Errorf("Failed to delete the policy files for e2edev. %v", err)
+	} else if _, err := os.Stat(file_pb); !os.IsNotExist(err) {
+		t.Errorf("File %v should have been deleted but not", file_pb)
+	} else if _, err := os.Stat(file_pa); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not", file_pa)
+		// delete all pilicy files
+	} else if err := DeletePolicyFilesForOrg(policyPath, "e2edev", false); err != nil {
+		t.Errorf("Failed to delete all the policy files for org e2edev. %v", err)
+	} else if _, err := os.Stat(file_pa); !os.IsNotExist(err) {
+		t.Errorf("File %v should have been deleted but not", file_pa)
+	} else if _, err := os.Stat(file_pc); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not", file_pc)
+	} else if _, err := os.Stat(file_pd); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not", file_pd)
+	}
+}
+
+// Delete all pattern based policy files and delete all policy files.
+func Test_DeleteAllPolicyFiles(t *testing.T) {
+
+	policyPath := "/tmp/policyfiletest/"
+
+	// setup test
+	if err := cleanTestDir(policyPath); err != nil {
+		t.Errorf(err.Error())
+	}
+
+	pa := `{"header":{"name":"producer","version": "2.0"}}`
+	pb := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
+		`"patternId": "e2edev/pws1",` +
+		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
+		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
+		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
+		`],"valueExchange":{},"resourceLimits":{},` +
+		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
+		`"proposalRejection":{},"ha_group":{}}`
+	pc := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
+		`"patternId": "IBM/pws2",` +
+		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
+		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
+		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
+		`],"valueExchange":{},"resourceLimits":{},` +
+		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
+		`"proposalRejection":{},"ha_group":{}}`
+
+	pd := `{"header":{"name":"split netspeed policy","version":"2.0"},` +
+		`"agreementProtocols":[{"name":"Basic"}],` +
+		`"workloads":[{"workloadUrl":"https://bluehorizon.network/workloads/netspeed","version":"2.3.0","arch":"amd64"}],` +
+		`"dataVerification":{"enabled":true,"URL":"","interval":600,"metering":{"tokens":4,"per_time_unit":"min","notification_interval":30}},` +
+		`"maxAgreements":2,"nodeHealth":{"missing_heartbeat_interval":600,"check_agreement_status":15}}`
+
+	if p1 := create_Policy(pa, t); p1 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
+	} else if p2 := create_Policy(pb, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
+	} else if p3 := create_Policy(pc, t); p3 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p3, pc)
+	} else if p4 := create_Policy(pd, t); p2 == nil {
+		t.Errorf("Error: returned %v, should have returned %v\n", p4, pd)
+	} else if file_pa, err := CreatePolicyFile(policyPath, "e2edev", "pa", p1); err != nil {
+		t.Errorf("Error save the policy pa to a file. %v", err)
+	} else if file_pb, err := CreatePolicyFile(policyPath, "e2edev", "pb", p2); err != nil {
+		t.Errorf("Error save the policy pa to a file. %v", err)
+	} else if file_pc, err := CreatePolicyFile(policyPath, "IBM", "pc", p3); err != nil {
+		t.Errorf("Error save the policy pa to a file. %v", err)
+	} else if file_pd, err := CreatePolicyFile(policyPath, "IBM", "pd", p4); err != nil {
+		t.Errorf("Error save the policy pa to a file. %v", err)
+	} else if _, err := os.Stat(file_pa); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not.", file_pa)
+	} else if _, err := os.Stat(file_pb); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not.", file_pb)
+	} else if _, err := os.Stat(file_pc); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not.", file_pc)
+	} else if _, err := os.Stat(file_pd); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not.", file_pd)
+		// delete pattern based policy files
+	} else if err := DeleteAllPolicyFiles(policyPath, true); err != nil {
+		t.Errorf("Failed to delete the policy files. %v", err)
+	} else if _, err := os.Stat(file_pb); !os.IsNotExist(err) {
+		t.Errorf("File %v should have been deleted but not", file_pb)
+	} else if _, err := os.Stat(file_pa); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not", file_pa)
+	} else if _, err := os.Stat(file_pc); !os.IsNotExist(err) {
+		t.Errorf("File %v should have been deleted but not", file_pc)
+	} else if _, err := os.Stat(file_pd); os.IsNotExist(err) {
+		t.Errorf("File %v should exist but not", file_pd)
+		// delete all policy files
+	} else if err := DeleteAllPolicyFiles(policyPath, false); err != nil {
+		t.Errorf("Failed to delete all the policy files. %v", err)
+	} else if _, err := os.Stat(file_pa); !os.IsNotExist(err) {
+		t.Errorf("File %v should have been deleted but not", file_pa)
+	} else if _, err := os.Stat(file_pd); !os.IsNotExist(err) {
+		t.Errorf("File %v should have been deleted but not", file_pd)
+	}
+}
+
 // ================================================================================================================
 // Helper functions
 //
@@ -875,4 +1108,18 @@ func create_WorkloadList(jsonString string, t *testing.T) *WorkloadList {
 	} else {
 		return pl
 	}
+}
+
+// Remove all the file from the given dir
+func cleanTestDir(policyPath string) error {
+	if _, err := os.Stat(policyPath); !os.IsNotExist(err) {
+		if err := os.RemoveAll(policyPath); err != nil {
+			return err
+		}
+	}
+
+	if err := os.MkdirAll(policyPath, 0764); err != nil {
+		return err
+	}
+	return nil
 }

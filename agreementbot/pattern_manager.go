@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/golang/glog"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
 	"golang.org/x/crypto/sha3"
@@ -147,17 +148,16 @@ func (pm *PatternManager) SetCurrentPatterns(servedPatterns map[string]exchange.
 		// If the org is not in the new map, then we need to get rid of it and all its patterns.
 		if _, ok := newMap[org]; !ok {
 			// delete org and all policy files in it.
-			pm.deleteOrg(policyPath, org)
+			if err := pm.deleteOrg(policyPath, org); err != nil {
+				return err
+			}
 		} else {
-
 			// If the pattern is not in the org any more, get rid of its policy files.
-			for pattern, pe := range orgMap {
-				if _, ok := newMap[org][pattern]; !ok && pe != nil {
-					// Delete the policy files.
-					if err := pe.DeleteAllPolicyFiles(policyPath, org); err != nil {
+			for pattern, _ := range orgMap {
+				if _, ok := newMap[org][pattern]; !ok {
+					if err := pm.deletePattern(policyPath, org, pattern); err != nil {
 						return err
 					}
-
 				}
 			}
 		}
@@ -193,6 +193,31 @@ func (pm *PatternManager) UpdatePatternPolicies(org string, definedPatterns map[
 	// Exit early on error
 	if !pm.hasOrg(org) {
 		return errors.New(fmt.Sprintf("org %v not found in pattern manager", org))
+	}
+
+	// If there is no pattern in the org, delete the org from the pm and all of the policy files in the org.
+	// This is the case where pattern or the org has been deleted but the agbot still hosts the pattern on the exchange.
+	if definedPatterns == nil || len(definedPatterns) == 0 {
+		// delete org and all policy files in it.
+		return pm.deleteOrg(policyPath, org)
+	}
+
+	// Delete the pattern from the pm and all of its policy files if the pattern does not exist on the exchange.
+	// This is the case where pattern or the org has been deleted but the agbot still hosts the pattern on the exchange.
+	for pattern, _ := range pm.OrgPatterns[org] {
+		found := false
+		for patternId, _ := range definedPatterns {
+			if exchange.GetId(patternId) == pattern {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			if err := pm.deletePattern(policyPath, org, pattern); err != nil {
+				return err
+			}
+		}
 	}
 
 	// For each defined pattern, update it in the new PatternManager map
@@ -243,22 +268,33 @@ func (pm *PatternManager) UpdatePatternPolicies(org string, definedPatterns map[
 // from the PatternManager and delete all the policy files for it.
 func (pm *PatternManager) deleteOrg(policyPath string, org string) error {
 
-	// Verify that we know about the org
-	if !pm.hasOrg(org) {
-		return errors.New(fmt.Sprintf("unable to delete org %v, org was not found", org))
-	}
-
-	// Delete the policy files for each pattern
-	for _, pe := range pm.OrgPatterns[org] {
-		if pe != nil {
-			if err := pe.DeleteAllPolicyFiles(policyPath, org); err != nil {
-				return errors.New(fmt.Sprintf("unable to delete policy files for %v, error %v", org, err))
-			}
-		}
+	// Delete all the policy files that are pattern based for the org
+	if err := policy.DeletePolicyFilesForOrg(policyPath, org, true); err != nil {
+		glog.Errorf("Error deleting policy files for org %v. %v", org, err)
 	}
 
 	// Get rid of the org map
-	delete(pm.OrgPatterns, org)
+	if pm.hasOrg(org) {
+		delete(pm.OrgPatterns, org)
+	}
+
+	return nil
+}
+
+// When a pattern is removed, remove the pattern from the PatternManager and delete all the policy files for it.
+func (pm *PatternManager) deletePattern(policyPath string, org string, pattern string) error {
+
+	// delete the policy files
+	if err := policy.DeletePolicyFilesForPattern(policyPath, org, pattern); err != nil {
+		glog.Errorf("Error deleting policy files for pattern %v/%v. %v", org, pattern, err)
+	}
+
+	// Get rid of the pattern from the pm
+	if pm.hasOrg(org) {
+		if _, ok := pm.OrgPatterns[org][pattern]; ok {
+			delete(pm.OrgPatterns[org], pattern)
+		}
+	}
 
 	return nil
 }

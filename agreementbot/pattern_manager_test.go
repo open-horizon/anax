@@ -544,7 +544,192 @@ func Test_pattern_manager_setpatterns4(t *testing.T) {
 	} else {
 		t.Log(np)
 	}
+}
 
+// UpdatePatternPolicies removes the pattern, org and the policy files
+func Test_pattern_manager_setpatterns5(t *testing.T) {
+
+	policyPath := "/tmp/servedpatterntest/"
+	myorg1 := "myorg1"
+	myorg2 := "myorg2"
+	pattern1 := "pattern1"
+	pattern2 := "pattern2"
+
+	servedPatterns1 := map[string]exchange.ServedPattern{
+		"myorg1_pattern1": {
+			Org:     myorg1,
+			Pattern: pattern1,
+		},
+		"myorg1_pattern2": {
+			Org:     myorg1,
+			Pattern: pattern2,
+		},
+		"myorg2_pattern2": {
+			Org:     myorg2,
+			Pattern: pattern2,
+		},
+	}
+
+	definedPatterns1 := map[string]exchange.Pattern{
+		"myorg1/pattern1": exchange.Pattern{
+			Label:       "label",
+			Description: "description",
+			Public:      false,
+			Workloads: []exchange.WorkloadReference{
+				{
+					WorkloadURL:  "http://mydomain.com/workload/test1",
+					WorkloadOrg:  "testorg",
+					WorkloadArch: "amd64",
+					WorkloadVersions: []exchange.WorkloadChoice{
+						{
+							Version: "1.0.0",
+						},
+					},
+				},
+			},
+			AgreementProtocols: []exchange.AgreementProtocol{
+				{Name: "Basic"},
+			},
+		},
+		"myorg1/pattern2": exchange.Pattern{
+			Label:       "label",
+			Description: "description",
+			Public:      false,
+			Workloads: []exchange.WorkloadReference{
+				{
+					WorkloadURL:  "http://mydomain.com/workload/test1",
+					WorkloadOrg:  "testorg",
+					WorkloadArch: "amd64",
+					WorkloadVersions: []exchange.WorkloadChoice{
+						{
+							Version: "2.0.0",
+						},
+					},
+				},
+			},
+			AgreementProtocols: []exchange.AgreementProtocol{
+				{Name: "Basic"},
+			},
+		},
+	}
+
+	definedPatterns2 := map[string]exchange.Pattern{
+		"myorg2/pattern1": exchange.Pattern{
+			Label:       "label",
+			Description: "description",
+			Public:      false,
+			Workloads: []exchange.WorkloadReference{
+				{
+					WorkloadURL:  "http://mydomain.com/workload/test2",
+					WorkloadOrg:  "testorg",
+					WorkloadArch: "amd64",
+					WorkloadVersions: []exchange.WorkloadChoice{
+						{
+							Version: "1.4.0",
+						},
+					},
+				},
+			},
+			AgreementProtocols: []exchange.AgreementProtocol{
+				{Name: "Basic"},
+			},
+		},
+		"myorg2/pattern2": exchange.Pattern{
+			Label:       "label",
+			Description: "description",
+			Public:      false,
+			Workloads: []exchange.WorkloadReference{
+				{
+					WorkloadURL:  "http://mydomain.com/workload/test2",
+					WorkloadOrg:  "testorg",
+					WorkloadArch: "amd64",
+					WorkloadVersions: []exchange.WorkloadChoice{
+						{
+							Version: "1.5.0",
+						},
+					},
+				},
+			},
+			AgreementProtocols: []exchange.AgreementProtocol{
+				{Name: "Basic"},
+			},
+		},
+	}
+
+	definedPatterns11 := map[string]exchange.Pattern{
+		"myorg1/pattern1": exchange.Pattern{
+			Label:       "label",
+			Description: "description",
+			Public:      false,
+			Workloads: []exchange.WorkloadReference{
+				{
+					WorkloadURL:  "http://mydomain.com/workload/test1",
+					WorkloadOrg:  "testorg",
+					WorkloadArch: "amd64",
+					WorkloadVersions: []exchange.WorkloadChoice{
+						{
+							Version: "1.0.0",
+						},
+					},
+				},
+			},
+			AgreementProtocols: []exchange.AgreementProtocol{
+				{Name: "Basic"},
+			},
+		},
+	}
+
+	// setup the test
+	if err := cleanTestDir(policyPath); err != nil {
+		t.Errorf(err.Error())
+	}
+
+	// run the test
+	if np := NewPatternManager(); np == nil {
+		t.Errorf("Error: pattern manager not created")
+	} else if err := np.SetCurrentPatterns(servedPatterns1, policyPath); err != nil {
+		t.Errorf("Error %v consuming served patterns %v", err, servedPatterns1)
+	} else if err := np.UpdatePatternPolicies(myorg1, definedPatterns1, policyPath); err != nil {
+		t.Errorf("Error: error updating pattern policies, %v", err)
+	} else if err := np.UpdatePatternPolicies(myorg2, definedPatterns2, policyPath); err != nil {
+		t.Errorf("Error: error updating pattern policies, %v", err)
+	} else if len(np.OrgPatterns) != 2 {
+		t.Errorf("Error: should have 2 orgs in the PatternManager, have %v", len(np.OrgPatterns))
+	} else if !np.hasOrg(myorg1) {
+		t.Errorf("Error: PM should have org %v but doesnt, has %v", myorg1, np)
+	} else if !np.hasOrg(myorg2) {
+		t.Errorf("Error: PM should have org %v but doesnt, has %v", myorg2, np)
+	} else if err := getPatternEntryFiles(np.OrgPatterns[myorg1][pattern1].PolicyFileNames); err != nil {
+		t.Errorf("Error getting pattern entry files for %v %v, %v", myorg1, pattern1, err)
+	} else if err := getPatternEntryFiles(np.OrgPatterns[myorg1][pattern2].PolicyFileNames); err != nil {
+		t.Errorf("Error getting pattern entry files for %v %v, %v", myorg1, pattern2, err)
+	} else if err := getPatternEntryFiles(np.OrgPatterns[myorg2][pattern2].PolicyFileNames); err != nil {
+		t.Errorf("Error getting pattern entry files for %v %v, %v", myorg2, pattern2, err)
+	} else {
+		files_delete := np.OrgPatterns[myorg1][pattern2].PolicyFileNames
+		if err := np.UpdatePatternPolicies(myorg1, definedPatterns11, policyPath); err != nil {
+			t.Errorf("Error: error updating pattern policies, %v", err)
+		} else if err := getPatternEntryFiles(files_delete); err == nil {
+			t.Errorf("Should return error but got nil for checking policy files %v", files_delete)
+		} else if len(np.OrgPatterns[myorg1]) != 1 {
+			t.Errorf("Error: PM should have 1 pattern for org %v but got %v", myorg1, np.OrgPatterns[myorg1])
+		} else {
+			files_delete1 := np.OrgPatterns[myorg1][pattern1].PolicyFileNames
+			if err := np.UpdatePatternPolicies(myorg1, make(map[string]exchange.Pattern), policyPath); err != nil {
+				t.Errorf("Error: error updating pattern policies, %v", err)
+			} else if np.hasOrg(myorg1) {
+				t.Errorf("Error: org %v should have deleted but not.", myorg1)
+			} else if err := getPatternEntryFiles(files_delete1); err == nil {
+				t.Errorf("Should return error but got nil for checking policy files %v", files_delete1)
+			} else if !np.hasOrg(myorg2) {
+				t.Errorf("Error: org %v should be left but not.", myorg2)
+			} else if err := getPatternEntryFiles(np.OrgPatterns[myorg2][pattern2].PolicyFileNames); err != nil {
+				t.Errorf("Error getting pattern entry files for %v %v, %v", myorg2, pattern2, err)
+			} else {
+				t.Log(np)
+			}
+		}
+	}
 }
 
 // Utility functions
