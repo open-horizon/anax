@@ -80,7 +80,7 @@ func List() {
 func Registered() {
 	// The registered microservices are listed as policies
 	apiOutput := make(map[string]policy.Policy)
-	httpCode := cliutils.HorizonGet("microservice/policy", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput)
+	httpCode := cliutils.HorizonGet("service/policy", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput)
 	if httpCode == cliutils.ANAX_NOT_CONFIGURED_YET {
 		cliutils.Fatal(cliutils.HTTP_ERROR, cliutils.MUST_REGISTER_FIRST)
 	}
