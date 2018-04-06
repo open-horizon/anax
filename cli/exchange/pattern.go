@@ -25,7 +25,7 @@ type PatternOutput struct {
 	Label              string                       `json:"label"`
 	Description        string                       `json:"description"`
 	Public             bool                         `json:"public"`
-	Services          []ServiceReference          `json:"services"`
+	Services           []ServiceReference           `json:"services"`
 	Workloads          []WorkloadReference          `json:"workloads"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
 	LastUpdated        string                       `json:"lastUpdated"`
@@ -55,26 +55,26 @@ type WorkloadReferenceFile struct {
 	NodeH            exchange.NodeHealth       `json:"nodeHealth"`       // policy for determining when a node's health is violating its agreements
 }
 type ServiceChoiceFile struct {
-	Version  string                    `json:"version"`  // the version of the service
-	Priority exchange.WorkloadPriority `json:"priority"` // the highest priority service is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
-	Upgrade  exchange.UpgradePolicy    `json:"upgradePolicy"`
-	DeploymentOverrides          interface{} `json:"deployment_overrides"`           // env var overrides for the service
-	DeploymentOverridesSignature string      `json:"deployment_overrides_signature"` // signature of env var overrides
+	Version                      string                    `json:"version"`  // the version of the service
+	Priority                     exchange.WorkloadPriority `json:"priority"` // the highest priority service is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
+	Upgrade                      exchange.UpgradePolicy    `json:"upgradePolicy"`
+	DeploymentOverrides          interface{}               `json:"deployment_overrides"`           // env var overrides for the service
+	DeploymentOverridesSignature string                    `json:"deployment_overrides_signature"` // signature of env var overrides
 }
 type ServiceReferenceFile struct {
-	ServiceURL      string                    `json:"serviceUrl"`      // refers to a service definition in the exchange
-	ServiceOrg      string                    `json:"serviceOrgid"`    // the org holding the service definition
-	ServiceArch     string                    `json:"serviceArch"`     // the hardware architecture of the service definition
-	ServiceVersions []ServiceChoiceFile      `json:"serviceVersions"` // a list of service version for rollback
-	DataVerify       exchange.DataVerification `json:"dataVerification"` // policy for verifying that the node is sending data
-	NodeH            exchange.NodeHealth       `json:"nodeHealth"`       // policy for determining when a node's health is violating its agreements
+	ServiceURL      string                    `json:"serviceUrl"`       // refers to a service definition in the exchange
+	ServiceOrg      string                    `json:"serviceOrgid"`     // the org holding the service definition
+	ServiceArch     string                    `json:"serviceArch"`      // the hardware architecture of the service definition
+	ServiceVersions []ServiceChoiceFile       `json:"serviceVersions"`  // a list of service version for rollback
+	DataVerify      exchange.DataVerification `json:"dataVerification"` // policy for verifying that the node is sending data
+	NodeH           exchange.NodeHealth       `json:"nodeHealth"`       // policy for determining when a node's health is violating its agreements
 }
 type PatternFile struct {
 	Org                string                       `json:"org"` // optional
 	Label              string                       `json:"label"`
 	Description        string                       `json:"description"`
 	Public             bool                         `json:"public"`
-	Services          []ServiceReferenceFile      `json:"services"`
+	Services           []ServiceReferenceFile       `json:"services"`
 	Workloads          []WorkloadReferenceFile      `json:"workloads"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
 }
@@ -104,18 +104,18 @@ type ServiceChoice struct {
 	DeploymentOverridesSignature string                    `json:"deployment_overrides_signature"` // signature of env var overrides
 }
 type ServiceReference struct {
-	ServiceURL      string                    `json:"serviceUrl"`      // refers to a service definition in the exchange
-	ServiceOrg      string                    `json:"serviceOrgid"`    // the org holding the service definition
-	ServiceArch     string                    `json:"serviceArch"`     // the hardware architecture of the service definition
-	ServiceVersions []ServiceChoice          `json:"serviceVersions"` // a list of service version for rollback
-	DataVerify       exchange.DataVerification `json:"dataVerification"` // policy for verifying that the node is sending data
-	NodeH            exchange.NodeHealth       `json:"nodeHealth"`       // policy for determining when a node's health is violating its agreements
+	ServiceURL      string                    `json:"serviceUrl"`       // refers to a service definition in the exchange
+	ServiceOrg      string                    `json:"serviceOrgid"`     // the org holding the service definition
+	ServiceArch     string                    `json:"serviceArch"`      // the hardware architecture of the service definition
+	ServiceVersions []ServiceChoice           `json:"serviceVersions"`  // a list of service version for rollback
+	DataVerify      exchange.DataVerification `json:"dataVerification"` // policy for verifying that the node is sending data
+	NodeH           exchange.NodeHealth       `json:"nodeHealth"`       // policy for determining when a node's health is violating its agreements
 }
 type PatternInput struct {
 	Label              string                       `json:"label"`
 	Description        string                       `json:"description"`
 	Public             bool                         `json:"public"`
-	Services          []ServiceReference          `json:"services"`
+	Services           []ServiceReference           `json:"services"`
 	Workloads          []WorkloadReference          `json:"workloads"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
 }
@@ -337,7 +337,7 @@ func PatternVerify(org, userPw, pattern, keyFilePath string) {
 		for j := range pat.Services[i].ServiceVersions {
 			cliutils.Verbose("verifying deployment_overrides string in service %d, serviceVersion number %d", i+1, j+1)
 			if pat.Services[i].ServiceVersions[j].DeploymentOverrides == "" && pat.Services[i].ServiceVersions[j].DeploymentOverridesSignature == "" {
-				continue	// there was nothing to sign, so nothing to verify
+				continue // there was nothing to sign, so nothing to verify
 			}
 			verified, err := verify.Input(keyFilePath, pat.Services[i].ServiceVersions[j].DeploymentOverridesSignature, []byte(pat.Services[i].ServiceVersions[j].DeploymentOverrides))
 			if err != nil {
@@ -353,7 +353,7 @@ func PatternVerify(org, userPw, pattern, keyFilePath string) {
 		for j := range pat.Workloads[i].WorkloadVersions {
 			cliutils.Verbose("verifying deployment_overrides string in workload %d, workloadVersion number %d", i+1, j+1)
 			if pat.Workloads[i].WorkloadVersions[j].DeploymentOverrides == "" && pat.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature == "" {
-				continue	// there was nothing to sign, so nothing to verify
+				continue // there was nothing to sign, so nothing to verify
 			}
 			verified, err := verify.Input(keyFilePath, pat.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature, []byte(pat.Workloads[i].WorkloadVersions[j].DeploymentOverrides))
 			if err != nil {

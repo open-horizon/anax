@@ -38,7 +38,7 @@ func (m MicroWork) String() string {
 
 type InputFile struct {
 	Global        []GlobalSet `json:"global,omitempty"`
-	Services []MicroWork `json:"services,omitempty"`
+	Services      []MicroWork `json:"services,omitempty"`
 	Microservices []MicroWork `json:"microservices,omitempty"`
 	Workloads     []MicroWork `json:"workloads,omitempty"`
 }
@@ -144,7 +144,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 
 		// Set the microservice variables
 		attr = api.NewAttribute("UserInputAttributes", []string{}, "microservice", false, false, map[string]interface{}{}) // we reuse this for each microservice
-		microservice := api.MicroService{SensorName: &emptyStr} // we reuse this too
+		microservice := api.MicroService{SensorName: &emptyStr}                                                            // we reuse this too
 		if len(inputFileStruct.Microservices) > 0 {
 			fmt.Println("Setting microservice variables...")
 		}
@@ -297,11 +297,11 @@ func CreateInputFile(org, pattern, arch, nodeIdTok, inputFile string) {
 		} else {
 			versionRangeStr = versionRange.Get_expression()
 		}
-		micro, err := exchange.GetMicroservice(httpClientFactory, m.SpecRef, m.Org, versionRangeStr, m.Arch, exchangeUrl+"/", cliutils.OrgAndCreds(org, nodeId), nodeToken)
+		micro, err := exchange.GetMicroservice(httpClientFactory, m.Url, m.Org, versionRangeStr, m.Arch, exchangeUrl+"/", cliutils.OrgAndCreds(org, nodeId), nodeToken)
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem getting the highest version microservice for %s %s %s: %v", m.Org, m.SpecRef, m.Arch, err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem getting the highest version microservice for %s %s %s: %v", m.Org, m.Url, m.Arch, err)
 		}
-		cliutils.Verbose("for %s %s %s selected %s for version range %s", m.Org, m.SpecRef, m.Arch, micro.Version, m.Version)
+		cliutils.Verbose("for %s %s %s selected %s for version range %s", m.Org, m.Url, m.Arch, micro.Version, m.Version)
 		*/
 
 		// Get the user input from this microservice
