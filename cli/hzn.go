@@ -214,6 +214,7 @@ Environment Variables:
 	keyCmd := app.Command("key", "List and manage keys for signing and verifying services.")
 	keyListCmd := keyCmd.Command("list", "List the signing keys that have been imported into this Horizon agent.")
 	keyName := keyListCmd.Arg("key-name", "The name of a specific key to show.").String()
+	keyListAll := keyListCmd.Flag("all", "List the names of all signing keys, even the older public keys not wrapped in a certificate.").Short('a').Bool()
 	keyCreateCmd := keyCmd.Command("create", "Generate a signing key pair.")
 	keyX509Org := keyCreateCmd.Arg("x509-org", "x509 certificate Organization (O) field (preferably a company name or other organization's name).").Required().String()
 	keyX509CN := keyCreateCmd.Arg("x509-cn", "x509 certificate Common Name (CN) field (preferably an email address issued by x509org).").Required().String()
@@ -422,7 +423,7 @@ Environment Variables:
 	case registerCmd.FullCommand():
 		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *email, *inputFile)
 	case keyListCmd.FullCommand():
-		key.List(*keyName)
+		key.List(*keyName, *keyListAll)
 	//case keyCmd.FullCommand():   // <- I'd like to just default to list in this case, but don't know how to do that yet
 	//	keyCmd.List()
 	case keyCreateCmd.FullCommand():

@@ -1,13 +1,13 @@
 {
   "label": "Cpu2wiotp for amd64 and arm",
-  "description": "Horizon deployment pattern that runs the cpu2wiotp service",
+  "description": "Horizon deployment pattern that runs the cpu2wiotp workload",
   "public": true,
-  "services": [
+  "workloads": [
     {
-      "serviceUrl": "https://internetofthings.ibmcloud.com/services/cpu2wiotp",
-      "serviceOrgid": "IBM",
-      "serviceArch": "amd64",
-      "serviceVersions": [
+      "workloadUrl": "https://internetofthings.ibmcloud.com/workloads/cpu2wiotp",
+      "workloadOrgid": "IBM",
+      "workloadArch": "amd64",
+      "workloadVersions": [
         {
           "version": "1.1.3",
           "deployment_overrides": {},
@@ -22,10 +22,10 @@
       }
     },
     {
-      "serviceUrl": "https://internetofthings.ibmcloud.com/services/cpu2wiotp",
-      "serviceOrgid": "IBM",
-      "serviceArch": "arm",
-      "serviceVersions": [
+      "workloadUrl": "https://internetofthings.ibmcloud.com/workloads/cpu2wiotp",
+      "workloadOrgid": "IBM",
+      "workloadArch": "arm",
+      "workloadVersions": [
         {
           "version": "1.1.3",
           "deployment_overrides": {},

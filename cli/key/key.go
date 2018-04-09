@@ -21,8 +21,20 @@ type KeyPairSimpleOutput struct {
 	NotValidAfter    string `json:"not_valid_after"`
 }
 
-func List(keyName string) {
-	if keyName == "" {
+type KeyList struct {
+	Pem []string `json:"pem"`
+}
+
+func List(keyName string, listAll bool) {
+	if keyName == "" && listAll {
+		var apiOutput KeyList
+		cliutils.HorizonGet("trust", []int{200}, &apiOutput)
+		jsonBytes, err := json.MarshalIndent(apiOutput.Pem, "", cliutils.JSON_INDENT)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'key list' output: %v", err)
+		}
+		fmt.Printf("%s\n", jsonBytes)
+	} else if keyName == "" {
 		// Getting all of the keys only returns the names
 		var apiOutput map[string][]api.KeyPairSimpleRecord
 		// Note: it is allowed to get /trust before post /node is called, so we don't have to check for that error

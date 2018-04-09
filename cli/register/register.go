@@ -24,7 +24,7 @@ func (g GlobalSet) String() string {
 	return fmt.Sprintf("Global Array element, type: %v, sensor_urls: %v, variables: %v", g.Type, g.SensorUrls, g.Variables)
 }
 
-// Use for both microservices and workloads
+// Use for services, microservices, and workloads
 type MicroWork struct {
 	Org          string                 `json:"org"`
 	Url          string                 `json:"url"`
@@ -38,6 +38,7 @@ func (m MicroWork) String() string {
 
 type InputFile struct {
 	Global        []GlobalSet `json:"global,omitempty"`
+	Services      []MicroWork `json:"services,omitempty"`
 	Microservices []MicroWork `json:"microservices,omitempty"`
 	Workloads     []MicroWork `json:"workloads,omitempty"`
 }
@@ -113,8 +114,10 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 	if inputFile != "" {
 		// Set the global variables as attributes with no url (or in the case of HTTPSBasicAuthAttributes, with url equal to image svr)
 		// Technically the AgreementProtocolAttributes can be set, but it has no effect on anax if a pattern is being used.
-		fmt.Println("Setting global variables...")
 		attr := api.NewAttribute("", []string{}, "Global variables", false, false, map[string]interface{}{}) // we reuse this for each GlobalSet
+		if len(inputFileStruct.Global) > 0 {
+			fmt.Println("Setting global variables...")
+		}
 		for _, g := range inputFileStruct.Global {
 			attr.Type = &g.Type
 			attr.SensorUrls = &g.SensorUrls
@@ -122,24 +125,44 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 			cliutils.HorizonPutPost(http.MethodPost, "attribute", []int{201, 200}, attr)
 		}
 
-		// Set the microservice variables
-		fmt.Println("Setting microservice variables...")
-		attr = api.NewAttribute("UserInputAttributes", []string{}, "microservice", false, false, map[string]interface{}{}) // we reuse this for each microservice
+		// Set the service variables
+		attr = api.NewAttribute("UserInputAttributes", []string{}, "service", false, false, map[string]interface{}{}) // we reuse this for each service
 		emptyStr := ""
-		service := api.MicroService{SensorName: &emptyStr} // we reuse this too
-		for _, m := range inputFileStruct.Microservices {
-			service.SensorOrg = &m.Org
-			service.SensorUrl = &m.Url
-			service.SensorVersion = &m.VersionRange
+		service := api.Service{Name: &emptyStr} // we reuse this too
+		if len(inputFileStruct.Services) > 0 {
+			fmt.Println("Setting service variables...")
+		}
+		for _, m := range inputFileStruct.Services {
+			service.Org = &m.Org
+			service.Url = &m.Url
+			service.VersionRange = &m.VersionRange
 			attr.Mappings = &m.Variables
 			attrSlice := []api.Attribute{*attr}
 			service.Attributes = &attrSlice
-			cliutils.HorizonPutPost(http.MethodPost, "microservice/config", []int{201, 200}, service)
+			cliutils.HorizonPutPost(http.MethodPost, "service/config", []int{201, 200}, service)
+		}
+
+		// Set the microservice variables
+		attr = api.NewAttribute("UserInputAttributes", []string{}, "microservice", false, false, map[string]interface{}{}) // we reuse this for each microservice
+		microservice := api.MicroService{SensorName: &emptyStr}                                                            // we reuse this too
+		if len(inputFileStruct.Microservices) > 0 {
+			fmt.Println("Setting microservice variables...")
+		}
+		for _, m := range inputFileStruct.Microservices {
+			microservice.SensorOrg = &m.Org
+			microservice.SensorUrl = &m.Url
+			microservice.SensorVersion = &m.VersionRange
+			attr.Mappings = &m.Variables
+			attrSlice := []api.Attribute{*attr}
+			microservice.Attributes = &attrSlice
+			cliutils.HorizonPutPost(http.MethodPost, "microservice/config", []int{201, 200}, microservice)
 		}
 
 		// Set the workload variables
-		fmt.Println("Setting workload variables...")
 		attr = api.NewAttribute("UserInputAttributes", []string{}, "workload", false, false, map[string]interface{}{})
+		if len(inputFileStruct.Workloads) > 0 {
+			fmt.Println("Setting workload variables...")
+		}
 		for _, w := range inputFileStruct.Workloads {
 			attr.Mappings = &w.Variables
 			workload := api.WorkloadConfig{Org: w.Org, WorkloadURL: w.Url, Version: w.VersionRange, Attributes: []api.Attribute{*attr}}
@@ -274,11 +297,11 @@ func CreateInputFile(org, pattern, arch, nodeIdTok, inputFile string) {
 		} else {
 			versionRangeStr = versionRange.Get_expression()
 		}
-		micro, err := exchange.GetMicroservice(httpClientFactory, m.SpecRef, m.Org, versionRangeStr, m.Arch, exchangeUrl+"/", cliutils.OrgAndCreds(org, nodeId), nodeToken)
+		micro, err := exchange.GetMicroservice(httpClientFactory, m.Url, m.Org, versionRangeStr, m.Arch, exchangeUrl+"/", cliutils.OrgAndCreds(org, nodeId), nodeToken)
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem getting the highest version microservice for %s %s %s: %v", m.Org, m.SpecRef, m.Arch, err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem getting the highest version microservice for %s %s %s: %v", m.Org, m.Url, m.Arch, err)
 		}
-		cliutils.Verbose("for %s %s %s selected %s for version range %s", m.Org, m.SpecRef, m.Arch, micro.Version, m.Version)
+		cliutils.Verbose("for %s %s %s selected %s for version range %s", m.Org, m.Url, m.Arch, micro.Version, m.Version)
 		*/
 
 		// Get the user input from this microservice

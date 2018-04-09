@@ -25,6 +25,7 @@ type PatternOutput struct {
 	Label              string                       `json:"label"`
 	Description        string                       `json:"description"`
 	Public             bool                         `json:"public"`
+	Services           []ServiceReference           `json:"services"`
 	Workloads          []WorkloadReference          `json:"workloads"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
 	LastUpdated        string                       `json:"lastUpdated"`
@@ -53,11 +54,27 @@ type WorkloadReferenceFile struct {
 	DataVerify       exchange.DataVerification `json:"dataVerification"` // policy for verifying that the node is sending data
 	NodeH            exchange.NodeHealth       `json:"nodeHealth"`       // policy for determining when a node's health is violating its agreements
 }
+type ServiceChoiceFile struct {
+	Version                      string                    `json:"version"`  // the version of the service
+	Priority                     exchange.WorkloadPriority `json:"priority"` // the highest priority service is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
+	Upgrade                      exchange.UpgradePolicy    `json:"upgradePolicy"`
+	DeploymentOverrides          interface{}               `json:"deployment_overrides"`           // env var overrides for the service
+	DeploymentOverridesSignature string                    `json:"deployment_overrides_signature"` // signature of env var overrides
+}
+type ServiceReferenceFile struct {
+	ServiceURL      string                    `json:"serviceUrl"`       // refers to a service definition in the exchange
+	ServiceOrg      string                    `json:"serviceOrgid"`     // the org holding the service definition
+	ServiceArch     string                    `json:"serviceArch"`      // the hardware architecture of the service definition
+	ServiceVersions []ServiceChoiceFile       `json:"serviceVersions"`  // a list of service version for rollback
+	DataVerify      exchange.DataVerification `json:"dataVerification"` // policy for verifying that the node is sending data
+	NodeH           exchange.NodeHealth       `json:"nodeHealth"`       // policy for determining when a node's health is violating its agreements
+}
 type PatternFile struct {
 	Org                string                       `json:"org"` // optional
 	Label              string                       `json:"label"`
 	Description        string                       `json:"description"`
 	Public             bool                         `json:"public"`
+	Services           []ServiceReferenceFile       `json:"services"`
 	Workloads          []WorkloadReferenceFile      `json:"workloads"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
 }
@@ -79,10 +96,26 @@ type WorkloadReference struct {
 	DataVerify       exchange.DataVerification `json:"dataVerification"` // policy for verifying that the node is sending data
 	NodeH            exchange.NodeHealth       `json:"nodeHealth"`       // policy for determining when a node's health is violating its agreements
 }
+type ServiceChoice struct {
+	Version                      string                    `json:"version"`  // the version of the service
+	Priority                     exchange.WorkloadPriority `json:"priority"` // the highest priority service is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
+	Upgrade                      exchange.UpgradePolicy    `json:"upgradePolicy"`
+	DeploymentOverrides          string                    `json:"deployment_overrides"`           // env var overrides for the service
+	DeploymentOverridesSignature string                    `json:"deployment_overrides_signature"` // signature of env var overrides
+}
+type ServiceReference struct {
+	ServiceURL      string                    `json:"serviceUrl"`       // refers to a service definition in the exchange
+	ServiceOrg      string                    `json:"serviceOrgid"`     // the org holding the service definition
+	ServiceArch     string                    `json:"serviceArch"`      // the hardware architecture of the service definition
+	ServiceVersions []ServiceChoice           `json:"serviceVersions"`  // a list of service version for rollback
+	DataVerify      exchange.DataVerification `json:"dataVerification"` // policy for verifying that the node is sending data
+	NodeH           exchange.NodeHealth       `json:"nodeHealth"`       // policy for determining when a node's health is violating its agreements
+}
 type PatternInput struct {
 	Label              string                       `json:"label"`
 	Description        string                       `json:"description"`
 	Public             bool                         `json:"public"`
+	Services           []ServiceReference           `json:"services"`
 	Workloads          []WorkloadReference          `json:"workloads"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
 }
@@ -105,7 +138,6 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
 		// Display the full resources
-		//var output string
 		var output ExchangePatterns
 		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 		if httpCode == 404 && pattern != "" {
@@ -166,47 +198,95 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 	if patFile.Org != "" && patFile.Org != org {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", patFile.Org, org)
 	}
-	patInput := PatternInput{Label: patFile.Label, Description: patFile.Description, Public: patFile.Public, Workloads: make([]WorkloadReference, len(patFile.Workloads)), AgreementProtocols: patFile.AgreementProtocols}
+	if patFile.Workloads != nil && len(patFile.Workloads) > 0 && patFile.Services != nil && len(patFile.Services) > 0 {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "you can not specify both the 'workloads' and 'services' fields.")
+	}
+	patInput := PatternInput{Label: patFile.Label, Description: patFile.Description, Public: patFile.Public, AgreementProtocols: patFile.AgreementProtocols}
 
-	// Loop thru the workloads array and the workloadVersions array and sign the deployment_overrides strings
-	fmt.Println("Signing pattern...")
-	for i := range patFile.Workloads {
-		patInput.Workloads[i].WorkloadURL = patFile.Workloads[i].WorkloadURL
-		patInput.Workloads[i].WorkloadOrg = patFile.Workloads[i].WorkloadOrg
-		patInput.Workloads[i].WorkloadArch = patFile.Workloads[i].WorkloadArch
-		patInput.Workloads[i].WorkloadVersions = make([]WorkloadChoice, len(patFile.Workloads[i].WorkloadVersions))
-		patInput.Workloads[i].DataVerify = patFile.Workloads[i].DataVerify
-		patInput.Workloads[i].NodeH = patFile.Workloads[i].NodeH
-		for j := range patFile.Workloads[i].WorkloadVersions {
-			cliutils.Verbose("signing deployment_overrides string in workload %d, workloadVersion number %d", i+1, j+1)
-			patInput.Workloads[i].WorkloadVersions[j].Version = patFile.Workloads[i].WorkloadVersions[j].Version
-			patInput.Workloads[i].WorkloadVersions[j].Priority = patFile.Workloads[i].WorkloadVersions[j].Priority
-			patInput.Workloads[i].WorkloadVersions[j].Upgrade = patFile.Workloads[i].WorkloadVersions[j].Upgrade
+	// Loop thru the services/workloads array and the servicesVersions/workloadVersions array and sign the deployment_overrides fields
+	if patFile.Services != nil && len(patFile.Services) > 0 {
+		patInput.Services = make([]ServiceReference, len(patFile.Services))
+		for i := range patFile.Services {
+			patInput.Services[i].ServiceURL = patFile.Services[i].ServiceURL
+			patInput.Services[i].ServiceOrg = patFile.Services[i].ServiceOrg
+			patInput.Services[i].ServiceArch = patFile.Services[i].ServiceArch
+			patInput.Services[i].ServiceVersions = make([]ServiceChoice, len(patFile.Services[i].ServiceVersions))
+			patInput.Services[i].DataVerify = patFile.Services[i].DataVerify
+			patInput.Services[i].NodeH = patFile.Services[i].NodeH
+			for j := range patFile.Services[i].ServiceVersions {
+				patInput.Services[i].ServiceVersions[j].Version = patFile.Services[i].ServiceVersions[j].Version
+				patInput.Services[i].ServiceVersions[j].Priority = patFile.Services[i].ServiceVersions[j].Priority
+				patInput.Services[i].ServiceVersions[j].Upgrade = patFile.Services[i].ServiceVersions[j].Upgrade
 
-			var err error
-			var deployment []byte
-			depOver := ConvertToDeploymentOverrides(patFile.Workloads[i].WorkloadVersions[j].DeploymentOverrides)
-			// If the input deployment overrides are already in string form and signed, then use them as is.
-			if patFile.Workloads[i].WorkloadVersions[j].DeploymentOverrides != nil && reflect.TypeOf(patFile.Workloads[i].WorkloadVersions[j].DeploymentOverrides).String() == "string" && patFile.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature != "" {
-				patInput.Workloads[i].WorkloadVersions[j].DeploymentOverrides = patFile.Workloads[i].WorkloadVersions[j].DeploymentOverrides.(string)
-				patInput.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature = patFile.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature
-			} else if depOver == nil {
-				// If the input deployment override is an object that is nil, then there are no overrides.
-				patInput.Workloads[i].WorkloadVersions[j].DeploymentOverrides = ""
-				patInput.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature = ""
-			} else {
-				deployment, err = json.Marshal(depOver)
-				if err != nil {
-					cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment_overrides field in workload %d, workloadVersion number %d: %v", i+1, j+1, err)
+				var err error
+				var deployment []byte
+				depOver := ConvertToDeploymentOverrides(patFile.Services[i].ServiceVersions[j].DeploymentOverrides)
+				// If the input deployment overrides are already in string form and signed, then use them as is.
+				if patFile.Services[i].ServiceVersions[j].DeploymentOverrides != nil && reflect.TypeOf(patFile.Services[i].ServiceVersions[j].DeploymentOverrides).String() == "string" && patFile.Services[i].ServiceVersions[j].DeploymentOverridesSignature != "" {
+					patInput.Services[i].ServiceVersions[j].DeploymentOverrides = patFile.Services[i].ServiceVersions[j].DeploymentOverrides.(string)
+					patInput.Services[i].ServiceVersions[j].DeploymentOverridesSignature = patFile.Services[i].ServiceVersions[j].DeploymentOverridesSignature
+				} else if depOver == nil {
+					// If the input deployment override is an object that is nil, then there are no overrides, so no signing necessary.
+					patInput.Services[i].ServiceVersions[j].DeploymentOverrides = ""
+					patInput.Services[i].ServiceVersions[j].DeploymentOverridesSignature = ""
+				} else {
+					fmt.Printf("Signing deployment_overrides field in service %d, serviceVersion number %d\n", i+1, j+1)
+					deployment, err = json.Marshal(depOver)
+					if err != nil {
+						cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment_overrides field in service %d, serviceVersion number %d: %v", i+1, j+1, err)
+					}
+					patInput.Services[i].ServiceVersions[j].DeploymentOverrides = string(deployment)
+					// We know we need to sign the overrides, so make sure a real key file was provided.
+					if keyFilePath == "" {
+						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "must specify --private-key-file so that the deployment_overrides can be signed")
+					}
+					patInput.Services[i].ServiceVersions[j].DeploymentOverridesSignature, err = sign.Input(keyFilePath, deployment)
+					if err != nil {
+						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment_overrides string with %s: %v", keyFilePath, err)
+					}
 				}
-				patInput.Workloads[i].WorkloadVersions[j].DeploymentOverrides = string(deployment)
-				// We know we need to sign the overrides, so make sure a real key file was provided.
-				if keyFilePath == "" {
-					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "must specify --private-key-file so that the deployment_overrides can be signed")
-				}
-				patInput.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature, err = sign.Input(keyFilePath, deployment)
-				if err != nil {
-					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment_overrides string with %s: %v", keyFilePath, err)
+			}
+		}
+	} else if patFile.Workloads != nil && len(patFile.Workloads) > 0 {
+		patInput.Workloads = make([]WorkloadReference, len(patFile.Workloads))
+		for i := range patFile.Workloads {
+			patInput.Workloads[i].WorkloadURL = patFile.Workloads[i].WorkloadURL
+			patInput.Workloads[i].WorkloadOrg = patFile.Workloads[i].WorkloadOrg
+			patInput.Workloads[i].WorkloadArch = patFile.Workloads[i].WorkloadArch
+			patInput.Workloads[i].WorkloadVersions = make([]WorkloadChoice, len(patFile.Workloads[i].WorkloadVersions))
+			patInput.Workloads[i].DataVerify = patFile.Workloads[i].DataVerify
+			patInput.Workloads[i].NodeH = patFile.Workloads[i].NodeH
+			for j := range patFile.Workloads[i].WorkloadVersions {
+				patInput.Workloads[i].WorkloadVersions[j].Version = patFile.Workloads[i].WorkloadVersions[j].Version
+				patInput.Workloads[i].WorkloadVersions[j].Priority = patFile.Workloads[i].WorkloadVersions[j].Priority
+				patInput.Workloads[i].WorkloadVersions[j].Upgrade = patFile.Workloads[i].WorkloadVersions[j].Upgrade
+
+				var err error
+				var deployment []byte
+				depOver := ConvertToDeploymentOverrides(patFile.Workloads[i].WorkloadVersions[j].DeploymentOverrides)
+				// If the input deployment overrides are already in string form and signed, then use them as is.
+				if patFile.Workloads[i].WorkloadVersions[j].DeploymentOverrides != nil && reflect.TypeOf(patFile.Workloads[i].WorkloadVersions[j].DeploymentOverrides).String() == "string" && patFile.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature != "" {
+					patInput.Workloads[i].WorkloadVersions[j].DeploymentOverrides = patFile.Workloads[i].WorkloadVersions[j].DeploymentOverrides.(string)
+					patInput.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature = patFile.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature
+				} else if depOver == nil {
+					// If the input deployment override is an object that is nil, then there are no overrides, so no signing necessary.
+					patInput.Workloads[i].WorkloadVersions[j].DeploymentOverrides = ""
+					patInput.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature = ""
+				} else {
+					fmt.Printf("Signing deployment_overrides field in workload %d, workloadVersion number %d\n", i+1, j+1)
+					deployment, err = json.Marshal(depOver)
+					if err != nil {
+						cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment_overrides field in workload %d, workloadVersion number %d: %v", i+1, j+1, err)
+					}
+					patInput.Workloads[i].WorkloadVersions[j].DeploymentOverrides = string(deployment)
+					// We know we need to sign the overrides, so make sure a real key file was provided.
+					if keyFilePath == "" {
+						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "must specify --private-key-file so that the deployment_overrides can be signed")
+					}
+					patInput.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature, err = sign.Input(keyFilePath, deployment)
+					if err != nil {
+						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment_overrides string with %s: %v", keyFilePath, err)
+					}
 				}
 			}
 		}
@@ -246,16 +326,35 @@ func PatternVerify(org, userPw, pattern, keyFilePath string) {
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "pattern '%s' not found in org %s", pattern, org)
 	}
-
-	// Loop thru workloads array, checking the deployment string signature
 	pat, ok := output.Patterns[org+"/"+pattern]
 	if !ok {
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, "key '%s' not found in resources returned from exchange", org+"/"+pattern)
 	}
+
+	// Loop thru services array, checking the deployment string signature
 	someInvalid := false
+	for i := range pat.Services {
+		for j := range pat.Services[i].ServiceVersions {
+			cliutils.Verbose("verifying deployment_overrides string in service %d, serviceVersion number %d", i+1, j+1)
+			if pat.Services[i].ServiceVersions[j].DeploymentOverrides == "" && pat.Services[i].ServiceVersions[j].DeploymentOverridesSignature == "" {
+				continue // there was nothing to sign, so nothing to verify
+			}
+			verified, err := verify.Input(keyFilePath, pat.Services[i].ServiceVersions[j].DeploymentOverridesSignature, []byte(pat.Services[i].ServiceVersions[j].DeploymentOverrides))
+			if err != nil {
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem verifying deployment_overrides string in service %d, serviceVersion number %d with %s: %v", i+1, j+1, keyFilePath, err)
+			} else if !verified {
+				fmt.Printf("Deployment_overrides string in service %d, serviceVersion number %d was not signed with the private key associated with this public key.\n", i+1, j+1)
+				someInvalid = true
+			}
+			// else if they all turned out to be valid, we will tell them that at the end
+		}
+	}
 	for i := range pat.Workloads {
 		for j := range pat.Workloads[i].WorkloadVersions {
 			cliutils.Verbose("verifying deployment_overrides string in workload %d, workloadVersion number %d", i+1, j+1)
+			if pat.Workloads[i].WorkloadVersions[j].DeploymentOverrides == "" && pat.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature == "" {
+				continue // there was nothing to sign, so nothing to verify
+			}
 			verified, err := verify.Input(keyFilePath, pat.Workloads[i].WorkloadVersions[j].DeploymentOverridesSignature, []byte(pat.Workloads[i].WorkloadVersions[j].DeploymentOverrides))
 			if err != nil {
 				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem verifying deployment_overrides string in workload %d, workloadVersion number %d with %s: %v", i+1, j+1, keyFilePath, err)
