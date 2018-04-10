@@ -324,7 +324,7 @@ func (a *CSAgreementWorker) HandleProducerUpdate(cph *CSProtocolHandler, wi *CSP
 	// Get rid of the exchange message if there is one
 	if wi.MessageId != 0 && !deletedMessage {
 		if err := cph.DeleteMessage(wi.MessageId); err != nil {
-			glog.Errorf(logstring(workerID, fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, cph.ExchangeId())))
+			glog.Errorf(logstring(workerID, fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, cph.GetExchangeId())))
 		}
 	}
 
@@ -354,7 +354,7 @@ func (a *CSAgreementWorker) HandleConsumerUpdateAck(cph *CSProtocolHandler, wi *
 	// Get rid of the exchange message if there is one
 	if wi.MessageId != 0 && !deletedMessage {
 		if err := cph.DeleteMessage(wi.MessageId); err != nil {
-			glog.Errorf(logstring(workerID, fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, cph.ExchangeId())))
+			glog.Errorf(logstring(workerID, fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, cph.GetExchangeId())))
 		}
 	}
 

@@ -118,8 +118,8 @@ func Test_isValidFor_API(t *testing.T) {
 		ServicePattern: containermessage.Pattern{},
 	}
 
-	if valid := desc2.IsValidFor("workload"); valid {
-		t.Errorf("Service2 is not valid for a workload, %v", serv2)
+	if valid := desc2.IsValidFor("workload"); !valid {
+		t.Errorf("Service2 is valid for a workload, %v", serv2)
 	} else if valid := desc2.IsValidFor("infrastructure"); !valid {
 		t.Errorf("Service2 is valid for infrastructure, %v", serv2)
 	}

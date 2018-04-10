@@ -511,7 +511,7 @@ func (w *EthBlockchainWorker) fireStartEvent(details *exchange.ChainDetails, nam
 		cc := events.NewContainerConfig(*url, details.DeploymentDesc.Torrent.Signature, details.DeploymentDesc.Deployment, details.DeploymentDesc.DeploymentSignature, details.DeploymentDesc.DeploymentUserInfo, "")
 		envAdds := w.computeEnvVarsForContainer(details)
 		w.SetColonusDir(name, envAdds["COLONUS_DIR"])
-		lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{Type: CHAIN_TYPE, Name: name}, name)
+		lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{Type: CHAIN_TYPE, Name: name}, name, "", []events.MicroserviceSpec{})
 		w.BaseWorker.Manager.Messages <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
 
 		return nil

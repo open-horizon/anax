@@ -559,6 +559,7 @@ func serviceStart(client *docker.Client,
 		return fail(container, serviceName, err)
 	}
 	for _, cfg := range sharedEndpoints {
+		glog.V(5).Infof("Connecting network: %v to container id: %v", cfg.NetworkID, container.ID)
 		err := client.ConnectNetwork(cfg.NetworkID, docker.NetworkConnectionOptions{
 			Container:      container.ID,
 			EndpointConfig: cfg,
@@ -1115,13 +1116,20 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			return true
 		} else {
 
-			// get a list of microservice network ids to be added to all the workload containers
-			glog.V(5).Infof("Microservice containers for this workload are: %v", ms_containers)
+			// Now that we have a list of service containers that are part of this agreement, we need to get a list of service
+			// network ids to be added to all the workload containers. The service containers can be in more than 1 network so
+			// we have to carefully choose the networks that the workload container should connect to. Only choose the network
+			// on which the dependent service is providing the service. This will be the network that has the same name as
+			// the agreement_id label on the service container.
+			glog.V(5).Infof("Service containers for this workload are: %v", ms_containers)
 			ms_networks := make(map[string]docker.ContainerNetwork)
 			if ms_containers != nil && len(ms_containers) > 0 {
 				for _, msc := range ms_containers {
-					for nw_name, nw := range msc.Networks.Networks {
-						ms_networks[nw_name] = nw
+					if nw_name, ok := msc.Labels[LABEL_PREFIX+".agreement_id"]; ok {
+						if nw, ok := msc.Networks.Networks[nw_name]; ok {
+							glog.V(5).Infof("Adding network %v", nw.NetworkID)
+							ms_networks[nw_name] = nw
+						}
 					}
 				}
 			}
@@ -1179,6 +1187,29 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 		glog.V(3).Infof("ContainerWorker received container configure command: %v", cmd)
 
+		// Locate dependency containers (if there are any) so that this new container will be added to their docker network.
+		ms_networks := make(map[string]docker.ContainerNetwork)
+		if len(cmd.ContainerLaunchContext.Microservices) != 0 {
+			if ms_containers, err := b.findMsContainersAndUpdateMsInstance(cmd.ContainerLaunchContext.AgreementId, cmd.ContainerLaunchContext.Microservices); err != nil {
+				glog.Errorf("Error checking service containers: %v", err)
+
+				// Requeue the command
+				b.AddDeferredCommand(cmd)
+				return true
+			} else {
+
+				// Get a list of service network ids to be added to this container.
+				glog.V(5).Infof("Service containers for this service are: %v", ms_containers)
+				if ms_containers != nil && len(ms_containers) > 0 {
+					for _, msc := range ms_containers {
+						for nw_name, nw := range msc.Networks.Networks {
+							ms_networks[nw_name] = nw
+						}
+					}
+				}
+			}
+		}
+
 		// We support capabilities in the deployment string that not all container deployments should be able
 		// to exploit, e.g. file system mapping from host to container. This check ensures that infrastructure
 		// containers dont try to do something unsupported.
@@ -1227,12 +1258,12 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		deploymentDesc.Infrastructure = true
 
 		// Get the container started.
-		if deployment, err := b.ResourcesCreate(cmd.ContainerLaunchContext.Name, &cmd.ContainerLaunchContext.Configure, deploymentDesc, []byte(""), *cmd.ContainerLaunchContext.EnvironmentAdditions, nil); err != nil {
+		if deployment, err := b.ResourcesCreate(cmd.ContainerLaunchContext.Name, &cmd.ContainerLaunchContext.Configure, deploymentDesc, []byte(""), *cmd.ContainerLaunchContext.EnvironmentAdditions, ms_networks); err != nil {
 			glog.Errorf("Error starting containers: %v", err)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 
 		} else {
-			glog.Infof("Success starting pattern for serviceNames: %v", persistence.ServiceConfigNames(deployment))
+			glog.V(1).Infof("Success starting container pattern for serviceNames: %v", persistence.ServiceConfigNames(deployment))
 
 			// perhaps add the tc info to the container message so it can be enforced
 			if ov := os.Getenv("CMTN_SERVICEOVERRIDE"); ov != "" {
@@ -1342,7 +1373,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				// ask governer to record it into the db
 				u, _ := url.Parse("")
 				cc := events.NewContainerConfig(*u, "", "", "", "", "")
-				ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey)
+				ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey, "", []events.MicroserviceSpec{})
 				b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *ll, "", "")
 			}
 		}
@@ -1743,11 +1774,11 @@ func (b *ContainerWorker) findMsContainersAndUpdateMsInstance(agreementId string
 		for _, api_spec := range microservices {
 			// find the ms from the local db,
 			if msc_names, err := b.findMicroserviceDefContainerNames(api_spec.SpecRef, api_spec.Version, api_spec.MsdefId); err != nil {
-				return nil, fmt.Errorf("Error finding microservice definition from the local db for %v. %v", api_spec, err)
+				return nil, fmt.Errorf("Error finding service definition from the local db for %v. %v", api_spec, err)
 			} else if msinsts, err := persistence.FindMicroserviceInstances(b.db, []persistence.MIFilter{persistence.AllInstancesMIFilter(api_spec.SpecRef, api_spec.Version), persistence.UnarchivedMIFilter()}); err != nil {
-				return nil, fmt.Errorf("Error retrieving microservice instances for %v version %v from database, error: %v", api_spec.SpecRef, api_spec.Version, err)
+				return nil, fmt.Errorf("Error retrieving service instances for %v version %v from database, error: %v", api_spec.SpecRef, api_spec.Version, err)
 			} else if msinsts == nil || len(msinsts) == 0 {
-				return nil, fmt.Errorf("Microservice instance has not be initiated for microservice  %v yet.", api_spec)
+				return nil, fmt.Errorf("Service instance has not be initiated for service %v yet.", api_spec)
 			} else {
 				// find the ms instance that has the agreement id in it
 				var ms_instance *persistence.MicroserviceInstance
@@ -1767,7 +1798,7 @@ func (b *ContainerWorker) findMsContainersAndUpdateMsInstance(agreementId string
 				}
 
 				if ms_instance == nil {
-					return nil, fmt.Errorf("Microservice instance has not be initiated for microservice %v yet.", api_spec)
+					return nil, fmt.Errorf("Service instance has not been initiated for service %v yet.", api_spec)
 				}
 
 				if msc_names == nil || len(msc_names) == 0 {
@@ -1783,9 +1814,9 @@ func (b *ContainerWorker) findMsContainersAndUpdateMsInstance(agreementId string
 							if cname == "/"+ms_instance.GetKey()+"-"+serviceName {
 								// check if the container is up and running
 								if container.State != "running" {
-									return nil, fmt.Errorf("The microservice container %v is not up and running. %v", serviceName, err)
+									return nil, fmt.Errorf("The service container %v is not up and running. %v", serviceName, err)
 								} else {
-									glog.V(5).Infof("Found running microservice container %v for microservice %v", container, api_spec)
+									glog.V(5).Infof("Found running service container %v for service %v", container, api_spec)
 									ms_containers = append(ms_containers, container)
 								}
 							}

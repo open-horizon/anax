@@ -29,7 +29,6 @@ const HEARTBEAT = "HeartBeat"
 type AgreementWorker struct {
 	worker.BaseWorker        // embedded field
 	db                       *bolt.DB
-	httpClient               *http.Client // a shared http client
 	devicePattern            string
 	protocols                map[string]bool
 	pm                       *policy.PolicyManager
@@ -51,10 +50,9 @@ func NewAgreementWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm 
 	worker := &AgreementWorker{
 		BaseWorker:       worker.NewBaseWorker(name, cfg, ec),
 		db:               db,
-		httpClient:       cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
+		devicePattern:    pattern,
 		protocols:        make(map[string]bool),
 		pm:               pm,
-		devicePattern:    pattern,
 		producerPH:       make(map[string]producer.ProducerProtocolHandler),
 		lastExchVerCheck: 0,
 	}
@@ -347,15 +345,15 @@ func (w *AgreementWorker) heartBeat() int {
 			w.lastExchVerCheck = time_now
 
 			// log error if the current exchange version does not meet the requirement
-			if err := version.VerifyExchangeVersion(w.Config.Collaborators.HTTPClientFactory, w.Config.Edge.ExchangeURL, false); err != nil {
+			if err := version.VerifyExchangeVersion(w.GetHTTPFactory(), w.GetExchangeURL(), false); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
 			}
 		}
 	}
 
 	// now do the hearbeat
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/heartbeat"
-	err := exchange.Heartbeat(w.httpClient, targetURL, w.GetExchangeId(), w.GetExchangeToken())
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/heartbeat"
+	err := exchange.Heartbeat(w.GetHTTPFactory().NewHTTPClient(nil), targetURL, w.GetExchangeId(), w.GetExchangeToken())
 
 	// If the heartbeat fails because the node entry is gone then initiate a full node quiesce
 	if err != nil && strings.Contains(err.Error(), "status: 401") {
@@ -393,7 +391,7 @@ func (w *AgreementWorker) syncOnInit() error {
 			} else if len(agreements) == 0 {
 				glog.V(3).Infof(logString(fmt.Sprintf("found agreement %v in the exchange that is not in our DB.", exchangeAg)))
 				// Delete the agreement from the exchange.
-				if err := deleteProducerAgreement(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.Config.Edge.ExchangeURL, w.GetExchangeId(), w.GetExchangeToken(), exchangeAg); err != nil {
+				if err := deleteProducerAgreement(w.GetHTTPFactory().NewHTTPClient(nil), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), exchangeAg); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error deleting agreement %v in exchange: %v", exchangeAg, err)))
 				}
 			}
@@ -494,7 +492,7 @@ func (w *AgreementWorker) syncOnInit() error {
 		for org, typeMap := range neededBCInstances {
 			for typeName, instMap := range typeMap {
 				for instName, _ := range instMap {
-					w.Messages() <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, typeName, instName, org, w.Config.Edge.ExchangeURL, w.GetExchangeId(), w.GetExchangeToken())
+					w.Messages() <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, typeName, instName, org, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
 				}
 			}
 		}
@@ -544,9 +542,9 @@ func (w *AgreementWorker) getAllAgreements() (map[string]exchange.DeviceAgreemen
 	var resp interface{}
 	resp = new(exchange.AllDeviceAgreementsResponse)
 
-	targetURL := w.BaseWorker.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/agreements"
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/agreements"
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(err.Error())
 			return exchangeDeviceAgreements, err
 		} else if tpErr != nil {
@@ -581,12 +579,12 @@ func (w *AgreementWorker) registerNode(dev *persistence.ExchangeDevice, ms *[]ex
 
 	var resp interface{}
 	resp = new(exchange.PutDeviceResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId())
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId())
 
 	glog.V(3).Infof("AgreementWorker Registering microservices: %v at %v", pdr.ShortString(), targetURL)
 
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), pdr, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.GetHTTPFactory().NewHTTPClient(nil), "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), pdr, &resp); err != nil {
 			return err
 		} else if tpErr != nil {
 			glog.Warningf(tpErr.Error())
@@ -605,12 +603,12 @@ func (w *AgreementWorker) patchNodeKey() error {
 
 	var resp interface{}
 	resp = new(exchange.PutDeviceResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId())
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId())
 
 	glog.V(3).Infof(logString(fmt.Sprintf("patching messaging key to node entry: %v at %v", pdr, targetURL)))
 
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PATCH", targetURL, w.GetExchangeId(), w.GetExchangeToken(), pdr, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.GetHTTPFactory().NewHTTPClient(nil), "PATCH", targetURL, w.GetExchangeId(), w.GetExchangeToken(), pdr, &resp); err != nil {
 			return err
 		} else if tpErr != nil {
 			glog.Warningf(tpErr.Error())
@@ -748,9 +746,9 @@ func (w *AgreementWorker) recordAgreementState(agreementId string, pol *policy.P
 
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/agreements/" + agreementId
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), as, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.GetHTTPFactory().NewHTTPClient(nil), "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), as, &resp); err != nil {
 			glog.Errorf(err.Error())
 			return err
 		} else if tpErr != nil {
@@ -791,9 +789,9 @@ func deleteProducerAgreement(httpClient *http.Client, url string, deviceId strin
 func (w *AgreementWorker) deleteMessage(msg *exchange.DeviceMessage) error {
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/msgs/" + strconv.Itoa(msg.MsgId)
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/msgs/" + strconv.Itoa(msg.MsgId)
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.httpClient, "DELETE", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.GetHTTPFactory().NewHTTPClient(nil), "DELETE", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(err.Error())
 			return err
 		} else if tpErr != nil {
@@ -810,9 +808,9 @@ func (w *AgreementWorker) deleteMessage(msg *exchange.DeviceMessage) error {
 func (w *AgreementWorker) messageInExchange(msgId int) (bool, error) {
 	var resp interface{}
 	resp = new(exchange.GetDeviceMessageResponse)
-	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/msgs"
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/msgs"
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(w.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(err.Error())
 			return false, err
 		} else if tpErr != nil {
