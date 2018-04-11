@@ -159,11 +159,12 @@ type ContainerLaunchContext struct {
 	Blockchain           BlockchainConfig
 	Name                 string // used as the docker network name and part of container name. For microservice it is the ms instance key
 	AgreementId          string
-	Microservices        []MicroserviceSpec // Service dependencies go here. Microservices (in the workload/microservice model) never have dependencies.
+	Microservices        []MicroserviceSpec                     // Service dependencies go here. Microservices (in the workload/microservice model) never have dependencies.
+	ServicePathElement   persistence.ServiceInstancePathElement // The service that we're trying to start.
 }
 
 func (c ContainerLaunchContext) String() string {
-	return fmt.Sprintf("ContainerConfig: %v, EnvironmentAdditions: %v, Blockchain: %v, Name: %v, AgreementId: %v, ServiceDependencies: %v", c.Configure, c.EnvironmentAdditions, c.Blockchain, c.Name, c.AgreementId, c.Microservices)
+	return fmt.Sprintf("ContainerConfig: %v, EnvironmentAdditions: %v, Blockchain: %v, Name: %v, AgreementId: %v, ServiceDependencies: %v, ThisService: %v", c.Configure, c.EnvironmentAdditions, c.Blockchain, c.Name, c.AgreementId, c.Microservices, c.ServicePathElement)
 }
 
 func (c ContainerLaunchContext) ShortString() string {
@@ -182,7 +183,11 @@ func (c ContainerLaunchContext) GetMicroservices() []MicroserviceSpec {
 	return c.Microservices
 }
 
-func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]string, bc BlockchainConfig, name string, agId string, mss []MicroserviceSpec) *ContainerLaunchContext {
+func (c ContainerLaunchContext) GetServicePathElement() *persistence.ServiceInstancePathElement {
+	return &c.ServicePathElement
+}
+
+func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]string, bc BlockchainConfig, name string, agId string, mss []MicroserviceSpec, spe *persistence.ServiceInstancePathElement) *ContainerLaunchContext {
 	return &ContainerLaunchContext{
 		Configure:            *config,
 		EnvironmentAdditions: envAdds,
@@ -190,6 +195,7 @@ func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]stri
 		Name:                 name,
 		AgreementId:          agId,
 		Microservices:        mss,
+		ServicePathElement:   *spe,
 	}
 }
 

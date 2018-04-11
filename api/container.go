@@ -8,7 +8,7 @@ import (
 )
 
 // Get docker container metadata from the docker API for workload containers
-func GetWorkloadContainers(dockerEndpoint string) ([]dockerclient.APIContainers, error) {
+func GetWorkloadContainers(dockerEndpoint string, agreementId string) ([]dockerclient.APIContainers, error) {
 	if client, err := dockerclient.NewClient(dockerEndpoint); err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to create docker client from %v, error %v", dockerEndpoint, err))
 	} else {
@@ -24,6 +24,10 @@ func GetWorkloadContainers(dockerEndpoint string) ([]dockerclient.APIContainers,
 			for _, c := range containers {
 				if _, exists := c.Labels["network.bluehorizon.colonus.service_name"]; exists {
 					if _, exists := c.Labels["network.bluehorizon.colonus.infrastructure"]; !exists {
+						// If we are filtering by agreement id, then check the agreement id label
+						if agreementId != "" && (c.Labels["network.bluehorizon.colonus.agreement_id"] != agreementId) {
+							continue
+						}
 						ret = append(ret, c)
 					}
 				}

@@ -63,7 +63,7 @@ func (w *GovernanceWorker) governMicroservices() int {
 }
 
 // It creates microservice instance and loads the containers for the given microservice def
-func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string) (*persistence.MicroserviceInstance, error) {
+func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, dependencyPath []persistence.ServiceInstancePathElement) (*persistence.MicroserviceInstance, error) {
 	glog.V(5).Infof(logString(fmt.Sprintf("Starting microservice instance for %v", ms_key)))
 	if msdef, err := persistence.FindMicroserviceDefWithKey(w.db, ms_key); err != nil {
 		return nil, fmt.Errorf(logString(fmt.Sprintf("Error finding microserivce definition from db with key %v. %v", ms_key, err)))
@@ -72,7 +72,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string) 
 	} else {
 		if !msdef.HasDeployment() {
 			glog.Infof(logString(fmt.Sprintf("No workload needed for microservice %v.", msdef.SpecRef)))
-			if mi, err := persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Version, ms_key); err != nil {
+			if mi, err := persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Version, ms_key, dependencyPath); err != nil {
 				return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting microservice instance for %v %v %v.", msdef.SpecRef, msdef.Version, ms_key)))
 				// if the new microservice does not have containers, just mark it done.
 			} else if mi, err := persistence.UpdateMSInstanceExecutionState(w.db, mi.GetKey(), true, 0, ""); err != nil {
@@ -158,7 +158,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string) 
 			}
 
 			// save the instance
-			if ms_instance, err := persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Version, ms_key); err != nil {
+			if ms_instance, err := persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Version, ms_key, dependencyPath); err != nil {
 				return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting microservice instance for %v %v %v.", msdef.SpecRef, msdef.Version, ms_key)))
 			} else {
 				// Fire an event to the torrent worker so that it will download the container
@@ -181,7 +181,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string) 
 							}
 						}
 					}
-					lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey(), agreementId, ms_specs)
+					lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey(), agreementId, ms_specs, persistence.NewServiceInstancePathElement(msdef.SpecRef, msdef.Version))
 					w.Messages() <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
 				}
 
@@ -362,7 +362,7 @@ func (w *GovernanceWorker) RollbackMicroservice(msdef *persistence.MicroserviceD
 }
 
 // Start a servic/microservice instance for the given agreement according to the sharing mode.
-func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.MicroserviceDefinition, agreementId string, protocol string) error {
+func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.MicroserviceDefinition, agreementId string, dependencyPath []persistence.ServiceInstancePathElement, protocol string) error {
 	glog.V(3).Infof(logString(fmt.Sprintf("start microserivce instance %v for agreement %v", msdef.SpecRef, agreementId)))
 
 	var msi *persistence.MicroserviceInstance
@@ -384,7 +384,7 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 
 	if needs_new_ms {
 		var inst_err error
-		if msi, inst_err = w.StartMicroservice(msdef.Id, agreementId); inst_err != nil {
+		if msi, inst_err = w.StartMicroservice(msdef.Id, agreementId, dependencyPath); inst_err != nil {
 
 			// Try to downgrade the service/microservice to a lower version.
 			glog.V(3).Infof(logString(fmt.Sprintf("Ending the agreement: %v because microservice %v failed to start", agreementId, msdef.SpecRef)))
@@ -399,6 +399,8 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 
 			return fmt.Errorf(logString(fmt.Sprintf("Failed to start microservice instance for %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, inst_err)))
 		}
+	} else if _, err := persistence.UpdateMSInstanceAddDependencyPath(w.db, msi.GetKey(), &dependencyPath); err != nil {
+		return fmt.Errorf(logString(fmt.Sprintf("error adding dependency path %v to the microservice %v: %v", dependencyPath, msi.GetKey(), err)))
 	}
 
 	// Add the agreement id into the instance so that the workload containers know which instance to associate with.

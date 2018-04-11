@@ -517,19 +517,24 @@ func persistUpdatedMicroserviceDef(db *bolt.DB, key string, update *Microservice
 	})
 }
 
+// ==========================================================================================================
+// Service/Microservice instance object
+//
+
 type MicroserviceInstance struct {
-	SpecRef              string   `json:"ref_url"`
-	Version              string   `json:"version"`
-	Arch                 string   `json:"arch"`
-	InstanceId           string   `json:"instance_id"`
-	Archived             bool     `json:"archived"`
-	InstanceCreationTime uint64   `json:"instance_creation_time"`
-	ExecutionStartTime   uint64   `json:"execution_start_time"`
-	ExecutionFailureCode uint     `json:"execution_failure_code"`
-	ExecutionFailureDesc string   `json:"execution_failure_desc"`
-	CleanupStartTime     uint64   `json:"cleanup_start_time"`
-	AssociatedAgreements []string `json:"associated_agreements"`
-	MicroserviceDefId    string   `json:"microservicedef_id"`
+	SpecRef              string                         `json:"ref_url"`
+	Version              string                         `json:"version"`
+	Arch                 string                         `json:"arch"`
+	InstanceId           string                         `json:"instance_id"`
+	Archived             bool                           `json:"archived"`
+	InstanceCreationTime uint64                         `json:"instance_creation_time"`
+	ExecutionStartTime   uint64                         `json:"execution_start_time"`
+	ExecutionFailureCode uint                           `json:"execution_failure_code"`
+	ExecutionFailureDesc string                         `json:"execution_failure_desc"`
+	CleanupStartTime     uint64                         `json:"cleanup_start_time"`
+	AssociatedAgreements []string                       `json:"associated_agreements"`
+	MicroserviceDefId    string                         `json:"microservicedef_id"`
+	ParentPath           [][]ServiceInstancePathElement `json:"service_instance_path"` // Set when instance is created
 }
 
 func (w MicroserviceInstance) String() string {
@@ -544,10 +549,11 @@ func (w MicroserviceInstance) String() string {
 		"ExecutionFailureDesc: %v, "+
 		"CleanupStartTime: %v, "+
 		"AssociatedAgreements: %v, "+
-		"MicroserviceDefId: %v",
+		"MicroserviceDefId: %v, "+
+		"ParentPath: %v",
 		w.SpecRef, w.Version, w.Arch, w.InstanceId, w.Archived, w.InstanceCreationTime,
 		w.ExecutionStartTime, w.ExecutionFailureCode, w.ExecutionFailureDesc,
-		w.CleanupStartTime, w.AssociatedAgreements, w.MicroserviceDefId)
+		w.CleanupStartTime, w.AssociatedAgreements, w.MicroserviceDefId, w.ParentPath)
 }
 
 // create a unique name for a microservice def
@@ -569,8 +575,20 @@ func (m MicroserviceInstance) HasWorkload(db *bolt.DB) (bool, error) {
 	return false, nil
 }
 
+// Check if this microservice instance has a direct parent.
+func (m *MicroserviceInstance) HasDirectParent(parent *ServiceInstancePathElement) bool {
+	for _, pathList := range m.ParentPath {
+		for ix, element := range pathList {
+			if parent != nil && parent.IsSame(&element) && (len(pathList) > (ix + 1)) && (&pathList[ix+1]).IsSame(NewServiceInstancePathElement(m.SpecRef, m.Version)) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // create a new microservice instance and save it to db.
-func NewMicroserviceInstance(db *bolt.DB, ref_url string, version string, msdef_id string) (*MicroserviceInstance, error) {
+func NewMicroserviceInstance(db *bolt.DB, ref_url string, version string, msdef_id string, dependencyPath []ServiceInstancePathElement) (*MicroserviceInstance, error) {
 
 	if ref_url == "" || version == "" {
 		return nil, errors.New("Microservice ref url id or version is empty, cannot persist")
@@ -597,6 +615,7 @@ func NewMicroserviceInstance(db *bolt.DB, ref_url string, version string, msdef_
 		CleanupStartTime:     0,
 		AssociatedAgreements: make([]string, 0),
 		MicroserviceDefId:    msdef_id,
+		ParentPath:           [][]ServiceInstancePathElement{dependencyPath},
 	}
 
 	return new_inst, db.Update(func(tx *bolt.Tx) error {
@@ -802,6 +821,15 @@ func MicroserviceInstanceCleanupStarted(db *bolt.DB, key string) (*MicroserviceI
 	})
 }
 
+func UpdateMSInstanceAddDependencyPath(db *bolt.DB, key string, dp *[]ServiceInstancePathElement) (*MicroserviceInstance, error) {
+	return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
+		if len(*dp) != 0 {
+			c.ParentPath = append(c.ParentPath, *dp)
+		}
+		return &c
+	})
+}
+
 // update the micorserive instance
 func microserviceInstanceStateUpdate(db *bolt.DB, key string, fn func(MicroserviceInstance) *MicroserviceInstance) (*MicroserviceInstance, error) {
 
@@ -854,6 +882,10 @@ func persistUpdatedMicroserviceInstance(db *bolt.DB, key string, update *Microse
 				}
 
 				mod.AssociatedAgreements = update.AssociatedAgreements
+
+				if len(mod.ParentPath) != len(update.ParentPath) {
+					mod.ParentPath = update.ParentPath
+				}
 
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize contract record: %v. Error: %v", mod, err)
@@ -912,4 +944,38 @@ func DeleteMicroserviceInstance(db *bolt.DB, key string) (*MicroserviceInstance,
 			})
 		}
 	}
+}
+
+// Service dependencies can be described by a directed graph, starting from the agreement service as the root node of
+// the graph all the way to the services which are leaf nodes because they have no dependencies. Services can be
+// defined such that instances of a service are sharable by more than 1 caller (sharable = single), not sharable by
+// more than 1 caller (sharable = multiple), or exclusive to 1 caller (sharable = exclusive).
+//
+// When a service is defined as sharable=multiple AND it has more than 1 parent in the dependency graph, then each
+// instance of such a service has a unique dependency path. To illustrate, suppose A depends on B and C, and B and C
+// both depend on D such that the dependency graph forms a diamond. Further suppose that D is defined as sharable=multiple.
+// This means that at runtime, there will be 2 instances of the D service running, one is supporting B and the other is
+// supporting C. Thus, when an instance of D is started, it is important to know if the instance is supporting B or C so
+// so that the correct docker network configuration can be established. Service B should not be able to access the instance
+// of D that is supporting C, it should only be able to access the instance of D that supports B. Likewise for C.
+//
+// Therefore, we can express an abstract "path" to each instance of D as follows: /A/B/D and /A/C/D, where '/' is used to
+// separate path elements. Each element in the "path" is described by a ServiceInstancePathElement object. The path is an
+// array of ServiceInstancePathElements and is stored within the database record of a service instance.
+//
+
+type ServiceInstancePathElement struct {
+	URL     string `json:"url"`
+	Version string `json:"version"`
+}
+
+func NewServiceInstancePathElement(url string, version string) *ServiceInstancePathElement {
+	return &ServiceInstancePathElement{
+		URL:     url,
+		Version: version,
+	}
+}
+
+func (s *ServiceInstancePathElement) IsSame(other *ServiceInstancePathElement) bool {
+	return (s.URL == other.URL) && (s.Version == other.Version)
 }
