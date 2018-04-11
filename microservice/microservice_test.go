@@ -62,7 +62,7 @@ func TestMicroserviceReadyForUpgrade(t *testing.T) {
 	pms.UpgradeStartTime = uint64(0)
 
 	pms.Id = "1"
-	msi, err := persistence.NewMicroserviceInstance(db, pms.SpecRef, pms.Version, pms.Id)
+	msi, err := persistence.NewMicroserviceInstance(db, pms.SpecRef, pms.Version, pms.Id, []persistence.ServiceInstancePathElement{})
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 
 	pms.AutoUpgrade = true

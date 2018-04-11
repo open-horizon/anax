@@ -986,10 +986,6 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			lc.EnvironmentAdditions = &envAdds
 			lc.AgreementProtocol = protocol
 
-			// Get a list of services/microservices associated with this agreement and store them in the AgreementLaunchContext. These are
-			// the services that are going to be network accessible to the workload container(s).
-			ms_specs := []events.MicroserviceSpec{}
-
 			// Make a list of service dependencies for this workload. For sevices, it is just the top level dependencies. For
 			// the old workload model, it is a list of all dependencies.
 			deps := serviceDef.GetServiceDependencies()
@@ -1000,33 +996,17 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 				}
 			}
 
+			// Create the service instance dependency path with the workload as the root.
+			instancePath := []persistence.ServiceInstancePathElement{*persistence.NewServiceInstancePathElement(workload.WorkloadURL, workload.Version)}
+
 			// Start each dependent service, one at a time.
-			for _, sDep := range *deps {
-
-				if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, sDep.URL); err != nil {
-					return errors.New(logString(fmt.Sprintf("Error finding service definition from the local db for %v version range %v. %v", sDep.URL, sDep.Version, err)))
-				} else if msdefs != nil && len(msdefs) > 0 {
-					glog.V(5).Infof(logString(fmt.Sprintf("found directly dependent service definition locally: %v", msdefs)))
-					msdef := msdefs[0] // assuming there is only one msdef for a service/microservice at any time
-
-					// validate the version range
-					if vExp, err := policy.Version_Expression_Factory(sDep.Version); err != nil {
-						return errors.New(logString(fmt.Sprintf("Error converting APISpec version %v for %v to version range. %v", sDep.Version, sDep.URL, err)))
-					} else if inRange, err := vExp.Is_within_range(msdef.Version); err != nil {
-						return errors.New(logString(fmt.Sprintf("Error checking if microservice version %v is within APISpec version range %v for %v. %v", msdef.Version, vExp, sDep.URL, err)))
-					} else if !inRange {
-						return errors.New(logString(fmt.Sprintf("Current microservice %v version %v is not within the APISpec version range %v. %v", msdef.SpecRef, msdef.Version, vExp, err)))
-					}
-
-					msspec := events.MicroserviceSpec{SpecRef: msdef.SpecRef, Version: msdef.Version, MsdefId: msdef.Id}
-					ms_specs = append(ms_specs, msspec)
-
-					// Recursively work down the dependency tree, starting leaf node dependencies first and then start their parents.
-					w.startDependentServices(&msdef, proposal.AgreementId(), protocol)
-				}
+			if ms_specs, err := w.processDependencies(instancePath, deps, proposal.AgreementId(), protocol); err != nil {
+				return err
+			} else {
+				// Save the list of services/microservices associated with this agreement and store them in the AgreementLaunchContext. These are
+				// the services that are going to be network accessible to the workload container(s).
+				lc.Microservices = ms_specs
 			}
-
-			lc.Microservices = ms_specs
 
 			w.BaseWorker.Manager.Messages <- events.NewAgreementMessage(events.AGREEMENT_REACHED, lc)
 		}
@@ -1040,28 +1020,53 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 	return nil
 }
 
-// Recursive function that starts leaf node service dependencies before starting parents.
-func (w *GovernanceWorker) startDependentServices(msdef *persistence.MicroserviceDefinition, agreementId string, protocol string) error {
+// Run through the list of service dependencies and start each one. This function is used recursively to start leaf nodes first,
+// and then their parents.
+func (w *GovernanceWorker) processDependencies(dependencyPath []persistence.ServiceInstancePathElement, deps *[]exchange.ServiceDependency, agreementId string, protocol string) ([]events.MicroserviceSpec, error) {
+	ms_specs := []events.MicroserviceSpec{}
 
-	for _, dep := range msdef.RequiredServices {
-		if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, dep.URL); err != nil {
-			return errors.New(logString(fmt.Sprintf("Error finding service definition from the local db for %v version range %v. %v", dep.URL, dep.Version, err)))
+	for _, sDep := range *deps {
+
+		if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, sDep.URL); err != nil {
+			return ms_specs, errors.New(logString(fmt.Sprintf("Error finding service definition from the local db for %v version range %v. %v", sDep.URL, sDep.Version, err)))
 		} else if msdefs != nil && len(msdefs) > 0 {
 			glog.V(5).Infof(logString(fmt.Sprintf("found dependent service definition locally: %v", msdefs)))
-			msdef := msdefs[0]
+			msdef := msdefs[0] // assuming there is only one msdef for a service/microservice at any time
+
 			// validate the version range
-			if vExp, err := policy.Version_Expression_Factory(dep.Version); err != nil {
-				return errors.New(logString(fmt.Sprintf("Error converting APISpec version %v for %v to version range. %v", dep.Version, dep.URL, err)))
+			if vExp, err := policy.Version_Expression_Factory(sDep.Version); err != nil {
+				return ms_specs, errors.New(logString(fmt.Sprintf("Error converting APISpec version %v for %v to version range. %v", sDep.Version, sDep.URL, err)))
 			} else if inRange, err := vExp.Is_within_range(msdef.Version); err != nil {
-				return errors.New(logString(fmt.Sprintf("Error checking if microservice version %v is within APISpec version range %v for %v. %v", msdef.Version, vExp, dep.URL, err)))
+				return ms_specs, errors.New(logString(fmt.Sprintf("Error checking if service version %v is within APISpec version range %v for %v. %v", msdef.Version, vExp, sDep.URL, err)))
 			} else if !inRange {
-				return errors.New(logString(fmt.Sprintf("Current microservice %v version %v is not within the APISpec version range %v. %v", msdef.SpecRef, msdef.Version, vExp, err)))
+				return ms_specs, errors.New(logString(fmt.Sprintf("Current service %v version %v is not within the APISpec version range %v. %v", msdef.SpecRef, msdef.Version, vExp, err)))
 			}
-			w.startDependentServices(&msdef, agreementId, protocol)
+
+			msspec := events.MicroserviceSpec{SpecRef: msdef.SpecRef, Version: msdef.Version, MsdefId: msdef.Id}
+			ms_specs = append(ms_specs, msspec)
+
+			// Recursively work down the dependency tree, starting leaf node dependencies first and then start their parents.
+			fullPath := append(dependencyPath, *persistence.NewServiceInstancePathElement(msdef.SpecRef, msdef.Version))
+			w.startDependentService(fullPath, &msdef, agreementId, protocol)
 		}
 	}
-	glog.V(5).Infof(logString(fmt.Sprintf("starting dependency: %v", msdef)))
-	return w.startMicroserviceInstForAgreement(msdef, agreementId, protocol)
+
+	return ms_specs, nil
+}
+
+// Function that starts leaf node service dependencies before starting parents.
+func (w *GovernanceWorker) startDependentService(dependencyPath []persistence.ServiceInstancePathElement, msdef *persistence.MicroserviceDefinition, agreementId string, protocol string) error {
+
+	// If the service has dependencies, process those before starting itself.
+	if msdef.HasRequiredServices() {
+		deps := microservice.ConvertRequiredServicesToExchange(msdef)
+		if _, err := w.processDependencies(dependencyPath, deps, agreementId, protocol); err != nil {
+			return err
+		}
+	}
+
+	glog.V(5).Infof(logString(fmt.Sprintf("starting dependency: %v with def %v", dependencyPath, msdef)))
+	return w.startMicroserviceInstForAgreement(msdef, agreementId, dependencyPath, protocol)
 
 }
 

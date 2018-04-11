@@ -189,6 +189,15 @@ func ConvertServiceToPersistent(es *exchange.ServiceDefinition, org string) (*pe
 	return pms, nil
 }
 
+func ConvertRequiredServicesToExchange(m *persistence.MicroserviceDefinition) *[]exchange.ServiceDependency {
+	reqServs := make([]exchange.ServiceDependency, 0)
+	for _, rs := range m.RequiredServices {
+		sd := exchange.ServiceDependency{URL: rs.URL, Org: rs.Org, Version: rs.Version, Arch: rs.Arch}
+		reqServs = append(reqServs, sd)
+	}
+	return &reqServs
+}
+
 // check if the given msdef is eligible for a upgrade
 func MicroserviceReadyForUpgrade(msdef *persistence.MicroserviceDefinition, db *bolt.DB) bool {
 	glog.V(5).Infof("Check if microservice is available for a upgrade: %v.", msdef.SpecRef)

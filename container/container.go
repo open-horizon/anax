@@ -1108,7 +1108,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			glog.Infof("Receved configure command for agreement %v. Ignoring it because this agreement has been terminated.", agreementId)
 		} else if ags[0].AgreementExecutionStartTime != 0 {
 			glog.Infof("Receved configure command for agreement %v. Ignoring it because the containers for this agreement has been configured.", agreementId)
-		} else if ms_containers, err := b.findMsContainersAndUpdateMsInstance(agreementId, cmd.AgreementLaunchContext.Microservices); err != nil {
+		} else if ms_containers, err := b.findMsContainersAndUpdateMsInstance(persistence.NewServiceInstancePathElement(ags[0].RunningWorkload.URL, ags[0].RunningWorkload.Version), agreementId, cmd.AgreementLaunchContext.Microservices); err != nil {
 			glog.Errorf("Error checking microservice containers: %v", err)
 
 			// requeue the command
@@ -1190,7 +1190,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		// Locate dependency containers (if there are any) so that this new container will be added to their docker network.
 		ms_networks := make(map[string]docker.ContainerNetwork)
 		if len(cmd.ContainerLaunchContext.Microservices) != 0 {
-			if ms_containers, err := b.findMsContainersAndUpdateMsInstance(cmd.ContainerLaunchContext.AgreementId, cmd.ContainerLaunchContext.Microservices); err != nil {
+			if ms_containers, err := b.findMsContainersAndUpdateMsInstance(cmd.ContainerLaunchContext.GetServicePathElement(), cmd.ContainerLaunchContext.AgreementId, cmd.ContainerLaunchContext.Microservices); err != nil {
 				glog.Errorf("Error checking service containers: %v", err)
 
 				// Requeue the command
@@ -1373,7 +1373,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				// ask governer to record it into the db
 				u, _ := url.Parse("")
 				cc := events.NewContainerConfig(*u, "", "", "", "", "")
-				ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey, "", []events.MicroserviceSpec{})
+				ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey, "", []events.MicroserviceSpec{}, nil)
 				b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *ll, "", "")
 			}
 		}
@@ -1766,7 +1766,7 @@ func (b *ContainerWorker) findMicroserviceDefContainerNames(api_spec string, ver
 
 // go through all the microservice containers for the given microservices and check if the containers are up and running.
 // If yes, return the list of containers. It also associates the given agreement id with the microservice instances.
-func (b *ContainerWorker) findMsContainersAndUpdateMsInstance(agreementId string, microservices []events.MicroserviceSpec) ([]docker.APIContainers, error) {
+func (b *ContainerWorker) findMsContainersAndUpdateMsInstance(parent *persistence.ServiceInstancePathElement, agreementId string, microservices []events.MicroserviceSpec) ([]docker.APIContainers, error) {
 	ms_containers := make([]docker.APIContainers, 0)
 	if containers, err := b.client.ListContainers(docker.ListContainersOptions{}); err != nil {
 		return nil, fmt.Errorf("Unable to get list of running containers: %v", err)
@@ -1792,8 +1792,12 @@ func (b *ContainerWorker) findMsContainersAndUpdateMsInstance(agreementId string
 							}
 						}
 					}
-					if ms_instance != nil {
+					// We found a service instance that is in the current agreement. Now check to make sure
+					// that this instance is a dependent of the container we're trying to start.
+					if ms_instance != nil && ms_instance.HasDirectParent(parent) {
 						break
+					} else {
+						ms_instance = nil
 					}
 				}
 

@@ -18,7 +18,7 @@ func FindWorkloadForOutput(db *bolt.DB, config *config.HorizonConfig) (*AllWorkl
 
 	work.Config = cfgs["config"]
 
-	containers, err := GetWorkloadContainers(config.Edge.DockerEndpoint)
+	containers, err := GetWorkloadContainers(config.Edge.DockerEndpoint, "")
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to get running workload containers, error %v", err))
 	}
