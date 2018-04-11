@@ -13,6 +13,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 )
 
 // This can't be a const because a map literal isn't a const in go
@@ -66,6 +68,11 @@ type ServiceExch struct {
 	DeploymentSignature string                 `json:"deploymentSignature"`
 	ImageStore          map[string]interface{} `json:"imageStore"`
 	LastUpdated         string                 `json:"lastUpdated,omitempty"`
+}
+
+type ServiceDockAuthExch struct {
+	Registry string `json:"registry"`
+	Token    string `json:"token"`
 }
 
 // Returns true if the service definition userinputs define the variable.
@@ -143,7 +150,7 @@ func ServiceList(org, userPw, service string, namesOnly bool) {
 }
 
 // ServicePublish signs the MS def and puts it in the exchange
-func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool) {
+func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, registryTokens []string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the service metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
@@ -155,7 +162,7 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 	if svcFile.Org != "" && svcFile.Org != org {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", svcFile.Org, org)
 	}
-	svcFile.SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath, dontTouchImage)
+	svcFile.SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath, dontTouchImage, registryTokens)
 }
 
 // CheckDeploymentService verifies it has the required 'image' key, and checks for keys we don't recognize.
@@ -224,7 +231,7 @@ func SignImagesFromDeploymentMap(deployment map[string]interface{}, dontTouchIma
 }
 
 // Sign and publish the service definition. This is a function that is reusable across different hzn commands.
-func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath string, dontTouchImage bool) {
+func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath string, dontTouchImage bool, registryTokens []string) {
 	svcInput := ServiceExch{Label: sf.Label, Description: sf.Description, Public: sf.Public, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs, ImageStore: sf.ImageStore}
 
 	// Go thru the docker image paths to push/get sha256 tag and/or gather list of images that user needs to push
@@ -274,6 +281,18 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath s
 		baseName := filepath.Base(pubKeyFilePath)
 		fmt.Printf("Storing %s with the service in the exchange...\n", baseName)
 		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
+	}
+
+	// Store registry auth tokens in the exchange, if they gave us some
+	for _, regTok := range registryTokens {
+		parts := strings.SplitN(regTok, ":", 2)
+		if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+			fmt.Printf("Error: registry-token value of '%s' is not in the required format: registry:token. Not storing that in the Horizon exchange.\n", regTok)
+			continue
+		}
+		fmt.Printf("Storing %s with the service in the exchange...\n", regTok)
+		regTokExch := ServiceDockAuthExch{Registry: parts[0], Token: parts[1]}
+		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId+"/dockauths", cliutils.OrgAndCreds(org, userPw), []int{201}, regTokExch)
 	}
 
 	// Tell the user to push the images to the docker registry
@@ -339,13 +358,16 @@ func ServiceListKey(org, userPw, service, keyName string) {
 	if keyName == "" {
 		// Only display the names
 		var output string
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/keys", cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/keys", cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		if httpCode == 404 {
+			cliutils.Fatal(cliutils.NOT_FOUND, "keys not found", keyName)
+		}
 		fmt.Printf("%s\n", output)
 	} else {
 		// Display the content of the key
 		var output []byte
 		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
-		if httpCode == 404 && service != "" {
+		if httpCode == 404 {
 			cliutils.Fatal(cliutils.NOT_FOUND, "key '%s' not found", keyName)
 		}
 		fmt.Printf("%s", string(output))
@@ -358,5 +380,34 @@ func ServiceRemoveKey(org, userPw, service, keyName string) {
 	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "key '%s' not found", keyName)
+	}
+}
+
+func ServiceListAuth(org, userPw, service string, authId uint) {
+	cliutils.SetWhetherUsingApiKey(userPw)
+	org, service = cliutils.TrimOrg(org, service)
+	var authIdStr string
+	if authId != 0 {
+		authIdStr = "/" + strconv.Itoa(int(authId))
+	}
+	var output string
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/dockauths"+authIdStr, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+	if httpCode == 404 {
+		if authId != 0 {
+			cliutils.Fatal(cliutils.NOT_FOUND, "docker auth %d not found", authId)
+		} else {
+			cliutils.Fatal(cliutils.NOT_FOUND, "docker auths not found")
+		}
+	}
+	fmt.Printf("%s\n", output)
+}
+
+func ServiceRemoveAuth(org, userPw, service string, authId uint) {
+	cliutils.SetWhetherUsingApiKey(userPw)
+	org, service = cliutils.TrimOrg(org, service)
+	authIdStr := strconv.Itoa(int(authId))
+	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/dockauths/"+authIdStr, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "docker auth %d not found", authId)
 	}
 }

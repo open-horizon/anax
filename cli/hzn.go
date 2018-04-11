@@ -170,6 +170,7 @@ Environment Variables:
 	exSvcPrivKeyFile := exServicePublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the service. ").Short('k').ExistingFile()
 	exSvcPubPubKeyFile := exServicePublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
 	exSvcPubDontTouchImage := exServicePublishCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. This should only be used during development when testing new versions often.").Short('I').Bool()
+	exSvcRegistryTokens := exServicePublishCmd.Flag("registry-token", "Docker registry domain and auth token that should be stored with the service, to enable the Horizon edge node to access the service's docker images. This flag can be repeated, and each flag should be in the format: registry:token").Short('r').Strings()
 	exServiceVerifyCmd := exServiceCmd.Command("verify", "Verify the signatures of a service resource in the Horizon Exchange.")
 	exVerService := exServiceVerifyCmd.Arg("service", "The service to verify.").Required().String()
 	exSvcPubKeyFile := exServiceVerifyCmd.Flag("public-key-file", "The path of a pem public key file to be used to verify the service. ").Short('k').Required().ExistingFile()
@@ -182,6 +183,12 @@ Environment Variables:
 	exServiceRemKeyCmd := exServiceCmd.Command("removekey", "Remove a signing public key/cert for this service resource in the Horizon Exchange.")
 	exSvcRemKeySvc := exServiceRemKeyCmd.Arg("service", "The existing service to remove the key from.").Required().String()
 	exSvcRemKeyKey := exServiceRemKeyCmd.Arg("key-name", "The existing key name to remove.").Required().String()
+	exServiceListAuthCmd := exServiceCmd.Command("listauth", "List the docker auth tokens for this service resource in the Horizon Exchange.")
+	exSvcListAuthSvc := exServiceListAuthCmd.Arg("service", "The existing service to list the docker auths for.").Required().String()
+	exSvcListAuthId := exServiceListAuthCmd.Arg("auth-name", "The existing docker auth id to see the contents of.").Uint()
+	exServiceRemAuthCmd := exServiceCmd.Command("removeauth", "Remove a docker auth token for this service resource in the Horizon Exchange.")
+	exSvcRemAuthSvc := exServiceRemAuthCmd.Arg("service", "The existing service to remove the docker auth from.").Required().String()
+	exSvcRemAuthId := exServiceRemAuthCmd.Arg("auth-name", "The existing docker auth id to remove.").Required().Uint()
 
 	wiotpCmd := app.Command("wiotp", "List and manage WIoTP objects.")
 	wiotpOrg := wiotpCmd.Flag("org", "The WIoTP organization ID. If not specified, HZN_ORG_ID will be used as a default.").Short('o').String()
@@ -405,7 +412,7 @@ Environment Variables:
 	case exServiceListCmd.FullCommand():
 		exchange.ServiceList(*exOrg, *exUserPw, *exService, !*exServiceLong)
 	case exServicePublishCmd.FullCommand():
-		exchange.ServicePublish(*exOrg, *exUserPw, *exSvcJsonFile, *exSvcPrivKeyFile, *exSvcPubPubKeyFile, *exSvcPubDontTouchImage)
+		exchange.ServicePublish(*exOrg, *exUserPw, *exSvcJsonFile, *exSvcPrivKeyFile, *exSvcPubPubKeyFile, *exSvcPubDontTouchImage, *exSvcRegistryTokens)
 	case exServiceVerifyCmd.FullCommand():
 		exchange.ServiceVerify(*exOrg, *exUserPw, *exVerService, *exSvcPubKeyFile)
 	case exSvcDelCmd.FullCommand():
@@ -414,6 +421,10 @@ Environment Variables:
 		exchange.ServiceListKey(*exOrg, *exUserPw, *exSvcListKeySvc, *exSvcListKeyKey)
 	case exServiceRemKeyCmd.FullCommand():
 		exchange.ServiceRemoveKey(*exOrg, *exUserPw, *exSvcRemKeySvc, *exSvcRemKeyKey)
+	case exServiceListAuthCmd.FullCommand():
+		exchange.ServiceListAuth(*exOrg, *exUserPw, *exSvcListAuthSvc, *exSvcListAuthId)
+	case exServiceRemAuthCmd.FullCommand():
+		exchange.ServiceRemoveAuth(*exOrg, *exUserPw, *exSvcRemAuthSvc, *exSvcRemAuthId)
 	case wiotpTypeListCmd.FullCommand():
 		wiotp.TypeList(*wiotpOrg, *wiotpApiKeyToken, *wiotpType)
 	case wiotpDevListCmd.FullCommand():
