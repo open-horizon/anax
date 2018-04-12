@@ -196,6 +196,13 @@ func (w *AgreementBotWorker) Initialize() bool {
 		return false
 	}
 
+	// To strart clean, remove all left over pattern based policy files.
+	// This is only called once at the agbot start up time
+	if err := policy.DeleteAllPolicyFiles(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, true); err != nil {
+		glog.Errorf("AgreementBotWorker cannot clean up pattern based policy files under $v. %v", w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, err)
+		return false
+	}
+
 	// Give the policy manager a chance to read in all the policies. The agbot worker will not proceed past this point
 	// until it has some policies to work with.
 	for {
@@ -1105,6 +1112,7 @@ func (w *AgreementBotWorker) GeneratePolicyFromPatterns() int {
 		return -1
 	}
 
+	glog.V(5).Infof(AWlogString(fmt.Sprintf("pattern manager initialized: %v", w.PatternManager)))
 	return 0
 }
 
@@ -1129,12 +1137,23 @@ func (w *AgreementBotWorker) internalGeneratePolicyFromPatterns() error {
 	// Iterate over each org in the PatternManager and process all the patterns in that org
 	for org, _ := range w.PatternManager.OrgPatterns {
 
-		// Query exchange for all patterns in the org
-		if exchangePatternMetadata, err := exchange.GetPatterns(w.Config.Collaborators.HTTPClientFactory, org, "", w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken()); err != nil {
-			return errors.New(fmt.Sprintf("unable to get patterns for org %v, error %v", org, err))
+		var exchangePatternMetadata map[string]exchange.Pattern
+		var err error
 
-			// Check for pattern metadata changes and update policy files accordingly
-		} else if err := w.PatternManager.UpdatePatternPolicies(org, exchangePatternMetadata, w.Config.AgreementBot.PolicyPath); err != nil {
+		// check if the org exists on the exchange or not
+		if _, err = exchange.GetOrganization(w.Config.Collaborators.HTTPClientFactory, org, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken()); err != nil {
+			// org does not exist is returned as an error
+			glog.V(5).Infof(AWlogString(fmt.Sprintf("unable to get organization %v: %v", org, err)))
+			exchangePatternMetadata = make(map[string]exchange.Pattern)
+		} else {
+			// Query exchange for all patterns in the org
+			if exchangePatternMetadata, err = exchange.GetPatterns(w.Config.Collaborators.HTTPClientFactory, org, "", w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken()); err != nil {
+				return errors.New(fmt.Sprintf("unable to get patterns for org %v, error %v", org, err))
+			}
+		}
+
+		// Check for pattern metadata changes and update policy files accordingly
+		if err := w.PatternManager.UpdatePatternPolicies(org, exchangePatternMetadata, w.Config.AgreementBot.PolicyPath); err != nil {
 			return errors.New(fmt.Sprintf("unable to update policies for org %v, error %v", org, err))
 		}
 	}

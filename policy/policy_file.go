@@ -595,6 +595,79 @@ func WritePolicyFile(newPolicy *Policy, name string) error {
 	}
 }
 
+// This function deletes all the policy files for the given pattern of the given org.
+func DeletePolicyFilesForPattern(policyPath string, org string, pattern string) error {
+
+	// get all the policy files from the policy path and delete them
+	orgPath := policyPath + "/" + org + "/"
+
+	if _, err := os.Stat(orgPath); os.IsNotExist(err) {
+		glog.Infof("The directory %v does not exist, do nothing.", orgPath)
+		return nil
+	}
+
+	files, err := getPolicyFiles(orgPath)
+	if err != nil {
+		return fmt.Errorf("Unable to get list of policy files in %v, error: %v", orgPath, err)
+	}
+
+	// For each policy, if it is for this pattern, delete it.
+	p_id := fmt.Sprintf("%v/%v", org, pattern)
+	for _, fileInfo := range files {
+		if policy, err := ReadPolicyFile(orgPath+fileInfo.Name(), config.NewArchSynonyms()); err != nil {
+			return fmt.Errorf("Failed to read file %v, error: %v", orgPath+fileInfo.Name(), err)
+		} else if policy.PatternId != "" && policy.PatternId == p_id {
+			if err := DeletePolicyFile(orgPath + fileInfo.Name()); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// This function deletes all the policy files for the given org.
+// If patternBasedOnly is false, it deletes all policy file under the path.
+// If patternBasedOnly is true, it only deletes the policy files that are pattern based.
+func DeletePolicyFilesForOrg(policyPath string, org string, patternBasedOnly bool) error {
+
+	// get all the policy files from the policy path and delete them
+	orgPath := policyPath + "/" + org + "/"
+
+	if _, err := os.Stat(orgPath); os.IsNotExist(err) {
+		glog.Infof("The directory %v does not exist, do nothing.", orgPath)
+		return nil
+	}
+
+	files, err := getPolicyFiles(orgPath)
+	if err != nil {
+		return fmt.Errorf("pattern manager unable to get list of policy files in %v, error: %v", orgPath, err)
+	}
+
+	// For each policy, delete it according to the patternBasedOnly setting
+	for _, fileInfo := range files {
+
+		if !patternBasedOnly {
+			// just delete it
+			if err := DeletePolicyFile(orgPath + fileInfo.Name()); err != nil {
+				return err
+			}
+		} else if policy, err := ReadPolicyFile(orgPath+fileInfo.Name(), config.NewArchSynonyms()); err != nil {
+			// this file could have error, just delete it
+			glog.Errorf("Failed to read file %v, error: %v", orgPath+fileInfo.Name(), err)
+			if err := DeletePolicyFile(orgPath + fileInfo.Name()); err != nil {
+				return err
+			}
+		} else if policy.PatternId != "" {
+			if err := DeletePolicyFile(orgPath + fileInfo.Name()); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 // The next section provides a function that can be used to dynamically discover the addition or removal
 // of policy files from the system. It maintains a map of WatchEntry objects that represent every file in
 // the policy file directory (from the config). The Watcher function calls back to inform the invoker of
@@ -855,7 +928,7 @@ func PolicyFileChangeWatcher(homePath string,
 
 // Delete all policy files. This function does not try to update the policy manager, it is a low level function
 // that simply removes all the policy files.
-func DeleteAllPolicyFiles(homePath string) error {
+func DeleteAllPolicyFiles(homePath string, patternBasedOnly bool) error {
 
 	dirs, err := getPolicyDirectories(homePath)
 	if err != nil {
@@ -867,10 +940,17 @@ func DeleteAllPolicyFiles(homePath string) error {
 		org := dirInfo.Name()
 		glog.V(5).Infof("Deleting policies from directory %v", org)
 
-		// Remove the org directory.
 		pDir := homePath + "/" + org
-		if err := os.RemoveAll(pDir); err != nil {
-			glog.Errorf("Error removing policy directory %v, error: %v", pDir, err)
+		if !patternBasedOnly {
+			// Remove the org directory.
+			if err := os.RemoveAll(pDir); err != nil {
+				glog.Errorf("Error removing policy directory %v, error: %v", pDir, err)
+			}
+		} else {
+			// remove policy files that are pattern based
+			if err := DeletePolicyFilesForOrg(homePath, org, true); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
