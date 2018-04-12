@@ -345,7 +345,7 @@ func (w *AgreementWorker) heartBeat() int {
 			w.lastExchVerCheck = time_now
 
 			// log error if the current exchange version does not meet the requirement
-			if err := version.VerifyExchangeVersion(w.GetHTTPFactory(), w.GetExchangeURL(), false); err != nil {
+			if err := version.VerifyExchangeVersion(w.GetHTTPFactory(), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), false); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
 			}
 		}

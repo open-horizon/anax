@@ -32,9 +32,9 @@ type Info struct {
 	Connectivity  map[string]bool `json:"connectivity"`
 }
 
-func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string) *Info {
+func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, id string, token string) *Info {
 
-	exch_version, err := exchange.GetExchangeVersion(httpClientFactory, exchangeUrl)
+	exch_version, err := exchange.GetExchangeVersion(httpClientFactory, exchangeUrl, id, token)
 	if err != nil {
 		glog.Errorf("Failed to get exchange version: %v", err)
 	}

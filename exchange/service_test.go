@@ -880,7 +880,7 @@ func Test_ResolveWorkloadOrService_withError(t *testing.T) {
 	apiSpecList, exDef, err := GetWorkloadOrService(myURL, myOrg, myVersion, myArch, wr, sh)
 
 	if err == nil {
-		t.Errorf("should have returned an error", err)
+		t.Errorf("should have returned an error but got nil")
 	} else if exDef != nil {
 		t.Errorf("should not have received service definition")
 	} else if apiSpecList != nil {

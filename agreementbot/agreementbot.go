@@ -185,7 +185,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 	}
 
 	// log error if the current exchange version does not meet the requirement
-	if err := version.VerifyExchangeVersion(w.Config.Collaborators.HTTPClientFactory, w.Manager.Config.AgreementBot.ExchangeURL, false); err != nil {
+	if err := version.VerifyExchangeVersion(w.Config.Collaborators.HTTPClientFactory, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), false); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
 		return false
 	}
@@ -1197,7 +1197,7 @@ func (w *AgreementBotWorker) heartBeat() int {
 			w.lastExchVerCheck = time_now
 
 			// log error if the current exchange version does not meet the requirement
-			if err := version.VerifyExchangeVersion(w.Config.Collaborators.HTTPClientFactory, w.Manager.Config.AgreementBot.ExchangeURL, false); err != nil {
+			if err := version.VerifyExchangeVersion(w.Config.Collaborators.HTTPClientFactory, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), false); err != nil {
 				glog.Errorf(AWlogString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
 			}
 		}

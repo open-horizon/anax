@@ -202,7 +202,7 @@ func (a *API) GetExchangeURL() string {
 	if a.EC != nil {
 		return a.EC.URL
 	} else {
-		return ""
+		return a.Config.Edge.ExchangeURL
 	}
 }
 
