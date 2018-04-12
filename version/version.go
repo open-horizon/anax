@@ -20,13 +20,13 @@ const PREFERRED_EXCHANGE_VERSION = "1.49.0"
 // It return nil if the exchange version is okay.
 // or error if there is an error or current version is not okay.
 // If a new feature needs the exchagne version higher than the minumum version, call this function with checkWithPreffered to true.
-func VerifyExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, checkWithPreferred bool) error {
+func VerifyExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, id string, token string, checkWithPreferred bool) error {
 	version_for_check := MINIMUM_EXCHANGE_VERSION
 	if checkWithPreferred {
 		version_for_check = PREFERRED_EXCHANGE_VERSION
 	}
 
-	if exch_version, err := exchange.GetExchangeVersion(httpClientFactory, exchangeUrl); err != nil {
+	if exch_version, err := exchange.GetExchangeVersion(httpClientFactory, exchangeUrl, id, token); err != nil {
 		return fmt.Errorf("Failed to get exchange version from the exchange. %v", err)
 	} else if !policy.IsVersionString(exch_version) {
 		return fmt.Errorf("The current exchange version %v is not a valid version string.", exch_version)

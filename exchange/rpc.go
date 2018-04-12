@@ -1625,7 +1625,7 @@ var rpclogString = func(v interface{}) string {
 	return fmt.Sprintf("Exchange RPC %v", v)
 }
 
-func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl string) (string, error) {
+func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, id string, token string) (string, error) {
 
 	glog.V(3).Infof(rpclogString("Get exchange version."))
 
@@ -1633,7 +1633,7 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 	resp = ""
 	targetURL := exchangeUrl + "admin/version"
 	for {
-		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, "", "", nil, &resp); err != nil {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, id, token, nil, &resp); err != nil {
 			//glog.Errorf(err.Error())
 			//return "", err
 			// temporary return a version for wiotp

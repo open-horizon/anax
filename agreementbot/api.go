@@ -397,7 +397,7 @@ func (a *API) status(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 
-		info := apicommon.NewInfo(a.Config.Collaborators.HTTPClientFactory, a.Config.AgreementBot.ExchangeURL)
+		info := apicommon.NewInfo(a.GetHTTPFactory(), a.GetExchangeURL(), a.GetExchangeId(), a.GetExchangeToken())
 
 		if err := apicommon.WriteConnectionStatus(info); err != nil {
 			glog.Errorf(APIlogString(fmt.Sprintf("Unable to get connectivity status: %v", err)))
