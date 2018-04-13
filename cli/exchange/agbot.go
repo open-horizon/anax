@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// We only care about handling the microservice names, so the rest is left as interface{} and will be passed from the exchange to the display
+// We only care about handling the agbot names, so the rest is left as interface{} and will be passed from the exchange to the display
 type ExchangeAgbots struct {
 	LastIndex int                    `json:"lastIndex"`
 	Agbots    map[string]interface{} `json:"agbots"`
@@ -31,17 +31,22 @@ func AgbotList(org string, userPw string, agbot string, namesOnly bool) {
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
 		// Display the full resources
-		var output string
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots"+cliutils.AddSlash(agbot), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		var agbots ExchangeAgbots
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots"+cliutils.AddSlash(agbot), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &agbots)
 		if httpCode == 404 && agbot != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, "agbot '%s' not found in org %s", agbot, org)
 		}
+		output := cliutils.MarshalIndent(agbots.Agbots, "exchange agbots list")
 		fmt.Println(output)
 	}
 }
 
 func formPatternId(patternOrg, pattern string) string {
 	return patternOrg + "_" + pattern
+}
+
+type ExchangeAgbotPatterns struct {
+	Patterns map[string]interface{} `json:"patterns"`
 }
 
 func AgbotListPatterns(org, userPw, agbot, patternOrg, pattern string) {
@@ -55,11 +60,12 @@ func AgbotListPatterns(org, userPw, agbot, patternOrg, pattern string) {
 		patternId = formPatternId(patternOrg, pattern)
 	}
 	// Display the full resources
-	var output string
-	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/patterns"+cliutils.AddSlash(patternId), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+	var patterns ExchangeAgbotPatterns
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/patterns"+cliutils.AddSlash(patternId), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &patterns)
 	if httpCode == 404 && patternOrg != "" && pattern != "" {
 		cliutils.Fatal(cliutils.NOT_FOUND, "pattern '%s' with org '%s' not found in agbot '%s'", pattern, patternOrg, agbot)
 	}
+	output := cliutils.MarshalIndent(patterns.Patterns, "exchange agbot patterns list")
 	fmt.Println(output)
 }
 

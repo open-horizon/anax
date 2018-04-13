@@ -32,11 +32,12 @@ func NodeList(org string, userPw string, node string, namesOnly bool) {
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
 		// Display the full resources
-		var output string
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		var nodes ExchangeNodes
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &nodes)
 		if httpCode == 404 && node != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, "node '%s' not found in org %s", node, org)
 		}
+		output := cliutils.MarshalIndent(nodes.Nodes, "exchange nodes list")
 		fmt.Println(output)
 	}
 }
