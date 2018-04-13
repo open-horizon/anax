@@ -92,6 +92,9 @@ func CreateService(service *Service,
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("Create service payload: %v", service)))
 
 	// Validate all the inputs in the service object.
+	if *service.Url == "" {
+		return errorhandler(NewAPIUserInputError("not specified", "service.url")), nil, nil
+	}
 	if bail := checkInputString(errorhandler, "service.url", service.Url); bail {
 		return true, nil, nil
 	}
@@ -214,9 +217,22 @@ func CreateService(service *Service,
 	// user inputs in the specific service selected earlier.
 	msdefAttributeVerifier := func(attr persistence.Attribute) (bool, error) {
 
-		// Verfiy that all non-defaulted userInput variables in the service definition are specified in a mapped property attribute
-		// of this service invocation.
+		// Verfiy that all userInput variables are correctly typed and that non-defaulted userInput variables are specified
+		// in a mapped property attribute.
 		if msdef != nil && attr.GetMeta().Type == "UserInputAttributes" {
+
+			// Loop through each input variable and verify that it is defined in the service's user input section, and that the
+			// type matches.
+			for varName, varValue := range attr.GetGenericMappings() {
+				glog.V(5).Infof(apiLogString(fmt.Sprintf("checking input variable: %v", varName)))
+				if ui := msdef.GetUserInputName(varName); ui != nil {
+					if err := cutil.VerifyWorkloadVarTypes(varValue, ui.Type); err != nil {
+						return errorhandler(NewAPIUserInputError(fmt.Sprintf("variable %v is %v", varName, err), "variables")), nil
+					}
+				}
+			}
+
+			// Verify that non-default variables are present.
 			for _, ui := range msdef.UserInputs {
 				if ui.DefaultValue != "" {
 					continue
