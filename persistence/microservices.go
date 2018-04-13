@@ -221,6 +221,15 @@ func (m *MicroserviceDefinition) NeedsUserInput() string {
 	return ""
 }
 
+func (w *MicroserviceDefinition) GetUserInputName(name string) *UserInput {
+	for _, ui := range w.UserInputs {
+		if ui.Name == name {
+			return &ui
+		}
+	}
+	return nil
+}
+
 func (m *MicroserviceDefinition) HasRequiredServices() bool {
 	return len(m.RequiredServices) != 0
 }
