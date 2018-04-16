@@ -138,12 +138,12 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
 		// Display the full resources
-		var output ExchangePatterns
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		var patterns ExchangePatterns
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &patterns)
 		if httpCode == 404 && pattern != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, "pattern '%s' not found in org %s", pattern, org)
 		}
-		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
+		jsonBytes, err := json.MarshalIndent(patterns.Patterns, "", cliutils.JSON_INDENT)
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange pattern list' output: %v", err)
 		}

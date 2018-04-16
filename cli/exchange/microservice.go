@@ -192,13 +192,12 @@ func MicroserviceList(org string, userPw string, microservice string, namesOnly 
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
 		// Display the full resources
-		//var output string
-		var output exchange.GetMicroservicesResponse
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices"+cliutils.AddSlash(microservice), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		var microservices exchange.GetMicroservicesResponse
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/microservices"+cliutils.AddSlash(microservice), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &microservices)
 		if httpCode == 404 && microservice != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, "microservice '%s' not found in org %s", microservice, org)
 		}
-		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
+		jsonBytes, err := json.MarshalIndent(microservices.Microservices, "", cliutils.JSON_INDENT)
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange microservice list' output: %v", err)
 		}

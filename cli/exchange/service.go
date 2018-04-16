@@ -134,14 +134,13 @@ func ServiceList(org, userPw, service string, namesOnly bool) {
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
 		// Display the full resources
-		//var output string
-		var output GetServicesResponse
+		var services GetServicesResponse
 
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &services)
 		if httpCode == 404 && service != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, "service '%s' not found in org %s", service, org)
 		}
-		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
+		jsonBytes, err := json.MarshalIndent(services.Services, "", cliutils.JSON_INDENT)
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange service list' output: %v", err)
 		}

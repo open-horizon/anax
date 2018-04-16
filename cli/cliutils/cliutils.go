@@ -104,6 +104,23 @@ func SplitIdToken(idToken string) (id, token string) {
 	return
 }
 
+// Unmarshal simply calls json.Unmarshal and handles any errors
+func Unmarshal(data []byte, v interface{}, errMsg string) {
+	err := json.Unmarshal(data, v)
+	if err != nil {
+		Fatal(JSON_PARSING_ERROR, "failed to unmarshal bytes from %s: %v", errMsg, err)
+	}
+}
+
+// MarshalIndent calls json.MarshalIndent and handles any errors
+func MarshalIndent(v interface{}, errMsg string) string {
+	jsonBytes, err := json.MarshalIndent(v, "", JSON_INDENT)
+	if err != nil {
+		Fatal(JSON_PARSING_ERROR, "failed to marshal data type from %s: %v", errMsg, err)
+	}
+	return string(jsonBytes)
+}
+
 // SetWhetherUsingApiKey is a hack that will hopefully go away when the wiotp exchange api is consistent whether access via
 // an api key or device id/token.
 func SetWhetherUsingApiKey(creds string) {
@@ -705,6 +722,80 @@ func WiotpGet(urlBase string, urlSuffix string, credentials string, goodHttpCode
 				Fatal(JSON_PARSING_ERROR, "failed to unmarshal exchange body response from %s: %v", apiMsg, err)
 			}
 		}
+	}
+	return
+}
+func WiotpPutPost(method string, urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, body interface{}) (httpCode int) {
+	url := urlBase + "/" + urlSuffix
+	apiMsg := method + " " + url
+	Verbose(apiMsg)
+	if IsDryRun() {
+		return 201
+	}
+	httpClient := &http.Client{}
+
+	// Prepare body
+	var jsonBytes []byte
+	switch b := body.(type) {
+	case string:
+		jsonBytes = []byte(b)
+	default:
+		var err error
+		jsonBytes, err = json.Marshal(body)
+		if err != nil {
+			Fatal(JSON_PARSING_ERROR, "failed to marshal wiotp body for %s: %v", apiMsg, err)
+		}
+	}
+	requestBody := bytes.NewBuffer(jsonBytes)
+
+	// Create the request and run it
+	req, err := http.NewRequest(method, url, requestBody)
+	if err != nil {
+		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
+	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		Fatal(HTTP_ERROR, "Can't connect to the WIoTP REST API to run %s: %v", apiMsg, err)
+	}
+	defer resp.Body.Close()
+	httpCode = resp.StatusCode
+	Verbose("HTTP code: %d", httpCode)
+	if !isGoodCode(httpCode, goodHttpCodes) {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			Fatal(HTTP_ERROR, "failed to read wiotp body response from %s: %v", apiMsg, err)
+		}
+		Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, string(bodyBytes))
+	}
+	Verbose("Response: %s", GetRespBodyAsString(resp.Body))
+	return
+}
+
+func WiotpDelete(urlBase string, urlSuffix string, credentials string, goodHttpCodes []int) (httpCode int) {
+	url := urlBase + "/" + urlSuffix
+	apiMsg := http.MethodDelete + " " + url
+	Verbose(apiMsg)
+	if IsDryRun() {
+		return 204
+	}
+	httpClient := &http.Client{}
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
+	}
+	req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		Fatal(HTTP_ERROR, "Can't connect to the WIoTP REST API to run %s: %v", apiMsg, err)
+	}
+	defer resp.Body.Close()
+	httpCode = resp.StatusCode
+	Verbose("HTTP code: %d", httpCode)
+	if !isGoodCode(httpCode, goodHttpCodes) {
+		Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyAsString(resp.Body))
 	}
 	return
 }

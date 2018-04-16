@@ -6,15 +6,21 @@ import (
 	"net/http"
 )
 
+type ExchangeUsers struct {
+	Users     map[string]interface{} `json:"users"`
+	ListIndex int                    `json:"lastIndex"`
+}
+
 func UserList(org string, userPw string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	exchUrlBase := cliutils.GetExchangeUrl()
 	user, _ := cliutils.SplitIdToken(userPw)
-	var output string
-	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+	var users ExchangeUsers
+	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &users)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "user '%s' not found in org %s", user, org)
 	}
+	output := cliutils.MarshalIndent(users.Users, "exchange users list")
 	fmt.Println(output)
 }
 

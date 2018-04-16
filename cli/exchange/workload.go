@@ -101,14 +101,13 @@ func WorkloadList(org, userPw, workload string, namesOnly bool) {
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
 		// Display the full resources
-		//var output string
-		var output exchange.GetWorkloadsResponse
+		var workloads exchange.GetWorkloadsResponse
 
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+cliutils.AddSlash(workload), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/workloads"+cliutils.AddSlash(workload), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &workloads)
 		if httpCode == 404 && workload != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, "workload '%s' not found in org %s", workload, org)
 		}
-		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
+		jsonBytes, err := json.MarshalIndent(workloads.Workloads, "", cliutils.JSON_INDENT)
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange workload list' output: %v", err)
 		}

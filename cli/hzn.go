@@ -49,6 +49,7 @@ Environment Variables:
 	exUserPw := exchangeCmd.Flag("user-pw", "Horizon Exchange user credentials to query and create exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.").Short('u').PlaceHolder("USER:PW").String()
 
 	exVersionCmd := exchangeCmd.Command("version", "Display the version of the Horizon Exchange.")
+	exStatusCmd := exchangeCmd.Command("status", "Display the status of the Horizon Exchange.")
 
 	exUserCmd := exchangeCmd.Command("user", "List and manage users in the Horizon Exchange.")
 	exUserListCmd := exUserCmd.Command("list", "Display the user resource from the Horizon Exchange. (You can only display your own user. If the user does not exist, you will get an invalid credentials error.)")
@@ -194,14 +195,33 @@ Environment Variables:
 	wiotpOrg := wiotpCmd.Flag("org", "The WIoTP organization ID. If not specified, HZN_ORG_ID will be used as a default.").Short('o').String()
 	wiotpApiKeyToken := wiotpCmd.Flag("apikey-token", "WIoTP API key and token to query and create WIoTP objects. If not specified, HZN_EXCHANGE_API_AUTH will be used as a default.").Short('A').PlaceHolder("APIKEY:TOKEN").String()
 
+	wiotpOrgCmd := wiotpCmd.Command("org", "List information about your WIoTP org")
+	wiotpStatusCmd := wiotpCmd.Command("status", "Show the status of the WIoTP cloud services")
+
 	wiotpTypeCmd := wiotpCmd.Command("type", "List and manage types in WIoTP")
 	wiotpTypeListCmd := wiotpTypeCmd.Command("list", "Display the type objects from WIoTP.")
 	wiotpType := wiotpTypeListCmd.Arg("type", "Show the details of this one type.").String()
+	wiotpTypeCreateCmd := wiotpTypeCmd.Command("create", "Create a gateway type object, with edge services enabled, in WIoTP.")
+	wiotpTypeCreateType := wiotpTypeCreateCmd.Arg("type", "The gateway type.").Required().String()
+	wiotpTypeCreateArch := wiotpTypeCreateCmd.Arg("arch", "The architecture of the gateway type: amd64, arm, arm64.").Required().String()
+	wiotpTypeCreateServices := wiotpTypeCreateCmd.Flag("service", "The exchange id of a service that should be deployed to this edge node type. For example: internetofthings.ibmcloud.com-workloads-cpu2wiotp_1.2.2_amd64. This flag can be repeated.").Short('s').Strings()
+	wiotpTypeRemoveCmd := wiotpTypeCmd.Command("remove", "Remove a gateway type object from WIoTP.")
+	wiotpTypeRemoveType := wiotpTypeRemoveCmd.Arg("type", "The gateway type.").Required().String()
 
 	wiotpDeviceCmd := wiotpCmd.Command("device", "List and manage devices/gateways of a particular type in WIoTP")
 	wiotpDevListCmd := wiotpDeviceCmd.Command("list", "Display the devices/gateways objects of the specified type from WIoTP.")
 	wiotpDevType := wiotpDevListCmd.Arg("type", "Show the devices/gateways of this type.").Required().String()
 	wiotpDevice := wiotpDevListCmd.Arg("device", "Show the details of this one device/gateway.").String()
+	wiotpDevEdgeStatusCmd := wiotpDeviceCmd.Command("edgestatus", "Display the device/gateway's status of edge node services.")
+	wiotpDevEdgeType := wiotpDevEdgeStatusCmd.Arg("type", "The device/gateway type.").Required().String()
+	wiotpDevEdgeDevice := wiotpDevEdgeStatusCmd.Arg("device", "The device/gateway.").Required().String()
+	wiotpDevCreateCmd := wiotpDeviceCmd.Command("create", "Create a device/gateway objects of the specified type in WIoTP.")
+	wiotpDevCreateType := wiotpDevCreateCmd.Arg("type", "The device/gateway type.").Required().String()
+	wiotpDevCreateDevice := wiotpDevCreateCmd.Arg("device", "The device/gateway id to create.").Required().String()
+	wiotpDevCreateToken := wiotpDevCreateCmd.Arg("token", "The token the device/gateway should have.").Required().String()
+	wiotpDevRemoveCmd := wiotpDeviceCmd.Command("remove", "Remove a device/gateway objects from WIoTP.")
+	wiotpDevRemoveType := wiotpDevRemoveCmd.Arg("type", "The device/gateway type.").Required().String()
+	wiotpDevRemoveDevice := wiotpDevRemoveCmd.Arg("device", "The device/gateway id to remove.").Required().String()
 
 	regInputCmd := app.Command("reginput", "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the workloads and microservices that the specified pattern uses, and determines the node owner input that is required for them.")
 	regInputNodeIdTok := regInputCmd.Flag("node-id-tok", "The Horizon exchange node ID and token (it must already exist).").Short('n').PlaceHolder("ID:TOK").Required().String()
@@ -349,6 +369,8 @@ Environment Variables:
 		node.Version()
 	case exVersionCmd.FullCommand():
 		exchange.Version()
+	case exStatusCmd.FullCommand():
+		exchange.Status(*exOrg, *exUserPw)
 	case exUserListCmd.FullCommand():
 		exchange.UserList(*exOrg, *exUserPw)
 	case exUserCreateCmd.FullCommand():
@@ -425,10 +447,24 @@ Environment Variables:
 		exchange.ServiceListAuth(*exOrg, *exUserPw, *exSvcListAuthSvc, *exSvcListAuthId)
 	case exServiceRemAuthCmd.FullCommand():
 		exchange.ServiceRemoveAuth(*exOrg, *exUserPw, *exSvcRemAuthSvc, *exSvcRemAuthId)
+	case wiotpOrgCmd.FullCommand():
+		wiotp.OrgList(*wiotpOrg, *wiotpApiKeyToken)
+	case wiotpStatusCmd.FullCommand():
+		wiotp.Status(*wiotpOrg, *wiotpApiKeyToken)
 	case wiotpTypeListCmd.FullCommand():
 		wiotp.TypeList(*wiotpOrg, *wiotpApiKeyToken, *wiotpType)
+	case wiotpTypeCreateCmd.FullCommand():
+		wiotp.TypeCreate(*wiotpOrg, *wiotpApiKeyToken, *wiotpTypeCreateType, *wiotpTypeCreateArch, *wiotpTypeCreateServices)
+	case wiotpTypeRemoveCmd.FullCommand():
+		wiotp.TypeRemove(*wiotpOrg, *wiotpApiKeyToken, *wiotpTypeRemoveType)
 	case wiotpDevListCmd.FullCommand():
 		wiotp.DeviceList(*wiotpOrg, *wiotpApiKeyToken, *wiotpDevType, *wiotpDevice)
+	case wiotpDevEdgeStatusCmd.FullCommand():
+		wiotp.DeviceEdgeStatus(*wiotpOrg, *wiotpApiKeyToken, *wiotpDevEdgeType, *wiotpDevEdgeDevice)
+	case wiotpDevCreateCmd.FullCommand():
+		wiotp.DeviceCreate(*wiotpOrg, *wiotpApiKeyToken, *wiotpDevCreateType, *wiotpDevCreateDevice, *wiotpDevCreateToken)
+	case wiotpDevRemoveCmd.FullCommand():
+		wiotp.DeviceRemove(*wiotpOrg, *wiotpApiKeyToken, *wiotpDevRemoveType, *wiotpDevRemoveDevice)
 	case regInputCmd.FullCommand():
 		register.CreateInputFile(*regInputOrg, *regInputPattern, *regInputArch, *regInputNodeIdTok, *regInputInputFile)
 	case registerCmd.FullCommand():
