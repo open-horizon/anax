@@ -62,12 +62,13 @@ type ServiceChoiceFile struct {
 	DeploymentOverridesSignature string                    `json:"deployment_overrides_signature"` // signature of env var overrides
 }
 type ServiceReferenceFile struct {
-	ServiceURL      string                    `json:"serviceUrl"`       // refers to a service definition in the exchange
-	ServiceOrg      string                    `json:"serviceOrgid"`     // the org holding the service definition
-	ServiceArch     string                    `json:"serviceArch"`      // the hardware architecture of the service definition
-	ServiceVersions []ServiceChoiceFile       `json:"serviceVersions"`  // a list of service version for rollback
-	DataVerify      exchange.DataVerification `json:"dataVerification"` // policy for verifying that the node is sending data
-	NodeH           exchange.NodeHealth       `json:"nodeHealth"`       // policy for determining when a node's health is violating its agreements
+	ServiceURL      string                    `json:"serviceUrl"`              // refers to a service definition in the exchange
+	ServiceOrg      string                    `json:"serviceOrgid"`            // the org holding the service definition
+	ServiceArch     string                    `json:"serviceArch"`             // the hardware architecture of the service definition
+	AgreementLess   bool                      `json:"agreementLess,omitempty"` // a special case where this service will also be required by others
+	ServiceVersions []ServiceChoiceFile       `json:"serviceVersions"`         // a list of service version for rollback
+	DataVerify      exchange.DataVerification `json:"dataVerification"`        // policy for verifying that the node is sending data
+	NodeH           exchange.NodeHealth       `json:"nodeHealth"`              // policy for determining when a node's health is violating its agreements
 }
 type PatternFile struct {
 	Org                string                       `json:"org"` // optional
@@ -104,12 +105,13 @@ type ServiceChoice struct {
 	DeploymentOverridesSignature string                    `json:"deployment_overrides_signature"` // signature of env var overrides
 }
 type ServiceReference struct {
-	ServiceURL      string                    `json:"serviceUrl"`       // refers to a service definition in the exchange
-	ServiceOrg      string                    `json:"serviceOrgid"`     // the org holding the service definition
-	ServiceArch     string                    `json:"serviceArch"`      // the hardware architecture of the service definition
-	ServiceVersions []ServiceChoice           `json:"serviceVersions"`  // a list of service version for rollback
-	DataVerify      exchange.DataVerification `json:"dataVerification"` // policy for verifying that the node is sending data
-	NodeH           exchange.NodeHealth       `json:"nodeHealth"`       // policy for determining when a node's health is violating its agreements
+	ServiceURL      string                    `json:"serviceUrl"`              // refers to a service definition in the exchange
+	ServiceOrg      string                    `json:"serviceOrgid"`            // the org holding the service definition
+	ServiceArch     string                    `json:"serviceArch"`             // the hardware architecture of the service definition
+	AgreementLess   bool                      `json:"agreementLess,omitempty"` // a special case where this service will also be required by others
+	ServiceVersions []ServiceChoice           `json:"serviceVersions"`         // a list of service version for rollback
+	DataVerify      exchange.DataVerification `json:"dataVerification"`        // policy for verifying that the node is sending data
+	NodeH           exchange.NodeHealth       `json:"nodeHealth"`              // policy for determining when a node's health is violating its agreements
 }
 type PatternInput struct {
 	Label              string                       `json:"label"`
@@ -210,6 +212,7 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 			patInput.Services[i].ServiceURL = patFile.Services[i].ServiceURL
 			patInput.Services[i].ServiceOrg = patFile.Services[i].ServiceOrg
 			patInput.Services[i].ServiceArch = patFile.Services[i].ServiceArch
+			patInput.Services[i].AgreementLess = patFile.Services[i].AgreementLess
 			patInput.Services[i].ServiceVersions = make([]ServiceChoice, len(patFile.Services[i].ServiceVersions))
 			patInput.Services[i].DataVerify = patFile.Services[i].DataVerify
 			patInput.Services[i].NodeH = patFile.Services[i].NodeH
