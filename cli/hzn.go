@@ -33,10 +33,11 @@ func main() {
 Environment Variables:
   HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API. This can facilitate using a remote Horizon Agent via an ssh tunnel.
   HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use to communicate with the Horizon Exchange, for example https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the Horizon Agent for the URL.)
-  HZN_ORG_ID:  default value for the 'hzn exchange -o' or 'hzn wiotp -o' flag, to specify the organization ID'.
-  HZN_EXCHANGE_USER_AUTH:  default value for the 'hzn exchange -u' or 'hzn register -u' flag, in the form '[org/]user:pw'.
-  HZN_EXCHANGE_API_AUTH:  default value for the 'hzn wiotp -A' flag, in the form 'apikey:apitoken'.
-  USING_API_KEY:  Set this to "0" to indicate that even though the credential passed into the 'hzn exchange -u' flag looks like an WIoTP API key/token, it is not so Horizon should not interpret as such.
+  HZN_ORG_ID:  Default value for the 'hzn exchange -o' or 'hzn wiotp -o' flag, to specify the organization ID'.
+  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn register -u' flag, in the form '[org/]user:pw'.
+  HZN_EXCHANGE_API_AUTH:  Default value for the 'hzn wiotp -A' flag, in the form 'apikey:apitoken'.
+  HZN_DONT_SUBST_ENV_VARS:  Set this to "1" to indicate that input json files should *not* be processed to replace environment variable references with their values.
+  USING_API_KEY:  Set this to "0" to indicate that even though the credential passed into the 'hzn exchange -u' flag looks like an WIoTP API key/token, it is not, so Horizon should not interpret as such.
 `)
 	app.HelpFlag.Short('h')
 	cliutils.Opts.Verbose = app.Flag("verbose", "Verbose output.").Short('v').Bool()
