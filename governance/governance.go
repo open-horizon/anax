@@ -97,6 +97,12 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 		msg, _ := incoming.(*events.EdgeConfigCompleteMessage)
 		w.EC.ServiceBased = msg.ServiceBased()
 
+		// Start any services that run without needing an agreement.
+		if msg.ServiceBased() {
+			cmd := w.NewStartAgreementLessServicesCommand()
+			w.Commands <- cmd
+		}
+
 	case *events.WorkloadMessage:
 		msg, _ := incoming.(*events.WorkloadMessage)
 
@@ -878,6 +884,12 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 		// to complete the shutdown procedure.
 		w.TerminateSubworkers()
 
+	case *StartAgreementLessServicesCommand:
+		cmd, _ := command.(*StartAgreementLessServicesCommand)
+		glog.V(5).Infof(logString(fmt.Sprintf("%v", cmd)))
+
+		w.startAgreementLessServices()
+
 	default:
 		return false
 	}
@@ -1067,6 +1079,58 @@ func (w *GovernanceWorker) startDependentService(dependencyPath []persistence.Se
 
 	glog.V(5).Infof(logString(fmt.Sprintf("starting dependency: %v with def %v", dependencyPath, msdef)))
 	return w.startMicroserviceInstForAgreement(msdef, agreementId, dependencyPath, protocol)
+
+}
+
+// Start all the agreement-less services. This function is only called when the node is running in service mode.
+func (w *GovernanceWorker) startAgreementLessServices() {
+
+	// A node that is not using a pattern cannot have agreement-less services.
+	if w.devicePattern == "" {
+		return
+	}
+
+	// Get the pattern definition from the exchange.
+	patternDef, err := exchange.GetHTTPExchangePatternHandler(w)(exchange.GetOrg(w.GetExchangeId()), w.devicePattern)
+	if err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less services, error searching for pattern %v in exchange, error: %v", w.devicePattern, err)))
+		return
+	}
+
+	// There should only be 1 pattern in the response.
+	pat := fmt.Sprintf("%v/%v", exchange.GetOrg(w.GetExchangeId()), w.devicePattern)
+	if _, ok := patternDef[pat]; !ok {
+		glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less services, pattern %v not found in exchange", pat)))
+		return
+	}
+
+	glog.V(3).Infof(logString(fmt.Sprintf("Starting agreement-less services")))
+
+	// Loop through all the services and start the ones that are agreement-less.
+	for _, service := range patternDef[pat].Services {
+		if service.AgreementLess {
+
+			// Find the microservice definition for this service.
+			if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, service.ServiceURL); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less service %v, error %v", service.ServiceURL, err)))
+				return
+			} else if msdefs == nil || len(msdefs) == 0 {
+				glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less service %v, local service definition not found", service.ServiceURL)))
+				return
+			} else {
+
+				// Create the service instance dependency path with the agreement-less service as the root.
+				instancePath := []persistence.ServiceInstancePathElement{*persistence.NewServiceInstancePathElement(msdefs[0].SpecRef, msdefs[0].Version)}
+
+				if err := w.startDependentService(instancePath, &msdefs[0], "", policy.BasicProtocol); err != nil {
+					glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less service %v, error %v", service.ServiceURL, err)))
+				}
+
+			}
+		}
+	}
+
+	glog.V(3).Infof(logString(fmt.Sprintf("Started agreement-less services")))
 
 }
 

@@ -1778,13 +1778,19 @@ func (b *ContainerWorker) findMsContainersAndUpdateMsInstance(parent *persistenc
 			} else if msinsts, err := persistence.FindMicroserviceInstances(b.db, []persistence.MIFilter{persistence.AllInstancesMIFilter(api_spec.SpecRef, api_spec.Version), persistence.UnarchivedMIFilter()}); err != nil {
 				return nil, fmt.Errorf("Error retrieving service instances for %v version %v from database, error: %v", api_spec.SpecRef, api_spec.Version, err)
 			} else if msinsts == nil || len(msinsts) == 0 {
-				return nil, fmt.Errorf("Service instance has not be initiated for service %v yet.", api_spec)
+				return nil, fmt.Errorf("No service instance for service %v yet.", api_spec)
 			} else {
 				// find the ms instance that has the agreement id in it
 				var ms_instance *persistence.MicroserviceInstance
 				ms_instance = nil
 				for _, msi := range msinsts {
-					if msi.AssociatedAgreements != nil && len(msi.AssociatedAgreements) > 0 {
+					// If we're starting an agreement-less service then the agreement id will be empty. Dependent services will also
+					// be marked as agreement-less so we should try these. The HasDirectParent check further down will prevent us from
+					// picking the wrong agreement-less dependent.
+					if agreementId == "" && msi.AgreementLess {
+						ms_instance = &msi
+					} else if msi.AssociatedAgreements != nil && len(msi.AssociatedAgreements) > 0 {
+						// Make sure the dependent service is in our agreement, ignore it if not.
 						for _, id := range msi.AssociatedAgreements {
 							if id == agreementId {
 								ms_instance = &msi

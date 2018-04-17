@@ -159,3 +159,16 @@ func (w *GovernanceWorker) NewUpgradeMicroserviceCommand(msdef_id string) *Upgra
 		MsDefId: msdef_id,
 	}
 }
+
+// ==============================================================================================================
+// Start agreement-less services
+type StartAgreementLessServicesCommand struct {
+}
+
+func (c StartAgreementLessServicesCommand) ShortString() string {
+	return fmt.Sprintf("StartAgreementLessServicesCommand")
+}
+
+func (w *GovernanceWorker) NewStartAgreementLessServicesCommand() *StartAgreementLessServicesCommand {
+	return &StartAgreementLessServicesCommand{}
+}

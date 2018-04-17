@@ -199,7 +199,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 	// To strart clean, remove all left over pattern based policy files.
 	// This is only called once at the agbot start up time
 	if err := policy.DeleteAllPolicyFiles(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, true); err != nil {
-		glog.Errorf("AgreementBotWorker cannot clean up pattern based policy files under $v. %v", w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, err)
+		glog.Errorf("AgreementBotWorker cannot clean up pattern based policy files under %v. %v", w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, err)
 		return false
 	}
 

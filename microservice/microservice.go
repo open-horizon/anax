@@ -216,17 +216,23 @@ func MicroserviceReadyForUpgrade(msdef *persistence.MicroserviceDefinition, db *
 		return false
 	}
 
-	// for inactive upgrade make sure there are no agreements associated with it
-	if !msdef.ActiveUpgrade {
-		if ms_insts, err := persistence.FindMicroserviceInstances(db, []persistence.MIFilter{persistence.AllInstancesMIFilter(msdef.SpecRef, msdef.Version), persistence.UnarchivedMIFilter()}); err != nil {
-			glog.Errorf("Error retrieving all the microservice instaces from db for %v version %v. %v", msdef.SpecRef, msdef.Version, err)
-			return false
-		} else if ms_insts != nil && len(ms_insts) > 0 {
-			for _, msi := range ms_insts {
-				if msi.MicroserviceDefId == msdef.Id {
-					if ags := msi.AssociatedAgreements; ags != nil && len(ags) > 0 {
-						return false
-					}
+	// For inactive upgrade, make sure there are no agreements associated with the service instances. If there are,
+	// the upgrade cannot proceed.
+	// For agreement-less services, never upgrade. The agreement-less indicator is only in the instance object
+	// (not in the def object) because an agreement-less service is defined by the node's pattern which can
+	// change on a lifecycle boundary that is different from the lifecycle of the service definition itself.
+	if ms_insts, err := persistence.FindMicroserviceInstances(db, []persistence.MIFilter{persistence.AllInstancesMIFilter(msdef.SpecRef, msdef.Version), persistence.UnarchivedMIFilter()}); err != nil {
+		glog.Errorf("Error retrieving all the microservice instances from db for %v version %v. %v", msdef.SpecRef, msdef.Version, err)
+		return false
+	} else if ms_insts != nil && len(ms_insts) > 0 {
+		for _, msi := range ms_insts {
+			// Agreement-less services are never upgraded.
+			if msi.AgreementLess {
+				return false
+			} else if !msdef.ActiveUpgrade && msi.MicroserviceDefId == msdef.Id {
+				// If the service can only be upgraded when there are no agreements, check for agreements.
+				if ags := msi.AssociatedAgreements; ags != nil && len(ags) > 0 {
+					return false
 				}
 			}
 		}

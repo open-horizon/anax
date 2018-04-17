@@ -544,6 +544,7 @@ type MicroserviceInstance struct {
 	AssociatedAgreements []string                       `json:"associated_agreements"`
 	MicroserviceDefId    string                         `json:"microservicedef_id"`
 	ParentPath           [][]ServiceInstancePathElement `json:"service_instance_path"` // Set when instance is created
+	AgreementLess        bool                           `json:"agreement_less"`        // Set when the service instance was started because it is an agreement-less service (as defined in the pattern)
 }
 
 func (w MicroserviceInstance) String() string {
@@ -559,10 +560,11 @@ func (w MicroserviceInstance) String() string {
 		"CleanupStartTime: %v, "+
 		"AssociatedAgreements: %v, "+
 		"MicroserviceDefId: %v, "+
-		"ParentPath: %v",
+		"ParentPath: %v, "+
+		"AgreementLess: %v",
 		w.SpecRef, w.Version, w.Arch, w.InstanceId, w.Archived, w.InstanceCreationTime,
 		w.ExecutionStartTime, w.ExecutionFailureCode, w.ExecutionFailureDesc,
-		w.CleanupStartTime, w.AssociatedAgreements, w.MicroserviceDefId, w.ParentPath)
+		w.CleanupStartTime, w.AssociatedAgreements, w.MicroserviceDefId, w.ParentPath, w.AgreementLess)
 }
 
 // create a unique name for a microservice def
@@ -839,6 +841,13 @@ func UpdateMSInstanceAddDependencyPath(db *bolt.DB, key string, dp *[]ServiceIns
 	})
 }
 
+func UpdateMSInstanceAgreementLess(db *bolt.DB, key string) (*MicroserviceInstance, error) {
+	return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
+		c.AgreementLess = true
+		return &c
+	})
+}
+
 // update the micorserive instance
 func microserviceInstanceStateUpdate(db *bolt.DB, key string, fn func(MicroserviceInstance) *MicroserviceInstance) (*MicroserviceInstance, error) {
 
@@ -894,6 +903,10 @@ func persistUpdatedMicroserviceInstance(db *bolt.DB, key string, update *Microse
 
 				if len(mod.ParentPath) != len(update.ParentPath) {
 					mod.ParentPath = update.ParentPath
+				}
+
+				if !mod.AgreementLess { // 1 transition from false to true
+					mod.AgreementLess = update.AgreementLess
 				}
 
 				if serialized, err := json.Marshal(mod); err != nil {

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	dockerclient "github.com/fsouza/go-dockerclient"
-	"strings"
+	"github.com/open-horizon/anax/cutil"
 )
 
 // Get docker container metadata from the docker API for workload containers
@@ -38,7 +38,7 @@ func GetWorkloadContainers(dockerEndpoint string, agreementId string) ([]dockerc
 }
 
 // Get docker container metadata from the docker API for microservice containers
-func GetMicroserviceContainer(dockerEndpoint string, mURL string) ([]dockerclient.APIContainers, error) {
+func GetMicroserviceContainer(dockerEndpoint string, mURL string, mVersion string, mInstanceId string) ([]dockerclient.APIContainers, error) {
 	if client, err := dockerclient.NewClient(dockerEndpoint); err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to create docker client from %v, error %v", dockerEndpoint, err))
 	} else {
@@ -56,8 +56,8 @@ func GetMicroserviceContainer(dockerEndpoint string, mURL string) ([]dockerclien
 			for _, c := range containers {
 				if _, exists := c.Labels["network.bluehorizon.colonus.infrastructure"]; exists {
 					if agid, exists := c.Labels["network.bluehorizon.colonus.agreement_id"]; exists {
-						name := getMangledName(mURL)
-						if strings.Contains(agid, name) {
+						name := cutil.MakeMSInstanceKey(mURL, mVersion, mInstanceId)
+						if agid == name {
 							ret = append(ret, c)
 						}
 					}
@@ -66,12 +66,4 @@ func GetMicroserviceContainer(dockerEndpoint string, mURL string) ([]dockerclien
 			return ret, nil
 		}
 	}
-}
-
-func getMangledName(url string) string {
-	s := url
-	if strings.Contains(url, "://") {
-		s = strings.Split(url, "://")[1]
-	}
-	return strings.Replace(s, "/", "-", -1)
 }

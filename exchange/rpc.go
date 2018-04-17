@@ -1145,6 +1145,7 @@ type ServiceReference struct {
 	ServiceVersions []WorkloadChoice `json:"serviceVersions,omitempty"` // a list of service version for rollback
 	DataVerify      DataVerification `json:"dataVerification"`          // policy for verifying that the node is sending data
 	NodeH           NodeHealth       `json:"nodeHealth"`                // policy for determining when a node's health is violating its agreements
+	AgreementLess   bool             `json:"agreementLess"`             // This service should get started on the node without an agreement to start it
 }
 
 type Meter struct {
@@ -1266,6 +1267,12 @@ func ConvertToPolicies(patternId string, p *Pattern) ([]*policy.Policy, error) {
 	// Each pattern contains a list of workloads/services that need to be converted to a policy
 	if p.UsingServiceModel() {
 		for _, service := range p.Services {
+
+			// Don't generate policies on the agbot for agreement-less services because the service will be started
+			// on the node as soon as the node is configured.
+			if service.AgreementLess {
+				continue
+			}
 
 			// make sure required fields are not empty
 			if service.ServiceURL == "" || service.ServiceOrg == "" || service.ServiceArch == "" {
