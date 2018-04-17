@@ -390,7 +390,9 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 			glog.V(3).Infof(logString(fmt.Sprintf("Ending the agreement: %v because microservice %v failed to start", agreementId, msdef.SpecRef)))
 			ag_reason_code := w.producerPH[protocol].GetTerminationCode(producer.TERM_REASON_MS_DOWNGRADE_REQUIRED)
 			ag_reason_text := w.producerPH[protocol].GetTerminationReason(ag_reason_code)
-			w.cancelAgreement(agreementId, protocol, ag_reason_code, ag_reason_text)
+			if agreementId != "" {
+				w.cancelAgreement(agreementId, protocol, ag_reason_code, ag_reason_text)
+			}
 
 			glog.V(3).Infof(logString(fmt.Sprintf("Downgrading microservice %v because version %v key %v failed to start. Error: %v", msdef.SpecRef, msdef.Version, msdef.Id, inst_err)))
 			if err := w.RollbackMicroservice(msdef); err != nil {
@@ -404,8 +406,14 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 	}
 
 	// Add the agreement id into the instance so that the workload containers know which instance to associate with.
-	if _, err := persistence.UpdateMSInstanceAssociatedAgreements(w.db, msi.GetKey(), true, agreementId); err != nil {
-		return fmt.Errorf(logString(fmt.Sprintf("error adding agreement id %v to the microservice %v: %v", agreementId, msi.GetKey(), err)))
+	if agreementId != "" {
+		if _, err := persistence.UpdateMSInstanceAssociatedAgreements(w.db, msi.GetKey(), true, agreementId); err != nil {
+			return fmt.Errorf(logString(fmt.Sprintf("error adding agreement id %v to the microservice %v: %v", agreementId, msi.GetKey(), err)))
+		}
+	} else {
+		if _, err := persistence.UpdateMSInstanceAgreementLess(w.db, msi.GetKey()); err != nil {
+			return fmt.Errorf(logString(fmt.Sprintf("error setting agreement-less on the microservice %v: %v", msi.GetKey(), err)))
+		}
 	}
 
 	return nil

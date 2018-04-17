@@ -48,7 +48,7 @@ func FindMicroServicesForOutput(pm *policy.PolicyManager,
 		if msinst.Archived {
 			wrap.Instances[archivedKey] = append(wrap.Instances[archivedKey], *NewMicroserviceInstanceOutput(msinst, nil))
 		} else {
-			containers, err := GetMicroserviceContainer(config.Edge.DockerEndpoint, msinst.SpecRef)
+			containers, err := GetMicroserviceContainer(config.Edge.DockerEndpoint, msinst.SpecRef, msinst.Version, msinst.InstanceId)
 			if err != nil {
 				return nil, errors.New(fmt.Sprintf("unable to get docker container info, error %v", err))
 			}
