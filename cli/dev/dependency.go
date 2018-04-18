@@ -445,9 +445,6 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 
 	msDef := new(cliexchange.MicroserviceFile)
 
-	// The rest of this function produces or updates metadata files. We want those to retain the env vars they had.
-	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1")
-
 	// Get this project's userinputs.
 	currentUIs, _, err := GetUserInputs(homeDirectory, "")
 	if err != nil {
@@ -493,6 +490,9 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 		return err
 	}
 
+	// The rest of this function produces or updates metadata files. We want those to retain the env vars they had.
+	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1")
+
 	// Update the workload definition dependencies to make sure the dependency is included. The APISpec array
 	// in the workload definition is rebuilt from the dependencies.
 	if err := RefreshWorkloadDependencies(homeDirectory); err != nil {
@@ -500,6 +500,12 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 	}
 
 	// Add skeletal userinputs to this project's userinput file.
+
+	// Get this project's userinputs again, because this time is w/o replacing the env vars, so we can write it out with those intact.
+	currentUIs, _, err = GetUserInputs(homeDirectory, "")
+	if err != nil {
+		return err
+	}
 
 	// Loop through this project's microservice variable configurations and add skeletal non-default variables that
 	// are defined by the new dependency.
