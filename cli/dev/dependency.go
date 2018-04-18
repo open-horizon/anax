@@ -302,7 +302,6 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	// handles the 'hzn dev microservice verify' command so it will exit if there is an error.
 	MicroserviceValidate(project, "")
 
-
 	// The rest of this function produces or updates metadata files. We want those to retain the env vars they had.
 	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1")
 
@@ -445,6 +444,9 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 	cliutils.Verbose("Creating dependency %v, Org: %v", microserviceDef, org)
 
 	msDef := new(cliexchange.MicroserviceFile)
+
+	// The rest of this function produces or updates metadata files. We want those to retain the env vars they had.
+	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1")
 
 	// Get this project's userinputs.
 	currentUIs, _, err := GetUserInputs(homeDirectory, "")
