@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
 	"net/http"
@@ -673,6 +674,20 @@ type WorkloadDeployment struct {
 	Torrent             string `json:"torrent"`
 }
 
+func (w WorkloadDeployment) String() string {
+	return fmt.Sprintf("Deployment: %v, DeploymentSignature: %v, Torrent: %v",
+		w.Deployment,
+		w.DeploymentSignature,
+		w.Torrent)
+}
+
+func (w WorkloadDeployment) ShortString() string {
+	return fmt.Sprintf("Deployment: %v, DeploymentSignature: %v, Torrent: %v",
+		w.Deployment,
+		cutil.TruncateDisplayString(w.DeploymentSignature, 5),
+		cutil.TruncateDisplayString(w.Torrent, 50))
+}
+
 type WorkloadDefinition struct {
 	Owner       string               `json:"owner"`
 	Label       string               `json:"label"`
@@ -702,6 +717,28 @@ func (w *WorkloadDefinition) String() string {
 		"LastUpdated: %v",
 		w.Owner, w.Label, w.Description, w.WorkloadURL, w.Version, w.Arch, w.DownloadURL,
 		w.APISpecs, w.UserInputs, w.Workloads, w.LastUpdated)
+}
+
+func (w *WorkloadDefinition) ShortString() string {
+	// get the short string for each workload
+	wl_a := make([]string, len(w.Workloads))
+	for i, wl := range w.Workloads {
+		wl_a[i] = wl.ShortString()
+	}
+
+	return fmt.Sprintf("Owner: %v, "+
+		"Label: %v, "+
+		"Description: %v, "+
+		"WorkloadURL: %v, "+
+		"Version: %v, "+
+		"Arch: %v, "+
+		"DownloadURL: %v, "+
+		"APISpecs: %v, "+
+		"UserInputs: %v, "+
+		"Workloads: %v, "+
+		"LastUpdated: %v",
+		w.Owner, w.Label, w.Description, w.WorkloadURL, w.Version, w.Arch, w.DownloadURL,
+		w.APISpecs, w.UserInputs, wl_a, w.LastUpdated)
 }
 
 func (w *WorkloadDefinition) GetUserInputName(name string) *UserInput {
@@ -805,9 +842,44 @@ func (w *MicroserviceDefinition) String() string {
 		w.MatchHardware, w.UserInputs, w.Workloads, w.LastUpdated)
 }
 
+func (w *MicroserviceDefinition) ShortString() string {
+	// get the short string for each workload
+	wl_a := make([]string, len(w.Workloads))
+	for i, wl := range w.Workloads {
+		wl_a[i] = wl.ShortString()
+	}
+
+	return fmt.Sprintf("Owner: %v, "+
+		"Label: %v, "+
+		"Description: %v, "+
+		"SpecRef: %v, "+
+		"Version: %v, "+
+		"Arch: %v, "+
+		"Sharable: %v, "+
+		"DownloadURL: %v, "+
+		"MatchHardware: %v, "+
+		"UserInputs: %v, "+
+		"Workloads: %v, "+
+		"LastUpdated: %v",
+		w.Owner, w.Label, w.Description, w.SpecRef, w.Version, w.Arch, w.Sharable, w.DownloadURL,
+		w.MatchHardware, w.UserInputs, wl_a, w.LastUpdated)
+}
+
 type GetMicroservicesResponse struct {
 	Microservices map[string]MicroserviceDefinition `json:"microservices"`
 	LastIndex     int                               `json:"lastIndex"`
+}
+
+func (w *GetMicroservicesResponse) ShortString() string {
+	// get the short string for each MicroserviceDefinition
+	wl_a := make(map[string]string)
+	for ms_name, wl := range w.Microservices {
+		wl_a[ms_name] = wl.ShortString()
+	}
+
+	return fmt.Sprintf("LastIndex: %v, "+
+		"Microservices: %v",
+		w.LastIndex, wl_a)
 }
 
 func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg string, wVersion string, wArch string, exURL string, id string, token string) (*WorkloadDefinition, string, error) {
@@ -847,7 +919,7 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg 
 					return nil, "", errors.New(fmt.Sprintf("expecting 1 result, got %v", len(workloadMetadata)))
 				} else {
 					for wlId, workloadDef := range workloadMetadata {
-						glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v", &workloadDef)))
+						glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v", workloadDef.ShortString())))
 						return &workloadDef, wlId, nil
 					}
 				}
@@ -899,7 +971,7 @@ func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg 
 					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v for %v", nil, wURL)))
 					return nil, "", nil
 				} else {
-					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v for %v", resWDef, wURL)))
+					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v for %v", resWDef.ShortString(), wURL)))
 					return &resWDef, resWId, nil
 				}
 			}
@@ -936,7 +1008,7 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("found microservice %v.", resp)))
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("found microservice %v.", resp.(*GetMicroservicesResponse).ShortString())))
 			msMetadata := resp.(*GetMicroservicesResponse).Microservices
 
 			// If the caller wanted a specific version, check for 1 result.
@@ -946,7 +1018,7 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 					return nil, "", errors.New(fmt.Sprintf("expecting 1 microservice %v %v %v, got %v", mURL, mOrg, mVersion, len(msMetadata)))
 				} else {
 					for msId, msDef := range msMetadata {
-						glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v", &msDef)))
+						glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v", msDef.ShortString())))
 						return &msDef, msId, nil
 					}
 				}
@@ -997,7 +1069,7 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v for %v", nil, mURL)))
 					return nil, "", nil
 				} else {
-					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v for %v", resMsDef, mURL)))
+					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v for %v", resMsDef.ShortString(), mURL)))
 					return &resMsDef, resMsId, nil
 				}
 			}
@@ -1021,7 +1093,7 @@ func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, 
 	} else if workload == nil {
 		return nil, nil, errors.New(fmt.Sprintf("unable to find workload %v %v %v %v on the exchange.", wURL, wOrg, wVersion, wArch))
 	} else if len(workload.Workloads) != 1 {
-		return nil, nil, errors.New(fmt.Sprintf("expecting 1 element in the workloads array of %v, have %v", workload, len(workload.Workloads)))
+		return nil, nil, errors.New(fmt.Sprintf("expecting 1 element in the workloads array of %v, have %v", workload.ShortString(), len(workload.Workloads)))
 	} else {
 
 		// We found the workload definition. Microservices are referred to within a workload definition by
@@ -1129,6 +1201,24 @@ type WorkloadChoice struct {
 	DeploymentOverridesSignature string           `json:"deployment_overrides_signature"` // signature of env var overrides
 }
 
+func (w WorkloadChoice) String() string {
+	return fmt.Sprintf("Version: %v, Priority: %v, Upgrade: %v, DeploymentOverrides: %v, DeploymentOverridesSignature: %v",
+		w.Version,
+		w.Priority,
+		w.Upgrade,
+		w.DeploymentOverrides,
+		w.DeploymentOverridesSignature)
+}
+
+func (w WorkloadChoice) ShortString() string {
+	return fmt.Sprintf("Version: %v, Priority: %v, Upgrade: %v, DeploymentOverrides: %v, DeploymentOverridesSignature: %v",
+		w.Version,
+		w.Priority,
+		w.Upgrade,
+		w.DeploymentOverrides,
+		cutil.TruncateDisplayString(w.DeploymentOverridesSignature, 5))
+}
+
 type WorkloadReference struct {
 	WorkloadURL      string           `json:"workloadUrl,omitempty"`      // refers to a workload definition in the exchange
 	WorkloadOrg      string           `json:"workloadOrgid,omitempty"`    // the org holding the workload definition
@@ -1136,6 +1226,31 @@ type WorkloadReference struct {
 	WorkloadVersions []WorkloadChoice `json:"workloadVersions,omitempty"` // a list of workload version for rollback
 	DataVerify       DataVerification `json:"dataVerification"`           // policy for verifying that the node is sending data
 	NodeH            NodeHealth       `json:"nodeHealth"`                 // policy for determining when a node's health is violating its agreements
+}
+
+func (w WorkloadReference) String() string {
+	return fmt.Sprintf("WorkloadURL: %v, WorkloadOrg: %v, WorkloadArch: %v, WorkloadVersions: %v, DataVerify: %v, NodeH: %v",
+		w.WorkloadURL,
+		w.WorkloadOrg,
+		w.WorkloadArch,
+		w.WorkloadVersions,
+		w.DataVerify,
+		w.NodeH)
+}
+
+func (w WorkloadReference) ShortString() string {
+	// get the short string for each workloadchoice
+	wl_a := make([]string, len(w.WorkloadVersions))
+	for i, wl := range w.WorkloadVersions {
+		wl_a[i] = wl.ShortString()
+	}
+	return fmt.Sprintf("WorkloadURL: %v, WorkloadOrg: %v, WorkloadArch: %v, WorkloadVersions: %v, DataVerify: %v, NodeH: %v",
+		w.WorkloadURL,
+		w.WorkloadOrg,
+		w.WorkloadArch,
+		wl_a,
+		w.DataVerify,
+		w.NodeH)
 }
 
 type ServiceReference struct {
@@ -1146,6 +1261,31 @@ type ServiceReference struct {
 	DataVerify      DataVerification `json:"dataVerification"`          // policy for verifying that the node is sending data
 	NodeH           NodeHealth       `json:"nodeHealth"`                // policy for determining when a node's health is violating its agreements
 	AgreementLess   bool             `json:"agreementLess"`             // This service should get started on the node without an agreement to start it
+}
+
+func (w ServiceReference) String() string {
+	return fmt.Sprintf("ServiceURL: %v, ServiceOrg: %v, ServiceArch: %v, ServiceVersions: %v, DataVerify: %v, NodeH: %v",
+		w.ServiceURL,
+		w.ServiceOrg,
+		w.ServiceArch,
+		w.ServiceVersions,
+		w.DataVerify,
+		w.NodeH)
+}
+
+func (w ServiceReference) ShortString() string {
+	// get the short string for each service version
+	wl_a := make([]string, len(w.ServiceVersions))
+	for i, wl := range w.ServiceVersions {
+		wl_a[i] = wl.ShortString()
+	}
+	return fmt.Sprintf("ServiceURL: %v, ServiceOrg: %v, ServiceArch: %v, ServiceVersions: %v, DataVerify: %v, NodeH: %v",
+		w.ServiceURL,
+		w.ServiceOrg,
+		w.ServiceArch,
+		wl_a,
+		w.DataVerify,
+		w.NodeH)
 }
 
 type Meter struct {
@@ -1193,6 +1333,39 @@ type Pattern struct {
 	AgreementProtocols []AgreementProtocol `json:"agreementProtocols"`
 }
 
+func (w Pattern) String() string {
+	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Public: %v, Workloads: %v, Services: %v, AgreementProtocols: %v",
+		w.Owner,
+		w.Label,
+		w.Description,
+		w.Public,
+		w.Workloads,
+		w.Services,
+		w.AgreementProtocols)
+}
+
+func (w Pattern) ShortString() string {
+	// get the short string for each workload version
+	wl_a := make([]string, len(w.Workloads))
+	for i, wl := range w.Workloads {
+		wl_a[i] = wl.ShortString()
+	}
+	// get the short string for each service version
+	svc_a := make([]string, len(w.Services))
+	for i, wl := range w.Services {
+		svc_a[i] = wl.ShortString()
+	}
+
+	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Public: %v, Workloads: %v, Services: %v, AgreementProtocols: %v",
+		w.Owner,
+		w.Label,
+		w.Description,
+		w.Public,
+		wl_a,
+		svc_a,
+		w.AgreementProtocols)
+}
+
 func (p *Pattern) UsingServiceModel() bool {
 	if len(p.Workloads) == 0 {
 		return true
@@ -1235,11 +1408,17 @@ func GetPatterns(httpClientFactory *config.HTTPClientFactory, org string, patter
 			continue
 		} else {
 			pats := resp.(*GetPatternResponse).Patterns
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("found patterns for %v, %v", org, pats)))
+
+			// log the pat with signatures truncated
+			pats_sa := make([]string, len(pats))
+			for _, pat := range pats {
+				pats_sa = append(pats_sa, pat.ShortString())
+			}
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("found patterns for %v, %v", org, pats_sa)))
+
 			return pats, nil
 		}
 	}
-
 }
 
 // Create a name for the generated policy that should be unique within the org.
@@ -1298,7 +1477,7 @@ func ConvertToPolicies(patternId string, p *Pattern) ([]*policy.Policy, error) {
 
 			ConvertCommon(p, patternId, service.DataVerify, service.NodeH, pol)
 
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("converted %v into %v", service, pol)))
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("converted %v into %v", service.ShortString(), pol)))
 			policies = append(policies, pol)
 
 		}
@@ -1328,7 +1507,7 @@ func ConvertToPolicies(patternId string, p *Pattern) ([]*policy.Policy, error) {
 
 			ConvertCommon(p, patternId, workload.DataVerify, workload.NodeH, pol)
 
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("converted %v into %v", workload, pol)))
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("converted %v into %v", workload.ShortString(), pol)))
 			policies = append(policies, pol)
 
 		}
@@ -1534,7 +1713,7 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 				return nil, nil
 			} else {
 				out := string(outBytes)
-				glog.V(5).Infof(rpclogString(fmt.Sprintf("Response to %v at %v is %v", method, url, out)))
+				glog.V(6).Infof(rpclogString(fmt.Sprintf("Response to %v at %v is %v", method, url, out)))
 
 				// no need to Unmarshal the string output
 				switch (*resp).(type) {
@@ -1547,7 +1726,7 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 					return errors.New(fmt.Sprintf("Unable to demarshal response %v from invocation of %v at %v, error: %v", out, method, url, err)), nil
 				} else {
 					if httpResp.StatusCode == http.StatusNotFound {
-						glog.V(5).Infof(rpclogString(fmt.Sprintf(" ---- Got %v. Response to %v at %v is %v", httpResp.StatusCode, method, url, *resp)))
+						glog.V(5).Infof(rpclogString(fmt.Sprintf("Got %v. Response to %v at %v is %v", httpResp.StatusCode, method, url, *resp)))
 					}
 					switch (*resp).(type) {
 					case *PutDeviceResponse:

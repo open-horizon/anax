@@ -279,3 +279,12 @@ func CopyMap(m1 map[string]interface{}, m2 map[string]interface{}) {
 		m2[k] = v
 	}
 }
+
+// It will return the first n characters of the string and the rest will be as "..."
+func TruncateDisplayString(s string, n int) string {
+	if len(s) <= n {
+		return s
+	} else {
+		return s[:n] + "..."
+	}
+}

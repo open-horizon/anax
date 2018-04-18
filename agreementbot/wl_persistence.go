@@ -50,6 +50,25 @@ func (w WorkloadUsage) String() string {
 		w.RetryDurationS, w.CurrentAgreementId, w.FirstTryTime, w.LatestRetryTime, w.DisableRetry, w.VerifiedDurationS, w.ReqsNotMet, w.Policy)
 }
 
+func (w WorkloadUsage) ShortString() string {
+	return fmt.Sprintf("Id: %v, "+
+		"DeviceId: %v, "+
+		"HA Partners: %v, "+
+		"Pending Upgrade Time: %v, "+
+		"PolicyName: %v, "+
+		"Priority: %v, "+
+		"RetryCount: %v, "+
+		"RetryDurationS: %v, "+
+		"CurrentAgreementId: %v, "+
+		"FirstTryTime: %v, "+
+		"LatestRetryTime: %v, "+
+		"DisableRetry: %v, "+
+		"VerifiedDurationS: %v, "+
+		"ReqsNotMet: %v",
+		w.Id, w.DeviceId, w.HAPartners, w.PendingUpgradeTime, w.PolicyName, w.Priority, w.RetryCount,
+		w.RetryDurationS, w.CurrentAgreementId, w.FirstTryTime, w.LatestRetryTime, w.DisableRetry, w.VerifiedDurationS, w.ReqsNotMet)
+}
+
 // private factory method for workloadusage w/out persistence safety:
 func workloadUsage(deviceId string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) (*WorkloadUsage, error) {
 
@@ -248,7 +267,7 @@ func persistUpdatedWorkloadUsage(db *bolt.DB, id uint64, update *WorkloadUsage) 
 				} else if err := b.Put([]byte(pKey), serialized); err != nil {
 					return fmt.Errorf("Failed to write workload usage record with key: %v", pKey)
 				} else {
-					glog.V(2).Infof("Succeeded updating workload usage record to %v", mod)
+					glog.V(2).Infof("Succeeded updating workload usage record to %v", mod.ShortString())
 				}
 			}
 		}
@@ -317,7 +336,7 @@ func FindWorkloadUsages(db *bolt.DB, filters []WUFilter) ([]WorkloadUsage, error
 				if err := json.Unmarshal(v, &a); err != nil {
 					glog.Errorf("Unable to deserialize db record: %v", v)
 				} else {
-					glog.V(5).Infof("Demarshalled workload usage in DB: %v", a)
+					glog.V(5).Infof("Demarshalled workload usage in DB: %v", a.ShortString())
 					exclude := false
 					for _, filterFn := range filters {
 						if !filterFn(a) {
