@@ -345,7 +345,7 @@ func FindMicroserviceDefs(db *bolt.DB, filters []MSFilter) ([]MicroserviceDefini
 				if err := json.Unmarshal(v, &e); err != nil {
 					glog.Errorf("Unable to deserialize db record: %v", v)
 				} else {
-					glog.V(5).Infof("Demarshalled microservice definition in DB: %v", e)
+					glog.V(5).Infof("Demarshalled microservice definition in DB: %v", e.ShortString())
 					exclude := false
 					for _, filterFn := range filters {
 						if !filterFn(e) {

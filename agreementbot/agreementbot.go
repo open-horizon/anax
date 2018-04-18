@@ -1112,7 +1112,7 @@ func (w *AgreementBotWorker) GeneratePolicyFromPatterns() int {
 		return -1
 	}
 
-	glog.V(5).Infof(AWlogString(fmt.Sprintf("pattern manager initialized: %v", w.PatternManager)))
+	glog.V(5).Infof(AWlogString(fmt.Sprintf("pattern manager initialized: %v", w.PatternManager.ShortString())))
 	return 0
 }
 

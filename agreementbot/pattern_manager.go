@@ -28,6 +28,10 @@ func (p *PatternEntry) String() string {
 		p.Updated, p.Hash, p.PolicyFileNames, p.Pattern)
 }
 
+func (p *PatternEntry) ShortString() string {
+	return fmt.Sprintf("Files: %v", p.PolicyFileNames)
+}
+
 func hashPattern(p *exchange.Pattern) ([]byte, error) {
 	if ps, err := json.Marshal(p); err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to marshal pattern %v to a string, error %v", p, err))
@@ -80,6 +84,21 @@ func (p *PatternManager) String() string {
 		res += fmt.Sprintf("Org: %v ", org)
 		for pat, pe := range orgMap {
 			res += fmt.Sprintf("Pattern: %v %v ", pat, pe)
+		}
+	}
+	return res
+}
+
+func (p *PatternManager) ShortString() string {
+	res := "Pattern Manager: "
+	for org, orgMap := range p.OrgPatterns {
+		res += fmt.Sprintf("Org: %v ", org)
+		for pat, pe := range orgMap {
+			s := ""
+			if pe != nil {
+				s = pe.ShortString()
+			}
+			res += fmt.Sprintf("Pattern: %v %v ", pat, s)
 		}
 	}
 	return res

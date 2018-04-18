@@ -285,7 +285,7 @@ func GetUpgradeMicroserviceDef(getMicroservice exchange.MicroserviceHandler, msd
 		new_msdef.ActiveUpgrade = msdef.ActiveUpgrade
 		new_msdef.RequestedArch = msdef.RequestedArch
 
-		glog.V(5).Infof("New upgrade msdef is %v", new_msdef)
+		glog.V(5).Infof("New upgrade msdef is %v", new_msdef.ShortString())
 		return new_msdef, nil
 	}
 }
@@ -314,7 +314,7 @@ func GetRollbackMicroserviceDef(getMicroservice exchange.MicroserviceHandler, ms
 		new_msdef.ActiveUpgrade = msdef.ActiveUpgrade
 		new_msdef.RequestedArch = msdef.RequestedArch
 
-		glog.V(5).Infof("New rollback msdef is %v", new_msdef)
+		glog.V(5).Infof("New rollback msdef is %v", new_msdef.ShortString())
 		return new_msdef, nil
 	}
 }

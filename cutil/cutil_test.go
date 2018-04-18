@@ -162,3 +162,11 @@ func Test_ParseDockerImagePath_Other_Cases(t *testing.T) {
 	assert.Empty(t, path, fmt.Sprintf("Wrong path name in %v.", image_name))
 
 }
+
+func Test_TruncateDisplayString(t *testing.T) {
+	s1 := "1234567890"
+	assert.Equal(t, "12...", TruncateDisplayString(s1, 2), fmt.Sprintf("Should only show the first 2 charactors"))
+	assert.Equal(t, "12345678...", TruncateDisplayString(s1, 8), fmt.Sprintf("Should only show the first 8 charactors"))
+	assert.Equal(t, "1234567890", TruncateDisplayString(s1, 10), fmt.Sprintf("Should only show all 10 charactors"))
+	assert.Equal(t, "1234567890", TruncateDisplayString(s1, 15), fmt.Sprintf("Should only show all 10 charactors"))
+}

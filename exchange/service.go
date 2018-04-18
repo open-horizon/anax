@@ -206,6 +206,18 @@ type GetServicesResponse struct {
 	LastIndex int                          `json:"lastIndex"`
 }
 
+func (w *GetServicesResponse) ShortString() string {
+	// get the short string for each MicroserviceDefinition
+	wl_a := make(map[string]string)
+	for ms_name, wl := range w.Services {
+		wl_a[ms_name] = wl.ShortString()
+	}
+
+	return fmt.Sprintf("LastIndex: %v, "+
+		"Services: %v",
+		w.LastIndex, wl_a)
+}
+
 // This function is used to figure out what kind of version search to do in the exchange based on the input version string.
 func getSearchVersion(version string) (string, error) {
 	// The caller could pass a specific version or a version range, in the version parameter. If it's a version range
@@ -261,7 +273,7 @@ func GetService(ec ExchangeContext, mURL string, mOrg string, mVersion string, m
 // was searching for (the service tuple and the desired version or version range).
 func processGetServiceResponse(mURL string, mOrg string, mVersion string, mArch string, searchVersion string, resp interface{}) (*ServiceDefinition, string, error) {
 
-	glog.V(5).Infof(rpclogString(fmt.Sprintf("found service %v.", resp)))
+	glog.V(5).Infof(rpclogString(fmt.Sprintf("found service %v.", resp.(*GetServicesResponse).ShortString())))
 	msMetadata := resp.(*GetServicesResponse).Services
 
 	// If the caller wanted a specific version, check for 1 result.
@@ -271,7 +283,7 @@ func processGetServiceResponse(mURL string, mOrg string, mVersion string, mArch 
 			return nil, "", errors.New(fmt.Sprintf("expecting 1 service %v %v %v, got %v", mURL, mOrg, mVersion, len(msMetadata)))
 		} else {
 			for msId, msDef := range msMetadata {
-				glog.V(3).Infof(rpclogString(fmt.Sprintf("returning service definition %v", &msDef)))
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("returning service definition %v", msDef.ShortString())))
 				return &msDef, msId, nil
 			}
 			return nil, "", errors.New("should not get here")
@@ -326,7 +338,7 @@ func processGetServiceResponse(mURL string, mOrg string, mVersion string, mArch 
 			glog.V(3).Infof(rpclogString(fmt.Sprintf("returning service definition %v for %v", nil, mURL)))
 			return nil, "", nil
 		} else {
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("returning service definition %v for %v", resMsDef, mURL)))
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("returning service definition %v for %v", resMsDef.ShortString(), mURL)))
 			return &resMsDef, resMsId, nil
 		}
 	}
