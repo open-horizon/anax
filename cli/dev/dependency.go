@@ -315,7 +315,10 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 		return err
 	}
 
-	// The rest of this function produces or updates metadata files. We want those to retain the env vars they had.
+	// The rest of this function gets the dependency's user input and adds it to this project's user input, and it reads
+	// this project's workload definition and updates it with the reference to the ms. In the files that are read and
+	// then written we want those to preserve the env vars as env vars.
+	envVarSetting := os.Getenv("HZN_DONT_SUBST_ENV_VARS")
 	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1")
 
 	// Get the dependency's userinputs to get the global attribute settings and any variable configuration.
@@ -396,6 +399,7 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	}
 
 	cliutils.Verbose("Updated %v/%v with the dependency's variable and global attribute configuration.", homeDirectory, USERINPUT_FILE)
+	os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting)		// restore this setting
 
 	return nil
 }
@@ -490,7 +494,10 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 		return err
 	}
 
-	// The rest of this function produces or updates metadata files. We want those to retain the env vars they had.
+	// The rest of this function gets the dependency's user input and adds it to this project's user input, and it reads
+	// this project's workload definition and updates it with the reference to the ms. In the files that are read and
+	// then written we want those to preserve the env vars as env vars.
+	envVarSetting := os.Getenv("HZN_DONT_SUBST_ENV_VARS")
 	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1")
 
 	// Update the workload definition dependencies to make sure the dependency is included. The APISpec array
@@ -501,7 +508,7 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 
 	// Add skeletal userinputs to this project's userinput file.
 
-	// Get this project's userinputs again, because this time is w/o replacing the env vars, so we can write it out with those intact.
+	// Get this project's userinputs again, this time w/o replacing the env vars, so we can write it out with those intact.
 	currentUIs, _, err = GetUserInputs(homeDirectory, "")
 	if err != nil {
 		return err
@@ -550,6 +557,7 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 	}
 
 	fmt.Printf("Please add Horizon attributes to the global section of the new dependency to ensure that the dependency operates correctly.\n")
+	os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting)		// restore this setting
 
 	return nil
 }
