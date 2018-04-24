@@ -566,11 +566,11 @@ func UpdateDependencyFile(homeDirectory string, msDef *cliexchange.MicroserviceF
 
 	// Create the dependency filename.
 	re := regexp.MustCompile(`^[A-Za-z0-9+.-]*?://`)
-	url2 := re.ReplaceAllLiteralString(msDef.SpecRef, "")
+	url2 := re.ReplaceAllLiteralString(cliutils.ExpandEnv(msDef.SpecRef), "")
 	re = regexp.MustCompile(`[$!*,;/?@&~=%]`)
 	url3 := re.ReplaceAllLiteralString(url2, "-")
 
-	fileName := fmt.Sprintf("%v_%v.%v", url3, msDef.Version, MICROSERVICE_DEFINITION_FILE)
+	fileName := fmt.Sprintf("%v_%v.%v", url3, cliutils.ExpandEnv(msDef.Version), MICROSERVICE_DEFINITION_FILE)
 
 	filePath := path.Join(homeDirectory, DEFAULT_DEPENDENCY_DIR)
 	if err := CreateFile(filePath, fileName, msDef); err != nil {
