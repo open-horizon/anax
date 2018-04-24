@@ -302,6 +302,12 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	// handles the 'hzn dev microservice verify' command so it will exit if there is an error.
 	MicroserviceValidate(project, "")
 
+	// The rest of this function gets the dependency's user input and adds it to this project's user input, and it reads
+	// this project's workload definition and updates it with the reference to the ms. In the files that are read and
+	// then written we want those to preserve the env vars as env vars.
+	envVarSetting := os.Getenv("HZN_DONT_SUBST_ENV_VARS")
+	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1")
+
 	// Pull the metadata from the dependent project.
 	if absProject, err := filepath.Abs(project); err != nil {
 		return err
@@ -314,12 +320,6 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	if err != nil {
 		return err
 	}
-
-	// The rest of this function gets the dependency's user input and adds it to this project's user input, and it reads
-	// this project's workload definition and updates it with the reference to the ms. In the files that are read and
-	// then written we want those to preserve the env vars as env vars.
-	envVarSetting := os.Getenv("HZN_DONT_SUBST_ENV_VARS")
-	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1")
 
 	// Get the dependency's userinputs to get the global attribute settings and any variable configuration.
 	ui, _, err := GetUserInputs(project, userInputFile)
