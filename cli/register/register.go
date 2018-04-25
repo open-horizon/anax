@@ -122,6 +122,13 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 			attr.Type = &g.Type
 			attr.SensorUrls = &g.SensorUrls
 			attr.Mappings = &g.Variables
+
+			// set HostOnly to true for these 2 types
+			switch g.Type {
+			case "HTTPSBasicAuthAttributes", "DockerRegistryAuthAttributes":
+				host_only := true
+				attr.HostOnly = &host_only
+			}
 			cliutils.HorizonPutPost(http.MethodPost, "attribute", []int{201, 200}, attr)
 		}
 

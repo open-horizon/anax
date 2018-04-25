@@ -183,22 +183,35 @@ func parseHTTPSBasicAuth(errorhandler ErrorHandler, permitEmpty bool, given *Att
 	}, false, nil
 }
 
-func parseBXDockerRegistryAuth(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.BXDockerRegistryAuthAttributes, bool, error) {
-	var ok bool
-
-	var token string
-	tk, exists := (*given.Mappings)["token"]
+func parseDockerRegistryAuth(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.DockerRegistryAuthAttributes, bool, error) {
+	auths, exists := (*given.Mappings)["auths"]
 	if !exists {
-		return nil, errorhandler(NewAPIUserInputError("missing key", "dockerregistry.mappings.token")), nil
-	}
-	if token, ok = tk.(string); !ok {
-		return nil, errorhandler(NewAPIUserInputError("expected string", "dockerregistry.mappings.token")), nil
-	}
+		return nil, errorhandler(NewAPIUserInputError("missing key", "dockerregistry.mappings.auths")), nil
+	} else if a_temp, ok := auths.([]interface{}); !ok {
+		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("expected []interface{} received %T", a_temp), "dockerregistry.mappings.auths")), nil
+	} else {
+		var auth_array []persistence.Auth
+		for _, val := range a_temp {
+			a_temp2, ok2 := val.(map[string]interface{})
+			if !ok2 {
+				return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("array value is not a map[string]interface{}, it is %T", val), "dockerregistry.mappings.auths")), nil
+			}
 
-	return &persistence.BXDockerRegistryAuthAttributes{
-		Meta:  generateAttributeMetadata(*given, reflect.TypeOf(persistence.BXDockerRegistryAuthAttributes{}).Name()),
-		Token: token,
-	}, false, nil
+			if a_temp2["token"] == nil {
+				return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("'token' does not exist, it is %v", a_temp2), "dockerregistry.mappings.auths")), nil
+			}
+			a_temp3, ok3 := a_temp2["token"].(string)
+			if !ok3 {
+				return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("the token value is not a string, it is %T", a_temp2["token"]), "dockerregistry.mappings.auths")), nil
+			}
+			auth_array = append(auth_array, persistence.Auth{Token: a_temp3})
+		}
+
+		return &persistence.DockerRegistryAuthAttributes{
+			Meta:  generateAttributeMetadata(*given, reflect.TypeOf(persistence.DockerRegistryAuthAttributes{}).Name()),
+			Auths: auth_array,
+		}, false, nil
+	}
 }
 
 func parseHA(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.HAAttributes, bool, error) {
@@ -537,8 +550,8 @@ func ValidateAndConvertAPIAttribute(errorhandler ErrorHandler, permitEmpty bool,
 			}
 			attribute = attr
 
-		case reflect.TypeOf(persistence.BXDockerRegistryAuthAttributes{}).Name():
-			attr, inputErr, err := parseBXDockerRegistryAuth(errorhandler, permitEmpty, &given)
+		case reflect.TypeOf(persistence.DockerRegistryAuthAttributes{}).Name():
+			attr, inputErr, err := parseDockerRegistryAuth(errorhandler, permitEmpty, &given)
 			if err != nil || inputErr {
 				return attribute, inputErr, err
 			}

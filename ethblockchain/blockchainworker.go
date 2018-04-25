@@ -508,7 +508,7 @@ func (w *EthBlockchainWorker) fireStartEvent(details *exchange.ChainDetails, nam
 		}
 
 		// Fire an event to the torrent worker so that it will download the container
-		cc := events.NewContainerConfig(*url, details.DeploymentDesc.Torrent.Signature, details.DeploymentDesc.Deployment, details.DeploymentDesc.DeploymentSignature, details.DeploymentDesc.DeploymentUserInfo, "")
+		cc := events.NewContainerConfig(*url, details.DeploymentDesc.Torrent.Signature, details.DeploymentDesc.Deployment, details.DeploymentDesc.DeploymentSignature, details.DeploymentDesc.DeploymentUserInfo, "", nil)
 		envAdds := w.computeEnvVarsForContainer(details)
 		w.SetColonusDir(name, envAdds["COLONUS_DIR"])
 		lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{Type: CHAIN_TYPE, Name: name}, name, "", []events.MicroserviceSpec{}, nil)

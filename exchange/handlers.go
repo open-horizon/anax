@@ -134,3 +134,21 @@ func GetHTTPWorkloadOrServiceResolverHandler(ec ExchangeContext) WorkloadOrServi
 		return GetWorkloadOrService(wUrl, wOrg, wVersion, wArch, GetHTTPWorkloadResolverHandler(ec), GetHTTPServiceHandler(ec))
 	}
 }
+
+// A handler for getting the image docker auths for a service in the exchange.
+type ServiceDockerAuthsHandler func(sUrl string, sOrg string, sVersion string, sArch string) ([]ImageDockerAuth, error)
+
+func GetHTTPServiceDockerAuthsHandler(ec ExchangeContext) ServiceDockerAuthsHandler {
+	return func(sUrl string, sOrg string, sVersion string, sArch string) ([]ImageDockerAuth, error) {
+		return GetServiceDockerAuths(ec, sUrl, sOrg, sVersion, sArch)
+	}
+}
+
+// A handler for getting the image docker auths for a service by the id in the exchange.
+type ServiceDockerAuthsWithIdHandler func(sId string) ([]ImageDockerAuth, error)
+
+func GetHTTPServiceDockerAuthsWithIdHandler(ec ExchangeContext) ServiceDockerAuthsWithIdHandler {
+	return func(sId string) ([]ImageDockerAuth, error) {
+		return GetServiceDockerAuthsWithId(ec, sId)
+	}
+}

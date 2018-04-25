@@ -1,0 +1,11 @@
+{
+	"auths": {
+		"myrepo2.com": {
+			"auth": "dXNlcjpwYXNz"
+		},
+		"myrepo3.com": {
+			"auth": "dXNlcjE6cGFzczE="
+		}
+	}
+}
+

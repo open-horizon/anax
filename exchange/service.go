@@ -1,6 +1,7 @@
 package exchange
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
@@ -218,6 +219,21 @@ func (w *GetServicesResponse) ShortString() string {
 		w.LastIndex, wl_a)
 }
 
+type ImageDockerAuth struct {
+	DockAuthId  int    `json:"dockAuthId"`
+	Registry    string `json:"registry"`
+	Token       string `json:"token"`
+	LastUpdated string `json:"lastUpdated"`
+}
+
+func (s ImageDockerAuth) String() string {
+	return fmt.Sprintf("DockAuthId: %v, "+
+		"Registry: %v, "+
+		"Token: %v, "+
+		"LastUpdated: %v",
+		s.DockAuthId, s.Registry, s.Token, s.LastUpdated)
+}
+
 // This function is used to figure out what kind of version search to do in the exchange based on the input version string.
 func getSearchVersion(version string) (string, error) {
 	// The caller could pass a specific version or a version range, in the version parameter. If it's a version range
@@ -421,4 +437,57 @@ func GetWorkloadOrService(wURL string, wOrg string, wVersion string, wArch strin
 		glog.Errorf(rpclogString(fmt.Sprintf("error searching for service details, error: %v", err)))
 		return nil, nil, err
 	}
+}
+
+// This function gets the image docker auths for a service.
+func GetServiceDockerAuths(ec ExchangeContext, url string, org string, version string, arch string) ([]ImageDockerAuth, error) {
+
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting docker auths for service %v %v %v %v", url, org, version, arch)))
+
+	if version == "" || !policy.IsVersionString(version) {
+		return nil, errors.New(rpclogString(fmt.Sprintf("GetServiceDockerAuths got wrong version string %v. The version string should be a non-empy single version string.", version)))
+	}
+
+	// get the service id
+	s_resp, s_id, err := GetService(ec, url, org, version, arch)
+	if err != nil {
+		return nil, errors.New(rpclogString(fmt.Sprintf("failed to get the service %v %v %v %v.%v", url, org, version, arch, err)))
+	} else if s_resp == nil {
+		return nil, errors.New(rpclogString(fmt.Sprintf("unable to find the service %v %v %v %v.", url, org, version, arch)))
+	}
+
+	return GetServiceDockerAuthsWithId(ec, s_id)
+}
+
+// This function gets the image docker auths for the service by the given service id
+func GetServiceDockerAuthsWithId(ec ExchangeContext, service_id string) ([]ImageDockerAuth, error) {
+
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting docker auths for service %v.", service_id)))
+
+	// get all the docker auths for the service
+	var resp_DockAuths interface{}
+	resp_DockAuths = ""
+	docker_auths := make([]ImageDockerAuth, 0)
+
+	targetURL := fmt.Sprintf("%vorgs/%v/services/%v/dockauths", ec.GetExchangeURL(), GetOrg(service_id), GetId(service_id))
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp_DockAuths); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			if resp_DockAuths.(string) != "" {
+				if err := json.Unmarshal([]byte(resp_DockAuths.(string)), &docker_auths); err != nil {
+					return nil, errors.New(fmt.Sprintf("Unable to demarshal service docker auth response %v, error: %v", resp_DockAuths, err))
+				}
+			}
+			break
+		}
+	}
+
+	glog.V(5).Infof(rpclogString(fmt.Sprintf("returning service docker auths %v for service %v.", docker_auths, service_id)))
+	return docker_auths, nil
 }

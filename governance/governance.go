@@ -965,7 +965,23 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		if url, err := url.Parse(workload.Torrent.Url); err != nil {
 			return errors.New(fmt.Sprintf("Ill-formed URL: %v", workload.Torrent.Url))
 		} else {
-			cc := events.NewContainerConfig(*url, workload.Torrent.Signature, workload.Deployment, workload.DeploymentSignature, workload.DeploymentUserInfo, workload.DeploymentOverrides)
+			// get service image auths from the exchange
+			img_auths := make([]events.ImageDockerAuth, 0)
+			if w.Config.Edge.TrustDockerAuthFromOrg {
+				if tcPolicy.IsServiceBased() {
+					if ias, err := exchange.GetHTTPServiceDockerAuthsHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+						return errors.New(logString(fmt.Sprintf("received error querying exchange for service image auths: %v, error %v", workload, err)))
+					} else {
+						if ias != nil {
+							for _, iau_temp := range ias {
+								img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: "token", Password: iau_temp.Token})
+							}
+						}
+					}
+				}
+			}
+
+			cc := events.NewContainerConfig(*url, workload.Torrent.Signature, workload.Deployment, workload.DeploymentSignature, workload.DeploymentUserInfo, workload.DeploymentOverrides, img_auths)
 
 			lc := new(events.AgreementLaunchContext)
 			lc.Configure = *cc
