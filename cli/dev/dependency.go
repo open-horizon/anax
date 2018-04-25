@@ -302,6 +302,12 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	// handles the 'hzn dev microservice verify' command so it will exit if there is an error.
 	MicroserviceValidate(project, "")
 
+	// The rest of this function gets the dependency's user input and adds it to this project's user input, and it reads
+	// this project's workload definition and updates it with the reference to the ms. In the files that are read and
+	// then written we want those to preserve the env vars as env vars.
+	envVarSetting := os.Getenv("HZN_DONT_SUBST_ENV_VARS")
+	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1")
+
 	// Pull the metadata from the dependent project.
 	if absProject, err := filepath.Abs(project); err != nil {
 		return err
@@ -393,6 +399,7 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	}
 
 	cliutils.Verbose("Updated %v/%v with the dependency's variable and global attribute configuration.", homeDirectory, USERINPUT_FILE)
+	os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting)		// restore this setting
 
 	return nil
 }
@@ -487,6 +494,12 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 		return err
 	}
 
+	// The rest of this function gets the dependency's user input and adds it to this project's user input, and it reads
+	// this project's workload definition and updates it with the reference to the ms. In the files that are read and
+	// then written we want those to preserve the env vars as env vars.
+	envVarSetting := os.Getenv("HZN_DONT_SUBST_ENV_VARS")
+	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1")
+
 	// Update the workload definition dependencies to make sure the dependency is included. The APISpec array
 	// in the workload definition is rebuilt from the dependencies.
 	if err := RefreshWorkloadDependencies(homeDirectory); err != nil {
@@ -494,6 +507,12 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 	}
 
 	// Add skeletal userinputs to this project's userinput file.
+
+	// Get this project's userinputs again, this time w/o replacing the env vars, so we can write it out with those intact.
+	currentUIs, _, err = GetUserInputs(homeDirectory, "")
+	if err != nil {
+		return err
+	}
 
 	// Loop through this project's microservice variable configurations and add skeletal non-default variables that
 	// are defined by the new dependency.
@@ -538,6 +557,7 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 	}
 
 	fmt.Printf("Please add Horizon attributes to the global section of the new dependency to ensure that the dependency operates correctly.\n")
+	os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting)		// restore this setting
 
 	return nil
 }
@@ -546,11 +566,11 @@ func UpdateDependencyFile(homeDirectory string, msDef *cliexchange.MicroserviceF
 
 	// Create the dependency filename.
 	re := regexp.MustCompile(`^[A-Za-z0-9+.-]*?://`)
-	url2 := re.ReplaceAllLiteralString(msDef.SpecRef, "")
+	url2 := re.ReplaceAllLiteralString(cliutils.ExpandEnv(msDef.SpecRef), "")
 	re = regexp.MustCompile(`[$!*,;/?@&~=%]`)
 	url3 := re.ReplaceAllLiteralString(url2, "-")
 
-	fileName := fmt.Sprintf("%v_%v.%v", url3, msDef.Version, MICROSERVICE_DEFINITION_FILE)
+	fileName := fmt.Sprintf("%v_%v.%v", url3, cliutils.ExpandEnv(msDef.Version), MICROSERVICE_DEFINITION_FILE)
 
 	filePath := path.Join(homeDirectory, DEFAULT_DEPENDENCY_DIR)
 	if err := CreateFile(filePath, fileName, msDef); err != nil {

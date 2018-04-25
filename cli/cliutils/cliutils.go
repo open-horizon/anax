@@ -265,7 +265,21 @@ func ReadFile(filePath string) []byte {
 	return fileBytes
 }
 
-// ReadJsonFile reads json from a file or stdin, eliminates comments, and returns it.
+// ExpandMapping is used in ExpandEnv() to print a warning if the env var is not defined.
+func ExpandMapping(envVarName string) string {
+	envVarValue := os.Getenv(envVarName)
+	if envVarValue == "" {
+		fmt.Printf("Warning: environment variable '%s' is referenced in input file, but not defined in the environment.\n", envVarName)
+	}
+	return envVarValue
+}
+
+// ExpandEnv is equivalent to os.ExpandEnv(), except prints a warning when an env var is not defined
+func ExpandEnv(s string) string {
+	return os.Expand(s, ExpandMapping)
+}
+
+// ReadJsonFile reads json from a file or stdin, eliminates comments, substitutes env vars, and returns it.
 func ReadJsonFile(filePath string) []byte {
 	var fileBytes []byte
 	var err error
@@ -277,10 +291,17 @@ func ReadJsonFile(filePath string) []byte {
 	if err != nil {
 		Fatal(FILE_IO_ERROR, "reading %s failed: %v", filePath, err)
 	}
-	// remove /* */ comments
+
+	// Remove /* */ comments
 	re := regexp.MustCompile(`(?s)/\*.*?\*/`)
 	newBytes := re.ReplaceAll(fileBytes, nil)
-	return newBytes
+
+	// Replace env vars
+	if os.Getenv("HZN_DONT_SUBST_ENV_VARS") == "1" {
+		return newBytes
+	}
+	str := ExpandEnv(string(newBytes))
+	return []byte(str)
 }
 
 // ConfirmRemove prompts the user to confirm they want to run the destructive cmd
