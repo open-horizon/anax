@@ -1372,7 +1372,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 				// ask governer to record it into the db
 				u, _ := url.Parse("")
-				cc := events.NewContainerConfig(*u, "", "", "", "", "")
+				cc := events.NewContainerConfig(*u, "", "", "", "", "", nil)
 				ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey, "", []events.MicroserviceSpec{}, nil)
 				b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *ll, "", "")
 			}

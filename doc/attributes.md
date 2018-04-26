@@ -22,7 +22,7 @@ Valid values are:
 * [LocationAttributes](#loca)
 * [UserInputAttributes](#uia)
 * [HTTPSBasicAuthAttributes](#httpsa)
-* [BXDockerRegistryAuthAttributes](#bxa)
+* [DockerRegistryAuthAttributes](#bxa)
 * [HAAttributes](#haa)
 * [MeteringAttributes](#ma)
 * [AgreementProtocolAttributes](#agpa)
@@ -170,25 +170,30 @@ For example:
     }
 ```
 
-### <a name="bxa"></a>BXDockerRegistryAuthAttributes
+### <a name="bxa"></a>DockerRegistryAuthAttributes
 This attribute is used to set a docker authentication token that enables the Horizon agent to access a docker repository when downloading images for microservices and workloads.
-It is only needed when docker images are stored in the IBM Cloud Container Registry.
 
 The value for `publishable` should be `false`.
 
 The value for `host_only` should be `true`.
 
-The `token` variable is a string containing the docker token used to access the repository.
+The `myDockerToken` variable is a string containing the docker token used to access the repository.
 
 For example:
 ```
     {
-        "type": "BXDockerRegistryAuthAttributes",
+        "type": "DockerRegistryAuthAttributes",
         "label": "Docker auth",
+        "sensor_urls": [
+            "registry.ng.bluemix.net"
+        ],
         "publishable": false,
         "host_only": true,
         "variables": {
-            "token": "myDockerToken"
+            auth: [
+                {"token": "myDockerToken1"},
+                {"token": "myDockerToken2"}
+            ]
         }
     }
 ```

@@ -161,8 +161,22 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			if ms_instance, err := persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Version, ms_key, dependencyPath); err != nil {
 				return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting microservice instance for %v %v %v.", msdef.SpecRef, msdef.Version, ms_key)))
 			} else {
+				// get the image auth for service (we have to try even for microservice because we do not know if this is ms or svc.)
+				img_auths := make([]events.ImageDockerAuth, 0)
+				if w.Config.Edge.TrustDockerAuthFromOrg {
+					if ias, err := exchange.GetHTTPServiceDockerAuthsHandler(w)(msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch); err != nil {
+						glog.V(5).Infof(logString(fmt.Sprintf("received error querying exchange for service image auths: %v version %v, error %v", msdef.SpecRef, msdef.Version, err)))
+					} else {
+						if ias != nil {
+							for _, iau_temp := range ias {
+								img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: "token", Password: iau_temp.Token})
+							}
+						}
+					}
+				}
+
 				// Fire an event to the torrent worker so that it will download the container
-				cc := events.NewContainerConfig(*url, ms_workload.Torrent.Signature, ms_workload.Deployment, ms_workload.DeploymentSignature, ms_workload.DeploymentUserInfo, "")
+				cc := events.NewContainerConfig(*url, ms_workload.Torrent.Signature, ms_workload.Deployment, ms_workload.DeploymentSignature, ms_workload.DeploymentUserInfo, "", img_auths)
 
 				// convert the user input from the service attributes to env variables
 				if attrs, err := persistence.FindApplicableAttributes(w.db, msdef.SpecRef); err != nil {

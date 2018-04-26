@@ -15,6 +15,7 @@ import (
 	"github.com/open-horizon/anax/worker"
 	fetch "github.com/open-horizon/horizon-pkg-fetch"
 	"github.com/open-horizon/horizon-pkg-fetch/fetcherrors"
+	"strings"
 )
 
 type TorrentWorker struct {
@@ -74,7 +75,8 @@ func (w *TorrentWorker) NewEvent(incoming events.Message) {
 	return
 }
 
-func ExtractAuthAttributes(attributes []persistence.Attribute, httpAuthAttrs map[string]map[string]string, dockerAuthConfigurations map[string]docker.AuthConfiguration) (map[string]map[string]string, map[string]docker.AuthConfiguration, error) {
+// append the auth attribute to the given auth maps
+func ExtractAuthAttributes(attributes []persistence.Attribute, httpAuthAttrs map[string]map[string]string, dockerAuthConfigurations map[string][]docker.AuthConfiguration) error {
 
 	for _, attr := range attributes {
 		if attr.GetMeta().Type == "HTTPSBasicAuthAttributes" {
@@ -88,40 +90,110 @@ func ExtractAuthAttributes(attributes []persistence.Attribute, httpAuthAttrs map
 			for _, url := range attr.GetMeta().SensorUrls {
 				httpAuthAttrs[url] = cred
 			}
-		} else if attr.GetMeta().Type == "BXDockerRegistryAuthAttributes" {
-			a := attr.(persistence.BXDockerRegistryAuthAttributes)
+		} else if attr.GetMeta().Type == "DockerRegistryAuthAttributes" {
+			a := attr.(persistence.DockerRegistryAuthAttributes)
 
+			// should have one url, but we iterate through it anyway
 			for _, url := range attr.GetMeta().SensorUrls {
-				// TODO: replace this string business with whatever is parsed out of a docker config file
-				dockerAuthConfigurations[url] = docker.AuthConfiguration{
-					Email:         "",
-					Username:      "token",
-					Password:      a.Token,
-					ServerAddress: url,
+				// may container multiple auths
+				for _, auth := range a.Auths {
+					a_single := docker.AuthConfiguration{
+						Email:         "",
+						Username:      "token",
+						Password:      auth.Token,
+						ServerAddress: url,
+					}
+					dockerAuthConfigurations = appendDockerAuth(dockerAuthConfigurations, a_single)
 				}
 			}
 		}
 	}
-	return httpAuthAttrs, dockerAuthConfigurations, nil
+	return nil
 }
 
-func authAttributes(db *bolt.DB) (map[string]map[string]string, *docker.AuthConfigurations, error) {
-
-	httpAuthAttrs := make(map[string]map[string]string, 0)
-	dockerAuthConfigurations := make(map[string]docker.AuthConfiguration, 0)
-
-	wrapDockerAuth := func() *docker.AuthConfigurations {
-		return &docker.AuthConfigurations{Configs: dockerAuthConfigurations}
+// this function append the docker auth object into the map if it does not exists in the map.
+func appendDockerAuth(dockerAuths map[string][]docker.AuthConfiguration, auth docker.AuthConfiguration) map[string][]docker.AuthConfiguration {
+	if auth.ServerAddress == "" {
+		return dockerAuths
 	}
+
+	url := auth.ServerAddress
+	if auth_array, ok := dockerAuths[url]; !ok {
+		dockerAuths[url] = make([]docker.AuthConfiguration, 0)
+		dockerAuths[url] = append(dockerAuths[url], auth)
+	} else {
+		found := false
+		for _, a := range auth_array {
+			if a.Username == auth.Username && a.Password == auth.Password {
+				found = true
+				break
+			}
+		}
+		if !found {
+			dockerAuths[url] = append(dockerAuths[url], auth)
+		}
+	}
+	return dockerAuths
+}
+
+// append the auth attribute to the given auth maps
+func authAttributes(db *bolt.DB, httpAuthAttrs map[string]map[string]string, dockerAuthConfigurations map[string][]docker.AuthConfiguration) error {
 
 	// assemble credentials from attributes
 	attributes, err := persistence.FindApplicableAttributes(db, "")
 	if err != nil {
-		return httpAuthAttrs, wrapDockerAuth(), fmt.Errorf("Error fetching attributes. Error: %v", err)
+		return fmt.Errorf("Error fetching attributes. Error: %v", err)
 	}
 
-	httpAuthAttrs, dockerAuthConfigurations, err = ExtractAuthAttributes(attributes, httpAuthAttrs, dockerAuthConfigurations)
-	return httpAuthAttrs, wrapDockerAuth(), err
+	return ExtractAuthAttributes(attributes, httpAuthAttrs, dockerAuthConfigurations)
+}
+
+// append the image auth from exchange to the given auth maps
+func authExchange(imageAuths []events.ImageDockerAuth, dockerAuthConfigurations map[string][]docker.AuthConfiguration) error {
+
+	for _, auth := range imageAuths {
+		a_single := docker.AuthConfiguration{
+			Email:         "",
+			Username:      "token",
+			Password:      auth.Password,
+			ServerAddress: auth.Registry,
+		}
+		dockerAuthConfigurations = appendDockerAuth(dockerAuthConfigurations, a_single)
+	}
+	return nil
+}
+
+// copy the given http auth to a new map and then add the default http auth to the new map. The given httpAuthAttrs is unchanged.
+func addDefaultHttpAuth(db *bolt.DB, pkgUrl string, httpAuthAttrs map[string]map[string]string) (map[string]map[string]string, error) {
+	// copy the given map to a new map
+	new_auth := make(map[string]map[string]string, 0)
+	for k, v := range httpAuthAttrs {
+		new_auth[k] = v
+	}
+
+	//get the device org, id and token
+	if dev, err := persistence.FindExchangeDevice(db); err != nil {
+		return new_auth, fmt.Errorf("Received error getting device: %v", err)
+	} else if dev == nil {
+		return new_auth, fmt.Errorf("Could not get device because no device was registered yet.")
+	} else {
+		// get the http path from the torrent url
+		i := strings.LastIndex(pkgUrl, "/")
+		repo_url := pkgUrl
+		if i > 0 {
+			repo_url = pkgUrl[0:i]
+		}
+
+		// create the default http auth and add it to the new map
+		cred := map[string]string{
+			"username": fmt.Sprintf("%v/%v", dev.Org, dev.Id),
+			"password": dev.Token,
+		}
+
+		new_auth[repo_url] = cred
+	}
+
+	return new_auth, nil
 }
 
 func processDeployment(cfg *config.HorizonConfig, containerConfig events.ContainerConfig) ([]string, *containermessage.DeploymentDescription, error) {
@@ -143,10 +215,20 @@ func processDeployment(cfg *config.HorizonConfig, containerConfig events.Contain
 	return pemFiles, &deploymentDesc, nil
 }
 
-func processFetch(cfg *config.HorizonConfig, client *docker.Client, db *bolt.DB, pemFiles []string, deploymentDesc *containermessage.DeploymentDescription, torrentUrl url.URL, torrentSig string) error {
-	httpAuth, dockerAuth, err := authAttributes(db)
+func processFetch(cfg *config.HorizonConfig, client *docker.Client, db *bolt.DB, pemFiles []string, deploymentDesc *containermessage.DeploymentDescription, torrentUrl url.URL, torrentSig string, imageDockerAuths []events.ImageDockerAuth) error {
+	httpAuthAttrs := make(map[string]map[string]string, 0)
+	dockerAuthConfigurations := make(map[string][]docker.AuthConfiguration, 0)
+
+	var err error
+	if cfg.Edge.TrustDockerAuthFromOrg {
+		err = authExchange(imageDockerAuths, dockerAuthConfigurations)
+		if err != nil {
+			glog.Errorf("Failed to add authentication facts from exchange before processing packages and / or Docker pulls: %v. Continuing anyway", err)
+		}
+	}
+	err = authAttributes(db, httpAuthAttrs, dockerAuthConfigurations)
 	if err != nil {
-		glog.Errorf("Failed to fetch authentication facts before processing packages and / or Docker pulls: %v. Continuing anyway", err)
+		glog.Errorf("Failed to fetch authentication facts from the attributes before processing packages and / or Docker pulls: %v. Continuing anyway", err)
 	}
 
 	// N.B. Using fetcherrors types even for docker pull errors
@@ -158,14 +240,39 @@ func processFetch(cfg *config.HorizonConfig, client *docker.Client, db *bolt.DB,
 		// Note: we don't want to make this a fallback option, it's a potential security vector
 		glog.V(3).Infof("Empty torrent URL '%v' and Signature '%v' provided in LaunchContext, using Docker pull mechanism to retrieve and load Docker images into local registry", torrentUrl.String(), torrentSig)
 
-		fetchErr = pullImageFromRepos(cfg.Edge, dockerAuth, client, &skipCheckFn, deploymentDesc)
+		fetchErr = pullImageFromRepos(cfg.Edge, dockerAuthConfigurations, client, &skipCheckFn, deploymentDesc)
 
 	} else {
 		// using Pkg fetch and image load (traditional option, content of images is packaged completely, all content is checked for signature)
 		// imageFiles is of form {<repotag>: <part abspath> or empty string}
 		var imageFiles map[string]string
 
-		imageFiles, fetchErr = fetch.PkgFetch(cfg.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), &skipCheckFn, torrentUrl, torrentSig, cfg.Edge.TorrentDir, pemFiles, httpAuth)
+		foundHttpAuth := false
+		for k, _ := range httpAuthAttrs {
+			if strings.HasPrefix(torrentUrl.String(), k) {
+				foundHttpAuth = true
+			}
+		}
+
+		if foundHttpAuth {
+			// use the user defined http auth to fetch the image files
+			glog.V(5).Infof("Try to fetch the image files for %v with user defined auth attributes %v.", torrentUrl.String(), httpAuthAttrs)
+			imageFiles, fetchErr = fetch.PkgFetch(cfg.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), &skipCheckFn, torrentUrl, torrentSig, cfg.Edge.TorrentDir, pemFiles, httpAuthAttrs)
+		} else {
+			// try to add org/device_id:device_token as the http username and password
+			new_auth := make(map[string]map[string]string, 0)
+			if new_auth, fetchErr = addDefaultHttpAuth(db, torrentUrl.String(), httpAuthAttrs); fetchErr != nil {
+				return fmt.Errorf("Failed to get the default http auth for package %v. %v", torrentUrl.String(), fetchErr)
+			}
+
+			glog.V(5).Infof("Try to fetch the image files for %v with default auth %v.", torrentUrl.String(), new_auth)
+			imageFiles, fetchErr = fetch.PkgFetch(cfg.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), &skipCheckFn, torrentUrl, torrentSig, cfg.Edge.TorrentDir, pemFiles, new_auth)
+			if fetchErr != nil {
+				// try without added default http auth
+				glog.V(5).Infof("Default auth failed, try to fetch the image files for %v without default auth. The auth used are: %v.", torrentUrl.String(), httpAuthAttrs)
+				imageFiles, fetchErr = fetch.PkgFetch(cfg.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), &skipCheckFn, torrentUrl, torrentSig, cfg.Edge.TorrentDir, pemFiles, httpAuthAttrs)
+			}
+		}
 
 		if fetchErr == nil {
 			// now load those imageFiles using Docker client
@@ -194,7 +301,7 @@ func (b *TorrentWorker) CommandHandler(command worker.Command) bool {
 				return true
 			}
 
-			if fetchErr := processFetch(b.Config, b.client, b.db, pemFiles, deploymentDesc, lc.ContainerConfig().TorrentURL, lc.ContainerConfig().TorrentSignature); fetchErr != nil {
+			if fetchErr := processFetch(b.Config, b.client, b.db, pemFiles, deploymentDesc, lc.ContainerConfig().TorrentURL, lc.ContainerConfig().TorrentSignature, lc.ContainerConfig().ImageDockerAuths); fetchErr != nil {
 				var id events.EventId
 				switch fetchErr.(type) {
 				case fetcherrors.PkgMetaError, fetcherrors.PkgSourceError, fetcherrors.PkgPrecheckError:

@@ -20,6 +20,7 @@ const (
 	maxPullAttempts = 3
 )
 
+// read the given docker file and get the auths
 func dockerCredsFromConfigFile(configFilePath string) (*docker.AuthConfigurations, error) {
 
 	f, err := os.Open(configFilePath)
@@ -36,8 +37,8 @@ func dockerCredsFromConfigFile(configFilePath string) (*docker.AuthConfiguration
 	return auths, nil
 }
 
-func pullImageFromRepos(config config.Config, authConfigs *docker.AuthConfigurations, client *docker.Client, skipPartFetchFn *func(repotag string) (bool, error), deploymentDesc *containermessage.DeploymentDescription) error {
-
+// read the docker file and append the image auths from the docker file to the given map
+func authDockerFile(config config.Config, authConfigs map[string][]docker.AuthConfiguration) error {
 	// auth from creds file
 	file_name := ""
 	if config.DockerCredFilePath != "" {
@@ -57,17 +58,21 @@ func pullImageFromRepos(config config.Config, authConfigs *docker.AuthConfigurat
 			glog.Errorf("Failed to read creds file %v. Error: %v", file_name, err)
 		} else {
 			// do not overwrite incoming authconfigs entries, only augment them
-			for k, v := range authFromFile.Configs {
-				if _, exists := authConfigs.Configs[k]; !exists {
-					authConfigs.Configs[k] = v
-				}
+			for _, v := range authFromFile.Configs {
+				authConfigs = appendDockerAuth(authConfigs, v)
 			}
 		}
 	}
+	return nil
+}
+
+func pullImageFromRepos(config config.Config, authConfigs map[string][]docker.AuthConfiguration, client *docker.Client, skipPartFetchFn *func(repotag string) (bool, error), deploymentDesc *containermessage.DeploymentDescription) error {
+
+	// append docker auth from docker file
+	authDockerFile(config, authConfigs)
 
 	// TODO: can we fetch in parallel with the docker client? If so, lift pattern from https://github.com/open-horizon/horizon-pkg-fetch/blob/master/fetch.go#L350
 	for name, service := range deploymentDesc.Services {
-		var pullAttempts int
 
 		glog.Infof("Pulling image %v for service %v", service.Image, name)
 
@@ -112,47 +117,72 @@ func pullImageFromRepos(config config.Config, authConfigs *docker.AuthConfigurat
 			}
 		}
 
-		var auth docker.AuthConfiguration
-
-		for domainName, creds := range authConfigs.Configs {
-			if domain != "" && domain == domainName {
-				auth = creds
-			}
-		}
-
-		for pullAttempts <= maxPullAttempts {
-			if err := client.PullImage(opts, auth); err == nil {
-				glog.Infof("Succeeded fetching image %v for service %v", service.Image, name)
-				break
-			} else {
-				glog.Errorf("Docker image pull(s) failed. Waiting %d seconds before retry. Error: %v", pullAttemptDelayS, err)
-				pullAttempts++
-
-				if pullAttempts != maxPullAttempts {
-					time.Sleep(pullAttemptDelayS * time.Second)
-				} else {
-					msg := fmt.Sprintf("Max pull attempts reached (%d). Aborting fetch of Docker image %v", pullAttempts, service.Image)
-
-					switch err.(type) {
-					case *docker.Error:
-						dErr := err.(*docker.Error)
-						if dErr.Status == 500 && strings.Contains(dErr.Message, "cred") {
-							return fetcherrors.PkgSourceFetchAuthError{Msg: msg, InternalError: dErr}
-						} else {
-							glog.Infof("Docker client error occurred %v", err)
-							return err
-						}
-
-					default:
-						glog.Errorf("(Unknown error type, %T) Internal error of unidentifiable type: %v. Original: %v", err, msg, err)
-						return err
-
-					}
+		var err error
+		if domain == "" {
+			err = pullSingleImageFromRepo(client, opts, docker.AuthConfiguration{})
+		} else if auth_array, ok := authConfigs[domain]; !ok {
+			err = pullSingleImageFromRepo(client, opts, docker.AuthConfiguration{})
+		} else {
+			for i, auth := range auth_array {
+				err = pullSingleImageFromRepo(client, opts, auth)
+				if err == nil {
+					break
+				} else if i < len(auth_array)-1 {
+					glog.V(5).Infof("Docker image pull(s) failed for service %v docker image %v with auth %v. Error: %v. Try next auth.", name, service.Image, auth, err)
 				}
 			}
 		}
-
+		if err != nil {
+			glog.Errorf("Docker image pull(s) failed for docker image %v. Error: %v.", service.Image, err)
+			return err
+		} else {
+			glog.Infof("Succeeded fetching image %v for service", service.Image, name)
+		}
 	}
 
+	return nil
+}
+
+//  This function try maxPullAttempts times to pull the image from the repo. It exits out imediately if there is auth error.
+func pullSingleImageFromRepo(client *docker.Client, opts docker.PullImageOptions, auth docker.AuthConfiguration) error {
+	glog.V(5).Infof("Pulling image %v with auth %v.", opts, auth)
+
+	var pullAttempts int
+
+	for pullAttempts <= maxPullAttempts {
+		if err := client.PullImage(opts, auth); err == nil {
+			return nil
+		} else {
+			pullAttempts++
+
+			// no need to try more times if it is auth error
+			switch err.(type) {
+			case *docker.Error:
+				dErr := err.(*docker.Error)
+				if strings.Contains(dErr.Message, "cred") {
+					msg := fmt.Sprintf("Aborting fetch of Docker image %v.", opts.Repository)
+					return fetcherrors.PkgSourceFetchAuthError{Msg: msg, InternalError: dErr}
+				}
+			}
+
+			if pullAttempts != maxPullAttempts {
+				glog.V(5).Infof("Waiting %d seconds before retry. Error: %v", pullAttemptDelayS, err)
+				time.Sleep(pullAttemptDelayS * time.Second)
+			} else {
+				msg := fmt.Sprintf("Max pull attempts reached (%d) for fetching Docker image %v.", pullAttempts, opts.Repository)
+
+				switch err.(type) {
+				case *docker.Error:
+					glog.V(5).Infof(msg+"Docker client error occurred %v", err)
+					return err
+
+				default:
+					glog.V(5).Infof(msg+"(Unknown error type, %T) Internal error of unidentifiable type: %v. Original: %v", err, msg, err)
+					return err
+
+				}
+			}
+		}
+	}
 	return nil
 }

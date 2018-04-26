@@ -123,20 +123,35 @@ func (c AgreementLaunchContext) ContainerConfig() ContainerConfig {
 	return c.Configure
 }
 
+type ImageDockerAuth struct {
+	Registry string `json:"registry"`
+	UserName string `json:"user_name"`
+	Password string `json:"token"`
+}
+
+func (s ImageDockerAuth) String() string {
+	return fmt.Sprintf(
+		"Registry: %v, "+
+			"UserName: %v, "+
+			"Password: %v",
+		s.Registry, s.UserName, "******")
+}
+
 type ContainerConfig struct {
-	TorrentURL          url.URL `json:"torrent_url"`
-	TorrentSignature    string  `json:"torrent_signature"`
-	Deployment          string  `json:"deployment"` // JSON docker-compose like
-	DeploymentSignature string  `json:"deployment_signature"`
-	DeploymentUserInfo  string  `json:"deployment_user_info"`
-	Overrides           string  `json:"overrides"`
+	TorrentURL          url.URL           `json:"torrent_url"`
+	TorrentSignature    string            `json:"torrent_signature"`
+	Deployment          string            `json:"deployment"` // JSON docker-compose like
+	DeploymentSignature string            `json:"deployment_signature"`
+	DeploymentUserInfo  string            `json:"deployment_user_info"`
+	Overrides           string            `json:"overrides"`
+	ImageDockerAuths    []ImageDockerAuth `json:"image_auths"`
 }
 
 func (c ContainerConfig) String() string {
-	return fmt.Sprintf("TorrentURL: %v, TorrentSignature: %v, Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, Overrides: %v", c.TorrentURL.String(), c.TorrentSignature, c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo, c.Overrides)
+	return fmt.Sprintf("TorrentURL: %v, TorrentSignature: %v, Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, Overrides: %v, ImageDockerAuths: %v", c.TorrentURL.String(), c.TorrentSignature, c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo, c.Overrides, c.ImageDockerAuths)
 }
 
-func NewContainerConfig(torrentURL url.URL, torrentSignature string, deployment string, deploymentSignature string, deploymentUserInfo string, overrides string) *ContainerConfig {
+func NewContainerConfig(torrentURL url.URL, torrentSignature string, deployment string, deploymentSignature string, deploymentUserInfo string, overrides string, imageDockerAuths []ImageDockerAuth) *ContainerConfig {
 	return &ContainerConfig{
 		TorrentURL:          torrentURL,
 		TorrentSignature:    torrentSignature,
@@ -144,6 +159,7 @@ func NewContainerConfig(torrentURL url.URL, torrentSignature string, deployment 
 		DeploymentSignature: deploymentSignature,
 		DeploymentUserInfo:  deploymentUserInfo,
 		Overrides:           overrides,
+		ImageDockerAuths:    imageDockerAuths,
 	}
 }
 

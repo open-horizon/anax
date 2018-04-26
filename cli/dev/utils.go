@@ -233,8 +233,8 @@ func makeByValueAttributes(attrs []persistence.Attribute) []persistence.Attribut
 		case *persistence.HTTPSBasicAuthAttributes:
 			p := a.(*persistence.HTTPSBasicAuthAttributes)
 			byValueAttrs = append(byValueAttrs, *p)
-		case *persistence.BXDockerRegistryAuthAttributes:
-			p := a.(*persistence.BXDockerRegistryAuthAttributes)
+		case *persistence.DockerRegistryAuthAttributes:
+			p := a.(*persistence.DockerRegistryAuthAttributes)
 			byValueAttrs = append(byValueAttrs, *p)
 		}
 	}
@@ -500,13 +500,13 @@ func downloadFromImageServer(torrentInfo string, keyFile string, currentUIs *reg
 
 		// Then extract the HTTPS authentication attributes.
 		httpAuthAttrs := make(map[string]map[string]string, 0)
-		dockerAuthConfigurations := make(map[string]docker.AuthConfiguration, 0)
-		httpAuth, _, authErr := torrent.ExtractAuthAttributes(byValueAttrs, httpAuthAttrs, dockerAuthConfigurations)
+		dockerAuthConfigurations := make(map[string][]docker.AuthConfiguration, 0)
+		authErr := torrent.ExtractAuthAttributes(byValueAttrs, httpAuthAttrs, dockerAuthConfigurations)
 		if authErr != nil {
 			return errors.New(fmt.Sprintf("failed to extract authentication attribute from %v, error: %v ", USERINPUT_FILE, err))
 		}
 
-		cliutils.Verbose("Using HTTPS Basic authorization: %v", httpAuth)
+		cliutils.Verbose("Using HTTPS Basic authorization: %v", httpAuthAttrs)
 
 		// A public key is needed to verify the signature of the image parts.
 		pemFiles := []string{keyFile}
@@ -515,7 +515,7 @@ func downloadFromImageServer(torrentInfo string, keyFile string, currentUIs *reg
 		torrentDir := "/tmp"
 
 		// Call the package fetcher library to download and verify the image parts.
-		imageFiles, fetchErr := fetch.PkgFetch(cfg.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), &skipCheckFn, *torrentUrl, torrentSig, torrentDir, pemFiles, httpAuth)
+		imageFiles, fetchErr := fetch.PkgFetch(cfg.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), &skipCheckFn, *torrentUrl, torrentSig, torrentDir, pemFiles, httpAuthAttrs)
 		if fetchErr != nil {
 			return errors.New(fmt.Sprintf("failed to fetch %v, error: %v", torrentUrl, fetchErr))
 		}

@@ -190,8 +190,8 @@ func HydrateConcreteAttribute(v []byte) (Attribute, error) {
 		}
 		attr = hba
 
-	case "BXDockerRegistryAuthAttributes":
-		var dra BXDockerRegistryAuthAttributes
+	case "DockerRegistryAuthAttributes":
+		var dra DockerRegistryAuthAttributes
 		if err := json.Unmarshal(v, &dra); err != nil {
 			return nil, err
 		}

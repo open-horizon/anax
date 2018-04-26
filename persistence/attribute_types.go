@@ -302,41 +302,75 @@ func (a HTTPSBasicAuthAttributes) Update(other Attribute) error {
 	return nil
 }
 
-type BXDockerRegistryAuthAttributes struct {
+type Auth struct {
+	Token string `json:"token"`
+}
+
+type DockerRegistryAuthAttributes struct {
 	Meta  *AttributeMeta `json:"meta"`
-	Token string         `json:"token"`
+	Auths []Auth         `json:"auths"`
 }
 
-func (a BXDockerRegistryAuthAttributes) String() string {
-	return fmt.Sprintf("meta: %v, token: <withheld>", a.GetMeta())
+func (a DockerRegistryAuthAttributes) String() string {
+	auths_show := make([]Auth, 0)
+	for range a.Auths {
+		auths_show = append(auths_show, Auth{Token: "********"})
+	}
+
+	return fmt.Sprintf("meta: %v, auths: %v", a.GetMeta(), auths_show)
 }
 
-func (a BXDockerRegistryAuthAttributes) GetMeta() *AttributeMeta {
+func (a DockerRegistryAuthAttributes) GetMeta() *AttributeMeta {
 	return a.Meta
 }
 
-func (a BXDockerRegistryAuthAttributes) GetGenericMappings() map[string]interface{} {
-	var obf string
+func (a DockerRegistryAuthAttributes) GetGenericMappings() map[string]interface{} {
 
-	if a.Token != "" {
-		obf = "**********"
+	auths_show := make([]Auth, 0)
+	for range a.Auths {
+		auths_show = append(auths_show, Auth{Token: "********"})
 	}
 
 	return map[string]interface{}{
-		"token": obf,
+		"auths": auths_show,
 	}
 }
 
-func (a BXDockerRegistryAuthAttributes) Update(other Attribute) error {
+func (a DockerRegistryAuthAttributes) Update(other Attribute) error {
 	switch other.(type) {
-	case *BXDockerRegistryAuthAttributes:
-		o := other.(*BXDockerRegistryAuthAttributes)
+	case *DockerRegistryAuthAttributes:
+		o := other.(*DockerRegistryAuthAttributes)
 		a.GetMeta().Update(*o.GetMeta())
 
-		a.Token = o.Token
+		a.Auths = o.Auths
 	default:
 		return fmt.Errorf("Concrete type of attribute (%T) provided to Update() is incompatible with this Attribute's type (%T)", a, other)
 	}
 
 	return nil
+}
+
+// add a new auth token to this registery
+func (a DockerRegistryAuthAttributes) AddAuth(auth_new Auth) {
+	found := false
+	for _, auth := range a.Auths {
+		if auth.Token == auth_new.Token {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		a.Auths = append(a.Auths, auth_new)
+	}
+}
+
+// delete the given auth from this registery
+func (a DockerRegistryAuthAttributes) DeleteAuth(auth_in Auth) {
+	for i, auth := range a.Auths {
+		if auth.Token == auth_in.Token {
+			a.Auths = append(a.Auths[:i], a.Auths[i+1:]...)
+			break
+		}
+	}
 }

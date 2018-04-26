@@ -26,12 +26,14 @@ This sample will work as-is with the IBM netspeed pattern.
 			}
 		},
 		{
-			"type": "BXDockerRegistryAuthAttributes",   /* use this if your docker images are in the IBM Cloud container registry */
+			"type": "DockerRegistryAuthAttributes",   /* use this if your docker images are in the IBM Cloud container registry */
 			"sensor_urls": [
 				"registry.ng.bluemix.net"
 			],
 			"variables": {
-				"token": "REGISTRYAUTHTOKEN"
+				"auths": [
+					{"token": "REGISTRYAUTHTOKEN"}
+				]
 			}
 		},
 		{
