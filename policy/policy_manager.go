@@ -591,6 +591,43 @@ func (self *PolicyManager) GetAllPolicyOrgs() []string {
 	return orgs
 }
 
+// returns all the policy names keyed by organization
+func (self *PolicyManager) GetAllPolicyNames() map[string][]string {
+	ret := make(map[string][]string, 0)
+	self.PolicyLock.Lock()
+	defer self.PolicyLock.Unlock()
+
+	if self.Policies != nil {
+		for org, p_array := range self.Policies {
+			names := make([]string, 0)
+			if p_array != nil {
+				for _, policy := range p_array {
+					names = append(names, policy.Header.Name)
+				}
+			}
+			ret[org] = names
+		}
+	}
+
+	return ret
+}
+
+// returns the policy names for the given organization
+func (self *PolicyManager) GetPolicyNamesForOrg(org string) map[string][]string {
+	ret := make(map[string][]string, 0)
+
+	p_array := self.GetAllPolicies(org)
+	if p_array != nil {
+		names := make([]string, 0)
+		for _, policy := range p_array {
+			names = append(names, policy.Header.Name)
+		}
+		ret[org] = names
+	}
+
+	return ret
+}
+
 func (self *PolicyManager) GetAllAvailablePolicies(org string) []Policy {
 	policies := make([]Policy, 0, 10)
 	self.PolicyLock.Lock()

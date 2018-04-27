@@ -157,7 +157,10 @@ func (a *API) listen(apiListen string) {
 
 		router.HandleFunc("/agreement", a.agreement).Methods("GET", "OPTIONS")
 		router.HandleFunc("/agreement/{id}", a.agreement).Methods("GET", "DELETE", "OPTIONS")
-		router.HandleFunc("/policy/{name}/upgrade", a.policyUpgrade).Methods("POST", "OPTIONS")
+		router.HandleFunc("/policy", a.policy).Methods("GET", "OPTIONS")
+		router.HandleFunc("/policy/{org}", a.policy).Methods("GET", "OPTIONS")
+		router.HandleFunc("/policy/{org}/{name}", a.policy).Methods("GET", "OPTIONS")
+		router.HandleFunc("/policy/{name}/upgrade", a.policy).Methods("POST", "OPTIONS")
 		router.HandleFunc("/workloadusage", a.workloadusage).Methods("GET", "OPTIONS")
 		router.HandleFunc("/status", a.status).Methods("GET", "OPTIONS")
 		router.HandleFunc("/node", a.node).Methods("GET", "OPTIONS")
@@ -256,8 +259,66 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a *API) policyUpgrade(w http.ResponseWriter, r *http.Request) {
+func (a *API) policy(w http.ResponseWriter, r *http.Request) {
+	workloadResolver := func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
+		asl, _, err := exchange.GetHTTPWorkloadResolverHandler(a)(wURL, wOrg, wVersion, wArch)
+		if err != nil {
+			glog.Errorf(APIlogString(fmt.Sprintf("unable to resolve workload, error %v", err)))
+		}
+		return asl, err
+	}
+
+	serviceResolver := func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
+		asl, _, err := exchange.GetHTTPServiceResolverHandler(a)(wURL, wOrg, wVersion, wArch)
+		if err != nil {
+			glog.Errorf(APIlogString(fmt.Sprintf("unable to resolve service, error %v", err)))
+		}
+		return asl, err
+	}
+
 	switch r.Method {
+	case "GET":
+		pathVars := mux.Vars(r)
+		org := pathVars["org"]
+		name := pathVars["name"]
+
+		// get a list of hosted policy names
+		if pm, err := policy.Initialize(a.Config.AgreementBot.PolicyPath, a.Config.ArchSynonyms, workloadResolver, serviceResolver, false, false); err != nil {
+			glog.Error(APIlogString(fmt.Sprintf("error initializing policy manager, error: %v", err)))
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		} else {
+			if org == "" {
+				// get all the policy names
+				response := pm.GetAllPolicyNames()
+				writeResponse(w, response, http.StatusOK)
+			} else if name == "" {
+				// get the policy names for the given org
+				response := pm.GetPolicyNamesForOrg(org)
+
+				if len(response) > 0 && len(response[org]) > 0 {
+					writeResponse(w, response, http.StatusOK)
+				} else if _, err = exchange.GetOrganization(a.GetHTTPFactory(), org, a.GetExchangeURL(), a.GetExchangeId(), a.GetExchangeToken()); err != nil {
+					// org does not exists
+					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "org", Error: "organization does not exist in the exchange."})
+				} else {
+					// org exists but no policy files
+					res := make(map[string][]string, 1)
+					res[org] = make([]string, 0)
+					writeResponse(w, res, http.StatusOK)
+				}
+			} else {
+				if response := pm.GetPolicy(org, name); response != nil {
+					writeResponse(w, response, http.StatusOK)
+				} else if _, err = exchange.GetOrganization(a.GetHTTPFactory(), org, a.GetExchangeURL(), a.GetExchangeId(), a.GetExchangeToken()); err != nil {
+					// org does not exists
+					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "org", Error: "organization does not exist in the exchange."})
+				} else {
+					writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "name", Error: "policy not found."})
+				}
+			}
+		}
+
 	case "POST":
 		pathVars := mux.Vars(r)
 		policyName := pathVars["name"]
@@ -277,22 +338,6 @@ func (a *API) policyUpgrade(w http.ResponseWriter, r *http.Request) {
 		} else if ok, msg := upgrade.IsValid(); !ok {
 			writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "body", Error: msg})
 			return
-		}
-
-		workloadResolver := func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
-			asl, _, err := exchange.GetHTTPWorkloadResolverHandler(a)(wURL, wOrg, wVersion, wArch)
-			if err != nil {
-				glog.Errorf(APIlogString(fmt.Sprintf("unable to resolve workload, error %v", err)))
-			}
-			return asl, err
-		}
-
-		serviceResolver := func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
-			asl, _, err := exchange.GetHTTPServiceResolverHandler(a)(wURL, wOrg, wVersion, wArch)
-			if err != nil {
-				glog.Errorf(APIlogString(fmt.Sprintf("unable to resolve service, error %v", err)))
-			}
-			return asl, err
 		}
 
 		// Verify the input policy name. It can be either the name of the policy within the header of the policy file or the name
