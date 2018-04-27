@@ -330,6 +330,8 @@ Environment Variables:
 
 	agbotCmd := app.Command("agbot", "List and manage Horizon agreement bot resources.")
 
+	agbotListCmd := agbotCmd.Command("list", "Display general information about this Horizon agbot node.")
+
 	agbotAgreementCmd := agbotCmd.Command("agreement", "List or manage the active or archived agreements this Horizon agreement bot has with edge nodes.")
 	agbotAgreementListCmd := agbotAgreementCmd.Command("list", "List the active or archived agreements this Horizon agreement bot has with edge nodes.")
 	agbotlistArchivedAgreements := agbotAgreementListCmd.Flag("archived", "List archived agreements instead of the active agreements.").Short('r').Bool()
@@ -338,7 +340,10 @@ Environment Variables:
 	agbotCancelAllAgreements := agbotAgreementCancelCmd.Flag("all", "Cancel all of the current agreements.").Short('a').Bool()
 	agbotCancelAgreementId := agbotAgreementCancelCmd.Arg("agreement", "The active agreement to cancel.").String()
 
-	agbotListCmd := agbotCmd.Command("list", "Display general information about this Horizon agbot node.")
+	agbotPolicyCmd := agbotCmd.Command("policy", "List the policies this Horizon agreement bot hosts.")
+	agbotPolicyListCmd := agbotPolicyCmd.Command("list", "List policies this Horizon agreement bot hosts.")
+	agbotPolicyOrg := agbotPolicyListCmd.Arg("org", "The organization the policy belongs to.").String()
+	agbotPolicyName := agbotPolicyListCmd.Arg("name", "The policy name.").String()
 
 	app.Version("Run 'hzn version' to see the Horizon version.")
 	/* trying to override the base --version behavior does not work....
@@ -530,5 +535,7 @@ Environment Variables:
 		agreementbot.AgreementCancel(*agbotCancelAgreementId, *agbotCancelAllAgreements)
 	case agbotListCmd.FullCommand():
 		agreementbot.List()
+	case agbotPolicyListCmd.FullCommand():
+		agreementbot.PolicyList(*agbotPolicyOrg, *agbotPolicyName)
 	}
 }

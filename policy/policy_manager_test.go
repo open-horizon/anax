@@ -47,8 +47,13 @@ func Test_Payloadmanager_init_success2(t *testing.T) {
 			t.Errorf("Did not find 3 policies, found %v", num)
 		} else if orgs := pm.GetAllPolicyOrgs(); len(orgs) != 2 {
 			t.Errorf("Expected 2 orgs, but got %v", len(orgs))
+		} else if names := pm.GetAllPolicyNames(); len(names) != 2 || len(names["testorg"]) != 1 || len(names["testorg2"]) != 2 {
+			t.Errorf("Expexted 2 orgs got %v; expected 1 element for testorg got %v, expected 2 elements for testorg2 got %v", len(names), len(names["testorg"]), len(names["testorg2"]))
+		} else if names2 := pm.GetPolicyNamesForOrg("testorg2"); len(names2["testorg2"]) != 2 {
+			t.Errorf("Expected 2 elements for testorg2 got %v", len(names2["testorg2"]))
+		} else if names3 := pm.GetPolicyNamesForOrg("wrongorg"); len(names3["wrongorg"]) != 0 {
+			t.Errorf("Expected 0 elements for wrongorg got %v", len(names3["wrongorg"]))
 		}
-
 	}
 }
 

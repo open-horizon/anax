@@ -852,7 +852,7 @@ func Test_DeletePolicyFilesForPattern(t *testing.T) {
 	}
 }
 
-// Delete all pilicy files for an org
+// Delete all policy files for an org
 func Test_DeletePolicyFilesForOrg(t *testing.T) {
 
 	policyPath := "/tmp/policyfiletest/"
@@ -919,7 +919,7 @@ func Test_DeletePolicyFilesForOrg(t *testing.T) {
 		t.Errorf("File %v should have been deleted but not", file_pb)
 	} else if _, err := os.Stat(file_pa); os.IsNotExist(err) {
 		t.Errorf("File %v should exist but not", file_pa)
-		// delete all pilicy files
+		// delete all policy files
 	} else if err := DeletePolicyFilesForOrg(policyPath, "e2edev", false); err != nil {
 		t.Errorf("Failed to delete all the policy files for org e2edev. %v", err)
 	} else if _, err := os.Stat(file_pa); !os.IsNotExist(err) {
