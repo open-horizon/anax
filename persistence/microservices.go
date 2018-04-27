@@ -212,6 +212,12 @@ func (m *MicroserviceDefinition) GetDeployment() (string, string, string) {
 	return "", "", ""
 }
 
+func (m *MicroserviceDefinition) GetImageStore() ImplementationPackage {
+	ip := make(ImplementationPackage)
+	cutil.CopyMap(m.ImageStore, ip)
+	return ip
+}
+
 func (m *MicroserviceDefinition) NeedsUserInput() string {
 	for _, ui := range m.UserInputs {
 		if ui.DefaultValue == "" {
