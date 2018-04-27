@@ -179,7 +179,7 @@ func CheckDeploymentService(svcName string, depSvc map[string]interface{}) {
 	}
 }
 
-// AppendImagesFromDeploymentMap finds the images in this deployment structure (if any) and appends them to the imageList
+// SignImagesFromDeploymentMap finds the images in this deployment structure (if any) and appends them to the imageList
 func SignImagesFromDeploymentMap(deployment map[string]interface{}, dontTouchImage bool) (imageList []string) {
 	// The deployment string should include: {"services":{"cpu2wiotp":{"image":"openhorizon/example_wl_x86_cpu2wiotp:1.1.2",...}}}
 	// Since we have to parse the deployment structure anyway, we do some validity checking while we are at it
@@ -234,7 +234,11 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath s
 	svcInput := ServiceExch{Label: sf.Label, Description: sf.Description, Public: sf.Public, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs, ImageStore: sf.ImageStore}
 
 	// Go thru the docker image paths to push/get sha256 tag and/or gather list of images that user needs to push
-	imageList := SignImagesFromDeploymentMap(sf.Deployment, dontTouchImage)
+	var imageList []string
+	if storeType, ok := svcInput.ImageStore["storeType"]; !ok || storeType != "imageServer" {
+		imageList = SignImagesFromDeploymentMap(sf.Deployment, dontTouchImage)
+	}
+	// else the images are in the deprecated horizon image svr, don't do anything with them
 
 	// Marshal and sign the deployment string
 	fmt.Println("Signing service...")
@@ -253,9 +257,6 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath s
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing deployment string with %s: %v", keyFilePath, err)
 	}
-
-	// Gather the docker image paths to instruct the user to docker push at the end
-	//imageList = AppendImagesFromDeploymentMap(sf.Deployment, imageList)
 
 	//todo: when we support something in the ImageStore map, process it here
 

@@ -399,7 +399,7 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	}
 
 	cliutils.Verbose("Updated %v/%v with the dependency's variable and global attribute configuration.", homeDirectory, USERINPUT_FILE)
-	os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting)		// restore this setting
+	os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting) // restore this setting
 
 	return nil
 }
@@ -557,7 +557,7 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, org st
 	}
 
 	fmt.Printf("Please add Horizon attributes to the global section of the new dependency to ensure that the dependency operates correctly.\n")
-	os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting)		// restore this setting
+	os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting) // restore this setting
 
 	return nil
 }
