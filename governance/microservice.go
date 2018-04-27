@@ -92,6 +92,18 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			if err := json.Unmarshal([]byte(torr), &torrent); err != nil {
 				return nil, fmt.Errorf(logString(fmt.Sprintf("The torrent definition for microservice %v has error: %v", msdef.SpecRef, err)))
 			}
+		} else {
+			// this is the service case where the image server is defined
+			if image_store := msdef.GetImageStore(); len(image_store) > 0 {
+				if st, ok := image_store[exchange.IMPL_PACKAGE_DISCRIMINATOR]; ok && st == exchange.IMPL_PACKAGE_IMAGESERVER {
+					if url, ok1 := image_store["url"]; ok1 {
+						torrent.Url = url.(string)
+					}
+					if sig, ok2 := image_store["signature"]; ok2 {
+						torrent.Signature = sig.(string)
+					}
+				}
+			}
 		}
 
 		// convert workload to policy workload structure
