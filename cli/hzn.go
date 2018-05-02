@@ -315,13 +315,29 @@ Environment Variables:
 	devMicroserviceValidateCmd := devMicroserviceCmd.Command("verify", "Validate the project for completeness and schema compliance.")
 	devMicroserviceVerifyUserInputFile := devMicroserviceValidateCmd.Flag("userInputFile", "File containing user input values for verification of a project.").Short('f').String()
 
+	devServiceCmd := devCmd.Command("service", "For working with a service project.")
+	devServiceNewCmd := devServiceCmd.Command("new", "Create a new service project.")
+	devServiceNewCmdOrg := devServiceNewCmd.Flag("org", "The Org id that the service is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is ued.").Short('o').String()
+	devServiceStartTestCmd := devServiceCmd.Command("start", "Run a service in a mocked Horizon Agent environment.")
+	devServiceUserInputFile := devServiceStartTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
+	devServiceStopTestCmd := devServiceCmd.Command("stop", "Stop a service that is running in a mocked Horizon Agent environment.")
+	devServiceDeployCmd := devServiceCmd.Command("publish", "Publish a service to a Horizon Exchange.")
+	devServiceDeployCmdUserPw := devServiceDeployCmd.Flag("user-pw", "Horizon Exchange user credentials to create exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
+	devServiceKeyfile := devServiceDeployCmd.Flag("keyFile", "File containing a private key used to sign the deployment configuration.").Short('k').String()
+	devServicePubKeyFile := devServiceDeployCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
+	devServicePubDontTouchImage := devServiceDeployCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. This should only be used during development when testing new versions often.").Short('I').Bool()
+	devServicePubRegistryTokens := devServiceDeployCmd.Flag("registry-token", "Docker registry domain and auth token that should be stored with the service, to enable the Horizon edge node to access the service's docker images. This flag can be repeated, and each flag should be in the format: registry:token").Short('r').Strings()
+	devServiceValidateCmd := devServiceCmd.Command("verify", "Validate the project for completeness and schema compliance.")
+	devServiceVerifyUserInputFile := devServiceValidateCmd.Flag("userInputFile", "File containing user input values for verification of a project.").Short('f').String()
+
 	devDependencyCmd := devCmd.Command("dependency", "For working with project dependencies.")
-	devDependencyCmdProject := devDependencyCmd.Flag("project", "Horizon project containing the definition of a dependency. Mutually exclusive with -s -o --ver -a.").Short('p').ExistingDir()
-	devDependencyCmdSpecRef := devDependencyCmd.Flag("specRef", "The URL of the microservice dependency in the exchange. Mutually exclusive with -p.").Short('s').String()
-	devDependencyCmdOrg := devDependencyCmd.Flag("org", "The Org of the microservice dependency in the exchange. Mutually exclusive with -p.").Short('o').String()
+	devDependencyCmdSpecRef := devDependencyCmd.Flag("specRef", "The URL of the microservice dependency in the exchange. Mutually exclusive with -p and --url.").Short('s').String()
+	devDependencyCmdURL := devDependencyCmd.Flag("url", "The URL of the service dependency in the exchange. Mutually exclusive with -p and --specRef.").String()
+	devDependencyCmdOrg := devDependencyCmd.Flag("org", "The Org of the service or microservice dependency in the exchange. Mutually exclusive with -p.").Short('o').String()
 	devDependencyCmdVersion := devDependencyCmd.Flag("ver", "(optional) The Version of the microservice dependency in the exchange. Mutually exclusive with -p.").String()
-	devDependencyCmdArch := devDependencyCmd.Flag("arch", "(optional) The hardware Architecture of the microservice dependency in the exchange. Mutually exclusive with -p.").Short('a').String()
+	devDependencyCmdArch := devDependencyCmd.Flag("arch", "(optional) The hardware Architecture of the service or microservice dependency in the exchange. Mutually exclusive with -p.").Short('a').String()
 	devDependencyFetchCmd := devDependencyCmd.Command("fetch", "Retrieving Horizon metadata for a new dependency.")
+	devDependencyFetchCmdProject := devDependencyFetchCmd.Flag("project", "Horizon project containing the definition of a dependency. Mutually exclusive with -s -o --ver -a and --url.").Short('p').ExistingDir()
 	devDependencyFetchCmdUserPw := devDependencyFetchCmd.Flag("user-pw", "Horizon Exchange user credentials to query exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
 	devDependencyFetchCmdKeyFile := devDependencyFetchCmd.Flag("public-key-file", "The path of a public key file to be used to verify a signature.").Short('k').ExistingFile()
 	devDependencyFetchCmdUserInputFile := devDependencyFetchCmd.Flag("userInputFile", "File containing user input values for configuring the new dependency.").Short('f').ExistingFile()
@@ -523,12 +539,22 @@ Environment Variables:
 		dev.MicroserviceValidate(*devHomeDirectory, *devMicroserviceVerifyUserInputFile)
 	case devMicroserviceDeployCmd.FullCommand():
 		dev.MicroserviceDeploy(*devHomeDirectory, *devMicroserviceKeyfile, *devMicroservicePubKeyFile, *devMicroserviceDeployCmdUserPw, *devMicroservicePubDontTouchImage)
+	case devServiceNewCmd.FullCommand():
+		dev.ServiceNew(*devHomeDirectory, *devServiceNewCmdOrg)
+	case devServiceStartTestCmd.FullCommand():
+		dev.ServiceStartTest(*devHomeDirectory, *devServiceUserInputFile)
+	case devServiceStopTestCmd.FullCommand():
+		dev.ServiceStopTest(*devHomeDirectory)
+	case devServiceValidateCmd.FullCommand():
+		dev.ServiceValidate(*devHomeDirectory, *devServiceVerifyUserInputFile)
+	case devServiceDeployCmd.FullCommand():
+		dev.ServiceDeploy(*devHomeDirectory, *devServiceKeyfile, *devServicePubKeyFile, *devServiceDeployCmdUserPw, *devServicePubDontTouchImage, *devServicePubRegistryTokens)
 	case devDependencyFetchCmd.FullCommand():
-		dev.DependencyFetch(*devHomeDirectory, *devDependencyCmdProject, *devDependencyCmdSpecRef, *devDependencyCmdOrg, *devDependencyCmdVersion, *devDependencyCmdArch, *devDependencyFetchCmdUserPw, *devDependencyFetchCmdKeyFile, *devDependencyFetchCmdUserInputFile)
+		dev.DependencyFetch(*devHomeDirectory, *devDependencyFetchCmdProject, *devDependencyCmdSpecRef, *devDependencyCmdURL, *devDependencyCmdOrg, *devDependencyCmdVersion, *devDependencyCmdArch, *devDependencyFetchCmdUserPw, *devDependencyFetchCmdKeyFile, *devDependencyFetchCmdUserInputFile)
 	case devDependencyListCmd.FullCommand():
 		dev.DependencyList(*devHomeDirectory)
 	case devDependencyRemoveCmd.FullCommand():
-		dev.DependencyRemove(*devHomeDirectory, *devDependencyCmdSpecRef, *devDependencyCmdVersion, *devDependencyCmdArch)
+		dev.DependencyRemove(*devHomeDirectory, *devDependencyCmdSpecRef, *devDependencyCmdURL, *devDependencyCmdVersion, *devDependencyCmdArch)
 	case agbotAgreementListCmd.FullCommand():
 		agreementbot.AgreementList(*agbotlistArchivedAgreements, *agbotAgreement)
 	case agbotAgreementCancelCmd.FullCommand():

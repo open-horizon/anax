@@ -48,7 +48,7 @@ func WorkloadNew(homeDirectory string, org string) {
 	}
 
 	// Create the metadata files.
-	if err := CreateUserInputs(dir, true, org); err != nil {
+	if err := CreateUserInputs(dir, true, false, org); err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", WORKLOAD_COMMAND, WORKLOAD_CREATION_COMMAND, err)
 	} else if err := CreateWorkloadDefinition(dir, org); err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", WORKLOAD_COMMAND, WORKLOAD_CREATION_COMMAND, err)
@@ -109,7 +109,7 @@ func WorkloadStartTest(homeDirectory string, userInputFile string) {
 				fmt.Printf("Skipping microservice because it has no services: %v\n", depConfig)
 				continue
 			} else if derr == nil {
-				ms_networks, startErr = startMicroservice(deployment, depDef.SpecRef, depDef.Version, userInputs.Global, depDef.UserInputs, userInputs, workloadDef.Org, depConfig, cw, ms_networks)
+				ms_networks, startErr = startMicroservice(deployment, depDef.SpecRef, depDef.Version, userInputs.Global, depDef.UserInputs, userInputs.Microservices, workloadDef.Org, depConfig, cw, ms_networks)
 			}
 
 			// If there were errors, cleanup any microservices that are already started.

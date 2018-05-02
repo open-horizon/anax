@@ -88,6 +88,26 @@ type MicroserviceFile struct {
 	Workloads     []WorkloadDeployment `json:"workloads"`
 }
 
+func (sf *MicroserviceFile) GetOrg() string {
+	return sf.Org
+}
+
+func (sf *MicroserviceFile) GetURL() string {
+	return sf.SpecRef
+}
+
+func (sf *MicroserviceFile) GetVersion() string {
+	return sf.Version
+}
+
+func (sf *MicroserviceFile) GetArch() string {
+	return sf.Arch
+}
+
+func (sf *MicroserviceFile) GetUserInputs() []exchange.UserInput {
+	return sf.UserInputs
+}
+
 // Take the deployment field, which we have told the json unmarshaller was unknown type (so we can handle both escaped string and struct)
 // and turn it into the DeploymentConfig struct we really want.
 func ConvertToDeploymentConfig(deployment interface{}) *DeploymentConfig {

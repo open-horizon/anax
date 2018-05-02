@@ -25,7 +25,7 @@ func MicroserviceNew(homeDirectory string, org string) {
 	}
 
 	if org == "" && os.Getenv(DEVTOOL_HZN_ORG) == "" {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' must specify either --org or set the %v environment variable.", WORKLOAD_COMMAND, WORKLOAD_CREATION_COMMAND, DEVTOOL_HZN_ORG)
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' must specify either --org or set the %v environment variable.", MICROSERVICE_COMMAND, MICROSERVICE_CREATION_COMMAND, DEVTOOL_HZN_ORG)
 	}
 
 	// Create the working directory.
@@ -37,21 +37,17 @@ func MicroserviceNew(homeDirectory string, org string) {
 	cmd := fmt.Sprintf("%v %v", MICROSERVICE_COMMAND, MICROSERVICE_CREATION_COMMAND)
 	FileNotExist(dir, cmd, USERINPUT_FILE, UserInputExists)
 	FileNotExist(dir, cmd, MICROSERVICE_DEFINITION_FILE, MicroserviceDefinitionExists)
-	//FileNotExist(dir, cmd, DEPENDENCIES_FILE, DependenciesExists)
 
 	if org == "" {
 		org = os.Getenv(DEVTOOL_HZN_ORG)
 	}
 
 	// Create the metadata files.
-	if err := CreateUserInputs(dir, false, org); err != nil {
+	if err := CreateUserInputs(dir, false, false, org); err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", MICROSERVICE_COMMAND, MICROSERVICE_CREATION_COMMAND, err)
 	} else if err := CreateMicroserviceDefinition(dir, org); err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", MICROSERVICE_COMMAND, MICROSERVICE_CREATION_COMMAND, err)
 	}
-	// } else if err := CreateDependencies(dir); err != nil {
-	// 	cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", MICROSERVICE_COMMAND, MICROSERVICE_CREATION_COMMAND, err)
-	// }
 
 	fmt.Printf("Created horizon metadata files in %v. Edit these files to define and configure your new %v.\n", dir, MICROSERVICE_COMMAND)
 }
@@ -76,7 +72,7 @@ func MicroserviceStartTest(homeDirectory string, userInputFile string) {
 	}
 
 	// Now we can start the microservice container.
-	_, err := startMicroservice(deployment, microserviceDef.SpecRef, microserviceDef.Version, userInputs.Global, microserviceDef.UserInputs, userInputs, microserviceDef.Org, dc, cw, map[string]docker.ContainerNetwork{})
+	_, err := startMicroservice(deployment, microserviceDef.SpecRef, microserviceDef.Version, userInputs.Global, microserviceDef.UserInputs, userInputs.Microservices, microserviceDef.Org, dc, cw, map[string]docker.ContainerNetwork{})
 	if err != nil {
 
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v.", MICROSERVICE_COMMAND, MICROSERVICE_START_COMMAND, err)
@@ -118,14 +114,8 @@ func MicroserviceValidate(homeDirectory string, userInputFile string) {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", MICROSERVICE_COMMAND, MICROSERVICE_VERIFY_COMMAND, err)
 	}
 
-	// Make sure we're in a microservice project.
-	if !IsMicroserviceProject(dir) {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' current project is not a microservice project.", MICROSERVICE_COMMAND, MICROSERVICE_VERIFY_COMMAND)
-	}
-
-	// Validate Microservice Definition
-	if verr := ValidateMicroserviceDefinition(dir, MICROSERVICE_DEFINITION_FILE); verr != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' project does not validate. %v ", MICROSERVICE_COMMAND, MICROSERVICE_VERIFY_COMMAND, verr)
+	if err := AbstractServiceValidation(dir, false); err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", MICROSERVICE_COMMAND, MICROSERVICE_VERIFY_COMMAND, err)
 	}
 
 	CommonProjectValidation(dir, userInputFile, MICROSERVICE_COMMAND, MICROSERVICE_VERIFY_COMMAND)
