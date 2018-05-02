@@ -175,6 +175,18 @@ func IsMicroserviceProject(directory string) bool {
 	return true
 }
 
+// Indicates whether or not the given project is a service project
+func IsServiceProject(directory string) bool {
+	if ex, err := UserInputExists(directory); !ex || err != nil {
+		return false
+	} else if ex, err := ServiceDefinitionExists(directory); !ex || err != nil {
+		return false
+	} else if ex, err := DependenciesExists(directory); !ex || err != nil {
+		return false
+	}
+	return true
+}
+
 func CommonProjectValidation(dir string, userInputFile string, projectType string, cmd string) {
 	// Get the Userinput file, so that we can validate it.
 	userInputs, userInputsFilePath, uierr := GetUserInputs(dir, userInputFile)
@@ -192,6 +204,56 @@ func CommonProjectValidation(dir string, userInputFile string, projectType strin
 	}
 }
 
+func AbstractServiceValidation(dir string, serviceExpected bool) error {
+	// If the caller thinks this is a service project, then look for the service definition file and validate it.
+	if serviceExpected {
+		if !IsServiceProject(dir) {
+			return errors.New(fmt.Sprintf("current project is not a service project."))
+		} else if verr := ValidateServiceDefinition(dir, SERVICE_DEFINITION_FILE); verr != nil {
+			return errors.New(fmt.Sprintf("project does not validate. %v ", verr))
+		}
+	} else {
+		// The caller thinks this is a microservice project, so look for the microservice definition file and validate it.
+		if !IsMicroserviceProject(dir) {
+			return errors.New(fmt.Sprintf("current project is not a microservice project."))
+		} else if verr := ValidateMicroserviceDefinition(dir, MICROSERVICE_DEFINITION_FILE); verr != nil {
+			return errors.New(fmt.Sprintf("project does not validate. %v ", verr))
+		}
+	}
+
+	return nil
+}
+
+// Sort of like a constructor, it creates an in memory object except that it is created from either a microservice or a service
+// definition config file in the current project. This function assumes the caller has determined the exact location of the file.
+// This function also assumes that the project pointed to by the directory parameter is assuemd to contain the kind of definition
+// the caller expects.
+func GetAbstractDefinition(directory string) (cliexchange.AbstractServiceFile, error) {
+
+	tryDefinitionName := MICROSERVICE_DEFINITION_FILE
+	if exists, err := FileExists(directory, tryDefinitionName); err != nil {
+		return nil, err
+	} else if exists {
+		res := new(cliexchange.MicroserviceFile)
+
+		// GetFile will write to the res object, demarshalling the bytes into a json object that can be returned.
+		if err := GetFile(directory, tryDefinitionName, res); err != nil {
+			return nil, err
+		}
+		return res, nil
+	} else {
+		tryDefinitionName = SERVICE_DEFINITION_FILE
+		res := new(cliexchange.ServiceFile)
+
+		// GetFile will write to the res object, demarshalling the bytes into a json object that can be returned.
+		if err := GetFile(directory, tryDefinitionName, res); err != nil {
+			return nil, err
+		}
+		return res, nil
+	}
+
+}
+
 // Common setup processing for handling workload related commands.
 func setup(homeDirectory string, mustExist bool, needExchange bool, userCreds string) (string, error) {
 
@@ -207,7 +269,7 @@ func setup(homeDirectory string, mustExist bool, needExchange bool, userCreds st
 	cliutils.Verbose("Reading Horizon metadata from %s", dir)
 
 	// Verify that the project is a workload project or a microservice.
-	if !IsWorkloadProject(dir) && !IsMicroserviceProject(dir) {
+	if !IsWorkloadProject(dir) && !IsMicroserviceProject(dir) && !IsServiceProject(dir) {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "project in %v is not a horizon project.", dir)
 	}
 
@@ -358,23 +420,177 @@ func commonExecutionSetup(homeDirectory string, userInputFile string, projectTyp
 	return dir, userInputs, cw
 }
 
+func findContainers(serviceName string, cw *container.ContainerWorker) ([]docker.APIContainers, error) {
+	dcService := docker.ListContainersOptions{
+		All: true,
+		Filters: map[string][]string{
+			"label": []string{
+				fmt.Sprintf("%v.service_name=%v", container.LABEL_PREFIX, serviceName),
+			},
+		},
+	}
+
+	containers, err := cw.GetClient().ListContainers(dcService)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("unable to list containers, %v", err))
+	}
+	return containers, nil
+}
+
+func getContainerNetworks(depConfig *cliexchange.DeploymentConfig, cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
+	containerNetworks := map[string]docker.ContainerNetwork{}
+	for serviceName, _ := range depConfig.Services {
+		containers, err := findContainers(serviceName, cw)
+		if err != nil {
+			return nil, errors.New(fmt.Sprintf("unable to list existing containers: %v", err))
+		}
+		// Return the main network for this service/microservice. It will always be the network name
+		// that matches the agreement_id label.
+		for _, msc := range containers {
+			if nw_name, ok := msc.Labels[container.LABEL_PREFIX+".agreement_id"]; ok {
+				if nw, ok := msc.Networks.Networks[nw_name]; ok {
+					containerNetworks[nw_name] = nw
+					cliutils.Verbose("Found main network for service %v, %v", nw_name, nw)
+				}
+			}
+		}
+	}
+	return containerNetworks, nil
+}
+
+func processStartDependencies(dir string, deps []*cliexchange.ServiceFile, globals []register.GlobalSet, configUserInputs []register.MicroWork, cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
+
+	// Collect all the service networks that have to be connected to the caller's container.
+	ms_networks := map[string]docker.ContainerNetwork{}
+
+	for _, depDef := range deps {
+
+		msn, startErr := startDependent(dir, depDef, globals, configUserInputs, cw)
+
+		// If there were errors, cleanup any services that are already started.
+		if startErr != nil {
+
+			// Stop any services that might already be started.
+			ServiceStopTest(dir)
+
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v for dependency %v", SERVICE_COMMAND, SERVICE_START_COMMAND, startErr, depDef.URL)
+
+		} else {
+			// Add the dependent's networks to the map.
+			for netName, net := range msn {
+				ms_networks[netName] = net
+			}
+		}
+
+	}
+
+	return ms_networks, nil
+}
+
+func startDependent(dir string,
+	serviceDef *cliexchange.ServiceFile,
+	globals []register.GlobalSet, // API attributes
+	configUserInputs []register.MicroWork, // indicates configured variables
+	cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
+
+	// The docker networks of any dependencies that the input service has.
+	msNetworks := map[string]docker.ContainerNetwork{}
+
+	// Work our way down the dependency tree. If the service we want to start has dependencies, recursively process them
+	// until we get to a leaf node. Leaf node services are started first, parents are started last.
+	if serviceDef.HasDependencies() {
+
+		if deps, err := GetServiceDependencies(dir, serviceDef.RequiredServices); err != nil {
+			return nil, errors.New(fmt.Sprintf("unable to retrieve dependency metadata: %v", err))
+			// Start this service's dependencies
+		} else if msn, err := processStartDependencies(dir, deps, globals, configUserInputs, cw); err != nil {
+			return nil, errors.New(fmt.Sprintf("unable to start dependencies: %v", err))
+		} else {
+			msNetworks = msn
+		}
+	}
+
+	// Convert the deployment config into a full DeploymentDescription.
+	depConfig, deployment, derr := serviceDef.ConvertToDeploymentDescription(false)
+	if derr != nil {
+		return nil, derr
+	}
+
+	// Start the service containers
+	if !depConfig.HasAnyServices() {
+		cliutils.Verbose("Skipping service because it has no deployment configuration: %v", depConfig)
+		return msNetworks, nil
+	} else {
+
+		// If the service we need to start is a sharable singleton then it might already be started. If it is then just return
+		// the networks associated with the containers.
+		if serviceDef.Sharable == exchange.MS_SHARING_MODE_SINGLE {
+
+			if containerNetworks, err := getContainerNetworks(depConfig, cw); err != nil {
+				return nil, err
+			} else if len(containerNetworks) > 0 {
+				return containerNetworks, nil
+			}
+
+		}
+
+		// Start the service containers. Make an instance id the same way the runtime makes them.
+		sId := cutil.MakeMSInstanceKey(serviceDef.URL, serviceDef.Version, uuid.NewV4().String())
+
+		return startContainers(deployment, serviceDef.URL, serviceDef.Version, globals, serviceDef.UserInputs, configUserInputs, serviceDef.Org, depConfig, cw, msNetworks, true, false, sId)
+	}
+}
+
 func startMicroservice(deployment *containermessage.DeploymentDescription,
 	specRef string,
 	version string,
 	globals []register.GlobalSet, // API attributes
 	defUserInputs []exchange.UserInput, // indicates variable defaults
-	configUserInputs *register.InputFile, // indciates configured variables
+	configUserInputs []register.MicroWork, // indicates configured variables
 	org string,
 	dc *cliexchange.DeploymentConfig,
 	cw *container.ContainerWorker,
 	msNetworks map[string]docker.ContainerNetwork) (map[string]docker.ContainerNetwork, error) {
 
+	// Make an instance id the same way the runtime makes them.
+	msId := cutil.MakeMSInstanceKey(specRef, version, uuid.NewV4().String())
+
+	return startContainers(deployment, specRef, version, globals, defUserInputs, configUserInputs, org, dc, cw, msNetworks, false, false, msId)
+}
+
+func startContainers(deployment *containermessage.DeploymentDescription,
+	specRef string,
+	version string,
+	globals []register.GlobalSet, // API attributes
+	defUserInputs []exchange.UserInput, // indicates variable defaults
+	configUserInputs []register.MicroWork, // indicates configured variables
+	org string,
+	dc *cliexchange.DeploymentConfig,
+	cw *container.ContainerWorker,
+	msNetworks map[string]docker.ContainerNetwork,
+	service bool,
+	agreementBased bool,
+	id string) (map[string]docker.ContainerNetwork, error) {
+
+	// Establish logging context
+	logName := "microservice"
+	if service {
+		logName = "service"
+	}
+
+	agId := ""
+	wlpw := ""
+	if agreementBased {
+		agId = id
+		wlpw = "deprecated"
+	}
+
 	// Dependencies that require userinput variables to be set must have those variables set in the current userinput file,
 	// which is either the input userinput file or the default userinput file from the current project.
-	configVars := getConfiguredVariables(configUserInputs.Microservices, specRef)
+	configVars := getConfiguredVariables(configUserInputs, specRef)
 
 	// Now that we have the configured variables, turn everything into environment variables for the container.
-	environmentAdditions, enverr := createEnvVarMap("", "", globals, specRef, configVars, defUserInputs, org, persistence.AttributesToEnvvarMap)
+	environmentAdditions, enverr := createEnvVarMap(agId, wlpw, globals, specRef, configVars, defUserInputs, org, persistence.AttributesToEnvvarMap)
 	if enverr != nil {
 		return nil, errors.New(fmt.Sprintf("unable to create environment variables"))
 	}
@@ -383,75 +599,114 @@ func startMicroservice(deployment *containermessage.DeploymentDescription,
 
 	// Start the dependency microservice
 
-	// Make an instance id the same way the runtime makes them.
-	msId := cutil.MakeMSInstanceKey(specRef, version, uuid.NewV4().String())
-
-	fmt.Printf("Start microservice: %v with instance id prefix %v\n", dc.CLIString(), msId)
+	fmt.Printf("Start %v: %v with instance id prefix %v\n", logName, dc.CLIString(), id)
 
 	// Start the microservice container.
-	_, startErr := cw.ResourcesCreate(msId, nil, deployment, []byte(""), environmentAdditions, map[string]docker.ContainerNetwork{})
+	_, startErr := cw.ResourcesCreate(id, nil, deployment, []byte(""), environmentAdditions, msNetworks)
 	if startErr != nil {
 		return nil, errors.New(fmt.Sprintf("unable to start container using %v, error: %v", dc.CLIString(), startErr))
 	}
 
-	fmt.Printf("Running microservice.\n")
+	fmt.Printf("Running %v.\n", logName)
 
-	// Locate the microservice network(s) and return them so that a workload can be hooked in if necessary.
-	for serviceName, _ := range dc.Services {
-		dcService := docker.ListContainersOptions{
-			Filters: map[string][]string{
-				"label": []string{
-					fmt.Sprintf("%v.service_name=%v", container.LABEL_PREFIX, serviceName),
-				},
-			},
-		}
+	// Locate the service/microservice network(s) and return them so that a workload/parent-service can be hooked in.
+	return getContainerNetworks(dc, cw)
+}
 
-		containers, err := cw.GetClient().ListContainers(dcService)
-		if err != nil {
-			return nil, errors.New(fmt.Sprintf("unable to list containers, %v", err))
-		}
+func processStopDependencies(dir string, deps []*cliexchange.ServiceFile, cw *container.ContainerWorker) error {
 
-		// Return all the networks on this microservice.
-		for _, msc := range containers {
-			for nw_name, nw := range msc.Networks.Networks {
-				msNetworks[nw_name] = nw
-				cliutils.Verbose("Found network %v", nw)
-			}
+	// Log the stopping of dependencies if there are any.
+	if len(deps) != 0 {
+		cliutils.Verbose("Stopping dependencies.")
+	}
+
+	for _, depDef := range deps {
+		if err := stopDependent(dir, depDef, cw); err != nil {
+			return err
 		}
 	}
 
-	return msNetworks, nil
+	return nil
+}
+
+func stopDependent(dir string, serviceDef *cliexchange.ServiceFile, cw *container.ContainerWorker) error {
+
+	// Convert the deployment config into a full DeploymentDescription.
+	depConfig, _, derr := serviceDef.ConvertToDeploymentDescription(false)
+	if derr != nil {
+		return derr
+	}
+
+	// Stop the service containers
+	if !depConfig.HasAnyServices() {
+		fmt.Printf("Skipping service because it has no deployment configuration: %v\n", depConfig)
+	} else if err := stopContainers(depConfig, cw, true); err != nil {
+		return err
+	}
+
+	// Work our way down the dependency tree. If the service we want to stop has dependencies, recursively process them
+	// until we get to a leaf node. Parents are stopped first, leaf nodes are stopped last.
+	if serviceDef.HasDependencies() {
+
+		if deps, err := GetServiceDependencies(dir, serviceDef.RequiredServices); err != nil {
+			return errors.New(fmt.Sprintf("unable to retrieve dependency metadata: %v", err))
+			// Stop this service's dependencies
+		} else if err := processStopDependencies(dir, deps, cw); err != nil {
+			return errors.New(fmt.Sprintf("unable to stop dependencies: %v", err))
+		}
+	}
+
+	return nil
+}
+
+func stopService(dc *cliexchange.DeploymentConfig, cw *container.ContainerWorker) error {
+	return stopContainers(dc, cw, true)
 }
 
 func stopMicroservice(dc *cliexchange.DeploymentConfig, cw *container.ContainerWorker) error {
-	for serviceName, _ := range dc.Services {
-		dcService := docker.ListContainersOptions{
-			All: true,
-			Filters: map[string][]string{
-				"label": []string{
-					fmt.Sprintf("%v.service_name=%v", container.LABEL_PREFIX, serviceName),
-				},
-			},
-		}
+	return stopContainers(dc, cw, false)
+}
 
-		containers, err := cw.GetClient().ListContainers(dcService)
+func stopContainers(dc *cliexchange.DeploymentConfig, cw *container.ContainerWorker, service bool) error {
+
+	// Establish logging context
+	logName := "service"
+	if !service {
+		logName = "microservice"
+	}
+
+	// Stop each container in the deployment config.
+	for serviceName, _ := range dc.Services {
+		containers, err := findContainers(serviceName, cw)
 		if err != nil {
 			return errors.New(fmt.Sprintf("unable to list containers, %v", err))
 		}
 
 		cliutils.Verbose("Found containers %v", containers)
 
-		// Locate the microservice container and stop it.
+		// Locate the container and stop it.
 		for _, c := range containers {
 			msId := c.Labels[container.LABEL_PREFIX+".agreement_id"]
-			fmt.Printf("Stop microservice: %v with instance id prefix  %v\n", dc.CLIString(), msId)
+			fmt.Printf("Stop %v: %v with instance id prefix %v\n", logName, dc.CLIString(), msId)
 			cw.ResourcesRemove([]string{msId})
 		}
 	}
 	return nil
 }
 
-// For workloads and microservices that have their images on an image server, download the image(s)
+func getImageReferenceAsString(serviceDef *exchange.ServiceDefinition) (string, error) {
+
+	pip := make(policy.ImplementationPackage)
+	cutil.CopyMap(serviceDef.ImageStore, pip)
+	pt := pip.ConvertToTorrent()
+	if jsonBytes, err := json.Marshal(&pt); err != nil {
+		return "", err
+	} else {
+		return string(jsonBytes), nil
+	}
+}
+
+// For workloads, microservices and services that have their images on an image server, download the image(s)
 // and load them into the local docker.
 func downloadFromImageServer(torrentInfo string, keyFile string, currentUIs *register.InputFile) error {
 

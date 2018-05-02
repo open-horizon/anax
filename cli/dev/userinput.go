@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliutils"
+	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
@@ -47,9 +48,20 @@ func GetUserInputs(homeDirectory string, userInputFile string) (*register.InputF
 
 }
 
+// Given a userinput file, extract the configured variables based on the type of project.
+func GetUserInputsVariableConfiguration(homeDirectory string, userInputFile string) ([]register.MicroWork, error) {
+	if uif, _, err := GetUserInputs(homeDirectory, userInputFile); err != nil {
+		return nil, err
+	} else if IsMicroserviceProject(homeDirectory) {
+		return uif.Microservices, nil
+	} else {
+		return uif.Services, nil
+	}
+}
+
 // Sort of like a constructor, it creates a skeletal user input config object and writes it to the project
 // in the file system.
-func CreateUserInputs(directory string, workload bool, org string) error {
+func CreateUserInputs(directory string, workload bool, service bool, org string) error {
 
 	// Create a skeletal user input config object with fillins/place-holders for configuration.
 	res := new(register.InputFile)
@@ -62,28 +74,24 @@ func CreateUserInputs(directory string, workload bool, org string) error {
 		},
 	}
 
+	// Create a skeletal array with one element for variable configuration.
+	mw := []register.MicroWork{
+		register.MicroWork{
+			Org:          org,
+			Url:          "",
+			VersionRange: "[0.0.0,INFINITY)",
+			Variables: map[string]interface{}{
+				"my_variable": "some_value",
+			},
+		},
+	}
+
 	if workload {
-		res.Workloads = []register.MicroWork{
-			register.MicroWork{
-				Org:          org,
-				Url:          "",
-				VersionRange: "[0.0.0,INFINITY)",
-				Variables: map[string]interface{}{
-					"my_variable": "some_value",
-				},
-			},
-		}
+		res.Workloads = mw
+	} else if service {
+		res.Services = mw
 	} else {
-		res.Microservices = []register.MicroWork{
-			register.MicroWork{
-				Org:          org,
-				Url:          "",
-				VersionRange: "[0.0.0,INFINITY)",
-				Variables: map[string]interface{}{
-					"my_variable": "some_value",
-				},
-			},
-		}
+		res.Microservices = mw
 	}
 
 	// Convert the object to JSON and write it into the project.
@@ -194,6 +202,38 @@ func ValidateUserInput(i *register.InputFile, directory string, originalUserInpu
 			}
 		}
 
+	} else if IsServiceProject(directory) {
+		// Get the service definition, so that we can look at the user input variable definitions.
+		sDef, wderr := GetServiceDefinition(directory, SERVICE_DEFINITION_FILE)
+		if wderr != nil {
+			return wderr
+		}
+		foundDefinitionTuple := false
+		for ix, ms := range i.Services {
+			// Validate the tuple identifiers. With services, there can be tuples for the service in this project as well as services
+			// that are dependencies. Only the tuple for the current project's definition is validated here. The tuples for the
+			// dependencies are validated in dependency validation functions.
+			if ms.Url == sDef.URL {
+				foundDefinitionTuple = true
+				// For every variable that is set in the userinput file, make sure that variable is defined in the service definition.
+				if err := validateConfiguredVariables(ms.Variables, sDef.DefinesVariable); err != nil {
+					return errors.New(fmt.Sprintf("%v: services array element at index %v is %v %v", originalUserInputFilePath, ix, ms, err))
+				}
+				// For every variable that is defined without a default, make sure it is set.
+				if err := sDef.RequiredVariablesAreSet(ms.Variables); err != nil {
+					return errors.New(fmt.Sprintf("%v: %v", originalUserInputFilePath, err))
+				}
+			}
+
+			if err := validateServiceTuple(ms.Org, ms.VersionRange, ms.Url); err != nil {
+				return errors.New(fmt.Sprintf("%v: services array element at index %v is %v %v", originalUserInputFilePath, ix, ms, err))
+			}
+
+		}
+		if !foundDefinitionTuple {
+			return errors.New(fmt.Sprintf("%v: services array does not contain an element for %v.", originalUserInputFilePath, sDef.URL))
+		}
+
 	} else {
 		// Validity check the microservice array.
 		// Get the microservice definition, so that we can look at the user input variable definitions.
@@ -223,11 +263,22 @@ func ValidateUserInput(i *register.InputFile, directory string, originalUserInpu
 
 func validateTuple(org string, vers string, url string, definitionUrl string) error {
 	if org == "" {
-		return errors.New(fmt.Sprintf("has empty Org, must be set to the name of the organization that owns the microservice."))
+		return errors.New(fmt.Sprintf("has empty org, must be set to the name of the organization that owns the microservice."))
 	} else if vers == "" {
-		return errors.New(fmt.Sprintf("has empty VersionRange. Use [0.0.0,INFINITY) to cover all version ranges."))
+		return errors.New(fmt.Sprintf("has empty versionRange. Use [0.0.0,INFINITY) to cover all version ranges."))
 	} else if url != definitionUrl {
-		return errors.New(fmt.Sprintf("has incorrect Url, must be set to %v.", definitionUrl))
+		return errors.New(fmt.Sprintf("has incorrect url, must be set to %v.", definitionUrl))
+	}
+	return nil
+}
+
+func validateServiceTuple(org string, vers string, url string) error {
+	if org == "" {
+		return errors.New(fmt.Sprintf("has empty org, must be set to the name of the organization that owns the microservice."))
+	} else if vers == "" {
+		return errors.New(fmt.Sprintf("has empty versionRange. Use [0.0.0,INFINITY) to cover all version ranges."))
+	} else if url == "" {
+		return errors.New(fmt.Sprintf("has empty url. Must be set to this service's url or a dependency's url."))
 	}
 	return nil
 }
@@ -257,4 +308,111 @@ func getConfiguredVariables(configEntries []register.MicroWork, url string) map[
 		}
 	}
 	return configVars
+}
+
+// Given a userinput file, a dependency definition and a set of configured user input variables, copy the configured variables
+// into the userinput file.
+func UpdateVariableConfiguration(homeDirectory string, sDef cliexchange.AbstractServiceFile, configuredVars []register.MicroWork) (*register.InputFile, error) {
+
+	currentUIs, _, err := GetUserInputs(homeDirectory, "")
+	if err != nil {
+		return nil, err
+	}
+
+	// If there are any user inputs, append them to this project's user inputs. If this dependency already has
+	// some configuration in this project, then no changes will be made to this project.
+	if IsWorkloadProject(homeDirectory) {
+		// Find the configured variables for this dependency.
+		var depVarConfig register.MicroWork
+		for _, depUI := range configuredVars {
+			if depUI.Url == sDef.GetURL() {
+				depVarConfig = depUI
+				break
+			}
+		}
+
+		if depVarConfig.Url != "" {
+			found := false
+			for _, currentUI := range currentUIs.Microservices {
+				if currentUI.Url == depVarConfig.Url && currentUI.Org == depVarConfig.Org {
+					found = true
+					break
+				}
+			}
+			if !found {
+				currentUIs.Microservices = append(currentUIs.Microservices, depVarConfig)
+			}
+		}
+	} else {
+		// For services, copy all the variable configurations because we want to get the variable config for the
+		// dependencies too.
+		for _, currentCV := range configuredVars {
+			found := false
+			for _, currentUI := range currentUIs.Services {
+				if currentUI.Url == currentCV.Url && currentUI.Org == currentCV.Org {
+					found = true
+					break
+				}
+			}
+			if !found {
+				currentUIs.Services = append(currentUIs.Services, currentCV)
+			}
+		}
+	}
+
+	return currentUIs, nil
+
+}
+
+func SetUserInputsVariableConfiguration(homeDirectory string, sDef cliexchange.AbstractServiceFile, configuredVars []register.MicroWork) error {
+
+	if currentUIs, err := UpdateVariableConfiguration(homeDirectory, sDef, configuredVars); err != nil {
+		return err
+	} else {
+		return CreateFile(homeDirectory, USERINPUT_FILE, currentUIs)
+	}
+}
+
+// Remove configured variables from the userinputs file
+func RemoveConfiguredVariables(homeDirectory string, theDep cliexchange.AbstractServiceFile) error {
+
+	// Update the service definition dependencies.
+	userInputs, _, err := GetUserInputs(homeDirectory, "")
+	if err != nil {
+		return err
+	}
+
+	if IsServiceProject(homeDirectory) {
+		for ix, dep := range userInputs.Services {
+			if dep.Url == theDep.GetURL() {
+				userInputs.Services = append(userInputs.Services[:ix], userInputs.Services[ix+1:]...)
+				// Harden the updated user inputs.
+				if err := CreateFile(homeDirectory, USERINPUT_FILE, userInputs); err != nil {
+					return err
+				}
+
+				cliutils.Verbose("Updated %v/%v.", homeDirectory, USERINPUT_FILE)
+				return nil
+			}
+		}
+		cliutils.Verbose("No need to update %v/%v.", homeDirectory, USERINPUT_FILE)
+
+	} else if IsWorkloadProject(homeDirectory) {
+		for ix, dep := range userInputs.Microservices {
+			if dep.Url == theDep.GetURL() {
+				userInputs.Microservices = append(userInputs.Microservices[:ix], userInputs.Microservices[ix+1:]...)
+				// Harden the updated user inputs.
+				if err := CreateFile(homeDirectory, USERINPUT_FILE, userInputs); err != nil {
+					return err
+				}
+
+				cliutils.Verbose("Updated %v/%v.", homeDirectory, USERINPUT_FILE)
+				return nil
+			}
+		}
+		cliutils.Verbose("No need to update %v/%v.", homeDirectory, USERINPUT_FILE)
+	}
+
+	return nil
+
 }

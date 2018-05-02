@@ -5,11 +5,13 @@ package container
 import (
 	"archive/tar"
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"io"
@@ -254,12 +256,17 @@ func commonPatterned(t *testing.T, db *bolt.DB, agreementId string, tFn func(wor
 		myDeployment = deployment
 	}
 
+	var deploymentDesc containermessage.DeploymentDescription
+	if err := json.Unmarshal([]byte(myDeployment), &deploymentDesc); err != nil {
+		t.Error(err)
+	}
+
 	env := map[string]string{
 		"HZN_AGREEMENTID": myAgreementId,
 		"HZN_RAM":         "64",
 	}
 
-	cmd := worker.NewWorkloadConfigureCommand([]string{}, &events.AgreementLaunchContext{
+	cmd := worker.NewWorkloadConfigureCommand(&deploymentDesc, &events.AgreementLaunchContext{
 		AgreementProtocol:    protocol,
 		AgreementId:          myAgreementId,
 		Configure:            *events.NewContainerConfig(url.URL{}, "", myDeployment, "", "", ""),
@@ -325,11 +332,13 @@ func Test_resourcesCreate_failLoad(t *testing.T) {
 
 	dl, _ := url.Parse("https://images.bluehorizon.network/f3a39c78edf78d415ff7e634e396d8e34b1656a3.torrent")
 
+	var deploymentDesc containermessage.DeploymentDescription
+	if err := json.Unmarshal([]byte(pattern), &deploymentDesc); err != nil {
+		t.Error(err)
+	}
+
 	// launch setup
-	cmd := worker.NewWorkloadConfigureCommand([]string{
-		"6fcc9d89326a42d48fa596e9f61dba5730b7a20e.tar.gz",
-		"aef3b0fe6536092014cb29e9723ccc661d321d35.tar.gz",
-	}, &events.AgreementLaunchContext{
+	cmd := worker.NewWorkloadConfigureCommand(&deploymentDesc, &events.AgreementLaunchContext{
 		AgreementProtocol:    "Citizen Scientist",
 		AgreementId:          agreementId,
 		Configure:            *events.NewContainerConfig(*dl, "", pattern, "wpDdJ60JG1MvThKLMRX0eJf6/LHGUes79FDypYCOkgDAmA96BsREKpEHzl3OVM15z1vop6mpkLH5ka6vvbG0xJBYzZQl9HvyCSA7oJ/dQOqodjy2CySNWmzlFC842QXhrZO9yZxHZX0EcaPr2BdGu9p/9q17LzH9BcBYmBo7dZNqKSqkphErdqc1BOGSnjGlk/FfwnQGZM5SFz8mXa3ZW1/8yQ7w9/vvjTpcyB/X0Rv8qy0hfN0LKUfjfsZJ6O/aij0RkQ0w5ioGorGawOzQGvijs17KN8qfyVNn6QGqa03d4+e0mEQalhG9xsZKWSviSY92ifdSpBs7DohevyYMfT2mCRafP4lF2luu61Ho3pBQPEUjVEhvWch6b0FbsiH4iVcIVFTR+7SZhcv6oVwLDawvdT4aDo6Q1JhEuUrLMJhs6fb9q0cHl8SBpkPfcua33F4XDRCJoiYwTj3a8TtEKfaGmMDuIQq/5mJI8DSdCKasKDitLYFTE4z7+i2uKYlmXD1tzC2hNIWgdgAIXg0meQymWPqNIxDoo+pzTgDvv+tQ9usDRAvd+aYIDcf7IXAlAomtg7GE4v8KTCJHkM1aHVKE1ZCy0yI5uEWQoce9v8DukyZVwRTxfSX83F8Y/zfhxneSAeGkHHKO1PyFp82/fQDRyWhaSDdqO1uFPFvfbBU=", "", ""),

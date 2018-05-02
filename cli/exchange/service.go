@@ -6,6 +6,7 @@ import (
 	"fmt"
 	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/rsapss-tool/sign"
@@ -20,30 +21,30 @@ import (
 // This can't be a const because a map literal isn't a const in go
 var VALID_DEPLOYMENT_FIELDS = map[string]int8{"image": 1, "privileged": 1, "cap_add": 1, "environment": 1, "devices": 1, "binds": 1, "specific_ports": 1, "command": 1, "ports": 1}
 
-//todo: when these structs are added to anax proper, use those instead
-type ServiceRef struct {
-	Org     string `json:"org"`
-	URL     string `json:"url"`
-	Version string `json:"version"`
-	Arch    string `json:"arch"`
+type AbstractServiceFile interface {
+	GetOrg() string
+	GetURL() string
+	GetVersion() string
+	GetArch() string
+	GetUserInputs() []exchange.UserInput
 }
 
 // This is used when reading json file the user gives us as input to create the service struct
 type ServiceFile struct {
-	Org                 string                 `json:"org"` // optional
-	Label               string                 `json:"label"`
-	Description         string                 `json:"description"`
-	Public              bool                   `json:"public"`
-	URL                 string                 `json:"url"`
-	Version             string                 `json:"version"`
-	Arch                string                 `json:"arch"`
-	Sharable            string                 `json:"sharable"`
-	MatchHardware       map[string]interface{} `json:"matchHardware"`
-	RequiredServices    []ServiceRef           `json:"requiredServices"`
-	UserInputs          []exchange.UserInput   `json:"userInput"`
-	Deployment          map[string]interface{} `json:"deployment"`
-	DeploymentSignature string                 `json:"deploymentSignature"`
-	ImageStore          map[string]interface{} `json:"imageStore"`
+	Org                 string                       `json:"org"` // optional
+	Label               string                       `json:"label"`
+	Description         string                       `json:"description"`
+	Public              bool                         `json:"public"`
+	URL                 string                       `json:"url"`
+	Version             string                       `json:"version"`
+	Arch                string                       `json:"arch"`
+	Sharable            string                       `json:"sharable"`
+	MatchHardware       map[string]interface{}       `json:"matchHardware"`
+	RequiredServices    []exchange.ServiceDependency `json:"requiredServices"`
+	UserInputs          []exchange.UserInput         `json:"userInput"`
+	Deployment          map[string]interface{}       `json:"deployment"`
+	DeploymentSignature string                       `json:"deploymentSignature"`
+	ImageStore          map[string]interface{}       `json:"imageStore"`
 }
 
 type GetServicesResponse struct {
@@ -53,26 +54,46 @@ type GetServicesResponse struct {
 
 // This is used as the input/output to the exchange to create/read the service. The main differences are: no org, deployment is an escaped string, and optional owner and last updated
 type ServiceExch struct {
-	Owner               string                 `json:"owner,omitempty"`
-	Label               string                 `json:"label"`
-	Description         string                 `json:"description"`
-	Public              bool                   `json:"public"`
-	URL                 string                 `json:"url"`
-	Version             string                 `json:"version"`
-	Arch                string                 `json:"arch"`
-	Sharable            string                 `json:"sharable"`
-	MatchHardware       map[string]interface{} `json:"matchHardware"`
-	RequiredServices    []ServiceRef           `json:"requiredServices"`
-	UserInputs          []exchange.UserInput   `json:"userInput"`
-	Deployment          string                 `json:"deployment"`
-	DeploymentSignature string                 `json:"deploymentSignature"`
-	ImageStore          map[string]interface{} `json:"imageStore"`
-	LastUpdated         string                 `json:"lastUpdated,omitempty"`
+	Owner               string                       `json:"owner,omitempty"`
+	Label               string                       `json:"label"`
+	Description         string                       `json:"description"`
+	Public              bool                         `json:"public"`
+	URL                 string                       `json:"url"`
+	Version             string                       `json:"version"`
+	Arch                string                       `json:"arch"`
+	Sharable            string                       `json:"sharable"`
+	MatchHardware       map[string]interface{}       `json:"matchHardware"`
+	RequiredServices    []exchange.ServiceDependency `json:"requiredServices"`
+	UserInputs          []exchange.UserInput         `json:"userInput"`
+	Deployment          string                       `json:"deployment"`
+	DeploymentSignature string                       `json:"deploymentSignature"`
+	ImageStore          map[string]interface{}       `json:"imageStore"`
+	LastUpdated         string                       `json:"lastUpdated,omitempty"`
 }
 
 type ServiceDockAuthExch struct {
 	Registry string `json:"registry"`
 	Token    string `json:"token"`
+}
+
+func (sf *ServiceFile) GetOrg() string {
+	return sf.Org
+}
+
+func (sf *ServiceFile) GetURL() string {
+	return sf.URL
+}
+
+func (sf *ServiceFile) GetVersion() string {
+	return sf.Version
+}
+
+func (sf *ServiceFile) GetArch() string {
+	return sf.Arch
+}
+
+func (sf *ServiceFile) GetUserInputs() []exchange.UserInput {
+	return sf.UserInputs
 }
 
 // Returns true if the service definition userinputs define the variable.
@@ -85,23 +106,37 @@ func (sf *ServiceFile) DefinesVariable(name string) string {
 	return ""
 }
 
-/* Need help from dave about how to port this to service...
-// Convert the first Deployment Configuration to a full Deployment Description.
-func (sf *ServiceFile) ConvertToDeploymentDescription() (*DeploymentConfig, *containermessage.DeploymentDescription, error) {
-	for _, wl := range sf.Services {
-		depConfig := ConvertToDeploymentConfig(wl.Deployment)
-		return depConfig, &containermessage.DeploymentDescription{
-			Services: depConfig.Services,
-			ServicePattern: containermessage.Pattern{
-				Shared: map[string][]string{},
-			},
-			Infrastructure: true,
-			Overrides:      map[string]*containermessage.Service{},
-		}, nil
+// Returns true if the service definition has required services.
+func (sf *ServiceFile) HasDependencies() bool {
+	if len(sf.RequiredServices) == 0 {
+		return false
 	}
-	return nil, nil, errors.New(fmt.Sprintf("has no containers to execute"))
+	return true
 }
-*/
+
+// Return true if the service definition is a dependency in the input list of service references.
+func (sf *ServiceFile) IsDependent(deps []exchange.ServiceDependency) bool {
+	for _, dep := range deps {
+		if sf.URL == dep.URL && sf.Org == dep.Org {
+			return true
+		}
+	}
+	return false
+}
+
+// Convert the Deployment Configuration to a full Deployment Description.
+func (sf *ServiceFile) ConvertToDeploymentDescription(agreementService bool) (*DeploymentConfig, *containermessage.DeploymentDescription, error) {
+	depConfig := ConvertToDeploymentConfig(sf.Deployment)
+	infra := !agreementService
+	return depConfig, &containermessage.DeploymentDescription{
+		Services: depConfig.Services,
+		ServicePattern: containermessage.Pattern{
+			Shared: map[string][]string{},
+		},
+		Infrastructure: infra,
+		Overrides:      map[string]*containermessage.Service{},
+	}, nil
+}
 
 // Verify that non default user inputs are set in the input map.
 func (sf *ServiceFile) RequiredVariablesAreSet(setVars map[string]interface{}) error {

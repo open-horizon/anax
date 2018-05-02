@@ -319,34 +319,10 @@ func processGetServiceResponse(mURL string, mOrg string, mVersion string, mArch 
 			}
 		}
 
-		highest := ""
-		// resMsDef has to be an object instead of pointer to the object because once the pointer points to &msDef,
-		// the content of it will get changed when the content of msDef gets changed in the loop.
-		var resMsDef ServiceDefinition
-		var resMsId string
-		for msId, msDef := range msMetadata {
-			if inRange, err := vRange.Is_within_range(msDef.Version); err != nil {
-				return nil, "", errors.New(fmt.Sprintf("unable to verify that %v is within %v, error %v", msDef.Version, vRange, err))
-			} else if inRange {
-				glog.V(5).Infof(rpclogString(fmt.Sprintf("found service version %v within acceptable range", msDef.Version)))
-
-				// cannot pass in "" in the CompareVersions because it checks for invalid version strings.
-				var c int
-				var err error
-
-				if highest == "" {
-					c, err = policy.CompareVersions("0.0.0", msDef.Version)
-				} else {
-					c, err = policy.CompareVersions(highest, msDef.Version)
-				}
-				if err != nil {
-					glog.Errorf(rpclogString(fmt.Sprintf("error comparing version %v with version %v. %v", highest, msDef.Version, err)))
-				} else if c == -1 {
-					highest = msDef.Version
-					resMsDef = msDef
-					resMsId = msId
-				}
-			}
+		highest, resMsDef, resMsId, err := GetHighestVersion(msMetadata, vRange)
+		if err != nil {
+			glog.Errorf(rpclogString(err))
+			return nil, "", err
 		}
 
 		if highest == "" {
@@ -358,6 +334,43 @@ func processGetServiceResponse(mURL string, mOrg string, mVersion string, mArch 
 			return &resMsDef, resMsId, nil
 		}
 	}
+}
+
+// Find the highest version service and return it.
+func GetHighestVersion(msMetadata map[string]ServiceDefinition, vRange *policy.Version_Expression) (string, ServiceDefinition, string, error) {
+	highest := ""
+	if vRange == nil {
+		vRange, _ = policy.Version_Expression_Factory("0.0.0")
+	}
+	// resSDef has to be an object instead of pointer to the object because once the pointer points to &sDef,
+	// the content of it will get changed when the content of sDef gets changed in the loop.
+	var resSDef ServiceDefinition
+	var resSId string
+	for sId, sDef := range msMetadata {
+		if inRange, err := vRange.Is_within_range(sDef.Version); err != nil {
+			return "", resSDef, "", errors.New(fmt.Sprintf("unable to verify that %v is within %v, error %v", sDef.Version, vRange, err))
+		} else if inRange {
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("found service version %v within acceptable range", sDef.Version)))
+
+			// cannot pass in "" in the CompareVersions because it checks for invalid version strings.
+			var c int
+			var err error
+
+			if highest == "" {
+				c, err = policy.CompareVersions("0.0.0", sDef.Version)
+			} else {
+				c, err = policy.CompareVersions(highest, sDef.Version)
+			}
+			if err != nil {
+				glog.Errorf(rpclogString(fmt.Sprintf("error comparing version %v with version %v. %v", highest, sDef.Version, err)))
+			} else if c == -1 {
+				highest = sDef.Version
+				resSDef = sDef
+				resSId = sId
+			}
+		}
+	}
+	return highest, resSDef, resSId, nil
 }
 
 // The purpose of this function is to verify that a given service URL, version and architecture, is defined in the exchange
