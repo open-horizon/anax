@@ -162,7 +162,187 @@ curl -X DELETE -s http://localhost/agreement/a70042dd17d2c18fa0c9f354bf1b560061d
 
 ### 2. Policy
 
-#### **API:** POST  /policy/\<policy name\>/upgrade
+#### **API:** GET  /policy
+---
+
+Get all the names of policies that this agbot hosts.
+
+**Parameters:**
+
+none
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| {org} | json | The key is the organization name. The value is a list of the policy names for the organization that are hosted by this agbot.  |
+
+
+**Example:**
+
+```
+curl -s http://localhost:8046/policy | jq
+{
+  "public": [
+    "netspeed-docker-public_bluehorizon.network-workloads-location-docker-public_public_amd64",
+    "netspeed-docker-public_bluehorizon.network-workloads-location_IBM_arm",
+    "netspeed-docker-public_bluehorizon.network-workloads-netspeed-docker-public_public_amd64",
+    "netspeed-docker-public_bluehorizon.network-workloads-netspeed-docker_IBM_arm",
+    "netspeed-docker_bluehorizon.network-workloads-location_IBM_amd64",
+    "netspeed-docker_bluehorizon.network-workloads-location_IBM_arm",
+    "netspeed-docker_bluehorizon.network-workloads-netspeed-docker_IBM_amd64",
+    "netspeed-docker_bluehorizon.network-workloads-netspeed-docker_IBM_arm"
+  ],
+  "test": [
+    "location amd64",
+    "location x86_64"
+  ]
+}
+
+```
+
+#### **API:** GET  /policy/{org}
+---
+
+Get all name of the policies this agbot hosts for a organization.
+
+**Parameters:**
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| org | string | the name of the organization.  |
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| {org} | json | The key is the organization name. The value is a list of the policy names for the organization that are hosted by this agbot.  |
+
+
+**Example:**
+
+```
+curl -s http://localhost:8046/policy/test | jq
+{
+  "test": [
+    "location amd64",
+    "location x86_64"
+  ]
+}
+
+```
+
+
+#### **API:** GET  /policy/{org}/{name}
+---
+
+Get a specific policy.
+
+**Parameters:**
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| org | string | the name of the organization.  |
+| name | string | the name of the policy.  |
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| header | json|  the header of the policy. It includes the name and the version of the policy. |
+| patternId | string |  the name of the pattern this policy is created for. |
+| workloads | json | the workload name, version, priority and its deployment  information. |
+| agreementProtocols | array | an array of agreement protocols. Each one includes the name of the agreement protocol.|
+| properties | array | an array of name value pairs that the current party have. |
+| dataVerification | json | contains information on how data gets verified. |
+| nodeHealth | json | contains information on how to determine  the health of the node. |
+| ha_group | json | a list of ha partners. |
+
+
+**Example:**
+
+```
+curl -s http://localhost:8046/policy/public/netspeed-docker_bluehorizon.network-workloads-location_IBM_arm |jq
+{
+  "header": {
+    "name": "netspeed-docker_bluehorizon.network-workloads-location_IBM_arm",
+    "version": "2.0"
+  },
+  "patternId": "public/netspeed-docker",
+  "useServices": false,
+  "agreementProtocols": [
+    {
+      "name": "Basic",
+      "protocolVersion": 1
+    },
+    {
+      "name": "Citizen Scientist",
+      "protocolVersion": 2,
+      "blockchains": [
+        {
+          "type": "ethereum",
+          "name": "bluehorizon",
+          "organization": "IBM"
+        }
+      ]
+    }
+  ],
+  "workloads": [
+    {
+      "torrent": {},
+      "priority": {
+        "priority_value": 50,
+        "retries": 1,
+        "retry_durations": 3600,
+        "verified_durations": 52
+      },
+      "workloadUrl": "https://bluehorizon.network/workloads/location",
+      "organization": "IBM",
+      "version": "2.0.6",
+      "arch": "arm",
+      "deployment_overrides": "{\"services\":{\"location\":{\"environment\":[\"USE_NEW_STAGING_URL=false\"]}}}",
+      "deployment_overrides_signature": "CmOTNqB..."
+    }
+  ],
+  "valueExchange": {},
+  "resourceLimits": {},
+  "dataVerification": {
+    "enabled": true,
+    "interval": 480,
+    "check_rate": 15,
+    "metering": {
+      "tokens": 1,
+      "per_time_unit": "min",
+      "notification_interval": 30
+    }
+  },
+  "proposalRejection": {},
+  "ha_group": {},
+  "nodeHealth": {
+    "missing_heartbeat_interval": 90,
+    "check_agreement_status": 60
+  }
+}
+
+
+```
+
+#### **API:** POST  /policy/{policy name}/upgrade
 ---
 
 Force a device to attempt a workload upgrade for the given device and given policy.
@@ -251,4 +431,159 @@ curl -s http://localhost/workloadusage | jq '.'
     "verified_durations": 45
   }
 ]
+```
+
+### 4. Status
+
+#### **API:** GET  /status
+---
+
+Get the connectivity, configuration, and blockchain status on the agbot. The output includes the status of all blockchain containers, agent configuration and the agbot host's connectivity. 
+**Parameters:**
+
+none
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| geth   | json | the information about the ethereum client. |
+| configuration| json| the configuration data.  |
+| configuration.exchange_api | string | the url for the exchange being used by the Horizon agent. |
+| configuration.exchange_version | string | the current version of the exchange being used. |
+| configuration.preferred_exchange_version | string | the preferred version for the exchange in order to use all the horizon functions. |
+| configuration.required_minimum_exchange_version | string | the required minimum version for the exchange. |
+| configuration.architecture | string | the hardware architecture of the node as returned from the Go language API runtime.GOARCH. |
+| connectivity | json | whether or not the node has network connectivity with some remote sites. |
+
+
+**Example:**
+```
+curl -s http://localhost:8046/status |jq '.'
+{
+  "geth": [],
+  "configuration": {
+    "exchange_api": "https://exchange.staging.bluehorizon.network/api/v1/",
+    "exchange_version": "1.55.0",
+    "required_minimum_exchange_version": "1.49.0",
+    "preferred_exchange_version": "1.55.0",
+    "architecture": "amd64",
+    "horizon_version": "2.17.2"
+  },
+  "connectivity": {
+    "firmware.bluehorizon.network": true,
+    "images.bluehorizon.network": true
+  }
+}
+```
+
+#### **API:** GET  /status/workers
+---
+
+Get the current Horizon agent worker status and the status trasition logs. 
+**Parameters:**
+
+none
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| workers   | json | the current status of each worker and its subworkers. |
+| worker_status_log | string array |  the history of the worker status changes. |
+
+
+**Example:**
+```
+curl -s http://localhost:8046/status/workers |jq 
+{
+  "workers": {
+    "AgBot": {
+      "name": "AgBot",
+      "status": "initialized",
+      "subworker_status": {
+        "AgBotGovernAgreements": "started",
+        "AgBotGovernArchivedAgreements": "started",
+        "AgBotGovernBlockchain": "started",
+        "AgBotPolicyGenerator": "started",
+        "AgBotPolicyWatcher": "started",
+        "AgbotHeartBeat": "started"
+      }
+    },
+    "BasicProtocolHandler": {
+      "name": "BasicProtocolHandler",
+      "status": "initialized",
+      "subworker_status": {
+        "129b5b8c-11da-45d4-98b4-fc8b191ae38a": "started",
+        "1dcb639c-45ee-43bc-bd39-6104eac7a03d": "started",
+        "3843f354-531e-44af-9f24-9d79737ca401": "started",
+      }
+    },
+    "Blockchain": {
+      "name": "Blockchain",
+      "status": "initialized",
+      "subworker_status": {}
+    },
+    "CSProtocolHandler": {
+      "name": "CSProtocolHandler",
+      "status": "initialized",
+      "subworker_status": {
+        "006d3a21-7d68-49c6-97e9-a0afb3977ef7": "started",
+        "0cbe1051-0abb-4b59-812c-ea6862348629": "started",
+        "2b27196f-941a-46f4-866e-04b145f0c4bd": "started",
+      }
+    },
+    "Container": {
+      "name": "Container",
+      "status": "initialized",
+      "subworker_status": {}
+    },
+    "Torrent": {
+      "name": "Torrent",
+      "status": "initialized",
+      "subworker_status": {}
+    }
+  },
+  "worker_status_log": [
+    "2018-05-02 19:25:11 Worker Torrent: started.",
+    "2018-05-02 19:25:11 Worker Torrent: initialized.",
+    "2018-05-02 19:25:11 Worker AgBot: started.",
+    "2018-05-02 19:25:11 Worker Blockchain: started.",
+    "2018-05-02 19:25:11 Worker Blockchain: initialized.",
+    "2018-05-02 19:25:11 Worker Container: started.",
+    "2018-05-02 19:25:11 Worker Container: initialized.",
+    "2018-05-02 19:25:13 Worker BasicProtocolHandler: initialized.",
+    "2018-05-02 19:25:13 Worker BasicProtocolHandler: subworker 3843f354-531e-44af-9f24-9d79737ca401 started.",
+    "2018-05-02 19:25:13 Worker BasicProtocolHandler: subworker 1dcb639c-45ee-43bc-bd39-6104eac7a03d started.",
+    "2018-05-02 19:25:13 Worker BasicProtocolHandler: subworker 129b5b8c-11da-45d4-98b4-fc8b191ae38a started.",
+    "2018-05-02 19:25:13 Worker CSProtocolHandler: initialized.",
+    "2018-05-02 19:25:13 Worker CSProtocolHandler: subworker 0cbe1051-0abb-4b59-812c-ea6862348629 started.",
+    "2018-05-02 19:25:13 Worker CSProtocolHandler: subworker 006d3a21-7d68-49c6-97e9-a0afb3977ef7 started.",
+    "2018-05-02 19:25:13 Worker CSProtocolHandler: subworker 2b27196f-941a-46f4-866e-04b145f0c4bd started.",
+    "2018-05-02 19:25:13 Worker AgBot: subworker AgbotHeartBeat added.",
+    "2018-05-02 19:25:13 Worker AgBot: subworker AgBotGovernAgreements added.",
+    "2018-05-02 19:25:13 Worker AgBot: subworker AgBotGovernArchivedAgreements added.",
+    "2018-05-02 19:25:13 Worker AgBot: subworker AgBotGovernBlockchain added.",
+    "2018-05-02 19:25:13 Worker AgBot: subworker AgBotPolicyWatcher added.",
+    "2018-05-02 19:25:13 Worker AgBot: subworker AgBotPolicyGenerator added.",
+    "2018-05-02 19:25:13 Worker AgBot: initialized.",
+    "2018-05-02 19:25:13 Worker AgBot: subworker AgbotHeartBeat started.",
+    "2018-05-02 19:25:13 Worker AgBot: subworker AgBotGovernAgreements started.",
+    "2018-05-02 19:25:13 Worker AgBot: subworker AgBotGovernArchivedAgreements started.",
+    "2018-05-02 19:25:13 Worker AgBot: subworker AgBotGovernBlockchain started.",
+    "2018-05-02 19:25:13 Worker AgBot: subworker AgBotPolicyWatcher started.",
+    "2018-05-02 19:25:13 Worker AgBot: subworker AgBotPolicyGenerator started."
+  ]
+}
+
 ```

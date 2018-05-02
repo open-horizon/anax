@@ -89,12 +89,12 @@ func TestGetUpgradeMicroserviceDef(t *testing.T) {
 	// invalide verision range
 	saved_vr := pms.UpgradeVersionRange
 	pms.UpgradeVersionRange = "abc"
-	_, err = GetUpgradeMicroserviceDef(getVariableMicroserviceHandler("2.0"), pms, db)
+	_, err = GetUpgradeMicroserviceDef(getVariableMicroserviceOrServiceHandler("2.0"), pms, db)
 	assert.NotNil(t, err, "Invalid version range fromat should result in error")
 	pms.UpgradeVersionRange = saved_vr
 
 	// higher version
-	new_ms, err := GetUpgradeMicroserviceDef(getVariableMicroserviceHandler("2.0"), pms, db)
+	new_ms, err := GetUpgradeMicroserviceDef(getVariableMicroserviceOrServiceHandler("2.0"), pms, db)
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 	assert.NotNil(t, new_ms, "should return a new ms")
 	assert.Equal(t, "2.0", new_ms.Version, "should have a higher version")
@@ -104,12 +104,12 @@ func TestGetUpgradeMicroserviceDef(t *testing.T) {
 	assert.Equal(t, pms.UpgradeVersionRange, new_ms.UpgradeVersionRange, "")
 
 	// lower version
-	new_ms, err = GetUpgradeMicroserviceDef(getVariableMicroserviceHandler("0.5"), pms, db)
+	new_ms, err = GetUpgradeMicroserviceDef(getVariableMicroserviceOrServiceHandler("0.5"), pms, db)
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 	assert.Nil(t, new_ms, fmt.Sprintf("should return a nil ms, but got this: %v", new_ms))
 
 	// same version but different hash
-	new_ms, err = GetUpgradeMicroserviceDef(getVariableMicroserviceHandler("1.0.0"), pms, db)
+	new_ms, err = GetUpgradeMicroserviceDef(getVariableMicroserviceOrServiceHandler("1.0.0"), pms, db)
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 	assert.NotNil(t, new_ms, "should return a new ms")
 	assert.Equal(t, "1.0.0", new_ms.Version, "should have the same version")
@@ -352,6 +352,31 @@ func getVariableMicroserviceHandler(version string) exchange.MicroserviceHandler
 			LastUpdated:   "today",
 		}
 		return &md, "ms-id", nil
+	}
+}
+
+func getVariableMicroserviceOrServiceHandler(version string) exchange.MicroserviceOrServiceHandler {
+	return func(mUrl string, mOrg string, mVersion string, mArch string) (exchange.ExchangeDefinition, error) {
+		md := exchange.MicroserviceDefinition{
+			Owner:         "owner",
+			Label:         "label",
+			Description:   "desc",
+			SpecRef:       mUrl,
+			Version:       version,
+			Arch:          mArch,
+			Sharable:      exchange.MS_SHARING_MODE_EXCLUSIVE,
+			DownloadURL:   "",
+			MatchHardware: exchange.HardwareMatch{},
+			UserInputs:    []exchange.UserInput{},
+			Workloads:     []exchange.WorkloadDeployment{},
+			LastUpdated:   "today",
+		}
+
+		var details exchange.ExchangeDefinition
+
+		details = &md
+
+		return details, nil
 	}
 }
 

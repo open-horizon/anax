@@ -82,7 +82,7 @@ func (c *CSProtocolHandler) Initialize() {
 		agw := NewCSAgreementWorker(c, c.config, c.db, c.pm, agreementLockMgr)
 		go agw.start(c.Work, random)
 	}
-
+	worker.GetWorkerStatusManager().SetWorkerStatus("CSProtocolHandler", worker.STATUS_INITIALIZED)
 }
 
 func (c *CSProtocolHandler) AgreementProtocolHandler(typeName string, name string, org string) abstractprotocol.ProtocolHandler {

@@ -163,6 +163,7 @@ func (a *API) listen(apiListen string) {
 		router.HandleFunc("/policy/{name}/upgrade", a.policy).Methods("POST", "OPTIONS")
 		router.HandleFunc("/workloadusage", a.workloadusage).Methods("GET", "OPTIONS")
 		router.HandleFunc("/status", a.status).Methods("GET", "OPTIONS")
+		router.HandleFunc("/status/workers", a.workerstatus).Methods("GET", "OPTIONS")
 		router.HandleFunc("/node", a.node).Methods("GET", "OPTIONS")
 
 		http.ListenAndServe(apiListen, nocache(router))
@@ -456,6 +457,19 @@ func (a *API) status(w http.ResponseWriter, r *http.Request) {
 		}
 
 		writeResponse(w, info, http.StatusOK)
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *API) workerstatus(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		status := worker.GetWorkerStatusManager()
+		writeResponse(w, status, http.StatusOK)
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, OPTIONS")
 		w.WriteHeader(http.StatusOK)

@@ -254,6 +254,7 @@ func (w *BaseWorker) HandleFrameworkCommands(command Command) (bool, bool) {
 		cmd, _ := command.(*TerminateCommand)
 		glog.V(3).Infof(cdLogString(fmt.Sprintf("%v framework handling %v", w.GetName(), cmd)))
 
+		workerStatusManager.SetWorkerStatus(w.GetName(), STATUS_TERMINATING)
 		// If we can terminate, do it. Otherwise requeue the termination.
 		if w.AreAllSubworkersTerminated() {
 			w.Messages <- events.NewWorkerStopMessage(events.WORKER_STOP, w.GetName())
@@ -262,7 +263,6 @@ func (w *BaseWorker) HandleFrameworkCommands(command Command) (bool, bool) {
 			w.AddDeferredCommand(cmd)
 			return true, false
 		}
-
 	}
 	return false, false
 }
@@ -292,10 +292,16 @@ func (w *BaseWorker) internalCommandhandler(worker Worker, command Command) bool
 func (w *BaseWorker) Start(worker Worker, noWorkInterval int) {
 	go func() {
 
+		// log worker status
+		workerStatusManager.SetWorkerStatus(w.GetName(), STATUS_STARTED)
+
 		// Allow the worker to initialize itself, or stop it if initialization determines that.
 		if !worker.Initialize() {
+			workerStatusManager.SetWorkerStatus(w.GetName(), STATUS_INIT_FAILED)
 			w.Messages <- events.NewWorkerStopMessage(events.WORKER_STOP, w.GetName())
 			return
+		} else {
+			workerStatusManager.SetWorkerStatus(w.GetName(), STATUS_INITIALIZED)
 		}
 
 		// Process commands in blocking or non-blocking fashion, depending on how we were called.
@@ -370,17 +376,20 @@ func (w *BaseWorker) AddSubworker(name string) chan bool {
 		TermChan:   rc,
 		Terminated: false,
 	}
+	workerStatusManager.SetSubworkerStatus(w.GetName(), name, STATUS_ADDED)
 	return rc
 }
 
 func (w *BaseWorker) SetSubworkerTerminated(name string) {
 	if sw, ok := w.SubWorkers[name]; ok {
+		workerStatusManager.SetSubworkerStatus(w.GetName(), name, STATUS_TERMINATED)
 		sw.Terminated = true
 	}
 }
 
 func (w *BaseWorker) TerminateSubworker(name string) {
 	if sw, ok := w.SubWorkers[name]; ok && !w.IsSubworkerTerminated(name) {
+		workerStatusManager.SetSubworkerStatus(w.GetName(), name, STATUS_TERMINATING)
 		glog.V(5).Infof(cdLogString(fmt.Sprintf("telling subworker %v %v to terminate", name, sw)))
 		sw.TermChan <- true
 	}
@@ -416,6 +425,7 @@ func (w *BaseWorker) DispatchSubworker(name string, runSubWorker func() int, int
 	quit := w.AddSubworker(name)
 	nextWaitTime := interval
 	go func() {
+		workerStatusManager.SetSubworkerStatus(w.GetName(), name, STATUS_STARTED)
 		glog.V(3).Infof(cdLogString(fmt.Sprintf("starting subworker %v", name)))
 		for {
 			select {
@@ -486,6 +496,7 @@ func eventHandler(incoming events.Message, workers *MessageHandlerRegistry) (str
 	case *events.WorkerStopMessage:
 		msg, _ := incoming.(*events.WorkerStopMessage)
 		workers.Remove(msg.Name())
+		workerStatusManager.SetWorkerStatus(msg.Name(), STATUS_TERMINATED)
 		return successMsg, nil
 	}
 

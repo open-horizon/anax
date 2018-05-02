@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/worker"
 	"github.com/satori/go.uuid"
 	"math/rand"
 	"runtime"
@@ -122,6 +123,7 @@ func (c CSConsumerUpdateAck) String() string {
 // to actually work through the agreement protocol.
 func (a *CSAgreementWorker) start(work chan AgreementWork, random *rand.Rand) {
 
+	worker.GetWorkerStatusManager().SetSubworkerStatus("CSProtocolHandler", a.workerID, worker.STATUS_STARTED)
 	for {
 		glog.V(5).Infof(logstring(a.workerID, fmt.Sprintf("blocking for work")))
 		workItem := <-work // block waiting for work
@@ -213,7 +215,6 @@ func (a *CSAgreementWorker) start(work chan AgreementWork, random *rand.Rand) {
 
 		glog.V(5).Infof(logstring(a.workerID, fmt.Sprintf("handled work: %v", workItem)))
 		runtime.Gosched()
-
 	}
 }
 

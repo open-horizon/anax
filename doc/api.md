@@ -34,6 +34,9 @@ body:
 | geth.eth_accounts | array | an array of ethereum account numbers for this agent. |
 | configuration| json| the configuration data.  |
 | configuration.exchange_api | string | the url for the exchange being used by the Horizon agent. |
+| configuration.exchange_version | string | the current version of the exchange being used. |
+| configuration.preferred_exchange_version | string | the preferred version for the exchange in order to use all the horizon functions. |
+| configuration.required_minimum_exchange_version | string | the required minimum version for the exchange. |
 | configuration.architecture | string | the hardware architecture of the node as returned from the Go language API runtime.GOARCH. |
 | connectivity | json | whether or not the node has network connectivity with some remote sites. |
 
@@ -54,7 +57,11 @@ curl -s http://localhost/status | jq '.'
     },
     "configuration": {
       "exchange_api": "https://exchange.staging.bluehorizon.network/api/v1/",
-      "architecture": "amd64"
+      "exchange_version": "1.55.0",
+      "required_minimum_exchange_version": "1.49.0",
+      "preferred_exchange_version": "1.55.0",
+      "architecture": "amd64",
+      "horizon_version": "2.17.2"
     },
     "connectivity": {
       "firmware.bluehorizon.network": true,
@@ -63,6 +70,102 @@ curl -s http://localhost/status | jq '.'
   }
 ]
 
+
+```
+
+#### **API:** GET  /status/workers
+---
+
+Get the current Horizon agent worker status and the status trasition logs. 
+**Parameters:**
+
+none
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| workers   | json | the current status of each worker and its subworkers. |
+| worker_status_log | string array |  the history of the worker status changes. |
+
+
+**Example:**
+```
+curl -s  http://localhost/status/workers |jq
+{
+  "workers": {
+    "AgBot": {
+      "name": "AgBot",
+      "status": "initialization failed",
+      "subworker_status": {}
+    },
+    "Agreement": {
+      "name": "Agreement",
+      "status": "initialized",
+      "subworker_status": {
+        "HeartBeat": "started"
+      }
+    },
+    "Blockchain": {
+      "name": "Blockchain",
+      "status": "initialized",
+      "subworker_status": {}
+    },
+    "Container": {
+      "name": "Container",
+      "status": "initialized",
+      "subworker_status": {}
+    },
+    "Exchange": {
+      "name": "Exchange",
+      "status": "initialized",
+      "subworker_status": {}
+    },
+    "Governance": {
+      "name": "Governance",
+      "status": "initialized",
+      "subworker_status": {
+        "BlockchainGovernor": "started",
+        "ContainerGovernor": "started",
+        "MicroserviceGovernor": "started"
+      }
+    },
+    "Torrent": {
+      "name": "Torrent",
+      "status": "initialized",
+      "subworker_status": {}
+    }
+  },
+  "worker_status_log": [
+    "2018-05-02 19:25:02 Worker Torrent: started.",
+    "2018-05-02 19:25:02 Worker Torrent: initialized.",
+    "2018-05-02 19:25:02 Worker AgBot: started.",
+    "2018-05-02 19:25:02 Worker AgBot: initialization failed.",
+    "2018-05-02 19:25:02 Worker Blockchain: started.",
+    "2018-05-02 19:25:02 Worker Blockchain: initialized.",
+    "2018-05-02 19:25:02 Worker Agreement: started.",
+    "2018-05-02 19:25:02 Worker Governance: started.",
+    "2018-05-02 19:25:02 Worker Exchange: started.",
+    "2018-05-02 19:25:02 Worker Container: started.",
+    "2018-05-02 19:25:03 Worker Container: initialized.",
+    "2018-05-02 19:25:07 Worker Agreement: initialized.",
+    "2018-05-02 20:17:35 Worker Agreement: subworker HeartBeat added.",
+    "2018-05-02 20:17:35 Worker Agreement: subworker HeartBeat started.",
+    "2018-05-02 20:17:38 Worker Exchange: initialized.",
+    "2018-05-02 20:17:38 Worker Governance: subworker ContainerGovernor added.",
+    "2018-05-02 20:17:38 Worker Governance: subworker BlockchainGovernor added.",
+    "2018-05-02 20:17:38 Worker Governance: subworker MicroserviceGovernor added.",
+    "2018-05-02 20:17:38 Worker Governance: initialized.",
+    "2018-05-02 20:17:38 Worker Governance: subworker MicroserviceGovernor started.",
+    "2018-05-02 20:17:38 Worker Governance: subworker ContainerGovernor started.",
+    "2018-05-02 20:17:38 Worker Governance: subworker BlockchainGovernor started."
+  ]
+}
 
 ```
 

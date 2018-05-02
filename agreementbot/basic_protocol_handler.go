@@ -68,6 +68,7 @@ func (c *BasicProtocolHandler) Initialize() {
 		go agw.start(c.Work, random)
 	}
 
+	worker.GetWorkerStatusManager().SetWorkerStatus("BasicProtocolHandler", worker.STATUS_INITIALIZED)
 }
 
 func (c *BasicProtocolHandler) AgreementProtocolHandler(typeName string, name string, org string) abstractprotocol.ProtocolHandler {

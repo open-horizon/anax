@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/worker"
 )
 
 func (a *API) status(w http.ResponseWriter, r *http.Request) {
@@ -34,6 +35,19 @@ func (a *API) status(w http.ResponseWriter, r *http.Request) {
 		}
 
 		writeResponse(w, info, http.StatusOK)
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *API) workerstatus(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		status := worker.GetWorkerStatusManager()
+		writeResponse(w, status, http.StatusOK)
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, OPTIONS")
 		w.WriteHeader(http.StatusOK)
