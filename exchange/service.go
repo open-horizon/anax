@@ -24,6 +24,7 @@ type ExchangeDefinition interface {
 	GetImageStore() policy.ImplementationPackage
 	IsServiceBased() bool
 	GetServiceDependencies() *[]ServiceDependency
+	GetVersion() string
 }
 
 // This type is used to abstract the various edge node hardware requirements. The schema is left wide open.
@@ -200,6 +201,10 @@ func (s *ServiceDefinition) IsServiceBased() bool {
 
 func (s *ServiceDefinition) GetServiceDependencies() *[]ServiceDependency {
 	return &s.RequiredServices
+}
+
+func (s *ServiceDefinition) GetVersion() string {
+	return s.Version
 }
 
 type GetServicesResponse struct {
@@ -449,6 +454,22 @@ func GetWorkloadOrService(wURL string, wOrg string, wVersion string, wArch strin
 	} else {
 		glog.Errorf(rpclogString(fmt.Sprintf("error searching for service details, error: %v", err)))
 		return nil, nil, err
+	}
+}
+
+// This function is used temporarily while workloads and services are being used at the same time. It will return an interface
+// that supports methods which are common to both the microservice and service definitions.
+func GetMicroserviceOrService(wURL string, wOrg string, wVersion string, wArch string, mr MicroserviceHandler, sh ServiceHandler) (ExchangeDefinition, error) {
+	var details ExchangeDefinition
+	if md, _, err := mr(wURL, wOrg, wVersion, wArch); err == nil {
+		details = md
+		return details, nil
+	} else if _, sd, err := ServiceResolver(wURL, wOrg, wVersion, wArch, sh); err == nil {
+		details = sd
+		return details, nil
+	} else {
+		glog.Errorf(rpclogString(fmt.Sprintf("error searching for service details, error: %v", err)))
+		return nil, err
 	}
 }
 

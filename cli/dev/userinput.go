@@ -263,7 +263,7 @@ func ValidateUserInput(i *register.InputFile, directory string, originalUserInpu
 
 func validateTuple(org string, vers string, url string, definitionUrl string) error {
 	if org == "" {
-		return errors.New(fmt.Sprintf("has empty org, must be set to the name of the organization that owns the microservice."))
+		return errors.New(fmt.Sprintf("has empty org, must be set to the name of the organization that owns the workload or microservice."))
 	} else if vers == "" {
 		return errors.New(fmt.Sprintf("has empty versionRange. Use [0.0.0,INFINITY) to cover all version ranges."))
 	} else if url != definitionUrl {
@@ -274,7 +274,7 @@ func validateTuple(org string, vers string, url string, definitionUrl string) er
 
 func validateServiceTuple(org string, vers string, url string) error {
 	if org == "" {
-		return errors.New(fmt.Sprintf("has empty org, must be set to the name of the organization that owns the microservice."))
+		return errors.New(fmt.Sprintf("has empty org, must be set to the name of the organization that owns the service."))
 	} else if vers == "" {
 		return errors.New(fmt.Sprintf("has empty versionRange. Use [0.0.0,INFINITY) to cover all version ranges."))
 	} else if url == "" {

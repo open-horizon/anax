@@ -56,7 +56,7 @@ func FindMicroServicesForOutput(pm *policy.PolicyManager,
 		}
 	}
 
-	// Iterate through each microserivce definition and dump it to the output directly.
+	// Iterate through each microservice definition and dump it to the output directly.
 	for _, msdef := range msdefs {
 		if msdef.Archived {
 			wrap.Definitions[archivedKey] = append(wrap.Definitions[archivedKey], msdef)

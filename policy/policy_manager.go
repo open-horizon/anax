@@ -180,8 +180,7 @@ func (self *PolicyManager) DeletePolicy(org string, delPolicy *Policy) {
 // The apiSpecCounts boolean is used to tell the policy manager to track agreement counts by policy apiSpec ref name.
 func Initialize(policyPath string,
 	arch_synonymns config.ArchSynonyms,
-	workloadResolver func(wURL string, wOrg string, wVersion string, wArch string) (*APISpecList, error),
-	serviceResolver func(wURL string, wOrg string, wVersion string, wArch string) (*APISpecList, error),
+	workloadOrServiceResolver func(wURL string, wOrg string, wVersion string, wArch string) (*APISpecList, error),
 	agreementTracking bool,
 	apiSpecCounts bool) (*PolicyManager, error) {
 
@@ -207,7 +206,7 @@ func Initialize(policyPath string,
 
 	// Call the policy file watcher once to load up the initial set of policy files
 	contents := NewContents()
-	if cons, err := PolicyFileChangeWatcher(policyPath, contents, arch_synonymns, changeNotify, deleteNotify, errorNotify, workloadResolver, serviceResolver, 0); err != nil {
+	if cons, err := PolicyFileChangeWatcher(policyPath, contents, arch_synonymns, changeNotify, deleteNotify, errorNotify, workloadOrServiceResolver, 0); err != nil {
 		return nil, err
 	} else if pm.NumberPolicies() != numberFiles {
 		return nil, errors.New(fmt.Sprintf("Policy Names must be unique, found %v files, but %v unique policies", numberFiles, pm.NumberPolicies()))

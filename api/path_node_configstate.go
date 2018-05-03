@@ -101,7 +101,7 @@ func UpdateConfigstate(cfg *Configstate,
 
 		// Reject the config attempt if the dependencies are inconsistent. There are always dependencies for the workload model, but not for the service model.
 		if !pattern.UsingServiceModel() && len(*common_apispec_list) == 0 {
-			return errorhandler(NewAPIUserInputError(fmt.Sprintf("microservices in org %v pattern %v don't have a common version range.", pDevice.Org, pDevice.Pattern), "configstate.state")), nil, nil
+			return errorhandler(NewAPIUserInputError(fmt.Sprintf("services in org %v pattern %v don't have a common version range.", pDevice.Org, pDevice.Pattern), "configstate.state")), nil, nil
 		}
 
 		// Check for inconsistencies between what might have been configured up to this point and what is in the pattern. Both the service based and
@@ -133,18 +133,18 @@ func UpdateConfigstate(cfg *Configstate,
 						glog.Errorf(apiLogString(fmt.Sprintf("Configstate autoconfig received error (%T) %v", createServiceError, createServiceError)))
 						msErr := createServiceError.(*MSMissingVariableConfigError)
 						// Cannot autoconfig this microservice because it has variables that need to be configured.
-						return errorhandler(NewAPIUserInputError(fmt.Sprintf("Configstate autoconfig, microservice %v %v %v, %v", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, msErr.Err), "configstate.state")), nil, nil
+						return errorhandler(NewAPIUserInputError(fmt.Sprintf("Configstate autoconfig, service %v %v %v, %v", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, msErr.Err), "configstate.state")), nil, nil
 
 					case *DuplicateServiceError:
 						// If the microservice is already registered, that's ok because the node user is allowed to configure any of the
 						// required microservices before calling the configstate API.
-						glog.V(3).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig found duplicate microservice %v %v, overwriting the version range to %v.", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version)))
+						glog.V(3).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig found duplicate service %v %v, overwriting the version range to %v.", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version)))
 
 					default:
-						return errorhandler(NewSystemError(fmt.Sprintf("unexpected error returned from microservice create (%T) %v", createServiceError, createServiceError))), nil, nil
+						return errorhandler(NewSystemError(fmt.Sprintf("unexpected error returned from service create (%T) %v", createServiceError, createServiceError))), nil, nil
 					}
 				} else {
-					glog.V(5).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig created microservice %v", newService)))
+					glog.V(5).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig created service %v", newService)))
 					msgs = append(msgs, msg)
 				}
 			}

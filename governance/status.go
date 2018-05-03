@@ -226,7 +226,7 @@ func (w *GovernanceWorker) getMicroserviceStatus(containers []docker.APIContaine
 	status := make([]MicroserviceStatus, 0)
 
 	if msdefs, err := persistence.FindMicroserviceDefs(w.db, []persistence.MSFilter{persistence.UnarchivedMSFilter()}); err != nil {
-		return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving all microservice definitions from database, error: %v", err)))
+		return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving all service definitions from database, error: %v", err)))
 	} else if msdefs != nil {
 		for _, msdef := range msdefs {
 			var msdef_status MicroserviceStatus
@@ -236,13 +236,13 @@ func (w *GovernanceWorker) getMicroserviceStatus(containers []docker.APIContaine
 			msdef_status.Arch = msdef.Arch
 			msdef_status.Containers = make([]ContainerStatus, 0)
 			if msinsts, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.UnarchivedMIFilter(), msdefFilter(msdef.Id)}); err != nil {
-				return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving all microservice instances for %v from database, error: %v", msdef.SpecRef, err)))
+				return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving all service instances for %v from database, error: %v", msdef.SpecRef, err)))
 			} else if msinsts != nil {
 				for _, msi := range msinsts {
 					deployment, _, _ := msdef.GetDeployment()
 					if deployment != "" {
 						if cstatus, err := GetContainerStatus(deployment, msi.GetKey(), true, containers); err != nil {
-							return nil, fmt.Errorf(logString(fmt.Sprintf("Error getting microservice container status for %v. %v", msdef.SpecRef, err)))
+							return nil, fmt.Errorf(logString(fmt.Sprintf("Error getting service container status for %v. %v", msdef.SpecRef, err)))
 						} else {
 							msdef_status.Containers = append(msdef_status.Containers, cstatus...)
 						}

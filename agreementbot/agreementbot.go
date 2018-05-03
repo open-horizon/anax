@@ -212,7 +212,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 			return false
 		}
 
-		if policyManager, err := policy.Initialize(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, w.Config.ArchSynonyms, w.workloadResolver, w.serviceResolver, true, false); err != nil {
+		if policyManager, err := policy.Initialize(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, w.Config.ArchSynonyms, w.workloadOrServiceResolver, true, false); err != nil {
 			glog.Errorf("AgreementBotWorker unable to initialize policy manager, error: %v", err)
 		} else if policyManager.NumberPolicies() != 0 {
 			w.pm = policyManager
@@ -502,7 +502,7 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 						// For every microservice required by the workload, deserialize the JSON policy blob into a policy object and
 						// then merge them all together.
 						if producerPolicy, err = w.MergeAllProducerPolicies(&dev); err != nil {
-							glog.Errorf("AgreementBotWorker unable to merge microservice policies, error: %v", err)
+							glog.Errorf("AgreementBotWorker unable to merge service policies, error: %v", err)
 							continue
 						} else if producerPolicy == nil {
 							glog.Errorf("AgreementBotWorker unable to create merged policy from producer %v", dev)
@@ -607,7 +607,7 @@ func (w *AgreementBotWorker) policyWatcher(name string, quit chan bool) {
 			return
 
 		case <-time.After(time.Duration(w.Config.AgreementBot.CheckUpdatedPolicyS) * time.Second):
-			contents, _ = policy.PolicyFileChangeWatcher(w.Config.AgreementBot.PolicyPath, contents, w.Config.ArchSynonyms, w.changedPolicy, w.deletedPolicy, w.errorPolicy, w.workloadResolver, w.serviceResolver, 0)
+			contents, _ = policy.PolicyFileChangeWatcher(w.Config.AgreementBot.PolicyPath, contents, w.Config.ArchSynonyms, w.changedPolicy, w.deletedPolicy, w.errorPolicy, w.workloadOrServiceResolver, 0)
 		}
 	}
 
@@ -780,7 +780,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, searchOrg string
 		// can't satisfy all the workloads then workload rollback cant work so we shouldnt make an agreement with this
 		// device.
 		for _, workload := range pol.Workloads {
-			if e_workload, _, err := exchange.GetWorkload(w.Config.Collaborators.HTTPClientFactory, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken()); err != nil {
+			if e_workload, _, err := exchange.GetHTTPWorkloadHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
 				return nil, errors.New(fmt.Sprintf("AgreementBotWorker received error retrieving workload definition for %v, error: %v", workload, err))
 			} else if e_workload == nil {
 				return nil, errors.New(fmt.Sprintf("AgreementBotWorker could not find workload definition for %v", workload))
@@ -1084,20 +1084,11 @@ func (w *AgreementBotWorker) registerPublicKey() error {
 	}
 }
 
-func (w *AgreementBotWorker) workloadResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
+func (w *AgreementBotWorker) workloadOrServiceResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
 
-	asl, _, err := exchange.GetHTTPWorkloadResolverHandler(w)(wURL, wOrg, wVersion, wArch)
+	asl, _, err := exchange.GetHTTPWorkloadOrServiceResolverHandler(w)(wURL, wOrg, wVersion, wArch)
 	if err != nil {
-		glog.Errorf(AWlogString(fmt.Sprintf("unable to resolve workload, error %v", err)))
-	}
-	return asl, err
-}
-
-func (w *AgreementBotWorker) serviceResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
-
-	asl, _, err := exchange.GetHTTPServiceResolverHandler(w)(wURL, wOrg, wVersion, wArch)
-	if err != nil {
-		glog.Errorf(AWlogString(fmt.Sprintf("unable to resolve service, error %v", err)))
+		glog.Errorf(AWlogString(fmt.Sprintf("unable to resolve %v %v, error %v", wURL, wOrg, err)))
 	}
 	return asl, err
 }

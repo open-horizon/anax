@@ -122,28 +122,15 @@ func (w *BaseProducerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 	}
 }
 
-func (w *BaseProducerProtocolHandler) GetWorkloadResolver() func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
-	return w.workloadResolver
+func (w *BaseProducerProtocolHandler) GetWorkloadOrServiceResolver() func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
+	return w.workloadOrServiceResolver
 }
 
-func (w *BaseProducerProtocolHandler) workloadResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
+func (w *BaseProducerProtocolHandler) workloadOrServiceResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
 
-	asl, _, err := exchange.GetHTTPWorkloadResolverHandler(w.ec)(wURL, wOrg, wVersion, wArch)
+	asl, _, err := exchange.GetHTTPWorkloadOrServiceResolverHandler(w.ec)(wURL, wOrg, wVersion, wArch)
 	if err != nil {
-		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("unable to resolve workload, error %v", err)))
-	}
-	return asl, err
-}
-
-func (w *BaseProducerProtocolHandler) GetServiceResolver() func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
-	return w.serviceResolver
-}
-
-func (w *BaseProducerProtocolHandler) serviceResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
-
-	asl, _, err := exchange.GetHTTPServiceResolverHandler(w.ec)(wURL, wOrg, wVersion, wArch)
-	if err != nil {
-		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("unable to resolve service, error %v", err)))
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("unable to resolve %v %v, error %v", wURL, wOrg, err)))
 	}
 	return asl, err
 }
@@ -165,7 +152,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 	} else if pemFiles, err := w.config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.config.Edge.PublicKeyPath, w.config.UserPublicKeyPath()); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting pem key files: %v", err)))
 		handled = true
-	} else if err := tcPolicy.Is_Self_Consistent(pemFiles, w.GetWorkloadResolver(), w.GetServiceResolver()); err != nil {
+	} else if err := tcPolicy.Is_Self_Consistent(pemFiles, w.GetWorkloadOrServiceResolver()); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking self consistency of TsAndCs, %v", err)))
 		handled = true
 	} else if pmatch, err := w.MatchPattern(tcPolicy); err != nil {

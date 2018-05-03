@@ -830,13 +830,13 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 	case *UpdateMicroserviceCommand:
 		cmd, _ := command.(*UpdateMicroserviceCommand)
 
-		glog.V(5).Infof(logString(fmt.Sprintf("Updating microservice execution status %v", cmd)))
+		glog.V(5).Infof(logString(fmt.Sprintf("Updating service execution status %v", cmd)))
 
 		if cmd.ExecutionStarted == false && cmd.ExecutionFailureCode == 0 {
 			// the miceroservice containers were destroyed, just archive the ms instance it if it not already done
 			// this part is from the CONTAINER_DESTROYED event id which was originally
 			if _, err := persistence.ArchiveMicroserviceInstance(w.db, cmd.MsInstKey); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("Error archiving microservice instance %v. %v", cmd.MsInstKey, err)))
+				glog.Errorf(logString(fmt.Sprintf("Error archiving service instance %v. %v", cmd.MsInstKey, err)))
 			}
 		} else {
 			// microservice execution started or failed
@@ -844,12 +844,12 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 
 			// update the execution status for microservice instance
 			if msinst, err := persistence.UpdateMSInstanceExecutionState(w.db, cmd.MsInstKey, cmd.ExecutionStarted, cmd.ExecutionFailureCode, cmd.ExecutionFailureDesc); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("Error updating microservice execution status. %v", err)))
+				glog.Errorf(logString(fmt.Sprintf("Error updating service execution status. %v", err)))
 			} else if msinst != nil {
 				if msdef, err := persistence.FindMicroserviceDefWithKey(w.db, msinst.MicroserviceDefId); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("Error finding microserivce definition fron db for %v version %v key %v. %v", msinst.SpecRef, msinst.Version, msinst.MicroserviceDefId, err)))
+					glog.Errorf(logString(fmt.Sprintf("Error finding service definition fron db for %v version %v key %v. %v", msinst.SpecRef, msinst.Version, msinst.MicroserviceDefId, err)))
 				} else if msdef == nil {
-					glog.Errorf(logString(fmt.Sprintf("No microserivce definition record in db for %v version %v key %v. %v", msinst.SpecRef, msinst.Version, msinst.MicroserviceDefId, err)))
+					glog.Errorf(logString(fmt.Sprintf("No service definition record in db for %v version %v key %v. %v", msinst.SpecRef, msinst.Version, msinst.MicroserviceDefId, err)))
 				} else {
 					if !cmd.ExecutionStarted && msinst.CleanupStartTime == 0 { // if this is not part of the ms instance cleanup process
 						// this is the case where agreement are made but microservice containers are failed
@@ -861,7 +861,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 	case *UpgradeMicroserviceCommand:
 		cmd, _ := command.(*UpgradeMicroserviceCommand)
 
-		glog.V(5).Infof(logString(fmt.Sprintf("Upgrade microservice if needed. %v", cmd)))
+		glog.V(5).Infof(logString(fmt.Sprintf("Upgrade service if needed. %v", cmd)))
 
 		w.handleMicroserviceUpgrade(cmd.MsDefId)
 

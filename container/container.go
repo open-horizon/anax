@@ -1109,7 +1109,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		} else if ags[0].AgreementExecutionStartTime != 0 {
 			glog.Infof("Receved configure command for agreement %v. Ignoring it because the containers for this agreement has been configured.", agreementId)
 		} else if ms_containers, err := b.findMsContainersAndUpdateMsInstance(persistence.NewServiceInstancePathElement(ags[0].RunningWorkload.URL, ags[0].RunningWorkload.Version), agreementId, cmd.AgreementLaunchContext.Microservices); err != nil {
-			glog.Errorf("Error checking microservice containers: %v", err)
+			glog.Errorf("Error checking service containers: %v", err)
 
 			// requeue the command
 			b.AddDeferredCommand(cmd)
@@ -1333,16 +1333,16 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 	case *MaintainMicroserviceCommand:
 		cmd := command.(*MaintainMicroserviceCommand)
-		glog.V(3).Infof("ContainerWorker received microservice maintenance command: %v", cmd)
+		glog.V(3).Infof("ContainerWorker received service maintenance command: %v", cmd)
 
 		cMatches := make([]docker.APIContainers, 0)
 
 		if msinst, err := persistence.FindMicroserviceInstanceWithKey(b.db, cmd.MsInstKey); err != nil {
-			glog.Errorf("Error retrieving microservice instance from database for %v, error: %v", cmd.MsInstKey, err)
+			glog.Errorf("Error retrieving service instance from database for %v, error: %v", cmd.MsInstKey, err)
 		} else if msinst == nil {
-			glog.Errorf("Cannot find microservice instance record from database for %v.", cmd.MsInstKey)
+			glog.Errorf("Cannot find service instance record from database for %v.", cmd.MsInstKey)
 		} else if serviceNames, err := b.findMicroserviceDefContainerNames(msinst.SpecRef, msinst.Version, msinst.MicroserviceDefId); err != nil {
-			glog.Errorf("Error retrieving microservice contianers for %v, error: %v", cmd.MsInstKey, err)
+			glog.Errorf("Error retrieving service contianers for %v, error: %v", cmd.MsInstKey, err)
 		} else if serviceNames != nil && len(serviceNames) > 0 {
 
 			report := func(container *docker.APIContainers, instance_key string) error {
@@ -1352,12 +1352,12 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 						if container.State != "running" {
 							// try to restart the container if it is down from some reason
 							if err := b.client.StartContainer(container.ID, nil); err != nil {
-								glog.Errorf("Container worker failed to restart microservice container %v. %v", container.ID, err)
+								glog.Errorf("Container worker failed to restart service container %v. %v", container.ID, err)
 								continue
 							}
 						}
 						cMatches = append(cMatches, *container)
-						glog.V(4).Infof("Matching container instance for microservice instance %v: %v", instance_key, container)
+						glog.V(4).Infof("Matching container instance for service instance %v: %v", instance_key, container)
 					}
 				}
 				return nil
@@ -1366,9 +1366,9 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			b.ContainersMatchingAgreement([]string{cmd.MsInstKey}, true, report)
 
 			if len(serviceNames) == len(cMatches) {
-				glog.V(4).Infof("Found expected count of running containers for microservice instance %v: %v", cmd.MsInstKey, len(cMatches))
+				glog.V(4).Infof("Found expected count of running containers for service instance %v: %v", cmd.MsInstKey, len(cMatches))
 			} else {
-				glog.Errorf("Insufficient running containers found for miceroservice instance %v. Found: %v", cmd.MsInstKey, cMatches)
+				glog.Errorf("Insufficient running containers found for service instance %v. Found: %v", cmd.MsInstKey, cMatches)
 
 				// ask governer to record it into the db
 				u, _ := url.Parse("")
@@ -1382,7 +1382,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 		agreements := make([]string, 0)
 		if cmd.MsInstKey != "" {
-			glog.Infof("ContainerWorker received shutdown command for microservice %v. Shutting down resources", cmd.MsInstKey)
+			glog.Infof("ContainerWorker received shutdown command for service %v. Shutting down resources", cmd.MsInstKey)
 			agreements = append(agreements, cmd.MsInstKey)
 		}
 
@@ -1747,20 +1747,20 @@ func (b *ContainerWorker) findMicroserviceDefContainerNames(api_spec string, ver
 	container_names := make([]string, 0)
 	// find the ms from the local db, it is okay if the ms def is not found. this is old behavious befor the ms split.
 	if msdef, err := persistence.FindMicroserviceDefWithKey(b.db, msdef_key); err != nil {
-		return nil, fmt.Errorf("Error finding microservice definition from the local db for %v version %v key %v. %v", api_spec, version, msdef_key, err)
+		return nil, fmt.Errorf("Error finding service definition from the local db for %v version %v key %v. %v", api_spec, version, msdef_key, err)
 	} else if msdef != nil && msdef.HasDeployment() {
 		// get the service name from the ms def
 		deployment, _, _ := msdef.GetDeployment()
 		deploymentDesc := new(containermessage.DeploymentDescription)
 		if err := json.Unmarshal([]byte(deployment), &deploymentDesc); err != nil {
-			return nil, fmt.Errorf("Error Unmarshalling deployment string %v for microservice %v version %v. %v", deployment, api_spec, version, err)
+			return nil, fmt.Errorf("Error Unmarshalling deployment string %v for service %v version %v. %v", deployment, api_spec, version, err)
 		} else {
 			for serviceName, _ := range deploymentDesc.Services {
 				container_names = append(container_names, serviceName)
 			}
 		}
 	}
-	glog.V(5).Infof("The container names for microservice %v version %v are: %v", api_spec, version, container_names)
+	glog.V(5).Infof("The container names for service %v version %v are: %v", api_spec, version, container_names)
 	return container_names, nil
 }
 

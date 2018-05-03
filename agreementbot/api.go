@@ -260,18 +260,11 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) policy(w http.ResponseWriter, r *http.Request) {
-	workloadResolver := func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
-		asl, _, err := exchange.GetHTTPWorkloadResolverHandler(a)(wURL, wOrg, wVersion, wArch)
-		if err != nil {
-			glog.Errorf(APIlogString(fmt.Sprintf("unable to resolve workload, error %v", err)))
-		}
-		return asl, err
-	}
 
-	serviceResolver := func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
-		asl, _, err := exchange.GetHTTPServiceResolverHandler(a)(wURL, wOrg, wVersion, wArch)
+	workloadOrServiceResolver := func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
+		asl, _, err := exchange.GetHTTPWorkloadOrServiceResolverHandler(a)(wURL, wOrg, wVersion, wArch)
 		if err != nil {
-			glog.Errorf(APIlogString(fmt.Sprintf("unable to resolve service, error %v", err)))
+			glog.Errorf(APIlogString(fmt.Sprintf("unable to resolve %v %v, error %v", wURL, wOrg, err)))
 		}
 		return asl, err
 	}
@@ -283,7 +276,7 @@ func (a *API) policy(w http.ResponseWriter, r *http.Request) {
 		name := pathVars["name"]
 
 		// get a list of hosted policy names
-		if pm, err := policy.Initialize(a.Config.AgreementBot.PolicyPath, a.Config.ArchSynonyms, workloadResolver, serviceResolver, false, false); err != nil {
+		if pm, err := policy.Initialize(a.Config.AgreementBot.PolicyPath, a.Config.ArchSynonyms, workloadOrServiceResolver, false, false); err != nil {
 			glog.Error(APIlogString(fmt.Sprintf("error initializing policy manager, error: %v", err)))
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -343,7 +336,7 @@ func (a *API) policy(w http.ResponseWriter, r *http.Request) {
 		// Verify the input policy name. It can be either the name of the policy within the header of the policy file or the name
 		// of the file itself.
 		found := false
-		if pm, err := policy.Initialize(a.Config.AgreementBot.PolicyPath, a.Config.ArchSynonyms, workloadResolver, serviceResolver, false, false); err != nil {
+		if pm, err := policy.Initialize(a.Config.AgreementBot.PolicyPath, a.Config.ArchSynonyms, workloadOrServiceResolver, false, false); err != nil {
 			glog.Error(APIlogString(fmt.Sprintf("error initializing policy manager, error: %v", err)))
 			w.WriteHeader(http.StatusInternalServerError)
 			return

@@ -135,6 +135,15 @@ func GetHTTPWorkloadOrServiceResolverHandler(ec ExchangeContext) WorkloadOrServi
 	}
 }
 
+// A handler for resolving microservice or service references in the exchange.
+type MicroserviceOrServiceHandler func(wUrl string, wOrg string, wVersion string, wArch string) (ExchangeDefinition, error)
+
+func GetHTTPMicroserviceOrServiceResolverHandler(ec ExchangeContext) MicroserviceOrServiceHandler {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (ExchangeDefinition, error) {
+		return GetMicroserviceOrService(wUrl, wOrg, wVersion, wArch, GetHTTPMicroserviceHandler(ec), GetHTTPServiceHandler(ec))
+	}
+}
+
 // A handler for getting the image docker auths for a service in the exchange.
 type ServiceDockerAuthsHandler func(sUrl string, sOrg string, sVersion string, sArch string) ([]ImageDockerAuth, error)
 
