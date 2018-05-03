@@ -42,7 +42,7 @@ type ServiceFile struct {
 	MatchHardware       map[string]interface{}       `json:"matchHardware"`
 	RequiredServices    []exchange.ServiceDependency `json:"requiredServices"`
 	UserInputs          []exchange.UserInput         `json:"userInput"`
-	Deployment          map[string]interface{}       `json:"deployment"`
+	Deployment          interface{}                  `json:"deployment"` // interface{} because pre-signed services can be stringified json
 	DeploymentSignature string                       `json:"deploymentSignature"`
 	ImageStore          map[string]interface{}       `json:"imageStore"`
 }
@@ -267,33 +267,53 @@ func SignImagesFromDeploymentMap(deployment map[string]interface{}, dontTouchIma
 // Sign and publish the service definition. This is a function that is reusable across different hzn commands.
 func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath string, dontTouchImage bool, registryTokens []string) {
 	svcInput := ServiceExch{Label: sf.Label, Description: sf.Description, Public: sf.Public, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs, ImageStore: sf.ImageStore}
-
-	// Go thru the docker image paths to push/get sha256 tag and/or gather list of images that user needs to push
 	var imageList []string
-	if storeType, ok := svcInput.ImageStore["storeType"]; !ok || storeType != "imageServer" {
-		imageList = SignImagesFromDeploymentMap(sf.Deployment, dontTouchImage)
-	}
-	// else the images are in the deprecated horizon image svr, don't do anything with them
 
-	// Marshal and sign the deployment string
-	fmt.Println("Signing service...")
-	//cliutils.Verbose("signing deployment string %d", i+1)
-	// Convert the deployment field from map[string]interface{} to []byte (i think treating it as type DeploymentConfig is too inflexible for future additions)
-	deployment, err := json.Marshal(sf.Deployment)
-	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment string: %v", err)
-	}
-	svcInput.Deployment = string(deployment)
-	// We know we need to sign the deployment config, so make sure a real key file was provided.
-	if keyFilePath == "" {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "must specify --private-key-file so that the deployment string can be signed")
-	}
-	svcInput.DeploymentSignature, err = sign.Input(keyFilePath, deployment)
-	if err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing deployment string with %s: %v", keyFilePath, err)
-	}
+	// The deployment field can be json object (map), string (for pre-signed), or nil
+	switch dep := sf.Deployment.(type) {
+	case nil:
+		svcInput.Deployment = ""
+		if sf.DeploymentSignature != "" {
+			cliutils.Warning("the 'deploymentSignature' field is non-blank, but being ignored, because the 'deployment' field is null")
+		}
+		svcInput.DeploymentSignature = ""
 
-	//todo: when we support something in the ImageStore map, process it here
+	case map[string]interface{}:
+		// Go thru the docker image paths to push/get sha256 tag and/or gather list of images that user needs to push
+		if storeType, ok := svcInput.ImageStore["storeType"]; !ok || storeType != "imageServer" {
+			imageList = SignImagesFromDeploymentMap(dep, dontTouchImage)
+		}
+		// else the images are in the deprecated horizon image svr, don't do anything with them
+
+		// Marshal and sign the deployment string
+		fmt.Println("Signing service...")
+		//cliutils.Verbose("signing deployment string %d", i+1)
+		// Convert the deployment field from map[string]interface{} to []byte (i think treating it as type DeploymentConfig is too inflexible for future additions)
+		deployment, err := json.Marshal(dep)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment string: %v", err)
+		}
+		svcInput.Deployment = string(deployment)
+		// We know we need to sign the deployment config, so make sure a real key file was provided.
+		if keyFilePath == "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "must specify --private-key-file so that the deployment string can be signed")
+		}
+		svcInput.DeploymentSignature, err = sign.Input(keyFilePath, deployment)
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing deployment string with %s: %v", keyFilePath, err)
+		}
+
+	case string:
+		// Means this service is pre-signed
+		if sf.Deployment != "" && sf.DeploymentSignature == "" {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "the 'deployment' field is a non-empty string, which implies this service is pre-signed, but the 'deploymentSignature' field is empty")
+		}
+		svcInput.Deployment = dep
+		svcInput.DeploymentSignature = sf.DeploymentSignature
+
+	default:
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "'deployment' field is invalid type. It must be either a json object or a string (for pre-signed)")
+	}
 
 	// Create or update resource in the exchange
 	exchId := cliutils.FormExchangeId(svcInput.URL, svcInput.Version, svcInput.Arch)

@@ -250,6 +250,15 @@ func FormExchangeId(url, version, arch string) string {
 	return url3 + "_" + version + "_" + arch
 }
 
+// ReadStdin reads from stdin, and returns it as a byte array.
+func ReadStdin() []byte {
+	fileBytes, err := ioutil.ReadAll(os.Stdin)
+	if err != nil {
+		Fatal(FILE_IO_ERROR, "reading stdin failed: %v", err)
+	}
+	return fileBytes
+}
+
 // ReadFile reads from a file or stdin, and returns it as a byte array.
 func ReadFile(filePath string) []byte {
 	var fileBytes []byte
