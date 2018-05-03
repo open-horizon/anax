@@ -192,49 +192,49 @@ func (w *GovernanceWorker) terminateAllAgreements() error {
 	return nil
 }
 
-// Terminate any remaining microservice containers. All ms(es) associated with an agreement should be gone. The
+// Terminate any remaining service/microservice containers. All ms(es) associated with an agreement should be gone. The
 // remaining containers are the shared singleton containers.
 func (w *GovernanceWorker) terminateMicroservices() error {
-	// Get all unarchived microservice instances and ask them to terminate. Microservices that have containers will be
+	// Get all unarchived service/microservice instances and ask them to terminate. Services/Microservices that have containers will be
 	// cleaned up asynchronously so we have to wait to make sure they are all gone.
 	ms_instances, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.NotCleanedUpMIFilter(), persistence.UnarchivedMIFilter()})
 	if err != nil {
-		return errors.New(fmt.Sprintf("unable to retrieve microservice instances from database, error: %v", err))
+		return errors.New(fmt.Sprintf("unable to retrieve service instances from database, error: %v", err))
 	} else if ms_instances != nil {
 		for _, msi := range ms_instances {
-			glog.V(3).Infof(logString(fmt.Sprintf("terminating microservice instance %v.", msi.GetKey())))
+			glog.V(3).Infof(logString(fmt.Sprintf("terminating service instance %v.", msi.GetKey())))
 			if err := w.CleanupMicroservice(msi.SpecRef, msi.Version, msi.GetKey(), 0); err != nil {
-				return errors.New(fmt.Sprintf("unable to terminate microservice instances %v, error: %v", msi, err))
+				return errors.New(fmt.Sprintf("unable to terminate service instances %v, error: %v", msi, err))
 			}
 		}
 	}
 
-	// Make sure they are all gone
+	// Make sure they are all gone.
 	runtime.Gosched()
 	for {
 		remainingInstances, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.UnarchivedMIFilter()})
 		if err != nil {
-			return errors.New(fmt.Sprintf("unable to retrieve microservice instances from database, error: %v", err))
+			return errors.New(fmt.Sprintf("unable to retrieve service instances from database, error: %v", err))
 		} else if remainingInstances != nil && len(remainingInstances) != 0 {
-			glog.V(3).Infof(logString(fmt.Sprintf("waiting for microservices to terminate, have %v, %v", len(remainingInstances), remainingInstances)))
+			glog.V(3).Infof(logString(fmt.Sprintf("waiting for services to terminate, have %v, %v", len(remainingInstances), remainingInstances)))
 			time.Sleep(15 * time.Second)
 		} else {
-			glog.V(3).Infof(logString(fmt.Sprintf("microservice instance termination complete")))
+			glog.V(3).Infof(logString(fmt.Sprintf("service instance termination complete")))
 			break
 		}
 	}
 
-	// Clean up all microservice definitions too
+	// Clean up all service/microservice definitions too.
 	if msDefs, err := persistence.FindMicroserviceDefs(w.db, []persistence.MSFilter{persistence.UnarchivedMSFilter()}); err != nil {
-		return errors.New(fmt.Sprintf("unable to retrieve microservice definitions from database, error: %v", err))
+		return errors.New(fmt.Sprintf("unable to retrieve service definitions from database, error: %v", err))
 	} else {
 		for _, mdi := range msDefs {
 			if _, err := persistence.MsDefArchived(w.db, mdi.Id); err != nil {
-				return errors.New(fmt.Sprintf("unable to archive microservice definition %v, error: %v", mdi, err))
+				return errors.New(fmt.Sprintf("unable to archive service definition %v, error: %v", mdi, err))
 			}
 		}
 	}
-	glog.V(3).Infof(logString(fmt.Sprintf("microservice definition cleanup complete")))
+	glog.V(3).Infof(logString(fmt.Sprintf("service definition cleanup complete")))
 
 	return nil
 }

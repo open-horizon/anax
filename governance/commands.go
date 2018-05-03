@@ -104,7 +104,7 @@ type UpdateMicroserviceCommand struct {
 }
 
 func (c UpdateMicroserviceCommand) ShortString() string {
-	return fmt.Sprintf("UpdateMicroserviceCommand: MsInstKey %v, ExecutionStarted %v, ExecutionFailureCode %v, ExecutionFailureDesc %v",
+	return fmt.Sprintf("UpdateServiceCommand: MsInstKey %v, ExecutionStarted %v, ExecutionFailureCode %v, ExecutionFailureDesc %v",
 		c.MsInstKey, c.ExecutionStarted, c.ExecutionFailureCode, c.ExecutionFailureDesc)
 }
 
@@ -151,7 +151,7 @@ type UpgradeMicroserviceCommand struct {
 }
 
 func (c UpgradeMicroserviceCommand) ShortString() string {
-	return fmt.Sprintf("UpgradeMicroserviceCommand: MsDefId %v", c.MsDefId)
+	return fmt.Sprintf("UpgradeServiceCommand: MsDefId %v", c.MsDefId)
 }
 
 func (w *GovernanceWorker) NewUpgradeMicroserviceCommand(msdef_id string) *UpgradeMicroserviceCommand {

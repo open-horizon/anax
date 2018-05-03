@@ -798,8 +798,12 @@ func (w *WorkloadDefinition) IsServiceBased() bool {
 	return false
 }
 
-func (s *WorkloadDefinition) GetServiceDependencies() *[]ServiceDependency {
+func (w *WorkloadDefinition) GetServiceDependencies() *[]ServiceDependency {
 	return &[]ServiceDependency{}
+}
+
+func (w *WorkloadDefinition) GetVersion() string {
+	return w.Version
 }
 
 type GetWorkloadsResponse struct {
@@ -863,6 +867,62 @@ func (w *MicroserviceDefinition) ShortString() string {
 		"LastUpdated: %v",
 		w.Owner, w.Label, w.Description, w.SpecRef, w.Version, w.Arch, w.Sharable, w.DownloadURL,
 		w.MatchHardware, w.UserInputs, wl_a, w.LastUpdated)
+}
+
+func (w *MicroserviceDefinition) NeedsUserInput() bool {
+	for _, ui := range w.UserInputs {
+		if ui.DefaultValue == "" {
+			return true
+		}
+	}
+	return false
+}
+
+func (w *MicroserviceDefinition) PopulateDefaultUserInput(envAdds map[string]string) {
+	for _, ui := range w.UserInputs {
+		if ui.DefaultValue != "" {
+			if _, ok := envAdds[ui.Name]; !ok {
+				envAdds[ui.Name] = ui.DefaultValue
+			}
+		}
+	}
+}
+
+func (w *MicroserviceDefinition) GetDeployment() string {
+	if len(w.Workloads) > 0 {
+		return w.Workloads[0].Deployment
+	}
+	return ""
+}
+
+func (w *MicroserviceDefinition) GetDeploymentSignature() string {
+	if len(w.Workloads) > 0 {
+		return w.Workloads[0].DeploymentSignature
+	}
+	return ""
+}
+
+func (w *MicroserviceDefinition) GetTorrent() string {
+	if len(w.Workloads) > 0 {
+		return w.Workloads[0].Torrent
+	}
+	return ""
+}
+
+func (w *MicroserviceDefinition) GetImageStore() policy.ImplementationPackage {
+	return policy.ImplementationPackage{}
+}
+
+func (w *MicroserviceDefinition) IsServiceBased() bool {
+	return false
+}
+
+func (m *MicroserviceDefinition) GetServiceDependencies() *[]ServiceDependency {
+	return &[]ServiceDependency{}
+}
+
+func (m *MicroserviceDefinition) GetVersion() string {
+	return m.Version
 }
 
 type GetMicroservicesResponse struct {
@@ -1014,7 +1074,8 @@ func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, m
 			// If the caller wanted a specific version, check for 1 result.
 			if searchVersion != "" {
 				if len(msMetadata) != 1 {
-					glog.Errorf(rpclogString(fmt.Sprintf("expecting 1 microservice %v %v %v response: %v", mURL, mOrg, mVersion, resp)))
+					// TODO: consider getting rid of logging a warning, and just return the error.
+					glog.Warningf(rpclogString(fmt.Sprintf("expecting 1 microservice %v %v %v response: %v", mURL, mOrg, mVersion, resp)))
 					return nil, "", errors.New(fmt.Sprintf("expecting 1 microservice %v %v %v, got %v", mURL, mOrg, mVersion, len(msMetadata)))
 				} else {
 					for msId, msDef := range msMetadata {

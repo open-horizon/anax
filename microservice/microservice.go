@@ -52,6 +52,17 @@ func DecodeReasonCode(code uint64) string {
 	}
 }
 
+func ConvertMicroserviceOrServiceToPersistent(s exchange.ExchangeDefinition, org string) (*persistence.MicroserviceDefinition, error) {
+	switch s.(type) {
+	case *exchange.MicroserviceDefinition:
+		ms := s.(*exchange.MicroserviceDefinition)
+		return ConvertMicroserviceToPersistent(ms, org)
+	default:
+		ss := s.(*exchange.ServiceDefinition)
+		return ConvertServiceToPersistent(ss, org)
+	}
+}
+
 // Currently the MicroserviceDefiniton structures in exchange and persistence packages are identical.
 // But we need to make them separate structures in case we need to put more in persistence structure.
 // This function converts the structure from exchange to persistence.
@@ -180,7 +191,7 @@ func ConvertServiceToPersistent(es *exchange.ServiceDefinition, org string) (*pe
 
 	// Hash the metadata and save it
 	if serial, err := json.Marshal(*es); err != nil {
-		return nil, fmt.Errorf("Failed to marshal microservice metadata: %v. %v", *es, err)
+		return nil, fmt.Errorf("Failed to marshal service metadata: %v. %v", *es, err)
 	} else {
 		hash := sha3.Sum256(serial)
 		pms.MetadataHash = hash[:]
@@ -200,7 +211,7 @@ func ConvertRequiredServicesToExchange(m *persistence.MicroserviceDefinition) *[
 
 // check if the given msdef is eligible for a upgrade
 func MicroserviceReadyForUpgrade(msdef *persistence.MicroserviceDefinition, db *bolt.DB) bool {
-	glog.V(5).Infof("Check if microservice is available for a upgrade: %v.", msdef.SpecRef)
+	glog.V(5).Infof("Check if service is available for a upgrade: %v.", msdef.SpecRef)
 
 	if msdef.Archived {
 		return false
@@ -218,11 +229,17 @@ func MicroserviceReadyForUpgrade(msdef *persistence.MicroserviceDefinition, db *
 
 	// For inactive upgrade, make sure there are no agreements associated with the service instances. If there are,
 	// the upgrade cannot proceed.
+	//
 	// For agreement-less services, never upgrade. The agreement-less indicator is only in the instance object
 	// (not in the def object) because an agreement-less service is defined by the node's pattern which can
 	// change on a lifecycle boundary that is different from the lifecycle of the service definition itself.
-	if ms_insts, err := persistence.FindMicroserviceInstances(db, []persistence.MIFilter{persistence.AllInstancesMIFilter(msdef.SpecRef, msdef.Version), persistence.UnarchivedMIFilter()}); err != nil {
-		glog.Errorf("Error retrieving all the microservice instances from db for %v version %v. %v", msdef.SpecRef, msdef.Version, err)
+	//
+	// Service's that are managed by an agreement do not have a record in the microservice instance table, so they
+	// will never be found by this function and will therefore never be upgraded (which is the behavior we want).
+
+	// Use a filter that only returns unarchived, non-terminating instances that match the input service definition.
+	if ms_insts, err := persistence.FindMicroserviceInstances(db, []persistence.MIFilter{persistence.AllInstancesMIFilter(msdef.SpecRef, msdef.Version), persistence.UnarchivedMIFilter(), persistence.NotCleanedUpMIFilter()}); err != nil {
+		glog.Errorf("Error retrieving all the service instances from db for %v version %v. %v", msdef.SpecRef, msdef.Version, err)
 		return false
 	} else if ms_insts != nil && len(ms_insts) > 0 {
 		for _, msi := range ms_insts {
@@ -238,7 +255,7 @@ func MicroserviceReadyForUpgrade(msdef *persistence.MicroserviceDefinition, db *
 		}
 	}
 
-	glog.V(5).Infof("Microservice is available for a upgrade.")
+	glog.V(5).Infof("Service is available for a upgrade.")
 	return true
 }
 
@@ -246,29 +263,29 @@ func MicroserviceReadyForUpgrade(msdef *persistence.MicroserviceDefinition, db *
 // This function gets the msdef with highest version within defined version range from the exchange and
 // compare the version and content with the current msdef and decide if it needs to upgrade.
 // It returns the new msdef if the old one needs to be upgraded, otherwide return nil.
-func GetUpgradeMicroserviceDef(getMicroservice exchange.MicroserviceHandler, msdef *persistence.MicroserviceDefinition, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
-	glog.V(3).Infof("Get new microservice def for upgrading microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
+func GetUpgradeMicroserviceDef(getMicroserviceOrService exchange.MicroserviceOrServiceHandler, msdef *persistence.MicroserviceDefinition, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
+	glog.V(3).Infof("Get new service def for upgrading service %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
 
 	// convert the sensor version to a version expression
 	if vExp, err := policy.Version_Expression_Factory(msdef.UpgradeVersionRange); err != nil {
 		return nil, fmt.Errorf("Unable to convert %v to a version expression, error %v", msdef.UpgradeVersionRange, err)
-	} else if e_msdef, _, err := getMicroservice(msdef.SpecRef, msdef.Org, vExp.Get_expression(), msdef.Arch); err != nil {
-		return nil, fmt.Errorf("Failed to find a highest version for microservice %v version range %v: %v", msdef.SpecRef, msdef.UpgradeVersionRange, err)
+	} else if e_msdef, err := getMicroserviceOrService(msdef.SpecRef, msdef.Org, vExp.Get_expression(), msdef.Arch); err != nil {
+		return nil, fmt.Errorf("Failed to find a highest version for service %v version range %v: %v", msdef.SpecRef, msdef.UpgradeVersionRange, err)
 	} else if e_msdef == nil {
-		return nil, fmt.Errorf("Could not find any microservices for %v within the version range %v.", msdef.SpecRef, msdef.UpgradeVersionRange)
-	} else if new_msdef, err := ConvertMicroserviceToPersistent(e_msdef, msdef.Org); err != nil {
-		return nil, fmt.Errorf("Failed to convert microservice metadata to persistent.MicroserviceDefinition for %v. %v", msdef.SpecRef, err)
+		return nil, fmt.Errorf("Could not find any services for %v within the version range %v.", msdef.SpecRef, msdef.UpgradeVersionRange)
+	} else if new_msdef, err := ConvertMicroserviceOrServiceToPersistent(e_msdef, msdef.Org); err != nil {
+		return nil, fmt.Errorf("Failed to convert service metadata to persistent.MicroserviceDefinition for %v. %v", msdef.SpecRef, err)
 	} else {
 		// if the newer version is smaller than the old one, do nothing
-		if c, err := policy.CompareVersions(e_msdef.Version, msdef.Version); err != nil {
-			return nil, fmt.Errorf("error compairing version %v with version %v. %v", e_msdef.Version, msdef.Version, err)
+		if c, err := policy.CompareVersions(e_msdef.GetVersion(), msdef.Version); err != nil {
+			return nil, fmt.Errorf("error compairing version %v with version %v. %v", e_msdef.GetVersion(), msdef.Version, err)
 		} else if c < 0 {
 			return nil, nil
 		} else if c == 0 && bytes.Equal(msdef.MetadataHash, new_msdef.MetadataHash) {
 			return nil, nil // no change, do nothing
 		} else {
 			if msdefs, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UrlVersionMSFilter(new_msdef.SpecRef, new_msdef.Version), persistence.ArchivedMSFilter()}); err != nil {
-				return nil, fmt.Errorf("Failed to get archived microservice definition for %v version %v. %v", msdef.SpecRef, msdef.Version, err)
+				return nil, fmt.Errorf("Failed to get archived service definition for %v version %v. %v", msdef.SpecRef, msdef.Version, err)
 			} else if msdefs != nil && len(msdefs) > 0 {
 				for _, ms := range msdefs {
 					if ms.UpgradeNewMsId != "" && bytes.Equal(ms.MetadataHash, new_msdef.MetadataHash) {
@@ -292,7 +309,7 @@ func GetUpgradeMicroserviceDef(getMicroservice exchange.MicroserviceHandler, msd
 
 // Get a msdef with a lower version compared to the given msdef version and return the new microservice def.
 func GetRollbackMicroserviceDef(getMicroservice exchange.MicroserviceHandler, msdef *persistence.MicroserviceDefinition, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
-	glog.V(3).Infof("Get next highest microservice def for rolling back microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
+	glog.V(3).Infof("Get next highest service def for rolling back service %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
 
 	// convert the sensor version to a version expression
 	if vExp, err := policy.Version_Expression_Factory(msdef.UpgradeVersionRange); err != nil {
@@ -300,11 +317,11 @@ func GetRollbackMicroserviceDef(getMicroservice exchange.MicroserviceHandler, ms
 	} else if err := vExp.ChangeCeiling(msdef.Version, false); err != nil { //modify the version range in order to searh for new ms
 		return nil, nil
 	} else if e_msdef, _, err := getMicroservice(msdef.SpecRef, msdef.Org, vExp.Get_expression(), msdef.Arch); err != nil {
-		return nil, fmt.Errorf("Failed to find a highest version for microservice %v version range %v: %v", msdef.SpecRef, vExp.Get_expression(), err)
+		return nil, fmt.Errorf("Failed to find a highest version for service %v version range %v: %v", msdef.SpecRef, vExp.Get_expression(), err)
 	} else if e_msdef == nil {
 		return nil, nil
 	} else if new_msdef, err := ConvertMicroserviceToPersistent(e_msdef, msdef.Org); err != nil {
-		return nil, fmt.Errorf("Failed to convert microservice metadata to persistent.MicroserviceDefinition for %v. %v", msdef.SpecRef, err)
+		return nil, fmt.Errorf("Failed to convert service metadata to persistent.MicroserviceDefinition for %v. %v", msdef.SpecRef, err)
 	} else {
 
 		// copy some attributes from the old over to the new
@@ -348,7 +365,7 @@ func RemoveMicroservicePolicy(spec_ref string, org string, version string, msdef
 
 // Generate a new policy file for given ms and the register the microservice on the exchange.
 func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath string, db *bolt.DB, e chan events.Message, deviceOrg string) error {
-	glog.V(3).Infof("Genarate policy for the given microservice %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
+	glog.V(3).Infof("Generate policy for the given service %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
 
 	var haPartner []string
 	var meterPolicy policy.Meter
@@ -403,7 +420,7 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 
 	// get the attributes for the microservice from the service_attribute table
 	if orig_attributes, err := persistence.FindApplicableAttributes(db, msdef.SpecRef); err != nil {
-		return fmt.Errorf("Failed to get the microservice attributes for %v from db. %v", msdef.SpecRef, err)
+		return fmt.Errorf("Failed to get the service attributes for %v from db. %v", msdef.SpecRef, err)
 	} else {
 		// device the attributes into 2 groups, common and specific
 		common_attribs := make([]persistence.Attribute, 0)

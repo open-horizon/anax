@@ -123,7 +123,7 @@ type MaintainMicroserviceCommand struct {
 }
 
 func (c MaintainMicroserviceCommand) ShortString() string {
-	return fmt.Sprintf("MaintainMicroserviceCommand: MsInstKey %v", c.MsInstKey)
+	return fmt.Sprintf("MaintainServiceCommand: MsInstKey %v", c.MsInstKey)
 }
 
 func (b *ContainerWorker) NewMaintainMicroserviceCommand(key string) *MaintainMicroserviceCommand {
@@ -138,7 +138,7 @@ type ShutdownMicroserviceCommand struct {
 }
 
 func (c ShutdownMicroserviceCommand) ShortString() string {
-	return fmt.Sprintf("MaintainMicroserviceCommand: MsInstKey %v", c.MsInstKey)
+	return fmt.Sprintf("MaintainServiceCommand: MsInstKey %v", c.MsInstKey)
 }
 
 func (b *ContainerWorker) NewShutdownMicroserviceCommand(key string) *ShutdownMicroserviceCommand {

@@ -38,7 +38,7 @@ func FindServiceConfigForOutput(pm *policy.PolicyManager, db *bolt.DB) (map[stri
 		// Find the microservice definition in our database so that we can get the upgrade settings.
 		msDefs, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UrlOrgVersionMSFilter(msURL, msOrg, msVer), persistence.UnarchivedMSFilter()})
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("unable to get microservice definitions from the database, error %v", err))
+			return nil, errors.New(fmt.Sprintf("unable to get service definitions from the database, error %v", err))
 		} else if msDefs != nil && len(msDefs) > 0 {
 			mc.AutoUpgrade = msDefs[0].AutoUpgrade
 			mc.ActiveUpgrade = msDefs[0].ActiveUpgrade
@@ -50,7 +50,7 @@ func FindServiceConfigForOutput(pm *policy.PolicyManager, db *bolt.DB) (map[stri
 
 		// Get the attributes for this service from the attributes database
 		if attrs, err := persistence.FindApplicableAttributes(db, msURL); err != nil {
-			return nil, errors.New(fmt.Sprintf("unable to get microservice attributes from the database, error %v", err))
+			return nil, errors.New(fmt.Sprintf("unable to get service attributes from the database, error %v", err))
 		} else {
 			mc.Attributes = attrs
 		}

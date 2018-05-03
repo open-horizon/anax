@@ -581,7 +581,7 @@ func (w *AgreementWorker) registerNode(dev *persistence.ExchangeDevice, ms *[]ex
 	resp = new(exchange.PutDeviceResponse)
 	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId())
 
-	glog.V(3).Infof("AgreementWorker Registering microservices: %v at %v", pdr.ShortString(), targetURL)
+	glog.V(3).Infof("AgreementWorker Registering services: %v at %v", pdr.ShortString(), targetURL)
 
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.GetHTTPFactory().NewHTTPClient(nil), "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), pdr, &resp); err != nil {

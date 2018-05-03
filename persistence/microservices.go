@@ -251,11 +251,11 @@ func SaveOrUpdateMicroserviceDef(db *bolt.DB, msdef *MicroserviceDefinition) err
 			strKey := strconv.FormatUint(nextKey, 10)
 			msdef.Id = strKey
 
-			glog.V(5).Infof("saving msdef %v to db", *msdef)
+			glog.V(5).Infof("saving service definition %v to db", *msdef)
 
 			serial, err := json.Marshal(*msdef)
 			if err != nil {
-				return fmt.Errorf("Failed to serialize microservice: %v. Error: %v", *msdef, err)
+				return fmt.Errorf("Failed to serialize service: %v. Error: %v", *msdef, err)
 			}
 			return bucket.Put([]byte(strKey), serial)
 		}
@@ -283,7 +283,7 @@ func FindMicroserviceDefWithKey(db *bolt.DB, key string) (*MicroserviceDefinitio
 			var ms MicroserviceDefinition
 
 			if err := json.Unmarshal(v, &ms); err != nil {
-				glog.Errorf("Unable to deserialize microservice_definition db record: %v. Error: %v", v, err)
+				glog.Errorf("Unable to deserialize service definition db record: %v. Error: %v", v, err)
 				return err
 			} else {
 				pms = &ms
@@ -351,7 +351,7 @@ func FindMicroserviceDefs(db *bolt.DB, filters []MSFilter) ([]MicroserviceDefini
 				if err := json.Unmarshal(v, &e); err != nil {
 					glog.Errorf("Unable to deserialize db record: %v", v)
 				} else {
-					glog.V(5).Infof("Demarshalled microservice definition in DB: %v", e.ShortString())
+					glog.V(5).Infof("Demarshalled service definition in DB: %v", e.ShortString())
 					exclude := false
 					for _, filterFn := range filters {
 						if !filterFn(e) {
@@ -474,9 +474,9 @@ func persistUpdatedMicroserviceDef(db *bolt.DB, key string, update *Microservice
 			var mod MicroserviceDefinition
 
 			if current == nil {
-				return fmt.Errorf("No microservice with given key available to update: %v", key)
+				return fmt.Errorf("No service with given key available to update: %v", key)
 			} else if err := json.Unmarshal(current, &mod); err != nil {
-				return fmt.Errorf("Failed to unmarshal microservice DB data: %v. Error: %v", string(current), err)
+				return fmt.Errorf("Failed to unmarshal service DB data: %v. Error: %v", string(current), err)
 			} else {
 
 				// This code is running in a database transaction. Within the tx, the current record is
@@ -522,9 +522,9 @@ func persistUpdatedMicroserviceDef(db *bolt.DB, key string, update *Microservice
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize contract record: %v. Error: %v", mod, err)
 				} else if err := b.Put([]byte(key), serialized); err != nil {
-					return fmt.Errorf("Failed to write microservice definition %v version %v key %v. Error: %v", mod.SpecRef, mod.Version, key, err)
+					return fmt.Errorf("Failed to write service definition %v version %v key %v. Error: %v", mod.SpecRef, mod.Version, key, err)
 				} else {
-					glog.V(2).Infof("Succeeded updating microservice definition record to %v", mod.ShortString())
+					glog.V(2).Infof("Succeeded updating service definition record to %v", mod.ShortString())
 					return nil
 				}
 			}
@@ -641,7 +641,7 @@ func NewMicroserviceInstance(db *bolt.DB, ref_url string, version string, msdef_
 		} else if bytes, err := json.Marshal(new_inst); err != nil {
 			return fmt.Errorf("Unable to marshal new record: %v", err)
 		} else if err := b.Put([]byte(new_inst.GetKey()), []byte(bytes)); err != nil {
-			return fmt.Errorf("Unable to persist microservice instance: %v", err)
+			return fmt.Errorf("Unable to persist service instance: %v", err)
 		}
 		// success, close tx
 		return nil
@@ -662,7 +662,7 @@ func FindMicroserviceInstance(db *bolt.DB, url string, version string, instance_
 				var ms MicroserviceInstance
 
 				if err := json.Unmarshal(v, &ms); err != nil {
-					glog.Errorf("Unable to deserialize microservice_instance db record: %v", v)
+					glog.Errorf("Unable to deserialize service_instance db record: %v", v)
 				} else if ms.SpecRef == url && ms.Version == version && ms.InstanceId == instance_id {
 					pms = &ms
 					return nil
@@ -695,7 +695,7 @@ func FindMicroserviceInstanceWithKey(db *bolt.DB, key string) (*MicroserviceInst
 			var ms MicroserviceInstance
 
 			if err := json.Unmarshal(v, &ms); err != nil {
-				glog.Errorf("Unable to deserialize microservice_instance db record: %v. Error: %v", v, err)
+				glog.Errorf("Unable to deserialize service instance db record: %v. Error: %v", v, err)
 				return err
 			} else {
 				pms = &ms
@@ -755,7 +755,7 @@ func FindMicroserviceInstances(db *bolt.DB, filters []MIFilter) ([]MicroserviceI
 				if err := json.Unmarshal(v, &e); err != nil {
 					glog.Errorf("Unable to deserialize db record: %v", v)
 				} else {
-					glog.V(5).Infof("Demarshalled microservice instance in DB: %v", e)
+					glog.V(5).Infof("Demarshalled service instance in DB: %v", e)
 					exclude := false
 					for _, filterFn := range filters {
 						if !filterFn(e) {
@@ -878,9 +878,9 @@ func persistUpdatedMicroserviceInstance(db *bolt.DB, key string, update *Microse
 			var mod MicroserviceInstance
 
 			if current == nil {
-				return fmt.Errorf("No microservice with given key available to update: %v", key)
+				return fmt.Errorf("No service with given key available to update: %v", key)
 			} else if err := json.Unmarshal(current, &mod); err != nil {
-				return fmt.Errorf("Failed to unmarshal microservice DB data: %v. Error: %v", string(current), err)
+				return fmt.Errorf("Failed to unmarshal service DB data: %v. Error: %v", string(current), err)
 			} else {
 
 				// This code is running in a database transaction. Within the tx, the current record is
@@ -918,9 +918,9 @@ func persistUpdatedMicroserviceInstance(db *bolt.DB, key string, update *Microse
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize contract record: %v. Error: %v", mod, err)
 				} else if err := b.Put([]byte(key), serialized); err != nil {
-					return fmt.Errorf("Failed to write microservice instance with key: %v. Error: %v", key, err)
+					return fmt.Errorf("Failed to write service instance with key: %v. Error: %v", key, err)
 				} else {
-					glog.V(2).Infof("Succeeded updating microservice instance record to %v", mod)
+					glog.V(2).Infof("Succeeded updating service instance record to %v", mod)
 					return nil
 				}
 			}
@@ -931,7 +931,7 @@ func persistUpdatedMicroserviceInstance(db *bolt.DB, key string, update *Microse
 // delete associated agreement id from all the microservice instances
 func DeleteAsscAgmtsFromMSInstances(db *bolt.DB, agreement_id string) error {
 	if ms_instances, err := FindMicroserviceInstances(db, []MIFilter{UnarchivedMIFilter()}); err != nil {
-		return fmt.Errorf("Error retrieving all microservice instances from database, error: %v", err)
+		return fmt.Errorf("Error retrieving all service instances from database, error: %v", err)
 	} else if ms_instances != nil {
 		for _, msi := range ms_instances {
 			if msi.AssociatedAgreements != nil && len(msi.AssociatedAgreements) > 0 {
@@ -965,7 +965,7 @@ func DeleteMicroserviceInstance(db *bolt.DB, key string) (*MicroserviceInstance,
 				if b, err := tx.CreateBucketIfNotExists([]byte(MICROSERVICE_INSTANCES)); err != nil {
 					return err
 				} else if err := b.Delete([]byte(key)); err != nil {
-					return fmt.Errorf("Unable to delete microservice instance %v: %v", key, err)
+					return fmt.Errorf("Unable to delete service instance %v: %v", key, err)
 				} else {
 					return nil
 				}
