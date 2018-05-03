@@ -14,6 +14,7 @@ import (
 	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/cli/service"
 	"github.com/open-horizon/anax/cli/unregister"
+	"github.com/open-horizon/anax/cli/utilcmds"
 	"github.com/open-horizon/anax/cli/wiotp"
 	"github.com/open-horizon/anax/cli/workload"
 	"github.com/open-horizon/anax/cutil"
@@ -361,6 +362,13 @@ Environment Variables:
 	agbotPolicyOrg := agbotPolicyListCmd.Arg("org", "The organization the policy belongs to.").String()
 	agbotPolicyName := agbotPolicyListCmd.Arg("name", "The policy name.").String()
 
+	utilCmd := app.Command("util", "Utility commands.")
+	utilSignCmd := utilCmd.Command("sign", "Sign the text in stdin. The signature is sent to stdout.")
+	utilSignPrivKeyFile := utilSignCmd.Flag("private-key-file", "The path of a private key file to be used to sign the stdin. ").Short('k').Required().ExistingFile()
+	utilVerifyCmd := utilCmd.Command("verify", "Verify that the signature specified via -s is a valid signature for the text in stdin.")
+	utilVerifyPubKeyFile := utilVerifyCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key that was used to sign) to verify the signature of stdin.").Short('K').Required().ExistingFile()
+	utilVerifySig := utilVerifyCmd.Flag("signature", "The supposed signature of stdin.").Short('s').Required().String()
+
 	app.Version("Run 'hzn version' to see the Horizon version.")
 	/* trying to override the base --version behavior does not work....
 	fmt.Printf("version: %v\n", *version)
@@ -563,5 +571,9 @@ Environment Variables:
 		agreementbot.List()
 	case agbotPolicyListCmd.FullCommand():
 		agreementbot.PolicyList(*agbotPolicyOrg, *agbotPolicyName)
+	case utilSignCmd.FullCommand():
+		utilcmds.Sign(*utilSignPrivKeyFile)
+	case utilVerifyCmd.FullCommand():
+		utilcmds.Verify(*utilVerifyPubKeyFile, *utilVerifySig)
 	}
 }
