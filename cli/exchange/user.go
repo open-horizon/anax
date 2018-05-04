@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"net/http"
+	"strings"
 )
 
 type ExchangeUsers struct {
@@ -11,14 +12,18 @@ type ExchangeUsers struct {
 	ListIndex int                    `json:"lastIndex"`
 }
 
-func UserList(org string, userPw string) {
+func UserList(org, userPw string, allUsers bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	exchUrlBase := cliutils.GetExchangeUrl()
-	user, _ := cliutils.SplitIdToken(userPw)
+	var user string
+	if !allUsers {
+		user, _ = cliutils.SplitIdToken(userPw)
+		user = "/" + user
+	}
 	var users ExchangeUsers
-	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &users)
+	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/users"+user, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &users)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, "user '%s' not found in org %s", user, org)
+		cliutils.Fatal(cliutils.NOT_FOUND, "user '%s' not found in org %s", strings.TrimPrefix(user, "/"), org)
 	}
 	output := cliutils.MarshalIndent(users.Users, "exchange users list")
 	fmt.Println(output)

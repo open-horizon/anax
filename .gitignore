@@ -8,4 +8,6 @@ agreementbot/build/docker/fs/root/.ssh/id*
 anax/doc/*.png
 **/*.apib
 /cli/hzn
+/cli/man1
+/cli/bash_completion
 /.idea
