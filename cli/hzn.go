@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/cli/node"
 	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/cli/service"
+	"github.com/open-horizon/anax/cli/status"
 	"github.com/open-horizon/anax/cli/unregister"
 	"github.com/open-horizon/anax/cli/utilcmds"
 	"github.com/open-horizon/anax/cli/wiotp"
@@ -285,6 +286,9 @@ Environment Variables:
 	forceUnregister := unregisterCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 	removeNodeUnregister := unregisterCmd.Flag("remove", "Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).").Short('r').Bool()
 
+	statusCmd := app.Command("status", "Display the current horizon internal status for the node.")
+	statusLong := statusCmd.Flag("long", "Show detailed status").Short('l').Bool()
+
 	devCmd := app.Command("dev", "Developmnt tools for creation of workloads and microservices.")
 	devHomeDirectory := devCmd.Flag("directory", "Directory containing Horizon project metadata.").Short('d').String()
 
@@ -346,9 +350,7 @@ Environment Variables:
 	devDependencyRemoveCmd := devDependencyCmd.Command("remove", "Remove a project dependency.")
 
 	agbotCmd := app.Command("agbot", "List and manage Horizon agreement bot resources.")
-
 	agbotListCmd := agbotCmd.Command("list", "Display general information about this Horizon agbot node.")
-
 	agbotAgreementCmd := agbotCmd.Command("agreement", "List or manage the active or archived agreements this Horizon agreement bot has with edge nodes.")
 	agbotAgreementListCmd := agbotAgreementCmd.Command("list", "List the active or archived agreements this Horizon agreement bot has with edge nodes.")
 	agbotlistArchivedAgreements := agbotAgreementListCmd.Flag("archived", "List archived agreements instead of the active agreements.").Short('r').Bool()
@@ -356,11 +358,12 @@ Environment Variables:
 	agbotAgreementCancelCmd := agbotAgreementCmd.Command("cancel", "Cancel 1 or all of the active agreements this Horizon agreement bot has with edge nodes. Usually an agbot will immediately negotiated a new agreement. ")
 	agbotCancelAllAgreements := agbotAgreementCancelCmd.Flag("all", "Cancel all of the current agreements.").Short('a').Bool()
 	agbotCancelAgreementId := agbotAgreementCancelCmd.Arg("agreement", "The active agreement to cancel.").String()
-
 	agbotPolicyCmd := agbotCmd.Command("policy", "List the policies this Horizon agreement bot hosts.")
 	agbotPolicyListCmd := agbotPolicyCmd.Command("list", "List policies this Horizon agreement bot hosts.")
 	agbotPolicyOrg := agbotPolicyListCmd.Arg("org", "The organization the policy belongs to.").String()
 	agbotPolicyName := agbotPolicyListCmd.Arg("name", "The policy name.").String()
+	agbotStatusCmd := agbotCmd.Command("status", "Display the current horizon internal status for the Horizon agreement bot.")
+	agbotStatusLong := agbotStatusCmd.Flag("long", "Show detailed status").Short('l').Bool()
 
 	utilCmd := app.Command("util", "Utility commands.")
 	utilSignCmd := utilCmd.Command("sign", "Sign the text in stdin. The signature is sent to stdout.")
@@ -527,6 +530,8 @@ Environment Variables:
 		workload.List()
 	case unregisterCmd.FullCommand():
 		unregister.DoIt(*forceUnregister, *removeNodeUnregister)
+	case statusCmd.FullCommand():
+		status.DisplayStatus(*statusLong, false)
 	case devWorkloadNewCmd.FullCommand():
 		dev.WorkloadNew(*devHomeDirectory, *devWorkloadNewCmdOrg)
 	case devWorkloadStartTestCmd.FullCommand():
@@ -575,5 +580,7 @@ Environment Variables:
 		utilcmds.Sign(*utilSignPrivKeyFile)
 	case utilVerifyCmd.FullCommand():
 		utilcmds.Verify(*utilVerifyPubKeyFile, *utilVerifySig)
+	case agbotStatusCmd.FullCommand():
+		status.DisplayStatus(*agbotStatusLong, true)
 	}
 }

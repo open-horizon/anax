@@ -81,6 +81,7 @@ func (a *API) router(includeStaticRedirects bool) *mux.Router {
 
 	// Connectivity and blockchain status info
 	router.HandleFunc("/status", a.status).Methods("GET", "OPTIONS")
+	router.HandleFunc("/status/workers", a.workerstatus).Methods("GET", "OPTIONS")
 
 	// Used by the Registration UI to obtain a random token string
 	router.HandleFunc("/token/random", tokenRandom).Methods("GET", "OPTIONS")

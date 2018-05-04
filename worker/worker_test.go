@@ -8,7 +8,9 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
+	"github.com/stretchr/testify/assert"
 	"os"
+	"strings"
 	"testing"
 	"time"
 )
@@ -37,6 +39,9 @@ func Test_No_workers(t *testing.T) {
 
 func Test_One_worker(t *testing.T) {
 
+	// reset the workerStatusManager for testing
+	resetWorkerStatusManager()
+
 	// Setup the worker handler registry
 	mhr := NewMessageHandlerRegistry()
 
@@ -62,10 +67,24 @@ func Test_One_worker(t *testing.T) {
 	if w.CommandCount != expectedCommandCount {
 		t.Errorf("command count is %v, should be %v", w.CommandCount, expectedCommandCount)
 	}
+
+	assert.Equal(t, 4, len(workerStatusManager.StatusLog), "There should be 4 log entries.")
+	assert.Equal(t, 1, len(workerStatusManager.Workers), "There should be 1 worker.")
+	assert.Equal(t, STATUS_TERMINATED, workerStatusManager.GetWorkerStatus("testworker"), "The status for testworker should be "+STATUS_TERMINATED)
+	assert.Equal(t, 0, len(workerStatusManager.GetAllSubworkerStatus("testworker")), "There should be 0 subworkers.")
+
+	logs := workerStatusManager.StatusLog
+	assert.True(t, strings.Contains(logs[0], STATUS_STARTED), fmt.Sprintf("The first status is %v.", STATUS_ADDED))
+	assert.True(t, strings.Contains(logs[1], STATUS_INITIALIZED), fmt.Sprintf("The status log should be %v.", STATUS_INITIALIZED))
+	assert.True(t, strings.Contains(logs[2], STATUS_TERMINATING), fmt.Sprintf("The status log should be %v.", STATUS_TERMINATING))
+	assert.True(t, strings.Contains(logs[3], STATUS_TERMINATED), fmt.Sprintf("The status log should be %v.", STATUS_TERMINATED))
 }
 
 // One worker with blocking command selection
 func Test_One_worker_non_blocking(t *testing.T) {
+
+	// reset the workerStatusManager for testing
+	resetWorkerStatusManager()
 
 	// Setup the worker handler registry
 	mhr := NewMessageHandlerRegistry()
@@ -104,10 +123,23 @@ func Test_One_worker_non_blocking(t *testing.T) {
 	// Start the event handler
 	mhr.ProcessEventMessages()
 
+	assert.Equal(t, 4, len(workerStatusManager.StatusLog), "There should be 4 log entries.")
+	assert.Equal(t, 1, len(workerStatusManager.Workers), "There should be 1 worker.")
+	assert.Equal(t, STATUS_TERMINATED, workerStatusManager.GetWorkerStatus("blockingtest"), "The status for blockingtest should be "+STATUS_TERMINATED)
+	assert.Equal(t, 0, len(workerStatusManager.GetAllSubworkerStatus("blockingtest")), "There should be 0 subworkers.")
+
+	logs := workerStatusManager.StatusLog
+	assert.True(t, strings.Contains(logs[0], STATUS_STARTED), fmt.Sprintf("The status log should be %v.", STATUS_ADDED))
+	assert.True(t, strings.Contains(logs[1], STATUS_INITIALIZED), fmt.Sprintf("The status log should be %v.", STATUS_INITIALIZED))
+	assert.True(t, strings.Contains(logs[2], STATUS_TERMINATING), fmt.Sprintf("The status log should be %v.", STATUS_TERMINATING))
+	assert.True(t, strings.Contains(logs[3], STATUS_TERMINATED), fmt.Sprintf("The status log should be %v.", STATUS_TERMINATED))
 }
 
 // Worker doesnt initialize
 func Test_One_worker_no_init(t *testing.T) {
+
+	// reset the workerStatusManager for testing
+	resetWorkerStatusManager()
 
 	// Setup the worker handler registry
 	mhr := NewMessageHandlerRegistry()
@@ -135,9 +167,22 @@ func Test_One_worker_no_init(t *testing.T) {
 	if w.CommandCount != expectedCommandCount {
 		t.Errorf("command count is %v, should be %v", w.CommandCount, expectedCommandCount)
 	}
+
+	assert.Equal(t, 3, len(workerStatusManager.StatusLog), "There should be 3 log entries.")
+	assert.Equal(t, 1, len(workerStatusManager.Workers), "There should be 1 worker.")
+	assert.Equal(t, STATUS_TERMINATED, workerStatusManager.GetWorkerStatus("testworker"), "The status for testworker should be "+STATUS_TERMINATED)
+	assert.Equal(t, 0, len(workerStatusManager.GetAllSubworkerStatus("testworker")), "There should be 0 subworkers.")
+
+	logs := workerStatusManager.StatusLog
+	assert.True(t, strings.Contains(logs[0], STATUS_STARTED), fmt.Sprintf("The status log should be %v.", STATUS_ADDED))
+	assert.True(t, strings.Contains(logs[1], STATUS_INIT_FAILED), fmt.Sprintf("The status log should be %v.", STATUS_INIT_FAILED))
+	assert.True(t, strings.Contains(logs[2], STATUS_TERMINATED), fmt.Sprintf("The status log should be %v.", STATUS_TERMINATED))
 }
 
 func Test_two_workers(t *testing.T) {
+
+	// reset the workerStatusManager for testing
+	resetWorkerStatusManager()
 
 	// Setup the worker handler registry
 	mhr := NewMessageHandlerRegistry()
@@ -168,9 +213,19 @@ func Test_two_workers(t *testing.T) {
 	} else if w2.CommandCount != (expectedCommandCount * 2) {
 		t.Errorf("command count for %v is %v, should be %v", w2.GetName(), w2.CommandCount, expectedCommandCount)
 	}
+
+	assert.Equal(t, 8, len(workerStatusManager.StatusLog), "There should be 8 log entries.")
+	assert.Equal(t, 2, len(workerStatusManager.Workers), "There should be 2 workers.")
+	assert.Equal(t, STATUS_TERMINATED, workerStatusManager.GetWorkerStatus("testworker1"), "The status for testworker should be "+STATUS_TERMINATED)
+	assert.Equal(t, STATUS_TERMINATED, workerStatusManager.GetWorkerStatus("testworker2"), "The status for testworker should be "+STATUS_TERMINATED)
+	assert.Equal(t, 0, len(workerStatusManager.GetAllSubworkerStatus("testworker1")), "There should be 0 subworkers.")
+	assert.Equal(t, 0, len(workerStatusManager.GetAllSubworkerStatus("testworker2")), "There should be 0 subworkers.")
 }
 
 func Test_One_worker_one_sub(t *testing.T) {
+
+	// reset the workerStatusManager for testing
+	resetWorkerStatusManager()
 
 	// Setup the worker handler registry
 	mhr := NewMessageHandlerRegistry()
@@ -198,9 +253,17 @@ func Test_One_worker_one_sub(t *testing.T) {
 	if w.CommandCount != expectedCommandCount {
 		t.Errorf("command count is %v, should be %v", w.CommandCount, expectedCommandCount)
 	}
+
+	assert.Equal(t, 1, len(workerStatusManager.Workers), "There should be 1 worker.")
+	assert.Equal(t, STATUS_TERMINATED, workerStatusManager.GetWorkerStatus("testworker"), "The status for testworker should be "+STATUS_TERMINATED)
+	assert.Equal(t, 1, len(workerStatusManager.GetAllSubworkerStatus("testworker")), "There should be 1 subworker.")
+	assert.Equal(t, STATUS_TERMINATED, workerStatusManager.GetSubworkerStatus("testworker", "sub1"), "The status for sub1 should be "+STATUS_TERMINATED)
 }
 
 func Test_One_worker_two_sub(t *testing.T) {
+
+	// reset the workerStatusManager for testing
+	resetWorkerStatusManager()
 
 	// Setup the worker handler registry
 	mhr := NewMessageHandlerRegistry()
@@ -228,6 +291,12 @@ func Test_One_worker_two_sub(t *testing.T) {
 	if w.CommandCount != expectedCommandCount {
 		t.Errorf("command count is %v, should be %v", w.CommandCount, expectedCommandCount)
 	}
+
+	assert.Equal(t, 1, len(workerStatusManager.Workers), "There should be 1 worker.")
+	assert.Equal(t, STATUS_TERMINATED, workerStatusManager.GetWorkerStatus("testworker"), "The status for testworker should be "+STATUS_TERMINATED)
+	assert.Equal(t, 2, len(workerStatusManager.GetAllSubworkerStatus("testworker")), "There should be 2 subworker.")
+	assert.Equal(t, STATUS_TERMINATED, workerStatusManager.GetSubworkerStatus("testworker", "sub10"), "The status for sub10 should be "+STATUS_TERMINATED)
+	assert.Equal(t, STATUS_TERMINATED, workerStatusManager.GetSubworkerStatus("testworker", "sub11"), "The status for sub11 should be "+STATUS_TERMINATED)
 }
 
 // This function monitors the test to prevent hung tests.

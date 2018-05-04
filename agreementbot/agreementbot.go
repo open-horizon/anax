@@ -595,6 +595,8 @@ func (w *AgreementBotWorker) MergeAllProducerPolicies(dev *exchange.SearchResult
 
 func (w *AgreementBotWorker) policyWatcher(name string, quit chan bool) {
 
+	worker.GetWorkerStatusManager().SetSubworkerStatus(w.GetName(), name, worker.STATUS_STARTED)
+
 	// create a place for the policy watcher to save state between iterations.
 	contents := w.pm.WatcherContent
 
