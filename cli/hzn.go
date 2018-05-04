@@ -33,15 +33,27 @@ func main() {
 	app := kingpin.New("hzn", `Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).
 
 Environment Variables:
-  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API. This can facilitate using a remote Horizon Agent via an ssh tunnel.
-  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use to communicate with the Horizon Exchange, for example https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the Horizon Agent for the URL.)
-  HZN_ORG_ID:  Default value for the 'hzn exchange -o' or 'hzn wiotp -o' flag, to specify the organization ID'.
-  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn register -u' flag, in the form '[org/]user:pw'.
-  HZN_EXCHANGE_API_AUTH:  Default value for the 'hzn wiotp -A' flag, in the form 'apikey:apitoken'.
-  HZN_DONT_SUBST_ENV_VARS:  Set this to "1" to indicate that input json files should *not* be processed to replace environment variable references with their values.
-  USING_API_KEY:  Set this to "0" to indicate that even though the credential passed into the 'hzn exchange -u' flag looks like an WIoTP API key/token, it is not, so Horizon should not interpret as such.
+  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.
+      This can facilitate using a remote Horizon Agent via an ssh tunnel.
+  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use
+      to communicate with the Horizon Exchange, for example
+      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the
+      Horizon Agent for the URL.)
+  HZN_ORG_ID:  Default value for the 'hzn exchange -o' or 'hzn wiotp -o' flag,
+      to specify the organization ID'.
+  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn
+      register -u' flag, in the form '[org/]user:pw'.
+  HZN_EXCHANGE_API_AUTH:  Default value for the 'hzn wiotp -A' flag, in the
+      form 'apikey:apitoken'.
+  HZN_DONT_SUBST_ENV_VARS:  Set this to "1" to indicate that input json files
+      should *not* be processed to replace environment variable references with
+      their values.
+  USING_API_KEY:  Set this to "0" to indicate that even though the credential
+      passed into the 'hzn exchange -u' flag looks like an WIoTP API key/token,
+      it is not, so Horizon should not interpret as such.
 `)
 	app.HelpFlag.Short('h')
+	app.UsageTemplate(kingpin.CompactUsageTemplate)
 	cliutils.Opts.Verbose = app.Flag("verbose", "Verbose output.").Short('v').Bool()
 	cliutils.Opts.IsDryRun = app.Flag("dry-run", "When calling the Horizon or Exchange API, do GETs, but don't do PUTs, POSTs, or DELETEs.").Bool()
 
@@ -55,7 +67,8 @@ Environment Variables:
 	exStatusCmd := exchangeCmd.Command("status", "Display the status of the Horizon Exchange.")
 
 	exUserCmd := exchangeCmd.Command("user", "List and manage users in the Horizon Exchange.")
-	exUserListCmd := exUserCmd.Command("list", "Display the user resource from the Horizon Exchange. (You can only display your own user. If the user does not exist, you will get an invalid credentials error.)")
+	exUserListCmd := exUserCmd.Command("list", "Display the user resource from the Horizon Exchange. (Normally you can only display your own user. If the user does not exist, you will get an invalid credentials error.)")
+	exUserListAll := exUserListCmd.Flag("all", "List all users in the org. Will only do this if you are and user with admin privilege.").Short('a').Bool()
 	exUserCreateCmd := exUserCmd.Command("create", "Create the user resource in the Horizon Exchange.")
 	exUserCreateEmail := exUserCreateCmd.Flag("email", "Your email address that should be associated with this user account when creating it in the Horizon exchange.").Short('e').Required().String()
 	exUserDelCmd := exUserCmd.Command("remove", "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, microservices, workloads, patterns, etc).")
@@ -405,7 +418,7 @@ Environment Variables:
 	case exStatusCmd.FullCommand():
 		exchange.Status(*exOrg, *exUserPw)
 	case exUserListCmd.FullCommand():
-		exchange.UserList(*exOrg, *exUserPw)
+		exchange.UserList(*exOrg, *exUserPw, *exUserListAll)
 	case exUserCreateCmd.FullCommand():
 		exchange.UserCreate(*exOrg, *exUserPw, *exUserCreateEmail)
 	case exUserDelCmd.FullCommand():
