@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func Test_appendDockerAuth(t *testing.T) {
+func Test_AppendDockerAuth(t *testing.T) {
 	dockerAuths := make(map[string][]docker.AuthConfiguration)
 	a1 := docker.AuthConfiguration{
 		Email:         "",
@@ -43,11 +43,11 @@ func Test_appendDockerAuth(t *testing.T) {
 		Password:      "55555",
 		ServerAddress: "test3",
 	}
-	dockerAuths = appendDockerAuth(dockerAuths, a1)
-	dockerAuths = appendDockerAuth(dockerAuths, a2)
-	dockerAuths = appendDockerAuth(dockerAuths, a3)
-	dockerAuths = appendDockerAuth(dockerAuths, a4)
-	dockerAuths = appendDockerAuth(dockerAuths, a5)
+	dockerAuths = AppendDockerAuth(dockerAuths, a1)
+	dockerAuths = AppendDockerAuth(dockerAuths, a2)
+	dockerAuths = AppendDockerAuth(dockerAuths, a3)
+	dockerAuths = AppendDockerAuth(dockerAuths, a4)
+	dockerAuths = AppendDockerAuth(dockerAuths, a5)
 
 	assert.Equal(t, 3, len(dockerAuths), "The map should have 3 keys.")
 	assert.Equal(t, 2, len(dockerAuths["test1"]), "The auth array for test1 should have 2 items.")
