@@ -281,9 +281,9 @@ type PostDeviceResponse struct {
 }
 
 type WorkloadAgreement struct {
-	Org     string `json:"orgid,omitempty"`   // the org of the pattern
-	Pattern string `json:"pattern,omitempty"` // pattern - without the org prefix on it
-	URL     string `json:"url,omitempty"`     // workload URL
+	Org     string `json:"orgid,omitempty"` // the org of the pattern
+	Pattern string `json:"pattern"`         // pattern - without the org prefix on it
+	URL     string `json:"url,omitempty"`   // workload URL
 }
 
 type PutAgbotAgreementState struct {

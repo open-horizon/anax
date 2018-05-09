@@ -281,7 +281,7 @@ func FindApplicableAttributes(db *bolt.DB, serviceUrl string) ([]Attribute, erro
 
 // Workloads dont see the same system level env vars that microservices see. This function picks out just
 // the attributes that are applicable to workloads.
-func ConvertWorkloadPersistentNativeToEnv(allAttrs []Attribute, envvars map[string]string, prefix string) (map[string]string, error) {
+func ConvertWorkloadPersistentNativeToEnv(allAttrs []Attribute, envvars map[string]string, prefix string, defaultRam int64) (map[string]string, error) {
 	var lat, lon, cpus, ram, arch string
 	for _, attr := range allAttrs {
 
@@ -304,9 +304,9 @@ func ConvertWorkloadPersistentNativeToEnv(allAttrs []Attribute, envvars map[stri
 	return envvars, nil
 }
 
-// This function is used to convert the persistent attributes for a microservice to an env var map.
+// This function is used to convert the persistent attributes for a service/microservice to an env var map.
 // This will include *all* values for which HostOnly is false, include those marked to not publish.
-func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, prefix string) (map[string]string, error) {
+func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, prefix string, defaultRAM int64) (map[string]string, error) {
 
 	pf := func(str string, prefix string) string {
 		return fmt.Sprintf("%v%v", prefix, str)
@@ -324,6 +324,11 @@ func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, pr
 	writePrefix := func(k string, v string) {
 		write(k, v, false)
 	}
+
+	// Write defaults
+	writePrefix("CPUS", strconv.FormatInt(1, 10))
+	writePrefix("RAM", strconv.FormatInt(defaultRAM, 10))
+	writePrefix("ARCH", cutil.ArchString())
 
 	// TODO: consider extracting this type-processing out for generalization
 	for _, serv := range attributes {

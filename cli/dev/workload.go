@@ -136,7 +136,7 @@ func WorkloadStartTest(homeDirectory string, userInputFile string) {
 	// Get the variables intended to configure this workload from this project's userinput file.
 	configVars := getConfiguredVariables(userInputs.Workloads, workloadDef.WorkloadURL)
 
-	environmentAdditions, enverr := createEnvVarMap(agreementId, "deprecated", userInputs.Global, "", configVars, workloadDef.UserInputs, workloadDef.Org, persistence.ConvertWorkloadPersistentNativeToEnv)
+	environmentAdditions, enverr := createEnvVarMap(agreementId, "deprecated", userInputs.Global, "", configVars, workloadDef.UserInputs, workloadDef.Org, 0, persistence.ConvertWorkloadPersistentNativeToEnv)
 	if enverr != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to create environment variables, %v", WORKLOAD_COMMAND, WORKLOAD_START_COMMAND, enverr)
 	}

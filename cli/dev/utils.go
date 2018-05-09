@@ -312,7 +312,8 @@ func createEnvVarMap(agreementId string,
 	configVar map[string]interface{},
 	defaultVar []exchange.UserInput,
 	org string,
-	attrConverter func(attributes []persistence.Attribute, envvars map[string]string, prefix string) (map[string]string, error)) (map[string]string, error) {
+	defaultRAM int64,
+	attrConverter func(attributes []persistence.Attribute, envvars map[string]string, prefix string, defaultRAM int64) (map[string]string, error)) (map[string]string, error) {
 
 	// First, add in the Horizon platform env vars.
 	envvars := make(map[string]string)
@@ -359,7 +360,7 @@ func createEnvVarMap(agreementId string,
 
 	// Fourth, convert all attributes to system env vars.
 	var cerr error
-	envvars, cerr = attrConverter(byValueAttrs, envvars, config.ENVVAR_PREFIX)
+	envvars, cerr = attrConverter(byValueAttrs, envvars, config.ENVVAR_PREFIX, defaultRAM)
 	if cerr != nil {
 		return nil, errors.New(fmt.Sprintf("global attribute conversion error: %v", cerr))
 	}
@@ -387,7 +388,7 @@ func createContainerWorker() (*container.ContainerWorker, error) {
 	config := &config.HorizonConfig{
 		Edge: config.Config{
 			WorkloadROStorage:             workloadRODir,
-			DefaultServiceRegistrationRAM: 128,
+			DefaultServiceRegistrationRAM: 0,
 		},
 		AgreementBot:  config.AGConfig{},
 		Collaborators: config.Collaborators{},
@@ -590,7 +591,7 @@ func startContainers(deployment *containermessage.DeploymentDescription,
 	configVars := getConfiguredVariables(configUserInputs, specRef)
 
 	// Now that we have the configured variables, turn everything into environment variables for the container.
-	environmentAdditions, enverr := createEnvVarMap(agId, wlpw, globals, specRef, configVars, defUserInputs, org, persistence.AttributesToEnvvarMap)
+	environmentAdditions, enverr := createEnvVarMap(agId, wlpw, globals, specRef, configVars, defUserInputs, org, cw.Config.Edge.DefaultServiceRegistrationRAM, persistence.AttributesToEnvvarMap)
 	if enverr != nil {
 		return nil, errors.New(fmt.Sprintf("unable to create environment variables"))
 	}

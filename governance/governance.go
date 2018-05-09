@@ -1150,14 +1150,14 @@ func (w *GovernanceWorker) startAgreementLessServices() {
 
 }
 
-// get the environmental variables for the workload (this is about launching), pre MS split
+// Get the environmental variables for a service (this is about launching).
 func (w *GovernanceWorker) GetWorkloadPreference(url string) (map[string]string, error) {
 	attrs, err := persistence.FindApplicableAttributes(w.db, url)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to fetch workload %v preferences. Err: %v", url, err)
 	}
 
-	return persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX)
+	return persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM)
 
 }
 
@@ -1216,7 +1216,8 @@ func (w *GovernanceWorker) ConfigToEnvvarMap(db *bolt.DB, cfg *persistence.Workl
 	if allAttrs, err := persistence.FindApplicableAttributes(db, ""); err != nil {
 		return nil, err
 	} else {
-		persistence.ConvertWorkloadPersistentNativeToEnv(allAttrs, envvars, config.ENVVAR_PREFIX)
+		glog.V(3).Infof("Attributes to scan: %v", allAttrs)
+		persistence.ConvertWorkloadPersistentNativeToEnv(allAttrs, envvars, config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM)
 	}
 
 	if cfg == nil {
@@ -1254,11 +1255,9 @@ func recordProducerAgreementState(httpClient *http.Client, url string, deviceId 
 	}
 
 	workload := exchange.WorkloadAgreement{}
-	if pattern != "" {
-		workload.Org = exchange.GetOrg(deviceId)
-		workload.Pattern = pattern
-		workload.URL = pol.Workloads[0].WorkloadURL // This is always 1 workload array element
-	}
+	workload.Org = exchange.GetOrg(deviceId)
+	workload.Pattern = pattern
+	workload.URL = pol.Workloads[0].WorkloadURL // This is always 1 workload array element
 
 	// Configure the input object based on the service model or on the older workload model.
 	as.State = state

@@ -337,6 +337,13 @@ func (self *Policy) Is_Self_Consistent(keyFileNames []string,
 				} else {
 					return errors.New(fmt.Sprintf("Workload %v does not resolve, error: %v", workload, err))
 				}
+				// If the policy is not pattern based then it is a policy file that places workloads on nodes solely based on services that the node owner
+				// has opted in to. In this case, the agreement services must have dependencies in order for them to be placed on a node. This is the not
+				// the case for patterns (i.e. patterns can place agreement services on nodes where the agreement service has no dependencies).
+				if self.PatternId == "" && (referencedApiSpecRefs == nil || len(*referencedApiSpecRefs) == 0) {
+					return errors.New(fmt.Sprintf("Agreement services in non-pattern policies must have service dependencies, policy: %v", self.Header.Name))
+				}
+
 			} else {
 				secondASRL, err := workloadOrServiceResolver(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 				if err != nil {
@@ -350,6 +357,7 @@ func (self *Policy) Is_Self_Consistent(keyFileNames []string,
 		}
 
 	}
+
 	return nil
 }
 
