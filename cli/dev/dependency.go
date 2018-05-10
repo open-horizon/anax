@@ -8,8 +8,11 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/register"
+	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -40,7 +43,7 @@ func createLogMessage(specRef string, url string, org string, version string, ar
 }
 
 // This is the entry point for the hzn dev dependency fetch command.
-func DependencyFetch(homeDirectory string, project string, specRef string, url string, org string, version string, arch string, userCreds string, keyFile string, userInputFile string) {
+func DependencyFetch(homeDirectory string, project string, specRef string, url string, org string, version string, arch string, userCreds string, keyFiles []string, userInputFile string) {
 
 	// Check input parameters for correctness.
 	dir, err := verifyFetchInput(homeDirectory, project, specRef, url, org, version, arch, userCreds)
@@ -56,7 +59,7 @@ func DependencyFetch(homeDirectory string, project string, specRef string, url s
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'dependency %v' %v", DEPENDENCY_FETCH_COMMAND, err)
 		}
 	} else {
-		if err := fetchExchangeProjectDependency(dir, specRef, url, org, version, arch, userCreds, keyFile, userInputFile); err != nil {
+		if err := fetchExchangeProjectDependency(dir, specRef, url, org, version, arch, userCreds, keyFiles, userInputFile); err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'dependency %v' %v", DEPENDENCY_FETCH_COMMAND, err)
 		}
 
@@ -573,7 +576,7 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	return nil
 }
 
-func fetchExchangeProjectDependency(homeDirectory string, specRef string, url string, org string, version string, arch string, userCreds string, keyFile string, userInputFile string) error {
+func fetchExchangeProjectDependency(homeDirectory string, specRef string, url string, org string, version string, arch string, userCreds string, keyFiles []string, userInputFile string) error {
 
 	projectType := "service"
 	if IsWorkloadProject(homeDirectory) {
@@ -581,7 +584,7 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, url st
 	}
 
 	// Pull the metadata from the exchange, including any of this dependency's dependencies.
-	sDef, err := getExchangeDefinition(homeDirectory, specRef, url, org, version, arch, userCreds, keyFile, userInputFile)
+	sDef, err := getExchangeDefinition(homeDirectory, specRef, url, org, version, arch, userCreds, keyFiles, userInputFile)
 	if err != nil {
 		return err
 	}
@@ -650,7 +653,7 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, url st
 	return nil
 }
 
-func getExchangeDefinition(homeDirectory string, specRef string, url string, org string, version string, arch string, userCreds string, keyFile string, userInputFile string) (cliexchange.AbstractServiceFile, error) {
+func getExchangeDefinition(homeDirectory string, specRef string, surl string, org string, version string, arch string, userCreds string, keyFiles []string, userInputFile string) (cliexchange.AbstractServiceFile, error) {
 
 	if IsWorkloadProject(homeDirectory) {
 
@@ -701,18 +704,31 @@ func getExchangeDefinition(homeDirectory string, specRef string, url string, org
 			return nil, err
 		}
 
-		// Get the dependency's deployment config and container package info (if any).
+		// Get the dependency's deployment container images
 		dc := new(cliexchange.DeploymentConfig)
-		for _, wl := range microserviceDef.Workloads {
-			if err := json.Unmarshal([]byte(wl.Deployment), dc); err != nil {
-				return nil, errors.New(fmt.Sprintf("failed to unmarshal deployment %v: %v", microserviceDef.Workloads[0].Deployment, err))
+		var torrent policy.Torrent
+		if len(microserviceDef.Workloads) > 0 {
+			ms_workload := microserviceDef.Workloads[0]
+			if err := json.Unmarshal([]byte(ms_workload.Deployment), dc); err != nil {
+				return nil, errors.New(fmt.Sprintf("failed to unmarshal deployment %v: %v", ms_workload.Deployment, err))
 			}
 
-			// Now that we have the deployment config, we can retrieve the container packages and download into docker.
-			if wl.Torrent != "" {
-				if err := downloadFromImageServer(wl.Torrent, keyFile, currentUIs); err != nil {
-					return nil, err
+			// convert to torrent structure only if the torrent string exists on the exchange
+			if ms_workload.Torrent != "" {
+				if err := json.Unmarshal([]byte(ms_workload.Torrent), &torrent); err != nil {
+					return nil, fmt.Errorf("The torrent definition for microservice %v has error: %v", microserviceDef.SpecRef, err)
 				}
+			}
+
+			url1, err := url.Parse(torrent.Url)
+			if err != nil {
+				return nil, fmt.Errorf("ill-formed URL: %v, error %v", torrent.Url, err)
+			}
+
+			cc := events.NewContainerConfig(*url1, torrent.Signature, ms_workload.Deployment, ms_workload.DeploymentSignature, "", "", make([]events.ImageDockerAuth, 0))
+
+			if err := getContainerImages(cc, keyFiles, currentUIs); err != nil {
+				return nil, errors.New(fmt.Sprintf("failed to get images for %v/%v: %v", org, specRef, err))
 			}
 		}
 
@@ -739,7 +755,7 @@ func getExchangeDefinition(homeDirectory string, specRef string, url string, org
 
 	} else if IsServiceProject(homeDirectory) {
 
-		return getServiceDefinition(homeDirectory, url, org, version, arch, userCreds, keyFile)
+		return getServiceDefinition(homeDirectory, surl, org, version, arch, userCreds, keyFiles)
 
 	} else {
 		return nil, errors.New(fmt.Sprintf("unsupported project type"))
@@ -810,11 +826,11 @@ func UpdateDependentDependencies(homeDirectory string, depProject string) error 
 }
 
 // Iterate through the dependencies of the given service and create a dependency for each one.
-func getServiceDefinitionDependencies(homeDirectory string, serviceDef *cliexchange.ServiceFile, userCreds string, keyFile string) error {
+func getServiceDefinitionDependencies(homeDirectory string, serviceDef *cliexchange.ServiceFile, userCreds string, keyFiles []string) error {
 	for _, rs := range serviceDef.RequiredServices {
 		// Get the service definition for each required service. Dependencies refer to each other by version range, so the
 		// service we're looking for might not be at the exact version specified in the required service element.
-		if sDef, err := getServiceDefinition(homeDirectory, rs.URL, rs.Org, "", rs.Arch, userCreds, keyFile); err != nil {
+		if sDef, err := getServiceDefinition(homeDirectory, rs.URL, rs.Org, "", rs.Arch, userCreds, keyFiles); err != nil {
 			return err
 		} else if err := UpdateDependencyFile(homeDirectory, sDef); err != nil {
 			return err
@@ -823,10 +839,10 @@ func getServiceDefinitionDependencies(homeDirectory string, serviceDef *cliexcha
 	return nil
 }
 
-func getServiceDefinition(homeDirectory, url string, org string, version string, arch string, userCreds string, keyFile string) (*cliexchange.ServiceFile, error) {
+func getServiceDefinition(homeDirectory, surl string, org string, version string, arch string, userCreds string, keyFiles []string) (*cliexchange.ServiceFile, error) {
 
 	// Construct the resource URL suffix.
-	resSuffix := fmt.Sprintf("orgs/%v/services?url=%v", org, url)
+	resSuffix := fmt.Sprintf("orgs/%v/services?url=%v", org, surl)
 	if version != "" {
 		resSuffix += fmt.Sprintf("&version=%v", version)
 	}
@@ -846,71 +862,98 @@ func getServiceDefinition(homeDirectory, url string, org string, version string,
 
 	// Parse the response and extract the highest version service definition or return an error.
 	var serviceDef exchange.ServiceDefinition
+	var serviceId string
 	if len(resp.Services) > 1 {
-		highest, sDef, _, err := exchange.GetHighestVersion(resp.Services, nil)
+		highest, sDef, sId, err := exchange.GetHighestVersion(resp.Services, nil)
 		if err != nil {
 			return nil, err
 		} else if highest == "" {
-			return nil, errors.New(fmt.Sprintf("unable to find highest version of %v %v in the exchange: %v", url, org, resp.Services))
+			return nil, errors.New(fmt.Sprintf("unable to find highest version of %v %v in the exchange: %v", surl, org, resp.Services))
 		} else {
 			serviceDef = sDef
+			serviceId = sId
 		}
 
 	} else if len(resp.Services) == 0 {
 		return nil, errors.New(fmt.Sprintf("no services found in the exchange."))
 	} else {
-		for _, sDef := range resp.Services {
+		for sId, sDef := range resp.Services {
 			serviceDef = sDef
+			serviceId = sId
 			break
 		}
 	}
 
 	cliutils.Verbose("Creating dependency on: %v, Org: %v", serviceDef, org)
 
-	sDef := new(cliexchange.ServiceFile)
+	sDef_cliex := new(cliexchange.ServiceFile)
 
-	// Get the dependency's deployment config and container package info (if any).
+	// Get container images into the local docker
 	dc := make(map[string]interface{})
 	if serviceDef.Deployment != "" {
 		if err := json.Unmarshal([]byte(serviceDef.Deployment), &dc); err != nil {
 			return nil, errors.New(fmt.Sprintf("failed to unmarshal deployment %v: %v", serviceDef.Deployment, err))
 		}
-	}
 
-	// Now that we have the deployment config, we can retrieve the container packages and download into docker.
-	if torr, err := getImageReferenceAsString(&serviceDef); err != nil {
-		return nil, errors.New(fmt.Sprintf("failed to get image reference: %v", err))
-	} else if torr != "" {
 		// Get this project's userinputs so that the downloader can use any special authorization attributes that might
 		// be specified in the global section of the user inputs.
-		if currentUIs, _, err := GetUserInputs(homeDirectory, ""); err != nil {
+		currentUIs, _, err := GetUserInputs(homeDirectory, "")
+		if err != nil {
 			return nil, err
-		} else if err := downloadFromImageServer(torr, keyFile, currentUIs); err != nil {
-			return nil, err
+		}
+
+		// convert the image server info into torrent
+		torrent := getImageReferenceAsTorrent(&serviceDef)
+
+		// verify the image server url
+		url1, err := url.Parse(torrent.Url)
+		if err != nil {
+			return nil, fmt.Errorf("ill-formed URL: %v, error %v", torrent.Url, err)
+		}
+
+		// Get docker auth for the service
+		auth_url := fmt.Sprintf("orgs/%v/services/%v/dockauths", org, exchange.GetId(serviceId))
+		docker_auths := make([]exchange.ImageDockerAuth, 0)
+		cliutils.SetWhetherUsingApiKey(userCreds)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), auth_url, cliutils.OrgAndCreds(os.Getenv(DEVTOOL_HZN_ORG), userCreds), []int{200, 404}, &docker_auths)
+
+		img_auths := make([]events.ImageDockerAuth, 0)
+		if docker_auths != nil {
+			for _, iau_temp := range docker_auths {
+				img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: "token", Password: iau_temp.Token})
+			}
+		}
+		cliutils.Verbose("The image docker auths for the service %v/%v are: %v", org, surl, img_auths)
+
+		cc := events.NewContainerConfig(*url1, torrent.Signature, serviceDef.Deployment, serviceDef.DeploymentSignature, "", "", img_auths)
+
+		// get the images
+		if err := getContainerImages(cc, keyFiles, currentUIs); err != nil {
+			return nil, errors.New(fmt.Sprintf("failed to get images for %v/%v: %v", org, surl, err))
 		}
 	}
 
 	// Fill in the parts of the dependency that come from the microservice definition.
-	sDef.Org = org
-	sDef.URL = serviceDef.URL
-	sDef.Version = serviceDef.Version
-	sDef.Arch = serviceDef.Arch
-	sDef.Label = serviceDef.Label
-	sDef.Description = serviceDef.Description
-	sDef.Public = serviceDef.Public
-	sDef.Sharable = serviceDef.Sharable
-	sDef.UserInputs = serviceDef.UserInputs
-	sDef.Deployment = dc
-	sDef.MatchHardware = serviceDef.MatchHardware
-	sDef.RequiredServices = serviceDef.RequiredServices
-	sDef.ImageStore = serviceDef.ImageStore
+	sDef_cliex.Org = org
+	sDef_cliex.URL = serviceDef.URL
+	sDef_cliex.Version = serviceDef.Version
+	sDef_cliex.Arch = serviceDef.Arch
+	sDef_cliex.Label = serviceDef.Label
+	sDef_cliex.Description = serviceDef.Description
+	sDef_cliex.Public = serviceDef.Public
+	sDef_cliex.Sharable = serviceDef.Sharable
+	sDef_cliex.UserInputs = serviceDef.UserInputs
+	sDef_cliex.Deployment = dc
+	sDef_cliex.MatchHardware = serviceDef.MatchHardware
+	sDef_cliex.RequiredServices = serviceDef.RequiredServices
+	sDef_cliex.ImageStore = serviceDef.ImageStore
 
 	// If this service has dependencies, bring them in.
 	if serviceDef.HasDependencies() {
-		if err := getServiceDefinitionDependencies(homeDirectory, sDef, userCreds, keyFile); err != nil {
+		if err := getServiceDefinitionDependencies(homeDirectory, sDef_cliex, userCreds, keyFiles); err != nil {
 			return nil, err
 		}
 	}
 
-	return sDef, nil
+	return sDef_cliex, nil
 }

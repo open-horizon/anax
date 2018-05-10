@@ -94,16 +94,11 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			}
 		} else {
 			// this is the service case where the image server is defined
-			if image_store := msdef.GetImageStore(); len(image_store) > 0 {
-				if st, ok := image_store[exchange.IMPL_PACKAGE_DISCRIMINATOR]; ok && st == exchange.IMPL_PACKAGE_IMAGESERVER {
-					if url, ok1 := image_store["url"]; ok1 {
-						torrent.Url = url.(string)
-					}
-					if sig, ok2 := image_store["signature"]; ok2 {
-						torrent.Signature = sig.(string)
-					}
-				}
-			}
+			ptorrent := msdef.GetImageStore().ConvertToTorrent()
+
+			// convert the persistence.Torrent to policy.Torrent.
+			torrent.Url = ptorrent.Url
+			torrent.Signature = ptorrent.Signature
 		}
 
 		// convert workload to policy workload structure

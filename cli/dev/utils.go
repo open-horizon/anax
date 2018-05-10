@@ -14,14 +14,13 @@ import (
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/torrent"
-	fetch "github.com/open-horizon/horizon-pkg-fetch"
 	"github.com/satori/go.uuid"
 	"io/ioutil"
-	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -695,95 +694,59 @@ func stopContainers(dc *cliexchange.DeploymentConfig, cw *container.ContainerWor
 	return nil
 }
 
-func getImageReferenceAsString(serviceDef *exchange.ServiceDefinition) (string, error) {
+func getImageReferenceAsTorrent(serviceDef *exchange.ServiceDefinition) policy.Torrent {
 
 	pip := make(policy.ImplementationPackage)
 	cutil.CopyMap(serviceDef.ImageStore, pip)
-	pt := pip.ConvertToTorrent()
-	if jsonBytes, err := json.Marshal(&pt); err != nil {
-		return "", err
-	} else {
-		return string(jsonBytes), nil
-	}
+	return pip.ConvertToTorrent()
 }
 
-// For workloads, microservices and services that have their images on an image server, download the image(s)
-// and load them into the local docker.
-func downloadFromImageServer(torrentInfo string, keyFile string, currentUIs *register.InputFile) error {
+// Get the images into the local docker server for workloads, microservices and services
+func getContainerImages(containerConfig *events.ContainerConfig, pemFiles []string, currentUIs *register.InputFile) error {
 
-	torrObj := new(policy.Torrent)
-	if err := json.Unmarshal([]byte(torrentInfo), torrObj); err != nil {
-		return errors.New(fmt.Sprintf("failed to unmarshal torrent field: %v, error: %v", torrentInfo, err))
-	} else if torrObj.Url == "" {
-		return nil
-	} else if torrentUrl, err := url.Parse(torrObj.Url); err != nil {
-		return errors.New(fmt.Sprintf("failed to parse torrent.url %v, error: %v", torrObj, err))
-	} else if torrentUrl != nil {
-
-		fmt.Printf("Dependency has container images on an image server, downloading the images now.\n")
-		cliutils.Verbose("Downloading container images from image server: %s", torrentUrl)
-
-		torrentSig := torrObj.Signature
-
-		// Create a temporary anax config object to hold the HTTP config we need to contact the Image server.
-		cfg := &config.HorizonConfig{
-			Edge: config.Config{
-				TrustSystemCACerts: true,
-			},
-			AgreementBot:  config.AGConfig{},
-			Collaborators: config.Collaborators{},
-		}
-		col, _ := config.NewCollaborators(*cfg)
-		cfg.Collaborators = *col
-
-		// Create a docker client so that we can convert the downloaded images into docker images.
-		dockerEP := "unix:///var/run/docker.sock"
-		client, derr := docker.NewClient(dockerEP)
-		if derr != nil {
-			return errors.New(fmt.Sprintf("failed to create docker client, error: %v", derr))
-		}
-
-		// This function prevents a download for something that is already downloaded.
-		skipCheckFn := torrent.SkipCheckFn(client)
-
-		// This is the image server authentication configuration. First get any anax attributes and convert them into
-		// anax attributes.
-		attributes, err := GlobalSetAsAttributes(currentUIs.Global)
-		if err != nil {
-			return errors.New(fmt.Sprintf("failed to convert global attributes in %v, error: %v ", USERINPUT_FILE, err))
-		}
-		byValueAttrs := makeByValueAttributes(attributes)
-
-		// Then extract the HTTPS authentication attributes.
-		httpAuthAttrs := make(map[string]map[string]string, 0)
-		dockerAuthConfigurations := make(map[string][]docker.AuthConfiguration, 0)
-		authErr := torrent.ExtractAuthAttributes(byValueAttrs, httpAuthAttrs, dockerAuthConfigurations)
-		if authErr != nil {
-			return errors.New(fmt.Sprintf("failed to extract authentication attribute from %v, error: %v ", USERINPUT_FILE, err))
-		}
-
-		cliutils.Verbose("Using HTTPS Basic authorization: %v", httpAuthAttrs)
-
-		// A public key is needed to verify the signature of the image parts.
-		pemFiles := []string{keyFile}
-
-		// Download to a temporary location.
-		torrentDir := "/tmp"
-
-		// Call the package fetcher library to download and verify the image parts.
-		imageFiles, fetchErr := fetch.PkgFetch(cfg.Collaborators.HTTPClientFactory.WrappedNewHTTPClient(), &skipCheckFn, *torrentUrl, torrentSig, torrentDir, pemFiles, httpAuthAttrs)
-		if fetchErr != nil {
-			return errors.New(fmt.Sprintf("failed to fetch %v, error: %v", torrentUrl, fetchErr))
-		}
-
-		fmt.Printf("Loading container images into docker.\n")
-		cliutils.Verbose("Loading container images into docker: %v", imageFiles)
-
-		// Now that the images are downloaded, load them into docker.
-		loadErr := torrent.LoadImagesFromPkgParts(client, imageFiles)
-		if loadErr != nil {
-			return errors.New(fmt.Sprintf("failed to load images %v from images server, error: %v", imageFiles, loadErr))
-		}
+	// Create a temporary anax config object to hold the HTTP config we need to contact the Image server.
+	cfg := &config.HorizonConfig{
+		Edge: config.Config{
+			TrustSystemCACerts:     true,
+			TrustDockerAuthFromOrg: true,
+			TorrentDir:             "/tmp",
+		},
+		AgreementBot:  config.AGConfig{},
+		Collaborators: config.Collaborators{},
 	}
+
+	col, _ := config.NewCollaborators(*cfg)
+	cfg.Collaborators = *col
+
+	// Create a docker client so that we can convert the downloaded images into docker images.
+	dockerEP := "unix:///var/run/docker.sock"
+	client, derr := docker.NewClient(dockerEP)
+	if derr != nil {
+		return errors.New(fmt.Sprintf("failed to create docker client, error: %v", derr))
+	}
+
+	// This is the image server authentication configuration. First get any anax attributes and convert them into
+	// anax attributes.
+	attributes, err := GlobalSetAsAttributes(currentUIs.Global)
+	if err != nil {
+		return errors.New(fmt.Sprintf("failed to convert global attributes in %v, error: %v ", USERINPUT_FILE, err))
+	}
+	byValueAttrs := makeByValueAttributes(attributes)
+
+	// Then extract the HTTPS authentication attributes.
+	httpAuthAttrs := make(map[string]map[string]string, 0)
+	dockerAuthConfigurations := make(map[string][]docker.AuthConfiguration, 0)
+	authErr := torrent.ExtractAuthAttributes(byValueAttrs, httpAuthAttrs, dockerAuthConfigurations)
+	if authErr != nil {
+		return errors.New(fmt.Sprintf("failed to extract authentication attribute from %v, error: %v ", USERINPUT_FILE, err))
+	}
+
+	cliutils.Verbose("Using HTTPS Basic authorization: %v", httpAuthAttrs)
+
+	fmt.Printf("getting container images into docker.\n")
+	if err := torrent.ProcessImageFetch(cfg, client, containerConfig, httpAuthAttrs, dockerAuthConfigurations, pemFiles); err != nil {
+		return errors.New(fmt.Sprintf("failed to get container images, error: %v", err))
+	}
+
 	return nil
 }
