@@ -59,7 +59,7 @@ func authDockerFile(config config.Config, authConfigs map[string][]docker.AuthCo
 		} else {
 			// do not overwrite incoming authconfigs entries, only augment them
 			for _, v := range authFromFile.Configs {
-				authConfigs = appendDockerAuth(authConfigs, v)
+				authConfigs = AppendDockerAuth(authConfigs, v)
 			}
 		}
 	}
@@ -74,7 +74,7 @@ func pullImageFromRepos(config config.Config, authConfigs map[string][]docker.Au
 	// TODO: can we fetch in parallel with the docker client? If so, lift pattern from https://github.com/open-horizon/horizon-pkg-fetch/blob/master/fetch.go#L350
 	for name, service := range deploymentDesc.Services {
 
-		glog.Infof("Pulling image %v for service %v", service.Image, name)
+		glog.V(3).Infof("Pulling image %v for service %v", service.Image, name)
 
 		var opts docker.PullImageOptions
 
@@ -136,7 +136,7 @@ func pullImageFromRepos(config config.Config, authConfigs map[string][]docker.Au
 			glog.Errorf("Docker image pull(s) failed for docker image %v. Error: %v.", service.Image, err)
 			return err
 		} else {
-			glog.Infof("Succeeded fetching image %v for service", service.Image, name)
+			glog.V(3).Infof("Succeeded fetching image %v for service", service.Image, name)
 		}
 	}
 

@@ -2,6 +2,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/agreementbot"
 	"github.com/open-horizon/anax/cli/attribute"
@@ -27,7 +28,7 @@ import (
 func main() {
 	// Shut off the Anax runtime logging, so functions reused from anax don't fight with the kingpin parsing of args/flags.
 	// Also, in the reused code need to change any calls like glog.Infof("some string") to glog.V(3).Infof("some string")
-	//flag.Set("v", "0")
+	flag.Set("v", "0")
 
 	// Command flags and args - see https://github.com/alecthomas/kingpin
 	app := kingpin.New("hzn", `Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).
@@ -351,7 +352,7 @@ Environment Variables:
 	devDependencyFetchCmd := devDependencyCmd.Command("fetch", "Retrieving Horizon metadata for a new dependency.")
 	devDependencyFetchCmdProject := devDependencyFetchCmd.Flag("project", "Horizon project containing the definition of a dependency. Mutually exclusive with -s -o --ver -a and --url.").Short('p').ExistingDir()
 	devDependencyFetchCmdUserPw := devDependencyFetchCmd.Flag("user-pw", "Horizon Exchange user credentials to query exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
-	devDependencyFetchCmdKeyFile := devDependencyFetchCmd.Flag("public-key-file", "The path of a public key file to be used to verify a signature.").Short('k').ExistingFile()
+	devDependencyFetchCmdKeyFiles := devDependencyFetchCmd.Flag("public-key-file", "The path of a public key file to be used to verify a signature.").Short('k').ExistingFiles()
 	devDependencyFetchCmdUserInputFile := devDependencyFetchCmd.Flag("userInputFile", "File containing user input values for configuring the new dependency.").Short('f').ExistingFile()
 	devDependencyListCmd := devDependencyCmd.Command("list", "List all dependencies.")
 	devDependencyRemoveCmd := devDependencyCmd.Command("remove", "Remove a project dependency.")
@@ -568,7 +569,7 @@ Environment Variables:
 	case devServiceValidateCmd.FullCommand():
 		dev.ServiceValidate(*devHomeDirectory, *devServiceVerifyUserInputFile)
 	case devDependencyFetchCmd.FullCommand():
-		dev.DependencyFetch(*devHomeDirectory, *devDependencyFetchCmdProject, *devDependencyCmdSpecRef, *devDependencyCmdURL, *devDependencyCmdOrg, *devDependencyCmdVersion, *devDependencyCmdArch, *devDependencyFetchCmdUserPw, *devDependencyFetchCmdKeyFile, *devDependencyFetchCmdUserInputFile)
+		dev.DependencyFetch(*devHomeDirectory, *devDependencyFetchCmdProject, *devDependencyCmdSpecRef, *devDependencyCmdURL, *devDependencyCmdOrg, *devDependencyCmdVersion, *devDependencyCmdArch, *devDependencyFetchCmdUserPw, *devDependencyFetchCmdKeyFiles, *devDependencyFetchCmdUserInputFile)
 	case devDependencyListCmd.FullCommand():
 		dev.DependencyList(*devHomeDirectory)
 	case devDependencyRemoveCmd.FullCommand():

@@ -79,6 +79,48 @@ func (i ImplementationPackage) String() string {
 	return res
 }
 
+// This type is used to describe the package that implements the service. This type is identical to the same type
+// found in the exchange package. It is part of a ServiceDefinition. See that module for an explanation.
+const IMPL_PACKAGE_DISCRIMINATOR = "storeType"
+const IMPL_PACKAGE_CONTAINER = "dockerRegistry"
+const IMPL_PACKAGE_IMAGESERVER = "imageServer"
+const IMPL_PACKAGE_IMAGESERVER_URL = "url"
+const IMPL_PACKAGE_IMAGESERVER_SIG = "signature"
+
+// The ImplementationPackage object can be converted to a Torrent type field when the implementation package
+// is using the image server packaging model. The ImplementationPackage object must specify the storeType of
+// the image server and it must include the image server fields; url and signature. If this function is unable
+// to convert to a Torrent object then an empty Torrent object is returned.
+func (i ImplementationPackage) ConvertToTorrent() Torrent {
+	res := Torrent{}
+
+	if storeType, ok := i[IMPL_PACKAGE_DISCRIMINATOR]; !ok || storeType != IMPL_PACKAGE_IMAGESERVER {
+		return res
+	} else if url, ok := i[IMPL_PACKAGE_IMAGESERVER_URL]; !ok {
+		return res
+	} else if urlString, ok := url.(string); !ok {
+		return res
+	} else if sig, ok := i[IMPL_PACKAGE_IMAGESERVER_SIG]; !ok {
+		return res
+	} else if sigString, ok := sig.(string); !ok {
+		return res
+	} else {
+		return Torrent{
+			Url:       urlString,
+			Signature: sigString,
+		}
+	}
+}
+
+type Torrent struct {
+	Url       string `json:"url,omitempty"`
+	Signature string `json:"signature,omitempty"`
+}
+
+func (t Torrent) IsSame(compare Torrent) bool {
+	return t.Url == compare.Url && t.Signature == compare.Signature
+}
+
 type MicroserviceDefinition struct {
 	Id                           string                `json:"record_id"` // unique primary key for records
 	Owner                        string                `json:"owner"`
