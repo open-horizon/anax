@@ -339,12 +339,6 @@ Environment Variables:
 	devServiceStartTestCmd := devServiceCmd.Command("start", "Run a service in a mocked Horizon Agent environment.")
 	devServiceUserInputFile := devServiceStartTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
 	devServiceStopTestCmd := devServiceCmd.Command("stop", "Stop a service that is running in a mocked Horizon Agent environment.")
-	devServiceDeployCmd := devServiceCmd.Command("publish", "Publish a service to a Horizon Exchange.")
-	devServiceDeployCmdUserPw := devServiceDeployCmd.Flag("user-pw", "Horizon Exchange user credentials to create exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
-	devServiceKeyfile := devServiceDeployCmd.Flag("keyFile", "File containing a private key used to sign the deployment configuration.").Short('k').String()
-	devServicePubKeyFile := devServiceDeployCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
-	devServicePubDontTouchImage := devServiceDeployCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. This should only be used during development when testing new versions often.").Short('I').Bool()
-	devServicePubRegistryTokens := devServiceDeployCmd.Flag("registry-token", "Docker registry domain and auth token that should be stored with the service, to enable the Horizon edge node to access the service's docker images. This flag can be repeated, and each flag should be in the format: registry:token").Short('r').Strings()
 	devServiceValidateCmd := devServiceCmd.Command("verify", "Validate the project for completeness and schema compliance.")
 	devServiceVerifyUserInputFile := devServiceValidateCmd.Flag("userInputFile", "File containing user input values for verification of a project.").Short('f').String()
 
@@ -573,8 +567,6 @@ Environment Variables:
 		dev.ServiceStopTest(*devHomeDirectory)
 	case devServiceValidateCmd.FullCommand():
 		dev.ServiceValidate(*devHomeDirectory, *devServiceVerifyUserInputFile)
-	case devServiceDeployCmd.FullCommand():
-		dev.ServiceDeploy(*devHomeDirectory, *devServiceKeyfile, *devServicePubKeyFile, *devServiceDeployCmdUserPw, *devServicePubDontTouchImage, *devServicePubRegistryTokens)
 	case devDependencyFetchCmd.FullCommand():
 		dev.DependencyFetch(*devHomeDirectory, *devDependencyFetchCmdProject, *devDependencyCmdSpecRef, *devDependencyCmdURL, *devDependencyCmdOrg, *devDependencyCmdVersion, *devDependencyCmdArch, *devDependencyFetchCmdUserPw, *devDependencyFetchCmdKeyFile, *devDependencyFetchCmdUserInputFile)
 	case devDependencyListCmd.FullCommand():

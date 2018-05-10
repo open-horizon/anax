@@ -252,8 +252,18 @@ func GetServiceDependencies(directory string, deps []exchange.ServiceDependency)
 }
 
 // Check for the existence of the dependency directory in the project.
-func DependenciesExists(directory string) (bool, error) {
-	return FileExists(directory, DEFAULT_DEPENDENCY_DIR)
+func DependenciesExists(directory string, okToCreate bool) (bool, error) {
+	if exists, err := FileExists(directory, DEFAULT_DEPENDENCY_DIR); err != nil {
+		return false, err
+	} else if !exists && okToCreate {
+		newDir := path.Join(directory, DEFAULT_DEPENDENCY_DIR)
+		if err := os.MkdirAll(newDir, 0755); err != nil {
+			return false, errors.New(fmt.Sprintf("could not create dependency directory %v, error: %v", newDir, err))
+		}
+	} else if !exists {
+		return false, nil
+	}
+	return true, nil
 }
 
 // Validate that the dependencies are complete and coherent with the rest of the definitions in the project.
@@ -725,7 +735,6 @@ func getExchangeDefinition(homeDirectory string, specRef string, url string, org
 		msDef.Description = microserviceDef.Description
 		msDef.Public = microserviceDef.Public
 		msDef.Sharable = microserviceDef.Sharable
-		msDef.DownloadURL = microserviceDef.DownloadURL
 		msDef.UserInputs = microserviceDef.UserInputs
 		msDef.Workloads = []cliexchange.WorkloadDeployment{
 			cliexchange.WorkloadDeployment{

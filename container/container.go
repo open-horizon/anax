@@ -950,7 +950,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, configure *events.
 
 	for serviceName, servicePair := range servicePairs {
 		if image, err := b.client.InspectImage(servicePair.serviceConfig.Config.Image); err != nil {
-			return nil, fail(nil, serviceName, fmt.Errorf("Failed to inspect image. Original error: %v", err))
+			return nil, fail(nil, serviceName, fmt.Errorf("Failed to inspect image: %v. Original error: %v", servicePair.serviceConfig.Config.Image, err))
 		} else if image == nil {
 			return nil, fail(nil, serviceName, fmt.Errorf("Unable to find Docker image: %v", servicePair.serviceConfig.Config.Image))
 		}

@@ -6,7 +6,6 @@
   "version": "1.2.2",
   "arch": "amd64",
   "sharable": "single",
-  "downloadUrl": "not used yet",
   "matchHardware": {},
   "userInput": [],
   "workloads": [

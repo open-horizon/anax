@@ -24,7 +24,6 @@ type WorkloadFile struct {
 	WorkloadURL string               `json:"workloadUrl"`
 	Version     string               `json:"version"`
 	Arch        string               `json:"arch"`
-	DownloadURL string               `json:"downloadUrl"`
 	APISpecs    []exchange.APISpec   `json:"apiSpec"`
 	UserInputs  []exchange.UserInput `json:"userInput"`
 	Workloads   []WorkloadDeployment `json:"workloads"`
@@ -76,7 +75,6 @@ type WorkloadInput struct {
 	WorkloadURL string                        `json:"workloadUrl"`
 	Version     string                        `json:"version"`
 	Arch        string                        `json:"arch"`
-	DownloadURL string                        `json:"downloadUrl"`
 	APISpecs    []exchange.APISpec            `json:"apiSpec"`
 	UserInputs  []exchange.UserInput          `json:"userInput"`
 	Workloads   []exchange.WorkloadDeployment `json:"workloads"`
@@ -133,7 +131,7 @@ func WorkloadPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath stri
 
 // Sign and publish the workload definition. This is a function that is reusable across different hzn commands.
 func (wf *WorkloadFile) SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath string, dontTouchImage bool) {
-	workInput := WorkloadInput{Label: wf.Label, Description: wf.Description, Public: wf.Public, WorkloadURL: wf.WorkloadURL, Version: wf.Version, Arch: wf.Arch, DownloadURL: wf.DownloadURL, APISpecs: wf.APISpecs, UserInputs: wf.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(wf.Workloads))}
+	workInput := WorkloadInput{Label: wf.Label, Description: wf.Description, Public: wf.Public, WorkloadURL: wf.WorkloadURL, Version: wf.Version, Arch: wf.Arch, APISpecs: wf.APISpecs, UserInputs: wf.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(wf.Workloads))}
 
 	// Loop thru the workloads array and sign the deployment strings
 	//fmt.Println("Signing workload...")  // <- do not print this because it might be pre-signed
