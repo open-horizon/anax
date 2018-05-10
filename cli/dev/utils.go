@@ -156,7 +156,7 @@ func IsWorkloadProject(directory string) bool {
 		return false
 	} else if ex, err := WorkloadDefinitionExists(directory); !ex || err != nil {
 		return false
-	} else if ex, err := DependenciesExists(directory); !ex || err != nil {
+	} else if ex, err := DependenciesExists(directory, true); !ex || err != nil {
 		return false
 	}
 	return true
@@ -168,7 +168,7 @@ func IsMicroserviceProject(directory string) bool {
 		return false
 	} else if ex, err := MicroserviceDefinitionExists(directory); !ex || err != nil {
 		return false
-	} else if ex, err := DependenciesExists(directory); !ex || err != nil {
+	} else if ex, err := DependenciesExists(directory, true); !ex || err != nil {
 		return false
 	}
 	return true
@@ -180,7 +180,7 @@ func IsServiceProject(directory string) bool {
 		return false
 	} else if ex, err := ServiceDefinitionExists(directory); !ex || err != nil {
 		return false
-	} else if ex, err := DependenciesExists(directory); !ex || err != nil {
+	} else if ex, err := DependenciesExists(directory, true); !ex || err != nil {
 		return false
 	}
 	return true

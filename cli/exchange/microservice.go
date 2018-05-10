@@ -82,7 +82,6 @@ type MicroserviceFile struct {
 	Version       string               `json:"version"`
 	Arch          string               `json:"arch"`
 	Sharable      string               `json:"sharable"`
-	DownloadURL   string               `json:"downloadUrl"`
 	MatchHardware map[string]string    `json:"matchHardware"`
 	UserInputs    []exchange.UserInput `json:"userInput"`
 	Workloads     []WorkloadDeployment `json:"workloads"`
@@ -188,7 +187,6 @@ type MicroserviceInput struct {
 	Version       string                        `json:"version"`
 	Arch          string                        `json:"arch"`
 	Sharable      string                        `json:"sharable"`
-	DownloadURL   string                        `json:"downloadUrl"`
 	MatchHardware map[string]string             `json:"matchHardware"`
 	UserInputs    []exchange.UserInput          `json:"userInput"`
 	Workloads     []exchange.WorkloadDeployment `json:"workloads"`
@@ -311,7 +309,7 @@ func MicroservicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath 
 
 // Sign and publish the microservice definition. This is a function that is reusable across different hzn commands.
 func (mf *MicroserviceFile) SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath string, dontTouchImage bool) {
-	microInput := MicroserviceInput{Label: mf.Label, Description: mf.Description, Public: mf.Public, SpecRef: mf.SpecRef, Version: mf.Version, Arch: mf.Arch, Sharable: mf.Sharable, DownloadURL: mf.DownloadURL, MatchHardware: mf.MatchHardware, UserInputs: mf.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(mf.Workloads))}
+	microInput := MicroserviceInput{Label: mf.Label, Description: mf.Description, Public: mf.Public, SpecRef: mf.SpecRef, Version: mf.Version, Arch: mf.Arch, Sharable: mf.Sharable, MatchHardware: mf.MatchHardware, UserInputs: mf.UserInputs, Workloads: make([]exchange.WorkloadDeployment, len(mf.Workloads))}
 
 	// Loop thru the workloads array, sign the deployment strings, and copy all 3 fields to microInput
 	//fmt.Println("Signing microservice...")  // <- do not print this because it might be pre-signed

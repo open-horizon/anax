@@ -39,7 +39,6 @@ func CreateMicroserviceDefinition(directory string, org string) error {
 	res.Description = ""
 	res.Public = true
 	res.SpecRef = DEFAULT_MSDEF_URL
-	res.DownloadURL = "not used yet"
 	res.Version = DEFAULT_MSDEF_SPECIFIC_VERSION
 	res.Arch = cutil.ArchString()
 	res.Sharable = exchange.MS_SHARING_MODE_MULTIPLE
