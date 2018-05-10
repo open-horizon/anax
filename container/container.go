@@ -142,7 +142,7 @@ func removeDuplicateVariable(existingArray *[]string, newVar string) {
 
 }
 
-func finalizeDeployment(agreementId string, deployment *containermessage.DeploymentDescription, environmentAdditions map[string]string, workloadROStorageDir string, cpuSet string) (map[string]servicePair, error) {
+func finalizeDeployment(agreementId string, deployment *containermessage.DeploymentDescription, environmentAdditions map[string]string, workloadRWStorageDir string, cpuSet string) (map[string]servicePair, error) {
 
 	// final structure
 	services := make(map[string]servicePair, 0)
@@ -381,13 +381,20 @@ func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, e
 func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB) *ContainerWorker {
 
 	inAgbot := false
-	if config.Edge.WorkloadROStorage == "" && config.Edge.DBPath == "" {
-		// We are running in an agbot, dont need the workload RO storage config.
+	if config.Edge.ServiceStorage == "" && config.Edge.DBPath == "" {
+		// We are running in an agbot, dont need the service storage config.
 		inAgbot = true
 
-	} else if err := unix.Access(config.Edge.WorkloadROStorage, unix.W_OK); err != nil {
-		glog.Errorf("Unable to access workload RO storage dir: %v. Error: %v", config.Edge.WorkloadROStorage, err)
-		panic("Unable to access workload RO storage dir specified in config")
+	} else {
+		storage_base_dir := "/var/tmp/horizon/service_storage" // default
+		if config.Edge.ServiceStorage != "" {
+			storage_base_dir = config.Edge.ServiceStorage
+		}
+
+		if err := unix.Access(storage_base_dir, unix.W_OK); err != nil {
+			glog.Errorf("Unable to access service storage dir: %v. Error: %v", config.Edge.ServiceStorage, err)
+			panic("Unable to access service storage dir specified in config")
+		}
 	}
 
 	if ipt, err := iptables.New(); err != nil {
@@ -865,7 +872,11 @@ func processPostCreate(ipt *iptables.IPTables, client *docker.Client, agreementI
 }
 
 func (b *ContainerWorker) workloadStorageDir(agreementId string) string {
-	return path.Join(b.Config.Edge.WorkloadROStorage, agreementId)
+	storage_base_dir := "/var/tmp/horizon/service_storage" // default
+	if b.Config.Edge.ServiceStorage != "" {
+		storage_base_dir = b.Config.Edge.ServiceStorage
+	}
+	return path.Join(storage_base_dir, agreementId)
 }
 
 func (b *ContainerWorker) ResourcesCreate(agreementId string, configure *events.ContainerConfig, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]docker.ContainerNetwork) (*map[string]persistence.ServiceConfig, error) {
@@ -917,10 +928,10 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, configure *events.
 		return endpoints
 	}
 
-	workloadROStorageDir := b.workloadStorageDir(agreementId)
+	workloadRWStorageDir := b.workloadStorageDir(agreementId)
 
 	// create RO workload storage dir if it doesnt already exist
-	if err := os.Mkdir(workloadROStorageDir, 0700); err != nil {
+	if err := os.Mkdir(workloadRWStorageDir, 0700); err != nil {
 		if pErr, ok := err.(*os.PathError); ok {
 			if pErr.Err.Error() != "file exists" {
 				return nil, err
@@ -930,13 +941,13 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, configure *events.
 		}
 	}
 
-	glog.V(5).Infof("Writing raw config to file in %v. Config data: %v", workloadROStorageDir, string(configureRaw))
-	// write raw to workloadROStorageDir
-	if err := ioutil.WriteFile(path.Join(workloadROStorageDir, "Configure"), configureRaw, 0644); err != nil {
+	glog.V(5).Infof("Writing raw config to file in %v. Config data: %v", workloadRWStorageDir, string(configureRaw))
+	// write raw to workloadRWStorageDir
+	if err := ioutil.WriteFile(path.Join(workloadRWStorageDir, "Configure"), configureRaw, 0644); err != nil {
 		return nil, err
 	}
 
-	servicePairs, err := finalizeDeployment(agreementId, deployment, environmentAdditions, workloadROStorageDir, b.Config.Edge.DefaultCPUSet)
+	servicePairs, err := finalizeDeployment(agreementId, deployment, environmentAdditions, workloadRWStorageDir, b.Config.Edge.DefaultCPUSet)
 	if err != nil {
 		return nil, err
 	}
@@ -1162,7 +1173,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				} else {
 					dir = b.workloadStorageDir(agreementId)
 				}
-				deploymentDesc.Services[serviceName].AddFilesystemBinding(fmt.Sprintf("%v:%v:ro", dir, "/workload_config"))
+				deploymentDesc.Services[serviceName].AddFilesystemBinding(fmt.Sprintf("%v:%v:rw", dir, "/service_config"))
 			}
 
 			// Create the docker configuration and launch the containers.
@@ -1250,7 +1261,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				} else {
 					dir = b.workloadStorageDir(cmd.ContainerLaunchContext.Name)
 				}
-				deploymentDesc.Services[serviceName].AddFilesystemBinding(fmt.Sprintf("%v:%v:ro", dir, "/workload_config"))
+				deploymentDesc.Services[serviceName].AddFilesystemBinding(fmt.Sprintf("%v:%v:rw", dir, "/service_config"))
 			}
 		}
 
@@ -1545,9 +1556,9 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 
 	// remove old workspaceROStorage dir
 	for _, agreementId := range agreements {
-		workloadROStorageDir := b.workloadStorageDir(agreementId)
-		if err := os.RemoveAll(workloadROStorageDir); err != nil {
-			glog.Errorf("Failed to remove workloadROStorageDir: %v. Error: %v", workloadROStorageDir, err)
+		workloadRWStorageDir := b.workloadStorageDir(agreementId)
+		if err := os.RemoveAll(workloadRWStorageDir); err != nil {
+			glog.Errorf("Failed to remove workloadStorageDir: %v. Error: %v", workloadRWStorageDir, err)
 		}
 	}
 
