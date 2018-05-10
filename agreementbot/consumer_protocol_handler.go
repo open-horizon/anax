@@ -405,7 +405,7 @@ func (b *BaseConsumerProtocolHandler) RecordConsumerAgreementState(agreementId s
 	as := new(exchange.PutAgbotAgreementState)
 
 	wa := exchange.WorkloadAgreement{
-		Org:     exchange.GetOrg(pol.PatternId),
+		Org:     org,
 		Pattern: exchange.GetId(pol.PatternId),
 		URL:     workload,
 	}

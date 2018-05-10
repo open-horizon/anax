@@ -773,7 +773,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, searchOrg string
 
 	} else {
 
-		// Search the exchange based on a list of microservices.
+		// Search the exchange based on a list of services.
 		// Collect the API specs to search over into a map so that duplicates are automatically removed.
 		msMap := make(map[string]*exchange.Microservice)
 
@@ -782,22 +782,22 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, searchOrg string
 		// can't satisfy all the workloads then workload rollback cant work so we shouldnt make an agreement with this
 		// device.
 		for _, workload := range pol.Workloads {
-			if e_workload, _, err := exchange.GetHTTPWorkloadHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
-				return nil, errors.New(fmt.Sprintf("AgreementBotWorker received error retrieving workload definition for %v, error: %v", workload, err))
-			} else if e_workload == nil {
-				return nil, errors.New(fmt.Sprintf("AgreementBotWorker could not find workload definition for %v", workload))
+			if asl, e_service, err := exchange.GetHTTPServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+				return nil, errors.New(fmt.Sprintf("AgreementBotWorker received error retrieving service definition for %v, error: %v", workload, err))
+			} else if e_service == nil {
+				return nil, errors.New(fmt.Sprintf("AgreementBotWorker could not find service definition for %v", workload))
 			} else {
-				for _, apiSpec := range e_workload.APISpecs {
+				for _, rs := range *asl {
 					// convert the arch to GOARCH standard using synonyms defined in the config
-					arch := apiSpec.Arch
+					arch := rs.Arch
 					if arch != "" && w.Config.ArchSynonyms.GetCanonicalArch(arch) != "" {
 						arch = w.Config.ArchSynonyms.GetCanonicalArch(arch)
 					}
 
-					if newMS, err := w.makeNewMSSearchElement(apiSpec.SpecRef, apiSpec.Org, "", arch, pol); err != nil {
+					if newMS, err := w.makeNewMSSearchElement(rs.SpecRef, rs.Org, "", arch, pol); err != nil {
 						return nil, err
 					} else {
-						msMap[apiSpec.SpecRef] = newMS
+						msMap[rs.SpecRef] = newMS
 					}
 				}
 			}
