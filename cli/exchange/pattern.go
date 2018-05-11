@@ -188,7 +188,7 @@ func ConvertToDeploymentOverrides(deployment interface{}) *DeploymentOverrides {
 }
 
 // PatternPublish signs the MS def and puts it in the exchange
-func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string) {
+func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patName string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the pattern metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
@@ -296,8 +296,14 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 	}
 
 	// Create or update resource in the exchange
-	exchId := filepath.Base(jsonFilePath)                     // remove the leading path
-	exchId = strings.TrimSuffix(exchId, filepath.Ext(exchId)) // strip suffix if there
+	var exchId string
+	if patName != "" {
+		exchId = patName
+	} else {
+		// Use the json file base name as the default for the pattern name
+		exchId = filepath.Base(jsonFilePath)                      // remove the leading path
+		exchId = strings.TrimSuffix(exchId, filepath.Ext(exchId)) // strip suffix if there
+	}
 	var output string
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 200 {

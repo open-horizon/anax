@@ -5,8 +5,10 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 )
 
-func Version() {
+func Version(org, userPw string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
 	var output []byte
-	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "admin/version", "", []int{200}, &output)
+	// Note: the base exchange doesn't need creds for this call (altho is tolerant of it), but the wiotp data power front-end to the exchange does
+	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "admin/version", cliutils.OrgAndCreds(org, userPw), []int{200}, &output)
 	fmt.Print(string(output))
 }
