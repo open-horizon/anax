@@ -13,6 +13,9 @@ CLI_EXECUTABLE := cli/hzn
 CLI_MAN_DIR := cli/man1
 CLI_COMPLETION_DIR := cli/bash_completion
 DEFAULT_UI = api/static/index.html
+ANAX_CONTAINER_DIR := anax-in-container
+DOCKER_IMAGE_VERSION ?= 0.5.0
+DOCKER_IMAGE = openhorizon/$(arch)_anax:$(DOCKER_IMAGE_VERSION)
 
 export TMPGOPATH ?= $(TMPDIR)$(EXECUTABLE)-gopath
 export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon/$(EXECUTABLE)
@@ -64,6 +67,14 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 	mkdir -p $(CLI_MAN_DIR) && $(CLI_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1
 	mkdir -p $(CLI_COMPLETION_DIR) && $(CLI_EXECUTABLE) --completion-script-bash > $(CLI_COMPLETION_DIR)/hzn_bash_autocomplete.sh
 
+docker-image:
+	@echo "Producing anax docker image $(DOCKER_IMAGE)"
+	cd $(ANAX_CONTAINER_DIR) && docker build -t $(DOCKER_IMAGE) -f ./Dockerfile.$(arch) .
+
+docker-push: docker-image
+	@echo "Pushing anax docker image $(DOCKER_IMAGE)"
+	docker push $(DOCKER_IMAGE)
+
 clean: mostlyclean
 	@echo "Clean"
 	find ./vendor -maxdepth 1 -not -path ./vendor -and -not -iname "vendor.json" -print0 | xargs -0 rm -Rf
@@ -75,6 +86,7 @@ endif
 mostlyclean:
 	@echo "Mostlyclean"
 	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE)
+	-docker rmi $(DOCKER_IMAGE) 2> /dev/null || :
 
 deps: $(TMPGOPATH)/bin/govendor
 	@echo "Fetching dependencies"
@@ -163,4 +175,4 @@ diagrams:
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/protocolSequenceDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/horizonSequenceDiagram.txt
 
-.PHONY: check clean deps format gopathlinks install lint mostlyclean pull test test-integration
+.PHONY: check clean deps format gopathlinks install lint mostlyclean pull test test-integration docker-image docker-push

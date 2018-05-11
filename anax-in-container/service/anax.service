@@ -1,0 +1,125 @@
+#!/bin/bash
+
+# Script to start, restart, and stop anax inside a docker container
+
+ANAX_LOG_LEVEL=${ANAX_LOG_LEVEL:-3}
+
+usage() {
+	echo "Usage: $0 {start|restart|status} [env-script-to-run]"
+	exit 1
+}
+
+# Check the exit status of the previously run command and exit if nonzero
+checkrc() {
+  if [[ $1 -ne 0 ]]; then
+  	if [[ -n "$2" ]]; then
+  		fromStr="from: $2"
+  	else
+  		fromStr="from the last command"
+  	fi
+    echo "Error: exit code $1 $fromStr"
+    exit $1
+  fi
+}
+
+start() {
+	while true; do
+		cmd="/usr/horizon/bin/anax -v $ANAX_LOG_LEVEL -logtostderr -config /etc/horizon/anax.json"
+		echo "$cmd"
+		$cmd    # purposely running this in the foreground
+		echo "Anax ended with exit code $?.  Respawning..." >&2
+		sleep 1		# in case the cmd above is failing, this loop won't consume 100% cpu
+	done
+}
+
+# Note: the way to stop anax w/o it restarting is to stop the container
+#stopanax() {
+#	killall /usr/horizon/bin/anax
+#}
+
+restart() {
+	killall /usr/horizon/bin/anax 		# the start function will automatically restart it
+	#stopanax
+	#start
+}
+
+psg() {
+	ps aux|head -1
+	ps aux|grep -i $*|grep -v '0:00 /bin/grep -'
+}
+
+status() {
+	psg /usr/horizon/bin/anax
+}
+
+defaultEnv() {
+	# Update several fields in anax.json
+	anaxJsonFile='/etc/horizon/anax.json'
+	echo "Modifying $anaxJsonFile for anax-in-container..."
+
+	# Read the json object in /etc/horizon/anax.json
+	anaxJson=$(jq . $anaxJsonFile)
+	checkrc $? "read anax.json"
+	cp $anaxJsonFile $anaxJsonFile.orig
+	checkrc $? "back up anax.json"
+
+	# Anax must be listening on port 80 of all interfaces for it to be published to the host by docker (we will only publish it to 127.0.0.1 on the host)
+	anaxJson=$(jq ".Edge.APIListen = \"0.0.0.0:80\" " <<< $anaxJson)
+	checkrc $? "change APIListen"
+
+	# Experimental: configure anax running on mac host
+	# The Mac can not mount the /var/run/docker.sock unix socket into the container. So on the host you must use a cmd like this to have the docker engine listen on a port:
+	#    socat TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &
+	# Then on docker run use -e MAC_HOST=192.168.1.10 so the anax container can connect to that.
+	if [[ -n "$MAC_HOST" ]]; then
+	  anaxJson=$(jq ".Edge.DockerEndpoint = \"tcp://$MAC_HOST:2375\" " <<< $anaxJson)
+	  checkrc $? "change DockerEndpoint"
+
+	  # Also can't mount /var, but can mount anything under /private
+	  anaxJson=$(jq ".Edge.ServiceStorage = \"/private/var/tmp/horizon/service_storage/\" " <<< $anaxJson)
+	  checkrc $? "change ServiceStorage"
+	fi
+
+	# Write the new json back to the file
+	echo "$anaxJson" > $anaxJsonFile
+	checkrc $? "write anax.json"
+}
+
+# Main....
+if [[ -z "$1" ]]; then usage; fi
+
+if [[ -n "$2" && "$2" == "DO_NOT_RUN" ]]; then
+	while :; do sleep 2073600; done    # block forever w/o starting anax so the container stays up, and you can exec in, start anax manually, and debug
+fi
+
+# Do the config that is specific to running anax in a container, but needed for all environments
+defaultEnv
+
+# This argument is an optional script to run to configure anax for a specific development environment before starting it
+if [[ -n "$2" ]]; then
+	# Run the environment config script, then fall thru to start anax
+	envScript="$2"
+	if [[ ! -x "$envScript" ]]; then
+		echo "Error: the environment script to run ($envScript) does not exist, or is not executable."
+		exit 2
+	fi
+	$envScript
+	checkrc $? "running $envScript"
+fi
+
+case "$1" in
+	start)
+		start
+		;;
+	# stop)
+		# stopanax
+		# ;;
+	restart)
+		restart
+		;;
+	status)
+		status
+		;;
+	*)
+		usage
+esac
