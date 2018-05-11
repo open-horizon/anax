@@ -141,7 +141,7 @@ func tConfig(t *testing.T, dir string) *config.HorizonConfig {
 			DockerCredFilePath: dockerCredFile,
 			DefaultCPUSet:      "0-1",
 			TorrentDir:         torrentDir,
-			WorkloadROStorage:  workloadStorageDir,
+			ServiceStorage:     workloadStorageDir,
 			//		DockerCredFilePath: "/config.json",
 			PublicKeyPath: path.Join(dir, "validpkgcert.pem"),
 			// consistent with setup()'s dirs

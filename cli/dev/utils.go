@@ -379,14 +379,14 @@ func createEnvVarMap(agreementId string,
 
 func createContainerWorker() (*container.ContainerWorker, error) {
 
-	workloadRODir := "/tmp/hzn"
-	if err := os.MkdirAll(workloadRODir, 0755); err != nil {
+	workloadStorageDir := "/tmp/hzn"
+	if err := os.MkdirAll(workloadStorageDir, 0755); err != nil {
 		return nil, err
 	}
 
 	config := &config.HorizonConfig{
 		Edge: config.Config{
-			WorkloadROStorage:             workloadRODir,
+			ServiceStorage:                workloadStorageDir,
 			DefaultServiceRegistrationRAM: 0,
 		},
 		AgreementBot:  config.AGConfig{},

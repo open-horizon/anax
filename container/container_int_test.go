@@ -64,9 +64,9 @@ func tConfig() *config.HorizonConfig {
 
 	return &config.HorizonConfig{
 		Edge: config.Config{
-			DockerEndpoint:    "unix:///var/run/docker.sock",
-			DefaultCPUSet:     "0-1",
-			WorkloadROStorage: workloadStorageDir,
+			DockerEndpoint: "unix:///var/run/docker.sock",
+			DefaultCPUSet:  "0-1",
+			ServiceStorage: workloadStorageDir,
 		},
 	}
 }
@@ -151,7 +151,7 @@ func tClean(t *testing.T, tName string, worker *ContainerWorker, setupVerificati
 	}
 
 	// TODO: handle
-	os.RemoveAll(worker.Config.Edge.WorkloadROStorage + "/" + tName)
+	os.RemoveAll(worker.Config.Edge.ServiceStorage + "/" + tName)
 
 	for _, net := range networks {
 		if strings.Contains(net.Name, tName) {
@@ -321,7 +321,7 @@ func Test_resourcesCreate_failLoad(t *testing.T) {
 
 	config := tConfig()
 	config.Edge.TorrentDir = "/somethingfake"
-	config.Edge.WorkloadROStorage = "/tmp"
+	config.Edge.ServiceStorage = "/tmp"
 	worker := tWorker(config, db)
 
 	env := map[string]string{

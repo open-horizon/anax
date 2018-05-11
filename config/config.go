@@ -19,7 +19,7 @@ type HorizonConfig struct {
 
 // This is the configuration options for Edge component flavor of Anax
 type Config struct {
-	WorkloadROStorage             string
+	ServiceStorage                string // The base storage directory where the service can write or get the data.
 	TorrentDir                    string
 	APIListen                     string
 	DBPath                        string
