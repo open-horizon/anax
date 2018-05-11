@@ -20,7 +20,7 @@ make docker-push     # push the image to docker hub
 
 ```
 docker pull openhorizon/amd64_anax:0.5.0
-mkdir -p /var/tmp/horizon/workload_ro    # anax will check for this, because this will be mounted into service containers
+mkdir -p /var/tmp/horizon/service_storage    # anax will check for this, because this will be mounted into service containers
 docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -v /var/run/docker.sock:/var/run/docker.sock -v /etc/wiotp-edge:/etc/wiotp-edge -v /var/wiotp-edge:/var/wiotp-edge openhorizon/amd64_anax:0.5.0
 export HORIZON_URL='http://localhost:8081'    # to point the hzn cmd to the container
 docker exec amd64_anax bash   # enter the container
@@ -33,7 +33,7 @@ hzn agreement list
 
 ```
 docker pull openhorizon/amd64_anax:0.5.0
-mkdir -p /var/tmp/horizon/workload_ro    # anax will check for this, because this will be mounted into service containers
+mkdir -p /var/tmp/horizon/service_storage    # anax will check for this, because this will be mounted into service containers
 docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -v /var/run/docker.sock:/var/run/docker.sock -v /etc/wiotp-edge:/etc/wiotp-edge -v /var/wiotp-edge:/var/wiotp-edge -v `pwd`:/outside openhorizon/amd64_anax:0.5.0 /root/bluehorizon-env.sh
 export HORIZON_URL='http://localhost:8081'    # to point the hzn cmd to the container
 hzn node list   # ensure you talking to the container, and the bluehorizon-env.sh config script ran
@@ -62,7 +62,7 @@ hzn agreement list
 
 ```
 socat TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &   # have docker api listen on a port, in addition to a unix socket
-mkdir -p /private/var/tmp/horizon/workload_ro    # anax will check for this, because this will be mounted into service containers
+mkdir -p /private/var/tmp/horizon/service_storage    # anax will check for this, because this will be mounted into service containers
 docker pull openhorizon/amd64_anax:0.5.0
 docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -e MAC_HOST=192.168.1.10 -v /private/var/tmp/horizon:/private/var/tmp/horizon -v /private/etc/wiotp-edge:/etc/wiotp-edge -v /private/var/wiotp-edge:/var/wiotp-edge -v `pwd`:/outside openhorizon/amd64_anax:0.5.0 /root/bluehorizon-env.sh
 export HORIZON_URL='http://localhost:8081'    # to point the hzn cmd to the container

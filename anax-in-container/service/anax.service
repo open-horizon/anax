@@ -55,7 +55,7 @@ status() {
 defaultEnv() {
 	# Update several fields in anax.json
 	anaxJsonFile='/etc/horizon/anax.json'
-	echo "Modifying $anaxJsonFile for wiotp..."
+	echo "Modifying $anaxJsonFile for anax-in-container..."
 
 	# Read the json object in /etc/horizon/anax.json
 	anaxJson=$(jq . $anaxJsonFile)
@@ -76,8 +76,8 @@ defaultEnv() {
 	  checkrc $? "change DockerEndpoint"
 
 	  # Also can't mount /var, but can mount anything under /private
-	  anaxJson=$(jq ".Edge.WorkloadROStorage = \"/private/var/tmp/horizon/workload_ro/\" " <<< $anaxJson)
-	  checkrc $? "change WorkloadROStorage"
+	  anaxJson=$(jq ".Edge.ServiceStorage = \"/private/var/tmp/horizon/service_storage/\" " <<< $anaxJson)
+	  checkrc $? "change ServiceStorage"
 	fi
 
 	# Write the new json back to the file
