@@ -102,7 +102,10 @@ func TypeCreate(org, apiKeyTok, wType, arch string, services []string) {
 	fmt.Printf("Device type %s created\n", wType)
 }
 
-func TypeRemove(org, apiKeyTok, wType string) {
+func TypeRemove(org, apiKeyTok, wType string, force bool) {
+	if !force {
+		cliutils.ConfirmRemove("Are you sure you want to remove type '" + wType + "' from WIoTP?")
+	}
 	cliutils.WiotpDelete(cliutils.GetWiotpUrl(org), "device/types/"+wType, apiKeyTok, []int{204})
 	fmt.Printf("Device type %s removed\n", wType)
 }
@@ -174,7 +177,10 @@ func DeviceCreate(org, apiKeyTok, wType, device, token string) {
 	fmt.Printf("Device %s created\n", device)
 }
 
-func DeviceRemove(org, apiKeyTok, wType, device string) {
+func DeviceRemove(org, apiKeyTok, wType, device string, force bool) {
+	if !force {
+		cliutils.ConfirmRemove("Are you sure you want to remove device '" + device + "' from WIoTP?")
+	}
 	cliutils.WiotpDelete(cliutils.GetWiotpUrl(org), "device/types/"+wType+"/devices/"+device, apiKeyTok, []int{204})
 	fmt.Printf("Device %s removed\n", device)
 }

@@ -112,6 +112,7 @@ Environment Variables:
 	exPatJsonFile := exPatternPublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the pattern in the Horizon exchange. See /usr/horizon/samples/pattern.json. Specify -f- to read from stdin.").Short('f').Required().String()
 	exPatKeyFile := exPatternPublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the pattern.").Short('k').ExistingFile()
 	exPatPubPubKeyFile := exPatternPublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
+	exPatName := exPatternPublishCmd.Flag("pattern-name", "The name to use for this pattern in the Horizon exchange. If not specified, will default to the base name of the file path specified in -f.").Short('p').String()
 	exPatternVerifyCmd := exPatternCmd.Command("verify", "Verify the signatures of a pattern resource in the Horizon Exchange.")
 	exVerPattern := exPatternVerifyCmd.Arg("pattern", "The pattern to verify.").Required().String()
 	exPatPubKeyFile := exPatternVerifyCmd.Flag("public-key-file", "The path of a pem public key file to be used to verify the pattern. ").Short('k').Required().ExistingFile()
@@ -224,6 +225,7 @@ Environment Variables:
 	wiotpTypeCreateServices := wiotpTypeCreateCmd.Flag("service", "The exchange id of a service that should be deployed to this edge node type. For example: internetofthings.ibmcloud.com-workloads-cpu2wiotp_1.2.2_amd64. This flag can be repeated.").Short('s').Strings()
 	wiotpTypeRemoveCmd := wiotpTypeCmd.Command("remove", "Remove a gateway type object from WIoTP.")
 	wiotpTypeRemoveType := wiotpTypeRemoveCmd.Arg("type", "The gateway type.").Required().String()
+	wiotpTypeRemoveForce := wiotpTypeRemoveCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 
 	wiotpDeviceCmd := wiotpCmd.Command("device", "List and manage devices/gateways of a particular type in WIoTP")
 	wiotpDevListCmd := wiotpDeviceCmd.Command("list", "Display the devices/gateways objects of the specified type from WIoTP.")
@@ -239,6 +241,7 @@ Environment Variables:
 	wiotpDevRemoveCmd := wiotpDeviceCmd.Command("remove", "Remove a device/gateway objects from WIoTP.")
 	wiotpDevRemoveType := wiotpDevRemoveCmd.Arg("type", "The device/gateway type.").Required().String()
 	wiotpDevRemoveDevice := wiotpDevRemoveCmd.Arg("device", "The device/gateway id to remove.").Required().String()
+	wiotpDevRemoveForce := wiotpDevRemoveCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 
 	regInputCmd := app.Command("reginput", "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the workloads and microservices that the specified pattern uses, and determines the node owner input that is required for them.")
 	regInputNodeIdTok := regInputCmd.Flag("node-id-tok", "The Horizon exchange node ID and token (it must already exist).").Short('n').PlaceHolder("ID:TOK").Required().String()
@@ -409,7 +412,7 @@ Environment Variables:
 	case versionCmd.FullCommand():
 		node.Version()
 	case exVersionCmd.FullCommand():
-		exchange.Version()
+		exchange.Version(*exOrg, *exUserPw)
 	case exStatusCmd.FullCommand():
 		exchange.Status(*exOrg, *exUserPw)
 	case exUserListCmd.FullCommand():
@@ -435,7 +438,7 @@ Environment Variables:
 	case exPatternListCmd.FullCommand():
 		exchange.PatternList(*exOrg, *exUserPw, *exPattern, !*exPatternLong)
 	case exPatternPublishCmd.FullCommand():
-		exchange.PatternPublish(*exOrg, *exUserPw, *exPatJsonFile, *exPatKeyFile, *exPatPubPubKeyFile)
+		exchange.PatternPublish(*exOrg, *exUserPw, *exPatJsonFile, *exPatKeyFile, *exPatPubPubKeyFile, *exPatName)
 	case exPatternVerifyCmd.FullCommand():
 		exchange.PatternVerify(*exOrg, *exUserPw, *exVerPattern, *exPatPubKeyFile)
 	case exPatDelCmd.FullCommand():
@@ -497,7 +500,7 @@ Environment Variables:
 	case wiotpTypeCreateCmd.FullCommand():
 		wiotp.TypeCreate(*wiotpOrg, *wiotpApiKeyToken, *wiotpTypeCreateType, *wiotpTypeCreateArch, *wiotpTypeCreateServices)
 	case wiotpTypeRemoveCmd.FullCommand():
-		wiotp.TypeRemove(*wiotpOrg, *wiotpApiKeyToken, *wiotpTypeRemoveType)
+		wiotp.TypeRemove(*wiotpOrg, *wiotpApiKeyToken, *wiotpTypeRemoveType, *wiotpTypeRemoveForce)
 	case wiotpDevListCmd.FullCommand():
 		wiotp.DeviceList(*wiotpOrg, *wiotpApiKeyToken, *wiotpDevType, *wiotpDevice)
 	case wiotpDevEdgeStatusCmd.FullCommand():
@@ -505,7 +508,7 @@ Environment Variables:
 	case wiotpDevCreateCmd.FullCommand():
 		wiotp.DeviceCreate(*wiotpOrg, *wiotpApiKeyToken, *wiotpDevCreateType, *wiotpDevCreateDevice, *wiotpDevCreateToken)
 	case wiotpDevRemoveCmd.FullCommand():
-		wiotp.DeviceRemove(*wiotpOrg, *wiotpApiKeyToken, *wiotpDevRemoveType, *wiotpDevRemoveDevice)
+		wiotp.DeviceRemove(*wiotpOrg, *wiotpApiKeyToken, *wiotpDevRemoveType, *wiotpDevRemoveDevice, *wiotpDevRemoveForce)
 	case regInputCmd.FullCommand():
 		register.CreateInputFile(*regInputOrg, *regInputPattern, *regInputArch, *regInputNodeIdTok, *regInputInputFile)
 	case registerCmd.FullCommand():
