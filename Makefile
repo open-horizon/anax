@@ -69,7 +69,7 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 
 docker-image:
 	@echo "Producing anax docker image $(DOCKER_IMAGE)"
-	cd $(ANAX_CONTAINER_DIR) && docker build -t $(DOCKER_IMAGE) -f ./Dockerfile.$(arch) .
+	if [[ $(arch) == "amd64" ]]; then cd $(ANAX_CONTAINER_DIR) && docker build -t $(DOCKER_IMAGE) -f ./Dockerfile.$(arch) .; else echo "Building the anax docker image is not supported on $(arch)"; fi
 
 docker-push: docker-image
 	@echo "Pushing anax docker image $(DOCKER_IMAGE)"
