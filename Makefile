@@ -14,8 +14,10 @@ CLI_MAN_DIR := cli/man1
 CLI_COMPLETION_DIR := cli/bash_completion
 DEFAULT_UI = api/static/index.html
 ANAX_CONTAINER_DIR := anax-in-container
-DOCKER_IMAGE_VERSION ?= 0.5.0
+DOCKER_IMAGE_VERSION ?= 0.5.1
 DOCKER_IMAGE = openhorizon/$(arch)_anax:$(DOCKER_IMAGE_VERSION)
+# To not use cache, so it picks up the latest horizon deb pkgs: DOCKER_MAYBE_CACHE='--no-cache' make docker-image
+DOCKER_MAYBE_CACHE ?=
 
 export TMPGOPATH ?= $(TMPDIR)$(EXECUTABLE)-gopath
 export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon/$(EXECUTABLE)
@@ -71,7 +73,7 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 
 docker-image:
 	@echo "Producing anax docker image $(DOCKER_IMAGE)"
-	if [[ $(arch) == "amd64" ]]; then cd $(ANAX_CONTAINER_DIR) && docker build -t $(DOCKER_IMAGE) -f ./Dockerfile.$(arch) .; else echo "Building the anax docker image is not supported on $(arch)"; fi
+	if [[ $(arch) == "amd64" ]]; then cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(DOCKER_IMAGE) -f ./Dockerfile.$(arch) .; else echo "Building the anax docker image is not supported on $(arch)"; fi
 
 docker-push: docker-image
 	@echo "Pushing anax docker image $(DOCKER_IMAGE)"

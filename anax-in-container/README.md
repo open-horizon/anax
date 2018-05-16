@@ -11,17 +11,28 @@ This support provides the way to build and run a container running anax (the Hor
 ## Build and Push the Anax Container
 
 ```
-export DOCKER_IMAGE_VERSION=0.5.0
+# in Makefile, modify line: DOCKER_IMAGE_VERSION ?= x.x.x
 make docker-image
 make docker-push     # push the image to docker hub
 ```
 
-## Using the Anax Container for the WIoTP Production Environment
+If you don't need to change anything about the anax image, except pick up the latest horizon deb pkgs:
 
 ```
-docker pull openhorizon/amd64_anax:0.5.0
+DOCKER_MAYBE_CACHE='--no-cache' make docker-image
+make docker-push
+```
+
+## Using the Anax Container for the WIoTP Production Environment
+
+**Note: we haven't actually tested this case yet.**
+
+```
+export ANAX_CONTAINER_VERSION=0.5.1    # or what is the latest
+sudo bash -c 'mkdir -p /etc/wiotp-edge /var/wiotp-edge && chmod 777 /etc/wiotp-edge /var/wiotp-edge'
 mkdir -p /var/tmp/horizon/service_storage    # anax will check for this, because this will be mounted into service containers
-docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -v /var/run/docker.sock:/var/run/docker.sock -v /etc/wiotp-edge:/etc/wiotp-edge -v /var/wiotp-edge:/var/wiotp-edge openhorizon/amd64_anax:0.5.0
+docker pull openhorizon/amd64_anax:$ANAX_CONTAINER_VERSION
+docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -v /var/run/docker.sock:/var/run/docker.sock -v /etc/wiotp-edge:/etc/wiotp-edge -v /var/wiotp-edge:/var/wiotp-edge openhorizon/amd64_anax:$ANAX_CONTAINER_VERSION
 export HORIZON_URL='http://localhost:8081'    # to point the hzn cmd to the container
 docker exec amd64_anax bash   # enter the container
 wiotp_agent_setup --org $HZN_ORG_ID --deviceType $WIOTP_GW_TYPE --deviceId $WIOTP_GW_ID --deviceToken "$WIOTP_GW_TOKEN" -cn 'edge-connector'
@@ -32,9 +43,11 @@ hzn agreement list
 ## Using the Anax Container for the Bluehorizon/WIoTP Hyrbrid Environment
 
 ```
-docker pull openhorizon/amd64_anax:0.5.0
+export ANAX_CONTAINER_VERSION=0.5.1    # or what is the latest
+sudo bash -c 'mkdir -p /etc/wiotp-edge /var/wiotp-edge && chmod 777 /etc/wiotp-edge /var/wiotp-edge'
 mkdir -p /var/tmp/horizon/service_storage    # anax will check for this, because this will be mounted into service containers
-docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -v /var/run/docker.sock:/var/run/docker.sock -v /etc/wiotp-edge:/etc/wiotp-edge -v /var/wiotp-edge:/var/wiotp-edge -v `pwd`:/outside openhorizon/amd64_anax:0.5.0 /root/bluehorizon-env.sh
+docker pull openhorizon/amd64_anax:$ANAX_CONTAINER_VERSION
+docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -v /var/run/docker.sock:/var/run/docker.sock -v /etc/wiotp-edge:/etc/wiotp-edge -v /var/wiotp-edge:/var/wiotp-edge -v `pwd`:/outside openhorizon/amd64_anax:$ANAX_CONTAINER_VERSION /root/bluehorizon-env.sh
 export HORIZON_URL='http://localhost:8081'    # to point the hzn cmd to the container
 hzn node list   # ensure you talking to the container, and the bluehorizon-env.sh config script ran
 docker exec amd64_anax wiotp_create_certificate -p $WIOTP_GW_TOKEN
@@ -47,9 +60,10 @@ hzn agreement list
 **Note: you currently can't have both instances of anax running the core-iot service, because the core-iot containers collide on ports, /etc/wiotp-edge, and /var/wiotp-edge.**
 
 ```
-docker pull openhorizon/amd64_anax:0.5.0
+export ANAX_CONTAINER_VERSION=0.5.1    # or what is the latest
+docker pull openhorizon/amd64_anax:$ANAX_CONTAINER_VERSION
 # Note the slightly different container name and port number in the next 2 cmds
-docker run -d -t --name amd64_anax2 --privileged -p 127.0.0.1:8082:80 -v /var/run/docker.sock:/var/run/docker.sock -v `pwd`:/outside openhorizon/amd64_anax:0.5.0 /root/bluehorizon-env.sh
+docker run -d -t --name amd64_anax2 --privileged -p 127.0.0.1:8082:80 -v /var/run/docker.sock:/var/run/docker.sock -v `pwd`:/outside openhorizon/amd64_anax:$ANAX_CONTAINER_VERSION /root/bluehorizon-env.sh
 export HORIZON_URL='http://localhost:8082'    # to point the hzn cmd to the container
 hzn node list   # ensure you talking to the right container, and the bluehorizon-env.sh config script ran
 hzn register -n $EXCHANGE_NODEAUTH $HZN_ORG_ID $WIOTP_GW_TYPE -f ~/examples/edge/wiotp/location2wiotp/horizon/without-core-iot/userinput.json
@@ -61,10 +75,13 @@ hzn agreement list
 **Note: this doesn't quite work yet, because docker can't configure the unix syslog driver. See: https://github.com/open-horizon/anax/issues/628**
 
 ```
+export ANAX_CONTAINER_VERSION=0.5.1    # or what is the latest
+export MAC_HOST=192.168.1.12   # whatever your mac IP address is
 socat TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &   # have docker api listen on a port, in addition to a unix socket
+sudo bash -c 'mkdir -p /private/etc/wiotp-edge /private/var/wiotp-edge && chmod 777 /private/etc/wiotp-edge /private/var/wiotp-edge'
 mkdir -p /private/var/tmp/horizon/service_storage    # anax will check for this, because this will be mounted into service containers
-docker pull openhorizon/amd64_anax:0.5.0
-docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -e MAC_HOST=192.168.1.10 -v /private/var/tmp/horizon:/private/var/tmp/horizon -v /private/etc/wiotp-edge:/etc/wiotp-edge -v /private/var/wiotp-edge:/var/wiotp-edge -v `pwd`:/outside openhorizon/amd64_anax:0.5.0 /root/bluehorizon-env.sh
+docker pull openhorizon/amd64_anax:$ANAX_CONTAINER_VERSION
+docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -e MAC_HOST=$MAC_HOST -v /private/var/tmp/horizon:/private/var/tmp/horizon -v /private/etc/wiotp-edge:/etc/wiotp-edge -v /private/var/wiotp-edge:/var/wiotp-edge -v `pwd`:/outside openhorizon/amd64_anax:$ANAX_CONTAINER_VERSION /root/bluehorizon-env.sh
 export HORIZON_URL='http://localhost:8081'    # to point the hzn cmd to the container
 hzn node list   # ensure you talking to the container, and the bluehorizon-env.sh config script ran
 docker exec amd64_anax wiotp_create_certificate -p $WIOTP_GW_TOKEN
