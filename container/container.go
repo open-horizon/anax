@@ -531,7 +531,8 @@ func serviceStart(client *docker.Client,
 	endpointsConfig map[string]*docker.EndpointConfig,
 	sharedEndpoints map[string]*docker.EndpointConfig,
 	postCreateContainers *[]interface{},
-	fail func(container *docker.Container, name string, err error) error) error {
+	fail func(container *docker.Container, name string, err error) error,
+	useSyslog bool) error {
 
 	var namePrefix string
 	if shareLabel != "" {
@@ -549,6 +550,11 @@ func serviceStart(client *docker.Client,
 		},
 	}
 
+	// this for the retry after log driver using syslog failed.
+	if !useSyslog {
+		containerOpts.HostConfig.LogConfig = docker.LogConfig{}
+	}
+
 	glog.V(5).Infof("CreateContainer options: Config: %v, HostConfig: %v, EndpointsConfig: %v", serviceConfig.Config, serviceConfig.HostConfig, endpointsConfig)
 
 	container, cErr := client.CreateContainer(containerOpts)
@@ -563,7 +569,24 @@ func serviceStart(client *docker.Client,
 	// second arg just a backwards compat feature, will go away someday
 	err := client.StartContainer(container.ID, nil)
 	if err != nil {
-		return fail(container, serviceName, err)
+		if strings.Contains(err.Error(), "logging driver") && strings.Contains(err.Error(), "syslog") {
+			// prevent infinit loop, just in case
+			if !useSyslog {
+				return fail(container, serviceName, err)
+			}
+
+			// if the error is related to syslog, use the default for logconfig and retry
+			glog.V(3).Infof("StartContainer logconfig cannot use syslog: %v. Switching to default. You can use 'docker logs -f <container_name> to view the logs.", err)
+
+			if err_r := client.RemoveContainer(docker.RemoveContainerOptions{ID: container.ID, RemoveVolumes: false, Force: true}); err_r != nil {
+				return fail(container, serviceName, err_r)
+			} else {
+				return serviceStart(client, agreementId, serviceName, shareLabel, serviceConfig, endpointsConfig,
+					sharedEndpoints, postCreateContainers, fail, false)
+			}
+		} else {
+			return fail(container, serviceName, err)
+		}
 	}
 	for _, cfg := range sharedEndpoints {
 		glog.V(5).Infof("Connecting network: %v to container id: %v", cfg.NetworkID, container.ID)
@@ -1035,7 +1058,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, configure *events.
 		if existingContainer == nil {
 			// only create container if there wasn't one
 			servicePair.serviceConfig.HostConfig.NetworkMode = bridgeName
-			if err := serviceStart(b.client, agreementId, containerName, shareLabel, servicePair.serviceConfig, eps, ms_sharedendpoints, &postCreateContainers, fail); err != nil {
+			if err := serviceStart(b.client, agreementId, containerName, shareLabel, servicePair.serviceConfig, eps, ms_sharedendpoints, &postCreateContainers, fail, true); err != nil {
 				return nil, err
 			}
 		} else {
@@ -1076,7 +1099,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, configure *events.
 	// every one of these gets wired to both the agBridge and every shared bridge from this agreement
 	for serviceName, servicePair := range private {
 		servicePair.serviceConfig.HostConfig.NetworkMode = agreementId // custom bridge has agreementId as name, same as endpoint key
-		if err := serviceStart(b.client, agreementId, serviceName, "", servicePair.serviceConfig, mkEndpoints(agBridge, serviceName), sharedEndpoints, &postCreateContainers, fail); err != nil {
+		if err := serviceStart(b.client, agreementId, serviceName, "", servicePair.serviceConfig, mkEndpoints(agBridge, serviceName), sharedEndpoints, &postCreateContainers, fail, true); err != nil {
 			if err != docker.ErrContainerAlreadyExists {
 				return nil, err
 			}
