@@ -2,12 +2,19 @@
 
 # Script to start, restart, and stop anax inside a docker container
 
+# Note: this won't run while we are blocking on a foreground cmd. Have to run anax in background and use wait.
+trap 'echo "Unregistering..."; /usr/bin/hzn unregister -f; echo "Done. Exiting..."; exit 0' SIGTERM
+
 ANAX_LOG_LEVEL=${ANAX_LOG_LEVEL:-3}
 
 usage() {
-	echo "Usage: $0 {start|restart|status} [env-script-to-run]"
+	echo "Usage: $0 {start|restart|status|block} [env-script-to-run] [gw-token]"
 	exit 1
 }
+
+cmd="$1"
+envScript="$2"
+token="$3"
 
 # Check the exit status of the previously run command and exit if nonzero
 checkrc() {
@@ -22,41 +29,23 @@ checkrc() {
   fi
 }
 
-start() {
-	while true; do
-		cmd="/usr/horizon/bin/anax -v $ANAX_LOG_LEVEL -logtostderr -config /etc/horizon/anax.json"
-		echo "$cmd"
-		$cmd    # purposely running this in the foreground
-		echo "Anax ended with exit code $?.  Respawning..." >&2
-		sleep 1		# in case the cmd above is failing, this loop won't consume 100% cpu
-	done
-}
-
-# Note: the way to stop anax w/o it restarting is to stop the container
-#stopanax() {
-#	killall /usr/horizon/bin/anax
-#}
-
-restart() {
-	killall /usr/horizon/bin/anax 		# the start function will automatically restart it
-	#stopanax
-	#start
-}
-
-psg() {
-	ps aux|head -1
-	ps aux|grep -i $*|grep -v '0:00 /bin/grep -'
-}
-
-status() {
-	psg /usr/horizon/bin/anax
+createCertificate() {
+	token="$1"
+	echo "Creating the WIoTP certificate with token '$token'..."
+	wiotp_create_certificate -p "$token"
 }
 
 defaultEnv() {
+	token="$1"
+
 	# Now the the host dirs /etc/wiotp-edge and /var/wiotp-edge have been mounted over ours, copy are backup back into them
 	# I don't think we have to check if we have already done this, because i think it is only run on the 1st start of the container
 	cp -a /tmp/etc/wiotp-edge/* /etc/wiotp-edge
 	cp -a /tmp/var/wiotp-edge/* /var/wiotp-edge
+
+	if [[ -n "$token" ]]; then
+		createCertificate "$token"   # create the wiotp certificate
+	fi
 
 	# Update several fields in anax.json
 	anaxJsonFile='/etc/horizon/anax.json'
@@ -90,31 +79,85 @@ defaultEnv() {
 	checkrc $? "write anax.json"
 }
 
-# Main....
-if [[ -z "$1" ]]; then usage; fi
-
-if [[ -n "$2" && "$2" == "DO_NOT_RUN" ]]; then
+block() {
+	echo "Sleeping forever..."
 	while :; do sleep 2073600; done    # block forever w/o starting anax so the container stays up, and you can exec in, start anax manually, and debug
-fi
+}
 
-# Do the config that is specific to running anax in a container, but needed for all environments
-defaultEnv
+start() {
+	envScript="$1"
+	token="$2"
 
-# This argument is an optional script to run to configure anax for a specific development environment before starting it
-if [[ -n "$2" ]]; then
-	# Run the environment config script, then fall thru to start anax
-	envScript="$2"
-	if [[ ! -x "$envScript" ]]; then
-		echo "Error: the environment script to run ($envScript) does not exist, or is not executable."
-		exit 2
+	if [[ -n "$envScript" ]]; then
+		# Handle special case environments
+		if [[ "$envScript" == "block" ]]; then
+			block   # a special case to just sleep forever so we can get into the container and examine it
+		elif [[ "$envScript" == "only_certificate" ]]; then
+			if [[ -z "$token" ]]; then
+				echo "Error: a token must be specified $envScript."
+				exit 2
+			fi
+			createCertificate "$token"   # create the wiotp certificate
+			exit 0
+		fi
 	fi
-	$envScript
-	checkrc $? "running $envScript"
-fi
 
-case "$1" in
+	# Do the config that is specific to running anax in a container, but needed for all environments
+	defaultEnv "$token"    # the optional gw token to create the wiotp certificate with
+
+	# This argument is an optional script to run to configure anax for a specific development environment before starting it
+	if [[ -n "$envScript" ]]; then
+		# Run the environment config script, then fall thru to start anax
+		if [[ ! -x "$envScript" ]]; then
+			echo "Error: the environment script to run ($envScript) does not exist, or is not executable."
+			exit 2
+		fi
+		$envScript
+		checkrc $? "running $envScript"
+	fi
+
+	# Now repeatedly run anax...
+	while true; do
+		anaxCmd="/usr/horizon/bin/anax -v $ANAX_LOG_LEVEL -logtostderr -config /etc/horizon/anax.json"
+		echo "$anaxCmd"
+		# We run this in the background and wait on it using wait, because that's the only way for traps to get control immediately
+		$anaxCmd &
+		pid=$!
+		wait $pid
+		if [[ $? -gt 128 ]]; then
+			# This means a signal interrupted wait. If it was sigterm, then our trap will run immediately, clean up, and exit.
+			# Else, we should go back to waiting on anax
+			wait $pid
+		fi
+		echo "Anax ended with exit code $?.  Respawning..." >&2
+		sleep 1		# in case the cmd above is failing, this loop won't consume 100% cpu
+	done
+}
+
+# Note: the way to stop anax w/o it restarting is to stop the container
+#stopanax() {
+#	killall /usr/horizon/bin/anax
+#}
+
+restart() {
+	killall /usr/horizon/bin/anax 		# the start function will automatically restart it
+	#stopanax
+	#start
+}
+
+psg() {
+	ps aux|head -1
+	ps aux|grep -i $*|grep -v '0:00 /bin/grep -'
+}
+
+status() {
+	psg /usr/horizon/bin/anax
+}
+
+# Main....
+case "$cmd" in
 	start)
-		start
+		start "$envScript" "$token"
 		;;
 	# stop)
 		# stopanax
