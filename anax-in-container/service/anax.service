@@ -140,14 +140,14 @@ start() {
 #}
 
 restart() {
-	killall /usr/horizon/bin/anax 		# the start function will automatically restart it
+	killall anax 		# the start function will automatically restart it
 	#stopanax
 	#start
 }
 
 psg() {
 	ps aux|head -1
-	ps aux|grep -i $*|grep -v '0:00 /bin/grep -'
+	ps aux|grep -i $*|grep -v 'grep -'
 }
 
 status() {

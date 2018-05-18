@@ -39,9 +39,10 @@ else ifeq ($(arch),ppc64el)
 	COMPILE_ARGS +=  GOARCH=ppc64le
 endif
 
-ifeq ($(shell uname -s),Linux)
+opsys ?= $(shell uname -s)
+ifeq ($(opsys),Linux)
 	COMPILE_ARGS += GOOS=linux
-else ifeq ($(shell uname -s),Darwin)
+else ifeq ($(opsys),Darwin)
 	COMPILE_ARGS += GOOS=darwin
 endif
 
@@ -67,7 +68,7 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
 	    $(COMPILE_ARGS) go build -o $(CLI_EXECUTABLE) $(CLI_EXECUTABLE).go
-	if [[ $(arch) == $(shell tools/arch-tag) ]]; then \
+	if [[ $(arch) == $(shell tools/arch-tag) && $(opsys) == $(shell uname -s) ]]; then \
 	  mkdir -p $(CLI_MAN_DIR) && $(CLI_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1 && \
 	  mkdir -p $(CLI_COMPLETION_DIR) && $(CLI_EXECUTABLE) --completion-script-bash > $(CLI_COMPLETION_DIR)/hzn_bash_autocomplete.sh; \
 	fi
