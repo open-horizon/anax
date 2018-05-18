@@ -1444,8 +1444,17 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 // function which periodically checks to ensure that all containers are running.
 func (b *ContainerWorker) syncupResources() {
 
+	// do nothing for agbot
 	if b.inAgbot {
 		glog.V(3).Infof("ContainerWorker skipping resource sync up on agreement bot.")
+		return
+	}
+
+	// for multiple anax instances case, do nothing because we do not want to remove containers that
+	// belong to other anax instances
+	if b.Config.Edge.MultipleAnaxInstances {
+		glog.V(3).Infof("ContainerWorke: multiple anax instances enabled. will not cleanup left over containers.")
+		b.Messages() <- events.NewDeviceContainersSyncedMessage(events.DEVICE_CONTAINERS_SYNCED, true)
 		return
 	}
 

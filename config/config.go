@@ -46,6 +46,7 @@ type Config struct {
 	TrustCertUpdatesFromOrg       bool   // whether to trust the certs provided by the organization on the exchange or not.
 	TrustDockerAuthFromOrg        bool   // whether to turst the docker auths provided by the organization on the exchange or not.
 	ServiceUpgradeCheckIntervalS  int64  // service upgrade check interval in seconds. The default is 300 seconds.
+	MultipleAnaxInstances         bool   // multiple anax instances running on the same machine
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string
