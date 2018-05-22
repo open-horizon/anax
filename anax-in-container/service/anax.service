@@ -38,6 +38,14 @@ createCertificate() {
 defaultEnv() {
 	token="$1"
 
+	# Source /etc/default/horizon
+	envFile=/etc/default/horizon
+	if [[ -f "$envFile" ]]; then
+		echo "Sourcing $envFile..."
+		source $envFile
+		export $(cut -d= -f1 $envFile)
+	fi
+
 	# Now the the host dirs /etc/wiotp-edge and /var/wiotp-edge have been mounted over ours, copy are backup back into them
 	# I don't think we have to check if we have already done this, because i think it is only run on the 1st start of the container
 	cp -a /tmp/etc/wiotp-edge/* /etc/wiotp-edge

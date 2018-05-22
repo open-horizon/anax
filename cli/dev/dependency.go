@@ -273,7 +273,7 @@ func DependenciesExists(directory string, okToCreate bool) (bool, error) {
 // Any errors will be returned to the caller.
 func ValidateDependencies(directory string, userInputs *register.InputFile, userInputsFilePath string, projectType string) error {
 
-	if projectType != SERVICE_COMMAND && (projectType == WORKLOAD_COMMAND || IsWorkloadProject(directory) ) {
+	if projectType != SERVICE_COMMAND && (projectType == WORKLOAD_COMMAND || IsWorkloadProject(directory)) {
 
 		// Get the current project's definition file.
 		d, err := GetWorkloadDefinition(directory)
@@ -311,7 +311,7 @@ func ValidateDependencies(directory string, userInputs *register.InputFile, user
 			}
 		}
 
-	} else if projectType != WORKLOAD_COMMAND && (projectType == SERVICE_COMMAND ||  IsServiceProject(directory) ) {
+	} else if projectType != WORKLOAD_COMMAND && (projectType == SERVICE_COMMAND || IsServiceProject(directory)) {
 
 		d, err := GetServiceDefinition(directory, SERVICE_DEFINITION_FILE)
 		if err != nil {

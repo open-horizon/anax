@@ -109,7 +109,11 @@ func WorkloadStartTest(homeDirectory string, userInputFile string) {
 				fmt.Printf("Skipping microservice because it has no services: %v\n", depConfig)
 				continue
 			} else if derr == nil {
-				ms_networks, startErr = startMicroservice(deployment, depDef.SpecRef, depDef.Version, userInputs.Global, depDef.UserInputs, userInputs.Microservices, workloadDef.Org, depConfig, cw, ms_networks)
+				var msn map[string]docker.ContainerNetwork
+				msn, startErr = startMicroservice(deployment, depDef.SpecRef, depDef.Version, userInputs.Global, depDef.UserInputs, userInputs.Microservices, workloadDef.Org, depConfig, cw, nil)
+				for netName, net := range msn {
+					ms_networks[netName] = net
+				}
 			}
 
 			// If there were errors, cleanup any microservices that are already started.

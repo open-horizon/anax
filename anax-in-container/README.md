@@ -11,7 +11,7 @@ This support provides the way to build and run a container running anax (the Hor
 ## Build and Push the Anax Container
 
 ```
-# in Makefile, modify line: DOCKER_IMAGE_VERSION ?= x.x.x
+# In Makefile, modify line: DOCKER_IMAGE_VERSION ?= x.x.x, or set that variable in the environment
 make docker-image
 make docker-push     # push the image to docker hub
 ```
@@ -84,7 +84,7 @@ hzn agreement list
 
 ## Experimental: Support for 'hzn dev' on Mac
 
-If you install go and docker on your mac, clone https://github.com/open-horizon/anax and 'make cli/hzn', you can use `hzn dev` on your mac. If you are developing services that use the WIoTP core-iot service, you can get the `/etc/wiotp-edge` and `/var/wiotp-edge` directories populated using:
+Install go and docker on your mac, clone https://github.com/open-horizon/anax and 'make cli/hzn', you can use `hzn dev` on your mac. If you are developing services that use the WIoTP core-iot service, you can get the `/etc/wiotp-edge` and `/var/wiotp-edge` directories populated using:
 ```
 docker pull openhorizon/amd64_anax
 docker run -t --rm --name amd64_anax --privileged -v /etc/wiotp-edge:/etc/wiotp-edge -v /var/wiotp-edge:/var/wiotp-edge openhorizon/amd64_anax only_certificate "$WIOTP_GW_TOKEN"
