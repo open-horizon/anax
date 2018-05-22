@@ -163,7 +163,7 @@ func GlobalSetAsAttributes(global []register.GlobalSet) ([]persistence.Attribute
 
 // Validate that the userinputs file is complete and coherent with the rest of the definitions in the project.
 // If the file is not valid the reason will be returned in the error.
-func ValidateUserInput(i *register.InputFile, directory string, originalUserInputFilePath string) error {
+func ValidateUserInput(i *register.InputFile, directory string, originalUserInputFilePath string, projectType string) error {
 
 	// 1. type is non-empty and one of the valid types
 	// 2. workloads/microservices - variables refer to valid variable definitions.
@@ -181,7 +181,7 @@ func ValidateUserInput(i *register.InputFile, directory string, originalUserInpu
 	}
 
 	// Validity check the workload array.
-	if IsWorkloadProject(directory) {
+	if projectType != SERVICE_COMMAND && projectType != MICROSERVICE_COMMAND && IsWorkloadProject(directory) {
 		// Get the workload definition, so that we can look at the user input variable definitions.
 		workloadDef, wderr := GetWorkloadDefinition(directory)
 		if wderr != nil {
@@ -202,7 +202,7 @@ func ValidateUserInput(i *register.InputFile, directory string, originalUserInpu
 			}
 		}
 
-	} else if IsServiceProject(directory) {
+	} else if projectType != WORKLOAD_COMMAND && projectType != MICROSERVICE_COMMAND && IsServiceProject(directory) {
 		// Get the service definition, so that we can look at the user input variable definitions.
 		sDef, wderr := GetServiceDefinition(directory, SERVICE_DEFINITION_FILE)
 		if wderr != nil {

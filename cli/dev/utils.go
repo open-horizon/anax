@@ -193,12 +193,12 @@ func CommonProjectValidation(dir string, userInputFile string, projectType strin
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", projectType, cmd, uierr)
 	}
 
-	if verr := ValidateUserInput(userInputs, dir, userInputsFilePath); verr != nil {
+	if verr := ValidateUserInput(userInputs, dir, userInputsFilePath, projectType); verr != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' project does not validate. %v ", projectType, cmd, verr)
 	}
 
 	// Validate Dependencies
-	if derr := ValidateDependencies(dir, userInputs, userInputsFilePath, SERVICE_COMMAND); derr != nil {
+	if derr := ValidateDependencies(dir, userInputs, userInputsFilePath, projectType); derr != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' project does not validate. %v", projectType, cmd, derr)
 	}
 }
