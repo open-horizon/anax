@@ -59,6 +59,7 @@ func (pe *PatternEntry) AddPolicyFileName(fileName string) {
 }
 
 func (pe *PatternEntry) DeleteAllPolicyFiles(policyPath string, org string) error {
+
 	for _, fileName := range pe.PolicyFileNames {
 		if err := policy.DeletePolicyFile(fileName); err != nil {
 			return err
@@ -167,6 +168,7 @@ func (pm *PatternManager) SetCurrentPatterns(servedPatterns map[string]exchange.
 		// If the org is not in the new map, then we need to get rid of it and all its patterns.
 		if _, ok := newMap[org]; !ok {
 			// delete org and all policy files in it.
+			glog.V(5).Infof("Deletinging the org %v from the pattern manager and all its policy files because it is no longer hosted by the agbot.", org)
 			if err := pm.deleteOrg(policyPath, org); err != nil {
 				return err
 			}
@@ -174,6 +176,7 @@ func (pm *PatternManager) SetCurrentPatterns(servedPatterns map[string]exchange.
 			// If the pattern is not in the org any more, get rid of its policy files.
 			for pattern, _ := range orgMap {
 				if _, ok := newMap[org][pattern]; !ok {
+					glog.V(5).Infof("Deletinging pattern %v and its policy files from the org %v from the pattern manager because the pattern is no longer hosted by the agobt.", pattern, org)
 					if err := pm.deletePattern(policyPath, org, pattern); err != nil {
 						return err
 					}
@@ -218,6 +221,7 @@ func (pm *PatternManager) UpdatePatternPolicies(org string, definedPatterns map[
 	// This is the case where pattern or the org has been deleted but the agbot still hosts the pattern on the exchange.
 	if definedPatterns == nil || len(definedPatterns) == 0 {
 		// delete org and all policy files in it.
+		glog.V(5).Infof("Deletinging the org %v from the pattern manager and all its policy files because it does not contain a pattern.", org)
 		return pm.deleteOrg(policyPath, org)
 	}
 
@@ -233,6 +237,7 @@ func (pm *PatternManager) UpdatePatternPolicies(org string, definedPatterns map[
 		}
 
 		if !found {
+			glog.V(5).Infof("Deletinging pattern %v and its policy files from the org %v from the pattern manager because the pattern no longer exists.", pattern, org)
 			if err := pm.deletePattern(policyPath, org, pattern); err != nil {
 				return err
 			}
@@ -252,6 +257,7 @@ func (pm *PatternManager) UpdatePatternPolicies(org string, definedPatterns map[
 					return errors.New(fmt.Sprintf("unable to create pattern entry for %v, error %v", pattern, err))
 				} else {
 					pm.OrgPatterns[org][exchange.GetId(patternId)] = newPE
+					glog.V(5).Infof("Creating the policy files for pattern %v.", patternId)
 					if err := createPolicyFiles(newPE, patternId, &pattern, policyPath, org); err != nil {
 						return errors.New(fmt.Sprintf("unable to create policy files for %v, error %v", pattern, err))
 					}
@@ -265,10 +271,12 @@ func (pm *PatternManager) UpdatePatternPolicies(org string, definedPatterns map[
 					return errors.New(fmt.Sprintf("unable to hash pattern %v for %v, error %v", pattern, org, err))
 				}
 				if !bytes.Equal(pe.Hash, newHash) {
+					glog.V(5).Infof("Deleting all the policy files for org %v because the old pattern %v does not match the new pattern %v", org, pe.Pattern, pattern)
 					if err := pe.DeleteAllPolicyFiles(policyPath, org); err != nil {
 						return errors.New(fmt.Sprintf("unable to delete policy files for %v, error %v", org, err))
 					}
 					pe.UpdateEntry(&pattern, newHash)
+					glog.V(5).Infof("Creating the policy files for pattern %v.", patternId)
 					if err := createPolicyFiles(pe, patternId, &pattern, policyPath, org); err != nil {
 						return errors.New(fmt.Sprintf("unable to create policy files for %v, error %v", pattern, err))
 					}

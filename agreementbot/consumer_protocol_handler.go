@@ -318,25 +318,26 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyDeleted(cmd *PolicyDeletedComm
 
 			if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
 				glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
-			} else if existingPol := b.pm.GetPolicy(cmd.Msg.Org(), pol.Header.Name); existingPol == nil {
-				glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
+			} else if cmd.Msg.Org() == ag.Org {
+				if existingPol := b.pm.GetPolicy(cmd.Msg.Org(), pol.Header.Name); existingPol == nil {
+					glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
 
-				// Remove any workload usage records so that a new agreement will be made starting from the highest priority workload.
-				if err := DeleteWorkloadUsage(b.db, ag.DeviceId, ag.PolicyName); err != nil {
-					glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
+					// Remove any workload usage records so that a new agreement will be made starting from the highest priority workload.
+					if err := DeleteWorkloadUsage(b.db, ag.DeviceId, ag.PolicyName); err != nil {
+						glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
+					}
+
+					// Queue up a cancellation command for this agreement.
+					agreementWork := CancelAgreement{
+						workType:    CANCEL,
+						AgreementId: ag.CurrentAgreementId,
+						Protocol:    ag.AgreementProtocol,
+						Reason:      cph.GetTerminationCode(TERM_REASON_POLICY_CHANGED),
+					}
+					cph.WorkQueue() <- agreementWork
+
 				}
-
-				// Queue up a cancellation command for this agreement.
-				agreementWork := CancelAgreement{
-					workType:    CANCEL,
-					AgreementId: ag.CurrentAgreementId,
-					Protocol:    ag.AgreementProtocol,
-					Reason:      cph.GetTerminationCode(TERM_REASON_POLICY_CHANGED),
-				}
-				cph.WorkQueue() <- agreementWork
-
 			}
-
 		}
 	} else {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error searching database: %v", err)))
