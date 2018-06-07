@@ -1,5 +1,5 @@
 FROM ubuntu:16.04
-#FROM debian:stretch   # switch to this when horizon is built for it
+#FROM debian:stretch   # image based on this is 830MB (image based on ubuntu:16.04 is 590MB)
 
 ARG HORIZON_REPO_CHANNEL=testing
 ENV ANAX_LOG_LEVEL 3
@@ -7,13 +7,19 @@ ENV ANAX_LOG_LEVEL 3
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install pre-reqs for getting the horizon pkgs
-RUN apt-get update && apt-get install -y curl vim jq wget apt-transport-https software-properties-common gettext-base psmisc
+RUN apt-get update && apt-get install -y curl vim jq wget apt-transport-https software-properties-common gettext-base psmisc gnupg
 
 # Set up the apt repos for docker and horizon
 RUN wget -qO- https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
     add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 RUN wget -qO- http://pkg.bluehorizon.network/bluehorizon.network-public.key | apt-key add - && \
     add-apt-repository "deb [arch=$(dpkg --print-architecture)] http://pkg.bluehorizon.network/linux/ubuntu $(lsb_release -cs)-$HORIZON_REPO_CHANNEL main"
+
+# For debian
+#RUN wget -qO- https://download.docker.com/linux/debian/gpg | apt-key add - && \
+#    add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+#RUN wget -qO- http://pkg.bluehorizon.network/bluehorizon.network-public.key | apt-key add - && \
+#    add-apt-repository "deb [arch=$(dpkg --print-architecture)] http://pkg.bluehorizon.network/linux/debian $(lsb_release -cs)-$HORIZON_REPO_CHANNEL main"
 
 # Install horizon-wiotp and then do some things that wiotp_agent_setup would do
 RUN apt-get update && apt-get install -y horizon-wiotp mosquitto-clients
