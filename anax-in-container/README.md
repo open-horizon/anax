@@ -37,6 +37,8 @@ docker exec amd64_anax bash   # enter the container
 wiotp_agent_setup --org $HZN_ORG_ID --deviceType $WIOTP_GW_TYPE --deviceId $WIOTP_GW_ID --deviceToken "$WIOTP_GW_TOKEN" -cn 'edge-connector'
 exit   # exit the container (or you can stay in and work there)
 hzn agreement list
+# To stop anax, use this cmd to give it time to unregister and stop the service containers:
+docker stop -t 120 amd64_anax; docker rm amd64_anax
 ```
 
 ## Using the Anax Container for the Bluehorizon/WIoTP Hyrbrid Environment
@@ -50,6 +52,8 @@ export HORIZON_URL='http://localhost:8081'    # to point the hzn cmd to the cont
 hzn node list   # ensure you talking to the container, and the bluehorizon-env.sh config script ran
 hzn register -n $EXCHANGE_NODEAUTH -f ~/examples/edge/wiotp/location2wiotp/horizon/userinput-service.json $HZN_ORG_ID $WIOTP_GW_TYPE
 hzn agreement list
+# To stop anax, use this cmd to give it time to unregister and stop the service containers:
+docker stop -t 120 amd64_anax; docker rm amd64_anax
 ```
 
 ## Using a Second Anax Container on the Same Machine
@@ -65,6 +69,8 @@ export HORIZON_URL='http://localhost:8082'    # to point the hzn cmd to the cont
 hzn node list   # ensure you talking to the right container, and the bluehorizon-env.sh config script ran
 hzn register -n $EXCHANGE_NODEAUTH $HZN_ORG_ID $WIOTP_GW_TYPE -f ~/examples/edge/wiotp/location2wiotp/horizon/without-core-iot/userinput.json
 hzn agreement list
+# To stop anax, use this cmd to give it time to unregister and stop the service containers:
+docker stop -t 120 amd64_anax; docker rm amd64_anax
 ```
 
 ## Experimental: Using the Anax Container on Mac for the Bluehorizon/WIoTP Hyrbrid Environment
@@ -80,6 +86,8 @@ export HORIZON_URL='http://localhost:8081'    # to point the hzn cmd to the cont
 hzn node list   # ensure you talking to the container, and the bluehorizon-env.sh config script ran
 hzn register -n $EXCHANGE_NODEAUTH -f ~/input/services/core-iot-input.json $HZN_ORG_ID $WIOTP_GW_TYPE
 hzn agreement list
+# To stop anax, use this cmd to give it time to unregister and stop the service containers:
+docker stop -t 120 amd64_anax; docker rm amd64_anax
 ```
 
 ## Experimental: Support for 'hzn dev' on Mac
