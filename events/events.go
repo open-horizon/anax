@@ -176,7 +176,7 @@ type ContainerLaunchContext struct {
 	Name                 string // used as the docker network name and part of container name. For microservice it is the ms instance key
 	AgreementId          string
 	Microservices        []MicroserviceSpec                     // Service dependencies go here. Microservices (in the workload/microservice model) never have dependencies.
-	ServicePathElement   *persistence.ServiceInstancePathElement // The service that we're trying to start.
+	ServicePathElement   persistence.ServiceInstancePathElement // The service that we're trying to start.
 }
 
 func (c ContainerLaunchContext) String() string {
@@ -200,24 +200,19 @@ func (c ContainerLaunchContext) GetMicroservices() []MicroserviceSpec {
 }
 
 func (c ContainerLaunchContext) GetServicePathElement() *persistence.ServiceInstancePathElement {
-	return c.ServicePathElement
+	return &c.ServicePathElement
 }
 
 func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]string, bc BlockchainConfig, name string, agId string, mss []MicroserviceSpec, spe *persistence.ServiceInstancePathElement) *ContainerLaunchContext {
-	c := new(ContainerLaunchContext)
-	c.Configure = *config
-	c.EnvironmentAdditions = envAdds
-	c.Blockchain = bc
-	c.Name = name
-	c.AgreementId = agId
-	c.Microservices = mss
-	if(spe != nil){
-		c.ServicePathElement = new(persistence.ServiceInstancePathElement)
-		*c.ServicePathElement = *spe
-	} else {
-		c.ServicePathElement = nil
+	return &ContainerLaunchContext{
+		Configure:            *config,
+		EnvironmentAdditions: envAdds,
+		Blockchain:           bc,
+		Name:                 name,
+		AgreementId:          agId,
+		Microservices:        mss,
+		ServicePathElement:   *spe,
 	}
-	return c
 }
 
 // Anax device side fires this event when it needs to download and load a container.
