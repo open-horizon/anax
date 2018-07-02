@@ -1,0 +1,20 @@
+{
+    "Edge": {
+        "ServiceStorage": "/root/.colonus/service_storage",
+        "TorrentDir": "/torrent",
+        "APIListen": "0.0.0.0:80",
+        "DBPath": "/root/.colonus",
+        "GethURL": "http://localhost:8545",
+        "DockerEndpoint": "unix:///var/run/docker.sock",
+        "StaticWebContent": "/srv/anax_static",
+        "CACertsPath": "/root/.colonus/horizon.pem",
+        "PublicKeyPath": "/root/.colonus/mtn-publicKey.pem",
+        "ExchangeURL": "http://${EXCH_APP_HOST}:8080/v1/",
+        "PolicyPath": "/root/.colonus/policy.d/",
+        "ExchangeHeartbeat": 60,
+        "TrustCertUpdatesFromOrg": true,
+        "TrustDockerAuthFromOrg": true,
+        "ServiceUpgradeCheckIntervalS": 60,
+        "UserPublicKeyPath": "/root/.colonus/"
+    }
+}

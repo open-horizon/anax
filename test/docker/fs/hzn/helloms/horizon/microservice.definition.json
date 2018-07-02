@@ -1,0 +1,34 @@
+{
+    "org": "e2edev",
+    "label": "Hello service",
+    "description": "HTTP API replies hello",
+    "public": false,
+    "specRef": "http://bluehorizon.network/microservices/hello",
+    "version": "1.0.0",
+    "arch": "amd64",
+    "sharable": "multiple",
+    "matchHardware": {},
+    "userInput": [
+        {
+            "name": "MY_MS_VAR1",
+            "label": "",
+            "type": "string",
+            "defaultValue": ""
+        }
+    ],
+    "workloads": [
+        {
+            "deployment": {
+                "services": {
+                    "helloservice": {
+                        "image": "openhorizon/amd64_hellomicroservice:v1.0",
+                        "privileged": false,
+                        "environment": []
+                    }
+                }
+            },
+            "deployment_signature": "",
+            "torrent": ""
+        }
+    ]
+}

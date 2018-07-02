@@ -1,0 +1,18 @@
+sudo: true
+
+services:
+  - docker
+
+language: go
+
+go: 1.10.x
+
+env:
+  - TEST_VARS="NOLOOP=1 TEST_PATTERNS=sall,e2egwtype"
+
+before_script:
+  - make
+  - docker ps
+
+script:
+  - make test
