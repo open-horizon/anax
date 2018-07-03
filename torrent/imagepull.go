@@ -128,7 +128,7 @@ func pullImageFromRepos(config config.Config, authConfigs map[string][]docker.Au
 				if err == nil {
 					break
 				} else if i < len(auth_array)-1 {
-					glog.V(5).Infof("Docker image pull(s) failed for service %v docker image %v with auth %v. Error: %v. Try next auth.", name, service.Image, auth, err)
+					glog.V(5).Infof("Docker image pull(s) failed for service %v docker image %v with auth name %v. Error: %v. Try next auth.", name, service.Image, auth.Username, err)
 				}
 			}
 		}
@@ -145,7 +145,7 @@ func pullImageFromRepos(config config.Config, authConfigs map[string][]docker.Au
 
 //  This function try maxPullAttempts times to pull the image from the repo. It exits out imediately if there is auth error.
 func pullSingleImageFromRepo(client *docker.Client, opts docker.PullImageOptions, auth docker.AuthConfiguration) error {
-	glog.V(5).Infof("Pulling image %v with auth %v.", opts, auth)
+	glog.V(5).Infof("Pulling image %v with auth name %v.", opts, auth.Username)
 
 	var pullAttempts int
 
