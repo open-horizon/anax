@@ -11,8 +11,8 @@ env:
   - TEST_VARS="NOLOOP=1 TEST_PATTERNS=sall,e2egwtype"
 
 before_script:
-  - make
+  - make -C test
   - docker ps
 
 script:
-  - make test
+  - make test -C test
