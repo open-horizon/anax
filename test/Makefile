@@ -3,7 +3,10 @@ SHELL := /bin/bash
 
 #Versioning
 DOCKER_EXCH_TAG := latest
-HORIZON_PKG_VER ?= $(shell curl -s "https://api.github.com/repos/open-horizon/horizon-deb-packager/releases/latest" | jq -r ".tag_name" | cut -c2-)
+PKG_URL_BASE := http://pkg.bluehorizon.network/linux/ubuntu
+PKGS_URL := $(PKG_URL_BASE)/dists/xenial-testing/main/binary-amd64/Packages
+DEB_PKGS_URL := $(PKG_URL_BASE)/pool/main/h/horizon
+HORIZON_PKG_VER ?= $(shell curl -s $(PKGS_URL) grep -A 2 'Package: horizon' | grep -m 1 'Version:' | awk -F ' |~' '{print $$2}')
 
 # user configurable variables
 # The TEST_PATTERNS is a comma separated list of following patterns.
@@ -149,21 +152,19 @@ agbot-docker-prereqs: $(ANAX_SOURCE)/anax
 	cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(AGBOT_TEMPFS)/root
 	for f in $$(find $(AGBOT_TEMPFS)/etc/agbot/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH_CNAME) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
 	for f in $$(find $(AGBOT_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH_CNAME) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
-	@echo "curl http://pkg.bluehorizon.network/linux/ubuntu/pool/main/h/horizon/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz"
-	curl http://pkg.bluehorizon.network/linux/ubuntu/pool/main/h/horizon/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz \
+	curl $(DEB_PKGS_URL)/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz \
 	-o $(AGBOT_TEMPFS)/etc/colonus/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz
 	tar --strip=6 -C $(AGBOT_TEMPFS)/root/.colonus -zxvf $(AGBOT_TEMPFS)/etc/colonus/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz \
 	./debian/fs-bluehorizon/etc/horizon/trust/horizon.pem ./debian/fs-bluehorizon/etc/horizon/trust/mtn-publicKey.pem
-	curl http://pkg.bluehorizon.network/linux/ubuntu/pool/main/h/horizon/horizon-wiotp_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial_all.deb \
+	curl $(DEB_PKGS_URL)/horizon-wiotp_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial_all.deb \
 	-o $(AGBOT_TEMPFS)/horizon-wiotp_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial_all.deb
 	dpkg -x $(AGBOT_TEMPFS)/horizon-wiotp_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial_all.deb $(AGBOT_TEMPFS)
 	rm $(AGBOT_TEMPFS)/horizon-wiotp_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial_all.deb
 
 version-check:
-ifeq ($(HORIZON_PKG_VER), ull)
-        $(error Version not found, likely you have reached max github API calls. \
-        You can manually set it with `export HORIZON_PKG_VER=<x.x.x>` plugging in the latest official version which can be found here: \
-        https://github.com/open-horizon/horizon-deb-packager/releases)
+	@echo "Horizon version being used for public keys/configs: $(HORIZON_PKG_VER)"
+ifeq ($(HORIZON_PKG_VER),)
+        $(error Version not found. Likely the apt-repo is down; $(PKGS_URL))
 endif
 
 agbot-image:
