@@ -78,10 +78,19 @@ docker stop -t 120 amd64_anax; docker rm amd64_anax
 ```
 export MAC_HOST=192.168.1.12   # whatever your mac IP address is
 socat TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &   # have docker api listen on a port, in addition to a unix socket
-# Note: we let docker create /etc/wiotp-edge and /var/wiotp-edge automatically, in its VM tmpfs
 mkdir -p /private/var/tmp/horizon/service_storage    # anax will check for this, because this will be mounted into service containers
 docker pull openhorizon/amd64_anax
-docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -e MAC_HOST=$MAC_HOST -v /private/var/tmp/horizon:/private/var/tmp/horizon -v /etc/wiotp-edge:/etc/wiotp-edge -v /var/wiotp-edge:/var/wiotp-edge -v `pwd`:/outside openhorizon/amd64_anax /root/bluehorizon-env.sh "$WIOTP_GW_TOKEN"
+
+# Note: since a recent update to docker on mac, it won't automatically create dirs /etc/wiotp-edge /var/wiotp-edge in the VM tmpfs as a result of
+#		mounting them into the container. And we can't add them to the docker preferences as dirs to allow to mount, because it automatically
+#		resolves them to /private/etc/wiotp-edge and /private/var/wiotp-edge, which overlap with the existing /private mount point, which isn't allowed.
+#		The docker run cmd below will work and populate /private/etc/wiotp-edge and /private/var/wiotp-edge properly, but anax can't run services that
+#		use core-iot, because it will try to bind /etc/wiotp-edge and /var/wiotp-edge. (The only solution i know of is to modify the service definitions
+#		of core-iot and the service that uses it to bind /private/etc/wiotp-edge to /etc/wiotp-edge and /private/var/wiotp-edge to /var/wiotp-edge.)
+sudo mkdir -p -m 777 /private/etc/wiotp-edge /private/var/wiotp-edge
+docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -e MAC_HOST=$MAC_HOST -v /private/var/tmp/horizon:/private/var/tmp/horizon -v /private/etc/wiotp-edge:/etc/wiotp-edge -v /private/var/wiotp-edge:/var/wiotp-edge -v `pwd`:/outside openhorizon/amd64_anax /root/bluehorizon-env.sh "$WIOTP_GW_TOKEN"
+#docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -e MAC_HOST=$MAC_HOST -v /private/var/tmp/horizon:/private/var/tmp/horizon -v /etc/wiotp-edge:/etc/wiotp-edge -v /var/wiotp-edge:/var/wiotp-edge -v `pwd`:/outside openhorizon/amd64_anax /root/bluehorizon-env.sh "$WIOTP_GW_TOKEN"
+
 export HORIZON_URL='http://localhost:8081'    # to point the hzn cmd to the container
 hzn node list   # ensure you talking to the container, and the bluehorizon-env.sh config script ran
 hzn register -n $EXCHANGE_NODEAUTH -f ~/input/services/core-iot-input.json $HZN_ORG_ID $WIOTP_GW_TYPE
