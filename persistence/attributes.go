@@ -330,6 +330,13 @@ func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, pr
 	writePrefix("RAM", strconv.FormatInt(defaultRAM, 10))
 	writePrefix("ARCH", cutil.ArchString())
 
+	// Set the Host IPv4 addresses, omit interfaces that are down.
+	if ips, err := cutil.GetAllHostIPv4Addresses([]cutil.NetFilter{cutil.OmitDown}); err != nil {
+		return nil, fmt.Errorf("error obtaining host IP addresses: %v", err)
+	} else {
+		writePrefix("HOST_IPS", strings.Join(ips, ","))
+	}
+
 	// TODO: consider extracting this type-processing out for generalization
 	for _, serv := range attributes {
 		meta := serv.GetMeta()

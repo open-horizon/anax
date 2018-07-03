@@ -199,7 +199,7 @@ func SetPlatformEnvvars(envAdds map[string]string, prefix string, agreementId st
 	envAdds[prefix+"EXCHANGE_URL"] = exchangeURL
 }
 
-// This function is similar to the above, for env vars that are system related.
+// This function is similar to the above, for env vars that are system related. It is only used by workloads.
 func SetSystemEnvvars(envAdds map[string]string, prefix string, lat string, lon string, cpus string, ram string, arch string) {
 
 	// The latitude and longitude of the node are provided.
@@ -215,6 +215,13 @@ func SetSystemEnvvars(envAdds map[string]string, prefix string, lat string, lon 
 		envAdds[prefix+"ARCH"] = runtime.GOARCH
 	} else {
 		envAdds[prefix+"ARCH"] = arch
+	}
+
+	// Set the Host IPv4 addresses, omit interfaces that are down.
+	if ips, err := GetAllHostIPv4Addresses([]NetFilter{OmitDown}); err != nil {
+		glog.Errorf("Error obtaining host IP addresses: %v", err)
+	} else {
+		envAdds[prefix+"HOST_IPS"] = strings.Join(ips, ",")
 	}
 
 }
@@ -287,4 +294,91 @@ func TruncateDisplayString(s string, n int) string {
 	} else {
 		return s[:n] + "..."
 	}
+}
+
+func IsIPv4(address string) bool {
+	if net.ParseIP(address) == nil {
+		return false
+	}
+	return strings.Count(address, ":") < 2
+}
+
+type NetFilter func(net.Interface) bool
+
+func OmitLoopback(i net.Interface) bool {
+	if (i.Flags & net.FlagLoopback) != 0 {
+		return false
+	}
+	return true
+}
+
+func OmitUp(i net.Interface) bool {
+	if (i.Flags & net.FlagUp) != 0 {
+		return false
+	}
+	return true
+}
+
+func OmitDown(i net.Interface) bool {
+	if (i.Flags & net.FlagUp) == 0 {
+		return false
+	}
+	return true
+}
+
+// Interface filter functions return false if the interface should be filtered out.
+func GetAllHostIPv4Addresses(interfaceFilters []NetFilter) ([]string, error) {
+
+	ips := make([]string, 0, 5)
+
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		return ips, errors.New(fmt.Sprintf("could not get network interfaces, error: %v", err))
+	}
+
+	// Run through all the host's network interaces, filtering out interfaces as per in the input filters,
+	// and then return the remaining IPv4 addresses.
+	for _, i := range interfaces {
+
+		// Filter out interfaces that we don't care about.
+		keep := true
+		for _, f := range interfaceFilters {
+			if !f(i) {
+				keep = false
+				break
+			}
+		}
+
+		if !keep {
+			continue
+		}
+
+		// The interface filter didnt remove the interface, so grab it's IP address and make sure it's a v4 address.
+		addrs, err := i.Addrs()
+		if err != nil {
+			glog.Warningf("Could not get IP address(es) for network interface %v, error: %v", i.Name, err)
+		} else {
+			for _, addr := range addrs {
+
+				// Grab the IP address.
+				var ip net.IP
+				switch v := addr.(type) {
+				case *net.IPNet:
+					ip = v.IP
+				case *net.IPAddr:
+					ip = v.IP
+				default:
+					return ips, errors.New(fmt.Sprintf("interface %v has address object of unexpected type %T.", i.Name, addr))
+				}
+
+				// If it's a v4 address keep it.
+				if IsIPv4(ip.String()) {
+					ips = append(ips, ip.String())
+				}
+
+			}
+		}
+	}
+
+	return ips, nil
 }

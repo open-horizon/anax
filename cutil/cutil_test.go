@@ -170,3 +170,66 @@ func Test_TruncateDisplayString(t *testing.T) {
 	assert.Equal(t, "1234567890", TruncateDisplayString(s1, 10), fmt.Sprintf("Should only show all 10 charactors"))
 	assert.Equal(t, "1234567890", TruncateDisplayString(s1, 15), fmt.Sprintf("Should only show all 10 charactors"))
 }
+
+func Test_GetAllIPAddresses_nofilter(t *testing.T) {
+
+	_, err := GetAllHostIPv4Addresses([]NetFilter{})
+	if err != nil {
+		t.Errorf("error returned: %v", err)
+	}
+
+}
+
+func Test_GetAllIPAddresses_loopbackfilter(t *testing.T) {
+
+	allips, err := GetAllHostIPv4Addresses([]NetFilter{})
+	if err != nil {
+		t.Errorf("error returned: %v", err)
+	}
+
+	nlbips, nlberr := GetAllHostIPv4Addresses([]NetFilter{OmitLoopback})
+	if nlberr != nil {
+		t.Errorf("error returned: %v", nlberr)
+	}
+
+	if len(allips) <= len(nlbips) {
+		t.Errorf("there should be fewer ips returned when the loopback interface is filtered out. All: %v, filtered: %v", len(allips), len(nlbips))
+	}
+
+}
+
+func Test_GetAllIPAddresses_upfilter(t *testing.T) {
+
+	allips, err := GetAllHostIPv4Addresses([]NetFilter{})
+	if err != nil {
+		t.Errorf("error returned: %v", err)
+	}
+
+	nupips, nuperr := GetAllHostIPv4Addresses([]NetFilter{OmitUp})
+	if nuperr != nil {
+		t.Errorf("error returned: %v", nuperr)
+	}
+
+	if len(allips) <= len(nupips) {
+		t.Errorf("there should be fewer ips returned when the interface state of UP is filtered out. All: %v, filtered: %v", len(allips), len(nupips))
+	}
+
+}
+
+func Test_GetAllIPAddresses_downfilter(t *testing.T) {
+
+	allips, err := GetAllHostIPv4Addresses([]NetFilter{})
+	if err != nil {
+		t.Errorf("error returned: %v", err)
+	}
+
+	ndips, nderr := GetAllHostIPv4Addresses([]NetFilter{OmitDown})
+	if nderr != nil {
+		t.Errorf("error returned: %v", nderr)
+	}
+
+	if len(allips) != len(ndips) {
+		t.Errorf("this test assumes that all network interfaces on the host are up. All: %v, filtered: %v", len(allips), len(ndips))
+	}
+
+}
