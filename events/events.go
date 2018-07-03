@@ -206,8 +206,8 @@ func (c ContainerLaunchContext) GetServicePathElement() *persistence.ServiceInst
 func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]string, bc BlockchainConfig, name string, agId string, mss []MicroserviceSpec, spe *persistence.ServiceInstancePathElement) *ContainerLaunchContext {
 
 	spe_temp := spe
-	if(spe_temp == nil){
-		spe_temp = persistence.NewServiceInstancePathElement("","")
+	if spe_temp == nil {
+		spe_temp = persistence.NewServiceInstancePathElement("", "")
 	}
 
 	return &ContainerLaunchContext{
