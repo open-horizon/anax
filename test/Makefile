@@ -1,0 +1,189 @@
+# Makefile for e2e execution
+SHELL := /bin/bash
+
+#Versioning
+DOCKER_EXCH_TAG := latest
+PKG_URL_BASE := http://pkg.bluehorizon.network/linux/ubuntu
+PKGS_URL := $(PKG_URL_BASE)/dists/xenial-testing/main/binary-amd64/Packages
+DEB_PKGS_URL := $(PKG_URL_BASE)/pool/main/h/horizon
+HORIZON_PKG_VER ?= $(shell curl -s $(PKGS_URL) grep -A 2 'Package: horizon' | grep -m 1 'Version:' | awk -F ' |~' '{print $$2}')
+
+# user configurable variables
+# The TEST_PATTERNS is a comma separated list of following patterns.
+# sall,sns,spws,susehello,sgps,sloc,e2egwtype,e2egwtypenocore(These are pattern with services)
+# all,ns,loc,gps,ns-keytest (These are patterns with workloads)
+#
+# If e2egwtype or e2egwtypenocore pattern is in the TEST_PATTERNS, then 
+# please export the following WIOTP variables before calling 'make test'
+# WIOTP_ORG_ID, WIOTP_API_KEY and WIOTP_API_TOKEN
+# You need to get them from https://console.bluemix.net/
+# Please also export WIOTP_GW_TOKEN which any be any password-like string. 
+TEST_VARS ?= NOLOOP=1 TEST_PATTERNS=sall
+
+# e2e config variables
+WIOTP_VARS := WIOTP_ORG_ID='$(WIOTP_ORG_ID)' WIOTP_API_KEY='$(WIOTP_API_KEY)' WIOTP_API_TOKEN='$(WIOTP_API_TOKEN)' WIOTP_GW_TOKEN='$(WIOTP_GW_TOKEN)'
+ANAX_SOURCE ?= $(shell dirname $(CURDIR))
+AGBOT_TEMPFS := $(CURDIR)/docker/tempfs/agbot
+EXCH_TEMPFS := $(CURDIR)/docker/tempfs/exchange
+EXCHDB_USER := admin
+EXCHDB_PORT := 5432
+EXCHDB_NAME := exchange
+EXCH_ROOTPW := Horizon-Rul3s
+DOCKER_TEST_NETWORK := e2edev_test_network
+DOCKER_AGBOT_INAME := openhorizon/e2edev-agbot
+DOCKER_EXCH_INAME := openhorizon/amd64_exchange-api
+DOCKER_DEV_TAG := latest
+DOCKER_EXCHDB_INAME := postgres
+DOCKER_EXCHDB_TAG := 9
+DOCKER_DEV_OPTS :=  --rm --no-cache
+
+ifndef verbose
+.SILENT:
+endif
+
+all: default
+default: build
+stop: clean
+build: version-check agbot-image exchange-db-image exchange-image
+run: test
+distclean: realclean
+
+DOCKER_AGBOT_CNAME := agbot
+DOCKER_EXCH_CNAME := exchange-api
+DOCKER_EXCHDB_CNAME := exchange-db
+
+run-agbot: agbot-docker-prereqs test-network
+	@echo "Handling $(DOCKER_AGBOT_CNAME)"
+	docker/docker_run.bash "$(DOCKER_AGBOT_CNAME)" \
+		docker run -d \
+		--privileged \
+		-p 127.0.0.1:80:80 \
+		-p 127.0.0.1:81:81 \
+		-p 127.0.0.1:82:82 \
+		--name "$(DOCKER_AGBOT_CNAME)" \
+		--network "$(DOCKER_TEST_NETWORK)" \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v ~/.docker:/root/.docker \
+		-v /etc/wiotp-edge/:/etc/wiotp-edge/ \
+		-v /var/wiotp-edge/persist/:/var/wiotp-edge/persist/ \
+		-e "HZN_DISABLE_IPTABLES_MANIPULATION=true" \
+		-e "EXCH_APP_HOST=$(DOCKER_EXCH_CNAME)" \
+		-e "AGBOT_HZN_API=http://localhost:81" \
+		-t $(DOCKER_AGBOT_INAME):$(DOCKER_DEV_TAG)
+	docker cp $(AGBOT_TEMPFS)/. $(DOCKER_AGBOT_CNAME):/
+
+run-exchange: run-exchange-db test-network $(EXCH_TEMPFS)/config.json
+	@echo "Handling $(DOCKER_EXCH_CNAME)"
+	docker/docker_run.bash "$(DOCKER_EXCH_CNAME)" \
+		docker run -d \
+		-p 127.0.0.1:8080:8080 \
+		--name "$(DOCKER_EXCH_CNAME)" \
+		--network "$(DOCKER_TEST_NETWORK)" \
+		-v $(EXCH_TEMPFS)/config.json:/etc/horizon/exchange/config.json:ro \
+		-t openhorizon/amd64_exchange-api:$(DOCKER_EXCH_TAG)
+
+$(EXCH_TEMPFS)/config.json:
+	@echo "Populating the exchange configuration"
+	mkdir -p $(EXCH_TEMPFS)
+	echo "{ \"api\": { \"db\": { \"jdbcUrl\": \"jdbc:postgresql://$(DOCKER_EXCHDB_CNAME):$(EXCHDB_PORT)/$(EXCHDB_NAME)\"," \
+                "\"user\": \"$(EXCHDB_USER)\" }, \"root\": { \"password\": \"$(EXCH_ROOTPW)\" } } }" > $(EXCH_TEMPFS)/config.json
+
+run-exchange-db: test-network
+	@echo "Handling $(DOCKER_EXCHDB_CNAME)"
+	docker/docker_run.bash "$(DOCKER_EXCHDB_CNAME)" \
+		docker run -d \
+		--name "$(DOCKER_EXCHDB_CNAME)" \
+		--network "$(DOCKER_TEST_NETWORK)" \
+		-e POSTGRES_DB=$(EXCHDB_NAME) \
+		-e POSTGRES_USER=$(EXCHDB_USER) \
+		-t postgres:9
+
+clean:
+	@echo -e "\nStarting cleanup"
+	@echo "Removing agbot container"
+	-docker rm -f "$(DOCKER_AGBOT_CNAME)"
+	@echo "Removing existing workloads"
+	-for i in $$(docker ps -a | egrep -v 'NAMES$$|$(DOCKER_AGBOT_CNAME)$$|$(DOCKER_EXCH_CNAME)$$|$(DOCKER_EXCHDB_CNAME)$$' | awk '{print $$NF}'); \
+		do if docker inspect $$i | egrep -q 'openhorizon/|HZN_ORGANIZATION=e2edev|HZN_DEVICE_ID=g@e2e'; then IMAGE=$$(docker inspect $$i | jq -r '.[].Config.Image'); \
+		echo "Removing container $$i"; docker rm -f $$i; echo "Attempting to remove base image $$IMAGE"; docker rmi $$IMAGE || true; fi; done
+	@echo "Dropping and re-initializing the exchange DB"
+	$(eval DROP_DB_TOKEN := $(shell curl -sLX GET -H 'Authorization:Basic root/root:$(EXCH_ROOTPW)' "http://localhost:8080/v1/admin/dropdb/token" | jq -r '.token'))
+	-curl -sLX POST -H 'Authorization:Basic root/root:$(DROP_DB_TOKEN)' "http://localhost:8080/v1/admin/dropdb" | jq -r '.msg'
+	-curl -sLX POST -H "Authorization:Basic root/root:$(EXCH_ROOTPW)" "http://localhost:8080/v1/admin/initdb" | jq -r '.msg'
+	@echo "Removing stale networks"
+	-docker network prune -f
+	@echo "Removing unused images"
+	-docker rmi $$(docker images -qf "dangling=true")
+	@echo "Removing any leftover images generated by e2edev"
+	-for i in $$(docker images -q); \
+		do if [ "e2edev" == "$$(docker inspect $$i | jq -r '.[].ContainerConfig.Labels.generated_by')" ]; then docker rmi $$i; fi; done
+	@echo "Removing the $(DOCKER_EXCH_CNAME) container"
+	-docker rm -f "$(DOCKER_EXCH_CNAME)"
+	@echo "Removing the $(DOCKER_EXCHDB_CNAME) container"
+	-docker rm -f "$(DOCKER_EXCHDB_CNAME)"
+	-rm -rf $(CURDIR)/docker/tempfs
+
+mostlyclean: clean
+	@echo "Cleaning anax binaries and configs"
+	-cd $(ANAX_SOURCE) && make clean
+
+realclean: mostlyclean
+	-docker rm -f "$(DOCKER_EXCHDB_CNAME)" "$(DOCKER_EXCH_CNAME)"
+	-docker rmi $(DOCKER_AGBOT_INAME):$(DOCKER_DEV_TAG) $(DOCKER_AGBOT_INAME):latest
+	-docker rmi openhorizon/amd64_exchange-api:$(DOCKER_EXCH_TAG)
+	-docker network rm $(DOCKER_TEST_NETWORK)
+	-docker rmi $$(docker images -qf "dangling=true")
+
+test-network:
+	@echo "Creating e2edev environment network"
+	if [[ "$(shell docker network ls -qf name=$(DOCKER_TEST_NETWORK))" == "" ]]; then \
+		docker network create "$(DOCKER_TEST_NETWORK)"; \
+	fi
+
+$(ANAX_SOURCE)/anax:
+	@echo "Building anax"
+	cd $(ANAX_SOURCE) && make clean && make
+
+agbot-docker-prereqs: $(ANAX_SOURCE)/anax
+	@echo "Configuring agbot prerequisites"
+	mkdir -p $(AGBOT_TEMPFS)/usr/local/bin $(AGBOT_TEMPFS)/root/.colonus
+	cp $(ANAX_SOURCE)/anax $(ANAX_SOURCE)/cli/hzn $(AGBOT_TEMPFS)/usr/local/bin
+	cp -r $(CURDIR)/docker/fs/etc $(AGBOT_TEMPFS)
+	cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(AGBOT_TEMPFS)/root
+	for f in $$(find $(AGBOT_TEMPFS)/etc/agbot/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH_CNAME) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
+	for f in $$(find $(AGBOT_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH_CNAME) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
+	curl $(DEB_PKGS_URL)/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz \
+	-o $(AGBOT_TEMPFS)/etc/colonus/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz
+	tar --strip=6 -C $(AGBOT_TEMPFS)/root/.colonus -zxvf $(AGBOT_TEMPFS)/etc/colonus/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz \
+	./debian/fs-bluehorizon/etc/horizon/trust/horizon.pem ./debian/fs-bluehorizon/etc/horizon/trust/mtn-publicKey.pem
+	curl $(DEB_PKGS_URL)/horizon-wiotp_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial_all.deb \
+	-o $(AGBOT_TEMPFS)/horizon-wiotp_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial_all.deb
+	dpkg -x $(AGBOT_TEMPFS)/horizon-wiotp_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial_all.deb $(AGBOT_TEMPFS)
+	rm $(AGBOT_TEMPFS)/horizon-wiotp_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial_all.deb
+
+version-check:
+	@echo "Horizon version being used for public keys/configs: $(HORIZON_PKG_VER)"
+ifeq ($(HORIZON_PKG_VER),)
+        $(error Version not found. Likely the apt-repo is down; $(PKGS_URL))
+endif
+
+agbot-image:
+	@echo "Handling $(DOCKER_AGBOT_INAME)"
+	if [ -n "$(shell docker images | grep '$(DOCKER_AGBOT_INAME)')" ]; then \
+		echo "Skipping since $(DOCKER_AGBOT_INAME) image exists, run 'make clean && make' if a rebuild is desired"; \
+	else \
+		echo "Building container image $(DOCKER_AGBOT_INAME)"; \
+		docker build $(DOCKER_DEV_OPTS) -t $(DOCKER_AGBOT_INAME) -f docker/Dockerfile ./docker && docker tag $(DOCKER_AGBOT_INAME) $(DOCKER_AGBOT_INAME):$(DOCKER_DEV_TAG); \
+	fi
+
+exchange-db-image:
+	docker pull $(DOCKER_EXCHDB_INAME):$(DOCKER_EXCHDB_TAG)
+
+exchange-image:
+	docker pull $(DOCKER_EXCH_INAME):$(DOCKER_EXCH_TAG)
+
+test: clean run-exchange run-agbot
+	@echo -e  "\nStarting tests"
+	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(WIOTP_VARS); /root/gov-combined.sh"
+
+.PHONY: all default stop build run distclean clean mostlyclean realclean run-agbot run-exchange run-exchange-db test-network test agbot-docker-prereqs version-check agbot-image exchange-db-image exchange-image

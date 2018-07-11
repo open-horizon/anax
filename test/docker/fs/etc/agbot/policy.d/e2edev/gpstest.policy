@@ -1,0 +1,23 @@
+{
+  "header": {
+    "name": "CS gpstest amd64",
+    "version": "2.0"
+  },
+  "useServices": true,
+  "workloads": [
+    {
+      "workloadUrl":"https://bluehorizon.network/services/gpstest",
+      "organization":"e2edev",
+      "version":"1.0.0",
+      "arch":"amd64"
+    }
+  ],
+  "dataVerification": {},
+  "properties": [
+    {
+        "name": "iame2edev",
+        "value": true
+    }
+  ],
+  "maxAgreements": 3
+}

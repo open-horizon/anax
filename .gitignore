@@ -11,3 +11,4 @@ anax/doc/*.png
 /cli/man1
 /cli/bash_completion
 /.idea
+/test/docker/tempfs

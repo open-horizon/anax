@@ -1,0 +1,41 @@
+{
+  "header": {
+    "name": "CS location amd64",
+    "version": "2.0"
+  },
+  "useServices": true,
+  "workloads": [
+    {
+      "workloadUrl":"https://bluehorizon.network/services/location",
+      "organization":"e2edev",
+      "version":"2.0.6",
+      "arch":"amd64",
+      "priority":{
+        "priority_value": 3,
+        "retries": 1,
+        "retry_durations": 3600,
+        "verified_durations": 52
+      }
+    },
+    {
+      "workloadUrl":"https://bluehorizon.network/services/location",
+      "organization":"e2edev",
+      "version":"2.0.7",
+      "arch":"amd64",
+      "priority":{
+        "priority_value": 2,
+        "retries": 1,
+        "retry_durations": 3600,
+        "verified_durations": 52
+      }
+    }
+  ],
+  "properties": [
+      {
+          "name": "iame2edev",
+          "value": true
+      }
+  ],
+  "dataVerification": {},
+  "maxAgreements": 1
+}

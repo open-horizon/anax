@@ -1,0 +1,37 @@
+{
+    "Edge": {
+        "TorrentDir": "/torrent",
+        "TorrentListenAddr": ":50008",
+        "DockerEndpoint": "unix:///var/run/docker.sock",
+        "CACertsPath": "/root/.colonus/horizon.pem",
+        "TrustSystemCACerts": true,
+        "PublicKeyPath": "/root/.colonus/mtn-publicKey.pem",
+        "ExchangeURL": "http://${EXCH_APP_HOST}:8080/v1/"
+    },
+    "AgreementBot": {
+        "DBPath": "/root/.colonus",
+        "TxLostDelayTolerationSeconds": 120,
+        "AgreementWorkers": 5,
+        "ProtocolTimeoutS": 120,
+        "AgreementTimeoutS": 600,
+        "NoDataIntervalS": 300,
+        "ActiveAgreementsURL": "",
+        "ActiveAgreementsUser": "",
+        "ActiveAgreementsPW": "",
+        "PolicyPath": "/etc/agbot/policy.d/",
+        "NewContractIntervalS": 10,
+        "ProcessGovernanceIntervalS": 10,
+        "IgnoreContractWithAttribs": "ethereum_account",
+        "ExchangeURL": "http://${EXCH_APP_HOST}:8080/v1/",
+        "ExchangeId": "IBM/ag12345",
+        "ExchangeToken":"abcdefg",
+        "ExchangeVersionCheckIntervalM":1,
+        "ExchangeHeartbeat": 60,
+        "ActiveDeviceTimeoutS": 180,
+        "DefaultWorkloadPW": "bogus-password",
+        "MessageKeyPath": ".colonus",
+        "APIListen": "0.0.0.0:81",
+        "PurgeArchivedAgreementHours": 1,
+        "CheckUpdatedPolicyS": 15
+    }
+}
