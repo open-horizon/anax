@@ -140,8 +140,8 @@ func (s ImageDockerAuth) String() string {
 type ContainerConfig struct {
 	TorrentURL          url.URL           `json:"torrent_url"`
 	TorrentSignature    string            `json:"torrent_signature"`
-	Deployment          string            `json:"deployment"` // JSON docker-compose like
-	DeploymentSignature string            `json:"deployment_signature"`
+	Deployment          string            `json:"deployment"`           // A stringified (and escaped) JSON structure.
+	DeploymentSignature string            `json:"deployment_signature"` // Digital signature of the Deployment string.
 	DeploymentUserInfo  string            `json:"deployment_user_info"`
 	Overrides           string            `json:"overrides"`
 	ImageDockerAuths    []ImageDockerAuth `json:"image_auths"`
@@ -535,7 +535,7 @@ type GovernanceMaintenanceMessage struct {
 	event             Event
 	AgreementProtocol string
 	AgreementId       string
-	Deployment        map[string]persistence.ServiceConfig
+	Deployment        persistence.DeploymentConfig
 }
 
 func (m *GovernanceMaintenanceMessage) Event() Event {
@@ -543,15 +543,26 @@ func (m *GovernanceMaintenanceMessage) Event() Event {
 }
 
 func (m GovernanceMaintenanceMessage) String() string {
-	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v", m.event, m.AgreementProtocol, m.AgreementId, m.Deployment)
+	depStr := ""
+	if m.Deployment != nil {
+		depStr = m.Deployment.ToString()
+	}
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v", m.event, m.AgreementProtocol, m.AgreementId, depStr)
 }
 
 func (m GovernanceMaintenanceMessage) ShortString() string {
-	depStr := ""
-	for key, _ := range m.Deployment {
-		depStr = depStr + key + ","
+	return m.String()
+}
+
+func NewGovernanceMaintenanceMessage(id EventId, protocol string, agreementId string, deployment persistence.DeploymentConfig) *GovernanceMaintenanceMessage {
+	return &GovernanceMaintenanceMessage{
+		event: Event{
+			Id: id,
+		},
+		AgreementProtocol: protocol,
+		AgreementId:       agreementId,
+		Deployment:        deployment,
 	}
-	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment Services: %v", m.event, m.AgreementProtocol, m.AgreementId, depStr)
 }
 
 type GovernanceWorkloadCancelationMessage struct {
@@ -565,25 +576,18 @@ func (m *GovernanceWorkloadCancelationMessage) Event() Event {
 }
 
 func (m GovernanceWorkloadCancelationMessage) String() string {
-	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Cause: %v", m.event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment), m.Cause)
+	depStr := ""
+	if m.Deployment != nil {
+		depStr = m.Deployment.ToString()
+	}
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Cause: %v", m.event, m.AgreementProtocol, m.AgreementId, depStr, m.Cause)
 }
 
 func (m GovernanceWorkloadCancelationMessage) ShortString() string {
 	return m.String()
 }
 
-func NewGovernanceMaintenanceMessage(id EventId, protocol string, agreementId string, deployment map[string]persistence.ServiceConfig) *GovernanceMaintenanceMessage {
-	return &GovernanceMaintenanceMessage{
-		event: Event{
-			Id: id,
-		},
-		AgreementProtocol: protocol,
-		AgreementId:       agreementId,
-		Deployment:        deployment,
-	}
-}
-
-func NewGovernanceWorkloadCancelationMessage(id EventId, cause EndContractCause, protocol string, agreementId string, deployment map[string]persistence.ServiceConfig) *GovernanceWorkloadCancelationMessage {
+func NewGovernanceWorkloadCancelationMessage(id EventId, cause EndContractCause, protocol string, agreementId string, deployment persistence.DeploymentConfig) *GovernanceWorkloadCancelationMessage {
 
 	govMaint := NewGovernanceMaintenanceMessage(id, protocol, agreementId, deployment)
 
@@ -598,11 +602,15 @@ type WorkloadMessage struct {
 	event             Event
 	AgreementProtocol string
 	AgreementId       string
-	Deployment        map[string]persistence.ServiceConfig
+	Deployment        persistence.DeploymentConfig
 }
 
 func (m WorkloadMessage) String() string {
-	return fmt.Sprintf("event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v", m.event.Id, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment))
+	depStr := ""
+	if m.Deployment != nil {
+		depStr = m.Deployment.ToString()
+	}
+	return fmt.Sprintf("event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v", m.event.Id, m.AgreementProtocol, m.AgreementId, depStr)
 }
 
 func (m WorkloadMessage) ShortString() string {
@@ -613,7 +621,7 @@ func (b WorkloadMessage) Event() Event {
 	return b.event
 }
 
-func NewWorkloadMessage(id EventId, protocol string, agreementId string, deployment map[string]persistence.ServiceConfig) *WorkloadMessage {
+func NewWorkloadMessage(id EventId, protocol string, agreementId string, deployment persistence.DeploymentConfig) *WorkloadMessage {
 
 	return &WorkloadMessage{
 		event: Event{
@@ -722,7 +730,7 @@ type ApiAgreementCancelationMessage struct {
 	event             Event
 	AgreementProtocol string
 	AgreementId       string
-	Deployment        map[string]persistence.ServiceConfig
+	Deployment        persistence.DeploymentConfig
 	Cause             EndContractCause
 }
 
@@ -731,14 +739,18 @@ func (m *ApiAgreementCancelationMessage) Event() Event {
 }
 
 func (m ApiAgreementCancelationMessage) String() string {
-	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Cause: %v", m.event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment), m.Cause)
+	depStr := ""
+	if m.Deployment != nil {
+		depStr = m.Deployment.ToString()
+	}
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Cause: %v", m.event, m.AgreementProtocol, m.AgreementId, depStr, m.Cause)
 }
 
 func (m ApiAgreementCancelationMessage) ShortString() string {
 	return m.String()
 }
 
-func NewApiAgreementCancelationMessage(id EventId, cause EndContractCause, protocol string, agreementId string, deployment map[string]persistence.ServiceConfig) *ApiAgreementCancelationMessage {
+func NewApiAgreementCancelationMessage(id EventId, cause EndContractCause, protocol string, agreementId string, deployment persistence.DeploymentConfig) *ApiAgreementCancelationMessage {
 	return &ApiAgreementCancelationMessage{
 		event: Event{
 			Id: id,
@@ -816,7 +828,7 @@ type InitAgreementCancelationMessage struct {
 	event             Event
 	AgreementProtocol string
 	AgreementId       string
-	Deployment        map[string]persistence.ServiceConfig
+	Deployment        persistence.DeploymentConfig
 	Reason            uint
 }
 
@@ -825,14 +837,18 @@ func (m *InitAgreementCancelationMessage) Event() Event {
 }
 
 func (m InitAgreementCancelationMessage) String() string {
-	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Reason: %v", m.event, m.AgreementProtocol, m.AgreementId, persistence.ServiceConfigNames(&m.Deployment), m.Reason)
+	depStr := ""
+	if m.Deployment != nil {
+		depStr = m.Deployment.ToString()
+	}
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v, Reason: %v", m.event, m.AgreementProtocol, m.AgreementId, depStr, m.Reason)
 }
 
 func (m InitAgreementCancelationMessage) ShortString() string {
 	return m.String()
 }
 
-func NewInitAgreementCancelationMessage(id EventId, reason uint, protocol string, agreementId string, deployment map[string]persistence.ServiceConfig) *InitAgreementCancelationMessage {
+func NewInitAgreementCancelationMessage(id EventId, reason uint, protocol string, agreementId string, deployment persistence.DeploymentConfig) *InitAgreementCancelationMessage {
 	return &InitAgreementCancelationMessage{
 		event: Event{
 			Id: id,

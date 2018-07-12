@@ -121,7 +121,7 @@ EOF
             echo -e "found expected response: $RES"
         fi
 
-    elif [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ] || [ "$PATTERN" = "e2egwtype" ]; then
+    elif [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ] || [ "$PATTERN" = "e2egwtype" ] || [ "$PATTERN" = "shelm" ]; then
         echo -e "Pattern $PATTERN is not supported with HA tests, only sns and spws are supported."
     fi
 fi

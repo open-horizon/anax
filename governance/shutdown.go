@@ -169,7 +169,7 @@ func (w *GovernanceWorker) terminateAllAgreements() error {
 		w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, reasonCode, pph.GetTerminationReason(reasonCode))
 
 		// send the event to the container worker in case it has started workload containers.
-		w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
+		w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
 		// clean up microservice instances, but make sure we dont upgrade any microservices as a result of agreement cancellation.
 		skipUpgrade := true
 		w.handleMicroserviceInstForAgEnded(ag.CurrentAgreementId, skipUpgrade)

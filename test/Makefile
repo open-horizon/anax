@@ -6,7 +6,7 @@ DOCKER_EXCH_TAG := latest
 PKG_URL_BASE := http://pkg.bluehorizon.network/linux/ubuntu
 PKGS_URL := $(PKG_URL_BASE)/dists/xenial-testing/main/binary-amd64/Packages
 DEB_PKGS_URL := $(PKG_URL_BASE)/pool/main/h/horizon
-HORIZON_PKG_VER ?= $(shell curl -s $(PKGS_URL) grep -A 2 'Package: horizon' | grep -m 1 'Version:' | awk -F ' |~' '{print $$2}')
+HORIZON_PKG_VER ?= $(shell curl -s $(PKGS_URL) | grep -A 2 'Package: horizon' | grep -m 1 'Version:' | awk -F ' |~' '{print $$2}')
 
 # user configurable variables
 # The TEST_PATTERNS is a comma separated list of following patterns.
@@ -43,8 +43,8 @@ endif
 
 all: default
 default: build
-stop: clean
-build: version-check agbot-image exchange-db-image exchange-image
+stop: clean minikube-stop
+build: version-check agbot-image exchange-db-image exchange-image minikube-setup
 run: test
 distclean: realclean
 
@@ -64,6 +64,8 @@ run-agbot: agbot-docker-prereqs test-network
 		--network "$(DOCKER_TEST_NETWORK)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v ~/.docker:/root/.docker \
+		-v ~/.kube:/root/.kube \
+		-v ~/.minikube:$(HOME)/.minikube \
 		-v /etc/wiotp-edge/:/etc/wiotp-edge/ \
 		-v /var/wiotp-edge/persist/:/var/wiotp-edge/persist/ \
 		-e "HZN_DISABLE_IPTABLES_MANIPULATION=true" \
@@ -100,6 +102,8 @@ run-exchange-db: test-network
 
 clean:
 	@echo -e "\nStarting cleanup"
+	@echo "Shutdown anax cleanly"
+	-curl -sSLX DELETE http://localhost/node
 	@echo "Removing agbot container"
 	-docker rm -f "$(DOCKER_AGBOT_CNAME)"
 	@echo "Removing existing workloads"
@@ -127,7 +131,7 @@ mostlyclean: clean
 	@echo "Cleaning anax binaries and configs"
 	-cd $(ANAX_SOURCE) && make clean
 
-realclean: mostlyclean
+realclean: mostlyclean minikube-clean
 	-docker rm -f "$(DOCKER_EXCHDB_CNAME)" "$(DOCKER_EXCH_CNAME)"
 	-docker rmi $(DOCKER_AGBOT_INAME):$(DOCKER_DEV_TAG) $(DOCKER_AGBOT_INAME):latest
 	-docker rmi openhorizon/amd64_exchange-api:$(DOCKER_EXCH_TAG)
@@ -149,7 +153,7 @@ agbot-docker-prereqs: $(ANAX_SOURCE)/anax
 	mkdir -p $(AGBOT_TEMPFS)/usr/local/bin $(AGBOT_TEMPFS)/root/.colonus
 	cp $(ANAX_SOURCE)/anax $(ANAX_SOURCE)/cli/hzn $(AGBOT_TEMPFS)/usr/local/bin
 	cp -r $(CURDIR)/docker/fs/etc $(AGBOT_TEMPFS)
-	cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(AGBOT_TEMPFS)/root
+	cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(CURDIR)/docker/fs/helm $(AGBOT_TEMPFS)/root
 	for f in $$(find $(AGBOT_TEMPFS)/etc/agbot/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH_CNAME) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
 	for f in $$(find $(AGBOT_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH_CNAME) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
 	curl $(DEB_PKGS_URL)/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz \
@@ -182,8 +186,35 @@ exchange-db-image:
 exchange-image:
 	docker pull $(DOCKER_EXCH_INAME):$(DOCKER_EXCH_TAG)
 
-test: clean run-exchange run-agbot
+test: clean run-exchange minikube-start run-agbot
 	@echo -e  "\nStarting tests"
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(WIOTP_VARS); /root/gov-combined.sh"
 
-.PHONY: all default stop build run distclean clean mostlyclean realclean run-agbot run-exchange run-exchange-db test-network test agbot-docker-prereqs version-check agbot-image exchange-db-image exchange-image
+minikube-setup:
+	@echo "Setting up minikube"
+	if [ ! -f /usr/local/bin/kubectl ]; then \
+		touch minikube-setup-by-test; \
+		./scripts/setup_minikube.sh; \
+		./scripts/stop_minikube.sh; \
+	else \
+		echo "Skipping minikube setup, already done"; \
+	fi
+
+minikube-start: minikube-setup
+	@echo "Starting minikube"
+	./scripts/start_minikube.sh
+
+minikube-stop:
+	@echo "Stopping minikube"
+	./scripts/stop_minikube.sh
+
+minikube-clean: minikube-stop
+	@echo "Cleaning up minikube"
+	if [ -f minikube-setup-by-test ]; then \
+		./scripts/remove_minikube.sh; \
+		rm -f minikube-setup-by-test; \
+	else \
+		echo "Skipping minikube cleanup, minikube was not setup by the test environment"; \
+	fi
+
+.PHONY: all default stop build run distclean clean mostlyclean realclean run-agbot run-exchange run-exchange-db test-network test agbot-docker-prereqs version-check agbot-image exchange-db-image exchange-image minikube-setup minikube-start minikube-stop minikube-clean

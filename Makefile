@@ -54,7 +54,7 @@ endif
 all: deps all-nodeps
 all-nodeps: gopathlinks $(EXECUTABLE) $(CLI_EXECUTABLE)
 
-$(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') $(CLI_EXECUTABLE) gopathlinks
+$(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathlinks
 	@echo "Producing $(EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \

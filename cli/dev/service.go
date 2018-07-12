@@ -3,6 +3,7 @@ package dev
 import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cli/plugin_registry"
 	"github.com/open-horizon/anax/cutil"
 	"os"
 )
@@ -13,10 +14,9 @@ const SERVICE_CREATION_COMMAND = "new"
 const SERVICE_START_COMMAND = "start"
 const SERVICE_STOP_COMMAND = "stop"
 const SERVICE_VERIFY_COMMAND = "verify"
-const SERVICE_DEPLOY_COMMAND = "publish"
 
 // Create skeletal horizon metadata files to establish a new microservice project.
-func ServiceNew(homeDirectory string, org string) {
+func ServiceNew(homeDirectory string, org string, dconfig string) {
 
 	// Verify that env vars are set properly and determine the working directory.
 	dir, err := VerifyEnvironment(homeDirectory, false, false, "")
@@ -26,6 +26,11 @@ func ServiceNew(homeDirectory string, org string) {
 
 	if org == "" && os.Getenv(DEVTOOL_HZN_ORG) == "" {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' must specify either --org or set the %v environment variable.", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, DEVTOOL_HZN_ORG)
+	}
+
+	// Make sure that the input deployment config type is supported.
+	if !plugin_registry.DeploymentConfigPlugins.HasPlugin(dconfig) {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, fmt.Sprintf("unsupported deployment config type: %v", dconfig))
 	}
 
 	// Create the working directory.
@@ -45,7 +50,7 @@ func ServiceNew(homeDirectory string, org string) {
 	// Create the metadata files.
 	if err := CreateUserInputs(dir, false, true, org); err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
-	} else if err := CreateServiceDefinition(dir, org); err != nil {
+	} else if err := CreateServiceDefinition(dir, org, dconfig); err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
 	}
 

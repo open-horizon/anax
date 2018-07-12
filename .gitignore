@@ -12,3 +12,4 @@ anax/doc/*.png
 /cli/bash_completion
 /.idea
 /test/docker/tempfs
+/test/docker/fs/hzn/helloms/server

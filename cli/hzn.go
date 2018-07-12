@@ -9,8 +9,10 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/dev"
 	"github.com/open-horizon/anax/cli/exchange"
+	_ "github.com/open-horizon/anax/cli/helm_deployment"
 	"github.com/open-horizon/anax/cli/key"
 	"github.com/open-horizon/anax/cli/metering"
+	_ "github.com/open-horizon/anax/cli/native_deployment"
 	"github.com/open-horizon/anax/cli/node"
 	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/cli/service"
@@ -311,7 +313,7 @@ Environment Variables:
 
 	devWorkloadCmd := devCmd.Command("workload", "For working with a workload project.")
 	devWorkloadNewCmd := devWorkloadCmd.Command("new", "Create a new workload project.")
-	devWorkloadNewCmdOrg := devWorkloadNewCmd.Flag("org", "The Org id that the workload is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is ued.").Short('o').String()
+	devWorkloadNewCmdOrg := devWorkloadNewCmd.Flag("org", "The Org id that the workload is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is used.").Short('o').String()
 	devWorkloadStartTestCmd := devWorkloadCmd.Command("start", "Run a workload in a mocked Horizon Agent environment.")
 	devWorkloadUserInputFile := devWorkloadStartTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
 	devWorkloadStopTestCmd := devWorkloadCmd.Command("stop", "Stop a workload that is running in a mocked Horizon Agent environment.")
@@ -325,7 +327,7 @@ Environment Variables:
 
 	devMicroserviceCmd := devCmd.Command("microservice", "For working with a microservice project.")
 	devMicroserviceNewCmd := devMicroserviceCmd.Command("new", "Create a new microservice project.")
-	devMicroserviceNewCmdOrg := devMicroserviceNewCmd.Flag("org", "The Org id that the microservice is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is ued.").Short('o').String()
+	devMicroserviceNewCmdOrg := devMicroserviceNewCmd.Flag("org", "The Org id that the microservice is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is used.").Short('o').String()
 	devMicroserviceStartTestCmd := devMicroserviceCmd.Command("start", "Run a microservice in a mocked Horizon Agent environment.")
 	devMicroserviceUserInputFile := devMicroserviceStartTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
 	devMicroserviceStopTestCmd := devMicroserviceCmd.Command("stop", "Stop a microservice that is running in a mocked Horizon Agent environment.")
@@ -339,7 +341,8 @@ Environment Variables:
 
 	devServiceCmd := devCmd.Command("service", "For working with a service project.")
 	devServiceNewCmd := devServiceCmd.Command("new", "Create a new service project.")
-	devServiceNewCmdOrg := devServiceNewCmd.Flag("org", "The Org id that the service is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is ued.").Short('o').String()
+	devServiceNewCmdOrg := devServiceNewCmd.Flag("org", "The Org id that the service is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is used.").Short('o').String()
+	devServiceNewCmdCfg := devServiceNewCmd.Flag("dconfig", "Indicates the type of deployment that will be used, e.g. native (the default), or helm.").Short('c').Default("native").String()
 	devServiceStartTestCmd := devServiceCmd.Command("start", "Run a service in a mocked Horizon Agent environment.")
 	devServiceUserInputFile := devServiceStartTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
 	devServiceStopTestCmd := devServiceCmd.Command("stop", "Stop a service that is running in a mocked Horizon Agent environment.")
@@ -564,7 +567,7 @@ Environment Variables:
 	case devMicroserviceDeployCmd.FullCommand():
 		dev.MicroserviceDeploy(*devHomeDirectory, *devMicroserviceKeyfile, *devMicroservicePubKeyFile, *devMicroserviceDeployCmdUserPw, *devMicroservicePubDontTouchImage)
 	case devServiceNewCmd.FullCommand():
-		dev.ServiceNew(*devHomeDirectory, *devServiceNewCmdOrg)
+		dev.ServiceNew(*devHomeDirectory, *devServiceNewCmdOrg, *devServiceNewCmdCfg)
 	case devServiceStartTestCmd.FullCommand():
 		dev.ServiceStartTest(*devHomeDirectory, *devServiceUserInputFile)
 	case devServiceStopTestCmd.FullCommand():

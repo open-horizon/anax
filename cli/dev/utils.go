@@ -602,7 +602,7 @@ func startContainers(deployment *containermessage.DeploymentDescription,
 	fmt.Printf("Start %v: %v with instance id prefix %v\n", logName, dc.CLIString(), id)
 
 	// Start the microservice container.
-	_, startErr := cw.ResourcesCreate(id, nil, deployment, []byte(""), environmentAdditions, msNetworks)
+	_, startErr := cw.ResourcesCreate(id, "", nil, deployment, []byte(""), environmentAdditions, msNetworks)
 	if startErr != nil {
 		return nil, errors.New(fmt.Sprintf("unable to start container using %v, error: %v", dc.CLIString(), startErr))
 	}

@@ -317,7 +317,7 @@ func (w *GovernanceWorker) governAgreements() {
 					w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
 
 					// cleanup workloads
-					w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
+					w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
 
 					// clean up microservice instances if needed
 					w.handleMicroserviceInstForAgEnded(ag.CurrentAgreementId, false)
@@ -332,7 +332,7 @@ func (w *GovernanceWorker) governAgreements() {
 						reason := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_NOT_EXECUTED_TIMEOUT)
 						w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
 						// cleanup workloads if needed
-						w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
+						w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
 						// clean up microservice instances if needed
 						w.handleMicroserviceInstForAgEnded(ag.CurrentAgreementId, false)
 					}
@@ -364,7 +364,7 @@ func (w *GovernanceWorker) governContainers() int {
 			glog.V(3).Infof(logString(fmt.Sprintf("fire event to ensure containers are still up for agreement %v.", ag.CurrentAgreementId)))
 
 			// current contract, ensure workloads still running
-			w.Messages() <- events.NewGovernanceMaintenanceMessage(events.CONTAINER_MAINTAIN, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
+			w.Messages() <- events.NewGovernanceMaintenanceMessage(events.CONTAINER_MAINTAIN, ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
 
 		}
 	}
@@ -528,7 +528,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 		cmd, _ := command.(*StartGovernExecutionCommand)
 		glog.V(3).Infof(logString(fmt.Sprintf("Starting governance on resources in agreement: %v", cmd.AgreementId)))
 
-		if _, err := persistence.AgreementStateExecutionStarted(w.db, cmd.AgreementId, cmd.AgreementProtocol, &cmd.Deployment); err != nil {
+		if _, err := persistence.AgreementStateExecutionStarted(w.db, cmd.AgreementId, cmd.AgreementProtocol); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("Failed to update local contract record to start governing Agreement: %v. Error: %v", cmd.AgreementId, err)))
 		}
 
@@ -602,7 +602,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				}
 			} else {
 				deleteMessage = true
-				w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, ags[0].CurrentDeployment)
+				w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, ags[0].GetDeploymentConfig())
 				reason := w.producerPH[msgProtocol].GetTerminationCode(producer.TERM_REASON_AGBOT_REQUESTED)
 				w.cancelAgreement(replyAck.AgreementId(), msgProtocol, reason, w.producerPH[msgProtocol].GetTerminationReason(reason))
 				// clean up microservice instances if needed
@@ -665,7 +665,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 			} else {
 				w.cancelAgreement(canReceived.AgreementId(), msgProtocol, canReceived.Reason(), w.producerPH[msgProtocol].GetTerminationReason(canReceived.Reason()))
 				// cleanup workloads if needed
-				w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, ags[0].CurrentDeployment)
+				w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, ags[0].GetDeploymentConfig())
 				// clean up microservice instances if needed
 				w.handleMicroserviceInstForAgEnded(ags[0].CurrentAgreementId, false)
 				deleteMessage = true
@@ -688,7 +688,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				} else {
 					w.cancelAgreement(agid, msgProtocol, reason, w.producerPH[msgProtocol].GetTerminationReason(reason))
 					// cleanup workloads if needed
-					w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, msgProtocol, agid, ags[0].CurrentDeployment)
+					w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, msgProtocol, agid, ags[0].GetDeploymentConfig())
 					// clean up microservice instances if needed
 					w.handleMicroserviceInstForAgEnded(agid, false)
 				}
@@ -729,7 +729,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 					glog.Infof(logString(fmt.Sprintf("terminating agreement %v because it has been cancelled on the blockchain.", ags[0].CurrentAgreementId)))
 					w.cancelAgreement(ags[0].CurrentAgreementId, ags[0].AgreementProtocol, uint(reason), w.producerPH[protocol].GetTerminationReason(uint(reason)))
 					// cleanup workloads if needed
-					w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, ags[0].CurrentDeployment)
+					w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ags[0].AgreementProtocol, ags[0].CurrentAgreementId, ags[0].GetDeploymentConfig())
 					// clean up microservice instances if needed
 					w.handleMicroserviceInstForAgEnded(ags[0].CurrentAgreementId, false)
 				}

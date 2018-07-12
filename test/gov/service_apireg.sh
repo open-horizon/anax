@@ -26,6 +26,14 @@ then
     exit 1
 fi
 
+# Create the Helm package.
+./helm_package.sh ${EXCH_URL} ${E2EDEV_ADMIN_AUTH}
+if [ $? -ne 0 ]
+then
+    echo -e "helm package creation failed."
+    exit 1
+fi
+
 KEY_TEST_DIR="/tmp/keytest"
 mkdir -p $KEY_TEST_DIR
 
@@ -67,6 +75,15 @@ echo -e "Register test service:"
 RES=$(echo "$sdef" | curl -sLX POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev/services" | jq -r '.')
 results "$RES"
 
+# Helm service
+VERS="1.0.0"
+echo -e "Register Helm service $VERS:"
+hzn exchange service publish -I -u root/root:Horizon-Rul3s -o e2edev -f /root/helm/hello/external/horizon/service.definition.json -k $KEY_TEST_DIR/*private.key
+if [ $? -ne 0 ]
+then
+    echo -e "hzn exchange service publish failed for Helm service."
+    exit 2
+fi
 
 # cpu service - needed by the hzn dev tests and the location top level service as a 3rd level dependency.
 VERS="1.2.2"
@@ -609,6 +626,45 @@ read -d '' sdef <<EOF
 EOF
 echo -e "Register gps service pattern $VERS:"
 RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev/patterns/sgps" | jq -r '.')
+results "$RES"
+
+# shelm test pattern
+VERS="1.0.0"
+read -d '' sdef <<EOF
+{
+  "label": "Helm Test",
+  "description": "a Helm Test pattern",
+  "public": true,
+  "services": [
+    {
+      "serviceUrl":"http://my.company.com/services/helm-service",
+      "serviceOrgid":"e2edev",
+      "serviceArch":"amd64",
+      "serviceVersions":[
+        {
+          "version":"$VERS",
+          "deployment_overrides":"",
+          "deployment_overrides_signature":"",
+          "priority":{},
+          "upgradePolicy": {}
+        }
+      ],
+      "dataVerification": {},
+      "nodeHealth": {
+        "missing_heartbeat_interval": 90,
+        "check_agreement_status": 60
+      }
+    }
+  ],
+  "agreementProtocols": [
+    {
+      "name": "Basic"
+    }
+  ]
+}
+EOF
+echo -e "Register Helm service pattern $VERS:"
+RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev/patterns/shelm" | jq -r '.')
 results "$RES"
 
 # susehello test pattern

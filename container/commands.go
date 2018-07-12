@@ -54,18 +54,18 @@ func (b *ContainerWorker) NewContainerConfigureCommand(deploymentDescription *co
 type ContainerMaintenanceCommand struct {
 	AgreementProtocol string
 	AgreementId       string
-	Deployment        map[string]persistence.ServiceConfig
+	Deployment        persistence.DeploymentConfig
 }
 
 func (c ContainerMaintenanceCommand) String() string {
-	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v, Deployment: %v", c.AgreementProtocol, c.AgreementId, persistence.ServiceConfigNames(&c.Deployment))
+	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v, Deployment: %v", c.AgreementProtocol, c.AgreementId, c.Deployment.ToString())
 }
 
 func (c ContainerMaintenanceCommand) ShortString() string {
 	return c.String()
 }
 
-func (b *ContainerWorker) NewContainerMaintenanceCommand(protocol string, agreementId string, deployment map[string]persistence.ServiceConfig) *ContainerMaintenanceCommand {
+func (b *ContainerWorker) NewContainerMaintenanceCommand(protocol string, agreementId string, deployment persistence.DeploymentConfig) *ContainerMaintenanceCommand {
 	return &ContainerMaintenanceCommand{
 		AgreementProtocol: protocol,
 		AgreementId:       agreementId,
@@ -77,19 +77,23 @@ func (b *ContainerWorker) NewContainerMaintenanceCommand(protocol string, agreem
 type WorkloadShutdownCommand struct {
 	AgreementProtocol  string
 	CurrentAgreementId string
-	Deployment         map[string]persistence.ServiceConfig
+	Deployment         persistence.DeploymentConfig
 	Agreements         []string
 }
 
 func (c WorkloadShutdownCommand) String() string {
-	return fmt.Sprintf("AgreementProtocol: %v, CurrentAgreementId: %v, Deployment: %v, Agreements (sample): %v", c.AgreementProtocol, c.CurrentAgreementId, persistence.ServiceConfigNames(&c.Deployment), cutil.FirstN(10, c.Agreements))
+	depStr := ""
+	if c.Deployment != nil {
+		depStr = c.Deployment.ToString()
+	}
+	return fmt.Sprintf("AgreementProtocol: %v, CurrentAgreementId: %v, Deployment: %v, Agreements (sample): %v", c.AgreementProtocol, c.CurrentAgreementId, depStr, cutil.FirstN(10, c.Agreements))
 }
 
 func (c WorkloadShutdownCommand) ShortString() string {
 	return c.String()
 }
 
-func (b *ContainerWorker) NewWorkloadShutdownCommand(protocol string, currentAgreementId string, deployment map[string]persistence.ServiceConfig, agreements []string) *WorkloadShutdownCommand {
+func (b *ContainerWorker) NewWorkloadShutdownCommand(protocol string, currentAgreementId string, deployment persistence.DeploymentConfig, agreements []string) *WorkloadShutdownCommand {
 	return &WorkloadShutdownCommand{
 		AgreementProtocol:  protocol,
 		CurrentAgreementId: currentAgreementId,
