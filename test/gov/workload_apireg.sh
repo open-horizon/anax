@@ -416,12 +416,16 @@ cat <<EOF >$KEY_TEST_DIR/wl_location.json
   "userInput":[],
   "workloads":[
     {
-      "services":{
-        "location":{
-          "environment":["USE_NEW_STAGING_URL=false", "DEPL_ENV=staging"],
-          "image": "openhorizon/amd64_location:2.0.6"
+      "deployment":{
+        "services":{
+          "location":{
+            "environment":["USE_NEW_STAGING_URL=false", "DEPL_ENV=staging"],
+            "image": "openhorizon/amd64_location:2.0.6"
+          }
         }
-      }
+      },
+      "deployment_signature":"",
+      "torrent":""
     }
   ]
 }
@@ -450,12 +454,16 @@ cat <<EOF >$KEY_TEST_DIR/wl_location2.json
   "userInput":[],
   "workloads":[
     {
-      "services":{
-        "location":{
-          "environment":["USE_NEW_STAGING_URL=false", "DEPL_ENV=staging"],
-          "image": "openhorizon/amd64_location:2.0.6"
+      "deployment":{
+        "services":{
+          "location":{
+            "environment":["USE_NEW_STAGING_URL=false", "DEPL_ENV=staging"],
+            "image": "openhorizon/amd64_location:2.0.6"
+          }
         }
-      }
+      },
+      "deployment_signature":"",
+      "torrent":""
     }
   ]
 }
@@ -518,12 +526,16 @@ cat <<EOF >$KEY_TEST_DIR/wl_netspeed.json
   ],
   "workloads":[
     {
-      "services":{
-        "netspeed5":{
-          "image":"openhorizon/amd64_netspeed:2.5.0",
-          "environment":["USE_NEW_STAGING_URL=false","DEPL_ENV=staging","SKIP_NUM_REPEAT_LOC_READINGS=0"]
+      "deployment":{
+        "services":{
+          "netspeed5":{
+            "image":"openhorizon/amd64_netspeed:2.5.0",
+            "environment":["USE_NEW_STAGING_URL=false","DEPL_ENV=staging","SKIP_NUM_REPEAT_LOC_READINGS=0"]
+          }
         }
-      }
+      },
+      "deployment_signature":"",
+      "torrent":""
     }
   ]
 }
@@ -587,12 +599,16 @@ cat <<EOF >$KEY_TEST_DIR/wl_netspeed2.json
   ],
   "workloads":[
     {
-      "services":{
-        "netspeed5":{
-          "image":"openhorizon/amd64_netspeed:2.5.0",
-          "environment":["USE_NEW_STAGING_URL=false","DEPL_ENV=staging","SKIP_NUM_REPEAT_LOC_READINGS=0"]
+      "deployment": {
+        "services":{
+          "netspeed5":{
+            "image":"openhorizon/amd64_netspeed:2.5.0",
+            "environment":["USE_NEW_STAGING_URL=false","DEPL_ENV=staging","SKIP_NUM_REPEAT_LOC_READINGS=0"]
+          }
         }
-      }
+      },
+      "deployment_signature":"",
+      "torrent":""
     }
   ]
 }
@@ -630,7 +646,7 @@ cat <<EOF >$KEY_TEST_DIR/wl_gpstest.json
           }
         }
       },
-      "deployment_signature":"$",
+      "deployment_signature":"",
       "torrent":""
     }
   ]

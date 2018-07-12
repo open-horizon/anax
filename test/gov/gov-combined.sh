@@ -1,5 +1,98 @@
 #!/bin/bash
 
+function set_exports {
+    if [ "$NOANAX" != "1" ]
+    then
+        if [ "$1" == "e2egwtype" ]; then
+            export WIOTP_GW_TYPE=e2egwtype
+            export WIOTP_GW_ID=e2egwid
+            export USER=${WIOTP_API_KEY}
+            export PASS=${WIOTP_API_TOKEN}
+            export DEVICE_ID="g@${WIOTP_GW_TYPE}@$WIOTP_GW_ID"
+            export DEVICE_NAME="g@${WIOTP_GW_TYPE}@$WIOTP_GW_ID"
+            export TOKEN=${WIOTP_GW_TOKEN}
+            export ORG=$WIOTP_ORG_ID
+        elif [ "$1" == "e2egwtypenocore" ]; then
+            export WIOTP_GW_TYPE=e2egwtypenocore
+            export WIOTP_GW_ID=e2egwid
+            export USER=${WIOTP_API_KEY}
+            export PASS=${WIOTP_API_TOKEN}
+            export DEVICE_ID="g@${WIOTP_GW_TYPE}@$WIOTP_GW_ID"
+            export DEVICE_NAME="g@${WIOTP_GW_TYPE}@$WIOTP_GW_ID"
+            export TOKEN=${WIOTP_GW_TOKEN}
+            export ORG=$WIOTP_ORG_ID
+        else
+            export USER=anax1
+            export PASS=anax1pw
+            export DEVICE_ID="an12345"
+            export DEVICE_NAME="anaxdev1"
+            export TOKEN="abcdefg"
+            export ORG="e2edev"
+        fi
+
+        export ANAX_API="http://localhost"
+        export EXCH="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
+
+    else
+        echo -e "Anax is disabled"
+    fi
+}
+
+function run_delete_loops {
+    # Start the deletion loop tests if they have not been disabled.
+    echo -e "No loop setting is $NOLOOP"
+    if [ "$NOLOOP" != "1" ] && [ "$NOAGBOT" != "1" ]
+    then
+        echo "Starting deletion loop tests. Giving time for 1st agreement to complete."
+        sleep 240
+
+        echo "Starting device delete agreement script"
+        ./del_loop.sh &
+
+        # Give the device script time to get started and get into it's 10 min cycle. Wait 5 mins
+        # and then start the agbot delete cycle, so that it is interleaved with the device cycle.
+        sleep 300
+        ./agbot_del_loop.sh &
+    else
+        echo -e "Deletion loop tests set to only run once."
+
+        if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" == "e2egwtype" ] || [ "${PATTERN}" == "e2egwtypenocore" ]; then
+            echo -e "Starting service pattern verification scripts"
+            if [ "$NOLOOP" == "1" ]; then
+                ./verify_agreements.sh
+                if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
+                echo -e "No cancellation setting is $NOCANCEL"
+                if [ "$NOCANCEL" != "1" ]; then
+                    ./del_loop.sh
+                    if [ $? -ne 0 ]; then echo "Agreement deletion failure."; exit 1; fi
+                    echo -e "Sleeping for 30s between device and agbot agreement deletion"
+                    sleep 30
+                    ./agbot_del_loop.sh
+                    if [ $? -ne 0 ]; then echo "Agbot agreement deletion failure."; exit 1; fi
+                    ./verify_agreements.sh
+                    if [ $? -ne 0 ]; then echo "Agreement restart failure."; exit 1; fi
+                else
+                    echo -e "Cancellation tests are disabled"
+                fi
+            else
+                ./verify_agreements.sh &
+            fi
+        else
+            echo -e "No cancellation setting is $NOCANCEL"
+            if [ "$NOCANCEL" != "1" ]; then
+                ./del_loop.sh
+                if [ $? -ne 0 ]; then echo "Agreement deletion failure."; exit 1; fi
+                echo -e "Sleeping for 30s between device and agbot agreement deletion"
+                sleep 30
+                ./agbot_del_loop.sh
+                if [ $? -ne 0 ]; then echo "Agbot agreement deletion failure."; exit 1; fi
+            else
+                echo -e "Cancellation tests are disabled"
+            fi
+        fi
+    fi
+}
+
 EXCH_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
 
 # Build an old anax if we need it
@@ -93,7 +186,7 @@ then
     TESTFAIL="1"
 else
     echo "Register services SUCCESSFUL"
-fi   
+fi
 
 if [ "$TESTFAIL" != "1" ]
 then
@@ -288,132 +381,77 @@ fi
 # fi
 # echo "Agbot API tests completed."
 
-last_pattern=$(echo $TEST_PATTERNS |sed -e 's/^.*,//')
-echo -e "Last pattern is $last_pattern"
+# Services can be run via patterns or from policy files
+if [ "${TEST_PATTERNS}" == "" ] && [ "$TESTFAIL" != "1" ]
+then
+    echo -e "Making agreements based on policy files."
 
-for pat in $(echo $TEST_PATTERNS | tr "," " "); do
-    export PATTERN=$pat
-    echo -e "***************************"
-    echo -e "Start testing pattern $PATTERN..."
+    set_exports
 
-    # start pattern test
-    if [ "$NOANAX" != "1" ] && [ "$TESTFAIL" != "1" ]
+    ./start_node.sh
+    if [ $? -ne 0 ]
     then
-        if [ "$pat" == "e2egwtype" ]; then
-            export WIOTP_GW_TYPE=e2egwtype
-            export WIOTP_GW_ID=e2egwid
-            export USER=${WIOTP_API_KEY}
-            export PASS=${WIOTP_API_TOKEN}
-            export DEVICE_ID="g@${WIOTP_GW_TYPE}@$WIOTP_GW_ID"
-            export DEVICE_NAME="g@${WIOTP_GW_TYPE}@$WIOTP_GW_ID"
-            export TOKEN=${WIOTP_GW_TOKEN}
-            export ORG=$WIOTP_ORG_ID
-        elif [ "$pat" == "e2egwtypenocore" ]; then
-            export WIOTP_GW_TYPE=e2egwtypenocore
-            export WIOTP_GW_ID=e2egwid
-            export USER=${WIOTP_API_KEY}
-            export PASS=${WIOTP_API_TOKEN}
-            export DEVICE_ID="g@${WIOTP_GW_TYPE}@$WIOTP_GW_ID"
-            export DEVICE_NAME="g@${WIOTP_GW_TYPE}@$WIOTP_GW_ID"
-            export TOKEN=${WIOTP_GW_TOKEN}
-            export ORG=$WIOTP_ORG_ID
-        else
-            export USER=anax1
-            export PASS=anax1pw
-            export DEVICE_ID="an12345"
-            export DEVICE_NAME="anaxdev1"
-            export TOKEN="abcdefg"
-            export ORG="e2edev"
-        fi 
+        echo "Node start failure."
+        TESTFAIL="1"
+    else
+        run_delete_loops
+        if [ $? -ne 0 ]
+        then
+            echo "Delete loop failure."
+            TESTFAIL="1"
+        fi
+    fi
 
-        export ANAX_API="http://localhost"
-        export EXCH="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
+elif [ "$TESTFAIL" != "1" ]; then
+    # make agreements based on patterns
+    last_pattern=$(echo $TEST_PATTERNS |sed -e 's/^.*,//')
+    echo -e "Last pattern is $last_pattern"
 
+    for pat in $(echo $TEST_PATTERNS | tr "," " "); do
+        export PATTERN=$pat
+        echo -e "***************************"
+        echo -e "Start testing pattern $PATTERN..."
+
+        # start pattern test
+        set_exports $pat
 
         ./start_node.sh
         if [ $? -ne 0 ]
         then
             echo "Node start failure."
             TESTFAIL="1"
+            break
         fi
-    else
-        echo -e "Anax is disabled"
-    fi
 
+        run_delete_loops
+        if [ $? -ne 0 ]
+        then
+            echo "Delete loop failure."
+            TESTFAIL="1"
+            break
+        fi
 
-    # Start the deletion loop tests if they have not been disabled.
-    echo -e "No loop setting is $NOLOOP"
-    if [ "$NOLOOP" != "1" ] && [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
-    then
-        echo "Starting deletion loop tests. Giving time for 1st agreement to complete."
-        sleep 240
+        echo -e "Done testing pattern $PATTERN"
 
-        echo "Starting device delete agreement script"
-        ./del_loop.sh &
+        # unregister if it is not the last pattern
+        if [ "$pat" != "$last_pattern" ]; then
+            # Save off the existing log file, in case the next test fails and we need to look back to see how this
+            # instance of anax actually ended.
+            mv /tmp/anax.log /tmp/anax_$pat.log
 
-        # Give the device script time to get started and get into it's 10 min cycle. Wait 5 mins
-        # and then start the agbot delete cycle, so that it is interleaved with the device cycle.
-        sleep 300
-        ./agbot_del_loop.sh &
-    else
-        echo -e "Deletion loop tests set to only run once."
-
-        if [ "$TESTFAIL" != "1" ]; then
-            if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" == "e2egwtype" ] || [ "${PATTERN}" == "e2egwtypenocore" ]; then
-                echo -e "Starting service pattern verification scripts"
-                if [ "$NOLOOP" == "1" ]; then
-                    ./verify_agreements.sh
-                    if [ $? -ne 0 ]; then echo "Node start failure."; TESTFAIL="1"; fi
-                    echo -e "No cancellation setting is $NOCANCEL"
-                    if [ "$NOCANCEL" != "1" ]; then
-                        ./del_loop.sh
-                        if [ $? -ne 0 ]; then echo "Agreement deletion failure."; TESTFAIL="1"; fi
-                        echo -e "Sleeping for 30s between device and agbot agreement deletion"
-                        sleep 30
-                        ./agbot_del_loop.sh
-                        if [ $? -ne 0 ]; then echo "Agbot agreement deletion failure."; TESTFAIL="1"; fi
-                        ./verify_agreements.sh
-                        if [ $? -ne 0 ]; then echo "Agreement restart failure."; TESTFAIL="1"; fi
-                    else
-                        echo -e "Cancellation tests are disabled"
-                    fi
-                else
-                    ./verify_agreements.sh &
-                fi
+            echo -e "Unregister the node. Anax will be shutdown."
+            ./unregister.sh
+            if [ $? -eq 0 ]; then
+                sleep 10
             else
-                echo -e "No cancellation setting is $NOCANCEL"
-                if [ "$NOCANCEL" != "1" ]; then
-                    ./del_loop.sh
-                    if [ $? -ne 0 ]; then echo "Agreement deletion failure."; TESTFAIL="1"; fi
-                    echo -e "Sleeping for 30s between device and agbot agreement deletion"
-                    sleep 30
-                    ./agbot_del_loop.sh
-                    if [ $? -ne 0 ]; then echo "Agbot agreement deletion failure."; TESTFAIL="1"; fi
-                else
-                    echo -e "Cancellation tests are disabled"
-                fi
+                exit 1
             fi
         fi
-    fi
+        echo -e "***************************"
+    done
 
-    echo -e "Done testing pattern $PATTERN"
+fi
 
-    # unregister if it is not the last pattern
-    if [ "$pat" != "$last_pattern" ]; then
-        # Save off the existing log file, in case the next test fails and we need to look back to see how this
-        # instance of anax actually ended.
-        mv /tmp/anax.log /tmp/anax_$pat.log
-
-        echo -e "Unregister the node. Anax will be shutdown."
-        ./unregister.sh
-        if [ $? -eq 0 ]; then
-            sleep 10
-        else
-            exit 1
-        fi
-    fi 
-    echo -e "***************************"
-done
 
 # Start the node unconfigure tests if they have been enabled.
 echo -e "Node unconfig setting is $UNCONFIG"
