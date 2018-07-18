@@ -15,7 +15,7 @@ CLI_COMPLETION_DIR := cli/bash_completion
 DEFAULT_UI = api/static/index.html
 
 ANAX_CONTAINER_DIR := anax-in-container
-DOCKER_IMAGE_VERSION ?= 2.17.9
+DOCKER_IMAGE_VERSION ?= 2.17.11
 DOCKER_IMAGE = openhorizon/$(arch)_anax:$(DOCKER_IMAGE_VERSION)
 DOCKER_IMAGE_LATEST = openhorizon/$(arch)_anax:latest
 # To not use cache, so it picks up the latest horizon deb pkgs: DOCKER_MAYBE_CACHE='--no-cache' make docker-image
