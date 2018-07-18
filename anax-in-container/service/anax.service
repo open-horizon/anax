@@ -69,6 +69,10 @@ defaultEnv() {
 	anaxJson=$(jq ".Edge.APIListen = \"0.0.0.0:80\" " <<< $anaxJson)
 	checkrc $? "change APIListen"
 
+	# Since they are running anax in a container, assume they could run multiple anax containers
+	anaxJson=$(jq ".Edge.MultipleAnaxInstances = true" <<< $anaxJson)
+	checkrc $? "change MultipleAnaxInstances"
+
 	# Experimental: configure anax running on mac host
 	# The Mac can not mount the /var/run/docker.sock unix socket into the container. So on the host you must use a cmd like this to have the docker engine listen on a port:
 	#    socat TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &
