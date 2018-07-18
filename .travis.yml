@@ -11,12 +11,9 @@ language: go
 
 go: 1.10.x
 
-env:
-  - TEST_VARS="NOLOOP=1 TEST_PATTERNS=sall,e2egwtype"
-
 before_script:
   - make -C test
   - docker ps
 
 script:
-  - make test -C test
+  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && make test -C test TEST_VARS="NOLOOP=1 TEST_PATTERNS=sall,e2egwtype" || make test -C test TEST_VARS="NOLOOP=1 TEST_PATTERNS=sall"'
