@@ -509,6 +509,10 @@ func mkBridge(name string, client *docker.Client) (*docker.Network, error) {
 		Internal:       false,
 		Driver:         "bridge",
 		CheckDuplicate: true,
+		IPAM: docker.IPAMOptions{
+			Driver: "default",
+			Config: []docker.IPAMConfig{},
+		},
 		Options: map[string]interface{}{
 			"com.docker.network.bridge.enable_icc":           "true",
 			"com.docker.network.bridge.enable_ip_masquerade": "true",
