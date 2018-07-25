@@ -16,7 +16,7 @@ make docker-image
 make docker-push     # push the image to docker hub
 ```
 
-If you don't need to change anything about the anax image, except pick up the latest horizon deb pkgs:
+If the anax files have not changed, but you need to force a rebuild to pick up the latest horizon deb pkgs:
 
 ```
 DOCKER_MAYBE_CACHE='--no-cache' make docker-image
