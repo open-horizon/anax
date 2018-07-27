@@ -21,12 +21,8 @@ RUN wget -qO- http://pkg.bluehorizon.network/bluehorizon.network-public.key | ap
 #RUN wget -qO- http://pkg.bluehorizon.network/bluehorizon.network-public.key | apt-key add - && \
 #    add-apt-repository "deb [arch=$(dpkg --print-architecture)] http://pkg.bluehorizon.network/linux/debian $(lsb_release -cs)-$HORIZON_REPO_CHANNEL main"
 
-# Install horizon-wiotp and then do some things that wiotp_agent_setup would do
-RUN apt-get update && apt-get install -y horizon-wiotp mosquitto-clients
-RUN cp /etc/wiotp-edge/edge.conf.template /etc/wiotp-edge/edge.conf && mkdir -p /var/wiotp-edge/persist
-# Copy these dirs before they get mounted over by the host dirs. In /root/anax.service we will copy them back.
-RUN mkdir -p /tmp/etc /tmp/var && cp -a /etc/wiotp-edge /tmp/etc && cp -a /var/wiotp-edge /tmp/var
-# before registering, you also need to run: wiotp_create_certificate -p $WIOTP_GW_TOKEN
+# Install bluehorizon
+RUN apt-get update && apt-get install -y bluehorizon mosquitto-clients
 
 #RUN systemctl restart horizon.service  # <- systemd not available in a container w/o hacks
 WORKDIR /root
