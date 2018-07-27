@@ -193,6 +193,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 				} else {
 					envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = exchange.GetId(w.GetExchangeId())
 					envAdds[config.ENVVAR_PREFIX+"ORGANIZATION"] = exchange.GetOrg(w.GetExchangeId())
+					envAdds[config.ENVVAR_PREFIX+"PATTERN"] = w.devicePattern
 					envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = w.Config.Edge.ExchangeURL
 					// Add in any default variables from the microservice userInputs that havent been overridden
 					for _, ui := range msdef.UserInputs {

@@ -324,7 +324,7 @@ func createEnvVarMap(agreementId string,
 	}
 
 	exchangeURL := os.Getenv(DEVTOOL_HZN_EXCHANGE_URL)
-	cutil.SetPlatformEnvvars(envvars, config.ENVVAR_PREFIX, agreementId, testDeviceId, org, workloadPW, exchangeURL)
+	cutil.SetPlatformEnvvars(envvars, config.ENVVAR_PREFIX, agreementId, testDeviceId, org, workloadPW, exchangeURL, "")
 
 	// Second, add the Horizon system env vars. Some of these can come from the global section of a user inputs file. To do this we have to
 	// convert the attributes in the userinput file into API attributes so that they can be validity checked. Then they are converted to

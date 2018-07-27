@@ -177,7 +177,7 @@ func VerifyWorkloadVarTypes(varValue interface{}, expectedType string) error {
 
 // This function may seem simple but since it is shared with the hzn dev CLI, an update to it will cause a compile error in the CLI
 // code. This will prevent us from adding a new platform env var but forgetting to update the CLI.
-func SetPlatformEnvvars(envAdds map[string]string, prefix string, agreementId string, deviceId string, org string, workloadPW string, exchangeURL string) {
+func SetPlatformEnvvars(envAdds map[string]string, prefix string, agreementId string, deviceId string, org string, workloadPW string, exchangeURL string, pattern string) {
 
 	// The agreement id that is controlling the lifecycle of this container.
 	if agreementId != "" {
@@ -189,6 +189,9 @@ func SetPlatformEnvvars(envAdds map[string]string, prefix string, agreementId st
 
 	// The exchange organization that the node belongs.
 	envAdds[prefix+"ORGANIZATION"] = org
+
+	// The pattern that the node is hosting.
+	envAdds[prefix+"PATTERN"] = pattern
 
 	// Deprecated workload password, used only by legacy POC workloads.
 	if workloadPW != "" {
