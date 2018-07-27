@@ -3,18 +3,17 @@
 # Script to start, restart, and stop anax inside a docker container
 
 # Note: this won't run while we are blocking on a foreground cmd. Have to run anax in background and use wait.
-trap 'echo "Unregistering..."; /usr/bin/hzn unregister -f; echo "Done. Exiting..."; exit 0' SIGTERM
+trap 'echo "Unregistering..."; touch $HOME/container-stopping; /usr/bin/hzn unregister -f; echo "Done. Exiting..."; exit 0' SIGTERM
 
 ANAX_LOG_LEVEL=${ANAX_LOG_LEVEL:-3}
 
 usage() {
-	echo "Usage: $0 {start|restart|status|block} [env-script-to-run] [gw-token]"
+	echo "Usage: $0 {start|restart|status|block} [env-script-to-run]"
 	exit 1
 }
 
 cmd="$1"
 envScript="$2"
-token="$3"
 
 # Check the exit status of the previously run command and exit if nonzero
 checkrc() {
@@ -29,14 +28,7 @@ checkrc() {
   fi
 }
 
-createCertificate() {
-	token="$1"
-	echo "Creating the WIoTP certificate with token '$token'..."
-	wiotp_create_certificate -p "$token"
-}
-
 defaultEnv() {
-	token="$1"
 
 	# Source /etc/default/horizon
 	envFile=/etc/default/horizon
@@ -44,15 +36,6 @@ defaultEnv() {
 		echo "Sourcing $envFile..."
 		source $envFile
 		export $(cut -d= -f1 $envFile)
-	fi
-
-	# Now the the host dirs /etc/wiotp-edge and /var/wiotp-edge have been mounted over ours, copy our backup back into them
-	# I don't think we have to check if we have already done this, because i think it is only run on the 1st start of the container
-	cp -a /tmp/etc/wiotp-edge/* /etc/wiotp-edge
-	cp -a /tmp/var/wiotp-edge/* /var/wiotp-edge
-
-	if [[ -n "$token" ]]; then
-		createCertificate "$token"   # create the wiotp certificate
 	fi
 
 	# Update several fields in anax.json
@@ -73,7 +56,7 @@ defaultEnv() {
 	anaxJson=$(jq ".Edge.MultipleAnaxInstances = true" <<< $anaxJson)
 	checkrc $? "change MultipleAnaxInstances"
 
-	# Experimental: configure anax running on mac host
+	# Configure anax running on mac host, if applicable
 	# The Mac can not mount the /var/run/docker.sock unix socket into the container. So on the host you must use a cmd like this to have the docker engine listen on a port:
 	#    socat TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &
 	# Then on docker run use -e MAC_HOST=192.168.1.10 so the anax container can connect to that.
@@ -98,24 +81,16 @@ block() {
 
 start() {
 	envScript="$1"
-	token="$2"
 
 	if [[ -n "$envScript" ]]; then
 		# Handle special case environments
 		if [[ "$envScript" == "block" ]]; then
 			block   # a special case to just sleep forever so we can get into the container and examine it
-		elif [[ "$envScript" == "only_certificate" ]]; then
-			if [[ -z "$token" ]]; then
-				echo "Error: a token must be specified $envScript."
-				exit 2
-			fi
-			createCertificate "$token"   # create the wiotp certificate
-			exit 0
 		fi
 	fi
 
 	# Do the config that is specific to running anax in a container, but needed for all environments
-	defaultEnv "$token"    # the optional gw token to create the wiotp certificate with
+	defaultEnv
 
 	# This argument is an optional script to run to configure anax for a specific development environment before starting it
 	if [[ -n "$envScript" ]]; then
@@ -142,6 +117,10 @@ start() {
 			wait $pid
 		fi
 		echo "Anax ended with exit code $?.  Respawning..." >&2
+		if [[ -f $HOME/container-stopping ]]; then
+			echo "The docker container is stopping, so not respawning anax."
+			break
+		fi
 		sleep 1		# in case the cmd above is failing, this loop won't consume 100% cpu
 	done
 }
@@ -169,7 +148,7 @@ status() {
 # Main....
 case "$cmd" in
 	start)
-		start "$envScript" "$token"
+		start "$envScript"
 		;;
 	# stop)
 		# stopanax
