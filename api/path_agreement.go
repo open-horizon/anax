@@ -62,7 +62,7 @@ func DeleteAgreement(errorhandler ErrorHandler, agreementId string, db *bolt.DB)
 	// Deletion is actually handled asynchronously. If the agreement is already terminating there is nothing to do.
 	var msg *events.ApiAgreementCancelationMessage
 	if agreements[0].AgreementTerminatedTime == 0 {
-		msg = events.NewApiAgreementCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, agreements[0].AgreementProtocol, agreements[0].CurrentAgreementId, agreements[0].CurrentDeployment)
+		msg = events.NewApiAgreementCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, agreements[0].AgreementProtocol, agreements[0].CurrentAgreementId, agreements[0].GetDeploymentConfig())
 	}
 
 	return false, msg

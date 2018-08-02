@@ -212,7 +212,7 @@ fi
 
 SERVICE_MODEL="microservice"
 
-if [ "$PATTERN" = "sns" ] || [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "spws" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ]; then
+if [ "$PATTERN" = "sns" ] || [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "spws" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ] || [ "$PATTERN" = "shelm" ]; then
   SERVICE_MODEL="service"
   APITESTURL="https://bluehorizon.network/"$SERVICE_MODEL"s/no-such-service"
 
@@ -309,7 +309,7 @@ export SERVICE_URL="sensor_url"
 export SERVICE_ORG="sensor_org"
 export SERVICE_NAME="sensor_name"
 export SERVICE_VERSION="sensor_version"
-if [ "$PATTERN" = "sns" ] || [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "spws" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ]; then
+if [ "$PATTERN" = "sns" ] || [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "spws" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ] || [ "$PATTERN" = "shelm" ]; then
   export SERVICE_MODE="service"
   export SERVICE_URL="url"
   export SERVICE_ORG="organization"
@@ -347,7 +347,7 @@ else
   echo -e "Agreementprotocol tests SUCCESSFUL"
 fi
 
-if [ "$PATTERN" = "sns" ] || [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "spws" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ]; then
+if [ "$PATTERN" = "sns" ] || [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "spws" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ] || [ "$PATTERN" = "shelm" ]; then
 
     ./service_apitest.sh
   if [ $? -ne 0 ]

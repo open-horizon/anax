@@ -234,7 +234,7 @@ func (w *GovernanceWorker) CleanupMicroservice(spec_ref string, version string, 
 		glog.V(5).Infof(logString(fmt.Sprintf("Removing all the containers for associated agreements %v", ms_inst.AssociatedAgreements)))
 		for _, ag := range agreements {
 			// send the event to the container so that the workloads can be deleted
-			w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
+			w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
 
 			var ag_reason_code uint
 			switch ms_reason_code {

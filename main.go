@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/governance"
+	"github.com/open-horizon/anax/helm"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/torrent"
@@ -141,6 +142,7 @@ func main() {
 		workers.Add(exchange.NewExchangeMessageWorker("Exchange", cfg, db))
 		workers.Add(container.NewContainerWorker("Container", cfg, db))
 		workers.Add(torrent.NewTorrentWorker("Torrent", cfg, db))
+		workers.Add(helm.NewHelmWorker("Helm", cfg, db))
 	} else {
 		workers.Add(container.NewContainerWorker("Container", cfg, agbotdb))
 		workers.Add(torrent.NewTorrentWorker("Torrent", cfg, agbotdb))

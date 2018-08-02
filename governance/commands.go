@@ -9,19 +9,14 @@ import (
 type StartGovernExecutionCommand struct {
 	AgreementId       string
 	AgreementProtocol string
-	Deployment        map[string]persistence.ServiceConfig
+	Deployment        persistence.DeploymentConfig
 }
 
 func (g StartGovernExecutionCommand) ShortString() string {
-	depStr := ""
-	for key, _ := range g.Deployment {
-		depStr = depStr + key + ","
-	}
-
-	return fmt.Sprintf("GovernExecutionCommand: AgreementId %v, AgreementProtocol %v, Deployed Services %v", g.AgreementId, g.AgreementProtocol, depStr)
+	return fmt.Sprintf("GovernExecutionCommand: AgreementId %v, AgreementProtocol %v, Deployment %v", g.AgreementId, g.AgreementProtocol, g.Deployment.ToString())
 }
 
-func (w *GovernanceWorker) NewStartGovernExecutionCommand(deployment map[string]persistence.ServiceConfig, protocol string, agreementId string) *StartGovernExecutionCommand {
+func (w *GovernanceWorker) NewStartGovernExecutionCommand(deployment persistence.DeploymentConfig, protocol string, agreementId string) *StartGovernExecutionCommand {
 	return &StartGovernExecutionCommand{
 		AgreementId:       agreementId,
 		AgreementProtocol: protocol,
@@ -34,19 +29,15 @@ type CleanupExecutionCommand struct {
 	AgreementProtocol string
 	AgreementId       string
 	Reason            uint
-	Deployment        map[string]persistence.ServiceConfig
+	Deployment        persistence.DeploymentConfig
 }
 
 func (c CleanupExecutionCommand) ShortString() string {
-	depStr := ""
-	for key, _ := range c.Deployment {
-		depStr = depStr + key + ","
-	}
-
-	return fmt.Sprintf("CleanupExecutionCommand: AgreementId %v, AgreementProtocol %v, Reason %v, Deployed Services %v", c.AgreementId, c.AgreementProtocol, c.Reason, depStr)
+	depStr := c.Deployment.ToString()
+	return fmt.Sprintf("CleanupExecutionCommand: AgreementId %v, AgreementProtocol %v, Reason %v, Deployment %v", c.AgreementId, c.AgreementProtocol, c.Reason, depStr)
 }
 
-func (w *GovernanceWorker) NewCleanupExecutionCommand(protocol string, agreementId string, reason uint, deployment map[string]persistence.ServiceConfig) *CleanupExecutionCommand {
+func (w *GovernanceWorker) NewCleanupExecutionCommand(protocol string, agreementId string, reason uint, deployment persistence.DeploymentConfig) *CleanupExecutionCommand {
 	return &CleanupExecutionCommand{
 		AgreementProtocol: protocol,
 		AgreementId:       agreementId,

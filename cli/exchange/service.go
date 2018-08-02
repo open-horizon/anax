@@ -4,12 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cli/plugin_registry"
 	"github.com/open-horizon/anax/containermessage"
-	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/rsapss-tool/sign"
 	"github.com/open-horizon/rsapss-tool/verify"
 	"net/http"
 	"os"
@@ -17,9 +15,6 @@ import (
 	"strconv"
 	"strings"
 )
-
-// This can't be a const because a map literal isn't a const in go
-var VALID_DEPLOYMENT_FIELDS = map[string]int8{"image": 1, "privileged": 1, "cap_add": 1, "environment": 1, "devices": 1, "binds": 1, "specific_ports": 1, "command": 1, "ports": 1}
 
 type AbstractServiceFile interface {
 	GetOrg() string
@@ -196,78 +191,12 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 	if svcFile.Org != "" && svcFile.Org != org {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", svcFile.Org, org)
 	}
-	svcFile.SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath, dontTouchImage, registryTokens)
-}
-
-// CheckDeploymentService verifies it has the required 'image' key, and checks for keys we don't recognize.
-// For now it only prints a warning for unrecognized keys, in case we recently added a key to anax and haven't updated hzn yet.
-func CheckDeploymentService(svcName string, depSvc map[string]interface{}) {
-	if _, ok := depSvc["image"]; !ok {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "service '%s' defined under 'deployment.services' does not have mandatory 'image' field", svcName)
-	}
-
-	// Check the rest of the keys for unrecognized ones
-	for k := range depSvc {
-		if _, ok := VALID_DEPLOYMENT_FIELDS[k]; !ok {
-			cliutils.Warning("service '%s' defined under 'deployment.services' has unrecognized field '%s'. See https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md", svcName, k)
-		}
-	}
-}
-
-// SignImagesFromDeploymentMap finds the images in this deployment structure (if any) and appends them to the imageList
-func SignImagesFromDeploymentMap(deployment map[string]interface{}, dontTouchImage bool) (imageList []string) {
-	// The deployment string should include: {"services":{"cpu2wiotp":{"image":"openhorizon/example_wl_x86_cpu2wiotp:1.1.2",...}}}
-	// Since we have to parse the deployment structure anyway, we do some validity checking while we are at it
-	// Note: in the code below we are exploiting the golang map feature that it returns the zero value when a key does not exist in the map.
-	if len(deployment) == 0 {
-		return imageList // an empty deployment structure is valid
-	}
-	var client *dockerclient.Client
-	switch services := deployment["services"].(type) {
-	case map[string]interface{}:
-		for k, svc := range services {
-			switch s := svc.(type) {
-			case map[string]interface{}:
-				CheckDeploymentService(k, s)
-				switch image := s["image"].(type) {
-				case string:
-					domain, path, tag, digest := cutil.ParseDockerImagePath(image)
-					cliutils.Verbose("%s parsed into: domain=%s, path=%s, tag=%s", image, domain, path, tag)
-					if path == "" {
-						fmt.Printf("Warning: could not parse image path '%v'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.\n", image)
-					} else if digest == "" {
-						// This image has a tag, or default tag
-						if dontTouchImage {
-							imageList = append(imageList, image)
-						} else {
-							// Push it, get the repo digest, and modify the imagePath to use the digest
-							if client == nil {
-								client = cliutils.NewDockerClient()
-							}
-							digest := cliutils.PushDockerImage(client, domain, path, tag) // this will error out if the push fails or can't get the digest
-							if domain != "" {
-								domain = domain + "/"
-							}
-							newImage := domain + path + "@" + digest
-							fmt.Printf("Using '%s' in 'deployment' field instead of '%s'\n", newImage, image)
-							s["image"] = newImage
-						}
-					}
-				}
-			default:
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "each service defined under 'deployment.services' must be a json object (with strings as the keys)")
-			}
-		}
-	default:
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the 'deployment' field must contain the 'services' field, whose value must be a json object (with strings as the keys)")
-	}
-	return
+	svcFile.SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, dontTouchImage, registryTokens)
 }
 
 // Sign and publish the service definition. This is a function that is reusable across different hzn commands.
-func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath string, dontTouchImage bool, registryTokens []string) {
+func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, registryTokens []string) {
 	svcInput := ServiceExch{Label: sf.Label, Description: sf.Description, Public: sf.Public, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs, ImageStore: sf.ImageStore}
-	var imageList []string
 
 	// The deployment field can be json object (map), string (for pre-signed), or nil
 	switch dep := sf.Deployment.(type) {
@@ -279,29 +208,28 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath s
 		svcInput.DeploymentSignature = ""
 
 	case map[string]interface{}:
-		// Go thru the docker image paths to push/get sha256 tag and/or gather list of images that user needs to push
-		if storeType, ok := svcInput.ImageStore["storeType"]; !ok || storeType != "imageServer" {
-			imageList = SignImagesFromDeploymentMap(dep, dontTouchImage)
-		}
-		// else the images are in the deprecated horizon image svr, don't do anything with them
-
-		// Marshal and sign the deployment string
-		fmt.Println("Signing service...")
-		//cliutils.Verbose("signing deployment string %d", i+1)
-		// Convert the deployment field from map[string]interface{} to []byte (i think treating it as type DeploymentConfig is too inflexible for future additions)
-		deployment, err := json.Marshal(dep)
-		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment string: %v", err)
-		}
-		svcInput.Deployment = string(deployment)
 		// We know we need to sign the deployment config, so make sure a real key file was provided.
 		if keyFilePath == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "must specify --private-key-file so that the deployment string can be signed")
 		}
-		svcInput.DeploymentSignature, err = sign.Input(keyFilePath, deployment)
+
+		// Construct and sign the deployment string.
+		fmt.Println("Signing service...")
+
+		// Setup the Plugin context with variables that might be needed by 1 or more of the plugins.
+		ctx := plugin_registry.NewPluginContext()
+		ctx.Add("currentDir", filepath.Dir(jsonFilePath))
+		ctx.Add("dontTouchImage", dontTouchImage)
+
+		// Allow the right plugin to sign the deployment configuration.
+		depStr, sig, err := plugin_registry.DeploymentConfigPlugins.SignByOne(dep, keyFilePath, ctx)
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing deployment string with %s: %v", keyFilePath, err)
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "unable to sign deployment config: %v", err)
 		}
+		// Update the exchange service input object with the deployment string and sig, so that the service
+		// can be created in the exchange.
+		svcInput.Deployment = depStr
+		svcInput.DeploymentSignature = sig
 
 	case string:
 		// Means this service is pre-signed
@@ -350,12 +278,21 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, keyFilePath, pubKeyFilePath s
 		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId+"/dockauths", cliutils.OrgAndCreds(org, userPw), []int{201}, regTokExch)
 	}
 
-	// Tell the user to push the images to the docker registry
-	if len(imageList) > 0 {
-		//todo: should we just push the docker images for them?
-		fmt.Println("If you haven't already, push your docker images to the registry:")
-		for _, image := range imageList {
-			fmt.Printf("  docker push %s\n", image)
+	// If necessary, tell the user to push the container images to the docker registry. Get the list of images they need to manually push
+	// from the appropriate deployment config plugin.
+	//
+	// If the images are in the deprecated imageserver, then we will NOT tell the user to manually push images to docker, since that makes no
+	// sense. Also, we will NOT tell the user to manually push images if the publish command has already pushed the images. By default, the act
+	// of publishing a service will also cause the docker images used by the service to be pushed to a docker repo. The dontTouchImage flag tells
+	// the publish command to skip pushing the images.
+	if storeType, ok := svcInput.ImageStore["storeType"]; (!ok || storeType != "imageServer") && dontTouchImage {
+		if imageList, err := plugin_registry.DeploymentConfigPlugins.GetContainerImages(sf.Deployment); err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "unable to get container images from deployment: %v", err)
+		} else if len(imageList) > 0 {
+			fmt.Println("If you haven't already, push your docker images to the registry:")
+			for _, image := range imageList {
+				fmt.Printf("  docker push %s\n", image)
+			}
 		}
 	}
 	return
