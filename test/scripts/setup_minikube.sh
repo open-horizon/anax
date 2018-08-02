@@ -3,7 +3,7 @@
 echo "Setting up minikube and helm configuration in $HOME"
 
 isRoot=$(id -u)
-cprefix="sudo"
+cprefix="sudo -E"
 if [ "${isRoot}" == "0" ]; then
 	cprefix=""
 fi
@@ -33,23 +33,32 @@ export MINIKUBE_HOME=$HOME
 export CHANGE_MINIKUBE_NONE_USER=true
 export KUBECONFIG=$HOME/.kube/config
 
-$cprefix -E minikube start --vm-driver=none
+$cprefix minikube config set WantReportErrorPrompt false
+$cprefix minikube start --vm-driver=none
 
-# Wait until this returns at least 4 lines of non-header output indicating that something is
+# Wait for 2 minutes until this returns at least 4 lines of non-header output indicating that something is
 # running in the kube-system namespace.
-while :
+LOOP_CNT=0
+MINIKUBE_RUNNING=0
+while [ "$LOOP_CNT" -le 12 ]
 do
 
 	pods=$(kubectl get pods --all-namespaces=true 2>&1 | grep -c 'kube-system')
 	if [ "${pods}" -gt "3" ]; then
 		echo "Minikube is running."
+		MINIKUBE_RUNNING=1
 		break
 	else
 		echo "Waiting for minikube pods to start..."
+		let LOOP_CNT+=1
 		sleep 10
 	fi
 
 done
+
+if [ "$MINIKUBE_RUNNING" == 0 ]; then
+       exit 1
+fi
 
 # Assume that some part of kubernetes managed to get started, so its ok to install helm now.
 helm init

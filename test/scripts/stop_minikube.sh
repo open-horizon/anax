@@ -2,6 +2,7 @@
 
 # A script to automate stopping a minikube instance on the local machine.
 
+
 isRoot=$(id -u)
 if [ "${isRoot}" == "0" ]; then
 	minikube stop
@@ -12,7 +13,7 @@ fi
 kubedown=$(kubectl get pods 2>&1 | grep -c 'refused')
 if [ "${kubedown}" -gt "0" ]; then
 	echo "Minikube is stopped, cleaning up stopped containers..."
-	runc=$(docker ps -aq)
+	runc=$(docker ps -aq -f "status=exited" -f "name=k8s_")
 	if [ "${runc}" != "" ]; then
 		docker rm ${runc}
 	fi

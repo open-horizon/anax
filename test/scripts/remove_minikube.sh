@@ -10,7 +10,7 @@ fi
 
 $cprefix minikube delete
 
-docker stop $(docker ps -aq)
+docker stop $(docker ps -aq -f "name=k8s_")
 
 rm -fr ~/.kube ~/.minikube ~/.helm
 
