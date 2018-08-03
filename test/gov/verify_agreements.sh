@@ -152,7 +152,7 @@ function handleLocation {
         if [ "$(echo ${NET_KEYS} | jq -r 'contains(["services-locgps"])')" == "false" ]; then
                 echo -e "${PREFIX} the location service is not in the dependent network for locgps, location has: ${NET_KEYS}"
                 exit 2
-        elif [ "$(echo ${NET_KEYS} | jq -r 'contains(["services-cpu"])')" == "false" ]; then
+        elif [ "$(echo ${NET_KEYS} | jq -r 'contains(["service-cpu"])')" == "false" ]; then
                 echo -e "${PREFIX} the location service is not in the dependent network for cpu, location has: ${NET_KEYS}"
                 exit 2
         fi
@@ -237,7 +237,7 @@ function verifyServices {
 
                 if [ "${REFURL}" == "https://bluehorizon.network/services/location" ]; then
                         handleLocation "${INST}"
-                elif [ "${REFURL}" == "https://internetofthings.ibmcloud.com/services/cpu" ]; then
+                elif [ "${REFURL}" == "https://bluehorizon.network/service-cpu" ]; then
                         handleCPU "${INST}"
                 fi
         done
@@ -272,6 +272,26 @@ function handleWiotpDataVerification {
     fi
 }
 
+function handleMsghubDataVerification {
+
+    echo -e "${PREFIX} veriying data for $2."
+    # get needed env from the Env of docker container
+    cpu2msghub_env=$(docker inspect $1 | jq -r '.[0].Config.Env')
+    MSGHUB_BROKER_URL=$(echo  $cpu2msghub_env |jq '.' |grep MSGHUB_BROKER_URL | grep -o '=.*"' | sed 's/["=]//g')
+    MSGHUB_API_KEY=$(echo  $cpu2msghub_env |jq '.' |grep MSGHUB_API_KEY | grep -o '=.*"' | sed 's/["=]//g')
+    HZN_ORGANIZATION=$(echo  $cpu2msghub_env |jq '.' |grep HZN_ORGANIZATION | grep -o '=.*"' | sed 's/["=]//g')
+    HZN_PATTERN=$(echo  $cpu2msghub_env |jq '.' |grep HZN_PATTERN | grep -o '=.*"' | sed 's/["=]//g')
+
+    # the script will exit after receiving first data. timeout after 1 minute.
+    timeout --preserve-status 1m kafkacat -C -c 1 -q -o end -f "%t/%p/%o/%k: %s\n" -b $MSGHUB_BROKER_URL -X "api.version.request=true" -X "security.protocol=sasl_ssl" -X "sasl.mechanisms=PLAIN" -X "sasl.username=${MSGHUB_API_KEY:0:16}" -X "sasl.password=${MSGHUB_API_KEY:16}" -t "$HZN_ORGANIZATION.$HZN_PATTERN"
+    if [ $? -eq 0 ]; then
+        echo -e "${PREFIX} data verification for $2 service successful."
+    else
+        echo -e "${PREFIX} error: No data received from $2 service."
+        exit 2
+    fi
+}
+
 # Data verification
 function verifyData {
     ALLSERV=$(curl -sSL http://localhost/service | jq -r '.instances.active')
@@ -285,6 +305,9 @@ function verifyData {
         if [ "${REFURL}" == "https://internetofthings.ibmcloud.com/services/cpu2wiotp" ] || [ "${REFURL}" == "https://internetofthings.ibmcloud.com/services/cpu2wiotp-no-core-iot" ]; then
             id=$(echo "${INST}" | jq -r '.containers[0].Id')
             handleWiotpDataVerification "${id}" "${REFURL}"
+        elif [ "${REFURL}" == "https://bluehorizon.network/service-cpu2msghub" ]; then
+            id=$(echo "${INST}" | jq -r '.containers[0].Id')
+            handleMsghubDataVerification "${id}" "${REFURL}"
         fi
     done
 }

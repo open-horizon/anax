@@ -15,7 +15,10 @@ echo -e "Registering services"
 echo -e "PATTERN setting is $PATTERN"
 
 EXCH_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
+IBM_ADMIN_AUTH="IBM/ibmadmin:ibmadminpw"
 E2EDEV_ADMIN_AUTH="e2edev/e2edevadmin:e2edevadminpw"
+IBM_ADMIN_AUTH="IBM/ibmadmin:ibmadminpw"
+
 export HZN_EXCHANGE_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
 
 # Register services via the hzn dev exchange commands
@@ -75,7 +78,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "label":"CPU service",
   "description":"CPU service",
   "public":true,
-  "url":"https://internetofthings.ibmcloud.com/services/cpu",
+  "url":"https://bluehorizon.network/service-cpu",
   "version":"$VERS",
   "arch":"amd64",
   "sharable":"single",
@@ -92,7 +95,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
 }
 EOF
 echo -e "Register cpu service $VERS:"
-hzn exchange service publish -I -u root/root:Horizon-Rul3s -o IBM -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key
+hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for CPU."
@@ -147,8 +150,8 @@ cat <<EOF >$KEY_TEST_DIR/svc_gps.json
 {
   "label":"GPS for x86_64",
   "description":"GPS service",
-  "public":false,
-  "url":"https://bluehorizon.network/services/gps",
+  "public":true,
+  "url":"https://bluehorizon.network/service-gps",
   "version":"$VERS",
   "arch":"amd64",
   "sharable":"multiple",
@@ -170,7 +173,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_gps.json
 }
 EOF
 echo -e "Register GPS service $VERS"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_gps.json -k $KEY_TEST_DIR/*private.key
+hzn exchange service publish -I -u $IBM_ADMIN_AUTH  -o IBM -f $KEY_TEST_DIR/svc_gps.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for GPS."
@@ -182,8 +185,8 @@ cat <<EOF >$KEY_TEST_DIR/svc_gps2.json
 {
   "label":"GPS for x86_64",
   "description":"GPS service",
-  "public":false,
-  "url":"https://bluehorizon.network/services/gps",
+  "public":true,
+  "url":"https://bluehorizon.network/service-gps",
   "version":"$VERS",
   "arch":"amd64",
   "sharable":"multiple",
@@ -205,7 +208,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_gps2.json
 }
 EOF
 echo -e "Register GPS service $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_gps2.json -k $KEY_TEST_DIR/*private.key
+hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_gps2.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for GPS."
@@ -262,7 +265,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_locgps2.json
   "arch":"amd64",
   "sharable":"single",
   "requiredServices":[
-    {"url":"https://internetofthings.ibmcloud.com/services/cpu","version":"1.0.0","arch":"amd64","org":"IBM"},
+    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"IBM"},
     {"url":"https://bluehorizon.network/services/network2","version":"1.0.0","arch":"amd64","org":"IBM"}
   ],
   "matchHardware":{
@@ -361,7 +364,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
 }
 EOF
 echo -e "Register netspeed service $VERS:"
-hzn exchange service publish -I -u root/root:Horizon-Rul3s -o IBM -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key
+hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for Netspeed."
@@ -380,7 +383,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_gpstest.json
   "version":"$VERS",
   "arch":"amd64",
   "requiredServices":[
-    {"url":"https://bluehorizon.network/services/gps","version":"1.0.0","arch":"amd64","org":"e2edev"}
+    {"url":"https://bluehorizon.network/service-gps","version":"1.0.0","arch":"amd64","org":"IBM"}
   ],
   "userInput":[],
   "deployment": {
@@ -416,7 +419,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_location.json
   "arch":"amd64",
   "requiredServices":[
     {"url":"https://bluehorizon.network/services/locgps","version":"2.0.3","arch":"amd64","org":"e2edev"},
-    {"url":"https://internetofthings.ibmcloud.com/services/cpu","version":"1.0.0","arch":"amd64","org":"IBM"}
+    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"IBM"}
   ],
   "userInput":[],
   "deployment": {
@@ -450,7 +453,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_location2.json
   "arch":"amd64",
   "requiredServices":[
     {"url":"https://bluehorizon.network/services/locgps","version":"2.0.4","arch":"amd64","org":"e2edev"},
-    {"url":"https://internetofthings.ibmcloud.com/services/cpu","version":"1.0.0","arch":"amd64","org":"IBM"}
+    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"IBM"}
   ],
   "userInput":[],
   "deployment": {

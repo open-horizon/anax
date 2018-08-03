@@ -56,7 +56,7 @@ function run_delete_loops {
     else
         echo -e "Deletion loop tests set to only run once."
 
-        if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" == "e2egwtype" ] || [ "${PATTERN}" == "e2egwtypenocore" ]; then
+        if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" == "e2egwtype" ] || [ "${PATTERN}" == "e2egwtypenocore" ] || [ "${PATTERN}" == "cpu2msghub" ]; then
             echo -e "Starting service pattern verification scripts"
             if [ "$NOLOOP" == "1" ]; then
                 ./verify_agreements.sh
@@ -217,15 +217,34 @@ fi
 
 
 
-# Register wiotp services and patterns
 TEST_WIOTP=0
+TEST_MSGHUB=0
+
 for pat in $(echo $TEST_PATTERNS | tr "," " "); do
     if [ "$pat" == "e2egwtype" ] || [ "$pat" == "e2egwtypenocore" ]; then
         TEST_WIOTP=1
-        break
+    elif [ "$pat" == "cpu2msghub" ]; then
+        TEST_MSGHUB=1
     fi
 done
 
+# Register msghub services and patterns
+if [ "$TESTFAIL" != "1" ]; then
+    if [ $TEST_MSGHUB -eq 1 ]; then
+        echo "Register services and patterns for msghub test"
+
+        ./msghub_rsrcreg.sh
+        if [ $? -ne 0 ]
+        then
+            echo -e "Service registration failure for msghub."
+            TESTFAIL="1"
+        else
+            echo "Register services for msghub SUCCESSFUL"
+        fi
+    fi
+fi
+
+# Register wiotp services and patterns
 if [ "$TESTFAIL" != "1" ]; then
     if [ $TEST_WIOTP -eq 1 ]; then
         echo "Register wiotp device, services and patterns for wiotp test"
@@ -245,6 +264,8 @@ if [ "$TESTFAIL" != "1" ]; then
         fi
     fi
 fi
+
+
 
 # Setup to use the anax registration APIs
 if [ "$TESTFAIL" != "1" ]
@@ -335,6 +356,13 @@ then
     echo "Registering Agbot instance2..."
     REGAGBOT2=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"token":"abcdefg","name":"agbotdev","msgEndPoint":"","publicKey":""}' "${EXCH_URL}/orgs/$ORG/agbots/ag54321" | jq -r '.msg')
     echo "$REGAGBOT2" 
+
+
+    # register msghub patterns to agbot1
+    if [ $TEST_MSGHUB -eq 1 ]; then
+        REGAGBOTCPU2MSGHUB=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"cpu2msghub"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_cpu2msghub" | jq -r '.msg')
+        echo "$REGAGBOTCPU2MSGHUB"
+    fi
 
     # register wiotp pattern to agbot1
     if [ $TEST_WIOTP -eq 1 ]; then
