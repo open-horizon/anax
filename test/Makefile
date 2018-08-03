@@ -10,25 +10,16 @@ HORIZON_PKG_VER ?= $(shell curl -s $(PKGS_URL) grep -A 2 'Package: horizon' | gr
 
 # user configurable variables
 # The TEST_PATTERNS is a comma separated list of following patterns.
-# sall,sns,spws,susehello,sgps,sloc,e2egwtype,e2egwtypenocore,cpu2msghub (These are pattern with services)
+# sall,sns,spws,susehello,sgps,sloc,cpu2msghub (These are pattern with services)
 # all,ns,loc,gps,ns-keytest (These are patterns with workloads and microservices)
-#
-# If e2egwtype or e2egwtypenocore pattern is in the TEST_PATTERNS, then 
-# please export the following WIOTP variables before calling 'make test':
-#    WIOTP_ORG_ID, WIOTP_API_KEY and WIOTP_API_TOKEN
-# You need to get them from https://console.bluemix.net/
-# Please also export WIOTP_GW_TOKEN which any be any password-like string. 
 #
 # If cpu2msghub pattern is in the TEST_PATTERNS, then 
 # please export the following variables before calling 'make test'
-#    MSGHUB_BROKER_URL (if you do not like the default value. )
+#    MSGHUB_BROKER_URL
 #    MSGHUB_API_KEY
 #
 
 TEST_VARS ?= NOLOOP=1 TEST_PATTERNS=sall
-
-# e2e config variables
-WIOTP_VARS := WIOTP_ORG_ID='$(WIOTP_ORG_ID)' WIOTP_API_KEY='$(WIOTP_API_KEY)' WIOTP_API_TOKEN='$(WIOTP_API_TOKEN)' WIOTP_GW_TOKEN='$(WIOTP_GW_TOKEN)'
 
 # msghub
 MSGHUB_VARS := MSGHUB_BROKER_URL='$(MSGHUB_BROKER_URL)' MSGHUB_API_KEY='$(MSGHUB_API_KEY)'
@@ -75,8 +66,6 @@ run-agbot: agbot-docker-prereqs test-network
 		--network "$(DOCKER_TEST_NETWORK)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v ~/.docker:/root/.docker \
-		-v /etc/wiotp-edge/:/etc/wiotp-edge/ \
-		-v /var/wiotp-edge/persist/:/var/wiotp-edge/persist/ \
 		-e "HZN_DISABLE_IPTABLES_MANIPULATION=true" \
 		-e "EXCH_APP_HOST=$(DOCKER_EXCH_CNAME)" \
 		-e "AGBOT_HZN_API=http://localhost:81" \
@@ -167,10 +156,6 @@ agbot-docker-prereqs: $(ANAX_SOURCE)/anax
 	-o $(AGBOT_TEMPFS)/etc/colonus/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz
 	tar --strip=6 -C $(AGBOT_TEMPFS)/root/.colonus -zxvf $(AGBOT_TEMPFS)/etc/colonus/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz \
 	./debian/fs-bluehorizon/etc/horizon/trust/horizon.pem ./debian/fs-bluehorizon/etc/horizon/trust/mtn-publicKey.pem
-	curl $(DEB_PKGS_URL)/horizon-wiotp_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial_all.deb \
-	-o $(AGBOT_TEMPFS)/horizon-wiotp_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial_all.deb
-	dpkg -x $(AGBOT_TEMPFS)/horizon-wiotp_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial_all.deb $(AGBOT_TEMPFS)
-	rm $(AGBOT_TEMPFS)/horizon-wiotp_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial_all.deb
 
 version-check:
 	@echo "Horizon version being used for public keys/configs: $(HORIZON_PKG_VER)"
@@ -195,6 +180,6 @@ exchange-image:
 
 test: clean run-exchange run-agbot
 	@echo -e  "\nStarting tests"
-	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(WIOTP_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
+	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
 
 .PHONY: all default stop build run distclean clean mostlyclean realclean run-agbot run-exchange run-exchange-db test-network test agbot-docker-prereqs version-check agbot-image exchange-db-image exchange-image

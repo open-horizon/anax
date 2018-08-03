@@ -121,7 +121,7 @@ EOF
             echo -e "found expected response: $RES"
         fi
 
-    elif [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ] || [ "$PATTERN" = "e2egwtype" ] || [ "$PATTERN" = "cpu2msghub" ]; then
+    elif [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ] || [ "$PATTERN" = "cpu2msghub" ]; then
         echo -e "Pattern $PATTERN is not supported with HA tests, only sns and spws are supported."
     fi
 fi
@@ -170,20 +170,6 @@ then
     ./pwsha_apireg.sh
   else
     ./pws_apireg.sh
-  fi
-  if [ $? -ne 0 ]
-  then
-    exit 2
-  fi
-fi
-
-echo -e "\nNo wiotp setting is $NOWIOTP"
-if [ "$NOWIOTP" != "1" ]
-then
-  if [ "$HA" == "1" ]; then
-    exit 2
-  else
-    ./wiotp_apireg.sh
   fi
   if [ $? -ne 0 ]
   then

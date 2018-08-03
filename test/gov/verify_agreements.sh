@@ -243,35 +243,6 @@ function verifyServices {
         done
 }
 
-# Do the data verification for the cpu2wiotp service
-# $1 - the container id for cpu2wiotp
-#
-function handleWiotpDataVerification {
-
-    echo -e "${PREFIX} veriying data for $2."
-    # get needed env from the Env of docker container
-    cpu2wiotp_env=$(docker inspect $1 | jq -r '.[0].Config.Env')
-    HZN_DEVICE_ID=$(echo  $cpu2wiotp_env |jq '.' |grep HZN_DEVICE_ID | grep -o '=.*"' | sed 's/[",=]//g')
-    WIOTP_GW_TOKEN=$(echo  $cpu2wiotp_env |jq '.' |grep WIOTP_GW_TOKEN | grep -o '=.*"' | sed 's/[",=]//g')
-    HZN_ORGANIZATION=$(echo  $cpu2wiotp_env |jq '.' |grep HZN_ORGANIZATION | grep -o '=.*"' | sed 's/[",=]//g')
-    WIOTP_DOMAIN=$(echo  $cpu2wiotp_env |jq '.' |grep WIOTP_DOMAIN | grep -o '=.*"' | sed 's/[",=]//g')
-
-    # get WIOTP_GW_TYPE and WIOTP_GW_ID from HZN_DEVICE_ID because HZN_DEVICE_ID="g@${WIOTP_GW_TYPE}@$WIOTP_GW_ID"
-    WIOTP_GW_TYPE=$(echo $HZN_DEVICE_ID | cut -d'@' -f2)
-    WIOTP_GW_ID=$(echo $HZN_DEVICE_ID | cut -d'@' -f3)
-
-    WIOTP_CLIENT_ID_APP="a:$HZN_ORGANIZATION:$WIOTP_GW_TYPE$WIOTP_GW_ID"
-
-    # the script will exit after receiving first data. timeout after 1 minute.
-    timeout --preserve-status 1m mosquitto_sub -v -C 1 -h ${HZN_ORGANIZATION}.messaging.${WIOTP_DOMAIN} -p 8883 -i "$WIOTP_CLIENT_ID_APP" -u "$WIOTP_API_KEY" -P "$WIOTP_API_TOKEN" --capath /etc/ssl/certs -t iot-2/type/$WIOTP_GW_TYPE/id/$WIOTP_GW_ID/evt/status/fmt/json
-    if [ $? -eq 0 ]; then
-        echo -e "${PREFIX} data verification for $2 service successful."
-    else
-        echo -e "${PREFIX} error: No data received from $2 service."
-        exit 2
-    fi
-}
-
 function handleMsghubDataVerification {
 
     echo -e "${PREFIX} veriying data for $2."
@@ -302,10 +273,7 @@ function verifyData {
         INST=$(echo ${ALLSERV} | jq -r '.['$ix']')
         REFURL=$(echo ${INST} | jq -r '.ref_url')
 
-        if [ "${REFURL}" == "https://internetofthings.ibmcloud.com/services/cpu2wiotp" ] || [ "${REFURL}" == "https://internetofthings.ibmcloud.com/services/cpu2wiotp-no-core-iot" ]; then
-            id=$(echo "${INST}" | jq -r '.containers[0].Id')
-            handleWiotpDataVerification "${id}" "${REFURL}"
-        elif [ "${REFURL}" == "https://bluehorizon.network/service-cpu2msghub" ]; then
+        if [ "${REFURL}" == "https://bluehorizon.network/service-cpu2msghub" ]; then
             id=$(echo "${INST}" | jq -r '.containers[0].Id')
             handleMsghubDataVerification "${id}" "${REFURL}"
         fi

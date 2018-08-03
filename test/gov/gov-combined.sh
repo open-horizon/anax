@@ -3,32 +3,12 @@
 function set_exports {
     if [ "$NOANAX" != "1" ]
     then
-        if [ "$1" == "e2egwtype" ]; then
-            export WIOTP_GW_TYPE=e2egwtype
-            export WIOTP_GW_ID=e2egwid
-            export USER=${WIOTP_API_KEY}
-            export PASS=${WIOTP_API_TOKEN}
-            export DEVICE_ID="g@${WIOTP_GW_TYPE}@$WIOTP_GW_ID"
-            export DEVICE_NAME="g@${WIOTP_GW_TYPE}@$WIOTP_GW_ID"
-            export TOKEN=${WIOTP_GW_TOKEN}
-            export ORG=$WIOTP_ORG_ID
-        elif [ "$1" == "e2egwtypenocore" ]; then
-            export WIOTP_GW_TYPE=e2egwtypenocore
-            export WIOTP_GW_ID=e2egwid
-            export USER=${WIOTP_API_KEY}
-            export PASS=${WIOTP_API_TOKEN}
-            export DEVICE_ID="g@${WIOTP_GW_TYPE}@$WIOTP_GW_ID"
-            export DEVICE_NAME="g@${WIOTP_GW_TYPE}@$WIOTP_GW_ID"
-            export TOKEN=${WIOTP_GW_TOKEN}
-            export ORG=$WIOTP_ORG_ID
-        else
-            export USER=anax1
-            export PASS=anax1pw
-            export DEVICE_ID="an12345"
-            export DEVICE_NAME="anaxdev1"
-            export TOKEN="abcdefg"
-            export ORG="e2edev"
-        fi
+        export USER=anax1
+        export PASS=anax1pw
+        export DEVICE_ID="an12345"
+        export DEVICE_NAME="anaxdev1"
+        export TOKEN="abcdefg"
+        export ORG="e2edev"
 
         export ANAX_API="http://localhost"
         export EXCH="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
@@ -56,7 +36,7 @@ function run_delete_loops {
     else
         echo -e "Deletion loop tests set to only run once."
 
-        if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" == "e2egwtype" ] || [ "${PATTERN}" == "e2egwtypenocore" ] || [ "${PATTERN}" == "cpu2msghub" ]; then
+        if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" == "cpu2msghub" ]; then
             echo -e "Starting service pattern verification scripts"
             if [ "$NOLOOP" == "1" ]; then
                 ./verify_agreements.sh
@@ -217,13 +197,9 @@ fi
 
 
 
-TEST_WIOTP=0
 TEST_MSGHUB=0
-
 for pat in $(echo $TEST_PATTERNS | tr "," " "); do
-    if [ "$pat" == "e2egwtype" ] || [ "$pat" == "e2egwtypenocore" ]; then
-        TEST_WIOTP=1
-    elif [ "$pat" == "cpu2msghub" ]; then
+    if [ "$pat" == "cpu2msghub" ]; then
         TEST_MSGHUB=1
     fi
 done
@@ -243,29 +219,6 @@ if [ "$TESTFAIL" != "1" ]; then
         fi
     fi
 fi
-
-# Register wiotp services and patterns
-if [ "$TESTFAIL" != "1" ]; then
-    if [ $TEST_WIOTP -eq 1 ]; then
-        echo "Register wiotp device, services and patterns for wiotp test"
-
-        # necessary setup to wiotp
-        cp /etc/horizon/trust/publicWIoTPEdgeComponentsKey.pem /root/.colonus/.
-        cp /etc/wiotp-edge/edge.conf.template /etc/wiotp-edge/edge.conf
-        mkdir -p /var/wiotp-edge/persist
-        /usr/wiotp-edge/bin/wiotp_create_certificate.sh -p $WIOTP_GW_TOKEN
-
-        ./wiotp_rsrcreg.sh
-        if [ $? -ne 0 ]; then
-            echo -e "registration for wiotp failed."
-            TESTFAIL="1"
-     else
-            echo "Registration for wiotp SUCCESSFUL"
-        fi
-    fi
-fi
-
-
 
 # Setup to use the anax registration APIs
 if [ "$TESTFAIL" != "1" ]
@@ -362,27 +315,6 @@ then
     if [ $TEST_MSGHUB -eq 1 ]; then
         REGAGBOTCPU2MSGHUB=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"cpu2msghub"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_cpu2msghub" | jq -r '.msg')
         echo "$REGAGBOTCPU2MSGHUB"
-    fi
-
-    # register wiotp pattern to agbot1
-    if [ $TEST_WIOTP -eq 1 ]; then
-        read -d '' input_pat <<EOF
-{
-    "patternOrgid": "${WIOTP_ORG_ID}", 
-    "pattern": "e2egwtype"
-}
-EOF
-        REGAGBOTGWTYPE=$(echo "$input_pat" | curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" --data @- "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/${WIOTP_ORG_ID}_e2egwtype" | jq -r '.msg')
-        echo "$REGAGBOTGWTYPE"
-
-        read -d '' input_pat_nocore <<EOF
-{
-    "patternOrgid": "${WIOTP_ORG_ID}", 
-    "pattern": "e2egwtypenocore"
-}
-EOF
-        REGAGBOTGWTYPENOCORE=$(echo "$input_pat_nocore" | curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" --data @- "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/${WIOTP_ORG_ID}_e2egwtypenocore" | jq -r '.msg')
-        echo "$REGAGBOTGWTYPENOCORE"
     fi
 
     # Start the agbot
