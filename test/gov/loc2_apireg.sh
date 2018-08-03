@@ -42,7 +42,7 @@ fi
 
 read -d '' slocservice <<EOF
 {
-  "url": "https://internetofthings.ibmcloud.com/services/cpu",
+  "url": "https://bluehorizon.network/service-cpu",
   "name": "cpu",
   "organization": "IBM",
   "versionRange": "1.0.0",
