@@ -392,7 +392,7 @@ func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB) 
 		}
 
 		if err := unix.Access(storage_base_dir, unix.W_OK); err != nil {
-			glog.Errorf("Unable to access service storage dir: %v. Error: %v", config.Edge.ServiceStorage, err)
+			glog.Errorf("Unable to access service storage dir: %v. Error: %v", storage_base_dir, err)
 			panic("Unable to access service storage dir specified in config")
 		}
 	}

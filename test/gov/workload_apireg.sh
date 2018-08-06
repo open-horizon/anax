@@ -345,60 +345,6 @@ then
     exit 2
 fi
 
-
-# mqttbroker microservice
-MQMD='{\\\"services\\\":{\\\"edge-mqttbroker\\\":{\\\"image\\\":\\\"wiotp-connect/edge/amd64/edge-mqttbroker:1.0.7\\\",\\\"binds\\\":[\\\"/etc/wiotp-edge:/etc/wiotp-edge\\\",\\\"/var/wiotp-edge:/var/wiotp-edge\\\"],\\\"privileged\\\":true},\\\"edge-connector\\\":{\\\"image\\\":\\\"wiotp-connect/edge/amd64/edge-connector:1.2.1\\\",\\\"binds\\\":[\\\"/etc/wiotp-edge:/etc/wiotp-edge\\\",\\\"/var/wiotp-edge:/var/wiotp-edge\\\"],\\\"privileged\\\":true,\\\"specific_ports\\\":[{\\\"HostPort\\\":\\\"8883\\\",\\\"HostIP\\\":\\\"0.0.0.0\\\"},{\\\"HostPort\\\":\\\"1883\\\",\\\"HostIP\\\":\\\"0.0.0.0\\\"}]},\\\"edge-im\\\":{\\\"image\\\":\\\"wiotp-infomgmt/edge/amd64/edge-im:1.0.3\\\",\\\"binds\\\":[\\\"/etc/wiotp-edge:/etc/wiotp-edge\\\",\\\"/var/wiotp-edge:/var/wiotp-edge\\\"],\\\"privileged\\\":true}}}'
-MQMDS='L7VR+Z6Dc+TU6DmtRa3naeJI6sfjRj7lS9uRrH2BTm8ePeSnrBkh7KDGtfbYJntQ1niqkDDvT4RyZgxEuLPFyjF1z7O59QMWdlNFXXaOyC2YERTwyOzQJFaKPMeNyz/YS91xkzt75FAb73sl6YhIo27bzKUzXkjGK6gZVz4UsnrKxR63zXxVu7L0G1ChKH2XhRl4DPT4ehQBXSAUHKDsmpUk7PrtxLNt0O/kAUl9t1WpCrrO6OAP8II+pO+/E/q0jA6JhrknMkJAjaztzFKPNGVhRJTAd2JyLZW9PtCfzeDaEIs93lpvuATpc9jgzrVjddHcPRY5iw4nt33GFqaFxyfMuX7wmaE+NQdJSQ7NWpWJuK32r6EL3W5ne3kWV0cRcnzIBcYp+Udd/puAS5zgmNuMGO2q0mnTf+LFqfVjnrJfcRC+tM2ZoXBLRIcM78RTMEa4S3tJdNKRV7LORfa/y0BLFCTBsU0G1/jkMOJwK8UrDArhPyVOi3fQfKEMvzH9KgIoSj3KkpukFXmwD23YW8hlSe3DK61a2BF5wqF0oX8R4WLPE++1RyeZRjWzsPBhoxM0o1t+TCC5JWvdEoJZKJoW+9csxjdcJosoyHRRXsqtB4oWuyGsBItOejrK/AaZDaZRGmvYQQxOFjMNy7VcOG+s+TsUXP1gEnwuUrl9ers='
-MQMT='{\\\"url\\\":\\\"https://us.internetofthings.ibmcloud.com/api/v0002/horizon-image/common/939a394cdb48c3bbe468a9770cf3c6571d934490.json\\\",\\\"signature\\\":\\\"AQO6MfqvBY7dVgTi2//UXU/sRwuiy7Un0eeWHTHqhAyfV2f2bTdzNTUBj9aesvvMOiux7RwlbBB01s2PLhB/1PVUPsBnqwhMblOfZZqcX4d32aBYgah/Ac30W0seb+6Vrh5F3O0TKJMHufRhRSv7DI96HV5MNWZPrd+7QkXJAC21Hpj07wwBxQ0+AgcfO6Lra/sR3k2ZV6f/P/k+7WsrpH4eUnXlwu913qH3AyaOecdsIQ9ERCRz6mBMxQflO8TipTsFJddpWyHaFjfc6n8uHPfKYzUBpbYuG2kUjPX1GUeJMqV1q3caR4YResuUtBlOriekaBUmSreI4a3v28eZ9SWH/i2ldOh/iiRraFxQAdJ6HTC1whEbJHou98k2CmbPkEbyd/Mu1lrbt62Dj/BCh1G7T8dnXtllnZ+UteRDzJVF1VN8gaXF05R8XFuvaFBhtI5ZHJnyAc4uXh4tk4A6D264yPa2IqrNVh4gR/f6ygC1CfbhwmRYeEIPheWrs7MnbpJom183nOnk8rrx1LjYqbl7k80L3KAQlH3XIxAzVPi0aCl8MdbAGV983od57JuCLcyo6Zck1RFgBgf+GEoqk6ygnlee/gKVMBmuMPlnQkSsn5FN+RpJWiVeS6vM/HM/q4gwY0x87pyX/0f9DPV2I/FW11trrIeOwUq9wUqyMKU=\\\"}'
-VERS="1.0.11"
-read -d '' msdef <<EOF
-{
-  "label": "Edge Core IoT Microservice",
-  "description": "Images for Edge Core IoT Microservice",
-  "public":true,
-  "specRef":"https://internetofthings.ibmcloud.com/wiotp-edge/microservices/edge-core-iot-microservice",
-  "version":"$VERS",
-  "arch":"amd64",
-  "sharable":"exclusive",
-  "downloadUrl":"",
-  "matchHardware":{},
-  "userInput": [
-      {
-        "name": "WIOTP_LOCAL_BROKER_PORT",
-        "label": "MQTT Broker connection port",
-        "type": "string",
-        "defaultValue": ""
-      },
-      {
-        "name": "WIOTP_CLIENT_ID",
-        "label": "Watson IoT Platform client ID in the format g:orgid:gatewaytype:gatewayid",
-        "type": "string",
-        "defaultValue": ""
-      },
-      {
-        "name": "WIOTP_DEVICE_AUTH_TOKEN",
-        "label": "Watson IoT Platform auth token for this gateway ID.",
-        "type": "string",
-        "defaultValue": ""
-      },
-      {
-        "name": "WIOTP_DOMAIN",
-        "label": "Watson IoT Platform domain: \u003corgID\u003e.messaging.internetofthings.ibmcloud.com",
-        "type": "string",
-        "defaultValue": ""
-      }
-  ],
-  "workloads":[{
-    "deployment":"$MQMD",
-    "deployment_signature":"$MQMDS",
-    "torrent":"$MQMT"
-  }]
-}
-EOF
-echo -e "Register MQTT broker microservice $VERS"
-RES=$(echo "$msdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" --data @- "${EXCH_URL}/orgs/IBM/microservices" | jq -r '.')
-results "$RES"
-
 # Location workload
 VERS="2.0.6"
 cat <<EOF >$KEY_TEST_DIR/wl_location.json

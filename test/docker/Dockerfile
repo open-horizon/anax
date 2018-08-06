@@ -1,7 +1,7 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 RUN apt-get update
-RUN apt-get -y install vim iptables build-essential wget git iputils-ping net-tools curl jq mosquitto-clients apt-transport-https socat
+RUN apt-get -y install vim iptables build-essential wget git iputils-ping net-tools curl jq kafkacat apt-transport-https socat
 RUN curl -fsSL get.docker.com | sh
 RUN curl https://dl.google.com/go/go1.10.2.linux-amd64.tar.gz | tar -xzf- -C /usr/local/
 

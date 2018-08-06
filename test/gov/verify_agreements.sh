@@ -152,7 +152,7 @@ function handleLocation {
         if [ "$(echo ${NET_KEYS} | jq -r 'contains(["services-locgps"])')" == "false" ]; then
                 echo -e "${PREFIX} the location service is not in the dependent network for locgps, location has: ${NET_KEYS}"
                 exit 2
-        elif [ "$(echo ${NET_KEYS} | jq -r 'contains(["services-cpu"])')" == "false" ]; then
+        elif [ "$(echo ${NET_KEYS} | jq -r 'contains(["service-cpu"])')" == "false" ]; then
                 echo -e "${PREFIX} the location service is not in the dependent network for cpu, location has: ${NET_KEYS}"
                 exit 2
         fi
@@ -237,33 +237,24 @@ function verifyServices {
 
                 if [ "${REFURL}" == "https://bluehorizon.network/services/location" ]; then
                         handleLocation "${INST}"
-                elif [ "${REFURL}" == "https://internetofthings.ibmcloud.com/services/cpu" ]; then
+                elif [ "${REFURL}" == "https://bluehorizon.network/service-cpu" ]; then
                         handleCPU "${INST}"
                 fi
         done
 }
 
-# Do the data verification for the cpu2wiotp service
-# $1 - the container id for cpu2wiotp
-#
-function handleWiotpDataVerification {
+function handleMsghubDataVerification {
 
     echo -e "${PREFIX} veriying data for $2."
     # get needed env from the Env of docker container
-    cpu2wiotp_env=$(docker inspect $1 | jq -r '.[0].Config.Env')
-    HZN_DEVICE_ID=$(echo  $cpu2wiotp_env |jq '.' |grep HZN_DEVICE_ID | grep -o '=.*"' | sed 's/[",=]//g')
-    WIOTP_GW_TOKEN=$(echo  $cpu2wiotp_env |jq '.' |grep WIOTP_GW_TOKEN | grep -o '=.*"' | sed 's/[",=]//g')
-    HZN_ORGANIZATION=$(echo  $cpu2wiotp_env |jq '.' |grep HZN_ORGANIZATION | grep -o '=.*"' | sed 's/[",=]//g')
-    WIOTP_DOMAIN=$(echo  $cpu2wiotp_env |jq '.' |grep WIOTP_DOMAIN | grep -o '=.*"' | sed 's/[",=]//g')
-
-    # get WIOTP_GW_TYPE and WIOTP_GW_ID from HZN_DEVICE_ID because HZN_DEVICE_ID="g@${WIOTP_GW_TYPE}@$WIOTP_GW_ID"
-    WIOTP_GW_TYPE=$(echo $HZN_DEVICE_ID | cut -d'@' -f2)
-    WIOTP_GW_ID=$(echo $HZN_DEVICE_ID | cut -d'@' -f3)
-
-    WIOTP_CLIENT_ID_APP="a:$HZN_ORGANIZATION:$WIOTP_GW_TYPE$WIOTP_GW_ID"
+    cpu2msghub_env=$(docker inspect $1 | jq -r '.[0].Config.Env')
+    MSGHUB_BROKER_URL=$(echo  $cpu2msghub_env |jq '.' |grep MSGHUB_BROKER_URL | grep -o '=.*"' | sed 's/["=]//g')
+    MSGHUB_API_KEY=$(echo  $cpu2msghub_env |jq '.' |grep MSGHUB_API_KEY | grep -o '=.*"' | sed 's/["=]//g')
+    HZN_ORGANIZATION=$(echo  $cpu2msghub_env |jq '.' |grep HZN_ORGANIZATION | grep -o '=.*"' | sed 's/["=]//g')
+    HZN_PATTERN=$(echo  $cpu2msghub_env |jq '.' |grep HZN_PATTERN | grep -o '=.*"' | sed 's/["=]//g')
 
     # the script will exit after receiving first data. timeout after 1 minute.
-    timeout --preserve-status 1m mosquitto_sub -v -C 1 -h ${HZN_ORGANIZATION}.messaging.${WIOTP_DOMAIN} -p 8883 -i "$WIOTP_CLIENT_ID_APP" -u "$WIOTP_API_KEY" -P "$WIOTP_API_TOKEN" --capath /etc/ssl/certs -t iot-2/type/$WIOTP_GW_TYPE/id/$WIOTP_GW_ID/evt/status/fmt/json
+    timeout --preserve-status 1m kafkacat -C -c 1 -q -o end -f "%t/%p/%o/%k: %s\n" -b $MSGHUB_BROKER_URL -X "api.version.request=true" -X "security.protocol=sasl_ssl" -X "sasl.mechanisms=PLAIN" -X "sasl.username=${MSGHUB_API_KEY:0:16}" -X "sasl.password=${MSGHUB_API_KEY:16}" -t "$HZN_ORGANIZATION.$HZN_PATTERN"
     if [ $? -eq 0 ]; then
         echo -e "${PREFIX} data verification for $2 service successful."
     else
@@ -282,9 +273,9 @@ function verifyData {
         INST=$(echo ${ALLSERV} | jq -r '.['$ix']')
         REFURL=$(echo ${INST} | jq -r '.ref_url')
 
-        if [ "${REFURL}" == "https://internetofthings.ibmcloud.com/services/cpu2wiotp" ] || [ "${REFURL}" == "https://internetofthings.ibmcloud.com/services/cpu2wiotp-no-core-iot" ]; then
+        if [ "${REFURL}" == "https://bluehorizon.network/service-cpu2msghub" ]; then
             id=$(echo "${INST}" | jq -r '.containers[0].Id')
-            handleWiotpDataVerification "${id}" "${REFURL}"
+            handleMsghubDataVerification "${id}" "${REFURL}"
         fi
     done
 }

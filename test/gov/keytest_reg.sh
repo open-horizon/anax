@@ -349,7 +349,7 @@ EOF
 hzn exchange pattern publish -u e2edevadmin:e2edevadminpw -o e2edev -f $KEY_TEST_DIR/ns-keytest.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 if [ $? -ne 0 ]
 then
-    echo -e "hzn exchange pattern for publish failed for key test."
+    echo -e "hzn exchange pattern publish failed for key test."
     exit 1
 fi
 

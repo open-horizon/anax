@@ -12,8 +12,9 @@ then
 # and then configure by service API to opt into the gps service.
 read -d '' slocservice <<EOF
 {
-  "url": "https://bluehorizon.network/services/gps",
+  "url": "https://bluehorizon.network/service-gps",
   "name": "gps",
+  "organization": "IBM",
   "versionRange": "2.0.3",
   "attributes": []
 }

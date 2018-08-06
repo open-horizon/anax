@@ -52,7 +52,7 @@ Here is a full description of all the variables you can use to setup the test th
 - NOLOOP=1 - turns off the loop that cancels agreements on the device and agbot (alternating), every 10 mins. Usually you want to specify NOLOOP=1 when actively iterating code.
 - NOCANCEL=1 - when set with NOLOOP=1, skips the single round of cancellation tests for less log clutter and time when just interested in agreement formation.
 - UNCONFIG=1 - turns on the unconfig/reconfig loop tests.
-- PATTERN=name - specify the name of a configured pattern that you want the device to use. Builtin patterns are pws, spws, ns, sns, loc, sloc, gps, sgps, ns-keytest, all and sall. If you specify PATTERN, but turn off one of the microservices that the workload needs, the system will not work correctly. If you dont specify a PATTERN, the manually managed policy files will be used to run the workloads (unless you turn them off).
+- PATTERN=name - specify the name of a configured pattern that you want the device to use. Builtin patterns are pws, spws, ns, sns, loc, sloc, gps, sgps, ns-keytest, all, sall, cpu2msghub etc. If you specify PATTERN, but turn off one of the microservices that the workload needs, the system will not work correctly. If you dont specify a PATTERN, the manually managed policy files will be used to run the workloads (unless you turn them off).
 - NONS=1 - dont register the netspeed microservice.
 - NOGPS=1 - dont register the gpstest microservice.
 - NOLOC=1 - dont register the location microservice.

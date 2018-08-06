@@ -38,7 +38,7 @@ func hello(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(bodyBytes) == 0 {
-		io.WriteString(w, fmt.Sprintf("Error, response body length is 0", err))
+		io.WriteString(w, fmt.Sprintf("Error, response body length is 0: %v", err))
 		return
 	}
 	var cpu CPU
