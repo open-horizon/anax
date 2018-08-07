@@ -361,6 +361,13 @@ func (b *TorrentWorker) CommandHandler(command worker.Command) bool {
 		} else {
 			glog.V(5).Infof("LaunchContext(%T): %v", lc, lc)
 
+			// Check the deployment string to see if it's a native Horizon deployment. If not, ignore the event.
+			deploymentConfig := lc.ContainerConfig().Deployment
+			if _, err := containermessage.GetNativeDeployment(deploymentConfig); err != nil {
+				glog.Warningf("Ignoring deployment: %v", err)
+				return true
+			}
+
 			pemFiles, deploymentDesc, err := processDeployment(b.Config, lc.ContainerConfig())
 			if err != nil {
 				glog.Errorf("Failed to process deployment description and signature after agreement negotiation: %v", err)

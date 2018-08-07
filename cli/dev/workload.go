@@ -155,7 +155,7 @@ func WorkloadStartTest(homeDirectory string, userInputFile string) {
 	fmt.Printf("Starting workload: %v in agreement id %v\n", dc.CLIString(), agreementId)
 
 	// Start the workload container image
-	_, startErr := cw.ResourcesCreate(agreementId, nil, deployment, []byte(""), environmentAdditions, ms_networks)
+	_, startErr := cw.ResourcesCreate(agreementId, "", nil, deployment, []byte(""), environmentAdditions, ms_networks)
 	if startErr != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to start container using %v, %v", WORKLOAD_COMMAND, WORKLOAD_START_COMMAND, dc.CLIString(), startErr)
 	}

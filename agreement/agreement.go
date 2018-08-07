@@ -427,7 +427,7 @@ func (w *AgreementWorker) syncOnInit() error {
 				if _, err := persistence.AgreementStateForceTerminated(w.db, ag.CurrentAgreementId, ag.AgreementProtocol); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to set force termination for agreement %v, error %v", ag.CurrentAgreementId, err)))
 				}
-				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, reason, ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
+				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, reason, ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
 
 				// If the agreement's protocol requires that it is recorded externally in some way, verify that it is present there (e.g. a blockchain).
 				// Make sure the external state agrees with our local DB state for this agreement. If not, then we might need to cancel the agreement.
@@ -435,7 +435,7 @@ func (w *AgreementWorker) syncOnInit() error {
 			} else if ok, err := w.verifyAgreement(&ag, w.producerPH[ag.AgreementProtocol], bcType, bcName, bcOrg); err != nil {
 				return errors.New(logString(fmt.Sprintf("unable to check for agreement %v in blockchain, error %v", ag.CurrentAgreementId, err)))
 			} else if !ok {
-				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_AGBOT_REQUESTED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
+				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_AGBOT_REQUESTED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
 
 				// If the agreement has been started then we just need to make sure that the policy manager's agreement counts
 				// are correct. Even for already timedout agreements, the governance process will cleanup old and outdated agreements,
@@ -448,15 +448,15 @@ func (w *AgreementWorker) syncOnInit() error {
 
 			} else if policies, err := w.pm.GetPolicyList(exchange.GetOrg(w.GetExchangeId()), pol); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to get policy list for producer policy in agrement %v, error: %v", ag.CurrentAgreementId, err)))
-				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
+				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
 
 			} else if mergedPolicy, err := w.pm.MergeAllProducers(&policies, pol); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to merge producer policies for agreement %v, error: %v", ag.CurrentAgreementId, err)))
-				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
+				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
 
 			} else if _, err := policy.Are_Compatible_Producers(mergedPolicy, pol, uint64(pol.DataVerify.Interval)); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to verify merged policy %v and %v for agreement %v, error: %v", mergedPolicy, pol, ag.CurrentAgreementId, err)))
-				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.CurrentDeployment)
+				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
 
 			} else if err := w.pm.AttemptingAgreement(policies, ag.CurrentAgreementId, exchange.GetOrg(w.GetExchangeId())); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))

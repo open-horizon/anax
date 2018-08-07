@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
-	"github.com/open-horizon/anax/containermessage"
+	"github.com/open-horizon/anax/cli/plugin_registry"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"path"
@@ -32,7 +32,7 @@ func GetServiceDefinition(directory string, name string) (*cliexchange.ServiceFi
 
 // Sort of like a constructor, it creates a skeletal microservice definition config object and writes it to the project
 // in the file system.
-func CreateServiceDefinition(directory string, org string) error {
+func CreateServiceDefinition(directory string, org string, deploymentType string) error {
 
 	// Create a skeletal service definition config object with fillins/place-holders for configuration.
 	res := new(cliexchange.ServiceFile)
@@ -53,14 +53,14 @@ func CreateServiceDefinition(directory string, org string) error {
 	}
 	res.MatchHardware = map[string]interface{}{}
 	res.RequiredServices = []exchange.ServiceDependency{}
-	res.Deployment = map[string]interface{}{
-		"services": map[string]*containermessage.Service{
-			"": &containermessage.Service{
-				Image:       "",
-				Environment: []string{"ENV_VAR_HERE=SOME_VALUE"},
-			},
-		},
+
+	// Use the deployment plugin registry to obtain the default deployment config map.
+	if plugin_registry.DeploymentConfigPlugins.HasPlugin(deploymentType) {
+		res.Deployment = plugin_registry.DeploymentConfigPlugins.Get(deploymentType).DefaultConfig()
+	} else {
+		return errors.New(fmt.Sprintf("unknown deployment type: %v", deploymentType))
 	}
+
 	res.DeploymentSignature = ""
 	res.ImageStore = map[string]interface{}{}
 	res.Org = org
@@ -92,8 +92,7 @@ func ValidateServiceDefinition(directory string, fileName string) error {
 	} else if sDef.Org == "" {
 		return errors.New(fmt.Sprintf("%v: org must be set.", filePath))
 	} else {
-		depConfig := cliexchange.ConvertToDeploymentConfig(sDef.Deployment)
-		if err := depConfig.CanStartStop(); err != nil {
+		if err := plugin_registry.DeploymentConfigPlugins.ValidatedByOne(sDef.Deployment); err != nil {
 			return errors.New(fmt.Sprintf("%v: deployment configuration, %v", filePath, err))
 		}
 		for ix, ui := range sDef.UserInputs {

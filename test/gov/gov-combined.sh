@@ -36,7 +36,7 @@ function run_delete_loops {
     else
         echo -e "Deletion loop tests set to only run once."
 
-        if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" == "cpu2msghub" ]; then
+        if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" == "cpu2msghub" ] || [ "${PATTERN}" == "shelm" ]; then
             echo -e "Starting service pattern verification scripts"
             if [ "$NOLOOP" == "1" ]; then
                 ./verify_agreements.sh
@@ -304,6 +304,9 @@ then
     echo "$REGAGBOTSALL"
 
     REGAGBOTSUH=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"susehello"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_susehello" | jq -r '.msg')
+    echo "$REGAGBOTSUH"
+
+    REGAGBOTSHELM=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"shelm"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_shelm" | jq -r '.msg')
     echo "$REGAGBOTSUH"
 
     echo "Registering Agbot instance2..."

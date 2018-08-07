@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
-	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
 	"time"
@@ -44,21 +43,23 @@ func NewWorkloadInfo(url string, org string, version string, arch string) (*Work
 // N.B. Important!! Ensure new values are handled in Update function below
 // This struct is for persisting agreements
 type EstablishedAgreement struct {
-	Name                            string                   `json:"name"`
-	SensorUrl                       []string                 `json:"sensor_url"`
-	Archived                        bool                     `json:"archived"`
-	CurrentAgreementId              string                   `json:"current_agreement_id"`
-	ConsumerId                      string                   `json:"consumer_id"`
-	CounterPartyAddress             string                   `json:"counterparty_address"`
-	AgreementCreationTime           uint64                   `json:"agreement_creation_time"`
-	AgreementAcceptedTime           uint64                   `json:"agreement_accepted_time"`
-	AgreementBCUpdateAckTime        uint64                   `json:"agreement_bc_update_ack_time"` // V2 protocol - time when consumer acks our blockchain update
-	AgreementFinalizedTime          uint64                   `json:"agreement_finalized_time"`
-	AgreementTerminatedTime         uint64                   `json:"agreement_terminated_time"`
-	AgreementForceTerminatedTime    uint64                   `json:"agreement_force_terminated_time"`
-	AgreementExecutionStartTime     uint64                   `json:"agreement_execution_start_time"`
-	AgreementDataReceivedTime       uint64                   `json:"agreement_data_received_time"`
-	CurrentDeployment               map[string]ServiceConfig `json:"current_deployment"`
+	Name                         string   `json:"name"`
+	SensorUrl                    []string `json:"sensor_url"`
+	Archived                     bool     `json:"archived"`
+	CurrentAgreementId           string   `json:"current_agreement_id"`
+	ConsumerId                   string   `json:"consumer_id"`
+	CounterPartyAddress          string   `json:"counterparty_address"`
+	AgreementCreationTime        uint64   `json:"agreement_creation_time"`
+	AgreementAcceptedTime        uint64   `json:"agreement_accepted_time"`
+	AgreementBCUpdateAckTime     uint64   `json:"agreement_bc_update_ack_time"` // V2 protocol - time when consumer acks our blockchain update
+	AgreementFinalizedTime       uint64   `json:"agreement_finalized_time"`
+	AgreementTerminatedTime      uint64   `json:"agreement_terminated_time"`
+	AgreementForceTerminatedTime uint64   `json:"agreement_force_terminated_time"`
+	AgreementExecutionStartTime  uint64   `json:"agreement_execution_start_time"`
+	AgreementDataReceivedTime    uint64   `json:"agreement_data_received_time"`
+	// One of the following 2 fields are set when the worker that owns deployment for this agreement, starts deploying the services in the agreement.
+	CurrentDeployment               map[string]ServiceConfig `json:"current_deployment"`  // Native Horizon deployment config goes here, mutually exclusive with the extended deployment field. This field is set before the torrent worker starts the workload.
+	ExtendedDeployment              map[string]interface{}   `json:"extended_deployment"` // All non-native deployment configs go here. This field is set before the helm worker installs the release.
 	Proposal                        string                   `json:"proposal"`
 	ProposalSig                     string                   `json:"proposal_sig"`           // the proposal currently in effect
 	AgreementProtocol               string                   `json:"agreement_protocol"`     // the agreement protocol being used. It is also in the proposal.
@@ -83,6 +84,7 @@ func (c EstablishedAgreement) String() string {
 		"ConsumerId: %v, "+
 		"CounterPartyAddress: %v, "+
 		"CurrentDeployment (service names): %v, "+
+		"ExtendedDeployment: %v, "+
 		"Proposal Signature: %v, "+
 		"AgreementCreationTime: %v, "+
 		"AgreementExecutionStartTime: %v, "+
@@ -103,34 +105,12 @@ func (c EstablishedAgreement) String() string {
 		"BlockchainName: %v, "+
 		"BlockchainOrg: %v",
 		c.Name, c.SensorUrl, c.Archived, c.CurrentAgreementId, c.ConsumerId, c.CounterPartyAddress, ServiceConfigNames(&c.CurrentDeployment),
-		c.ProposalSig,
+		c.ExtendedDeployment, c.ProposalSig,
 		c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementBCUpdateAckTime, c.AgreementFinalizedTime,
 		c.AgreementDataReceivedTime, c.AgreementTerminatedTime, c.AgreementForceTerminatedTime, c.TerminatedReason, c.TerminatedDescription,
 		c.AgreementProtocol, c.ProtocolVersion, c.AgreementProtocolTerminatedTime, c.WorkloadTerminatedTime,
 		c.MeteringNotificationMsg, c.BlockchainType, c.BlockchainName, c.BlockchainOrg)
 
-}
-
-// the internal representation of this lib; *this is the one persisted using the persistence lib*
-type ServiceConfig struct {
-	Config     docker.Config     `json:"config"`
-	HostConfig docker.HostConfig `json:"host_config"`
-}
-
-func ServiceConfigNames(serviceConfigs *map[string]ServiceConfig) []string {
-	names := []string{}
-
-	if serviceConfigs != nil {
-		for name, _ := range *serviceConfigs {
-			names = append(names, name)
-		}
-	}
-
-	return names
-}
-
-func (c ServiceConfig) String() string {
-	return fmt.Sprintf("Config: %v, HostConfig: %v", c.Config, c.HostConfig)
 }
 
 func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consumerId string, proposal string, protocol string, protocolVersion int, sensorUrl []string, signature string, address string, bcType string, bcName string, bcOrg string, wi *WorkloadInfo) (*EstablishedAgreement, error) {
@@ -165,6 +145,7 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 		AgreementExecutionStartTime:     0,
 		AgreementDataReceivedTime:       0,
 		CurrentDeployment:               map[string]ServiceConfig{},
+		ExtendedDeployment:              map[string]interface{}{},
 		Proposal:                        proposal,
 		ProposalSig:                     signature,
 		AgreementProtocol:               protocol,
@@ -195,6 +176,26 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 	})
 }
 
+// Return either the CurrentDeployment or the ExtendedDeployment, depending on which is set, in a form that
+// implements the DeploymentConfig interface.
+func (a *EstablishedAgreement) GetDeploymentConfig() DeploymentConfig {
+
+	// If the native deployment config is in use, then create that object and return it.
+	if len(a.CurrentDeployment) > 0 {
+		nd := new(NativeDeploymentConfig)
+		nd.Services = a.CurrentDeployment
+		return nd
+
+		// The extended deployment config must be in use, so return it.
+	} else if IsHelm(a.ExtendedDeployment) {
+		hd := new(HelmDeploymentConfig)
+		hd.FromPersistentForm(a.ExtendedDeployment)
+		return hd
+	}
+
+	return nil
+}
+
 func ArchiveEstablishedAgreement(db *bolt.DB, agreementId string, protocol string) (*EstablishedAgreement, error) {
 	return agreementStateUpdate(db, agreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
 		c.Archived = true
@@ -204,10 +205,9 @@ func ArchiveEstablishedAgreement(db *bolt.DB, agreementId string, protocol strin
 }
 
 // set agreement state to execution started
-func AgreementStateExecutionStarted(db *bolt.DB, dbAgreementId string, protocol string, deployment *map[string]ServiceConfig) (*EstablishedAgreement, error) {
+func AgreementStateExecutionStarted(db *bolt.DB, dbAgreementId string, protocol string) (*EstablishedAgreement, error) {
 	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
 		c.AgreementExecutionStartTime = uint64(time.Now().Unix())
-		c.CurrentDeployment = *deployment
 		return &c
 	})
 }
@@ -248,6 +248,22 @@ func AgreementStateBCUpdateAcked(db *bolt.DB, dbAgreementId string, protocol str
 func AgreementStateFinalized(db *bolt.DB, dbAgreementId string, protocol string) (*EstablishedAgreement, error) {
 	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
 		c.AgreementFinalizedTime = uint64(time.Now().Unix())
+		return &c
+	})
+}
+
+// set deployment config because execution is about to begin
+func AgreementDeploymentStarted(db *bolt.DB, dbAgreementId string, protocol string, deployment DeploymentConfig) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
+		if pf, err := deployment.ToPersistentForm(); err != nil {
+			glog.Errorf("Unable to persist deployment config: (%T) %v", deployment, deployment)
+		} else if deployment.IsNative() {
+			for k, v := range pf {
+				c.CurrentDeployment[k] = v.(ServiceConfig)
+			}
+		} else {
+			c.ExtendedDeployment = pf
+		}
 		return &c
 	})
 }
@@ -398,6 +414,9 @@ func persistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 				// valid transitions are from empty to non-empty to empty, ad infinitum
 				if (len(mod.CurrentDeployment) == 0 && len(update.CurrentDeployment) != 0) || (len(mod.CurrentDeployment) != 0 && len(update.CurrentDeployment) == 0) {
 					mod.CurrentDeployment = update.CurrentDeployment
+				}
+				if len(mod.ExtendedDeployment) == 0 && len(update.ExtendedDeployment) != 0 { // valid transitions are from empty to non-empty
+					mod.ExtendedDeployment = update.ExtendedDeployment
 				}
 				if mod.TerminatedReason == 0 { // 1 transition from zero to non-zero
 					mod.TerminatedReason = update.TerminatedReason

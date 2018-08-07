@@ -906,7 +906,7 @@ func (b *ContainerWorker) workloadStorageDir(agreementId string) string {
 	return path.Join(storage_base_dir, agreementId)
 }
 
-func (b *ContainerWorker) ResourcesCreate(agreementId string, configure *events.ContainerConfig, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]docker.ContainerNetwork) (*map[string]persistence.ServiceConfig, error) {
+func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol string, configure *events.ContainerConfig, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]docker.ContainerNetwork) (persistence.DeploymentConfig, error) {
 
 	// local helpers
 	fail := func(container *docker.Container, name string, err error) error {
@@ -984,7 +984,9 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, configure *events.
 	private := make(map[string]servicePair, 0)
 
 	// trimmed structure to return to caller
-	ret := make(map[string]persistence.ServiceConfig, 0)
+	ret := persistence.NativeDeploymentConfig{
+		Services: make(map[string]persistence.ServiceConfig, 0),
+	}
 
 	for serviceName, servicePair := range servicePairs {
 		if image, err := b.client.InspectImage(servicePair.serviceConfig.Config.Image); err != nil {
@@ -1000,7 +1002,14 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, configure *events.
 			private[serviceName] = servicePair
 		}
 
-		ret[serviceName] = *servicePair.serviceConfig
+		ret.Services[serviceName] = *servicePair.serviceConfig
+	}
+
+	// Now that we know we are going to process this deployment, save the deployment config before we create any docker resources.
+	if agreementProtocol != "" {
+		if _, err := persistence.AgreementDeploymentStarted(b.db, agreementId, agreementProtocol, &ret); err != nil {
+			return nil, err
+		}
 	}
 
 	// create a list of ms shared endpoints for all the workload containers to connect
@@ -1117,7 +1126,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, configure *events.
 		return nil, err
 	}
 
-	for name, _ := range ret {
+	for name, _ := range ret.Services {
 		glog.V(1).Infof("Created service %v in agreement %v", name, agreementId)
 	}
 	return &ret, nil
@@ -1204,19 +1213,15 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			}
 
 			// Create the docker configuration and launch the containers.
-			if deployment, err := b.ResourcesCreate(agreementId, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_networks); err != nil {
+			if deploymentConfig, err := b.ResourcesCreate(agreementId, cmd.AgreementLaunchContext.AgreementProtocol, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_networks); err != nil {
 				glog.Errorf("Error starting containers: %v", err)
-				var dep map[string]persistence.ServiceConfig
-				if deployment != nil {
-					dep = *deployment
-				}
-				b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, dep) // still using deployment here, need it to shutdown containers
+				b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, deploymentConfig) // still using deployment here, need it to shutdown containers
 
 			} else {
-				glog.Infof("Success starting pattern for agreement: %v, protocol: %v, serviceNames: %v", agreementId, cmd.AgreementLaunchContext.AgreementProtocol, persistence.ServiceConfigNames(deployment))
+				glog.Infof("Success starting pattern for agreement: %v, protocol: %v, serviceNames: %v", agreementId, cmd.AgreementLaunchContext.AgreementProtocol, deploymentConfig.ToString())
 
 				// perhaps add the tc info to the container message so it can be enforced
-				b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_BEGUN, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, *deployment)
+				b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_BEGUN, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, deploymentConfig)
 			}
 		}
 
@@ -1296,12 +1301,12 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		deploymentDesc.Infrastructure = true
 
 		// Get the container started.
-		if deployment, err := b.ResourcesCreate(cmd.ContainerLaunchContext.Name, &cmd.ContainerLaunchContext.Configure, deploymentDesc, []byte(""), *cmd.ContainerLaunchContext.EnvironmentAdditions, ms_networks); err != nil {
+		if deployment, err := b.ResourcesCreate(cmd.ContainerLaunchContext.Name, "", &cmd.ContainerLaunchContext.Configure, deploymentDesc, []byte(""), *cmd.ContainerLaunchContext.EnvironmentAdditions, ms_networks); err != nil {
 			glog.Errorf("Error starting containers: %v", err)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 
 		} else {
-			glog.V(1).Infof("Success starting container pattern for serviceNames: %v", persistence.ServiceConfigNames(deployment))
+			glog.V(1).Infof("Success starting container pattern for serviceNames: %v", deployment.ToString())
 
 			// perhaps add the tc info to the container message so it can be enforced
 			if ov := os.Getenv("CMTN_SERVICEOVERRIDE"); ov != "" {
@@ -1317,33 +1322,44 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 		cMatches := make([]docker.APIContainers, 0)
 
-		serviceNames := persistence.ServiceConfigNames(&cmd.Deployment)
+		if cmd.Deployment.IsNative() {
 
-		report := func(container *docker.APIContainers, agreementId string) error {
+			nd := cmd.Deployment.(*persistence.NativeDeploymentConfig)
+			serviceNames := persistence.ServiceConfigNames(&nd.Services)
 
-			for _, name := range serviceNames {
-				if container.Labels[LABEL_PREFIX+".service_name"] == name && container.State == "running" {
-					cMatches = append(cMatches, *container)
-					glog.V(4).Infof("Matching container instance for agreement %v: %v", agreementId, container)
+			report := func(container *docker.APIContainers, agreementId string) error {
+
+				for _, name := range serviceNames {
+					if container.Labels[LABEL_PREFIX+".service_name"] == name && container.State == "running" {
+						cMatches = append(cMatches, *container)
+						glog.V(4).Infof("Matching container instance for agreement %v: %v", agreementId, container)
+					}
 				}
+				return nil
 			}
-			return nil
-		}
 
-		b.ContainersMatchingAgreement([]string{cmd.AgreementId}, true, report)
+			b.ContainersMatchingAgreement([]string{cmd.AgreementId}, true, report)
 
-		if len(serviceNames) == len(cMatches) {
-			glog.V(4).Infof("Found expected count of running containers for agreement %v: %v", cmd.AgreementId, len(cMatches))
-		} else {
-			glog.Errorf("Insufficient running containers found for agreement %v. Found: %v", cmd.AgreementId, cMatches)
+			if len(serviceNames) == len(cMatches) {
+				glog.V(4).Infof("Found expected count of running containers for agreement %v: %v", cmd.AgreementId, len(cMatches))
+			} else {
+				glog.Errorf("Insufficient running containers found for agreement %v. Found: %v", cmd.AgreementId, cMatches)
 
-			// ask governer to cancel the agreement
-			b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementProtocol, cmd.AgreementId, cmd.Deployment)
+				// ask governer to cancel the agreement
+				b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementProtocol, cmd.AgreementId, cmd.Deployment)
+			}
 		}
 
 	case *WorkloadShutdownCommand:
 		cmd := command.(*WorkloadShutdownCommand)
 
+		// The container worker might not be the right handler for this event, if the deployment is handled by some other worker.
+		if cmd.Deployment != nil && !cmd.Deployment.IsNative() {
+			glog.V(5).Infof("ContainerWorker ignoring shutdown command for agreement id %v: %v", cmd.CurrentAgreementId, cmd)
+			return true
+		}
+
+		// This agreement should be handled by the container worker.
 		agreements := cmd.Agreements
 		if cmd.CurrentAgreementId != "" {
 			glog.Infof("ContainerWorker received shutdown command w/ current agreement id: %v. Shutting down resources", cmd.CurrentAgreementId)

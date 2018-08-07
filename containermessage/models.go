@@ -3,6 +3,7 @@ package containermessage
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	docker "github.com/fsouza/go-dockerclient"
 	"reflect"
@@ -261,4 +262,22 @@ func (n *NetworkIsolation) UnmarshalJSON(data []byte) error {
 	}
 
 	return nil
+}
+
+// Given a deployment string, unmarshal it as a native Horizon Deployment object. It might not be a native Deployment, so
+// we have to verify what was just unmarshalled.
+func GetNativeDeployment(depStr string) (*DeploymentDescription, error) {
+
+	dd := new(DeploymentDescription)
+	err := json.Unmarshal([]byte(depStr), dd)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("error unmarshalling deployment config as DeploymentDescription: %v", err))
+	}
+
+	if len(dd.Services) == 0 {
+		return nil, errors.New(fmt.Sprintf("deployment config is not a DeploymentDescription"))
+	}
+
+	return dd, nil
+
 }
