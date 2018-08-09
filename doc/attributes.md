@@ -163,7 +163,7 @@ For example:
         ],
         "publishable": false,
         "host_only": true,
-        "variables": {
+        "mappings": {
             "username": "me",
             "password": "myPassword"
         }
@@ -171,16 +171,36 @@ For example:
 ```
 
 ### <a name="bxa"></a>DockerRegistryAuthAttributes
-This attribute is used to set a docker authentication token that enables the Horizon agent to access a docker repository when downloading images for microservices and workloads.
+This attribute is used to set a docker authentication user name and password or token that enables the Horizon agent to access a docker repository when downloading images for microservices and workloads.
 
 The value for `publishable` should be `false`.
 
 The value for `host_only` should be `true`.
 
-The `myDockerToken` variable is a string containing the docker token used to access the repository.
+The value for `token` can be a token, an API key or a password. 
+
+/* use this if your docker images are in the IBM Cloud container registry, you can use either token or Identity and Access Management (IAM) API key. */
+
 
 For example:
 ```
+    {
+        "type": "DockerRegistryAuthAttributes",
+        "label": "Docker auth",
+        "sensor_urls": [
+            "mydockerrepo"
+        ],
+        "publishable": false,
+        "host_only": true,
+        "mappings": {
+            "auths": [
+                {"user": "user1", "token": "myDockerhubPassword"}
+            ]
+        }
+    }
+
+    /* Use this if your docker images are in the IBM Cloud container registry. The `myDockerToken` variable is a string containing the docker token used to access the repository. */
+
     {
         "type": "DockerRegistryAuthAttributes",
         "label": "Docker auth",
@@ -189,13 +209,30 @@ For example:
         ],
         "publishable": false,
         "host_only": true,
-        "variables": {
-            auth: [
-                {"token": "myDockerToken1"},
-                {"token": "myDockerToken2"}
+        "mappings": {
+            "auths": [
+                {"user": "token", "token": "myDockerToken"}
             ]
         }
     }
+
+    /* Use this if your docker images are in the IBM Cloud container registry. The `myIAMApiKey` variable is a string containing the IBM Cloud Identity and Access Management (IAM) API key. The user is `iamapikey`. */
+    {
+        "type": "DockerRegistryAuthAttributes",
+        "label": "Docker auth",
+        "sensor_urls": [
+            "registry.ng.bluemix.net"
+        ],
+        "publishable": false,
+        "host_only": true,
+        "mappings": {
+            "auths": [
+                {"user": "iamapikey", "token": "myIAMApiKey"}
+            ]
+        }
+    }
+
+
 ```
 
 ### <a name="haa"></a>HAAttributes

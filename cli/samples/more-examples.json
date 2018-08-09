@@ -26,13 +26,14 @@ This sample will work as-is with the IBM netspeed pattern.
 			}
 		},
 		{
-			"type": "DockerRegistryAuthAttributes",   /* use this if your docker images are in the IBM Cloud container registry */
+			"type": "DockerRegistryAuthAttributes",   /* use this if your docker images are in the IBM Cloud container registry, you can use either token or Identity and Access Management (IAM) API key. */
 			"sensor_urls": [
 				"registry.ng.bluemix.net"
 			],
 			"variables": {
 				"auths": [
-					{"token": "REGISTRYAUTHTOKEN"}
+					{"user": "token", "token": "REGISTRYAUTHTOKEN"},
+               		{"user": "iamapikey", "token": "MYPLATFORMAPIKEY"}
 				]
 			}
 		},
