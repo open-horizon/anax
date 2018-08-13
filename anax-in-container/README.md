@@ -54,11 +54,10 @@ docker stop -t 120 amd64_anax2; docker rm amd64_anax2
 ## Using the Anax Container on **Mac** for the Bluehorizon Environment
 
 ```
-export MAC_HOST=192.168.1.12   # whatever your mac IP address is
 socat TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &   # have docker api listen on a port, in addition to a unix socket
 mkdir -p /private/var/tmp/horizon/service_storage    # anax will check for this, because this will be mounted into service containers
 docker pull openhorizon/amd64_anax
-docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -e MAC_HOST=$MAC_HOST -v /private/var/tmp/horizon:/private/var/tmp/horizon -v `pwd`:/outside openhorizon/amd64_anax /root/bluehorizon-env.sh
+docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -e ANAX_DOCKER_ENDPOINT=tcp://host.docker.internal:2375 -v /private/var/tmp/horizon:/private/var/tmp/horizon -v `pwd`:/outside openhorizon/amd64_anax /root/bluehorizon-env.sh
 export HORIZON_URL='http://localhost:8081'    # to point the hzn cmd to the container
 hzn node list   # ensure you talking to the container, and the bluehorizon-env.sh config script ran
 hzn register -n $EXCHANGE_NODEAUTH -f ~/examples/edge/msghub/cpu2msghub/horizon/userinput.json $HZN_ORG_ID $HZN_PATTERN
