@@ -59,11 +59,17 @@ defaultEnv() {
 	# Configure anax running on mac host, if applicable
 	# The Mac can not mount the /var/run/docker.sock unix socket into the container. So on the host you must use a cmd like this to have the docker engine listen on a port:
 	#    socat TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &
-	# Then on docker run use -e MAC_HOST=192.168.1.10 so the anax container can connect to that.
-	if [[ -n "$MAC_HOST" ]]; then
-	  anaxJson=$(jq ".Edge.DockerEndpoint = \"tcp://$MAC_HOST:2375\" " <<< $anaxJson)
+	# Then on docker run use -e ANAX_DOCKER_ENDPOINT=tcp://host.docker.internal:2375 so the anax container can connect to that.
+	if [[ -z "$ANAX_DOCKER_ENDPOINT" && -n "$MAC_HOST" ]]; then
+		# for backward compat (this was the old way)
+		ANAX_DOCKER_ENDPOINT="tcp://$MAC_HOST:2375"
+	fi
+	if [[ -n "$ANAX_DOCKER_ENDPOINT" ]]; then
+	  anaxJson=$(jq ".Edge.DockerEndpoint = \"$ANAX_DOCKER_ENDPOINT\" " <<< $anaxJson)
 	  checkrc $? "change DockerEndpoint"
+	fi
 
+	if [[ -d /private/var/tmp/horizon/service_storage ]]; then
 	  # Also can't mount /var, but can mount anything under /private
 	  anaxJson=$(jq ".Edge.ServiceStorage = \"/private/var/tmp/horizon/service_storage/\" " <<< $anaxJson)
 	  checkrc $? "change ServiceStorage"
