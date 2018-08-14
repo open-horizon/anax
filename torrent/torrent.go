@@ -100,7 +100,7 @@ func ExtractAuthAttributes(attributes []persistence.Attribute, httpAuthAttrs map
 				for _, auth := range a.Auths {
 					a_single := docker.AuthConfiguration{
 						Email:         "",
-						Username:      "token",
+						Username:      auth.User,
 						Password:      auth.Token,
 						ServerAddress: url,
 					}
