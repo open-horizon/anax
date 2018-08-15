@@ -9,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
@@ -143,42 +144,116 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("unable to retrieve agreements from database, error %v", err)))
 	} else if len(agAlreadyExists) != 0 {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("agreement %v already exists, ignoring proposal: %v", proposal.AgreementId(), proposal.ShortString())))
+
+		eventlog.LogAgreementEvent(
+			w.db,
+			persistence.SEVERITY_INFO,
+			fmt.Sprintf("Agreement %v already exists, ignoring proposal: %v", proposal.AgreementId(), proposal.ShortString()),
+			persistence.EC_IGNORE_PROPOSAL,
+			agAlreadyExists[0])
+
 		handled = true
 	} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error demarshalling TsAndCs, %v", err)))
-	} else if err := w.saveSigningKeys(tcPolicy); err != nil {
-		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error handling signing keys from the exchange: %v", err)))
-		handled = true
-	} else if pemFiles, err := w.config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.config.Edge.PublicKeyPath, w.config.UserPublicKeyPath()); err != nil {
-		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting pem key files: %v", err)))
-		handled = true
-	} else if err := tcPolicy.Is_Self_Consistent(pemFiles, w.GetWorkloadOrServiceResolver()); err != nil {
-		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking self consistency of TsAndCs, %v", err)))
-		handled = true
-	} else if pmatch, err := w.MatchPattern(tcPolicy); err != nil {
-		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking pattern name match, %v", err)))
-		handled = true
-	} else if !pmatch {
-		glog.Errorf(BPPHlogString(w.Name(), "pattern name matching failed, ignoring proposal"))
-		handled = true
-	} else if found, err := w.FindAgreementWithSameWorkload(ph, tcPolicy.Header.Name); err != nil {
-		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error finding agreement with TsAndCs name '%v', error %v", tcPolicy.Header.Name, err)))
-		handled = true
-	} else if found {
-		glog.Warningf(BPPHlogString(w.Name(), fmt.Sprintf("agreement with TsAndCs name '%v' exists, ignoring proposal: %v", tcPolicy.Header.Name, proposal.ShortString())))
-		handled = true
-	} else if messageTarget, err := exchange.CreateMessageTarget(exchangeMsg.AgbotId, nil, exchangeMsg.AgbotPubKey, ""); err != nil {
-		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error creating message target: %v", err)))
+		eventlog.LogAgreementEvent2(
+			w.db,
+			persistence.SEVERITY_ERROR,
+			fmt.Sprintf("received error demarshalling TsAndCs for agrement %v, %v", proposal.AgreementId(), err),
+			persistence.EC_ERROR_IN_PROPOSAL,
+			proposal.AgreementId(),
+			persistence.WorkloadInfo{},
+			[]string{},
+			proposal.ConsumerId(),
+			proposal.Protocol())
+
 	} else {
-		handled = true
-		if r, err := ph.DecideOnProposal(proposal, w.ec.GetExchangeId(), exchange.GetOrg(w.ec.GetExchangeId()), runningBCs, messageTarget, w.sendMessage); err != nil {
-			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("respond to proposal with error: %v", err)))
+		var wls, wversion, warch, worg string
+		if len(tcPolicy.Workloads) > 0 {
+			wls = tcPolicy.Workloads[0].WorkloadURL
+			wversion = tcPolicy.Workloads[0].Version
+			worg = tcPolicy.Workloads[0].Org
+			warch = tcPolicy.Workloads[0].Arch
+		}
+		eventlog.LogAgreementEvent2(
+			w.db,
+			persistence.SEVERITY_INFO,
+			fmt.Sprintf("Node received Proposal message for service %v from the agbot %v.", wls, proposal.ConsumerId()),
+			persistence.EC_RECEIVED_PROPOSAL,
+			proposal.AgreementId(),
+			persistence.WorkloadInfo{wls, worg, wversion, warch},
+			(&tcPolicy.APISpecs).AsStringArray(),
+			proposal.ConsumerId(),
+			proposal.Protocol())
+
+		err_log_event := ""
+
+		if err := w.saveSigningKeys(tcPolicy); err != nil {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error handling signing keys from the exchange: %v", err)))
+			err_log_event = fmt.Sprintf("Received error handling signing keys from the exchange: %v", err)
+			handled = true
+		} else if pemFiles, err := w.config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.config.Edge.PublicKeyPath, w.config.UserPublicKeyPath()); err != nil {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting pem key files: %v", err)))
+			err_log_event = fmt.Sprintf("Received error getting pem key files: %v", err)
+			handled = true
+		} else if err := tcPolicy.Is_Self_Consistent(pemFiles, w.GetWorkloadOrServiceResolver()); err != nil {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking self consistency of TsAndCs, %v", err)))
+			err_log_event = fmt.Sprintf("Received error checking self consistency of TsAndCs: %v", err)
+			handled = true
+		} else if pmatch, err := w.MatchPattern(tcPolicy); err != nil {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking pattern name match, %v", err)))
+			err_log_event = fmt.Sprintf("Received error checking pattern name match, %v", err)
+			handled = true
+		} else if !pmatch {
+			glog.Errorf(BPPHlogString(w.Name(), "pattern name matching failed, ignoring proposal"))
+			err_log_event = "Pattern name matching failed, ignoring proposal"
+			handled = true
+		} else if found, err := w.FindAgreementWithSameWorkload(ph, tcPolicy.Header.Name); err != nil {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error finding agreement with TsAndCs name '%v', error %v", tcPolicy.Header.Name, err)))
+			err_log_event = fmt.Sprintf("Error finding agreement with TsAndCs name '%v', error %v", tcPolicy.Header.Name, err)
+			handled = true
+		} else if found {
+			glog.Warningf(BPPHlogString(w.Name(), fmt.Sprintf("agreement with TsAndCs name '%v' exists, ignoring proposal: %v", tcPolicy.Header.Name, proposal.ShortString())))
+			err_log_event = "Agreement with TsAndCs name exists, ignoring proposal."
+			handled = true
+		} else if messageTarget, err := exchange.CreateMessageTarget(exchangeMsg.AgbotId, nil, exchangeMsg.AgbotPubKey, ""); err != nil {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error creating message target: %v", err)))
+			err_log_event = fmt.Sprintf("Error creating message target: %v", err)
 		} else {
-			return handled, r, tcPolicy
+			handled = true
+			if r, err := ph.DecideOnProposal(proposal, w.ec.GetExchangeId(), exchange.GetOrg(w.ec.GetExchangeId()), runningBCs, messageTarget, w.sendMessage); err != nil {
+				glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("respond to proposal with error: %v", err)))
+				err_log_event = fmt.Sprintf("Respond to proposal with error: %v", err)
+			} else {
+				if !r.ProposalAccepted() {
+					eventlog.LogAgreementEvent2(
+						w.db,
+						persistence.SEVERITY_INFO,
+						fmt.Sprintf("Node rejected the proposal for service %v.", wls),
+						persistence.EC_REJECT_PROPOSAL,
+						proposal.AgreementId(),
+						persistence.WorkloadInfo{wls, worg, wversion, warch},
+						(&tcPolicy.APISpecs).AsStringArray(),
+						proposal.ConsumerId(),
+						proposal.Protocol())
+				}
+				return handled, r, tcPolicy
+			}
+		}
+
+		if err_log_event != "" {
+			eventlog.LogAgreementEvent2(
+				w.db,
+				persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error handling Prosal for service %v. Error: %v", wls, err_log_event),
+				persistence.EC_ERROR_PROCESSING_PROPOSAL,
+				proposal.AgreementId(),
+				persistence.WorkloadInfo{wls, worg, wversion, warch},
+				(&tcPolicy.APISpecs).AsStringArray(),
+				proposal.ConsumerId(),
+				proposal.Protocol())
 		}
 	}
 	return handled, nil, nil
-
 }
 
 // This function gets the pattern and workload's signing keys and save them to anax

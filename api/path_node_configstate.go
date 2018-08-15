@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
@@ -67,8 +68,10 @@ func UpdateConfigstate(cfg *Configstate,
 	// to the HTTP response.
 	pDevice, err := persistence.FindExchangeDevice(db)
 	if err != nil {
+		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Unable to read node object from database, error %v", err), persistence.EC_DATABASE_ERROR)
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err))), nil, nil
 	} else if pDevice == nil {
+		LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in node configuration. The node is not found from the database."), persistence.EC_ERROR_NODE_CONFIG_REG, nil)
 		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path.", "node")), nil, nil
 	}
 
@@ -80,11 +83,15 @@ func UpdateConfigstate(cfg *Configstate,
 	// transition of unconfigured to configuring occurs when POST /node is called.
 	// If the caller is requesting a state change that is a noop, just return the current state.
 	if *cfg.State != persistence.CONFIGSTATE_CONFIGURING && *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
+		LogDeviceEvent(db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to %v.", cfg.State),
+			persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("Supported state values are '%v' and '%v'.", persistence.CONFIGSTATE_CONFIGURING, persistence.CONFIGSTATE_CONFIGURED), "configstate.state")), nil, nil
 	} else if NoOpStateChange(pDevice.Config.State, *cfg.State) {
 		exDev := ConvertFromPersistentHorizonDevice(pDevice)
 		return false, exDev.Config, nil
 	} else if !ValidStateChange(pDevice.Config.State, *cfg.State) {
+		LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Node state transition from '%v' to '%v' is not supported.", pDevice.Config.State, *cfg.State), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("Transition from '%v' to '%v' is not supported.", pDevice.Config.State, *cfg.State), "configstate.state")), nil, nil
 	}
 
@@ -96,11 +103,13 @@ func UpdateConfigstate(cfg *Configstate,
 
 		common_apispec_list, pattern, err := getSpecRefsForPattern(pDevice.Pattern, pDevice.Org, getPatterns, resolveWorkload, resolveService, db, config, true)
 		if err != nil {
+			LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("%v", err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 			return errorhandler(err), nil, nil
 		}
 
 		// Reject the config attempt if the dependencies are inconsistent. There are always dependencies for the workload model, but not for the service model.
 		if !pattern.UsingServiceModel() && len(*common_apispec_list) == 0 {
+			LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Services in org %v pattern %v don't have a common version range.", pDevice.Org, pDevice.Pattern), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 			return errorhandler(NewAPIUserInputError(fmt.Sprintf("services in org %v pattern %v don't have a common version range.", pDevice.Org, pDevice.Pattern), "configstate.state")), nil, nil
 		}
 
@@ -180,12 +189,16 @@ func UpdateConfigstate(cfg *Configstate,
 	// Update the state in the local database
 	updatedDev, err := pDevice.SetConfigstate(db, pDevice.Id, *cfg.State, usingServices)
 	if err != nil {
+		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error persisting new config state: %v", err), persistence.EC_DATABASE_ERROR)
 		return errorhandler(NewSystemError(fmt.Sprintf("error persisting new config state: %v", err))), nil, nil
 	}
 
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("Update configstate: updated device: %v", updatedDev)))
 
 	exDev := ConvertFromPersistentHorizonDevice(updatedDev)
+
+	LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete node configuration/registration for node %v.", updatedDev.Id), persistence.EC_NODE_CONFIG_REG_COMPLETE, updatedDev)
+
 	return false, exDev.Config, msgs
 
 }
@@ -204,7 +217,14 @@ func configureService(service *Service,
 	var createServiceError error
 	passthruHandler := GetPassThroughErrorHandler(&createServiceError)
 
-	if errHandled, newService, msg := CreateService(service, passthruHandler, getPatterns, resolveService, getService, db, config, false); errHandled {
+	create_service_error_handler := func(err error) bool {
+		if !strings.Contains(err.Error(), "Duplicate registration") {
+			LogServiceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in service configuration for %v. %v", *service.Url, err), persistence.EC_ERROR_SERVICE_CONFIG, service)
+		}
+		return passthruHandler(err)
+	}
+
+	if errHandled, newService, msg := CreateService(service, create_service_error_handler, getPatterns, resolveService, getService, db, config, false); errHandled {
 
 		switch createServiceError.(type) {
 

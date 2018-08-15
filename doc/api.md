@@ -1607,3 +1607,177 @@ none
 curl -s -X DELETE http://localhost/trust/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem
 
 ```
+
+### 8. Event Log
+#### **API:** GET  /eventlog
+---
+
+Get event logs for the Horizon agent for the current registration. It supports selection strings. The selections can be made against the attributes.
+
+**Parameters:**
+
+none
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| record_id   | string | the record id in the data base. |
+| timestamp | uint64 | the time when the event log was saved. |
+| severity | string | the severity for this event. It can be 'info', 'warning' or 'error'. |
+| message | string | a human consumable the event message.  |
+| event_code | string| an event code that can be used by programs.|
+| source_type | string | the source for the event. It can be 'agreement', 'service', 'exchange', 'node' etc. |
+| event_source | json | a structure that holds the event source object. |
+
+**Example:**
+
+```
+http://localhost/eventlog
+[
+  {
+    "record_id": "270",
+    "timestamp": 1536861596,
+    "severity": "info",
+    "message": "Start node configuration/registration for node mynode1.",
+    "event_code": "start_node_configuration_registration",
+    "source_type": "node",
+    "event_source": {
+      "node_id": "5330a6eb4b177e9203a14d6780589f539f8ec809",
+      "node_org": "mycomp",
+      "pattern": "comp/netspeed",
+      "config_state": ""
+    }
+  },
+  {
+    "record_id": "271",
+    "timestamp": 1536861598,
+    "severity": "info",
+    "message": "Complete node configuration/registration for node mynode1.",
+    "event_code": "node_configuration_registration_complete",
+    "source_type": "node",
+    "event_source": {
+      "node_id": "mynode1",
+      "node_org": "mycomp",
+      "pattern": "netspeed",
+      "config_state": "configured"
+    }
+  },
+  {
+    "record_id": "272",
+    "timestamp": 1536861598,
+    "severity": "info",
+    "message": "Start policy advertising with the exchange for service https://bluehorizon.network/microservices/gps.",
+    "event_code": "start_policy_advertising",
+    "source_type": "agreement",
+    "event_source": {
+       "workload_to_run": {
+        "url": "",
+        "org": "",
+        "version": "",
+        "arch": ""
+      },
+      "service_url": [
+        "https://bluehorizon.network/microservices/gps"
+      ],
+      "agreement_id": "https://bluehorizon.network/microservices/gps",
+      "consumer_id": "",
+      "agreement_protocol": ""
+    }
+  }
+  ....
+]
+
+```
+
+
+```
+http://localhost/eventlog?source_type=node&message=~Complete
+[
+  {
+    "record_id": "271",
+    "timestamp": 1536861598,
+    "severity": "info",
+    "message": "Complete node configuration/registration for node mynode1.",
+    "event_code": "node_configuration_registration_complete",
+    "source_type": "node",
+    "event_source": {
+      "node_id": "mynode1",
+      "node_org": "mycomp",
+      "pattern": "netspeed",
+      "config_state": "configured"
+    }
+  }
+]
+
+```
+
+#### **API:** GET  /eventlog/all
+---
+
+Get all the event logs including the previous regstrations for the Horizon agent. It supports selection strings. It supports selection strings. The selections can be made against the attributes.
+
+**Parameters:**
+
+none
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| record_id   | string | the record id in the data base. |
+| timestamp | uint64 | the time when the event log was saved. |
+| severity | string | the severity for this event. It can be 'info', 'warning' or 'error'. |
+| message | string | a human consumable the event message.  |
+| event_code | string| an event code that can be used by programs.|
+| source_type | string | the source for the event. It can be 'agreement', 'service', 'exchange', 'node' etc. |
+| event_source | json | a structure that holds the event source object. |
+
+**Example:**
+
+```
+http://localhost/eventlog/all
+[
+  {
+    "record_id": "1",
+    "timestamp": 1336861590,
+    "severity": "info",
+    "message": "Start node configuration/registration for node mynode1.",
+    "event_code": "start_node_configuration_registration",
+    "source_type": "node",
+    "event_source": {
+      "node_id": "mynode1",
+      "node_org": "mycomp",
+      "pattern": "mycomp/netspeed",
+      "config_state": ""
+    }
+  },
+  {
+    "record_id": "2",
+    "timestamp": 1336861600,
+    "severity": "info",
+    "message": "Complete node configuration/registration for node mynode1.",
+    "event_code": "node_configuration_registration_complete",
+    "source_type": "node",
+    "event_source": {
+      "node_id": "mynode1",
+      "node_org": "mycomp",
+      "pattern": "netspeed",
+      "config_state": "configured"
+    }
+  },
+
+  ....
+
+```
+

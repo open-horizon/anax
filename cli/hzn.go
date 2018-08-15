@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/cli/attribute"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/dev"
+	"github.com/open-horizon/anax/cli/eventlog"
 	"github.com/open-horizon/anax/cli/exchange"
 	_ "github.com/open-horizon/anax/cli/helm_deployment"
 	"github.com/open-horizon/anax/cli/key"
@@ -308,6 +309,12 @@ Environment Variables:
 	statusCmd := app.Command("status", "Display the current horizon internal status for the node.")
 	statusLong := statusCmd.Flag("long", "Show detailed status").Short('l').Bool()
 
+	eventlogCmd := app.Command("eventlog", "List the event logs for the current or all registrations.")
+	eventlogListCmd := eventlogCmd.Command("list", "List the event logs for the current or all registrations.")
+	listAllEventlogs := eventlogListCmd.Flag("all", "List all the event logs including the previous registrations.").Short('a').Bool()
+	listDetailedEventlogs := eventlogListCmd.Flag("long", "List event logs with details.").Short('l').Bool()
+	listSelectedEventlogs := eventlogListCmd.Flag("select", "Selection string. This flag can be repeated, and each flag should be in the format: attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains.").Short('s').Strings()
+
 	devCmd := app.Command("dev", "Developmnt tools for creation of workloads and microservices.")
 	devHomeDirectory := devCmd.Flag("directory", "Directory containing Horizon project metadata.").Short('d').String()
 
@@ -546,6 +553,8 @@ Environment Variables:
 		unregister.DoIt(*forceUnregister, *removeNodeUnregister)
 	case statusCmd.FullCommand():
 		status.DisplayStatus(*statusLong, false)
+	case eventlogListCmd.FullCommand():
+		eventlog.List(*listAllEventlogs, *listDetailedEventlogs, *listSelectedEventlogs)
 	case devWorkloadNewCmd.FullCommand():
 		dev.WorkloadNew(*devHomeDirectory, *devWorkloadNewCmdOrg)
 	case devWorkloadStartTestCmd.FullCommand():

@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/microservice"
@@ -16,6 +17,29 @@ import (
 	"strconv"
 	"strings"
 )
+
+func LogServiceEvent(db *bolt.DB, severity string, message string, event_code string, service *Service) {
+	surl := ""
+	org := ""
+	version := "[0.0.0,INFINITY)"
+	arch := ""
+	if service != nil {
+		if service.Url != nil {
+			surl = *service.Url
+		}
+		if service.Org != nil {
+			org = *service.Org
+		}
+		if service.Arch != nil {
+			arch = *service.Arch
+		}
+		if service.VersionRange != nil {
+			version = *service.VersionRange
+		}
+	}
+
+	eventlog.LogServiceEvent2(db, severity, message, event_code, "", surl, org, version, arch, []string{})
+}
 
 func FindServiceConfigForOutput(pm *policy.PolicyManager, db *bolt.DB) (map[string][]MicroserviceConfig, error) {
 
@@ -74,6 +98,12 @@ func CreateService(service *Service,
 	db *bolt.DB,
 	config *config.HorizonConfig,
 	from_user bool) (bool, *Service, *events.PolicyCreatedMessage) {
+
+	if from_user {
+		LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Start service configuration with user input for %v.", *service.Url), persistence.EC_START_SERVICE_CONFIG, service)
+	} else {
+		LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Start service auto configuration for %v.", *service.Url), persistence.EC_START_SERVICE_CONFIG, service)
+	}
 
 	// Check for the device in the local database. If there are errors, they will be written
 	// to the HTTP response.
@@ -202,6 +232,10 @@ func CreateService(service *Service,
 	if pms, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UnarchivedMSFilter(), persistence.UrlMSFilter(*service.Url)}); err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("Error accessing db to find service definition: %v", err))), nil, nil
 	} else if pms != nil && len(pms) > 0 {
+		// this is for the auto service registration case.
+		if !from_user {
+			LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service auto configuration for %v.", *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+		}
 		return errorhandler(NewDuplicateServiceError(fmt.Sprintf("Duplicate registration for %v %v %v %v. Only one registration per service is supported.", *service.Url, *service.Org, vExp.Get_expression(), cutil.ArchString()), "service")), nil, nil
 	}
 
@@ -440,7 +474,11 @@ func CreateService(service *Service,
 	if msg, genErr := policy.GeneratePolicy(*service.Url, *service.Org, *service.Name, *service.VersionRange, *service.Arch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, maxAgreements, config.Edge.PolicyPath, pDevice.Org); genErr != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("Error generating policy, error: %v", genErr))), nil, nil
 	} else {
+		if from_user {
+			LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service configuration for %v.", *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+		} else {
+			LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service auto configuration for %v.", *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+		}
 		return false, service, msg
 	}
-
 }

@@ -94,6 +94,12 @@ func (a *API) router(includeStaticRedirects bool) *mux.Router {
 	router.HandleFunc("/workload", a.workload).Methods("GET", "OPTIONS")
 	router.HandleFunc("/workload/config", a.workloadConfig).Methods("GET", "POST", "DELETE", "OPTIONS")
 
+	// Used to get the event logs on this node.
+	// get the eventlogs for current registration.
+	router.HandleFunc("/eventlog", a.eventlog).Methods("GET", "OPTIONS")
+	// get the eventlogs for all registrations.
+	router.HandleFunc("/eventlog/all", a.eventlog).Methods("GET", "OPTIONS")
+
 	// For importing workload public signing keys (RSA-PSS key pair public key)
 	router.HandleFunc("/{p:(publickey|trust)}", a.publickey).Methods("GET", "OPTIONS")
 	router.HandleFunc("/{p:(publickey|trust)}/{filename}", a.publickey).Methods("GET", "PUT", "DELETE", "OPTIONS")

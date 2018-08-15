@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
@@ -46,6 +47,9 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 
 		// make sure current exchange version meet the requirement
 		if err := version.VerifyExchangeVersion(a.GetHTTPFactory(), a.GetExchangeURL(), a.GetExchangeId(), a.GetExchangeToken(), false); err != nil {
+			eventlog.LogExchangeEvent(a.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error verifiying exchange version. error: %v", err),
+				persistence.EC_EXCHANGE_ERROR, a.GetExchangeURL())
 			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
 			return
 		}
@@ -57,12 +61,20 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		var newDevice HorizonDevice
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &newDevice); err != nil {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: %v, error: %v", string(body), err),
+				persistence.EC_API_USER_INPUT_ERROR, nil)
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body couldn't be deserialized to %v object: %v, error: %v", resource, string(body), err), "device"))
 			return
 		}
 
+		create_device_error_handler := func(err error) bool {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in node configuration/registration for node %v. %v", newDevice.Id, err), persistence.EC_ERROR_NODE_CONFIG_REG, &newDevice)
+			return errorHandler(err)
+		}
+
 		// Validate and create the new device registration.
-		errHandled, device, exDev := CreateHorizonDevice(&newDevice, errorHandler, orgHandler, patternHandler, a.em, a.db)
+		errHandled, device, exDev := CreateHorizonDevice(&newDevice, create_device_error_handler, orgHandler, patternHandler, a.em, a.db)
 		if errHandled {
 			return
 		}
@@ -78,6 +90,9 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 
 		// make sure current exchange version meet the requirement
 		if err := version.VerifyExchangeVersion(a.GetHTTPFactory(), a.GetExchangeURL(), a.GetExchangeId(), a.GetExchangeToken(), false); err != nil {
+			eventlog.LogExchangeEvent(a.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error verifiying exchange version. error: %v", err),
+				persistence.EC_EXCHANGE_ERROR, a.GetExchangeURL())
 			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
 			return
 		}
@@ -85,12 +100,21 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		var device HorizonDevice
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &device); err != nil {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error parsing input for node update. Input body couldn't be deserialized to node object: %v, error: %v", string(body), err),
+				persistence.EC_API_USER_INPUT_ERROR, nil)
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body couldn't be deserialized to %v object: %v, error: %v", resource, string(body), err), "device"))
 			return
 		}
 
+		update_device_error_handler := func(err error) bool {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in updating node %v. %v", device.Id, err),
+				persistence.EC_ERROR_NODE_UPDATE, &device)
+			return errorHandler(err)
+		}
+
 		// Validate the PATCH input and update the object in the database.
-		errHandled, dev, exDev := UpdateHorizonDevice(&device, errorHandler, a.db)
+		errHandled, dev, exDev := UpdateHorizonDevice(&device, update_device_error_handler, a.db)
 		if errHandled {
 			return
 		}
@@ -113,6 +137,8 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if a.shutdownError != "" {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in node unregistration. %v", a.shutdownError),
+				persistence.EC_ERROR_NODE_UNREG, nil)
 			errorHandler(NewSystemError(fmt.Sprintf("received error handling %v on resource %v, error: %v", r.Method, resource, a.shutdownError)))
 			return
 		}
@@ -160,6 +186,9 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 
 		// make sure current exchange version meet the requirement
 		if err := version.VerifyExchangeVersion(a.GetHTTPFactory(), a.GetExchangeURL(), a.GetExchangeId(), a.GetExchangeToken(), false); err != nil {
+			eventlog.LogExchangeEvent(a.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error verifiying exchange version. error: %v", err),
+				persistence.EC_EXCHANGE_ERROR, a.GetExchangeURL())
 			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
 			return
 		}
@@ -174,6 +203,9 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 		var configState Configstate
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &configState); err != nil {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: %v, error: %v", string(body), err),
+				persistence.EC_API_USER_INPUT_ERROR, nil)
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body couldn't be deserialized to %v object: %v, error: %v", resource, string(body), err), "configstate"))
 			return
 		}
@@ -186,6 +218,7 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 
 		pDevice, err := persistence.FindExchangeDevice(a.db)
 		if err != nil {
+			eventlog.LogDatabaseEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Unable to read node object from database, error %v", err), persistence.EC_DATABASE_ERROR)
 			errorHandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err)))
 			return
 		}
