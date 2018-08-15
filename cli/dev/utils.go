@@ -31,6 +31,7 @@ const DEVTOOL_HZN_ORG = "HZN_ORG_ID"
 const DEVTOOL_HZN_USER = "HZN_EXCHANGE_USER_AUTH"
 const DEVTOOL_HZN_EXCHANGE_URL = "HZN_EXCHANGE_URL"
 const DEVTOOL_HZN_DEVICE_ID = "HZN_DEVICE_ID"
+const DEVTOOL_HZN_PATTERN = "HZN_PATTERN"
 
 const DEFAULT_WORKING_DIR = "horizon"
 const DEFAULT_DEPENDENCY_DIR = "dependencies"
@@ -323,8 +324,10 @@ func createEnvVarMap(agreementId string,
 		testDeviceId = os.Getenv(DEVTOOL_HZN_DEVICE_ID)
 	}
 
+	pattern := os.Getenv(DEVTOOL_HZN_PATTERN)
+
 	exchangeURL := os.Getenv(DEVTOOL_HZN_EXCHANGE_URL)
-	cutil.SetPlatformEnvvars(envvars, config.ENVVAR_PREFIX, agreementId, testDeviceId, org, workloadPW, exchangeURL, "")
+	cutil.SetPlatformEnvvars(envvars, config.ENVVAR_PREFIX, agreementId, testDeviceId, org, workloadPW, exchangeURL, pattern)
 
 	// Second, add the Horizon system env vars. Some of these can come from the global section of a user inputs file. To do this we have to
 	// convert the attributes in the userinput file into API attributes so that they can be validity checked. Then they are converted to
