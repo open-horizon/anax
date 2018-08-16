@@ -1,7 +1,7 @@
 {
     "services": [
         {
-            "org": "e2edev",
+            "org": "IBM",
             "url": "http://my.company.com/services/helm-service",
             "versionRange": "[0.0.0,INFINITY)",
             "variables": {}

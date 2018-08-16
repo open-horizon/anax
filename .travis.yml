@@ -12,8 +12,9 @@ language: go
 go: 1.10.x
 
 before_script:
+  - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then echo "$BMX_REG_TOKEN" | docker login -u "$BMX_REG_USER" --password-stdin registry.ng.bluemix.net; fi'
   - make -C test
   - docker ps
 
 script:
-  - make test -C test TEST_VARS="NOLOOP=1 TEST_PATTERNS=sall"
+  - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then make test -C test TEST_VARS="NOLOOP=1 TEST_PATTERNS=sall APPSTORE=1"; else make test -C test TEST_VARS="NOLOOP=1 TEST_PATTERNS=sall"; fi'

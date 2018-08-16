@@ -67,7 +67,7 @@ func WorkloadStartTest(homeDirectory string, userInputFile string) {
 	WorkloadValidate(homeDirectory, userInputFile)
 
 	// Perform the common execution setup.
-	dir, userInputs, cw := commonExecutionSetup(homeDirectory, userInputFile, WORKLOAD_COMMAND, WORKLOAD_START_COMMAND)
+	dir, userInputs, cw := CommonExecutionSetup(homeDirectory, userInputFile, WORKLOAD_COMMAND, WORKLOAD_START_COMMAND)
 
 	// Collect all the microservice networks that have to be connected.
 	ms_networks := map[string]docker.ContainerNetwork{}
@@ -167,7 +167,7 @@ func WorkloadStartTest(homeDirectory string, userInputFile string) {
 func WorkloadStopTest(homeDirectory string) {
 
 	// Perform the common execution setup.
-	dir, _, cw := commonExecutionSetup(homeDirectory, "", WORKLOAD_COMMAND, WORKLOAD_STOP_COMMAND)
+	dir, _, cw := CommonExecutionSetup(homeDirectory, "", WORKLOAD_COMMAND, WORKLOAD_STOP_COMMAND)
 
 	// Loop through each dependency to get the metadata we need to stop the dependency.
 	deps, err := GetDependencies(dir)

@@ -129,7 +129,7 @@ func (w *HelmWorker) CommandHandler(command worker.Command) bool {
 		if !ok {
 			glog.Errorf(hpwlog(fmt.Sprintf("ignoring non-Helm maintenance command: %v", cmd)))
 			return true
-		} else if err := w.releaseStatus(hdc, STATUS_RUNNING); err != nil {
+		} else if err := w.releaseStatus(hdc, "DEPLOYED"); err != nil {
 			glog.Errorf(hpwlog(fmt.Sprintf("%v", err)))
 			// Ask governer to cancel the agreement.
 			w.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementProtocol, cmd.AgreementId, hdc)
@@ -181,7 +181,7 @@ func (w *HelmWorker) uninstallHelmPackage(hd *persistence.HelmDeploymentConfig) 
 	return nil
 }
 
-func (w *HelmWorker) releaseStatus(hd *persistence.HelmDeploymentConfig, desiredStatus int) error {
+func (w *HelmWorker) releaseStatus(hd *persistence.HelmDeploymentConfig, desiredStatus string) error {
 
 	glog.V(5).Infof(hpwlog(fmt.Sprintf("begin listing Helm Deployment release %v", hd.ReleaseName)))
 
@@ -189,7 +189,7 @@ func (w *HelmWorker) releaseStatus(hd *persistence.HelmDeploymentConfig, desired
 	status, err := c.Status(hd.ReleaseName)
 	if err != nil {
 		return errors.New(fmt.Sprintf("unable to list Helm release %v, error: %v", hd.ReleaseName, err))
-	} else if status != desiredStatus {
+	} else if status.Status != desiredStatus {
 		return errors.New(fmt.Sprintf("Helm release %v is not in desiredStatus %v, in %v", hd.ReleaseName, desiredStatus, status))
 	}
 

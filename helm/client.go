@@ -8,16 +8,22 @@ import (
 	"os"
 )
 
-// Constants returned by the Status function inthe HelmClient interface.
-const (
-	STATUS_RUNNING int = iota // 0
-	STATUS_NOT_RUNNING
-)
+// Status object returned by our Helm client.
+type ReleaseStatus struct {
+	Name      string // Release name
+	Revision  string // Revision of the release
+	Updated   string // The date of last change
+	Status    string // The release's status
+	ChartName string // The name of the chart
+	Namespace string // The k8s namespace that the chart was deployed into
+}
 
+// The Helm Client interface that we use, regardless of how its implemented under the covers.
 type HelmClient interface {
 	Install(b64Package string, releaseName string) error
 	UnInstall(releaseName string) error
-	Status(releaseName string) (int, error)
+	Status(releaseName string) (*ReleaseStatus, error)
+	ReleaseTimeFormat() string
 }
 
 func NewHelmClient() HelmClient {

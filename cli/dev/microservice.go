@@ -58,7 +58,7 @@ func MicroserviceStartTest(homeDirectory string, userInputFile string) {
 	MicroserviceValidate(homeDirectory, userInputFile)
 
 	// Perform the common execution setup.
-	dir, userInputs, cw := commonExecutionSetup(homeDirectory, userInputFile, MICROSERVICE_COMMAND, MICROSERVICE_START_COMMAND)
+	dir, userInputs, cw := CommonExecutionSetup(homeDirectory, userInputFile, MICROSERVICE_COMMAND, MICROSERVICE_START_COMMAND)
 
 	// Get the microservice definition, so that we can look at the user input variable definitions.
 	microserviceDef, wderr := GetMicroserviceDefinition(dir, MICROSERVICE_DEFINITION_FILE)
@@ -83,7 +83,7 @@ func MicroserviceStartTest(homeDirectory string, userInputFile string) {
 func MicroserviceStopTest(homeDirectory string) {
 
 	// Perform the common execution setup.
-	dir, _, cw := commonExecutionSetup(homeDirectory, "", MICROSERVICE_COMMAND, MICROSERVICE_STOP_COMMAND)
+	dir, _, cw := CommonExecutionSetup(homeDirectory, "", MICROSERVICE_COMMAND, MICROSERVICE_STOP_COMMAND)
 
 	// Get the microservice definition.
 	microserviceDef, wderr := GetMicroserviceDefinition(dir, MICROSERVICE_DEFINITION_FILE)

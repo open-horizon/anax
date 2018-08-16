@@ -129,10 +129,28 @@ echo "Creating IBM organization..."
 CR8IORG=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"label":"IBMorg","description":"IBM"}' "${EXCH_URL}/orgs/IBM" | jq -r '.msg')
 echo "$CR8IORG"
 
+echo "Creating Customer1 organization..."
+CR8C1ORG=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"label":"Customer1","description":"The Customer1 org"}' "${EXCH_URL}/orgs/Customer1" | jq -r '.msg')
+echo "$CR8C1ORG"
+
+echo "Creating Customer2 organization..."
+CR8C2ORG=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"label":"Customer2","description":"The Customer2 org"}' "${EXCH_URL}/orgs/Customer2" | jq -r '.msg')
+echo "$CR8C2ORG"
+
 # Register an e2edev admin user in the exchange
 echo "Creating an admin user for e2edev organization..."
 CR8EADM=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"password":"e2edevadminpw","email":"me%40gmail.com","admin":true}' "${EXCH_URL}/orgs/e2edev/users/e2edevadmin" | jq -r '.msg')
 echo "$CR8EADM"
+
+# Register an ICP user in the customer1 org
+echo "Creating an ICP admin user for Customer1 organization..."
+CR81ICPADM=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"password":"icpadminpw","email":"me%40gmail.com","admin":true}' "${EXCH_URL}/orgs/Customer1/users/icpadmin" | jq -r '.msg')
+echo "$CR81ICPADM"
+
+# Register an ICP user in the customer2 org
+echo "Creating an ICP admin user for Customer2 organization..."
+CR82ICPADM=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"password":"icpadminpw","email":"me%40gmail.com","admin":true}' "${EXCH_URL}/orgs/Customer2/users/icpadmin" | jq -r '.msg')
+echo "$CR82ICPADM"
 
 # Register an IBM admin user in the exchange
 echo "Creating an admin user for IBM org..."
@@ -149,7 +167,6 @@ echo "Creating Anax user..."
 CR8ANAX=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"password":"anax1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/e2edev/users/anax1" | jq -r '.msg')
 echo "$CR8ANAX"
 
-
 echo "Registering Anax device1..."
 REGANAX1=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic e2edev/anax1:anax1pw" -d '{"token":"abcdefg","name":"anaxdev","registeredMicroservices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":""}' "${EXCH_URL}/orgs/e2edev/nodes/an12345" | jq -r '.msg')
 echo "$REGANAX1"
@@ -157,6 +174,10 @@ echo "$REGANAX1"
 echo "Registering Anax device2..."
 REGANAX2=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic e2edev/anax1:anax1pw" -d '{"token":"abcdefg","name":"anaxdev","registeredMicroservices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":""}' "${EXCH_URL}/orgs/e2edev/nodes/an54321" | jq -r '.msg')
 echo "$REGANAX2"
+
+echo "Registering Anax device1 in customer org..."
+REGANAX1C=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic Customer1/icpadmin:icpadminpw" -d '{"token":"abcdefg","name":"anaxdev","registeredMicroservices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":""}' "${EXCH_URL}/orgs/Customer1/nodes/an12345" | jq -r '.msg')
+echo "$REGANAX1C"
 
 echo "Register services"
 ./service_apireg.sh

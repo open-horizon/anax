@@ -72,8 +72,8 @@ func CheckConnectivity(host string) error {
 // This is so that the formatter and parser can figure out what goes where in the string.
 const ExchangeTimeFormat = "2006-01-02T15:04:05.999Z[MST]"
 
-func TimeInSeconds(timestamp string) int64 {
-	if t, err := time.Parse(ExchangeTimeFormat, timestamp); err != nil {
+func TimeInSeconds(timestamp string, format string) int64 {
+	if t, err := time.Parse(format, timestamp); err != nil {
 		glog.Errorf(fmt.Sprintf("error converting time %v into seconds, error: %v", timestamp, err))
 		return 0
 	} else {

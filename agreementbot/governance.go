@@ -346,7 +346,7 @@ func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *WorkloadUsa
 
 		if dev, err := GetDevice(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), partnerWLU.DeviceId, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken()); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("error obtaining device %v heartbeat state: %v", partnerWLU.DeviceId, err)))
-		} else if len(dev.LastHeartbeat) != 0 && (uint64(cutil.TimeInSeconds(dev.LastHeartbeat)+300) > uint64(time.Now().Unix())) {
+		} else if len(dev.LastHeartbeat) != 0 && (uint64(cutil.TimeInSeconds(dev.LastHeartbeat, cutil.ExchangeTimeFormat)+300) > uint64(time.Now().Unix())) {
 			// If the device is still alive (heart beat received in the last 5 mins), then assume this partner is trying to make an
 			// agreement. Exit the partner loop because no one else can safely upgrade right now. The upgrade might be bad.
 			glog.V(5).Infof(logString(fmt.Sprintf("HA group member %v is upgrading, has partners %v %v.", partnerWLU.DeviceId, currentWLU.HAPartners, currentWLU.DeviceId)))
