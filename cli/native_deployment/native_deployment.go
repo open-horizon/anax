@@ -6,6 +6,7 @@ import (
 	"fmt"
 	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cli/dev"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/plugin_registry"
 	"github.com/open-horizon/anax/containermessage"
@@ -105,7 +106,7 @@ func (p *NativeDeploymentConfigPlugin) DefaultConfig() interface{} {
 	}
 }
 
-func (h *NativeDeploymentConfigPlugin) Validate(dep interface{}) (bool, error) {
+func (p *NativeDeploymentConfigPlugin) Validate(dep interface{}) (bool, error) {
 
 	if dc, ok := dep.(map[string]interface{}); !ok {
 		return false, nil
@@ -211,6 +212,107 @@ func SignImagesFromDeploymentMap(deployment map[string]interface{}, dontTouchIma
 	return
 }
 
-// svcInput.DeploymentSignature, err = sign.Input(keyFilePath, deployment)
+// Start the native deployment config in test mode. Only services are supported.
+func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInputFile string) bool {
 
-// cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing deployment string with %s: %v", keyFilePath, err)
+	// Run verification before trying to start anything.
+	dev.ServiceValidate(homeDirectory, userInputFile)
+
+	// Perform the common execution setup.
+	dir, userInputs, cw := dev.CommonExecutionSetup(homeDirectory, userInputFile, dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND)
+
+	// Get the service definition, so that we can look at the user input variable definitions.
+	serviceDef, sderr := dev.GetServiceDefinition(dir, dev.SERVICE_DEFINITION_FILE)
+	if sderr != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, sderr)
+	}
+
+	// Now that we have the service def, we can check if we own the deployment config object.
+	if owned, err := p.Validate(serviceDef.Deployment); !owned || err != nil {
+		return false
+	}
+
+	// Get the metadata for each dependency. The metadata is returned as a list of service definition files from
+	// the project's dependency directory.
+	deps, derr := dev.GetServiceDependencies(dir, serviceDef.RequiredServices)
+	if derr != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to get service dependencies, %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, derr)
+	}
+
+	// Log the starting of dependencies if there are any.
+	if len(deps) != 0 {
+		cliutils.Verbose("Starting dependencies.")
+	}
+
+	// If the service has dependencies, get them started first.
+	msNetworks, perr := dev.ProcessStartDependencies(dir, deps, userInputs.Global, userInputs.Services, cw)
+	if perr != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to start service dependencies, %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, perr)
+	}
+
+	// Get the service's deployment description from the deployment config in the definition.
+	dc, deployment, cerr := serviceDef.ConvertToDeploymentDescription(true)
+	if cerr != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, cerr)
+	}
+
+	// Generate an agreement id for testing purposes.
+	agreementId, aerr := cutil.GenerateAgreementId()
+	if aerr != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to generate test agreementId, %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, aerr)
+	}
+
+	// Now we can start the service container.
+	_, err := dev.StartContainers(deployment, serviceDef.URL, serviceDef.Version, userInputs.Global, serviceDef.UserInputs, userInputs.Services, serviceDef.Org, dc, cw, msNetworks, true, true, agreementId)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v.", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, err)
+	}
+
+	return true
+}
+
+// Stop the native deployment config in test mode. Only services are supported.
+func (p *NativeDeploymentConfigPlugin) StopTest(homeDirectory string) bool {
+
+	// Perform the common execution setup.
+	dir, _, cw := dev.CommonExecutionSetup(homeDirectory, "", dev.SERVICE_COMMAND, dev.SERVICE_STOP_COMMAND)
+
+	// Get the service definition for this project.
+	serviceDef, wderr := dev.GetServiceDefinition(dir, dev.SERVICE_DEFINITION_FILE)
+	if wderr != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", dev.SERVICE_COMMAND, dev.SERVICE_STOP_COMMAND, wderr)
+	}
+
+	// Now that we have the service def, we can check if we own the deployment config object.
+	if owned, err := p.Validate(serviceDef.Deployment); !owned || err != nil {
+		return false
+	}
+
+	// Get the deployment config. This is a top-level service because it's the one being launched, so it is treated as
+	// if it is managed by an agreement.
+	dc, _, cerr := serviceDef.ConvertToDeploymentDescription(true)
+	if cerr != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", dev.SERVICE_COMMAND, dev.SERVICE_STOP_COMMAND, cerr)
+	}
+
+	// Stop the service.
+	err := dev.StopService(dc, cw)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", dev.SERVICE_COMMAND, dev.SERVICE_STOP_COMMAND, err)
+	}
+
+	// Get the metadata for each dependency. The metadata is returned as a list of service definition files from
+	// the project's dependency directory.
+	deps, derr := dev.GetServiceDependencies(dir, serviceDef.RequiredServices)
+	if derr != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to get service dependencies, %v", dev.SERVICE_COMMAND, dev.SERVICE_STOP_COMMAND, derr)
+	}
+
+	// If the service has dependencies, stop them.
+	if err := dev.ProcessStopDependencies(dir, deps, cw); err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to stop service dependencies, %v", dev.SERVICE_COMMAND, dev.SERVICE_STOP_COMMAND, err)
+	}
+
+	fmt.Printf("Stopped service.\n")
+	return true
+}

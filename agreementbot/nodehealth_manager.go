@@ -91,7 +91,7 @@ func (m *NodeHealthManager) NodeOutOfPolicy(pattern string, org string, deviceId
 	} else if node, ok := pe.Nodes.Nodes[deviceId]; !ok {
 		return true
 	} else {
-		lastHB := uint64(cutil.TimeInSeconds(node.LastHeartbeat))
+		lastHB := uint64(cutil.TimeInSeconds(node.LastHeartbeat, cutil.ExchangeTimeFormat))
 		now := uint64(time.Now().Unix())
 		if (lastHB < now) && ((now - lastHB) >= uint64(interval)) {
 			return true

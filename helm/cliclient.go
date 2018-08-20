@@ -66,7 +66,9 @@ func (c *CliClient) UnInstall(releaseName string) error {
 	return nil
 }
 
-func (c *CliClient) Status(releaseName string) (int, error) {
+func (c *CliClient) Status(releaseName string) (*ReleaseStatus, error) {
+
+	status := new(ReleaseStatus)
 
 	args := fmt.Sprintf(STATUS_ARGS)
 	glog.V(5).Infof(clilogString(fmt.Sprintf("Listing Helm releases: %v, args %v", releaseName, args)))
@@ -76,7 +78,7 @@ func (c *CliClient) Status(releaseName string) (int, error) {
 		if exErr, ok := err.(*exec.ExitError); ok {
 			errMsg = string(exErr.Stderr)
 		}
-		return STATUS_NOT_RUNNING, errors.New(fmt.Sprintf("error listing Helm releases: (%T) %v error message: %v", err, err, errMsg))
+		return nil, errors.New(fmt.Sprintf("error listing Helm releases: (%T) %v error message: %v", err, err, errMsg))
 	} else {
 
 		glog.V(5).Infof(clilogString(fmt.Sprintf("Output from list releases: (%T) %s", out, string(out))))
@@ -84,7 +86,7 @@ func (c *CliClient) Status(releaseName string) (int, error) {
 		// Split std out into lines (array of string). There should be at least 2 lines if there is anything deployed.
 		lines := strings.Split(string(out), EOL)
 		if len(lines) <= 1 {
-			return STATUS_NOT_RUNNING, nil
+			return nil, errors.New(fmt.Sprintf("no active releases"))
 		}
 		glog.V(5).Infof(clilogString(fmt.Sprintf("Output as lines: %v", lines)))
 
@@ -92,20 +94,29 @@ func (c *CliClient) Status(releaseName string) (int, error) {
 		for _, line := range lines {
 			tabs := strings.Split(line, TAB)
 			glog.V(5).Infof(clilogString(fmt.Sprintf("Output as tabs: %v", tabs)))
-			if len(tabs) <= 3 {
-				return STATUS_NOT_RUNNING, nil
+			if len(tabs) < 6 {
+				return nil, errors.New(fmt.Sprintf("not enough output, expecting 6 tabs: %v", line))
 			} else if tabs[0] == releaseName {
-				// The 4th column is the release's deployment status.
-				if tabs[3] == DEPLOYED {
-					return STATUS_RUNNING, nil
-				} else {
-					return STATUS_NOT_RUNNING, nil
-				}
+				status.Name = tabs[0]
+				status.Revision = tabs[1]
+				status.Updated = tabs[2]
+				status.Status = tabs[3]
+				status.ChartName = tabs[4]
+				status.Namespace = tabs[5]
+				return status, nil
 			}
 		}
+		return nil, errors.New(fmt.Sprintf("release not found: %v", lines))
 	}
 
-	return STATUS_NOT_RUNNING, nil
+}
+
+// Helm time format. Golang requires the format string to be in reference to the specific time as shown.
+// This is so that the formatter and parser can figure out what goes where in the string.
+const HelmCLIReleaseStatusTimeFormat = "Mon Jan 2 15:04:05 2006"
+
+func (c *CliClient) ReleaseTimeFormat() string {
+	return HelmCLIReleaseStatusTimeFormat
 }
 
 var clilogString = func(v interface{}) string {

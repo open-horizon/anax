@@ -1,8 +1,8 @@
 {
-    "org": "e2edev",
+    "org": "IBM",
     "label": "Helm service",
     "description": "Test service in a Helm package",
-    "public": false,
+    "public": true,
     "url": "http://my.company.com/services/helm-service",
     "version": "1.0.0",
     "arch": "amd64",

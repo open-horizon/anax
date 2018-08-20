@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cli/dev"
 	"github.com/open-horizon/anax/cli/plugin_registry"
 	"github.com/open-horizon/anax/helm"
 	"github.com/open-horizon/rsapss-tool/sign"
@@ -88,4 +90,51 @@ func (p *HelmDeploymentConfigPlugin) Validate(dep interface{}) (bool, error) {
 	} else {
 		return true, nil
 	}
+}
+
+func (p *HelmDeploymentConfigPlugin) StartTest(homeDirectory string, userInputFile string) bool {
+
+	// Run verification before trying to start anything.
+	dev.ServiceValidate(homeDirectory, userInputFile)
+
+	// Perform the common execution setup.
+	dir, _, _ := dev.CommonExecutionSetup(homeDirectory, userInputFile, dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND)
+
+	// Get the service definition, so that we can look at the user input variable definitions.
+	serviceDef, sderr := dev.GetServiceDefinition(dir, dev.SERVICE_DEFINITION_FILE)
+	if sderr != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, sderr)
+	}
+
+	// Now that we have the service def, we can check if we own the deployment config object.
+	if owned, err := p.Validate(serviceDef.Deployment); !owned || err != nil {
+		return false
+	}
+
+	cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' not supported for Helm deployments", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND)
+
+	// For the compiler
+	return true
+}
+
+func (p *HelmDeploymentConfigPlugin) StopTest(homeDirectory string) bool {
+
+	// Perform the common execution setup.
+	dir, _, _ := dev.CommonExecutionSetup(homeDirectory, "", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND)
+
+	// Get the service definition, so that we can look at the user input variable definitions.
+	serviceDef, sderr := dev.GetServiceDefinition(dir, dev.SERVICE_DEFINITION_FILE)
+	if sderr != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, sderr)
+	}
+
+	// Now that we have the service def, we can check if we own the deployment config object.
+	if owned, err := p.Validate(serviceDef.Deployment); !owned || err != nil {
+		return false
+	}
+
+	cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' not supported for Helm deployments", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND)
+
+	// For the compiler
+	return true
 }

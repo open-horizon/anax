@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/plugin_registry"
-	"github.com/open-horizon/anax/cutil"
 	"os"
 )
 
@@ -59,54 +58,10 @@ func ServiceNew(homeDirectory string, org string, dconfig string) {
 
 func ServiceStartTest(homeDirectory string, userInputFile string) {
 
-	// Run verification before trying to start anything.
-	ServiceValidate(homeDirectory, userInputFile)
-
-	// Perform the common execution setup.
-	dir, userInputs, cw := commonExecutionSetup(homeDirectory, userInputFile, SERVICE_COMMAND, SERVICE_START_COMMAND)
-
-	// Get the service definition, so that we can look at the user input variable definitions.
-	serviceDef, sderr := GetServiceDefinition(dir, SERVICE_DEFINITION_FILE)
-	if sderr != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_START_COMMAND, sderr)
-	}
-
-	// Get the metadata for each dependency. The metadata is returned as a list of service definition files from
-	// the project's dependency directory.
-	deps, derr := GetServiceDependencies(dir, serviceDef.RequiredServices)
-	if derr != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to get service dependencies, %v", SERVICE_COMMAND, SERVICE_START_COMMAND, derr)
-	}
-
-	// Log the starting of dependencies if there are any.
-	if len(deps) != 0 {
-		cliutils.Verbose("Starting dependencies.")
-	}
-
-	// If the service has dependencies, get them started first.
-	msNetworks, perr := processStartDependencies(dir, deps, userInputs.Global, userInputs.Services, cw)
-	if perr != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to start service dependencies, %v", SERVICE_COMMAND, SERVICE_START_COMMAND, perr)
-	}
-
-	// Get the service's deployment description from the deployment config in the definition.
-	dc, deployment, cerr := serviceDef.ConvertToDeploymentDescription(true)
-	if cerr != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_START_COMMAND, cerr)
-	}
-
-	// Generate an agreement id for testing purposes.
-	agreementId, aerr := cutil.GenerateAgreementId()
-	if aerr != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to generate test agreementId, %v", SERVICE_COMMAND, SERVICE_START_COMMAND, aerr)
-	}
-
-	// Now we can start the service container.
-	_, err := startContainers(deployment, serviceDef.URL, serviceDef.Version, userInputs.Global, serviceDef.UserInputs, userInputs.Services, serviceDef.Org, dc, cw, msNetworks, true, true, agreementId)
-	//    _, err := startService(deployment, serviceDef, deps, userInputs.Global, userInputs.Services, dc, cw, map[string]docker.ContainerNetwork{})
-	//    _, err := startService(deployment, serviceDef.URL, serviceDef.Version, userInputs.Global, serviceDef.UserInputs, userInputs.Services, serviceDef.Org, dc, cw, map[string]docker.ContainerNetwork{})
-	if err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v.", SERVICE_COMMAND, SERVICE_START_COMMAND, err)
+	// Allow the right plugin to start a test of this service.
+	startErr := plugin_registry.DeploymentConfigPlugins.StartTest(homeDirectory, userInputFile)
+	if startErr != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "%v", startErr)
 	}
 
 }
@@ -115,41 +70,12 @@ func ServiceStartTest(homeDirectory string, userInputFile string) {
 // to minimize the possibility of a parent throwing an error during execution because a leaf node is gone.
 func ServiceStopTest(homeDirectory string) {
 
-	// Perform the common execution setup.
-	dir, _, cw := commonExecutionSetup(homeDirectory, "", SERVICE_COMMAND, SERVICE_STOP_COMMAND)
-
-	// Get the service definition for this project.
-	serviceDef, wderr := GetServiceDefinition(dir, SERVICE_DEFINITION_FILE)
-	if wderr != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_STOP_COMMAND, wderr)
+	// Allow the right plugin to stop a test of this service.
+	stopErr := plugin_registry.DeploymentConfigPlugins.StopTest(homeDirectory)
+	if stopErr != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "%v", stopErr)
 	}
 
-	// Get the deployment config. This is a top-level service because it's the one being launched, so it is treated as
-	// if it is managed by an agreement.
-	dc, _, cerr := serviceDef.ConvertToDeploymentDescription(true)
-	if cerr != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_STOP_COMMAND, cerr)
-	}
-
-	// Stop the service.
-	err := stopService(dc, cw)
-	if err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_STOP_COMMAND, err)
-	}
-
-	// Get the metadata for each dependency. The metadata is returned as a list of service definition files from
-	// the project's dependency directory.
-	deps, derr := GetServiceDependencies(dir, serviceDef.RequiredServices)
-	if derr != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to get service dependencies, %v", SERVICE_COMMAND, SERVICE_STOP_COMMAND, derr)
-	}
-
-	// If the service has dependencies, stop them.
-	if err := processStopDependencies(dir, deps, cw); err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to stop service dependencies, %v", SERVICE_COMMAND, SERVICE_STOP_COMMAND, err)
-	}
-
-	fmt.Printf("Stopped service.\n")
 }
 
 func ServiceValidate(homeDirectory string, userInputFile string) {

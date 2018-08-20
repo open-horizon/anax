@@ -400,7 +400,7 @@ func createContainerWorker() (*container.ContainerWorker, error) {
 }
 
 // This function is used to setup context to execute a microservice or workload container.
-func commonExecutionSetup(homeDirectory string, userInputFile string, projectType string, cmd string) (string, *register.InputFile, *container.ContainerWorker) {
+func CommonExecutionSetup(homeDirectory string, userInputFile string, projectType string, cmd string) (string, *register.InputFile, *container.ContainerWorker) {
 
 	// Get the setup info and context for running the command.
 	dir, err := setup(homeDirectory, true, false, "")
@@ -461,7 +461,7 @@ func getContainerNetworks(depConfig *cliexchange.DeploymentConfig, cw *container
 	return containerNetworks, nil
 }
 
-func processStartDependencies(dir string, deps []*cliexchange.ServiceFile, globals []register.GlobalSet, configUserInputs []register.MicroWork, cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
+func ProcessStartDependencies(dir string, deps []*cliexchange.ServiceFile, globals []register.GlobalSet, configUserInputs []register.MicroWork, cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
 
 	// Collect all the service networks that have to be connected to the caller's container.
 	ms_networks := map[string]docker.ContainerNetwork{}
@@ -506,7 +506,7 @@ func startDependent(dir string,
 		if deps, err := GetServiceDependencies(dir, serviceDef.RequiredServices); err != nil {
 			return nil, errors.New(fmt.Sprintf("unable to retrieve dependency metadata: %v", err))
 			// Start this service's dependencies
-		} else if msn, err := processStartDependencies(dir, deps, globals, configUserInputs, cw); err != nil {
+		} else if msn, err := ProcessStartDependencies(dir, deps, globals, configUserInputs, cw); err != nil {
 			return nil, errors.New(fmt.Sprintf("unable to start dependencies: %v", err))
 		} else {
 			msNetworks = msn
@@ -540,7 +540,7 @@ func startDependent(dir string,
 		// Start the service containers. Make an instance id the same way the runtime makes them.
 		sId := cutil.MakeMSInstanceKey(serviceDef.URL, serviceDef.Version, uuid.NewV4().String())
 
-		return startContainers(deployment, serviceDef.URL, serviceDef.Version, globals, serviceDef.UserInputs, configUserInputs, serviceDef.Org, depConfig, cw, msNetworks, true, false, sId)
+		return StartContainers(deployment, serviceDef.URL, serviceDef.Version, globals, serviceDef.UserInputs, configUserInputs, serviceDef.Org, depConfig, cw, msNetworks, true, false, sId)
 	}
 }
 
@@ -558,10 +558,10 @@ func startMicroservice(deployment *containermessage.DeploymentDescription,
 	// Make an instance id the same way the runtime makes them.
 	msId := cutil.MakeMSInstanceKey(specRef, version, uuid.NewV4().String())
 
-	return startContainers(deployment, specRef, version, globals, defUserInputs, configUserInputs, org, dc, cw, msNetworks, false, false, msId)
+	return StartContainers(deployment, specRef, version, globals, defUserInputs, configUserInputs, org, dc, cw, msNetworks, false, false, msId)
 }
 
-func startContainers(deployment *containermessage.DeploymentDescription,
+func StartContainers(deployment *containermessage.DeploymentDescription,
 	specRef string,
 	version string,
 	globals []register.GlobalSet, // API attributes
@@ -616,7 +616,7 @@ func startContainers(deployment *containermessage.DeploymentDescription,
 	return getContainerNetworks(dc, cw)
 }
 
-func processStopDependencies(dir string, deps []*cliexchange.ServiceFile, cw *container.ContainerWorker) error {
+func ProcessStopDependencies(dir string, deps []*cliexchange.ServiceFile, cw *container.ContainerWorker) error {
 
 	// Log the stopping of dependencies if there are any.
 	if len(deps) != 0 {
@@ -654,7 +654,7 @@ func stopDependent(dir string, serviceDef *cliexchange.ServiceFile, cw *containe
 		if deps, err := GetServiceDependencies(dir, serviceDef.RequiredServices); err != nil {
 			return errors.New(fmt.Sprintf("unable to retrieve dependency metadata: %v", err))
 			// Stop this service's dependencies
-		} else if err := processStopDependencies(dir, deps, cw); err != nil {
+		} else if err := ProcessStopDependencies(dir, deps, cw); err != nil {
 			return errors.New(fmt.Sprintf("unable to stop dependencies: %v", err))
 		}
 	}
@@ -662,7 +662,7 @@ func stopDependent(dir string, serviceDef *cliexchange.ServiceFile, cw *containe
 	return nil
 }
 
-func stopService(dc *cliexchange.DeploymentConfig, cw *container.ContainerWorker) error {
+func StopService(dc *cliexchange.DeploymentConfig, cw *container.ContainerWorker) error {
 	return stopContainers(dc, cw, true)
 }
 

@@ -9,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/helm"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"time"
@@ -304,10 +305,7 @@ func GetContainerStatus(deployment string, key string, infrastructure bool, cont
 
 	status := make([]ContainerStatus, 0)
 
-	deploymentDesc := new(containermessage.DeploymentDescription)
-	if err := json.Unmarshal([]byte(deployment), &deploymentDesc); err != nil {
-		return nil, fmt.Errorf(logString(fmt.Sprintf("Error Unmarshalling deployment string %v. %v", deployment, err)))
-	} else {
+	if deploymentDesc, err := containermessage.GetNativeDeployment(deployment); err == nil {
 		label := container.LABEL_PREFIX + ".agreement_id"
 		if infrastructure {
 			label = container.LABEL_PREFIX + ".infrastructure"
@@ -333,6 +331,24 @@ func GetContainerStatus(deployment string, key string, infrastructure bool, cont
 			glog.Infof("container_status=%v", container_status)
 			status = append(status, container_status)
 		}
+	} else if hdc, err := persistence.GetHelmDeployment(deployment); err == nil {
+		var container_status ContainerStatus
+		container_status.Name = fmt.Sprintf("Helm release: %v", hdc.ReleaseName)
+
+		hc := helm.NewHelmClient()
+		releaseState := "Not Running"
+		if rs, err := hc.Status(hdc.ReleaseName); err != nil {
+			releaseState = fmt.Sprintf("Unknown, error: %v", err)
+		} else {
+			releaseState = rs.Status
+			cDate := cutil.TimeInSeconds(rs.Updated, hc.ReleaseTimeFormat())
+			container_status.Created = cDate
+			container_status.Image = rs.ChartName
+		}
+		container_status.State = releaseState
+		status = append(status, container_status)
+	} else {
+		return nil, fmt.Errorf(logString(fmt.Sprintf("Error Unmarshalling deployment string %v. %v", deployment, err)))
 	}
 	return status, nil
 }

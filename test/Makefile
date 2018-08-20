@@ -20,6 +20,7 @@ HORIZON_PKG_VER ?= $(shell curl -s $(PKGS_URL) | grep -A 2 'Package: horizon' | 
 #
 
 TEST_VARS ?= NOLOOP=1 TEST_PATTERNS=sall
+APPSTORE = $(shell echo $(TEST_VARS) | awk -F "APPSTORE=" '{print $$2}' | cut -c1)
 
 # msghub
 MSGHUB_VARS := MSGHUB_BROKER_URL='$(MSGHUB_BROKER_URL)' MSGHUB_API_KEY='$(MSGHUB_API_KEY)'
@@ -45,7 +46,7 @@ endif
 
 all: default
 default: build
-stop: clean minikube-stop
+stop: appstore-stop clean minikube-stop
 build: version-check agbot-image exchange-db-image exchange-image minikube-setup
 run: test
 distclean: realclean
@@ -179,7 +180,7 @@ exchange-db-image:
 exchange-image:
 	docker pull $(DOCKER_EXCH_INAME):$(DOCKER_EXCH_TAG)
 
-test: clean run-exchange minikube-start run-agbot
+test: clean run-exchange minikube-start appstore-start run-agbot
 	@echo -e  "\nStarting tests"
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
 
@@ -210,4 +211,16 @@ minikube-clean: minikube-stop
 		echo "Skipping minikube cleanup, minikube was not setup by the test environment"; \
 	fi
 
-.PHONY: all default stop build run distclean clean mostlyclean realclean run-agbot run-exchange run-exchange-db test-network test agbot-docker-prereqs version-check agbot-image exchange-db-image exchange-image minikube-setup minikube-start minikube-stop minikube-clean
+appstore-start:
+	if [ "$(APPSTORE)" = "1" ]; then \
+		echo "Starting app store"; \
+		docker run -d --rm --name app-store -p 9001:9001 -e EXCHANGE_URL=http://$(DOCKER_EXCH_CNAME):8080/v1 --network "$(DOCKER_TEST_NETWORK)" registry.ng.bluemix.net/rj-dev/app-store:latest; \
+		docker run -d --rm --name app-store-ui -p 9015:9015 --network "$(DOCKER_TEST_NETWORK)" -e NODE_ENV=production -e APP_STORE_CONTAINER_NAME=app-store -e APP_STORE_CONTAINER_PORT=9001 registry.ng.bluemix.net/rj-dev/app-store-ui:0.11.0; \
+	fi
+
+appstore-stop:
+	@echo "Stopping app store"
+	-docker stop app-store-ui
+	-docker stop app-store
+
+.PHONY: all default stop build run distclean clean mostlyclean realclean run-agbot run-exchange run-exchange-db test-network test agbot-docker-prereqs version-check agbot-image exchange-db-image exchange-image minikube-setup minikube-start minikube-stop minikube-clean appstore-start appstore-stop

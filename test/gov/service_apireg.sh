@@ -17,7 +17,6 @@ echo -e "PATTERN setting is $PATTERN"
 EXCH_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
 IBM_ADMIN_AUTH="IBM/ibmadmin:ibmadminpw"
 E2EDEV_ADMIN_AUTH="e2edev/e2edevadmin:e2edevadminpw"
-IBM_ADMIN_AUTH="IBM/ibmadmin:ibmadminpw"
 
 export HZN_EXCHANGE_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
 
@@ -81,7 +80,7 @@ results "$RES"
 # Helm service
 VERS="1.0.0"
 echo -e "Register Helm service $VERS:"
-hzn exchange service publish -I -u root/root:Horizon-Rul3s -o e2edev -f /root/helm/hello/external/horizon/service.definition.json -k $KEY_TEST_DIR/*private.key
+hzn exchange service publish -I -u root/root:Horizon-Rul3s -o IBM -f /root/helm/hello/external/horizon/service.definition.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for Helm service."
@@ -641,7 +640,7 @@ read -d '' sdef <<EOF
   "services": [
     {
       "serviceUrl":"http://my.company.com/services/helm-service",
-      "serviceOrgid":"e2edev",
+      "serviceOrgid":"IBM",
       "serviceArch":"amd64",
       "serviceVersions":[
         {

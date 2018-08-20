@@ -11,6 +11,8 @@ type DeploymentConfigPlugin interface {
 	GetContainerImages(dep interface{}) (bool, []string, error)
 	DefaultConfig() interface{}
 	Validate(dep interface{}) (bool, error)
+	StartTest(homeDirectory string, userInputFile string) bool
+	StopTest(homeDirectory string) bool
 }
 
 // Global deployment config registry.
@@ -62,6 +64,32 @@ func (d DeploymentConfigRegistry) ValidatedByOne(dep interface{}) error {
 	}
 
 	return errors.New(fmt.Sprintf("deployment config %v is not supported", dep))
+}
+
+// Ask each plugin to attempt to start the project in test mode. Plugins are called
+// until one of them claims ownership of the deployment config. If no error is
+// returned, then one of the plugins has claimed the deployment config.
+func (d DeploymentConfigRegistry) StartTest(homeDirectory string, userInputFile string) error {
+	for _, p := range d {
+		if owned := p.StartTest(homeDirectory, userInputFile); owned {
+			return nil
+		}
+	}
+
+	return errors.New(fmt.Sprintf("starting test mode is not supported for this project"))
+}
+
+// Ask each plugin to attempt to stop the project in test mode. Plugins are called
+// until one of them claims ownership of the deployment config. If no error is
+// returned, then one of the plugins has claimed the deployment config.
+func (d DeploymentConfigRegistry) StopTest(homeDirectory string) error {
+	for _, p := range d {
+		if owned := p.StopTest(homeDirectory); owned {
+			return nil
+		}
+	}
+
+	return errors.New(fmt.Sprintf("stopping test mode is not supported for this project"))
 }
 
 func (d DeploymentConfigRegistry) HasPlugin(name string) bool {

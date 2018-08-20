@@ -45,7 +45,7 @@ func Test_nested_dependencies(t *testing.T) {
 		t.Errorf("unable to get service dependencies, %v", derr)
 	}
 
-	networks, perr := processStartDependencies(horizonDir, deps, []register.GlobalSet{}, []register.MicroWork{}, cw)
+	networks, perr := ProcessStartDependencies(horizonDir, deps, []register.GlobalSet{}, []register.MicroWork{}, cw)
 	if perr != nil {
 		t.Errorf("unable to process dependencies, %v", perr)
 	}
@@ -56,7 +56,7 @@ func Test_nested_dependencies(t *testing.T) {
 	}
 
 	// Shut everything down.
-	if err := processStopDependencies(horizonDir, deps, cw); err != nil {
+	if err := ProcessStopDependencies(horizonDir, deps, cw); err != nil {
 		t.Errorf("error shutting down test containers, %v", err)
 	}
 
