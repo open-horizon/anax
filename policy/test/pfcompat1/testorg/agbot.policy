@@ -13,7 +13,7 @@
     ],
     "agreementProtocols": [
         {
-            "name": "Citizen Scientist"
+            "name": "Basic"
         }
     ],
     "workloads": [
@@ -55,15 +55,5 @@
             {"name":"rpiprop2", "value":"rpival2"}
         ]
     },
-    "blockchains": [
-        {
-            "type":"ethereum",
-            "details": {
-                "genesis":["http://bhnetwork.com/genesis"],
-                "bootnodes":["http://bhnetwork.com/bootnodes"],
-                "directory":["http://bhnetwork.com/directory"],
-                "networkid":["http://bhnetwork.com/networkid"]
-            }
-        }
-    ]
+    "blockchains": []
 }

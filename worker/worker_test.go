@@ -25,7 +25,7 @@ func Test_No_workers(t *testing.T) {
 	mhr := NewMessageHandlerRegistry()
 
 	// Monitor the test to make sure it doesnt get stuck in a wait loop.
-	monitorWaitTime := 5
+	monitorWaitTime := 8
 	testEnded := false
 	go monitorTest(t, &testEnded, monitorWaitTime)
 
@@ -53,7 +53,7 @@ func Test_One_worker(t *testing.T) {
 	mhr.Add(w)
 
 	// Monitor the test to make sure it doesnt get stuck in a wait loop.
-	monitorWaitTime := 10
+	monitorWaitTime := 12
 	testEnded := false
 	go monitorTest(t, &testEnded, monitorWaitTime)
 
@@ -97,7 +97,7 @@ func Test_One_worker_non_blocking(t *testing.T) {
 	mhr.Add(w)
 
 	// Monitor the test to make sure it doesnt get stuck in a wait loop.
-	monitorWaitTime := 10
+	monitorWaitTime := 12
 	testEnded := false
 	go monitorTest(t, &testEnded, monitorWaitTime)
 
@@ -122,6 +122,9 @@ func Test_One_worker_non_blocking(t *testing.T) {
 
 	// Start the event handler
 	mhr.ProcessEventMessages()
+
+	// Tell the monitor the test is done.
+	testEnded = true
 
 	assert.Equal(t, 4, len(workerStatusManager.StatusLog), "There should be 4 log entries.")
 	assert.Equal(t, 1, len(workerStatusManager.Workers), "There should be 1 worker.")
@@ -310,7 +313,7 @@ func monitorTest(t *testing.T, state *bool, wait int) {
 		wc += 1
 		if wc >= wait {
 			t.Errorf("test monitor timeout, test failed.")
-			fmt.Println("Test monitor timeout, test failed.")
+			fmt.Printf("Test monitor timeout on %v, test failed.\n", wait)
 			os.Exit(1)
 		}
 	}

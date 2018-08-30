@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
+	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -17,10 +17,8 @@ import (
 	"time"
 )
 
-func CreateConsumerPH(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, msgq chan events.Message) ConsumerProtocolHandler {
-	if handler := NewCSProtocolHandler(name, cfg, db, pm, msgq); handler != nil {
-		return handler
-	} else if handler := NewBasicProtocolHandler(name, cfg, db, pm, msgq); handler != nil {
+func CreateConsumerPH(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, msgq chan events.Message) ConsumerProtocolHandler {
+	if handler := NewBasicProtocolHandler(name, cfg, db, pm, msgq); handler != nil {
 		return handler
 	} // Add new consumer side protocol handlers here
 	return nil
@@ -41,27 +39,28 @@ type ConsumerProtocolHandler interface {
 	HandlePolicyDeleted(cmd *PolicyDeletedCommand, cph ConsumerProtocolHandler)
 	HandleWorkloadUpgrade(cmd *WorkloadUpgradeCommand, cph ConsumerProtocolHandler)
 	HandleMakeAgreement(cmd *MakeAgreementCommand, cph ConsumerProtocolHandler)
+	HandleStopProtocol(cph ConsumerProtocolHandler)
 	GetTerminationCode(reason string) uint
 	GetTerminationReason(code uint) string
 	GetSendMessage() func(mt interface{}, pay []byte) error
 	RecordConsumerAgreementState(agreementId string, pol *policy.Policy, org string, state string, workerID string) error
 	DeleteMessage(msgId int) error
-	CreateMeteringNotification(mp policy.Meter, agreement *Agreement) (*metering.MeteringNotification, error)
-	TerminateAgreement(agreement *Agreement, reason uint, workerId string)
+	CreateMeteringNotification(mp policy.Meter, agreement *persistence.Agreement) (*metering.MeteringNotification, error)
+	TerminateAgreement(agreement *persistence.Agreement, reason uint, workerId string)
 	GetDeviceMessageEndpoint(deviceId string, workerId string) (string, []byte, error)
 	SetBlockchainClientAvailable(ev *events.BlockchainClientInitializedMessage)
 	SetBlockchainClientNotAvailable(ev *events.BlockchainClientStoppingMessage)
 	SetBlockchainWritable(ev *events.AccountFundedMessage)
 	IsBlockchainWritable(typeName string, name string, org string) bool
-	CanCancelNow(agreement *Agreement) bool
+	CanCancelNow(agreement *persistence.Agreement) bool
 	DeferCommand(cmd AgreementWork)
 	HandleDeferredCommands()
 	PostReply(agreementId string, proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, consumerPolicy *policy.Policy, org string, workerId string) error
-	UpdateProducer(ag *Agreement)
+	UpdateProducer(ag *persistence.Agreement)
 	HandleExtensionMessage(cmd *NewProtocolMessageCommand) error
-	AlreadyReceivedReply(ag *Agreement) bool
-	GetKnownBlockchain(ag *Agreement) (string, string, string)
-	CanSendMeterRecord(ag *Agreement) bool
+	AlreadyReceivedReply(ag *persistence.Agreement) bool
+	GetKnownBlockchain(ag *persistence.Agreement) (string, string, string)
+	CanSendMeterRecord(ag *persistence.Agreement) bool
 	GetExchangeId() string
 	GetExchangeToken() string
 	GetExchangeURL() string
@@ -72,7 +71,7 @@ type ConsumerProtocolHandler interface {
 type BaseConsumerProtocolHandler struct {
 	name             string
 	pm               *policy.PolicyManager
-	db               *bolt.DB
+	db               persistence.AgbotDatabase
 	config           *config.HorizonConfig
 	httpClient       *http.Client // shared HTTP client instance
 	agbotId          string
@@ -126,7 +125,10 @@ func (w *BaseConsumerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 	glog.V(3).Infof(BCPHlogstring(w.Name(), fmt.Sprintf("sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))))
 
 	// Get my own keys
-	myPubKey, myPrivKey, _ := exchange.GetKeys(w.config.AgreementBot.MessageKeyPath)
+	myPubKey, myPrivKey, keyErr := exchange.GetKeys(w.config.AgreementBot.MessageKeyPath)
+	if keyErr != nil {
+		return errors.New(fmt.Sprintf("error getting keys: %v", keyErr))
+	}
 
 	// Demarshal the receiver's public key if we need to
 	if messageTarget.ReceiverPublicKeyObj == nil {
@@ -191,7 +193,7 @@ func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMe
 		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued data received ack message")))
 	} else if can, cerr := cph.AgreementProtocolHandler("", "", "").ValidateCancel(string(cmd.Message)); cerr == nil {
 		// Before dispatching the cancel to a worker thread, make sure it's a valid cancel
-		if ag, err := FindSingleAgreementByAgreementId(b.db, can.AgreementId(), can.Protocol(), []AFilter{}); err != nil {
+		if ag, err := b.db.FindSingleAgreementByAgreementId(can.AgreementId(), can.Protocol(), []persistence.AFilter{}); err != nil {
 			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error finding agreement %v in the db", can.AgreementId())))
 		} else if ag == nil {
 			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("cancel ignored, cannot find agreement %v in the db", can.AgreementId())))
@@ -203,6 +205,7 @@ func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMe
 				AgreementId: can.AgreementId(),
 				Protocol:    can.Protocol(),
 				Reason:      can.Reason(),
+				MessageId:   cmd.MessageId,
 			}
 			cph.WorkQueue() <- agreementWork
 			glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued cancel message")))
@@ -239,11 +242,11 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error demarshalling change policy event %v, error: %v", cmd.Msg.PolicyString(), err)))
 	} else {
 
-		InProgress := func() AFilter {
-			return func(e Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }
+		InProgress := func() persistence.AFilter {
+			return func(e persistence.Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }
 		}
 
-		if agreements, err := FindAgreements(b.db, []AFilter{UnarchivedAFilter(), InProgress()}, cph.Name()); err == nil {
+		if agreements, err := b.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), InProgress()}, cph.Name()); err == nil {
 			for _, ag := range agreements {
 
 				if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
@@ -258,20 +261,20 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 
 					// Remove any workload usage records (non-HA) or mark for pending upgrade (HA). There might not be a workload usage record
 					// if the consumer policy does not specify the workload priority section.
-					if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(b.db, ag.DeviceId, ag.PolicyName); err != nil {
+					if wlUsage, err := b.db.FindSingleWorkloadUsageByDeviceAndPolicyName(ag.DeviceId, ag.PolicyName); err != nil {
 						glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error retreiving workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 					} else if wlUsage != nil && len(wlUsage.HAPartners) != 0 && wlUsage.PendingUpgradeTime != 0 {
 						// Skip this agreement, it is part of an HA group where another member is upgrading
 						continue
 					} else if wlUsage != nil && len(wlUsage.HAPartners) != 0 && wlUsage.PendingUpgradeTime == 0 {
 						for _, partnerId := range wlUsage.HAPartners {
-							if _, err := UpdatePendingUpgrade(b.db, partnerId, ag.PolicyName); err != nil {
+							if _, err := b.db.UpdatePendingUpgrade(partnerId, ag.PolicyName); err != nil {
 								glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("could not update pending workload upgrade for %v using policy %v, error: %v", partnerId, ag.PolicyName, err)))
 							}
 						}
 						// Choose this device's agreement within the HA group to start upgrading.
 						// Delete this workload usage record so that a new agreement will be made starting from the highest priority workload
-						if err := DeleteWorkloadUsage(b.db, ag.DeviceId, ag.PolicyName); err != nil {
+						if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
 							glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 						}
 						agreementWork := CancelAgreement{
@@ -282,9 +285,9 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 						}
 						cph.WorkQueue() <- agreementWork
 					} else {
-						// Non-HA device or agrement without workload priority in the policy, re-make the agreement
+						// Non-HA device or agreement without workload priority in the policy, re-make the agreement.
 						// Delete this workload usage record so that a new agreement will be made starting from the highest priority workload
-						if err := DeleteWorkloadUsage(b.db, ag.DeviceId, ag.PolicyName); err != nil {
+						if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
 							glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 						}
 						agreementWork := CancelAgreement{
@@ -309,11 +312,11 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 func (b *BaseConsumerProtocolHandler) HandlePolicyDeleted(cmd *PolicyDeletedCommand, cph ConsumerProtocolHandler) {
 	glog.V(5).Infof(BCPHlogstring(b.Name(), "received policy deleted command."))
 
-	InProgress := func() AFilter {
-		return func(e Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }
+	InProgress := func() persistence.AFilter {
+		return func(e persistence.Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }
 	}
 
-	if agreements, err := FindAgreements(b.db, []AFilter{UnarchivedAFilter(), InProgress()}, cph.Name()); err == nil {
+	if agreements, err := b.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), InProgress()}, cph.Name()); err == nil {
 		for _, ag := range agreements {
 
 			if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
@@ -323,7 +326,7 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyDeleted(cmd *PolicyDeletedComm
 					glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
 
 					// Remove any workload usage records so that a new agreement will be made starting from the highest priority workload.
-					if err := DeleteWorkloadUsage(b.db, ag.DeviceId, ag.PolicyName); err != nil {
+					if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
 						glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 					}
 
@@ -370,6 +373,18 @@ func (b *BaseConsumerProtocolHandler) HandleMakeAgreement(cmd *MakeAgreementComm
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued make agreement command.")))
 }
 
+func (b *BaseConsumerProtocolHandler) HandleStopProtocol(cph ConsumerProtocolHandler) {
+	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received stop protocol command.")))
+
+	for ix := 0; ix < b.config.AgreementBot.AgreementWorkers; ix++ {
+		work := new(StopWorker)
+		work.workType = STOP
+		cph.WorkQueue() <- *work
+	}
+
+	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued %x stop protocol commands.", b.config.AgreementBot.AgreementWorkers)))
+}
+
 func (b *BaseConsumerProtocolHandler) PersistBaseAgreement(wi *InitiateAgreement, proposal abstractprotocol.Proposal, workerID string, hash string, sig string) error {
 
 	if polBytes, err := json.Marshal(wi.ConsumerPolicy); err != nil {
@@ -378,7 +393,7 @@ func (b *BaseConsumerProtocolHandler) PersistBaseAgreement(wi *InitiateAgreement
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error marshalling proposal for storage %v, error: %v", proposal, err)))
 	} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error demarshalling TsandCs policy from pending agreement %v, error: %v", proposal.AgreementId(), err)))
-	} else if _, err := AgreementUpdate(b.db, proposal.AgreementId(), string(pBytes), string(polBytes), pol.DataVerify, b.config.AgreementBot.ProcessGovernanceIntervalS, hash, sig, b.Name(), proposal.Version()); err != nil {
+	} else if _, err := b.db.AgreementUpdate(proposal.AgreementId(), string(pBytes), string(polBytes), pol.DataVerify, b.config.AgreementBot.ProcessGovernanceIntervalS, hash, sig, b.Name(), proposal.Version()); err != nil {
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error updating agreement with proposal %v in DB, error: %v", proposal, err)))
 
 		// Record that the agreement was initiated, in the exchange
@@ -390,7 +405,7 @@ func (b *BaseConsumerProtocolHandler) PersistBaseAgreement(wi *InitiateAgreement
 
 func (b *BaseConsumerProtocolHandler) PersistReply(reply abstractprotocol.ProposalReply, pol *policy.Policy, workerID string) error {
 
-	if _, err := AgreementMade(b.db, reply.AgreementId(), reply.DeviceId(), "", b.Name(), pol.HAGroup.Partners, "", "", ""); err != nil {
+	if _, err := b.db.AgreementMade(reply.AgreementId(), reply.DeviceId(), "", b.Name(), pol.HAGroup.Partners, "", "", ""); err != nil {
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error updating agreement %v with reply info in DB, error: %v", reply.AgreementId(), err)))
 	}
 	return nil
@@ -443,7 +458,7 @@ func (b *BaseConsumerProtocolHandler) DeleteMessage(msgId int) error {
 
 }
 
-func (b *BaseConsumerProtocolHandler) TerminateAgreement(ag *Agreement, reason uint, mt interface{}, workerId string, cph ConsumerProtocolHandler) {
+func (b *BaseConsumerProtocolHandler) TerminateAgreement(ag *persistence.Agreement, reason uint, mt interface{}, workerId string, cph ConsumerProtocolHandler) {
 	if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
 		glog.Errorf(BCPHlogstring2(workerId, fmt.Sprintf("unable to demarshal policy while trying to cancel %v, error %v", ag.CurrentAgreementId, err)))
 	} else {
@@ -506,7 +521,7 @@ func (b *BaseConsumerProtocolHandler) GetDeferredCommands() []AgreementWork {
 	return res
 }
 
-func (b *BaseConsumerProtocolHandler) UpdateProducer(ag *Agreement) {
+func (b *BaseConsumerProtocolHandler) UpdateProducer(ag *persistence.Agreement) {
 	return
 }
 
@@ -522,18 +537,18 @@ func (c *BaseConsumerProtocolHandler) SetBlockchainClientNotAvailable(ev *events
 	return
 }
 
-func (c *BaseConsumerProtocolHandler) AlreadyReceivedReply(ag *Agreement) bool {
+func (c *BaseConsumerProtocolHandler) AlreadyReceivedReply(ag *persistence.Agreement) bool {
 	if ag.CounterPartyAddress != "" {
 		return true
 	}
 	return false
 }
 
-func (c *BaseConsumerProtocolHandler) GetKnownBlockchain(ag *Agreement) (string, string, string) {
+func (c *BaseConsumerProtocolHandler) GetKnownBlockchain(ag *persistence.Agreement) (string, string, string) {
 	return "", "", ""
 }
 
-func (c *BaseConsumerProtocolHandler) CanSendMeterRecord(ag *Agreement) bool {
+func (c *BaseConsumerProtocolHandler) CanSendMeterRecord(ag *persistence.Agreement) bool {
 	return true
 }
 

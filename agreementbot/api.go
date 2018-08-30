@@ -3,9 +3,9 @@ package agreementbot
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
+	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
@@ -16,19 +16,22 @@ import (
 	"net/http"
 	"sort"
 	"sync"
+	"time"
 )
 
 type API struct {
 	worker.Manager // embedded field
 	name           string
-	db             *bolt.DB
+	db             persistence.AgbotDatabase
 	pm             *policy.PolicyManager
 	bcState        map[string]map[string]apicommon.BlockchainState
 	bcStateLock    sync.Mutex
 	EC             *worker.BaseExchangeContext
+	em             *events.EventStateManager
+	shutdownError  string
 }
 
-func NewAPIListener(name string, config *config.HorizonConfig, db *bolt.DB) *API {
+func NewAPIListener(name string, config *config.HorizonConfig, db persistence.AgbotDatabase) *API {
 	messages := make(chan events.Message)
 
 	listener := &API{
@@ -40,6 +43,7 @@ func NewAPIListener(name string, config *config.HorizonConfig, db *bolt.DB) *API
 		name: name,
 		db:   db,
 		EC:   worker.NewExchangeContext(config.AgreementBot.ExchangeId, config.AgreementBot.ExchangeToken, config.AgreementBot.ExchangeURL, false, config.Collaborators.HTTPClientFactory),
+		em:   events.NewEventStateManager(),
 	}
 
 	listener.listen(config.AgreementBot.APIListen)
@@ -70,16 +74,36 @@ func (a *API) NewEvent(ev events.Message) {
 			glog.V(3).Infof(APIlogString(fmt.Sprintf("API Worker processed BC stopping for %v", msg)))
 		}
 	case *events.NodeShutdownCompleteMessage:
+		msg, _ := ev.(*events.NodeShutdownCompleteMessage)
 		// Now remove myself from the worker dispatch list. When the anax process terminates,
 		// the socket listener will terminate also. This is done on a separate thread so that
 		// the message dispatcher doesnt get blocked. This worker isnt actually a full blown
 		// worker and doesnt have a command thread that it can run on.
-		go func() {
-			a.Messages() <- events.NewWorkerStopMessage(events.WORKER_STOP, a.GetName())
-		}()
+		switch msg.Event().Id {
+		case events.UNCONFIGURE_COMPLETE:
+			// This is for the situation where the agbot is running on a node.
+			go func() {
+				a.Messages() <- events.NewWorkerStopMessage(events.WORKER_STOP, a.GetName())
+			}()
+		case events.AGBOT_QUIESCE_COMPLETE:
+			a.em.RecordEvent(msg, func(m events.Message) { a.saveShutdownError(m) })
+			// This is for the situation where the agbot is running stand alone.
+			go func() {
+				a.Messages() <- events.NewWorkerStopMessage(events.WORKER_STOP, a.GetName())
+			}()
+		}
+
 	}
 
 	return
+}
+
+func (a *API) saveShutdownError(msg events.Message) {
+	switch msg.(type) {
+	case *events.NodeShutdownCompleteMessage:
+		m, _ := msg.(*events.NodeShutdownCompleteMessage)
+		a.shutdownError = m.Err()
+	}
 }
 
 func (a *API) GetName() string {
@@ -157,6 +181,7 @@ func (a *API) listen(apiListen string) {
 
 		router.HandleFunc("/agreement", a.agreement).Methods("GET", "OPTIONS")
 		router.HandleFunc("/agreement/{id}", a.agreement).Methods("GET", "DELETE", "OPTIONS")
+		router.HandleFunc("/partition", a.partition).Methods("GET", "OPTIONS")
 		router.HandleFunc("/policy", a.policy).Methods("GET", "OPTIONS")
 		router.HandleFunc("/policy/{org}", a.policy).Methods("GET", "OPTIONS")
 		router.HandleFunc("/policy/{org}/{name}", a.policy).Methods("GET", "OPTIONS")
@@ -164,7 +189,7 @@ func (a *API) listen(apiListen string) {
 		router.HandleFunc("/workloadusage", a.workloadusage).Methods("GET", "OPTIONS")
 		router.HandleFunc("/status", a.status).Methods("GET", "OPTIONS")
 		router.HandleFunc("/status/workers", a.workerstatus).Methods("GET", "OPTIONS")
-		router.HandleFunc("/node", a.node).Methods("GET", "OPTIONS")
+		router.HandleFunc("/node", a.node).Methods("GET", "DELETE", "OPTIONS")
 
 		http.ListenAndServe(apiListen, nocache(router))
 	}()
@@ -178,7 +203,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 		id := pathVars["id"]
 
 		if id != "" {
-			if ag, err := FindSingleAgreementByAgreementIdAllProtocols(a.db, id, policy.AllAgreementProtocols(), []AFilter{}); err != nil {
+			if ag, err := a.db.FindSingleAgreementByAgreementIdAllProtocols(id, policy.AllAgreementProtocols(), []persistence.AFilter{}); err != nil {
 				glog.Error(APIlogString(fmt.Sprintf("error finding agreement %v, error: %v", id, err)))
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
 			} else if ag == nil {
@@ -192,13 +217,13 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 			var archivedKey = "archived"
 			var activeKey = "active"
 
-			wrap := make(map[string]map[string][]Agreement, 0)
-			wrap[agreementsKey] = make(map[string][]Agreement, 0)
-			wrap[agreementsKey][archivedKey] = []Agreement{}
-			wrap[agreementsKey][activeKey] = []Agreement{}
+			wrap := make(map[string]map[string][]persistence.Agreement, 0)
+			wrap[agreementsKey] = make(map[string][]persistence.Agreement, 0)
+			wrap[agreementsKey][archivedKey] = []persistence.Agreement{}
+			wrap[agreementsKey][activeKey] = []persistence.Agreement{}
 
 			for _, agp := range policy.AllAgreementProtocols() {
-				if ags, err := FindAgreements(a.db, []AFilter{}, agp); err != nil {
+				if ags, err := a.db.FindAgreements([]persistence.AFilter{}, agp); err != nil {
 					glog.Error(APIlogString(fmt.Sprintf("error finding all agreements, error: %v", err)))
 					http.Error(w, "Internal server error", http.StatusInternalServerError)
 					return
@@ -234,7 +259,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 		}
 		glog.V(3).Infof(APIlogString(fmt.Sprintf("handling DELETE of agreement: %v", r)))
 
-		if ag, err := FindSingleAgreementByAgreementIdAllProtocols(a.db, id, policy.AllAgreementProtocols(), []AFilter{UnarchivedAFilter()}); err != nil {
+		if ag, err := a.db.FindSingleAgreementByAgreementIdAllProtocols(id, policy.AllAgreementProtocols(), []persistence.AFilter{persistence.UnarchivedAFilter()}); err != nil {
 			glog.Error(APIlogString(fmt.Sprintf("error finding agreement %v, error: %v", id, err)))
 			w.WriteHeader(http.StatusInternalServerError)
 		} else if ag == nil {
@@ -242,7 +267,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 		} else {
 			if ag.AgreementTimedout == 0 {
 				// Update the database
-				if _, err := AgreementTimedout(a.db, ag.CurrentAgreementId, ag.AgreementProtocol); err != nil {
+				if _, err := a.db.AgreementTimedout(ag.CurrentAgreementId, ag.AgreementProtocol); err != nil {
 					glog.Errorf(APIlogString(fmt.Sprintf("error marking agreement %v terminated: %v", ag.CurrentAgreementId, err)))
 				}
 				a.Messages() <- events.NewABApiAgreementCancelationMessage(events.AGREEMENT_ENDED, ag.AgreementProtocol, ag.CurrentAgreementId)
@@ -358,7 +383,7 @@ func (a *API) policy(w http.ResponseWriter, r *http.Request) {
 		protocol := ""
 		// The body is syntacticly correct, verify that the agreement id matches up with the device id and policy name.
 		if upgrade.AgreementId != "" {
-			if ag, err := FindSingleAgreementByAgreementIdAllProtocols(a.db, upgrade.AgreementId, policy.AllAgreementProtocols(), []AFilter{UnarchivedAFilter()}); err != nil {
+			if ag, err := a.db.FindSingleAgreementByAgreementIdAllProtocols(upgrade.AgreementId, policy.AllAgreementProtocols(), []persistence.AFilter{persistence.UnarchivedAFilter()}); err != nil {
 				glog.Error(APIlogString(fmt.Sprintf("error finding agreement %v, error: %v", upgrade.AgreementId, err)))
 				w.WriteHeader(http.StatusInternalServerError)
 				return
@@ -386,7 +411,7 @@ func (a *API) policy(w http.ResponseWriter, r *http.Request) {
 
 		// Verfiy that the device is using the workload rollback feature
 		if upgrade.Device != "" {
-			if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(a.db, upgrade.Device, policyName); err != nil {
+			if wlUsage, err := a.db.FindSingleWorkloadUsageByDeviceAndPolicyName(upgrade.Device, policyName); err != nil {
 				glog.Error(APIlogString(fmt.Sprintf("error finding workload usage record for %v with policy %v, error: %v", upgrade.AgreementId, policyName, err)))
 				w.WriteHeader(http.StatusInternalServerError)
 				return
@@ -412,7 +437,7 @@ func (a *API) workloadusage(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
-		if wlusages, err := FindWorkloadUsages(a.db, []WUFilter{}); err != nil {
+		if wlusages, err := a.db.FindWorkloadUsages([]persistence.WUFilter{}); err != nil {
 			glog.Error(APIlogString(fmt.Sprintf("error finding all workload usages, error: %v", err)))
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 		} else {
@@ -440,20 +465,6 @@ func (a *API) status(w http.ResponseWriter, r *http.Request) {
 
 		if err := apicommon.WriteConnectionStatus(info); err != nil {
 			glog.Errorf(APIlogString(fmt.Sprintf("Unable to get connectivity status: %v", err)))
-		}
-
-		a.bcStateLock.Lock()
-		defer a.bcStateLock.Unlock()
-
-		for _, bc := range a.bcState[policy.Ethereum_bc] {
-			geth := apicommon.NewGeth()
-
-			gethURL := fmt.Sprintf("http://%v:%v", bc.GetService(), bc.GetServicePort())
-			if err := apicommon.WriteGethStatus(gethURL, geth); err != nil {
-				glog.Errorf(APIlogString(fmt.Sprintf("Unable to determine geth service facts: %v", err)))
-			}
-
-			info.AddGeth(geth)
 		}
 
 		writeResponse(w, info, http.StatusOK)
@@ -494,6 +505,106 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		}
 		agbot := NewHorizonAgbot(id, org)
 		writeResponse(w, agbot, http.StatusOK)
+
+	case "DELETE":
+		glog.V(5).Infof(APIlogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		// Get the blocking option from the URL query parameters. If blocking is true, then the API will block
+		// until the Agbot quiesce is complete. True is the default.
+		block := r.URL.Query().Get("block")
+		if block != "" && block != "true" && block != "false" {
+			glog.Error(APIlogString(fmt.Sprintf("%v is an incorrect value for block, must be true or false", block)))
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		} else if block == "" {
+			block = "true"
+		}
+
+		blocking := true
+		if block == "false" {
+			blocking = false
+		}
+
+		// Quiesce the agbot. This means:
+		// a) stop the search for nodes to make agreements with, and then
+		// b) make sure all this agbot's agreements are in a steady state, meaning archived or finalized
+
+		// Fire the NodeShutdown event to get the agbot to quiesce itself.
+		ns := events.NewNodeShutdownMessage(events.START_AGBOT_QUIESCE, blocking, false)
+		a.Messages() <- ns
+
+		// Wait (if allowed) for the ShutdownComplete event
+		if block == "true" {
+			se := events.NewNodeShutdownCompleteMessage(events.AGBOT_QUIESCE_COMPLETE, "")
+			for {
+				if a.em.ReceivedEvent(se, nil) {
+					break
+				}
+				glog.V(5).Infof(APIlogString(fmt.Sprintf("Waiting for agbot shutdown to complete")))
+				time.Sleep(5 * time.Second)
+			}
+		}
+
+		glog.V(5).Infof(APIlogString(fmt.Sprintf("Handled %v on resource %v", r.Method, resource)))
+
+		w.WriteHeader(http.StatusNoContent)
+
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *API) partition(w http.ResponseWriter, r *http.Request) {
+
+	switch r.Method {
+	case "GET":
+
+		// For each partition, how many agreements and other objects are in it. The top level keys in the output
+		// are the partition names, the sub maps are for each of agreements, workload usage, etc.
+		const AGREEMENT_ACTIVE_KEY = "active agreements"
+		const AGREEMENT_ARCHIVED_KEY = "archived agreements"
+		const WORKLOAD_USAGES_KEY = "workload usages"
+
+		output := make(map[string]map[string]int64, 0)
+
+		if partitions, err := a.db.FindPartitions(); err != nil {
+			glog.Error(APIlogString(fmt.Sprintf("error finding all partitions, error: %v", err)))
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		} else {
+
+			// For each partition, get a count of records in the partition.
+			for _, p := range partitions {
+				partitionMaps := make(map[string]int64, 0)
+
+				// First get the agreement count.
+				if active, archived, err := a.db.GetAgreementCount(p); err != nil {
+					glog.Error(APIlogString(fmt.Sprintf("error finding agreement count in partition %v, error: %v", p, err)))
+					http.Error(w, "Internal server error", http.StatusInternalServerError)
+					return
+				} else {
+					partitionMaps[AGREEMENT_ACTIVE_KEY] = active
+					partitionMaps[AGREEMENT_ARCHIVED_KEY] = archived
+				}
+
+				// Then get the workload_usage count.
+				if num, err := a.db.GetWorkloadUsagesCount(p); err != nil {
+					glog.Error(APIlogString(fmt.Sprintf("error finding workload usage count in partition %v, error: %v", p, err)))
+					http.Error(w, "Internal server error", http.StatusInternalServerError)
+					return
+				} else {
+					partitionMaps[WORKLOAD_USAGES_KEY] = num
+				}
+
+				// Set the values for the current partition
+				output[p] = partitionMaps
+
+			}
+
+			writeResponse(w, output, http.StatusOK)
+		}
 
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, OPTIONS")
@@ -542,7 +653,7 @@ func writeInputErr(writer http.ResponseWriter, status int, inputErr *APIUserInpu
 }
 
 // Helper functions for sorting agreements
-type AgreementsByAgreementCreationTime []Agreement
+type AgreementsByAgreementCreationTime []persistence.Agreement
 
 func (s AgreementsByAgreementCreationTime) Len() int {
 	return len(s)
@@ -556,7 +667,7 @@ func (s AgreementsByAgreementCreationTime) Less(i, j int) bool {
 	return s[i].AgreementInceptionTime < s[j].AgreementInceptionTime
 }
 
-type AgreementsByAgreementTimeoutTime []Agreement
+type AgreementsByAgreementTimeoutTime []persistence.Agreement
 
 func (s AgreementsByAgreementTimeoutTime) Len() int {
 	return len(s)
@@ -571,7 +682,7 @@ func (s AgreementsByAgreementTimeoutTime) Less(i, j int) bool {
 }
 
 // Helper functions for sorting workload usages
-type WorkloadUsagesByDeviceId []WorkloadUsage
+type WorkloadUsagesByDeviceId []persistence.WorkloadUsage
 
 func (s WorkloadUsagesByDeviceId) Len() int {
 	return len(s)

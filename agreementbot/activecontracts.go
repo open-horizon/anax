@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/config"
 	"net/http"
 	"os"
@@ -29,7 +30,7 @@ type DeviceEntry struct {
 	Agreements []AgreementEntry `json:"contracts"`
 }
 
-func GetActiveAgreements(in_devices map[string][]string, agreement Agreement, hConfig *config.HorizonConfig) ([]string, error) {
+func GetActiveAgreements(in_devices map[string][]string, agreement persistence.Agreement, hConfig *config.HorizonConfig) ([]string, error) {
 	err := error(nil)
 
 	httpClient := hConfig.Collaborators.HTTPClientFactory.NewHTTPClient(nil)
@@ -95,7 +96,7 @@ func GetActiveAgreements(in_devices map[string][]string, agreement Agreement, hC
 	}
 }
 
-func ActiveAgreementsContains(activeAgreements []string, agreement Agreement, prefix string) bool {
+func ActiveAgreementsContains(activeAgreements []string, agreement persistence.Agreement, prefix string) bool {
 
 	inttest_mode := os.Getenv("mtn_integration_test")
 	if inttest_mode != "" || agreement.DisableDataVerificationChecks == true {

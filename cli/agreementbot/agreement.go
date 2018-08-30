@@ -3,7 +3,7 @@ package agreementbot
 import (
 	"encoding/json"
 	"fmt"
-	agbot "github.com/open-horizon/anax/agreementbot"
+	agbot "github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"os"
 )

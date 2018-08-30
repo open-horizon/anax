@@ -26,7 +26,6 @@ type NodeAndStatus struct {
 	HA                 *bool       `json:"ha"`                    // removed omitempty
 	Config             Configstate `json:"configstate"`           // removed omitempty
 	// from apicommon.Info
-	Geths         []apicommon.Geth         `json:"geth"`
 	Configuration *apicommon.Configuration `json:"configuration"`
 	Connectivity  map[string]bool          `json:"connectivity"`
 }
@@ -53,7 +52,6 @@ func (n *NodeAndStatus) CopyNodeInto(horDevice *api.HorizonDevice) {
 // CopyStatusInto copies the status info into our output struct
 func (n *NodeAndStatus) CopyStatusInto(status *apicommon.Info) {
 	//todo: I don't like having to repeat all of these fields, hard to maintain. Maybe use reflection?
-	n.Geths = status.Geths
 	n.Configuration = status.Configuration
 	n.Connectivity = status.Connectivity
 }

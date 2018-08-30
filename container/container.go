@@ -357,7 +357,6 @@ type ContainerWorker struct {
 	db                *bolt.DB
 	client            *docker.Client
 	iptables          *iptables.IPTables
-	inAgbot           bool
 }
 
 func (cw *ContainerWorker) GetClient() *docker.Client {
@@ -375,27 +374,19 @@ func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, e
 		db:         nil,
 		client:     client,
 		iptables:   nil,
-		inAgbot:    true,
 	}, nil
 }
 
 func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB) *ContainerWorker {
 
-	inAgbot := false
-	if config.Edge.ServiceStorage == "" && config.Edge.DBPath == "" {
-		// We are running in an agbot, dont need the service storage config.
-		inAgbot = true
+	storage_base_dir := "/var/tmp/horizon/service_storage" // default
+	if config.Edge.ServiceStorage != "" {
+		storage_base_dir = config.Edge.ServiceStorage
+	}
 
-	} else {
-		storage_base_dir := "/var/tmp/horizon/service_storage" // default
-		if config.Edge.ServiceStorage != "" {
-			storage_base_dir = config.Edge.ServiceStorage
-		}
-
-		if err := unix.Access(storage_base_dir, unix.W_OK); err != nil {
-			glog.Errorf("Unable to access service storage dir: %v. Error: %v", storage_base_dir, err)
-			panic("Unable to access service storage dir specified in config")
-		}
+	if err := unix.Access(storage_base_dir, unix.W_OK); err != nil {
+		glog.Errorf("Unable to access service storage dir: %v. Error: %v", storage_base_dir, err)
+		panic("Unable to access service storage dir specified in config")
 	}
 
 	if ipt, err := iptables.New(); err != nil {
@@ -410,7 +401,6 @@ func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB) 
 			db:         db,
 			client:     client,
 			iptables:   ipt,
-			inAgbot:    inAgbot,
 		}
 		worker.SetDeferredDelay(15)
 
@@ -1485,12 +1475,6 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 // To ensure that all the containers for all known agreements are running, we will depend on the governance
 // function which periodically checks to ensure that all containers are running.
 func (b *ContainerWorker) syncupResources() {
-
-	// do nothing for agbot
-	if b.inAgbot {
-		glog.V(3).Infof("ContainerWorker skipping resource sync up on agreement bot.")
-		return
-	}
 
 	// for multiple anax instances case, do nothing because we do not want to remove containers that
 	// belong to other anax instances

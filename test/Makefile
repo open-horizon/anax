@@ -101,7 +101,7 @@ run-exchange-db: test-network
 		--network "$(DOCKER_TEST_NETWORK)" \
 		-e POSTGRES_DB=$(EXCHDB_NAME) \
 		-e POSTGRES_USER=$(EXCHDB_USER) \
-		-t postgres:9
+		-t $(DOCKER_EXCHDB_INAME):$(DOCKER_EXCHDB_TAG)
 
 clean:
 	@echo -e "\nStarting cleanup"
@@ -214,7 +214,7 @@ minikube-clean: minikube-stop
 appstore-start:
 	if [ "$(APPSTORE)" = "1" ]; then \
 		echo "Starting app store"; \
-		docker run -d --rm --name app-store -p 9001:9001 -e EXCHANGE_URL=http://$(DOCKER_EXCH_CNAME):8080/v1 --network "$(DOCKER_TEST_NETWORK)" registry.ng.bluemix.net/rj-dev/app-store:latest; \
+		docker run -d --rm --name app-store -p 9001:9001 -e EXCHANGE_URL=http://$(DOCKER_EXCH_CNAME):8080/v1 --network "$(DOCKER_TEST_NETWORK)" registry.ng.bluemix.net/rj-dev/app-store:0.7.0; \
 		docker run -d --rm --name app-store-ui -p 9015:9015 --network "$(DOCKER_TEST_NETWORK)" -e NODE_ENV=production -e APP_STORE_CONTAINER_NAME=app-store -e APP_STORE_CONTAINER_PORT=9001 registry.ng.bluemix.net/rj-dev/app-store-ui:0.11.0; \
 	fi
 

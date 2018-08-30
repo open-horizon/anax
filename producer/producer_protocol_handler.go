@@ -20,9 +20,7 @@ import (
 )
 
 func CreateProducerPH(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, ec exchange.ExchangeContext) ProducerProtocolHandler {
-	if handler := NewCSProtocolHandler(name, cfg, db, pm, ec); handler != nil {
-		return handler
-	} else if handler := NewBasicProtocolHandler(name, cfg, db, pm, ec); handler != nil {
+	if handler := NewBasicProtocolHandler(name, cfg, db, pm, ec); handler != nil {
 		return handler
 	} // Add new producer side protocol handlers here
 	return nil
@@ -180,7 +178,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 			fmt.Sprintf("Node received Proposal message for service %v from the agbot %v.", wls, proposal.ConsumerId()),
 			persistence.EC_RECEIVED_PROPOSAL,
 			proposal.AgreementId(),
-			persistence.WorkloadInfo{wls, worg, wversion, warch},
+			persistence.WorkloadInfo{URL: wls, Org: worg, Version: wversion, Arch: warch},
 			(&tcPolicy.APISpecs).AsStringArray(),
 			proposal.ConsumerId(),
 			proposal.Protocol())
@@ -231,7 +229,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 						fmt.Sprintf("Node rejected the proposal for service %v.", wls),
 						persistence.EC_REJECT_PROPOSAL,
 						proposal.AgreementId(),
-						persistence.WorkloadInfo{wls, worg, wversion, warch},
+						persistence.WorkloadInfo{URL: wls, Org: worg, Version: wversion, Arch: warch},
 						(&tcPolicy.APISpecs).AsStringArray(),
 						proposal.ConsumerId(),
 						proposal.Protocol())
@@ -247,7 +245,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 				fmt.Sprintf("Error handling Prosal for service %v. Error: %v", wls, err_log_event),
 				persistence.EC_ERROR_PROCESSING_PROPOSAL,
 				proposal.AgreementId(),
-				persistence.WorkloadInfo{wls, worg, wversion, warch},
+				persistence.WorkloadInfo{URL: wls, Org: worg, Version: wversion, Arch: warch},
 				(&tcPolicy.APISpecs).AsStringArray(),
 				proposal.ConsumerId(),
 				proposal.Protocol())

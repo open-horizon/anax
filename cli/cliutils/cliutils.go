@@ -14,15 +14,15 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
-	"runtime"
 )
 
 const (
 	HZN_API             = "http://localhost"
-	HZN_API_MAC             = "http://localhost:8081"
+	HZN_API_MAC         = "http://localhost:8081"
 	AGBOT_HZN_API       = "http://localhost:8046"
 	WIOTP_DOMAIN        = "internetofthings.ibmcloud.com"
 	WIOTP_BASE_ROUTE    = "api/v0002"
