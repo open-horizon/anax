@@ -1,0 +1,13 @@
+#!/bin/sh
+# Create sym links from we where we install the horizon-cli files to where they need to be under /usr/local
+# Note: this file must be given the executable permissions before giving it to pkgbuild
+
+SRCDIR=/Users/Shared
+DESTDIR=/usr/local
+
+mkdir -p $DESTDIR/bin $DESTDIR/share/man/man1
+ln -sf $SRCDIR/horizon-cli/bin/hzn $DESTDIR/bin
+ln -sf $SRCDIR/horizon-cli/share/horizon $DESTDIR/share
+ln -sf $SRCDIR/horizon-cli/share/man/man1/hzn.1 $DESTDIR/share/man/man1
+
+exit 0

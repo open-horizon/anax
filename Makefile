@@ -74,6 +74,30 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 	  mkdir -p $(CLI_COMPLETION_DIR) && $(CLI_EXECUTABLE) --completion-script-bash > $(CLI_COMPLETION_DIR)/hzn_bash_autocomplete.sh; \
 	fi
 
+
+# Build an install pkg for horizon-cli for mac
+#todo: these targets should probably be moved into the official horizon build process
+export MAC_PKG_VERSION ?= 2.17.14
+MAC_PKG_IDENTIFIER ?= com.github.open-horizon.pkg.horizon-cli
+MAC_PKG_INSTALL_DIR ?= /Users/Shared/horizon-cli
+
+macpkg: $(CLI_EXECUTABLE)
+	mkdir -p pkg/mac/horizon-cli/bin pkg/mac/horizon-cli/share/horizon pkg/mac/horizon-cli/share/man/man1
+	cp $(CLI_EXECUTABLE) pkg/mac/horizon-cli/bin
+	cp LICENSE.txt pkg/mac/horizon-cli/share/horizon
+	cp $(CLI_MAN_DIR)/hzn.1 pkg/mac/horizon-cli/share/man/man1
+	cp $(CLI_COMPLETION_DIR)/hzn_bash_autocomplete.sh pkg/mac/horizon-cli/share/horizon
+	pkgbuild --root pkg/mac/horizon-cli --scripts pkg/mac/scripts --identifier $(MAC_PKG_IDENTIFIER) --version $(MAC_PKG_VERSION) --install-location $(MAC_PKG_INSTALL_DIR) pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg
+	rm -f pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg.zip
+	cd pkg/mac/build; zip horizon-cli-$(MAC_PKG_VERSION).pkg.zip horizon-cli-$(MAC_PKG_VERSION).pkg; cd ../../..   # need to be in the same dir to zip
+
+macinstall: macpkg
+	sudo installer -pkg pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg -target '/Volumes/Macintosh HD'
+
+macpkginfo:
+	pkgutil --pkg-info $(MAC_PKG_IDENTIFIER)
+	pkgutil --only-files --files $(MAC_PKG_IDENTIFIER)
+
 docker-image:
 	@echo "Producing anax docker image $(DOCKER_IMAGE)"
 	if [[ $(arch) == "amd64" ]]; then \
