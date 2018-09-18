@@ -17,10 +17,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"runtime"
 )
 
 const (
 	HZN_API             = "http://localhost"
+	HZN_API_MAC             = "http://localhost:8081"
 	AGBOT_HZN_API       = "http://localhost:8046"
 	WIOTP_DOMAIN        = "internetofthings.ibmcloud.com"
 	WIOTP_BASE_ROUTE    = "api/v0002"
@@ -356,7 +358,11 @@ func GetHorizonUrlBase() string {
 	if envVar != "" {
 		return envVar
 	}
-	return HZN_API
+	if runtime.GOOS == "darwin" {
+		return HZN_API_MAC
+	} else {
+		return HZN_API
+	}
 }
 
 // GetRespBodyAsString converts an http response body to a string
