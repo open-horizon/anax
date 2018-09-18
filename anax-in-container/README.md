@@ -1,6 +1,6 @@
 # Horizon Agent (anax) Running in a Container
 
-This support provides the way to build and run a container running anax (the Horizon edge agent), so that an edge node can be created by starting the container. This can be useful in several cases:
+This support provides the way to build and run a container running the Horizon edge agent, so that an edge node can be created by starting the container. This can be useful in several cases:
 - You want to run several instances of the Horizon agent on the same host, for scale testing or development.
 - You want to have several instances of the Horizon agent, each configured slightly differently, so you can quickly/easily start the one you want to work with.
 - You want to run the Horizon agent on your Mac, for development, testing, or quick experimentation, and you have docker but not a VM (or you just don't want manage a separate VM). This is a very low barrier to entry for trying out horizon (if you happen to have a mac).
@@ -27,7 +27,7 @@ make docker-push
 
 One of the most convenient uses of the Horizon agent container is to run it on a Mac, since the full Horizon agent install package is not available for Mac. This enables you to use your mac as a quick edge node for experimenting, or edge service development.
 
-The horizon-cli package **is** available for Mac, so first download and install the latest version of horizon-cli-x.x.x.pkg.zip from https://github.com/open-horizon/anax/releases
+The horizon-cli package **is** available for Mac, so first download and install the latest version of `horizon-cli-x.x.x.pkg.zip` from https://github.com/open-horizon/anax/releases
 
 If you don't already have `/usr/local/bin` in your command line PATH, add that, or fully qualify the commands below. Then:
 
@@ -50,13 +50,13 @@ Note: since you have the `hzn` command installed, you can also run edge services
 
 ## Using the Horizon agent Container on **Linux**
 
-The Horizon agent container can be used on a linux host in a very similar to the instructions above, with these differences:
+The Horizon agent container can be used on a linux host in a very similar way to the instructions above, with these differences:
 - Install the Horizon CLI using the horizon-cli debian package
 - On your linux host run `export HORIZON_URL=http://localhost:8081` to direct the `hzn` command to the container
 
 ## Using a Second Horizon agent Container on the Same Machine
 
-For now, to do this you must start the container manually, the horizon-container start script doesn't yet handle multiple instances.
+For now, to start a second container you must start it manually, the horizon-container start script doesn't yet handle multiple instances.
 
 
 ```
