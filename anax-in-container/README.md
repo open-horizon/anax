@@ -23,7 +23,7 @@ DOCKER_MAYBE_CACHE='--no-cache' make docker-image
 make docker-push
 ```
 
-## Using the Horizon agent Container on **Mac** for the Bluehorizon Environment
+## Using the Horizon agent Container on **Mac**
 
 One of the most convenient uses of the Horizon agent container is to run it on a Mac, since the full Horizon agent install package is not available for Mac. This enables you to use your mac as a quick edge node for experimenting, or edge service development.
 
@@ -46,22 +46,18 @@ If you no longer want to run edge services on your mac, you can unregister your 
 horizon-container stop
 ```
 
+Note: since you have the `hzn` command installed, you can also run edge services using `hzn dev` while developing them.
 
-## Using the Anax Container for the Bluehorizon Environment
+## Using the Horizon agent Container on **Linux**
 
-```
-mkdir -p /var/tmp/horizon/service_storage    # anax will check for this, because this will be mounted into service containers
-docker pull openhorizon/amd64_anax
-docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -v /var/run/docker.sock:/var/run/docker.sock -v /var/tmp/horizon:/var/tmp/horizon -v `pwd`:/outside openhorizon/amd64_anax /root/bluehorizon-env.sh
-export HORIZON_URL='http://localhost:8081'    # to point the hzn cmd to the container
-hzn node list   # ensure you talking to the container, and the bluehorizon-env.sh config script ran
-hzn register -n $EXCHANGE_NODEAUTH -f ~/examples/edge/msghub/cpu2msghub/horizon/userinput.json $HZN_ORG_ID $HZN_PATTERN
-hzn agreement list
-# To stop anax, use this cmd to give it time to unregister and stop the service containers:
-docker stop -t 120 amd64_anax; docker rm amd64_anax
-```
+The Horizon agent container can be used on a linux host in a very similar to the instructions above, with these differences:
+- Install the Horizon CLI using the horizon-cli debian package
+- On your linux host run `export HORIZON_URL=http://localhost:8081` to direct the `hzn` command to the container
 
-## Using a Second Anax Container on the Same Machine
+## Using a Second Horizon agent Container on the Same Machine
+
+For now, to do this you must start the container manually, the horizon-container start script doesn't yet handle multiple instances.
+
 
 ```
 docker pull openhorizon/amd64_anax
@@ -74,22 +70,3 @@ hzn agreement list
 # To stop anax, use this cmd to give it time to unregister and stop the service containers:
 docker stop -t 120 amd64_anax2; docker rm amd64_anax2
 ```
-
-## Using the Anax Container on **Mac** for the Bluehorizon Environment
-
-```
-socat TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &   # have docker api listen on a port, in addition to a unix socket
-mkdir -p /private/var/tmp/horizon/service_storage    # anax will check for this, because this will be mounted into service containers
-docker pull openhorizon/amd64_anax
-docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -e ANAX_DOCKER_ENDPOINT=tcp://host.docker.internal:2375 -v /private/var/tmp/horizon:/private/var/tmp/horizon -v `pwd`:/outside openhorizon/amd64_anax /root/ibmcloud-env.sh
-export HORIZON_URL='http://localhost:8081'    # to point the hzn cmd to the container
-hzn node list   # ensure you talking to the container, and the bluehorizon-env.sh config script ran
-hzn register -n $EXCHANGE_NODEAUTH -f ~/examples/edge/msghub/cpu2msghub/horizon/userinput.json $HZN_ORG_ID $HZN_PATTERN
-hzn agreement list
-# To stop anax, use this cmd to give it time to unregister and stop the service containers:
-docker stop -t 120 amd64_anax; docker rm amd64_anax
-```
-
-## Support for 'hzn dev' on Mac
-
-Install go and docker on your mac, clone https://github.com/open-horizon/anax and 'make cli/hzn'. Then you can use `hzn dev` on your mac.
