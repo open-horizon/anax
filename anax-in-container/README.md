@@ -27,7 +27,13 @@ make docker-push
 
 One of the most convenient uses of the Horizon agent container is to run it on a Mac, since the full Horizon agent install package is not available for Mac. This enables you to use your mac as a quick edge node for experimenting, or edge service development.
 
-The horizon-cli package **is** available for Mac, so first download and install the latest version of `horizon-cli-x.x.x.pkg.zip` from https://github.com/open-horizon/anax/releases
+You need the following prerequisites:
+- The horizon-cli package **is** available for Mac. Download and install the latest version of `horizon-cli-x.x.x.pkg.zip` from https://github.com/open-horizon/anax/releases
+- Docker for Mac OS X: https://docs.docker.com/docker-for-mac/install/
+- Socat, install using **one** of these methods:
+    - Homebrew: http://macappstore.org/socat/
+    - MacPorts: https://www.macports.org/ then 'sudo port install socat'"
+
 
 If you don't already have `/usr/local/bin` in your command line PATH, add that, or fully qualify the commands below. Then:
 
