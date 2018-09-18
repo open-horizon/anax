@@ -7,6 +7,7 @@ DESTDIR=/usr/local
 
 mkdir -p $DESTDIR/bin $DESTDIR/share/man/man1
 ln -sf $SRCDIR/horizon-cli/bin/hzn $DESTDIR/bin
+ln -sf $SRCDIR/horizon-cli/bin/horizon-container $DESTDIR/bin
 ln -sf $SRCDIR/horizon-cli/share/horizon $DESTDIR/share
 ln -sf $SRCDIR/horizon-cli/share/man/man1/hzn.1 $DESTDIR/share/man/man1
 

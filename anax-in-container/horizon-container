@@ -1,0 +1,159 @@
+#!/bin/bash
+
+# This script starts or stops the horizon edge node agent in a container. Supports linux and mac os x.
+
+usage() {
+	echo "Usage: $0 {start|stop} [env-script-to-run]"
+	exit 1
+}
+
+# Check the exit status of the previously run command and exit if nonzero
+checkrc() {
+  if [[ $1 -ne 0 ]]; then
+  	if [[ -n "$2" ]]; then
+  		fromStr="from: $2"
+  	else
+  		fromStr="from the last command"
+  	fi
+    echo "Error: exit code $1 $fromStr"
+    exit $1
+  fi
+}
+
+isMacos() {
+	if [[ "$SYSTEM_TYPE" == "Darwin" ]]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+isSocatRunning() {
+	ps aux | grep -v 'grep ' | grep -q "socat TCP-LISTEN:$SOCAT_LISTEN_PORT"
+	return $?
+}
+
+killSocat() {
+	# killall only works on procname (not args), so do it ourselves
+	pids=$(ps aux | grep -v 'grep ' | grep "socat TCP-LISTEN:$SOCAT_LISTEN_PORT" | awk '{ print $2 }')
+	if [[ -n "$pids" ]]; then
+		echo "Killing socat PIDs: $pids..."
+		kill $pids
+		checkrc $? "kill socat"
+	fi
+}
+
+# Check that they have the necessary software installed
+checkRequirements() {
+	if ! which docker >/dev/null; then
+		echo "You must have docker installed to run this command."
+		if isMacos; then
+			echo "Install docker on Mac OS X: https://docs.docker.com/docker-for-mac/install/"
+		fi
+		exit 2
+	fi
+
+	if isMacos; then
+		if ! which socat >/dev/null; then
+			echo "You must have socat installed to run this command."
+			echo "Install socat using homebrew: http://macappstore.org/socat/, or using MacPorts: https://www.macports.org/ then 'sudo port install socat'"
+			exit 2
+		fi
+	fi
+
+	if ! which hzn >/dev/null; then
+		echo "You must have the hzn command installed to use Horizon in a container."
+		exit 2
+	fi
+}
+
+start() {
+	if [[ -n "$2" ]]; then
+		envScript="$2"
+	else
+		envScript="ibmcloud-env.sh"
+	fi
+
+	checkRequirements	# this will exit with msg if requirements are not met
+
+	if isMacos; then
+		serviceStorageDir=/private/var/tmp/horizon
+	else
+		serviceStorageDir=/var/tmp/horizon
+	fi
+
+	# Start socat, if not already running
+	if isMacos; then
+		if ! isSocatRunning; then
+			# have docker api listen on a port, in addition to a unix socket
+			echo "Starting socat to listen on port $SOCAT_LISTEN_PORT and forward it to the docker API socket..."
+			socat TCP-LISTEN:$SOCAT_LISTEN_PORT,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &
+		fi
+	fi
+
+	# Create service storage dir because anax will check for this, because this will be mounted into service containers
+	mkdir -p $serviceStorageDir/service_storage
+	checkrc $? "mkdir -p $serviceStorageDir/service_storage"
+
+	# Get the horizon container
+	docker pull openhorizon/amd64_anax:latest
+	checkrc $? "docker pull openhorizon/amd64_anax"
+
+	# Start the horizon container
+	echo "Starting the Horizon agent container..."
+	if isMacos; then
+		docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -e ANAX_DOCKER_ENDPOINT=tcp://host.docker.internal:$SOCAT_LISTEN_PORT -v $serviceStorageDir:$serviceStorageDir -v `pwd`:/outside openhorizon/amd64_anax /root/$envScript
+		checkrc $? "docker run"
+	else
+		docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -v /var/run/docker.sock:/var/run/docker.sock -v $serviceStorageDir:$serviceStorageDir -v `pwd`:/outside openhorizon/amd64_anax /root/$envScript
+		checkrc $? "docker run"
+	fi
+
+	if isMacos; then
+		# hzn on mac sets HORIZON_URL correctly by default, so the user does not need to do it
+		echo "Horizon agent started successfully. Now use 'hzn node list', 'hzn register ...', and 'hzn agreement list'"
+	else
+		echo "Horizon agent started successfully. Now export HORIZON_URL=http://localhost:$HORIZON_AGENT_PORT, then use 'hzn node list', 'hzn register ...', and 'hzn agreement list'"
+	fi
+}		# end start()
+
+
+stop() {
+	checkRequirements	# this will exit with msg if requirements are not met
+
+	# Stop the anax container
+	echo "Unregistering the node, then stopping/removing the horizon container (this may take a minute)..."
+	docker stop -t 120 amd64_anax  # give it time to unregister and stop the service containers
+	checkrc $? "docker stop"
+	docker rm amd64_anax
+	checkrc $? "docker rm"
+
+	# Stop socat
+	killSocat
+}
+
+# Main
+
+# Environment Variables
+SOCAT_LISTEN_PORT=${SOCAT_LISTEN_PORT:-2375}
+HORIZON_AGENT_PORT=${HORIZON_AGENT_PORT:-8081}
+SYSTEM_TYPE=${SYSTEM_TYPE:-$(uname -s)}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	#restart)
+	#	restart
+	#	;;
+	#status)
+	#	status
+	#	;;
+	*)
+		usage
+esac
+
+exit

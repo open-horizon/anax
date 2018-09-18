@@ -84,6 +84,7 @@ MAC_PKG_INSTALL_DIR ?= /Users/Shared/horizon-cli
 macpkg: $(CLI_EXECUTABLE)
 	mkdir -p pkg/mac/horizon-cli/bin pkg/mac/horizon-cli/share/horizon pkg/mac/horizon-cli/share/man/man1
 	cp $(CLI_EXECUTABLE) pkg/mac/horizon-cli/bin
+	cp anax-in-container/horizon-container pkg/mac/horizon-cli/bin
 	cp LICENSE.txt pkg/mac/horizon-cli/share/horizon
 	cp $(CLI_MAN_DIR)/hzn.1 pkg/mac/horizon-cli/share/man/man1
 	cp $(CLI_COMPLETION_DIR)/hzn_bash_autocomplete.sh pkg/mac/horizon-cli/share/horizon
