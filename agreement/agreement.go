@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
@@ -218,14 +219,42 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 	case *AdvertisePolicyCommand:
 		cmd, _ := command.(*AdvertisePolicyCommand)
 
+		a_tmp := strings.Split(cmd.PolicyFile, "/")
+		svcName := a_tmp[len(a_tmp)-1]
+
 		if newPolicy, err := policy.ReadPolicyFile(cmd.PolicyFile, w.Config.ArchSynonyms); err != nil {
+			eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Unable to read policy file %v for service %v, error: %v", cmd.PolicyFile, svcName, err),
+				persistence.EC_ERROR_POLICY_ADVERTISING,
+				"", persistence.WorkloadInfo{}, []string{svcName}, "", "")
+
 			glog.Errorf(logString(fmt.Sprintf("unable to read policy file %v into memory, error: %v", cmd.PolicyFile, err)))
 		} else {
 			w.pm.UpdatePolicy(exchange.GetOrg(w.GetExchangeId()), newPolicy)
 
+			a_protocols := []string{}
+			for _, p := range newPolicy.AgreementProtocols {
+				a_protocols = append(a_protocols, p.Name)
+			}
+			protocols := strings.Join(a_protocols, ",")
+
+			eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_INFO,
+				fmt.Sprintf("Start policy advertising with the exchange for service %v.", newPolicy.APISpecs[0].SpecRef),
+				persistence.EC_START_POLICY_ADVERTISING,
+				"", persistence.WorkloadInfo{}, []string{newPolicy.APISpecs[0].SpecRef}, "", protocols)
 			// Publish what we have for the world to see
 			if err := w.advertiseAllPolicies(w.BaseWorker.Manager.Config.Edge.PolicyPath); err != nil {
+				eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_ERROR,
+					fmt.Sprintf("Unable to advertise policies with exchange for service %v, error: %v", newPolicy.APISpecs[0].SpecRef, err),
+					persistence.EC_ERROR_POLICY_ADVERTISING,
+					"", persistence.WorkloadInfo{}, []string{newPolicy.APISpecs[0].SpecRef}, "", protocols)
+
 				glog.Warningf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
+			} else {
+				eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_INFO,
+					fmt.Sprintf("Complete policy advertising with the exchange for service %v.", newPolicy.APISpecs[0].SpecRef),
+					persistence.EC_COMPLETE_POLICY_ADVERTISING,
+					"", persistence.WorkloadInfo{}, []string{newPolicy.APISpecs[0].SpecRef}, "", protocols)
 			}
 		}
 
@@ -261,6 +290,7 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 		}
 
 		if deleteMessage {
+
 			if err := w.deleteMessage(exchangeMsg); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error deleting exchange message %v, error %v", exchangeMsg.MsgId, err)))
 			}
@@ -435,6 +465,12 @@ func (w *AgreementWorker) syncOnInit() error {
 			} else if ok, err := w.verifyAgreement(&ag, w.producerPH[ag.AgreementProtocol], bcType, bcName, bcOrg); err != nil {
 				return errors.New(logString(fmt.Sprintf("unable to check for agreement %v in blockchain, error %v", ag.CurrentAgreementId, err)))
 			} else if !ok {
+				eventlog.LogAgreementEvent(
+					w.db,
+					persistence.SEVERITY_INFO,
+					fmt.Sprintf("Node could not verify the agreement %v with the consumer. Will cancel it", ag.CurrentAgreementId),
+					persistence.EC_CANCEL_AGREEMENT,
+					ag)
 				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_AGBOT_REQUESTED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
 
 				// If the agreement has been started then we just need to make sure that the policy manager's agreement counts
@@ -525,11 +561,13 @@ func (w *AgreementWorker) verifyAgreement(ag *persistence.EstablishedAgreement, 
 		glog.Errorf(logString(fmt.Sprintf("for %v unable to verify agreement, agreement protocol handler is not ready", ag.CurrentAgreementId)))
 	} else if recorded, err := pph.VerifyAgreement(ag); err != nil {
 		return false, errors.New(logString(fmt.Sprintf("encountered error verifying agreement %v, error %v", ag.CurrentAgreementId, err)))
-	} else if !recorded {
-		// A finalized agreement should be in the external store.
-		if ag.AgreementFinalizedTime != 0 && ag.AgreementTerminatedTime == 0 {
-			glog.V(3).Infof(logString(fmt.Sprintf("agreement %v is not known externally, cancelling.", ag.CurrentAgreementId)))
-			return false, nil
+	} else {
+		if !recorded {
+			// A finalized agreement should be in the external store.
+			if ag.AgreementFinalizedTime != 0 && ag.AgreementTerminatedTime == 0 {
+				glog.V(3).Infof(logString(fmt.Sprintf("agreement %v is not known externally, cancelling.", ag.CurrentAgreementId)))
+				return false, nil
+			}
 		}
 	}
 	return true, nil

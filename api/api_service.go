@@ -10,6 +10,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 )
 
@@ -110,9 +111,14 @@ func (a *API) serviceconfig(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		create_service_error_handler := func(err error) bool {
+			LogServiceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error configuring service %v. %v", service, err), persistence.EC_ERROR_SERVICE_CONFIG, &service)
+			return errorhandler(err)
+		}
+
 		// Validate and create the service object and all of the service specific attributes in the body
 		// of the request.
-		errHandled, newService, msg := CreateService(&service, errorhandler, getPatterns, resolveService, getService, a.db, a.Config, true)
+		errHandled, newService, msg := CreateService(&service, create_service_error_handler, getPatterns, resolveService, getService, a.db, a.Config, true)
 		if errHandled {
 			return
 		}

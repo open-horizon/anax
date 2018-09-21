@@ -98,9 +98,13 @@ func ExtractAuthAttributes(attributes []persistence.Attribute, httpAuthAttrs map
 			for _, url := range attr.GetMeta().SensorUrls {
 				// may container multiple auths
 				for _, auth := range a.Auths {
+					username := "token" // default user name if auth.User is empty
+					if auth.User != "" {
+						username = auth.User
+					}
 					a_single := docker.AuthConfiguration{
 						Email:         "",
-						Username:      auth.User,
+						Username:      username,
 						Password:      auth.Token,
 						ServerAddress: url,
 					}

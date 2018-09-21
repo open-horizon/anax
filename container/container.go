@@ -13,6 +13,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/containermessage"
+	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -1186,6 +1187,9 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			// to do something dangerous.
 			deploymentDesc := cmd.DeploymentDescription
 			if valid := deploymentDesc.IsValidFor("workload"); !valid {
+				eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR,
+					fmt.Sprintf("Deployment config %v contains unsupported capability for a workload", cmd.AgreementLaunchContext.Configure.Deployment),
+					persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG, ags[0])
 				glog.Errorf("Deployment config %v contains unsupported capability for a workload", cmd.AgreementLaunchContext.Configure.Deployment)
 				b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
 			}
@@ -1194,6 +1198,9 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			if len(cmd.AgreementLaunchContext.Configure.Overrides) != 0 {
 				overrideDD := new(containermessage.DeploymentDescription)
 				if err := json.Unmarshal([]byte(cmd.AgreementLaunchContext.Configure.Overrides), &overrideDD); err != nil {
+					eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR,
+						fmt.Sprintf("Error Unmarshalling deployment override string %v for agreement %v, error: %v", cmd.AgreementLaunchContext.Configure.Overrides, agreementId, err),
+						persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG, ags[0])
 					glog.Errorf("Error Unmarshalling deployment override string %v for agreement %v, error: %v", cmd.AgreementLaunchContext.Configure.Overrides, agreementId, err)
 					return true
 				} else {
@@ -1214,6 +1221,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 			// Create the docker configuration and launch the containers.
 			if deploymentConfig, err := b.ResourcesCreate(agreementId, cmd.AgreementLaunchContext.AgreementProtocol, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_networks); err != nil {
+				eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error starting containers: %v", err), persistence.EC_ERROR_START_CONTAINER, ags[0])
 				glog.Errorf("Error starting containers: %v", err)
 				b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, deploymentConfig) // still using deployment here, need it to shutdown containers
 
@@ -1253,15 +1261,25 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			}
 		}
 
+		lc := cmd.ContainerLaunchContext
+
 		// We support capabilities in the deployment string that not all container deployments should be able
 		// to exploit, e.g. file system mapping from host to container. This check ensures that infrastructure
 		// containers dont try to do something unsupported.
 		deploymentDesc := new(containermessage.DeploymentDescription)
 		if err := json.Unmarshal([]byte(cmd.ContainerLaunchContext.Configure.Deployment), &deploymentDesc); err != nil {
+			eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error Unmarshalling deployment string %v, error: %v", cmd.ContainerLaunchContext.Configure.Deployment, err),
+				persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG,
+				"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", []string{lc.AgreementId})
 			glog.Errorf("Error Unmarshalling deployment string %v, error: %v", cmd.ContainerLaunchContext.Configure.Deployment, err)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 			return true
 		} else if valid := deploymentDesc.IsValidFor("infrastructure"); !valid {
+			eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Deployment config %v contains unsupported capability for infrastructure container.", cmd.ContainerLaunchContext.Configure.Deployment),
+				persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG,
+				"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", []string{lc.AgreementId})
 			glog.Errorf("Deployment config %v contains unsupported capability for infrastructure container", cmd.ContainerLaunchContext.Configure.Deployment)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 			return true
@@ -1302,6 +1320,10 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 		// Get the container started.
 		if deployment, err := b.ResourcesCreate(cmd.ContainerLaunchContext.Name, "", &cmd.ContainerLaunchContext.Configure, deploymentDesc, []byte(""), *cmd.ContainerLaunchContext.EnvironmentAdditions, ms_networks); err != nil {
+			eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error starting containers for agreement %v: %v", lc.AgreementId, err),
+				persistence.EC_ERROR_START_CONTAINER,
+				"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", []string{lc.AgreementId})
 			glog.Errorf("Error starting containers: %v", err)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 

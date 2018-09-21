@@ -4,6 +4,7 @@ import (
 	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	"strconv"
 	"strings"
 )
 
@@ -214,4 +215,23 @@ func (s MicroserviceInstanceByCleanupStartTime) Swap(i, j int) {
 
 func (s MicroserviceInstanceByCleanupStartTime) Less(i, j int) bool {
 	return s[i].(MicroserviceInstanceOutput).CleanupStartTime < s[j].(MicroserviceInstanceOutput).CleanupStartTime
+}
+
+type EventLogByRecordId []persistence.EventLog
+
+func (s EventLogByRecordId) Len() int {
+	return len(s)
+}
+
+func (s EventLogByRecordId) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s EventLogByRecordId) Less(i, j int) bool {
+	if id_i, err := strconv.ParseUint(s[i].Id, 10, 64); err == nil {
+		if id_j, err := strconv.ParseUint(s[j].Id, 10, 64); err == nil {
+			return id_i < id_j
+		}
+	}
+	return s[i].Id < s[j].Id
 }

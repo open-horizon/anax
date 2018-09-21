@@ -6,6 +6,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/microservice"
@@ -65,6 +66,7 @@ func (w *GovernanceWorker) governMicroservices() int {
 // It creates microservice instance and loads the containers for the given microservice def
 func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, dependencyPath []persistence.ServiceInstancePathElement) (*persistence.MicroserviceInstance, error) {
 	glog.V(5).Infof(logString(fmt.Sprintf("Starting service instance for %v", ms_key)))
+
 	if msdef, err := persistence.FindMicroserviceDefWithKey(w.db, ms_key); err != nil {
 		return nil, fmt.Errorf(logString(fmt.Sprintf("Error finding service definition from db with key %v. %v", ms_key, err)))
 	} else if msdef == nil {
@@ -363,15 +365,32 @@ func (w *GovernanceWorker) RollbackMicroservice(msdef *persistence.MicroserviceD
 	for true {
 		// get next lower version
 		if new_msdef, err := microservice.GetRollbackMicroserviceDef(exchange.GetHTTPMicroserviceHandler(w), msdef, w.db); err != nil {
+			eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error finding the new service definition to downgrade to for %v %v version key %v. error: %v", msdef.SpecRef, msdef.Version, msdef.Id, err),
+				persistence.EC_DATABASE_ERROR)
 			return fmt.Errorf(logString(fmt.Sprintf("Error finding the new service definition to downgrade to for %v %v version key %v. error: %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
 		} else if new_msdef == nil { //no more to try, exit out
+			eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
+				fmt.Sprintf("Could not find lower version to downgrade for %v version %v.", msdef.SpecRef, msdef.Version),
+				persistence.EC_NO_VERSION_TO_DOWNGRADE,
+				"", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
 			glog.Warningf(logString(fmt.Sprintf("Unable to find the service definition to downgrade to for %v %v version key %v. error: %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
 			return nil
-		} else if err := w.UpgradeMicroservice(msdef, new_msdef, false); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Failed to downgrade %v from version %v key %v to version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, new_msdef.Version, new_msdef.Id, err)))
-			msdef = new_msdef
 		} else {
-			return nil
+			if err := w.UpgradeMicroservice(msdef, new_msdef, false); err != nil {
+				eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
+					fmt.Sprintf("Error downgrading service %v frpm version %v to version %v. Eror: %v", msdef.SpecRef, msdef.Version, new_msdef.Version, err),
+					persistence.EC_ERROR_DOWNGRADE_SERVICE,
+					"", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
+				glog.Errorf(logString(fmt.Sprintf("Failed to downgrade %v from version %v key %v to version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, new_msdef.Version, new_msdef.Id, err)))
+				msdef = new_msdef
+			} else {
+				eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
+					fmt.Sprintf("Complete downgrading service %v from version %v to version %v.", msdef.SpecRef, msdef.Version, new_msdef.Version),
+					persistence.EC_COMPLETE_DOWNGRADE_SERVICE,
+					"", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
+				return nil
+			}
 		}
 	}
 
@@ -392,6 +411,9 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 		// The "exclusive" sharing mode is handled by maxAgreements=1 in the node side policy file. This ensures that agbots and nodes will
 		// only support one agreement at any time.
 	} else if ms_insts, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.AllInstancesMIFilter(msdef.SpecRef, msdef.Version), persistence.UnarchivedMIFilter()}); err != nil {
+		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Error retrieving all the service instances from db for %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err),
+			persistence.EC_DATABASE_ERROR)
 		return fmt.Errorf(logString(fmt.Sprintf("Error retrieving all the service instances from db for %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
 	} else if ms_insts == nil || len(ms_insts) == 0 {
 		needs_new_ms = true
@@ -403,6 +425,11 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 		var inst_err error
 		if msi, inst_err = w.StartMicroservice(msdef.Id, agreementId, dependencyPath); inst_err != nil {
 
+			eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Service starting failed for %v version %v, error: %v", msdef.SpecRef, msdef.Version, inst_err),
+				persistence.EC_ERROR_START_SERVICE,
+				"", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{agreementId})
+
 			// Try to downgrade the service/microservice to a lower version.
 			glog.V(3).Infof(logString(fmt.Sprintf("Ending the agreement: %v because service %v failed to start", agreementId, msdef.SpecRef)))
 			ag_reason_code := w.producerPH[protocol].GetTerminationCode(producer.TERM_REASON_MS_DOWNGRADE_REQUIRED)
@@ -412,7 +439,16 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 			}
 
 			glog.V(3).Infof(logString(fmt.Sprintf("Downgrading service %v because version %v key %v failed to start. Error: %v", msdef.SpecRef, msdef.Version, msdef.Id, inst_err)))
+			eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
+				fmt.Sprintf("Start downgrading service %v version %v because service for aagreement failed to start.", msdef.SpecRef, msdef.Version),
+				persistence.EC_START_DOWNGRADE_SERVICE,
+				"", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{agreementId})
+
 			if err := w.RollbackMicroservice(msdef); err != nil {
+				eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
+					fmt.Sprintf("Error downgrading service %v version %v. %v", msdef.SpecRef, msdef.Version, err),
+					persistence.EC_ERROR_DOWNGRADE_SERVICE,
+					"", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{agreementId})
 				glog.Errorf(logString(fmt.Sprintf("Error downgrading service %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
 			}
 
@@ -442,6 +478,9 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 
 	// delete the agreement from the microservice instance and upgrade the microservice if needed
 	if ms_instances, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.UnarchivedMIFilter()}); err != nil {
+		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Error retrieving all service instances from database, error: %v", err),
+			persistence.EC_DATABASE_ERROR)
 		glog.Errorf(logString(fmt.Sprintf("error retrieving all service instances from database, error: %v", err)))
 	} else if ms_instances != nil {
 		for _, msi := range ms_instances {
@@ -453,6 +492,11 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 							glog.Errorf(logString(fmt.Sprintf("Error retrieving service definition %v version %v key %v from database, error: %v", msi.SpecRef, msi.Version, msi.MicroserviceDefId, err)))
 							// delete the microservice instance if the sharing mode is "multiple"
 						} else {
+							eventlog.LogServiceEvent(w.db, persistence.SEVERITY_INFO,
+								fmt.Sprintf("Start cleaning up service %v because agreement %v ended.", msi.SpecRef, agreementId),
+								persistence.EC_START_CLEANUP_SERVICE,
+								msi)
+
 							if msd.Sharable == exchange.MS_SHARING_MODE_MULTIPLE {
 								// mark the ms clean up started and remove all the microservice containers if any
 								if _, err := persistence.MicroserviceInstanceCleanupStarted(w.db, msi.GetKey()); err != nil {
@@ -493,7 +537,17 @@ func (w *GovernanceWorker) handleMicroserviceExecFailure(msdef *persistence.Micr
 	glog.V(3).Infof(logString(fmt.Sprintf("handle service execution failure for %v", msinst_key)))
 
 	// rollback the microservice to lower version
+	eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
+		fmt.Sprintf("Start downgrading service %v version %v because service failed to start.", msdef.SpecRef, msdef.Version),
+		persistence.EC_START_DOWNGRADE_SERVICE,
+		msinst_key, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
+
 	if err := w.RollbackMicroservice(msdef); err != nil {
+		eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Failed to downgrade service %v version %v, error: %v", msdef.SpecRef, msdef.Version, err),
+			persistence.EC_ERROR_DOWNGRADE_SERVICE,
+			msinst_key, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
+
 		glog.Errorf(logString(fmt.Sprintf("Error downgrading service %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
 	}
 }
@@ -502,6 +556,9 @@ func (w *GovernanceWorker) handleMicroserviceExecFailure(msdef *persistence.Micr
 func (w *GovernanceWorker) handleMicroserviceUpgrade(msdef_id string) {
 	glog.V(3).Infof(logString(fmt.Sprintf("handling service upgrade for service id %v", msdef_id)))
 	if msdef, err := persistence.FindMicroserviceDefWithKey(w.db, msdef_id); err != nil {
+		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Error getting service definitions %v from db. %v", msdef_id, err),
+			persistence.EC_DATABASE_ERROR)
 		glog.Errorf(logString(fmt.Sprintf("error getting service definitions %v from db. %v", msdef_id, err)))
 	} else if microservice.MicroserviceReadyForUpgrade(msdef, w.db) {
 		// find the new ms def to upgrade to
@@ -509,12 +566,36 @@ func (w *GovernanceWorker) handleMicroserviceUpgrade(msdef_id string) {
 			glog.Errorf(logString(fmt.Sprintf("Error finding the new service definition to upgrade to for %v version %v. %v", msdef.SpecRef, msdef.Version, err)))
 		} else if new_msdef == nil {
 			glog.V(5).Infof(logString(fmt.Sprintf("No changes for service definition %v, no need to upgrade.", msdef.SpecRef)))
-		} else if err := w.UpgradeMicroservice(msdef, new_msdef, true); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Error upgrading service %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
+		} else {
+			eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
+				fmt.Sprintf("Start upgrading service %v from version %v to version %v.", msdef.SpecRef, msdef.Version, new_msdef.Version),
+				persistence.EC_START_UPGRADE_SERVICE,
+				"", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
 
-			// rollback the microservice to lower version
-			if err := w.RollbackMicroservice(new_msdef); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("Error downgrading service %v version %v key %v. %v", new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
+			if err := w.UpgradeMicroservice(msdef, new_msdef, true); err != nil {
+				eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
+					fmt.Sprintf("Failed to upgrade service %v from version %v to version %v, error: %v", msdef.SpecRef, msdef.Version, new_msdef.Version, err),
+					persistence.EC_ERROR_UPGRADE_SERVICE,
+					"", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
+				glog.Errorf(logString(fmt.Sprintf("Error upgrading service %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
+
+				// rollback the microservice to lower version
+				eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
+					fmt.Sprintf("Start downgrading service %v version %v because upgrade failed.", new_msdef.SpecRef, new_msdef.Version),
+					persistence.EC_START_DOWNGRADE_SERVICE,
+					"", new_msdef.SpecRef, new_msdef.Org, new_msdef.Version, new_msdef.Arch, []string{})
+				if err := w.RollbackMicroservice(new_msdef); err != nil {
+					eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
+						fmt.Sprintf("Failed to downgrade service %v version %v, error: %v", new_msdef.SpecRef, new_msdef.Version, err),
+						persistence.EC_ERROR_DOWNGRADE_SERVICE,
+						"", new_msdef.SpecRef, new_msdef.Org, new_msdef.Version, new_msdef.Arch, []string{})
+					glog.Errorf(logString(fmt.Sprintf("Error downgrading service %v version %v key %v. %v", new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
+				}
+			} else {
+				eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
+					fmt.Sprintf("Complete upgrading service %v from version %v to version %v.", msdef.SpecRef, msdef.Version, new_msdef.Version),
+					persistence.EC_COMPLETE_UPGRADE_SERVICE,
+					"", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
 			}
 		}
 	}

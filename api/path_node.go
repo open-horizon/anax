@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
@@ -15,6 +16,40 @@ import (
 // Global "static" field to remember that unconfig is in progress. We can't tell from the configstate in the node
 // object because it eventually gets deleted at the end of unconfiguration.
 var Unconfiguring bool
+
+func LogDeviceEvent(db *bolt.DB, severity string, message string, event_code string, device interface{}) {
+	id := ""
+	org := ""
+	pattern := ""
+	state := ""
+
+	if device != nil {
+		switch device.(type) {
+		case *HorizonDevice:
+			d, _ := (device).(*HorizonDevice)
+			if d.Id != nil {
+				id = *d.Id
+			}
+			if d.Org != nil {
+				org = *d.Org
+			}
+			if d.Pattern != nil {
+				pattern = fmt.Sprintf("%v/%v", org, *d.Pattern)
+			}
+			if d.Config != nil {
+				state = *d.Config.State
+			}
+		case *persistence.ExchangeDevice:
+			d, _ := (device).(*persistence.ExchangeDevice)
+			id = d.Id
+			org = d.Org
+			pattern = d.Pattern
+			state = d.Config.State
+		}
+	}
+
+	eventlog.LogNodeEvent(db, severity, message, event_code, id, org, pattern, state)
+}
 
 func FindHorizonDeviceForOutput(db *bolt.DB) (*HorizonDevice, error) {
 
@@ -71,6 +106,8 @@ func CreateHorizonDevice(device *HorizonDevice,
 	}
 
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("Create node payload: %v", device)))
+
+	LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Start node configuration/registration for node %v.", *device.Id), persistence.EC_START_NODE_CONFIG_REG, device)
 
 	// There is no existing device registration in the database, so proceed to verifying the input device object.
 	if device.Id == nil || *device.Id == "" {
@@ -138,6 +175,7 @@ func CreateHorizonDevice(device *HorizonDevice,
 	// Return 2 device objects, the first is the fully populated newly created device object. The second is a device
 	// object suitable for output (external consumption). Specifically the token is omitted.
 	exDev := ConvertFromPersistentHorizonDevice(pDev)
+
 	return false, device, exDev
 
 }
@@ -146,6 +184,8 @@ func CreateHorizonDevice(device *HorizonDevice,
 func UpdateHorizonDevice(device *HorizonDevice,
 	errorhandler ErrorHandler,
 	db *bolt.DB) (bool, *HorizonDevice, *HorizonDevice) {
+
+	LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Start updating node %v.", *device.Id), persistence.EC_START_NODE_UPDATE, device)
 
 	// Check for the device in the local database. If there are errors, they will be written
 	// to the HTTP response.
@@ -178,6 +218,9 @@ func UpdateHorizonDevice(device *HorizonDevice,
 	// Return 2 device objects, the first is the fully populated newly updated device object. The second is a device
 	// object suitable for output (external consumption). Specifically the token is omitted.
 	exDev := ConvertFromPersistentHorizonDevice(updatedDev)
+
+	LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete node update for %v.", *device.Id), persistence.EC_NODE_UPDATE_COMPLETE, device)
+
 	return false, device, exDev
 
 }
@@ -190,23 +233,30 @@ func DeleteHorizonDevice(removeNode string,
 	errorhandler ErrorHandler,
 	db *bolt.DB) bool {
 
+	LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Start node unregistration."), persistence.EC_START_NODE_UNREG, nil)
+
 	// Check for the device in the local database. If there are errors, they will be written
 	// to the HTTP response.
 	pDevice, err := persistence.FindExchangeDevice(db)
 	if err != nil {
+		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Unable to read node object from database, error %v", err), persistence.EC_DATABASE_ERROR)
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err)))
 	} else if pDevice == nil {
+		LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error unregistring the node. The node is not found from the database."), persistence.EC_ERROR_NODE_UNREG, nil)
 		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API.", "node"))
 	} else if !pDevice.IsState(persistence.CONFIGSTATE_CONFIGURED) && !pDevice.IsState(persistence.CONFIGSTATE_CONFIGURING) {
+		LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."), persistence.EC_ERROR_NODE_UNREG, pDevice)
 		return errorhandler(NewBadRequestError(fmt.Sprintf("The node must be in configured or configuring state in order to unconfigure it.")))
 	}
 
 	// Verify optional input
 	if removeNode != "" && removeNode != "true" && removeNode != "false" {
+		LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Input error for node unregistration. %v is an incorrect value for removeNode", removeNode), persistence.EC_API_USER_INPUT_ERROR, pDevice)
 		return errorhandler(NewAPIUserInputError("%v is an incorrect value for removeNode", "url.removeNode"))
 	}
 
 	if block != "" && block != "true" && block != "false" {
+		LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Input error for node unregistration. %v is an incorrect value for block", block), persistence.EC_API_USER_INPUT_ERROR, pDevice)
 		return errorhandler(NewAPIUserInputError("%v is an incorrect value for block", "url.block"))
 	}
 
@@ -223,6 +273,9 @@ func DeleteHorizonDevice(removeNode string,
 	// Mark the device as "unconfigure in progress"
 	_, err = pDevice.SetConfigstate(db, pDevice.Id, persistence.CONFIGSTATE_UNCONFIGURING, pDevice.ServiceBased)
 	if err != nil {
+		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Error saving new node config state (unconfiguring) in the database: %v", err),
+			persistence.EC_DATABASE_ERROR)
 		return errorhandler(NewSystemError(fmt.Sprintf("error persisting unconfiguring on node object: %v", err)))
 	}
 
@@ -243,6 +296,13 @@ func DeleteHorizonDevice(removeNode string,
 			glog.V(5).Infof(apiLogString(fmt.Sprintf("Waiting for node shutdown to complete")))
 			time.Sleep(5 * time.Second)
 		}
+	}
+
+	LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Node unregistration complete for node %v.", pDevice.Id), persistence.EC_NODE_UNREG_COMPLETE, pDevice)
+
+	// now save this timestamp in db.
+	if err := persistence.SaveLastUnregistrationTime(db, uint64(time.Now().Unix())); err != nil {
+		return errorhandler(NewSystemError(fmt.Sprintf("error persisting the last unregistration timestamp: %v", err)))
 	}
 
 	return false
