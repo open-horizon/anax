@@ -12,13 +12,19 @@ fi
 
 echo "Calling node API"
 
+pat=$PATTERN
+if [[ "$PATTERN" != "" ]]; then
+    pat="e2edev/$PATTERN"
+fi
+
+
 read -d '' newhzndevice <<EOF
 {
   "id": "$DEVICE_ID",
   "token": "$TOKEN",
   "name": "$DEVICE_NAME",
-  "organization": "$ORG",
-  "pattern": "$PATTERN",
+  "organization": "$DEVICE_ORG",
+  "pattern": "$pat",
   "ha": $HA_DEVICE
 }
 EOF

@@ -797,14 +797,22 @@ func DeleteMessage(msgId int, agbotId, agbotToken, exchangeURL string, httpClien
 // microservices. If the agbot is working with a policy file that was generated from a pattern, then it will do searches
 // by pattern. If the agbot is working with a manually created policy file, then it will do searches by list of
 // microservices.
-func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, searchOrg string) (*[]exchange.SearchResultDevice, error) {
+func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, polOrg string) (*[]exchange.SearchResultDevice, error) {
 
 	// If it is a pattern based policy, search by worload URL and pattern.
 	if pol.PatternId != "" {
+		// get a list of node orgs that agbot is serving for this pattern
+		nodeOrgs := w.PatternManager.GetServedNodeOrgs(polOrg, exchange.GetId(pol.PatternId))
+		if len(nodeOrgs) == 0 {
+			glog.V(3).Infof("Policy file for pattern %v exits but currently the agbot is not serving this policy for any organizations.", pol.PatternId)
+			empty := make([]exchange.SearchResultDevice, 0, 0)
+			return &empty, nil
+		}
 
 		// Setup the search request body
 		ser := exchange.CreateSearchPatternRequest()
 		ser.SecondsStale = w.Config.AgreementBot.ActiveDeviceTimeoutS
+		ser.NodeOrgIds = nodeOrgs
 		if pol.IsServiceBased() {
 			ser.ServiceURL = pol.Workloads[0].WorkloadURL
 		} else {
@@ -814,7 +822,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, searchOrg string
 		// Invoke the exchange
 		var resp interface{}
 		resp = new(exchange.SearchExchangePatternResponse)
-		targetURL := w.GetExchangeURL() + "orgs/" + searchOrg + "/patterns/" + exchange.GetId(pol.PatternId) + "/search"
+		targetURL := w.GetExchangeURL() + "orgs/" + polOrg + "/patterns/" + exchange.GetId(pol.PatternId) + "/search"
 		for {
 			if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.GetExchangeId(), w.GetExchangeToken(), ser, &resp); err != nil {
 				if !strings.Contains(err.Error(), "status: 404") {
@@ -880,7 +888,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, searchOrg string
 		// Invoke the exchange
 		var resp interface{}
 		resp = new(exchange.SearchExchangeMSResponse)
-		targetURL := w.GetExchangeURL() + "orgs/" + searchOrg + "/search/nodes"
+		targetURL := w.GetExchangeURL() + "orgs/" + polOrg + "/search/nodes"
 		for {
 			if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.GetExchangeId(), w.GetExchangeToken(), ser, &resp); err != nil {
 				if !strings.Contains(err.Error(), "status: 404") {

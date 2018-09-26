@@ -4,6 +4,8 @@ EMAIL="foo@goo.com"
 
 TESTFAIL="0"
 
+ORG="e2edev"
+
 # =================================================================
 # Run error tests on the node API
 
@@ -70,7 +72,7 @@ read -d '' newhzndevice <<EOF
   "id": "$DEVICE_ID",
   "name": "$DEVICE_NAME",
   "token": "$TOKEN",
-  "organization": "e2edev",
+  "organization": "$ORG",
   "pattern": "fred"
 }
 EOF
@@ -85,7 +87,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "${ERR:0:34}" != "pattern fred not found in exchange" ]
+if [ "${ERR:0:41}" != "pattern e2edev/fred not found in exchange" ]
 then
   echo -e "$newhzndevice \nresulted in incorrect response: $RES"
   exit 2

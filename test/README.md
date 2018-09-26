@@ -8,7 +8,7 @@ The project will create 3 containers:
 - exchange-db 
   - A postgres container for the exchange-api
 - exchange-api 
-  - Pulled from openhorizon/amd64_exchange-api:volcanostaging
+  - Pulled from openhorizon/amd64_exchange-api:latest
 - agbot
   - Where anax runs, built initially from openhorizon/anax source, uses local copy of source afterwards unless told otherwise
 And depending on which PATTERN is chosen, a series of workload containers

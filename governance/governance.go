@@ -1367,7 +1367,8 @@ func (w *GovernanceWorker) startAgreementLessServices() {
 	}
 
 	// Get the pattern definition from the exchange.
-	patternDef, err := exchange.GetHTTPExchangePatternHandler(w)(exchange.GetOrg(w.GetExchangeId()), w.devicePattern)
+	pattern_org, pattern_name, pat := persistence.GetFormatedPatternString(w.devicePattern, "")
+	patternDef, err := exchange.GetHTTPExchangePatternHandler(w)(pattern_org, pattern_name)
 	if err != nil {
 		eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
 			fmt.Sprintf("Unable to start agreement-less services, error searching for pattern %v in exchange, error: %v", w.devicePattern, err),
@@ -1378,7 +1379,6 @@ func (w *GovernanceWorker) startAgreementLessServices() {
 	}
 
 	// There should only be 1 pattern in the response.
-	pat := fmt.Sprintf("%v/%v", exchange.GetOrg(w.GetExchangeId()), w.devicePattern)
 	if _, ok := patternDef[pat]; !ok {
 		eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
 			fmt.Sprintf("Unable to start agreement-less services, pattern %v not found in exchange", pat),

@@ -81,6 +81,38 @@ func Test_FindHDForOutput1(t *testing.T) {
 
 }
 
+// Create output device object based on object in the DB. THe pattern org is different from the device org
+func Test_FindHDForOutput2(t *testing.T) {
+
+	dir, db, err := utsetup()
+	if err != nil {
+		t.Error(err)
+	}
+
+	defer cleanTestDir(dir)
+
+	theOrg := "myorg"
+
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "otherorg/apattern", persistence.CONFIGSTATE_CONFIGURING, false, false)
+	if err != nil {
+		t.Errorf("failed to create persisted device, error %v", err)
+	}
+
+	if dev, err := FindHorizonDeviceForOutput(db); err != nil {
+		t.Errorf("failed to find device in db, error %v", err)
+	} else if *dev.Org != theOrg {
+		t.Errorf("incorrect device found: %v", *dev)
+	} else if *dev.Pattern != "otherorg/apattern" {
+		t.Errorf("incorrect pattern found: %v", *dev)
+	} else if dev.Token != nil && *dev.Token != "" {
+		t.Errorf("token should not be returned, but is %v", *dev)
+	} else if dev.Config == nil {
+		t.Errorf("config state should be initialized, is %v", *dev)
+	} else if *dev.Config.State != persistence.CONFIGSTATE_CONFIGURING {
+		t.Errorf("config state has wrong state %v", *dev)
+	}
+}
+
 // no device id
 func Test_CreateHorizonDevice_NoDeviceid(t *testing.T) {
 

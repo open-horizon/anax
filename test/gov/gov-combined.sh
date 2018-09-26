@@ -7,12 +7,17 @@ function set_exports {
         export PASS=anax1pw
         export DEVICE_ID="an12345"
         export DEVICE_NAME="anaxdev1"
+        export DEVICE_ORG="e2edev"
         export TOKEN="abcdefg"
-        export ORG="e2edev"
-
+ 
         export ANAX_API="http://localhost"
         export EXCH="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
 
+        if [[ $TEST_DIFF_ORG -eq 1 ]]; then
+            export USER=useranax1
+            export PASS=useranax1pw
+            export DEVICE_ORG="userdev"
+        fi
     else
         echo -e "Anax is disabled"
     fi
@@ -125,6 +130,10 @@ echo "Creating e2edev organization..."
 CR8EORG=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"label":"E2EDev","description":"E2EDevTest"}' "${EXCH_URL}/orgs/e2edev" | jq -r '.msg')
 echo "$CR8EORG"
 
+echo "Creating userdev organization..."
+CR8UORG=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"label":"UserDev","description":"UserDevTest"}' "${EXCH_URL}/orgs/userdev" | jq -r '.msg')
+echo "$CR8UORG"
+
 echo "Creating IBM organization..."
 CR8IORG=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"label":"IBMorg","description":"IBM"}' "${EXCH_URL}/orgs/IBM" | jq -r '.msg')
 echo "$CR8IORG"
@@ -141,6 +150,11 @@ echo "$CR8C2ORG"
 echo "Creating an admin user for e2edev organization..."
 CR8EADM=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"password":"e2edevadminpw","email":"me%40gmail.com","admin":true}' "${EXCH_URL}/orgs/e2edev/users/e2edevadmin" | jq -r '.msg')
 echo "$CR8EADM"
+
+# Register an userdev admin user in the exchange
+echo "Creating an admin user for userdev organization..."
+CR8UADM=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"password":"userdevadminpw","email":"me%40gmail.com","admin":true}' "${EXCH_URL}/orgs/userdev/users/userdevadmin" | jq -r '.msg')
+echo "$CR8UADM"
 
 # Register an ICP user in the customer1 org
 echo "Creating an ICP admin user for Customer1 organization..."
@@ -162,10 +176,14 @@ echo "Creating Agbot user..."
 CR8AGBOT=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"password":"agbot1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/IBM/users/agbot1" | jq -r '.msg')
 echo "$CR8AGBOT"
 
-# Register IBM users in the exchange
-echo "Creating Anax user..."
+# Register users in the exchange
+echo "Creating Anax user in e2edev org..."
 CR8ANAX=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"password":"anax1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/e2edev/users/anax1" | jq -r '.msg')
 echo "$CR8ANAX"
+
+echo "Creating Anax user in userdev org..."
+CR8UANAX=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"password":"useranax1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/userdev/users/useranax1" | jq -r '.msg')
+echo "$CR8UANAX"
 
 echo "Registering Anax device1..."
 REGANAX1=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic e2edev/anax1:anax1pw" -d '{"token":"abcdefg","name":"anaxdev","registeredMicroservices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":""}' "${EXCH_URL}/orgs/e2edev/nodes/an12345" | jq -r '.msg')
@@ -174,6 +192,15 @@ echo "$REGANAX1"
 echo "Registering Anax device2..."
 REGANAX2=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic e2edev/anax1:anax1pw" -d '{"token":"abcdefg","name":"anaxdev","registeredMicroservices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":""}' "${EXCH_URL}/orgs/e2edev/nodes/an54321" | jq -r '.msg')
 echo "$REGANAX2"
+
+# register an anax devices for userdev in order to test the case where the pattern is from a different org than the device org.
+echo "Registering Anax device1 in userdev org..."
+REGUANAX1=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic userdev/useranax1:useranax1pw" -d '{"token":"abcdefg","name":"anaxdev","registeredMicroservices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":""}' "${EXCH_URL}/orgs/userdev/nodes/an12345" | jq -r '.msg')
+echo "$REGUANAX1"
+
+echo "Registering Anax device2 in userdev org..."
+REGUANAX2=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic userdev/useranax1:useranax1pw" -d '{"token":"abcdefg","name":"anaxdev","registeredMicroservices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":""}' "${EXCH_URL}/orgs/userdev/nodes/an54321" | jq -r '.msg')
+echo "$REGUANAX2"
 
 echo "Registering Anax device1 in customer org..."
 REGANAX1C=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic Customer1/icpadmin:icpadminpw" -d '{"token":"abcdefg","name":"anaxdev","registeredMicroservices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":""}' "${EXCH_URL}/orgs/Customer1/nodes/an12345" | jq -r '.msg')
@@ -247,11 +274,16 @@ then
     export USER=anax1
     export PASS=anax1pw
     export DEVICE_ID="an12345"
-    export DEVICE_NAME="anaxdev1"
+    export DEVICE_NAME="an12345"
+    export DEVICE_ORG="e2edev"
     export ANAX_API="http://localhost"
     export EXCH="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
     export TOKEN="abcdefg"
-    export ORG="e2edev"
+    if [[ $TEST_DIFF_ORG -eq 1 ]]; then
+        export USER=useranax1
+        export PASS=useranax1pw
+        export DEVICE_ORG="userdev"
+    fi
 
     #export mtn_soliditycontract=1
 
@@ -291,44 +323,17 @@ then
     REGAGBOT1=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"token":"abcdefg","name":"agbotdev","msgEndPoint":"","publicKey":""}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345" | jq -r '.msg')
     echo "$REGAGBOT1"
 
-    REGAGBOTNS=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"ns"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_ns" | jq -r '.msg')
-    echo "$REGAGBOTNS"
-
-    REGAGBOTSNS=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"sns"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_sns" | jq -r '.msg')
+    # keep one just for testing this api
+    REGAGBOTSNS=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"sns"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns" | jq -r '.msg')
     echo "$REGAGBOTSNS"
 
-    REGAGBOTLOC=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"loc"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_loc" | jq -r '.msg')
-    echo "$REGAGBOTLOC"
+    # register all patterns for e2edev org to agbot1
+    REGAGBOTE2EDEV=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"*", "nodeOrgid": "e2edev"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns" | jq -r '.msg')
+    echo "$REGAGBOTE2EDEV"
 
-    REGAGBOTSLOC=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"sloc"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_sloc" | jq -r '.msg')
-    echo "$REGAGBOTSLOC"
-
-    REGAGBOTGPS=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"gps"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_gps" | jq -r '.msg')
-    echo "$REGAGBOTGPS"
-
-    REGAGBOTSGPS=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"sgps"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_sgps" | jq -r '.msg')
-    echo "$REGAGBOTSGPS"
-
-    REGAGBOTPWS=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"pws"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_pws" | jq -r '.msg')
-    echo "$REGAGBOTPWS"
-
-    REGAGBOTSPWS=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"spws"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_spws" | jq -r '.msg')
-    echo "$REGAGBOTSPWS"
-
-    REGAGBOT_NETSPEEDKEYTEST=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"ns-keytest"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_ns-keytest" | jq -r '.msg')
-    echo "$REGAGBOT_NETSPEEDKEYTEST"
-
-    REGAGBOTALL=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"all"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_all" | jq -r '.msg')
-    echo "$REGAGBOTALL"
-
-    REGAGBOTSALL=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"sall"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_sall" | jq -r '.msg')
-    echo "$REGAGBOTSALL"
-
-    REGAGBOTSUH=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"susehello"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_susehello" | jq -r '.msg')
-    echo "$REGAGBOTSUH"
-
-    REGAGBOTSHELM=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"shelm"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_shelm" | jq -r '.msg')
-    echo "$REGAGBOTSUH"
+    # register all patterns for userdev org to agbot1
+    REGAGBOTUSERDEV=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns" | jq -r '.msg')
+    echo "$REGAGBOTUSERDEV"
 
     echo "Registering Agbot instance2..."
     REGAGBOT2=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"token":"abcdefg","name":"agbotdev","msgEndPoint":"","publicKey":""}' "${EXCH_URL}/orgs/$ORG/agbots/ag54321" | jq -r '.msg')
@@ -365,12 +370,15 @@ fi
 # fi
 # echo "Agbot API tests completed."
 
+echo "TEST_PATTERNS=${TEST_PATTERNS}"
+
 # Services can be run via patterns or from policy files
-if [ "${TEST_PATTERNS}" == "" ] && [ "$TESTFAIL" != "1" ]
+if [[ "${TEST_PATTERNS}" == "" ]] && [ "$TESTFAIL" != "1" ]
 then
     echo -e "Making agreements based on policy files."
 
     set_exports
+    export PATTERN=""
 
     ./start_node.sh
     if [ $? -ne 0 ]

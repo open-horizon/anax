@@ -338,9 +338,6 @@ func (w *BaseProducerProtocolHandler) MatchPattern(tcPolicy *policy.Policy) (boo
 		// the patter id from the proposal is in the format of org/pattern,
 		// we need to compose the same thing from device in order to compare
 		device_pattern := dev.Pattern
-		if dev.Pattern != "" {
-			device_pattern = fmt.Sprintf("%v/%v", dev.Org, dev.Pattern)
-		}
 
 		// compare the patterns from the propodal and device
 		if tcPolicy.PatternId != device_pattern {

@@ -15,6 +15,7 @@ read -d '' slocservice <<EOF
   "url": "https://bluehorizon.network/services/locgps",
   "name": "gps",
   "versionRange": "2.0.3",
+  "organization": "e2edev",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -123,6 +124,7 @@ read -d '' slocservice <<EOF
   "url": "https://bluehorizon.network/services/locgps",
   "name": "gps",
   "versionRange": "2.0.3",
+  "organization": "e2edev",
   "attributes": [
     {
       "type": "UserInputAttributes",

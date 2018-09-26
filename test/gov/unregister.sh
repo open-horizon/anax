@@ -32,13 +32,17 @@ do
       echo -e "Is anax still up: $GET"
 
       # Since anax is still up, verify that a POST to /node will return the correct error.
+      pat=$PATTERN
+      if [[ "$PATTERN" != "" ]]; then
+        pat="e2edev/$PATTERN"
+      fi
 read -d '' newhzndevice <<EOF
 {
   "id": "$DEVICE_ID",
   "token": "$TOKEN",
   "name": "$DEVICE_NAME",
-  "organization": "$ORG",
-  "pattern": "$PATTERN"
+  "organization": "$DEVICE_ORG",
+  "pattern": "$pat"
 }
 EOF
       HDS=$(echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/node")

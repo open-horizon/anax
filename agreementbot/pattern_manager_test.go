@@ -78,8 +78,9 @@ func Test_pattern_manager_setpatterns1(t *testing.T) {
 	policyPath := "/tmp/servedpatterntest/"
 	servedPatterns := map[string]exchange.ServedPattern{
 		"myorg1_pattern1": {
-			Org:     "myorg1",
-			Pattern: "pattern1",
+			PatternOrg: "myorg1",
+			Pattern:    "pattern1",
+			NodeOrg:    "",
 		},
 	}
 
@@ -101,20 +102,23 @@ func Test_pattern_manager_setpatterns2(t *testing.T) {
 	policyPath := "/tmp/servedpatterntest/"
 	myorg1 := "myorg1"
 	myorg2 := "myorg2"
+	myorg3 := "myorg3"
 	pattern1 := "pattern1"
 	pattern2 := "pattern2"
 
 	servedPatterns1 := map[string]exchange.ServedPattern{
 		"myorg1_pattern1": {
-			Org:     myorg1,
-			Pattern: pattern1,
+			PatternOrg: myorg1,
+			Pattern:    pattern1,
+			NodeOrg:    myorg3,
 		},
 	}
 
 	servedPatterns2 := map[string]exchange.ServedPattern{
 		"myorg2_pattern2": {
-			Org:     myorg2,
-			Pattern: pattern2,
+			PatternOrg: myorg2,
+			Pattern:    pattern2,
+			NodeOrg:    myorg3,
 		},
 	}
 
@@ -210,32 +214,38 @@ func Test_pattern_manager_setpatterns3(t *testing.T) {
 	policyPath := "/tmp/servedpatterntest/"
 	myorg1 := "myorg1"
 	myorg2 := "myorg2"
+	myorg3 := "myorg3"
 	pattern1 := "pattern1"
 	pattern2 := "pattern2"
 
 	servedPatterns1 := map[string]exchange.ServedPattern{
 		"myorg1_pattern1": {
-			Org:     myorg1,
-			Pattern: pattern1,
+			PatternOrg: myorg1,
+			Pattern:    pattern1,
+			NodeOrg:    "",
 		},
 		"myorg1_pattern2": {
-			Org:     myorg1,
-			Pattern: pattern2,
+			PatternOrg: myorg1,
+			Pattern:    pattern2,
+			NodeOrg:    myorg1,
 		},
 		"myorg2_pattern2": {
-			Org:     myorg2,
-			Pattern: pattern2,
+			PatternOrg: myorg2,
+			Pattern:    pattern2,
+			NodeOrg:    myorg3,
 		},
 	}
 
 	servedPatterns2 := map[string]exchange.ServedPattern{
 		"myorg2_pattern1": {
-			Org:     myorg2,
-			Pattern: pattern1,
+			PatternOrg: myorg2,
+			Pattern:    pattern1,
+			NodeOrg:    myorg1,
 		},
 		"myorg2_pattern2": {
-			Org:     myorg2,
-			Pattern: pattern2,
+			PatternOrg: myorg2,
+			Pattern:    pattern2,
+			NodeOrg:    "",
 		},
 	}
 
@@ -379,36 +389,43 @@ func Test_pattern_manager_setpatterns4(t *testing.T) {
 	policyPath := "/tmp/servedpatterntest/"
 	myorg1 := "myorg1"
 	myorg2 := "myorg2"
+	myorg3 := "myorg3"
 	pattern1 := "pattern1"
 	pattern2 := "pattern2"
 
 	servedPatterns1 := map[string]exchange.ServedPattern{
 		"myorg1_pattern1": {
-			Org:     myorg1,
-			Pattern: pattern1,
+			PatternOrg: myorg1,
+			Pattern:    pattern1,
+			NodeOrg:    myorg3,
 		},
 		"myorg1_pattern2": {
-			Org:     myorg1,
-			Pattern: pattern2,
+			PatternOrg: myorg1,
+			Pattern:    pattern2,
+			NodeOrg:    "",
 		},
 		"myorg2_pattern2": {
-			Org:     myorg2,
-			Pattern: pattern2,
+			PatternOrg: myorg2,
+			Pattern:    pattern2,
+			NodeOrg:    myorg3,
 		},
 	}
 
 	servedPatterns2 := map[string]exchange.ServedPattern{
 		"myorg1_pattern1": {
-			Org:     myorg1,
-			Pattern: pattern1,
+			PatternOrg: myorg1,
+			Pattern:    pattern1,
+			NodeOrg:    myorg3,
 		},
 		"myorg2_pattern1": {
-			Org:     myorg2,
-			Pattern: pattern1,
+			PatternOrg: myorg2,
+			Pattern:    pattern1,
+			NodeOrg:    myorg2,
 		},
 		"myorg2_pattern2": {
-			Org:     myorg2,
-			Pattern: pattern2,
+			PatternOrg: myorg2,
+			Pattern:    pattern2,
+			NodeOrg:    myorg3,
 		},
 	}
 
@@ -558,16 +575,19 @@ func Test_pattern_manager_setpatterns5(t *testing.T) {
 
 	servedPatterns1 := map[string]exchange.ServedPattern{
 		"myorg1_pattern1": {
-			Org:     myorg1,
-			Pattern: pattern1,
+			PatternOrg: myorg1,
+			Pattern:    pattern1,
+			NodeOrg:    myorg1,
 		},
 		"myorg1_pattern2": {
-			Org:     myorg1,
-			Pattern: pattern2,
+			PatternOrg: myorg1,
+			Pattern:    pattern2,
+			NodeOrg:    myorg2,
 		},
 		"myorg2_pattern2": {
-			Org:     myorg2,
-			Pattern: pattern2,
+			PatternOrg: myorg2,
+			Pattern:    pattern2,
+			NodeOrg:    "",
 		},
 	}
 
@@ -788,6 +808,106 @@ func Test_pattern_manager_hashPattern(t *testing.T) {
 	}
 }
 
+func Test_pattern_manager_ServedPatterns(t *testing.T) {
+	servedPatterns := map[string]exchange.ServedPattern{
+		"org1_EdgeType":       {PatternOrg: "org1", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-05-14T19:20:27.187Z[UTC]"},
+		"org1_EdgeType_org2":  {PatternOrg: "org1", Pattern: "EdgeType", NodeOrg: "org2", LastUpdated: "2018-05-14T19:20:27.197Z[UTC]"},
+		"org1_EdgeType_org3":  {PatternOrg: "org1", Pattern: "EdgeType", NodeOrg: "org3", LastUpdated: "2018-05-14T19:20:27.120Z[UTC]"},
+		"org2_edgegateway":    {PatternOrg: "org2", Pattern: "edgegateway", NodeOrg: "", LastUpdated: "2018-04-25T15:10:12.153Z[UTC]"},
+		"org3_pat3":           {PatternOrg: "org3", Pattern: "pat3", NodeOrg: "", LastUpdated: "2018-05-21T14:40:51.017Z[UTC]"},
+		"org15_EdgeType_org2": {PatternOrg: "org15", Pattern: "EdgeType", NodeOrg: "org2", LastUpdated: "2018-04-17T14:07:43.350Z[UTC]"},
+		"org15_EdgeType_org3": {PatternOrg: "org15", Pattern: "EdgeType", NodeOrg: "org3", LastUpdated: "2018-04-17T14:07:43.350Z[UTC]"},
+		"org15_EdgeType_org5": {PatternOrg: "org15", Pattern: "EdgeType", NodeOrg: "org5", LastUpdated: "2018-04-17T14:07:43.350Z[UTC]"},
+		"org16_*_org19":       {PatternOrg: "org16", Pattern: "*", NodeOrg: "org19", LastUpdated: "2018-04-18T18:22:34.237Z[UTC]"},
+		"org17_*_org17":       {PatternOrg: "org17", Pattern: "*", NodeOrg: "", LastUpdated: "2018-05-18T19:26:10.097Z[UTC]"},
+	}
+
+	policyPath := "/tmp/servedpatterntest/"
+
+	// setup the test
+	if err := cleanTestDir(policyPath); err != nil {
+		t.Errorf(err.Error())
+	}
+
+	np := NewPatternManager()
+	if np == nil {
+		t.Errorf("Error: pattern manager not created")
+	}
+
+	err := np.SetCurrentPatterns(servedPatterns, policyPath)
+	if err != nil {
+		t.Errorf("Error %v consuming served patterns %v", err, servedPatterns)
+	}
+
+	a1 := np.GetServedNodeOrgs("org1", "EdgeType")
+	if len(a1) != 3 || !sliceContains(a1, "org1") || !sliceContains(a1, "org2") || !sliceContains(a1, "org3") {
+		t.Errorf("Error: GetServedNodeOrgs expeting to get %v but got %v", []string{"org3", "org2", "org1"}, a1)
+	}
+	a15 := np.GetServedNodeOrgs("org15", "EdgeType")
+	if len(a15) != 3 || !sliceContains(a15, "org5") || !sliceContains(a1, "org2") || !sliceContains(a1, "org3") {
+		t.Errorf("Error: GetServedNodeOrgs expeting to get %v but got %v", []string{"org5", "org3", "org2"}, a15)
+	}
+	a2 := np.GetServedNodeOrgs("org2", "edgegateway")
+	if len(a2) != 1 || !sliceContains(a2, "org2") {
+		t.Errorf("Error: GetServedNodeOrgs expeting to get %v but got %v", []string{"org2"}, a2)
+	}
+	a3 := np.GetServedNodeOrgs("org3", "pat3")
+	if len(a3) != 1 || !sliceContains(a3, "org3") {
+		t.Errorf("Error: GetServedNodeOrgs expeting to get %v but got %v", []string{"org3"}, a3)
+	}
+	a16 := np.GetServedNodeOrgs("org16", "patx")
+	if len(a16) != 1 || !sliceContains(a16, "org19") {
+		t.Errorf("Error: GetServedNodeOrgs expeting to get %v but got %v", []string{"org19"}, a16)
+	}
+	a16_2 := np.GetServedNodeOrgs("org16", "paty")
+	if len(a16_2) != 1 || !sliceContains(a16_2, "org19") {
+		t.Errorf("Error: GetServedNodeOrgs expeting to get %v but got %v", []string{"org19"}, a16_2)
+	}
+	a17 := np.GetServedNodeOrgs("org17", "patx")
+	if len(a17) != 1 || !sliceContains(a17, "org17") {
+		t.Errorf("Error: GetServedNodeOrgs expeting to get %v but got %v", []string{"org17"}, a17)
+	}
+
+	if !np.serveOrg("org1") {
+		t.Errorf("Error: serveOrg for %v expeting to return true but got false", "org1")
+	}
+	if !np.serveOrg("org2") {
+		t.Errorf("Error: serveOrg for %v expeting to return true but got false", "org2")
+	}
+	if !np.serveOrg("org3") {
+		t.Errorf("Error: serveOrg for %v expeting to return true but got false", "org3")
+	}
+	if !np.serveOrg("org15") {
+		t.Errorf("Error: serveOrg for %v expeting to return true but got false", "org15")
+	}
+	if !np.serveOrg("org16") {
+		t.Errorf("Error: serveOrg for %v expeting to return true but got false", "org16")
+	}
+	if !np.serveOrg("org17") {
+		t.Errorf("Error: serveOrg for %v expeting to return true but got false", "org17")
+	}
+	if np.serveOrg("org19") {
+		t.Errorf("Error: serveOrg for %v expeting to return false but got true", "org19")
+	}
+
+	if !np.servePattern("org1", "EdgeType") {
+		t.Errorf("Error: servePattern for %v expeting to return true but got false", "org1/EdgeType")
+	}
+	if np.servePattern("org1", "EdgeType1") {
+		t.Errorf("Error: servePattern for %v expeting to return false but got true", "org1/EdgeType1")
+	}
+	if !np.servePattern("org16", "patx") {
+		t.Errorf("Error: servePattern for %v expeting to return true but got false", "org16/patx")
+	}
+	if !np.servePattern("org17", "patx") {
+		t.Errorf("Error: servePattern for %v expeting to return true but got false", "org17/patx")
+	}
+	if np.servePattern("org19", "pat19") {
+		t.Errorf("Error: servePattern for %v expeting to return false but got true", "org19/pat19")
+	}
+
+}
+
 // test large data
 func Test_pattern_manager_setpatterns6(t *testing.T) {
 
@@ -799,41 +919,45 @@ func Test_pattern_manager_setpatterns6(t *testing.T) {
 	}
 
 	servedPatterns := map[string]exchange.ServedPattern{
-		"org1_EdgeType":           {Org: "org1", Pattern: "EdgeType", LastUpdated: "2018-05-14T19:20:27.187Z[UTC]"},
-		"org2_edgegateway":        {Org: "org2", Pattern: "edgegateway", LastUpdated: "2018-04-25T15:10:12.153Z[UTC]"},
-		"org3_EdgeType":           {Org: "org3", Pattern: "EdgeType", LastUpdated: "2018-05-21T14:40:51.017Z[UTC]"},
-		"org4_EdgeType":           {Org: "org4", Pattern: "EdgeType", LastUpdated: "2018-05-21T14:28:50.608Z[UTC]"},
-		"org5_EdgeType":           {Org: "org5", Pattern: "EdgeType", LastUpdated: "2018-05-18T21:13:09.358Z[UTC]"},
-		"org6_EdgeType":           {Org: "org6", Pattern: "EdgeType", LastUpdated: "2018-04-17T14:44:00.957Z[UTC]"},
-		"org7_EdgeType":           {Org: "org7", Pattern: "EdgeType", LastUpdated: "2018-05-10T12:12:20.640Z[UTC]"},
-		"org8_EdgeType":           {Org: "org8", Pattern: "EdgeType", LastUpdated: "2018-05-04T19:13:23.210Z[UTC]"},
-		"org9_myGatewayType":      {Org: "org9", Pattern: "myGatewayType", LastUpdated: "2018-05-16T14:19:25.557Z[UTC]"},
-		"org10_EdgeType":          {Org: "org10", Pattern: "EdgeType", LastUpdated: "2018-05-04T18:31:01.533Z[UTC]"},
-		"org11_myanothertypeEdge": {Org: "org11", Pattern: "myanothertypeEdge", LastUpdated: "2018-05-15T17:58:46.386Z[UTC]"},
-		"org11_EdgeType":          {Org: "org11", Pattern: "EdgeType", LastUpdated: "2018-04-24T19:43:16.427Z[UTC]"},
-		"org12_EdgeType":          {Org: "org12", Pattern: "EdgeType", LastUpdated: "2018-04-24T19:43:16.427Z[UTC]"},
-		"org13_EdgeType":          {Org: "org13", Pattern: "EdgeType", LastUpdated: "2018-05-03T16:40:38.945Z[UTC]"},
-		"org14_EdgeType":          {Org: "org14", Pattern: "EdgeType", LastUpdated: "2018-04-24T12:16:47.278Z[UTC]"},
-		"org15_EdgeType":          {Org: "org15", Pattern: "EdgeType", LastUpdated: "2018-04-17T14:07:43.350Z[UTC]"},
-		"org16_EdgeType":          {Org: "org16", Pattern: "EdgeType", LastUpdated: "2018-04-18T18:22:34.237Z[UTC]"},
-		"org17_EdgeType":          {Org: "org17", Pattern: "EdgeType", LastUpdated: "2018-05-18T19:26:10.097Z[UTC]"},
-		"org18_EdgeType":          {Org: "org18", Pattern: "EdgeType", LastUpdated: "2018-05-11T21:14:11.998Z[UTC]"},
-		"org19_EdgeType":          {Org: "org19", Pattern: "EdgeType", LastUpdated: "2018-04-19T13:52:13.210Z[UTC]"},
-		"org20_EdgeType":          {Org: "org20", Pattern: "EdgeType", LastUpdated: "2018-04-23T12:12:01.337Z[UTC]"},
-		"org21_EdgeType":          {Org: "org21", Pattern: "EdgeType", LastUpdated: "2018-04-18T14:29:20.840Z[UTC]"},
-		"org22_p11":               {Org: "org22", Pattern: "p11", LastUpdated: "2018-05-07T19:31:24.801Z[UTC]"},
-		"org22_p12":               {Org: "org22", Pattern: "p12", LastUpdated: "2018-05-18T13:42:11.294Z[UTC]"},
-		"org22_p13":               {Org: "org22", Pattern: "p13", LastUpdated: "2018-05-02T19:53:09.428Z[UTC]"},
-		"org22_p14":               {Org: "org22", Pattern: "p14", LastUpdated: "2018-05-14T15:02:49.802Z[UTC]"},
-		"org22_p15":               {Org: "org22", Pattern: "p15", LastUpdated: "2018-05-16T19:37:46.886Z[UTC]"},
-		"org22_p16":               {Org: "org22", Pattern: "p16", LastUpdated: "2018-05-16T20:19:02.775Z[UTC]"},
-		"org22_p17":               {Org: "org22", Pattern: "p17", LastUpdated: "2018-05-16T20:19:02.775Z[UTC]"},
-		"org22_p21":               {Org: "org22", Pattern: "p21", LastUpdated: "2018-05-17T14:05:47.301Z[UTC]"},
-		"org22_p22":               {Org: "org22", Pattern: "p22", LastUpdated: "2018-05-14T14:56:11.403Z[UTC]"},
-		"org22_p23":               {Org: "org22", Pattern: "p23", LastUpdated: "2018-05-07T19:59:17.033Z[UTC]"},
-		"org23_myanothertypeEdge": {Org: "org23", Pattern: "myanothertypeEdge", LastUpdated: "2018-05-15T14:48:05.986Z[UTC]"},
-		"org24_EdgeType":          {Org: "org24", Pattern: "EdgeType", LastUpdated: "2018-05-10T16:47:55.533Z[UTC]"},
-		"org25_EdgeType":          {Org: "org25", Pattern: "EdgeType", LastUpdated: "2018-05-18T22:04:00.370Z[UTC]"},
+		"org1_EdgeType":           {PatternOrg: "org1", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-05-14T19:20:27.187Z[UTC]"},
+		"org1_EdgeType_org2":      {PatternOrg: "org1", Pattern: "EdgeType", NodeOrg: "org2", LastUpdated: "2018-05-14T19:20:27.197Z[UTC]"},
+		"org1_EdgeType_org3":      {PatternOrg: "org1", Pattern: "EdgeType", NodeOrg: "org3", LastUpdated: "2018-05-14T19:20:27.120Z[UTC]"},
+		"org2_edgegateway":        {PatternOrg: "org2", Pattern: "edgegateway", LastUpdated: "2018-04-25T15:10:12.153Z[UTC]"},
+		"org3_EdgeType":           {PatternOrg: "org3", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-05-21T14:40:51.017Z[UTC]"},
+		"org4_EdgeType":           {PatternOrg: "org4", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-05-21T14:28:50.608Z[UTC]"},
+		"org5_EdgeType":           {PatternOrg: "org5", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-05-18T21:13:09.358Z[UTC]"},
+		"org6_EdgeType":           {PatternOrg: "org6", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-04-17T14:44:00.957Z[UTC]"},
+		"org7_EdgeType":           {PatternOrg: "org7", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-05-10T12:12:20.640Z[UTC]"},
+		"org8_EdgeType":           {PatternOrg: "org8", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-05-04T19:13:23.210Z[UTC]"},
+		"org9_myGatewayType":      {PatternOrg: "org9", Pattern: "myGatewayType", NodeOrg: "", LastUpdated: "2018-05-16T14:19:25.557Z[UTC]"},
+		"org10_EdgeType":          {PatternOrg: "org10", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-05-04T18:31:01.533Z[UTC]"},
+		"org11_myanothertypeEdge": {PatternOrg: "org11", Pattern: "myanothertypeEdge", NodeOrg: "", LastUpdated: "2018-05-15T17:58:46.386Z[UTC]"},
+		"org11_EdgeType":          {PatternOrg: "org11", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-04-24T19:43:16.427Z[UTC]"},
+		"org12_EdgeType":          {PatternOrg: "org12", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-04-24T19:43:16.427Z[UTC]"},
+		"org13_EdgeType":          {PatternOrg: "org13", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-05-03T16:40:38.945Z[UTC]"},
+		"org14_EdgeType":          {PatternOrg: "org14", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-04-24T12:16:47.278Z[UTC]"},
+		"org15_EdgeType_org2":     {PatternOrg: "org15", Pattern: "EdgeType", NodeOrg: "org2", LastUpdated: "2018-04-17T14:07:43.350Z[UTC]"},
+		"org15_EdgeType_org3":     {PatternOrg: "org15", Pattern: "EdgeType", NodeOrg: "org3", LastUpdated: "2018-04-17T14:07:43.350Z[UTC]"},
+		"org15_EdgeType_org1":     {PatternOrg: "org15", Pattern: "EdgeType", NodeOrg: "org1", LastUpdated: "2018-04-17T14:07:43.350Z[UTC]"},
+		"org16_EdgeTyp":           {PatternOrg: "org16", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-04-18T18:22:34.237Z[UTC]"},
+		"org17_EdgeType":          {PatternOrg: "org17", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-05-18T19:26:10.097Z[UTC]"},
+		"org18_EdgeType":          {PatternOrg: "org18", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-05-11T21:14:11.998Z[UTC]"},
+		"org19_EdgeType":          {PatternOrg: "org19", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-04-19T13:52:13.210Z[UTC]"},
+		"org20_EdgeType":          {PatternOrg: "org20", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-04-23T12:12:01.337Z[UTC]"},
+		"org21_EdgeType":          {PatternOrg: "org21", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-04-18T14:29:20.840Z[UTC]"},
+		"org22_p11":               {PatternOrg: "org22", Pattern: "p11", NodeOrg: "", LastUpdated: "2018-05-07T19:31:24.801Z[UTC]"},
+		"org22_p12":               {PatternOrg: "org22", Pattern: "p12", NodeOrg: "", LastUpdated: "2018-05-18T13:42:11.294Z[UTC]"},
+		"org22_p13":               {PatternOrg: "org22", Pattern: "p13", NodeOrg: "", LastUpdated: "2018-05-02T19:53:09.428Z[UTC]"},
+		"org22_p14":               {PatternOrg: "org22", Pattern: "p14", NodeOrg: "", LastUpdated: "2018-05-14T15:02:49.802Z[UTC]"},
+		"org22_p15":               {PatternOrg: "org22", Pattern: "p15", NodeOrg: "", LastUpdated: "2018-05-16T19:37:46.886Z[UTC]"},
+		"org22_p16":               {PatternOrg: "org22", Pattern: "p16", NodeOrg: "", LastUpdated: "2018-05-16T20:19:02.775Z[UTC]"},
+		"org22_p17":               {PatternOrg: "org22", Pattern: "p17", NodeOrg: "", LastUpdated: "2018-05-16T20:19:02.775Z[UTC]"},
+		"org22_p21":               {PatternOrg: "org22", Pattern: "p21", NodeOrg: "", LastUpdated: "2018-05-17T14:05:47.301Z[UTC]"},
+		"org22_p22":               {PatternOrg: "org22", Pattern: "p22", NodeOrg: "", LastUpdated: "2018-05-14T14:56:11.403Z[UTC]"},
+		"org22_p23":               {PatternOrg: "org22", Pattern: "p23", NodeOrg: "", LastUpdated: "2018-05-07T19:59:17.033Z[UTC]"},
+		"org23_myanothertypeEdge": {PatternOrg: "org23", Pattern: "myanothertypeEdge", NodeOrg: "", LastUpdated: "2018-05-15T14:48:05.986Z[UTC]"},
+		"org24_EdgeType":          {PatternOrg: "org24", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-05-10T16:47:55.533Z[UTC]"},
+		"org25_EdgeType":          {PatternOrg: "org25", Pattern: "EdgeType", NodeOrg: "", LastUpdated: "2018-05-18T22:04:00.370Z[UTC]"},
 	}
 
 	org_pattern_map := map[string][]string{
@@ -1034,4 +1158,14 @@ func getTestPattern2() exchange.Pattern {
 			},
 		},
 	}
+}
+
+// check if a slice contains a string
+func sliceContains(a []string, s string) bool {
+	for _, v := range a {
+		if s == v {
+			return true
+		}
+	}
+	return false
 }

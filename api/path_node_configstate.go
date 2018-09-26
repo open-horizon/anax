@@ -101,7 +101,10 @@ func UpdateConfigstate(cfg *Configstate,
 
 		glog.V(3).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig of services starting")))
 
-		common_apispec_list, pattern, err := getSpecRefsForPattern(pDevice.Pattern, pDevice.Org, getPatterns, resolveWorkload, resolveService, db, config, true)
+		pattern_org, pattern_name, pat := persistence.GetFormatedPatternString(pDevice.Pattern, pDevice.Org)
+		pDevice.Pattern = pat
+
+		common_apispec_list, pattern, err := getSpecRefsForPattern(pattern_name, pattern_org, getPatterns, resolveWorkload, resolveService, db, config, true)
 		if err != nil {
 			LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("%v", err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 			return errorhandler(err), nil, nil
@@ -109,8 +112,8 @@ func UpdateConfigstate(cfg *Configstate,
 
 		// Reject the config attempt if the dependencies are inconsistent. There are always dependencies for the workload model, but not for the service model.
 		if !pattern.UsingServiceModel() && len(*common_apispec_list) == 0 {
-			LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Services in org %v pattern %v don't have a common version range.", pDevice.Org, pDevice.Pattern), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
-			return errorhandler(NewAPIUserInputError(fmt.Sprintf("services in org %v pattern %v don't have a common version range.", pDevice.Org, pDevice.Pattern), "configstate.state")), nil, nil
+			LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Services in pattern %v don't have a common version range.", pDevice.Pattern), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
+			return errorhandler(NewAPIUserInputError(fmt.Sprintf("services in pattern %v don't have a common version range.", pDevice.Pattern), "configstate.state")), nil, nil
 		}
 
 		// Check for inconsistencies between what might have been configured up to this point and what is in the pattern. Both the service based and

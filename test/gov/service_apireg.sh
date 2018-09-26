@@ -262,6 +262,11 @@ cat <<EOF >$KEY_TEST_DIR/svc_locgps.json
   "deploymentSignature":""
 }
 EOF
+
+# make the service public so that it can be used by devices in other orgs
+if [[ $TEST_DIFF_ORG -eq 1 ]]; then
+    sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_locgps.json
+fi
 echo -e "Register GPS Loc service $VERS:"
 hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_locgps.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
@@ -304,6 +309,10 @@ cat <<EOF >$KEY_TEST_DIR/svc_locgps2.json
   "deploymentSignature":""
 }
 EOF
+# make the service public so that it can be used by devices in other orgs
+if [[ $TEST_DIFF_ORG -eq 1 ]]; then
+    sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_locgps2.json
+fi
 echo -e "Register GPS Loc service $VERS:"
 hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_locgps2.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
@@ -413,6 +422,11 @@ cat <<EOF >$KEY_TEST_DIR/svc_gpstest.json
   "deploymentSignature":""
 }
 EOF
+# make the service public so that it can be used by devices in other orgs
+if [[ $TEST_DIFF_ORG -eq 1 ]]; then
+    sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_gpstest.json
+fi
+
 echo -e "Register GPSTest service $VERS:"
 hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_gpstest.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
@@ -449,6 +463,10 @@ cat <<EOF >$KEY_TEST_DIR/svc_location.json
   "deploymentSignature":""
 }
 EOF
+# make the service public so that it can be used by devices in other orgs
+if [[ $TEST_DIFF_ORG -eq 1 ]]; then
+    sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_location.json
+fi
 echo -e "Register service based location $VERS:"
 hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_location.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
@@ -483,6 +501,10 @@ cat <<EOF >$KEY_TEST_DIR/svc_location2.json
   "deploymentSignature":""
 }
 EOF
+# make the service public so that it can be used by devices in other orgs
+if [[ $TEST_DIFF_ORG -eq 1 ]]; then
+    sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_location2.json
+fi
 echo -e "Register service based location $VERS:"
 hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_location2.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
@@ -521,6 +543,10 @@ cat <<EOF >$KEY_TEST_DIR/svc_weather.json
   "deploymentSignature": ""
 }
 EOF
+# make the service public so that it can be used by devices in other orgs
+if [[ $TEST_DIFF_ORG -eq 1 ]]; then
+    sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_weather.json
+fi
 echo -e "Register service based PWS $VERS:"
 hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_weather.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
