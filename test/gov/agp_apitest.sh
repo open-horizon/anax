@@ -370,48 +370,6 @@ else
   echo -e "found expected response: $RES"
 fi
 
-# blockchain type not supported for known blockchain protocol
-read -d '' agreementprotocolattribute <<EOF
-{
-  "type": "AgreementProtocolAttributes",
-  "label": "Agreement Protocols",
-  "publishable": true,
-  "host_only": false,
-  "mappings": {
-    "protocols": [
-      {
-        "Citizen Scientist": [
-          {
-            "type": "hyperledger",
-            "name": "hl1"
-          }
-        ]
-      }
-    ]
-  }
-}
-EOF
-
-echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
-
-echo "Setting workload independent agreement protocol attribute"
-
-RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/attribute")
-if [ "$RES" == "" ]
-then
-  echo -e "$agreementprotocolattribute \nresulted in empty response"
-  exit 2
-fi
-
-ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "blockchain type hyperledger is not supported for protocol Citizen Scientist" ]
-then
-  echo -e "$agreementprotocolattribute \nresulted in incorrect response: $RES"
-  exit 2
-else
-  echo -e "found expected response: $RES"
-fi
-
 # ==================================================================
 # Now testing service specific agreement protocol attributes
 
@@ -862,56 +820,6 @@ else
   echo -e "found expected response: $RES"
 fi
 
-# invalid blockchain type for known blockchain protocol
-read -d '' netspeedservice <<EOF
-{
-  "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
-  "${SERVICE_ORG}": "IBM",
-  "${SERVICE_NAME}": "network",
-  "${SERVICE_VERSION}": "1.0.0",
-  "attributes": [
-    {
-      "type": "AgreementProtocolAttributes",
-      "label": "Agreement Protocols",
-      "publishable": true,
-      "host_only": false,
-      "mappings": {
-        "protocols": [
-          {
-            "Citizen Scientist": [
-              {
-                "type": "hyperledger",
-                "name": "hl1"
-              }
-            ]
-          }
-        ]
-      }
-    }
-  ]
-}
-EOF
-
-echo -e "\n\n[D] agreement protocol payload: $netspeedservice"
-
-echo "Setting workload independent agreement protocol attribute"
-
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
-then
-  echo -e "$netspeedservice \nresulted in empty response"
-  exit 2
-fi
-
-ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "blockchain type hyperledger is not supported for protocol Citizen Scientist" ]
-then
-  echo -e "$netspeedservice \nresulted in incorrect response: $RES"
-  exit 2
-else
-  echo -e "found expected response: $RES"
-fi
-
 # ==========================================================================================
 # Now testing valid service specific agreement protocol attributes that will never be used.
 
@@ -932,13 +840,7 @@ read -d '' netspeedservice <<EOF
       "mappings": {
         "protocols": [
           {
-            "Citizen Scientist": [
-              {
-                  "name": "hl2",
-                  "type": "ethereum",
-                  "organization": "IBM"
-              }
-            ]
+            "Basic": []
           }
         ]
       }
@@ -977,13 +879,7 @@ read -d '' netspeedservice <<EOF
       "mappings": {
         "protocols": [
           {
-            "Citizen Scientist": [
-              {
-                  "name": "hl2",
-                  "type": "ethereum",
-                  "organization": "IBM"
-              }
-            ]
+            "Basic": []
           }
         ]
       }

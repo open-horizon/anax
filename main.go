@@ -2,14 +2,17 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreement"
 	"github.com/open-horizon/anax/agreementbot"
+	agbotPersistence "github.com/open-horizon/anax/agreementbot/persistence"
+	_ "github.com/open-horizon/anax/agreementbot/persistence/bolt"
+	_ "github.com/open-horizon/anax/agreementbot/persistence/postgresql"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/container"
-	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/governance"
 	"github.com/open-horizon/anax/helm"
@@ -69,17 +72,13 @@ func main() {
 	}
 
 	// open Agreement Bot DB if necessary
-	var agbotdb *bolt.DB
-	if len(cfg.AgreementBot.DBPath) != 0 {
-		if err := os.MkdirAll(cfg.AgreementBot.DBPath, 0700); err != nil {
-			panic(err)
-		}
 
-		agdb, err := bolt.Open(path.Join(cfg.AgreementBot.DBPath, "agreementbot.db"), 0600, &bolt.Options{Timeout: 10 * time.Second})
-		if err != nil {
-			panic(err)
-		}
-		agbotdb = agdb
+	var agbotDB agbotPersistence.AgbotDatabase
+	agbotDB, dberr := agbotPersistence.InitDatabase(cfg)
+	if db == nil && dberr != nil {
+		panic(fmt.Sprintf("Unable to initialize Agreement Bot: %v", dberr))
+	} else if db != nil && dberr != nil {
+		glog.Warningf("Unable to initialize Agreement Bot database on this node: %v", dberr)
 	}
 
 	// start control signal handler
@@ -97,8 +96,8 @@ func main() {
 		if db != nil {
 			db.Close()
 		}
-		if agbotdb != nil {
-			agbotdb.Close()
+		if agbotDB != nil {
+			agbotDB.Close()
 		}
 
 		os.Exit(0)
@@ -129,11 +128,10 @@ func main() {
 	// start workers
 	workers := worker.NewMessageHandlerRegistry()
 
-	workers.Add(agreementbot.NewAgreementBotWorker("AgBot", cfg, agbotdb))
+	workers.Add(agreementbot.NewAgreementBotWorker("AgBot", cfg, agbotDB))
 	if cfg.AgreementBot.APIListen != "" {
-		workers.Add(agreementbot.NewAPIListener("AgBot API", cfg, agbotdb))
+		workers.Add(agreementbot.NewAPIListener("AgBot API", cfg, agbotDB))
 	}
-	workers.Add(ethblockchain.NewEthBlockchainWorker("Blockchain", cfg))
 
 	if db != nil {
 		workers.Add(api.NewAPIListener("API", cfg, db, pm))
@@ -143,9 +141,6 @@ func main() {
 		workers.Add(container.NewContainerWorker("Container", cfg, db))
 		workers.Add(torrent.NewTorrentWorker("Torrent", cfg, db))
 		workers.Add(helm.NewHelmWorker("Helm", cfg, db))
-	} else {
-		workers.Add(container.NewContainerWorker("Container", cfg, agbotdb))
-		workers.Add(torrent.NewTorrentWorker("Torrent", cfg, agbotdb))
 	}
 
 	// Get into the event processing loop until anax shuts itself down.
@@ -154,8 +149,8 @@ func main() {
 	if db != nil {
 		db.Close()
 	}
-	if agbotdb != nil {
-		agbotdb.Close()
+	if agbotDB != nil {
+		agbotDB.Close()
 	}
 
 	glog.Info("Main process terminating")

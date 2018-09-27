@@ -74,9 +74,9 @@ func AgbotListPatterns(org, userPw, agbot, patternOrg, pattern, nodeOrg string) 
 }
 
 type ServedPattern struct {
-	PatternOrg     string `json:"patternOrgid"`
-	Pattern string `json:"pattern"`
-	NodeOrg     string `json:"nodeOrgid"`
+	PatternOrg string `json:"patternOrgid"`
+	Pattern    string `json:"pattern"`
+	NodeOrg    string `json:"nodeOrgid"`
 }
 
 func AgbotAddPattern(org, userPw, agbot, patternOrg, pattern, nodeOrg string) {
@@ -87,7 +87,7 @@ func AgbotAddPattern(org, userPw, agbot, patternOrg, pattern, nodeOrg string) {
 	}
 	//patternId := formPatternId(patternOrg, pattern, nodeOrg)
 	input := ServedPattern{PatternOrg: patternOrg, Pattern: pattern, NodeOrg: nodeOrg}
-	httpCode := cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/patterns", cliutils.OrgAndCreds(org, userPw), []int{201,409}, input)
+	httpCode := cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/patterns", cliutils.OrgAndCreds(org, userPw), []int{201, 409}, input)
 	if httpCode == 409 {
 		fmt.Printf("Pattern '%s' with org '%s' and node org '%s' already exists in agbot '%s'\n", pattern, patternOrg, nodeOrg, agbot)
 		os.Exit(cliutils.CLI_INPUT_ERROR)

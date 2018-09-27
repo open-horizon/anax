@@ -1,15 +1,15 @@
 {
-    "Edge": {
-        "TorrentDir": "/torrent",
-        "TorrentListenAddr": ":50008",
-        "DockerEndpoint": "unix:///var/run/docker.sock",
-        "CACertsPath": "/root/.colonus/horizon.pem",
-        "TrustSystemCACerts": true,
-        "PublicKeyPath": "/root/.colonus/mtn-publicKey.pem",
-        "ExchangeURL": "http://${EXCH_APP_HOST}:8080/v1/"
-    },
     "AgreementBot": {
-        "DBPath": "/root/.colonus",
+        "DBPath": "",
+        "Postgresql": {
+            "Host": "exchange-db",
+            "Port": "5432",
+            "User": "admin",
+            "Password": "",
+            "DBName": "exchange",
+            "NoSSL": true
+        },
+        "Partitions": "part0",
         "TxLostDelayTolerationSeconds": 120,
         "AgreementWorkers": 5,
         "ProtocolTimeoutS": 120,

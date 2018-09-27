@@ -22,11 +22,11 @@
     ],
     "agreementProtocols": [
         {
-            "name": "Citizen Scientist",
-            "protocolVersion": 2,
+            "name": "Fred",
+            "protocolVersion": 1,
             "blockchains": [
                 {
-                    "type": "ethereum",
+                    "type": "Fred",
                     "name": "bc1",
                     "organization": "myorg"
                 }
@@ -37,7 +37,7 @@
             "protocolVersion": 1,
             "blockchains": [
                 {
-                    "type": "ethereum",
+                    "type": "Fred",
                     "name": "bc2",
                     "organization": "myorg"
                 }

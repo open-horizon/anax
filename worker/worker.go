@@ -569,7 +569,7 @@ func (workers *MessageHandlerRegistry) ProcessEventMessages() {
 	}
 
 	// Brief delay just in case.
-	time.Sleep(3 * time.Second)
+	time.Sleep(6 * time.Second)
 }
 
 var mdLogString = func(v interface{}) string {

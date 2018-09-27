@@ -2,8 +2,8 @@ package agreementbot
 
 import (
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/basicprotocol"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
@@ -19,7 +19,7 @@ type BasicAgreementWorker struct {
 	protocolHandler *BasicProtocolHandler
 }
 
-func NewBasicAgreementWorker(c *BasicProtocolHandler, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, alm *AgreementLockManager) *BasicAgreementWorker {
+func NewBasicAgreementWorker(c *BasicProtocolHandler, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, alm *AgreementLockManager) *BasicAgreementWorker {
 
 	p := &BasicAgreementWorker{
 		BaseAgreementWorker: &BaseAgreementWorker{
@@ -84,7 +84,7 @@ func (a *BasicAgreementWorker) start(work chan AgreementWork, random *rand.Rand)
 			wi := workItem.(HandleReply)
 			if ok := a.HandleAgreementReply(a.protocolHandler, &wi, a.workerID); ok {
 				// Update state in the database
-				if ag, err := AgreementFinalized(a.db, wi.Reply.AgreementId(), a.protocolHandler.Name()); err != nil {
+				if ag, err := a.db.AgreementFinalized(wi.Reply.AgreementId(), a.protocolHandler.Name()); err != nil {
 					glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error persisting agreement %v finalized: %v", wi.Reply.AgreementId(), err)))
 
 					// Update state in exchange
@@ -103,6 +103,13 @@ func (a *BasicAgreementWorker) start(work chan AgreementWork, random *rand.Rand)
 			wi := workItem.(CancelAgreement)
 			a.CancelAgreementWithLock(a.protocolHandler, wi.AgreementId, wi.Reason, a.workerID)
 
+			// Get rid of the original agreement cancellation message.
+			if wi.MessageId != 0 {
+				if err := a.protocolHandler.DeleteMessage(wi.MessageId); err != nil {
+					glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error deleting message %v from exchange", wi.MessageId)))
+				}
+			}
+
 		} else if workItem.Type() == WORKLOAD_UPGRADE {
 			// upgrade a workload on a device
 			wi := workItem.(HandleWorkloadUpgrade)
@@ -116,7 +123,7 @@ func (a *BasicAgreementWorker) start(work chan AgreementWork, random *rand.Rand)
 			wi := workItem.(BAgreementVerification)
 
 			// Archived and terminating agreements are considered to be non-existent.
-			agreement, err := FindSingleAgreementByAgreementId(a.db, wi.Verify.AgreementId(), a.protocolHandler.Name(), []AFilter{UnarchivedAFilter()})
+			agreement, err := a.db.FindSingleAgreementByAgreementId(wi.Verify.AgreementId(), a.protocolHandler.Name(), []persistence.AFilter{persistence.UnarchivedAFilter()})
 			if err != nil {
 				glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error querying agreement %v, error: %v", wi.Verify.AgreementId(), err)))
 			}
@@ -142,6 +149,10 @@ func (a *BasicAgreementWorker) start(work chan AgreementWork, random *rand.Rand)
 				}
 			}
 
+		} else if workItem.Type() == STOP {
+			// At this point, we assume that the parent agreement bot worker has already decided that it's ok to terminate.
+			break
+
 		} else {
 			glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("received unknown work request: %v", workItem)))
 		}
@@ -150,6 +161,9 @@ func (a *BasicAgreementWorker) start(work chan AgreementWork, random *rand.Rand)
 		runtime.Gosched()
 
 	}
+
+	glog.V(5).Infof(bwlogstring(a.workerID, fmt.Sprintf("terminating")))
+
 }
 
 var bwlogstring = func(workerID string, v interface{}) string {

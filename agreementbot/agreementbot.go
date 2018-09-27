@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
+	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -38,7 +38,7 @@ type DVState struct {
 // must be safely-constructed!!
 type AgreementBotWorker struct {
 	worker.BaseWorker // embedded field
-	db                *bolt.DB
+	db                persistence.AgbotDatabase
 	httpClient        *http.Client // a shared HTTP client instance for this worker
 	pm                *policy.PolicyManager
 	consumerPH        map[string]ConsumerProtocolHandler
@@ -47,9 +47,10 @@ type AgreementBotWorker struct {
 	NHManager         *NodeHealthManager
 	GovTiming         DVState
 	lastExchVerCheck  int64
+	shutdownStarted   bool
 }
 
-func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db *bolt.DB) *AgreementBotWorker {
+func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase) *AgreementBotWorker {
 
 	// An agbot is never service based, it supports both all the time, until we get rid of support for workloads.
 	ec := worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, false, cfg.Collaborators.HTTPClientFactory)
@@ -64,11 +65,16 @@ func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db *bolt.DB) 
 		NHManager:        NewNodeHealthManager(),
 		GovTiming:        DVState{},
 		lastExchVerCheck: 0,
+		shutdownStarted:  false,
 	}
 
 	glog.Info("Starting AgreementBot worker")
 	worker.Start(worker, int(cfg.AgreementBot.NewContractIntervalS))
 	return worker
+}
+
+func (w *AgreementBotWorker) ShutdownStarted() bool {
+	return w.shutdownStarted
 }
 
 func (w *AgreementBotWorker) Messages() chan events.Message {
@@ -162,6 +168,15 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 		case events.UNCONFIGURE_COMPLETE:
 			w.Commands <- worker.NewBeginShutdownCommand()
 			w.Commands <- worker.NewTerminateCommand("shutdown")
+		case events.AGBOT_QUIESCE_COMPLETE:
+			w.Commands <- worker.NewTerminateCommand("shutdown")
+		}
+
+	case *events.NodeShutdownMessage:
+		msg, _ := incoming.(*events.NodeShutdownMessage)
+		switch msg.Event().Id {
+		case events.START_AGBOT_QUIESCE:
+			w.Commands <- NewAgbotShutdownCommand(msg)
 		}
 
 	default: //nothing
@@ -186,7 +201,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 
 	// log error if the current exchange version does not meet the requirement
 	if err := version.VerifyExchangeVersion(w.Config.Collaborators.HTTPClientFactory, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), false); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
+		glog.Errorf(AWlogString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
 		return false
 	}
 
@@ -388,6 +403,10 @@ func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
 			cph.SetBlockchainClientNotAvailable(&cmd.Msg)
 		}
 
+	case *AgbotShutdownCommand:
+		w.shutdownStarted = true
+		glog.V(4).Infof("AgreementBotWorker received start shutdown command")
+
 	default:
 		return false
 	}
@@ -441,9 +460,57 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 	}
 	glog.V(5).Infof(fmt.Sprintf("AgreementBotWorker done processing messages"))
 
-	glog.V(4).Infof("AgreementBotWorker Polling Exchange.")
-	w.findAndMakeAgreements()
-	glog.V(4).Infof("AgreementBotWorker Done Polling Exchange.")
+	// If shutdown has not started then keep looking for nodes to make agreements with.
+	// If shutdown has started then we will stop making new agreements. Instead we will look for agreements that have not yet completed
+	// the agreement protocol process. If there are any, then we will hold the quiesce from completing.
+	if !w.ShutdownStarted() {
+		glog.V(4).Infof("AgreementBotWorker Polling Exchange.")
+		w.findAndMakeAgreements()
+		glog.V(4).Infof("AgreementBotWorker Done Polling Exchange.")
+
+	} else {
+		// Find all agreements that are not yet finalized. This filter will return only agreements that are still in an agreement protocol
+		// pending state.
+		glog.V(4).Infof("AgreementBotWorker Looking for pending agreements before shutting down.")
+
+		agreementPendingFilter := func() persistence.AFilter {
+			return func(a persistence.Agreement) bool { return a.AgreementFinalizedTime == 0 && a.AgreementTimedout == 0 }
+		}
+
+		// Look at all agreements across all protocols,
+		foundPending := false
+		for _, agp := range policy.AllAgreementProtocols() {
+
+			// Find all agreements that are in progress, agreements that are not archived and dont have either a finalized time or a timeeout time.
+			if agreements, err := w.db.FindAgreements([]persistence.AFilter{agreementPendingFilter(), persistence.UnarchivedAFilter()}, agp); err != nil {
+				glog.Errorf("AgreementBotWorker unable to read agreements from database, error: %v", err)
+				w.Messages() <- events.NewNodeShutdownCompleteMessage(events.AGBOT_QUIESCE_COMPLETE, err.Error())
+			} else if len(agreements) != 0 {
+				foundPending = true
+				break
+			}
+
+		}
+
+		// If no pending agreements were found, then we can begin the shutdown.
+		if !foundPending {
+
+			glog.V(5).Infof("AgreementBotWorker shutdown beginning")
+
+			w.SetWorkerShuttingDown()
+
+			// Shutdown the protocol specific agreement workers for each supported protocol.
+			for _, cph := range w.consumerPH {
+				cph.HandleStopProtocol(cph)
+			}
+
+			// Shutdown the subworkers.
+			w.TerminateSubworkers()
+
+			w.Messages() <- events.NewNodeShutdownCompleteMessage(events.AGBOT_QUIESCE_COMPLETE, "")
+
+		}
+	}
 
 }
 
@@ -548,17 +615,17 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 func (w *AgreementBotWorker) alreadyMakingAgreementWith(dev *exchange.SearchResultDevice, consumerPolicy *policy.Policy) (bool, error) {
 
 	// Check to see if we're already doing something with this device
-	pendingAgreementFilter := func() AFilter {
-		return func(a Agreement) bool {
+	pendingAgreementFilter := func() persistence.AFilter {
+		return func(a persistence.Agreement) bool {
 			return a.DeviceId == dev.Id && a.PolicyName == consumerPolicy.Header.Name && a.AgreementTimedout == 0
 		}
 	}
 
 	// Search all agreement protocol buckets
 	for _, agp := range policy.AllAgreementProtocols() {
-		// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized on blockchain.
+		// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized.
 		// TODO: To support more than 1 agreement (maxagreements > 1) with this device for this policy, we need to adjust this logic.
-		if agreements, err := FindAgreements(w.db, []AFilter{UnarchivedAFilter(), pendingAgreementFilter()}, agp); err != nil {
+		if agreements, err := w.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), pendingAgreementFilter()}, agp); err != nil {
 			glog.Errorf("AgreementBotWorker received error trying to find pending agreements for protocol %v: %v", agp, err)
 		} else if len(agreements) != 0 {
 			return true, nil
@@ -681,25 +748,21 @@ func RetrieveAllProperties(version string, arch string, pol *policy.Policy) (*po
 
 func DeleteConsumerAgreement(httpClient *http.Client, url string, agbotId string, token string, agreementId string) error {
 
-	logString := func(v interface{}) string {
-		return fmt.Sprintf("AgreementBot Governance: %v", v)
-	}
-
-	glog.V(5).Infof(logString(fmt.Sprintf("deleting agreement %v in exchange", agreementId)))
+	glog.V(5).Infof(AWlogString(fmt.Sprintf("deleting agreement %v in exchange", agreementId)))
 
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := url + "orgs/" + exchange.GetOrg(agbotId) + "/agbots/" + exchange.GetId(agbotId) + "/agreements/" + agreementId
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClient, "DELETE", targetURL, agbotId, token, nil, &resp); err != nil && !strings.Contains(err.Error(), "not found") {
-			glog.Errorf(logString(fmt.Sprintf(err.Error())))
+			glog.Errorf(AWlogString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
 			glog.Warningf(tpErr.Error())
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
-			glog.V(5).Infof(logString(fmt.Sprintf("deleted agreement %v from exchange", agreementId)))
+			glog.V(5).Infof(AWlogString(fmt.Sprintf("deleted agreement %v from exchange", agreementId)))
 			return nil
 		}
 	}
@@ -865,7 +928,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 	for _, agp := range policy.AllAgreementProtocols() {
 
 		// Loop through our database and check each record for accuracy with the exchange and the blockchain
-		if agreements, err := FindAgreements(w.db, []AFilter{UnarchivedAFilter()}, agp); err == nil {
+		if agreements, err := w.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter()}, agp); err == nil {
 
 			neededBCInstances := make(map[string]map[string]map[string]bool)
 
@@ -896,11 +959,11 @@ func (w *AgreementBotWorker) syncOnInit() error {
 							glog.Errorf(AWlogString(fmt.Sprintf("error deleting agreement %v in exchange: %v", ag.CurrentAgreementId, err)))
 						}
 						// Remove any workload usage records so that a new agreement will be made starting from the highest priority workload
-						if err := DeleteWorkloadUsage(w.db, ag.DeviceId, ag.PolicyName); err != nil {
+						if err := w.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
 							glog.Warningf(AWlogString(fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 						}
 						// Indicate that the agreement is timed out
-						if _, err := AgreementTimedout(w.db, ag.CurrentAgreementId, agp); err != nil {
+						if _, err := w.db.AgreementTimedout(ag.CurrentAgreementId, agp); err != nil {
 							glog.Errorf(AWlogString(fmt.Sprintf("error marking agreement %v terminated: %v", ag.CurrentAgreementId, err)))
 						}
 						w.consumerPH[agp].HandleAgreementTimeout(NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, w.consumerPH[agp].GetTerminationCode(TERM_REASON_POLICY_CHANGED)), w.consumerPH[agp])
@@ -909,14 +972,14 @@ func (w *AgreementBotWorker) syncOnInit() error {
 
 						// Remove any workload usage records (non-HA) or mark for pending upgrade (HA). There might not be a workload usage record
 						// if the consumer policy does not specify the workload priority section.
-						if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(w.db, ag.DeviceId, ag.PolicyName); err != nil {
+						if wlUsage, err := w.db.FindSingleWorkloadUsageByDeviceAndPolicyName(ag.DeviceId, ag.PolicyName); err != nil {
 							glog.Warningf(AWlogString(fmt.Sprintf("error retreiving workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 						} else if wlUsage != nil && len(wlUsage.HAPartners) != 0 && wlUsage.PendingUpgradeTime != 0 {
 							// Skip this agreement, it is part of an HA group where another member is upgrading
 							continue
 						} else if wlUsage != nil && len(wlUsage.HAPartners) != 0 && wlUsage.PendingUpgradeTime == 0 {
 							for _, partnerId := range wlUsage.HAPartners {
-								if _, err := UpdatePendingUpgrade(w.db, partnerId, ag.PolicyName); err != nil {
+								if _, err := w.db.UpdatePendingUpgrade(partnerId, ag.PolicyName); err != nil {
 									glog.Warningf(AWlogString(fmt.Sprintf("could not update pending workload upgrade for %v using policy %v, error: %v", partnerId, ag.PolicyName, err)))
 								}
 							}
@@ -969,7 +1032,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 					// immediately following creation of the record. Further, if this were to occur, then the exchange should not have been
 					// updated, so there is no reason to try to clean that up. Same is true for the workload usage records.
 				} else if ag.AgreementInceptionTime != 0 && ag.AgreementCreationTime == 0 {
-					if err := DeleteAgreement(w.db, ag.CurrentAgreementId, agp); err != nil {
+					if err := w.db.DeleteAgreement(ag.CurrentAgreementId, agp); err != nil {
 						glog.Errorf(AWlogString(fmt.Sprintf("error deleting partially created agreement: %v, error: %v", ag.CurrentAgreementId, err)))
 					}
 				}
@@ -996,19 +1059,19 @@ func (w *AgreementBotWorker) syncOnInit() error {
 	return nil
 }
 
-func (w *AgreementBotWorker) cleanupAgreement(ag *Agreement) {
+func (w *AgreementBotWorker) cleanupAgreement(ag *persistence.Agreement) {
 	// Update state in exchange
 	if err := DeleteConsumerAgreement(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), ag.CurrentAgreementId); err != nil {
 		glog.Errorf(AWlogString(fmt.Sprintf("error deleting agreement %v in exchange: %v", ag.CurrentAgreementId, err)))
 	}
 
 	// Delete this workload usage record so that a new agreement will be made starting from the highest priority workload
-	if err := DeleteWorkloadUsage(w.db, ag.DeviceId, ag.PolicyName); err != nil {
+	if err := w.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
 		glog.Warningf(AWlogString(fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 	}
 
 	// Indicate that the agreement is timed out
-	if _, err := AgreementTimedout(w.db, ag.CurrentAgreementId, ag.AgreementProtocol); err != nil {
+	if _, err := w.db.AgreementTimedout(ag.CurrentAgreementId, ag.AgreementProtocol); err != nil {
 		glog.Errorf(AWlogString(fmt.Sprintf("error marking agreement %v terminated: %v", ag.CurrentAgreementId, err)))
 	}
 

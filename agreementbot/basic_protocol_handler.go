@@ -3,9 +3,9 @@ package agreementbot
 import (
 	"errors"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
+	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/basicprotocol"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
@@ -23,7 +23,7 @@ type BasicProtocolHandler struct {
 	Work        chan AgreementWork // outgoing commands for the workers
 }
 
-func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, messages chan events.Message) *BasicProtocolHandler {
+func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, messages chan events.Message) *BasicProtocolHandler {
 	if name == basicprotocol.PROTOCOL_NAME {
 		return &BasicProtocolHandler{
 			BaseConsumerProtocolHandler: &BaseConsumerProtocolHandler{
@@ -112,12 +112,12 @@ func (c *BasicProtocolHandler) HandleBlockchainEvent(cmd *BlockchainEventCommand
 	return
 }
 
-func (c *BasicProtocolHandler) CreateMeteringNotification(mp policy.Meter, ag *Agreement) (*metering.MeteringNotification, error) {
+func (c *BasicProtocolHandler) CreateMeteringNotification(mp policy.Meter, ag *persistence.Agreement) (*metering.MeteringNotification, error) {
 
 	return metering.NewMeteringNotification(mp, ag.AgreementCreationTime, uint64(ag.DataVerificationCheckRate), ag.DataVerificationMissedCount, ag.CurrentAgreementId, ag.ProposalHash, ag.ConsumerProposalSig, "", ag.ProposalSig, "")
 }
 
-func (c *BasicProtocolHandler) TerminateAgreement(ag *Agreement, reason uint, workerId string) {
+func (c *BasicProtocolHandler) TerminateAgreement(ag *persistence.Agreement, reason uint, workerId string) {
 	var messageTarget interface{}
 	if whisperTo, pubkeyTo, err := c.BaseConsumerProtocolHandler.GetDeviceMessageEndpoint(ag.DeviceId, workerId); err != nil {
 		glog.Errorf(BCPHlogstring2(workerId, fmt.Sprintf("error obtaining message target for cancel message: %v", err)))
@@ -172,7 +172,7 @@ func (c *BasicProtocolHandler) IsBlockchainWritable(typeName string, name string
 	return true
 }
 
-func (c *BasicProtocolHandler) CanCancelNow(ag *Agreement) bool {
+func (c *BasicProtocolHandler) CanCancelNow(ag *persistence.Agreement) bool {
 	return true
 }
 

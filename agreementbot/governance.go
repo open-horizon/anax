@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -15,7 +16,7 @@ import (
 
 func (w *AgreementBotWorker) GovernAgreements() int {
 
-	unarchived := []AFilter{UnarchivedAFilter()}
+	unarchived := []persistence.AFilter{persistence.UnarchivedAFilter()}
 
 	// The length of time this governance routine waits is based on several factors. The data verification check rate
 	// of any agreements that are being maintained and the default time specified in the agbot config. Assume that we
@@ -32,8 +33,8 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 	w.GovTiming.nhSkip = uint64(0)    // Number of times to skip node health checks before actually doing the check.
 
 	// A filter for limiting the returned set of agreements just to those that are in progress and not yet timed out.
-	notYetFinalFilter := func() AFilter {
-		return func(a Agreement) bool { return a.AgreementCreationTime != 0 && a.AgreementTimedout == 0 }
+	notYetFinalFilter := func() persistence.AFilter {
+		return func(a persistence.Agreement) bool { return a.AgreementCreationTime != 0 && a.AgreementTimedout == 0 }
 	}
 
 	// Reset the updated status of the Node Health manager. This ensures that the agbot will attempt to get updated status
@@ -46,7 +47,7 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 		protocolHandler := w.consumerPH[agp]
 
 		// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized on blockchain.
-		if agreements, err := FindAgreements(w.db, []AFilter{notYetFinalFilter(), UnarchivedAFilter()}, agp); err == nil {
+		if agreements, err := w.db.FindAgreements([]persistence.AFilter{notYetFinalFilter(), persistence.UnarchivedAFilter()}, agp); err == nil {
 			activeDataVerification := true
 			allActiveAgreements := make(map[string][]string)
 			for _, ag := range agreements {
@@ -96,7 +97,7 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 									glog.Errorf(logString(fmt.Sprintf("unable to retrieve active agreement list. Terminating data verification loop early, error: %v", err)))
 									activeDataVerification = false
 								} else if ActiveAgreementsContains(activeAgreements, ag, w.Config.AgreementBot.DVPrefix) {
-									if _, err := DataVerified(w.db, ag.CurrentAgreementId, agp); err != nil {
+									if _, err := w.db.DataVerified(ag.CurrentAgreementId, agp); err != nil {
 										glog.Errorf(logString(fmt.Sprintf("unable to record data verification, error: %v", err)))
 									}
 
@@ -134,7 +135,7 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 												glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
 											} else if msg, err := protocolHandler.AgreementProtocolHandler(bcType, bcName, bcOrg).NotifyMetering(ag.CurrentAgreementId, mn, mt, protocolHandler.GetSendMessage()); err != nil {
 												glog.Errorf(logString(fmt.Sprintf("unable to send metering notification, error: %v", err)))
-											} else if _, err := MeteringNotification(w.db, ag.CurrentAgreementId, agp, msg); err != nil {
+											} else if _, err := w.db.MeteringNotification(ag.CurrentAgreementId, agp, msg); err != nil {
 												glog.Errorf(logString(fmt.Sprintf("unable to record metering notification, error: %v", err)))
 											}
 										}
@@ -142,18 +143,18 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 
 									// Data verification has occured. If it has been maintained for the specified duration then we can turn off the
 									// workload rollback retry checking feature.
-									if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(w.db, ag.DeviceId, ag.PolicyName); err != nil {
+									if wlUsage, err := w.db.FindSingleWorkloadUsageByDeviceAndPolicyName(ag.DeviceId, ag.PolicyName); err != nil {
 										glog.Errorf(logString(fmt.Sprintf("unable to find workload usage record, error: %v", err)))
 									} else if wlUsage != nil && !wlUsage.DisableRetry {
 										if wlUsage.VerifiedDurationS == 0 || (wlUsage.VerifiedDurationS != 0 && ag.DataNotificationSent != 0 && ag.DataVerifiedTime != ag.AgreementCreationTime && (ag.DataVerifiedTime > ag.DataNotificationSent) && ((ag.DataVerifiedTime - ag.DataNotificationSent) >= uint64(wlUsage.VerifiedDurationS))) {
 											glog.V(5).Infof(logString(fmt.Sprintf("disabling workload rollback for %v after %v seconds", ag.CurrentAgreementId, (ag.DataVerifiedTime - ag.DataNotificationSent))))
-											if _, err := DisableRollbackChecking(w.db, ag.DeviceId, ag.PolicyName); err != nil {
+											if _, err := w.db.DisableRollbackChecking(ag.DeviceId, ag.PolicyName); err != nil {
 												glog.Errorf(logString(fmt.Sprintf("unable to disable workload rollback retries, error: %v", err)))
 											}
 										}
 									}
 
-								} else if _, err := DataNotVerified(w.db, ag.CurrentAgreementId, agp); err != nil {
+								} else if _, err := w.db.DataNotVerified(ag.CurrentAgreementId, agp); err != nil {
 									glog.Errorf(logString(fmt.Sprintf("unable to record data not verified, error: %v", err)))
 								}
 							}
@@ -201,11 +202,11 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 
 	glog.V(5).Infof(logString(fmt.Sprintf("checking for HA partners needing a workload upgrade.")))
 
-	HAPartnerUpgradeWUFilter := func() WUFilter {
-		return func(a WorkloadUsage) bool { return len(a.HAPartners) != 0 && a.PendingUpgradeTime != 0 }
+	HAPartnerUpgradeWUFilter := func() persistence.WUFilter {
+		return func(a persistence.WorkloadUsage) bool { return len(a.HAPartners) != 0 && a.PendingUpgradeTime != 0 }
 	}
 
-	if upgrades, err := FindWorkloadUsages(w.db, []WUFilter{HAPartnerUpgradeWUFilter()}); err != nil {
+	if upgrades, err := w.db.FindWorkloadUsages([]persistence.WUFilter{HAPartnerUpgradeWUFilter()}); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error searching for HA devices that need their workloads upgraded, error: %v", err)))
 	} else if len(upgrades) != 0 {
 
@@ -219,7 +220,7 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 			for _, partnerId := range wlu.HAPartners {
 				glog.V(5).Infof(logString(fmt.Sprintf("analyzing HA group containing %v with partners %v", wlu.DeviceId, wlu.HAPartners)))
 
-				if partnerWLU, err := FindSingleWorkloadUsageByDeviceAndPolicyName(w.db, partnerId, wlu.PolicyName); err != nil {
+				if partnerWLU, err := w.db.FindSingleWorkloadUsageByDeviceAndPolicyName(partnerId, wlu.PolicyName); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error obtaining partner workload usage record for device %v and policy %v, error: %v", partnerId, wlu.PolicyName, err)))
 				} else if partnerWLU == nil {
 					// If the partner doesnt have a workload usage record, then it is because that partner is upgrading.
@@ -251,11 +252,11 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 			// begin upgrading the partner who needs it.
 			if upgradedPartnerFound != "" && partnerUpgrading == "" {
 				glog.V(3).Infof(logString(fmt.Sprintf("beginning upgrade of HA member %v in group %v.", wlu.DeviceId, wlu.HAPartners)))
-				if ag, err := FindSingleAgreementByAgreementIdAllProtocols(w.db, wlu.CurrentAgreementId, policy.AllAgreementProtocols(), unarchived); err != nil {
+				if ag, err := w.db.FindSingleAgreementByAgreementIdAllProtocols(wlu.CurrentAgreementId, policy.AllAgreementProtocols(), unarchived); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to read agreement %v from database, error: %v", wlu.CurrentAgreementId, err)))
 				} else {
 					// Make sure the workload usage record is gone,this will allow the device to pick up the newest workload.
-					if err := DeleteWorkloadUsage(w.db, wlu.DeviceId, wlu.PolicyName); err != nil {
+					if err := w.db.DeleteWorkloadUsage(wlu.DeviceId, wlu.PolicyName); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", wlu.DeviceId, wlu.PolicyName, err)))
 					}
 
@@ -331,12 +332,12 @@ func calculateSkipTime(dvCheckrate uint64, nhCheckrate uint64, pgi uint64) (uint
 // a device in an HA group that is in the midst of making an agreement will prevent the agbot from upgrading other HA
 // partners. This function also considers the possibility that an HA partner has stopped heart beating (because it died), and
 // therefore wont be making any agreements right now. In that case, we skip that device and look for others to start upgrading.
-func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *WorkloadUsage, currentWLU *WorkloadUsage) (string, string) {
+func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *persistence.WorkloadUsage, currentWLU *persistence.WorkloadUsage) (string, string) {
 
 	partnerUpgrading := ""
 	upgradedPartnerFound := ""
 
-	if ag, err := FindSingleAgreementByAgreementIdAllProtocols(w.db, partnerWLU.CurrentAgreementId, policy.AllAgreementProtocols(), []AFilter{UnarchivedAFilter()}); err != nil {
+	if ag, err := w.db.FindSingleAgreementByAgreementIdAllProtocols(partnerWLU.CurrentAgreementId, policy.AllAgreementProtocols(), []persistence.AFilter{persistence.UnarchivedAFilter()}); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("unable to read agreement %v from database, error: %v", partnerWLU.CurrentAgreementId, err)))
 	} else if ag == nil {
 		// If we dont find an agreement for a partner, then it is because a previous agreement with that partner has failed and we
@@ -380,7 +381,7 @@ func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *WorkloadUsa
 }
 
 // This function is used to verify that a node is still functioning correctly
-func (w *AgreementBotWorker) VerifyNodeHealth(ag *Agreement, cph ConsumerProtocolHandler) (int, error) {
+func (w *AgreementBotWorker) VerifyNodeHealth(ag *persistence.Agreement, cph ConsumerProtocolHandler) (int, error) {
 
 	finalizedTolerance := uint64(60)
 
@@ -413,12 +414,12 @@ func (w *AgreementBotWorker) VerifyNodeHealth(ag *Agreement, cph ConsumerProtoco
 	return ag.NHCheckAgreementStatus, nil
 }
 
-func (w *AgreementBotWorker) TerminateAgreement(ag *Agreement, reason uint) {
+func (w *AgreementBotWorker) TerminateAgreement(ag *persistence.Agreement, reason uint) {
 	// Start timing out the agreement
 	glog.V(3).Infof(logString(fmt.Sprintf("detected agreement %v needs to terminate.", ag.CurrentAgreementId)))
 
 	// Update the database
-	if _, err := AgreementTimedout(w.db, ag.CurrentAgreementId, ag.AgreementProtocol); err != nil {
+	if _, err := w.db.AgreementTimedout(ag.CurrentAgreementId, ag.AgreementProtocol); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error marking agreement %v terminate: %v", ag.CurrentAgreementId, err)))
 	}
 
@@ -469,8 +470,8 @@ func (w *AgreementBotWorker) GovernArchivedAgreements() int {
 	glog.V(5).Infof(logString(fmt.Sprintf("archive purge scanning for agreements archived more than %v hour(s) ago.", ageLimit)))
 
 	// A filter for limiting the returned set of agreements to just those that are too old.
-	agedOutFilter := func(now int64, limitH int) AFilter {
-		return func(a Agreement) bool {
+	agedOutFilter := func(now int64, limitH int) persistence.AFilter {
+		return func(a persistence.Agreement) bool {
 			return a.AgreementTimedout != 0 && (a.AgreementTimedout+uint64(limitH*3600) <= uint64(now))
 		}
 	}
@@ -478,9 +479,9 @@ func (w *AgreementBotWorker) GovernArchivedAgreements() int {
 	// Find all archived agreements that are old enough and delete them.
 	for _, agp := range policy.AllAgreementProtocols() {
 		now := time.Now().Unix()
-		if agreements, err := FindAgreements(w.db, []AFilter{ArchivedAFilter(), agedOutFilter(now, ageLimit)}, agp); err == nil {
+		if agreements, err := w.db.FindAgreements([]persistence.AFilter{persistence.ArchivedAFilter(), agedOutFilter(now, ageLimit)}, agp); err == nil {
 			for _, ag := range agreements {
-				if err := DeleteAgreement(w.db, ag.CurrentAgreementId, agp); err != nil {
+				if err := w.db.DeleteAgreement(ag.CurrentAgreementId, agp); err != nil {
 					glog.Error(logString(fmt.Sprintf("error deleting archived agreement %v, error: %v", ag.CurrentAgreementId, err)))
 				} else {
 					glog.V(3).Infof(logString(fmt.Sprintf("archive purge deleted %v", ag.CurrentAgreementId)))
@@ -508,7 +509,7 @@ func (w *AgreementBotWorker) GovernBlockchainNeeds() int {
 
 			// Make a map of all blockchain names that we need to have running
 			neededBCs := make(map[string]map[string]bool)
-			if agreements, err := FindAgreements(w.db, []AFilter{UnarchivedAFilter()}, agp); err == nil {
+			if agreements, err := w.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter()}, agp); err == nil {
 				for _, ag := range agreements {
 					_, bcName, bcOrg := w.consumerPH[agp].GetKnownBlockchain(&ag)
 					if bcName != "" {

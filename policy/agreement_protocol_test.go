@@ -218,7 +218,7 @@ func Test_AgreementProtocolList_intersects(t *testing.T) {
 				t.Errorf("Error: %v intersects with %v, error was %v\n", p1, p2, err)
 			} else if len(*pl3) != 1 {
 				t.Errorf("Error: Intersection of %v with %v should have produced 1 intersections, produced %v\n", p1, p2, len(*pl3))
-			} else if (*pl3)[0].ProtocolVersion != 2 {
+			} else if (*pl3)[0].ProtocolVersion != 1 {
 				t.Errorf("Error: Intersection of %v with %v should have produced protocol version 1, produced %v\n", p1, p2, (*pl3)[0].ProtocolVersion)
 			}
 		}
@@ -233,7 +233,7 @@ func Test_AgreementProtocolList_intersects(t *testing.T) {
 				t.Errorf("Error: %v intersects with %v, error was %v\n", p1, p2, err)
 			} else if len(*pl3) != 1 {
 				t.Errorf("Error: Intersection of %v with %v should have produced 1 intersections, produced %v\n", p1, p2, len(*pl3))
-			} else if (*pl3)[0].ProtocolVersion != 2 {
+			} else if (*pl3)[0].ProtocolVersion != 1 {
 				t.Errorf("Error: Intersection of %v with %v should have produced protocol version 1, produced %v\n", p1, p2, (*pl3)[0].ProtocolVersion)
 			} else if len((*pl3)[0].Blockchains) != 2 {
 				t.Errorf("Error: Intersection of %v with %v should have produced 2 blockchains, produced %v\n", p1, p2, len((*pl3)[0].Blockchains))
@@ -351,20 +351,20 @@ func Test_AgreementProtocolList_single_element(t *testing.T) {
 }
 
 func Test_AgreementProtocol_init(t *testing.T) {
-	agp := AgreementProtocol_Factory(CitizenScientist)
+	agp := AgreementProtocol_Factory(BasicProtocol)
 	agp.Initialize()
-	if agp.Blockchains[0].Type != Ethereum_bc {
+	if len(agp.Blockchains) != 0 {
 		t.Errorf("Error: blockchain type was not correctly inited, is %v\n", agp.Blockchains[0])
 	}
 }
 
 func Test_AgreementProtocol_isvalid(t *testing.T) {
-	agp := AgreementProtocol_Factory(CitizenScientist)
+	agp := AgreementProtocol_Factory(BasicProtocol)
 	if err := agp.IsValid(); err != nil {
 		t.Errorf("Error: agreement protocol object is valid %v\n", agp)
 	}
 
-	p1 := `[{"name":"Basic","blockchains":[]},{"name":"Basic"},{"name":"Citizen Scientist"},{"name":"Citizen Scientist","blockchains":[]},{"name":"Citizen Scientist","blockchains":[{}]},{"name":"Citizen Scientist","blockchains":[{"name":"fred"}]},{"name":"Citizen Scientist","blockchains":[{"name":"fred","type":"ethereum"}]}]`
+	p1 := `[{"name":"Basic","blockchains":[]},{"name":"Basic"}]`
 	if pl1 := create_AgreementProtocolList(p1, t); pl1 != nil {
 		for _, agp := range *pl1 {
 			if err := agp.IsValid(); err != nil {
@@ -490,7 +490,7 @@ func Test_AgreementProtocolList_is_not_Same(t *testing.T) {
 	var pl1 *AgreementProtocolList
 	var pl2 *AgreementProtocolList
 
-	pa := `[{"name":"` + CitizenScientist + `"}]`
+	pa := `[{"name":"Fred"}]`
 	pb := `[{"name":"` + BasicProtocol + `"}]`
 	if pl1 = create_AgreementProtocolList(pa, t); pl1 == nil || len(*pl1) != 1 {
 		t.Errorf("Error: returned %v, should have returned %v\n", pl1, pa)
@@ -521,7 +521,7 @@ func Test_AgreementProtocolList_is_not_Same(t *testing.T) {
 	}
 
 	pa = `[{"name":"` + BasicProtocol + `"}]`
-	pb = `[{"name":"` + BasicProtocol + `"},{"name":"` + CitizenScientist + `"}]`
+	pb = `[{"name":"` + BasicProtocol + `"},{"name":"Fred"}]`
 	if pl1 = create_AgreementProtocolList(pa, t); pl1 == nil || len(*pl1) != 1 {
 		t.Errorf("Error: returned %v, should have returned %v\n", pl1, pa)
 	} else if pl2 = create_AgreementProtocolList(pb, t); pl2 == nil || len(*pl2) != 2 {
@@ -536,42 +536,42 @@ func Test_AgreementProtocolList_FindByName(t *testing.T) {
 
 	var pl1 *AgreementProtocolList
 
-	pa := `[{"name":"` + CitizenScientist + `","blockchains":[{"name":"fred"}]}]`
+	pa := `[{"name":"Fred","blockchains":[{"name":"fred"}]}]`
 
 	if pl1 = create_AgreementProtocolList(pa, t); pl1 == nil || len(*pl1) != 1 {
 		t.Errorf("Error: returned %v, should have returned %v\n", pl1, pa)
-	} else if agp := pl1.FindByName(CitizenScientist); agp == nil {
-		t.Errorf("Error: the list contains AGP %v that we searched for in %v\n", CitizenScientist, pl1)
+	} else if agp := pl1.FindByName("Fred"); agp == nil {
+		t.Errorf("Error: the list contains AGP %v that we searched for in %v\n", "Fred", pl1)
 	} else if len(agp.Blockchains) != 1 {
 		t.Errorf("Error: lost the blockchain list, should have 1 element, is %v", agp.Blockchains)
 	}
 
-	pa = `[{"name":"` + CitizenScientist + `","blockchains":[{"name":"fred"}]},{"name":"fred","blockchains":[{"name":"fred"}]}]`
+	pa = `[{"name":"Fred","blockchains":[{"name":"fred"}]},{"name":"fred","blockchains":[{"name":"fred"}]}]`
 
 	if pl1 = create_AgreementProtocolList(pa, t); pl1 == nil || len(*pl1) != 2 {
 		t.Errorf("Error: returned %v, should have returned %v\n", pl1, pa)
-	} else if agp := pl1.FindByName(CitizenScientist); agp == nil {
-		t.Errorf("Error: the list contains AGP %v that we searched for in %v\n", CitizenScientist, pl1)
+	} else if agp := pl1.FindByName("Fred"); agp == nil {
+		t.Errorf("Error: the list contains AGP %v that we searched for in %v\n", "Fred", pl1)
 	} else if len(agp.Blockchains) != 1 {
 		t.Errorf("Error: lost the blockchain list, should have 1 element, is %v", agp.Blockchains)
 	}
 
-	pa = `[{"name":"ethel","blockchains":[{"name":"fred"}]},{"name":"` + CitizenScientist + `","blockchains":[{"name":"fred"}]},{"name":"fred","blockchains":[{"name":"fred"}]}]`
+	pa = `[{"name":"ethel","blockchains":[{"name":"fred"}]},{"name":"Fred","blockchains":[{"name":"fred"}]},{"name":"fred","blockchains":[{"name":"fred"}]}]`
 
 	if pl1 = create_AgreementProtocolList(pa, t); pl1 == nil || len(*pl1) != 3 {
 		t.Errorf("Error: returned %v, should have returned %v\n", pl1, pa)
-	} else if agp := pl1.FindByName(CitizenScientist); agp == nil {
-		t.Errorf("Error: the list contains AGP %v that we searched for in %v\n", CitizenScientist, pl1)
+	} else if agp := pl1.FindByName("Fred"); agp == nil {
+		t.Errorf("Error: the list contains AGP %v that we searched for in %v\n", "Fred", pl1)
 	} else if len(agp.Blockchains) != 1 {
 		t.Errorf("Error: lost the blockchain list, should have 1 element, is %v", agp.Blockchains)
 	}
 
-	pa = `[{"name":"ethel","blockchains":[{"name":"fred"}]},{"name":"` + CitizenScientist + `","blockchains":[{"name":"fred"}]}]`
+	pa = `[{"name":"ethel","blockchains":[{"name":"fred"}]},{"name":"Fred","blockchains":[{"name":"fred"}]}]`
 
 	if pl1 = create_AgreementProtocolList(pa, t); pl1 == nil || len(*pl1) != 2 {
 		t.Errorf("Error: returned %v, should have returned %v\n", pl1, pa)
-	} else if agp := pl1.FindByName(CitizenScientist); agp == nil {
-		t.Errorf("Error: the list contains AGP %v that we searched for in %v\n", CitizenScientist, pl1)
+	} else if agp := pl1.FindByName("Fred"); agp == nil {
+		t.Errorf("Error: the list contains AGP %v that we searched for in %v\n", "Fred", pl1)
 	} else if len(agp.Blockchains) != 1 {
 		t.Errorf("Error: lost the blockchain list, should have 1 element, is %v", agp.Blockchains)
 	}
@@ -582,7 +582,7 @@ func Test_AgreementProtocolList_not_FindByName(t *testing.T) {
 
 	var pl1 *AgreementProtocolList
 
-	pa := `[{"name":"` + CitizenScientist + `","blockchains":[{"name":"fred"}]}]`
+	pa := `[{"name":"Fred","blockchains":[{"name":"fred"}]}]`
 
 	if pl1 = create_AgreementProtocolList(pa, t); pl1 == nil || len(*pl1) != 1 {
 		t.Errorf("Error: returned %v, should have returned %v\n", pl1, pa)
@@ -598,7 +598,7 @@ func Test_AgreementProtocolList_not_FindByName(t *testing.T) {
 		t.Errorf("Error: the list does not contain AGP %v that we searched for in %v\n", "fred", pl1)
 	}
 
-	pa = `[{"name":"` + CitizenScientist + `","blockchains":[{"name":"fred"}]},{"name":"` + CitizenScientist + `","blockchains":[{"name":"fred"}]}]`
+	pa = `[{"name":"Fred","blockchains":[{"name":"fred"}]},{"name":"Fred","blockchains":[{"name":"fred"}]}]`
 
 	if pl1 = create_AgreementProtocolList(pa, t); pl1 == nil || len(*pl1) != 2 {
 		t.Errorf("Error: returned %v, should have returned %v\n", pl1, pa)

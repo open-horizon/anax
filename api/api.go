@@ -163,14 +163,17 @@ func (a *API) NewEvent(incoming events.Message) {
 
 	case *events.NodeShutdownCompleteMessage:
 		msg, _ := incoming.(*events.NodeShutdownCompleteMessage)
-		a.em.RecordEvent(msg, func(m events.Message) { a.saveShutdownError(m) })
-		// Now remove myself from the worker dispatch list. When the anax process terminates,
-		// the socket listener will terminate also. This is done on a separate thread so that
-		// the message dispatcher doesnt get blocked. This worker isnt actually a full blown
-		// worker and doesnt have a command thread that it can run on.
-		go func() {
-			a.Messages() <- events.NewWorkerStopMessage(events.WORKER_STOP, a.GetName())
-		}()
+		switch msg.Event().Id {
+		case events.UNCONFIGURE_COMPLETE:
+			a.em.RecordEvent(msg, func(m events.Message) { a.saveShutdownError(m) })
+			// Now remove myself from the worker dispatch list. When the anax process terminates,
+			// the socket listener will terminate also. This is done on a separate thread so that
+			// the message dispatcher doesnt get blocked. This worker isnt actually a full blown
+			// worker and doesnt have a command thread that it can run on.
+			go func() {
+				a.Messages() <- events.NewWorkerStopMessage(events.WORKER_STOP, a.GetName())
+			}()
+		}
 
 	}
 	return

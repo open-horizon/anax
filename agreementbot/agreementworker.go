@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
+	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
@@ -22,6 +22,7 @@ const CANCEL = "AGREEMENT_CANCEL"
 const DATARECEIVEDACK = "AGREEMENT_DATARECEIVED_ACK"
 const WORKLOAD_UPGRADE = "WORKLOAD_UPGRADE"
 const ASYNC_CANCEL = "ASYNC_CANCEL"
+const STOP = "PROTOCOL_WORKER_STOP"
 
 type AgreementWork interface {
 	Type() string
@@ -88,6 +89,7 @@ type CancelAgreement struct {
 	AgreementId string
 	Protocol    string
 	Reason      uint
+	MessageId   int
 }
 
 func (c CancelAgreement) Type() string {
@@ -117,13 +119,25 @@ func (c AsyncCancelAgreement) Type() string {
 	return c.workType
 }
 
+type StopWorker struct {
+	workType string
+}
+
+func (c StopWorker) String() string {
+	return fmt.Sprintf("Workitem: %v", c.workType)
+}
+
+func (c StopWorker) Type() string {
+	return c.workType
+}
+
 type AgreementWorker interface {
 	AgreementLockManager() *AgreementLockManager
 }
 
 type BaseAgreementWorker struct {
 	pm         *policy.PolicyManager
-	db         *bolt.DB
+	db         persistence.AgbotDatabase
 	config     *config.HorizonConfig
 	alm        *AgreementLockManager
 	workerID   string
@@ -180,7 +194,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 
 	for !foundWorkload {
 
-		if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(b.db, wi.Device.Id, wi.ConsumerPolicy.Header.Name); err != nil {
+		if wlUsage, err := b.db.FindSingleWorkloadUsageByDeviceAndPolicyName(wi.Device.Id, wi.ConsumerPolicy.Header.Name); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
 			return
 		} else if wlUsage == nil {
@@ -196,7 +210,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("unable to find supported workload for %v within %v", wi.Device.Id, wi.ConsumerPolicy.Workloads)))
 
 			// If we created a workload usage record during this process, get rid of it.
-			if err := DeleteWorkloadUsage(b.db, wi.Device.Id, wi.ConsumerPolicy.Header.Name); err != nil {
+			if err := b.db.DeleteWorkloadUsage(wi.Device.Id, wi.ConsumerPolicy.Header.Name); err != nil {
 				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("unable to delete workload usage record for %v with %v because %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
 			}
 			return
@@ -261,17 +275,17 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				if !workload.HasEmptyPriority() {
 					// If this is not the first time through the loop, update the workload usage record, otherwise create it.
 					if lastWorkload != nil {
-						if _, err := UpdatePriority(b.db, wi.Device.Id, wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, agreementIdString); err != nil {
+						if _, err := b.db.UpdatePriority(wi.Device.Id, wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, agreementIdString); err != nil {
 							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating priority in persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
 							return
 						}
-					} else if err := NewWorkloadUsage(b.db, wi.Device.Id, wi.ProducerPolicy.HAGroup.Partners, "", wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, true, agreementIdString); err != nil {
+					} else if err := b.db.NewWorkloadUsage(wi.Device.Id, wi.ProducerPolicy.HAGroup.Partners, "", wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, true, agreementIdString); err != nil {
 						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
 						return
 					}
 
 					// Artificially bump up the retry count so that the loop will choose the next workload
-					if _, err := UpdateRetryCount(b.db, wi.Device.Id, wi.ConsumerPolicy.Header.Name, workload.Priority.Retries+1, agreementIdString); err != nil {
+					if _, err := b.db.UpdateRetryCount(wi.Device.Id, wi.ConsumerPolicy.Header.Name, workload.Priority.Retries+1, agreementIdString); err != nil {
 						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating retry count persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
 						return
 					}
@@ -328,7 +342,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	}
 
 	// Create pending agreement in database
-	if err := AgreementAttempt(b.db, agreementIdString, wi.Org, wi.Device.Id, wi.ConsumerPolicy.Header.Name, bcType, bcName, bcOrg, cph.Name(), wi.ConsumerPolicy.PatternId, wi.ConsumerPolicy.NodeH); err != nil {
+	if err := b.db.AgreementAttempt(agreementIdString, wi.Org, wi.Device.Id, wi.ConsumerPolicy.Header.Name, bcType, bcName, bcOrg, cph.Name(), wi.ConsumerPolicy.PatternId, wi.ConsumerPolicy.NodeH); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error persisting agreement attempt: %v", err)))
 
 		// Create message target for protocol message
@@ -340,7 +354,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error initiating agreement: %v", err)))
 
 		// Remove pending agreement from database
-		if err := DeleteAgreement(b.db, agreementIdString, cph.Name()); err != nil {
+		if err := b.db.DeleteAgreement(agreementIdString, cph.Name()); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting pending agreement: %v, error %v", agreementIdString, err)))
 		}
 
@@ -376,7 +390,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 	if reply.ProposalAccepted() {
 
 		// Find the saved agreement in the database
-		if agreement, err := FindSingleAgreementByAgreementId(b.db, reply.AgreementId(), cph.Name(), []AFilter{UnarchivedAFilter()}); err != nil {
+		if agreement, err := b.db.FindSingleAgreementByAgreementId(reply.AgreementId(), cph.Name(), []persistence.AFilter{persistence.UnarchivedAFilter()}); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying pending agreement %v, error: %v", reply.AgreementId(), err)))
 		} else if agreement == nil {
 			glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("discarding reply, agreement id %v not in our database", reply.AgreementId())))
@@ -407,7 +421,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 			// If we dont have a workload usage record for this device, then we need to create one. If there is already a
 			// workload usage record and workload rollback retry counting is enabled, then check to see if the workload priority
 			// has changed. If so, update the record and reset the retry count and time. Othwerwise just update the retry count.
-			if wlUsage, err := FindSingleWorkloadUsageByDeviceAndPolicyName(b.db, wi.SenderId, consumerPolicy.Header.Name); err != nil {
+			if wlUsage, err := b.db.FindSingleWorkloadUsageByDeviceAndPolicyName(wi.SenderId, consumerPolicy.Header.Name); err != nil {
 				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 			} else if wlUsage == nil {
 				// There is no workload usage record. Make sure that the current workload chosen is the highest priority workload.
@@ -419,26 +433,29 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 					// Need a new workload usage record but not the same as the highest priority. That can't be right.
 					ackReplyAsValid = false
 				} else if !pol.Workloads[0].HasEmptyPriority() {
-					if err := NewWorkloadUsage(b.db, wi.SenderId, pol.HAGroup.Partners, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, false, reply.AgreementId()); err != nil {
+					if err := b.db.NewWorkloadUsage(wi.SenderId, pol.HAGroup.Partners, agreement.Policy, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, false, reply.AgreementId()); err != nil {
 						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 					}
 				}
 			} else {
 				if wlUsage.Policy == "" {
-					if _, err := UpdatePolicy(b.db, wi.SenderId, consumerPolicy.Header.Name, agreement.Policy); err != nil {
+					if _, err := b.db.UpdatePolicy(wi.SenderId, consumerPolicy.Header.Name, agreement.Policy); err != nil {
 						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating policy in workload usage prioroty for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 					}
 				}
 
 				if !wlUsage.DisableRetry {
 					if pol.Workloads[0].Priority.PriorityValue != wlUsage.Priority {
-						if _, err := UpdatePriority(b.db, wi.SenderId, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, reply.AgreementId()); err != nil {
+						if _, err := b.db.UpdatePriority(wi.SenderId, consumerPolicy.Header.Name, pol.Workloads[0].Priority.PriorityValue, pol.Workloads[0].Priority.RetryDurationS, pol.Workloads[0].Priority.VerifiedDurationS, reply.AgreementId()); err != nil {
 							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating workload usage prioroty for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 						}
-					} else if _, err := UpdateRetryCount(b.db, wi.SenderId, consumerPolicy.Header.Name, wlUsage.RetryCount+1, reply.AgreementId()); err != nil {
+					} else if _, err := b.db.UpdateRetryCount(wi.SenderId, consumerPolicy.Header.Name, wlUsage.RetryCount+1, reply.AgreementId()); err != nil {
 						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating workload usage retry count for device %v with policy %v, error: %v", wi.SenderId, consumerPolicy.Header.Name, err)))
 					}
-				} else if _, err := UpdateWUAgreementId(b.db, wi.SenderId, consumerPolicy.Header.Name, reply.AgreementId()); err != nil {
+				}
+
+				// Make sure the agreement id gets updated.
+				if _, err := b.db.UpdateWUAgreementId(wi.SenderId, consumerPolicy.Header.Name, reply.AgreementId(), cph.Name()); err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating agreement id %v in workload usage for %v for policy %v, error: %v", reply.AgreementId(), wi.SenderId, consumerPolicy.Header.Name, err)))
 				}
 			}
@@ -516,11 +533,11 @@ func (b *BaseAgreementWorker) HandleDataReceivedAck(cph ConsumerProtocolHandler,
 		lock := b.alm.getAgreementLock(drAck.AgreementId())
 		lock.Lock()
 
-		if ag, err := FindSingleAgreementByAgreementId(b.db, drAck.AgreementId(), cph.Name(), []AFilter{UnarchivedAFilter()}); err != nil {
+		if ag, err := b.db.FindSingleAgreementByAgreementId(drAck.AgreementId(), cph.Name(), []persistence.AFilter{persistence.UnarchivedAFilter()}); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying timed out agreement %v, error: %v", drAck.AgreementId(), err)))
 		} else if ag == nil {
 			glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("nothing to terminate for agreement %v, no database record.", drAck.AgreementId())))
-		} else if _, err := DataNotification(b.db, ag.CurrentAgreementId, cph.Name()); err != nil {
+		} else if _, err := b.db.DataNotification(ag.CurrentAgreementId, cph.Name()); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to record data notification, error: %v", err)))
 		}
 
@@ -550,7 +567,7 @@ func (b *BaseAgreementWorker) HandleWorkloadUpgrade(cph ConsumerProtocolHandler,
 	// grab the agreement id lock, cancel the agreement and delete the workload usage record.
 
 	if wi.AgreementId == "" {
-		if ags, err := FindAgreements(b.db, []AFilter{DevPolAFilter(wi.Device, wi.PolicyName)}, cph.Name()); err != nil {
+		if ags, err := b.db.FindAgreements([]persistence.AFilter{persistence.DevPolAFilter(wi.Device, wi.PolicyName)}, cph.Name()); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error finding agreement for device %v and policyName %v, error: %v", wi.Device, wi.PolicyName, err)))
 		} else if len(ags) == 0 {
 			// If there is no agreement found, is it a problem? We could have caught the system in a state where there is no
@@ -572,7 +589,7 @@ func (b *BaseAgreementWorker) HandleWorkloadUpgrade(cph ConsumerProtocolHandler,
 
 	// Find the workload usage record and delete it. This will cause any new agreement negotiations to start with the highest priority
 	// workload.
-	if err := DeleteWorkloadUsage(b.db, wi.Device, wi.PolicyName); err != nil {
+	if err := b.db.DeleteWorkloadUsage(wi.Device, wi.PolicyName); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting workload usage record for device %v and policyName %v, error: %v", wi.Device, wi.PolicyName, err)))
 	}
 
@@ -598,7 +615,7 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("terminating agreement %v.", agreementId)))
 
 	// Update the database
-	if _, err := AgreementTimedout(b.db, agreementId, cph.Name()); err != nil {
+	if _, err := b.db.AgreementTimedout(agreementId, cph.Name()); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marking agreement %v terminated: %v", agreementId, err)))
 	}
 
@@ -608,7 +625,7 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 	}
 
 	// Find the agreement record
-	if ag, err := FindSingleAgreementByAgreementId(b.db, agreementId, cph.Name(), []AFilter{UnarchivedAFilter()}); err != nil {
+	if ag, err := b.db.FindSingleAgreementByAgreementId(agreementId, cph.Name(), []persistence.AFilter{persistence.UnarchivedAFilter()}); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying agreement %v from database, error: %v", agreementId, err)))
 	} else if ag == nil {
 		glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("nothing to terminate for agreement %v, no database record.", agreementId)))
@@ -616,14 +633,14 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 
 		// Update the workload usage record to clear the agreement. There might not be a workload usage record if there is no workload priority
 		// specified in the workload section of the policy.
-		if wlUsage, err := UpdateWUAgreementId(b.db, ag.DeviceId, ag.PolicyName, ""); err != nil {
+		if wlUsage, err := b.db.UpdateWUAgreementId(ag.DeviceId, ag.PolicyName, "", cph.Name()); err != nil {
 			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("warning updating agreement id in workload usage for %v for policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 
 		} else if wlUsage != nil && wlUsage.ReqsNotMet {
 			// If the workload usage record indicates that it is not at the highest priority workload because the device cant meet the
 			// requirements of the higher priority workload, then when an agreement gets cancelled, we will remove the record so that the
 			// agbot always tries the next agreement starting with the highest priority workload again.
-			if err := DeleteWorkloadUsage(b.db, ag.DeviceId, ag.PolicyName); err != nil {
+			if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
 				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting workload usage record for device %v and policyName %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 			}
 		}
@@ -636,7 +653,7 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 			b.DoAsyncCancel(cph, ag, reason, workerId)
 		}
 
-		if ag.AgreementProtocolVersion < 2 || (ag.BlockchainType != "" && !cph.IsBlockchainWritable(ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg)) {
+		if ag.BlockchainType != "" && !cph.IsBlockchainWritable(ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg) {
 			// create deferred termination command
 			glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("deferring blockchain cancel for %v", agreementId)))
 			cph.DeferCommand(AsyncCancelAgreement{
@@ -648,7 +665,7 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 		}
 
 		// Archive the record
-		if _, err := ArchiveAgreement(b.db, ag.CurrentAgreementId, cph.Name(), reason, cph.GetTerminationReason(reason)); err != nil {
+		if _, err := b.db.ArchiveAgreement(ag.CurrentAgreementId, cph.Name(), reason, cph.GetTerminationReason(reason)); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error archiving terminated agreement: %v, error: %v", ag.CurrentAgreementId, err)))
 		}
 
@@ -660,7 +677,7 @@ func (b *BaseAgreementWorker) ExternalCancel(cph ConsumerProtocolHandler, agreem
 	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("starting deferred cancel for %v", agreementId)))
 
 	// Find the agreement record
-	if ag, err := FindSingleAgreementByAgreementId(b.db, agreementId, cph.Name(), []AFilter{}); err != nil {
+	if ag, err := b.db.FindSingleAgreementByAgreementId(agreementId, cph.Name(), []persistence.AFilter{}); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying agreement %v from database, error: %v", agreementId, err)))
 	} else if ag == nil {
 		glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("nothing to terminate for agreement %v, no database record.", agreementId)))
@@ -681,7 +698,7 @@ func (b *BaseAgreementWorker) ExternalCancel(cph ConsumerProtocolHandler, agreem
 	}
 }
 
-func (b *BaseAgreementWorker) DoAsyncCancel(cph ConsumerProtocolHandler, ag *Agreement, reason uint, workerId string) {
+func (b *BaseAgreementWorker) DoAsyncCancel(cph ConsumerProtocolHandler, ag *persistence.Agreement, reason uint, workerId string) {
 
 	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("starting async cancel for %v", ag.CurrentAgreementId)))
 	// This routine does not need to be a subworker because it will terminate on its own.

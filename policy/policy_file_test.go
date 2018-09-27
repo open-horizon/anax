@@ -364,11 +364,11 @@ func Test_Policy_Creation(t *testing.T) {
 	pf_created.Add_API_Spec(APISpecification_Factory("http://mycompany.com/dm/cpu_temp", "myorg", "1.0.0", "arm"))
 	pf_created.Add_API_Spec(APISpecification_Factory("http://mycompany.com/dm/gps", "myorg", "1.0.0", "arm"))
 
-	agp1 := AgreementProtocol_Factory(CitizenScientist)
-	agp1.Blockchains.Add_Blockchain(Blockchain_Factory(Ethereum_bc, "bc1", "myorg"))
+	agp1 := AgreementProtocol_Factory("Fred")
+	agp1.Blockchains.Add_Blockchain(Blockchain_Factory("Fred", "bc1", "myorg"))
 	pf_created.Add_Agreement_Protocol(agp1)
 	agp2 := AgreementProtocol_Factory("2Party Bitcoin")
-	agp2.Blockchains.Add_Blockchain(Blockchain_Factory(Ethereum_bc, "bc2", "myorg"))
+	agp2.Blockchains.Add_Blockchain(Blockchain_Factory("Fred", "bc2", "myorg"))
 	pf_created.Add_Agreement_Protocol(agp2)
 
 	pf_created.Add_Property(Property_Factory("rpiprop1", "rpival1"))
@@ -426,58 +426,58 @@ func Test_MinimumProtocolVersion(t *testing.T) {
 
 	var p1, p2 *Policy
 
-	pa := `{"agreementProtocols":[{"name":"` + CitizenScientist + `","blockchains":[{"name":"fred"}]}]}`
-	pb := `{"agreementProtocols":[{"name":"` + CitizenScientist + `","blockchains":[{"name":"fred"}]}]}`
+	pa := `{"agreementProtocols":[{"name":"Fred","blockchains":[{"name":"fred"}]}]}`
+	pb := `{"agreementProtocols":[{"name":"Fred","blockchains":[{"name":"fred"}]}]}`
 
 	if p1 = create_Policy(pa, t); p1 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
 	} else if p2 = create_Policy(pb, t); p2 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
-	} else if pv := p1.MinimumProtocolVersion(CitizenScientist, p2, 2); pv != 1 {
+	} else if pv := p1.MinimumProtocolVersion("Fred", p2, 2); pv != 1 {
 		t.Errorf("Error: the min version should be 1 but was %v\n", pv)
 	}
 
-	pa = `{"agreementProtocols":[{"name":"` + CitizenScientist + `","protocolVersion":2}]}`
-	pb = `{"agreementProtocols":[{"name":"` + CitizenScientist + `","protocolVersion":1}]}`
+	pa = `{"agreementProtocols":[{"name":"Fred","protocolVersion":2}]}`
+	pb = `{"agreementProtocols":[{"name":"Fred","protocolVersion":1}]}`
 
 	if p1 = create_Policy(pa, t); p1 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
 	} else if p2 = create_Policy(pb, t); p2 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
-	} else if pv := p1.MinimumProtocolVersion(CitizenScientist, p2, 1); pv != 1 {
+	} else if pv := p1.MinimumProtocolVersion("Fred", p2, 1); pv != 1 {
 		t.Errorf("Error: the min version should be 1 but was %v\n", pv)
 	}
 
-	pa = `{"agreementProtocols":[{"name":"` + CitizenScientist + `","protocolVersion":3}]}`
-	pb = `{"agreementProtocols":[{"name":"` + CitizenScientist + `"}]}`
+	pa = `{"agreementProtocols":[{"name":"Fred","protocolVersion":3}]}`
+	pb = `{"agreementProtocols":[{"name":"Fred"}]}`
 
 	if p1 = create_Policy(pa, t); p1 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
 	} else if p2 = create_Policy(pb, t); p2 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
-	} else if pv := p1.MinimumProtocolVersion(CitizenScientist, p2, 2); pv != 2 {
+	} else if pv := p1.MinimumProtocolVersion("Fred", p2, 2); pv != 2 {
 		t.Errorf("Error: the min version should be 2 but was %v\n", pv)
 	}
 
-	pa = `{"agreementProtocols":[{"name":"` + CitizenScientist + `","protocolVersion":3}]}`
-	pb = `{"agreementProtocols":[{"name":"` + CitizenScientist + `"}]}`
+	pa = `{"agreementProtocols":[{"name":"Fred","protocolVersion":3}]}`
+	pb = `{"agreementProtocols":[{"name":"Fred"}]}`
 
 	if p1 = create_Policy(pa, t); p1 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
 	} else if p2 = create_Policy(pb, t); p2 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
-	} else if pv := p1.MinimumProtocolVersion(CitizenScientist, p2, 4); pv != 3 {
+	} else if pv := p1.MinimumProtocolVersion("Fred", p2, 4); pv != 3 {
 		t.Errorf("Error: the min version should be 3 but was %v\n", pv)
 	}
 
-	pa = `{"agreementProtocols":[{"name":"` + CitizenScientist + `","protocolVersion":2}]}`
-	pb = `{"agreementProtocols":[{"name":"` + CitizenScientist + `","protocolVersion":4}]}`
+	pa = `{"agreementProtocols":[{"name":"Fred","protocolVersion":2}]}`
+	pb = `{"agreementProtocols":[{"name":"Fred","protocolVersion":4}]}`
 
 	if p1 = create_Policy(pa, t); p1 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
 	} else if p2 = create_Policy(pb, t); p2 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
-	} else if pv := p1.MinimumProtocolVersion(CitizenScientist, p2, 5); pv != 2 {
+	} else if pv := p1.MinimumProtocolVersion("Fred", p2, 5); pv != 2 {
 		t.Errorf("Error: the min version should be 2 but was %v\n", pv)
 	}
 

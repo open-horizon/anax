@@ -6,13 +6,12 @@ import (
 )
 
 // All known and supported agreement protocols
-const CitizenScientist = "Citizen Scientist"
 const BasicProtocol = "Basic"
 
-var AllProtocols = []string{CitizenScientist, BasicProtocol}
+var AllProtocols = []string{BasicProtocol}
 
-var RequiresBCType = map[string]string{CitizenScientist: Ethereum_bc}
-var DefaultBCOrg = map[string]string{CitizenScientist: Default_Blockchain_org}
+var RequiresBCType = map[string]string{}
+var DefaultBCOrg = map[string]string{}
 
 func SupportedAgreementProtocol(name string) bool {
 	for _, p := range AllProtocols {
@@ -121,20 +120,6 @@ func (a AgreementProtocol) IsSame(compare AgreementProtocol) bool {
 }
 
 func (a *AgreementProtocol) Initialize() {
-	if a.Name == CitizenScientist && len(a.Blockchains) == 0 {
-		a.Blockchains.Add_Blockchain(Blockchain_Factory("", "", ""))
-	}
-	for ix, bc := range a.Blockchains {
-		if a.Name == CitizenScientist && bc.Type == "" {
-			a.Blockchains[ix].Type = Ethereum_bc
-		}
-		if a.Name == CitizenScientist && bc.Name == "" {
-			a.Blockchains[ix].Name = Default_Blockchain_name
-		}
-		if a.Name == CitizenScientist && bc.Org == "" {
-			a.Blockchains[ix].Org = Default_Blockchain_org
-		}
-	}
 }
 
 func (a AgreementProtocol) String() string {
@@ -179,11 +164,7 @@ func AgreementProtocol_Factory(name string) *AgreementProtocol {
 	a := new(AgreementProtocol)
 	a.Name = name
 	a.Blockchains = (*new(BlockchainList))
-	if name == CitizenScientist {
-		a.ProtocolVersion = 2
-	} else {
-		a.ProtocolVersion = 1 // this might have to be zero
-	}
+	a.ProtocolVersion = 1
 	return a
 }
 

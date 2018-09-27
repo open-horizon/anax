@@ -202,6 +202,7 @@ func Test_authExchange(t *testing.T) {
 		events.ImageDockerAuth{Registry: "myrepo2.com", UserName: "token", Password: "t24"})
 
 	err = authExchange(img_auths, dockerAuthConfigurations)
+
 	assert.Nil(t, err, "Should return nil.")
 	assert.Equal(t, 1, len(httpAuthAttrs), "the http auth should have 1 element.")
 	assert.Equal(t, 2, len(httpAuthAttrs["http://myrepo3.com"]), "The http auth element for http://myrepo3.com should have 2 items.")

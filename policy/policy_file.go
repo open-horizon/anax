@@ -519,27 +519,10 @@ func (p *Policy) MinimumProtocolVersion(name string, other *Policy, maxSupported
 
 }
 
-func (p *Policy) RequiresDefaultBC(protocol string) bool {
-	if protocol != CitizenScientist {
-		return false
-	}
-
-	if prodAGP := p.AgreementProtocols.FindByName(protocol); prodAGP == nil {
-		return false
-	} else if prodAGP.ProtocolVersion < 2 && len(prodAGP.Blockchains) == 0 {
-		return true
-	}
-	return false
-}
-
 func (p *Policy) RequiresKnownBC(protocol string) (string, string, string) {
-	if protocol != CitizenScientist {
-		return "", "", ""
-	}
-
 	if prodAGP := p.AgreementProtocols.FindByName(protocol); prodAGP == nil {
 		return "", "", ""
-	} else if prodAGP.ProtocolVersion < 2 && len(prodAGP.Blockchains) != 0 {
+	} else if len(prodAGP.Blockchains) != 0 {
 		return prodAGP.Blockchains[0].Type, prodAGP.Blockchains[0].Name, prodAGP.Blockchains[0].Org
 	}
 	return "", "", ""

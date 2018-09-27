@@ -15,7 +15,6 @@ type AgbotAndStatus struct {
 	Id  string `json:"agbot_id"`
 	Org string `json:"organization"`
 	// from apicommon.Info
-	Geths         []apicommon.Geth         `json:"geth"`
 	Configuration *apicommon.Configuration `json:"configuration"`
 	Connectivity  map[string]bool          `json:"connectivity"`
 }
@@ -30,7 +29,6 @@ func (n *AgbotAndStatus) CopyNodeInto(horDevice *agreementbot.HorizonAgbot) {
 // CopyStatusInto copies the status info into our output struct
 func (n *AgbotAndStatus) CopyStatusInto(status *apicommon.Info) {
 	//todo: I don't like having to repeat all of these fields, hard to maintain. Maybe use reflection?
-	n.Geths = status.Geths
 	n.Configuration = status.Configuration
 	n.Connectivity = status.Connectivity
 }

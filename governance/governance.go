@@ -9,7 +9,6 @@ import (
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
-	"github.com/open-horizon/anax/ethblockchain"
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -50,7 +49,6 @@ const BC_GOVERNOR = "BlockchainGovernor"
 type GovernanceWorker struct {
 	worker.BaseWorker   // embedded field
 	db                  *bolt.DB
-	bc                  *ethblockchain.BaseContracts
 	devicePattern       string
 	pm                  *policy.PolicyManager
 	producerPH          map[string]producer.ProducerProtocolHandler

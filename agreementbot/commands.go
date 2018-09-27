@@ -172,3 +172,18 @@ func NewAccountFundedCommand(msg *events.AccountFundedMessage) *AccountFundedCom
 		Msg: *msg,
 	}
 }
+
+// ==============================================================================================================
+type AgbotShutdownCommand struct {
+	Msg events.NodeShutdownMessage
+}
+
+func (e AgbotShutdownCommand) ShortString() string {
+	return e.Msg.ShortString()
+}
+
+func NewAgbotShutdownCommand(msg *events.NodeShutdownMessage) *AgbotShutdownCommand {
+	return &AgbotShutdownCommand{
+		Msg: *msg,
+	}
+}

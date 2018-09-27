@@ -127,7 +127,7 @@ func (w *HelmWorker) CommandHandler(command worker.Command) bool {
 
 		hdc, ok := cmd.Deployment.(*persistence.HelmDeploymentConfig)
 		if !ok {
-			glog.Errorf(hpwlog(fmt.Sprintf("ignoring non-Helm maintenance command: %v", cmd)))
+			glog.Warningf(hpwlog(fmt.Sprintf("ignoring non-Helm maintenance command: %v", cmd)))
 			return true
 		} else if err := w.releaseStatus(hdc, "DEPLOYED"); err != nil {
 			glog.Errorf(hpwlog(fmt.Sprintf("%v", err)))
