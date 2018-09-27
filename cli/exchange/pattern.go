@@ -68,12 +68,12 @@ type ServiceReferenceFile struct {
 	AgreementLess   bool                      `json:"agreementLess,omitempty"` // a special case where this service will also be required by others
 	ServiceVersions []ServiceChoiceFile       `json:"serviceVersions"`         // a list of service version for rollback
 	DataVerify      exchange.DataVerification `json:"dataVerification"`        // policy for verifying that the node is sending data
-	NodeH           exchange.NodeHealth       `json:"nodeHealth"`              // policy for determining when a node's health is violating its agreements
+	NodeH           *exchange.NodeHealth      `json:"nodeHealth,omitempty"`    // this needs to be a ptr so it will be omitted if not specified, so exchange will default it
 }
 type PatternFile struct {
 	Org                string                       `json:"org"` // optional
 	Label              string                       `json:"label"`
-	Description        string                       `json:"description"`
+	Description        string                       `json:"description,omitempty"`
 	Public             bool                         `json:"public"`
 	Services           []ServiceReferenceFile       `json:"services"`
 	Workloads          []WorkloadReferenceFile      `json:"workloads"`
@@ -111,11 +111,11 @@ type ServiceReference struct {
 	AgreementLess   bool                      `json:"agreementLess,omitempty"` // a special case where this service will also be required by others
 	ServiceVersions []ServiceChoice           `json:"serviceVersions"`         // a list of service version for rollback
 	DataVerify      exchange.DataVerification `json:"dataVerification"`        // policy for verifying that the node is sending data
-	NodeH           exchange.NodeHealth       `json:"nodeHealth"`              // policy for determining when a node's health is violating its agreements
+	NodeH           *exchange.NodeHealth      `json:"nodeHealth,omitempty"`    // this needs to be a ptr so it will be omitted if not specified, so exchange will default it
 }
 type PatternInput struct {
 	Label              string                       `json:"label"`
-	Description        string                       `json:"description"`
+	Description        string                       `json:"description,omitempty"`
 	Public             bool                         `json:"public"`
 	Services           []ServiceReference           `json:"services"`
 	Workloads          []WorkloadReference          `json:"workloads"`
