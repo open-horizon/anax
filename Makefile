@@ -77,7 +77,7 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 
 # Build an install pkg for horizon-cli for mac
 #todo: these targets should probably be moved into the official horizon build process
-export MAC_PKG_VERSION ?= 2.17.14
+export MAC_PKG_VERSION ?= 2.18.1
 MAC_PKG_IDENTIFIER ?= com.github.open-horizon.pkg.horizon-cli
 MAC_PKG_INSTALL_DIR ?= /Users/Shared/horizon-cli
 
