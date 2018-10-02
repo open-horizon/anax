@@ -42,9 +42,28 @@ func NodeList(org string, userPw string, node string, namesOnly bool) {
 	}
 }
 
-func NodeCreate(org string, nodeIdTok string, userPw string, email string) {
+func NodeCreate(org, nodeIdTok, node, token, userPw, email string) {
+	// They should specify either nodeIdTok (for backward compat) or node and token, but not both
+	 var nodeId, nodeToken string
+	if node != "" || token != "" {
+		if node == "" || token == "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "if node or token are specified then they both must be specified")
+		}
+		// at this point we know both node and token were specified
+		if nodeIdTok != "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "do not specify both the -n flag and the node and token positional arguments. They mean the same thing.")
+		}
+		nodeId = node
+		nodeToken = token
+	} else {
+		// here we know neither node nor token were specified
+		if nodeIdTok == "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "either the node and token positional arguments, or the -n flag must be specified.")
+		}
+		nodeId, nodeToken = cliutils.SplitIdToken(nodeIdTok)
+	}
+
 	cliutils.SetWhetherUsingApiKey(userPw)
-	nodeId, nodeToken := cliutils.SplitIdToken(nodeIdTok)
 	exchUrlBase := cliutils.GetExchangeUrl()
 
 	// Assume the user exists and try to create the node, but handle the error cases
@@ -76,6 +95,25 @@ func NodeCreate(org string, nodeIdTok string, userPw string, email string) {
 		}
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "can not update existing node %s because it is owned by another user (%s)", nodeId, ourNode.Owner)
 	}
+}
+
+type NodeExchangePatchToken struct {
+	Token    string   `json:"token"`
+}
+
+func NodeSetToken(org, userPw, node, token string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
+	patchNodeReq := NodeExchangePatchToken{Token: token}
+	cliutils.ExchangePutPost(http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, userPw), []int{201}, patchNodeReq)
+}
+
+func NodeConfirm(org, node, token string) {
+	cliutils.SetWhetherUsingApiKey("")
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, node+":"+token), []int{200}, nil)
+	if httpCode == 200 {
+		fmt.Println("Node id and token are valid.")
+	}
+	// else cliutils.ExchangeGet() already gave the error msg
 }
 
 func NodeRemove(org, userPw, node string, force bool) {

@@ -72,9 +72,15 @@ Environment Variables:
 
 	exUserCmd := exchangeCmd.Command("user", "List and manage users in the Horizon Exchange.")
 	exUserListCmd := exUserCmd.Command("list", "Display the user resource from the Horizon Exchange. (Normally you can only display your own user. If the user does not exist, you will get an invalid credentials error.)")
-	exUserListAll := exUserListCmd.Flag("all", "List all users in the org. Will only do this if you are and user with admin privilege.").Short('a').Bool()
+	exUserListAll := exUserListCmd.Flag("all", "List all users in the org. Will only do this if you are a user with admin privilege.").Short('a').Bool()
 	exUserCreateCmd := exUserCmd.Command("create", "Create the user resource in the Horizon Exchange.")
-	exUserCreateEmail := exUserCreateCmd.Flag("email", "Your email address that should be associated with this user account when creating it in the Horizon exchange.").Short('e').Required().String()
+	exUserCreateUser := exUserCreateCmd.Arg("user", "Your username for this user account when creating it in the Horizon exchange.").Required().String()
+	exUserCreatePw := exUserCreateCmd.Arg("pw", "Your password for this user account when creating it in the Horizon exchange.").Required().String()
+	exUserCreateEmail := exUserCreateCmd.Arg("email", "Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted.").String()
+	exUserCreateIsAdmin := exUserCreateCmd.Flag("admin", "This user should be an administrator, capable of managing all resources in this org of the exchange.").Short('A').Bool()
+	exUserSetAdminCmd := exUserCmd.Command("setadmin", "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.")
+	exUserSetAdminUser := exUserSetAdminCmd.Arg("user", "The user to be modified.").Required().String()
+	exUserSetAdminBool := exUserSetAdminCmd.Arg("isadmin", "True if they should be an admin user, otherwise false.").Required().Bool()
 	exUserDelCmd := exUserCmd.Command("remove", "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, microservices, workloads, patterns, etc).")
 	exDelUser := exUserDelCmd.Arg("user", "The user to remove.").Required().String()
 	exUserDelForce := exUserDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
@@ -84,8 +90,16 @@ Environment Variables:
 	exNode := exNodeListCmd.Arg("node", "List just this one node.").String()
 	exNodeLong := exNodeListCmd.Flag("long", "When listing all of the nodes, show the entire resource of each nodes, instead of just the name.").Short('l').Bool()
 	exNodeCreateCmd := exNodeCmd.Command("create", "Create the node resource in the Horizon Exchange.")
-	exNodeIdTok := exNodeCreateCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token. The node ID must be unique within the organization.").Short('n').PlaceHolder("ID:TOK").Required().String()
-	exNodeEmail := exNodeCreateCmd.Flag("email", "Your email address. Only needs to be specified if: the user specified in the -u flag does not exist, and you specified the 'public' org. If these things are true we will create the user and include this value as the email attribute.").Short('e').String()
+	exNodeCreateNodeIdTok := exNodeCreateCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be created. The node ID must be unique within the organization.").Short('n').PlaceHolder("ID:TOK").String()
+	exNodeCreateNodeEmail := exNodeCreateCmd.Flag("email", "Your email address. Only needs to be specified if: the user specified in the -u flag does not exist, and you specified the 'public' org. If these things are true we will create the user and include this value as the email attribute.").Short('e').String()
+	exNodeCreateNode := exNodeCreateCmd.Arg("node", "The node to be created.").String()
+	exNodeCreateToken := exNodeCreateCmd.Arg("token", "The token the new node should have.").String()
+	exNodeSetTokCmd := exNodeCmd.Command("settoken", "Change the token of a node resource in the Horizon Exchange.")
+	exNodeSetTokNode := exNodeSetTokCmd.Arg("node", "The node to be changed.").Required().String()
+	exNodeSetTokToken := exNodeSetTokCmd.Arg("token", "The new token for the node.").Required().String()
+	exNodeConfirmCmd := exNodeCmd.Command("confirm", "Check to see if the specified node and token are valid in the Horizon Exchange.")
+	exNodeConfirmNode := exNodeConfirmCmd.Arg("node", "The node id to be checked.").Required().String()
+	exNodeConfirmToken := exNodeConfirmCmd.Arg("token", "The token for the node.").Required().String()
 	exNodeDelCmd := exNodeCmd.Command("remove", "Remove a node resource from the Horizon Exchange. Do NOT do this when an edge node is registered with this node id.")
 	exDelNode := exNodeDelCmd.Arg("node", "The node to remove.").Required().String()
 	exNodeDelForce := exNodeDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
@@ -431,13 +445,19 @@ Environment Variables:
 	case exUserListCmd.FullCommand():
 		exchange.UserList(*exOrg, *exUserPw, *exUserListAll)
 	case exUserCreateCmd.FullCommand():
-		exchange.UserCreate(*exOrg, *exUserPw, *exUserCreateEmail)
+		exchange.UserCreate(*exOrg, *exUserPw, *exUserCreateUser, *exUserCreatePw, *exUserCreateEmail, *exUserCreateIsAdmin)
+	case exUserSetAdminCmd.FullCommand():
+		exchange.UserSetAdmin(*exOrg, *exUserPw, *exUserSetAdminUser, *exUserSetAdminBool)
 	case exUserDelCmd.FullCommand():
 		exchange.UserRemove(*exOrg, *exUserPw, *exDelUser, *exUserDelForce)
 	case exNodeListCmd.FullCommand():
 		exchange.NodeList(*exOrg, *exUserPw, *exNode, !*exNodeLong)
 	case exNodeCreateCmd.FullCommand():
-		exchange.NodeCreate(*exOrg, *exNodeIdTok, *exUserPw, *exNodeEmail)
+		exchange.NodeCreate(*exOrg, *exNodeCreateNodeIdTok, *exNodeCreateNode, *exNodeCreateToken, *exUserPw, *exNodeCreateNodeEmail)
+	case exNodeSetTokCmd.FullCommand():
+		exchange.NodeSetToken(*exOrg, *exUserPw, *exNodeSetTokNode, *exNodeSetTokToken)
+	case exNodeConfirmCmd.FullCommand():
+		exchange.NodeConfirm(*exOrg, *exNodeConfirmNode, *exNodeConfirmToken)
 	case exNodeDelCmd.FullCommand():
 		exchange.NodeRemove(*exOrg, *exUserPw, *exDelNode, *exNodeDelForce)
 	case exAgbotListCmd.FullCommand():
