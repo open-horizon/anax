@@ -43,7 +43,7 @@ func UserCreate(org, userPwCreds, user, pw, email string, isAdmin bool) {
 }
 
 type UserExchangePatchAdmin struct {
-	Admin    bool   `json:"admin"`
+	Admin bool `json:"admin"`
 }
 
 func UserSetAdmin(org, userPwCreds, user string, isAdmin bool) {

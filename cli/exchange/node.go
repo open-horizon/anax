@@ -44,7 +44,7 @@ func NodeList(org string, userPw string, node string, namesOnly bool) {
 
 func NodeCreate(org, nodeIdTok, node, token, userPw, email string) {
 	// They should specify either nodeIdTok (for backward compat) or node and token, but not both
-	 var nodeId, nodeToken string
+	var nodeId, nodeToken string
 	if node != "" || token != "" {
 		if node == "" || token == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "if node or token are specified then they both must be specified")
@@ -98,7 +98,7 @@ func NodeCreate(org, nodeIdTok, node, token, userPw, email string) {
 }
 
 type NodeExchangePatchToken struct {
-	Token    string   `json:"token"`
+	Token string `json:"token"`
 }
 
 func NodeSetToken(org, userPw, node, token string) {
