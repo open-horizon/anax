@@ -15,7 +15,7 @@ CLI_COMPLETION_DIR := cli/bash_completion
 DEFAULT_UI = api/static/index.html
 
 ANAX_CONTAINER_DIR := anax-in-container
-DOCKER_IMAGE_VERSION ?= 2.17.14
+DOCKER_IMAGE_VERSION ?= 2.18.1
 DOCKER_IMAGE = openhorizon/$(arch)_anax:$(DOCKER_IMAGE_VERSION)
 DOCKER_IMAGE_LATEST = openhorizon/$(arch)_anax:latest
 # To not use cache, so it picks up the latest horizon deb pkgs: DOCKER_MAYBE_CACHE='--no-cache' make docker-image
@@ -77,7 +77,7 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 
 # Build an install pkg for horizon-cli for mac
 #todo: these targets should probably be moved into the official horizon build process
-export MAC_PKG_VERSION ?= 2.17.14
+export MAC_PKG_VERSION ?= 2.18.1
 MAC_PKG_IDENTIFIER ?= com.github.open-horizon.pkg.horizon-cli
 MAC_PKG_INSTALL_DIR ?= /Users/Shared/horizon-cli
 
