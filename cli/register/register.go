@@ -8,7 +8,6 @@ import (
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
 	"net/http"
@@ -236,11 +235,8 @@ func CreateInputFile(org, pattern, arch, nodeIdTok, inputFile string) {
 	// Get the pattern
 	exchangeUrl := cliutils.GetExchangeUrl()
 	var patOutput exchange.GetPatternResponse
-
-	pat_org, pat_name, _ := persistence.GetFormatedPatternString(pattern, org)
-
-	cliutils.ExchangeGet(exchangeUrl, "orgs/"+pat_org+"/patterns/"+pat_name, cliutils.OrgAndCreds(org, nodeIdTok), []int{200}, &patOutput)
-	patKey := cliutils.OrgAndCreds(pat_org, pat_name)
+	cliutils.ExchangeGet(exchangeUrl, "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org, nodeIdTok), []int{200}, &patOutput)
+	patKey := cliutils.OrgAndCreds(org, pattern)
 	if _, ok := patOutput.Patterns[patKey]; !ok {
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, "did not find pattern '%s' as expected", patKey)
 	}

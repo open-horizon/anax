@@ -91,6 +91,9 @@ func (pm *PatternManager) String() string {
 		}
 	}
 
+	pm.spMapLock.Lock()
+	defer pm.spMapLock.Unlock()
+
 	for _, served := range pm.ServedPatterns {
 		res += fmt.Sprintf(" Serve: %v ", served)
 	}
@@ -146,6 +149,9 @@ func (pm *PatternManager) setServedPatterns(servedPatterns map[string]exchange.S
 
 // chek if the agbot serves the given pattern or not.
 func (pm *PatternManager) servePattern(pattern_org string, pattern string) bool {
+	pm.spMapLock.Lock()
+	defer pm.spMapLock.Unlock()
+
 	for _, sp := range pm.ServedPatterns {
 		if sp.PatternOrg == pattern_org && (sp.Pattern == pattern || sp.Pattern == "*") {
 			return true
@@ -156,6 +162,9 @@ func (pm *PatternManager) servePattern(pattern_org string, pattern string) bool 
 
 // check if the agbot service the given org or not.
 func (pm *PatternManager) serveOrg(pattern_org string) bool {
+	pm.spMapLock.Lock()
+	defer pm.spMapLock.Unlock()
+
 	for _, sp := range pm.ServedPatterns {
 		if sp.PatternOrg == pattern_org {
 			return true

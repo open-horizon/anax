@@ -56,7 +56,6 @@ func FindHorizonDeviceForOutput(db *bolt.DB) (*HorizonDevice, error) {
 	var device *HorizonDevice
 
 	pDevice, err := persistence.FindExchangeDevice(db)
-	glog.Infof("*** the device is: %v", pDevice)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to read node object, error %v", err))
 	} else if pDevice == nil {

@@ -804,7 +804,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, polOrg string) (
 		// get a list of node orgs that agbot is serving for this pattern
 		nodeOrgs := w.PatternManager.GetServedNodeOrgs(polOrg, exchange.GetId(pol.PatternId))
 		if len(nodeOrgs) == 0 {
-			glog.V(3).Infof("Policy file for pattern %v exits but currently the agbot is not serving this policy for any organizations.", pol.PatternId)
+			glog.V(3).Infof("Policy file for pattern %v exists but currently the agbot is not serving this policy for any organizations.", pol.PatternId)
 			empty := make([]exchange.SearchResultDevice, 0, 0)
 			return &empty, nil
 		}
