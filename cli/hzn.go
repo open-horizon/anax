@@ -20,7 +20,6 @@ import (
 	"github.com/open-horizon/anax/cli/status"
 	"github.com/open-horizon/anax/cli/unregister"
 	"github.com/open-horizon/anax/cli/utilcmds"
-	"github.com/open-horizon/anax/cli/wiotp"
 	"github.com/open-horizon/anax/cli/workload"
 	"github.com/open-horizon/anax/cutil"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -43,18 +42,13 @@ Environment Variables:
       to communicate with the Horizon Exchange, for example
       https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the
       Horizon Agent for the URL.)
-  HZN_ORG_ID:  Default value for the 'hzn exchange -o' or 'hzn wiotp -o' flag,
+  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,
       to specify the organization ID'.
   HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn
       register -u' flag, in the form '[org/]user:pw'.
-  HZN_EXCHANGE_API_AUTH:  Default value for the 'hzn wiotp -A' flag, in the
-      form 'apikey:apitoken'.
   HZN_DONT_SUBST_ENV_VARS:  Set this to "1" to indicate that input json files
       should *not* be processed to replace environment variable references with
       their values.
-  USING_API_KEY:  Set this to "0" to indicate that even though the credential
-      passed into the 'hzn exchange -u' flag looks like an WIoTP API key/token,
-      it is not, so Horizon should not interpret as such.
 `)
 	app.HelpFlag.Short('h')
 	app.UsageTemplate(kingpin.CompactUsageTemplate)
@@ -81,7 +75,7 @@ Environment Variables:
 	exUserSetAdminCmd := exUserCmd.Command("setadmin", "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.")
 	exUserSetAdminUser := exUserSetAdminCmd.Arg("user", "The user to be modified.").Required().String()
 	exUserSetAdminBool := exUserSetAdminCmd.Arg("isadmin", "True if they should be an admin user, otherwise false.").Required().Bool()
-	exUserDelCmd := exUserCmd.Command("remove", "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, microservices, workloads, patterns, etc).")
+	exUserDelCmd := exUserCmd.Command("remove", "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).")
 	exDelUser := exUserDelCmd.Arg("user", "The user to remove.").Required().String()
 	exUserDelForce := exUserDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 
@@ -229,53 +223,19 @@ Environment Variables:
 	exSvcRemAuthSvc := exServiceRemAuthCmd.Arg("service", "The existing service to remove the docker auth from.").Required().String()
 	exSvcRemAuthId := exServiceRemAuthCmd.Arg("auth-name", "The existing docker auth id to remove.").Required().Uint()
 
-	wiotpCmd := app.Command("wiotp", "List and manage WIoTP objects.")
-	wiotpOrg := wiotpCmd.Flag("org", "The WIoTP organization ID. If not specified, HZN_ORG_ID will be used as a default.").Short('o').String()
-	wiotpApiKeyToken := wiotpCmd.Flag("apikey-token", "WIoTP API key and token to query and create WIoTP objects. If not specified, HZN_EXCHANGE_API_AUTH will be used as a default.").Short('A').PlaceHolder("APIKEY:TOKEN").String()
-
-	wiotpOrgCmd := wiotpCmd.Command("org", "List information about your WIoTP org")
-	wiotpStatusCmd := wiotpCmd.Command("status", "Show the status of the WIoTP cloud services")
-
-	wiotpTypeCmd := wiotpCmd.Command("type", "List and manage types in WIoTP")
-	wiotpTypeListCmd := wiotpTypeCmd.Command("list", "Display the type objects from WIoTP.")
-	wiotpType := wiotpTypeListCmd.Arg("type", "Show the details of this one type.").String()
-	wiotpTypeCreateCmd := wiotpTypeCmd.Command("create", "Create a gateway type object, with edge services enabled, in WIoTP.")
-	wiotpTypeCreateType := wiotpTypeCreateCmd.Arg("type", "The gateway type.").Required().String()
-	wiotpTypeCreateArch := wiotpTypeCreateCmd.Arg("arch", "The architecture of the gateway type: amd64, arm, arm64.").Required().String()
-	wiotpTypeCreateServices := wiotpTypeCreateCmd.Flag("service", "The exchange id of a service that should be deployed to this edge node type. For example: internetofthings.ibmcloud.com-workloads-cpu2wiotp_1.2.2_amd64. This flag can be repeated.").Short('s').Strings()
-	wiotpTypeRemoveCmd := wiotpTypeCmd.Command("remove", "Remove a gateway type object from WIoTP.")
-	wiotpTypeRemoveType := wiotpTypeRemoveCmd.Arg("type", "The gateway type.").Required().String()
-	wiotpTypeRemoveForce := wiotpTypeRemoveCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
-
-	wiotpDeviceCmd := wiotpCmd.Command("device", "List and manage devices/gateways of a particular type in WIoTP")
-	wiotpDevListCmd := wiotpDeviceCmd.Command("list", "Display the devices/gateways objects of the specified type from WIoTP.")
-	wiotpDevType := wiotpDevListCmd.Arg("type", "Show the devices/gateways of this type.").Required().String()
-	wiotpDevice := wiotpDevListCmd.Arg("device", "Show the details of this one device/gateway.").String()
-	wiotpDevEdgeStatusCmd := wiotpDeviceCmd.Command("edgestatus", "Display the device/gateway's status of edge node services.")
-	wiotpDevEdgeType := wiotpDevEdgeStatusCmd.Arg("type", "The device/gateway type.").Required().String()
-	wiotpDevEdgeDevice := wiotpDevEdgeStatusCmd.Arg("device", "The device/gateway.").Required().String()
-	wiotpDevCreateCmd := wiotpDeviceCmd.Command("create", "Create a device/gateway objects of the specified type in WIoTP.")
-	wiotpDevCreateType := wiotpDevCreateCmd.Arg("type", "The device/gateway type.").Required().String()
-	wiotpDevCreateDevice := wiotpDevCreateCmd.Arg("device", "The device/gateway id to create.").Required().String()
-	wiotpDevCreateToken := wiotpDevCreateCmd.Arg("token", "The token the device/gateway should have.").Required().String()
-	wiotpDevRemoveCmd := wiotpDeviceCmd.Command("remove", "Remove a device/gateway objects from WIoTP.")
-	wiotpDevRemoveType := wiotpDevRemoveCmd.Arg("type", "The device/gateway type.").Required().String()
-	wiotpDevRemoveDevice := wiotpDevRemoveCmd.Arg("device", "The device/gateway id to remove.").Required().String()
-	wiotpDevRemoveForce := wiotpDevRemoveCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
-
-	regInputCmd := app.Command("reginput", "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the workloads and microservices that the specified pattern uses, and determines the node owner input that is required for them.")
+	regInputCmd := app.Command("reginput", "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the services that the specified pattern uses, and determines the node owner input that is required for them.")
 	regInputNodeIdTok := regInputCmd.Flag("node-id-tok", "The Horizon exchange node ID and token (it must already exist).").Short('n').PlaceHolder("ID:TOK").Required().String()
 	regInputInputFile := regInputCmd.Flag("input-file", "The JSON input template file name that should be created. This file will contain placeholders for you to fill in user input values.").Short('f').Required().String()
-	regInputOrg := regInputCmd.Arg("organization", "The Horizon exchange organization ID.").Required().String()
+	regInputOrg := regInputCmd.Arg("nodeorg", "The Horizon exchange organization ID that the node will be registered in.").Required().String()
 	regInputPattern := regInputCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization form the node, use the 'other_org/pattern' format.").Required().String()
-	regInputArch := regInputCmd.Arg("arch", "The architecture to write the template file for. (Horizon ignores workloads in patterns whose architecture is different from the target system.) The architecture must be what is returned by 'hzn node list' on the target system.").Default(cutil.ArchString()).String()
+	regInputArch := regInputCmd.Arg("arch", "The architecture to write the template file for. (Horizon ignores services in patterns whose architecture is different from the target system.) The architecture must be what is returned by 'hzn node list' on the target system.").Default(cutil.ArchString()).String()
 
 	registerCmd := app.Command("register", "Register this edge node with Horizon.")
 	nodeIdTok := registerCmd.Flag("node-id-tok", "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.").Short('n').PlaceHolder("ID:TOK").String()
 	userPw := registerCmd.Flag("user-pw", "User credentials to create the node resource in the Horizon exchange if it does not already exist.").Short('u').PlaceHolder("USER:PW").String()
 	email := registerCmd.Flag("email", "Your email address. Only needs to be specified if: the node resource does not yet exist in the Horizon exchange, and the user specified in the -u flag does not exist, and you specified the 'public' org. If all of these things are true we will create the user and include this value as the email attribute.").Short('e').String()
 	inputFile := registerCmd.Flag("input-file", "A JSON file that sets or overrides variables needed by the node, workloads, and microservices that are part of this pattern. See /usr/horizon/samples/input.json and /usr/horizon/samples/more-examples.json. Specify -f- to read from stdin.").Short('f').String() // not using ExistingFile() because it can be - for stdin
-	org := registerCmd.Arg("organization", "The Horizon exchange organization ID.").Required().String()
+	org := registerCmd.Arg("nodeorg", "The Horizon exchange organization ID that the node should be registered in.").Required().String()
 	pattern := registerCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization form the node, use the 'other_org/pattern' format.").Required().String()
 
 	keyCmd := app.Command("key", "List and manage keys for signing and verifying services.")
@@ -319,7 +279,7 @@ Environment Variables:
 	workloadCmd := app.Command("workload", "List or manage the workloads that are currently registered on this Horizon edge node.")
 	workloadListCmd := workloadCmd.Command("list", "List the workloads that are currently registered on this Horizon edge node.")
 
-	unregisterCmd := app.Command("unregister", "Unregister and reset this Horizon edge node so that it is ready to be registered again. Warning: this will stop all the Horizon workloads running on this edge node, and restart the Horizon agent.")
+	unregisterCmd := app.Command("unregister", "Unregister and reset this Horizon edge node so that it is ready to be registered again. Warning: this will stop all the Horizon services running on this edge node, and restart the Horizon agent.")
 	forceUnregister := unregisterCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 	removeNodeUnregister := unregisterCmd.Flag("remove", "Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).").Short('r').Bool()
 
@@ -426,10 +386,6 @@ Environment Variables:
 		exOrg = cliutils.RequiredWithDefaultEnvVar(exOrg, "HZN_ORG_ID", "organization ID must be specified with either the -o flag or HZN_ORG_ID")
 		exUserPw = cliutils.RequiredWithDefaultEnvVar(exUserPw, "HZN_EXCHANGE_USER_AUTH", "exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH")
 	}
-	if strings.HasPrefix(fullCmd, "wiotp") {
-		wiotpOrg = cliutils.RequiredWithDefaultEnvVar(wiotpOrg, "HZN_ORG_ID", "organization ID must be specified with either the -o flag or HZN_ORG_ID")
-		wiotpApiKeyToken = cliutils.RequiredWithDefaultEnvVar(wiotpApiKeyToken, "HZN_EXCHANGE_API_AUTH", "WIoTP API key authentication must be specified with either the -A flag or HZN_EXCHANGE_API_AUTH")
-	}
 	if strings.HasPrefix(fullCmd, "register") {
 		userPw = cliutils.WithDefaultEnvVar(userPw, "HZN_EXCHANGE_USER_AUTH")
 	}
@@ -524,24 +480,6 @@ Environment Variables:
 		exchange.ServiceListAuth(*exOrg, *exUserPw, *exSvcListAuthSvc, *exSvcListAuthId)
 	case exServiceRemAuthCmd.FullCommand():
 		exchange.ServiceRemoveAuth(*exOrg, *exUserPw, *exSvcRemAuthSvc, *exSvcRemAuthId)
-	case wiotpOrgCmd.FullCommand():
-		wiotp.OrgList(*wiotpOrg, *wiotpApiKeyToken)
-	case wiotpStatusCmd.FullCommand():
-		wiotp.Status(*wiotpOrg, *wiotpApiKeyToken)
-	case wiotpTypeListCmd.FullCommand():
-		wiotp.TypeList(*wiotpOrg, *wiotpApiKeyToken, *wiotpType)
-	case wiotpTypeCreateCmd.FullCommand():
-		wiotp.TypeCreate(*wiotpOrg, *wiotpApiKeyToken, *wiotpTypeCreateType, *wiotpTypeCreateArch, *wiotpTypeCreateServices)
-	case wiotpTypeRemoveCmd.FullCommand():
-		wiotp.TypeRemove(*wiotpOrg, *wiotpApiKeyToken, *wiotpTypeRemoveType, *wiotpTypeRemoveForce)
-	case wiotpDevListCmd.FullCommand():
-		wiotp.DeviceList(*wiotpOrg, *wiotpApiKeyToken, *wiotpDevType, *wiotpDevice)
-	case wiotpDevEdgeStatusCmd.FullCommand():
-		wiotp.DeviceEdgeStatus(*wiotpOrg, *wiotpApiKeyToken, *wiotpDevEdgeType, *wiotpDevEdgeDevice)
-	case wiotpDevCreateCmd.FullCommand():
-		wiotp.DeviceCreate(*wiotpOrg, *wiotpApiKeyToken, *wiotpDevCreateType, *wiotpDevCreateDevice, *wiotpDevCreateToken)
-	case wiotpDevRemoveCmd.FullCommand():
-		wiotp.DeviceRemove(*wiotpOrg, *wiotpApiKeyToken, *wiotpDevRemoveType, *wiotpDevRemoveDevice, *wiotpDevRemoveForce)
 	case regInputCmd.FullCommand():
 		register.CreateInputFile(*regInputOrg, *regInputPattern, *regInputArch, *regInputNodeIdTok, *regInputInputFile)
 	case registerCmd.FullCommand():

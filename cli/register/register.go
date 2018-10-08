@@ -52,7 +52,7 @@ func ReadInputFile(filePath string, inputFileStruct *InputFile) {
 }
 
 // DoIt registers this node to Horizon with a pattern
-func DoIt(nodeOrg, pattern, nodeIdTok, userPw, email, inputFile string) {
+func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 	cliutils.SetWhetherUsingApiKey(nodeIdTok) // if we have to use userPw later in NodeCreate(), it will set this appropriately for userPw
 	// Read input file 1st, so we don't get half way thru registration before finding the problem
 	inputFileStruct := InputFile{}
@@ -86,22 +86,22 @@ func DoIt(nodeOrg, pattern, nodeIdTok, userPw, email, inputFile string) {
 	nodeIdTok = nodeId + ":" + nodeToken
 
 	// See if the node exists in the exchange, and create if it doesn't
-	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+nodeOrg+"/nodes/"+nodeId, cliutils.OrgAndCreds(nodeOrg, nodeIdTok), nil, nil)
+	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, nil)
 	if httpCode != 200 {
 		if userPw == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node '%s/%s' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.", nodeOrg, nodeId)
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node '%s/%s' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId)
 		}
-		fmt.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...\n", nodeOrg, nodeId)
-		cliexchange.NodeCreate(nodeOrg, "", nodeId, nodeToken, userPw, email)
+		fmt.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...\n", org, nodeId)
+		cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email)
 	} else {
-		fmt.Printf("Node %s/%s exists in the exchange\n", nodeOrg, nodeId)
+		fmt.Printf("Node %s/%s exists in the exchange\n", org, nodeId)
 	}
 
 	// Initialize the Horizon device (node)
 	fmt.Println("Initializing the Horizon node...")
 	//nd := Node{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HA: false}
 	falseVal := false
-	nd := api.HorizonDevice{Id: &nodeId, Token: &nodeToken, Org: &nodeOrg, Pattern: &pattern, Name: &nodeId, HA: &falseVal} //todo: support HA config
+	nd := api.HorizonDevice{Id: &nodeId, Token: &nodeToken, Org: &org, Pattern: &pattern, Name: &nodeId, HA: &falseVal} //todo: support HA config
 	httpCode = cliutils.HorizonPutPost(http.MethodPost, "node", []int{201, 200, cliutils.ANAX_ALREADY_CONFIGURED}, nd)
 	if httpCode == cliutils.ANAX_ALREADY_CONFIGURED {
 		// Note: I wanted to make `hzn register` idempotent, but the anax api doesn't support changing existing settings once in configuring state (to maintain internal consistency).
