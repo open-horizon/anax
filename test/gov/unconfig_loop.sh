@@ -28,7 +28,7 @@ do
 
    # Following the API call, the node's entry in the exchange should have some changes in it. The messaging key should be empty,
    # and the list of registered microservices should be empty.
-   NST=$(curl -sSL --header 'Accept: application/json' -H "Authorization:Basic e2edev/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/e2edev/nodes/an12345" | jq -r '.')
+   NST=$(curl -sSL --header 'Accept: application/json' -H "Authorization:Basic e2edev/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/$DEVICE_ORG/nodes/an12345" | jq -r '.')
    PK=$(echo "$NST" | jq -r '.publicKey')
    if [ "$PK" != "null" ]
    then
@@ -57,13 +57,17 @@ do
          echo -e "Is anax still up: $GET"
 
          # Since anax is still up, verify that a POST to /node will return the correct error.
+         pat=$PATTERN
+         if [[ "$PATTERN" != "" ]]; then
+            pat="e2edev/$PATTERN"
+         fi
 read -d '' newhzndevice <<EOF
 {
   "id": "$DEVICE_ID",
   "token": "$TOKEN",
   "name": "$DEVICE_NAME",
-  "organization": "$ORG",
-  "pattern": "$PATTERN"
+  "organization": "$DEVICE_ORG",
+  "pattern": "$pat"
 }
 EOF
          HDS=$(echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/node")
@@ -148,13 +152,17 @@ EOF
          echo -e "Is anax still up: $GET"
 
          # Since anax is still up, verify that a POST to /node will return the correct error.
+         pat=$PATTERN
+         if [[ "$PATTERN" != "" ]]; then
+            pat="e2edev/$PATTERN"
+         fi
 read -d '' newhzndevice <<EOF
 {
   "id": "$DEVICE_ID",
   "token": "$TOKEN",
   "name": "$DEVICE_NAME",
-  "organization": "$ORG",
-  "pattern": "$PATTERN"
+  "organization": "$DEVICE_ORG",
+  "pattern": "$pat"
 }
 EOF
          HDS=$(echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/node")
@@ -184,7 +192,7 @@ EOF
 
    # Following the API call, the node's entry in the exchange should have some changes in it. The messaging key should be empty,
    # and the list of registered microservices should be empty.
-   NST=$(curl -sSL --header 'Accept: application/json' -H "Authorization:Basic e2edev/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/e2edev/nodes/an12345" | jq -r '.')
+   NST=$(curl -sSL --header 'Accept: application/json' -H "Authorization:Basic e2edev/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/$DEVICE_ORG/nodes/an12345" | jq -r '.')
    PK=$(echo "$NST" | jq -r '.publicKey')
    if [ "$PK" != "null" ]
    then

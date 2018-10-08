@@ -133,7 +133,10 @@ func CreateService(service *Service,
 	// come up with a common version for all references. If the service we're registering is one of these, then use the
 	// common version range in our service instead of the version range that was passed as input.
 	if pDevice.Pattern != "" && from_user {
-		common_apispec_list, _, err := getSpecRefsForPattern(pDevice.Pattern, pDevice.Org, getPatterns, nil, resolveService, db, config, false)
+
+		pattern_org, pattern_name, _ := persistence.GetFormatedPatternString(pDevice.Pattern, pDevice.Org)
+
+		common_apispec_list, _, err := getSpecRefsForPattern(pattern_name, pattern_org, getPatterns, nil, resolveService, db, config, false)
 		if err != nil {
 			return errorhandler(err), nil, nil
 		}

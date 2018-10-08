@@ -54,6 +54,10 @@
           "value": 11
       }
     ],
+    "nodeHealth": {
+        "missing_heartbeat_interval": 240,
+        "check_agreement_status": 60
+    },
     "dataVerification": {},
     "maxAgreements": 2
 }

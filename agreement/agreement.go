@@ -612,7 +612,7 @@ func (w *AgreementWorker) registerNode(dev *persistence.ExchangeDevice, ms *[]ex
 	}
 
 	if dev.Pattern != "" {
-		pdr.Pattern = fmt.Sprintf("%v/%v", dev.Org, dev.Pattern)
+		pdr.Pattern = dev.Pattern
 	}
 
 	var resp interface{}

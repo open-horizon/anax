@@ -112,11 +112,12 @@ func (r SearchExchangeMSResponse) String() string {
 
 // Structs and types for working with pattern based exchange searches
 type SearchExchangePatternRequest struct {
-	WorkloadURL  string `json:"workloadUrl,omitempty"`
-	ServiceURL   string `json:"serviceUrl,omitempty"`
-	SecondsStale int    `json:"secondsStale"`
-	StartIndex   int    `json:"startIndex"`
-	NumEntries   int    `json:"numEntries"`
+	WorkloadURL  string   `json:"workloadUrl,omitempty"`
+	ServiceURL   string   `json:"serviceUrl,omitempty"`
+	NodeOrgIds   []string `json:"nodeOrgids,omitempty"`
+	SecondsStale int      `json:"secondsStale"`
+	StartIndex   int      `json:"startIndex"`
+	NumEntries   int      `json:"numEntries"`
 }
 
 func (a SearchExchangePatternRequest) String() string {
@@ -200,7 +201,8 @@ func PutExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 }
 
 type ServedPattern struct {
-	Org         string `json:"patternOrgid"`
+	NodeOrg     string `json:"nodeOrgid"`
+	PatternOrg  string `json:"patternOrgid"`
 	Pattern     string `json:"pattern"`
 	LastUpdated string `json:"lastUpdated"`
 }
@@ -1653,17 +1655,26 @@ type NodeHealthStatus struct {
 }
 
 type NodeHealthStatusRequest struct {
-	LastCall string `json:"lastTime"`
+	NodeOrgIds []string `json:"nodeOrgids,omitempty"`
+	LastCall   string   `json:"lastTime"`
 }
 
 // Return the current status of nodes in a given pattern. This function can return nil and no error if the exchange has no
 // updated status to return.
-func GetNodeHealthStatus(httpClientFactory *config.HTTPClientFactory, pattern string, org string, lastCallTime string, exURL string, id string, token string) (*NodeHealthStatus, error) {
+func GetNodeHealthStatus(httpClientFactory *config.HTTPClientFactory, pattern string, org string, nodeOrgs []string, lastCallTime string, exURL string, id string, token string) (*NodeHealthStatus, error) {
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting node health status for %v", pattern)))
 
+	// to save time, do not make a rpc call if the nodeOrgs is empty
+	if len(nodeOrgs) == 0 {
+		var nh NodeHealthStatus
+		nh.Nodes = make(map[string]NodeInfo, 0)
+		return &nh, nil
+	}
+
 	params := &NodeHealthStatusRequest{
-		LastCall: lastCallTime,
+		NodeOrgIds: nodeOrgs,
+		LastCall:   lastCallTime,
 	}
 
 	var resp interface{}

@@ -5,11 +5,11 @@
 # export USER=anax1
 # export PASS=anax1pw
 # export DEVICE_ID="an12345"
+# export DEVICE_ORG="e2edev"
 # export DEVICE_NAME="anaxdev1"
 # export ANAX_API="http://localhost"
 # export EXCH="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
 # export TOKEN="abcdefg"
-# export ORG="e2edev"
 
 if [ "$OLDANAX" == "1" ]
 then
@@ -34,7 +34,7 @@ fi
 # Setup anax itself through APIs.
 if [ "$HA" == "1" ]
 then
-    export PARTNERID="e2edev/an54321"
+    export PARTNERID="$DEVICE_ORG/an54321"
     ./apireg.sh
 
     if [ $? -ne 0 ]
@@ -63,7 +63,7 @@ then
 
         sleep 5
 
-        export PARTNERID="e2edev/an12345"
+        export PARTNERID="$DEVICE_ORG/an12345"
         ./apireg.sh
         if [ $? -ne 0 ]
         then

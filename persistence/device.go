@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"strings"
 	"time"
 )
 
@@ -23,6 +24,24 @@ type Configstate struct {
 
 func (c Configstate) String() string {
 	return fmt.Sprintf("State: %v, Time: %v", c.State, c.LastUpdateTime)
+}
+
+// This function returns the pattern org, pattern name and formatted pattern string 'pattern org/pattern name'.
+// If the input pattern does not contain the org name, the device org name will be used as the pattern org name.
+// The input is a pattern string 'pattern org/pattern name' or just 'pattern name' for backward compatibility.
+// The device org is the org name for the device.
+func GetFormatedPatternString(pattern string, device_org string) (string, string, string) {
+	if pattern == "" {
+		return "", "", ""
+	} else if ix := strings.Index(pattern, "/"); ix < 0 {
+		if device_org == "" {
+			return device_org, pattern, pattern
+		} else {
+			return device_org, pattern, fmt.Sprintf("%v/%v", device_org, pattern)
+		}
+	} else {
+		return pattern[:ix], pattern[ix+1:], pattern
+	}
 }
 
 type ExchangeDevice struct {
@@ -62,6 +81,12 @@ func newExchangeDevice(id string, token string, name string, tokenLastValidTime 
 	cfg := Configstate{
 		State:          configstate,
 		LastUpdateTime: uint64(time.Now().Unix()),
+	}
+
+	// make the pattern to the standard "org/pattern" format
+	if pattern != "" {
+		_, _, pat := GetFormatedPatternString(pattern, org)
+		pattern = pat
 	}
 
 	return &ExchangeDevice{
@@ -286,6 +311,11 @@ func FindExchangeDevice(db *bolt.DB) (*ExchangeDevice, error) {
 	if len(devices) > 1 {
 		return nil, fmt.Errorf("Unsupported state: more than one exchange device stored in bucket. Devices: %v", devices)
 	} else if len(devices) == 1 {
+		// convert the pattern string to standard "org/pattern" format.
+		if devices[0].Pattern != "" {
+			_, _, pattern := GetFormatedPatternString(devices[0].Pattern, devices[0].Org)
+			devices[0].Pattern = pattern
+		}
 		return &devices[0], nil
 	} else {
 		return nil, nil

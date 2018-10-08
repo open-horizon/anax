@@ -70,6 +70,7 @@ read -d '' pwsservice <<EOF
 {
   "url": "https://bluehorizon.network/services/weather",
   "version": "1.5.0",
+  "organization": "e2edev",
   "attributes": [
     {
       "type": "UserInputAttributes",

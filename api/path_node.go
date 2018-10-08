@@ -150,12 +150,20 @@ func CreateHorizonDevice(device *HorizonDevice,
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("organization %v not found in exchange, error: %v", *device.Org, err), "device.organization")), nil, nil
 	}
 
-	// Verify that the input pattern is defined in the exchange. A device (or node) can only use patterns that are defined within its own org.
+	// Verify the pattern org if the patter is not in the same org as the device.
+
+	// Verify that the input pattern is defined in the exchange.
+	// The input pattern is in the format of <pattern org>/<pattern name>
 	if device.Pattern != nil && *device.Pattern != "" {
-		if patternDefs, err := getPatterns(*device.Org, *device.Pattern, deviceId, *device.Token); err != nil {
-			return errorhandler(NewAPIUserInputError(fmt.Sprintf("error searching for pattern %v in exchange, error: %v", *device.Pattern, err), "device.pattern")), nil, nil
-		} else if _, ok := patternDefs[fmt.Sprintf("%v/%v", *device.Org, *device.Pattern)]; !ok {
-			return errorhandler(NewAPIUserInputError(fmt.Sprintf("pattern %v not found in exchange, error: %v", *device.Pattern, err), "device.pattern")), nil, nil
+		// get the pattern name and the pattern org name.
+		pattern_org, pattern_name, pattern := persistence.GetFormatedPatternString(*device.Pattern, *device.Org)
+		device.Pattern = &pattern
+
+		// verify pattern exists
+		if patternDefs, err := getPatterns(pattern_org, pattern_name, deviceId, *device.Token); err != nil {
+			return errorhandler(NewAPIUserInputError(fmt.Sprintf("error searching for pattern %v in exchange, error: %v", pattern, err), "device.pattern")), nil, nil
+		} else if _, ok := patternDefs[pattern]; !ok {
+			return errorhandler(NewAPIUserInputError(fmt.Sprintf("pattern %v not found in exchange.", pattern), "device.pattern")), nil, nil
 		}
 	}
 
@@ -177,7 +185,6 @@ func CreateHorizonDevice(device *HorizonDevice,
 	exDev := ConvertFromPersistentHorizonDevice(pDev)
 
 	return false, device, exDev
-
 }
 
 // Handles the PATCH verb on this resource. Only the exchange token is updateable.

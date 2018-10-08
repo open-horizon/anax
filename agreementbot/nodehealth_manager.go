@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"time"
@@ -19,7 +20,7 @@ import (
 // call to the exchange. An agbot will only obtain node status info for patterns which are used
 // by agreements that it is managing.
 
-type NodeHealthHandler func(pattern string, org string, lastCallTime string) (*exchange.NodeHealthStatus, error)
+type NodeHealthHandler func(pattern string, org string, nodeOrgs []string, lastCallTime string) (*exchange.NodeHealthStatus, error)
 
 type NHPatternEntry struct {
 	Nodes        *exchange.NodeHealthStatus // The node info from the exchange
@@ -45,6 +46,7 @@ func NewNHPatternEntry() *NHPatternEntry {
 
 type NodeHealthManager struct {
 	Patterns map[string]*NHPatternEntry // A map of patterns for which this agbot has agreements
+	NodeOrgs map[string][]string        // a map of node orgs for each pattern used by current active agreements
 }
 
 func (n *NodeHealthManager) String() string {
@@ -130,7 +132,15 @@ func (m *NodeHealthManager) hasUpdatedStatus(pattern string, org string) (string
 
 // Assume the caller has called hasUpdatedStatus and knows they definitely want to call the exchange.
 func (m *NodeHealthManager) getNewStatus(pattern string, org string, lastCall string, nhHandler NodeHealthHandler) (*exchange.NodeHealthStatus, error) {
-	return nhHandler(pattern, org, lastCall)
+	//get the node orgs for the pattern
+	patternKey := getKey(pattern, org)
+	nodeOrgs := []string{}
+	if v, found := m.NodeOrgs[patternKey]; found {
+		nodeOrgs = v
+	}
+	glog.V(5).Infof("Node Health Manager: node orgs for pattern %v or org %v: %v", pattern, org, nodeOrgs)
+
+	return nhHandler(pattern, org, nodeOrgs, lastCall)
 }
 
 // Update the manager with the new node status.
@@ -161,6 +171,37 @@ func (m *NodeHealthManager) setNewStatus(pattern string, org string, lastCall st
 		}
 	}
 
+}
+
+// set the node orgs for patterns for current active agreements under the given agreement protocol
+func (m *NodeHealthManager) SetNodeOrgs(agreements []persistence.Agreement, agreementProtocol string) {
+
+	tmpNodeOrgs := map[string][]string{}
+
+	for _, ag := range agreements {
+		patternKey := getKey(ag.Pattern, ag.Org)
+		nodeOrg := exchange.GetOrg(ag.DeviceId)
+		if nodeOrgs, ok := tmpNodeOrgs[patternKey]; !ok {
+			tmpNodeOrgs[patternKey] = []string{nodeOrg}
+		} else {
+			if !stringSliceContains(nodeOrgs, nodeOrg) {
+				nodeOrgs = append(nodeOrgs, nodeOrg)
+				tmpNodeOrgs[patternKey] = nodeOrgs
+			}
+		}
+	}
+
+	m.NodeOrgs = tmpNodeOrgs
+}
+
+// check if a slice contains a string
+func stringSliceContains(a []string, s string) bool {
+	for _, v := range a {
+		if s == v {
+			return true
+		}
+	}
+	return false
 }
 
 func getKey(pattern string, org string) string {

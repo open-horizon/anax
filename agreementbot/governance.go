@@ -50,6 +50,11 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 		if agreements, err := w.db.FindAgreements([]persistence.AFilter{notYetFinalFilter(), persistence.UnarchivedAFilter()}, agp); err == nil {
 			activeDataVerification := true
 			allActiveAgreements := make(map[string][]string)
+
+			// set the node orgs for the given agreement protocol
+			glog.V(5).Infof("AgreementBot Governance saving the node orgs to the node health manager for all active agreements under %v protocol.", agp)
+			w.NHManager.SetNodeOrgs(agreements, agp)
+
 			for _, ag := range agreements {
 
 				// Govern agreements that have seen a reply from the device
@@ -163,7 +168,6 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 
 					// Do node health check only if not skipping it this time.
 					if w.GovTiming.nhSkip == 0 {
-
 						// Check for agreement termination based on node health issues. Checking node health might require an expensive
 						// call to the exchange for batch node status, so only do the health checks if we have to.
 						if checkrate, err := w.VerifyNodeHealth(&ag, protocolHandler); err != nil {
@@ -383,18 +387,19 @@ func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *persistence
 // This function is used to verify that a node is still functioning correctly
 func (w *AgreementBotWorker) VerifyNodeHealth(ag *persistence.Agreement, cph ConsumerProtocolHandler) (int, error) {
 
-	finalizedTolerance := uint64(60)
-
-	nodeHealthHandler := func(pattern string, org string, lastCallTime string) (*exchange.NodeHealthStatus, error) {
-		return exchange.GetNodeHealthStatus(w.Config.Collaborators.HTTPClientFactory, pattern, org, lastCallTime, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
-	}
-
 	// If there is no node health policy configured, return quickly.
 	if !ag.NodeHealthInUse() {
 		return 0, nil
 	}
 
+	nodeHealthHandler := func(pattern string, org string, nodeOrgs []string, lastCallTime string) (*exchange.NodeHealthStatus, error) {
+		return exchange.GetNodeHealthStatus(w.Config.Collaborators.HTTPClientFactory, pattern, org, nodeOrgs, lastCallTime, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
+	}
+
 	glog.V(5).Infof("AgreementBot Governance checking node health for %v.", ag.CurrentAgreementId)
+
+	finalizedTolerance := uint64(60)
+
 	// Make sure the Node Health Manager has updated info for this agreement's pattern.
 	if err := w.NHManager.SetUpdatedStatus(ag.Pattern, ag.Org, nodeHealthHandler); err != nil {
 		return ag.NHCheckAgreementStatus, errors.New(fmt.Sprintf("unable to update node health for %v, error %v", ag.Pattern, err))

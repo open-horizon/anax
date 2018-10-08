@@ -4,8 +4,10 @@ package agreementbot
 
 import (
 	"flag"
+	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/policy"
 	"testing"
 )
 
@@ -42,7 +44,7 @@ func Test_NodeHealthStatus_firstpass(t *testing.T) {
 	agid := "ag1"
 	lastHB := "2006-01-02T15:04:05.999Z[UTC]"
 
-	nhHandler := getVariableStatusHandler(mynode, agid, lastHB)
+	nhHandler := getVariableStatusHandler(mynode, agid, []string{}, lastHB)
 	err := nhm.SetUpdatedStatus(mypattern, "theorg", nhHandler)
 
 	if err != nil {
@@ -85,7 +87,7 @@ func Test_NodeHealthStatus_recentnode(t *testing.T) {
 	agid := "ag1"
 	lastHB := cutil.FormattedTime() // Now in the exchange string format
 
-	nhHandler := getVariableStatusHandler(mynode, agid, lastHB)
+	nhHandler := getVariableStatusHandler(mynode, agid, []string{"theorg", "theorg1"}, lastHB)
 	err := nhm.SetUpdatedStatus(mypattern, "theorg", nhHandler)
 
 	if err != nil {
@@ -111,11 +113,11 @@ func Test_NodeHealthStatus_recentnode_org(t *testing.T) {
 
 	mypattern := ""
 	myorg := "org"
-	mynode := "org/node1"
+	mynode := "org1/node1"
 	agid := "ag1"
 	lastHB := cutil.FormattedTime() // Now in the exchange string format
 
-	nhHandler := getVariableStatusHandler(mynode, agid, lastHB)
+	nhHandler := getVariableStatusHandler(mynode, agid, []string{"org", "org2"}, lastHB)
 	err := nhm.SetUpdatedStatus(mypattern, myorg, nhHandler)
 
 	if err != nil {
@@ -134,7 +136,7 @@ func Test_NodeHealthStatus_recentnode_org(t *testing.T) {
 	agid = "ag2"
 	lastHB = cutil.FormattedTime() // Now in the exchange string format
 
-	nhHandler = getVariableStatusHandler(mynode, agid, lastHB)
+	nhHandler = getVariableStatusHandler(mynode, agid, []string{"org", "org2"}, lastHB)
 	err = nhm.SetUpdatedStatus(mypattern, myorg, nhHandler)
 
 	if err != nil {
@@ -162,13 +164,13 @@ func Test_NodeHealthStatus_multiupdate(t *testing.T) {
 
 	mypattern := "mypattern"
 	myorg := "org"
-	mynode := "org/node1"
-	mynode2 := "org/node2"
+	mynode := "org1/node1"
+	mynode2 := "org2/node2"
 	agid := "ag1"
 	agid2 := "ag2"
 	lastHB := cutil.FormattedTime() // Now in the exchange string format
 
-	nhHandler := getVariableStatusHandler(mynode, agid, lastHB)
+	nhHandler := getVariableStatusHandler(mynode, agid, []string{"org1", "org2"}, lastHB)
 	err := nhm.SetUpdatedStatus(mypattern, myorg, nhHandler)
 
 	if err != nil {
@@ -189,7 +191,7 @@ func Test_NodeHealthStatus_multiupdate(t *testing.T) {
 		t.Errorf("expected a last call string %v", nhm)
 	}
 
-	nhHandler = getVariableStatusHandler(mynode2, agid2, lastHB)
+	nhHandler = getVariableStatusHandler(mynode2, agid2, []string{"org1", "org2"}, lastHB)
 	err = nhm.SetUpdatedStatus(mypattern, myorg, nhHandler)
 	if err != nil {
 		t.Errorf("unexpected error %v", err)
@@ -204,7 +206,7 @@ func Test_NodeHealthStatus_multiupdate(t *testing.T) {
 	}
 
 	// Reset update state and get a nil update from the status handler.
-	nhHandler = getNilUpdateStatusHandler(mynode, agid, lastHB)
+	nhHandler = getNilUpdateStatusHandler(mynode, agid, []string{}, lastHB)
 	nhm.ResetUpdateStatus()
 	err = nhm.SetUpdatedStatus(mypattern, myorg, nhHandler)
 	if err != nil {
@@ -220,7 +222,7 @@ func Test_NodeHealthStatus_multiupdate(t *testing.T) {
 	}
 
 	// Reset update state and get a nil update from the status handler.
-	nhHandler = getNoUpdateStatusHandler(mynode, agid, lastHB)
+	nhHandler = getNoUpdateStatusHandler(mynode, agid, []string{"org1", "org2"}, lastHB)
 	nhm.ResetUpdateStatus()
 	err = nhm.SetUpdatedStatus(mypattern, myorg, nhHandler)
 	if err != nil {
@@ -237,8 +239,93 @@ func Test_NodeHealthStatus_multiupdate(t *testing.T) {
 
 }
 
-func getVariableStatusHandler(node string, agreementId string, lastHB string) func(pattern string, org string, lastCall string) (*exchange.NodeHealthStatus, error) {
-	return func(pattern string, org string, lastCall string) (*exchange.NodeHealthStatus, error) {
+func Test_SetNodeOrgs(t *testing.T) {
+	nhm := NewNodeHealthManager()
+	if len(nhm.Patterns) != 0 {
+		t.Errorf("patterns map should be empty")
+	}
+
+	ag1, _ := persistence.NewAgreement("agreement_id1", "pattern_org1", "node_org1/device1", "", "", "", "", "basic", "pattern_org1/sall", policy.NodeHealth{})
+	ag2, _ := persistence.NewAgreement("agreement_id2", "pattern_org1", "node_org1/device2", "", "", "", "", "basic", "pattern_org1/sall", policy.NodeHealth{})
+	ag3, _ := persistence.NewAgreement("agreement_id3", "pattern_org1", "node_org2/device1", "", "", "", "", "basic", "pattern_org1/sall", policy.NodeHealth{})
+	ag4, _ := persistence.NewAgreement("agreement_id4", "pattern_org1", "node_org2/device2", "", "", "", "", "basic", "pattern_org1/sall", policy.NodeHealth{})
+	ag5, _ := persistence.NewAgreement("agreement_id5", "pattern_org2", "node_org1/device1", "", "", "", "", "basic", "pattern_org2/sall", policy.NodeHealth{})
+	ag6, _ := persistence.NewAgreement("agreement_id6", "pattern_org2", "node_org1/device1", "", "", "", "", "basic", "pattern_org2/sall", policy.NodeHealth{})
+	ag7, _ := persistence.NewAgreement("agreement_id7", "pattern_org1", "node_org1/device2", "", "", "", "", "basic", "pattern_org1/netspeed", policy.NodeHealth{})
+	ag8, _ := persistence.NewAgreement("agreement_id8", "pattern_org1", "node_org2/device2", "", "", "", "", "basic", "pattern_org1/netspeed", policy.NodeHealth{})
+	ag9, _ := persistence.NewAgreement("agreement_id9", "org1", "node_org2/device3", "", "", "", "", "basic", "", policy.NodeHealth{})
+	ag10, _ := persistence.NewAgreement("agreement_id10", "org1", "node_org3/device3", "", "", "", "", "basic", "", policy.NodeHealth{})
+
+	agreements := []persistence.Agreement{*ag1, *ag2, *ag3, *ag4, *ag5, *ag6, *ag7, *ag8, *ag9, *ag10}
+
+	nhm.SetNodeOrgs(agreements, "basic")
+
+	patternNodeOrgs := nhm.NodeOrgs
+
+	if len(patternNodeOrgs) != 4 {
+		t.Errorf("expected patternNodeOrgs has 4 keys but found %v", len(patternNodeOrgs))
+	}
+
+	if nodeOrgs, ok := patternNodeOrgs["pattern_org1/sall"]; !ok {
+		t.Errorf("expected pattern_org1/sall found in map but not.")
+	} else if len(nodeOrgs) != 2 {
+		t.Errorf("expected pattern_org1/sall has 2 node orgs in map but found %v.", nodeOrgs)
+	} else if !stringSliceContains(nodeOrgs, "node_org1") {
+		t.Errorf("expected org1 has node org called node_org1 in map but not.")
+	} else if !stringSliceContains(nodeOrgs, "node_org2") {
+		t.Errorf("expected org1 has node org called node_org2 in map but not.")
+	}
+
+	if nodeOrgs, ok := patternNodeOrgs["pattern_org2/sall"]; !ok {
+		t.Errorf("expected pattern_org2/sall found in map but not.")
+	} else if len(nodeOrgs) != 1 {
+		t.Errorf("expected pattern_org2/sall has 1 node org in map but found %v.", nodeOrgs)
+	} else if nodeOrgs[0] != "node_org1" {
+		t.Errorf("expected pattern_org2/sall has 1 node org called node_org1 in map but found %v.", nodeOrgs[0])
+	}
+
+	if nodeOrgs, ok := patternNodeOrgs["pattern_org1/netspeed"]; !ok {
+		t.Errorf("expected pattern_org1/netspeed found in map but not.")
+	} else if len(nodeOrgs) != 2 {
+		t.Errorf("expected pattern_org1/netspeed has 2 node orgs in map but found %v.", nodeOrgs)
+	} else if !stringSliceContains(nodeOrgs, "node_org1") {
+		t.Errorf("expected org1 has node org called node_org1 in map but not.")
+	} else if !stringSliceContains(nodeOrgs, "node_org2") {
+		t.Errorf("expected org1 has node org called node_org2 in map but not.")
+	}
+
+	if nodeOrgs, ok := patternNodeOrgs["org1"]; !ok {
+		t.Errorf("expected org1 found in map but not.")
+	} else if len(nodeOrgs) != 2 {
+		t.Errorf("expected org1 has 2 node orgs in map but found %v.", nodeOrgs)
+	} else if !stringSliceContains(nodeOrgs, "node_org2") {
+		t.Errorf("expected org1 has node org called node_org2 in map but not.")
+	} else if !stringSliceContains(nodeOrgs, "node_org3") {
+		t.Errorf("expected org1 has node org called node_org3 in map but not.")
+	}
+
+	nhm.SetNodeOrgs([]persistence.Agreement{}, "basic")
+	if len(nhm.NodeOrgs) != 0 {
+		t.Errorf("expected patternNodeOrgs has 0 keys but found %v", len(nhm.NodeOrgs))
+	}
+}
+
+func Test_stringSliceContains(t *testing.T) {
+	if !stringSliceContains([]string{"s1", "s2", "s3"}, "s1") {
+		t.Errorf("expected slice contains s1 but not.")
+	} else if !stringSliceContains([]string{"s1", "s2", "s3"}, "s2") {
+		t.Errorf("expected slice contains s2 but not.")
+	} else if !stringSliceContains([]string{"s1", "s2", "s3"}, "s2") {
+		t.Errorf("expected slice contains s2 but not.")
+	} else if stringSliceContains([]string{"s1", "s3"}, "s2") {
+		t.Errorf("expected slice not contain s2 but it does.")
+	} else if stringSliceContains([]string{"s3"}, "s2") {
+		t.Errorf("expected slice not contain s3 but it does.")
+	}
+}
+
+func getVariableStatusHandler(node string, agreementId string, nodeOrgs []string, lastHB string) func(pattern string, org string, nodeOrgs []string, lastCall string) (*exchange.NodeHealthStatus, error) {
+	return func(pattern string, org string, nodeOrgs []string, lastCall string) (*exchange.NodeHealthStatus, error) {
 		o := &exchange.NodeHealthStatus{
 			Nodes: map[string]exchange.NodeInfo{
 				node: exchange.NodeInfo{
@@ -253,14 +340,14 @@ func getVariableStatusHandler(node string, agreementId string, lastHB string) fu
 	}
 }
 
-func getNilUpdateStatusHandler(node string, agreementId string, lastHB string) func(pattern string, org string, lastCall string) (*exchange.NodeHealthStatus, error) {
-	return func(pattern string, org string, lastCall string) (*exchange.NodeHealthStatus, error) {
+func getNilUpdateStatusHandler(node string, agreementId string, nodeOrgs []string, lastHB string) func(pattern string, org string, nodeOrgs []string, lastCall string) (*exchange.NodeHealthStatus, error) {
+	return func(pattern string, org string, nodeOrgs []string, lastCall string) (*exchange.NodeHealthStatus, error) {
 		return nil, nil
 	}
 }
 
-func getNoUpdateStatusHandler(node string, agreementId string, lastHB string) func(pattern string, org string, lastCall string) (*exchange.NodeHealthStatus, error) {
-	return func(pattern string, org string, lastCall string) (*exchange.NodeHealthStatus, error) {
+func getNoUpdateStatusHandler(node string, agreementId string, nodeOrgs []string, lastHB string) func(pattern string, org string, nodeOrgs []string, lastCall string) (*exchange.NodeHealthStatus, error) {
+	return func(pattern string, org string, nodeOrgs []string, lastCall string) (*exchange.NodeHealthStatus, error) {
 		o := &exchange.NodeHealthStatus{
 			Nodes: map[string]exchange.NodeInfo{},
 		}

@@ -112,7 +112,11 @@ func (a *API) serviceconfig(w http.ResponseWriter, r *http.Request) {
 		}
 
 		create_service_error_handler := func(err error) bool {
-			LogServiceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error configuring service %v. %v", service, err), persistence.EC_ERROR_SERVICE_CONFIG, &service)
+			service_url := ""
+			if service.Url != nil {
+				service_url = *service.Url
+			}
+			LogServiceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error configuring service %v. %v", service_url, err), persistence.EC_ERROR_SERVICE_CONFIG, &service)
 			return errorhandler(err)
 		}
 

@@ -96,13 +96,17 @@ func CreateMicroService(service *MicroService,
 
 	// use the pattern arch and version range in the pattern case if this is a user config, ignore the arch and version range from the user input.
 	if pDevice.Pattern != "" && from_user {
-		common_apispec_list, _, err := getSpecRefsForPattern(pDevice.Pattern, pDevice.Org, getPatterns, resolveWorkload, nil, db, config, false)
+
+		pattern_org, pattern_name, pattern := persistence.GetFormatedPatternString(pDevice.Pattern, pDevice.Org)
+		pDevice.Pattern = pattern
+
+		common_apispec_list, _, err := getSpecRefsForPattern(pattern_name, pattern_org, getPatterns, resolveWorkload, nil, db, config, false)
 		if err != nil {
 			return errorhandler(err), nil, nil
 		}
 
 		if len(*common_apispec_list) == 0 {
-			return errorhandler(NewAPIUserInputError(fmt.Sprintf("No microservices have the common version ranges for %v %v.", pDevice.Pattern, pDevice.Org), "configstate.state")), nil, nil
+			return errorhandler(NewAPIUserInputError(fmt.Sprintf("No microservices have the common version ranges for pattern %v.", pattern), "configstate.state")), nil, nil
 		}
 
 		for _, apiSpec := range *common_apispec_list {
