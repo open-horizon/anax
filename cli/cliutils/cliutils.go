@@ -24,8 +24,6 @@ const (
 	HZN_API             = "http://localhost"
 	HZN_API_MAC         = "http://localhost:8081"
 	AGBOT_HZN_API       = "http://localhost:8046"
-	WIOTP_DOMAIN        = "internetofthings.ibmcloud.com"
-	WIOTP_BASE_ROUTE    = "api/v0002"
 	JSON_INDENT         = "  "
 	MUST_REGISTER_FIRST = "this command can not be run before running 'hzn register'"
 
@@ -123,13 +121,13 @@ func MarshalIndent(v interface{}, errMsg string) string {
 	return string(jsonBytes)
 }
 
-// SetWhetherUsingApiKey is a hack that will hopefully go away when the wiotp exchange api is consistent whether access via
+// SetWhetherUsingApiKey is a hack because some api keys are global and shouldn't be prepended by the org
 // an api key or device id/token.
 func SetWhetherUsingApiKey(creds string) {
 	if os.Getenv("USING_API_KEY") == "0" {
 		return // this is their way of telling us that even though the creds look like an api key it isn't
 	}
-	// WIoTP API keys start with: a-<6charorgid>-
+	// Some API keys start with: a-<6charorgid>-
 	if matched, err := regexp.MatchString(`^a-[A-Za-z0-9]{6}-`, creds); err != nil {
 		Fatal(INTERNAL_ERROR, "problem testing api key match: %v", err)
 	} else if matched {
@@ -207,8 +205,8 @@ func PushDockerImage(client *dockerclient.Client, domain, path, tag string) (dig
 // OrgAndCreds prepends the org to creds (separated by /) unless creds already has an org prepended
 func OrgAndCreds(org, creds string) string {
 	// org is the org of the resource being accessed, so if they want to use creds from a different org, the prepend that org to creds before calling this
-	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" {
-		return creds // WIoTP API keys are globally unique and shouldn't be prepended with the org
+	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" {	// leaving this code here, because we might need it for ibm cloud api keys
+		return creds
 	}
 	id, _ := SplitIdToken(creds) // only look for the / in the id, because the token is more likely to have special chars
 	if strings.Contains(id, "/") {
@@ -697,143 +695,6 @@ func ConvertTime(unixSeconds uint64) string {
 		return ""
 	}
 	return time.Unix(int64(unixSeconds), 0).String()
-}
-
-// GetWiotpUrl returns the wiotp url from the env var and org
-func GetWiotpUrl(org string) (url string) {
-	domainEnv := os.Getenv("WIOTP_DOMAIN")
-	if domainEnv == "" {
-		domainEnv = WIOTP_DOMAIN
-	}
-	url = "https://" + org + "." + domainEnv + "/" + WIOTP_BASE_ROUTE
-	return url
-}
-
-// WiotpGet runs a GET to the wiotp api and fills in the specified json structure. If the structure is just a string, fill in the raw json.
-// If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
-func WiotpGet(urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, structure interface{}) (httpCode int) {
-	url := urlBase + "/" + urlSuffix
-	apiMsg := http.MethodGet + " " + url
-	Verbose(apiMsg)
-	httpClient := &http.Client{}
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
-	}
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		Fatal(HTTP_ERROR, "Can't connect to the WIoTP REST API to run %s: %v", apiMsg, err)
-	}
-	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		Fatal(HTTP_ERROR, "failed to read body response from %s: %v", apiMsg, err)
-	}
-	httpCode = resp.StatusCode
-	Verbose("HTTP code: %d", httpCode)
-	if !isGoodCode(httpCode, goodHttpCodes) {
-		Fatal(HTTP_ERROR, "bad HTTP code %d from %s, output: %s", httpCode, apiMsg, string(bodyBytes))
-	}
-
-	if httpCode == goodHttpCodes[0] {
-		switch s := structure.(type) {
-		case *string:
-			// If the structure to fill in is just a string, unmarshal/remarshal it to get it in json indented form, and then return as a string
-			//todo: this gets it in json indented form, but also returns the fields in random order (because they were interpreted as a map)
-			var jsonStruct interface{}
-			err = json.Unmarshal(bodyBytes, &jsonStruct)
-			if err != nil {
-				Fatal(JSON_PARSING_ERROR, "failed to unmarshal exchange body response from %s: %v", apiMsg, err)
-			}
-			jsonBytes, err := json.MarshalIndent(jsonStruct, "", JSON_INDENT)
-			if err != nil {
-				Fatal(JSON_PARSING_ERROR, "failed to marshal exchange output from %s: %v", apiMsg, err)
-			}
-			*s = string(jsonBytes)
-		default:
-			err = json.Unmarshal(bodyBytes, structure)
-			if err != nil {
-				Fatal(JSON_PARSING_ERROR, "failed to unmarshal exchange body response from %s: %v", apiMsg, err)
-			}
-		}
-	}
-	return
-}
-func WiotpPutPost(method string, urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, body interface{}) (httpCode int) {
-	url := urlBase + "/" + urlSuffix
-	apiMsg := method + " " + url
-	Verbose(apiMsg)
-	if IsDryRun() {
-		return 201
-	}
-	httpClient := &http.Client{}
-
-	// Prepare body
-	var jsonBytes []byte
-	switch b := body.(type) {
-	case string:
-		jsonBytes = []byte(b)
-	default:
-		var err error
-		jsonBytes, err = json.Marshal(body)
-		if err != nil {
-			Fatal(JSON_PARSING_ERROR, "failed to marshal wiotp body for %s: %v", apiMsg, err)
-		}
-	}
-	requestBody := bytes.NewBuffer(jsonBytes)
-
-	// Create the request and run it
-	req, err := http.NewRequest(method, url, requestBody)
-	if err != nil {
-		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
-	}
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		Fatal(HTTP_ERROR, "Can't connect to the WIoTP REST API to run %s: %v", apiMsg, err)
-	}
-	defer resp.Body.Close()
-	httpCode = resp.StatusCode
-	Verbose("HTTP code: %d", httpCode)
-	if !isGoodCode(httpCode, goodHttpCodes) {
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			Fatal(HTTP_ERROR, "failed to read wiotp body response from %s: %v", apiMsg, err)
-		}
-		Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, string(bodyBytes))
-	}
-	Verbose("Response: %s", GetRespBodyAsString(resp.Body))
-	return
-}
-
-func WiotpDelete(urlBase string, urlSuffix string, credentials string, goodHttpCodes []int) (httpCode int) {
-	url := urlBase + "/" + urlSuffix
-	apiMsg := http.MethodDelete + " " + url
-	Verbose(apiMsg)
-	if IsDryRun() {
-		return 204
-	}
-	httpClient := &http.Client{}
-	req, err := http.NewRequest(http.MethodDelete, url, nil)
-	if err != nil {
-		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
-	}
-	req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		Fatal(HTTP_ERROR, "Can't connect to the WIoTP REST API to run %s: %v", apiMsg, err)
-	}
-	defer resp.Body.Close()
-	httpCode = resp.StatusCode
-	Verbose("HTTP code: %d", httpCode)
-	if !isGoodCode(httpCode, goodHttpCodes) {
-		Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyAsString(resp.Body))
-	}
-	return
 }
 
 /* Do not need at the moment, but keeping for reference...

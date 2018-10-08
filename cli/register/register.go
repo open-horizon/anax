@@ -24,7 +24,7 @@ func (g GlobalSet) String() string {
 	return fmt.Sprintf("Global Array element, type: %v, sensor_urls: %v, variables: %v", g.Type, g.SensorUrls, g.Variables)
 }
 
-// Use for services, microservices, and workloads
+// Use for services, microservices, and workloads. This is used by other cli sub-cmds too.
 type MicroWork struct {
 	Org          string                 `json:"org"`
 	Url          string                 `json:"url"`
@@ -37,7 +37,7 @@ func (m MicroWork) String() string {
 }
 
 type InputFile struct {
-	Global        []GlobalSet `json:"global,omitempty"`
+	Global        []GlobalSet    `json:"global,omitempty"`
 	Services      []MicroWork `json:"services,omitempty"`
 	Microservices []MicroWork `json:"microservices,omitempty"`
 	Workloads     []MicroWork `json:"workloads,omitempty"`
@@ -189,135 +189,150 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 	fmt.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
 }
 
-// GetHighestMicroservice queries the exchange for all versions of this MS and returns the highest version, or an error
-func GetHighestMicroservice(exchangeUrl, credOrg, nodeIdTok, org, url, versionRange, arch string) exchange.MicroserviceDefinition {
-	route := "orgs/" + org + "/microservices?specRef=" + url + "&arch=" + arch // get all MS of this org, url, and arch
-	var microOutput exchange.GetMicroservicesResponse
-	cliutils.ExchangeGet(exchangeUrl, route, cliutils.OrgAndCreds(credOrg, nodeIdTok), []int{200}, &microOutput)
-	if len(microOutput.Microservices) == 0 {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "found no microservices in the exchange matched: org=%s, specRef=%s, arch=%s", org, url, arch)
+// isWithinRanges returns true if version is within at least 1 of the ranges in versionRanges
+func isWithinRanges(version string, versionRanges []string) bool {
+	for _, vr := range versionRanges {
+		vRange, err := policy.Version_Expression_Factory(vr)
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "invalid version range '%s': %v", vr, err)
+		}
+		if inRange, err := vRange.Is_within_range(version); err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "unable to verify that %v is within %v, error %v", version, vRange, err)
+		} else if inRange {
+			return true
+		}
+	}
+	return false 	// was not within any of the ranges
+}
+
+// GetHighestService queries the exchange for all versions of this service and returns the highest version that is within at least 1 of the version ranges
+func GetHighestService(nodeCreds, org, url, arch string, versionRanges []string) exchange.ServiceDefinition {
+	route := "orgs/" + org + "/services?url=" + url + "&arch=" + arch // get all services of this org, url, and arch
+	var svcOutput exchange.GetServicesResponse
+	cliutils.SetWhetherUsingApiKey(nodeCreds)
+	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), route, nodeCreds, []int{200}, &svcOutput)
+	if len(svcOutput.Services) == 0 {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "found no services in the exchange matching: org=%s, url=%s, arch=%s", org, url, arch)
 	}
 
-	// Loop thru the returned MSs and pick out the highest version that is within versionRange range
-	highestKey := "" // key to the MS def in the map that so far has the highest valid version
-	vRange, err := policy.Version_Expression_Factory(versionRange)
-	if err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "invalid version range '%s': %v", versionRange, err)
-	}
-	for microKey, micro := range microOutput.Microservices {
-		if inRange, err := vRange.Is_within_range(micro.Version); err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "unable to verify that %v is within %v, error %v", micro.Version, vRange, err)
-		} else if !inRange {
-			continue // not within the specified version range, so ignore it
+	// Loop thru the returned services and pick out the highest version that is within one of the versionRanges
+	highestKey := "" // key to the service def in the map that so far has the highest valid version
+	for svcKey, svc := range svcOutput.Services {
+		if !isWithinRanges(svc.Version, versionRanges) {
+			continue // not within any of the specified version ranges, so ignore it
 		}
 		if highestKey == "" {
-			highestKey = microKey // 1st MS found within the range
+			highestKey = svcKey // 1st svc found that is within the range
 			continue
 		}
 		// else see if this version is higher than the previous highest version
-		c, err := policy.CompareVersions(microOutput.Microservices[highestKey].Version, micro.Version)
+		c, err := policy.CompareVersions(svcOutput.Services[highestKey].Version, svc.Version)
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "error compairing version %v with version %v. %v", microOutput.Microservices[highestKey], micro.Version, err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "error comparing version %v with version %v. %v", svcOutput.Services[highestKey], svc.Version, err)
 		} else if c == -1 {
-			highestKey = microKey
+			highestKey = svcKey
 		}
 	}
 
 	if highestKey == "" {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "found no microservices in the exchange matched: org=%s, specRef=%s, version range=%s, arch=%s", org, url, versionRange, arch)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "found no services in the exchange matched: org=%s, specRef=%s, version range=%s, arch=%s", org, url, versionRanges, arch)
 	}
-	cliutils.Verbose("selected %s for version range %s", highestKey, versionRange)
-	return microOutput.Microservices[highestKey]
+	return svcOutput.Services[highestKey]
 }
 
-// CreateInputFile runs thru the workloads and microservices used by this pattern and collects the user input needed
-func CreateInputFile(org, pattern, arch, nodeIdTok, inputFile string) {
+func formSvcKey(org, url, arch string) string {
+	return org + "_" + url + "_" + arch
+}
+
+type SvcMapValue struct {
+	Org           string
+	URL           string
+	Arch          string
+	VersionRanges []string	// all the version ranges we find for this service as we descend thru the required services
+	HighestVersion	string	// filled in when we have to find the highest service to get its required services. Is valid at the end if len(VersionRanges)==1
+	UserInputs          []exchange.UserInput
+}
+
+// AddAllRequiredSvcs
+func AddAllRequiredSvcs(nodeCreds, org, url, arch, versionRange string, allRequiredSvcs map[string]*SvcMapValue) {
+	// Add this service to the service map
+	cliutils.Verbose("found: %s, %s, %s, %s", org, url, arch, versionRange)
+	svcKey := formSvcKey(org, url, arch)
+	if s, ok := allRequiredSvcs[svcKey]; ok {
+		// To protect against circular service references, check if we've already seen this exact svc version range
+		for _, v := range s.VersionRanges {
+			if v == versionRange {
+				return
+			}
+		}
+	} else {
+		allRequiredSvcs[svcKey] = &SvcMapValue{Org: org, URL: url, Arch: arch}		// this must be a ptr to the struct or go won't let us modify it in the map
+	}
+	allRequiredSvcs[svcKey].VersionRanges = append(allRequiredSvcs[svcKey].VersionRanges, versionRange) // add this version to this service in our map
+
+	// Get the service from the exchange so we can get its required services
+	highestSvc := GetHighestService(nodeCreds, org, url, arch, []string{versionRange})
+	allRequiredSvcs[svcKey].HighestVersion = highestSvc.Version		// in case we don't encounter this service again, we already know the highest version for getting the user input from
+	allRequiredSvcs[svcKey].UserInputs = highestSvc.UserInputs
+
+	// Loop thru this service's required services, adding them to our map
+	for _, s := range highestSvc.RequiredServices {
+		// This will add this svc to our map and keep descending down the required services
+		AddAllRequiredSvcs(nodeCreds, s.Org, s.URL, s.Arch, s.Version, allRequiredSvcs)
+	}
+}
+
+// CreateInputFile runs thru the services used by this pattern (descending into all required services) and collects the user input needed
+func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
+	var patOrg string
+	patOrg, pattern = cliutils.TrimOrg(nodeOrg, pattern)	// patOrg will either get the prefix from pattern, or default to nodeOrg
+	nodeCreds := cliutils.OrgAndCreds(nodeOrg, nodeIdTok)
 	// Get the pattern
-	exchangeUrl := cliutils.GetExchangeUrl()
 	var patOutput exchange.GetPatternResponse
-	cliutils.ExchangeGet(exchangeUrl, "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org, nodeIdTok), []int{200}, &patOutput)
-	patKey := cliutils.OrgAndCreds(org, pattern)
+	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+patOrg+"/patterns/"+pattern, nodeCreds, []int{200}, &patOutput)
+	patKey := cliutils.OrgAndCreds(patOrg, pattern)
 	if _, ok := patOutput.Patterns[patKey]; !ok {
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, "did not find pattern '%s' as expected", patKey)
 	}
-
-	// Loop thru the workloads gathering their user input and microservices
-	templateFile := InputFile{Global: []GlobalSet{{Type: "LocationAttributes", Variables: map[string]interface{}{"lat": 0.0, "lon": 0.0, "use_gps": false, "location_accuracy_km": 0.0}}}}
 	if arch == "" {
 		arch = cutil.ArchString()
 	}
-	completeAPISpecList := new(policy.APISpecList) // list of all MSs the workloads require (will filter out MS refs with exact same version range, but not overlapping ranges (that comes later)
-	for _, work := range patOutput.Patterns[patKey].Workloads {
-		if work.WorkloadArch != arch { // filter out workloads that are not our arch
-			fmt.Printf("Ignoring workload that is a different architecture: %s, %s, %s\n", work.WorkloadOrg, work.WorkloadURL, work.WorkloadArch)
+
+	// Recursively go thru the services and their required services, collecting them in a map.
+	// Afterward we will process them to figure out the highest version of each before getting their input.
+	allRequiredSvcs := make(map[string]*SvcMapValue)	// the key is the combined org, url, arch. The value is the org, url, arch and a list of the versions.
+	for _, svc := range patOutput.Patterns[patKey].Services {
+		if svc.ServiceArch != arch { // filter out services that are not our arch
+			fmt.Printf("Ignoring service that is a different architecture: %s, %s, %s\n", svc.ServiceOrg, svc.ServiceURL, svc.ServiceArch)
 			continue
 		}
 
-		for _, workVersion := range work.WorkloadVersions {
-			// Get the workload
-			exchId := cliutils.FormExchangeId(work.WorkloadURL, workVersion.Version, work.WorkloadArch)
-			var workOutput exchange.GetWorkloadsResponse
-			cliutils.ExchangeGet(exchangeUrl, "orgs/"+work.WorkloadOrg+"/workloads/"+exchId, cliutils.OrgAndCreds(org, nodeIdTok), []int{200}, &workOutput)
-			workKey := cliutils.OrgAndCreds(work.WorkloadOrg, exchId)
-			if _, ok := workOutput.Workloads[workKey]; !ok {
-				cliutils.Fatal(cliutils.INTERNAL_ERROR, "did not find workload '%s' as expected", workKey)
-			}
-
-			// Get the user input from this workload
-			userInputs := workOutput.Workloads[workKey].UserInputs
-			if len(userInputs) > 0 {
-				workInput := MicroWork{Org: work.WorkloadOrg, Url: work.WorkloadURL, VersionRange: "[0.0.0,INFINITY)", Variables: make(map[string]interface{})}
-				for _, u := range userInputs {
-					workInput.Variables[u.Name] = u.DefaultValue
-				}
-				templateFile.Workloads = append(templateFile.Workloads, workInput)
-			}
-
-			// Loop thru this workload's microservices, adding them to our list
-			micros := workOutput.Workloads[workKey].APISpecs
-			apiSpecList := new(policy.APISpecList)
-			for _, m := range micros {
-				newAPISpec := policy.APISpecification_Factory(m.SpecRef, m.Org, m.Version, m.Arch)
-				*apiSpecList = append(*apiSpecList, *newAPISpec)
-			}
-			// MergeWith will will filter out MS refs with exact same version range, but not overlapping ranges (that comes later)
-			*completeAPISpecList = completeAPISpecList.MergeWith(apiSpecList)
+		for _, svcVersion := range svc.ServiceVersions {
+			// This will add this svc to our map and keep descending down the required services
+			AddAllRequiredSvcs(nodeCreds, svc.ServiceOrg, svc.ServiceURL, svc.ServiceArch, svcVersion.Version, allRequiredSvcs)		// svcVersion.Version is a version range
 		}
 	}
 
-	// Loop thru the referenced MSs, get the highest version of each range, and then get the user input for it
-	// For now, anax only allows one microservice version, so we need to get the common version range for each microservice.
-	common_apispec_list, err := completeAPISpecList.GetCommonVersionRanges()
-	if err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem getting the common list of microservice version ranges: %v", err)
-	}
-	// these 2 lines are for GetMicroservice()
-	//nodeId, nodeToken := cliutils.SplitIdToken(nodeIdTok)
-	//httpClientFactory := &config.HTTPClientFactory{NewHTTPClient: func(overrideTimeoutS *uint) *http.Client { return &http.Client{} }}
-	for _, m := range *common_apispec_list {
-		micro := GetHighestMicroservice(exchangeUrl, org, nodeIdTok, m.Org, m.SpecRef, m.Version, m.Arch)
-		/* we could use exchange.GetMicroservice() instead of GetHighestMicroservice(), but it assumes an anax context so logs errors in a way not clear for hzn users...
-		var versionRangeStr string		// need to expand the version string to a full version range, but still as a string
-		if versionRange, err := policy.Version_Expression_Factory(m.Version); err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem creating version expression of %s: %v", m.Version, err)
+	// Loop thru each service, find the highest version of that service, and then record the user input for it
+	// Note: if the pattern references multiple versions of the same service (directly or indirectly), we create input for the highest version of the service.
+	templateFile := InputFile{Global: []GlobalSet{}}	// to add the global loc attrs: Type: "LocationAttributes", Variables: map[string]interface{}{"lat": 0.0, "lon": 0.0, "use_gps": false, "location_accuracy_km": 0.0}
+	for _, s := range allRequiredSvcs {
+		var userInput []exchange.UserInput
+		if s.HighestVersion != "" && len(s.VersionRanges) <= 1 {
+			// When we were finding the required services we only encountered this service once, so the user input we found then is valid
+			userInput = s.UserInputs
 		} else {
-			versionRangeStr = versionRange.Get_expression()
+			svc := GetHighestService(nodeCreds, s.Org, s.URL, s.Arch, s.VersionRanges)
+			userInput = svc.UserInputs
 		}
-		micro, err := exchange.GetMicroservice(httpClientFactory, m.Url, m.Org, versionRangeStr, m.Arch, exchangeUrl+"/", cliutils.OrgAndCreds(org, nodeId), nodeToken)
-		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem getting the highest version microservice for %s %s %s: %v", m.Org, m.Url, m.Arch, err)
-		}
-		cliutils.Verbose("for %s %s %s selected %s for version range %s", m.Org, m.Url, m.Arch, micro.Version, m.Version)
-		*/
 
-		// Get the user input from this microservice
-		userInputs2 := micro.UserInputs
-		if len(userInputs2) > 0 {
-			microInput := MicroWork{Org: m.Org, Url: m.SpecRef, VersionRange: "[0.0.0,INFINITY)", Variables: make(map[string]interface{})}
-			for _, u := range userInputs2 {
-				microInput.Variables[u.Name] = u.DefaultValue
+		// Get the user input from this service
+		if len(userInput) > 0 {
+			svcInput := MicroWork{Org: s.Org, Url: s.URL, VersionRange: "[0.0.0,INFINITY)", Variables: make(map[string]interface{})}
+			for _, u := range userInput {
+				svcInput.Variables[u.Name] = u.DefaultValue
 			}
-			templateFile.Microservices = append(templateFile.Microservices, microInput)
+			templateFile.Services = append(templateFile.Services, svcInput)
 		}
 	}
 
@@ -326,8 +341,6 @@ func CreateInputFile(org, pattern, arch, nodeIdTok, inputFile string) {
 	if err != nil {
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, "failed to marshal the user input template file: %v", err)
 	}
-	//fmt.Printf("Would write to %s\n", inputFile)
-	//fmt.Println(string(jsonBytes))
 	if err := ioutil.WriteFile(inputFile, jsonBytes, 0644); err != nil {
 		cliutils.Fatal(cliutils.FILE_IO_ERROR, "problem writing the user input template file: %v", err)
 	}
