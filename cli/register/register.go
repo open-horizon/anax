@@ -24,7 +24,7 @@ func (g GlobalSet) String() string {
 	return fmt.Sprintf("Global Array element, type: %v, sensor_urls: %v, variables: %v", g.Type, g.SensorUrls, g.Variables)
 }
 
-// Use for services, microservices, and workloads
+// Use for services, microservices, and workloads. This is used by other cli sub-cmds too.
 type MicroWork struct {
 	Org          string                 `json:"org"`
 	Url          string                 `json:"url"`
@@ -206,11 +206,11 @@ func isWithinRanges(version string, versionRanges []string) bool {
 }
 
 // GetHighestService queries the exchange for all versions of this service and returns the highest version that is within at least 1 of the version ranges
-func GetHighestService(exchangeUrl, credOrg, nodeIdTok, org, url, arch string, versionRanges []string) exchange.ServiceDefinition {
+func GetHighestService(nodeCreds, org, url, arch string, versionRanges []string) exchange.ServiceDefinition {
 	route := "orgs/" + org + "/services?url=" + url + "&arch=" + arch // get all services of this org, url, and arch
 	var svcOutput exchange.GetServicesResponse
-	cliutils.SetWhetherUsingApiKey(nodeIdTok)
-	cliutils.ExchangeGet(exchangeUrl, route, cliutils.OrgAndCreds(credOrg, nodeIdTok), []int{200}, &svcOutput)
+	cliutils.SetWhetherUsingApiKey(nodeCreds)
+	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), route, nodeCreds, []int{200}, &svcOutput)
 	if len(svcOutput.Services) == 0 {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "found no services in the exchange matching: org=%s, url=%s, arch=%s", org, url, arch)
 	}
@@ -247,18 +247,49 @@ func formSvcKey(org, url, arch string) string {
 type SvcMapValue struct {
 	Org           string
 	URL           string
-	VersionRanges []string
 	Arch          string
+	VersionRanges []string	// all the version ranges we find for this service as we descend thru the required services
+	HighestVersion	string	// filled in when we have to find the highest service to get its required services. Is valid at the end if len(VersionRanges)==1
+	UserInputs          []exchange.UserInput
 }
 
-// CreateInputFile runs thru the services used by this pattern and collects the user input needed
+// AddAllRequiredSvcs
+func AddAllRequiredSvcs(nodeCreds, org, url, arch, versionRange string, allRequiredSvcs map[string]*SvcMapValue) {
+	// Add this service to the service map
+	cliutils.Verbose("found: %s, %s, %s, %s", org, url, arch, versionRange)
+	svcKey := formSvcKey(org, url, arch)
+	if s, ok := allRequiredSvcs[svcKey]; ok {
+		// To protect against circular service references, check if we've already seen this exact svc version range
+		for _, v := range s.VersionRanges {
+			if v == versionRange {
+				return
+			}
+		}
+	} else {
+		allRequiredSvcs[svcKey] = &SvcMapValue{Org: org, URL: url, Arch: arch}		// this must be a ptr to the struct or go won't let us modify it in the map
+	}
+	allRequiredSvcs[svcKey].VersionRanges = append(allRequiredSvcs[svcKey].VersionRanges, versionRange) // add this version to this service in our map
+
+	// Get the service from the exchange so we can get its required services
+	highestSvc := GetHighestService(nodeCreds, org, url, arch, []string{versionRange})
+	allRequiredSvcs[svcKey].HighestVersion = highestSvc.Version		// in case we don't encounter this service again, we already know the highest version for getting the user input from
+	allRequiredSvcs[svcKey].UserInputs = highestSvc.UserInputs
+
+	// Loop thru this service's required services, adding them to our map
+	for _, s := range highestSvc.RequiredServices {
+		// This will add this svc to our map and keep descending down the required services
+		AddAllRequiredSvcs(nodeCreds, s.Org, s.URL, s.Arch, s.Version, allRequiredSvcs)
+	}
+}
+
+// CreateInputFile runs thru the services used by this pattern (descending into all required services) and collects the user input needed
 func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 	var patOrg string
 	patOrg, pattern = cliutils.TrimOrg(nodeOrg, pattern)	// patOrg will either get the prefix from pattern, or default to nodeOrg
+	nodeCreds := cliutils.OrgAndCreds(nodeOrg, nodeIdTok)
 	// Get the pattern
-	exchangeUrl := cliutils.GetExchangeUrl()
 	var patOutput exchange.GetPatternResponse
-	cliutils.ExchangeGet(exchangeUrl, "orgs/"+patOrg+"/patterns/"+pattern, cliutils.OrgAndCreds(nodeOrg, nodeIdTok), []int{200}, &patOutput)
+	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+patOrg+"/patterns/"+pattern, nodeCreds, []int{200}, &patOutput)
 	patKey := cliutils.OrgAndCreds(patOrg, pattern)
 	if _, ok := patOutput.Patterns[patKey]; !ok {
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, "did not find pattern '%s' as expected", patKey)
@@ -267,7 +298,6 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 		arch = cutil.ArchString()
 	}
 
-	//todo: this needs to be recursive!!
 	// Recursively go thru the services and their required services, collecting them in a map.
 	// Afterward we will process them to figure out the highest version of each before getting their input.
 	allRequiredSvcs := make(map[string]*SvcMapValue)	// the key is the combined org, url, arch. The value is the org, url, arch and a list of the versions.
@@ -277,48 +307,29 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 			continue
 		}
 
-		svcKey := formSvcKey(svc.ServiceOrg, svc.ServiceURL, svc.ServiceArch)
-		if _, ok := allRequiredSvcs[svcKey]; !ok {
-			allRequiredSvcs[svcKey] = &SvcMapValue{Org: svc.ServiceOrg, URL: svc.ServiceURL, Arch: svc.ServiceArch}		// this must be a ptr to the struct or go won't let us modify it in the map
-		}
 		for _, svcVersion := range svc.ServiceVersions {
-			cliutils.Verbose("found: %s, %s, %s, %s", svc.ServiceOrg, svc.ServiceURL, svc.ServiceArch, svcVersion.Version)
-			versionRange := "[" + svcVersion.Version + "," + svcVersion.Version + "]"	// the pattern specifies an exact version, turn that into a range
-			allRequiredSvcs[svcKey].VersionRanges = append(allRequiredSvcs[svcKey].VersionRanges, versionRange) // add this version to this service in our map
-
-			// Get the service from the exchange so we can get its required services
-			exchId := cliutils.FormExchangeId(svc.ServiceURL, svcVersion.Version, svc.ServiceArch)
-			var svcOutput exchange.GetServicesResponse
-			cliutils.ExchangeGet(exchangeUrl, "orgs/"+svc.ServiceOrg+"/services/"+exchId, cliutils.OrgAndCreds(nodeOrg, nodeIdTok), []int{200}, &svcOutput)
-			exSvcKey := cliutils.OrgAndCreds(svc.ServiceOrg, exchId)
-			if _, ok := svcOutput.Services[exSvcKey]; !ok {
-				cliutils.Fatal(cliutils.INTERNAL_ERROR, "did not find service '%s' in exchange as expected", exSvcKey)
-			}
-
-			// Loop thru this service's required services, adding them to our map
-			for _, s := range svcOutput.Services[exSvcKey].RequiredServices {
-				//todo: this is where we need to recurse
-				cliutils.Verbose("found: %s, %s, %s, %s", s.Org, s.URL, s.Arch, s.Version)
-				sKey := formSvcKey(s.Org, s.URL, s.Arch)
-				if _, ok := allRequiredSvcs[sKey]; !ok {
-					allRequiredSvcs[sKey] = &SvcMapValue{Org: svc.ServiceOrg, URL: svc.ServiceURL, Arch: svc.ServiceArch}
-				}
-				allRequiredSvcs[sKey].VersionRanges = append(allRequiredSvcs[sKey].VersionRanges, s.Version)	// s.Version is already a range
-			}
+			// This will add this svc to our map and keep descending down the required services
+			AddAllRequiredSvcs(nodeCreds, svc.ServiceOrg, svc.ServiceURL, svc.ServiceArch, svcVersion.Version, allRequiredSvcs)		// svcVersion.Version is a version range
 		}
 	}
 
 	// Loop thru each service, find the highest version of that service, and then record the user input for it
 	// Note: if the pattern references multiple versions of the same service (directly or indirectly), we create input for the highest version of the service.
-	templateFile := InputFile{Global: []GlobalSet{}}
-	//templateFile := InputFile{Global: []GlobalSet{{Type: "LocationAttributes", Variables: map[string]interface{}{"lat": 0.0, "lon": 0.0, "use_gps": false, "location_accuracy_km": 0.0}}}}
+	templateFile := InputFile{Global: []GlobalSet{}}	// to add the global loc attrs: Type: "LocationAttributes", Variables: map[string]interface{}{"lat": 0.0, "lon": 0.0, "use_gps": false, "location_accuracy_km": 0.0}
 	for _, s := range allRequiredSvcs {
-		svc := GetHighestService(exchangeUrl, nodeOrg, nodeIdTok, s.Org, s.URL, s.Arch, s.VersionRanges)
+		var userInput []exchange.UserInput
+		if s.HighestVersion != "" && len(s.VersionRanges) <= 1 {
+			// When we were finding the required services we only encountered this service once, so the user input we found then is valid
+			userInput = s.UserInputs
+		} else {
+			svc := GetHighestService(nodeCreds, s.Org, s.URL, s.Arch, s.VersionRanges)
+			userInput = svc.UserInputs
+		}
 
 		// Get the user input from this service
-		if len(svc.UserInputs) > 0 {
+		if len(userInput) > 0 {
 			svcInput := MicroWork{Org: s.Org, Url: s.URL, VersionRange: "[0.0.0,INFINITY)", Variables: make(map[string]interface{})}
-			for _, u := range svc.UserInputs {
+			for _, u := range userInput {
 				svcInput.Variables[u.Name] = u.DefaultValue
 			}
 			templateFile.Services = append(templateFile.Services, svcInput)
