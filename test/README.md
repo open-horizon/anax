@@ -27,10 +27,10 @@ And depending on which PATTERN is chosen, a series of workload containers
   - `export GOPATH=</your/go/path>`
   - `go get -u github.com/kardianos/govendor`
   - `export ANAX_SOURCE=</path/to/anax>`
-- Clone this repo (may have to add your ssh key to your profile if you haven't yet)
-  - `git clone -b v3 git@github.ibm.com:appsci-legacy/MTN-e2edev`
+- Clone this repo  
+  - `git clone git@github.com:open-horizon/anax.git`
 - Build the anax binary, the agbot base image, and pull the exchange images
-  - `make`
+  - `cd anax && make`
 
 ### Development Iterations - Basic
 This is the most comprehensive 'Basic' test.
