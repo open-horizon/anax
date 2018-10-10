@@ -79,7 +79,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		a.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", *device.Org, *device.Id), *device.Token, a.Config.Edge.ExchangeURL, false, a.Config.Collaborators.HTTPClientFactory)
+		a.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", *device.Org, *device.Id), *device.Token, a.Config.Edge.ExchangeURL, a.Config.Collaborators.HTTPClientFactory)
 
 		a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, *device.Id, *device.Token, *device.Org, *device.Pattern)
 
@@ -119,7 +119,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		a.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", *device.Org, *device.Id), *dev.Token, a.Config.Edge.ExchangeURL, a.GetServiceBased(), a.Config.Collaborators.HTTPClientFactory)
+		a.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", *device.Org, *device.Id), *dev.Token, a.Config.Edge.ExchangeURL, a.Config.Collaborators.HTTPClientFactory)
 
 		writeResponse(w, exDev, http.StatusOK)
 
@@ -193,9 +193,7 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		microserviceHandler := exchange.GetHTTPMicroserviceHandler(a)
 		patternHandler := exchange.GetHTTPExchangePatternHandler(a)
-		workloadResolver := exchange.GetHTTPWorkloadResolverHandler(a)
 		serviceResolver := exchange.GetHTTPServiceResolverHandler(a)
 		getService := exchange.GetHTTPServiceHandler(a)
 
@@ -211,15 +209,8 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Validate and update the config state.
-		errHandled, cfg, msgs := UpdateConfigstate(&configState, errorHandler, microserviceHandler, patternHandler, workloadResolver, serviceResolver, getService, a.db, a.Config)
+		errHandled, cfg, msgs := UpdateConfigstate(&configState, errorHandler, patternHandler, serviceResolver, getService, a.db, a.Config)
 		if errHandled {
-			return
-		}
-
-		pDevice, err := persistence.FindExchangeDevice(a.db)
-		if err != nil {
-			eventlog.LogDatabaseEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Unable to read node object from database, error %v", err), persistence.EC_DATABASE_ERROR)
-			errorHandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err)))
 			return
 		}
 
@@ -229,7 +220,7 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Send out the config complete message that enables the device for agreements
-		a.Messages() <- events.NewEdgeConfigCompleteMessage(events.NEW_DEVICE_CONFIG_COMPLETE, pDevice.IsServiceBased())
+		a.Messages() <- events.NewEdgeConfigCompleteMessage(events.NEW_DEVICE_CONFIG_COMPLETE)
 
 		writeResponse(w, cfg, http.StatusCreated)
 

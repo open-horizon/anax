@@ -15,12 +15,6 @@ import (
 // ========================================================================================
 // These are functions which are used across the set of API unit tests
 
-func getDummyWorkloadResolver() exchange.WorkloadResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *exchange.WorkloadDefinition, error) {
-		return nil, nil, nil
-	}
-}
-
 func getDummyServiceResolver() exchange.ServiceResolverHandler {
 	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *exchange.ServiceDefinition, error) {
 		return nil, nil, nil
@@ -29,12 +23,6 @@ func getDummyServiceResolver() exchange.ServiceResolverHandler {
 
 func getDummyServiceHandler() exchange.ServiceHandler {
 	return func(mUrl string, mOrg string, mVersion string, mArch string) (*exchange.ServiceDefinition, string, error) {
-		return nil, "", nil
-	}
-}
-
-func getDummyMicroserviceHandler() exchange.MicroserviceHandler {
-	return func(mUrl string, mOrg string, mVersion string, mArch string) (*exchange.MicroserviceDefinition, string, error) {
 		return nil, "", nil
 	}
 }
@@ -73,117 +61,18 @@ func getDummyGetPatternsWithContext() exchange.PatternHandlerWithContext {
 }
 
 // Use these variable functions when you need the business logic to do something specific and you need to verify something specific.
-func getVariablePatternHandler(workload exchange.WorkloadReference, service exchange.ServiceReference) exchange.PatternHandler {
+func getVariablePatternHandler(service exchange.ServiceReference) exchange.PatternHandler {
 	return func(org string, pattern string) (map[string]exchange.Pattern, error) {
 		patid := fmt.Sprintf("%v/%v", org, pattern)
-		if len(workload.WorkloadVersions) != 0 {
-			return map[string]exchange.Pattern{
-				patid: exchange.Pattern{
-					Label:              "label",
-					Description:        "desc",
-					Public:             true,
-					Workloads:          []exchange.WorkloadReference{workload},
-					AgreementProtocols: []exchange.AgreementProtocol{},
-				},
-			}, nil
-		} else {
-			return map[string]exchange.Pattern{
-				patid: exchange.Pattern{
-					Label:              "label",
-					Description:        "desc",
-					Public:             true,
-					Services:           []exchange.ServiceReference{service},
-					AgreementProtocols: []exchange.AgreementProtocol{},
-				},
-			}, nil
-		}
-	}
-}
-
-func getVariableWorkloadResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange.UserInput) exchange.WorkloadResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *exchange.WorkloadDefinition, error) {
-		sl := policy.APISpecList{
-			policy.APISpecification{
-				SpecRef:         mUrl,
-				Org:             mOrg,
-				Version:         mVersion,
-				ExclusiveAccess: true,
-				Arch:            mArch,
+		return map[string]exchange.Pattern{
+			patid: exchange.Pattern{
+				Label:              "label",
+				Description:        "desc",
+				Public:             true,
+				Services:           []exchange.ServiceReference{service},
+				AgreementProtocols: []exchange.AgreementProtocol{},
 			},
-		}
-		es := exchange.APISpec{
-			SpecRef: mUrl,
-			Org:     mOrg,
-			Version: mVersion,
-			Arch:    mArch,
-		}
-		uis := []exchange.UserInput{}
-		if ui != nil {
-			uis = []exchange.UserInput{*ui}
-		}
-		wl := exchange.WorkloadDefinition{
-			Owner:       "owner",
-			Label:       "label",
-			Description: "desc",
-			WorkloadURL: wUrl,
-			Version:     wVersion,
-			Arch:        wArch,
-			DownloadURL: "",
-			APISpecs:    []exchange.APISpec{es},
-			UserInputs:  uis,
-			Workloads:   []exchange.WorkloadDeployment{},
-			LastUpdated: "updated",
-		}
-		return &sl, &wl, nil
-	}
-}
-
-func getVariableMicroserviceHandler(mUserInput exchange.UserInput) exchange.MicroserviceHandler {
-	return func(mUrl string, mOrg string, mVersion string, mArch string) (*exchange.MicroserviceDefinition, string, error) {
-		md := exchange.MicroserviceDefinition{
-			Owner:         "owner",
-			Label:         "label",
-			Description:   "desc",
-			SpecRef:       mUrl,
-			Version:       mVersion,
-			Arch:          mArch,
-			Sharable:      exchange.MS_SHARING_MODE_EXCLUSIVE,
-			DownloadURL:   "",
-			MatchHardware: exchange.HardwareMatch{},
-			UserInputs:    []exchange.UserInput{mUserInput},
-			Workloads:     []exchange.WorkloadDeployment{},
-			LastUpdated:   "today",
-		}
-		return &md, "ms-id", nil
-	}
-}
-
-func getVariableWorkload(mUrl, mOrg, mVersion, mArch string, ui []exchange.UserInput) exchange.WorkloadHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string) (*exchange.WorkloadDefinition, string, error) {
-		es := exchange.APISpec{
-			SpecRef: mUrl,
-			Org:     mOrg,
-			Version: mVersion,
-			Arch:    mArch,
-		}
-		uis := []exchange.UserInput{}
-		if ui != nil {
-			uis = ui
-		}
-		wl := exchange.WorkloadDefinition{
-			Owner:       "owner",
-			Label:       "label",
-			Description: "desc",
-			WorkloadURL: mUrl,
-			Version:     mVersion,
-			Arch:        mArch,
-			DownloadURL: "",
-			APISpecs:    []exchange.APISpec{es},
-			UserInputs:  uis,
-			Workloads:   []exchange.WorkloadDeployment{},
-			LastUpdated: "updated",
-		}
-		return &wl, "wl-id", nil
+		}, nil
 	}
 }
 

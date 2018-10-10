@@ -253,7 +253,7 @@ vTLlpah1Y8Dvd1Mg6DorvN7eHb+R9pRYz6m/ll84KeLHyX+ml9Yj9Xem+H7MMYh7
 		simpleGET(t, pp, http.StatusFailedDependency, false)
 	})
 
-	_, err = persistence.SaveNewExchangeDevice(db, "device-22", "tokenval", "Device 22", false, "myorg", ".*", persistence.CONFIGSTATE_CONFIGURING, false, true)
+	_, err = persistence.SaveNewExchangeDevice(db, "device-22", "tokenval", "Device 22", false, "myorg", ".*", persistence.CONFIGSTATE_CONFIGURING)
 	assert.Nil(suite, err)
 
 	suite.Run("OPTIONS returns methods", func(t *testing.T) {

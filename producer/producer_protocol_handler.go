@@ -121,13 +121,13 @@ func (w *BaseProducerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 	}
 }
 
-func (w *BaseProducerProtocolHandler) GetWorkloadOrServiceResolver() func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
-	return w.workloadOrServiceResolver
+func (w *BaseProducerProtocolHandler) GetServiceResolver() func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
+	return w.serviceResolver
 }
 
-func (w *BaseProducerProtocolHandler) workloadOrServiceResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
+func (w *BaseProducerProtocolHandler) serviceResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
 
-	asl, _, err := exchange.GetHTTPWorkloadOrServiceResolverHandler(w.ec)(wURL, wOrg, wVersion, wArch)
+	asl, _, err := exchange.GetHTTPServiceResolverHandler(w.ec)(wURL, wOrg, wVersion, wArch)
 	if err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("unable to resolve %v %v, error %v", wURL, wOrg, err)))
 	}
@@ -193,7 +193,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting pem key files: %v", err)))
 			err_log_event = fmt.Sprintf("Received error getting pem key files: %v", err)
 			handled = true
-		} else if err := tcPolicy.Is_Self_Consistent(pemFiles, w.GetWorkloadOrServiceResolver()); err != nil {
+		} else if err := tcPolicy.Is_Self_Consistent(pemFiles, w.GetServiceResolver()); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking self consistency of TsAndCs, %v", err)))
 			err_log_event = fmt.Sprintf("Received error checking self consistency of TsAndCs: %v", err)
 			handled = true
@@ -286,27 +286,8 @@ func (w *BaseProducerProtocolHandler) saveSigningKeys(pol *policy.Policy) error 
 		}
 	}
 
-	// save signing keys for workloads
-	if pol.Workloads != nil && !pol.IsServiceBased() {
-		for _, wl := range pol.Workloads {
-			if key_map, err := objSigningHandler(exchange.WORKLOAD, wl.WorkloadURL, wl.Org, wl.Version, wl.Arch); err != nil {
-				return fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting signing keys for workload from the exchange: %v %v %v %v. %v", wl.WorkloadURL, wl.Org, wl.Version, wl.Arch, err)))
-			} else if key_map != nil {
-				for key, content := range key_map {
-					//add .pem the end of the keyname if it does not have none.
-					fn := key
-					if !strings.HasSuffix(key, ".pem") {
-						fn = fmt.Sprintf("%v.pem", key)
-					}
-
-					api.UploadPublicKey(fn, []byte(content), w.config, errHandler(fn))
-				}
-			}
-		}
-	}
-
 	// save signing keys for services
-	if pol.Workloads != nil && pol.IsServiceBased() {
+	if pol.Workloads != nil {
 		for _, wl := range pol.Workloads {
 			if key_map, err := objSigningHandler(exchange.SERVICE, wl.WorkloadURL, wl.Org, wl.Version, wl.Arch); err != nil {
 				return fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error getting signing keys for workload from the exchange: %v %v %v %v. %v", wl.WorkloadURL, wl.Org, wl.Version, wl.Arch, err)))

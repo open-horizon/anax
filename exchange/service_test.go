@@ -820,74 +820,6 @@ func TestServiceResolver2(t *testing.T) {
 
 }
 
-// Resolve a service using the WorkloadOrService API
-func Test_ResolveWorkloadOrService_withService(t *testing.T) {
-
-	myURL := "http://service1"
-	myOrg := "test"
-	myVersion := "2.0.0"
-	myArch := "amd64"
-
-	sh := getVariableServiceHandler([]UserInput{}, []ServiceDependency{})
-	wr := getErrorWorkloadResolver()
-	apiSpecList, exDef, err := GetWorkloadOrService(myURL, myOrg, myVersion, myArch, wr, sh)
-
-	if err != nil {
-		t.Errorf("received unexpected error: %v", err)
-	} else if exDef == nil {
-		t.Errorf("received no service definition")
-	} else if len(*apiSpecList) != 0 {
-		t.Errorf("should have received empty api spec list")
-	}
-}
-
-// Resolve a workload using the WorkloadOrService API
-func Test_ResolveWorkloadOrService_withWorkload(t *testing.T) {
-
-	myURL := "http://workload1"
-	myOrg := "test"
-	myVersion := "1.0.0"
-	myArch := "amd64"
-
-	msURL := "http://service1/ms"
-	msOrg := "test"
-	msVersion := "2.0.0"
-	msArch := "amd64"
-
-	wr := getVariableWorkloadResolver(msURL, msOrg, msVersion, msArch, nil)
-	sh := getErrorServiceHandler()
-	apiSpecList, exDef, err := GetWorkloadOrService(myURL, myOrg, myVersion, myArch, wr, sh)
-
-	if err != nil {
-		t.Errorf("received unexpected error: %v", err)
-	} else if exDef == nil {
-		t.Errorf("received no service definition")
-	} else if len(*apiSpecList) == 0 {
-		t.Errorf("should NOT have received empty api spec list")
-	}
-}
-
-// Resolve a workload using the WorkloadOrService API
-func Test_ResolveWorkloadOrService_withError(t *testing.T) {
-
-	myURL := "http://workload1"
-	myOrg := "test"
-	myVersion := "1.0.0"
-	myArch := "amd64"
-
-	wr := getErrorWorkloadResolver()
-	sh := getErrorServiceHandler()
-	apiSpecList, exDef, err := GetWorkloadOrService(myURL, myOrg, myVersion, myArch, wr, sh)
-
-	if err == nil {
-		t.Errorf("should have returned an error but got nil")
-	} else if exDef != nil {
-		t.Errorf("should not have received service definition")
-	} else if apiSpecList != nil {
-		t.Errorf("should have received nil api spec list")
-	}
-}
-
 func Test_RecursiveServiceResolver_1level(t *testing.T) {
 
 	flag.Set("alsologtostderr", "true")
@@ -1063,50 +995,6 @@ func getVariableServiceHandler(mUserInput []UserInput, mRequiredServices []Servi
 			LastUpdated:         "today",
 		}
 		return &md, "service-id", nil
-	}
-}
-
-func getVariableWorkloadResolver(mUrl, mOrg, mVersion, mArch string, ui *UserInput) WorkloadResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *WorkloadDefinition, error) {
-		sl := policy.APISpecList{
-			policy.APISpecification{
-				SpecRef:         mUrl,
-				Org:             mOrg,
-				Version:         mVersion,
-				ExclusiveAccess: true,
-				Arch:            mArch,
-			},
-		}
-		es := APISpec{
-			SpecRef: mUrl,
-			Org:     mOrg,
-			Version: mVersion,
-			Arch:    mArch,
-		}
-		uis := []UserInput{}
-		if ui != nil {
-			uis = []UserInput{*ui}
-		}
-		wl := WorkloadDefinition{
-			Owner:       "owner",
-			Label:       "label",
-			Description: "desc",
-			WorkloadURL: wUrl,
-			Version:     wVersion,
-			Arch:        wArch,
-			DownloadURL: "",
-			APISpecs:    []APISpec{es},
-			UserInputs:  uis,
-			Workloads:   []WorkloadDeployment{},
-			LastUpdated: "updated",
-		}
-		return &sl, &wl, nil
-	}
-}
-
-func getErrorWorkloadResolver() WorkloadResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *WorkloadDefinition, error) {
-		return nil, nil, errors.New("workload error")
 	}
 }
 

@@ -47,7 +47,7 @@ func ServiceNew(homeDirectory string, org string, dconfig string) {
 	}
 
 	// Create the metadata files.
-	if err := CreateUserInputs(dir, false, true, org); err != nil {
+	if err := CreateUserInputs(dir, org); err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
 	} else if err := CreateServiceDefinition(dir, org, dconfig); err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
@@ -86,7 +86,7 @@ func ServiceValidate(homeDirectory string, userInputFile string) {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_VERIFY_COMMAND, err)
 	}
 
-	if err := AbstractServiceValidation(dir, true); err != nil {
+	if err := AbstractServiceValidation(dir); err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_VERIFY_COMMAND, err)
 	}
 

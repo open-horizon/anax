@@ -42,7 +42,7 @@ func NewAPIListener(name string, config *config.HorizonConfig, db persistence.Ag
 
 		name: name,
 		db:   db,
-		EC:   worker.NewExchangeContext(config.AgreementBot.ExchangeId, config.AgreementBot.ExchangeToken, config.AgreementBot.ExchangeURL, false, config.Collaborators.HTTPClientFactory),
+		EC:   worker.NewExchangeContext(config.AgreementBot.ExchangeId, config.AgreementBot.ExchangeToken, config.AgreementBot.ExchangeURL, config.Collaborators.HTTPClientFactory),
 		em:   events.NewEventStateManager(),
 	}
 
@@ -132,14 +132,6 @@ func (a *API) GetExchangeURL() string {
 		return a.EC.URL
 	} else {
 		return ""
-	}
-}
-
-func (a *API) GetServiceBased() bool {
-	if a.EC != nil {
-		return a.EC.ServiceBased
-	} else {
-		return false
 	}
 }
 
@@ -287,8 +279,8 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) policy(w http.ResponseWriter, r *http.Request) {
 
-	workloadOrServiceResolver := func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
-		asl, _, err := exchange.GetHTTPWorkloadOrServiceResolverHandler(a)(wURL, wOrg, wVersion, wArch)
+	serviceResolver := func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
+		asl, _, err := exchange.GetHTTPServiceResolverHandler(a)(wURL, wOrg, wVersion, wArch)
 		if err != nil {
 			glog.Errorf(APIlogString(fmt.Sprintf("unable to resolve %v %v, error %v", wURL, wOrg, err)))
 		}
@@ -302,7 +294,7 @@ func (a *API) policy(w http.ResponseWriter, r *http.Request) {
 		name := pathVars["name"]
 
 		// get a list of hosted policy names
-		if pm, err := policy.Initialize(a.Config.AgreementBot.PolicyPath, a.Config.ArchSynonyms, workloadOrServiceResolver, false, false); err != nil {
+		if pm, err := policy.Initialize(a.Config.AgreementBot.PolicyPath, a.Config.ArchSynonyms, serviceResolver, false, false); err != nil {
 			glog.Error(APIlogString(fmt.Sprintf("error initializing policy manager, error: %v", err)))
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -362,7 +354,7 @@ func (a *API) policy(w http.ResponseWriter, r *http.Request) {
 		// Verify the input policy name. It can be either the name of the policy within the header of the policy file or the name
 		// of the file itself.
 		found := false
-		if pm, err := policy.Initialize(a.Config.AgreementBot.PolicyPath, a.Config.ArchSynonyms, workloadOrServiceResolver, false, false); err != nil {
+		if pm, err := policy.Initialize(a.Config.AgreementBot.PolicyPath, a.Config.ArchSynonyms, serviceResolver, false, false); err != nil {
 			glog.Error(APIlogString(fmt.Sprintf("error initializing policy manager, error: %v", err)))
 			w.WriteHeader(http.StatusInternalServerError)
 			return

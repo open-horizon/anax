@@ -151,30 +151,6 @@ func VerifyEnvironment(homeDirectory string, mustExist bool, needExchange bool, 
 
 }
 
-// Indicates whether or not the given project is a workload project
-func IsWorkloadProject(directory string) bool {
-	if ex, err := UserInputExists(directory); !ex || err != nil {
-		return false
-	} else if ex, err := WorkloadDefinitionExists(directory); !ex || err != nil {
-		return false
-	} else if ex, err := DependenciesExists(directory, true); !ex || err != nil {
-		return false
-	}
-	return true
-}
-
-// Indicates whether or not the given project is a microservice project
-func IsMicroserviceProject(directory string) bool {
-	if ex, err := UserInputExists(directory); !ex || err != nil {
-		return false
-	} else if ex, err := MicroserviceDefinitionExists(directory); !ex || err != nil {
-		return false
-	} else if ex, err := DependenciesExists(directory, true); !ex || err != nil {
-		return false
-	}
-	return true
-}
-
 // Indicates whether or not the given project is a service project
 func IsServiceProject(directory string) bool {
 	if ex, err := UserInputExists(directory); !ex || err != nil {
@@ -204,53 +180,27 @@ func CommonProjectValidation(dir string, userInputFile string, projectType strin
 	}
 }
 
-func AbstractServiceValidation(dir string, serviceExpected bool) error {
-	// If the caller thinks this is a service project, then look for the service definition file and validate it.
-	if serviceExpected {
-		if !IsServiceProject(dir) {
-			return errors.New(fmt.Sprintf("current project is not a service project."))
-		} else if verr := ValidateServiceDefinition(dir, SERVICE_DEFINITION_FILE); verr != nil {
-			return errors.New(fmt.Sprintf("project does not validate. %v ", verr))
-		}
-	} else {
-		// The caller thinks this is a microservice project, so look for the microservice definition file and validate it.
-		if !IsMicroserviceProject(dir) {
-			return errors.New(fmt.Sprintf("current project is not a microservice project."))
-		} else if verr := ValidateMicroserviceDefinition(dir, MICROSERVICE_DEFINITION_FILE); verr != nil {
-			return errors.New(fmt.Sprintf("project does not validate. %v ", verr))
-		}
+func AbstractServiceValidation(dir string) error {
+	if verr := ValidateServiceDefinition(dir, SERVICE_DEFINITION_FILE); verr != nil {
+		return errors.New(fmt.Sprintf("project does not validate. %v ", verr))
 	}
-
 	return nil
 }
 
-// Sort of like a constructor, it creates an in memory object except that it is created from either a microservice or a service
+// Sort of like a constructor, it creates an in memory object except that it is created from a service
 // definition config file in the current project. This function assumes the caller has determined the exact location of the file.
-// This function also assumes that the project pointed to by the directory parameter is assuemd to contain the kind of definition
+// This function also assumes that the project pointed to by the directory parameter is assumed to contain the kind of definition
 // the caller expects.
 func GetAbstractDefinition(directory string) (cliexchange.AbstractServiceFile, error) {
 
-	tryDefinitionName := MICROSERVICE_DEFINITION_FILE
-	if exists, err := FileExists(directory, tryDefinitionName); err != nil {
+	tryDefinitionName := SERVICE_DEFINITION_FILE
+	res := new(cliexchange.ServiceFile)
+
+	// GetFile will write to the res object, demarshalling the bytes into a json object that can be returned.
+	if err := GetFile(directory, tryDefinitionName, res); err != nil {
 		return nil, err
-	} else if exists {
-		res := new(cliexchange.MicroserviceFile)
-
-		// GetFile will write to the res object, demarshalling the bytes into a json object that can be returned.
-		if err := GetFile(directory, tryDefinitionName, res); err != nil {
-			return nil, err
-		}
-		return res, nil
-	} else {
-		tryDefinitionName = SERVICE_DEFINITION_FILE
-		res := new(cliexchange.ServiceFile)
-
-		// GetFile will write to the res object, demarshalling the bytes into a json object that can be returned.
-		if err := GetFile(directory, tryDefinitionName, res); err != nil {
-			return nil, err
-		}
-		return res, nil
 	}
+	return res, nil
 
 }
 
@@ -269,7 +219,7 @@ func setup(homeDirectory string, mustExist bool, needExchange bool, userCreds st
 	cliutils.Verbose("Reading Horizon metadata from %s", dir)
 
 	// Verify that the project is a workload project or a microservice.
-	if !IsWorkloadProject(dir) && !IsMicroserviceProject(dir) && !IsServiceProject(dir) {
+	if !IsServiceProject(dir) {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "project in %v is not a horizon project.", dir)
 	}
 
@@ -544,23 +494,6 @@ func startDependent(dir string,
 	}
 }
 
-func startMicroservice(deployment *containermessage.DeploymentDescription,
-	specRef string,
-	version string,
-	globals []register.GlobalSet, // API attributes
-	defUserInputs []exchange.UserInput, // indicates variable defaults
-	configUserInputs []register.MicroWork, // indicates configured variables
-	org string,
-	dc *cliexchange.DeploymentConfig,
-	cw *container.ContainerWorker,
-	msNetworks map[string]docker.ContainerNetwork) (map[string]docker.ContainerNetwork, error) {
-
-	// Make an instance id the same way the runtime makes them.
-	msId := cutil.MakeMSInstanceKey(specRef, version, uuid.NewV4().String())
-
-	return StartContainers(deployment, specRef, version, globals, defUserInputs, configUserInputs, org, dc, cw, msNetworks, false, false, msId)
-}
-
 func StartContainers(deployment *containermessage.DeploymentDescription,
 	specRef string,
 	version string,
@@ -664,10 +597,6 @@ func stopDependent(dir string, serviceDef *cliexchange.ServiceFile, cw *containe
 
 func StopService(dc *cliexchange.DeploymentConfig, cw *container.ContainerWorker) error {
 	return stopContainers(dc, cw, true)
-}
-
-func stopMicroservice(dc *cliexchange.DeploymentConfig, cw *container.ContainerWorker) error {
-	return stopContainers(dc, cw, false)
 }
 
 func stopContainers(dc *cliexchange.DeploymentConfig, cw *container.ContainerWorker, service bool) error {

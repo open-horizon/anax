@@ -40,7 +40,7 @@ func CreateServiceDefinition(directory string, org string, deploymentType string
 	res.Description = ""
 	res.Public = true
 	res.URL = DEFAULT_SDEF_URL
-	res.Version = DEFAULT_MSDEF_SPECIFIC_VERSION
+	res.Version = DEFAULT_SDEF_SPECIFIC_VERSION
 	res.Arch = cutil.ArchString()
 	res.Sharable = exchange.MS_SHARING_MODE_MULTIPLE
 	res.UserInputs = []exchange.UserInput{
@@ -107,11 +107,6 @@ func ValidateServiceDefinition(directory string, fileName string) error {
 // Refresh the RequiredServices dependencies in the definition. This is called when new dependencies are added or removed.
 func RefreshServiceDependencies(homeDirectory string, newDepDef cliexchange.AbstractServiceFile) error {
 
-	// If the project is a workload project, refresh it and return.
-	if IsWorkloadProject(homeDirectory) {
-		return RefreshWorkloadDependencies(homeDirectory)
-	}
-
 	// Update the service definition dependencies.
 	serviceDef, err := GetServiceDefinition(homeDirectory, SERVICE_DEFINITION_FILE)
 	if err != nil {
@@ -150,11 +145,6 @@ func RefreshServiceDependencies(homeDirectory string, newDepDef cliexchange.Abst
 }
 
 func RemoveServiceDependency(homeDirectory string, theDepDef cliexchange.AbstractServiceFile) error {
-
-	// If the project is a workload project, refresh it and return.
-	if IsWorkloadProject(homeDirectory) {
-		return RefreshWorkloadDependencies(homeDirectory)
-	}
 
 	// Update the service definition dependencies.
 	serviceDef, err := GetServiceDefinition(homeDirectory, SERVICE_DEFINITION_FILE)

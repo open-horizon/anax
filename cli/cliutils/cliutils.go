@@ -205,7 +205,7 @@ func PushDockerImage(client *dockerclient.Client, domain, path, tag string) (dig
 // OrgAndCreds prepends the org to creds (separated by /) unless creds already has an org prepended
 func OrgAndCreds(org, creds string) string {
 	// org is the org of the resource being accessed, so if they want to use creds from a different org, the prepend that org to creds before calling this
-	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" {	// leaving this code here, because we might need it for ibm cloud api keys
+	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" { // leaving this code here, because we might need it for ibm cloud api keys
 		return creds
 	}
 	id, _ := SplitIdToken(creds) // only look for the / in the id, because the token is more likely to have special chars

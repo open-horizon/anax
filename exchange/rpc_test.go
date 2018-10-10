@@ -8,32 +8,13 @@ import (
 	"testing"
 )
 
-func Test_Blockchain_Demarshal(t *testing.T) {
-	// Simulate the detail string that we get from the exchange on a call to get details for a given blockchain type and name
-	details := `{"chains":[{"arch":"amd64","deployment_description":{"deployment":"{\"services\":{\"geth\":{\"environment\":[\"CHAIN=bluehorizon\"],\"image\":\"summit.hovitos.engineering/x86_64/geth:1.5.7\",\"command\":[\"start.sh\"]}}}","deployment_signature":"abcdefg","deployment_user_info":"","torrent":{"url":"https://images.bluehorizon.network/f27f762cef632af1a19cd8a761ac4c3da4f9ef7d.torrent","images":[{"file":"f27f762cef632af1a19cd8a761ac4c3da4f9ef7d.tar.gz","signature":"123456"}]}}}]}`
-
-	detailsObj := new(BlockchainDetails)
-	if err := json.Unmarshal([]byte(details), detailsObj); err != nil {
-		t.Errorf("Could not unmarshal details, error %v\n", err)
-	} else {
-		for _, chain := range detailsObj.Chains {
-			if chain.Arch != "amd64" {
-				t.Errorf("Could not find amd64 arch in the array.\n")
-			} else if chain.DeploymentDesc.Deployment[:6] != `{"serv` {
-				t.Errorf("Could not find deployment string %v in %v.\n", `{"serv`, chain.DeploymentDesc.Deployment[:6])
-			}
-		}
-	}
-
-}
-
 func Test_ConvertPattern0(t *testing.T) {
 
 	org := "testorg"
 	name := "testpattern"
 
 	pa := `{"label":"Weather","description":"a weather pattern","public":true,` +
-		`"workloads":[],` +
+		`"services":[],` +
 		`"agreementProtocols":[{"name":"Basic"}]}`
 
 	if p1 := create_Pattern(pa, t); p1 == nil {
@@ -51,11 +32,11 @@ func Test_ConvertPattern1(t *testing.T) {
 	org := "testorg"
 	name := "testpattern"
 
-	pn := makePolicyName(name, "https://bluehorizon.network/workloads/weather", org, "amd64")
+	pn := makePolicyName(name, "https://bluehorizon.network/services/weather", org, "amd64")
 
 	pa := `{"label":"Weather","description":"a weather pattern","public":true,` +
-		`"workloads":[` +
-		`{"workloadUrl":"https://bluehorizon.network/workloads/weather","workloadOrgid":"testorg","workloadArch":"amd64","workloadVersions":` +
+		`"services":[` +
+		`{"serviceUrl":"https://bluehorizon.network/services/weather","serviceOrgid":"testorg","serviceArch":"amd64","serviceVersions":` +
 		`[{"version":"1.5.0",` +
 		`"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"upgradePolicy":{}},` +
@@ -90,11 +71,11 @@ func Test_ConvertPattern2(t *testing.T) {
 	org := "testorg"
 	name := "testpattern"
 
-	pn := makePolicyName(name, "https://bluehorizon.network/workloads/weather", org, "amd64")
+	pn := makePolicyName(name, "https://bluehorizon.network/services/weather", org, "amd64")
 
 	pa := `{"label":"Weather","description":"a weather pattern","public":true,` +
-		`"workloads":[` +
-		`{"workloadUrl":"https://bluehorizon.network/workloads/weather","workloadOrgid":"testorg","workloadArch":"amd64","workloadVersions":` +
+		`"services":[` +
+		`{"serviceUrl":"https://bluehorizon.network/services/weather","serviceOrgid":"testorg","serviceArch":"amd64","serviceVersions":` +
 		`[{"version":"1.5.0",` +
 		`"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"upgradePolicy":{}},` +
@@ -102,7 +83,7 @@ func Test_ConvertPattern2(t *testing.T) {
 		`"priority":{"priority_value":2,"retries":1,"retry_durations":3600,"verified_durations": 52},` +
 		`"upgradePolicy":{}}],` +
 		`"dataVerification":{"enabled":true,"user":"","password":"","URL":"myURL","interval":240,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}}},` +
-		`{"workloadUrl":"https://bluehorizon.network/workloads/netspeed","workloadOrgid":"testorg","workloadArch":"amd64","workloadVersions":` +
+		`{"serviceUrl":"https://bluehorizon.network/services/netspeed","serviceOrgid":"testorg","serviceArch":"amd64","serviceVersions":` +
 		`[{"version":"1.5.0",` +
 		`"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"upgradePolicy":{}},` +
@@ -135,8 +116,8 @@ func Test_ConvertPattern3(t *testing.T) {
 	name := "testpattern"
 
 	pa_no_wlurl := `{"label":"Weather","description":"a weather pattern","public":true,` +
-		`"workloads":[` +
-		`{"workloadUrl":"","workloadOrgid":"testorg","workloadArch":"amd64","workloadVersions":` +
+		`"services":[` +
+		`{"serviceUrl":"","serviceOrgid":"testorg","serviceArch":"amd64","serviceVersions":` +
 		`[{"version":"1.5.0",` +
 		`"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"upgradePolicy":{}},` +
@@ -149,8 +130,8 @@ func Test_ConvertPattern3(t *testing.T) {
 		`"agreementProtocols":[{"name":"Basic"}]}`
 
 	pa_no_wlarch := `{"label":"Weather","description":"a weather pattern","public":true,` +
-		`"workloads":[` +
-		`{"workloadUrl":"https://bluehorizon.network/workloads/weather","workloadOrgid":"testorg","workloadArch":"","workloadVersions":` +
+		`"services":[` +
+		`{"serviceUrl":"https://bluehorizon.network/services/weather","serviceOrgid":"testorg","serviceArch":"","serviceVersions":` +
 		`[{"version":"1.5.0",` +
 		`"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"upgradePolicy":{}},` +
@@ -163,8 +144,8 @@ func Test_ConvertPattern3(t *testing.T) {
 		`"agreementProtocols":[{"name":"Basic"}]}`
 
 	pa_no_wlorg := `{"label":"Weather","description":"a weather pattern","public":true,` +
-		`"workloads":[` +
-		`{"workloadUrl":"https://bluehorizon.network/workloads/weather","workloadOrgid":"","workloadArch":"amd64","workloadVersions":` +
+		`"services":[` +
+		`{"serviceUrl":"https://bluehorizon.network/services/weather","serviceOrgid":"","serviceArch":"amd64","serviceVersions":` +
 		`[{"version":"1.5.0",` +
 		`"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"upgradePolicy":{}},` +
@@ -177,8 +158,8 @@ func Test_ConvertPattern3(t *testing.T) {
 		`"agreementProtocols":[{"name":"Basic"}]}`
 
 	pa_empty_wl_versions := `{"label":"Weather","description":"a weather pattern","public":true,` +
-		`"workloads":[` +
-		`{"workloadUrl":"https://bluehorizon.network/workloads/weather","workloadOrgid":"testorg","workloadArch":"amd64","workloadVersions":` +
+		`"services":[` +
+		`{"serviceUrl":"https://bluehorizon.network/services/weather","serviceOrgid":"testorg","serviceArch":"amd64","serviceVersions":` +
 		`[],` +
 		`"dataVerification":{"enabled":true,"user":"","password":"","URL":"myURL","interval":240,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
 		`"nodeHealth":{"missing_heartbeat_interval":480}}` +
@@ -186,8 +167,8 @@ func Test_ConvertPattern3(t *testing.T) {
 		`"agreementProtocols":[{"name":"Basic"}]}`
 
 	pa_no_wlversion := `{"label":"Weather","description":"a weather pattern","public":true,` +
-		`"workloads":[` +
-		`{"workloadUrl":"https://bluehorizon.network/workloads/weather","workloadOrgid":"testorg","workloadArch":"amd64","workloadVersions":` +
+		`"services":[` +
+		`{"serviceUrl":"https://bluehorizon.network/services/weather","serviceOrgid":"testorg","serviceArch":"amd64","serviceVersions":` +
 		`[{"version":"",` +
 		`"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"upgradePolicy":{}},` +

@@ -44,7 +44,7 @@ func Test_FindCSForOutput1(t *testing.T) {
 
 	theOrg := "myorg"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "apattern", persistence.CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "apattern", persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -55,496 +55,6 @@ func Test_FindCSForOutput1(t *testing.T) {
 		t.Errorf("incorrect configstate, found: %v", *cfg)
 	} else if *cfg.LastUpdateTime == uint64(0) {
 		t.Errorf("incorrect last update time, found: %v", *cfg)
-	}
-
-}
-
-// no change in state - confguring to configuring
-func Test_UpdateConfigstate1(t *testing.T) {
-
-	dir, db, err := utsetup()
-	if err != nil {
-		t.Error(err)
-	}
-	defer cleanTestDir(dir)
-
-	cs := getBasicConfigstate()
-
-	var myError error
-	errorhandler := GetPassThroughErrorHandler(&myError)
-
-	theOrg := "myorg"
-
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "apattern", persistence.CONFIGSTATE_CONFIGURING, false, false)
-	if err != nil {
-		t.Errorf("failed to create persisted device, error %v", err)
-	}
-
-	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, getDummyMicroserviceHandler(), getDummyGetPatterns(), getDummyWorkloadResolver(), getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
-
-	if errHandled {
-		t.Errorf("unexpected error %v", myError)
-	} else if myError != nil && len(myError.Error()) != 0 {
-		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
-	} else if cfg == nil {
-		t.Errorf("no configstate returned")
-	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURING {
-		t.Errorf("wrong state field %v", *cfg)
-	} else if *cfg.LastUpdateTime == uint64(0) {
-		t.Errorf("last update time should be set, is %v", *cfg)
-	}
-
-}
-
-// change state to configured
-func Test_UpdateConfigstate2(t *testing.T) {
-
-	dir, db, err := utsetup()
-	if err != nil {
-		t.Error(err)
-	}
-	defer cleanTestDir(dir)
-
-	cs := getBasicConfigstate()
-	state := persistence.CONFIGSTATE_CONFIGURED
-	cs.State = &state
-
-	var myError error
-	errorhandler := GetPassThroughErrorHandler(&myError)
-
-	myOrg := "myorg"
-	myPattern := "mypattern"
-
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
-	if err != nil {
-		t.Errorf("failed to create persisted device, error %v", err)
-	}
-
-	wc := exchange.WorkloadChoice{
-		Version:                      "1.0.0",
-		Priority:                     exchange.WorkloadPriority{},
-		Upgrade:                      exchange.UpgradePolicy{},
-		DeploymentOverrides:          "",
-		DeploymentOverridesSignature: "",
-	}
-
-	wref := exchange.WorkloadReference{
-		WorkloadURL:      "wurl",
-		WorkloadOrg:      myOrg,
-		WorkloadArch:     cutil.ArchString(),
-		WorkloadVersions: []exchange.WorkloadChoice{wc},
-		DataVerify:       exchange.DataVerification{},
-		NodeH:            exchange.NodeHealth{},
-	}
-
-	mURL := "http://utest.com/mservice"
-	mVersion := "1.0.0"
-	mArch := cutil.ArchString()
-	wlResolver := getVariableWorkloadResolver(mURL, myOrg, mVersion, mArch, nil)
-
-	patternHandler := getVariablePatternHandler(wref, exchange.ServiceReference{})
-	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, getVariableMicroserviceHandler(exchange.UserInput{}), patternHandler, wlResolver, getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
-
-	if errHandled {
-		t.Errorf("unexpected error %v", myError)
-	} else if myError != nil && len(myError.Error()) != 0 {
-		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
-	} else if cfg == nil {
-		t.Errorf("no configstate returned")
-	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
-		t.Errorf("wrong state field %v", *cfg)
-	} else if *cfg.LastUpdateTime == uint64(0) {
-		t.Errorf("last update time should be set, is %v", *cfg)
-	} else if len(msgs) != 1 {
-		t.Errorf("there should be 1 message, received %v", len(msgs))
-	}
-
-}
-
-// change state from configured to configuring
-func Test_UpdateConfigstate_Illegal_state_change(t *testing.T) {
-
-	dir, db, err := utsetup()
-	if err != nil {
-		t.Error(err)
-	}
-	defer cleanTestDir(dir)
-
-	cs := getBasicConfigstate()
-	state := persistence.CONFIGSTATE_CONFIGURED
-	cs.State = &state
-
-	var myError error
-	errorhandler := GetPassThroughErrorHandler(&myError)
-
-	myOrg := "myorg"
-	myPattern := "mypattern"
-
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
-	if err != nil {
-		t.Errorf("failed to create persisted device, error %v", err)
-	}
-
-	wc := exchange.WorkloadChoice{
-		Version:                      "1.0.0",
-		Priority:                     exchange.WorkloadPriority{},
-		Upgrade:                      exchange.UpgradePolicy{},
-		DeploymentOverrides:          "",
-		DeploymentOverridesSignature: "",
-	}
-
-	wref := exchange.WorkloadReference{
-		WorkloadURL:      "wurl",
-		WorkloadOrg:      myOrg,
-		WorkloadArch:     cutil.ArchString(),
-		WorkloadVersions: []exchange.WorkloadChoice{wc},
-		DataVerify:       exchange.DataVerification{},
-		NodeH:            exchange.NodeHealth{},
-	}
-
-	mURL := "http://utest.com/mservice"
-	mVersion := "1.0.0"
-	mArch := cutil.ArchString()
-	wlResolver := getVariableWorkloadResolver(mURL, myOrg, mVersion, mArch, nil)
-
-	patternHandler := getVariablePatternHandler(wref, exchange.ServiceReference{})
-	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, getVariableMicroserviceHandler(exchange.UserInput{}), patternHandler, wlResolver, getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
-
-	if errHandled {
-		t.Errorf("unexpected error %v", myError)
-	} else if myError != nil && len(myError.Error()) != 0 {
-		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
-	} else if cfg == nil {
-		t.Errorf("no configstate returned")
-	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
-		t.Errorf("wrong state field %v", *cfg)
-	} else if *cfg.LastUpdateTime == uint64(0) {
-		t.Errorf("last update time should be set, is %v", *cfg)
-	} else if len(msgs) != 1 {
-		t.Errorf("there should be 1 message, received %v", len(msgs))
-	}
-
-	state = persistence.CONFIGSTATE_CONFIGURING
-	cs.State = &state
-
-	errHandled, cfg, _ = UpdateConfigstate(cs, errorhandler, getDummyMicroserviceHandler(), patternHandler, getDummyWorkloadResolver(), getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
-
-	if !errHandled {
-		t.Errorf("expected error")
-	} else if apiErr, ok := myError.(*APIUserInputError); !ok {
-		t.Errorf("myError has the wrong type (%T)", myError)
-	} else if apiErr.Input != "configstate.state" {
-		t.Errorf("wrong error input field %v", *apiErr)
-	} else if cfg != nil {
-		t.Errorf("configstate should not be returned")
-	}
-
-}
-
-// no change in state - configured to configured
-func Test_UpdateConfigstate_no_state_change(t *testing.T) {
-
-	dir, db, err := utsetup()
-	if err != nil {
-		t.Error(err)
-	}
-	defer cleanTestDir(dir)
-
-	cs := getBasicConfigstate()
-	state := persistence.CONFIGSTATE_CONFIGURED
-	cs.State = &state
-
-	var myError error
-	errorhandler := GetPassThroughErrorHandler(&myError)
-
-	myOrg := "myorg"
-	myPattern := "mypattern"
-
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
-	if err != nil {
-		t.Errorf("failed to create persisted device, error %v", err)
-	}
-
-	wc := exchange.WorkloadChoice{
-		Version:                      "1.0.0",
-		Priority:                     exchange.WorkloadPriority{},
-		Upgrade:                      exchange.UpgradePolicy{},
-		DeploymentOverrides:          "",
-		DeploymentOverridesSignature: "",
-	}
-
-	wref := exchange.WorkloadReference{
-		WorkloadURL:      "wurl",
-		WorkloadOrg:      myOrg,
-		WorkloadArch:     cutil.ArchString(),
-		WorkloadVersions: []exchange.WorkloadChoice{wc},
-		DataVerify:       exchange.DataVerification{},
-		NodeH:            exchange.NodeHealth{},
-	}
-
-	mURL := "http://utest.com/mservice"
-	mVersion := "1.0.0"
-	mArch := cutil.ArchString()
-	wlResolver := getVariableWorkloadResolver(mURL, myOrg, mVersion, mArch, nil)
-
-	patternHandler := getVariablePatternHandler(wref, exchange.ServiceReference{})
-	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, getVariableMicroserviceHandler(exchange.UserInput{}), patternHandler, wlResolver, getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
-
-	if errHandled {
-		t.Errorf("unexpected error %v", myError)
-	} else if myError != nil && len(myError.Error()) != 0 {
-		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
-	} else if cfg == nil {
-		t.Errorf("no configstate returned")
-	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
-		t.Errorf("wrong state field %v", *cfg)
-	} else if *cfg.LastUpdateTime == uint64(0) {
-		t.Errorf("last update time should be set, is %v", *cfg)
-	} else if len(msgs) != 1 {
-		t.Errorf("there should be 1 message, received %v", len(msgs))
-	}
-
-	errHandled, cfg, msgs = UpdateConfigstate(cs, errorhandler, getDummyMicroserviceHandler(), patternHandler, getDummyWorkloadResolver(), getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
-
-	if errHandled {
-		t.Errorf("unexpected error %v", myError)
-	} else if myError != nil && len(myError.Error()) != 0 {
-		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
-	} else if cfg == nil {
-		t.Errorf("no configstate returned")
-	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
-		t.Errorf("wrong state field %v", *cfg)
-	} else if *cfg.LastUpdateTime == uint64(0) {
-		t.Errorf("last update time should be set, is %v", *cfg)
-	} else if len(msgs) != 0 {
-		t.Errorf("there should be 0 messages, received %v", len(msgs))
-	}
-
-}
-
-// change state to unsupported state
-func Test_UpdateConfigstate_unknown_state_change(t *testing.T) {
-
-	dir, db, err := utsetup()
-	if err != nil {
-		t.Error(err)
-	}
-	defer cleanTestDir(dir)
-
-	cs := getBasicConfigstate()
-	state := "blah"
-	cs.State = &state
-
-	var myError error
-	errorhandler := GetPassThroughErrorHandler(&myError)
-
-	theOrg := "myorg"
-
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "apattern", persistence.CONFIGSTATE_CONFIGURING, false, false)
-	if err != nil {
-		t.Errorf("failed to create persisted device, error %v", err)
-	}
-
-	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, getDummyMicroserviceHandler(), getDummyGetPatterns(), getDummyWorkloadResolver(), getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
-
-	if !errHandled {
-		t.Errorf("expected error")
-	} else if apiErr, ok := myError.(*APIUserInputError); !ok {
-		t.Errorf("myError has the wrong type (%T)", myError)
-	} else if apiErr.Input != "configstate.state" {
-		t.Errorf("wrong error input field %v", *apiErr)
-	} else if cfg != nil {
-		t.Errorf("configstate should not be returned")
-	}
-
-}
-
-// change state to configured with microservices
-func Test_UpdateConfigstateWithMS(t *testing.T) {
-
-	dir, db, err := utsetup()
-	if err != nil {
-		t.Error(err)
-	}
-	defer cleanTestDir(dir)
-
-	cs := getBasicConfigstate()
-	state := persistence.CONFIGSTATE_CONFIGURED
-	cs.State = &state
-
-	var myError error
-	errorhandler := GetPassThroughErrorHandler(&myError)
-
-	myOrg := "myorg"
-	myPattern := "mypattern"
-
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
-	if err != nil {
-		t.Errorf("failed to create persisted device, error %v", err)
-	}
-
-	msHandler := getVariableMicroserviceHandler(exchange.UserInput{})
-	wr := exchange.WorkloadReference{
-		WorkloadURL:  "http://mydomain.com/workload/test1",
-		WorkloadOrg:  "testorg",
-		WorkloadArch: "amd64",
-		WorkloadVersions: []exchange.WorkloadChoice{
-			{
-				Version: "1.0.0",
-			},
-		},
-	}
-	patternHandler := getVariablePatternHandler(wr, exchange.ServiceReference{})
-
-	mURL := "http://utest.com/mservice"
-	mVersion := "1.0.0"
-	mArch := "amd64"
-	wlResolver := getVariableWorkloadResolver(mURL, myOrg, mVersion, mArch, nil)
-
-	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, msHandler, patternHandler, wlResolver, getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
-
-	if errHandled {
-		t.Errorf("unexpected error %v", myError)
-	} else if myError != nil && len(myError.Error()) != 0 {
-		t.Errorf("myError set unexpectedly (%T) %v", myError, myError)
-	} else if cfg == nil {
-		t.Errorf("no configstate returned")
-	} else if *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
-		t.Errorf("wrong state field %v", *cfg)
-	} else if *cfg.LastUpdateTime == uint64(0) {
-		t.Errorf("last update time should be set, is %v", *cfg)
-	} else if len(msgs) != 1 {
-		t.Errorf("there should be 1 message, received %v", len(msgs))
-	}
-
-	cleanTestDir(getBasicConfig().Edge.PolicyPath + "/" + myOrg)
-
-}
-
-// change state with a pattern that has an MS which requires config, error results.
-func Test_UpdateConfigstate_unconfig_ms(t *testing.T) {
-
-	dir, db, err := utsetup()
-	if err != nil {
-		t.Error(err)
-	}
-	defer cleanTestDir(dir)
-
-	cs := getBasicConfigstate()
-	state := persistence.CONFIGSTATE_CONFIGURED
-	cs.State = &state
-
-	var myError error
-	errorhandler := GetPassThroughErrorHandler(&myError)
-
-	theOrg := "myorg"
-	thePattern := "apattern"
-
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, thePattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
-	if err != nil {
-		t.Errorf("failed to create persisted device, error %v", err)
-	}
-
-	missingVarName := "missingVar"
-	ui := exchange.UserInput{
-		Name:         missingVarName,
-		Label:        "label",
-		Type:         "string",
-		DefaultValue: "",
-	}
-	mURL := "http://utest.com/mservice"
-	mVersion := "1.0.0"
-	mArch := "amd64"
-	msHandler := getVariableMicroserviceHandler(ui)
-	wr := exchange.WorkloadReference{
-		WorkloadURL:  "http://mydomain.com/workload/test1",
-		WorkloadOrg:  "testorg",
-		WorkloadArch: "amd64",
-		WorkloadVersions: []exchange.WorkloadChoice{
-			{
-				Version: "1.0.0",
-			},
-		},
-	}
-	patternHandler := getVariablePatternHandler(wr, exchange.ServiceReference{})
-	wlResolver := getVariableWorkloadResolver(mURL, theOrg, mVersion, mArch, nil)
-
-	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, msHandler, patternHandler, wlResolver, getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
-
-	if !errHandled {
-		t.Errorf("expected error")
-	} else if apiErr, ok := myError.(*APIUserInputError); !ok {
-		t.Errorf("myError has the wrong type (%T)", myError)
-	} else if apiErr.Input != "configstate.state" {
-		t.Errorf("wrong error input field %v", *apiErr)
-	} else if !strings.Contains(apiErr.Err, missingVarName) {
-		t.Errorf("wrong error reason, is %v", apiErr.Err)
-	} else if cfg != nil {
-		t.Errorf("configstate should not be returned")
-	}
-
-}
-
-// change state with a pattern that has a workload which requires config, error results.
-func Test_UpdateConfigstate_unconfig_workload(t *testing.T) {
-
-	dir, db, err := utsetup()
-	if err != nil {
-		t.Error(err)
-	}
-	defer cleanTestDir(dir)
-
-	cs := getBasicConfigstate()
-	state := persistence.CONFIGSTATE_CONFIGURED
-	cs.State = &state
-
-	var myError error
-	errorhandler := GetPassThroughErrorHandler(&myError)
-
-	theOrg := "myorg"
-	thePattern := "apattern"
-
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, thePattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
-	if err != nil {
-		t.Errorf("failed to create persisted device, error %v", err)
-	}
-
-	missingVarName := "missingVar"
-	ui := exchange.UserInput{
-		Name:         missingVarName,
-		Label:        "label",
-		Type:         "string",
-		DefaultValue: "",
-	}
-	mURL := "http://utest.com/mservice"
-	mVersion := "1.0.0"
-	mArch := "amd64"
-	msHandler := getVariableMicroserviceHandler(exchange.UserInput{})
-	wr := exchange.WorkloadReference{
-		WorkloadURL:  "http://mydomain.com/workload/test1",
-		WorkloadOrg:  "testorg",
-		WorkloadArch: "amd64",
-		WorkloadVersions: []exchange.WorkloadChoice{
-			{
-				Version: "1.0.0",
-			},
-		},
-	}
-	patternHandler := getVariablePatternHandler(wr, exchange.ServiceReference{})
-	wlResolver := getVariableWorkloadResolver(mURL, theOrg, mVersion, mArch, &ui)
-
-	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, msHandler, patternHandler, wlResolver, getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
-
-	if !errHandled {
-		t.Errorf("expected error")
-	} else if apiErr, ok := myError.(*MSMissingVariableConfigError); !ok {
-		t.Errorf("myError has the wrong type (%T)", myError)
-	} else if apiErr.Input != "configstate.state" {
-		t.Errorf("wrong error input field %v", *apiErr)
-	} else if !strings.Contains(apiErr.Err, "missing") {
-		t.Errorf("wrong error reason, is %v", apiErr.Err)
-	} else if cfg != nil {
-		t.Errorf("configstate should not be returned")
 	}
 
 }
@@ -569,7 +79,7 @@ func Test_UpdateConfigstate2services(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -597,8 +107,8 @@ func Test_UpdateConfigstate2services(t *testing.T) {
 	sResolver := getVariableServiceResolver(mURL, myOrg, mVersion, mArch, nil)
 	sHandler := getVariableServiceHandler(exchange.UserInput{})
 
-	patternHandler := getVariablePatternHandler(exchange.WorkloadReference{}, sref)
-	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, getDummyMicroserviceHandler(), patternHandler, getDummyWorkloadResolver(), sResolver, sHandler, db, getBasicConfig())
+	patternHandler := getVariablePatternHandler(sref)
+	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("%v", myError)
@@ -635,7 +145,7 @@ func Test_UpdateConfigstate2service_only(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -660,8 +170,8 @@ func Test_UpdateConfigstate2service_only(t *testing.T) {
 	sResolver := getVariableServiceResolver("", "", "", "", nil)
 	sHandler := getVariableServiceHandler(exchange.UserInput{})
 
-	patternHandler := getVariablePatternHandler(exchange.WorkloadReference{}, sref)
-	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, getDummyMicroserviceHandler(), patternHandler, getDummyWorkloadResolver(), sResolver, sHandler, db, getBasicConfig())
+	patternHandler := getVariablePatternHandler(sref)
+	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("%v", myError)
@@ -698,7 +208,7 @@ func Test_UpdateConfigstate_Illegal_state_change_services(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -726,8 +236,8 @@ func Test_UpdateConfigstate_Illegal_state_change_services(t *testing.T) {
 	sResolver := getVariableServiceResolver(mURL, myOrg, mVersion, mArch, nil)
 	sHandler := getVariableServiceHandler(exchange.UserInput{})
 
-	patternHandler := getVariablePatternHandler(exchange.WorkloadReference{}, sref)
-	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, getDummyMicroserviceHandler(), patternHandler, getDummyWorkloadResolver(), sResolver, sHandler, db, getBasicConfig())
+	patternHandler := getVariablePatternHandler(sref)
+	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
@@ -746,7 +256,7 @@ func Test_UpdateConfigstate_Illegal_state_change_services(t *testing.T) {
 	state = persistence.CONFIGSTATE_CONFIGURING
 	cs.State = &state
 
-	errHandled, cfg, _ = UpdateConfigstate(cs, errorhandler, getDummyMicroserviceHandler(), patternHandler, getDummyWorkloadResolver(), getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
+	errHandled, cfg, _ = UpdateConfigstate(cs, errorhandler, patternHandler, getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -779,7 +289,7 @@ func Test_UpdateConfigstate_no_state_change_services(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -807,8 +317,8 @@ func Test_UpdateConfigstate_no_state_change_services(t *testing.T) {
 	sResolver := getVariableServiceResolver(mURL, myOrg, mVersion, mArch, nil)
 	sHandler := getVariableServiceHandler(exchange.UserInput{})
 
-	patternHandler := getVariablePatternHandler(exchange.WorkloadReference{}, sref)
-	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, getDummyMicroserviceHandler(), patternHandler, getDummyWorkloadResolver(), sResolver, sHandler, db, getBasicConfig())
+	patternHandler := getVariablePatternHandler(sref)
+	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
@@ -824,7 +334,7 @@ func Test_UpdateConfigstate_no_state_change_services(t *testing.T) {
 		t.Errorf("there should be 2 messages, received %v", len(msgs))
 	}
 
-	errHandled, cfg, msgs = UpdateConfigstate(cs, errorhandler, getDummyMicroserviceHandler(), patternHandler, getDummyWorkloadResolver(), getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
+	errHandled, cfg, msgs = UpdateConfigstate(cs, errorhandler, patternHandler, getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
@@ -861,7 +371,7 @@ func Test_UpdateConfigstateWith_services(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -877,14 +387,14 @@ func Test_UpdateConfigstateWith_services(t *testing.T) {
 			},
 		},
 	}
-	patternHandler := getVariablePatternHandler(exchange.WorkloadReference{}, sr)
+	patternHandler := getVariablePatternHandler(sr)
 
 	mURL := "http://utest.com/mservice"
 	mVersion := "1.0.0"
 	mArch := "amd64"
 	sResolver := getVariableServiceResolver(mURL, myOrg, mVersion, mArch, nil)
 
-	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, getDummyMicroserviceHandler(), patternHandler, getDummyWorkloadResolver(), sResolver, sHandler, db, getBasicConfig())
+	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
@@ -923,7 +433,7 @@ func Test_UpdateConfigstate_unconfig_services(t *testing.T) {
 	theOrg := "myorg"
 	thePattern := "apattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, thePattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, thePattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -949,10 +459,10 @@ func Test_UpdateConfigstate_unconfig_services(t *testing.T) {
 			},
 		},
 	}
-	patternHandler := getVariablePatternHandler(exchange.WorkloadReference{}, sr)
+	patternHandler := getVariablePatternHandler(sr)
 	sResolver := getVariableServiceResolver(mURL, theOrg, mVersion, mArch, nil)
 
-	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, getDummyMicroserviceHandler(), patternHandler, getDummyWorkloadResolver(), sResolver, sHandler, db, getBasicConfig())
+	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, db, getBasicConfig())
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -987,7 +497,7 @@ func Test_UpdateConfigstate_unconfig_top_level_services(t *testing.T) {
 	theOrg := "myorg"
 	thePattern := "apattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, thePattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, thePattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -1013,10 +523,10 @@ func Test_UpdateConfigstate_unconfig_top_level_services(t *testing.T) {
 			},
 		},
 	}
-	patternHandler := getVariablePatternHandler(exchange.WorkloadReference{}, sr)
+	patternHandler := getVariablePatternHandler(sr)
 	sResolver := getVariableServiceResolver(mURL, theOrg, mVersion, mArch, &ui)
 
-	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, getDummyMicroserviceHandler(), patternHandler, getDummyWorkloadResolver(), sResolver, sHandler, db, getBasicConfig())
+	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, db, getBasicConfig())
 
 	if !errHandled {
 		t.Errorf("expected error")

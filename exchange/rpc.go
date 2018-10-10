@@ -20,8 +20,6 @@ import (
 )
 
 const PATTERN = "pattern"
-const MICROSERVICE = "microservce"
-const WORKLOAD = "workload"
 const SERVICE = "service"
 
 // Helper functions for dealing with exchangeIds that are already prefixed with the org name and then "/".
@@ -112,7 +110,6 @@ func (r SearchExchangeMSResponse) String() string {
 
 // Structs and types for working with pattern based exchange searches
 type SearchExchangePatternRequest struct {
-	WorkloadURL  string   `json:"workloadUrl,omitempty"`
 	ServiceURL   string   `json:"serviceUrl,omitempty"`
 	NodeOrgIds   []string `json:"nodeOrgids,omitempty"`
 	SecondsStale int      `json:"secondsStale"`
@@ -121,7 +118,7 @@ type SearchExchangePatternRequest struct {
 }
 
 func (a SearchExchangePatternRequest) String() string {
-	return fmt.Sprintf("ServiceURL: %v, WorkloadURL: %v, SecondsStale: %v, StartIndex: %v, NumEntries: %v", a.ServiceURL, a.WorkloadURL, a.SecondsStale, a.StartIndex, a.NumEntries)
+	return fmt.Sprintf("ServiceURL: %v, SecondsStale: %v, StartIndex: %v, NumEntries: %v", a.ServiceURL, a.SecondsStale, a.StartIndex, a.NumEntries)
 }
 
 type SearchExchangePatternResponse struct {
@@ -446,45 +443,6 @@ type GetAgbotMessageResponse struct {
 	LastIndex int            `json:"lastIndex"`
 }
 
-type GetEthereumClientResponse struct {
-	Blockchains map[string]BlockchainDef `json:"blockchains"`
-	LastIndex   int                      `json:"lastIndex"`
-}
-
-type BlockchainDef struct {
-	Description string `json:"description"`
-	DefinedBy   string `json:"definedBy"`
-	Details     string `json:"details"`
-	LastUpdated string `json:"lastUpdated"`
-}
-
-// This is the structure of what is marshalled into the BlockchainDef.Details field of ethereum
-// based blockchains.
-type ChainInstance struct {
-	BlocksURLs    string `json:"blocksURLs"`
-	ChainDataDir  string `json:"chainDataDir"`
-	DiscoveryURLs string `json:"discoveryURLs"`
-	Port          string `json:"port"`
-	HostName      string `json:"hostname"`
-	Identity      string `json:"identity"`
-	KDF           string `json:"kdf"`
-	PingHost      string `json:"pingHost"`
-	ColonusDir    string `json:"colonusDir"`
-	EthDir        string `json:"ethDir"`
-	MaxPeers      string `json:"maxPeers"`
-	GethLog       string `json:"gethLog"`
-}
-
-type ChainDetails struct {
-	Arch           string          `json:"arch"`
-	DeploymentDesc policy.Workload `json:"deployment_description"`
-	Instance       ChainInstance   `json:"instance"`
-}
-
-type BlockchainDetails struct {
-	Chains []ChainDetails `json:"chains"`
-}
-
 // This function creates the exchange search message body.
 func CreateSearchMSRequest() *SearchExchangeMSRequest {
 
@@ -585,35 +543,6 @@ func Heartbeat(h *http.Client, url string, id string, token string) error {
 
 }
 
-func GetEthereumClient(httpClientFactory *config.HTTPClientFactory, url string, org string, chainName string, chainType string, deviceId string, token string) (string, error) {
-
-	glog.V(5).Infof(rpclogString(fmt.Sprintf("getting ethereum client metadata for chain %v/%v", org, chainName)))
-
-	var resp interface{}
-	resp = new(GetEthereumClientResponse)
-	targetURL := url + "orgs/" + org + "/bctypes/" + chainType + "/blockchains/" + chainName
-	for {
-		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, deviceId, token, nil, &resp); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
-			return "", err
-		} else if tpErr != nil {
-			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
-			time.Sleep(10 * time.Second)
-			continue
-		} else {
-			if val, ok := resp.(*GetEthereumClientResponse).Blockchains[chainName]; ok {
-				glog.V(3).Infof(rpclogString(fmt.Sprintf("found blockchain %v.", resp)))
-				clientMetadata := val.Details
-				return clientMetadata, nil
-			} else {
-				glog.V(3).Infof(rpclogString(fmt.Sprintf("not found blockchain %v.", chainName)))
-				return "", nil
-			}
-		}
-	}
-
-}
-
 func ConvertPropertyToExchangeFormat(prop *policy.Property) (*MSProp, error) {
 	var pType, pValue, pCompare string
 
@@ -660,542 +589,6 @@ func ConvertPropertyToExchangeFormat(prop *policy.Property) (*MSProp, error) {
 		Op:       pCompare,
 	}
 	return newProp, nil
-}
-
-// Functions related to working with workloads and microservices in the exchange
-type APISpec struct {
-	SpecRef string `json:"specRef"`
-	Org     string `json:"org"`
-	Version string `json:"version"`
-	Arch    string `json:"arch"`
-}
-
-type WorkloadDeployment struct {
-	Deployment          string `json:"deployment"`
-	DeploymentSignature string `json:"deployment_signature"`
-	Torrent             string `json:"torrent"`
-}
-
-func (w WorkloadDeployment) String() string {
-	return fmt.Sprintf("Deployment: %v, DeploymentSignature: %v, Torrent: %v",
-		w.Deployment,
-		w.DeploymentSignature,
-		w.Torrent)
-}
-
-func (w WorkloadDeployment) ShortString() string {
-	return fmt.Sprintf("Deployment: %v, DeploymentSignature: %v, Torrent: %v",
-		w.Deployment,
-		cutil.TruncateDisplayString(w.DeploymentSignature, 5),
-		cutil.TruncateDisplayString(w.Torrent, 50))
-}
-
-type WorkloadDefinition struct {
-	Owner       string               `json:"owner"`
-	Label       string               `json:"label"`
-	Description string               `json:"description"`
-	Public      bool                 `json:"public"`
-	WorkloadURL string               `json:"workloadUrl"`
-	Version     string               `json:"version"`
-	Arch        string               `json:"arch"`
-	DownloadURL string               `json:"downloadUrl"`
-	APISpecs    []APISpec            `json:"apiSpec"`
-	UserInputs  []UserInput          `json:"userInput"`
-	Workloads   []WorkloadDeployment `json:"workloads"`
-	LastUpdated string               `json:"lastUpdated"`
-}
-
-func (w *WorkloadDefinition) String() string {
-	return fmt.Sprintf("Owner: %v, "+
-		"Label: %v, "+
-		"Description: %v, "+
-		"WorkloadURL: %v, "+
-		"Version: %v, "+
-		"Arch: %v, "+
-		"DownloadURL: %v, "+
-		"APISpecs: %v, "+
-		"UserInputs: %v, "+
-		"Workloads: %v, "+
-		"LastUpdated: %v",
-		w.Owner, w.Label, w.Description, w.WorkloadURL, w.Version, w.Arch, w.DownloadURL,
-		w.APISpecs, w.UserInputs, w.Workloads, w.LastUpdated)
-}
-
-func (w *WorkloadDefinition) ShortString() string {
-	// get the short string for each workload
-	wl_a := make([]string, len(w.Workloads))
-	for i, wl := range w.Workloads {
-		wl_a[i] = wl.ShortString()
-	}
-
-	return fmt.Sprintf("Owner: %v, "+
-		"Label: %v, "+
-		"Description: %v, "+
-		"WorkloadURL: %v, "+
-		"Version: %v, "+
-		"Arch: %v, "+
-		"DownloadURL: %v, "+
-		"APISpecs: %v, "+
-		"UserInputs: %v, "+
-		"Workloads: %v, "+
-		"LastUpdated: %v",
-		w.Owner, w.Label, w.Description, w.WorkloadURL, w.Version, w.Arch, w.DownloadURL,
-		w.APISpecs, w.UserInputs, wl_a, w.LastUpdated)
-}
-
-func (w *WorkloadDefinition) GetUserInputName(name string) *UserInput {
-	for _, ui := range w.UserInputs {
-		if ui.Name == name {
-			return &ui
-		}
-	}
-	return nil
-}
-
-func (w *WorkloadDefinition) NeedsUserInput() bool {
-	for _, ui := range w.UserInputs {
-		if ui.DefaultValue == "" {
-			return true
-		}
-	}
-	return false
-}
-
-func (w *WorkloadDefinition) PopulateDefaultUserInput(envAdds map[string]string) {
-	for _, ui := range w.UserInputs {
-		if ui.DefaultValue != "" {
-			if _, ok := envAdds[ui.Name]; !ok {
-				envAdds[ui.Name] = ui.DefaultValue
-			}
-		}
-	}
-}
-
-func (w *WorkloadDefinition) GetDeployment() string {
-	if len(w.Workloads) > 0 {
-		return w.Workloads[0].Deployment
-	}
-	return ""
-}
-
-func (w *WorkloadDefinition) GetDeploymentSignature() string {
-	if len(w.Workloads) > 0 {
-		return w.Workloads[0].DeploymentSignature
-	}
-	return ""
-}
-
-func (w *WorkloadDefinition) GetTorrent() string {
-	if len(w.Workloads) > 0 {
-		return w.Workloads[0].Torrent
-	}
-	return ""
-}
-
-func (w *WorkloadDefinition) GetImageStore() policy.ImplementationPackage {
-	return policy.ImplementationPackage{}
-}
-
-func (w *WorkloadDefinition) IsServiceBased() bool {
-	return false
-}
-
-func (w *WorkloadDefinition) GetServiceDependencies() *[]ServiceDependency {
-	return &[]ServiceDependency{}
-}
-
-func (w *WorkloadDefinition) GetVersion() string {
-	return w.Version
-}
-
-type GetWorkloadsResponse struct {
-	Workloads map[string]WorkloadDefinition `json:"workloads"`
-	LastIndex int                           `json:"lastIndex"`
-}
-
-type HardwareMatch map[string]interface{}
-
-type MicroserviceDefinition struct {
-	Owner         string               `json:"owner"`
-	Label         string               `json:"label"`
-	Description   string               `json:"description"`
-	Public        bool                 `json:"public"`
-	SpecRef       string               `json:"specRef"`
-	Version       string               `json:"version"`
-	Arch          string               `json:"arch"`
-	Sharable      string               `json:"sharable"`
-	DownloadURL   string               `json:"downloadUrl"`
-	MatchHardware HardwareMatch        `json:"matchHardware"`
-	UserInputs    []UserInput          `json:"userInput"`
-	Workloads     []WorkloadDeployment `json:"workloads"`
-	LastUpdated   string               `json:"lastUpdated"`
-}
-
-func (w *MicroserviceDefinition) String() string {
-	return fmt.Sprintf("Owner: %v, "+
-		"Label: %v, "+
-		"Description: %v, "+
-		"SpecRef: %v, "+
-		"Version: %v, "+
-		"Arch: %v, "+
-		"Sharable: %v, "+
-		"DownloadURL: %v, "+
-		"MatchHardware: %v, "+
-		"UserInputs: %v, "+
-		"Workloads: %v, "+
-		"LastUpdated: %v",
-		w.Owner, w.Label, w.Description, w.SpecRef, w.Version, w.Arch, w.Sharable, w.DownloadURL,
-		w.MatchHardware, w.UserInputs, w.Workloads, w.LastUpdated)
-}
-
-func (w *MicroserviceDefinition) ShortString() string {
-	// get the short string for each workload
-	wl_a := make([]string, len(w.Workloads))
-	for i, wl := range w.Workloads {
-		wl_a[i] = wl.ShortString()
-	}
-
-	return fmt.Sprintf("Owner: %v, "+
-		"Label: %v, "+
-		"Description: %v, "+
-		"SpecRef: %v, "+
-		"Version: %v, "+
-		"Arch: %v, "+
-		"Sharable: %v, "+
-		"DownloadURL: %v, "+
-		"MatchHardware: %v, "+
-		"UserInputs: %v, "+
-		"Workloads: %v, "+
-		"LastUpdated: %v",
-		w.Owner, w.Label, w.Description, w.SpecRef, w.Version, w.Arch, w.Sharable, w.DownloadURL,
-		w.MatchHardware, w.UserInputs, wl_a, w.LastUpdated)
-}
-
-func (w *MicroserviceDefinition) NeedsUserInput() bool {
-	for _, ui := range w.UserInputs {
-		if ui.DefaultValue == "" {
-			return true
-		}
-	}
-	return false
-}
-
-func (w *MicroserviceDefinition) PopulateDefaultUserInput(envAdds map[string]string) {
-	for _, ui := range w.UserInputs {
-		if ui.DefaultValue != "" {
-			if _, ok := envAdds[ui.Name]; !ok {
-				envAdds[ui.Name] = ui.DefaultValue
-			}
-		}
-	}
-}
-
-func (w *MicroserviceDefinition) GetDeployment() string {
-	if len(w.Workloads) > 0 {
-		return w.Workloads[0].Deployment
-	}
-	return ""
-}
-
-func (w *MicroserviceDefinition) GetDeploymentSignature() string {
-	if len(w.Workloads) > 0 {
-		return w.Workloads[0].DeploymentSignature
-	}
-	return ""
-}
-
-func (w *MicroserviceDefinition) GetTorrent() string {
-	if len(w.Workloads) > 0 {
-		return w.Workloads[0].Torrent
-	}
-	return ""
-}
-
-func (w *MicroserviceDefinition) GetImageStore() policy.ImplementationPackage {
-	return policy.ImplementationPackage{}
-}
-
-func (w *MicroserviceDefinition) IsServiceBased() bool {
-	return false
-}
-
-func (m *MicroserviceDefinition) GetServiceDependencies() *[]ServiceDependency {
-	return &[]ServiceDependency{}
-}
-
-func (m *MicroserviceDefinition) GetVersion() string {
-	return m.Version
-}
-
-type GetMicroservicesResponse struct {
-	Microservices map[string]MicroserviceDefinition `json:"microservices"`
-	LastIndex     int                               `json:"lastIndex"`
-}
-
-func (w *GetMicroservicesResponse) ShortString() string {
-	// get the short string for each MicroserviceDefinition
-	wl_a := make(map[string]string)
-	for ms_name, wl := range w.Microservices {
-		wl_a[ms_name] = wl.ShortString()
-	}
-
-	return fmt.Sprintf("LastIndex: %v, "+
-		"Microservices: %v",
-		w.LastIndex, wl_a)
-}
-
-func GetWorkload(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg string, wVersion string, wArch string, exURL string, id string, token string) (*WorkloadDefinition, string, error) {
-
-	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting workload definition %v %v %v %v", wURL, wOrg, wVersion, wArch)))
-
-	var resp interface{}
-	resp = new(GetWorkloadsResponse)
-
-	// Figure out which version to filter the search with. Could be "".
-	searchVersion, err := getSearchVersion(wVersion)
-	if err != nil {
-		return nil, "", err
-	}
-
-	// Search the exchange for the workload definition
-	targetURL := fmt.Sprintf("%vorgs/%v/workloads?workloadUrl=%v&arch=%v", exURL, wOrg, wURL, wArch)
-	if searchVersion != "" {
-		targetURL = fmt.Sprintf("%vorgs/%v/workloads?workloadUrl=%v&version=%v&arch=%v", exURL, wOrg, wURL, searchVersion, wArch)
-	}
-
-	for {
-		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, id, token, nil, &resp); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
-			return nil, "", err
-		} else if tpErr != nil {
-			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
-			time.Sleep(10 * time.Second)
-			continue
-		} else {
-			workloadMetadata := resp.(*GetWorkloadsResponse).Workloads
-
-			// If the caller wanted a specific version, check for 1 result.
-			if searchVersion != "" {
-				if len(workloadMetadata) != 1 {
-					glog.Warningf(rpclogString(fmt.Sprintf("expecting 1 result in GET workloads response: %v", resp)))
-					return nil, "", errors.New(fmt.Sprintf("expecting 1 result, got %v", len(workloadMetadata)))
-				} else {
-					for wlId, workloadDef := range workloadMetadata {
-						glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v", workloadDef.ShortString())))
-						return &workloadDef, wlId, nil
-					}
-				}
-			} else {
-				if len(workloadMetadata) == 0 {
-					glog.V(3).Infof(rpclogString(fmt.Sprintf("no workload definition found for %v", wURL)))
-					return nil, "", nil
-				}
-
-				// The caller wants the highest version in the input version range. If no range was specified then
-				// they will get the highest of all available versions.
-				vRange, _ := policy.Version_Expression_Factory("0.0.0")
-				if wVersion != "" {
-					vRange, _ = policy.Version_Expression_Factory(wVersion)
-				}
-
-				highest := ""
-				// resWDef has to be the object instead of pointer to the object because onece the pointer points to &wDef,
-				// the content of it will get changed when the content of wDef gets changed in the loop
-				var resWDef WorkloadDefinition
-				var resWId string
-				for wlId, wDef := range workloadMetadata {
-					if inRange, err := vRange.Is_within_range(wDef.Version); err != nil {
-						return nil, "", errors.New(fmt.Sprintf("unable to verify that %v is within %v, error %v", wDef.Version, vRange, err))
-					} else if inRange {
-						glog.V(5).Infof(rpclogString(fmt.Sprintf("found workload version %v within acceptable range", wDef.Version)))
-
-						// cannot pass in "" in the CompareVersions because it checks for invalid version strings.
-						var c int
-						var err error
-						if highest == "" {
-							c, err = policy.CompareVersions("0.0.0", wDef.Version)
-						} else {
-							c, err = policy.CompareVersions(highest, wDef.Version)
-						}
-
-						if err != nil {
-							glog.Errorf(rpclogString(fmt.Sprintf("error compairing version %v with version %v. %v", highest, wDef.Version, err)))
-						} else if c == -1 {
-							highest = wDef.Version
-							resWDef = wDef
-							resWId = wlId
-						}
-					}
-				}
-
-				if highest == "" {
-					// when highest is empty, it means that there were no data in workloadMetadata, hence return nil.
-					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v for %v", nil, wURL)))
-					return nil, "", nil
-				} else {
-					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning workload definition %v for %v", resWDef.ShortString(), wURL)))
-					return &resWDef, resWId, nil
-				}
-			}
-		}
-	}
-}
-
-// Get microservice and its exchange id for the given org, url, version and arch. If the the version string is version range, then the highest available microservice within the range will be returned.
-func GetMicroservice(httpClientFactory *config.HTTPClientFactory, mURL string, mOrg string, mVersion string, mArch string, exURL string, id string, token string) (*MicroserviceDefinition, string, error) {
-
-	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting microservice definition %v %v %v %v", mURL, mOrg, mVersion, mArch)))
-
-	var resp interface{}
-	resp = new(GetMicroservicesResponse)
-
-	// Figure out which version to filter the search with. Could be "".
-	searchVersion, err := getSearchVersion(mVersion)
-	if err != nil {
-		return nil, "", err
-	}
-
-	// Search the exchange for the microservice definition
-	targetURL := fmt.Sprintf("%vorgs/%v/microservices?specRef=%v&arch=%v", exURL, mOrg, mURL, mArch)
-	if searchVersion != "" {
-		targetURL = fmt.Sprintf("%vorgs/%v/microservices?specRef=%v&version=%v&arch=%v", exURL, mOrg, mURL, searchVersion, mArch)
-	}
-
-	for {
-		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, id, token, nil, &resp); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
-			return nil, "", err
-		} else if tpErr != nil {
-			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
-			time.Sleep(10 * time.Second)
-			continue
-		} else {
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("found microservice %v.", resp.(*GetMicroservicesResponse).ShortString())))
-			msMetadata := resp.(*GetMicroservicesResponse).Microservices
-
-			// If the caller wanted a specific version, check for 1 result.
-			if searchVersion != "" {
-				if len(msMetadata) != 1 {
-					// TODO: consider getting rid of logging a warning, and just return the error.
-					glog.Warningf(rpclogString(fmt.Sprintf("expecting 1 microservice %v %v %v response: %v", mURL, mOrg, mVersion, resp)))
-					return nil, "", errors.New(fmt.Sprintf("expecting 1 microservice %v %v %v, got %v", mURL, mOrg, mVersion, len(msMetadata)))
-				} else {
-					for msId, msDef := range msMetadata {
-						glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v", msDef.ShortString())))
-						return &msDef, msId, nil
-					}
-				}
-
-			} else {
-				if len(msMetadata) == 0 {
-					return nil, "", errors.New(fmt.Sprintf("expecting at least 1 microservce %v %v %v, got %v", mURL, mOrg, mVersion, len(msMetadata)))
-				}
-				// The caller wants the highest version in the input version range. If no range was specified then
-				// they will get the highest of all available versions.
-				vRange, _ := policy.Version_Expression_Factory("0.0.0")
-				if mVersion != "" {
-					vRange, _ = policy.Version_Expression_Factory(mVersion)
-				}
-
-				highest := ""
-				// resMsDef has to be the object instead of pointer to the object because once the pointer points to &msDef,
-				// the content of it will get changed when the content of msDef gets changed in the loop
-				var resMsDef MicroserviceDefinition
-				var resMsId string
-				for msId, msDef := range msMetadata {
-					if inRange, err := vRange.Is_within_range(msDef.Version); err != nil {
-						return nil, "", errors.New(fmt.Sprintf("unable to verify that %v is within %v, error %v", msDef.Version, vRange, err))
-					} else if inRange {
-						glog.V(5).Infof(rpclogString(fmt.Sprintf("found microservice version %v within acceptable range", msDef.Version)))
-
-						// cannot pass in "" in the CompareVersions because it checks for invalid version strings.
-						var c int
-						var err error
-
-						if highest == "" {
-							c, err = policy.CompareVersions("0.0.0", msDef.Version)
-						} else {
-							c, err = policy.CompareVersions(highest, msDef.Version)
-						}
-						if err != nil {
-							glog.Errorf(rpclogString(fmt.Sprintf("error compairing version %v with version %v. %v", highest, msDef.Version, err)))
-						} else if c == -1 {
-							highest = msDef.Version
-							resMsDef = msDef
-							resMsId = msId
-						}
-					}
-				}
-
-				if highest == "" {
-					// when highest is empty, it means that there were no data in msMetadata, hence return nil.
-					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v for %v", nil, mURL)))
-					return nil, "", nil
-				} else {
-					glog.V(3).Infof(rpclogString(fmt.Sprintf("returning microservice definition %v for %v", resMsDef.ShortString(), mURL)))
-					return &resMsDef, resMsId, nil
-				}
-			}
-		}
-	}
-}
-
-// The purpose of this function is to verify that a given workload URL, version and architecture, is defined in the exchange
-// as well as all of its API spec dependencies. This function also returns the API dependencies converted into
-// policy types so that the caller can use those types to do policy compatibility checks if they want to.
-func WorkloadResolver(httpClientFactory *config.HTTPClientFactory, wURL string, wOrg string, wVersion string, wArch string, exURL string, id string, token string) (*policy.APISpecList, *WorkloadDefinition, error) {
-	resolveMicroservices := true
-
-	glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving workload %v %v %v %v", wURL, wOrg, wVersion, wArch)))
-
-	res := new(policy.APISpecList)
-	// Get a version specific workload definition.
-	workload, _, werr := GetWorkload(httpClientFactory, wURL, wOrg, wVersion, wArch, exURL, id, token)
-	if werr != nil {
-		return nil, nil, werr
-	} else if workload == nil {
-		return nil, nil, errors.New(fmt.Sprintf("unable to find workload %v %v %v %v on the exchange.", wURL, wOrg, wVersion, wArch))
-	} else if len(workload.Workloads) != 1 {
-		return nil, nil, errors.New(fmt.Sprintf("expecting 1 element in the workloads array of %v, have %v", workload.ShortString(), len(workload.Workloads)))
-	} else {
-
-		// We found the workload definition. Microservices are referred to within a workload definition by
-		// URL, architecture, and version range. Microservice definitions in the exchange arent queryable by version range,
-		// so we will have to do the version filtering.  We're looking for the highest version microservice definition that
-		// is within the range defined by the workload.  See ./policy/version.go for an explanation of version syntax and
-		// version ranges. The GetMicroservices() function is smart enough to return the microservice we're looking for as
-		// long as we give it a range to search within.
-
-		if resolveMicroservices {
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving microservices for %v %v %v %v", wURL, wOrg, wVersion, wArch)))
-			for _, apiSpec := range workload.APISpecs {
-
-				// Make sure the microservice has the same arch as the workload
-				// Convert version to a version range expression (if it's not already an expression) so that GetMicroservice()
-				// will return us something in the range required by the workload.
-				if apiSpec.Arch != wArch {
-					return nil, nil, errors.New(fmt.Sprintf("microservice %v has a different architecture from the workload.", apiSpec))
-				} else if vExp, err := policy.Version_Expression_Factory(apiSpec.Version); err != nil {
-					return nil, nil, errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", apiSpec.Version, err))
-				} else if ms, _, err := GetMicroservice(httpClientFactory, apiSpec.SpecRef, apiSpec.Org, vExp.Get_expression(), apiSpec.Arch, exURL, id, token); err != nil {
-					return nil, nil, err
-				} else if ms == nil {
-					return nil, nil, errors.New(fmt.Sprintf("unable to find microservice %v within version range %v in the exchange.", apiSpec, vExp))
-				} else {
-					newAPISpec := policy.APISpecification_Factory(ms.SpecRef, apiSpec.Org, ms.Version, ms.Arch)
-					if ms.Sharable == MS_SHARING_MODE_SINGLE {
-						newAPISpec.ExclusiveAccess = false
-					}
-					(*res) = append((*res), (*newAPISpec))
-				}
-			}
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved microservices for %v %v %v %v", wURL, wOrg, wVersion, wArch)))
-		}
-		glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved workload %v %v %v %v", wURL, wOrg, wVersion, wArch)))
-		return res, workload, nil
-
-	}
-
 }
 
 // Functions and types for working with organizations in the exchange
@@ -1282,40 +675,6 @@ func (w WorkloadChoice) ShortString() string {
 		cutil.TruncateDisplayString(w.DeploymentOverridesSignature, 5))
 }
 
-type WorkloadReference struct {
-	WorkloadURL      string           `json:"workloadUrl,omitempty"`      // refers to a workload definition in the exchange
-	WorkloadOrg      string           `json:"workloadOrgid,omitempty"`    // the org holding the workload definition
-	WorkloadArch     string           `json:"workloadArch,omitempty"`     // the hardware architecture of the workload definition
-	WorkloadVersions []WorkloadChoice `json:"workloadVersions,omitempty"` // a list of workload version for rollback
-	DataVerify       DataVerification `json:"dataVerification"`           // policy for verifying that the node is sending data
-	NodeH            NodeHealth       `json:"nodeHealth"`                 // policy for determining when a node's health is violating its agreements
-}
-
-func (w WorkloadReference) String() string {
-	return fmt.Sprintf("WorkloadURL: %v, WorkloadOrg: %v, WorkloadArch: %v, WorkloadVersions: %v, DataVerify: %v, NodeH: %v",
-		w.WorkloadURL,
-		w.WorkloadOrg,
-		w.WorkloadArch,
-		w.WorkloadVersions,
-		w.DataVerify,
-		w.NodeH)
-}
-
-func (w WorkloadReference) ShortString() string {
-	// get the short string for each workloadchoice
-	wl_a := make([]string, len(w.WorkloadVersions))
-	for i, wl := range w.WorkloadVersions {
-		wl_a[i] = wl.ShortString()
-	}
-	return fmt.Sprintf("WorkloadURL: %v, WorkloadOrg: %v, WorkloadArch: %v, WorkloadVersions: %v, DataVerify: %v, NodeH: %v",
-		w.WorkloadURL,
-		w.WorkloadOrg,
-		w.WorkloadArch,
-		wl_a,
-		w.DataVerify,
-		w.NodeH)
-}
-
 type ServiceReference struct {
 	ServiceURL      string           `json:"serviceUrl,omitempty"`      // refers to a service definition in the exchange
 	ServiceOrg      string           `json:"serviceOrgid,omitempty"`    // the org holding the service definition
@@ -1391,49 +750,34 @@ type Pattern struct {
 	Label              string              `json:"label"`
 	Description        string              `json:"description"`
 	Public             bool                `json:"public"`
-	Workloads          []WorkloadReference `json:"workloads"` // A pattern either has workloads or services, never both.
 	Services           []ServiceReference  `json:"services"`
 	AgreementProtocols []AgreementProtocol `json:"agreementProtocols"`
 }
 
 func (w Pattern) String() string {
-	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Public: %v, Workloads: %v, Services: %v, AgreementProtocols: %v",
+	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Public: %v, Services: %v, AgreementProtocols: %v",
 		w.Owner,
 		w.Label,
 		w.Description,
 		w.Public,
-		w.Workloads,
 		w.Services,
 		w.AgreementProtocols)
 }
 
 func (w Pattern) ShortString() string {
-	// get the short string for each workload version
-	wl_a := make([]string, len(w.Workloads))
-	for i, wl := range w.Workloads {
-		wl_a[i] = wl.ShortString()
-	}
 	// get the short string for each service version
 	svc_a := make([]string, len(w.Services))
 	for i, wl := range w.Services {
 		svc_a[i] = wl.ShortString()
 	}
 
-	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Public: %v, Workloads: %v, Services: %v, AgreementProtocols: %v",
+	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Public: %v, Services: %v, AgreementProtocols: %v",
 		w.Owner,
 		w.Label,
 		w.Description,
 		w.Public,
-		wl_a,
 		svc_a,
 		w.AgreementProtocols)
-}
-
-func (p *Pattern) UsingServiceModel() bool {
-	if len(p.Workloads) == 0 {
-		return true
-	}
-	return false
 }
 
 type GetPatternResponse struct {
@@ -1507,73 +851,39 @@ func ConvertToPolicies(patternId string, p *Pattern) ([]*policy.Policy, error) {
 	policies := make([]*policy.Policy, 0, 10)
 
 	// Each pattern contains a list of workloads/services that need to be converted to a policy
-	if p.UsingServiceModel() {
-		for _, service := range p.Services {
 
-			// Don't generate policies on the agbot for agreement-less services because the service will be started
-			// on the node as soon as the node is configured.
-			if service.AgreementLess {
-				continue
-			}
+	for _, service := range p.Services {
 
-			// make sure required fields are not empty
-			if service.ServiceURL == "" || service.ServiceOrg == "" || service.ServiceArch == "" {
-				return nil, fmt.Errorf("serviceUrl, serviceOrgid or serviceArch is empty string in pattern %v.", name)
-			} else if service.ServiceVersions == nil || len(service.ServiceVersions) == 0 {
-				return nil, fmt.Errorf("The serviceVersions array is empty in pattern %v.", name)
-			}
-
-			policyName := makePolicyName(name, service.ServiceURL, service.ServiceOrg, service.ServiceArch)
-
-			pol := policy.Policy_Factory(fmt.Sprintf("%v", policyName))
-
-			// This is a service based policy file.
-			pol.ServiceBased = true
-
-			// Copy service metadata into the policy
-			for _, wl := range service.ServiceVersions {
-				if wl.Version == "" {
-					return nil, fmt.Errorf("The version for service %v arch %v is empty in pattern %v.", service.ServiceURL, service.ServiceArch, name)
-				}
-				ConvertChoice(wl, service.ServiceURL, service.ServiceOrg, service.ServiceArch, pol)
-			}
-
-			ConvertCommon(p, patternId, service.DataVerify, service.NodeH, pol)
-
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("converted %v into %v", service.ShortString(), pol)))
-			policies = append(policies, pol)
-
+		// Don't generate policies on the agbot for agreement-less services because the service will be started
+		// on the node as soon as the node is configured.
+		if service.AgreementLess {
+			continue
 		}
 
-	} else {
-
-		for _, workload := range p.Workloads {
-
-			// make sure required fields are not empty
-			if workload.WorkloadURL == "" || workload.WorkloadOrg == "" || workload.WorkloadArch == "" {
-				return nil, fmt.Errorf("workloadUrl, workloadOrgid or workloadArch is empty string in pattern %v.", name)
-			} else if workload.WorkloadVersions == nil || len(workload.WorkloadVersions) == 0 {
-				return nil, fmt.Errorf("The workloadVersions array is empty in pattern %v.", name)
-			}
-
-			policyName := makePolicyName(name, workload.WorkloadURL, workload.WorkloadOrg, workload.WorkloadArch)
-
-			pol := policy.Policy_Factory(fmt.Sprintf("%v", policyName))
-
-			// Copy workload metadata into the policy
-			for _, wl := range workload.WorkloadVersions {
-				if wl.Version == "" {
-					return nil, fmt.Errorf("The version for workload %v arch %v is empty in pattern %v.", workload.WorkloadURL, workload.WorkloadArch, name)
-				}
-				ConvertChoice(wl, workload.WorkloadURL, workload.WorkloadOrg, workload.WorkloadArch, pol)
-			}
-
-			ConvertCommon(p, patternId, workload.DataVerify, workload.NodeH, pol)
-
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("converted %v into %v", workload.ShortString(), pol)))
-			policies = append(policies, pol)
-
+		// make sure required fields are not empty
+		if service.ServiceURL == "" || service.ServiceOrg == "" || service.ServiceArch == "" {
+			return nil, fmt.Errorf("serviceUrl, serviceOrgid or serviceArch is empty string in pattern %v.", name)
+		} else if service.ServiceVersions == nil || len(service.ServiceVersions) == 0 {
+			return nil, fmt.Errorf("The serviceVersions array is empty in pattern %v.", name)
 		}
+
+		policyName := makePolicyName(name, service.ServiceURL, service.ServiceOrg, service.ServiceArch)
+
+		pol := policy.Policy_Factory(fmt.Sprintf("%v", policyName))
+
+		// Copy service metadata into the policy
+		for _, wl := range service.ServiceVersions {
+			if wl.Version == "" {
+				return nil, fmt.Errorf("The version for service %v arch %v is empty in pattern %v.", service.ServiceURL, service.ServiceArch, name)
+			}
+			ConvertChoice(wl, service.ServiceURL, service.ServiceOrg, service.ServiceArch, pol)
+		}
+
+		ConvertCommon(p, patternId, service.DataVerify, service.NodeH, pol)
+
+		glog.V(3).Infof(rpclogString(fmt.Sprintf("converted %v into %v", service.ShortString(), pol)))
+		policies = append(policies, pol)
+
 	}
 
 	return policies, nil
@@ -1836,15 +1146,6 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 					case *GetAgbotMessageResponse:
 						return nil, nil
 
-					case *GetEthereumClientResponse:
-						return nil, nil
-
-					case *GetWorkloadsResponse:
-						return nil, nil
-
-					case *GetMicroservicesResponse:
-						return nil, nil
-
 					case *GetServicesResponse:
 						return nil, nil
 
@@ -1935,32 +1236,6 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 			targetURL = fmt.Sprintf("%vorgs/%v/patterns/%v/keys", ec.GetExchangeURL(), oOrg, GetId(oIndex))
 			break
 		}
-
-	case MICROSERVICE:
-		if oVersion == "" || !policy.IsVersionString(oVersion) {
-			return nil, errors.New(rpclogString(fmt.Sprintf("GetObjectSigningKeys got wrong version string %v. The version string should be a non-empy single version string.", oVersion)))
-		}
-		ms_resp, ms_id, err := GetMicroservice(ec.GetHTTPFactory(), oURL, oOrg, oVersion, oArch, ec.GetExchangeURL(), ec.GetExchangeId(), ec.GetExchangeToken())
-		if err != nil {
-			return nil, errors.New(rpclogString(fmt.Sprintf("failed to get the microservice %v %v %v %v.%v", oURL, oOrg, oVersion, oArch, err)))
-		} else if ms_resp == nil {
-			return nil, errors.New(rpclogString(fmt.Sprintf("unable to find the microservice %v %v %v %v.", oURL, oOrg, oVersion, oArch)))
-		}
-		oIndex = ms_id
-		targetURL = fmt.Sprintf("%vorgs/%v/microservices/%v/keys", ec.GetExchangeURL(), oOrg, GetId(oIndex))
-
-	case WORKLOAD:
-		if oVersion == "" || !policy.IsVersionString(oVersion) {
-			return nil, errors.New(rpclogString(fmt.Sprintf("GetObjectSigningKeys got wrong version string %v. The version string should be a non-empy single version string.", oVersion)))
-		}
-		wl_resp, wl_id, err := GetWorkload(ec.GetHTTPFactory(), oURL, oOrg, oVersion, oArch, ec.GetExchangeURL(), ec.GetExchangeId(), ec.GetExchangeToken())
-		if err != nil {
-			return nil, errors.New(rpclogString(fmt.Sprintf("failed to get the workload %v %v %v %v. %v", oURL, oOrg, oVersion, oArch, err)))
-		} else if wl_resp == nil {
-			return nil, errors.New(rpclogString(fmt.Sprintf("unable to find the workload %v %v %v %v.", oURL, oOrg, oVersion, oArch)))
-		}
-		oIndex = wl_id
-		targetURL = fmt.Sprintf("%vorgs/%v/workloads/%v/keys", ec.GetExchangeURL(), oOrg, GetId(oIndex))
 
 	case SERVICE:
 		if oVersion == "" || !policy.IsVersionString(oVersion) {

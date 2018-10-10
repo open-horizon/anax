@@ -4,14 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
-	"github.com/open-horizon/anax/policy"
+	"io/ioutil"
+	"net/http"
 )
 
 func (a *API) service(w http.ResponseWriter, r *http.Request) {
@@ -36,14 +34,6 @@ func (a *API) service(w http.ResponseWriter, r *http.Request) {
 		}
 
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
-
-		// Get the persisted device to see if it's service or workload based.
-		if pDevice, errWritten := a.existingDeviceOrError(w); errWritten {
-			return
-		} else if !pDevice.IsServiceBased() {
-			writeResponse(w, *NewServiceOutput(), http.StatusOK)
-			return
-		}
 
 		// Gather all the service info from the database and format for output.
 		if out, err := FindServicesForOutput(a.pm, a.db, a.Config); err != nil {
@@ -75,16 +65,6 @@ func (a *API) serviceconfig(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
-
-		// Get the persisted device to see if it's service or workload based.
-		if pDevice, errWritten := a.existingDeviceOrError(w); errWritten {
-			return
-		} else if !pDevice.IsServiceBased() {
-			out := make(map[string][]MicroserviceConfig)
-			out["config"] = make([]MicroserviceConfig, 0, 10)
-			writeResponse(w, out, http.StatusOK)
-			return
-		}
 
 		if out, err := FindServiceConfigForOutput(a.pm, a.db); err != nil {
 			errorhandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
@@ -159,17 +139,8 @@ func (a *API) servicepolicy(w http.ResponseWriter, r *http.Request) {
 
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
-		// Get the persisted device to see if it's service or workload based.
-		if pDevice, errWritten := a.existingDeviceOrError(w); errWritten {
-			return
-		} else if !pDevice.IsServiceBased() {
-			out := make(map[string]policy.Policy)
-			writeResponse(w, out, http.StatusOK)
-			return
-		}
-
 		// Gather all the policies from the local filesystem and format them for output.
-		if out, err := FindPoliciesForOutput(a.pm, a.db); err != nil {
+		if out, err := findPoliciesForOutput(a.pm, a.db); err != nil {
 			errorhandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
 		} else {
 			writeResponse(w, out, http.StatusOK)

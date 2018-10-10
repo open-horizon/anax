@@ -52,7 +52,6 @@ type ProposalRejection struct {
 type Policy struct {
 	Header                 PolicyHeader          `json:"header"`
 	PatternId              string                `json:"patternId,omitempty"` // Manually created policy files should NOT use this field.
-	ServiceBased           bool                  `json:"useServices"`         // Manually created policy files set this field when using the service model.
 	APISpecs               APISpecList           `json:"apiSpec,omitempty"`
 	AgreementProtocols     AgreementProtocolList `json:"agreementProtocols,omitempty"`
 	Workloads              WorkloadList          `json:"workloads,omitempty"`
@@ -249,9 +248,6 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		merged_pol.Header.Name = producer_policy.Header.Name + " merged with " + consumer_policy.Header.Name
 		merged_pol.Header.Version = CurrentVersion
 
-		// Propagate the service model indicator
-		merged_pol.ServiceBased = consumer_policy.ServiceBased
-
 		// Propagate the pattern id
 		merged_pol.PatternId = consumer_policy.PatternId
 
@@ -372,7 +368,7 @@ func (self *Policy) Is_Version(v string) bool {
 
 func (self *Policy) String() string {
 	res := ""
-	res += fmt.Sprintf("Name: %v Version: %v, Pattern: %v, ServiceBased: %v\n", self.Header.Name, self.Header.Version, self.PatternId, self.ServiceBased)
+	res += fmt.Sprintf("Name: %v Version: %v, Pattern: %v\n", self.Header.Name, self.Header.Version, self.PatternId)
 	res += "API Specifications\n"
 	for _, apiSpec := range self.APISpecs {
 		res += fmt.Sprintf("Ref: %v Org: %v Version: %v Exclusive: %v Arch: %v\n", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.ExclusiveAccess, apiSpec.Arch)
@@ -395,7 +391,7 @@ func (self *Policy) String() string {
 
 func (self *Policy) ShortString() string {
 	res := ""
-	res += fmt.Sprintf("Name: %v Version: %v, Pattern: %v, ServiceBased: %v", self.Header.Name, self.Header.Version, self.PatternId, self.ServiceBased)
+	res += fmt.Sprintf("Name: %v Version: %v, Pattern: %v", self.Header.Name, self.Header.Version, self.PatternId)
 	res += ", API Specifications "
 	for _, apiSpec := range self.APISpecs {
 		res += fmt.Sprintf("Ref: %v Org: %v Version: %v Exclusive: %v Arch: %v ", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.ExclusiveAccess, apiSpec.Arch)
@@ -539,11 +535,6 @@ func (p *Policy) ConvertSpecRefArchToGOARCH(arch_synonymns config.ArchSynonyms) 
 			}
 		}
 	}
-}
-
-// Return true if the policy is for a service based policy
-func (p *Policy) IsServiceBased() bool {
-	return p.ServiceBased
 }
 
 // These are functions that operate on policy files in the file system.

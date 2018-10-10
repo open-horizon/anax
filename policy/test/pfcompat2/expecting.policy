@@ -3,7 +3,6 @@
         "name": "ms1 policy merged with ms2 policy",
         "version": "2.0"
     },
-    "useServices": false,
     "apiSpec": [
         {
             "specRef": "http://mycompany.com/dm/ms1",

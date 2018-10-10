@@ -284,22 +284,10 @@ curl -s http://localhost:8046/policy/public/netspeed-docker_bluehorizon.network-
     "version": "2.0"
   },
   "patternId": "public/netspeed-docker",
-  "useServices": false,
   "agreementProtocols": [
     {
       "name": "Basic",
       "protocolVersion": 1
-    },
-    {
-      "name": "Citizen Scientist",
-      "protocolVersion": 2,
-      "blockchains": [
-        {
-          "type": "ethereum",
-          "name": "bluehorizon",
-          "organization": "IBM"
-        }
-      ]
     }
   ],
   "workloads": [
@@ -311,7 +299,7 @@ curl -s http://localhost:8046/policy/public/netspeed-docker_bluehorizon.network-
         "retry_durations": 3600,
         "verified_durations": 52
       },
-      "workloadUrl": "https://bluehorizon.network/workloads/location",
+      "workloadUrl": "https://bluehorizon.network/services/location",
       "organization": "IBM",
       "version": "2.0.6",
       "arch": "arm",
@@ -452,7 +440,6 @@ body:
 
 | name | type | description |
 | ---- | ---- | ---------------- |
-| geth   | json | the information about the ethereum client. |
 | configuration| json| the configuration data.  |
 | configuration.exchange_api | string | the url for the exchange being used by the Horizon agent. |
 | configuration.exchange_version | string | the current version of the exchange being used. |
@@ -466,7 +453,6 @@ body:
 ```
 curl -s http://localhost:8046/status |jq '.'
 {
-  "geth": [],
   "configuration": {
     "exchange_api": "https://exchange.staging.bluehorizon.network/api/v1/",
     "exchange_version": "1.55.0",
@@ -528,59 +514,23 @@ curl -s http://localhost:8046/status/workers |jq
         "1dcb639c-45ee-43bc-bd39-6104eac7a03d": "started",
         "3843f354-531e-44af-9f24-9d79737ca401": "started",
       }
-    },
-    "Blockchain": {
-      "name": "Blockchain",
-      "status": "initialized",
-      "subworker_status": {}
-    },
-    "CSProtocolHandler": {
-      "name": "CSProtocolHandler",
-      "status": "initialized",
-      "subworker_status": {
-        "006d3a21-7d68-49c6-97e9-a0afb3977ef7": "started",
-        "0cbe1051-0abb-4b59-812c-ea6862348629": "started",
-        "2b27196f-941a-46f4-866e-04b145f0c4bd": "started",
-      }
-    },
-    "Container": {
-      "name": "Container",
-      "status": "initialized",
-      "subworker_status": {}
-    },
-    "Torrent": {
-      "name": "Torrent",
-      "status": "initialized",
-      "subworker_status": {}
     }
   },
   "worker_status_log": [
-    "2018-05-02 19:25:11 Worker Torrent: started.",
-    "2018-05-02 19:25:11 Worker Torrent: initialized.",
     "2018-05-02 19:25:11 Worker AgBot: started.",
-    "2018-05-02 19:25:11 Worker Blockchain: started.",
-    "2018-05-02 19:25:11 Worker Blockchain: initialized.",
-    "2018-05-02 19:25:11 Worker Container: started.",
-    "2018-05-02 19:25:11 Worker Container: initialized.",
     "2018-05-02 19:25:13 Worker BasicProtocolHandler: initialized.",
     "2018-05-02 19:25:13 Worker BasicProtocolHandler: subworker 3843f354-531e-44af-9f24-9d79737ca401 started.",
     "2018-05-02 19:25:13 Worker BasicProtocolHandler: subworker 1dcb639c-45ee-43bc-bd39-6104eac7a03d started.",
     "2018-05-02 19:25:13 Worker BasicProtocolHandler: subworker 129b5b8c-11da-45d4-98b4-fc8b191ae38a started.",
-    "2018-05-02 19:25:13 Worker CSProtocolHandler: initialized.",
-    "2018-05-02 19:25:13 Worker CSProtocolHandler: subworker 0cbe1051-0abb-4b59-812c-ea6862348629 started.",
-    "2018-05-02 19:25:13 Worker CSProtocolHandler: subworker 006d3a21-7d68-49c6-97e9-a0afb3977ef7 started.",
-    "2018-05-02 19:25:13 Worker CSProtocolHandler: subworker 2b27196f-941a-46f4-866e-04b145f0c4bd started.",
     "2018-05-02 19:25:13 Worker AgBot: subworker AgbotHeartBeat added.",
     "2018-05-02 19:25:13 Worker AgBot: subworker AgBotGovernAgreements added.",
     "2018-05-02 19:25:13 Worker AgBot: subworker AgBotGovernArchivedAgreements added.",
-    "2018-05-02 19:25:13 Worker AgBot: subworker AgBotGovernBlockchain added.",
     "2018-05-02 19:25:13 Worker AgBot: subworker AgBotPolicyWatcher added.",
     "2018-05-02 19:25:13 Worker AgBot: subworker AgBotPolicyGenerator added.",
     "2018-05-02 19:25:13 Worker AgBot: initialized.",
     "2018-05-02 19:25:13 Worker AgBot: subworker AgbotHeartBeat started.",
     "2018-05-02 19:25:13 Worker AgBot: subworker AgBotGovernAgreements started.",
     "2018-05-02 19:25:13 Worker AgBot: subworker AgBotGovernArchivedAgreements started.",
-    "2018-05-02 19:25:13 Worker AgBot: subworker AgBotGovernBlockchain started.",
     "2018-05-02 19:25:13 Worker AgBot: subworker AgBotPolicyWatcher started.",
     "2018-05-02 19:25:13 Worker AgBot: subworker AgBotPolicyGenerator started."
   ]

@@ -18,26 +18,26 @@ import (
 	"time"
 )
 
-// This function runs periodically in a separate process. It checks if the service/microservice containers are up and running and
-// if new service/microservice versions are available for upgrade.
+// This function runs periodically in a separate process. It checks if the service containers are up and running and
+// if new service versions are available for upgrade.
 func (w *GovernanceWorker) governMicroservices() int {
 
 	if w.Config.Edge.ServiceUpgradeCheckIntervalS > 0 {
 		// get the microservice upgrade check interval
 		check_interval := w.Config.Edge.ServiceUpgradeCheckIntervalS
 
-		// check for the new microservice version when time is right
+		// check for the new service version when time is right
 		time_now := time.Now().Unix()
 		if time_now-w.lastSvcUpgradeCheck >= int64(check_interval) {
 			w.lastSvcUpgradeCheck = time_now
 
-			// handle microservice upgrade. The upgrade includes inactive upgrades if the associated agreements happen to be 0.
+			// handle service upgrade. The upgrade includes inactive upgrades if the associated agreements happen to be 0.
 			glog.V(4).Infof(logString(fmt.Sprintf("governing service upgrades")))
 			if ms_defs, err := persistence.FindMicroserviceDefs(w.db, []persistence.MSFilter{persistence.UnarchivedMSFilter()}); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("Error getting service definitions from db. %v", err)))
 			} else if ms_defs != nil && len(ms_defs) > 0 {
 				for _, ms := range ms_defs {
-					// upgrade the microserice if needed
+					// upgrade the service if needed
 					cmd := w.NewUpgradeMicroserviceCommand(ms.Id)
 					w.Commands <- cmd
 				}
@@ -45,13 +45,13 @@ func (w *GovernanceWorker) governMicroservices() int {
 		}
 	}
 
-	// check if microservice instance containers are down
+	// check if service instance containers are down
 	glog.V(4).Infof(logString(fmt.Sprintf("governing service containers")))
 	if ms_instances, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.AllMIFilter(), persistence.UnarchivedMIFilter()}); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Error retrieving all service instances from database, error: %v", err)))
 	} else if ms_instances != nil {
 		for _, msi := range ms_instances {
-			// only check the ones that has containers started already and not in the middle of cleanup
+			// only check the ones that have containers started already and not in the middle of cleanup
 			if hasWL, _ := msi.HasWorkload(w.db); hasWL && msi.ExecutionStartTime != 0 && msi.CleanupStartTime == 0 {
 				glog.V(3).Infof(logString(fmt.Sprintf("fire event to ensure service containers are still up for service instance %v.", msi.GetKey())))
 
@@ -117,10 +117,8 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 		} else {
 			// get microservice/service keys and save it to the user keys.
 			if w.Config.Edge.TrustCertUpdatesFromOrg {
-				key_map, err := exchange.GetHTTPObjectSigningKeysHandler(w)(exchange.MICROSERVICE, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch)
-				if err == nil {
-					// No error means that we are working with a microservice.
-				} else if key_map, err = exchange.GetHTTPObjectSigningKeysHandler(w)(exchange.SERVICE, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch); err != nil {
+				key_map, err := exchange.GetHTTPObjectSigningKeysHandler(w)(exchange.SERVICE, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch)
+				if err != nil {
 					return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting signing keys from the exchange: %v %v %v %v. %v", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, err)))
 				}
 
@@ -328,7 +326,7 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 	unregError = microservice.RemoveMicroservicePolicy(msdef.SpecRef, msdef.Org, msdef.Version, msdef.Id, w.Config.Edge.PolicyPath, w.pm)
 	if unregError != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to remove service policy for service def %v version %v. %v", msdef.SpecRef, msdef.Version, unregError)))
-	} else if unregError = microservice.UnregisterMicroserviceExchange(exchange.GetHTTPDeviceHandler(w), exchange.GetHTTPPutDeviceHandler(w), msdef.SpecRef, w.GetServiceBased(), w.GetExchangeId(), w.GetExchangeToken(), w.db); unregError != nil {
+	} else if unregError = microservice.UnregisterMicroserviceExchange(exchange.GetHTTPDeviceHandler(w), exchange.GetHTTPPutDeviceHandler(w), msdef.SpecRef, w.GetExchangeId(), w.GetExchangeToken(), w.db); unregError != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to unregister service from the exchange for service def %v. %v", msdef.SpecRef, unregError)))
 	}
 
@@ -364,7 +362,7 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 func (w *GovernanceWorker) RollbackMicroservice(msdef *persistence.MicroserviceDefinition) error {
 	for true {
 		// get next lower version
-		if new_msdef, err := microservice.GetRollbackMicroserviceDef(exchange.GetHTTPMicroserviceHandler(w), msdef, w.db); err != nil {
+		if new_msdef, err := microservice.GetRollbackMicroserviceDef(exchange.GetHTTPServiceResolverHandler(w), msdef, w.db); err != nil {
 			eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
 				fmt.Sprintf("Error finding the new service definition to downgrade to for %v %v version key %v. error: %v", msdef.SpecRef, msdef.Version, msdef.Id, err),
 				persistence.EC_DATABASE_ERROR)
@@ -397,7 +395,7 @@ func (w *GovernanceWorker) RollbackMicroservice(msdef *persistence.MicroserviceD
 	return nil
 }
 
-// Start a servic/microservice instance for the given agreement according to the sharing mode.
+// Start a service/microservice instance for the given agreement according to the sharing mode.
 func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.MicroserviceDefinition, agreementId string, dependencyPath []persistence.ServiceInstancePathElement, protocol string) error {
 	glog.V(3).Infof(logString(fmt.Sprintf("start service instance %v for agreement %v", msdef.SpecRef, agreementId)))
 
@@ -562,7 +560,7 @@ func (w *GovernanceWorker) handleMicroserviceUpgrade(msdef_id string) {
 		glog.Errorf(logString(fmt.Sprintf("error getting service definitions %v from db. %v", msdef_id, err)))
 	} else if microservice.MicroserviceReadyForUpgrade(msdef, w.db) {
 		// find the new ms def to upgrade to
-		if new_msdef, err := microservice.GetUpgradeMicroserviceDef(exchange.GetHTTPMicroserviceOrServiceResolverHandler(w), msdef, w.db); err != nil {
+		if new_msdef, err := microservice.GetUpgradeMicroserviceDef(exchange.GetHTTPServiceResolverHandler(w), msdef, w.db); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("Error finding the new service definition to upgrade to for %v version %v. %v", msdef.SpecRef, msdef.Version, err)))
 		} else if new_msdef == nil {
 			glog.V(5).Infof(logString(fmt.Sprintf("No changes for service definition %v, no need to upgrade.", msdef.SpecRef)))

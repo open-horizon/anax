@@ -1,7 +1,7 @@
 # Makefile for usehello service container
 
 VER = 1.0
-BASE = openhorizon
+BASE = localhost:443
 IMAGE = amd64_usehello
 
 default: build run check

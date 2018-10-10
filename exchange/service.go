@@ -12,21 +12,6 @@ import (
 
 // Types and functions used to work with the exchange's service objects.
 
-// This interface provides methods to work with workload and service definitions abstractly. Both types of
-// definitions implement this interface, which allows common code to work on either definition without
-// being aware of which definition type is actually behind the interface.
-type ExchangeDefinition interface {
-	NeedsUserInput() bool
-	PopulateDefaultUserInput(envAdds map[string]string)
-	GetDeployment() string
-	GetDeploymentSignature() string
-	GetTorrent() string
-	GetImageStore() policy.ImplementationPackage
-	IsServiceBased() bool
-	GetServiceDependencies() *[]ServiceDependency
-	GetVersion() string
-}
-
 // This type is used to abstract the various edge node hardware requirements. The schema is left wide open.
 type HardwareRequirement map[string]interface{}
 
@@ -193,10 +178,6 @@ func (s *ServiceDefinition) GetImageStore() policy.ImplementationPackage {
 
 func (s *ServiceDefinition) HasDependencies() bool {
 	return len(s.RequiredServices) != 0
-}
-
-func (s *ServiceDefinition) IsServiceBased() bool {
-	return true
 }
 
 func (s *ServiceDefinition) GetServiceDependencies() *[]ServiceDependency {
@@ -439,38 +420,6 @@ func ServiceResolver(wURL string, wOrg string, wVersion string, wArch string, se
 
 	}
 
-}
-
-// This function is used temporarily while workloads and services are being used at the same time. It will return an interface
-// that supports methods which are common to both the workload and service definitions.
-func GetWorkloadOrService(wURL string, wOrg string, wVersion string, wArch string, wr WorkloadResolverHandler, sh ServiceHandler) (*policy.APISpecList, ExchangeDefinition, error) {
-	var details ExchangeDefinition
-	if as, wd, err := wr(wURL, wOrg, wVersion, wArch); err == nil {
-		details = wd
-		return as, details, nil
-	} else if as, sd, err := ServiceResolver(wURL, wOrg, wVersion, wArch, sh); err == nil {
-		details = sd
-		return as, details, nil
-	} else {
-		glog.Errorf(rpclogString(fmt.Sprintf("error searching for service details, error: %v", err)))
-		return nil, nil, err
-	}
-}
-
-// This function is used temporarily while workloads and services are being used at the same time. It will return an interface
-// that supports methods which are common to both the microservice and service definitions.
-func GetMicroserviceOrService(wURL string, wOrg string, wVersion string, wArch string, mr MicroserviceHandler, sh ServiceHandler) (ExchangeDefinition, error) {
-	var details ExchangeDefinition
-	if md, _, err := mr(wURL, wOrg, wVersion, wArch); err == nil {
-		details = md
-		return details, nil
-	} else if _, sd, err := ServiceResolver(wURL, wOrg, wVersion, wArch, sh); err == nil {
-		details = sd
-		return details, nil
-	} else {
-		glog.Errorf(rpclogString(fmt.Sprintf("error searching for service details, error: %v", err)))
-		return nil, err
-	}
 }
 
 // This function gets the image docker auths for a service.

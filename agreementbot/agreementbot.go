@@ -53,7 +53,7 @@ type AgreementBotWorker struct {
 func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase) *AgreementBotWorker {
 
 	// An agbot is never service based, it supports both all the time, until we get rid of support for workloads.
-	ec := worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, false, cfg.Collaborators.HTTPClientFactory)
+	ec := worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, cfg.Collaborators.HTTPClientFactory)
 
 	worker := &AgreementBotWorker{
 		BaseWorker:       worker.NewBaseWorker(name, cfg, ec),
@@ -227,7 +227,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 			return false
 		}
 
-		if policyManager, err := policy.Initialize(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, w.Config.ArchSynonyms, w.workloadOrServiceResolver, true, false); err != nil {
+		if policyManager, err := policy.Initialize(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, w.Config.ArchSynonyms, w.serviceResolver, true, false); err != nil {
 			glog.Errorf("AgreementBotWorker unable to initialize policy manager, error: %v", err)
 		} else if policyManager.NumberPolicies() != 0 {
 			w.pm = policyManager
@@ -560,9 +560,6 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 					// agreement protocol choice based solely on the consumer side policy. Once the new agreement
 					// attempt gets on a worker thread, then we can perform the policy checks and merges.
 					producerPolicy := policy.Policy_Factory(consumerPolicy.Header.Name)
-					if consumerPolicy.IsServiceBased() {
-						producerPolicy.ServiceBased = true
-					}
 					err := error(nil)
 					if len(dev.Services) != 0 {
 
@@ -676,7 +673,7 @@ func (w *AgreementBotWorker) policyWatcher(name string, quit chan bool) {
 			return
 
 		case <-time.After(time.Duration(w.Config.AgreementBot.CheckUpdatedPolicyS) * time.Second):
-			contents, _ = policy.PolicyFileChangeWatcher(w.Config.AgreementBot.PolicyPath, contents, w.Config.ArchSynonyms, w.changedPolicy, w.deletedPolicy, w.errorPolicy, w.workloadOrServiceResolver, 0)
+			contents, _ = policy.PolicyFileChangeWatcher(w.Config.AgreementBot.PolicyPath, contents, w.Config.ArchSynonyms, w.changedPolicy, w.deletedPolicy, w.errorPolicy, w.serviceResolver, 0)
 		}
 	}
 
@@ -813,11 +810,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, polOrg string) (
 		ser := exchange.CreateSearchPatternRequest()
 		ser.SecondsStale = w.Config.AgreementBot.ActiveDeviceTimeoutS
 		ser.NodeOrgIds = nodeOrgs
-		if pol.IsServiceBased() {
-			ser.ServiceURL = pol.Workloads[0].WorkloadURL
-		} else {
-			ser.WorkloadURL = pol.Workloads[0].WorkloadURL
-		}
+		ser.ServiceURL = pol.Workloads[0].WorkloadURL
 
 		// Invoke the exchange
 		var resp interface{}
@@ -1093,19 +1086,13 @@ func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, po
 	glog.V(5).Infof(AWlogString(fmt.Sprintf("setting agreement %v for workload %v state to %v", agreementId, workload, state)))
 
 	as := new(exchange.PutAgbotAgreementState)
-	wa := exchange.WorkloadAgreement{
+	as.Service = exchange.WorkloadAgreement{
 		Org:     exchange.GetOrg(pol.PatternId),
 		Pattern: exchange.GetId(pol.PatternId),
 		URL:     workload,
 	}
-
-	if pol.IsServiceBased() {
-		as.Service = wa
-	} else {
-		as.Workload = wa
-	}
-
 	as.State = state
+
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/agbots/" + exchange.GetId(w.GetExchangeId()) + "/agreements/" + agreementId
@@ -1157,9 +1144,9 @@ func (w *AgreementBotWorker) registerPublicKey() error {
 	}
 }
 
-func (w *AgreementBotWorker) workloadOrServiceResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
+func (w *AgreementBotWorker) serviceResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
 
-	asl, _, err := exchange.GetHTTPWorkloadOrServiceResolverHandler(w)(wURL, wOrg, wVersion, wArch)
+	asl, _, err := exchange.GetHTTPServiceResolverHandler(w)(wURL, wOrg, wVersion, wArch)
 	if err != nil {
 		glog.Errorf(AWlogString(fmt.Sprintf("unable to resolve %v %v, error %v", wURL, wOrg, err)))
 	}
