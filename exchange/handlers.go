@@ -12,7 +12,6 @@ type ExchangeContext interface {
 	GetExchangeId() string
 	GetExchangeToken() string
 	GetExchangeURL() string
-	GetServiceBased() bool
 	GetHTTPFactory() *config.HTTPClientFactory
 }
 
@@ -54,34 +53,7 @@ func GetHTTPExchangePatternHandlerWithContext(cfg *config.HorizonConfig) Pattern
 	}
 }
 
-// A handler for querying the exchange for microservices.
-type MicroserviceHandler func(mUrl string, mOrg string, mVersion string, mArch string) (*MicroserviceDefinition, string, error)
-
-func GetHTTPMicroserviceHandler(ec ExchangeContext) MicroserviceHandler {
-	return func(mUrl string, mOrg string, mVersion string, mArch string) (*MicroserviceDefinition, string, error) {
-		return GetMicroservice(ec.GetHTTPFactory(), mUrl, mOrg, mVersion, mArch, ec.GetExchangeURL(), ec.GetExchangeId(), ec.GetExchangeToken())
-	}
-}
-
-// A handler for resolving workload references in the exchange.
-type WorkloadResolverHandler func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *WorkloadDefinition, error)
-
-func GetHTTPWorkloadResolverHandler(ec ExchangeContext) WorkloadResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *WorkloadDefinition, error) {
-		return WorkloadResolver(ec.GetHTTPFactory(), wUrl, wOrg, wVersion, wArch, ec.GetExchangeURL(), ec.GetExchangeId(), ec.GetExchangeToken())
-	}
-}
-
-// A handler for getting workload metadata from the exchange.
-type WorkloadHandler func(wUrl string, wOrg string, wVersion string, wArch string) (*WorkloadDefinition, string, error)
-
-func GetHTTPWorkloadHandler(ec ExchangeContext) WorkloadHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string) (*WorkloadDefinition, string, error) {
-		return GetWorkload(ec.GetHTTPFactory(), wUrl, wOrg, wVersion, wArch, ec.GetExchangeURL(), ec.GetExchangeId(), ec.GetExchangeToken())
-	}
-}
-
-// a handler for getting the device information from the exchange
+// A handler for getting the device information from the exchange
 type DeviceHandler func(id string, token string) (*Device, error)
 
 func GetHTTPDeviceHandler(ec ExchangeContext) DeviceHandler {
@@ -90,7 +62,7 @@ func GetHTTPDeviceHandler(ec ExchangeContext) DeviceHandler {
 	}
 }
 
-// a handler for modifying the device information on the exchange
+// A handler for modifying the device information on the exchange
 type PutDeviceHandler func(deviceId string, deviceToken string, pdr *PutDeviceRequest) (*PutDeviceResponse, error)
 
 func GetHTTPPutDeviceHandler(ec ExchangeContext) PutDeviceHandler {
@@ -123,24 +95,6 @@ type ObjectSigningKeysHandler func(oType, oUrl string, oOrg string, oVersion str
 func GetHTTPObjectSigningKeysHandler(ec ExchangeContext) ObjectSigningKeysHandler {
 	return func(oType string, oUrl string, oOrg string, oVersion string, oArch string) (map[string]string, error) {
 		return GetObjectSigningKeys(ec, oType, oUrl, oOrg, oVersion, oArch)
-	}
-}
-
-// A handler for resolving workload or service references in the exchange.
-type WorkloadOrServiceResolverHandler func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, ExchangeDefinition, error)
-
-func GetHTTPWorkloadOrServiceResolverHandler(ec ExchangeContext) WorkloadOrServiceResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, ExchangeDefinition, error) {
-		return GetWorkloadOrService(wUrl, wOrg, wVersion, wArch, GetHTTPWorkloadResolverHandler(ec), GetHTTPServiceHandler(ec))
-	}
-}
-
-// A handler for resolving microservice or service references in the exchange.
-type MicroserviceOrServiceHandler func(wUrl string, wOrg string, wVersion string, wArch string) (ExchangeDefinition, error)
-
-func GetHTTPMicroserviceOrServiceResolverHandler(ec ExchangeContext) MicroserviceOrServiceHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string) (ExchangeDefinition, error) {
-		return GetMicroserviceOrService(wUrl, wOrg, wVersion, wArch, GetHTTPMicroserviceHandler(ec), GetHTTPServiceHandler(ec))
 	}
 }
 

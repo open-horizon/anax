@@ -28,7 +28,7 @@ func Test_pattern_entry_success1(t *testing.T) {
 		Label:              lab,
 		Description:        "desc",
 		Public:             true,
-		Workloads:          []exchange.WorkloadReference{},
+		Services:           []exchange.ServiceReference{},
 		AgreementProtocols: []exchange.AgreementProtocol{},
 	}
 
@@ -127,12 +127,12 @@ func Test_pattern_manager_setpatterns2(t *testing.T) {
 			Label:       "label",
 			Description: "description",
 			Public:      false,
-			Workloads: []exchange.WorkloadReference{
+			Services: []exchange.ServiceReference{
 				{
-					WorkloadURL:  "http://mydomain.com/workload/test1",
-					WorkloadOrg:  "testorg",
-					WorkloadArch: "amd64",
-					WorkloadVersions: []exchange.WorkloadChoice{
+					ServiceURL:  "http://mydomain.com/workload/test1",
+					ServiceOrg:  "testorg",
+					ServiceArch: "amd64",
+					ServiceVersions: []exchange.WorkloadChoice{
 						{
 							Version: "1.0.0",
 						},
@@ -150,12 +150,12 @@ func Test_pattern_manager_setpatterns2(t *testing.T) {
 			Label:       "label",
 			Description: "description",
 			Public:      false,
-			Workloads: []exchange.WorkloadReference{
+			Services: []exchange.ServiceReference{
 				{
-					WorkloadURL:  "http://mydomain.com/workload/test2",
-					WorkloadOrg:  "testorg",
-					WorkloadArch: "amd64",
-					WorkloadVersions: []exchange.WorkloadChoice{
+					ServiceURL:  "http://mydomain.com/workload/test2",
+					ServiceOrg:  "testorg",
+					ServiceArch: "amd64",
+					ServiceVersions: []exchange.WorkloadChoice{
 						{
 							Version: "1.5.0",
 						},
@@ -254,12 +254,12 @@ func Test_pattern_manager_setpatterns3(t *testing.T) {
 			Label:       "label",
 			Description: "description",
 			Public:      false,
-			Workloads: []exchange.WorkloadReference{
+			Services: []exchange.ServiceReference{
 				{
-					WorkloadURL:  "http://mydomain.com/workload/test1",
-					WorkloadOrg:  "testorg",
-					WorkloadArch: "amd64",
-					WorkloadVersions: []exchange.WorkloadChoice{
+					ServiceURL:  "http://mydomain.com/workload/test1",
+					ServiceOrg:  "testorg",
+					ServiceArch: "amd64",
+					ServiceVersions: []exchange.WorkloadChoice{
 						{
 							Version: "1.0.0",
 						},
@@ -274,12 +274,12 @@ func Test_pattern_manager_setpatterns3(t *testing.T) {
 			Label:       "label",
 			Description: "description",
 			Public:      false,
-			Workloads: []exchange.WorkloadReference{
+			Services: []exchange.ServiceReference{
 				{
-					WorkloadURL:  "http://mydomain.com/workload/test1",
-					WorkloadOrg:  "testorg",
-					WorkloadArch: "amd64",
-					WorkloadVersions: []exchange.WorkloadChoice{
+					ServiceURL:  "http://mydomain.com/workload/test1",
+					ServiceOrg:  "testorg",
+					ServiceArch: "amd64",
+					ServiceVersions: []exchange.WorkloadChoice{
 						{
 							Version: "2.0.0",
 						},
@@ -297,12 +297,12 @@ func Test_pattern_manager_setpatterns3(t *testing.T) {
 			Label:       "label",
 			Description: "description",
 			Public:      false,
-			Workloads: []exchange.WorkloadReference{
+			Services: []exchange.ServiceReference{
 				{
-					WorkloadURL:  "http://mydomain.com/workload/test2",
-					WorkloadOrg:  "testorg",
-					WorkloadArch: "amd64",
-					WorkloadVersions: []exchange.WorkloadChoice{
+					ServiceURL:  "http://mydomain.com/workload/test2",
+					ServiceOrg:  "testorg",
+					ServiceArch: "amd64",
+					ServiceVersions: []exchange.WorkloadChoice{
 						{
 							Version: "1.4.0",
 						},
@@ -317,12 +317,12 @@ func Test_pattern_manager_setpatterns3(t *testing.T) {
 			Label:       "label",
 			Description: "description",
 			Public:      false,
-			Workloads: []exchange.WorkloadReference{
+			Services: []exchange.ServiceReference{
 				{
-					WorkloadURL:  "http://mydomain.com/workload/test2",
-					WorkloadOrg:  "testorg",
-					WorkloadArch: "amd64",
-					WorkloadVersions: []exchange.WorkloadChoice{
+					ServiceURL:  "http://mydomain.com/workload/test2",
+					ServiceOrg:  "testorg",
+					ServiceArch: "amd64",
+					ServiceVersions: []exchange.WorkloadChoice{
 						{
 							Version: "1.5.0",
 						},
@@ -434,12 +434,12 @@ func Test_pattern_manager_setpatterns4(t *testing.T) {
 			Label:       "label",
 			Description: "description",
 			Public:      false,
-			Workloads: []exchange.WorkloadReference{
+			Services: []exchange.ServiceReference{
 				{
-					WorkloadURL:  "http://mydomain.com/workload/test1",
-					WorkloadOrg:  "testorg",
-					WorkloadArch: "amd64",
-					WorkloadVersions: []exchange.WorkloadChoice{
+					ServiceURL:  "http://mydomain.com/workload/test1",
+					ServiceOrg:  "testorg",
+					ServiceArch: "amd64",
+					ServiceVersions: []exchange.WorkloadChoice{
 						{
 							Version: "1.0.0",
 						},
@@ -454,12 +454,12 @@ func Test_pattern_manager_setpatterns4(t *testing.T) {
 			Label:       "label",
 			Description: "description",
 			Public:      false,
-			Workloads: []exchange.WorkloadReference{
+			Services: []exchange.ServiceReference{
 				{
-					WorkloadURL:  "http://mydomain.com/workload/test1",
-					WorkloadOrg:  "testorg",
-					WorkloadArch: "amd64",
-					WorkloadVersions: []exchange.WorkloadChoice{
+					ServiceURL:  "http://mydomain.com/workload/test1",
+					ServiceOrg:  "testorg",
+					ServiceArch: "amd64",
+					ServiceVersions: []exchange.WorkloadChoice{
 						{
 							Version: "2.0.0",
 						},
@@ -477,12 +477,12 @@ func Test_pattern_manager_setpatterns4(t *testing.T) {
 			Label:       "label",
 			Description: "description",
 			Public:      false,
-			Workloads: []exchange.WorkloadReference{
+			Services: []exchange.ServiceReference{
 				{
-					WorkloadURL:  "http://mydomain.com/workload/test2",
-					WorkloadOrg:  "testorg",
-					WorkloadArch: "amd64",
-					WorkloadVersions: []exchange.WorkloadChoice{
+					ServiceURL:  "http://mydomain.com/workload/test2",
+					ServiceOrg:  "testorg",
+					ServiceArch: "amd64",
+					ServiceVersions: []exchange.WorkloadChoice{
 						{
 							Version: "1.4.0",
 						},
@@ -497,12 +497,12 @@ func Test_pattern_manager_setpatterns4(t *testing.T) {
 			Label:       "label",
 			Description: "description",
 			Public:      false,
-			Workloads: []exchange.WorkloadReference{
+			Services: []exchange.ServiceReference{
 				{
-					WorkloadURL:  "http://mydomain.com/workload/test2",
-					WorkloadOrg:  "testorg",
-					WorkloadArch: "amd64",
-					WorkloadVersions: []exchange.WorkloadChoice{
+					ServiceURL:  "http://mydomain.com/workload/test2",
+					ServiceOrg:  "testorg",
+					ServiceArch: "amd64",
+					ServiceVersions: []exchange.WorkloadChoice{
 						{
 							Version: "1.5.0",
 						},
@@ -596,12 +596,12 @@ func Test_pattern_manager_setpatterns5(t *testing.T) {
 			Label:       "label",
 			Description: "description",
 			Public:      false,
-			Workloads: []exchange.WorkloadReference{
+			Services: []exchange.ServiceReference{
 				{
-					WorkloadURL:  "http://mydomain.com/workload/test1",
-					WorkloadOrg:  "testorg",
-					WorkloadArch: "amd64",
-					WorkloadVersions: []exchange.WorkloadChoice{
+					ServiceURL:  "http://mydomain.com/workload/test1",
+					ServiceOrg:  "testorg",
+					ServiceArch: "amd64",
+					ServiceVersions: []exchange.WorkloadChoice{
 						{
 							Version: "1.0.0",
 						},
@@ -616,12 +616,12 @@ func Test_pattern_manager_setpatterns5(t *testing.T) {
 			Label:       "label",
 			Description: "description",
 			Public:      false,
-			Workloads: []exchange.WorkloadReference{
+			Services: []exchange.ServiceReference{
 				{
-					WorkloadURL:  "http://mydomain.com/workload/test1",
-					WorkloadOrg:  "testorg",
-					WorkloadArch: "amd64",
-					WorkloadVersions: []exchange.WorkloadChoice{
+					ServiceURL:  "http://mydomain.com/workload/test1",
+					ServiceOrg:  "testorg",
+					ServiceArch: "amd64",
+					ServiceVersions: []exchange.WorkloadChoice{
 						{
 							Version: "2.0.0",
 						},
@@ -639,12 +639,12 @@ func Test_pattern_manager_setpatterns5(t *testing.T) {
 			Label:       "label",
 			Description: "description",
 			Public:      false,
-			Workloads: []exchange.WorkloadReference{
+			Services: []exchange.ServiceReference{
 				{
-					WorkloadURL:  "http://mydomain.com/workload/test2",
-					WorkloadOrg:  "testorg",
-					WorkloadArch: "amd64",
-					WorkloadVersions: []exchange.WorkloadChoice{
+					ServiceURL:  "http://mydomain.com/workload/test2",
+					ServiceOrg:  "testorg",
+					ServiceArch: "amd64",
+					ServiceVersions: []exchange.WorkloadChoice{
 						{
 							Version: "1.4.0",
 						},
@@ -659,12 +659,12 @@ func Test_pattern_manager_setpatterns5(t *testing.T) {
 			Label:       "label",
 			Description: "description",
 			Public:      false,
-			Workloads: []exchange.WorkloadReference{
+			Services: []exchange.ServiceReference{
 				{
-					WorkloadURL:  "http://mydomain.com/workload/test2",
-					WorkloadOrg:  "testorg",
-					WorkloadArch: "amd64",
-					WorkloadVersions: []exchange.WorkloadChoice{
+					ServiceURL:  "http://mydomain.com/workload/test2",
+					ServiceOrg:  "testorg",
+					ServiceArch: "amd64",
+					ServiceVersions: []exchange.WorkloadChoice{
 						{
 							Version: "1.5.0",
 						},
@@ -682,12 +682,12 @@ func Test_pattern_manager_setpatterns5(t *testing.T) {
 			Label:       "label",
 			Description: "description",
 			Public:      false,
-			Workloads: []exchange.WorkloadReference{
+			Services: []exchange.ServiceReference{
 				{
-					WorkloadURL:  "http://mydomain.com/workload/test1",
-					WorkloadOrg:  "testorg",
-					WorkloadArch: "amd64",
-					WorkloadVersions: []exchange.WorkloadChoice{
+					ServiceURL:  "http://mydomain.com/workload/test1",
+					ServiceOrg:  "testorg",
+					ServiceArch: "amd64",
+					ServiceVersions: []exchange.WorkloadChoice{
 						{
 							Version: "1.0.0",
 						},
@@ -1036,7 +1036,6 @@ func getTestPattern() exchange.Pattern {
 		Label:       "Pattern",
 		Description: "Pattern for the service version of Core",
 		Public:      true,
-		Workloads:   []exchange.WorkloadReference{},
 		Services: []exchange.ServiceReference{
 			{
 				ServiceURL:  "https://internetofthings.ibmcloud.com/services/core-iot",
@@ -1104,7 +1103,6 @@ func getTestPattern2() exchange.Pattern {
 		Public:      true,
 		Owner:       "u1/u1",
 		Label:       "Pattern",
-		Workloads:   []exchange.WorkloadReference{},
 		Services: []exchange.ServiceReference{
 			{
 				ServiceURL:  "https://internetofthings.ibmcloud.com/services/core-iot",

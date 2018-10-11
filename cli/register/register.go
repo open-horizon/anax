@@ -37,10 +37,8 @@ func (m MicroWork) String() string {
 }
 
 type InputFile struct {
-	Global        []GlobalSet    `json:"global,omitempty"`
-	Services      []MicroWork `json:"services,omitempty"`
-	Microservices []MicroWork `json:"microservices,omitempty"`
-	Workloads     []MicroWork `json:"workloads,omitempty"`
+	Global   []GlobalSet `json:"global,omitempty"`
+	Services []MicroWork `json:"services,omitempty"`
 }
 
 func ReadInputFile(filePath string, inputFileStruct *InputFile) {
@@ -109,7 +107,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 		cliutils.Fatal(cliutils.HTTP_ERROR, "this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first.")
 	}
 
-	// Process the input file and call /attribute, /microservice/config, and /workload/config to set the specified variables
+	// Process the input file and call /attribute, /service/config to set the specified variables
 	if inputFile != "" {
 		// Set the global variables as attributes with no url (or in the case of HTTPSBasicAuthAttributes, with url equal to image svr)
 		// Technically the AgreementProtocolAttributes can be set, but it has no effect on anax if a pattern is being used.
@@ -148,33 +146,6 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 			cliutils.HorizonPutPost(http.MethodPost, "service/config", []int{201, 200}, service)
 		}
 
-		// Set the microservice variables
-		attr = api.NewAttribute("UserInputAttributes", []string{}, "microservice", false, false, map[string]interface{}{}) // we reuse this for each microservice
-		microservice := api.MicroService{SensorName: &emptyStr}                                                            // we reuse this too
-		if len(inputFileStruct.Microservices) > 0 {
-			fmt.Println("Setting microservice variables...")
-		}
-		for _, m := range inputFileStruct.Microservices {
-			microservice.SensorOrg = &m.Org
-			microservice.SensorUrl = &m.Url
-			microservice.SensorVersion = &m.VersionRange
-			attr.Mappings = &m.Variables
-			attrSlice := []api.Attribute{*attr}
-			microservice.Attributes = &attrSlice
-			cliutils.HorizonPutPost(http.MethodPost, "microservice/config", []int{201, 200}, microservice)
-		}
-
-		// Set the workload variables
-		attr = api.NewAttribute("UserInputAttributes", []string{}, "workload", false, false, map[string]interface{}{})
-		if len(inputFileStruct.Workloads) > 0 {
-			fmt.Println("Setting workload variables...")
-		}
-		for _, w := range inputFileStruct.Workloads {
-			attr.Mappings = &w.Variables
-			workload := api.WorkloadConfig{Org: w.Org, WorkloadURL: w.Url, Version: w.VersionRange, Attributes: []api.Attribute{*attr}}
-			cliutils.HorizonPutPost(http.MethodPost, "workload/config", []int{201, 200}, workload)
-		}
-
 	} else {
 		// Technically an input file is not required, but it is not the common case, so warn them
 		fmt.Println("Warning: no input file was specified. This is only valid if none of the microservices or workloads need variables set (including GPS coordinates).")
@@ -202,7 +173,7 @@ func isWithinRanges(version string, versionRanges []string) bool {
 			return true
 		}
 	}
-	return false 	// was not within any of the ranges
+	return false // was not within any of the ranges
 }
 
 // GetHighestService queries the exchange for all versions of this service and returns the highest version that is within at least 1 of the version ranges
@@ -245,12 +216,12 @@ func formSvcKey(org, url, arch string) string {
 }
 
 type SvcMapValue struct {
-	Org           string
-	URL           string
-	Arch          string
-	VersionRanges []string	// all the version ranges we find for this service as we descend thru the required services
-	HighestVersion	string	// filled in when we have to find the highest service to get its required services. Is valid at the end if len(VersionRanges)==1
-	UserInputs          []exchange.UserInput
+	Org            string
+	URL            string
+	Arch           string
+	VersionRanges  []string // all the version ranges we find for this service as we descend thru the required services
+	HighestVersion string   // filled in when we have to find the highest service to get its required services. Is valid at the end if len(VersionRanges)==1
+	UserInputs     []exchange.UserInput
 }
 
 // AddAllRequiredSvcs
@@ -266,13 +237,13 @@ func AddAllRequiredSvcs(nodeCreds, org, url, arch, versionRange string, allRequi
 			}
 		}
 	} else {
-		allRequiredSvcs[svcKey] = &SvcMapValue{Org: org, URL: url, Arch: arch}		// this must be a ptr to the struct or go won't let us modify it in the map
+		allRequiredSvcs[svcKey] = &SvcMapValue{Org: org, URL: url, Arch: arch} // this must be a ptr to the struct or go won't let us modify it in the map
 	}
 	allRequiredSvcs[svcKey].VersionRanges = append(allRequiredSvcs[svcKey].VersionRanges, versionRange) // add this version to this service in our map
 
 	// Get the service from the exchange so we can get its required services
 	highestSvc := GetHighestService(nodeCreds, org, url, arch, []string{versionRange})
-	allRequiredSvcs[svcKey].HighestVersion = highestSvc.Version		// in case we don't encounter this service again, we already know the highest version for getting the user input from
+	allRequiredSvcs[svcKey].HighestVersion = highestSvc.Version // in case we don't encounter this service again, we already know the highest version for getting the user input from
 	allRequiredSvcs[svcKey].UserInputs = highestSvc.UserInputs
 
 	// Loop thru this service's required services, adding them to our map
@@ -285,8 +256,9 @@ func AddAllRequiredSvcs(nodeCreds, org, url, arch, versionRange string, allRequi
 // CreateInputFile runs thru the services used by this pattern (descending into all required services) and collects the user input needed
 func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 	var patOrg string
-	patOrg, pattern = cliutils.TrimOrg(nodeOrg, pattern)	// patOrg will either get the prefix from pattern, or default to nodeOrg
+	patOrg, pattern = cliutils.TrimOrg(nodeOrg, pattern) // patOrg will either get the prefix from pattern, or default to nodeOrg
 	nodeCreds := cliutils.OrgAndCreds(nodeOrg, nodeIdTok)
+
 	// Get the pattern
 	var patOutput exchange.GetPatternResponse
 	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+patOrg+"/patterns/"+pattern, nodeCreds, []int{200}, &patOutput)
@@ -300,7 +272,7 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 
 	// Recursively go thru the services and their required services, collecting them in a map.
 	// Afterward we will process them to figure out the highest version of each before getting their input.
-	allRequiredSvcs := make(map[string]*SvcMapValue)	// the key is the combined org, url, arch. The value is the org, url, arch and a list of the versions.
+	allRequiredSvcs := make(map[string]*SvcMapValue) // the key is the combined org, url, arch. The value is the org, url, arch and a list of the versions.
 	for _, svc := range patOutput.Patterns[patKey].Services {
 		if svc.ServiceArch != arch { // filter out services that are not our arch
 			fmt.Printf("Ignoring service that is a different architecture: %s, %s, %s\n", svc.ServiceOrg, svc.ServiceURL, svc.ServiceArch)
@@ -309,13 +281,13 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 
 		for _, svcVersion := range svc.ServiceVersions {
 			// This will add this svc to our map and keep descending down the required services
-			AddAllRequiredSvcs(nodeCreds, svc.ServiceOrg, svc.ServiceURL, svc.ServiceArch, svcVersion.Version, allRequiredSvcs)		// svcVersion.Version is a version range
+			AddAllRequiredSvcs(nodeCreds, svc.ServiceOrg, svc.ServiceURL, svc.ServiceArch, svcVersion.Version, allRequiredSvcs) // svcVersion.Version is a version range
 		}
 	}
 
 	// Loop thru each service, find the highest version of that service, and then record the user input for it
 	// Note: if the pattern references multiple versions of the same service (directly or indirectly), we create input for the highest version of the service.
-	templateFile := InputFile{Global: []GlobalSet{}}	// to add the global loc attrs: Type: "LocationAttributes", Variables: map[string]interface{}{"lat": 0.0, "lon": 0.0, "use_gps": false, "location_accuracy_km": 0.0}
+	templateFile := InputFile{Global: []GlobalSet{}} // to add the global loc attrs: Type: "LocationAttributes", Variables: map[string]interface{}{"lat": 0.0, "lon": 0.0, "use_gps": false, "location_accuracy_km": 0.0}
 	for _, s := range allRequiredSvcs {
 		var userInput []exchange.UserInput
 		if s.HighestVersion != "" && len(s.VersionRanges) <= 1 {
@@ -341,6 +313,7 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 	if err != nil {
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, "failed to marshal the user input template file: %v", err)
 	}
+
 	if err := ioutil.WriteFile(inputFile, jsonBytes, 0644); err != nil {
 		cliutils.Fatal(cliutils.FILE_IO_ERROR, "problem writing the user input template file: %v", err)
 	}

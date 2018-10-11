@@ -54,8 +54,6 @@ type ExchangeDevice struct {
 	TokenValid         bool        `json:"token_valid"`
 	HA                 bool        `json:"ha"`
 	Config             Configstate `json:"configstate"`
-	ServiceBased       bool        `json:"serviceBased"`  // The device is service based if this flag is on, but the flag being off could mean that service or workload based is not yet known.
-	WorkloadBased      bool        `json:"workloadBased"` // The device is workload based if this flag is on, but the flag being off could mean that service or workload based is not yet known.
 }
 
 func (e ExchangeDevice) String() string {
@@ -66,14 +64,14 @@ func (e ExchangeDevice) String() string {
 		tokenShadow = "unset"
 	}
 
-	return fmt.Sprintf("Org: %v, Token: <%s>, Name: %v, TokenLastValidTime: %v, TokenValid: %v, Pattern: %v, ServiceBased: %v, WorkloadBased: %v, %v", e.Org, tokenShadow, e.Name, e.TokenLastValidTime, e.TokenValid, e.Pattern, e.ServiceBased, e.WorkloadBased, e.Config)
+	return fmt.Sprintf("Org: %v, Token: <%s>, Name: %v, TokenLastValidTime: %v, TokenValid: %v, Pattern: %v, %v", e.Org, tokenShadow, e.Name, e.TokenLastValidTime, e.TokenValid, e.Pattern, e.Config)
 }
 
 func (e ExchangeDevice) GetId() string {
 	return fmt.Sprintf("%v/%v", e.Org, e.Id)
 }
 
-func newExchangeDevice(id string, token string, name string, tokenLastValidTime uint64, ha bool, org string, pattern string, configstate string, serviceBased bool, workloadBased bool) (*ExchangeDevice, error) {
+func newExchangeDevice(id string, token string, name string, tokenLastValidTime uint64, ha bool, org string, pattern string, configstate string) (*ExchangeDevice, error) {
 	if id == "" || token == "" || name == "" || tokenLastValidTime == 0 || org == "" {
 		return nil, errors.New("Cannot create exchange device, illegal arguments")
 	}
@@ -99,8 +97,6 @@ func newExchangeDevice(id string, token string, name string, tokenLastValidTime 
 		Org:                org,
 		Pattern:            pattern,
 		Config:             cfg,
-		ServiceBased:       serviceBased,
-		WorkloadBased:      workloadBased,
 	}, nil
 }
 
@@ -128,7 +124,7 @@ func (e *ExchangeDevice) SetExchangeDeviceToken(db *bolt.DB, deviceId string, to
 	})
 }
 
-func (e *ExchangeDevice) SetConfigstate(db *bolt.DB, deviceId string, state string, serviceBased bool) (*ExchangeDevice, error) {
+func (e *ExchangeDevice) SetConfigstate(db *bolt.DB, deviceId string, state string) (*ExchangeDevice, error) {
 	if deviceId == "" || state == "" {
 		return nil, errors.New("Argument null and mustn't be")
 	}
@@ -136,36 +132,12 @@ func (e *ExchangeDevice) SetConfigstate(db *bolt.DB, deviceId string, state stri
 	return updateExchangeDevice(db, e, deviceId, false, func(d ExchangeDevice) *ExchangeDevice {
 		d.Config.State = state
 		d.Config.LastUpdateTime = uint64(time.Now().Unix())
-		d.ServiceBased = serviceBased
-		d.WorkloadBased = !serviceBased
-		return &d
-	})
-}
-
-func (e *ExchangeDevice) SetServiceBased(db *bolt.DB) (*ExchangeDevice, error) {
-	return updateExchangeDevice(db, e, e.Id, false, func(d ExchangeDevice) *ExchangeDevice {
-		d.ServiceBased = true
-		return &d
-	})
-}
-
-func (e *ExchangeDevice) SetWorkloadBased(db *bolt.DB) (*ExchangeDevice, error) {
-	return updateExchangeDevice(db, e, e.Id, false, func(d ExchangeDevice) *ExchangeDevice {
-		d.WorkloadBased = true
 		return &d
 	})
 }
 
 func (e *ExchangeDevice) IsState(state string) bool {
 	return e.Config.State == state
-}
-
-func (e *ExchangeDevice) IsServiceBased() bool {
-	return e.ServiceBased && !e.WorkloadBased
-}
-
-func (e *ExchangeDevice) IsWorkloadBased() bool {
-	return !e.ServiceBased && e.WorkloadBased
 }
 
 func updateExchangeDevice(db *bolt.DB, self *ExchangeDevice, deviceId string, invalidateToken bool, fn func(d ExchangeDevice) *ExchangeDevice) (*ExchangeDevice, error) {
@@ -213,12 +185,6 @@ func updateExchangeDevice(db *bolt.DB, self *ExchangeDevice, deviceId string, in
 				mod.Config.State = update.Config.State
 				mod.Config.LastUpdateTime = update.Config.LastUpdateTime
 			}
-			if mod.ServiceBased == false && mod.WorkloadBased == false && update.ServiceBased == true {
-				mod.ServiceBased = update.ServiceBased
-			}
-			if mod.ServiceBased == false && mod.WorkloadBased == false && update.WorkloadBased == true {
-				mod.WorkloadBased = update.WorkloadBased
-			}
 			// note: DEVICES is used as the key b/c we only want to store one value in this bucket
 
 			if serialized, err := json.Marshal(mod); err != nil {
@@ -235,7 +201,7 @@ func updateExchangeDevice(db *bolt.DB, self *ExchangeDevice, deviceId string, in
 }
 
 // always assumed the given token is valid at the time of call
-func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, ha bool, organization string, pattern string, configstate string, serviceBased bool, workloadBased bool) (*ExchangeDevice, error) {
+func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, ha bool, organization string, pattern string, configstate string) (*ExchangeDevice, error) {
 
 	if id == "" || token == "" || name == "" || organization == "" || configstate == "" {
 		return nil, errors.New("Argument null and must not be")
@@ -259,7 +225,7 @@ func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, ha
 		return nil, fmt.Errorf("Duplicate record found in devices for %v.", name)
 	}
 
-	exDevice, err := newExchangeDevice(id, token, name, uint64(time.Now().Unix()), ha, organization, pattern, configstate, serviceBased, workloadBased)
+	exDevice, err := newExchangeDevice(id, token, name, uint64(time.Now().Unix()), ha, organization, pattern, configstate)
 
 	if err != nil {
 		return nil, err
@@ -351,15 +317,6 @@ func MigrateExchangeDevice(db *bolt.DB) (bool, error) {
 	// using workloads.
 	if db != nil {
 		if dev, _ := FindExchangeDevice(db); dev != nil {
-			if dev.IsServiceBased() || dev.IsWorkloadBased() {
-				// nothing to do, one of the 2 mode flags is already set.
-			} else if dev.IsState(CONFIGSTATE_CONFIGURED) {
-				// The device is configured but needs to have its workload mode set. A device that exists but is not yet configured
-				// should not be touched until the config steps are complete.
-				if _, err := dev.SetWorkloadBased(db); err != nil {
-					return false, err
-				}
-			}
 
 			// If the existing device is using a pattern then we need to turn off agreement tracking when we create the policy manager.
 			if dev.Pattern != "" {

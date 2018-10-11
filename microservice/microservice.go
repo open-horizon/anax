@@ -52,83 +52,6 @@ func DecodeReasonCode(code uint64) string {
 	}
 }
 
-func ConvertMicroserviceOrServiceToPersistent(s exchange.ExchangeDefinition, org string) (*persistence.MicroserviceDefinition, error) {
-	switch s.(type) {
-	case *exchange.MicroserviceDefinition:
-		ms := s.(*exchange.MicroserviceDefinition)
-		return ConvertMicroserviceToPersistent(ms, org)
-	default:
-		ss := s.(*exchange.ServiceDefinition)
-		return ConvertServiceToPersistent(ss, org)
-	}
-}
-
-// Currently the MicroserviceDefiniton structures in exchange and persistence packages are identical.
-// But we need to make them separate structures in case we need to put more in persistence structure.
-// This function converts the structure from exchange to persistence.
-func ConvertMicroserviceToPersistent(ems *exchange.MicroserviceDefinition, org string) (*persistence.MicroserviceDefinition, error) {
-	pms := new(persistence.MicroserviceDefinition)
-
-	pms.Owner = ems.Owner
-	pms.Label = ems.Label
-	pms.Description = ems.Description
-	pms.SpecRef = ems.SpecRef
-	pms.Org = org
-	pms.Version = ems.Version
-	pms.Arch = ems.Arch
-	pms.DownloadURL = ems.DownloadURL
-
-	pms.Sharable = strings.ToLower(ems.Sharable)
-	if pms.Sharable != exchange.MS_SHARING_MODE_EXCLUSIVE &&
-		pms.Sharable != exchange.MS_SHARING_MODE_SINGLE &&
-		pms.Sharable != exchange.MS_SHARING_MODE_MULTIPLE {
-		pms.Sharable = exchange.MS_SHARING_MODE_EXCLUSIVE // default
-	}
-
-	pms.MatchHardware = make(persistence.HardwareMatch)
-	cutil.CopyMap(ems.MatchHardware, pms.MatchHardware)
-
-	user_inputs := make([]persistence.UserInput, 0)
-	for _, ui := range ems.UserInputs {
-		new_ui := persistence.NewUserInput(ui.Name, ui.Label, ui.Type, ui.DefaultValue)
-		user_inputs = append(user_inputs, *new_ui)
-	}
-	pms.UserInputs = user_inputs
-
-	workloads := make([]persistence.WorkloadDeployment, 0)
-	for _, wl := range ems.Workloads {
-		new_wl := persistence.NewWorkloadDeployment(wl.Deployment, wl.DeploymentSignature, wl.Torrent)
-		workloads = append(workloads, *new_wl)
-	}
-	pms.Workloads = workloads
-	pms.LastUpdated = ems.LastUpdated
-
-	// set defaults
-	pms.UpgradeStartTime = 0
-	pms.UpgradeMsUnregisteredTime = 0
-	pms.UpgradeAgreementsClearedTime = 0
-	pms.UpgradeExecutionStartTime = 0
-	pms.UpgradeFailedTime = 0
-	pms.UngradeFailureReason = 0
-	pms.UngradeFailureDescription = ""
-	pms.UpgradeNewMsId = ""
-
-	pms.Name = ""
-	pms.UpgradeVersionRange = "0.0.0"
-	pms.AutoUpgrade = MS_DEFAULT_AUTOUPGRADE
-	pms.ActiveUpgrade = MS_DEFAULT_ACTIVEUPGRADE
-
-	// Hash the metadata and save it
-	if serial, err := json.Marshal(*ems); err != nil {
-		return nil, fmt.Errorf("Failed to marshal microservice metadata: %v. %v", *ems, err)
-	} else {
-		hash := sha3.Sum256(serial)
-		pms.MetadataHash = hash[:]
-	}
-
-	return pms, nil
-}
-
 // This function converts the structure from exchange service to persistence.
 func ConvertServiceToPersistent(es *exchange.ServiceDefinition, org string) (*persistence.MicroserviceDefinition, error) {
 	pms := new(persistence.MicroserviceDefinition)
@@ -263,22 +186,22 @@ func MicroserviceReadyForUpgrade(msdef *persistence.MicroserviceDefinition, db *
 // This function gets the msdef with highest version within defined version range from the exchange and
 // compare the version and content with the current msdef and decide if it needs to upgrade.
 // It returns the new msdef if the old one needs to be upgraded, otherwide return nil.
-func GetUpgradeMicroserviceDef(getMicroserviceOrService exchange.MicroserviceOrServiceHandler, msdef *persistence.MicroserviceDefinition, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
+func GetUpgradeMicroserviceDef(getService exchange.ServiceResolverHandler, msdef *persistence.MicroserviceDefinition, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
 	glog.V(3).Infof("Get new service def for upgrading service %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
 
 	// convert the sensor version to a version expression
 	if vExp, err := policy.Version_Expression_Factory(msdef.UpgradeVersionRange); err != nil {
 		return nil, fmt.Errorf("Unable to convert %v to a version expression, error %v", msdef.UpgradeVersionRange, err)
-	} else if e_msdef, err := getMicroserviceOrService(msdef.SpecRef, msdef.Org, vExp.Get_expression(), msdef.Arch); err != nil {
+	} else if _, e_sdef, err := getService(msdef.SpecRef, msdef.Org, vExp.Get_expression(), msdef.Arch); err != nil {
 		return nil, fmt.Errorf("Failed to find a highest version for service %v version range %v: %v", msdef.SpecRef, msdef.UpgradeVersionRange, err)
-	} else if e_msdef == nil {
+	} else if e_sdef == nil {
 		return nil, fmt.Errorf("Could not find any services for %v within the version range %v.", msdef.SpecRef, msdef.UpgradeVersionRange)
-	} else if new_msdef, err := ConvertMicroserviceOrServiceToPersistent(e_msdef, msdef.Org); err != nil {
+	} else if new_msdef, err := ConvertServiceToPersistent(e_sdef, msdef.Org); err != nil {
 		return nil, fmt.Errorf("Failed to convert service metadata to persistent.MicroserviceDefinition for %v. %v", msdef.SpecRef, err)
 	} else {
 		// if the newer version is smaller than the old one, do nothing
-		if c, err := policy.CompareVersions(e_msdef.GetVersion(), msdef.Version); err != nil {
-			return nil, fmt.Errorf("error compairing version %v with version %v. %v", e_msdef.GetVersion(), msdef.Version, err)
+		if c, err := policy.CompareVersions(e_sdef.GetVersion(), msdef.Version); err != nil {
+			return nil, fmt.Errorf("error compairing version %v with version %v. %v", e_sdef.GetVersion(), msdef.Version, err)
 		} else if c < 0 {
 			return nil, nil
 		} else if c == 0 && bytes.Equal(msdef.MetadataHash, new_msdef.MetadataHash) {
@@ -308,7 +231,7 @@ func GetUpgradeMicroserviceDef(getMicroserviceOrService exchange.MicroserviceOrS
 }
 
 // Get a msdef with a lower version compared to the given msdef version and return the new microservice def.
-func GetRollbackMicroserviceDef(getMicroservice exchange.MicroserviceHandler, msdef *persistence.MicroserviceDefinition, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
+func GetRollbackMicroserviceDef(getService exchange.ServiceResolverHandler, msdef *persistence.MicroserviceDefinition, db *bolt.DB) (*persistence.MicroserviceDefinition, error) {
 	glog.V(3).Infof("Get next highest service def for rolling back service %v version %v key %v", msdef.SpecRef, msdef.Version, msdef.Id)
 
 	// convert the sensor version to a version expression
@@ -316,11 +239,11 @@ func GetRollbackMicroserviceDef(getMicroservice exchange.MicroserviceHandler, ms
 		return nil, fmt.Errorf("Unable to convert %v to a version expression, error %v", msdef.UpgradeVersionRange, err)
 	} else if err := vExp.ChangeCeiling(msdef.Version, false); err != nil { //modify the version range in order to searh for new ms
 		return nil, nil
-	} else if e_msdef, _, err := getMicroservice(msdef.SpecRef, msdef.Org, vExp.Get_expression(), msdef.Arch); err != nil {
+	} else if _, e_sdef, err := getService(msdef.SpecRef, msdef.Org, vExp.Get_expression(), msdef.Arch); err != nil {
 		return nil, fmt.Errorf("Failed to find a highest version for service %v version range %v: %v", msdef.SpecRef, vExp.Get_expression(), err)
-	} else if e_msdef == nil {
+	} else if e_sdef == nil {
 		return nil, nil
-	} else if new_msdef, err := ConvertMicroserviceToPersistent(e_msdef, msdef.Org); err != nil {
+	} else if new_msdef, err := ConvertServiceToPersistent(e_sdef, msdef.Org); err != nil {
 		return nil, fmt.Errorf("Failed to convert service metadata to persistent.MicroserviceDefinition for %v. %v", msdef.SpecRef, err)
 	} else {
 
@@ -463,7 +386,7 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 // Unregisters the given microservice from the exchange
 func UnregisterMicroserviceExchange(getExchangeDevice exchange.DeviceHandler,
 	putExchangeDevice exchange.PutDeviceHandler,
-	spec_ref string, serviceBased bool,
+	spec_ref string,
 	device_id string, device_token string, db *bolt.DB) error {
 
 	glog.V(3).Infof("Unregister service %v from exchange for %v.", spec_ref, device_id)
@@ -484,9 +407,7 @@ func UnregisterMicroserviceExchange(getExchangeDevice exchange.DeviceHandler,
 		return nil // no registered services/microservices, nothing to do
 	} else {
 		services := eDevice.RegisteredServices
-		if !serviceBased {
-			services = eDevice.RegisteredMicroservices
-		}
+
 		// remove the service with the given spec_ref
 		ms_put := make([]exchange.Microservice, 0, 10)
 		for _, ms := range services {
@@ -497,11 +418,7 @@ func UnregisterMicroserviceExchange(getExchangeDevice exchange.DeviceHandler,
 
 		// create PUT body
 		pdr := exchange.CreateDevicePut(device_token, deviceName)
-		if serviceBased {
-			pdr.RegisteredServices = ms_put
-		} else {
-			pdr.RegisteredMicroservices = ms_put
-		}
+		pdr.RegisteredServices = ms_put
 
 		glog.V(3).Infof("Unregistering service: %v", spec_ref)
 

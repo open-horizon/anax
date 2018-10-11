@@ -92,7 +92,7 @@ func createTempProject(t *testing.T, projectDir string) string {
 	}
 
 	// The userinputs file just needs to be in the project.
-	uierr := createSkeletalUserInputs(horizonDir, false, true)
+	uierr := createSkeletalUserInputs(horizonDir)
 	if uierr != nil {
 		t.Errorf("unable to create user inputs, %v", uierr)
 	}
@@ -149,22 +149,14 @@ func createSkeletalServiceDef(serviceName string) *cliexchange.ServiceFile {
 	return res
 }
 
-func createSkeletalUserInputs(directory string, workload bool, service bool) error {
+func createSkeletalUserInputs(directory string) error {
 
 	// Create a skeletal user input config object with fillins/place-holders for configuration.
 	res := new(register.InputFile)
 	res.Global = []register.GlobalSet{}
 
 	// Create a skeletal array with one element for variable configuration.
-	mw := []register.MicroWork{}
-
-	if workload {
-		res.Workloads = mw
-	} else if service {
-		res.Services = mw
-	} else {
-		res.Microservices = mw
-	}
+	res.Services = []register.MicroWork{}
 
 	// Convert the object to JSON and write it into the project.
 	return CreateFile(directory, USERINPUT_FILE, res)

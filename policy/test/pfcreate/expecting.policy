@@ -3,7 +3,6 @@
         "name": "test creation",
         "version": "2.0"
     },
-    "useServices": false,
     "apiSpec": [
         {
             "specRef": "http://mycompany.com/dm/cpu_temp",

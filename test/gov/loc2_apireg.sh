@@ -83,39 +83,6 @@ if [ "$ERR" != "null" ]; then
   fi
 fi
 
-# using pattern, must configure the gps container, by old microservice
-elif [ "$PATTERN" == "all" ] || [ "$PATTERN" == "loc" ]; then
-
-read -d '' splitgpsservice <<EOF
-{
-  "sensor_url": "https://bluehorizon.network/microservices/locgps",
-  "sensor_name": "gps",
-  "sensor_version": "2.0.3",
-  "attributes": [
-    {
-      "type": "UserInputAttributes",
-      "label": "Extra",
-      "publishable": true,
-      "host_only": false,
-      "mappings": {
-        "test": "testValue",
-        "extra": "extraValue"
-      }
-    }
-  ]
-}
-EOF
-
-echo -e "\n\n[D] split gps service payload: $splitgpsservice"
-
-echo "Registering split gps loc service"
-
-ERR=$(echo "$splitgpsservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/microservice/config" | jq -r '.error')
-if [ "$ERR" != "null" ]; then
-  echo -e "error occured: $ERR"
-  exit 2
-fi
-
 elif [ "$PATTERN" == "sall" ] || [ "$PATTERN" == "sloc" ]; then
 
 # and then configure by service API
@@ -150,75 +117,6 @@ if [ "$ERR" != "null" ]; then
   exit 2
 fi
 
-fi
-
-# blockchain in use
-else
-
-read -d '' splitgpsservice <<EOF
-{
-  "sensor_url": "https://bluehorizon.network/microservices/locgps",
-  "sensor_name": "gps",
-  "sensor_version": "2.0.3",
-  "attributes": [
-    {
-      "type": "MeteringAttributes",
-      "label": "Metering Policy",
-      "publishable": true,
-      "host_only": false,
-      "mappings": {
-        "tokens": 2,
-        "perTimeUnit": "hour",
-        "notificationInterval": 3600
-      }
-    },
-    {
-      "type": "UserInputAttributes",
-      "label": "Extra",
-      "publishable": true,
-      "host_only": false,
-      "mappings": {
-        "test": "testValue",
-        "extra": "extraValue"
-      }
-    },
-    {
-      "type": "agreementprotocol",
-      "label": "Agreement Protocols",
-      "publishable": true,
-      "host_only": false,
-      "mappings": {
-        "protocols": [
-          {
-            "Citizen Scientist": [
-              {
-                "name": "privatebc",
-                "organization": "e2edev"
-              },
-              {
-                "name": "bluehorizon",
-                "organization": "e2edev"
-              }
-            ]
-          },
-          {
-            "Basic": []
-          }
-        ]
-      }
-    }
-  ]
-}
-EOF
-
-echo -e "\n\n[D] split gps service payload: $splitgpsservice"
-
-echo "Registering split gps service"
-
-ERR=$(echo "$splitgpsservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/microservice/config" | jq -r '.error')
-if [ "$ERR" != "null" ]; then
-  echo -e "error occured: $ERR"
-  exit 2
 fi
 
 fi

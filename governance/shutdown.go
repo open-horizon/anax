@@ -64,12 +64,6 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 		return
 	}
 
-	// Remove workload config from the database
-	if err := w.deleteWorkloadconfig(); err != nil {
-		w.completedWithError(logString(err.Error()))
-		return
-	}
-
 	// Remove attributes from the database
 	if err := w.deleteAttributes(); err != nil {
 		w.completedWithError(logString(err.Error()))
@@ -277,26 +271,6 @@ func (w *GovernanceWorker) patchNodeKey() error {
 
 	return nil
 
-}
-
-// Remove all workload config records from the DB.
-func (w *GovernanceWorker) deleteWorkloadconfig() error {
-	wcs, err := persistence.FindWorkloadConfigs(w.db, []persistence.WCFilter{})
-	if err != nil {
-		return errors.New(fmt.Sprintf("unable to retrieve workload config objects from database, error: %v", err))
-	} else if wcs == nil {
-		return nil
-	}
-
-	for _, wc := range wcs {
-		if err := persistence.DeleteWorkloadConfig(w.db, wc.WorkloadURL, wc.Org, wc.VersionExpression); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("error deleting workload config object %v, error: %v", wc, err)))
-		}
-	}
-
-	glog.V(3).Infof(logString(fmt.Sprintf("deleted all workloadconfig objects")))
-
-	return nil
 }
 
 // Remove all attributes from the DB.

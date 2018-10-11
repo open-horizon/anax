@@ -44,7 +44,7 @@ func NewAgreementWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm 
 	var ec *worker.BaseExchangeContext
 	pattern := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
-		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, cfg.Edge.ExchangeURL, dev.IsServiceBased(), cfg.Collaborators.HTTPClientFactory)
+		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, cfg.Edge.ExchangeURL, cfg.Collaborators.HTTPClientFactory)
 		pattern = dev.Pattern
 	}
 
@@ -127,7 +127,6 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 		msg, _ := incoming.(*events.EdgeConfigCompleteMessage)
 		switch msg.Event().Id {
 		case events.NEW_DEVICE_CONFIG_COMPLETE:
-			w.EC.ServiceBased = msg.ServiceBased()
 			w.Commands <- NewEdgeConfigCompleteCommand(msg)
 		}
 
@@ -335,7 +334,7 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 
 func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
-	w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", cmd.Msg.Org(), cmd.Msg.DeviceId()), cmd.Msg.Token(), w.Config.Edge.ExchangeURL, w.GetServiceBased(), w.Config.Collaborators.HTTPClientFactory)
+	w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", cmd.Msg.Org(), cmd.Msg.DeviceId()), cmd.Msg.Token(), w.Config.Edge.ExchangeURL, w.Config.Collaborators.HTTPClientFactory)
 	w.devicePattern = cmd.Msg.Pattern()
 
 	// There is no need for agreement tracking on a node that is using patterns.
@@ -605,10 +604,8 @@ func (w *AgreementWorker) getAllAgreements() (map[string]exchange.DeviceAgreemen
 func (w *AgreementWorker) registerNode(dev *persistence.ExchangeDevice, ms *[]exchange.Microservice) error {
 
 	pdr := exchange.CreateDevicePut(w.GetExchangeToken(), dev.Name)
-	if ms != nil && dev.IsServiceBased() {
+	if ms != nil {
 		pdr.RegisteredServices = *ms
-	} else if ms != nil && dev.IsWorkloadBased() {
-		pdr.RegisteredMicroservices = *ms
 	}
 
 	if dev.Pattern != "" {
@@ -774,13 +771,8 @@ func (w *AgreementWorker) recordAgreementState(agreementId string, pol *policy.P
 
 	// Configure the input object based on the service model or on the older workload model.
 	as.State = state
-	if pol.IsServiceBased() {
-		as.Services = services
-		as.AgreementService = workload
-	} else {
-		as.Microservices = services
-		as.Workload = workload
-	}
+	as.Services = services
+	as.AgreementService = workload
 
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)

@@ -1,7 +1,7 @@
 DOCKER_NAME = amd64_cpu
 DOCKER_TAG = 1.0
 
-DOCKER_HUB_ID = openhorizon
+DOCKER_HUB_ID = localhost:443
 
 default: all
 

@@ -41,12 +41,42 @@ func LogServiceEvent(db *bolt.DB, severity string, message string, event_code st
 	eventlog.LogServiceEvent2(db, severity, message, event_code, "", surl, org, version, arch, []string{})
 }
 
+func findPoliciesForOutput(pm *policy.PolicyManager, db *bolt.DB) (map[string]policy.Policy, error) {
+
+	out := make(map[string]policy.Policy)
+
+	// Policies are kept in org specific directories
+	allOrgs := pm.GetAllPolicyOrgs()
+	for _, org := range allOrgs {
+
+		allPolicies := pm.GetAllPolicies(org)
+		for _, pol := range allPolicies {
+
+			// the arch of SPecRefs have been converted to canonical arch in the pm, we will switch to the ones defined in the pattern or by user for output
+			if pol.APISpecs != nil {
+				for i := 0; i < len(pol.APISpecs); i++ {
+					api_spec := &pol.APISpecs[i]
+					if pmsdef, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UnarchivedMSFilter(), persistence.UrlMSFilter(api_spec.SpecRef)}); err != nil {
+						glog.Warningf(apiLogString(fmt.Sprintf("Failed to get microservice %v from db. %v", api_spec.SpecRef, err)))
+					} else if pmsdef != nil && len(pmsdef) > 0 {
+						api_spec.Arch = pmsdef[0].Arch
+					}
+				}
+			}
+
+			out[pol.Header.Name] = pol
+		}
+	}
+
+	return out, nil
+}
+
 func FindServiceConfigForOutput(pm *policy.PolicyManager, db *bolt.DB) (map[string][]MicroserviceConfig, error) {
 
 	outConfig := make([]MicroserviceConfig, 0, 10)
 
 	// Get all the policies so that we can grab the pieces we need from there
-	policies, err := FindPoliciesForOutput(pm, db)
+	policies, err := findPoliciesForOutput(pm, db)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to get local policies, error %v", err))
 	}
@@ -114,11 +144,6 @@ func CreateService(service *Service,
 		return errorhandler(NewAPIUserInputError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API's /horizondevice path.", "service")), nil, nil
 	}
 
-	// If the device is already set to use the workload/microservice model, then return an error.
-	if pDevice.IsWorkloadBased() {
-		return errorhandler(NewAPIUserInputError("The node is configured to use workloads and microservices, cannot configure a service.", "service")), nil, nil
-	}
-
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("Create service payload: %v", service)))
 
 	// Validate all the inputs in the service object.
@@ -136,7 +161,8 @@ func CreateService(service *Service,
 
 		pattern_org, pattern_name, _ := persistence.GetFormatedPatternString(pDevice.Pattern, pDevice.Org)
 
-		common_apispec_list, _, err := getSpecRefsForPattern(pattern_name, pattern_org, getPatterns, nil, resolveService, db, config, false)
+		common_apispec_list, _, err := getSpecRefsForPattern(pattern_name, pattern_org, getPatterns, resolveService, db, config, false)
+
 		if err != nil {
 			return errorhandler(err), nil, nil
 		}
@@ -454,11 +480,6 @@ func CreateService(service *Service,
 	// Save the service definition in the local database.
 	if err := persistence.SaveOrUpdateMicroserviceDef(db, msdef); err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("Error saving service definition %v into db: %v", *msdef, err))), nil, nil
-	}
-
-	// Indicate that this node is service based.
-	if _, err := pDevice.SetServiceBased(db); err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("Error setting service mode on device object: %v", err))), nil, nil
 	}
 
 	// Set max number of agreements for this service's policy.

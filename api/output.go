@@ -3,9 +3,7 @@ package api
 import (
 	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/persistence"
-	"github.com/open-horizon/anax/policy"
 	"strconv"
-	"strings"
 )
 
 // The output format for microservice config
@@ -89,7 +87,6 @@ func NewAgreementServiceInstanceOutput(ag *persistence.EstablishedAgreement, con
 
 // The output format for GET workload
 type AllWorkloads struct {
-	Config     []persistence.WorkloadConfig  `json:"config"`     // the workload configurations
 	Containers *[]dockerclient.APIContainers `json:"containers"` // the docker info for a running container
 }
 
@@ -139,26 +136,6 @@ func (s EstablishedAgreementsByAgreementTerminatedTime) Swap(i, j int) {
 
 func (s EstablishedAgreementsByAgreementTerminatedTime) Less(i, j int) bool {
 	return s[i].AgreementTerminatedTime < s[j].AgreementTerminatedTime
-}
-
-type WorkloadConfigByWorkloadURLAndVersion []persistence.WorkloadConfig
-
-func (s WorkloadConfigByWorkloadURLAndVersion) Len() int {
-	return len(s)
-}
-
-func (s WorkloadConfigByWorkloadURLAndVersion) Swap(i, j int) {
-	s[i], s[j] = s[j], s[i]
-}
-
-func (s WorkloadConfigByWorkloadURLAndVersion) Less(i, j int) bool {
-
-	// Just compare the starting version in the two ranges
-	first := s[i].VersionExpression[1:strings.Index(s[i].VersionExpression, ",")]
-	second := s[j].VersionExpression[1:strings.Index(s[j].VersionExpression, ",")]
-
-	c, _ := policy.CompareVersions(first, second)
-	return (strings.Compare(s[i].WorkloadURL, s[j].WorkloadURL) == -1) && (c == -1)
 }
 
 type MicroserviceDefById []interface{}

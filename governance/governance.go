@@ -20,7 +20,6 @@ import (
 	"github.com/open-horizon/anax/worker"
 	"net/http"
 	"net/url"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -62,7 +61,7 @@ func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm
 	var ec *worker.BaseExchangeContext
 	pattern := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
-		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, cfg.Edge.ExchangeURL, dev.IsServiceBased(), cfg.Collaborators.HTTPClientFactory)
+		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, cfg.Edge.ExchangeURL, cfg.Collaborators.HTTPClientFactory)
 		pattern = dev.Pattern
 	}
 
@@ -90,18 +89,13 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 	switch incoming.(type) {
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
-		w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.GetServiceBased(), w.Config.Collaborators.HTTPClientFactory)
+		w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.Config.Collaborators.HTTPClientFactory)
 		w.devicePattern = msg.Pattern()
 
 	case *events.EdgeConfigCompleteMessage:
-		msg, _ := incoming.(*events.EdgeConfigCompleteMessage)
-		w.EC.ServiceBased = msg.ServiceBased()
-
 		// Start any services that run without needing an agreement.
-		if msg.ServiceBased() {
-			cmd := w.NewStartAgreementLessServicesCommand()
-			w.Commands <- cmd
-		}
+		cmd := w.NewStartAgreementLessServicesCommand()
+		w.Commands <- cmd
 
 	case *events.WorkloadMessage:
 		msg, _ := incoming.(*events.WorkloadMessage)
@@ -1209,14 +1203,12 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			// get service image auths from the exchange
 			img_auths := make([]events.ImageDockerAuth, 0)
 			if w.Config.Edge.TrustDockerAuthFromOrg {
-				if tcPolicy.IsServiceBased() {
-					if ias, err := exchange.GetHTTPServiceDockerAuthsHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
-						return errors.New(logString(fmt.Sprintf("received error querying exchange for service image auths: %v, error %v", workload, err)))
-					} else {
-						if ias != nil {
-							for _, iau_temp := range ias {
-								img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: "token", Password: iau_temp.Token})
-							}
+				if ias, err := exchange.GetHTTPServiceDockerAuthsHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+					return errors.New(logString(fmt.Sprintf("received error querying exchange for service image auths: %v, error %v", workload, err)))
+				} else {
+					if ias != nil {
+						for _, iau_temp := range ias {
+							img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: "token", Password: iau_temp.Token})
 						}
 					}
 				}
@@ -1231,22 +1223,22 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			// get environmental settings for the workload
 			envAdds := make(map[string]string)
 
-			// The workload config variables are stored in the workload config database.
-			if envAdds, err = w.GetWorkloadConfig(workload.WorkloadURL, workload.Version, tcPolicy.IsServiceBased()); err != nil {
+			// The service config variables are stored in the device's attributes.
+			if envAdds, err = w.GetWorkloadPreference(workload.WorkloadURL); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("Error: %v", err)))
 				return err
 			}
 
 			// The workload config we have might be from a lower version of the workload. Go to the exchange and
 			// get the metadata for the version we are running and then add in any unset default user inputs.
-			var serviceDef exchange.ExchangeDefinition
-			if _, exDef, err := exchange.GetHTTPWorkloadOrServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+			var serviceDef *exchange.ServiceDefinition
+			if _, sDef, err := exchange.GetHTTPServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
 				return errors.New(logString(fmt.Sprintf("received error querying exchange for workload or service metadata: %v, error %v", workload, err)))
-			} else if exDef == nil {
+			} else if sDef == nil {
 				return errors.New(logString(fmt.Sprintf("cound not find workload or service metadata for %v.", workload)))
 			} else {
-				serviceDef = exDef
-				exDef.PopulateDefaultUserInput(envAdds)
+				serviceDef = sDef
+				sDef.PopulateDefaultUserInput(envAdds)
 			}
 
 			cutil.SetPlatformEnvvars(envAdds, config.ENVVAR_PREFIX, proposal.AgreementId(), exchange.GetId(w.GetExchangeId()), exchange.GetOrg(w.GetExchangeId()), workload.WorkloadPassword, w.GetExchangeURL(), w.devicePattern)
@@ -1254,15 +1246,8 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			lc.EnvironmentAdditions = &envAdds
 			lc.AgreementProtocol = protocol
 
-			// Make a list of service dependencies for this workload. For sevices, it is just the top level dependencies. For
-			// the old workload model, it is a list of all dependencies.
+			// Make a list of service dependencies for this workload. For sevices, it is just the top level dependencies.
 			deps := serviceDef.GetServiceDependencies()
-			if !serviceDef.IsServiceBased() {
-				for _, as := range tcPolicy.APISpecs {
-					sd := exchange.ServiceDependency{URL: as.SpecRef, Org: as.Org, Version: as.Version, Arch: as.Arch}
-					(*deps) = append((*deps), sd)
-				}
-			}
 
 			// Create the service instance dependency path with the workload as the root.
 			instancePath := []persistence.ServiceInstancePathElement{*persistence.NewServiceInstancePathElement(workload.WorkloadURL, workload.Version)}
@@ -1458,84 +1443,6 @@ func (w *GovernanceWorker) GetWorkloadPreference(url string) (map[string]string,
 
 }
 
-// Get the environmental variables for the workload for MS split workloads. The workload config
-// record has a version range. The workload has to fall within that range inorder for us to apply
-// the configuration to the workload. If there are multiple configs in the version range, we will
-// use the most current config we have.
-func (w *GovernanceWorker) GetWorkloadConfig(url string, version string, serviceModel bool) (map[string]string, error) {
-
-	// Filter to return workload configs with versions less than or equal to the input workload version range
-	OlderWorkloadWCFilter := func(workload_url string, version string) persistence.WCFilter {
-		return func(e persistence.WorkloadConfigOnly) bool {
-			if vExp, err := policy.Version_Expression_Factory(e.VersionExpression); err != nil {
-				return false
-			} else if inRange, err := vExp.Is_within_range(version); err != nil {
-				return false
-			} else if e.WorkloadURL == workload_url && inRange {
-				return true
-			} else {
-				return false
-			}
-		}
-	}
-
-	// Find the eligible workload config objects. There might not be any if the workload we're starting is a service, or
-	// if the workload just doesnt need any config.
-	cfgs, err := persistence.FindWorkloadConfigs(w.db, []persistence.WCFilter{OlderWorkloadWCFilter(url, version)})
-	if err != nil {
-		return nil, fmt.Errorf("Unable to fetch post split workload %v preferences. Err: %v", url, err)
-	} else if len(cfgs) != 0 {
-		// Sort them by version, oldest to newest
-		sort.Sort(WorkloadConfigByVersion(cfgs))
-
-		// Configure the env map with the newest config that is within the version range.
-		return w.ConfigToEnvvarMap(w.db, &cfgs[len(cfgs)-1], config.ENVVAR_PREFIX)
-	} else if !serviceModel {
-		// Configure the env map with an empty config.
-		return w.ConfigToEnvvarMap(w.db, nil, config.ENVVAR_PREFIX)
-	}
-
-	// The workload being configured is a top level (agreement) service. In that case, if there are any
-	// user input variables configured, they will be found in the attributes database.
-	return w.GetWorkloadPreference(url)
-
-}
-
-// Grab configured userInput variables for the workload and pass them into the
-// workload container. The namespace of these env vars is defined by the workload
-// so there is no need for us to prefix them with the HZN prefix.
-func (w *GovernanceWorker) ConfigToEnvvarMap(db *bolt.DB, cfg *persistence.WorkloadConfig, prefix string) (map[string]string, error) {
-
-	envvars := map[string]string{}
-
-	// Get the location attributes and set them into the envvar map. We think this is a
-	// temporary measure until all workloads are taught to use a GPS microservice.
-	if allAttrs, err := persistence.FindApplicableAttributes(w.db, ""); err != nil {
-		return nil, err
-	} else {
-		glog.V(3).Infof("Attributes to scan: %v", allAttrs)
-		persistence.ConvertWorkloadPersistentNativeToEnv(allAttrs, envvars, config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM)
-	}
-
-	if cfg == nil {
-		return envvars, nil
-	}
-
-	// Workload config values are saved as their native types.
-	for _, attr := range cfg.Attributes {
-		if attr.GetMeta().Type == "UserInputAttributes" {
-			for v, varValue := range attr.GetGenericMappings() {
-				glog.V(3).Infof("workload UI var %v is type %T", v, varValue)
-				if err := cutil.NativeToEnvVariableMap(envvars, v, varValue); err != nil {
-					return nil, err
-				}
-			}
-		}
-	}
-
-	return envvars, nil
-}
-
 func recordProducerAgreementState(httpClient *http.Client, url string, deviceId string, token string, pattern string, agreementId string, pol *policy.Policy, state string) error {
 
 	glog.V(5).Infof(logString(fmt.Sprintf("setting agreement %v state to %v", agreementId, state)))
@@ -1558,13 +1465,8 @@ func recordProducerAgreementState(httpClient *http.Client, url string, deviceId 
 
 	// Configure the input object based on the service model or on the older workload model.
 	as.State = state
-	if pol.IsServiceBased() {
-		as.Services = services
-		as.AgreementService = workload
-	} else {
-		as.Microservices = services
-		as.Workload = workload
-	}
+	as.Services = services
+	as.AgreementService = workload
 
 	// Call the exchange API to set the agreement state.
 	var resp interface{}

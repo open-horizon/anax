@@ -1,7 +1,7 @@
 # Makefile for hello service container
 
 VER = 1.0
-BASE = openhorizon
+BASE = localhost:443
 IMAGE = amd64_helloservice
 
 default: build run check

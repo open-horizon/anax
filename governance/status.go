@@ -128,27 +128,11 @@ func (w *GovernanceWorker) ReportDeviceStatus() {
 		}
 	}
 
-	if w.GetServiceBased() {
-		// get service status
-		if ms_status, err := w.getServiceStatus(containers); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Error getting service container status: %v", err)))
-		} else {
-			device_status.Services = ms_status
-		}
+	// get service status
+	if ms_status, err := w.getServiceStatus(containers); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Error getting service container status: %v", err)))
 	} else {
-		// get microservice status
-		if ms_status, err := w.getMicroserviceStatus(containers); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Error getting microservice container status: %v", err)))
-		} else {
-			device_status.Microservices = ms_status
-		}
-
-		// get workload status
-		if wl_status, err := w.getWorkloadStatus(containers); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Error getting microservice container status: %v", err)))
-		} else {
-			device_status.Workloads = wl_status
-		}
+		device_status.Services = ms_status
 	}
 
 	// report the status to the exchange

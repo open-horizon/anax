@@ -61,7 +61,7 @@ function createProject {
     sed -e 's|"name": ""|"name": "'$6'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e 's|"type": ""|"type": "'$7'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e 's|"": {|"'$9'": {|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-    sed -e 's|"image": ""|"image": "openhorizon/amd64_'$9':1.0"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
+    sed -e 's|"image": ""|"image": "localhost:443/amd64_'$9':1.0"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e '/"ENV_VAR_HERE=SOME_VALUE"/d' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
 
     sed -e '/"global"/,+8d' ${userInput} > ${userInput}.tmp && mv ${userInput}.tmp ${userInput}
@@ -94,7 +94,7 @@ function stopServices {
 # $2 - project name
 function deploy {
     cd $1
-    deploy=$(hzn exchange service publish -vI -k /tmp/*private.key -f ./horizon/service.definition.json 2>&1)
+    deploy=$(hzn exchange service publish -v -k /tmp/*private.key -f ./horizon/service.definition.json 2>&1)
     deploying=$(echo ${deploy} | grep "HTTP code: 201")
     if [ "${deploying}" == "" ]; then
         echo -e "\nERROR: $2 did not deploy. Output was:"
@@ -201,6 +201,15 @@ fi
 
 echo -e "Copy public key into anax folder for use at runtime."
 cp /tmp/*public.pem /root/.colonus/.
+
+echo -e "Logging into the e2edev docker registry."
+echo ${DOCKER_REG_PW} | docker login -u=${DOCKER_REG_USER} --password-stdin localhost:443
+
+if [ $? -ne 0 ]
+then
+    echo -e "docker login failed."
+    exit 1
+fi
 
 deploy ${CPU_HOME} "CPU"
 if [ $? -ne 0 ]; then exit $?; fi

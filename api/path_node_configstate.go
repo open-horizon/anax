@@ -56,9 +56,7 @@ func FindConfigstateForOutput(db *bolt.DB) (*Configstate, error) {
 // Given a demarshalled Configstate object, validate it and save, returning any errors.
 func UpdateConfigstate(cfg *Configstate,
 	errorhandler ErrorHandler,
-	getMicroservice exchange.MicroserviceHandler,
 	getPatterns exchange.PatternHandler,
-	resolveWorkload exchange.WorkloadResolverHandler,
 	resolveService exchange.ServiceResolverHandler,
 	getService exchange.ServiceHandler,
 	db *bolt.DB,
@@ -95,8 +93,7 @@ func UpdateConfigstate(cfg *Configstate,
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("Transition from '%v' to '%v' is not supported.", pDevice.Config.State, *cfg.State), "configstate.state")), nil, nil
 	}
 
-	// From the node's pattern, resolve all the workloads/top-level services to dependent microservices/services and then register each microservice/service that is not already registered.
-	usingServices := false
+	// From the node's pattern, resolve all the top-level services to dependent services and then register each service that is not already registered.
 	if pDevice.Pattern != "" {
 
 		glog.V(3).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig of services starting")))
@@ -104,84 +101,38 @@ func UpdateConfigstate(cfg *Configstate,
 		pattern_org, pattern_name, pat := persistence.GetFormatedPatternString(pDevice.Pattern, pDevice.Org)
 		pDevice.Pattern = pat
 
-		common_apispec_list, pattern, err := getSpecRefsForPattern(pattern_name, pattern_org, getPatterns, resolveWorkload, resolveService, db, config, true)
+		common_apispec_list, pattern, err := getSpecRefsForPattern(pattern_name, pattern_org, getPatterns, resolveService, db, config, true)
+
 		if err != nil {
 			LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("%v", err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 			return errorhandler(err), nil, nil
 		}
 
-		// Reject the config attempt if the dependencies are inconsistent. There are always dependencies for the workload model, but not for the service model.
-		if !pattern.UsingServiceModel() && len(*common_apispec_list) == 0 {
-			LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Services in pattern %v don't have a common version range.", pDevice.Pattern), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
-			return errorhandler(NewAPIUserInputError(fmt.Sprintf("services in pattern %v don't have a common version range.", pDevice.Pattern), "configstate.state")), nil, nil
-		}
-
-		// Check for inconsistencies between what might have been configured up to this point and what is in the pattern. Both the service based and
-		// workload based flags could be off at this point, that's ok.
-		if pattern.UsingServiceModel() && pDevice.IsWorkloadBased() {
-			return errorhandler(NewAPIUserInputError("The node is configured to use workloads and microservices, cannot use a pattern that is service based.", "configstate.state")), nil, nil
-		} else if !pattern.UsingServiceModel() && pDevice.IsServiceBased() {
-			return errorhandler(NewAPIUserInputError("The node is configured to use services, cannot use a pattern that is workload based.", "configstate.state")), nil, nil
-		}
-
-		// Using the list of APISpec objects, we can create a microservice/service on this node automatically, for each microservice/service
+		// Using the list of APISpec objects, we can create a service on this node automatically, for each service
 		// that already has configuration or which doesn't need it.
-		var createServiceError error
-		passthruHandler := GetPassThroughErrorHandler(&createServiceError)
 		for _, apiSpec := range *common_apispec_list {
 
-			if pattern.UsingServiceModel() {
-				s := NewService(apiSpec.SpecRef, apiSpec.Org, makeServiceName(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version), apiSpec.Arch, apiSpec.Version)
-				if errHandled := configureService(s, getPatterns, resolveService, getService, errorhandler, &msgs, db, config); errHandled {
-					return errHandled, nil, nil
-				}
-
-			} else {
-				service := NewMicroService(apiSpec.SpecRef, apiSpec.Org, makeServiceName(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version), apiSpec.Arch, apiSpec.Version)
-				errHandled, newService, msg := CreateMicroService(service, passthruHandler, getPatterns, resolveWorkload, getMicroservice, db, config, false)
-				if errHandled {
-					switch createServiceError.(type) {
-					case *MSMissingVariableConfigError:
-						glog.Errorf(apiLogString(fmt.Sprintf("Configstate autoconfig received error (%T) %v", createServiceError, createServiceError)))
-						msErr := createServiceError.(*MSMissingVariableConfigError)
-						// Cannot autoconfig this microservice because it has variables that need to be configured.
-						return errorhandler(NewAPIUserInputError(fmt.Sprintf("Configstate autoconfig, service %v %v %v, %v", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, msErr.Err), "configstate.state")), nil, nil
-
-					case *DuplicateServiceError:
-						// If the microservice is already registered, that's ok because the node user is allowed to configure any of the
-						// required microservices before calling the configstate API.
-						glog.V(3).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig found duplicate service %v %v, overwriting the version range to %v.", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version)))
-
-					default:
-						return errorhandler(NewSystemError(fmt.Sprintf("unexpected error returned from service create (%T) %v", createServiceError, createServiceError))), nil, nil
-					}
-				} else {
-					glog.V(5).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig created service %v", newService)))
-					msgs = append(msgs, msg)
-				}
+			s := NewService(apiSpec.SpecRef, apiSpec.Org, makeServiceName(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version), apiSpec.Arch, apiSpec.Version)
+			if errHandled := configureService(s, getPatterns, resolveService, getService, errorhandler, &msgs, db, config); errHandled {
+				return errHandled, nil, nil
 			}
+
 		}
 
 		// The top-level services in a pattern also need to be registered just like the dependent services.
-		if pattern.UsingServiceModel() {
-			for _, service := range pattern.Services {
+		for _, service := range pattern.Services {
 
-				// Ignore top-level services that don't match this node's hardware architecture.
-				thisArch := cutil.ArchString()
-				if service.ServiceArch != thisArch && config.ArchSynonyms.GetCanonicalArch(service.ServiceArch) != thisArch {
-					glog.Infof(apiLogString(fmt.Sprintf("skipping service because it is for a different hardware architecture, this node is %v. Skipped service is: %v", thisArch, service.ServiceArch)))
-					continue
-				}
-
-				s := NewService(service.ServiceURL, service.ServiceOrg, makeServiceName(service.ServiceURL, service.ServiceOrg, "[0.0.0,INFINITY)"), service.ServiceArch, "[0.0.0,INFINITY)")
-				if errHandled := configureService(s, getPatterns, resolveService, getService, errorhandler, &msgs, db, config); errHandled {
-					return errHandled, nil, nil
-				}
-
+			// Ignore top-level services that don't match this node's hardware architecture.
+			thisArch := cutil.ArchString()
+			if service.ServiceArch != thisArch && config.ArchSynonyms.GetCanonicalArch(service.ServiceArch) != thisArch {
+				glog.Infof(apiLogString(fmt.Sprintf("skipping service because it is for a different hardware architecture, this node is %v. Skipped service is: %v", thisArch, service.ServiceArch)))
+				continue
 			}
 
-			// Remember that this node is using the service model.
-			usingServices = true
+			s := NewService(service.ServiceURL, service.ServiceOrg, makeServiceName(service.ServiceURL, service.ServiceOrg, "[0.0.0,INFINITY)"), service.ServiceArch, "[0.0.0,INFINITY)")
+			if errHandled := configureService(s, getPatterns, resolveService, getService, errorhandler, &msgs, db, config); errHandled {
+				return errHandled, nil, nil
+			}
 
 		}
 
@@ -190,7 +141,7 @@ func UpdateConfigstate(cfg *Configstate,
 	}
 
 	// Update the state in the local database
-	updatedDev, err := pDevice.SetConfigstate(db, pDevice.Id, *cfg.State, usingServices)
+	updatedDev, err := pDevice.SetConfigstate(db, pDevice.Id, *cfg.State)
 	if err != nil {
 		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error persisting new config state: %v", err), persistence.EC_DATABASE_ERROR)
 		return errorhandler(NewSystemError(fmt.Sprintf("error persisting new config state: %v", err))), nil, nil
@@ -231,7 +182,7 @@ func configureService(service *Service,
 
 		switch createServiceError.(type) {
 
-		// This is a real error, the service is not configurable with supplying values for non-defaulted user inputs.
+		// This is a real error, the service is not configurable without supplying values for non-defaulted user inputs.
 		case *MSMissingVariableConfigError:
 			glog.Errorf(apiLogString(fmt.Sprintf("Configstate autoconfig received error (%T) %v", createServiceError, createServiceError)))
 			msErr := createServiceError.(*MSMissingVariableConfigError)
@@ -257,39 +208,14 @@ func configureService(service *Service,
 
 // This function verifies that if the given workload needs variable configuration, that there is a workloadconfig
 // object holding that config.
-func workloadConfigPresent(ed exchange.ExchangeDefinition, wUrl string, wVersion string, db *bolt.DB) (bool, error) {
+func workloadConfigPresent(sd *exchange.ServiceDefinition, wUrl string, wVersion string, db *bolt.DB) (bool, error) {
 
 	// If the definition needs no config, exit early.
-	if !ed.NeedsUserInput() {
+	if !sd.NeedsUserInput() {
 		return true, nil
 	}
 
-	// Filter to return workload configs with versions less than or equal to the input workload version range
-	OlderWorkloadWCFilter := func(workload_url string, version string) persistence.WCFilter {
-		return func(e persistence.WorkloadConfigOnly) bool {
-			if vExp, err := policy.Version_Expression_Factory(e.VersionExpression); err != nil {
-				return false
-			} else if inRange, err := vExp.Is_within_range(version); err != nil {
-				return false
-			} else if e.WorkloadURL == workload_url && inRange {
-				return true
-			} else {
-				return false
-			}
-		}
-	}
-
-	// Find the eligible workload config objects. We know that the /workload/config API validates that all required
-	// variables are set BEFORE saving the config, so if we find any matching config objects, we can assume the
-	// workload is configured.
-	cfgs, err := persistence.FindWorkloadConfigs(db, []persistence.WCFilter{OlderWorkloadWCFilter(wUrl, wVersion)})
-	if err != nil {
-		return false, errors.New(fmt.Sprintf("unable to read workload config objects %v %v, error: %v", wUrl, wVersion, err))
-	} else if len(cfgs) != 0 {
-		return true, nil
-	}
-
-	// The workload being configured might actually be a top level service. In that case, if there are any
+	// The workload being configured is a top level service, and if there are any
 	// user input variables configured, they will be found in the attributes database. We know that the /service/config
 	// API validates that all required variables are set BEFORE saving the config, so if we find any matching userinput
 	// attribute objects, we can assume the service is configured.
@@ -314,7 +240,6 @@ func workloadConfigPresent(ed exchange.ExchangeDefinition, wUrl string, wVersion
 func getSpecRefsForPattern(patName string,
 	patOrg string,
 	getPatterns exchange.PatternHandler,
-	resolveWorkload exchange.WorkloadResolverHandler,
 	resolveService exchange.ServiceResolverHandler,
 	db *bolt.DB,
 	config *config.HorizonConfig,
@@ -344,100 +269,49 @@ func getSpecRefsForPattern(patName string,
 	completeAPISpecList := new(policy.APISpecList)
 	thisArch := cutil.ArchString()
 
-	if patternDef.UsingServiceModel() {
+	// This parameter is nil if the caller is configuring a workload based pattern.
+	if resolveService == nil {
+		return nil, nil, NewAPIUserInputError(fmt.Sprintf("cannot configure a microservice on a node that is using a service based pattern: %v", patId), "microservice")
+	}
 
-		// This parameter is nil if the caller is configuring a workload based pattern.
-		if resolveService == nil {
-			return nil, nil, NewAPIUserInputError(fmt.Sprintf("cannot configure a microservice on a node that is using a service based pattern: %v", patId), "microservice")
+	for _, service := range patternDef.Services {
+
+		// Ignore top-level services that don't match this node's hardware architecture.
+		if service.ServiceArch != thisArch && config.ArchSynonyms.GetCanonicalArch(service.ServiceArch) != thisArch {
+			glog.Infof(apiLogString(fmt.Sprintf("skipping service because it is for a different hardware architecture, this node is %v. Skipped service is: %v", thisArch, service.ServiceArch)))
+			continue
 		}
 
-		for _, service := range patternDef.Services {
+		// Each top-level service in the pattern can specify rollback versions, so to get a fully qualified top-level service URL,
+		// we need to iterate each "workloadChoice" to grab the version.
+		for _, serviceChoice := range service.ServiceVersions {
 
-			// Ignore top-level services that don't match this node's hardware architecture.
-			if service.ServiceArch != thisArch && config.ArchSynonyms.GetCanonicalArch(service.ServiceArch) != thisArch {
-				glog.Infof(apiLogString(fmt.Sprintf("skipping service because it is for a different hardware architecture, this node is %v. Skipped service is: %v", thisArch, service.ServiceArch)))
-				continue
+			apiSpecList, serviceDef, err := resolveService(service.ServiceURL, service.ServiceOrg, serviceChoice.Version, service.ServiceArch)
+			if err != nil {
+				return nil, nil, NewSystemError(fmt.Sprintf("Error resolving service %v %v %v %v, error %v", service.ServiceURL, service.ServiceOrg, serviceChoice.Version, thisArch, err))
 			}
 
-			// Each top-level service in the pattern can specify rollback versions, so to get a fully qualified top-level service URL,
-			// we need to iterate each "workloadChoice" to grab the version.
-			for _, serviceChoice := range service.ServiceVersions {
-
-				apiSpecList, serviceDef, err := resolveService(service.ServiceURL, service.ServiceOrg, serviceChoice.Version, service.ServiceArch)
-				if err != nil {
-					return nil, nil, NewSystemError(fmt.Sprintf("Error resolving service %v %v %v %v, error %v", service.ServiceURL, service.ServiceOrg, serviceChoice.Version, thisArch, err))
+			if checkWorkloadConfig {
+				// The top-level service might have variables that need to be configured. If so, find all relevant service attribute objects to make sure
+				// there is userinput config available.
+				if present, err := workloadConfigPresent(serviceDef, service.ServiceURL, serviceChoice.Version, db); err != nil {
+					return nil, nil, NewSystemError(fmt.Sprintf("Error checking service config, error %v", err))
+				} else if !present {
+					return nil, nil, NewMSMissingVariableConfigError(fmt.Sprintf("service config for %v %v is missing", service.ServiceURL, serviceChoice.Version), "configstate.state")
 				}
-
-				if checkWorkloadConfig {
-					// The top-level service might have variables that need to be configured. If so, find all relevant service attribute objects to make sure
-					// there is userinput config available.
-					if present, err := workloadConfigPresent(serviceDef, service.ServiceURL, serviceChoice.Version, db); err != nil {
-						return nil, nil, NewSystemError(fmt.Sprintf("Error checking service config, error %v", err))
-					} else if !present {
-						return nil, nil, NewMSMissingVariableConfigError(fmt.Sprintf("service config for %v %v is missing", service.ServiceURL, serviceChoice.Version), "configstate.state")
-					}
-				}
-
-				// Look for inconsistencies in the hardware architecture of the list of dependencies.
-				for _, apiSpec := range *apiSpecList {
-					if apiSpec.Arch != thisArch && config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch) != thisArch {
-						return nil, nil, NewSystemError(fmt.Sprintf("The referenced service %v by service %v has a hardware architecture that is not supported by this node: %v.", apiSpec, service.ServiceURL, thisArch))
-					}
-				}
-
-				// MergeWith will omit exact duplicates when merging the 2 lists.
-				(*completeAPISpecList) = completeAPISpecList.MergeWith(apiSpecList)
 			}
 
+			// Look for inconsistencies in the hardware architecture of the list of dependencies.
+			for _, apiSpec := range *apiSpecList {
+				if apiSpec.Arch != thisArch && config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch) != thisArch {
+					return nil, nil, NewSystemError(fmt.Sprintf("The referenced service %v by service %v has a hardware architecture that is not supported by this node: %v.", apiSpec, service.ServiceURL, thisArch))
+				}
+			}
+
+			// MergeWith will omit exact duplicates when merging the 2 lists.
+			(*completeAPISpecList) = completeAPISpecList.MergeWith(apiSpecList)
 		}
 
-	} else {
-
-		// This parameter is nil if the caller is configuring a service based pattern.
-		if resolveWorkload == nil {
-			return nil, nil, NewAPIUserInputError(fmt.Sprintf("cannot configure a service on a node that is using a workload based pattern: %v", patId), "service")
-
-		}
-
-		for _, workload := range patternDef.Workloads {
-
-			// Ignore workloads that don't match this node's hardware architecture.
-			if workload.WorkloadArch != thisArch && config.ArchSynonyms.GetCanonicalArch(workload.WorkloadArch) != thisArch {
-				glog.Infof(apiLogString(fmt.Sprintf("skipping workload because it is for a different hardware architecture, this node is %v. Skipped workload is: %v", thisArch, workload.WorkloadArch)))
-				continue
-			}
-
-			// Each workload in the pattern can specify rollback versions, so to get a fully qualified workload URL,
-			// we need to iterate each "workloadChoice" to grab the version.
-			for _, workloadChoice := range workload.WorkloadVersions {
-
-				apiSpecList, workloadDef, err := resolveWorkload(workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, workload.WorkloadArch)
-				if err != nil {
-					return nil, nil, NewSystemError(fmt.Sprintf("Error resolving workload %v %v %v %v, error %v", workload.WorkloadURL, workload.WorkloadOrg, workloadChoice.Version, thisArch, err))
-				}
-
-				if checkWorkloadConfig {
-					// The workload might have variables that need to be configured. If so, find all relevant workloadconfig objects to make sure
-					// there is a workload config available.
-					if present, err := workloadConfigPresent(workloadDef, workload.WorkloadURL, workloadChoice.Version, db); err != nil {
-						return nil, nil, NewSystemError(fmt.Sprintf("Error checking workload config, error %v", err))
-					} else if !present {
-						return nil, nil, NewMSMissingVariableConfigError(fmt.Sprintf("Workload config for %v %v is missing", workload.WorkloadURL, workloadChoice.Version), "configstate.state")
-					}
-				}
-
-				// Look for inconsistencies in the hardware architecture of the list of dependencies.
-				for _, apiSpec := range *apiSpecList {
-					if apiSpec.Arch != thisArch && config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch) != thisArch {
-						return nil, nil, NewSystemError(fmt.Sprintf("The referenced microservice %v by workload %v has a hardware architecture that is not supported by this node: %v.", apiSpec, workload.WorkloadURL, thisArch))
-					}
-				}
-
-				// MergeWith will omit exact duplicates when merging the 2 lists.
-				(*completeAPISpecList) = completeAPISpecList.MergeWith(apiSpecList)
-			}
-
-		}
 	}
 
 	// If the pattern search doesnt find any microservices/services then there might be a problem.
@@ -445,7 +319,7 @@ func getSpecRefsForPattern(patName string,
 		return completeAPISpecList, &patternDef, nil
 	}
 
-	// for now, anax only allow one microservice version, so we need to get the common version range for each microservice.
+	// for now, anax only allow one service version, so we need to get the common version range for each service.
 	common_apispec_list, err := completeAPISpecList.GetCommonVersionRanges()
 	if err != nil {
 		return nil, nil, NewAPIUserInputError(fmt.Sprintf("Error resolving the common version ranges for the referenced services for %v %v. %v", patId, thisArch, err), "configstate.state")

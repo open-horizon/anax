@@ -216,35 +216,6 @@ else
     echo "Register services SUCCESSFUL"
 fi
 
-if [ "$TESTFAIL" != "1" ]
-then
-    echo "Register microservices, workloads, and patterns"
-    ./workload_apireg.sh
-    if [ $? -ne 0 ]
-    then
-        echo -e "Microservice and workload registration failure."
-        TESTFAIL="1"
-    else
-        echo "Register microservices and workloads SUCCESSFUL"
-    fi
-fi
-
-# Register a microservice and workload via the hzn exchange commands
-if [ "$TESTFAIL" != "1" ]
-then
-    echo "Register microservices, workloads, and patterns for keytest"
-    ./keytest_reg.sh
-    if [ $? -ne 0 ]
-    then
-        echo -e "hzn microservice, workload and pattern registration with signing keys failed."
-        TESTFAIL="1"
-    else
-        echo "Register microservices and workloads for keytest SUCCESSFUL"
-    fi
-fi
-
-
-
 TEST_MSGHUB=0
 for pat in $(echo $TEST_PATTERNS | tr "," " "); do
     if [ "$pat" == "cpu2msghub" ]; then
@@ -284,8 +255,6 @@ then
         export PASS=useranax1pw
         export DEVICE_ORG="userdev"
     fi
-
-    #export mtn_soliditycontract=1
 
     # Start Anax
     echo "Starting Anax1 for tests."
@@ -334,6 +303,24 @@ then
     # register all patterns for userdev org to agbot1
     REGAGBOTUSERDEV=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns" | jq -r '.msg')
     echo "$REGAGBOTUSERDEV"
+
+    # REGAGBOTSLOC=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"sloc"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_sloc" | jq -r '.msg')
+    # echo "$REGAGBOTSLOC"
+
+    # REGAGBOTSGPS=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"sgps"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_sgps" | jq -r '.msg')
+    # echo "$REGAGBOTSGPS"
+
+    # REGAGBOTSPWS=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"spws"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_spws" | jq -r '.msg')
+    # echo "$REGAGBOTSPWS"
+
+    # REGAGBOTSALL=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"sall"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_sall" | jq -r '.msg')
+    # echo "$REGAGBOTSALL"
+
+    # REGAGBOTSUH=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"susehello"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_susehello" | jq -r '.msg')
+    # echo "$REGAGBOTSUH"
+
+    REGAGBOTSHELM=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"shelm"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_shelm" | jq -r '.msg')
+    echo "$REGAGBOTSUH"
 
     echo "Registering Agbot instance2..."
     REGAGBOT2=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"token":"abcdefg","name":"agbotdev","msgEndPoint":"","publicKey":""}' "${EXCH_URL}/orgs/$ORG/agbots/ag54321" | jq -r '.msg')

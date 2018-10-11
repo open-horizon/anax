@@ -212,11 +212,8 @@ fi
 # =================================================================
 # run HA tests - device is non-HA, cant use HA config
 
-SERVICE_MODEL="microservice"
-
-if [ "$PATTERN" = "sns" ] || [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "spws" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ] || [ "$PATTERN" = "shelm" ]; then
-  SERVICE_MODEL="service"
-  APITESTURL="https://bluehorizon.network/"$SERVICE_MODEL"s/no-such-service"
+SERVICE_MODEL="service"
+APITESTURL="https://bluehorizon.network/"$SERVICE_MODEL"s/no-such-service"
 
 read -d '' service <<EOF
 {
@@ -246,40 +243,7 @@ read -d '' service <<EOF
 }
 EOF
 
-else
-
-APITESTURL="https://bluehorizon.network/"$SERVICE_MODEL"s/no-such-service"
-
-read -d '' service <<EOF
-{
-  "sensor_url": "$APITESTURL",
-  "sensor_name": "test",
-  "sensor_version": "1.0.0",
-  "attributes": [
-    {
-      "type": "ComputeAttributes",
-      "label": "Compute Resources",
-      "publishable": true,
-      "host_only": false,
-      "mappings": {
-        "ram": 256,
-        "cpus": 1
-      }
-    },
-    {
-      "type": "HAAttributes",
-      "label": "HA Partner",
-      "publishable": true,
-      "host_only": false,
-      "mappings": {
-        "partnerID": ["an54321"]
-      }
-    }
-  ]
-}
-EOF
-
-fi
+#fi
 
 echo -e "\n\n[D] payload for HA test: $service"
 
@@ -306,18 +270,11 @@ fi
 # run attribute specific tests
 
 # Set env vars depending on whether we're running services or not.
-export SERVICE_MODE="microservice"
-export SERVICE_URL="sensor_url"
-export SERVICE_ORG="sensor_org"
-export SERVICE_NAME="sensor_name"
-export SERVICE_VERSION="sensor_version"
-if [ "$PATTERN" = "sns" ] || [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "spws" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ] || [ "$PATTERN" = "shelm" ]; then
-  export SERVICE_MODE="service"
-  export SERVICE_URL="url"
-  export SERVICE_ORG="organization"
-  export SERVICE_NAME="name"
-  export SERVICE_VERSION="version"
-fi
+export SERVICE_MODE="service"
+export SERVICE_URL="url"
+export SERVICE_ORG="organization"
+export SERVICE_NAME="name"
+export SERVICE_VERSION="version"
 
 ./counterparty_apitest.sh
 if [ $? -ne 0 ]
@@ -349,40 +306,14 @@ else
   echo -e "Agreementprotocol tests SUCCESSFUL"
 fi
 
-if [ "$PATTERN" = "sns" ] || [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "spws" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ] || [ "$PATTERN" = "shelm" ]; then
-
-    ./service_apitest.sh
-  if [ $? -ne 0 ]
-  then
-    echo -e "Service config tests failed"
-    TESTFAIL="1"
-    exit 2
-  else
-    echo -e "Service config tests SUCCESSFUL"
-  fi
-
+  ./service_apitest.sh
+if [ $? -ne 0 ]
+then
+  echo -e "Service config tests failed"
+  TESTFAIL="1"
+  exit 2
 else
-
-  ./workloadconfig_apitest.sh
-  if [ $? -ne 0 ]
-  then
-    echo -e "Workload config tests failed"
-    TESTFAIL="1"
-    exit 2
-  else
-    echo -e "Workload config tests SUCCESSFUL"
-  fi
-
-  ./ms_apitest.sh
-  if [ $? -ne 0 ]
-  then
-    echo -e "Microservice API tests failed"
-    TESTFAIL="1"
-    exit 2
-  else
-    echo -e "Microservice API tests SUCCESSFUL"
-  fi
-
+  echo -e "Service config tests SUCCESSFUL"
 fi
 
 ./cs_apitest.sh

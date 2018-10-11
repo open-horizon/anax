@@ -419,20 +419,13 @@ func (b *BaseConsumerProtocolHandler) RecordConsumerAgreementState(agreementId s
 	glog.V(5).Infof(BCPHlogstring2(workerID, fmt.Sprintf("setting agreement %v for workload %v/%v state to %v", agreementId, org, workload, state)))
 
 	as := new(exchange.PutAgbotAgreementState)
-
-	wa := exchange.WorkloadAgreement{
+	as.Service = exchange.WorkloadAgreement{
 		Org:     org,
 		Pattern: exchange.GetId(pol.PatternId),
 		URL:     workload,
 	}
-
-	if pol.IsServiceBased() {
-		as.Service = wa
-	} else {
-		as.Workload = wa
-	}
-
 	as.State = state
+
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := b.config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(b.agbotId) + "/agbots/" + exchange.GetId(b.agbotId) + "/agreements/" + agreementId

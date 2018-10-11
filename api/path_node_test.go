@@ -62,7 +62,7 @@ func Test_FindHDForOutput1(t *testing.T) {
 
 	theOrg := "myorg"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "apattern", persistence.CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "apattern", persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -93,7 +93,7 @@ func Test_FindHDForOutput2(t *testing.T) {
 
 	theOrg := "myorg"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "otherorg/apattern", persistence.CONFIGSTATE_CONFIGURING, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "otherorg/apattern", persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -337,7 +337,7 @@ func Test_CreateHorizonDevice0(t *testing.T) {
 					Label:              "label",
 					Description:        "desc",
 					Public:             true,
-					Workloads:          []exchange.WorkloadReference{},
+					Services:           []exchange.ServiceReference{},
 					AgreementProtocols: []exchange.AgreementProtocol{},
 				},
 			}, nil
@@ -398,7 +398,7 @@ func Test_CreateHorizonDevice_EnvVarDeviceid(t *testing.T) {
 					Label:              "label",
 					Description:        "desc",
 					Public:             true,
-					Workloads:          []exchange.WorkloadReference{},
+					Services:           []exchange.ServiceReference{},
 					AgreementProtocols: []exchange.AgreementProtocol{},
 				},
 			}, nil
@@ -458,7 +458,7 @@ func Test_CreateHorizonDevice_alreadythere(t *testing.T) {
 					Label:              "label",
 					Description:        "desc",
 					Public:             true,
-					Workloads:          []exchange.WorkloadReference{},
+					Services:           []exchange.ServiceReference{},
 					AgreementProtocols: []exchange.AgreementProtocol{},
 				},
 			}, nil
@@ -523,7 +523,7 @@ func Test_CreateHorizonDevice_badorg(t *testing.T) {
 					Label:              "label",
 					Description:        "desc",
 					Public:             true,
-					Workloads:          []exchange.WorkloadReference{},
+					Services:           []exchange.ServiceReference{},
 					AgreementProtocols: []exchange.AgreementProtocol{},
 				},
 			}, nil
@@ -583,7 +583,7 @@ func Test_CreateHorizonDevice_badpattern(t *testing.T) {
 					Label:              "label",
 					Description:        "desc",
 					Public:             true,
-					Workloads:          []exchange.WorkloadReference{},
+					Services:           []exchange.ServiceReference{},
 					AgreementProtocols: []exchange.AgreementProtocol{},
 				},
 			}, nil
@@ -621,7 +621,7 @@ func Test_DeleteHorizonDevice_success(t *testing.T) {
 	myPattern := "testPattern"
 	device := getBasicDevice(myOrg, myPattern)
 
-	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, persistence.CONFIGSTATE_CONFIGURED, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, persistence.CONFIGSTATE_CONFIGURED)
 	if err != nil {
 		t.Errorf("unexpected error creating device %v", err)
 	}
@@ -659,7 +659,7 @@ func Test_DeleteHorizonDevice_fail1(t *testing.T) {
 	myPattern := "testPattern"
 	device := getBasicDevice(myOrg, myPattern)
 
-	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, persistence.CONFIGSTATE_UNCONFIGURED, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, persistence.CONFIGSTATE_UNCONFIGURED)
 	if err != nil {
 		t.Errorf("unexpected error creating device %v", err)
 	}
@@ -699,7 +699,7 @@ func Test_PatchHorizonDevice_fail1(t *testing.T) {
 	myPattern := "testPattern"
 	device := getBasicDevice(myOrg, myPattern)
 
-	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, persistence.CONFIGSTATE_CONFIGURED, false, false)
+	_, err = persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, false, *device.Org, *device.Pattern, persistence.CONFIGSTATE_CONFIGURED)
 	if err != nil {
 		t.Errorf("unexpected error creating device %v", err)
 	}

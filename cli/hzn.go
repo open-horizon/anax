@@ -20,7 +20,6 @@ import (
 	"github.com/open-horizon/anax/cli/status"
 	"github.com/open-horizon/anax/cli/unregister"
 	"github.com/open-horizon/anax/cli/utilcmds"
-	"github.com/open-horizon/anax/cli/workload"
 	"github.com/open-horizon/anax/cutil"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"os"
@@ -133,66 +132,12 @@ Environment Variables:
 	exPatDelCmd := exPatternCmd.Command("remove", "Remove a pattern resource from the Horizon Exchange.")
 	exDelPat := exPatDelCmd.Arg("pattern", "The pattern to remove.").Required().String()
 	exPatDelForce := exPatDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
-	exPatternAddWorkCmd := exPatternCmd.Command("insertworkload", "Add or replace a workload in an existing pattern resource in the Horizon Exchange.")
-	exPatAddWork := exPatternAddWorkCmd.Arg("pattern", "The existing pattern that the workload should be inserted into.").Required().String()
-	exPatAddWorkJsonFile := exPatternAddWorkCmd.Flag("json-file", "The path of a JSON file containing the additional workload metadata. See /usr/horizon/samples/insert-workload-into-pattern.json. Specify -f- to read from stdin.").Short('f').Required().String()
-	exPatAddWorkKeyFile := exPatternAddWorkCmd.Flag("private-key-file", "The path of a private key file to be used to sign the inserted workload. ").Short('k').ExistingFile()
-	exPatAddWorkPubKeyFile := exPatternAddWorkCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
-	exPatternDelWorkCmd := exPatternCmd.Command("removeworkload", "Remove a workload from an existing pattern resource in the Horizon Exchange.")
-	exPatDelWorkPat := exPatternDelWorkCmd.Arg("pattern", "The existing pattern that the workload should be removed from.").Required().String()
-	exPatDelWorkOrg := exPatternDelWorkCmd.Arg("workload-org", "The org of the workload to remove.").Required().String()
-	exPatDelWorkUrl := exPatternDelWorkCmd.Arg("workload-url", "The URL of the workload to remove.").Required().String()
-	exPatDelWorkArch := exPatternDelWorkCmd.Arg("workload-arch", "The arch of the workload to remove.").Required().String()
 	exPatternListKeyCmd := exPatternCmd.Command("listkey", "List the signing public keys/certs for this pattern resource in the Horizon Exchange.")
 	exPatListKeyPat := exPatternListKeyCmd.Arg("pattern", "The existing pattern to list the keys for.").Required().String()
 	exPatListKeyKey := exPatternListKeyCmd.Arg("key-name", "The existing key name to see the contents of.").String()
 	exPatternRemKeyCmd := exPatternCmd.Command("removekey", "Remove a signing public key/cert for this pattern resource in the Horizon Exchange.")
 	exPatRemKeyPat := exPatternRemKeyCmd.Arg("pattern", "The existing pattern to remove the key from.").Required().String()
 	exPatRemKeyKey := exPatternRemKeyCmd.Arg("key-name", "The existing key name to remove.").Required().String()
-
-	exWorkloadCmd := exchangeCmd.Command("workload", "List and manage workloads in the Horizon Exchange")
-	exWorkloadListCmd := exWorkloadCmd.Command("list", "Display the workload resources from the Horizon Exchange.")
-	exWorkload := exWorkloadListCmd.Arg("workload", "List just this one workload.").String()
-	exWorkloadLong := exWorkloadListCmd.Flag("long", "When listing all of the workloads, show the entire resource of each workloads, instead of just the name.").Short('l').Bool()
-	exWorkloadPublishCmd := exWorkloadCmd.Command("publish", "Sign and create/update the workload resource in the Horizon Exchange.")
-	exWorkJsonFile := exWorkloadPublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the workload in the Horizon exchange. See /usr/horizon/samples/workload.json. Specify -f- to read from stdin.").Short('f').Required().String()
-	exWorkPrivKeyFile := exWorkloadPublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the workload. ").Short('k').ExistingFile()
-	exWorkPubPubKeyFile := exWorkloadPublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the workload, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
-	exWorkPubDontTouchImage := exWorkloadPublishCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. This should only be used during development when testing new versions often.").Short('I').Bool()
-	exWorkloadVerifyCmd := exWorkloadCmd.Command("verify", "Verify the signatures of a workload resource in the Horizon Exchange.")
-	exVerWorkload := exWorkloadVerifyCmd.Arg("workload", "The workload to verify.").Required().String()
-	exWorkPubKeyFile := exWorkloadVerifyCmd.Flag("public-key-file", "The path of a pem public key file to be used to verify the workload. ").Short('k').Required().ExistingFile()
-	exWorkDelCmd := exWorkloadCmd.Command("remove", "Remove a workload resource from the Horizon Exchange.")
-	exDelWork := exWorkDelCmd.Arg("workload", "The workload to remove.").Required().String()
-	exWorkDelForce := exWorkDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
-	exWorkloadListKeyCmd := exWorkloadCmd.Command("listkey", "List the signing public keys/certs for this workload resource in the Horizon Exchange.")
-	exWorkListKeyWork := exWorkloadListKeyCmd.Arg("workload", "The existing workload to list the keys for.").Required().String()
-	exWorkListKeyKey := exWorkloadListKeyCmd.Arg("key-name", "The existing key name to see the contents of.").String()
-	exWorkloadRemKeyCmd := exWorkloadCmd.Command("removekey", "Remove a signing public key/cert for this workload resource in the Horizon Exchange.")
-	exWorkRemKeyWork := exWorkloadRemKeyCmd.Arg("workload", "The existing workload to remove the key from.").Required().String()
-	exWorkRemKeyKey := exWorkloadRemKeyCmd.Arg("key-name", "The existing key name to remove.").Required().String()
-
-	exMicroserviceCmd := exchangeCmd.Command("microservice", "List and manage microservices in the Horizon Exchange")
-	exMicroserviceListCmd := exMicroserviceCmd.Command("list", "Display the microservice resources from the Horizon Exchange.")
-	exMicroservice := exMicroserviceListCmd.Arg("microservice", "List just this one microservice.").String()
-	exMicroserviceLong := exMicroserviceListCmd.Flag("long", "When listing all of the microservices, show the entire resource of each microservices, instead of just the name.").Short('l').Bool()
-	exMicroservicePublishCmd := exMicroserviceCmd.Command("publish", "Sign and create/update the microservice resource in the Horizon Exchange.")
-	exMicroJsonFile := exMicroservicePublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the microservice in the Horizon exchange. See /usr/horizon/samples/microservice.json. Specify -f- to read from stdin.").Short('f').Required().String()
-	exMicroKeyFile := exMicroservicePublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the microservice. ").Short('k').ExistingFile()
-	exMicroPubPubKeyFile := exMicroservicePublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the microservice, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
-	exMicroPubDontTouchImage := exMicroservicePublishCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. This should only be used during development when testing new versions often.").Short('I').Bool()
-	exMicroVerifyCmd := exMicroserviceCmd.Command("verify", "Verify the signatures of a microservice resource in the Horizon Exchange.")
-	exVerMicro := exMicroVerifyCmd.Arg("microservice", "The microservice to verify.").Required().String()
-	exMicroPubKeyFile := exMicroVerifyCmd.Flag("public-key-file", "The path of a pem public key file to be used to verify the microservice. ").Short('k').Required().ExistingFile()
-	exMicroDelCmd := exMicroserviceCmd.Command("remove", "Remove a microservice resource from the Horizon Exchange.")
-	exDelMicro := exMicroDelCmd.Arg("microservice", "The microservice to remove.").Required().String()
-	exMicroDelForce := exMicroDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
-	exMicroListKeyCmd := exMicroserviceCmd.Command("listkey", "List the signing public keys/certs for this microservice resource in the Horizon Exchange.")
-	exMicroListKeyMicro := exMicroListKeyCmd.Arg("microservice", "The existing microservice to list the keys for.").Required().String()
-	exMicroListKeyKey := exMicroListKeyCmd.Arg("key-name", "The existing key name to see the contents of.").String()
-	exMicroRemKeyCmd := exMicroserviceCmd.Command("removekey", "Remove a signing public key/cert for this microservice resource in the Horizon Exchange.")
-	exMicroRemKeyMicro := exMicroRemKeyCmd.Arg("microservice", "The existing microservice to remove the key from.").Required().String()
-	exMicroRemKeyKey := exMicroRemKeyCmd.Arg("key-name", "The existing key name to remove.").Required().String()
 
 	exServiceCmd := exchangeCmd.Command("service", "List and manage services in the Horizon Exchange")
 	exServiceListCmd := exServiceCmd.Command("list", "Display the service resources from the Horizon Exchange.")
@@ -276,10 +221,8 @@ Environment Variables:
 	serviceListCmd := serviceCmd.Command("list", "List the microservices variable configuration that has been done on this Horizon edge node.")
 	serviceRegisteredCmd := serviceCmd.Command("registered", "List the microservices that are currently registered on this Horizon edge node.")
 
-	workloadCmd := app.Command("workload", "List or manage the workloads that are currently registered on this Horizon edge node.")
-	workloadListCmd := workloadCmd.Command("list", "List the workloads that are currently registered on this Horizon edge node.")
-
 	unregisterCmd := app.Command("unregister", "Unregister and reset this Horizon edge node so that it is ready to be registered again. Warning: this will stop all the Horizon services running on this edge node, and restart the Horizon agent.")
+
 	forceUnregister := unregisterCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 	removeNodeUnregister := unregisterCmd.Flag("remove", "Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).").Short('r').Bool()
 
@@ -294,34 +237,6 @@ Environment Variables:
 
 	devCmd := app.Command("dev", "Developmnt tools for creation of workloads and microservices.")
 	devHomeDirectory := devCmd.Flag("directory", "Directory containing Horizon project metadata.").Short('d').String()
-
-	devWorkloadCmd := devCmd.Command("workload", "For working with a workload project.")
-	devWorkloadNewCmd := devWorkloadCmd.Command("new", "Create a new workload project.")
-	devWorkloadNewCmdOrg := devWorkloadNewCmd.Flag("org", "The Org id that the workload is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is used.").Short('o').String()
-	devWorkloadStartTestCmd := devWorkloadCmd.Command("start", "Run a workload in a mocked Horizon Agent environment.")
-	devWorkloadUserInputFile := devWorkloadStartTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
-	devWorkloadStopTestCmd := devWorkloadCmd.Command("stop", "Stop a workload that is running in a mocked Horizon Agent environment.")
-	devWorkloadDeployCmd := devWorkloadCmd.Command("publish", "Publish a workload to a Horizon Exchange.")
-	devWorkloadDeployCmdUserPw := devWorkloadDeployCmd.Flag("user-pw", "Horizon Exchange user credentials to create exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
-	devWorkloadKeyfile := devWorkloadDeployCmd.Flag("keyFile", "File containing a private key used to sign the deployment configuration.").Short('k').String()
-	devWorkPubKeyFile := devWorkloadDeployCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the workload, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
-	devWorkPubDontTouchImage := devWorkloadDeployCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 values. This should only be used during development when testing new versions often.").Short('I').Bool()
-	devWorkloadValidateCmd := devWorkloadCmd.Command("verify", "Validate the project for completeness and schema compliance.")
-	devWorkloadVerifyUserInputFile := devWorkloadValidateCmd.Flag("userInputFile", "File containing user input values for verification of a project.").Short('f').String()
-
-	devMicroserviceCmd := devCmd.Command("microservice", "For working with a microservice project.")
-	devMicroserviceNewCmd := devMicroserviceCmd.Command("new", "Create a new microservice project.")
-	devMicroserviceNewCmdOrg := devMicroserviceNewCmd.Flag("org", "The Org id that the microservice is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is used.").Short('o').String()
-	devMicroserviceStartTestCmd := devMicroserviceCmd.Command("start", "Run a microservice in a mocked Horizon Agent environment.")
-	devMicroserviceUserInputFile := devMicroserviceStartTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
-	devMicroserviceStopTestCmd := devMicroserviceCmd.Command("stop", "Stop a microservice that is running in a mocked Horizon Agent environment.")
-	devMicroserviceDeployCmd := devMicroserviceCmd.Command("publish", "Publish a microservice to a Horizon Exchange.")
-	devMicroserviceDeployCmdUserPw := devMicroserviceDeployCmd.Flag("user-pw", "Horizon Exchange user credentials to create exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
-	devMicroserviceKeyfile := devMicroserviceDeployCmd.Flag("keyFile", "File containing a private key used to sign the deployment configuration.").Short('k').String()
-	devMicroservicePubKeyFile := devMicroserviceDeployCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the microservice, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
-	devMicroservicePubDontTouchImage := devMicroserviceDeployCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. This should only be used during development when testing new versions often.").Short('I').Bool()
-	devMicroserviceValidateCmd := devMicroserviceCmd.Command("verify", "Validate the project for completeness and schema compliance.")
-	devMicroserviceVerifyUserInputFile := devMicroserviceValidateCmd.Flag("userInputFile", "File containing user input values for verification of a project.").Short('f').String()
 
 	devServiceCmd := devCmd.Command("service", "For working with a service project.")
 	devServiceNewCmd := devServiceCmd.Command("new", "Create a new service project.")
@@ -432,38 +347,10 @@ Environment Variables:
 		exchange.PatternVerify(*exOrg, *exUserPw, *exVerPattern, *exPatPubKeyFile)
 	case exPatDelCmd.FullCommand():
 		exchange.PatternRemove(*exOrg, *exUserPw, *exDelPat, *exPatDelForce)
-	case exPatternAddWorkCmd.FullCommand():
-		exchange.PatternAddWorkload(*exOrg, *exUserPw, *exPatAddWork, *exPatAddWorkJsonFile, *exPatAddWorkKeyFile, *exPatAddWorkPubKeyFile)
-	case exPatternDelWorkCmd.FullCommand():
-		exchange.PatternDelWorkload(*exOrg, *exUserPw, *exPatDelWorkPat, *exPatDelWorkOrg, *exPatDelWorkUrl, *exPatDelWorkArch)
 	case exPatternListKeyCmd.FullCommand():
 		exchange.PatternListKey(*exOrg, *exUserPw, *exPatListKeyPat, *exPatListKeyKey)
 	case exPatternRemKeyCmd.FullCommand():
 		exchange.PatternRemoveKey(*exOrg, *exUserPw, *exPatRemKeyPat, *exPatRemKeyKey)
-	case exWorkloadListCmd.FullCommand():
-		exchange.WorkloadList(*exOrg, *exUserPw, *exWorkload, !*exWorkloadLong)
-	case exWorkloadPublishCmd.FullCommand():
-		exchange.WorkloadPublish(*exOrg, *exUserPw, *exWorkJsonFile, *exWorkPrivKeyFile, *exWorkPubPubKeyFile, *exWorkPubDontTouchImage)
-	case exWorkloadVerifyCmd.FullCommand():
-		exchange.WorkloadVerify(*exOrg, *exUserPw, *exVerWorkload, *exWorkPubKeyFile)
-	case exWorkDelCmd.FullCommand():
-		exchange.WorkloadRemove(*exOrg, *exUserPw, *exDelWork, *exWorkDelForce)
-	case exWorkloadListKeyCmd.FullCommand():
-		exchange.WorkloadListKey(*exOrg, *exUserPw, *exWorkListKeyWork, *exWorkListKeyKey)
-	case exWorkloadRemKeyCmd.FullCommand():
-		exchange.WorkloadRemoveKey(*exOrg, *exUserPw, *exWorkRemKeyWork, *exWorkRemKeyKey)
-	case exMicroserviceListCmd.FullCommand():
-		exchange.MicroserviceList(*exOrg, *exUserPw, *exMicroservice, !*exMicroserviceLong)
-	case exMicroservicePublishCmd.FullCommand():
-		exchange.MicroservicePublish(*exOrg, *exUserPw, *exMicroJsonFile, *exMicroKeyFile, *exMicroPubPubKeyFile, *exMicroPubDontTouchImage)
-	case exMicroVerifyCmd.FullCommand():
-		exchange.MicroserviceVerify(*exOrg, *exUserPw, *exVerMicro, *exMicroPubKeyFile)
-	case exMicroDelCmd.FullCommand():
-		exchange.MicroserviceRemove(*exOrg, *exUserPw, *exDelMicro, *exMicroDelForce)
-	case exMicroListKeyCmd.FullCommand():
-		exchange.MicroserviceListKey(*exOrg, *exUserPw, *exMicroListKeyMicro, *exMicroListKeyKey)
-	case exMicroRemKeyCmd.FullCommand():
-		exchange.MicroserviceRemoveKey(*exOrg, *exUserPw, *exMicroRemKeyMicro, *exMicroRemKeyKey)
 	case exServiceListCmd.FullCommand():
 		exchange.ServiceList(*exOrg, *exUserPw, *exService, !*exServiceLong)
 	case exServicePublishCmd.FullCommand():
@@ -486,8 +373,6 @@ Environment Variables:
 		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *email, *inputFile)
 	case keyListCmd.FullCommand():
 		key.List(*keyName, *keyListAll)
-	//case keyCmd.FullCommand():   // <- I'd like to just default to list in this case, but don't know how to do that yet
-	//	keyCmd.List()
 	case keyCreateCmd.FullCommand():
 		key.Create(*keyX509Org, *keyX509CN, *keyOutputDir, *keyLength, *keyDaysValid, *keyImportFlag)
 	case keyImportCmd.FullCommand():
@@ -508,34 +393,12 @@ Environment Variables:
 		service.List()
 	case serviceRegisteredCmd.FullCommand():
 		service.Registered()
-	case workloadListCmd.FullCommand():
-		workload.List()
 	case unregisterCmd.FullCommand():
 		unregister.DoIt(*forceUnregister, *removeNodeUnregister)
 	case statusCmd.FullCommand():
 		status.DisplayStatus(*statusLong, false)
 	case eventlogListCmd.FullCommand():
 		eventlog.List(*listAllEventlogs, *listDetailedEventlogs, *listSelectedEventlogs)
-	case devWorkloadNewCmd.FullCommand():
-		dev.WorkloadNew(*devHomeDirectory, *devWorkloadNewCmdOrg)
-	case devWorkloadStartTestCmd.FullCommand():
-		dev.WorkloadStartTest(*devHomeDirectory, *devWorkloadUserInputFile)
-	case devWorkloadStopTestCmd.FullCommand():
-		dev.WorkloadStopTest(*devHomeDirectory)
-	case devWorkloadValidateCmd.FullCommand():
-		dev.WorkloadValidate(*devHomeDirectory, *devWorkloadVerifyUserInputFile)
-	case devWorkloadDeployCmd.FullCommand():
-		dev.WorkloadDeploy(*devHomeDirectory, *devWorkloadKeyfile, *devWorkPubKeyFile, *devWorkloadDeployCmdUserPw, *devWorkPubDontTouchImage)
-	case devMicroserviceNewCmd.FullCommand():
-		dev.MicroserviceNew(*devHomeDirectory, *devMicroserviceNewCmdOrg)
-	case devMicroserviceStartTestCmd.FullCommand():
-		dev.MicroserviceStartTest(*devHomeDirectory, *devMicroserviceUserInputFile)
-	case devMicroserviceStopTestCmd.FullCommand():
-		dev.MicroserviceStopTest(*devHomeDirectory)
-	case devMicroserviceValidateCmd.FullCommand():
-		dev.MicroserviceValidate(*devHomeDirectory, *devMicroserviceVerifyUserInputFile)
-	case devMicroserviceDeployCmd.FullCommand():
-		dev.MicroserviceDeploy(*devHomeDirectory, *devMicroserviceKeyfile, *devMicroservicePubKeyFile, *devMicroserviceDeployCmdUserPw, *devMicroservicePubDontTouchImage)
 	case devServiceNewCmd.FullCommand():
 		dev.ServiceNew(*devHomeDirectory, *devServiceNewCmdOrg, *devServiceNewCmdCfg)
 	case devServiceStartTestCmd.FullCommand():

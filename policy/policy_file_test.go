@@ -319,8 +319,6 @@ func Test_Policy_Merge(t *testing.T) {
 		t.Errorf("Unable to read expecting.policy policy file, error: %v", err)
 	} else if bytes.Compare(mpbytes, epbytes) != 0 {
 		t.Errorf("Merged policy file %v does not match expected file %v", string(mpbytes), string(epbytes))
-	} else if !pf_merged.IsServiceBased() {
-		t.Errorf("Merged policy file should be service based")
 	}
 }
 
@@ -719,8 +717,6 @@ func Test_Merge_Producers_Create_TsAndCs1(t *testing.T) {
 			t.Errorf("Error: returned %v APISpecs, should have returned %v\n", len(tcPolicy.APISpecs), 2)
 		} else if tcPolicy.NodeH.MissingHBInterval != 600 {
 			t.Errorf("Error: missing heartbeat interval, should be %v but is %v", 600, tcPolicy.NodeH.MissingHBInterval)
-		} else if tcPolicy.IsServiceBased() {
-			t.Errorf("Merged policy file should NOT be service based")
 		} else {
 			t.Logf("Merged Policy from 2 producer policies: %v", tcPolicy)
 		}
@@ -749,8 +745,6 @@ func Test_Merge_EmptyProducer_and_Create_TsAndCs1(t *testing.T) {
 		t.Errorf(err.Error())
 	} else if mergedPF, err := Create_Terms_And_Conditions(p1, p2, &p2.Workloads[0], "agreementId", "defaultPW", 300, 1); err != nil {
 		t.Errorf(err.Error())
-	} else if mergedPF.IsServiceBased() {
-		t.Errorf("Merged policy file should NOT be service based")
 	} else {
 		t.Log(mergedPF)
 	}

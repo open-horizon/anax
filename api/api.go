@@ -70,11 +70,6 @@ func (a *API) router(includeStaticRedirects bool) *mux.Router {
 	router.HandleFunc("/agreement/{id}", a.agreement).Methods("GET", "DELETE", "OPTIONS")
 
 	// For obtaining microservice info or configuring a microservice (sensor) userInput variables
-	router.HandleFunc("/microservice", a.microservice).Methods("GET", "OPTIONS")
-	router.HandleFunc("/microservice/config", a.microserviceconfig).Methods("GET", "POST", "OPTIONS")
-	router.HandleFunc("/microservice/policy", a.microservicepolicy).Methods("GET", "OPTIONS")
-
-	// For obtaining microservice info or configuring a microservice (sensor) userInput variables
 	router.HandleFunc("/service", a.service).Methods("GET", "OPTIONS")
 	router.HandleFunc("/service/config", a.serviceconfig).Methods("GET", "POST", "OPTIONS")
 	router.HandleFunc("/service/policy", a.servicepolicy).Methods("GET", "OPTIONS")
@@ -89,10 +84,6 @@ func (a *API) router(includeStaticRedirects bool) *mux.Router {
 	// Used to configure a node to participate in the Horizon platform
 	router.HandleFunc("/node", a.node).Methods("GET", "HEAD", "POST", "PATCH", "DELETE", "OPTIONS")
 	router.HandleFunc("/node/configstate", a.nodeconfigstate).Methods("GET", "HEAD", "PUT", "OPTIONS")
-
-	// Used to configure workload userInputs for workloads that are expected to be run on this node.
-	router.HandleFunc("/workload", a.workload).Methods("GET", "OPTIONS")
-	router.HandleFunc("/workload/config", a.workloadConfig).Methods("GET", "POST", "DELETE", "OPTIONS")
 
 	// Used to get the event logs on this node.
 	// get the eventlogs for current registration.
@@ -213,14 +204,6 @@ func (a *API) GetExchangeURL() string {
 		return a.EC.URL
 	} else {
 		return a.Config.Edge.ExchangeURL
-	}
-}
-
-func (a *API) GetServiceBased() bool {
-	if a.EC != nil {
-		return a.EC.ServiceBased
-	} else {
-		return false
 	}
 }
 

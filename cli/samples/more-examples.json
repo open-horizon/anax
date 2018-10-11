@@ -46,25 +46,14 @@ This sample will work as-is with the IBM netspeed pattern.
 			}
 		}
 	],
-	/* You only need to list the workloads that need input from you the edge node owner */
-	"workloads": [
+	/* You only need to list the services that need input from you the edge node owner */
+	"services": [
 		{
 			"org": "IBM",
-			"url": "https://bluehorizon.network/workloads/netspeed",
+			"url": "https://bluehorizon.network/services/netspeed",
 			"versionRange": "[0.0.0,INFINITY)",    /* this range applies to any version */
 			"variables": {
 				"HZN_TARGET_SERVER": "closest"
-			}
-		}
-	],
-	/* You only need to list the microservices that need input from you the edge node owner */
-	"microservices": [
-		{
-			"org": "IBM",
-			"url": "https://bluehorizon.network/microservices/gps",
-			"versionRange": "[0.0.0,INFINITY)",    /* this range applies to any version */
-			"variables": {
-				"BAR": "foobar"
 			}
 		}
 	]

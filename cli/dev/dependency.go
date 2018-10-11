@@ -10,7 +10,6 @@ import (
 	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -78,29 +77,19 @@ func DependencyList(homeDirectory string) {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", DEPENDENCY_COMMAND, DEPENDENCY_LIST_COMMAND, err)
 	}
 
-	if IsMicroserviceProject(dir) || IsWorkloadProject(dir) {
-		deps, err := GetDependencies(dir)
-		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", DEPENDENCY_COMMAND, DEPENDENCY_LIST_COMMAND, err)
-		}
-
-		marshalListOut(deps)
-
-	} else if IsServiceProject(dir) {
-		// Get the service definition, so that we can look at the service dependencies.
-		serviceDef, sderr := GetServiceDefinition(dir, SERVICE_DEFINITION_FILE)
-		if sderr != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", DEPENDENCY_COMMAND, DEPENDENCY_LIST_COMMAND, sderr)
-		}
-
-		// Now get all the dependencies
-		deps, err := GetServiceDependencies(dir, serviceDef.RequiredServices)
-		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", DEPENDENCY_COMMAND, DEPENDENCY_LIST_COMMAND, err)
-		}
-
-		marshalListOut(deps)
+	// Get the service definition, so that we can look at the service dependencies.
+	serviceDef, sderr := GetServiceDefinition(dir, SERVICE_DEFINITION_FILE)
+	if sderr != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", DEPENDENCY_COMMAND, DEPENDENCY_LIST_COMMAND, sderr)
 	}
+
+	// Now get all the dependencies
+	deps, err := GetServiceDependencies(dir, serviceDef.RequiredServices)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", DEPENDENCY_COMMAND, DEPENDENCY_LIST_COMMAND, err)
+	}
+
+	marshalListOut(deps)
 
 }
 
@@ -125,14 +114,8 @@ func DependencyRemove(homeDirectory string, specRef string, url string, version 
 	var depFileInfo os.FileInfo
 	uniqueDep := true
 
-	// Indicate the kinds of dependency files we need to look for.
-	fileSuffix := SERVICE_DEFINITION_FILE
-	if IsWorkloadProject(dir) || IsMicroserviceProject(dir) {
-		fileSuffix = MICROSERVICE_DEFINITION_FILE
-	}
-
 	// Grab the dependency files from the filesystem.
-	deps, err := GetDependencyFiles(dir, fileSuffix)
+	deps, err := GetDependencyFiles(dir, SERVICE_DEFINITION_FILE)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", DEPENDENCY_COMMAND, DEPENDENCY_REMOVE_COMMAND, err)
 	}
@@ -142,18 +125,10 @@ func DependencyRemove(homeDirectory string, specRef string, url string, version 
 	for _, fileInfo := range deps {
 
 		tempDep = nil
-		if IsWorkloadProject(dir) || IsMicroserviceProject(dir) {
-			if dep, err := GetMicroserviceDefinition(path.Join(dir, DEFAULT_DEPENDENCY_DIR), fileInfo.Name()); err != nil {
-				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", DEPENDENCY_COMMAND, DEPENDENCY_REMOVE_COMMAND, err)
-			} else {
-				tempDep = dep
-			}
+		if dep, err := GetServiceDefinition(path.Join(dir, DEFAULT_DEPENDENCY_DIR), fileInfo.Name()); err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", DEPENDENCY_COMMAND, DEPENDENCY_REMOVE_COMMAND, err)
 		} else {
-			if dep, err := GetServiceDefinition(path.Join(dir, DEFAULT_DEPENDENCY_DIR), fileInfo.Name()); err != nil {
-				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", DEPENDENCY_COMMAND, DEPENDENCY_REMOVE_COMMAND, err)
-			} else {
-				tempDep = dep
-			}
+			tempDep = dep
 		}
 
 		if (tempDep.GetURL() == specRef || tempDep.GetURL() == url) && (version == "" || (version != "" && tempDep.GetVersion() == version)) && (arch == "" || (arch != "" && tempDep.GetArch() == arch)) {
@@ -216,25 +191,6 @@ func GetDependencyFiles(directory string, fileSuffix string) ([]os.FileInfo, err
 
 }
 
-func GetDependencies(directory string) ([]*cliexchange.MicroserviceFile, error) {
-	res := make([]*cliexchange.MicroserviceFile, 0, 10)
-	depFiles, err := GetDependencyFiles(directory, MICROSERVICE_DEFINITION_FILE)
-	if err != nil {
-		return res, err
-	}
-
-	for _, fileInfo := range depFiles {
-		d, err := GetMicroserviceDefinition(path.Join(directory, DEFAULT_DEPENDENCY_DIR), fileInfo.Name())
-		if err != nil {
-			return res, err
-		} else {
-			res = append(res, d)
-		}
-	}
-
-	return res, nil
-}
-
 func GetServiceDependencies(directory string, deps []exchange.ServiceDependency) ([]*cliexchange.ServiceFile, error) {
 	res := make([]*cliexchange.ServiceFile, 0, 10)
 	depFiles, err := GetDependencyFiles(directory, SERVICE_DEFINITION_FILE)
@@ -273,45 +229,7 @@ func DependenciesExists(directory string, okToCreate bool) (bool, error) {
 // Any errors will be returned to the caller.
 func ValidateDependencies(directory string, userInputs *register.InputFile, userInputsFilePath string, projectType string) error {
 
-	if projectType != SERVICE_COMMAND && (projectType == WORKLOAD_COMMAND || IsWorkloadProject(directory)) {
-
-		// Get the current project's definition file.
-		d, err := GetWorkloadDefinition(directory)
-		if err != nil {
-			return err
-		}
-
-		// For each microservice definition file in the dependencies directory, verify it.
-		deps, err := GetDependencyFiles(directory, MICROSERVICE_DEFINITION_FILE)
-		if err != nil {
-			return err
-		}
-
-		// Validate each dependency, not just the direct dependencies of the current project.
-		for _, fileInfo := range deps {
-			if err := ValidateMicroserviceDefinition(path.Join(directory, DEFAULT_DEPENDENCY_DIR), fileInfo.Name()); err != nil {
-				return errors.New(fmt.Sprintf("dependency %v did not validate, error: %v", fileInfo.Name(), err))
-			} else if err := Validate(directory, fileInfo, userInputs, userInputsFilePath); err != nil {
-				return errors.New(fmt.Sprintf("dependency %v did not validate, error: %v", fileInfo.Name(), err))
-			}
-		}
-
-		// Validate that the project defintion's dependencies are present in the dependencies directory.
-		for _, rs := range d.APISpecs {
-			fName := createDependencyFileName(rs.SpecRef, rs.Version, MICROSERVICE_DEFINITION_FILE)
-			found := false
-			for _, fileInfo := range deps {
-				if fName == fileInfo.Name() {
-					found = true
-					break
-				}
-			}
-			if !found {
-				return errors.New(fmt.Sprintf("dependency %v does not exist in %v.", rs.SpecRef, path.Join(directory, DEFAULT_DEPENDENCY_DIR)))
-			}
-		}
-
-	} else if projectType != WORKLOAD_COMMAND && (projectType == SERVICE_COMMAND || IsServiceProject(directory)) {
+	if projectType == SERVICE_COMMAND || IsServiceProject(directory) {
 
 		d, err := GetServiceDefinition(directory, SERVICE_DEFINITION_FILE)
 		if err != nil {
@@ -349,18 +267,6 @@ func ValidateDependencies(directory string, userInputs *register.InputFile, user
 	}
 
 	return nil
-}
-
-func Validate(directory string, fInfo os.FileInfo, userInputs *register.InputFile, userInputsFilePath string) error {
-
-	d, err := GetMicroserviceDefinition(path.Join(directory, DEFAULT_DEPENDENCY_DIR), fInfo.Name())
-	if err != nil {
-		return err
-	}
-
-	// Userinputs from the dependency without a default value must be set in the userinput file.
-	return validateDependencyUserInputs(d, d.GetUserInputs(), userInputs.Microservices, userInputsFilePath)
-
 }
 
 func ValidateService(directory string, fInfo os.FileInfo, userInputs *register.InputFile, userInputsFilePath string) error {
@@ -419,20 +325,12 @@ func verifyFetchInput(homeDirectory string, project string, specRef string, url 
 	// Verify that the inputs match with the project type.
 	if specRef != "" && IsServiceProject(dir) {
 		return "", errors.New(fmt.Sprintf("use --url with service projects."))
-	} else if url != "" && IsWorkloadProject(dir) {
-		return "", errors.New(fmt.Sprintf("use --specRef with workload projects."))
-	} else if IsMicroserviceProject(dir) {
-		return "", errors.New(fmt.Sprintf("microservice projects cannot have dependencies."))
 	}
 
 	// Verify that if --project was specified, it points to a valid horizon project directory.
 	if project != "" {
-		if !IsMicroserviceProject(project) && !IsServiceProject(project) {
-			return "", errors.New(fmt.Sprintf("--project %v does not contain Horizon service or microservice metadata.", project))
-		} else if IsMicroserviceProject(project) {
-			if err := ValidateMicroserviceDefinition(project, MICROSERVICE_DEFINITION_FILE); err != nil {
-				return "", err
-			}
+		if !IsServiceProject(project) {
+			return "", errors.New(fmt.Sprintf("--project %v does not contain Horizon service metadata.", project))
 		} else {
 			if err := ValidateServiceDefinition(project, SERVICE_DEFINITION_FILE); err != nil {
 				return "", err
@@ -479,24 +377,13 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	}
 
 	// If the dependent project is not validate-able then we cant reliably use it as a dependency.
-	// Validate the dependency project based on what kind of project we are currently working with.
-	dependentProjectType := "Microservice"
-	if IsWorkloadProject(dir) {
-		if err := AbstractServiceValidation(project, false); err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", DEPENDENCY_COMMAND, DEPENDENCY_FETCH_COMMAND, err)
-		}
-	} else if IsServiceProject(dir) {
-		dependentProjectType = "Service"
-		if err := AbstractServiceValidation(project, true); err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", DEPENDENCY_COMMAND, DEPENDENCY_FETCH_COMMAND, err)
-		}
-	} else {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' microservice projects cannot have dependencies", DEPENDENCY_COMMAND, DEPENDENCY_FETCH_COMMAND)
+	if err := AbstractServiceValidation(project); err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", DEPENDENCY_COMMAND, DEPENDENCY_FETCH_COMMAND, err)
 	}
 
 	CommonProjectValidation(project, userInputFile, DEPENDENCY_COMMAND, DEPENDENCY_FETCH_COMMAND)
 
-	fmt.Printf("%v project %v verified.\n", dependentProjectType, dir)
+	fmt.Printf("Service project %v verified.\n", dir)
 
 	// The rest of this function gets the dependency's user input and adds it to this project's user input, and it reads
 	// this project's workload definition and updates it with the reference to the ms. In the files that are read and
@@ -589,9 +476,6 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 func fetchExchangeProjectDependency(homeDirectory string, specRef string, url string, org string, version string, arch string, userCreds string, keyFiles []string, userInputFile string) error {
 
 	projectType := "service"
-	if IsWorkloadProject(homeDirectory) {
-		projectType = "microservice"
-	}
 
 	// Pull the metadata from the exchange, including any of this dependency's dependencies.
 	sDef, err := getExchangeDefinition(homeDirectory, specRef, url, org, version, arch, userCreds, keyFiles, userInputFile)
@@ -665,107 +549,8 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, url st
 
 func getExchangeDefinition(homeDirectory string, specRef string, surl string, org string, version string, arch string, userCreds string, keyFiles []string, userInputFile string) (cliexchange.AbstractServiceFile, error) {
 
-	if IsWorkloadProject(homeDirectory) {
-
-		// Construct the resource URL suffix.
-		resSuffix := fmt.Sprintf("orgs/%v/microservices?specRef=%v", org, specRef)
-		if version != "" {
-			resSuffix += fmt.Sprintf("&version=%v", version)
-		}
-		if arch != "" {
-			resSuffix += fmt.Sprintf("&arch=%v", arch)
-		}
-
-		// Create an object to hold the response.
-		resp := new(exchange.GetMicroservicesResponse)
-
-		// Call the exchange to get the microservice definition.
-		if userCreds == "" {
-			userCreds = os.Getenv(DEVTOOL_HZN_USER)
-		}
-		cliutils.SetWhetherUsingApiKey(userCreds)
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), resSuffix, cliutils.OrgAndCreds(os.Getenv(DEVTOOL_HZN_ORG), userCreds), []int{200}, resp)
-
-		// Parse the response and extract the 1 microservice definition or return an error if not 1 ms.
-		var microserviceDef exchange.MicroserviceDefinition
-		if len(resp.Microservices) > 1 {
-			listed := ""
-			for _, msDef := range resp.Microservices {
-				listed += fmt.Sprintf("version: %v arch: %v, ", msDef.Version, msDef.Arch)
-			}
-			listed = listed[:len(listed)-2]
-			return nil, errors.New(fmt.Sprintf("more than 1 microservice found in the exchange, please specify version and/or hardware architecture to narrow the results: %v", listed))
-		} else if len(resp.Microservices) == 0 {
-			return nil, errors.New(fmt.Sprintf("no microservices found in the exchange."))
-		} else {
-			for _, msDef := range resp.Microservices {
-				microserviceDef = msDef
-				break
-			}
-		}
-
-		cliutils.Verbose("Creating dependency %v, Org: %v", microserviceDef, org)
-
-		msDef := new(cliexchange.MicroserviceFile)
-
-		// Get this project's userinputs.
-		currentUIs, _, err := GetUserInputs(homeDirectory, "")
-		if err != nil {
-			return nil, err
-		}
-
-		// Get the dependency's deployment container images
-		dc := new(cliexchange.DeploymentConfig)
-		var torrent policy.Torrent
-		if len(microserviceDef.Workloads) > 0 {
-			ms_workload := microserviceDef.Workloads[0]
-			if err := json.Unmarshal([]byte(ms_workload.Deployment), dc); err != nil {
-				return nil, errors.New(fmt.Sprintf("failed to unmarshal deployment %v: %v", ms_workload.Deployment, err))
-			}
-
-			// convert to torrent structure only if the torrent string exists on the exchange
-			if ms_workload.Torrent != "" {
-				if err := json.Unmarshal([]byte(ms_workload.Torrent), &torrent); err != nil {
-					return nil, fmt.Errorf("The torrent definition for microservice %v has error: %v", microserviceDef.SpecRef, err)
-				}
-			}
-
-			url1, err := url.Parse(torrent.Url)
-			if err != nil {
-				return nil, fmt.Errorf("ill-formed URL: %v, error %v", torrent.Url, err)
-			}
-
-			cc := events.NewContainerConfig(*url1, torrent.Signature, ms_workload.Deployment, ms_workload.DeploymentSignature, "", "", make([]events.ImageDockerAuth, 0))
-
-			if err := getContainerImages(cc, keyFiles, currentUIs); err != nil {
-				return nil, errors.New(fmt.Sprintf("failed to get images for %v/%v: %v", org, specRef, err))
-			}
-		}
-
-		// Fill in the parts of the dependency that come from the microservice definition.
-		msDef.Org = org
-		msDef.SpecRef = microserviceDef.SpecRef
-		msDef.Version = microserviceDef.Version
-		msDef.Arch = microserviceDef.Arch
-		msDef.Label = microserviceDef.Label
-		msDef.Description = microserviceDef.Description
-		msDef.Public = microserviceDef.Public
-		msDef.Sharable = microserviceDef.Sharable
-		msDef.UserInputs = microserviceDef.UserInputs
-		msDef.Workloads = []cliexchange.WorkloadDeployment{
-			cliexchange.WorkloadDeployment{
-				Deployment:          dc,
-				DeploymentSignature: "",
-				Torrent:             "",
-			},
-		}
-
-		return msDef, nil
-
-	} else if IsServiceProject(homeDirectory) {
-
+	if IsServiceProject(homeDirectory) {
 		return getServiceDefinition(homeDirectory, surl, org, version, arch, userCreds, keyFiles)
-
 	} else {
 		return nil, errors.New(fmt.Sprintf("unsupported project type"))
 	}
@@ -774,14 +559,7 @@ func getExchangeDefinition(homeDirectory string, specRef string, surl string, or
 
 func UpdateDependencyFile(homeDirectory string, sDef cliexchange.AbstractServiceFile) error {
 
-	// Determine what the file suffix should be
-	fileSuffix := MICROSERVICE_DEFINITION_FILE
-	switch sDef.(type) {
-	case *cliexchange.ServiceFile:
-		fileSuffix = SERVICE_DEFINITION_FILE
-	}
-
-	fileName := createDependencyFileName(sDef.GetURL(), sDef.GetVersion(), fileSuffix)
+	fileName := createDependencyFileName(sDef.GetURL(), sDef.GetVersion(), SERVICE_DEFINITION_FILE)
 
 	filePath := path.Join(homeDirectory, DEFAULT_DEPENDENCY_DIR)
 	if err := CreateFile(filePath, fileName, sDef); err != nil {

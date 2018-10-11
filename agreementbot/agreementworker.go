@@ -221,8 +221,8 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		// into the consumer policy file. We have a copy of the consumer policy file that we can modify. If the device doesnt have the right
 		// version API specs (services), then we will try the next workload.
 
-		if asl, workloadDetails, err := exchange.GetHTTPWorkloadOrServiceResolverHandler(cph)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
-			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for workload details %v, error: %v", workload, err)))
+		if asl, workloadDetails, err := exchange.GetHTTPServiceResolverHandler(cph)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for service details %v, error: %v", workload, err)))
 			return
 		} else {
 
@@ -236,9 +236,6 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				if wi.ConsumerPolicy.PatternId != "" {
 
 					services := exchangeDev.RegisteredServices
-					if !workloadDetails.IsServiceBased() {
-						services = exchangeDev.RegisteredMicroservices
-					}
 
 					// Run through all the services on the node that are required by this workload and merge those policies.
 					for _, devMS := range services {

@@ -173,7 +173,7 @@ func CreateHorizonDevice(device *HorizonDevice,
 		haDevice = true
 	}
 
-	pDev, err := persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, haDevice, *device.Org, *device.Pattern, persistence.CONFIGSTATE_CONFIGURING, false, false)
+	pDev, err := persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, haDevice, *device.Org, *device.Pattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("error persisting new device registration: %v", err))), nil, nil
 	}
@@ -278,7 +278,7 @@ func DeleteHorizonDevice(removeNode string,
 	}
 
 	// Mark the device as "unconfigure in progress"
-	_, err = pDevice.SetConfigstate(db, pDevice.Id, persistence.CONFIGSTATE_UNCONFIGURING, pDevice.ServiceBased)
+	_, err = pDevice.SetConfigstate(db, pDevice.Id, persistence.CONFIGSTATE_UNCONFIGURING)
 	if err != nil {
 		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR,
 			fmt.Sprintf("Error saving new node config state (unconfiguring) in the database: %v", err),

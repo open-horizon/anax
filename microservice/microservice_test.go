@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
@@ -17,7 +18,7 @@ import (
 )
 
 func TestConvertToPersistent(t *testing.T) {
-	pms := createMicroservice(t)
+	pms := createService(t)
 
 	// check defaults
 	assert.True(t, pms.AutoUpgrade, "The default AutoUpgrade should be true")
@@ -43,7 +44,7 @@ func TestMicroserviceReadyForUpgrade(t *testing.T) {
 	dir, db, err := setupDB()
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 
-	pms := createMicroservice(t)
+	pms := createService(t)
 
 	assert.True(t, MicroserviceReadyForUpgrade(pms, db), "")
 
@@ -84,17 +85,17 @@ func TestGetUpgradeMicroserviceDef(t *testing.T) {
 	dir, db, err := setupDB()
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 
-	pms := createMicroservice(t)
+	pms := createService(t)
 
 	// invalide verision range
 	saved_vr := pms.UpgradeVersionRange
 	pms.UpgradeVersionRange = "abc"
-	_, err = GetUpgradeMicroserviceDef(getVariableMicroserviceOrServiceHandler("2.0"), pms, db)
+	_, err = GetUpgradeMicroserviceDef(getVariableExchangeDefinitionHandler("2.0"), pms, db)
 	assert.NotNil(t, err, "Invalid version range fromat should result in error")
 	pms.UpgradeVersionRange = saved_vr
 
 	// higher version
-	new_ms, err := GetUpgradeMicroserviceDef(getVariableMicroserviceOrServiceHandler("2.0"), pms, db)
+	new_ms, err := GetUpgradeMicroserviceDef(getVariableExchangeDefinitionHandler("2.0"), pms, db)
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 	assert.NotNil(t, new_ms, "should return a new ms")
 	assert.Equal(t, "2.0", new_ms.Version, "should have a higher version")
@@ -104,12 +105,12 @@ func TestGetUpgradeMicroserviceDef(t *testing.T) {
 	assert.Equal(t, pms.UpgradeVersionRange, new_ms.UpgradeVersionRange, "")
 
 	// lower version
-	new_ms, err = GetUpgradeMicroserviceDef(getVariableMicroserviceOrServiceHandler("0.5"), pms, db)
+	new_ms, err = GetUpgradeMicroserviceDef(getVariableExchangeDefinitionHandler("0.5"), pms, db)
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 	assert.Nil(t, new_ms, fmt.Sprintf("should return a nil ms, but got this: %v", new_ms))
 
 	// same version but different hash
-	new_ms, err = GetUpgradeMicroserviceDef(getVariableMicroserviceOrServiceHandler("1.0.0"), pms, db)
+	new_ms, err = GetUpgradeMicroserviceDef(getVariableExchangeDefinitionHandler("1.0.0"), pms, db)
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 	assert.NotNil(t, new_ms, "should return a new ms")
 	assert.Equal(t, "1.0.0", new_ms.Version, "should have the same version")
@@ -122,17 +123,17 @@ func TestGetRollbackMicroserviceDef(t *testing.T) {
 	dir, db, err := setupDB()
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 
-	pms := createMicroservice(t)
+	pms := createService(t)
 
 	// invalide verision range
 	saved_vr := pms.UpgradeVersionRange
 	pms.UpgradeVersionRange = "abc"
-	_, err = GetRollbackMicroserviceDef(getVariableMicroserviceHandler("2.0"), pms, db)
+	_, err = GetRollbackMicroserviceDef(getVariableExchangeDefinitionHandler("2.0"), pms, db)
 	assert.NotNil(t, err, "Invalid version range fromat should result in error")
 	pms.UpgradeVersionRange = saved_vr
 
 	// always return lower version
-	new_ms, err := GetRollbackMicroserviceDef(getVariableMicroserviceHandler("0.5"), pms, db)
+	new_ms, err := GetRollbackMicroserviceDef(getVariableExchangeDefinitionHandler("0.5"), pms, db)
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 	assert.NotNil(t, new_ms, "should return a new ms")
 	assert.Equal(t, "0.5", new_ms.Version, "should have a lower version")
@@ -140,74 +141,6 @@ func TestGetRollbackMicroserviceDef(t *testing.T) {
 	assert.Equal(t, pms.ActiveUpgrade, new_ms.ActiveUpgrade, "")
 	assert.Equal(t, pms.Name, new_ms.Name, "")
 	assert.Equal(t, pms.UpgradeVersionRange, new_ms.UpgradeVersionRange, "")
-
-	err = cleanupDB(dir)
-	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
-}
-
-func TestUnregisterMicroserviceExchange(t *testing.T) {
-
-	checkPutDeviceHandler := func(t *testing.T, mss []exchange.Microservice, url string) exchange.PutDeviceHandler {
-		return func(id string, token string, pdr *exchange.PutDeviceRequest) (*exchange.PutDeviceResponse, error) {
-
-			assert.Equal(t, len(mss)-1, len(pdr.RegisteredMicroservices), "one microservice should have been removed")
-
-			for _, ms := range pdr.RegisteredMicroservices {
-				assert.False(t, ms.Url == url, fmt.Sprintf("%v should have been removed", url))
-			}
-
-			pd := new(exchange.PutDeviceResponse)
-			return pd, nil
-		}
-	}
-
-	dir, db, err := setupDB()
-	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
-
-	m1 := exchange.Microservice{
-		Url:           "gps",
-		Properties:    nil,
-		NumAgreements: 0,
-		Policy:        "blahblah",
-	}
-	m2 := exchange.Microservice{
-		Url:           "network",
-		Properties:    nil,
-		NumAgreements: 0,
-		Policy:        "blahblah",
-	}
-	m3 := exchange.Microservice{
-		Url:           "pwsms",
-		Properties:    nil,
-		NumAgreements: 0,
-		Policy:        "blahblah",
-	}
-	mss := []exchange.Microservice{m1, m2, m3}
-
-	org := "myorg"
-	device_id := "mydevice"
-	device_token := "mytoken"
-	device_name := "mydevicename"
-	url := "network"
-
-	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(mss, nil),
-		checkPutDeviceHandler(t, mss, url),
-		url, false, device_id, device_token, db)
-	assert.NotNil(t, err, "Device not created in the db yet.")
-
-	// save device in db
-	_, err = persistence.SaveNewExchangeDevice(db, "mydevice", device_token, device_name, false, org, "netspeed-amd64", "configuring", false, true)
-	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
-
-	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, nil),
-		checkPutDeviceHandler(t, nil, url),
-		url, false, device_id, device_token, db)
-	assert.Nil(t, err, "no registered ms, nothing to do")
-
-	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(mss, nil),
-		checkPutDeviceHandler(t, mss, url),
-		url, false, device_id, device_token, db)
-	assert.Nil(t, err, "eveything should have worked")
 
 	err = cleanupDB(dir)
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
@@ -260,29 +193,29 @@ func TestUnregisterServiceExchange(t *testing.T) {
 
 	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, mss),
 		checkPutDeviceHandler(t, mss, url),
-		url, true, device_id, device_token, db)
+		url, device_id, device_token, db)
 	assert.NotNil(t, err, "Device not created in the db yet.")
 
 	// save device in db
-	_, err = persistence.SaveNewExchangeDevice(db, "mydevice", device_token, device_name, false, org, "netspeed-amd64", "configuring", true, false)
+	_, err = persistence.SaveNewExchangeDevice(db, "mydevice", device_token, device_name, false, org, "netspeed-amd64", "configuring")
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 
 	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, nil),
 		checkPutDeviceHandler(t, nil, url),
-		url, true, device_id, device_token, db)
+		url, device_id, device_token, db)
 	assert.Nil(t, err, "no registered ms, nothing to do")
 
 	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, mss),
 		checkPutDeviceHandler(t, mss, url),
-		url, true, device_id, device_token, db)
+		url, device_id, device_token, db)
 	assert.Nil(t, err, "eveything should have worked")
 
 	err = cleanupDB(dir)
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 }
 
-func createMicroservice(t *testing.T) *persistence.MicroserviceDefinition {
-	hwm := exchange.HardwareMatch{
+func createService(t *testing.T) *persistence.MicroserviceDefinition {
+	hwm := exchange.HardwareRequirement{
 		"USBDeviceIds": "1546:01a7",
 		"Devfiles":     "/dev/ttyUSB*,/dev/ttyACM*",
 	}
@@ -298,85 +231,81 @@ func createMicroservice(t *testing.T) *persistence.MicroserviceDefinition {
 		Type:         "string",
 		DefaultValue: "bar2",
 	}
-	wl1 := exchange.WorkloadDeployment{
-		Deployment:          "{\"services\":{\"gps\":{\"image\":\"summit.hovitos.engineering/x86/gps:2.0.3\",\"privileged\":true,\"devices\":[\"/dev/bus/usb/001/001:/dev/bus/usb/001/001\"]}}}",
-		DeploymentSignature: "AnEqOmulIfQ5jXs0hh/Hz5jCUUu1gA2Y",
-		Torrent:             "{\"url\":\"https://images.bluehorizon.network/82de3971dbae7435977873d076c5d87ec071e31d.json\",\"signature\":\"liz4Vlps/is3ojxea4jLm6DU\"",
+	sd := exchange.ServiceDependency{
+		URL:     "https://bluehorizon.network/services/other",
+		Org:     "myorg",
+		Version: "1.0.0",
+		Arch:    cutil.ArchString(),
 	}
 
-	ems := exchange.MicroserviceDefinition{
-		Owner:         "bob",
-		Label:         "GPS for ARM",
-		Description:   "my ms",
-		SpecRef:       "https://bluehorizon.network/microservices/gps",
-		Version:       "1.0.0",
-		Arch:          cutil.ArchString(),
-		Sharable:      "single",
-		DownloadURL:   "not used yet",
-		MatchHardware: hwm,
-		UserInputs:    []exchange.UserInput{ut1, ut2},
-		Workloads:     []exchange.WorkloadDeployment{wl1},
-		LastUpdated:   "2017-11-14T22:36:52.748Z[UTC]",
+	ems := exchange.ServiceDefinition{
+		Owner:               "bob",
+		Label:               "GPS for ARM",
+		Description:         "my services",
+		Public:              false,
+		URL:                 "https://bluehorizon.network/microservices/gps",
+		Version:             "1.0.0",
+		Arch:                cutil.ArchString(),
+		Sharable:            "single",
+		MatchHardware:       hwm,
+		RequiredServices:    []exchange.ServiceDependency{sd},
+		UserInputs:          []exchange.UserInput{ut1, ut2},
+		Deployment:          "",
+		DeploymentSignature: "",
+		ImageStore:          exchange.ImplementationPackage{},
+		LastUpdated:         "2017-11-14T22:36:52.748Z[UTC]",
 	}
 
-	pms, err := ConvertMicroserviceToPersistent(&ems, "mycompany")
+	pms, err := ConvertServiceToPersistent(&ems, "mycompany")
 
 	// check error
 	assert.Nil(t, err, fmt.Sprintf("Shold return no error, but got %v", err))
 
 	// check a few attributes
-	assert.Equal(t, ems.SpecRef, pms.SpecRef, "The assignment should work")
+	assert.Equal(t, ems.URL, pms.SpecRef, "The assignment should work")
 	assert.Equal(t, ems.Version, pms.Version, "The assignment should work")
 	assert.Equal(t, ems.Arch, pms.Arch, "The assignment should work")
 	assert.Equal(t, "mycompany", pms.Org, "The assignment should work")
 	assert.Equal(t, len(ems.UserInputs), len(pms.UserInputs), "The assignment should work")
-	assert.Equal(t, len(ems.Workloads), len(pms.Workloads), "The assignment should work")
+	assert.Equal(t, len(ems.RequiredServices), len(pms.RequiredServices), "The assignment should work")
 
 	return pms
 }
 
-func getVariableMicroserviceHandler(version string) exchange.MicroserviceHandler {
-	return func(mUrl string, mOrg string, mVersion string, mArch string) (*exchange.MicroserviceDefinition, string, error) {
-		md := exchange.MicroserviceDefinition{
+func getVariableServiceHandler(version string) exchange.ServiceHandler {
+	return func(mUrl string, mOrg string, mVersion string, mArch string) (*exchange.ServiceDefinition, string, error) {
+		md := exchange.ServiceDefinition{
 			Owner:         "owner",
 			Label:         "label",
 			Description:   "desc",
-			SpecRef:       mUrl,
+			URL:           mUrl,
 			Version:       version,
 			Arch:          mArch,
 			Sharable:      exchange.MS_SHARING_MODE_EXCLUSIVE,
-			DownloadURL:   "",
-			MatchHardware: exchange.HardwareMatch{},
+			MatchHardware: exchange.HardwareRequirement{},
 			UserInputs:    []exchange.UserInput{},
-			Workloads:     []exchange.WorkloadDeployment{},
 			LastUpdated:   "today",
 		}
-		return &md, "ms-id", nil
+		return &md, "service-id", nil
 	}
 }
 
-func getVariableMicroserviceOrServiceHandler(version string) exchange.MicroserviceOrServiceHandler {
-	return func(mUrl string, mOrg string, mVersion string, mArch string) (exchange.ExchangeDefinition, error) {
-		md := exchange.MicroserviceDefinition{
+func getVariableExchangeDefinitionHandler(version string) exchange.ServiceResolverHandler {
+	return func(mUrl string, mOrg string, mVersion string, mArch string) (*policy.APISpecList, *exchange.ServiceDefinition, error) {
+		md := exchange.ServiceDefinition{
 			Owner:         "owner",
 			Label:         "label",
 			Description:   "desc",
-			SpecRef:       mUrl,
+			URL:           mUrl,
 			Version:       version,
 			Arch:          mArch,
 			Sharable:      exchange.MS_SHARING_MODE_EXCLUSIVE,
-			DownloadURL:   "",
-			MatchHardware: exchange.HardwareMatch{},
+			MatchHardware: exchange.HardwareRequirement{},
 			UserInputs:    []exchange.UserInput{},
-			Workloads:     []exchange.WorkloadDeployment{},
 			LastUpdated:   "today",
 		}
 
-		var details exchange.ExchangeDefinition
-
-		details = &md
-
-		return details, nil
+		return nil, &md, nil
 	}
 }
 

@@ -439,12 +439,11 @@ func NewEdgeRegisteredExchangeMessage(evId EventId, device_id string, token stri
 
 // This event indicates that the edge device configuration is complete
 type EdgeConfigCompleteMessage struct {
-	event        Event
-	serviceBased bool
+	event Event
 }
 
 func (e EdgeConfigCompleteMessage) String() string {
-	return fmt.Sprintf("event: %v, serviceBased: %v", e.event, e.serviceBased)
+	return fmt.Sprintf("event: %v", e.event)
 }
 
 func (e EdgeConfigCompleteMessage) ShortString() string {
@@ -455,17 +454,12 @@ func (e *EdgeConfigCompleteMessage) Event() Event {
 	return e.event
 }
 
-func (e *EdgeConfigCompleteMessage) ServiceBased() bool {
-	return e.serviceBased
-}
-
-func NewEdgeConfigCompleteMessage(evId EventId, sb bool) *EdgeConfigCompleteMessage {
+func NewEdgeConfigCompleteMessage(evId EventId) *EdgeConfigCompleteMessage {
 
 	return &EdgeConfigCompleteMessage{
 		event: Event{
 			Id: evId,
 		},
-		serviceBased: sb,
 	}
 }
 
