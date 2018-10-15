@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -252,16 +253,21 @@ func ValidateDependencies(directory string, userInputs *register.InputFile, user
 
 		// Validate that the project defintion's dependencies are present in the dependencies directory.
 		for _, rs := range d.RequiredServices {
-			fName := createDependencyFileName(rs.URL, rs.Version, SERVICE_DEFINITION_FILE)
 			found := false
 			for _, fileInfo := range deps {
-				if fName == fileInfo.Name() {
+				if dDef, err := GetServiceDefinition(path.Join(directory, DEFAULT_DEPENDENCY_DIR), fileInfo.Name()); err != nil {
+					return errors.New(fmt.Sprintf("dependency validation failed, unable to read %v, error: %v", fileInfo.Name(), err))
+				} else if vRange, err := policy.Version_Expression_Factory(rs.Version); err != nil {
+					return errors.New(fmt.Sprintf("dependency validation failed, dependency %v has an invalid version %v, error: %v", fileInfo.Name(), rs.Version, err))
+				} else if inRange, err := vRange.Is_within_range(dDef.Version); err != nil {
+					return errors.New(fmt.Sprintf("dependency validation failed, unable to verify version range %v is within required range %v, error: %v", dDef.Version, vRange.Get_expression(), err))
+				} else if inRange {
 					found = true
 					break
 				}
 			}
 			if !found {
-				return errors.New(fmt.Sprintf("dependency %v does not exist in %v.", rs.URL, path.Join(directory, DEFAULT_DEPENDENCY_DIR)))
+				return errors.New(fmt.Sprintf("dependency %v at version %v does not exist in %v.", rs.URL, rs.Version, path.Join(directory, DEFAULT_DEPENDENCY_DIR)))
 			}
 		}
 	}
