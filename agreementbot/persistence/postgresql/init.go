@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	_ "github.com/lib/pq"
 	"github.com/open-horizon/anax/config"
+	"github.com/satori/go.uuid"
 )
 
 // This function is called by the anax main to allow the configured database a chance to initialize itself.
@@ -28,22 +29,8 @@ func (db *AgbotPostgresqlDB) Initialize(cfg *config.HorizonConfig) error {
 		db.db = pgdb
 
 		// Initialize the DB instance fields.
-		// Verify that any secondary partitions have tables that exist. If not, adjust the list of partitions in the
-		// config object to be just the secondary partitions that have tables.
-		configPartitions := cfg.PartitionsAsArray()
-		if secondaryPartitions, err := db.VerifyPartitions(configPartitions[1:]); err != nil {
-			return errors.New(fmt.Sprintf("unable to verify secondary partition tables: %v, error: %v", configPartitions[1:], err))
-		} else if len(configPartitions) > 0 {
-			db.primaryPartition = configPartitions[0]
-			db.partitions = append(db.partitions, configPartitions[0])
-			db.partitions = append(db.partitions, secondaryPartitions...)
-			if len(configPartitions) != (len(secondaryPartitions) + 1) {
-				glog.Warningf("One or more configured secondary partitions are being ignored because the tables do not exist.")
-			}
-			glog.V(3).Infof("Running with partitions: %v", db.partitions)
-		} else {
-			return errors.New(fmt.Sprintf("unable to initialize Postgresql database, no partitions specified in the agbot configuration"))
-		}
+		db.identity = uuid.NewV4().String()
+		glog.V(1).Infof("Agreementbot %v initializing partitions", db.identity)
 
 		// Now create the tables and initialize them as necessary.
 		glog.V(3).Infof("Postgresql database tables initializing.")
@@ -51,10 +38,23 @@ func (db *AgbotPostgresqlDB) Initialize(cfg *config.HorizonConfig) error {
 		// Create the version table if necessary, and insert the current version row if necessary.
 		if _, err = db.db.Exec(VERSION_CREATE_TABLE); err != nil {
 			return errors.New(fmt.Sprintf("unable to create version table, error: %v", err))
+		} else if _, err = db.db.Exec(VERSION_INSERT); err != nil {
+			return errors.New(fmt.Sprintf("unable to insert singleton version row, error: %v", err))
 		}
 
-		if _, err = db.db.Exec(VERSION_INSERT); err != nil {
-			return errors.New(fmt.Sprintf("unable to insert singleton version row, error: %v", err))
+		// Create the partition tables and create the postgresql procedure that manages the table.
+		if _, err := db.db.Exec(PARTITION_CREATE_MAIN_TABLE); err != nil {
+			return errors.New(fmt.Sprintf("unable to create partition table, error: %v", err))
+		} else if _, err := db.db.Exec(PARTITION_CLAIM_UNOWNED_FUNCTION); err != nil {
+			return errors.New(fmt.Sprintf("unable to create claim unowned partition function, error: %v", err))
+		}
+
+		// Claim a partition for ourselves.
+		if partition, err := db.ClaimPartition(cfg.GetPartitionStale()); err != nil {
+			return errors.New(fmt.Sprintf("unable to claim a partition, error: %v", err))
+		} else {
+			db.primaryPartition = partition
+			db.partitions = append(db.partitions, partition)
 		}
 
 		// Create the workload usage table, partition and index if necessary.

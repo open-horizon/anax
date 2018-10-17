@@ -556,11 +556,12 @@ func (a *API) partition(w http.ResponseWriter, r *http.Request) {
 
 		// For each partition, how many agreements and other objects are in it. The top level keys in the output
 		// are the partition names, the sub maps are for each of agreements, workload usage, etc.
+		const PARTITION_OWNER = "owner"
 		const AGREEMENT_ACTIVE_KEY = "active agreements"
 		const AGREEMENT_ARCHIVED_KEY = "archived agreements"
 		const WORKLOAD_USAGES_KEY = "workload usages"
 
-		output := make(map[string]map[string]int64, 0)
+		output := make(map[string]map[string]interface{}, 0)
 
 		if partitions, err := a.db.FindPartitions(); err != nil {
 			glog.Error(APIlogString(fmt.Sprintf("error finding all partitions, error: %v", err)))
@@ -569,9 +570,18 @@ func (a *API) partition(w http.ResponseWriter, r *http.Request) {
 
 			// For each partition, get a count of records in the partition.
 			for _, p := range partitions {
-				partitionMaps := make(map[string]int64, 0)
+				partitionMaps := make(map[string]interface{}, 0)
 
-				// First get the agreement count.
+				// First get the partition owner.
+				if owner, err := a.db.GetPartitionOwner(p); err != nil {
+					glog.Error(APIlogString(fmt.Sprintf("error finding partition %v owner, error: %v", p, err)))
+					http.Error(w, "Internal server error", http.StatusInternalServerError)
+					return
+				} else {
+					partitionMaps[PARTITION_OWNER] = owner
+				}
+
+				// Then get the agreement count.
 				if active, archived, err := a.db.GetAgreementCount(p); err != nil {
 					glog.Error(APIlogString(fmt.Sprintf("error finding agreement count in partition %v, error: %v", p, err)))
 					http.Error(w, "Internal server error", http.StatusInternalServerError)

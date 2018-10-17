@@ -24,6 +24,10 @@ type AgbotBoltDB struct {
 	db *bolt.DB
 }
 
+func (db *AgbotBoltDB) String() string {
+	return fmt.Sprintf("DB Handle: %v", db.db)
+}
+
 func (db *AgbotBoltDB) GetAgreementCount(partition string) (int64, int64, error) {
 	var activeNum, archivedNum int64
 	for _, protocol := range policy.AllAgreementProtocols() {

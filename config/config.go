@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 )
 
 const ExchangeURLEnvvarName = "HZN_EXCHANGE_URL"
@@ -60,7 +59,7 @@ type AGConfig struct {
 	AgreementWorkers              int
 	DBPath                        string
 	Postgresql                    PostgresqlConfig // The Postgresql config if it is being used
-	Partitions                    string           // The comma separated list of partitions this agbot owns. This not an array because structs with arrays cant be compared with an empty struct.
+	PartitionStale                uint64           // Number of seconds to wait before declaring a partition to be stale (i.e. the previous owner has unexpectedly terminated).
 	ProtocolTimeoutS              uint64           // Number of seconds to wait before declaring proposal response is lost
 	AgreementTimeoutS             uint64           // Number of seconds to wait before declaring agreement not finalized in blockchain
 	NoDataIntervalS               uint64           // default should be 15 mins == 15*60 == 900. Ignored if the policy has data verification disabled.
@@ -103,17 +102,15 @@ func (c *HorizonConfig) IsBoltDBConfigured() bool {
 }
 
 func (c *HorizonConfig) IsPostgresqlConfigured() bool {
-	return (c.AgreementBot.Postgresql != (PostgresqlConfig{})) && (len(c.AgreementBot.Partitions) > 0)
+	return (c.AgreementBot.Postgresql != (PostgresqlConfig{})) && (c.GetPartitionStale() != 0)
 }
 
-func (c *HorizonConfig) PartitionsAsArray() []string {
-
-	if len(c.AgreementBot.Partitions) == 0 {
-		return []string{}
+func (c *HorizonConfig) GetPartitionStale() uint64 {
+	if c.AgreementBot.PartitionStale == 0 {
+		return 60
+	} else {
+		return c.AgreementBot.PartitionStale
 	}
-	str := strings.Replace(c.AgreementBot.Partitions, " ", "", -1)
-	str = strings.Trim(str, ",")
-	return strings.Split(str, ",")
 }
 
 // some configuration is provided by envvars; in this case we populate this config object from expected envvars

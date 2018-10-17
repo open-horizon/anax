@@ -18,8 +18,8 @@ func init() {
 }
 
 // Constants for the SQL statements that are used to work with agreements. Agreements are partitioned by agbot instances. Each
-// agbot instance "owns" 1 or more partitions in the database. Postgresql supports automatic partitioning, which is what we want
-// to use but cannot because Postgresqk is too new. Instead we have implemented our own partitioning scheme using table inheritance.
+// agbot instance "owns" 1 partitions in the database. Postgresql supports automatic partitioning, which is what we want
+// to use but cannot because Postgresql 10 is too new. Instead we have implemented our own partitioning scheme using table inheritance.
 // There is a "main" table (called agreements) that defines the schema for all the partitions, and then there is a
 // set of separate tables (called agreements_<partition_name>, one for each partition) that we have to create. When an agbot
 // comes up it will attempt to create the main table and a partition table (and index) for its primary partition that inherites
@@ -30,7 +30,7 @@ func init() {
 //
 // IMPORTANT NOTE ====================================================================================================================
 // The lifecycle of the workload usage records is non-standard and therefore likely to be unexpected. Each record is loosely
-// tied to an agreement. Records are specific to a devie that the agbot is working with, and retain state outside the scope
+// tied to an agreement. Records are specific to a device that the agbot is working with, and retains state outside the scope
 // of any agreement between the device and agbot. However. the state is specific to how to make the next agreement with the
 // device and therefore these records need to be kept in the same partition where the agbot is making new agreements. That means
 // these records sometimes need to be "moved" from one partition to another. It also means that the partition coud be removed
@@ -110,15 +110,27 @@ const AGREEMENT_INSERT = `INSERT INTO "agreements_ (agreement_id, protocol, part
 const AGREEMENT_UPDATE = `UPDATE "agreements_ SET agreement = $3, updated = current_timestamp WHERE agreement_id = $1 AND protocol = $2;`
 const AGREEMENT_DELETE = `DELETE FROM "agreements_ WHERE agreement_id = $1;`
 
+const AGREEMENT_MOVE = `WITH moved_rows AS (
+    DELETE FROM "agreements_ a
+    RETURNING a.agreement_id, a.protocol, a.agreement
+)
+INSERT INTO "agreements_ (agreement_id, protocol, partition, agreement) SELECT agreement_id, protocol, 'partition_name', agreement FROM moved_rows;
+`
+
 const AGREEMENT_PARTITIONS = `SELECT partition FROM agreements;`
 
 const AGREEMENT_DROP_PARTITION = `DROP TABLE "agreements_;`
 
 // The fields in this object are initialized in the Initialize method in this package.
 type AgbotPostgresqlDB struct {
+	identity         string   // The identity of this agbot in the partitions table.
 	db               *sql.DB  // A handle to the underlying database.
 	primaryPartition string   // The partition to use when creating new agreements.
 	partitions       []string // The list of partitions this agbot is responsible to maintain.
+}
+
+func (db *AgbotPostgresqlDB) String() string {
+	return fmt.Sprintf("Instance: %v, PrimaryPartition: %v, All Partitions: %v, DB Handle: %v", db.identity, db.primaryPartition, db.partitions, db.db)
 }
 
 func (db *AgbotPostgresqlDB) PrimaryPartition() string {
@@ -158,6 +170,14 @@ func (db *AgbotPostgresqlDB) GetAgreementPartitionTableCount(partition string) s
 // of how the table partition is substituted into the SQL. The difference is in the required use of single quotes.
 func (db *AgbotPostgresqlDB) GetAgreementPartitionTableExists(partition string) string {
 	sql := strings.Replace(AGREEMENT_PARTITION_TABLE_EXISTS, AGREEMENT_TABLE_NAME_ROOT, AGREEMENT_TABLE_NAME_ROOT+partition, 1)
+	return sql
+}
+
+// The partition table name replacement scheme used in this function is slightly different from the others above.
+func (db *AgbotPostgresqlDB) GetAgreementPartitionMove(fromPartition string, toPartition string) string {
+	sql := strings.Replace(AGREEMENT_MOVE, AGREEMENT_TABLE_NAME_ROOT, db.GetAgreementPartitionTableName(toPartition), 2)
+	sql = strings.Replace(sql, db.GetAgreementPartitionTableName(toPartition), db.GetAgreementPartitionTableName(fromPartition), 1)
+	sql = strings.Replace(sql, AGREEMENT_PARTITION_FILLIN, toPartition, 1)
 	return sql
 }
 
@@ -277,7 +297,7 @@ func (db *AgbotPostgresqlDB) FindAgreements(filters []persistence.AFilter, proto
 }
 
 // Find a specific agreement in the database. The input filters are ignored for this query. They are needed by the bolt implementation.
-func (db *AgbotPostgresqlDB) internalFindSingleAgreementByAgreementId(agreementId string, protocol string, filters []persistence.AFilter) (*persistence.Agreement, string, error) {
+func (db *AgbotPostgresqlDB) internalFindSingleAgreementByAgreementId(tx *sql.Tx, agreementId string, protocol string, filters []persistence.AFilter) (*persistence.Agreement, string, error) {
 
 	agBytes := make([]byte, 0, 2048)
 	ag := new(persistence.Agreement)
@@ -286,12 +306,21 @@ func (db *AgbotPostgresqlDB) internalFindSingleAgreementByAgreementId(agreementI
 
 		// Find the agreement row and read in the agreement object column, run the returned agreement through the filters, then unmarshal
 		// the blob into an in memory agreement object which gets returned to the caller.
+		var qerr error
 		sqlStr := strings.Replace(AGREEMENT_QUERY, AGREEMENT_TABLE_NAME_ROOT, db.GetAgreementPartitionTableName(currentPartition), 1)
-		if err := db.db.QueryRow(sqlStr, agreementId, protocol).Scan(&agBytes); err != nil && err != sql.ErrNoRows {
-			return nil, "", errors.New(fmt.Sprintf("error scanning row for agreement %v error: %v", agreementId, err))
-		} else if err == sql.ErrNoRows {
+		if tx == nil {
+			qerr = db.db.QueryRow(sqlStr, agreementId, protocol).Scan(&agBytes)
+		} else {
+			qerr = tx.QueryRow(sqlStr, agreementId, protocol).Scan(&agBytes)
+		}
+
+		if qerr != nil && qerr != sql.ErrNoRows {
+			return nil, "", errors.New(fmt.Sprintf("error scanning row for agreement %v error: %v", agreementId, qerr))
+		} else if qerr == sql.ErrNoRows {
 			continue
-		} else if err := json.Unmarshal(agBytes, ag); err != nil {
+		}
+
+		if err := json.Unmarshal(agBytes, ag); err != nil {
 			return nil, "", errors.New(fmt.Sprintf("error demarshalling row: %v, error: %v", string(agBytes), err))
 		} else if agPassed := persistence.RunFilters(ag, filters); agPassed == nil {
 			return nil, "", nil // Agreement ids are unique. If we found the one we want but the filters rejected it, then we're done. No need to look at more partitions.
@@ -304,7 +333,7 @@ func (db *AgbotPostgresqlDB) internalFindSingleAgreementByAgreementId(agreementI
 }
 
 func (db *AgbotPostgresqlDB) FindSingleAgreementByAgreementId(agreementId string, protocol string, filters []persistence.AFilter) (*persistence.Agreement, error) {
-	ag, _, err := db.internalFindSingleAgreementByAgreementId(agreementId, protocol, filters)
+	ag, _, err := db.internalFindSingleAgreementByAgreementId(nil, agreementId, protocol, filters)
 	return ag, err
 }
 
@@ -380,9 +409,16 @@ func (db *AgbotPostgresqlDB) ArchiveAgreement(agreementid string, protocol strin
 }
 
 func (db *AgbotPostgresqlDB) DeleteAgreement(agreementid string, protocol string) error {
-	if err := db.deleteAgreement(agreementid, protocol); err != nil {
+	tx, err := db.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if err := db.deleteAgreement(tx, agreementid, protocol); err != nil {
 		return err
 	} else {
+		tx.Commit()
 		return nil
 	}
 }
@@ -414,7 +450,7 @@ func (db *AgbotPostgresqlDB) wrapTransaction(agreementid string, protocol string
 
 	if tx, err := db.db.Begin(); err != nil {
 		return err
-	} else if err := db.persistUpdatedAgreement(agreementid, protocol, updated); err != nil {
+	} else if err := db.persistUpdatedAgreement(tx, agreementid, protocol, updated); err != nil {
 		tx.Rollback()
 		return err
 	} else {
@@ -426,9 +462,9 @@ func (db *AgbotPostgresqlDB) wrapTransaction(agreementid string, protocol string
 
 // This function runs inside a transaction. It will atomicly read the agreement from the DB, verify that the updated
 // agreement object contains valid state transitions, and then write the updated agreement back to the database.
-func (db *AgbotPostgresqlDB) persistUpdatedAgreement(agreementid string, protocol string, update *persistence.Agreement) error {
+func (db *AgbotPostgresqlDB) persistUpdatedAgreement(tx *sql.Tx, agreementid string, protocol string, update *persistence.Agreement) error {
 
-	if mod, partition, err := db.internalFindSingleAgreementByAgreementId(agreementid, protocol, []persistence.AFilter{}); err != nil {
+	if mod, partition, err := db.internalFindSingleAgreementByAgreementId(tx, agreementid, protocol, []persistence.AFilter{}); err != nil {
 		return err
 	} else if mod == nil {
 		return errors.New(fmt.Sprintf("No agreement with given id available to update: %v", agreementid))
@@ -437,7 +473,7 @@ func (db *AgbotPostgresqlDB) persistUpdatedAgreement(agreementid string, protoco
 		// read and then updated according to the updates within the input update record. It is critical
 		// to check for correct data transitions within the tx.
 		persistence.ValidateStateTransition(mod, update)
-		return db.updateAgreement(mod, protocol, partition)
+		return db.updateAgreement(tx, mod, protocol, partition)
 	}
 }
 
@@ -456,13 +492,13 @@ func (db *AgbotPostgresqlDB) insertAgreement(ag *persistence.Agreement, protocol
 	return nil
 }
 
-func (db *AgbotPostgresqlDB) updateAgreement(ag *persistence.Agreement, protocol string, partition string) error {
+func (db *AgbotPostgresqlDB) updateAgreement(tx *sql.Tx, ag *persistence.Agreement, protocol string, partition string) error {
 
 	sql := strings.Replace(AGREEMENT_UPDATE, AGREEMENT_TABLE_NAME_ROOT, db.GetAgreementPartitionTableName(partition), 1)
 
 	if agm, err := json.Marshal(ag); err != nil {
 		return err
-	} else if _, err = db.db.Exec(sql, ag.CurrentAgreementId, protocol, agm); err != nil {
+	} else if _, err = tx.Exec(sql, ag.CurrentAgreementId, protocol, agm); err != nil {
 		return err
 	} else {
 		glog.V(2).Infof("Succeeded writing agreement record %v", *ag)
@@ -471,14 +507,14 @@ func (db *AgbotPostgresqlDB) updateAgreement(ag *persistence.Agreement, protocol
 	return nil
 }
 
-func (db *AgbotPostgresqlDB) deleteAgreement(agreementId string, protocol string) error {
+func (db *AgbotPostgresqlDB) deleteAgreement(tx *sql.Tx, agreementId string, protocol string) error {
 
 	// Query the agreement id to retrieve the partition for this agreement. We dont need the agreement object in this case.
 	// Compare the agreement's partition with the DB's primary and if they are different, delete this agreement and then
 	// check to see if the partition specific table is now empty.
 
 	checkTableDeletion := false
-	_, partition, err := db.internalFindSingleAgreementByAgreementId(agreementId, protocol, []persistence.AFilter{})
+	_, partition, err := db.internalFindSingleAgreementByAgreementId(tx, agreementId, protocol, []persistence.AFilter{})
 	if err != nil {
 		return err
 	} else if partition != db.PrimaryPartition() {
@@ -487,7 +523,7 @@ func (db *AgbotPostgresqlDB) deleteAgreement(agreementId string, protocol string
 
 	// Delete the agreement.
 	sql := strings.Replace(AGREEMENT_DELETE, AGREEMENT_TABLE_NAME_ROOT, db.GetAgreementPartitionTableName(partition), 1)
-	if _, err := db.db.Exec(sql, agreementId); err != nil {
+	if _, err := tx.Exec(sql, agreementId); err != nil {
 		return err
 	}
 
@@ -496,7 +532,7 @@ func (db *AgbotPostgresqlDB) deleteAgreement(agreementId string, protocol string
 	// Remove the secondary partition table if necessary.
 	if checkTableDeletion {
 		sql := strings.Replace(AGREEMENT_PARTITION_EMPTY, AGREEMENT_TABLE_NAME_ROOT, db.GetAgreementPartitionTableName(partition), 1)
-		rows, err := db.db.Query(sql)
+		rows, err := tx.Query(sql)
 		if err != nil {
 			return errors.New(fmt.Sprintf("error querying for empty agreement partition %v error: %v", partition, err))
 		}
@@ -507,7 +543,7 @@ func (db *AgbotPostgresqlDB) deleteAgreement(agreementId string, protocol string
 		// If there are no rows then this table is empty and should be deleted.
 		if !rows.Next() {
 			glog.V(5).Infof("Deleting secondary agreement partition %v from database.", partition)
-			if _, err := db.db.Exec(db.GetAgreementPartitionTableDrop(partition)); err != nil {
+			if _, err := tx.Exec(db.GetAgreementPartitionTableDrop(partition)); err != nil {
 				return err
 			}
 			glog.V(5).Infof("Deleted secondary agreement partition %v from database.", partition)

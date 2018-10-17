@@ -23,11 +23,13 @@ import (
 
 // for identifying the subworkers used by this worker
 const HEARTBEAT = "AgbotHeartBeat"
+const DATABASE_HEARTBEAT = "AgbotDatabaseHeartBeat"
 const GOVERN_AGREEMENTS = "AgBotGovernAgreements"
 const GOVERN_ARCHIVED_AGREEMENTS = "AgBotGovernArchivedAgreements"
 const GOVERN_BC_NEEDS = "AgBotGovernBlockchain"
 const POLICY_WATCHER = "AgBotPolicyWatcher"
 const GENERATE_POLICY = "AgBotPolicyGenerator"
+const STALE_PARTITIONS = "AgbotStaleDatabasePartition"
 
 // Agreement governance timing state. Used in the GovernAgreements subworker.
 type DVState struct {
@@ -273,6 +275,10 @@ func (w *AgreementBotWorker) Initialize() bool {
 	// Start the go thread that heartbeats to the exchange
 	w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.AgreementBot.ExchangeHeartbeat)
 
+	// Start the go thread that heartbeats to the database and checks for stale partitions.
+	w.DispatchSubworker(DATABASE_HEARTBEAT, w.databaseHeartBeat, int(w.BaseWorker.Manager.Config.GetPartitionStale()/3))
+	w.DispatchSubworker(STALE_PARTITIONS, w.stalePartitions, int(w.BaseWorker.Manager.Config.GetPartitionStale()))
+
 	// Start the governance routines using the subworker APIs.
 	w.DispatchSubworker(GOVERN_AGREEMENTS, w.GovernAgreements, int(w.BaseWorker.Manager.Config.AgreementBot.ProcessGovernanceIntervalS))
 	w.DispatchSubworker(GOVERN_ARCHIVED_AGREEMENTS, w.GovernArchivedAgreements, 1800)
@@ -506,6 +512,9 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 
 			// Shutdown the subworkers.
 			w.TerminateSubworkers()
+
+			// Shutdown the database partition.
+			w.db.QuiescePartition()
 
 			w.Messages() <- events.NewNodeShutdownCompleteMessage(events.AGBOT_QUIESCE_COMPLETE, "")
 
@@ -1258,6 +1267,25 @@ func (w *AgreementBotWorker) heartBeat() int {
 	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/agbots/" + exchange.GetId(w.GetExchangeId()) + "/heartbeat"
 	exchange.Heartbeat(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), targetURL, w.GetExchangeId(), w.GetExchangeToken())
 
+	return 0
+}
+
+// Heartbeat to the database. This function is called by the database heartbeat subworker.
+func (w *AgreementBotWorker) databaseHeartBeat() int {
+
+	if err := w.db.HeartbeatPartition(); err != nil {
+		glog.Errorf(AWlogString(fmt.Sprintf("Error heartbeating to the database, error: %v", err)))
+	}
+
+	return 0
+}
+
+// Ask the database to check for stale partitions and move them into our partition if one is found.
+func (w *AgreementBotWorker) stalePartitions() int {
+
+	if err := w.db.MovePartition(w.Config.GetPartitionStale()); err != nil {
+		glog.Errorf(AWlogString(fmt.Sprintf("Error claiming an unowned partition, error: %v", err)))
+	}
 	return 0
 }
 
