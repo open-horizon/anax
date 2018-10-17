@@ -98,9 +98,9 @@ func ExtractAuthAttributes(attributes []persistence.Attribute, httpAuthAttrs map
 			for _, url := range attr.GetMeta().SensorUrls {
 				// may container multiple auths
 				for _, auth := range a.Auths {
-					username := "token" // default user name if auth.User is empty
-					if auth.User != "" {
-						username = auth.User
+					username := "token" // default user name if auth.UserName is empty
+					if auth.UserName != "" {
+						username = auth.UserName
 					}
 					a_single := docker.AuthConfiguration{
 						Email:         "",
@@ -163,9 +163,12 @@ func authExchange(imageAuths []events.ImageDockerAuth, dockerAuthConfigurations 
 	for _, auth := range imageAuths {
 		a_single := docker.AuthConfiguration{
 			Email:         "",
-			Username:      "token",
+			Username:      auth.UserName,
 			Password:      auth.Password,
 			ServerAddress: auth.Registry,
+		}
+		if a_single.Username == "" {
+			a_single.Username = "token"
 		}
 		dockerAuthConfigurations = AppendDockerAuth(dockerAuthConfigurations, a_single)
 	}

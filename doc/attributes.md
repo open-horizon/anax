@@ -194,7 +194,7 @@ For example:
         "host_only": true,
         "mappings": {
             "auths": [
-                {"user": "user1", "token": "myDockerhubPassword"}
+                {"username": "user1", "token": "myDockerhubPassword"}
             ]
         }
     }
@@ -211,7 +211,7 @@ For example:
         "host_only": true,
         "mappings": {
             "auths": [
-                {"user": "token", "token": "myDockerToken"}
+                {"username": "token", "token": "myDockerToken"}
             ]
         }
     }
@@ -227,7 +227,7 @@ For example:
         "host_only": true,
         "mappings": {
             "auths": [
-                {"user": "iamapikey", "token": "myIAMApiKey"}
+                {"username": "iamapikey", "token": "myIAMApiKey"}
             ]
         }
     }

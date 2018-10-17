@@ -208,6 +208,7 @@ func (w *GetServicesResponse) ShortString() string {
 type ImageDockerAuth struct {
 	DockAuthId  int    `json:"dockAuthId"`
 	Registry    string `json:"registry"`
+	UserName    string `json:"username"`
 	Token       string `json:"token"`
 	LastUpdated string `json:"lastUpdated"`
 }
@@ -215,9 +216,10 @@ type ImageDockerAuth struct {
 func (s ImageDockerAuth) String() string {
 	return fmt.Sprintf("DockAuthId: %v, "+
 		"Registry: %v, "+
+		"UserName: %v, "+
 		"Token: %v, "+
 		"LastUpdated: %v",
-		s.DockAuthId, s.Registry, s.Token, s.LastUpdated)
+		s.DockAuthId, s.Registry, s.UserName, s.Token, s.LastUpdated)
 }
 
 // This function is used to figure out what kind of version search to do in the exchange based on the input version string.

@@ -182,12 +182,12 @@ func setup(t *testing.T) (string, *bolt.DB, error) {
 	ff := false
 
 	// add the bluemix registry token as an attribute
-	attr := &persistence.BXDockerRegistryAuthAttributes{
+	attr := &persistence.DockerRegistryAuthAttributes{
 		Token: bxRegToken,
 		Meta: &persistence.AttributeMeta{
 			Id:          "bxauth",
 			Label:       "bxauth",
-			Type:        "BXDockerRegistryAuthAttributes",
+			Type:        "DockerRegistryAuthAttributes",
 			SensorUrls:  []string{"registry.ng.bluemix.net"},
 			HostOnly:    &tt,
 			Publishable: &ff,
