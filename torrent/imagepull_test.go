@@ -25,7 +25,7 @@ func Test_authDockerFile(t *testing.T) {
 		Type:        reflect.TypeOf(persistence.DockerRegistryAuthAttributes{}).Name(),
 	}
 	var auth_array1 []persistence.Auth
-	auth_array1 = append(auth_array1, persistence.Auth{Token: "t11"}, persistence.Auth{Token: "t12"})
+	auth_array1 = append(auth_array1, persistence.Auth{Token: "t11"}, persistence.Auth{UserName: "iamapikey", Token: "t12"})
 	auth_attrib1 := persistence.DockerRegistryAuthAttributes{
 		Meta:  &meta_data1,
 		Auths: auth_array1,
@@ -39,7 +39,7 @@ func Test_authDockerFile(t *testing.T) {
 		Type:        reflect.TypeOf(persistence.DockerRegistryAuthAttributes{}).Name(),
 	}
 	var auth_array2 []persistence.Auth
-	auth_array2 = append(auth_array2, persistence.Auth{Token: "t21"}, persistence.Auth{Token: "t22"}, persistence.Auth{Token: "t23"})
+	auth_array2 = append(auth_array2, persistence.Auth{UserName: "token", Token: "t21"}, persistence.Auth{Token: "t22"}, persistence.Auth{Token: "t23"})
 	auth_attrib2 := persistence.DockerRegistryAuthAttributes{
 		Meta:  &meta_data2,
 		Auths: auth_array2,

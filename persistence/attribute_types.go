@@ -303,8 +303,8 @@ func (a HTTPSBasicAuthAttributes) Update(other Attribute) error {
 }
 
 type Auth struct {
-	User  string `json:"user"`  // The name of the user, the default is 'token'
-	Token string `json:"token"` // It can be a token, a password, an api key etc.
+	UserName string `json:"username"` // The name of the user, the default is 'token'
+	Token    string `json:"token"`    // It can be a token, a password, an api key etc.
 }
 
 type DockerRegistryAuthAttributes struct {
@@ -315,7 +315,7 @@ type DockerRegistryAuthAttributes struct {
 func (a DockerRegistryAuthAttributes) String() string {
 	auths_show := make([]Auth, 0)
 	for _, au := range a.Auths {
-		auths_show = append(auths_show, Auth{User: au.User, Token: "********"})
+		auths_show = append(auths_show, Auth{UserName: au.UserName, Token: "********"})
 	}
 
 	return fmt.Sprintf("meta: %v, auths: %v", a.GetMeta(), auths_show)
@@ -329,7 +329,7 @@ func (a DockerRegistryAuthAttributes) GetGenericMappings() map[string]interface{
 
 	auths_show := make([]Auth, 0)
 	for _, au := range a.Auths {
-		auths_show = append(auths_show, Auth{User: au.User, Token: "********"})
+		auths_show = append(auths_show, Auth{UserName: au.UserName, Token: "********"})
 	}
 
 	return map[string]interface{}{
@@ -355,7 +355,7 @@ func (a DockerRegistryAuthAttributes) Update(other Attribute) error {
 func (a DockerRegistryAuthAttributes) AddAuth(auth_new Auth) {
 	found := false
 	for _, auth := range a.Auths {
-		if auth.User == auth_new.User && auth.Token == auth_new.Token {
+		if auth.UserName == auth_new.UserName && auth.Token == auth_new.Token {
 			found = true
 			break
 		}
@@ -369,7 +369,7 @@ func (a DockerRegistryAuthAttributes) AddAuth(auth_new Auth) {
 // delete the given auth from this registery
 func (a DockerRegistryAuthAttributes) DeleteAuth(auth_in Auth) {
 	for i, auth := range a.Auths {
-		if auth.User == auth_in.User && auth.Token == auth_in.Token {
+		if auth.UserName == auth_in.UserName && auth.Token == auth_in.Token {
 			a.Auths = append(a.Auths[:i], a.Auths[i+1:]...)
 			break
 		}

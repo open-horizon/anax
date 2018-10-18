@@ -127,7 +127,7 @@ func (c AgreementLaunchContext) ContainerConfig() ContainerConfig {
 
 type ImageDockerAuth struct {
 	Registry string `json:"registry"`
-	UserName string `json:"user_name"`
+	UserName string `json:"username"`
 	Password string `json:"token"`
 }
 

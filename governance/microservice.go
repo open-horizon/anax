@@ -176,7 +176,11 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 					} else {
 						if ias != nil {
 							for _, iau_temp := range ias {
-								img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: "token", Password: iau_temp.Token})
+								username := iau_temp.UserName
+								if username == "" {
+									username = "token"
+								}
+								img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: username, Password: iau_temp.Token})
 							}
 						}
 					}

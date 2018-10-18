@@ -148,7 +148,7 @@ Environment Variables:
 	exSvcPrivKeyFile := exServicePublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the service. ").Short('k').ExistingFile()
 	exSvcPubPubKeyFile := exServicePublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
 	exSvcPubDontTouchImage := exServicePublishCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. This should only be used during development when testing new versions often.").Short('I').Bool()
-	exSvcRegistryTokens := exServicePublishCmd.Flag("registry-token", "Docker registry domain and auth token that should be stored with the service, to enable the Horizon edge node to access the service's docker images. This flag can be repeated, and each flag should be in the format: registry:token").Short('r').Strings()
+	exSvcRegistryTokens := exServicePublishCmd.Flag("registry-token", "Docker registry domain and auth that should be stored with the service, to enable the Horizon edge node to access the service's docker images. This flag can be repeated, and each flag should be in the format: registry:user:token").Short('r').Strings()
 	exServiceVerifyCmd := exServiceCmd.Command("verify", "Verify the signatures of a service resource in the Horizon Exchange.")
 	exVerService := exServiceVerifyCmd.Arg("service", "The service to verify.").Required().String()
 	exSvcPubKeyFile := exServiceVerifyCmd.Flag("public-key-file", "The path of a pem public key file to be used to verify the service. ").Short('k').Required().ExistingFile()

@@ -32,8 +32,8 @@ This sample will work as-is with the IBM netspeed pattern.
 			],
 			"variables": {
 				"auths": [
-					{"user": "token", "token": "REGISTRYAUTHTOKEN"},
-               		{"user": "iamapikey", "token": "MYPLATFORMAPIKEY"}
+					{"username": "token", "token": "REGISTRYAUTHTOKEN"},
+               		{"username": "iamapikey", "token": "MYPLATFORMAPIKEY"}
 				]
 			}
 		},

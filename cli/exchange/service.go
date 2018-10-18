@@ -68,6 +68,7 @@ type ServiceExch struct {
 
 type ServiceDockAuthExch struct {
 	Registry string `json:"registry"`
+	UserName string `json:"username"`
 	Token    string `json:"token"`
 }
 
@@ -268,13 +269,22 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 
 	// Store registry auth tokens in the exchange, if they gave us some
 	for _, regTok := range registryTokens {
-		parts := strings.SplitN(regTok, ":", 2)
-		if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
-			fmt.Printf("Error: registry-token value of '%s' is not in the required format: registry:token. Not storing that in the Horizon exchange.\n", regTok)
+		parts := strings.SplitN(regTok, ":", 3)
+		regstry := ""
+		username := ""
+		token := ""
+		if len(parts) == 3 {
+			regstry = parts[0]
+			username = parts[1]
+			token = parts[2]
+		}
+
+		if parts[0] == "" || len(parts) < 3 || parts[2] == "" {
+			fmt.Printf("Error: registry-token value of '%s' is not in the required format: registry:user:token. Not storing that in the Horizon exchange.\n", regTok)
 			continue
 		}
 		fmt.Printf("Storing %s with the service in the exchange...\n", regTok)
-		regTokExch := ServiceDockAuthExch{Registry: parts[0], Token: parts[1]}
+		regTokExch := ServiceDockAuthExch{Registry: regstry, UserName: username, Token: token}
 		cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId+"/dockauths", cliutils.OrgAndCreds(org, userPw), []int{201}, regTokExch)
 	}
 

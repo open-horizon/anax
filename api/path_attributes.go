@@ -205,15 +205,15 @@ func parseDockerRegistryAuth(errorhandler ErrorHandler, permitEmpty bool, given 
 				return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("the token value is not a string, it is %T", a_temp2["token"]), "dockerregistry.mappings.auths")), nil
 			}
 
-			// user can be omitted, the default is "token"
+			// username can be omitted, the default is "token"
 			a_temp4 := "token"
-			if a_temp2["user"] != nil {
-				a_temp4, ok3 = a_temp2["user"].(string)
+			if a_temp2["username"] != nil {
+				a_temp4, ok3 = a_temp2["username"].(string)
 				if !ok3 {
-					return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("the user value is not a string, it is %T", a_temp2["user"]), "dockerregistry.mappings.auths")), nil
+					return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("the username value is not a string, it is %T", a_temp2["username"]), "dockerregistry.mappings.auths")), nil
 				}
 			}
-			auth_array = append(auth_array, persistence.Auth{User: a_temp4, Token: a_temp3})
+			auth_array = append(auth_array, persistence.Auth{UserName: a_temp4, Token: a_temp3})
 		}
 
 		return &persistence.DockerRegistryAuthAttributes{
