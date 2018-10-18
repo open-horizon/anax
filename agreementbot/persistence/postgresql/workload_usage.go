@@ -12,7 +12,7 @@ import (
 
 // Constants for the SQL statements that are used to work with workload usages. These records are used to track what workload
 // is running on each device so that we can do proper management of HA devices. Workload usages are partitioned by agbot instances.
-// Each agbot instance "owns" 1 or more partitions in the database. We are implementing our own partitioning scheme. There is a
+// Each agbot instance "owns" 1 partition in the database. We are implementing our own partitioning scheme. There is a
 // "main" table (called workload_usages) that defines the schema for all the partitions, and then there is a
 // set of separate tables (called workload_usages_<partition_name>, one for each partition) which inherit from the main table and
 // that we have to create. When an agbot comes up it will attempt to create the main table and a partition table for its primary
@@ -85,6 +85,13 @@ const WORKLOAD_USAGE_INSERT = `INSERT INTO "workload_usages_ (device_id, policy_
 const WORKLOAD_USAGE_UPDATE = `UPDATE "workload_usages_ SET workload_usage = $3, updated = current_timestamp WHERE device_id = $1 AND policy_name = $2;`
 const WORKLOAD_USAGE_DELETE = `DELETE FROM "workload_usages_ WHERE device_id = $1 AND policy_name = $2;`
 
+const WORKLOAD_USAGE_MOVE = `WITH moved_rows AS (
+    DELETE FROM "workload_usages_ a
+    RETURNING a.device_id, a.policy_name, a.workload_usage
+)
+INSERT INTO "workload_usages_ (device_id, policy_name, partition, workload_usage) SELECT device_id, policy_name, 'partition_name', workload_usage FROM moved_rows;
+`
+
 const WORKLOAD_USAGE_DROP_PARTITION = `DROP TABLE "workload_usages_;`
 
 func (db *AgbotPostgresqlDB) GetWorkloadUsagePartitionTableName(partition string) string {
@@ -119,6 +126,15 @@ func (db *AgbotPostgresqlDB) GetWorkloadUsagePartitionTableExists(partition stri
 	return sql
 }
 
+// The partition table name replacement scheme used in this function is slightly different from the others above.
+func (db *AgbotPostgresqlDB) GetWorkloadUsagePartitionMove(fromPartition string, toPartition string) string {
+	sql := strings.Replace(WORKLOAD_USAGE_MOVE, WORKLOAD_USAGE_TABLE_NAME_ROOT, db.GetWorkloadUsagePartitionTableName(toPartition), 2)
+	sql = strings.Replace(sql, db.GetWorkloadUsagePartitionTableName(toPartition), db.GetWorkloadUsagePartitionTableName(fromPartition), 1)
+	sql = strings.Replace(sql, WORKLOAD_USAGE_PARTITION_FILLIN, toPartition, 1)
+	return sql
+}
+
+// The partition table name replacement scheme used in this function is slightly different from the others above.
 func (db *AgbotPostgresqlDB) GetWorkloadUsagesCount(partition string) (int64, error) {
 	var num int64
 	if err := db.db.QueryRow(db.GetWorkloadUsagePartitionUsageTableCount(partition)).Scan(&num); err != nil && err != sql.ErrNoRows && !strings.Contains(err.Error(), "not exist") {
@@ -129,7 +145,7 @@ func (db *AgbotPostgresqlDB) GetWorkloadUsagesCount(partition string) (int64, er
 }
 
 // Find the workload usage record, but constrain the search to partitions owned by this agbot.
-func (db *AgbotPostgresqlDB) internalFindSingleWorkloadUsageByDeviceAndPolicyName(deviceid string, policyName string) (*persistence.WorkloadUsage, string, error) {
+func (db *AgbotPostgresqlDB) internalFindSingleWorkloadUsageByDeviceAndPolicyName(tx *sql.Tx, deviceid string, policyName string) (*persistence.WorkloadUsage, string, error) {
 
 	wuBytes := make([]byte, 0, 2048)
 	wu := new(persistence.WorkloadUsage)
@@ -139,11 +155,20 @@ func (db *AgbotPostgresqlDB) internalFindSingleWorkloadUsageByDeviceAndPolicyNam
 		// Find the workload usage row and read in the workload usage object column, then unmarshal the blob into an
 		// in memory workload usage object which gets returned to the caller.
 		sqlStr := strings.Replace(WORKLOAD_USAGE_QUERY, WORKLOAD_USAGE_TABLE_NAME_ROOT, db.GetWorkloadUsagePartitionTableName(currentPartition), 1)
-		if err := db.db.QueryRow(sqlStr, deviceid, policyName).Scan(&wuBytes); err != nil && err != sql.ErrNoRows && !strings.Contains(err.Error(), "not exist") {
-			return nil, "", errors.New(fmt.Sprintf("error scanning row for workload usage for device id %v and policy name %v, error: %v", deviceid, policyName, err))
-		} else if err == sql.ErrNoRows || (err != nil && strings.Contains(err.Error(), "not exist")) {
+		var qerr error
+		if tx == nil {
+			qerr = db.db.QueryRow(sqlStr, deviceid, policyName).Scan(&wuBytes)
+		} else {
+			qerr = tx.QueryRow(sqlStr, deviceid, policyName).Scan(&wuBytes)
+		}
+
+		if qerr != nil && qerr != sql.ErrNoRows && !strings.Contains(qerr.Error(), "not exist") {
+			return nil, "", errors.New(fmt.Sprintf("error scanning row for workload usage for device id %v and policy name %v, error: %v", deviceid, policyName, qerr))
+		} else if qerr == sql.ErrNoRows || (qerr != nil && strings.Contains(qerr.Error(), "not exist")) {
 			continue
-		} else if err := json.Unmarshal(wuBytes, wu); err != nil {
+		}
+
+		if err := json.Unmarshal(wuBytes, wu); err != nil {
 			return nil, "", errors.New(fmt.Sprintf("error demarshalling row: %v, error: %v", string(wuBytes), err))
 		} else {
 			return wu, currentPartition, nil
@@ -155,7 +180,7 @@ func (db *AgbotPostgresqlDB) internalFindSingleWorkloadUsageByDeviceAndPolicyNam
 }
 
 func (db *AgbotPostgresqlDB) FindSingleWorkloadUsageByDeviceAndPolicyName(deviceid string, policyName string) (*persistence.WorkloadUsage, error) {
-	wu, _, err := db.internalFindSingleWorkloadUsageByDeviceAndPolicyName(deviceid, policyName)
+	wu, _, err := db.internalFindSingleWorkloadUsageByDeviceAndPolicyName(nil, deviceid, policyName)
 	return wu, err
 }
 
@@ -208,11 +233,11 @@ func (db *AgbotPostgresqlDB) FindWorkloadUsages(filters []persistence.WUFilter) 
 func (db *AgbotPostgresqlDB) NewWorkloadUsage(deviceId string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) error {
 	if wlUsage, err := persistence.NewWorkloadUsage(deviceId, hapartners, policy, policyName, priority, retryDurationS, verifiedDurationS, reqsNotMet, agid); err != nil {
 		return err
-	} else if existing, partition, err := db.internalFindSingleWorkloadUsageByDeviceAndPolicyName(deviceId, policyName); err != nil {
+	} else if existing, partition, err := db.internalFindSingleWorkloadUsageByDeviceAndPolicyName(nil, deviceId, policyName); err != nil {
 		return err
 	} else if existing != nil {
 		return fmt.Errorf("Workload usage record for device %v and policy name %v already exists in partition %v.", deviceId, policyName, partition)
-	} else if err := db.insertWorkloadUsage(wlUsage); err != nil {
+	} else if err := db.insertWorkloadUsage(nil, wlUsage); err != nil {
 		return err
 	} else {
 		return nil
@@ -247,18 +272,18 @@ func (db *AgbotPostgresqlDB) UpdateWUAgreementId(deviceid string, policyName str
 
 	// Get the partition of the workload usage record and the partition of the agreement. If they are different then we need to
 	// move the workload usage record.
-	if wlUsage, wlPartition, err := db.internalFindSingleWorkloadUsageByDeviceAndPolicyName(deviceid, policyName); err != nil {
+	if wlUsage, wlPartition, err := db.internalFindSingleWorkloadUsageByDeviceAndPolicyName(nil, deviceid, policyName); err != nil {
 		return nil, err
-	} else if _, agPartition, err := db.internalFindSingleAgreementByAgreementId(agid, protocol, []persistence.AFilter{}); err != nil {
+	} else if _, agPartition, err := db.internalFindSingleAgreementByAgreementId(nil, agid, protocol, []persistence.AFilter{}); err != nil {
 		return nil, err
 	} else if wlPartition != agPartition {
 		// Move the existing record to the new partition. Inserts are always done in the primary partition.
 		if tx, err := db.db.Begin(); err != nil {
 			return nil, err
-		} else if err := db.deleteWU(deviceid, policyName); err != nil {
+		} else if err := db.deleteWU(tx, deviceid, policyName); err != nil {
 			tx.Rollback()
 			return nil, err
-		} else if err := db.insertWorkloadUsage(wlUsage); err != nil {
+		} else if err := db.insertWorkloadUsage(tx, wlUsage); err != nil {
 			tx.Rollback()
 			return nil, err
 		} else {
@@ -275,9 +300,16 @@ func (db *AgbotPostgresqlDB) DisableRollbackChecking(deviceid string, policyName
 }
 
 func (db *AgbotPostgresqlDB) DeleteWorkloadUsage(deviceid string, policyName string) error {
-	if err := db.deleteWU(deviceid, policyName); err != nil {
+	tx, err := db.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if err := db.deleteWU(tx, deviceid, policyName); err != nil {
 		return err
 	} else {
+		tx.Commit()
 		return nil
 	}
 }
@@ -297,7 +329,7 @@ func (db *AgbotPostgresqlDB) wrapWUTransaction(deviceid string, policyName strin
 
 	if tx, err := db.db.Begin(); err != nil {
 		return err
-	} else if err := db.persistUpdatedWorkloadUsage(deviceid, policyName, updated); err != nil {
+	} else if err := db.persistUpdatedWorkloadUsage(tx, deviceid, policyName, updated); err != nil {
 		tx.Rollback()
 		return err
 	} else {
@@ -309,9 +341,9 @@ func (db *AgbotPostgresqlDB) wrapWUTransaction(deviceid string, policyName strin
 
 // This function runs inside a transaction. It will atomicly read the workload usage from the DB, verify that the updated
 // workload usage object contains valid state transitions, and then write the updated workload usage back to the database.
-func (db *AgbotPostgresqlDB) persistUpdatedWorkloadUsage(deviceid string, policyName string, update *persistence.WorkloadUsage) error {
+func (db *AgbotPostgresqlDB) persistUpdatedWorkloadUsage(tx *sql.Tx, deviceid string, policyName string, update *persistence.WorkloadUsage) error {
 
-	if mod, partition, err := db.internalFindSingleWorkloadUsageByDeviceAndPolicyName(deviceid, policyName); err != nil {
+	if mod, partition, err := db.internalFindSingleWorkloadUsageByDeviceAndPolicyName(tx, deviceid, policyName); err != nil {
 		return err
 	} else if mod == nil {
 		return errors.New(fmt.Sprintf("No workload usage with device id %v and policy name %v available to update.", deviceid, policyName))
@@ -320,32 +352,37 @@ func (db *AgbotPostgresqlDB) persistUpdatedWorkloadUsage(deviceid string, policy
 		// read and then updated according to the updates within the input update record. It is critical
 		// to check for correct data transitions within the tx.
 		persistence.ValidateWUStateTransition(mod, update)
-		return db.updateWorkloadUsage(mod, partition)
+		return db.updateWorkloadUsage(tx, mod, partition)
 	}
 }
 
-func (db *AgbotPostgresqlDB) insertWorkloadUsage(wu *persistence.WorkloadUsage) error {
+func (db *AgbotPostgresqlDB) insertWorkloadUsage(tx *sql.Tx, wu *persistence.WorkloadUsage) error {
 
 	sqlStr := strings.Replace(WORKLOAD_USAGE_INSERT, WORKLOAD_USAGE_TABLE_NAME_ROOT, db.GetWorkloadUsagePartitionTableName(db.PrimaryPartition()), 1)
 
 	if wum, err := json.Marshal(wu); err != nil {
 		return err
-	} else if _, err = db.db.Exec(sqlStr, wu.DeviceId, wu.PolicyName, db.PrimaryPartition(), wum); err != nil {
-		return err
+	} else if tx == nil {
+		if _, err = db.db.Exec(sqlStr, wu.DeviceId, wu.PolicyName, db.PrimaryPartition(), wum); err != nil {
+			return err
+		}
 	} else {
-		glog.V(2).Infof("Succeeded creating workload usage record %v", *wu)
+		if _, err = tx.Exec(sqlStr, wu.DeviceId, wu.PolicyName, db.PrimaryPartition(), wum); err != nil {
+			return err
+		}
 	}
+	glog.V(2).Infof("Succeeded creating workload usage record %v", *wu)
 
 	return nil
 }
 
-func (db *AgbotPostgresqlDB) updateWorkloadUsage(wu *persistence.WorkloadUsage, partition string) error {
+func (db *AgbotPostgresqlDB) updateWorkloadUsage(tx *sql.Tx, wu *persistence.WorkloadUsage, partition string) error {
 
 	sqlStr := strings.Replace(WORKLOAD_USAGE_UPDATE, WORKLOAD_USAGE_TABLE_NAME_ROOT, db.GetWorkloadUsagePartitionTableName(partition), 1)
 
 	if wum, err := json.Marshal(wu); err != nil {
 		return err
-	} else if _, err = db.db.Exec(sqlStr, wu.DeviceId, wu.PolicyName, wum); err != nil {
+	} else if _, err = tx.Exec(sqlStr, wu.DeviceId, wu.PolicyName, wum); err != nil {
 		return err
 	} else {
 		glog.V(2).Infof("Succeeded writing workload usage record %v", *wu)
@@ -354,13 +391,13 @@ func (db *AgbotPostgresqlDB) updateWorkloadUsage(wu *persistence.WorkloadUsage, 
 	return nil
 }
 
-func (db *AgbotPostgresqlDB) deleteWU(deviceid string, policyName string) error {
+func (db *AgbotPostgresqlDB) deleteWU(tx *sql.Tx, deviceid string, policyName string) error {
 	// Query the device id and policy name to retrieve the partition for this workload usage. We dont need the workload usage
 	// object in this case. Then compare the workload usage's partition with the DB's primary and if they are different, delete
 	// this workload usage and then check to see if the partition specific table is now empty. If so, delete it.
 
 	checkTableDeletion := false
-	_, partition, err := db.internalFindSingleWorkloadUsageByDeviceAndPolicyName(deviceid, policyName)
+	_, partition, err := db.internalFindSingleWorkloadUsageByDeviceAndPolicyName(tx, deviceid, policyName)
 	if err != nil {
 		return err
 	} else if partition != db.PrimaryPartition() {
@@ -369,7 +406,7 @@ func (db *AgbotPostgresqlDB) deleteWU(deviceid string, policyName string) error 
 
 	// Delete the workload usage.
 	sqlStr := strings.Replace(WORKLOAD_USAGE_DELETE, WORKLOAD_USAGE_TABLE_NAME_ROOT, db.GetWorkloadUsagePartitionTableName(partition), 1)
-	if _, err := db.db.Exec(sqlStr, deviceid, policyName); err != nil {
+	if _, err := tx.Exec(sqlStr, deviceid, policyName); err != nil {
 		return err
 	}
 
@@ -378,7 +415,7 @@ func (db *AgbotPostgresqlDB) deleteWU(deviceid string, policyName string) error 
 	// Remove the secondary partition table if necessary.
 	if checkTableDeletion {
 		sqlStr := strings.Replace(ALL_WORKLOAD_USAGE_QUERY, WORKLOAD_USAGE_TABLE_NAME_ROOT, db.GetWorkloadUsagePartitionTableName(partition), 1)
-		rows, err := db.db.Query(sqlStr)
+		rows, err := tx.Query(sqlStr)
 		if err != nil {
 			return errors.New(fmt.Sprintf("error querying for empty workload usage partition %v error: %v", partition, err))
 		}
@@ -389,7 +426,7 @@ func (db *AgbotPostgresqlDB) deleteWU(deviceid string, policyName string) error 
 		// If there are no rows then this table is empty and should be deleted.
 		if !rows.Next() {
 			glog.V(5).Infof("Deleting secondary workload usage partition %v from database.", partition)
-			if _, err := db.db.Exec(db.GetWorkloadUsagePartitionTableDrop(partition)); err != nil {
+			if _, err := tx.Exec(db.GetWorkloadUsagePartitionTableDrop(partition)); err != nil {
 				return err
 			}
 			glog.V(5).Infof("Deleted secondary workload usage partition %v from database.", partition)

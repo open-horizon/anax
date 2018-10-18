@@ -18,6 +18,11 @@ type AgbotDatabase interface {
 
 	// Database partition related functions.
 	FindPartitions() ([]string, error)
+	ClaimPartition(timeout uint64) (string, error)
+	HeartbeatPartition() error
+	QuiescePartition() error
+	GetPartitionOwner(id string) (string, error)
+	MovePartition(timeout uint64) error
 
 	// Persistent agreement related functions
 	FindAgreements(filters []AFilter, protocol string) ([]Agreement, error)
