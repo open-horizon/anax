@@ -172,7 +172,7 @@ Environment Variables:
 	regInputNodeIdTok := regInputCmd.Flag("node-id-tok", "The Horizon exchange node ID and token (it must already exist).").Short('n').PlaceHolder("ID:TOK").Required().String()
 	regInputInputFile := regInputCmd.Flag("input-file", "The JSON input template file name that should be created. This file will contain placeholders for you to fill in user input values.").Short('f').Required().String()
 	regInputOrg := regInputCmd.Arg("nodeorg", "The Horizon exchange organization ID that the node will be registered in.").Required().String()
-	regInputPattern := regInputCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization form the node, use the 'other_org/pattern' format.").Required().String()
+	regInputPattern := regInputCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format.").Required().String()
 	regInputArch := regInputCmd.Arg("arch", "The architecture to write the template file for. (Horizon ignores services in patterns whose architecture is different from the target system.) The architecture must be what is returned by 'hzn node list' on the target system.").Default(cutil.ArchString()).String()
 
 	registerCmd := app.Command("register", "Register this edge node with Horizon.")
@@ -181,7 +181,7 @@ Environment Variables:
 	email := registerCmd.Flag("email", "Your email address. Only needs to be specified if: the node resource does not yet exist in the Horizon exchange, and the user specified in the -u flag does not exist, and you specified the 'public' org. If all of these things are true we will create the user and include this value as the email attribute.").Short('e').String()
 	inputFile := registerCmd.Flag("input-file", "A JSON file that sets or overrides variables needed by the node, workloads, and microservices that are part of this pattern. See /usr/horizon/samples/input.json and /usr/horizon/samples/more-examples.json. Specify -f- to read from stdin.").Short('f').String() // not using ExistingFile() because it can be - for stdin
 	org := registerCmd.Arg("nodeorg", "The Horizon exchange organization ID that the node should be registered in.").Required().String()
-	pattern := registerCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization form the node, use the 'other_org/pattern' format.").Required().String()
+	pattern := registerCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format.").Required().String()
 
 	keyCmd := app.Command("key", "List and manage keys for signing and verifying services.")
 	keyListCmd := keyCmd.Command("list", "List the signing keys that have been imported into this Horizon agent.")
