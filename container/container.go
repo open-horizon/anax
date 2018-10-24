@@ -1720,7 +1720,9 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 		} else {
 			// remove the docker volumn
 			if err := b.client.RemoveVolume(workloadRWStorageDir); err != nil {
-				glog.Errorf("Failed to remove workloadStorageDir docker volume: %v. Error: %v", workloadRWStorageDir, err)
+				if err != docker.ErrNoSuchVolume {
+					glog.Errorf("Failed to remove workloadStorageDir docker volume: %v. Error: %v", workloadRWStorageDir, err)
+				}
 			}
 		}
 	}
