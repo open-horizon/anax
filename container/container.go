@@ -1424,14 +1424,11 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				for _, name := range serviceNames {
 					if container.Labels[LABEL_PREFIX+".service_name"] == name {
 						if container.State != "running" {
-							// try to restart the container if it is down from some reason
-							if err := b.client.StartContainer(container.ID, nil); err != nil {
-								glog.Errorf("Container worker failed to restart service container %v. %v", container.ID, err)
-								continue
-							}
+							glog.Errorf("Service container for %v is not in the running state.", instance_key)
+						} else {
+							cMatches = append(cMatches, *container)
+							glog.V(4).Infof("Matching container instance for service instance %v: %v", instance_key, container)
 						}
-						cMatches = append(cMatches, *container)
-						glog.V(4).Infof("Matching container instance for service instance %v: %v", instance_key, container)
 					}
 				}
 				return nil
