@@ -3,7 +3,16 @@
 # This script starts or stops the horizon edge node agent in a container. Supports linux and mac os x.
 
 usage() {
-	echo "Usage: $0 {start|stop} [env-script-to-run]"
+	cat <<ENDUSAGE
+Usage: $0 {start|stop|update} [index-num] [env-script-to-run]
+  start:  pull the latest horizon docker image and start it
+  stop:   unregister the node and stop/remove the horizon docker container
+  update: stop the horizon container (w/o unregistering), pull the latest docker image, and start it. Any running services will remain running.
+
+Arguments:
+  index-num:         an integer number identifying this instance of horizon when running multiple horizon containers on the same host. Default is 1.
+  env-script-to-run: which environment to initialize horizon for when starting or updating. Default is ibmcloud-env.sh
+ENDUSAGE
 	exit 1
 }
 
@@ -28,8 +37,26 @@ isMacos() {
 	fi
 }
 
+# Bash cant do AND of cmd and checking a string (afaik), so bury it in this function
+isMacAndDefaultIndex() {
+	if isMacos; then
+		if [[ "$INDEX_NUM" == "1" ]]; then
+			return 0
+		else
+			return 1
+		fi
+	else
+		return 1
+	fi
+}
+
 isSocatRunning() {
 	ps aux | grep -v 'grep ' | grep -q "socat TCP-LISTEN:$SOCAT_LISTEN_PORT"
+	return $?
+}
+
+isContainerRunning() {
+	docker ps --filter "name=$1" | tail -n +2 | grep -q -w "$1"
 	return $?
 }
 
@@ -67,20 +94,23 @@ checkRequirements() {
 	fi
 }
 
+# Pull the latest horizon docker image, get some prereqs established, and start the image
+# First arg is optional env script, second arg has value 'updating' if we are called by restart
 start() {
-	if [[ -n "$2" ]]; then
-		envScript="$2"
+	if [[ -n "$1" ]]; then
+		envScript="$1"
 	else
 		envScript="ibmcloud-env.sh"
 	fi
 
 	checkRequirements	# this will exit with msg if requirements are not met
 
-	if isMacos; then
-		serviceStorageDir=/private/var/tmp/horizon
-	else
-		serviceStorageDir=/var/tmp/horizon
-	fi
+	# not needed as of 2.19.0...
+	#if isMacos; then
+	#	serviceStorageDir=/private/var/tmp/horizon
+	#else
+	#	serviceStorageDir=/var/tmp/horizon
+	#fi
 
 	# Start socat, if not already running
 	if isMacos; then
@@ -91,64 +121,109 @@ start() {
 		fi
 	fi
 
+	# not needed as of 2.19.0...
 	# Create service storage dir because anax will check for this, because this will be mounted into service containers
-	mkdir -p $serviceStorageDir/service_storage
-	checkrc $? "mkdir -p $serviceStorageDir/service_storage"
+	#mkdir -p $serviceStorageDir/service_storage
+	#checkrc $? "mkdir -p $serviceStorageDir/service_storage"
 
-	# Get the horizon container
-	docker pull openhorizon/amd64_anax:latest
-	checkrc $? "docker pull openhorizon/amd64_anax"
+	# Get the latest horizon image
+	# HC_DONT_PULL is an intentionally undocumented env var that allows us to test a new image before pushing it to docker hub
+	if [[ -z "$HC_DONT_PULL" ]]; then
+		docker pull openhorizon/amd64_anax:latest
+		checkrc $? "docker pull openhorizon/amd64_anax"
+	fi
 
 	# Start the horizon container
 	echo "Starting the Horizon agent container..."
+	# Note: docker will automatically create the ${DOCKER_NAME}_var and ${DOCKER_NAME}_etc volumes if necessary
 	if isMacos; then
-		docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -e ANAX_DOCKER_ENDPOINT=tcp://host.docker.internal:$SOCAT_LISTEN_PORT -v $serviceStorageDir:$serviceStorageDir -v `pwd`:/outside openhorizon/amd64_anax /root/$envScript
+		docker run -d -t --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -e ANAX_DOCKER_ENDPOINT=tcp://host.docker.internal:$SOCAT_LISTEN_PORT -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ openhorizon/amd64_anax /root/$envScript
 		checkrc $? "docker run"
 	else
-		docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -v /var/run/docker.sock:/var/run/docker.sock -v $serviceStorageDir:$serviceStorageDir -v `pwd`:/outside openhorizon/amd64_anax /root/$envScript
+		docker run -d -t --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -v /var/run/docker.sock:/var/run/docker.sock -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ openhorizon/amd64_anax /root/$envScript
 		checkrc $? "docker run"
 	fi
 
-	if isMacos; then
-		# hzn on mac sets HORIZON_URL correctly by default, so the user does not need to do it
-		echo "Horizon agent started successfully. Now use 'hzn node list', 'hzn register ...', and 'hzn agreement list'"
+	if [[ "$2" == "updating" ]]; then
+		echo "Horizon agent updated/restarted successfully."
 	else
-		echo "Horizon agent started successfully. Now export HORIZON_URL=http://localhost:$HORIZON_AGENT_PORT, then use 'hzn node list', 'hzn register ...', and 'hzn agreement list'"
+		if isMacAndDefaultIndex; then
+			# hzn on mac sets HORIZON_URL correctly by default for index 1, so the user does not need to do it
+			echo "Horizon agent started successfully. Now use 'hzn node list', 'hzn register ...', and 'hzn agreement list'"
+		else
+			echo "Horizon agent started successfully. Now export HORIZON_URL=http://localhost:$HORIZON_AGENT_PORT, then use 'hzn node list', 'hzn register ...', and 'hzn agreement list'"
+		fi
 	fi
 }		# end start()
 
 
+# Unregister the node, then stop/remove the container
 stop() {
 	checkRequirements	# this will exit with msg if requirements are not met
 
 	# Stop the anax container
 	echo "Unregistering the node, then stopping/removing the horizon container (this may take a minute)..."
-	docker stop -t 120 amd64_anax  # give it time to unregister and stop the service containers
+	docker stop -t 120 $DOCKER_NAME  # give it time to unregister and stop the service containers
 	checkrc $? "docker stop"
-	docker rm amd64_anax
+	docker rm $DOCKER_NAME
 	checkrc $? "docker rm"
+
+	# Remove the volumes
+	docker volume rm ${DOCKER_NAME}_var ${DOCKER_NAME}_etc
 
 	# Stop socat
 	killSocat
+}
+
+
+# Stop the container without deleting the volumes, pull the latest horizon docker image, and start it (so this accomplishes an anax update too)
+# Note: since we do not delete the volumes for /var/horizon and /etc/horizon, anax still has its "memory", so the services dont need to be unregistered
+restart() {
+	checkRequirements	# this will exit with msg if requirements are not met
+
+	# Stop the anax container, but 1st tell it not to unregister when stopping, and dont delete the volumes
+	echo "Stopping/removing the horizon container..."
+	docker exec $DOCKER_NAME touch /root/dont-unregister-on-exit
+	checkrc $? "docker dont-unregister-on-exit"
+	docker stop $DOCKER_NAME
+	checkrc $? "docker stop"
+	docker rm $DOCKER_NAME
+	checkrc $? "docker rm"
+
+	start "$1" 'updating'
 }
 
 # Main
 
 # Environment Variables
 SOCAT_LISTEN_PORT=${SOCAT_LISTEN_PORT:-2375}
-HORIZON_AGENT_PORT=${HORIZON_AGENT_PORT:-8081}
 SYSTEM_TYPE=${SYSTEM_TYPE:-$(uname -s)}
+
+# The 2nd arg is optionally the instance number
+if [[ -n "$2" ]]; then
+	if [[ "$2" -lt 1 ]]; then
+		echo "Error: index-num must be > 0"
+		exit 2
+	fi
+	INDEX_NUM="$2"
+else
+	INDEX_NUM=1
+fi
+
+# use arithmetic addition in case index num is > 9
+HORIZON_AGENT_PORT=$(( 8080 + $INDEX_NUM ))
+DOCKER_NAME="horizon$INDEX_NUM"
 
 case "$1" in
 	start)
-		start
+		start "$3"
 		;;
 	stop)
 		stop
 		;;
-	#restart)
-	#	restart
-	#	;;
+	restart|update)
+		restart "$3"
+		;;
 	#status)
 	#	status
 	#	;;
