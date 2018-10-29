@@ -179,7 +179,7 @@ lint: gopathlinks
 	@echo "Checking source code for style issues and statically-determinable errors"
 	-golint ./... | grep -v "vendor/"
 	-cd $(PKGPATH) && \
-		GOPATH=$(TMPGOPATH) go vet $(shell find . -not -path './vendor/*' -iname '*.go' -print | xargs dirname | sort | uniq | xargs) 2>&1 | grep -vP "^exit.*"
+		GOPATH=$(TMPGOPATH) $(COMPILE_ARGS) go vet $(shell find . -not -path './vendor/*' -iname '*.go' -print | xargs dirname | sort | uniq | xargs) 2>&1 | grep -vP "^exit.*"
 
 pull: deps
 
@@ -187,17 +187,17 @@ pull: deps
 test: gopathlinks
 	@echo "Executing unit tests"
 	-@cd $(PKGPATH) && \
-		GOPATH=$(TMPGOPATH) go test -cover -tags=unit $(PKGS)
+		GOPATH=$(TMPGOPATH) $(COMPILE_ARGS) go test -cover -tags=unit $(PKGS)
 
 test-integration: gopathlinks
 	@echo "Executing integration tests"
 	-@cd $(PKGPATH) && \
-		GOPATH=$(TMPGOPATH) go test -cover -tags=integration $(PKGS)
+		GOPATH=$(TMPGOPATH) $(COMPILE_ARGS) go test -cover -tags=integration $(PKGS)
 
 test-ci: gopathlinks
 	@echo "Executing integration tests intended for CI systems with special configuration"
 	-@cd $(PKGPATH) && \
-		GOPATH=$(TMPGOPATH) go test -cover -tags=ci $(PKGS)
+		GOPATH=$(TMPGOPATH) $(COMPILE_ARGS) go test -cover -tags=ci $(PKGS)
 
 # N.B. this doesn't run ci tests, the ones that require CI system setup
 check: deps lint test test-integration

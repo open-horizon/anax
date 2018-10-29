@@ -21,13 +21,18 @@ type BasicAgreementWorker struct {
 
 func NewBasicAgreementWorker(c *BasicProtocolHandler, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, alm *AgreementLockManager) *BasicAgreementWorker {
 
+	id, err := uuid.NewV4()
+	if err != nil {
+		panic(fmt.Sprintf("Error generating worker UUID: %v", err))
+	}
+
 	p := &BasicAgreementWorker{
 		BaseAgreementWorker: &BaseAgreementWorker{
 			pm:         pm,
 			db:         db,
 			config:     cfg,
 			alm:        alm,
-			workerID:   uuid.NewV4().String(),
+			workerID:   id.String(),
 			httpClient: cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 		},
 		protocolHandler: c,

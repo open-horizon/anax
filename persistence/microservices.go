@@ -653,7 +653,12 @@ func NewMicroserviceInstance(db *bolt.DB, ref_url string, version string, msdef_
 		return nil, errors.New("Microservice ref url id or version is empty, cannot persist")
 	}
 
-	instance_id := uuid.NewV4().String()
+	var instance_id string
+	if id, err := uuid.NewV4(); err != nil {
+		return nil, errors.New(fmt.Sprintf("Unable to generate UUID for service %v instance id %v, error: %v", ref_url, msdef_id, err))
+	} else {
+		instance_id = id.String()
+	}
 
 	if ms_instance, err := FindMicroserviceInstance(db, ref_url, version, instance_id); err != nil {
 		return nil, err
