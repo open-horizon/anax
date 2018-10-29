@@ -379,14 +379,14 @@ func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, e
 
 func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB) *ContainerWorker {
 
-	storage_base_dir := "/var/tmp/horizon/service_storage" // default
+	// if config.Edge.ServiceStorage is not empty, then we assume that the local file system directory will
+	// be used for the storage of the service container.
+	// if config.Edge.ServiceStorage is empty, docker volume will be used instead for the storage of the service container.
 	if config.Edge.ServiceStorage != "" {
-		storage_base_dir = config.Edge.ServiceStorage
-	}
-
-	if err := unix.Access(storage_base_dir, unix.W_OK); err != nil {
-		glog.Errorf("Unable to access service storage dir: %v. Error: %v", storage_base_dir, err)
-		panic("Unable to access service storage dir specified in config")
+		if err := unix.Access(config.Edge.ServiceStorage, unix.W_OK); err != nil {
+			glog.Errorf("Unable to access service storage dir: %v. Error: %v", config.Edge.ServiceStorage, err)
+			panic("Unable to access service storage dir specified in config")
+		}
 	}
 
 	if ipt, err := iptables.New(); err != nil {
@@ -889,12 +889,14 @@ func processPostCreate(ipt *iptables.IPTables, client *docker.Client, agreementI
 	return nil
 }
 
-func (b *ContainerWorker) workloadStorageDir(agreementId string) string {
-	storage_base_dir := "/var/tmp/horizon/service_storage" // default
+// Return the base workload rw storage directory.
+// If Config.Edge.ServiceStorage is empty then the docker volume is uesd, it returns the new volume name.
+func (b *ContainerWorker) workloadStorageDir(agreementId string) (string, bool) {
 	if b.Config.Edge.ServiceStorage != "" {
-		storage_base_dir = b.Config.Edge.ServiceStorage
+		return path.Join(b.Config.Edge.ServiceStorage, agreementId), false
+	} else {
+		return agreementId, true
 	}
-	return path.Join(storage_base_dir, agreementId)
 }
 
 func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol string, configure *events.ContainerConfig, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]docker.ContainerNetwork) (persistence.DeploymentConfig, error) {
@@ -946,23 +948,29 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 		return endpoints
 	}
 
-	workloadRWStorageDir := b.workloadStorageDir(agreementId)
+	workloadRWStorageDir, useVolume := b.workloadStorageDir(agreementId)
 
-	// create RO workload storage dir if it doesnt already exist
-	if err := os.Mkdir(workloadRWStorageDir, 0700); err != nil {
-		if pErr, ok := err.(*os.PathError); ok {
-			if pErr.Err.Error() != "file exists" {
+	if !useVolume {
+		// create RO workload storage dir if it doesnt already exist
+		if err := os.Mkdir(workloadRWStorageDir, 0700); err != nil {
+			if pErr, ok := err.(*os.PathError); ok {
+				if pErr.Err.Error() != "file exists" {
+					return nil, err
+				}
+			} else {
 				return nil, err
 			}
-		} else {
+		}
+
+		glog.V(5).Infof("Writing raw config to file in %v. Config data: %v", workloadRWStorageDir, string(configureRaw))
+		// write raw to workloadRWStorageDir
+		if err := ioutil.WriteFile(path.Join(workloadRWStorageDir, "Configure"), configureRaw, 0644); err != nil {
 			return nil, err
 		}
-	}
-
-	glog.V(5).Infof("Writing raw config to file in %v. Config data: %v", workloadRWStorageDir, string(configureRaw))
-	// write raw to workloadRWStorageDir
-	if err := ioutil.WriteFile(path.Join(workloadRWStorageDir, "Configure"), configureRaw, 0644); err != nil {
-		return nil, err
+	} else {
+		// The volume has been specified in the binds section of the deployment config in the WorkloadConfigureCommand and
+		// ContainerConfigureCommand command handler section.
+		// No need to create volume separately here becuase docker will automatically create it if it does not exist.
 	}
 
 	servicePairs, err := finalizeDeployment(agreementId, deployment, environmentAdditions, workloadRWStorageDir, b.Config.Edge.DefaultCPUSet)
@@ -1202,9 +1210,9 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			for serviceName, service := range deploymentDesc.Services {
 				dir := ""
 				if deploymentDesc.ServicePattern.IsShared("singleton", serviceName) {
-					dir = b.workloadStorageDir(fmt.Sprintf("%v-%v-%v", "singleton", serviceName, service.VariationLabel))
+					dir, _ = b.workloadStorageDir(fmt.Sprintf("%v-%v-%v", "singleton", serviceName, service.VariationLabel))
 				} else {
-					dir = b.workloadStorageDir(agreementId)
+					dir, _ = b.workloadStorageDir(agreementId)
 				}
 				deploymentDesc.Services[serviceName].AddFilesystemBinding(fmt.Sprintf("%v:%v:rw", dir, "/service_config"))
 			}
@@ -1297,9 +1305,9 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				// Dynamically add in a filesystem mapping so that the workload container has a RO filesystem.
 				dir := ""
 				if deploymentDesc.ServicePattern.IsShared("singleton", serviceName) {
-					dir = b.workloadStorageDir(fmt.Sprintf("%v-%v-%v", "singleton", serviceName, service.VariationLabel))
+					dir, _ = b.workloadStorageDir(fmt.Sprintf("%v-%v-%v", "singleton", serviceName, service.VariationLabel))
 				} else {
-					dir = b.workloadStorageDir(cmd.ContainerLaunchContext.Name)
+					dir, _ = b.workloadStorageDir(cmd.ContainerLaunchContext.Name)
 				}
 				deploymentDesc.Services[serviceName].AddFilesystemBinding(fmt.Sprintf("%v:%v:rw", dir, "/service_config"))
 			}
@@ -1612,14 +1620,6 @@ func (b *ContainerWorker) syncupResources() {
 func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 	glog.V(5).Infof("Killing and removing resources in agreements: %v", agreements)
 
-	// remove old workspaceROStorage dir
-	for _, agreementId := range agreements {
-		workloadRWStorageDir := b.workloadStorageDir(agreementId)
-		if err := os.RemoveAll(workloadRWStorageDir); err != nil {
-			glog.Errorf("Failed to remove workloadStorageDir: %v. Error: %v", workloadRWStorageDir, err)
-		}
-	}
-
 	// Remove networks
 	networks, err := b.client.ListNetworks()
 	if err != nil {
@@ -1709,6 +1709,23 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 	}
 
 	b.ContainersMatchingAgreement(agreements, true, destroy)
+
+	// remove old workspaceROStorage dir docker volume
+	for _, agreementId := range agreements {
+		workloadRWStorageDir, useVolume := b.workloadStorageDir(agreementId)
+		if !useVolume {
+			if err := os.RemoveAll(workloadRWStorageDir); err != nil {
+				glog.Errorf("Failed to remove workloadStorageDir: %v. Error: %v", workloadRWStorageDir, err)
+			}
+		} else {
+			// remove the docker volumn
+			if err := b.client.RemoveVolume(workloadRWStorageDir); err != nil {
+				if err != docker.ErrNoSuchVolume {
+					glog.Errorf("Failed to remove workloadStorageDir docker volume: %v. Error: %v", workloadRWStorageDir, err)
+				}
+			}
+		}
+	}
 
 	// gather agreement networks to free
 	for _, net := range networks {

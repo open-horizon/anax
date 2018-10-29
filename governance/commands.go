@@ -33,7 +33,10 @@ type CleanupExecutionCommand struct {
 }
 
 func (c CleanupExecutionCommand) ShortString() string {
-	depStr := c.Deployment.ToString()
+	depStr := ""
+	if c.Deployment != nil {
+		depStr = c.Deployment.ToString()
+	}
 	return fmt.Sprintf("CleanupExecutionCommand: AgreementId %v, AgreementProtocol %v, Reason %v, Deployment %v", c.AgreementId, c.AgreementProtocol, c.Reason, depStr)
 }
 
