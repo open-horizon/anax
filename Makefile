@@ -15,7 +15,7 @@ CLI_COMPLETION_DIR := cli/bash_completion
 DEFAULT_UI = api/static/index.html
 
 ANAX_CONTAINER_DIR := anax-in-container
-DOCKER_IMAGE_VERSION ?= 2.18.1
+DOCKER_IMAGE_VERSION ?= 2.19.0
 DOCKER_IMAGE = openhorizon/$(arch)_anax:$(DOCKER_IMAGE_VERSION)
 DOCKER_IMAGE_LATEST = openhorizon/$(arch)_anax:latest
 # To not use cache, so it picks up the latest horizon deb pkgs: DOCKER_MAYBE_CACHE='--no-cache' make docker-image
@@ -75,12 +75,13 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 	fi
 
 
-# Build an install pkg for horizon-cli for mac
+# Build the horizon-cli pkg for mac
 #todo: these targets should probably be moved into the official horizon build process
-export MAC_PKG_VERSION ?= 2.18.1
+export MAC_PKG_VERSION ?= 2.19.0
 MAC_PKG_IDENTIFIER ?= com.github.open-horizon.pkg.horizon-cli
 MAC_PKG_INSTALL_DIR ?= /Users/Shared/horizon-cli
 
+# Build the pkg and put it in pkg/mac/build/
 macpkg: $(CLI_EXECUTABLE)
 	mkdir -p pkg/mac/horizon-cli/bin pkg/mac/horizon-cli/share/horizon pkg/mac/horizon-cli/share/man/man1
 	cp $(CLI_EXECUTABLE) pkg/mac/horizon-cli/bin
@@ -89,12 +90,16 @@ macpkg: $(CLI_EXECUTABLE)
 	cp $(CLI_MAN_DIR)/hzn.1 pkg/mac/horizon-cli/share/man/man1
 	cp $(CLI_COMPLETION_DIR)/hzn_bash_autocomplete.sh pkg/mac/horizon-cli/share/horizon
 	pkgbuild --root pkg/mac/horizon-cli --scripts pkg/mac/scripts --identifier $(MAC_PKG_IDENTIFIER) --version $(MAC_PKG_VERSION) --install-location $(MAC_PKG_INSTALL_DIR) pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg
-	rm -f pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg.zip
-	cd pkg/mac/build; zip horizon-cli-$(MAC_PKG_VERSION).pkg.zip horizon-cli-$(MAC_PKG_VERSION).pkg; cd ../../..   # need to be in the same dir to zip
+
+# Upload the pkg to our apt repo svr (aptrepo-sjc03-1), so users can get to it at http://pkg.bluehorizon.network/macos/
+#todo: For now, you must have ssh access to the apt repo svr for this to work
+macupload: macpkg
+	rsync -avz pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg root@169.45.88.181:/vol/aptrepo-local/repositories/view-public/macos/
 
 macinstall: macpkg
 	sudo installer -pkg pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg -target '/Volumes/Macintosh HD'
 
+# This only works on the installed package
 macpkginfo:
 	pkgutil --pkg-info $(MAC_PKG_IDENTIFIER)
 	pkgutil --only-files --files $(MAC_PKG_IDENTIFIER)
