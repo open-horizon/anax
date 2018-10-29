@@ -500,7 +500,7 @@ func mkBridge(name string, client *docker.Client) (*docker.Network, error) {
 		Internal:       false,
 		Driver:         "bridge",
 		CheckDuplicate: true,
-		IPAM: docker.IPAMOptions{
+		IPAM: &docker.IPAMOptions{
 			Driver: "default",
 			Config: []docker.IPAMConfig{},
 		},

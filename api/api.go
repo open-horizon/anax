@@ -92,8 +92,8 @@ func (a *API) router(includeStaticRedirects bool) *mux.Router {
 	router.HandleFunc("/eventlog/all", a.eventlog).Methods("GET", "OPTIONS")
 
 	// For importing workload public signing keys (RSA-PSS key pair public key)
-	router.HandleFunc("/{p:(publickey|trust)}", a.publickey).Methods("GET", "OPTIONS")
-	router.HandleFunc("/{p:(publickey|trust)}/{filename}", a.publickey).Methods("GET", "PUT", "DELETE", "OPTIONS")
+	router.HandleFunc("/{p:(?:publickey|trust)}", a.publickey).Methods("GET", "OPTIONS")
+	router.HandleFunc("/{p:(?:publickey|trust)}/{filename}", a.publickey).Methods("GET", "PUT", "DELETE", "OPTIONS")
 
 	if includeStaticRedirects {
 		// redirect to index.html because SPA

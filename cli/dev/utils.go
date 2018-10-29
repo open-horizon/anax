@@ -488,7 +488,12 @@ func startDependent(dir string,
 		}
 
 		// Start the service containers. Make an instance id the same way the runtime makes them.
-		sId := cutil.MakeMSInstanceKey(serviceDef.URL, serviceDef.Version, uuid.NewV4().String())
+		id, err := uuid.NewV4()
+		if err != nil {
+			return nil, errors.New(fmt.Sprintf("unable to generate instance ID: %v", err))
+		}
+
+		sId := cutil.MakeMSInstanceKey(serviceDef.URL, serviceDef.Version, id.String())
 
 		return StartContainers(deployment, serviceDef.URL, serviceDef.Version, globals, serviceDef.UserInputs, configUserInputs, serviceDef.Org, depConfig, cw, msNetworks, true, false, sId)
 	}

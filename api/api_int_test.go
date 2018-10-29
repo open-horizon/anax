@@ -365,9 +365,9 @@ vTLlpah1Y8Dvd1Mg6DorvN7eHb+R9pRYz6m/ll84KeLHyX+ml9Yj9Xem+H7MMYh7
 		assert.EqualValues(t, "NEWVALUE", dbVal)
 	})
 
-	suite.Run("New attribute given via PUT /attribute is rejected with 404", func(t *testing.T) {
+	suite.Run("New attribute given via PUT /attribute is rejected with 405", func(t *testing.T) {
 		pp, _ := url.Parse(fmt.Sprintf("%s/%s", recordingServer.URL, "attribute"))
-		simpleMod(t, http.MethodPut, pp, http.StatusNotFound, pubMapping, false)
+		simpleMod(t, http.MethodPut, pp, http.StatusMethodNotAllowed, pubMapping, false)
 	})
 
 	suite.Run("PUT to /attribute/{id} is rejected with 404 if no matching record is found", func(t *testing.T) {

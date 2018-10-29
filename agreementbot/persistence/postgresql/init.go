@@ -29,16 +29,20 @@ func (db *AgbotPostgresqlDB) Initialize(cfg *config.HorizonConfig) error {
 		db.db = pgdb
 
 		// Initialize the DB instance fields.
-		db.identity = uuid.NewV4().String()
+		if id, err := uuid.NewV4(); err != nil {
+			return errors.New(fmt.Sprintf("unable to get UUID identity for this agbot, error: %v", err))
+		} else {
+			db.identity = id.String()
+		}
 		glog.V(1).Infof("Agreementbot %v initializing partitions", db.identity)
 
 		// Now create the tables and initialize them as necessary.
 		glog.V(3).Infof("Postgresql database tables initializing.")
 
 		// Create the version table if necessary, and insert the current version row if necessary.
-		if _, err = db.db.Exec(VERSION_CREATE_TABLE); err != nil {
+		if _, err := db.db.Exec(VERSION_CREATE_TABLE); err != nil {
 			return errors.New(fmt.Sprintf("unable to create version table, error: %v", err))
-		} else if _, err = db.db.Exec(VERSION_INSERT); err != nil {
+		} else if _, err := db.db.Exec(VERSION_INSERT); err != nil {
 			return errors.New(fmt.Sprintf("unable to insert singleton version row, error: %v", err))
 		}
 
@@ -58,20 +62,20 @@ func (db *AgbotPostgresqlDB) Initialize(cfg *config.HorizonConfig) error {
 		}
 
 		// Create the workload usage table, partition and index if necessary.
-		if _, err = db.db.Exec(WORKLOAD_USAGE_CREATE_MAIN_TABLE); err != nil {
+		if _, err := db.db.Exec(WORKLOAD_USAGE_CREATE_MAIN_TABLE); err != nil {
 			return errors.New(fmt.Sprintf("unable to create workload usage table, error: %v", err))
-		} else if _, err = db.db.Exec(db.GetPrimaryWorkloadUsagePartitionTableCreate()); err != nil {
+		} else if _, err := db.db.Exec(db.GetPrimaryWorkloadUsagePartitionTableCreate()); err != nil {
 			return errors.New(fmt.Sprintf("unable to create workload usage partition table, error: %v", err))
-		} else if _, err = db.db.Exec(db.GetPrimaryWorkloadUsagePartitionTableIndexCreate()); err != nil {
+		} else if _, err := db.db.Exec(db.GetPrimaryWorkloadUsagePartitionTableIndexCreate()); err != nil {
 			return errors.New(fmt.Sprintf("unable to create workload usage partition table index, error: %v", err))
 		}
 
 		// Create the agreement table, partition and index if necessary.
-		if _, err = db.db.Exec(AGREEMENT_CREATE_MAIN_TABLE); err != nil {
+		if _, err := db.db.Exec(AGREEMENT_CREATE_MAIN_TABLE); err != nil {
 			return errors.New(fmt.Sprintf("unable to create agreements table, error: %v", err))
-		} else if _, err = db.db.Exec(db.GetPrimaryAgreementPartitionTableCreate()); err != nil {
+		} else if _, err := db.db.Exec(db.GetPrimaryAgreementPartitionTableCreate()); err != nil {
 			return errors.New(fmt.Sprintf("unable to create agreements partition table, error: %v", err))
-		} else if _, err = db.db.Exec(db.GetPrimaryAgreementPartitionTableIndexCreate()); err != nil {
+		} else if _, err := db.db.Exec(db.GetPrimaryAgreementPartitionTableIndexCreate()); err != nil {
 			return errors.New(fmt.Sprintf("unable to create agreements partition table index, error: %v", err))
 		}
 
@@ -97,9 +101,9 @@ func (db *AgbotPostgresqlDB) Initialize(cfg *config.HorizonConfig) error {
 
 				// Run each SQL statement in the array of SQL statements for the current verion.
 				for si := 0; si < len(migrationSQL[v].sql); si++ {
-					if _, err = db.db.Exec(migrationSQL[v].sql[si]); err != nil {
+					if _, err := db.db.Exec(migrationSQL[v].sql[si]); err != nil {
 						return errors.New(fmt.Sprintf("unable to run SQL migration statement version %v, index %v, statement %v, error: %v", v, si, migrationSQL[v].sql[si], err))
-					} else if _, err = db.db.Exec(VERSION_UPDATE, HIGHEST_DATABASE_VERSION, migrationSQL[v].description); err != nil {
+					} else if _, err := db.db.Exec(VERSION_UPDATE, HIGHEST_DATABASE_VERSION, migrationSQL[v].description); err != nil {
 						return errors.New(fmt.Sprintf("unable to create version table, error: %v", err))
 					} else {
 						glog.V(3).Infof("Postgresql database tables upgraded to version %v, %v", v, migrationSQL[v].description)
