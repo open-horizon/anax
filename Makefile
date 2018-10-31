@@ -173,7 +173,6 @@ install:
 	#	cp $(DEFAULT_UI) $(DESTDIR)/web
 	cp -Rapv cli/samples $(DESTDIR)
 	mkdir -p $(CDIR) && \
-		cp -apv ./vendor/github.com/open-horizon/go-solidity/contracts/. $(CDIR)/
 	find $(CDIR)/ \( -name "Makefile" -or -iname ".git*" \) -exec rm {} \;
 
 format:
