@@ -258,9 +258,12 @@ func (w *GovernanceWorker) CleanupMicroservice(spec_ref string, version string, 
 			// end the agreements
 			glog.V(3).Infof(logString(fmt.Sprintf("Ending the agreement: %v because service %v is deleted", ag.CurrentAgreementId, inst_key)))
 			w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, ag_reason_code, ag_reason_text)
+
+			// cleanup all the related dependent services for this agreement
+			w.handleMicroserviceInstForAgEnded(ag.CurrentAgreementId, true)
 		}
 
-		// remove all the microservice containers if any
+		// remove all the containers if any for this specific service instance
 		if has_wl, err := ms_inst.HasWorkload(w.db); err != nil {
 			return fmt.Errorf(logString(fmt.Sprintf("Error checking if the service %v has workload. %v", ms_inst.GetKey(), err)))
 		} else if has_wl {
@@ -376,8 +379,8 @@ func (w *GovernanceWorker) RollbackMicroservice(msdef *persistence.MicroserviceD
 				fmt.Sprintf("Could not find lower version to downgrade for %v version %v.", msdef.SpecRef, msdef.Version),
 				persistence.EC_NO_VERSION_TO_DOWNGRADE,
 				"", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
-			glog.Warningf(logString(fmt.Sprintf("Unable to find the service definition to downgrade to for %v %v version key %v. error: %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
-			return nil
+			glog.Warningf(logString(fmt.Sprintf("Unable to find the service definition to downgrade to for %v %v version key %v.", msdef.SpecRef, msdef.Version, msdef.Id)))
+			return fmt.Errorf(logString(fmt.Sprintf("Unable to find the service definition to downgrade to for %v %v version key %v.", msdef.SpecRef, msdef.Version, msdef.Id)))
 		} else {
 			if err := w.UpgradeMicroservice(msdef, new_msdef, false); err != nil {
 				eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
@@ -551,6 +554,12 @@ func (w *GovernanceWorker) handleMicroserviceExecFailure(msdef *persistence.Micr
 			msinst_key, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
 
 		glog.Errorf(logString(fmt.Sprintf("Error downgrading service %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
+
+		// this service just could not be started. we have to cancel all the associated agreements
+		cleanup_reason := microservice.MS_EXEC_FAILED
+		if err = w.CleanupMicroservice(msdef.SpecRef, msdef.Version, msinst_key, uint(cleanup_reason)); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Error cleanup service instances %v. %v", msinst_key, err)))
+		}
 	}
 }
 

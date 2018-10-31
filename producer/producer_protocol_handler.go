@@ -242,7 +242,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 			eventlog.LogAgreementEvent2(
 				w.db,
 				persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error handling Prosal for service %v. Error: %v", wls, err_log_event),
+				fmt.Sprintf("Error handling proposal for service %v. Error: %v", wls, err_log_event),
 				persistence.EC_ERROR_PROCESSING_PROPOSAL,
 				proposal.AgreementId(),
 				persistence.WorkloadInfo{URL: wls, Org: worg, Version: wversion, Arch: warch},

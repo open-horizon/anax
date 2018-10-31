@@ -34,10 +34,10 @@ const MS_DELETED_BY_DOWNGRADE_PROCESS = 208
 func DecodeReasonCode(code uint64) string {
 	// microservice termiated deccription
 	codeMeanings := map[uint64]string{
-		MS_UNREG_EXCH_FAILED:            "Unregistering microservice on exchange failed",
+		MS_UNREG_EXCH_FAILED:            "Service un-registration on exchange failed",
 		MS_CLEAR_OLD_AGS_FAILED:         "Clearing old agreements failed",
 		MS_EXEC_FAILED:                  "Execution failed",
-		MS_REREG_EXCH_FAILED:            "Reregistering microservice on exchange failed",
+		MS_REREG_EXCH_FAILED:            "Service registration on exchange failed",
 		MS_IMAGE_LOAD_FAILED:            "Image loading failed",
 		MS_DELETED_BY_UPGRADE_PROCESS:   "Deleted by upgrading process",
 		MS_DELETED_BY_DOWNGRADE_PROCESS: "Deleted by downgrading process",
