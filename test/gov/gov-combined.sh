@@ -80,6 +80,10 @@ function run_delete_loops {
 
 EXCH_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
 
+# the horizon var base for storing the keys. It is the default value for HZN_VAR_BASE.
+mkdir -p /var/horizon
+mkdir -p /var/horizon/.colonus
+
 # Build an old anax if we need it
 if [ "$OLDANAX" == "1" ] || [ "$OLDAGBOT" == "1" ]
 then

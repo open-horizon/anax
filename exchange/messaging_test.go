@@ -984,7 +984,7 @@ func TestKeySaving_success1(t *testing.T) {
 		os.Remove("/tmp/publicMessagingKey.pem")
 	}
 
-	_ = os.Setenv("SNAP_COMMON", "/tmp")
+	_ = os.Setenv("HZN_VAR_BASE", "/tmp")
 
 	// Test the initial start of a new anax
 	if priv, pub, err := GetKeys(""); err != nil {

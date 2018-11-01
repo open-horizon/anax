@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
 	"golang.org/x/crypto/sha3"
 	"io/ioutil"
 	"os"
@@ -390,8 +391,13 @@ func GetKeys(keyPath string) (*rsa.PublicKey, *rsa.PrivateKey, error) {
 		return gPublicKey, gPrivateKey, nil
 	}
 
-	privFilepath := path.Join(os.Getenv("SNAP_COMMON"), keyPath, privFileName)
-	pubFilepath := path.Join(os.Getenv("SNAP_COMMON"), keyPath, pubFileName)
+	snap_common := os.Getenv("HZN_VAR_BASE")
+	if len(snap_common) == 0 {
+		snap_common = config.HZN_VAR_BASE_DEFAULT
+	}
+
+	privFilepath := path.Join(snap_common, keyPath, privFileName)
+	pubFilepath := path.Join(snap_common, keyPath, pubFileName)
 	if _, ferr := os.Stat(privFilepath); os.IsNotExist(ferr) {
 
 		if privateKey, err := rsa.GenerateKey(rand.Reader, 2048); err != nil {
@@ -464,8 +470,13 @@ func GetKeys(keyPath string) (*rsa.PublicKey, *rsa.PrivateKey, error) {
 
 func DeleteKeys(keyPath string) error {
 	// Construct the full file path name
-	privFilepath := path.Join(os.Getenv("SNAP_COMMON"), keyPath, privFileName)
-	pubFilepath := path.Join(os.Getenv("SNAP_COMMON"), keyPath, pubFileName)
+	snap_common := os.Getenv("HZN_VAR_BASE")
+	if len(snap_common) == 0 {
+		snap_common = config.HZN_VAR_BASE_DEFAULT
+	}
+
+	privFilepath := path.Join(snap_common, keyPath, privFileName)
+	pubFilepath := path.Join(snap_common, keyPath, pubFileName)
 
 	glog.V(5).Infof("Removing private key path %v, and public key path %v", privFilepath, pubFilepath)
 

@@ -13,3 +13,5 @@ const MaxHTTPIdleConnections = 20
 
 // HTTPIdleConnectionTimeoutS see https://golang.org/pkg/net/http/
 const HTTPIdleConnectionTimeoutS = 120
+
+const HZN_VAR_BASE_DEFAULT = "/var/horizon"

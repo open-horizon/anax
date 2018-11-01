@@ -30,7 +30,7 @@ func Test_FindHDForOutput0(t *testing.T) {
 	defer cleanTestDir(dir)
 
 	myDevice := "myid"
-	os.Setenv("CMTN_DEVICE_ID", myDevice)
+	os.Setenv("HZN_DEVICE_ID", myDevice)
 
 	if dev, err := FindHorizonDeviceForOutput(db); err != nil {
 		t.Errorf("failed to find device in db, error %v", err)
@@ -46,7 +46,7 @@ func Test_FindHDForOutput0(t *testing.T) {
 		t.Errorf("config state has wrong state %v", *dev)
 	}
 
-	os.Unsetenv("CMTN_DEVICE_ID")
+	os.Unsetenv("HZN_DEVICE_ID")
 
 }
 
@@ -374,7 +374,7 @@ func Test_CreateHorizonDevice_EnvVarDeviceid(t *testing.T) {
 	hd := getBasicDevice(myOrg, myPattern)
 	badId := ""
 	hd.Id = &badId
-	os.Setenv("CMTN_DEVICE_ID", "myDevice")
+	os.Setenv("HZN_DEVICE_ID", "myDevice")
 
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
@@ -419,7 +419,7 @@ func Test_CreateHorizonDevice_EnvVarDeviceid(t *testing.T) {
 		t.Errorf("wrong device id, expected %v but is %v", "myDevice", *device)
 	}
 
-	os.Unsetenv("CMTN_DEVICE_ID")
+	os.Unsetenv("HZN_DEVICE_ID")
 
 }
 
