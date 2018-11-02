@@ -270,7 +270,7 @@ func Test_KeyFileNamesFetcher_Suite(t *testing.T) {
 			t.Error(nil)
 		}
 
-		err = os.Setenv("SNAP_COMMON", dir)
+		err = os.Setenv("HZN_VAR_BASE", dir)
 		if err != nil {
 			t.Error(err)
 		}

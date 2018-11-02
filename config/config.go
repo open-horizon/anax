@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
 const ExchangeURLEnvvarName = "HZN_EXCHANGE_URL"
@@ -87,11 +88,11 @@ type AGConfig struct {
 
 func (c *HorizonConfig) UserPublicKeyPath() string {
 	if c.Edge.UserPublicKeyPath == "" {
-		if commonPath := os.Getenv("SNAP_COMMON"); commonPath != "" {
-			thePath := path.Join(os.Getenv("SNAP_COMMON"), USERKEYDIR)
+		if commonPath := os.Getenv("HZN_VAR_BASE"); commonPath != "" {
+			thePath := path.Join(os.Getenv("HZN_VAR_BASE"), USERKEYDIR)
 			c.Edge.UserPublicKeyPath = thePath
 		} else {
-			return ""
+			return HZN_VAR_BASE_DEFAULT
 		}
 	}
 	return c.Edge.UserPublicKeyPath
@@ -165,6 +166,14 @@ func Read(file string) (*HorizonConfig, error) {
 		}
 		if config.Edge.ServiceUpgradeCheckIntervalS == 0 {
 			config.Edge.ServiceUpgradeCheckIntervalS = 300
+		}
+
+		// add a slash at the back of the ExchangeUrl
+		if config.Edge.ExchangeURL != "" {
+			config.Edge.ExchangeURL = strings.TrimRight(config.Edge.ExchangeURL, "/") + "/"
+		}
+		if config.AgreementBot.ExchangeURL != "" {
+			config.AgreementBot.ExchangeURL = strings.TrimRight(config.AgreementBot.ExchangeURL, "/") + "/"
 		}
 
 		// now make collaborators instance and assign it to member in this config

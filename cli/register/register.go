@@ -70,7 +70,12 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 		horDevice := api.HorizonDevice{}
 		cliutils.HorizonGet("node", []int{200}, &horDevice)
 		nodeId = *horDevice.Id
-		fmt.Printf("Using node ID '%s' from the Horizon agent\n", nodeId)
+
+		if nodeId == "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Please specify the node id and token using -n flag.")
+		} else {
+			fmt.Printf("Using node ID '%s' from the Horizon agent\n", nodeId)
+		}
 	}
 	if nodeToken == "" {
 		// Create a random token

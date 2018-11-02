@@ -59,7 +59,7 @@ func FindHorizonDeviceForOutput(db *bolt.DB) (*HorizonDevice, error) {
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to read node object, error %v", err))
 	} else if pDevice == nil {
-		device_id := os.Getenv("CMTN_DEVICE_ID")
+		device_id := os.Getenv("HZN_DEVICE_ID")
 		state := persistence.CONFIGSTATE_UNCONFIGURED
 		if Unconfiguring {
 			state = persistence.CONFIGSTATE_UNCONFIGURING
@@ -111,9 +111,9 @@ func CreateHorizonDevice(device *HorizonDevice,
 
 	// There is no existing device registration in the database, so proceed to verifying the input device object.
 	if device.Id == nil || *device.Id == "" {
-		device_id := os.Getenv("CMTN_DEVICE_ID")
+		device_id := os.Getenv("HZN_DEVICE_ID")
 		if device_id == "" {
-			return errorhandler(NewAPIUserInputError("Either setup CMTN_DEVICE_ID environmental variable or specify device.id.", "device.id")), nil, nil
+			return errorhandler(NewAPIUserInputError("Either setup HZN_DEVICE_ID environmental variable or specify device.id.", "device.id")), nil, nil
 		}
 		device.Id = &device_id
 	}

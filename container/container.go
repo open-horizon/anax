@@ -1290,11 +1290,15 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				// Dynamically add in a filesystem mapping so that the infrastructure container can write files that will
 				// be saveable or observable to the host system. Also turn on the privileged flag for this container.
 				dir := ""
-				// NON_SNAP_COMMON is used for testing purposes only
-				if altDir := os.Getenv("NON_SNAP_COMMON"); len(altDir) != 0 {
+				// NON_HZN_VAR_BASE is used for testing purposes only
+				if altDir := os.Getenv("NON_HZN_VAR_BASE"); len(altDir) != 0 {
 					dir = altDir + ":/root"
 				} else {
-					dir = path.Join(os.Getenv("SNAP_COMMON")) + ":/root"
+					snap_common := os.Getenv("HZN_VAR_BASE")
+					if len(snap_common) == 0 {
+						snap_common = config.HZN_VAR_BASE_DEFAULT
+					}
+					dir = path.Join(snap_common) + ":/root"
 				}
 				deploymentDesc.Services[serviceName].AddFilesystemBinding(dir)
 				if !deploymentDesc.Services[serviceName].HasSpecificPortBinding() { // Add compatibility config - assume eth container
