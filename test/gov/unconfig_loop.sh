@@ -36,10 +36,10 @@ do
       exit 2
    fi
 
-   RM=$(echo "$NST" | jq -r '.registeredMicroservices[0]')
+   RM=$(echo "$NST" | jq -r '.registeredServices[0]')
    if [ "$RM" != "null" ]
    then
-      echo -e "registeredMicroservices should be empty: $RM"
+      echo -e "registeredServices should be empty: $RM"
       exit 2
    fi
 
@@ -200,10 +200,10 @@ EOF
       exit 2
    fi
 
-   RM=$(echo "$NST" | jq -r '.registeredMicroservices[0]')
+   RM=$(echo "$NST" | jq -r '.registeredServices[0]')
    if [ "$RM" != "null" ]
    then
-      echo -e "registeredMicroservices should be empty: $RM"
+      echo -e "registeredServices should be empty: $RM"
       exit 2
    fi
 

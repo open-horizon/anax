@@ -132,16 +132,15 @@ func (r SearchExchangePatternResponse) String() string {
 
 // Structs and types for interacting with the device (node) object in the exchange
 type Device struct {
-	Token                   string          `json:"token"`
-	Name                    string          `json:"name"`
-	Owner                   string          `json:"owner"`
-	Pattern                 string          `json:"pattern"`
-	RegisteredMicroservices []Microservice  `json:"registeredMicroservices"`
-	RegisteredServices      []Microservice  `json:"registeredServices"`
-	MsgEndPoint             string          `json:"msgEndPoint"`
-	SoftwareVersions        SoftwareVersion `json:"softwareVersions"`
-	LastHeartbeat           string          `json:"lastHeartbeat"`
-	PublicKey               []byte          `json:"publicKey"`
+	Token              string          `json:"token"`
+	Name               string          `json:"name"`
+	Owner              string          `json:"owner"`
+	Pattern            string          `json:"pattern"`
+	RegisteredServices []Microservice  `json:"registeredServices"`
+	MsgEndPoint        string          `json:"msgEndPoint"`
+	SoftwareVersions   SoftwareVersion `json:"softwareVersions"`
+	LastHeartbeat      string          `json:"lastHeartbeat"`
+	PublicKey          []byte          `json:"publicKey"`
 }
 
 type GetDevicesResponse struct {
@@ -231,27 +230,24 @@ type GetAgbotsPatternsResponse struct {
 }
 
 type AgbotAgreement struct {
-	Workload    WorkloadAgreement `json:"workload,omitempty"`
 	Service     WorkloadAgreement `json:"service,omitempty"`
 	State       string            `json:"state"`
 	LastUpdated string            `json:"lastUpdated"`
 }
 
 func (a AgbotAgreement) String() string {
-	return fmt.Sprintf("Service: %v, Workload: %v, State: %v, LastUpdated: %v", a.Service, a.Workload, a.State, a.LastUpdated)
+	return fmt.Sprintf("Service: %v, State: %v, LastUpdated: %v", a.Service, a.State, a.LastUpdated)
 }
 
 type DeviceAgreement struct {
-	Microservice     []MSAgreementState `json:"microservices"`
 	Service          []MSAgreementState `json:"services"`
 	State            string             `json:"state"`
-	Workload         WorkloadAgreement  `json:"workload"`
 	AgreementService WorkloadAgreement  `json:"agrService"`
 	LastUpdated      string             `json:"lastUpdated"`
 }
 
 func (a DeviceAgreement) String() string {
-	return fmt.Sprintf("AgreementService: %v, Service: %v, State: %v, Workload: %v, Microservice: %v, LastUpdated: %v", a.AgreementService, a.Service, a.State, a.Workload, a.Microservice, a.LastUpdated)
+	return fmt.Sprintf("AgreementService: %v, Service: %v, State: %v, LastUpdated: %v", a.AgreementService, a.Service, a.State, a.LastUpdated)
 }
 
 type AllAgbotAgreementsResponse struct {
@@ -286,9 +282,8 @@ type WorkloadAgreement struct {
 }
 
 type PutAgbotAgreementState struct {
-	Workload WorkloadAgreement `json:"workload,omitempty"`
-	Service  WorkloadAgreement `json:"service,omitempty"`
-	State    string            `json:"state"`
+	Service WorkloadAgreement `json:"service,omitempty"`
+	State   string            `json:"state"`
 }
 
 type MSAgreementState struct {
@@ -297,39 +292,33 @@ type MSAgreementState struct {
 }
 
 type PutAgreementState struct {
-	Microservices    []MSAgreementState `json:"microservices,omitempty"`
 	State            string             `json:"state"`
-	Workload         WorkloadAgreement  `json:"workload,omitempty"`
 	Services         []MSAgreementState `json:"services,omitempty"`
 	AgreementService WorkloadAgreement  `json:"agreementService,omitempty"`
 }
 
 func (p PutAgreementState) String() string {
-	return fmt.Sprintf("State: %v, Services: %v, AgreementService: %v, Microservices: %v, Workload: %v", p.State, p.Services, p.AgreementService, p.Microservices, p.Workload)
+	return fmt.Sprintf("State: %v, Services: %v, AgreementService: %v", p.State, p.Services, p.AgreementService)
 }
 
 type SoftwareVersion map[string]string
 
 type PutDeviceRequest struct {
-	Token                   string          `json:"token"`
-	Name                    string          `json:"name"`
-	Pattern                 string          `json:"pattern"`
-	RegisteredMicroservices []Microservice  `json:"registeredMicroservices"`
-	RegisteredServices      []Microservice  `json:"registeredServices"`
-	MsgEndPoint             string          `json:"msgEndPoint"`
-	SoftwareVersions        SoftwareVersion `json:"softwareVersions"`
-	PublicKey               []byte          `json:"publicKey"`
+	Token              string          `json:"token"`
+	Name               string          `json:"name"`
+	Pattern            string          `json:"pattern"`
+	RegisteredServices []Microservice  `json:"registeredServices"`
+	MsgEndPoint        string          `json:"msgEndPoint"`
+	SoftwareVersions   SoftwareVersion `json:"softwareVersions"`
+	PublicKey          []byte          `json:"publicKey"`
 }
 
 func (p PutDeviceRequest) String() string {
-	return fmt.Sprintf("Token: %v, Name: %v, RegisteredServices %v, RegisteredMicroservices %v, MsgEndPoint %v, SoftwareVersions %v, PublicKey %x", p.Token, p.Name, p.RegisteredServices, p.RegisteredMicroservices, p.MsgEndPoint, p.SoftwareVersions, p.PublicKey)
+	return fmt.Sprintf("Token: %v, Name: %v, RegisteredServices %v, MsgEndPoint %v, SoftwareVersions %v, PublicKey %x", p.Token, p.Name, p.RegisteredServices, p.MsgEndPoint, p.SoftwareVersions, p.PublicKey)
 }
 
 func (p PutDeviceRequest) ShortString() string {
-	str := fmt.Sprintf("Token: %v, Name: %v, MsgEndPoint %v, SoftwareVersions %v, Microservice URLs: ", p.Token, p.Name, p.MsgEndPoint, p.SoftwareVersions)
-	for _, ms := range p.RegisteredMicroservices {
-		str += fmt.Sprintf("%v,", ms.Url)
-	}
+	str := fmt.Sprintf("Token: %v, Name: %v, MsgEndPoint %v, SoftwareVersions %v", p.Token, p.Name, p.MsgEndPoint, p.SoftwareVersions)
 	str += ", Service URLs: "
 	for _, ms := range p.RegisteredServices {
 		str += fmt.Sprintf("%v,", ms.Url)
@@ -850,7 +839,7 @@ func ConvertToPolicies(patternId string, p *Pattern) ([]*policy.Policy, error) {
 
 	policies := make([]*policy.Policy, 0, 10)
 
-	// Each pattern contains a list of workloads/services that need to be converted to a policy
+	// Each pattern contains a list of services that need to be converted to a policy
 
 	for _, service := range p.Services {
 
