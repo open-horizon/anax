@@ -312,16 +312,15 @@ func getVariableExchangeDefinitionHandler(version string) exchange.ServiceResolv
 func getVariableDeviceHandler(mss []exchange.Microservice, ss []exchange.Microservice) exchange.DeviceHandler {
 	return func(id string, token string) (*exchange.Device, error) {
 		d := exchange.Device{
-			Token:                   token,
-			Name:                    id,
-			Owner:                   "bob",
-			Pattern:                 "netspeed-amd64",
-			RegisteredMicroservices: mss,
-			RegisteredServices:      ss,
-			MsgEndPoint:             "",
-			SoftwareVersions:        nil,
-			LastHeartbeat:           "now",
-			PublicKey:               nil,
+			Token:              token,
+			Name:               id,
+			Owner:              "bob",
+			Pattern:            "netspeed-amd64",
+			RegisteredServices: ss,
+			MsgEndPoint:        "",
+			SoftwareVersions:   nil,
+			LastHeartbeat:      "now",
+			PublicKey:          nil,
 		}
 		return &d, nil
 	}

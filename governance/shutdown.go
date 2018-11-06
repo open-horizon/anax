@@ -34,8 +34,8 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 		return
 	}
 
-	// Clear the Pattern and RegisteredMicroservices/RegisteredServices array in the node’s exchange resource. We have to leave the
-	// public key so that the node can send messages to an agbot. Removing the pattern and RegisteredMicroservices/RegisteredServices
+	// Clear the Pattern and RegisteredServices array in the node’s exchange resource. We have to leave the
+	// public key so that the node can send messages to an agbot. Removing the pattern and RegisteredServices
 	// will prevent the exchange from finding the node and thereby prevent agobts from trying to make new agreements.
 	if err := w.clearNodePatternAndMS(); err != nil {
 		w.completedWithError(logString(err.Error()))
@@ -111,9 +111,6 @@ func (w *GovernanceWorker) clearNodePatternAndMS() error {
 	// CreateDevicePut will include the existing message key in the returned object, and the Pattern field will be an empty string.
 	// Preserve the rest of the existing fields on the PUT.
 	pdr := exchange.CreateDevicePut(w.GetExchangeToken(), exDev.Name)
-	if exDev.RegisteredMicroservices != nil && len(exDev.RegisteredMicroservices) != 0 {
-		pdr.RegisteredMicroservices = []exchange.Microservice{}
-	}
 	if exDev.RegisteredServices != nil && len(exDev.RegisteredServices) != 0 {
 		pdr.RegisteredServices = []exchange.Microservice{}
 	}

@@ -403,7 +403,7 @@ func UnregisterMicroserviceExchange(getExchangeDevice exchange.DeviceHandler,
 
 	if eDevice, err := getExchangeDevice(device_id, device_token); err != nil {
 		return fmt.Errorf("Error getting device %v from the exchange. %v", device_id, err)
-	} else if (eDevice.RegisteredMicroservices == nil || len(eDevice.RegisteredMicroservices) == 0) && (eDevice.RegisteredServices == nil || len(eDevice.RegisteredServices) == 0) {
+	} else if eDevice.RegisteredServices == nil || len(eDevice.RegisteredServices) == 0 {
 		return nil // no registered services/microservices, nothing to do
 	} else {
 		services := eDevice.RegisteredServices

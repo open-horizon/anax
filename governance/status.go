@@ -32,26 +32,8 @@ func (w ContainerStatus) String() string {
 		w.Name, w.Image, w.Created, w.State)
 }
 
-type MicroserviceStatus struct {
-	SpecRef    string            `json:"specRef,omitempty"`
-	Org        string            `json:"orgid,omitempty"`
-	Version    string            `json:"version,omitempty"`
-	Arch       string            `json:"arch,omitempty"`
-	Containers []ContainerStatus `json:"containerStatus,omitempty"`
-}
-
-func (w MicroserviceStatus) String() string {
-	return fmt.Sprintf("SpecRef: %v, "+
-		"Org: %v, "+
-		"Version: %v, "+
-		"Arch: %v, "+
-		"Containers: %v",
-		w.SpecRef, w.Org, w.Version, w.Arch, w.Containers)
-}
-
 type WorkloadStatus struct {
 	AgreementId string            `json:"agreementId"`
-	WorkloadURL string            `json:"workloadUrl,omitempty"`
 	ServiceURL  string            `json:"serviceUrl,omitempty"`
 	Org         string            `json:"orgid,omitempty"`
 	Version     string            `json:"version,omitempty"`
@@ -61,31 +43,26 @@ type WorkloadStatus struct {
 
 func (w WorkloadStatus) String() string {
 	return fmt.Sprintf("AgreementId: %v, "+
-		"WorkloadURL: %v, "+
 		"ServiceURL: %v, "+
 		"Org: %v, "+
 		"Version: %v, "+
 		"Arch: %v, "+
 		"Containers: %v",
-		w.AgreementId, w.WorkloadURL, w.ServiceURL, w.Org, w.Version, w.Arch, w.Containers)
+		w.AgreementId, w.ServiceURL, w.Org, w.Version, w.Arch, w.Containers)
 }
 
 type DeviceStatus struct {
-	Connectivity  map[string]bool      `json:"connectivity"` //  hosts and whether this device can reach them or not
-	Microservices []MicroserviceStatus `json:"microservices,omitempty"`
-	Workloads     []WorkloadStatus     `json:"workloads,omitempty"`
-	Services      []WorkloadStatus     `json:"services"`
-	LastUpdated   string               `json:"lastUpdated"`
+	Connectivity map[string]bool  `json:"connectivity"` //  hosts and whether this device can reach them or not
+	Services     []WorkloadStatus `json:"services"`
+	LastUpdated  string           `json:"lastUpdated"`
 }
 
 func (w DeviceStatus) String() string {
 	return fmt.Sprintf(
 		"Connectivity: %v, "+
-			"Microservices: %v, "+
-			"Workloads: %v,"+
 			"Services: %v,"+
 			"LastUpdated: %v",
-		w.Connectivity, w.Microservices, w.Workloads, w.Services, w.LastUpdated)
+		w.Connectivity, w.Services, w.LastUpdated)
 }
 
 func NewDeviceStatus() *DeviceStatus {
@@ -151,7 +128,6 @@ func (w *GovernanceWorker) ReportDeviceStatus() {
 }
 
 // Find the status for all the Services.
-// TODO: Rewrite this code when we get rid of the workload/microservice functionality.
 func (w *GovernanceWorker) getServiceStatus(containers []docker.APIContainers) ([]WorkloadStatus, error) {
 
 	// Get all top level (agreement) services and related metadata.
@@ -160,38 +136,25 @@ func (w *GovernanceWorker) getServiceStatus(containers []docker.APIContainers) (
 		return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving agreement services from database, error: %v", err)))
 	}
 
-	// Convert to service form.
-	for ix, ws := range tempWS {
-		tempWS[ix].ServiceURL = ws.WorkloadURL
-		tempWS[ix].WorkloadURL = ""
-	}
-
 	// Get all dependent services and related metadata.
 	tempMS, err := w.getMicroserviceStatus(containers)
 	if err != nil {
 		return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving services from database, error: %v", err)))
 	}
 
-	// Convert to service form.
 	for _, ms := range tempMS {
 		// In the services model, there will be duplicates in the microservice list and the workload list. Skip the duplicates
 		// from the microservice list, and prefer the service from the workload list.
 		duplicate := false
 		for _, ws := range tempWS {
-			if ws.ServiceURL == ms.SpecRef {
+			if ws.ServiceURL == ms.ServiceURL {
 				duplicate = true
 				break
 			}
 		}
 
 		if !duplicate {
-			var wl_status WorkloadStatus
-			wl_status.ServiceURL = ms.SpecRef
-			wl_status.Org = ms.Org
-			wl_status.Version = ms.Version
-			wl_status.Arch = ms.Arch
-			wl_status.Containers = ms.Containers
-			tempWS = append(tempWS, wl_status)
+			tempWS = append(tempWS, ms)
 		}
 	}
 
@@ -199,7 +162,7 @@ func (w *GovernanceWorker) getServiceStatus(containers []docker.APIContainers) (
 }
 
 // Find the status for all the microservices
-func (w *GovernanceWorker) getMicroserviceStatus(containers []docker.APIContainers) ([]MicroserviceStatus, error) {
+func (w *GovernanceWorker) getMicroserviceStatus(containers []docker.APIContainers) ([]WorkloadStatus, error) {
 
 	// Filter to return all instances for a msdef
 	msdefFilter := func(msdef_id string) persistence.MIFilter {
@@ -208,14 +171,14 @@ func (w *GovernanceWorker) getMicroserviceStatus(containers []docker.APIContaine
 		}
 	}
 
-	status := make([]MicroserviceStatus, 0)
+	status := make([]WorkloadStatus, 0)
 
 	if msdefs, err := persistence.FindMicroserviceDefs(w.db, []persistence.MSFilter{persistence.UnarchivedMSFilter()}); err != nil {
 		return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving all service definitions from database, error: %v", err)))
 	} else if msdefs != nil {
 		for _, msdef := range msdefs {
-			var msdef_status MicroserviceStatus
-			msdef_status.SpecRef = msdef.SpecRef
+			var msdef_status WorkloadStatus
+			msdef_status.ServiceURL = msdef.SpecRef
 			msdef_status.Org = msdef.Org
 			msdef_status.Version = msdef.Version
 			msdef_status.Arch = msdef.Arch
@@ -264,7 +227,7 @@ func (w *GovernanceWorker) getWorkloadStatus(containers []docker.APIContainers) 
 					for _, wl := range tcPolicy.Workloads {
 						var wl_status WorkloadStatus
 						wl_status.AgreementId = ag.CurrentAgreementId
-						wl_status.WorkloadURL = wl.WorkloadURL
+						wl_status.ServiceURL = wl.WorkloadURL
 						wl_status.Org = wl.Org
 						wl_status.Version = wl.Version
 						wl_status.Arch = wl.Arch
