@@ -29,8 +29,8 @@ import (
 	"strings"
 )
 
-const LABEL_PREFIX = "network.bluehorizon.colonus"
-const IPT_COLONUS_ISOLATED_CHAIN = "COLONUS-ISOLATION"
+const LABEL_PREFIX = "openhorizon.anax"
+const IPT_COLONUS_ISOLATED_CHAIN = "OPENHORIZON-ANAX-ISOLATION"
 
 /*
  *
@@ -493,7 +493,18 @@ func (w *ContainerWorker) NewEvent(incoming events.Message) {
 	return
 }
 
-func mkBridge(name string, client *docker.Client) (*docker.Network, error) {
+func mkBridge(client *docker.Client, name string, infrastructure bool, sharedPattern bool) (*docker.Network, error) {
+
+	// Labels on the docker network indicate attributes about the network.
+	labels := make(map[string]string)
+	labels[LABEL_PREFIX+".network"] = ""
+	if infrastructure {
+		labels[LABEL_PREFIX+".infrastructure"] = ""
+	}
+	if sharedPattern {
+		labels[LABEL_PREFIX+".service_pattern.shared"] = "singleton"
+	}
+
 	bridgeOpts := docker.CreateNetworkOptions{
 		Name:           name,
 		EnableIPv6:     false,
@@ -509,6 +520,7 @@ func mkBridge(name string, client *docker.Client) (*docker.Network, error) {
 			"com.docker.network.bridge.enable_ip_masquerade": "true",
 			"com.docker.network.bridge.default_bridge":       "false",
 		},
+		Labels: labels,
 	}
 
 	bridge, err := client.CreateNetwork(bridgeOpts)
@@ -626,7 +638,7 @@ func existingShared(client *docker.Client, serviceName string, servicePair *serv
 	}
 
 	for _, net := range networks {
-		if net.Name == bridgeName {
+		if isAnaxNetwork(&net, bridgeName) {
 			glog.V(3).Infof("Found shared network: %v with name %v", net.ID, net.Name)
 			sBridge = net
 		}
@@ -1054,7 +1066,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 		}
 
 		if existingNetwork == nil {
-			existingNetwork, err = mkBridge(bridgeName, b.client)
+			existingNetwork, err = mkBridge(b.client, bridgeName, deployment.Infrastructure, true)
 			glog.V(2).Infof("Created new network for shared container: %v. Network: %v", containerName, existingNetwork)
 			if err != nil {
 				return nil, fail(nil, containerName, fmt.Errorf("Unable to create bridge for shared container. Original error: %v", err))
@@ -1088,14 +1100,14 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 		return nil, err
 	} else {
 		for _, net := range networks {
-			if net.Name == agreementId {
+			if isAnaxNetwork(&net, agreementId) {
 				glog.V(5).Infof("Found network %v already present", net.Name)
 				agBridge = &net
 				break
 			}
 		}
 		if agBridge == nil {
-			newBridge, err := mkBridge(agreementId, b.client)
+			newBridge, err := mkBridge(b.client, agreementId, deployment.Infrastructure, false)
 			if err != nil {
 				return nil, err
 			}
@@ -1286,7 +1298,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		serviceNames := deploymentDesc.ServiceNames()
 
 		for serviceName, service := range deploymentDesc.Services {
-			if cmd.ContainerLaunchContext.Blockchain.Name != "" { // for etherum case
+			if cmd.ContainerLaunchContext.Blockchain.Name != "" {
 				// Dynamically add in a filesystem mapping so that the infrastructure container can write files that will
 				// be saveable or observable to the host system. Also turn on the privileged flag for this container.
 				dir := ""
@@ -1545,9 +1557,6 @@ func (b *ContainerWorker) syncupResources() {
 					continue
 				} else if _, labelThere := container.Labels[LABEL_PREFIX+".agreement_id"]; !labelThere {
 					continue
-				} else if !IsAgreementId(container.Labels[LABEL_PREFIX+".agreement_id"]) {
-					// Not a valid number so it must be old infrastructure before the infrastructure label was added, ignore it.
-					continue
 				} else if _, there := agMap[container.Labels[LABEL_PREFIX+".agreement_id"]]; !there {
 					// The container has the horizon agreement id label, but the agreement id is not in our local DB.
 					glog.V(3).Infof("ContainerWorker found leftover container %v", container)
@@ -1563,7 +1572,10 @@ func (b *ContainerWorker) syncupResources() {
 		} else {
 			for _, net := range networks {
 				glog.V(5).Infof("ContainerWorker working on network %v", net)
-				if strings.HasPrefix(net.Name, "singleton-") {
+				if _, anaxNet := net.Labels[LABEL_PREFIX+".network"]; !anaxNet {
+					continue
+				} else if val, exists := net.Labels[LABEL_PREFIX+".service_pattern.shared"]; exists && val == "singleton" {
+
 					if netInfo, err := b.client.NetworkInfo(net.ID); err != nil {
 						glog.Errorf("Failure getting network info for %v. Error: %v", net.Name, err)
 					} else if len(netInfo.Containers) != 0 {
@@ -1642,7 +1654,7 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 						// this shared container should only have one network, its own and it should be the same as the name of the container (minus the prefix, of course)
 						for _, network := range networks {
 							// want a handle to a real network from our earlier-fetched list, not just the Container stub
-							if netName == network.Name {
+							if isAnaxNetwork(&network, netName) {
 								sharedNet = network
 							}
 						}
@@ -1719,7 +1731,7 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 				glog.Errorf("Failed to remove workloadStorageDir: %v. Error: %v", workloadRWStorageDir, err)
 			}
 		} else {
-			// remove the docker volumn
+			// remove the docker volume
 			if err := b.client.RemoveVolume(workloadRWStorageDir); err != nil {
 				if err != docker.ErrNoSuchVolume {
 					glog.Errorf("Failed to remove workloadStorageDir docker volume: %v. Error: %v", workloadRWStorageDir, err)
@@ -1925,4 +1937,11 @@ func (b *ContainerWorker) findMsContainersAndUpdateMsInstance(parent *persistenc
 		}
 	}
 	return ms_containers, nil
+}
+
+func isAnaxNetwork(net *docker.Network, bridgeName string) bool {
+	if _, anaxNet := net.Labels[LABEL_PREFIX+".network"]; anaxNet && net.Name == bridgeName {
+		return true
+	}
+	return false
 }

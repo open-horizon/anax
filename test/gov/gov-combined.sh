@@ -308,21 +308,6 @@ then
     REGAGBOTUSERDEV=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns" | jq -r '.msg')
     echo "$REGAGBOTUSERDEV"
 
-    # REGAGBOTSLOC=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"sloc"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_sloc" | jq -r '.msg')
-    # echo "$REGAGBOTSLOC"
-
-    # REGAGBOTSGPS=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"sgps"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_sgps" | jq -r '.msg')
-    # echo "$REGAGBOTSGPS"
-
-    # REGAGBOTSPWS=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"spws"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_spws" | jq -r '.msg')
-    # echo "$REGAGBOTSPWS"
-
-    # REGAGBOTSALL=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"sall"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_sall" | jq -r '.msg')
-    # echo "$REGAGBOTSALL"
-
-    # REGAGBOTSUH=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"susehello"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_susehello" | jq -r '.msg')
-    # echo "$REGAGBOTSUH"
-
     REGAGBOTSHELM=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"shelm"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_shelm" | jq -r '.msg')
     echo "$REGAGBOTSUH"
 

@@ -11,6 +11,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
@@ -362,9 +363,9 @@ func Test_resourcesCreate_patterned(t *testing.T) {
 	thisTest := func(worker *ContainerWorker, env map[string]string, agreementId string) {
 
 		setupVerification := func(container *docker.APIContainers, containerDetail *docker.Container) error {
-			if container.Labels["network.bluehorizon.colonus.agreement_id"] == agreementId {
+			if container.Labels[container.LABEL_PREFIX+".agreement_id"] == agreementId {
 
-				if _, present := container.Labels["network.bluehorizon.colonus.service_name"]; !present {
+				if _, present := container.Labels[container.LABEL_PREFIX+".service_name"]; !present {
 					return fmt.Errorf("service_name label not set on workload container: %v", container.Labels)
 				}
 
@@ -534,14 +535,14 @@ func Test_resourcesCreate_shared(t *testing.T) {
 		}
 
 		for _, con := range cons {
-			conAg := con.Labels["network.bluehorizon.colonus.agreement_id"]
+			conAg := con.Labels[container.LABEL_PREFIX+".agreement_id"]
 
 			if conAg == p2AgreementId || conAg == p1AgreementId {
 
 				connectivity := tConnectivity(t, worker.client, &con)
 
 				// D isn't supposed to have connectivity
-				if con.Labels["network.bluehorizon.colonus.service_name"] == "container-int-test-someServiceD" {
+				if con.Labels[container.LABEL_PREFIX+".service_name"] == "container-int-test-someServiceD" {
 					if connectivity {
 						t.Errorf("container %v isn't supposed to have connectivity but it does", con.Names)
 					}
