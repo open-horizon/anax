@@ -18,8 +18,8 @@ func Test_GetContainerStatus(t *testing.T) {
 		Status:  "Up Less than a second",
 		Names:   []string{"/aaaa-netspeed5"},
 		Labels: map[string]string{
-			"network.bluehorizon.colonus.agreement_id": "aaaa",
-			"network.bluehorizon.colonus.service_name": "netspeed5"},
+			"openhorizon.anax.agreement_id": "aaaa",
+			"openhorizon.anax.service_name": "netspeed5"},
 	}
 	c2 := docker.APIContainers{
 		ID:      "73f4354c98",
@@ -30,8 +30,8 @@ func Test_GetContainerStatus(t *testing.T) {
 		Status:  "Up 10 seconds",
 		Names:   []string{"/aaaa-test"},
 		Labels: map[string]string{
-			"network.bluehorizon.colonus.agreement_id": "aaaa",
-			"network.bluehorizon.colonus.service_name": "test"},
+			"openhorizon.anax.agreement_id": "aaaa",
+			"openhorizon.anax.service_name": "test"},
 	}
 	c3 := docker.APIContainers{
 		ID:      "dec4ea9e5",
@@ -42,8 +42,8 @@ func Test_GetContainerStatus(t *testing.T) {
 		Status:  "Up 18 second",
 		Names:   []string{"/bbbb-location"},
 		Labels: map[string]string{
-			"network.bluehorizon.colonus.agreement_id": "bbbb",
-			"network.bluehorizon.colonus.service_name": "location"},
+			"openhorizon.anax.agreement_id": "bbbb",
+			"openhorizon.anax.service_name": "location"},
 	}
 	c4 := docker.APIContainers{
 		ID:      "dec4ea9e5",
@@ -54,8 +54,8 @@ func Test_GetContainerStatus(t *testing.T) {
 		Status:  "Up 18 second",
 		Names:   []string{"/bluehorizon.network-microservices-gps_2.0.3_52df00-gps"},
 		Labels: map[string]string{
-			"network.bluehorizon.colonus.agreement_id":   "bluehorizon.network-microservices-gps_2.0.3_52df00",
-			"network.bluehorizon.colonus.infrastructure": ""},
+			"openhorizon.anax.agreement_id":   "bluehorizon.network-microservices-gps_2.0.3_52df00",
+			"openhorizon.anax.infrastructure": ""},
 	}
 	containers := []docker.APIContainers{c1, c2, c3, c4}
 

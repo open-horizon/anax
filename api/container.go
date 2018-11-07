@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	dockerclient "github.com/fsouza/go-dockerclient"
+	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/cutil"
 )
 
@@ -22,10 +23,10 @@ func GetWorkloadContainers(dockerEndpoint string, agreementId string) ([]dockerc
 			ret := make([]dockerclient.APIContainers, 0, 10)
 
 			for _, c := range containers {
-				if _, exists := c.Labels["network.bluehorizon.colonus.service_name"]; exists {
-					if _, exists := c.Labels["network.bluehorizon.colonus.infrastructure"]; !exists {
+				if _, exists := c.Labels[container.LABEL_PREFIX+".service_name"]; exists {
+					if _, exists := c.Labels[container.LABEL_PREFIX+".infrastructure"]; !exists {
 						// If we are filtering by agreement id, then check the agreement id label
-						if agreementId != "" && (c.Labels["network.bluehorizon.colonus.agreement_id"] != agreementId) {
+						if agreementId != "" && (c.Labels[container.LABEL_PREFIX+".agreement_id"] != agreementId) {
 							continue
 						}
 						ret = append(ret, c)
@@ -54,8 +55,8 @@ func GetMicroserviceContainer(dockerEndpoint string, mURL string, mVersion strin
 			// Iterate through containers looking for the infrastructure container with an agreement id that
 			// matches the microservice instance.
 			for _, c := range containers {
-				if _, exists := c.Labels["network.bluehorizon.colonus.infrastructure"]; exists {
-					if agid, exists := c.Labels["network.bluehorizon.colonus.agreement_id"]; exists {
+				if _, exists := c.Labels[container.LABEL_PREFIX+".infrastructure"]; exists {
+					if agid, exists := c.Labels[container.LABEL_PREFIX+".agreement_id"]; exists {
 						name := cutil.MakeMSInstanceKey(mURL, mVersion, mInstanceId)
 						if agid == name {
 							ret = append(ret, c)
