@@ -484,7 +484,7 @@ func CreateService(service *Service,
 
 	// Set max number of agreements for this service's policy.
 	maxAgreements := 1
-	if msdef.Sharable == exchange.MS_SHARING_MODE_SINGLE || msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE {
+	if msdef.Sharable == exchange.MS_SHARING_MODE_SINGLETON || msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE || msdef.Sharable == exchange.MS_SHARING_MODE_SINGLE {
 		if pDevice.Pattern == "" {
 			maxAgreements = 2 // hard coded to 2 for now. will change to 0 later
 		} else {

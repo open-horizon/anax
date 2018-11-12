@@ -477,7 +477,7 @@ func startDependent(dir string,
 
 		// If the service we need to start is a sharable singleton then it might already be started. If it is then just return
 		// the networks associated with the containers.
-		if serviceDef.Sharable == exchange.MS_SHARING_MODE_SINGLE {
+		if serviceDef.Sharable == exchange.MS_SHARING_MODE_SINGLETON || serviceDef.Sharable == exchange.MS_SHARING_MODE_SINGLE {
 
 			if containerNetworks, err := getContainerNetworks(depConfig, cw); err != nil {
 				return nil, err

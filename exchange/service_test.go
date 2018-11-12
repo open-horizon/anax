@@ -19,7 +19,7 @@ func TestServiceString1(t *testing.T) {
 		URL:                 "http://test.company.com/service1",
 		Version:             "1.0.0",
 		Arch:                "amd64",
-		Sharable:            MS_SHARING_MODE_SINGLE,
+		Sharable:            MS_SHARING_MODE_SINGLETON,
 		MatchHardware:       HardwareRequirement{},
 		RequiredServices:    []ServiceDependency{},
 		UserInputs:          []UserInput{},
@@ -31,7 +31,7 @@ func TestServiceString1(t *testing.T) {
 	str := s.String()
 	t.Log(str)
 
-	expected := `Owner: testOwner, Label: service def, Description: a test, Public: false, URL: http://test.company.com/service1, Version: 1.0.0, Arch: amd64, Sharable: single, MatchHardware: none, RequiredServices: [], UserInputs: [], Deployment: {"services":{}}, DeploymentSignature: xyzpdq=, Package: none, LastUpdated: today`
+	expected := `Owner: testOwner, Label: service def, Description: a test, Public: false, URL: http://test.company.com/service1, Version: 1.0.0, Arch: amd64, Sharable: singleton, MatchHardware: none, RequiredServices: [], UserInputs: [], Deployment: {"services":{}}, DeploymentSignature: xyzpdq=, Package: none, LastUpdated: today`
 	if str != expected {
 		t.Errorf("String() output expected: %v", expected)
 	}
@@ -46,7 +46,7 @@ func TestServiceString2(t *testing.T) {
 		URL:         "http://test.company.com/service1",
 		Version:     "1.0.0",
 		Arch:        "amd64",
-		Sharable:    MS_SHARING_MODE_SINGLE,
+		Sharable:    MS_SHARING_MODE_SINGLETON,
 		MatchHardware: HardwareRequirement{
 			"dev": "/dev/dev1",
 		},
@@ -88,7 +88,7 @@ func TestServiceString2(t *testing.T) {
 	str := s.String()
 	t.Log(str)
 
-	expected := `Owner: testOwner, Label: service def, Description: a test, Public: false, URL: http://test.company.com/service1, Version: 1.0.0, Arch: amd64, Sharable: single, MatchHardware: {dev:/dev/dev1}, RequiredServices: [{URL: http://my.com/ms/ms1, Org: otherOrg, Version: 1.5.0, Arch: amd64} {URL: http://my.com/ms/ms2, Org: otherOrg, Version: 2.7, Arch: amd64}], UserInputs: [{Name: name, :Label: a ui, Type: string, DefaultValue: } {Name: name2, :Label: another ui, Type: string, DefaultValue: three}], Deployment: {"services":{}}, DeploymentSignature: xyzpdq=, Package: {storeType:container}, LastUpdated: today`
+	expected := `Owner: testOwner, Label: service def, Description: a test, Public: false, URL: http://test.company.com/service1, Version: 1.0.0, Arch: amd64, Sharable: singleton, MatchHardware: {dev:/dev/dev1}, RequiredServices: [{URL: http://my.com/ms/ms1, Org: otherOrg, Version: 1.5.0, Arch: amd64} {URL: http://my.com/ms/ms2, Org: otherOrg, Version: 2.7, Arch: amd64}], UserInputs: [{Name: name, :Label: a ui, Type: string, DefaultValue: } {Name: name2, :Label: another ui, Type: string, DefaultValue: three}], Deployment: {"services":{}}, DeploymentSignature: xyzpdq=, Package: {storeType:container}, LastUpdated: today`
 	if str != expected {
 		t.Errorf("String() output expected: %v", expected)
 	}
@@ -104,7 +104,7 @@ func TestServiceString3(t *testing.T) {
 		URL:         "http://test.company.com/service1",
 		Version:     "1.0.0",
 		Arch:        "amd64",
-		Sharable:    MS_SHARING_MODE_SINGLE,
+		Sharable:    MS_SHARING_MODE_SINGLETON,
 		MatchHardware: HardwareRequirement{
 			"dev": "/dev/dev1",
 		},
@@ -167,7 +167,7 @@ func TestService_GetUserInputByName(t *testing.T) {
 		URL:         "http://test.company.com/service1",
 		Version:     "1.0.0",
 		Arch:        "amd64",
-		Sharable:    MS_SHARING_MODE_SINGLE,
+		Sharable:    MS_SHARING_MODE_SINGLETON,
 		MatchHardware: HardwareRequirement{
 			"dev": "/dev/dev1",
 		},
@@ -237,7 +237,7 @@ func TestService_NeedsUserInput1(t *testing.T) {
 		URL:         "http://test.company.com/service1",
 		Version:     "1.0.0",
 		Arch:        "amd64",
-		Sharable:    MS_SHARING_MODE_SINGLE,
+		Sharable:    MS_SHARING_MODE_SINGLETON,
 		MatchHardware: HardwareRequirement{
 			"dev": "/dev/dev1",
 		},
@@ -297,7 +297,7 @@ func TestService_NeedsUserInput2(t *testing.T) {
 		URL:         "http://test.company.com/service1",
 		Version:     "1.0.0",
 		Arch:        "amd64",
-		Sharable:    MS_SHARING_MODE_SINGLE,
+		Sharable:    MS_SHARING_MODE_SINGLETON,
 		MatchHardware: HardwareRequirement{
 			"dev": "/dev/dev1",
 		},
@@ -359,7 +359,7 @@ func TestService_PopulateDefaultUserInput(t *testing.T) {
 		URL:         "http://test.company.com/service1",
 		Version:     "1.0.0",
 		Arch:        "amd64",
-		Sharable:    MS_SHARING_MODE_SINGLE,
+		Sharable:    MS_SHARING_MODE_SINGLETON,
 		MatchHardware: HardwareRequirement{
 			"dev": "/dev/dev1",
 		},
@@ -429,7 +429,7 @@ func TestService_GetDeployment(t *testing.T) {
 		URL:         "http://test.company.com/service1",
 		Version:     "1.0.0",
 		Arch:        "amd64",
-		Sharable:    MS_SHARING_MODE_SINGLE,
+		Sharable:    MS_SHARING_MODE_SINGLETON,
 		MatchHardware: HardwareRequirement{
 			"dev": "/dev/dev1",
 		},

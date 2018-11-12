@@ -1023,7 +1023,7 @@ func DeleteMicroserviceInstance(db *bolt.DB, key string) (*MicroserviceInstance,
 
 // Service dependencies can be described by a directed graph, starting from the agreement service as the root node of
 // the graph all the way to the services which are leaf nodes because they have no dependencies. Services can be
-// defined such that instances of a service are sharable by more than 1 caller (sharable = single), not sharable by
+// defined such that instances of a service are sharable by more than 1 caller (sharable = singleton), not sharable by
 // more than 1 caller (sharable = multiple), or exclusive to 1 caller (sharable = exclusive).
 //
 // When a service is defined as sharable=multiple AND it has more than 1 parent in the dependency graph, then each

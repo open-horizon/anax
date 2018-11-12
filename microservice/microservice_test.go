@@ -246,7 +246,7 @@ func createService(t *testing.T) *persistence.MicroserviceDefinition {
 		URL:                 "https://bluehorizon.network/microservices/gps",
 		Version:             "1.0.0",
 		Arch:                cutil.ArchString(),
-		Sharable:            "single",
+		Sharable:            "singleton",
 		MatchHardware:       hwm,
 		RequiredServices:    []exchange.ServiceDependency{sd},
 		UserInputs:          []exchange.UserInput{ut1, ut2},
