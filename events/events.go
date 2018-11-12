@@ -178,13 +178,14 @@ type ContainerLaunchContext struct {
 	EnvironmentAdditions *map[string]string
 	Blockchain           BlockchainConfig
 	Name                 string // used as the docker network name and part of container name. For microservice it is the ms instance key
-	AgreementId          string
+	AgreementIds         []string
 	Microservices        []MicroserviceSpec                     // Service dependencies go here. Microservices (in the workload/microservice model) never have dependencies.
 	ServicePathElement   persistence.ServiceInstancePathElement // The service that we're trying to start.
+	IsRetry              bool
 }
 
 func (c ContainerLaunchContext) String() string {
-	return fmt.Sprintf("ContainerConfig: %v, EnvironmentAdditions: %v, Blockchain: %v, Name: %v, AgreementId: %v, ServiceDependencies: %v, ThisService: %v", c.Configure, c.EnvironmentAdditions, c.Blockchain, c.Name, c.AgreementId, c.Microservices, c.ServicePathElement)
+	return fmt.Sprintf("ContainerConfig: %v, EnvironmentAdditions: %v, Blockchain: %v, Name: %v, AgreementIds: %v, ServiceDependencies: %v, ThisService: %v, IsRetry: %v", c.Configure, c.EnvironmentAdditions, c.Blockchain, c.Name, c.AgreementIds, c.Microservices, c.ServicePathElement, c.IsRetry)
 }
 
 func (c ContainerLaunchContext) ShortString() string {
@@ -195,8 +196,8 @@ func (c ContainerLaunchContext) ContainerConfig() ContainerConfig {
 	return c.Configure
 }
 
-func (c ContainerLaunchContext) GetAgreementId() string {
-	return c.AgreementId
+func (c ContainerLaunchContext) GetAgreementIds() []string {
+	return c.AgreementIds
 }
 
 func (c ContainerLaunchContext) GetMicroservices() []MicroserviceSpec {
@@ -207,7 +208,7 @@ func (c ContainerLaunchContext) GetServicePathElement() *persistence.ServiceInst
 	return &c.ServicePathElement
 }
 
-func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]string, bc BlockchainConfig, name string, agId string, mss []MicroserviceSpec, spe *persistence.ServiceInstancePathElement) *ContainerLaunchContext {
+func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]string, bc BlockchainConfig, name string, agIds []string, mss []MicroserviceSpec, spe *persistence.ServiceInstancePathElement, isRetry bool) *ContainerLaunchContext {
 
 	spe_temp := spe
 	if spe_temp == nil {
@@ -219,9 +220,10 @@ func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]stri
 		EnvironmentAdditions: envAdds,
 		Blockchain:           bc,
 		Name:                 name,
-		AgreementId:          agId,
+		AgreementIds:         agIds,
 		Microservices:        mss,
 		ServicePathElement:   *spe_temp,
+		IsRetry:              isRetry,
 	}
 }
 
@@ -591,7 +593,7 @@ func NewGovernanceWorkloadCancelationMessage(id EventId, cause EndContractCause,
 
 	return &GovernanceWorkloadCancelationMessage{
 		GovernanceMaintenanceMessage: *govMaint,
-		Cause:                        cause,
+		Cause: cause,
 	}
 }
 

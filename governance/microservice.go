@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/producer"
+	"math"
 	"net/url"
 	"strings"
 	"time"
@@ -64,8 +65,21 @@ func (w *GovernanceWorker) governMicroservices() int {
 }
 
 // It creates microservice instance and loads the containers for the given microservice def
-func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, dependencyPath []persistence.ServiceInstancePathElement) (*persistence.MicroserviceInstance, error) {
+// If the msinst_key is not empty, the function is called to restart a failed dependent service.
+func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, dependencyPath []persistence.ServiceInstancePathElement, msinst_key string) (*persistence.MicroserviceInstance, error) {
 	glog.V(5).Infof(logString(fmt.Sprintf("Starting service instance for %v", ms_key)))
+
+	// get the service instance if the key is given
+	var msinst_given *persistence.MicroserviceInstance
+	var err1 error
+	isRetry := false
+	if msinst_key != "" {
+		isRetry = true
+		msinst_given, err1 = persistence.FindMicroserviceInstanceWithKey(w.db, msinst_key)
+		if err1 != nil {
+			return nil, fmt.Errorf(logString(fmt.Sprintf("Error finding service instance %v from db. %v", msinst_key, err1)))
+		}
+	}
 
 	if msdef, err := persistence.FindMicroserviceDefWithKey(w.db, ms_key); err != nil {
 		return nil, fmt.Errorf(logString(fmt.Sprintf("Error finding service definition from db with key %v. %v", ms_key, err)))
@@ -74,100 +88,117 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 	} else {
 		if !msdef.HasDeployment() {
 			glog.Infof(logString(fmt.Sprintf("No workload needed for service %v.", msdef.SpecRef)))
-			if mi, err := persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Version, ms_key, dependencyPath); err != nil {
-				return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting service instance for %v %v %v.", msdef.SpecRef, msdef.Version, ms_key)))
-				// if the new microservice does not have containers, just mark it done.
-			} else if mi, err := persistence.UpdateMSInstanceExecutionState(w.db, mi.GetKey(), true, 0, ""); err != nil {
+			var mi *persistence.MicroserviceInstance
+
+			if isRetry {
+				mi = msinst_given
+			} else {
+				mi, err1 = persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Version, ms_key, dependencyPath)
+				if err1 != nil {
+					return nil, fmt.Errorf(logString(fmt.Sprintf("Error creating service instance for %v %v %v. %v", msdef.SpecRef, msdef.Version, ms_key, err1)))
+				}
+			}
+
+			// if the new microservice does not have containers, just mark it done.
+			if mi_new, err := persistence.UpdateMSInstanceExecutionState(w.db, mi.GetKey(), true, 0, ""); err != nil {
 				return nil, fmt.Errorf(logString(fmt.Sprintf("Failed to update the ExecutionStartTime for service instance %v. %v", mi.GetKey(), err)))
 			} else {
-				return mi, nil
-			}
-		}
-
-		deployment, deploymentSig, torr := msdef.GetDeployment()
-
-		// convert the torrent string to a structure
-		var torrent policy.Torrent
-
-		// convert to torrent structure only if the torrent string exists on the exchange
-		if torr != "" {
-			if err := json.Unmarshal([]byte(torr), &torrent); err != nil {
-				return nil, fmt.Errorf(logString(fmt.Sprintf("The torrent definition for service %v has error: %v", msdef.SpecRef, err)))
+				return mi_new, nil
 			}
 		} else {
-			// this is the service case where the image server is defined
-			ptorrent := msdef.GetImageStore().ConvertToTorrent()
 
-			// convert the persistence.Torrent to policy.Torrent.
-			torrent.Url = ptorrent.Url
-			torrent.Signature = ptorrent.Signature
-		}
+			// now handle the case where there are containers
+			deployment, deploymentSig, torr := msdef.GetDeployment()
 
-		// convert workload to policy workload structure
-		var ms_workload policy.Workload
-		ms_workload.Deployment = deployment
-		ms_workload.DeploymentSignature = deploymentSig
-		ms_workload.Torrent = torrent
-		ms_workload.WorkloadPassword = ""
-		ms_workload.DeploymentUserInfo = ""
+			// convert the torrent string to a structure
+			var torrent policy.Torrent
 
-		// verify torrent url
-		if url, err := url.Parse(torrent.Url); err != nil {
-			return nil, fmt.Errorf("ill-formed URL: %v, error %v", torrent.Url, err)
-		} else {
-			// get microservice/service keys and save it to the user keys.
-			if w.Config.Edge.TrustCertUpdatesFromOrg {
-				key_map, err := exchange.GetHTTPObjectSigningKeysHandler(w)(exchange.SERVICE, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch)
-				if err != nil {
-					return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting signing keys from the exchange: %v %v %v %v. %v", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, err)))
+			// convert to torrent structure only if the torrent string exists on the exchange
+			if torr != "" {
+				if err := json.Unmarshal([]byte(torr), &torrent); err != nil {
+					return nil, fmt.Errorf(logString(fmt.Sprintf("The torrent definition for service %v has error: %v", msdef.SpecRef, err)))
 				}
-
-				if key_map != nil {
-					errHandler := func(keyname string) api.ErrorHandler {
-						return func(err error) bool {
-							glog.Errorf(logString(fmt.Sprintf("received error when saving the signing key file %v to anax. %v", keyname, err)))
-							return true
-						}
-					}
-
-					for key, content := range key_map {
-						//add .pem the end of the keyname if it does not have none.
-						fn := key
-						if !strings.HasSuffix(key, ".pem") {
-							fn = fmt.Sprintf("%v.pem", key)
-						}
-
-						api.UploadPublicKey(fn, []byte(content), w.Config, errHandler(fn))
-					}
-				}
-			}
-
-			// Verify the deployment signature
-			if pemFiles, err := w.Config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.Config.Edge.PublicKeyPath, w.Config.UserPublicKeyPath()); err != nil {
-				return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting pem key files: %v", err)))
-			} else if err := ms_workload.HasValidSignature(pemFiles); err != nil {
-				return nil, fmt.Errorf(logString(fmt.Sprintf("service container has invalid deployment signature %v for %v", ms_workload.DeploymentSignature, ms_workload.Deployment)))
-			}
-
-			// Gather up the service dependencies, if there are any. Microservices in the workload/microservice model never have dependencies,
-			// but services can. It is important to use the correct version for the service dependency, which is the version we have
-			// in the local database, not necessarily the version in the dependency. The version we have in the local database should always
-			// be greater than the dependency version.
-			ms_specs := []events.MicroserviceSpec{}
-			for _, rs := range msdef.RequiredServices {
-				if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, rs.URL); err != nil {
-					return nil, fmt.Errorf(logString(fmt.Sprintf("received error reading service definition for %v: %v", rs.URL, err)))
-				} else {
-					// Assume the first msdef is the one we want.
-					msspec := events.MicroserviceSpec{SpecRef: rs.URL, Version: msdefs[0].Version, MsdefId: msdefs[0].Id}
-					ms_specs = append(ms_specs, msspec)
-				}
-			}
-
-			// save the instance
-			if ms_instance, err := persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Version, ms_key, dependencyPath); err != nil {
-				return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting service instance for %v %v %v.", msdef.SpecRef, msdef.Version, ms_key)))
 			} else {
+				// this is the service case where the image server is defined
+				ptorrent := msdef.GetImageStore().ConvertToTorrent()
+
+				// convert the persistence.Torrent to policy.Torrent.
+				torrent.Url = ptorrent.Url
+				torrent.Signature = ptorrent.Signature
+			}
+
+			// convert workload to policy workload structure
+			var ms_workload policy.Workload
+			ms_workload.Deployment = deployment
+			ms_workload.DeploymentSignature = deploymentSig
+			ms_workload.Torrent = torrent
+			ms_workload.WorkloadPassword = ""
+			ms_workload.DeploymentUserInfo = ""
+
+			// verify torrent url
+			if url, err := url.Parse(torrent.Url); err != nil {
+				return nil, fmt.Errorf("ill-formed URL: %v, error %v", torrent.Url, err)
+			} else {
+				// get microservice/service keys and save it to the user keys.
+				if w.Config.Edge.TrustCertUpdatesFromOrg {
+					key_map, err := exchange.GetHTTPObjectSigningKeysHandler(w)(exchange.SERVICE, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch)
+					if err != nil {
+						return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting signing keys from the exchange: %v %v %v %v. %v", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, err)))
+					}
+
+					if key_map != nil {
+						errHandler := func(keyname string) api.ErrorHandler {
+							return func(err error) bool {
+								glog.Errorf(logString(fmt.Sprintf("received error when saving the signing key file %v to anax. %v", keyname, err)))
+								return true
+							}
+						}
+
+						for key, content := range key_map {
+							//add .pem the end of the keyname if it does not have none.
+							fn := key
+							if !strings.HasSuffix(key, ".pem") {
+								fn = fmt.Sprintf("%v.pem", key)
+							}
+
+							api.UploadPublicKey(fn, []byte(content), w.Config, errHandler(fn))
+						}
+					}
+				}
+
+				// Verify the deployment signature
+				if pemFiles, err := w.Config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.Config.Edge.PublicKeyPath, w.Config.UserPublicKeyPath()); err != nil {
+					return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting pem key files: %v", err)))
+				} else if err := ms_workload.HasValidSignature(pemFiles); err != nil {
+					return nil, fmt.Errorf(logString(fmt.Sprintf("service container has invalid deployment signature %v for %v", ms_workload.DeploymentSignature, ms_workload.Deployment)))
+				}
+
+				// Gather up the service dependencies, if there are any. Microservices in the workload/microservice model never have dependencies,
+				// but services can. It is important to use the correct version for the service dependency, which is the version we have
+				// in the local database, not necessarily the version in the dependency. The version we have in the local database should always
+				// be greater than the dependency version.
+				ms_specs := []events.MicroserviceSpec{}
+				for _, rs := range msdef.RequiredServices {
+					if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, rs.URL); err != nil {
+						return nil, fmt.Errorf(logString(fmt.Sprintf("received error reading service definition for %v: %v", rs.URL, err)))
+					} else {
+						// Assume the first msdef is the one we want.
+						msspec := events.MicroserviceSpec{SpecRef: rs.URL, Version: msdefs[0].Version, MsdefId: msdefs[0].Id}
+						ms_specs = append(ms_specs, msspec)
+					}
+				}
+
+				// save the instance
+				var ms_instance *persistence.MicroserviceInstance
+				if isRetry {
+					ms_instance = msinst_given
+				} else {
+					ms_instance, err1 = persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Version, ms_key, dependencyPath)
+					if err1 != nil {
+						return nil, fmt.Errorf(logString(fmt.Sprintf("Error creating service instance for %v %v %v. %v", msdef.SpecRef, msdef.Version, ms_key, err1)))
+					}
+				}
+
 				// get the image auth for service (we have to try even for microservice because we do not know if this is ms or svc.)
 				img_auths := make([]events.ImageDockerAuth, 0)
 				if w.Config.Edge.TrustDockerAuthFromOrg {
@@ -207,7 +238,17 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 							}
 						}
 					}
-					lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey(), agreementId, ms_specs, persistence.NewServiceInstancePathElement(msdef.SpecRef, msdef.Version))
+
+					agIds := make([]string, 0)
+
+					if agreementId != "" {
+						// service originally start up
+						agIds = append(agIds, agreementId)
+					} else {
+						// retry case or agreementless case
+						agIds = ms_instance.AssociatedAgreements
+					}
+					lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey(), agIds, ms_specs, persistence.NewServiceInstancePathElement(msdef.SpecRef, msdef.Version), isRetry)
 					w.Messages() <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
 				}
 
@@ -215,7 +256,6 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			}
 		}
 	}
-
 }
 
 // It cleans the microservice instance and its associated agreements
@@ -365,6 +405,27 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 	return nil
 }
 
+// This function will call StartMicroservice to restart all the containers for the given service instance.
+// The process will eventually trigger image loading (just in case the imgges are gone on the node), old container cleaning and
+// new container brought up.
+func (w *GovernanceWorker) RetryMicroservice(msi *persistence.MicroserviceInstance) error {
+	inst_key := msi.GetKey()
+	glog.V(5).Infof(logString(fmt.Sprintf("RetryMicroservice will restart all the containers for %v. Retry count: %v.", inst_key, msi.CurrentRetryCount+1)))
+
+	// increment the retry count
+	if _, err := persistence.UpdateMSInstanceCurrentRetryCount(w.db, inst_key, msi.CurrentRetryCount+1); err != nil {
+		return fmt.Errorf(logString(fmt.Sprintf("error setting the current retry count to %v for service instance %v in db. %v", msi.CurrentRetryCount+1, inst_key, err)))
+		// clear the execution state
+	} else if _, err := persistence.ResetMsInstanceExecutionStatus(w.db, inst_key); err != nil {
+		return fmt.Errorf(logString(fmt.Sprintf("error resetting the execution status for service instance %v in db. %v", inst_key, err)))
+		// start retry
+	} else if _, err := w.StartMicroservice(msi.MicroserviceDefId, "", []persistence.ServiceInstancePathElement{}, inst_key); err != nil {
+		return err
+	} else {
+		return nil
+	}
+}
+
 // Get the next highest microservice version and rollback to it. Tryer even lower version if it fails
 func (w *GovernanceWorker) RollbackMicroservice(msdef *persistence.MicroserviceDefinition) error {
 	for true {
@@ -402,7 +463,7 @@ func (w *GovernanceWorker) RollbackMicroservice(msdef *persistence.MicroserviceD
 	return nil
 }
 
-// Start a service/microservice instance for the given agreement according to the sharing mode.
+// Start a service instance for the given agreement according to the sharing mode.
 func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.MicroserviceDefinition, agreementId string, dependencyPath []persistence.ServiceInstancePathElement, protocol string) error {
 	glog.V(3).Infof(logString(fmt.Sprintf("start service instance %v for agreement %v", msdef.SpecRef, agreementId)))
 
@@ -428,7 +489,7 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 
 	if needs_new_ms {
 		var inst_err error
-		if msi, inst_err = w.StartMicroservice(msdef.Id, agreementId, dependencyPath); inst_err != nil {
+		if msi, inst_err = w.StartMicroservice(msdef.Id, agreementId, dependencyPath, ""); inst_err != nil {
 
 			eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
 				fmt.Sprintf("Service starting failed for %v version %v, error: %v", msdef.SpecRef, msdef.Version, inst_err),
@@ -518,6 +579,16 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 								//remove the agreement from the microservice instance
 							} else if _, err := persistence.UpdateMSInstanceAssociatedAgreements(w.db, msi.GetKey(), false, agreementId); err != nil {
 								glog.Errorf(logString(fmt.Sprintf("error removing agreement id %v from the service db: %v", agreementId, err)))
+							} else if ags, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.IdEAFilter(agreementId)}); err != nil {
+								glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agreementId, err)))
+							} else if len(ags) != 1 {
+								glog.Errorf(logString(fmt.Sprintf("Should have one agreement from the db but found %v.", len(ags))))
+							} else if ags[0].RunningWorkload.URL != "" {
+								// remove the related partent path from the service instance
+								tpe := persistence.NewServiceInstancePathElement(ags[0].RunningWorkload.URL, ags[0].RunningWorkload.Version)
+								if _, err := persistence.UpdateMSInstanceRemoveDependencyPath2(w.db, msi.GetKey(), tpe); err != nil {
+									glog.Errorf(logString(fmt.Sprintf("error removing parent path from the db for service instance %v fro agreement %v: %v", msi.GetKey(), agreementId, err)))
+								}
 							}
 
 							// handle inactive microservice upgrade, upgrade the microservice if needed
@@ -536,29 +607,140 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 	}
 }
 
-// This is the case where the agreement is made but the microservices containers fail.
-// This function will try a new microservice with lower version.
+// This function goes through all associated agreements for a dependent servie instance and get the retry count
+// and the duration for the top level service. The retry duration means that all the retires must happen within the duration,
+// other wise retry count will be reset.
+// If there are mutiple agreements associated with the depenent service, the retry count is the average of all the
+// non-zero retry counts. The default retry count is 1 if all the areements have 0 retry counts.
+func (w *GovernanceWorker) getMiceroserviceRetryCount(msi *persistence.MicroserviceInstance) (uint, uint, error) {
+	retry_count := w.Config.Edge.DefaultServiceRetryCount
+	retry_duration := uint(w.Config.Edge.DefaultServiceRetryDuration)
+
+	if ags, err := w.FindEstablishedAgreementsWithIds(msi.AssociatedAgreements); err != nil {
+		return 0, 0, fmt.Errorf(logString(fmt.Sprintf("unable to retrieve agreements %v from database, error %v", msi.AssociatedAgreements, err)))
+	} else if len(ags) != 0 {
+		total_retries := 0
+		total_retry_duration := 0
+		total_nums := 0
+		total_duration_nums := 0
+
+		for _, ag := range ags {
+			protocolHandler := w.producerPH[ag.AgreementProtocol].AgreementProtocolHandler("", "", "")
+			if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
+				return 0, 0, fmt.Errorf(logString(fmt.Sprintf("could not hydrate proposal, error: %v", err)))
+			} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
+				return 0, 0, fmt.Errorf(logString(fmt.Sprintf("error demarshalling TsAndCs policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
+			} else {
+				total_retries += tcPolicy.Workloads[0].Priority.Retries
+				total_retry_duration += tcPolicy.Workloads[0].Priority.RetryDurationS
+				if tcPolicy.Workloads[0].Priority.Retries != 0 {
+					total_nums += 1
+				}
+				if tcPolicy.Workloads[0].Priority.Retries != 0 {
+					total_duration_nums += 1
+				}
+			}
+		}
+
+		if total_nums > 0 {
+			retry_count = int(math.Round(float64(total_retries) / float64(total_nums)))
+		}
+		if total_duration_nums > 0 {
+			retry_duration = uint(math.Round(float64(total_retry_duration) / float64(total_duration_nums)))
+		}
+	}
+
+	return uint(retry_count), retry_duration, nil
+}
+
+// This is the case where the agreement is made but the dependent service containers fail.
+// This function will retry the dependent service containers. If the retry fails it will try with a lower version.
 func (w *GovernanceWorker) handleMicroserviceExecFailure(msdef *persistence.MicroserviceDefinition, msinst_key string) {
-	glog.V(3).Infof(logString(fmt.Sprintf("handle service execution failure for %v", msinst_key)))
+	glog.V(3).Infof(logString(fmt.Sprintf("handle dependent service execution failure for %v", msinst_key)))
 
-	// rollback the microservice to lower version
-	eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
-		fmt.Sprintf("Start downgrading service %v version %v because service failed to start.", msdef.SpecRef, msdef.Version),
-		persistence.EC_START_DOWNGRADE_SERVICE,
-		msinst_key, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
+	need_retry := false
+	// check if we need to retry.
+	msi, err := persistence.FindMicroserviceInstanceWithKey(w.db, msinst_key)
+	if err != nil {
+		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Error getting service instance %v from db. %v", msinst_key, err),
+			persistence.EC_DATABASE_ERROR)
+		glog.Errorf(logString(fmt.Sprintf("error getting service instance %v from db. %v", msinst_key, err)))
+		return
+	}
 
-	if err := w.RollbackMicroservice(msdef); err != nil {
-		eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
-			fmt.Sprintf("Failed to downgrade service %v version %v, error: %v", msdef.SpecRef, msdef.Version, err),
-			persistence.EC_ERROR_DOWNGRADE_SERVICE,
+	timeNow := uint64(time.Now().Unix())
+	if msi.RetryStartTime != 0 {
+		if timeNow-msi.RetryStartTime <= uint64(msi.MaxRetryDuration) && msi.CurrentRetryCount < msi.MaxRetries {
+			need_retry = true
+		}
+	}
+
+	// new ewtry cycle. getting the retry count again because
+	// there may be new agreements associated with this service instance after last retry cycle
+	if msi.RetryStartTime == 0 || timeNow-msi.RetryStartTime > uint64(msi.MaxRetryDuration) {
+		need_retry = true
+		retries, retry_duration, err := w.getMiceroserviceRetryCount(msi)
+		if err != nil {
+			eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Failed to get the service retry count for %v version %v. %v", msdef.SpecRef, msdef.Version, err),
+				persistence.EC_START_DOWNGRADE_SERVICE,
+				msinst_key, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
+
+			glog.Errorf(logString(fmt.Sprintf("Failed to get the retry counts for failed dependent service instance %v. %v", msinst_key, err)))
+			return
+		}
+
+		var err1 error
+		msi, err1 = persistence.UpdateMSInstanceRetryState(w.db, msinst_key, true, retries, retry_duration)
+		if err1 != nil {
+			eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error updating retry start state for service instance %v in db. %v", msinst_key, err1),
+				persistence.EC_DATABASE_ERROR)
+			glog.Errorf(logString(fmt.Sprintf("error updating retry start state for service instance %v in db. %v", msinst_key, err1)))
+			return
+		}
+	}
+
+	if need_retry {
+		current_retry := msi.CurrentRetryCount + 1
+		// start the retry
+		eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
+			fmt.Sprintf("Start retrying number %v for dependent service %v version %v because service failed.", current_retry, msdef.SpecRef, msdef.Version),
+			persistence.EC_START_RETRY_DEPENDENT_SERVICE,
 			msinst_key, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
 
-		glog.Errorf(logString(fmt.Sprintf("Error downgrading service %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
+		if err := w.RetryMicroservice(msi); err != nil {
+			eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Failed retrying number %v for dependent service %v version %v.", current_retry, msdef.SpecRef, msdef.Version),
+				persistence.EC_ERROR_START_RETRY_DEPENDENT_SERVICE,
+				msinst_key, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
+			glog.Errorf(logString(fmt.Sprintf("error retrying number %v for failed dependent service %v.", msinst_key, err)))
+			// recursive call to do next retry
+			w.handleMicroserviceExecFailure(msdef, msinst_key)
+		}
+	} else {
+		// rollback the microservice to lower version
+		// a new ms instance will be created if successful
+		eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
+			fmt.Sprintf("Start downgrading dependent service %v version %v because service failed.", msdef.SpecRef, msdef.Version),
+			persistence.EC_START_DOWNGRADE_SERVICE,
+			msinst_key, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
 
-		// this service just could not be started. we have to cancel all the associated agreements
-		cleanup_reason := microservice.MS_EXEC_FAILED
-		if err = w.CleanupMicroservice(msdef.SpecRef, msdef.Version, msinst_key, uint(cleanup_reason)); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Error cleanup service instances %v. %v", msinst_key, err)))
+		if err := w.RollbackMicroservice(msdef); err != nil {
+			eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Failed to downgrade service %v version %v, error: %v", msdef.SpecRef, msdef.Version, err),
+				persistence.EC_ERROR_DOWNGRADE_SERVICE,
+				msinst_key, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
+
+			glog.Errorf(logString(fmt.Sprintf("Error downgrading service %v version %v key %v. %v", msdef.SpecRef, msdef.Version, msdef.Id, err)))
+
+			// this service just could not be started. we have to cancel all the associated agreements
+			// a new instance will be created.
+			cleanup_reason := microservice.MS_EXEC_FAILED
+			if err = w.CleanupMicroservice(msdef.SpecRef, msdef.Version, msinst_key, uint(cleanup_reason)); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Error cleanup service instances %v. %v", msinst_key, err)))
+			}
 		}
 	}
 }

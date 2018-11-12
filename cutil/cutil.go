@@ -385,3 +385,13 @@ func GetAllHostIPv4Addresses(interfaceFilters []NetFilter) ([]string, error) {
 
 	return ips, nil
 }
+
+// check if a slice contains a string
+func SliceContains(a []string, s string) bool {
+	for _, v := range a {
+		if s == v {
+			return true
+		}
+	}
+	return false
+}

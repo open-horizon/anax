@@ -179,14 +179,14 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 					persistence.SEVERITY_INFO,
 					fmt.Sprintf("Image loaded for service %v.", lc.ServicePathElement.URL),
 					persistence.EC_IMAGE_LOADED,
-					"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", []string{lc.AgreementId})
+					"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
 			} else {
 				eventlog.LogServiceEvent2(
 					w.db,
 					persistence.SEVERITY_ERROR,
 					fmt.Sprintf("Error loading image for service %v.", lc.ServicePathElement.URL),
 					persistence.EC_ERROR_IMAGE_LOADE,
-					"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", []string{lc.AgreementId})
+					"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
 				cmd := w.NewUpdateMicroserviceCommand(lc.Name, false, microservice.MS_IMAGE_FETCH_FAILED, microservice.DecodeReasonCode(microservice.MS_IMAGE_FETCH_FAILED))
 				w.Commands <- cmd
 			}
@@ -1111,18 +1111,16 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				} else if msdef == nil {
 					glog.Errorf(logString(fmt.Sprintf("No service definition record in db for %v version %v key %v. %v", msinst.SpecRef, msinst.Version, msinst.MicroserviceDefId, err)))
 				} else {
-
 					if cmd.ExecutionStarted {
 						eventlog.LogServiceEvent(w.db, persistence.SEVERITY_INFO,
 							fmt.Sprintf("Service containers for %v started.", msinst.SpecRef),
 							persistence.EC_COMPLETE_DEPENDENT_SERVICE,
 							*msinst)
-					}
-
-					if !cmd.ExecutionStarted && msinst.CleanupStartTime == 0 { // if this is not part of the ms instance cleanup process
-						// this is the case where agreement are made but microservice containers are failed
-
-						w.handleMicroserviceExecFailure(msdef, cmd.MsInstKey)
+					} else {
+						if msinst.CleanupStartTime == 0 { // if this is not part of the ms instance cleanup process
+							// this is the case where agreement are made but microservice containers are failed
+							w.handleMicroserviceExecFailure(msdef, cmd.MsInstKey)
+						}
 					}
 				}
 			}

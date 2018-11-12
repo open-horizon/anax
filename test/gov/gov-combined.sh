@@ -405,6 +405,14 @@ elif [ "$TESTFAIL" != "1" ]; then
             break
         fi
 
+        ./service_retry_test.sh
+        if [ $? -ne 0 ]
+        then
+            echo "Service retry failure."
+            TESTFAIL="1"
+            break
+        fi
+
         echo -e "Done testing pattern $PATTERN"
 
         # unregister if it is not the last pattern
