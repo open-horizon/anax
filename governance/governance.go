@@ -465,40 +465,64 @@ func (w *GovernanceWorker) reportBlockchains() int {
 // same agreement id.
 func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol string, reason uint, desc string) {
 
-	// Update the database
 	var ag *persistence.EstablishedAgreement
-	if agreement, err := persistence.AgreementStateTerminated(w.db, agreementId, uint64(reason), desc, agreementProtocol); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("error marking agreement %v terminated: %v", agreementId, err)))
-	} else {
-		ag = agreement
-	}
 
-	// Delete from the exchange
-	if ag != nil && ag.AgreementAcceptedTime != 0 {
-		if err := deleteProducerAgreement(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), agreementId); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("error deleting agreement %v in exchange: %v", agreementId, err)))
+	// This function could be called the first time an agreement is cancelled and it could be called from
+	// the deferred queue after the agreement has been archived. Find the agreement using the find API
+	// so that we will find it even if it has already been archived.
+	filters := make([]persistence.EAFilter, 0)
+	filters = append(filters, persistence.IdEAFilter(agreementId))
+	if agreements, err := persistence.FindEstablishedAgreements(w.db, agreementProtocol, filters); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("error getting agreement %v from db: %v.", agreementId, err)))
+		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Error getting agreement %v: %v.", agreementId, err),
+			persistence.EC_DATABASE_ERROR)
+	} else if len(agreements) == 0 {
+		glog.Errorf(logString(fmt.Sprintf("no record found for agreement: %v in db.", agreementId)))
+	} else {
+		ag = &agreements[0]
+
+		if !ag.Archived && ag.AgreementTerminatedTime == 0 {
+			// Update the database
+			if _, err := persistence.AgreementStateTerminated(w.db, agreementId, uint64(reason), desc, agreementProtocol); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error marking agreement %v terminated: %v.", agreementId, err)))
+				eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+					fmt.Sprintf("Error marking agreement %v terminated: %v.", agreementId, err),
+					persistence.EC_DATABASE_ERROR)
+			}
+		}
+
+		// update the exchange
+		if ag.AgreementAcceptedTime != 0 {
+			if err := deleteProducerAgreement(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), agreementId); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error deleting agreement %v in exchange: %v. Will retry.", agreementId, err)))
+				eventlog.LogAgreementEvent(
+					w.db,
+					persistence.SEVERITY_ERROR,
+					fmt.Sprintf("Error deleting agreement for %v in exchange: %v. Will retry.", ag.RunningWorkload.URL, err),
+					persistence.EC_ERROR_DELETE_AGREEMENT_IN_EXCHANGE,
+					*ag)
+
+				// create deferred agreement cancelation command
+				w.AddDeferredCommand(NewCancelAgreementCommand(agreementId, agreementProtocol, reason, desc))
+				return
+			}
+		}
+
+		// If we can do the termination now, do it. Otherwise we will queue a command to do it later.
+		w.externalTermination(ag, agreementId, agreementProtocol, reason)
+		if !w.producerPH[agreementProtocol].IsBlockchainWritable(ag) {
+			// create deferred external termination command
+			w.Commands <- NewAsyncTerminationCommand(agreementId, agreementProtocol, reason)
+		} else {
 			eventlog.LogAgreementEvent(
 				w.db,
-				persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error deleting agreement for %v in exchange: %v", ag.RunningWorkload.URL, err),
-				persistence.EC_ERROR_DELETE_AGREEMENT_IN_EXCHANGE,
+				persistence.SEVERITY_INFO,
+				fmt.Sprintf("Complete terminating agreement for %v. Termination reason: %v", ag.RunningWorkload.URL, desc),
+				persistence.EC_AGREEMENT_CANCELED,
 				*ag)
 		}
 	}
-
-	// If we can do the termination now, do it. Otherwise we will queue a command to do it later.
-	w.externalTermination(ag, agreementId, agreementProtocol, reason)
-	if !w.producerPH[agreementProtocol].IsBlockchainWritable(ag) {
-		// create deferred external termination command
-		w.Commands <- NewAsyncTerminationCommand(agreementId, agreementProtocol, reason)
-	}
-
-	eventlog.LogAgreementEvent(
-		w.db,
-		persistence.SEVERITY_INFO,
-		fmt.Sprintf("Complete terminating agreement for %v. Termination reason: %v", ag.RunningWorkload.URL, desc),
-		persistence.EC_AGREEMENT_CANCELED,
-		*ag)
 }
 
 func (w *GovernanceWorker) externalTermination(ag *persistence.EstablishedAgreement, agreementId string, agreementProtocol string, reason uint) {
@@ -1036,9 +1060,18 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 		} else if w.producerPH[cmd.AgreementProtocol].IsBlockchainWritable(&ags[0]) {
 			glog.Infof(logString(fmt.Sprintf("external agreement termination of %v reason %v.", cmd.AgreementId, cmd.Reason)))
 			w.externalTermination(&ags[0], cmd.AgreementId, cmd.AgreementProtocol, cmd.Reason)
+			eventlog.LogAgreementEvent(
+				w.db,
+				persistence.SEVERITY_INFO,
+				fmt.Sprintf("Complete terminating agreement for %v. Termination reason: %v", ags[0].RunningWorkload.URL, cmd.Reason),
+				persistence.EC_AGREEMENT_CANCELED,
+				ags[0])
 		} else {
 			w.AddDeferredCommand(cmd)
 		}
+	case *CancelAgreementCommand:
+		cmd, _ := command.(*CancelAgreementCommand)
+		w.cancelAgreement(cmd.AgreementId, cmd.AgreementProtocol, cmd.Reason, cmd.ReasonDescription)
 	case *UpdateMicroserviceCommand:
 		cmd, _ := command.(*UpdateMicroserviceCommand)
 
@@ -1500,7 +1533,7 @@ func deleteProducerAgreement(httpClient *http.Client, url string, deviceId strin
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId) + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(httpClient, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(httpClient, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil && !strings.Contains(err.Error(), "status: 404") {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
@@ -1512,7 +1545,6 @@ func deleteProducerAgreement(httpClient *http.Client, url string, deviceId strin
 			return nil
 		}
 	}
-
 }
 
 func (w *GovernanceWorker) deleteMessage(msg *exchange.DeviceMessage) error {

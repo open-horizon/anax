@@ -90,6 +90,28 @@ func NewAsyncTerminationCommand(agreementId string, agreementProtocol string, re
 }
 
 // ==============================================================================================================
+type CancelAgreementCommand struct {
+	AgreementId       string
+	AgreementProtocol string
+	Reason            uint
+	ReasonDescription string
+}
+
+func (c CancelAgreementCommand) ShortString() string {
+
+	return fmt.Sprintf("CancelAgreementCommand: AgreementId %v, AgreementProtocol %v, Reason %v, ReasonDescription: %v", c.AgreementId, c.AgreementProtocol, c.Reason, c.ReasonDescription)
+}
+
+func NewCancelAgreementCommand(agreementId string, agreementProtocol string, reason uint, desc string) *CancelAgreementCommand {
+	return &CancelAgreementCommand{
+		AgreementId:       agreementId,
+		AgreementProtocol: agreementProtocol,
+		Reason:            reason,
+		ReasonDescription: desc,
+	}
+}
+
+// ==============================================================================================================
 type UpdateMicroserviceCommand struct {
 	MsInstKey            string // the name that was passed into the ContainerLaunchContext, it is the key to the MicroserviceInstance table.
 	ExecutionStarted     bool
