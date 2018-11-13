@@ -97,7 +97,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "url":"https://bluehorizon.network/service-cpu",
   "version":"$VERS",
   "arch":"amd64",
-  "sharable":"single",
+  "sharable":"singleton",
   "matchHardware":{},
   "userInput":[],
   "deployment":{
@@ -128,7 +128,7 @@ read -d '' sdef <<EOF
   "url":"https://bluehorizon.network/services/network",
   "version":"$VERS",
   "arch":"amd64",
-  "sharable":"single",
+  "sharable":"singleton",
   "matchHardware":{},
   "userInput":[],
   "deployment":"",
@@ -148,7 +148,7 @@ read -d '' sdef <<EOF
   "url":"https://bluehorizon.network/services/network2",
   "version":"$VERS",
   "arch":"amd64",
-  "sharable":"single",
+  "sharable":"singleton",
   "matchHardware":{},
   "userInput":[],
   "deployment":"",
@@ -231,7 +231,8 @@ then
     exit 2
 fi
 
-# GPS service for the location service that has configurable user inputs
+# GPS service for the location service that has configurable user inputs,
+# the sharable is single instead of singleton for backward compatibility.
 VERS="2.0.3"
 cat <<EOF >$KEY_TEST_DIR/svc_locgps.json
 {
@@ -737,7 +738,7 @@ results "$RES"
 #
 # sloc pattern
 # This pattern tests a number of things:
-# 1. That it is possible for an ag-service to depend on an ag-less (sharable=single) service.
+# 1. That it is possible for an ag-service to depend on an ag-less (sharable=singleton) service.
 # 2. That the higher version of 2.0.7 is chosen when the ag-service is executed.
 # 3. That data verification, metering, and nodehealth work correctly.
 #

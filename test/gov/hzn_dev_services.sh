@@ -121,13 +121,13 @@ USEHELLO_HOME=${PROJECT_HOME}/usehello
 # ============= Service creation =====================================
 #
 
-createProject "${CPU_HOME}" "CPU" "\"cpu\":" "http://my.company.com/services/cpu2" "single" "MY_CPU_VAR" "string" "cpuVarValue" "cpu"
+createProject "${CPU_HOME}" "CPU" "\"cpu\":" "http://my.company.com/services/cpu2" "singleton" "MY_CPU_VAR" "string" "cpuVarValue" "cpu"
 if [ $? -ne 0 ]; then exit $?; fi
 
 createProject "${HELLO_HOME}" "Hello" "Star Wars" "http://my.company.com/services/hello2" "multiple" "MY_S_VAR1" "string" "inside" "helloservice"
 if [ $? -ne 0 ]; then exit $?; fi
 
-createProject "${USEHELLO_HOME}" "UseHello" "variables verified." "http://my.company.com/services/usehello2" "single" "MY_VAR1" "string" "inside" "usehello"
+createProject "${USEHELLO_HOME}" "UseHello" "variables verified." "http://my.company.com/services/usehello2" "singleton" "MY_VAR1" "string" "inside" "usehello"
 if [ $? -ne 0 ]; then exit $?; fi
 
 # ============= Connect dependencies =================================

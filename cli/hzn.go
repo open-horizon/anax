@@ -233,7 +233,7 @@ Environment Variables:
 	eventlogListCmd := eventlogCmd.Command("list", "List the event logs for the current or all registrations.")
 	listAllEventlogs := eventlogListCmd.Flag("all", "List all the event logs including the previous registrations.").Short('a').Bool()
 	listDetailedEventlogs := eventlogListCmd.Flag("long", "List event logs with details.").Short('l').Bool()
-	listSelectedEventlogs := eventlogListCmd.Flag("select", "Selection string. This flag can be repeated, and each flag should be in the format: attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains.").Short('s').Strings()
+	listSelectedEventlogs := eventlogListCmd.Flag("select", "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.").Short('s').Strings()
 
 	devCmd := app.Command("dev", "Developmnt tools for creation of workloads and microservices.")
 	devHomeDirectory := devCmd.Flag("directory", "Directory containing Horizon project metadata.").Short('d').String()

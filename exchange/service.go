@@ -80,7 +80,8 @@ func (i ImplementationPackage) String() string {
 // This is the structure of the object returned on a GET /service.
 // microservice sharing mode
 const MS_SHARING_MODE_EXCLUSIVE = "exclusive"
-const MS_SHARING_MODE_SINGLE = "single"
+const MS_SHARING_MODE_SINGLE = "single" // deprecated, use singleton instead. but leave it here for backward compatibility
+const MS_SHARING_MODE_SINGLETON = "singleton"
 const MS_SHARING_MODE_MULTIPLE = "multiple"
 
 type ServiceDefinition struct {
@@ -410,7 +411,7 @@ func ServiceResolver(wURL string, wOrg string, wVersion string, wArch string, se
 
 				// Capture the current service dependency as an API Spec object and add it to the running list of API specs.
 				newAPISpec := policy.APISpecification_Factory(sDep.URL, sDep.Org, sDep.Version, sDep.Arch)
-				if serviceDef.Sharable == MS_SHARING_MODE_SINGLE {
+				if serviceDef.Sharable == MS_SHARING_MODE_SINGLETON || serviceDef.Sharable == MS_SHARING_MODE_SINGLE {
 					newAPISpec.ExclusiveAccess = false
 				}
 				res.Add_API_Spec(newAPISpec)

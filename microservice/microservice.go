@@ -67,6 +67,7 @@ func ConvertServiceToPersistent(es *exchange.ServiceDefinition, org string) (*pe
 	pms.Sharable = strings.ToLower(es.Sharable)
 	if pms.Sharable != exchange.MS_SHARING_MODE_EXCLUSIVE &&
 		pms.Sharable != exchange.MS_SHARING_MODE_SINGLE &&
+		pms.Sharable != exchange.MS_SHARING_MODE_SINGLETON &&
 		pms.Sharable != exchange.MS_SHARING_MODE_MULTIPLE {
 		pms.Sharable = exchange.MS_SHARING_MODE_EXCLUSIVE // default
 	}
@@ -369,7 +370,7 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 
 		//Generate a policy based on all the attributes and the service definition
 		maxAgreements := 1
-		if msdef.Sharable == exchange.MS_SHARING_MODE_SINGLE || msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE {
+		if msdef.Sharable == exchange.MS_SHARING_MODE_SINGLETON || msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE || msdef.Sharable == exchange.MS_SHARING_MODE_SINGLE {
 			maxAgreements = 2 // hard coded 2 for now, will change to 0 later
 		}
 
