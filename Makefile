@@ -83,6 +83,7 @@ MAC_PKG_INSTALL_DIR ?= /Users/Shared/horizon-cli
 
 # Build the pkg and put it in pkg/mac/build/
 macpkg: $(CLI_EXECUTABLE)
+	@echo "Producing Mac pkg horizon-cli"
 	mkdir -p pkg/mac/horizon-cli/bin pkg/mac/horizon-cli/share/horizon pkg/mac/horizon-cli/share/man/man1
 	cp $(CLI_EXECUTABLE) pkg/mac/horizon-cli/bin
 	cp anax-in-container/horizon-container pkg/mac/horizon-cli/bin
@@ -94,6 +95,7 @@ macpkg: $(CLI_EXECUTABLE)
 # Upload the pkg to our apt repo svr (aptrepo-sjc03-1), so users can get to it at http://pkg.bluehorizon.network/macos/
 #todo: For now, you must have ssh access to the apt repo svr for this to work
 macupload: macpkg
+	@echo "Uploading pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg to http://pkg.bluehorizon.network/macos/"
 	rsync -avz pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg root@169.45.88.181:/vol/aptrepo-local/repositories/view-public/macos/
 
 macinstall: macpkg
@@ -111,10 +113,12 @@ docker-image:
 	  docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE_LATEST); \
 	else echo "Building the anax docker image is not supported on $(arch)"; fi
 
-docker-push: docker-image
+docker-push-only:
 	@echo "Pushing anax docker image $(DOCKER_IMAGE)"
 	docker push $(DOCKER_IMAGE)
 	docker push $(DOCKER_IMAGE_LATEST)
+
+docker-push: docker-image docker-push-only
 
 clean: mostlyclean
 	@echo "Clean"

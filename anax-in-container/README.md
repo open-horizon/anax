@@ -15,7 +15,7 @@ This support provides the way to build and run a container running the Horizon e
 make docker-image
 # test container locally with:
 HC_DONT_PULL=1 horizon-container start
-make docker-push     # push the image to docker hub
+make docker-push-only     # push the image to docker hub
 ```
 
 ## Using the Horizon agent Container on **Mac**
