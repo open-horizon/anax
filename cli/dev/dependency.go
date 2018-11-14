@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/register"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
@@ -639,9 +640,10 @@ func getServiceDefinition(homeDirectory, surl string, org string, version string
 	if version != "" {
 		resSuffix += fmt.Sprintf("&version=%v", version)
 	}
-	if arch != "" {
-		resSuffix += fmt.Sprintf("&arch=%v", arch)
+	if arch == "" {
+		arch = cutil.ArchString()
 	}
+	resSuffix += fmt.Sprintf("&arch=%v", arch)
 
 	// Create an object to hold the response.
 	resp := new(exchange.GetServicesResponse)

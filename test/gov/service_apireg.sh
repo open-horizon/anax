@@ -57,7 +57,7 @@ fi
 echo -e "Copy public key into anax folder:"
 cp $KEY_TEST_DIR/*public.pem /root/.colonus/. &> /dev/null
 
-# test service
+# test service amd64
 read -d '' sdef <<EOF
 {
   "label":"Test service",
@@ -73,7 +73,47 @@ read -d '' sdef <<EOF
   "deploymentSignature":""
 }
 EOF
-echo -e "Register test service:"
+echo -e "Register amd64 test service:"
+RES=$(echo "$sdef" | curl -sLX POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev/services" | jq -r '.')
+results "$RES"
+
+# test service arm64
+read -d '' sdef <<EOF
+{
+  "label":"Test service",
+  "description":"Test service",
+  "public":false,
+  "url":"https://bluehorizon.network/services/no-such-service",
+  "version":"1.0.0",
+  "arch":"arm64",
+  "sharable":"multiple",
+  "matchHardware":{},
+  "userInput":[],
+  "deployment":"",
+  "deploymentSignature":""
+}
+EOF
+echo -e "Register arm64 test service:"
+RES=$(echo "$sdef" | curl -sLX POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev/services" | jq -r '.')
+results "$RES"
+
+# test service arm
+read -d '' sdef <<EOF
+{
+  "label":"Test service",
+  "description":"Test service",
+  "public":false,
+  "url":"https://bluehorizon.network/services/no-such-service",
+  "version":"1.0.0",
+  "arch":"arm",
+  "sharable":"multiple",
+  "matchHardware":{},
+  "userInput":[],
+  "deployment":"",
+  "deploymentSignature":""
+}
+EOF
+echo -e "Register arm test service:"
 RES=$(echo "$sdef" | curl -sLX POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev/services" | jq -r '.')
 results "$RES"
 
