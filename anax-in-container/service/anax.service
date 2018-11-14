@@ -124,7 +124,9 @@ start() {
 	fi
 
 	# Now repeatedly run anax...
+	numInvocations=0
 	while true; do
+		((numInvocations++))
 		anaxCmd="/usr/horizon/bin/anax -v $ANAX_LOG_LEVEL -logtostderr -config /etc/horizon/anax.json"
 		echo "$anaxCmd"
 		# We run this in the background and wait on it using wait, because that's the only way for traps to get control immediately
@@ -136,11 +138,16 @@ start() {
 			# Else, we should go back to waiting on anax
 			wait $pid
 		fi
-		echo "Anax ended with exit code $?.  Respawning..." >&2
+		echo "Anax run number $numInvocations ended with exit code $?." >&2
 		if [[ -f $HOME/container-stopping ]]; then
-			echo "The docker container is stopping, so not respawning anax."
+			echo "The docker container is stopping, so not respawning anax." >&2
 			break
 		fi
+		if [[ -n "$HZN_MAX_INVOCATIONS" && $numInvocations -ge $HZN_MAX_INVOCATIONS ]]; then
+			echo "The number of times anax has been invoked is >= HZN_MAX_INVOCATIONS ($HZN_MAX_INVOCATIONS), so not respawning anax." >&2
+			break
+		fi
+		echo "Respawning anax..." >&2
 		sleep 1		# in case the cmd above is failing, this loop won't consume 100% cpu
 	done
 }

@@ -15,11 +15,11 @@ CLI_COMPLETION_DIR := cli/bash_completion
 DEFAULT_UI = api/static/index.html
 
 ANAX_CONTAINER_DIR := anax-in-container
-DOCKER_IMAGE_VERSION ?= 2.19.0
+DOCKER_IMAGE_VERSION ?= 2.20.0
 DOCKER_IMAGE = openhorizon/$(arch)_anax:$(DOCKER_IMAGE_VERSION)
 DOCKER_IMAGE_LATEST = openhorizon/$(arch)_anax:latest
-# To not use cache, so it picks up the latest horizon deb pkgs: DOCKER_MAYBE_CACHE='--no-cache' make docker-image
-DOCKER_MAYBE_CACHE ?=
+# By default we do not use cache for the anax container build, so it picks up the latest horizon deb pkgs. If you do want to use the cache: DOCKER_MAYBE_CACHE='' make docker-image
+DOCKER_MAYBE_CACHE ?= --no-cache
 
 export TMPGOPATH ?= $(TMPDIR)$(EXECUTABLE)-gopath
 export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon/$(EXECUTABLE)
@@ -77,7 +77,7 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 
 # Build the horizon-cli pkg for mac
 #todo: these targets should probably be moved into the official horizon build process
-export MAC_PKG_VERSION ?= 2.19.0
+export MAC_PKG_VERSION ?= 2.20.0
 MAC_PKG_IDENTIFIER ?= com.github.open-horizon.pkg.horizon-cli
 MAC_PKG_INSTALL_DIR ?= /Users/Shared/horizon-cli
 
