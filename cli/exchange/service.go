@@ -30,6 +30,7 @@ type ServiceFile struct {
 	Label               string                       `json:"label"`
 	Description         string                       `json:"description"`
 	Public              bool                         `json:"public"`
+	Documentation       string                       `json:"documentation"`
 	URL                 string                       `json:"url"`
 	Version             string                       `json:"version"`
 	Arch                string                       `json:"arch"`
@@ -53,6 +54,7 @@ type ServiceExch struct {
 	Label               string                       `json:"label"`
 	Description         string                       `json:"description"`
 	Public              bool                         `json:"public"`
+	Documentation       string                       `json:"documentation"`
 	URL                 string                       `json:"url"`
 	Version             string                       `json:"version"`
 	Arch                string                       `json:"arch"`
@@ -197,7 +199,7 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 
 // Sign and publish the service definition. This is a function that is reusable across different hzn commands.
 func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, registryTokens []string) {
-	svcInput := ServiceExch{Label: sf.Label, Description: sf.Description, Public: sf.Public, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs, ImageStore: sf.ImageStore}
+	svcInput := ServiceExch{Label: sf.Label, Description: sf.Description, Public: sf.Public, Documentation: sf.Documentation, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs, ImageStore: sf.ImageStore}
 
 	// The deployment field can be json object (map), string (for pre-signed), or nil
 	switch dep := sf.Deployment.(type) {
