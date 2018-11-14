@@ -13,14 +13,9 @@ This support provides the way to build and run a container running the Horizon e
 ```
 # In Makefile, modify line: DOCKER_IMAGE_VERSION ?= x.x.x, or set that variable in the environment
 make docker-image
-make docker-push     # push the image to docker hub
-```
-
-If the anax files have not changed, but you need to force a rebuild to pick up the latest horizon deb pkgs:
-
-```
-DOCKER_MAYBE_CACHE='--no-cache' make docker-image
-make docker-push
+# test container locally with:
+HC_DONT_PULL=1 horizon-container start
+make docker-push-only     # push the image to docker hub
 ```
 
 ## Using the Horizon agent Container on **Mac**
@@ -60,16 +55,25 @@ The Horizon agent container can be used on a linux host in a very similar way to
 - Install the Horizon CLI using the horizon-cli debian package
 - On your linux host run `export HORIZON_URL=http://localhost:8081` to direct the `hzn` command to the container
 
-## Using a Second Horizon agent Container on the Same Machine
+## Running a Second Horizon agent Container on the Same Machine
 
-For now, to start a second container you must start it manually, the horizon-container start script doesn't yet handle multiple instances.
+You can easily start additional Horizon agent containers on the same machine by passing an integer number to horizon-container:
+```
+horizon-container start 2
+```
+
+This can be useful for scaling testing, or switching between patterns of services quickly.
+
+## Manually Starting the Horizon agent Container
+
+The horizon-container script handles all of the details of invoking the Horizon agent container, but in case you need to do something out of the ordinary, here are the main commands to run it manually on a **linux** machine:
 
 
 ```
 docker pull openhorizon/amd64_anax
 # Note the slightly different container name and port number in the next 2 cmds:
-docker run -d -t --name amd64_anax2 --privileged -p 127.0.0.1:8082:80 -v /var/run/docker.sock:/var/run/docker.sock -v /var/tmp/horizon:/var/tmp/horizon -v `pwd`:/outside openhorizon/amd64_anax /root/bluehorizon-env.sh
-export HORIZON_URL='http://localhost:8082'    # to point the hzn cmd to the container
+docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -v /var/run/docker.sock:/var/run/docker.sock -v /var/tmp/horizon:/var/tmp/horizon openhorizon/amd64_anax
+export HORIZON_URL='http://localhost:8081'    # to point the hzn cmd to the container
 hzn node list   # ensure you talking to the right container, and the bluehorizon-env.sh config script ran
 hzn register -n $EXCHANGE_NODEAUTH -f ~/examples/edge/msghub/cpu2msghub/horizon/userinput.json $HZN_ORG_ID $HZN_PATTERN
 hzn agreement list

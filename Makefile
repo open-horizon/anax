@@ -15,11 +15,11 @@ CLI_COMPLETION_DIR := cli/bash_completion
 DEFAULT_UI = api/static/index.html
 
 ANAX_CONTAINER_DIR := anax-in-container
-DOCKER_IMAGE_VERSION ?= 2.19.0
+DOCKER_IMAGE_VERSION ?= 2.20.0
 DOCKER_IMAGE = openhorizon/$(arch)_anax:$(DOCKER_IMAGE_VERSION)
 DOCKER_IMAGE_LATEST = openhorizon/$(arch)_anax:latest
-# To not use cache, so it picks up the latest horizon deb pkgs: DOCKER_MAYBE_CACHE='--no-cache' make docker-image
-DOCKER_MAYBE_CACHE ?=
+# By default we do not use cache for the anax container build, so it picks up the latest horizon deb pkgs. If you do want to use the cache: DOCKER_MAYBE_CACHE='' make docker-image
+DOCKER_MAYBE_CACHE ?= --no-cache
 
 export TMPGOPATH ?= $(TMPDIR)$(EXECUTABLE)-gopath
 export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon/$(EXECUTABLE)
@@ -77,12 +77,13 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 
 # Build the horizon-cli pkg for mac
 #todo: these targets should probably be moved into the official horizon build process
-export MAC_PKG_VERSION ?= 2.19.0
+export MAC_PKG_VERSION ?= 2.20.0
 MAC_PKG_IDENTIFIER ?= com.github.open-horizon.pkg.horizon-cli
 MAC_PKG_INSTALL_DIR ?= /Users/Shared/horizon-cli
 
 # Build the pkg and put it in pkg/mac/build/
 macpkg: $(CLI_EXECUTABLE)
+	@echo "Producing Mac pkg horizon-cli"
 	mkdir -p pkg/mac/horizon-cli/bin pkg/mac/horizon-cli/share/horizon pkg/mac/horizon-cli/share/man/man1
 	cp $(CLI_EXECUTABLE) pkg/mac/horizon-cli/bin
 	cp anax-in-container/horizon-container pkg/mac/horizon-cli/bin
@@ -94,6 +95,7 @@ macpkg: $(CLI_EXECUTABLE)
 # Upload the pkg to our apt repo svr (aptrepo-sjc03-1), so users can get to it at http://pkg.bluehorizon.network/macos/
 #todo: For now, you must have ssh access to the apt repo svr for this to work
 macupload: macpkg
+	@echo "Uploading pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg to http://pkg.bluehorizon.network/macos/"
 	rsync -avz pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg root@169.45.88.181:/vol/aptrepo-local/repositories/view-public/macos/
 
 macinstall: macpkg
@@ -111,10 +113,12 @@ docker-image:
 	  docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE_LATEST); \
 	else echo "Building the anax docker image is not supported on $(arch)"; fi
 
-docker-push: docker-image
+docker-push-only:
 	@echo "Pushing anax docker image $(DOCKER_IMAGE)"
 	docker push $(DOCKER_IMAGE)
 	docker push $(DOCKER_IMAGE_LATEST)
+
+docker-push: docker-image docker-push-only
 
 clean: mostlyclean
 	@echo "Clean"
