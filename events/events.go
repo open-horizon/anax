@@ -73,11 +73,13 @@ const (
 	WORKLOAD_UPGRADE         EventId = "WORKLOAD_UPGRADE"
 
 	// Node related
-	START_UNCONFIGURE      EventId = "UNCONFIGURE_NODE"
-	UNCONFIGURE_COMPLETE   EventId = "UNCONFIGURE_COMPLETE"
-	WORKER_STOP            EventId = "WORKER_STOP"
-	START_AGBOT_QUIESCE    EventId = "AGBOT_QUIESCE"
-	AGBOT_QUIESCE_COMPLETE EventId = "AGBOT_QUIESCE_COMPLETE"
+	START_UNCONFIGURE       EventId = "UNCONFIGURE_NODE"
+	UNCONFIGURE_COMPLETE    EventId = "UNCONFIGURE_COMPLETE"
+	WORKER_STOP             EventId = "WORKER_STOP"
+	START_AGBOT_QUIESCE     EventId = "AGBOT_QUIESCE"
+	AGBOT_QUIESCE_COMPLETE  EventId = "AGBOT_QUIESCE_COMPLETE"
+	NODE_HEARTBEAT_FAILED   EventId = "HEARTBEAT_FAILED"
+	NODE_HEARTBEAT_RESTORED EventId = "HEARTBEAT_RESTORED"
 )
 
 type EndContractCause string
@@ -1488,5 +1490,33 @@ func NewAllBlockchainShutdownMessage(id EventId) *AllBlockchainShutdownMessage {
 		event: Event{
 			Id: id,
 		},
+	}
+}
+
+type NodeHeartbeatStateChangeMessage struct {
+	event   Event
+	NodeOrg string
+	NodeId  string
+}
+
+func (w *NodeHeartbeatStateChangeMessage) Event() Event {
+	return w.event
+}
+
+func (w *NodeHeartbeatStateChangeMessage) String() string {
+	return w.ShortString()
+}
+
+func (w *NodeHeartbeatStateChangeMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v, NodeOrg: %v, NodeId: %v", w.event, w.NodeOrg, w.NodeId)
+}
+
+func NewNodeHeartbeatStateChangeMessage(id EventId, node_org string, node_id string) *NodeHeartbeatStateChangeMessage {
+	return &NodeHeartbeatStateChangeMessage{
+		event: Event{
+			Id: id,
+		},
+		NodeOrg: node_org,
+		NodeId:  node_id,
 	}
 }

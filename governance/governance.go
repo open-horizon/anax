@@ -285,6 +285,14 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			w.Commands <- worker.NewTerminateCommand("shutdown")
 		}
 
+	case *events.NodeHeartbeatStateChangeMessage:
+		msg, _ := incoming.(*events.NodeHeartbeatStateChangeMessage)
+		switch msg.Event().Id {
+		case events.NODE_HEARTBEAT_RESTORED:
+			cmd := w.NewNodeHeartbeatRestoredCommand()
+			w.Commands <- cmd
+		}
+
 	default: //nothing
 	}
 
@@ -1151,6 +1159,12 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 
 		w.startAgreementLessServices()
 
+	case *NodeHeartbeatRestoredCommand:
+		cmd, _ := command.(*NodeHeartbeatRestoredCommand)
+		glog.V(5).Infof(logString(fmt.Sprintf("%v", cmd)))
+
+		w.handleNodeHeartbeatRestored()
+
 	default:
 		return false
 	}
@@ -1618,4 +1632,46 @@ func (w *GovernanceWorker) FindEstablishedAgreementsWithIds(agreementIds []strin
 	filters = append(filters, persistence.UnarchivedEAFilter())
 	filters = append(filters, multiIdFilter(agreementIds))
 	return persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), filters)
+}
+
+// This is called after the node heartneat is restored. For the basic protocol, it will contact the agbot to check if the current agreements are
+// still needed by the agbot.
+func (w *GovernanceWorker) handleNodeHeartbeatRestored() error {
+	glog.V(5).Infof(logString(fmt.Sprintf("handling agreements after node heartbeat restored.")))
+
+	if ags, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err != nil {
+		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Unable to retrieve unarchived agreements from database. %v", err),
+			persistence.EC_DATABASE_ERROR)
+		return fmt.Errorf(logString(fmt.Sprintf("Unable to retrieve unarchived agreements from database. %v", err)))
+	} else {
+		veryfication_failed := false
+		for _, ag := range ags {
+			if ag.AgreementTerminatedTime == 0 {
+				bcType, bcName, bcOrg := w.producerPH[ag.AgreementProtocol].GetKnownBlockchain(&ag)
+
+				// Check to see if the agreement is valid. For agreement on the blockchain, we check the blockchain directly. This call to the blockchain
+				// should be very fast if the client is up and running. For other agreements, send a message to the agbot to get the agbot's opinion
+				// on the agreement.
+				// Remember, the device might have been down for some time and/or restarted, causing it to miss events on the blockchain.
+				if w.producerPH[ag.AgreementProtocol].IsBlockchainClientAvailable(bcType, bcName, bcOrg) && w.producerPH[ag.AgreementProtocol].IsAgreementVerifiable(&ag) {
+
+					if _, err := w.producerPH[ag.AgreementProtocol].VerifyAgreement(&ag); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("encountered error verifying agreement %v, error %v", ag.CurrentAgreementId, err)))
+						eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_ERROR,
+							fmt.Sprintf("Encountered error for AgreementVerification for %v with agbot, error %v", ag.RunningWorkload.URL, err),
+							persistence.EC_ERROR_AGREEMENT_VERIFICATION,
+							ag)
+						veryfication_failed = true
+					}
+				}
+			}
+		}
+
+		// put it to the deferred queue and retry
+		if veryfication_failed {
+			w.AddDeferredCommand(w.NewNodeHeartbeatRestoredCommand())
+		}
+	}
+	return nil
 }

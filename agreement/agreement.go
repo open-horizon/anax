@@ -37,6 +37,7 @@ type AgreementWorker struct {
 	containerSyncUpSucessful bool
 	producerPH               map[string]producer.ProducerProtocolHandler
 	lastExchVerCheck         int64
+	heartBeatFailed          bool
 }
 
 func NewAgreementWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *AgreementWorker {
@@ -56,6 +57,7 @@ func NewAgreementWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm 
 		pm:               pm,
 		producerPH:       make(map[string]producer.ProducerProtocolHandler),
 		lastExchVerCheck: 0,
+		heartBeatFailed:  false,
 	}
 
 	glog.Info("Starting Agreement worker")
@@ -189,8 +191,8 @@ func (w *AgreementWorker) Initialize() bool {
 
 		// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
 		// start heartbeating when the registration event comes in.
+		w.heartBeatFailed = false
 		w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat)
-
 	}
 
 	// Publish what we have for the world to see
@@ -357,6 +359,7 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 	}
 
 	// Start the go thread that heartbeats to the exchange
+	w.heartBeatFailed = false
 	w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat)
 
 }
@@ -381,12 +384,43 @@ func (w *AgreementWorker) heartBeat() int {
 	}
 
 	// now do the hearbeat
-	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/heartbeat"
+	nodeOrg := exchange.GetOrg(w.GetExchangeId())
+	nodeId := exchange.GetId(w.GetExchangeId())
+
+	targetURL := w.GetExchangeURL() + "orgs/" + nodeOrg + "/nodes/" + nodeId + "/heartbeat"
 	err := exchange.Heartbeat(w.GetHTTPFactory().NewHTTPClient(nil), targetURL, w.GetExchangeId(), w.GetExchangeToken())
 
-	// If the heartbeat fails because the node entry is gone then initiate a full node quiesce
-	if err != nil && strings.Contains(err.Error(), "status: 401") {
-		w.Messages() <- events.NewNodeShutdownMessage(events.START_UNCONFIGURE, false, false)
+	if err != nil {
+		if strings.Contains(err.Error(), "status: 401") {
+			// If the heartbeat fails because the node entry is gone then initiate a full node quiesce
+			w.Messages() <- events.NewNodeShutdownMessage(events.START_UNCONFIGURE, false, false)
+		} else {
+			// let other workers know that the heartbeat failed.
+			// the message is sent out only when the heartbeat state changes from success to failed.
+			if !w.heartBeatFailed {
+				w.heartBeatFailed = true
+
+				glog.Errorf(logString(fmt.Sprintf("node heartbeat failed for node %v/%v. Error: %v", nodeOrg, nodeId, err)))
+				eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
+					fmt.Sprintf("Node heartbeat failed for node %v/%v. Error: %v", nodeOrg, nodeId, err),
+					persistence.EC_NODE_HEARTBEAT_FAILED, nodeId, nodeOrg, "", "")
+
+				w.Messages() <- events.NewNodeHeartbeatStateChangeMessage(events.NODE_HEARTBEAT_FAILED, nodeOrg, nodeId)
+			}
+		}
+	} else {
+		if w.heartBeatFailed {
+			// let other workers know that the heartbeat restored
+			// the message is sent out only when the heartbeat state changes from faild to success.
+			w.heartBeatFailed = false
+
+			glog.Infof(logString(fmt.Sprintf("node heartbeat restored for node %v/%v.", nodeOrg, nodeId)))
+			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_INFO,
+				fmt.Sprintf("Node heartbeat restored for node %v/%v.", nodeOrg, nodeId),
+				persistence.EC_NODE_HEARTBEAT_RESTORED, nodeId, nodeOrg, "", "")
+
+			w.Messages() <- events.NewNodeHeartbeatStateChangeMessage(events.NODE_HEARTBEAT_RESTORED, nodeOrg, nodeId)
+		}
 	}
 
 	return 0

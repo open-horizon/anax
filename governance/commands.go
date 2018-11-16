@@ -188,3 +188,16 @@ func (c StartAgreementLessServicesCommand) ShortString() string {
 func (w *GovernanceWorker) NewStartAgreementLessServicesCommand() *StartAgreementLessServicesCommand {
 	return &StartAgreementLessServicesCommand{}
 }
+
+// ==============================================================================================================
+// Node heartbeat restored
+type NodeHeartbeatRestoredCommand struct {
+}
+
+func (c NodeHeartbeatRestoredCommand) ShortString() string {
+	return fmt.Sprintf("NodeHeartbeatRestoredCommand.")
+}
+
+func (w *GovernanceWorker) NewNodeHeartbeatRestoredCommand() *NodeHeartbeatRestoredCommand {
+	return &NodeHeartbeatRestoredCommand{}
+}

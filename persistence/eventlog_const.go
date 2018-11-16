@@ -40,6 +40,10 @@ const (
 	EC_NODE_UNREG_COMPLETE = "node_unregistration_complete"
 	EC_ERROR_NODE_UNREG    = "error_node_unregistration"
 
+	// node heartbeat
+	EC_NODE_HEARTBEAT_FAILED   = "node_heartbeat_failed"
+	EC_NODE_HEARTBEAT_RESTORED = "node_heartbeat_restored"
+
 	// service configuration
 	EC_START_SERVICE_CONFIG    = "start_service_configuration"
 	EC_SERVICE_CONFIG_COMPLETE = "service_configuration_complete"
