@@ -119,7 +119,7 @@ Environment Variables:
 
 	exPatternCmd := exchangeCmd.Command("pattern", "List and manage patterns in the Horizon Exchange")
 	exPatternListCmd := exPatternCmd.Command("list", "Display the pattern resources from the Horizon Exchange.")
-	exPattern := exPatternListCmd.Arg("pattern", "List just this one pattern.").String()
+	exPattern := exPatternListCmd.Arg("pattern", "List just this one pattern. Use <org>/<pat> to specify a public pattern in another org, or <org>/ to list all of the public patterns in another org.").String()
 	exPatternLong := exPatternListCmd.Flag("long", "When listing all of the patterns, show the entire resource of each pattern, instead of just the name.").Short('l').Bool()
 	exPatternPublishCmd := exPatternCmd.Command("publish", "Sign and create/update the pattern resource in the Horizon Exchange.")
 	exPatJsonFile := exPatternPublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the pattern in the Horizon exchange. See /usr/horizon/samples/pattern.json. Specify -f- to read from stdin.").Short('f').Required().String()
@@ -141,7 +141,7 @@ Environment Variables:
 
 	exServiceCmd := exchangeCmd.Command("service", "List and manage services in the Horizon Exchange")
 	exServiceListCmd := exServiceCmd.Command("list", "Display the service resources from the Horizon Exchange.")
-	exService := exServiceListCmd.Arg("service", "List just this one service.").String()
+	exService := exServiceListCmd.Arg("service", "List just this one service. Use <org>/<svc> to specify a public service in another org, or <org>/ to list all of the public services in another org.").String()
 	exServiceLong := exServiceListCmd.Flag("long", "When listing all of the services, show the entire resource of each services, instead of just the name.").Short('l').Bool()
 	exServicePublishCmd := exServiceCmd.Command("publish", "Sign and create/update the service resource in the Horizon Exchange.")
 	exSvcJsonFile := exServicePublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the service in the Horizon exchange. See /usr/horizon/samples/service.json. Specify -f- to read from stdin.").Short('f').Required().String()

@@ -86,13 +86,17 @@ type PatternInput struct {
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
 }
 
-func PatternList(org string, userPw string, pattern string, namesOnly bool) {
+func PatternList(credOrg string, userPw string, pattern string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
-	org, pattern = cliutils.TrimOrg(org, pattern)
-	if namesOnly && pattern == "" {
+	var patOrg string
+	patOrg, pattern = cliutils.TrimOrg(credOrg, pattern)
+	if namesOnly && (pattern == "" || pattern == "*") {
 		// Only display the names
+		if pattern == "*" {
+			pattern = ""
+		}
 		var resp ExchangePatterns
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+patOrg+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(credOrg, userPw), []int{200, 404}, &resp)
 		patterns := []string{} // this is important (instead of leaving it nil) so json marshaling displays it as [] instead of null
 		for p := range resp.Patterns {
 			patterns = append(patterns, p)
@@ -105,9 +109,9 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 	} else {
 		// Display the full resources
 		var patterns ExchangePatterns
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &patterns)
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+patOrg+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(credOrg, userPw), []int{200, 404}, &patterns)
 		if httpCode == 404 && pattern != "" {
-			cliutils.Fatal(cliutils.NOT_FOUND, "pattern '%s' not found in org %s", pattern, org)
+			cliutils.Fatal(cliutils.NOT_FOUND, "pattern '%s' not found in org %s", pattern, patOrg)
 		}
 		jsonBytes, err := json.MarshalIndent(patterns.Patterns, "", cliutils.JSON_INDENT)
 		if err != nil {
