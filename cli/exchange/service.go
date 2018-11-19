@@ -148,13 +148,17 @@ func (sf *ServiceFile) RequiredVariablesAreSet(setVars map[string]interface{}) e
 	return nil
 }
 
-func ServiceList(org, userPw, service string, namesOnly bool) {
+func ServiceList(credOrg, userPw, service string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
-	org, service = cliutils.TrimOrg(org, service)
-	if namesOnly && service == "" {
+	var svcOrg string
+	svcOrg, service = cliutils.TrimOrg(credOrg, service)
+	if namesOnly && (service == "" || service == "*") {
 		// Only display the names
+		if service == "*" {
+			service = ""
+		}
 		var resp GetServicesResponse
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+svcOrg+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(credOrg, userPw), []int{200, 404}, &resp)
 		services := []string{}
 
 		for k := range resp.Services {
@@ -169,9 +173,9 @@ func ServiceList(org, userPw, service string, namesOnly bool) {
 		// Display the full resources
 		var services GetServicesResponse
 
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &services)
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+svcOrg+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(credOrg, userPw), []int{200, 404}, &services)
 		if httpCode == 404 && service != "" {
-			cliutils.Fatal(cliutils.NOT_FOUND, "service '%s' not found in org %s", service, org)
+			cliutils.Fatal(cliutils.NOT_FOUND, "service '%s' not found in org %s", service, svcOrg)
 		}
 		jsonBytes, err := json.MarshalIndent(services.Services, "", cliutils.JSON_INDENT)
 		if err != nil {
