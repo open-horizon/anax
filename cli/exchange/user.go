@@ -1,6 +1,7 @@
 package exchange
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"net/http"
@@ -12,21 +13,39 @@ type ExchangeUsers struct {
 	ListIndex int                    `json:"lastIndex"`
 }
 
-func UserList(org, userPwCreds string, allUsers bool) {
+func UserList(org, userPwCreds, theUser string, allUsers, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(userPwCreds)
+
+	// Decide which users should be shown
 	exchUrlBase := cliutils.GetExchangeUrl()
-	var user string
-	if !allUsers {
-		user, _ = cliutils.SplitIdToken(userPwCreds)
-		user = "/" + user
-	}
+	if allUsers {
+		theUser = ""
+	} else if theUser == "" {
+		theUser, _ = cliutils.SplitIdToken(userPwCreds)
+	} // else we list the user specified in theUser
+
+	// Get users
 	var users ExchangeUsers
-	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/users"+user, cliutils.OrgAndCreds(org, userPwCreds), []int{200, 404}, &users)
+	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/users"+cliutils.AddSlash(theUser), cliutils.OrgAndCreds(org, userPwCreds), []int{200, 404}, &users)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, "user '%s' not found in org %s", strings.TrimPrefix(user, "/"), org)
+		cliutils.Fatal(cliutils.NOT_FOUND, "theUser '%s' not found in org %s", strings.TrimPrefix(theUser, "/"), org)
 	}
-	output := cliutils.MarshalIndent(users.Users, "exchange users list")
-	fmt.Println(output)
+
+	// Decide how much of each user should be shown
+	if namesOnly {
+		usernames := []string{} // this is important (instead of leaving it nil) so json marshaling displays it as [] instead of null
+		for u := range users.Users {
+			usernames = append(usernames, u)
+		}
+		jsonBytes, err := json.MarshalIndent(usernames, "", cliutils.JSON_INDENT)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'exchange user list' output: %v", err)
+		}
+		fmt.Printf("%s\n", jsonBytes)
+	} else { // show full resources
+		output := cliutils.MarshalIndent(users.Users, "exchange users list")
+		fmt.Println(output)
+	}
 }
 
 func UserCreate(org, userPwCreds, user, pw, email string, isAdmin bool) {
