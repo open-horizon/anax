@@ -76,13 +76,25 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 
 
 # Build the horizon-cli pkg for mac
-#todo: these targets should probably be moved into the official horizon build process
+#todo: these targets should be moved into the official horizon build process
 export MAC_PKG_VERSION ?= 2.20.1
 MAC_PKG_IDENTIFIER ?= com.github.open-horizon.pkg.horizon-cli
 MAC_PKG_INSTALL_DIR ?= /Users/Shared/horizon-cli
 
+# Inserts the version into version.go in prep for the macpkg build
+temp-mod-version:
+	mv version/version.go version/version.go.bak   # preserve the time stamp
+	cp version/version.go.bak version/version.go
+	sed -i.bak2 's/local build/$(MAC_PKG_VERSION)/' version/version.go
+	rm -f version/version.go.bak2	# this backup is necessary to make the above sed work on both linux and mac
+
+# Undoes the above, so the source is unchanged
+temp-mod-version-undo:
+	mv version/version.go.bak version/version.go
+
 # Build the pkg and put it in pkg/mac/build/
-macpkg: $(CLI_EXECUTABLE)
+# Note: this will only run the dependencies sequentially (as we need) if make is run without --jobs
+macpkg: temp-mod-version $(CLI_EXECUTABLE) temp-mod-version-undo
 	@echo "Producing Mac pkg horizon-cli"
 	mkdir -p pkg/mac/build pkg/mac/horizon-cli/bin pkg/mac/horizon-cli/share/horizon pkg/mac/horizon-cli/share/man/man1
 	cp $(CLI_EXECUTABLE) pkg/mac/horizon-cli/bin
