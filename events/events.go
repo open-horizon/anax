@@ -591,7 +591,7 @@ func NewGovernanceWorkloadCancelationMessage(id EventId, cause EndContractCause,
 
 	return &GovernanceWorkloadCancelationMessage{
 		GovernanceMaintenanceMessage: *govMaint,
-		Cause: cause,
+		Cause:                        cause,
 	}
 }
 

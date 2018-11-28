@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/version"
 )
 
 type Configstate struct {
@@ -77,7 +78,11 @@ func List() {
 }
 
 func Version() {
+	// Show hzn version
+	fmt.Printf("Horizon CLI version: %s\n", version.HORIZON_VERSION)
+
+	// Show anax version
 	status := apicommon.Info{}
 	cliutils.HorizonGet("status", []int{200}, &status)
-	fmt.Println(status.Configuration.HorizonVersion)
+	fmt.Printf("Horizon Agent version: %s\n", status.Configuration.HorizonVersion)
 }

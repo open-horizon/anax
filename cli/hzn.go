@@ -65,7 +65,9 @@ Environment Variables:
 
 	exUserCmd := exchangeCmd.Command("user", "List and manage users in the Horizon Exchange.")
 	exUserListCmd := exUserCmd.Command("list", "Display the user resource from the Horizon Exchange. (Normally you can only display your own user. If the user does not exist, you will get an invalid credentials error.)")
+	exUserListUser := exUserListCmd.Arg("user", "List this one user. Default is your own user. Only admin users can list other users.").String()
 	exUserListAll := exUserListCmd.Flag("all", "List all users in the org. Will only do this if you are a user with admin privilege.").Short('a').Bool()
+	exUserListNamesOnly := exUserListCmd.Flag("names", "When listing all of the users, show only the usernames, instead of each entire resource.").Short('N').Bool()
 	exUserCreateCmd := exUserCmd.Command("create", "Create the user resource in the Horizon Exchange.")
 	exUserCreateUser := exUserCreateCmd.Arg("user", "Your username for this user account when creating it in the Horizon exchange.").Required().String()
 	exUserCreatePw := exUserCreateCmd.Arg("pw", "Your password for this user account when creating it in the Horizon exchange.").Required().String()
@@ -81,7 +83,7 @@ Environment Variables:
 	exNodeCmd := exchangeCmd.Command("node", "List and manage nodes in the Horizon Exchange")
 	exNodeListCmd := exNodeCmd.Command("list", "Display the node resources from the Horizon Exchange.")
 	exNode := exNodeListCmd.Arg("node", "List just this one node.").String()
-	exNodeLong := exNodeListCmd.Flag("long", "When listing all of the nodes, show the entire resource of each nodes, instead of just the name.").Short('l').Bool()
+	exNodeLong := exNodeListCmd.Flag("long", "When listing all of the nodes, show the entire resource of each node, instead of just the name.").Short('l').Bool()
 	exNodeCreateCmd := exNodeCmd.Command("create", "Create the node resource in the Horizon Exchange.")
 	exNodeCreateNodeIdTok := exNodeCreateCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be created. The node ID must be unique within the organization.").Short('n').PlaceHolder("ID:TOK").String()
 	exNodeCreateNodeEmail := exNodeCreateCmd.Flag("email", "Your email address. Only needs to be specified if: the user specified in the -u flag does not exist, and you specified the 'public' org. If these things are true we will create the user and include this value as the email attribute.").Short('e').String()
@@ -314,7 +316,7 @@ Environment Variables:
 	case exStatusCmd.FullCommand():
 		exchange.Status(*exOrg, *exUserPw)
 	case exUserListCmd.FullCommand():
-		exchange.UserList(*exOrg, *exUserPw, *exUserListAll)
+		exchange.UserList(*exOrg, *exUserPw, *exUserListUser, *exUserListAll, *exUserListNamesOnly)
 	case exUserCreateCmd.FullCommand():
 		exchange.UserCreate(*exOrg, *exUserPw, *exUserCreateUser, *exUserCreatePw, *exUserCreateEmail, *exUserCreateIsAdmin)
 	case exUserSetAdminCmd.FullCommand():
