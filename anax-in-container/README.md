@@ -55,7 +55,7 @@ The Horizon agent container can be used on a linux host in a very similar way to
 - Install the Horizon CLI using the horizon-cli debian package
 - On your linux host run `export HORIZON_URL=http://localhost:8081` to direct the `hzn` command to the container
 
-## Running a Second Horizon agent Container on the Same Machine
+## Running More Horizon agent Containers on the Same Machine
 
 You can easily start additional Horizon agent containers on the same machine by passing an integer number to horizon-container:
 ```
@@ -63,6 +63,18 @@ horizon-container start 2
 ```
 
 This can be useful for scaling testing, or switching between patterns of services quickly.
+
+## Pointing the Horizon Agent to a Different Exchange
+
+By default, the Horizon agent container uses the production exchange, but you can tell it to use a different exchange using the standard `/etc/default/horizon` on the host. In that file set, for example:
+```
+HZN_EXCHANGE_URL=https://stg.edge-fabric.com/v1
+```
+
+You can also use a different file on the host by specifying it on the command line:
+```
+horizon-container start 1 /etc/default/horizon.stg
+```
 
 ## Manually Starting the Horizon agent Container
 
@@ -74,7 +86,7 @@ docker pull openhorizon/amd64_anax
 # Note the slightly different container name and port number in the next 2 cmds:
 docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -v /var/run/docker.sock:/var/run/docker.sock -v /var/tmp/horizon:/var/tmp/horizon openhorizon/amd64_anax
 export HORIZON_URL='http://localhost:8081'    # to point the hzn cmd to the container
-hzn node list   # ensure you talking to the right container, and the bluehorizon-env.sh config script ran
+hzn node list   # ensure you are talking to the right container, and it is talking to the right exchange
 hzn register -n $EXCHANGE_NODEAUTH -f ~/examples/edge/msghub/cpu2msghub/horizon/userinput.json $HZN_ORG_ID $HZN_PATTERN
 hzn agreement list
 # To stop anax, use this cmd to give it time to unregister and stop the service containers:
