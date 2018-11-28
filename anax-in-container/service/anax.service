@@ -22,12 +22,11 @@ trapHandler() {
 ANAX_LOG_LEVEL=${ANAX_LOG_LEVEL:-3}
 
 usage() {
-	echo "Usage: $0 {start|restart|status|block} [env-script-to-run]"
+	echo "Usage: $0 {start|restart|status|block}"
 	exit 1
 }
 
 cmd="$1"
-envScript="$2"
 
 # Check the exit status of the previously run command and exit if nonzero
 checkrc() {
@@ -43,15 +42,6 @@ checkrc() {
 }
 
 defaultEnv() {
-
-	# Source /etc/default/horizon
-	envFile=/etc/default/horizon
-	if [[ -f "$envFile" ]]; then
-		echo "Sourcing $envFile..."
-		source $envFile
-		export $(cut -d= -f1 $envFile)
-	fi
-
 	# Update several fields in anax.json
 	anaxJsonFile='/etc/horizon/anax.json'
 	echo "Modifying $anaxJsonFile for anax-in-container..."
@@ -83,11 +73,12 @@ defaultEnv() {
 	  checkrc $? "change DockerEndpoint"
 	fi
 
-	if [[ -d /private/var/tmp/horizon/service_storage ]]; then
+	# not needed as of 2.19.0...
+	#if [[ -d /private/var/tmp/horizon/service_storage ]]; then
 	  # Also can't mount /var, but can mount anything under /private
-	  anaxJson=$(jq ".Edge.ServiceStorage = \"/private/var/tmp/horizon/service_storage/\" " <<< $anaxJson)
-	  checkrc $? "change ServiceStorage"
-	fi
+	  #anaxJson=$(jq ".Edge.ServiceStorage = \"/private/var/tmp/horizon/service_storage/\" " <<< $anaxJson)
+	  #checkrc $? "change ServiceStorage"
+	#fi
 
 	# Write the new json back to the file
 	echo "$anaxJson" > $anaxJsonFile
@@ -100,28 +91,24 @@ block() {
 }
 
 start() {
-	envScript="$1"
+	# Handle special case environments
+	if [[ "$1" == "block" ]]; then
+		block   # a special case to just sleep forever so we can get into the container and examine it
+	fi
 
-	if [[ -n "$envScript" ]]; then
-		# Handle special case environments
-		if [[ "$envScript" == "block" ]]; then
-			block   # a special case to just sleep forever so we can get into the container and examine it
-		fi
+	# Source and export the variables in /etc/default/horizon. This file was either put there by the deb pkg,
+	# or mounted over by the launching horizon-container script
+	if [[ -f /etc/default/horizon ]]; then
+		echo "Sourcing/exporting /etc/default/horizon"
+		set -a   # automatically export all variable assignments
+		source /etc/default/horizon
+		checkrc $? "source /etc/default/horizon"
+		set +a   # undo
 	fi
 
 	# Do the config that is specific to running anax in a container, but needed for all environments
 	defaultEnv
 
-	# This argument is an optional script to run to configure anax for a specific development environment before starting it
-	if [[ -n "$envScript" ]]; then
-		# Run the environment config script, then fall thru to start anax
-		if [[ ! -x "$envScript" ]]; then
-			echo "Error: the environment script to run ($envScript) does not exist, or is not executable."
-			exit 2
-		fi
-		$envScript
-		checkrc $? "running $envScript"
-	fi
 
 	# Now repeatedly run anax...
 	numInvocations=0
@@ -175,7 +162,7 @@ status() {
 # Main....
 case "$cmd" in
 	start)
-		start "$envScript"
+		start
 		;;
 	# stop)
 		# stopanax

@@ -4,14 +4,14 @@
 
 usage() {
 	cat <<ENDUSAGE
-Usage: $0 {start|stop|update} [index-num] [env-script-to-run]
+Usage: $0 {start|stop|update} [index-num] [default-file]
   start:  pull the latest horizon docker image and start it
   stop:   unregister the node and stop/remove the horizon docker container
   update: stop the horizon container (w/o unregistering), pull the latest docker image, and start it. Any running services will remain running.
 
 Arguments:
-  index-num:         an integer number identifying this instance of horizon when running multiple horizon containers on the same host. Default is 1.
-  env-script-to-run: which environment to initialize horizon for when starting or updating. Default is ibmcloud-env.sh
+  index-num:      an integer number identifying this instance of horizon when running multiple horizon containers on the same host. Default is 1.
+  default-file:   a default file to use to set common environment variables for the horizon agent like HZN_EXCHANGE_URL and HZN_DEVICE_ID. If not specified and /etc/default/horizon exists on the host, that will be used.
 ENDUSAGE
 	exit 1
 }
@@ -35,6 +35,29 @@ isMacos() {
 	else
 		return 1
 	fi
+}
+
+# Turn a potentially relative path, with symlinks at any level, into the absolute canonical path. Works on both linux and mac.
+canonicalPath() {
+	relPath="$1"
+	dirName=$(dirname "$relPath")
+	baseName=$(basename "$relPath")
+	# Handle if basename is a sym link
+	if [[ -L "$relPath" ]]; then
+		symLink=$(ls -l "$relPath" | sed -e 's/.* -> //')
+		if [[ "$symLink" == /* ]]; then
+			# Its a fully qualified path, so this is our new path to resolve
+			relPath="$symLink"
+			dirName=$(dirname "$relPath")
+			baseName=$(basename "$relPath")
+		else
+			# Its relative so treat it as the new basename
+			baseName="$symLink"
+		fi
+	fi
+
+	# Now use pwd -P to resolve links in dirName
+	echo "$(cd "$dirName"; pwd -P)/$baseName"
 }
 
 # Bash cant do AND of cmd and checking a string (afaik), so bury it in this function
@@ -95,12 +118,10 @@ checkRequirements() {
 }
 
 # Pull the latest horizon docker image, get some prereqs established, and start the image
-# First arg is optional env script, second arg has value 'updating' if we are called by restart
+# First arg is optional host default file, second arg has value 'updating' if we are called by restart
 start() {
 	if [[ -n "$1" ]]; then
-		envScript="$1"
-	else
-		envScript="ibmcloud-env.sh"
+		defaultFileMountArg="-v ${1}:/etc/default/horizon:ro"
 	fi
 
 	checkRequirements	# this will exit with msg if requirements are not met
@@ -137,10 +158,10 @@ start() {
 	echo "Starting the Horizon agent container..."
 	# Note: docker will automatically create the ${DOCKER_NAME}_var and ${DOCKER_NAME}_etc volumes if necessary
 	if isMacos; then
-		docker run -d -t --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -e ANAX_DOCKER_ENDPOINT=tcp://host.docker.internal:$SOCAT_LISTEN_PORT -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ openhorizon/amd64_anax /root/$envScript
+		docker run -d -t --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -e ANAX_DOCKER_ENDPOINT=tcp://host.docker.internal:$SOCAT_LISTEN_PORT $defaultFileMountArg -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ openhorizon/amd64_anax
 		checkrc $? "docker run"
 	else
-		docker run -d -t --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -v /var/run/docker.sock:/var/run/docker.sock -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ openhorizon/amd64_anax /root/$envScript
+		docker run -d -t --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -v /var/run/docker.sock:/var/run/docker.sock $defaultFileMountArg -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ openhorizon/amd64_anax
 		checkrc $? "docker run"
 	fi
 
@@ -210,19 +231,37 @@ else
 	INDEX_NUM=1
 fi
 
+# The 3rd arg is optionally the default file
+if [[ -n "$3" ]]; then
+	DEFAULT_FILE="$3"
+	if [[ ! -f "$DEFAULT_FILE" ]]; then
+		echo "Error: default file '$DEFAULT_FILE' specified, but does not exist on the host."
+		exit 2
+	fi
+else
+	# Default file not specified, try /etc/default/horizon
+	if [[ -f /etc/default/horizon ]]; then
+		DEFAULT_FILE=/etc/default/horizon
+	fi
+	# otherwise leave DEFAULT_FILE unset
+fi
+if [[ -n "$DEFAULT_FILE" ]]; then
+	DEFAULT_FILE=$(canonicalPath "$DEFAULT_FILE")
+fi
+
 # use arithmetic addition in case index num is > 9
 HORIZON_AGENT_PORT=$(( 8080 + $INDEX_NUM ))
 DOCKER_NAME="horizon$INDEX_NUM"
 
 case "$1" in
 	start)
-		start "$3"
+		start "$DEFAULT_FILE"
 		;;
 	stop)
 		stop
 		;;
 	restart|update)
-		restart "$3"
+		restart "$DEFAULT_FILE"
 		;;
 	#status)
 	#	status
