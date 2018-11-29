@@ -10,7 +10,7 @@ function verifyAgreements {
         # Wait until there are agreements
         TARGET_NUM_AG=1
         if [ "${PATTERN}" == "sall" ]; then
-                TARGET_NUM_AG=5
+                TARGET_NUM_AG=6
         fi
 
         # Look for agreements to appear.
@@ -175,8 +175,8 @@ function handleLocation {
         elif [ "${CPU_NET_NAME}" != "" ] && [ "${CPU_NET_NAME}" == "${LOC_CPU_NETNAME}" ]; then
                 echo -e "${PREFIX} location's cpu service network is the same as the network of the CPU service itself"
         fi
-
 }
+
 
 # Do the cpu specific verification. This function has specific knowledge of the
 # way in which the cpu service (dependent service) should be running.
@@ -185,12 +185,6 @@ function handleLocation {
 function handleCPU {
 
         REFURL=$(echo $1 | jq -r '.ref_url')
-
-        # Make sure we dont get called twice
-        if [ "${CPU_NET_NAME}" != "" ]; then
-                echo -e "${PREFIX} ${REFURL} should have 1 service, but encountered another"
-                exit 2
-        fi
 
         # Validate that it has 1 container.
         CONT_NUM=$(echo $1 | jq -r '.containers | length')
@@ -210,7 +204,12 @@ function handleCPU {
         # Grab the network name keys as a json array so we can iterate them. There sould be only 1.
         NET_KEYS=$(echo ${NETS} | jq -r '. | keys')
 
-        CPU_NET_NAME=$(echo ${NET_KEYS} | jq -r '.[0]')
+        # There is another cpu service which is from e2edev org. CPU_NET_NAME should be the one from IBM org.
+        netname=$(echo ${NET_KEYS} | jq -r '.[0]')
+        echo $netname | grep IBM 
+        if [ $? -eq 0 ]; then
+            CPU_NET_NAME=$netname
+        fi
 
         # LOC_CPU_NETNAME might not be filled in yet. We will do this same check when we verify the CPU service.
         if [ "${LOC_CPU_NETNAME}" != "" ] && [ "${CPU_NET_NAME}" != "${LOC_CPU_NETNAME}" ]; then

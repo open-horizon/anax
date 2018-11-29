@@ -419,6 +419,7 @@ func parseAgreementProtocol(errorhandler ErrorHandler, permitEmpty bool, given *
 // AttributeVerifier returns true if there is a handled inputError (one that caused a write to the http responsewriter) and error if there is a system processing problem
 type AttributeVerifier func(attr persistence.Attribute) (bool, error)
 
+// the sensorURL is in the form of "org/url"
 func toPersistedAttributesAttachedToService(errorhandler ErrorHandler, persistedDevice *persistence.ExchangeDevice, defaultRAM int64, attrs []Attribute, sensorURL string, additionalVerifiers []AttributeVerifier) ([]persistence.Attribute, bool, error) {
 
 	additionalVerifiers = append(additionalVerifiers, func(attr persistence.Attribute) (bool, error) {
@@ -607,6 +608,7 @@ func toOutModel(persisted persistence.Attribute) *Attribute {
 	}
 }
 
+//  the sensorUrl is in the form of "org/url"
 func FinalizeAttributesSpecifiedInService(defaultRAM int64, sensorURL string, attributes []persistence.Attribute) []persistence.Attribute {
 
 	// check for required
@@ -719,7 +721,7 @@ func payloadToAttributes(errorhandler ErrorHandler, body io.Reader, permitPartia
 // HTTP response.
 func FindAndWrapAttributesForOutput(db *bolt.DB, id string) (map[string][]Attribute, error) {
 
-	attributes, err := persistence.FindApplicableAttributes(db, "")
+	attributes, err := persistence.FindApplicableAttributes(db, "", "")
 	if err != nil {
 		return nil, fmt.Errorf("Failed fetching existing service attributes. Error: %v", err)
 	}

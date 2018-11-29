@@ -145,7 +145,7 @@ func AppendDockerAuth(dockerAuths map[string][]docker.AuthConfiguration, auth do
 func authAttributes(db *bolt.DB, httpAuthAttrs map[string]map[string]string, dockerAuthConfigurations map[string][]docker.AuthConfiguration) error {
 
 	// assemble credentials from attributes
-	attributes, err := persistence.FindApplicableAttributes(db, "")
+	attributes, err := persistence.FindApplicableAttributes(db, "", "")
 	if err != nil {
 		return fmt.Errorf("Error fetching attributes. Error: %v", err)
 	}

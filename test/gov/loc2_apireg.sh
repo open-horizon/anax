@@ -43,11 +43,21 @@ fi
 
 read -d '' slocservice <<EOF
 {
-  "url": "https://bluehorizon.network/service-cpu",
-  "name": "cpu",
-  "organization": "IBM",
-  "versionRange": "1.0.0",
-  "attributes": []
+    "url": "https://bluehorizon.network/service-cpu",
+    "name": "cpu",
+    "organization": "IBM",
+    "versionRange": "1.0.0",
+    "attributes": [
+        {
+            "type": "UserInputAttributes",
+            "label": "User input variables",
+            "publishable": false,
+            "host_only": false,
+            "mappings": {
+                "cpu_var1": "ibmvar1"
+            }
+        }
+    ]
 }
 EOF
 
@@ -57,8 +67,10 @@ echo "Registering service based cpu service"
 
 ERR=$(echo "$slocservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
 if [ "$ERR" != "null" ]; then
-  echo -e "error occured: $ERR"
-  exit 2
+    if [ "${ERR:0:22}" != "Duplicate registration" ]; then 
+        echo -e "error occured: $ERR"
+        exit 2
+    fi
 fi
 
 read -d '' slocservice <<EOF

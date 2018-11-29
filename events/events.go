@@ -102,6 +102,7 @@ type LaunchContext interface {
 
 type MicroserviceSpec struct {
 	SpecRef string
+	Org     string
 	Version string
 	MsdefId string
 }
@@ -211,7 +212,7 @@ func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]stri
 
 	spe_temp := spe
 	if spe_temp == nil {
-		spe_temp = persistence.NewServiceInstancePathElement("", "")
+		spe_temp = persistence.NewServiceInstancePathElement("", "", "")
 	}
 
 	return &ContainerLaunchContext{
@@ -591,7 +592,7 @@ func NewGovernanceWorkloadCancelationMessage(id EventId, cause EndContractCause,
 
 	return &GovernanceWorkloadCancelationMessage{
 		GovernanceMaintenanceMessage: *govMaint,
-		Cause:                        cause,
+		Cause: cause,
 	}
 }
 

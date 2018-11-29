@@ -19,7 +19,7 @@ HORIZON_PKG_VER ?= $(shell curl -s $(PKGS_URL) | grep -A 2 'Package: horizon' | 
 #    MSGHUB_API_KEY
 #
 
-TEST_VARS ?= NOLOOP=1 TEST_DIFF_ORG=0 TEST_PATTERNS=sall
+TEST_VARS ?= NOLOOP=1 TEST_DIFF_ORG=0 TEST_PATTERNS="sall"
 APPSTORE = $(shell echo $(TEST_VARS) | awk -F "APPSTORE=" '{print $$2}' | cut -c1)
 
 # msghub

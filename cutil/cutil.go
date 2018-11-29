@@ -229,14 +229,18 @@ func SetSystemEnvvars(envAdds map[string]string, prefix string, lat string, lon 
 
 }
 
-func MakeMSInstanceKey(specRef string, v string, id string) string {
+func MakeMSInstanceKey(specRef string, org string, v string, id string) string {
 	s := specRef
 	if strings.Contains(specRef, "://") {
 		s = strings.Split(specRef, "://")[1]
 	}
 	new_s := strings.Replace(s, "/", "-", -1)
 
-	return fmt.Sprintf("%v_%v_%v", new_s, v, id)
+	if org == "" {
+		return fmt.Sprintf("%v_%v_%v", new_s, v, id)
+	} else {
+		return fmt.Sprintf("%v_%v_%v_%v", org, new_s, v, id)
+	}
 }
 
 // This function parsed the given image name to disfferent parts. The image name has the following format:
@@ -384,4 +388,13 @@ func GetAllHostIPv4Addresses(interfaceFilters []NetFilter) ([]string, error) {
 	}
 
 	return ips, nil
+}
+
+// it returns the org/url form for an api spec
+func FormOrgSpecUrl(url string, org string) string {
+	if org == "" {
+		return url
+	} else {
+		return fmt.Sprintf("%v/%v", org, url)
+	}
 }

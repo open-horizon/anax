@@ -300,7 +300,7 @@ func createEnvVarMap(agreementId string,
 	}
 
 	// Third, add in default system attributes if not already present.
-	attrs = api.FinalizeAttributesSpecifiedInService(1024, msURL, attrs)
+	attrs = api.FinalizeAttributesSpecifiedInService(1024, cutil.FormOrgSpecUrl(msURL, org), attrs)
 
 	cliutils.Verbose("Final Attributes: %v", attrs)
 
@@ -493,7 +493,7 @@ func startDependent(dir string,
 			return nil, errors.New(fmt.Sprintf("unable to generate instance ID: %v", err))
 		}
 
-		sId := cutil.MakeMSInstanceKey(serviceDef.URL, serviceDef.Version, id.String())
+		sId := cutil.MakeMSInstanceKey(serviceDef.URL, serviceDef.Org, serviceDef.Version, id.String())
 
 		return StartContainers(deployment, serviceDef.URL, serviceDef.Version, globals, serviceDef.UserInputs, configUserInputs, serviceDef.Org, depConfig, cw, msNetworks, true, false, sId)
 	}

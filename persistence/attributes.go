@@ -38,6 +38,7 @@ func (a AttributeMeta) String() string {
 }
 
 // important to use this for additions to prevent duplicates and keep slice ordered
+// The sensor url is in the form of service_org/service_url for a service.
 func (m *AttributeMeta) AppendSensorUrl(url string) *AttributeMeta {
 
 	contains := false
@@ -239,9 +240,16 @@ func FindAttributeByKey(db *bolt.DB, id string) (*Attribute, error) {
 	return &attr, nil
 }
 
-func FindApplicableAttributes(db *bolt.DB, serviceUrl string) ([]Attribute, error) {
+// get all the attribute that the given this service can use.
+// If the given serviceUrl is an empty string, all attributes will be returned.
+// For an attribute, if the a.SensorUrls is empty, it will be included.
+// Otherwise, if an element in the attrubute's SensorUrls array equals to 'org/serviceUrl'
+// or 'serviceUrl' (for backward compatibility), the attribute will be included.
+func FindApplicableAttributes(db *bolt.DB, serviceUrl string, org string) ([]Attribute, error) {
 
 	filteredAttrs := []Attribute{}
+
+	fullUrl := cutil.FormOrgSpecUrl(serviceUrl, org)
 
 	return filteredAttrs, db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(ATTRIBUTES))
@@ -267,7 +275,7 @@ func FindApplicableAttributes(db *bolt.DB, serviceUrl string) ([]Attribute, erro
 				} else {
 					// O(2)
 					for _, url := range sensorUrls {
-						if url == "" || url == serviceUrl {
+						if url == "" || url == fullUrl || url == serviceUrl {
 							filteredAttrs = append(filteredAttrs, attr)
 						}
 					}
@@ -304,7 +312,7 @@ func ConvertWorkloadPersistentNativeToEnv(allAttrs []Attribute, envvars map[stri
 	return envvars, nil
 }
 
-// This function is used to convert the persistent attributes for a service/microservice to an env var map.
+// This function is used to convert the persistent attributes for a service to an env var map.
 // This will include *all* values for which HostOnly is false, include those marked to not publish.
 func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, prefix string, defaultRAM int64) (map[string]string, error) {
 
@@ -398,13 +406,13 @@ func FindConflictingAttributes(db *bolt.DB, attribute *Attribute) (*Attribute, e
 	urls := (*attribute).GetMeta().SensorUrls
 
 	if len(urls) == 0 {
-		common, err = FindApplicableAttributes(db, "")
+		common, err = FindApplicableAttributes(db, "", "")
 		if err != nil {
 			return nil, err
 		}
 	} else {
 		for _, url := range urls {
-			common, err = FindApplicableAttributes(db, url)
+			common, err = FindApplicableAttributes(db, url, "")
 			if err != nil {
 				return nil, err
 			}

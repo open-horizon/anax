@@ -62,9 +62,10 @@ func NewMicroserviceInstanceOutput(mi persistence.MicroserviceInstance, containe
 }
 
 func NewAgreementServiceInstanceOutput(ag *persistence.EstablishedAgreement, containers *[]dockerclient.APIContainers) *MicroserviceInstanceOutput {
-	sipe := persistence.NewServiceInstancePathElement(ag.RunningWorkload.URL, ag.RunningWorkload.Version)
+	sipe := persistence.NewServiceInstancePathElement(ag.RunningWorkload.URL, ag.RunningWorkload.Org, ag.RunningWorkload.Version)
 	mi := persistence.MicroserviceInstance{
 		SpecRef:              ag.RunningWorkload.URL,
+		Org:                  ag.RunningWorkload.Org,
 		Version:              ag.RunningWorkload.Version,
 		Arch:                 ag.RunningWorkload.Arch,
 		InstanceId:           ag.CurrentAgreementId,

@@ -175,7 +175,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 		eventlog.LogAgreementEvent2(
 			w.db,
 			persistence.SEVERITY_INFO,
-			fmt.Sprintf("Node received Proposal message for service %v from the agbot %v.", wls, proposal.ConsumerId()),
+			fmt.Sprintf("Node received Proposal message for service %v/%v from the agbot %v.", worg, wls, proposal.ConsumerId()),
 			persistence.EC_RECEIVED_PROPOSAL,
 			proposal.AgreementId(),
 			persistence.WorkloadInfo{URL: wls, Org: worg, Version: wversion, Arch: warch},
@@ -226,7 +226,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 					eventlog.LogAgreementEvent2(
 						w.db,
 						persistence.SEVERITY_INFO,
-						fmt.Sprintf("Node rejected the proposal for service %v.", wls),
+						fmt.Sprintf("Node rejected the proposal for service %v/%v.", worg, wls),
 						persistence.EC_REJECT_PROPOSAL,
 						proposal.AgreementId(),
 						persistence.WorkloadInfo{URL: wls, Org: worg, Version: wversion, Arch: warch},
@@ -242,7 +242,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 			eventlog.LogAgreementEvent2(
 				w.db,
 				persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error handling proposal for service %v. Error: %v", wls, err_log_event),
+				fmt.Sprintf("Error handling proposal for service %v/%v. Error: %v", worg, wls, err_log_event),
 				persistence.EC_ERROR_PROCESSING_PROPOSAL,
 				proposal.AgreementId(),
 				persistence.WorkloadInfo{URL: wls, Org: worg, Version: wversion, Arch: warch},

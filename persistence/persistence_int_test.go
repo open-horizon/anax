@@ -62,7 +62,8 @@ func Test_SaveArchitectureAttributes(t *testing.T) {
 		panic(err)
 	}
 
-	matches, err := FindApplicableAttributes(testDb, "zoo")
+	// check for backword compatibility
+	matches, err := FindApplicableAttributes(testDb, "zoo", "mycomp")
 	if err != nil {
 		panic(err)
 	}
@@ -98,8 +99,8 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 		}
 	}
 
-	illZ := "http://illuminated.z/v/2"
-	illK := "http://illuminated.k/v/2"
+	illZ := "mycomp/http://illuminated.z/v/2"
+	illK := "mycomp/http://illuminated.k/v/2"
 
 	arch := &ArchitectureAttributes{
 		Meta: &AttributeMeta{
@@ -189,7 +190,7 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 
 	pub(creds, illK)
 
-	services, err := FindApplicableAttributes(testDb, illK)
+	services, err := FindApplicableAttributes(testDb, "http://illuminated.k/v/2", "mycomp")
 	if err != nil {
 		panic(err)
 	}

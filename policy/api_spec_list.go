@@ -3,6 +3,7 @@ package policy
 import (
 	"errors"
 	"fmt"
+	"github.com/open-horizon/anax/cutil"
 )
 
 // The purpose of this file is to provide APIs for working with the API spec list in a Policy.
@@ -70,7 +71,7 @@ func (self *APISpecList) Concatenate(new_list *APISpecList) {
 // This function adds an API spec to the list. Return an error if there are duplicates.
 func (self *APISpecList) Add_API_Spec(new_ele *APISpecification) error {
 	for _, ele := range *self {
-		if ele.SpecRef == new_ele.SpecRef {
+		if ele.SpecRef == new_ele.SpecRef && ele.Org == new_ele.Org {
 			return errors.New(fmt.Sprintf("APISpecList %v already has the element being added: %v", *self, *new_ele))
 		}
 	}
@@ -164,7 +165,7 @@ func (self *APISpecList) MergeWith(other *APISpecList) APISpecList {
 func (self *APISpecList) AsStringArray() []string {
 	res := make([]string, 0, 10)
 	for _, apiSpec := range *self {
-		res = append(res, apiSpec.SpecRef)
+		res = append(res, cutil.FormOrgSpecUrl(apiSpec.SpecRef, apiSpec.Org))
 	}
 	return res
 }
@@ -187,9 +188,9 @@ func (self *APISpecList) GetCommonVersionRanges() (*APISpecList, error) {
 
 				// get the intersection of the two version ranges
 				if v, err := Version_Expression_Factory(apiSpec.Version); err != nil {
-					return nil, fmt.Errorf("Error creating version range for %v, %v", apiSpec.SpecRef, apiSpec.Version)
+					return nil, fmt.Errorf("Error creating version range for %v/%v, %v", apiSpec.Org, apiSpec.SpecRef, apiSpec.Version)
 				} else if v_new, err := Version_Expression_Factory(newApiSpec.Version); err != nil {
-					return nil, fmt.Errorf("Error creating version range for %v, %v", newApiSpec.SpecRef, newApiSpec.Version)
+					return nil, fmt.Errorf("Error creating version range for %v/%v, %v", newApiSpec.Org, newApiSpec.SpecRef, newApiSpec.Version)
 				} else if err := v.IntersectsWith(v_new); err != nil {
 					// no intersection found, remove the microservice from the list.
 					(*new_list)[i].Version = NO_INTERSECTION

@@ -56,8 +56,8 @@ func findPoliciesForOutput(pm *policy.PolicyManager, db *bolt.DB) (map[string]po
 			if pol.APISpecs != nil {
 				for i := 0; i < len(pol.APISpecs); i++ {
 					api_spec := &pol.APISpecs[i]
-					if pmsdef, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UnarchivedMSFilter(), persistence.UrlMSFilter(api_spec.SpecRef)}); err != nil {
-						glog.Warningf(apiLogString(fmt.Sprintf("Failed to get microservice %v from db. %v", api_spec.SpecRef, err)))
+					if pmsdef, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UnarchivedMSFilter(), persistence.UrlOrgMSFilter(api_spec.SpecRef, org)}); err != nil {
+						glog.Warningf(apiLogString(fmt.Sprintf("Failed to get service %v/%v from local db. %v", api_spec.Org, api_spec.SpecRef, err)))
 					} else if pmsdef != nil && len(pmsdef) > 0 {
 						api_spec.Arch = pmsdef[0].Arch
 					}
@@ -103,7 +103,7 @@ func FindServiceConfigForOutput(pm *policy.PolicyManager, db *bolt.DB) (map[stri
 		}
 
 		// Get the attributes for this service from the attributes database
-		if attrs, err := persistence.FindApplicableAttributes(db, msURL); err != nil {
+		if attrs, err := persistence.FindApplicableAttributes(db, msURL, msOrg); err != nil {
 			return nil, errors.New(fmt.Sprintf("unable to get service attributes from the database, error %v", err))
 		} else {
 			mc.Attributes = attrs
@@ -129,10 +129,18 @@ func CreateService(service *Service,
 	config *config.HorizonConfig,
 	from_user bool) (bool, *Service, *events.PolicyCreatedMessage) {
 
+	org_forlog := ""
+	if service.Org != nil {
+		org_forlog = *service.Org
+	}
+	url_forlog := ""
+	if service.Url != nil {
+		url_forlog = *service.Url
+	}
 	if from_user {
-		LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Start service configuration with user input for %v.", *service.Url), persistence.EC_START_SERVICE_CONFIG, service)
+		LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Start service configuration with user input for %v/%v.", org_forlog, url_forlog), persistence.EC_START_SERVICE_CONFIG, service)
 	} else {
-		LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Start service auto configuration for %v.", *service.Url), persistence.EC_START_SERVICE_CONFIG, service)
+		LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Start service auto configuration for %v/%v.", org_forlog, url_forlog), persistence.EC_START_SERVICE_CONFIG, service)
 	}
 
 	// Check for the device in the local database. If there are errors, they will be written
@@ -154,6 +162,13 @@ func CreateService(service *Service,
 		return true, nil, nil
 	}
 
+	// Use the device's org if org not specified in the service object.
+	if service.Org == nil || *service.Org == "" {
+		service.Org = &pDevice.Org
+	} else if bail := checkInputString(errorhandler, "service.organization", service.Org); bail {
+		return true, nil, nil
+	}
+
 	// We might be registering a dependent service, so look through the pattern and get a list of all dependent services, then
 	// come up with a common version for all references. If the service we're registering is one of these, then use the
 	// common version range in our service instead of the version range that was passed as input.
@@ -169,21 +184,13 @@ func CreateService(service *Service,
 
 		if len(*common_apispec_list) != 0 {
 			for _, apiSpec := range *common_apispec_list {
-				if apiSpec.SpecRef == *service.Url {
-					service.Org = &apiSpec.Org
+				if apiSpec.SpecRef == *service.Url && apiSpec.SpecRef == *service.Org {
 					service.VersionRange = &apiSpec.Version
 					service.Arch = &apiSpec.Arch
 					break
 				}
 			}
 		}
-	}
-
-	// Use the device's org if org not specified in the service object.
-	if service.Org == nil || *service.Org == "" {
-		service.Org = &pDevice.Org
-	} else if bail := checkInputString(errorhandler, "service.organization", service.Org); bail {
-		return true, nil, nil
 	}
 
 	// Return error if the arch in the service object is not a synonym of the node's arch.
@@ -220,12 +227,12 @@ func CreateService(service *Service,
 	if err1 != nil || sdef == nil {
 		if *service.Arch == thisArch {
 			// failed with user defined arch
-			return errorhandler(NewAPIUserInputError(fmt.Sprintf("Unable to find the service definition using  %v %v %v %v in the exchange.", *service.Url, *service.Org, vExp.Get_expression(), *service.Arch), "service")), nil, nil
+			return errorhandler(NewAPIUserInputError(fmt.Sprintf("Unable to find the service definition using  %v/%v %v %v in the exchange.", *service.Org, *service.Url, vExp.Get_expression(), *service.Arch), "service")), nil, nil
 		} else {
 			// try node's arch
 			sdef, _, err1 = getService(*service.Url, *service.Org, vExp.Get_expression(), thisArch)
 			if err1 != nil || sdef == nil {
-				return errorhandler(NewAPIUserInputError(fmt.Sprintf("Unable to find the service definition using  %v %v %v %v in the exchange.", *service.Url, *service.Org, vExp.Get_expression(), thisArch), "service")), nil, nil
+				return errorhandler(NewAPIUserInputError(fmt.Sprintf("Unable to find the service definition using  %v/%v %v %v in the exchange.", *service.Org, *service.Url, vExp.Get_expression(), thisArch), "service")), nil, nil
 			}
 		}
 	}
@@ -233,7 +240,7 @@ func CreateService(service *Service,
 	// Convert the service definition to a persistent format so that it can be saved to the db.
 	msdef, err = microservice.ConvertServiceToPersistent(sdef, *service.Org)
 	if err != nil {
-		return errorhandler(NewAPIUserInputError(fmt.Sprintf("Error converting the service metadata to persistent.MicroserviceDefinition for %v version %v, error %v", sdef.URL, sdef.Version, err), "service")), nil, nil
+		return errorhandler(NewAPIUserInputError(fmt.Sprintf("Error converting the service metadata to persistent.MicroserviceDefinition for %v/%v version %v, error %v", *service.Org, sdef.URL, sdef.Version, err), "service")), nil, nil
 	}
 
 	// Save some of the items in the MicroserviceDefinition object for use in the upgrading process.
@@ -258,14 +265,14 @@ func CreateService(service *Service,
 	service.VersionRange = &msdef.Version
 
 	// Check if the service has been registered or not (currently only support one service registration)
-	if pms, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UnarchivedMSFilter(), persistence.UrlMSFilter(*service.Url)}); err != nil {
+	if pms, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UnarchivedMSFilter(), persistence.UrlOrgMSFilter(*service.Url, *service.Org)}); err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("Error accessing db to find service definition: %v", err))), nil, nil
 	} else if pms != nil && len(pms) > 0 {
 		// this is for the auto service registration case.
 		if !from_user {
-			LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service auto configuration for %v.", *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+			LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service auto configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
 		}
-		return errorhandler(NewDuplicateServiceError(fmt.Sprintf("Duplicate registration for %v %v %v %v. Only one registration per service is supported.", *service.Url, *service.Org, vExp.Get_expression(), cutil.ArchString()), "service")), nil, nil
+		return errorhandler(NewDuplicateServiceError(fmt.Sprintf("Duplicate registration for %v/%v %v %v. Only one registration per service is supported.", *service.Org, *service.Url, vExp.Get_expression(), cutil.ArchString()), "service")), nil, nil
 	}
 
 	// If there are no attributes associated with this request but the service requires some configuration, return an error.
@@ -328,7 +335,7 @@ func CreateService(service *Service,
 		var err error
 		var inputErrWritten bool
 
-		attributes, inputErrWritten, err = toPersistedAttributesAttachedToService(errorhandler, pDevice, config.Edge.DefaultServiceRegistrationRAM, *service.Attributes, *service.Url, []AttributeVerifier{msdefAttributeVerifier, patternedDeviceAttributeVerifier})
+		attributes, inputErrWritten, err = toPersistedAttributesAttachedToService(errorhandler, pDevice, config.Edge.DefaultServiceRegistrationRAM, *service.Attributes, cutil.FormOrgSpecUrl(*service.Url, *service.Org), []AttributeVerifier{msdefAttributeVerifier, patternedDeviceAttributeVerifier})
 		if !inputErrWritten && err != nil {
 			return errorhandler(NewSystemError(fmt.Sprintf("Failure deserializing attributes: %v", err))), nil, nil
 		} else if inputErrWritten {
@@ -346,7 +353,7 @@ func CreateService(service *Service,
 	props := make(map[string]interface{})
 
 	// There might be node wide global attributes. Check for them and grab the values to use as defaults for later.
-	allAttrs, aerr := persistence.FindApplicableAttributes(db, "")
+	allAttrs, aerr := persistence.FindApplicableAttributes(db, "", "")
 	if aerr != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to fetch global attributes, error %v", err))), nil, nil
 	}
@@ -400,7 +407,7 @@ func CreateService(service *Service,
 	// This verification cannot be done in the attribute verifier above because those verifiers dont know about global attributes.
 	haType := reflect.TypeOf(persistence.HAAttributes{}).Name()
 	if pDevice.HA && len(haPartner) == 0 {
-		if attr := attributesContains(attributes, *service.Url, haType); attr == nil {
+		if attr := attributesContains(attributes, cutil.FormOrgSpecUrl(*service.Url, *service.Org), haType); attr == nil {
 			return errorhandler(NewAPIUserInputError("services on an HA device must specify an HA partner.", "service.[attribute].type")), nil, nil
 		}
 	}
@@ -465,7 +472,7 @@ func CreateService(service *Service,
 		}
 	}
 
-	glog.V(5).Infof(apiLogString(fmt.Sprintf("Complete Attr list for registration of service %v: %v", *service.Url, attributes)))
+	glog.V(5).Infof(apiLogString(fmt.Sprintf("Complete Attr list for registration of service %v/%v: %v", *service.Org, *service.Url, attributes)))
 
 	// Establish the correct agreement protocol list. The AGP list from this service overrides any global list that might exist.
 	var agpList *[]policy.AgreementProtocol
@@ -486,7 +493,7 @@ func CreateService(service *Service,
 	maxAgreements := 1
 	if msdef.Sharable == exchange.MS_SHARING_MODE_SINGLETON || msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE || msdef.Sharable == exchange.MS_SHARING_MODE_SINGLE {
 		if pDevice.Pattern == "" {
-			maxAgreements = 2 // hard coded to 2 for now. will change to 0 later
+			maxAgreements = 5 // hard coded to 5 for now. will change to 0 later
 		} else {
 			maxAgreements = 0 // no limites for pattern
 		}
@@ -499,9 +506,9 @@ func CreateService(service *Service,
 		return errorhandler(NewSystemError(fmt.Sprintf("Error generating policy, error: %v", genErr))), nil, nil
 	} else {
 		if from_user {
-			LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service configuration for %v.", *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+			LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
 		} else {
-			LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service auto configuration for %v.", *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+			LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service auto configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
 		}
 		return false, service, msg
 	}

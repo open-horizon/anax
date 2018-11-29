@@ -156,14 +156,14 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 					eventlog.LogAgreementEvent(
 						w.db,
 						persistence.SEVERITY_INFO,
-						fmt.Sprintf("Image loaded for %v.", ags[0].RunningWorkload.URL),
+						fmt.Sprintf("Image loaded for %v/%v.", ags[0].RunningWorkload.Org, ags[0].RunningWorkload.URL),
 						persistence.EC_IMAGE_LOADED,
 						ags[0])
 				} else {
 					eventlog.LogAgreementEvent(
 						w.db,
 						persistence.SEVERITY_ERROR,
-						fmt.Sprintf("Error loading image for %v.", ags[0].RunningWorkload.URL),
+						fmt.Sprintf("Error loading image for %v/%v.", ags[0].RunningWorkload.Org, ags[0].RunningWorkload.URL),
 						persistence.EC_ERROR_IMAGE_LOADE,
 						ags[0])
 					cmd := w.NewCleanupExecutionCommand(lc.AgreementProtocol, lc.AgreementId, reason, nil)
@@ -177,14 +177,14 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 				eventlog.LogServiceEvent2(
 					w.db,
 					persistence.SEVERITY_INFO,
-					fmt.Sprintf("Image loaded for service %v.", lc.ServicePathElement.URL),
+					fmt.Sprintf("Image loaded for service %v/%v.", lc.ServicePathElement.Org, lc.ServicePathElement.URL),
 					persistence.EC_IMAGE_LOADED,
 					"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", []string{lc.AgreementId})
 			} else {
 				eventlog.LogServiceEvent2(
 					w.db,
 					persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Error loading image for service %v.", lc.ServicePathElement.URL),
+					fmt.Sprintf("Error loading image for service %v/%v.", lc.ServicePathElement.Org, lc.ServicePathElement.URL),
 					persistence.EC_ERROR_IMAGE_LOADE,
 					"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", []string{lc.AgreementId})
 				cmd := w.NewUpdateMicroserviceCommand(lc.Name, false, microservice.MS_IMAGE_FETCH_FAILED, microservice.DecodeReasonCode(microservice.MS_IMAGE_FETCH_FAILED))
@@ -627,7 +627,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 			eventlog.LogAgreementEvent(
 				w.db,
 				persistence.SEVERITY_INFO,
-				fmt.Sprintf("Workload service containers for %v are up and running.", ag.RunningWorkload.URL),
+				fmt.Sprintf("Workload service containers for %v/%v are up and running.", ag.RunningWorkload.Org, ag.RunningWorkload.URL),
 				persistence.EC_CONTAINER_RUNNING,
 				*ag)
 		}
@@ -858,7 +858,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 					eventlog.LogAgreementEvent(
 						w.db,
 						persistence.SEVERITY_INFO,
-						fmt.Sprintf("Node received Cancel message for %v from agbot %v.", ags[0].RunningWorkload.URL, exchangeMsg.AgbotId),
+						fmt.Sprintf("Node received Cancel message for %v/%v from agbot %v.", ags[0].RunningWorkload.Org, ags[0].RunningWorkload.URL, exchangeMsg.AgbotId),
 						persistence.EC_RECEIVED_CANCEL_AGREEMENT_MESSAGE, ags[0])
 
 					if exchangeMsg.AgbotId != ags[0].ConsumerId {
@@ -1107,14 +1107,14 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				glog.Errorf(logString(fmt.Sprintf("Error updating service execution status. %v", err)))
 			} else if msinst != nil {
 				if msdef, err := persistence.FindMicroserviceDefWithKey(w.db, msinst.MicroserviceDefId); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("Error finding service definition fron db for %v version %v key %v. %v", msinst.SpecRef, msinst.Version, msinst.MicroserviceDefId, err)))
+					glog.Errorf(logString(fmt.Sprintf("Error finding service definition fron db for %v version %v key %v. %v", cutil.FormOrgSpecUrl(msinst.SpecRef, msinst.Org), msinst.Version, msinst.MicroserviceDefId, err)))
 				} else if msdef == nil {
-					glog.Errorf(logString(fmt.Sprintf("No service definition record in db for %v version %v key %v. %v", msinst.SpecRef, msinst.Version, msinst.MicroserviceDefId, err)))
+					glog.Errorf(logString(fmt.Sprintf("No service definition record in db for %v version %v key %v. %v", cutil.FormOrgSpecUrl(msinst.SpecRef, msinst.Org), msinst.Version, msinst.MicroserviceDefId, err)))
 				} else {
 
 					if cmd.ExecutionStarted {
 						eventlog.LogServiceEvent(w.db, persistence.SEVERITY_INFO,
-							fmt.Sprintf("Service containers for %v started.", msinst.SpecRef),
+							fmt.Sprintf("Service containers for %v started.", cutil.FormOrgSpecUrl(msinst.SpecRef, msinst.Org)),
 							persistence.EC_COMPLETE_DEPENDENT_SERVICE,
 							*msinst)
 					}
@@ -1275,7 +1275,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			envAdds := make(map[string]string)
 
 			// The service config variables are stored in the device's attributes.
-			if envAdds, err = w.GetWorkloadPreference(workload.WorkloadURL); err != nil {
+			if envAdds, err = w.GetWorkloadPreference(workload.WorkloadURL, workload.Org); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("Error: %v", err)))
 				return err
 			}
@@ -1301,10 +1301,10 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			deps := serviceDef.GetServiceDependencies()
 
 			// Create the service instance dependency path with the workload as the root.
-			instancePath := []persistence.ServiceInstancePathElement{*persistence.NewServiceInstancePathElement(workload.WorkloadURL, workload.Version)}
+			instancePath := []persistence.ServiceInstancePathElement{*persistence.NewServiceInstancePathElement(workload.WorkloadURL, workload.Org, workload.Version)}
 
 			eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
-				fmt.Sprintf("Start dependent services for %v.", ag.RunningWorkload.URL),
+				fmt.Sprintf("Start dependent services for %v/%v.", ag.RunningWorkload.Org, ag.RunningWorkload.URL),
 				persistence.EC_START_DEPENDENT_SERVICE,
 				*ag)
 
@@ -1312,7 +1312,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 				eventlog.LogAgreementEvent(
 					w.db,
 					persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Encountered error starting dependen services for %v. %v", ag.RunningWorkload.URL, err),
+					fmt.Sprintf("Encountered error starting dependen services for %v/%v. %v", ag.RunningWorkload.Org, ag.RunningWorkload.URL, err),
 					persistence.EC_ERROR_START_DEPENDENT_SERVICE,
 					*ag)
 				return err
@@ -1323,7 +1323,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			}
 
 			eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
-				fmt.Sprintf("Start workload service for %v.", ag.RunningWorkload.URL),
+				fmt.Sprintf("Start workload service for %v/%v.", ag.RunningWorkload.Org, ag.RunningWorkload.URL),
 				persistence.EC_START_SERVICE,
 				*ag)
 
@@ -1347,29 +1347,29 @@ func (w *GovernanceWorker) processDependencies(dependencyPath []persistence.Serv
 
 	for _, sDep := range *deps {
 
-		if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, sDep.URL); err != nil {
-			return ms_specs, errors.New(logString(fmt.Sprintf("Error finding service definition from the local db for %v version range %v. %v", sDep.URL, sDep.Version, err)))
+		if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, sDep.URL, sDep.Org); err != nil {
+			return ms_specs, errors.New(logString(fmt.Sprintf("Error finding service definition from the local db for %v/%v version range %v. %v", sDep.Org, sDep.URL, sDep.Version, err)))
 		} else if msdefs != nil && len(msdefs) > 0 {
 			glog.V(5).Infof(logString(fmt.Sprintf("found dependent service definition locally: %v", msdefs)))
 			msdef := msdefs[0] // assuming there is only one msdef for a service/microservice at any time
 
 			// validate the version range
 			if vExp, err := policy.Version_Expression_Factory(sDep.Version); err != nil {
-				return ms_specs, errors.New(logString(fmt.Sprintf("Error converting APISpec version %v for %v to version range. %v", sDep.Version, sDep.URL, err)))
+				return ms_specs, errors.New(logString(fmt.Sprintf("Error converting APISpec version %v for %v/%v to version range. %v", sDep.Version, sDep.Org, sDep.URL, err)))
 			} else if inRange, err := vExp.Is_within_range(msdef.Version); err != nil {
-				return ms_specs, errors.New(logString(fmt.Sprintf("Error checking if service version %v is within APISpec version range %v for %v. %v", msdef.Version, vExp, sDep.URL, err)))
+				return ms_specs, errors.New(logString(fmt.Sprintf("Error checking if service version %v is within APISpec version range %v for %v/%v. %v", msdef.Version, vExp, sDep.Org, sDep.URL, err)))
 			} else if !inRange {
-				return ms_specs, errors.New(logString(fmt.Sprintf("Current service %v version %v is not within the APISpec version range %v. %v", msdef.SpecRef, msdef.Version, vExp, err)))
+				return ms_specs, errors.New(logString(fmt.Sprintf("Current service %v/%v version %v is not within the APISpec version range %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, vExp, err)))
 			}
 
-			msspec := events.MicroserviceSpec{SpecRef: msdef.SpecRef, Version: msdef.Version, MsdefId: msdef.Id}
+			msspec := events.MicroserviceSpec{SpecRef: msdef.SpecRef, Org: msdef.Org, Version: msdef.Version, MsdefId: msdef.Id}
 			ms_specs = append(ms_specs, msspec)
 
 			// Recursively work down the dependency tree, starting leaf node dependencies first and then start their parents.
-			fullPath := append(dependencyPath, *persistence.NewServiceInstancePathElement(msdef.SpecRef, msdef.Version))
+			fullPath := append(dependencyPath, *persistence.NewServiceInstancePathElement(msdef.SpecRef, msdef.Org, msdef.Version))
 			if err := w.startDependentService(fullPath, &msdef, agreementId, protocol); err != nil {
 				eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Error starting dependen service %v version %v for agreement %v. %v", msdef.SpecRef, msdef.Version, agreementId, err),
+					fmt.Sprintf("Error starting dependen service %v/%v version %v for agreement %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, agreementId, err),
 					persistence.EC_ERROR_START_DEPENDENT_SERVICE,
 					"", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{agreementId})
 			}
@@ -1438,39 +1438,39 @@ func (w *GovernanceWorker) startAgreementLessServices() {
 			versions := strings.Join(a_versions, ",")
 
 			eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
-				fmt.Sprintf("Start agreement-less service %v.", service.ServiceURL),
+				fmt.Sprintf("Start agreement-less service %v/%v.", service.ServiceOrg, service.ServiceURL),
 				persistence.EC_START_AGREEMENTLESS_SERVICE,
 				"", service.ServiceURL, service.ServiceOrg, versions, service.ServiceArch, []string{})
 
 			// Find the microservice definition for this service.
-			if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, service.ServiceURL); err != nil {
+			if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, service.ServiceURL, service.ServiceOrg); err != nil {
 				eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Unable to start agreement-less service %v, error %v", service.ServiceURL, err),
+					fmt.Sprintf("Unable to start agreement-less service %v/%v, error %v", service.ServiceOrg, service.ServiceURL, err),
 					persistence.EC_DATABASE_ERROR)
-				glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less service %v, error %v", service.ServiceURL, err)))
+				glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less service %v/%v, error %v", service.ServiceOrg, service.ServiceURL, err)))
 				return
 			} else if msdefs == nil || len(msdefs) == 0 {
 				eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Unable to start agreement-less service %v, local service definition not found", service.ServiceURL),
+					fmt.Sprintf("Unable to start agreement-less service %v/%v, local service definition not found", service.ServiceOrg, service.ServiceURL),
 					persistence.EC_ERROR_START_AGREEMENTLESS_SERVICE,
 					"", service.ServiceURL, service.ServiceOrg, versions, service.ServiceArch, []string{})
-				glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less service %v, local service definition not found", service.ServiceURL)))
+				glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less service %v/%v, local service definition not found", service.ServiceOrg, service.ServiceURL)))
 				return
 			} else {
 
 				// Create the service instance dependency path with the agreement-less service as the root.
-				instancePath := []persistence.ServiceInstancePathElement{*persistence.NewServiceInstancePathElement(msdefs[0].SpecRef, msdefs[0].Version)}
+				instancePath := []persistence.ServiceInstancePathElement{*persistence.NewServiceInstancePathElement(msdefs[0].SpecRef, msdefs[0].Org, msdefs[0].Version)}
 
 				if err := w.startDependentService(instancePath, &msdefs[0], "", policy.BasicProtocol); err != nil {
 					eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
-						fmt.Sprintf("Unable to start agreement-less service %v, error %v", service.ServiceURL, err),
+						fmt.Sprintf("Unable to start agreement-less service %v/%v, error %v", service.ServiceOrg, service.ServiceURL, err),
 						persistence.EC_ERROR_START_AGREEMENTLESS_SERVICE,
 						"", service.ServiceURL, service.ServiceOrg, versions, service.ServiceArch, []string{})
 
-					glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less service %v, error %v", service.ServiceURL, err)))
+					glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less service %v/%v, error %v", service.ServiceOrg, service.ServiceURL, err)))
 				} else {
 					eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
-						fmt.Sprintf("Complete starting agreement-less service %v and its dependents.", service.ServiceURL),
+						fmt.Sprintf("Complete starting agreement-less service %v/%v and its dependents.", service.ServiceOrg, service.ServiceURL),
 						persistence.EC_COMPLETE_AGREEMENTLESS_SERVICE_STARTUP,
 						"", service.ServiceURL, service.ServiceOrg, versions, service.ServiceArch, []string{})
 				}
@@ -1484,8 +1484,8 @@ func (w *GovernanceWorker) startAgreementLessServices() {
 }
 
 // Get the environmental variables for a service (this is about launching).
-func (w *GovernanceWorker) GetWorkloadPreference(url string) (map[string]string, error) {
-	attrs, err := persistence.FindApplicableAttributes(w.db, url)
+func (w *GovernanceWorker) GetWorkloadPreference(url string, org string) (map[string]string, error) {
+	attrs, err := persistence.FindApplicableAttributes(w.db, url, org)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to fetch workload %v preferences. Err: %v", url, err)
 	}
