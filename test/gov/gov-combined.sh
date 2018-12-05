@@ -333,6 +333,12 @@ then
     fi
 
     sleep 5
+
+    # Check that the agbot is still alive
+    if ! curl -sSL http://localhost:81/agreement > /dev/null; then
+      echo "Agreement Bot 1 startup failure."
+      TESTFAIL="1"
+    fi
 else
     echo -e "Agbot is disabled"
 fi
