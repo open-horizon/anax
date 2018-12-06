@@ -17,7 +17,7 @@ import (
 // - The database is completely up to date WRT the schemas
 func (db *AgbotPostgresqlDB) Initialize(cfg *config.HorizonConfig) error {
 
-	trace, connectInfo := cfg.AgreementBot.Postgresql.MakeConnectionString()
+	connectInfo, trace := cfg.AgreementBot.Postgresql.MakeConnectionString()
 
 	glog.V(1).Infof("Connecting to Postgresql database: %v", trace)
 
