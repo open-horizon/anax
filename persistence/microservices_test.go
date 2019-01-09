@@ -182,6 +182,162 @@ func Test_ServiceInstancePath_HasDirectParent_second(t *testing.T) {
 	}
 }
 
+func Test_CompareServiceInstancePath(t *testing.T) {
+	// Establish the dependency path objects
+	parent := NewServiceInstancePathElement("parentUrl", "1.0.0")
+	child := NewServiceInstancePathElement("childURL", "2.0.0")
+	child2 := NewServiceInstancePathElement("child2URL", "3.0.0")
+
+	dep1 := []ServiceInstancePathElement{*parent, *child, *child2}
+	dep2 := []ServiceInstancePathElement{*parent, *child}
+
+	if !CompareServiceInstancePath(nil, nil) {
+		t.Errorf("CompareServiceInstancePath failed: nil and nil should not be equal.")
+	}
+
+	if CompareServiceInstancePath(nil, dep2) {
+		t.Errorf("CompareServiceInstancePath failed: nil and %v should not be equal.", dep2)
+	}
+
+	if CompareServiceInstancePath(dep1, nil) {
+		t.Errorf("CompareServiceInstancePath failed: %v and nil should not be equal.", dep1)
+	}
+
+	if CompareServiceInstancePath([]ServiceInstancePathElement{}, nil) {
+		t.Errorf("CompareServiceInstancePath failed: empty slice and nil should not be equal.")
+	}
+
+	if CompareServiceInstancePath(dep1, dep2) {
+		t.Errorf("CompareServiceInstancePath failed: %v and %v should not be equal.", dep1, dep2)
+	}
+
+	if !CompareServiceInstancePath(dep1, dep1) {
+		t.Errorf("CompareServiceInstancePath failed: %v and %v should be equal.", dep1, dep1)
+	}
+}
+
+func Test_UpdateMSInstanceAddDependencyPath(t *testing.T) {
+
+	// Setup the DB for the UT environment
+	dir, db, err := utsetup()
+	if err != nil {
+		t.Errorf("Error setting up UT DB: %v", err)
+	}
+
+	defer cleanTestDir(dir)
+
+	parent := NewServiceInstancePathElement("parentUrl", "1.0.0")
+	child := NewServiceInstancePathElement("childURL", "2.0.0")
+	child2 := NewServiceInstancePathElement("child2URL", "3.0.0")
+
+	dep1 := []ServiceInstancePathElement{*parent, *child, *child2}
+	dep2 := []ServiceInstancePathElement{*parent, *child}
+
+	// Create the test microservice instance to represent the child
+	if msi, err := NewMicroserviceInstance(db, "child2URL", "2.0.0", "1234", dep1); err != nil {
+		t.Errorf("Error creating instance: %v", err)
+	} else if newmsi, err := UpdateMSInstanceAddDependencyPath(db, msi.GetKey(), &dep2); err != nil {
+		t.Errorf("Error updating instance: %v", err)
+	} else if len(newmsi.ParentPath) != 2 {
+		t.Errorf("UpdateMSInstanceAddDependencyPath failed")
+	} else if newmsi, err := UpdateMSInstanceAddDependencyPath(db, msi.GetKey(), nil); err != nil {
+		t.Errorf("Error updating instance: %v", err)
+	} else if len(newmsi.ParentPath) != 2 {
+		t.Errorf("UpdateMSInstanceAddDependencyPath failed")
+	} else if newmsi, err := UpdateMSInstanceAddDependencyPath(db, msi.GetKey(), &dep2); err != nil {
+		t.Errorf("Error updating instance: %v", err)
+	} else if len(newmsi.ParentPath) != 2 {
+		t.Errorf("UpdateMSInstanceAddDependencyPath failed")
+	}
+}
+
+func Test_UpdateMSInstanceRemoveDependencyPath(t *testing.T) {
+
+	// Setup the DB for the UT environment
+	dir, db, err := utsetup()
+	if err != nil {
+		t.Errorf("Error setting up UT DB: %v", err)
+	}
+
+	defer cleanTestDir(dir)
+
+	parent1 := NewServiceInstancePathElement("parentUrl", "1.0.0")
+	parent2 := NewServiceInstancePathElement("parentUrl2", "1.0.0")
+	parent3 := NewServiceInstancePathElement("parentUrl", "2.0.0")
+	child := NewServiceInstancePathElement("childURL", "2.0.0")
+	child2 := NewServiceInstancePathElement("child2URL", "3.0.0")
+
+	dep1 := []ServiceInstancePathElement{*parent1, *child, *child2}
+	dep2 := []ServiceInstancePathElement{*parent1, *child}
+	dep3 := []ServiceInstancePathElement{*parent2, *child}
+	dep4 := []ServiceInstancePathElement{*parent3, *child, *child2}
+
+	// Create the test microservice instance to represent the child
+	if msi, err := NewMicroserviceInstance(db, "child2URL", "2.0.0", "1234", dep1); err != nil {
+		t.Errorf("Error creating instance: %v", err)
+	} else if _, err := UpdateMSInstanceAddDependencyPath(db, msi.GetKey(), &dep2); err != nil {
+		t.Errorf("Error updating instance: %v", err)
+	} else if _, err := UpdateMSInstanceAddDependencyPath(db, msi.GetKey(), &dep3); err != nil {
+		t.Errorf("Error updating instance: %v", err)
+	} else if newmsi, err := UpdateMSInstanceAddDependencyPath(db, msi.GetKey(), &dep4); err != nil {
+		t.Errorf("Error updating instance: %v", err)
+	} else if len(newmsi.ParentPath) != 4 {
+		t.Errorf("UpdateMSInstanceAddDependencyPath failed")
+	} else if newmsi, err := UpdateMSInstanceRemoveDependencyPath(db, msi.GetKey(), &dep1); err != nil {
+		t.Errorf("Error removing parent path: %v", err)
+	} else if len(newmsi.ParentPath) != 3 {
+		t.Errorf("UpdateMSInstanceRemoveDependencyPath failed")
+	} else if !CompareServiceInstancePath(newmsi.ParentPath[0], dep2) {
+		t.Errorf("UpdateMSInstanceRemoveDependencyPath failed")
+	} else if !CompareServiceInstancePath(newmsi.ParentPath[1], dep3) {
+		t.Errorf("UpdateMSInstanceRemoveDependencyPath failed")
+	} else if !CompareServiceInstancePath(newmsi.ParentPath[2], dep4) {
+		t.Errorf("UpdateMSInstanceRemoveDependencyPath failed")
+	}
+}
+
+func Test_UpdateMSInstanceRemoveDependencyPath2(t *testing.T) {
+	// Setup the DB for the UT environment
+	dir, db, err := utsetup()
+	if err != nil {
+		t.Errorf("Error setting up UT DB: %v", err)
+	}
+
+	defer cleanTestDir(dir)
+
+	parent1 := NewServiceInstancePathElement("parentUrl", "1.0.0")
+	parent2 := NewServiceInstancePathElement("parentUrl2", "1.0.0")
+	parent3 := NewServiceInstancePathElement("parentUrl", "2.0.0")
+	child := NewServiceInstancePathElement("childURL", "2.0.0")
+	child2 := NewServiceInstancePathElement("child2URL", "3.0.0")
+
+	dep1 := []ServiceInstancePathElement{*parent1, *child, *child2}
+	dep2 := []ServiceInstancePathElement{*parent1, *child}
+	dep3 := []ServiceInstancePathElement{*parent2, *child}
+	dep4 := []ServiceInstancePathElement{*parent3, *child, *child2}
+
+	// Create the test microservice instance to represent the child
+	if msi, err := NewMicroserviceInstance(db, "child2URL", "2.0.0", "1234", dep1); err != nil {
+		t.Errorf("Error creating instance: %v", err)
+	} else if _, err := UpdateMSInstanceAddDependencyPath(db, msi.GetKey(), &dep2); err != nil {
+		t.Errorf("Error updating instance: %v", err)
+	} else if _, err := UpdateMSInstanceAddDependencyPath(db, msi.GetKey(), &dep3); err != nil {
+		t.Errorf("Error updating instance: %v", err)
+	} else if newmsi, err := UpdateMSInstanceAddDependencyPath(db, msi.GetKey(), &dep4); err != nil {
+		t.Errorf("Error updating instance: %v", err)
+	} else if len(newmsi.ParentPath) != 4 {
+		t.Errorf("UpdateMSInstanceAddDependencyPath failed")
+	} else if newmsi, err := UpdateMSInstanceRemoveDependencyPath2(db, msi.GetKey(), parent1); err != nil {
+		t.Errorf("Error removing parent path: %v", err)
+	} else if len(newmsi.ParentPath) != 2 {
+		t.Errorf("UpdateMSInstanceRemoveDependencyPath failed")
+	} else if !CompareServiceInstancePath(newmsi.ParentPath[0], dep3) {
+		t.Errorf("UpdateMSInstanceRemoveDependencyPath failed")
+	} else if !CompareServiceInstancePath(newmsi.ParentPath[1], dep4) {
+		t.Errorf("UpdateMSInstanceRemoveDependencyPath failed")
+	}
+}
+
 // Utility functions needed by tests
 func utsetup() (string, *bolt.DB, error) {
 	dir, err := ioutil.TempDir("", "utdb-")

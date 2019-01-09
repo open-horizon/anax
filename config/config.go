@@ -48,6 +48,8 @@ type Config struct {
 	TrustDockerAuthFromOrg        bool   // whether to turst the docker auths provided by the organization on the exchange or not.
 	ServiceUpgradeCheckIntervalS  int64  // service upgrade check interval in seconds. The default is 300 seconds.
 	MultipleAnaxInstances         bool   // multiple anax instances running on the same machine
+	DefaultServiceRetryCount      int    // the default service retry count if retries are not specified by the policy file. The default value is 2.
+	DefaultServiceRetryDuration   uint64 // the default retry duration in seconds. The next retry cycle occurs after the duration. The default value is 600
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string
@@ -166,6 +168,16 @@ func Read(file string) (*HorizonConfig, error) {
 		}
 		if config.Edge.ServiceUpgradeCheckIntervalS == 0 {
 			config.Edge.ServiceUpgradeCheckIntervalS = 300
+		}
+
+		// set default retry parameters
+		// the default DefaultServiceRetryCount is 2. It means 2 tries including the original one.
+		// so it is actually 1 retry.
+		if config.Edge.DefaultServiceRetryCount == 0 {
+			config.Edge.DefaultServiceRetryCount = 2
+		}
+		if config.Edge.DefaultServiceRetryDuration == 0 {
+			config.Edge.DefaultServiceRetryDuration = 600
 		}
 
 		// add a slash at the back of the ExchangeUrl

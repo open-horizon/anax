@@ -93,9 +93,16 @@ const (
 	EC_ERROR_START_SERVICE      = "error_start_service"
 	EC_COMPLETE_SERVICE_STARTUP = "complete_service_startup"
 
-	EC_START_DEPENDENT_SERVICE       = "start_dependent_service"
-	EC_ERROR_START_DEPENDENT_SERVICE = "error_start_dependent_service"
-	EC_COMPLETE_DEPENDENT_SERVICE    = "complete_dependent_service"
+	EC_START_DEPENDENT_SERVICE             = "start_dependent_service"
+	EC_ERROR_START_DEPENDENT_SERVICE       = "error_start_dependent_service"
+	EC_DEPENDENT_SERVICE_FAILED            = "dependent_service_failed"
+	EC_COMPLETE_DEPENDENT_SERVICE          = "complete_dependent_service"
+	EC_REMOVE_OLD_DEPENDENT_SERVICE_FAILED = "remove_old_dependent_service_failed"
+
+	EC_START_RETRY_DEPENDENT_SERVICE       = "start_retry_dependent_service"
+	EC_ERROR_START_RETRY_DEPENDENT_SERVICE = "error_start_retry_dependent_service"
+	EC_DEPENDENT_SERVICE_RETRY_FAILED      = "dependent_service_retry_failed"
+	EC_COMPLETE_RETRY_DEPENDENT_SERVICE    = "complete_retry_dependent_service"
 
 	EC_START_AGREEMENTLESS_SERVICE            = "start_agreementless_service"
 	EC_ERROR_START_AGREEMENTLESS_SERVICE      = "error_start_agreementless_service"

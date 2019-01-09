@@ -593,6 +593,10 @@ type MicroserviceInstance struct {
 	MicroserviceDefId    string                         `json:"microservicedef_id"`
 	ParentPath           [][]ServiceInstancePathElement `json:"service_instance_path"` // Set when instance is created
 	AgreementLess        bool                           `json:"agreement_less"`        // Set when the service instance was started because it is an agreement-less service (as defined in the pattern)
+	MaxRetries           uint                           `json:"max_retries"`           // maximum retries allowed
+	MaxRetryDuration     uint                           `json:"max_retry_duration"`    // The number of seconds in which the specified number of retries must occur in order for next retry cycle.
+	CurrentRetryCount    uint                           `json:"current_retry_count"`
+	RetryStartTime       uint64                         `json:"retry_start_time"`
 }
 
 func (w MicroserviceInstance) String() string {
@@ -609,10 +613,15 @@ func (w MicroserviceInstance) String() string {
 		"AssociatedAgreements: %v, "+
 		"MicroserviceDefId: %v, "+
 		"ParentPath: %v, "+
-		"AgreementLess: %v",
+		"AgreementLess: %v, "+
+		"MaxRetries: %v, "+
+		"MaxRetryDuration: %v, "+
+		"CurrentRetryCount: %v, "+
+		"RetryStartTime: %v",
 		w.SpecRef, w.Version, w.Arch, w.InstanceId, w.Archived, w.InstanceCreationTime,
 		w.ExecutionStartTime, w.ExecutionFailureCode, w.ExecutionFailureDesc,
-		w.CleanupStartTime, w.AssociatedAgreements, w.MicroserviceDefId, w.ParentPath, w.AgreementLess)
+		w.CleanupStartTime, w.AssociatedAgreements, w.MicroserviceDefId, w.ParentPath, w.AgreementLess,
+		w.MaxRetries, w.MaxRetryDuration, w.CurrentRetryCount, w.RetryStartTime)
 }
 
 // create a unique name for a microservice def
@@ -634,7 +643,7 @@ func (m MicroserviceInstance) HasWorkload(db *bolt.DB) (bool, error) {
 	return false, nil
 }
 
-// Check if this microservice instance has a direct parent.
+// Check if this microservice instance has the given service as a direct parent.
 func (m *MicroserviceInstance) HasDirectParent(parent *ServiceInstancePathElement) bool {
 	for _, pathList := range m.ParentPath {
 		for ix, element := range pathList {
@@ -644,6 +653,31 @@ func (m *MicroserviceInstance) HasDirectParent(parent *ServiceInstancePathElemen
 		}
 	}
 	return false
+}
+
+// It returns a an array of direct parents for this service instance.
+func (m *MicroserviceInstance) GetDirectParents() []ServiceInstancePathElement {
+	parents := make([]ServiceInstancePathElement, 0)
+
+	for _, pathList := range m.ParentPath {
+		if len(pathList) > 1 {
+			item := pathList[len(pathList)-2]
+
+			// no duplicates
+			found := false
+			for _, s := range parents {
+				if s.IsSame(&item) {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				parents = append(parents, item)
+			}
+		}
+	}
+	return parents
 }
 
 // create a new microservice instance and save it to db.
@@ -680,6 +714,10 @@ func NewMicroserviceInstance(db *bolt.DB, ref_url string, version string, msdef_
 		AssociatedAgreements: make([]string, 0),
 		MicroserviceDefId:    msdef_id,
 		ParentPath:           [][]ServiceInstancePathElement{dependencyPath},
+		MaxRetries:           0,
+		MaxRetryDuration:     0,
+		CurrentRetryCount:    1, // the original execution is counted as the first one.
+		RetryStartTime:       0,
 	}
 
 	return new_inst, db.Update(func(tx *bolt.Tx) error {
@@ -693,6 +731,26 @@ func NewMicroserviceInstance(db *bolt.DB, ref_url string, version string, msdef_
 		// success, close tx
 		return nil
 	})
+}
+
+// Create an microservice instance object out of an agreement. The object is not be saved into the db.
+func AgreementToMicroserviceInstance(ag EstablishedAgreement, msdef_id string) *MicroserviceInstance {
+	sipe := NewServiceInstancePathElement(ag.RunningWorkload.URL, ag.RunningWorkload.Version)
+	return &MicroserviceInstance{
+		SpecRef:              ag.RunningWorkload.URL,
+		Version:              ag.RunningWorkload.Version,
+		Arch:                 ag.RunningWorkload.Arch,
+		InstanceId:           ag.CurrentAgreementId,
+		Archived:             ag.Archived,
+		InstanceCreationTime: ag.AgreementCreationTime,
+		ExecutionStartTime:   ag.AgreementExecutionStartTime,
+		ExecutionFailureCode: uint(ag.TerminatedReason),
+		ExecutionFailureDesc: ag.TerminatedDescription,
+		CleanupStartTime:     ag.AgreementTerminatedTime,
+		AssociatedAgreements: []string{ag.CurrentAgreementId},
+		MicroserviceDefId:    msdef_id,
+		ParentPath:           [][]ServiceInstancePathElement{[]ServiceInstancePathElement{*sipe}},
+	}
 }
 
 // find the microservice instance from the db
@@ -885,10 +943,54 @@ func MicroserviceInstanceCleanupStarted(db *bolt.DB, key string) (*MicroserviceI
 	})
 }
 
+// Add the given path to the ParentPath. It will not be added if there is duplicate path.
 func UpdateMSInstanceAddDependencyPath(db *bolt.DB, key string, dp *[]ServiceInstancePathElement) (*MicroserviceInstance, error) {
 	return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
-		if len(*dp) != 0 {
-			c.ParentPath = append(c.ParentPath, *dp)
+		if dp != nil && len(*dp) != 0 {
+			found := false
+			for _, p := range c.ParentPath {
+				// compare two arrays
+				if CompareServiceInstancePath(p, *dp) {
+					found = true
+				}
+			}
+
+			if !found {
+				c.ParentPath = append(c.ParentPath, *dp)
+			}
+		}
+		return &c
+	})
+}
+
+// remove the given path to the ParentPath.
+func UpdateMSInstanceRemoveDependencyPath(db *bolt.DB, key string, dp *[]ServiceInstancePathElement) (*MicroserviceInstance, error) {
+	return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
+		if dp != nil && len(*dp) != 0 {
+			new_pp := make([][]ServiceInstancePathElement, 0)
+			for _, p := range c.ParentPath {
+				// compare two arrays
+				if !CompareServiceInstancePath(p, *dp) {
+					new_pp = append(new_pp, p)
+				}
+			}
+			c.ParentPath = new_pp
+		}
+		return &c
+	})
+}
+
+// Remove all the paths with the given top parent from the ParentPath
+func UpdateMSInstanceRemoveDependencyPath2(db *bolt.DB, key string, top_parent *ServiceInstancePathElement) (*MicroserviceInstance, error) {
+	return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
+		if top_parent != nil {
+			new_pp := make([][]ServiceInstancePathElement, 0)
+			for _, p := range c.ParentPath {
+				if !top_parent.IsSame(&p[0]) {
+					new_pp = append(new_pp, p)
+				}
+			}
+			c.ParentPath = new_pp
 		}
 		return &c
 	})
@@ -897,6 +999,41 @@ func UpdateMSInstanceAddDependencyPath(db *bolt.DB, key string, dp *[]ServiceIns
 func UpdateMSInstanceAgreementLess(db *bolt.DB, key string) (*MicroserviceInstance, error) {
 	return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
 		c.AgreementLess = true
+		return &c
+	})
+}
+
+// This function is call when the retry starts or retry is done. When it is done, this function resets the retry counts
+func UpdateMSInstanceRetryState(db *bolt.DB, key string, started bool, max_retries uint, max_retry_duration uint) (*MicroserviceInstance, error) {
+	return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
+		if started {
+			c.RetryStartTime = uint64(time.Now().Unix())
+			c.MaxRetries = max_retries
+			c.MaxRetryDuration = max_retry_duration
+			c.CurrentRetryCount = 1 // the original execution is counted as the first one.
+		} else {
+			c.RetryStartTime = 0
+			c.MaxRetries = 0
+			c.MaxRetryDuration = 0
+			c.CurrentRetryCount = 1 // the original execution is counted as the first one.
+		}
+		return &c
+	})
+}
+
+func UpdateMSInstanceCurrentRetryCount(db *bolt.DB, key string, current_retry uint) (*MicroserviceInstance, error) {
+	return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
+		c.CurrentRetryCount = current_retry
+		return &c
+	})
+}
+
+func ResetMsInstanceExecutionStatus(db *bolt.DB, key string) (*MicroserviceInstance, error) {
+	return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
+		c.ExecutionStartTime = 0
+		c.ExecutionFailureCode = 0
+		c.ExecutionFailureDesc = ""
+		c.CleanupStartTime = 0
 		return &c
 	})
 }
@@ -939,20 +1076,15 @@ func persistUpdatedMicroserviceInstance(db *bolt.DB, key string, update *Microse
 				if mod.InstanceCreationTime == 0 { // 1 transition from zero to non-zero
 					mod.InstanceCreationTime = update.InstanceCreationTime
 				}
-				if mod.ExecutionStartTime == 0 {
-					mod.ExecutionStartTime = update.ExecutionStartTime
-				}
-				if mod.ExecutionFailureCode == 0 {
-					mod.ExecutionFailureCode = update.ExecutionFailureCode
-				}
-				if mod.ExecutionFailureDesc == "" {
-					mod.ExecutionFailureDesc = update.ExecutionFailureDesc
-				}
-				if mod.CleanupStartTime == 0 {
-					mod.CleanupStartTime = update.CleanupStartTime
-				}
-
+				mod.ExecutionStartTime = update.ExecutionStartTime
+				mod.ExecutionFailureCode = update.ExecutionFailureCode
+				mod.ExecutionFailureDesc = update.ExecutionFailureDesc
+				mod.CleanupStartTime = update.CleanupStartTime
 				mod.AssociatedAgreements = update.AssociatedAgreements
+				mod.RetryStartTime = update.RetryStartTime
+				mod.MaxRetries = update.MaxRetries
+				mod.MaxRetryDuration = update.MaxRetryDuration
+				mod.CurrentRetryCount = update.CurrentRetryCount
 
 				if len(mod.ParentPath) != len(update.ParentPath) {
 					mod.ParentPath = update.ParentPath
@@ -1053,4 +1185,21 @@ func NewServiceInstancePathElement(url string, version string) *ServiceInstanceP
 
 func (s *ServiceInstancePathElement) IsSame(other *ServiceInstancePathElement) bool {
 	return (s.URL == other.URL) && (s.Version == other.Version)
+}
+
+func CompareServiceInstancePath(a, b []ServiceInstancePathElement) bool {
+	if a == nil && b == nil {
+		return true
+	}
+
+	if a != nil && b != nil && len(a) == len(b) {
+		for i, a_elem := range a {
+			if !a_elem.IsSame(&b[i]) {
+				return false
+			}
+		}
+		return true
+	}
+
+	return false
 }

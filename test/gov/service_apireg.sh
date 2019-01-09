@@ -804,7 +804,7 @@ read -d '' sdef <<EOF
           "deployment_overrides_signature":"",
           "priority":{
             "priority_value": 3,
-            "retries": 1,
+            "retries": 2,
             "retry_durations": 3600,
             "verified_durations": 52
           },
@@ -816,7 +816,7 @@ read -d '' sdef <<EOF
           "deployment_overrides_signature":"",
           "priority":{
             "priority_value": 2,
-            "retries": 1,
+            "retries": 2,
             "retry_durations": 3600,
             "verified_durations": 52
           },
@@ -992,7 +992,7 @@ read -d '' msdef <<EOF
           "deployment_overrides_signature":"",
           "priority":{
             "priority_value": 3,
-            "retries": 1,
+            "retries": 2,
             "retry_durations": 3600,
             "verified_durations": 52
           },
@@ -1004,7 +1004,7 @@ read -d '' msdef <<EOF
           "deployment_overrides_signature":"",
           "priority":{
             "priority_value": 2,
-            "retries": 1,
+            "retries": 2,
             "retry_durations": 3600,
             "verified_durations": 52
           },
