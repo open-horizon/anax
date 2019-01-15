@@ -1,5 +1,7 @@
 #!/bin/bash
 
+TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
+
 function set_exports {
     if [ "$NOANAX" != "1" ]
     then

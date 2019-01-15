@@ -19,8 +19,8 @@ func LogAgreementEvent(db *bolt.DB, severity string, message string, event_code 
 }
 
 // Save the agreement eventlog into the db
-func LogAgreementEvent2(db *bolt.DB, severity, message, event_code, agreement_id string, workload persistence.WorkloadInfo, service_url []string, consumer_id, protocol string) error {
-	source := persistence.NewAgreementEventSource(agreement_id, workload, service_url, consumer_id, protocol)
+func LogAgreementEvent2(db *bolt.DB, severity, message, event_code, agreement_id string, workload persistence.WorkloadInfo, dependent_svcs persistence.ServiceSpecs, consumer_id, protocol string) error {
+	source := persistence.NewAgreementEventSource(agreement_id, workload, dependent_svcs, consumer_id, protocol)
 	eventlog := persistence.NewEventLog(severity, message, event_code, persistence.SRC_TYPE_AG, source)
 	return persistence.SaveEventLog(db, eventlog)
 }

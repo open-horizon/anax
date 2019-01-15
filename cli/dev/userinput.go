@@ -130,9 +130,11 @@ func GlobalSetAsAttributes(global []register.GlobalSet) ([]persistence.Attribute
 	// Run through each attribute in the global set of attributes and convert them into an API attributes, as if they are
 	// coming through the anax REST API.
 	for _, gs := range global {
-		attr := api.NewAttribute("", []string{}, "Global variables", false, false, map[string]interface{}{})
+		attr := api.NewAttribute("", "Global variables", false, false, map[string]interface{}{})
 		attr.Type = &gs.Type
-		attr.SensorUrls = &gs.SensorUrls
+		if gs.ServiceSpecs != nil {
+			attr.ServiceSpecs = &gs.ServiceSpecs
+		}
 		attr.Mappings = &gs.Variables
 		cliutils.Verbose("Converted userinput attribute: %v to API attribute: %v", gs, attr)
 

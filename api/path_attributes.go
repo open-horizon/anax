@@ -15,18 +15,20 @@ import (
 	"github.com/open-horizon/anax/policy"
 )
 
-func attributesContains(given []persistence.Attribute, sensorURL string, typeString string) *persistence.Attribute {
+func attributesContains(given []persistence.Attribute, sp *persistence.ServiceSpec, typeString string) *persistence.Attribute {
 	// only returns the first match and doesn't look in the db; this is sufficient for looking at POST services, but not sufficient for supporting PUT and PATCH mechanisms
 
 	for _, attr := range given {
 		if attr.GetMeta().Type == typeString {
 
-			if len(attr.GetMeta().SensorUrls) == 0 {
+			sps := persistence.GetAttributeServiceSpecs(&attr)
+
+			if sps == nil || len(*sps) == 0 {
 				return &attr
 			}
 
-			for _, url := range attr.GetMeta().SensorUrls {
-				if sensorURL == url {
+			for _, sp1 := range *sps {
+				if sp.IsSame(sp1) {
 					return &attr
 				}
 			}
@@ -37,15 +39,7 @@ func attributesContains(given []persistence.Attribute, sensorURL string, typeStr
 }
 
 func generateAttributeMetadata(given Attribute, typeName string) *persistence.AttributeMeta {
-	var sensorUrls []string
-	if given.SensorUrls == nil {
-		sensorUrls = []string{}
-	} else {
-		sensorUrls = *given.SensorUrls
-	}
-
 	return &persistence.AttributeMeta{
-		SensorUrls:  sensorUrls,
 		Label:       *given.Label,
 		Publishable: given.Publishable,
 		HostOnly:    given.HostOnly,
@@ -80,10 +74,16 @@ func parseCompute(errorhandler ErrorHandler, permitEmpty bool, given *Attribute)
 		return nil, errorhandler(NewAPIUserInputError("expected integer", "compute.mappings.cpus")), nil
 	}
 
+	sps := new(persistence.ServiceSpecs)
+	if given.ServiceSpecs != nil {
+		sps = given.ServiceSpecs
+	}
+
 	return &persistence.ComputeAttributes{
-		Meta: generateAttributeMetadata(*given, reflect.TypeOf(persistence.ComputeAttributes{}).Name()),
-		CPUs: cpus,
-		RAM:  ram,
+		Meta:         generateAttributeMetadata(*given, reflect.TypeOf(persistence.ComputeAttributes{}).Name()),
+		ServiceSpecs: sps,
+		CPUs:         cpus,
+		RAM:          ram,
 	}, false, nil
 }
 
@@ -149,14 +149,29 @@ func parseUserInput(errorhandler ErrorHandler, permitEmpty bool, given *Attribut
 		}
 	}
 
+	sps := new(persistence.ServiceSpecs)
+	if given.ServiceSpecs != nil {
+		sps = given.ServiceSpecs
+	}
+
 	return &persistence.UserInputAttributes{
-		Meta:     generateAttributeMetadata(*given, reflect.TypeOf(persistence.UserInputAttributes{}).Name()),
-		Mappings: (*given.Mappings),
+		Meta:         generateAttributeMetadata(*given, reflect.TypeOf(persistence.UserInputAttributes{}).Name()),
+		ServiceSpecs: sps,
+		Mappings:     (*given.Mappings),
 	}, false, nil
 }
 
 func parseHTTPSBasicAuth(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.HTTPSBasicAuthAttributes, bool, error) {
 	var ok bool
+
+	var server_url string
+	su, exists := (*given.Mappings)["url"]
+	if !exists {
+		return nil, errorhandler(NewAPIUserInputError("missing key", "httpsbasic.mappings.url")), nil
+	}
+	if server_url, ok = su.(string); !ok {
+		return nil, errorhandler(NewAPIUserInputError("expected string", "httpsbasic.mappings.url")), nil
+	}
 
 	var username string
 	us, exists := (*given.Mappings)["username"]
@@ -178,6 +193,7 @@ func parseHTTPSBasicAuth(errorhandler ErrorHandler, permitEmpty bool, given *Att
 
 	return &persistence.HTTPSBasicAuthAttributes{
 		Meta:     generateAttributeMetadata(*given, reflect.TypeOf(persistence.HTTPSBasicAuthAttributes{}).Name()),
+		Url:      server_url,
 		Username: username,
 		Password: password,
 	}, false, nil
@@ -197,23 +213,32 @@ func parseDockerRegistryAuth(errorhandler ErrorHandler, permitEmpty bool, given 
 				return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("array value is not a map[string]interface{}, it is %T", val), "dockerregistry.mappings.auths")), nil
 			}
 
+			if a_temp2["registry"] == nil {
+				return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("'registry' does not exist, it is %v", a_temp2), "dockerregistry.mappings.auths")), nil
+			}
+			registry, ok3 := a_temp2["registry"].(string)
+			if !ok3 {
+				return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("the registry value is not a string, it is %T", a_temp2["registry"]), "dockerregistry.mappings.auths")), nil
+			}
+
 			if a_temp2["token"] == nil {
 				return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("'token' does not exist, it is %v", a_temp2), "dockerregistry.mappings.auths")), nil
 			}
-			a_temp3, ok3 := a_temp2["token"].(string)
-			if !ok3 {
+			token, ok4 := a_temp2["token"].(string)
+			if !ok4 {
 				return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("the token value is not a string, it is %T", a_temp2["token"]), "dockerregistry.mappings.auths")), nil
 			}
 
 			// username can be omitted, the default is "token"
-			a_temp4 := "token"
+			username := "token"
 			if a_temp2["username"] != nil {
-				a_temp4, ok3 = a_temp2["username"].(string)
-				if !ok3 {
+				username, ok = a_temp2["username"].(string)
+				if !ok {
 					return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("the username value is not a string, it is %T", a_temp2["username"]), "dockerregistry.mappings.auths")), nil
 				}
 			}
-			auth_array = append(auth_array, persistence.Auth{UserName: a_temp4, Token: a_temp3})
+
+			auth_array = append(auth_array, persistence.Auth{Registry: registry, UserName: username, Token: token})
 		}
 
 		return &persistence.DockerRegistryAuthAttributes{
@@ -305,9 +330,15 @@ func parseMetering(errorhandler ErrorHandler, permitEmpty bool, given *Attribute
 		return nil, errorhandler(NewAPIUserInputError("cannot be non-zero without tokens and perTimeUnit", "metering.mappings.notificationInterval")), nil
 	}
 
+	sps := new(persistence.ServiceSpecs)
+	if given.ServiceSpecs != nil {
+		sps = given.ServiceSpecs
+	}
+
 	return &persistence.MeteringAttributes{
 		Meta:                  generateAttributeMetadata(*given, reflect.TypeOf(persistence.MeteringAttributes{}).Name()),
 		Tokens:                uint64(tokens),
+		ServiceSpecs:          sps,
 		PerTimeUnit:           perTimeUnit,
 		NotificationIntervalS: int(notificationInterval),
 	}, false, nil
@@ -318,9 +349,15 @@ func parseProperty(errorhandler ErrorHandler, permitEmpty bool, given *Attribute
 		return nil, errorhandler(NewAPIUserInputError("partial update unsupported", "property.mappings")), nil
 	}
 
+	sps := new(persistence.ServiceSpecs)
+	if given.ServiceSpecs != nil {
+		sps = given.ServiceSpecs
+	}
+
 	return &persistence.PropertyAttributes{
-		Meta:     generateAttributeMetadata(*given, reflect.TypeOf(persistence.PropertyAttributes{}).Name()),
-		Mappings: (*given.Mappings)}, false, nil
+		Meta:         generateAttributeMetadata(*given, reflect.TypeOf(persistence.PropertyAttributes{}).Name()),
+		ServiceSpecs: sps,
+		Mappings:     (*given.Mappings)}, false, nil
 }
 
 func parseCounterPartyProperty(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.CounterPartyPropertyAttributes, bool, error) {
@@ -342,9 +379,15 @@ func parseCounterPartyProperty(errorhandler ErrorHandler, permitEmpty bool, give
 	} else if err := rp.IsValid(); err != nil {
 		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("not a valid expression: %v", err), "counterpartyproperty.mappings.expression")), nil
 	} else {
+		sps := new(persistence.ServiceSpecs)
+		if given.ServiceSpecs != nil {
+			sps = given.ServiceSpecs
+		}
+
 		return &persistence.CounterPartyPropertyAttributes{
-			Meta:       generateAttributeMetadata(*given, reflect.TypeOf(persistence.CounterPartyPropertyAttributes{}).Name()),
-			Expression: rawExpression.(map[string]interface{}),
+			Meta:         generateAttributeMetadata(*given, reflect.TypeOf(persistence.CounterPartyPropertyAttributes{}).Name()),
+			ServiceSpecs: sps,
+			Expression:   rawExpression.(map[string]interface{}),
 		}, false, nil
 	}
 }
@@ -409,9 +452,15 @@ func parseAgreementProtocol(errorhandler ErrorHandler, permitEmpty bool, given *
 			return nil, errorhandler(NewAPIUserInputError("array value is empty", "agreementprotocol.mappings.protocols")), nil
 		}
 
+		sps := new(persistence.ServiceSpecs)
+		if given.ServiceSpecs != nil {
+			sps = given.ServiceSpecs
+		}
+
 		return &persistence.AgreementProtocolAttributes{
-			Meta:      generateAttributeMetadata(*given, reflect.TypeOf(persistence.AgreementProtocolAttributes{}).Name()),
-			Protocols: allProtocols,
+			Meta:         generateAttributeMetadata(*given, reflect.TypeOf(persistence.AgreementProtocolAttributes{}).Name()),
+			ServiceSpecs: sps,
+			Protocols:    allProtocols,
 		}, false, nil
 	}
 }
@@ -419,14 +468,14 @@ func parseAgreementProtocol(errorhandler ErrorHandler, permitEmpty bool, given *
 // AttributeVerifier returns true if there is a handled inputError (one that caused a write to the http responsewriter) and error if there is a system processing problem
 type AttributeVerifier func(attr persistence.Attribute) (bool, error)
 
-func toPersistedAttributesAttachedToService(errorhandler ErrorHandler, persistedDevice *persistence.ExchangeDevice, defaultRAM int64, attrs []Attribute, sensorURL string, additionalVerifiers []AttributeVerifier) ([]persistence.Attribute, bool, error) {
+func toPersistedAttributesAttachedToService(errorhandler ErrorHandler, persistedDevice *persistence.ExchangeDevice, defaultRAM int64, attrs []Attribute, sp *persistence.ServiceSpec, additionalVerifiers []AttributeVerifier) ([]persistence.Attribute, bool, error) {
 
 	additionalVerifiers = append(additionalVerifiers, func(attr persistence.Attribute) (bool, error) {
-		// can't specify sensorURLs in attributes that are a part of a service
-		sensorURLs := attr.GetMeta().SensorUrls
-		if sensorURLs != nil {
-			if len(sensorURLs) > 1 || (len(sensorURLs) == 1 && sensorURLs[0] != sensorURL) {
-				return errorhandler(NewAPIUserInputError("sensor_urls not permitted on attributes specified on a service", "service.[attribute].sensor_urls")), nil
+		// can't specify service specs in attributes that are a part of a service
+		sps := persistence.GetAttributeServiceSpecs(&attr)
+		if sps != nil {
+			if len(*sps) > 1 || (len(*sps) == 1 && !(*sps)[0].IsSame(*sp)) {
+				return errorhandler(NewAPIUserInputError("service_specs not permitted on attributes specified on a service", "service.[attribute].service_specs")), nil
 			}
 		}
 
@@ -438,7 +487,7 @@ func toPersistedAttributesAttachedToService(errorhandler ErrorHandler, persisted
 		return persistenceAttrs, inputErr, err
 	}
 
-	persistenceAttrs = FinalizeAttributesSpecifiedInService(defaultRAM, sensorURL, persistenceAttrs)
+	persistenceAttrs = FinalizeAttributesSpecifiedInService(defaultRAM, sp, persistenceAttrs)
 
 	return persistenceAttrs, inputErr, err
 }
@@ -463,10 +512,17 @@ func ValidateAndConvertAPIAttribute(errorhandler ErrorHandler, permitEmpty bool,
 	}
 
 	// always ok if this one is nil
-	if given.SensorUrls != nil {
-		for _, url := range *given.SensorUrls {
-			if bail := checkInputString(errorhandler, "sensorurl", &url); bail {
+	if given.ServiceSpecs != nil {
+		sps := *given.ServiceSpecs
+		for _, sp := range sps {
+			if bail := checkInputString(errorhandler, "service_specs", &sp.Url); bail {
 				return nil, true, nil
+			}
+
+			if sp.Org != "" {
+				if bail := checkInputString(errorhandler, "service_specs", &sp.Org); bail {
+					return nil, true, nil
+				}
 			}
 		}
 	}
@@ -596,47 +652,50 @@ func toPersistedAttributes(errorhandler ErrorHandler, permitEmpty bool, persiste
 func toOutModel(persisted persistence.Attribute) *Attribute {
 	mappings := persisted.GetGenericMappings()
 
+	sps := persistence.GetAttributeServiceSpecs(&persisted)
 	return &Attribute{
-		Id:          &persisted.GetMeta().Id,
-		SensorUrls:  &persisted.GetMeta().SensorUrls,
-		Label:       &persisted.GetMeta().Label,
-		Publishable: persisted.GetMeta().Publishable,
-		HostOnly:    persisted.GetMeta().HostOnly,
-		Type:        &persisted.GetMeta().Type,
-		Mappings:    &mappings,
+		Id:           &persisted.GetMeta().Id,
+		Label:        &persisted.GetMeta().Label,
+		Publishable:  persisted.GetMeta().Publishable,
+		HostOnly:     persisted.GetMeta().HostOnly,
+		Type:         &persisted.GetMeta().Type,
+		ServiceSpecs: sps,
+		Mappings:     &mappings,
 	}
 }
 
-func FinalizeAttributesSpecifiedInService(defaultRAM int64, sensorURL string, attributes []persistence.Attribute) []persistence.Attribute {
+func FinalizeAttributesSpecifiedInService(defaultRAM int64, sp *persistence.ServiceSpec, attributes []persistence.Attribute) []persistence.Attribute {
+
+	sps := new(persistence.ServiceSpecs)
+	sps.AppendServiceSpec(*sp)
 
 	// check for required
 	cType := reflect.TypeOf(persistence.ComputeAttributes{}).Name()
-	if attributesContains(attributes, sensorURL, cType) == nil {
+	if attributesContains(attributes, sp, cType) == nil {
 		computePub := true
 
 		attributes = append(attributes, &persistence.ComputeAttributes{
 			Meta: &persistence.AttributeMeta{
 				Id:          "compute",
-				SensorUrls:  []string{sensorURL},
 				Label:       "Compute Resources",
 				Publishable: &computePub,
 				Type:        cType,
 			},
-			CPUs: 1,
-			RAM:  defaultRAM,
+			ServiceSpecs: sps,
+			CPUs:         1,
+			RAM:          defaultRAM,
 		})
 	}
 
 	aType := reflect.TypeOf(persistence.ArchitectureAttributes{}).Name()
 	// a little weird; could a user give us an alternate architecture than the one we're going to publising in the prop?
-	if attributesContains(attributes, sensorURL, aType) == nil {
+	if attributesContains(attributes, sp, aType) == nil {
 		// make a default
 
 		archPub := true
 		attributes = append(attributes, &persistence.ArchitectureAttributes{
 			Meta: &persistence.AttributeMeta{
 				Id:          "architecture",
-				SensorUrls:  []string{sensorURL},
 				Label:       "Architecture",
 				Publishable: &(archPub),
 				Type:        aType,
@@ -646,8 +705,11 @@ func FinalizeAttributesSpecifiedInService(defaultRAM int64, sensorURL string, at
 	}
 
 	for _, attr := range attributes {
-		attr.GetMeta().AppendSensorUrl(sensorURL)
-		glog.V(3).Infof(apiLogString(fmt.Sprintf("SensorUrls for %v: %v", attr.GetMeta().Id, attr.GetMeta().SensorUrls)))
+		sps := persistence.GetAttributeServiceSpecs(&attr)
+		if sps != nil {
+			sps.AppendServiceSpec(*sp)
+			glog.V(3).Infof(apiLogString(fmt.Sprintf("ServiceSpecs for %v: %v, %v", attr.GetMeta(), *sps, *(persistence.GetAttributeServiceSpecs(&attr)))))
+		}
 	}
 
 	// return updated
@@ -656,7 +718,7 @@ func FinalizeAttributesSpecifiedInService(defaultRAM int64, sensorURL string, at
 
 func validateConcreteAttributes(errorhandler ErrorHandler, persistedDevice *persistence.ExchangeDevice, attributes []persistence.Attribute, additionalVerifiers []AttributeVerifier) (bool, error) {
 
-	// check for errors in attribute input, like specifying a sensorUrl or specifying HA Partner on a non-HA device
+	// check for errors in attribute input, like specifying HA Partner on a non-HA device
 	for _, attr := range attributes {
 		for _, verifier := range additionalVerifiers {
 			if inputErr, err := verifier(attr); inputErr || err != nil {
@@ -719,7 +781,7 @@ func payloadToAttributes(errorhandler ErrorHandler, body io.Reader, permitPartia
 // HTTP response.
 func FindAndWrapAttributesForOutput(db *bolt.DB, id string) (map[string][]Attribute, error) {
 
-	attributes, err := persistence.FindApplicableAttributes(db, "")
+	attributes, err := persistence.FindApplicableAttributes(db, "", "")
 	if err != nil {
 		return nil, fmt.Errorf("Failed fetching existing service attributes. Error: %v", err)
 	}

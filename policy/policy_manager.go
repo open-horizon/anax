@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"reflect"
 	"sync"
 )
@@ -123,7 +124,7 @@ func (self *PolicyManager) addPolicy(org string, newPolicy *Policy) error {
 
 		keyName := newPolicy.Header.Name
 		if self.APISpecCounts {
-			keyName = newPolicy.APISpecs[0].SpecRef
+			keyName = cutil.FormOrgSpecUrl(newPolicy.APISpecs[0].SpecRef, newPolicy.APISpecs[0].Org)
 		}
 
 		self.AgreementCounts[org][keyName] = cce
@@ -330,7 +331,7 @@ func (self *PolicyManager) AttemptingAgreement(policies []Policy, agreement stri
 		for _, pol := range policies {
 			keyName := pol.Header.Name
 			if self.APISpecCounts && len(pol.APISpecs) > 0 {
-				keyName = pol.APISpecs[0].SpecRef
+				keyName = cutil.FormOrgSpecUrl(pol.APISpecs[0].SpecRef, pol.APISpecs[0].Org)
 			}
 
 			if cce, there := orgMap[keyName]; !there {
@@ -370,7 +371,7 @@ func (self *PolicyManager) FinalAgreement(policies []Policy, agreement string, o
 
 			keyName := pol.Header.Name
 			if self.APISpecCounts && len(pol.APISpecs) > 0 {
-				keyName = pol.APISpecs[0].SpecRef
+				keyName = cutil.FormOrgSpecUrl(pol.APISpecs[0].SpecRef, pol.APISpecs[0].Org)
 			}
 
 			if cce, there := orgMap[keyName]; !there {
@@ -411,7 +412,7 @@ func (self *PolicyManager) CancelAgreement(policies []Policy, agreement string, 
 
 			keyName := pol.Header.Name
 			if self.APISpecCounts && len(pol.APISpecs) > 0 {
-				keyName = pol.APISpecs[0].SpecRef
+				keyName = cutil.FormOrgSpecUrl(pol.APISpecs[0].SpecRef, pol.APISpecs[0].Org)
 			}
 
 			if cce, there := orgMap[keyName]; !there {
@@ -449,7 +450,7 @@ func (self *PolicyManager) ReachedMaxAgreements(policies []Policy, org string) (
 
 			keyName := pol.Header.Name
 			if self.APISpecCounts {
-				keyName = pol.APISpecs[0].SpecRef
+				keyName = cutil.FormOrgSpecUrl(pol.APISpecs[0].SpecRef, pol.APISpecs[0].Org)
 			}
 
 			if cce, there := orgMap[keyName]; !there {
@@ -641,7 +642,7 @@ func (self *PolicyManager) GetAllAvailablePolicies(org string) []Policy {
 
 		keyName := pol.Header.Name
 		if self.APISpecCounts {
-			keyName = pol.APISpecs[0].SpecRef
+			keyName = cutil.FormOrgSpecUrl(pol.APISpecs[0].SpecRef, pol.APISpecs[0].Org)
 		}
 
 		if self.AgreementTracking && self.unlockedReachedMaxAgreements(pol, self.AgreementCounts[org][keyName].Count) {

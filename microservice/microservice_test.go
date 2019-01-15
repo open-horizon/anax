@@ -63,7 +63,7 @@ func TestMicroserviceReadyForUpgrade(t *testing.T) {
 	pms.UpgradeStartTime = uint64(0)
 
 	pms.Id = "1"
-	msi, err := persistence.NewMicroserviceInstance(db, pms.SpecRef, pms.Version, pms.Id, []persistence.ServiceInstancePathElement{})
+	msi, err := persistence.NewMicroserviceInstance(db, pms.SpecRef, pms.Org, pms.Version, pms.Id, []persistence.ServiceInstancePathElement{})
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 
 	pms.AutoUpgrade = true
@@ -166,19 +166,19 @@ func TestUnregisterServiceExchange(t *testing.T) {
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 
 	m1 := exchange.Microservice{
-		Url:           "gps",
+		Url:           "myorg/gps",
 		Properties:    nil,
 		NumAgreements: 0,
 		Policy:        "blahblah",
 	}
 	m2 := exchange.Microservice{
-		Url:           "network",
+		Url:           "myorg/network",
 		Properties:    nil,
 		NumAgreements: 0,
 		Policy:        "blahblah",
 	}
 	m3 := exchange.Microservice{
-		Url:           "pwsms",
+		Url:           "myorg/pwsms",
 		Properties:    nil,
 		NumAgreements: 0,
 		Policy:        "blahblah",
@@ -193,7 +193,7 @@ func TestUnregisterServiceExchange(t *testing.T) {
 
 	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, mss),
 		checkPutDeviceHandler(t, mss, url),
-		url, device_id, device_token, db)
+		url, org, device_id, device_token, db)
 	assert.NotNil(t, err, "Device not created in the db yet.")
 
 	// save device in db
@@ -202,12 +202,12 @@ func TestUnregisterServiceExchange(t *testing.T) {
 
 	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, nil),
 		checkPutDeviceHandler(t, nil, url),
-		url, device_id, device_token, db)
+		url, org, device_id, device_token, db)
 	assert.Nil(t, err, "no registered ms, nothing to do")
 
 	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, mss),
 		checkPutDeviceHandler(t, mss, url),
-		url, device_id, device_token, db)
+		url, org, device_id, device_token, db)
 	assert.Nil(t, err, "eveything should have worked")
 
 	err = cleanupDB(dir)

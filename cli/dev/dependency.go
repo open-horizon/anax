@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
 	"net/url"
@@ -462,8 +463,8 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 		} else {
 			// Copy the global setting so that the dependency continues to work correctly. Also tag the global setting with the
 			// dependencies URL so that the system knows it only applies to this dependency.
-			if len(depGlobal.SensorUrls) == 0 {
-				depGlobal.SensorUrls = append(depGlobal.SensorUrls, sDef.GetURL())
+			if len(depGlobal.ServiceSpecs) == 0 {
+				depGlobal.ServiceSpecs = append(depGlobal.ServiceSpecs, *persistence.NewServiceSpec(sDef.GetURL(), sDef.GetOrg()))
 			}
 			currentUIs.Global = append(currentUIs.Global, depGlobal)
 		}

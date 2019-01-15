@@ -2,6 +2,9 @@
 
 # $1 - results
 # $2 - 
+
+TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
+
 function results {
   if [ "$(echo "$1" | jq -r '.code')" != "ok" ]
   then
@@ -139,7 +142,13 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "arch":"amd64",
   "sharable":"singleton",
   "matchHardware":{},
-  "userInput":[],
+  "userInput":[
+    {
+      "name":"cpu_var1",
+      "label":"",
+      "type":"string"
+    }
+  ],
   "deployment":{
     "services":{
       "cpu":{
@@ -150,13 +159,52 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "deploymentSignature":""
 }
 EOF
-echo -e "Register cpu service $VERS:"
+echo -e "Register IBM/cpu service $VERS:"
 hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
 then
-    echo -e "hzn exchange service publish failed for CPU."
+    echo -e "hzn exchange service publish failed for IBM/cpu."
     exit 2
 fi
+
+# cpu service - needed by the e2edev/netspeed
+VERS="1.0"
+cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
+{
+  "label":"CPU service",
+  "description":"CPU service",
+  "public":true,
+  "url":"https://bluehorizon.network/service-cpu",
+  "version":"$VERS",
+  "arch":"amd64",
+  "sharable":"singleton",
+  "matchHardware":{},
+  "userInput":[
+    {
+      "name":"cpu_var1",
+      "label":"",
+      "type":"string"
+    }
+  ],
+  "deployment":{
+    "services":{
+      "cpu":{
+        "image":"openhorizon/amd64_cpu:1.2.2"
+      }
+    }
+  },
+  "deploymentSignature":""
+}
+EOF
+
+echo -e "Register e2edev/cpu service $VERS:"
+hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key
+if [ $? -ne 0 ]
+then
+    echo -e "hzn exchange service publish failed for e2edev/cpu."
+    exit 2
+fi
+
 
 # A no-op network service used by the netspeed service as a dependency.
 VERS="1.5.0"
@@ -175,9 +223,14 @@ read -d '' sdef <<EOF
   "deploymentSignature":""
 }
 EOF
-echo -e "Register network service $VERS:"
+echo -e "Register IBM/network service $VERS:"
 RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" --data @- "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
 results "$RES"
+
+echo -e "Register e2edev/network service $VERS:"
+RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" --data @- "${EXCH_URL}/orgs/e2edev/services" | jq -r '.')
+results "$RES"
+
 
 VERS="1.5.0"
 read -d '' sdef <<EOF
@@ -195,8 +248,12 @@ read -d '' sdef <<EOF
   "deploymentSignature":""
 }
 EOF
-echo -e "Register network service $VERS:"
+echo -e "Register IBM/network service $VERS:"
 RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" --data @- "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
+results "$RES"
+
+echo -e "Register e2edev/network service $VERS:"
+RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" --data @- "${EXCH_URL}/orgs/e2edev/services" | jq -r '.')
 results "$RES"
 
 
@@ -382,7 +439,8 @@ cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
   "arch":"amd64",
   "requiredServices":[
     {"url":"https://bluehorizon.network/services/network","version":"1.0.0","arch":"amd64","org":"IBM"},
-    {"url":"https://bluehorizon.network/services/network2","version":"1.0.0","arch":"amd64","org":"IBM"}
+    {"url":"https://bluehorizon.network/services/network2","version":"1.0.0","arch":"amd64","org":"IBM"},
+    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"IBM"}
   ],
   "userInput":[
     {
@@ -429,11 +487,79 @@ cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
   "deploymentSignature":""
 }
 EOF
-echo -e "Register netspeed service $VERS:"
+echo -e "Register IBM/netspeed service $VERS:"
 hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
 then
-    echo -e "hzn exchange service publish failed for Netspeed."
+    echo -e "hzn exchange service publish failed for IBM/netspeed."
+    exit 2
+fi
+
+cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
+{
+  "label":"Netspeed for x86_64",
+  "description":"Netspeed service",
+  "sharable":"multiple",
+  "public":true,
+  "url":"https://bluehorizon.network/services/netspeed",
+  "version":"$VERS",
+  "arch":"amd64",
+  "requiredServices":[
+    {"url":"https://bluehorizon.network/services/network","version":"1.0.0","arch":"amd64","org":"e2edev"},
+    {"url":"https://bluehorizon.network/services/network2","version":"1.0.0","arch":"amd64","org":"e2edev"},
+    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"e2edev"},
+    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"IBM"}
+  ],
+  "userInput":[
+    {
+      "name":"var1",
+      "label":"",
+      "type":"string"
+    },
+    {
+      "name":"var2",
+      "label":"",
+      "type":"int"
+    },
+    {
+      "name":"var3",
+      "label":"",
+      "type":"float"
+    },
+    {
+      "name":"var4",
+      "label":"",
+      "type":"list of strings"
+    },
+    {
+      "name":"var5",
+      "label":"",
+      "type":"string",
+      "defaultValue":"default"
+    },
+    {
+      "name":"var6",
+      "label":"",
+      "type":"string",
+      "defaultValue":"default"
+    }
+  ],
+  "deployment":{
+    "services":{
+      "netspeed5":{
+        "image":"openhorizon/amd64_netspeed:2.5.0",
+        "environment":["USE_NEW_STAGING_URL=false","DEPL_ENV=staging","SKIP_NUM_REPEAT_LOC_READINGS=0"]
+      }
+    }
+  },
+  "deploymentSignature":""
+}
+EOF
+echo -e "Register e2edev/netspeed service $VERS:"
+hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key
+if [ $? -ne 0 ]
+then
+    echo -e "hzn exchange service publish failed for e2edev/netspeed."
     exit 2
 fi
 
@@ -970,7 +1096,42 @@ read -d '' msdef <<EOF
           "priority":{
             "priority_value": 2,
             "retries": 1,
-            "retry_durations": 3600
+            "retry_durations": 1800
+          },
+          "upgradePolicy": {}
+        }
+      ],
+      "dataVerification": {},
+      "nodeHealth": {
+        "missing_heartbeat_interval": 120,
+        "check_agreement_status": 30
+      }
+    },
+    {
+      "serviceUrl":"https://bluehorizon.network/services/netspeed",
+      "serviceOrgid":"e2edev",
+      "serviceArch":"amd64",
+      "serviceVersions":[
+        {
+          "version":"$NSVERS",
+          "deployment_overrides":"{\\\"services\\\":{\\\"netspeed5\\\":{\\\"environment\\\":[\\\"E2EDEV_OVERRIDE=1\\\"]}}}",
+          "deployment_overrides_signature":"CoQb1Tw204vbMP0H1Faw7Sp9lHHSiIzvhlX9SEejx2kRY+x6uj7PB4fvJUBoYlWJJOkecQKDD9zdLm6hD32b+f9zMWaBdRF5Ab4pHU5gcDPpuPGnYup1ZreSe4eqPnThkGgfYIW5zcQd/vbxO9tx31EM8lJ5NrhcJ5rwhwbIPDh7Hstxi84IetNAygE1gPaTGQaJzzqATFYINwWkxjJXjihdEVuo5IvINJusHtIs7C6BIVy9+CExUXXxem1I/bzvwzY1wpKuubHxq1CddIKr+BaHAsErHIHvJQVc3JoDPgXPjVE8ew1QKjLCkC86wRbANN6rhCB2Q6+HhyaRfv8oJDz8XoLBcYw6bKerGMCxEBTuyUu0n9mTSCzEZZaaLdmxTzaLN47Svm8Gj18tT5CjvYkeSgDpISwRR0aME8YSHO6OtRKhLFGvZDzR4hu6kzyfp7aiYHRzVDrfcKhch/c0AuAEb6qEQ8nCHnSFJwEXP/3L3qKy8y8OT+42vumXTYOp7IadZ+UnFxLNJip9qnEsXFS8+WlT3PwaNMKFdg+zsJfUz5V+OXaotZKfe9PABn4+656PfngIi+N7q/unnrNSzc/BN8Dgy1FSHqVQ0UfRWST31pStJi2kS46UreIBgG9T6D/WgwnvATN3BaZkveiwDpUXRNv5nGzcWqnIerWWfL8=",
+          "priority":{
+            "priority_value": 3,
+            "retries": 1,
+            "retry_durations": 1800,
+            "verified_durations": 45
+          },
+          "upgradePolicy": {}
+        },
+        {
+          "version":"$NSVERS",
+          "deployment_overrides":"{\\\"services\\\":{\\\"netspeed5\\\":{\\\"environment\\\":[\\\"E2EDEV_OVERRIDE=1\\\"]}}}",
+          "deployment_overrides_signature":"CoQb1Tw204vbMP0H1Faw7Sp9lHHSiIzvhlX9SEejx2kRY+x6uj7PB4fvJUBoYlWJJOkecQKDD9zdLm6hD32b+f9zMWaBdRF5Ab4pHU5gcDPpuPGnYup1ZreSe4eqPnThkGgfYIW5zcQd/vbxO9tx31EM8lJ5NrhcJ5rwhwbIPDh7Hstxi84IetNAygE1gPaTGQaJzzqATFYINwWkxjJXjihdEVuo5IvINJusHtIs7C6BIVy9+CExUXXxem1I/bzvwzY1wpKuubHxq1CddIKr+BaHAsErHIHvJQVc3JoDPgXPjVE8ew1QKjLCkC86wRbANN6rhCB2Q6+HhyaRfv8oJDz8XoLBcYw6bKerGMCxEBTuyUu0n9mTSCzEZZaaLdmxTzaLN47Svm8Gj18tT5CjvYkeSgDpISwRR0aME8YSHO6OtRKhLFGvZDzR4hu6kzyfp7aiYHRzVDrfcKhch/c0AuAEb6qEQ8nCHnSFJwEXP/3L3qKy8y8OT+42vumXTYOp7IadZ+UnFxLNJip9qnEsXFS8+WlT3PwaNMKFdg+zsJfUz5V+OXaotZKfe9PABn4+656PfngIi+N7q/unnrNSzc/BN8Dgy1FSHqVQ0UfRWST31pStJi2kS46UreIBgG9T6D/WgwnvATN3BaZkveiwDpUXRNv5nGzcWqnIerWWfL8=",
+          "priority":{
+            "priority_value": 2,
+            "retries": 1,
+            "retry_durations": 1800
           },
           "upgradePolicy": {}
         }
@@ -1077,6 +1238,11 @@ read -d '' msdef <<EOF
   ]
 }
 EOF
+
+if [[ $TEST_DIFF_ORG -eq 0 ]]; then
+  msdef=$(echo $msdef |jq 'del(.services[] | select(.serviceUrl == "https://bluehorizon.network/services/netspeed") | select(.serviceOrgid == "e2edev"))')
+fi
+
 echo -e "Register service based all pattern:"
 RES=$(echo "$msdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev/patterns/sall" | jq -r '.')
 results "$RES"

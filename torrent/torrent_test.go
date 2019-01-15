@@ -62,28 +62,26 @@ func Test_ExtractAuthAttributes(t *testing.T) {
 
 	// docker auths
 	meta_data1 := persistence.AttributeMeta{
-		SensorUrls:  []string{"myrepo1.com"},
 		Label:       "test1",
 		Publishable: &publishable,
 		HostOnly:    &host_only,
 		Type:        reflect.TypeOf(persistence.DockerRegistryAuthAttributes{}).Name(),
 	}
 	var auth_array1 []persistence.Auth
-	auth_array1 = append(auth_array1, persistence.Auth{Token: "t11"}, persistence.Auth{UserName: "iamapikey", Token: "t12"})
+	auth_array1 = append(auth_array1, persistence.Auth{Registry: "myrepo1.com", Token: "t11"}, persistence.Auth{Registry: "myrepo1.com", UserName: "iamapikey", Token: "t12"})
 	auth_attrib1 := persistence.DockerRegistryAuthAttributes{
 		Meta:  &meta_data1,
 		Auths: auth_array1,
 	}
 
 	meta_data2 := persistence.AttributeMeta{
-		SensorUrls:  []string{"myrepo2.com"},
 		Label:       "test2",
 		Publishable: &publishable,
 		HostOnly:    &host_only,
 		Type:        reflect.TypeOf(persistence.DockerRegistryAuthAttributes{}).Name(),
 	}
 	var auth_array2 []persistence.Auth
-	auth_array2 = append(auth_array2, persistence.Auth{UserName: "token", Token: "t21"}, persistence.Auth{Token: "t22"}, persistence.Auth{Token: "t23"})
+	auth_array2 = append(auth_array2, persistence.Auth{Registry: "myrepo2.com", UserName: "token", Token: "t21"}, persistence.Auth{Registry: "myrepo2.com", Token: "t22"}, persistence.Auth{Registry: "myrepo2.com", Token: "t23"})
 	auth_attrib2 := persistence.DockerRegistryAuthAttributes{
 		Meta:  &meta_data2,
 		Auths: auth_array2,
@@ -91,7 +89,6 @@ func Test_ExtractAuthAttributes(t *testing.T) {
 
 	// http auth
 	meta_data3 := persistence.AttributeMeta{
-		SensorUrls:  []string{"http://myrepo3.com"},
 		Label:       "test3",
 		Publishable: &publishable,
 		HostOnly:    &host_only,
@@ -99,12 +96,12 @@ func Test_ExtractAuthAttributes(t *testing.T) {
 	}
 	auth_attrib3 := persistence.HTTPSBasicAuthAttributes{
 		Meta:     &meta_data3,
+		Url:      "http://myrepo3.com",
 		Username: "user3",
 		Password: "password3",
 	}
 
 	meta_data4 := persistence.AttributeMeta{
-		SensorUrls:  []string{"http://myrepo4.com"},
 		Label:       "test3",
 		Publishable: &publishable,
 		HostOnly:    &host_only,
@@ -112,6 +109,7 @@ func Test_ExtractAuthAttributes(t *testing.T) {
 	}
 	auth_attrib4 := persistence.HTTPSBasicAuthAttributes{
 		Meta:     &meta_data4,
+		Url:      "http://myrepo4.com",
 		Username: "user4",
 		Password: "password4",
 	}
@@ -148,28 +146,26 @@ func Test_authExchange(t *testing.T) {
 
 	// docker auths
 	meta_data1 := persistence.AttributeMeta{
-		SensorUrls:  []string{"myrepo1.com"},
 		Label:       "test1",
 		Publishable: &publishable,
 		HostOnly:    &host_only,
 		Type:        reflect.TypeOf(persistence.DockerRegistryAuthAttributes{}).Name(),
 	}
 	var auth_array1 []persistence.Auth
-	auth_array1 = append(auth_array1, persistence.Auth{Token: "t11"}, persistence.Auth{UserName: "iamapikey", Token: "t12"})
+	auth_array1 = append(auth_array1, persistence.Auth{Registry: "myrepo1.com", Token: "t11"}, persistence.Auth{Registry: "myrepo1.com", UserName: "iamapikey", Token: "t12"})
 	auth_attrib1 := persistence.DockerRegistryAuthAttributes{
 		Meta:  &meta_data1,
 		Auths: auth_array1,
 	}
 
 	meta_data2 := persistence.AttributeMeta{
-		SensorUrls:  []string{"myrepo2.com"},
 		Label:       "test2",
 		Publishable: &publishable,
 		HostOnly:    &host_only,
 		Type:        reflect.TypeOf(persistence.DockerRegistryAuthAttributes{}).Name(),
 	}
 	var auth_array2 []persistence.Auth
-	auth_array2 = append(auth_array2, persistence.Auth{UserName: "token", Token: "t21"}, persistence.Auth{Token: "t22"}, persistence.Auth{Token: "t23"})
+	auth_array2 = append(auth_array2, persistence.Auth{Registry: "myrepo2.com", UserName: "token", Token: "t21"}, persistence.Auth{Registry: "myrepo2.com", Token: "t22"}, persistence.Auth{Registry: "myrepo2.com", Token: "t23"})
 	auth_attrib2 := persistence.DockerRegistryAuthAttributes{
 		Meta:  &meta_data2,
 		Auths: auth_array2,
@@ -177,7 +173,6 @@ func Test_authExchange(t *testing.T) {
 
 	// http auth
 	meta_data3 := persistence.AttributeMeta{
-		SensorUrls:  []string{"http://myrepo3.com"},
 		Label:       "test3",
 		Publishable: &publishable,
 		HostOnly:    &host_only,
@@ -185,6 +180,7 @@ func Test_authExchange(t *testing.T) {
 	}
 	auth_attrib3 := persistence.HTTPSBasicAuthAttributes{
 		Meta:     &meta_data3,
+		Url:      "http://myrepo3.com",
 		Username: "user3",
 		Password: "password3",
 	}

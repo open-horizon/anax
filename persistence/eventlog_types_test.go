@@ -9,9 +9,16 @@ import (
 
 func Test_AgreementEventSource_Matches(t *testing.T) {
 
-	source1 := NewAgreementEventSource("agreement id 1", WorkloadInfo{"http://top1.com", "mycomp", "1.0.0", "amd64"}, []string{"http://mycom.com", "http://service12.com"}, "agbot1", "basic")
-	source2 := NewAgreementEventSource("agreement id 2", WorkloadInfo{"http://top2.com", "mycomp", "1.0.0", "amd64"}, []string{"http://mycom21.com", "http://mycome22.com"}, "agbot2", "cs")
-	source3 := NewAgreementEventSource("agreement id 3", WorkloadInfo{"http://top3.com", "mycomp", "1.0.0", "amd64"}, []string{"http://service31.com", "http://service32.com"}, "agbot1", "basic")
+	sp11 := ServiceSpec{Url: "http://mycom.com", Org: "mycom"}
+	sp12 := ServiceSpec{Url: "http://service12.com", Org: "service12"}
+	sp21 := ServiceSpec{Url: "http://mycom21.com", Org: "mycom21"}
+	sp22 := ServiceSpec{Url: "http://mycome22.com", Org: "mycome22"}
+	sp31 := ServiceSpec{Url: "http://service31.com", Org: "service31"}
+	sp32 := ServiceSpec{Url: "http://service32.com", Org: "service32"}
+
+	source1 := NewAgreementEventSource("agreement id 1", WorkloadInfo{"http://top1.com", "mycomp", "1.0.0", "amd64"}, []ServiceSpec{sp11, sp12}, "agbot1", "basic")
+	source2 := NewAgreementEventSource("agreement id 2", WorkloadInfo{"http://top2.com", "mycomp", "1.0.0", "amd64"}, []ServiceSpec{sp21, sp22}, "agbot2", "cs")
+	source3 := NewAgreementEventSource("agreement id 3", WorkloadInfo{"http://top3.com", "mycomp", "1.0.0", "amd64"}, []ServiceSpec{sp31, sp32}, "agbot1", "basic")
 
 	s1 := []Selector{{"~", "service"}}
 	s2 := []Selector{{"~", "id"}}

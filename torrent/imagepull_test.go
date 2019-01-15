@@ -18,28 +18,26 @@ func Test_authDockerFile(t *testing.T) {
 
 	// docker auths
 	meta_data1 := persistence.AttributeMeta{
-		SensorUrls:  []string{"myrepo1.com"},
 		Label:       "test1",
 		Publishable: &publishable,
 		HostOnly:    &host_only,
 		Type:        reflect.TypeOf(persistence.DockerRegistryAuthAttributes{}).Name(),
 	}
 	var auth_array1 []persistence.Auth
-	auth_array1 = append(auth_array1, persistence.Auth{Token: "t11"}, persistence.Auth{UserName: "iamapikey", Token: "t12"})
+	auth_array1 = append(auth_array1, persistence.Auth{Registry: "myrepo1.com", Token: "t11"}, persistence.Auth{Registry: "myrepo1.com", UserName: "iamapikey", Token: "t12"})
 	auth_attrib1 := persistence.DockerRegistryAuthAttributes{
 		Meta:  &meta_data1,
 		Auths: auth_array1,
 	}
 
 	meta_data2 := persistence.AttributeMeta{
-		SensorUrls:  []string{"myrepo2.com"},
 		Label:       "test2",
 		Publishable: &publishable,
 		HostOnly:    &host_only,
 		Type:        reflect.TypeOf(persistence.DockerRegistryAuthAttributes{}).Name(),
 	}
 	var auth_array2 []persistence.Auth
-	auth_array2 = append(auth_array2, persistence.Auth{UserName: "token", Token: "t21"}, persistence.Auth{Token: "t22"}, persistence.Auth{Token: "t23"})
+	auth_array2 = append(auth_array2, persistence.Auth{Registry: "myrepo2.com", UserName: "token", Token: "t21"}, persistence.Auth{Registry: "myrepo2.com", Token: "t22"}, persistence.Auth{Registry: "myrepo2.com", Token: "t23"})
 	auth_attrib2 := persistence.DockerRegistryAuthAttributes{
 		Meta:  &meta_data2,
 		Auths: auth_array2,
@@ -62,6 +60,6 @@ func Test_authDockerFile(t *testing.T) {
 	assert.Equal(t, 3, len(dockerAuthConfigurations), "the docker auth should have 3 elements.")
 	assert.Equal(t, 2, len(dockerAuthConfigurations["myrepo1.com"]), "The docker auth array should have 2 items.")
 	assert.Equal(t, 4, len(dockerAuthConfigurations["myrepo2.com"]), "The docker auth array should have 4 items.")
-	assert.Equal(t, 1, len(dockerAuthConfigurations["myrepo3.com"]), "The docker auth array should have 4 items.")
+	assert.Equal(t, 1, len(dockerAuthConfigurations["myrepo3.com"]), "The docker auth array should have 1 items.")
 
 }

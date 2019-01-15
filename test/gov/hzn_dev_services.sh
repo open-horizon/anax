@@ -64,7 +64,7 @@ function createProject {
     sed -e 's|"image": ""|"image": "localhost:443/amd64_'$9':1.0"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e '/"ENV_VAR_HERE=SOME_VALUE"/d' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
 
-    sed -e '/"global"/,+8d' ${userInput} > ${userInput}.tmp && mv ${userInput}.tmp ${userInput}
+    sed -e '/"global"/,+7d' ${userInput} > ${userInput}.tmp && mv ${userInput}.tmp ${userInput}
     sed -e 's|"url": ""|"url": "'${serviceURL}'"|' ${userInput} > ${userInput}.tmp && mv ${userInput}.tmp ${userInput}
     sed -e 's|"my_variable": "some_value"|"'$6'": "'$8'"|' ${userInput} > ${userInput}.tmp && mv ${userInput}.tmp ${userInput}
 

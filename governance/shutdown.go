@@ -273,7 +273,7 @@ func (w *GovernanceWorker) patchNodeKey() error {
 // Remove all attributes from the DB.
 func (w *GovernanceWorker) deleteAttributes() error {
 	// Retrieve all attributes in the DB.
-	attrs, err := persistence.FindApplicableAttributes(w.db, "")
+	attrs, err := persistence.FindApplicableAttributes(w.db, "", "")
 	if err != nil {
 		return errors.New(fmt.Sprintf("unable to retrieve attribute objects from database, error: %v", err))
 	} else if attrs == nil || len(attrs) == 0 {

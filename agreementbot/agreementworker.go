@@ -240,7 +240,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 					// Run through all the services on the node that are required by this workload and merge those policies.
 					for _, devMS := range services {
 						// Find the device's service definition based on the services needed by the workload.
-						if devMS.Url == apiSpec.SpecRef {
+						if devMS.Url == cutil.FormOrgSpecUrl(apiSpec.SpecRef, apiSpec.Org) || devMS.Url == apiSpec.SpecRef {
 							if pol, err := policy.DemarshalPolicy(devMS.Policy); err != nil {
 								glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error demarshalling device %v policy, error: %v", wi.Device.Id, err)))
 								return

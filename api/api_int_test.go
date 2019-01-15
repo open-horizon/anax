@@ -142,13 +142,14 @@ func Test_API_attribute_Suite(suite *testing.T) {
 		suite.Error(err)
 	}
 
-	sensorUrl := `https://bluehorizon.network/doc/locsampler`
+	sp := persistence.ServiceSpec{Url: "https://bluehorizon.network/doc/locsampler", Org: "myorg"}
+	sps := new(persistence.ServiceSpecs)
+	sps.AppendServiceSpec(sp)
 
 	bF := false
 	loc, err := persistence.SaveOrUpdateAttribute(db, &persistence.LocationAttributes{
 		Meta: &persistence.AttributeMeta{
 			Id:          "",
-			SensorUrls:  []string{fmt.Sprintf("%v%s", sensorUrl, "-1")},
 			Label:       "My Location",
 			HostOnly:    &bF,
 			Publishable: &bF,
@@ -164,12 +165,12 @@ func Test_API_attribute_Suite(suite *testing.T) {
 	_, err = persistence.SaveOrUpdateAttribute(db, &persistence.UserInputAttributes{
 		Meta: &persistence.AttributeMeta{
 			Id:          "",
-			SensorUrls:  []string{sensorUrl},
 			Label:       "Defs",
 			HostOnly:    &bF,
 			Publishable: &bF,
 			Type:        "UserInputAttributes",
 		},
+		ServiceSpecs: sps,
 		Mappings: map[string]interface{}{
 			"SAMPLE_INTERVAL": "5s",
 		},
@@ -309,8 +310,11 @@ vTLlpah1Y8Dvd1Mg6DorvN7eHb+R9pRYz6m/ll84KeLHyX+ml9Yj9Xem+H7MMYh7
 	pubMapping := []byte(`{
 			"type": "UserInputAttributes",
 			"label": "Application Mappings",
-			"SensorUrls": ["https://foo", "https://goo"],
 			"publishable":	false,
+			"service_specs": [
+			    {"url": "https://foo", "organization": "myorg"},
+			    {"url": "https://goo", "organization": "myorg2"}
+			],
 			"mappings": {
 				"KEY": "VALUE"
 			}}`)
@@ -342,8 +346,10 @@ vTLlpah1Y8Dvd1Mg6DorvN7eHb+R9pRYz6m/ll84KeLHyX+ml9Yj9Xem+H7MMYh7
 			{
             "type": "UserInputAttributes",
             "label": "Application Mappings",
-			"sensor_urls": ["https://zoo"],
-            "publishable":  false,
+           "publishable":  false,
+			"service_specs": [
+			    {"url": "https://zoo", "organization": "myorg"}
+			],
             "mappings": {
                 "KEY": "NEWVALUE"
             }}
@@ -395,7 +401,7 @@ vTLlpah1Y8Dvd1Mg6DorvN7eHb+R9pRYz6m/ll84KeLHyX+ml9Yj9Xem+H7MMYh7
 			}
 		`), true)
 		assert.EqualValues(t, true, (*(*responseAttr).Publishable))
-		assert.Contains(t, (*(*responseAttr).SensorUrls), "https://zoo")
+		assert.Contains(t, (*(*responseAttr).ServiceSpecs), persistence.ServiceSpec{Url: "https://zoo", Org: "myorg"})
 	})
 
 	suite.Run("Update using PATCH to /attribute/{id} is rejected if no type is specified", func(t *testing.T) {
