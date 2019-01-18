@@ -15,9 +15,13 @@ CLI_COMPLETION_DIR := cli/bash_completion
 DEFAULT_UI = api/static/index.html
 
 ANAX_CONTAINER_DIR := anax-in-container
-DOCKER_IMAGE_VERSION ?= 2.20.2
-DOCKER_IMAGE = openhorizon/$(arch)_anax:$(DOCKER_IMAGE_VERSION)
-DOCKER_IMAGE_LATEST = openhorizon/$(arch)_anax:latest
+DOCKER_IMAGE_VERSION ?= 2.20.5
+DOCKER_IMAGE_BASE = openhorizon/$(arch)_anax
+DOCKER_IMAGE = $(DOCKER_IMAGE_BASE):$(DOCKER_IMAGE_VERSION)
+DOCKER_IMAGE_STG = $(DOCKER_IMAGE_BASE):testing
+DOCKER_IMAGE_PROD = $(DOCKER_IMAGE_BASE):stable
+# the latest tag is the same as stable
+DOCKER_IMAGE_LATEST = $(DOCKER_IMAGE_BASE):latest
 # By default we do not use cache for the anax container build, so it picks up the latest horizon deb pkgs. If you do want to use the cache: DOCKER_MAYBE_CACHE='' make docker-image
 DOCKER_MAYBE_CACHE ?= --no-cache
 
@@ -77,9 +81,11 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 
 # Build the horizon-cli pkg for mac
 #todo: these targets should be moved into the official horizon build process
-export MAC_PKG_VERSION ?= 2.20.2
+export MAC_PKG_VERSION ?= 2.20.5
 MAC_PKG_IDENTIFIER ?= com.github.open-horizon.pkg.horizon-cli
 MAC_PKG_INSTALL_DIR ?= /Users/Shared/horizon-cli
+APT_REPO_HOST ?= 169.45.88.181
+APT_REPO_DIR ?= /vol/aptrepo-local/repositories/view-public
 
 # Inserts the version into version.go in prep for the macpkg build
 temp-mod-version:
@@ -104,11 +110,16 @@ macpkg: temp-mod-version $(CLI_EXECUTABLE) temp-mod-version-undo
 	cp $(CLI_COMPLETION_DIR)/hzn_bash_autocomplete.sh pkg/mac/horizon-cli/share/horizon
 	pkgbuild --root pkg/mac/horizon-cli --scripts pkg/mac/scripts --identifier $(MAC_PKG_IDENTIFIER) --version $(MAC_PKG_VERSION) --install-location $(MAC_PKG_INSTALL_DIR) pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg
 
-# Upload the pkg to our apt repo svr (aptrepo-sjc03-1), so users can get to it at http://pkg.bluehorizon.network/macos/
+# Upload the pkg to the staging dir of our apt repo svr (aptrepo-sjc03-1), so users can get to it at http://pkg.bluehorizon.network/macos/
 #todo: For now, you must have ssh access to the apt repo svr for this to work
 macupload: macpkg
-	@echo "Uploading pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg to http://pkg.bluehorizon.network/macos/"
-	rsync -avz pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg root@169.45.88.181:/vol/aptrepo-local/repositories/view-public/macos/
+	@echo "Uploading pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg to http://pkg.bluehorizon.network/macos/testing/"
+	rsync -avz pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg root@$(APT_REPO_HOST):$(APT_REPO_DIR)/macos/testing
+
+# This target promotes the last version you uploaded to staging, so assumes MAC_PKG_VERSION is still set to that version
+promote-mac-pkg:
+	@echo "Promoting horizon-cli-$(MAC_PKG_VERSION).pkg"
+	ssh root@$(APT_REPO_HOST) 'cp $(APT_REPO_DIR)/macos/testing/horizon-cli-$(MAC_PKG_VERSION).pkg $(APT_REPO_DIR)/macos'
 
 macinstall: macpkg
 	sudo installer -pkg pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg -target '/Volumes/Macintosh HD'
@@ -122,15 +133,25 @@ docker-image:
 	@echo "Producing anax docker image $(DOCKER_IMAGE)"
 	if [[ $(arch) == "amd64" ]]; then \
 	  cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(DOCKER_IMAGE) -f ./Dockerfile.$(arch) . && \
-	  docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE_LATEST); \
+	  docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE_STG); \
 	else echo "Building the anax docker image is not supported on $(arch)"; fi
 
+# Pushes the docker image with the staging tag
 docker-push-only:
 	@echo "Pushing anax docker image $(DOCKER_IMAGE)"
 	docker push $(DOCKER_IMAGE)
-	docker push $(DOCKER_IMAGE_LATEST)
+	docker push $(DOCKER_IMAGE_STG)
 
 docker-push: docker-image docker-push-only
+
+promote-docker:
+	@echo "Promoting $(DOCKER_IMAGE_STG)"
+	docker tag $(DOCKER_IMAGE_STG) $(DOCKER_IMAGE_PROD)
+	docker push $(DOCKER_IMAGE_PROD)
+	docker tag $(DOCKER_IMAGE_STG) $(DOCKER_IMAGE_LATEST)
+	docker push $(DOCKER_IMAGE_LATEST)
+
+promote-mac-pkg-and-docker: promote-mac-pkg promote-docker
 
 clean: mostlyclean
 	@echo "Clean"
@@ -231,4 +252,4 @@ diagrams:
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/protocolSequenceDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/horizonSequenceDiagram.txt
 
-.PHONY: check clean deps format gopathlinks install lint mostlyclean pull test test-integration docker-image docker-push
+.PHONY: check clean deps format gopathlinks install lint mostlyclean pull test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-docker
