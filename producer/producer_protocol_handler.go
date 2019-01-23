@@ -160,7 +160,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 			persistence.EC_ERROR_IN_PROPOSAL,
 			proposal.AgreementId(),
 			persistence.WorkloadInfo{},
-			[]string{},
+			[]persistence.ServiceSpec{},
 			proposal.ConsumerId(),
 			proposal.Protocol())
 
@@ -175,11 +175,11 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 		eventlog.LogAgreementEvent2(
 			w.db,
 			persistence.SEVERITY_INFO,
-			fmt.Sprintf("Node received Proposal message for service %v from the agbot %v.", wls, proposal.ConsumerId()),
+			fmt.Sprintf("Node received Proposal message for service %v/%v from the agbot %v.", worg, wls, proposal.ConsumerId()),
 			persistence.EC_RECEIVED_PROPOSAL,
 			proposal.AgreementId(),
 			persistence.WorkloadInfo{URL: wls, Org: worg, Version: wversion, Arch: warch},
-			(&tcPolicy.APISpecs).AsStringArray(),
+			ConvertToServiceSpecs(tcPolicy.APISpecs),
 			proposal.ConsumerId(),
 			proposal.Protocol())
 
@@ -226,11 +226,11 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 					eventlog.LogAgreementEvent2(
 						w.db,
 						persistence.SEVERITY_INFO,
-						fmt.Sprintf("Node rejected the proposal for service %v.", wls),
+						fmt.Sprintf("Node rejected the proposal for service %v/%v.", worg, wls),
 						persistence.EC_REJECT_PROPOSAL,
 						proposal.AgreementId(),
 						persistence.WorkloadInfo{URL: wls, Org: worg, Version: wversion, Arch: warch},
-						(&tcPolicy.APISpecs).AsStringArray(),
+						ConvertToServiceSpecs(tcPolicy.APISpecs),
 						proposal.ConsumerId(),
 						proposal.Protocol())
 				}
@@ -242,11 +242,11 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 			eventlog.LogAgreementEvent2(
 				w.db,
 				persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error handling proposal for service %v. Error: %v", wls, err_log_event),
+				fmt.Sprintf("Error handling proposal for service %v/%v. Error: %v", worg, wls, err_log_event),
 				persistence.EC_ERROR_PROCESSING_PROPOSAL,
 				proposal.AgreementId(),
 				persistence.WorkloadInfo{URL: wls, Org: worg, Version: wversion, Arch: warch},
-				(&tcPolicy.APISpecs).AsStringArray(),
+				ConvertToServiceSpecs(tcPolicy.APISpecs),
 				proposal.ConsumerId(),
 				proposal.Protocol())
 		}
@@ -360,7 +360,7 @@ func (w *BaseProducerProtocolHandler) FindAgreementWithSameWorkload(ph abstractp
 func (w *BaseProducerProtocolHandler) PersistProposal(proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, tcPolicy *policy.Policy, protocolMsg string) {
 	if wi, err := persistence.NewWorkloadInfo(tcPolicy.Workloads[0].WorkloadURL, tcPolicy.Workloads[0].Org, tcPolicy.Workloads[0].Version, tcPolicy.Workloads[0].Arch); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error creating workload info object from %v, error: %v", tcPolicy.Workloads[0], err)))
-	} else if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, w.Name(), proposal.Version(), (&tcPolicy.APISpecs).AsStringArray(), "", proposal.ConsumerId(), "", "", "", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, w.Name(), proposal.Version(), ConvertToServiceSpecs(tcPolicy.APISpecs), "", proposal.ConsumerId(), "", "", "", wi); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId(), err)))
 	}
 }
@@ -549,4 +549,15 @@ func NewBCWritableCommand(msg *events.AccountFundedMessage) *BCWritableCommand {
 
 var BPPHlogString = func(p string, v interface{}) string {
 	return fmt.Sprintf("Base Producer Protocol Handler (%v): %v", p, v)
+}
+
+// This function converts an array of APISpecification to an array of ServiceSpec
+func ConvertToServiceSpecs(apiSpecs policy.APISpecList) persistence.ServiceSpecs {
+	sps := make([]persistence.ServiceSpec, 0)
+	if apiSpecs != nil && len(apiSpecs) > 0 {
+		for _, as := range apiSpecs {
+			sps = append(sps, persistence.ServiceSpec{Url: as.SpecRef, Org: as.Org})
+		}
+	}
+	return sps
 }

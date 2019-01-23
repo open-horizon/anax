@@ -733,7 +733,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "${ERR:0:75}" != "Duplicate registration for https://bluehorizon.network/services/testservice" ]
+if [ "${ERR:0:82}" != "Duplicate registration for e2edev/https://bluehorizon.network/services/testservice" ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2

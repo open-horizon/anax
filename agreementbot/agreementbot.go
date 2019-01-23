@@ -9,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
@@ -870,7 +871,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, polOrg string) (
 					if newMS, err := w.makeNewMSSearchElement(rs.SpecRef, rs.Org, "", arch, pol); err != nil {
 						return nil, err
 					} else {
-						msMap[rs.SpecRef] = newMS
+						msMap[cutil.FormOrgSpecUrl(rs.SpecRef, rs.Org)] = newMS
 					}
 				}
 			}
@@ -914,7 +915,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, polOrg string) (
 
 func (w *AgreementBotWorker) makeNewMSSearchElement(specRef string, org string, version string, arch string, pol *policy.Policy) (*exchange.Microservice, error) {
 	newMS := new(exchange.Microservice)
-	newMS.Url = specRef
+	newMS.Url = cutil.FormOrgSpecUrl(specRef, org)
 	newMS.NumAgreements = 1
 
 	if props, err := RetrieveAllProperties(version, arch, pol); err != nil {

@@ -28,16 +28,19 @@ func Test_LogEvent(t *testing.T) {
 	}
 	defer cleanTestDir(dir)
 
+	sp := persistence.ServiceSpec{Url: "http://sensor.org", Org: "myorg"}
+	sps := []persistence.ServiceSpec{sp}
+
 	// agreement source type
 	wi, _ := persistence.NewWorkloadInfo("url", "org", "version", "")
-	ag1, err1 := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, []string{"http://sensor1.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi)
+	ag1, err1 := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi)
 	if err1 != nil {
 		t.Errorf("error writing agreement1: %v", err1)
 	}
 	src1 := persistence.NewAgreementEventSourceFromAg(*ag1)
 
 	// service source type
-	svc1, err1 := persistence.NewMicroserviceInstance(db, "http://sensor1.org", "1.2.0", "1", []persistence.ServiceInstancePathElement{})
+	svc1, err1 := persistence.NewMicroserviceInstance(db, "http://sensor1.org", "myorg", "1.2.0", "1", []persistence.ServiceInstancePathElement{})
 	if err1 != nil {
 		t.Errorf("error writing agreement1: %v", err1)
 	}
@@ -59,6 +62,12 @@ func Test_LogEvent(t *testing.T) {
 		t.Errorf("error getting event logs: %v", err)
 	} else {
 		assert.Equal(t, 4, len(elogs), "Test GetEventLogs without selection. Total 12 entries.")
+	}
+
+	if elogs, err := GetEventLogs(db, true, map[string][]persistence.Selector{"dependent_services": {{"~", "sensor"}}}); err != nil {
+		t.Errorf("error getting event logs: %v", err)
+	} else {
+		assert.Equal(t, 2, len(elogs), "Test GetEventLogs with selection.")
 	}
 
 	if elogs, err := GetEventLogs(db, true, map[string][]persistence.Selector{"service_url": {{"~", "sensor"}}}); err != nil {
@@ -94,16 +103,20 @@ func Test_LogAgreementEvent(t *testing.T) {
 	}
 	defer cleanTestDir(dir)
 
+	sp1 := persistence.ServiceSpec{Url: "http://sensor1.org", Org: "sensor1"}
+	sp2 := persistence.ServiceSpec{Url: "http://mycomp.org", Org: "myorg"}
+	sp3 := persistence.ServiceSpec{Url: "http://sensor3.org", Org: "sensor3"}
+
 	wi, _ := persistence.NewWorkloadInfo("url", "org", "version", "")
-	ag1, err1 := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, []string{"http://sensor1.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi)
+	ag1, err1 := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, []persistence.ServiceSpec{sp1}, "signature", "address", "bcType", "bcName", "bcOrg", wi)
 	if err1 != nil {
 		t.Errorf("error writing agreement1: %v", err1)
 	}
-	ag2, err2 := persistence.NewEstablishedAgreement(db, "name2", "agreementId2", "consumerId", "{}", "Basic", 1, []string{"http://mycomp.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi)
+	ag2, err2 := persistence.NewEstablishedAgreement(db, "name2", "agreementId2", "consumerId", "{}", "Basic", 1, []persistence.ServiceSpec{sp2}, "signature", "address", "bcType", "bcName", "bcOrg", wi)
 	if err2 != nil {
 		t.Errorf("error writing agreement2: %v", err2)
 	}
-	ag3, err3 := persistence.NewEstablishedAgreement(db, "name3", "agreementId3", "consumerId", "{}", "Basic", 1, []string{"http://sensor3.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi)
+	ag3, err3 := persistence.NewEstablishedAgreement(db, "name3", "agreementId3", "consumerId", "{}", "Basic", 1, []persistence.ServiceSpec{sp3}, "signature", "address", "bcType", "bcName", "bcOrg", wi)
 	if err3 != nil {
 		t.Errorf("error writing agreement3: %v", err3)
 	}
@@ -176,30 +189,34 @@ func Test_LogAgreementEvent2(t *testing.T) {
 	}
 	defer cleanTestDir(dir)
 
+	sp1 := persistence.ServiceSpec{Url: "http://sensor1.org", Org: "sensor1"}
+	sp2 := persistence.ServiceSpec{Url: "http://mycomp.org", Org: "myorg"}
+	sp3 := persistence.ServiceSpec{Url: "http://sensor3.org", Org: "sensor3"}
+
 	// save event logs
-	if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "proposal received.", persistence.EC_RECEIVED_PROPOSAL, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []string{"http://sensor1.org"}, "consumerId", "Basic"); err != nil {
+	if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "proposal received.", persistence.EC_RECEIVED_PROPOSAL, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp1}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "reply sent.", persistence.EC_RECEIVED_REPLYACK_MESSAGE, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []string{"http://sensor1.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "reply sent.", persistence.EC_RECEIVED_REPLYACK_MESSAGE, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp1}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "proposal received.", persistence.EC_RECEIVED_PROPOSAL, "agreementId2", persistence.WorkloadInfo{"http://top2.com", "myorg", "1.0.0", "amd64"}, []string{"http://mycomp.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "proposal received.", persistence.EC_RECEIVED_PROPOSAL, "agreementId2", persistence.WorkloadInfo{"http://top2.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp2}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "proposal received.", persistence.EC_RECEIVED_PROPOSAL, "agreementId3", persistence.WorkloadInfo{"http://top3.com", "myorg", "1.0.0", "amd64"}, []string{"http://sensor3.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "proposal received.", persistence.EC_RECEIVED_PROPOSAL, "agreementId3", persistence.WorkloadInfo{"http://top3.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp3}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "reply sent.", persistence.EC_RECEIVED_REPLYACK_MESSAGE, "agreementId2", persistence.WorkloadInfo{"http://top2.com", "myorg", "1.0.0", "amd64"}, []string{"http://mycomp.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "reply sent.", persistence.EC_RECEIVED_REPLYACK_MESSAGE, "agreementId2", persistence.WorkloadInfo{"http://top2.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp2}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "agreement finalized.", persistence.EC_AGREEMENT_REACHED, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []string{"http://sensor1.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "agreement finalized.", persistence.EC_AGREEMENT_REACHED, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp1}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "reply sent.", persistence.EC_RECEIVED_REPLYACK_MESSAGE, "agreementId3", persistence.WorkloadInfo{"http://top3.com", "myorg", "1.0.0", "amd64"}, []string{"http://sensor3.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "reply sent.", persistence.EC_RECEIVED_REPLYACK_MESSAGE, "agreementId3", persistence.WorkloadInfo{"http://top3.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp3}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "agreement finalized.", persistence.EC_AGREEMENT_REACHED, "agreementId3", persistence.WorkloadInfo{"http://top3.com", "myorg", "1.0.0", "amd64"}, []string{"http://sensor3.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "agreement finalized.", persistence.EC_AGREEMENT_REACHED, "agreementId3", persistence.WorkloadInfo{"http://top3.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp3}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "agreement finalized.", persistence.EC_AGREEMENT_REACHED, "agreementId2", persistence.WorkloadInfo{"http://top2.com", "myorg", "1.0.0", "amd64"}, []string{"http://mycomp.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_INFO, "agreement finalized.", persistence.EC_AGREEMENT_REACHED, "agreementId2", persistence.WorkloadInfo{"http://top2.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp2}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_ERROR, "something is wrong.", persistence.EC_ERROR_START_CONTAINER, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []string{"http://sensor1.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_ERROR, "something is wrong.", persistence.EC_ERROR_START_CONTAINER, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp1}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_WARN, "something is wrong.", persistence.EC_ERROR_START_CONTAINER, "agreementId2", persistence.WorkloadInfo{"http://top2.com", "myorg", "1.0.0", "amd64"}, []string{"http://mycomp.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_WARN, "something is wrong.", persistence.EC_ERROR_START_CONTAINER, "agreementId2", persistence.WorkloadInfo{"http://top2.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp2}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_ERROR, "something is really wrong.", persistence.EC_DATABASE_ERROR, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []string{"http://sensor1.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := LogAgreementEvent2(db, persistence.SEVERITY_ERROR, "something is really wrong.", persistence.EC_DATABASE_ERROR, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp1}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
 	}
 
@@ -234,7 +251,7 @@ func Test_LogAgreementEvent2(t *testing.T) {
 		assert.Equal(t, 12, len(elogs), "Test GetEventLogs with selection.")
 	}
 
-	if elogs, err := GetEventLogs(db, true, map[string][]persistence.Selector{"service_url": {{"~", "top1"}, {"~", "mycomp"}}}); err != nil {
+	if elogs, err := GetEventLogs(db, true, map[string][]persistence.Selector{"dependent_services": {{"~", "top1"}, {"~", "mycomp"}}}); err != nil {
 		t.Errorf("error getting event logs: %v", err)
 	} else {
 		assert.Equal(t, 0, len(elogs), "Test GetEventLogs with selection.")
@@ -256,11 +273,11 @@ func Test_LogServiceEvent(t *testing.T) {
 	}
 	defer cleanTestDir(dir)
 
-	src1, err1 := persistence.NewMicroserviceInstance(db, "http://sensor1.org", "1.2.0", "1", []persistence.ServiceInstancePathElement{})
+	src1, err1 := persistence.NewMicroserviceInstance(db, "http://sensor1.org", "myorg", "1.2.0", "1", []persistence.ServiceInstancePathElement{})
 	if err1 != nil {
 		t.Errorf("error writing agreement1: %v", err1)
 	}
-	src2, err2 := persistence.NewMicroserviceInstance(db, "http://sensor2.org", "1.0.0", "2", []persistence.ServiceInstancePathElement{})
+	src2, err2 := persistence.NewMicroserviceInstance(db, "http://sensor2.org", "myorg", "1.0.0", "2", []persistence.ServiceInstancePathElement{})
 	if err2 != nil {
 		t.Errorf("error writing agreement2: %v", err2)
 	}

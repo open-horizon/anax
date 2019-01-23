@@ -47,7 +47,6 @@ func Test_SaveArchitectureAttributes(t *testing.T) {
 	attr := &ArchitectureAttributes{
 		Meta: &AttributeMeta{
 			Id:          "arch",
-			SensorUrls:  []string{},
 			Label:       "Supported Architecture",
 			Publishable: pT,
 			Type:        reflect.TypeOf(ArchitectureAttributes{}).Name(),
@@ -55,14 +54,13 @@ func Test_SaveArchitectureAttributes(t *testing.T) {
 		Architecture: "armhf",
 	}
 
-	attr.GetMeta().AppendSensorUrl("zoo").AppendSensorUrl("boo")
-
 	_, err := SaveOrUpdateAttribute(testDb, attr, "", true)
 	if err != nil {
 		panic(err)
 	}
 
-	matches, err := FindApplicableAttributes(testDb, "zoo")
+	// check for backword compatibility
+	matches, err := FindApplicableAttributes(testDb, "zoo", "mycomp")
 	if err != nil {
 		panic(err)
 	}
@@ -78,17 +76,15 @@ func Test_SaveArchitectureAttributes(t *testing.T) {
 			t.Errorf("Architecture in persisted type not accessible (b/c of ill deserialization or wrong value")
 		}
 	}
-
-	urls := sAttr.GetMeta().SensorUrls
-	if urls[len(urls)-1] != "zoo" {
-		t.Errorf("SensorUrl match failed")
-	}
 }
 
 func Test_DiscriminateSavedAttributes(t *testing.T) {
 	pub := func(attr Attribute, url ...string) {
 		for _, u := range url {
-			attr.GetMeta().AppendSensorUrl(u)
+			sps_a := GetAttributeServiceSpecs(&attr)
+			if sps_a != nil {
+				sps_a.AppendServiceSpec(ServiceSpec{Url: u, Org: "myorg"})
+			}
 		}
 
 		// db is shared, ok for now
@@ -98,13 +94,12 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 		}
 	}
 
-	illZ := "http://illuminated.z/v/2"
-	illK := "http://illuminated.k/v/2"
+	illZ := "mycomp/http://illuminated.z/v/2"
+	illK := "mycomp/http://illuminated.k/v/2"
 
 	arch := &ArchitectureAttributes{
 		Meta: &AttributeMeta{
 			Id:          "architecture",
-			SensorUrls:  []string{},
 			Label:       "Supported Architecture",
 			Publishable: pT,
 			Type:        reflect.TypeOf(ArchitectureAttributes{}).Name(),
@@ -117,13 +112,13 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 	comp := &ComputeAttributes{
 		Meta: &AttributeMeta{
 			Id:          "compute",
-			SensorUrls:  []string{},
 			Label:       "Compute Resources",
 			Publishable: pT,
 			Type:        reflect.TypeOf(ComputeAttributes{}).Name(),
 		},
-		CPUs: 4,
-		RAM:  1024,
+		ServiceSpecs: new(ServiceSpecs),
+		CPUs:         4,
+		RAM:          1024,
 	}
 
 	pub(comp, illZ)
@@ -131,13 +126,13 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 	comp2 := &ComputeAttributes{
 		Meta: &AttributeMeta{
 			Id:          "compute",
-			SensorUrls:  []string{},
 			Label:       "Compute Resources",
 			Publishable: pT,
 			Type:        reflect.TypeOf(ComputeAttributes{}).Name(),
 		},
-		CPUs: 2,
-		RAM:  2048,
+		ServiceSpecs: new(ServiceSpecs),
+		CPUs:         2,
+		RAM:          2048,
 	}
 
 	pub(comp2, illK)
@@ -145,7 +140,6 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 	loc := &LocationAttributes{
 		Meta: &AttributeMeta{
 			Id:          "location",
-			SensorUrls:  []string{},
 			Label:       "Location",
 			Publishable: pF,
 			Type:        reflect.TypeOf(LocationAttributes{}).Name(),
@@ -160,10 +154,10 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 	misc := &UserInputAttributes{
 		Meta: &AttributeMeta{
 			Id:          "misc",
-			SensorUrls:  []string{},
 			Publishable: pT,
 			Type:        reflect.TypeOf(UserInputAttributes{}).Name(),
 		},
+		ServiceSpecs: new(ServiceSpecs),
 		Mappings: map[string]interface{}{
 			"x": "xoo",
 			"y": "yoo",
@@ -176,10 +170,10 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 	creds := &UserInputAttributes{
 		Meta: &AttributeMeta{
 			Id:          "credentials",
-			SensorUrls:  []string{},
 			Publishable: pF,
 			Type:        reflect.TypeOf(UserInputAttributes{}).Name(),
 		},
+		ServiceSpecs: new(ServiceSpecs),
 		Mappings: map[string]interface{}{
 			"user":         "fred",
 			"pass":         "pinkfloydfan4ever",
@@ -189,7 +183,7 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 
 	pub(creds, illK)
 
-	services, err := FindApplicableAttributes(testDb, illK)
+	services, err := FindApplicableAttributes(testDb, "http://illuminated.k/v/2", "mycomp")
 	if err != nil {
 		panic(err)
 	}

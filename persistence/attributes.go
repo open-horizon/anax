@@ -8,7 +8,6 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/satori/go.uuid"
 	"reflect"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -17,12 +16,11 @@ import (
 const ATTRIBUTES = "attributes"
 
 type AttributeMeta struct {
-	Id          string   `json:"id"` // should correspond to something meangingful to the caller
-	Type        string   `json:"type"`
-	SensorUrls  []string `json:"sensor_urls"` // empty if applicable to all services
-	Label       string   `json:"label"`       // for humans only, never computable
-	HostOnly    *bool    `json:"host_only"`   // determines whether or not the attribute will be published inside workload containers or exists only for Host use
-	Publishable *bool    `json:"publishable"` // means sent to exchange or otherwise published; whether or not an attr ends up in a workload depends on the value of HostOnly
+	Id          string `json:"id"` // should correspond to something meangingful to the caller
+	Type        string `json:"type"`
+	Label       string `json:"label"`       // for humans only, never computable
+	HostOnly    *bool  `json:"host_only"`   // determines whether or not the attribute will be published inside workload containers or exists only for Host use
+	Publishable *bool  `json:"publishable"` // means sent to exchange or otherwise published; whether or not an attr ends up in a workload depends on the value of HostOnly
 }
 
 func (a AttributeMeta) String() string {
@@ -34,47 +32,12 @@ func (a AttributeMeta) String() string {
 	if a.Publishable == nil || !*a.Publishable {
 		pub = "false"
 	}
-	return fmt.Sprintf("Id: %v, Type: %v, SensorUrls: %v, Label: %v, HostOnly: %v, Publishable: %v", a.Id, a.Type, a.SensorUrls, a.Label, ho, pub)
-}
-
-// important to use this for additions to prevent duplicates and keep slice ordered
-func (m *AttributeMeta) AppendSensorUrl(url string) *AttributeMeta {
-
-	contains := false
-	for _, val := range m.SensorUrls {
-		if val == url {
-			contains = true
-		}
-	}
-
-	if !contains {
-		new := append(m.SensorUrls, url)
-		m.SensorUrls = new
-
-	}
-
-	sort.Strings(m.SensorUrls)
-
-	return m
+	return fmt.Sprintf("Id: %v, Type: %v, Label: %v, HostOnly: %v, Publishable: %v", a.Id, a.Type, a.Label, ho, pub)
 }
 
 // Update *selectively* updates the content of this AttributeMeta (m) with non-empty values in the given meta.
 func (m *AttributeMeta) Update(meta AttributeMeta) {
-	// cannot change id, type; SensorUrls are merged, others are replaced if not empty / nil
-
-	for _, updateSensorUrl := range meta.SensorUrls {
-		alreadyPresent := false
-		for _, sensorUrl := range (*m).SensorUrls {
-			if updateSensorUrl == sensorUrl {
-				alreadyPresent = true
-			}
-		}
-
-		if !alreadyPresent {
-			m.SensorUrls = append(m.SensorUrls, updateSensorUrl)
-		}
-	}
-
+	// cannot change id, others are replaced if not empty / nil
 	if m.Label != "" {
 		m.Label = meta.Label
 	}
@@ -105,6 +68,108 @@ func (a MetaAttributesOnly) GetMeta() *AttributeMeta {
 
 func (a MetaAttributesOnly) GetGenericMappings() map[string]interface{} {
 	return map[string]interface{}{}
+}
+
+type ServiceSpec struct {
+	Url string `json:"url"`
+	Org string `json:"organization,omitempty"` // default is the node org
+}
+
+func NewServiceSpec(url string, org string) *ServiceSpec {
+	return &ServiceSpec{
+		Url: url,
+		Org: org,
+	}
+}
+
+type ServiceSpecs []ServiceSpec // empty if applicable to all services
+
+type ServiceAttribute interface {
+	GetServiceSpecs() *ServiceSpecs
+}
+
+func (s ServiceSpec) IsSame(sp ServiceSpec) bool {
+	return s.Url == sp.Url && s.Org == sp.Org
+}
+
+// check if the two service spec arrays point to the same set of services.
+// assume no duplicates in either of the array.
+func (s ServiceSpecs) IsSame(sps ServiceSpecs) bool {
+	if len(s) != len(sps) {
+		return false
+	}
+	for _, s_me := range s {
+		found := false
+		for _, s_in := range sps {
+			if s_me.IsSame(s_in) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
+// check if the service attrubute supports the given service
+// If the ServiceSpecs is an empty array, it supports all services.
+// Empty string for service or org means all.
+func (s ServiceSpecs) SupportService(serviceUrl string, serviceOrg string) bool {
+	if serviceUrl == "" {
+		return true
+	} else {
+		if len(s) == 0 {
+			return true
+		} else {
+			for _, sp := range s {
+				if sp.Url == serviceUrl && (sp.Org == "" || sp.Org == serviceOrg) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+// important to use this for additions to prevent duplicates and keep slice ordered
+func (s *ServiceSpecs) AppendServiceSpec(sp ServiceSpec) {
+
+	contains := false
+	for _, val := range *s {
+		if val.IsSame(sp) {
+			contains = true
+		}
+	}
+
+	if !contains {
+		(*s) = append(*s, sp)
+	}
+}
+
+// update the service specs. no duplicates
+func (s *ServiceSpecs) Update(sps ServiceSpecs) {
+	for _, sp := range sps {
+		contains := false
+		for _, val := range *s {
+			if val.IsSame(sp) {
+				contains = true
+			}
+		}
+
+		if !contains {
+			(*s) = append(*s, sp)
+		}
+	}
+}
+
+func GetAttributeServiceSpecs(attribute *Attribute) *ServiceSpecs {
+	if s, ok := (*attribute).(ServiceAttribute); ok {
+		return s.GetServiceSpecs()
+	} else {
+		return nil
+	}
 }
 
 // N.B. The concrete attributes are to be found in a different file in this module
@@ -239,7 +304,12 @@ func FindAttributeByKey(db *bolt.DB, id string) (*Attribute, error) {
 	return &attr, nil
 }
 
-func FindApplicableAttributes(db *bolt.DB, serviceUrl string) ([]Attribute, error) {
+// get all the attribute that the given this service can use.
+// If the given serviceUrl is an empty string, all attributes will be returned.
+// For an attribute, if the a.ServiceSpecs is empty, it will be included.
+// Otherwise, if an element in the attrubute's ServiceSpecs array equals to ServiceSpec{serviceUrl, org}
+// the attribute will be included.
+func FindApplicableAttributes(db *bolt.DB, serviceUrl string, org string) ([]Attribute, error) {
 
 	filteredAttrs := []Attribute{}
 
@@ -251,29 +321,17 @@ func FindApplicableAttributes(db *bolt.DB, serviceUrl string) ([]Attribute, erro
 		}
 
 		return bucket.ForEach(func(k, v []byte) error {
-			// TODO: optimization: do this only if the sensorurls match
 			attr, err := HydrateConcreteAttribute(v)
 			if err != nil {
 				return err
 			}
 
-			if serviceUrl == "" {
-				// no need to discriminate
+			serviceSpecs := GetAttributeServiceSpecs(&attr)
+			if serviceSpecs == nil {
 				filteredAttrs = append(filteredAttrs, attr)
-			} else {
-				sensorUrls := attr.GetMeta().SensorUrls
-				if sensorUrls == nil || len(sensorUrls) == 0 {
-					filteredAttrs = append(filteredAttrs, attr)
-				} else {
-					// O(2)
-					for _, url := range sensorUrls {
-						if url == "" || url == serviceUrl {
-							filteredAttrs = append(filteredAttrs, attr)
-						}
-					}
-				}
+			} else if serviceSpecs.SupportService(serviceUrl, org) {
+				filteredAttrs = append(filteredAttrs, attr)
 			}
-
 			return nil
 		})
 	})
@@ -304,7 +362,7 @@ func ConvertWorkloadPersistentNativeToEnv(allAttrs []Attribute, envvars map[stri
 	return envvars, nil
 }
 
-// This function is used to convert the persistent attributes for a service/microservice to an env var map.
+// This function is used to convert the persistent attributes for a service to an env var map.
 // This will include *all* values for which HostOnly is false, include those marked to not publish.
 func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, prefix string, defaultRAM int64) (map[string]string, error) {
 
@@ -395,16 +453,16 @@ func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, pr
 func FindConflictingAttributes(db *bolt.DB, attribute *Attribute) (*Attribute, error) {
 	var err error
 	var common []Attribute
-	urls := (*attribute).GetMeta().SensorUrls
+	serviceSpecs := GetAttributeServiceSpecs(attribute)
 
-	if len(urls) == 0 {
-		common, err = FindApplicableAttributes(db, "")
+	if serviceSpecs == nil || len(*serviceSpecs) == 0 {
+		common, err = FindApplicableAttributes(db, "", "")
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		for _, url := range urls {
-			common, err = FindApplicableAttributes(db, url)
+		for _, sp := range *serviceSpecs {
+			common, err = FindApplicableAttributes(db, sp.Url, sp.Org)
 			if err != nil {
 				return nil, err
 			}
@@ -412,10 +470,12 @@ func FindConflictingAttributes(db *bolt.DB, attribute *Attribute) (*Attribute, e
 	}
 
 	attributeMeta := (*attribute).GetMeta()
+	attributeServiceSpecs := GetAttributeServiceSpecs(attribute)
 	for _, possiblyConflicting := range common {
 		conflictingMeta := possiblyConflicting.GetMeta()
+		conflictingServiceMeta := GetAttributeServiceSpecs(&possiblyConflicting)
 		if attributeMeta.Type == conflictingMeta.Type &&
-			reflect.DeepEqual(attributeMeta.SensorUrls, conflictingMeta.SensorUrls) &&
+			((conflictingServiceMeta == nil && attributeServiceSpecs == nil) || conflictingServiceMeta.IsSame(*attributeServiceSpecs)) &&
 			attributeMeta.Label == conflictingMeta.Label &&
 			reflect.DeepEqual((*attribute).GetGenericMappings(), possiblyConflicting.GetGenericMappings()) {
 
@@ -437,7 +497,7 @@ type ConflictingAttributeFound struct {
 
 func (e ConflictingAttributeFound) Error() string { return e.msg }
 
-// N.B. It's the caller's responsibility to ensure the attr.SensorUrls are deduplicated; use the Attribute.AddSensorUrl() function to keep the slice clean
+// N.B. It's the caller's responsibility to ensure the attr.ServiceSpecs are deduplicated; use the ServiceSpecs.AddServiceSpec() function to keep the slice clean
 func SaveOrUpdateAttribute(db *bolt.DB, attr Attribute, id string, permitPartialOverwrite bool) (*Attribute, error) {
 	var ret *Attribute
 

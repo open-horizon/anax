@@ -5,16 +5,17 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/persistence"
 )
 
 const HTTPSBasicAuthAttributes = "HTTPSBasicAuthAttributes"
 
 // Our form of the attributes output
 type OurAttributes struct {
-	Type       string                 `json:"type"`
-	Label      string                 `json:"label"`
-	SensorUrls []string               `json:"sensor_urls,omitempty"`
-	Variables  map[string]interface{} `json:"variables"`
+	Type         string                   `json:"type"`
+	Label        string                   `json:"label"`
+	ServiceSpecs persistence.ServiceSpecs `json:"service_specs,omitempty"`
+	Variables    map[string]interface{}   `json:"variables"`
 }
 
 func List() {
@@ -33,10 +34,10 @@ func List() {
 	// Only include interesting fields in our output
 	attrs := []OurAttributes{}
 	for _, a := range apiAttrs {
-		if len(*a.SensorUrls) == 0 {
+		if a.ServiceSpecs == nil {
 			attrs = append(attrs, OurAttributes{Type: *a.Type, Label: *a.Label, Variables: *a.Mappings})
-		} else if *a.Type == HTTPSBasicAuthAttributes {
-			attrs = append(attrs, OurAttributes{Type: *a.Type, Label: *a.Label, SensorUrls: *a.SensorUrls, Variables: *a.Mappings})
+		} else {
+			attrs = append(attrs, OurAttributes{Type: *a.Type, Label: *a.Label, ServiceSpecs: *a.ServiceSpecs, Variables: *a.Mappings})
 		}
 	}
 

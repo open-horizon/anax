@@ -8,6 +8,7 @@ import (
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
 	"net/http"
@@ -15,13 +16,13 @@ import (
 
 // These structs are used to parse the registration input file. These are also used by the hzn dev code.
 type GlobalSet struct {
-	Type       string                 `json:"type"`
-	SensorUrls []string               `json:"sensor_urls"`
-	Variables  map[string]interface{} `json:"variables"`
+	Type         string                   `json:"type"`
+	ServiceSpecs persistence.ServiceSpecs `json:"service_specs,omitempty"`
+	Variables    map[string]interface{}   `json:"variables"`
 }
 
 func (g GlobalSet) String() string {
-	return fmt.Sprintf("Global Array element, type: %v, sensor_urls: %v, variables: %v", g.Type, g.SensorUrls, g.Variables)
+	return fmt.Sprintf("Global Array element, type: %v, service_specs: %v, variables: %v", g.Type, g.ServiceSpecs, g.Variables)
 }
 
 // Use for services, microservices, and workloads. This is used by other cli sub-cmds too.
@@ -116,13 +117,13 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 	if inputFile != "" {
 		// Set the global variables as attributes with no url (or in the case of HTTPSBasicAuthAttributes, with url equal to image svr)
 		// Technically the AgreementProtocolAttributes can be set, but it has no effect on anax if a pattern is being used.
-		attr := api.NewAttribute("", []string{}, "Global variables", false, false, map[string]interface{}{}) // we reuse this for each GlobalSet
+		attr := api.NewAttribute("", "Global variables", false, false, map[string]interface{}{}) // we reuse this for each GlobalSet
 		if len(inputFileStruct.Global) > 0 {
 			fmt.Println("Setting global variables...")
 		}
 		for _, g := range inputFileStruct.Global {
 			attr.Type = &g.Type
-			attr.SensorUrls = &g.SensorUrls
+			attr.ServiceSpecs = &g.ServiceSpecs
 			attr.Mappings = &g.Variables
 
 			// set HostOnly to true for these 2 types
@@ -135,7 +136,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 		}
 
 		// Set the service variables
-		attr = api.NewAttribute("UserInputAttributes", []string{}, "service", false, false, map[string]interface{}{}) // we reuse this for each service
+		attr = api.NewAttribute("UserInputAttributes", "service", false, false, map[string]interface{}{}) // we reuse this for each service
 		emptyStr := ""
 		service := api.Service{Name: &emptyStr} // we reuse this too
 		if len(inputFileStruct.Services) > 0 {

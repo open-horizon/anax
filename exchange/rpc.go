@@ -780,7 +780,7 @@ func GetPatterns(httpClientFactory *config.HTTPClientFactory, org string, patter
 	if pattern == "" {
 		glog.V(3).Infof(rpclogString(fmt.Sprintf("getting pattern definitions for %v", org)))
 	} else {
-		glog.V(3).Infof(rpclogString(fmt.Sprintf("getting pattern definitions for %v and %v", org, pattern)))
+		glog.V(3).Infof(rpclogString(fmt.Sprintf("getting pattern definitions for %v/%v", org, pattern)))
 	}
 
 	var resp interface{}

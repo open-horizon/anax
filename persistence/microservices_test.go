@@ -25,16 +25,18 @@ func Test_ServiceInstancePath_HasDirectParent_simple(t *testing.T) {
 	// Setup initial variable values
 	parentURL := "url1"
 	parentVersion := "1.0.0"
+	parentOrg := "myorg"
 	childURL := "url2"
+	childOrg := "childorg"
 	childVersion := "2.0.0"
 
 	// Establish the dependency path objects
-	parent := NewServiceInstancePathElement(parentURL, parentVersion)
-	child := NewServiceInstancePathElement(childURL, childVersion)
+	parent := NewServiceInstancePathElement(parentURL, parentOrg, parentVersion)
+	child := NewServiceInstancePathElement(childURL, childOrg, childVersion)
 
 	depPath := []ServiceInstancePathElement{*parent, *child}
 	// Create the test microservice instance to represent the child
-	if msi, err := NewMicroserviceInstance(db, childURL, childVersion, "1234", depPath); err != nil {
+	if msi, err := NewMicroserviceInstance(db, childURL, childOrg, childVersion, "1234", depPath); err != nil {
 		t.Errorf("Error creating instance: %v", err)
 	} else if !msi.HasDirectParent(parent) {
 		t.Errorf("Child %v has direct parent: %v", child, depPath)
@@ -54,19 +56,21 @@ func Test_ServiceInstancePath_HasDirectParent_fail1(t *testing.T) {
 
 	// Setup initial variable values
 	parentURL := "url1"
+	parentOrg := "myorg"
 	parentVersion := "1.0.0"
 	childURL := "url2"
+	childOrg := "childorg"
 	childVersion := "2.0.0"
 
 	// Establish the dependency path objects
-	parent := NewServiceInstancePathElement(parentURL, parentVersion)
-	child := NewServiceInstancePathElement(childURL, childVersion)
+	parent := NewServiceInstancePathElement(parentURL, parentOrg, parentVersion)
+	child := NewServiceInstancePathElement(childURL, childOrg, childVersion)
 
-	notParent := NewServiceInstancePathElement("other", parentVersion)
+	notParent := NewServiceInstancePathElement("other", parentOrg, parentVersion)
 
 	depPath := []ServiceInstancePathElement{*parent, *child}
 	// Create the test microservice instance to represent the child
-	if msi, err := NewMicroserviceInstance(db, childURL, childVersion, "1234", depPath); err != nil {
+	if msi, err := NewMicroserviceInstance(db, childURL, childOrg, childVersion, "1234", depPath); err != nil {
 		t.Errorf("Error creating instance: %v", err)
 	} else if msi.HasDirectParent(notParent) {
 		t.Errorf("Child %v does not have direct parent: %v", child, depPath)
@@ -86,20 +90,23 @@ func Test_ServiceInstancePath_HasDirectParent_fail2(t *testing.T) {
 
 	// Setup initial variable values
 	parentURL := "url1"
+	parentOrg := "myorg"
 	parentVersion := "1.0.0"
 	childURL := "url2"
+	childOrg := "childorg"
 	childVersion := "2.0.0"
 	child2URL := "url3"
+	child2Org := "child2org"
 	child2Version := "3.0.0"
 
 	// Establish the dependency path objects
-	parent := NewServiceInstancePathElement(parentURL, parentVersion)
-	child := NewServiceInstancePathElement(childURL, childVersion)
-	child2 := NewServiceInstancePathElement(child2URL, child2Version)
+	parent := NewServiceInstancePathElement(parentURL, parentOrg, parentVersion)
+	child := NewServiceInstancePathElement(childURL, childOrg, childVersion)
+	child2 := NewServiceInstancePathElement(child2URL, child2Org, child2Version)
 
 	depPath := []ServiceInstancePathElement{*parent, *child, *child2}
 	// Create the test microservice instance to represent the child
-	if msi, err := NewMicroserviceInstance(db, child2URL, child2Version, "1234", depPath); err != nil {
+	if msi, err := NewMicroserviceInstance(db, child2URL, child2Org, child2Version, "1234", depPath); err != nil {
 		t.Errorf("Error creating instance: %v", err)
 	} else if msi.HasDirectParent(parent) {
 		t.Errorf("Child %v does not have direct parent: %v", child2, depPath)
@@ -119,24 +126,27 @@ func Test_ServiceInstancePath_HasDirectParent_fail3(t *testing.T) {
 
 	// Setup initial variable values
 	parentURL := "url1"
+	parentOrg := "myorg"
 	parentVersion := "1.0.0"
 	childURL := "url2"
+	childOrg := "childorg2"
 	childVersion := "2.0.0"
 	child2URL := "url3"
+	child2Org := "child2Org"
 	child2Version := "3.0.0"
 
 	// Establish the dependency path objects
-	parent := NewServiceInstancePathElement(parentURL, parentVersion)
-	child := NewServiceInstancePathElement(childURL, childVersion)
-	child2 := NewServiceInstancePathElement(child2URL, child2Version)
+	parent := NewServiceInstancePathElement(parentURL, parentOrg, parentVersion)
+	child := NewServiceInstancePathElement(childURL, childOrg, childVersion)
+	child2 := NewServiceInstancePathElement(child2URL, child2Org, child2Version)
 
-	notParent := NewServiceInstancePathElement("other", parentVersion)
+	notParent := NewServiceInstancePathElement("other", parentOrg, parentVersion)
 
 	depPath := []ServiceInstancePathElement{*parent, *child, *child2}
 	dp2 := []ServiceInstancePathElement{*parent, *child2}
 
 	// Create the test microservice instance to represent the child
-	if msi, err := NewMicroserviceInstance(db, child2URL, child2Version, "1234", depPath); err != nil {
+	if msi, err := NewMicroserviceInstance(db, child2URL, child2Org, child2Version, "1234", depPath); err != nil {
 		t.Errorf("Error creating instance: %v", err)
 	} else if _, err := UpdateMSInstanceAddDependencyPath(db, msi.GetKey(), &dp2); err != nil {
 		t.Errorf("Error updating instance: %v", err)
@@ -158,22 +168,25 @@ func Test_ServiceInstancePath_HasDirectParent_second(t *testing.T) {
 
 	// Setup initial variable values
 	parentURL := "url1"
+	parentOrg := "myorg"
 	parentVersion := "1.0.0"
 	childURL := "url2"
+	childOrg := "childorg"
 	childVersion := "2.0.0"
 	child2URL := "url3"
+	child2Org := "childorg3"
 	child2Version := "3.0.0"
 
 	// Establish the dependency path objects
-	parent := NewServiceInstancePathElement(parentURL, parentVersion)
-	child := NewServiceInstancePathElement(childURL, childVersion)
-	child2 := NewServiceInstancePathElement(child2URL, child2Version)
+	parent := NewServiceInstancePathElement(parentURL, parentOrg, parentVersion)
+	child := NewServiceInstancePathElement(childURL, childOrg, childVersion)
+	child2 := NewServiceInstancePathElement(child2URL, child2Org, child2Version)
 
 	depPath := []ServiceInstancePathElement{*parent, *child, *child2}
 	dp2 := []ServiceInstancePathElement{*parent, *child2}
 
 	// Create the test microservice instance to represent the child
-	if msi, err := NewMicroserviceInstance(db, child2URL, child2Version, "1234", depPath); err != nil {
+	if msi, err := NewMicroserviceInstance(db, child2URL, child2Org, child2Version, "1234", depPath); err != nil {
 		t.Errorf("Error creating instance: %v", err)
 	} else if newmsi, err := UpdateMSInstanceAddDependencyPath(db, msi.GetKey(), &dp2); err != nil {
 		t.Errorf("Error updating instance: %v", err)
@@ -184,9 +197,19 @@ func Test_ServiceInstancePath_HasDirectParent_second(t *testing.T) {
 
 func Test_CompareServiceInstancePath(t *testing.T) {
 	// Establish the dependency path objects
-	parent := NewServiceInstancePathElement("parentUrl", "1.0.0")
-	child := NewServiceInstancePathElement("childURL", "2.0.0")
-	child2 := NewServiceInstancePathElement("child2URL", "3.0.0")
+	parentURL := "url1"
+	parentOrg := "myorg"
+	parentVersion := "1.0.0"
+	childURL := "url2"
+	childOrg := "childorg"
+	childVersion := "2.0.0"
+	child2URL := "url3"
+	child2Org := "childorg3"
+	child2Version := "3.0.0"
+
+	parent := NewServiceInstancePathElement(parentURL, parentOrg, parentVersion)
+	child := NewServiceInstancePathElement(childURL, childOrg, childVersion)
+	child2 := NewServiceInstancePathElement(child2URL, child2Org, child2Version)
 
 	dep1 := []ServiceInstancePathElement{*parent, *child, *child2}
 	dep2 := []ServiceInstancePathElement{*parent, *child}
@@ -226,15 +249,25 @@ func Test_UpdateMSInstanceAddDependencyPath(t *testing.T) {
 
 	defer cleanTestDir(dir)
 
-	parent := NewServiceInstancePathElement("parentUrl", "1.0.0")
-	child := NewServiceInstancePathElement("childURL", "2.0.0")
-	child2 := NewServiceInstancePathElement("child2URL", "3.0.0")
+	parentURL := "parentUrl"
+	parentOrg := "myorg1"
+	parentVersion := "1.0.0"
+	childURL := "childURL"
+	childOrg := "childorg"
+	childVersion := "2.0.0"
+	child2URL := "child2URL"
+	child2Org := "childorg2"
+	child2Version := "3.0.0"
+
+	parent := NewServiceInstancePathElement(parentURL, parentOrg, parentVersion)
+	child := NewServiceInstancePathElement(childURL, childOrg, childVersion)
+	child2 := NewServiceInstancePathElement(child2URL, child2Org, child2Version)
 
 	dep1 := []ServiceInstancePathElement{*parent, *child, *child2}
 	dep2 := []ServiceInstancePathElement{*parent, *child}
 
 	// Create the test microservice instance to represent the child
-	if msi, err := NewMicroserviceInstance(db, "child2URL", "2.0.0", "1234", dep1); err != nil {
+	if msi, err := NewMicroserviceInstance(db, "child2UR", "childorg2", "2.0.0", "1234", dep1); err != nil {
 		t.Errorf("Error creating instance: %v", err)
 	} else if newmsi, err := UpdateMSInstanceAddDependencyPath(db, msi.GetKey(), &dep2); err != nil {
 		t.Errorf("Error updating instance: %v", err)
@@ -261,11 +294,11 @@ func Test_UpdateMSInstanceRemoveDependencyPath(t *testing.T) {
 
 	defer cleanTestDir(dir)
 
-	parent1 := NewServiceInstancePathElement("parentUrl", "1.0.0")
-	parent2 := NewServiceInstancePathElement("parentUrl2", "1.0.0")
-	parent3 := NewServiceInstancePathElement("parentUrl", "2.0.0")
-	child := NewServiceInstancePathElement("childURL", "2.0.0")
-	child2 := NewServiceInstancePathElement("child2URL", "3.0.0")
+	parent1 := NewServiceInstancePathElement("parentUrl", "parentOrg", "1.0.0")
+	parent2 := NewServiceInstancePathElement("parentUrl2", "parentOrg2", "1.0.0")
+	parent3 := NewServiceInstancePathElement("parentUrl", "parentOrg", "2.0.0")
+	child := NewServiceInstancePathElement("childURL", "childorg", "2.0.0")
+	child2 := NewServiceInstancePathElement("child2URL", "childorg2", "3.0.0")
 
 	dep1 := []ServiceInstancePathElement{*parent1, *child, *child2}
 	dep2 := []ServiceInstancePathElement{*parent1, *child}
@@ -273,7 +306,7 @@ func Test_UpdateMSInstanceRemoveDependencyPath(t *testing.T) {
 	dep4 := []ServiceInstancePathElement{*parent3, *child, *child2}
 
 	// Create the test microservice instance to represent the child
-	if msi, err := NewMicroserviceInstance(db, "child2URL", "2.0.0", "1234", dep1); err != nil {
+	if msi, err := NewMicroserviceInstance(db, "child2UR", "childorg2", "2.0.0", "1234", dep1); err != nil {
 		t.Errorf("Error creating instance: %v", err)
 	} else if _, err := UpdateMSInstanceAddDependencyPath(db, msi.GetKey(), &dep2); err != nil {
 		t.Errorf("Error updating instance: %v", err)
@@ -305,11 +338,11 @@ func Test_UpdateMSInstanceRemoveDependencyPath2(t *testing.T) {
 
 	defer cleanTestDir(dir)
 
-	parent1 := NewServiceInstancePathElement("parentUrl", "1.0.0")
-	parent2 := NewServiceInstancePathElement("parentUrl2", "1.0.0")
-	parent3 := NewServiceInstancePathElement("parentUrl", "2.0.0")
-	child := NewServiceInstancePathElement("childURL", "2.0.0")
-	child2 := NewServiceInstancePathElement("child2URL", "3.0.0")
+	parent1 := NewServiceInstancePathElement("parentUrl", "parentOrg", "1.0.0")
+	parent2 := NewServiceInstancePathElement("parentUrl2", "parentOrg2", "1.0.0")
+	parent3 := NewServiceInstancePathElement("parentUrl", "parentOrg", "2.0.0")
+	child := NewServiceInstancePathElement("childURL", "childorg", "2.0.0")
+	child2 := NewServiceInstancePathElement("child2URL", "childorg2", "3.0.0")
 
 	dep1 := []ServiceInstancePathElement{*parent1, *child, *child2}
 	dep2 := []ServiceInstancePathElement{*parent1, *child}
@@ -317,7 +350,7 @@ func Test_UpdateMSInstanceRemoveDependencyPath2(t *testing.T) {
 	dep4 := []ServiceInstancePathElement{*parent3, *child, *child2}
 
 	// Create the test microservice instance to represent the child
-	if msi, err := NewMicroserviceInstance(db, "child2URL", "2.0.0", "1234", dep1); err != nil {
+	if msi, err := NewMicroserviceInstance(db, "child2UR", "childorg2", "2.0.0", "1234", dep1); err != nil {
 		t.Errorf("Error creating instance: %v", err)
 	} else if _, err := UpdateMSInstanceAddDependencyPath(db, msi.GetKey(), &dep2); err != nil {
 		t.Errorf("Error updating instance: %v", err)
