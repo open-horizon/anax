@@ -361,11 +361,6 @@ func ArchivedMSFilter() MSFilter {
 	return func(e MicroserviceDefinition) bool { return e.Archived }
 }
 
-// filter on the url + version
-func UrlVersionMSFilter(spec_url string, version string) MSFilter {
-	return func(e MicroserviceDefinition) bool { return (e.SpecRef == spec_url && e.Version == version) }
-}
-
 // filter on the url + version + org
 func UrlOrgVersionMSFilter(spec_url string, org string, version string) MSFilter {
 	return func(e MicroserviceDefinition) bool {

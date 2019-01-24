@@ -136,7 +136,7 @@ func pullImageFromRepos(config config.Config, authConfigs map[string][]docker.Au
 			glog.Errorf("Docker image pull(s) failed for docker image %v. Error: %v.", service.Image, err)
 			return err
 		} else {
-			glog.V(3).Infof("Succeeded fetching image %v for service", service.Image, name)
+			glog.V(3).Infof("Succeeded fetching image %v for service %v", service.Image, name)
 		}
 	}
 

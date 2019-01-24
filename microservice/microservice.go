@@ -208,7 +208,7 @@ func GetUpgradeMicroserviceDef(getService exchange.ServiceResolverHandler, msdef
 		} else if c == 0 && bytes.Equal(msdef.MetadataHash, new_msdef.MetadataHash) {
 			return nil, nil // no change, do nothing
 		} else {
-			if msdefs, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UrlVersionMSFilter(new_msdef.SpecRef, new_msdef.Version), persistence.ArchivedMSFilter()}); err != nil {
+			if msdefs, err := persistence.FindMicroserviceDefs(db, []persistence.MSFilter{persistence.UrlOrgVersionMSFilter(new_msdef.SpecRef, new_msdef.Org, new_msdef.Version), persistence.ArchivedMSFilter()}); err != nil {
 				return nil, fmt.Errorf("Failed to get archived service definition for %v/%v version %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, err)
 			} else if msdefs != nil && len(msdefs) > 0 {
 				for _, ms := range msdefs {

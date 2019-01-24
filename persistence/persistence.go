@@ -103,13 +103,14 @@ func (c EstablishedAgreement) String() string {
 		"MeteringNotificationMsg: %v, "+
 		"BlockchainType: %v, "+
 		"BlockchainName: %v, "+
-		"BlockchainOrg: %v",
+		"BlockchainOrg: %v, "+
+		"RunningWorkload: %v",
 		c.Name, c.DependentServices, c.Archived, c.CurrentAgreementId, c.ConsumerId, c.CounterPartyAddress, ServiceConfigNames(&c.CurrentDeployment),
 		c.ExtendedDeployment, c.ProposalSig,
 		c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementBCUpdateAckTime, c.AgreementFinalizedTime,
 		c.AgreementDataReceivedTime, c.AgreementTerminatedTime, c.AgreementForceTerminatedTime, c.TerminatedReason, c.TerminatedDescription,
 		c.AgreementProtocol, c.ProtocolVersion, c.AgreementProtocolTerminatedTime, c.WorkloadTerminatedTime,
-		c.MeteringNotificationMsg, c.BlockchainType, c.BlockchainName, c.BlockchainOrg)
+		c.MeteringNotificationMsg, c.BlockchainType, c.BlockchainName, c.BlockchainOrg, c.RunningWorkload)
 
 }
 
@@ -470,6 +471,11 @@ func IdEAFilter(id string) EAFilter {
 // filter on EstablishedAgreements
 type EAFilter func(EstablishedAgreement) bool
 
+// This structure is used to get the SensorUrl from the old EstablishedAgreement structure
+type SensorUrls struct {
+	SensorUrl []string `json:"sensor_url"`
+}
+
 func FindEstablishedAgreements(db *bolt.DB, protocol string, filters []EAFilter) ([]EstablishedAgreement, error) {
 	agreements := make([]EstablishedAgreement, 0)
 
@@ -482,8 +488,24 @@ func FindEstablishedAgreements(db *bolt.DB, protocol string, filters []EAFilter)
 				var e EstablishedAgreement
 
 				if err := json.Unmarshal(v, &e); err != nil {
-					glog.Errorf("Unable to deserialize db record: %v", v)
+					glog.Errorf("Unable to deserialize db record to EstablishedAgreement: %v", v)
 				} else {
+					// this might be agreement from the old EstablishedAgreement structure where SensorUrl was used.
+					// will convert it to new using DependentServices
+					if e.DependentServices == nil {
+						var sensor_urls SensorUrls
+						if err := json.Unmarshal(v, &sensor_urls); err != nil {
+							glog.Errorf("Unable to deserialize db record to SensorUrl: %v", v)
+						} else {
+							e.DependentServices = []ServiceSpec{}
+							if sensor_urls.SensorUrl != nil && len(sensor_urls.SensorUrl) > 0 {
+								for _, url := range sensor_urls.SensorUrl {
+									e.DependentServices = append(e.DependentServices, ServiceSpec{Url: url})
+								}
+							}
+						}
+					}
+
 					if !e.Archived {
 						glog.V(5).Infof("Demarshalled agreement in DB: %v", e)
 					}
