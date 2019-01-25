@@ -106,8 +106,10 @@ start() {
 		set +a   # undo
 	fi
 
-	# Do the config that is specific to running anax in a container, but needed for all environments
-	defaultEnv
+        # Do the config that is specific to running anax in a container, but needed for all environments, unless we want to define it ourselves
+        if [[ -z "$HZN_KEEP_CONFIG" ]]; then
+          defaultEnv
+        fi
 
 
 	# Now repeatedly run anax...
