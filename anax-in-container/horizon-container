@@ -149,25 +149,24 @@ start() {
 
 	# Get the latest horizon image
 	# HC_DONT_PULL is an intentionally undocumented env var that allows us to test a new image before pushing it to docker hub
+	dockerTag='latest'
 	if [[ -z "$HC_DONT_PULL" ]]; then
 		# $HC_DOCKER_TAG is an intentionally undocumented env var that allows us to test the staging version of the docker image
 		if [[ -n "$HC_DOCKER_TAG" ]]; then
 			dockerTag="$HC_DOCKER_TAG"
-		else
-			dockerTag='latest'
 		fi
 		docker pull openhorizon/amd64_anax:$dockerTag
-		checkrc $? "docker pull openhorizon/amd64_anax"
+		checkrc $? "docker pull openhorizon/amd64_anax:$dockerTag"
 	fi
 
 	# Start the horizon container
 	echo "Starting the Horizon agent container..."
 	# Note: docker will automatically create the ${DOCKER_NAME}_var and ${DOCKER_NAME}_etc volumes if necessary
 	if isMacos; then
-		docker run -d -t --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -e ANAX_DOCKER_ENDPOINT=tcp://host.docker.internal:$SOCAT_LISTEN_PORT $defaultFileMountArg -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ openhorizon/amd64_anax
+		docker run -d -t --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -e ANAX_DOCKER_ENDPOINT=tcp://host.docker.internal:$SOCAT_LISTEN_PORT $defaultFileMountArg -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ openhorizon/amd64_anax:$dockerTag
 		checkrc $? "docker run"
 	else
-		docker run -d -t --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -v /var/run/docker.sock:/var/run/docker.sock $defaultFileMountArg -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ openhorizon/amd64_anax
+		docker run -d -t --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -v /var/run/docker.sock:/var/run/docker.sock $defaultFileMountArg -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ openhorizon/amd64_anax:$dockerTag
 		checkrc $? "docker run"
 	fi
 
