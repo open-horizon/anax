@@ -10,6 +10,7 @@ endif
 SHELL := /bin/bash
 EXECUTABLE := $(shell basename $$PWD)
 CLI_EXECUTABLE := cli/hzn
+CLI_HORIZON_CONTAINER := anax-in-container/horizon-container
 CLI_MAN_DIR := cli/man1
 CLI_COMPLETION_DIR := cli/bash_completion
 DEFAULT_UI = api/static/index.html
@@ -202,10 +203,11 @@ PKGS=$(shell cd $(PKGPATH); GOPATH=$(TMPGOPATH) go list ./... | gawk '$$1 !~ /ve
 
 CDIR=$(DESTDIR)/go/src/github.com/open-horizon/go-solidity/contracts
 install:
-	@echo "Installing $(EXECUTABLE) and $(CLI_EXECUTABLE) in $(DESTDIR)/bin"
+	@echo "Installing $(EXECUTABLE), $(CLI_EXECUTABLE) and $(CLI_HORIZON_CONTAINER) in $(DESTDIR)/bin"
 	mkdir -p $(DESTDIR)/bin && \
 		cp $(EXECUTABLE) $(DESTDIR)/bin && \
-		cp $(CLI_EXECUTABLE) $(DESTDIR)/bin
+		cp $(CLI_EXECUTABLE) $(DESTDIR)/bin && \
+		cp $(CLI_HORIZON_CONTAINER) $(DESTDIR)/bin
 	# mkdir -p $(DESTDIR)/web && \
 	#	cp $(DEFAULT_UI) $(DESTDIR)/web
 	cp -Rapv cli/samples $(DESTDIR)
