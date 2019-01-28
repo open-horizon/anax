@@ -288,7 +288,7 @@ func createEnvVarMap(agreementId string,
 	// create a shortened list of global attribute that only apply to this microservice.
 	shortGlobals := make([]register.GlobalSet, 0, 10)
 	for _, inputGlobal := range global {
-		if len(inputGlobal.SensorUrls) == 0 || inputGlobal.SensorUrls[0] == msURL {
+		if len(inputGlobal.ServiceSpecs) == 0 || (inputGlobal.ServiceSpecs[0].Url == msURL && inputGlobal.ServiceSpecs[0].Org == org) {
 			shortGlobals = append(shortGlobals, inputGlobal)
 		}
 	}
@@ -300,7 +300,7 @@ func createEnvVarMap(agreementId string,
 	}
 
 	// Third, add in default system attributes if not already present.
-	attrs = api.FinalizeAttributesSpecifiedInService(1024, msURL, attrs)
+	attrs = api.FinalizeAttributesSpecifiedInService(1024, persistence.NewServiceSpec(msURL, org), attrs)
 
 	cliutils.Verbose("Final Attributes: %v", attrs)
 
@@ -493,7 +493,7 @@ func startDependent(dir string,
 			return nil, errors.New(fmt.Sprintf("unable to generate instance ID: %v", err))
 		}
 
-		sId := cutil.MakeMSInstanceKey(serviceDef.URL, serviceDef.Version, id.String())
+		sId := cutil.MakeMSInstanceKey(serviceDef.URL, serviceDef.Org, serviceDef.Version, id.String())
 
 		return StartContainers(deployment, serviceDef.URL, serviceDef.Version, globals, serviceDef.UserInputs, configUserInputs, serviceDef.Org, depConfig, cw, msNetworks, true, false, sId)
 	}

@@ -208,7 +208,7 @@ func configureService(service *Service,
 
 // This function verifies that if the given workload needs variable configuration, that there is a workloadconfig
 // object holding that config.
-func workloadConfigPresent(sd *exchange.ServiceDefinition, wUrl string, wVersion string, db *bolt.DB) (bool, error) {
+func workloadConfigPresent(sd *exchange.ServiceDefinition, wUrl string, wOrg, wVersion string, db *bolt.DB) (bool, error) {
 
 	// If the definition needs no config, exit early.
 	if !sd.NeedsUserInput() {
@@ -219,9 +219,9 @@ func workloadConfigPresent(sd *exchange.ServiceDefinition, wUrl string, wVersion
 	// user input variables configured, they will be found in the attributes database. We know that the /service/config
 	// API validates that all required variables are set BEFORE saving the config, so if we find any matching userinput
 	// attribute objects, we can assume the service is configured.
-	attrs, err := persistence.FindApplicableAttributes(db, wUrl)
+	attrs, err := persistence.FindApplicableAttributes(db, wUrl, wOrg)
 	if err != nil {
-		return false, fmt.Errorf("Unable to fetch service %v attributes, error: %v", wUrl, err)
+		return false, fmt.Errorf("Unable to fetch service %v/%v attributes, error: %v", wOrg, wUrl, err)
 	} else {
 		for _, attr := range attrs {
 			switch attr.(type) {
@@ -288,23 +288,23 @@ func getSpecRefsForPattern(patName string,
 
 			apiSpecList, serviceDef, err := resolveService(service.ServiceURL, service.ServiceOrg, serviceChoice.Version, service.ServiceArch)
 			if err != nil {
-				return nil, nil, NewSystemError(fmt.Sprintf("Error resolving service %v %v %v %v, error %v", service.ServiceURL, service.ServiceOrg, serviceChoice.Version, thisArch, err))
+				return nil, nil, NewSystemError(fmt.Sprintf("Error resolving service %v/%v %v %v, error %v", service.ServiceOrg, service.ServiceURL, serviceChoice.Version, thisArch, err))
 			}
 
 			if checkWorkloadConfig {
 				// The top-level service might have variables that need to be configured. If so, find all relevant service attribute objects to make sure
 				// there is userinput config available.
-				if present, err := workloadConfigPresent(serviceDef, service.ServiceURL, serviceChoice.Version, db); err != nil {
+				if present, err := workloadConfigPresent(serviceDef, service.ServiceURL, service.ServiceOrg, serviceChoice.Version, db); err != nil {
 					return nil, nil, NewSystemError(fmt.Sprintf("Error checking service config, error %v", err))
 				} else if !present {
-					return nil, nil, NewMSMissingVariableConfigError(fmt.Sprintf("service config for %v %v is missing", service.ServiceURL, serviceChoice.Version), "configstate.state")
+					return nil, nil, NewMSMissingVariableConfigError(fmt.Sprintf("service config for %v/%v %v is missing", service.ServiceOrg, service.ServiceURL, serviceChoice.Version), "configstate.state")
 				}
 			}
 
 			// Look for inconsistencies in the hardware architecture of the list of dependencies.
 			for _, apiSpec := range *apiSpecList {
 				if apiSpec.Arch != thisArch && config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch) != thisArch {
-					return nil, nil, NewSystemError(fmt.Sprintf("The referenced service %v by service %v has a hardware architecture that is not supported by this node: %v.", apiSpec, service.ServiceURL, thisArch))
+					return nil, nil, NewSystemError(fmt.Sprintf("The referenced service %v by service %v/%v has a hardware architecture that is not supported by this node: %v.", apiSpec, service.ServiceOrg, service.ServiceURL, thisArch))
 				}
 			}
 

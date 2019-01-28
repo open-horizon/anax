@@ -306,9 +306,9 @@ func SaveOrUpdateMicroserviceDef(db *bolt.DB, msdef *MicroserviceDefinition) err
 	return writeErr
 }
 
-// find the unarchived microservice definitions for the given url
-func FindUnarchivedMicroserviceDefs(db *bolt.DB, url string) ([]MicroserviceDefinition, error) {
-	return FindMicroserviceDefs(db, []MSFilter{UnarchivedMSFilter(), UrlMSFilter(url)})
+// find the unarchived microservice definitions for the given url and org
+func FindUnarchivedMicroserviceDefs(db *bolt.DB, url string, org string) ([]MicroserviceDefinition, error) {
+	return FindMicroserviceDefs(db, []MSFilter{UnarchivedMSFilter(), UrlOrgMSFilter(url, org)})
 }
 
 // find the microservice definition from the db
@@ -361,15 +361,17 @@ func ArchivedMSFilter() MSFilter {
 	return func(e MicroserviceDefinition) bool { return e.Archived }
 }
 
-// filter on the url + version
-func UrlVersionMSFilter(spec_url string, version string) MSFilter {
-	return func(e MicroserviceDefinition) bool { return (e.SpecRef == spec_url && e.Version == version) }
-}
-
 // filter on the url + version + org
 func UrlOrgVersionMSFilter(spec_url string, org string, version string) MSFilter {
 	return func(e MicroserviceDefinition) bool {
 		return (e.SpecRef == spec_url && e.Org == org && e.Version == version)
+	}
+}
+
+// filter on the url + + org
+func UrlOrgMSFilter(spec_url string, org string) MSFilter {
+	return func(e MicroserviceDefinition) bool {
+		return (e.SpecRef == spec_url && e.Org == org)
 	}
 }
 
@@ -580,6 +582,7 @@ func persistUpdatedMicroserviceDef(db *bolt.DB, key string, update *Microservice
 
 type MicroserviceInstance struct {
 	SpecRef              string                         `json:"ref_url"`
+	Org                  string                         `json:"organization"`
 	Version              string                         `json:"version"`
 	Arch                 string                         `json:"arch"`
 	InstanceId           string                         `json:"instance_id"`
@@ -601,6 +604,7 @@ type MicroserviceInstance struct {
 
 func (w MicroserviceInstance) String() string {
 	return fmt.Sprintf("SpecRef: %v, "+
+		"Org: %v, "+
 		"Version: %v, "+
 		"Arch: %v, "+
 		"InstanceId: %v, "+
@@ -618,17 +622,17 @@ func (w MicroserviceInstance) String() string {
 		"MaxRetryDuration: %v, "+
 		"CurrentRetryCount: %v, "+
 		"RetryStartTime: %v",
-		w.SpecRef, w.Version, w.Arch, w.InstanceId, w.Archived, w.InstanceCreationTime,
+		w.SpecRef, w.Org, w.Version, w.Arch, w.InstanceId, w.Archived, w.InstanceCreationTime,
 		w.ExecutionStartTime, w.ExecutionFailureCode, w.ExecutionFailureDesc,
 		w.CleanupStartTime, w.AssociatedAgreements, w.MicroserviceDefId, w.ParentPath, w.AgreementLess,
 		w.MaxRetries, w.MaxRetryDuration, w.CurrentRetryCount, w.RetryStartTime)
 }
 
 // create a unique name for a microservice def
-// If SpecRef is https://bluehorizon.network/microservices/network, version is 2.3.1 and the instance id is "abcd1234"
-// the output string will be "bluehorizon.network-microservices-network_2.3.1_abcd1234"
+// If SpecRef is https://bluehorizon.network/microservices/network, Org is myorg, version is 2.3.1 and the instance id is "abcd1234"
+// the output string will be "myorg_bluehorizon.network-microservices-network_2.3.1_abcd1234"
 func (m MicroserviceInstance) GetKey() string {
-	return cutil.MakeMSInstanceKey(m.SpecRef, m.Version, m.InstanceId)
+	return cutil.MakeMSInstanceKey(m.SpecRef, m.Org, m.Version, m.InstanceId)
 }
 
 // Check if this microservice instance has a container dpeloyment.
@@ -647,7 +651,7 @@ func (m MicroserviceInstance) HasWorkload(db *bolt.DB) (bool, error) {
 func (m *MicroserviceInstance) HasDirectParent(parent *ServiceInstancePathElement) bool {
 	for _, pathList := range m.ParentPath {
 		for ix, element := range pathList {
-			if parent != nil && parent.IsSame(&element) && (len(pathList) > (ix + 1)) && (&pathList[ix+1]).IsSame(NewServiceInstancePathElement(m.SpecRef, m.Version)) {
+			if parent != nil && parent.IsSame(&element) && (len(pathList) > (ix + 1)) && (&pathList[ix+1]).IsSame(NewServiceInstancePathElement(m.SpecRef, m.Org, m.Version)) {
 				return true
 			}
 		}
@@ -681,27 +685,26 @@ func (m *MicroserviceInstance) GetDirectParents() []ServiceInstancePathElement {
 }
 
 // create a new microservice instance and save it to db.
-func NewMicroserviceInstance(db *bolt.DB, ref_url string, version string, msdef_id string, dependencyPath []ServiceInstancePathElement) (*MicroserviceInstance, error) {
+func NewMicroserviceInstance(db *bolt.DB, ref_url string, org string, version string, msdef_id string, dependencyPath []ServiceInstancePathElement) (*MicroserviceInstance, error) {
 
-	if ref_url == "" || version == "" {
-		return nil, errors.New("Microservice ref url id or version is empty, cannot persist")
+	if ref_url == "" || org == "" || version == "" {
+		return nil, errors.New("Microservice ref url id, org or version is empty, cannot persist")
 	}
 
-	var instance_id string
-	if id, err := uuid.NewV4(); err != nil {
-		return nil, errors.New(fmt.Sprintf("Unable to generate UUID for service %v instance id %v, error: %v", ref_url, msdef_id, err))
-	} else {
-		instance_id = id.String()
+	instance_id, err := createInstanceId()
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Error creating an instance id for the service instance %v/%v version %v", org, ref_url, version))
 	}
 
-	if ms_instance, err := FindMicroserviceInstance(db, ref_url, version, instance_id); err != nil {
+	if ms_instance, err := FindMicroserviceInstance(db, ref_url, org, version, instance_id); err != nil {
 		return nil, err
 	} else if ms_instance != nil {
-		return nil, fmt.Errorf("Not expecting any records with SpecRef %v, version %v and instance id %v, found %v", ref_url, version, instance_id, ms_instance)
+		return nil, fmt.Errorf("Not expecting any records with Org %v, SpecRef %v, version %v and instance id %v, found %v", org, ref_url, version, instance_id, ms_instance)
 	}
 
 	new_inst := &MicroserviceInstance{
 		SpecRef:              ref_url,
+		Org:                  org,
 		Version:              version,
 		Arch:                 cutil.ArchString(),
 		InstanceId:           instance_id,
@@ -720,24 +723,15 @@ func NewMicroserviceInstance(db *bolt.DB, ref_url string, version string, msdef_
 		RetryStartTime:       0,
 	}
 
-	return new_inst, db.Update(func(tx *bolt.Tx) error {
-		if b, err := tx.CreateBucketIfNotExists([]byte(MICROSERVICE_INSTANCES)); err != nil {
-			return err
-		} else if bytes, err := json.Marshal(new_inst); err != nil {
-			return fmt.Errorf("Unable to marshal new record: %v", err)
-		} else if err := b.Put([]byte(new_inst.GetKey()), []byte(bytes)); err != nil {
-			return fmt.Errorf("Unable to persist service instance: %v", err)
-		}
-		// success, close tx
-		return nil
-	})
+	return saveMicroserviceInstance(db, new_inst)
 }
 
 // Create an microservice instance object out of an agreement. The object is not be saved into the db.
 func AgreementToMicroserviceInstance(ag EstablishedAgreement, msdef_id string) *MicroserviceInstance {
-	sipe := NewServiceInstancePathElement(ag.RunningWorkload.URL, ag.RunningWorkload.Version)
+	sipe := NewServiceInstancePathElement(ag.RunningWorkload.URL, ag.RunningWorkload.Org, ag.RunningWorkload.Version)
 	return &MicroserviceInstance{
 		SpecRef:              ag.RunningWorkload.URL,
+		Org:                  ag.RunningWorkload.Org,
 		Version:              ag.RunningWorkload.Version,
 		Arch:                 ag.RunningWorkload.Arch,
 		InstanceId:           ag.CurrentAgreementId,
@@ -754,7 +748,7 @@ func AgreementToMicroserviceInstance(ag EstablishedAgreement, msdef_id string) *
 }
 
 // find the microservice instance from the db
-func FindMicroserviceInstance(db *bolt.DB, url string, version string, instance_id string) (*MicroserviceInstance, error) {
+func FindMicroserviceInstance(db *bolt.DB, url string, org string, version string, instance_id string) (*MicroserviceInstance, error) {
 	var pms *MicroserviceInstance
 	pms = nil
 
@@ -769,7 +763,10 @@ func FindMicroserviceInstance(db *bolt.DB, url string, version string, instance_
 				if err := json.Unmarshal(v, &ms); err != nil {
 					glog.Errorf("Unable to deserialize service_instance db record: %v", v)
 				} else if ms.SpecRef == url && ms.Version == version && ms.InstanceId == instance_id {
-					pms = &ms
+					// ms.Org == "" is for ms instances created by older versions
+					if ms.Org == "" || ms.Org == org {
+						pms = &ms
+					}
 					return nil
 				}
 				return nil
@@ -826,14 +823,16 @@ func AllMIFilter() MIFilter {
 	return func(e MicroserviceInstance) bool { return true }
 }
 
-// filter for all the microservice instances for the given url and version
-func AllInstancesMIFilter(spec_url string, version string) MIFilter {
+// filter for all the microservice instances for the given url and org and version
+func AllInstancesMIFilter(spec_url string, org string, version string) MIFilter {
 	return func(e MicroserviceInstance) bool {
 		if e.SpecRef == spec_url && e.Version == version {
-			return true
-		} else {
-			return false
+			// e.Org == "" is for ms instances created by older versions
+			if e.Org == "" || e.Org == org {
+				return true
+			}
 		}
+		return false
 	}
 }
 
@@ -1173,18 +1172,44 @@ func DeleteMicroserviceInstance(db *bolt.DB, key string) (*MicroserviceInstance,
 
 type ServiceInstancePathElement struct {
 	URL     string `json:"url"`
+	Org     string `json:"org"`
 	Version string `json:"version"`
 }
 
-func NewServiceInstancePathElement(url string, version string) *ServiceInstancePathElement {
+func NewServiceInstancePathElement(url string, org string, version string) *ServiceInstancePathElement {
 	return &ServiceInstancePathElement{
 		URL:     url,
+		Org:     org,
 		Version: version,
 	}
 }
 
 func (s *ServiceInstancePathElement) IsSame(other *ServiceInstancePathElement) bool {
-	return (s.URL == other.URL) && (s.Version == other.Version)
+	return (s.URL == other.URL) && (s.Org == other.Org) && (s.Version == other.Version)
+}
+
+// create an instance
+func createInstanceId() (string, error) {
+	if id, err := uuid.NewV4(); err != nil {
+		return "", errors.New(fmt.Sprintf("Unable to generate UUID, error: %v", err))
+	} else {
+		return id.String(), nil
+	}
+}
+
+// save the given microservice instance into the db
+func saveMicroserviceInstance(db *bolt.DB, new_inst *MicroserviceInstance) (*MicroserviceInstance, error) {
+	return new_inst, db.Update(func(tx *bolt.Tx) error {
+		if b, err := tx.CreateBucketIfNotExists([]byte(MICROSERVICE_INSTANCES)); err != nil {
+			return err
+		} else if bytes, err := json.Marshal(new_inst); err != nil {
+			return fmt.Errorf("Unable to marshal new record: %v", err)
+		} else if err := b.Put([]byte(new_inst.GetKey()), []byte(bytes)); err != nil {
+			return fmt.Errorf("Unable to persist service instance: %v", err)
+		}
+		// success, close tx
+		return nil
+	})
 }
 
 func CompareServiceInstancePath(a, b []ServiceInstancePathElement) bool {

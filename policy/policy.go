@@ -1,6 +1,7 @@
 package policy
 
 import (
+	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/events"
 	"strings"
@@ -15,11 +16,11 @@ import (
 
 func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, sensorVersion string, arch string, props *map[string]interface{}, haPartners []string, meterPolicy Meter, counterPartyProperties RequiredProperty, agps []AgreementProtocol, maxAgreements int, filePath string, deviceOrg string) (*events.PolicyCreatedMessage, error) {
 
-	glog.V(5).Infof("Generating policy for %v", sensorUrl)
+	glog.V(5).Infof("Generating policy for %v/%v", sensorOrg, sensorUrl)
 
 	// Generate a policy file name
 	a_tmp := strings.Split(sensorUrl, "/")
-	fileName := a_tmp[len(a_tmp)-1]
+	fileName := fmt.Sprintf("%v_%v", sensorOrg, a_tmp[len(a_tmp)-1])
 
 	p := Policy_Factory("Policy for " + fileName)
 	p.Add_API_Spec(APISpecification_Factory(sensorUrl, sensorOrg, sensorVersion, arch))

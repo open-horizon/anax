@@ -43,20 +43,20 @@ func NewWorkloadInfo(url string, org string, version string, arch string) (*Work
 // N.B. Important!! Ensure new values are handled in Update function below
 // This struct is for persisting agreements
 type EstablishedAgreement struct {
-	Name                         string   `json:"name"`
-	SensorUrl                    []string `json:"sensor_url"`
-	Archived                     bool     `json:"archived"`
-	CurrentAgreementId           string   `json:"current_agreement_id"`
-	ConsumerId                   string   `json:"consumer_id"`
-	CounterPartyAddress          string   `json:"counterparty_address"`
-	AgreementCreationTime        uint64   `json:"agreement_creation_time"`
-	AgreementAcceptedTime        uint64   `json:"agreement_accepted_time"`
-	AgreementBCUpdateAckTime     uint64   `json:"agreement_bc_update_ack_time"` // V2 protocol - time when consumer acks our blockchain update
-	AgreementFinalizedTime       uint64   `json:"agreement_finalized_time"`
-	AgreementTerminatedTime      uint64   `json:"agreement_terminated_time"`
-	AgreementForceTerminatedTime uint64   `json:"agreement_force_terminated_time"`
-	AgreementExecutionStartTime  uint64   `json:"agreement_execution_start_time"`
-	AgreementDataReceivedTime    uint64   `json:"agreement_data_received_time"`
+	Name                         string       `json:"name"`
+	DependentServices            ServiceSpecs `json:"dependent_services"`
+	Archived                     bool         `json:"archived"`
+	CurrentAgreementId           string       `json:"current_agreement_id"`
+	ConsumerId                   string       `json:"consumer_id"`
+	CounterPartyAddress          string       `json:"counterparty_address"`
+	AgreementCreationTime        uint64       `json:"agreement_creation_time"`
+	AgreementAcceptedTime        uint64       `json:"agreement_accepted_time"`
+	AgreementBCUpdateAckTime     uint64       `json:"agreement_bc_update_ack_time"` // V2 protocol - time when consumer acks our blockchain update
+	AgreementFinalizedTime       uint64       `json:"agreement_finalized_time"`
+	AgreementTerminatedTime      uint64       `json:"agreement_terminated_time"`
+	AgreementForceTerminatedTime uint64       `json:"agreement_force_terminated_time"`
+	AgreementExecutionStartTime  uint64       `json:"agreement_execution_start_time"`
+	AgreementDataReceivedTime    uint64       `json:"agreement_data_received_time"`
 	// One of the following 2 fields are set when the worker that owns deployment for this agreement, starts deploying the services in the agreement.
 	CurrentDeployment               map[string]ServiceConfig `json:"current_deployment"`  // Native Horizon deployment config goes here, mutually exclusive with the extended deployment field. This field is set before the torrent worker starts the workload.
 	ExtendedDeployment              map[string]interface{}   `json:"extended_deployment"` // All non-native deployment configs go here. This field is set before the helm worker installs the release.
@@ -78,7 +78,7 @@ type EstablishedAgreement struct {
 func (c EstablishedAgreement) String() string {
 
 	return fmt.Sprintf("Name: %v, "+
-		"SensorUrl: %v, "+
+		"DependentServices: %v, "+
 		"Archived: %v, "+
 		"CurrentAgreementId: %v, "+
 		"ConsumerId: %v, "+
@@ -103,17 +103,18 @@ func (c EstablishedAgreement) String() string {
 		"MeteringNotificationMsg: %v, "+
 		"BlockchainType: %v, "+
 		"BlockchainName: %v, "+
-		"BlockchainOrg: %v",
-		c.Name, c.SensorUrl, c.Archived, c.CurrentAgreementId, c.ConsumerId, c.CounterPartyAddress, ServiceConfigNames(&c.CurrentDeployment),
+		"BlockchainOrg: %v, "+
+		"RunningWorkload: %v",
+		c.Name, c.DependentServices, c.Archived, c.CurrentAgreementId, c.ConsumerId, c.CounterPartyAddress, ServiceConfigNames(&c.CurrentDeployment),
 		c.ExtendedDeployment, c.ProposalSig,
 		c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementBCUpdateAckTime, c.AgreementFinalizedTime,
 		c.AgreementDataReceivedTime, c.AgreementTerminatedTime, c.AgreementForceTerminatedTime, c.TerminatedReason, c.TerminatedDescription,
 		c.AgreementProtocol, c.ProtocolVersion, c.AgreementProtocolTerminatedTime, c.WorkloadTerminatedTime,
-		c.MeteringNotificationMsg, c.BlockchainType, c.BlockchainName, c.BlockchainOrg)
+		c.MeteringNotificationMsg, c.BlockchainType, c.BlockchainName, c.BlockchainOrg, c.RunningWorkload)
 
 }
 
-func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consumerId string, proposal string, protocol string, protocolVersion int, sensorUrl []string, signature string, address string, bcType string, bcName string, bcOrg string, wi *WorkloadInfo) (*EstablishedAgreement, error) {
+func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consumerId string, proposal string, protocol string, protocolVersion int, dependentSvcs ServiceSpecs, signature string, address string, bcType string, bcName string, bcOrg string, wi *WorkloadInfo) (*EstablishedAgreement, error) {
 
 	if name == "" || agreementId == "" || consumerId == "" || proposal == "" || protocol == "" || protocolVersion == 0 {
 		return nil, errors.New("Agreement id, consumer id, proposal, protocol, or protocol version are empty, cannot persist")
@@ -131,7 +132,7 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 
 	newAg := &EstablishedAgreement{
 		Name:                            name,
-		SensorUrl:                       sensorUrl,
+		DependentServices:               dependentSvcs,
 		Archived:                        false,
 		CurrentAgreementId:              agreementId,
 		ConsumerId:                      consumerId,
@@ -470,6 +471,11 @@ func IdEAFilter(id string) EAFilter {
 // filter on EstablishedAgreements
 type EAFilter func(EstablishedAgreement) bool
 
+// This structure is used to get the SensorUrl from the old EstablishedAgreement structure
+type SensorUrls struct {
+	SensorUrl []string `json:"sensor_url"`
+}
+
 func FindEstablishedAgreements(db *bolt.DB, protocol string, filters []EAFilter) ([]EstablishedAgreement, error) {
 	agreements := make([]EstablishedAgreement, 0)
 
@@ -482,8 +488,24 @@ func FindEstablishedAgreements(db *bolt.DB, protocol string, filters []EAFilter)
 				var e EstablishedAgreement
 
 				if err := json.Unmarshal(v, &e); err != nil {
-					glog.Errorf("Unable to deserialize db record: %v", v)
+					glog.Errorf("Unable to deserialize db record to EstablishedAgreement: %v", v)
 				} else {
+					// this might be agreement from the old EstablishedAgreement structure where SensorUrl was used.
+					// will convert it to new using DependentServices
+					if e.DependentServices == nil {
+						var sensor_urls SensorUrls
+						if err := json.Unmarshal(v, &sensor_urls); err != nil {
+							glog.Errorf("Unable to deserialize db record to SensorUrl: %v", v)
+						} else {
+							e.DependentServices = []ServiceSpec{}
+							if sensor_urls.SensorUrl != nil && len(sensor_urls.SensorUrl) > 0 {
+								for _, url := range sensor_urls.SensorUrl {
+									e.DependentServices = append(e.DependentServices, ServiceSpec{Url: url})
+								}
+							}
+						}
+					}
+
 					if !e.Archived {
 						glog.V(5).Infof("Demarshalled agreement in DB: %v", e)
 					}

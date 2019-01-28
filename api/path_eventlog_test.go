@@ -25,30 +25,34 @@ func Test_FindEventLogsForOutput(t *testing.T) {
 	}
 	defer cleanTestDir(dir)
 
+	sp1 := persistence.ServiceSpec{Url: "http://sensor1.org", Org: "sensor1"}
+	sp2 := persistence.ServiceSpec{Url: "http://mycomp.org", Org: "myorg"}
+	sp3 := persistence.ServiceSpec{Url: "http://sensor3.org", Org: "sensor3"}
+
 	// save event logs
-	if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "proposal received.", persistence.EC_RECEIVED_PROPOSAL, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []string{"http://sensor1.org"}, "consumerId", "Basic"); err != nil {
+	if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "proposal received.", persistence.EC_RECEIVED_PROPOSAL, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp1}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "reply sent.", persistence.EC_RECEIVED_REPLYACK_MESSAGE, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []string{"http://sensor1.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "reply sent.", persistence.EC_RECEIVED_REPLYACK_MESSAGE, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp1}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "proposal received.", persistence.EC_RECEIVED_PROPOSAL, "agreementId2", persistence.WorkloadInfo{"http://top2.com", "myorg", "1.0.0", "amd64"}, []string{"http://mycomp.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "proposal received.", persistence.EC_RECEIVED_PROPOSAL, "agreementId2", persistence.WorkloadInfo{"http://top2.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp2}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "proposal received.", persistence.EC_RECEIVED_PROPOSAL, "agreementId3", persistence.WorkloadInfo{"http://top3.com", "myorg", "1.0.0", "amd64"}, []string{"http://sensor3.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "proposal received.", persistence.EC_RECEIVED_PROPOSAL, "agreementId3", persistence.WorkloadInfo{"http://top3.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp3}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "reply sent.", persistence.EC_RECEIVED_REPLYACK_MESSAGE, "agreementId2", persistence.WorkloadInfo{"http://top2.com", "myorg", "1.0.0", "amd64"}, []string{"http://mycomp.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "reply sent.", persistence.EC_RECEIVED_REPLYACK_MESSAGE, "agreementId2", persistence.WorkloadInfo{"http://top2.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp2}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "agreement finalized.", persistence.EC_AGREEMENT_REACHED, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []string{"http://sensor1.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "agreement finalized.", persistence.EC_AGREEMENT_REACHED, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp1}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "reply sent.", persistence.EC_RECEIVED_REPLYACK_MESSAGE, "agreementId3", persistence.WorkloadInfo{"http://top3.com", "myorg", "1.0.0", "amd64"}, []string{"http://sensor3.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "reply sent.", persistence.EC_RECEIVED_REPLYACK_MESSAGE, "agreementId3", persistence.WorkloadInfo{"http://top3.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp3}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "agreement finalized.", persistence.EC_AGREEMENT_REACHED, "agreementId3", persistence.WorkloadInfo{"http://top3.com", "myorg", "1.0.0", "amd64"}, []string{"http://sensor3.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "agreement finalized.", persistence.EC_AGREEMENT_REACHED, "agreementId3", persistence.WorkloadInfo{"http://top3.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp3}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "agreement finalized.", persistence.EC_AGREEMENT_REACHED, "agreementId2", persistence.WorkloadInfo{"http://top2.com", "myorg", "1.0.0", "amd64"}, []string{"http://mycomp.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_INFO, "agreement finalized.", persistence.EC_AGREEMENT_REACHED, "agreementId2", persistence.WorkloadInfo{"http://top2.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp2}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_ERROR, "something is wrong.", persistence.EC_ERROR_START_CONTAINER, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []string{"http://sensor1.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_ERROR, "something is wrong.", persistence.EC_ERROR_START_CONTAINER, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp1}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_WARN, "something is wrong.", persistence.EC_ERROR_START_CONTAINER, "agreementId2", persistence.WorkloadInfo{"http://top2.com", "myorg", "1.0.0", "amd64"}, []string{"http://mycomp.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_WARN, "something is wrong.", persistence.EC_ERROR_START_CONTAINER, "agreementId2", persistence.WorkloadInfo{"http://top2.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp2}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
-	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_ERROR, "something is really wrong.", persistence.EC_EXCHANGE_ERROR, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []string{"http://sensor1.org"}, "consumerId", "Basic"); err != nil {
+	} else if err := eventlog.LogAgreementEvent2(db, persistence.SEVERITY_ERROR, "something is really wrong.", persistence.EC_EXCHANGE_ERROR, "agreementId1", persistence.WorkloadInfo{"http://top1.com", "myorg", "1.0.0", "amd64"}, []persistence.ServiceSpec{sp1}, "consumerId", "Basic"); err != nil {
 		t.Errorf("error saving event log: %v", err)
 	}
 
@@ -100,4 +104,11 @@ func Test_FindEventLogsForOutput(t *testing.T) {
 			}
 		}
 	}
+
+	if elogs, err := FindEventLogsForOutput(db, true, map[string][]string{"dependent_services.url": {"http://mycomp.org"}}); err != nil {
+		t.Errorf("error getting event logs: %v", err)
+	} else {
+		assert.Equal(t, 4, len(elogs), "Test FindEventLogsForOutput with selection.")
+	}
+
 }

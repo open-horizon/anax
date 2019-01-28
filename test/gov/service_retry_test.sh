@@ -49,7 +49,7 @@ if [ "$PATTERN" = "sloc" ] ||[ "$PATTERN" = "sall" ]; then
         exit 2
     fi
 
-    cpu_inst_before=$(curl -s http://localhost/service | jq -r '.instances.active[] | select (.ref_url == "https://bluehorizon.network/service-cpu")')
+    cpu_inst_before=$(curl -s http://localhost/service | jq -r '.instances.active[] | select (.ref_url == "https://bluehorizon.network/service-cpu") | select (.organization == "IBM")')
     if [ $? -ne 0 ]; then
         echo -e "${PREFIX} failed to get cpu service instace. ${cpu_inst_before}"
         exit 2
@@ -70,7 +70,7 @@ if [ "$PATTERN" = "sloc" ] ||[ "$PATTERN" = "sall" ]; then
         exit 1
     fi
 
-    cpu_inst_after=$(curl -s http://localhost/service | jq -r '.instances.active[] | select (.ref_url == "https://bluehorizon.network/service-cpu")')
+    cpu_inst_after=$(curl -s http://localhost/service | jq -r '.instances.active[] | select (.ref_url == "https://bluehorizon.network/service-cpu") | select (.organization == "IBM")')
     if [ $? -ne 0 ]; then
         echo -e "${PREFIX} failed to get cpu service instace. ${cpu_inst_after}"
         exit 2
@@ -89,7 +89,7 @@ if [ "$PATTERN" = "sloc" ] ||[ "$PATTERN" = "sall" ]; then
         max_retry_duration=$(echo "$cpu_inst_after" | jq '.max_retry_duration')
         current_retry_count=$(echo "$cpu_inst_after" | jq '.current_retry_count')
         retry_start_time=$(echo "$cpu_inst_after" | jq '.retry_start_time')
-        if [ "$max_retries" != "2" ] || [ "$max_retry_duration" != "3600" ] || [ "$current_retry_count" != "2" ] || [ "$retry_start_time" == "0" ]; then
+        if [ "$max_retries" != "2" ] || [ "$max_retry_duration" != "2400" ] || [ "$current_retry_count" != "2" ] || [ "$retry_start_time" == "0" ]; then
              echo -e "${PREFIX} retry paramters are not right: max_retries=$max_retries, max_retry_duration=$max_retry_duration, current_retry_count=$current_retry_count, retry_start_time=$retry_start_time"
             exit 2
         fi

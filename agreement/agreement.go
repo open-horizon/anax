@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -227,7 +228,7 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 			eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_ERROR,
 				fmt.Sprintf("Unable to read policy file %v for service %v, error: %v", cmd.PolicyFile, svcName, err),
 				persistence.EC_ERROR_POLICY_ADVERTISING,
-				"", persistence.WorkloadInfo{}, []string{svcName}, "", "")
+				"", persistence.WorkloadInfo{}, []persistence.ServiceSpec{}, "", "")
 
 			glog.Errorf(logString(fmt.Sprintf("unable to read policy file %v into memory, error: %v", cmd.PolicyFile, err)))
 		} else {
@@ -240,22 +241,22 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 			protocols := strings.Join(a_protocols, ",")
 
 			eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_INFO,
-				fmt.Sprintf("Start policy advertising with the exchange for service %v.", newPolicy.APISpecs[0].SpecRef),
+				fmt.Sprintf("Start policy advertising with the exchange for service %v/%v.", newPolicy.APISpecs[0].Org, newPolicy.APISpecs[0].SpecRef),
 				persistence.EC_START_POLICY_ADVERTISING,
-				"", persistence.WorkloadInfo{}, []string{newPolicy.APISpecs[0].SpecRef}, "", protocols)
+				"", persistence.WorkloadInfo{}, producer.ConvertToServiceSpecs(newPolicy.APISpecs), "", protocols)
 			// Publish what we have for the world to see
 			if err := w.advertiseAllPolicies(w.BaseWorker.Manager.Config.Edge.PolicyPath); err != nil {
 				eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Unable to advertise policies with exchange for service %v, error: %v", newPolicy.APISpecs[0].SpecRef, err),
+					fmt.Sprintf("Unable to advertise policies with exchange for service %v/%v, error: %v", newPolicy.APISpecs[0].Org, newPolicy.APISpecs[0].SpecRef, err),
 					persistence.EC_ERROR_POLICY_ADVERTISING,
-					"", persistence.WorkloadInfo{}, []string{newPolicy.APISpecs[0].SpecRef}, "", protocols)
+					"", persistence.WorkloadInfo{}, producer.ConvertToServiceSpecs(newPolicy.APISpecs), "", protocols)
 
 				glog.Warningf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
 			} else {
 				eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_INFO,
-					fmt.Sprintf("Complete policy advertising with the exchange for service %v.", newPolicy.APISpecs[0].SpecRef),
+					fmt.Sprintf("Complete policy advertising with the exchange for service %v/%v.", newPolicy.APISpecs[0].Org, newPolicy.APISpecs[0].SpecRef),
 					persistence.EC_COMPLETE_POLICY_ADVERTISING,
-					"", persistence.WorkloadInfo{}, []string{newPolicy.APISpecs[0].SpecRef}, "", protocols)
+					"", persistence.WorkloadInfo{}, producer.ConvertToServiceSpecs(newPolicy.APISpecs), "", protocols)
 			}
 		}
 
@@ -708,7 +709,7 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 		ms := make([]exchange.Microservice, 0, 10)
 		for _, p := range policies {
 			newMS := new(exchange.Microservice)
-			newMS.Url = p.APISpecs[0].SpecRef
+			newMS.Url = cutil.FormOrgSpecUrl(p.APISpecs[0].SpecRef, p.APISpecs[0].Org)
 
 			// The version property needs special handling
 			newProp := &exchange.MSProp{

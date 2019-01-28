@@ -19,8 +19,8 @@ func (a LocationAttributes) GetMeta() *AttributeMeta {
 
 func (a LocationAttributes) GetGenericMappings() map[string]interface{} {
 	return map[string]interface{}{
-		"lat": a.Lat,
-		"lon": a.Lon,
+		"lat":                  a.Lat,
+		"lon":                  a.Lon,
 		"location_accuracy_km": a.LocationAccuracyKM,
 		"use_gps":              a.UseGps,
 	}
@@ -58,9 +58,10 @@ func (a ArchitectureAttributes) String() string {
 }
 
 type ComputeAttributes struct {
-	Meta *AttributeMeta `json:"meta"`
-	CPUs int64          `json:"cpus"`
-	RAM  int64          `json:"ram"`
+	Meta         *AttributeMeta `json:"meta"`
+	ServiceSpecs *ServiceSpecs  `json:"service_specs"`
+	CPUs         int64          `json:"cpus"`
+	RAM          int64          `json:"ram"`
 }
 
 func (a ComputeAttributes) GetMeta() *AttributeMeta {
@@ -80,7 +81,18 @@ func (a ComputeAttributes) Update(other Attribute) error {
 }
 
 func (a ComputeAttributes) String() string {
-	return fmt.Sprintf("Meta: %v, CPUs: %v, RAM: %v", a.Meta, a.CPUs, a.RAM)
+	if a.ServiceSpecs == nil {
+		return fmt.Sprintf("Meta: %v, ServiceSpecs: %v, CPUs: %v, RAM: %v", a.Meta, nil, a.CPUs, a.RAM)
+	} else {
+		return fmt.Sprintf("Meta: %v, ServiceSpecs: %v, CPUs: %v, RAM: %v", a.Meta, *a.ServiceSpecs, a.CPUs, a.RAM)
+	}
+}
+
+func (a ComputeAttributes) GetServiceSpecs() *ServiceSpecs {
+	if a.ServiceSpecs == nil {
+		a.ServiceSpecs = new(ServiceSpecs)
+	}
+	return a.ServiceSpecs
 }
 
 type HAAttributes struct {
@@ -118,6 +130,7 @@ func (a HAAttributes) String() string {
 
 type MeteringAttributes struct {
 	Meta                  *AttributeMeta `json:"meta"`
+	ServiceSpecs          *ServiceSpecs  `json:"service_specs"`
 	Tokens                uint64         `json:"tokens"`
 	PerTimeUnit           string         `json:"per_time_unit"`
 	NotificationIntervalS int            `json:"notification_interval"`
@@ -141,12 +154,24 @@ func (a MeteringAttributes) Update(other Attribute) error {
 }
 
 func (a MeteringAttributes) String() string {
-	return fmt.Sprintf("Meta: %v, Tokens: %v, PerTimeUnit: %v, NotificationIntervalS: %v", a.Meta, a.Tokens, a.PerTimeUnit, a.NotificationIntervalS)
+	if a.ServiceSpecs == nil {
+		return fmt.Sprintf("Meta: %v, ServiceSpecs: %v, Tokens: %v, PerTimeUnit: %v, NotificationIntervalS: %v", a.Meta, nil, a.Tokens, a.PerTimeUnit, a.NotificationIntervalS)
+	} else {
+		return fmt.Sprintf("Meta: %v, ServiceSpecs: %v, Tokens: %v, PerTimeUnit: %v, NotificationIntervalS: %v", a.Meta, *(a.ServiceSpecs), a.Tokens, a.PerTimeUnit, a.NotificationIntervalS)
+	}
+}
+
+func (a MeteringAttributes) GetServiceSpecs() *ServiceSpecs {
+	if a.ServiceSpecs == nil {
+		a.ServiceSpecs = new(ServiceSpecs)
+	}
+	return a.ServiceSpecs
 }
 
 type CounterPartyPropertyAttributes struct {
-	Meta       *AttributeMeta         `json:"meta"`
-	Expression map[string]interface{} `json:"expression"`
+	Meta         *AttributeMeta         `json:"meta"`
+	ServiceSpecs *ServiceSpecs          `json:"service_specs"`
+	Expression   map[string]interface{} `json:"expression"`
 }
 
 func (a CounterPartyPropertyAttributes) GetMeta() *AttributeMeta {
@@ -159,18 +184,30 @@ func (a CounterPartyPropertyAttributes) GetGenericMappings() map[string]interfac
 	}
 }
 
+func (a CounterPartyPropertyAttributes) GetServiceSpecs() *ServiceSpecs {
+	if a.ServiceSpecs == nil {
+		a.ServiceSpecs = new(ServiceSpecs)
+	}
+	return a.ServiceSpecs
+}
+
 // TODO: duplicate this for the others too
 func (a CounterPartyPropertyAttributes) Update(other Attribute) error {
 	return fmt.Errorf("Update not implemented for type: %T", a)
 }
 
 func (a CounterPartyPropertyAttributes) String() string {
-	return fmt.Sprintf("Meta: %v, Expression: %v", a.Meta, a.Expression)
+	if a.ServiceSpecs == nil {
+		return fmt.Sprintf("Meta: %v, ServiceSpecs: %v, Expression: %v", a.Meta, nil, a.Expression)
+	} else {
+		return fmt.Sprintf("Meta: %v, ServiceSpecs: %v, Expression: %v", a.Meta, *a.ServiceSpecs, a.Expression)
+	}
 }
 
 type PropertyAttributes struct {
-	Meta     *AttributeMeta         `json:"meta"`
-	Mappings map[string]interface{} `json:"mappings"`
+	Meta         *AttributeMeta         `json:"meta"`
+	ServiceSpecs *ServiceSpecs          `json:"service_specs"`
+	Mappings     map[string]interface{} `json:"mappings"`
 }
 
 func (a PropertyAttributes) GetMeta() *AttributeMeta {
@@ -193,12 +230,24 @@ func (a PropertyAttributes) Update(other Attribute) error {
 }
 
 func (a PropertyAttributes) String() string {
-	return fmt.Sprintf("Meta: %v, Mappings: %v", a.Meta, a.Mappings)
+	if a.ServiceSpecs == nil {
+		return fmt.Sprintf("Meta: %v, ServiceSpecs: %v, Mappings: %v", a.Meta, nil, a.Mappings)
+	} else {
+		return fmt.Sprintf("Meta: %v, ServiceSpecs: %v, Mappings: %v", a.Meta, *a.ServiceSpecs, a.Mappings)
+	}
+}
+
+func (a PropertyAttributes) GetServiceSpecs() *ServiceSpecs {
+	if a.ServiceSpecs == nil {
+		a.ServiceSpecs = new(ServiceSpecs)
+	}
+	return a.ServiceSpecs
 }
 
 type UserInputAttributes struct {
-	Meta     *AttributeMeta         `json:"meta"`
-	Mappings map[string]interface{} `json:"mappings"`
+	Meta         *AttributeMeta         `json:"meta"`
+	ServiceSpecs *ServiceSpecs          `json:"service_specs"`
+	Mappings     map[string]interface{} `json:"mappings"`
 }
 
 func (a UserInputAttributes) GetMeta() *AttributeMeta {
@@ -220,6 +269,7 @@ func (a UserInputAttributes) Update(other Attribute) error {
 	case *UserInputAttributes:
 		o := other.(*UserInputAttributes)
 		a.GetMeta().Update(*o.GetMeta())
+		a.GetServiceSpecs().Update(*o.GetServiceSpecs())
 		// update a's members with any in o that are specified
 
 		for k, v := range o.Mappings {
@@ -233,12 +283,24 @@ func (a UserInputAttributes) Update(other Attribute) error {
 }
 
 func (a UserInputAttributes) String() string {
-	return fmt.Sprintf("Meta: %v, Mappings: %v", a.Meta, a.Mappings)
+	if a.ServiceSpecs == nil {
+		return fmt.Sprintf("Meta: %v, ServiceSpecs: %v, Mappings: %v", a.Meta, nil, a.Mappings)
+	} else {
+		return fmt.Sprintf("Meta: %v, ServiceSpecs: %v, Mappings: %v", a.Meta, *a.ServiceSpecs, a.Mappings)
+	}
+}
+
+func (a UserInputAttributes) GetServiceSpecs() *ServiceSpecs {
+	if a.ServiceSpecs == nil {
+		a.ServiceSpecs = new(ServiceSpecs)
+	}
+	return a.ServiceSpecs
 }
 
 type AgreementProtocolAttributes struct {
-	Meta      *AttributeMeta `json:"meta"`
-	Protocols interface{}    `json:"protocols"`
+	Meta         *AttributeMeta `json:"meta"`
+	ServiceSpecs *ServiceSpecs  `json:"service_specs"`
+	Protocols    interface{}    `json:"protocols"`
 }
 
 func (a AgreementProtocolAttributes) GetMeta() *AttributeMeta {
@@ -257,17 +319,29 @@ func (a AgreementProtocolAttributes) Update(other Attribute) error {
 }
 
 func (a AgreementProtocolAttributes) String() string {
-	return fmt.Sprintf("Meta: %v, Protocols: %v", a.Meta, a.Protocols)
+	if a.ServiceSpecs == nil {
+		return fmt.Sprintf("Meta: %v, ServiceSpecs: %v, Protocols: %v", a.Meta, nil, a.Protocols)
+	} else {
+		return fmt.Sprintf("Meta: %v, ServiceSpecs: %v, Protocols: %v", a.Meta, *a.ServiceSpecs, a.Protocols)
+	}
+}
+
+func (a AgreementProtocolAttributes) GetServiceSpecs() *ServiceSpecs {
+	if a.ServiceSpecs == nil {
+		a.ServiceSpecs = new(ServiceSpecs)
+	}
+	return a.ServiceSpecs
 }
 
 type HTTPSBasicAuthAttributes struct {
 	Meta     *AttributeMeta `json:"meta"`
+	Url      string         `json:"url"`
 	Username string         `json:"username"`
 	Password string         `json:"password"`
 }
 
 func (a HTTPSBasicAuthAttributes) String() string {
-	return fmt.Sprintf("meta: %v, username: %v, password: <withheld>", a.GetMeta(), a.Username)
+	return fmt.Sprintf("meta: %v, url: %v, username: %v, password: <withheld>", a.GetMeta(), a.Url, a.Username)
 }
 
 func (a HTTPSBasicAuthAttributes) GetMeta() *AttributeMeta {
@@ -282,6 +356,7 @@ func (a HTTPSBasicAuthAttributes) GetGenericMappings() map[string]interface{} {
 	}
 
 	return map[string]interface{}{
+		"url":      a.Url,
 		"username": a.Username,
 		"password": obf,
 	}
@@ -303,6 +378,7 @@ func (a HTTPSBasicAuthAttributes) Update(other Attribute) error {
 }
 
 type Auth struct {
+	Registry string `json:"registry"`
 	UserName string `json:"username"` // The name of the user, the default is 'token'
 	Token    string `json:"token"`    // It can be a token, a password, an api key etc.
 }
@@ -315,7 +391,7 @@ type DockerRegistryAuthAttributes struct {
 func (a DockerRegistryAuthAttributes) String() string {
 	auths_show := make([]Auth, 0)
 	for _, au := range a.Auths {
-		auths_show = append(auths_show, Auth{UserName: au.UserName, Token: "********"})
+		auths_show = append(auths_show, Auth{Registry: au.Registry, UserName: au.UserName, Token: "********"})
 	}
 
 	return fmt.Sprintf("meta: %v, auths: %v", a.GetMeta(), auths_show)

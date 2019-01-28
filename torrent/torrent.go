@@ -88,28 +88,23 @@ func ExtractAuthAttributes(attributes []persistence.Attribute, httpAuthAttrs map
 			}
 
 			// we don't care about apply-all settings, they're a security problem (TODO: add an API check for this case)
-			for _, url := range attr.GetMeta().SensorUrls {
-				httpAuthAttrs[url] = cred
-			}
+			httpAuthAttrs[a.Url] = cred
 		} else if attr.GetMeta().Type == "DockerRegistryAuthAttributes" {
 			a := attr.(persistence.DockerRegistryAuthAttributes)
 
-			// should have one url, but we iterate through it anyway
-			for _, url := range attr.GetMeta().SensorUrls {
-				// may container multiple auths
-				for _, auth := range a.Auths {
-					username := "token" // default user name if auth.UserName is empty
-					if auth.UserName != "" {
-						username = auth.UserName
-					}
-					a_single := docker.AuthConfiguration{
-						Email:         "",
-						Username:      username,
-						Password:      auth.Token,
-						ServerAddress: url,
-					}
-					dockerAuthConfigurations = AppendDockerAuth(dockerAuthConfigurations, a_single)
+			// may container multiple auths
+			for _, auth := range a.Auths {
+				username := "token" // default user name if auth.UserName is empty
+				if auth.UserName != "" {
+					username = auth.UserName
 				}
+				a_single := docker.AuthConfiguration{
+					Email:         "",
+					Username:      username,
+					Password:      auth.Token,
+					ServerAddress: auth.Registry,
+				}
+				dockerAuthConfigurations = AppendDockerAuth(dockerAuthConfigurations, a_single)
 			}
 		}
 	}
@@ -145,7 +140,7 @@ func AppendDockerAuth(dockerAuths map[string][]docker.AuthConfiguration, auth do
 func authAttributes(db *bolt.DB, httpAuthAttrs map[string]map[string]string, dockerAuthConfigurations map[string][]docker.AuthConfiguration) error {
 
 	// assemble credentials from attributes
-	attributes, err := persistence.FindApplicableAttributes(db, "")
+	attributes, err := persistence.FindApplicableAttributes(db, "", "")
 	if err != nil {
 		return fmt.Errorf("Error fetching attributes. Error: %v", err)
 	}

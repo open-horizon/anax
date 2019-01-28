@@ -2,12 +2,13 @@ package persistence
 
 import (
 	"fmt"
+	"github.com/open-horizon/anax/cutil"
 )
 
 type AgreementEventSource struct {
 	AgreementId       string       `json:"agreement_id"`
 	RunningWorkload   WorkloadInfo `json:"workload_to_run"`
-	ServiceUrl        []string     `json:"service_url"`
+	DependentServices ServiceSpecs `json:"dependent_services"`
 	ConsumerId        string       `json:"consumer_id"`
 	AgreementProtocol string       `json:"agreement_protocol"`
 }
@@ -16,10 +17,10 @@ func (w AgreementEventSource) String() string {
 	return fmt.Sprintf(
 		"AgreementId: %v, "+
 			"RunningWorkload: %v, "+
-			"ServiceUrl: %v, "+
+			"DependentServices: %v, "+
 			"ConsumerId: %v, "+
 			"AgreementProtocol: %v",
-		w.AgreementId, w.RunningWorkload, w.ServiceUrl, w.ConsumerId, w.AgreementProtocol)
+		w.AgreementId, w.RunningWorkload, w.DependentServices, w.ConsumerId, w.AgreementProtocol)
 }
 
 func (w AgreementEventSource) ShortString() string {
@@ -30,7 +31,7 @@ func NewAgreementEventSourceFromAg(ag EstablishedAgreement) *AgreementEventSourc
 	source := AgreementEventSource{
 		AgreementId:       ag.CurrentAgreementId,
 		RunningWorkload:   ag.RunningWorkload,
-		ServiceUrl:        ag.SensorUrl,
+		DependentServices: ag.DependentServices,
 		ConsumerId:        ag.ConsumerId,
 		AgreementProtocol: ag.AgreementProtocol,
 	}
@@ -38,13 +39,13 @@ func NewAgreementEventSourceFromAg(ag EstablishedAgreement) *AgreementEventSourc
 	return &source
 }
 
-func NewAgreementEventSource(agreement_id string, workload WorkloadInfo, service_url []string, consumer_id string, protocol string) *AgreementEventSource {
+func NewAgreementEventSource(agreement_id string, workload WorkloadInfo, dependent_svcs ServiceSpecs, consumer_id string, protocol string) *AgreementEventSource {
 	source := AgreementEventSource{
 		RunningWorkload:   workload,
 		AgreementId:       agreement_id,
 		ConsumerId:        consumer_id,
 		AgreementProtocol: protocol,
-		ServiceUrl:        service_url,
+		DependentServices: dependent_svcs,
 	}
 	return &source
 }
@@ -68,10 +69,48 @@ func (w AgreementEventSource) Matches(selectors map[string][]Selector) bool {
 			attr = w.AgreementId
 		case "consumer_id":
 			attr = w.ConsumerId
-		case "service_url":
+		case "dependent_services":
 			matches := false
-			for _, url1 := range w.ServiceUrl {
-				if m, _, _ := MatchAttributeValue(url1, s_vals); m {
+			for _, sp := range w.DependentServices {
+				if m, _, _ := MatchAttributeValue(cutil.FormOrgSpecUrl(sp.Url, sp.Org), s_vals); m {
+					matches = true
+					break
+				}
+			}
+			if !matches {
+				return false
+			}
+			handle = false
+		case "dependent_services.url":
+			matches := false
+			for _, sp := range w.DependentServices {
+				if m, _, _ := MatchAttributeValue(sp.Url, s_vals); m {
+					matches = true
+					break
+				}
+			}
+			if !matches {
+				return false
+			}
+			handle = false
+		case "service_url":
+			// service_url is no longer an attribute for AgreementEventSource,
+			// but we keep it here so that the selection can be made for both AgreementEventSource and ServiceEventSource in the eventlogs
+			matches := false
+			for _, sp := range w.DependentServices {
+				if m, _, _ := MatchAttributeValue(sp.Url, s_vals); m {
+					matches = true
+					break
+				}
+			}
+			if !matches {
+				return false
+			}
+			handle = false
+		case "dependent_services.organization":
+			matches := false
+			for _, sp := range w.DependentServices {
+				if m, _, _ := MatchAttributeValue(sp.Org, s_vals); m {
 					matches = true
 					break
 				}

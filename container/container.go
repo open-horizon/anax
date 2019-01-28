@@ -1167,7 +1167,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			glog.Infof("Receved configure command for agreement %v. Ignoring it because this agreement has been terminated.", agreementId)
 		} else if ags[0].AgreementExecutionStartTime != 0 {
 			glog.Infof("Receved configure command for agreement %v. Ignoring it because the containers for this agreement has been configured.", agreementId)
-		} else if ms_containers, err := b.findDependencyContainersForService(persistence.NewServiceInstancePathElement(ags[0].RunningWorkload.URL, ags[0].RunningWorkload.Version), []string{agreementId}, cmd.AgreementLaunchContext.Microservices); err != nil {
+		} else if ms_containers, err := b.findDependencyContainersForService(persistence.NewServiceInstancePathElement(ags[0].RunningWorkload.URL, ags[0].RunningWorkload.Org, ags[0].RunningWorkload.Version), []string{agreementId}, cmd.AgreementLaunchContext.Microservices); err != nil {
 			glog.Errorf("Error checking service containers: %v", err)
 
 			// requeue the command
@@ -1479,7 +1479,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			glog.Errorf("Error retrieving service instance from database for %v, error: %v", cmd.MsInstKey, err)
 		} else if msinst == nil {
 			glog.Errorf("Cannot find service instance record from database for %v.", cmd.MsInstKey)
-		} else if serviceNames, err := b.findMicroserviceDefContainerNames(msinst.SpecRef, msinst.Version, msinst.MicroserviceDefId); err != nil {
+		} else if serviceNames, err := b.findMicroserviceDefContainerNames(msinst.SpecRef, msinst.Org, msinst.Version, msinst.MicroserviceDefId); err != nil {
 			glog.Errorf("Error retrieving service contianers for %v, error: %v", cmd.MsInstKey, err)
 		} else if serviceNames != nil && len(serviceNames) > 0 {
 
@@ -1508,7 +1508,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				// ask governer to record it into the db
 				u, _ := url.Parse("")
 				cc := events.NewContainerConfig(*u, "", "", "", "", "", nil)
-				ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey, []string{}, []events.MicroserviceSpec{}, persistence.NewServiceInstancePathElement("", ""), false)
+				ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey, []string{}, []events.MicroserviceSpec{}, persistence.NewServiceInstancePathElement("", "", ""), false)
 				b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *ll, "", "")
 			}
 		}
@@ -1892,7 +1892,7 @@ func (b *ContainerWorker) ContainersMatchingAgreement(agreements []string, inclu
 }
 
 // find the microservice definition from the db
-func (b *ContainerWorker) findMicroserviceDefContainerNames(api_spec string, version string, msdef_key string) ([]string, error) {
+func (b *ContainerWorker) findMicroserviceDefContainerNames(api_spec string, org string, version string, msdef_key string) ([]string, error) {
 
 	container_names := make([]string, 0)
 	var msdef *persistence.MicroserviceDefinition
@@ -1904,8 +1904,8 @@ func (b *ContainerWorker) findMicroserviceDefContainerNames(api_spec string, ver
 			msdef = msd
 		}
 	} else {
-		if ms_defs, err := persistence.FindMicroserviceDefs(b.db, []persistence.MSFilter{persistence.UnarchivedMSFilter(), persistence.UrlVersionMSFilter(api_spec, version)}); err != nil {
-			return nil, fmt.Errorf(fmt.Sprintf("Error finding service definitions from db for %v version %v. %v", api_spec, version, err))
+		if ms_defs, err := persistence.FindMicroserviceDefs(b.db, []persistence.MSFilter{persistence.UnarchivedMSFilter(), persistence.UrlOrgVersionMSFilter(api_spec, org, version)}); err != nil {
+			return nil, fmt.Errorf("Error finding service definition from the local db for %v version %v key %v. %v", cutil.FormOrgSpecUrl(api_spec, org), version, msdef_key, err)
 		} else if ms_defs != nil && len(ms_defs) > 0 {
 			// assume only one microservicedef exists for each service
 			msdef = &ms_defs[0]
@@ -1917,14 +1917,14 @@ func (b *ContainerWorker) findMicroserviceDefContainerNames(api_spec string, ver
 		deployment, _, _ := msdef.GetDeployment()
 		deploymentDesc := new(containermessage.DeploymentDescription)
 		if err := json.Unmarshal([]byte(deployment), &deploymentDesc); err != nil {
-			return nil, fmt.Errorf("Error Unmarshalling deployment string %v for service %v version %v. %v", deployment, api_spec, version, err)
+			return nil, fmt.Errorf("Error Unmarshalling deployment string %v for service %v version %v. %v", deployment, cutil.FormOrgSpecUrl(api_spec, org), version, err)
 		} else {
 			for serviceName, _ := range deploymentDesc.Services {
 				container_names = append(container_names, serviceName)
 			}
 		}
 	}
-	glog.V(5).Infof("The container names for service %v version %v are: %v", api_spec, version, container_names)
+	glog.V(5).Infof("The container names for service %v/%v version %v are: %v", org, api_spec, version, container_names)
 	return container_names, nil
 }
 
@@ -1937,10 +1937,10 @@ func (b *ContainerWorker) findDependencyContainersForService(parent *persistence
 	} else {
 		for _, api_spec := range microservices {
 			// find the ms from the local db,
-			if msc_names, err := b.findMicroserviceDefContainerNames(api_spec.SpecRef, api_spec.Version, api_spec.MsdefId); err != nil {
-				return nil, fmt.Errorf("Error finding service containers for %v. %v", api_spec, err)
-			} else if msinsts, err := persistence.FindMicroserviceInstances(b.db, []persistence.MIFilter{persistence.UnarchivedMIFilter(), persistence.AllInstancesMIFilter(api_spec.SpecRef, api_spec.Version)}); err != nil {
-				return nil, fmt.Errorf("Error retrieving service instances for %v version %v from database, error: %v", api_spec.SpecRef, api_spec.Version, err)
+			if msc_names, err := b.findMicroserviceDefContainerNames(api_spec.SpecRef, api_spec.Org, api_spec.Version, api_spec.MsdefId); err != nil {
+				return nil, fmt.Errorf("Error finding service definition from the local db for %v. %v", api_spec, err)
+			} else if msinsts, err := persistence.FindMicroserviceInstances(b.db, []persistence.MIFilter{persistence.AllInstancesMIFilter(api_spec.SpecRef, api_spec.Org, api_spec.Version), persistence.UnarchivedMIFilter()}); err != nil {
+				return nil, fmt.Errorf("Error retrieving service instances for %v/%v version %v from database, error: %v", api_spec.Org, api_spec.SpecRef, api_spec.Version, err)
 			} else if msinsts == nil || len(msinsts) == 0 {
 				return nil, fmt.Errorf("No service instance for service %v yet.", api_spec)
 			} else {
@@ -1981,7 +1981,7 @@ func (b *ContainerWorker) findDependencyContainersForService(parent *persistence
 
 				// get the service name from the ms def
 				for _, serviceName := range msc_names {
-					// compare with the container name. assume the container name = <msname>_<version>-<service name>
+					// compare with the container name. assume the container name = <msinstkey>-<service name>
 					for _, container := range containers {
 						if _, ok := container.Labels[LABEL_PREFIX+".infrastructure"]; ok {
 							cname := container.Names[0]
@@ -2044,19 +2044,20 @@ func (b *ContainerWorker) findParentContainersForService(msinst_key string) ([]d
 	} else {
 		for _, api_spec := range parents {
 			// find the ms from the local db,
-			if msc_names, err := b.findMicroserviceDefContainerNames(api_spec.URL, api_spec.Version, ""); err != nil {
+			if msc_names, err := b.findMicroserviceDefContainerNames(api_spec.URL, api_spec.Org, api_spec.Version, ""); err != nil {
 				return nil, fmt.Errorf("Error finding service containers for %v. %v", api_spec, err)
 			} else if msc_names == nil || len(msc_names) == 0 {
 				continue
-			} else if msinsts, err := persistence.FindMicroserviceInstances(b.db, []persistence.MIFilter{persistence.UnarchivedMIFilter(), persistence.AllInstancesMIFilter(api_spec.URL, api_spec.Version)}); err != nil {
+			} else if msinsts, err := persistence.FindMicroserviceInstances(b.db, []persistence.MIFilter{persistence.UnarchivedMIFilter(), persistence.AllInstancesMIFilter(api_spec.URL, api_spec.Org, api_spec.Version)}); err != nil {
 				return nil, fmt.Errorf("Error retrieving service instances for %v version %v from database, error: %v", api_spec.URL, api_spec.Version, err)
 			} else {
 				if msinsts == nil {
 					msinsts = make([]persistence.MicroserviceInstance, 0)
 				}
+
 				// add top level services to msinsts. a container can be belong to a dependent service and top level service at the same time
 				for _, tmsi := range top_level_msinsts {
-					if tmsi.SpecRef == api_spec.URL && tmsi.Version == api_spec.Version {
+					if tmsi.SpecRef == api_spec.URL && tmsi.Org == api_spec.Org && tmsi.Version == api_spec.Version {
 						msinsts = append(msinsts, tmsi)
 					}
 				}
@@ -2064,13 +2065,12 @@ func (b *ContainerWorker) findParentContainersForService(msinst_key string) ([]d
 				// find the ms instances that have the agreement id in it
 				var ms_instances_to_use = []persistence.MicroserviceInstance{}
 				for _, msi := range msinsts {
-					agreementIds := msi.AssociatedAgreements
-					if msi_child.AgreementLess {
+					if msi.AgreementLess {
 						ms_instances_to_use = append(ms_instances_to_use, msi)
 					} else if msi_child.AssociatedAgreements != nil && len(msi_child.AssociatedAgreements) > 0 {
 						// Make sure the dependent service is in our agreement, ignore it if not.
 						for _, id := range msi_child.AssociatedAgreements {
-							if cutil.SliceContains(agreementIds, id) && msi.CleanupStartTime == 0 {
+							if cutil.SliceContains(msi.AssociatedAgreements, id) && msi.CleanupStartTime == 0 {
 								ms_instances_to_use = append(ms_instances_to_use, msi)
 							}
 						}

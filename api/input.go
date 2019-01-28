@@ -97,13 +97,13 @@ func ConvertFromPersistentHorizonDevice(pDevice *persistence.ExchangeDevice) *Ho
 }
 
 type Attribute struct {
-	Id          *string                 `json:"id"`
-	Type        *string                 `json:"type"`
-	SensorUrls  *[]string               `json:"sensor_urls"`
-	Label       *string                 `json:"label"`
-	Publishable *bool                   `json:"publishable"`
-	HostOnly    *bool                   `json:"host_only"`
-	Mappings    *map[string]interface{} `json:"mappings"`
+	Id           *string                   `json:"id"`
+	Type         *string                   `json:"type"`
+	Label        *string                   `json:"label"`
+	Publishable  *bool                     `json:"publishable"`
+	HostOnly     *bool                     `json:"host_only"`
+	ServiceSpecs *persistence.ServiceSpecs `json:"service_specs,omitempty"`
+	Mappings     *map[string]interface{}   `json:"mappings"`
 }
 
 func (a Attribute) String() string {
@@ -116,14 +116,13 @@ func (a Attribute) String() string {
 		}
 	}
 
-	return fmt.Sprintf("Id: %v, Type: %v, SensorUrls: %v, Label: %v, Publishable: %v, HostOnly: %v, Mappings: %v",
-		getString(a.Id), getString(a.Type), getString(a.SensorUrls), getString(a.Label), getString(a.Publishable), getString(a.HostOnly), getString(a.Mappings))
+	return fmt.Sprintf("Id: %v, Type: %v, Label: %v, Publishable: %v, HostOnly: %v, ServiceSpecs: %v, Mappings: %v",
+		getString(a.Id), getString(a.Type), getString(a.Label), getString(a.Publishable), getString(a.HostOnly), getString(a.ServiceSpecs), getString(a.Mappings))
 }
 
-func NewAttribute(t string, sURLs []string, l string, publishable bool, hostOnly bool, mappings map[string]interface{}) *Attribute {
+func NewAttribute(t string, l string, publishable bool, hostOnly bool, mappings map[string]interface{}) *Attribute {
 	return &Attribute{
 		Type:        &t,
-		SensorUrls:  &sURLs,
 		Label:       &l,
 		Publishable: &publishable,
 		HostOnly:    &hostOnly,

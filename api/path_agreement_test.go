@@ -45,12 +45,15 @@ func Test_FindAgreementsForOutput1(t *testing.T) {
 
 	// Add 3 agreements to the DB, one for each path in the /agreement GET.
 	// Agreement 1 is active, agreement2 is archived, agreement3 is active but terminating.
+	sp := persistence.ServiceSpec{Url: "http://sensor.org", Org: "myorg"}
+	sps := []persistence.ServiceSpec{sp}
+
 	wi, _ := persistence.NewWorkloadInfo("url", "org", "version", "")
-	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, []string{"http://sensor.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
 		t.Errorf("error writing agreement1: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, []string{"http://sensor.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
 		t.Errorf("error writing agreement2: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, []string{"http://sensor.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
 		t.Errorf("error writing agreement3: %v", err)
 	} else if _, err := persistence.ArchiveEstablishedAgreement(db, "agreementId2", "Basic"); err != nil {
 		t.Errorf("error archiving agreement2: %v", err)
@@ -79,12 +82,15 @@ func Test_DeleteAgreement0(t *testing.T) {
 
 	// Add 3 agreements to the DB, one for each special agreement state.
 	// Agreement 1 is active, agreement2 is archived, agreement3 is active but terminating.
+	sp := persistence.ServiceSpec{Url: "http://sensor.org", Org: "myorg"}
+	sps := []persistence.ServiceSpec{sp}
+
 	wi, _ := persistence.NewWorkloadInfo("url", "org", "version", "")
-	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, []string{"http://sensor.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
 		t.Errorf("error writing agreement1: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, []string{"http://sensor.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
 		t.Errorf("error writing agreement2: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, []string{"http://sensor.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
 		t.Errorf("error writing agreement3: %v", err)
 	} else if _, err := persistence.ArchiveEstablishedAgreement(db, "agreementId2", "Basic"); err != nil {
 		t.Errorf("error archiving agreement2: %v", err)
@@ -115,12 +121,15 @@ func Test_DeleteAgreement1(t *testing.T) {
 
 	// Add 3 agreements to the DB, one for each special agreement state.
 	// Agreement 1 is active, agreement2 is archived, agreement3 is active but terminating.
+	sp := persistence.ServiceSpec{Url: "http://sensor.org", Org: "myorg"}
+	sps := []persistence.ServiceSpec{sp}
+
 	wi, _ := persistence.NewWorkloadInfo("url", "org", "version", "")
-	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, []string{"http://sensor.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
 		t.Errorf("error writing agreement1: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, []string{"http://sensor.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
 		t.Errorf("error writing agreement2: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, []string{"http://sensor.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
 		t.Errorf("error writing agreement3: %v", err)
 	} else if _, err := persistence.ArchiveEstablishedAgreement(db, "agreementId2", "Basic"); err != nil {
 		t.Errorf("error archiving agreement2: %v", err)
@@ -149,12 +158,15 @@ func Test_DeleteAgreement2(t *testing.T) {
 
 	// Add 3 agreements to the DB, one for each special agreement state.
 	// Agreement 1 is active, agreement2 is archived, agreement3 is active but terminating.
+	sp := persistence.ServiceSpec{Url: "http://sensor.org", Org: "myorg"}
+	sps := []persistence.ServiceSpec{sp}
+
 	wi, _ := persistence.NewWorkloadInfo("url", "org", "version", "")
-	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, []string{"http://sensor.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
 		t.Errorf("error writing agreement1: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, []string{"http://sensor.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
 		t.Errorf("error writing agreement2: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, []string{"http://sensor.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
 		t.Errorf("error writing agreement3: %v", err)
 	} else if _, err := persistence.ArchiveEstablishedAgreement(db, "agreementId2", "Basic"); err != nil {
 		t.Errorf("error archiving agreement2: %v", err)
@@ -183,12 +195,15 @@ func Test_DeleteAgreement3(t *testing.T) {
 
 	// Add 3 agreements to the DB, one for each special agreement state.
 	// Agreement 1 is active, agreement2 is archived, agreement3 is active but terminating.
+	sp := persistence.ServiceSpec{Url: "http://sensor.org", Org: "myorg"}
+	sps := []persistence.ServiceSpec{sp}
+
 	wi, _ := persistence.NewWorkloadInfo("url", "org", "version", "")
-	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, []string{"http://sensor.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
 		t.Errorf("error writing agreement1: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, []string{"http://sensor.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
 		t.Errorf("error writing agreement2: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, []string{"http://sensor.org"}, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
 		t.Errorf("error writing agreement3: %v", err)
 	} else if _, err := persistence.ArchiveEstablishedAgreement(db, "agreementId2", "Basic"); err != nil {
 		t.Errorf("error archiving agreement2: %v", err)
