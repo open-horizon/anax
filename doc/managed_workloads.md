@@ -1,35 +1,27 @@
-## Horizon Managed Workload Detail
+## Horizon Managed Service Detail
 
-Horizon manages the lifecycle, connectivity, and other features of services it launches on a device. This document describes the contract between the service and the Horizon system that manages it. It is intended for service developers' consumption.
+Horizon manages the lifecycle, connectivity, and other features of services it launches on a device. This document is intended for service developers' consumption.
 
-### Workload Environment
+### Service Environment Variables
 
-#### Environment Configuration
+Horizon sets these environment variables when starting a service container:
 
-Each service container includes a read-only copy of the configuration document for the pattern the container is a part of. This configuration document is provided by the agreement-creating party (often an agbot) in the Horizon multi-party system. The document is mounted in the container as `/workload_config/Configure`. The structure of the document is defined here: [provider.Configure](https://github.com/open-horizon/go-whisper/blob/master/provider.go#L22).
+* `HZN_DEVICE_ID`: The unique identifier for the edge node.
+* `HZN_ORGANIZATION`: The organization the edge node is part of.
+* `HZN_PATTERN`: The pattern that was deployed on this edge node, if any.
+* `HZN_EXCHANGE_URL`: The Horizon Exchange being used by this edge node.
+* `HZN_HOST_IPS`: The IP addresses configured on this edge node host.
+* `HZN_ARCH`: A machine architecture designation for the host device. (This is retrieved by the golang runtime using the function `runtime.GOARCH`. Note: in the future, this may be modified to align with Ubuntu architecture designations: armel (Pi Zero), armhf (Pi 2, Odroid Xu4), arm64 (Pi 3, Odroid c2), or amd64.
+* `HZN_RAM`: The quantity of RAM (in MB) that the container is restricted to use.
+* `HZN_CPUS`: The quantity of CPU cores that the host device advertises. Note that the system may restrict scheduling services on a subset of the total available cores or may prioritize work on those cores.
 
-#### Environment Variables
+This environment variable is only set if this is a top-level service (referenced directly by the pattern):
 
-Horizon guarantees that each service is provided the follow static environment variables upon launch:
+* `HZN_AGREEMENTID`: The unique identifier for the contractual agreement that the currently-running service is a part of. The lifecycle of the service never exceeds the lifecycle of an active agreement.
 
-  * `<PREFIX>_RAM` (advertised, non-null): The quantity of RAM (in MB) that the container is restricted to use.
-  * `<PREFIX>_CPUS` (advertised, non-null): The quantity of CPU cores that the host device advertises. Note that the system may restrict scheduling services on a subset of the total available cores or may prioritize work on those cores.
-  * `<PREFIX>_ARCH` (advertised, non-null): A machine architecture designation for the host device. (This is retrieved by the golang runtime using the function `runtime.GOARCH`. Note: in the future, this may be modified to align with Ubuntu architecture designations: armel (Pi Zero), armhf (Pi 2, Odroid Xu4), arm64 (Pi 3, Odroid c2), or amd64.
-  * `<PREFIX>_IS_LOC_ENABLED` (true|false, advertised, non-null): The user preference for publishing location information for the device.
-  * `<PREFIX>_AGREEMENTID` (non-null): The unique identifier for the contractual agreement that the currently-running service is a part of. The lifecycle of the service never exceeds the lifecycle of an active agreement.
-  * `<PREFIX>_LAT`: The user-provided latitude of the device.
-  * `<PREFIX>_LON`: The user-provided longitude of the device.
-  * `<PREFIX>_USER_PROVIDED_COORDS`: `false` iff the system provided the coordinates and the user couldn't have provided inaccurate ones, `true` otherwise.
-  * `<PREFIX>_USE_GPS`: `true` if the user gives permission for the system to read corrdinates from a GPS device, `false` otherwise. Note that a `true` value does not guarantee that a GPS device will be accessible.
-  * `<PREFIX>_DEVICE_ID` (non-null): A unique identifier for the host device. Effort is made to assign a device the same ID across installations of Horizon, although that behavior is not guaranteed.
-  * `<PREFIX>_HASH`: (non-null): A generated value, using a user-provided secret in the workload deployment description, passed to the device for the purpose of data verification with security.  (Replaces the obsolete MTN_CONFIGURE_NONCE value)
+These environment variables are only set if the corresponding values are set by the edge node owner in the `global` section of the registration input file:
 
-##### Deprecated in version 2
-  * `DEVICE_ID` (non-null): A unique identifier for the host device. Effort is made to assign a device the same ID across installations of Horizon, although that behavior is not guaranteed.
-
-##### Obsolete in version 2
-
-  * `<PREFIX>_CONTRACT` (non-null): The unique identifier for a consumable device resource (a sensor, compute time on the host, or other). A contract is exercised by a renting party over the duration of an agreement.
-  * `<PREFIX>_NAME` (advertised, non-null): An informal name for a type of an advertised contract.
-  * `<PREFIX>_SDR` (advertised, non-null): A sensor and service specific variable for a contract.
-  * `<PREFIX>_CONFIGURE_NONCE` (non-null): A random token generated by each client for each agreement.
+* `HZN_LAT`: The user-provided latitude of the device.
+* `HZN_LON`: The user-provided longitude of the device.
+* `HZN_USER_PROVIDED_COORDS`: `false` if the system provided the coordinates and the user couldn't have provided inaccurate ones, `true` otherwise.
+* `HZN_USE_GPS`: `true` if the user gives permission for the system to read corrdinates from a GPS device, `false` otherwise. Note that a `true` value does not guarantee that a GPS device will be accessible.
