@@ -12,13 +12,30 @@ import (
 
 /*
  *
- * The external representations of the config; once processed, the data about the pattern is stored in a persistence.ServiceConfig object
+ * The external representations of the service deployment string; once processed, the data is stored in a persistence.MicroserviceDefinition object for a service
  *
  * ex:
  * {
  *   "services": {
  *     "service_a": {
- *       "image": "..."
+ *       "image": "...",
+ *       "privileged": true,
+ *       "environment": [
+ *         "FOO=bar"
+ *       ],
+ *       "devices": [
+ *         "/dev/bus/usb/001/001:/dev/bus/usb/001/001"
+ *       ],
+ *       "binds": [
+ *         "/tmp/testdata:/tmp/mydata:ro",
+ *         "myvolume1:/tmp/mydata2"
+ *       ],
+ *       "ports": [
+ *         {
+ *           "HostPort":"5200:6414/tcp",
+ *           "HostIP": "0.0.0.0"
+ *         }
+ *       ]
  *     },
  *     "service_b": {
  *       "image": "...",
@@ -127,10 +144,11 @@ type Service struct {
 	CapAdd           []string             `json:"cap_add,omitempty"`
 	Command          []string             `json:"command,omitempty"`
 	Devices          []string             `json:"devices,omitempty"`
-	Ports            []Port               `json:"ports,omitempty"`
 	NetworkIsolation *NetworkIsolation    `json:"network_isolation,omitempty"` // Changed to pointer so that the hzn dev CLI doesnt generate this struct into the deployment config skeleton
 	Binds            []string             `json:"binds,omitempty"`
-	SpecificPorts    []docker.PortBinding `json:"specific_ports,omitempty"`
+	Ports            []docker.PortBinding `json:"ports,omitempty"`
+	EphemeralPorts   []Port               `json:"ephemeral_ports,omitempty"`
+	SpecificPorts    []docker.PortBinding `json:"specific_ports,omitempty"` // obselete. for backward compatibility only, new way should use ports instead.
 }
 
 func (s *Service) AddFilesystemBinding(bind string) {
@@ -141,34 +159,40 @@ func (s *Service) AddFilesystemBinding(bind string) {
 }
 
 func (s *Service) HasSpecificPortBinding() bool {
-	if s.SpecificPorts == nil {
-		return false
+	if s.SpecificPorts != nil && len(s.SpecificPorts) != 0 {
+		return true
 	}
-	if len(s.SpecificPorts) != 0 {
+	if s.Ports != nil && len(s.Ports) != 0 {
 		return true
 	}
 	return false
 }
 
 func (s *Service) GetSpecificHostPortBinding() string {
-	if s.SpecificPorts == nil {
-		return ""
-	} else if len(s.SpecificPorts) == 0 {
-		return ""
-	} else {
-		p := strings.Split(s.SpecificPorts[0].HostPort, ":")
+	p := []string{}
+	if s.SpecificPorts != nil && len(s.SpecificPorts) != 0 {
+		p = strings.Split(s.SpecificPorts[0].HostPort, ":")
+	} else if s.Ports != nil && len(s.Ports) != 0 {
+		p = strings.Split(s.Ports[0].HostPort, ":")
+	}
+
+	if len(p) > 0 {
 		port := strings.Split(p[0], "/")[0]
 		return port
 	}
+
+	return ""
 }
 
 func (s *Service) GetSpecificContainerPortBinding() string {
-	if s.SpecificPorts == nil {
-		return ""
-	} else if len(s.SpecificPorts) == 0 {
-		return ""
-	} else {
-		p := strings.Split(s.SpecificPorts[0].HostPort, ":")
+	p := []string{}
+	if s.SpecificPorts != nil && len(s.SpecificPorts) != 0 {
+		p = strings.Split(s.SpecificPorts[0].HostPort, ":")
+	} else if s.Ports != nil && len(s.Ports) != 0 {
+		p = strings.Split(s.Ports[0].HostPort, ":")
+	}
+
+	if len(p) > 0 {
 		if len(p) < 2 {
 			port := strings.Split(p[0], "/")[0]
 			return port
@@ -177,27 +201,28 @@ func (s *Service) GetSpecificContainerPortBinding() string {
 			return port
 		}
 	}
+
+	return ""
 }
 
 func (s *Service) GetSpecificHostBinding() string {
-	if s.SpecificPorts == nil {
-		return ""
-	} else if len(s.SpecificPorts) == 0 {
-		return ""
-	} else {
+	if s.SpecificPorts != nil && len(s.SpecificPorts) != 0 {
 		return s.SpecificPorts[0].HostIP
+	} else if s.Ports != nil && len(s.Ports) != 0 {
+		return s.Ports[0].HostIP
 	}
+	return ""
 }
 
 func (s *Service) AddSpecificPortBinding(b docker.PortBinding) {
-	if s.SpecificPorts == nil {
-		s.SpecificPorts = make([]docker.PortBinding, 0, 5)
+	if s.Ports == nil {
+		s.Ports = make([]docker.PortBinding, 0, 5)
 	}
-	s.SpecificPorts = append(s.SpecificPorts, b)
+	s.Ports = append(s.Ports, b)
 }
 
 type Port struct {
-	LocalhostOnly   bool   `json:"localhost_only"`
+	LocalhostOnly   bool   `json:"localhost_only,omitempty"`
 	PortAndProtocol string `json:"port_and_protocol"`
 }
 

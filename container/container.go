@@ -35,13 +35,30 @@ const IPT_COLONUS_ISOLATED_CHAIN = "OPENHORIZON-ANAX-ISOLATION"
 
 /*
  *
- * The external representations of the config; once processed, the data about the pattern is stored in a persistence.ServiceConfig object
+ * The external representations of the service deployment string; once processed, the data is stored in a persistence.MicroserviceDefinition object for a service
  *
  * ex:
  * {
  *   "services": {
  *     "service_a": {
- *       "image": "..."
+ *       "image": "...",
+ *       "privileged": true,
+ *       "environment": [
+ *         "FOO=bar"
+ *       ],
+ *       "devices": [
+ *         "/dev/bus/usb/001/001:/dev/bus/usb/001/001"
+ *       ],
+ *       "binds": [
+ *         "/tmp/testdata:/tmp/mydata:ro",
+ *         "myvolume1:/tmp/mydata2"
+ *       ],
+ *       "ports": [
+ *         {
+ *           "HostPort":"5200:6414/tcp",
+ *           "HostIP": "0.0.0.0"
+ *         }
+ *       ]
  *     },
  *     "service_b": {
  *       "image": "...",
@@ -269,7 +286,7 @@ func finalizeDeployment(agreementId string, deployment *containermessage.Deploym
 			}
 		}
 
-		for _, port := range service.Ports {
+		for _, port := range service.EphemeralPorts {
 			var hostIP string
 
 			if port.LocalhostOnly {
@@ -280,6 +297,11 @@ func finalizeDeployment(agreementId string, deployment *containermessage.Deploym
 
 			if port.PortAndProtocol == "" {
 				return nil, fmt.Errorf("Failed to locate necessary port setup param, PortAndProtocol in %v", port)
+			}
+
+			// default is tcp protocal
+			if !strings.Contains(port.PortAndProtocol, "/") {
+				port.PortAndProtocol = port.PortAndProtocol + "/tcp"
 			}
 
 			dPort := docker.Port(port.PortAndProtocol)
@@ -297,7 +319,8 @@ func finalizeDeployment(agreementId string, deployment *containermessage.Deploym
 		// HostPort schema: <host_port>:<container_port>:<protocol>
 		// If <host_port> is absent, <container_port> is used instead.
 		// If <protocol> is absent, "/tcp" is used.
-		for _, specificPort := range service.SpecificPorts {
+		// service.SpecificPorts is for backward compatibility, the new way is using service.Ports.
+		for _, specificPort := range append(service.SpecificPorts, service.Ports...) {
 			var emptyS struct{}
 			cPort := ""
 			hPort := ""
