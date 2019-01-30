@@ -14,7 +14,7 @@ Horizon sets these environment variables when starting a service container:
 * `HZN_RAM`: The quantity of RAM (in MB) that the container is restricted to use.
 * `HZN_CPUS`: The quantity of CPU cores that the host device advertises. Note that the system may restrict scheduling services on a subset of the total available cores or may prioritize work on those cores.
 
-This environment variable is only set if a pattern as used to register the edge node with. This is not set when using `hzn dev service start` to start the service (because there is no pattern at that point):
+This environment variable is only set if a pattern was used to register the edge node with. This is not set when using `hzn dev service start` to start the service (because there is no pattern at that point):
 
 * `HZN_PATTERN`: The pattern that was deployed on this edge node, if any.
 
