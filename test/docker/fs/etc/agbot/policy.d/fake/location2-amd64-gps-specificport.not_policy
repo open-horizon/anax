@@ -14,7 +14,7 @@
   "agreementProtocols": [],
   "workloads": [
     {
-      "deployment": "{\"service_pattern\":{\"shared\":{\"singleton\":[\"gps\"]}},\"services\":{\"location\":{\"environment\":[\"USE_NEW_STAGING_URL=false\",\"DEPL_ENV=staging\"],\"image\":\"openhorizon/amd64_location:2.0.6\"},\"gps\":{\"devices\":[\"/dev/bus/usb/001/001:/dev/bus/usb/001/001\"],\"privileged\":true,\"image\":\"openhorizon/amd64_gps:2.0.3\",\"specific_ports\":[{\"HostPort\":\"31779\",\"HostIP\":\"127.0.0.1\"},{\"HostPort\":\"31778/udp\",\"HostIP\":\"127.0.0.1\"}],\"binds\":[\"/tmp/testdata:/tmp/notexist\"]}}}",
+      "deployment": "{\"service_pattern\":{\"shared\":{\"singleton\":[\"gps\"]}},\"services\":{\"location\":{\"environment\":[\"USE_NEW_STAGING_URL=false\",\"DEPL_ENV=staging\"],\"image\":\"openhorizon/amd64_location:2.0.6\"},\"gps\":{\"devices\":[\"/dev/bus/usb/001/001:/dev/bus/usb/001/001\"],\"privileged\":true,\"image\":\"openhorizon/amd64_gps:2.0.3\",\"ports\":[{\"HostPort\":\"31779\",\"HostIP\":\"127.0.0.1\"},{\"HostPort\":\"31778/udp\",\"HostIP\":\"127.0.0.1\"}],\"binds\":[\"/tmp/testdata:/tmp/notexist\"]}}}",
       "deployment_signature": "",
       "torrent": ""
     }

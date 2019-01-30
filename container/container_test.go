@@ -80,7 +80,7 @@ func Test_isValidFor_API(t *testing.T) {
 		CapAdd:           []string{"a", "b"},
 		Command:          []string{"start"},
 		Devices:          []string{},
-		Ports:            []containermessage.Port{},
+		EphemeralPorts:   []containermessage.Port{},
 		NetworkIsolation: &containermessage.NetworkIsolation{},
 		Binds:            []string{"/tmp/geth:/root"},
 	}
@@ -107,9 +107,9 @@ func Test_isValidFor_API(t *testing.T) {
 		CapAdd:           []string{"a", "b"},
 		Command:          []string{"start"},
 		Devices:          []string{},
-		Ports:            []containermessage.Port{},
+		EphemeralPorts:   []containermessage.Port{},
 		NetworkIsolation: &containermessage.NetworkIsolation{},
-		SpecificPorts:    []docker.PortBinding{{HostIP: "0.0.0.0", HostPort: "8545"}},
+		Ports:            []docker.PortBinding{{HostIP: "0.0.0.0", HostPort: "8545"}},
 	}
 
 	services["geth"] = &serv2
