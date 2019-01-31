@@ -129,6 +129,12 @@
 			"revisionTime": "2018-10-02T22:04:33Z"
 		},
 		{
+			"checksumSHA1": "cNp7rNReJHvdSfrIetXS9RGsLSo=",
+			"path": "github.com/docker/distribution/uuid",
+			"revision": "b75069ef13a1de846c0cdf964f5917f5b00c1a47",
+			"revisionTime": "2019-01-17T00:37:37Z"
+		},
+		{
 			"checksumSHA1": "rOHC0haxchPUDGm0Fuqf6bJ51Mk=",
 			"path": "github.com/docker/docker/api/types",
 			"revision": "785fe99bdb7c004acd57d5d65d57ceb256d87ef1",
@@ -393,6 +399,18 @@
 			"revisionTime": "2018-10-12T15:38:25Z"
 		},
 		{
+			"checksumSHA1": "EM5mtWBrQSzTq/vaQpftxQ7UOxI=",
+			"path": "github.com/eclipse/paho.mqtt.golang",
+			"revision": "cb7eb9363b4469c601b1a714447653b720e4e43a",
+			"revisionTime": "2019-01-17T15:08:08Z"
+		},
+		{
+			"checksumSHA1": "ITCnG3uKUnqNXrnnulKokjQKfN4=",
+			"path": "github.com/eclipse/paho.mqtt.golang/packets",
+			"revision": "cb7eb9363b4469c601b1a714447653b720e4e43a",
+			"revisionTime": "2019-01-17T15:08:08Z"
+		},
+		{
 			"checksumSHA1": "IEqgM4mo76X+D7FsZsModdbfFaY=",
 			"path": "github.com/fsouza/go-dockerclient",
 			"revision": "623c4c4b51ec7507502197470dbfbcf77ae877b3",
@@ -415,6 +433,40 @@
 			"path": "github.com/fsouza/go-dockerclient/internal/term",
 			"revision": "623c4c4b51ec7507502197470dbfbcf77ae877b3",
 			"revisionTime": "2018-10-16T22:24:07Z"
+		},
+		{
+			"checksumSHA1": "O1v7ZY6psIKMtE2Ma/hp1myzM2o=",
+			"path": "github.com/globalsign/mgo",
+			"revision": "eeefdecb41b842af6dc652aaea4026e8403e62df",
+			"revisionTime": "2018-10-15T13:59:52Z"
+		},
+		{
+			"checksumSHA1": "zdy6XflmESAiFmyptSqpUMfXSyo=",
+			"path": "github.com/globalsign/mgo/bson",
+			"revision": "eeefdecb41b842af6dc652aaea4026e8403e62df",
+			"revisionTime": "2018-10-15T13:59:52Z"
+		},
+		{
+			"checksumSHA1": "//bXQG4HblBwxHJDIW/PklXAxu0=",
+			"path": "github.com/globalsign/mgo/internal/json",
+			"revision": "eeefdecb41b842af6dc652aaea4026e8403e62df",
+			"revisionTime": "2018-10-15T13:59:52Z"
+		},
+		{
+			"checksumSHA1": "loubUcDO2QAStKIlVd7DqSeoEaw=",
+			"path": "github.com/globalsign/mgo/internal/sasl",
+			"revision": "eeefdecb41b842af6dc652aaea4026e8403e62df",
+			"revisionTime": "2018-10-15T13:59:52Z"
+		},
+		{
+			"checksumSHA1": "xjfEsfN7ho6dDOVeUQJhW4KzD2I=",
+			"path": "github.com/globalsign/mgo/internal/scram",
+			"revision": "eeefdecb41b842af6dc652aaea4026e8403e62df",
+			"revisionTime": "2018-10-15T13:59:52Z"
+		},
+		{
+			"path": "github.com/go.etcd.io/bbolt",
+			"revision": ""
 		},
 		{
 			"checksumSHA1": "47nJ3iu1bVvK9jPXwAinFYr4mBU=",
@@ -609,6 +661,66 @@
 			"revisionTime": "2018-10-22T14:49:18Z"
 		},
 		{
+			"checksumSHA1": "yO8wMjgjI2ds6WDtEy/+uBisdXQ=",
+			"path": "github.ibm.com/edge-sync-service/edge-sync-service/common",
+			"revision": "55ee18eed018c83109580eadfa3dee6555bfe411",
+			"revisionTime": "2019-01-29T19:08:35Z"
+		},
+		{
+			"checksumSHA1": "hoOhh6O2uh3GwvYRIFtCbBa17+Q=",
+			"path": "github.ibm.com/edge-sync-service/edge-sync-service/core/base",
+			"revision": "55ee18eed018c83109580eadfa3dee6555bfe411",
+			"revisionTime": "2019-01-29T19:08:35Z"
+		},
+		{
+			"checksumSHA1": "kXQExPL1LgV8OnTyIabbQlFeEZc=",
+			"path": "github.ibm.com/edge-sync-service/edge-sync-service/core/communications",
+			"revision": "55ee18eed018c83109580eadfa3dee6555bfe411",
+			"revisionTime": "2019-01-29T19:08:35Z"
+		},
+		{
+			"checksumSHA1": "qmRGZzhFbDIlK18FNLTkgZ8jdzQ=",
+			"path": "github.ibm.com/edge-sync-service/edge-sync-service/core/dataURI",
+			"revision": "55ee18eed018c83109580eadfa3dee6555bfe411",
+			"revisionTime": "2019-01-29T19:08:35Z"
+		},
+		{
+			"checksumSHA1": "K/LfSM0ZOB5Q7zaLJVrqSmCK+PY=",
+			"path": "github.ibm.com/edge-sync-service/edge-sync-service/core/leader",
+			"revision": "55ee18eed018c83109580eadfa3dee6555bfe411",
+			"revisionTime": "2019-01-29T19:08:35Z"
+		},
+		{
+			"checksumSHA1": "OOvRQbdwGxts9DOnHU9GsC3/X9I=",
+			"path": "github.ibm.com/edge-sync-service/edge-sync-service/core/storage",
+			"revision": "55ee18eed018c83109580eadfa3dee6555bfe411",
+			"revisionTime": "2019-01-29T19:08:35Z"
+		},
+		{
+			"checksumSHA1": "SyRrOZPXUsA3wlROBpxxR+24In4=",
+			"path": "github.ibm.com/edge-sync-service/edge-utilities/logger",
+			"revision": "ef290deb912197c10e74c0c38e3305e7a559e713",
+			"revisionTime": "2019-01-07T12:50:15Z"
+		},
+		{
+			"checksumSHA1": "qYwb8FkMe4YSSY1REDAdISqoLZg=",
+			"path": "github.ibm.com/edge-sync-service/edge-utilities/logger/log",
+			"revision": "ef290deb912197c10e74c0c38e3305e7a559e713",
+			"revisionTime": "2019-01-07T12:50:15Z"
+		},
+		{
+			"checksumSHA1": "exsOHjTg/ouIVdUi6OgDEvmXdD4=",
+			"path": "github.ibm.com/edge-sync-service/edge-utilities/logger/trace",
+			"revision": "ef290deb912197c10e74c0c38e3305e7a559e713",
+			"revisionTime": "2019-01-07T12:50:15Z"
+		},
+		{
+			"checksumSHA1": "6tMEfhHxDNSM68LZWx7gDkj+Hd8=",
+			"path": "github.ibm.com/edge-sync-service/edge-utilities/properties",
+			"revision": "ef290deb912197c10e74c0c38e3305e7a559e713",
+			"revisionTime": "2019-01-07T12:50:15Z"
+		},
+		{
 			"checksumSHA1": "oCH3J96RWvO8W4xjix47PModpio=",
 			"path": "golang.org/x/crypto/bcrypt",
 			"revision": "0c41d7ab0a0ee717d4590a44bcb987dfd9e183eb",
@@ -643,6 +755,12 @@
 			"path": "golang.org/x/net/proxy",
 			"revision": "9b4f9f5ad5197c79fd623a3638e70d8b26cef344",
 			"revisionTime": "2018-10-23T11:20:58Z"
+		},
+		{
+			"checksumSHA1": "F+tqxPGFt5x7DKZakbbMmENX1oQ=",
+			"path": "golang.org/x/net/websocket",
+			"revision": "d26f9f9a57f3fab6a695bec0d84433c2c50f8bbf",
+			"revisionTime": "2018-09-25T13:55:50Z"
 		},
 		{
 			"checksumSHA1": "uwjPXJc/NAUhO8yOmqQ/NjNbtL8=",

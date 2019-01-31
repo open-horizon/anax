@@ -277,7 +277,7 @@ func createEnvVarMap(agreementId string,
 	pattern := os.Getenv(DEVTOOL_HZN_PATTERN)
 
 	exchangeURL := os.Getenv(DEVTOOL_HZN_EXCHANGE_URL)
-	cutil.SetPlatformEnvvars(envvars, config.ENVVAR_PREFIX, agreementId, testDeviceId, org, workloadPW, exchangeURL, pattern)
+	cutil.SetPlatformEnvvars(envvars, config.ENVVAR_PREFIX, agreementId, testDeviceId, org, workloadPW, exchangeURL, pattern, "localhost", config.HZN_FSS_AUTH_MOUNT)
 
 	// Second, add the Horizon system env vars. Some of these can come from the global section of a user inputs file. To do this we have to
 	// convert the attributes in the userinput file into API attributes so that they can be validity checked. Then they are converted to
@@ -543,7 +543,7 @@ func StartContainers(deployment *containermessage.DeploymentDescription,
 	fmt.Printf("Start %v: %v with instance id prefix %v\n", logName, dc.CLIString(), id)
 
 	// Start the dependent service container.
-	_, startErr := cw.ResourcesCreate(id, "", nil, deployment, []byte(""), environmentAdditions, msNetworks)
+	_, startErr := cw.ResourcesCreate(id, "", nil, deployment, []byte(""), environmentAdditions, msNetworks, fmt.Sprintf("%v/%v", org, specRef))
 	if startErr != nil {
 		return nil, errors.New(fmt.Sprintf("unable to start container using %v, error: %v", dc.CLIString(), startErr))
 	}

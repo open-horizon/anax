@@ -28,6 +28,8 @@ MSGHUB_VARS := MSGHUB_BROKER_URL='$(MSGHUB_BROKER_URL)' MSGHUB_API_KEY='$(MSGHUB
 ANAX_SOURCE ?= $(shell dirname $(CURDIR))
 AGBOT_TEMPFS := $(CURDIR)/docker/tempfs/agbot
 EXCH_TEMPFS := $(CURDIR)/docker/tempfs/exchange
+CSS_CONFIG := $(CURDIR)/docker/fs/etc/edge-sync-service/
+UDS := /var/run/horizon/
 EXCHDB_USER := admin
 EXCHDB_PORT := 5432
 EXCHDB_NAME := exchange
@@ -40,6 +42,10 @@ DOCKER_EXCHDB_INAME := postgres
 DOCKER_EXCHDB_TAG := 9
 DOCKER_REG_INAME := registry
 DOCKER_REG_TAG := 2
+DOCKER_CSSDB_INAME := mongo
+DOCKER_CSSDB_TAG := latest
+DOCKER_CSS_INAME := edge-sync-service/edge-sync-service
+DOCKER_CSS_TAG := latest
 DOCKER_DEV_OPTS :=  --rm --no-cache
 
 ifndef verbose
@@ -49,7 +55,7 @@ endif
 all: default
 default: build
 stop: appstore-stop clean minikube-stop
-build: version-check agbot-image exchange-db-image exchange-image minikube-setup
+build: version-check agbot-image exchange-db-image exchange-image minikube-setup css-mongo-db-image
 run: test
 distclean: realclean
 
@@ -60,6 +66,8 @@ DOCKER_REG_CNAME := e2edevregistry
 DOCKER_REG_PW_CNAME := htregistry
 DOCKER_REG_USER := testuser
 DOCKER_REG_PW := testpassword
+DOCKER_CSS_CNAME := css-api
+DOCKER_CSSDB_CNAME := css-db
 
 run-agbot: agbot-docker-prereqs test-network
 	@echo "Handling $(DOCKER_AGBOT_CNAME)"
@@ -72,6 +80,7 @@ run-agbot: agbot-docker-prereqs test-network
 		--name "$(DOCKER_AGBOT_CNAME)" \
 		--network "$(DOCKER_TEST_NETWORK)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v $(UDS):$(UDS):rw \
 		-v ~/.docker:/root/.docker \
 		-v ~/.kube:/root/.kube \
 		-v ~/.minikube:$(HOME)/.minikube \
@@ -168,7 +177,12 @@ clean:
 	-docker rm -f "$(DOCKER_EXCHDB_CNAME)"
 	@echo "Removing the $(DOCKER_REG_CNAME) container"
 	-docker rm -f "$(DOCKER_REG_CNAME)"
+	@echo "Removing the $(DOCKER_CSSDB_CNAME) container"
+	-docker rm -f "$(DOCKER_CSSDB_CNAME)"
+	@echo "Removing the $(DOCKER_CSS_CNAME) container"
+	-docker rm -f "$(DOCKER_CSS_CNAME)"
 	-rm -rf $(CURDIR)/docker/tempfs
+	-sudo rm -fr $(UDS)
 
 mostlyclean: clean
 	@echo "Cleaning anax binaries and configs"
@@ -196,7 +210,7 @@ agbot-docker-prereqs: $(ANAX_SOURCE)/anax
 	mkdir -p $(AGBOT_TEMPFS)/usr/local/bin $(AGBOT_TEMPFS)/root/.colonus
 	cp $(ANAX_SOURCE)/anax $(ANAX_SOURCE)/cli/hzn $(AGBOT_TEMPFS)/usr/local/bin
 	cp -r $(CURDIR)/docker/fs/etc $(AGBOT_TEMPFS)
-	cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(CURDIR)/docker/fs/helm $(AGBOT_TEMPFS)/root
+	cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(CURDIR)/docker/fs/helm $(CURDIR)/docker/fs/resources $(AGBOT_TEMPFS)/root
 	for f in $$(find $(AGBOT_TEMPFS)/etc/agbot/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH_CNAME) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
 	for f in $$(find $(AGBOT_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH_CNAME) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
 	curl $(DEB_PKGS_URL)/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz \
@@ -225,7 +239,7 @@ exchange-db-image:
 exchange-image:
 	docker pull $(DOCKER_EXCH_INAME):$(DOCKER_EXCH_TAG)
 
-test: clean run-dockerreg run-exchange minikube-start appstore-start run-agbot
+test: clean run-dockerreg run-exchange minikube-start run-css appstore-start run-agbot
 	@echo -e  "\nStarting tests"
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
 
@@ -256,6 +270,28 @@ minikube-clean: minikube-stop
 		echo "Skipping minikube cleanup, minikube was not setup by the test environment"; \
 	fi
 
+css-mongo-db-image:
+	docker pull $(DOCKER_CSSDB_INAME):$(DOCKER_CSSDB_TAG)
+
+run-mongo-db: test-network
+	@echo "Handling $(DOCKER_CSSDB_CNAME)"
+	docker/docker_run.bash "$(DOCKER_CSSDB_CNAME)" \
+		docker run -d \
+		--name "$(DOCKER_CSSDB_CNAME)" \
+		-p 127.0.0.1:27017:27017 \
+		--network "$(DOCKER_TEST_NETWORK)" \
+		-t $(DOCKER_CSSDB_INAME):$(DOCKER_CSSDB_TAG)
+
+run-css: run-mongo-db
+	@echo "Starting $(DOCKER_CSS_CNAME)"
+	docker/docker_run.bash "$(DOCKER_CSS_CNAME)" \
+		docker run -d \
+		--name "$(DOCKER_CSS_CNAME)" \
+		-p 127.0.0.1:8500:8500 \
+		--network "$(DOCKER_TEST_NETWORK)" \
+		-v $(CSS_CONFIG):/etc/edge-sync-service/ \
+		-t $(DOCKER_CSS_INAME):$(DOCKER_CSS_TAG)
+
 appstore-start:
 	if [ "$(APPSTORE)" = "1" ]; then \
 		echo "Starting app store"; \
@@ -268,4 +304,4 @@ appstore-stop:
 	-docker stop app-store-ui
 	-docker stop app-store
 
-.PHONY: all default stop build run distclean clean mostlyclean realclean run-agbot run-dockerreg run-exchange run-exchange-db test-network test agbot-docker-prereqs version-check agbot-image exchange-db-image exchange-image minikube-setup minikube-start minikube-stop minikube-clean appstore-start appstore-stop
+.PHONY: all default stop build run distclean clean mostlyclean realclean run-agbot run-dockerreg run-exchange run-exchange-db test-network test agbot-docker-prereqs version-check agbot-image exchange-db-image exchange-image minikube-setup minikube-start minikube-stop minikube-clean appstore-start appstore-stop css-mongo-db-image run-mongo-db run-css

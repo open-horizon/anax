@@ -212,6 +212,9 @@ echo "Registering Anax device1 in customer org..."
 REGANAX1C=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic Customer1/icpadmin:icpadminpw" -d '{"token":"abcdefg","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":""}' "${EXCH_URL}/orgs/Customer1/nodes/an12345" | jq -r '.msg')
 echo "$REGANAX1C"
 
+# package resources
+./resource_package.sh
+
 echo "Register services"
 ./service_apireg.sh
 if [ $? -ne 0 ]

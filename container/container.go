@@ -161,7 +161,7 @@ func removeDuplicateVariable(existingArray *[]string, newVar string) {
 
 }
 
-func finalizeDeployment(agreementId string, deployment *containermessage.DeploymentDescription, environmentAdditions map[string]string, workloadRWStorageDir string, cpuSet string) (map[string]servicePair, error) {
+func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *containermessage.DeploymentDescription, environmentAdditions map[string]string, workloadRWStorageDir string, cpuSet string, uds string) (map[string]servicePair, error) {
 
 	// final structure
 	services := make(map[string]servicePair, 0)
@@ -188,6 +188,13 @@ func finalizeDeployment(agreementId string, deployment *containermessage.Deploym
 		if err != nil {
 			return nil, err
 		}
+
+		// Add a filesystem binding for the FSS (ESS) API's unix domain socket.
+		service.Binds = append(service.Binds, fmt.Sprintf("%v:%v", uds, uds))
+
+		// Add a filesystem binding for the FSS (ESS) API authentication credentials.
+		//service.Binds = append(service.Binds, fmt.Sprintf("%v:%v", path.Join(w.BaseWorker.Manager.Config.GetFileSyncServiceAuthPath(), agreementId), config.HZN_FSS_AUTH_MOUNT))
+		service.Binds = append(service.Binds, fmt.Sprintf("%v:%v", w.GetAuthenticationManager().GetCredentialPath(agreementId), config.HZN_FSS_AUTH_MOUNT))
 
 		// Create the volume map based on the container paths being bound to the host.
 		// The bind string looks like this: <host-path>:<container-path>:<ro> where ro means readonly and is optional.
@@ -381,11 +388,17 @@ type ContainerWorker struct {
 	db                *bolt.DB
 	client            *docker.Client
 	iptables          *iptables.IPTables
+	authMgr           *AuthenticationManager
 }
 
 func (cw *ContainerWorker) GetClient() *docker.Client {
 	return cw.client
 }
+
+func (cw *ContainerWorker) GetAuthenticationManager() *AuthenticationManager {
+	return cw.authMgr
+}
+
 func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, error) {
 	dockerEP := "unix:///var/run/docker.sock"
 	client, derr := docker.NewClient(dockerEP)
@@ -398,6 +411,7 @@ func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, e
 		db:         nil,
 		client:     client,
 		iptables:   nil,
+		authMgr:    nil,
 	}, nil
 }
 
@@ -425,6 +439,7 @@ func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB) 
 			db:         db,
 			client:     client,
 			iptables:   ipt,
+			authMgr:    NewAuthenticationManager(config.GetFileSyncServiceAuthPath()),
 		}
 		worker.SetDeferredDelay(15)
 
@@ -926,7 +941,7 @@ func processPostCreate(ipt *iptables.IPTables, client *docker.Client, agreementI
 }
 
 // Return the base workload rw storage directory.
-// If Config.Edge.ServiceStorage is empty then the docker volume is uesd, it returns the new volume name.
+// If Config.Edge.ServiceStorage is empty then the docker volume is used, it returns the new volume name.
 func (b *ContainerWorker) workloadStorageDir(agreementId string) (string, bool) {
 	if b.Config.Edge.ServiceStorage != "" {
 		return path.Join(b.Config.Edge.ServiceStorage, agreementId), false
@@ -936,7 +951,8 @@ func (b *ContainerWorker) workloadStorageDir(agreementId string) (string, bool) 
 }
 
 // This function creates the containers, volumes, networks for the given agreement or service.
-func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol string, configure *events.ContainerConfig, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]docker.ContainerNetwork) (persistence.DeploymentConfig, error) {
+func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol string, configure *events.ContainerConfig, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]docker.ContainerNetwork, serviceURL string) (persistence.DeploymentConfig, error) {
+
 	// local helpers
 	fail := func(container *docker.Container, name string, err error) error {
 		if container != nil {
@@ -1009,7 +1025,12 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 		// No need to create volume separately here becuase docker will automatically create it if it does not exist.
 	}
 
-	servicePairs, err := finalizeDeployment(agreementId, deployment, environmentAdditions, workloadRWStorageDir, b.Config.Edge.DefaultCPUSet)
+	// Create the FSS authentication credentials for this container.
+	if err := b.GetAuthenticationManager().CreateCredential(agreementId, serviceURL); err != nil {
+		glog.Errorf("Failed to create FSS Authentication credential file for %v, error %v", agreementId, err)
+	}
+
+	servicePairs, err := b.finalizeDeployment(agreementId, deployment, environmentAdditions, workloadRWStorageDir, b.Config.Edge.DefaultCPUSet, b.Config.GetFileSyncServiceAPIUnixDomainSocketPath())
 	if err != nil {
 		return nil, err
 	}
@@ -1254,7 +1275,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			}
 
 			// Create the docker configuration and launch the containers.
-			if deploymentConfig, err := b.ResourcesCreate(agreementId, cmd.AgreementLaunchContext.AgreementProtocol, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_children_networks); err != nil {
+			if deploymentConfig, err := b.ResourcesCreate(agreementId, cmd.AgreementLaunchContext.AgreementProtocol, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_children_networks, ags[0].RunningWorkload.URL); err != nil {
 				eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error starting containers: %v", err), persistence.EC_ERROR_START_CONTAINER, ags[0])
 				glog.Errorf("Error starting containers: %v", err)
 				b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, deploymentConfig) // still using deployment here, need it to shutdown containers
@@ -1380,11 +1401,12 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		deploymentDesc.Infrastructure = true
 
 		// Get the container started.
-		if deployment, err := b.ResourcesCreate(lc.Name, "", &lc.Configure, deploymentDesc, []byte(""), *lc.EnvironmentAdditions, ms_children_networks); err != nil {
+		if deployment, err := b.ResourcesCreate(lc.Name, "", &lc.Configure, deploymentDesc, []byte(""), *lc.EnvironmentAdditions, ms_children_networks, lc.ServicePathElement.URL); err != nil {
 			log_str := fmt.Sprintf("Error starting containers for agreement %v: %v", lc.AgreementIds, err)
 			if lc.IsRetry {
 				log_str = fmt.Sprintf("Error restarting containers for agreements %v: %v", lc.AgreementIds, err)
 			}
+
 			eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
 				log_str, persistence.EC_ERROR_START_CONTAINER, "",
 				lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
@@ -1797,8 +1819,9 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 		glog.Errorf("Error removing containers for %v. Error: %v", agreements, err)
 	}
 
-	// remove old workspaceROStorage dir docker volume
+	// Remove the pieces of the host file system that are no longer needed.
 	for _, agreementId := range agreements {
+		// Remove workspaceROStorage directory and docker volume.
 		workloadRWStorageDir, useVolume := b.workloadStorageDir(agreementId)
 		if !useVolume {
 			if err := os.RemoveAll(workloadRWStorageDir); err != nil {
@@ -1812,6 +1835,12 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 				}
 			}
 		}
+
+		// Remove the File Sync Service API authentication credential file.
+		if err := b.GetAuthenticationManager().RemoveCredential(agreementId); err != nil {
+			glog.Errorf("Failed to remove FSS Authentication credential file for %v, error %v", agreementId, err)
+		}
+
 	}
 
 	// gather agreement networks to free

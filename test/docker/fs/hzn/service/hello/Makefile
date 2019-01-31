@@ -21,6 +21,7 @@ horizonstop:
 
 run: stop build
 	docker run --name $(IMAGE) -e MY_S_VAR1='outside' -p 8000:8000 -d -t $(BASE)/$(IMAGE):$(VER)
+	sleep 3
 
 check:
 	contId=$(shell docker ps -q | head -1) && \

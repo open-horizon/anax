@@ -18,6 +18,7 @@ import (
 	"github.com/open-horizon/anax/helm"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/resource"
 	"github.com/open-horizon/anax/torrent"
 	"github.com/open-horizon/anax/worker"
 	"os"
@@ -141,6 +142,7 @@ func main() {
 		workers.Add(container.NewContainerWorker("Container", cfg, db))
 		workers.Add(torrent.NewTorrentWorker("Torrent", cfg, db))
 		workers.Add(helm.NewHelmWorker("Helm", cfg, db))
+		workers.Add(resource.NewResourceWorker("Resource", cfg, db))
 	}
 
 	// Get into the event processing loop until anax shuts itself down.

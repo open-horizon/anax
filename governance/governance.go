@@ -1310,7 +1310,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 				sDef.PopulateDefaultUserInput(envAdds)
 			}
 
-			cutil.SetPlatformEnvvars(envAdds, config.ENVVAR_PREFIX, proposal.AgreementId(), exchange.GetId(w.GetExchangeId()), exchange.GetOrg(w.GetExchangeId()), workload.WorkloadPassword, w.GetExchangeURL(), w.devicePattern)
+			cutil.SetPlatformEnvvars(envAdds, config.ENVVAR_PREFIX, proposal.AgreementId(), exchange.GetId(w.GetExchangeId()), exchange.GetOrg(w.GetExchangeId()), workload.WorkloadPassword, w.GetExchangeURL(), w.devicePattern, w.BaseWorker.Manager.Config.GetFileSyncServiceAPIUnixDomainSocket(), config.HZN_FSS_AUTH_MOUNT)
 
 			lc.EnvironmentAdditions = &envAdds
 			lc.AgreementProtocol = protocol

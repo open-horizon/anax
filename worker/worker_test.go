@@ -200,7 +200,7 @@ func Test_two_workers(t *testing.T) {
 	mhr.Add(w2)
 
 	// Monitor the test to make sure it doesnt get stuck in a wait loop.
-	monitorWaitTime := 15
+	monitorWaitTime := 12
 	testEnded := false
 	go monitorTest(t, &testEnded, monitorWaitTime)
 

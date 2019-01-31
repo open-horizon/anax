@@ -177,7 +177,7 @@ func VerifyWorkloadVarTypes(varValue interface{}, expectedType string) error {
 
 // This function may seem simple but since it is shared with the hzn dev CLI, an update to it will cause a compile error in the CLI
 // code. This will prevent us from adding a new platform env var but forgetting to update the CLI.
-func SetPlatformEnvvars(envAdds map[string]string, prefix string, agreementId string, deviceId string, org string, workloadPW string, exchangeURL string, pattern string) {
+func SetPlatformEnvvars(envAdds map[string]string, prefix string, agreementId string, deviceId string, org string, workloadPW string, exchangeURL string, pattern string, fssAddress string, fssAuth string) {
 
 	// The agreement id that is controlling the lifecycle of this container.
 	if agreementId != "" {
@@ -200,6 +200,23 @@ func SetPlatformEnvvars(envAdds map[string]string, prefix string, agreementId st
 
 	// Add in the exchange URL so that the workload knows which ecosystem its part of
 	envAdds[prefix+"EXCHANGE_URL"] = exchangeURL
+
+	// Add in the File Sync Service related env vars. Note the env vars contain ESS instead of FSS. This is intentional for now
+	// because the sync service code is going to remain independent and potentially reusable/stand alone. A service implementation
+	// is expected to read these env vars so that it can form the correct URL to invoke the FSS (ESS) API.
+	// The transport protocol used by the API_ADDRESS variable.
+	envAdds[prefix+"ESS_API_PROTOCOL"] = "unix"
+
+	// The address of the file sync service API.
+	//envAdds[prefix+"ESS_API_ADDRESS"] = cfg.GetFileSyncServiceAPIUnixDomainSocket()
+	envAdds[prefix+"ESS_API_ADDRESS"] = fssAddress
+
+	// The port of the file sync service API. Zero for now, until we support more than a unix domain socket.
+	envAdds[prefix+"ESS_API_PORT"] = "0"
+
+	// The name of the mounted file containing the FSS credentials that the container should use.
+	envAdds[prefix+"FSS_AUTH"] = fssAuth
+
 }
 
 // This function is similar to the above, for env vars that are system related. It is only used by workloads.
