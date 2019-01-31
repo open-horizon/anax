@@ -109,7 +109,7 @@ macpkg: temp-mod-version $(CLI_EXECUTABLE) temp-mod-version-undo
 	cp LICENSE.txt pkg/mac/horizon-cli/share/horizon
 	cp $(CLI_MAN_DIR)/hzn.1 pkg/mac/horizon-cli/share/man/man1
 	cp $(CLI_COMPLETION_DIR)/hzn_bash_autocomplete.sh pkg/mac/horizon-cli/share/horizon
-	pkgbuild --root pkg/mac/horizon-cli --scripts pkg/mac/scripts --identifier $(MAC_PKG_IDENTIFIER) --version $(MAC_PKG_VERSION) --install-location $(MAC_PKG_INSTALL_DIR) pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg
+	pkgbuild --sign "horizon-cli-installer" --root pkg/mac/horizon-cli --scripts pkg/mac/scripts --identifier $(MAC_PKG_IDENTIFIER) --version $(MAC_PKG_VERSION) --install-location $(MAC_PKG_INSTALL_DIR) pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg
 
 # Upload the pkg to the staging dir of our apt repo svr (aptrepo-sjc03-1), so users can get to it at http://pkg.bluehorizon.network/macos/
 #todo: For now, you must have ssh access to the apt repo svr for this to work
