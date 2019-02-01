@@ -6,14 +6,14 @@ Set/export `HORIZON_CLI_PRIV_KEY_PW` to the passphrase the signing private key h
 
 ## Generate and Install the Signing Key
 
-If the signing private key has never been created, or you need to recreate it:
+If the signing private key and public certificate have never been created, or you need to recreate them:
 
 ```
 # at the top level of the anax git repo:
 make gen-mac-key
 ```
 
-To install the signing private key on your Mac so you can sign the mac pkg you are building (this only needs to be done once):
+To install the signing private key on your Mac (this only needs to be done once) so you can sign the mac pkg you are building:
 
 ```
 # at the top level of the anax git repo:
@@ -41,18 +41,27 @@ Otherwise, you can install the package via the command line:
 make macinstall
 ```
 
-## Upload the Mac Package
+## Upload the Mac Package (and New Certificate, If Necessary)
 
-Once it has been verified, upload the package to the staging download spot, so other dev team members can test:
+Once the package has been verified (including the signature):
+
+Upload the package to the staging download spot, so other dev team members can test:
 
 ```
 # at the top level of the anax git repo:
 make macupload
 ```
 
-Then it can be downloaded by others from http://pkg.bluehorizon.network/macos/testing/ .
+If you created a new private signing key and public cert, upload the cert to the staging download spot, so other dev team members can test:
 
-## Promote the Mac Package
+```
+# at the top level of the anax git repo:
+make macuploadcert
+```
+
+Then they can be downloaded by others from http://pkg.bluehorizon.network/macos/testing/ .
+
+## Promote the Mac Package (and New Certificate, If Necessary)
 
 Once it has been verified in staging, and this version of horizon is being promoted:
 

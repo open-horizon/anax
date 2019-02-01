@@ -83,8 +83,10 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 # Build the horizon-cli pkg for mac
 #todo: these targets should be moved into the official horizon build process
 export MAC_PKG_VERSION ?= 2.21.0
+MAC_PKG = pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg
 MAC_PKG_IDENTIFIER ?= com.github.open-horizon.pkg.horizon-cli
 MAC_PKG_INSTALL_DIR ?= /Users/Shared/horizon-cli
+# this is Softlayer hostname aptrepo-sjc03-1
 APT_REPO_HOST ?= 169.45.88.181
 APT_REPO_DIR ?= /vol/aptrepo-local/repositories/view-public
 
@@ -96,8 +98,10 @@ gen-mac-key:
 	openssl genrsa -out pkg/mac/build/horizon-cli.key 2048  # create private key
 	openssl req -x509 -new -config pkg/mac/key-gen/horizon-cli-key.conf -nodes -key pkg/mac/build/horizon-cli.key -extensions extensions -sha256 -out pkg/mac/build/horizon-cli.crt  # create self-signed cert
 	openssl pkcs12 -export -inkey pkg/mac/build/horizon-cli.key -in pkg/mac/build/horizon-cli.crt -out pkg/mac/build/horizon-cli.p12 -password env:HORIZON_CLI_PRIV_KEY_PW  # wrap the key and certificate into PKCS#12 archive
-	rm -f pkg/mac/build/horizon-cli.key pkg/mac/build/horizon-cli.crt  # clean up intermediate files
-	echo "Created pkg/mac/build/horizon-cli.p12, copy it to the horizon dev team's private key location."
+	rm -f pkg/mac/build/horizon-cli.key  # clean up intermediate files
+	@echo "Created pkg/mac/build/horizon-cli.crt and pkg/mac/build/horizon-cli.p12. Once you are sure that this the key/cert that should be used for all new staging mac packages:"
+	@echo "  - Copy pkg/mac/build/horizon-cli.p12 to the horizon dev team's private key location."
+	@echo "  - Make pkg/mac/build/horizon-cli.crt available to users via 'make macuploadcert' ."
 
 # This is a 1-time step to install the mac pkg signing key on your mac so it can be used to sign the pkg.
 # You must first set HORIZON_CLI_PRIV_KEY_PW to the passphrase to use the private key.
@@ -126,7 +130,9 @@ temp-mod-version-undo:
 
 # Build the pkg and put it in pkg/mac/build/
 # Note: this will only run the dependencies sequentially (as we need) if make is run without --jobs
-macpkg: temp-mod-version $(CLI_EXECUTABLE) temp-mod-version-undo
+macpkg: $(MAC_PKG)
+
+$(MAC_PKG): temp-mod-version $(CLI_EXECUTABLE) temp-mod-version-undo
 	@echo "Producing Mac pkg horizon-cli"
 	mkdir -p pkg/mac/build pkg/mac/horizon-cli/bin pkg/mac/horizon-cli/share/horizon pkg/mac/horizon-cli/share/man/man1
 	cp $(CLI_EXECUTABLE) pkg/mac/horizon-cli/bin
@@ -134,21 +140,29 @@ macpkg: temp-mod-version $(CLI_EXECUTABLE) temp-mod-version-undo
 	cp LICENSE.txt pkg/mac/horizon-cli/share/horizon
 	cp $(CLI_MAN_DIR)/hzn.1 pkg/mac/horizon-cli/share/man/man1
 	cp $(CLI_COMPLETION_DIR)/hzn_bash_autocomplete.sh pkg/mac/horizon-cli/share/horizon
-	pkgbuild --sign "horizon-cli-installer" --root pkg/mac/horizon-cli --scripts pkg/mac/scripts --identifier $(MAC_PKG_IDENTIFIER) --version $(MAC_PKG_VERSION) --install-location $(MAC_PKG_INSTALL_DIR) pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg
+	pkgbuild --sign "horizon-cli-installer" --root pkg/mac/horizon-cli --scripts pkg/mac/scripts --identifier $(MAC_PKG_IDENTIFIER) --version $(MAC_PKG_VERSION) --install-location $(MAC_PKG_INSTALL_DIR) $@
 
-# Upload the pkg to the staging dir of our apt repo svr (aptrepo-sjc03-1), so users can get to it at http://pkg.bluehorizon.network/macos/
+# Upload the pkg to the staging dir of our apt repo svr, so users can get to it at http://pkg.bluehorizon.network/macos/
 #todo: For now, you must have ssh access to the apt repo svr for this to work
-macupload: macpkg
-	@echo "Uploading pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg to http://pkg.bluehorizon.network/macos/testing/"
-	rsync -avz pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg root@$(APT_REPO_HOST):$(APT_REPO_DIR)/macos/testing
+macupload: $(MAC_PKG)
+	@echo "Uploading $< to http://pkg.bluehorizon.network/macos/testing/"
+	rsync -avz $< root@$(APT_REPO_HOST):$(APT_REPO_DIR)/macos/testing
+
+# Upload the pkg cert to the staging dir of our apt repo svr, so users can get to it at http://pkg.bluehorizon.network/testing/macos/
+#todo: For now, you must have ssh access to the apt repo svr for this to work
+macuploadcert:
+	@echo "Uploading pkg/mac/build/horizon-cli.crt to http://pkg.bluehorizon.network/macos/testing/certs/"
+	rsync -avz pkg/mac/build/horizon-cli.crt root@$(APT_REPO_HOST):$(APT_REPO_DIR)/macos/testing/certs
 
 # This target promotes the last version you uploaded to staging, so assumes MAC_PKG_VERSION is still set to that version
 promote-mac-pkg:
+	@echo "Promoting horizon-cli.crt"
+	ssh root@$(APT_REPO_HOST) 'cp $(APT_REPO_DIR)/macos/testing/certs/horizon-cli.crt $(APT_REPO_DIR)/macos/certs'
 	@echo "Promoting horizon-cli-$(MAC_PKG_VERSION).pkg"
 	ssh root@$(APT_REPO_HOST) 'cp $(APT_REPO_DIR)/macos/testing/horizon-cli-$(MAC_PKG_VERSION).pkg $(APT_REPO_DIR)/macos'
 
-macinstall: macpkg
-	sudo installer -pkg pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg -target '/Volumes/Macintosh HD'
+macinstall: $(MAC_PKG)
+	sudo installer -pkg $< -target '/Volumes/Macintosh HD'
 
 # This only works on the installed package
 macpkginfo:
