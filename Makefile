@@ -88,6 +88,31 @@ MAC_PKG_INSTALL_DIR ?= /Users/Shared/horizon-cli
 APT_REPO_HOST ?= 169.45.88.181
 APT_REPO_DIR ?= /vol/aptrepo-local/repositories/view-public
 
+# This is a 1-time step to create the private signing key and public cert for the mac pkg.
+# You must first set HORIZON_CLI_PRIV_KEY_PW to the passphrase to use the private key.
+gen-mac-key:
+	: $${HORIZON_CLI_PRIV_KEY_PW:?}
+	@echo "Generating the horizon-cli mac pkg private key and public certificate, and putting them in the p12 archive"
+	openssl genrsa -out pkg/mac/build/horizon-cli.key 2048  # create private key
+	openssl req -x509 -new -config pkg/mac/key-gen/horizon-cli-key.conf -nodes -key pkg/mac/build/horizon-cli.key -extensions extensions -sha256 -out pkg/mac/build/horizon-cli.crt  # create self-signed cert
+	openssl pkcs12 -export -inkey pkg/mac/build/horizon-cli.key -in pkg/mac/build/horizon-cli.crt -out pkg/mac/build/horizon-cli.p12 -password env:HORIZON_CLI_PRIV_KEY_PW  # wrap the key and certificate into PKCS#12 archive
+	rm -f pkg/mac/build/horizon-cli.key pkg/mac/build/horizon-cli.crt  # clean up intermediate files
+	echo "Created pkg/mac/build/horizon-cli.p12, copy it to the horizon dev team's private key location."
+
+# This is a 1-time step to install the mac pkg signing key on your mac so it can be used to sign the pkg.
+# You must first set HORIZON_CLI_PRIV_KEY_PW to the passphrase to use the private key.
+# If you did not just create the pkg/mac/build/horizon-cli.p12 file using the make target above, download it and put it there.
+install-mac-key:
+	: $${HORIZON_CLI_PRIV_KEY_PW:?}
+	@echo "Importing the key/cert into your keychain. When prompted, enter your Mac admin password:"
+	sudo security import pkg/mac/build/horizon-cli.p12 -k /Library/Keychains/System.keychain -P "$$HORIZON_CLI_PRIV_KEY_PW" -f pkcs12  # import key/cert into keychain
+	#todo: the cmd above does not automatically set the cert to "Always Trust", tried the cmd below but it does not work.
+	#sudo security add-trusted-cert -d -r trustAsRoot -p pkgSign -k /Library/Keychains/System.keychain pkg/mac/build/horizon-cli.p12
+	@echo "pkg/mac/build/horizon-cli.p12 installed in the System keychain. Now set it to 'Always Trust' by doing:"
+	@echo "Open Finder, click on Applications and then Utilities, and open the Keychain Access app."
+	@echo "Click on the System keychain, find horizon-cli-installer in list, and open it."
+	@echo "Expand the Trust section and for 'When using this certificate' select 'Always Trust'."
+
 # Inserts the version into version.go in prep for the macpkg build
 temp-mod-version:
 	mv version/version.go version/version.go.bak   # preserve the time stamp
@@ -254,4 +279,4 @@ diagrams:
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/protocolSequenceDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/horizonSequenceDiagram.txt
 
-.PHONY: check clean deps format gopathlinks install lint mostlyclean pull test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-docker
+.PHONY: check clean deps format gopathlinks install lint mostlyclean pull test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-docker gen-mac-key install-mac-key
