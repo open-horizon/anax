@@ -32,7 +32,7 @@ func DoIt(forceUnregister, removeNodeUnregister bool) {
 	/* This does the same thing more manually. Want to keep for reference...
 	fmt.Println("Stopping horizon...")
 	cliutils.RunCmd(nil, "systemctl", "stop", "horizon.service")
-	fmt.Println("Stopping workload and microservice containers...")
+	fmt.Println("Stopping service containers...")
 	stdoutBytes, _ := cliutils.RunCmd(nil, "docker", "ps", "-qa")
 	cliutils.RunCmd(stdoutBytes, "xargs", "docker", "stop")
 	fmt.Println("Deleting local horizon DB...")

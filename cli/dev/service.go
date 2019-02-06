@@ -14,7 +14,7 @@ const SERVICE_START_COMMAND = "start"
 const SERVICE_STOP_COMMAND = "stop"
 const SERVICE_VERIFY_COMMAND = "verify"
 
-// Create skeletal horizon metadata files to establish a new microservice project.
+// Create skeletal horizon metadata files to establish a new service project.
 func ServiceNew(homeDirectory string, org string, dconfig string) {
 
 	// Verify that env vars are set properly and determine the working directory.

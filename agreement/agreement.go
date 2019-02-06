@@ -801,7 +801,7 @@ func (w *AgreementWorker) recordAgreementState(agreementId string, pol *policy.P
 	if w.devicePattern != "" {
 		workload.Org = exchange.GetOrg(w.GetExchangeId())
 		workload.Pattern = w.devicePattern
-		workload.URL = pol.Workloads[0].WorkloadURL // This is always 1 workload array element
+		workload.URL = cutil.FormOrgSpecUrl(pol.Workloads[0].WorkloadURL, pol.Workloads[0].Org) // This is always 1 workload array element
 	}
 
 	// Configure the input object based on the service model or on the older workload model.

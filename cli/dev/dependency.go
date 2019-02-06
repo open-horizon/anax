@@ -729,7 +729,7 @@ func getServiceDefinition(homeDirectory, surl string, org string, version string
 		}
 	}
 
-	// Fill in the parts of the dependency that come from the microservice definition.
+	// Fill in the parts of the dependency that come from the service definition.
 	sDef_cliex.Org = org
 	sDef_cliex.URL = serviceDef.URL
 	sDef_cliex.Version = serviceDef.Version

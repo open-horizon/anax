@@ -218,7 +218,7 @@ func setup(homeDirectory string, mustExist bool, needExchange bool, userCreds st
 
 	cliutils.Verbose("Reading Horizon metadata from %s", dir)
 
-	// Verify that the project is a workload project or a microservice.
+	// Verify that the project is a service project.
 	if !IsServiceProject(dir) {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "project in %v is not a horizon project.", dir)
 	}
@@ -284,8 +284,8 @@ func createEnvVarMap(agreementId string,
 	// persistence attributes so that they can be further converted to environment variables. This is the progression that anax uses when
 	// running real workloads so the same progression is used here.
 
-	// The set of global attributes in the project's userinput file might not all be applicable to all microservices, so we will
-	// create a shortened list of global attribute that only apply to this microservice.
+	// The set of global attributes in the project's userinput file might not all be applicable to all services, so we will
+	// create a shortened list of global attribute that only apply to this service.
 	shortGlobals := make([]register.GlobalSet, 0, 10)
 	for _, inputGlobal := range global {
 		if len(inputGlobal.ServiceSpecs) == 0 || (inputGlobal.ServiceSpecs[0].Url == msURL && inputGlobal.ServiceSpecs[0].Org == org) {
@@ -349,7 +349,7 @@ func createContainerWorker() (*container.ContainerWorker, error) {
 	return container.CreateCLIContainerWorker(config)
 }
 
-// This function is used to setup context to execute a microservice or workload container.
+// This function is used to setup context to execute a service container.
 func CommonExecutionSetup(homeDirectory string, userInputFile string, projectType string, cmd string) (string, *register.InputFile, *container.ContainerWorker) {
 
 	// Get the setup info and context for running the command.
@@ -397,7 +397,7 @@ func getContainerNetworks(depConfig *cliexchange.DeploymentConfig, cw *container
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("unable to list existing containers: %v", err))
 		}
-		// Return the main network for this service/microservice. It will always be the network name
+		// Return the main network for this service. It will always be the network name
 		// that matches the agreement_id label.
 		for _, msc := range containers {
 			if nw_name, ok := msc.Labels[container.LABEL_PREFIX+".agreement_id"]; ok {
@@ -538,11 +538,11 @@ func StartContainers(deployment *containermessage.DeploymentDescription,
 
 	cliutils.Verbose("Passing environment variables: %v", environmentAdditions)
 
-	// Start the dependency microservice
+	// Start the dpendent service
 
 	fmt.Printf("Start %v: %v with instance id prefix %v\n", logName, dc.CLIString(), id)
 
-	// Start the microservice container.
+	// Start the dependent service container.
 	_, startErr := cw.ResourcesCreate(id, "", nil, deployment, []byte(""), environmentAdditions, msNetworks)
 	if startErr != nil {
 		return nil, errors.New(fmt.Sprintf("unable to start container using %v, error: %v", dc.CLIString(), startErr))
@@ -550,7 +550,7 @@ func StartContainers(deployment *containermessage.DeploymentDescription,
 
 	fmt.Printf("Running %v.\n", logName)
 
-	// Locate the service/microservice network(s) and return them so that a workload/parent-service can be hooked in.
+	// Locate the service network(s) and return them so that a workload/parent-service can be hooked in.
 	return getContainerNetworks(dc, cw)
 }
 
@@ -638,7 +638,7 @@ func getImageReferenceAsTorrent(serviceDef *exchange.ServiceDefinition) policy.T
 	return pip.ConvertToTorrent()
 }
 
-// Get the images into the local docker server for workloads, microservices and services
+// Get the images into the local docker server for services
 func getContainerImages(containerConfig *events.ContainerConfig, pemFiles []string, currentUIs *register.InputFile) error {
 
 	// Create a temporary anax config object to hold the HTTP config we need to contact the Image server.

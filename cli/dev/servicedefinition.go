@@ -16,7 +16,7 @@ const SERVICE_DEFINITION_FILE = "service.definition.json"
 const DEFAULT_SDEF_SPECIFIC_VERSION = "specific_version_number"
 const DEFAULT_SDEF_URL = ""
 
-// Sort of like a constructor, it creates an in memory object except that it is created from the microservice definition config
+// Sort of like a constructor, it creates an in memory object except that it is created from the service definition config
 // file in the current project. This function assumes the caller has determined the exact location of the file.
 func GetServiceDefinition(directory string, name string) (*cliexchange.ServiceFile, error) {
 
@@ -30,7 +30,7 @@ func GetServiceDefinition(directory string, name string) (*cliexchange.ServiceFi
 
 }
 
-// Sort of like a constructor, it creates a skeletal microservice definition config object and writes it to the project
+// Sort of like a constructor, it creates a skeletal service definition config object and writes it to the project
 // in the file system.
 func CreateServiceDefinition(directory string, org string, deploymentType string) error {
 
@@ -70,7 +70,7 @@ func CreateServiceDefinition(directory string, org string, deploymentType string
 
 }
 
-// Check for the existence of the microservice definition config file in the project.
+// Check for the existence of the service definition config file in the project.
 func ServiceDefinitionExists(directory string) (bool, error) {
 	return FileExists(directory, SERVICE_DEFINITION_FILE)
 }

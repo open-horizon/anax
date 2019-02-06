@@ -408,3 +408,18 @@ func FormOrgSpecUrl(url string, org string) string {
 		return fmt.Sprintf("%v/%v", org, url)
 	}
 }
+
+// The input is org/url, output is (org, url).
+// assume no `/` in the org
+func SplitOrgSpecUrl(org_url string) (string, string) {
+	if org_url == "" {
+		return "", ""
+	} else {
+		s := strings.SplitN(org_url, "/", 2)
+		if len(s) == 1 {
+			return "", s[0]
+		} else {
+			return s[0], s[1]
+		}
+	}
+}

@@ -44,6 +44,7 @@ const STATUS_AG_PROTOCOL_TERMINATED = 501
 const CONTAINER_GOVERNOR = "ContainerGovernor"
 const MICROSERVICE_GOVERNOR = "MicroserviceGovernor"
 const BC_GOVERNOR = "BlockchainGovernor"
+const SERVICE_CONFIGSTATE_GOVERNOR = "ServiceConfigStateGovernor"
 
 type GovernanceWorker struct {
 	worker.BaseWorker   // embedded field
@@ -293,6 +294,14 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			w.Commands <- cmd
 		}
 
+	case *events.ServiceConfigStateChangeMessage:
+		msg, _ := incoming.(*events.ServiceConfigStateChangeMessage)
+		switch msg.Event().Id {
+		case events.SERVICE_SUSPENDED:
+			cmd := w.NewServiceSuspendedCommand(msg.ServiceConfigState)
+			w.Commands <- cmd
+		}
+
 	default: //nothing
 	}
 
@@ -313,7 +322,7 @@ func (w *GovernanceWorker) governAgreements() {
 	}
 
 	if establishedAgreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), notYetFinalFilter()}); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Unable to retrieve not yet final agreements from database: %v. Error: %v", err, err)))
+		glog.Errorf(logString(fmt.Sprintf("Unable to retrieve not yet final agreements from database. Error: %v", err)))
 	} else {
 
 		// If there are agreements in the database then we will assume that the device is already registered
@@ -606,6 +615,11 @@ func (w *GovernanceWorker) Initialize() bool {
 
 	// Fire up the microservice governor
 	w.DispatchSubworker(MICROSERVICE_GOVERNOR, w.governMicroservices, 60)
+
+	// Fire up the service configuration state governer. Only support pattern case for now.
+	if w.devicePattern != "" {
+		w.DispatchSubworker(SERVICE_CONFIGSTATE_GOVERNOR, w.governServiceConfigState, w.Config.Edge.ServiceConfigStateCheckIntervalS)
+	}
 
 	return true
 
@@ -1163,6 +1177,12 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 
 		w.handleNodeHeartbeatRestored()
 
+	case *ServiceSuspendedCommand:
+		cmd, _ := command.(*ServiceSuspendedCommand)
+		glog.V(5).Infof(logString(fmt.Sprintf("%v", cmd)))
+
+		w.handleServiceSuspended(cmd.ServiceConfigState)
+
 	default:
 		return false
 	}
@@ -1510,7 +1530,7 @@ func recordProducerAgreementState(httpClient *http.Client, url string, deviceId 
 	workload := exchange.WorkloadAgreement{}
 	workload.Org = exchange.GetOrg(deviceId)
 	workload.Pattern = pattern
-	workload.URL = pol.Workloads[0].WorkloadURL // This is always 1 workload array element
+	workload.URL = cutil.FormOrgSpecUrl(pol.Workloads[0].WorkloadURL, pol.Workloads[0].Org) // This is always 1 workload array element
 
 	// Configure the input object based on the service model or on the older workload model.
 	as.State = state

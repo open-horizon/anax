@@ -477,7 +477,7 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 		// For other sharing modes, start a new instance only if there is no existing one.
 		// The "exclusive" sharing mode is handled by maxAgreements=1 in the node side policy file. This ensures that agbots and nodes will
 		// only support one agreement at any time.
-	} else if ms_insts, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.AllInstancesMIFilter(msdef.SpecRef, msdef.Org, msdef.Version), persistence.UnarchivedMIFilter()}); err != nil {
+	} else if ms_insts, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.UnarchivedMIFilter(), persistence.NotCleanedUpMIFilter(), persistence.AllInstancesMIFilter(msdef.SpecRef, msdef.Org, msdef.Version)}); err != nil {
 		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
 			fmt.Sprintf("Error retrieving all the service instances from db for %v/%v version %v key %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id, err),
 			persistence.EC_DATABASE_ERROR)
@@ -564,7 +564,7 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 								persistence.EC_START_CLEANUP_SERVICE,
 								msi)
 
-							if msd.Sharable == exchange.MS_SHARING_MODE_MULTIPLE {
+							if msd.Sharable == exchange.MS_SHARING_MODE_MULTIPLE || len(msi.AssociatedAgreements) == 1 {
 								// mark the ms clean up started and remove all the microservice containers if any
 								if _, err := persistence.MicroserviceInstanceCleanupStarted(w.db, msi.GetKey()); err != nil {
 									glog.Errorf(logString(fmt.Sprintf("Error setting cleanup start time for service instance %v. %v", msi.GetKey(), err)))
@@ -793,4 +793,132 @@ func (w *GovernanceWorker) handleMicroserviceUpgrade(msdef_id string) {
 			}
 		}
 	}
+}
+
+// get the service configuration state from the exchange, check if any of them are suspended.
+// if a service is suspended, cancel the agreements and remove the containers associated with it.
+func (w *GovernanceWorker) governServiceConfigState() int {
+	// go govern
+	glog.V(4).Infof(logString(fmt.Sprintf("governing the service configuration state")))
+
+	service_cs, err := exchange.GetServicesConfigState(w.GetHTTPFactory(), w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL())
+	if err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Unable to retrieve servcie configuration state from the exchange, error %v", err)))
+		eventlog.LogExchangeEvent(w.db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Unable to retrieve the service configuration state for node resource %v from the exchange, error %v", w.GetExchangeId(), err),
+			persistence.EC_EXCHANGE_ERROR, w.GetExchangeURL())
+	} else {
+		// get the services that has been changed to suspended state
+		suspended_services := []events.ServiceConfigState{}
+
+		if service_cs != nil {
+			for _, scs_exchange := range service_cs {
+				// all suspended services will be handled even the ones that was in the suspended state from last check.
+				// this will make sure there is no leak between the checking intervals, for example the un-arrived agreements
+				// from last check.
+				if scs_exchange.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED {
+					suspended_services = append(suspended_services, *(events.NewServiceConfigState(scs_exchange.Url, scs_exchange.Org, scs_exchange.ConfigState)))
+				}
+			}
+		}
+
+		glog.V(5).Infof(logString(fmt.Sprintf("Suspended services to handle are %v", suspended_services)))
+
+		// fire event to handle the suspended services if any
+		if len(suspended_services) != 0 {
+			// we only handle the suspended services for the configstate change now
+			w.Messages() <- events.NewServiceConfigStateChangeMessage(events.SERVICE_SUSPENDED, suspended_services)
+		}
+	}
+	return 0
+}
+
+// For the given suspended services, cancel all the related agreements and hence remove all the related containers.
+func (w *GovernanceWorker) handleServiceSuspended(service_cs []events.ServiceConfigState) error {
+	if service_cs == nil || len(service_cs) == 0 {
+		// nothing to handle
+		return nil
+	}
+
+	glog.V(3).Infof(logString(fmt.Sprintf("handle service suspension for %v", service_cs)))
+
+	orgUrlMIFilter := func() persistence.MIFilter {
+		return func(e persistence.MicroserviceInstance) bool {
+			for _, s := range service_cs {
+				if e.SpecRef == s.Url && e.Org == s.Org {
+					return true
+				}
+			}
+			return false
+		}
+	}
+
+	// get the all the agreements the suspended services are associated with.
+	// The agreement that a top level service is associated with is from the EstablishedAgreement.RunningWorkload.
+	// The agreement that a dependent level service is associated with is from the MicroserviceInstance.AssociatedAgreements.
+	// We need to go through both to get all the agreements that the user want to stop because we do not know from the input, service_cs, if the given
+	// service is top level to dependent.
+	agreements_to_cancel := make(map[string]persistence.EstablishedAgreement, 10)
+	establishedAgreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()})
+	if err != nil {
+		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Error retrieving matching agreements from database for workloads %v. Error: %v", service_cs, err),
+			persistence.EC_DATABASE_ERROR)
+		glog.Errorf(logString(fmt.Sprintf("Error retrieving matching agreements from database for workloads %v. Error: %v", service_cs, err)))
+		return fmt.Errorf("Error retrieving matching agreements from database for workloads %v. Error: %v", service_cs, err)
+	} else if establishedAgreements != nil && len(establishedAgreements) > 0 {
+		for _, ag := range establishedAgreements {
+			for _, s := range service_cs {
+				if ag.RunningWorkload.URL == s.Url && ag.RunningWorkload.Org == s.Org {
+					agreements_to_cancel[ag.CurrentAgreementId] = ag
+					break
+				}
+			}
+		}
+
+		ms_insts, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.UnarchivedMIFilter(), orgUrlMIFilter()})
+		if err != nil {
+			eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error retrieving all the service instances from db for %v. %v", service_cs, err),
+				persistence.EC_DATABASE_ERROR)
+			glog.Errorf(logString(fmt.Sprintf("Error retrieving the service instances from db for %v. %v", service_cs, err)))
+			return fmt.Errorf("Error retrieving all the service instances from db for %v. %v", service_cs, err)
+		} else if ms_insts != nil && len(ms_insts) > 0 {
+			for _, msi := range ms_insts {
+				ag_ids := msi.AssociatedAgreements
+				if ag_ids != nil && len(ag_ids) > 0 {
+					for _, ag_id := range ag_ids {
+						for _, ag := range establishedAgreements {
+							if ag.CurrentAgreementId == ag_id {
+								agreements_to_cancel[ag_id] = ag
+								break
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// now cancel the agreements
+	for _, ag := range agreements_to_cancel {
+		glog.V(3).Infof(logString(fmt.Sprintf("Start terminating agreement %v because service suspened.", ag.CurrentAgreementId)))
+
+		reason := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_SERVICE_SUSPENDED)
+
+		eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
+			fmt.Sprintf("Start terminating agreement for %v/%v. Reason: %v", ag.RunningWorkload.Org, ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
+			persistence.EC_CANCEL_AGREEMENT_SERVICE_SUSPENDED,
+			ag)
+
+		w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
+
+		// cleanup workloads
+		w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
+
+		// clean up microservice instances
+		w.handleMicroserviceInstForAgEnded(ag.CurrentAgreementId, true)
+	}
+
+	return nil
 }

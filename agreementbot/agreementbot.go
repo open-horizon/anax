@@ -535,14 +535,13 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 		// Get a copy of all policies in the policy manager so that we can safely iterate the list
 		policies := w.pm.GetAllAvailablePolicies(org)
 		for _, consumerPolicy := range policies {
-
 			if devices, err := w.searchExchange(&consumerPolicy, org); err != nil {
 				glog.Errorf("AgreementBotWorker received error searching for %v, error: %v", &consumerPolicy, err)
 			} else {
 
 				for _, dev := range *devices {
 
-					glog.V(3).Infof("AgreementBotWorker picked up %v", dev.ShortString())
+					glog.V(3).Infof("AgreementBotWorker picked up %v for policy %v.", dev.ShortString(), consumerPolicy.Header.Name)
 					glog.V(5).Infof("AgreementBotWorker picked up %v", dev)
 
 					// Check for agreements already in progress with this device
@@ -820,7 +819,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, polOrg string) (
 		ser := exchange.CreateSearchPatternRequest()
 		ser.SecondsStale = w.Config.AgreementBot.ActiveDeviceTimeoutS
 		ser.NodeOrgIds = nodeOrgs
-		ser.ServiceURL = pol.Workloads[0].WorkloadURL
+		ser.ServiceURL = cutil.FormOrgSpecUrl(pol.Workloads[0].WorkloadURL, pol.Workloads[0].Org)
 
 		// Invoke the exchange
 		var resp interface{}

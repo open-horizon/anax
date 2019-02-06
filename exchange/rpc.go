@@ -56,14 +56,15 @@ type Microservice struct {
 	Properties    []MSProp `json:"properties"`
 	NumAgreements int      `json:"numAgreements"`
 	Policy        string   `json:"policy"`
+	ConfigState   string   `json:"configState"`
 }
 
 func (m Microservice) String() string {
-	return fmt.Sprintf("URL: %v, Properties: %v, NumAgreements: %v, Policy: %v", m.Url, m.Properties, m.NumAgreements, m.Policy)
+	return fmt.Sprintf("URL: %v, Properties: %v, NumAgreements: %v, Policy: %v, ConfigState: %v", m.Url, m.Properties, m.NumAgreements, m.Policy, m.ConfigState)
 }
 
 func (m Microservice) ShortString() string {
-	return fmt.Sprintf("URL: %v, NumAgreements: %v, Properties: %v", m.Url, m.NumAgreements, m.Properties)
+	return fmt.Sprintf("URL: %v, NumAgreements: %v, Properties: %v, ConfigState: %v", m.Url, m.NumAgreements, m.Properties, m.ConfigState)
 }
 
 // structs and types for working with microservice based exchange searches

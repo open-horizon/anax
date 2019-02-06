@@ -19,7 +19,7 @@ then
         read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/netspeed",
-  "version": "2.2.0",
+  "versionRange": "2.2.0",
   "organization": "IBM",
   "attributes": [
     {
@@ -50,7 +50,7 @@ EOF
         read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/netspeed",
-  "version": "2.2.0",
+  "versionRange": "2.2.0",
   "organization": "e2edev",
   "attributes": [
     {
@@ -81,7 +81,7 @@ EOF
         read -d '' networkservice <<EOF
 {
   "url": "https://bluehorizon.network/services/network",
-  "version": "1.0.0",
+  "versionRange": "1.0.0",
   "organization": "IBM",
   "attributes": []
 }
@@ -98,7 +98,7 @@ EOF
         read -d '' networkservice <<EOF
 {
   "url": "https://bluehorizon.network/services/network",
-  "version": "1.0.0",
+  "versionRange": "1.0.0",
   "organization": "e2edev",
   "attributes": []
 }
@@ -116,7 +116,7 @@ EOF
         read -d '' networkservice <<EOF
 {
   "url": "https://bluehorizon.network/services/network2",
-  "version": "1.0.0",
+  "versionRange": "1.0.0",
   "organization": "IBM",
   "attributes": []
 }
@@ -135,7 +135,7 @@ EOF
         read -d '' networkservice <<EOF
 {
   "url": "https://bluehorizon.network/services/network2",
-  "version": "1.0.0",
+  "versionRange": "1.0.0",
   "organization": "e2edev",
   "attributes": []
 }
@@ -218,7 +218,7 @@ EOF
         read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/netspeed",
-  "version": "2.2.0",
+  "versionRange": "2.2.0",
   "organization": "IBM",
   "attributes": [
     {
@@ -249,7 +249,7 @@ EOF
         read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/netspeed",
-  "version": "2.2.0",
+  "versionRange": "2.2.0",
   "organization": "e2edev",
   "attributes": [
     {

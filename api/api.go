@@ -72,6 +72,7 @@ func (a *API) router(includeStaticRedirects bool) *mux.Router {
 	// For obtaining microservice info or configuring a microservice (sensor) userInput variables
 	router.HandleFunc("/service", a.service).Methods("GET", "OPTIONS")
 	router.HandleFunc("/service/config", a.serviceconfig).Methods("GET", "POST", "OPTIONS")
+	router.HandleFunc("/service/configstate", a.service_configstate).Methods("GET", "POST", "OPTIONS")
 	router.HandleFunc("/service/policy", a.servicepolicy).Methods("GET", "OPTIONS")
 
 	// Connectivity and blockchain status info

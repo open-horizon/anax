@@ -106,7 +106,7 @@ func AddDefaultUserInputs(uis []exchange.UserInput, envmap map[string]string) {
 	}
 }
 
-// Convert user input variables and values (for a workload or microservice) to environment variables and add them to an env var map.
+// Convert user input variables and values (for a service) to environment variables and add them to an env var map.
 func AddConfiguredUserInputs(configVars map[string]interface{}, envvars map[string]string) error {
 
 	for varName, varValue := range configVars {
@@ -158,7 +158,7 @@ func GlobalSetAsAttributes(global []register.GlobalSet) ([]persistence.Attribute
 func ValidateUserInput(i *register.InputFile, directory string, originalUserInputFilePath string, projectType string) error {
 
 	// 1. type is non-empty and one of the valid types
-	// 2. workloads/microservices - variables refer to valid variable definitions.
+	// 2. services - variables refer to valid variable definitions.
 
 	for _, gs := range i.Global {
 		if gs.Type == DEFAULT_GLOBALSET_TYPE {
@@ -211,7 +211,7 @@ func ValidateUserInput(i *register.InputFile, directory string, originalUserInpu
 
 func validateTuple(org string, vers string, url string, definitionUrl string) error {
 	if org == "" {
-		return errors.New(fmt.Sprintf("has empty org, must be set to the name of the organization that owns the workload or microservice."))
+		return errors.New(fmt.Sprintf("has empty org, must be set to the name of the organization that owns the service."))
 	} else if vers == "" {
 		return errors.New(fmt.Sprintf("has empty versionRange. Use [0.0.0,INFINITY) to cover all version ranges."))
 	} else if url != definitionUrl {

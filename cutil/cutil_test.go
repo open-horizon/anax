@@ -233,3 +233,39 @@ func Test_GetAllIPAddresses_downfilter(t *testing.T) {
 	}
 
 }
+
+func Test_FormOrgSpecUrl(t *testing.T) {
+
+	s := FormOrgSpecUrl("service_url", "")
+	if s != "service_url" {
+		t.Errorf("FormOrgSpecUrl should have returned 'service_url', but got '%v'", s)
+	}
+
+	s = FormOrgSpecUrl("service_url", "myorg")
+	if s != "myorg/service_url" {
+		t.Errorf("FormOrgSpecUrl should have returned 'myorg/service_url', but got '%v'", s)
+	}
+
+	s = FormOrgSpecUrl("http://service_url", "myorg")
+	if s != "myorg/http://service_url" {
+		t.Errorf("FormOrgSpecUrl should have returned 'myorg/http://service_url', but got '%v'", s)
+	}
+}
+
+func Test_SplitOrgSpecUrl(t *testing.T) {
+
+	org, url := SplitOrgSpecUrl("service_url")
+	if org != "" || url != "service_url" {
+		t.Errorf("SplitOrgSpecUrl should have returned '(, service_url)', but got '(%v, %v)'", org, url)
+	}
+
+	org, url = SplitOrgSpecUrl("myorg/service_url")
+	if org != "myorg" || url != "service_url" {
+		t.Errorf("SplitOrgSpecUrl should have returned '(myorg, service_url)', but got '(%v, %v)'", org, url)
+	}
+
+	org, url = SplitOrgSpecUrl("myorg/http://service_url")
+	if org != "myorg" || url != "http://service_url" {
+		t.Errorf("SplitOrgSpecUrl should have returned '(myorg, http://service_url)', but got '(%v, %v)'", org, url)
+	}
+}

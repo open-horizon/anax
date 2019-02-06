@@ -181,7 +181,7 @@ Environment Variables:
 	nodeIdTok := registerCmd.Flag("node-id-tok", "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.").Short('n').PlaceHolder("ID:TOK").String()
 	userPw := registerCmd.Flag("user-pw", "User credentials to create the node resource in the Horizon exchange if it does not already exist.").Short('u').PlaceHolder("USER:PW").String()
 	email := registerCmd.Flag("email", "Your email address. Only needs to be specified if: the node resource does not yet exist in the Horizon exchange, and the user specified in the -u flag does not exist, and you specified the 'public' org. If all of these things are true we will create the user and include this value as the email attribute.").Short('e').String()
-	inputFile := registerCmd.Flag("input-file", "A JSON file that sets or overrides variables needed by the node, workloads, and microservices that are part of this pattern. See /usr/horizon/samples/input.json and /usr/horizon/samples/more-examples.json. Specify -f- to read from stdin.").Short('f').String() // not using ExistingFile() because it can be - for stdin
+	inputFile := registerCmd.Flag("input-file", "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See /usr/horizon/samples/input.json and /usr/horizon/samples/more-examples.json. Specify -f- to read from stdin.").Short('f').String() // not using ExistingFile() because it can be - for stdin
 	org := registerCmd.Arg("nodeorg", "The Horizon exchange organization ID that the node should be registered in.").Required().String()
 	pattern := registerCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format.").Required().String()
 
@@ -219,9 +219,20 @@ Environment Variables:
 	attributeCmd := app.Command("attribute", "List or manage the global attributes that are currently registered on this Horizon edge node.")
 	attributeListCmd := attributeCmd.Command("list", "List the global attributes that are currently registered on this Horizon edge node.")
 
-	serviceCmd := app.Command("service", "List or manage the microservices that are currently registered on this Horizon edge node.")
-	serviceListCmd := serviceCmd.Command("list", "List the microservices variable configuration that has been done on this Horizon edge node.")
-	serviceRegisteredCmd := serviceCmd.Command("registered", "List the microservices that are currently registered on this Horizon edge node.")
+	serviceCmd := app.Command("service", "List or manage the services that are currently registered on this Horizon edge node.")
+	serviceListCmd := serviceCmd.Command("list", "List the services variable configuration that has been done on this Horizon edge node.")
+	serviceRegisteredCmd := serviceCmd.Command("registered", "List the services that are currently registered on this Horizon edge node.")
+	serviceConfigStateCmd := serviceCmd.Command("configstate", "List or manage the configuration state for the services that are currently registered on this Horizon edge node.")
+	serviceConfigStateListCmd := serviceConfigStateCmd.Command("list", "List the configuration state for the services that are currently registered on this Horizon edge node.")
+	serviceConfigStateSuspendCmd := serviceConfigStateCmd.Command("suspend", "Change the configuration state to 'suspend' for a service.")
+	serviceConfigStateActiveCmd := serviceConfigStateCmd.Command("resume", "Change the configuration state to 'active' for a service.")
+	suspendAllServices := serviceConfigStateSuspendCmd.Flag("all", "Suspend all registerd services.").Short('a').Bool()
+	suspendServiceOrg := serviceConfigStateSuspendCmd.Arg("serviceorg", "The organization of the service that should be suspended.").String()
+	suspendServiceName := serviceConfigStateSuspendCmd.Arg("service", "The name of the service that should be suspended.").String()
+	forceSuspendService := serviceConfigStateSuspendCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
+	resumeAllServices := serviceConfigStateActiveCmd.Flag("all", "Resume all registerd services.").Short('a').Bool()
+	resumeServiceOrg := serviceConfigStateActiveCmd.Arg("serviceorg", "The organization of the service that should be resumed.").String()
+	resumeServiceName := serviceConfigStateActiveCmd.Arg("service", "The name of the service that should be resumed.").String()
 
 	unregisterCmd := app.Command("unregister", "Unregister and reset this Horizon edge node so that it is ready to be registered again. Warning: this will stop all the Horizon services running on this edge node, and restart the Horizon agent.")
 
@@ -237,7 +248,7 @@ Environment Variables:
 	listDetailedEventlogs := eventlogListCmd.Flag("long", "List event logs with details.").Short('l').Bool()
 	listSelectedEventlogs := eventlogListCmd.Flag("select", "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.").Short('s').Strings()
 
-	devCmd := app.Command("dev", "Developmnt tools for creation of workloads and microservices.")
+	devCmd := app.Command("dev", "Developmnt tools for creation of services.")
 	devHomeDirectory := devCmd.Flag("directory", "Directory containing Horizon project metadata.").Short('d').String()
 
 	devServiceCmd := devCmd.Command("service", "For working with a service project.")
@@ -251,11 +262,11 @@ Environment Variables:
 	devServiceVerifyUserInputFile := devServiceValidateCmd.Flag("userInputFile", "File containing user input values for verification of a project.").Short('f').String()
 
 	devDependencyCmd := devCmd.Command("dependency", "For working with project dependencies.")
-	devDependencyCmdSpecRef := devDependencyCmd.Flag("specRef", "The URL of the microservice dependency in the exchange. Mutually exclusive with -p and --url.").Short('s').String()
+	devDependencyCmdSpecRef := devDependencyCmd.Flag("specRef", "The URL of the service dependency in the exchange. Mutually exclusive with -p and --url.").Short('s').String()
 	devDependencyCmdURL := devDependencyCmd.Flag("url", "The URL of the service dependency in the exchange. Mutually exclusive with -p and --specRef.").String()
-	devDependencyCmdOrg := devDependencyCmd.Flag("org", "The Org of the service or microservice dependency in the exchange. Mutually exclusive with -p.").Short('o').String()
-	devDependencyCmdVersion := devDependencyCmd.Flag("ver", "(optional) The Version of the microservice dependency in the exchange. Mutually exclusive with -p.").String()
-	devDependencyCmdArch := devDependencyCmd.Flag("arch", "(optional) The hardware Architecture of the service or microservice dependency in the exchange. Mutually exclusive with -p.").Short('a').String()
+	devDependencyCmdOrg := devDependencyCmd.Flag("org", "The Org of the service or service dependency in the exchange. Mutually exclusive with -p.").Short('o').String()
+	devDependencyCmdVersion := devDependencyCmd.Flag("ver", "(optional) The Version of the service dependency in the exchange. Mutually exclusive with -p.").String()
+	devDependencyCmdArch := devDependencyCmd.Flag("arch", "(optional) The hardware Architecture of the service or service dependency in the exchange. Mutually exclusive with -p.").Short('a').String()
 	devDependencyFetchCmd := devDependencyCmd.Command("fetch", "Retrieving Horizon metadata for a new dependency.")
 	devDependencyFetchCmdProject := devDependencyFetchCmd.Flag("project", "Horizon project containing the definition of a dependency. Mutually exclusive with -s -o --ver -a and --url.").Short('p').ExistingDir()
 	devDependencyFetchCmdUserPw := devDependencyFetchCmd.Flag("user-pw", "Horizon Exchange user credentials to query exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
@@ -395,6 +406,12 @@ Environment Variables:
 		service.List()
 	case serviceRegisteredCmd.FullCommand():
 		service.Registered()
+	case serviceConfigStateListCmd.FullCommand():
+		service.ListConfigState()
+	case serviceConfigStateSuspendCmd.FullCommand():
+		service.Suspend(*forceSuspendService, *suspendAllServices, *suspendServiceOrg, *suspendServiceName)
+	case serviceConfigStateActiveCmd.FullCommand():
+		service.Resume(*resumeAllServices, *resumeServiceOrg, *resumeServiceName)
 	case unregisterCmd.FullCommand():
 		unregister.DoIt(*forceUnregister, *removeNodeUnregister)
 	case statusCmd.FullCommand():

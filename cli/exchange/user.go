@@ -74,7 +74,7 @@ func UserSetAdmin(org, userPwCreds, user string, isAdmin bool) {
 func UserRemove(org, userPwCreds, user string, force bool) {
 	cliutils.SetWhetherUsingApiKey(userPwCreds)
 	if !force {
-		cliutils.ConfirmRemove("Warning: this will also delete all Exchange resources owned by this user (nodes, microservices, workloads, patterns, etc). Are you sure you want to remove user '" + org + "/" + user + "' from the Horizon Exchange?")
+		cliutils.ConfirmRemove("Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user '" + org + "/" + user + "' from the Horizon Exchange?")
 	}
 
 	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPwCreds), []int{204, 404})

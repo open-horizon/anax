@@ -25,7 +25,7 @@ func (g GlobalSet) String() string {
 	return fmt.Sprintf("Global Array element, type: %v, service_specs: %v, variables: %v", g.Type, g.ServiceSpecs, g.Variables)
 }
 
-// Use for services, microservices, and workloads. This is used by other cli sub-cmds too.
+// Use for services. This is used by other cli sub-cmds too.
 type MicroWork struct {
 	Org          string                 `json:"org"`
 	Url          string                 `json:"url"`
@@ -154,7 +154,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 
 	} else {
 		// Technically an input file is not required, but it is not the common case, so warn them
-		fmt.Println("Warning: no input file was specified. This is only valid if none of the microservices or workloads need variables set (including GPS coordinates).")
+		fmt.Println("Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).")
 	}
 
 	// Set the pattern and register the node
