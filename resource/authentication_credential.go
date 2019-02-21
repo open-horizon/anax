@@ -1,4 +1,4 @@
-package container
+package resource
 
 import (
 	"github.com/open-horizon/anax/cutil"

@@ -24,6 +24,13 @@
         "UserPublicKeyPath": "/root/.colonus/",
         "DefaultServiceRetryCount": 1,
         "DefaultServiceRetryDuration": 600,
-        "FileSyncServicePath": "/tmp/ess-store/"
+        "FileSyncService": {
+            "PersistencePath": "/tmp/ess-store2/",
+            "AuthenticationPath": "/tmp/ess-auth2/",
+            "CSSURL": "css-api",
+            "CSSPort": 9443,
+            "CSSSSLCert": "/certs/css.crt",
+            "PollingRate": 10
+        }
     }
 }

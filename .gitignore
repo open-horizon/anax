@@ -14,3 +14,5 @@ anax/doc/*.png
 /test/docker/tempfs
 /test/docker/fs/hzn/helloms/server
 minikube-setup-by-test
+/css/cloud-sync-service
+/ess/edge-sync-service

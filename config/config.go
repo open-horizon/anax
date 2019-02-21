@@ -51,6 +51,7 @@ type Config struct {
 	DefaultServiceRetryCount         int    // the default service retry count if retries are not specified by the policy file. The default value is 2.
 	DefaultServiceRetryDuration      uint64 // the default retry duration in seconds. The next retry cycle occurs after the duration. The default value is 600
 	ServiceConfigStateCheckIntervalS int    // the service configuration state check interval. The default is 30 seconds.
+	FileSyncService                  FSSConfig // The config for the embedded ESS sync service.
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string
@@ -114,38 +115,6 @@ func (c *HorizonConfig) GetPartitionStale() uint64 {
 		return 60
 	} else {
 		return c.AgreementBot.PartitionStale
-	}
-}
-
-func (c *HorizonConfig) GetFileSyncServiceAPIUnixDomainSocket() string {
-	if c.Edge.FSSAPIUnixListen == "" {
-		return path.Join(HZN_FSS_DOMAIN_SOCKET_PATH, HZN_FSS_DOMAIN_SOCKET)
-	} else {
-		return c.Edge.FSSAPIUnixListen
-	}
-}
-
-func (c *HorizonConfig) GetFileSyncServiceAPIUnixDomainSocketPath() string {
-	if c.Edge.FSSAPIUnixListen == "" {
-		return HZN_FSS_DOMAIN_SOCKET_PATH
-	} else {
-		return filepath.Base(c.Edge.FSSAPIUnixListen)
-	}
-}
-
-func (c *HorizonConfig) GetFileSyncServiceStoragePath() string {
-	if c.Edge.FileSyncServicePath == "" {
-		return path.Join(getDefaultBase(), HZN_FSS_STORAGE_PATH)
-	} else {
-		return c.Edge.FileSyncServicePath
-	}
-}
-
-func (c *HorizonConfig) GetFileSyncServiceAuthPath() string {
-	if c.Edge.FileSyncServicePath == "" {
-		return path.Join(getDefaultBase(), HZN_FSS_AUTH_PATH)
-	} else {
-		return c.Edge.FileSyncServicePath
 	}
 }
 

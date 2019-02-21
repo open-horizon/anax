@@ -3,9 +3,11 @@
 # tar up the raw resource files used in the test services.
 echo "Building resource packages."
 
+EXEC_DIR=$PWD
 cd /root/resources
 
-RESOURCE_ORG=e2edev
+RESOURCE_ORG1=e2edev
+RESOURCE_ORG2=userdev
 RESOURCE_TYPE=model
 
 # For each directory in the resources folder, make zipped tarball of directory contents and then register the resources in the Cloud side sync service (CSS).
@@ -21,38 +23,8 @@ for dir in */; do
 
 	echo "Installing resource package ${justDirName}.tgz."
 
-read -d '' resmeta <<EOF
-{
-  "data": [],
-  "meta": {
-  	"objectID": "${justDirName}",
-  	"objectType": "$RESOURCE_TYPE",
-  	"version": "1.0.0",
-  	"description": "A JSON configuration file tarball."
-  }
-}
-EOF
-
-	ADDM=$(echo "$resmeta" | curl -sLX PUT "http://css-api:8500/api/v1/objects/${RESOURCE_ORG}/${RESOURCE_TYPE}/${justDirName}" --data @-)
-
-	if [ "$ADDM" == "" ]
-	then
-		echo -e "$resmeta \nadded successfully"
-	else
-		echo -e "$resmeta \nPUT returned:"
-	 	echo $ADDM
-	fi
-
-	ADDF=$(curl -sLX PUT --header 'Content-Type:application/octet-stream' "http://css-api:8500/api/v1/objects/${RESOURCE_ORG}/${RESOURCE_TYPE}/${justDirName}/data" --data-binary @${justDirName}.tgz)
-
-	if [ "$ADDF" == "" ]
-	then
-		echo -e "Data file ${justDirName}.tgz added successfully"
-	else
-		echo -e "Data file PUT returned:"
-	 	echo $ADDF
-	fi
-
+	$EXEC_DIR/deploy_file.sh /root/resources/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG1} ${RESOURCE_TYPE} none none
+	$EXEC_DIR/deploy_file.sh /root/resources/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG2} ${RESOURCE_TYPE} none none
 
 	cd ..
 done

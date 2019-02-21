@@ -18,6 +18,7 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/resource"
 	"github.com/open-horizon/anax/worker"
 	"golang.org/x/sys/unix"
 	"io"
@@ -189,12 +190,16 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 			return nil, err
 		}
 
-		// Add a filesystem binding for the FSS (ESS) API's unix domain socket.
-		service.Binds = append(service.Binds, fmt.Sprintf("%v:%v", uds, uds))
+		// If the FSS is using a unix domain socket listener, add a filesystem binding for it.
+		if uds != "" {
+			service.Binds = append(service.Binds, fmt.Sprintf("%v:%v", uds, uds))
+		}
 
 		// Add a filesystem binding for the FSS (ESS) API authentication credentials.
-		//service.Binds = append(service.Binds, fmt.Sprintf("%v:%v", path.Join(w.BaseWorker.Manager.Config.GetFileSyncServiceAuthPath(), agreementId), config.HZN_FSS_AUTH_MOUNT))
-		service.Binds = append(service.Binds, fmt.Sprintf("%v:%v", w.GetAuthenticationManager().GetCredentialPath(agreementId), config.HZN_FSS_AUTH_MOUNT))
+		service.Binds = append(service.Binds, fmt.Sprintf("%v:%v:ro", w.GetAuthenticationManager().GetCredentialPath(agreementId), config.HZN_FSS_AUTH_MOUNT))
+
+		// Add a filesystem binding for the FSS (ESS) API SSL client certificate.
+		service.Binds = append(service.Binds, fmt.Sprintf("%v:%v:ro", w.Config.GetESSSSLClientCertPath(), config.HZN_FSS_CERT_MOUNT))
 
 		// Create the volume map based on the container paths being bound to the host.
 		// The bind string looks like this: <host-path>:<container-path>:<ro> where ro means readonly and is optional.
@@ -388,14 +393,14 @@ type ContainerWorker struct {
 	db                *bolt.DB
 	client            *docker.Client
 	iptables          *iptables.IPTables
-	authMgr           *AuthenticationManager
+	authMgr           *resource.AuthenticationManager
 }
 
 func (cw *ContainerWorker) GetClient() *docker.Client {
 	return cw.client
 }
 
-func (cw *ContainerWorker) GetAuthenticationManager() *AuthenticationManager {
+func (cw *ContainerWorker) GetAuthenticationManager() *resource.AuthenticationManager {
 	return cw.authMgr
 }
 
@@ -411,11 +416,11 @@ func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, e
 		db:         nil,
 		client:     client,
 		iptables:   nil,
-		authMgr:    nil,
+		authMgr:    resource.NewAuthenticationManager(config.GetFileSyncServiceAuthPath()),
 	}, nil
 }
 
-func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB) *ContainerWorker {
+func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB, am *resource.AuthenticationManager) *ContainerWorker {
 
 	// if config.Edge.ServiceStorage is not empty, then we assume that the local file system directory will
 	// be used for the storage of the service container.
@@ -439,7 +444,7 @@ func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB) 
 			db:         db,
 			client:     client,
 			iptables:   ipt,
-			authMgr:    NewAuthenticationManager(config.GetFileSyncServiceAuthPath()),
+			authMgr:    am,
 		}
 		worker.SetDeferredDelay(15)
 
@@ -522,7 +527,7 @@ func (w *ContainerWorker) NewEvent(incoming events.Message) {
 		msg, _ := incoming.(*events.NodeShutdownCompleteMessage)
 		switch msg.Event().Id {
 		case events.UNCONFIGURE_COMPLETE:
-			w.Commands <- worker.NewTerminateCommand("shutdown")
+			w.Commands <- NewNodeUnconfigCommand(msg)
 		}
 
 	default: // nothing
@@ -1022,7 +1027,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 	} else {
 		// The volume has been specified in the binds section of the deployment config in the WorkloadConfigureCommand and
 		// ContainerConfigureCommand command handler section.
-		// No need to create volume separately here becuase docker will automatically create it if it does not exist.
+		// No need to create volume separately here because docker will automatically create it if it does not exist.
 	}
 
 	// Create the FSS authentication credentials for this container.
@@ -1274,8 +1279,12 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				deploymentDesc.Services[serviceName].AddFilesystemBinding(fmt.Sprintf("%v:%v:rw", dir, "/service_config"))
 			}
 
+			// Each service has an identity that is based on its service defintion URL and Org. This identity is what we can use to
+			// authenticate a service to an API that is hosted by Anax.
+			serviceIdentity := cutil.FormOrgSpecUrl(cutil.NormalizeURL(ags[0].RunningWorkload.URL), ags[0].RunningWorkload.Org)
+
 			// Create the docker configuration and launch the containers.
-			if deploymentConfig, err := b.ResourcesCreate(agreementId, cmd.AgreementLaunchContext.AgreementProtocol, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_children_networks, ags[0].RunningWorkload.URL); err != nil {
+			if deploymentConfig, err := b.ResourcesCreate(agreementId, cmd.AgreementLaunchContext.AgreementProtocol, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_children_networks, serviceIdentity); err != nil {
 				eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error starting containers: %v", err), persistence.EC_ERROR_START_CONTAINER, ags[0])
 				glog.Errorf("Error starting containers: %v", err)
 				b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, deploymentConfig) // still using deployment here, need it to shutdown containers
@@ -1400,8 +1409,12 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		// Indicate that this deployment description is part of the infrastructure
 		deploymentDesc.Infrastructure = true
 
+		// Each service has an identity that is based on its service defintion URL and Org. This identity is what we can use to
+		// authenticate a service to an API that is hosted by Anax.
+		serviceIdentity := cutil.FormOrgSpecUrl(cutil.NormalizeURL(lc.ServicePathElement.URL), lc.ServicePathElement.Org)
+
 		// Get the container started.
-		if deployment, err := b.ResourcesCreate(lc.Name, "", &lc.Configure, deploymentDesc, []byte(""), *lc.EnvironmentAdditions, ms_children_networks, lc.ServicePathElement.URL); err != nil {
+		if deployment, err := b.ResourcesCreate(lc.Name, "", &lc.Configure, deploymentDesc, []byte(""), *lc.EnvironmentAdditions, ms_children_networks, serviceIdentity); err != nil {
 			log_str := fmt.Sprintf("Error starting containers for agreement %v: %v", lc.AgreementIds, err)
 			if lc.IsRetry {
 				log_str = fmt.Sprintf("Error restarting containers for agreements %v: %v", lc.AgreementIds, err)
@@ -1572,6 +1585,12 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 		// send the event to let others know that the microservice clean up has been processed
 		b.Messages() <- events.NewMicroserviceContainersDestroyedMessage(events.CONTAINER_DESTROYED, cmd.MsInstKey)
+
+	case *NodeUnconfigCommand:
+		if err := b.GetAuthenticationManager().RemoveAll(); err != nil {
+			glog.Errorf("Error handling node unconfig command: %v", err)
+		}
+		b.Commands <- worker.NewTerminateCommand("shutdown")
 
 	default:
 		return false

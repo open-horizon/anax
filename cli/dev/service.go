@@ -56,10 +56,10 @@ func ServiceNew(homeDirectory string, org string, dconfig string) {
 	fmt.Printf("Created horizon metadata files in %v. Edit these files to define and configure your new %v.\n", dir, SERVICE_COMMAND)
 }
 
-func ServiceStartTest(homeDirectory string, userInputFile string) {
+func ServiceStartTest(homeDirectory string, userInputFile string, configFiles []string, configType string) {
 
 	// Allow the right plugin to start a test of this service.
-	startErr := plugin_registry.DeploymentConfigPlugins.StartTest(homeDirectory, userInputFile)
+	startErr := plugin_registry.DeploymentConfigPlugins.StartTest(homeDirectory, userInputFile, configFiles, configType)
 	if startErr != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "%v", startErr)
 	}
@@ -78,7 +78,7 @@ func ServiceStopTest(homeDirectory string) {
 
 }
 
-func ServiceValidate(homeDirectory string, userInputFile string) {
+func ServiceValidate(homeDirectory string, userInputFile string, configFiles []string, configType string) []string {
 
 	// Get the setup info and context for running the command.
 	dir, err := setup(homeDirectory, true, false, "")
@@ -92,5 +92,9 @@ func ServiceValidate(homeDirectory string, userInputFile string) {
 
 	CommonProjectValidation(dir, userInputFile, SERVICE_COMMAND, SERVICE_VERIFY_COMMAND)
 
+	absFiles := FileValidation(configFiles, configType, SERVICE_COMMAND, SERVICE_VERIFY_COMMAND)
+
 	fmt.Printf("Service project %v verified.\n", dir)
+
+	return absFiles
 }

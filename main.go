@@ -126,6 +126,9 @@ func main() {
 		pm = policyManager
 	}
 
+	// Initialize the shared authentication manager for service containers to authentication to the agent.
+	authm := resource.NewAuthenticationManager(cfg.GetFileSyncServiceAuthPath())
+
 	// start workers
 	workers := worker.NewMessageHandlerRegistry()
 
@@ -139,10 +142,10 @@ func main() {
 		workers.Add(agreement.NewAgreementWorker("Agreement", cfg, db, pm))
 		workers.Add(governance.NewGovernanceWorker("Governance", cfg, db, pm))
 		workers.Add(exchange.NewExchangeMessageWorker("Exchange", cfg, db))
-		workers.Add(container.NewContainerWorker("Container", cfg, db))
+		workers.Add(container.NewContainerWorker("Container", cfg, db, authm))
 		workers.Add(torrent.NewTorrentWorker("Torrent", cfg, db))
 		workers.Add(helm.NewHelmWorker("Helm", cfg, db))
-		workers.Add(resource.NewResourceWorker("Resource", cfg, db))
+		workers.Add(resource.NewResourceWorker("Resource", cfg, db, authm))
 	}
 
 	// Get into the event processing loop until anax shuts itself down.

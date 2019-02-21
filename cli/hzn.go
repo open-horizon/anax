@@ -248,7 +248,7 @@ Environment Variables:
 	listDetailedEventlogs := eventlogListCmd.Flag("long", "List event logs with details.").Short('l').Bool()
 	listSelectedEventlogs := eventlogListCmd.Flag("select", "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.").Short('s').Strings()
 
-	devCmd := app.Command("dev", "Developmnt tools for creation of services.")
+	devCmd := app.Command("dev", "Development tools for creation of services.")
 	devHomeDirectory := devCmd.Flag("directory", "Directory containing Horizon project metadata.").Short('d').String()
 
 	devServiceCmd := devCmd.Command("service", "For working with a service project.")
@@ -257,6 +257,8 @@ Environment Variables:
 	devServiceNewCmdCfg := devServiceNewCmd.Flag("dconfig", "Indicates the type of deployment that will be used, e.g. native (the default), or helm.").Short('c').Default("native").String()
 	devServiceStartTestCmd := devServiceCmd.Command("start", "Run a service in a mocked Horizon Agent environment.")
 	devServiceUserInputFile := devServiceStartTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
+	devServiceConfigFile := devServiceStartTestCmd.Flag("configFile", "File to be made available through the sync service APIs. This flag can be repeated to populate multiple files.").Short('m').Strings()
+	devServiceConfigType := devServiceStartTestCmd.Flag("type", "The type of file to be made available through the sync service APIs. All config files are presumed to be of the same type. This flag is required if any configFiles are specified.").Short('t').String()
 	devServiceStopTestCmd := devServiceCmd.Command("stop", "Stop a service that is running in a mocked Horizon Agent environment.")
 	devServiceValidateCmd := devServiceCmd.Command("verify", "Validate the project for completeness and schema compliance.")
 	devServiceVerifyUserInputFile := devServiceValidateCmd.Flag("userInputFile", "File containing user input values for verification of a project.").Short('f').String()
@@ -264,9 +266,9 @@ Environment Variables:
 	devDependencyCmd := devCmd.Command("dependency", "For working with project dependencies.")
 	devDependencyCmdSpecRef := devDependencyCmd.Flag("specRef", "The URL of the service dependency in the exchange. Mutually exclusive with -p and --url.").Short('s').String()
 	devDependencyCmdURL := devDependencyCmd.Flag("url", "The URL of the service dependency in the exchange. Mutually exclusive with -p and --specRef.").String()
-	devDependencyCmdOrg := devDependencyCmd.Flag("org", "The Org of the service or service dependency in the exchange. Mutually exclusive with -p.").Short('o').String()
+	devDependencyCmdOrg := devDependencyCmd.Flag("org", "The Org of the service dependency in the exchange. Mutually exclusive with -p.").Short('o').String()
 	devDependencyCmdVersion := devDependencyCmd.Flag("ver", "(optional) The Version of the service dependency in the exchange. Mutually exclusive with -p.").String()
-	devDependencyCmdArch := devDependencyCmd.Flag("arch", "(optional) The hardware Architecture of the service or service dependency in the exchange. Mutually exclusive with -p.").Short('a').String()
+	devDependencyCmdArch := devDependencyCmd.Flag("arch", "(optional) The hardware Architecture of the service dependency in the exchange. Mutually exclusive with -p.").Short('a').String()
 	devDependencyFetchCmd := devDependencyCmd.Command("fetch", "Retrieving Horizon metadata for a new dependency.")
 	devDependencyFetchCmdProject := devDependencyFetchCmd.Flag("project", "Horizon project containing the definition of a dependency. Mutually exclusive with -s -o --ver -a and --url.").Short('p').ExistingDir()
 	devDependencyFetchCmdUserPw := devDependencyFetchCmd.Flag("user-pw", "Horizon Exchange user credentials to query exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
@@ -421,11 +423,11 @@ Environment Variables:
 	case devServiceNewCmd.FullCommand():
 		dev.ServiceNew(*devHomeDirectory, *devServiceNewCmdOrg, *devServiceNewCmdCfg)
 	case devServiceStartTestCmd.FullCommand():
-		dev.ServiceStartTest(*devHomeDirectory, *devServiceUserInputFile)
+		dev.ServiceStartTest(*devHomeDirectory, *devServiceUserInputFile, *devServiceConfigFile, *devServiceConfigType)
 	case devServiceStopTestCmd.FullCommand():
 		dev.ServiceStopTest(*devHomeDirectory)
 	case devServiceValidateCmd.FullCommand():
-		dev.ServiceValidate(*devHomeDirectory, *devServiceVerifyUserInputFile)
+		dev.ServiceValidate(*devHomeDirectory, *devServiceVerifyUserInputFile, []string{}, "")
 	case devDependencyFetchCmd.FullCommand():
 		dev.DependencyFetch(*devHomeDirectory, *devDependencyFetchCmdProject, *devDependencyCmdSpecRef, *devDependencyCmdURL, *devDependencyCmdOrg, *devDependencyCmdVersion, *devDependencyCmdArch, *devDependencyFetchCmdUserPw, *devDependencyFetchCmdKeyFiles, *devDependencyFetchCmdUserInputFile)
 	case devDependencyListCmd.FullCommand():

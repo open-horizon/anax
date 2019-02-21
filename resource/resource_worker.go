@@ -15,9 +15,10 @@ type ResourceWorker struct {
 	worker.BaseWorker // embedded field
 	db                *bolt.DB
 	rm                *ResourceManager
+	am                *AuthenticationManager
 }
 
-func NewResourceWorker(name string, config *config.HorizonConfig, db *bolt.DB) *ResourceWorker {
+func NewResourceWorker(name string, config *config.HorizonConfig, db *bolt.DB, am *AuthenticationManager) *ResourceWorker {
 
 	var ec *worker.BaseExchangeContext
 	dev, _ := persistence.FindExchangeDevice(db)
@@ -29,6 +30,7 @@ func NewResourceWorker(name string, config *config.HorizonConfig, db *bolt.DB) *
 		BaseWorker: worker.NewBaseWorker(name, config, ec),
 		db:         db,
 		rm:         NewResourceManager(config),
+		am:         am,
 	}
 
 	glog.Info(reslog(fmt.Sprintf("Starting Resource worker")))
@@ -51,28 +53,11 @@ func (w *ResourceWorker) NewEvent(incoming events.Message) {
 		w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.Config.Collaborators.HTTPClientFactory)
 		w.Commands <- NewNodeConfigCommand(msg)
 
-
-	// case *events.LoadContainerMessage:
-	// 	msg, _ := incoming.(*events.LoadContainerMessage)
-	// 	w.Commands <- NewDownloadCommand(msg.LaunchContext().GetServiceReference(), msg.LaunchContext())
-
-	// case *events.AgreementReachedMessage:
-	// 	msg, _ := incoming.(*events.AgreementReachedMessage)
-
-	// 	// Check the deployment config to see if it's a native Horizon deployment. If not, ignore the event.
-	// 	deploymentConfig := msg.LaunchContext().ContainerConfig().Deployment
-	// 	if _, err := containermessage.GetNativeDeployment(deploymentConfig); err != nil {
-	// 		glog.Warningf(reslog(fmt.Sprintf("ignoring deployment: %v", err)))
-	// 	}
-
-	// 	// Queue up a request to download a resource
-	// 	w.Commands <- NewDownloadCommand(msg.LaunchContext().GetServiceReference(), msg.LaunchContext())
-
 	case *events.NodeShutdownCompleteMessage:
 		msg, _ := incoming.(*events.NodeShutdownCompleteMessage)
 		switch msg.Event().Id {
 		case events.UNCONFIGURE_COMPLETE:
-			w.Commands <- worker.NewTerminateCommand("shutdown")
+			w.Commands <- NewNodeUnconfigCommand(msg)
 		}
 
 	default: //nothing
@@ -90,6 +75,12 @@ func (w *ResourceWorker) CommandHandler(command worker.Command) bool {
 		cmd, _ := command.(*NodeConfigCommand)
 		if err := w.handleNodeConfigCommand(cmd); err != nil {
 			glog.Errorf(reslog(fmt.Sprintf("Error handling node config command: %v", err)))
+		}
+
+	case *NodeUnconfigCommand:
+		cmd, _ := command.(*NodeUnconfigCommand)
+		if err := w.handleNodeUnconfigCommand(cmd); err != nil {
+			glog.Errorf(reslog(fmt.Sprintf("Error handling node unconfig command: %v", err)))
 		}
 
 	default:
@@ -111,12 +102,18 @@ func (w *ResourceWorker) NoWorkHandler() {
 // The node has just been configured so we can start functions that need node credentials to login.
 func (w *ResourceWorker) handleNodeConfigCommand(cmd *NodeConfigCommand) error {
 	if cmd.msg.Pattern() != "" {
-		w.rm.NodeConfigUpdate(cmd.msg.Pattern(), cmd.msg.DeviceId(), cmd.msg.Org())
-		return w.rm.StartFileSyncService()
+		w.rm.NodeConfigUpdate(cmd.msg.Org(), cmd.msg.Pattern(), cmd.msg.DeviceId(), cmd.msg.Token())
+		return w.rm.StartFileSyncService(w.am)
 	}
 	return nil
 }
 
+// The node has just been unconfigured so we can stop the file sync service.
+func (w *ResourceWorker) handleNodeUnconfigCommand(cmd *NodeUnconfigCommand) error {
+	w.rm.StopFileSyncService()
+	w.Commands <- worker.NewTerminateCommand("shutdown")
+	return nil
+}
 
 // Utility logging function
 var reslog = func(v interface{}) string {

@@ -11,7 +11,7 @@ type DeploymentConfigPlugin interface {
 	GetContainerImages(dep interface{}) (bool, []string, error)
 	DefaultConfig() interface{}
 	Validate(dep interface{}) (bool, error)
-	StartTest(homeDirectory string, userInputFile string) bool
+	StartTest(homeDirectory string, userInputFile string, configFiles []string, configType string) bool
 	StopTest(homeDirectory string) bool
 }
 
@@ -69,9 +69,9 @@ func (d DeploymentConfigRegistry) ValidatedByOne(dep interface{}) error {
 // Ask each plugin to attempt to start the project in test mode. Plugins are called
 // until one of them claims ownership of the deployment config. If no error is
 // returned, then one of the plugins has claimed the deployment config.
-func (d DeploymentConfigRegistry) StartTest(homeDirectory string, userInputFile string) error {
+func (d DeploymentConfigRegistry) StartTest(homeDirectory string, userInputFile string, configFiles []string, configType string) error {
 	for _, p := range d {
-		if owned := p.StartTest(homeDirectory, userInputFile); owned {
+		if owned := p.StartTest(homeDirectory, userInputFile, configFiles, configType); owned {
 			return nil
 		}
 	}
