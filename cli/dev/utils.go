@@ -24,14 +24,22 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
+// Constants that hold the name of env vars used with the context of the hzn dev commands.
 const DEVTOOL_HZN_ORG = "HZN_ORG_ID"
 const DEVTOOL_HZN_USER = "HZN_EXCHANGE_USER_AUTH"
 const DEVTOOL_HZN_EXCHANGE_URL = "HZN_EXCHANGE_URL"
 const DEVTOOL_HZN_DEVICE_ID = "HZN_DEVICE_ID"
 const DEVTOOL_HZN_PATTERN = "HZN_PATTERN"
+
+const DEVTOOL_HZN_FSS_IMAGE_TAG = "HZN_DEV_FSS_IMAGE_TAG"
+const DEVTOOL_HZN_FSS_CSS_PORT = "HZN_DEV_FSS_CSS_PORT"
+const DEVTOOL_HZN_FSS_MONGO_IMAGE = "HZN_DEV_FSS_MONGO_IMAGE"
+const DEVTOOL_HZN_FSS_WORKING_DIR = "HZN_DEV_FSS_WORKING_DIR"
+const DEFAULT_DEVTOOL_HZN_FSS_WORKING_DIR = "/tmp/hzndev/"
 
 const DEFAULT_WORKING_DIR = "horizon"
 const DEFAULT_DEPENDENCY_DIR = "dependencies"
@@ -180,6 +188,28 @@ func CommonProjectValidation(dir string, userInputFile string, projectType strin
 	}
 }
 
+// Validate that the input list of files actually exist.
+func FileValidation(configFiles []string, configType string, projectType string, cmd string) []string {
+
+	if len(configFiles) > 0 && configType == "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' Must specify configuration file type (-t) when a configuration file is specified (-m).", projectType, cmd)
+	}
+
+	absoluteFiles := make([]string, 0, 5)
+
+	for _, fileRef := range configFiles {
+		if absFileRef, err := filepath.Abs(fileRef); err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' configuration file %v error %v", projectType, cmd, fileRef, err)
+		} else if _, err := os.Stat(absFileRef); err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' configuration file %v error %v", projectType, cmd, fileRef, err)
+		} else {
+			absoluteFiles = append(absoluteFiles, absFileRef)
+		}
+	}
+
+	return absoluteFiles
+}
+
 func AbstractServiceValidation(dir string) error {
 	if verr := ValidateServiceDefinition(dir, SERVICE_DEFINITION_FILE); verr != nil {
 		return errors.New(fmt.Sprintf("project does not validate. %v ", verr))
@@ -262,22 +292,28 @@ func createEnvVarMap(agreementId string,
 	configVar map[string]interface{},
 	defaultVar []exchange.UserInput,
 	org string,
-	defaultRAM int64,
-	attrConverter func(attributes []persistence.Attribute, envvars map[string]string, prefix string, defaultRAM int64) (map[string]string, error)) (map[string]string, error) {
+	cw *container.ContainerWorker,
+	attrConverter func(attributes []persistence.Attribute,
+		envvars map[string]string,
+		prefix string,
+		defaultRAM int64) (map[string]string, error),
+	) (map[string]string, error) {
 
 	// First, add in the Horizon platform env vars.
 	envvars := make(map[string]string)
 
-	// Allow device id override if the env var is set.
-	testDeviceId, _ := os.Hostname()
-	if os.Getenv(DEVTOOL_HZN_DEVICE_ID) != "" {
-		testDeviceId = os.Getenv(DEVTOOL_HZN_DEVICE_ID)
-	}
-
-	pattern := os.Getenv(DEVTOOL_HZN_PATTERN)
-
-	exchangeURL := os.Getenv(DEVTOOL_HZN_EXCHANGE_URL)
-	cutil.SetPlatformEnvvars(envvars, config.ENVVAR_PREFIX, agreementId, testDeviceId, org, workloadPW, exchangeURL, pattern)
+	// Set the env vars that will be passed to the services.
+	cutil.SetPlatformEnvvars(envvars,
+		config.ENVVAR_PREFIX,
+		agreementId,
+		GetNodeId(),
+		org,
+		workloadPW,
+		os.Getenv(DEVTOOL_HZN_EXCHANGE_URL),
+		os.Getenv(DEVTOOL_HZN_PATTERN),
+		cw.Config.GetFileSyncServiceProtocol(),
+		cw.Config.GetFileSyncServiceAPIListen(),
+		strconv.Itoa(int(cw.Config.GetFileSyncServiceAPIPort())))
 
 	// Second, add the Horizon system env vars. Some of these can come from the global section of a user inputs file. To do this we have to
 	// convert the attributes in the userinput file into API attributes so that they can be validity checked. Then they are converted to
@@ -312,7 +348,7 @@ func createEnvVarMap(agreementId string,
 
 	// Fourth, convert all attributes to system env vars.
 	var cerr error
-	envvars, cerr = attrConverter(byValueAttrs, envvars, config.ENVVAR_PREFIX, defaultRAM)
+	envvars, cerr = attrConverter(byValueAttrs, envvars, config.ENVVAR_PREFIX, cw.Config.Edge.DefaultServiceRegistrationRAM)
 	if cerr != nil {
 		return nil, errors.New(fmt.Sprintf("global attribute conversion error: %v", cerr))
 	}
@@ -341,6 +377,11 @@ func createContainerWorker() (*container.ContainerWorker, error) {
 		Edge: config.Config{
 			ServiceStorage:                workloadStorageDir,
 			DefaultServiceRegistrationRAM: 0,
+			FileSyncService:               config.FSSConfig{
+				AuthenticationPath:        path.Join(GetDevWorkingDirectory(), "auth"),
+				APIListen:                 path.Join(GetDevWorkingDirectory(), "essapi.sock"),
+				APIProtocol:               "unix",
+			},
 		},
 		AgreementBot:  config.AGConfig{},
 		Collaborators: config.Collaborators{},
@@ -531,7 +572,7 @@ func StartContainers(deployment *containermessage.DeploymentDescription,
 	configVars := getConfiguredVariables(configUserInputs, specRef)
 
 	// Now that we have the configured variables, turn everything into environment variables for the container.
-	environmentAdditions, enverr := createEnvVarMap(agId, wlpw, globals, specRef, configVars, defUserInputs, org, cw.Config.Edge.DefaultServiceRegistrationRAM, persistence.AttributesToEnvvarMap)
+	environmentAdditions, enverr := createEnvVarMap(agId, wlpw, globals, specRef, configVars, defUserInputs, org, cw, persistence.AttributesToEnvvarMap)
 	if enverr != nil {
 		return nil, errors.New(fmt.Sprintf("unable to create environment variables"))
 	}
@@ -543,7 +584,7 @@ func StartContainers(deployment *containermessage.DeploymentDescription,
 	fmt.Printf("Start %v: %v with instance id prefix %v\n", logName, dc.CLIString(), id)
 
 	// Start the dependent service container.
-	_, startErr := cw.ResourcesCreate(id, "", nil, deployment, []byte(""), environmentAdditions, msNetworks)
+	_, startErr := cw.ResourcesCreate(id, "", nil, deployment, []byte(""), environmentAdditions, msNetworks, cutil.FormOrgSpecUrl(cutil.NormalizeURL(specRef), org))
 	if startErr != nil {
 		return nil, errors.New(fmt.Sprintf("unable to start container using %v, error: %v", dc.CLIString(), startErr))
 	}
@@ -641,7 +682,7 @@ func getImageReferenceAsTorrent(serviceDef *exchange.ServiceDefinition) policy.T
 // Get the images into the local docker server for services
 func getContainerImages(containerConfig *events.ContainerConfig, pemFiles []string, currentUIs *register.InputFile) error {
 
-	// Create a temporary anax config object to hold the HTTP config we need to contact the Image server.
+	// Create a temporary anax config object to hold config for the shared runtime functions.
 	cfg := &config.HorizonConfig{
 		Edge: config.Config{
 			TrustSystemCACerts:     true,
@@ -686,4 +727,21 @@ func getContainerImages(containerConfig *events.ContainerConfig, pemFiles []stri
 	}
 
 	return nil
+}
+
+func GetNodeId() string {
+	// Allow device id override if the env var is set.
+	testDeviceId, _ := os.Hostname()
+	if os.Getenv(DEVTOOL_HZN_DEVICE_ID) != "" {
+		testDeviceId = os.Getenv(DEVTOOL_HZN_DEVICE_ID)
+	}
+	return testDeviceId
+}
+
+func GetDevWorkingDirectory() string {
+	wd := os.Getenv(DEVTOOL_HZN_FSS_WORKING_DIR)
+	if wd == "" {
+		wd = DEFAULT_DEVTOOL_HZN_FSS_WORKING_DIR
+	}
+	return wd
 }

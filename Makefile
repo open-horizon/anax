@@ -26,6 +26,30 @@ DOCKER_IMAGE_LATEST = $(DOCKER_IMAGE_BASE):latest
 # By default we do not use cache for the anax container build, so it picks up the latest horizon deb pkgs. If you do want to use the cache: DOCKER_MAYBE_CACHE='' make docker-image
 DOCKER_MAYBE_CACHE ?= --no-cache
 
+# The CSS and its production container. This container is NOT used by hzn dev.
+CSS_EXECUTABLE := css/cloud-sync-service
+CSS_CONTAINER_DIR := css
+CSS_IMAGE_VERSION ?= 1.0.0
+CSS_IMAGE_BASE = image/cloud-sync-service
+CSS_IMAGE_NAME = openhorizon/$(arch)_cloud-sync-service
+CSS_IMAGE = $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION)
+CSS_IMAGE_STG = $(CSS_IMAGE_NAME):testing
+CSS_IMAGE_PROD = $(CSS_IMAGE_NAME):stable
+# the latest tag is the same as stable
+CSS_IMAGE_LATEST = $(CSS_IMAGE_NAME):latest
+
+# The hzn dev ESS/CSS and its container.
+ESS_EXECUTABLE := ess/edge-sync-service
+ESS_CONTAINER_DIR := ess
+ESS_IMAGE_VERSION ?= 1.0.0
+ESS_IMAGE_BASE = image/edge-sync-service
+ESS_IMAGE_NAME = openhorizon/$(arch)_edge-sync-service
+ESS_IMAGE = $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION)
+ESS_IMAGE_STG = $(ESS_IMAGE_NAME):testing
+ESS_IMAGE_PROD = $(ESS_IMAGE_NAME):stable
+# the latest tag is the same as stable
+ESS_IMAGE_LATEST = $(ESS_IMAGE_NAME):latest
+
 export TMPGOPATH ?= $(TMPDIR)$(EXECUTABLE)-gopath
 export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon/$(EXECUTABLE)
 export PATH := $(TMPGOPATH)/bin:$(PATH)
@@ -57,7 +81,7 @@ ifndef verbose
 endif
 
 all: deps all-nodeps
-all-nodeps: gopathlinks $(EXECUTABLE) $(CLI_EXECUTABLE)
+all-nodeps: gopathlinks $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE)
 
 $(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathlinks
 	@echo "Producing $(EXECUTABLE) given arch: $(arch)"
@@ -79,6 +103,17 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 	  mkdir -p $(CLI_COMPLETION_DIR) && $(CLI_EXECUTABLE) --completion-script-bash > $(CLI_COMPLETION_DIR)/hzn_bash_autocomplete.sh; \
 	fi
 
+$(CSS_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathlinks
+	@echo "Producing $(CSS_EXECUTABLE) given arch: $(arch)"
+	cd $(PKGPATH) && \
+	  export GOPATH=$(TMPGOPATH); \
+	    $(COMPILE_ARGS) go build -o $(CSS_EXECUTABLE) css/cmd/cloud-sync-service/main.go;
+
+$(ESS_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathlinks
+	@echo "Producing $(ESS_EXECUTABLE) given arch: $(arch)"
+	cd $(PKGPATH) && \
+	  export GOPATH=$(TMPGOPATH); \
+	    $(COMPILE_ARGS) go build -o $(ESS_EXECUTABLE) ess/cmd/edge-sync-service/main.go;
 
 # Build the horizon-cli pkg for mac
 #todo: these targets should be moved into the official horizon build process
@@ -193,6 +228,40 @@ promote-docker:
 
 promote-mac-pkg-and-docker: promote-mac-pkg promote-docker
 
+css-docker-image: css-clean
+	@echo "Producing CSS docker image $(CSS_IMAGE)"
+	cd $(CSS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(CSS_IMAGE) -f ./$(CSS_IMAGE_BASE)-$(arch)/Dockerfile . && \
+	docker tag $(CSS_IMAGE) $(CSS_IMAGE_STG); \
+
+css-docker-push-only:
+	@echo "Pushing CSS docker image $(CSS_IMAGE)"
+	docker push $(CSS_IMAGE)
+	docker push $(CSS_IMAGE_STG)
+
+css-promote:
+	@echo "Promoting $(CSS_IMAGE_STG)"
+	docker tag $(CSS_IMAGE_STG) $(CSS_IMAGE_PROD)
+	docker push $(CSS_IMAGE_PROD)
+	docker tag $(CSS_IMAGE_STG) $(CSS_IMAGE_LATEST)
+	docker push $(CSS_IMAGE_LATEST)
+
+ess-docker-image: ess-clean
+	@echo "Producing ESS docker image $(ESS_IMAGE)"
+	cd $(ESS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(ESS_IMAGE) -f ./$(ESS_IMAGE_BASE)-$(arch)/Dockerfile . && \
+	docker tag $(ESS_IMAGE) $(ESS_IMAGE_STG); \
+
+ess-docker-push-only:
+	@echo "Pushing ESS docker image $(ESS_IMAGE)"
+	docker push $(ESS_IMAGE)
+	docker push $(ESS_IMAGE_STG)
+
+ess-promote:
+	@echo "Promoting $(ESS_IMAGE_STG)"
+	docker tag $(ESS_IMAGE_STG) $(ESS_IMAGE_PROD)
+	docker push $(ESS_IMAGE_PROD)
+	docker tag $(ESS_IMAGE_STG) $(ESS_IMAGE_LATEST)
+	docker push $(ESS_IMAGE_LATEST)
+
 clean: mostlyclean
 	@echo "Clean"
 	find ./vendor -maxdepth 1 -not -path ./vendor -and -not -iname "vendor.json" -print0 | xargs -0 rm -Rf
@@ -201,10 +270,18 @@ ifneq ($(TMPGOPATH),$(GOPATH))
 endif
 	rm -rf ./contracts
 
-mostlyclean:
+mostlyclean: css-clean ess-clean
 	@echo "Mostlyclean"
-	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE)
+	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE)
 	-docker rmi $(DOCKER_IMAGE) 2> /dev/null || :
+
+css-clean:
+	-docker rmi $(CSS_IMAGE) 2> /dev/null || :
+	-docker rmi $(CSS_IMAGE_STG) 2> /dev/null || :
+
+ess-clean:
+	-docker rmi $(ESS_IMAGE) 2> /dev/null || :
+	-docker rmi $(ESS_IMAGE_STG) 2> /dev/null || :
 
 deps: $(TMPGOPATH)/bin/govendor
 	@echo "Fetching dependencies"
@@ -293,4 +370,4 @@ diagrams:
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/protocolSequenceDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/horizonSequenceDiagram.txt
 
-.PHONY: check clean deps format gopathlinks install lint mostlyclean pull test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-docker gen-mac-key install-mac-key
+.PHONY: check clean deps format gopathlinks install lint mostlyclean pull test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-docker gen-mac-key install-mac-key css-docker-image ess-promote css-docker-image ess-promote

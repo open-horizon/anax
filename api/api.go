@@ -36,12 +36,12 @@ type BlockchainState struct {
 	servicePort string // the network port of the container
 }
 
-func NewAPIListener(name string, config *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *API {
+func NewAPIListener(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *API {
 	messages := make(chan events.Message)
 
 	listener := &API{
 		Manager: worker.Manager{
-			Config:   config,
+			Config:   cfg,
 			Messages: messages,
 		},
 
@@ -54,7 +54,7 @@ func NewAPIListener(name string, config *config.HorizonConfig, db *bolt.DB, pm *
 		EC:          nil,
 	}
 
-	listener.listen(config.Edge.APIListen)
+	listener.listen(cfg)
 	return listener
 }
 
@@ -108,7 +108,7 @@ func (a *API) router(includeStaticRedirects bool) *mux.Router {
 	return router
 }
 
-func (a *API) listen(apiListen string) {
+func (a *API) listen(cfg *config.HorizonConfig) {
 	glog.Info(apiLogString(fmt.Sprintf("Starting Anax API server")))
 
 	nocache := func(h http.Handler) http.Handler {
@@ -122,11 +122,34 @@ func (a *API) listen(apiListen string) {
 		})
 	}
 
-	// This routine does not need to be a subworker because there is no way to terminate. It will terminate when
+	// This routine does not need to be a subworker because there is no way to terminate it. It will terminate when
 	// the main anax process goes away.
 	go func() {
-		http.ListenAndServe(apiListen, nocache(a.router(true)))
+		http.ListenAndServe(cfg.Edge.APIListen, nocache(a.router(true)))
 	}()
+
+	// // Make sure the socket path is present on the host filesystem.
+	// if _, err := os.Stat(cfg.GetAgentAPIUnixDomainSocketPath()); os.IsNotExist(err) {
+	// 	if err := os.MkdirAll(cfg.GetAgentAPIUnixDomainSocketPath(), 0660); err != nil {
+	// 		panic(err)
+	// 	}
+	// } else if err := os.Remove(cfg.GetAgentAPIUnixDomainSocket()); err != nil {
+
+	// 	// The Unix Domain Socket file has to be removed before we try to bind to it, in case it is left over from
+	// 	// an anax process that failed abruptly.
+	// 	glog.Infof(apiLogString(fmt.Sprintf("Removal of unix domain socket %v, resulted in: %v", cfg.GetAgentAPIUnixDomainSocket(), err)))
+	// }
+
+	// // This routine does not need to be a subworker because there is no way to terminate it. It will terminate when
+	// // the main anax process goes away.
+	// if unixListener, err := net.Listen("unix", cfg.GetAgentAPIUnixDomainSocket()); err != nil {
+	// 	panic(err)
+	// } else {
+	// 	go func() {
+	// 		http.Serve(unixListener, nocache(a.router(true)))
+	// 	}()
+	// }
+
 }
 
 // Worker framework functions

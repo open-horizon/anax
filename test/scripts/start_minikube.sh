@@ -10,9 +10,9 @@ export KUBECONFIG=$HOME/.kube/config
 
 isRoot=$(id -u)
 if [ "${isRoot}" == "0" ]; then
-	minikube start --vm-driver=none
+	minikube start --vm-driver=none --kubernetes-version v1.13.0
 else
-	sudo -E minikube start --vm-driver=none
+	sudo -E minikube start --vm-driver=none --kubernetes-version v1.13.0
 fi
 
 echo "Delaying while minikube starts..."

@@ -162,7 +162,7 @@ if [ $? -ne 0 ]; then exit $?; fi
 
 echo -e "Starting the top level service in the Horizon test environment."
 
-startDev=$(hzn dev service start -v 2>&1)
+startDev=$(hzn dev service start -v -m /root/resources/basicres/basicres.tgz -m /root/resources/multires/multires.tgz -t model 2>&1)
 startedServices=$(echo ${startDev} | sed 's/Running service./Running service.\n/g' | grep -c "Running service.")
 if [ "${startedServices}" != "3" ]; then
     echo -e "${startedServices}"
@@ -173,7 +173,7 @@ if [ "${startedServices}" != "3" ]; then
 fi
 
 echo -e "Waiting for services to run a bit before stopping them."
-sleep 10
+sleep 15
 
 containers=$(docker ps -a)
 restarting=$(echo ${containers} | grep "Restarting")

@@ -154,3 +154,23 @@ func (b *ContainerWorker) NewShutdownMicroserviceCommand(key string) *ShutdownMi
 		MsInstKey: key,
 	}
 }
+
+// ==============================================================================================================
+// This worker command is used to tell the worker than the node is done shutting down and so it can terminate itself.
+type NodeUnconfigCommand struct {
+	msg *events.NodeShutdownCompleteMessage
+}
+
+func (n NodeUnconfigCommand) String() string {
+	return n.ShortString()
+}
+
+func (n NodeUnconfigCommand) ShortString() string {
+	return fmt.Sprintf("NodeUnconfig Command, Msg: %v", n.msg)
+}
+
+func NewNodeUnconfigCommand(msg *events.NodeShutdownCompleteMessage) *NodeUnconfigCommand {
+	return &NodeUnconfigCommand{
+		msg: msg,
+	}
+}

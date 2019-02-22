@@ -129,6 +129,12 @@
 			"revisionTime": "2018-10-02T22:04:33Z"
 		},
 		{
+			"checksumSHA1": "cNp7rNReJHvdSfrIetXS9RGsLSo=",
+			"path": "github.com/docker/distribution/uuid",
+			"revision": "b75069ef13a1de846c0cdf964f5917f5b00c1a47",
+			"revisionTime": "2019-01-17T00:37:37Z"
+		},
+		{
 			"checksumSHA1": "rOHC0haxchPUDGm0Fuqf6bJ51Mk=",
 			"path": "github.com/docker/docker/api/types",
 			"revision": "785fe99bdb7c004acd57d5d65d57ceb256d87ef1",
@@ -393,6 +399,24 @@
 			"revisionTime": "2018-10-12T15:38:25Z"
 		},
 		{
+			"checksumSHA1": "EM5mtWBrQSzTq/vaQpftxQ7UOxI=",
+			"path": "github.com/eclipse/paho.mqtt.golang",
+			"revision": "cb7eb9363b4469c601b1a714447653b720e4e43a",
+			"revisionTime": "2019-01-17T15:08:08Z"
+		},
+		{
+			"checksumSHA1": "ITCnG3uKUnqNXrnnulKokjQKfN4=",
+			"path": "github.com/eclipse/paho.mqtt.golang/packets",
+			"revision": "cb7eb9363b4469c601b1a714447653b720e4e43a",
+			"revisionTime": "2019-01-17T15:08:08Z"
+		},
+		{
+			"checksumSHA1": "ySzd4wbbkGYl9Ch1dJbJOAmNXWQ=",
+			"path": "github.com/etcd-io/bbolt",
+			"revision": "63597a96ec0ad9e6d43c3fc81e809909e0237461",
+			"revisionTime": "2019-01-28T18:11:30Z"
+		},
+		{
 			"checksumSHA1": "IEqgM4mo76X+D7FsZsModdbfFaY=",
 			"path": "github.com/fsouza/go-dockerclient",
 			"revision": "623c4c4b51ec7507502197470dbfbcf77ae877b3",
@@ -417,6 +441,40 @@
 			"revisionTime": "2018-10-16T22:24:07Z"
 		},
 		{
+			"checksumSHA1": "O1v7ZY6psIKMtE2Ma/hp1myzM2o=",
+			"path": "github.com/globalsign/mgo",
+			"revision": "eeefdecb41b842af6dc652aaea4026e8403e62df",
+			"revisionTime": "2018-10-15T13:59:52Z"
+		},
+		{
+			"checksumSHA1": "zdy6XflmESAiFmyptSqpUMfXSyo=",
+			"path": "github.com/globalsign/mgo/bson",
+			"revision": "eeefdecb41b842af6dc652aaea4026e8403e62df",
+			"revisionTime": "2018-10-15T13:59:52Z"
+		},
+		{
+			"checksumSHA1": "//bXQG4HblBwxHJDIW/PklXAxu0=",
+			"path": "github.com/globalsign/mgo/internal/json",
+			"revision": "eeefdecb41b842af6dc652aaea4026e8403e62df",
+			"revisionTime": "2018-10-15T13:59:52Z"
+		},
+		{
+			"checksumSHA1": "loubUcDO2QAStKIlVd7DqSeoEaw=",
+			"path": "github.com/globalsign/mgo/internal/sasl",
+			"revision": "eeefdecb41b842af6dc652aaea4026e8403e62df",
+			"revisionTime": "2018-10-15T13:59:52Z"
+		},
+		{
+			"checksumSHA1": "xjfEsfN7ho6dDOVeUQJhW4KzD2I=",
+			"path": "github.com/globalsign/mgo/internal/scram",
+			"revision": "eeefdecb41b842af6dc652aaea4026e8403e62df",
+			"revisionTime": "2018-10-15T13:59:52Z"
+		},
+		{
+			"path": "github.com/go.etcd.io/bbolt",
+			"revision": ""
+		},
+		{
 			"checksumSHA1": "47nJ3iu1bVvK9jPXwAinFYr4mBU=",
 			"path": "github.com/gogo/protobuf/proto",
 			"revision": "6f222ca7387001523464e651447e272d9d2aa6f6",
@@ -427,6 +485,12 @@
 			"path": "github.com/golang/glog",
 			"revision": "23def4e6c14b4da8ac2ed8007337bc5eb5007998",
 			"revisionTime": "2016-01-25T20:49:56Z"
+		},
+		{
+			"checksumSHA1": "yNyE9MrpDJQAxOxSipSIBgBhuNQ=",
+			"path": "github.com/google/uuid",
+			"revision": "9b3b1e0f5f99ae461456d768e7d301a7acdaa2d8",
+			"revisionTime": "2018-09-17T14:00:05Z"
 		},
 		{
 			"checksumSHA1": "5NQxGXStdEEDvT6IPRtJk7Qg+GQ=",
@@ -457,6 +521,72 @@
 			"path": "github.com/mattn/go-shellwords",
 			"revision": "3c0603ff9671145648171317c30371d805656003",
 			"revisionTime": "2018-10-23T06:56:52Z"
+		},
+		{
+			"checksumSHA1": "12FgspFrBAoRr4QH+jxuWk/+ioQ=",
+			"path": "github.com/open-horizon/edge-sync-service/common",
+			"revision": "4a65823ab228e9a85b4c6b7906abc21cf2e58181",
+			"revisionTime": "2019-02-20T16:01:46Z"
+		},
+		{
+			"checksumSHA1": "HwN55BYwa+eIHDQfHYtMEy3DRDo=",
+			"path": "github.com/open-horizon/edge-sync-service/core/base",
+			"revision": "4a65823ab228e9a85b4c6b7906abc21cf2e58181",
+			"revisionTime": "2019-02-20T16:01:46Z"
+		},
+		{
+			"checksumSHA1": "uTJDfcaKMDNZxmW09MnlRcux/zc=",
+			"path": "github.com/open-horizon/edge-sync-service/core/communications",
+			"revision": "4a65823ab228e9a85b4c6b7906abc21cf2e58181",
+			"revisionTime": "2019-02-20T16:01:46Z"
+		},
+		{
+			"checksumSHA1": "HnCscLC9W2l/YlcxS9CkgRzDHos=",
+			"path": "github.com/open-horizon/edge-sync-service/core/dataURI",
+			"revision": "4a65823ab228e9a85b4c6b7906abc21cf2e58181",
+			"revisionTime": "2019-02-20T16:01:46Z"
+		},
+		{
+			"checksumSHA1": "govi7cUD+B85hJBFJInfqP9a1Ws=",
+			"path": "github.com/open-horizon/edge-sync-service/core/leader",
+			"revision": "4a65823ab228e9a85b4c6b7906abc21cf2e58181",
+			"revisionTime": "2019-02-20T16:01:46Z"
+		},
+		{
+			"checksumSHA1": "hQ/cgtIo0HtIEjAvDyeL+oxTZjE=",
+			"path": "github.com/open-horizon/edge-sync-service/core/security",
+			"revision": "4a65823ab228e9a85b4c6b7906abc21cf2e58181",
+			"revisionTime": "2019-02-20T16:01:46Z"
+		},
+		{
+			"checksumSHA1": "VO9BEjQw/DMLmhHOz36lkyrzFjA=",
+			"path": "github.com/open-horizon/edge-sync-service/core/storage",
+			"revision": "4a65823ab228e9a85b4c6b7906abc21cf2e58181",
+			"revisionTime": "2019-02-20T16:01:46Z"
+		},
+		{
+			"checksumSHA1": "mSLaXXEiDyk7MD83PSsR3s/igtg=",
+			"path": "github.com/open-horizon/edge-utilities/logger",
+			"revision": "aa0a278b8ace23a93f8ef8b890139a801a7e94d8",
+			"revisionTime": "2019-02-20T11:26:40Z"
+		},
+		{
+			"checksumSHA1": "kK7IdbmXxRjVTJE/92vH4/iIb58=",
+			"path": "github.com/open-horizon/edge-utilities/logger/log",
+			"revision": "aa0a278b8ace23a93f8ef8b890139a801a7e94d8",
+			"revisionTime": "2019-02-20T11:26:40Z"
+		},
+		{
+			"checksumSHA1": "Oei8GSncNAosGw8EsgCPH4N2Pyg=",
+			"path": "github.com/open-horizon/edge-utilities/logger/trace",
+			"revision": "aa0a278b8ace23a93f8ef8b890139a801a7e94d8",
+			"revisionTime": "2019-02-20T11:26:40Z"
+		},
+		{
+			"checksumSHA1": "3HtDOzmIZo2tu8d+VcbRjm4cy68=",
+			"path": "github.com/open-horizon/edge-utilities/properties",
+			"revision": "aa0a278b8ace23a93f8ef8b890139a801a7e94d8",
+			"revisionTime": "2019-02-20T11:26:40Z"
 		},
 		{
 			"checksumSHA1": "da+YEJY+nMqad6J7sFQVh2Wed1c=",
@@ -643,6 +773,12 @@
 			"path": "golang.org/x/net/proxy",
 			"revision": "9b4f9f5ad5197c79fd623a3638e70d8b26cef344",
 			"revisionTime": "2018-10-23T11:20:58Z"
+		},
+		{
+			"checksumSHA1": "F+tqxPGFt5x7DKZakbbMmENX1oQ=",
+			"path": "golang.org/x/net/websocket",
+			"revision": "d26f9f9a57f3fab6a695bec0d84433c2c50f8bbf",
+			"revisionTime": "2018-09-25T13:55:50Z"
 		},
 		{
 			"checksumSHA1": "uwjPXJc/NAUhO8yOmqQ/NjNbtL8=",

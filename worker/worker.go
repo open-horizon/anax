@@ -534,23 +534,27 @@ func (workers *MessageHandlerRegistry) ProcessEventMessages() {
 		messageStream = mux(workers, messageStream)
 
 		// Process any new messages on the combined worker message queue.
-		select {
-		case msg := <-messageStream:
-			glog.V(3).Infof(mdLogString(fmt.Sprintf("Handling Message (%T): %v\n", msg, msg.ShortString())))
-			glog.V(5).Infof(mdLogString(fmt.Sprintf("Handling Message (%T): %v\n", msg, msg)))
+		done := false
+		for !done {
+			select {
+			case msg := <-messageStream:
+				glog.V(3).Infof(mdLogString(fmt.Sprintf("Handling Message (%T): %v\n", msg, msg.ShortString())))
+				glog.V(5).Infof(mdLogString(fmt.Sprintf("Handling Message (%T): %v\n", msg, msg)))
 
-			// Push outbound messages into each worker.
-			if successMsg, err := eventHandler(msg, workers); err != nil {
-				// error! do some barfing and then continue
-				glog.Errorf(mdLogString(fmt.Sprintf("Error occurred handling message: %s, Error: %v\n", msg, err)))
-			} else {
-				glog.V(2).Infof(mdLogString(fmt.Sprintf("Success handling message: %s\n", successMsg)))
-			}
-		default:
-			now := time.Now().Unix()
-			if now-last > 30 {
-				glog.V(5).Infof(mdLogString(fmt.Sprintf("No incoming messages for router to handle")))
-				last = now
+				// Push outbound messages into each worker.
+				if successMsg, err := eventHandler(msg, workers); err != nil {
+					// error! do some barfing and then continue
+					glog.Errorf(mdLogString(fmt.Sprintf("Error occurred handling message: %s, Error: %v\n", msg, err)))
+				} else {
+					glog.V(2).Infof(mdLogString(fmt.Sprintf("Success handling message: %s\n", successMsg)))
+				}
+			default:
+				now := time.Now().Unix()
+				if now-last > 30 {
+					glog.V(5).Infof(mdLogString(fmt.Sprintf("No incoming messages for router to handle")))
+					last = now
+				}
+				done = true
 			}
 		}
 

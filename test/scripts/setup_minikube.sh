@@ -11,11 +11,11 @@ fi
 $cprefix apt-get update
 $cprefix apt-get install -y apt-transport-https curl socat
 
-curl -Lo /tmp/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.10.0/bin/linux/amd64/kubectl
+curl -Lo /tmp/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.13.0/bin/linux/amd64/kubectl
 chmod +x /tmp/kubectl
 $cprefix mv /tmp/kubectl /usr/local/bin/
 
-curl -Lo /tmp/minikube https://storage.googleapis.com/minikube-builds/2550/minikube-linux-amd64
+curl -Lo /tmp/minikube https://github.com/kubernetes/minikube/releases/download/v0.30.0/minikube-linux-amd64
 chmod +x /tmp/minikube
 $cprefix mv /tmp/minikube /usr/local/bin/
 
