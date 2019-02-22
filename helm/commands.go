@@ -44,7 +44,11 @@ type MaintenanceCommand struct {
 }
 
 func (c MaintenanceCommand) String() string {
-	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v, Deployment: %v", c.AgreementProtocol, c.AgreementId, c.Deployment.ToString())
+	deployment_string := ""
+	if c.Deployment != nil {
+		deployment_string = c.Deployment.ToString()
+	}
+	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v, Deployment: %v", c.AgreementProtocol, c.AgreementId, deployment_string)
 }
 
 func (c MaintenanceCommand) ShortString() string {

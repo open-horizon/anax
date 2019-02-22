@@ -347,6 +347,7 @@ const CANCEL_IMAGE_SIG_VERIF_FAILURE = 115
 const CANCEL_NODE_SHUTDOWN = 116 // x74
 const CANCEL_MS_IMAGE_FETCH_FAILURE = 117
 const CANCEL_MS_DOWNGRADE_REQUIRED = 118
+const CANCEL_SERVICE_SUSPENDED = 119
 
 // These constants represent consumer cancellation reason codes
 // const AB_CANCEL_NOT_FINALIZED_TIMEOUT = 200  // xc8
@@ -382,6 +383,7 @@ func DecodeReasonCode(code uint64) string {
 		CANCEL_IMAGE_FETCH_AUTH_FAILURE: "authorization failed for image fetching",
 		CANCEL_IMAGE_SIG_VERIF_FAILURE:  "image signature verification failed",
 		CANCEL_NODE_SHUTDOWN:            "node was unconfigured",
+		CANCEL_SERVICE_SUSPENDED:        "service suspended",
 		// AB_CANCEL_NOT_FINALIZED_TIMEOUT: "agreement bot never detected agreement on the blockchain",
 		AB_CANCEL_NO_REPLY:         "agreement bot never received reply to proposal",
 		AB_CANCEL_NEGATIVE_REPLY:   "agreement bot received negative reply",

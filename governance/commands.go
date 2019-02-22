@@ -201,3 +201,17 @@ func (c NodeHeartbeatRestoredCommand) ShortString() string {
 func (w *GovernanceWorker) NewNodeHeartbeatRestoredCommand() *NodeHeartbeatRestoredCommand {
 	return &NodeHeartbeatRestoredCommand{}
 }
+
+// ==============================================================================================================
+// Node heartbeat restored
+type ServiceSuspendedCommand struct {
+	ServiceConfigState []events.ServiceConfigState
+}
+
+func (c ServiceSuspendedCommand) ShortString() string {
+	return fmt.Sprintf("ServiceSuspendedCommand: ServiceConfigState %v.", c.ServiceConfigState)
+}
+
+func (w *GovernanceWorker) NewServiceSuspendedCommand(scs []events.ServiceConfigState) *ServiceSuspendedCommand {
+	return &ServiceSuspendedCommand{ServiceConfigState: scs}
+}

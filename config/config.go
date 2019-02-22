@@ -20,36 +20,37 @@ type HorizonConfig struct {
 
 // This is the configuration options for Edge component flavor of Anax
 type Config struct {
-	ServiceStorage                string // The base storage directory where the service can write or get the data.
-	TorrentDir                    string
-	APIListen                     string
-	DBPath                        string
-	DockerEndpoint                string
-	DockerCredFilePath            string
-	DefaultCPUSet                 string
-	DefaultServiceRegistrationRAM int64
-	StaticWebContent              string
-	PublicKeyPath                 string
-	TrustSystemCACerts            bool   // If equal to true, the HTTP client factory will set up clients that trust CA certs provided by a Linux distribution (see https://golang.org/pkg/crypto/x509/#SystemCertPool and https://golang.org/src/crypto/x509/root_linux.go)
-	CACertsPath                   string // Path to a file containing PEM-encoded x509 certs HTTP clients in Anax will trust (additive to the configuration option "TrustSystemCACerts")
-	ExchangeURL                   string
-	DefaultHTTPClientTimeoutS     uint
-	PolicyPath                    string
-	ExchangeHeartbeat             int    // Seconds between heartbeats
-	ExchangeVersionCheckIntervalM int64  // Exchange version check interval in minutes. The default is 720.
-	AgreementTimeoutS             uint64 // Number of seconds to wait before declaring agreement not finalized in blockchain
-	DVPrefix                      string // When passing agreement ids into a workload container, add this prefix to the agreement id
-	RegistrationDelayS            uint64 // The number of seconds to wait after blockchain init before registering with the exchange. This is for testing initialization ONLY.
-	ExchangeMessageTTL            int    // The number of seconds the exchange will keep this message before automatically deleting it
-	TorrentListenAddr             string // Override the torrent listen address just in case there are conflicts, syntax is "host:port"
-	UserPublicKeyPath             string // The location to store user keys uploaded through the REST API
-	ReportDeviceStatus            bool   // whether to report the device status to the exchange or not.
-	TrustCertUpdatesFromOrg       bool   // whether to trust the certs provided by the organization on the exchange or not.
-	TrustDockerAuthFromOrg        bool   // whether to turst the docker auths provided by the organization on the exchange or not.
-	ServiceUpgradeCheckIntervalS  int64  // service upgrade check interval in seconds. The default is 300 seconds.
-	MultipleAnaxInstances         bool   // multiple anax instances running on the same machine
-	DefaultServiceRetryCount      int    // the default service retry count if retries are not specified by the policy file. The default value is 2.
-	DefaultServiceRetryDuration   uint64 // the default retry duration in seconds. The next retry cycle occurs after the duration. The default value is 600
+	ServiceStorage                   string // The base storage directory where the service can write or get the data.
+	TorrentDir                       string
+	APIListen                        string
+	DBPath                           string
+	DockerEndpoint                   string
+	DockerCredFilePath               string
+	DefaultCPUSet                    string
+	DefaultServiceRegistrationRAM    int64
+	StaticWebContent                 string
+	PublicKeyPath                    string
+	TrustSystemCACerts               bool   // If equal to true, the HTTP client factory will set up clients that trust CA certs provided by a Linux distribution (see https://golang.org/pkg/crypto/x509/#SystemCertPool and https://golang.org/src/crypto/x509/root_linux.go)
+	CACertsPath                      string // Path to a file containing PEM-encoded x509 certs HTTP clients in Anax will trust (additive to the configuration option "TrustSystemCACerts")
+	ExchangeURL                      string
+	DefaultHTTPClientTimeoutS        uint
+	PolicyPath                       string
+	ExchangeHeartbeat                int    // Seconds between heartbeats
+	ExchangeVersionCheckIntervalM    int64  // Exchange version check interval in minutes. The default is 720.
+	AgreementTimeoutS                uint64 // Number of seconds to wait before declaring agreement not finalized in blockchain
+	DVPrefix                         string // When passing agreement ids into a workload container, add this prefix to the agreement id
+	RegistrationDelayS               uint64 // The number of seconds to wait after blockchain init before registering with the exchange. This is for testing initialization ONLY.
+	ExchangeMessageTTL               int    // The number of seconds the exchange will keep this message before automatically deleting it
+	TorrentListenAddr                string // Override the torrent listen address just in case there are conflicts, syntax is "host:port"
+	UserPublicKeyPath                string // The location to store user keys uploaded through the REST API
+	ReportDeviceStatus               bool   // whether to report the device status to the exchange or not.
+	TrustCertUpdatesFromOrg          bool   // whether to trust the certs provided by the organization on the exchange or not.
+	TrustDockerAuthFromOrg           bool   // whether to turst the docker auths provided by the organization on the exchange or not.
+	ServiceUpgradeCheckIntervalS     int64  // service upgrade check interval in seconds. The default is 300 seconds.
+	MultipleAnaxInstances            bool   // multiple anax instances running on the same machine
+	DefaultServiceRetryCount         int    // the default service retry count if retries are not specified by the policy file. The default value is 2.
+	DefaultServiceRetryDuration      uint64 // the default retry duration in seconds. The next retry cycle occurs after the duration. The default value is 600
+	ServiceConfigStateCheckIntervalS int    // the service configuration state check interval. The default is 30 seconds.
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string
@@ -168,6 +169,10 @@ func Read(file string) (*HorizonConfig, error) {
 		}
 		if config.Edge.ServiceUpgradeCheckIntervalS == 0 {
 			config.Edge.ServiceUpgradeCheckIntervalS = 300
+		}
+
+		if config.Edge.ServiceConfigStateCheckIntervalS == 0 {
+			config.Edge.ServiceConfigStateCheckIntervalS = 30
 		}
 
 		// set default retry parameters

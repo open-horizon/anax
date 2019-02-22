@@ -80,6 +80,9 @@ const (
 	AGBOT_QUIESCE_COMPLETE  EventId = "AGBOT_QUIESCE_COMPLETE"
 	NODE_HEARTBEAT_FAILED   EventId = "HEARTBEAT_FAILED"
 	NODE_HEARTBEAT_RESTORED EventId = "HEARTBEAT_RESTORED"
+
+	// Service related
+	SERVICE_SUSPENDED EventId = "SERVICE_SUSPENDED"
 )
 
 type EndContractCause string
@@ -1521,5 +1524,49 @@ func NewNodeHeartbeatStateChangeMessage(id EventId, node_org string, node_id str
 		},
 		NodeOrg: node_org,
 		NodeId:  node_id,
+	}
+}
+
+type ServiceConfigState struct {
+	Url         string `json:"url"`
+	Org         string `json:"org"`
+	ConfigState string `json:"configState"`
+}
+
+func (s *ServiceConfigState) String() string {
+	return fmt.Sprintf("Url: %v, Org: %v, ConfigState: %v", s.Url, s.Org, s.ConfigState)
+}
+
+func NewServiceConfigState(url, org, state string) *ServiceConfigState {
+	return &ServiceConfigState{
+		Url:         url,
+		Org:         org,
+		ConfigState: state,
+	}
+}
+
+type ServiceConfigStateChangeMessage struct {
+	event              Event
+	ServiceConfigState []ServiceConfigState
+}
+
+func (w *ServiceConfigStateChangeMessage) Event() Event {
+	return w.event
+}
+
+func (w *ServiceConfigStateChangeMessage) String() string {
+	return w.ShortString()
+}
+
+func (w *ServiceConfigStateChangeMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v, ServiceConfigState: %v", w.event, w.ServiceConfigState)
+}
+
+func NewServiceConfigStateChangeMessage(id EventId, scs []ServiceConfigState) *ServiceConfigStateChangeMessage {
+	return &ServiceConfigStateChangeMessage{
+		event: Event{
+			Id: id,
+		},
+		ServiceConfigState: scs,
 	}
 }

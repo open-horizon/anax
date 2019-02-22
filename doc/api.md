@@ -24,16 +24,15 @@ code:
 
 body:
 
-| name | type | description |
-| ---- | ---- | ---------------- |
-| configuration| json| the configuration data.  |
-| configuration.exchange_api | string | the url for the exchange being used by the Horizon agent. |
-| configuration.exchange_version | string | the current version of the exchange being used. |
-| configuration.preferred_exchange_version | string | the preferred version for the exchange in order to use all the horizon functions. |
-| configuration.required_minimum_exchange_version | string | the required minimum version for the exchange. |
-| configuration.architecture | string | the hardware architecture of the node as returned from the Go language API runtime.GOARCH. |
-| connectivity | json | whether or not the node has network connectivity with some remote sites. |
-
+| name | subfield | type | description |
+| ---- | ---- |----| ---------------- |
+| configuration||json| the configuration data.  |
+|  |exchange_api| string | the url for the exchange being used by the Horizon agent. |
+| |exchange_version | string | the current version of the exchange being used. |
+| |required_minimum_exchange_version | string | the required minimum version for the exchange. |
+| |preferred_exchange_version | string | the preferred version for the exchange in order to use all the horizon functions. |
+| |architecture | string | the hardware architecture of the node as returned from the Go language API runtime.GOARCH. |
+| connectivity || json | whether or not the node has network connectivity with some remote sites. |
 
 **Example:**
 ```
@@ -73,10 +72,13 @@ code:
 
 body:
 
-| name | type | description |
-| ---- | ---- | ---------------- |
-| workers   | json | the current status of each worker and its subworkers. |
-| worker_status_log | string array |  the history of the worker status changes. |
+| name | subfield | type | description |
+| ---- | ---- |----| ---------------- |
+| workers  | | json | the current status of each worker and its subworkers. |
+| | name | string | the name of the worker. |
+| | status | string | the status of the worker. The valid values are: added, started, initialized, initialization failed, terminating, t erminated. |
+| | subworker_status | json | the name and the status of the subworkers that are created by this worker. |
+| worker_status_log | | string array |  the history of the worker status changes. |
 
 
 **Example:**
@@ -356,7 +358,7 @@ curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json'  -d '{
 #### **API:** GET  /attribute
 ---
 
-Get all the attributes for the registered services.
+Get all the attributes for the edge node and registered services.
 
 **Parameters:**
 
@@ -379,10 +381,10 @@ attribute
 | ---- | ---- | ---------------- |
 | id | string| the id of the attribute. |
 | label | string | the user readable name of the attribute |
-| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, MappedAttributes, HAAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, AgreementProtocolAttributes and ArchitectureAttributes. |
-| sensor_urls | array | an array of sensor url. It applies to all services if it is empty. |
+| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, HAAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
 | publishable| bool | whether the attribute can be made public or not. |
-| host_only | bool | whether or not the attribute will be passed to the workload. |
+| host_only | bool | whether or not the attribute will be passed to the service containers. |
+| service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes: ComputeAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
 | mappings | map | a list of key value pairs. |
 
 
@@ -392,91 +394,74 @@ curl -s http://localhost/attribute | jq '.'
 {
   "attributes": [
     {
-      "id": "38596bf5-6713-422a-ad87-5892b819ba7a",
+      "id": "67c65225-ebef-49e9-944c-229a02f2115c",
+      "type": "ArchitectureAttributes",
+      "label": "Architecture",
+      "publishable": true,
+      "host_only": false,
+      "mappings": {
+        "architecture": "amd64"
+      }
+    },
+    {
+      "id": "f08c3992-6f4f-465d-b1a5-4a6bedf3693d",
+      "type": "ComputeAttributes",
+      "label": "Compute Resources",
+      "publishable": true,
+      "host_only": false,
+      "service_specs": [
+        {
+          "url": "https://bluehorizon.network/service-cpu",
+          "organization": "myorg"
+        }
+      ],
+      "mappings": {
+        "cpus": 1,
+        "ram": 1024
+      }
+    },
+    {
+      "id": "f1c7aa1d-2868-477e-8f26-900a3c5adfd3",
       "type": "LocationAttributes",
-      "sensor_urls": [],
       "label": "Registered Location Facts",
       "publishable": false,
+      "host_only": false,
       "mappings": {
-        "lat": 40.4273,
-        "lon": -111.898,
-        "use_gps": false,
-        "location_accuracy_km": 0.5
+        "lat": 44.921769,
+        "location_accuracy_km": 0.5,
+        "lon": -63.894225,
+        "use_gps": false
       }
     },
     {
-      "id": "55fc2373-d47c-48bc-9934-22f3e2e4de78",
-      "type": "ArchitectureAttributes",
-      "sensor_urls": [
-        "https://bluehorizon.network/services/network"
+      "id": "f85de917-ecb1-4d65-9310-66b0d9d2642f",
+      "type": "UserInputAttributes",
+      "label": "User input variables",
+      "publishable": false,
+      "host_only": false,
+      "service_specs": [
+        {
+          "url": "https://bluehorizon.network/services/weather",
+          "organization": "e2edev"
+        }
       ],
-      "label": "Architecture",
-      "publishable": true,
       "mappings": {
-        "architecture": "amd64"
-      }
-    },
-    {
-      "id": "692d375b-031c-4c90-95ef-c1a038c0b551",
-      "type": "ComputeAttributes",
-      "sensor_urls": [
-        "https://bluehorizon.network/services/gps"
-      ],
-      "label": "gps service",
-      "publishable": true,
-      "mappings": {
-        "cpus": 1,
-        "ram": 128
-      }
-    },
-    {
-      "id": "9aeea17c-73cf-48b7-ba65-a678c60c2637",
-      "type": "ArchitectureAttributes",
-      "sensor_urls": [
-        "https://bluehorizon.network/services/gps"
-      ],
-      "label": "Architecture",
-      "publishable": true,
-      "mappings": {
-        "architecture": "amd64"
-      }
-    },
-    {
-      "id": "cce6681d-cc50-480d-ab3c-36cf2f1b10a5",
-      "type": "AgreementProtocolAttributes",
-      "sensor_urls": [],
-      "label": "Agreement Protocol",
-      "publishable": true,
-      "mappings": {
-        "protocols": [
-          {
-            "name": "Basic",
-            "protocolVersion": 1
-          }
-        ]
-      }
-    },
-    {
-      "id": "ed356f2c-7c4d-432e-80e8-82064b5703bd",
-      "type": "ComputeAttributes",
-      "sensor_urls": [
-        "https://bluehorizon.network/services/network"
-      ],
-      "label": "network service",
-      "publishable": true,
-      "mappings": {
-        "cpus": 1,
-        "ram": 128
+        "HZN_PWS_MODEL": "LaCrosse WS2317",
+        "HZN_PWS_ST_TYPE": "WS23xx",
+        "HZN_WUGNAME": "e2edev mocked pws",
+        "MTN_PWS_MODEL": "LaCrosse WS2317",
+        "MTN_PWS_ST_TYPE": "WS23xx"
       }
     }
   ]
 }
+
 ```
 
 #### **API:** POST  /attribute
 ---
 
-Register an attribute for a service. If the sensor_url is omitted, the attribute applies to all the services.
+Register an attribute for a service. If the service_specs is omitted, the attribute applies to all the services.
 
 **Parameters:**
 
@@ -499,15 +484,21 @@ none
 **Example:**
 ```
 curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json' -d '{
-    "type": "ComputeAttributes",
-    "label": "Compute Resources",
-    "publishable": true,
-    "host_only": false,
-    "mappings": {
-      "ram": 256,
-      "cpus": 1
-    }
-  }'  http://localhost/attribute
+  "type": "DockerRegistryAuthAttributes",
+  "label": "Docker auth",
+  "publishable": false,
+  "host_only": true,
+  "mappings": {
+    "auths": [
+      {
+        "registry": "mydockerrepo", username": "user1", "token": "myDockerhubPassword"
+      },
+      {
+        "registry": "registry.ng.bluemix.net", "username": "token", "token": "myDockerToken"
+      }
+    ]
+  }
+}'  http://localhost/attribute
 
 ```
 
@@ -532,10 +523,10 @@ body:
 | ---- | ---- | ---------------- |
 | id | string| the id of the attribute. |
 | label | string | the user readable name of the attribute |
-| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, UserInputAttributes, HAAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, and AgreementProtocolAttributes. |
-| sensor_urls | array | an array of sensor url. It applies to all services if it is empty. |
+| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, HAAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
 | publishable| bool | whether the attribute can be made public or not. |
-| host_only | bool | whether or not the attribute will be passed to the service. |
+| host_only | bool | whether or not the attribute will be passed to the service containers. |
+| service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes: ComputeAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
 | mappings | map | a list of key value pairs. |
 
 
@@ -545,16 +536,26 @@ curl -s -w "%{http_code}" http://localhost/attribute/0d5762bf-67a6-49ff-8ff9-c0f
 {
   "attributes": [
     {
-      "id": "0d5762bf-67a6-49ff-8ff9-c0fd32a8699f",
+      "id": "a784b89c-e6f7-46dc-bf39-f2ac812a70b4",
       "type": "UserInputAttributes",
-      "sensor_urls": [
-        "https://bluehorizon.network/services/gps"
-      ],
-      "label": "app",
+      "label": "User input variables",
       "publishable": false,
       "host_only": false,
+      "service_specs": [
+        {
+          "url": "https://bluehorizon.network/services/netspeed",
+          "organization": "myorg"
+        }
+      ],
       "mappings": {
-        "foo": "hello"
+        "var1": "aString",
+        "var2": 5,
+        "var3": 10.2,
+        "var4": [
+          "abc",
+          "123"
+        ],
+        "var5": "override"
       }
     }
   ]
@@ -567,7 +568,7 @@ curl -s -w "%{http_code}" http://localhost/attribute/0d5762bf-67a6-49ff-8ff9-c0f
 #### **API:** PUT, PATCH  /attribute/{id}
 ---
 
-Modify an attribute for a service. If the sensor_url is omitted, the attribute applies to all the services.
+Modify an attribute for a service. If the service_specs is omitted, the attribute applies to all the services.
 
 **Parameters:**
 
@@ -595,8 +596,11 @@ body:
 curl -s -w "%{http_code}" -X PUT -d '{
       "id": "0d5762bf-67a6-49ff-8ff9-c0fd32a8699f",
       "type": "UserInputAttributes",
-      "sensor_urls": [
-        "https://bluehorizon.network/services/gps"
+      "service_specs": [
+        {
+          "url": "https://bluehorizon.network/services/netspeed",
+          "organization": "IBM"
+        }
       ],
       "label": "app",
       "publishable": false,
@@ -611,7 +615,7 @@ curl -s -w "%{http_code}" -X PUT -d '{
 #### **API:** DELETE /attribute/{id}
 ---
 
-Modify an attribute for a service. If the sensor_url is omitted, the attribute applies to all the services.
+Modify an attribute for a service. If the service_specs is omitted, the attribute applies to all the services.
 
 **Parameters:**
 
@@ -636,7 +640,672 @@ curl -s -w "%{http_code}" -X DELETE http://localhost/attribute/0d5762bf-67a6-49f
 
 ```
 
-### 4. Agreement
+### 4. Service
+
+#### **API:** GET  /service
+---
+
+Get the definition, the instance information and the configuration information for all the services.
+
+**Parameters:**
+
+none
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+| name | subfield | type | description |
+| ---- | ---- |----| ---------------- |
+| config | | array of json | all the services and the associated configuration attributes. For the pattern case, these are the top level services and their dependent services the pattern references to. For the non-pattern case, thses are the registered depended services and any top level services that use has configured. |
+| definitions | | json | the definition of all the related services. |
+| | active  | array of json | an array of service definitions that are actively in use. Please refer to the following table for the fields of a service definition object. |
+| | archived  | array of json | an array of service definitions that are archived. Please refer to the following table for the fields of a service definition object. |
+| instances | | json | the instances of all the running services. It contains the information about the running service containers.|
+| | active  | array of json | an array of service instances that are active. Please refer to the following table for the fields of a service instance object. |
+| | archived  | array of json | an array of service instances that are archived. Please refer to the following table for the fields of a service instance object. |
+
+service configuration:
+
+| name | subfield | type | description |
+| ---- | ---- |----| ---------------- |
+| sensor_url | | string | the url of the service. |
+| sensor_org | | string | the organization of the service. |
+| sensor_version | | string | the version of the service. |
+| auto_upgrade | | boolean | if the service should be automatically upgraded when a new version becomes available. |
+| active_upgrade | | boolean | if the horizon agent should actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade. |
+| attributes  | | array of json | an array of attributes that are associated with the service. |
+| | meta | json | the meta data for an attribute. It includes id, type, lable etc. |
+| | {key1} | string | key value pairs to be used to configure the service. |
+| | {key2} | string | key value pairs to be used to configure the service. |
+
+service definition:
+
+| name | subfield | type | description |
+| ---- | ---- |----| ---------------- |
+| record_id | | string | the record id in the db. |
+| owner | | string | the owner of the service. |
+| label | | string | the user readable name of the service. |
+| description | | string | the discription of the service. |
+| specRef | | string | the url of the service. |
+| organization | | string | the organization of the service. |
+| version | | string | the version of the service. |
+| arch | | string | the architecture of the node the service can run on. |
+| sharable | | string | how the service containers are shared if there are mutiple services reference this service. The valid values are: singleton, mutiple and exlusice. "singleton" means that all the services can share a single instance of this service. "mutiple" means that each service should have its own instance of this service. "exclusive" means that there can only be one service that references this service on at ay time. |
+| userInput | | json | defines variables that can be configured by the user.. |
+| | name | json | the name of the variable. |
+| | label | json | the user readable name of the variable. |
+| | type | json | the data type of the variable. |
+| | defaultValue | json | the default value of the variable. If it is set, then the user does not have to configure this variable. |
+| public | | boolean | whether the service can be refenced outside the organization. |
+| requiredServices  | | array of json | an array of services that this service depends on. |
+| | url | string | the url of the dependent service. |
+| | org | string | the organization of the dependent service.  |
+| | version | string | the version of the dependent service. |
+| | arch | string | of architecture of the dependent service. |
+| deployment | | string | how the service is deployed. It defines the containers, images and configurations for this service. |
+| deployment_signature | | string | the signature that can be used to verify the "deployment" string with a public key. |
+| imageStore | | string | If the image is not from a docker registry, this field defines how the image is fetched. |
+| lastUpdated | | string | date where the service is last update on the exchange. |
+| archived | | boolean | if the service definition is archived. |
+| name | | string | the name of the service. |
+| requested_arch | | string | the architecture from user input or from a service that refrences this service. It can be a synonym of the node architecture. |
+| auto_upgrade | | boolean | if the service should be automatically upgraded when a new version becomes available. |
+| active_upgrade | | boolean | if the horizon agent should actively terminate agreements when new versions become available (active) or wait for all the associated agreements terminated before making upgrade. |
+| upgrade_start_time | | uint64 | the time when the service upgrade is started. |
+| upgrade_ms_unregistered_time | | uint64 |  the time when the service is unregistered during the upgrade process. |
+| upgrade_agreements_cleared_time | | uint64 | the time when all the associated agreements are cleared during the upgrade process. |
+| upgrade_execution_start_time | | uint64 | the time when the new service is started running during the upgrade process. |
+| upgrade_ms_reregistered_time | | uint64 | the time when the service is reregistered during the upgrade process. |
+| upgrade_failed_time | | uint64 | the time when the service upgrade failed. |
+| upgrade_failure_reason | | uint64 | the reason code for the service upgrade failure. |
+| upgrade_failure_description | | sting | the description for the service upgrade failure. |
+| upgrade_new_ms_id | | string | the record_id of the new service that this service is upgrading to. |
+| metadata_hash | | string | the hash for the service defined in the exchange. |
+
+
+service instance:
+
+| name | subfield | type | description |
+| ---- | ---- |----| ---------------- |
+| ref_url | | string | the url of the service. |
+| organization | | string | the organization of the service. |
+| version | | string | the version of the service. |
+| arch | | string | the architecture of the node the service can run on. |
+| instance_id | | string | an unique id for this service instance. |
+| archived | | boolean | if the service instance is archived. |
+| instance_creation_time | | uint64 | the time when the service instance is created. |
+| execution_start_time | | uint64 | the time when the service containers are started. |
+| execution_failure_code | | uint64 | the reason code for the service instance failure. |
+| execution_failure_desc | | sting | the description for the service instance failure. |
+| cleanup_start_time | | uint64 | the time when the service instance is being cleaned. |
+| associated_agreements | | array of string | agreements that use this service instance. |
+| microservicedef_id | | string | record_id for the definiton of the service that this instance is for. |
+| service_instance_path | | array of array | the parent path of how to get to this service instance. Since there may be multiple services that depend on this service, there may be multiple paths. |
+| | url | string | the url of the parent or grandparent service. |
+| | org | string | the organization of the parent or grandparent service.  |
+| | version | string | the version of the parent or grandparent service. |
+| agreement_less | | boolean | if this service is a agreement-less service (as defined in the pattern). |
+| max_retries | | uint | maximum retries allowed. |
+| max_retry_duration | | uint | the number of seconds in which the specified number of retries must occur in order for next retry cycle. |
+| current_retry_count | | uint | the current retry count. |
+| retry_start_time | | uint64 | the time when the service retry is started. |
+| containers | | json | the info for the running docker containers for this service. |
+
+
+**Example:**
+```
+curl http://localhost/service |jq '.config'
+[
+  {
+    "sensor_url": "https://bluehorizon.network/services/netspeed",
+    "sensor_org": "e2edev",
+    "sensor_version": "2.3.0",
+    "auto_upgrade": true,
+    "active_upgrade": false,
+    "attributes": [
+      {
+        "meta": {
+          "id": "49cde8e2-a448-4f5e-98a1-c033deca5c53",
+          "type": "UserInputAttributes",
+          "label": "User input variables",
+          "host_only": false,
+          "publishable": false
+        },
+        "service_specs": [
+          {
+            "url": "https://bluehorizon.network/services/netspeed",
+            "organization": "e2edev"
+          }
+        ],
+        "mappings": {
+          "var1": "aString",
+          "var2": 5,
+          "var3": 10.2,
+          "var4": [
+            "abc",
+            "123"
+          ],
+          "var5": "override"
+        }
+      },
+      {
+        "meta": {
+          "id": "67c65225-ebef-49e9-944c-229a02f2115c",
+          "type": "ArchitectureAttributes",
+          "label": "Architecture",
+          "host_only": false,
+          "publishable": true
+        },
+        "architecture": "amd64"
+      },
+      {
+        "meta": {
+          "id": "7fd29cf6-7184-40b9-ae49-5688366c7a7e",
+          "type": "ComputeAttributes",
+          "label": "Compute Resources",
+          "host_only": false,
+          "publishable": true
+        },
+        "service_specs": [
+          {
+            "url": "https://bluehorizon.network/services/netspeed",
+            "organization": "e2edev"
+          }
+        ],
+        "cpus": 1,
+        "ram": 1024
+      },
+      {
+        "meta": {
+          "id": "f1c7aa1d-2868-477e-8f26-900a3c5adfd3",
+          "type": "LocationAttributes",
+          "label": "Registered Location Facts",
+          "host_only": false,
+          "publishable": false
+        },
+        "lat": 41.921766,
+        "lon": -73.894224,
+        "location_accuracy_km": 0.5,
+        "use_gps": false
+      }
+    ]
+  },
+  ...
+]
+
+
+
+```
+
+```
+curl http://localhost/service |jq '.definitions.active'
+[
+  {
+    "record_id": "1",
+    "owner": "IBM/ibmadmin",
+    "label": "Netspeed for x86_64",
+    "description": "Netspeed service",
+    "specRef": "https://bluehorizon.network/services/netspeed",
+    "organization": "e2edev",
+    "version": "2.3.0",
+    "arch": "amd64",
+    "sharable": "multiple",
+    "downloadUrl": "",
+    "matchHardware": {},
+    "userInput": [
+      {
+        "name": "var1",
+        "label": "",
+        "type": "string",
+        "defaultValue": ""
+      },
+      {
+        "name": "var2",
+        "label": "",
+        "type": "int",
+        "defaultValue": ""
+      }
+    ],
+    "workloads": null,
+    "public": true,
+    "requiredServices": [
+      {
+        "url": "https://bluehorizon.network/services/network",
+        "org": "myorg",
+        "version": "1.0.0",
+        "arch": "amd64"
+      }
+    ],
+    "deployment": "{\"services\":{\"netspeed5\":{\"environment\":[\"MY_SETTINGS=0\"],\"image\":\"openhorizon/amd64_netspeed:2.5.0\"}}}",
+    "deployment_signature": "vqwgYA/b",
+    "imageStore": {},
+    "lastUpdated": "2019-02-13T21:56:02.228Z[UTC]",
+    "archived": false,
+    "name": "netspeed",
+    "requested_arch": "amd64",
+    "upgrade_version_range": "[0.0.0,INFINITY)",
+    "auto_upgrade": true,
+    "active_upgrade": false,
+    "upgrade_start_time": 0,
+    "upgrade_ms_unregistered_time": 0,
+    "upgrade_agreements_cleared_time": 0,
+    "upgrade_execution_start_time": 0,
+    "upgrade_ms_reregistered_time": 0,
+    "upgrade_failed_time": 0,
+    "upgrade_failure_reason": 0,
+    "upgrade_failure_description": "",
+    "upgrade_new_ms_id": "",
+    "metadata_hash": "q8Lxbb/poHcq/+aDoFdAtF1PwCYXxfPWDjCEjm49Dc8="
+  },
+  ...
+]
+
+
+
+```
+
+```
+curl http://localhost/service |jq '.instances.active'
+[
+  {
+    "ref_url": "https://bluehorizon.network/services/location",
+    "organization": "e2edev",
+    "version": "2.0.6",
+    "arch": "amd64",
+    "instance_id": "535369111ae8d5d7c6dced904c0457f13c30b9ec6ed024fb53be649e4729c814",
+    "archived": false,
+    "instance_creation_time": 1550265488,
+    "execution_start_time": 1550265501,
+    "execution_failure_code": 0,
+    "execution_failure_desc": "",
+    "cleanup_start_time": 0,
+    "associated_agreements": [
+      "535369111ae8d5d7c6dced904c0457f13c30b9ec6ed024fb53be649e4729c814"
+    ],
+    "microservicedef_id": "2",
+    "service_instance_path": [
+      [
+        {
+          "url": "https://bluehorizon.network/services/location",
+          "org": "e2edev",
+          "version": "2.0.6"
+        }
+      ]
+    ],
+    "agreement_less": false,
+    "max_retries": 0,
+    "max_retry_duration": 0,
+    "current_retry_count": 0,
+    "retry_start_time": 0,
+    "containers": [
+      {
+        "Id": "f9bca37e87e6128530902432b8cbb66dcd63e955b059e07ebc9b26f0266b9e63",
+        "Image": "openhorizon/amd64_location:2.0.6",
+        "Command": "/bin/sh -c /start.sh",
+        "Created": 1550265500,
+        "State": "running",
+        "Status": "Up 2 days",
+        "Names": [
+          "/535369111ae8d5d7c6dced904c0457f13c30b9ec6ed024fb53be649e4729c814-location"
+        ],
+        "Labels": {
+          "openhorizon.anax.agreement_id": "535369111ae8d5d7c6dced904c0457f13c30b9ec6ed024fb53be649e4729c814",
+          "openhorizon.anax.deployment_description_hash": "tYE0SSJMmIjEH6wffMlFBP-qD_0=",
+          "openhorizon.anax.service_name": "location",
+          "openhorizon.anax.variation": ""
+        },
+        "NetworkSettings": {
+          "Networks": {
+            "535369111ae8d5d7c6dced904c0457f13c30b9ec6ed024fb53be649e4729c814": {
+              "MacAddress": "02:42:c0:a8:70:02",
+              "IPPrefixLen": 20,
+              "IPAddress": "192.168.112.2",
+              "Gateway": "192.168.112.1",
+              "EndpointID": "c367b1de79cc87569c5b1b40c9c4a856f6f21dfea7e7b6766d58c08a829d6051",
+              "NetworkID": "9a74f202ed8292a05ac06f7cc94186f69ab8455271a1dfc912c9bf8bb7859d59"
+            },
+             "e2edev_bluehorizon.network-services-locgps_2.0.4_22249248-9e92-470a-828d-da1875d5462c": {
+              "MacAddress": "02:42:c0:a8:60:03",
+              "IPPrefixLen": 20,
+              "IPAddress": "192.168.96.3",
+              "Gateway": "192.168.96.1",
+              "EndpointID": "807817c5175a186f6e8de30ecd9291951b0538a19e389e37f9808d248f8b1a84",
+              "NetworkID": "762d3afabd1cd20e25dc7bc15396ca07b8fd36dd6e2c25d10eed9e1a1ce9a8a9"
+            }
+          }
+        },
+        "Mounts": [
+          {
+            "Source": "/tmp/service_storage/535369111ae8d5d7c6dced904c0457f13c30b9ec6ed024fb53be649e4729c814",
+            "Destination": "/service_config",
+            "Mode": "rw",
+            "RW": true
+          }
+        ]
+      }
+    ]
+  },
+  ...
+]
+```
+
+#### **API:** GET  /service/config
+---
+
+Get the service configuration for all services.
+
+**Parameters:**
+
+none
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+  Please refer to the service configuration table of `GET /serve` api for the field definitions.
+
+**Example:**
+```
+curl http://localhost/service/config |jq 
+"config": [
+  {
+    "sensor_url": "https://bluehorizon.network/services/netspeed",
+    "sensor_org": "e2edev",
+    "sensor_version": "2.3.0",
+    "auto_upgrade": true,
+    "active_upgrade": false,
+    "attributes": [
+      {
+        "meta": {
+          "id": "49cde8e2-a448-4f5e-98a1-c033deca5c53",
+          "type": "UserInputAttributes",
+          "label": "User input variables",
+          "host_only": false,
+          "publishable": false
+        },
+        "service_specs": [
+          {
+            "url": "https://bluehorizon.network/services/netspeed",
+            "organization": "e2edev"
+          }
+        ],
+        "mappings": {
+          "var1": "aString",
+          "var2": 5,
+          "var3": 10.2,
+          "var4": [
+            "abc",
+            "123"
+          ],
+          "var5": "override"
+        }
+      },
+      {
+        "meta": {
+          "id": "67c65225-ebef-49e9-944c-229a02f2115c",
+          "type": "ArchitectureAttributes",
+          "label": "Architecture",
+          "host_only": false,
+          "publishable": true
+        },
+        "architecture": "amd64"
+      },
+      {
+        "meta": {
+          "id": "7fd29cf6-7184-40b9-ae49-5688366c7a7e",
+          "type": "ComputeAttributes",
+          "label": "Compute Resources",
+          "host_only": false,
+          "publishable": true
+        },
+        "service_specs": [
+          {
+            "url": "https://bluehorizon.network/services/netspeed",
+            "organization": "e2edev"
+          }
+        ],
+        "cpus": 1,
+        "ram": 1024
+      },
+      {
+        "meta": {
+          "id": "f1c7aa1d-2868-477e-8f26-900a3c5adfd3",
+          "type": "LocationAttributes",
+          "label": "Registered Location Facts",
+          "host_only": false,
+          "publishable": false
+        },
+        "lat": 41.921766,
+        "lon": -73.894224,
+        "location_accuracy_km": 0.5,
+        "use_gps": false
+      }
+    ]
+  },
+  ...
+]
+
+```
+
+#### **API:** POST /service/config
+---
+
+Configure attributes for a service.
+
+**Parameters:**
+
+body:
+
+| name | subfield | type | description |
+| ---- | ---- |----| ---------------- |
+| url | | string | the url of the service to be configured. |
+| organization | | string | the organization of the service. |
+| name | | string | (optional) the name of the service. |
+| arch | | string | architecture of the service to be configured, could be a synonym. The default is the current node architecture. |
+| versionRange | | string | the version range of the service that the configuration applies to. The versionRange is in OSGI version format. The default is [0.0.0,INFINITY) |
+| auto_upgrade | | boolean | whether the service should be automatically upgraded or not when a new version becomes available. The default is true. |
+| active_upgrade | | boolean | whether the horizon agent should actively terminate agreements or not when new versions become available (active) or wait for all the associated agreements terminated before making upgrade. The default is false. |
+| attributes  | | array of json | an array of attributes that will be applied to the the service. |
+| | type | string | the type of the attribute. Most commonly used type is UserInputAttributes. |
+| | label | string | a short description for this configuration. |
+| | publishable| bool | whether the attribute can be made public or not. |
+| | host_only | bool | whether or not the attribute will be passed to the service containers. |
+| | mappings | json | a list of name and value pairs of configuration data for the service. |
+
+
+**Response:**
+
+code:
+
+* 200 -- success
+
+
+
+**Example:**
+```
+read -d '' nsconfig <<EOF
+{
+  "url": "https://bluehorizon.network/services/netspeed",
+  "versionRange": "2.2.0",
+  "organization": "e2edev",
+  "publishable": false,
+  "host_only": false,
+  "attributes": [
+    {
+      "type": "UserInputAttributes",
+      "label": "User input variables",
+      "publishable": false,
+      "host_only": false,
+      "mappings": {
+        "var1": "bString",
+        "var2": 10,
+        "var3": 10.22,
+        "var4": ["abcd", "1234"],
+        "var5": "override2"
+      }
+    }
+  ]
+}
+EOF
+
+echo "$nsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- http://localhost/service/config
+
+```
+
+#### **API:** GET  /service/configstate
+---
+
+Get the service configuration state for all services.
+
+**Parameters:**
+
+none
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+| name | subfield | type | description |
+| ---- | ---- |----| ---------------- |
+| configstates | | array of json | an array of service configuration state. |
+| | url | string | the url for the service. |
+| | org | string | the organization for the service. |
+| | configstate | string | the current configuration state for the service. The valid values are "active" and "suspended". |
+
+**Example:**
+```
+curl http://localhost/service/configstate |jq
+{
+  "configstates": [
+    {
+      "url": "https://bluehorizon.network/services/netspeed",
+      "org": "e2edev",
+      "configState": "active"
+    },
+    {
+      "url": "https://bluehorizon.network/service-cpu",
+      "org": "e2edev",
+      "configState": "suspended"
+    },
+   ...
+  ]
+}
+
+
+```
+
+#### **API:** POST /service/configstate
+---
+
+Configure attributes for a service.
+
+**Parameters:**
+
+body:
+
+| name | type | description |
+| ---- | ----| ---------------- |
+| url | string | the url of the service to be configured. If it is an empty string and the org is also an empty string, the new configuration state will apply to all the services. If it is an empty string and the org is not an empty string, the new configuration state will apply to all the services within the organization. |
+| org | string | the organization of the service to be configured. |
+| configstate | string | the new configuration state for the service. |
+
+
+**Response:**
+
+code:
+
+* 200 -- success
+
+
+
+**Example:**
+```
+curl -sS -X POST -H "Content-Type: application/json" --data '{"url": "myservice", "org": "myorg", "configstate": "suspended"}' http://localhost/service/configstate
+
+```
+
+
+
+#### **API:** GET  /service/policy
+---
+
+Get the current list of policies for each registered service.
+
+**Parameters:**
+
+none
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+| name | subfield | type | description |
+| ---- | ---- |----| ---------------- |
+| {policy name} | | json | the name of a policy generated for a service. |
+| | header | json|  the header of the policy. It includes the name and the version of the policy. |
+| | apiSpec | array | an array of api specifications. Each one includes a URL pointing to the definition of the API spec, the version of the API spec in OSGI version format, the organization that implements the API spec, whether or not exclusive access to this API spec is required and the hardware architecture of the API spec implementation. |
+| | properties | array | an array of name value pairs that the current party have. |
+| | counterPartyProperties | json | an array of (name, value, op)s that the counter party is required to have. | 
+| | ha_group | json | a list of ha partners. |
+| | agreementProtocols | array | an array of agreement protocols. Each one includes the name of the agreement protocol.|
+
+Note: The policy also contains other fields that are unused and therefore not documented.
+
+**Example:**
+```
+curl http://localhost/service/policy | jq '.'
+{
+  "Policy for IBM_netspeed": {
+    "header": {
+      "name": "Policy for e2edev_netspeed",
+      "version": "2.0"
+    },
+    "apiSpec": [
+      {
+        "specRef": "https://bluehorizon.network/services/netspeed",
+        "organization": "e2edev",
+        "version": "2.3.0",
+        "exclusiveAccess": true,
+        "arch": "amd64"
+      }
+    ],
+    "valueExchange": {},
+    "resourceLimits": {},
+    "dataVerification": {
+      "metering": {}
+    },
+    "proposalRejection": {},
+    "properties": [
+      {
+        "name": "cpus",
+        "value": "1"
+      },
+      {
+        "name": "ram",
+        "value": "1024"
+      }
+    ],
+    "ha_group": {},
+    "nodeHealth": {}
+  },
+  ...
+]
+```
+
+
+### 5. Agreement
 
 #### **API:** GET  /agreement
 ---
@@ -653,33 +1322,44 @@ code:
 * 200 -- success
 
 body:
+| name | subfield | type | description |
+| ---- | ---- |----| ---------------- |
+| agreements | | json | all established agreements, active and archived. |
+| | active  | array of json | an array of all the active agreements. Please refer to the following talbe for the fileds of an agreement element. |
+| |archived | array of json | an array of all the archived agreements. Please refer to the following talbe for the fileds of an agreement element.|
 
-| name | type | description |
-| ---- | ---- | ---------------- |
-| agreements  | json | contains active and archived agreements |
-| active | array | an array of current agreements. The attributes of each agreement are defined in the following rows. |
-| archived | array | an array of canceled agreements. The attributes of each agreement are defined in the following rows. |
-| name | string |  the name of the policies used to make the agreement.  |
-| current_agreement_id | string | the id of the agreement. |
-| counterparty_address | string |  the ethereum account of the agbot. |
-| consumer_id| string |  the id of the agbot that proposed the agreement. |
-| agreement_creation_time | uint64 | the time when the agent received the agreement proposal from the agbot. The negotiation process starts. |
-| agreement_accepted_time | uint64 | the time when the agbot and the agent have come to agreement on the terms. Workload downloading starts. |
-| agreement_execution_start_time | uint64 | the time when the agent starts running the workloads. |
-| agreement_finalized_time | uint64 | the time when the agbot and the agent have finalized the agreement. Workloads are running and data is verified by the agbot. |
-| agreement_data_received_time | uint64 | the time when the agbot has verified that data was received from the workload. |
-| agreement_terminated_time| uint64 | the time when the agreement is terminated. |
-| terminated_reason| uint64 | the reason code for the agreement termination. |
-| terminated_description | string | the description of the agreement termination. |
-| agreement_protocol_terminated_time | uint64 | the time when the agreement protocol terminated. |
-| workload_terminated_time | uint64 | the time when the workload for an agreement terminated. |
-| proposal| string | the proposal currently in effect. |
-| proposal_sig| string | the proposal signature. |
-| agreement_protocol | string | the name of the agreement protocol being used. |
-| protocol_version | int | the version of the agreement protocol being used. |
-| current_deployment | json | contains the deployment configuration for the workload. The key is the name of the workload and the value is the result of the [/containers/<id> docker remote API call](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/inspect-a-container) for the workload container. Please refer to the link for details. |
-| archived | bool |  if the agreement is archived or not.  |
-| metering_notification | json |  the most recent metering notification received. It includes the amount, metering start time, data missed time, consumer address, consumer signature etc. |
+| name | subfield | type | description |
+| ---- | ---- |----| ---------------- |
+| name || string |  the name of the policies used to make the agreement.  |
+| dependent_services || array of json |  the organizations and urls of the services that the agreement workload depend on.  |
+| | url | string | the url for a service.  |
+| | organization | string | the organization for a service.  |
+| archived | | bool |  if the agreement is archived or not.  |
+| current_agreement_id | | string | the id of the agreement. |
+| consumer_id | | string |  the id of the agbot that proposed the agreement. |
+| counterparty_address | | string |  the name of the agbot that proposed the agreement. |
+| agreement_creation_time | | uint64 | the time when the agent received the agreement proposal from the agbot. The negotiation process starts. |
+| agreement_accepted_time | | uint64 | the time when the agbot and the agent have come to agreement on the terms. Workload downloading starts. |
+| agreement_finalized_time | | uint64 | the time when the agbot and the agent have finalized the agreement. Workloads are running and data is verified by the agbot. |
+| agreement_execution_start_time | | uint64 | the time when the agent starts running the workloads. |
+| agreement_data_received_time | | uint64 | the time when the agbot has verified that data was received from the workload. |
+| agreement_terminated_time| | uint64 | the time when the agreement is terminated. |
+| agreement_force_terminated_time| | uint64 | the time when the agreement is forced to be terminated by the horizon agent initialization process. |
+| terminated_reason| | uint64 | the reason code for the agreement termination. |
+| terminated_description | | string | the description of the agreement termination. |
+| agreement_protocol_terminated_time | | uint64 | the time when the agreement protocol terminated. |
+| workload_terminated_time | | uint64 | the time when the workload for an agreement terminated. |
+| proposal | | string | the proposal currently in effect. |
+| proposal_sig | | string | the proposal signature. |
+| agreement_protocol | | string | the name of the agreement protocol being used. |
+| protocol_version | | int | the version of the agreement protocol being used. |
+| current_deployment | | json | contains the deployment configuration for the workload. The key is the name of the workload and the value is the result of the [/containers/<id> docker remote API call](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/inspect-a-container) for the workload container. Please refer to the link for details. |
+| metering_notification | | json |  the most recent metering notification received. It includes the amount, metering start time, data missed time, consumer address, consumer signature etc. |
+| workload_to_run | | json |  the service to run for this agreement.  |
+| | url | json |  the url of the service. |
+| | org | json |  the organization of the service. |
+| | version | json |  the version of the service. |
+| | arch | json |  the architecture of the edge node the service can run on. |
 
 
 **Example:**
@@ -690,7 +1370,12 @@ curl -s http://localhost/agreement | jq '.'
     "active": [
       {
         "name": "Policy for netspeed merged with netspeed arm",
-        "sensor_url": ["https://bluehorizon.network/documentation/netspeed-device-api"],
+        "dependent_services": [
+         {
+            "url": "https://bluehorizon.network/services/locgps",
+            "organization": "e2edev"
+          }
+        ],
         "archived": false,
         "current_agreement_id": "7539aad7bf9269c97bf6285b173b50f016dc13dbe722a1e7cedcfec8f23c528f",
         "consumer_id": "stg-agbot-lon02-01.horizon.hovitos.engineering",
@@ -759,6 +1444,12 @@ curl -s http://localhost/agreement | jq '.'
         }
       }
     ],
+    "workload_to_run": {
+      "url": "https://bluehorizon.network/services/netspeed",
+      "org": "e2edev",
+      "version": "2.0.6",
+      "arch": "armhf"
+    }
     "archived": []
   }
 }
@@ -795,7 +1486,7 @@ curl -X DELETE -s http://localhost/agreement/a70042dd17d2c18fa0c9f354bf1b560061d
 
 ```
 
-### 5. Trusted Certs for Service Image Verification
+### 6. Trusted Certs for Service Image Verification
 
 #### **API:** GET  /trust[?verbose=true]
 ---
@@ -949,7 +1640,7 @@ curl -s -X DELETE http://localhost/trust/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecf
 
 ```
 
-### 6. Event Log
+### 7. Event Log
 #### **API:** GET  /eventlog
 ---
 
@@ -1013,22 +1704,24 @@ http://localhost/eventlog
     "record_id": "272",
     "timestamp": 1536861598,
     "severity": "info",
-    "message": "Start policy advertising with the exchange for service https://bluehorizon.network/services/gps.",
-    "event_code": "start_policy_advertising",
+    "message": "Workload service containers for e2edev/https://bluehorizon.network/services/netspeed are up and running.",
+    "event_code": "container_running",
     "source_type": "agreement",
     "event_source": {
+      "agreement_id": "0a94bb0e85e2d98050cd89b5fc98ac3270462170ea836b1a91a2d2a01613c4f8",
        "workload_to_run": {
-        "url": "",
-        "org": "",
-        "version": "",
-        "arch": ""
+        "url": "https://bluehorizon.network/services/netspeed",
+        "org": "e2edev",
+        "version": "1.0",
+        "arch": "amd64"
       },
-      "service_url": [
-        "https://bluehorizon.network/services/gps"
+      "dependent_services": [
+        {
+          "url": https://bluehorizon.network/services/gps",
+          "organization": "e2edev"
       ],
-      "agreement_id": "https://bluehorizon.network/services/gps",
-      "consumer_id": "",
-      "agreement_protocol": ""
+      "consumer_id": "IBM/ag12345",
+      "agreement_protocol": "Basic"
     }
   }
   ....
@@ -1061,7 +1754,7 @@ http://localhost/eventlog?source_type=node&message=~Complete
 #### **API:** GET  /eventlog/all
 ---
 
-Get all the event logs including the previous regstrations for the Horizon agent. It supports selection strings. It supports selection strings. The selections can be made against the attributes.
+Get all the event logs including the previous regstrations for the Horizon agent. It supports selection strings. The selections can be made against the attributes.
 
 **Parameters:**
 

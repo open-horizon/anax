@@ -216,6 +216,14 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			return
 		}
 
+		// check if workload is suspended
+		if wi.ConsumerPolicy.PatternId != "" {
+			if found, suspended := exchange.ServiceSuspended(exchangeDev.RegisteredServices, workload.WorkloadURL, workload.Org); found && suspended {
+				glog.Infof(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with %v for policy %v because service %v is suspended by the user.", wi.Device.Id, wi.ConsumerPolicy.Header.Name, cutil.FormOrgSpecUrl(workload.WorkloadURL, workload.Org))))
+				return
+			}
+		}
+
 		// The workload in the consumer policy has a reference to the workload details. We need to get the details so that we
 		// can verify that the device has the right version API specs (services) to run this workload. Then, we can store the workload details
 		// into the consumer policy file. We have a copy of the consumer policy file that we can modify. If the device doesnt have the right
@@ -225,6 +233,20 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for service details %v, error: %v", workload, err)))
 			return
 		} else {
+
+			// check if the depended services are suspended. If any of them is suspended, then abort the agreeent initialization process
+			if wi.ConsumerPolicy.PatternId != "" {
+				for _, apiSpec := range *asl {
+					for _, devMS := range exchangeDev.RegisteredServices {
+						if devMS.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED {
+							if devMS.Url == cutil.FormOrgSpecUrl(apiSpec.SpecRef, apiSpec.Org) || devMS.Url == apiSpec.SpecRef {
+								glog.Infof(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with %v for policy %v because service %v is suspended by the user.", wi.Device.Id, wi.ConsumerPolicy.Header.Name, devMS.Url)))
+								return
+							}
+						}
+					}
+				}
+			}
 
 			// Canonicalize the arch field in the API spec list, and then merge node policies together if they aren't already merged.
 			var mergedProducer *policy.Policy
@@ -240,6 +262,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 					// Run through all the services on the node that are required by this workload and merge those policies.
 					for _, devMS := range services {
 						// Find the device's service definition based on the services needed by the workload.
+
 						if devMS.Url == cutil.FormOrgSpecUrl(apiSpec.SpecRef, apiSpec.Org) || devMS.Url == apiSpec.SpecRef {
 							if pol, err := policy.DemarshalPolicy(devMS.Policy); err != nil {
 								glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error demarshalling device %v policy, error: %v", wi.Device.Id, err)))

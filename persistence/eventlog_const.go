@@ -49,6 +49,11 @@ const (
 	EC_SERVICE_CONFIG_COMPLETE = "service_configuration_complete"
 	EC_ERROR_SERVICE_CONFIG    = "error_service_configuration"
 
+	// service config state
+	EC_START_CHANGING_SERVICE_CONFIGSTATE    = "start_changing_service_configuration_state"
+	EC_CHANGING_SERVICE_CONFIGSTATE_COMPLETE = "changing_service_configuration_state_complete"
+	EC_ERROR_CHANGING_SERVICE_CONFIGSTATE    = "error_changing_service_configuration_state"
+
 	// agreement related event code
 	EC_RECEIVED_PROPOSAL         = "received_proposal"
 	EC_IGNORE_PROPOSAL           = "ignore_proposal"
@@ -77,6 +82,7 @@ const (
 	EC_CANCEL_AGREEMENT_EXECUTION_TIMEOUT = "cancel_agreement_execution_timeout"
 	EC_CANCEL_AGREEMENT_NO_REPLYACK       = "cancel_agreement_no_replyack"
 	EC_CANCEL_AGREEMENT_PER_AGBOT         = "cancel_agreement_per_agbot_request"
+	EC_CANCEL_AGREEMENT_SERVICE_SUSPENDED = "cancel_agreement_service_suspended"
 
 	EC_CONTAINER_RUNNING          = "container_running"
 	EC_CONTAINER_STOPPED          = "container_stopped"

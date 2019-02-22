@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/policy"
 	"time"
@@ -221,6 +222,45 @@ func (s ImageDockerAuth) String() string {
 		"Token: %v, "+
 		"LastUpdated: %v",
 		s.DockAuthId, s.Registry, s.UserName, s.Token, s.LastUpdated)
+}
+
+// service configuration states
+const SERVICE_CONFIGSTATE_SUSPENDED = "suspended"
+const SERVICE_CONFIGSTATE_ACTIVE = "active"
+
+type ServiceConfigState struct {
+	Url         string `json:"url"`
+	Org         string `json:"org"`
+	ConfigState string `json:"configState"`
+}
+
+func (s *ServiceConfigState) String() string {
+	return fmt.Sprintf("Url: %v, Org: %v, ConfigState: %v", s.Url, s.Org, s.ConfigState)
+}
+
+func NewServiceConfigState(url, org, state string) *ServiceConfigState {
+	return &ServiceConfigState{
+		Url:         url,
+		Org:         org,
+		ConfigState: state,
+	}
+}
+
+// check if the 2 given config states are the same.
+func SameCongigState(state1 string, state2 string) bool {
+	if state1 == state2 {
+		return true
+	}
+
+	if state1 == "" && state2 == SERVICE_CONFIGSTATE_ACTIVE {
+		return true
+	}
+
+	if state1 == SERVICE_CONFIGSTATE_ACTIVE && state2 == "" {
+		return true
+	}
+
+	return false
 }
 
 // This function is used to figure out what kind of version search to do in the exchange based on the input version string.
@@ -476,4 +516,71 @@ func GetServiceDockerAuthsWithId(ec ExchangeContext, service_id string) ([]Image
 
 	glog.V(5).Infof(rpclogString(fmt.Sprintf("returning service docker auths %v for service %v.", docker_auths, service_id)))
 	return docker_auths, nil
+}
+
+func GetServicesConfigState(httpClientFactory *config.HTTPClientFactory, dev_id string, dev_token string, exchangeUrl string) ([]ServiceConfigState, error) {
+	service_cs := []ServiceConfigState{}
+
+	pDevice, err := GetExchangeDevice(httpClientFactory, dev_id, dev_token, exchangeUrl)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Unable to retrieve node resource for %v from the exchange, error %v", dev_id, err))
+	}
+
+	for _, service := range pDevice.RegisteredServices {
+		// service.Url is in the form of org/url
+		org, url := cutil.SplitOrgSpecUrl(service.Url)
+
+		// set to default if empty
+		config_state := service.ConfigState
+		if config_state == "" {
+			config_state = SERVICE_CONFIGSTATE_ACTIVE
+		}
+
+		mcs := NewServiceConfigState(url, org, config_state)
+		service_cs = append(service_cs, *mcs)
+	}
+
+	glog.V(5).Infof(rpclogString(fmt.Sprintf("returning service configuration states:  %v.", service_cs)))
+
+	return service_cs, nil
+}
+
+// check the registered services to see if the given service is suspended or not
+// returns (found, suspended)
+func ServiceSuspended(registered_services []Microservice, service_url string, service_org string) (bool, bool) {
+	if registered_services == nil {
+		return false, false
+	}
+	for _, svc := range registered_services {
+		if svc.Url == cutil.FormOrgSpecUrl(service_url, service_org) || svc.Url == service_url {
+			if svc.ConfigState == SERVICE_CONFIGSTATE_SUSPENDED {
+				return true, true
+			} else {
+				return true, false
+			}
+		}
+	}
+
+	return false, false
+}
+
+// modify the the configuration state for the registeredServices for a device.
+func PostDeviceServicesConfigState(httpClientFactory *config.HTTPClientFactory, deviceId string, deviceToken string, exchangeUrl string, svcs_configstate *ServiceConfigState) error {
+	// create POST body
+	targetURL := exchangeUrl + "orgs/" + GetOrg(deviceId) + "/nodes/" + GetId(deviceId) + "/services_configstate"
+	var resp interface{}
+	resp = ""
+
+	for {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "POST", targetURL, deviceId, deviceToken, svcs_configstate, &resp); err != nil {
+			return err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("post service configuration states %v for device %v to the exchange.", svcs_configstate, deviceId)))
+			return nil
+		}
+	}
 }

@@ -71,6 +71,24 @@ func GetHTTPPutDeviceHandler(ec ExchangeContext) PutDeviceHandler {
 	}
 }
 
+// A handler for modifying the device information on the exchange
+type PostDeviceServicesConfigStateHandler func(deviceId string, deviceToken string, svcsConfigState *ServiceConfigState) error
+
+func GetHTTPPostDeviceServicesConfigStateHandler(ec ExchangeContext) PostDeviceServicesConfigStateHandler {
+	return func(id string, token string, svcsConfigState *ServiceConfigState) error {
+		return PostDeviceServicesConfigState(ec.GetHTTPFactory(), ec.GetExchangeId(), ec.GetExchangeToken(), ec.GetExchangeURL(), svcsConfigState)
+	}
+}
+
+// A handler for service config state information from the exchange
+type ServicesConfigStateHandler func(id string, token string) ([]ServiceConfigState, error)
+
+func GetHTTPServicesConfigStateHandler(ec ExchangeContext) ServicesConfigStateHandler {
+	return func(id string, token string) ([]ServiceConfigState, error) {
+		return GetServicesConfigState(ec.GetHTTPFactory(), ec.GetExchangeId(), ec.GetExchangeToken(), ec.GetExchangeURL())
+	}
+}
+
 // A handler for resolving service references in the exchange.
 type ServiceResolverHandler func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *ServiceDefinition, error)
 

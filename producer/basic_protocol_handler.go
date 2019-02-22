@@ -155,6 +155,8 @@ func (c *BasicProtocolHandler) GetTerminationCode(reason string) uint {
 		return basicprotocol.CANCEL_IMAGE_SIG_VERIF_FAILURE
 	case TERM_REASON_NODE_SHUTDOWN:
 		return basicprotocol.CANCEL_NODE_SHUTDOWN
+	case TERM_REASON_SERVICE_SUSPENDED:
+		return basicprotocol.CANCEL_SERVICE_SUSPENDED
 	default:
 		return 999
 	}
