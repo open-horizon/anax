@@ -219,11 +219,12 @@ docker-push-only:
 
 docker-push: docker-image docker-push-only
 
+# you must set DOCKER_IMAGE_VERSION to the correct version for promotion to production
 promote-docker:
-	@echo "Promoting $(DOCKER_IMAGE_STG)"
-	docker tag $(DOCKER_IMAGE_STG) $(DOCKER_IMAGE_PROD)
+	@echo "Promoting $(DOCKER_IMAGE)"
+	docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE_PROD)
 	docker push $(DOCKER_IMAGE_PROD)
-	docker tag $(DOCKER_IMAGE_STG) $(DOCKER_IMAGE_LATEST)
+	docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE_LATEST)
 	docker push $(DOCKER_IMAGE_LATEST)
 
 promote-mac-pkg-and-docker: promote-mac-pkg promote-docker
