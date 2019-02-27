@@ -24,5 +24,6 @@ import (
 )
 
 func main() {
+	base.ConfigStandaloneSyncService()
 	base.StandaloneSyncService(&css.HorizonAuthenticate{})
 }

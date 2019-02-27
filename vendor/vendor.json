@@ -523,70 +523,78 @@
 			"revisionTime": "2018-10-23T06:56:52Z"
 		},
 		{
-			"checksumSHA1": "12FgspFrBAoRr4QH+jxuWk/+ioQ=",
+			"checksumSHA1": "iGH7L0UO2pDqRotJ9FpabZ7P4tM=",
 			"path": "github.com/open-horizon/edge-sync-service/common",
-			"revision": "4a65823ab228e9a85b4c6b7906abc21cf2e58181",
-			"revisionTime": "2019-02-20T16:01:46Z"
+			"revision": "12439b5e3afce0b24d506290702050db9896472b",
+			"revisionTime": "2019-02-27T12:05:05Z",
+			"version": "=0.3.0",
+			"versionExact": "0.3.0"
 		},
 		{
-			"checksumSHA1": "HwN55BYwa+eIHDQfHYtMEy3DRDo=",
+			"checksumSHA1": "7uOeARlATBNLWMGtywo02yDV/sY=",
 			"path": "github.com/open-horizon/edge-sync-service/core/base",
-			"revision": "4a65823ab228e9a85b4c6b7906abc21cf2e58181",
-			"revisionTime": "2019-02-20T16:01:46Z"
+			"revision": "12439b5e3afce0b24d506290702050db9896472b",
+			"revisionTime": "2019-02-27T12:05:05Z",
+			"version": "=0.3.0",
+			"versionExact": "0.3.0"
 		},
 		{
-			"checksumSHA1": "uTJDfcaKMDNZxmW09MnlRcux/zc=",
+			"checksumSHA1": "BvJkSAPViLCWbh6zGU8j85aAcSU=",
 			"path": "github.com/open-horizon/edge-sync-service/core/communications",
-			"revision": "4a65823ab228e9a85b4c6b7906abc21cf2e58181",
-			"revisionTime": "2019-02-20T16:01:46Z"
+			"revision": "12439b5e3afce0b24d506290702050db9896472b",
+			"revisionTime": "2019-02-27T12:05:05Z"
 		},
 		{
-			"checksumSHA1": "HnCscLC9W2l/YlcxS9CkgRzDHos=",
+			"checksumSHA1": "TN/PN4azauVE8hsRrUEF/DTlw+o=",
 			"path": "github.com/open-horizon/edge-sync-service/core/dataURI",
-			"revision": "4a65823ab228e9a85b4c6b7906abc21cf2e58181",
-			"revisionTime": "2019-02-20T16:01:46Z"
+			"revision": "12439b5e3afce0b24d506290702050db9896472b",
+			"revisionTime": "2019-02-27T12:05:05Z"
 		},
 		{
 			"checksumSHA1": "govi7cUD+B85hJBFJInfqP9a1Ws=",
 			"path": "github.com/open-horizon/edge-sync-service/core/leader",
-			"revision": "4a65823ab228e9a85b4c6b7906abc21cf2e58181",
-			"revisionTime": "2019-02-20T16:01:46Z"
+			"revision": "12439b5e3afce0b24d506290702050db9896472b",
+			"revisionTime": "2019-02-27T12:05:05Z"
 		},
 		{
-			"checksumSHA1": "hQ/cgtIo0HtIEjAvDyeL+oxTZjE=",
+			"checksumSHA1": "O3aPYsgc5q9CX8+DQ0QD3Tioa5U=",
 			"path": "github.com/open-horizon/edge-sync-service/core/security",
-			"revision": "4a65823ab228e9a85b4c6b7906abc21cf2e58181",
-			"revisionTime": "2019-02-20T16:01:46Z"
+			"revision": "12439b5e3afce0b24d506290702050db9896472b",
+			"revisionTime": "2019-02-27T12:05:05Z"
 		},
 		{
-			"checksumSHA1": "VO9BEjQw/DMLmhHOz36lkyrzFjA=",
+			"checksumSHA1": "qyJujhaVGysiFUgKYFGcUbodiGY=",
 			"path": "github.com/open-horizon/edge-sync-service/core/storage",
-			"revision": "4a65823ab228e9a85b4c6b7906abc21cf2e58181",
-			"revisionTime": "2019-02-20T16:01:46Z"
+			"revision": "12439b5e3afce0b24d506290702050db9896472b",
+			"revisionTime": "2019-02-27T12:05:05Z"
 		},
 		{
-			"checksumSHA1": "mSLaXXEiDyk7MD83PSsR3s/igtg=",
+			"checksumSHA1": "PhqDyNovth4bfrmBd3jjJAVjxd0=",
 			"path": "github.com/open-horizon/edge-utilities/logger",
-			"revision": "aa0a278b8ace23a93f8ef8b890139a801a7e94d8",
-			"revisionTime": "2019-02-20T11:26:40Z"
+			"revision": "1de8bc71f1ab11fafd69a5012f27db33e1fec09d",
+			"revisionTime": "2019-02-27T10:41:37Z",
+			"version": "=0.3.0",
+			"versionExact": "0.3.0"
 		},
 		{
 			"checksumSHA1": "kK7IdbmXxRjVTJE/92vH4/iIb58=",
 			"path": "github.com/open-horizon/edge-utilities/logger/log",
-			"revision": "aa0a278b8ace23a93f8ef8b890139a801a7e94d8",
-			"revisionTime": "2019-02-20T11:26:40Z"
+			"revision": "1de8bc71f1ab11fafd69a5012f27db33e1fec09d",
+			"revisionTime": "2019-02-27T10:41:37Z"
 		},
 		{
 			"checksumSHA1": "Oei8GSncNAosGw8EsgCPH4N2Pyg=",
 			"path": "github.com/open-horizon/edge-utilities/logger/trace",
-			"revision": "aa0a278b8ace23a93f8ef8b890139a801a7e94d8",
-			"revisionTime": "2019-02-20T11:26:40Z"
+			"revision": "1de8bc71f1ab11fafd69a5012f27db33e1fec09d",
+			"revisionTime": "2019-02-27T10:41:37Z",
+			"version": "=0.3.0",
+			"versionExact": "0.3.0"
 		},
 		{
 			"checksumSHA1": "3HtDOzmIZo2tu8d+VcbRjm4cy68=",
 			"path": "github.com/open-horizon/edge-utilities/properties",
-			"revision": "aa0a278b8ace23a93f8ef8b890139a801a7e94d8",
-			"revisionTime": "2019-02-20T11:26:40Z"
+			"revision": "1de8bc71f1ab11fafd69a5012f27db33e1fec09d",
+			"revisionTime": "2019-02-27T10:41:37Z"
 		},
 		{
 			"checksumSHA1": "da+YEJY+nMqad6J7sFQVh2Wed1c=",

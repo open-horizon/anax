@@ -5,6 +5,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/edge-sync-service/common"
 	"github.com/open-horizon/edge-sync-service/core/security"
+	"net/http"
 	"strings"
 )
 
@@ -28,10 +29,21 @@ func (auth *FSSAuthenticate) Start() {
 // An edge service's identity is <service-org>/<service-name>.
 //
 // Returns authentication result code, the user's org and id.
-func (auth *FSSAuthenticate) Authenticate(appKey, appSecret string) (int, string, string) {
+func (auth *FSSAuthenticate) Authenticate(request *http.Request) (int, string, string) {
+
+	if request == nil {
+		glog.Errorf(essALS(fmt.Sprintf("called with a nil HTTP request")))
+		return security.AuthFailed, "", ""
+	}
+
+	appKey, appSecret, ok := request.BasicAuth()
+	if !ok {
+		glog.Errorf(essALS(fmt.Sprintf("unable to extract basic auth information")))
+		return security.AuthFailed, "", ""
+	}
 
 	glog.V(3).Infof(essALS(fmt.Sprintf("received authentication request for user %v", appKey)))
-	glog.V(5).Infof(essALS(fmt.Sprintf("received authentication request for user %v with secret %v", appKey, appSecret)))
+	glog.V(6).Infof(essALS(fmt.Sprintf("received authentication request for user %v with secret %v", appKey, appSecret)))
 
 	// appKey will be <service-org>/<service-name> indicating a service running on this node.
 	authCode := security.AuthFailed
@@ -58,11 +70,12 @@ func (auth *FSSAuthenticate) Authenticate(appKey, appSecret string) (int, string
 // with the specified URL. For ESS to CSS SPI communication, the node id and token is used.
 func (auth *FSSAuthenticate) KeyandSecretForURL(url string) (string, string) {
 
-	glog.V(5).Infof(essALS(fmt.Sprintf("received request for URL %v credentials", url)))
+	glog.V(6).Infof(essALS(fmt.Sprintf("received request for URL %v credentials", url)))
 
 	if strings.HasPrefix(url, common.HTTPCSSURL) {
-		return common.Configuration.OrgID + "/" + common.Configuration.DestinationType + "/" +
-			common.Configuration.DestinationID, auth.nodeToken
+		id := common.Configuration.OrgID + "/" + common.Configuration.DestinationType + "/" + common.Configuration.DestinationID
+		glog.V(6).Infof(essALS(fmt.Sprintf("returning credentials %v %v", id, auth.nodeToken)))
+		return id, auth.nodeToken
 	}
 
 	return "", ""

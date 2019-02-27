@@ -3,6 +3,7 @@ package config
 import (
 	"path"
 	"path/filepath"
+	"strings"
 )
 
 // Configuration for the File Sync Service, which is implemented by the embedded ESS.
@@ -13,7 +14,6 @@ type FSSConfig struct {
 	PersistencePath    string // The absolute location in the host filesystem where anax stores files retrieved by the file sync service.
 	AuthenticationPath string // The absolute location in the host filesystem where anax stores authentication credentials for services so that the service can authenticate to the FSS (ESS) API.
 	CSSURL             string // The URL used to access the CSS.
-	CSSPort            uint16 // The port used to access the CSS.
 	CSSSSLCert         string // The path to the client side SSL certificate for the CSS.
 	PollingRate        uint16 // The number of seconds between polls to the CSS for notification updates.
 }
@@ -24,7 +24,7 @@ func (c *HorizonConfig) FSSIsUnixProtocol() bool {
 
 func (c *HorizonConfig) GetFileSyncServiceProtocol() string {
 	if c.FSSIsUnixProtocol() {
-		return "unix"
+		return "secure-unix"
 	}
 	return c.Edge.FileSyncService.APIProtocol
 }
@@ -86,11 +86,7 @@ func (c *HorizonConfig) GetFileSyncServiceAuthPath() string {
 }
 
 func (c *HorizonConfig) GetCSSURL() string {
-	return c.Edge.FileSyncService.CSSURL
-}
-
-func (c *HorizonConfig) GetCSSPort() uint16 {
-	return c.Edge.FileSyncService.CSSPort
+	return strings.TrimRight(c.Edge.FileSyncService.CSSURL, "/")
 }
 
 func (c *HorizonConfig) GetCSSSSLCert() string {

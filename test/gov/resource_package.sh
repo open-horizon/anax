@@ -24,7 +24,16 @@ for dir in */; do
 	echo "Installing resource package ${justDirName}.tgz."
 
 	$EXEC_DIR/deploy_file.sh /root/resources/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG1} ${RESOURCE_TYPE} none none
+	if [ $? -ne 0 ]
+	then
+		exit -1
+	fi
+
 	$EXEC_DIR/deploy_file.sh /root/resources/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG2} ${RESOURCE_TYPE} none none
+	if [ $? -ne 0 ]
+	then
+		exit -1
+	fi
 
 	cd ..
 done

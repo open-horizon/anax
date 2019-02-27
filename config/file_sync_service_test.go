@@ -15,7 +15,7 @@ func Test_default_FSS(t *testing.T) {
 
 	if !testCfg.FSSIsUnixProtocol() {
 		t.Errorf("config API should indicate unix FSS protocol in use")
-	} else if testCfg.GetFileSyncServiceProtocol() != "unix" {
+	} else if testCfg.GetFileSyncServiceProtocol() != "secure-unix" {
 		t.Errorf("config API should indicate unix FSS protocol value, is %v", testCfg.GetFileSyncServiceProtocol())
 	} else if testCfg.GetFileSyncServiceAPIPort() != 0 {
 		t.Errorf("config API should indicate port 0, is %v", testCfg.GetFileSyncServiceAPIPort())
@@ -47,7 +47,7 @@ func Test_unix_config_FSS(t *testing.T) {
 
 	if !testCfg.FSSIsUnixProtocol() {
 		t.Errorf("config API should indicate unix FSS protocol in use")
-	} else if testCfg.GetFileSyncServiceProtocol() != "unix" {
+	} else if testCfg.GetFileSyncServiceProtocol() != "secure-unix" {
 		t.Errorf("config API should indicate unix FSS protocol value, is %v", testCfg.GetFileSyncServiceProtocol())
 	} else if testCfg.GetFileSyncServiceAPIPort() != 0 {
 		t.Errorf("config API should indicate port 0, is %v", testCfg.GetFileSyncServiceAPIPort())
@@ -72,7 +72,7 @@ func Test_unix_config_error_FSS(t *testing.T) {
 
 	if !testCfg.FSSIsUnixProtocol() {
 		t.Errorf("config API should indicate unix FSS protocol in use")
-	} else if testCfg.GetFileSyncServiceProtocol() != "unix" {
+	} else if testCfg.GetFileSyncServiceProtocol() != "secure-unix" {
 		t.Errorf("config API should indicate unix FSS protocol value, is %v", testCfg.GetFileSyncServiceProtocol())
 	} else if testCfg.GetFileSyncServiceAPIPort() != 0 {
 		t.Errorf("config API should indicate port 0, is %v", testCfg.GetFileSyncServiceAPIPort())

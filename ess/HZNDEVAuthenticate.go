@@ -3,6 +3,7 @@ package ess
 import (
 	"github.com/open-horizon/edge-sync-service/common"
 	"github.com/open-horizon/edge-sync-service/core/security"
+	"net/http"
 	"strings"
 )
 
@@ -22,7 +23,16 @@ func (auth *HZNDEVAuthenticate) Start() {
 // 3) a 2 part '/' delimited service identity.
 //
 // Returns authentication result code, the user's org and id.
-func (auth *HZNDEVAuthenticate) Authenticate(appKey, appSecret string) (int, string, string) {
+func (auth *HZNDEVAuthenticate) Authenticate(request *http.Request) (int, string, string) {
+
+	if request == nil {
+		return security.AuthFailed, "", ""
+	}
+
+	appKey, _, ok := request.BasicAuth()
+	if !ok {
+		return security.AuthFailed, "", ""
+	}
 
 	parts := strings.Split(appKey, "/")
 	if len(parts) == 3 {
@@ -44,8 +54,7 @@ func (auth *HZNDEVAuthenticate) Authenticate(appKey, appSecret string) (int, str
 // used by the ESS when communicating with the specified URL.
 func (auth *HZNDEVAuthenticate) KeyandSecretForURL(url string) (string, string) {
 	if strings.HasPrefix(url, common.HTTPCSSURL) {
-		return common.Configuration.OrgID + "/" + common.Configuration.DestinationType + "/" +
-			common.Configuration.DestinationID, ""
+		return common.Configuration.OrgID + "/" + common.Configuration.DestinationType + "/" + common.Configuration.DestinationID, ""
 	}
 	return "", ""
 }

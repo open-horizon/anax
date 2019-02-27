@@ -214,6 +214,19 @@ echo "$REGANAX1C"
 
 # package resources
 ./resource_package.sh
+if [ $? -ne 0 ]
+then
+    echo -e "Resource registration failure."
+    exit -1
+fi
+
+# test the CSS API
+./sync_service_test.sh
+if [ $? -ne 0 ]
+then
+    echo -e "Model management sync service test failure."
+    exit -1
+fi
 
 echo "Register services"
 ./service_apireg.sh

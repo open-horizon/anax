@@ -1,79 +1,357 @@
 package css
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/golang/glog"
 	"github.com/open-horizon/edge-sync-service/core/security"
+	"github.com/open-horizon/edge-utilities/logger"
+	"github.com/open-horizon/edge-utilities/logger/log"
+	"github.com/open-horizon/edge-utilities/logger/trace"
+	"io/ioutil"
+	"net/http"
+	"os"
 	"strings"
 )
 
+// Set this env var to a value that will be used to identify the http header that contains the user identity, when this
+// plugin is running behind something that is doing the authentication.
+const CSS_PRE_AUTHENTICATED_IDENTITY = "CSS_PRE_AUTHENTICATED_HEADER"
+
+// The env var that holds the exchange API endpoint when this authenticator should use the exchange to do authentication.
+const HZN_EXCHANGE_URL = "HZN_EXCHANGE_URL"
+
 // HorizonAuthenticate is the Horizon plugin for authentication used by the Cloud sync service. This plugin
-// utilizes the exchange to authenticate users.
+// can be used in environments where authentication is handled by something else in the network before
+// the CSS or where the CSS itself is deployed with a public facing API and so this plugin utilizes the exchange
+// to authenticate users.
 type HorizonAuthenticate struct {
 }
 
 // Start initializes the HorizonAuthenticate plugin.
 func (auth *HorizonAuthenticate) Start() {
-	glog.V(3).Infof(cssALS("Starting"))
+
+	// Make sure one of the authentication behaviors has been chosen.
+	if AlreadyAuthenticatedIdentityHeader() != "" && ExchangeURL() != "" {
+		panic(fmt.Sprintf("Must not specify both %v=%v and %v=%v.", CSS_PRE_AUTHENTICATED_IDENTITY, AlreadyAuthenticatedIdentityHeader(), HZN_EXCHANGE_URL, ExchangeURL()))
+	} else if AlreadyAuthenticatedIdentityHeader() == "" && ExchangeURL() == "" {
+		panic(fmt.Sprintf("Must specify an environment variable to indicate authentication behavior, either %v or %v.", CSS_PRE_AUTHENTICATED_IDENTITY, HZN_EXCHANGE_URL))
+	}
+
+	// Log which authentication behavior we are using.
+	if id := AlreadyAuthenticatedIdentityHeader(); id == "" {
+		if log.IsLogging(logger.INFO) {
+			log.Info(cssALS("starting with exchange authenticated identity"))
+		}
+	} else {
+		if log.IsLogging(logger.INFO) {
+			log.Info(cssALS(fmt.Sprintf("starting with pre-authenticated identities in header: %v", id)))
+		}
+	}
 	return
+}
+
+func AlreadyAuthenticatedIdentityHeader() string {
+	return os.Getenv(CSS_PRE_AUTHENTICATED_IDENTITY)
+}
+
+func ExchangeURL() string {
+	return os.Getenv(HZN_EXCHANGE_URL)
 }
 
 // Authenticate authenticates a particular appKey/appSecret pair and indicates
 // whether it is an edge node, org admin, or plain user. Also returned is the
-// user's org and identitity. An edge node's identity is orgID/destType/destID.
+// user's org and identitity.
 //
-// Note: This Authenticate implementation is for production use with the Horizon
-//      Agent. App keys for APIs are of the form, userID@orgID or
-//      email@emailDomain@orgID. If the userID does not
-//      appear there, it is assumed to be an admin for the specified org.
-//      Edge node app keys are of the form orgID/destType/destID
+// When this authenticator is using the exchange to authenticate, the expected form for an appKey is:
+// <org>/<destination type>/<destination id> - for a node identity, where destination type is mapped to a pattern in horizon and destination id is the node id.
+// <id>@<org> - for a real person user
+//
+// When this authenticator is allowing something infront of it in the network to do the authentication, the expected form for an appKey is irrelevant.
+// What's important is what's in the HTTP request header:
+// the CSS_PRE_AUTHENTICATED_IDENTITY header will contain the identity
+// the "type" header will contain "dev" for a node or "person" for a user
+// the "orgid" header will contain the orgid
+//
 
 // Returns authentication result code, the user's org and id.
-func (auth *HorizonAuthenticate) Authenticate(appKey, appSecret string) (int, string, string) {
+func (auth *HorizonAuthenticate) Authenticate(request *http.Request) (int, string, string) {
 
-	glog.V(3).Infof(cssALS(fmt.Sprintf("Received authentication request for user %v", appKey)))
-	glog.V(5).Infof(cssALS(fmt.Sprintf("Received authentication request for user %v with secret %v", appKey, appSecret)))
+	if request == nil {
+		if log.IsLogging(logger.ERROR) {
+			log.Error(cssALS(fmt.Sprintf("called with a nil HTTP request")))
+		}
+		return security.AuthFailed, "", ""
+	}
 
-	// appKey will be either <org>/<pattern>/<id> - for a node identity,
-	// or <id>@<org> for a real person user.
+	appKey, appSecret, ok := request.BasicAuth()
+	if !ok {
+		if log.IsLogging(logger.ERROR) {
+			log.Error(cssALS(fmt.Sprintf("unable to extract basic auth information")))
+		}
+		return security.AuthFailed, "", ""
+	}
 
+	// If the exchange is being used for authentication, then use the env var to access the exchange endpoint.
+	if exURL := ExchangeURL(); exURL != "" {
+		return auth.authenticateWithExchange(appKey, appSecret, exURL)
+
+	} else {
+		// Otherwise use the env var to know which header to access for the authenticated identity.
+		return auth.authenticationAlreadyDone(request, AlreadyAuthenticatedIdentityHeader())
+
+	}
+}
+
+// KeyandSecretForURL returns an app key and an app secret pair to be
+// used by the ESS when communicating with the specified URL. This method is not needed in the CSS.
+func (auth *HorizonAuthenticate) KeyandSecretForURL(url string) (string, string) {
+	return "", ""
+}
+
+// Internal function used to separate the code for authenticating with the exchange away from the main
+// Authenticate function.
+func (auth *HorizonAuthenticate) authenticateWithExchange(appKey string, appSecret string, exURL string) (int, string, string) {
+	if log.IsLogging(logger.DEBUG) {
+		log.Debug(cssALS(fmt.Sprintf("received exchange authentication request for user %v", appKey)))
+	}
+	if trace.IsLogging(logger.TRACE) {
+		trace.Debug(cssALS(fmt.Sprintf("received exchange authentication request for user %v with secret %v", appKey, appSecret)))
+	}
+
+	// Assume the request will be rejected.
 	authCode := security.AuthFailed
 	authOrg := ""
 	authId := ""
 
-	// If the appKey is shaped like a node identity, let it through as a node.
-	parts := strings.Split(appKey, "/")
-	if len(parts) == 3 {
-		authCode = security.AuthEdgeNode
-		authOrg = parts[0]
-		authId = parts[1] + "/" + parts[2]
+	// If the appKey is shaped like a node identity, then let's make sure it is a node identity.
+	if parts := strings.Split(appKey, "/"); len(parts) == 3 {
+
+		// A 3 part '/' delimited identity has to be a node identity.
+		if trace.IsLogging(logger.TRACE) {
+			trace.Debug(cssALS(fmt.Sprintf("authentication request for user %v appears to be a node identity", appKey)))
+		}
+
+		if err := verifyNodeIdentity(parts[2], parts[0], appSecret, ExchangeURL()); err != nil {
+			if log.IsLogging(logger.ERROR) {
+				log.Error(cssALS(fmt.Sprintf("unable to verify identity %v, error %v", appKey, err)))
+			}
+		} else {
+			authCode = security.AuthEdgeNode
+			authOrg = parts[0]
+			authId = parts[1] + "/" + parts[2]
+		}
+
+	} else if parts := strings.Split(appKey, "@"); len(parts) == 2 {
+		// If the appKey is shaped like a user identity, then let's make sure it is a user identity.
+
+		// A 2 part '@' delimited identity has to be a user identity.
+		if trace.IsLogging(logger.TRACE) {
+			trace.Debug(cssALS(fmt.Sprintf("authentication request for user %v appears to be a user identity", appKey)))
+		}
+
+		if admin, err := verifyUserIdentity(parts[0], parts[1], appSecret, ExchangeURL()); err != nil {
+			if log.IsLogging(logger.ERROR) {
+				log.Error(cssALS(fmt.Sprintf("unable to verify identity %v, error %v", appKey, err)))
+			}
+		} else if admin {
+			authCode = security.AuthAdmin
+			authOrg = parts[1]
+			authId = parts[0]
+		} else {
+			authCode = security.AuthUser
+			authOrg = parts[1]
+			authId = parts[0]
+		}
+	} else {
+		if log.IsLogging(logger.ERROR) {
+			log.Error(cssALS(fmt.Sprintf("request identity %v is not in a supported format, must be either <org>/<destination type>/<destination id> for a node, or <destination id>@<org> for a user.", appKey)))
+		}
 	}
 
-	// If the appKey is shaped like a user identity, let it through as an admin.
-	parts = strings.Split(appKey, "@")
-	if len(parts) == 2 {
-		authCode = security.AuthAdmin
-		authOrg = parts[1]
-		authId = parts[0]
+	// Log the results of the authentication.
+	if log.IsLogging(logger.DEBUG) {
+		log.Debug(cssALS(fmt.Sprintf("returned exchange authentication result code %v org %v id %v", authCode, authOrg, authId)))
 	}
-
-	glog.V(3).Infof(cssALS(fmt.Sprintf("Returned authentication result code %v org %v id %v", authCode, authOrg, authId)))
-
-	// Everything else gets rejected.
 	return authCode, authOrg, authId
 }
 
-// KeyandSecretForURL returns an app key and an app secret pair to be
-// used by the ESS when communicating with the specified URL.
-func (auth *HorizonAuthenticate) KeyandSecretForURL(url string) (string, string) {
-	// if strings.HasPrefix(url, common.HTTPCSSURL) {
-	// 	return common.Configuration.OrgID + "/" + common.Configuration.DestinationType + "/" +
-	// 		common.Configuration.DestinationID, ""
-	// }
-	return "", ""
+type UserDefinition struct {
+	Password    string `json:"password"`
+	Admin       bool   `json:"admin"`
+	Email       string `json:"email"`
+	LastUpdated string `json:"lastUpdated"`
+}
+
+type GetUsersResponse struct {
+	Users     map[string]UserDefinition `json:"users"`
+	LastIndex int                       `json:"lastIndex"`
+}
+
+// Returns true,nil for users that are admins, false,nil for users that are valid but aren't admins,
+// and false,error otherwise.
+func verifyUserIdentity(id string, orgId string, appSecret string, exURL string) (bool, error) {
+
+	// Log which API we're about to use.
+	url := fmt.Sprintf("%v/orgs/%v/users/%v", exURL, orgId, id)
+	apiMsg := fmt.Sprintf("%v %v", http.MethodGet, url)
+	if trace.IsLogging(logger.TRACE) {
+		trace.Debug(cssALS(fmt.Sprintf("checking exchange %v", apiMsg)))
+	}
+
+	// Invoke the exchange API to verify the user.
+	user := fmt.Sprintf("%v/%v", orgId, id)
+	resp, err := invokeExchange(url, user, appSecret)
+
+	// Make sure the response reader is closed if we exit quickly.
+	defer resp.Body.Close()
+
+	// If there was an error invoking the HTTP API, return it.
+	if err != nil {
+		return false, err
+	}
+
+	// Log the HTTP response code.
+	if trace.IsLogging(logger.TRACE) {
+		trace.Debug(cssALS(fmt.Sprintf("received HTTP code: %d", resp.StatusCode)))
+	}
+
+	// If the response code was not expected, then return the error.
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		if resp.StatusCode == 401 {
+			return false, errors.New(fmt.Sprintf("unable to verify user %v in the exchange, HTTP code %v, either the user is undefined or the user's password is incorrect.", user, resp.StatusCode))
+		} else {
+			return false, errors.New(fmt.Sprintf("unable to verify user %v in the exchange, HTTP code %v", user, resp.StatusCode))
+		}
+	} else {
+		users := new(GetUsersResponse)
+
+		// Read in the response object and check if this user is an admin or not.
+		if outBytes, err := ioutil.ReadAll(resp.Body); err != nil {
+			return false, errors.New(fmt.Sprintf("unable to read HTTP response to %v, error %v", apiMsg, err))
+		} else if err := json.Unmarshal(outBytes, users); err != nil {
+			return false, errors.New(fmt.Sprintf("unable to demarshal response %v from %v, error %v", string(outBytes), apiMsg, err))
+		} else if exUserDef, ok := users.Users[user]; !ok {
+			return false, errors.New(fmt.Sprintf("user %v was not returned in response to %v", user, apiMsg))
+		} else if exUserDef.Admin {
+			return true, nil
+		} else {
+			return false, nil
+		}
+
+	}
+}
+
+type GetNodesResponse struct {
+	Nodes     map[string]interface{} `json:"nodes"`
+	LastIndex int                    `json:"lastIndex"`
+}
+
+// Returns nil for valid nodes, otherwise error.
+func verifyNodeIdentity(id string, orgId string, appSecret string, exURL string) error {
+
+	// Log which API we're about to use.
+	url := fmt.Sprintf("%v/orgs/%v/nodes/%v", exURL, orgId, id)
+	apiMsg := fmt.Sprintf("%v %v", http.MethodGet, url)
+	if trace.IsLogging(logger.TRACE) {
+		trace.Debug(cssALS(fmt.Sprintf("checking exchange %v", apiMsg)))
+	}
+
+	// Invoke the exchange API to verify the node.
+	node := fmt.Sprintf("%v/%v", orgId, id)
+	resp, err := invokeExchange(url, node, appSecret)
+
+	// Make sure the response reader is closed if we exit quickly.
+	defer resp.Body.Close()
+
+	// If there was an error invoking the HTTP API, return it.
+	if err != nil {
+		return err
+	}
+
+	// Log the HTTP response code.
+	if trace.IsLogging(logger.TRACE) {
+		trace.Debug(cssALS(fmt.Sprintf("received HTTP code: %d", resp.StatusCode)))
+	}
+
+	// If the response code was not expected, then return the error.
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		if resp.StatusCode == 401 {
+			return errors.New(fmt.Sprintf("unable to verify node %v in the exchange, HTTP code %v, either the node is undefined or the node's token is probably incorrect.", node, resp.StatusCode))
+		} else {
+			return errors.New(fmt.Sprintf("unable to verify node %v in the exchange, HTTP code %v", node, resp.StatusCode))
+		}
+	} else {
+		nodes := new(GetNodesResponse)
+
+		// Read in the response object and check if this node is in it.
+		if outBytes, err := ioutil.ReadAll(resp.Body); err != nil {
+			return errors.New(fmt.Sprintf("unable to read HTTP response to %v, error %v", apiMsg, err))
+		} else if err := json.Unmarshal(outBytes, nodes); err != nil {
+			return errors.New(fmt.Sprintf("unable to demarshal response %v from %v, error %v", string(outBytes), apiMsg, err))
+		} else if _, ok := nodes.Nodes[node]; !ok {
+			return errors.New(fmt.Sprintf("node %v was not returned in response to %v", node, apiMsg))
+		} else {
+			return nil
+		}
+
+	}
+}
+
+// Common function to invoke the Exchange API when checking for valid users and nodes.
+func invokeExchange(url string, user string, pw string) (*http.Response, error) {
+
+	apiMsg := fmt.Sprintf("%v %v", http.MethodGet, url)
+
+	// Make a new HTTP request for the API call.
+	httpClient := &http.Client{}
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("unable to create HTTP request for %v, error %v", apiMsg, err))
+	}
+
+	// Add the basic auth header so that the exchange will authenticate.
+	req.SetBasicAuth(user, pw)
+	req.Header.Add("Accept", "application/json")
+
+	if trace.IsLogging(logger.TRACE) {
+		trace.Debug(cssALS(fmt.Sprintf("request has headers %v", req.Header)))
+	}
+
+	// Send the request to verify the user.
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("unable to send HTTP request for %v, error %v", apiMsg, err))
+	} else {
+		return resp, nil
+	}
+}
+
+// Internal function used to separate the code for authenticating with the exchange away from the main
+// Authenticate function. This implementation assumes that the authentication info is in headers as parsed
+// out by the netowrk device in front of the CSS. The Basic Auth header is not interesting anymore.
+func (auth *HorizonAuthenticate) authenticationAlreadyDone(request *http.Request, idHeaderName string) (int, string, string) {
+
+	if log.IsLogging(logger.DEBUG) {
+		log.Debug(cssALS(fmt.Sprintf("request header type %v", request.Header.Get("type"))))
+		log.Debug(cssALS(fmt.Sprintf("request header orgId %v", request.Header.Get("orgId"))))
+		log.Debug(cssALS(fmt.Sprintf("request header %v %v", request.Header.Get(idHeaderName))))
+
+		user, pw, _ := request.BasicAuth()
+		log.Debug(cssALS(fmt.Sprintf("request basic auth header id %v", user)))
+		log.Debug(cssALS(fmt.Sprintf("request basic auth header pw %v", pw)))
+	}
+
+	if request.Header.Get("type") == "person" {
+		return security.AuthAdmin, request.Header.Get("orgId"), request.Header.Get(idHeaderName)
+	} else if request.Header.Get("type") == "dev" {
+		return security.AuthEdgeNode, request.Header.Get("orgId"), request.Header.Get(idHeaderName)
+	}
+
+	return security.AuthFailed, "", ""
 }
 
 // Logging function
 var cssALS = func(v interface{}) string {
-	return fmt.Sprintf("CSS: Authenticator %v", v)
+	return fmt.Sprintf("Horizon Authenticator %v", v)
 }

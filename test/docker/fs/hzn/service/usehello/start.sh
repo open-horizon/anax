@@ -30,7 +30,7 @@ then
     echo -e "All Horizon platform env vars verified."
 
     # Assuming the API address is a unix socket file. HZN_ESS_API_PROTOCOL should be "unix".
-    BASEURL='--unix-socket '${HZN_ESS_API_ADDRESS}' http://localhost/api/v1/objects/'
+    BASEURL='--unix-socket '${HZN_ESS_API_ADDRESS}' https://localhost/api/v1/objects/'
 
 else
     echo -e "Running outside Horizon, skip Horizon platform env var checks."
@@ -83,12 +83,12 @@ do
         if [ "${COUNT}" != "${COUNT_TARGET}" ]
         then
             echo -e "Found ${COUNT} files from the sync service in ${FILE_LOC}, there should be ${COUNT_TARGET}."
-            if [ "$FAILCOUNT" -gt "5" ]
+            if [ "$FAILCOUNT" -gt "2" ]
             then
                 exit 1
             fi
-            sleep 10
-            FAILCOUNT=FAILCOUNT+1
+            sleep 5
+            FAILCOUNT=$((FAILCOUNT+1))
         else
             break
         fi
