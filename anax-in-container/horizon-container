@@ -11,7 +11,7 @@ Usage: $0 {start|stop|update} [index-num] [default-file]
 
 Arguments:
   index-num:      an integer number identifying this instance of horizon when running multiple horizon containers on the same host. Default is 1.
-  default-file:   a default file to use to set common environment variables for the horizon agent like HZN_EXCHANGE_URL and HZN_DEVICE_ID. If not specified and /etc/default/horizon exists on the host, that will be used.
+  default-file:   a default file to use to set common environment variables for the horizon agent like HZN_EXCHANGE_URL, HZN_FSS_CSSURL and HZN_DEVICE_ID. If not specified and /etc/default/horizon exists on the host, that will be used.
 ENDUSAGE
 	exit 1
 }

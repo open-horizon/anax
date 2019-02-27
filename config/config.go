@@ -10,6 +10,7 @@ import (
 )
 
 const ExchangeURLEnvvarName = "HZN_EXCHANGE_URL"
+const FileSyncServiceCSSURLEnvvarName = "HZN_FSS_CSSURL"
 
 type HorizonConfig struct {
 	Edge          Config
@@ -137,6 +138,9 @@ func enrichFromEnvvars(config *HorizonConfig) error {
 		// return fmt.Errorf("Unspecified but required envvar: %s", ExchangeURLEnvvarName)
 	}
 
+	if fssCSSURL := os.Getenv(FileSyncServiceCSSURLEnvvarName); fssCSSURL != "" {
+		config.Edge.FileSyncService.CSSURL = fssCSSURL
+	}
 	return nil
 }
 
