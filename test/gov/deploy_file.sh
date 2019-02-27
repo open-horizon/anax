@@ -39,18 +39,18 @@ read -d '' resmeta <<EOF
 }
 EOF
 
-ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" --cacert /certs/css.crt -u ${3}admin@${3}:password "https://css-api:9443/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
+ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" --cacert /certs/css.crt -u ${3}admin@${3}:${3}adminpw "https://css-api:9443/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
 
-if [ "$ADDM" != "200" ]
+if [ "$ADDM" != "204" ]
 then
 	echo -e "$resmeta \nPUT returned:"
  	echo $ADDM
   exit -1
 fi
 
-ADDF=$(curl -sLX PUT -w "%{http_code}" --cacert /certs/css.crt -u ${3}admin@${3}:password --header 'Content-Type:application/octet-stream' "https://css-api:9443/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @${1})
+ADDF=$(curl -sLX PUT -w "%{http_code}" --cacert /certs/css.crt -u ${3}admin@${3}:${3}adminpw --header 'Content-Type:application/octet-stream' "https://css-api:9443/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @${1})
 
-if [ "$ADDF" == "200" ]
+if [ "$ADDF" == "204" ]
 then
 	echo -e "Data file ${1} added successfully"
 else

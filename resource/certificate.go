@@ -19,7 +19,6 @@ import (
 )
 
 const (
-	keyName      = "key.pem"
 	rsaBits      = 2048
 	daysValidFor = 500
 )
@@ -27,7 +26,7 @@ const (
 func CreateCertificate(org string, keyPath string, certPath string) error {
 
 	common.Configuration.ServerCertificate = path.Join(certPath, config.HZN_FSS_CERT_FILE)
-	common.Configuration.ServerKey = path.Join(keyPath, keyName)
+	common.Configuration.ServerKey = path.Join(keyPath, config.HZN_FSS_CERT_KEY_FILE)
 
 	glog.V(5).Infof(reslog(fmt.Sprintf("creating self signed cert in %v", common.Configuration.ServerCertificate)))
 

@@ -8,6 +8,7 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/dev"
+	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/resource"
 	"io/ioutil"
@@ -261,6 +262,27 @@ func startESS(cw *container.ContainerWorker, network *docker.Network, org string
 		return errors.New(fmt.Sprintf("unable to create SSL certificate for ESS, error %v", err))
 	}
 
+	// Pass our certificate and key into the ESS config by value, as a string of bytes.
+
+	certFile := path.Join(cw.Config.GetESSSSLClientCertPath(), config.HZN_FSS_CERT_FILE)
+	certKeyFile := path.Join(cw.Config.GetESSSSLCertKeyPath(), config.HZN_FSS_CERT_KEY_FILE)
+
+	serverCert := ""
+	serverCertKey := ""
+
+	if essCert, err := os.Open(certFile); err != nil {
+		return errors.New(fmt.Sprintf("unable to open ESS SSL Certificate file %v, error %v", cw.Config.GetESSSSLClientCertPath(), err))
+	} else if essCertBytes, err := ioutil.ReadAll(essCert); err != nil {
+		return errors.New(fmt.Sprintf("unable to read ESS SSL Certificate file %v, error %v", cw.Config.GetESSSSLClientCertPath(), err))
+	} else if essCertKey, err := os.Open(certKeyFile); err != nil {
+		return errors.New(fmt.Sprintf("unable to open ESS SSL Certificate Key file %v, error %v", cw.Config.GetESSSSLCertKeyPath(), err))
+	} else if essCertKeyBytes, err := ioutil.ReadAll(essCertKey); err != nil {
+		return errors.New(fmt.Sprintf("unable to read ESS SSL Certificate Key file %v, error %v", cw.Config.GetESSSSLCertKeyPath(), err))
+	} else {
+		serverCert = string(essCertBytes)
+		serverCertKey = string(essCertKeyBytes)
+	}
+
 	// Get the docker client API out of the container worker.
 	dc := cw.GetClient()
 
@@ -278,9 +300,11 @@ func startESS(cw *container.ContainerWorker, network *docker.Network, org string
 
 	envVars := []string{
 		"NODE_TYPE=ESS",
-		"LISTENING_TYPE=unix",
+		"LISTENING_TYPE=secure-unix",
 		"LISTENING_ADDRESS=" + workingDir,
 		"COMMUNICATION_PROTOCOL=http",
+		"SERVER_CERTIFICATE=" + serverCert,
+		"SERVER_KEY=" + serverCertKey,
 		"HTTP_CSS_HOST=" + CSS_NAME,
 		"HTTP_CSS_PORT=" + getCSSPort(),
 		"PERSISTENCE_ROOT_PATH=/tmp/",

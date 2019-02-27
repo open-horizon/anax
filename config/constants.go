@@ -45,5 +45,8 @@ const HZN_FSS_CERT_MOUNT = "/" + HZN_FSS_CERT_PATH
 // The name of the SSL certificate file that a service can use to make an SSL connection to the FSS (ESS) API.
 const HZN_FSS_CERT_FILE = "cert.pem"
 
+// The name of the SSL certificate key file that the ESS uses to establish an SSL listener.
+const HZN_FSS_CERT_KEY_FILE = "key.pem"
+
 // The number of seconds between polls to the CSS for updates.
 const HZN_FSS_POLLING_RATE = 60

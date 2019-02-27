@@ -2,7 +2,7 @@
 SHELL := /bin/bash
 
 #Versioning
-DOCKER_EXCH_TAG := latest
+DOCKER_EXCH_TAG := 1.73.0
 PKG_URL_BASE := http://pkg.bluehorizon.network/linux/ubuntu
 PKGS_URL := $(PKG_URL_BASE)/dists/xenial-testing/main/binary-amd64/Packages
 DEB_PKGS_URL := $(PKG_URL_BASE)/pool/main/h/horizon
@@ -305,6 +305,7 @@ run-css: run-mongo-db
 		--name "$(DOCKER_CSS_CNAME)" \
 		-p 127.0.0.1:9443:9443 \
 		--network "$(DOCKER_TEST_NETWORK)" \
+		-e "HZN_EXCHANGE_URL=http://$(DOCKER_EXCH_CNAME):8080/v1" \
 		-v $(CSS_CONFIG):/etc/edge-sync-service/ \
 		-v $(AGBOT_TEMPFS)/certs/:/certs/ \
 		-t $(DOCKER_CSS_INAME):$(DOCKER_CSS_TAG)

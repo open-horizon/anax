@@ -12,7 +12,9 @@ import (
 	"github.com/open-horizon/edge-utilities/logger"
 	"github.com/open-horizon/edge-utilities/logger/log"
 	"github.com/open-horizon/edge-utilities/logger/trace"
+	"io/ioutil"
 	"os"
+	"path"
 )
 
 type ResourceManager struct {
@@ -33,6 +35,7 @@ func (r *ResourceManager) NodeConfigUpdate(org string, pattern string, id string
 	r.pattern = pattern
 	r.id = id
 	r.org = org
+	r.token = token
 }
 
 func (r ResourceManager) String() string {
@@ -45,22 +48,48 @@ func (r ResourceManager) String() string {
 
 func (r ResourceManager) StartFileSyncService(am *AuthenticationManager) error {
 
-	// Configure the embedded ESS using configuration from the node.
-	common.Configuration.NodeType = "ESS"
-	common.Configuration.DestinationType = exchange.GetId(r.pattern)
-	common.Configuration.DestinationID = r.id
-	common.Configuration.OrgID = r.org
-	common.Configuration.ListeningType = r.config.GetFileSyncServiceProtocol()
-	common.Configuration.ListeningAddress = r.config.GetFileSyncServiceAPIListen()
-	common.Configuration.SecureListeningPort = r.config.GetFileSyncServiceAPIPort()
-	common.Configuration.CommunicationProtocol = "http"
-	common.Configuration.HTTPPollingInterval = r.config.GetESSPollingRate()
-	common.Configuration.PersistenceRootPath = r.config.GetFileSyncServiceStoragePath()
-	common.Configuration.HTTPCSSHost = r.config.GetCSSURL()
-	common.Configuration.HTTPCSSPort = r.config.GetCSSPort()
-	common.Configuration.HTTPCSSUseSSL = true
-	common.Configuration.HTTPCSSCACertificate = r.config.GetCSSSSLCert()
-	common.Configuration.LogTraceDestination = "glog"
+	// Generate a self signed certificate to be used for TLS between a service and the embedded ESS API.
+	// The SSL private key is stored in a different location from the certificate so that the services
+	// only have access to the certificate with the public key.
+	//
+	// This function directly modifies the ESS common.Configuration object, which is also set below.
+	if err := CreateCertificate(r.org, r.config.GetESSSSLCertKeyPath(), r.config.GetESSSSLClientCertPath()); err != nil {
+		return errors.New(fmt.Sprintf("unable to create SSL certificate for ESS API, error %v", err))
+	}
+
+	// In order to override the ESS SSL certificate and key that the ESS uses to listen on the ESS API,
+	// we have to pass our certificate and key into the ESS config by value, as a string of bytes.
+
+	certFile := path.Join(r.config.GetESSSSLClientCertPath(), config.HZN_FSS_CERT_FILE)
+	certKeyFile := path.Join(r.config.GetESSSSLCertKeyPath(), config.HZN_FSS_CERT_KEY_FILE)
+
+	if essCert, err := os.Open(certFile); err != nil {
+		return errors.New(fmt.Sprintf("unable to open ESS SSL Certificate file %v, error %v", r.config.GetESSSSLClientCertPath(), err))
+	} else if essCertBytes, err := ioutil.ReadAll(essCert); err != nil {
+		return errors.New(fmt.Sprintf("unable to read ESS SSL Certificate file %v, error %v", r.config.GetESSSSLClientCertPath(), err))
+	} else if essCertKey, err := os.Open(certKeyFile); err != nil {
+		return errors.New(fmt.Sprintf("unable to open ESS SSL Certificate Key file %v, error %v", r.config.GetESSSSLCertKeyPath(), err))
+	} else if essCertKeyBytes, err := ioutil.ReadAll(essCertKey); err != nil {
+		return errors.New(fmt.Sprintf("unable to read ESS SSL Certificate Key file %v, error %v", r.config.GetESSSSLCertKeyPath(), err))
+	} else {
+
+		// Configure the embedded ESS using configuration from the node.
+		common.Configuration.NodeType = "ESS"
+		common.Configuration.DestinationType = exchange.GetId(r.pattern)
+		common.Configuration.DestinationID = r.id
+		common.Configuration.OrgID = r.org
+		common.Configuration.ListeningType = r.config.GetFileSyncServiceProtocol()
+		common.Configuration.ListeningAddress = r.config.GetFileSyncServiceAPIListen()
+		common.Configuration.SecureListeningPort = r.config.GetFileSyncServiceAPIPort()
+		common.Configuration.ServerCertificate = string(essCertBytes)
+		common.Configuration.ServerKey = string(essCertKeyBytes)
+		common.Configuration.CommunicationProtocol = "http"
+		common.Configuration.HTTPPollingInterval = r.config.GetESSPollingRate()
+		common.Configuration.PersistenceRootPath = r.config.GetFileSyncServiceStoragePath()
+		common.Configuration.HTTPCSSUseSSL = true
+		common.Configuration.HTTPCSSCACertificate = r.config.GetCSSSSLCert()
+		common.Configuration.LogTraceDestination = "glog"
+	}
 
 	if glog.V(5) {
 		common.Configuration.LogLevel = "TRACE"
@@ -72,17 +101,8 @@ func (r ResourceManager) StartFileSyncService(am *AuthenticationManager) error {
 
 	common.Configuration.ESSPersistentStorage = true
 
-	// Generate a self signed certificate to be used for TLS between a service and the embedded ESS API.
-	// The SSL private key is stored in a different location from the certificate so that the services
-	// only have access to the certificate with the public key.
-	//
-	// This function directly modifies the ESS common.Configuration object, which is also set below.
-	if err := CreateCertificate(r.org, r.config.GetESSSSLCertKeyPath(), r.config.GetESSSSLClientCertPath()); err != nil {
-		return errors.New(fmt.Sprintf("unable to create SSL certificate for ESS API, error %v", err))
-	}
-
 	// Set the fully formed CSS API URL in the global configuration object.
-	common.HTTPCSSURL = fmt.Sprintf("%ss://%s:%d", common.Configuration.CommunicationProtocol, common.Configuration.HTTPCSSHost, common.Configuration.HTTPCSSPort)
+	common.HTTPCSSURL = r.config.GetCSSURL()
 
 	// Init the sync service log and trace.
 	parameters := logger.Parameters{
@@ -105,7 +125,7 @@ func (r ResourceManager) StartFileSyncService(am *AuthenticationManager) error {
 	defer trace.Stop()
 
 	// Log the embedded ESS config now that it's complete.
-	glog.V(3).Infof(rmLogString(fmt.Sprintf("ESS Config: %v", common.Configuration)))
+	glog.V(5).Infof(rmLogString(fmt.Sprintf("ESS Config: %v", common.Configuration)))
 	censorAndDumpConfig()
 
 	// Set the authenticator that we're going to use.
