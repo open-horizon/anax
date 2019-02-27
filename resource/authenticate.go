@@ -12,10 +12,10 @@ import (
 // It implements the security.Authentication interface. It is also called by the embedded ESS to
 // provide credentials for the node to access the CSS (over the internal SPI).
 type FSSAuthenticate struct {
-	nodeOrg string
-	nodeID  string
+	nodeOrg   string
+	nodeID    string
 	nodeToken string
-	AuthMgr *AuthenticationManager
+	AuthMgr   *AuthenticationManager
 }
 
 // Start initializes the HorizonAuthenticate plugin.
@@ -64,7 +64,7 @@ func (auth *FSSAuthenticate) KeyandSecretForURL(url string) (string, string) {
 		return common.Configuration.OrgID + "/" + common.Configuration.DestinationType + "/" +
 			common.Configuration.DestinationID, auth.nodeToken
 	}
-	
+
 	return "", ""
 }
 

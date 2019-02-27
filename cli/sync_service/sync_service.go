@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 	docker "github.com/fsouza/go-dockerclient"
-	"github.com/open-horizon/anax/cli/dev"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cli/dev"
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/resource"
 	"io/ioutil"
@@ -57,7 +57,7 @@ func Start(cw *container.ContainerWorker, org string, configFiles []string, conf
 		return errors.New(fmt.Sprintf("unable to start ESS, error %v", err))
 	}
 
-	return nil	
+	return nil
 }
 
 func Stop(dc *docker.Client) error {
@@ -82,7 +82,7 @@ func Stop(dc *docker.Client) error {
 		cliutils.Verbose(fmt.Sprintf("Unable to remove network %v for file sync service, error %v", NETWORK_NAME, err))
 	}
 
-	return nil	
+	return nil
 }
 
 // Start the mongo container, configured to support the CSS container.
@@ -195,17 +195,17 @@ func startCSS(dc *docker.Client, network *docker.Network) error {
 
 	// Setup the env var configuration of the CSS.
 	dockerConfig := docker.Config{
-		Image:        getFSSFullImageName(),
-		Env:          []string{"NODE_TYPE=CSS",
-						"UNSECURE_LISTENING_PORT="+getCSSPort(),
-						"COMMUNICATION_PROTOCOL=http",
-						"LOG_LEVEL=TRACE",
-						"LOG_ROOT_PATH=/tmp/",
-						"LOG_TRACE_DESTINATION=stdout",
-						"TRACE_LEVEL=TRACE",
-						"TRACE_ROOT_PATH=/tmp/",
-						"MONGO_ADDRESS_CSV=mongo:27017",
-						"MONGO_AUTH_DB_NAME=d_edge"},
+		Image: getFSSFullImageName(),
+		Env: []string{"NODE_TYPE=CSS",
+			"UNSECURE_LISTENING_PORT=" + getCSSPort(),
+			"COMMUNICATION_PROTOCOL=http",
+			"LOG_LEVEL=TRACE",
+			"LOG_ROOT_PATH=/tmp/",
+			"LOG_TRACE_DESTINATION=stdout",
+			"TRACE_LEVEL=TRACE",
+			"TRACE_ROOT_PATH=/tmp/",
+			"MONGO_ADDRESS_CSV=mongo:27017",
+			"MONGO_AUTH_DB_NAME=d_edge"},
 		CPUSet:       "",
 		Labels:       makeLabel(CSS_NAME),
 		ExposedPorts: ep,
@@ -279,10 +279,10 @@ func startESS(cw *container.ContainerWorker, network *docker.Network, org string
 	envVars := []string{
 		"NODE_TYPE=ESS",
 		"LISTENING_TYPE=unix",
-		"LISTENING_ADDRESS="+workingDir,
+		"LISTENING_ADDRESS=" + workingDir,
 		"COMMUNICATION_PROTOCOL=http",
-		"HTTP_CSS_HOST="+CSS_NAME,
-		"HTTP_CSS_PORT="+getCSSPort(),
+		"HTTP_CSS_HOST=" + CSS_NAME,
+		"HTTP_CSS_PORT=" + getCSSPort(),
 		"PERSISTENCE_ROOT_PATH=/tmp/",
 		"LOG_LEVEL=TRACE",
 		"LOG_ROOT_PATH=/tmp/",
@@ -394,7 +394,7 @@ func loadCSS(org string, fileType string, fileObjects []string) error {
 			fileObjectName := path.Base(fileName)
 
 			metadata := &cssFileMeta{
-				ObjectID: fileObjectName,
+				ObjectID:   fileObjectName,
 				ObjectType: fileType,
 			}
 
@@ -417,24 +417,23 @@ func loadCSS(org string, fileType string, fileObjects []string) error {
 		fmt.Printf("Configuration files %v loaded into the File sync service.\n", fileObjects)
 	}
 
-
 	return nil
 
 }
 
 type cssFileMeta struct {
-	ObjectID string `json:"objectID"`
+	ObjectID   string `json:"objectID"`
 	ObjectType string `json:"objectType"`
 }
 
 type cssFilePutBody struct {
-	Data []byte `json:"data"`
+	Data []byte      `json:"data"`
 	Meta cssFileMeta `json:"meta"`
 }
 
 func putFile(url string, org string, metadata *cssFileMeta, file []byte) error {
 
-	// Tell the user what API we're about to use.	
+	// Tell the user what API we're about to use.
 	apiMsg := http.MethodPut + " " + url
 	cliutils.Verbose(apiMsg)
 

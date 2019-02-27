@@ -297,7 +297,7 @@ func createEnvVarMap(agreementId string,
 		envvars map[string]string,
 		prefix string,
 		defaultRAM int64) (map[string]string, error),
-	) (map[string]string, error) {
+) (map[string]string, error) {
 
 	// First, add in the Horizon platform env vars.
 	envvars := make(map[string]string)
@@ -377,10 +377,10 @@ func createContainerWorker() (*container.ContainerWorker, error) {
 		Edge: config.Config{
 			ServiceStorage:                workloadStorageDir,
 			DefaultServiceRegistrationRAM: 0,
-			FileSyncService:               config.FSSConfig{
-				AuthenticationPath:        path.Join(GetDevWorkingDirectory(), "auth"),
-				APIListen:                 path.Join(GetDevWorkingDirectory(), "essapi.sock"),
-				APIProtocol:               "unix",
+			FileSyncService: config.FSSConfig{
+				AuthenticationPath: path.Join(GetDevWorkingDirectory(), "auth"),
+				APIListen:          path.Join(GetDevWorkingDirectory(), "essapi.sock"),
+				APIProtocol:        "unix",
 			},
 		},
 		AgreementBot:  config.AGConfig{},

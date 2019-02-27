@@ -269,3 +269,32 @@ func Test_SplitOrgSpecUrl(t *testing.T) {
 		t.Errorf("SplitOrgSpecUrl should have returned '(myorg, http://service_url)', but got '(%v, %v)'", org, url)
 	}
 }
+
+func Test_MakeMSInstanceKey(t *testing.T) {
+
+	s := MakeMSInstanceKey("service_url", "myorg", "1.0.0", "123b-4512ef")
+	if s != "myorg_service_url_1.0.0_123b-4512ef" {
+		t.Errorf("MakeMSInstanceKey should have returned 'myorg_service_url_1.0.0_123b-4512ef', but got '%v'", s)
+	}
+
+	s = MakeMSInstanceKey("htp://service_url", "myorg", "1.0.0", "123b-4512ef")
+	if s != "myorg_service_url_1.0.0_123b-4512ef" {
+		t.Errorf("MakeMSInstanceKey should have returned 'myorg_service_url_1.0.0_123b-4512ef', but got '%v'", s)
+	}
+
+	s = MakeMSInstanceKey("htp://service/myurl", "myorg", "1.0.0", "123b-4512ef")
+	if s != "myorg_service-myurl_1.0.0_123b-4512ef" {
+		t.Errorf("MakeMSInstanceKey should have returned 'myorg_service-myurl_1.0.0_123b-4512ef', but got '%v'", s)
+	}
+
+	s = MakeMSInstanceKey("htp://service/my%%url", "my@org*#", "1.0.0", "123b-45@#$%12ef")
+	if s != "my-org--_service-my--url_1.0.0_123b-45----12ef" {
+		t.Errorf("MakeMSInstanceKey should have returned 'my-org--_service-my--url_1.0.0_123b-45----12ef', but got '%v'", s)
+	}
+
+	s = MakeMSInstanceKey("htp://service/my%%url", "%%my@org*#", "1.0.0", "123b-45@#$%12ef")
+	if s != "0-my-org--_service-my--url_1.0.0_123b-45----12ef" {
+		t.Errorf("MakeMSInstanceKey should have returned '0-my-org--_service-my--url_1.0.0_123b-45----12ef', but got '%v'", s)
+	}
+
+}

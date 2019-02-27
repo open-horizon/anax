@@ -16,11 +16,11 @@ import (
 )
 
 type ResourceManager struct {
-	config *config.HorizonConfig
-	org string
+	config  *config.HorizonConfig
+	org     string
 	pattern string
-	id string
-	token string
+	id      string
+	token   string
 }
 
 func NewResourceManager(cfg *config.HorizonConfig) *ResourceManager {
@@ -86,10 +86,10 @@ func (r ResourceManager) StartFileSyncService(am *AuthenticationManager) error {
 
 	// Init the sync service log and trace.
 	parameters := logger.Parameters{
-		Destinations:             common.Configuration.LogTraceDestination,
-		Prefix:                   common.Configuration.NodeType + ": ",
-		Level:                    common.Configuration.LogLevel,
-		MaintenanceInterval:      common.Configuration.LogTraceMaintenanceInterval,
+		Destinations:        common.Configuration.LogTraceDestination,
+		Prefix:              common.Configuration.NodeType + ": ",
+		Level:               common.Configuration.LogLevel,
+		MaintenanceInterval: common.Configuration.LogTraceMaintenanceInterval,
 	}
 	if err := log.Init(parameters); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to initialize the log. Error: %s\n", err)
@@ -109,7 +109,7 @@ func (r ResourceManager) StartFileSyncService(am *AuthenticationManager) error {
 	censorAndDumpConfig()
 
 	// Set the authenticator that we're going to use.
-	security.SetAuthentication(&FSSAuthenticate{nodeOrg:r.org, nodeID:r.id, nodeToken:r.token, AuthMgr:am})
+	security.SetAuthentication(&FSSAuthenticate{nodeOrg: r.org, nodeID: r.id, nodeToken: r.token, AuthMgr: am})
 
 	// Start the embedded ESS.
 	if err := base.Start("", true); err != nil {
