@@ -9,8 +9,7 @@ func Test_default_FSS(t *testing.T) {
 
 	testCfg := &HorizonConfig{
 		Edge: Config{
-			FileSyncService: FSSConfig{
-			},
+			FileSyncService: FSSConfig{},
 		},
 	}
 
@@ -66,7 +65,7 @@ func Test_unix_config_error_FSS(t *testing.T) {
 		Edge: Config{
 			FileSyncService: FSSConfig{
 				APIListen: "1.1.1.1",
-				APIPort: 5555,
+				APIPort:   5555,
 			},
 		},
 	}
@@ -91,7 +90,6 @@ func Test_TCP_default_FSS(t *testing.T) {
 		Edge: Config{
 			FileSyncService: FSSConfig{
 				APIProtocol: "https",
-
 			},
 		},
 	}
@@ -123,13 +121,13 @@ func Test_TCP_config_FSS(t *testing.T) {
 	testCfg := &HorizonConfig{
 		Edge: Config{
 			FileSyncService: FSSConfig{
-				APIProtocol: "https",
-				APIPort: 8888,
-				APIListen: "1.1.1.1",
-				PersistencePath: "/tmp/",
+				APIProtocol:        "https",
+				APIPort:            8888,
+				APIListen:          "1.1.1.1",
+				PersistencePath:    "/tmp/",
 				AuthenticationPath: "/tmp/auth/",
-				CSSURL: "cloud.css.com",
-				CSSPort: 7777,
+				CSSURL:             "cloud.css.com",
+				CSSPort:            7777,
 			},
 		},
 	}

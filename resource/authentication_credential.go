@@ -5,7 +5,7 @@ import (
 )
 
 type AuthenticationCredential struct {
-	Id string `json:"id"`
+	Id    string `json:"id"`
 	Token string `json:"token"`
 }
 
@@ -19,7 +19,7 @@ func GenerateNewCredential(id string) (*AuthenticationCredential, error) {
 	}
 
 	return &AuthenticationCredential{
-		Id: id,
+		Id:    id,
 		Token: generated,
 	}, nil
 }

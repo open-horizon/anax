@@ -250,18 +250,34 @@ func SetSystemEnvvars(envAdds map[string]string, prefix string, lat string, lon 
 
 }
 
+// This is also used as the container name
+// The container name must start with an alphanumeric character and can then use _ . or - in addition to alphanumeric.
+// [a-zA-Z0-9][a-zA-Z0-9_.-]+
 func MakeMSInstanceKey(specRef string, org string, v string, id string) string {
 	s := specRef
+	// only take the part after "*://" for specRef
 	if strings.Contains(specRef, "://") {
 		s = strings.Split(specRef, "://")[1]
 	}
 	new_s := strings.Replace(s, "/", "-", -1)
 
+	// form the key
+	instKey1 := ""
 	if org == "" {
-		return fmt.Sprintf("%v_%v_%v", new_s, v, id)
+		instKey1 = fmt.Sprintf("%v_%v_%v", new_s, v, id)
 	} else {
-		return fmt.Sprintf("%v_%v_%v_%v", org, new_s, v, id)
+		instKey1 = fmt.Sprintf("%v_%v_%v_%v", org, new_s, v, id)
 	}
+
+	// replace any characters not in [a-zA-Z0-9_.-] with "-"
+	re1 := regexp.MustCompile(`[^a-zA-Z0-9_.-]`)
+	instKey2 := re1.ReplaceAllLiteralString(instKey1, "-")
+
+	// now make sure the first charactor is alphanumeric, replace it with "0" if not.
+	re2 := regexp.MustCompile(`^[^a-zA-Z0-9]`)
+	instKey3 := re2.ReplaceAllLiteralString(instKey2, "0")
+
+	return instKey3
 }
 
 func NormalizeURL(specRef string) string {

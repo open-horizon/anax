@@ -22,7 +22,7 @@ func NewAuthenticationManager(authPath string) *AuthenticationManager {
 }
 
 func (a AuthenticationManager) String() string {
-	return fmt.Sprintf("Authentication Manager: " +
+	return fmt.Sprintf("Authentication Manager: "+
 		"AuthPath: %v", a.AuthPath)
 }
 
@@ -45,7 +45,7 @@ func (a *AuthenticationManager) CreateCredential(key string, id string) error {
 	} else if err := os.MkdirAll(a.GetCredentialPath(key), 0700); err != nil {
 		return errors.New(fmt.Sprintf("unable to create directory path %v for authentication credential, error: %v", a.GetCredentialPath(key), err))
 	} else if err := ioutil.WriteFile(fileName, credBytes, 0700); err != nil {
-		return errors.New(fmt.Sprintf("unable to write authentication credential file %v, error: %v", fileName, err))		
+		return errors.New(fmt.Sprintf("unable to write authentication credential file %v, error: %v", fileName, err))
 	}
 
 	glog.V(5).Infof(authLogString(fmt.Sprintf("Created credential for service %v, assigned id %v.", key, id)))
