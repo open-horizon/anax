@@ -485,7 +485,7 @@ func putFile(url string, org string, metadata *cssFileMeta, file []byte) error {
 	req.Header.Add("Content-Type", "application/json")
 
 	// Add a dummy basic auth header. The CSS should be configured with a dummy basic auth authenticator.
-	req.SetBasicAuth("hzndev@"+org, "password")
+	req.SetBasicAuth(org+"/hzndev", "password")
 
 	resp, err := httpClient.Do(req)
 	if err != nil {

@@ -12,7 +12,7 @@ then
 fi
 
 # Test what happens when an unknown user id is attempted
-UUSER=$(curl -sLX GET -w "%{http_code}" --cacert /certs/css.crt -u fred@ethel:murray "https://css-api:9443/api/v1/destinations/userdev")
+UUSER=$(curl -sLX GET -w "%{http_code}" --cacert /certs/css.crt -u userdev/ethel:murray "https://css-api:9443/api/v1/destinations/userdev")
 
 if [ "$UUSER" != "Unauthorized403" ]
 then

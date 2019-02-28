@@ -21,7 +21,7 @@ const CSS_PRE_AUTHENTICATED_IDENTITY = "CSS_PRE_AUTHENTICATED_HEADER"
 // The env var that holds the exchange API endpoint when this authenticator should use the exchange to do authentication.
 const HZN_EXCHANGE_URL = "HZN_EXCHANGE_URL"
 
-// HorizonAuthenticate is the Horizon plugin for authentication used by the Cloud sync service. This plugin
+// HorizonAuthenticate is the Horizon plugin for authentication used by the Cloud sync service (CSS). This plugin
 // can be used in environments where authentication is handled by something else in the network before
 // the CSS or where the CSS itself is deployed with a public facing API and so this plugin utilizes the exchange
 // to authenticate users.
@@ -65,7 +65,7 @@ func ExchangeURL() string {
 //
 // When this authenticator is using the exchange to authenticate, the expected form for an appKey is:
 // <org>/<destination type>/<destination id> - for a node identity, where destination type is mapped to a pattern in horizon and destination id is the node id.
-// <id>@<org> - for a real person user
+// <org>/<user> - for a real person user
 //
 // When this authenticator is allowing something infront of it in the network to do the authentication, the expected form for an appKey is irrelevant.
 // What's important is what's in the HTTP request header:
@@ -142,30 +142,30 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(appKey string, appSecr
 			authId = parts[1] + "/" + parts[2]
 		}
 
-	} else if parts := strings.Split(appKey, "@"); len(parts) == 2 {
+	} else if parts := strings.Split(appKey, "/"); len(parts) == 2 {
 		// If the appKey is shaped like a user identity, then let's make sure it is a user identity.
 
-		// A 2 part '@' delimited identity has to be a user identity.
+		// A 2 part '/' delimited identity has to be a user identity.
 		if trace.IsLogging(logger.TRACE) {
 			trace.Debug(cssALS(fmt.Sprintf("authentication request for user %v appears to be a user identity", appKey)))
 		}
 
-		if admin, err := verifyUserIdentity(parts[0], parts[1], appSecret, ExchangeURL()); err != nil {
+		if admin, err := verifyUserIdentity(parts[1], parts[0], appSecret, ExchangeURL()); err != nil {
 			if log.IsLogging(logger.ERROR) {
 				log.Error(cssALS(fmt.Sprintf("unable to verify identity %v, error %v", appKey, err)))
 			}
 		} else if admin {
 			authCode = security.AuthAdmin
-			authOrg = parts[1]
-			authId = parts[0]
+			authOrg = parts[0]
+			authId = parts[1]
 		} else {
 			authCode = security.AuthUser
-			authOrg = parts[1]
-			authId = parts[0]
+			authOrg = parts[0]
+			authId = parts[1]
 		}
 	} else {
 		if log.IsLogging(logger.ERROR) {
-			log.Error(cssALS(fmt.Sprintf("request identity %v is not in a supported format, must be either <org>/<destination type>/<destination id> for a node, or <destination id>@<org> for a user.", appKey)))
+			log.Error(cssALS(fmt.Sprintf("request identity %v is not in a supported format, must be either <org>/<destination type>/<destination id> for a node, or <org>/<user id> for a user.", appKey)))
 		}
 	}
 
