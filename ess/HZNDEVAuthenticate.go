@@ -17,10 +17,9 @@ func (auth *HZNDEVAuthenticate) Start() {
 	return
 }
 
-// Authenticate verifies that the incoming identity has one of the valid formats:
+// Authenticate verifies that the incoming identity is a node, service or a user:
 // 1) a 3 part '/' delimited node identity.
-// 2) a 2 part '@' delimited user identity.
-// 3) a 2 part '/' delimited service identity.
+// 2) everything else is a service or user identity.
 //
 // Returns authentication result code, the user's org and id.
 func (auth *HZNDEVAuthenticate) Authenticate(request *http.Request) (int, string, string) {
@@ -38,11 +37,9 @@ func (auth *HZNDEVAuthenticate) Authenticate(request *http.Request) (int, string
 	if len(parts) == 3 {
 		return security.AuthEdgeNode, parts[0], parts[1] + "/" + parts[2]
 	} else if len(parts) == 2 {
-		return security.AuthAdmin, common.Configuration.OrgID, ""
-	}
-
-	parts = strings.Split(appKey, "@")
-	if len(parts) == 2 {
+		return security.AuthAdmin, parts[0], parts[1]
+	} else if parts := strings.Split(appKey, "@"); len(parts) == 2 {
+		// legacy compensation, can be removed during beta
 		return security.AuthAdmin, parts[1], parts[0]
 	}
 
