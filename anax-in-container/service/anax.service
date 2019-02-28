@@ -80,6 +80,28 @@ defaultEnv() {
 	  #checkrc $? "change ServiceStorage"
 	#fi
 
+	# setup fss domain socket path and ess auth path
+	if [[ -z "${DOCKER_NAME}" ]]; then
+		DOCKER_NAME="horizon1"
+	fi
+	if [[ "${HOST_OS}" == "mac" ]]; then
+		base_host_dir="/private/var/tmp/horizon/${DOCKER_NAME}"
+		mkdir -p /private/var/tmp
+		ln -s /var/tmp/horizon /private/var/tmp/horizon
+	else
+		base_host_dir="/var/tmp/horizon/${DOCKER_NAME}"
+	fi
+
+	if [[ -d ${base_host_dir}/ess-auth ]]; then
+		anaxJson=$(jq ".Edge.FileSyncService.AuthenticationPath = \"${base_host_dir}/ess-auth\" " <<< $anaxJson)
+		checkrc $? "change FileSyncService.AuthenticationPath"
+	fi
+	if [[ -d ${base_host_dir}/fss-domain-socket ]]; then
+		anaxJson=$(jq ".Edge.FileSyncService.APIListen = \"${base_host_dir}/fss-domain-socket/essapi.sock\" " <<< $anaxJson)
+		checkrc $? "change FileSyncService.APIListen"
+	fi
+
+
 	# Write the new json back to the file
 	echo "$anaxJson" > $anaxJsonFile
 	checkrc $? "write anax.json"
