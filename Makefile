@@ -29,7 +29,7 @@ DOCKER_MAYBE_CACHE ?= --no-cache
 # The CSS and its production container. This container is NOT used by hzn dev.
 CSS_EXECUTABLE := css/cloud-sync-service
 CSS_CONTAINER_DIR := css
-CSS_IMAGE_VERSION ?= 1.0.2
+CSS_IMAGE_VERSION ?= 1.0.3
 CSS_IMAGE_BASE = image/cloud-sync-service
 CSS_IMAGE_NAME = openhorizon/$(arch)_cloud-sync-service
 CSS_IMAGE = $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION)
@@ -41,7 +41,7 @@ CSS_IMAGE_LATEST = $(CSS_IMAGE_NAME):latest
 # The hzn dev ESS/CSS and its container.
 ESS_EXECUTABLE := ess/edge-sync-service
 ESS_CONTAINER_DIR := ess
-ESS_IMAGE_VERSION ?= 1.0.2
+ESS_IMAGE_VERSION ?= 1.0.3
 ESS_IMAGE_BASE = image/edge-sync-service
 ESS_IMAGE_NAME = openhorizon/$(arch)_edge-sync-service
 ESS_IMAGE = $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION)
