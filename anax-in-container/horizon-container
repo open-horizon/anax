@@ -133,6 +133,17 @@ start() {
 	#	serviceStorageDir=/var/tmp/horizon
 	#fi
 
+	# setup directories for file sync service 
+	if isMacos; then
+		fssHostSharePath=/private/var/tmp/horizon/${DOCKER_NAME}
+	else
+		fssHostSharePath=/var/tmp/horizon/${DOCKER_NAME}
+	fi
+
+	# create fss domain socket path and ess auth path
+	mkdir -p ${fssHostSharePath}/fss-domain-socket
+	mkdir -p ${fssHostSharePath}/ess-auth
+
 	# Start socat, if not already running
 	if isMacos; then
 		if ! isSocatRunning; then
@@ -160,13 +171,13 @@ start() {
 	fi
 
 	# Start the horizon container
-	echo "Starting the Horizon agent container..."
+	echo "Starting the Horizon agent container openhorizon/amd64_anax:$dockerTag..."
 	# Note: docker will automatically create the ${DOCKER_NAME}_var and ${DOCKER_NAME}_etc volumes if necessary
 	if isMacos; then
-		docker run -d -t --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -e ANAX_DOCKER_ENDPOINT=tcp://host.docker.internal:$SOCAT_LISTEN_PORT $defaultFileMountArg -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ openhorizon/amd64_anax:$dockerTag
+		docker run -d -t --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -e ANAX_DOCKER_ENDPOINT=tcp://host.docker.internal:$SOCAT_LISTEN_PORT -e HOST_OS=mac -e DOCKER_NAME=${DOCKER_NAME} $defaultFileMountArg -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} openhorizon/amd64_anax:$dockerTag
 		checkrc $? "docker run"
 	else
-		docker run -d -t --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -v /var/run/docker.sock:/var/run/docker.sock $defaultFileMountArg -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ openhorizon/amd64_anax:$dockerTag
+		docker run -d -t --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:80 -e DOCKER_NAME=${DOCKER_NAME} -v /var/run/docker.sock:/var/run/docker.sock $defaultFileMountArg -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} openhorizon/amd64_anax:$dockerTag
 		checkrc $? "docker run"
 	fi
 
