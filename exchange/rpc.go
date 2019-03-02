@@ -1183,10 +1183,8 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 	targetURL := exchangeUrl + "admin/version"
 	for {
 		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, id, token, nil, &resp); err != nil {
-			//glog.Errorf(err.Error())
-			//return "", err
-			// temporary return a version for wiotp
-			return "1.49.0", nil
+			glog.Errorf(err.Error())
+			return "", err
 		} else if tpErr != nil {
 			glog.Warningf(tpErr.Error())
 			time.Sleep(10 * time.Second)

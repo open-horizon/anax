@@ -335,7 +335,7 @@ func (auth *HorizonAuthenticate) authenticationAlreadyDone(request *http.Request
 	if log.IsLogging(logger.DEBUG) {
 		log.Debug(cssALS(fmt.Sprintf("request header type %v", request.Header.Get("type"))))
 		log.Debug(cssALS(fmt.Sprintf("request header orgId %v", request.Header.Get("orgId"))))
-		log.Debug(cssALS(fmt.Sprintf("request header %v %v", request.Header.Get(idHeaderName))))
+		log.Debug(cssALS(fmt.Sprintf("request header %v %v", idHeaderName, request.Header.Get(idHeaderName))))
 
 		user, pw, _ := request.BasicAuth()
 		log.Debug(cssALS(fmt.Sprintf("request basic auth header id %v", user)))
