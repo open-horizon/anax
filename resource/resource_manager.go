@@ -15,6 +15,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"time"
 )
 
 type ResourceManager struct {
@@ -168,8 +169,22 @@ func censorAndDumpConfig() {
 func (r ResourceManager) StopFileSyncService() {
 	if r.pattern != "" {
 		glog.Infof(rmLogString(fmt.Sprintf("ESS Stopping")))
-		base.Stop(20)
+		go func() {
+			base.Stop(0)
+		}()
+		// Give the ESS 6 seconds to shutdown
+		timer := time.NewTimer(time.Duration(6) * time.Second)
+		<-timer.C
+		r.RemovePersistencePath()
 		glog.Infof(rmLogString(fmt.Sprintf("ESS Stopped")))
+	}
+}
+
+// Remove any remaining FSS objects from the Agent's host file system.
+func (r *ResourceManager) RemovePersistencePath() {
+	syncPath := path.Join(r.config.GetFileSyncServiceStoragePath(), "sync")
+	if err := os.RemoveAll(syncPath); err != nil {
+		glog.Errorf(rmLogString(fmt.Sprintf("unable to remove file sync service persistence path %v, error: %v", syncPath, err)))
 	}
 }
 

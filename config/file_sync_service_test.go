@@ -29,8 +29,6 @@ func Test_default_FSS(t *testing.T) {
 		t.Errorf("config API should be the default authentication path, is %v", testCfg.GetFileSyncServiceAuthPath())
 	} else if testCfg.GetCSSURL() != "" {
 		t.Errorf("config API should have an empty CSS URL, is %v", testCfg.GetCSSURL())
-	} else if testCfg.GetCSSPort() != 0 {
-		t.Errorf("config API should have a zero CSS Port, is %v", testCfg.GetCSSPort())
 	}
 
 }
@@ -110,8 +108,6 @@ func Test_TCP_default_FSS(t *testing.T) {
 		t.Errorf("config API should be the default authentication path, is %v", testCfg.GetFileSyncServiceAuthPath())
 	} else if testCfg.GetCSSURL() != "" {
 		t.Errorf("config API should have an empty CSS URL, is %v", testCfg.GetCSSURL())
-	} else if testCfg.GetCSSPort() != 0 {
-		t.Errorf("config API should have a zero CSS Port, is %v", testCfg.GetCSSPort())
 	}
 
 }
@@ -127,7 +123,6 @@ func Test_TCP_config_FSS(t *testing.T) {
 				PersistencePath:    "/tmp/",
 				AuthenticationPath: "/tmp/auth/",
 				CSSURL:             "cloud.css.com",
-				CSSPort:            7777,
 			},
 		},
 	}
@@ -148,8 +143,6 @@ func Test_TCP_config_FSS(t *testing.T) {
 		t.Errorf("config API should be the default authentication path, is %v", testCfg.GetFileSyncServiceAuthPath())
 	} else if testCfg.GetCSSURL() != "cloud.css.com" {
 		t.Errorf("config API should have an empty CSS URL, is %v", testCfg.GetCSSURL())
-	} else if testCfg.GetCSSPort() != 7777 {
-		t.Errorf("config API should have a zero CSS Port, is %v", testCfg.GetCSSPort())
 	}
 
 }
