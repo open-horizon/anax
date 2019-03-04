@@ -131,7 +131,7 @@ gen-mac-key:
 	: $${HORIZON_CLI_PRIV_KEY_PW:?}
 	@echo "Generating the horizon-cli mac pkg private key and public certificate, and putting them in the p12 archive"
 	openssl genrsa -out pkg/mac/build/horizon-cli.key 2048  # create private key
-	openssl req -x509 -new -config pkg/mac/key-gen/horizon-cli-key.conf -nodes -key pkg/mac/build/horizon-cli.key -extensions extensions -sha256 -out pkg/mac/build/horizon-cli.crt  # create self-signed cert
+	openssl req -x509 -days 3650 -new -config pkg/mac/key-gen/horizon-cli-key.conf -nodes -key pkg/mac/build/horizon-cli.key -extensions extensions -sha256 -out pkg/mac/build/horizon-cli.crt  # create self-signed cert
 	openssl pkcs12 -export -inkey pkg/mac/build/horizon-cli.key -in pkg/mac/build/horizon-cli.crt -out pkg/mac/build/horizon-cli.p12 -password env:HORIZON_CLI_PRIV_KEY_PW  # wrap the key and certificate into PKCS#12 archive
 	rm -f pkg/mac/build/horizon-cli.key  # clean up intermediate files
 	@echo "Created pkg/mac/build/horizon-cli.crt and pkg/mac/build/horizon-cli.p12. Once you are sure that this the key/cert that should be used for all new staging mac packages:"
