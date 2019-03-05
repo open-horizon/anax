@@ -16,7 +16,7 @@ CLI_COMPLETION_DIR := cli/bash_completion
 DEFAULT_UI = api/static/index.html
 
 ANAX_CONTAINER_DIR := anax-in-container
-DOCKER_IMAGE_VERSION ?= 2.22.3
+DOCKER_IMAGE_VERSION ?= 2.22.4
 DOCKER_IMAGE_BASE = openhorizon/$(arch)_anax
 DOCKER_IMAGE = $(DOCKER_IMAGE_BASE):$(DOCKER_IMAGE_VERSION)
 DOCKER_IMAGE_STG = $(DOCKER_IMAGE_BASE):testing
@@ -117,7 +117,7 @@ $(ESS_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 
 # Build the horizon-cli pkg for mac
 #todo: these targets should be moved into the official horizon build process
-export MAC_PKG_VERSION ?= 2.22.3
+export MAC_PKG_VERSION ?= 2.22.4
 MAC_PKG = pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg
 MAC_PKG_IDENTIFIER ?= com.github.open-horizon.pkg.horizon-cli
 MAC_PKG_INSTALL_DIR ?= /Users/Shared/horizon-cli
