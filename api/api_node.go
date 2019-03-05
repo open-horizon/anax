@@ -45,18 +45,6 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
-		// make sure current exchange version meet the requirement
-		if err := version.VerifyExchangeVersion(a.GetHTTPFactory(), a.GetExchangeURL(), a.GetExchangeId(), a.GetExchangeToken(), false); err != nil {
-			eventlog.LogExchangeEvent(a.db, persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error verifiying exchange version. error: %v", err),
-				persistence.EC_EXCHANGE_ERROR, a.GetExchangeURL())
-			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
-			return
-		}
-
-		orgHandler := exchange.GetHTTPExchangeOrgHandlerWithContext(a.Config)
-		patternHandler := exchange.GetHTTPExchangePatternHandlerWithContext(a.Config)
-
 		// Read in the HTTP body and pass the device registration off to be validated and created.
 		var newDevice HorizonDevice
 		body, _ := ioutil.ReadAll(r.Body)
@@ -67,6 +55,18 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body couldn't be deserialized to %v object: %v, error: %v", resource, string(body), err), "device"))
 			return
 		}
+
+		// make sure current exchange version meet the requirement
+		if err := version.VerifyExchangeVersion(a.GetHTTPFactory(), a.GetExchangeURL(), *newDevice.Id, *newDevice.Token, false); err != nil {
+			eventlog.LogExchangeEvent(a.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error verifiying exchange version. error: %v", err),
+				persistence.EC_EXCHANGE_ERROR, a.GetExchangeURL())
+			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
+			return
+		}
+
+		orgHandler := exchange.GetHTTPExchangeOrgHandlerWithContext(a.Config)
+		patternHandler := exchange.GetHTTPExchangePatternHandlerWithContext(a.Config)
 
 		create_device_error_handler := func(err error) bool {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in node configuration/registration for node %v. %v", newDevice.Id, err), persistence.EC_ERROR_NODE_CONFIG_REG, &newDevice)
@@ -88,15 +88,6 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 	case "PATCH":
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
-		// make sure current exchange version meet the requirement
-		if err := version.VerifyExchangeVersion(a.GetHTTPFactory(), a.GetExchangeURL(), a.GetExchangeId(), a.GetExchangeToken(), false); err != nil {
-			eventlog.LogExchangeEvent(a.db, persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error verifiying exchange version. error: %v", err),
-				persistence.EC_EXCHANGE_ERROR, a.GetExchangeURL())
-			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
-			return
-		}
-
 		var device HorizonDevice
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &device); err != nil {
@@ -104,6 +95,15 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 				fmt.Sprintf("Error parsing input for node update. Input body couldn't be deserialized to node object: %v, error: %v", string(body), err),
 				persistence.EC_API_USER_INPUT_ERROR, nil)
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body couldn't be deserialized to %v object: %v, error: %v", resource, string(body), err), "device"))
+			return
+		}
+
+		// make sure current exchange version meet the requirement
+		if err := version.VerifyExchangeVersion(a.GetHTTPFactory(), a.GetExchangeURL(), *device.Id, *device.Token, false); err != nil {
+			eventlog.LogExchangeEvent(a.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error verifiying exchange version. error: %v", err),
+				persistence.EC_EXCHANGE_ERROR, a.GetExchangeURL())
+			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
 			return
 		}
 

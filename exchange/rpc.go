@@ -144,6 +144,18 @@ type Device struct {
 	PublicKey          []byte          `json:"publicKey"`
 }
 
+func (d Device) String() string {
+	return fmt.Sprintf("Name: %v, Owner: %v, Pattern: %v, LastHeartbeat: %v, RegisteredServices: %v, MsgEndPoint: %v", d.Name, d.Owner, d.Pattern, d.LastHeartbeat, d.RegisteredServices, d.MsgEndPoint)
+}
+
+func (d Device) ShortString() string {
+	str := fmt.Sprintf("Name: %v, Owner: %v, Pattern %v, LastHeartbeat: %v, MsgEndPoint: %v, RegisteredServices URLs:", d.Name, d.Owner, d.Pattern, d.LastHeartbeat, d.MsgEndPoint)
+	for _, ms := range d.RegisteredServices {
+		str += fmt.Sprintf("%v,", ms.Url)
+	}
+	return str
+}
+
 type GetDevicesResponse struct {
 	Devices   map[string]Device `json:"nodes"`
 	LastIndex int               `json:"lastIndex"`
@@ -315,11 +327,11 @@ type PutDeviceRequest struct {
 }
 
 func (p PutDeviceRequest) String() string {
-	return fmt.Sprintf("Token: %v, Name: %v, RegisteredServices %v, MsgEndPoint %v, SoftwareVersions %v, PublicKey %x", p.Token, p.Name, p.RegisteredServices, p.MsgEndPoint, p.SoftwareVersions, p.PublicKey)
+	return fmt.Sprintf("Token: %v, Name: %v, RegisteredServices %v, MsgEndPoint %v, SoftwareVersions %v, PublicKey %x", "*****", p.Name, p.RegisteredServices, p.MsgEndPoint, p.SoftwareVersions, p.PublicKey)
 }
 
 func (p PutDeviceRequest) ShortString() string {
-	str := fmt.Sprintf("Token: %v, Name: %v, MsgEndPoint %v, SoftwareVersions %v", p.Token, p.Name, p.MsgEndPoint, p.SoftwareVersions)
+	str := fmt.Sprintf("Token: %v, Name: %v, MsgEndPoint %v, SoftwareVersions %v", "*****", p.Name, p.MsgEndPoint, p.SoftwareVersions)
 	str += ", Service URLs: "
 	for _, ms := range p.RegisteredServices {
 		str += fmt.Sprintf("%v,", ms.Url)
