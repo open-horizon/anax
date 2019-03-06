@@ -60,6 +60,12 @@ func getDummyGetPatternsWithContext() exchange.PatternHandlerWithContext {
 	}
 }
 
+func getDummyGetExchangeVersion() exchange.ExchangeVersionHandler {
+	return func(id string, token string) (string, error) {
+		return "20.0.0", nil
+	}
+}
+
 // Use these variable functions when you need the business logic to do something specific and you need to verify something specific.
 func getVariablePatternHandler(service exchange.ServiceReference) exchange.PatternHandler {
 	return func(org string, pattern string) (map[string]exchange.Pattern, error) {

@@ -56,17 +56,9 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// make sure current exchange version meet the requirement
-		if err := version.VerifyExchangeVersion(a.GetHTTPFactory(), a.GetExchangeURL(), *newDevice.Id, *newDevice.Token, false); err != nil {
-			eventlog.LogExchangeEvent(a.db, persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error verifiying exchange version. error: %v", err),
-				persistence.EC_EXCHANGE_ERROR, a.GetExchangeURL())
-			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
-			return
-		}
-
 		orgHandler := exchange.GetHTTPExchangeOrgHandlerWithContext(a.Config)
 		patternHandler := exchange.GetHTTPExchangePatternHandlerWithContext(a.Config)
+		versionHandler := exchange.GetHTTPExchangeVersionHandler(a.Config)
 
 		create_device_error_handler := func(err error) bool {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in node configuration/registration for node %v. %v", newDevice.Id, err), persistence.EC_ERROR_NODE_CONFIG_REG, &newDevice)
@@ -74,7 +66,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Validate and create the new device registration.
-		errHandled, device, exDev := CreateHorizonDevice(&newDevice, create_device_error_handler, orgHandler, patternHandler, a.em, a.db)
+		errHandled, device, exDev := CreateHorizonDevice(&newDevice, create_device_error_handler, orgHandler, patternHandler, versionHandler, a.em, a.db)
 		if errHandled {
 			return
 		}
@@ -98,23 +90,16 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// make sure current exchange version meet the requirement
-		if err := version.VerifyExchangeVersion(a.GetHTTPFactory(), a.GetExchangeURL(), *device.Id, *device.Token, false); err != nil {
-			eventlog.LogExchangeEvent(a.db, persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error verifiying exchange version. error: %v", err),
-				persistence.EC_EXCHANGE_ERROR, a.GetExchangeURL())
-			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
-			return
-		}
-
 		update_device_error_handler := func(err error) bool {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in updating node %v. %v", device.Id, err),
 				persistence.EC_ERROR_NODE_UPDATE, &device)
 			return errorHandler(err)
 		}
 
+		versionHandler := exchange.GetHTTPExchangeVersionHandler(a.Config)
+
 		// Validate the PATCH input and update the object in the database.
-		errHandled, dev, exDev := UpdateHorizonDevice(&device, update_device_error_handler, a.db)
+		errHandled, dev, exDev := UpdateHorizonDevice(&device, update_device_error_handler, versionHandler, a.db)
 		if errHandled {
 			return
 		}
