@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -129,7 +130,7 @@ func Test_CreateHorizonDevice_NoDeviceid(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), events.NewEventStateManager(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), getDummyGetExchangeVersion(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -161,7 +162,7 @@ func Test_CreateHorizonDevice_IllegalId(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), events.NewEventStateManager(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), getDummyGetExchangeVersion(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -192,7 +193,7 @@ func Test_CreateHorizonDevice_IllegalOrg(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), events.NewEventStateManager(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), getDummyGetExchangeVersion(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -223,7 +224,7 @@ func Test_CreateHorizonDevice_IllegalPattern(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), events.NewEventStateManager(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), getDummyGetExchangeVersion(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -255,7 +256,7 @@ func Test_CreateHorizonDevice_IllegalName(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), events.NewEventStateManager(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), getDummyGetExchangeVersion(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -286,7 +287,7 @@ func Test_CreateHorizonDevice_IllegalToken(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), events.NewEventStateManager(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), getDummyGetExchangeVersion(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -299,7 +300,35 @@ func Test_CreateHorizonDevice_IllegalToken(t *testing.T) {
 	} else if exDevice != nil {
 		t.Errorf("output device should not be returned")
 	}
+}
 
+// exchange version not meet the requirement
+func Test_CreateHorizonDevice_WrongExchangeVersion(t *testing.T) {
+
+	dir, db, err := utsetup()
+	if err != nil {
+		t.Error(err)
+	}
+	defer cleanTestDir(dir)
+
+	hd := getBasicDevice("myOrg", "myPattern")
+
+	var myError error
+	errorhandler := GetPassThroughErrorHandler(&myError)
+
+	getExchangeVersion := func(id string, token string) (string, error) {
+		return "0.1.1", nil
+	}
+
+	errHandled, _, _ := CreateHorizonDevice(hd, errorhandler, getDummyGetOrg(), getDummyGetPatternsWithContext(), getExchangeVersion, events.NewEventStateManager(), db)
+
+	if !errHandled {
+		t.Errorf("expected error")
+	} else if systemErr, ok := myError.(*SystemError); !ok {
+		t.Errorf("myError has the wrong type (%T)", myError)
+	} else if !strings.Contains(systemErr.Error(), "Error verifiying exchange version") {
+		t.Errorf("wrong message: %v", systemErr.Error())
+	}
 }
 
 // Successful create, everything works
@@ -346,7 +375,7 @@ func Test_CreateHorizonDevice0(t *testing.T) {
 		}
 	}
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, events.NewEventStateManager(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, getDummyGetExchangeVersion(), events.NewEventStateManager(), db)
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
@@ -407,7 +436,7 @@ func Test_CreateHorizonDevice_EnvVarDeviceid(t *testing.T) {
 		}
 	}
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, events.NewEventStateManager(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, getDummyGetExchangeVersion(), events.NewEventStateManager(), db)
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
@@ -467,12 +496,12 @@ func Test_CreateHorizonDevice_alreadythere(t *testing.T) {
 		}
 	}
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, events.NewEventStateManager(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, getDummyGetExchangeVersion(), events.NewEventStateManager(), db)
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
 	}
 
-	errHandled, device, exDevice = CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, events.NewEventStateManager(), db)
+	errHandled, device, exDevice = CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, getDummyGetExchangeVersion(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -532,7 +561,7 @@ func Test_CreateHorizonDevice_badorg(t *testing.T) {
 		}
 	}
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, events.NewEventStateManager(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, getDummyGetExchangeVersion(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -592,7 +621,7 @@ func Test_CreateHorizonDevice_badpattern(t *testing.T) {
 		}
 	}
 
-	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, events.NewEventStateManager(), db)
+	errHandled, device, exDevice := CreateHorizonDevice(hd, errorhandler, getOrg, getPatterns, getDummyGetExchangeVersion(), events.NewEventStateManager(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -714,7 +743,7 @@ func Test_PatchHorizonDevice_fail1(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
-	errHandled, dev1, dev2 := UpdateHorizonDevice(hd, errorhandler, db)
+	errHandled, dev1, dev2 := UpdateHorizonDevice(hd, errorhandler, getDummyGetExchangeVersion(), db)
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -727,7 +756,6 @@ func Test_PatchHorizonDevice_fail1(t *testing.T) {
 	} else if dev1 != nil || dev2 != nil {
 		t.Errorf("returned non-nil response devices objects: %v %v", *dev1, *dev2)
 	}
-
 }
 
 func getBasicDevice(org string, pattern string) *HorizonDevice {

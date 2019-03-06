@@ -24,6 +24,15 @@ func GetHTTPExchangeOrgHandler(ec ExchangeContext) OrgHandler {
 	}
 }
 
+// A handler for querying the exchange version. The id and token is used for auth.
+type ExchangeVersionHandler func(id string, token string) (string, error)
+
+func GetHTTPExchangeVersionHandler(cfg *config.HorizonConfig) ExchangeVersionHandler {
+	return func(id string, token string) (string, error) {
+		return GetExchangeVersion(cfg.Collaborators.HTTPClientFactory, cfg.Edge.ExchangeURL, id, token)
+	}
+}
+
 // A handler for querying the exchange for an org when the caller doesnt have exchange identity at the time of creating the handler, but
 // can supply the exchange context when it's time to make the call. Only used by the API package when trying to register an edge device.
 type OrgHandlerWithContext func(org string, id string, token string) (*Organization, error)

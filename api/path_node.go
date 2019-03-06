@@ -9,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/version"
 	"os"
 	"time"
 )
@@ -85,6 +86,7 @@ func CreateHorizonDevice(device *HorizonDevice,
 	errorhandler ErrorHandler,
 	getOrg exchange.OrgHandlerWithContext,
 	getPatterns exchange.PatternHandlerWithContext,
+	getExchangeVersion exchange.ExchangeVersionHandler,
 	em *events.EventStateManager,
 	db *bolt.DB) (bool, *HorizonDevice, *HorizonDevice) {
 
@@ -144,8 +146,17 @@ func CreateHorizonDevice(device *HorizonDevice,
 
 	// HA validation. Since the HA declaration is a boolean, there is nothing to validate for HA.
 
-	// Verify that the input organization exists in the exchange.
+	// make sure current exchange version meet the requirement
 	deviceId := fmt.Sprintf("%v/%v", *device.Org, *device.Id)
+	if exchangeVersion, err := getExchangeVersion(deviceId, *device.Token); err != nil {
+		return errorhandler(NewSystemError(fmt.Sprintf("Error getting exchange version. error: %v", err))), nil, nil
+	} else {
+		if err := version.VerifyExchangeVersion1(exchangeVersion, false); err != nil {
+			return errorhandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err))), nil, nil
+		}
+	}
+
+	// Verify that the input organization exists in the exchange.
 	if _, err := getOrg(*device.Org, deviceId, *device.Token); err != nil {
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("organization %v not found in exchange, error: %v", *device.Org, err), "device.organization")), nil, nil
 	}
@@ -190,6 +201,7 @@ func CreateHorizonDevice(device *HorizonDevice,
 // Handles the PATCH verb on this resource. Only the exchange token is updateable.
 func UpdateHorizonDevice(device *HorizonDevice,
 	errorhandler ErrorHandler,
+	getExchangeVersion exchange.ExchangeVersionHandler,
 	db *bolt.DB) (bool, *HorizonDevice, *HorizonDevice) {
 
 	LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Start updating node %v.", *device.Id), persistence.EC_START_NODE_UPDATE, device)
@@ -215,6 +227,21 @@ func UpdateHorizonDevice(device *HorizonDevice,
 	// If there is no token, that's an error
 	if device.Token == nil {
 		return errorhandler(NewAPIUserInputError("null and must not be", "device.token")), nil, nil
+	}
+
+	// make sure current exchange version meet the requirement
+	deviceId := ""
+	if device.Org != nil && *device.Org != "" {
+		deviceId = fmt.Sprintf("%v/%v", *device.Org, *device.Id)
+	} else {
+		deviceId = fmt.Sprintf("%v/%v", pDevice.Org, *device.Id)
+	}
+	if exchangeVersion, err := getExchangeVersion(deviceId, *device.Token); err != nil {
+		return errorhandler(NewSystemError(fmt.Sprintf("Error getting exchange version. error: %v", err))), nil, nil
+	} else {
+		if err := version.VerifyExchangeVersion1(exchangeVersion, false); err != nil {
+			return errorhandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err))), nil, nil
+		}
 	}
 
 	updatedDev, err := pDevice.SetExchangeDeviceToken(db, *device.Id, *device.Token)
