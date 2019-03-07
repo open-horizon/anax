@@ -99,14 +99,6 @@ func startMongo(dc *docker.Client, network *docker.Network) error {
 		return errors.New(fmt.Sprintf("unable to pull Mongo container using image %v, error %v. Set environment variable %v to use a different image.", getMongoFullImage(), err, dev.DEVTOOL_HZN_FSS_MONGO_IMAGE))
 	}
 
-	// Setup log config for the new container.
-	logConfig := docker.LogConfig{
-		Type: "syslog",
-		Config: map[string]string{
-			"tag": makeLabelName(MONGO_NAME),
-		},
-	}
-
 	dockerConfig := docker.Config{
 		Image:        getMongoFullImage(),
 		Env:          []string{},
@@ -123,7 +115,7 @@ func startMongo(dc *docker.Client, network *docker.Network) error {
 		Memory:          500 * 1024 * 1024,
 		MemorySwap:      0,
 		Devices:         []docker.Device{},
-		LogConfig:       logConfig,
+		LogConfig:       docker.LogConfig{},
 		Binds:           []string{},
 	}
 
@@ -172,14 +164,6 @@ func startCSS(dc *docker.Client, network *docker.Network) error {
 	// Now create the container from this image.
 	var emptyS struct{}
 
-	// Setup log config for the new container.
-	logConfig := docker.LogConfig{
-		Type: "syslog",
-		Config: map[string]string{
-			"tag": makeLabelName(CSS_NAME),
-		},
-	}
-
 	// Setup the CSS to listen on a host port so that the CLI can preload file objects.
 	port := docker.Port(getCSSPort())
 
@@ -220,7 +204,7 @@ func startCSS(dc *docker.Client, network *docker.Network) error {
 		Memory:          1000 * 1024 * 1024,
 		MemorySwap:      0,
 		Devices:         []docker.Device{},
-		LogConfig:       logConfig,
+		LogConfig:       docker.LogConfig{},
 		Binds:           []string{},
 	}
 
@@ -286,14 +270,6 @@ func startESS(cw *container.ContainerWorker, network *docker.Network, org string
 	// Get the docker client API out of the container worker.
 	dc := cw.GetClient()
 
-	// Setup log config for the new container.
-	logConfig := docker.LogConfig{
-		Type: "syslog",
-		Config: map[string]string{
-			"tag": makeLabelName(ESS_NAME),
-		},
-	}
-
 	// Setup the env vars to configure the ESS for this test environment.
 
 	workingDir := path.Join(dev.GetDevWorkingDirectory(), "essapi.sock")
@@ -339,7 +315,7 @@ func startESS(cw *container.ContainerWorker, network *docker.Network, org string
 		Memory:          1000 * 1024 * 1024,
 		MemorySwap:      0,
 		Devices:         []docker.Device{},
-		LogConfig:       logConfig,
+		LogConfig:       docker.LogConfig{},
 		Binds:           []string{fmt.Sprintf("%v:%v", dev.GetDevWorkingDirectory(), dev.GetDevWorkingDirectory())},
 	}
 
