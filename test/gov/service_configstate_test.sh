@@ -6,15 +6,15 @@ E2EDEV_NETSPEED_AG_ID=""
 E2EDEV_LOCATION_AG_ID=""
 
 
-# get the agreements ids for e2edev/netspeed and e2edev/location services. 
+# get the agreements ids for e2edev@somecomp.com/netspeed and e2edev@somecomp.com/location services. 
 function getNetspeedLocationAgreements {
-	E2EDEV_NETSPEED_AG_ID=$(hzn agreement list | jq '.[] | select(.workload_to_run.url == "https://bluehorizon.network/services/netspeed") | select(.workload_to_run.org == "e2edev") | .current_agreement_id')
-	echo -e "${PREFIX} agreement for e2edev/netspeed: $E2EDEV_NETSPEED_AG_ID"
-	E2EDEV_LOCATION_AG_ID=$(hzn agreement list | jq '.[] | select(.workload_to_run.url == "https://bluehorizon.network/services/location") | select(.workload_to_run.org == "e2edev") | .current_agreement_id')
-	echo -e "${PREFIX} agreement for e2edev/location: $E2EDEV_LOCATION_AG_ID"
+	E2EDEV_NETSPEED_AG_ID=$(hzn agreement list | jq '.[] | select(.workload_to_run.url == "https://bluehorizon.network/services/netspeed") | select(.workload_to_run.org == "e2edev@somecomp.com") | .current_agreement_id')
+	echo -e "${PREFIX} agreement for e2edev@somecomp.com/netspeed: $E2EDEV_NETSPEED_AG_ID"
+	E2EDEV_LOCATION_AG_ID=$(hzn agreement list | jq '.[] | select(.workload_to_run.url == "https://bluehorizon.network/services/location") | select(.workload_to_run.org == "e2edev@somecomp.com") | .current_agreement_id')
+	echo -e "${PREFIX} agreement for e2edev@somecomp.com/location: $E2EDEV_LOCATION_AG_ID"
 }
 
-# check if the containers for e2edev/netspeed and e2edev/location services
+# check if the containers for e2edev@somecomp.com/netspeed and e2edev@somecomp.com/location services
 # are up/down.
 function checkNetspeedLocationContainers {
 	# remove the quotes
@@ -23,7 +23,7 @@ function checkNetspeedLocationContainers {
 	out=$(docker ps | grep $ns_ag)
 	ret=$?
 	if ([ "$1" == "up" ] && [ $ret -ne 0 ]) || ([ "$1" == "down" ] && [ $ret -eq 0 ]); then
-		echo -e "${PREFIX} container for e2edev/netspeed is not $1."
+		echo -e "${PREFIX} container for e2edev@somecomp.com/netspeed is not $1."
 		return 1
 	fi
 
@@ -32,19 +32,19 @@ function checkNetspeedLocationContainers {
 	out=$(docker ps | grep $loc_ag)
 	ret=$?
 	if ([ "$1" == "up" ] && [ $ret -ne 0 ]) || ([ "$1" == "down" ] && [ $ret -eq 0 ]); then
-		echo -e "${PREFIX} container for e2edev/location is not $1."
+		echo -e "${PREFIX} container for e2edev@somecomp.com/location is not $1."
 		return 1
 	fi
 	out=$(docker ps | grep locgps)
 	ret=$?
 	if ([ "$1" == "up" ] && [ $ret -ne 0 ]) || ([ "$1" == "down" ] && [ $ret -eq 0 ]); then
-		echo -e "${PREFIX} container for e2edev/locgps is not $1."
+		echo -e "${PREFIX} container for e2edev@somecomp.com/locgps is not $1."
 		return 1
 	fi
 	out=$(docker ps | grep cpu | grep -v "my.company.com" | grep e2edev)
 	ret=$?
 	if ([ "$1" == "up" ] && [ $ret -ne 0 ]) || ([ "$1" == "down" ] && [ $ret -eq 0 ]); then
-		echo -e "${PREFIX} container for e2edev/cpu is not $1."
+		echo -e "${PREFIX} container for e2edev@somecomp.com/cpu is not $1."
 		return 1
 	fi
 
@@ -75,11 +75,11 @@ fi
 # check the agreements exist
 getNetspeedLocationAgreements
 if [ "$E2EDEV_NETSPEED_AG_ID" == "" ]; then
-  echo -e "${PREFIX} error: cannot find agreement for e2edev/netspeed."
+  echo -e "${PREFIX} error: cannot find agreement for e2edev@somecomp.com/netspeed."
   exit 2
 fi
 if [ "$E2EDEV_LOCATION_AG_ID" == "" ]; then
-  echo -e "${PREFIX} error: cannot find agreement for e2edev/location."
+  echo -e "${PREFIX} error: cannot find agreement for e2edev@somecomp.com/location."
   exit 2
 fi
 
@@ -94,35 +94,35 @@ if [ $? -ne 0 ]; then
 	exit 2
 fi
 
-# suspending the two servicess: e2edev/netspeed, e2edev/location
-echo -e "${PREFIX} suspending the e2edev/netspeed service..." 
-out=$(hzn service configstate suspend e2edev https://bluehorizon.network/services/netspeed -f)
+# suspending the two servicess: e2edev@somecomp.com/netspeed, e2edev@somecomp.com/location
+echo -e "${PREFIX} suspending the e2edev@somecomp.com/netspeed service..." 
+out=$(hzn service configstate suspend e2edev@somecomp.com https://bluehorizon.network/services/netspeed -f)
 if [ $? -ne 0 ]; then
-	echo -e "${PREFIX} error suspending e2edev/netspeed: $out"
+	echo -e "${PREFIX} error suspending e2edev@somecomp.com/netspeed: $out"
     exit 2
 fi
-echo -e "${PREFIX} suspending the e2edev/location service..." 
-out=$(hzn service configstate suspend e2edev https://bluehorizon.network/services/location -f)
+echo -e "${PREFIX} suspending the e2edev@somecomp.com/location service..." 
+out=$(hzn service configstate suspend e2edev@somecomp.com https://bluehorizon.network/services/location -f)
 if [ $? -ne 0 ]; then
-	echo -e "${PREFIX} error suspending e2edev/location: $out"
+	echo -e "${PREFIX} error suspending e2edev@somecomp.com/location: $out"
     exit 2
 fi
 
 # make sure the service configstate is suspended
 echo -e "${PREFIX} checking service config state..." 
-location_configstate=$(hzn service configstate list | jq '.configstates[] | select(.url == "https://bluehorizon.network/services/location") | select(.org == "e2edev") |.configState')
+location_configstate=$(hzn service configstate list | jq '.configstates[] | select(.url == "https://bluehorizon.network/services/location") | select(.org == "e2edev@somecomp.com") |.configState')
 if [ "$location_configstate" != "\"suspended\"" ]; then
-  echo -e "${PREFIX} error: the e2edev/location service is still in the 'active' state."
+  echo -e "${PREFIX} error: the e2edev@somecomp.com/location service is still in the 'active' state."
   exit 2
 else
-  echo -e "${PREFIX} e2edev/location service: suspended"
+  echo -e "${PREFIX} e2edev@somecomp.com/location service: suspended"
 fi
-netspeed_configstate=$(hzn service configstate list | jq '.configstates[] | select(.url == "https://bluehorizon.network/services/netspeed") | select(.org == "e2edev") |.configState')
+netspeed_configstate=$(hzn service configstate list | jq '.configstates[] | select(.url == "https://bluehorizon.network/services/netspeed") | select(.org == "e2edev@somecomp.com") |.configState')
 if [ "$netspeed_configstate" != "\"suspended\"" ]; then
-  echo -e "${PREFIX} error: the e2edev/netspeed service is still in the 'active' state."
+  echo -e "${PREFIX} error: the e2edev@somecomp.com/netspeed service is still in the 'active' state."
   exit 2
 else
-  echo -e "${PREFIX} e2edev/netspeed service: suspended"
+  echo -e "${PREFIX} e2edev@somecomp.com/netspeed service: suspended"
 fi
 
 loop_cnt=0
@@ -136,14 +136,14 @@ do
 
     if [ $ag_canceled -ne 1 ]; then
 		# make sure the agreement is gone
-		echo -e "${PREFIX} making the agreements are canceled..." 
+		echo -e "${PREFIX} making sure the agreements are canceled..." 
 		getNetspeedLocationAgreements
 		if [ "$E2EDEV_NETSPEED_AG_ID" != "" ]; then
-			echo -e "${PREFIX} error: agreement for e2edev/netspeed not canceled."
+			echo -e "${PREFIX} error: agreement for e2edev@somecomp.com/netspeed not canceled."
 			continue
 		fi
 		if [ "$E2EDEV_LOCATION_AG_ID" != "" ]; then
- 			echo -e "${PREFIX} error: agreement for e2edev/location not canceled."
+ 			echo -e "${PREFIX} error: agreement for e2edev@somecomp.com/location not canceled."
 			continue
 		fi
 	fi
@@ -169,34 +169,34 @@ echo -e "${PREFIX} wait for 10 seconds..."
 sleep 10
 
 # resume the services
-echo -e "${PREFIX} resuming e2edev/netspeed service..." 
-out=$(hzn service configstate resume e2edev https://bluehorizon.network/services/netspeed)
+echo -e "${PREFIX} resuming e2edev@somecomp.com/netspeed service..." 
+out=$(hzn service configstate resume e2edev@somecomp.com https://bluehorizon.network/services/netspeed)
 if [ $? -ne 0 ]; then
-	echo -e "${PREFIX} error resuming e2edev/netspeed: $out"
+	echo -e "${PREFIX} error resuming e2edev@somecomp.com/netspeed: $out"
     exit 2
 fi
-echo -e "${PREFIX} resuming e2edev/location service..." 
-out=$(hzn service configstate resume e2edev https://bluehorizon.network/services/location)
+echo -e "${PREFIX} resuming e2edev@somecomp.com/location service..." 
+out=$(hzn service configstate resume e2edev@somecomp.com https://bluehorizon.network/services/location)
 if [ $? -ne 0 ]; then
-	echo -e "${PREFIX} error resuming e2edev/location: $out"
+	echo -e "${PREFIX} error resuming e2edev@somecomp.com/location: $out"
     exit 2
 fi
 
 # make sure the new configstate is set
 echo -e "${PREFIX} checking service config state..." 
-location_configstate=$(hzn service configstate list | jq '.configstates[] | select(.url == "https://bluehorizon.network/services/location") | select(.org == "e2edev") |.configState')
+location_configstate=$(hzn service configstate list | jq '.configstates[] | select(.url == "https://bluehorizon.network/services/location") | select(.org == "e2edev@somecomp.com") |.configState')
 if [ "$location_configstate" != "\"active\"" ]; then
-  echo -e "${PREFIX} error: the e2edev/location service is still in the 'suspended' state."
+  echo -e "${PREFIX} error: the e2edev@somecomp.com/location service is still in the 'suspended' state."
   exit 2
 else
-  echo -e "${PREFIX} e2edev/location service: active"
+  echo -e "${PREFIX} e2edev@somecomp.com/location service: active"
 fi
-netspeed_configstate=$(hzn service configstate list | jq '.configstates[] | select(.url == "https://bluehorizon.network/services/netspeed") | select(.org == "e2edev") |.configState')
+netspeed_configstate=$(hzn service configstate list | jq '.configstates[] | select(.url == "https://bluehorizon.network/services/netspeed") | select(.org == "e2edev@somecomp.com") |.configState')
 if [ "$netspeed_configstate" != "\"active\"" ]; then
-  echo -e "${PREFIX} error: the e2edev/netspeed service is still in the 'suspended' state."
+  echo -e "${PREFIX} error: the e2edev@somecomp.com/netspeed service is still in the 'suspended' state."
   exit 2
 else
-  echo -e "${PREFIX} e2edev/netspeed service: active"
+  echo -e "${PREFIX} e2edev@somecomp.com/netspeed service: active"
 fi
 
 # make sure the agreements and the containers are up
@@ -212,11 +212,11 @@ do
 		echo -e "${PREFIX} making sure the agreements are formed..." 
 		getNetspeedLocationAgreements
 		if [ "$E2EDEV_NETSPEED_AG_ID" == "" ]; then
-  			echo -e "${PREFIX} error: cannot find agreement for e2edev/netspeed."
+  			echo -e "${PREFIX} error: cannot find agreement for e2edev@somecomp.com/netspeed."
   			continue
 		fi
 		if [ "$E2EDEV_LOCATION_AG_ID" == "" ]; then
-  			echo -e "${PREFIX} error: cannot find agreement for e2edev/location."
+  			echo -e "${PREFIX} error: cannot find agreement for e2edev@somecomp.com/location."
   			continue
 		fi
 	fi

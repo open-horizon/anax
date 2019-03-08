@@ -108,7 +108,7 @@ function deploy {
 #
 echo -e "Begin hzn dev service testing."
 
-export HZN_ORG_ID="e2edev"
+export HZN_ORG_ID="e2edev@somecomp.com"
 export HZN_EXCHANGE_URL=$1
 E2EDEV_ADMIN_AUTH=$2
 
@@ -121,13 +121,13 @@ USEHELLO_HOME=${PROJECT_HOME}/usehello
 # ============= Service creation =====================================
 #
 
-createProject "${CPU_HOME}" "CPU" "\"cpu\":" "http://my.company.com/services/cpu2" "singleton" "MY_CPU_VAR" "string" "cpuVarValue" "cpu"
+createProject "${CPU_HOME}" "CPU" "\"cpu\":" "my.company.com.services.cpu2" "singleton" "MY_CPU_VAR" "string" "cpuVarValue" "cpu"
 if [ $? -ne 0 ]; then exit $?; fi
 
-createProject "${HELLO_HOME}" "Hello" "Star Wars" "http://my.company.com/services/hello2" "multiple" "MY_S_VAR1" "string" "inside" "helloservice"
+createProject "${HELLO_HOME}" "Hello" "Star Wars" "my.company.com.services.hello2" "multiple" "MY_S_VAR1" "string" "inside" "helloservice"
 if [ $? -ne 0 ]; then exit $?; fi
 
-createProject "${USEHELLO_HOME}" "UseHello" "variables verified." "http://my.company.com/services/usehello2" "singleton" "MY_VAR1" "string" "inside" "usehello"
+createProject "${USEHELLO_HOME}" "UseHello" "variables verified." "my.company.com.services.usehello2" "singleton" "MY_VAR1" "string" "inside" "usehello"
 if [ $? -ne 0 ]; then exit $?; fi
 
 # ============= Connect dependencies =================================
@@ -192,7 +192,7 @@ echo -e "Deploying services."
 
 cd /tmp
 echo -e "Generate signing keys."
-hzn key create -l 4096 e2edev e2edev@gmail.com
+hzn key create -l 4096 e2edev@somecomp.com e2edev@gmail.com
 if [ $? -ne 0 ]
 then
     echo -e "hzn key create failed."
@@ -202,7 +202,7 @@ fi
 echo -e "Copy public key into anax folder for use at runtime."
 cp /tmp/*public.pem /root/.colonus/.
 
-echo -e "Logging into the e2edev docker registry."
+echo -e "Logging into the e2edev@somecomp.com docker registry."
 echo ${DOCKER_REG_PW} | docker login -u=${DOCKER_REG_USER} --password-stdin localhost:443
 
 if [ $? -ne 0 ]

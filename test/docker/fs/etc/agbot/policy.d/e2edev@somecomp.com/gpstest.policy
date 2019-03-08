@@ -7,7 +7,7 @@
   "workloads": [
     {
       "workloadUrl":"https://bluehorizon.network/services/gpstest",
-      "organization":"e2edev",
+      "organization":"e2edev@somecomp.com",
       "version":"1.0.0",
       "arch":"amd64"
     }

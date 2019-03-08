@@ -6,7 +6,7 @@ echo "Building resource packages."
 EXEC_DIR=$PWD
 cd /root/resources
 
-RESOURCE_ORG1=e2edev
+RESOURCE_ORG1=e2edev@somecomp.com
 RESOURCE_ORG2=userdev
 RESOURCE_TYPE=model
 

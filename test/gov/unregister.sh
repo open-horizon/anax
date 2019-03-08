@@ -7,7 +7,7 @@
 # when it terminates.
 
 EXCH_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
-E2EDEV_ADMIN_AUTH="e2edev/e2edevadmin:e2edevadminpw"
+E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 export HZN_EXCHANGE_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
 
 echo "Unregister node, non-blocking"
@@ -34,7 +34,7 @@ do
       # Since anax is still up, verify that a POST to /node will return the correct error.
       pat=$PATTERN
       if [[ "$PATTERN" != "" ]]; then
-        pat="e2edev/$PATTERN"
+        pat="e2edev@somecomp.com/$PATTERN"
       fi
 read -d '' newhzndevice <<EOF
 {
@@ -78,7 +78,7 @@ done
 # Following the API call, the node's entry in the exchange should have some changes in it. The messaging key should be empty,
 # and the list of registered microservices should be empty.
 echo -e "Checking node status in the exchange."
-NST=$(curl -sSL --header 'Accept: application/json' -H "Authorization:Basic e2edev/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/e2edev/nodes/an12345" | jq -r '.')
+NST=$(curl -sSL --header 'Accept: application/json' -H "Authorization:Basic e2edev@somecomp.com/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/an12345" | jq -r '.')
 PK=$(echo "$NST" | jq -r '.publicKey')
 if [ "$PK" != "null" ]
 then

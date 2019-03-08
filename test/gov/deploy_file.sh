@@ -39,7 +39,14 @@ read -d '' resmeta <<EOF
 }
 EOF
 
-ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" --cacert /certs/css.crt -u ${3}/${3}admin:${3}adminpw "https://css-api:9443/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
+admin_user="${3}admin"
+admin_pw="${3}adminpw"
+if [ "${3}" == "e2edev@somecomp.com" ]; then
+    admin_user="e2edevadmin"
+    admin_pw="e2edevadminpw"
+fi
+
+ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" --cacert /certs/css.crt -u ${3}/${admin_user}:${admin_pw} "https://css-api:9443/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
 
 if [ "$ADDM" != "204" ]
 then
@@ -48,7 +55,7 @@ then
   exit -1
 fi
 
-ADDF=$(curl -sLX PUT -w "%{http_code}" --cacert /certs/css.crt -u ${3}/${3}admin:${3}adminpw --header 'Content-Type:application/octet-stream' "https://css-api:9443/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @${1})
+ADDF=$(curl -sLX PUT -w "%{http_code}" --cacert /certs/css.crt -u ${3}/${admin_user}:${admin_pw} --header 'Content-Type:application/octet-stream' "https://css-api:9443/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @${1})
 
 if [ "$ADDF" == "204" ]
 then

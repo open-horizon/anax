@@ -833,15 +833,18 @@ func GetPatterns(httpClientFactory *config.HTTPClientFactory, org string, patter
 // Create a name for the generated policy that should be unique within the org.
 func makePolicyName(patternName string, workloadURL string, workloadOrg string, workloadArch string) string {
 
-	url := ""
+	url := workloadURL
+
+	// for the old url style, get the part after '*://'
 	pieces := strings.SplitN(workloadURL, "/", 3)
 	if len(pieces) >= 3 {
 		url = strings.TrimSuffix(pieces[2], "/")
-		url = strings.Replace(url, "/", "-", -1)
 	}
 
-	return fmt.Sprintf("%v_%v_%v_%v", patternName, url, workloadOrg, workloadArch)
+	// convert slash to under line
+	url = strings.Replace(url, "/", "-", -1)
 
+	return fmt.Sprintf("%v_%v_%v_%v", patternName, url, workloadOrg, workloadArch)
 }
 
 // Convert a pattern to a list of policy objects. Each pattern contains 1 or more workloads or services,

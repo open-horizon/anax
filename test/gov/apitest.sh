@@ -4,7 +4,7 @@ EMAIL="foo@goo.com"
 
 TESTFAIL="0"
 
-ORG="e2edev"
+ORG="e2edev@somecomp.com"
 
 # =================================================================
 # Run error tests on the node API
@@ -87,7 +87,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "${ERR:0:41}" != "pattern e2edev/fred not found in exchange" ]
+if [ "${ERR:0:54}" != "pattern e2edev@somecomp.com/fred not found in exchange" ]
 then
   echo -e "$newhzndevice \nresulted in incorrect response: $RES"
   exit 2

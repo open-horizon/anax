@@ -8,9 +8,9 @@ then
 # Configure the usehello service variables.
 read -d '' snsconfig <<EOF
 {
-  "url": "http://my.company.com/services/usehello2",
+  "url": "my.company.com.services.usehello2",
   "version": "1.0.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -38,9 +38,9 @@ fi
 # Configure the hello service variables.
 read -d '' snsconfig <<EOF
 {
-  "url": "http://my.company.com/services/hello2",
+  "url": "my.company.com.services.hello2",
   "version": "1.0.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -68,9 +68,9 @@ fi
 # Configure the cpu service variables.
 read -d '' snsconfig <<EOF
 {
-  "url": "http://my.company.com/services/cpu2",
+  "url": "my.company.com.services.cpu2",
   "version": "1.0.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",

@@ -19,7 +19,7 @@ echo -e "PATTERN setting is $PATTERN"
 
 EXCH_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
 IBM_ADMIN_AUTH="IBM/ibmadmin:ibmadminpw"
-E2EDEV_ADMIN_AUTH="e2edev/e2edevadmin:e2edevadminpw"
+E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 
 export HZN_EXCHANGE_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
 
@@ -49,7 +49,7 @@ then
     echo -e "Using existing key"
 else
   echo -e "Generate new signing keys:"
-  hzn key create -l 4096 e2edev e2edev@gmail.com
+  hzn key create -l 4096 e2edev@somecomp.com e2edev@gmail.com
   if [ $? -ne 0 ]
   then
     echo -e "hzn key create failed."
@@ -77,7 +77,7 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register amd64 test service:"
-RES=$(echo "$sdef" | curl -sLX POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev/services" | jq -r '.')
+RES=$(echo "$sdef" | curl -sLX POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 results "$RES"
 
 # test service arm64
@@ -97,7 +97,7 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register arm64 test service:"
-RES=$(echo "$sdef" | curl -sLX POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev/services" | jq -r '.')
+RES=$(echo "$sdef" | curl -sLX POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 results "$RES"
 
 # test service arm
@@ -117,7 +117,7 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register arm test service:"
-RES=$(echo "$sdef" | curl -sLX POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev/services" | jq -r '.')
+RES=$(echo "$sdef" | curl -sLX POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 results "$RES"
 
 # Helm service
@@ -167,7 +167,7 @@ then
     exit 2
 fi
 
-# cpu service - needed by the e2edev/netspeed
+# cpu service - needed by the e2edev@somecomp.com/netspeed
 VERS="1.0"
 cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
 {
@@ -197,11 +197,11 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
 }
 EOF
 
-echo -e "Register e2edev/cpu service $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key
+echo -e "Register e2edev@somecomp.com/cpu service $VERS:"
+hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
 then
-    echo -e "hzn exchange service publish failed for e2edev/cpu."
+    echo -e "hzn exchange service publish failed for e2edev@somecomp.com/cpu."
     exit 2
 fi
 
@@ -227,8 +227,8 @@ echo -e "Register IBM/network service $VERS:"
 RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" --data @- "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
 results "$RES"
 
-echo -e "Register e2edev/network service $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" --data @- "${EXCH_URL}/orgs/e2edev/services" | jq -r '.')
+echo -e "Register e2edev@somecomp.com/network service $VERS:"
+RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 results "$RES"
 
 
@@ -252,8 +252,8 @@ echo -e "Register IBM/network service $VERS:"
 RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" --data @- "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
 results "$RES"
 
-echo -e "Register e2edev/network service $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" --data @- "${EXCH_URL}/orgs/e2edev/services" | jq -r '.')
+echo -e "Register e2edev@somecomp.com/network service $VERS:"
+RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 results "$RES"
 
 
@@ -366,7 +366,7 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_locgps.json
 fi
 echo -e "Register GPS Loc service $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_locgps.json -k $KEY_TEST_DIR/*private.key
+hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_locgps.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for LocGPS."
@@ -412,7 +412,7 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_locgps2.json
 fi
 echo -e "Register GPS Loc service $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_locgps2.json -k $KEY_TEST_DIR/*private.key
+hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_locgps2.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for LocGPS."
@@ -505,9 +505,9 @@ cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
   "version":"$VERS",
   "arch":"amd64",
   "requiredServices":[
-    {"url":"https://bluehorizon.network/services/network","version":"1.0.0","arch":"amd64","org":"e2edev"},
-    {"url":"https://bluehorizon.network/services/network2","version":"1.0.0","arch":"amd64","org":"e2edev"},
-    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"e2edev"},
+    {"url":"https://bluehorizon.network/services/network","version":"1.0.0","arch":"amd64","org":"e2edev@somecomp.com"},
+    {"url":"https://bluehorizon.network/services/network2","version":"1.0.0","arch":"amd64","org":"e2edev@somecomp.com"},
+    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"e2edev@somecomp.com"},
     {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"IBM"}
   ],
   "userInput":[
@@ -555,11 +555,11 @@ cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
   "deploymentSignature":""
 }
 EOF
-echo -e "Register e2edev/netspeed service $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key
+echo -e "Register e2edev@somecomp.com/netspeed service $VERS:"
+hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
 then
-    echo -e "hzn exchange service publish failed for e2edev/netspeed."
+    echo -e "hzn exchange service publish failed for e2edev@somecomp.com/netspeed."
     exit 2
 fi
 
@@ -595,7 +595,7 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
 fi
 
 echo -e "Register GPSTest service $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_gpstest.json -k $KEY_TEST_DIR/*private.key
+hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_gpstest.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for GPSTest."
@@ -615,7 +615,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_location.json
   "version":"$VERS",
   "arch":"amd64",
   "requiredServices":[
-    {"url":"https://bluehorizon.network/services/locgps","version":"2.0.3","arch":"amd64","org":"e2edev"},
+    {"url":"https://bluehorizon.network/services/locgps","version":"2.0.3","arch":"amd64","org":"e2edev@somecomp.com"},
     {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"IBM"}
   ],
   "userInput":[],
@@ -635,7 +635,7 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_location.json
 fi
 echo -e "Register service based location $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_location.json -k $KEY_TEST_DIR/*private.key
+hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_location.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for Location."
@@ -653,7 +653,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_location2.json
   "version":"$VERS",
   "arch":"amd64",
   "requiredServices":[
-    {"url":"https://bluehorizon.network/services/locgps","version":"2.0.4","arch":"amd64","org":"e2edev"},
+    {"url":"https://bluehorizon.network/services/locgps","version":"2.0.4","arch":"amd64","org":"e2edev@somecomp.com"},
     {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"IBM"}
   ],
   "userInput":[],
@@ -673,7 +673,7 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_location2.json
 fi
 echo -e "Register service based location $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_location2.json -k $KEY_TEST_DIR/*private.key
+hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_location2.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for Location."
@@ -715,7 +715,7 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_weather.json
 fi
 echo -e "Register service based PWS $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev -f $KEY_TEST_DIR/svc_weather.json -k $KEY_TEST_DIR/*private.key
+hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_weather.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for PWS."
@@ -723,7 +723,7 @@ then
 fi
 
 echo -e "Listing services:"
-hzn exchange service list -o e2edev
+hzn exchange service list -o e2edev@somecomp.com
 hzn exchange service list -o IBM
 
 
@@ -781,7 +781,7 @@ read -d '' pdef <<EOF
 }
 EOF
 echo -e "Register sns (service based netspeed) pattern $VERS:"
-RES=$(echo "$pdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev/patterns/sns" | jq -r '.')
+RES=$(echo "$pdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sns" | jq -r '.')
 results "$RES"
 
 # sgps test pattern
@@ -794,7 +794,7 @@ read -d '' sdef <<EOF
   "services": [
     {
       "serviceUrl":"https://bluehorizon.network/services/gpstest",
-      "serviceOrgid":"e2edev",
+      "serviceOrgid":"e2edev@somecomp.com",
       "serviceArch":"amd64",
       "serviceVersions":[
         {
@@ -820,7 +820,7 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register gps service pattern $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev/patterns/sgps" | jq -r '.')
+RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sgps" | jq -r '.')
 results "$RES"
 
 # shelm test pattern
@@ -859,7 +859,7 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register Helm service pattern $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev/patterns/shelm" | jq -r '.')
+RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/shelm" | jq -r '.')
 results "$RES"
 
 # susehello test pattern
@@ -871,8 +871,8 @@ read -d '' sdef <<EOF
   "public": true,
   "services": [
     {
-      "serviceUrl":"http://my.company.com/services/usehello2",
-      "serviceOrgid":"e2edev",
+      "serviceUrl":"my.company.com.services.usehello2",
+      "serviceOrgid":"e2edev@somecomp.com",
       "serviceArch":"amd64",
       "serviceVersions":[
         {
@@ -898,7 +898,7 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register usehello service pattern $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev/patterns/susehello" | jq -r '.')
+RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/susehello" | jq -r '.')
 results "$RES"
 
 #
@@ -921,7 +921,7 @@ read -d '' sdef <<EOF
   "services": [
     {
       "serviceUrl":"https://bluehorizon.network/services/location",
-      "serviceOrgid":"e2edev",
+      "serviceOrgid":"e2edev@somecomp.com",
       "serviceArch":"amd64",
       "serviceVersions":[
         {
@@ -957,7 +957,7 @@ read -d '' sdef <<EOF
     },
     {
       "serviceUrl":"https://bluehorizon.network/services/locgps",
-      "serviceOrgid":"e2edev",
+      "serviceOrgid":"e2edev@somecomp.com",
       "serviceArch":"amd64",
       "agreementLess": true,
       "serviceVersions":[
@@ -981,7 +981,7 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register location service pattern $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev/patterns/sloc" | jq -r '.')
+RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sloc" | jq -r '.')
 results "$RES"
 
 # weather pattern
@@ -994,7 +994,7 @@ read -d '' sdef <<EOF
   "services": [
     {
       "serviceUrl":"https://bluehorizon.network/services/weather",
-      "serviceOrgid":"e2edev",
+      "serviceOrgid":"e2edev@somecomp.com",
       "serviceArch":"amd64",
       "serviceVersions":[
         {
@@ -1020,7 +1020,7 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register weather service pattern $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev/patterns/spws" | jq -r '.')
+RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/spws" | jq -r '.')
 results "$RES"
 
 # the sall pattern
@@ -1038,7 +1038,7 @@ read -d '' msdef <<EOF
   "services": [
     {
       "serviceUrl":"https://bluehorizon.network/services/weather",
-      "serviceOrgid":"e2edev",
+      "serviceOrgid":"e2edev@somecomp.com",
       "serviceArch":"amd64",
       "serviceVersions":[
         {
@@ -1109,7 +1109,7 @@ read -d '' msdef <<EOF
     },
     {
       "serviceUrl":"https://bluehorizon.network/services/netspeed",
-      "serviceOrgid":"e2edev",
+      "serviceOrgid":"e2edev@somecomp.com",
       "serviceArch":"amd64",
       "serviceVersions":[
         {
@@ -1144,7 +1144,7 @@ read -d '' msdef <<EOF
     },
     {
       "serviceUrl":"https://bluehorizon.network/services/location",
-      "serviceOrgid":"e2edev",
+      "serviceOrgid":"e2edev@somecomp.com",
       "serviceArch":"amd64",
       "serviceVersions":[
         {
@@ -1180,7 +1180,7 @@ read -d '' msdef <<EOF
     },
     {
       "serviceUrl":"https://bluehorizon.network/services/locgps",
-      "serviceOrgid":"e2edev",
+      "serviceOrgid":"e2edev@somecomp.com",
       "serviceArch":"amd64",
       "agreementLess": true,
       "serviceVersions":[
@@ -1196,8 +1196,8 @@ read -d '' msdef <<EOF
       "nodeHealth": {}
     },
     {
-      "serviceUrl":"http://my.company.com/services/usehello2",
-      "serviceOrgid":"e2edev",
+      "serviceUrl":"my.company.com.services.usehello2",
+      "serviceOrgid":"e2edev@somecomp.com",
       "serviceArch":"amd64",
       "serviceVersions":[
         {
@@ -1213,7 +1213,7 @@ read -d '' msdef <<EOF
     },
     {
       "serviceUrl":"https://bluehorizon.network/services/gpstest",
-      "serviceOrgid":"e2edev",
+      "serviceOrgid":"e2edev@somecomp.com",
       "serviceArch":"amd64",
       "serviceVersions":[
         {
@@ -1240,11 +1240,11 @@ read -d '' msdef <<EOF
 EOF
 
 if [[ $TEST_DIFF_ORG -eq 0 ]]; then
-  msdef=$(echo $msdef |jq 'del(.services[] | select(.serviceUrl == "https://bluehorizon.network/services/netspeed") | select(.serviceOrgid == "e2edev"))')
+  msdef=$(echo $msdef |jq 'del(.services[] | select(.serviceUrl == "https://bluehorizon.network/services/netspeed") | select(.serviceOrgid == "e2edev@somecomp.com"))')
 fi
 
 echo -e "Register service based all pattern:"
-RES=$(echo "$msdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev/patterns/sall" | jq -r '.')
+RES=$(echo "$msdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sall" | jq -r '.')
 results "$RES"
 
 unset HZN_EXCHANGE_URL

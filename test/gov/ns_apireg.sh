@@ -13,7 +13,7 @@ then
         # that the runtime will still pick them up for the newer version that is installed in the exchange.
         # To test the services from different orgs with same url, we have setup 2 netspeed services.
         # IBM/netspeed depends on: IBM/nework, IBN/network2, IBM/cpu
-        # e2edev/netspeed depends on: e2edev/network, e2edev/network2, IBM/cpu e2edev/cpu
+        # e2edev@somecomp.com/netspeed depends on: e2edev@somecomp.com/network, e2edev@somecomp.com/network2, IBM/cpu e2edev@somecomp.com/cpu
 
         ### IBM/netspeed
         read -d '' snsconfig <<EOF
@@ -46,12 +46,12 @@ EOF
             exit 2
         fi
 
-        ### e2edev/netspeed
+        ### e2edev@somecomp.com/netspeed
         read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/netspeed",
   "versionRange": "2.2.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -69,8 +69,8 @@ EOF
   ]
 }
 EOF
-        echo -e "\n\n[D] e2edev/netspeed service config payload: $snsconfig"
-        echo "Registering e2edev/netspeed service config on node"
+        echo -e "\n\n[D] e2edev@somecomp.com/netspeed service config payload: $snsconfig"
+        echo "Registering e2edev@somecomp.com/netspeed service config on node"
         ERR=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
         if [ "$ERR" != "null" ]; then
             echo -e "error occured: $ERR"
@@ -94,17 +94,17 @@ EOF
             exit 2
         fi
 
-        ### e2edev/network
+        ### e2edev@somecomp.com/network
         read -d '' networkservice <<EOF
 {
   "url": "https://bluehorizon.network/services/network",
   "versionRange": "1.0.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": []
 }
 EOF
         echo -e "\n\n[D] networkservice payload: $networkservice"
-        echo "Registering e2edev/network service"
+        echo "Registering e2edev@somecomp.com/network service"
         ERR=$(echo "$networkservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
         if [ "$ERR" != "null" ]; then
             echo -e "error occured: $ERR"
@@ -131,17 +131,17 @@ EOF
             fi
         fi
 
-        ### e2edev/network2
+        ### e2edev@somecomp.com/network2
         read -d '' networkservice <<EOF
 {
   "url": "https://bluehorizon.network/services/network2",
   "versionRange": "1.0.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": []
 }
 EOF
         echo -e "\n\n[D] networkservice payload: $networkservice"
-        echo "Registering e2edev/network2 service"
+        echo "Registering e2edev@somecomp.com/network2 service"
         ERR=$(echo "$networkservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
         if [ "$ERR" != "null" ]; then
             if [ "${ERR:0:22}" != "Duplicate registration" ]; then
@@ -180,12 +180,12 @@ EOF
             fi
         fi
 
-         ### e2edev/cpu
+         ### e2edev@somecomp.com/cpu
         read -d '' slocservice <<EOF
 {
     "url": "https://bluehorizon.network/service-cpu",
     "name": "cpu",
-    "organization": "e2edev",
+    "organization": "e2edev@somecomp.com",
     "versionRange": "1.0.0",
     "attributes": [
         {
@@ -201,7 +201,7 @@ EOF
 }
 EOF
         echo -e "\n\n[D] service based cpu service payload: $slocservice"
-        echo "Registering service based e2edev/cpu service"
+        echo "Registering service based e2edev@somecomp.com/cpu service"
         ERR=$(echo "$slocservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
         if [ "$ERR" != "null" ]; then
             echo -e "error occured: $ERR"
@@ -245,12 +245,12 @@ EOF
             exit 2
         fi
 
-        ### e2edev/netspeed
+        ### e2edev@somecomp.com/netspeed
         read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/netspeed",
   "versionRange": "2.2.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -268,8 +268,8 @@ EOF
   ]
 }
 EOF
-        echo -e "\n\n[D] e2edev/netspeed service config payload: $snsconfig"
-        echo "Registering e2edev/netspeed service config on node"
+        echo -e "\n\n[D] e2edev@somecomp.com/netspeed service config payload: $snsconfig"
+        echo "Registering e2edev@somecomp.com/netspeed service config on node"
         ERR=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
         if [ "$ERR" != "null" ]; then
             echo -e "error occured: $ERR"
@@ -306,12 +306,12 @@ EOF
             fi
         fi
         
-         ### e2edev/cpu
+         ### e2edev@somecomp.com/cpu
         read -d '' slocservice <<EOF
 {
     "url": "https://bluehorizon.network/service-cpu",
     "name": "cpu",
-    "organization": "e2edev",
+    "organization": "e2edev@somecomp.com",
     "versionRange": "1.0.0",
     "attributes": [
         {
@@ -327,7 +327,7 @@ EOF
 }
 EOF
         echo -e "\n\n[D] service based cpu service payload: $slocservice"
-        echo "Registering service based e2edev/cpu service"
+        echo "Registering service based e2edev@somecomp.com/cpu service"
         ERR=$(echo "$slocservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
         if [ "$ERR" != "null" ]; then
             echo -e "error occured: $ERR"
