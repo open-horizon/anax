@@ -12,6 +12,8 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
 	"net/http"
+	"regexp"
+	"strings"
 )
 
 // These structs are used to parse the registration input file. These are also used by the hzn dev code.
@@ -106,7 +108,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 	//nd := Node{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HA: false}
 	falseVal := false
 	nd := api.HorizonDevice{Id: &nodeId, Token: &nodeToken, Org: &org, Pattern: &pattern, Name: &nodeId, HA: &falseVal} //todo: support HA config
-	httpCode = cliutils.HorizonPutPost(http.MethodPost, "node", []int{201, 200, cliutils.ANAX_ALREADY_CONFIGURED}, nd)
+	httpCode, _ = cliutils.HorizonPutPost(http.MethodPost, "node", []int{201, 200, cliutils.ANAX_ALREADY_CONFIGURED}, nd)
 	if httpCode == cliutils.ANAX_ALREADY_CONFIGURED {
 		// Note: I wanted to make `hzn register` idempotent, but the anax api doesn't support changing existing settings once in configuring state (to maintain internal consistency).
 		//		And i can't query ALL the existing settings to make sure they are what we were going to set, because i can't query the node token.
@@ -149,7 +151,13 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 			attr.Mappings = &m.Variables
 			attrSlice := []api.Attribute{*attr}
 			service.Attributes = &attrSlice
-			cliutils.HorizonPutPost(http.MethodPost, "service/config", []int{201, 200}, service)
+			httpCode, respBody := cliutils.HorizonPutPost(http.MethodPost, "service/config", []int{201, 200, 400}, service)
+			if httpCode == 400 {
+				if matches := parseRegisterInputError(respBody); matches != nil && len(matches) > 2 {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Registration failed because %v Please update the services section in the input file %v. Run 'hzn unregister' and then 'hzn register...' again", matches[0], inputFile)
+				}
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "%v", respBody)
+			}
 		}
 
 	} else {
@@ -161,7 +169,18 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 	fmt.Println("Changing Horizon state to configured to register this node with Horizon...")
 	configuredStr := "configured"
 	configState := api.Configstate{State: &configuredStr}
-	cliutils.HorizonPutPost(http.MethodPut, "node/configstate", []int{201, 200}, configState)
+	httpCode, respBody := cliutils.HorizonPutPost(http.MethodPut, "node/configstate", []int{201, 200, 400}, configState)
+	if httpCode == 400 {
+		if matches := parseRegisterInputError(respBody); matches != nil && len(matches) > 2 {
+			err_string := fmt.Sprintf("Registration failed because %v", matches[0])
+			if inputFile != "" {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, err_string+" Please define variables for service %v in the input file %v. Run 'hzn unregister' and then 'hzn register...' again", matches[2], inputFile)
+			} else {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, err_string+" Please create an input file, define variables for service %v. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.", matches[2])
+			}
+		}
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "%v", respBody)
+	}
 
 	fmt.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
 }
@@ -324,4 +343,35 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 		cliutils.Fatal(cliutils.FILE_IO_ERROR, "problem writing the user input template file: %v", err)
 	}
 	fmt.Printf("Wrote %s\n", inputFile)
+}
+
+// this function parses the error returned by the registration process to see if the error
+// is due to the missing input variable or wrong input variable type for a service.
+// It returns a string array in the following format:
+// [error, variable name, service org/service url]
+// if it returns an empty array, then there is no match.
+func parseRegisterInputError(resp string) []string {
+	// match the ANAX_SVC_MISSING_VARIABLE
+	tmplt_miss_var := strings.Replace(cutil.ANAX_SVC_MISSING_VARIABLE, "%v", "([^\\s]*)", -1)
+	re1 := regexp.MustCompile(tmplt_miss_var)
+	matches := re1.FindStringSubmatch(resp)
+
+	// match ANAX_SVC_WRONG_TYPE
+	if matches == nil || len(matches) == 0 {
+		tmplt_wrong_type := strings.Replace(cutil.ANAX_SVC_WRONG_TYPE, "%v", "([^\\s]*)", -1) + "type [^.]*[.]"
+		re2 := regexp.MustCompile(tmplt_wrong_type)
+		matches = re2.FindStringSubmatch(resp)
+	}
+
+	// match ANAX_SVC_MISSING_CONFIG
+	if matches == nil || len(matches) == 0 {
+		tmplt_missing_config := strings.Replace(cutil.ANAX_SVC_MISSING_CONFIG, "%v", "([^\\s]*)", -1)
+		re3 := regexp.MustCompile(tmplt_missing_config)
+		matches = re3.FindStringSubmatch(resp)
+		if matches != nil && len(matches) > 2 {
+			// no variable name for this
+			matches[1] = ""
+		}
+	}
+	return matches
 }
