@@ -306,6 +306,7 @@ run-css: run-mongo-db
 		-p 127.0.0.1:9443:9443 \
 		--network "$(DOCKER_TEST_NETWORK)" \
 		-e "HZN_EXCHANGE_URL=http://$(DOCKER_EXCH_CNAME):8080/v1" \
+		-e "HZN_EXCHANGE_CA_CERT=/certs/domain.crt" \
 		-v $(CSS_CONFIG):/etc/edge-sync-service/ \
 		-v $(AGBOT_TEMPFS)/certs/:/certs/ \
 		-t $(DOCKER_CSS_INAME):$(DOCKER_CSS_TAG)
