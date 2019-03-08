@@ -1,6 +1,8 @@
 package css
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,9 +11,11 @@ import (
 	"github.com/open-horizon/edge-utilities/logger/log"
 	"github.com/open-horizon/edge-utilities/logger/trace"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 // Set this env var to a value that will be used to identify the http header that contains the user identity, when this
@@ -21,25 +25,34 @@ const CSS_PRE_AUTHENTICATED_IDENTITY = "CSS_PRE_AUTHENTICATED_HEADER"
 // The env var that holds the exchange API endpoint when this authenticator should use the exchange to do authentication.
 const HZN_EXCHANGE_URL = "HZN_EXCHANGE_URL"
 
+// The env var that holds the path to an SSL CA certificate that should be used when accessing the exchange API.
+const HZN_EXCHANGE_CA_CERT = "HZN_EXCHANGE_CA_CERT"
+
 // HorizonAuthenticate is the Horizon plugin for authentication used by the Cloud sync service (CSS). This plugin
 // can be used in environments where authentication is handled by something else in the network before
 // the CSS or where the CSS itself is deployed with a public facing API and so this plugin utilizes the exchange
 // to authenticate users.
 type HorizonAuthenticate struct {
+	httpClient *http.Client
 }
 
 // Start initializes the HorizonAuthenticate plugin.
 func (auth *HorizonAuthenticate) Start() {
 
-	// Make sure one of the authentication behaviors has been chosen.
+	// Make sure one of the authentication behaviors has been clearly chosen.
 	if AlreadyAuthenticatedIdentityHeader() != "" && ExchangeURL() != "" {
 		panic(fmt.Sprintf("Must not specify both %v=%v and %v=%v.", CSS_PRE_AUTHENTICATED_IDENTITY, AlreadyAuthenticatedIdentityHeader(), HZN_EXCHANGE_URL, ExchangeURL()))
 	} else if AlreadyAuthenticatedIdentityHeader() == "" && ExchangeURL() == "" {
 		panic(fmt.Sprintf("Must specify an environment variable to indicate authentication behavior, either %v or %v.", CSS_PRE_AUTHENTICATED_IDENTITY, HZN_EXCHANGE_URL))
 	}
 
-	// Log which authentication behavior we are using.
+	// Setup for the authentication method that was chosen.
 	if id := AlreadyAuthenticatedIdentityHeader(); id == "" {
+		var err error
+		auth.httpClient, err = newHTTPClient(ExchangeCACert())
+		if err != nil {
+			panic(fmt.Sprintf("Unable to create HTTP client, error %v", err))
+		}
 		if log.IsLogging(logger.INFO) {
 			log.Info(cssALS("starting with exchange authenticated identity"))
 		}
@@ -57,6 +70,10 @@ func AlreadyAuthenticatedIdentityHeader() string {
 
 func ExchangeURL() string {
 	return os.Getenv(HZN_EXCHANGE_URL)
+}
+
+func ExchangeCACert() string {
+	return os.Getenv(HZN_EXCHANGE_CA_CERT)
 }
 
 // Authenticate authenticates a particular appKey/appSecret pair and indicates
@@ -132,7 +149,7 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(appKey string, appSecr
 			trace.Debug(cssALS(fmt.Sprintf("authentication request for user %v appears to be a node identity", appKey)))
 		}
 
-		if err := verifyNodeIdentity(parts[2], parts[0], appSecret, ExchangeURL()); err != nil {
+		if err := auth.verifyNodeIdentity(parts[2], parts[0], appSecret, ExchangeURL()); err != nil {
 			if log.IsLogging(logger.ERROR) {
 				log.Error(cssALS(fmt.Sprintf("unable to verify identity %v, error %v", appKey, err)))
 			}
@@ -150,7 +167,7 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(appKey string, appSecr
 			trace.Debug(cssALS(fmt.Sprintf("authentication request for user %v appears to be a user identity", appKey)))
 		}
 
-		if admin, err := verifyUserIdentity(parts[1], parts[0], appSecret, ExchangeURL()); err != nil {
+		if admin, err := auth.verifyUserIdentity(parts[1], parts[0], appSecret, ExchangeURL()); err != nil {
 			if log.IsLogging(logger.ERROR) {
 				log.Error(cssALS(fmt.Sprintf("unable to verify identity %v, error %v", appKey, err)))
 			}
@@ -190,7 +207,7 @@ type GetUsersResponse struct {
 
 // Returns true,nil for users that are admins, false,nil for users that are valid but aren't admins,
 // and false,error otherwise.
-func verifyUserIdentity(id string, orgId string, appSecret string, exURL string) (bool, error) {
+func (auth *HorizonAuthenticate) verifyUserIdentity(id string, orgId string, appSecret string, exURL string) (bool, error) {
 
 	// Log which API we're about to use.
 	url := fmt.Sprintf("%v/orgs/%v/users/%v", exURL, orgId, id)
@@ -201,7 +218,7 @@ func verifyUserIdentity(id string, orgId string, appSecret string, exURL string)
 
 	// Invoke the exchange API to verify the user.
 	user := fmt.Sprintf("%v/%v", orgId, id)
-	resp, err := invokeExchange(url, user, appSecret)
+	resp, err := auth.invokeExchange(url, user, appSecret)
 
 	// Make sure the response reader is closed if we exit quickly.
 	defer resp.Body.Close()
@@ -248,7 +265,7 @@ type GetNodesResponse struct {
 }
 
 // Returns nil for valid nodes, otherwise error.
-func verifyNodeIdentity(id string, orgId string, appSecret string, exURL string) error {
+func (auth *HorizonAuthenticate) verifyNodeIdentity(id string, orgId string, appSecret string, exURL string) error {
 
 	// Log which API we're about to use.
 	url := fmt.Sprintf("%v/orgs/%v/nodes/%v", exURL, orgId, id)
@@ -259,7 +276,7 @@ func verifyNodeIdentity(id string, orgId string, appSecret string, exURL string)
 
 	// Invoke the exchange API to verify the node.
 	node := fmt.Sprintf("%v/%v", orgId, id)
-	resp, err := invokeExchange(url, node, appSecret)
+	resp, err := auth.invokeExchange(url, node, appSecret)
 
 	// Make sure the response reader is closed if we exit quickly.
 	defer resp.Body.Close()
@@ -299,12 +316,11 @@ func verifyNodeIdentity(id string, orgId string, appSecret string, exURL string)
 }
 
 // Common function to invoke the Exchange API when checking for valid users and nodes.
-func invokeExchange(url string, user string, pw string) (*http.Response, error) {
+func (auth *HorizonAuthenticate) invokeExchange(url string, user string, pw string) (*http.Response, error) {
 
 	apiMsg := fmt.Sprintf("%v %v", http.MethodGet, url)
 
-	// Make a new HTTP request for the API call.
-	httpClient := &http.Client{}
+	// Create an outgoing HTTP request for the exchange.
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to create HTTP request for %v, error %v", apiMsg, err))
@@ -319,12 +335,70 @@ func invokeExchange(url string, user string, pw string) (*http.Response, error) 
 	}
 
 	// Send the request to verify the user.
-	resp, err := httpClient.Do(req)
+	resp, err := auth.httpClient.Do(req)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to send HTTP request for %v, error %v", apiMsg, err))
 	} else {
 		return resp, nil
 	}
+}
+
+// Create an https connection, using a supplied SSL CA certificate.
+func newHTTPClient(certPath string) (*http.Client, error) {
+	var caBytes []byte
+
+	if certPath != "" {
+		var err error
+		caBytes, err = ioutil.ReadFile(certPath)
+		if err != nil {
+			return nil, errors.New(fmt.Sprintf("unable to read %v, error %v", certPath, err))
+		}
+		if log.IsLogging(logger.INFO) {
+			log.Info(cssALS(fmt.Sprintf("read CA cert from provided file %v", certPath)))
+		}
+	}
+
+	var tlsConf tls.Config
+	tlsConf.InsecureSkipVerify = false
+	// do not allow negotiation to previous versions of TLS
+	tlsConf.MinVersion = tls.VersionTLS12
+
+	var certPool *x509.CertPool
+
+	var err error
+	certPool, err = x509.SystemCertPool()
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("unable to get system cert pool, error %v", err))
+	}
+
+	certPool.AppendCertsFromPEM(caBytes)
+	tlsConf.RootCAs = certPool
+
+	if trace.IsLogging(logger.TRACE) {
+		trace.Debug(cssALS(fmt.Sprintf("added CA Cert %v to trust", certPath)))
+	}
+
+	tlsConf.BuildNameToCertificate()
+
+	return &http.Client{
+		// remember that this timouet is for the whole request, including
+		// body reading. This means that you must set the timeout according
+		// to the total payload size you expect
+		Timeout: time.Second * time.Duration(20),
+		Transport: &http.Transport{
+			Dial: (&net.Dialer{
+				Timeout:   60 * time.Second,
+				KeepAlive: 120 * time.Second,
+			}).Dial,
+			TLSHandshakeTimeout:   20 * time.Second,
+			ResponseHeaderTimeout: 20 * time.Second,
+			ExpectContinueTimeout: 8 * time.Second,
+			MaxIdleConns:          20,
+			IdleConnTimeout:       120 * time.Second,
+			TLSClientConfig:       &tlsConf,
+		},
+	}, nil
+
 }
 
 // Internal function used to separate the code for authenticating with the exchange away from the main
