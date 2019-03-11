@@ -14,13 +14,13 @@ type ExchangeNodes struct {
 	Nodes     map[string]interface{} `json:"nodes"`
 }
 
-func NodeList(org string, userPw string, node string, namesOnly bool) {
-	cliutils.SetWhetherUsingApiKey(userPw)
+func NodeList(org string, credToUse string, node string, namesOnly bool) {
+	cliutils.SetWhetherUsingApiKey(credToUse)
 	org, node = cliutils.TrimOrg(org, node)
 	if namesOnly && node == "" {
 		// Only display the names
 		var resp ExchangeNodes
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
+		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &resp)
 		nodes := []string{}
 		for n := range resp.Nodes {
 			nodes = append(nodes, n)
@@ -33,7 +33,7 @@ func NodeList(org string, userPw string, node string, namesOnly bool) {
 	} else {
 		// Display the full resources
 		var nodes ExchangeNodes
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &nodes)
+		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
 		if httpCode == 404 && node != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, "node '%s' not found in org %s", node, org)
 		}
@@ -101,10 +101,10 @@ type NodeExchangePatchToken struct {
 	Token string `json:"token"`
 }
 
-func NodeSetToken(org, userPw, node, token string) {
-	cliutils.SetWhetherUsingApiKey(userPw)
+func NodeSetToken(org, credToUse, node, token string) {
+	cliutils.SetWhetherUsingApiKey(credToUse)
 	patchNodeReq := NodeExchangePatchToken{Token: token}
-	cliutils.ExchangePutPost(http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, userPw), []int{201}, patchNodeReq)
+	cliutils.ExchangePutPost(http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{201}, patchNodeReq)
 }
 
 func NodeConfirm(org, node, token string) {
@@ -116,14 +116,14 @@ func NodeConfirm(org, node, token string) {
 	// else cliutils.ExchangeGet() already gave the error msg
 }
 
-func NodeRemove(org, userPw, node string, force bool) {
-	cliutils.SetWhetherUsingApiKey(userPw)
+func NodeRemove(org, credToUse, node string, force bool) {
+	cliutils.SetWhetherUsingApiKey(credToUse)
 	org, node = cliutils.TrimOrg(org, node)
 	if !force {
 		cliutils.ConfirmRemove("Are you sure you want to remove node '" + org + "/" + node + "' from the Horizon Exchange (should not be done while an edge node is registered with this node id)?")
 	}
 
-	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
+	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "node '%s' not found in org %s", node, org)
 	}

@@ -252,7 +252,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var1 for service e2edev/https://bluehorizon.network/services/testservice is type json.Number, expecting string." ]
+if [ "$ERR" != "variable var1 for service e2edev@somecomp.com/https://bluehorizon.network/services/testservice is type json.Number, expecting string." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -292,7 +292,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var1 for service e2edev/https://bluehorizon.network/services/testservice is type []interface {}, expecting string." ]
+if [ "$ERR" != "variable var1 for service e2edev@somecomp.com/https://bluehorizon.network/services/testservice is type []interface {}, expecting string." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -332,7 +332,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var1 for service e2edev/https://bluehorizon.network/services/testservice is type map[string]interface {}, is an unexpected type." ]
+if [ "$ERR" != "variable var1 for service e2edev@somecomp.com/https://bluehorizon.network/services/testservice is type map[string]interface {}, is an unexpected type." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -372,7 +372,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var2 for service e2edev/https://bluehorizon.network/services/testservice is type string, expecting int." ]
+if [ "$ERR" != "variable var2 for service e2edev@somecomp.com/https://bluehorizon.network/services/testservice is type string, expecting int." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -412,7 +412,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var3 for service e2edev/https://bluehorizon.network/services/testservice is type string, expecting float." ]
+if [ "$ERR" != "variable var3 for service e2edev@somecomp.com/https://bluehorizon.network/services/testservice is type string, expecting float." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -452,7 +452,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var4 for service e2edev/https://bluehorizon.network/services/testservice is type string, expecting list of strings." ]
+if [ "$ERR" != "variable var4 for service e2edev@somecomp.com/https://bluehorizon.network/services/testservice is type string, expecting list of strings." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -492,7 +492,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var2 for service e2edev/https://bluehorizon.network/services/testservice is type float, expecting int." ]
+if [ "$ERR" != "variable var2 for service e2edev@somecomp.com/https://bluehorizon.network/services/testservice is type float, expecting int." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -532,7 +532,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var4 for service e2edev/https://bluehorizon.network/services/testservice is type json.Number, expecting list of strings." ]
+if [ "$ERR" != "variable var4 for service e2edev@somecomp.com/https://bluehorizon.network/services/testservice is type json.Number, expecting list of strings." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -572,7 +572,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var4 for service e2edev/https://bluehorizon.network/services/testservice is type []interface {}, expecting []string." ]
+if [ "$ERR" != "variable var4 for service e2edev@somecomp.com/https://bluehorizon.network/services/testservice is type []interface {}, expecting []string." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -613,7 +613,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var1 for service e2edev/https://bluehorizon.network/services/testservice is missing from mappings." ]
+if [ "$ERR" != "variable var1 for service e2edev@somecomp.com/https://bluehorizon.network/services/testservice is missing from mappings." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -653,7 +653,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var2 for service e2edev/https://bluehorizon.network/services/testservice is missing from mappings." ]
+if [ "$ERR" != "variable var2 for service e2edev@somecomp.com/https://bluehorizon.network/services/testservice is missing from mappings." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
