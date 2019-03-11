@@ -92,7 +92,7 @@ func (p *HelmDeploymentConfigPlugin) Validate(dep interface{}) (bool, error) {
 	}
 }
 
-func (p *HelmDeploymentConfigPlugin) StartTest(homeDirectory string, userInputFile string, configFiles []string, configType string) bool {
+func (p *HelmDeploymentConfigPlugin) StartTest(homeDirectory string, userInputFile string, configFiles []string, configType string, noFSS bool) bool {
 
 	// Run verification before trying to start anything.
 	dev.ServiceValidate(homeDirectory, userInputFile, configFiles, configType)
