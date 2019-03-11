@@ -125,30 +125,10 @@ func (a *API) listen(cfg *config.HorizonConfig) {
 	// This routine does not need to be a subworker because there is no way to terminate it. It will terminate when
 	// the main anax process goes away.
 	go func() {
-		http.ListenAndServe(cfg.Edge.APIListen, nocache(a.router(true)))
+		if err := http.ListenAndServe(cfg.Edge.APIListen, nocache(a.router(true))); err != nil {
+			glog.Fatalf(apiLogString(fmt.Sprintf("Failed to start listener on %v, error %v", cfg.Edge.APIListen, err)))
+		}
 	}()
-
-	// // Make sure the socket path is present on the host filesystem.
-	// if _, err := os.Stat(cfg.GetAgentAPIUnixDomainSocketPath()); os.IsNotExist(err) {
-	// 	if err := os.MkdirAll(cfg.GetAgentAPIUnixDomainSocketPath(), 0660); err != nil {
-	// 		panic(err)
-	// 	}
-	// } else if err := os.Remove(cfg.GetAgentAPIUnixDomainSocket()); err != nil {
-
-	// 	// The Unix Domain Socket file has to be removed before we try to bind to it, in case it is left over from
-	// 	// an anax process that failed abruptly.
-	// 	glog.Infof(apiLogString(fmt.Sprintf("Removal of unix domain socket %v, resulted in: %v", cfg.GetAgentAPIUnixDomainSocket(), err)))
-	// }
-
-	// // This routine does not need to be a subworker because there is no way to terminate it. It will terminate when
-	// // the main anax process goes away.
-	// if unixListener, err := net.Listen("unix", cfg.GetAgentAPIUnixDomainSocket()); err != nil {
-	// 	panic(err)
-	// } else {
-	// 	go func() {
-	// 		http.Serve(unixListener, nocache(a.router(true)))
-	// 	}()
-	// }
 
 }
 

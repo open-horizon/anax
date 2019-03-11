@@ -404,6 +404,9 @@ elif [ "$TESTFAIL" != "1" ]; then
         echo -e "***************************"
         echo -e "Start testing pattern $PATTERN..."
 
+        # Allocate port 80 to see what anax does
+        # socat - TCP4-LISTEN:80,crlf &
+
         # start pattern test
         set_exports $pat
 
