@@ -28,7 +28,7 @@ do
 
    # Following the API call, the node's entry in the exchange should have some changes in it. The messaging key should be empty,
    # and the list of registered microservices should be empty.
-   NST=$(curl -sSL --header 'Accept: application/json' -H "Authorization:Basic e2edev/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/$DEVICE_ORG/nodes/an12345" | jq -r '.')
+   NST=$(curl -sSL --header 'Accept: application/json' -H "Authorization:Basic e2edev@somecomp.com/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/$DEVICE_ORG/nodes/an12345" | jq -r '.')
    PK=$(echo "$NST" | jq -r '.publicKey')
    if [ "$PK" != "null" ]
    then
@@ -59,7 +59,7 @@ do
          # Since anax is still up, verify that a POST to /node will return the correct error.
          pat=$PATTERN
          if [[ "$PATTERN" != "" ]]; then
-            pat="e2edev/$PATTERN"
+            pat="e2edev@somecomp.com/$PATTERN"
          fi
 read -d '' newhzndevice <<EOF
 {
@@ -154,7 +154,7 @@ EOF
          # Since anax is still up, verify that a POST to /node will return the correct error.
          pat=$PATTERN
          if [[ "$PATTERN" != "" ]]; then
-            pat="e2edev/$PATTERN"
+            pat="e2edev@somecomp.com/$PATTERN"
          fi
 read -d '' newhzndevice <<EOF
 {
@@ -192,7 +192,7 @@ EOF
 
    # Following the API call, the node's entry in the exchange should have some changes in it. The messaging key should be empty,
    # and the list of registered microservices should be empty.
-   NST=$(curl -sSL --header 'Accept: application/json' -H "Authorization:Basic e2edev/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/$DEVICE_ORG/nodes/an12345" | jq -r '.')
+   NST=$(curl -sSL --header 'Accept: application/json' -H "Authorization:Basic e2edev@somecomp.com/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/$DEVICE_ORG/nodes/an12345" | jq -r '.')
    PK=$(echo "$NST" | jq -r '.publicKey')
    if [ "$PK" != "null" ]
    then

@@ -2,7 +2,7 @@
 
 echo -e "Registering microservice and workload with hzn dev"
 
-E2EDEV_ADMIN_AUTH="e2edev/e2edevadmin:e2edevadminpw"
+E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 export HZN_EXCHANGE_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
 
 KEY_TEST_DIR="/tmp/keytest"
@@ -11,7 +11,7 @@ mkdir -p $KEY_TEST_DIR
 cd $KEY_TEST_DIR && rm -f *.pem *.key
 
 echo -e "Generate signing keys:"
-hzn key create -l 4096 e2edev e2edev@gmail.com
+hzn key create -l 4096 e2edev@somecomp.com e2edev@gmail.com
 if [ $? -ne 0 ]
 then
     echo -e "hzn key create failed."
@@ -33,7 +33,7 @@ then
 fi
 
 echo -e "Listing microservices:"
-hzn exchange microservice list -o e2edev
+hzn exchange microservice list -o e2edev@somecomp.com
 
 echo -e "Define workload using hzn dev:"
 cd /root/hzn/usehello
@@ -45,7 +45,7 @@ then
 fi
 
 echo -e "Listing workloads:"
-hzn exchange workload list -o e2edev
+hzn exchange workload list -o e2edev@somecomp.com
 
 unset HZN_EXCHANGE_URL
 

@@ -73,11 +73,11 @@ read -d '' splitgpsservice <<EOF
             "Citizen Scientist": [
               {
                 "name": "privatebc",
-                "organization": "e2edev"
+                "organization": "e2edev@somecomp.com"
               },
               {
                 "name": "bluehorizon",
-                "organization": "e2edev"
+                "organization": "e2edev@somecomp.com"
               }
             ]
           },

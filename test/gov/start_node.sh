@@ -5,7 +5,7 @@
 # export USER=anax1
 # export PASS=anax1pw
 # export DEVICE_ID="an12345"
-# export DEVICE_ORG="e2edev"
+# export DEVICE_ORG="e2edev@somecomp.com"
 # export DEVICE_NAME="anaxdev1"
 # export ANAX_API="http://localhost"
 # export EXCH="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"

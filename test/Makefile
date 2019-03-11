@@ -111,7 +111,7 @@ run-dockerreg: test-network
 		-keyout $(AGBOT_TEMPFS)/certs/domain.key \
 		-days 365 \
 		-out $(AGBOT_TEMPFS)/certs/domain.crt \
-		-subj "/C=US/ST=e2edev/L=e2edev/O=e2edev/CN=localhost"
+		-subj "/C=US/ST=e2edev@somecomp.com/L=e2edev@somecomp.com/O=e2edev@somecomp.com/CN=localhost"
 	mkdir -p $(AGBOT_TEMPFS)/auth
 	touch $(AGBOT_TEMPFS)/auth/htpasswd
 	docker/docker_run.bash "$(DOCKER_REG_CNAME)" \
@@ -298,7 +298,7 @@ run-css: run-mongo-db
 		-keyout $(AGBOT_TEMPFS)/certs/css.key \
 		-days 365 \
 		-out $(AGBOT_TEMPFS)/certs/css.crt \
-		-subj "/C=US/ST=e2edev/L=e2edev/O=e2edev/CN=$(DOCKER_CSS_CNAME)"
+		-subj "/C=US/ST=e2edev@somecomp.com/L=e2edev@somecomp.com/O=e2edev@somecomp.com/CN=$(DOCKER_CSS_CNAME)"
 	@echo "Starting $(DOCKER_CSS_CNAME)"
 	docker/docker_run.bash "$(DOCKER_CSS_CNAME)" \
 		docker run -d \

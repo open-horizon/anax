@@ -4,7 +4,7 @@ echo -e "Registering services and patterns for msghub"
 
 EXCH_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
 IBM_ADMIN_AUTH="IBM/ibmadmin:ibmadminpw"
-E2EDEV_ADMIN_AUTH="e2edev/e2edevadmin:e2edevadminpw"
+E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 MH_SAMPLES_PATH="/root/examples/edge/msghub"
 
 
@@ -24,7 +24,7 @@ then
     echo -e "Using existing key"
 else
   echo -e "Generate new signing keys:"
-  hzn key create -l 4096 e2edev e2edev@gmail.com
+  hzn key create -l 4096 e2edev@somecomp.com e2edev@gmail.com
   if [ $? -ne 0 ]
   then
     echo -e "hzn key create failed."
@@ -75,7 +75,7 @@ then
 fi
 
 echo -e "Register cpu2msghub pattern $VERS:"
-hzn exchange pattern publish -u $E2EDEV_ADMIN_AUTH -o e2edev  -f "$MH_SAMPLES_PATH/cpu2msghub/horizon/pattern/cpu2msghub.json" -k $KEY_TEST_DIR/*private.key
+hzn exchange pattern publish -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com  -f "$MH_SAMPLES_PATH/cpu2msghub/horizon/pattern/cpu2msghub.json" -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange pattern publish failed for cpu2msghub."

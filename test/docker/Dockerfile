@@ -8,8 +8,8 @@ RUN curl https://dl.google.com/go/go1.10.2.linux-amd64.tar.gz | tar -xzf- -C /us
 ENV GOROOT=/usr/local/go
 ENV PATH="${PATH}:${GOROOT}/bin"
 
-ENV HZN_ORG_ID="e2edev"
-ENV HZN_EXCHANGE_USER_AUTH="e2edev/e2edevadmin:e2edevadminpw"
+ENV HZN_ORG_ID="e2edev@somecomp.com"
+ENV HZN_EXCHANGE_USER_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 
 # Get specific versions of kubectl, minikube and helm that are known to work and work together.
 # These steps get the CLI binaries and setup the config, including environment variables that the

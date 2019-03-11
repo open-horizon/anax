@@ -14,7 +14,7 @@ echo "Calling node API"
 
 pat=$PATTERN
 if [[ "$PATTERN" != "" ]]; then
-    pat="e2edev/$PATTERN"
+    pat="e2edev@somecomp.com/$PATTERN"
 fi
 
 
@@ -89,7 +89,7 @@ if [ "$HA" == "1" ]; then
         read -d '' pwsservice <<EOF
 {
   "url": "https://bluehorizon.network/services/no-such-service",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "version": "1.0.0",
   "attributes": [
     {

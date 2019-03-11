@@ -9,7 +9,7 @@ function set_exports {
         export PASS=anax1pw
         export DEVICE_ID="an12345"
         export DEVICE_NAME="anaxdev1"
-        export DEVICE_ORG="e2edev"
+        export DEVICE_ORG="e2edev@somecomp.com"
         export TOKEN="abcdefg"
  
         export ANAX_API="http://localhost"
@@ -132,8 +132,8 @@ echo "Exchange DB Init Response: $INITDB"
 cd /root
 
 # Create the organizations we need
-echo "Creating e2edev organization..."
-CR8EORG=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"label":"E2EDev","description":"E2EDevTest"}' "${EXCH_URL}/orgs/e2edev" | jq -r '.msg')
+echo "Creating e2edev@somecomp.com organization..."
+CR8EORG=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"label":"E2EDev","description":"E2EDevTest"}' "${EXCH_URL}/orgs/e2edev@somecomp.com" | jq -r '.msg')
 echo "$CR8EORG"
 
 echo "Creating userdev organization..."
@@ -152,9 +152,9 @@ echo "Creating Customer2 organization..."
 CR8C2ORG=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"label":"Customer2","description":"The Customer2 org"}' "${EXCH_URL}/orgs/Customer2" | jq -r '.msg')
 echo "$CR8C2ORG"
 
-# Register an e2edev admin user in the exchange
-echo "Creating an admin user for e2edev organization..."
-CR8EADM=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"password":"e2edevadminpw","email":"me%40gmail.com","admin":true}' "${EXCH_URL}/orgs/e2edev/users/e2edevadmin" | jq -r '.msg')
+# Register an e2edev@somecomp.com admin user in the exchange
+echo "Creating an admin user for e2edev@somecomp.com organization..."
+CR8EADM=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"password":"e2edevadminpw","email":"me%40gmail.com","admin":true}' "${EXCH_URL}/orgs/e2edev@somecomp.com/users/e2edevadmin" | jq -r '.msg')
 echo "$CR8EADM"
 
 # Register an userdev admin user in the exchange
@@ -183,8 +183,8 @@ CR8AGBOT=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Ac
 echo "$CR8AGBOT"
 
 # Register users in the exchange
-echo "Creating Anax user in e2edev org..."
-CR8ANAX=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"password":"anax1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/e2edev/users/anax1" | jq -r '.msg')
+echo "Creating Anax user in e2edev@somecomp.com org..."
+CR8ANAX=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"password":"anax1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/e2edev@somecomp.com/users/anax1" | jq -r '.msg')
 echo "$CR8ANAX"
 
 echo "Creating Anax user in userdev org..."
@@ -192,11 +192,11 @@ CR8UANAX=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Ac
 echo "$CR8UANAX"
 
 echo "Registering Anax device1..."
-REGANAX1=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic e2edev/anax1:anax1pw" -d '{"token":"abcdefg","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":""}' "${EXCH_URL}/orgs/e2edev/nodes/an12345" | jq -r '.msg')
+REGANAX1=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic e2edev@somecomp.com/anax1:anax1pw" -d '{"token":"abcdefg","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":""}' "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/an12345" | jq -r '.msg')
 echo "$REGANAX1"
 
 echo "Registering Anax device2..."
-REGANAX2=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic e2edev/anax1:anax1pw" -d '{"token":"abcdefg","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":""}' "${EXCH_URL}/orgs/e2edev/nodes/an54321" | jq -r '.msg')
+REGANAX2=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic e2edev@somecomp.com/anax1:anax1pw" -d '{"token":"abcdefg","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":""}' "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/an54321" | jq -r '.msg')
 echo "$REGANAX2"
 
 # register an anax devices for userdev in order to test the case where the pattern is from a different org than the device org.
@@ -268,7 +268,7 @@ then
     export PASS=anax1pw
     export DEVICE_ID="an12345"
     export DEVICE_NAME="an12345"
-    export DEVICE_ORG="e2edev"
+    export DEVICE_ORG="e2edev@somecomp.com"
     export ANAX_API="http://localhost"
     export EXCH="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
     export TOKEN="abcdefg"
@@ -315,18 +315,18 @@ then
     echo "$REGAGBOT1"
 
     # keep one just for testing this api
-    REGAGBOTSNS=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"sns"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns" | jq -r '.msg')
+    REGAGBOTSNS=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"sns"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns" | jq -r '.msg')
     echo "$REGAGBOTSNS"
 
-    # register all patterns for e2edev org to agbot1
-    REGAGBOTE2EDEV=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"*", "nodeOrgid": "e2edev"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns" | jq -r '.msg')
+    # register all patterns for e2edev@somecomp.com org to agbot1
+    REGAGBOTE2EDEV=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "e2edev@somecomp.com"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns" | jq -r '.msg')
     echo "$REGAGBOTE2EDEV"
 
     # register all patterns for userdev org to agbot1
-    REGAGBOTUSERDEV=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns" | jq -r '.msg')
+    REGAGBOTUSERDEV=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns" | jq -r '.msg')
     echo "$REGAGBOTUSERDEV"
 
-    REGAGBOTSHELM=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"shelm"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_shelm" | jq -r '.msg')
+    REGAGBOTSHELM=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"shelm"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev@somecomp.com_shelm" | jq -r '.msg')
     echo "$REGAGBOTSUH"
 
     echo "Registering Agbot instance2..."
@@ -336,7 +336,7 @@ then
 
     # register msghub patterns to agbot1
     if [ $TEST_MSGHUB -eq 1 ]; then
-        REGAGBOTCPU2MSGHUB=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev","pattern":"cpu2msghub"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev_cpu2msghub" | jq -r '.msg')
+        REGAGBOTCPU2MSGHUB=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"cpu2msghub"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev@somecomp.com_cpu2msghub" | jq -r '.msg')
         echo "$REGAGBOTCPU2MSGHUB"
     fi
 

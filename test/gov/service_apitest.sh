@@ -209,10 +209,10 @@ read -d '' service <<EOF
 }
 EOF
 
-WLRES=$(echo "$service" | curl -sS -X POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic e2edev/e2edevadmin:e2edevadminpw" --data @- "${EXCH_URL}/orgs/e2edev/services")
+WLRES=$(echo "$service" | curl -sS -X POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic e2edev@somecomp.com/e2edevadmin:e2edevadminpw" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services")
 echo -e "Registered testwl: $WLRES"
 MSG=$(echo $WLRES | jq -r ".msg")
-if [ "$MSG" != "service 'e2edev/bluehorizon.network-services-testservice_1.0.0_amd64' created" ]
+if [ "$MSG" != "service 'e2edev@somecomp.com/bluehorizon.network-services-testservice_1.0.0_amd64' created" ]
 then
   echo -e "Register testservice resulted in incorrect response: $WLRES"
   exit 2
@@ -225,7 +225,7 @@ read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -265,7 +265,7 @@ read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -305,7 +305,7 @@ read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -345,7 +345,7 @@ read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -385,7 +385,7 @@ read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -425,7 +425,7 @@ read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -465,7 +465,7 @@ read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -505,7 +505,7 @@ read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -545,7 +545,7 @@ read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -588,7 +588,7 @@ read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -626,7 +626,7 @@ read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -668,7 +668,7 @@ read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "0.5.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -702,7 +702,7 @@ read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "2.2.0",
-  "organization": "e2edev",
+  "organization": "e2edev@somecomp.com",
   "attributes": [
     {
       "type": "UserInputAttributes",
@@ -733,7 +733,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "${ERR:0:82}" != "Duplicate registration for e2edev/https://bluehorizon.network/services/testservice" ]
+if [ "${ERR:0:95}" != "Duplicate registration for e2edev@somecomp.com/https://bluehorizon.network/services/testservice" ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2

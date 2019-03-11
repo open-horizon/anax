@@ -12,7 +12,7 @@
     "workloads": [
     {
       "workloadUrl":"https://bluehorizon.network/services/netspeed",
-      "organization":"e2edev",
+      "organization":"e2edev@somecomp.com",
       "version":"2.3.0",
       "arch":"amd64",
       "deployment_overrides":"{\"services\":{\"netspeed5\":{\"environment\":[\"E2EDEV_OVERRIDE=1\"]}}}",
@@ -26,7 +26,7 @@
     },
     {
       "workloadUrl":"https://bluehorizon.network/services/netspeed",
-      "organization":"e2edev",
+      "organization":"e2edev@somecomp.com",
       "version":"2.3.0",
       "arch":"amd64",
       "deployment_overrides":"{\"services\":{\"netspeed5\":{\"environment\":[\"E2EDEV_OVERRIDE=1\"]}}}",

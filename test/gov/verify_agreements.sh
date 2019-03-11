@@ -204,7 +204,7 @@ function handleCPU {
         # Grab the network name keys as a json array so we can iterate them. There sould be only 1.
         NET_KEYS=$(echo ${NETS} | jq -r '. | keys')
 
-        # There is another cpu service which is from e2edev org. CPU_NET_NAME should be the one from IBM org.
+        # There is another cpu service which is from e2edev@somecomp.com2edev org. CPU_NET_NAME should be the one from IBM org.
         netname=$(echo ${NET_KEYS} | jq -r '.[0]')
         echo $netname | grep IBM 
         if [ $? -eq 0 ]; then
