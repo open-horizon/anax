@@ -259,6 +259,7 @@ Environment Variables:
 	devServiceUserInputFile := devServiceStartTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
 	devServiceConfigFile := devServiceStartTestCmd.Flag("configFile", "File to be made available through the sync service APIs. This flag can be repeated to populate multiple files.").Short('m').Strings()
 	devServiceConfigType := devServiceStartTestCmd.Flag("type", "The type of file to be made available through the sync service APIs. All config files are presumed to be of the same type. This flag is required if any configFiles are specified.").Short('t').String()
+	devServiceNoFSS := devServiceStartTestCmd.Flag("noFSS", "Do not bring up file sync service (FSS) containers. They are brought up by default.").Short('S').Bool()
 	devServiceStopTestCmd := devServiceCmd.Command("stop", "Stop a service that is running in a mocked Horizon Agent environment.")
 	devServiceValidateCmd := devServiceCmd.Command("verify", "Validate the project for completeness and schema compliance.")
 	devServiceVerifyUserInputFile := devServiceValidateCmd.Flag("userInputFile", "File containing user input values for verification of a project.").Short('f').String()
@@ -423,7 +424,7 @@ Environment Variables:
 	case devServiceNewCmd.FullCommand():
 		dev.ServiceNew(*devHomeDirectory, *devServiceNewCmdOrg, *devServiceNewCmdCfg)
 	case devServiceStartTestCmd.FullCommand():
-		dev.ServiceStartTest(*devHomeDirectory, *devServiceUserInputFile, *devServiceConfigFile, *devServiceConfigType)
+		dev.ServiceStartTest(*devHomeDirectory, *devServiceUserInputFile, *devServiceConfigFile, *devServiceConfigType, *devServiceNoFSS)
 	case devServiceStopTestCmd.FullCommand():
 		dev.ServiceStopTest(*devHomeDirectory)
 	case devServiceValidateCmd.FullCommand():

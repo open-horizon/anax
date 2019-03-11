@@ -214,7 +214,7 @@ func SignImagesFromDeploymentMap(deployment map[string]interface{}, dontTouchIma
 }
 
 // Start the native deployment config in test mode. Only services are supported.
-func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInputFile string, configFiles []string, configType string) bool {
+func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInputFile string, configFiles []string, configType string, noFSS bool) bool {
 
 	// Run verification before trying to start anything.
 	absConfigFiles := dev.ServiceValidate(homeDirectory, userInputFile, configFiles, configType)
@@ -233,18 +233,22 @@ func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInput
 		return false
 	}
 
-	// Start the file sync service infrastructure containers so the services can use it in test mode.
-	sserr := sync_service.Start(cw, serviceDef.Org, absConfigFiles, configType)
-	if sserr != nil {
-		sync_service.Stop(cw.GetClient())
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to start file sync service, %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, sserr)
+	if !noFSS {
+		// Start the file sync service infrastructure containers so the services can use it in test mode.
+		sserr := sync_service.Start(cw, serviceDef.Org, absConfigFiles, configType)
+		if sserr != nil {
+			sync_service.Stop(cw.GetClient())
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to start file sync service, %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, sserr)
+		}
 	}
 
 	// Get the metadata for each dependency. The metadata is returned as a list of service definition files from
 	// the project's dependency directory.
 	deps, derr := dev.GetServiceDependencies(dir, serviceDef.RequiredServices)
 	if derr != nil {
-		sync_service.Stop(cw.GetClient())
+		if !noFSS {
+			sync_service.Stop(cw.GetClient())
+		}
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to get service dependencies, %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, derr)
 	}
 
@@ -256,28 +260,36 @@ func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInput
 	// If the service has dependencies, get them started first.
 	msNetworks, perr := dev.ProcessStartDependencies(dir, deps, userInputs.Global, userInputs.Services, cw)
 	if perr != nil {
-		sync_service.Stop(cw.GetClient())
+		if !noFSS {
+			sync_service.Stop(cw.GetClient())
+		}
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to start service dependencies, %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, perr)
 	}
 
 	// Get the service's deployment description from the deployment config in the definition.
 	dc, deployment, cerr := serviceDef.ConvertToDeploymentDescription(true)
 	if cerr != nil {
-		sync_service.Stop(cw.GetClient())
+		if !noFSS {
+			sync_service.Stop(cw.GetClient())
+		}
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, cerr)
 	}
 
 	// Generate an agreement id for testing purposes.
 	agreementId, aerr := cutil.GenerateAgreementId()
 	if aerr != nil {
-		sync_service.Stop(cw.GetClient())
+		if !noFSS {
+			sync_service.Stop(cw.GetClient())
+		}
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to generate test agreementId, %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, aerr)
 	}
 
 	// Now we can start the service container.
 	_, err := dev.StartContainers(deployment, serviceDef.URL, serviceDef.Version, userInputs.Global, serviceDef.UserInputs, userInputs.Services, serviceDef.Org, dc, cw, msNetworks, true, true, agreementId)
 	if err != nil {
-		sync_service.Stop(cw.GetClient())
+		if !noFSS {
+			sync_service.Stop(cw.GetClient())
+		}
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v.", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, err)
 	}
 
@@ -326,7 +338,7 @@ func (p *NativeDeploymentConfigPlugin) StopTest(homeDirectory string) bool {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to stop service dependencies, %v", dev.SERVICE_COMMAND, dev.SERVICE_STOP_COMMAND, err)
 	}
 
-	// Stop the file sync service infrastructure containers now that the service(s) are stopped.
+	// Stop the file sync service infrastructure containers if any now that the service(s) are stopped.
 	sserr := sync_service.Stop(cw.GetClient())
 	if sserr != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to stop file sync service, %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, sserr)
