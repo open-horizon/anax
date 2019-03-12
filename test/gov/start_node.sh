@@ -10,6 +10,8 @@
 # export ANAX_API="http://localhost"
 # export EXCH="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
 # export TOKEN="abcdefg"
+# This env var can be changed to whatever pattern you want to run.
+# export PATTERN="sall"
 
 if [ "$OLDANAX" == "1" ]
 then
