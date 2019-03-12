@@ -549,7 +549,7 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, url st
 		}
 	}
 
-	fmt.Printf("Please add Horizon attributes to the global section of the new dependency to ensure that the dependency operates correctly.\n")
+	fmt.Printf("To ensure that the dependency operates correctly, please add variable values to the userinput.json file if this service needs any.\n")
 	os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting) // restore this setting
 
 	return nil
