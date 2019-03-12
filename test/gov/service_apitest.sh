@@ -133,9 +133,9 @@ read -d '' snsconfig <<EOF
 }
 EOF
 
-echo -e "\n\n[D] netspeed service config payload: $snsconfig"
+echo -e "\n\n[D] testServiceX service config payload: $snsconfig"
 
-echo "Registering netspeed service config with invalid variables"
+echo "Registering testServiceX service config with invalid variables"
 
 RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
 if [ "$RES" == "" ]
@@ -240,9 +240,9 @@ read -d '' snsconfig <<EOF
 }
 EOF
 
-echo -e "\n\n[D] netspeed service config payload: $snsconfig"
+echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
-echo "Registering netspeed service config with wrong variable type int for string"
+echo "Registering testservice service config with wrong variable type int for string"
 
 RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
 if [ "$RES" == "" ]
@@ -252,7 +252,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var1 is type json.Number, expecting string" ]
+if [ "$ERR" != "variable var1 for service e2edev/https://bluehorizon.network/services/testservice is type json.Number, expecting string." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -280,9 +280,9 @@ read -d '' snsconfig <<EOF
 }
 EOF
 
-echo -e "\n\n[D] netspeed service config payload: $snsconfig"
+echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
-echo "Registering netspeed service config with wrong variable type array of string for string"
+echo "Registering testservice service config with wrong variable type array of string for string"
 
 RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
 if [ "$RES" == "" ]
@@ -292,7 +292,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var1 is type []interface {}, expecting string" ]
+if [ "$ERR" != "variable var1 for service e2edev/https://bluehorizon.network/services/testservice is type []interface {}, expecting string." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -320,9 +320,9 @@ read -d '' snsconfig <<EOF
 }
 EOF
 
-echo -e "\n\n[D] netspeed service config payload: $snsconfig"
+echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
-echo "Registering netspeed service config with wrong variable type object for string"
+echo "Registering testservice service config with wrong variable type object for string"
 
 RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
 if [ "$RES" == "" ]
@@ -332,7 +332,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var1 is type map[string]interface {}, is an unexpected type." ]
+if [ "$ERR" != "variable var1 for service e2edev/https://bluehorizon.network/services/testservice is type map[string]interface {}, is an unexpected type." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -360,9 +360,9 @@ read -d '' snsconfig <<EOF
 }
 EOF
 
-echo -e "\n\n[D] netspeed service config payload: $snsconfig"
+echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
-echo "Registering netspeed service config with wrong variable type string for int"
+echo "Registering testservice service config with wrong variable type string for int"
 
 RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
 if [ "$RES" == "" ]
@@ -372,7 +372,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var2 is type string, expecting int" ]
+if [ "$ERR" != "variable var2 for service e2edev/https://bluehorizon.network/services/testservice is type string, expecting int." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -400,9 +400,9 @@ read -d '' snsconfig <<EOF
 }
 EOF
 
-echo -e "\n\n[D] netspeed service config payload: $snsconfig"
+echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
-echo "Registering netspeed service config with wrong variable type string for float"
+echo "Registering testservice service config with wrong variable type string for float"
 
 RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
 if [ "$RES" == "" ]
@@ -412,7 +412,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var3 is type string, expecting float" ]
+if [ "$ERR" != "variable var3 for service e2edev/https://bluehorizon.network/services/testservice is type string, expecting float." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -440,9 +440,9 @@ read -d '' snsconfig <<EOF
 }
 EOF
 
-echo -e "\n\n[D] netspeed service config payload: $snsconfig"
+echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
-echo "Registering netspeed service config with wrong variable type string for list of strings"
+echo "Registering testservice service config with wrong variable type string for list of strings"
 
 RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
 if [ "$RES" == "" ]
@@ -452,7 +452,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var4 is type string, expecting list of strings" ]
+if [ "$ERR" != "variable var4 for service e2edev/https://bluehorizon.network/services/testservice is type string, expecting list of strings." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -480,9 +480,9 @@ read -d '' snsconfig <<EOF
 }
 EOF
 
-echo -e "\n\n[D] netspeed service config payload: $snsconfig"
+echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
-echo "Registering netspeed service config with wrong variable type float for int"
+echo "Registering testservice service config with wrong variable type float for int"
 
 RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
 if [ "$RES" == "" ]
@@ -492,7 +492,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var2 is type float, expecting int" ]
+if [ "$ERR" != "variable var2 for service e2edev/https://bluehorizon.network/services/testservice is type float, expecting int." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -520,9 +520,9 @@ read -d '' snsconfig <<EOF
 }
 EOF
 
-echo -e "\n\n[D] netspeed service config payload: $snsconfig"
+echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
-echo "Registering netspeed service config with wrong variable type int for list of string"
+echo "Registering testservice service config with wrong variable type int for list of string"
 
 RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
 if [ "$RES" == "" ]
@@ -532,7 +532,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var4 is type json.Number, expecting list of strings" ]
+if [ "$ERR" != "variable var4 for service e2edev/https://bluehorizon.network/services/testservice is type json.Number, expecting list of strings." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -560,9 +560,9 @@ read -d '' snsconfig <<EOF
 }
 EOF
 
-echo -e "\n\n[D] netspeed service config payload: $snsconfig"
+echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
-echo "Registering netspeed service config with wrong variable type []int for list of string"
+echo "Registering testservice service config with wrong variable type []int for list of string"
 
 RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
 if [ "$RES" == "" ]
@@ -572,7 +572,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var4 is type []interface {}, expecting []string" ]
+if [ "$ERR" != "variable var4 for service e2edev/https://bluehorizon.network/services/testservice is type []interface {}, expecting []string." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -601,9 +601,9 @@ read -d '' snsconfig <<EOF
 }
 EOF
 
-echo -e "\n\n[D] netspeed service config payload: $snsconfig"
+echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
-echo "Registering netspeed service config with missing variable"
+echo "Registering testservice service config with missing variable"
 
 RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
 if [ "$RES" == "" ]
@@ -613,7 +613,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var1 is missing from mappings" ]
+if [ "$ERR" != "variable var1 for service e2edev/https://bluehorizon.network/services/testservice is missing from mappings." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2
@@ -653,7 +653,7 @@ then
 fi
 
 ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var2 is missing from mappings" ]
+if [ "$ERR" != "variable var2 for service e2edev/https://bluehorizon.network/services/testservice is missing from mappings." ]
 then
   echo -e "$snsconfig \nresulted in incorrect response: $RES"
   exit 2

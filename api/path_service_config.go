@@ -277,7 +277,7 @@ func CreateService(service *Service,
 	// If there are no attributes associated with this request but the service requires some configuration, return an error.
 	if service.Attributes == nil || (service.Attributes != nil && len(*service.Attributes) == 0) {
 		if varname := msdef.NeedsUserInput(); varname != "" {
-			return errorhandler(NewMSMissingVariableConfigError(fmt.Sprintf("variable %v is missing from mappings", varname), "service.[attribute].mapped")), nil, nil
+			return errorhandler(NewMSMissingVariableConfigError(fmt.Sprintf(cutil.ANAX_SVC_MISSING_VARIABLE, varname, cutil.FormOrgSpecUrl(*service.Url, *service.Org)), "service.[attribute].mappings")), nil, nil
 		}
 	}
 
@@ -296,7 +296,7 @@ func CreateService(service *Service,
 				glog.V(5).Infof(apiLogString(fmt.Sprintf("checking input variable: %v", varName)))
 				if ui := msdef.GetUserInputName(varName); ui != nil {
 					if err := cutil.VerifyWorkloadVarTypes(varValue, ui.Type); err != nil {
-						return errorhandler(NewAPIUserInputError(fmt.Sprintf("variable %v is %v", varName, err), "variables")), nil
+						return errorhandler(NewAPIUserInputError(fmt.Sprintf(cutil.ANAX_SVC_WRONG_TYPE+"%v", varName, cutil.FormOrgSpecUrl(*service.Url, *service.Org), err), "variables")), nil
 					}
 				}
 			}
@@ -306,7 +306,7 @@ func CreateService(service *Service,
 				if ui.DefaultValue != "" {
 					continue
 				} else if _, ok := attr.GetGenericMappings()[ui.Name]; !ok {
-					return errorhandler(NewMSMissingVariableConfigError(fmt.Sprintf("variable %v is missing from mappings", ui.Name), "service.[attribute].mapped")), nil
+					return errorhandler(NewMSMissingVariableConfigError(fmt.Sprintf(cutil.ANAX_SVC_MISSING_VARIABLE, ui.Name, cutil.FormOrgSpecUrl(*service.Url, *service.Org)), "service.[attribute].mappings")), nil
 				}
 			}
 		}

@@ -365,6 +365,10 @@ func GetHorizonUrlBase() string {
 
 // GetRespBodyAsString converts an http response body to a string
 func GetRespBodyAsString(responseBody io.ReadCloser) string {
+	if responseBody == nil {
+		return ""
+	}
+
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(responseBody)
 	return buf.String()
@@ -456,12 +460,12 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int) (httpCode int) {
 
 // HorizonPutPost runs a PUT or POST to the anax api to create or update a resource.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
-func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body interface{}) (httpCode int) {
+func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body interface{}) (httpCode int, resp_body string) {
 	url := GetHorizonUrlBase() + "/" + urlSuffix
 	apiMsg := method + " " + url
 	Verbose(apiMsg)
 	if IsDryRun() {
-		return 201
+		return 201, ""
 	}
 	httpClient := &http.Client{}
 
@@ -506,8 +510,10 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
+
+	resp_body = GetRespBodyAsString(resp.Body)
 	if !isGoodCode(httpCode, goodHttpCodes) {
-		Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyAsString(resp.Body))
+		Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, resp_body)
 	}
 	return
 }

@@ -18,6 +18,15 @@ import (
 	"time"
 )
 
+const (
+	// Please do not change
+	// they are used as error strings in api/path_service_config.go
+	// they also used as templates for parsing the error strings in cli/register.go
+	ANAX_SVC_MISSING_VARIABLE = "variable %v for service %v is missing from mappings."
+	ANAX_SVC_MISSING_CONFIG   = "service config for version %v of %v is missing."
+	ANAX_SVC_WRONG_TYPE       = "variable %v for service %v is "
+)
+
 func FirstN(n int, ss []string) []string {
 	out := make([]string, 0)
 
@@ -148,26 +157,26 @@ func VerifyWorkloadVarTypes(varValue interface{}, expectedType string) error {
 	switch varValue.(type) {
 	case bool:
 		if expectedType != "bool" && expectedType != "boolean" {
-			return errors.New(fmt.Sprintf("type %T, expecting %v", varValue, expectedType))
+			return errors.New(fmt.Sprintf("type %T, expecting %v.", varValue, expectedType))
 		}
 	case string:
 		if expectedType != "string" {
-			return errors.New(fmt.Sprintf("type %T, expecting %v", varValue, expectedType))
+			return errors.New(fmt.Sprintf("type %T, expecting %v.", varValue, expectedType))
 		}
 	case json.Number:
 		strNum := varValue.(json.Number).String()
 		if expectedType != "int" && expectedType != "float" {
-			return errors.New(fmt.Sprintf("type json.Number, expecting %v", expectedType))
+			return errors.New(fmt.Sprintf("type json.Number, expecting %v.", expectedType))
 		} else if strings.Contains(strNum, ".") && expectedType == "int" {
-			return errors.New(fmt.Sprintf("type float, expecting int"))
+			return errors.New(fmt.Sprintf("type float, expecting int."))
 		}
 	case []interface{}:
 		if expectedType != "list of strings" {
-			return errors.New(fmt.Sprintf("type %T, expecting %v", varValue, expectedType))
+			return errors.New(fmt.Sprintf("type %T, expecting %v.", varValue, expectedType))
 		} else {
 			for _, e := range varValue.([]interface{}) {
 				if _, ok := e.(string); !ok {
-					return errors.New(fmt.Sprintf("type %T, expecting []string", varValue))
+					return errors.New(fmt.Sprintf("type %T, expecting []string.", varValue))
 				}
 			}
 		}

@@ -297,7 +297,7 @@ func getSpecRefsForPattern(patName string,
 				if present, err := workloadConfigPresent(serviceDef, service.ServiceURL, service.ServiceOrg, serviceChoice.Version, db); err != nil {
 					return nil, nil, NewSystemError(fmt.Sprintf("Error checking service config, error %v", err))
 				} else if !present {
-					return nil, nil, NewMSMissingVariableConfigError(fmt.Sprintf("service config for %v/%v %v is missing", service.ServiceOrg, service.ServiceURL, serviceChoice.Version), "configstate.state")
+					return nil, nil, NewMSMissingVariableConfigError(fmt.Sprintf(cutil.ANAX_SVC_MISSING_CONFIG, serviceChoice.Version, cutil.FormOrgSpecUrl(service.ServiceURL, service.ServiceOrg)), "configstate.state")
 				}
 			}
 
