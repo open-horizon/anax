@@ -344,12 +344,12 @@ func (w *BaseWorker) Start(worker Worker, noWorkInterval int) {
 }
 
 // This function is called one time, when the worker first starts. The function returns false
-// when it was not successful and the worker shuld terminate.
+// when it was not successful and the worker should terminate.
 func (w *BaseWorker) Initialize() bool {
 	return true
 }
 
-// This function is called everytime a command arrives on the worker's command queue.
+// This function is called every time a command arrives on the worker's command queue.
 func (w *BaseWorker) CommandHandler(command Command) bool {
 	return false
 }

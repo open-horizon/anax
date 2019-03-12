@@ -189,11 +189,18 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 	return
 }
 
+// This function is used by Initialize to send the Agbot terminate message in the cases where Initialize fails such that the
+// entire agbot process should also terminate.
+func (w *AgreementBotWorker) fail() bool {
+	w.Messages() <- events.NewNodeShutdownCompleteMessage(events.AGBOT_QUIESCE_COMPLETE, "")
+	return false
+}
+
 func (w *AgreementBotWorker) Initialize() bool {
 
 	glog.Info("AgreementBot worker initializing")
 
-	// If there is no Agbot config, we will terminate
+	// If there is no Agbot config, we will terminate. This is a normal condition when running on a node.
 	if w.Config.AgreementBot == (config.AGConfig{}) {
 		glog.Warningf("AgreementBotWorker terminating, no AgreementBot config.")
 		return false
@@ -202,33 +209,33 @@ func (w *AgreementBotWorker) Initialize() bool {
 		return false
 	}
 
-	// log error if the current exchange version does not meet the requirement
+	// Log an error if the current exchange version does not meet the requirement.
 	if err := version.VerifyExchangeVersion(w.Config.Collaborators.HTTPClientFactory, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), false); err != nil {
 		glog.Errorf(AWlogString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
-		return false
+		return w.fail()
 	}
 
-	// Make sure the policy directory is in place
+	// Make sure the policy directory is in place so that we have a place to put the generated policy files.
 	if err := os.MkdirAll(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, 0644); err != nil {
 		glog.Errorf("AgreementBotWorker cannot create agreement bot policy file path %v, terminating.", w.BaseWorker.Manager.Config.AgreementBot.PolicyPath)
-		return false
+		return w.fail()
 	}
 
-	// To strart clean, remove all left over pattern based policy files.
-	// This is only called once at the agbot start up time
+	// To start clean, remove all left over pattern based policy files from the last time the agbot was started.
+	// This is only called once at the agbot start up time.
 	if err := policy.DeleteAllPolicyFiles(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, true); err != nil {
 		glog.Errorf("AgreementBotWorker cannot clean up pattern based policy files under %v. %v", w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, err)
-		return false
+		return w.fail()
 	}
 
 	// Give the policy manager a chance to read in all the policies. The agbot worker will not proceed past this point
 	// until it has some policies to work with.
 	for {
 
-		// Query the exchange for patterns that this agbot is supposed to serve and generate a policy for each one.
-		if agbotNotConfigured := w.GeneratePolicyFromPatterns(); agbotNotConfigured == -1 {
-			return false
-		}
+		// Query the exchange for patterns that this agbot is supposed to serve and generate a policy for each one. If an error
+		// occurs, it will be ignored. The Agbot should not proceed out of initialization until it has at least 1 policy/pattern
+		// that it can serve.
+		w.GeneratePolicyFromPatterns()
 
 		if policyManager, err := policy.Initialize(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, w.Config.ArchSynonyms, w.serviceResolver, true, false); err != nil {
 			glog.Errorf("AgreementBotWorker unable to initialize policy manager, error: %v", err)
@@ -246,7 +253,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 	// can send us messages.
 	if err := w.registerPublicKey(); err != nil {
 		glog.Errorf("AgreementBotWorker unable to register public key, error: %v", err)
-		return false
+		return w.fail()
 	}
 
 	// For each agreement protocol in the current list of configured policies, startup a processor
@@ -267,7 +274,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 	// we will cancel agreements and allow them to re-negotiate.
 	if err := w.syncOnInit(); err != nil {
 		glog.Errorf("AgreementBotWorker Terminating, unable to sync up, error: %v", err)
-		return false
+		return w.fail()
 	}
 
 	// The agbot worker is now ready to handle incoming messages
