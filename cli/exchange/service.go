@@ -148,6 +148,8 @@ func (sf *ServiceFile) RequiredVariablesAreSet(setVars map[string]interface{}) e
 	return nil
 }
 
+// List the the service resources for the given org.
+// The userPw can be the userId:password auth or the nodeId:token auth.
 func ServiceList(credOrg, userPw, service string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	var svcOrg string
@@ -315,6 +317,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 }
 
 // ServiceVerify verifies the deployment strings of the specified service resource in the exchange.
+// The userPw can be the userId:password auth or the nodeId:token auth.
 func ServiceVerify(org, userPw, service, keyFilePath string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	org, service = cliutils.TrimOrg(org, service)
@@ -360,6 +363,8 @@ func ServiceRemove(org, userPw, service string, force bool) {
 	}
 }
 
+// List the public keys for a service that can be used to verify the deployment signature for the service
+// The userPw can be the userId:password auth or the nodeId:token auth.
 func ServiceListKey(org, userPw, service, keyName string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	org, service = cliutils.TrimOrg(org, service)
@@ -391,6 +396,8 @@ func ServiceRemoveKey(org, userPw, service, keyName string) {
 	}
 }
 
+// List the docker auth that can be used to get the images for the service
+// The userPw can be the userId:password auth or the nodeId:token auth.
 func ServiceListAuth(org, userPw, service string, authId uint) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	org, service = cliutils.TrimOrg(org, service)

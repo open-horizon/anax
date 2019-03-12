@@ -86,6 +86,8 @@ type PatternInput struct {
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
 }
 
+// List the pattern resources for the given org.
+// The userPw can be the userId:password auth or the nodeId:token auth.
 func PatternList(credOrg string, userPw string, pattern string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	var patOrg string
@@ -248,6 +250,8 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 	}
 }
 
+// Verify that the deployment_overrides_signature is valid for the given key.
+// The userPw can be the userId:password auth or the nodeId:token auth.
 func PatternVerify(org, userPw, pattern, keyFilePath string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	org, pattern = cliutils.TrimOrg(org, pattern)
@@ -301,6 +305,8 @@ func PatternRemove(org, userPw, pattern string, force bool) {
 	}
 }
 
+// List the public keys that can be used to verify the deployment_overrides_signature for a pattern.
+// The userPw can be the userId:password auth or the nodeId:token auth.
 func PatternListKey(org, userPw, pattern, keyName string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	org, pattern = cliutils.TrimOrg(org, pattern)

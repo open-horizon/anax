@@ -83,6 +83,7 @@ Environment Variables:
 	exNodeCmd := exchangeCmd.Command("node", "List and manage nodes in the Horizon Exchange")
 	exNodeListCmd := exNodeCmd.Command("list", "Display the node resources from the Horizon Exchange.")
 	exNode := exNodeListCmd.Arg("node", "List just this one node.").String()
+	exNodeListNodeIdTok := exNodeListCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
 	exNodeLong := exNodeListCmd.Flag("long", "When listing all of the nodes, show the entire resource of each node, instead of just the name.").Short('l').Bool()
 	exNodeCreateCmd := exNodeCmd.Command("create", "Create the node resource in the Horizon Exchange.")
 	exNodeCreateNodeIdTok := exNodeCreateCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be created. The node ID must be unique within the organization.").Short('n').PlaceHolder("ID:TOK").String()
@@ -92,10 +93,12 @@ Environment Variables:
 	exNodeSetTokCmd := exNodeCmd.Command("settoken", "Change the token of a node resource in the Horizon Exchange.")
 	exNodeSetTokNode := exNodeSetTokCmd.Arg("node", "The node to be changed.").Required().String()
 	exNodeSetTokToken := exNodeSetTokCmd.Arg("token", "The new token for the node.").Required().String()
+	exNodeSetTokNodeIdTok := exNodeSetTokCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
 	exNodeConfirmCmd := exNodeCmd.Command("confirm", "Check to see if the specified node and token are valid in the Horizon Exchange.")
 	exNodeConfirmNode := exNodeConfirmCmd.Arg("node", "The node id to be checked.").Required().String()
 	exNodeConfirmToken := exNodeConfirmCmd.Arg("token", "The token for the node.").Required().String()
 	exNodeDelCmd := exNodeCmd.Command("remove", "Remove a node resource from the Horizon Exchange. Do NOT do this when an edge node is registered with this node id.")
+	exNodeRemoveNodeIdTok := exNodeDelCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
 	exDelNode := exNodeDelCmd.Arg("node", "The node to remove.").Required().String()
 	exNodeDelForce := exNodeDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 
@@ -121,6 +124,7 @@ Environment Variables:
 
 	exPatternCmd := exchangeCmd.Command("pattern", "List and manage patterns in the Horizon Exchange")
 	exPatternListCmd := exPatternCmd.Command("list", "Display the pattern resources from the Horizon Exchange.")
+	exPatternListNodeIdTok := exPatternListCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
 	exPattern := exPatternListCmd.Arg("pattern", "List just this one pattern. Use <org>/<pat> to specify a public pattern in another org, or <org>/ to list all of the public patterns in another org.").String()
 	exPatternLong := exPatternListCmd.Flag("long", "When listing all of the patterns, show the entire resource of each pattern, instead of just the name.").Short('l').Bool()
 	exPatternPublishCmd := exPatternCmd.Command("publish", "Sign and create/update the pattern resource in the Horizon Exchange.")
@@ -130,11 +134,13 @@ Environment Variables:
 	exPatName := exPatternPublishCmd.Flag("pattern-name", "The name to use for this pattern in the Horizon exchange. If not specified, will default to the base name of the file path specified in -f.").Short('p').String()
 	exPatternVerifyCmd := exPatternCmd.Command("verify", "Verify the signatures of a pattern resource in the Horizon Exchange.")
 	exVerPattern := exPatternVerifyCmd.Arg("pattern", "The pattern to verify.").Required().String()
+	exPatternVerifyNodeIdTok := exPatternVerifyCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
 	exPatPubKeyFile := exPatternVerifyCmd.Flag("public-key-file", "The path of a pem public key file to be used to verify the pattern. ").Short('k').Required().ExistingFile()
 	exPatDelCmd := exPatternCmd.Command("remove", "Remove a pattern resource from the Horizon Exchange.")
 	exDelPat := exPatDelCmd.Arg("pattern", "The pattern to remove.").Required().String()
 	exPatDelForce := exPatDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 	exPatternListKeyCmd := exPatternCmd.Command("listkey", "List the signing public keys/certs for this pattern resource in the Horizon Exchange.")
+	exPatternListKeyNodeIdTok := exPatternListKeyCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
 	exPatListKeyPat := exPatternListKeyCmd.Arg("pattern", "The existing pattern to list the keys for.").Required().String()
 	exPatListKeyKey := exPatternListKeyCmd.Arg("key-name", "The existing key name to see the contents of.").String()
 	exPatternRemKeyCmd := exPatternCmd.Command("removekey", "Remove a signing public key/cert for this pattern resource in the Horizon Exchange.")
@@ -144,6 +150,7 @@ Environment Variables:
 	exServiceCmd := exchangeCmd.Command("service", "List and manage services in the Horizon Exchange")
 	exServiceListCmd := exServiceCmd.Command("list", "Display the service resources from the Horizon Exchange.")
 	exService := exServiceListCmd.Arg("service", "List just this one service. Use <org>/<svc> to specify a public service in another org, or <org>/ to list all of the public services in another org.").String()
+	exServiceListNodeIdTok := exServiceListCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
 	exServiceLong := exServiceListCmd.Flag("long", "When listing all of the services, show the entire resource of each services, instead of just the name.").Short('l').Bool()
 	exServicePublishCmd := exServiceCmd.Command("publish", "Sign and create/update the service resource in the Horizon Exchange.")
 	exSvcJsonFile := exServicePublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the service in the Horizon exchange. See /usr/horizon/samples/service.json. Specify -f- to read from stdin.").Short('f').Required().String()
@@ -153,6 +160,7 @@ Environment Variables:
 	exSvcRegistryTokens := exServicePublishCmd.Flag("registry-token", "Docker registry domain and auth that should be stored with the service, to enable the Horizon edge node to access the service's docker images. This flag can be repeated, and each flag should be in the format: registry:user:token").Short('r').Strings()
 	exServiceVerifyCmd := exServiceCmd.Command("verify", "Verify the signatures of a service resource in the Horizon Exchange.")
 	exVerService := exServiceVerifyCmd.Arg("service", "The service to verify.").Required().String()
+	exServiceVerifyNodeIdTok := exServiceVerifyCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
 	exSvcPubKeyFile := exServiceVerifyCmd.Flag("public-key-file", "The path of a pem public key file to be used to verify the service. ").Short('k').Required().ExistingFile()
 	exSvcDelCmd := exServiceCmd.Command("remove", "Remove a service resource from the Horizon Exchange.")
 	exDelSvc := exSvcDelCmd.Arg("service", "The service to remove.").Required().String()
@@ -160,6 +168,7 @@ Environment Variables:
 	exServiceListKeyCmd := exServiceCmd.Command("listkey", "List the signing public keys/certs for this service resource in the Horizon Exchange.")
 	exSvcListKeySvc := exServiceListKeyCmd.Arg("service", "The existing service to list the keys for.").Required().String()
 	exSvcListKeyKey := exServiceListKeyCmd.Arg("key-name", "The existing key name to see the contents of.").String()
+	exServiceListKeyNodeIdTok := exServiceListKeyCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
 	exServiceRemKeyCmd := exServiceCmd.Command("removekey", "Remove a signing public key/cert for this service resource in the Horizon Exchange.")
 	exSvcRemKeySvc := exServiceRemKeyCmd.Arg("service", "The existing service to remove the key from.").Required().String()
 	exSvcRemKeyKey := exServiceRemKeyCmd.Arg("key-name", "The existing key name to remove.").Required().String()
@@ -167,6 +176,7 @@ Environment Variables:
 	exSvcListAuthSvc := exServiceListAuthCmd.Arg("service", "The existing service to list the docker auths for.").Required().String()
 	exSvcListAuthId := exServiceListAuthCmd.Arg("auth-name", "The existing docker auth id to see the contents of.").Uint()
 	exServiceRemAuthCmd := exServiceCmd.Command("removeauth", "Remove a docker auth token for this service resource in the Horizon Exchange.")
+	exServiceListAuthNodeIdTok := exServiceListAuthCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
 	exSvcRemAuthSvc := exServiceRemAuthCmd.Arg("service", "The existing service to remove the docker auth from.").Required().String()
 	exSvcRemAuthId := exServiceRemAuthCmd.Arg("auth-name", "The existing docker auth id to remove.").Required().Uint()
 
@@ -313,9 +323,39 @@ Environment Variables:
 	// Parse cmd and apply env var defaults
 	fullCmd := kingpin.MustParse(app.Parse(os.Args[1:]))
 	//cliutils.Verbose("Full command: %s", fullCmd)
+
+	credToUse := ""
 	if strings.HasPrefix(fullCmd, "exchange") {
 		exOrg = cliutils.RequiredWithDefaultEnvVar(exOrg, "HZN_ORG_ID", "organization ID must be specified with either the -o flag or HZN_ORG_ID")
-		exUserPw = cliutils.RequiredWithDefaultEnvVar(exUserPw, "HZN_EXCHANGE_USER_AUTH", "exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH")
+
+		// some hzn exchange commands can take either -u user:pw or -n nodeid:token as credentials.
+		switch subCmd := strings.TrimPrefix(fullCmd, "exchange "); subCmd {
+		case "node list":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeListNodeIdTok)
+		case "node settoken":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeSetTokNodeIdTok)
+		case "node remove":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeRemoveNodeIdTok)
+		case "node confirm":
+			//do nothing because it uses the node id and token given in the argument as the credential
+		case "service list":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListNodeIdTok)
+		case "service verify":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceVerifyNodeIdTok)
+		case "service listkey":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListKeyNodeIdTok)
+		case "service listauth":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListAuthNodeIdTok)
+		case "pattern list":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exPatternListNodeIdTok)
+		case "pattern verify":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exPatternVerifyNodeIdTok)
+		case "pattern listkey":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exPatternListKeyNodeIdTok)
+		default:
+			// get HZN_EXCHANGE_USER_AUTH as default if exUserPw is empty
+			exUserPw = cliutils.RequiredWithDefaultEnvVar(exUserPw, "HZN_EXCHANGE_USER_AUTH", "exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH")
+		}
 	}
 	if strings.HasPrefix(fullCmd, "register") {
 		userPw = cliutils.WithDefaultEnvVar(userPw, "HZN_EXCHANGE_USER_AUTH")
@@ -338,15 +378,15 @@ Environment Variables:
 	case exUserDelCmd.FullCommand():
 		exchange.UserRemove(*exOrg, *exUserPw, *exDelUser, *exUserDelForce)
 	case exNodeListCmd.FullCommand():
-		exchange.NodeList(*exOrg, *exUserPw, *exNode, !*exNodeLong)
+		exchange.NodeList(*exOrg, credToUse, *exNode, !*exNodeLong)
 	case exNodeCreateCmd.FullCommand():
 		exchange.NodeCreate(*exOrg, *exNodeCreateNodeIdTok, *exNodeCreateNode, *exNodeCreateToken, *exUserPw, *exNodeCreateNodeEmail)
 	case exNodeSetTokCmd.FullCommand():
-		exchange.NodeSetToken(*exOrg, *exUserPw, *exNodeSetTokNode, *exNodeSetTokToken)
+		exchange.NodeSetToken(*exOrg, credToUse, *exNodeSetTokNode, *exNodeSetTokToken)
 	case exNodeConfirmCmd.FullCommand():
 		exchange.NodeConfirm(*exOrg, *exNodeConfirmNode, *exNodeConfirmToken)
 	case exNodeDelCmd.FullCommand():
-		exchange.NodeRemove(*exOrg, *exUserPw, *exDelNode, *exNodeDelForce)
+		exchange.NodeRemove(*exOrg, credToUse, *exDelNode, *exNodeDelForce)
 	case exAgbotListCmd.FullCommand():
 		exchange.AgbotList(*exOrg, *exUserPw, *exAgbot, !*exAgbotLong)
 	case exAgbotListPatsCmd.FullCommand():
@@ -356,31 +396,31 @@ Environment Variables:
 	case exAgbotDelPatCmd.FullCommand():
 		exchange.AgbotRemovePattern(*exOrg, *exUserPw, *exAgbotDP, *exAgbotDPPatOrg, *exAgbotDPPat, *exAgbotDPNodeOrg)
 	case exPatternListCmd.FullCommand():
-		exchange.PatternList(*exOrg, *exUserPw, *exPattern, !*exPatternLong)
+		exchange.PatternList(*exOrg, credToUse, *exPattern, !*exPatternLong)
 	case exPatternPublishCmd.FullCommand():
 		exchange.PatternPublish(*exOrg, *exUserPw, *exPatJsonFile, *exPatKeyFile, *exPatPubPubKeyFile, *exPatName)
 	case exPatternVerifyCmd.FullCommand():
-		exchange.PatternVerify(*exOrg, *exUserPw, *exVerPattern, *exPatPubKeyFile)
+		exchange.PatternVerify(*exOrg, credToUse, *exVerPattern, *exPatPubKeyFile)
 	case exPatDelCmd.FullCommand():
 		exchange.PatternRemove(*exOrg, *exUserPw, *exDelPat, *exPatDelForce)
 	case exPatternListKeyCmd.FullCommand():
-		exchange.PatternListKey(*exOrg, *exUserPw, *exPatListKeyPat, *exPatListKeyKey)
+		exchange.PatternListKey(*exOrg, credToUse, *exPatListKeyPat, *exPatListKeyKey)
 	case exPatternRemKeyCmd.FullCommand():
 		exchange.PatternRemoveKey(*exOrg, *exUserPw, *exPatRemKeyPat, *exPatRemKeyKey)
 	case exServiceListCmd.FullCommand():
-		exchange.ServiceList(*exOrg, *exUserPw, *exService, !*exServiceLong)
+		exchange.ServiceList(*exOrg, credToUse, *exService, !*exServiceLong)
 	case exServicePublishCmd.FullCommand():
 		exchange.ServicePublish(*exOrg, *exUserPw, *exSvcJsonFile, *exSvcPrivKeyFile, *exSvcPubPubKeyFile, *exSvcPubDontTouchImage, *exSvcRegistryTokens)
 	case exServiceVerifyCmd.FullCommand():
-		exchange.ServiceVerify(*exOrg, *exUserPw, *exVerService, *exSvcPubKeyFile)
+		exchange.ServiceVerify(*exOrg, credToUse, *exVerService, *exSvcPubKeyFile)
 	case exSvcDelCmd.FullCommand():
 		exchange.ServiceRemove(*exOrg, *exUserPw, *exDelSvc, *exSvcDelForce)
 	case exServiceListKeyCmd.FullCommand():
-		exchange.ServiceListKey(*exOrg, *exUserPw, *exSvcListKeySvc, *exSvcListKeyKey)
+		exchange.ServiceListKey(*exOrg, credToUse, *exSvcListKeySvc, *exSvcListKeyKey)
 	case exServiceRemKeyCmd.FullCommand():
 		exchange.ServiceRemoveKey(*exOrg, *exUserPw, *exSvcRemKeySvc, *exSvcRemKeyKey)
 	case exServiceListAuthCmd.FullCommand():
-		exchange.ServiceListAuth(*exOrg, *exUserPw, *exSvcListAuthSvc, *exSvcListAuthId)
+		exchange.ServiceListAuth(*exOrg, credToUse, *exSvcListAuthSvc, *exSvcListAuthId)
 	case exServiceRemAuthCmd.FullCommand():
 		exchange.ServiceRemoveAuth(*exOrg, *exUserPw, *exSvcRemAuthSvc, *exSvcRemAuthId)
 	case regInputCmd.FullCommand():
