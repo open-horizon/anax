@@ -169,12 +169,34 @@ func censorAndDumpConfig() {
 func (r ResourceManager) StopFileSyncService() {
 	if r.pattern != "" {
 		glog.Infof(rmLogString(fmt.Sprintf("ESS Stopping")))
+
+		// Use a channel to communicate that ESS stop is complete.
+		stopChan := make(chan bool)
+		done := false
+
+		// Initiate the ESS stop in a go routine in case it hangs.
 		go func() {
 			base.Stop(0)
+			stopChan <- true
 		}()
-		// Give the ESS 6 seconds to shutdown
-		timer := time.NewTimer(time.Duration(6) * time.Second)
-		<-timer.C
+
+		// Give the ESS 3 seconds to shutdown
+		timerChan := time.NewTimer(time.Duration(3) * time.Second).C
+
+		// Wait for either our timer to expire or for the ESS to indicate that it is stopped.
+		for !done {
+			select {
+			case <- timerChan:
+			    glog.Warningf(rmLogString(fmt.Sprintf("Embedded ESS Stop timer expired while waiting for the ESS to stop, continuing with termination.")))
+			    done = true
+			case <- stopChan:
+			    glog.V(5).Infof(rmLogString(fmt.Sprintf("Embedded ESS Stop completed.")))
+			    done = true
+			    return
+			}
+		}
+
+		// Complete the final steps of cleanup.
 		r.RemovePersistencePath()
 		glog.Infof(rmLogString(fmt.Sprintf("ESS Stopped")))
 	}
