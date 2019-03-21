@@ -171,6 +171,10 @@ func (w *AgreementWorker) Initialize() bool {
 	}
 
 	if w.GetExchangeToken() != "" {
+		// populate the privFileName and pubFileName variables in the exchange.messaging.go
+		if _, _, err := exchange.GetKeys(""); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("failed to get the messaging keys. %v", err)))
+		}
 
 		// Establish agreement protocol handlers
 		for _, protocolName := range policy.AllAgreementProtocols() {

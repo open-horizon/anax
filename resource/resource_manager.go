@@ -186,13 +186,13 @@ func (r ResourceManager) StopFileSyncService() {
 		// Wait for either our timer to expire or for the ESS to indicate that it is stopped.
 		for !done {
 			select {
-			case <- timerChan:
-			    glog.Warningf(rmLogString(fmt.Sprintf("Embedded ESS Stop timer expired while waiting for the ESS to stop, continuing with termination.")))
-			    done = true
-			case <- stopChan:
-			    glog.V(5).Infof(rmLogString(fmt.Sprintf("Embedded ESS Stop completed.")))
-			    done = true
-			    return
+			case <-timerChan:
+				glog.Warningf(rmLogString(fmt.Sprintf("Embedded ESS Stop timer expired while waiting for the ESS to stop, continuing with termination.")))
+				done = true
+			case <-stopChan:
+				glog.V(5).Infof(rmLogString(fmt.Sprintf("Embedded ESS Stop completed.")))
+				done = true
+				return
 			}
 		}
 
