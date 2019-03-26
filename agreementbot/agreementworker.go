@@ -216,11 +216,36 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			return
 		}
 
-		// check if workload is suspended
 		if wi.ConsumerPolicy.PatternId != "" {
+			// check if workload is suspended. if suspended, then do not make agreement
 			if found, suspended := exchange.ServiceSuspended(exchangeDev.RegisteredServices, workload.WorkloadURL, workload.Org); found && suspended {
 				glog.Infof(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with %v for policy %v because service %v is suspended by the user.", wi.Device.Id, wi.ConsumerPolicy.Header.Name, cutil.FormOrgSpecUrl(workload.WorkloadURL, workload.Org))))
 				return
+			}
+
+			// check the arch of the top level service against the node. If not match, then do not make agreement.
+			// In the pattern case, the top level service spec, arch and version are also put in the node's registeredServices
+			for _, ms_svc := range exchangeDev.RegisteredServices {
+				if ms_svc.Url == cutil.FormOrgSpecUrl(workload.WorkloadURL, workload.Org) {
+					for _, prop := range ms_svc.Properties {
+						if prop.Name == "arch" {
+							// convert the arch to GOARCH standard using synonyms defined in the config
+							arch1 := prop.Value
+							if arch1 != "" && b.config.ArchSynonyms.GetCanonicalArch(arch1) != "" {
+								arch1 = b.config.ArchSynonyms.GetCanonicalArch(arch1)
+							}
+							arch2 := workload.Arch
+							if arch2 != "" && b.config.ArchSynonyms.GetCanonicalArch(arch2) != "" {
+								arch2 = b.config.ArchSynonyms.GetCanonicalArch(arch2)
+							}
+
+							if arch1 != arch2 {
+								glog.Infof(BAWlogstring(workerId, fmt.Sprintf("workload arch %v does not match the device arch %v. Can not make agreement.", workload.Arch, prop.Value)))
+								return
+							}
+						}
+					}
+				}
 			}
 		}
 
