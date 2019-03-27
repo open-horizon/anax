@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# This script queries dockerhub to see if the image we want to build has already been published to the input reegistry.
+# The script returns 0 if the image is not there, non-zero otherwise.
+
+# Positional parameter 2 is the image name that should also include the namespace of the image without a tag, i.e. openhorizon/imagexyz
+
+REGISTRY_SRC=$1
+IMAGE=$2
+TAG=$3
+
+if [[ "$REGISTRY_SRC" == "dockerhub" ]]; then
+  if ! curl -sSf https://index.docker.io/v1/repositories/$IMAGE/tags/$TAG > /dev/null; then
+    echo "0"
+  else
+    echo "1"
+  fi
+elif [[ "$REGISTRY_SRC" == "container_registry" ]]; then
+  if ! ibmcloud cr image-list | grep "us.icr.io/$IMAGE" | awk '{print $2}' | grep "^$TAG$" > /dev/null; then
+    echo "0"
+  else
+    echo "1"
+  fi
+else
+  (>&2 echo "Invalid registry choice $REGISTRY_SRC")
+  echo "2"
+fi
