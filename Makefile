@@ -8,6 +8,12 @@ ifneq ("$(wildcard ./rules.env)","")
 endif
 
 SHELL := /bin/bash
+
+# Set branch name to the name of the branch to which this file belongs. This must be updated
+# when a new branch is created. Development on the main (master) branch should leave this variable empty.
+# DO NOT set this variable to the branch in which you are doing development work.
+BRANCH_NAME ?= ""
+
 EXECUTABLE := $(shell basename $$PWD)
 CLI_EXECUTABLE := cli/hzn
 CLI_HORIZON_CONTAINER := anax-in-container/horizon-container
@@ -16,7 +22,7 @@ CLI_COMPLETION_DIR := cli/bash_completion
 DEFAULT_UI = api/static/index.html
 
 ANAX_CONTAINER_DIR := anax-in-container
-DOCKER_IMAGE_VERSION ?= 2.22.7
+DOCKER_IMAGE_VERSION ?= 2.22.7$(BRANCH_NAME)
 DOCKER_IMAGE_BASE = openhorizon/$(arch)_anax
 DOCKER_IMAGE = $(DOCKER_IMAGE_BASE):$(DOCKER_IMAGE_VERSION)
 DOCKER_IMAGE_STG = $(DOCKER_IMAGE_BASE):testing
@@ -26,10 +32,14 @@ DOCKER_IMAGE_LATEST = $(DOCKER_IMAGE_BASE):latest
 # By default we do not use cache for the anax container build, so it picks up the latest horizon deb pkgs. If you do want to use the cache: DOCKER_MAYBE_CACHE='' make docker-image
 DOCKER_MAYBE_CACHE ?= --no-cache
 
+# Variables that control packaging the file sync service containers
+FSS_OVERRIDE ?= ""
+FSS_REGISTRY ?= "dockerhub"
+
 # The CSS and its production container. This container is NOT used by hzn dev.
 CSS_EXECUTABLE := css/cloud-sync-service
 CSS_CONTAINER_DIR := css
-CSS_IMAGE_VERSION ?= 1.0.5
+CSS_IMAGE_VERSION ?= 1.0.5$(BRANCH_NAME)
 CSS_IMAGE_BASE = image/cloud-sync-service
 CSS_IMAGE_NAME = openhorizon/$(arch)_cloud-sync-service
 CSS_IMAGE = $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION)
@@ -41,7 +51,7 @@ CSS_IMAGE_LATEST = $(CSS_IMAGE_NAME):latest
 # The hzn dev ESS/CSS and its container.
 ESS_EXECUTABLE := ess/edge-sync-service
 ESS_CONTAINER_DIR := ess
-ESS_IMAGE_VERSION ?= 1.0.4
+ESS_IMAGE_VERSION ?= 1.0.4$(BRANCH_NAME)
 ESS_IMAGE_BASE = image/edge-sync-service
 ESS_IMAGE_NAME = openhorizon/$(arch)_edge-sync-service
 ESS_IMAGE = $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION)
@@ -234,11 +244,6 @@ css-docker-image: css-clean
 	cd $(CSS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(CSS_IMAGE) -f ./$(CSS_IMAGE_BASE)-$(arch)/Dockerfile . && \
 	docker tag $(CSS_IMAGE) $(CSS_IMAGE_STG); \
 
-css-docker-push-only:
-	@echo "Pushing CSS docker image $(CSS_IMAGE)"
-	docker push $(CSS_IMAGE)
-	docker push $(CSS_IMAGE_STG)
-
 css-promote:
 	@echo "Promoting $(CSS_IMAGE_STG)"
 	docker tag $(CSS_IMAGE_STG) $(CSS_IMAGE_PROD)
@@ -251,17 +256,37 @@ ess-docker-image: ess-clean
 	cd $(ESS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(ESS_IMAGE) -f ./$(ESS_IMAGE_BASE)-$(arch)/Dockerfile . && \
 	docker tag $(ESS_IMAGE) $(ESS_IMAGE_STG); \
 
-ess-docker-push-only:
-	@echo "Pushing ESS docker image $(ESS_IMAGE)"
-	docker push $(ESS_IMAGE)
-	docker push $(ESS_IMAGE_STG)
-
 ess-promote:
 	@echo "Promoting $(ESS_IMAGE_STG)"
 	docker tag $(ESS_IMAGE_STG) $(ESS_IMAGE_PROD)
 	docker push $(ESS_IMAGE_PROD)
 	docker tag $(ESS_IMAGE_STG) $(ESS_IMAGE_LATEST)
 	docker push $(ESS_IMAGE_LATEST)
+
+# This target should be used by developers working on anax, to build the ESS and CSS containers for the anax test environment.
+# These containers only need to be rebuilt when either the authentication plugin changes or when anax rebases on a new level/tag
+# of the edge-sync-service.
+fss: ess-docker-image css-docker-image
+	@echo "Built file sync service containers"
+
+# This is a target that is ONLY called by the deb packager system. The ESS and CSS containers are built and published by that process
+# when new versions are created. Developers should not use this target.
+fss-package: ess-docker-image css-docker-image
+	@echo "Packaging file sync service containers"
+	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(ESS_IMAGE_NAME) $(ESS_IMAGE_VERSION) 2> /dev/null) == "0" || $(FSS_OVERRIDE) != "" ]]; then \
+		echo "Pushing ESS docker image $(ESS_IMAGE)"; \
+		docker push $(ESS_IMAGE); \
+		docker push $(ESS_IMAGE_STG); \
+	else \
+		echo "File sync service container $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
+	fi
+	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(CSS_IMAGE_NAME) $(CSS_IMAGE_VERSION) 2> /dev/null) == "0" || $(FSS_OVERRIDE) != "" ]]; then \
+		echo "Pushing CSS docker image $(CSS_IMAGE)"; \
+		docker push $(CSS_IMAGE); \
+		docker push $(CSS_IMAGE_STG); \
+	else \
+		echo "File sync service container $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
+	fi
 
 clean: mostlyclean
 	@echo "Clean"
