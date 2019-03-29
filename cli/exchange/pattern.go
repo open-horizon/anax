@@ -38,11 +38,11 @@ type DeploymentOverrides struct {
 	Services map[string]ServiceOverrides `json:"services"`
 }
 type ServiceChoiceFile struct {
-	Version                      string                    `json:"version"`  // the version of the service
-	Priority                     exchange.WorkloadPriority `json:"priority"` // the highest priority service is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
-	Upgrade                      exchange.UpgradePolicy    `json:"upgradePolicy"`
-	DeploymentOverrides          interface{}               `json:"deployment_overrides"`           // env var overrides for the service
-	DeploymentOverridesSignature string                    `json:"deployment_overrides_signature"` // signature of env var overrides
+	Version                      string                    `json:"version"`            // the version of the service
+	Priority                     exchange.WorkloadPriority `json:"priority,omitempty"` // the highest priority service is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
+	Upgrade                      exchange.UpgradePolicy    `json:"upgradePolicy,omitempty"`
+	DeploymentOverrides          interface{}               `json:"deployment_overrides,omitempty"`           // env var overrides for the service
+	DeploymentOverridesSignature string                    `json:"deployment_overrides_signature,omitempty"` // signature of env var overrides
 }
 type ServiceReferenceFile struct {
 	ServiceURL      string                    `json:"serviceUrl"`              // refers to a service definition in the exchange
@@ -54,36 +54,36 @@ type ServiceReferenceFile struct {
 	NodeH           *exchange.NodeHealth      `json:"nodeHealth,omitempty"`    // this needs to be a ptr so it will be omitted if not specified, so exchange will default it
 }
 type PatternFile struct {
-	Org                string                       `json:"org"` // optional
+	Org                string                       `json:"org,omitempty"` // optional
 	Label              string                       `json:"label"`
 	Description        string                       `json:"description,omitempty"`
 	Public             bool                         `json:"public"`
 	Services           []ServiceReferenceFile       `json:"services"`
-	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
+	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols,omitempty"`
 }
 
 type ServiceChoice struct {
-	Version                      string                    `json:"version"`  // the version of the service
-	Priority                     exchange.WorkloadPriority `json:"priority"` // the highest priority service is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
-	Upgrade                      exchange.UpgradePolicy    `json:"upgradePolicy"`
-	DeploymentOverrides          string                    `json:"deployment_overrides"`           // env var overrides for the service
-	DeploymentOverridesSignature string                    `json:"deployment_overrides_signature"` // signature of env var overrides
+	Version                      string                    `json:"version"`            // the version of the service
+	Priority                     exchange.WorkloadPriority `json:"priority,omitempty"` // the highest priority service is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
+	Upgrade                      exchange.UpgradePolicy    `json:"upgradePolicy,omitempty"`
+	DeploymentOverrides          string                    `json:"deployment_overrides,omitempty"`           // env var overrides for the service
+	DeploymentOverridesSignature string                    `json:"deployment_overrides_signature,omitempty"` // signature of env var overrides
 }
 type ServiceReference struct {
-	ServiceURL      string                    `json:"serviceUrl"`              // refers to a service definition in the exchange
-	ServiceOrg      string                    `json:"serviceOrgid"`            // the org holding the service definition
-	ServiceArch     string                    `json:"serviceArch"`             // the hardware architecture of the service definition
-	AgreementLess   bool                      `json:"agreementLess,omitempty"` // a special case where this service will also be required by others
-	ServiceVersions []ServiceChoice           `json:"serviceVersions"`         // a list of service version for rollback
-	DataVerify      exchange.DataVerification `json:"dataVerification"`        // policy for verifying that the node is sending data
-	NodeH           *exchange.NodeHealth      `json:"nodeHealth,omitempty"`    // this needs to be a ptr so it will be omitted if not specified, so exchange will default it
+	ServiceURL      string                    `json:"serviceUrl"`                 // refers to a service definition in the exchange
+	ServiceOrg      string                    `json:"serviceOrgid"`               // the org holding the service definition
+	ServiceArch     string                    `json:"serviceArch"`                // the hardware architecture of the service definition
+	AgreementLess   bool                      `json:"agreementLess,omitempty"`    // a special case where this service will also be required by others
+	ServiceVersions []ServiceChoice           `json:"serviceVersions"`            // a list of service version for rollback
+	DataVerify      exchange.DataVerification `json:"dataVerification,omitempty"` // policy for verifying that the node is sending data
+	NodeH           *exchange.NodeHealth      `json:"nodeHealth,omitempty"`       // this needs to be a ptr so it will be omitted if not specified, so exchange will default it
 }
 type PatternInput struct {
 	Label              string                       `json:"label"`
 	Description        string                       `json:"description,omitempty"`
 	Public             bool                         `json:"public"`
 	Services           []ServiceReference           `json:"services"`
-	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
+	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols,omitempty"`
 }
 
 // List the pattern resources for the given org.

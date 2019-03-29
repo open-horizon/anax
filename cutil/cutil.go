@@ -300,8 +300,8 @@ func NormalizeURL(specRef string) string {
 // This function parsed the given image name to disfferent parts. The image name has the following format:
 // [[repo][:port]/][somedir/]image[:tag][@digest]
 // If the image path as an improper form (we could not parse it), path will be empty.
+// image names can be domain.com/dir/dir:tag  or  domain.com/dir/dir@sha256:ac88f4...  or  domain.com/dir/dir:tag@sha256:ac88f4...
 func ParseDockerImagePath(imagePath string) (domain, path, tag, digest string) {
-	// image names can be domain.com/dir/dir:tag  or  domain.com/dir/dir@sha256:ac88f4...  or  domain.com/dir/dir:tag@sha256:ac88f4...
 	reDigest := regexp.MustCompile(`^(\S*)@(\S+)$`)
 	reTag := regexp.MustCompile(`^([^/ ]*)(\S*):([^:/ ]+)$`)
 	reNoTag := regexp.MustCompile(`^([^/ ]*)(\S*)$`)
@@ -340,6 +340,25 @@ func ParseDockerImagePath(imagePath string) (domain, path, tag, digest string) {
 		path = strings.TrimPrefix(path, "/")
 	}
 	return
+}
+
+// for the image from the items parsed from ParseDockerImagePath function
+func FormDockerImageName(domain, path, tag, digest string) string {
+	image := ""
+	if domain != "" {
+		image = domain + "/" + path
+	} else {
+		image = path
+	}
+
+	if tag != "" {
+		image = image + ":" + tag
+	}
+
+	if digest != "" {
+		image = image + "@" + digest
+	}
+	return image
 }
 
 func CopyMap(m1 map[string]interface{}, m2 map[string]interface{}) {

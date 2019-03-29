@@ -96,14 +96,31 @@ func (p *NativeDeploymentConfigPlugin) GetContainerImages(dep interface{}) (bool
 	return true, imageList, nil
 }
 
-func (p *NativeDeploymentConfigPlugin) DefaultConfig() interface{} {
-	return map[string]interface{}{
-		"services": map[string]*containermessage.Service{
-			"": &containermessage.Service{
-				Image:       "",
-				Environment: []string{"ENV_VAR_HERE=SOME_VALUE"},
+// Given a map of image name and image pairs, the function returns a very simple deployment configuration to be used in the service definition.
+func (p *NativeDeploymentConfigPlugin) DefaultConfig(imageInfo interface{}) interface{} {
+	imageList := make(map[string]string, 0)
+	if imageInfo != nil {
+		imageList = imageInfo.(map[string]string)
+	}
+
+	if len(imageList) == 0 {
+		return map[string]interface{}{
+			"services": map[string]*containermessage.Service{
+				"": &containermessage.Service{
+					Image:       "",
+					Environment: []string{"ENV_VAR_HERE=SOME_VALUE"},
+				},
 			},
-		},
+		}
+	} else {
+		serviceDep := make(map[string]*containermessage.Service, len(imageList))
+		for image_name, image := range imageList {
+			serviceDep[image_name] = &containermessage.Service{
+				Image:       image,
+				Environment: []string{"ENV_VAR_HERE=SOME_VALUE"},
+			}
+		}
+		return map[string]interface{}{"services": serviceDep}
 	}
 }
 

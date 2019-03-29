@@ -57,30 +57,25 @@ func GetUserInputsVariableConfiguration(homeDirectory string, userInputFile stri
 	}
 }
 
-// Sort of like a constructor, it creates a skeletal user input config object and writes it to the project
+// Sort of like a constructor, it creates a user input config object and writes it to the project
 // in the file system.
-func CreateUserInputs(directory string, org string) error {
+func CreateUserInputs(directory string, specRef string) error {
 
-	// Create a skeletal user input config object with fillins/place-holders for configuration.
+	// Create a user input config object with fillins/place-holders for configuration.
 	res := new(register.InputFile)
-	res.Global = []register.GlobalSet{
-		register.GlobalSet{
-			Type: "",
-			Variables: map[string]interface{}{
-				"attribute_variable": "some_value",
-			},
-		},
-	}
+	res.Global = []register.GlobalSet{}
 
 	// Create a skeletal array with one element for variable configuration.
+	user_vars := map[string]interface{}{}
+	if specRef != "" {
+		user_vars = map[string]interface{}{"my_variable1": "hello from my service!"}
+	}
 	res.Services = []register.MicroWork{
 		register.MicroWork{
-			Org:          org,
-			Url:          "",
+			Org:          "$HZN_ORG_ID",
+			Url:          "$SERVICE_NAME",
 			VersionRange: "[0.0.0,INFINITY)",
-			Variables: map[string]interface{}{
-				"my_variable": "some_value",
-			},
+			Variables:    user_vars,
 		},
 	}
 

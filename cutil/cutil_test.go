@@ -163,6 +163,24 @@ func Test_ParseDockerImagePath_Other_Cases(t *testing.T) {
 
 }
 
+func Test_FormDockerImageName(t *testing.T) {
+	image_name := FormDockerImageName("mydomain.com", "x86_64/gps", "1.0.1", "sha256:15315df0677ab1c7291/a822290731032b19462a9d29bdd4d4619df7cb0c0f567")
+	assert.Equal(t, "mydomain.com/x86_64/gps:1.0.1@sha256:15315df0677ab1c7291/a822290731032b19462a9d29bdd4d4619df7cb0c0f567", image_name, fmt.Sprintf("Wrong image name in %v.", image_name))
+
+	image_name = FormDockerImageName("", "x86_64/gps", "1.0.1", "sha256:15315df0677ab1c7291/a822290731032b19462a9d29bdd4d4619df7cb0c0f567")
+	assert.Equal(t, "x86_64/gps:1.0.1@sha256:15315df0677ab1c7291/a822290731032b19462a9d29bdd4d4619df7cb0c0f567", image_name, fmt.Sprintf("Wrong image name in %v.", image_name))
+
+	image_name = FormDockerImageName("", "x86_64/gps", "", "sha256:15315df0677ab1c7291/a822290731032b19462a9d29bdd4d4619df7cb0c0f567")
+	assert.Equal(t, "x86_64/gps@sha256:15315df0677ab1c7291/a822290731032b19462a9d29bdd4d4619df7cb0c0f567", image_name, fmt.Sprintf("Wrong image name in %v.", image_name))
+
+	image_name = FormDockerImageName("", "x86_64/gps", "1.0.1", "")
+	assert.Equal(t, "x86_64/gps:1.0.1", image_name, fmt.Sprintf("Wrong image name in %v.", image_name))
+
+	image_name = FormDockerImageName("", "x86_64/gps", "", "")
+	assert.Equal(t, "x86_64/gps", image_name, fmt.Sprintf("Wrong image name in %v.", image_name))
+
+}
+
 func Test_TruncateDisplayString(t *testing.T) {
 	s1 := "1234567890"
 	assert.Equal(t, "12...", TruncateDisplayString(s1, 2), fmt.Sprintf("Should only show the first 2 charactors"))

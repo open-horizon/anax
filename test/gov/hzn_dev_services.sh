@@ -44,7 +44,7 @@ function createProject {
 
     echo -e "Creating Horizon $2 service project."
 
-    newProject=$(hzn dev service new -v 2>&1)
+    newProject=$(hzn dev service new -s $4 -V 1.0.0 -i "localhost:443/amd64_$9:1.0" --noImageGen --noPattern 2>&1)
     verify "${newProject}" "Created horizon metadata" "Horizon project was not created"
     if [ $? -ne 0 ]; then exit $?; fi
 
@@ -53,20 +53,18 @@ function createProject {
     userInput=$1/horizon/userinput.json
     serviceURL=$4
 
-    sed -e 's|"label": ""|"label": "'$2'service"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
+    sed -e 's|"label": "$SERVICE_NAME for $ARCH"|"label": "'$2'service"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e 's|"description": ""|"description": "'$2' service"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-    sed -e 's|"url": ""|"url": "'${serviceURL}'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-    sed -e 's|"version": "specific_version_number"|"version": "1.0.0"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e 's|"sharable": "multiple"|"sharable": "'$5'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-    sed -e 's|"name": ""|"name": "'$6'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-    sed -e 's|"type": ""|"type": "'$7'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-    sed -e 's|"": {|"'$9'": {|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-    sed -e 's|"image": ""|"image": "localhost:443/amd64_'$9':1.0"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
+    sed -e 's|"name": "my_variable1"|"name": "'$6'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
+    sed -e 's|"type": "string"|"type": "'$7'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
+    sed -e 's|"label": "my_variable1"|"label": "'$6'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
+    sed -e 's|"defaultValue": "hello world"|"defaultValue": ""|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e '/"ENV_VAR_HERE=SOME_VALUE"/d' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
 
-    sed -e '/"global"/,+7d' ${userInput} > ${userInput}.tmp && mv ${userInput}.tmp ${userInput}
-    sed -e 's|"url": ""|"url": "'${serviceURL}'"|' ${userInput} > ${userInput}.tmp && mv ${userInput}.tmp ${userInput}
-    sed -e 's|"my_variable": "some_value"|"'$6'": "'$8'"|' ${userInput} > ${userInput}.tmp && mv ${userInput}.tmp ${userInput}
+    sed -e 's|"my_variable1": "hello from my service!"|"'$6'": "'$8'"|' ${userInput} > ${userInput}.tmp && mv ${userInput}.tmp ${userInput}
+
+    source "$1/horizon/hzn.cfg"
 
     echo -e "Verifying the $2 project."
     verifyProject=$(hzn dev service verify -v 2>&1)
@@ -94,6 +92,7 @@ function stopServices {
 # $2 - project name
 function deploy {
     cd $1
+    source ./horizon/hzn.cfg
     deploy=$(hzn exchange service publish -v -k /tmp/*private.key -f ./horizon/service.definition.json 2>&1)
     deploying=$(echo ${deploy} | grep "HTTP code: 201")
     if [ "${deploying}" == "" ]; then
@@ -110,6 +109,7 @@ echo -e "Begin hzn dev service testing."
 
 export HZN_ORG_ID="e2edev@somecomp.com"
 export HZN_EXCHANGE_URL=$1
+export ARCH=$(uname -m | sed -e 's/aarch64.*/arm64/' -e 's/x86_64.*/amd64/' -e 's/armv.*/arm/')
 E2EDEV_ADMIN_AUTH=$2
 
 PROJECT_HOME="/root/hzn/service"
@@ -136,9 +136,11 @@ echo -e "Creating dependencies."
 
 cd ${HELLO_HOME}
 
+source ${CPU_HOME}/horizon/hzn.cfg
 depCreate=$(hzn dev dependency fetch -p ${CPU_HOME}/horizon -v 2>&1)
 verify "${depCreate}" "horizon created." "Could not create hello dependency on CPU."
 
+source ${HELLO_HOME}/horizon/hzn.cfg
 echo -e "Verifying the Hello project."
 verifyProject=$(hzn dev service verify -v 2>&1)
 
@@ -146,13 +148,16 @@ verify "${verifyProject}" "verified" "Horizon Hello project was not verifiable"
 if [ $? -ne 0 ]; then exit $?; fi
 
 cd ${USEHELLO_HOME}
+source ${CPU_HOME}/horizon/hzn.cfg
 depCreate=$(hzn dev dependency fetch -p ${CPU_HOME}/horizon -v 2>&1)
 verify "${depCreate}" "horizon created." "Could not create usehello dependency on CPU."
 
+source ${HELLO_HOME}/horizon/hzn.cfg
 depCreate=$(hzn dev dependency fetch -p ${HELLO_HOME}/horizon -v 2>&1)
 verify "${depCreate}" "horizon created." "Could not create usehello dependency on hello."
 
 echo -e "Verifying the UseHello project."
+source ${USEHELLO_HOME}/horizon/hzn.cfg
 verifyProject=$(hzn dev service verify -v 2>&1)
 
 verify "${verifyProject}" "verified" "Horizon UseHello project was not verifiable"
@@ -162,6 +167,7 @@ if [ $? -ne 0 ]; then exit $?; fi
 
 echo -e "Starting the top level service in the Horizon test environment."
 
+source ${USEHELLO_HOME}/horizon/hzn.cfg
 startDev=$(hzn dev service start -v -m /root/resources/basicres/basicres.tgz -m /root/resources/multires/multires.tgz -t model 2>&1)
 startedServices=$(echo ${startDev} | sed 's/Running service./Running service.\n/g' | grep -c "Running service.")
 if [ "${startedServices}" != "3" ]; then

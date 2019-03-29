@@ -67,7 +67,7 @@ func (p *HelmDeploymentConfigPlugin) GetContainerImages(dep interface{}) (bool, 
 	return owned, []string{}, err
 }
 
-func (p *HelmDeploymentConfigPlugin) DefaultConfig() interface{} {
+func (p *HelmDeploymentConfigPlugin) DefaultConfig(imageInfo interface{}) interface{} {
 	return map[string]interface{}{
 		"chart_archive": "",
 		"release_name":  "",

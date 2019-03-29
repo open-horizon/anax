@@ -43,6 +43,7 @@ const DEFAULT_DEVTOOL_HZN_FSS_WORKING_DIR = "/tmp/hzndev/"
 
 const DEFAULT_WORKING_DIR = "horizon"
 const DEFAULT_DEPENDENCY_DIR = "dependencies"
+const DEFAULT_PATTERN_DIR = "pattern"
 
 // The current working directory could be specified via input (as an absolute or relative path) or
 // it could be defaulted if there is no input. If it must exist but does not, return an error.
@@ -66,15 +67,24 @@ func GetWorkingDir(dashD string, verifyExists bool) (string, error) {
 
 // Create the working directory if needed.
 func CreateWorkingDir(dir string) error {
-	// Create the working directory with the dependencies directory in one shot. If it already exists, just keep going.
+	// Create the working directory with the dependencies and pattern directories in one shot. If it already exists, just keep going.
 
-	newDir := path.Join(dir, DEFAULT_DEPENDENCY_DIR)
-	if _, err := os.Stat(newDir); os.IsNotExist(err) {
-		if err := os.MkdirAll(newDir, 0755); err != nil {
-			return errors.New(fmt.Sprintf("could not create working directory %v, error: %v", dir, err))
+	newDepDir := path.Join(dir, DEFAULT_DEPENDENCY_DIR)
+	if _, err := os.Stat(newDepDir); os.IsNotExist(err) {
+		if err := os.MkdirAll(newDepDir, 0755); err != nil {
+			return errors.New(fmt.Sprintf("could not create directory %v, error: %v", newDepDir, err))
 		}
 	} else if err != nil {
-		return errors.New(fmt.Sprintf("could not get status of working directory %v, error: %v", dir, err))
+		return errors.New(fmt.Sprintf("could not get status of directory %v, error: %v", newDepDir, err))
+	}
+
+	newPatternDir := path.Join(dir, DEFAULT_PATTERN_DIR)
+	if _, err := os.Stat(newPatternDir); os.IsNotExist(err) {
+		if err := os.MkdirAll(newPatternDir, 0755); err != nil {
+			return errors.New(fmt.Sprintf("could not create directory %v, error: %v", newPatternDir, err))
+		}
+	} else if err != nil {
+		return errors.New(fmt.Sprintf("could not get status of directory %v, error: %v", newPatternDir, err))
 	}
 
 	cliutils.Verbose("Using working directory: %v", dir)
@@ -87,7 +97,7 @@ func FileNotExist(dir string, cmd string, fileName string, check func(string) (b
 	if exists, err := check(dir); err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v' %v", cmd, err)
 	} else if exists {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v' %v", cmd, fmt.Sprintf("horizon project in %v, already contains %v.", dir, fileName))
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v' %v", cmd, fmt.Sprintf("horizon project in %v already contains %v.", dir, fileName))
 	}
 }
 
@@ -744,4 +754,113 @@ func GetDevWorkingDirectory() string {
 		wd = DEFAULT_DEVTOOL_HZN_FSS_WORKING_DIR
 	}
 	return wd
+}
+
+// It is used by "hzn dev service new" when the specRef is an empty string.
+// This function generates a service specRef and version from the image name provided by the user.
+func GetServiceSpecFromImage(image string) (string, string, error) {
+	if image == "" {
+		return "", "", nil
+	}
+
+	specRef := ""
+	version := ""
+
+	// parse the image
+	_, path, tag, _ := cutil.ParseDockerImagePath(image)
+	if path == "" {
+		return "", "", errors.New(fmt.Sprintf("invalid image format: %v", image))
+	} else {
+		// get last part as the service ref
+		s := strings.Split(path, "/")
+		specRef = s[len(s)-1]
+	}
+
+	if tag != "" && policy.IsVersionString(tag) {
+		version = tag
+	}
+
+	return specRef, version, nil
+}
+
+// This function extracts the image names from the image list and returns a map of name~image pairs.
+// If the image does not have version tag specified, this function will add $SERVICE_VERSION as the tag
+// so that it's easy for the user to update the version later. And it will append_$ARCH to the image name so
+// distiguash images from different arch.
+func GetImageInfoFromImageList(images []string, version string, noImageGen bool) (map[string]string, string, error) {
+	imageInfo := make(map[string]string)
+	image_base := ""
+
+	if len(images) == 0 {
+		imageInfo["$SERVICE_NAME"] = "${DOCKER_IMAGE_BASE}_$ARCH:$SERVICE_VERSION"
+		return imageInfo, image_base, nil
+	}
+
+	for _, image := range images {
+		host, path, tag, digest := cutil.ParseDockerImagePath(image)
+		if path == "" {
+			return nil, "", errors.New(fmt.Sprintf("invalid image format: %v", image))
+		}
+		s := strings.Split(path, "/")
+
+		if !noImageGen {
+			// only one image will be specified if noImageGen is flase.
+			// In this case, remove the tag and digest, use SERVICE_VERSION for tag
+			// The real image name will be "${DOCKER_IMAGE_BASE}_$ARCH:$SERVICE_VERSION"
+			imageInfo[s[len(s)-1]] = "${DOCKER_IMAGE_BASE}_$ARCH:$SERVICE_VERSION"
+			image_base = cutil.FormDockerImageName(host, path, "", "")
+			return imageInfo, image_base, nil
+		} else {
+			if tag == "" && digest == "" {
+				if len(images) == 1 {
+					imageInfo[s[len(s)-1]] = "${DOCKER_IMAGE_BASE}_$ARCH:$SERVICE_VERSION"
+					image_base = cutil.FormDockerImageName(host, path, "", "")
+					return imageInfo, image_base, nil
+				} else {
+					// append _$ARCH in the image name and add SERVICE_VERSION as tag if the tag is not specified or the tag equals to the service version
+					image = cutil.FormDockerImageName(host, fmt.Sprintf("%v_$ARCH", path), "$SERVICE_VERSION", "")
+				}
+			}
+		}
+		imageInfo[s[len(s)-1]] = image
+	}
+
+	return imageInfo, "", nil
+}
+
+// check the file existance, substitute the variables and save the file
+func CreateFileWithConent(directory string, filename string, content string, substitutes map[string]string, perm_exec bool) error {
+
+	filePath := path.Join(directory, filename)
+
+	// make sure the file does not exist
+	found, err := FileExists(directory, filename)
+	if err != nil {
+		return err
+	}
+	if found {
+		return errors.New(fmt.Sprintf("file %v exists already", filePath))
+	}
+
+	// do the substitution
+	if substitutes != nil {
+		for key, val := range substitutes {
+			content = strings.Replace(content, key, val, -1)
+		}
+	}
+
+	// save the file
+	var perm os.FileMode
+	if perm_exec {
+		// executable file
+		perm = 0755
+	} else {
+		// regular file
+		perm = 0644
+	}
+	if err := ioutil.WriteFile(filePath, []byte(content), perm); err != nil {
+		return errors.New(fmt.Sprintf("unable to write content to file %v, error: %v", filePath, err))
+	} else {
+		return nil
+	}
 }

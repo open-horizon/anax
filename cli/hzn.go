@@ -259,11 +259,16 @@ Environment Variables:
 	listSelectedEventlogs := eventlogListCmd.Flag("select", "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.").Short('s').Strings()
 
 	devCmd := app.Command("dev", "Development tools for creation of services.")
-	devHomeDirectory := devCmd.Flag("directory", "Directory containing Horizon project metadata.").Short('d').String()
+	devHomeDirectory := devCmd.Flag("directory", "Directory containing Horizon project metadata. If omitted, a subdirectory called 'horizon' under current directory will be used.").Short('d').String()
 
 	devServiceCmd := devCmd.Command("service", "For working with a service project.")
 	devServiceNewCmd := devServiceCmd.Command("new", "Create a new service project.")
 	devServiceNewCmdOrg := devServiceNewCmd.Flag("org", "The Org id that the service is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is used.").Short('o').String()
+	devServiceNewCmdName := devServiceNewCmd.Flag("specRef", "The name of the service. If this flag and the -i flag are omitted, only the skeletal horizon metadata files will be generated.").Short('s').String()
+	devServiceNewCmdVer := devServiceNewCmd.Flag("ver", "The version of the service. If this flag is omitted, '0.0.1' is used.").Short('V').String()
+	devServiceNewCmdImage := devServiceNewCmd.Flag("image", "The docker container image base name without the version tag for the service. This command will add arch and version to the base name to form the final image name. The format is 'basename_arch:serviceversion'. This flag can be repeated to specify multiple images when '--noImageGen' flag is specified.").Short('i').Strings()
+	devServiceNewCmdNoImageGen := devServiceNewCmd.Flag("noImageGen", "Indicates that the image is built somewhere else. No image sample code will be created by this command. If this flag is not specified, files for generating a simple service image will be created under current directory.").Bool()
+	devServiceNewCmdNoPattern := devServiceNewCmd.Flag("noPattern", "Indicates no pattern definition file will be created.").Bool()
 	devServiceNewCmdCfg := devServiceNewCmd.Flag("dconfig", "Indicates the type of deployment that will be used, e.g. native (the default), or helm.").Short('c').Default("native").String()
 	devServiceStartTestCmd := devServiceCmd.Command("start", "Run a service in a mocked Horizon Agent environment.")
 	devServiceUserInputFile := devServiceStartTestCmd.Flag("userInputFile", "File containing user input values for running a test.").Short('f').String()
@@ -462,7 +467,7 @@ Environment Variables:
 	case eventlogListCmd.FullCommand():
 		eventlog.List(*listAllEventlogs, *listDetailedEventlogs, *listSelectedEventlogs)
 	case devServiceNewCmd.FullCommand():
-		dev.ServiceNew(*devHomeDirectory, *devServiceNewCmdOrg, *devServiceNewCmdCfg)
+		dev.ServiceNew(*devHomeDirectory, *devServiceNewCmdOrg, *devServiceNewCmdName, *devServiceNewCmdVer, *devServiceNewCmdImage, *devServiceNewCmdNoImageGen, *devServiceNewCmdCfg, *devServiceNewCmdNoPattern)
 	case devServiceStartTestCmd.FullCommand():
 		dev.ServiceStartTest(*devHomeDirectory, *devServiceUserInputFile, *devServiceConfigFile, *devServiceConfigType, *devServiceNoFSS)
 	case devServiceStopTestCmd.FullCommand():

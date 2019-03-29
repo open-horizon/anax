@@ -9,7 +9,7 @@ import (
 type DeploymentConfigPlugin interface {
 	Sign(dep map[string]interface{}, keyFilePath string, ctx PluginContext) (bool, string, string, error)
 	GetContainerImages(dep interface{}) (bool, []string, error)
-	DefaultConfig() interface{}
+	DefaultConfig(imageInfo interface{}) interface{}
 	Validate(dep interface{}) (bool, error)
 	StartTest(homeDirectory string, userInputFile string, configFiles []string, configType string, noFSS bool) bool
 	StopTest(homeDirectory string) bool
