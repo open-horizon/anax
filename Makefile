@@ -25,10 +25,10 @@ ANAX_CONTAINER_DIR := anax-in-container
 DOCKER_IMAGE_VERSION ?= 2.22.7$(BRANCH_NAME)
 DOCKER_IMAGE_BASE = openhorizon/$(arch)_anax
 DOCKER_IMAGE = $(DOCKER_IMAGE_BASE):$(DOCKER_IMAGE_VERSION)
-DOCKER_IMAGE_STG = $(DOCKER_IMAGE_BASE):testing
-DOCKER_IMAGE_PROD = $(DOCKER_IMAGE_BASE):stable
+DOCKER_IMAGE_STG = $(DOCKER_IMAGE_BASE):testing$(BRANCH_NAME)
+DOCKER_IMAGE_PROD = $(DOCKER_IMAGE_BASE):stable$(BRANCH_NAME)
 # the latest tag is the same as stable
-DOCKER_IMAGE_LATEST = $(DOCKER_IMAGE_BASE):latest
+DOCKER_IMAGE_LATEST = $(DOCKER_IMAGE_BASE):latest$(BRANCH_NAME)
 # By default we do not use cache for the anax container build, so it picks up the latest horizon deb pkgs. If you do want to use the cache: DOCKER_MAYBE_CACHE='' make docker-image
 DOCKER_MAYBE_CACHE ?= --no-cache
 
@@ -43,10 +43,10 @@ CSS_IMAGE_VERSION ?= 1.0.5$(BRANCH_NAME)
 CSS_IMAGE_BASE = image/cloud-sync-service
 CSS_IMAGE_NAME = openhorizon/$(arch)_cloud-sync-service
 CSS_IMAGE = $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION)
-CSS_IMAGE_STG = $(CSS_IMAGE_NAME):testing
-CSS_IMAGE_PROD = $(CSS_IMAGE_NAME):stable
+CSS_IMAGE_STG = $(CSS_IMAGE_NAME):testing$(BRANCH_NAME)
+CSS_IMAGE_PROD = $(CSS_IMAGE_NAME):stable$(BRANCH_NAME)
 # the latest tag is the same as stable
-CSS_IMAGE_LATEST = $(CSS_IMAGE_NAME):latest
+CSS_IMAGE_LATEST = $(CSS_IMAGE_NAME):latest$(BRANCH_NAME)
 
 # The hzn dev ESS/CSS and its container.
 ESS_EXECUTABLE := ess/edge-sync-service
@@ -55,10 +55,10 @@ ESS_IMAGE_VERSION ?= 1.0.4$(BRANCH_NAME)
 ESS_IMAGE_BASE = image/edge-sync-service
 ESS_IMAGE_NAME = openhorizon/$(arch)_edge-sync-service
 ESS_IMAGE = $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION)
-ESS_IMAGE_STG = $(ESS_IMAGE_NAME):testing
-ESS_IMAGE_PROD = $(ESS_IMAGE_NAME):stable
+ESS_IMAGE_STG = $(ESS_IMAGE_NAME):testing$(BRANCH_NAME)
+ESS_IMAGE_PROD = $(ESS_IMAGE_NAME):stable$(BRANCH_NAME)
 # the latest tag is the same as stable
-ESS_IMAGE_LATEST = $(ESS_IMAGE_NAME):latest
+ESS_IMAGE_LATEST = $(ESS_IMAGE_NAME):latest$(BRANCH_NAME)
 
 export TMPGOPATH ?= $(TMPDIR)$(EXECUTABLE)-gopath
 export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon/$(EXECUTABLE)
