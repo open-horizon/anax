@@ -86,16 +86,56 @@ func Stop(dc *docker.Client) error {
 	return nil
 }
 
+// Make sure the file sync service docker images are available locally. Either they are already present in the
+// local docker repo or we need to pull them in. This function checks for an exact match of image and tag name.
+// It does not try to re-pull if the image is already local.
+func getImage(imageName string, tagName string, dc *docker.Client) error {
+
+	// Check if the image already exists locally. If it does then skip the pull.
+	name := fmt.Sprintf("%v:%v", imageName, tagName)
+	skipPull := false
+	if images, err := dc.ListImages(docker.ListImagesOptions{
+		All: true,
+	}); err != nil {
+		return errors.New(fmt.Sprintf("unable to list existing docker images, error %v", err))
+	} else {
+		for _, image := range images {
+			for _, r := range image.RepoTags {
+				if r == name {
+					skipPull = true
+					cliutils.Verbose("Found docker image %v locally.", name)
+					break
+				}
+			}
+			// Exit the outter loop if we found the image locally.
+			if skipPull {
+				break
+			}
+		}
+	}
+
+	// If the image was not found locally, pull it from docker.
+	if !skipPull {
+		opts := docker.PullImageOptions{
+			Repository: imageName,
+			Tag:        tagName,
+		}
+
+		if err := dc.PullImage(opts, docker.AuthConfiguration{}); err != nil {
+			return errors.New(fmt.Sprintf("unable to pull CSS container using image %v, error %v. Set environment variable %v to use a different image tag.", getFSSFullImageName(), err, dev.DEVTOOL_HZN_FSS_IMAGE_TAG))
+		} else {
+			cliutils.Verbose("Pulled docker image %v.", name)
+		}
+	}
+
+	return nil
+}
+
 // Start the mongo container, configured to support the CSS container.
 func startMongo(dc *docker.Client, network *docker.Network) error {
 
 	// First load the image.
-	opts := docker.PullImageOptions{
-		Repository: getMongoImage(),
-		Tag:        getMongoImageTag(),
-	}
-
-	if err := dc.PullImage(opts, docker.AuthConfiguration{}); err != nil {
+	if err := getImage(getMongoImage(), getMongoImageTag(), dc); err != nil {
 		return errors.New(fmt.Sprintf("unable to pull Mongo container using image %v, error %v. Set environment variable %v to use a different image.", getMongoFullImage(), err, dev.DEVTOOL_HZN_FSS_MONGO_IMAGE))
 	}
 
@@ -151,13 +191,7 @@ func startMongo(dc *docker.Client, network *docker.Network) error {
 // Start the CSS container.
 func startCSS(dc *docker.Client, network *docker.Network) error {
 
-	// First load the image.
-	opts := docker.PullImageOptions{
-		Repository: getFSSImageName(),
-		Tag:        getFSSImageTagName(),
-	}
-
-	if err := dc.PullImage(opts, docker.AuthConfiguration{}); err != nil {
+	if err := getImage(getFSSImageName(), getFSSImageTagName(), dc); err != nil {
 		return errors.New(fmt.Sprintf("unable to pull CSS container using image %v, error %v. Set environment variable %v to use a different image tag.", getFSSFullImageName(), err, dev.DEVTOOL_HZN_FSS_IMAGE_TAG))
 	}
 
