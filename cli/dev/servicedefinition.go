@@ -6,7 +6,6 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/plugin_registry"
-	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"path"
 )
@@ -30,40 +29,56 @@ func GetServiceDefinition(directory string, name string) (*cliexchange.ServiceFi
 
 }
 
-// Sort of like a constructor, it creates a skeletal service definition config object and writes it to the project
+// Sort of like a constructor, it creates a service definition config object and writes it to the project
 // in the file system.
-func CreateServiceDefinition(directory string, org string, deploymentType string) error {
+func CreateServiceDefinition(directory string, specRef string, imageInfo map[string]string, deploymentType string) error {
 
 	// Create a skeletal service definition config object with fillins/place-holders for configuration.
 	res := new(cliexchange.ServiceFile)
-	res.Label = ""
-	res.Description = ""
+
+	res.Org = "$HZN_ORG_ID"
+	res.Label = "$SERVICE_NAME for $ARCH"
 	res.Public = true
-	res.URL = DEFAULT_SDEF_URL
-	res.Version = DEFAULT_SDEF_SPECIFIC_VERSION
-	res.Arch = cutil.ArchString()
+	res.URL = "$SERVICE_NAME"
+	res.Version = "$SERVICE_VERSION"
+	res.Arch = "$ARCH"
+	res.Description = ""
 	res.Sharable = exchange.MS_SHARING_MODE_MULTIPLE
-	res.UserInputs = []exchange.UserInput{
-		exchange.UserInput{
-			Name:         "",
-			Label:        "",
-			Type:         "",
-			DefaultValue: "",
-		},
+	if specRef == "" {
+		res.UserInputs = []exchange.UserInput{
+			exchange.UserInput{
+				Name:         "",
+				Label:        "",
+				Type:         "",
+				DefaultValue: "",
+			},
+		}
+	} else {
+		res.UserInputs = []exchange.UserInput{
+			exchange.UserInput{
+				Name:         "my_variable1",
+				Label:        "my_variable1",
+				Type:         "string",
+				DefaultValue: "hello world",
+			},
+		}
 	}
 	res.MatchHardware = map[string]interface{}{}
 	res.RequiredServices = []exchange.ServiceDependency{}
 
 	// Use the deployment plugin registry to obtain the default deployment config map.
 	if plugin_registry.DeploymentConfigPlugins.HasPlugin(deploymentType) {
-		res.Deployment = plugin_registry.DeploymentConfigPlugins.Get(deploymentType).DefaultConfig()
+		if deploymentType == "native" {
+			res.Deployment = plugin_registry.DeploymentConfigPlugins.Get(deploymentType).DefaultConfig(imageInfo)
+		} else {
+			res.Deployment = plugin_registry.DeploymentConfigPlugins.Get(deploymentType).DefaultConfig(nil)
+		}
 	} else {
 		return errors.New(fmt.Sprintf("unknown deployment type: %v", deploymentType))
 	}
 
 	res.DeploymentSignature = ""
 	res.ImageStore = map[string]interface{}{}
-	res.Org = org
 
 	// Convert the object to JSON and write it into the project.
 	return CreateFile(directory, SERVICE_DEFINITION_FILE, res)

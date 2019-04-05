@@ -117,6 +117,9 @@ func DependencyRemove(homeDirectory string, specRef string, url string, version 
 	var depFileInfo os.FileInfo
 	uniqueDep := true
 
+	envVarSetting := os.Getenv("HZN_DONT_SUBST_ENV_VARS")
+	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1")
+
 	// Grab the dependency files from the filesystem.
 	deps, err := GetDependencyFiles(dir, SERVICE_DEFINITION_FILE)
 	if err != nil {
@@ -172,6 +175,8 @@ func DependencyRemove(homeDirectory string, specRef string, url string, version 
 
 	// Create the right log message.
 	fmt.Printf("Removed dependency %v.\n", createLogMessage(specRef, url, theDep.GetOrg(), version, arch))
+
+	os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting) // restore this setting
 }
 
 // Returns an os.FileInfo object for each dependency file. This function assumes the caller has
@@ -397,7 +402,7 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	// this project's workload definition and updates it with the reference to the ms. In the files that are read and
 	// then written we want those to preserve the env vars as env vars.
 	envVarSetting := os.Getenv("HZN_DONT_SUBST_ENV_VARS")
-	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1")
+	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "0")
 
 	// Pull the metadata from the dependent project. Log the filesystem location of the dependent metadata.
 	if absProject, err := filepath.Abs(project); err != nil {
@@ -419,6 +424,8 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	}
 
 	cliutils.Verbose("Found dependency %v, Org: %v", sDef.GetURL(), sDef.GetOrg())
+
+	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1")
 
 	// Harden the new dependency in a file in this project's dependency store.
 	if err := UpdateDependencyFile(homeDirectory, sDef); err != nil {
