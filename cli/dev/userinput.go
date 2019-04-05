@@ -30,6 +30,16 @@ func GetUserInputs(homeDirectory string, userInputFile string) (*register.InputF
 		if userInputFilePath, err = filepath.Abs(userInputFile); err != nil {
 			return nil, "", err
 		}
+	} else {
+		// check if userinput.json exists. If not return an empty user input.
+		if exists, err := UserInputExists(homeDirectory); err != nil {
+			return nil, "", err
+		} else if !exists {
+			ui := new(register.InputFile)
+			ui.Global = []register.GlobalSet{}
+			ui.Services = []register.MicroWork{}
+			return ui, "", nil
+		}
 	}
 	userInputs := new(register.InputFile)
 
@@ -195,8 +205,16 @@ func ValidateUserInput(i *register.InputFile, directory string, originalUserInpu
 			}
 
 		}
+
 		if !foundDefinitionTuple {
-			return errors.New(fmt.Sprintf("%v: services array does not contain an element for %v.", originalUserInputFilePath, sDef.URL))
+			// For every variable that is defined without a default, make sure it is set.
+			if err := sDef.RequiredVariablesAreSet(map[string]interface{}{}); err != nil {
+				if originalUserInputFilePath != "" {
+					return errors.New(fmt.Sprintf("%v: services array does not contain an element for %v. Error: %v", originalUserInputFilePath, sDef.URL, err))
+				} else {
+					return errors.New(fmt.Sprintf("please provice a user input file for service %v. Error: %v", sDef.URL, err))
+				}
+			}
 		}
 
 	}
@@ -204,22 +222,10 @@ func ValidateUserInput(i *register.InputFile, directory string, originalUserInpu
 
 }
 
-func validateTuple(org string, vers string, url string, definitionUrl string) error {
-	if org == "" {
-		return errors.New(fmt.Sprintf("has empty org, must be set to the name of the organization that owns the service."))
-	} else if vers == "" {
-		return errors.New(fmt.Sprintf("has empty versionRange. Use [0.0.0,INFINITY) to cover all version ranges."))
-	} else if url != definitionUrl {
-		return errors.New(fmt.Sprintf("has incorrect url, must be set to %v.", definitionUrl))
-	}
-	return nil
-}
-
 func validateServiceTuple(org string, vers string, url string) error {
+	// version string can be empty
 	if org == "" {
 		return errors.New(fmt.Sprintf("has empty org, must be set to the name of the organization that owns the service."))
-	} else if vers == "" {
-		return errors.New(fmt.Sprintf("has empty versionRange. Use [0.0.0,INFINITY) to cover all version ranges."))
 	} else if url == "" {
 		return errors.New(fmt.Sprintf("has empty url. Must be set to this service's url or a dependency's url."))
 	}

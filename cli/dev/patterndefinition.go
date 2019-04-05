@@ -1,6 +1,7 @@
 package dev
 
 import (
+	"github.com/open-horizon/anax/cli/cliutils"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 )
 
@@ -21,9 +22,19 @@ func GetPatternDefinition(directory string, name string) (*cliexchange.PatternFi
 
 }
 
+// Check for the existence of the pattern definition config file in the project.
+func PatternDefinitionExists(directory string) (bool, error) {
+	return FileExists(directory, PATTERN_DEFINITION_FILE)
+}
+
+// Check for the existence of the pattern definition all in one config file in the project.
+func PatternDefinitionAllArchesExists(directory string) (bool, error) {
+	return FileExists(directory, PATTERN_DEFINITION_ALL_ARCHES_FILE)
+}
+
 // It creates a pattern definition config object and writes it to the project
 // in the file system.
-func CreatePatternDefinition(directory string) error {
+func CreatePatternDefinition(directory string, specRef string) error {
 
 	// Create a pattern definition config object with fillins/place-holders for configuration.
 	res := new(cliexchange.PatternFile)
@@ -37,6 +48,7 @@ func CreatePatternDefinition(directory string) error {
 	sref.ServiceArch = "$ARCH"
 	sref.ServiceVersions = []cliexchange.ServiceChoiceFile{*sv}
 
+	res.Name = cliutils.FormExchangeIdWithSpecRef(specRef) + "_$ARCH"
 	res.Label = "Edge $SERVICE_NAME Service Pattern for $ARCH"
 	res.Description = "Pattern for $SERVICE_NAME"
 	res.Public = true
@@ -48,7 +60,7 @@ func CreatePatternDefinition(directory string) error {
 
 // It creates a pattern definition config object for all architectures and writes it to the project
 // in the file system.
-func CreatePatternDefinitionAllArches(directory string) error {
+func CreatePatternDefinitionAllArches(directory string, specRef string) error {
 
 	// Create a pattern definition config object with fillins/place-holders for configuration.
 	res := new(cliexchange.PatternFile)
@@ -56,6 +68,7 @@ func CreatePatternDefinitionAllArches(directory string) error {
 	sv := new(cliexchange.ServiceChoiceFile)
 	sv.Version = "$SERVICE_VERSION"
 
+	res.Name = cliutils.FormExchangeIdWithSpecRef(specRef) + "_all-arches"
 	res.Label = "Edge $SERVICE_NAME Service Pattern for all architectures"
 	res.Description = "Pattern for $SERVICE_NAME"
 	res.Public = true

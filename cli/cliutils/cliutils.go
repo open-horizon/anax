@@ -1,13 +1,14 @@
 package cliutils
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	dockerclient "github.com/fsouza/go-dockerclient"
-	"github.com/open-horizon/anax/apicommon"
+	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
 	"io"
 	"io/ioutil"
@@ -41,6 +42,12 @@ const (
 	// Anax API HTTP Codes
 	ANAX_ALREADY_CONFIGURED = 409
 	ANAX_NOT_CONFIGURED_YET = 424
+
+	//anax configuration files
+	ANAX_OVERWRITE_FILE = "/etc/default/horizon"
+	ANAX_CONFIG_FILE    = "/etc/horizon/anax.json"
+
+	DEFAULT_EXCHANGE_URL = "https://alpha.edge-fabric.com/v1/"
 )
 
 // Holds the cmd line flags that were set so other pkgs can access
@@ -243,11 +250,17 @@ func FormExchangeId(url, version, arch string) string {
 	//val workloadUrl2 = """^[A-Za-z0-9+.-]*?://""".r replaceFirstIn (url, "")
 	//val workloadUrl3 = """[$!*,;/?@&~=%]""".r replaceAllIn (workloadUrl2, "-")     // I think possible chars in valid urls are: $_.+!*,;/?:@&~=%-
 	//return OrgAndId(orgid, workloadUrl3 + "_" + version + "_" + arch).toString
+	url1 := FormExchangeIdWithSpecRef(url)
+	return url1 + "_" + version + "_" + arch
+}
+
+// Remove the https:// from the beginning of workloadUrl and replace troublesome chars with a dash.
+func FormExchangeIdWithSpecRef(specRef string) string {
 	re := regexp.MustCompile(`^[A-Za-z0-9+.-]*?://`)
-	url2 := re.ReplaceAllLiteralString(url, "")
+	specRef2 := re.ReplaceAllLiteralString(specRef, "")
 	re = regexp.MustCompile(`[$!*,;/?@&~=%]`)
-	url3 := re.ReplaceAllLiteralString(url2, "-")
-	return url3 + "_" + version + "_" + arch
+	specRef3 := re.ReplaceAllLiteralString(specRef2, "-")
+	return specRef3
 }
 
 // ReadStdin reads from stdin, and returns it as a byte array.
@@ -387,34 +400,58 @@ func isGoodCode(actualHttpCode int, goodHttpCodes []int) bool {
 }
 
 func printHorizonRestError(apiMethod string, err error) {
+	msg := ""
 	if os.Getenv("HORIZON_URL") == "" {
-		Fatal(HTTP_ERROR, "Can't connect to the Horizon REST API to run %s. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMethod, err)
+		msg = fmt.Sprintf("Can't connect to the Horizon REST API to run %s. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMethod, err)
 	} else {
-		Fatal(HTTP_ERROR, "Can't connect to the Horizon REST API to run %s. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: %v", apiMethod, err)
+		msg = fmt.Sprintf("Can't connect to the Horizon REST API to run %s. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: %v", apiMethod, err)
 	}
+	Fatal(HTTP_ERROR, msg)
 }
 
 // HorizonGet runs a GET on the anax api and fills in the specified structure with the json.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
 // Only if the actual code matches the 1st element in goodHttpCodes, will it parse the body into the specified structure.
-func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}) (httpCode int) {
+// If quiet if true, then the error will be returned, the function returns back to the caller instead of exiting out.
+func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, quiet bool) (httpCode int, retError error) {
+	retError = nil
+
 	url := GetHorizonUrlBase() + "/" + urlSuffix
 	apiMsg := http.MethodGet + " " + url
 	Verbose(apiMsg)
 	resp, err := http.Get(url)
 	if err != nil {
-		printHorizonRestError(apiMsg, err)
+		if quiet {
+			if os.Getenv("HORIZON_URL") == "" {
+				retError = fmt.Errorf("Can't connect to the Horizon REST API to run %s. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMsg, err)
+			} else {
+				retError = fmt.Errorf("Can't connect to the Horizon REST API to run %s. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: %v", apiMsg, err)
+			}
+			return
+		} else {
+			printHorizonRestError(apiMsg, err)
+		}
 	}
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
 	if !isGoodCode(httpCode, goodHttpCodes) {
-		Fatal(HTTP_ERROR, "bad HTTP code from %s: %d", apiMsg, httpCode)
+		if quiet {
+			retError = fmt.Errorf("Bad HTTP code from %s: %d", apiMsg, httpCode)
+			return
+		} else {
+			Fatal(HTTP_ERROR, "bad HTTP code from %s: %d", apiMsg, httpCode)
+		}
 	}
 	if httpCode == goodHttpCodes[0] {
 		bodyBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			Fatal(HTTP_ERROR, "failed to read body response from %s: %v", apiMsg, err)
+			if quiet {
+				retError = fmt.Errorf("Failed to read body response from %s: %v", apiMsg, err)
+				return
+			} else {
+				Fatal(HTTP_ERROR, "failed to read body response from %s: %v", apiMsg, err)
+			}
 		}
 		switch s := structure.(type) {
 		case *string:
@@ -424,7 +461,12 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}) (h
 			// Put the response body in the specified struct
 			err = json.Unmarshal(bodyBytes, structure)
 			if err != nil {
-				Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response from %s: %v", apiMsg, err)
+				if quiet {
+					retError = fmt.Errorf("Failed to unmarshal body response from %s: %v", apiMsg, err)
+					return
+				} else {
+					Fatal(JSON_PARSING_ERROR, "failed to unmarshal body response from %s: %v", apiMsg, err)
+				}
 			}
 		}
 	}
@@ -518,20 +560,101 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 	return
 }
 
+// get a value keyed by key in a file. The file contains key=value for each line.
+func GetEnvVarFromFile(filename string, key string) (string, error) {
+	fHandle, err := os.Open(filename)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return "", nil
+		} else {
+			return "", err
+		}
+	}
+	defer fHandle.Close()
+
+	scanner := bufio.NewScanner(fHandle)
+	for scanner.Scan() {
+		lineContent := string(scanner.Bytes())
+		if strings.Contains(lineContent, key) {
+			key_value := strings.Split(lineContent, "=")
+			// comment line
+			if strings.Contains(key_value[0], "#") {
+				continue
+			} else if len(key_value) > 1 {
+				// trim the leading and trailing space, single quote and double quotes
+				s := key_value[1]
+				s = strings.TrimSpace(s)
+				s = strings.Trim(s, "'")
+				s = strings.Trim(s, "\"")
+				return s, nil
+			} else {
+				return "", nil
+			}
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+	return "", nil
+}
+
+// Get the anax configuration from the given configuration file.
+func GetAnaxConfig(configFile string) (*config.HorizonConfig, error) {
+	_, err := os.Stat(configFile)
+	if os.IsNotExist(err) {
+		return nil, nil
+	}
+
+	if byteValue, err := ioutil.ReadFile(configFile); err != nil {
+		return nil, err
+	} else {
+		var anaxConfig config.HorizonConfig
+		if err := json.Unmarshal(byteValue, &anaxConfig); err != nil {
+			return nil, fmt.Errorf("Failed to unmarshal bytes. %v", err)
+		} else {
+			return &anaxConfig, nil
+		}
+	}
+}
+
+// Get exchange url from /etc/default/horizon file. if not set, check /etc/horizon/anax.json file
+func GetExchangeUrlFromAnax() string {
+	if value, err := GetEnvVarFromFile(ANAX_OVERWRITE_FILE, "HZN_EXCHANGE_URL"); err != nil {
+		Verbose(fmt.Sprintf("Error getting HZN_EXCHANGE_URL from %v. %v", ANAX_OVERWRITE_FILE, err))
+	} else if value != "" {
+		return value
+	}
+
+	if anaxConfig, err := GetAnaxConfig(ANAX_CONFIG_FILE); err != nil {
+		Verbose(fmt.Sprintf("Error getting ExchangeUrl from %v. %v", ANAX_CONFIG_FILE, err))
+	} else if anaxConfig != nil {
+		return anaxConfig.Edge.ExchangeURL
+	}
+
+	return ""
+}
+
 // GetExchangeUrl returns the exchange url from the env var or anax api
 func GetExchangeUrl() string {
 	exchUrl := os.Getenv("HZN_EXCHANGE_URL")
 	if exchUrl == "" {
-		// Get it from anax
-		status := apicommon.Info{}
-		HorizonGet("status", []int{200}, &status)
-		exchUrl = status.Configuration.ExchangeAPI
+		Verbose("HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.")
+		value := GetExchangeUrlFromAnax()
+		if value != "" {
+			exchUrl = value
+		} else {
+			Verbose("Could not get the exchange url from the horizon agent, using default value: %v", DEFAULT_EXCHANGE_URL)
+			exchUrl = DEFAULT_EXCHANGE_URL
+		}
 	}
+
 	exchUrl = strings.TrimSuffix(exchUrl, "/") // anax puts a trailing slash on it
 	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" {
 		re := regexp.MustCompile(`edgenode$`)
 		exchUrl = re.ReplaceAllLiteralString(exchUrl, "edge")
 	}
+
+	Verbose("The exchange url: %v", exchUrl)
 	return exchUrl
 }
 
@@ -727,6 +850,14 @@ func GetExchangeAuth(userPw string, nodeIdTok string) string {
 	}
 
 	return credToUse
+}
+
+// set env variable ARCH if it is not set
+func SetDefaultArch() {
+	arch := os.Getenv("ARCH")
+	if arch == "" {
+		os.Setenv("ARCH", runtime.GOARCH)
+	}
 }
 
 /* Do not need at the moment, but keeping for reference...

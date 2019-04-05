@@ -54,6 +54,7 @@ type ServiceReferenceFile struct {
 	NodeH           *exchange.NodeHealth      `json:"nodeHealth,omitempty"`    // this needs to be a ptr so it will be omitted if not specified, so exchange will default it
 }
 type PatternFile struct {
+	Name               string                       `json:"name,omitempty"`
 	Org                string                       `json:"org,omitempty"` // optional
 	Label              string                       `json:"label"`
 	Description        string                       `json:"description,omitempty"`
@@ -223,6 +224,8 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 	var exchId string
 	if patName != "" {
 		exchId = patName
+	} else if patFile.Name != "" {
+		exchId = patFile.Name
 	} else {
 		// Use the json file base name as the default for the pattern name
 		exchId = filepath.Base(jsonFilePath)                      // remove the leading path

@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -31,7 +32,7 @@ func (g GlobalSet) String() string {
 type MicroWork struct {
 	Org          string                 `json:"org"`
 	Url          string                 `json:"url"`
-	VersionRange string                 `json:"versionRange"`
+	VersionRange string                 `json:"versionRange,omitempty"` //optional
 	Variables    map[string]interface{} `json:"variables"`
 }
 
@@ -53,7 +54,29 @@ func ReadInputFile(filePath string, inputFileStruct *InputFile) {
 }
 
 // DoIt registers this node to Horizon with a pattern
-func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
+func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromFlag string, patternFromFlag string) {
+	// check the input
+	if nodeOrgFromFlag != "" || patternFromFlag != "" {
+		if org != "" || pattern != "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "-o and -p are mutually exclusive with <nodeorg> and <pattern> arguments.")
+		} else {
+			org = nodeOrgFromFlag
+			pattern = patternFromFlag
+		}
+	}
+
+	// get default org if needed
+	if org == "" {
+		org = os.Getenv("HZN_ORG_ID")
+	}
+
+	if org == "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Please specify the node organization id.")
+	}
+	if pattern == "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Please specify a pattern name.")
+	}
+
 	cliutils.SetWhetherUsingApiKey(nodeIdTok) // if we have to use userPw later in NodeCreate(), it will set this appropriately for userPw
 	// Read input file 1st, so we don't get half way thru registration before finding the problem
 	inputFileStruct := InputFile{}
@@ -71,14 +94,17 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string) {
 	if nodeId == "" {
 		// Get the id from anax
 		horDevice := api.HorizonDevice{}
-		cliutils.HorizonGet("node", []int{200}, &horDevice)
+		cliutils.HorizonGet("node", []int{200}, &horDevice, false)
 		nodeId = *horDevice.Id
 
 		if nodeId == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Please specify the node id and token using -n flag.")
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Please specify the node id and token using -n flag or HZN_EXCHANGE_NODE_AUTH environment variable.")
 		} else {
 			fmt.Printf("Using node ID '%s' from the Horizon agent\n", nodeId)
 		}
+	} else {
+		// trim the org off the node id. the HZN_EXCHANGE_NODE_AUTH may contain the org id.
+		_, nodeId = cliutils.TrimOrg(org, nodeId)
 	}
 	if nodeToken == "" {
 		// Create a random token

@@ -43,7 +43,6 @@ const DEFAULT_DEVTOOL_HZN_FSS_WORKING_DIR = "/tmp/hzndev/"
 
 const DEFAULT_WORKING_DIR = "horizon"
 const DEFAULT_DEPENDENCY_DIR = "dependencies"
-const DEFAULT_PATTERN_DIR = "pattern"
 
 // The current working directory could be specified via input (as an absolute or relative path) or
 // it could be defaulted if there is no input. If it must exist but does not, return an error.
@@ -76,15 +75,6 @@ func CreateWorkingDir(dir string) error {
 		}
 	} else if err != nil {
 		return errors.New(fmt.Sprintf("could not get status of directory %v, error: %v", newDepDir, err))
-	}
-
-	newPatternDir := path.Join(dir, DEFAULT_PATTERN_DIR)
-	if _, err := os.Stat(newPatternDir); os.IsNotExist(err) {
-		if err := os.MkdirAll(newPatternDir, 0755); err != nil {
-			return errors.New(fmt.Sprintf("could not create directory %v, error: %v", newPatternDir, err))
-		}
-	} else if err != nil {
-		return errors.New(fmt.Sprintf("could not get status of directory %v, error: %v", newPatternDir, err))
 	}
 
 	cliutils.Verbose("Using working directory: %v", dir)
@@ -156,7 +146,12 @@ func VerifyEnvironment(homeDirectory string, mustExist bool, needExchange bool, 
 	if needExchange && os.Getenv(DEVTOOL_HZN_USER) == "" && userCreds == "" {
 		return "", errors.New(fmt.Sprintf("Must set environment variable %v or specify user exchange credentials with --user-pw", DEVTOOL_HZN_USER))
 	} else if os.Getenv(DEVTOOL_HZN_EXCHANGE_URL) == "" {
-		return "", errors.New(fmt.Sprintf("Environment variable %v must be set.", DEVTOOL_HZN_EXCHANGE_URL))
+		exchangeUrl := cliutils.GetExchangeUrl()
+		if exchangeUrl != "" {
+			os.Setenv(DEVTOOL_HZN_EXCHANGE_URL, exchangeUrl)
+		} else {
+			return "", errors.New(fmt.Sprintf("Environment variable %v must be set.", DEVTOOL_HZN_EXCHANGE_URL))
+		}
 	}
 
 	// Get the directory we're working in
@@ -169,11 +164,9 @@ func VerifyEnvironment(homeDirectory string, mustExist bool, needExchange bool, 
 
 }
 
-// Indicates whether or not the given project is a service project
+// Indicates whether or not the given project is a service project.
 func IsServiceProject(directory string) bool {
-	if ex, err := UserInputExists(directory); !ex || err != nil {
-		return false
-	} else if ex, err := ServiceDefinitionExists(directory); !ex || err != nil {
+	if ex, err := ServiceDefinitionExists(directory); !ex || err != nil {
 		return false
 	} else if ex, err := DependenciesExists(directory, true); !ex || err != nil {
 		return false

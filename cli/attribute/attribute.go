@@ -21,7 +21,7 @@ type OurAttributes struct {
 func List() {
 	// Get the attributes
 	apiOutput := map[string][]api.Attribute{}
-	httpCode := cliutils.HorizonGet("attribute", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput)
+	httpCode, _ := cliutils.HorizonGet("attribute", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput, false)
 	if httpCode == cliutils.ANAX_NOT_CONFIGURED_YET {
 		cliutils.Fatal(cliutils.HTTP_ERROR, cliutils.MUST_REGISTER_FIRST)
 	}

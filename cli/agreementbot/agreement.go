@@ -69,7 +69,7 @@ func getAgreements(archivedAgreements bool) (apiAgreements []agbot.Agreement) {
 
 	// Get horizon api agreement output and drill down to the category we want
 	apiOutput := make(map[string]map[string][]agbot.Agreement, 0)
-	cliutils.HorizonGet("agreement", []int{200}, &apiOutput)
+	cliutils.HorizonGet("agreement", []int{200}, &apiOutput, false)
 
 	var ok bool
 	if _, ok = apiOutput["agreements"]; !ok {

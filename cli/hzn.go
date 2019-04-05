@@ -55,6 +55,7 @@ Environment Variables:
 	cliutils.Opts.IsDryRun = app.Flag("dry-run", "When calling the Horizon or Exchange API, do GETs, but don't do PUTs, POSTs, or DELETEs.").Bool()
 
 	versionCmd := app.Command("version", "Show the Horizon version.") // using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
+	archCmd := app.Command("architecture", "Show the architecture of the client node.")
 
 	exchangeCmd := app.Command("exchange", "List and manage Horizon Exchange resources.")
 	exOrg := exchangeCmd.Flag("org", "The Horizon exchange organization ID. If not specified, HZN_ORG_ID will be used as a default.").Short('o').String()
@@ -95,8 +96,9 @@ Environment Variables:
 	exNodeSetTokToken := exNodeSetTokCmd.Arg("token", "The new token for the node.").Required().String()
 	exNodeSetTokNodeIdTok := exNodeSetTokCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
 	exNodeConfirmCmd := exNodeCmd.Command("confirm", "Check to see if the specified node and token are valid in the Horizon Exchange.")
-	exNodeConfirmNode := exNodeConfirmCmd.Arg("node", "The node id to be checked.").Required().String()
-	exNodeConfirmToken := exNodeConfirmCmd.Arg("token", "The token for the node.").Required().String()
+	exNodeConfirmNodeIdTok := exNodeConfirmCmd.Flag("node-id-tok", "The Horizon exchange node ID and token to be checked. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. Mutually exclusive with <node> and <token> arguments.").Short('n').PlaceHolder("ID:TOK").String()
+	exNodeConfirmNode := exNodeConfirmCmd.Arg("node", "The node id to be checked. Mutually exclusive with -n flag.").String()
+	exNodeConfirmToken := exNodeConfirmCmd.Arg("token", "The token for the node. Mutually exclusive with -n flag.").String()
 	exNodeDelCmd := exNodeCmd.Command("remove", "Remove a node resource from the Horizon Exchange. Do NOT do this when an edge node is registered with this node id.")
 	exNodeRemoveNodeIdTok := exNodeDelCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
 	exDelNode := exNodeDelCmd.Arg("node", "The node to remove.").Required().String()
@@ -156,8 +158,9 @@ Environment Variables:
 	exSvcJsonFile := exServicePublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the service in the Horizon exchange. See /usr/horizon/samples/service.json. Specify -f- to read from stdin.").Short('f').Required().String()
 	exSvcPrivKeyFile := exServicePublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the service. ").Short('k').ExistingFile()
 	exSvcPubPubKeyFile := exServicePublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
-	exSvcPubDontTouchImage := exServicePublishCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. This should only be used during development when testing new versions often.").Short('I').Bool()
+	exSvcPubDontTouchImage := exServicePublishCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. The image will not get automatically uploaded to the repository. This should only be used during development when testing new versions often.").Short('I').Bool()
 	exSvcRegistryTokens := exServicePublishCmd.Flag("registry-token", "Docker registry domain and auth that should be stored with the service, to enable the Horizon edge node to access the service's docker images. This flag can be repeated, and each flag should be in the format: registry:user:token").Short('r').Strings()
+	exSvcOverwrite := exServicePublishCmd.Flag("overwrite", "Overwrite the existing version if the service exists in the exchange. It will skip the 'do you want to overwrite' prompt.").Short('O').Bool()
 	exServiceVerifyCmd := exServiceCmd.Command("verify", "Verify the signatures of a service resource in the Horizon Exchange.")
 	exVerService := exServiceVerifyCmd.Arg("service", "The service to verify.").Required().String()
 	exServiceVerifyNodeIdTok := exServiceVerifyCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
@@ -188,12 +191,14 @@ Environment Variables:
 	regInputArch := regInputCmd.Arg("arch", "The architecture to write the template file for. (Horizon ignores services in patterns whose architecture is different from the target system.) The architecture must be what is returned by 'hzn node list' on the target system.").Default(cutil.ArchString()).String()
 
 	registerCmd := app.Command("register", "Register this edge node with Horizon.")
-	nodeIdTok := registerCmd.Flag("node-id-tok", "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.").Short('n').PlaceHolder("ID:TOK").String()
-	userPw := registerCmd.Flag("user-pw", "User credentials to create the node resource in the Horizon exchange if it does not already exist.").Short('u').PlaceHolder("USER:PW").String()
+	nodeIdTok := registerCmd.Flag("node-id-tok", "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. If both -n and HZN_EXCHANGE_NODE_AUTH are not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.").Short('n').PlaceHolder("ID:TOK").String()
+	userPw := registerCmd.Flag("user-pw", "User credentials to create the node resource in the Horizon exchange if it does not already exist. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default.").Short('u').PlaceHolder("USER:PW").String()
 	email := registerCmd.Flag("email", "Your email address. Only needs to be specified if: the node resource does not yet exist in the Horizon exchange, and the user specified in the -u flag does not exist, and you specified the 'public' org. If all of these things are true we will create the user and include this value as the email attribute.").Short('e').String()
 	inputFile := registerCmd.Flag("input-file", "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See /usr/horizon/samples/input.json and /usr/horizon/samples/more-examples.json. Specify -f- to read from stdin.").Short('f').String() // not using ExistingFile() because it can be - for stdin
-	org := registerCmd.Arg("nodeorg", "The Horizon exchange organization ID that the node should be registered in.").Required().String()
-	pattern := registerCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format.").Required().String()
+	nodeOrgFlag := registerCmd.Flag("nodeorg", "The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.").Short('o').String()
+	patternFlag := registerCmd.Flag("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments. ").Short('p').String()
+	org := registerCmd.Arg("nodeorg", "The Horizon exchange organization ID that the node should be registered in. Mutually exclusive with -o and -p.").String()
+	pattern := registerCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o and -p.").String()
 
 	keyCmd := app.Command("key", "List and manage keys for signing and verifying services.")
 	keyListCmd := keyCmd.Command("list", "List the signing keys that have been imported into this Horizon agent.")
@@ -363,13 +368,22 @@ Environment Variables:
 		}
 	}
 	if strings.HasPrefix(fullCmd, "register") {
+		// use HZN_EXCHANGE_USER_AUTH for -u
 		userPw = cliutils.WithDefaultEnvVar(userPw, "HZN_EXCHANGE_USER_AUTH")
+
+		// use HZN_EXCHANGE_NODE_AUTH for -n and trim the org
+		nodeIdTok = cliutils.WithDefaultEnvVar(nodeIdTok, "HZN_EXCHANGE_NODE_AUTH")
 	}
+
+	// set env variable ARCH if it is not set
+	cliutils.SetDefaultArch()
 
 	// Decide which command to run
 	switch fullCmd {
 	case versionCmd.FullCommand():
 		node.Version()
+	case archCmd.FullCommand():
+		node.Architecture()
 	case exVersionCmd.FullCommand():
 		exchange.Version(*exOrg, *exUserPw)
 	case exStatusCmd.FullCommand():
@@ -389,7 +403,7 @@ Environment Variables:
 	case exNodeSetTokCmd.FullCommand():
 		exchange.NodeSetToken(*exOrg, credToUse, *exNodeSetTokNode, *exNodeSetTokToken)
 	case exNodeConfirmCmd.FullCommand():
-		exchange.NodeConfirm(*exOrg, *exNodeConfirmNode, *exNodeConfirmToken)
+		exchange.NodeConfirm(*exOrg, *exNodeConfirmNode, *exNodeConfirmToken, *exNodeConfirmNodeIdTok)
 	case exNodeDelCmd.FullCommand():
 		exchange.NodeRemove(*exOrg, credToUse, *exDelNode, *exNodeDelForce)
 	case exAgbotListCmd.FullCommand():
@@ -415,7 +429,7 @@ Environment Variables:
 	case exServiceListCmd.FullCommand():
 		exchange.ServiceList(*exOrg, credToUse, *exService, !*exServiceLong)
 	case exServicePublishCmd.FullCommand():
-		exchange.ServicePublish(*exOrg, *exUserPw, *exSvcJsonFile, *exSvcPrivKeyFile, *exSvcPubPubKeyFile, *exSvcPubDontTouchImage, *exSvcRegistryTokens)
+		exchange.ServicePublish(*exOrg, *exUserPw, *exSvcJsonFile, *exSvcPrivKeyFile, *exSvcPubPubKeyFile, *exSvcPubDontTouchImage, *exSvcRegistryTokens, *exSvcOverwrite)
 	case exServiceVerifyCmd.FullCommand():
 		exchange.ServiceVerify(*exOrg, credToUse, *exVerService, *exSvcPubKeyFile)
 	case exSvcDelCmd.FullCommand():
@@ -431,7 +445,7 @@ Environment Variables:
 	case regInputCmd.FullCommand():
 		register.CreateInputFile(*regInputOrg, *regInputPattern, *regInputArch, *regInputNodeIdTok, *regInputInputFile)
 	case registerCmd.FullCommand():
-		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *email, *inputFile)
+		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *email, *inputFile, *nodeOrgFlag, *patternFlag)
 	case keyListCmd.FullCommand():
 		key.List(*keyName, *keyListAll)
 	case keyCreateCmd.FullCommand():
