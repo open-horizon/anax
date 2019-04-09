@@ -15,7 +15,7 @@ func getFSSImageName() string {
 func getFSSImageTagName() string {
 	tag := os.Getenv(dev.DEVTOOL_HZN_FSS_IMAGE_TAG)
 	if tag == "" {
-		tag = "latest"
+		tag = "latest-la"
 	}
 	return tag
 }

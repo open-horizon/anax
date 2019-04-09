@@ -12,7 +12,7 @@ SHELL := /bin/bash
 # Set branch name to the name of the branch to which this file belongs. This must be updated
 # when a new branch is created. Development on the main (master) branch should leave this variable empty.
 # DO NOT set this variable to the branch in which you are doing development work.
-BRANCH_NAME ?= ""
+BRANCH_NAME ?= "-la"
 
 EXECUTABLE := $(shell basename $$PWD)
 CLI_EXECUTABLE := cli/hzn
