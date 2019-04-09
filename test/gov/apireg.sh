@@ -54,6 +54,7 @@ done
 
 # ================================================================
 # Set global attributes
+# First, set a location attribute.
 
 read -d '' locationattribute <<EOF
 {
@@ -77,6 +78,20 @@ ERR=$(echo "$locationattribute" | curl -sS -X POST -H "Content-Type: application
 if [ "$ERR" != "null" ]; then
   echo -e "error occured: $ERR"
   exit 2
+fi
+
+# Then set a node level property
+./set_node_property.sh "purpose" "network testing"
+if [ $? -ne 0 ]
+then
+    exit 2
+fi
+
+# Then set a node level required property (CounterPartyProperty)
+./set_node_requiredproperty.sh "iame2edev" "true"
+if [ $? -ne 0 ]
+then
+    exit 2
 fi
 
 # =========================================================================

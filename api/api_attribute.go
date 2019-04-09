@@ -8,6 +8,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
+	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 )
 
@@ -35,7 +36,7 @@ func (a *API) attribute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// shared logic between payload-handling update functions
-	handlePayload := func(permitPartial bool, doModifications func(permitPartial bool, attr persistence.Attribute)) {
+	handlePayload := func(permitPartial bool, doModifications func(permitPartial bool, attr persistence.Attribute, msgQueue chan events.Message), msgQueue chan events.Message) {
 		defer r.Body.Close()
 
 		if attrs, inputErr, err := payloadToAttributes(errorhandler, r.Body, permitPartial, existingDevice); err != nil {
@@ -48,13 +49,13 @@ func (a *API) attribute(w http.ResponseWriter, r *http.Request) {
 				// only one attr may be specified to add at a time
 				w.WriteHeader(http.StatusBadRequest)
 			} else {
-				doModifications(permitPartial, attrs[0])
+				doModifications(permitPartial, attrs[0], msgQueue)
 			}
 		}
 	}
 
-	handleUpdateFn := func() func(bool, persistence.Attribute) {
-		return func(permitPartial bool, attr persistence.Attribute) {
+	handleUpdateFn := func() func(bool, persistence.Attribute, chan events.Message) {
+		return func(permitPartial bool, attr persistence.Attribute, msgQueue chan events.Message) {
 			if added, err := persistence.SaveOrUpdateAttribute(a.db, attr, decodedID, permitPartial); err != nil {
 				switch err.(type) {
 				case *persistence.OverwriteCandidateNotFound:
@@ -66,6 +67,7 @@ func (a *API) attribute(w http.ResponseWriter, r *http.Request) {
 				}
 			} else if added != nil {
 				writeResponse(w, toOutModel(*added), http.StatusOK)
+				msgQueue <- events.NewUpdatePolicyMessage(events.UPDATE_POLICY)
 			} else {
 				glog.Error(apiLogString(fmt.Sprintf("Attribute was not successfully persisted but no error was returned from persistence module")))
 				w.WriteHeader(http.StatusInternalServerError)
@@ -107,7 +109,7 @@ func (a *API) attribute(w http.ResponseWriter, r *http.Request) {
 		} else {
 
 			// call handlePayload with function to do additions
-			handlePayload(false, func(permitPartial bool, attr persistence.Attribute) {
+			handlePayload(false, func(permitPartial bool, attr persistence.Attribute, msgQueue chan events.Message) {
 
 				if added, err := persistence.SaveOrUpdateAttribute(a.db, attr, decodedID, permitPartial); err != nil {
 					glog.Infof(apiLogString(fmt.Sprintf("Got error from attempted save: <%T>, %v", err, err == nil)))
@@ -120,11 +122,12 @@ func (a *API) attribute(w http.ResponseWriter, r *http.Request) {
 					}
 				} else if added != nil {
 					writeResponse(w, toOutModel(*added), http.StatusCreated)
+					msgQueue <- events.NewUpdatePolicyMessage(events.UPDATE_POLICY)
 				} else {
 					glog.Error(apiLogString(fmt.Sprintf("Attribute was not successfully persisted but no error was returned from persistence module")))
 					w.WriteHeader(http.StatusInternalServerError)
 				}
-			})
+			}, a.Messages())
 		}
 
 	case "PUT":
@@ -133,7 +136,7 @@ func (a *API) attribute(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
 			// call handlePayload with function to do updates but prohibit partial updates
-			handlePayload(false, handleUpdateFn())
+			handlePayload(false, handleUpdateFn(), a.Messages())
 		}
 
 	case "PATCH":
@@ -141,7 +144,7 @@ func (a *API) attribute(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
 			// call handlePayload with function to do updates and allow partial updates
-			handlePayload(true, handleUpdateFn())
+			handlePayload(true, handleUpdateFn(), a.Messages())
 		}
 
 	case "DELETE":

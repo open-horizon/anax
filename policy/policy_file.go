@@ -155,7 +155,7 @@ func (self *Policy) Add_NodeHealth(nh *NodeHealth) error {
 // Compatibility is defined as; a Consumer can make an agreement with a Producer when:
 // 1) the Producer supports all the APISpecs that the Consumer's workload requires. Thus, the APISpecs
 //    supported by the Producer MUST be a superset (or equal) of the API Specs that the workload requires.
-// 2) the Producer advertises all the properties that the Consumer requires, and when the Consumer
+// 2) the Producer advertises all the properties that the Consumer requires, and the Consumer
 //    advertises all the properties that the Producer requires.
 // 3) the Producer is offering enough resources for the Consumer's workload.
 //
@@ -265,8 +265,18 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		merged_pol.ValueEx = consumer_policy.ValueEx
 		merged_pol.ResourceLimits = consumer_policy.ResourceLimits
 		merged_pol.DataVerify = producer_policy.DataVerify.MergeWith(consumer_policy.DataVerify, defaultNoData)
+
+		// The properties from the consumer are provided, indicating that some or all of them meet
+		// the counterPartyProperty requirements of the node.
 		(&merged_pol.Properties).Concatenate(&consumer_policy.Properties)
-		(&merged_pol.Properties).Concatenate(&producer_policy.Properties)
+		//(&merged_pol.Properties).Concatenate(&producer_policy.Properties)
+
+		// The consumer's counterparty properties are included indicating the requirements which are being met
+		// by the producer policy (which is also included in the proposal).
+		merged_pol.CounterPartyProperties = consumer_policy.CounterPartyProperties
+
+		// Merge the remaining policy.
+		// TODO: Can we get rid of any of these?
 		merged_pol.RequiredWorkload = producer_policy.RequiredWorkload
 		merged_pol.HAGroup = producer_policy.HAGroup
 		merged_pol.NodeH = consumer_policy.NodeH

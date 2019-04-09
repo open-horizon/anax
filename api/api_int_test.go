@@ -23,6 +23,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/worker"
 	"github.com/open-horizon/rsapss-tool/listkeys"
@@ -183,7 +184,7 @@ func Test_API_attribute_Suite(suite *testing.T) {
 			Config: &config.HorizonConfig{
 				Edge: config.Config{
 					UserPublicKeyPath: dir}},
-			Messages: nil,
+			Messages: make(chan events.Message, 20),
 		},
 
 		db:          db,

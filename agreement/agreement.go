@@ -521,7 +521,7 @@ func (w *AgreementWorker) syncOnInit() error {
 				glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
 
 			} else if policies, err := w.pm.GetPolicyList(exchange.GetOrg(w.GetExchangeId()), pol); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("unable to get policy list for producer policy in agrement %v, error: %v", ag.CurrentAgreementId, err)))
+				glog.Errorf(logString(fmt.Sprintf("unable to get policy list for producer policy in agreement %v, error: %v", ag.CurrentAgreementId, err)))
 				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
 
 			} else if mergedPolicy, err := w.pm.MergeAllProducers(&policies, pol); err != nil {
