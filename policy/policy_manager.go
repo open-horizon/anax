@@ -699,11 +699,12 @@ func (self *PolicyManager) MergeAllProducers(policies *[]Policy, previouslyMerge
 	var mergedPolicy *Policy
 	for _, pol := range *policies {
 		if mergedPolicy == nil {
-			mergedPolicy = &pol
+			mergedPolicy = new(Policy)
+			(*mergedPolicy) = pol
 		} else if newPolicy, err := Are_Compatible_Producers(mergedPolicy, &pol, uint64(previouslyMerged.DataVerify.Interval)); err != nil {
 			return nil, errors.New(fmt.Sprintf("could not merge policies %v and %v, error: %v", mergedPolicy, pol, err))
 		} else {
-			mergedPolicy = newPolicy
+			(*mergedPolicy) = *newPolicy
 		}
 	}
 	return mergedPolicy, nil
