@@ -215,3 +215,17 @@ func (c ServiceSuspendedCommand) ShortString() string {
 func (w *GovernanceWorker) NewServiceSuspendedCommand(scs []events.ServiceConfigState) *ServiceSuspendedCommand {
 	return &ServiceSuspendedCommand{ServiceConfigState: scs}
 }
+
+// ==============================================================================================================
+// Update (re-generate) node side policies
+type UpdatePolicyCommand struct {
+	Msg *events.UpdatePolicyMessage
+}
+
+func (c UpdatePolicyCommand) ShortString() string {
+	return fmt.Sprintf("UpdatePolicyCommand: msg %v.", c.Msg)
+}
+
+func (w *GovernanceWorker) NewUpdatePolicyCommand(msg *events.UpdatePolicyMessage) *UpdatePolicyCommand {
+	return &UpdatePolicyCommand{Msg: msg}
+}

@@ -904,6 +904,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, polOrg string) (
 					return nil, err
 				} else {
 					empty := make([]exchange.SearchResultDevice, 0, 0)
+					glog.V(3).Infof("AgreementBotWorker found 0 devices in exchange.")
 					return &empty, nil
 				}
 			} else if tpErr != nil {

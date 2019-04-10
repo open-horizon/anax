@@ -83,6 +83,7 @@ const (
 	EC_CANCEL_AGREEMENT_NO_REPLYACK       = "cancel_agreement_no_replyack"
 	EC_CANCEL_AGREEMENT_PER_AGBOT         = "cancel_agreement_per_agbot_request"
 	EC_CANCEL_AGREEMENT_SERVICE_SUSPENDED = "cancel_agreement_service_suspended"
+	EC_CANCEL_AGREEMENT_POLICY_CHANGED    = "cancel_agreement_policy_changed"
 
 	EC_CONTAINER_RUNNING          = "container_running"
 	EC_CONTAINER_STOPPED          = "container_stopped"

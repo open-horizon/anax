@@ -453,7 +453,9 @@ func CreateService(service *Service,
 			}
 
 		case *persistence.CounterPartyPropertyAttributes:
-			counterPartyProperties = attr.(*persistence.CounterPartyPropertyAttributes).Expression
+			if pDevice.Pattern == "" {
+				counterPartyProperties = attr.(*persistence.CounterPartyPropertyAttributes).Expression
+			}
 
 		case *persistence.PropertyAttributes:
 			properties = attr.(*persistence.PropertyAttributes).Mappings

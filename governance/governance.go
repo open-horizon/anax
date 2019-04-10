@@ -77,6 +77,7 @@ func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm
 		lastSvcUpgradeCheck: time.Now().Unix(),
 	}
 
+	// Start the worker and set the no work interval to 10 seconds.
 	worker.Start(worker, 10)
 	return worker
 }
@@ -302,6 +303,17 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			w.Commands <- cmd
 		}
 
+	case *events.UpdatePolicyMessage:
+		msg, _ := incoming.(*events.UpdatePolicyMessage)
+		switch msg.Event().Id {
+		case events.UPDATE_POLICY:
+			// Ignore these update events until the node config is complete
+			if w.GetExchangeToken() != "" {
+				cmd := w.NewUpdatePolicyCommand(msg)
+				w.Commands <- cmd
+			}
+		}
+
 	default: //nothing
 	}
 
@@ -310,6 +322,8 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 	return
 }
 
+// Make sure that every agreement we have is in a valid state or proceeding to valid states in a timely fashion. If not,
+// cancel the agreement and allow the agbots to re-make them if necessary.
 func (w *GovernanceWorker) governAgreements() {
 
 	glog.V(3).Infof(logString(fmt.Sprintf("governing pending agreements")))
@@ -374,37 +388,91 @@ func (w *GovernanceWorker) governAgreements() {
 						event_code = persistence.EC_CANCEL_AGREEMENT_NO_REPLYACK
 					}
 
-					eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
-						fmt.Sprintf("Start terminating agreement for %v. Reason: %v", ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
-						event_code,
-						ag)
-
-					w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
-
-					// cleanup workloads
-					w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
-
-					// clean up microservice instances if needed
-					w.handleMicroserviceInstForAgEnded(ag.CurrentAgreementId, false)
+					w.cancelGovernedAgreement(&ag,
+							fmt.Sprintf("Start terminating agreement for %v. Reason: %v", ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
+							reason,
+							event_code)
 				}
 
 			} else {
-				// For finalized agreements, make sure the workload has been started in time
+				// For finalized agreements, make sure the workload has been started in time.
 				if ag.AgreementExecutionStartTime == 0 {
 					// workload not started yet and in an agreement ...
 					if (int64(ag.AgreementAcceptedTime) + (MAX_CONTRACT_PRELAUNCH_TIME_M * 60)) < time.Now().Unix() {
 						glog.Infof(logString(fmt.Sprintf("terminating agreement %v because it hasn't been launched in max allowed time. This could be because of a workload failure.", ag.CurrentAgreementId)))
 						reason := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_NOT_EXECUTED_TIMEOUT)
-						w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
-						// cleanup workloads if needed
-						w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
-						// clean up microservice instances if needed
-						w.handleMicroserviceInstForAgEnded(ag.CurrentAgreementId, false)
+						w.cancelGovernedAgreement(&ag,
+							fmt.Sprintf("Start terminating agreement for %v. Reason: %v", ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
+							reason,
+							persistence.EC_CANCEL_AGREEMENT_EXECUTION_TIMEOUT)
+					}
+				} else {
+					// Finalized agreements could become out of policy if the policy changes on the node. Verify that the existing agreement
+					// is still in policy. To check this we have to get the original proposal and compare it for compatibility against the policies
+					// as they currently exist on the node.
+
+					if proposal, err := protocolHandler.DemarshalProposal(ag.Proposal); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("encountered error demarshalling proposal for agreement %v, error %v", ag.CurrentAgreementId, err)))
+
+					} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("unable to  demarshal TsAndCs of agreement %v, error %v", ag.CurrentAgreementId, err)))
+
+					} else if tcPolicy.PatternId != "" {
+						// Agreements that are based on patterns cannot become "out of policy" because there is no policy compatibility defined
+						// between nodes and agbots.
+						continue
+
+					} else if pol, err := policy.DemarshalPolicy(proposal.ProducerPolicy()); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
+
+					} else if policies, err := w.pm.GetPolicyList(exchange.GetOrg(w.GetExchangeId()), pol); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("unable to get policy list for producer policy in agreement %v, error %v", ag.CurrentAgreementId, err)))
+
+					} else if mergedPolicy, err := w.pm.MergeAllProducers(&policies, pol); err != nil {
+						glog.Errorf(logString(fmt.Sprintf("unable to merge producer policies for agreement %v, error %v", ag.CurrentAgreementId, err)))
+
+					} else if mergedPolicy == nil {
+						// When patterns are in use the producer policy is empty.
+						glog.Errorf(logString(fmt.Sprintf("for %v, merged policy was based on %v, but results in a nil merged policy", ag.CurrentAgreementId, policies)))
+						continue
+
+					} else if err := policy.Are_Compatible(mergedPolicy, tcPolicy); err != nil {
+
+						glog.V(5).Infof(logString(fmt.Sprintf("TsAndCs: %v", tcPolicy.ShortString())))
+						glog.V(5).Infof(logString(fmt.Sprintf("Merged Policy: %v", mergedPolicy.ShortString())))
+
+						// The proposal for this agreement is no longer compatible with the node's policy, so cancel the agreement.
+						glog.V(3).Infof(logString(fmt.Sprintf("current proposal for %v is out of policy: %v", ag.CurrentAgreementId, err)))
+
+						reason := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED)
+						w.cancelGovernedAgreement(&ag,
+							fmt.Sprintf("Start terminating agreement for %v. Reason: %v", ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
+							reason,
+							persistence.EC_CANCEL_AGREEMENT_POLICY_CHANGED)
+
+					} else {
+						glog.V(5).Infof(logString(fmt.Sprintf("agreement %v is still in policy.", ag.CurrentAgreementId)))
 					}
 				}
 			}
 		}
 	}
+}
+
+
+// Perform the common agreement cancelation steps.
+// TODO: consolidate every place that does the same thing as this function to call this function instead.
+func (w *GovernanceWorker) cancelGovernedAgreement(ag *persistence.EstablishedAgreement, detailMsg string, reason uint, eventCode string) {
+
+	eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO, detailMsg, eventCode, *ag)
+
+	w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
+
+	// cleanup workloads
+	w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
+
+	// clean up microservice instances if needed
+	w.handleMicroserviceInstForAgEnded(ag.CurrentAgreementId, false)
 }
 
 // Make sure the workload containers are all running, by asking the container worker to verify.
@@ -1182,6 +1250,12 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 		glog.V(5).Infof(logString(fmt.Sprintf("%v", cmd)))
 
 		w.handleServiceSuspended(cmd.ServiceConfigState)
+
+	case *UpdatePolicyCommand:
+		cmd, _ := command.(*UpdatePolicyCommand)
+		glog.V(5).Infof(logString(fmt.Sprintf("%v", cmd)))
+
+		w.handleUpdatePolicy(cmd)
 
 	default:
 		return false

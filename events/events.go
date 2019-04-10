@@ -58,6 +58,7 @@ const (
 
 	// policy-related
 	NEW_POLICY     EventId = "NEW_POLICY"
+	UPDATE_POLICY  EventId = "UPDATE_POLICY"
 	CHANGED_POLICY EventId = "CHANGED_POLICY"
 	DELETED_POLICY EventId = "DELETED_POLICY"
 
@@ -292,6 +293,32 @@ func NewPolicyCreatedMessage(id EventId, policyFileName string) *PolicyCreatedMe
 			Id: id,
 		},
 		fileName: policyFileName,
+	}
+}
+
+// This event indicates that something has changed on the node which requires that the node policies are updated.
+type UpdatePolicyMessage struct {
+	event    Event
+}
+
+func (e UpdatePolicyMessage) String() string {
+	return fmt.Sprintf("event: %v", e.event)
+}
+
+func (e UpdatePolicyMessage) ShortString() string {
+	return e.String()
+}
+
+func (e UpdatePolicyMessage) Event() Event {
+	return e.event
+}
+
+func NewUpdatePolicyMessage(id EventId) *UpdatePolicyMessage {
+
+	return &UpdatePolicyMessage{
+		event: Event{
+			Id: id,
+		},
 	}
 }
 

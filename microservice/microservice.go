@@ -287,8 +287,8 @@ func RemoveMicroservicePolicy(spec_ref string, org string, version string, msdef
 	return nil
 }
 
-// Generate a new policy file for given ms and the register the microservice on the exchange.
-func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath string, db *bolt.DB, e chan events.Message, deviceOrg string) error {
+// Generate a new policy file for given ms and then register the microservice in the exchange.
+func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath string, db *bolt.DB, e chan events.Message, deviceOrg string, pattern string) error {
 	glog.V(3).Infof("Generate policy for the given service %v/%v version %v key %v", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id)
 
 	var haPartner []string
@@ -319,7 +319,9 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 				}
 
 			case persistence.CounterPartyPropertyAttributes:
-				counterPartyProperties = attr.(persistence.CounterPartyPropertyAttributes).Expression
+				if pattern == "" {
+					counterPartyProperties = attr.(persistence.CounterPartyPropertyAttributes).Expression
+				}
 
 			case persistence.PropertyAttributes:
 				properties = attr.(persistence.PropertyAttributes).Mappings
@@ -346,7 +348,7 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 	if orig_attributes, err := persistence.FindApplicableAttributes(db, msdef.SpecRef, msdef.Org); err != nil {
 		return fmt.Errorf("Failed to get the service attributes for %v/%v from db. %v", msdef.Org, msdef.SpecRef, err)
 	} else {
-		// device the attributes into 2 groups, common and specific
+		// divide the attributes into 2 groups, common and specific
 		common_attribs := make([]persistence.Attribute, 0)
 		specific_attribs := make([]persistence.Attribute, 0)
 
