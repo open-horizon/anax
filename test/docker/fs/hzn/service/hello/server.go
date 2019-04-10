@@ -14,7 +14,7 @@ type CPU struct {
 
 func hello(w http.ResponseWriter, r *http.Request) {
 	httpClient := &http.Client{}
-	req, err := http.NewRequest(http.MethodGet, "http://cpu:8347/v1/cpu", nil)
+	req, err := http.NewRequest(http.MethodGet, "http://amd64_cpu:8347/v1/cpu", nil)
 	if err != nil {
 		io.WriteString(w, fmt.Sprintf("Error creating HTTP request: %v", err))
 		return
