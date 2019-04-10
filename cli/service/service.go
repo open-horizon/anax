@@ -30,7 +30,7 @@ func List() {
 	// Get the services
 	var apiOutput APIServices
 	// Note: intentionally querying /service, because in the future we will probably want to mix in some key runtime info
-	httpCode := cliutils.HorizonGet("service/config", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput)
+	httpCode, _ := cliutils.HorizonGet("service/config", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput, false)
 	//todo: i think config can be queried even before the node is registered?
 	if httpCode == cliutils.ANAX_NOT_CONFIGURED_YET {
 		cliutils.Fatal(cliutils.HTTP_ERROR, cliutils.MUST_REGISTER_FIRST)
@@ -75,7 +75,7 @@ func List() {
 func Registered() {
 	// The registered services are listed as policies
 	apiOutput := make(map[string]policy.Policy)
-	httpCode := cliutils.HorizonGet("service/policy", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput)
+	httpCode, _ := cliutils.HorizonGet("service/policy", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput, false)
 	if httpCode == cliutils.ANAX_NOT_CONFIGURED_YET {
 		cliutils.Fatal(cliutils.HTTP_ERROR, cliutils.MUST_REGISTER_FIRST)
 	}
@@ -90,7 +90,7 @@ func Registered() {
 
 func ListConfigState() {
 	apiOutput := make(map[string][]exchange.ServiceConfigState)
-	httpCode := cliutils.HorizonGet("service/configstate", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput)
+	httpCode, _ := cliutils.HorizonGet("service/configstate", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput, false)
 	if httpCode == cliutils.ANAX_NOT_CONFIGURED_YET {
 		cliutils.Fatal(cliutils.HTTP_ERROR, cliutils.MUST_REGISTER_FIRST)
 	}

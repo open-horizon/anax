@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/version"
 )
 
@@ -60,13 +61,13 @@ func (n *NodeAndStatus) CopyStatusInto(status *apicommon.Info) {
 func List() {
 	// Get the node info
 	horDevice := api.HorizonDevice{}
-	cliutils.HorizonGet("node", []int{200}, &horDevice)
+	cliutils.HorizonGet("node", []int{200}, &horDevice, false)
 	nodeInfo := NodeAndStatus{} // the structure we will output
 	nodeInfo.CopyNodeInto(&horDevice)
 
 	// Get the horizon status info
 	status := apicommon.Info{}
-	cliutils.HorizonGet("status", []int{200}, &status)
+	cliutils.HorizonGet("status", []int{200}, &status, false)
 	nodeInfo.CopyStatusInto(&status)
 
 	// Output the combined info
@@ -83,6 +84,26 @@ func Version() {
 
 	// Show anax version
 	status := apicommon.Info{}
-	cliutils.HorizonGet("status", []int{200}, &status)
-	fmt.Printf("Horizon Agent version: %s\n", status.Configuration.HorizonVersion)
+	httpCode, err := cliutils.HorizonGet("status", []int{200}, &status, true)
+	if err == nil && httpCode == 200 {
+		fmt.Printf("Horizon Agent version: %s\n", status.Configuration.HorizonVersion)
+	} else {
+		cliutils.Verbose(err.Error())
+		fmt.Printf("Horizon Agent version: failed to get.\n")
+	}
+}
+
+func Architecture() {
+	// Show client node architecture
+	fmt.Printf("Horizon CLI node architecture: %s\n", cutil.ArchString())
+
+	// Show edge node architecture if it running
+	status := apicommon.Info{}
+	httpCode, err := cliutils.HorizonGet("status", []int{200}, &status, true)
+	if err == nil && httpCode == 200 {
+		fmt.Printf("Horizon Edge node architecture: %s\n", status.Configuration.Arch)
+	} else {
+		cliutils.Verbose(err.Error())
+		fmt.Printf("Horizon Edge node architecture: failed to get.\n")
+	}
 }

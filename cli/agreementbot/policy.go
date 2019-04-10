@@ -19,10 +19,10 @@ func getPolicyNames(org string) (map[string][]string, int) {
 
 	if org != "" {
 		// get the policy names for the given org
-		httpCode = cliutils.HorizonGet(fmt.Sprintf("policy/%v", org), []int{200, 400}, &apiOutput)
+		httpCode, _ = cliutils.HorizonGet(fmt.Sprintf("policy/%v", org), []int{200, 400}, &apiOutput, false)
 	} else {
 		// get all the policy names
-		httpCode = cliutils.HorizonGet("policy", []int{200}, &apiOutput)
+		httpCode, _ = cliutils.HorizonGet("policy", []int{200}, &apiOutput, false)
 	}
 
 	return apiOutput, httpCode
@@ -35,7 +35,7 @@ func getPolicy(org string, name string) (*policy.Policy, int) {
 
 	// Get horizon api policy output
 	var apiOutput policy.Policy
-	httpCode := cliutils.HorizonGet(fmt.Sprintf("policy/%v/%v", org, name), []int{200, 400}, &apiOutput)
+	httpCode, _ := cliutils.HorizonGet(fmt.Sprintf("policy/%v/%v", org, name), []int{200, 400}, &apiOutput, false)
 
 	return &apiOutput, httpCode
 }

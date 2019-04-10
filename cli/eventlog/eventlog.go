@@ -79,7 +79,7 @@ func List(all bool, detail bool, selections []string) {
 
 	// get the eventlog from anax
 	apiOutput := make([]persistence.EventLogRaw, 0)
-	cliutils.HorizonGet(url_s, []int{200}, &apiOutput)
+	cliutils.HorizonGet(url_s, []int{200}, &apiOutput, false)
 
 	//output
 	if detail {

@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
 	"net/http"
+	"os"
 )
 
 // We only care about handling the node names, so the rest is left as interface{} and will be passed from the exchange to the display
@@ -107,8 +108,32 @@ func NodeSetToken(org, credToUse, node, token string) {
 	cliutils.ExchangePutPost(http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{201}, patchNodeReq)
 }
 
-func NodeConfirm(org, node, token string) {
+func NodeConfirm(org, node, token string, nodeIdTok string) {
 	cliutils.SetWhetherUsingApiKey("")
+
+	// check the input
+	if nodeIdTok != "" {
+		if node != "" || token != "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "-n is mutually exclusive with <node> and <token> arguments.")
+		}
+	} else {
+		if node == "" && token == "" {
+			nodeIdTok = os.Getenv("HZN_EXCHANGE_NODE_AUTH")
+		}
+	}
+
+	if nodeIdTok != "" {
+		node, token = cliutils.SplitIdToken(nodeIdTok)
+		if node != "" {
+			// trim the org off the node id. the HZN_EXCHANGE_NODE_AUTH may contain the org id.
+			_, node = cliutils.TrimOrg(org, node)
+		}
+	}
+
+	if node == "" || token == "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Please specify both node and token.")
+	}
+
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, node+":"+token), []int{200}, nil)
 	if httpCode == 200 {
 		fmt.Println("Node id and token are valid.")

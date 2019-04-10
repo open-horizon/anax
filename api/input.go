@@ -136,7 +136,7 @@ type Service struct {
 	Org           *string      `json:"organization"`   // The org that holds the service definition.
 	Name          *string      `json:"name"`           // Optional, may not be uniquely identifying.
 	Arch          *string      `json:"arch"`           // The arch of the service to be configured, could be a synonym.
-	VersionRange  *string      `json:"versionRange"`   // The version range that the configuration applies to.
+	VersionRange  *string      `json:"versionRange"`   // The version range that the configuration applies to. The default is [0.0.0,INFINITY)
 	AutoUpgrade   *bool        `json:"auto_upgrade"`   // The default is true. If the service should be automatically upgraded when a new version becomes available.
 	ActiveUpgrade *bool        `json:"active_upgrade"` // The default is false. If horizon should actively terminate agreements when new versions become available (active) or wait for all the associated agreements to terminate before upgrading.
 	Attributes    *[]Attribute `json:"attributes"`

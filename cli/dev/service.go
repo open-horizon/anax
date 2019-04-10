@@ -7,7 +7,6 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/policy"
 	"os"
-	"path"
 )
 
 // These constants define the hzn dev subcommands supported by this module.
@@ -57,6 +56,8 @@ func ServiceNew(homeDirectory string, org string, specRef string, version string
 	cmd := fmt.Sprintf("%v %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND)
 	FileNotExist(dir, cmd, USERINPUT_FILE, UserInputExists)
 	FileNotExist(dir, cmd, SERVICE_DEFINITION_FILE, ServiceDefinitionExists)
+	FileNotExist(dir, cmd, PATTERN_DEFINITION_FILE, PatternDefinitionExists)
+	FileNotExist(dir, cmd, PATTERN_DEFINITION_ALL_ARCHES_FILE, PatternDefinitionAllArchesExists)
 
 	if org == "" {
 		org = os.Getenv(DEVTOOL_HZN_ORG)
@@ -88,14 +89,13 @@ func ServiceNew(homeDirectory string, org string, specRef string, version string
 	}
 
 	if !noPattern {
-		patternDir := path.Join(dir, DEFAULT_PATTERN_DIR)
-		cliutils.Verbose(fmt.Sprintf("Creating pattern definition file: %v/%v", patternDir, PATTERN_DEFINITION_FILE))
-		err = CreatePatternDefinition(patternDir)
+		cliutils.Verbose(fmt.Sprintf("Creating pattern definition file: %v/%v", dir, PATTERN_DEFINITION_FILE))
+		err = CreatePatternDefinition(dir, specRef)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
 		}
-		cliutils.Verbose(fmt.Sprintf("Creating pattern definition file: %v/%v", patternDir, PATTERN_DEFINITION_ALL_ARCHES_FILE))
-		err = CreatePatternDefinitionAllArches(patternDir)
+		cliutils.Verbose(fmt.Sprintf("Creating pattern definition file: %v/%v", dir, PATTERN_DEFINITION_ALL_ARCHES_FILE))
+		err = CreatePatternDefinitionAllArches(dir, specRef)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
 		}

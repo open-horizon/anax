@@ -28,7 +28,7 @@ type KeyList struct {
 func List(keyName string, listAll bool) {
 	if keyName == "" && listAll {
 		var apiOutput KeyList
-		cliutils.HorizonGet("trust", []int{200}, &apiOutput)
+		cliutils.HorizonGet("trust", []int{200}, &apiOutput, false)
 		jsonBytes, err := json.MarshalIndent(apiOutput.Pem, "", cliutils.JSON_INDENT)
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'key list' output: %v", err)
@@ -38,7 +38,7 @@ func List(keyName string, listAll bool) {
 		// Getting all of the keys only returns the names
 		var apiOutput map[string][]api.KeyPairSimpleRecord
 		// Note: it is allowed to get /trust before post /node is called, so we don't have to check for that error
-		cliutils.HorizonGet("trust?verbose=true", []int{200}, &apiOutput)
+		cliutils.HorizonGet("trust?verbose=true", []int{200}, &apiOutput, false)
 		cliutils.Verbose("apiOutput: %v", apiOutput)
 
 		var output []api.KeyPairSimpleRecord
@@ -67,7 +67,7 @@ func List(keyName string, listAll bool) {
 	} else {
 		// Get the content of 1 key, which is not json
 		var apiOutput string
-		cliutils.HorizonGet("trust/"+keyName, []int{200}, &apiOutput)
+		cliutils.HorizonGet("trust/"+keyName, []int{200}, &apiOutput, false)
 		fmt.Printf("%s", apiOutput)
 	}
 }

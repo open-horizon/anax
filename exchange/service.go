@@ -392,7 +392,7 @@ func GetHighestVersion(msMetadata map[string]ServiceDefinition, vRange *policy.V
 			}
 			if err != nil {
 				glog.Errorf(rpclogString(fmt.Sprintf("error comparing version %v with version %v. %v", highest, sDef.Version, err)))
-			} else if c == -1 {
+			} else if c <= 0 {
 				highest = sDef.Version
 				resSDef = sDef
 				resSId = sId

@@ -17,7 +17,7 @@ func getStatus(agbot bool) (apiOutput *worker.WorkerStatusManager) {
 	}
 
 	// Get horizon api worker status
-	cliutils.HorizonGet("status/workers", []int{200}, apiOutput)
+	cliutils.HorizonGet("status/workers", []int{200}, apiOutput, false)
 
 	return
 }

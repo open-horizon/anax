@@ -188,7 +188,7 @@ func ServiceList(credOrg, userPw, service string, namesOnly bool) {
 }
 
 // ServicePublish signs the MS def and puts it in the exchange
-func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, registryTokens []string) {
+func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, registryTokens []string, overwrite bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the service metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
@@ -200,11 +200,12 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 	if svcFile.Org != "" && svcFile.Org != org {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", svcFile.Org, org)
 	}
-	svcFile.SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, dontTouchImage, registryTokens)
+
+	svcFile.SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, dontTouchImage, registryTokens, !overwrite)
 }
 
 // Sign and publish the service definition. This is a function that is reusable across different hzn commands.
-func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, registryTokens []string) {
+func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, registryTokens []string, promptForOverwite bool) {
 	svcInput := ServiceExch{Label: sf.Label, Description: sf.Description, Public: sf.Public, Documentation: sf.Documentation, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs, ImageStore: sf.ImageStore}
 
 	// The deployment field can be json object (map), string (for pre-signed), or nil
@@ -257,6 +258,10 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 	var output string
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 200 {
+		// check if the service exists with the same version, ask user if -O is not specified.
+		if promptForOverwite {
+			cliutils.ConfirmRemove(fmt.Sprintf("Service %v/%v exists in the exchange, do you want to overwite it?", org, exchId))
+		}
 		// Service exists, update it
 		fmt.Printf("Updating %s in the exchange...\n", exchId)
 		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, svcInput)

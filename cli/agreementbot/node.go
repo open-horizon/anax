@@ -39,13 +39,13 @@ func List() {
 
 	// Get the agbot info
 	horDevice := agreementbot.HorizonAgbot{}
-	cliutils.HorizonGet("node", []int{200}, &horDevice)
+	cliutils.HorizonGet("node", []int{200}, &horDevice, false)
 	nodeInfo := AgbotAndStatus{} // the structure we will output
 	nodeInfo.CopyNodeInto(&horDevice)
 
 	// Get the horizon status info
 	status := apicommon.Info{}
-	cliutils.HorizonGet("status", []int{200}, &status)
+	cliutils.HorizonGet("status", []int{200}, &status, false)
 	nodeInfo.CopyStatusInto(&status)
 
 	// Output the combined info

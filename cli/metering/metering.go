@@ -90,7 +90,7 @@ func (a *ArchivedMetering) CopyAgreementInto(agreement persistence.EstablishedAg
 
 func List(archivedMetering bool) {
 	apiOutput := make(map[string]map[string][]persistence.EstablishedAgreement, 0)
-	cliutils.HorizonGet("agreement", []int{200}, &apiOutput)
+	cliutils.HorizonGet("agreement", []int{200}, &apiOutput, false)
 	var ok bool
 	if _, ok = apiOutput["agreements"]; !ok {
 		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include 'agreements' key")

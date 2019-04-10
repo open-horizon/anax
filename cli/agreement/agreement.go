@@ -77,7 +77,7 @@ func (a *ArchivedAgreement) CopyAgreementInto(agreement persistence.EstablishedA
 func getAgreements(archivedAgreements bool) (apiAgreements []persistence.EstablishedAgreement) {
 	// Get horizon api agreement output and drill down to the category we want
 	apiOutput := make(map[string]map[string][]persistence.EstablishedAgreement, 0)
-	cliutils.HorizonGet("agreement", []int{200}, &apiOutput)
+	cliutils.HorizonGet("agreement", []int{200}, &apiOutput, false)
 	var ok bool
 	if _, ok = apiOutput["agreements"]; !ok {
 		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include 'agreements' key")
