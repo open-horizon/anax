@@ -217,7 +217,7 @@ macpkginfo:
 docker-image:
 	@echo "Producing anax docker image $(DOCKER_IMAGE)"
 	if [[ $(arch) == "amd64" ]]; then \
-	  cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(DOCKER_IMAGE) -f ./Dockerfile.$(arch) . && \
+	  cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) --build-arg HORIZON_REPO_CHANNEL=$(BRANCH_NAME)-testing -t $(DOCKER_IMAGE) -f ./Dockerfile.$(arch) . && \
 	  docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE_STG); \
 	else echo "Building the anax docker image is not supported on $(arch)"; fi
 
@@ -232,6 +232,7 @@ docker-push: docker-image docker-push-only
 # you must set DOCKER_IMAGE_VERSION to the correct version for promotion to production
 promote-docker:
 	@echo "Promoting $(DOCKER_IMAGE)"
+	docker pull $(DOCKER_IMAGE)
 	docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE_PROD)
 	docker push $(DOCKER_IMAGE_PROD)
 	docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE_LATEST)
@@ -245,10 +246,11 @@ css-docker-image: css-clean
 	docker tag $(CSS_IMAGE) $(CSS_IMAGE_STG); \
 
 css-promote:
-	@echo "Promoting $(CSS_IMAGE_STG)"
-	docker tag $(CSS_IMAGE_STG) $(CSS_IMAGE_PROD)
+	@echo "Promoting $(CSS_IMAGE)"
+	docker pull $(CSS_IMAGE)
+	docker tag $(CSS_IMAGE) $(CSS_IMAGE_PROD)
 	docker push $(CSS_IMAGE_PROD)
-	docker tag $(CSS_IMAGE_STG) $(CSS_IMAGE_LATEST)
+	docker tag $(CSS_IMAGE) $(CSS_IMAGE_LATEST)
 	docker push $(CSS_IMAGE_LATEST)
 
 ess-docker-image: ess-clean
@@ -257,10 +259,11 @@ ess-docker-image: ess-clean
 	docker tag $(ESS_IMAGE) $(ESS_IMAGE_STG); \
 
 ess-promote:
-	@echo "Promoting $(ESS_IMAGE_STG)"
-	docker tag $(ESS_IMAGE_STG) $(ESS_IMAGE_PROD)
+	@echo "Promoting $(ESS_IMAGE)"
+	docker pull $(ESS_IMAGE)
+	docker tag $(ESS_IMAGE) $(ESS_IMAGE_PROD)
 	docker push $(ESS_IMAGE_PROD)
-	docker tag $(ESS_IMAGE_STG) $(ESS_IMAGE_LATEST)
+	docker tag $(ESS_IMAGE) $(ESS_IMAGE_LATEST)
 	docker push $(ESS_IMAGE_LATEST)
 
 # This target should be used by developers working on anax, to build the ESS and CSS containers for the anax test environment.
