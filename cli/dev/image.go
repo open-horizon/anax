@@ -18,6 +18,9 @@ const MAKE_FILE_CONTENT = `# Make targets for building the IBM example helloworl
 # This imports the variables from horizon/hzn.cfg. You can ignore these lines, but do not remove them.
 -include horizon/.hzn.cfg.tmp.mk
 
+# Default ARCH to the architecture of this machines (as horizon/golang describes it)
+export ARCH ?= $(shell hzn architecture)
+
 # Build the docker image for the current architecture
 build:
 	docker build -t $(DOCKER_IMAGE_BASE)_$(ARCH):$(SERVICE_VERSION) -f ./Dockerfile.$(ARCH) .
