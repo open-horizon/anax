@@ -5,8 +5,8 @@ import (
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 )
 
-const PATTERN_DEFINITION_FILE = "pattern.definition.json"
-const PATTERN_DEFINITION_ALL_ARCHES_FILE = "pattern.definition-all-arches.json"
+const PATTERN_DEFINITION_FILE = "pattern.json"
+const PATTERN_DEFINITION_ALL_ARCHES_FILE = "pattern-all-arches.json"
 
 // Sort of like a constructor, it creates an in memory object except that it is created from the patern definition config
 // file in the current project. This function assumes the caller has determined the exact location of the file.
@@ -48,9 +48,9 @@ func CreatePatternDefinition(directory string, specRef string) error {
 	sref.ServiceArch = "$ARCH"
 	sref.ServiceVersions = []cliexchange.ServiceChoiceFile{*sv}
 
-	res.Name = cliutils.FormExchangeIdWithSpecRef(specRef) + "_$ARCH"
+	res.Name = "pattern-" + cliutils.FormExchangeIdWithSpecRef(specRef) + "-$ARCH"
 	res.Label = "Edge $SERVICE_NAME Service Pattern for $ARCH"
-	res.Description = "Pattern for $SERVICE_NAME"
+	res.Description = "Pattern for $SERVICE_NAME for $ARCH"
 	res.Public = true
 	res.Services = []cliexchange.ServiceReferenceFile{*sref}
 
@@ -68,7 +68,7 @@ func CreatePatternDefinitionAllArches(directory string, specRef string) error {
 	sv := new(cliexchange.ServiceChoiceFile)
 	sv.Version = "$SERVICE_VERSION"
 
-	res.Name = cliutils.FormExchangeIdWithSpecRef(specRef) + "_all-arches"
+	res.Name = "pattern-" + cliutils.FormExchangeIdWithSpecRef(specRef)
 	res.Label = "Edge $SERVICE_NAME Service Pattern for all architectures"
 	res.Description = "Pattern for $SERVICE_NAME"
 	res.Public = true
