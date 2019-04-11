@@ -95,15 +95,5 @@ func Version() {
 
 func Architecture() {
 	// Show client node architecture
-	fmt.Printf("Horizon CLI node architecture: %s\n", cutil.ArchString())
-
-	// Show edge node architecture if it running
-	status := apicommon.Info{}
-	httpCode, err := cliutils.HorizonGet("status", []int{200}, &status, true)
-	if err == nil && httpCode == 200 {
-		fmt.Printf("Horizon Edge node architecture: %s\n", status.Configuration.Arch)
-	} else {
-		cliutils.Verbose(err.Error())
-		fmt.Printf("Horizon Edge node architecture: failed to get.\n")
-	}
+	fmt.Printf("%s\n", cutil.ArchString())
 }
