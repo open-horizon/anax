@@ -190,6 +190,7 @@ func ServiceList(credOrg, userPw, service string, namesOnly bool) {
 // ServicePublish signs the MS def and puts it in the exchange
 func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, registryTokens []string, overwrite bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
+
 	// Read in the service metadata
 	newBytes := cliutils.ReadJsonFile(jsonFilePath)
 	var svcFile ServiceFile
@@ -219,9 +220,8 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 
 	case map[string]interface{}:
 		// We know we need to sign the deployment config, so make sure a real key file was provided.
-		if keyFilePath == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "must specify --private-key-file so that the deployment string can be signed")
-		}
+		keyFilePath = cliutils.VerifySigningKeyInput(keyFilePath, false)
+		pubKeyFilePath = cliutils.VerifySigningKeyInput(pubKeyFilePath, true)
 
 		// Construct and sign the deployment string.
 		fmt.Println("Signing service...")
@@ -236,6 +236,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "unable to sign deployment config: %v", err)
 		}
+
 		// Update the exchange service input object with the deployment string and sig, so that the service
 		// can be created in the exchange.
 		svcInput.Deployment = depStr
@@ -273,7 +274,6 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 
 	// Store the public key in the exchange, if they gave it to us
 	if pubKeyFilePath != "" {
-		// Note: the CLI framesvc already verified the file exists
 		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
 		baseName := filepath.Base(pubKeyFilePath)
 		fmt.Printf("Storing %s with the service in the exchange...\n", baseName)

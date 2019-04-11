@@ -298,7 +298,7 @@ func NewPolicyCreatedMessage(id EventId, policyFileName string) *PolicyCreatedMe
 
 // This event indicates that something has changed on the node which requires that the node policies are updated.
 type UpdatePolicyMessage struct {
-	event    Event
+	event Event
 }
 
 func (e UpdatePolicyMessage) String() string {

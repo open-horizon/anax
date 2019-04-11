@@ -131,8 +131,8 @@ Environment Variables:
 	exPatternLong := exPatternListCmd.Flag("long", "When listing all of the patterns, show the entire resource of each pattern, instead of just the name.").Short('l').Bool()
 	exPatternPublishCmd := exPatternCmd.Command("publish", "Sign and create/update the pattern resource in the Horizon Exchange.")
 	exPatJsonFile := exPatternPublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the pattern in the Horizon exchange. See /usr/horizon/samples/pattern.json. Specify -f- to read from stdin.").Short('f').Required().String()
-	exPatKeyFile := exPatternPublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the pattern.").Short('k').ExistingFile()
-	exPatPubPubKeyFile := exPatternPublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
+	exPatKeyFile := exPatternPublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.").Short('k').ExistingFile()
+	exPatPubPubKeyFile := exPatternPublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.").Short('K').ExistingFile()
 	exPatName := exPatternPublishCmd.Flag("pattern-name", "The name to use for this pattern in the Horizon exchange. If not specified, will default to the base name of the file path specified in -f.").Short('p').String()
 	exPatternVerifyCmd := exPatternCmd.Command("verify", "Verify the signatures of a pattern resource in the Horizon Exchange.")
 	exVerPattern := exPatternVerifyCmd.Arg("pattern", "The pattern to verify.").Required().String()
@@ -156,8 +156,8 @@ Environment Variables:
 	exServiceLong := exServiceListCmd.Flag("long", "When listing all of the services, show the entire resource of each services, instead of just the name.").Short('l').Bool()
 	exServicePublishCmd := exServiceCmd.Command("publish", "Sign and create/update the service resource in the Horizon Exchange.")
 	exSvcJsonFile := exServicePublishCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the service in the Horizon exchange. See /usr/horizon/samples/service.json. Specify -f- to read from stdin.").Short('f').Required().String()
-	exSvcPrivKeyFile := exServicePublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the service. ").Short('k').ExistingFile()
-	exSvcPubPubKeyFile := exServicePublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature.").Short('K').ExistingFile()
+	exSvcPrivKeyFile := exServicePublishCmd.Flag("private-key-file", "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.").Short('k').ExistingFile()
+	exSvcPubPubKeyFile := exServicePublishCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.").Short('K').ExistingFile()
 	exSvcPubDontTouchImage := exServicePublishCmd.Flag("dont-change-image-tag", "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. The image will not get automatically uploaded to the repository. This should only be used during development when testing new versions often.").Short('I').Bool()
 	exSvcRegistryTokens := exServicePublishCmd.Flag("registry-token", "Docker registry domain and auth that should be stored with the service, to enable the Horizon edge node to access the service's docker images. This flag can be repeated, and each flag should be in the format: registry:user:token").Short('r').Strings()
 	exSvcOverwrite := exServicePublishCmd.Flag("overwrite", "Overwrite the existing version if the service exists in the exchange. It will skip the 'do you want to overwrite' prompt.").Short('O').Bool()
@@ -207,7 +207,10 @@ Environment Variables:
 	keyCreateCmd := keyCmd.Command("create", "Generate a signing key pair.")
 	keyX509Org := keyCreateCmd.Arg("x509-org", "x509 certificate Organization (O) field (preferably a company name or other organization's name).").Required().String()
 	keyX509CN := keyCreateCmd.Arg("x509-cn", "x509 certificate Common Name (CN) field (preferably an email address issued by x509org).").Required().String()
-	keyOutputDir := keyCreateCmd.Flag("output-dir", "The directory to put the key pair files in. Defaults to the current directory.").Short('d').Default(".").ExistingDir()
+	keyOutputDir := keyCreateCmd.Flag("output-dir", "The directory to put the key pair files in. Mutually exclusive with -k and -K. The file names will be randomly generated.").Short('d').ExistingDir()
+	keyCreatePrivKey := keyCreateCmd.Flag("private-key-file", "The full path of the private key file. Mutually exclusive with -d. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.").Short('k').String()
+	keyCreatePubKey := keyCreateCmd.Flag("pubic-key-file", "The full path of the public key file. Mutually exclusive with -d. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.").Short('K').String()
+	keyCreateOverwrite := keyCreateCmd.Flag("overwrite", "Overwrite the existing files. It will skip the 'do you want to overwrite' prompt.").Short('f').Bool()
 	keyLength := keyCreateCmd.Flag("length", "The length of the key to create.").Short('l').Default("4096").Int()
 	keyDaysValid := keyCreateCmd.Flag("days-valid", "x509 certificate validity (Validity > Not After) expressed in days from the day of generation.").Default("1461").Int()
 	keyImportFlag := keyCreateCmd.Flag("import", "Automatically import the created public key into the local Horizon agent.").Short('i').Bool()
@@ -367,12 +370,28 @@ Environment Variables:
 			exUserPw = cliutils.RequiredWithDefaultEnvVar(exUserPw, "HZN_EXCHANGE_USER_AUTH", "exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH")
 		}
 	}
+
 	if strings.HasPrefix(fullCmd, "register") {
 		// use HZN_EXCHANGE_USER_AUTH for -u
 		userPw = cliutils.WithDefaultEnvVar(userPw, "HZN_EXCHANGE_USER_AUTH")
 
 		// use HZN_EXCHANGE_NODE_AUTH for -n and trim the org
 		nodeIdTok = cliutils.WithDefaultEnvVar(nodeIdTok, "HZN_EXCHANGE_NODE_AUTH")
+	}
+
+	// key file defaults
+	switch fullCmd {
+	case "key create":
+		if *keyOutputDir == "" {
+			keyCreatePrivKey = cliutils.WithDefaultEnvVar(keyCreatePrivKey, "HZN_PRIVATE_KEY_FILE")
+			keyCreatePubKey = cliutils.WithDefaultEnvVar(keyCreatePubKey, "HZN_PUBLIC_KEY_FILE")
+		}
+	case "exchange service publish":
+		exSvcPrivKeyFile = cliutils.WithDefaultEnvVar(exSvcPrivKeyFile, "HZN_PRIVATE_KEY_FILE")
+		exSvcPubPubKeyFile = cliutils.WithDefaultEnvVar(exSvcPubPubKeyFile, "HZN_PUBLIC_KEY_FILE")
+	case "exchange pattern publish":
+		exPatKeyFile = cliutils.WithDefaultEnvVar(exPatKeyFile, "HZN_PRIVATE_KEY_FILE")
+		exPatPubPubKeyFile = cliutils.WithDefaultEnvVar(exPatPubPubKeyFile, "HZN_PUBLIC_KEY_FILE")
 	}
 
 	// set env variable ARCH if it is not set
@@ -449,7 +468,7 @@ Environment Variables:
 	case keyListCmd.FullCommand():
 		key.List(*keyName, *keyListAll)
 	case keyCreateCmd.FullCommand():
-		key.Create(*keyX509Org, *keyX509CN, *keyOutputDir, *keyLength, *keyDaysValid, *keyImportFlag)
+		key.Create(*keyX509Org, *keyX509CN, *keyOutputDir, *keyLength, *keyDaysValid, *keyImportFlag, *keyCreatePrivKey, *keyCreatePubKey, *keyCreateOverwrite)
 	case keyImportCmd.FullCommand():
 		key.Import(*keyImportPubKeyFile)
 	case keyDelCmd.FullCommand():

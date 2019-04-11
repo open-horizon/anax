@@ -208,9 +208,8 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 					}
 					patInput.Services[i].ServiceVersions[j].DeploymentOverrides = string(deployment)
 					// We know we need to sign the overrides, so make sure a real key file was provided.
-					if keyFilePath == "" {
-						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "must specify --private-key-file so that the deployment_overrides can be signed")
-					}
+					keyFilePath = cliutils.VerifySigningKeyInput(keyFilePath, false)
+					pubKeyFilePath = cliutils.VerifySigningKeyInput(pubKeyFilePath, true)
 					patInput.Services[i].ServiceVersions[j].DeploymentOverridesSignature, err = sign.Input(keyFilePath, deployment)
 					if err != nil {
 						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment_overrides string with %s: %v", keyFilePath, err)
@@ -245,7 +244,7 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 
 	// Store the public key in the exchange, if they gave it to us
 	if pubKeyFilePath != "" {
-		// Note: the CLI framework already verified the file exists
+		// Note: already verified the file exists
 		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
 		baseName := filepath.Base(pubKeyFilePath)
 		fmt.Printf("Storing %s with the pattern in the exchange...\n", baseName)
