@@ -55,7 +55,7 @@ Environment Variables:
 	cliutils.Opts.IsDryRun = app.Flag("dry-run", "When calling the Horizon or Exchange API, do GETs, but don't do PUTs, POSTs, or DELETEs.").Bool()
 
 	versionCmd := app.Command("version", "Show the Horizon version.") // using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
-	archCmd := app.Command("architecture", "Show the architecture of the client node.")
+	archCmd := app.Command("architecture", "Show the architecture of this machine (as defined by Horizon and golang).")
 
 	exchangeCmd := app.Command("exchange", "List and manage Horizon Exchange resources.")
 	exOrg := exchangeCmd.Flag("org", "The Horizon exchange organization ID. If not specified, HZN_ORG_ID will be used as a default.").Short('o').String()
