@@ -25,8 +25,19 @@ export ARCH ?= $(shell hzn architecture)
 build:
 	docker build -t $(DOCKER_IMAGE_BASE)_$(ARCH):$(SERVICE_VERSION) -f ./Dockerfile.$(ARCH) .
 
+# Build the docker image for 3 architectures
+build-all-arches:
+	ARCH=amd64 $(MAKE) build
+	ARCH=arm $(MAKE) build
+	ARCH=arm64 $(MAKE) build
+
 clean:
 	-docker rmi $(DOCKER_IMAGE_BASE)_$(ARCH):$(SERVICE_VERSION) 2> /dev/null || :
+
+clean-all-archs:
+	ARCH=amd64 $(MAKE) clean
+	ARCH=arm $(MAKE) clean
+	ARCH=arm64 $(MAKE) clean
 
 ## This imports the variables from horizon/hzn.cfg. You can ignore these lines, but do not remove them.
 horizon/.hzn.cfg.tmp.mk: horizon/hzn.cfg
@@ -45,7 +56,7 @@ const SERVICE_FILE_CONTENT = `#!/bin/sh
 # Very simple Horizon sample edge service.
 
 while true; do
-  echo "$HZN_DEVICE_ID says: ${my_variable1}!"
+  echo "$HZN_DEVICE_ID says: Hello ${HW_WHO}!"
   sleep 3
 done
 `

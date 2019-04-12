@@ -37,22 +37,22 @@ func PatternDefinitionAllArchesExists(directory string) (bool, error) {
 func CreatePatternDefinition(directory string, specRef string) error {
 
 	// Create a pattern definition config object with fillins/place-holders for configuration.
-	res := new(cliexchange.PatternFile)
+	res := new(cliexchange.PatternFileForSample)
 
-	sv := new(cliexchange.ServiceChoiceFile)
+	sv := new(cliexchange.ServiceChoiceFileForSample)
 	sv.Version = "$SERVICE_VERSION"
 
-	sref := new(cliexchange.ServiceReferenceFile)
-	sref.ServiceOrg = "$HZN_ORG_ID"
+	sref := new(cliexchange.ServiceReferenceFileForSample)
 	sref.ServiceURL = "$SERVICE_NAME"
+	sref.ServiceOrg = "$HZN_ORG_ID"
 	sref.ServiceArch = "$ARCH"
-	sref.ServiceVersions = []cliexchange.ServiceChoiceFile{*sv}
+	sref.ServiceVersions = []cliexchange.ServiceChoiceFileForSample{*sv}
 
 	res.Name = "pattern-" + cliutils.FormExchangeIdWithSpecRef(specRef) + "-$ARCH"
 	res.Label = "Edge $SERVICE_NAME Service Pattern for $ARCH"
 	res.Description = "Pattern for $SERVICE_NAME for $ARCH"
 	res.Public = true
-	res.Services = []cliexchange.ServiceReferenceFile{*sref}
+	res.Services = []cliexchange.ServiceReferenceFileForSample{*sref}
 
 	// Convert the object to JSON and write it into the project.
 	return CreateFile(directory, PATTERN_DEFINITION_FILE, res)
@@ -63,21 +63,21 @@ func CreatePatternDefinition(directory string, specRef string) error {
 func CreatePatternDefinitionAllArches(directory string, specRef string) error {
 
 	// Create a pattern definition config object with fillins/place-holders for configuration.
-	res := new(cliexchange.PatternFile)
+	res := new(cliexchange.PatternFileForSample)
 
-	sv := new(cliexchange.ServiceChoiceFile)
+	sv := new(cliexchange.ServiceChoiceFileForSample)
 	sv.Version = "$SERVICE_VERSION"
 
 	res.Name = "pattern-" + cliutils.FormExchangeIdWithSpecRef(specRef)
 	res.Label = "Edge $SERVICE_NAME Service Pattern for all architectures"
 	res.Description = "Pattern for $SERVICE_NAME"
 	res.Public = true
-	res.Services = []cliexchange.ServiceReferenceFile{}
+	res.Services = []cliexchange.ServiceReferenceFileForSample{}
 
-	sref := new(cliexchange.ServiceReferenceFile)
+	sref := new(cliexchange.ServiceReferenceFileForSample)
 	sref.ServiceOrg = "$HZN_ORG_ID"
 	sref.ServiceURL = "$SERVICE_NAME"
-	sref.ServiceVersions = []cliexchange.ServiceChoiceFile{*sv}
+	sref.ServiceVersions = []cliexchange.ServiceChoiceFileForSample{*sv}
 
 	arches := []string{"amd64", "arm", "arm64"}
 	for _, arch := range arches {

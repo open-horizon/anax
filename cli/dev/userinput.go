@@ -78,14 +78,13 @@ func CreateUserInputs(directory string, specRef string) error {
 	// Create a skeletal array with one element for variable configuration.
 	user_vars := map[string]interface{}{}
 	if specRef != "" {
-		user_vars = map[string]interface{}{"my_variable1": "hello from my service!"}
+		user_vars = map[string]interface{}{}
 	}
 	res.Services = []register.MicroWork{
 		register.MicroWork{
-			Org:          "$HZN_ORG_ID",
-			Url:          "$SERVICE_NAME",
-			VersionRange: "[0.0.0,INFINITY)",
-			Variables:    user_vars,
+			Org:       "$HZN_ORG_ID",
+			Url:       "$SERVICE_NAME",
+			Variables: user_vars,
 		},
 	}
 
