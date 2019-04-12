@@ -389,9 +389,9 @@ func (w *GovernanceWorker) governAgreements() {
 					}
 
 					w.cancelGovernedAgreement(&ag,
-							fmt.Sprintf("Start terminating agreement for %v. Reason: %v", ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
-							reason,
-							event_code)
+						fmt.Sprintf("Start terminating agreement for %v. Reason: %v", ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
+						reason,
+						event_code)
 				}
 
 			} else {
@@ -458,7 +458,6 @@ func (w *GovernanceWorker) governAgreements() {
 		}
 	}
 }
-
 
 // Perform the common agreement cancelation steps.
 // TODO: consolidate every place that does the same thing as this function to call this function instead.

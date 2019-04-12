@@ -45,13 +45,13 @@ type ServiceChoiceFile struct {
 	DeploymentOverridesSignature string                    `json:"deployment_overrides_signature,omitempty"` // signature of env var overrides
 }
 type ServiceReferenceFile struct {
-	ServiceURL      string                    `json:"serviceUrl"`              // refers to a service definition in the exchange
-	ServiceOrg      string                    `json:"serviceOrgid"`            // the org holding the service definition
-	ServiceArch     string                    `json:"serviceArch"`             // the hardware architecture of the service definition
-	AgreementLess   bool                      `json:"agreementLess,omitempty"` // a special case where this service will also be required by others
-	ServiceVersions []ServiceChoiceFile       `json:"serviceVersions"`         // a list of service version for rollback
-	DataVerify      exchange.DataVerification `json:"dataVerification"`        // policy for verifying that the node is sending data
-	NodeH           *exchange.NodeHealth      `json:"nodeHealth,omitempty"`    // this needs to be a ptr so it will be omitted if not specified, so exchange will default it
+	ServiceURL      string                    `json:"serviceUrl"`                 // refers to a service definition in the exchange
+	ServiceOrg      string                    `json:"serviceOrgid"`               // the org holding the service definition
+	ServiceArch     string                    `json:"serviceArch"`                // the hardware architecture of the service definition
+	AgreementLess   bool                      `json:"agreementLess,omitempty"`    // a special case where this service will also be required by others
+	ServiceVersions []ServiceChoiceFile       `json:"serviceVersions"`            // a list of service version for rollback
+	DataVerify      exchange.DataVerification `json:"dataVerification,omitempty"` // policy for verifying that the node is sending data
+	NodeH           *exchange.NodeHealth      `json:"nodeHealth,omitempty"`       // this needs to be a ptr so it will be omitted if not specified, so exchange will default it
 }
 type PatternFile struct {
 	Name               string                       `json:"name,omitempty"`
@@ -75,7 +75,7 @@ type ServiceReference struct {
 	ServiceOrg      string                    `json:"serviceOrgid"`               // the org holding the service definition
 	ServiceArch     string                    `json:"serviceArch"`                // the hardware architecture of the service definition
 	AgreementLess   bool                      `json:"agreementLess,omitempty"`    // a special case where this service will also be required by others
-	ServiceVersions []ServiceChoice           `json:"serviceVersions"`            // a list of service version for rollback
+	ServiceVersions []ServiceChoice           `json:"serviceVersions,omitempty"`  // a list of service version for rollback
 	DataVerify      exchange.DataVerification `json:"dataVerification,omitempty"` // policy for verifying that the node is sending data
 	NodeH           *exchange.NodeHealth      `json:"nodeHealth,omitempty"`       // this needs to be a ptr so it will be omitted if not specified, so exchange will default it
 }
@@ -83,8 +83,32 @@ type PatternInput struct {
 	Label              string                       `json:"label"`
 	Description        string                       `json:"description,omitempty"`
 	Public             bool                         `json:"public"`
-	Services           []ServiceReference           `json:"services"`
+	Services           []ServiceReference           `json:"services,omitempty"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols,omitempty"`
+}
+
+// for hzn dev service new
+type ServiceReferenceFileForSample struct {
+	ServiceURL      string                       `json:"serviceUrl"`              // refers to a service definition in the exchange
+	ServiceOrg      string                       `json:"serviceOrgid"`            // the org holding the service definition
+	ServiceArch     string                       `json:"serviceArch"`             // the hardware architecture of the service definition
+	AgreementLess   bool                         `json:"agreementLess,omitempty"` // a special case where this service will also be required by others
+	ServiceVersions []ServiceChoiceFileForSample `json:"serviceVersions"`         // a list of service version for rollback
+}
+
+// for hzn dev service new
+type PatternFileForSample struct {
+	Name        string                          `json:"name,omitempty"`
+	Org         string                          `json:"org,omitempty"` // optional
+	Label       string                          `json:"label"`
+	Description string                          `json:"description,omitempty"`
+	Public      bool                            `json:"public"`
+	Services    []ServiceReferenceFileForSample `json:"services"`
+}
+
+// for hzn dev service new
+type ServiceChoiceFileForSample struct {
+	Version string `json:"version"` // the version of the service
 }
 
 // List the pattern resources for the given org.

@@ -35,12 +35,12 @@ type ServiceFile struct {
 	Version             string                       `json:"version"`
 	Arch                string                       `json:"arch"`
 	Sharable            string                       `json:"sharable"`
-	MatchHardware       map[string]interface{}       `json:"matchHardware"`
+	MatchHardware       map[string]interface{}       `json:"matchHardware,omitempty"`
 	RequiredServices    []exchange.ServiceDependency `json:"requiredServices"`
 	UserInputs          []exchange.UserInput         `json:"userInput"`
 	Deployment          interface{}                  `json:"deployment"` // interface{} because pre-signed services can be stringified json
-	DeploymentSignature string                       `json:"deploymentSignature"`
-	ImageStore          map[string]interface{}       `json:"imageStore"`
+	DeploymentSignature string                       `json:"deploymentSignature,omitempty"`
+	ImageStore          map[string]interface{}       `json:"imageStore,omitempty"`
 }
 
 type GetServicesResponse struct {

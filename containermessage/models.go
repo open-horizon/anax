@@ -139,7 +139,7 @@ func (p *Pattern) IsShared(tp string, serviceName string) bool {
 type Service struct {
 	Image            string               `json:"image"`
 	VariationLabel   string               `json:"variation_label,omitempty"`
-	Privileged       bool                 `json:"privileged"`
+	Privileged       bool                 `json:"privileged,omitempty"`
 	Environment      []string             `json:"environment,omitempty"`
 	CapAdd           []string             `json:"cap_add,omitempty"`
 	Command          []string             `json:"command,omitempty"`
