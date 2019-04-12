@@ -107,8 +107,7 @@ func (p *NativeDeploymentConfigPlugin) DefaultConfig(imageInfo interface{}) inte
 		return map[string]interface{}{
 			"services": map[string]*containermessage.Service{
 				"": &containermessage.Service{
-					Image:       "",
-					Environment: []string{"ENV_VAR_HERE=SOME_VALUE"},
+					Image: "",
 				},
 			},
 		}
@@ -116,8 +115,7 @@ func (p *NativeDeploymentConfigPlugin) DefaultConfig(imageInfo interface{}) inte
 		serviceDep := make(map[string]*containermessage.Service, len(imageList))
 		for image_name, image := range imageList {
 			serviceDep[image_name] = &containermessage.Service{
-				Image:       image,
-				Environment: []string{"ENV_VAR_HERE=SOME_VALUE"},
+				Image: image,
 			}
 		}
 		return map[string]interface{}{"services": serviceDep}

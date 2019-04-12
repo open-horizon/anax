@@ -56,14 +56,13 @@ func CreateServiceDefinition(directory string, specRef string, imageInfo map[str
 	} else {
 		res.UserInputs = []exchange.UserInput{
 			exchange.UserInput{
-				Name:         "my_variable1",
-				Label:        "my_variable1",
+				Name:         "HW_WHO",
+				Label:        "Who to say hello to",
 				Type:         "string",
-				DefaultValue: "hello world",
+				DefaultValue: "World",
 			},
 		}
 	}
-	res.MatchHardware = map[string]interface{}{}
 	res.RequiredServices = []exchange.ServiceDependency{}
 
 	// Use the deployment plugin registry to obtain the default deployment config map.
