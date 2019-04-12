@@ -56,13 +56,10 @@ function createProject {
     sed -e 's|"label": "$SERVICE_NAME for $ARCH"|"label": "'$2'service"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e 's|"description": ""|"description": "'$2' service"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e 's|"sharable": "multiple"|"sharable": "'$5'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-    sed -e 's|"name": "my_variable1"|"name": "'$6'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
+    sed -e 's|"name": "HW_WHO"|"name": "'$6'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e 's|"type": "string"|"type": "'$7'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-    sed -e 's|"label": "my_variable1"|"label": "'$6'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
+    sed -e 's|"label": "Who to say hello to"|"label": "'$6'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e 's|"defaultValue": "hello world"|"defaultValue": ""|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-    sed -e '/"ENV_VAR_HERE=SOME_VALUE"/d' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-
-    sed -e 's|"my_variable1": "hello from my service!"|"'$6'": "'$8'"|' ${userInput} > ${userInput}.tmp && mv ${userInput}.tmp ${userInput}
 
     source "$1/horizon/hzn.cfg"
 

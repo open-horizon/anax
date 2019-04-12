@@ -255,7 +255,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 	}
 
 	// Create or update resource in the exchange
-	exchId := cliutils.FormExchangeId(svcInput.URL, svcInput.Version, svcInput.Arch)
+	exchId := cliutils.FormExchangeIdForService(svcInput.URL, svcInput.Version, svcInput.Arch)
 	var output string
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 200 {

@@ -1,7 +1,6 @@
 package dev
 
 import (
-	"github.com/open-horizon/anax/cli/cliutils"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 )
 
@@ -34,25 +33,25 @@ func PatternDefinitionAllArchesExists(directory string) (bool, error) {
 
 // It creates a pattern definition config object and writes it to the project
 // in the file system.
-func CreatePatternDefinition(directory string, specRef string) error {
+func CreatePatternDefinition(directory string) error {
 
 	// Create a pattern definition config object with fillins/place-holders for configuration.
-	res := new(cliexchange.PatternFileForSample)
+	res := new(cliexchange.PatternFile)
 
-	sv := new(cliexchange.ServiceChoiceFileForSample)
+	sv := new(cliexchange.ServiceChoiceFile)
 	sv.Version = "$SERVICE_VERSION"
 
-	sref := new(cliexchange.ServiceReferenceFileForSample)
+	sref := new(cliexchange.ServiceReferenceFile)
 	sref.ServiceURL = "$SERVICE_NAME"
 	sref.ServiceOrg = "$HZN_ORG_ID"
 	sref.ServiceArch = "$ARCH"
-	sref.ServiceVersions = []cliexchange.ServiceChoiceFileForSample{*sv}
+	sref.ServiceVersions = []cliexchange.ServiceChoiceFile{*sv}
 
-	res.Name = "pattern-" + cliutils.FormExchangeIdWithSpecRef(specRef) + "-$ARCH"
+	res.Name = "pattern-${SERVICE_NAME}-$ARCH"
 	res.Label = "Edge $SERVICE_NAME Service Pattern for $ARCH"
 	res.Description = "Pattern for $SERVICE_NAME for $ARCH"
 	res.Public = true
-	res.Services = []cliexchange.ServiceReferenceFileForSample{*sref}
+	res.Services = []cliexchange.ServiceReferenceFile{*sref}
 
 	// Convert the object to JSON and write it into the project.
 	return CreateFile(directory, PATTERN_DEFINITION_FILE, res)
@@ -60,24 +59,24 @@ func CreatePatternDefinition(directory string, specRef string) error {
 
 // It creates a pattern definition config object for all architectures and writes it to the project
 // in the file system.
-func CreatePatternDefinitionAllArches(directory string, specRef string) error {
+func CreatePatternDefinitionAllArches(directory string) error {
 
 	// Create a pattern definition config object with fillins/place-holders for configuration.
-	res := new(cliexchange.PatternFileForSample)
+	res := new(cliexchange.PatternFile)
 
-	sv := new(cliexchange.ServiceChoiceFileForSample)
+	sv := new(cliexchange.ServiceChoiceFile)
 	sv.Version = "$SERVICE_VERSION"
 
-	res.Name = "pattern-" + cliutils.FormExchangeIdWithSpecRef(specRef)
+	res.Name = "pattern-$SERVICE_NAME"
 	res.Label = "Edge $SERVICE_NAME Service Pattern for all architectures"
 	res.Description = "Pattern for $SERVICE_NAME"
 	res.Public = true
-	res.Services = []cliexchange.ServiceReferenceFileForSample{}
+	res.Services = []cliexchange.ServiceReferenceFile{}
 
-	sref := new(cliexchange.ServiceReferenceFileForSample)
+	sref := new(cliexchange.ServiceReferenceFile)
 	sref.ServiceOrg = "$HZN_ORG_ID"
 	sref.ServiceURL = "$SERVICE_NAME"
-	sref.ServiceVersions = []cliexchange.ServiceChoiceFileForSample{*sv}
+	sref.ServiceVersions = []cliexchange.ServiceChoiceFile{*sv}
 
 	arches := []string{"amd64", "arm", "arm64"}
 	for _, arch := range arches {

@@ -251,7 +251,7 @@ func TrimOrg(org, id string) (string, string) {
 }
 
 // FormExchangeId combines url, version, arch the same way the exchange does to form the resource ID.
-func FormExchangeId(url, version, arch string) string {
+func FormExchangeIdForService(url, version, arch string) string {
 	// Remove the https:// from the beginning of workloadUrl and replace troublesome chars with a dash.
 	//val workloadUrl2 = """^[A-Za-z0-9+.-]*?://""".r replaceFirstIn (url, "")
 	//val workloadUrl3 = """[$!*,;/?@&~=%]""".r replaceAllIn (workloadUrl2, "-")     // I think possible chars in valid urls are: $_.+!*,;/?:@&~=%-
@@ -264,9 +264,13 @@ func FormExchangeId(url, version, arch string) string {
 func FormExchangeIdWithSpecRef(specRef string) string {
 	re := regexp.MustCompile(`^[A-Za-z0-9+.-]*?://`)
 	specRef2 := re.ReplaceAllLiteralString(specRef, "")
-	re = regexp.MustCompile(`[$!*,;/?@&~=%]`)
-	specRef3 := re.ReplaceAllLiteralString(specRef2, "-")
-	return specRef3
+	return FormExchangeId(specRef2)
+}
+
+// Replace unwanted charactore with - in the id
+func FormExchangeId(id string) string {
+	re := regexp.MustCompile(`[$!*,;/?@&~=%]`)
+	return re.ReplaceAllLiteralString(id, "-")
 }
 
 // ReadStdin reads from stdin, and returns it as a byte array.
