@@ -90,15 +90,22 @@ func ServiceNew(homeDirectory string, org string, specRef string, version string
 
 	if !noPattern {
 		cliutils.Verbose(fmt.Sprintf("Creating pattern definition file: %v/%v", dir, PATTERN_DEFINITION_FILE))
-		err = CreatePatternDefinition(dir, specRef)
+		err = CreatePatternDefinition(dir)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
 		}
 		cliutils.Verbose(fmt.Sprintf("Creating pattern definition file: %v/%v", dir, PATTERN_DEFINITION_ALL_ARCHES_FILE))
-		err = CreatePatternDefinitionAllArches(dir, specRef)
+		err = CreatePatternDefinitionAllArches(dir)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
 		}
+	}
+
+	// create files for source code control.
+	cliutils.Verbose(fmt.Sprintf("Creating .gitignore files for source code management."))
+	err = CreateSourceCodeManagementFiles(dir)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
 	}
 
 	// create the image related files under current direcotry.
