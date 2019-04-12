@@ -220,8 +220,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 
 	case map[string]interface{}:
 		// We know we need to sign the deployment config, so make sure a real key file was provided.
-		keyFilePath = cliutils.VerifySigningKeyInput(keyFilePath, false)
-		pubKeyFilePath = cliutils.VerifySigningKeyInput(pubKeyFilePath, true)
+		keyFilePath, pubKeyFilePath = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
 
 		// Construct and sign the deployment string.
 		fmt.Println("Signing service...")
@@ -255,7 +254,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 	}
 
 	// Create or update resource in the exchange
-	exchId := cliutils.FormExchangeId(svcInput.URL, svcInput.Version, svcInput.Arch)
+	exchId := cliutils.FormExchangeIdForService(svcInput.URL, svcInput.Version, svcInput.Arch)
 	var output string
 	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 200 {
@@ -339,11 +338,15 @@ func ServiceVerify(org, userPw, service, keyFilePath string) {
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, "key '%s' not found in resources returned from exchange", org+"/"+service)
 	}
 	someInvalid := false
+
+	//take default key if empty, make sure the key exists
+	keyFilePath = cliutils.VerifySigningKeyInput(keyFilePath, true)
+
 	verified, err := verify.Input(keyFilePath, svc.DeploymentSignature, []byte(svc.Deployment))
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem verifying deployment string with %s: %v", keyFilePath, err)
 	} else if !verified {
-		fmt.Println("Deployment string was not signed with the private key associated with this public key.")
+		fmt.Printf("Deployment string was not signed with the private key associated with this public key %v.\n", keyFilePath)
 		someInvalid = true
 	}
 	// else if they all turned out to be valid, we will tell them that at the end
@@ -378,7 +381,7 @@ func ServiceListKey(org, userPw, service, keyName string) {
 		var output string
 		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/keys", cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 		if httpCode == 404 {
-			cliutils.Fatal(cliutils.NOT_FOUND, "keys not found", keyName)
+			cliutils.Fatal(cliutils.NOT_FOUND, "keys not found")
 		}
 		fmt.Printf("%s\n", output)
 	} else {

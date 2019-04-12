@@ -627,10 +627,10 @@
 			"revisionTime": "2018-01-18T19:12:44Z"
 		},
 		{
-			"checksumSHA1": "J5hjBJsF7yJrRBAcPhIu7o2TIRM=",
+			"checksumSHA1": "xdvzKps+yEqLbSzVFF471rT2JXU=",
 			"path": "github.com/open-horizon/rsapss-tool/listkeys",
-			"revision": "064e62a61118dc418ca20d119687580354856578",
-			"revisionTime": "2018-01-18T19:12:44Z"
+			"revision": "2fc75eb3b6eac8e82e79f652fb8539f418abdce3",
+			"revisionTime": "2019-04-16T13:10:35Z"
 		},
 		{
 			"checksumSHA1": "6Ejtwv2PlXR8sT203iR38S7Y5qQ=",

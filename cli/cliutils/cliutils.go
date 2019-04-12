@@ -14,7 +14,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"os/user"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -251,7 +250,7 @@ func TrimOrg(org, id string) (string, string) {
 }
 
 // FormExchangeId combines url, version, arch the same way the exchange does to form the resource ID.
-func FormExchangeId(url, version, arch string) string {
+func FormExchangeIdForService(url, version, arch string) string {
 	// Remove the https:// from the beginning of workloadUrl and replace troublesome chars with a dash.
 	//val workloadUrl2 = """^[A-Za-z0-9+.-]*?://""".r replaceFirstIn (url, "")
 	//val workloadUrl3 = """[$!*,;/?@&~=%]""".r replaceAllIn (workloadUrl2, "-")     // I think possible chars in valid urls are: $_.+!*,;/?:@&~=%-
@@ -264,9 +263,13 @@ func FormExchangeId(url, version, arch string) string {
 func FormExchangeIdWithSpecRef(specRef string) string {
 	re := regexp.MustCompile(`^[A-Za-z0-9+.-]*?://`)
 	specRef2 := re.ReplaceAllLiteralString(specRef, "")
-	re = regexp.MustCompile(`[$!*,;/?@&~=%]`)
-	specRef3 := re.ReplaceAllLiteralString(specRef2, "-")
-	return specRef3
+	return FormExchangeId(specRef2)
+}
+
+// Replace unwanted charactore with - in the id
+func FormExchangeId(id string) string {
+	re := regexp.MustCompile(`[$!*,;/?@&~=%]`)
+	return re.ReplaceAllLiteralString(id, "-")
 }
 
 // ReadStdin reads from stdin, and returns it as a byte array.
@@ -868,14 +871,16 @@ func SetDefaultArch() {
 
 // get the default private or public key file name
 func GetDefaultSigningKeyFile(isPublic bool) (string, error) {
-	if c_user, err := user.Current(); err != nil {
-		return "", fmt.Errorf("Failed to get current os user. %v", err)
+	// we have to use $HOME for now because os/user is not implemented on some plateforms
+	home_dir := os.Getenv("HOME")
+	if home_dir == "" {
+		home_dir = "/tmp/keys"
+	}
+
+	if isPublic {
+		return filepath.Join(home_dir, DEFAULT_PUBLIC_KEY_FILE), nil
 	} else {
-		if isPublic {
-			return filepath.Join(c_user.HomeDir, DEFAULT_PUBLIC_KEY_FILE), nil
-		} else {
-			return filepath.Join(c_user.HomeDir, DEFAULT_PRIVATE_KEY_FILE), nil
-		}
+		return filepath.Join(home_dir, DEFAULT_PRIVATE_KEY_FILE), nil
 	}
 }
 
@@ -899,6 +904,29 @@ func VerifySigningKeyInput(keyFile string, isPublic bool) string {
 		Fatal(CLI_GENERAL_ERROR, "%v. Please create the signing key.", err)
 	}
 	return keyFile
+}
+
+// get default keys if needed and verify them.
+// this function is used by `hzn exhcange pattern/service publish
+func GetSigningKeys(privKeyFilePath, pubKeyFilePath string) (string, string) {
+
+	// if the -k is specified but -K is not specified, then do not get public key default.
+	// the public key will not be stored with the resource.
+	defaultPublicKey := true
+	if privKeyFilePath != "" && pubKeyFilePath == "" {
+		defaultPublicKey = false
+	}
+
+	// get default private key
+	privKeyFilePath_tmp := WithDefaultEnvVar(&privKeyFilePath, "HZN_PRIVATE_KEY_FILE")
+	privKeyFilePath = VerifySigningKeyInput(*privKeyFilePath_tmp, false)
+
+	// get default public key
+	if defaultPublicKey {
+		pubKeyFilePath_tmp := WithDefaultEnvVar(&pubKeyFilePath, "HZN_PUBLIC_KEY_FILE")
+		pubKeyFilePath = VerifySigningKeyInput(*pubKeyFilePath_tmp, true)
+	}
+	return privKeyFilePath, pubKeyFilePath
 }
 
 /* Do not need at the moment, but keeping for reference...
