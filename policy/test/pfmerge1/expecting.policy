@@ -54,20 +54,20 @@
         {
             "name": "conprop3",
             "value": "conval3"
-        },
-        {
-            "name": "rpiprop1",
-            "value": "rpival1"
-        },
-        {
-            "name": "rpiprop2",
-            "value": "rpival2"
-        },
-        {
-            "name": "rpiprop3",
-            "value": "rpival3"
         }
     ],
+    "counterPartyProperties": {
+        "or": [
+            {
+                "name": "rpiprop1",
+                "value": "rpival1"
+            },
+            {
+                "name": "rpiprop2",
+                "value": "rpival2"
+            }
+        ]
+    },
     "requiredWorkload": "http://mycompany.com/workload1",
     "ha_group": {},
     "nodeHealth": {}
