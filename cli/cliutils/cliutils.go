@@ -14,6 +14,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -48,6 +49,10 @@ const (
 	ANAX_CONFIG_FILE    = "/etc/horizon/anax.json"
 
 	DEFAULT_EXCHANGE_URL = "https://alpha.edge-fabric.com/v1/"
+
+	// default keys will be prepended with $HOME
+	DEFAULT_PRIVATE_KEY_FILE = ".hzn/keys/service.private.key"
+	DEFAULT_PUBLIC_KEY_FILE  = ".hzn/keys/service.public.pem"
 )
 
 // Holds the cmd line flags that were set so other pkgs can access
@@ -862,6 +867,66 @@ func SetDefaultArch() {
 	if arch == "" {
 		os.Setenv("ARCH", runtime.GOARCH)
 	}
+}
+
+// get the default private or public key file name
+func GetDefaultSigningKeyFile(isPublic bool) (string, error) {
+	// we have to use $HOME for now because os/user is not implemented on some plateforms
+	home_dir := os.Getenv("HOME")
+	if home_dir == "" {
+		home_dir = "/tmp/keys"
+	}
+
+	if isPublic {
+		return filepath.Join(home_dir, DEFAULT_PUBLIC_KEY_FILE), nil
+	} else {
+		return filepath.Join(home_dir, DEFAULT_PRIVATE_KEY_FILE), nil
+	}
+}
+
+// Gets default keys if not set, verify key files exist.
+func VerifySigningKeyInput(keyFile string, isPublic bool) string {
+	var err error
+	// get default file names if input is empty
+	if keyFile == "" {
+		if keyFile, err = GetDefaultSigningKeyFile(isPublic); err != nil {
+			Fatal(CLI_GENERAL_ERROR, err.Error())
+		}
+	}
+
+	// convert to absolute path
+	if keyFile, err = filepath.Abs(keyFile); err != nil {
+		Fatal(CLI_GENERAL_ERROR, "Failed to get absolute path for file %v. %v", keyFile, err)
+	}
+
+	// check file exist
+	if _, err := os.Stat(keyFile); os.IsNotExist(err) {
+		Fatal(CLI_GENERAL_ERROR, "%v. Please create the signing key.", err)
+	}
+	return keyFile
+}
+
+// get default keys if needed and verify them.
+// this function is used by `hzn exhcange pattern/service publish
+func GetSigningKeys(privKeyFilePath, pubKeyFilePath string) (string, string) {
+
+	// if the -k is specified but -K is not specified, then do not get public key default.
+	// the public key will not be stored with the resource.
+	defaultPublicKey := true
+	if privKeyFilePath != "" && pubKeyFilePath == "" {
+		defaultPublicKey = false
+	}
+
+	// get default private key
+	privKeyFilePath_tmp := WithDefaultEnvVar(&privKeyFilePath, "HZN_PRIVATE_KEY_FILE")
+	privKeyFilePath = VerifySigningKeyInput(*privKeyFilePath_tmp, false)
+
+	// get default public key
+	if defaultPublicKey {
+		pubKeyFilePath_tmp := WithDefaultEnvVar(&pubKeyFilePath, "HZN_PUBLIC_KEY_FILE")
+		pubKeyFilePath = VerifySigningKeyInput(*pubKeyFilePath_tmp, true)
+	}
+	return privKeyFilePath, pubKeyFilePath
 }
 
 /* Do not need at the moment, but keeping for reference...

@@ -176,6 +176,7 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 	// Loop thru the services array and the servicesVersions array and sign the deployment_overrides fields
 	if patFile.Services != nil && len(patFile.Services) > 0 {
 		patInput.Services = make([]ServiceReference, len(patFile.Services))
+		keyVerified := false
 		for i := range patFile.Services {
 			patInput.Services[i].ServiceURL = patFile.Services[i].ServiceURL
 			patInput.Services[i].ServiceOrg = patFile.Services[i].ServiceOrg
@@ -213,9 +214,10 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 					}
 					patInput.Services[i].ServiceVersions[j].DeploymentOverrides = string(deployment)
 					// We know we need to sign the overrides, so make sure a real key file was provided.
-					if keyFilePath == "" {
-						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "must specify --private-key-file so that the deployment_overrides can be signed")
+					if !keyVerified {
+						keyFilePath, pubKeyFilePath = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
 					}
+
 					patInput.Services[i].ServiceVersions[j].DeploymentOverridesSignature, err = sign.Input(keyFilePath, deployment)
 					if err != nil {
 						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment_overrides string with %s: %v", keyFilePath, err)
@@ -253,7 +255,7 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 
 	// Store the public key in the exchange, if they gave it to us
 	if pubKeyFilePath != "" {
-		// Note: the CLI framework already verified the file exists
+		// Note: already verified the file exists
 		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
 		baseName := filepath.Base(pubKeyFilePath)
 		fmt.Printf("Storing %s with the pattern in the exchange...\n", baseName)
@@ -279,17 +281,23 @@ func PatternVerify(org, userPw, pattern, keyFilePath string) {
 
 	// Loop thru services array, checking the deployment string signature
 	someInvalid := false
+	keyVerified := false
 	for i := range pat.Services {
 		for j := range pat.Services[i].ServiceVersions {
 			cliutils.Verbose("verifying deployment_overrides string in service %d, serviceVersion number %d", i+1, j+1)
 			if pat.Services[i].ServiceVersions[j].DeploymentOverrides == "" && pat.Services[i].ServiceVersions[j].DeploymentOverridesSignature == "" {
 				continue // there was nothing to sign, so nothing to verify
 			}
+			if !keyVerified {
+				//take default key if empty, make sure the key exists
+				keyFilePath = cliutils.VerifySigningKeyInput(keyFilePath, true)
+				keyVerified = true
+			}
 			verified, err := verify.Input(keyFilePath, pat.Services[i].ServiceVersions[j].DeploymentOverridesSignature, []byte(pat.Services[i].ServiceVersions[j].DeploymentOverrides))
 			if err != nil {
 				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem verifying deployment_overrides string in service %d, serviceVersion number %d with %s: %v", i+1, j+1, keyFilePath, err)
 			} else if !verified {
-				fmt.Printf("Deployment_overrides string in service %d, serviceVersion number %d was not signed with the private key associated with this public key.\n", i+1, j+1)
+				fmt.Printf("Deployment_overrides string in service %d, serviceVersion number %d was not signed with the private key associated with this public key %v.\n", i+1, j+1, keyFilePath)
 				someInvalid = true
 			}
 			// else if they all turned out to be valid, we will tell them that at the end
