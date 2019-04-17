@@ -61,6 +61,19 @@ func DependencyFetch(homeDirectory string, project string, specRef string, url s
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'dependency %v' %v", DEPENDENCY_FETCH_COMMAND, err)
 		}
 	} else {
+		if len(keyFiles) == 0 {
+			//take default key if empty, make sure the key exists
+			pubKeyFile := cliutils.WithDefaultEnvVar(new(string), "HZN_PUBLIC_KEY_FILE")
+			pubKeyFile1 := cliutils.VerifySigningKeyInput(*pubKeyFile, true)
+			keyFiles = []string{pubKeyFile1}
+		} else {
+			// verify the input file exists
+			for _, kf := range keyFiles {
+				if _, err := os.Stat(kf); os.IsNotExist(err) {
+					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
+				}
+			}
+		}
 		if err := fetchExchangeProjectDependency(dir, specRef, url, org, version, arch, userCreds, keyFiles, userInputFile); err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'dependency %v' %v", DEPENDENCY_FETCH_COMMAND, err)
 		}

@@ -11,7 +11,7 @@ mkdir -p $KEY_TEST_DIR
 cd $KEY_TEST_DIR && rm -f *.pem *.key
 
 echo -e "Generate signing keys:"
-hzn key create -l 4096 e2edev@somecomp.com e2edev@gmail.com
+hzn key create -l 4096 e2edev@somecomp.com e2edev@gmail.com -d .
 if [ $? -ne 0 ]
 then
     echo -e "hzn key create failed."

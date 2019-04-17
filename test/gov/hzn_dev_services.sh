@@ -195,7 +195,7 @@ echo -e "Deploying services."
 
 cd /tmp
 echo -e "Generate signing keys."
-hzn key create -l 4096 e2edev@somecomp.com e2edev@gmail.com
+hzn key create -l 4096 e2edev@somecomp.com e2edev@gmail.com -d .
 if [ $? -ne 0 ]
 then
     echo -e "hzn key create failed."

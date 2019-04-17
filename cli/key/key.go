@@ -123,7 +123,9 @@ func Create(x509Org, x509CN, outputDir string, keyLength, daysValid int, importK
 }
 
 func Import(pubKeyFile string) {
-	// Note: the CLI framework already verified the file exists
+	//take default key if empty, make sure the key exists
+	pubKeyFile = cliutils.VerifySigningKeyInput(pubKeyFile, true)
+
 	bodyBytes := cliutils.ReadFile(pubKeyFile)
 	baseName := filepath.Base(pubKeyFile)
 	cliutils.HorizonPutPost(http.MethodPut, "trust/"+baseName, []int{201, 200}, bodyBytes)
