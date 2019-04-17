@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/api"
+	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cutil"
@@ -46,7 +47,7 @@ type InputFile struct {
 }
 
 func ReadInputFile(filePath string, inputFileStruct *InputFile) {
-	newBytes := cliutils.ReadJsonFile(filePath)
+	newBytes := cliconfig.ReadJsonFileWithLocalConfig(filePath)
 	err := json.Unmarshal(newBytes, inputFileStruct)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", filePath, err)

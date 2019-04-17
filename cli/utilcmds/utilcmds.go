@@ -2,6 +2,7 @@ package utilcmds
 
 import (
 	"fmt"
+	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/rsapss-tool/sign"
 	"github.com/open-horizon/rsapss-tool/verify"
@@ -27,5 +28,22 @@ func Verify(pubKeyFilePath, signature string) {
 		os.Exit(cliutils.SIGNATURE_INVALID)
 	} else {
 		fmt.Println("Signature is valid.")
+	}
+}
+
+// convert the given json file to shell export commands and output it to stdout
+func ConvertConfig(cofigFile string) {
+	// get the env vars from the file
+	hzn_vars, metadata_vars, err := cliconfig.GetVarsFromFile(cofigFile)
+	if err != nil && !os.IsNotExist(err) {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to get the variables from configuration file %v. Error: %v", cofigFile, err)
+	}
+
+	// convert it to shell commands
+	for k, v := range hzn_vars {
+		fmt.Printf("export %v=%v\n", k, v)
+	}
+	for k, v := range metadata_vars {
+		fmt.Printf("export %v=%v\n", k, v)
 	}
 }

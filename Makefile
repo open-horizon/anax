@@ -16,6 +16,7 @@ BRANCH_NAME ?= ""
 
 EXECUTABLE := $(shell basename $$PWD)
 CLI_EXECUTABLE := cli/hzn
+CLI_CONFIG_FILE := cli/hzn.json
 CLI_HORIZON_CONTAINER := anax-in-container/horizon-container
 CLI_MAN_DIR := cli/man1
 CLI_COMPLETION_DIR := cli/bash_completion
@@ -64,6 +65,8 @@ export TMPGOPATH ?= $(TMPDIR)$(EXECUTABLE)-gopath
 export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon/$(EXECUTABLE)
 export PATH := $(TMPGOPATH)/bin:$(PATH)
 
+export EXCHANGE_URL ?= https://alpha.edge-fabric.com/v1
+
 # we use a script that will give us the debian arch version since that's what the packaging system inputs
 arch ?= $(shell tools/arch-tag)
 
@@ -107,7 +110,8 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 	@echo "Producing $(CLI_EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
-	    $(COMPILE_ARGS) go build -o $(CLI_EXECUTABLE) $(CLI_EXECUTABLE).go
+	    $(COMPILE_ARGS) go build -o $(CLI_EXECUTABLE) $(CLI_EXECUTABLE).go && \
+	    envsubst < cli/cliconfig/hzn.json.tmpl > $(CLI_CONFIG_FILE)
 	if [[ $(arch) == $(shell tools/arch-tag) && $(opsys) == $(shell uname -s) ]]; then \
 	  mkdir -p $(CLI_MAN_DIR) && $(CLI_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1 && \
 	  mkdir -p $(CLI_COMPLETION_DIR) && $(CLI_EXECUTABLE) --completion-script-bash > $(CLI_COMPLETION_DIR)/hzn_bash_autocomplete.sh; \
@@ -179,12 +183,13 @@ macpkg: $(MAC_PKG)
 
 $(MAC_PKG): temp-mod-version $(CLI_EXECUTABLE) temp-mod-version-undo
 	@echo "Producing Mac pkg horizon-cli"
-	mkdir -p pkg/mac/build pkg/mac/horizon-cli/bin pkg/mac/horizon-cli/share/horizon pkg/mac/horizon-cli/share/man/man1
+	mkdir -p pkg/mac/build pkg/mac/horizon-cli/bin pkg/mac/horizon-cli/share/horizon pkg/mac/horizon-cli/share/man/man1 pkg/mac/horizon-cli/etc/horizon
 	cp $(CLI_EXECUTABLE) pkg/mac/horizon-cli/bin
 	cp anax-in-container/horizon-container pkg/mac/horizon-cli/bin
 	cp LICENSE.txt pkg/mac/horizon-cli/share/horizon
 	cp $(CLI_MAN_DIR)/hzn.1 pkg/mac/horizon-cli/share/man/man1
 	cp $(CLI_COMPLETION_DIR)/hzn_bash_autocomplete.sh pkg/mac/horizon-cli/share/horizon
+	cp $(CLI_CONFIG_FILE) pkg/mac/horizon-cli/etc/horizon
 	pkgbuild --sign "horizon-cli-installer" --root pkg/mac/horizon-cli --scripts pkg/mac/scripts --identifier $(MAC_PKG_IDENTIFIER) --version $(MAC_PKG_VERSION) --install-location $(MAC_PKG_INSTALL_DIR) $@
 
 # Upload the pkg to the staging dir of our apt repo svr, so users can get to it at http://pkg.bluehorizon.network/macos/
@@ -301,7 +306,7 @@ endif
 
 mostlyclean: css-clean ess-clean
 	@echo "Mostlyclean"
-	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE)
+	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE) $(CLI_CONFIG_FILE)
 	-docker rmi $(DOCKER_IMAGE) 2> /dev/null || :
 
 css-clean:

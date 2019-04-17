@@ -5,11 +5,12 @@
 SRCDIR=/Users/Shared
 DESTDIR=/usr/local
 
-mkdir -p $DESTDIR/bin $DESTDIR/share/man/man1
+mkdir -p $DESTDIR/bin $DESTDIR/share/man/man1 $DESTDIR/etc/horizon
 ln -sf $SRCDIR/horizon-cli/bin/hzn $DESTDIR/bin
 ln -sf $SRCDIR/horizon-cli/bin/horizon-container $DESTDIR/bin
 # hzn_bash_autocomplete.sh is in share/horizon, so linking the dir takes care of it
 ln -sf $SRCDIR/horizon-cli/share/horizon $DESTDIR/share
 ln -sf $SRCDIR/horizon-cli/share/man/man1/hzn.1 $DESTDIR/share/man/man1
+mv $SRCDIR/horizon-cli/etc/horizon/hzn.json $DESTDIR/etc/horizon
 
 exit 0

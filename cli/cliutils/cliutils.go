@@ -48,8 +48,6 @@ const (
 	ANAX_OVERWRITE_FILE = "/etc/default/horizon"
 	ANAX_CONFIG_FILE    = "/etc/horizon/anax.json"
 
-	DEFAULT_EXCHANGE_URL = "https://alpha.edge-fabric.com/v1/"
-
 	// default keys will be prepended with $HOME
 	DEFAULT_PRIVATE_KEY_FILE = ".hzn/keys/service.private.key"
 	DEFAULT_PUBLIC_KEY_FILE  = ".hzn/keys/service.public.pem"
@@ -652,8 +650,7 @@ func GetExchangeUrl() string {
 		if value != "" {
 			exchUrl = value
 		} else {
-			Verbose("Could not get the exchange url from the horizon agent, using default value: %v", DEFAULT_EXCHANGE_URL)
-			exchUrl = DEFAULT_EXCHANGE_URL
+			Fatal(CLI_GENERAL_ERROR, "Could not get the exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent")
 		}
 	}
 
