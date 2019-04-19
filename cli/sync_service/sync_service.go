@@ -35,11 +35,6 @@ func Start(cw *container.ContainerWorker, org string, configFiles []string, conf
 		return errors.New(fmt.Sprintf("unable to create network %v for file sync service, error %v", NETWORK_NAME, err))
 	}
 
-	// Start the mongo DB container for the CSS.
-	if err := startMongo(dc, network); err != nil {
-		return errors.New(fmt.Sprintf("unable to start mongo DB for CSS, error %v", err))
-	}
-
 	// Start the CSS.
 	if err := startCSS(dc, network); err != nil {
 		return errors.New(fmt.Sprintf("unable to start CSS, error %v", err))
@@ -71,11 +66,6 @@ func Stop(dc *docker.Client) error {
 	// Stop and remove the CSS container.
 	if err := stopContainer(dc, makeLabelName(CSS_NAME)); err != nil {
 		cliutils.Verbose(fmt.Sprintf("Unable to stop %v, error %v", makeLabelName(CSS_NAME), err))
-	}
-
-	// Stop and remove the mongo DB container for the CSS.
-	if err := stopContainer(dc, makeLabelName(MONGO_NAME)); err != nil {
-		cliutils.Verbose(fmt.Sprintf("Unable to stop %v, error %v", makeLabelName(MONGO_NAME), err))
 	}
 
 	// Delete the hzn-dev network.
@@ -131,63 +121,6 @@ func getImage(imageName string, tagName string, dc *docker.Client) error {
 	return nil
 }
 
-// Start the mongo container, configured to support the CSS container.
-func startMongo(dc *docker.Client, network *docker.Network) error {
-
-	// First load the image.
-	if err := getImage(getMongoImage(), getMongoImageTag(), dc); err != nil {
-		return errors.New(fmt.Sprintf("unable to pull Mongo container using image %v, error %v. Set environment variable %v to use a different image.", getMongoFullImage(), err, dev.DEVTOOL_HZN_FSS_MONGO_IMAGE))
-	}
-
-	dockerConfig := docker.Config{
-		Image:        getMongoFullImage(),
-		Env:          []string{},
-		CPUSet:       "",
-		Labels:       makeLabel(MONGO_NAME),
-		ExposedPorts: map[docker.Port]struct{}{},
-	}
-
-	dockerHostConfig := docker.HostConfig{
-		PublishAllPorts: false,
-		PortBindings:    map[docker.Port][]docker.PortBinding{},
-		Links:           nil,
-		RestartPolicy:   docker.AlwaysRestart(),
-		Memory:          500 * 1024 * 1024,
-		MemorySwap:      0,
-		Devices:         []docker.Device{},
-		LogConfig:       docker.LogConfig{},
-		Binds:           []string{},
-	}
-
-	endpointsConfig := map[string]*docker.EndpointConfig{
-		network.Name: &docker.EndpointConfig{
-			Aliases:   []string{MONGO_NAME},
-			Links:     nil,
-			NetworkID: network.ID,
-		},
-	}
-
-	containerOpts := docker.CreateContainerOptions{
-		Name:       makeLabelName(MONGO_NAME),
-		Config:     &dockerConfig,
-		HostConfig: &dockerHostConfig,
-		NetworkingConfig: &docker.NetworkingConfig{
-			EndpointsConfig: endpointsConfig,
-		},
-	}
-
-	if container, err := dc.CreateContainer(containerOpts); err != nil {
-		return errors.New(fmt.Sprintf("unable to create mongo DB container, error %v", err))
-	} else if err := dc.StartContainer(container.ID, nil); err != nil {
-		return errors.New(fmt.Sprintf("unable to start mongo DB container, error %v", err))
-	}
-
-	cliutils.Verbose("Created %v container", makeLabelName(MONGO_NAME))
-
-	return nil
-
-}
-
 // Start the CSS container.
 func startCSS(dc *docker.Client, network *docker.Network) error {
 
@@ -224,8 +157,7 @@ func startCSS(dc *docker.Client, network *docker.Network) error {
 			"LOG_TRACE_DESTINATION=stdout",
 			"TRACE_LEVEL=TRACE",
 			"TRACE_ROOT_PATH=/tmp/",
-			"MONGO_ADDRESS_CSV=mongo:27017",
-			"MONGO_AUTH_DB_NAME=d_edge"},
+			"STORAGE_PROVIDER=bolt"},
 		CPUSet:       "",
 		Labels:       makeLabel(CSS_NAME),
 		ExposedPorts: ep,
