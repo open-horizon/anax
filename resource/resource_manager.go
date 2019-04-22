@@ -100,7 +100,8 @@ func (r ResourceManager) StartFileSyncService(am *AuthenticationManager) error {
 		common.Configuration.TraceLevel = "INFO"
 	}
 
-	common.Configuration.ESSPersistentStorage = true
+	// The embedded ESS will use a local bolt DB.
+	common.Configuration.StorageProvider = "bolt"
 
 	// Set the fully formed CSS API URL in the global configuration object.
 	common.HTTPCSSURL = r.config.GetCSSURL()
