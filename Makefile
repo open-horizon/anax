@@ -70,7 +70,7 @@ arch ?= $(shell tools/arch-tag)
 COMPILE_ARGS := CGO_ENABLED=0
 # TODO: handle other ARM architectures on build boxes too
 ifeq ($(arch),armhf)
-	COMPILE_ARGS +=  GOARCH=arm GOARM=7
+	COMPILE_ARGS +=  GOARCH=arm GOARM=6
 else ifeq ($(arch),arm64)
 	COMPILE_ARGS +=  GOARCH=arm64
 else ifeq ($(arch),amd64)
