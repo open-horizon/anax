@@ -1,33 +1,19 @@
 package dev
 
 import (
-	"fmt"
+	"github.com/open-horizon/anax/cli/cliconfig"
 )
 
-const HZNENV_FILE = "hzn.cfg"
+const HZNENV_FILE = "hzn.json"
 
-// It creates a hzn.env file that contains the enviromental variables needed for this project.
+// It creates a hzn.json file that contains the enviromental variables needed for this project.
 func CreateHznEnvFile(directory string, org string, specRef string, version string, image_base string) error {
-	content := "# Settings needed to build, publish, and run the Horizon helloworld example edge service.\n# This file will be automatically read by hzn and make.\n\n"
-	content += fmt.Sprintf("HZN_ORG_ID=%v\n", org)
-	content += fmt.Sprintf("SERVICE_NAME=%v\n", specRef)
-	content += fmt.Sprintf("SERVICE_VERSION=%v\n\n", version)
+	var config cliconfig.HorizonCliConfig
+	config.HZN_ORG_ID = org
+	config.MetadataVars = map[string]string{}
+	config.MetadataVars["SERVICE_NAME"] = specRef
+	config.MetadataVars["SERVICE_VERSION"] = version
+	config.MetadataVars["DOCKER_IMAGE_BASE"] = image_base
 
-	if specRef == "" {
-		content += fmt.Sprintf("# ARCH and SERVICE_VERSION will be added to this when used\n")
-		content += fmt.Sprintf("DOCKER_IMAGE_BASE=\n")
-	} else if image_base != "" {
-		content += fmt.Sprintf("# ARCH and SERVICE_VERSION will be added to this when used\n")
-		content += fmt.Sprintf("DOCKER_IMAGE_BASE=%v\n", image_base)
-	} else {
-		// this is the case when image is generated in other place and no image base could be obtained
-		//because user insists to certain image version or digest.
-	}
-
-	content += `
-# Soon this will not be needed
-export HZN_ORG_ID SERVICE_NAME SERVICE_VERSION DOCKER_IMAGE_BASE
-`
-
-	return CreateFileWithConent(directory, HZNENV_FILE, content, nil, false)
+	return CreateFile(directory, HZNENV_FILE, config)
 }

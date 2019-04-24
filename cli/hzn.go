@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/agreementbot"
 	"github.com/open-horizon/anax/cli/attribute"
+	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/dev"
 	"github.com/open-horizon/anax/cli/eventlog"
@@ -45,9 +46,13 @@ Environment Variables:
       to specify the organization ID'.
   HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn
       register -u' flag, in the form '[org/]user:pw'.
-  HZN_DONT_SUBST_ENV_VARS:  Set this to "1" to indicate that input json files
-      should *not* be processed to replace environment variable references with
-      their values.
+
+  All these environment variables and ones mentioned in the command help can be 
+  specified in user's configuration file: ~/.hzn/hzn.json with JSON format. 
+  For example:
+  {
+    "HZN_ORG_ID": "me@mycomp.com"
+  }
 `)
 	app.HelpFlag.Short('h')
 	app.UsageTemplate(kingpin.CompactUsageTemplate)
@@ -297,7 +302,7 @@ Environment Variables:
 	devDependencyFetchCmdProject := devDependencyFetchCmd.Flag("project", "Horizon project containing the definition of a dependency. Mutually exclusive with -s -o --ver -a and --url.").Short('p').ExistingDir()
 	devDependencyFetchCmdUserPw := devDependencyFetchCmd.Flag("user-pw", "Horizon Exchange user credentials to query exchange resources. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
 	devDependencyFetchCmdKeyFiles := devDependencyFetchCmd.Flag("public-key-file", "The path of a public key file to be used to verify a signature. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.").Short('k').Strings()
-	devDependencyFetchCmdUserInputFile := devDependencyFetchCmd.Flag("userInputFile", "File containing user input values for configuring the new dependency.").Short('f').ExistingFile()
+	devDependencyFetchCmdUserInputFile := devDependencyFetchCmd.Flag("userInputFile", "File containing user input values for configuring the new dependency. If omitted, the userinput file in the dependency project will be used.").Short('f').ExistingFile()
 	devDependencyListCmd := devDependencyCmd.Command("list", "List all dependencies.")
 	devDependencyRemoveCmd := devDependencyCmd.Command("remove", "Remove a project dependency.")
 
@@ -323,6 +328,8 @@ Environment Variables:
 	utilVerifyCmd := utilCmd.Command("verify", "Verify that the signature specified via -s is a valid signature for the text in stdin.")
 	utilVerifyPubKeyFile := utilVerifyCmd.Flag("public-key-file", "The path of public key file (that corresponds to the private key that was used to sign) to verify the signature of stdin.").Short('K').Required().ExistingFile()
 	utilVerifySig := utilVerifyCmd.Flag("signature", "The supposed signature of stdin.").Short('s').Required().String()
+	utilConfigConvCmd := utilCmd.Command("configconv", "Convert the configuration file from JSON format to a shell script.")
+	utilConfigConvFile := utilConfigConvCmd.Flag("config-file", "The path of a configuration file to be converted. ").Short('f').Required().ExistingFile()
 
 	app.Version("Run 'hzn version' to see the Horizon version.")
 	/* trying to override the base --version behavior does not work....
@@ -336,6 +343,13 @@ Environment Variables:
 	// Parse cmd and apply env var defaults
 	fullCmd := kingpin.MustParse(app.Parse(os.Args[1:]))
 	//cliutils.Verbose("Full command: %s", fullCmd)
+
+	// setup the environment variables from the config files
+	project_dir := ""
+	if strings.HasPrefix(fullCmd, "dev ") {
+		project_dir = *devHomeDirectory
+	}
+	cliconfig.SetEnvVarsFromConfigFiles(project_dir)
 
 	credToUse := ""
 	if strings.HasPrefix(fullCmd, "exchange") {
@@ -527,5 +541,7 @@ Environment Variables:
 		utilcmds.Verify(*utilVerifyPubKeyFile, *utilVerifySig)
 	case agbotStatusCmd.FullCommand():
 		status.DisplayStatus(*agbotStatusLong, true)
+	case utilConfigConvCmd.FullCommand():
+		utilcmds.ConvertConfig(*utilConfigConvFile)
 	}
 }

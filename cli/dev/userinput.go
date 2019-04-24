@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/open-horizon/anax/api"
+	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/register"
@@ -43,7 +44,7 @@ func GetUserInputs(homeDirectory string, userInputFile string) (*register.InputF
 	}
 	userInputs := new(register.InputFile)
 
-	fileBytes := cliutils.ReadJsonFile(userInputFilePath)
+	fileBytes := cliconfig.ReadJsonFileWithLocalConfig(userInputFilePath)
 
 	// We decode this JSON file using a decoder with the UseNumber flag set so that the attribute API code we reuse for parsing
 	// the GlobalSet attributes will have the right metadata.

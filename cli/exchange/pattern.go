@@ -3,6 +3,7 @@ package exchange
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/rsapss-tool/sign"
@@ -162,7 +163,7 @@ func ConvertToDeploymentOverrides(deployment interface{}) *DeploymentOverrides {
 func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patName string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the pattern metadata
-	newBytes := cliutils.ReadJsonFile(jsonFilePath)
+	newBytes := cliconfig.ReadJsonFileWithLocalConfig(jsonFilePath)
 	var patFile PatternFile
 	err := json.Unmarshal(newBytes, &patFile)
 	if err != nil {

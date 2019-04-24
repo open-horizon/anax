@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/register"
@@ -417,6 +418,24 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	envVarSetting := os.Getenv("HZN_DONT_SUBST_ENV_VARS")
 	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "0")
 
+	// get original env vars
+	orig_env_vars := cliconfig.GetEnvVars()
+
+	// get configuration file under the same directory and export the variables as env vars
+	hzn_vars := map[string]string{}
+	metadata_vars := map[string]string{}
+	proj_config_file, err := cliconfig.GetProjectConfigFile(project)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to get the hzn.json configuration file under %v directory. Error: %v", project, err)
+	}
+	// make sure the dependency files are expended with the env vars of their own config file.
+	if proj_config_file != "" {
+		hzn_vars, metadata_vars, err = cliconfig.SetEnvVarsFromConfigFile(proj_config_file, orig_env_vars, true)
+		if err != nil && !os.IsNotExist(err) {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to set the environment variables from configuration file %v. Error: %v", proj_config_file, err)
+		}
+	}
+
 	// Pull the metadata from the dependent project. Log the filesystem location of the dependent metadata.
 	if absProject, err := filepath.Abs(project); err != nil {
 		return err
@@ -437,6 +456,14 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	}
 
 	cliutils.Verbose("Found dependency %v, Org: %v", sDef.GetURL(), sDef.GetOrg())
+
+	// restore the env vars
+	if proj_config_file != "" {
+		err = cliconfig.RestoreEnvVars(orig_env_vars, hzn_vars, metadata_vars)
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to restore the environment variables. %v", err)
+		}
+	}
 
 	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1")
 

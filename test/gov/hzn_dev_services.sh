@@ -61,8 +61,6 @@ function createProject {
     sed -e 's|"label": "Who to say hello to"|"label": "'$6'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e 's|"defaultValue": "hello world"|"defaultValue": ""|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
 
-    source "$1/horizon/hzn.cfg"
-
     echo -e "Verifying the $2 project."
     verifyProject=$(hzn dev service verify -v 2>&1)
 
@@ -89,7 +87,6 @@ function stopServices {
 # $2 - project name
 function deploy {
     cd $1
-    source ./horizon/hzn.cfg
     deploy=$(hzn exchange service publish -v -k /tmp/*private.key -f ./horizon/service.definition.json 2>&1)
     deploying=$(echo ${deploy} | grep "HTTP code: 201")
     if [ "${deploying}" == "" ]; then
@@ -133,11 +130,9 @@ echo -e "Creating dependencies."
 
 cd ${HELLO_HOME}
 
-source ${CPU_HOME}/horizon/hzn.cfg
 depCreate=$(hzn dev dependency fetch -p ${CPU_HOME}/horizon -v 2>&1)
 verify "${depCreate}" "horizon created." "Could not create hello dependency on CPU."
 
-source ${HELLO_HOME}/horizon/hzn.cfg
 echo -e "Verifying the Hello project."
 verifyProject=$(hzn dev service verify -v 2>&1)
 
@@ -145,16 +140,13 @@ verify "${verifyProject}" "verified" "Horizon Hello project was not verifiable"
 if [ $? -ne 0 ]; then exit $?; fi
 
 cd ${USEHELLO_HOME}
-source ${CPU_HOME}/horizon/hzn.cfg
 depCreate=$(hzn dev dependency fetch -p ${CPU_HOME}/horizon -v 2>&1)
 verify "${depCreate}" "horizon created." "Could not create usehello dependency on CPU."
 
-source ${HELLO_HOME}/horizon/hzn.cfg
 depCreate=$(hzn dev dependency fetch -p ${HELLO_HOME}/horizon -v 2>&1)
 verify "${depCreate}" "horizon created." "Could not create usehello dependency on hello."
 
 echo -e "Verifying the UseHello project."
-source ${USEHELLO_HOME}/horizon/hzn.cfg
 verifyProject=$(hzn dev service verify -v 2>&1)
 
 verify "${verifyProject}" "verified" "Horizon UseHello project was not verifiable"
@@ -164,7 +156,6 @@ if [ $? -ne 0 ]; then exit $?; fi
 
 echo -e "Starting the top level service in the Horizon test environment."
 
-source ${USEHELLO_HOME}/horizon/hzn.cfg
 startDev=$(hzn dev service start -v -m /root/resources/basicres/basicres.tgz -m /root/resources/multires/multires.tgz -t model 2>&1)
 startedServices=$(echo ${startDev} | sed 's/Running service./Running service.\n/g' | grep -c "Running service.")
 if [ "${startedServices}" != "3" ]; then

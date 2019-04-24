@@ -15,8 +15,8 @@ const DEFAULT_BASE_OS_VALUE = "alpine:latest"
 
 const MAKE_FILE_CONTENT = `# Make targets for building the IBM example helloworld edge service
 
-# This imports the variables from horizon/hzn.cfg. You can ignore these lines, but do not remove them.
--include horizon/.hzn.cfg.tmp.mk
+# This imports the variables from horizon/hzn.json. You can ignore these lines, but do not remove them.
+-include PROJECT_DIR/.hzn.json.tmp.mk
 
 # Default ARCH to the architecture of this machines (as horizon/golang describes it)
 export ARCH ?= $(shell hzn architecture)
@@ -39,9 +39,9 @@ clean-all-archs:
 	ARCH=arm $(MAKE) clean
 	ARCH=arm64 $(MAKE) clean
 
-## This imports the variables from horizon/hzn.cfg. You can ignore these lines, but do not remove them.
-horizon/.hzn.cfg.tmp.mk: horizon/hzn.cfg
-	@sed -e '/^export /d' -e '/^ *#/d' -e '/^ *$$/d' -e "s/'//g" -e 's/"//g' -e 's/^/export /' $< > $@
+## This imports the variables from horizon/hzn.json. You can ignore these lines, but do not remove them.
+PROJECT_DIR/.hzn.json.tmp.mk: PROJECT_DIR/hzn.json
+	hzn util configconv -f $< > $@
 
 .PHONY: build clean`
 
@@ -90,7 +90,7 @@ func CreateDockerFiles(directory string) error {
 }
 
 func CreateMakeFile(directory string, hznenv_dir string) error {
-	return CreateFileWithConent(directory, MAKE_FILE, MAKE_FILE_CONTENT, map[string]string{"DIR": hznenv_dir}, false)
+	return CreateFileWithConent(directory, MAKE_FILE, MAKE_FILE_CONTENT, map[string]string{"PROJECT_DIR": hznenv_dir}, false)
 }
 
 func CreateServiceFile(directory string) error {

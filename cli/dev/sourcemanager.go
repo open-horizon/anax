@@ -8,7 +8,7 @@ import (
 const HORIZON_GITIGNORE_FILE = ".gitignore"
 const DEPENDENCY_GITIGNORE_FILE = "dependencies/.gitignore"
 
-const HORIZON_GITIGNORE_FILE_CONTENT = `/.hzn.cfg.tmp.mk
+const HORIZON_GITIGNORE_FILE_CONTENT = `/.hzn.json.tmp.mk
 `
 const DEPENDENCY_GITIGNORE_FILE_CONTENT = `*.service.definition.json
 `

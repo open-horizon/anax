@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/plugin_registry"
 	"github.com/open-horizon/anax/containermessage"
@@ -192,7 +193,7 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 	cliutils.SetWhetherUsingApiKey(userPw)
 
 	// Read in the service metadata
-	newBytes := cliutils.ReadJsonFile(jsonFilePath)
+	newBytes := cliconfig.ReadJsonFileWithLocalConfig(jsonFilePath)
 	var svcFile ServiceFile
 	err := json.Unmarshal(newBytes, &svcFile)
 	if err != nil {
