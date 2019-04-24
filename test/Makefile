@@ -25,6 +25,7 @@ APPSTORE = $(shell echo $(TEST_VARS) | awk -F "APPSTORE=" '{print $$2}' | cut -c
 # msghub
 MSGHUB_VARS := MSGHUB_BROKER_URL='$(MSGHUB_BROKER_URL)' MSGHUB_API_KEY='$(MSGHUB_API_KEY)'
 
+BRANCH_NAME ?= ""
 ANAX_SOURCE ?= $(shell dirname $(CURDIR))
 AGBOT_TEMPFS := $(CURDIR)/docker/tempfs/agbot
 EXCH_TEMPFS := $(CURDIR)/docker/tempfs/exchange
@@ -45,7 +46,7 @@ DOCKER_REG_TAG := 2
 DOCKER_CSSDB_INAME := mongo
 DOCKER_CSSDB_TAG := 4.0.6
 DOCKER_CSS_INAME := openhorizon/amd64_cloud-sync-service
-DOCKER_CSS_TAG := testing
+DOCKER_CSS_TAG := testing$(BRANCH_NAME)
 DOCKER_DEV_OPTS :=  --rm --no-cache
 E2EDEV_HOST_IP := $(shell hostname -I | awk '{print $$1}')
 
@@ -97,7 +98,7 @@ run-agbot: agbot-docker-prereqs test-network
 		-e "DOCKER_REG_PW=$(DOCKER_REG_PW)" \
 		-e "AGBOT_HZN_API=http://localhost:81" \
 		-e "HZN_DEV_HOST_IP=$(E2EDEV_HOST_IP)" \
-		-e "HZN_DEV_FSS_IMAGE_TAG"="testing" \
+		-e "HZN_DEV_FSS_IMAGE_TAG"="testing$(BRANCH_NAME)" \
 		-t $(DOCKER_AGBOT_INAME):$(DOCKER_DEV_TAG)
 	docker cp $(AGBOT_TEMPFS)/. $(DOCKER_AGBOT_CNAME):/
 

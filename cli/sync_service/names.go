@@ -5,7 +5,6 @@ import (
 	"github.com/open-horizon/anax/cli/dev"
 	"github.com/open-horizon/anax/cutil"
 	"os"
-	"strings"
 )
 
 func getFSSImageName() string {
@@ -30,22 +29,4 @@ func getCSSPort() string {
 		port = "8580"
 	}
 	return port
-}
-
-func getMongoFullImage() string {
-	image := os.Getenv(dev.DEVTOOL_HZN_FSS_MONGO_IMAGE)
-	if image == "" {
-		image = "mongo:4.0.6"
-	}
-	return image
-}
-
-func getMongoImageTag() string {
-	parts := strings.Split(getMongoFullImage(), ":")
-	return parts[1]
-}
-
-func getMongoImage() string {
-	parts := strings.Split(getMongoFullImage(), ":")
-	return parts[0]
 }
