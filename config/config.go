@@ -206,6 +206,14 @@ func Read(file string) (*HorizonConfig, error) {
 			config.AgreementBot.ExchangeURL = strings.TrimRight(config.AgreementBot.ExchangeURL, "/") + "/"
 		}
 
+		// add a slash at the back of the PolicyPath
+		if config.Edge.PolicyPath != "" {
+			config.Edge.PolicyPath = strings.TrimRight(config.Edge.PolicyPath, "/") + "/"
+		}
+		if config.AgreementBot.PolicyPath != "" {
+			config.AgreementBot.PolicyPath = strings.TrimRight(config.AgreementBot.PolicyPath, "/") + "/"
+		}
+
 		// now make collaborators instance and assign it to member in this config
 		collaborators, err := NewCollaborators(config)
 		if err != nil {
