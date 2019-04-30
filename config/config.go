@@ -222,3 +222,25 @@ func Read(file string) (*HorizonConfig, error) {
 		return &config, nil
 	}
 }
+
+func (cfg *HorizonConfig) LogConfigSafely() string {
+	configStr := ""
+	if cfg.AgreementBot.ExchangeToken != "" {
+		tempExchangeToken := cfg.AgreementBot.ExchangeToken
+		tempPostSQLPw := cfg.AgreementBot.Postgresql.Password
+		tempActiveAgreementsPw := cfg.AgreementBot.ActiveAgreementsPW
+		tempDefaultWorkloadPw := cfg.AgreementBot.DefaultWorkloadPW
+		cfg.AgreementBot.ExchangeToken = "******"
+		cfg.AgreementBot.Postgresql.Password = "******"
+		cfg.AgreementBot.ActiveAgreementsPW = "******"
+		cfg.AgreementBot.DefaultWorkloadPW = "******"
+		configStr = fmt.Sprintf("Using config: %v", cfg)
+		cfg.AgreementBot.ExchangeToken = tempExchangeToken
+		cfg.AgreementBot.Postgresql.Password = tempPostSQLPw
+		cfg.AgreementBot.ActiveAgreementsPW = tempActiveAgreementsPw
+		cfg.AgreementBot.DefaultWorkloadPW = tempDefaultWorkloadPw
+	} else {
+		configStr = fmt.Sprintf("Using config: %v", cfg)
+	}
+	return configStr
+}

@@ -54,7 +54,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	glog.V(2).Infof("Using config: %v", cfg)
+	glog.V(2).Infof(cfg.LogConfigSafely)
 	glog.V(2).Infof("GOMAXPROCS: %v", runtime.GOMAXPROCS(-1))
 
 	// open edge DB if necessary
