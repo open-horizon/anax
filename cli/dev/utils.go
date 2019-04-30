@@ -173,20 +173,21 @@ func IsServiceProject(directory string) bool {
 	return true
 }
 
-func CommonProjectValidation(dir string, userInputFile string, projectType string, cmd string) {
+// autoAddDep -- if true, the dependent services will be automatically added if they can be found from the exchange
+func CommonProjectValidation(dir string, userInputFile string, projectType string, cmd string, userCreds string, keyFiles []string, autoAddDep bool) {
 	// Get the Userinput file, so that we can validate it.
 	userInputs, userInputsFilePath, uierr := GetUserInputs(dir, userInputFile)
 	if uierr != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", projectType, cmd, uierr)
 	}
 
-	if verr := ValidateUserInput(userInputs, dir, userInputsFilePath, projectType); verr != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' project does not validate. %v ", projectType, cmd, verr)
+	// Validate Dependencies
+	if derr := ValidateDependencies(dir, userInputs, userInputsFilePath, projectType, userCreds, keyFiles, autoAddDep); derr != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' project does not validate. %v", projectType, cmd, derr)
 	}
 
-	// Validate Dependencies
-	if derr := ValidateDependencies(dir, userInputs, userInputsFilePath, projectType); derr != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' project does not validate. %v", projectType, cmd, derr)
+	if verr := ValidateUserInput(userInputs, dir, userInputsFilePath, projectType); verr != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' project does not validate. %v ", projectType, cmd, verr)
 	}
 }
 

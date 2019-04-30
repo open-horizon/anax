@@ -131,7 +131,7 @@ echo -e "Creating dependencies."
 cd ${HELLO_HOME}
 
 depCreate=$(hzn dev dependency fetch -p ${CPU_HOME}/horizon -v 2>&1)
-verify "${depCreate}" "horizon created." "Could not create hello dependency on CPU."
+verify "${depCreate}" "New dependency created" "Could not create hello dependency on CPU."
 
 echo -e "Verifying the Hello project."
 verifyProject=$(hzn dev service verify -v 2>&1)
@@ -141,10 +141,10 @@ if [ $? -ne 0 ]; then exit $?; fi
 
 cd ${USEHELLO_HOME}
 depCreate=$(hzn dev dependency fetch -p ${CPU_HOME}/horizon -v 2>&1)
-verify "${depCreate}" "horizon created." "Could not create usehello dependency on CPU."
+verify "${depCreate}" "New dependency created" "Could not create usehello dependency on CPU."
 
 depCreate=$(hzn dev dependency fetch -p ${HELLO_HOME}/horizon -v 2>&1)
-verify "${depCreate}" "horizon created." "Could not create usehello dependency on hello."
+verify "${depCreate}" "New dependency created" "Could not create usehello dependency on hello."
 
 echo -e "Verifying the UseHello project."
 verifyProject=$(hzn dev service verify -v 2>&1)
