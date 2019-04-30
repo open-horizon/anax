@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/version"
 	"github.com/open-horizon/anax/worker"
@@ -211,6 +212,94 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, POST, PATCH, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
+
+	resource := "node/policy"
+
+	errorHandler := GetHTTPErrorHandler(w)
+
+	switch r.Method {
+	case "GET":
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		if out, err := FindNodePolicyForOutput(a.db); err != nil {
+			errorHandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
+		} else {
+			writeResponse(w, out, http.StatusOK)
+		}
+
+	case "HEAD":
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		if out, err := FindNodePolicyForOutput(a.db); err != nil {
+			errorHandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
+		} else if serial, errWritten := serializeResponse(w, out); !errWritten {
+			w.Header().Add("Content-Length", strconv.Itoa(len(serial)))
+			w.WriteHeader(http.StatusOK)
+		}
+
+	case "PUT", "POST":
+		// Because there is one node policy object, POST and PUT are interchangeable. Either can be used to create the object and either
+		// can be used to update the existing object.
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		// Read in the HTTP body and pass the device registration off to be validated and created.
+		var nodePolicy externalpolicy.ExternalPolicy
+		body, _ := ioutil.ReadAll(r.Body)
+		if err := json.Unmarshal(body, &nodePolicy); err != nil {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error parsing input for node policy. Input body could not be deserialized as a policy object: %v, error: %v", string(body), err),
+				persistence.EC_API_USER_INPUT_ERROR, nil)
+			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), err), "body"))
+			return
+		}
+
+		// Validate and create or update the node policy.
+		errHandled, cfg, msgs := UpdateNodePolicy(&nodePolicy, errorHandler, a.db, a.Config)
+		if errHandled {
+			return
+		}
+
+		// Send out all messages
+		for _, msg := range msgs {
+			a.Messages() <- msg
+		}
+
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handled %v on resource %v", r.Method, resource)))
+
+		writeResponse(w, cfg, http.StatusCreated)
+
+	case "PATCH":
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		errorHandler(NewSystemError(fmt.Sprintf("%v on %v not supported yet.", r.Method, resource)))
+
+	case "DELETE":
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		// Validate the DELETE request and delete the object from the database.
+		errHandled, msgs := DeleteNodePolicy(errorHandler, a.db)
+		if errHandled {
+			return
+		}
+
+		// Send out all messages
+		for _, msg := range msgs {
+			a.Messages() <- msg
+		}
+
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handled %v on resource %v", r.Method, resource)))
+
+		w.WriteHeader(http.StatusNoContent)
+
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, HEAD, PUT, POST, PATCH, DELETE, OPTIONS")
 		w.WriteHeader(http.StatusOK)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)

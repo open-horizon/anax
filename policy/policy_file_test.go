@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/open-horizon/anax/externalpolicy"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -369,11 +370,11 @@ func Test_Policy_Creation(t *testing.T) {
 	agp2.Blockchains.Add_Blockchain(Blockchain_Factory("Fred", "bc2", "myorg"))
 	pf_created.Add_Agreement_Protocol(agp2)
 
-	pf_created.Add_Property(Property_Factory("rpiprop1", "rpival1"))
-	pf_created.Add_Property(Property_Factory("rpiprop2", "rpival2"))
-	pf_created.Add_Property(Property_Factory("rpiprop3", "rpival3"))
-	pf_created.Add_Property(Property_Factory("rpiprop4", "rpival4"))
-	pf_created.Add_Property(Property_Factory("rpiprop5", "rpival5"))
+	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop1", "rpival1"))
+	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop2", "rpival2"))
+	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop3", "rpival3"))
+	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop4", "rpival4"))
+	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop5", "rpival5"))
 
 	pf_created.Add_NodeHealth(NodeHealth_Factory(600, 30))
 
@@ -1059,20 +1060,6 @@ func create_Blockchain(jsonString string, t *testing.T) *Blockchain {
 		return nil
 	} else {
 		return bl
-	}
-}
-
-// Create a Property array from a JSON serialization. The JSON serialization
-// does not have to be a valid Property serialization, just has to be a valid
-// JSON serialization.
-func create_PropertyList(jsonString string, t *testing.T) *PropertyList {
-	pl := new(PropertyList)
-
-	if err := json.Unmarshal([]byte(jsonString), &pl); err != nil {
-		t.Errorf("Error unmarshalling PropertyList json string: %v error:%v\n", jsonString, err)
-		return nil
-	} else {
-		return pl
 	}
 }
 

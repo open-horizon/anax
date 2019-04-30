@@ -72,6 +72,8 @@ const (
 	EC_RECEIVED_CANCEL_AGREEMENT_MESSAGE         = "received_cancel_agreement_message"
 	EC_ERROR_PROCESSING_CANCEL_AGREEMENT_MESSAGE = "error_processing_cancel_agreement_message"
 
+	EC_NODE_POLICY_UPDATED         = "update node policy"
+	EC_NODE_POLICY_DELETED         = "delete node policy"
 	EC_START_POLICY_ADVERTISING    = "start_policy_advertising"
 	EC_COMPLETE_POLICY_ADVERTISING = "complete_policy_advertising"
 	EC_ERROR_POLICY_ADVERTISING    = "error_policy_advertising"

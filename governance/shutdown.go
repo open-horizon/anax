@@ -293,7 +293,10 @@ func (w *GovernanceWorker) deleteAttributes() error {
 
 // Delete all policy files from the filesystem.
 func (w *GovernanceWorker) deletePolicyFiles() error {
-	if err := policy.DeleteAllPolicyFiles(w.Config.Edge.PolicyPath, false); err != nil {
+
+	if err := persistence.DeleteNodePolicy(w.db); err != nil {
+		return errors.New(fmt.Sprintf("unable to node policy object from local database, error: %v", err))
+	} else if err := policy.DeleteAllPolicyFiles(w.Config.Edge.PolicyPath, false); err != nil {
 		return errors.New(fmt.Sprintf("unable to delete policy files from disk, error: %v", err))
 	}
 	glog.V(3).Infof(logString(fmt.Sprintf("deleted all policy files from the node")))

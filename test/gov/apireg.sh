@@ -53,6 +53,36 @@ do
 done
 
 # ================================================================
+# Set a node policy indicating the testing purpose of the node.
+read -d '' newhznpolicy <<EOF
+{
+  "properties": [
+      {"name":"purpose","value":"network-testing"}
+    ],
+  "constraints": []
+}
+EOF
+
+echo "Adding policy to the node using node/policy API"
+RES=$(echo "$newhznpolicy" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/policy")
+
+if [ "$RES" == "" ]
+then
+  echo -e "$newhznpolicy \nresulted in empty response"
+  exit 2
+fi
+
+ERR=$(echo $RES | jq -r ".error")
+if [ "$ERR" != "null" ]
+then
+  echo -e "$newhznpolicy \nresulted in incorrect response: $RES"
+  exit 2
+else
+  echo -e "found expected response: $RES"
+fi
+
+
+# ================================================================
 # Set global attributes
 # First, set a location attribute.
 
@@ -81,7 +111,7 @@ if [ "$ERR" != "null" ]; then
 fi
 
 # Then set a node level property
-./set_node_property.sh "purpose" "network testing"
+./set_node_property.sh "purpose" "network-testing"
 if [ $? -ne 0 ]
 then
     exit 2

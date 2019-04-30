@@ -10,6 +10,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
 	"net/http"
@@ -545,7 +546,7 @@ func Heartbeat(h *http.Client, url string, id string, token string) error {
 
 }
 
-func ConvertPropertyToExchangeFormat(prop *policy.Property) (*MSProp, error) {
+func ConvertPropertyToExchangeFormat(prop *externalpolicy.Property) (*MSProp, error) {
 	var pType, pValue, pCompare string
 
 	// version is a special property, it has a special type.

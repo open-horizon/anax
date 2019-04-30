@@ -264,6 +264,32 @@ func NewLoadContainerMessage(id EventId, lc *ContainerLaunchContext) *LoadContai
 	}
 }
 
+// This event indicates that something happened with a node policy.
+type NodePolicyMessage struct {
+	event Event
+}
+
+func (e NodePolicyMessage) String() string {
+	return fmt.Sprintf("event: %v", e.event)
+}
+
+func (e NodePolicyMessage) ShortString() string {
+	return e.String()
+}
+
+func (e NodePolicyMessage) Event() Event {
+	return e.event
+}
+
+func NewNodePolicyMessage(id EventId) *NodePolicyMessage {
+
+	return &NodePolicyMessage{
+		event: Event{
+			Id: id,
+		},
+	}
+}
+
 // This event indicates that a new microservice has been created in the form of a policy file
 type PolicyCreatedMessage struct {
 	event    Event

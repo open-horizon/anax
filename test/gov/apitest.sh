@@ -125,6 +125,118 @@ else
   echo -e "found expected response: $RES"
 fi
 
+# =================================================================
+# Run error tests on the node/policy API
+
+# Missing input on PUT and POST
+# First try POST
+echo "Testing for missing input on node/policy API"
+RES=$(curl -sS -X POST -H "Content-Type: application/json" "$ANAX_API/node/policy")
+
+if [ "$RES" == "" ]
+then
+  echo -e "Missing input in node/policy test resulted in empty response"
+  exit 2
+fi
+
+ERR=$(echo $RES | jq -r ".error")
+if [ "${ERR:0:36}" != "Input body could not be deserialized" ]
+then
+  echo -e "Missing input in node/policy test resulted in incorrect response: $RES"
+  exit 2
+else
+  echo -e "found expected response: $RES"
+fi
+
+# Then try PUT
+echo "Testing for missing input on node/policy API"
+RES=$(curl -sS -X PUT -H "Content-Type: application/json" "$ANAX_API/node/policy")
+
+if [ "$RES" == "" ]
+then
+  echo -e "Missing input in node/policy test resulted in empty response"
+  exit 2
+fi
+
+ERR=$(echo $RES | jq -r ".error")
+if [ "${ERR:0:36}" != "Input body could not be deserialized" ]
+then
+  echo -e "Missing input in node/policy test resulted in incorrect response: $RES"
+  exit 2
+else
+  echo -e "found expected response: $RES"
+fi
+
+# Incorrect input (not demarshallable) on POST
+read -d '' newhznpolicy <<EOF
+{
+  "properties": [{name":"prop1"}],
+  "constraints": ""
+}
+EOF
+
+echo "Testing for not demarshallable input on node/policy API"
+RES=$(echo "$newhznpolicy" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/node/policy")
+
+if [ "$RES" == "" ]
+then
+  echo -e "$newhznpolicy \nresulted in empty response"
+  exit 2
+fi
+
+ERR=$(echo $RES | jq -r ".error")
+if [ "${ERR:0:36}" != "Input body could not be deserialized" ]
+then
+  echo -e "$newhznpolicy \nresulted in incorrect response: $RES"
+  exit 2
+else
+  echo -e "found expected response: $RES"
+fi
+
+# Incorrect input (wrong field types) on PUT
+read -d '' newhznpolicy <<EOF
+{
+  "properties": 11,
+  "constraints": 0
+}
+EOF
+
+echo "Testing for incorrect input field types on node/policy API"
+RES=$(echo "$newhznpolicy" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/policy")
+
+if [ "$RES" == "" ]
+then
+  echo -e "$newhznpolicy \nresulted in empty response"
+  exit 2
+fi
+
+ERR=$(echo $RES | jq -r ".error")
+if [ "${ERR:0:36}" != "Input body could not be deserialized" ]
+then
+  echo -e "$newhznpolicy \nresulted in incorrect response: $RES"
+  exit 2
+else
+  echo -e "found expected response: $RES"
+fi
+
+# Delete when nothing to delete
+echo "Testing for delete when nothing to delete on node/policy API"
+RES=$(curl -sS -X DELETE -H "Content-Type: application/json" "$ANAX_API/node/policy")
+
+if [ "$RES" == "" ]
+then
+  echo -e "Testing for delete when nothing to delete resulted in empty response"
+  exit 2
+fi
+
+if [ "${RES:0:61}" != "Node policy could not be deleted, error could not find record" ]
+then
+  echo -e "Testing for delete when nothing to delete resulted in incorrect response: $RES"
+  exit 2
+else
+  echo -e "found expected response: $RES"
+fi
+
 # =====================================================================================
 # Register a test device so that subsequent tests can run
 

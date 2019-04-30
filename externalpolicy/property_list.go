@@ -1,4 +1,4 @@
-package policy
+package externalpolicy
 
 import (
 	"errors"
@@ -83,5 +83,16 @@ func (self *PropertyList) Add_Property(new_ele *Property) error {
 		}
 	}
 	(*self) = append(*self, *new_ele)
+	return nil
+}
+
+func (self *PropertyList) Validate() error {
+
+	// Check for incorrect boolean expression.
+
+	// Check for incorrect number value.
+
+	// This validation logic might be able to be borrowed from somewhere else in anax.
+
 	return nil
 }

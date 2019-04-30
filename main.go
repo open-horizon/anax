@@ -14,6 +14,7 @@ import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/exchange"
+	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/governance"
 	"github.com/open-horizon/anax/helm"
 	"github.com/open-horizon/anax/persistence"
