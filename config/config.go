@@ -223,6 +223,7 @@ func Read(file string) (*HorizonConfig, error) {
 	}
 }
 
+//returns a string to log the config object with auth details masked
 func (cfg *HorizonConfig) LogConfigSafely() string {
 	configStr := ""
 	if cfg.AgreementBot.ExchangeToken != "" {
