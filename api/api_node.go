@@ -114,10 +114,11 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 
 		// Retrieve the optional query parameter
 		removeNode := r.URL.Query().Get("removeNode")
+		deepClean := r.URL.Query().Get("deepClean")
 		block := r.URL.Query().Get("block")
 
 		// Validate the DELETE request and delete the object from the database.
-		errHandled := DeleteHorizonDevice(removeNode, block, a.em, a.Messages(), errorHandler, a.db)
+		errHandled := DeleteHorizonDevice(removeNode, deepClean, block, a.em, a.Messages(), errorHandler, a.db)
 		if errHandled {
 			return
 		}

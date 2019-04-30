@@ -113,7 +113,7 @@ func createServiceDef(t *testing.T, horizonDir string, serviceName string, child
 	fileName := SERVICE_DEFINITION_FILE
 	filePath := horizonDir
 	if dependency {
-		fileName = createDependencyFileName(depSDef1.GetURL(), depSDef1.GetVersion(), SERVICE_DEFINITION_FILE)
+		fileName = createDependencyFileName(depSDef1.GetOrg(), depSDef1.GetURL(), depSDef1.GetVersion(), SERVICE_DEFINITION_FILE)
 		filePath = path.Join(horizonDir, DEFAULT_DEPENDENCY_DIR)
 	}
 	if err := CreateFile(filePath, fileName, depSDef1); err != nil {

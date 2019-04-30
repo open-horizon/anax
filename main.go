@@ -97,6 +97,12 @@ func main() {
 		pprof.StopCPUProfile()
 		if db != nil {
 			db.Close()
+			// remove the local db
+			dbFile := path.Join(cfg.Edge.DBPath, "anax.db")
+			glog.Infof("Removing local db file %v.", dbFile)
+			if persistence.GetRemoveDatabaseOnExit() {
+				os.Remove(dbFile)
+			}
 		}
 		if agbotDB != nil {
 			agbotDB.Close()
@@ -154,11 +160,18 @@ func main() {
 
 	if db != nil {
 		db.Close()
+
+		// remove the local db
+		dbFile := path.Join(cfg.Edge.DBPath, "anax.db")
+		glog.Infof("Removing local db file %v.", dbFile)
+		if persistence.GetRemoveDatabaseOnExit() {
+			os.Remove(dbFile)
+		}
 	}
+
 	if agbotDB != nil {
 		agbotDB.Close()
 	}
 
 	glog.Info("Main process terminating")
-
 }

@@ -660,8 +660,9 @@ func Test_DeleteHorizonDevice_success(t *testing.T) {
 
 	removeNode := "false"
 	blocking := "false"
+	deepClean := "false"
 	msgQueue := make(chan events.Message, 10)
-	errHandled := DeleteHorizonDevice(removeNode, blocking, events.NewEventStateManager(), msgQueue, errorhandler, db)
+	errHandled := DeleteHorizonDevice(removeNode, deepClean, blocking, events.NewEventStateManager(), msgQueue, errorhandler, db)
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
@@ -698,8 +699,9 @@ func Test_DeleteHorizonDevice_fail1(t *testing.T) {
 
 	removeNode := "false"
 	blocking := "false"
+	deepClean := "false"
 	msgQueue := make(chan events.Message, 10)
-	errHandled := DeleteHorizonDevice(removeNode, blocking, events.NewEventStateManager(), msgQueue, errorhandler, db)
+	errHandled := DeleteHorizonDevice(removeNode, deepClean, blocking, events.NewEventStateManager(), msgQueue, errorhandler, db)
 
 	if !errHandled {
 		t.Errorf("expected error")

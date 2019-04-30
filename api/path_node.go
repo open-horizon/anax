@@ -261,6 +261,7 @@ func UpdateHorizonDevice(device *HorizonDevice,
 
 // Handles the DELETE verb on this resource.
 func DeleteHorizonDevice(removeNode string,
+	deepClean string,
 	block string,
 	em *events.EventStateManager,
 	msgQueue chan events.Message,
@@ -288,7 +289,10 @@ func DeleteHorizonDevice(removeNode string,
 		LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Input error for node unregistration. %v is an incorrect value for removeNode", removeNode), persistence.EC_API_USER_INPUT_ERROR, pDevice)
 		return errorhandler(NewAPIUserInputError("%v is an incorrect value for removeNode", "url.removeNode"))
 	}
-
+	if deepClean != "" && deepClean != "true" && deepClean != "false" {
+		LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Input error for node unregistration. %v is an incorrect value for deepClean", deepClean), persistence.EC_API_USER_INPUT_ERROR, pDevice)
+		return errorhandler(NewAPIUserInputError("%v is an incorrect value for deepClean", "url.deepClean"))
+	}
 	if block != "" && block != "true" && block != "false" {
 		LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Input error for node unregistration. %v is an incorrect value for block", block), persistence.EC_API_USER_INPUT_ERROR, pDevice)
 		return errorhandler(NewAPIUserInputError("%v is an incorrect value for block", "url.block"))
@@ -298,6 +302,10 @@ func DeleteHorizonDevice(removeNode string,
 	rNode := false
 	if removeNode == "true" {
 		rNode = true
+	}
+	bDeepClean := false
+	if deepClean == "true" {
+		bDeepClean = true
 	}
 	blocking := true
 	if block == "false" {
@@ -337,6 +345,11 @@ func DeleteHorizonDevice(removeNode string,
 	// now save this timestamp in db.
 	if err := persistence.SaveLastUnregistrationTime(db, uint64(time.Now().Unix())); err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("error persisting the last unregistration timestamp: %v", err)))
+	}
+
+	// save this so that the local db will get removed by main.go upon exiting.
+	if bDeepClean {
+		persistence.SetRemoveDatabaseOnExit(true)
 	}
 
 	return false

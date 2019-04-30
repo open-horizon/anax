@@ -272,6 +272,7 @@ Unconfigure the agent so that it can be re-configured. All agreements are cancel
 | ---- | ---- | ---------------- |
 | block | bool | If true (the default), the API blocks until the agent is quiesced. If false, the caller will get control back quickly while the quiesce happens in the background. While this is occurring, the caller should invoke GET /node until they receive an HTTP status 404. |
 | removeNode | bool | If true, the node’s entry in the exchange is also deleted, instead of just being cleared. The default is false. |
+| deepClean | bool | If true, all the history of the previous registration will be removed. The default is false. |
 
 **Response:**
 
