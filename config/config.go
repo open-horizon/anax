@@ -223,25 +223,25 @@ func Read(file string) (*HorizonConfig, error) {
 	}
 }
 
-//returns a string to log the config object with auth details masked
-func (cfg *HorizonConfig) LogConfigSafely() string {
+//LogConfigSafely returns a string to log the config object with auth masked
+func (c *HorizonConfig) LogConfigSafely() string {
 	configStr := ""
-	if cfg.AgreementBot.ExchangeToken != "" {
-		tempExchangeToken := cfg.AgreementBot.ExchangeToken
-		tempPostSQLPw := cfg.AgreementBot.Postgresql.Password
-		tempActiveAgreementsPw := cfg.AgreementBot.ActiveAgreementsPW
-		tempDefaultWorkloadPw := cfg.AgreementBot.DefaultWorkloadPW
-		cfg.AgreementBot.ExchangeToken = "******"
-		cfg.AgreementBot.Postgresql.Password = "******"
-		cfg.AgreementBot.ActiveAgreementsPW = "******"
-		cfg.AgreementBot.DefaultWorkloadPW = "******"
-		configStr = fmt.Sprintf("Using config: %v", cfg)
-		cfg.AgreementBot.ExchangeToken = tempExchangeToken
-		cfg.AgreementBot.Postgresql.Password = tempPostSQLPw
-		cfg.AgreementBot.ActiveAgreementsPW = tempActiveAgreementsPw
-		cfg.AgreementBot.DefaultWorkloadPW = tempDefaultWorkloadPw
+	if c.AgreementBot.ExchangeToken != "" {
+		tempExchangeToken := c.AgreementBot.ExchangeToken
+		tempPostSQLPw := c.AgreementBot.Postgresql.Password
+		tempActiveAgreementsPw := c.AgreementBot.ActiveAgreementsPW
+		tempDefaultWorkloadPw := c.AgreementBot.DefaultWorkloadPW
+		c.AgreementBot.ExchangeToken = "******"
+		c.AgreementBot.Postgresql.Password = "******"
+		c.AgreementBot.ActiveAgreementsPW = "******"
+		c.AgreementBot.DefaultWorkloadPW = "******"
+		configStr = fmt.Sprintf("Using config: %v", c)
+		c.AgreementBot.ExchangeToken = tempExchangeToken
+		c.AgreementBot.Postgresql.Password = tempPostSQLPw
+		c.AgreementBot.ActiveAgreementsPW = tempActiveAgreementsPw
+		c.AgreementBot.DefaultWorkloadPW = tempDefaultWorkloadPw
 	} else {
-		configStr = fmt.Sprintf("Using config: %v", cfg)
+		configStr = fmt.Sprintf("Using config: %v", c)
 	}
 	return configStr
 }
