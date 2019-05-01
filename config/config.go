@@ -230,3 +230,16 @@ func Read(file string) (*HorizonConfig, error) {
 		return &config, nil
 	}
 }
+
+func (c *HorizonConfig) String() string {
+	return fmt.Sprintf("Edge: {%v}, AgreementBot: {%v}, Collaborators: {%v}, ArchSynonyms: {%v}", c.Edge.String(), c.AgreementBot.String(), c.Collaborators.String(), c.ArchSynonyms)
+}
+
+func (con *Config) String() string {
+	return fmt.Sprintf("ServiceStorage %v, TorrentDir %v, APIListen %v, DBPath %v, DockerEndpoint %v, DockerCredFilePath %v, DefaultCPUSet %v, DefaultServiceRegistrationRAM: %v, StaticWebContent: %v, PublicKeyPath: %v, TrustSystemCACerts: %v, CACertsPath: %v, ExchangeURL: %v, DefaultHTTPClientTimeoutS: %v, PolicyPath: %v, ExchangeHeartbeat: %v, ExchangeVersionCheckIntervalM: %v, AgreementTimeoutS: %v, DVPrefix: %v, RegistrationDelayS: %v, ExchangeMessageTTL: %v, TorrentListenAddr: %v, UserPublicKeyPath: %v, ReportDeviceStatus: %v, TrustCertUpdatesFromOrg: %v, TrustDockerAuthFromOrg: %v, ServiceUpgradeCheckIntervalS: %v, MultipleAnaxInstances: %v, DefaultServiceRetryCount: %v, DefaultServiceRetryDuration: %v, ServiceConfigStateCheckIntervalS: %v, FileSyncService: {%v}, BlockchainAccountId: %v, BlockchainDirectoryAddress %v", con.ServiceStorage, con.TorrentDir, con.APIListen, con.DBPath, con.DockerEndpoint, con.DockerCredFilePath, con.DefaultCPUSet, con.DefaultServiceRegistrationRAM, con.StaticWebContent, con.PublicKeyPath, con.TrustSystemCACerts, con.CACertsPath, con.ExchangeURL, con.DefaultHTTPClientTimeoutS, con.PolicyPath, con.ExchangeHeartbeat, con.ExchangeVersionCheckIntervalM, con.AgreementTimeoutS, con.DVPrefix, con.RegistrationDelayS, con.ExchangeMessageTTL, con.TorrentListenAddr, con.UserPublicKeyPath, con.ReportDeviceStatus, con.TrustCertUpdatesFromOrg, con.TrustDockerAuthFromOrg, con.ServiceUpgradeCheckIntervalS, con.MultipleAnaxInstances, con.DefaultServiceRetryCount, con.DefaultServiceRetryDuration, con.ServiceConfigStateCheckIntervalS, con.FileSyncService.String(), con.BlockchainAccountId, con.BlockchainDirectoryAddress)
+}
+
+func (agc *AGConfig) String() string {
+	mask := "******"
+	return fmt.Sprintf("TxLostDelayTolerationSeconds: %v, AgreementWorkers: %v, DBPath: %v, Postgresql: {%v}, PartitionStale: %v, ProtocolTimeoutS: %v, AgreementTimeoutS: %v, NoDataIntervalS: %v, ActiveAgreementsURL: %v, ActiveAgreementsUser: %v, ActiveAgreementsPW: %v, PolicyPath: %v, NewContractIntervalS: %v, ProcessGovernanceIntervalS: %v, IgnoreContractWithAttribs: %v, ExchangeURL: %v, ExchangeHeartbeat: %v, ExchangeVersionCheckIntervalM: %v, ExchangeId: %v, ExchangeToken: %v, DVPrefix: %v, ActiveDeviceTimeoutS: %v, ExchangeMessageTTL: %v, MessageKeyPath: %v, DefaultWorkloadPW: %v, APIListen: %v, PurgeArchivedAgreementHours: %v, CheckUpdatedPolicyS: %v", agc.TxLostDelayTolerationSeconds, agc.AgreementWorkers, agc.DBPath, agc.Postgresql.String(), agc.PartitionStale, agc.ProtocolTimeoutS, agc.AgreementTimeoutS, agc.NoDataIntervalS, agc.ActiveAgreementsURL, agc.ActiveAgreementsUser, mask, agc.PolicyPath, agc.NewContractIntervalS, agc.ProcessGovernanceIntervalS, agc.IgnoreContractWithAttribs, agc.ExchangeURL, agc.ExchangeHeartbeat, agc.ExchangeVersionCheckIntervalM, agc.ExchangeId, mask, agc.DVPrefix, agc.ActiveDeviceTimeoutS, agc.ExchangeMessageTTL, agc.MessageKeyPath, mask, agc.APIListen, agc.PurgeArchivedAgreementHours, agc.CheckUpdatedPolicyS)
+}

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"path"
 	"path/filepath"
 	"strings"
@@ -16,6 +17,10 @@ type FSSConfig struct {
 	CSSURL             string // The URL used to access the CSS.
 	CSSSSLCert         string // The path to the client side SSL certificate for the CSS.
 	PollingRate        uint16 // The number of seconds between polls to the CSS for notification updates.
+}
+
+func (f *FSSConfig) String() string {
+	return fmt.Sprintf("APIListen: %v, APIPort: %v, APIProtocol: %v, PersistencePath: %v, AuthenticationPath: %v, CSSURL: %v, CSSSSLCert: %v, PollingRate: %v", f.APIListen, f.APIPort, f.APIProtocol, f.PersistencePath, f.AuthenticationPath, f.CSSURL, f.CSSSSLCert, f.PollingRate)
 }
 
 func (c *HorizonConfig) FSSIsUnixProtocol() bool {
