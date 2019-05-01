@@ -145,6 +145,12 @@ func getVariableServiceResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange
 	}
 }
 
+func getDummyPutNodePolicyHandler() exchange.PutNodePolicyHandler {
+	return func(deviceId string, ep *exchange.ExchangePolicy) (*exchange.PutDeviceResponse, error) {
+		return nil, nil
+	}
+}
+
 func utsetup() (string, *bolt.DB, error) {
 	dir, err := ioutil.TempDir("", "utdb-")
 	if err != nil {

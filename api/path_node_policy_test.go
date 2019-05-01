@@ -6,6 +6,7 @@ import (
 	"flag"
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
+	"github.com/open-horizon/anax/persistence"
 	"testing"
 )
 
@@ -44,6 +45,11 @@ func Test_SaveNodePolicy1(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, "myOrg", "", persistence.CONFIGSTATE_CONFIGURING)
+	if err != nil {
+		t.Errorf("failed to create persisted device, error %v", err)
+	}
+
 	propName := "prop1"
 	propList := new(externalpolicy.PropertyList)
 	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"))
@@ -53,7 +59,7 @@ func Test_SaveNodePolicy1(t *testing.T) {
 		Constraints: []string{`prop3 == "some value"`},
 	}
 
-	errHandled, np, msgs := UpdateNodePolicy(extNodePolicy, errorhandler, db, getBasicConfig())
+	errHandled, np, msgs := UpdateNodePolicy(extNodePolicy, errorhandler, getDummyPutNodePolicyHandler(), db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("Unexpected error handled: %v", myError)
@@ -85,6 +91,11 @@ func Test_UpdateNodePolicy1(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, "myOrg", "", persistence.CONFIGSTATE_CONFIGURING)
+	if err != nil {
+		t.Errorf("failed to create persisted device, error %v", err)
+	}
+
 	propName := "prop1"
 	propList := new(externalpolicy.PropertyList)
 	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"))
@@ -94,7 +105,7 @@ func Test_UpdateNodePolicy1(t *testing.T) {
 		Constraints: []string{`prop3 == "some value"`},
 	}
 
-	errHandled, np, msgs := UpdateNodePolicy(extNodePolicy, errorhandler, db, getBasicConfig())
+	errHandled, np, msgs := UpdateNodePolicy(extNodePolicy, errorhandler, getDummyPutNodePolicyHandler(), db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("Unexpected error handled: %v", myError)
@@ -119,7 +130,7 @@ func Test_UpdateNodePolicy1(t *testing.T) {
 
 	extNodePolicy.Properties = *propList
 
-	errHandled, np, msgs = UpdateNodePolicy(extNodePolicy, errorhandler, db, getBasicConfig())
+	errHandled, np, msgs = UpdateNodePolicy(extNodePolicy, errorhandler, getDummyPutNodePolicyHandler(), db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("Unexpected error handled: %v", myError)
@@ -151,6 +162,11 @@ func Test_DeleteNodePolicy1(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, "myOrg", "", persistence.CONFIGSTATE_CONFIGURING)
+	if err != nil {
+		t.Errorf("failed to create persisted device, error %v", err)
+	}
+
 	propName := "prop1"
 	propList := new(externalpolicy.PropertyList)
 	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"))
@@ -160,7 +176,7 @@ func Test_DeleteNodePolicy1(t *testing.T) {
 		Constraints: []string{`prop3 == "some value"`},
 	}
 
-	errHandled, np, msgs := UpdateNodePolicy(extNodePolicy, errorhandler, db, getBasicConfig())
+	errHandled, np, msgs := UpdateNodePolicy(extNodePolicy, errorhandler, getDummyPutNodePolicyHandler(), db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("Unexpected error handled: %v", myError)
