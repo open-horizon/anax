@@ -261,7 +261,9 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Validate and create or update the node policy.
-		errHandled, cfg, msgs := UpdateNodePolicy(&nodePolicy, errorHandler, a.db, a.Config)
+		nodePolicyHandler := exchange.GetHTTPPutNodePolicyHandler(a)
+
+		errHandled, cfg, msgs := UpdateNodePolicy(&nodePolicy, errorHandler, nodePolicyHandler, a.db, a.Config)
 		if errHandled {
 			return
 		}

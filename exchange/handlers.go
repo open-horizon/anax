@@ -142,3 +142,21 @@ func GetHTTPServiceDockerAuthsWithIdHandler(ec ExchangeContext) ServiceDockerAut
 		return GetServiceDockerAuthsWithId(ec, sId)
 	}
 }
+
+// A handler for getting the node policy from the exchange.
+type NodePolicyHandler func(deviceId string) (*ExchangePolicy, error)
+
+func GetHTTPNodePolicyHandler(ec ExchangeContext) NodePolicyHandler {
+	return func(deviceId string) (*ExchangePolicy, error) {
+		return GetNodePolicy(ec, deviceId)
+	}
+}
+
+// A handler for updating the node policy to the exchange.
+type PutNodePolicyHandler func(deviceId string, ep *ExchangePolicy) (*PutDeviceResponse, error)
+
+func GetHTTPPutNodePolicyHandler(ec ExchangeContext) PutNodePolicyHandler {
+	return func(deviceId string, ep *ExchangePolicy) (*PutDeviceResponse, error) {
+		return PutNodePolicy(ec, deviceId, ep)
+	}
+}
