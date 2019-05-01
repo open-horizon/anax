@@ -195,7 +195,7 @@ mostlyclean: clean
 	@echo "Cleaning anax binaries and configs"
 	-cd $(ANAX_SOURCE) && make clean
 
-realclean: mostlyclean minikube-clean
+realclean: mostlyclean
 	-docker rm -f "$(DOCKER_EXCHDB_CNAME)" "$(DOCKER_EXCH_CNAME)"
 	-docker rmi $(DOCKER_AGBOT_INAME):$(DOCKER_DEV_TAG) $(DOCKER_AGBOT_INAME):latest
 	-docker rmi openhorizon/amd64_exchange-api:$(DOCKER_EXCH_TAG)

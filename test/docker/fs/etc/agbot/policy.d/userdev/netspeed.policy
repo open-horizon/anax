@@ -41,7 +41,7 @@
     "resourceLimits": {},
     "counterPartyProperties": {
         "and":[
-            {"name":"purpose", "value":"network testing"}
+            {"name":"purpose", "value":"network-testing"}
         ]
     },
     "properties": [

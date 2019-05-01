@@ -1,8 +1,9 @@
 // +build unit
 
-package policy
+package externalpolicy
 
 import (
+	"encoding/json"
 	"testing"
 )
 
@@ -85,5 +86,19 @@ func Test_PropertyList_incompatible(t *testing.T) {
 				t.Errorf("Error: %v is not compatible with %v\n", p1, p2)
 			}
 		}
+	}
+}
+
+// Create a Property array from a JSON serialization. The JSON serialization
+// does not have to be a valid Property serialization, just has to be a valid
+// JSON serialization.
+func create_PropertyList(jsonString string, t *testing.T) *PropertyList {
+	pl := new(PropertyList)
+
+	if err := json.Unmarshal([]byte(jsonString), &pl); err != nil {
+		t.Errorf("Error unmarshalling PropertyList json string: %v error:%v\n", jsonString, err)
+		return nil
+	} else {
+		return pl
 	}
 }

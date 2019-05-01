@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/externalpolicy"
 	"strings"
 )
 
@@ -33,7 +34,7 @@ func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, senso
 
 	// Add properties to the policy
 	for prop, val := range *props {
-		p.Add_Property(Property_Factory(prop, val))
+		p.Add_Property(externalpolicy.Property_Factory(prop, val))
 	}
 
 	// Add HA configuration if there is any
@@ -64,17 +65,17 @@ func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, senso
 	}
 }
 
-func RetrieveAllProperties(policy *Policy) (*PropertyList, error) {
-	pl := new(PropertyList)
+func RetrieveAllProperties(policy *Policy) (*externalpolicy.PropertyList, error) {
+	pl := new(externalpolicy.PropertyList)
 
 	for _, p := range policy.Properties {
 		*pl = append(*pl, p)
 	}
 
-	*pl = append(*pl, Property{Name: "arch", Value: policy.APISpecs[0].Arch})
+	*pl = append(*pl, externalpolicy.Property{Name: "arch", Value: policy.APISpecs[0].Arch})
 
 	if len(policy.AgreementProtocols) != 0 {
-		*pl = append(*pl, Property{Name: "agreementProtocols", Value: policy.AgreementProtocols.As_String_Array()})
+		*pl = append(*pl, externalpolicy.Property{Name: "agreementProtocols", Value: policy.AgreementProtocols.As_String_Array()})
 	}
 
 	return pl, nil

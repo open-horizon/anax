@@ -16,6 +16,7 @@ import (
 	"github.com/open-horizon/anax/cli/metering"
 	_ "github.com/open-horizon/anax/cli/native_deployment"
 	"github.com/open-horizon/anax/cli/node"
+	"github.com/open-horizon/anax/cli/policy"
 	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/cli/service"
 	"github.com/open-horizon/anax/cli/status"
@@ -226,6 +227,11 @@ Environment Variables:
 
 	nodeCmd := app.Command("node", "List and manage general information about this Horizon edge node.")
 	nodeListCmd := nodeCmd.Command("list", "Display general information about this Horizon edge node.")
+
+	policyCmd := app.Command("policy", "List and manage policy for this Horizon edge node.")
+	policyListCmd := policyCmd.Command("list", "Display this edge node's policy.")
+	policyUpdateCmd := policyCmd.Command("update", "Update the node's policy.")
+	policyUpdateInputFile := policyUpdateCmd.Flag("input-file", "The JSON input file name containing the node policy.").Short('f').Required().String()
 
 	agreementCmd := app.Command("agreement", "List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.")
 	agreementListCmd := agreementCmd.Command("list", "List the active or archived agreements this edge node has made with a Horizon agreement bot.")
@@ -493,6 +499,10 @@ Environment Variables:
 		key.Remove(*keyDelName)
 	case nodeListCmd.FullCommand():
 		node.List()
+	case policyListCmd.FullCommand():
+		policy.List()
+	case policyUpdateCmd.FullCommand():
+		policy.Update(*policyUpdateInputFile)
 	case agreementListCmd.FullCommand():
 		agreement.List(*listArchivedAgreements, *listAgreementId)
 	case agreementCancelCmd.FullCommand():
