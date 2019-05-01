@@ -31,3 +31,7 @@ func (p PostgresqlConfig) MakeConnectionString() (string, string) {
 
 	return connStr, traceString
 }
+
+func (p PostgresqlConfig) String() string {
+	return fmt.Sprintf("Host: %v, Port: %v, User: %v, Password: %v, DBName: %v, SSLMode: %v", p.Host, p.Port, p.User, "******", p.DBName, p.SSLMode)
+}
