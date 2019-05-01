@@ -14,6 +14,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -38,6 +39,7 @@ const (
 	CLI_GENERAL_ERROR = 7
 	NOT_FOUND         = 8
 	SIGNATURE_INVALID = 9
+	EXEC_CMD_ERROR    = 10
 	INTERNAL_ERROR    = 99
 
 	// Anax API HTTP Codes
@@ -482,27 +484,46 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 
 // HorizonDelete runs a DELETE on the anax api.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
-func HorizonDelete(urlSuffix string, goodHttpCodes []int) (httpCode int) {
+func HorizonDelete(urlSuffix string, goodHttpCodes []int, quiet bool) (httpCode int, retError error) {
 	url := GetHorizonUrlBase() + "/" + urlSuffix
 	apiMsg := http.MethodDelete + " " + url
 	Verbose(apiMsg)
 	if IsDryRun() {
-		return 204
+		return 204, nil
 	}
 	httpClient := &http.Client{}
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
-		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
+		if quiet {
+			retError = fmt.Errorf("%s new request failed: %v", apiMsg, err)
+			return
+		} else {
+			Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
+		}
 	}
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		printHorizonRestError(apiMsg, err)
+		if quiet {
+			if os.Getenv("HORIZON_URL") == "" {
+				retError = fmt.Errorf("Can't connect to the Horizon REST API to run %s. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMsg, err)
+			} else {
+				retError = fmt.Errorf("Can't connect to the Horizon REST API to run %s. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: %v", apiMsg, err)
+			}
+			return
+		} else {
+			printHorizonRestError(apiMsg, err)
+		}
 	}
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
 	if !isGoodCode(httpCode, goodHttpCodes) {
-		Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyAsString(resp.Body))
+		if quiet {
+			retError = fmt.Errorf("Failed to read body response from %s: %v", apiMsg, err)
+			return
+		} else {
+			Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyAsString(resp.Body))
+		}
 	}
 	return
 }
@@ -926,7 +947,6 @@ func GetSigningKeys(privKeyFilePath, pubKeyFilePath string) (string, string) {
 	return privKeyFilePath, pubKeyFilePath
 }
 
-/* Do not need at the moment, but keeping for reference...
 // Run a command with optional stdin and args, and return stdout, stderr
 func RunCmd(stdinBytes []byte, commandString string, args ...string) ([]byte, []byte) {
 	// For debug, build the full cmd string
@@ -934,12 +954,16 @@ func RunCmd(stdinBytes []byte, commandString string, args ...string) ([]byte, []
 	for _, a := range args {
 		cmdStr += " " + a
 	}
-	if stdinBytes != nil { cmdStr += " < stdin" }
+	if stdinBytes != nil {
+		cmdStr += " < stdin"
+	}
 	Verbose("running: %v\n", cmdStr)
 
 	// Create the command object with its args
 	cmd := exec.Command(commandString, args...)
-	if cmd == nil { Fatal(EXEC_CMD_ERROR, "did not get a command object") }
+	if cmd == nil {
+		Fatal(EXEC_CMD_ERROR, "did not get a command object")
+	}
 
 	var stdin io.WriteCloser
 	//var jInbytes []byte
@@ -947,47 +971,64 @@ func RunCmd(stdinBytes []byte, commandString string, args ...string) ([]byte, []
 	if stdinBytes != nil {
 		// Create the std in pipe
 		stdin, err = cmd.StdinPipe()
-		if err != nil { Fatal(EXEC_CMD_ERROR, "Could not get Stdin pipe, error: %v", err) }
+		if err != nil {
+			Fatal(EXEC_CMD_ERROR, "Could not get Stdin pipe, error: %v", err)
+		}
 		// Read the input file
 		//jInbytes, err = ioutil.ReadFile(stdinFilename)
 		//if err != nil { Fatal(EXEC_CMD_ERROR,"Unable to read " + stdinFilename + " file, error: %v", err) }
 	}
 	// Create the stdout pipe to hold the output from the command
 	stdout, err := cmd.StdoutPipe()
-	if err != nil { Fatal(EXEC_CMD_ERROR,"could not retrieve output from command, error: %v", err) }
+	if err != nil {
+		Fatal(EXEC_CMD_ERROR, "could not retrieve output from command, error: %v", err)
+	}
 	// Create the stderr pipe to hold the errors from the command
 	stderr, err := cmd.StderrPipe()
-	if err != nil { Fatal(EXEC_CMD_ERROR,"could not retrieve stderr from command, error: %v", err) }
+	if err != nil {
+		Fatal(EXEC_CMD_ERROR, "could not retrieve stderr from command, error: %v", err)
+	}
 
 	// Start the command, which will block for input from stdin if the cmd reads from it
 	err = cmd.Start()
-	if err != nil { Fatal(EXEC_CMD_ERROR,"Unable to start command, error: %v", err) }
+	if err != nil {
+		Fatal(EXEC_CMD_ERROR, "Unable to start command, error: %v", err)
+	}
 
 	if stdinBytes != nil {
 		// Send in the std in bytes
 		_, err = stdin.Write(stdinBytes)
-		if err != nil { Fatal(EXEC_CMD_ERROR, "Unable to write to stdin of command, error: %v", err) }
+		if err != nil {
+			Fatal(EXEC_CMD_ERROR, "Unable to write to stdin of command, error: %v", err)
+		}
 		// Close std in so that the command will begin to execute
 		err = stdin.Close()
-		if err != nil { Fatal(EXEC_CMD_ERROR, "Unable to close stdin, error: %v", err) }
+		if err != nil {
+			Fatal(EXEC_CMD_ERROR, "Unable to close stdin, error: %v", err)
+		}
 	}
 
 	err = error(nil)
 	// Read the output from stdout and stderr into byte arrays
 	// stdoutBytes, err := readPipe(stdout)
 	stdoutBytes, err := ioutil.ReadAll(stdout)
-	if err != nil { Fatal(EXEC_CMD_ERROR,"could not read stdout, error: %v", err) }
+	if err != nil {
+		Fatal(EXEC_CMD_ERROR, "could not read stdout, error: %v", err)
+	}
 	// stderrBytes, err := readPipe(stderr)
 	stderrBytes, err := ioutil.ReadAll(stderr)
-	if err != nil { Fatal(EXEC_CMD_ERROR,"could not read stderr, error: %v", err) }
+	if err != nil {
+		Fatal(EXEC_CMD_ERROR, "could not read stderr, error: %v", err)
+	}
 
 	// Now block waiting for the command to complete
 	err = cmd.Wait()
-	if err != nil { Fatal(EXEC_CMD_ERROR, "command failed: %v, stderr: %s", err, string(stderrBytes)) }
+	if err != nil {
+		Fatal(EXEC_CMD_ERROR, "command failed: %v, stderr: %s", err, string(stderrBytes))
+	}
 
 	return stdoutBytes, stderrBytes
 }
-*/
 
 /* Will probably need this....
 func getString(v interface{}) string {

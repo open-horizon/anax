@@ -15,6 +15,16 @@ const E_AGREEMENTS = "established_agreements" // may or may not be in agreements
 
 const DEVMODE = "devmode"
 
+var RemoveDatabaseOnExit bool
+
+func SetRemoveDatabaseOnExit(remove bool) {
+	RemoveDatabaseOnExit = remove
+}
+
+func GetRemoveDatabaseOnExit() bool {
+	return RemoveDatabaseOnExit
+}
+
 type WorkloadInfo struct {
 	URL     string `json:"url,omitempty"`
 	Org     string `json:"org,omitempty"`

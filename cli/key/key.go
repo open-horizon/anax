@@ -132,7 +132,7 @@ func Import(pubKeyFile string) {
 }
 
 func Remove(keyName string) {
-	cliutils.HorizonDelete("trust/"+keyName, []int{200, 204})
+	cliutils.HorizonDelete("trust/"+keyName, []int{200, 204}, false)
 	fmt.Printf("Public key '%s' removed from the Horizon agent.\n", keyName)
 }
 
