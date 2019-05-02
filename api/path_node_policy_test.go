@@ -44,6 +44,9 @@ func Test_SaveNodePolicy1(t *testing.T) {
 
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
+	node_policy_error_handler := func(device interface{}, err error) bool {
+		return errorhandler(err)
+	}
 
 	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, "myOrg", "", persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
@@ -59,7 +62,9 @@ func Test_SaveNodePolicy1(t *testing.T) {
 		Constraints: []string{`prop3 == "some value"`},
 	}
 
-	errHandled, np, msgs := UpdateNodePolicy(extNodePolicy, errorhandler, getDummyPutNodePolicyHandler(), db, getBasicConfig())
+	ExchangeNodePolicyLastUpdated = ""
+
+	errHandled, np, msgs := UpdateNodePolicy(extNodePolicy, node_policy_error_handler, getDummyNodePolicyHandler(extNodePolicy), getDummyPutNodePolicyHandler(), db)
 
 	if errHandled {
 		t.Errorf("Unexpected error handled: %v", myError)
@@ -90,6 +95,9 @@ func Test_UpdateNodePolicy1(t *testing.T) {
 
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
+	node_policy_error_handler := func(device interface{}, err error) bool {
+		return errorhandler(err)
+	}
 
 	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, "myOrg", "", persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
@@ -104,8 +112,9 @@ func Test_UpdateNodePolicy1(t *testing.T) {
 		Properties:  *propList,
 		Constraints: []string{`prop3 == "some value"`},
 	}
+	ExchangeNodePolicyLastUpdated = ""
 
-	errHandled, np, msgs := UpdateNodePolicy(extNodePolicy, errorhandler, getDummyPutNodePolicyHandler(), db, getBasicConfig())
+	errHandled, np, msgs := UpdateNodePolicy(extNodePolicy, node_policy_error_handler, getDummyNodePolicyHandler(extNodePolicy), getDummyPutNodePolicyHandler(), db)
 
 	if errHandled {
 		t.Errorf("Unexpected error handled: %v", myError)
@@ -130,7 +139,7 @@ func Test_UpdateNodePolicy1(t *testing.T) {
 
 	extNodePolicy.Properties = *propList
 
-	errHandled, np, msgs = UpdateNodePolicy(extNodePolicy, errorhandler, getDummyPutNodePolicyHandler(), db, getBasicConfig())
+	errHandled, np, msgs = UpdateNodePolicy(extNodePolicy, node_policy_error_handler, getDummyNodePolicyHandler(extNodePolicy), getDummyPutNodePolicyHandler(), db)
 
 	if errHandled {
 		t.Errorf("Unexpected error handled: %v", myError)
@@ -161,6 +170,9 @@ func Test_DeleteNodePolicy1(t *testing.T) {
 
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
+	node_policy_error_handler := func(device interface{}, err error) bool {
+		return errorhandler(err)
+	}
 
 	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, "myOrg", "", persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
@@ -176,7 +188,9 @@ func Test_DeleteNodePolicy1(t *testing.T) {
 		Constraints: []string{`prop3 == "some value"`},
 	}
 
-	errHandled, np, msgs := UpdateNodePolicy(extNodePolicy, errorhandler, getDummyPutNodePolicyHandler(), db, getBasicConfig())
+	ExchangeNodePolicyLastUpdated = ""
+
+	errHandled, np, msgs := UpdateNodePolicy(extNodePolicy, node_policy_error_handler, getDummyNodePolicyHandler(extNodePolicy), getDummyPutNodePolicyHandler(), db)
 
 	if errHandled {
 		t.Errorf("Unexpected error handled: %v", myError)
@@ -196,7 +210,7 @@ func Test_DeleteNodePolicy1(t *testing.T) {
 
 	// Now delete the object.
 
-	errHandled, msgs = DeleteNodePolicy(errorhandler, db)
+	errHandled, msgs = DeleteNodePolicy(node_policy_error_handler, db, getDummyNodePolicyHandler(nil), getDummyDeleteNodePolicyHandler())
 
 	if errHandled {
 		t.Errorf("Unexpected error handled: %v", myError)

@@ -148,3 +148,78 @@ func Test_DeleteNodePolicy1(t *testing.T) {
 	}
 
 }
+
+// Verify that GetNodePolicyLatUpdated_Exch works when there is no data in the database.
+func Test_GetNodePolicyLatUpdated_Exch(t *testing.T) {
+	dir, db, err := utsetup()
+	if err != nil {
+		t.Error(err)
+	}
+	defer cleanTestDir(dir)
+
+	if lastUpdated, err := GetNodePolicyLatUpdated_Exch(db); err != nil {
+		t.Errorf("failed to find node policy in db, error %v", err)
+	} else if lastUpdated != "" {
+		t.Errorf("incorrect result, should have returned an empty string but got: %v", lastUpdated)
+	}
+
+}
+
+func Test_SaveNodePolicyLatUpdated_Exch(t *testing.T) {
+
+	dir, db, err := utsetup()
+	if err != nil {
+		t.Error(err)
+	}
+	defer cleanTestDir(dir)
+
+	lastUpdated := "2019-05-06T21:52:50.010Z[UTC]"
+	err = SaveNodePolicyLatUpdated_Exch(db, lastUpdated)
+
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	} else if lastUpdated1, err := GetNodePolicyLatUpdated_Exch(db); err != nil {
+		t.Errorf("failed to find last updated value for exchange node policy in local db, error %v", err)
+	} else if lastUpdated != lastUpdated1 {
+		t.Errorf("incorrect last updated value saved, expecting %v found: %v", lastUpdated, lastUpdated1)
+	}
+}
+
+// Verify that a exchange node lastUpdated value can be created and then deleted.
+func Test_DeleteNodePolicyLastUpdated_Exch(t *testing.T) {
+
+	dir, db, err := utsetup()
+	if err != nil {
+		t.Error(err)
+	}
+	defer cleanTestDir(dir)
+
+	lastUpdated := "2019-05-06T21:52:50.010Z[UTC]"
+	err = SaveNodePolicyLatUpdated_Exch(db, lastUpdated)
+
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	} else if lastUpdated1, err := GetNodePolicyLatUpdated_Exch(db); err != nil {
+		t.Errorf("failed to find last updated value for exchange node policy in local db, error %v", err)
+	} else if lastUpdated != lastUpdated1 {
+		t.Errorf("incorrect last updated value saved, expecting %v found: %v", lastUpdated, lastUpdated1)
+	}
+
+	// Now delete the object.
+	err = DeleteNodePolicyLastUpdated_Exch(db)
+	if err != nil {
+		t.Errorf("Failed to delete saved lastUpdated value from the local db, error %v", err)
+	}
+
+	if lastUpdated2, err := GetNodePolicyLatUpdated_Exch(db); err != nil {
+		t.Errorf("failed to find last updated value for exchange node policy in local db, error %v", err)
+	} else if lastUpdated2 != "" {
+		t.Errorf("incorrect result, expecting an empty string but got: %v", lastUpdated2)
+	}
+
+	// delete again, should have no error
+	err = DeleteNodePolicyLastUpdated_Exch(db)
+	if err != nil {
+		t.Errorf("Failed to delete saved lastUpdated value from the local db, error %v", err)
+	}
+}

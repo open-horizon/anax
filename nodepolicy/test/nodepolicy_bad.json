@@ -1,0 +1,13 @@
+{
+  "properties": [
+    {
+      "name": "purpose",
+      "value": "my-testing"
+    }, blah
+    {
+      "name": "hello",
+      "value": "world"
+    }
+  ],
+}
+

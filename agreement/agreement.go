@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/nodepolicy"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/producer"
@@ -26,6 +27,7 @@ import (
 
 // for identifying the subworkers used by this worker
 const HEARTBEAT = "HeartBeat"
+const NODEPOLICY = "NodePolicy"
 
 // must be safely-constructed!!
 type AgreementWorker struct {
@@ -197,6 +199,7 @@ func (w *AgreementWorker) Initialize() bool {
 		// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
 		// start heartbeating when the registration event comes in.
 		w.heartBeatFailed = false
+		w.DispatchSubworker(NODEPOLICY, w.checkNodePolicyChanges, w.BaseWorker.Manager.Config.Edge.NodePolicyCheckIntervalS)
 		w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat)
 	}
 
@@ -363,6 +366,9 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 		glog.Errorf(logString(fmt.Sprintf("error during sync up of agreements, error: %v", err)))
 	}
 
+	// start checking node policy changes periodically
+	w.DispatchSubworker(NODEPOLICY, w.checkNodePolicyChanges, w.BaseWorker.Manager.Config.Edge.NodePolicyCheckIntervalS)
+
 	// Start the go thread that heartbeats to the exchange
 	w.heartBeatFailed = false
 	w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat)
@@ -431,6 +437,49 @@ func (w *AgreementWorker) heartBeat() int {
 	return 0
 }
 
+// Check the node policy changes on the exchange and sync up with
+// the local copy. THe exchange is the master
+func (w *AgreementWorker) checkNodePolicyChanges() int {
+	glog.V(5).Infof(logString(fmt.Sprintf("checking the node policy changes.")))
+
+	// get the node
+	pDevice, err := persistence.FindExchangeDevice(w.db)
+	if err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Unable to read node object from the local database. %v", err)))
+		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Unable to read node object from the local database. %v", err),
+			persistence.EC_DATABASE_ERROR)
+		return 0
+	} else if pDevice == nil {
+		glog.Errorf(logString(fmt.Sprintf("No device is found from the local database.")))
+		return 0
+	}
+
+	// exchange is the master
+	updated, newNodePolicy, err := nodepolicy.SyncNodePolicyWithExchange(w.db, pDevice, exchange.GetHTTPNodePolicyHandler(w))
+	if err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Unable to sync the local node policy with the exchange copy. Error: %v", err)))
+		eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Unable to sync the local node policy with the exchange copy. Error: %v", err),
+			persistence.EC_ERROR_NODE_POLICY_UPDATE,
+			exchange.GetOrg(w.GetExchangeId()),
+			exchange.GetId(w.GetExchangeId()),
+			w.devicePattern, "")
+	} else if updated {
+		glog.V(3).Infof(logString(fmt.Sprintf("Node policy updated with the exchange copy: %v", newNodePolicy)))
+		eventlog.LogNodeEvent(w.db, persistence.SEVERITY_INFO,
+			fmt.Sprintf("Node policy updated with the exchange copy: %v", newNodePolicy),
+			persistence.EC_NODE_POLICY_UPDATED,
+			exchange.GetOrg(w.GetExchangeId()),
+			exchange.GetId(w.GetExchangeId()),
+			w.devicePattern, "")
+		w.Messages() <- events.NewNodePolicyMessage(events.UPDATE_POLICY)
+	}
+
+	glog.V(5).Infof(logString(fmt.Sprintf("Done checking the node policy changes.")))
+	return 0
+}
+
 // This function is only called when anax device side initializes. The agbot has it's own initialization checking.
 // This function is responsible for reconciling the agreements in our local DB with the agreements recorded in the exchange
 // and the blockchain, as well as looking for agreements that need to change based on changes to policy files. This function
@@ -439,6 +488,12 @@ func (w *AgreementWorker) heartBeat() int {
 func (w *AgreementWorker) syncOnInit() error {
 
 	glog.V(3).Infof(logString("beginning sync up."))
+
+	// setup the node policy. If neither node nor exchange has node policy, setup the default.
+	// Otherwise, use the one from the exchange.
+	if _, err := nodepolicy.NodePolicyInitalSetup(w.db, w.Config, exchange.GetHTTPNodePolicyHandler(w), exchange.GetHTTPPutNodePolicyHandler(w)); err != nil {
+		return errors.New(logString(fmt.Sprintf("Failed to initially set up node policy. %v", err)))
+	}
 
 	// Reconcile the set of agreements recorded in the exchange for this device with the agreements in the local DB.
 	// First get all the agreements for this device from the exchange.

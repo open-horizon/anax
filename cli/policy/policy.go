@@ -15,11 +15,12 @@ func List() {
 	cliutils.HorizonGet("node/policy", []int{200}, &nodePolicy, false)
 
 	// Output the combined info
-	jsonBytes, err := json.MarshalIndent(nodePolicy, "", cliutils.JSON_INDENT)
+	output, err := cliutils.DisplayAsJson(nodePolicy)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn policy list' output: %v", err)
 	}
-	fmt.Printf("%s\n", jsonBytes)
+
+	fmt.Println(output)
 }
 
 func Update(fileName string) {
@@ -27,7 +28,7 @@ func Update(fileName string) {
 	ep := new(externalpolicy.ExternalPolicy)
 	readInputFile(fileName, ep)
 
-	_, _ = cliutils.HorizonPutPost(http.MethodPost, "node/policy", []int{201, 200}, ep)
+	cliutils.HorizonPutPost(http.MethodPost, "node/policy", []int{201, 200}, ep)
 
 	fmt.Println("Horizon node policy updated.")
 
@@ -39,4 +40,14 @@ func readInputFile(filePath string, inputFileStruct *externalpolicy.ExternalPoli
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", filePath, err)
 	}
+}
+
+func Remove(force bool) {
+	if !force {
+		cliutils.ConfirmRemove("Are you sure you want to remove the node policy?")
+	}
+
+	cliutils.HorizonDelete("node/policy", []int{200, 204}, false)
+
+	fmt.Println("Horizon node policy deleted.")
 }

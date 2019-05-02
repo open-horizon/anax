@@ -1,0 +1,17 @@
+{
+  "properties": [
+    {
+      "name": "purpose",
+      "value": "my-testing"
+    },
+    {
+      "name": "hello",
+      "value": "world"
+    }
+  ],
+  "constraints": [
+     "a <= 1",
+     "eggs == 'truck load' AND certification == USDA"
+  ]
+}
+

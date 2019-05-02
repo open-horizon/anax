@@ -3,8 +3,10 @@ package exchange
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/externalpolicy"
 	"net/http"
 	"os"
 )
@@ -38,7 +40,7 @@ func NodeList(org string, credToUse string, node string, namesOnly bool) {
 		if httpCode == 404 && node != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, "node '%s' not found in org %s", node, org)
 		}
-		output := cliutils.MarshalIndent(nodes.Nodes, "exchange nodes list")
+		output := cliutils.MarshalIndent(nodes.Nodes, "exchange node list")
 		fmt.Println(output)
 	}
 }
@@ -152,4 +154,67 @@ func NodeRemove(org, credToUse, node string, force bool) {
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "node '%s' not found in org %s", node, org)
 	}
+}
+
+func NodeListPolicy(org string, credToUse string, node string) {
+	cliutils.SetWhetherUsingApiKey(credToUse)
+	org, node = cliutils.TrimOrg(org, node)
+
+	// check node exists first
+	var nodes ExchangeNodes
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "node '%v/%v' not found.", org, node)
+	}
+
+	// list policy
+	var policy exchange.ExchangePolicy
+	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &policy)
+	output := cliutils.MarshalIndent(policy.GetExternalPolicy(), "exchange node listpolicy")
+	fmt.Println(output)
+}
+
+func NodeUpdatePolicy(org string, credToUse string, node string, jsonFilePath string) {
+	cliutils.SetWhetherUsingApiKey(credToUse)
+	org, node = cliutils.TrimOrg(org, node)
+
+	// Read in the policy metadata
+	newBytes := cliconfig.ReadJsonFileWithLocalConfig(jsonFilePath)
+	var policyFile externalpolicy.ExternalPolicy
+	err := json.Unmarshal(newBytes, &policyFile)
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", jsonFilePath, err)
+	}
+
+	// check node exists first
+	var nodes ExchangeNodes
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "node '%v/%v' not found.", org, node)
+	}
+
+	// add/replce node policy
+	cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
+
+	fmt.Println("Node policy updated.")
+}
+
+func NodeRemovePolicy(org, credToUse, node string, force bool) {
+	cliutils.SetWhetherUsingApiKey(credToUse)
+	org, node = cliutils.TrimOrg(org, node)
+	if !force {
+		cliutils.ConfirmRemove("Are you sure you want to remove node policy for '" + org + "/" + node + "' from the Horizon Exchange?")
+	}
+
+	// check node exists first
+	var nodes ExchangeNodes
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "node '%v/%v' not found.", org, node)
+	}
+
+	// remove policy
+	cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
+	fmt.Println("Node policy removed.")
+
 }
