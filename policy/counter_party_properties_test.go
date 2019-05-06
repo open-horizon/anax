@@ -236,7 +236,7 @@ func Test_satisfy_simple2(t *testing.T) {
 		}
 	}
 
-	simple_or = `{"or":[{"name":"prop1", "value":10, "op":"="}]}`
+	simple_or = `{"or":[{"name":"prop1", "value":10, "op":"=="}]}`
 	if rp = create_RP(simple_or, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err != nil {
@@ -260,7 +260,7 @@ func Test_satisfy_multiple1(t *testing.T) {
 	var rp *RequiredProperty
 	var pa *[]externalpolicy.Property
 
-	multiple_and := `{"and":[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2", "op":"="}]}`
+	multiple_and := `{"and":[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2", "op":"=="}]}`
 	prop_list := `[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2"},{"name":"prop3", "value":"val3"}]`
 
 	if rp = create_RP(multiple_and, t); rp != nil {
@@ -703,6 +703,22 @@ func Test_simple_conversion(t *testing.T) {
 		t.Errorf("Error: There should be a top level array element")
 	} else if len(tle) != 1 {
 		t.Errorf("Error: Should be 1 top level array alement")
+	} else {
+		prop_list := `[{"name":"prop", "value":"value"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Error(err)
+			}
+		}
+
+		prop_list = `[{"name":"propA", "value":"value"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err == nil {
+				t.Errorf("Error: properties %v should not satisfy %v", prop_list, rp)
+			}
+		}
 	}
 
 	ce = new(externalpolicy.ConstraintExpression)
@@ -713,6 +729,22 @@ func Test_simple_conversion(t *testing.T) {
 		t.Errorf("Error: There should be a top level array element")
 	} else if len(tle) != 1 {
 		t.Errorf("Error: Should be 1 top level array alement")
+	} else {
+		prop_list := `[{"name":"prop", "value":"value"},{"name":"prop2", "value":"value2"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Error(err)
+			}
+		}
+
+		prop_list = `[{"name":"prop", "value":"value"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err == nil {
+				t.Errorf("Error: properties %v should not satisfy %v", prop_list, rp)
+			}
+		}
 	}
 
 	ce = new(externalpolicy.ConstraintExpression)
@@ -722,7 +754,23 @@ func Test_simple_conversion(t *testing.T) {
 	} else if tle := rp.TopLevelElements(); tle == nil {
 		t.Errorf("Error: There should be 2 top level array elements")
 	} else if len(tle) != 2 {
-		t.Errorf("Error: Should be 1 top level array alement")
+		t.Errorf("Error: Should be 2 top level array alements")
+	} else {
+		prop_list := `[{"name":"prop3", "value":"value3"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Error(err)
+			}
+		}
+
+		prop_list = `[{"name":"prop2", "value":"value2"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err == nil {
+				t.Errorf("Error: properties %v should not satisfy %v", prop_list, rp)
+			}
+		}
 	}
 
 	ce = new(externalpolicy.ConstraintExpression)
@@ -732,7 +780,23 @@ func Test_simple_conversion(t *testing.T) {
 	} else if tle := rp.TopLevelElements(); tle == nil {
 		t.Errorf("Error: There should be 3 top level array elements")
 	} else if len(tle) != 3 {
-		t.Errorf("Error: Should be 1 top level array alement")
+		t.Errorf("Error: Should be 3 top level array alements")
+	} else {
+		prop_list := `[{"name":"prop4", "value":"value4"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Error(err)
+			}
+		}
+
+		prop_list = `[{"name":"prop2", "value":"value2"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err == nil {
+				t.Errorf("Error: properties %v should not satisfy %v", prop_list, rp)
+			}
+		}
 	}
 
 	ce = new(externalpolicy.ConstraintExpression)
@@ -742,7 +806,23 @@ func Test_simple_conversion(t *testing.T) {
 	} else if tle := rp.TopLevelElements(); tle == nil {
 		t.Errorf("Error: There should be 3 top level array elements")
 	} else if len(tle) != 3 {
-		t.Errorf("Error: Should be 1 top level array alement")
+		t.Errorf("Error: Should be 3 top level array alement")
+	} else {
+		prop_list := `[{"name":"prop3", "value":"value3"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Error(err)
+			}
+		}
+
+		prop_list = `[{"name":"prop", "value":"value"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err == nil {
+				t.Errorf("Error: properties %v should not satisfy %v", prop_list, rp)
+			}
+		}
 	}
 
 }

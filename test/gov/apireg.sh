@@ -59,7 +59,7 @@ read -d '' newhznpolicy <<EOF
   "properties": [
       {"name":"purpose","value":"network-testing"}
     ],
-  "constraints": []
+  "constraints": ["iame2edev == true"]
 }
 EOF
 

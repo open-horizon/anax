@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/worker"
 	"math/rand"
 	"net/http"
 )
@@ -142,6 +143,41 @@ type BaseAgreementWorker struct {
 	alm        *AgreementLockManager
 	workerID   string
 	httpClient *http.Client
+	ec         *worker.BaseExchangeContext
+
+}
+
+// A local implementation of the ExchangeContext interface because Agbot agreement workers are not full featured workers.
+func (b *BaseAgreementWorker) GetExchangeId() string {
+	if b.ec != nil {
+		return b.ec.Id
+	} else {
+		return ""
+	}
+}
+
+func (b *BaseAgreementWorker) GetExchangeToken() string {
+	if b.ec != nil {
+		return b.ec.Token
+	} else {
+		return ""
+	}
+}
+
+func (b *BaseAgreementWorker) GetExchangeURL() string {
+	if b.ec != nil {
+		return b.ec.URL
+	} else {
+		return ""
+	}
+}
+
+func (b *BaseAgreementWorker) GetHTTPFactory() *config.HTTPClientFactory {
+	if b.ec != nil {
+		return b.ec.HTTPFactory
+	} else {
+		return b.config.Collaborators.HTTPClientFactory
+	}
 }
 
 func (b *BaseAgreementWorker) AgreementLockManager() *AgreementLockManager {
@@ -217,13 +253,13 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		}
 
 		if wi.ConsumerPolicy.PatternId != "" {
-			// check if workload is suspended. if suspended, then do not make agreement
+			// If the service is suspended, then do not make an agreement.
 			if found, suspended := exchange.ServiceSuspended(exchangeDev.RegisteredServices, workload.WorkloadURL, workload.Org); found && suspended {
 				glog.Infof(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with %v for policy %v because service %v is suspended by the user.", wi.Device.Id, wi.ConsumerPolicy.Header.Name, cutil.FormOrgSpecUrl(workload.WorkloadURL, workload.Org))))
 				return
 			}
 
-			// check the arch of the top level service against the node. If not match, then do not make agreement.
+			// Check the arch of the top level service against the node. If it does not match, then do not make an agreement.
 			// In the pattern case, the top level service spec, arch and version are also put in the node's registeredServices
 			for _, ms_svc := range exchangeDev.RegisteredServices {
 				if ms_svc.Url == cutil.FormOrgSpecUrl(workload.WorkloadURL, workload.Org) {
@@ -259,7 +295,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			return
 		} else {
 
-			// check if the depended services are suspended. If any of them is suspended, then abort the agreeent initialization process
+			// Check if the depended services are suspended. If any of them are suspended, then abort the agreement initialization process.
 			if wi.ConsumerPolicy.PatternId != "" {
 				for _, apiSpec := range *asl {
 					for _, devMS := range exchangeDev.RegisteredServices {
@@ -303,6 +339,50 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 							break
 						}
 					}
+				} else {
+					// This is the non-pattern use case, which means services are being deployed by policy.
+					// Make sure the node policy is compatible with the merger of the service policy and business policy.
+
+					nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(b)
+					if nodePolicy, err := nodePolicyHandler(wi.Device.Id); err != nil {
+						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error trying to query node policy: %v", err)))
+						continue
+					} else {
+						glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
+						pPolicy := policy.Policy_Factory(fmt.Sprintf("Policy for %v", wi.Device.Id))
+						pPolicy.Properties = nodePolicy.Properties
+						rp, err := policy.RequiredPropertyFromConstraint(&nodePolicy.Constraints)
+						if err != nil {
+							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error trying to convert node policy constraints to JSON: %v", err)))
+							continue
+						}
+						pPolicy.CounterPartyProperties = (*rp)
+
+						if err := policy.Are_Compatible(pPolicy, &wi.ConsumerPolicy); err != nil {
+							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error comparing node %v and %v, error: %v", *pPolicy, wi.ConsumerPolicy, err)))
+							continue
+						}
+						glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("Node %v is compatible", wi.Device.Id)))
+
+						// Ling, I know what the problem is, but not quite sure how to fix it. I need to stop working now.
+						// Here is the problem: In the old Citizen Scientist use case, the agbot searches for nodes that have
+						// the  services that it needs. It gets those services back in the device object that is returned. This
+						// function (InitiateNewAgreement) receives those services in the wi.producerPolicy field. That producer
+						// policy is sent in the proposal. In the new world, where the policy is in the node object in the
+						// exchange, we want to use that node policy to check if the workload is compatible. The problem is
+						// that the resulting policy we generated 5 lines up from here does not contain the list of services
+						// in the APISpecs array that the node is expecting (the versions are wrong). The only way to get the right
+						// versions is to get them from the list of registered services in the exchange node object. And further,
+						// we want to delete that list of registeredservices when policy is in use. So, the thing to do is to
+						// construct the list of APISpecs for the producer policy from the device's registered service array, instead
+						// of using the (*asl) which is from the service resolver, not from the node object.
+						// wi.Device might have the registered service in it (wi.Device.Services)
+
+						pPolicy.APISpecs = (*asl)
+						wi.ProducerPolicy = *pPolicy
+
+					}
+
 				}
 			}
 

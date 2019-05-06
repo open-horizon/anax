@@ -106,7 +106,7 @@ func RequiredPropertyFromConstraint(extConstraint *externalpolicy.ConstraintExpr
 
 		} else {
 			// OR means we need a new element in the "or" array.
-			innerAnd := map[string][]interface{}{
+			innerAnd := map[string]interface{}{
 				and: andArray,
 			}
 			orArray = append(orArray, innerAnd)
@@ -117,7 +117,7 @@ func RequiredPropertyFromConstraint(extConstraint *externalpolicy.ConstraintExpr
 	}
 
 	// Done with the expression, so close up the current and array initialize the RequiredProperty, and return it.
-	innerAnd := map[string][]interface{}{
+	innerAnd := map[string]interface{}{
 		and: andArray,
 	}
 	orArray = append(orArray, innerAnd)
@@ -143,7 +143,7 @@ func (rp *RequiredProperty) TopLevelElements() []interface{} {
 // These are the comparison operators that are supported
 const lessthan = "<"
 const greaterthan = ">"
-const equalto = "="
+const equalto = "=="
 const lessthaneq = "<="
 const greaterthaneq = ">="
 const notequalto = "!="
@@ -153,6 +153,10 @@ type PropertyExpression struct {
 	Name  string      `json:"name"`  // The Property name
 	Value interface{} `json:"value"` // The Property value
 	Op    string      `json:"op"`    // The operator to apply to the property value
+}
+
+func (p PropertyExpression) String() string {
+	return fmt.Sprintf("PropertyExpression: Name: %v, Value: %v, Op: %v", p.Name, p.Value, p.Op)
 }
 
 func PropertyExpression_Factory(name string, value interface{}, op string) *PropertyExpression {
@@ -377,11 +381,24 @@ func isMap(x interface{}) bool {
 	}
 }
 
+// This function checks the type of the input interface object to see if it's type is a PropertyExpression.
+func isPropertyExpressionType(x interface{}) bool {
+	switch x.(type) {
+	case PropertyExpression:
+		return true
+	default:
+		return false
+	}
+}
+
 // This function checks the type of the input interface object to see if it's a map of string to
 // interface that complies with the definition of a PropertyExpression object. If so, the input parameter
 // is used to construct a PropertyExpression object and return it.
 func isPropertyExpression(x interface{}) *PropertyExpression {
-	if !isMap(x) {
+	if isPropertyExpressionType(x) {
+		pe := x.(PropertyExpression)
+		return &pe
+	} else if !isMap(x) {
 		return nil
 	} else {
 		asMap := x.(map[string]interface{})
@@ -394,7 +411,7 @@ func isPropertyExpression(x interface{}) *PropertyExpression {
 			p.Name = asMap["name"].(string)
 			p.Value = asMap["value"]
 			if _, ok := asMap["op"]; !ok {
-				p.Op = "="
+				p.Op = equalto
 			} else if _, ok := comparisonOperators()[asMap["op"].(string)]; ok {
 				p.Op = asMap["op"].(string)
 			} else {
