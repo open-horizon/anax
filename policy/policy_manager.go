@@ -526,6 +526,7 @@ func (self *PolicyManager) unlockedGetPolicyByURL(homeOrg string, url string, or
 	}
 
 	for _, pol := range orgArray {
+		glog.Infof("iterating policy: %v %v", pol.Header, pol.APISpecs)
 		if pol.APISpecs.ContainsSpecRef(url, org, version) {
 			return pol
 		}

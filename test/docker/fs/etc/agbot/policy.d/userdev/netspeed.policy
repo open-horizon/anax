@@ -47,7 +47,7 @@
     "properties": [
       {
           "name": "iame2edev",
-          "value": true
+          "value": "true"
       },
       {
           "name": "number",

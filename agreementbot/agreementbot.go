@@ -567,38 +567,10 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 						continue
 					}
 
-					// The only reason for no microservices in the device search result is because the search was pattern based.
-					// In this case there will not be any policies from the producer side to work with. The agbot assumes that
-					// device side anax will not allow microservice registration that is incompatible with the pattern.
-
-					// If there are no microservices in the returned device then we cant do any of the
-					// producer side policy merge and compatibility checks until we get the node's policies from the
-					// exchange. It is preferable to NOT call the exchange on the main agbot thread. So, make an
-					// agreement protocol choice based solely on the consumer side policy. Once the new agreement
-					// attempt gets on a worker thread, then we can perform the policy checks and merges.
 					producerPolicy := policy.Policy_Factory(consumerPolicy.Header.Name)
-					err := error(nil)
-					if len(dev.Services) != 0 {
 
-						// For every microservice required by the workload, deserialize the JSON policy blob into a policy object and
-						// then merge them all together.
-						if producerPolicy, err = w.MergeAllProducerPolicies(&dev); err != nil {
-							glog.Errorf("AgreementBotWorker unable to merge service policies, error: %v", err)
-							continue
-						} else if producerPolicy == nil {
-							glog.Errorf("AgreementBotWorker unable to create merged policy from producer %v", dev)
-							continue
-						}
-
-						// Check to see if the device's merged policy is compatible with the consumer
-						if err := policy.Are_Compatible(producerPolicy, &consumerPolicy); err != nil {
-							glog.Errorf("AgreementBotWorker received error comparing %v and %v, error: %v", *producerPolicy, consumerPolicy, err)
-							continue
-						}
-
-					}
-
-					// Select a worker pool based on the agreement protocol that will be used.
+					// Select a worker pool based on the agreement protocol that will be used. This is decided by the
+					// consumer policy.
 					protocol := policy.Select_Protocol(producerPolicy, &consumerPolicy)
 					cmd := NewMakeAgreementCommand(*producerPolicy, consumerPolicy, org, dev)
 
@@ -813,9 +785,9 @@ func DeleteMessage(msgId int, agbotId, agbotToken, exchangeURL string, httpClien
 // microservices.
 func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, polOrg string) (*[]exchange.SearchResultDevice, error) {
 
-	// If it is a pattern based policy, search by worload URL and pattern.
+	// If it is a pattern based policy, search by workload URL and pattern.
 	if pol.PatternId != "" {
-		// get a list of node orgs that agbot is serving for this pattern
+		// Get a list of node orgs that the agbot is serving for this pattern.
 		nodeOrgs := w.PatternManager.GetServedNodeOrgs(polOrg, exchange.GetId(pol.PatternId))
 		if len(nodeOrgs) == 0 {
 			glog.V(3).Infof("Policy file for pattern %v exists but currently the agbot is not serving this policy for any organizations.", pol.PatternId)
@@ -860,7 +832,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, polOrg string) (
 
 		// For policy files that point to the exchange for workload details, we need to get all the referred to API specs
 		// from all workloads and search for devices that can satisfy all the workloads in the policy file. If a device
-		// can't satisfy all the workloads then workload rollback cant work so we shouldnt make an agreement with this
+		// can't satisfy all the workloads then workload rollback can't work so we shouldn't make an agreement with this
 		// device.
 		for _, workload := range pol.Workloads {
 			if asl, e_service, err := exchange.GetHTTPServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
@@ -869,7 +841,7 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, polOrg string) (
 				return nil, errors.New(fmt.Sprintf("AgreementBotWorker could not find service definition for %v", workload))
 			} else {
 				for _, rs := range *asl {
-					// convert the arch to GOARCH standard using synonyms defined in the config
+					// Convert the arch to GOARCH standard using synonyms defined in the config.
 					arch := rs.Arch
 					if arch != "" && w.Config.ArchSynonyms.GetCanonicalArch(arch) != "" {
 						arch = w.Config.ArchSynonyms.GetCanonicalArch(arch)
