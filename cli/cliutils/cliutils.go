@@ -7,20 +7,22 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	dockerclient "github.com/fsouza/go-dockerclient"
-	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/exchange"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
 	"time"
+
+	dockerclient "github.com/fsouza/go-dockerclient"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/exchange"
 )
 
 const (
@@ -469,6 +471,16 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 		default:
 			// Put the response body in the specified struct
 			err = json.Unmarshal(bodyBytes, structure)
+			var emptyStructure interface{}
+			if reflect.TypeOf(structure).Kind() == reflect.Ptr {
+				emptyStructure = reflect.New(reflect.ValueOf(structure).Elem().Type()).Interface()
+			} else {
+				emptyStructure = reflect.New(reflect.TypeOf(structure)).Elem().Interface()
+			}
+			if reflect.DeepEqual(structure, emptyStructure) {
+				return ANAX_NOT_CONFIGURED_YET, fmt.Errorf("Failed to get proper response from node")
+			}
+
 			if err != nil {
 				if quiet {
 					retError = fmt.Errorf("Failed to unmarshal body response from %s: %v", apiMsg, err)
