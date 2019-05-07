@@ -471,6 +471,7 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 		default:
 			// Put the response body in the specified struct
 			err = json.Unmarshal(bodyBytes, structure)
+			//Check that something was written to structure
 			var emptyStructure interface{}
 			if reflect.TypeOf(structure).Kind() == reflect.Ptr {
 				emptyStructure = reflect.New(reflect.ValueOf(structure).Elem().Type()).Interface()
