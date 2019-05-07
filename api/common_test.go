@@ -5,6 +5,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
 	"os"
@@ -145,9 +146,27 @@ func getVariableServiceResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange
 	}
 }
 
+var ExchangeNodePolicyLastUpdated = ""
 func getDummyPutNodePolicyHandler() exchange.PutNodePolicyHandler {
 	return func(deviceId string, ep *exchange.ExchangePolicy) (*exchange.PutDeviceResponse, error) {
+		ExchangeNodePolicyLastUpdated += "blah"
 		return nil, nil
+	}
+}
+
+func getDummyNodePolicyHandler(ep *externalpolicy.ExternalPolicy) exchange.NodePolicyHandler {
+	return func(deviceId string) (*exchange.ExchangePolicy, error) {
+		if ep != nil {
+			return &exchange.ExchangePolicy{*ep, ExchangeNodePolicyLastUpdated}, nil
+		} else {
+			return &exchange.ExchangePolicy{externalpolicy.ExternalPolicy{}, ExchangeNodePolicyLastUpdated}, nil
+		}
+	}
+}
+
+func getDummyDeleteNodePolicyHandler() exchange.DeleteNodePolicyHandler {
+	return func(deviceId string) (error) {
+		return nil
 	}
 }
 

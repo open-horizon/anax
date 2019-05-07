@@ -160,3 +160,12 @@ func GetHTTPPutNodePolicyHandler(ec ExchangeContext) PutNodePolicyHandler {
 		return PutNodePolicy(ec, deviceId, ep)
 	}
 }
+
+// A handler for deleting the node policy from the exchange.
+type DeleteNodePolicyHandler func(deviceId string) error
+
+func GetHTTPDeleteNodePolicyHandler(ec ExchangeContext) DeleteNodePolicyHandler {
+	return func(deviceId string) error {
+		return DeleteNodePolicy(ec, deviceId)
+	}
+}

@@ -109,6 +109,17 @@ Environment Variables:
 	exNodeRemoveNodeIdTok := exNodeDelCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
 	exDelNode := exNodeDelCmd.Arg("node", "The node to remove.").Required().String()
 	exNodeDelForce := exNodeDelCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
+	exNodeListPolicyCmd := exNodeCmd.Command("listpolicy", "Display the node policy from the Horizon Exchange.")
+	exNodeListPolicyIdTok := exNodeListPolicyCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
+	exNodeListPolicyNode := exNodeListPolicyCmd.Arg("node", "List policy for this node.").Required().String()
+	exNodeUpdatePolicyCmd := exNodeCmd.Command("updatepolicy", "Add or replace the node policy in the Horizon Exchange.")
+	exNodeUpdatePolicyIdTok := exNodeUpdatePolicyCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
+	exNodeUpdatePolicyNode := exNodeUpdatePolicyCmd.Arg("node", "Add or replace policy for this node.").Required().String()
+	exNodeUpdatePolicyJsonFile := exNodeUpdatePolicyCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the node policy in the Horizon exchange. Specify -f- to read from stdin.").Short('f').Required().String()
+	exNodeRemovePolicyCmd := exNodeCmd.Command("removepolicy", "Remove the node policy in the Horizon Exchange.")
+	exNodeRemovePolicyIdTok := exNodeRemovePolicyCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
+	exNodeRemovePolicyNode := exNodeRemovePolicyCmd.Arg("node", "Remove policy for this node.").Required().String()
+	exNodeRemovePolicyForce := exNodeRemovePolicyCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 
 	exAgbotCmd := exchangeCmd.Command("agbot", "List and manage agbots in the Horizon Exchange")
 	exAgbotListCmd := exAgbotCmd.Command("list", "Display the agbot resources from the Horizon Exchange.")
@@ -232,6 +243,8 @@ Environment Variables:
 	policyListCmd := policyCmd.Command("list", "Display this edge node's policy.")
 	policyUpdateCmd := policyCmd.Command("update", "Update the node's policy.")
 	policyUpdateInputFile := policyUpdateCmd.Flag("input-file", "The JSON input file name containing the node policy.").Short('f').Required().String()
+	policyRemoveCmd := policyCmd.Command("remove", "Remove the node's policy.")
+	policyRemoveForce := policyRemoveCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 
 	agreementCmd := app.Command("agreement", "List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.")
 	agreementListCmd := agreementCmd.Command("list", "List the active or archived agreements this edge node has made with a Horizon agreement bot.")
@@ -376,6 +389,12 @@ Environment Variables:
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeRemoveNodeIdTok)
 		case "node confirm":
 			//do nothing because it uses the node id and token given in the argument as the credential
+		case "node listpolicy":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeListPolicyIdTok)
+		case "node updatepolicy":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeUpdatePolicyIdTok)
+		case "node removepolicy":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeRemovePolicyIdTok)
 		case "service list":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListNodeIdTok)
 		case "service verify":
@@ -450,6 +469,12 @@ Environment Variables:
 		exchange.NodeConfirm(*exOrg, *exNodeConfirmNode, *exNodeConfirmToken, *exNodeConfirmNodeIdTok)
 	case exNodeDelCmd.FullCommand():
 		exchange.NodeRemove(*exOrg, credToUse, *exDelNode, *exNodeDelForce)
+	case exNodeListPolicyCmd.FullCommand():
+		exchange.NodeListPolicy(*exOrg, credToUse, *exNodeListPolicyNode)
+	case exNodeUpdatePolicyCmd.FullCommand():
+		exchange.NodeUpdatePolicy(*exOrg, credToUse, *exNodeUpdatePolicyNode, *exNodeUpdatePolicyJsonFile)
+	case exNodeRemovePolicyCmd.FullCommand():
+		exchange.NodeRemovePolicy(*exOrg, credToUse, *exNodeRemovePolicyNode, *exNodeRemovePolicyForce)
 	case exAgbotListCmd.FullCommand():
 		exchange.AgbotList(*exOrg, *exUserPw, *exAgbot, !*exAgbotLong)
 	case exAgbotListPatsCmd.FullCommand():
@@ -504,6 +529,8 @@ Environment Variables:
 		policy.List()
 	case policyUpdateCmd.FullCommand():
 		policy.Update(*policyUpdateInputFile)
+	case policyRemoveCmd.FullCommand():
+		policy.Remove(*policyRemoveForce)
 	case agreementListCmd.FullCommand():
 		agreement.List(*listArchivedAgreements, *listAgreementId)
 	case agreementCancelCmd.FullCommand():

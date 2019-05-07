@@ -1030,6 +1030,21 @@ func RunCmd(stdinBytes []byte, commandString string, args ...string) ([]byte, []
 	return stdoutBytes, stderrBytes
 }
 
+// display a data structure as json format. Unescape the <, >, and & etc.
+// (go usually escapes these chars.)
+func DisplayAsJson(data interface{}) (string, error) {
+	buf := new(bytes.Buffer)
+	enc := json.NewEncoder(buf)
+	enc.SetEscapeHTML(false)
+	enc.SetIndent("", JSON_INDENT)
+	err := enc.Encode(data)
+	if err != nil {
+		return "", err
+	} else {
+		return buf.String(), nil
+	}
+}
+
 /* Will probably need this....
 func getString(v interface{}) string {
 	if reflect.ValueOf(v).IsNil() { return "" }

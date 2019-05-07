@@ -261,10 +261,15 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Validate and create or update the node policy.
-		nodePolicyHandler := exchange.GetHTTPPutNodePolicyHandler(a)
+		update_node_policy_error_handler := func(device interface{}, err error) bool {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in updating node policy. %v", err), persistence.EC_ERROR_NODE_POLICY_UPDATE, device)
+			return errorHandler(err)
+		}
+		nodeGetPolicyHandler := exchange.GetHTTPNodePolicyHandler(a)
+		nodePutPolicyHandler := exchange.GetHTTPPutNodePolicyHandler(a)
 
-		errHandled, cfg, msgs := UpdateNodePolicy(&nodePolicy, errorHandler, nodePolicyHandler, a.db, a.Config)
+		// Validate and create or update the node policy.
+		errHandled, cfg, msgs := UpdateNodePolicy(&nodePolicy, update_node_policy_error_handler, nodeGetPolicyHandler, nodePutPolicyHandler, a.db)
 		if errHandled {
 			return
 		}
@@ -286,8 +291,15 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 	case "DELETE":
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
+		delete_node_policy_error_handler := func(device interface{}, err error) bool {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in deleting node policy. %v", err), persistence.EC_ERROR_NODE_POLICY_UPDATE, device)
+			return errorHandler(err)
+		}
+		nodeGetPolicyHandler := exchange.GetHTTPNodePolicyHandler(a)
+		nodeDeletePolicyHandler := exchange.GetHTTPDeleteNodePolicyHandler(a)
+
 		// Validate the DELETE request and delete the object from the database.
-		errHandled, msgs := DeleteNodePolicy(errorHandler, a.db)
+		errHandled, msgs := DeleteNodePolicy(delete_node_policy_error_handler, a.db, nodeGetPolicyHandler, nodeDeletePolicyHandler)
 		if errHandled {
 			return
 		}

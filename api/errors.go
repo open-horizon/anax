@@ -12,6 +12,9 @@ import (
 // transport that is used to access the API.
 type ErrorHandler func(err error) bool
 
+// This type is used for the node related the functions
+type DeviceErrorHandler func(device interface{}, err error) bool
+
 // APIUserInputError is for problems found with input path variables or input bodies. The Input field is flexible;
 // could be a field name or other. Note: the info in this field is intended to be consumed by humans, either API
 // consumers or developers of the UI. Add enum codes if these are to be evaluated in frontend code.

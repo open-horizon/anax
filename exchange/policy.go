@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/externalpolicy"
+	"strings"
 	"time"
 )
 
@@ -52,7 +53,11 @@ func GetNodePolicy(ec ExchangeContext, deviceId string) (*ExchangePolicy, error)
 		} else {
 			glog.V(3).Infof(rpclogString(fmt.Sprintf("returning node policy for %v.", deviceId)))
 			nodePolicy := resp.(*ExchangePolicy)
-			return nodePolicy, nil
+			if nodePolicy.GetLastUpdated() == "" {
+				return nil, nil
+			} else {
+				return nodePolicy, nil
+			}
 		}
 	}
 
@@ -75,6 +80,28 @@ func PutNodePolicy(ec ExchangeContext, deviceId string, ep *ExchangePolicy) (*Pu
 		} else {
 			glog.V(3).Infof(rpclogString(fmt.Sprintf("put device policy for %v to exchange %v", deviceId, ep)))
 			return resp.(*PutDeviceResponse), nil
+		}
+	}
+}
+
+// Delete node policy from the exchange.
+// Return nil if the policy is deleted or does not exist.
+func DeleteNodePolicy(ec ExchangeContext, deviceId string) error {
+	// create PUT body
+	var resp interface{}
+	resp = new(PostDeviceResponse)
+	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/policy", ec.GetExchangeURL(), GetOrg(deviceId), GetId(deviceId))
+
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "DELETE", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil && !strings.Contains(err.Error(), "status: 404") {
+			return err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("deleted device policy for %v from the exchange.", deviceId)))
+			return nil
 		}
 	}
 }
