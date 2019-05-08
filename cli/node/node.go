@@ -64,7 +64,7 @@ func List() {
 	horDevice := api.HorizonDevice{}
 	_, err := cliutils.HorizonGet("node", []int{200}, &horDevice, false)
 	if err != nil {
-		cliutils.Fatal(cliutils.ANAX_NOT_CONFIGURED_YET, "Failed to get response from node")
+		cliutils.Fatal(cliutils.ANAX_NOT_CONFIGURED_YET, "Failed to get node information from node: %v", err)
 	}
 	nodeInfo := NodeAndStatus{} // the structure we will output
 	nodeInfo.CopyNodeInto(&horDevice)
@@ -73,7 +73,7 @@ func List() {
 	status := apicommon.Info{}
 	_, err = cliutils.HorizonGet("status", []int{200}, &status, false)
 	if err != nil {
-		cliutils.Fatal(cliutils.ANAX_NOT_CONFIGURED_YET, "Failed to get response from node")
+		cliutils.Fatal(cliutils.ANAX_NOT_CONFIGURED_YET, "Failed to get horizon status from node: %v", err)
 	}
 	nodeInfo.CopyStatusInto(&status)
 
