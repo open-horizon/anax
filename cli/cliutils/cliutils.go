@@ -480,8 +480,9 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 			if reflect.DeepEqual(structure, emptyStructure) {
 				if quiet {
 					return ANAX_NOT_CONFIGURED_YET, fmt.Errorf("Failed to get proper response from node with request: %s", apiMsg)
+				} else {
+					Fatal(ANAX_NOT_CONFIGURED_YET, "Failed to get proper response from node with request: %s", apiMsg)
 				}
-				Fatal(ANAX_NOT_CONFIGURED_YET, "Failed to get proper response from node with request: %s", apiMsg)
 			}
 
 			if err != nil {
