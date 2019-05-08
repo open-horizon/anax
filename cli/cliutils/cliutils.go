@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -469,6 +470,21 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 		default:
 			// Put the response body in the specified struct
 			err = json.Unmarshal(bodyBytes, structure)
+			//Check that something was written to structure
+			var emptyStructure interface{}
+			if reflect.TypeOf(structure).Kind() == reflect.Ptr {
+				emptyStructure = reflect.New(reflect.ValueOf(structure).Elem().Type()).Interface()
+			} else {
+				emptyStructure = reflect.New(reflect.TypeOf(structure)).Elem().Interface()
+			}
+			if reflect.DeepEqual(structure, emptyStructure) {
+				if quiet {
+					return ANAX_NOT_CONFIGURED_YET, fmt.Errorf("Failed to get proper response from node with request: %s", apiMsg)
+				} else {
+					Fatal(ANAX_NOT_CONFIGURED_YET, "Failed to get proper response from node with request: %s", apiMsg)
+				}
+			}
+
 			if err != nil {
 				if quiet {
 					retError = fmt.Errorf("Failed to unmarshal body response from %s: %v", apiMsg, err)
