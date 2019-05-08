@@ -3,7 +3,6 @@ package node
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/cli/cliutils"
@@ -62,19 +61,13 @@ func (n *NodeAndStatus) CopyStatusInto(status *apicommon.Info) {
 func List() {
 	// Get the node info
 	horDevice := api.HorizonDevice{}
-	_, err := cliutils.HorizonGet("node", []int{200}, &horDevice, false)
-	if err != nil {
-		cliutils.Fatal(cliutils.ANAX_NOT_CONFIGURED_YET, "Failed to get node information from node: %v", err)
-	}
+	cliutils.HorizonGet("node", []int{200}, &horDevice, false)
 	nodeInfo := NodeAndStatus{} // the structure we will output
 	nodeInfo.CopyNodeInto(&horDevice)
 
 	// Get the horizon status info
 	status := apicommon.Info{}
-	_, err = cliutils.HorizonGet("status", []int{200}, &status, false)
-	if err != nil {
-		cliutils.Fatal(cliutils.ANAX_NOT_CONFIGURED_YET, "Failed to get horizon status from node: %v", err)
-	}
+	cliutils.HorizonGet("status", []int{200}, &status, false)
 	nodeInfo.CopyStatusInto(&status)
 
 	// Output the combined info

@@ -7,6 +7,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	dockerclient "github.com/fsouza/go-dockerclient"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/exchange"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -19,10 +22,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	dockerclient "github.com/fsouza/go-dockerclient"
-	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/exchange"
 )
 
 const (
@@ -479,10 +478,10 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 				emptyStructure = reflect.New(reflect.TypeOf(structure)).Elem().Interface()
 			}
 			if reflect.DeepEqual(structure, emptyStructure) {
-				if !quiet {
-					Fatal(ANAX_NOT_CONFIGURED_YET, "Failed to get proper response from node with request: %s", apiMsg)
+				if quiet {
+					return ANAX_NOT_CONFIGURED_YET, fmt.Errorf("Failed to get proper response from node with request: %s", apiMsg)
 				}
-				return ANAX_NOT_CONFIGURED_YET, fmt.Errorf("Failed to get proper response from node with request: %s", apiMsg)
+				Fatal(ANAX_NOT_CONFIGURED_YET, "Failed to get proper response from node with request: %s", apiMsg)
 			}
 
 			if err != nil {
