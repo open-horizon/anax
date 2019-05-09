@@ -268,6 +268,10 @@ func RemoveMicroservicePolicy(spec_ref string, org string, version string, msdef
 	policies := pm.GetAllPolicies(org)
 	if len(policies) > 0 {
 		for _, pol := range policies {
+			// skip the node policy which does not have APISpecs
+			if len(pol.APISpecs) == 0 {
+				continue
+			}
 			apiSpec := pol.APISpecs[0]
 			if apiSpec.SpecRef == spec_ref && apiSpec.Org == org && apiSpec.Version == version {
 				pm.DeletePolicy(org, &pol)

@@ -72,11 +72,25 @@ func RetrieveAllProperties(policy *Policy) (*externalpolicy.PropertyList, error)
 		*pl = append(*pl, p)
 	}
 
-	*pl = append(*pl, externalpolicy.Property{Name: "arch", Value: policy.APISpecs[0].Arch})
+	if len(policy.APISpecs) > 0 {
+		*pl = append(*pl, externalpolicy.Property{Name: "arch", Value: policy.APISpecs[0].Arch})
+	}
 
 	if len(policy.AgreementProtocols) != 0 {
 		*pl = append(*pl, externalpolicy.Property{Name: "agreementProtocols", Value: policy.AgreementProtocols.As_String_Array()})
 	}
 
 	return pl, nil
+}
+
+// generate a policy from the external policy
+func GenPolicyFromExternalPolicy(extPolicy *externalpolicy.ExternalPolicy, polName string) (*Policy, error) {
+	pPolicy := Policy_Factory(polName)
+	pPolicy.Properties = extPolicy.Properties
+	rp, err := RequiredPropertyFromConstraint(&(extPolicy.Constraints))
+	if err != nil {
+		return nil, fmt.Errorf("error trying to convert external policy constraints to JSON: %v", err)
+	}
+	pPolicy.CounterPartyProperties = (*rp)
+	return pPolicy, nil
 }

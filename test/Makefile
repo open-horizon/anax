@@ -2,7 +2,7 @@
 SHELL := /bin/bash
 
 #Versioning
-DOCKER_EXCH_TAG := 1.78.0
+DOCKER_EXCH_TAG := 1.79.0
 PKG_URL_BASE := http://pkg.bluehorizon.network/linux/ubuntu
 PKGS_URL := $(PKG_URL_BASE)/dists/xenial-testing/main/binary-amd64/Packages
 DEB_PKGS_URL := $(PKG_URL_BASE)/pool/main/h/horizon

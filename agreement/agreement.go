@@ -149,6 +149,13 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 			w.Commands <- worker.NewTerminateCommand("shutdown")
 		}
 
+	case *events.NodePolicyMessage:
+		msg, _ := incoming.(*events.NodePolicyMessage)
+		switch msg.Event().Id {
+		case events.UPDATE_POLICY, events.DELETED_POLICY:
+			w.Commands <- NewNodePolicyChangedCommand(msg)
+		}
+
 	default: //nothing
 	}
 
@@ -332,6 +339,15 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 			w.patchNodeKey()
 		}
 
+	case *NodePolicyChangedCommand:
+		cmd, _ := command.(*NodePolicyChangedCommand)
+		switch cmd.Msg.Event().Id {
+		case events.UPDATE_POLICY:
+			w.NodePolicyUpdated()
+		case events.DELETED_POLICY:
+			w.NodePolicyDeleted()
+		}
+
 	default:
 		// Unexpected commands are not handled.
 		return false
@@ -437,6 +453,34 @@ func (w *AgreementWorker) heartBeat() int {
 	return 0
 }
 
+// handles the node policy UPDATE_POLICY event
+func (w *AgreementWorker) NodePolicyUpdated() {
+	glog.V(5).Infof(logString("handling node policy updated."))
+	// get the node policy
+	nodePolicy, err := persistence.FindNodePolicy(w.db)
+	if err != nil {
+		glog.Errorf(logString(fmt.Sprintf("unable to read node policy from the local database. %v", err)))
+		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Unable to read node policy from the local database. %v", err),
+			persistence.EC_DATABASE_ERROR)
+		return
+	}
+
+	// add the node policy to the policy manager
+	newPol, err := policy.GenPolicyFromExternalPolicy(nodePolicy, fmt.Sprintf("Policy for %v", w.GetExchangeId()))
+	if err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Failed to convert node policy to policy file format: %v", err)))
+		return
+	}
+	w.pm.UpdatePolicy(exchange.GetOrg(w.GetExchangeId()), newPol)
+}
+
+// handles the node policy DELETE_POLICY event
+func (w *AgreementWorker) NodePolicyDeleted() {
+	glog.V(5).Infof(logString("handling node policy deleted."))
+	w.pm.DeletePolicyByName(exchange.GetOrg(w.GetExchangeId()), fmt.Sprintf("Policy for %v", w.GetExchangeId()))
+}
+
 // Check the node policy changes on the exchange and sync up with
 // the local copy. THe exchange is the master
 func (w *AgreementWorker) checkNodePolicyChanges() int {
@@ -473,6 +517,7 @@ func (w *AgreementWorker) checkNodePolicyChanges() int {
 			exchange.GetOrg(w.GetExchangeId()),
 			exchange.GetId(w.GetExchangeId()),
 			w.devicePattern, "")
+
 		w.Messages() <- events.NewNodePolicyMessage(events.UPDATE_POLICY)
 	}
 
@@ -491,8 +536,15 @@ func (w *AgreementWorker) syncOnInit() error {
 
 	// setup the node policy. If neither node nor exchange has node policy, setup the default.
 	// Otherwise, use the one from the exchange.
-	if _, err := nodepolicy.NodePolicyInitalSetup(w.db, w.Config, exchange.GetHTTPNodePolicyHandler(w), exchange.GetHTTPPutNodePolicyHandler(w)); err != nil {
+	if nodePolicy, err := nodepolicy.NodePolicyInitalSetup(w.db, w.Config, exchange.GetHTTPNodePolicyHandler(w), exchange.GetHTTPPutNodePolicyHandler(w)); err != nil {
 		return errors.New(logString(fmt.Sprintf("Failed to initially set up node policy. %v", err)))
+	} else if nodePolicy != nil {
+		// add the node policy to the policy manager
+		newPolicy, err := policy.GenPolicyFromExternalPolicy(nodePolicy, fmt.Sprintf("Policy for %v", w.GetExchangeId()))
+		if err != nil {
+			return errors.New(logString(fmt.Sprintf("Failed to convert node policy to policy file format: %v", err)))
+		}
+		w.pm.UpdatePolicy(exchange.GetOrg(w.GetExchangeId()), newPolicy)
 	}
 
 	// Reconcile the set of agreements recorded in the exchange for this device with the agreements in the local DB.
@@ -768,7 +820,12 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 		ms := make([]exchange.Microservice, 0, 10)
 		for _, p := range policies {
 			newMS := new(exchange.Microservice)
-			newMS.Url = cutil.FormOrgSpecUrl(p.APISpecs[0].SpecRef, p.APISpecs[0].Org)
+			// skip the node policy which does not have APISpecs
+			if len(p.APISpecs) == 0 {
+				continue
+			} else {
+				newMS.Url = cutil.FormOrgSpecUrl(p.APISpecs[0].SpecRef, p.APISpecs[0].Org)
+			}
 
 			// The version property needs special handling
 			newProp := &exchange.MSProp{

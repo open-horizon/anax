@@ -51,3 +51,18 @@ func NewEdgeConfigCompleteCommand(msg *events.EdgeConfigCompleteMessage) *EdgeCo
 		Msg: msg,
 	}
 }
+
+// ==============================================================================================================
+type NodePolicyChangedCommand struct {
+	Msg *events.NodePolicyMessage
+}
+
+func (d NodePolicyChangedCommand) ShortString() string {
+	return fmt.Sprintf("%v", d)
+}
+
+func NewNodePolicyChangedCommand(msg *events.NodePolicyMessage) *NodePolicyChangedCommand {
+	return &NodePolicyChangedCommand{
+		Msg: msg,
+	}
+}

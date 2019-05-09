@@ -83,6 +83,10 @@ func FindServiceConfigForOutput(pm *policy.PolicyManager, db *bolt.DB) (map[stri
 	// Each policy has some data we need for creating the output object. There is also data
 	// in the microservice definition database and the attibutes in the attribute database.
 	for _, pol := range policies {
+		// skip the node policy which does not have api specs.
+		if len(pol.APISpecs) == 0 {
+			continue
+		}
 		msURL := pol.APISpecs[0].SpecRef
 		msOrg := pol.APISpecs[0].Org
 		msVer := pol.APISpecs[0].Version
