@@ -2,7 +2,7 @@
 SHELL := /bin/bash
 
 #Versioning
-DOCKER_EXCH_TAG := 1.77.0
+DOCKER_EXCH_TAG := 1.78.0
 PKG_URL_BASE := http://pkg.bluehorizon.network/linux/ubuntu
 PKGS_URL := $(PKG_URL_BASE)/dists/xenial-testing/main/binary-amd64/Packages
 DEB_PKGS_URL := $(PKG_URL_BASE)/pool/main/h/horizon
@@ -20,6 +20,7 @@ HORIZON_PKG_VER ?= $(shell curl -s $(PKGS_URL) | grep -A 2 'Package: horizon' | 
 #
 
 TEST_VARS ?= NOLOOP=1 TEST_PATTERNS=sall
+# TEST_VARS ?= NOLOOP=1 NOCANCEL=1
 APPSTORE = $(shell echo $(TEST_VARS) | awk -F "APPSTORE=" '{print $$2}' | cut -c1)
 
 # msghub
