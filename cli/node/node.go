@@ -62,6 +62,9 @@ func List() {
 	// Get the node info
 	horDevice := api.HorizonDevice{}
 	cliutils.HorizonGet("node", []int{200}, &horDevice, false)
+	if horDevice.Config == nil {
+		cliutils.Fatal(cliutils.ANAX_NOT_CONFIGURED_YET, "Failed to get proper response from Horizon agent")
+	}
 	nodeInfo := NodeAndStatus{} // the structure we will output
 	nodeInfo.CopyNodeInto(&horDevice)
 
@@ -85,10 +88,12 @@ func Version() {
 	// Show anax version
 	status := apicommon.Info{}
 	httpCode, err := cliutils.HorizonGet("status", []int{200}, &status, true)
-	if err == nil && httpCode == 200 {
+	if err == nil && httpCode == 200 && status.Configuration != nil {
 		fmt.Printf("Horizon Agent version: %s\n", status.Configuration.HorizonVersion)
 	} else {
-		cliutils.Verbose(err.Error())
+		if err != nil {
+			cliutils.Verbose(err.Error())
+		}
 		fmt.Printf("Horizon Agent version: failed to get.\n")
 	}
 }
