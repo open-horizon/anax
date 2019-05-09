@@ -314,6 +314,13 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			}
 		}
 
+	case *events.NodePolicyMessage:
+		msg, _ := incoming.(*events.NodePolicyMessage)
+		switch msg.Event().Id {
+		case events.UPDATE_POLICY, events.DELETED_POLICY:
+			w.Commands <- NewNodePolicyChangedCommand(msg)
+		}
+
 	default: //nothing
 	}
 
@@ -1255,6 +1262,12 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 		glog.V(5).Infof(logString(fmt.Sprintf("%v", cmd)))
 
 		w.handleUpdatePolicy(cmd)
+
+	case *NodePolicyChangedCommand:
+		cmd, _ := command.(*NodePolicyChangedCommand)
+		glog.V(5).Infof(logString(fmt.Sprintf("%v", cmd)))
+
+		w.handleNodePolicyUpdated()
 
 	default:
 		return false

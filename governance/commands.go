@@ -229,3 +229,19 @@ func (c UpdatePolicyCommand) ShortString() string {
 func (w *GovernanceWorker) NewUpdatePolicyCommand(msg *events.UpdatePolicyMessage) *UpdatePolicyCommand {
 	return &UpdatePolicyCommand{Msg: msg}
 }
+
+// ==============================================================================================================
+// Update (re-generate) node side policies
+type NodePolicyChangedCommand struct {
+	Msg *events.NodePolicyMessage
+}
+
+func (d NodePolicyChangedCommand) ShortString() string {
+	return fmt.Sprintf("%v", d)
+}
+
+func NewNodePolicyChangedCommand(msg *events.NodePolicyMessage) *NodePolicyChangedCommand {
+	return &NodePolicyChangedCommand{
+		Msg: msg,
+	}
+}
