@@ -133,7 +133,7 @@ start() {
 	#	serviceStorageDir=/var/tmp/horizon
 	#fi
 
-	# setup directories for file sync service 
+	# setup directories for file sync service
 	if isMacos; then
 		fssHostSharePath=/private/var/tmp/horizon/${DOCKER_NAME}
 	else
@@ -201,9 +201,13 @@ stop() {
 	# Stop the anax container
 	echo "Unregistering the node, then stopping/removing the horizon container (this may take a minute)..."
 	docker stop -t 120 $DOCKER_NAME  # give it time to unregister and stop the service containers
-	checkrc $? "docker stop"
-	docker rm $DOCKER_NAME
-	checkrc $? "docker rm"
+	if [[ $? -ne 0 ]]; then
+		echo "Error stopping container: $DOCKER_NAME. Resuming stop procedures."
+	fi
+	docker rm -f $DOCKER_NAME
+	if [[ $? -ne 0 ]]; then
+		echo "Error removing container: $DOCKER_NAME. Resuming stop procedures."
+	fi
 
 	# Remove the volumes
 	docker volume rm ${DOCKER_NAME}_var ${DOCKER_NAME}_etc
