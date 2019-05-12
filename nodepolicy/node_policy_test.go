@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
 	"os"
 	"path"
@@ -36,8 +37,8 @@ func Test_UpdateNodePolicy(t *testing.T) {
 	}
 
 	propName := "prop1"
-	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"))
+	propList := new(policy.PropertyList)
+	propList.Add_Property(policy.Property_Factory(propName, "val1"))
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,
@@ -76,8 +77,8 @@ func Test_DeleteNodePolicy(t *testing.T) {
 	}
 
 	propName := "prop1"
-	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"))
+	propList := new(policy.PropertyList)
+	propList.Add_Property(policy.Property_Factory(propName, "val1"))
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,
@@ -124,8 +125,8 @@ func Test_ExchangeNodePolicyChanged(t *testing.T) {
 	}
 
 	propName := "prop1"
-	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"))
+	propList := new(policy.PropertyList)
+	propList.Add_Property(policy.Property_Factory(propName, "val1"))
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,
@@ -252,8 +253,8 @@ func Test_NodePolicyInitalSetup(t *testing.T) {
 
 	// make change to the exchange
 	propName := "prop1"
-	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"))
+	propList := new(policy.PropertyList)
+	propList.Add_Property(policy.Property_Factory(propName, "val1"))
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,

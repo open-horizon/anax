@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/open-horizon/anax/externalpolicy"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -370,11 +369,11 @@ func Test_Policy_Creation(t *testing.T) {
 	agp2.Blockchains.Add_Blockchain(Blockchain_Factory("Fred", "bc2", "myorg"))
 	pf_created.Add_Agreement_Protocol(agp2)
 
-	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop1", "rpival1"))
-	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop2", "rpival2"))
-	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop3", "rpival3"))
-	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop4", "rpival4"))
-	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop5", "rpival5"))
+	pf_created.Add_Property(Property_Factory("rpiprop1", "rpival1"))
+	pf_created.Add_Property(Property_Factory("rpiprop2", "rpival2"))
+	pf_created.Add_Property(Property_Factory("rpiprop3", "rpival3"))
+	pf_created.Add_Property(Property_Factory("rpiprop4", "rpival4"))
+	pf_created.Add_Property(Property_Factory("rpiprop5", "rpival5"))
 
 	pf_created.Add_NodeHealth(NodeHealth_Factory(600, 30))
 

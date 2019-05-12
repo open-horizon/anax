@@ -483,7 +483,7 @@ func (b *BaseAgreementWorker) GetAndCheckNodePolicy(deviceId string, dev *exchan
 	extPolicy := nodePolicy.GetExternalPolicy()
 
 	glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
-	pPolicy, err := policy.GenPolicyFromExternalPolicy(&extPolicy, fmt.Sprintf("Policy for %v", deviceId))
+	pPolicy, err := extPolicy.GenPolicyFromExternalPolicy(deviceId)
 	if err != nil {
 		return nil, fmt.Errorf(BAWlogstring(workerId, fmt.Sprintf("failed to convert node policy to policy file format: %v", err)))
 	}

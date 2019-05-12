@@ -1,6 +1,6 @@
 // +build unit
 
-package externalpolicy
+package policy
 
 import (
 	"encoding/json"

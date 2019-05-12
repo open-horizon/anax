@@ -4,6 +4,7 @@ package persistence
 
 import (
 	"github.com/open-horizon/anax/externalpolicy"
+	"github.com/open-horizon/anax/policy"
 	"testing"
 )
 
@@ -34,8 +35,8 @@ func Test_WriteNodePolicy1(t *testing.T) {
 	defer cleanTestDir(dir)
 
 	propName := "prop1"
-	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"))
+	propList := new(policy.PropertyList)
+	propList.Add_Property(policy.Property_Factory(propName, "val1"))
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,
@@ -66,8 +67,8 @@ func Test_UpdateNodePolicy1(t *testing.T) {
 	defer cleanTestDir(dir)
 
 	propName := "prop1"
-	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"))
+	propList := new(policy.PropertyList)
+	propList.Add_Property(policy.Property_Factory(propName, "val1"))
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,
@@ -88,8 +89,8 @@ func Test_UpdateNodePolicy1(t *testing.T) {
 
 	// Now change the property specified in the policy.
 	propName = "prop2"
-	propList = new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory(propName, "val2"))
+	propList = new(policy.PropertyList)
+	propList.Add_Property(policy.Property_Factory(propName, "val2"))
 
 	extNodePolicy.Properties = *propList
 
@@ -117,8 +118,8 @@ func Test_DeleteNodePolicy1(t *testing.T) {
 	defer cleanTestDir(dir)
 
 	propName := "prop1"
-	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"))
+	propList := new(policy.PropertyList)
+	propList.Add_Property(policy.Property_Factory(propName, "val1"))
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,

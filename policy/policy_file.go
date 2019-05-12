@@ -7,7 +7,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
-	"github.com/open-horizon/anax/externalpolicy"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -51,22 +50,22 @@ type ProposalRejection struct {
 
 // This is the main struct that defines the Policy object
 type Policy struct {
-	Header                 PolicyHeader                `json:"header"`
-	PatternId              string                      `json:"patternId,omitempty"` // Manually created policy files should NOT use this field.
-	APISpecs               APISpecList                 `json:"apiSpec,omitempty"`
-	AgreementProtocols     AgreementProtocolList       `json:"agreementProtocols,omitempty"`
-	Workloads              WorkloadList                `json:"workloads,omitempty"`
-	DeviceType             string                      `json:"deviceType,omitempty"`
-	ValueEx                ValueExchange               `json:"valueExchange,omitempty"`
-	ResourceLimits         ResourceLimit               `json:"resourceLimits,omitempty"`
-	DataVerify             DataVerification            `json:"dataVerification,omitempty"`
-	ProposalReject         ProposalRejection           `json:"proposalRejection,omitempty"`
-	MaxAgreements          int                         `json:"maxAgreements,omitempty"`
-	Properties             externalpolicy.PropertyList `json:"properties,omitempty"`             // Version 2.0
-	CounterPartyProperties RequiredProperty            `json:"counterPartyProperties,omitempty"` // Version 2.0
-	RequiredWorkload       string                      `json:"requiredWorkload,omitempty"`       // Version 2.0
-	HAGroup                HighAvailabilityGroup       `json:"ha_group,omitempty"`               // Version 2.0
-	NodeH                  NodeHealth                  `json:"nodeHealth,omitempty"`             // Version 2.0
+	Header                 PolicyHeader          `json:"header"`
+	PatternId              string                `json:"patternId,omitempty"` // Manually created policy files should NOT use this field.
+	APISpecs               APISpecList           `json:"apiSpec,omitempty"`
+	AgreementProtocols     AgreementProtocolList `json:"agreementProtocols,omitempty"`
+	Workloads              WorkloadList          `json:"workloads,omitempty"`
+	DeviceType             string                `json:"deviceType,omitempty"`
+	ValueEx                ValueExchange         `json:"valueExchange,omitempty"`
+	ResourceLimits         ResourceLimit         `json:"resourceLimits,omitempty"`
+	DataVerify             DataVerification      `json:"dataVerification,omitempty"`
+	ProposalReject         ProposalRejection     `json:"proposalRejection,omitempty"`
+	MaxAgreements          int                   `json:"maxAgreements,omitempty"`
+	Properties             PropertyList          `json:"properties,omitempty"`             // Version 2.0
+	CounterPartyProperties RequiredProperty      `json:"counterPartyProperties,omitempty"` // Version 2.0
+	RequiredWorkload       string                `json:"requiredWorkload,omitempty"`       // Version 2.0
+	HAGroup                HighAvailabilityGroup `json:"ha_group,omitempty"`               // Version 2.0
+	NodeH                  NodeHealth            `json:"nodeHealth,omitempty"`             // Version 2.0
 }
 
 // These functions are used to create Policy objects. You can create the base object
@@ -95,7 +94,7 @@ func (self *Policy) Add_Agreement_Protocol(ap *AgreementProtocol) error {
 	}
 }
 
-func (self *Policy) Add_Property(p *externalpolicy.Property) error {
+func (self *Policy) Add_Property(p *Property) error {
 	if p != nil {
 		return self.Properties.Add_Property(p)
 	} else {

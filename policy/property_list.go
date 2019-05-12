@@ -1,4 +1,4 @@
-package externalpolicy
+package policy
 
 import (
 	"errors"

@@ -3,9 +3,6 @@ package policy
 import (
 	"errors"
 	"fmt"
-	"github.com/open-horizon/anax/externalpolicy"
-	"github.com/open-horizon/anax/externalpolicy/plugin_registry"
-	"strings"
 )
 
 // The purpose this file is to abstract the CounterPartyProperties field in the Policy struct
@@ -31,9 +28,9 @@ import (
 //
 
 // These are the boolean operators that can be used to construct a RequiredProperties expression
-const and = "and"
-const or = "or"
-const not = "not"
+const OP_AND = "and"
+const OP_OR = "or"
+const OP_NOT = "not"
 
 type RequiredProperty map[string]interface{}
 
@@ -131,10 +128,10 @@ func RequiredPropertyFromConstraint(extConstraint *externalpolicy.ConstraintExpr
 
 // Return the top level elements in the requiredProperty.
 func (rp *RequiredProperty) TopLevelElements() []interface{} {
-	if _, ok := (*rp)[or]; ok {
-		return (*rp)[or].([]interface{})
-	} else if _, ok := (*rp)[and]; ok {
-		return (*rp)[and].([]interface{})
+	if _, ok := (*rp)[OP_OR]; ok {
+		return (*rp)[OP_OR].([]interface{})
+	} else if _, ok := (*rp)[OP_AND]; ok {
+		return (*rp)[OP_AND].([]interface{})
 	} else {
 		return nil
 	}
@@ -182,7 +179,7 @@ func (self *RequiredProperty) Initialize(exp *map[string]interface{}) error {
 
 // This function is used to determine if an input set of properties and values will satisfy
 // the RequiredProperty expression.
-func (self *RequiredProperty) IsSatisfiedBy(props []externalpolicy.Property) error {
+func (self *RequiredProperty) IsSatisfiedBy(props []Property) error {
 
 	// Make sure the expression is valid
 	if err := self.IsValid(); err != nil {
@@ -206,9 +203,9 @@ func (self *RequiredProperty) IsSatisfiedBy(props []externalpolicy.Property) err
 // This function does the real work of evaluating the expression to see if it is satisfied by
 // the list of properties and values that have been supplied. This function is called
 // recursively because control operators can be nested n levels deep.
-func (self *RequiredProperty) satisfied(cop *map[string]interface{}, props *[]externalpolicy.Property) error {
+func (self *RequiredProperty) satisfied(cop *map[string]interface{}, props *[]Property) error {
 	controlOp := self.getControlOperator(cop)
-	if controlOp == and {
+	if controlOp == OP_AND {
 
 		propArray := (*cop)[controlOp].([]interface{})
 		for _, p := range propArray {
@@ -226,7 +223,7 @@ func (self *RequiredProperty) satisfied(cop *map[string]interface{}, props *[]ex
 		}
 		return nil
 
-	} else if controlOp == or {
+	} else if controlOp == OP_OR {
 
 		propArray := (*cop)[controlOp].([]interface{})
 		for _, p := range propArray {
@@ -246,7 +243,7 @@ func (self *RequiredProperty) satisfied(cop *map[string]interface{}, props *[]ex
 		}
 		return errors.New(fmt.Sprintf("One of Required Properties %v not in %v\n", propArray, props))
 
-	} else if controlOp == not {
+	} else if controlOp == OP_NOT {
 
 	}
 
@@ -354,7 +351,7 @@ func (self *RequiredProperty) getControlOperator(m *map[string]interface{}) stri
 // of the supported control operators.
 func controlOperators() map[string]int {
 	// return map[string]int {and:0, or:0, not:0}
-	return map[string]int{and: 0, or: 0}
+	return map[string]int{OP_AND: 0, OP_OR: 0}
 }
 
 // Return a map of comparison operators so that it's easy to check if a string is equivalent to one
@@ -490,7 +487,7 @@ func getKeys(m map[string]interface{}) []string {
 
 // This function compares a Property object with an array of Property objects to see if it's
 // in the array with an appropriate value.
-func propertyInArray(propexp *PropertyExpression, props *[]externalpolicy.Property) bool {
+func propertyInArray(propexp *PropertyExpression, props *[]Property) bool {
 	for _, p := range *props {
 		if p.Name != propexp.Name {
 			// These are not the droids we're looking for

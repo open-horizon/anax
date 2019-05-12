@@ -3,8 +3,6 @@ package policy
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"github.com/open-horizon/anax/events"
-	"github.com/open-horizon/anax/externalpolicy"
 	"strings"
 )
 
@@ -15,7 +13,7 @@ import (
 // can take any version.
 // maxAgreements: 0 means unlimited.
 
-func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, sensorVersion string, arch string, props *map[string]interface{}, haPartners []string, meterPolicy Meter, counterPartyProperties RequiredProperty, agps []AgreementProtocol, maxAgreements int, filePath string, deviceOrg string) (*events.PolicyCreatedMessage, error) {
+func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, sensorVersion string, arch string, props *map[string]interface{}, haPartners []string, meterPolicy Meter, counterPartyProperties RequiredProperty, agps []AgreementProtocol, maxAgreements int, filePath string, deviceOrg string) (string, error) {
 
 	glog.V(5).Infof("Generating policy for %v/%v", sensorOrg, sensorUrl)
 
@@ -34,7 +32,7 @@ func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, senso
 
 	// Add properties to the policy
 	for prop, val := range *props {
-		p.Add_Property(externalpolicy.Property_Factory(prop, val))
+		p.Add_Property(Property_Factory(prop, val))
 	}
 
 	// Add HA configuration if there is any
@@ -56,41 +54,26 @@ func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, senso
 
 	// Store the policy on the filesystem
 	if fullFileName, err := CreatePolicyFile(filePath, deviceOrg, fileName, p); err != nil {
-		return nil, err
+		return "", err
 	} else {
-
-		// Create the new policy event
-		msg := events.NewPolicyCreatedMessage(events.NEW_POLICY, fullFileName)
-		return msg, nil
+		return fullFileName, nil
 	}
 }
 
-func RetrieveAllProperties(policy *Policy) (*externalpolicy.PropertyList, error) {
-	pl := new(externalpolicy.PropertyList)
+func RetrieveAllProperties(policy *Policy) (*PropertyList, error) {
+	pl := new(PropertyList)
 
 	for _, p := range policy.Properties {
 		*pl = append(*pl, p)
 	}
 
 	if len(policy.APISpecs) > 0 {
-		*pl = append(*pl, externalpolicy.Property{Name: "arch", Value: policy.APISpecs[0].Arch})
+		*pl = append(*pl, Property{Name: "arch", Value: policy.APISpecs[0].Arch})
 	}
 
 	if len(policy.AgreementProtocols) != 0 {
-		*pl = append(*pl, externalpolicy.Property{Name: "agreementProtocols", Value: policy.AgreementProtocols.As_String_Array()})
+		*pl = append(*pl, Property{Name: "agreementProtocols", Value: policy.AgreementProtocols.As_String_Array()})
 	}
 
 	return pl, nil
-}
-
-// generate a policy from the external policy
-func GenPolicyFromExternalPolicy(extPolicy *externalpolicy.ExternalPolicy, polName string) (*Policy, error) {
-	pPolicy := Policy_Factory(polName)
-	pPolicy.Properties = extPolicy.Properties
-	rp, err := RequiredPropertyFromConstraint(&(extPolicy.Constraints))
-	if err != nil {
-		return nil, fmt.Errorf("error trying to convert external policy constraints to JSON: %v", err)
-	}
-	pPolicy.CounterPartyProperties = (*rp)
-	return pPolicy, nil
 }

@@ -512,7 +512,7 @@ func CreateService(service *Service,
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("Create service: %v", service)))
 
 	// Generate a policy based on all the attributes and the service definition.
-	if msg, genErr := policy.GeneratePolicy(*service.Url, *service.Org, *service.Name, *service.VersionRange, *service.Arch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, maxAgreements, config.Edge.PolicyPath, pDevice.Org); genErr != nil {
+	if polFileName, genErr := policy.GeneratePolicy(*service.Url, *service.Org, *service.Name, *service.VersionRange, *service.Arch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, maxAgreements, config.Edge.PolicyPath, pDevice.Org); genErr != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("Error generating policy, error: %v", genErr))), nil, nil
 	} else {
 		if from_user {
@@ -520,6 +520,9 @@ func CreateService(service *Service,
 		} else {
 			LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service auto configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
 		}
+		// Create the new policy event
+		msg := events.NewPolicyCreatedMessage(events.NEW_POLICY, polFileName)
+
 		return false, service, msg
 	}
 }
