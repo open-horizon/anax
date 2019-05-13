@@ -3,10 +3,11 @@ package exchange
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/exchange"
 	"net/http"
 	"os"
+
+	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/exchange"
 )
 
 // We only care about handling the node names, so the rest is left as interface{} and will be passed from the exchange to the display
@@ -43,7 +44,7 @@ func NodeList(org string, credToUse string, node string, namesOnly bool) {
 	}
 }
 
-func NodeCreate(org, nodeIdTok, node, token, userPw, email string) {
+func NodeCreate(org, nodeIdTok, node, token, userPw, email string, arch string) {
 	// They should specify either nodeIdTok (for backward compat) or node and token, but not both
 	var nodeId, nodeToken string
 	if node != "" || token != "" {
@@ -68,7 +69,7 @@ func NodeCreate(org, nodeIdTok, node, token, userPw, email string) {
 	exchUrlBase := cliutils.GetExchangeUrl()
 
 	// Assume the user exists and try to create the node, but handle the error cases
-	putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeId, SoftwareVersions: make(map[string]string), PublicKey: []byte("")} // we only need to set the token
+	putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeId, SoftwareVersions: make(map[string]string), PublicKey: []byte(""), Arch: arch} // we only need to set the token
 	httpCode := cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, putNodeReq)
 
 	if httpCode == 401 {

@@ -3,6 +3,9 @@ package main
 
 import (
 	"flag"
+	"os"
+	"strings"
+
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/agreementbot"
 	"github.com/open-horizon/anax/cli/attribute"
@@ -24,8 +27,6 @@ import (
 	"github.com/open-horizon/anax/cli/utilcmds"
 	"github.com/open-horizon/anax/cutil"
 	"gopkg.in/alecthomas/kingpin.v2"
-	"os"
-	"strings"
 )
 
 func main() {
@@ -95,6 +96,7 @@ Environment Variables:
 	exNodeCreateCmd := exNodeCmd.Command("create", "Create the node resource in the Horizon Exchange.")
 	exNodeCreateNodeIdTok := exNodeCreateCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be created. The node ID must be unique within the organization.").Short('n').PlaceHolder("ID:TOK").String()
 	exNodeCreateNodeEmail := exNodeCreateCmd.Flag("email", "Your email address. Only needs to be specified if: the user specified in the -u flag does not exist, and you specified the 'public' org. If these things are true we will create the user and include this value as the email attribute.").Short('e').String()
+	exNodeCreateNodeArch := exNodeCreateCmd.Flag("Arch", "Your node architecture. If not specified, arch will leave blank").Short('a').String()
 	exNodeCreateNode := exNodeCreateCmd.Arg("node", "The node to be created.").String()
 	exNodeCreateToken := exNodeCreateCmd.Arg("token", "The token the new node should have.").String()
 	exNodeSetTokCmd := exNodeCmd.Command("settoken", "Change the token of a node resource in the Horizon Exchange.")
@@ -443,7 +445,7 @@ Environment Variables:
 	case exNodeListCmd.FullCommand():
 		exchange.NodeList(*exOrg, credToUse, *exNode, !*exNodeLong)
 	case exNodeCreateCmd.FullCommand():
-		exchange.NodeCreate(*exOrg, *exNodeCreateNodeIdTok, *exNodeCreateNode, *exNodeCreateToken, *exUserPw, *exNodeCreateNodeEmail)
+		exchange.NodeCreate(*exOrg, *exNodeCreateNodeIdTok, *exNodeCreateNode, *exNodeCreateToken, *exUserPw, *exNodeCreateNodeEmail, *exNodeCreateNodeArch)
 	case exNodeSetTokCmd.FullCommand():
 		exchange.NodeSetToken(*exOrg, credToUse, *exNodeSetTokNode, *exNodeSetTokToken)
 	case exNodeConfirmCmd.FullCommand():

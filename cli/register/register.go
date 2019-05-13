@@ -3,7 +3,14 @@ package register
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"regexp"
+	"strings"
+
 	"github.com/open-horizon/anax/api"
+	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
@@ -11,11 +18,6 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"regexp"
-	"strings"
 )
 
 // These structs are used to parse the registration input file. These are also used by the hzn dev code.
@@ -90,6 +92,12 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	exchUrlBase := cliutils.GetExchangeUrl()
 	fmt.Printf("Horizon Exchange base URL: %s\n", exchUrlBase)
 
+	// get the arch from anax
+	statusInfo := apicommon.Info{}
+	cliutils.HorizonGet("status", []int{200}, &statusInfo, false)
+	anaxArch := (*statusInfo.Configuration).Arch
+	fmt.Printf("Get Arch from anax: %s\n", anaxArch)
+
 	// Default node id and token if necessary
 	nodeId, nodeToken := cliutils.SplitIdToken(nodeIdTok)
 	if nodeId == "" {
@@ -119,15 +127,23 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	nodeIdTok = nodeId + ":" + nodeToken
 
 	// See if the node exists in the exchange, and create if it doesn't
-	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, nil)
+	stringResponse := ""
+	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, &stringResponse)
+	stringResp := stringResponse
+	fmt.Println("stringResp:", stringResp)
+	fmt.Println("stringResponse:", stringResponse)
+
 	if httpCode != 200 {
 		if userPw == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node '%s/%s' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId)
 		}
 		fmt.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...\n", org, nodeId)
-		cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email)
+		cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email, anaxArch)
 	} else {
 		fmt.Printf("Node %s/%s exists in the exchange\n", org, nodeId)
+
+		// if arch is not set, set the arch with anax's arch
+
 	}
 
 	// Initialize the Horizon device (node)
