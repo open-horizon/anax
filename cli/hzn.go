@@ -97,7 +97,7 @@ Environment Variables:
 	exNodeCreateNodeIdTok := exNodeCreateCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be created. The node ID must be unique within the organization.").Short('n').PlaceHolder("ID:TOK").String()
 	exNodeCreateNodeEmail := exNodeCreateCmd.Flag("email", "Your email address. Only needs to be specified if: the user specified in the -u flag does not exist, and you specified the 'public' org. If these things are true we will create the user and include this value as the email attribute.").Short('e').String()
 	exNodeCreateNodeArch := exNodeCreateCmd.Flag("arch", "Your node architecture. If not specified, arch will leave blank.").Short('a').String()
-	exNodeCreateNodeName := exNodeCreateCmd.Flag("name", "The name of your node").short('m').String()
+	exNodeCreateNodeName := exNodeCreateCmd.Flag("name", "The name of your node").Short('m').String()
 	exNodeCreateNode := exNodeCreateCmd.Arg("node", "The node to be created.").String()
 	exNodeCreateToken := exNodeCreateCmd.Arg("token", "The token the new node should have.").String()
 	exNodeSetTokCmd := exNodeCmd.Command("settoken", "Change the token of a node resource in the Horizon Exchange.")
