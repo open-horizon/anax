@@ -57,7 +57,7 @@ func ReadInputFile(filePath string, inputFileStruct *InputFile) {
 }
 
 // DoIt registers this node to Horizon with a pattern
-func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromFlag string, patternFromFlag string) {
+func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromFlag string, patternFromFlag string, nodeName string) {
 	// check the input
 	if nodeOrgFromFlag != "" || patternFromFlag != "" {
 		if org != "" || pattern != "" {
@@ -126,19 +126,71 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	}
 	nodeIdTok = nodeId + ":" + nodeToken
 
+	if nodeName == "" {
+		nodeName = nodeId
+	}
+
 	// See if the node exists in the exchange, and create if it doesn't
 	stringResponse := ""
 	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, &stringResponse)
 	stringResp := stringResponse
 	fmt.Println("stringResp:", stringResp)
-	fmt.Println("stringResponse:", stringResponse)
+	// stringResp: {
+	// 	"lastIndex": 0,
+	// 	"nodes": {
+	// 	  "bp@us.ibm.com/lilyIBMVMNode": {
+	// 		"lastHeartbeat": "2019-05-13T17:37:19.307Z[UTC]",
+	// 		"msgEndPoint": "",
+	// 		"name": "lilyIBMVMNode",
+	// 		"owner": "bp@us.ibm.com/zhangl@us.ibm.com",
+	// 		"pattern": "IBM/pattern-ibm.helloworld-amd64",
+	// 		"publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5FDe19jcAcgCHHLZ/q+tL2jvoPX1O3xJkwpZnuvMONt9VT8Kr/tnp1jDdROY+MO9rq1J/SI3gSiiDBeiOCUnx9XUVQZ6mpbyYn7PQsya8D4n+GN1UljRQ5Si4/HvE6TOAR2i8RhVKabCP16vmq1fAXtO/sm1pyX6Xl2z1Y5ZgIQx7ibMzqKQZnfm0sAV+7j616iB4MUBJcaXkxFNZxhlWPznNHdfeAskZVkmiuyBO/Vsyzbcix1zHn/jQ09xlpkIjo5OWTxTDp59M9r8u2cbhfo4IZrlpYucNjS9XC5jJTP8Q9NH6H4Eb0wskXVfNVtusGnrpMZbO9bOHwnc1XdJsQIDAQAB",
+	// 		"registeredServices": [
+	// 		  {
+	// 			"configState": "",
+	// 			"numAgreements": 0,
+	// 			"policy": "{\"header\":{\"name\":\"Policy for IBM_ibm.helloworld\",\"version\":\"2.0\"},\"apiSpec\":[{\"specRef\":\"ibm.helloworld\",\"organization\":\"IBM\",\"version\":\"1.0.0\",\"exclusiveAccess\":true,\"arch\":\"amd64\"}],\"valueExchange\":{},\"resourceLimits\":{},\"dataVerification\":{\"metering\":{}},\"proposalRejection\":{},\"properties\":[{\"name\":\"cpus\",\"value\":\"1\"},{\"name\":\"ram\",\"value\":\"0\"}],\"ha_group\":{},\"nodeHealth\":{}}",
+	// 			"properties": [
+	// 			  {
+	// 				"name": "version",
+	// 				"op": "in",
+	// 				"propType": "version",
+	// 				"value": "1.0.0"
+	// 			  },
+	// 			  {
+	// 				"name": "cpus",
+	// 				"op": "in",
+	// 				"propType": "string",
+	// 				"value": "1"
+	// 			  },
+	// 			  {
+	// 				"name": "ram",
+	// 				"op": "in",
+	// 				"propType": "string",
+	// 				"value": "0"
+	// 			  },
+	// 			  {
+	// 				"name": "arch",
+	// 				"op": "in",
+	// 				"propType": "string",
+	// 				"value": "amd64"
+	// 			  }
+	// 			],
+	// 			"url": "IBM/ibm.helloworld"
+	// 		  }
+	// 		],
+	// 		"softwareVersions": {},
+	// 		"token": "********"
+	// 	  }
+	// 	}
+	//   }
 
 	if httpCode != 200 {
 		if userPw == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node '%s/%s' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId)
 		}
 		fmt.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...\n", org, nodeId)
-		cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email, anaxArch)
+		cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email, anaxArch, nodeName)
 	} else {
 		fmt.Printf("Node %s/%s exists in the exchange\n", org, nodeId)
 
@@ -150,7 +202,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	fmt.Println("Initializing the Horizon node...")
 	//nd := Node{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HA: false}
 	falseVal := false
-	nd := api.HorizonDevice{Id: &nodeId, Token: &nodeToken, Org: &org, Pattern: &pattern, Name: &nodeId, HA: &falseVal} //todo: support HA config
+	nd := api.HorizonDevice{Id: &nodeId, Token: &nodeToken, Org: &org, Pattern: &pattern, Name: &nodeName, HA: &falseVal} //todo: support HA config
 	httpCode, _ = cliutils.HorizonPutPost(http.MethodPost, "node", []int{201, 200, cliutils.ANAX_ALREADY_CONFIGURED}, nd)
 	if httpCode == cliutils.ANAX_ALREADY_CONFIGURED {
 		// Note: I wanted to make `hzn register` idempotent, but the anax api doesn't support changing existing settings once in configuring state (to maintain internal consistency).
