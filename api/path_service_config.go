@@ -484,45 +484,47 @@ func CreateService(service *Service,
 
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("Complete Attr list for registration of service %v/%v: %v", *service.Org, *service.Url, attributes)))
 
-	// Establish the correct agreement protocol list. The AGP list from this service overrides any global list that might exist.
-	var agpList *[]policy.AgreementProtocol
-	if len(serviceAgreementProtocols) != 0 {
-		agpList = &serviceAgreementProtocols
-	} else if list, err := policy.ConvertToAgreementProtocolList(globalAgreementProtocols); err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("Error converting global agreement protocol list attribute %v to agreement protocol list, error: %v", globalAgreementProtocols, err))), nil, nil
-	} else {
-		agpList = list
-	}
-
 	// Save the service definition in the local database.
 	if err := persistence.SaveOrUpdateMicroserviceDef(db, msdef); err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("Error saving service definition %v into db: %v", *msdef, err))), nil, nil
 	}
 
-	// Set max number of agreements for this service's policy.
-	maxAgreements := 1
-	if msdef.Sharable == exchange.MS_SHARING_MODE_SINGLETON || msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE || msdef.Sharable == exchange.MS_SHARING_MODE_SINGLE {
-		if pDevice.Pattern == "" {
-			maxAgreements = 5 // hard coded to 5 for now. will change to 0 later
+	if pDevice.Pattern == "" {
+		// non pattern case, do not generate policies
+		LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+		return false, service, nil
+	} else {
+		// Establish the correct agreement protocol list. The AGP list from this service overrides any global list that might exist.
+		var agpList *[]policy.AgreementProtocol
+		if len(serviceAgreementProtocols) != 0 {
+			agpList = &serviceAgreementProtocols
+		} else if list, err := policy.ConvertToAgreementProtocolList(globalAgreementProtocols); err != nil {
+			return errorhandler(NewSystemError(fmt.Sprintf("Error converting global agreement protocol list attribute %v to agreement protocol list, error: %v", globalAgreementProtocols, err))), nil, nil
 		} else {
+			agpList = list
+		}
+
+		// Set max number of agreements for this service's policy.
+		maxAgreements := 1
+		if msdef.Sharable == exchange.MS_SHARING_MODE_SINGLETON || msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE || msdef.Sharable == exchange.MS_SHARING_MODE_SINGLE {
 			maxAgreements = 0 // no limites for pattern
 		}
-	}
 
-	glog.V(5).Infof(apiLogString(fmt.Sprintf("Create service: %v", service)))
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Create service policy: %v", service)))
 
-	// Generate a policy based on all the attributes and the service definition.
-	if polFileName, genErr := policy.GeneratePolicy(*service.Url, *service.Org, *service.Name, *service.VersionRange, *service.Arch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, maxAgreements, config.Edge.PolicyPath, pDevice.Org); genErr != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("Error generating policy, error: %v", genErr))), nil, nil
-	} else {
-		if from_user {
-			LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+		// Generate a policy based on all the attributes and the service definition.
+		if polFileName, genErr := policy.GeneratePolicy(*service.Url, *service.Org, *service.Name, *service.VersionRange, *service.Arch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, maxAgreements, config.Edge.PolicyPath, pDevice.Org); genErr != nil {
+			return errorhandler(NewSystemError(fmt.Sprintf("Error generating policy, error: %v", genErr))), nil, nil
 		} else {
-			LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service auto configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
-		}
-		// Create the new policy event
-		msg := events.NewPolicyCreatedMessage(events.NEW_POLICY, polFileName)
+			if from_user {
+				LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+			} else {
+				LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service auto configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+			}
+			// Create the new policy event
+			msg := events.NewPolicyCreatedMessage(events.NEW_POLICY, polFileName)
 
-		return false, service, msg
+			return false, service, msg
+		}
 	}
 }

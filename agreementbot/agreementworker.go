@@ -361,7 +361,9 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 
 			// The device seems to support the required API specs, so augment the consumer policy file with the workload
 			// details that match what the producer can support.
-			wi.ConsumerPolicy.APISpecs = (*asl)
+			if wi.ConsumerPolicy.PatternId != "" {
+				wi.ConsumerPolicy.APISpecs = (*asl)
+			}
 
 			// Save the deployment and implementation package details into the consumer policy so that the node knows how to run
 			// the workload/service in the policy.

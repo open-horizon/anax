@@ -180,11 +180,12 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 				// be greater than the dependency version.
 				ms_specs := []events.MicroserviceSpec{}
 				for _, rs := range msdef.RequiredServices {
-					if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, rs.URL, rs.Org); err != nil {
-						return nil, fmt.Errorf(logString(fmt.Sprintf("received error reading service definition for %v/%v: %v", rs.Org, rs.URL, err)))
+					msdef_dep, err := microservice.FindOrCreateMicroserviceDef(w.db, rs.URL, rs.Org, rs.Version, rs.Arch, exchange.GetHTTPServiceHandler(w))
+					if err != nil {
+						return nil, fmt.Errorf(logString(fmt.Sprintf("failed to get or create service definition for for %v/%v: %v", rs.Org, rs.URL, err)))
 					} else {
 						// Assume the first msdef is the one we want.
-						msspec := events.MicroserviceSpec{SpecRef: rs.URL, Org: rs.Org, Version: msdefs[0].Version, MsdefId: msdefs[0].Id}
+						msspec := events.MicroserviceSpec{SpecRef: rs.URL, Org: rs.Org, Version: msdef_dep.Version, MsdefId: msdef_dep.Id}
 						ms_specs = append(ms_specs, msspec)
 					}
 				}

@@ -200,7 +200,9 @@ func configureService(service *Service,
 
 	} else {
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig created service %v", newService)))
-		(*msgs) = append((*msgs), msg)
+		if msg != nil {
+			(*msgs) = append((*msgs), msg)
+		}
 	}
 
 	return false
