@@ -12,7 +12,6 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/nodepolicy"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -468,7 +467,7 @@ func (w *AgreementWorker) NodePolicyUpdated() {
 	}
 
 	// add the node policy to the policy manager
-	newPol, err := nodePolicy.GenPolicyFromExternalPolicy(w.GetExchangeId())
+	newPol, err := policy.GenPolicyFromExternalPolicy(nodePolicy, policy.MakeExternalPolicyHeaderName(w.GetExchangeId()))
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to convert node policy to policy file format: %v", err)))
 		return
@@ -479,7 +478,7 @@ func (w *AgreementWorker) NodePolicyUpdated() {
 // handles the node policy DELETE_POLICY event
 func (w *AgreementWorker) NodePolicyDeleted() {
 	glog.V(5).Infof(logString("handling node policy deleted."))
-	w.pm.DeletePolicyByName(exchange.GetOrg(w.GetExchangeId()), externalpolicy.MakeExternalPolicyHeaderName(w.GetExchangeId()))
+	w.pm.DeletePolicyByName(exchange.GetOrg(w.GetExchangeId()), policy.MakeExternalPolicyHeaderName(w.GetExchangeId()))
 }
 
 // Check the node policy changes on the exchange and sync up with
@@ -541,7 +540,7 @@ func (w *AgreementWorker) syncOnInit() error {
 		return errors.New(logString(fmt.Sprintf("Failed to initially set up node policy. %v", err)))
 	} else if nodePolicy != nil {
 		// add the node policy to the policy manager
-		newPolicy, err := nodePolicy.GenPolicyFromExternalPolicy(w.GetExchangeId())
+		newPolicy, err := policy.GenPolicyFromExternalPolicy(nodePolicy, policy.MakeExternalPolicyHeaderName(w.GetExchangeId()))
 		if err != nil {
 			return errors.New(logString(fmt.Sprintf("Failed to convert node policy to policy file format: %v", err)))
 		}

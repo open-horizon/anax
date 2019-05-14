@@ -3,6 +3,7 @@ package policy
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/externalpolicy"
 	"strings"
 )
 
@@ -32,7 +33,7 @@ func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, senso
 
 	// Add properties to the policy
 	for prop, val := range *props {
-		p.Add_Property(Property_Factory(prop, val))
+		p.Add_Property(externalpolicy.Property_Factory(prop, val))
 	}
 
 	// Add HA configuration if there is any
@@ -60,20 +61,52 @@ func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, senso
 	}
 }
 
-func RetrieveAllProperties(policy *Policy) (*PropertyList, error) {
-	pl := new(PropertyList)
+func RetrieveAllProperties(policy *Policy) (*externalpolicy.PropertyList, error) {
+	pl := new(externalpolicy.PropertyList)
 
 	for _, p := range policy.Properties {
 		*pl = append(*pl, p)
 	}
 
 	if len(policy.APISpecs) > 0 {
-		*pl = append(*pl, Property{Name: "arch", Value: policy.APISpecs[0].Arch})
+		*pl = append(*pl, externalpolicy.Property{Name: "arch", Value: policy.APISpecs[0].Arch})
 	}
 
 	if len(policy.AgreementProtocols) != 0 {
-		*pl = append(*pl, Property{Name: "agreementProtocols", Value: policy.AgreementProtocols.As_String_Array()})
+		*pl = append(*pl, externalpolicy.Property{Name: "agreementProtocols", Value: policy.AgreementProtocols.As_String_Array()})
 	}
 
 	return pl, nil
+}
+
+// Create a header name for the generated policy that should be unique within the org.
+// The input can be a device id or a servcie id.
+func MakeExternalPolicyHeaderName(id string) string {
+	return fmt.Sprintf("Policy for %v", id)
+}
+
+// Generate a policy from the external policy.
+// The input is the device id or service id.
+func GenPolicyFromExternalPolicy(extPol *externalpolicy.ExternalPolicy, polName string) (*Policy, error) {
+	// validate first
+	if err := extPol.Validate(); err != nil {
+		return nil, fmt.Errorf("Failed to validate the external policy: %v", extPol)
+	}
+
+	pPolicy := Policy_Factory(polName)
+
+	for _, p := range extPol.Properties {
+		if err := pPolicy.Add_Property(&p); err != nil {
+			return nil, fmt.Errorf("Failed to add property %v to policy. %v", p, err)
+		}
+	}
+
+	rp, err := RequiredPropertyFromConstraint(&(extPol.Constraints))
+	if err != nil {
+		return nil, fmt.Errorf("error trying to convert external policy constraints to JSON: %v", err)
+	}
+	if rp != nil {
+		pPolicy.CounterPartyProperties = (*rp)
+	}
+	return pPolicy, nil
 }

@@ -4,6 +4,7 @@ package policy
 
 import (
 	"encoding/json"
+	"github.com/open-horizon/anax/externalpolicy"
 	"testing"
 )
 
@@ -120,7 +121,7 @@ func Test_invalid_simple1(t *testing.T) {
 // Test that simple expressions satisfy a single property value.
 func Test_satisfy_simple1(t *testing.T) {
 	var rp *RequiredProperty
-	var pa *[]Property
+	var pa *[]externalpolicy.Property
 
 	prop_list := `[{"name":"prop1", "value":true}]`
 	simple_and := `{"and":[{"name":"prop1", "value":true}]}`
@@ -138,7 +139,7 @@ func Test_satisfy_simple1(t *testing.T) {
 // Test that simple expressions satisfy a single property value.
 func Test_satisfy_simple2(t *testing.T) {
 	var rp *RequiredProperty
-	var pa *[]Property
+	var pa *[]externalpolicy.Property
 
 	simple_and := `{}`
 	prop_list := `[{"name":"prop1", "value":"val1"}]`
@@ -256,7 +257,7 @@ func Test_satisfy_simple2(t *testing.T) {
 // Test that multiple property requirement expressions can be satisfied.
 func Test_satisfy_multiple1(t *testing.T) {
 	var rp *RequiredProperty
-	var pa *[]Property
+	var pa *[]externalpolicy.Property
 
 	multiple_and := `{"and":[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2", "op":"=="}]}`
 	prop_list := `[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2"},{"name":"prop3", "value":"val3"}]`
@@ -284,7 +285,7 @@ func Test_satisfy_multiple1(t *testing.T) {
 // Test that simple expressions satisfy a single property value.
 func Test_not_satisfy_simple1(t *testing.T) {
 	var rp *RequiredProperty
-	var pa *[]Property
+	var pa *[]externalpolicy.Property
 
 	prop_list := `[{"name":"prop1", "value":true}]`
 	simple_and := `{"and":[{"name":"prop1", "value":false}]}`
@@ -301,7 +302,7 @@ func Test_not_satisfy_simple1(t *testing.T) {
 // Test that simple expressions dont satisfy a single property value.
 func Test_not_satisfy_simple2(t *testing.T) {
 	var rp *RequiredProperty
-	var pa *[]Property
+	var pa *[]externalpolicy.Property
 
 	simple_and := `{"and":[{"name":"prop1", "value":"val1"}]}`
 	prop_list := `[{"name":"prop2", "value":"val1"}]`
@@ -429,7 +430,7 @@ func Test_not_satisfy_simple2(t *testing.T) {
 // Test that multiple property expressions arent satisfied.
 func Test_not_satisfy_multiple1(t *testing.T) {
 	var rp *RequiredProperty
-	var pa *[]Property
+	var pa *[]externalpolicy.Property
 
 	simple_and := `{"and":[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2"}]}`
 	prop_list := `[{"name":"prop2", "value":"val1"}]`
@@ -480,7 +481,7 @@ func Test_not_satisfy_multiple1(t *testing.T) {
 // Tests that use complex expressions (with multiple control operators)
 func Test_satisfy_complex1(t *testing.T) {
 	var rp *RequiredProperty
-	var pa *[]Property
+	var pa *[]externalpolicy.Property
 
 	ex := `{"and":[{"name":"prop1", "value":"val1"},{"or":[{"name":"prop3", "value":"val3"},{"name":"prop4", "value":"val4"}]} ]}`
 	prop_list := `[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2"},{"name":"prop3", "value":"val3"}]`
@@ -524,7 +525,7 @@ func Test_satisfy_complex1(t *testing.T) {
 // Tests that use complex expressions (with multiple control operators) that are not satisfied
 func Test_not_satisfy_complex1(t *testing.T) {
 	var rp *RequiredProperty
-	var pa *[]Property
+	var pa *[]externalpolicy.Property
 
 	ex := `{"and":[{"and":[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2"}]} ,{"or":[{"name":"prop3", "value":"val3"},{"name":"prop4", "value":"val4"}]} ]}`
 	prop_list := `[{"name":"prop1", "value":"val1"},{"name":"prop3", "value":"val3"}]`
@@ -601,7 +602,7 @@ func Test_merge1(t *testing.T) {
 			if rp3 := rp1.Merge(rp2); rp3 == nil {
 				t.Errorf("Error: Merged RequiredProperty expression not returned.\n")
 			} else {
-				var pa *[]Property
+				var pa *[]externalpolicy.Property
 				prop_list := `[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2"},{"name":"prop3", "value":"val3"},{"name":"prop4", "value":"val4"}]`
 
 				if pa = create_property_list(prop_list, t); pa != nil {
@@ -646,7 +647,7 @@ func Test_merge3(t *testing.T) {
 			} else if len(*rp3) != 1 {
 				t.Errorf("Error: Merged RequiredProperty should have 1 element, but it has %v.\n", len(*rp3))
 			} else {
-				var pa *[]Property
+				var pa *[]externalpolicy.Property
 				prop_list := `[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2"}]`
 
 				if pa = create_property_list(prop_list, t); pa != nil {
@@ -673,7 +674,7 @@ func Test_merge4(t *testing.T) {
 			} else if len(*rp3) != 1 {
 				t.Errorf("Error: Merged RequiredProperty should have 1 element, but it has %v.\n", len(*rp3))
 			} else {
-				var pa *[]Property
+				var pa *[]externalpolicy.Property
 				prop_list := `[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2"}]`
 
 				if pa = create_property_list(prop_list, t); pa != nil {
@@ -684,6 +685,145 @@ func Test_merge4(t *testing.T) {
 			}
 		}
 	}
+}
+
+// ================================================================================================================
+// Verify the function that converts external policy constraint expressions to the internal JSON format, for simple
+// constraint expressions.
+//
+func Test_simple_conversion(t *testing.T) {
+
+	ce := new(externalpolicy.ConstraintExpression)
+
+	(*ce) = append((*ce), "prop == value")
+	if rp, err := RequiredPropertyFromConstraint(ce); err != nil {
+		t.Errorf("Error: unable to convert simple expression: %v", err)
+	} else if tle := rp.TopLevelElements(); tle == nil {
+		t.Errorf("Error: There should be a top level array element")
+	} else if len(tle) != 1 {
+		t.Errorf("Error: Should be 1 top level array alement")
+	} else {
+		prop_list := `[{"name":"prop", "value":"value"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Error(err)
+			}
+		}
+
+		prop_list = `[{"name":"propA", "value":"value"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err == nil {
+				t.Errorf("Error: properties %v should not satisfy %v", prop_list, rp)
+			}
+		}
+	}
+
+	ce = new(externalpolicy.ConstraintExpression)
+	(*ce) = append((*ce), "prop == value && prop2 == value2")
+	if rp, err := RequiredPropertyFromConstraint(ce); err != nil {
+		t.Errorf("Error: unable to convert simple expression: %v", err)
+	} else if tle := rp.TopLevelElements(); tle == nil {
+		t.Errorf("Error: There should be a top level array element")
+	} else if len(tle) != 1 {
+		t.Errorf("Error: Should be 1 top level array alement")
+	} else {
+		prop_list := `[{"name":"prop", "value":"value"},{"name":"prop2", "value":"value2"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Error(err)
+			}
+		}
+
+		prop_list = `[{"name":"prop", "value":"value"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err == nil {
+				t.Errorf("Error: properties %v should not satisfy %v", prop_list, rp)
+			}
+		}
+	}
+
+	ce = new(externalpolicy.ConstraintExpression)
+	(*ce) = append((*ce), "prop == value && prop2 == value2 || prop3 == value3")
+	if rp, err := RequiredPropertyFromConstraint(ce); err != nil {
+		t.Errorf("Error: unable to convert simple expression: %v", err)
+	} else if tle := rp.TopLevelElements(); tle == nil {
+		t.Errorf("Error: There should be 2 top level array elements")
+	} else if len(tle) != 2 {
+		t.Errorf("Error: Should be 2 top level array alements")
+	} else {
+		prop_list := `[{"name":"prop3", "value":"value3"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Error(err)
+			}
+		}
+
+		prop_list = `[{"name":"prop2", "value":"value2"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err == nil {
+				t.Errorf("Error: properties %v should not satisfy %v", prop_list, rp)
+			}
+		}
+	}
+
+	ce = new(externalpolicy.ConstraintExpression)
+	(*ce) = append((*ce), "prop == value && prop2 == value2 || prop3 == value3 || prop4 == value4")
+	if rp, err := RequiredPropertyFromConstraint(ce); err != nil {
+		t.Errorf("Error: unable to convert simple expression: %v", err)
+	} else if tle := rp.TopLevelElements(); tle == nil {
+		t.Errorf("Error: There should be 3 top level array elements")
+	} else if len(tle) != 3 {
+		t.Errorf("Error: Should be 3 top level array alements")
+	} else {
+		prop_list := `[{"name":"prop4", "value":"value4"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Error(err)
+			}
+		}
+
+		prop_list = `[{"name":"prop2", "value":"value2"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err == nil {
+				t.Errorf("Error: properties %v should not satisfy %v", prop_list, rp)
+			}
+		}
+	}
+
+	ce = new(externalpolicy.ConstraintExpression)
+	(*ce) = append((*ce), "prop == value && prop2 == value2 || prop3 == value3 || prop4 == value4 && prop5 == value5")
+	if rp, err := RequiredPropertyFromConstraint(ce); err != nil {
+		t.Errorf("Error: unable to convert simple expression: %v", err)
+	} else if tle := rp.TopLevelElements(); tle == nil {
+		t.Errorf("Error: There should be 3 top level array elements")
+	} else if len(tle) != 3 {
+		t.Errorf("Error: Should be 3 top level array alement")
+	} else {
+		prop_list := `[{"name":"prop3", "value":"value3"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Error(err)
+			}
+		}
+
+		prop_list = `[{"name":"prop", "value":"value"}]`
+
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err == nil {
+				t.Errorf("Error: properties %v should not satisfy %v", prop_list, rp)
+			}
+		}
+	}
+
 }
 
 // ================================================================================================================
@@ -706,8 +846,8 @@ func create_RP(jsonString string, t *testing.T) *RequiredProperty {
 // Create an array of Property objects from a JSON serialization. The JSON serialization
 // does not have to be a valid Property serialization, just has to be a valid
 // JSON serialization.
-func create_property_list(jsonString string, t *testing.T) *[]Property {
-	pa := make([]Property, 0, 10)
+func create_property_list(jsonString string, t *testing.T) *[]externalpolicy.Property {
+	pa := make([]externalpolicy.Property, 0, 10)
 
 	if err := json.Unmarshal([]byte(jsonString), &pa); err != nil {
 		t.Errorf("Error unmarshalling Property json string: %v error:%v\n", jsonString, err)

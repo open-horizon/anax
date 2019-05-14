@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/version"
 	"github.com/open-horizon/anax/worker"
@@ -712,20 +713,20 @@ func (w *AgreementBotWorker) getMessages() ([]exchange.AgbotMessage, error) {
 
 // This function runs through the agbot policy and builds a list of properties and values that
 // it wants to search on.
-func RetrieveAllProperties(version string, arch string, pol *policy.Policy) (*policy.PropertyList, error) {
-	pl := new(policy.PropertyList)
+func RetrieveAllProperties(version string, arch string, pol *policy.Policy) (*externalpolicy.PropertyList, error) {
+	pl := new(externalpolicy.PropertyList)
 
 	for _, p := range pol.Properties {
 		*pl = append(*pl, p)
 	}
 
 	if version != "" {
-		*pl = append(*pl, policy.Property{Name: "version", Value: version})
+		*pl = append(*pl, externalpolicy.Property{Name: "version", Value: version})
 	}
-	*pl = append(*pl, policy.Property{Name: "arch", Value: arch})
+	*pl = append(*pl, externalpolicy.Property{Name: "arch", Value: arch})
 
 	if len(pol.AgreementProtocols) != 0 {
-		*pl = append(*pl, policy.Property{Name: "agreementProtocols", Value: pol.AgreementProtocols.As_String_Array()})
+		*pl = append(*pl, externalpolicy.Property{Name: "agreementProtocols", Value: pol.AgreementProtocols.As_String_Array()})
 	}
 
 	return pl, nil
