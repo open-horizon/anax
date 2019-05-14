@@ -3,6 +3,7 @@ package exchange
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/businesspolicy"
 	"github.com/open-horizon/anax/externalpolicy"
 	"strings"
 	"time"
@@ -31,6 +32,41 @@ func (e *ExchangePolicy) GetExternalPolicy() externalpolicy.ExternalPolicy {
 
 func (e *ExchangePolicy) GetLastUpdated() string {
 	return e.LastUpdated
+}
+
+// the exchange business policy
+type ExchangeBusinessPolicy struct {
+	businesspolicy.BusinessPolicy
+	Created     string `json:"created,omitempty"`
+	LastUpdated string `json:"lastUpdated,omitempty"`
+}
+
+func (e ExchangeBusinessPolicy) String() string {
+	return fmt.Sprintf("%v, "+
+		"Created: %v, "+
+		"LastUpdated: %v",
+		e.BusinessPolicy, e.Created, e.LastUpdated)
+}
+
+func (e ExchangeBusinessPolicy) ShortString() string {
+	return e.String()
+}
+
+func (e *ExchangeBusinessPolicy) GetBusinessPolicy() businesspolicy.BusinessPolicy {
+	return e.BusinessPolicy
+}
+
+func (e *ExchangeBusinessPolicy) GetLastUpdated() string {
+	return e.LastUpdated
+}
+
+func (e *ExchangeBusinessPolicy) GetCreated() string {
+	return e.Created
+}
+
+type GetBusinessPolicyResponse struct {
+	BusinessPolicy map[string]ExchangeBusinessPolicy `json:"businessPolicy,omitempty"` // map of all defined business policies
+	LastIndex      int                               `json:"lastIndex.omitempty"`
 }
 
 // Retrieve the node policy object from the exchange. The input device Id is assumed to be prefixed with its org.
@@ -102,6 +138,42 @@ func DeleteNodePolicy(ec ExchangeContext, deviceId string) error {
 		} else {
 			glog.V(3).Infof(rpclogString(fmt.Sprintf("deleted device policy for %v from the exchange.", deviceId)))
 			return nil
+		}
+	}
+}
+
+// Get all the business policy metadata for a specific organization, and policy if specified.
+func GetBusinessPolicies(ec ExchangeContext, org string, policy_id string) (map[string]ExchangeBusinessPolicy, error) {
+
+	if policy_id == "" {
+		glog.V(3).Infof(rpclogString(fmt.Sprintf("getting business policy for %v", org)))
+	} else {
+		glog.V(3).Infof(rpclogString(fmt.Sprintf("getting business policy for %v/%v", org, policy_id)))
+	}
+
+	var resp interface{}
+	resp = new(GetBusinessPolicyResponse)
+
+	// Search the exchange for the business policy definitions
+	targetURL := ""
+	if policy_id == "" {
+		targetURL = fmt.Sprintf("%vorgs/%v/business/policies", ec.GetExchangeURL(), org)
+	} else {
+		targetURL = fmt.Sprintf("%vorgs/%v/business/policies/%v", ec.GetExchangeURL(), org, policy_id)
+	}
+
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			pols := resp.(*GetBusinessPolicyResponse).BusinessPolicy
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("found business policy for %v, %v", org, pols)))
+			return pols, nil
 		}
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/policy"
+	"strings"
 	"time"
 )
 
@@ -580,6 +581,141 @@ func PostDeviceServicesConfigState(httpClientFactory *config.HTTPClientFactory, 
 			continue
 		} else {
 			glog.V(3).Infof(rpclogString(fmt.Sprintf("post service configuration states %v for device %v to the exchange.", svcs_configstate, deviceId)))
+			return nil
+		}
+	}
+}
+
+// This function gets the service policy for a service.
+// It returns nil if there is no service policy for this service
+func GetServicePolicy(ec ExchangeContext, url string, org string, version string, arch string) (*ExchangePolicy, error) {
+
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting service policy for service %v %v %v %v", url, org, version, arch)))
+
+	if version == "" || !policy.IsVersionString(version) {
+		return nil, errors.New(rpclogString(fmt.Sprintf("GetServicePolicy got wrong version string %v. The version string should be a non-empy single version string.", version)))
+	}
+
+	// get the service id
+	s_resp, s_id, err := GetService(ec, url, org, version, arch)
+	if err != nil {
+		return nil, errors.New(rpclogString(fmt.Sprintf("failed to get the service %v %v %v %v.%v", url, org, version, arch, err)))
+	} else if s_resp == nil {
+		return nil, errors.New(rpclogString(fmt.Sprintf("unable to find the service %v %v %v %v.", url, org, version, arch)))
+	}
+
+	return GetServicePolicyWithId(ec, s_id)
+}
+
+// Retrieve the service policy object from the exchange. The service_id is prefixed with the org name.
+// It returns nil if there is no service policy for this service
+func GetServicePolicyWithId(ec ExchangeContext, service_id string) (*ExchangePolicy, error) {
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting service policy for %v.", service_id)))
+
+	// Get the service policy object. There should only be 1.
+	var resp interface{}
+	resp = new(ExchangePolicy)
+
+	targetURL := fmt.Sprintf("%vorgs/%v/services/%v/policy", ec.GetExchangeURL(), GetOrg(service_id), GetId(service_id))
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("returning service policy for %v.", service_id)))
+			servicePolicy := resp.(*ExchangePolicy)
+			if servicePolicy.GetLastUpdated() == "" {
+				return nil, nil
+			} else {
+				return servicePolicy, nil
+			}
+		}
+	}
+}
+
+// This function updates the service policy for a service.
+func PutServicePolicy(ec ExchangeContext, url string, org string, version string, arch string, ep *ExchangePolicy) (*PutDeviceResponse, error) {
+
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("updating service policy for service %v %v %v %v", url, org, version, arch)))
+
+	if version == "" || !policy.IsVersionString(version) {
+		return nil, errors.New(rpclogString(fmt.Sprintf("PutServicePolicy got wrong version string %v. The version string should be a non-empy single version string.", version)))
+	}
+
+	// get the service id
+	s_resp, s_id, err := GetService(ec, url, org, version, arch)
+	if err != nil {
+		return nil, errors.New(rpclogString(fmt.Sprintf("failed to get the service %v %v %v %v.%v", url, org, version, arch, err)))
+	} else if s_resp == nil {
+		return nil, errors.New(rpclogString(fmt.Sprintf("unable to find the service %v %v %v %v.", url, org, version, arch)))
+	}
+
+	return PutServicePolicyWithId(ec, s_id, ep)
+}
+
+// Write an updated service policy to the exchange.
+func PutServicePolicyWithId(ec ExchangeContext, service_id string, ep *ExchangePolicy) (*PutDeviceResponse, error) {
+	// create PUT body
+	var resp interface{}
+	resp = new(PutDeviceResponse)
+	targetURL := fmt.Sprintf("%vorgs/%v/services/%v/policy", ec.GetExchangeURL(), GetOrg(service_id), GetId(service_id))
+
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "PUT", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), ep, &resp); err != nil {
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("put service policy for %v to exchange %v", service_id, ep)))
+			return resp.(*PutDeviceResponse), nil
+		}
+	}
+}
+
+// This function deletes the service policy for a service.
+// it returns nil if the policy is deleted or does not exist.
+func DeleteServicePolicy(ec ExchangeContext, url string, org string, version string, arch string) error {
+
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("deleting service policy for service %v %v %v %v", url, org, version, arch)))
+
+	if version == "" || !policy.IsVersionString(version) {
+		return errors.New(rpclogString(fmt.Sprintf("DeleteServicePolicy got wrong version string %v. The version string should be a non-empy single version string.", version)))
+	}
+
+	// get the service id
+	s_resp, s_id, err := GetService(ec, url, org, version, arch)
+	if err != nil {
+		return errors.New(rpclogString(fmt.Sprintf("failed to get the service %v %v %v %v.%v", url, org, version, arch, err)))
+	} else if s_resp == nil {
+		return errors.New(rpclogString(fmt.Sprintf("unable to find the service %v %v %v %v.", url, org, version, arch)))
+	}
+
+	return DeleteServicePolicyWithId(ec, s_id)
+}
+
+// Delete service policy from the exchange.
+// It returns nil if the policy is deleted or does not exist.
+func DeleteServicePolicyWithId(ec ExchangeContext, service_id string) error {
+	// create PUT body
+	var resp interface{}
+	resp = new(PostDeviceResponse)
+	targetURL := fmt.Sprintf("%vorgs/%v/services/%v/policy", ec.GetExchangeURL(), GetOrg(service_id), GetId(service_id))
+
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "DELETE", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil && !strings.Contains(err.Error(), "status: 404") {
+			return err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("deleted device policy for %v from the exchange.", service_id)))
 			return nil
 		}
 	}

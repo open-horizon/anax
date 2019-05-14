@@ -169,3 +169,63 @@ func GetHTTPDeleteNodePolicyHandler(ec ExchangeContext) DeleteNodePolicyHandler 
 		return DeleteNodePolicy(ec, deviceId)
 	}
 }
+
+// Two handlers for getting the service policy from the exchange.
+type ServicePolicyWithIdHandler func(service_id string) (*ExchangePolicy, error)
+
+func GetHTTPServicePolicyWithIdHandler(ec ExchangeContext) ServicePolicyWithIdHandler {
+	return func(service_id string) (*ExchangePolicy, error) {
+		return GetServicePolicyWithId(ec, service_id)
+	}
+}
+
+type ServicePolicyHandler func(sUrl string, sOrg string, sVersion string, sArch string) (*ExchangePolicy, error)
+
+func GetHTTPServicePolicyHandler(ec ExchangeContext) ServicePolicyHandler {
+	return func(sUrl string, sOrg string, sVersion string, sArch string) (*ExchangePolicy, error) {
+		return GetServicePolicy(ec, sUrl, sOrg, sVersion, sArch)
+	}
+}
+
+// Two handlers for updating the service policy to the exchange.
+type PutServicePolicyWithIdHandler func(service_id string, ep *ExchangePolicy) (*PutDeviceResponse, error)
+
+func GetHTTPPutServicePolicyWithIdHandler(ec ExchangeContext) PutServicePolicyWithIdHandler {
+	return func(service_id string, ep *ExchangePolicy) (*PutDeviceResponse, error) {
+		return PutServicePolicyWithId(ec, service_id, ep)
+	}
+}
+
+type PutServicePolicyHandler func(sUrl string, sOrg string, sVersion string, sArch string, ep *ExchangePolicy) (*PutDeviceResponse, error)
+
+func GetHTTPPutServicePolicyHandler(ec ExchangeContext) PutServicePolicyHandler {
+	return func(sUrl string, sOrg string, sVersion string, sArch string, ep *ExchangePolicy) (*PutDeviceResponse, error) {
+		return PutServicePolicy(ec, sUrl, sOrg, sVersion, sArch, ep)
+	}
+}
+
+// Two handlers for deleting the service policy from the exchange.
+type DeleteServicePolicyWithIdHandler func(service_id string) error
+
+func GetHTTPDeleteServicePolicyWithIdHandler(ec ExchangeContext) DeleteServicePolicyWithIdHandler {
+	return func(service_id string) error {
+		return DeleteServicePolicyWithId(ec, service_id)
+	}
+}
+
+type DeleteServicePolicyHandler func(sUrl string, sOrg string, sVersion string, sArch string) error
+
+func GetHTTPDeleteServicePolicyHandler(ec ExchangeContext) DeleteServicePolicyHandler {
+	return func(sUrl string, sOrg string, sVersion string, sArch string) error {
+		return DeleteServicePolicy(ec, sUrl, sOrg, sVersion, sArch)
+	}
+}
+
+// A handler for getting the business policies from the exchange.
+type BusinessPoliciesHandler func(org string, policy_id string) (map[string]ExchangeBusinessPolicy, error)
+
+func GetHTTPBusinessPoliciesHandler(ec ExchangeContext) BusinessPoliciesHandler {
+	return func(org string, policy_id string) (map[string]ExchangeBusinessPolicy, error) {
+		return GetBusinessPolicies(ec, org, policy_id)
+	}
+}
