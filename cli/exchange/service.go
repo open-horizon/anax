@@ -9,6 +9,8 @@ import (
 	"github.com/open-horizon/anax/cli/plugin_registry"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/externalpolicy"
+	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/rsapss-tool/verify"
 	"net/http"
 	"os"
@@ -434,4 +436,75 @@ func ServiceRemoveAuth(org, userPw, service string, authId uint) {
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "docker auth %d not found", authId)
 	}
+}
+
+//ServiceListPolicy lists the policy for the service in the Horizon Exchange
+func ServiceListPolicy(org string, credToUse string, service string) {
+	cliutils.SetWhetherUsingApiKey(credToUse)
+	org, service = cliutils.TrimOrg(org, service)
+
+	// Check that the service exists
+	var services ServiceExch
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "service '%v/%v' not found.", org, service)
+	}
+	var policy exchange.ExchangePolicy
+	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &policy)
+	output := cliutils.MarshalIndent(policy.GetExternalPolicy(), "exchange service listpolicy")
+	fmt.Println(output)
+}
+
+//ServiceUpdatePolicy adds a policy or replaces an existing policy for the service in the Horizon Exchange
+func ServiceUpdatePolicy(org string, credToUse string, service string, jsonFilePath string) {
+	cliutils.SetWhetherUsingApiKey(credToUse)
+	org, service = cliutils.TrimOrg(org, service)
+
+	// Read in the policy metadata
+	newBytes := cliconfig.ReadJsonFileWithLocalConfig(jsonFilePath)
+	var policyFile externalpolicy.ExternalPolicy
+	err := json.Unmarshal(newBytes, &policyFile)
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", jsonFilePath, err)
+	}
+
+	//Check the policy file format
+	err = policyFile.Validate()
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Incorrect policy format in file %s: %v", jsonFilePath, err)
+	}
+
+	// Check that the service exists
+	var services ServiceExch
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "service '%v/%v' not found.", org, service)
+	}
+
+	// add/replce service policy
+	cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
+
+	fmt.Println("Service policy updated.")
+}
+
+//ServiceRemovePolicy removes the service policy in the exchange
+func ServiceRemovePolicy(org string, credToUse string, service string, force bool) {
+	cliutils.SetWhetherUsingApiKey(credToUse)
+	org, service = cliutils.TrimOrg(org, service)
+
+	//confirm removal with user
+	if !force {
+		cliutils.ConfirmRemove("Are you sure you want to remove service policy for '" + org + "/" + service + "' from the Horizon Exchange?")
+	}
+
+	// Check that the service exists
+	var services ServiceExch
+	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "service '%v/%v' not found.", org, service)
+	}
+
+	//remove service policy
+	cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
+	fmt.Println("Service policy removed.")
 }

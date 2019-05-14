@@ -7,6 +7,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
+	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"net/http"
 	"os"
 )
@@ -184,6 +185,12 @@ func NodeUpdatePolicy(org string, credToUse string, node string, jsonFilePath st
 	err := json.Unmarshal(newBytes, &policyFile)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", jsonFilePath, err)
+	}
+
+	//Check the policy file format
+	err = policyFile.Validate()
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Incorrect policy format in file %s: %v", jsonFilePath, err)
 	}
 
 	// check node exists first
