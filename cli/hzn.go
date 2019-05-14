@@ -48,8 +48,8 @@ Environment Variables:
   HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn
       register -u' flag, in the form '[org/]user:pw'.
 
-  All these environment variables and ones mentioned in the command help can be 
-  specified in user's configuration file: ~/.hzn/hzn.json with JSON format. 
+  All these environment variables and ones mentioned in the command help can be
+  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.
   For example:
   {
     "HZN_ORG_ID": "me@mycomp.com"
@@ -199,6 +199,17 @@ Environment Variables:
 	exServiceListAuthNodeIdTok := exServiceListAuthCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
 	exSvcRemAuthSvc := exServiceRemAuthCmd.Arg("service", "The existing service to remove the docker auth from.").Required().String()
 	exSvcRemAuthId := exServiceRemAuthCmd.Arg("auth-name", "The existing docker auth id to remove.").Required().Uint()
+	exServiceListPolicyCmd := exServiceCmd.Command("listpolicy", "Display the service policy from the Horizon Exchange.")
+	exServiceListPolicyIdTok := exServiceListPolicyCmd.Flag("service-id-tok", "The Horizon Exchange id and password of the user").Short('n').PlaceHolder("ID:TOK").String()
+	exServiceListPolicyService := exServiceListPolicyCmd.Arg("service", "List policy for this service.").Required().String()
+	exServiceUpdatePolicyCmd := exServiceCmd.Command("updatepolicy", "Add or replace the service policy in the Horizon Exchange.")
+	exServiceUpdatePolicyIdTok := exServiceUpdatePolicyCmd.Flag("service-id-tok", "The Horizon Exchange ID and password of the user").Short('n').PlaceHolder("ID:TOK").String()
+	exServiceUpdatePolicyService := exServiceUpdatePolicyCmd.Arg("service", "Add or replace policy for this service.").Required().String()
+	exServiceUpdatePolicyJsonFile := exServiceUpdatePolicyCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the service policy in the Horizon Exchange. Specify -f- to read from stdin.").Short('f').Required().String()
+	exServiceRemovePolicyCmd := exServiceCmd.Command("removepolicy", "Remove the service policy in the Horizon Exchange.")
+	exServiceRemovePolicyIdTok := exServiceRemovePolicyCmd.Flag("service-id-tok", "The Horizon Exchange ID and password of the user").Short('n').PlaceHolder("ID:TOK").String()
+	exServiceRemovePolicyService := exServiceRemovePolicyCmd.Arg("service", "Remove policy for this service.").Required().String()
+	exServiceRemovePolicyForce := exServiceRemovePolicyCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 
 	regInputCmd := app.Command("reginput", "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the services that the specified pattern uses, and determines the node owner input that is required for them.")
 	regInputNodeIdTok := regInputCmd.Flag("node-id-tok", "The Horizon exchange node ID and token (it must already exist).").Short('n').PlaceHolder("ID:TOK").Required().String()
@@ -409,6 +420,12 @@ Environment Variables:
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exPatternVerifyNodeIdTok)
 		case "pattern listkey":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exPatternListKeyNodeIdTok)
+		case "service listpolicy":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListPolicyIdTok)
+		case "service updatepolicy":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceUpdatePolicyIdTok)
+		case "service removepolicy":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceRemovePolicyIdTok)
 		default:
 			// get HZN_EXCHANGE_USER_AUTH as default if exUserPw is empty
 			exUserPw = cliutils.RequiredWithDefaultEnvVar(exUserPw, "HZN_EXCHANGE_USER_AUTH", "exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH")
@@ -511,6 +528,12 @@ Environment Variables:
 		exchange.ServiceListAuth(*exOrg, credToUse, *exSvcListAuthSvc, *exSvcListAuthId)
 	case exServiceRemAuthCmd.FullCommand():
 		exchange.ServiceRemoveAuth(*exOrg, *exUserPw, *exSvcRemAuthSvc, *exSvcRemAuthId)
+	case exServiceListPolicyCmd.FullCommand():
+		exchange.ServiceListPolicy(*exOrg, credToUse, *exServiceListPolicyService)
+	case exServiceUpdatePolicyCmd.FullCommand():
+		exchange.ServiceUpdatePolicy(*exOrg, credToUse, *exServiceUpdatePolicyService, *exServiceUpdatePolicyJsonFile)
+	case exServiceRemovePolicyCmd.FullCommand():
+		exchange.ServiceRemovePolicy(*exOrg, credToUse, *exServiceRemovePolicyService, *exServiceRemovePolicyForce)
 	case regInputCmd.FullCommand():
 		register.CreateInputFile(*regInputOrg, *regInputPattern, *regInputArch, *regInputNodeIdTok, *regInputInputFile)
 	case registerCmd.FullCommand():
