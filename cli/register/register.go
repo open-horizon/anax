@@ -104,6 +104,9 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		// Get the id from anax
 		horDevice := api.HorizonDevice{}
 		cliutils.HorizonGet("node", []int{200}, &horDevice, false)
+		if horDevice.Id == nil {
+			cliutils.Fatal(cliutils.ANAX_NOT_CONFIGURED_YET, "Failed to get proper response from the Horizon agent")
+		}
 		nodeId = *horDevice.Id
 
 		if nodeId == "" {
