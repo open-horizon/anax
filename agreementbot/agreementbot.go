@@ -540,8 +540,30 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 	allOrgs := w.pm.GetAllPolicyOrgs()
 
 	for _, org := range allOrgs {
+
 		// Get a copy of all policies in the policy manager so that we can safely iterate the list
 		policies := w.pm.GetAllAvailablePolicies(org)
+
+		// temporary code TODO-New move it to a policy manager
+		// get the buiness polices form the exchange for this org
+		bpHandler := exchange.GetHTTPBusinessPoliciesHandler(w)
+		bpExchPolicies, err := bpHandler(org, "")
+		if err != nil {
+			glog.Errorf("AgreementBotWorker received error retrieving business polices for organization %v from the exchange, error: %v", org, err)
+		} else {
+			// convert business policies to comsumer policies and add to the list
+			for bpPolId, bpTempPol := range bpExchPolicies {
+				p := bpTempPol.GetBusinessPolicy()
+				if bpPol, err := p.GenPolicyFromBusinessPolicy(bpPolId); err != nil {
+					glog.Errorf("AgreementBotWorker reveived error converting business policy %v to comsumer policy, error: %v", bpPolId, err)
+				} else {
+					if bpPol != nil {
+						policies = append(policies, *bpPol)
+					}
+				}
+			}
+		}
+
 		for _, consumerPolicy := range policies {
 			if devices, err := w.searchExchange(&consumerPolicy, org); err != nil {
 				glog.Errorf("AgreementBotWorker received error searching for %v, error: %v", &consumerPolicy, err)
@@ -826,70 +848,96 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, polOrg string) (
 
 	} else {
 
-		// Search the exchange based on a list of services.
-		// Collect the API specs to search over into a map so that duplicates are automatically removed.
-		msMap := make(map[string]*exchange.Microservice)
+		// TODO-New for non pattern case, a new search API will be created.
+		// this is temorary code for testing which will be removed
+		glog.V(3).Infof("AgreementBotWorker start searching devices from business policy. %v", pol)
+		dev := make([]exchange.SearchResultDevice, 0)
 
-		// For policy files that point to the exchange for workload details, we need to get all the referred to API specs
-		// from all workloads and search for devices that can satisfy all the workloads in the policy file. If a device
-		// can't satisfy all the workloads then workload rollback can't work so we shouldn't make an agreement with this
-		// device.
-		for _, workload := range pol.Workloads {
-			if asl, e_service, err := exchange.GetHTTPServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
-				return nil, errors.New(fmt.Sprintf("AgreementBotWorker received error retrieving service definition for %v, error: %v", workload, err))
-			} else if e_service == nil {
-				return nil, errors.New(fmt.Sprintf("AgreementBotWorker could not find service definition for %v", workload))
-			} else {
-				for _, rs := range *asl {
-					// Convert the arch to GOARCH standard using synonyms defined in the config.
-					arch := rs.Arch
-					if arch != "" && w.Config.ArchSynonyms.GetCanonicalArch(arch) != "" {
-						arch = w.Config.ArchSynonyms.GetCanonicalArch(arch)
+		if len(pol.Constraints) > 0 {
+			glog.V(3).Infof("AgreementBotWorker found the service.")
+			pDevice, err := exchange.GetExchangeDevice(w.GetHTTPFactory(), "userdev/an12345", "abcdefg", w.GetExchangeURL())
+			if err != nil {
+				glog.Errorf("%v", err)
+			}
+			glog.V(3).Infof("AgreementBotWorker found the device %v", pDevice)
+			if pDevice != nil {
+				dev1 := exchange.SearchResultDevice{
+					Id:          "userdev/an12345",
+					Name:        pDevice.Name,
+					Services:    pDevice.RegisteredServices,
+					MsgEndPoint: pDevice.MsgEndPoint,
+					PublicKey:   pDevice.PublicKey,
+				}
+				dev = append(dev, dev1)
+			}
+		}
+
+		return &dev, nil
+		/*
+			// Search the exchange based on a list of services.
+			// Collect the API specs to search over into a map so that duplicates are automatically removed.
+			msMap := make(map[string]*exchange.Microservice)
+
+			// For policy files that point to the exchange for workload details, we need to get all the referred to API specs
+			// from all workloads and search for devices that can satisfy all the workloads in the policy file. If a device
+			// can't satisfy all the workloads then workload rollback cant work so we shouldnt make an agreement with this
+			// device.
+			for _, workload := range pol.Workloads {
+				if asl, e_service, err := exchange.GetHTTPServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+					return nil, errors.New(fmt.Sprintf("AgreementBotWorker received error retrieving service definition for %v, error: %v", workload, err))
+				} else if e_service == nil {
+					return nil, errors.New(fmt.Sprintf("AgreementBotWorker could not find service definition for %v", workload))
+				} else {
+					for _, rs := range *asl {
+						// convert the arch to GOARCH standard using synonyms defined in the config
+						arch := rs.Arch
+						if arch != "" && w.Config.ArchSynonyms.GetCanonicalArch(arch) != "" {
+							arch = w.Config.ArchSynonyms.GetCanonicalArch(arch)
+						}
+
+						if newMS, err := w.makeNewMSSearchElement(rs.SpecRef, rs.Org, "", arch, pol); err != nil {
+							return nil, err
+						} else {
+							msMap[cutil.FormOrgSpecUrl(rs.SpecRef, rs.Org)] = newMS
+						}
 					}
+				}
+			}
 
-					if newMS, err := w.makeNewMSSearchElement(rs.SpecRef, rs.Org, "", arch, pol); err != nil {
+			// Convert the collected API specs into an array for the search request body
+			desiredMS := make([]exchange.Microservice, 0, 10)
+			for _, ms := range msMap {
+				desiredMS = append(desiredMS, *ms)
+			}
+
+			// Setup the search request body
+			ser := exchange.CreateSearchMSRequest()
+			ser.SecondsStale = w.Config.AgreementBot.ActiveDeviceTimeoutS
+			ser.DesiredServices = desiredMS
+
+			// Invoke the exchange
+			var resp interface{}
+			resp = new(exchange.SearchExchangeMSResponse)
+			targetURL := w.GetExchangeURL() + "orgs/" + polOrg + "/search/nodes"
+			for {
+				if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.GetExchangeId(), w.GetExchangeToken(), ser, &resp); err != nil {
+					if !strings.Contains(err.Error(), "status: 404") {
 						return nil, err
 					} else {
-						msMap[cutil.FormOrgSpecUrl(rs.SpecRef, rs.Org)] = newMS
+						empty := make([]exchange.SearchResultDevice, 0, 0)
+						glog.V(3).Infof("AgreementBotWorker found 0 devices in exchange.")
+						return &empty, nil
 					}
-				}
-			}
-		}
-
-		// Convert the collected API specs into an array for the search request body
-		desiredMS := make([]exchange.Microservice, 0, 10)
-		for _, ms := range msMap {
-			desiredMS = append(desiredMS, *ms)
-		}
-
-		// Setup the search request body
-		ser := exchange.CreateSearchMSRequest()
-		ser.SecondsStale = w.Config.AgreementBot.ActiveDeviceTimeoutS
-		ser.DesiredServices = desiredMS
-
-		// Invoke the exchange
-		var resp interface{}
-		resp = new(exchange.SearchExchangeMSResponse)
-		targetURL := w.GetExchangeURL() + "orgs/" + polOrg + "/search/nodes"
-		for {
-			if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.GetExchangeId(), w.GetExchangeToken(), ser, &resp); err != nil {
-				if !strings.Contains(err.Error(), "status: 404") {
-					return nil, err
+				} else if tpErr != nil {
+					glog.Warningf(tpErr.Error())
+					time.Sleep(10 * time.Second)
+					continue
 				} else {
-					empty := make([]exchange.SearchResultDevice, 0, 0)
-					glog.V(3).Infof("AgreementBotWorker found 0 devices in exchange.")
-					return &empty, nil
+					glog.V(3).Infof("AgreementBotWorker found %v devices in exchange.", len(resp.(*exchange.SearchExchangeMSResponse).Devices))
+					dev := resp.(*exchange.SearchExchangeMSResponse).Devices
+					return &dev, nil
 				}
-			} else if tpErr != nil {
-				glog.Warningf(tpErr.Error())
-				time.Sleep(10 * time.Second)
-				continue
-			} else {
-				glog.V(3).Infof("AgreementBotWorker found %v devices in exchange.", len(resp.(*exchange.SearchExchangeMSResponse).Devices))
-				dev := resp.(*exchange.SearchExchangeMSResponse).Devices
-				return &dev, nil
-			}
-		}
+			} */
 	}
 }
 

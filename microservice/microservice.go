@@ -296,9 +296,6 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 	glog.V(3).Infof("Generate policy for the given service %v/%v version %v key %v", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id)
 
 	var haPartner []string
-	var meterPolicy policy.Meter
-	var counterPartyProperties policy.RequiredProperty
-	var properties map[string]interface{}
 	var serviceAgreementProtocols []interface{}
 
 	props := make(map[string]interface{})
@@ -315,35 +312,12 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 			case persistence.HAAttributes:
 				haPartner = attr.(persistence.HAAttributes).Partners
 
-			case persistence.MeteringAttributes:
-				meterPolicy = policy.Meter{
-					Tokens:                attr.(persistence.MeteringAttributes).Tokens,
-					PerTimeUnit:           attr.(persistence.MeteringAttributes).PerTimeUnit,
-					NotificationIntervalS: attr.(persistence.MeteringAttributes).NotificationIntervalS,
-				}
-
-			case persistence.CounterPartyPropertyAttributes:
-				if pattern == "" {
-					counterPartyProperties = attr.(persistence.CounterPartyPropertyAttributes).Expression
-				}
-
-			case persistence.PropertyAttributes:
-				properties = attr.(persistence.PropertyAttributes).Mappings
-
 			case persistence.AgreementProtocolAttributes:
 				agpl := attr.(persistence.AgreementProtocolAttributes).Protocols
 				serviceAgreementProtocols = agpl.([]interface{})
 
 			default:
 				glog.V(4).Infof("Unhandled attr type (%T): %v", attr, attr)
-			}
-		}
-
-		// add the PropertyAttributes to props
-		if len(properties) > 0 {
-			for key, val := range properties {
-				glog.V(5).Infof("Adding property %v=%v with value type %T", key, val, val)
-				props[key] = val
 			}
 		}
 	}
@@ -380,7 +354,7 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 			maxAgreements = 5 // hard coded 2 for now, will change to 0 later
 		}
 
-		if polFileName, err := policy.GeneratePolicy(msdef.SpecRef, msdef.Org, msdef.Name, msdef.Version, msdef.RequestedArch, &props, haPartner, meterPolicy, counterPartyProperties, *list, maxAgreements, policyPath, deviceOrg); err != nil {
+		if polFileName, err := policy.GeneratePolicy(msdef.SpecRef, msdef.Org, msdef.Name, msdef.Version, msdef.RequestedArch, &props, haPartner, *list, maxAgreements, policyPath, deviceOrg); err != nil {
 			return fmt.Errorf("Failed to generate policy for %v/%v version %v. Error: %v", msdef.Org, msdef.SpecRef, msdef.Version, err)
 		} else {
 			e <- events.NewPolicyCreatedMessage(events.NEW_POLICY, polFileName)

@@ -14,7 +14,7 @@ import (
 // can take any version.
 // maxAgreements: 0 means unlimited.
 
-func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, sensorVersion string, arch string, props *map[string]interface{}, haPartners []string, meterPolicy Meter, counterPartyProperties RequiredProperty, agps []AgreementProtocol, maxAgreements int, filePath string, deviceOrg string) (string, error) {
+func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, sensorVersion string, arch string, props *map[string]interface{}, haPartners []string, agps []AgreementProtocol, maxAgreements int, filePath string, deviceOrg string) (string, error) {
 
 	glog.V(5).Infof("Generating policy for %v/%v", sensorOrg, sensorUrl)
 
@@ -39,16 +39,6 @@ func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, senso
 	// Add HA configuration if there is any
 	if len(haPartners) != 0 {
 		p.Add_HAGroup(HAGroup_Factory(haPartners))
-	}
-
-	// Add Metering policy to the policy file
-	if meterPolicy.Tokens != 0 {
-		p.Add_DataVerification(DataVerification_Factory("", "", "", 0, 0, meterPolicy))
-	}
-
-	// Add counterparty properties if there are any
-	if len(counterPartyProperties) != 0 {
-		p.Add_CounterPartyProperties(&counterPartyProperties)
 	}
 
 	p.MaxAgreements = maxAgreements
@@ -86,7 +76,6 @@ func MakeExternalPolicyHeaderName(id string) string {
 }
 
 // Generate a policy from the external policy.
-// The input is the device id or service id.
 func GenPolicyFromExternalPolicy(extPol *externalpolicy.ExternalPolicy, polName string) (*Policy, error) {
 	// validate first
 	if err := extPol.Validate(); err != nil {
@@ -101,12 +90,9 @@ func GenPolicyFromExternalPolicy(extPol *externalpolicy.ExternalPolicy, polName 
 		}
 	}
 
-	rp, err := RequiredPropertyFromConstraint(&(extPol.Constraints))
-	if err != nil {
-		return nil, fmt.Errorf("error trying to convert external policy constraints to JSON: %v", err)
+	if err := pPolicy.Add_Constraints(&(extPol.Constraints)); err != nil {
+		return nil, err
 	}
-	if rp != nil {
-		pPolicy.CounterPartyProperties = (*rp)
-	}
+
 	return pPolicy, nil
 }

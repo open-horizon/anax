@@ -15,6 +15,11 @@ import (
 // Each microservice def in the database has a policy generated for it, that needs to be re-generated and published back to the exchange.
 func (w *GovernanceWorker) handleUpdatePolicy(cmd *UpdatePolicyCommand) {
 
+	// for the non pattern case, no policy files are needed. TODO-New: what should we do here?
+	if w.devicePattern == "" {
+		return
+	}
+
 	// Find the microservice definitions in our database so that we can update the policy for each one.
 	msDefs, err := persistence.FindMicroserviceDefs(w.db, []persistence.MSFilter{persistence.UnarchivedMSFilter()})
 	if err != nil {

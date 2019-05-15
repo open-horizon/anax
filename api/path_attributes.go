@@ -11,6 +11,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 )
@@ -372,7 +373,7 @@ func parseCounterPartyProperty(errorhandler ErrorHandler, permitEmpty bool, give
 
 	if exp, ok := rawExpression.(map[string]interface{}); !ok {
 		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("expected map[string]interface{}, is %T", rawExpression), "counterpartyproperty.mappings.expression")), nil
-	} else if rp := policy.RequiredProperty_Factory(); rp == nil {
+	} else if rp := externalpolicy.RequiredProperty_Factory(); rp == nil {
 		return nil, errorhandler(NewAPIUserInputError("could not construct RequiredProperty", "counterpartyproperty.mappings.expression")), nil
 	} else if err := rp.Initialize(&exp); err != nil {
 		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("could not initialize RequiredProperty: %v", err), "counterpartyproperty.mappings.expression")), nil

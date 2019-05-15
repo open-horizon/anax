@@ -1300,7 +1300,98 @@ read -d '' bpnsdef <<EOF
 }
 EOF
 echo -e "Register business policy for netspeed:"
-RES=$(echo "$bpnsdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_netspeed" | jq -r '.')
+RES=$(echo "$bpnsdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/business/policies/bp_netspeed" | jq -r '.')
+results "$RES"
+
+read -d '' bpgpstestdef <<EOF
+{
+  "label": "business policy for gpstest",
+  "description": "for gpstest",
+  "service": {
+    "name": "https://bluehorizon.network/services/gpstest",
+    "org": "e2edev@somecomp.com",
+    "arch": "amd64",
+    "serviceVersions": [
+      { 
+        "version": "1.0.0"
+      }
+    ]
+  },
+  "properties": [
+      {
+          "name": "iame2edev",
+          "value": "true"
+      },
+      {
+          "name": "number",
+          "value": "12"
+      },
+      {
+          "name": "foo",
+          "value": "bar"
+      }
+  ],
+  "constraints": [
+    "purpose == network-testing"
+  ]
+}
+EOF
+echo -e "Register business policy for gpstest:"
+RES=$(echo "$bpgpstestdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/business/policies/bp_gpstest" | jq -r '.')
+results "$RES"
+
+read -d '' bplocdef <<EOF
+{
+  "label": "business policy for location",
+  "description": "for location",
+  "service": {
+    "name": "https://bluehorizon.network/services/location",
+    "org": "e2edev@somecomp.com",
+    "arch": "amd64",
+    "serviceVersions": [
+        {
+          "version":"2.0.6",
+          "priority":{
+            "priority_value": 3,
+            "retries": 2,
+            "retry_durations": 3600,
+            "verified_durations": 52
+          },
+          "upgradePolicy": {}
+        },
+        {
+          "version":"2.0.7",
+          "priority":{
+            "priority_value": 2,
+            "retries": 2,
+            "retry_durations": 3600,
+            "verified_durations": 52
+          },
+          "upgradePolicy": {}
+        }
+     ]
+  },
+  "properties": [
+      {
+          "name": "iame2edev2",
+          "value": "true"
+      },
+      {
+          "name": "number",
+          "value": "12"
+      },
+      {
+          "name": "foo",
+          "value": "bar"
+      }
+  ],
+  "constraints": [
+    "purpose == network-testing"
+  ]
+}
+EOF
+echo -e "Register business policy for location:"
+RES=$(echo "$bplocdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/business/policies/bp_location" | jq -r '.')
 results "$RES"
 
 unset HZN_EXCHANGE_URL

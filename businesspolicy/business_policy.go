@@ -184,13 +184,10 @@ func ConvertProperties(properties externalpolicy.PropertyList, pol *policy.Polic
 }
 
 func ConvertConstraints(constraints externalpolicy.ConstraintExpression, pol *policy.Policy) error {
-	// Copy over the node health policy
-	rp, err := policy.RequiredPropertyFromConstraint(&constraints)
-	if err != nil {
-		return fmt.Errorf("error trying to convert external policy constraints to JSON: %v", err)
+	newconstr := externalpolicy.Constraint_Factory()
+	for _, c := range constraints {
+		newconstr.Add_Constraint(c)
 	}
-	if rp != nil {
-		pol.CounterPartyProperties = (*rp)
-	}
+	pol.Constraints = *newconstr
 	return nil
 }

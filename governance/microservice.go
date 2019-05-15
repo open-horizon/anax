@@ -390,12 +390,19 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 		}
 	}
 
-	// create a new policy file and register the new microservice in exchange
-	if err := microservice.GenMicroservicePolicy(new_msdef, w.Config.Edge.PolicyPath, w.db, w.Messages(), exchange.GetOrg(w.GetExchangeId()), w.devicePattern); err != nil {
-		if _, err := persistence.MSDefUpgradeFailed(w.db, new_msdef.Id, microservice.MS_REREG_EXCH_FAILED, microservice.DecodeReasonCode(microservice.MS_REREG_EXCH_FAILED)); err != nil {
-			return fmt.Errorf(logString(fmt.Sprintf("Failed to update service upgrading failure reason for service def %v/%v version %v id %v. %v", new_msdef.Org, new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
+	// create a new policy file and register the new microservice in exchange only for the pattern case.
+	// the business policy case does not need policy files.
+	var genPolErr error
+	if w.devicePattern != "" {
+		genPolErr = microservice.GenMicroservicePolicy(new_msdef, w.Config.Edge.PolicyPath, w.db, w.Messages(), exchange.GetOrg(w.GetExchangeId()), w.devicePattern)
+		if genPolErr != nil {
+			if _, err := persistence.MSDefUpgradeFailed(w.db, new_msdef.Id, microservice.MS_REREG_EXCH_FAILED, microservice.DecodeReasonCode(microservice.MS_REREG_EXCH_FAILED)); err != nil {
+				return fmt.Errorf(logString(fmt.Sprintf("Failed to update service upgrading failure reason for service def %v/%v version %v id %v. %v", new_msdef.Org, new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
+			}
 		}
-	} else {
+	}
+
+	if genPolErr == nil {
 		if _, err := persistence.MSDefUpgradeMsReregistered(w.db, new_msdef.Id); err != nil {
 			return fmt.Errorf(logString(fmt.Sprintf("Failed to update the UpgradeMsReregisteredTime for service def %v/%v version %v id %v. %v", new_msdef.Org, new_msdef.SpecRef, new_msdef.Version, new_msdef.Id, err)))
 		}

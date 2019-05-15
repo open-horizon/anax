@@ -348,9 +348,6 @@ func CreateService(service *Service,
 
 	// Information advertised in the edge node policy file
 	var haPartner []string
-	var meterPolicy policy.Meter
-	var counterPartyProperties policy.RequiredProperty
-	var properties map[string]interface{}
 	var globalAgreementProtocols []interface{}
 
 	props := make(map[string]interface{})
@@ -364,15 +361,6 @@ func CreateService(service *Service,
 
 	// For each node wide attribute, extract the value and save it for use later in this function.
 	for _, attr := range allAttrs {
-
-		// get service specs
-		sps := persistence.GetAttributeServiceSpecs(&attr)
-
-		apply_to_all := false
-		if sps == nil || len(*sps) == 0 {
-			apply_to_all = true
-		}
-
 		// Extract HA property
 		if attr.GetMeta().Type == "HAAttributes" {
 			haPartner = attr.(persistence.HAAttributes).Partners
@@ -381,41 +369,6 @@ func CreateService(service *Service,
 
 		if attr.GetMeta().Type == "ArchitectureAttributes" {
 			hasAA = true
-		}
-
-		// Global policy attributes are ignored for devices that are using a pattern. All policy is controlled
-		// by the pattern definition.
-		if pDevice.Pattern == "" {
-
-			// Extract global metering property
-			if attr.GetMeta().Type == "MeteringAttributes" && apply_to_all {
-				// found a global metering entry
-				meterPolicy = policy.Meter{
-					Tokens:                attr.(persistence.MeteringAttributes).Tokens,
-					PerTimeUnit:           attr.(persistence.MeteringAttributes).PerTimeUnit,
-					NotificationIntervalS: attr.(persistence.MeteringAttributes).NotificationIntervalS,
-				}
-				glog.V(5).Infof(apiLogString(fmt.Sprintf("Found default global metering attribute %v", attr)))
-			}
-
-			// Extract global counterparty property
-			if attr.GetMeta().Type == "CounterPartyPropertyAttributes" {
-				counterPartyProperties = attr.(persistence.CounterPartyPropertyAttributes).Expression
-				glog.V(5).Infof(apiLogString(fmt.Sprintf("Found default global counterpartyproperty attribute %v", attr)))
-			}
-
-			// Extract global properties
-			if attr.GetMeta().Type == "PropertyAttributes" && apply_to_all {
-				properties = attr.(persistence.PropertyAttributes).Mappings
-				glog.V(5).Infof(apiLogString(fmt.Sprintf("Found default global properties %v", properties)))
-			}
-
-			// Extract global agreement protocol attribute
-			if attr.GetMeta().Type == "AgreementProtocolAttributes" && apply_to_all {
-				agpl := attr.(persistence.AgreementProtocolAttributes).Protocols
-				globalAgreementProtocols = agpl.([]interface{})
-				glog.V(5).Infof(apiLogString(fmt.Sprintf("Found default global agreement protocol attribute %v", globalAgreementProtocols)))
-			}
 		}
 	}
 
@@ -449,36 +402,12 @@ func CreateService(service *Service,
 		case *persistence.HAAttributes:
 			haPartner = attr.(*persistence.HAAttributes).Partners
 
-		case *persistence.MeteringAttributes:
-			meterPolicy = policy.Meter{
-				Tokens:                attr.(*persistence.MeteringAttributes).Tokens,
-				PerTimeUnit:           attr.(*persistence.MeteringAttributes).PerTimeUnit,
-				NotificationIntervalS: attr.(*persistence.MeteringAttributes).NotificationIntervalS,
-			}
-
-		case *persistence.CounterPartyPropertyAttributes:
-			if pDevice.Pattern == "" {
-				counterPartyProperties = attr.(*persistence.CounterPartyPropertyAttributes).Expression
-			}
-
-		case *persistence.PropertyAttributes:
-			properties = attr.(*persistence.PropertyAttributes).Mappings
-
 		case *persistence.AgreementProtocolAttributes:
 			agpl := attr.(*persistence.AgreementProtocolAttributes).Protocols
 			serviceAgreementProtocols = agpl.([]policy.AgreementProtocol)
 
 		default:
 			glog.V(4).Infof(apiLogString(fmt.Sprintf("Unhandled attr type (%T): %v", attr, attr)))
-		}
-	}
-
-	// Add the PropertyAttributes to props. There are several attribute types that contribute properties to the properties
-	// section of the policy file.
-	if len(properties) > 0 {
-		for key, val := range properties {
-			glog.V(5).Infof(apiLogString(fmt.Sprintf("Adding property %v=%v with value type %T", key, val, val)))
-			props[key] = val
 		}
 	}
 
@@ -513,7 +442,7 @@ func CreateService(service *Service,
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Create service policy: %v", service)))
 
 		// Generate a policy based on all the attributes and the service definition.
-		if polFileName, genErr := policy.GeneratePolicy(*service.Url, *service.Org, *service.Name, *service.VersionRange, *service.Arch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, maxAgreements, config.Edge.PolicyPath, pDevice.Org); genErr != nil {
+		if polFileName, genErr := policy.GeneratePolicy(*service.Url, *service.Org, *service.Name, *service.VersionRange, *service.Arch, &props, haPartner, *agpList, maxAgreements, config.Edge.PolicyPath, pDevice.Org); genErr != nil {
 			return errorhandler(NewSystemError(fmt.Sprintf("Error generating policy, error: %v", genErr))), nil, nil
 		} else {
 			if from_user {

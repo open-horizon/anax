@@ -67,7 +67,7 @@ type DeviceHandler func(id string, token string) (*Device, error)
 
 func GetHTTPDeviceHandler(ec ExchangeContext) DeviceHandler {
 	return func(id string, token string) (*Device, error) {
-		return GetExchangeDevice(ec.GetHTTPFactory(), ec.GetExchangeId(), ec.GetExchangeToken(), ec.GetExchangeURL())
+		return GetExchangeDevice(ec.GetHTTPFactory(), id, token, ec.GetExchangeURL())
 	}
 }
 
