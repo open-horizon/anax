@@ -588,23 +588,24 @@ func PostDeviceServicesConfigState(httpClientFactory *config.HTTPClientFactory, 
 
 // This function gets the service policy for a service.
 // It returns nil if there is no service policy for this service
-func GetServicePolicy(ec ExchangeContext, url string, org string, version string, arch string) (*ExchangePolicy, error) {
+func GetServicePolicy(ec ExchangeContext, url string, org string, version string, arch string) (*ExchangePolicy, string, error) {
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting service policy for service %v %v %v %v", url, org, version, arch)))
 
 	if version == "" || !policy.IsVersionString(version) {
-		return nil, errors.New(rpclogString(fmt.Sprintf("GetServicePolicy got wrong version string %v. The version string should be a non-empy single version string.", version)))
+		return nil, "", errors.New(rpclogString(fmt.Sprintf("GetServicePolicy got wrong version string %v. The version string should be a non-empy single version string.", version)))
 	}
 
 	// get the service id
 	s_resp, s_id, err := GetService(ec, url, org, version, arch)
 	if err != nil {
-		return nil, errors.New(rpclogString(fmt.Sprintf("failed to get the service %v %v %v %v.%v", url, org, version, arch, err)))
+		return nil, "", errors.New(rpclogString(fmt.Sprintf("failed to get the service %v %v %v %v.%v", url, org, version, arch, err)))
 	} else if s_resp == nil {
-		return nil, errors.New(rpclogString(fmt.Sprintf("unable to find the service %v %v %v %v.", url, org, version, arch)))
+		return nil, "", errors.New(rpclogString(fmt.Sprintf("unable to find the service %v %v %v %v.", url, org, version, arch)))
 	}
 
-	return GetServicePolicyWithId(ec, s_id)
+	pol, err := GetServicePolicyWithId(ec, s_id)
+	return pol, s_id, err
 }
 
 // Retrieve the service policy object from the exchange. The service_id is prefixed with the org name.

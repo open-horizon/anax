@@ -179,10 +179,10 @@ func GetHTTPServicePolicyWithIdHandler(ec ExchangeContext) ServicePolicyWithIdHa
 	}
 }
 
-type ServicePolicyHandler func(sUrl string, sOrg string, sVersion string, sArch string) (*ExchangePolicy, error)
+type ServicePolicyHandler func(sUrl string, sOrg string, sVersion string, sArch string) (*ExchangePolicy, string, error)
 
 func GetHTTPServicePolicyHandler(ec ExchangeContext) ServicePolicyHandler {
-	return func(sUrl string, sOrg string, sVersion string, sArch string) (*ExchangePolicy, error) {
+	return func(sUrl string, sOrg string, sVersion string, sArch string) (*ExchangePolicy, string, error) {
 		return GetServicePolicy(ec, sUrl, sOrg, sVersion, sArch)
 	}
 }

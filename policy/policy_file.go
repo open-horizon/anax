@@ -306,6 +306,22 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 	}
 }
 
+// Merge a external policy into a policy
+func MergePolicyWithExternalPolicy(pol *Policy, extPol *externalpolicy.ExternalPolicy) (*Policy, error) {
+	if pol == nil {
+		return nil, nil
+	} else if extPol == nil {
+		return pol, nil
+	} else {
+		// make a copy of the given policy
+		merged_pol := Policy(*pol)
+
+		merged_pol.Properties.Concatenate(&(extPol.Properties))
+		merged_pol.Constraints = *((&merged_pol.Constraints).Merge(&extPol.Constraints))
+		return &merged_pol, nil
+	}
+}
+
 func (self *Policy) Is_Self_Consistent(keyFileNames []string,
 	workloadOrServiceResolver func(wURL string, wOrg string, wVersion string, wArch string) (*APISpecList, error)) error {
 
