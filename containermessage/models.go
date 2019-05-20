@@ -146,6 +146,7 @@ type Service struct {
 	Devices          []string             `json:"devices,omitempty"`
 	NetworkIsolation *NetworkIsolation    `json:"network_isolation,omitempty"` // Changed to pointer so that the hzn dev CLI doesnt generate this struct into the deployment config skeleton
 	Binds            []string             `json:"binds,omitempty"`
+	Tmpfs            map[string]string    `json:"tmpfs,omitempty"`
 	Ports            []docker.PortBinding `json:"ports,omitempty"`
 	EphemeralPorts   []Port               `json:"ephemeral_ports,omitempty"`
 	SpecificPorts    []docker.PortBinding `json:"specific_ports,omitempty"` // obselete. for backward compatibility only, new way should use ports instead.

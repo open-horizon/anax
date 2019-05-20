@@ -263,6 +263,7 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 				Devices:         []docker.Device{},
 				LogConfig:       logConfig,
 				Binds:           service.Binds,
+				Tmpfs:           service.Tmpfs,
 			},
 		}
 
