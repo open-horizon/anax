@@ -25,13 +25,12 @@ func NewTextConstraintLanguagePlugin() plugin_registry.ConstraintLanguagePlugin 
 
 func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool, error) {
 
-	// Validate that the input is a ConstraintExpression type (string[])
-
 	var err error
 	var constraints externalpolicy.ConstraintExpression
 	var nextExpression, nextLogicalOperator, remainder, constraint string
 	var validated bool
 
+	// Validate that the input is a ConstraintExpression type (string[])
 	if !isConstraintExpression(dconstraints) {
 		return false, errors.New(fmt.Sprintf("The Constrain input: %v is not Contraint Express type", dconstraints))
 	}
@@ -68,7 +67,7 @@ func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool,
 				break
 			}
 
-			// TODO: verify logical operators
+			// verify logical operators
 			if !isAllowedLogicalOpType(nextLogicalOperator) {
 				return false, errors.New(fmt.Sprintf("Logical operator %v is not valid", nextLogicalOperator))
 			}
