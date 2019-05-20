@@ -24,6 +24,7 @@ Because Horizon uses the Docker API to start the containers, many of the fields 
     - `environment`: `["FOO=bar","FOO2=bar2"]` - environment variables that should be set in the container.
     - `devices`: `["/dev/bus/usb/001/001:/dev/bus/usb/001/001",...]` - device files that should be made available to the container.
     - `binds`: `["/outside/container_path:/inside/container_path1:rw","docker_volume_name:/inside/container_path2:ro"...]` - directories from the host or docker volumes that should be bind mounted in the container. Equivalent to the `docker run --volume` flag. If the first field is not in the directory format, it will be treated as a docker volume. The directory or the docker volume will be created on the host if it does not exist when the containers starts. The last field is the mount options. `ro` means readonly, `rw` means read/write (default).
+    - `tmpfs`: {"/app":""} - There is no source for tmpfs mounts. The following example creates a tmpfs mount at /app
     - `ports`: `[{"HostPort":"5555:7777/udp","HostIP":"1.2.3.4"},{"HostPort":"8888/udp","HostIP":"1.2.3.4"}...]` -  container ports that should be mapped to the host. "5555" is the host port number, if omitted, the same container port number ("7777") will be used. If the protocol is not specified after the port number, it defaults to `tcp`. The `HostIP` identifies what host network interfaces this port should listen on. Use `0.0.0.0` to specify all interfaces.
     - `ephemeral_ports`: `[{"localhost_only":true, "port_and_protocol":"7777/udp"}, {"port_and_protocol":"8888"}...]` - publish a container port to an ephemeral host port. If `localhost_only` is set to true, the localhost ip address (`127.0.0.1`) will be used as the host network interface this port should listen on. Otherwise, all the host network interfaces on the host will be listened by this port. If the protocol is not specified after the port number for `port_and_protocol`, it defaults to `tcp`.
     - `command`: `["--myfirstarg","argvalue",...]` - override the start CMD specified the dockerfile, or append to the ENTRYPOINT specified in the dockerfile.
@@ -46,14 +47,17 @@ A deployment string JSON would look like this:
       ],
       "binds": [
         "/tmp/testdata:/tmp/mydata:ro",
-        "myvolume1:/tmp/mydata2"       
+        "myvolume1:/tmp/mydata2"
       ],
       "ports": [
         {
-          "HostPort":"5200:6414/tcp",
+          "HostPort": "5200:6414/tcp",
           "HostIP": "0.0.0.0"
         }
-      ]
+      ],
+      "tmpfs": {
+        "/app": ""
+      }
     }
   }
 }
@@ -62,5 +66,5 @@ A deployment string JSON would look like this:
 When stringified, the above example would look like:
 
 ```
-"deployment": "{\"services\":{\"gps\":{\"image\":\"openhorizon/x86/gps:2.0.3\",\"privileged\":true,\"environment\":[\"FOO=bar\"],\"devices\":[\"/dev/bus/usb/001/001:/dev/bus/usb/001/001\"],\"binds\":[\"/tmp/testdata:/tmp/mydata:ro\",\"myvolume1:/tmp/mydata2\"],\"ports\":[{\"HostPort\":\"5200:6414/tcp\",\"HostIP\":\"0.0.0.0\"}]}}}"
+"deployment": {"services":{"gps":{"image":"openhorizon/x86/gps:2.0.3","privileged":true,"environment":["FOO=bar"],"devices":["/dev/bus/usb/001/001:/dev/bus/usb/001/001"],"binds":["/tmp/testdata:/tmp/mydata:ro","myvolume1:/tmp/mydata2"],"ports":[{"HostPort":"5200:6414/tcp","HostIP":"0.0.0.0"}],"tmpfs":{"/app":""}}}}
 ```
