@@ -25,14 +25,11 @@ func NewTextConstraintLanguagePlugin() plugin_registry.ConstraintLanguagePlugin 
 
 func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool, error) {
 
-	// Validate that the input is a ConstraintExpression type (string)
-	// if !isString(dconstraints) {
-	// 	return false, errors.New*(fmt.Sprintf("The Constrain input is not String"))
-	// }
+	// Validate that the input is a ConstraintExpression type (string[])
 
 	var err error
-	var constrains []string
-	var nextExpression, nextLogicalOperator, remainder string
+	var constraints externalpolicy.ConstraintExpression
+	var nextExpression, nextLogicalOperator, remainder, constraint string
 	var validated bool
 
 	if !isConstraintExpression(dconstraints) {
@@ -40,14 +37,15 @@ func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool,
 	}
 
 	// Validate that the expression is syntactically correct and parse-able
-	constrains = dconstraints.([]string)
+	constraints = dconstraints.(externalpolicy.ConstraintExpression)
 
-	for _, remainder = range constrains {
+	for _, constraint = range constraints {
 		// 1 constrain inside constrain list
-		fmt.Println("remainder: ", remainder)
+		fmt.Println("constraint: ", constraint)
 
 		// handles space inside quote and inside string list
-		remainder = preprocessConstraintExpression(remainder)
+		constraint = preprocessConstraintExpression(constraint)
+		remainder = constraint
 
 		for {
 			nextExpression, remainder, err = p.GetNextExpression(remainder)
@@ -57,14 +55,6 @@ func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool,
 			} else if nextExpression == "" {
 				break
 			}
-
-			// TODO: verify pieces[1] and pieces[2]
-			// 1. == is supported for all types except list of string, which would use 'in'.
-			// 2. for numeric types, the operators ==, <, >, <=, >= are supported
-			// 3. false and true are the only valid values for a boolean type
-			// 4. for string types, a list of comma separated strings provide acceptable values
-			// 5. string values that contain spaces must be quoted
-			// 6. for the version type, supported values are a single version or a range of versions in the semantic version format (the same as used for service verions). The == operator implies that the value is a single version. The 'in' operator treats the value as a version range. As with service versions, the version 1.0.0 when treated as a version range is equivalent to the explicit range [1.0.0,INFINITY).
 
 			validated, err = validateOneConstraintExpression(nextExpression)
 			if !validated {
@@ -156,10 +146,16 @@ func isCommaSeparatedStringList(x string) bool {
 		return false
 	}
 
-	s := strings.Split(x, ",")
-	if len(s) == 0 {
+	if !canParseToString(x) {
 		return false
 	}
+
+	if !strings.Contains(x, ",") {
+		return false
+	}
+
+	//s := strings.Split(x, ",")
+
 	return true
 }
 
@@ -196,8 +192,26 @@ func canParseToStringList(s interface{}) bool {
 	}
 }
 
+func canParseToString(s string) bool {
+	if len(s) > 0 && s[0] == '"' && s[len(s)-1] == '"' {
+		content := strings.Trim(s, "\"")
+		fmt.Printf("content after removing quote: %v", content)
+		if strings.ToLower(content) == "true" || strings.ToLower(content) == "false" {
+
+			return false
+		}
+	}
+
+	if strings.Contains(s, " ") {
+		fmt.Printf("word with space not quoted: %v", s)
+		return false
+	}
+
+	return true
+}
+
 func isAllowedType(s string) bool {
-	if canParseToBoolean(s) || canParseToInteger(s) || canParseToFloat(s) || canParseToStringList(s) || policy.IsVersionString(s) {
+	if canParseToString(s) || canParseToBoolean(s) || canParseToInteger(s) || canParseToFloat(s) || canParseToStringList(s) || policy.IsVersionString(s) || policy.IsVersionExpression(s) {
 		return true
 	}
 	return false
@@ -239,22 +253,21 @@ func preprocessConstraintExpression(str string) string {
 
 	// remove space inside string list separate by ", "
 	space := regexp.MustCompile(`,\s+`)
-	str = space.ReplaceAllString(str, ",")
-	//str = strings.Replace(str, ", ", ",", -1)
+	s := space.ReplaceAllString(str, ",")
 
-	for _, match := range re.FindAllString(str, -1) {
+	for _, match := range re.FindAllString(s, -1) {
 		// if find "a b", replace space inside quote with invisiable charactor \a
-		newStr := strings.ReplaceAll(match, " ", "\a")
-		str = strings.Replace(str, match, newStr, -1)
+		newStr := strings.Replace(match, " ", "\a", -1)
+		s = strings.Replace(s, match, newStr, -1)
 	}
 
-	return str
+	return s
 }
 
 // 1. == is supported for all types except list of string, which would use 'in'.
 // 2. for numeric types, the operators ==, <, >, <=, >= are supported
 // 3. false and true are the only valid values for a boolean type
-// 4. for string types, a list of comma separated strings provide acceptable values
+// 4. for string types, a quoted string, inside which is a list of comma separated strings provide acceptable values
 // 5. string values that contain spaces must be quoted
 // 6. for the version type, supported values are a single version or a range of versions in the semantic version format (the same as used for service verions). The == operator implies that the value is a single version. The 'in' operator treats the value as a version range. As with service versions, the version 1.0.0 when treated as a version range is equivalent to the explicit range [1.0.0,INFINITY).
 
@@ -271,10 +284,6 @@ func validateOneConstraintExpression(expression string) (bool, error) {
 	compOp := pieces[1]
 	value := pieces[2]
 
-	if !isAllowedType(value) {
-		return false, errors.New(fmt.Sprintf("The type constrain value: %v is not supported for this express %v ", value, expression))
-	}
-
 	// if will failed on case when string values that contain spaces but not quoted (starting from 2nd interation)
 	if !isAllowedComparisonOpType(pieces[1]) {
 		return false, errors.New(fmt.Sprintf("Expression: %v should contain valid comparison operator - wrong operator %v", expression, pieces[1]))
@@ -284,35 +293,42 @@ func validateOneConstraintExpression(expression string) (bool, error) {
 		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 || strings.Compare(compOp, lessthan) == 0 || strings.Compare(compOp, greaterthan) == 0 || strings.Compare(compOp, lessthaneq) == 0 || strings.Compare(compOp, greaterthaneq) == 0 {
 			return true, nil
 		}
-		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for numeric value: %v", compOp, value))
+		return false, errors.New(fmt.Sprintf("1. Comparison operator: %v is not supported for numeric value: %v", compOp, value))
 	}
 
 	if canParseToBoolean(value) {
 		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 {
 			return true, nil
 		}
-		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for boolean value: %v", compOp, value))
+		return false, errors.New(fmt.Sprintf("2. Comparison operator: %v is not supported for boolean value: %v", compOp, value))
 	}
 
 	if isCommaSeparatedStringList(value) {
 		if strings.Compare(strings.ToLower(compOp), inoperator) == 0 {
 			return true, nil
 		}
-		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for string list value: %v", compOp, value))
+		return false, errors.New(fmt.Sprintf("3. Comparison operator: %v is not supported for string list value: %v", compOp, value))
+	}
+
+	if canParseToString(value) {
+		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 {
+			return true, nil
+		}
+		return false, errors.New(fmt.Sprintf("4. Comparison operator: %v is not supported for string value: %v", compOp, value))
 	}
 
 	if policy.IsVersionString(value) {
 		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 {
 			return true, nil
 		}
-		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for single version: %v", compOp, value))
+		return false, errors.New(fmt.Sprintf("5. Comparison operator: %v is not supported for single version: %v", compOp, value))
 	}
 
 	if policy.IsVersionExpression(value) {
-		if strings.Compare(compOp, inoperator) == 0 {
+		if strings.Compare(strings.ToLower(compOp), inoperator) == 0 {
 			return true, nil
 		}
-		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for version expression: %v", compOp, value))
+		return false, errors.New(fmt.Sprintf("6. Comparison operator: %v is not supported for version expression: %v", compOp, value))
 	}
 
 	return false, errors.New(fmt.Sprintf("Expression: %v is not valid", expression))
