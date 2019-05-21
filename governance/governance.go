@@ -1387,7 +1387,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			// The workload config we have might be from a lower version of the workload. Go to the exchange and
 			// get the metadata for the version we are running and then add in any unset default user inputs.
 			var serviceDef *exchange.ServiceDefinition
-			if _, sDef, err := exchange.GetHTTPServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+			if _, sDef, _, err := exchange.GetHTTPServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
 				return errors.New(logString(fmt.Sprintf("received error querying exchange for workload or service metadata: %v, error %v", workload, err)))
 			} else if sDef == nil {
 				return errors.New(logString(fmt.Sprintf("cound not find workload or service metadata for %v.", workload)))

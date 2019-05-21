@@ -288,7 +288,7 @@ func getSpecRefsForPattern(patName string,
 		// we need to iterate each "workloadChoice" to grab the version.
 		for _, serviceChoice := range service.ServiceVersions {
 
-			apiSpecList, serviceDef, err := resolveService(service.ServiceURL, service.ServiceOrg, serviceChoice.Version, service.ServiceArch)
+			apiSpecList, serviceDef, _, err := resolveService(service.ServiceURL, service.ServiceOrg, serviceChoice.Version, service.ServiceArch)
 			if err != nil {
 				return nil, nil, NewSystemError(fmt.Sprintf("Error resolving service %v/%v %v %v, error %v", service.ServiceOrg, service.ServiceURL, serviceChoice.Version, thisArch, err))
 			}

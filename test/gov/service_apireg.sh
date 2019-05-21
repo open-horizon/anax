@@ -1300,7 +1300,7 @@ read -d '' bpnsdef <<EOF
 }
 EOF
 echo -e "Register business policy for netspeed:"
-RES=$(echo "$bpnsdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/business/policies/bp_netspeed" | jq -r '.')
+RES=$(echo "$bpnsdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_netspeed" | jq -r '.')
 results "$RES"
 
 read -d '' bpgpstestdef <<EOF
@@ -1337,7 +1337,7 @@ read -d '' bpgpstestdef <<EOF
 }
 EOF
 echo -e "Register business policy for gpstest:"
-RES=$(echo "$bpgpstestdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/business/policies/bp_gpstest" | jq -r '.')
+RES=$(echo "$bpgpstestdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_gpstest" | jq -r '.')
 results "$RES"
 
 read -d '' bplocdef <<EOF
@@ -1391,7 +1391,7 @@ read -d '' bplocdef <<EOF
 }
 EOF
 echo -e "Register business policy for location:"
-RES=$(echo "$bplocdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/business/policies/bp_location" | jq -r '.')
+RES=$(echo "$bplocdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_location" | jq -r '.')
 results "$RES"
 
 unset HZN_EXCHANGE_URL

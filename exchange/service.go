@@ -406,7 +406,7 @@ func GetHighestVersion(msMetadata map[string]ServiceDefinition, vRange *policy.V
 // The purpose of this function is to verify that a given service URL, version and architecture, is defined in the exchange
 // as well as all of its required services. This function also returns the dependencies converted into policy types so that the caller
 // can use those types to do policy compatibility checks if they want to.
-func ServiceResolver(wURL string, wOrg string, wVersion string, wArch string, serviceHandler ServiceHandler) (*policy.APISpecList, *ServiceDefinition, error) {
+func ServiceResolver(wURL string, wOrg string, wVersion string, wArch string, serviceHandler ServiceHandler) (*policy.APISpecList, *ServiceDefinition, string, error) {
 
 	resolveRequiredServices := true
 
@@ -414,11 +414,11 @@ func ServiceResolver(wURL string, wOrg string, wVersion string, wArch string, se
 
 	res := new(policy.APISpecList)
 	// Get a version specific service definition.
-	tlService, _, werr := serviceHandler(wURL, wOrg, wVersion, wArch)
+	tlService, sId, werr := serviceHandler(wURL, wOrg, wVersion, wArch)
 	if werr != nil {
-		return nil, nil, werr
+		return nil, nil, "", werr
 	} else if tlService == nil {
-		return nil, nil, errors.New(fmt.Sprintf("unable to find service %v %v %v %v on the exchange.", wURL, wOrg, wVersion, wArch))
+		return nil, nil, "", errors.New(fmt.Sprintf("unable to find service %v %v %v %v on the exchange.", wURL, wOrg, wVersion, wArch))
 	} else {
 
 		// We found the service definition. Required services are referred to within a service definition by URL, org, architecture,
@@ -436,11 +436,11 @@ func ServiceResolver(wURL string, wOrg string, wVersion string, wArch string, se
 				// will return us something in the range required by the service.
 				var serviceDef *ServiceDefinition
 				if sDep.Arch != wArch {
-					return nil, nil, errors.New(fmt.Sprintf("service %v has a different architecture than the top level service.", sDep))
+					return nil, nil, "", errors.New(fmt.Sprintf("service %v has a different architecture than the top level service.", sDep))
 				} else if vExp, err := policy.Version_Expression_Factory(sDep.Version); err != nil {
-					return nil, nil, errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", sDep.Version, err))
-				} else if apiSpecs, sd, err := ServiceResolver(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch, serviceHandler); err != nil {
-					return nil, nil, err
+					return nil, nil, "", errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", sDep.Version, err))
+				} else if apiSpecs, sd, _, err := ServiceResolver(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch, serviceHandler); err != nil {
+					return nil, nil, "", err
 				} else {
 					// Add all service dependencies to the running list of API specs.
 					serviceDef = sd
@@ -460,7 +460,7 @@ func ServiceResolver(wURL string, wOrg string, wVersion string, wArch string, se
 			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved required services for %v %v %v %v", wURL, wOrg, wVersion, wArch)))
 		}
 		glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved service %v %v %v %v, APISpecs: %v", wURL, wOrg, wVersion, wArch, *res)))
-		return res, tlService, nil
+		return res, tlService, sId, nil
 
 	}
 

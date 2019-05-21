@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/policy"
 )
 
@@ -109,22 +110,32 @@ func NewWorkloadUpgradeCommand(msg events.ABApiWorkloadUpgradeMessage) *Workload
 
 // ==============================================================================================================
 type MakeAgreementCommand struct {
-	ProducerPolicy policy.Policy               // the producer policy received from the exchange
-	ConsumerPolicy policy.Policy               // the consumer policy we're matched up with
-	Org            string                      // the org of the consumer policy
-	Device         exchange.SearchResultDevice // the device entry in the exchange
+	ProducerPolicy     policy.Policy                            // the producer policy received from the exchange
+	ConsumerPolicy     policy.Policy                            // the consumer policy we're matched up with
+	Org                string                                   // the org of the consumer
+	ConsumerPolicyName string                                   // the name of the consumer policy in the exchange
+	Device             exchange.SearchResultDevice              // the device entry in the exchange
+	ServicePolicies    map[string]externalpolicy.ExternalPolicy // cached service polices, keyed by service id. it is a subset of the service versions in the consumer policy file
 }
 
 func (e MakeAgreementCommand) ShortString() string {
-	return fmt.Sprintf("Produder Policy: %v, ConsumerPolicy: %v, Org: %v, Device: %v", e.ProducerPolicy.Header.Name, e.ConsumerPolicy.Header.Name, e.Org, e.Device)
+	keys := []string{}
+	if e.ServicePolicies != nil {
+		for k, _ := range e.ServicePolicies {
+			keys = append(keys, k)
+		}
+	}
+	return fmt.Sprintf("Produder Policy: %v, ConsumerPolicy: %v, Org: %v, ConsumerPolicyName %v, Device: %v, ServicePolicies: %v", e.ProducerPolicy.Header.Name, e.ConsumerPolicy.Header.Name, e.Org, e.ConsumerPolicyName, e.Device, keys)
 }
 
-func NewMakeAgreementCommand(pPol policy.Policy, cPol policy.Policy, org string, dev exchange.SearchResultDevice) *MakeAgreementCommand {
+func NewMakeAgreementCommand(pPol policy.Policy, cPol policy.Policy, org string, polname string, dev exchange.SearchResultDevice, cachedServicePolicies map[string]externalpolicy.ExternalPolicy) *MakeAgreementCommand {
 	return &MakeAgreementCommand{
-		ProducerPolicy: pPol,
-		ConsumerPolicy: cPol,
-		Org:            org,
-		Device:         dev,
+		ProducerPolicy:     pPol,
+		ConsumerPolicy:     cPol,
+		Org:                org,
+		ConsumerPolicyName: polname,
+		Device:             dev,
+		ServicePolicies:    cachedServicePolicies,
 	}
 }
 
@@ -184,6 +195,51 @@ func (e AgbotShutdownCommand) ShortString() string {
 
 func NewAgbotShutdownCommand(msg *events.NodeShutdownMessage) *AgbotShutdownCommand {
 	return &AgbotShutdownCommand{
+		Msg: *msg,
+	}
+}
+
+// ==============================================================================================================
+type CacheServicePolicyCommand struct {
+	Msg events.CacheServicePolicyMessage
+}
+
+func (e CacheServicePolicyCommand) ShortString() string {
+	return e.Msg.ShortString()
+}
+
+func NewCacheServicePolicyCommand(msg *events.CacheServicePolicyMessage) *CacheServicePolicyCommand {
+	return &CacheServicePolicyCommand{
+		Msg: *msg,
+	}
+}
+
+// ==============================================================================================================
+type ServicePolicyChangedCommand struct {
+	Msg events.ServicePolicyChangedMessage
+}
+
+func (e ServicePolicyChangedCommand) ShortString() string {
+	return e.Msg.ShortString()
+}
+
+func NewServicePolicyChangedCommand(msg *events.ServicePolicyChangedMessage) *ServicePolicyChangedCommand {
+	return &ServicePolicyChangedCommand{
+		Msg: *msg,
+	}
+}
+
+// ==============================================================================================================
+type ServicePolicyDeletedCommand struct {
+	Msg events.ServicePolicyDeletedMessage
+}
+
+func (e ServicePolicyDeletedCommand) ShortString() string {
+	return e.Msg.ShortString()
+}
+
+func NewServicePolicyDeletedCommand(msg *events.ServicePolicyDeletedMessage) *ServicePolicyDeletedCommand {
+	return &ServicePolicyDeletedCommand{
 		Msg: *msg,
 	}
 }

@@ -99,10 +99,10 @@ func GetHTTPServicesConfigStateHandler(ec ExchangeContext) ServicesConfigStateHa
 }
 
 // A handler for resolving service references in the exchange.
-type ServiceResolverHandler func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *ServiceDefinition, error)
+type ServiceResolverHandler func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *ServiceDefinition, string, error)
 
 func GetHTTPServiceResolverHandler(ec ExchangeContext) ServiceResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *ServiceDefinition, error) {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *ServiceDefinition, string, error) {
 		return ServiceResolver(wUrl, wOrg, wVersion, wArch, GetHTTPServiceHandler(ec))
 	}
 }

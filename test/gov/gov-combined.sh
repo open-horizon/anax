@@ -318,12 +318,18 @@ then
     REGAGBOTSNS=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"sns"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns" | jq -r '.msg')
     echo "$REGAGBOTSNS"
 
-    # register all patterns for e2edev@somecomp.com org to agbot1
+    # register all patterns and business policies for e2edev@somecomp.com org to agbot1
     REGAGBOTE2EDEV=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "e2edev@somecomp.com"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns" | jq -r '.msg')
     echo "$REGAGBOTE2EDEV"
 
-    # register all patterns for userdev org to agbot1
+    REGAGBOTE2EDEV=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"businessPolOrgid":"e2edev@somecomp.com","businessPol":"*", "nodeOrgid": "e2edev@somecomp.com"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/businesspols" | jq -r '.msg')
+    echo "$REGAGBOTE2EDEV"
+
+    # register all patterns and business policies for userdev org to agbot1
     REGAGBOTUSERDEV=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns" | jq -r '.msg')
+    echo "$REGAGBOTUSERDEV"
+
+    REGAGBOTUSERDEV=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"businessPolOrgid":"userdev","businessPol":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/businesspols" | jq -r '.msg')
     echo "$REGAGBOTUSERDEV"
 
     REGAGBOTSHELM=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"shelm"}' "${EXCH_URL}/orgs/$ORG/agbots/ag12345/patterns/e2edev@somecomp.com_shelm" | jq -r '.msg')

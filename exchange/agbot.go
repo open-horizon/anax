@@ -33,7 +33,7 @@ type GetAgbotsPatternsResponse struct {
 
 // TODO-New check with exchange
 type GetAgbotsBusinessPolsResponse struct {
-	BusinessPols map[string]ServedBusinessPolicy `json:"servedBusinessPols"`
+	BusinessPols map[string]ServedBusinessPolicy `json:"businessPols"`
 }
 
 type AgbotAgreement struct {
