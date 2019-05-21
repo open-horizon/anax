@@ -15,6 +15,7 @@ func Test_Validate_Succeed1(t *testing.T) {
 	constraintStrings := []string{
 		"iame2edev == true && cpu == 3 NOT memory <= 32",
 		"hello == \"world\"",
+		"hello in \"'hi world', 'test'\"",
 		"eggs == \"truck load\" AND certification in \"USDA, Organic\"",
 		"version == 1.1.1 OR USDA == true",
 		"version in [1.1.1,INFINITY) ^ cert == USDA",
@@ -43,6 +44,17 @@ func Test_Validate_Failed1(t *testing.T) {
 
 	var validated bool
 	var err error
+
+	validated, err = textConstraintLanguagePlugin.Validate(interface{}(ce))
+	if validated == true {
+		t.Errorf("Validation should fail but not, err: %v", err)
+	} else if err == nil {
+		t.Errorf("Validated should fail and return err, but didn't")
+	}
+
+	// string list should not support ==
+	constraintStrings = []string{"hello == \"'hi world', 'test'\""}
+	ce = externalpolicy.ConstraintExpression(constraintStrings)
 
 	validated, err = textConstraintLanguagePlugin.Validate(interface{}(ce))
 	if validated == true {
@@ -90,7 +102,7 @@ func Test_Validate_Failed3(t *testing.T) {
 
 func Test_Validate_Failed4(t *testing.T) {
 
-	// true should only supported as boolean value, not string value
+	// string must be quoted if it has white space
 	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
 	constraintStrings := []string{"eggs == truck load"}
 	ce := externalpolicy.ConstraintExpression(constraintStrings)
