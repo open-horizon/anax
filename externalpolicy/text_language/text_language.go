@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/golang/glog"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/externalpolicy/plugin_registry"
 	"github.com/open-horizon/anax/policy"
@@ -40,8 +41,6 @@ func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool,
 
 	for _, constraint = range constraints {
 		// 1 constrain inside constrain list
-		fmt.Println("constraint: ", constraint)
-
 		// handles space inside quote and inside string list
 		constraint = preprocessConstraintExpression(constraint)
 		remainder = constraint
@@ -153,8 +152,6 @@ func isCommaSeparatedStringList(x string) bool {
 		return false
 	}
 
-	//s := strings.Split(x, ",")
-
 	return true
 }
 
@@ -194,7 +191,7 @@ func canParseToStringList(s interface{}) bool {
 func canParseToString(s string) bool {
 	if len(s) > 0 && s[0] == '"' && s[len(s)-1] == '"' {
 		content := strings.Trim(s, "\"")
-		fmt.Printf("content after removing quote: %v", content)
+		glog.V(5).Infof("content after removing quote: %v", content)
 		if strings.ToLower(content) == "true" || strings.ToLower(content) == "false" {
 
 			return false
@@ -202,7 +199,7 @@ func canParseToString(s string) bool {
 	}
 
 	if strings.Contains(s, " ") {
-		fmt.Printf("word with space not quoted: %v", s)
+		glog.V(5).Infof("word with space not quoted: %v", s)
 		return false
 	}
 
@@ -233,15 +230,13 @@ func isAllowedComparisonOpType(s string) bool {
 	return false
 }
 
-const andsimbol = "&&"
-const orsimbol = "||"
-const notsimbol = "^"
+const andsymbol = "&&"
+const orsymbol = "||"
 const and = "AND"
 const or = "OR"
-const not = "NOT"
 
 func isAllowedLogicalOpType(s string) bool {
-	if strings.Compare(s, andsimbol) == 0 || strings.Compare(s, orsimbol) == 0 || strings.Compare(s, notsimbol) == 0 || strings.Compare(s, and) == 0 || strings.Compare(s, or) == 0 || strings.Compare(s, not) == 0 {
+	if strings.Compare(s, andsymbol) == 0 || strings.Compare(s, orsymbol) == 0 || strings.Compare(s, and) == 0 || strings.Compare(s, or) == 0 {
 		return true
 	}
 	return false
