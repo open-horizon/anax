@@ -214,6 +214,24 @@ Environment Variables:
 	exServiceRemovePolicyService := exServiceRemovePolicyCmd.Arg("service", "Remove policy for this service.").Required().String()
 	exServiceRemovePolicyForce := exServiceRemovePolicyCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 
+	exBusinessCmd := exchangeCmd.Command("business", "List and manage business policies in the Horizon Exchange.")
+	exBusinessListPolicyCmd := exBusinessCmd.Command("listpolicy", "Display the business policies from the Horizon Exchange.")
+	exBusinessListPolicyIdTok := exBusinessListPolicyCmd.Flag("id-token", "The Horizon ID and password of the user.").Short('n').PlaceHolder("ID:TOK").String()
+	exBusinessListPolicyPolicy := exBusinessListPolicyCmd.Arg("policy", "List just this one policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.").String()
+	exBusinessAddPolicyCmd := exBusinessCmd.Command("addpolicy", "Add a new business policy or overwrite an existing policy by the same name in the Horizon Exchange.")
+	exBusinessAddPolicyIdTok := exBusinessAddPolicyCmd.Flag("id-token", "The Horizon ID and password of the user.").Short('n').PlaceHolder("ID:TOK").String()
+	exBusinessAddPolicyPolicy := exBusinessAddPolicyCmd.Arg("policy", "The name of the policy to add or overwrite.").Required().String()
+	exBusinessAddPolicyJsonFile := exBusinessAddPolicyCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the service policy in the Horizon Exchange. Specify -f- to read from stdin.").Short('f').Required().String()
+	exBusinessUpdatePolicyCmd := exBusinessCmd.Command("updatepolicy", "Update one attribute of an existing policy in the Horizon Exchange.")
+	exBusinessUpdatePolicyIdTok := exBusinessUpdatePolicyCmd.Flag("id-token", "The Horizon ID and password of the user.").Short('n').PlaceHolder("ID:TOK").String()
+	exBusinessUpdatePolicyPolicy := exBusinessUpdatePolicyCmd.Arg("policy", "The name of the policy to be updated in the Horizon Exchange.").Required().String()
+	exBusinessUpdatePolicyAttribute := exBusinessUpdatePolicyCmd.Arg("attribute", "The business policy attribute to be updated in the Horizon Command").Required().String()
+	exBusinessUpdatePolicyValue := exBusinessUpdatePolicyCmd.Flag("json-file", "The path to the file that contains the new value for this attribute. Specify -f- to read from stdin.").Short('f').Required().String()
+	exBusinessRemovePolicyCmd := exBusinessCmd.Command("removepolicy", "Remove the business policy in the Horizon Exchange.")
+	exBusinessRemovePolicyIdTok := exBusinessRemovePolicyCmd.Flag("id-token", "The Horizon ID and password of the user.").Short('n').PlaceHolder("ID:TOK").String()
+	exBusinessRemovePolicyForce := exBusinessRemovePolicyCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
+	exBusinessRemovePolicyPolicy := exBusinessRemovePolicyCmd.Arg("policy", "The name of the business policy to be removed.").Required().String()
+
 	regInputCmd := app.Command("reginput", "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the services that the specified pattern uses, and determines the node owner input that is required for them.")
 	regInputNodeIdTok := regInputCmd.Flag("node-id-tok", "The Horizon exchange node ID and token (it must already exist).").Short('n').PlaceHolder("ID:TOK").Required().String()
 	regInputInputFile := regInputCmd.Flag("input-file", "The JSON input template file name that should be created. This file will contain placeholders for you to fill in user input values.").Short('f').Required().String()
@@ -430,6 +448,14 @@ Environment Variables:
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceUpdatePolicyIdTok)
 		case "service removepolicy":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceRemovePolicyIdTok)
+		case "business listpolicy":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessListPolicyIdTok)
+		case "business updatepolicy":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessUpdatePolicyIdTok)
+		case "business addpolicy":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessAddPolicyIdTok)
+		case "business removepolicy":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessRemovePolicyIdTok)
 		default:
 			// get HZN_EXCHANGE_USER_AUTH as default if exUserPw is empty
 			exUserPw = cliutils.RequiredWithDefaultEnvVar(exUserPw, "HZN_EXCHANGE_USER_AUTH", "exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH")
@@ -538,6 +564,14 @@ Environment Variables:
 		exchange.ServiceUpdatePolicy(*exOrg, credToUse, *exServiceUpdatePolicyService, *exServiceUpdatePolicyJsonFile)
 	case exServiceRemovePolicyCmd.FullCommand():
 		exchange.ServiceRemovePolicy(*exOrg, credToUse, *exServiceRemovePolicyService, *exServiceRemovePolicyForce)
+	case exBusinessListPolicyCmd.FullCommand():
+		exchange.BusinessListPolicy(*exOrg, credToUse, *exBusinessListPolicyPolicy)
+	case exBusinessAddPolicyCmd.FullCommand():
+		exchange.BusinessAddPolicy(*exOrg, credToUse, *exBusinessAddPolicyPolicy, *exBusinessAddPolicyJsonFile)
+	case exBusinessUpdatePolicyCmd.FullCommand():
+		exchange.BusinessUpdatePolicy(*exOrg, credToUse, *exBusinessUpdatePolicyPolicy, *exBusinessUpdatePolicyAttribute, *exBusinessUpdatePolicyValue)
+	case exBusinessRemovePolicyCmd.FullCommand():
+		exchange.BusinessRemovePolicy(*exOrg, credToUse, *exBusinessRemovePolicyPolicy, *exBusinessRemovePolicyForce)
 	case regInputCmd.FullCommand():
 		register.CreateInputFile(*regInputOrg, *regInputPattern, *regInputArch, *regInputNodeIdTok, *regInputInputFile)
 	case registerCmd.FullCommand():
