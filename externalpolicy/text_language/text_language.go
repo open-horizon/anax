@@ -280,7 +280,7 @@ func validateOneConstraintExpression(expression string) (bool, error) {
 
 	// if will failed on case when string values that contain spaces but not quoted (starting from 2nd interation)
 	if !isAllowedComparisonOpType(pieces[1]) {
-		return false, errors.New(fmt.Sprintf("Expression: %v should contain valid comparison operator - wrong operator %v", expression, pieces[1]))
+		return false, errors.New(fmt.Sprintf("Expression: %v should contain valid comparison operator - wrong operator %v. Allowed operators: %v, %v, %v, %v, %v, %v, %v, %v", expression, pieces[1], lessthan, greaterthan, equalto, doubleequalto, lessthaneq, greaterthaneq, notequalto, inoperator))
 	}
 
 	if canParseToFloat(value) || canParseToInteger(value) {
