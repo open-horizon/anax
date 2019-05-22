@@ -49,7 +49,7 @@ func Test_Validate_Failed1(t *testing.T) {
 		t.Errorf("Validation should fail but not, err: %v", err)
 	} else if err == nil {
 		t.Errorf("Validated should fail and return err, but didn't")
-	} else if err.Error() != "3. Comparison operator: == is not supported for string list value: \"USDA,Organic\"" {
+	} else if err.Error() != "Comparison operator: == is not supported for string list value: \"USDA,Organic\"" {
 		t.Errorf("Error message: %v is not the expected error message", err)
 	}
 
@@ -62,7 +62,7 @@ func Test_Validate_Failed1(t *testing.T) {
 		t.Errorf("Validation should fail but not, err: %v", err)
 	} else if err == nil {
 		t.Errorf("Validated should fail and return err, but didn't")
-	} else if err.Error() != "3. Comparison operator: == is not supported for string list value: \"'hi\aworld','test'\"" {
+	} else if err.Error() != "Comparison operator: == is not supported for string list value: \"'hi\aworld','test'\"" {
 		t.Errorf("Error message: %v is not the expected error message", err)
 	}
 }
@@ -82,7 +82,7 @@ func Test_Validate_Failed2(t *testing.T) {
 		t.Errorf("Validation should fail but not, err: %v", err)
 	} else if err == nil {
 		t.Errorf("Validated should fail and return err, but didn't")
-	} else if err.Error() != "2. Comparison operator: < is not supported for boolean value: true" {
+	} else if err.Error() != "Comparison operator: < is not supported for boolean value: true" {
 		t.Errorf("Error message: %v is not the expected error message", err)
 	}
 }
@@ -122,7 +122,7 @@ func Test_Validate_Failed4(t *testing.T) {
 		t.Errorf("Validation should fail but not, err: %v", err)
 	} else if err == nil {
 		t.Errorf("Validated should fail and return err, but didn't")
-	} else if err.Error() != "Logical operator load is not valid" {
+	} else if err.Error() != "Logical operator load is not valid, expecting AND, OR, &&, ||" {
 		t.Errorf("Error message: %v is not the expected error message", err)
 	}
 }
@@ -142,7 +142,7 @@ func Test_Validate_Failed5(t *testing.T) {
 		t.Errorf("Validation should fail but not, err: %v", err)
 	} else if err == nil {
 		t.Errorf("Validated should fail and return err, but didn't")
-	} else if err.Error() != "Logical operator abcdefg is not valid" {
+	} else if err.Error() != "Logical operator abcdefg is not valid, expecting AND, OR, &&, ||" {
 		t.Errorf("Error message: %v is not the expected error message", err)
 	}
 }

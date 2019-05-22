@@ -33,7 +33,7 @@ func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool,
 
 	// Validate that the input is a ConstraintExpression type (string[])
 	if !isConstraintExpression(dconstraints) {
-		return false, errors.New(fmt.Sprintf("The Constrain input: %v is not Contraint Express type", dconstraints))
+		return false, errors.New(fmt.Sprintf("The constraint expression: %v is type %T, but is expected to be an array of strings", dconstraints, dconstraints))
 	}
 
 	// Validate that the expression is syntactically correct and parse-able
@@ -68,7 +68,7 @@ func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool,
 
 			// verify logical operators
 			if !isAllowedLogicalOpType(nextLogicalOperator) {
-				return false, errors.New(fmt.Sprintf("Logical operator %v is not valid", nextLogicalOperator))
+				return false, errors.New(fmt.Sprintf("Logical operator %v is not valid, expecting AND, OR, &&, ||", nextLogicalOperator))
 			}
 
 		}
@@ -191,7 +191,7 @@ func canParseToStringList(s interface{}) bool {
 func canParseToString(s string) bool {
 	if len(s) > 0 && s[0] == '"' && s[len(s)-1] == '"' {
 		content := strings.Trim(s, "\"")
-		glog.V(5).Infof("content after removing quote: %v", content)
+		glog.V(5).Infof(formatLogString(fmt.Sprintf("content after removing quote: %v", content)))
 		if strings.ToLower(content) == "true" || strings.ToLower(content) == "false" {
 
 			return false
@@ -272,7 +272,7 @@ func validateOneConstraintExpression(expression string) (bool, error) {
 
 	pieces := strings.Split(expression, " ")
 	if len(pieces) < 3 {
-		return false, errors.New(fmt.Sprintf("found %v token(s), expecting 3 in an expression %v, expected form is <property> == <value> in constraint expression", len(pieces), expression))
+		return false, errors.New(fmt.Sprintf("found %v token(s), expecting 3 in an expression %v, expected form is expression with 3 tokens: <property> <operator> <value> in constraint expression", len(pieces), expression))
 	}
 
 	compOp := pieces[1]
@@ -287,44 +287,48 @@ func validateOneConstraintExpression(expression string) (bool, error) {
 		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 || strings.Compare(compOp, lessthan) == 0 || strings.Compare(compOp, greaterthan) == 0 || strings.Compare(compOp, lessthaneq) == 0 || strings.Compare(compOp, greaterthaneq) == 0 {
 			return true, nil
 		}
-		return false, errors.New(fmt.Sprintf("1. Comparison operator: %v is not supported for numeric value: %v", compOp, value))
+		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for numeric value: %v", compOp, value))
 	}
 
 	if canParseToBoolean(value) {
 		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 {
 			return true, nil
 		}
-		return false, errors.New(fmt.Sprintf("2. Comparison operator: %v is not supported for boolean value: %v", compOp, value))
+		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for boolean value: %v", compOp, value))
 	}
 
 	if isCommaSeparatedStringList(value) {
 		if strings.Compare(strings.ToLower(compOp), inoperator) == 0 {
 			return true, nil
 		}
-		return false, errors.New(fmt.Sprintf("3. Comparison operator: %v is not supported for string list value: %v", compOp, value))
+		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for string list value: %v", compOp, value))
 	}
 
 	if canParseToString(value) {
 		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 {
 			return true, nil
 		}
-		return false, errors.New(fmt.Sprintf("4. Comparison operator: %v is not supported for string value: %v", compOp, value))
+		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for string value: %v", compOp, value))
 	}
 
 	if policy.IsVersionString(value) {
 		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 {
 			return true, nil
 		}
-		return false, errors.New(fmt.Sprintf("5. Comparison operator: %v is not supported for single version: %v", compOp, value))
+		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for single version: %v", compOp, value))
 	}
 
 	if policy.IsVersionExpression(value) {
 		if strings.Compare(strings.ToLower(compOp), inoperator) == 0 {
 			return true, nil
 		}
-		return false, errors.New(fmt.Sprintf("6. Comparison operator: %v is not supported for version expression: %v", compOp, value))
+		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for version expression: %v", compOp, value))
 	}
 
 	return false, errors.New(fmt.Sprintf("Expression: %v is not valid", expression))
 
+}
+
+func formatLogString(v interface{}) string {
+	return fmt.Sprintf("Constraint text language validation: %v", v)
 }
