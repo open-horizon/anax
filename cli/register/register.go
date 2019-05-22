@@ -134,14 +134,13 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	}
 
 	// See if the node exists in the exchange, and create if it doesn't
-	stringResponse := ""
-	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, &stringResponse)
-	stringResp := stringResponse
-	fmt.Println("stringResp:", stringResp)
-	// stringResp: {
+	var getDevicesResponse exchange.GetDevicesResponse
+	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, &getDevicesResponse)
+	// getDevicesResponse: {
 	// 	"lastIndex": 0,
 	// 	"nodes": {
 	// 	  "bp@us.ibm.com/lilyIBMVMNode": {
+	//		"arch": "",
 	// 		"lastHeartbeat": "2019-05-13T17:37:19.307Z[UTC]",
 	// 		"msgEndPoint": "",
 	// 		"name": "lilyIBMVMNode",
@@ -198,6 +197,20 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		fmt.Printf("Node %s/%s exists in the exchange\n", org, nodeId)
 
 		// if arch is not set, set the arch with anax's arch
+		devices := getDevicesResponse.Devices
+		node := org + "/" + nodeId
+		device := devices[node]
+		archFromNode := device.Arch
+
+		fmt.Printf("archFromNode: %v", archFromNode)
+
+		if archFromNode == "" {
+			// update node arch with anax arch
+			fmt.Printf("archFromNode is empty, update node with anax arch %v", anaxArch)
+			cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email, anaxArch, nodeName)
+		} else if archFromNode != anaxArch {
+			cliutils.Fatal(cliutils.INTERNAL_ERROR, "node arch from Exchange does not match arch from Anax")
+		}
 
 	}
 
