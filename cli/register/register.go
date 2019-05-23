@@ -96,7 +96,6 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	statusInfo := apicommon.Info{}
 	cliutils.HorizonGet("status", []int{200}, &statusInfo, false)
 	anaxArch := (*statusInfo.Configuration).Arch
-	fmt.Printf("Get Arch from anax: %s\n", anaxArch)
 
 	// Default node id and token if necessary
 	nodeId, nodeToken := cliutils.SplitIdToken(nodeIdTok)
@@ -226,7 +225,6 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	}
 	var getDevicesResp exchange.GetDevicesResponse
 	cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), []int{200}, &getDevicesResp)
-	fmt.Printf("getDevicesResp: %v", getDevicesResp)
 
 	// if arch is not set, set the arch with anax's arch
 	devices := getDevicesResp.Devices
@@ -234,16 +232,13 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	device := devices[node]
 	archFromExchange := device.Arch
 
-	fmt.Printf("device: %v", device)
-	fmt.Printf("archFromExchange: %v", archFromExchange)
-
 	if archFromExchange == "" {
 		// update node arch with anax arch
 		fmt.Printf("archFromNode is empty, update node arch with anax arch %v", anaxArch)
 		putDeviceReq := exchange.PutDeviceRequest{device.Token, device.Name, device.Pattern, device.RegisteredServices, device.MsgEndPoint, device.SoftwareVersions, device.PublicKey, anaxArch}
 		cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{200, 201}, putDeviceReq)
 	} else if archFromExchange != anaxArch {
-		cliutils.Fatal(cliutils.INTERNAL_ERROR, "node arch from Exchange does not match arch from Anax")
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, "node arch from Exchange - %v, does not match arch from Anax - %v", archFromExchange, anaxArch)
 	}
 
 	fmt.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
