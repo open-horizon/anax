@@ -147,6 +147,7 @@ func getVariableServiceResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange
 }
 
 var ExchangeNodePolicyLastUpdated = ""
+
 func getDummyPutNodePolicyHandler() exchange.PutNodePolicyHandler {
 	return func(deviceId string, ep *exchange.ExchangePolicy) (*exchange.PutDeviceResponse, error) {
 		ExchangeNodePolicyLastUpdated += "blah"
@@ -157,15 +158,15 @@ func getDummyPutNodePolicyHandler() exchange.PutNodePolicyHandler {
 func getDummyNodePolicyHandler(ep *externalpolicy.ExternalPolicy) exchange.NodePolicyHandler {
 	return func(deviceId string) (*exchange.ExchangePolicy, error) {
 		if ep != nil {
-			return &exchange.ExchangePolicy{*ep, ExchangeNodePolicyLastUpdated}, nil
+			return &exchange.ExchangePolicy{ExternalPolicy: *ep, LastUpdated: ExchangeNodePolicyLastUpdated}, nil
 		} else {
-			return &exchange.ExchangePolicy{externalpolicy.ExternalPolicy{}, ExchangeNodePolicyLastUpdated}, nil
+			return &exchange.ExchangePolicy{ExternalPolicy: externalpolicy.ExternalPolicy{}, LastUpdated: ExchangeNodePolicyLastUpdated}, nil
 		}
 	}
 }
 
 func getDummyDeleteNodePolicyHandler() exchange.DeleteNodePolicyHandler {
-	return func(deviceId string) (error) {
+	return func(deviceId string) error {
 		return nil
 	}
 }

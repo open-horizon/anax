@@ -113,7 +113,7 @@ func Test_Validate_Succeeded1(t *testing.T) {
 		Description: "blah",
 		Service:     service,
 		Properties:  *propList,
-		Constraints: []string{"prop3 == val3"},
+		Constraints: []string{`prop3 == "val3"`},
 	}
 
 	if err := bPolicy.Validate(); err != nil {
