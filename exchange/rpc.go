@@ -10,7 +10,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/externalpolicy"
-	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -805,7 +805,7 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 		}
 
 	case SERVICE:
-		if oVersion == "" || !policy.IsVersionString(oVersion) {
+		if oVersion == "" || !semanticversion.IsVersionString(oVersion) {
 			return nil, errors.New(rpclogString(fmt.Sprintf("GetObjectSigningKeys got wrong version string %v. The version string should be a non-empy single version string.", oVersion)))
 		}
 		ms_resp, ms_id, err := GetService(ec, oURL, oOrg, oVersion, oArch)

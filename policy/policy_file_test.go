@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/externalpolicy"
-//	_ "github.com/open-horizon/anax/externalpolicy/text_language"
+	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"io/ioutil"
 	"os"
 	"reflect"

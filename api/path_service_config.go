@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/microservice"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 	"strconv"
 	"strings"
 )
@@ -217,7 +218,7 @@ func CreateService(service *Service,
 	}
 
 	// Convert the sensor version to a version expression.
-	vExp, err := policy.Version_Expression_Factory(*service.VersionRange)
+	vExp, err := semanticversion.Version_Expression_Factory(*service.VersionRange)
 	if err != nil {
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("versionRange %v cannot be converted to a version expression, error %v", *service.VersionRange, err), "service.versionRange")), nil, nil
 	}

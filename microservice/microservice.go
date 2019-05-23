@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 	"golang.org/x/crypto/sha3"
 	"strconv"
 	"strings"
@@ -191,7 +192,7 @@ func GetUpgradeMicroserviceDef(getService exchange.ServiceResolverHandler, msdef
 	glog.V(3).Infof("Get new service def for upgrading service %v/%v version %v key %v", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id)
 
 	// convert the sensor version to a version expression
-	if vExp, err := policy.Version_Expression_Factory(msdef.UpgradeVersionRange); err != nil {
+	if vExp, err := semanticversion.Version_Expression_Factory(msdef.UpgradeVersionRange); err != nil {
 		return nil, fmt.Errorf("Unable to convert %v to a version expression, error %v", msdef.UpgradeVersionRange, err)
 	} else if _, e_sdef, _, err := getService(msdef.SpecRef, msdef.Org, vExp.Get_expression(), msdef.Arch); err != nil {
 		return nil, fmt.Errorf("Failed to find a highest version for service %v/%v version range %v: %v", msdef.Org, msdef.SpecRef, msdef.UpgradeVersionRange, err)
@@ -201,7 +202,7 @@ func GetUpgradeMicroserviceDef(getService exchange.ServiceResolverHandler, msdef
 		return nil, fmt.Errorf("Failed to convert service metadata to persistent.MicroserviceDefinition for %v/%v. %v", msdef.Org, msdef.SpecRef, err)
 	} else {
 		// if the newer version is smaller than the old one, do nothing
-		if c, err := policy.CompareVersions(e_sdef.GetVersion(), msdef.Version); err != nil {
+		if c, err := semanticversion.CompareVersions(e_sdef.GetVersion(), msdef.Version); err != nil {
 			return nil, fmt.Errorf("error compairing version %v with version %v. %v", e_sdef.GetVersion(), msdef.Version, err)
 		} else if c < 0 {
 			return nil, nil
@@ -236,7 +237,7 @@ func GetRollbackMicroserviceDef(getService exchange.ServiceResolverHandler, msde
 	glog.V(3).Infof("Get next highest service def for rolling back service %v/%v version %v key %v", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Id)
 
 	// convert the sensor version to a version expression
-	if vExp, err := policy.Version_Expression_Factory(msdef.UpgradeVersionRange); err != nil {
+	if vExp, err := semanticversion.Version_Expression_Factory(msdef.UpgradeVersionRange); err != nil {
 		return nil, fmt.Errorf("Unable to convert %v to a version expression, error %v", msdef.UpgradeVersionRange, err)
 	} else if err := vExp.ChangeCeiling(msdef.Version, false); err != nil { //modify the version range in order to searh for new ms
 		return nil, nil
@@ -418,7 +419,7 @@ func UnregisterMicroserviceExchange(getExchangeDevice exchange.DeviceHandler,
 func FindOrCreateMicroserviceDef(db *bolt.DB, service_name string, service_org string, service_version string, service_arch string,
 	getService exchange.ServiceHandler) (*persistence.MicroserviceDefinition, error) {
 
-	vExp, err := policy.Version_Expression_Factory(service_version)
+	vExp, err := semanticversion.Version_Expression_Factory(service_version)
 	if err != nil {
 		return nil, fmt.Errorf("Error converting APISpec version %v for %v/%v to version range. %v", service_version, service_org, service_name, err)
 	}
@@ -461,7 +462,7 @@ func CreateMicroserviceDef(db *bolt.DB, service_name string, service_org string,
 	glog.V(3).Infof("Create service definition for local db for for %v/%v version range %v", service_org, service_name, service_version)
 
 	// Convert the version to a version expression.
-	vExp, err := policy.Version_Expression_Factory(service_version)
+	vExp, err := semanticversion.Version_Expression_Factory(service_version)
 	if err != nil {
 		return nil, fmt.Errorf("VersionRange %v cannot be converted to a version expression, error %v", service_version, err)
 	}

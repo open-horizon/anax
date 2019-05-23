@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 	"strings"
 	"time"
 )
@@ -270,9 +271,9 @@ func getSearchVersion(version string) (string, error) {
 	// then it must be a full expression. That is, it must be expanded into the full syntax. For example; 1.2.3 is a specific
 	// version, and [4.5.6, INFINITY) is the full expression corresponding to the shorthand form of "4.5.6".
 	searchVersion := ""
-	if version == "" || policy.IsVersionExpression(version) {
+	if version == "" || semanticversion.IsVersionExpression(version) {
 		// search for all versions
-	} else if policy.IsVersionString(version) {
+	} else if semanticversion.IsVersionString(version) {
 		// search for a specific version
 		searchVersion = version
 	} else {
@@ -341,10 +342,10 @@ func processGetServiceResponse(mURL string, mOrg string, mVersion string, mArch 
 		}
 		// The caller wants the highest version in the input version range. If no range was specified then
 		// they will get the highest of all available versions.
-		vRange, _ := policy.Version_Expression_Factory("0.0.0")
+		vRange, _ := semanticversion.Version_Expression_Factory("0.0.0")
 		var err error
 		if mVersion != "" {
-			if vRange, err = policy.Version_Expression_Factory(mVersion); err != nil {
+			if vRange, err = semanticversion.Version_Expression_Factory(mVersion); err != nil {
 				return nil, "", errors.New(fmt.Sprintf("version range %v in error: %v", mVersion, err))
 			}
 		}
@@ -367,10 +368,10 @@ func processGetServiceResponse(mURL string, mOrg string, mVersion string, mArch 
 }
 
 // Find the highest version service and return it.
-func GetHighestVersion(msMetadata map[string]ServiceDefinition, vRange *policy.Version_Expression) (string, ServiceDefinition, string, error) {
+func GetHighestVersion(msMetadata map[string]ServiceDefinition, vRange *semanticversion.Version_Expression) (string, ServiceDefinition, string, error) {
 	highest := ""
 	if vRange == nil {
-		vRange, _ = policy.Version_Expression_Factory("0.0.0")
+		vRange, _ = semanticversion.Version_Expression_Factory("0.0.0")
 	}
 	// resSDef has to be an object instead of pointer to the object because once the pointer points to &sDef,
 	// the content of it will get changed when the content of sDef gets changed in the loop.
@@ -387,9 +388,9 @@ func GetHighestVersion(msMetadata map[string]ServiceDefinition, vRange *policy.V
 			var err error
 
 			if highest == "" {
-				c, err = policy.CompareVersions("0.0.0", sDef.Version)
+				c, err = semanticversion.CompareVersions("0.0.0", sDef.Version)
 			} else {
-				c, err = policy.CompareVersions(highest, sDef.Version)
+				c, err = semanticversion.CompareVersions(highest, sDef.Version)
 			}
 			if err != nil {
 				glog.Errorf(rpclogString(fmt.Sprintf("error comparing version %v with version %v. %v", highest, sDef.Version, err)))
@@ -437,7 +438,7 @@ func ServiceResolver(wURL string, wOrg string, wVersion string, wArch string, se
 				var serviceDef *ServiceDefinition
 				if sDep.Arch != wArch {
 					return nil, nil, "", errors.New(fmt.Sprintf("service %v has a different architecture than the top level service.", sDep))
-				} else if vExp, err := policy.Version_Expression_Factory(sDep.Version); err != nil {
+				} else if vExp, err := semanticversion.Version_Expression_Factory(sDep.Version); err != nil {
 					return nil, nil, "", errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", sDep.Version, err))
 				} else if apiSpecs, sd, _, err := ServiceResolver(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch, serviceHandler); err != nil {
 					return nil, nil, "", err
@@ -471,7 +472,7 @@ func GetServiceDockerAuths(ec ExchangeContext, url string, org string, version s
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting docker auths for service %v %v %v %v", url, org, version, arch)))
 
-	if version == "" || !policy.IsVersionString(version) {
+	if version == "" || !semanticversion.IsVersionString(version) {
 		return nil, errors.New(rpclogString(fmt.Sprintf("GetServiceDockerAuths got wrong version string %v. The version string should be a non-empy single version string.", version)))
 	}
 
@@ -592,7 +593,7 @@ func GetServicePolicy(ec ExchangeContext, url string, org string, version string
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting service policy for service %v %v %v %v", url, org, version, arch)))
 
-	if version == "" || !policy.IsVersionString(version) {
+	if version == "" || !semanticversion.IsVersionString(version) {
 		return nil, "", errors.New(rpclogString(fmt.Sprintf("GetServicePolicy got wrong version string %v. The version string should be a non-empy single version string.", version)))
 	}
 
@@ -643,7 +644,7 @@ func PutServicePolicy(ec ExchangeContext, url string, org string, version string
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("updating service policy for service %v %v %v %v", url, org, version, arch)))
 
-	if version == "" || !policy.IsVersionString(version) {
+	if version == "" || !semanticversion.IsVersionString(version) {
 		return nil, errors.New(rpclogString(fmt.Sprintf("PutServicePolicy got wrong version string %v. The version string should be a non-empy single version string.", version)))
 	}
 
@@ -685,7 +686,7 @@ func DeleteServicePolicy(ec ExchangeContext, url string, org string, version str
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("deleting service policy for service %v %v %v %v", url, org, version, arch)))
 
-	if version == "" || !policy.IsVersionString(version) {
+	if version == "" || !semanticversion.IsVersionString(version) {
 		return errors.New(rpclogString(fmt.Sprintf("DeleteServicePolicy got wrong version string %v. The version string should be a non-empy single version string.", version)))
 	}
 

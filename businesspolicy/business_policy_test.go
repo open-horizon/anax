@@ -4,6 +4,7 @@ package businesspolicy
 
 import (
 	"github.com/open-horizon/anax/externalpolicy"
+	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"strings"
 	"testing"
 )

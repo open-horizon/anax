@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 	"strings"
 )
 
@@ -342,7 +343,7 @@ func makeServiceName(msURL string, msOrg string, msVersion string) string {
 	}
 
 	version := ""
-	vExp, err := policy.Version_Expression_Factory(msVersion)
+	vExp, err := semanticversion.Version_Expression_Factory(msVersion)
 	if err == nil {
 		version = fmt.Sprintf("%v-%v", vExp.Get_start_version(), vExp.Get_end_version())
 	}

@@ -602,6 +602,9 @@ func (b *BaseAgreementWorker) GetServicePolicy(svcId string) (*externalpolicy.Ex
 		return nil, nil
 	} else {
 		extPolicy := servicePolicy.GetExternalPolicy()
+		if err := extPolicy.Validate(); err != nil {
+			return nil, fmt.Errorf("Failed to validate the service policy %v. %v", svcId, err)
+		}
 		return &extPolicy, nil
 	}
 }

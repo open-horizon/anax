@@ -69,11 +69,6 @@ func (c *ConstraintExpression) Merge(other *ConstraintExpression) *ConstraintExp
 // the ConstraintExpression expression.
 func (self *ConstraintExpression) IsSatisfiedBy(props []Property) error {
 
-	// Make sure the expression is valid
-	//if err := self.Validate(); err != nil {
-	//	return err
-	//}
-
 	// If there is no expression at all, then there is nothing to satisify
 	if len(*self) == 0 {
 		return nil

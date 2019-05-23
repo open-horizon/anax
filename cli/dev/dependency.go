@@ -13,7 +13,7 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
-	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -274,7 +274,7 @@ func ValidateDependencies(directory string, userInputs *register.InputFile, user
 			for _, fileInfo := range deps {
 				if dDef, err := GetServiceDefinition(path.Join(directory, DEFAULT_DEPENDENCY_DIR), fileInfo.Name()); err != nil {
 					return errors.New(fmt.Sprintf("dependency validation failed, unable to read %v, error: %v", fileInfo.Name(), err))
-				} else if vRange, err := policy.Version_Expression_Factory(rs.Version); err != nil {
+				} else if vRange, err := semanticversion.Version_Expression_Factory(rs.Version); err != nil {
 					return errors.New(fmt.Sprintf("dependency validation failed, dependency %v has an invalid version %v, error: %v", fileInfo.Name(), rs.Version, err))
 				} else if inRange, err := vRange.Is_within_range(dDef.Version); err != nil {
 					return errors.New(fmt.Sprintf("dependency validation failed, unable to verify version range %v is within required range %v, error: %v", dDef.Version, vRange.Get_expression(), err))

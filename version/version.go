@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 )
 
 // the real version will be set by the horizon-deb-packager build process
@@ -34,9 +34,9 @@ func VerifyExchangeVersion1(exch_version string, checkWithPreferred bool) error 
 		version_for_check = PREFERRED_EXCHANGE_VERSION
 	}
 
-	if !policy.IsVersionString(exch_version) {
+	if !semanticversion.IsVersionString(exch_version) {
 		return fmt.Errorf("The current exchange version %v is not a valid version string.", exch_version)
-	} else if comp, err := policy.CompareVersions(exch_version, version_for_check); err != nil {
+	} else if comp, err := semanticversion.CompareVersions(exch_version, version_for_check); err != nil {
 		return fmt.Errorf("Failed to compare the versions. %v", err)
 	} else if comp < 0 {
 		return fmt.Errorf("The current exchange version %v does not meet the requirement. The required version is %v or above. Please upgrade the exchange.", exch_version, version_for_check)
