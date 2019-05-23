@@ -781,7 +781,6 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 		}
 	}
 	requestBody := bytes.NewBuffer(jsonBytes)
-
 	// Create the request and run it
 	req, err := http.NewRequest(method, url, requestBody)
 	if err != nil {

@@ -134,58 +134,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	}
 
 	// See if the node exists in the exchange, and create if it doesn't
-	var getDevicesResponse exchange.GetDevicesResponse
-	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, &getDevicesResponse)
-	// getDevicesResponse: {
-	// 	"lastIndex": 0,
-	// 	"nodes": {
-	// 	  "bp@us.ibm.com/lilyIBMVMNode": {
-	//		"arch": "",
-	// 		"lastHeartbeat": "2019-05-13T17:37:19.307Z[UTC]",
-	// 		"msgEndPoint": "",
-	// 		"name": "lilyIBMVMNode",
-	// 		"owner": "bp@us.ibm.com/zhangl@us.ibm.com",
-	// 		"pattern": "IBM/pattern-ibm.helloworld-amd64",
-	// 		"publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5FDe19jcAcgCHHLZ/q+tL2jvoPX1O3xJkwpZnuvMONt9VT8Kr/tnp1jDdROY+MO9rq1J/SI3gSiiDBeiOCUnx9XUVQZ6mpbyYn7PQsya8D4n+GN1UljRQ5Si4/HvE6TOAR2i8RhVKabCP16vmq1fAXtO/sm1pyX6Xl2z1Y5ZgIQx7ibMzqKQZnfm0sAV+7j616iB4MUBJcaXkxFNZxhlWPznNHdfeAskZVkmiuyBO/Vsyzbcix1zHn/jQ09xlpkIjo5OWTxTDp59M9r8u2cbhfo4IZrlpYucNjS9XC5jJTP8Q9NH6H4Eb0wskXVfNVtusGnrpMZbO9bOHwnc1XdJsQIDAQAB",
-	// 		"registeredServices": [
-	// 		  {
-	// 			"configState": "",
-	// 			"numAgreements": 0,
-	// 			"policy": "{\"header\":{\"name\":\"Policy for IBM_ibm.helloworld\",\"version\":\"2.0\"},\"apiSpec\":[{\"specRef\":\"ibm.helloworld\",\"organization\":\"IBM\",\"version\":\"1.0.0\",\"exclusiveAccess\":true,\"arch\":\"amd64\"}],\"valueExchange\":{},\"resourceLimits\":{},\"dataVerification\":{\"metering\":{}},\"proposalRejection\":{},\"properties\":[{\"name\":\"cpus\",\"value\":\"1\"},{\"name\":\"ram\",\"value\":\"0\"}],\"ha_group\":{},\"nodeHealth\":{}}",
-	// 			"properties": [
-	// 			  {
-	// 				"name": "version",
-	// 				"op": "in",
-	// 				"propType": "version",
-	// 				"value": "1.0.0"
-	// 			  },
-	// 			  {
-	// 				"name": "cpus",
-	// 				"op": "in",
-	// 				"propType": "string",
-	// 				"value": "1"
-	// 			  },
-	// 			  {
-	// 				"name": "ram",
-	// 				"op": "in",
-	// 				"propType": "string",
-	// 				"value": "0"
-	// 			  },
-	// 			  {
-	// 				"name": "arch",
-	// 				"op": "in",
-	// 				"propType": "string",
-	// 				"value": "amd64"
-	// 			  }
-	// 			],
-	// 			"url": "IBM/ibm.helloworld"
-	// 		  }
-	// 		],
-	// 		"softwareVersions": {},
-	// 		"token": "********"
-	// 	  }
-	// 	}
-	//   }
+	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, nil)
 
 	if httpCode != 200 {
 		if userPw == "" {
@@ -195,23 +144,6 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email, anaxArch, nodeName)
 	} else {
 		fmt.Printf("Node %s/%s exists in the exchange\n", org, nodeId)
-
-		// if arch is not set, set the arch with anax's arch
-		devices := getDevicesResponse.Devices
-		node := org + "/" + nodeId
-		device := devices[node]
-		archFromNode := device.Arch
-
-		fmt.Printf("archFromNode: %v", archFromNode)
-
-		if archFromNode == "" {
-			// update node arch with anax arch
-			fmt.Printf("archFromNode is empty, update node with anax arch %v", anaxArch)
-			cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email, anaxArch, nodeName)
-		} else if archFromNode != anaxArch {
-			cliutils.Fatal(cliutils.INTERNAL_ERROR, "node arch from Exchange does not match arch from Anax")
-		}
-
 	}
 
 	// Initialize the Horizon device (node)
@@ -292,8 +224,30 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		}
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "%v", respBody)
 	}
+	var getDevicesResp exchange.GetDevicesResponse
+	cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), []int{200}, &getDevicesResp)
+	fmt.Printf("getDevicesResp: %v", getDevicesResp)
+
+	// if arch is not set, set the arch with anax's arch
+	devices := getDevicesResp.Devices
+	node := org + "/" + nodeId
+	device := devices[node]
+	archFromExchange := device.Arch
+
+	fmt.Printf("device: %v", device)
+	fmt.Printf("archFromExchange: %v", archFromExchange)
+
+	if archFromExchange == "" {
+		// update node arch with anax arch
+		fmt.Printf("archFromNode is empty, update node arch with anax arch %v", anaxArch)
+		putDeviceReq := exchange.PutDeviceRequest{device.Token, device.Name, device.Pattern, device.RegisteredServices, device.MsgEndPoint, device.SoftwareVersions, device.PublicKey, anaxArch}
+		cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{200, 201}, putDeviceReq)
+	} else if archFromExchange != anaxArch {
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, "node arch from Exchange does not match arch from Anax")
+	}
 
 	fmt.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
+
 }
 
 // isWithinRanges returns true if version is within at least 1 of the ranges in versionRanges
