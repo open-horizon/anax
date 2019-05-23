@@ -54,11 +54,16 @@ func RequiredPropertyFromConstraint(extConstraint *externalpolicy.ConstraintExpr
 	var nextExpression, remainder, controlOp string
 	var handler plugin_registry.ConstraintLanguagePlugin
 
+	// Completely empty input gets a completely empty, but non-nil response.
+	newRP := RequiredProperty_Factory()
+	if extConstraint == nil || len(*extConstraint) == 0 {
+		return newRP, nil
+	}
+
 	remainder = ([]string(*extConstraint))[0]
 
 	// Create a new Required Property structure and initialize it with a top level OR followed by a top level AND. This will allow us
 	// to drop expressions into the structure as they come in through the GetNextExpression function.
-	newRP := RequiredProperty_Factory()
 
 	andArray := make([]interface{}, 0) // An array of PropertyExpression.
 	orArray := make([]interface{}, 0)  // An array of "and" structures, each with an array of PropertyExpression.
