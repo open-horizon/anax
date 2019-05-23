@@ -3,7 +3,6 @@ package externalpolicy
 import (
 	"fmt"
 	"github.com/open-horizon/anax/externalpolicy/plugin_registry"
-	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"strings"
 )
 
@@ -71,9 +70,9 @@ func (c *ConstraintExpression) Merge(other *ConstraintExpression) *ConstraintExp
 func (self *ConstraintExpression) IsSatisfiedBy(props []Property) error {
 
 	// Make sure the expression is valid
-	if err := self.Validate(); err != nil {
-		return err
-	}
+	//if err := self.Validate(); err != nil {
+	//	return err
+	//}
 
 	// If there is no expression at all, then there is nothing to satisify
 	if len(*self) == 0 {

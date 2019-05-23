@@ -58,7 +58,6 @@ type Policy struct {
 	Workloads              WorkloadList                        `json:"workloads,omitempty"`
 	DeviceType             string                              `json:"deviceType,omitempty"`
 	ValueEx                ValueExchange                       `json:"valueExchange,omitempty"`
-	ResourceLimits         ResourceLimit                       `json:"resourceLimits,omitempty"`
 	DataVerify             DataVerification                    `json:"dataVerification,omitempty"`
 	ProposalReject         ProposalRejection                   `json:"proposalRejection,omitempty"`
 	MaxAgreements          int                                 `json:"maxAgreements,omitempty"`
@@ -182,17 +181,15 @@ func Are_Compatible(producer_policy *Policy, consumer_policy *Policy) error {
 		//	} else if err := producer_policy.APISpecs.Supports(consumer_policy.APISpecs); err != nil {
 		//		return errors.New(fmt.Sprintf("Compatibility Error: Producer policy APISpecs %v do not support Consumer APISpec requirements %v. Underlying error: %v", producer_policy.APISpecs, consumer_policy.APISpecs, err))
 	} else if err := (&consumer_policy.Constraints).IsSatisfiedBy(producer_policy.Properties); err != nil {
-		return errors.New(fmt.Sprintf("Compatibility Error: Producer properties %v do not satisfy Consumer property requirements %v. Underlying error: %v", producer_policy.Properties, consumer_policy.Constraints, err))
+		return errors.New(fmt.Sprintf("Compatibility Error: Producer properties %v do not satisfy Consumer constraint requirements %v. Underlying error: %v", producer_policy.Properties, consumer_policy.Constraints, err))
 	} else if err := (&consumer_policy.CounterPartyProperties).IsSatisfiedBy(producer_policy.Properties); err != nil {
 		return errors.New(fmt.Sprintf("Compatibility Error: Producer properties %v do not satisfy Consumer property requirements %v. Underlying error: %v", producer_policy.Properties, consumer_policy.CounterPartyProperties, err))
 	} else if err := (&producer_policy.Constraints).IsSatisfiedBy(consumer_policy.Properties); err != nil {
-		return errors.New(fmt.Sprintf("Compatibility Error: Consumer properties %v do not satisfy Producer property requirements %v. Underlying error: %v", consumer_policy.Properties, producer_policy.Constraints, err))
+		return errors.New(fmt.Sprintf("Compatibility Error: Consumer properties %v do not satisfy Producer constraint  %v. Underlying error: %v", consumer_policy.Properties, producer_policy.Constraints, err))
 	} else if err := (&producer_policy.CounterPartyProperties).IsSatisfiedBy(consumer_policy.Properties); err != nil {
 		return errors.New(fmt.Sprintf("Compatibility Error: Consumer properties %v do not satisfy Producer property requirements %v. Underlying error: %v", consumer_policy.Properties, producer_policy.CounterPartyProperties, err))
 	} else if _, err := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols); err != nil {
 		return errors.New(fmt.Sprintf("Compatibility Error: No common Agreement Protocols between %v and %v. Underlying error: %v", producer_policy.AgreementProtocols, consumer_policy.AgreementProtocols, err))
-	} else if !(&consumer_policy.ResourceLimits).IsSatisfiedBy(&producer_policy.ResourceLimits) {
-		return errors.New(fmt.Sprintf("Compatibility Error: Producer resource limits %v do not satisfy consumer resource requirements %v", producer_policy.ResourceLimits, consumer_policy.ResourceLimits))
 	} else if !producer_policy.DataVerify.IsCompatibleWith(consumer_policy.DataVerify) {
 		return errors.New(fmt.Sprintf("Compatibility Error: Data verification must be compatible, producer has %v and consumer has %v.", producer_policy.DataVerify, consumer_policy.DataVerify))
 	}
@@ -283,7 +280,6 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 			return nil, errors.New(fmt.Sprintf("Error merging policies, error: %v", err))
 		}
 		merged_pol.ValueEx = consumer_policy.ValueEx
-		merged_pol.ResourceLimits = consumer_policy.ResourceLimits
 		merged_pol.DataVerify = producer_policy.DataVerify.MergeWith(consumer_policy.DataVerify, defaultNoData)
 
 		// The properties from the consumer are provided, indicating that some or all of them meet

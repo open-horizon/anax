@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/externalpolicy"
+//	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -25,8 +26,6 @@ func Test_reads_and_writes_file(t *testing.T) {
 		t.Errorf("Demarshalled file has incorrect name: %v", pf.Header.Name)
 	} else if pf.DeviceType != "12345-54321-abcdef-fedcba" {
 		t.Errorf("Demarshalled file has incorrect DeviceType: %v", pf.DeviceType)
-	} else if pf.ResourceLimits.CPUs != 2 {
-		t.Errorf("Demarshalled file has incorrect ResourceLimits section: %v", pf.ResourceLimits.CPUs)
 	} else if pf.DataVerify.Interval != 300 {
 		t.Errorf("Demarshalled file has incorrect DataVerify section, interval: %v", pf.DataVerify.Interval)
 	} else if pf.ProposalReject.Number != 5 {
@@ -735,7 +734,7 @@ func Test_Merge_EmptyProducer_and_Create_TsAndCs1(t *testing.T) {
 		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
-		`],"valueExchange":{},"resourceLimits":{},` +
+		`],"valueExchange":{},` +
 		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
 		`"proposalRejection":{},"ha_group":{}}`
 
@@ -792,7 +791,7 @@ func Test_DeletePolicyFilesForPattern(t *testing.T) {
 		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
-		`],"valueExchange":{},"resourceLimits":{},` +
+		`],"valueExchange":{},` +
 		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
 		`"proposalRejection":{},"ha_group":{}}`
 	pc := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
@@ -801,7 +800,7 @@ func Test_DeletePolicyFilesForPattern(t *testing.T) {
 		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
-		`],"valueExchange":{},"resourceLimits":{},` +
+		`],"valueExchange":{},` +
 		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
 		`"proposalRejection":{},"ha_group":{}}`
 
@@ -865,7 +864,7 @@ func Test_DeletePolicyFilesForOrg(t *testing.T) {
 		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
-		`],"valueExchange":{},"resourceLimits":{},` +
+		`],"valueExchange":{},` +
 		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
 		`"proposalRejection":{},"ha_group":{}}`
 	pc := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
@@ -874,7 +873,7 @@ func Test_DeletePolicyFilesForOrg(t *testing.T) {
 		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
-		`],"valueExchange":{},"resourceLimits":{},` +
+		`],"valueExchange":{},` +
 		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
 		`"proposalRejection":{},"ha_group":{}}`
 
@@ -944,7 +943,7 @@ func Test_DeleteAllPolicyFiles(t *testing.T) {
 		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
-		`],"valueExchange":{},"resourceLimits":{},` +
+		`],"valueExchange":{},` +
 		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
 		`"proposalRejection":{},"ha_group":{}}`
 	pc := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
@@ -953,7 +952,7 @@ func Test_DeleteAllPolicyFiles(t *testing.T) {
 		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
-		`],"valueExchange":{},"resourceLimits":{},` +
+		`],"valueExchange":{},` +
 		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
 		`"proposalRejection":{},"ha_group":{}}`
 
@@ -1015,7 +1014,7 @@ func Test_GenPolicyFromExternalPolicy(t *testing.T) {
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,
-		Constraints: []string{"prop3 == val3"},
+		Constraints: []string{"prop3 == \"val3\""},
 	}
 
 	if pol, err := GenPolicyFromExternalPolicy(extNodePolicy, "Policy for mydevice"); err != nil {
@@ -1073,8 +1072,8 @@ func Test_MergePolicyWithExternalPolicy(t *testing.T) {
 		constraints := externalpolicy.Constraint_Factory()
 		constraints.Add_Constraint("iame2edev == true")
 		constraints.Add_Constraint("number == 12")
-		constraints.Add_Constraint("prop1 == val1")
-		constraints.Add_Constraint("prop2 == val2")
+		constraints.Add_Constraint("prop1 == \"val1\"")
+		constraints.Add_Constraint("prop2 == \"val2\"")
 		if err := constraints.IsSatisfiedBy(mergedpol.Properties); err != nil {
 			t.Errorf("Property check should not have returned error but got: %v", err)
 		}

@@ -14,7 +14,7 @@ func Test_simple_conversion(t *testing.T) {
 
 	ce := new(ConstraintExpression)
 
-	(*ce) = append((*ce), "prop == value")
+	(*ce) = append((*ce), "prop == \"value\"")
 	if rp, err := ce.RequiredPropertyFromConstraint(); err != nil {
 		t.Errorf("Error: unable to convert simple expression: %v", err)
 	} else if tle := rp.TopLevelElements(); tle == nil {
@@ -40,7 +40,7 @@ func Test_simple_conversion(t *testing.T) {
 	}
 
 	ce = new(ConstraintExpression)
-	(*ce) = append((*ce), "prop == value && prop2 == value2")
+	(*ce) = append((*ce), `prop == "value" && prop2 == "value2"`)
 	if rp, err := ce.RequiredPropertyFromConstraint(); err != nil {
 		t.Errorf("Error: unable to convert simple expression: %v", err)
 	} else if tle := rp.TopLevelElements(); tle == nil {
@@ -66,7 +66,7 @@ func Test_simple_conversion(t *testing.T) {
 	}
 
 	ce = new(ConstraintExpression)
-	(*ce) = append((*ce), "prop == value && prop2 == value2 || prop3 == value3")
+	(*ce) = append((*ce), `prop == "value" && prop2 == "value2" || prop3 == "value3"`)
 	if rp, err := ce.RequiredPropertyFromConstraint(); err != nil {
 		t.Errorf("Error: unable to convert simple expression: %v", err)
 	} else if tle := rp.TopLevelElements(); tle == nil {
@@ -92,7 +92,7 @@ func Test_simple_conversion(t *testing.T) {
 	}
 
 	ce = new(ConstraintExpression)
-	(*ce) = append((*ce), "prop == value && prop2 == value2 || prop3 == value3 || prop4 == value4")
+	(*ce) = append((*ce), `prop == "value" && prop2 == "value2" || prop3 == "value3" || prop4 == "value4"`)
 	if rp, err := ce.RequiredPropertyFromConstraint(); err != nil {
 		t.Errorf("Error: unable to convert simple expression: %v", err)
 	} else if tle := rp.TopLevelElements(); tle == nil {
@@ -118,7 +118,7 @@ func Test_simple_conversion(t *testing.T) {
 	}
 
 	ce = new(ConstraintExpression)
-	(*ce) = append((*ce), "prop == value && prop2 == value2 || prop3 == value3 || prop4 == value4 && prop5 == value5")
+	(*ce) = append((*ce), `prop == "value" && prop2 == "value2" || prop3 == "value3" || prop4 == "value4" && prop5 == "value5"`)
 	if rp, err := ce.RequiredPropertyFromConstraint(); err != nil {
 		t.Errorf("Error: unable to convert simple expression: %v", err)
 	} else if tle := rp.TopLevelElements(); tle == nil {

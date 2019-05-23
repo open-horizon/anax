@@ -1394,5 +1394,71 @@ echo -e "Register business policy for location:"
 RES=$(echo "$bplocdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_location" | jq -r '.')
 results "$RES"
 
+
+
+# ======================= Service Policies that use top level services ======================
+read -d '' nspoldef <<EOF
+{
+  "properties": [
+      {
+          "name": "iame2edev_service",
+          "value": "true"
+      },
+      {
+          "name": "service_var1",
+          "value": "this is netspeed service"
+      }
+  ],
+  "constraints": [
+    "group == bluenode"
+  ]
+}
+EOF
+echo -e "Register service policy for netspeed:"
+RES=$(echo "$nspoldef" | curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-netspeed_2.3.0_amd64/policy" | jq -r '.')
+results "$RES"
+
+read -d '' gpstestpoldef <<EOF
+{
+  "properties": [
+      {
+          "name": "iame2edev_service",
+          "value": "true"
+      },
+      {
+          "name": "service_var2",
+          "value": "this is gpstest service"
+      }
+  ],
+  "constraints": [
+    "group == bluenode"
+  ]
+}
+EOF
+echo -e "Register service policy for gpstest:"
+RES=$(echo "$gpstestpoldef" | curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-gpstest_1.0.0_amd64/policy" | jq -r '.')
+results "$RES"
+
+read -d '' locpoldef <<EOF
+{
+  "properties": [
+      {
+          "name": "iame2edev_service",
+          "value": "true"
+      },
+      {
+          "name": "service_var3",
+          "value": "this is location service"
+      }
+  ],
+  "constraints": [
+      "group == bluenode"
+  ]
+}
+EOF
+echo -e "Register service policy for location:"
+RES=$(echo "$locpoldef" | curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-location_2.0.6_amd64/policy" | jq -r '.')
+results "$RES"
+
 unset HZN_EXCHANGE_URL
 

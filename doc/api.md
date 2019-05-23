@@ -1283,7 +1283,6 @@ curl http://localhost/service/policy | jq '.'
       }
     ],
     "valueExchange": {},
-    "resourceLimits": {},
     "dataVerification": {
       "metering": {}
     },
