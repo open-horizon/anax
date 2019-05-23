@@ -66,6 +66,7 @@ type ConsumerProtocolHandler interface {
 	GetExchangeURL() string
 	GetServiceBased() bool
 	GetHTTPFactory() *config.HTTPClientFactory
+	SendEventMessage(event events.Message)
 }
 
 type BaseConsumerProtocolHandler struct {
@@ -363,11 +364,13 @@ func (b *BaseConsumerProtocolHandler) HandleWorkloadUpgrade(cmd *WorkloadUpgrade
 func (b *BaseConsumerProtocolHandler) HandleMakeAgreement(cmd *MakeAgreementCommand, cph ConsumerProtocolHandler) {
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received make agreement command.")))
 	agreementWork := InitiateAgreement{
-		workType:       INITIATE,
-		ProducerPolicy: cmd.ProducerPolicy,
-		ConsumerPolicy: cmd.ConsumerPolicy,
-		Org:            cmd.Org,
-		Device:         cmd.Device,
+		workType:           INITIATE,
+		ProducerPolicy:     cmd.ProducerPolicy,
+		ConsumerPolicy:     cmd.ConsumerPolicy,
+		Org:                cmd.Org,
+		Device:             cmd.Device,
+		ConsumerPolicyName: cmd.ConsumerPolicyName,
+		ServicePolicies:    cmd.ServicePolicies,
 	}
 	cph.WorkQueue() <- agreementWork
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued make agreement command.")))
@@ -543,6 +546,10 @@ func (c *BaseConsumerProtocolHandler) GetKnownBlockchain(ag *persistence.Agreeme
 
 func (c *BaseConsumerProtocolHandler) CanSendMeterRecord(ag *persistence.Agreement) bool {
 	return true
+}
+
+func (b *BaseConsumerProtocolHandler) SendEventMessage(event events.Message) {
+	b.messages <- event
 }
 
 // The list of termination reasons that should be supported by all agreement protocols. The caller can pass these into

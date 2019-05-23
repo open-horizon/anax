@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/semanticversion"
 )
 
 // The purpose of this file is to provide APIs for working with the API spec list in a Policy.
@@ -107,7 +108,7 @@ func (self APISpecList) Supports(required APISpecList) error {
 		found := false
 		for _, req_ele := range required {
 			if sub_ele.SpecRef == req_ele.SpecRef && sub_ele.Org == req_ele.Org && sub_ele.Arch == req_ele.Arch {
-				if req_ver, err := Version_Expression_Factory(req_ele.Version); err != nil {
+				if req_ver, err := semanticversion.Version_Expression_Factory(req_ele.Version); err != nil {
 					continue
 				} else if ok, err := req_ver.Is_within_range(sub_ele.Version); err != nil {
 					continue
@@ -187,9 +188,9 @@ func (self *APISpecList) GetCommonVersionRanges() (*APISpecList, error) {
 				found = true
 
 				// get the intersection of the two version ranges
-				if v, err := Version_Expression_Factory(apiSpec.Version); err != nil {
+				if v, err := semanticversion.Version_Expression_Factory(apiSpec.Version); err != nil {
 					return nil, fmt.Errorf("Error creating version range for %v/%v, %v", apiSpec.Org, apiSpec.SpecRef, apiSpec.Version)
-				} else if v_new, err := Version_Expression_Factory(newApiSpec.Version); err != nil {
+				} else if v_new, err := semanticversion.Version_Expression_Factory(newApiSpec.Version); err != nil {
 					return nil, fmt.Errorf("Error creating version range for %v/%v, %v", newApiSpec.Org, newApiSpec.SpecRef, newApiSpec.Version)
 				} else if err := v.IntersectsWith(v_new); err != nil {
 					// no intersection found, remove the microservice from the list.
@@ -204,7 +205,7 @@ func (self *APISpecList) GetCommonVersionRanges() (*APISpecList, error) {
 
 		if !found {
 			// convert the version string to version range string
-			if vr, err := Version_Expression_Factory(apiSpec.Version); err != nil {
+			if vr, err := semanticversion.Version_Expression_Factory(apiSpec.Version); err != nil {
 				return nil, fmt.Errorf("Failed to convert the version string %v to version range. %v", apiSpec.Version, err)
 			} else {
 				apiSpec.Version = vr.Get_expression()

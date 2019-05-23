@@ -17,12 +17,6 @@
             "name": "Citizen Scientist"
         }
     ],
-    "resourceLimits": {
-        "networkUpload": 1024,
-        "networkDownload": 1024,
-        "memory": 2048,
-        "cpus": 2
-    },
     "properties": [
         {"name":"rpiprop1", "value":"rpival1"},
         {"name":"rpiprop2", "value":"rpival2"},

@@ -127,7 +127,7 @@ func (w *BaseProducerProtocolHandler) GetServiceResolver() func(wURL string, wOr
 
 func (w *BaseProducerProtocolHandler) serviceResolver(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
 
-	asl, _, err := exchange.GetHTTPServiceResolverHandler(w.ec)(wURL, wOrg, wVersion, wArch)
+	asl, _, _, err := exchange.GetHTTPServiceResolverHandler(w.ec)(wURL, wOrg, wVersion, wArch)
 	if err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("unable to resolve %v %v, error %v", wURL, wOrg, err)))
 	}

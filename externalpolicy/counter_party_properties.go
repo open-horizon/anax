@@ -1,11 +1,8 @@
-package policy
+package externalpolicy
 
 import (
 	"errors"
 	"fmt"
-	"github.com/open-horizon/anax/externalpolicy"
-	"github.com/open-horizon/anax/externalpolicy/plugin_registry"
-	"strings"
 )
 
 // The purpose this file is to abstract the CounterPartyProperties field in the Policy struct
@@ -31,9 +28,9 @@ import (
 //
 
 // These are the boolean operators that can be used to construct a RequiredProperties expression
-const and = "and"
-const or = "or"
-const not = "not"
+const OP_AND = "and"
+const OP_OR = "or"
+const OP_NOT = "not"
 
 type RequiredProperty map[string]interface{}
 
@@ -45,96 +42,12 @@ func RequiredProperty_Factory() *RequiredProperty {
 	return rp
 }
 
-// Create a RequiredProperty Object based on the constraint expression in an external policy. The constraint expression
-// contains references to properties and provides a comparison operator and value on that property. These can be converted
-// into our internal format.
-func RequiredPropertyFromConstraint(extConstraint *externalpolicy.ConstraintExpression) (*RequiredProperty, error) {
-
-	var err error
-	var nextExpression, remainder, controlOp string
-	var handler plugin_registry.ConstraintLanguagePlugin
-
-	// Completely empty input gets a completely empty, but non-nil response.
-	newRP := RequiredProperty_Factory()
-	if extConstraint == nil || len(*extConstraint) == 0 {
-		return newRP, nil
-	}
-
-	remainder = ([]string(*extConstraint))[0]
-
-	// Create a new Required Property structure and initialize it with a top level OR followed by a top level AND. This will allow us
-	// to drop expressions into the structure as they come in through the GetNextExpression function.
-
-	andArray := make([]interface{}, 0) // An array of PropertyExpression.
-	orArray := make([]interface{}, 0)  // An array of "and" structures, each with an array of PropertyExpression.
-
-	// Get a handle to the specific language handler we will be using.
-	handler, err = extConstraint.GetLanguageHandler()
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("unable to obtain policy constraint language handler, error %v", err))
-	}
-
-	// Loop until there are no more property expressions to consume.
-	for {
-
-		// Get a property expression from the constraint expression. If there is no expression returned, then it's the
-		// end of the expression.
-		nextExpression, remainder, err = handler.GetNextExpression(remainder)
-		if err != nil {
-			return nil, errors.New(fmt.Sprintf("unable to convert policy constraint %v into internal format, error %v", remainder, err))
-		} else if nextExpression == "" {
-			break
-		}
-
-		// Convert the expression string into JSON and add it into the RequiredProperty object that we're building.
-		pieces := strings.Split(nextExpression, " ")
-		pe := PropertyExpression_Factory(pieces[0], pieces[2], pieces[1])
-
-		andArray = append(andArray, *pe)
-
-		// Get control operator. If no control operator is returned, then it's the end of the expression.
-		controlOp, remainder, err = handler.GetNextOperator(remainder)
-		if err != nil {
-			return nil, errors.New(fmt.Sprintf("unable to convert policy constraint %v into internal format, error %v", remainder, err))
-		} else if controlOp == "" {
-			break
-		}
-
-		// Based on the control operator expression that we get back, add the current list of ANDed expressions into the structure.
-		if strings.Contains(controlOp, "&&") || strings.Contains(strings.ToUpper(controlOp), "AND") {
-			// Just consume the operator and keep going.
-
-		} else {
-			// OR means we need a new element in the "or" array.
-			innerAnd := map[string][]interface{}{
-				and: andArray,
-			}
-			orArray = append(orArray, innerAnd)
-			andArray = make([]interface{}, 0)
-
-		}
-
-	}
-
-	// Done with the expression, so close up the current and array initialize the RequiredProperty, and return it.
-	innerAnd := map[string][]interface{}{
-		and: andArray,
-	}
-	orArray = append(orArray, innerAnd)
-
-	newRP.Initialize(&map[string]interface{}{
-		or: orArray,
-	})
-
-	return newRP, nil
-}
-
 // Return the top level elements in the requiredProperty.
 func (rp *RequiredProperty) TopLevelElements() []interface{} {
-	if _, ok := (*rp)[or]; ok {
-		return (*rp)[or].([]interface{})
-	} else if _, ok := (*rp)[and]; ok {
-		return (*rp)[and].([]interface{})
+	if _, ok := (*rp)[OP_OR]; ok {
+		return (*rp)[OP_OR].([]interface{})
+	} else if _, ok := (*rp)[OP_AND]; ok {
+		return (*rp)[OP_AND].([]interface{})
 	} else {
 		return nil
 	}
@@ -143,7 +56,7 @@ func (rp *RequiredProperty) TopLevelElements() []interface{} {
 // These are the comparison operators that are supported
 const lessthan = "<"
 const greaterthan = ">"
-const equalto = "="
+const equalto = "=="
 const lessthaneq = "<="
 const greaterthaneq = ">="
 const notequalto = "!="
@@ -153,6 +66,10 @@ type PropertyExpression struct {
 	Name  string      `json:"name"`  // The Property name
 	Value interface{} `json:"value"` // The Property value
 	Op    string      `json:"op"`    // The operator to apply to the property value
+}
+
+func (p PropertyExpression) String() string {
+	return fmt.Sprintf("PropertyExpression: Name: %v, Value: %v, Op: %v", p.Name, p.Value, p.Op)
 }
 
 func PropertyExpression_Factory(name string, value interface{}, op string) *PropertyExpression {
@@ -178,7 +95,7 @@ func (self *RequiredProperty) Initialize(exp *map[string]interface{}) error {
 
 // This function is used to determine if an input set of properties and values will satisfy
 // the RequiredProperty expression.
-func (self *RequiredProperty) IsSatisfiedBy(props []externalpolicy.Property) error {
+func (self *RequiredProperty) IsSatisfiedBy(props []Property) error {
 
 	// Make sure the expression is valid
 	if err := self.IsValid(); err != nil {
@@ -202,9 +119,9 @@ func (self *RequiredProperty) IsSatisfiedBy(props []externalpolicy.Property) err
 // This function does the real work of evaluating the expression to see if it is satisfied by
 // the list of properties and values that have been supplied. This function is called
 // recursively because control operators can be nested n levels deep.
-func (self *RequiredProperty) satisfied(cop *map[string]interface{}, props *[]externalpolicy.Property) error {
+func (self *RequiredProperty) satisfied(cop *map[string]interface{}, props *[]Property) error {
 	controlOp := self.getControlOperator(cop)
-	if controlOp == and {
+	if controlOp == OP_AND {
 
 		propArray := (*cop)[controlOp].([]interface{})
 		for _, p := range propArray {
@@ -222,7 +139,7 @@ func (self *RequiredProperty) satisfied(cop *map[string]interface{}, props *[]ex
 		}
 		return nil
 
-	} else if controlOp == or {
+	} else if controlOp == OP_OR {
 
 		propArray := (*cop)[controlOp].([]interface{})
 		for _, p := range propArray {
@@ -242,7 +159,7 @@ func (self *RequiredProperty) satisfied(cop *map[string]interface{}, props *[]ex
 		}
 		return errors.New(fmt.Sprintf("One of Required Properties %v not in %v\n", propArray, props))
 
-	} else if controlOp == not {
+	} else if controlOp == OP_NOT {
 
 	}
 
@@ -350,7 +267,7 @@ func (self *RequiredProperty) getControlOperator(m *map[string]interface{}) stri
 // of the supported control operators.
 func controlOperators() map[string]int {
 	// return map[string]int {and:0, or:0, not:0}
-	return map[string]int{and: 0, or: 0}
+	return map[string]int{OP_AND: 0, OP_OR: 0}
 }
 
 // Return a map of comparison operators so that it's easy to check if a string is equivalent to one
@@ -377,11 +294,24 @@ func isMap(x interface{}) bool {
 	}
 }
 
+// This function checks the type of the input interface object to see if it's type is a PropertyExpression.
+func isPropertyExpressionType(x interface{}) bool {
+	switch x.(type) {
+	case PropertyExpression:
+		return true
+	default:
+		return false
+	}
+}
+
 // This function checks the type of the input interface object to see if it's a map of string to
 // interface that complies with the definition of a PropertyExpression object. If so, the input parameter
 // is used to construct a PropertyExpression object and return it.
 func isPropertyExpression(x interface{}) *PropertyExpression {
-	if !isMap(x) {
+	if isPropertyExpressionType(x) {
+		pe := x.(PropertyExpression)
+		return &pe
+	} else if !isMap(x) {
 		return nil
 	} else {
 		asMap := x.(map[string]interface{})
@@ -394,7 +324,7 @@ func isPropertyExpression(x interface{}) *PropertyExpression {
 			p.Name = asMap["name"].(string)
 			p.Value = asMap["value"]
 			if _, ok := asMap["op"]; !ok {
-				p.Op = "="
+				p.Op = equalto
 			} else if _, ok := comparisonOperators()[asMap["op"].(string)]; ok {
 				p.Op = asMap["op"].(string)
 			} else {
@@ -473,7 +403,7 @@ func getKeys(m map[string]interface{}) []string {
 
 // This function compares a Property object with an array of Property objects to see if it's
 // in the array with an appropriate value.
-func propertyInArray(propexp *PropertyExpression, props *[]externalpolicy.Property) bool {
+func propertyInArray(propexp *PropertyExpression, props *[]Property) bool {
 	for _, p := range *props {
 		if p.Name != propexp.Name {
 			// These are not the droids we're looking for

@@ -67,7 +67,7 @@ type DeviceHandler func(id string, token string) (*Device, error)
 
 func GetHTTPDeviceHandler(ec ExchangeContext) DeviceHandler {
 	return func(id string, token string) (*Device, error) {
-		return GetExchangeDevice(ec.GetHTTPFactory(), ec.GetExchangeId(), ec.GetExchangeToken(), ec.GetExchangeURL())
+		return GetExchangeDevice(ec.GetHTTPFactory(), id, token, ec.GetExchangeURL())
 	}
 }
 
@@ -99,10 +99,10 @@ func GetHTTPServicesConfigStateHandler(ec ExchangeContext) ServicesConfigStateHa
 }
 
 // A handler for resolving service references in the exchange.
-type ServiceResolverHandler func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *ServiceDefinition, error)
+type ServiceResolverHandler func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *ServiceDefinition, string, error)
 
 func GetHTTPServiceResolverHandler(ec ExchangeContext) ServiceResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *ServiceDefinition, error) {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *ServiceDefinition, string, error) {
 		return ServiceResolver(wUrl, wOrg, wVersion, wArch, GetHTTPServiceHandler(ec))
 	}
 }
@@ -179,10 +179,10 @@ func GetHTTPServicePolicyWithIdHandler(ec ExchangeContext) ServicePolicyWithIdHa
 	}
 }
 
-type ServicePolicyHandler func(sUrl string, sOrg string, sVersion string, sArch string) (*ExchangePolicy, error)
+type ServicePolicyHandler func(sUrl string, sOrg string, sVersion string, sArch string) (*ExchangePolicy, string, error)
 
 func GetHTTPServicePolicyHandler(ec ExchangeContext) ServicePolicyHandler {
-	return func(sUrl string, sOrg string, sVersion string, sArch string) (*ExchangePolicy, error) {
+	return func(sUrl string, sOrg string, sVersion string, sArch string) (*ExchangePolicy, string, error) {
 		return GetServicePolicy(ec, sUrl, sOrg, sVersion, sArch)
 	}
 }

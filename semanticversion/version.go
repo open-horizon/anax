@@ -1,4 +1,4 @@
-package policy
+package semanticversion
 
 import (
 	"errors"

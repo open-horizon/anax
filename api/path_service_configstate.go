@@ -66,7 +66,7 @@ func ChangeServiceConfigState(service_cs *exchange.ServiceConfigState,
 
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("Start changing service configuration state for %v for the node.", service_cs)))
 
-	pDevice, err := getDevice(pLocalDevice.Id, pLocalDevice.Token)
+	pDevice, err := getDevice(fmt.Sprintf("%v/%v", pLocalDevice.Org, pLocalDevice.Id), pLocalDevice.Token)
 	if err != nil {
 		glog.Errorf(apiLogString(fmt.Sprintf("Unable to retrieve node resource for %v from the exchange, error %v", pLocalDevice.Id, err)))
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to retrieve node resource for %v from the exchange, error %v", pLocalDevice.Id, err))), nil

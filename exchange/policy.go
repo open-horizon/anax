@@ -69,6 +69,25 @@ type GetBusinessPolicyResponse struct {
 	LastIndex      int                               `json:"lastIndex.omitempty"`
 }
 
+// Structs and types for working with business policy based exchange searches
+type SearchExchBusinessPolRequest struct {
+	NodeOrgIds   []string `json:"nodeOrgids,omitempty"`
+	ChangedSince uint64   `json:"changedSince"`
+}
+
+func (a SearchExchBusinessPolRequest) String() string {
+	return fmt.Sprintf("NodeOrgIds: %v, ChangedSince: %v", a.NodeOrgIds, a.ChangedSince)
+}
+
+type SearchExchBusinessPolResponse struct {
+	Devices   []SearchResultDevice `json:"nodes"`
+	LastIndex int                  `json:"lastIndex"`
+}
+
+func (r SearchExchBusinessPolResponse) String() string {
+	return fmt.Sprintf("Devices: %v, LastIndex: %v", r.Devices, r.LastIndex)
+}
+
 // Retrieve the node policy object from the exchange. The input device Id is assumed to be prefixed with its org.
 func GetNodePolicy(ec ExchangeContext, deviceId string) (*ExchangePolicy, error) {
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting node policy for %v.", deviceId)))

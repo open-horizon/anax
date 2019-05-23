@@ -18,6 +18,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 	"github.com/open-horizon/anax/torrent"
 	"github.com/satori/go.uuid"
 	"io/ioutil"
@@ -769,7 +770,7 @@ func GetServiceSpecFromImage(image string) (string, string, error) {
 		specRef = s[len(s)-1]
 	}
 
-	if tag != "" && policy.IsVersionString(tag) {
+	if tag != "" && semanticversion.IsVersionString(tag) {
 		version = tag
 	}
 

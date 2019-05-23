@@ -26,7 +26,7 @@ func FindNodePolicyForOutput(db *bolt.DB) (*externalpolicy.ExternalPolicy, error
 	}
 }
 
-// Update the policy object. This function does not require the device object to be created first.
+// Update the policy object in the local node database and in the exchange.
 func UpdateNodePolicy(nodePolicy *externalpolicy.ExternalPolicy,
 	errorhandler DeviceErrorHandler,
 	nodeGetPolicyHandler exchange.NodePolicyHandler,

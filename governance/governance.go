@@ -314,6 +314,13 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			}
 		}
 
+	case *events.NodePolicyMessage:
+		msg, _ := incoming.(*events.NodePolicyMessage)
+		switch msg.Event().Id {
+		case events.UPDATE_POLICY, events.DELETED_POLICY:
+			w.Commands <- NewNodePolicyChangedCommand(msg)
+		}
+
 	default: //nothing
 	}
 
@@ -1256,6 +1263,12 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 
 		w.handleUpdatePolicy(cmd)
 
+	case *NodePolicyChangedCommand:
+		cmd, _ := command.(*NodePolicyChangedCommand)
+		glog.V(5).Infof(logString(fmt.Sprintf("%v", cmd)))
+
+		w.handleNodePolicyUpdated()
+
 	default:
 		return false
 	}
@@ -1374,7 +1387,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			// The workload config we have might be from a lower version of the workload. Go to the exchange and
 			// get the metadata for the version we are running and then add in any unset default user inputs.
 			var serviceDef *exchange.ServiceDefinition
-			if _, sDef, err := exchange.GetHTTPServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+			if _, sDef, _, err := exchange.GetHTTPServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
 				return errors.New(logString(fmt.Sprintf("received error querying exchange for workload or service metadata: %v, error %v", workload, err)))
 			} else if sDef == nil {
 				return errors.New(logString(fmt.Sprintf("cound not find workload or service metadata for %v.", workload)))
@@ -1446,34 +1459,25 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 func (w *GovernanceWorker) processDependencies(dependencyPath []persistence.ServiceInstancePathElement, deps *[]exchange.ServiceDependency, agreementId string, protocol string) ([]events.MicroserviceSpec, error) {
 	ms_specs := []events.MicroserviceSpec{}
 
+	glog.V(5).Infof(logString(fmt.Sprintf("processDependencies %v for agreement %v. The dependency path is: %v", *deps, agreementId, dependencyPath)))
+
 	for _, sDep := range *deps {
 
-		if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, sDep.URL, sDep.Org); err != nil {
-			return ms_specs, errors.New(logString(fmt.Sprintf("Error finding service definition from the local db for %v/%v version range %v. %v", sDep.Org, sDep.URL, sDep.Version, err)))
-		} else if msdefs != nil && len(msdefs) > 0 {
-			glog.V(5).Infof(logString(fmt.Sprintf("found dependent service definition locally: %v", msdefs)))
-			msdef := msdefs[0] // assuming there is only one msdef for a service/microservice at any time
+		msdef, err := microservice.FindOrCreateMicroserviceDef(w.db, sDep.URL, sDep.Org, sDep.Version, sDep.Arch, exchange.GetHTTPServiceHandler(w))
+		if err != nil {
+			return ms_specs, fmt.Errorf(logString(fmt.Sprintf("failed to get or create service definition for dependent service for agreement %v. %v", agreementId, err)))
+		}
 
-			// validate the version range
-			if vExp, err := policy.Version_Expression_Factory(sDep.Version); err != nil {
-				return ms_specs, errors.New(logString(fmt.Sprintf("Error converting APISpec version %v for %v/%v to version range. %v", sDep.Version, sDep.Org, sDep.URL, err)))
-			} else if inRange, err := vExp.Is_within_range(msdef.Version); err != nil {
-				return ms_specs, errors.New(logString(fmt.Sprintf("Error checking if service version %v is within APISpec version range %v for %v/%v. %v", msdef.Version, vExp, sDep.Org, sDep.URL, err)))
-			} else if !inRange {
-				return ms_specs, errors.New(logString(fmt.Sprintf("Current service %v/%v version %v is not within the APISpec version range %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, vExp, err)))
-			}
+		msspec := events.MicroserviceSpec{SpecRef: msdef.SpecRef, Org: msdef.Org, Version: msdef.Version, MsdefId: msdef.Id}
+		ms_specs = append(ms_specs, msspec)
 
-			msspec := events.MicroserviceSpec{SpecRef: msdef.SpecRef, Org: msdef.Org, Version: msdef.Version, MsdefId: msdef.Id}
-			ms_specs = append(ms_specs, msspec)
-
-			// Recursively work down the dependency tree, starting leaf node dependencies first and then start their parents.
-			fullPath := append(dependencyPath, *persistence.NewServiceInstancePathElement(msdef.SpecRef, msdef.Org, msdef.Version))
-			if err := w.startDependentService(fullPath, &msdef, agreementId, protocol); err != nil {
-				eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Error starting dependen service %v/%v version %v for agreement %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, agreementId, err),
-					persistence.EC_ERROR_START_DEPENDENT_SERVICE,
-					"", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{agreementId})
-			}
+		// Recursively work down the dependency tree, starting leaf node dependencies first and then start their parents.
+		fullPath := append(dependencyPath, *persistence.NewServiceInstancePathElement(msdef.SpecRef, msdef.Org, msdef.Version))
+		if err := w.startDependentService(fullPath, msdef, agreementId, protocol); err != nil {
+			eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error starting dependen service %v/%v version %v for agreement %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, agreementId, err),
+				persistence.EC_ERROR_START_DEPENDENT_SERVICE,
+				"", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{agreementId})
 		}
 	}
 

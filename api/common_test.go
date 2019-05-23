@@ -17,8 +17,8 @@ import (
 // These are functions which are used across the set of API unit tests
 
 func getDummyServiceResolver() exchange.ServiceResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *exchange.ServiceDefinition, error) {
-		return nil, nil, nil
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *exchange.ServiceDefinition, string, error) {
+		return nil, nil, "", nil
 	}
 }
 
@@ -102,7 +102,7 @@ func getVariableServiceHandler(mUserInput exchange.UserInput) exchange.ServiceHa
 }
 
 func getVariableServiceResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange.UserInput) exchange.ServiceResolverHandler {
-	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *exchange.ServiceDefinition, error) {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *exchange.ServiceDefinition, string, error) {
 		sl := policy.APISpecList{}
 		sd := []exchange.ServiceDependency{}
 		if mUrl != "" {
@@ -142,7 +142,7 @@ func getVariableServiceResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange
 			ImageStore:          exchange.ImplementationPackage{},
 			LastUpdated:         "updated",
 		}
-		return &sl, &wl, nil
+		return &sl, &wl, "", nil
 	}
 }
 

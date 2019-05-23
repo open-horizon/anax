@@ -9,8 +9,11 @@ import (
 	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/worker"
 	"math/rand"
 	"net/http"
 )
@@ -30,11 +33,13 @@ type AgreementWork interface {
 
 type InitiateAgreement struct {
 	workType               string
-	ProducerPolicy         policy.Policy               // the producer policy received from the exchange - demarshalled
-	OriginalProducerPolicy string                      // the producer policy received from the exchange - original in string form to be sent back
-	ConsumerPolicy         policy.Policy               // the consumer policy we're matched up with - this is a copy so that we can modify/augment it
-	Org                    string                      // the org from which the consumer policy originated
-	Device                 exchange.SearchResultDevice // the device entry in the exchange
+	ProducerPolicy         policy.Policy                            // the producer policy received from the exchange - demarshalled
+	OriginalProducerPolicy string                                   // the producer policy received from the exchange - original in string form to be sent back
+	ConsumerPolicy         policy.Policy                            // the consumer policy we're matched up with - this is a copy so that we can modify/augment it
+	Org                    string                                   // the org from which the consumer policy originated
+	Device                 exchange.SearchResultDevice              // the device entry in the exchange
+	ConsumerPolicyName     string                                   // the name of the consumer policy in the exchange
+	ServicePolicies        map[string]externalpolicy.ExternalPolicy // cached service polices, keyed by service id. it is a subset of the service versions in the consumer policy file
 }
 
 func (c InitiateAgreement) String() string {
@@ -43,6 +48,8 @@ func (c InitiateAgreement) String() string {
 	res += fmt.Sprintf("Producer Policy: %v\n", c.ProducerPolicy)
 	res += fmt.Sprintf("Consumer Policy: %v\n", c.ConsumerPolicy)
 	res += fmt.Sprintf("Device: %v", c.Device)
+	res += fmt.Sprintf("ConsumerPolicyName: %v", c.ConsumerPolicyName)
+	res += fmt.Sprintf("ServicePolicies: %v", c.ServicePolicies)
 	return res
 }
 
@@ -142,6 +149,40 @@ type BaseAgreementWorker struct {
 	alm        *AgreementLockManager
 	workerID   string
 	httpClient *http.Client
+	ec         *worker.BaseExchangeContext
+}
+
+// A local implementation of the ExchangeContext interface because Agbot agreement workers are not full featured workers.
+func (b *BaseAgreementWorker) GetExchangeId() string {
+	if b.ec != nil {
+		return b.ec.Id
+	} else {
+		return ""
+	}
+}
+
+func (b *BaseAgreementWorker) GetExchangeToken() string {
+	if b.ec != nil {
+		return b.ec.Token
+	} else {
+		return ""
+	}
+}
+
+func (b *BaseAgreementWorker) GetExchangeURL() string {
+	if b.ec != nil {
+		return b.ec.URL
+	} else {
+		return ""
+	}
+}
+
+func (b *BaseAgreementWorker) GetHTTPFactory() *config.HTTPClientFactory {
+	if b.ec != nil {
+		return b.ec.HTTPFactory
+	} else {
+		return b.config.Collaborators.HTTPClientFactory
+	}
 }
 
 func (b *BaseAgreementWorker) AgreementLockManager() *AgreementLockManager {
@@ -176,13 +217,11 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	// workload in the current consumer policy. If that's the case, query the exchange to get all the device
 	// policies so we can merge them.
 	var exchangeDev *exchange.Device
-	if wi.ConsumerPolicy.PatternId != "" {
-		if theDev, err := GetDevice(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), wi.Device.Id, b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken()); err != nil {
-			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error getting device %v policies, error: %v", wi.Device.Id, err)))
-			return
-		} else {
-			exchangeDev = theDev
-		}
+	if theDev, err := GetDevice(b.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), wi.Device.Id, b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken()); err != nil {
+		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error getting device %v policies, error: %v", wi.Device.Id, err)))
+		return
+	} else {
+		exchangeDev = theDev
 	}
 
 	// There could be more than 1 workload version in the consumer policy, and each version might NOT require the exact same
@@ -216,14 +255,14 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			return
 		}
 
+		// If the service is suspended, then do not make an agreement.
 		if wi.ConsumerPolicy.PatternId != "" {
-			// check if workload is suspended. if suspended, then do not make agreement
 			if found, suspended := exchange.ServiceSuspended(exchangeDev.RegisteredServices, workload.WorkloadURL, workload.Org); found && suspended {
 				glog.Infof(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with %v for policy %v because service %v is suspended by the user.", wi.Device.Id, wi.ConsumerPolicy.Header.Name, cutil.FormOrgSpecUrl(workload.WorkloadURL, workload.Org))))
 				return
 			}
 
-			// check the arch of the top level service against the node. If not match, then do not make agreement.
+			// Check the arch of the top level service against the node. If it does not match, then do not make an agreement.
 			// In the pattern case, the top level service spec, arch and version are also put in the node's registeredServices
 			for _, ms_svc := range exchangeDev.RegisteredServices {
 				if ms_svc.Url == cutil.FormOrgSpecUrl(workload.WorkloadURL, workload.Org) {
@@ -253,61 +292,42 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		// can verify that the device has the right version API specs (services) to run this workload. Then, we can store the workload details
 		// into the consumer policy file. We have a copy of the consumer policy file that we can modify. If the device doesnt have the right
 		// version API specs (services), then we will try the next workload.
-
-		if asl, workloadDetails, err := exchange.GetHTTPServiceResolverHandler(cph)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+		asl, workloadDetails, sId, err := exchange.GetHTTPServiceResolverHandler(cph)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
+		if err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for service details %v, error: %v", workload, err)))
 			return
-		} else {
+		}
 
-			// check if the depended services are suspended. If any of them is suspended, then abort the agreeent initialization process
-			if wi.ConsumerPolicy.PatternId != "" {
-				for _, apiSpec := range *asl {
-					for _, devMS := range exchangeDev.RegisteredServices {
-						if devMS.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED {
-							if devMS.Url == cutil.FormOrgSpecUrl(apiSpec.SpecRef, apiSpec.Org) || devMS.Url == apiSpec.SpecRef {
-								glog.Infof(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with %v for policy %v because service %v is suspended by the user.", wi.Device.Id, wi.ConsumerPolicy.Header.Name, devMS.Url)))
-								return
-							}
-						}
-					}
-				}
+		// Canonicalize the arch field in the API spec list
+		for ix, apiSpec := range *asl {
+			if apiSpec.Arch != "" && b.config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch) != "" {
+				(*asl)[ix].Arch = b.config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch)
 			}
+		}
 
-			// Canonicalize the arch field in the API spec list, and then merge node policies together if they aren't already merged.
-			var mergedProducer *policy.Policy
-			for ix, apiSpec := range *asl {
-				if apiSpec.Arch != "" && b.config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch) != "" {
-					(*asl)[ix].Arch = b.config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch)
-				}
+		policy_match := false
 
-				if wi.ConsumerPolicy.PatternId != "" {
-
-					services := exchangeDev.RegisteredServices
-
-					// Run through all the services on the node that are required by this workload and merge those policies.
-					for _, devMS := range services {
-						// Find the device's service definition based on the services needed by the workload.
-
+		// Check if the depended services are suspended. If any of them are suspended, then abort the agreement initialization process.
+		if wi.ConsumerPolicy.PatternId != "" {
+			for _, apiSpec := range *asl {
+				for _, devMS := range exchangeDev.RegisteredServices {
+					if devMS.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED {
 						if devMS.Url == cutil.FormOrgSpecUrl(apiSpec.SpecRef, apiSpec.Org) || devMS.Url == apiSpec.SpecRef {
-							if pol, err := policy.DemarshalPolicy(devMS.Policy); err != nil {
-								glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error demarshalling device %v policy, error: %v", wi.Device.Id, err)))
-								return
-							} else if mergedProducer == nil {
-								mergedProducer = pol
-							} else if newPolicy, err := policy.Are_Compatible_Producers(mergedProducer, pol, b.config.AgreementBot.NoDataIntervalS); err != nil {
-								glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error merging policies %v and %v, error: %v", mergedProducer, pol, err)))
-								return
-							} else {
-								mergedProducer = newPolicy
-							}
-							break
+							glog.Infof(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with %v for policy %v because service %v is suspended by the user.", wi.Device.Id, wi.ConsumerPolicy.Header.Name, devMS.Url)))
+							return
 						}
 					}
 				}
 			}
+		}
 
-			// Update the producer policy with a real merged policy based on the services required by the workload
-			if wi.ConsumerPolicy.PatternId != "" && mergedProducer != nil {
+		// check if merged producier policy matches the consumer policy
+		if wi.ConsumerPolicy.PatternId != "" {
+			mergedProducer, err := b.GetMergedProducerPolicyForPattern(wi.Device.Id, exchangeDev, *asl)
+			if err != nil {
+				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf(err.Error())))
+				return
+			} else if mergedProducer != nil {
 				wi.ProducerPolicy = *mergedProducer
 			}
 
@@ -316,55 +336,111 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			// even if retries have been disabled.
 			if err := wi.ProducerPolicy.APISpecs.Supports(*asl); err != nil {
 				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("skipping workload %v because device %v cant support it: %v", workload, wi.Device.Id, err)))
-
-				if !workload.HasEmptyPriority() {
-					// If this is not the first time through the loop, update the workload usage record, otherwise create it.
-					if lastWorkload != nil {
-						if _, err := b.db.UpdatePriority(wi.Device.Id, wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, agreementIdString); err != nil {
-							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating priority in persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
-							return
-						}
-					} else if err := b.db.NewWorkloadUsage(wi.Device.Id, wi.ProducerPolicy.HAGroup.Partners, "", wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, true, agreementIdString); err != nil {
-						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
-						return
-					}
-
-					// Artificially bump up the retry count so that the loop will choose the next workload
-					if _, err := b.db.UpdateRetryCount(wi.Device.Id, wi.ConsumerPolicy.Header.Name, workload.Priority.Retries+1, agreementIdString); err != nil {
-						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating retry count persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
-						return
-					}
-				}
 			} else {
+				policy_match = true
+			}
+		} else {
+			// non patten case
+			nodePolicy, err := b.GetNodePolicy(wi.Device.Id)
+			if err != nil {
+				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
+				return
+			} else if nodePolicy == nil {
+				glog.Warning(BAWlogstring(workerId, fmt.Sprintf("Cannot find node policy for this node %v.", wi.Device.Id)))
+				return
+			} else {
+				glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
+				wi.ProducerPolicy = *nodePolicy
 
-				foundWorkload = true
+				// merge the business policy with the top level service policy + service built-in policy
+				builtInSvcPol := b.CreateServiceBuiltInPolicy(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 
-				// The device seems to support the required API specs, so augment the consumer policy file with the workload
-				// details that match what the producer can support.
-				wi.ConsumerPolicy.APISpecs = (*asl)
-
-				// Save the deployment and implementation package details into the consumer policy so that the node knows how to run
-				// the workload/service in the policy.
-				workload.Deployment = workloadDetails.GetDeployment()
-				workload.DeploymentSignature = workloadDetails.GetDeploymentSignature()
-				workload.ImageStore = workloadDetails.GetImageStore()
-				if workloadDetails.GetTorrent() != "" {
-					torr := new(policy.Torrent)
-					if err := json.Unmarshal([]byte(workloadDetails.GetTorrent()), torr); err != nil {
-						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Unable to demarshal torrent info from %v, error: %v", workloadDetails, err)))
-						return
-					}
-					workload.Torrent = *torr
+				servicePolTemp, found := wi.ServicePolicies[sId]
+				var servicePol *externalpolicy.ExternalPolicy
+				if !found {
+					servicePol = nil
 				} else {
-					// Since the torrent field is empty, we can convert the Package implementation to a Torrent object. The conversion
-					// might result in an empty object which would be normal when the ImageStore field does not contain metadata
-					// pointing to an image server.
-					workload.Torrent = workload.ImageStore.ConvertToTorrent()
+					servicePol = &servicePolTemp
 				}
 
-				glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("workload %v is supported by device %v", workload, wi.Device.Id)))
+				mergedConsumerPol, sPol, err := b.MergeServicePolicyToConsumerPolicy(&wi.ConsumerPolicy, builtInSvcPol, servicePol, sId)
+				if err != nil {
+					glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error merging service policy into consumer policy. %v.", err)))
+					return
+				} else if mergedConsumerPol != nil {
+					wi.ConsumerPolicy = *mergedConsumerPol
+
+					// if this service policy is not from the policy manager cache, then send a message to pass the service policy back
+					// so that the business policy manager will save it.
+					if !found && sPol != nil {
+						if polString, err := json.Marshal(sPol); err != nil {
+							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marshaling service policy for service %v. %v", sId, err)))
+							return
+						} else {
+							cph.SendEventMessage(events.NewCacheServicePolicyMessage(events.CACHE_SERVICE_POLICY, wi.Org, wi.ConsumerPolicyName, sId, string(polString)))
+						}
+					}
+				}
+
+				// check if producer and comsumer polices match
+				if err := policy.Are_Compatible(&wi.ProducerPolicy, &wi.ConsumerPolicy); err != nil {
+					glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("error matching node policy %v and %v, error: %v", wi.ProducerPolicy, wi.ConsumerPolicy, err)))
+				} else {
+					glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("Node %v is compatible", wi.Device.Id)))
+					policy_match = true
+				}
+			}
+		}
+
+		if !policy_match {
+			if !workload.HasEmptyPriority() {
+				// If this is not the first time through the loop, update the workload usage record, otherwise create it.
+				if lastWorkload != nil {
+					if _, err := b.db.UpdatePriority(wi.Device.Id, wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, agreementIdString); err != nil {
+						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating priority in persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+						return
+					}
+				} else if err := b.db.NewWorkloadUsage(wi.Device.Id, wi.ProducerPolicy.HAGroup.Partners, "", wi.ConsumerPolicy.Header.Name, workload.Priority.PriorityValue, workload.Priority.RetryDurationS, workload.Priority.VerifiedDurationS, true, agreementIdString); err != nil {
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+					return
+				}
+
+				// Artificially bump up the retry count so that the loop will choose the next workload
+				if _, err := b.db.UpdateRetryCount(wi.Device.Id, wi.ConsumerPolicy.Header.Name, workload.Priority.Retries+1, agreementIdString); err != nil {
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating retry count persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+					return
+				}
+			}
+		} else {
+
+			foundWorkload = true
+
+			// The device seems to support the required API specs, so augment the consumer policy file with the workload
+			// details that match what the producer can support.
+			if wi.ConsumerPolicy.PatternId != "" {
+				wi.ConsumerPolicy.APISpecs = (*asl)
 			}
 
+			// Save the deployment and implementation package details into the consumer policy so that the node knows how to run
+			// the workload/service in the policy.
+			workload.Deployment = workloadDetails.GetDeployment()
+			workload.DeploymentSignature = workloadDetails.GetDeploymentSignature()
+			workload.ImageStore = workloadDetails.GetImageStore()
+			if workloadDetails.GetTorrent() != "" {
+				torr := new(policy.Torrent)
+				if err := json.Unmarshal([]byte(workloadDetails.GetTorrent()), torr); err != nil {
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Unable to demarshal torrent info from %v, error: %v", workloadDetails, err)))
+					return
+				}
+				workload.Torrent = *torr
+			} else {
+				// Since the torrent field is empty, we can convert the Package implementation to a Torrent object. The conversion
+				// might result in an empty object which would be normal when the ImageStore field does not contain metadata
+				// pointing to an image server.
+				workload.Torrent = workload.ImageStore.ConvertToTorrent()
+			}
+
+			glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("workload %v is supported by device %v", workload, wi.Device.Id)))
 		}
 
 		lastWorkload = workload
@@ -410,6 +486,127 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		glog.Errorf(err.Error())
 	}
 
+}
+
+// get the merged producer policy. asl is the spec list for the dependent services for a top level service.
+func (b *BaseAgreementWorker) GetMergedProducerPolicyForPattern(deviceId string, dev *exchange.Device, asl policy.APISpecList) (*policy.Policy, error) {
+	var mergedProducer *policy.Policy
+
+	// Run through all the services on the node that are required by this workload and merge the policies
+	for _, apiSpec := range asl {
+		for _, devMS := range dev.RegisteredServices {
+			// Find the device's service definition based on the services needed by the top level service.
+			if devMS.Url == cutil.FormOrgSpecUrl(apiSpec.SpecRef, apiSpec.Org) || devMS.Url == apiSpec.SpecRef {
+				pol, err := policy.DemarshalPolicy(devMS.Policy)
+				if err != nil {
+					return nil, fmt.Errorf("error demarshalling device %v policy, error: %v", deviceId, err)
+				}
+				if mergedProducer == nil {
+					mergedProducer = pol
+				} else if newPolicy, err := policy.Are_Compatible_Producers(mergedProducer, pol, b.config.AgreementBot.NoDataIntervalS); err != nil {
+					return nil, fmt.Errorf("error merging policies %v and %v, error: %v", mergedProducer, pol, err)
+				} else {
+					mergedProducer = newPolicy
+				}
+				break
+			}
+		}
+	}
+	return mergedProducer, nil
+}
+
+func (b *BaseAgreementWorker) CreateServiceBuiltInPolicy(svcName, svcOrg, svcVersion, svcArch string) *externalpolicy.ExternalPolicy {
+	svcBuiltInProps := new(externalpolicy.PropertyList)
+	svcBuiltInProps.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_URL, svcName))
+	svcBuiltInProps.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_NAME, svcName))
+	svcBuiltInProps.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ORG, svcOrg))
+	svcBuiltInProps.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_VERSION, svcVersion))
+	svcBuiltInProps.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ARCH, svcArch))
+
+	buitInPol := externalpolicy.ExternalPolicy{
+		Properties:  *svcBuiltInProps,
+		Constraints: []string{},
+	}
+
+	return &buitInPol
+}
+
+// This function merge the given business policy with the given built-in properties of the service and the given service policy
+// from the top level service, if any.
+// If the service policy is nil, then this function featches the service policy from the exchange and returned it back
+// in order to let the policy manager to cache it.
+func (b *BaseAgreementWorker) MergeServicePolicyToConsumerPolicy(businessPol *policy.Policy, buitInPol *externalpolicy.ExternalPolicy, servicePol *externalpolicy.ExternalPolicy, sId string) (*policy.Policy, *externalpolicy.ExternalPolicy, error) {
+	if businessPol == nil {
+		return nil, nil, nil
+	}
+
+	merged_pol1 := businessPol
+
+	// merge the service built-in properties
+	if buitInPol != nil {
+		var err error
+		if merged_pol1, err = policy.MergePolicyWithExternalPolicy(businessPol, buitInPol); err != nil {
+			return nil, nil, fmt.Errorf("error merging business policy with service built-in properties for servcie %v. %v", sId, err)
+		}
+	}
+
+	// get the service policy.
+	// If it cannot be found in the cache, go to the exchange to get one
+	if servicePol == nil {
+		if sp, err := b.GetServicePolicy(sId); err != nil {
+			return nil, nil, fmt.Errorf("error getting service policy for service %v. %v", sId, err)
+		} else {
+			servicePol = sp
+		}
+	}
+
+	//merge service policy
+	if servicePol == nil || merged_pol1 == nil {
+		return merged_pol1, nil, nil
+	} else if merged_pol2, err := policy.MergePolicyWithExternalPolicy(merged_pol1, servicePol); err != nil {
+		return nil, nil, fmt.Errorf("error merging business policy with service policy for servcie %v. %v", sId, err)
+	} else {
+		return merged_pol2, servicePol, nil
+	}
+}
+
+// Get node policy
+func (b *BaseAgreementWorker) GetNodePolicy(deviceId string) (*policy.Policy, error) {
+
+	nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(b)
+	nodePolicy, err := nodePolicyHandler(deviceId)
+	if err != nil {
+		return nil, fmt.Errorf("error trying to query node policy for %v: %v", deviceId, err)
+	}
+	if nodePolicy == nil {
+		return nil, fmt.Errorf("no node policy found for %v", deviceId)
+	}
+
+	extPolicy := nodePolicy.GetExternalPolicy()
+
+	pPolicy, err := policy.GenPolicyFromExternalPolicy(&extPolicy, policy.MakeExternalPolicyHeaderName(deviceId))
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert node policy to internal policy format for node %v: %v", deviceId, err)
+	}
+	return pPolicy, nil
+}
+
+// Get service policy
+func (b *BaseAgreementWorker) GetServicePolicy(svcId string) (*externalpolicy.ExternalPolicy, error) {
+
+	servicePolicyHandler := exchange.GetHTTPServicePolicyWithIdHandler(b)
+	servicePolicy, err := servicePolicyHandler(svcId)
+	if err != nil {
+		return nil, fmt.Errorf("error trying to query service policy for %v: %v", svcId, err)
+	} else if servicePolicy == nil {
+		return nil, nil
+	} else {
+		extPolicy := servicePolicy.GetExternalPolicy()
+		if err := extPolicy.Validate(); err != nil {
+			return nil, fmt.Errorf("Failed to validate the service policy %v. %v", svcId, err)
+		}
+		return &extPolicy, nil
+	}
 }
 
 func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, wi *HandleReply, workerId string) bool {

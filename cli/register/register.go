@@ -3,12 +3,6 @@ package register
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"regexp"
-	"strings"
-
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/cli/cliconfig"
@@ -17,7 +11,12 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
-	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"regexp"
+	"strings"
 )
 
 // These structs are used to parse the registration input file. These are also used by the hzn dev code.
@@ -248,7 +247,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 // isWithinRanges returns true if version is within at least 1 of the ranges in versionRanges
 func isWithinRanges(version string, versionRanges []string) bool {
 	for _, vr := range versionRanges {
-		vRange, err := policy.Version_Expression_Factory(vr)
+		vRange, err := semanticversion.Version_Expression_Factory(vr)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "invalid version range '%s': %v", vr, err)
 		}
@@ -282,7 +281,7 @@ func GetHighestService(nodeCreds, org, url, arch string, versionRanges []string)
 			continue
 		}
 		// else see if this version is higher than the previous highest version
-		c, err := policy.CompareVersions(svcOutput.Services[highestKey].Version, svc.Version)
+		c, err := semanticversion.CompareVersions(svcOutput.Services[highestKey].Version, svc.Version)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "error comparing version %v with version %v. %v", svcOutput.Services[highestKey], svc.Version, err)
 		} else if c == -1 {

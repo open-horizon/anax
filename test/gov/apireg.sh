@@ -57,9 +57,16 @@ done
 read -d '' newhznpolicy <<EOF
 {
   "properties": [
-      {"name":"purpose","value":"network-testing"}
+      {
+        "name":"purpose","value":"network-testing"
+      },
+      {
+        "name":"group","value":"bluenode"
+      }
     ],
-  "constraints": []
+  "constraints": [
+      "iame2edev == true"
+  ]
 }
 EOF
 

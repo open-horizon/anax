@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/microservice"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 	"strconv"
 	"strings"
 )
@@ -83,6 +84,10 @@ func FindServiceConfigForOutput(pm *policy.PolicyManager, db *bolt.DB) (map[stri
 	// Each policy has some data we need for creating the output object. There is also data
 	// in the microservice definition database and the attibutes in the attribute database.
 	for _, pol := range policies {
+		// skip the node policy which does not have api specs.
+		if len(pol.APISpecs) == 0 {
+			continue
+		}
 		msURL := pol.APISpecs[0].SpecRef
 		msOrg := pol.APISpecs[0].Org
 		msVer := pol.APISpecs[0].Version
@@ -213,7 +218,7 @@ func CreateService(service *Service,
 	}
 
 	// Convert the sensor version to a version expression.
-	vExp, err := policy.Version_Expression_Factory(*service.VersionRange)
+	vExp, err := semanticversion.Version_Expression_Factory(*service.VersionRange)
 	if err != nil {
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("versionRange %v cannot be converted to a version expression, error %v", *service.VersionRange, err), "service.versionRange")), nil, nil
 	}
@@ -344,9 +349,6 @@ func CreateService(service *Service,
 
 	// Information advertised in the edge node policy file
 	var haPartner []string
-	var meterPolicy policy.Meter
-	var counterPartyProperties policy.RequiredProperty
-	var properties map[string]interface{}
 	var globalAgreementProtocols []interface{}
 
 	props := make(map[string]interface{})
@@ -360,15 +362,6 @@ func CreateService(service *Service,
 
 	// For each node wide attribute, extract the value and save it for use later in this function.
 	for _, attr := range allAttrs {
-
-		// get service specs
-		sps := persistence.GetAttributeServiceSpecs(&attr)
-
-		apply_to_all := false
-		if sps == nil || len(*sps) == 0 {
-			apply_to_all = true
-		}
-
 		// Extract HA property
 		if attr.GetMeta().Type == "HAAttributes" {
 			haPartner = attr.(persistence.HAAttributes).Partners
@@ -377,41 +370,6 @@ func CreateService(service *Service,
 
 		if attr.GetMeta().Type == "ArchitectureAttributes" {
 			hasAA = true
-		}
-
-		// Global policy attributes are ignored for devices that are using a pattern. All policy is controlled
-		// by the pattern definition.
-		if pDevice.Pattern == "" {
-
-			// Extract global metering property
-			if attr.GetMeta().Type == "MeteringAttributes" && apply_to_all {
-				// found a global metering entry
-				meterPolicy = policy.Meter{
-					Tokens:                attr.(persistence.MeteringAttributes).Tokens,
-					PerTimeUnit:           attr.(persistence.MeteringAttributes).PerTimeUnit,
-					NotificationIntervalS: attr.(persistence.MeteringAttributes).NotificationIntervalS,
-				}
-				glog.V(5).Infof(apiLogString(fmt.Sprintf("Found default global metering attribute %v", attr)))
-			}
-
-			// Extract global counterparty property
-			if attr.GetMeta().Type == "CounterPartyPropertyAttributes" {
-				counterPartyProperties = attr.(persistence.CounterPartyPropertyAttributes).Expression
-				glog.V(5).Infof(apiLogString(fmt.Sprintf("Found default global counterpartyproperty attribute %v", attr)))
-			}
-
-			// Extract global properties
-			if attr.GetMeta().Type == "PropertyAttributes" && apply_to_all {
-				properties = attr.(persistence.PropertyAttributes).Mappings
-				glog.V(5).Infof(apiLogString(fmt.Sprintf("Found default global properties %v", properties)))
-			}
-
-			// Extract global agreement protocol attribute
-			if attr.GetMeta().Type == "AgreementProtocolAttributes" && apply_to_all {
-				agpl := attr.(persistence.AgreementProtocolAttributes).Protocols
-				globalAgreementProtocols = agpl.([]interface{})
-				glog.V(5).Infof(apiLogString(fmt.Sprintf("Found default global agreement protocol attribute %v", globalAgreementProtocols)))
-			}
 		}
 	}
 
@@ -445,21 +403,6 @@ func CreateService(service *Service,
 		case *persistence.HAAttributes:
 			haPartner = attr.(*persistence.HAAttributes).Partners
 
-		case *persistence.MeteringAttributes:
-			meterPolicy = policy.Meter{
-				Tokens:                attr.(*persistence.MeteringAttributes).Tokens,
-				PerTimeUnit:           attr.(*persistence.MeteringAttributes).PerTimeUnit,
-				NotificationIntervalS: attr.(*persistence.MeteringAttributes).NotificationIntervalS,
-			}
-
-		case *persistence.CounterPartyPropertyAttributes:
-			if pDevice.Pattern == "" {
-				counterPartyProperties = attr.(*persistence.CounterPartyPropertyAttributes).Expression
-			}
-
-		case *persistence.PropertyAttributes:
-			properties = attr.(*persistence.PropertyAttributes).Mappings
-
 		case *persistence.AgreementProtocolAttributes:
 			agpl := attr.(*persistence.AgreementProtocolAttributes).Protocols
 			serviceAgreementProtocols = agpl.([]policy.AgreementProtocol)
@@ -469,53 +412,49 @@ func CreateService(service *Service,
 		}
 	}
 
-	// Add the PropertyAttributes to props. There are several attribute types that contribute properties to the properties
-	// section of the policy file.
-	if len(properties) > 0 {
-		for key, val := range properties {
-			glog.V(5).Infof(apiLogString(fmt.Sprintf("Adding property %v=%v with value type %T", key, val, val)))
-			props[key] = val
-		}
-	}
-
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("Complete Attr list for registration of service %v/%v: %v", *service.Org, *service.Url, attributes)))
-
-	// Establish the correct agreement protocol list. The AGP list from this service overrides any global list that might exist.
-	var agpList *[]policy.AgreementProtocol
-	if len(serviceAgreementProtocols) != 0 {
-		agpList = &serviceAgreementProtocols
-	} else if list, err := policy.ConvertToAgreementProtocolList(globalAgreementProtocols); err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("Error converting global agreement protocol list attribute %v to agreement protocol list, error: %v", globalAgreementProtocols, err))), nil, nil
-	} else {
-		agpList = list
-	}
 
 	// Save the service definition in the local database.
 	if err := persistence.SaveOrUpdateMicroserviceDef(db, msdef); err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("Error saving service definition %v into db: %v", *msdef, err))), nil, nil
 	}
 
-	// Set max number of agreements for this service's policy.
-	maxAgreements := 1
-	if msdef.Sharable == exchange.MS_SHARING_MODE_SINGLETON || msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE || msdef.Sharable == exchange.MS_SHARING_MODE_SINGLE {
-		if pDevice.Pattern == "" {
-			maxAgreements = 5 // hard coded to 5 for now. will change to 0 later
+	if pDevice.Pattern == "" {
+		// non pattern case, do not generate policies
+		LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+		return false, service, nil
+	} else {
+		// Establish the correct agreement protocol list. The AGP list from this service overrides any global list that might exist.
+		var agpList *[]policy.AgreementProtocol
+		if len(serviceAgreementProtocols) != 0 {
+			agpList = &serviceAgreementProtocols
+		} else if list, err := policy.ConvertToAgreementProtocolList(globalAgreementProtocols); err != nil {
+			return errorhandler(NewSystemError(fmt.Sprintf("Error converting global agreement protocol list attribute %v to agreement protocol list, error: %v", globalAgreementProtocols, err))), nil, nil
 		} else {
+			agpList = list
+		}
+
+		// Set max number of agreements for this service's policy.
+		maxAgreements := 1
+		if msdef.Sharable == exchange.MS_SHARING_MODE_SINGLETON || msdef.Sharable == exchange.MS_SHARING_MODE_MULTIPLE || msdef.Sharable == exchange.MS_SHARING_MODE_SINGLE {
 			maxAgreements = 0 // no limites for pattern
 		}
-	}
 
-	glog.V(5).Infof(apiLogString(fmt.Sprintf("Create service: %v", service)))
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Create service policy: %v", service)))
 
-	// Generate a policy based on all the attributes and the service definition.
-	if msg, genErr := policy.GeneratePolicy(*service.Url, *service.Org, *service.Name, *service.VersionRange, *service.Arch, &props, haPartner, meterPolicy, counterPartyProperties, *agpList, maxAgreements, config.Edge.PolicyPath, pDevice.Org); genErr != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("Error generating policy, error: %v", genErr))), nil, nil
-	} else {
-		if from_user {
-			LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+		// Generate a policy based on all the attributes and the service definition.
+		if polFileName, genErr := policy.GeneratePolicy(*service.Url, *service.Org, *service.Name, *service.VersionRange, *service.Arch, &props, haPartner, *agpList, maxAgreements, config.Edge.PolicyPath, pDevice.Org); genErr != nil {
+			return errorhandler(NewSystemError(fmt.Sprintf("Error generating policy, error: %v", genErr))), nil, nil
 		} else {
-			LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service auto configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+			if from_user {
+				LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+			} else {
+				LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service auto configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+			}
+			// Create the new policy event
+			msg := events.NewPolicyCreatedMessage(events.NEW_POLICY, polFileName)
+
+			return false, service, msg
 		}
-		return false, service, msg
 	}
 }

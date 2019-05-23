@@ -22,7 +22,7 @@ if [ "$PROP" == "" ]; then
   "mappings": {
     "expression": {
       "and": [
-        {"name":"$PROP_NAME", "op":"=", "value":$PROP_VALUE}
+        {"name":"$PROP_NAME", "op":"==", "value":"$PROP_VALUE"}
       ]
     }
   }
@@ -48,7 +48,7 @@ else
     existing=$(echo $PROP | jq '(.mappings.expression.and[] | select (.name == "'$PROP_NAME'") | .value)')
     if [ "$existing" != "" ]; then
 
-        NEW_MAPPINGS=$(echo $PROP | jq '(.mappings.expression.and[] | select (.name == "'$PROP_NAME'") | .value) |= '$PROP_VALUE)
+        NEW_MAPPINGS=$(echo $PROP | jq --arg val "$PROP_VALUE" '(.mappings.expression.and[] | select (.name == "'$PROP_NAME'") | .value) |= $val')
 
         read -d '' propattribute <<EOF
 $NEW_MAPPINGS
@@ -67,6 +67,21 @@ EOF
     else
         # Add a new property to the expression
         echo "Add a new property"
+
+        NEW_MAPPINGS=$(echo $PROP | jq '.mappings.expression.and[.mappings.expression.and| length] |= . + {"name":"'$PROP_NAME'","op":"=","value":"'$PROP_VALUE'"}')
+        read -d '' propattribute <<EOF
+$NEW_MAPPINGS
+EOF
+
+        echo -e "\n\n[D] counter party property payload: $propattribute"
+
+        echo "Adding node counter party property $PROP_NAME=$PROP_VALUE"
+
+        ERR=$(echo "$propattribute" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/attribute/$ID" | jq -r '.error')
+        if [ "$ERR" != "null" ]; then
+            echo -e "error occured: $ERR"
+            exit 2
+        fi
 
     fi
 

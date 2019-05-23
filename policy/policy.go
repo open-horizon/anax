@@ -3,7 +3,6 @@ package policy
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/externalpolicy"
 	"strings"
 )
@@ -15,7 +14,7 @@ import (
 // can take any version.
 // maxAgreements: 0 means unlimited.
 
-func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, sensorVersion string, arch string, props *map[string]interface{}, haPartners []string, meterPolicy Meter, counterPartyProperties RequiredProperty, agps []AgreementProtocol, maxAgreements int, filePath string, deviceOrg string) (*events.PolicyCreatedMessage, error) {
+func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, sensorVersion string, arch string, props *map[string]interface{}, haPartners []string, agps []AgreementProtocol, maxAgreements int, filePath string, deviceOrg string) (string, error) {
 
 	glog.V(5).Infof("Generating policy for %v/%v", sensorOrg, sensorUrl)
 
@@ -42,26 +41,13 @@ func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, senso
 		p.Add_HAGroup(HAGroup_Factory(haPartners))
 	}
 
-	// Add Metering policy to the policy file
-	if meterPolicy.Tokens != 0 {
-		p.Add_DataVerification(DataVerification_Factory("", "", "", 0, 0, meterPolicy))
-	}
-
-	// Add counterparty properties if there are any
-	if len(counterPartyProperties) != 0 {
-		p.Add_CounterPartyProperties(&counterPartyProperties)
-	}
-
 	p.MaxAgreements = maxAgreements
 
 	// Store the policy on the filesystem
 	if fullFileName, err := CreatePolicyFile(filePath, deviceOrg, fileName, p); err != nil {
-		return nil, err
+		return "", err
 	} else {
-
-		// Create the new policy event
-		msg := events.NewPolicyCreatedMessage(events.NEW_POLICY, fullFileName)
-		return msg, nil
+		return fullFileName, nil
 	}
 }
 
@@ -72,11 +58,41 @@ func RetrieveAllProperties(policy *Policy) (*externalpolicy.PropertyList, error)
 		*pl = append(*pl, p)
 	}
 
-	*pl = append(*pl, externalpolicy.Property{Name: "arch", Value: policy.APISpecs[0].Arch})
+	if len(policy.APISpecs) > 0 {
+		*pl = append(*pl, externalpolicy.Property{Name: "arch", Value: policy.APISpecs[0].Arch})
+	}
 
 	if len(policy.AgreementProtocols) != 0 {
 		*pl = append(*pl, externalpolicy.Property{Name: "agreementProtocols", Value: policy.AgreementProtocols.As_String_Array()})
 	}
 
 	return pl, nil
+}
+
+// Create a header name for the generated policy that should be unique within the org.
+// The input can be a device id or a servcie id.
+func MakeExternalPolicyHeaderName(id string) string {
+	return fmt.Sprintf("Policy for %v", id)
+}
+
+// Generate a policy from the external policy.
+func GenPolicyFromExternalPolicy(extPol *externalpolicy.ExternalPolicy, polName string) (*Policy, error) {
+	// validate first
+	if err := extPol.Validate(); err != nil {
+		return nil, fmt.Errorf("Failed to validate the external policy: %v", extPol)
+	}
+
+	pPolicy := Policy_Factory(polName)
+
+	for _, p := range extPol.Properties {
+		if err := pPolicy.Add_Property(&p); err != nil {
+			return nil, fmt.Errorf("Failed to add property %v to policy. %v", p, err)
+		}
+	}
+
+	if err := pPolicy.Add_Constraints(&(extPol.Constraints)); err != nil {
+		return nil, err
+	}
+
+	return pPolicy, nil
 }

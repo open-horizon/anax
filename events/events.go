@@ -57,10 +57,13 @@ const (
 	IMAGE_LOAD_FAILED   EventId = "IMAGE_LOAD_FAILED"
 
 	// policy-related
-	NEW_POLICY     EventId = "NEW_POLICY"
-	UPDATE_POLICY  EventId = "UPDATE_POLICY"
-	CHANGED_POLICY EventId = "CHANGED_POLICY"
-	DELETED_POLICY EventId = "DELETED_POLICY"
+	NEW_POLICY             EventId = "NEW_POLICY"
+	UPDATE_POLICY          EventId = "UPDATE_POLICY"
+	CHANGED_POLICY         EventId = "CHANGED_POLICY"
+	DELETED_POLICY         EventId = "DELETED_POLICY"
+	CACHE_SERVICE_POLICY   EventId = "CACHE_SERVICE_POLICY"
+	SERVICE_POLICY_CHANGED EventId = "SERVICE_POLICY_CHANGED"
+	SERVICE_POLICY_DELETED EventId = "SERVICE_POLICY_DELETED"
 
 	// exchange-related
 	NEW_DEVICE_REG             EventId = "NEW_DEVICE_REG"
@@ -445,6 +448,104 @@ func NewPolicyDeletedMessage(id EventId, policyFileName string, policyName strin
 		name:     policyName,
 		policy:   policy,
 		org:      org,
+	}
+}
+
+// This event indicates that the business policy manager should cache the given service policy
+type CacheServicePolicyMessage struct {
+	event           Event
+	BusinessPolOrg  string
+	BusinessPolName string
+	ServiceId       string
+	ServicePolicy   string
+}
+
+func (e CacheServicePolicyMessage) String() string {
+	return fmt.Sprintf("event: %v, BusinessPolOrg: %v, BusinessPolName %v, ServiceId: %v, ServicePolicy: %v", e.event, e.BusinessPolOrg, e.BusinessPolName, e.ServiceId, e.ServicePolicy)
+}
+
+func (e CacheServicePolicyMessage) ShortString() string {
+	return fmt.Sprintf("event: %v, BusinessPolOrg: %v, BusinessPolName %v, ServiceId: %v", e.event, e.BusinessPolOrg, e.BusinessPolName, e.ServiceId)
+}
+
+func (e *CacheServicePolicyMessage) Event() Event {
+	return e.event
+}
+
+func NewCacheServicePolicyMessage(id EventId, bPolOrg, bPolName, svcId string, svcPolicy string) *CacheServicePolicyMessage {
+
+	return &CacheServicePolicyMessage{
+		event: Event{
+			Id: id,
+		},
+		BusinessPolOrg:  bPolOrg,
+		BusinessPolName: bPolName,
+		ServiceId:       svcId,
+		ServicePolicy:   svcPolicy,
+	}
+}
+
+type ServicePolicyChangedMessage struct {
+	event           Event
+	BusinessPolOrg  string
+	BusinessPolName string
+	ServiceId       string
+	NewServicePol   string
+}
+
+func (e ServicePolicyChangedMessage) String() string {
+	return fmt.Sprintf("event: %v, BusinessPolOrg: %v, BusinessPolName %v, ServiceId: %v, NewServicePolicy: %v", e.event, e.BusinessPolOrg, e.BusinessPolName, e.ServiceId, e.NewServicePol)
+}
+
+func (e ServicePolicyChangedMessage) ShortString() string {
+	return fmt.Sprintf("event: %v, BusinessPolOrg: %v, BusinessPolName %v, ServiceId: %v", e.event, e.BusinessPolOrg, e.BusinessPolName, e.ServiceId)
+}
+
+func (e *ServicePolicyChangedMessage) Event() Event {
+	return e.event
+}
+
+func NewServicePolicyChangedMessage(id EventId, bPolOrg, bPolName, svcId string, polString string) *ServicePolicyChangedMessage {
+
+	return &ServicePolicyChangedMessage{
+		event: Event{
+			Id: id,
+		},
+		BusinessPolOrg:  bPolOrg,
+		BusinessPolName: bPolName,
+		ServiceId:       svcId,
+		NewServicePol:   polString,
+	}
+}
+
+type ServicePolicyDeletedMessage struct {
+	event           Event
+	BusinessPolOrg  string
+	BusinessPolName string
+	ServiceId       string
+}
+
+func (e ServicePolicyDeletedMessage) String() string {
+	return fmt.Sprintf("event: %v, BusinessPolOrg: %v, BusinessPolName %v, ServiceId: %v", e.event, e.BusinessPolOrg, e.BusinessPolName, e.ServiceId)
+}
+
+func (e ServicePolicyDeletedMessage) ShortString() string {
+	return e.String()
+}
+
+func (e *ServicePolicyDeletedMessage) Event() Event {
+	return e.event
+}
+
+func NewServicePolicyDeletedMessage(id EventId, bPolOrg, bPolName, svcId string) *ServicePolicyDeletedMessage {
+
+	return &ServicePolicyDeletedMessage{
+		event: Event{
+			Id: id,
+		},
+		BusinessPolOrg:  bPolOrg,
+		BusinessPolName: bPolName,
+		ServiceId:       svcId,
 	}
 }
 

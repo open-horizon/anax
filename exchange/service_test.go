@@ -770,7 +770,7 @@ func TestServiceResolver1(t *testing.T) {
 	myArch := "amd64"
 
 	sh := getVariableServiceHandler([]UserInput{}, []ServiceDependency{})
-	apiSpecList, sd, err := ServiceResolver(myURL, myOrg, myVersion, myArch, sh)
+	apiSpecList, sd, _, err := ServiceResolver(myURL, myOrg, myVersion, myArch, sh)
 
 	if err != nil {
 		t.Errorf("received unexpected error: %v", err)
@@ -806,7 +806,7 @@ func TestServiceResolver2(t *testing.T) {
 	sdMap[myURL] = sDep
 
 	sh := getRecursiveVariableServiceHandler([]UserInput{}, sdMap)
-	apiSpecList, sd, err := ServiceResolver(myURL, myOrg, myVersion, myArch, sh)
+	apiSpecList, sd, _, err := ServiceResolver(myURL, myOrg, myVersion, myArch, sh)
 
 	if err != nil {
 		t.Errorf("received unexpected error: %v", err)
@@ -852,7 +852,7 @@ func Test_RecursiveServiceResolver_1level(t *testing.T) {
 	sh := getRecursiveVariableServiceHandler([]UserInput{}, sdMap)
 
 	// Test the resolver API
-	apiSpecs, sd, err := ServiceResolver(myURL, myOrg, myVersion, myArch, sh)
+	apiSpecs, sd, _, err := ServiceResolver(myURL, myOrg, myVersion, myArch, sh)
 
 	if err != nil {
 		t.Errorf("should not have returned err: %v", err)
@@ -931,7 +931,7 @@ func Test_RecursiveServiceResolver_2level(t *testing.T) {
 	sh := getRecursiveVariableServiceHandler([]UserInput{}, sdMap)
 
 	// Test the resolver API
-	apiSpecs, sd, err := ServiceResolver(myURL, myOrg, myVersion, myArch, sh)
+	apiSpecs, sd, _, err := ServiceResolver(myURL, myOrg, myVersion, myArch, sh)
 
 	//number of unique API specs returned. -1 is applied because there is a dup ms1->msa and ms2->msa.
 	num := len(sDep1) + len(sDep21) + len(sDep22) - 1

@@ -44,7 +44,6 @@
         }
     ],
     "valueExchange": {},
-    "resourceLimits": {},
     "dataVerification": {
         "metering": {}
     },

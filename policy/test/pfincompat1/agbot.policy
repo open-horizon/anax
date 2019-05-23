@@ -39,12 +39,6 @@
         "paymentRate": 0,
         "token": "siuwer78mvakj2ere"
     },
-    "resourceLimits": {
-        "networkUpload": 1024,
-        "networkDownload": 1024,
-        "memory": 2048,
-        "cpus": 2
-    },
     "dataVerification": {
         "enabled": true,
         "URL": "http://data.receipt.system.com",

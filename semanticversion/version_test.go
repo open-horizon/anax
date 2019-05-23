@@ -1,6 +1,6 @@
 // +build unit
 
-package policy
+package semanticversion
 
 import (
 	"fmt"
