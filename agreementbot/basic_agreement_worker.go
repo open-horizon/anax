@@ -34,6 +34,7 @@ func NewBasicAgreementWorker(c *BasicProtocolHandler, cfg *config.HorizonConfig,
 			alm:        alm,
 			workerID:   id.String(),
 			httpClient: cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
+			ec:         worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, cfg.Collaborators.HTTPClientFactory),
 		},
 		protocolHandler: c,
 	}

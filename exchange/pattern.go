@@ -321,3 +321,36 @@ func ConvertCommon(p *Pattern, patternId string, dv DataVerification, nodeh Node
 	// Unlimited number of devices can get this service
 	pol.MaxAgreements = 0
 }
+
+// Structs and types for working with pattern based exchange searches
+type SearchExchangePatternRequest struct {
+	ServiceURL   string   `json:"serviceUrl,omitempty"`
+	NodeOrgIds   []string `json:"nodeOrgids,omitempty"`
+	SecondsStale int      `json:"secondsStale"`
+	StartIndex   int      `json:"startIndex"`
+	NumEntries   int      `json:"numEntries"`
+}
+
+func (a SearchExchangePatternRequest) String() string {
+	return fmt.Sprintf("ServiceURL: %v, SecondsStale: %v, StartIndex: %v, NumEntries: %v", a.ServiceURL, a.SecondsStale, a.StartIndex, a.NumEntries)
+}
+
+type SearchExchangePatternResponse struct {
+	Devices   []SearchResultDevice `json:"nodes"`
+	LastIndex int                  `json:"lastIndex"`
+}
+
+func (r SearchExchangePatternResponse) String() string {
+	return fmt.Sprintf("Devices: %v, LastIndex: %v", r.Devices, r.LastIndex)
+}
+
+// This function creates the exchange search message body.
+func CreateSearchPatternRequest() *SearchExchangePatternRequest {
+
+	ser := &SearchExchangePatternRequest{
+		StartIndex: 0,
+		NumEntries: 100,
+	}
+
+	return ser
+}

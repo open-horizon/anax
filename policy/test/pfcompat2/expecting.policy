@@ -26,7 +26,6 @@
         }
     ],
     "valueExchange": {},
-    "resourceLimits": {},
     "dataVerification": {
         "enabled": true,
         "interval": 600,

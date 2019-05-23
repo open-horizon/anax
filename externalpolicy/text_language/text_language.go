@@ -10,7 +10,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/externalpolicy/plugin_registry"
-	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 )
 
 func init() {
@@ -207,7 +207,7 @@ func canParseToString(s string) bool {
 }
 
 func isAllowedType(s string) bool {
-	if canParseToString(s) || canParseToBoolean(s) || canParseToInteger(s) || canParseToFloat(s) || canParseToStringList(s) || policy.IsVersionString(s) || policy.IsVersionExpression(s) {
+	if canParseToString(s) || canParseToBoolean(s) || canParseToInteger(s) || canParseToFloat(s) || canParseToStringList(s) || semanticversion.IsVersionString(s) || semanticversion.IsVersionExpression(s) {
 		return true
 	}
 	return false
@@ -311,14 +311,14 @@ func validateOneConstraintExpression(expression string) (bool, error) {
 		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for string value: %v", compOp, value))
 	}
 
-	if policy.IsVersionString(value) {
+	if semanticversion.IsVersionString(value) {
 		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 {
 			return true, nil
 		}
 		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for single version: %v", compOp, value))
 	}
 
-	if policy.IsVersionExpression(value) {
+	if semanticversion.IsVersionExpression(value) {
 		if strings.Compare(strings.ToLower(compOp), inoperator) == 0 {
 			return true, nil
 		}

@@ -123,7 +123,7 @@ func (self *PolicyManager) addPolicy(org string, newPolicy *Policy) error {
 		}
 
 		keyName := newPolicy.Header.Name
-		if self.APISpecCounts {
+		if self.APISpecCounts && len(newPolicy.APISpecs) > 0 {
 			keyName = cutil.FormOrgSpecUrl(newPolicy.APISpecs[0].SpecRef, newPolicy.APISpecs[0].Org)
 		}
 
@@ -166,6 +166,27 @@ func (self *PolicyManager) DeletePolicy(org string, delPolicy *Policy) {
 
 	for ix, pol := range orgArray {
 		if pol.Header.Name == delPolicy.Header.Name {
+			// Remove existing policy
+			orgArray = append(orgArray[:ix], orgArray[ix+1:]...)
+			self.Policies[org] = orgArray
+			return
+		}
+	}
+	return
+}
+
+// Delete a policy in the policy manager (by name).
+func (self *PolicyManager) DeletePolicyByName(org string, polName string) {
+	self.PolicyLock.Lock()
+	defer self.PolicyLock.Unlock()
+
+	orgArray, ok := self.Policies[org]
+	if !ok {
+		return
+	}
+
+	for ix, pol := range orgArray {
+		if pol.Header.Name == polName {
 			// Remove existing policy
 			orgArray = append(orgArray[:ix], orgArray[ix+1:]...)
 			self.Policies[org] = orgArray
@@ -449,7 +470,7 @@ func (self *PolicyManager) ReachedMaxAgreements(policies []Policy, org string) (
 		for _, pol := range policies {
 
 			keyName := pol.Header.Name
-			if self.APISpecCounts {
+			if self.APISpecCounts && len(pol.APISpecs) > 0 {
 				keyName = cutil.FormOrgSpecUrl(pol.APISpecs[0].SpecRef, pol.APISpecs[0].Org)
 			}
 
@@ -526,7 +547,26 @@ func (self *PolicyManager) unlockedGetPolicyByURL(homeOrg string, url string, or
 	}
 
 	for _, pol := range orgArray {
+		glog.Infof("iterating policy: %v %v", pol.Header, pol.APISpecs)
 		if pol.APISpecs.ContainsSpecRef(url, org, version) {
+			return pol
+		}
+	}
+	return nil
+}
+
+// This function returns the first policy object that contains given name.
+// It runs outside the PM lock to make it reusable. It should ONLY be used by functions
+// that already hold the PM lock.
+func (self *PolicyManager) unlockedGetPolicyByName(homeOrg string, polName string) *Policy {
+
+	orgArray, ok := self.Policies[homeOrg]
+	if !ok {
+		return nil
+	}
+
+	for _, pol := range orgArray {
+		if pol.Header.Name == polName {
 			return pol
 		}
 	}
@@ -641,7 +681,7 @@ func (self *PolicyManager) GetAllAvailablePolicies(org string) []Policy {
 	for _, pol := range orgArray {
 
 		keyName := pol.Header.Name
-		if self.APISpecCounts {
+		if self.APISpecCounts && len(pol.APISpecs) > 0 {
 			keyName = cutil.FormOrgSpecUrl(pol.APISpecs[0].SpecRef, pol.APISpecs[0].Org)
 		}
 
@@ -674,17 +714,27 @@ func (self *PolicyManager) GetPolicyList(homeOrg string, inPolicy *Policy) ([]Po
 
 	res := make([]Policy, 0, 10)
 
-	// Policies that have more than 1 APISpec are policies that have been merged together from more than
-	// 1 individual policy. These are producer side policies that represent a request for more than 1
-	// microservice.
-	for _, apiSpec := range inPolicy.APISpecs {
-		pol := self.unlockedGetPolicyByURL(homeOrg, apiSpec.SpecRef, apiSpec.Org, apiSpec.Version)
+	// Get node policy that matches the inPolicy, this is the non-pattern case
+	if len(inPolicy.APISpecs) == 0 {
+		pol := self.unlockedGetPolicyByName(homeOrg, inPolicy.Header.Name)
 		if pol != nil {
 			res = append(res, *pol)
-		} else {
-			return nil, errors.New(fmt.Sprintf("could not find policy for %v %v %v", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version))
+		}
+	} else { // pattern case
+
+		// Policies that have more than 1 APISpec are policies that have been merged together from more than
+		// 1 individual policy. These are producer side policies that represent a request for more than 1
+		// microservice.
+		for _, apiSpec := range inPolicy.APISpecs {
+			pol := self.unlockedGetPolicyByURL(homeOrg, apiSpec.SpecRef, apiSpec.Org, apiSpec.Version)
+			if pol != nil {
+				res = append(res, *pol)
+			} else {
+				return nil, errors.New(fmt.Sprintf("could not find policy for %v %v %v", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version))
+			}
 		}
 	}
+
 	return res, nil
 }
 

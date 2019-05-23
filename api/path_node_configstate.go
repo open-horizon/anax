@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 	"strings"
 )
 
@@ -200,7 +201,9 @@ func configureService(service *Service,
 
 	} else {
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig created service %v", newService)))
-		(*msgs) = append((*msgs), msg)
+		if msg != nil {
+			(*msgs) = append((*msgs), msg)
+		}
 	}
 
 	return false
@@ -286,7 +289,7 @@ func getSpecRefsForPattern(patName string,
 		// we need to iterate each "workloadChoice" to grab the version.
 		for _, serviceChoice := range service.ServiceVersions {
 
-			apiSpecList, serviceDef, err := resolveService(service.ServiceURL, service.ServiceOrg, serviceChoice.Version, service.ServiceArch)
+			apiSpecList, serviceDef, _, err := resolveService(service.ServiceURL, service.ServiceOrg, serviceChoice.Version, service.ServiceArch)
 			if err != nil {
 				return nil, nil, NewSystemError(fmt.Sprintf("Error resolving service %v/%v %v %v, error %v", service.ServiceOrg, service.ServiceURL, serviceChoice.Version, thisArch, err))
 			}
@@ -340,7 +343,7 @@ func makeServiceName(msURL string, msOrg string, msVersion string) string {
 	}
 
 	version := ""
-	vExp, err := policy.Version_Expression_Factory(msVersion)
+	vExp, err := semanticversion.Version_Expression_Factory(msVersion)
 	if err == nil {
 		version = fmt.Sprintf("%v-%v", vExp.Get_start_version(), vExp.Get_end_version())
 	}

@@ -5,7 +5,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/plugin_registry"
 	"github.com/open-horizon/anax/cutil"
-	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 	"os"
 )
 
@@ -140,7 +140,7 @@ func verifyNewServiceInputs(homeDirectory string, org string, specRef string, ve
 
 	// check if the input version is a valid version string
 	if version != "" {
-		if !policy.IsVersionString(version) {
+		if !semanticversion.IsVersionString(version) {
 			return "", fmt.Errorf("invalid version string: %v", version)
 		}
 	}

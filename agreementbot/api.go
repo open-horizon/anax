@@ -280,7 +280,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 func (a *API) policy(w http.ResponseWriter, r *http.Request) {
 
 	serviceResolver := func(wURL string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, error) {
-		asl, _, err := exchange.GetHTTPServiceResolverHandler(a)(wURL, wOrg, wVersion, wArch)
+		asl, _, _, err := exchange.GetHTTPServiceResolverHandler(a)(wURL, wOrg, wVersion, wArch)
 		if err != nil {
 			glog.Errorf(APIlogString(fmt.Sprintf("unable to resolve %v %v, error %v", wURL, wOrg, err)))
 		}

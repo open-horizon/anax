@@ -10,7 +10,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/externalpolicy"
-	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -109,26 +109,15 @@ func (r SearchExchangeMSResponse) String() string {
 	return fmt.Sprintf("Devices: %v, LastIndex: %v", r.Devices, r.LastIndex)
 }
 
-// Structs and types for working with pattern based exchange searches
-type SearchExchangePatternRequest struct {
-	ServiceURL   string   `json:"serviceUrl,omitempty"`
-	NodeOrgIds   []string `json:"nodeOrgids,omitempty"`
-	SecondsStale int      `json:"secondsStale"`
-	StartIndex   int      `json:"startIndex"`
-	NumEntries   int      `json:"numEntries"`
-}
+// This function creates the exchange search message body.
+func CreateSearchMSRequest() *SearchExchangeMSRequest {
 
-func (a SearchExchangePatternRequest) String() string {
-	return fmt.Sprintf("ServiceURL: %v, SecondsStale: %v, StartIndex: %v, NumEntries: %v", a.ServiceURL, a.SecondsStale, a.StartIndex, a.NumEntries)
-}
+	ser := &SearchExchangeMSRequest{
+		StartIndex: 0,
+		NumEntries: 100,
+	}
 
-type SearchExchangePatternResponse struct {
-	Devices   []SearchResultDevice `json:"nodes"`
-	LastIndex int                  `json:"lastIndex"`
-}
-
-func (r SearchExchangePatternResponse) String() string {
-	return fmt.Sprintf("Devices: %v, LastIndex: %v", r.Devices, r.LastIndex)
+	return ser
 }
 
 // Structs and types for interacting with the device (node) object in the exchange
@@ -209,49 +198,6 @@ func PutExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 	}
 }
 
-type ServedPattern struct {
-	NodeOrg     string `json:"nodeOrgid"`
-	PatternOrg  string `json:"patternOrgid"`
-	Pattern     string `json:"pattern"`
-	LastUpdated string `json:"lastUpdated"`
-}
-
-type Agbot struct {
-	Token         string `json:"token"`
-	Name          string `json:"name"`
-	Owner         string `json:"owner"`
-	MsgEndPoint   string `json:"msgEndPoint"`
-	LastHeartbeat string `json:"lastHeartbeat"`
-	PublicKey     []byte `json:"publicKey"`
-}
-
-func (a Agbot) String() string {
-	return fmt.Sprintf("Name: %v, Owner: %v, LastHeartbeat: %v, PublicKey: %x", a.Name, a.Owner, a.LastHeartbeat, a.PublicKey)
-}
-
-func (a Agbot) ShortString() string {
-	return fmt.Sprintf("Name: %v, Owner: %v, LastHeartbeat: %v", a.Name, a.Owner, a.LastHeartbeat)
-}
-
-type GetAgbotsResponse struct {
-	Agbots    map[string]Agbot `json:"agbots"`
-	LastIndex int              `json:"lastIndex"`
-}
-
-type GetAgbotsPatternsResponse struct {
-	Patterns map[string]ServedPattern `json:"patterns"`
-}
-
-type AgbotAgreement struct {
-	Service     WorkloadAgreement `json:"service,omitempty"`
-	State       string            `json:"state"`
-	LastUpdated string            `json:"lastUpdated"`
-}
-
-func (a AgbotAgreement) String() string {
-	return fmt.Sprintf("Service: %v, State: %v, LastUpdated: %v", a.Service, a.State, a.LastUpdated)
-}
-
 type DeviceAgreement struct {
 	Service          []MSAgreementState `json:"services"`
 	State            string             `json:"state"`
@@ -261,15 +207,6 @@ type DeviceAgreement struct {
 
 func (a DeviceAgreement) String() string {
 	return fmt.Sprintf("AgreementService: %v, Service: %v, State: %v, LastUpdated: %v", a.AgreementService, a.Service, a.State, a.LastUpdated)
-}
-
-type AllAgbotAgreementsResponse struct {
-	Agreements map[string]AgbotAgreement `json:"agreements"`
-	LastIndex  int                       `json:"lastIndex"`
-}
-
-func (a AllAgbotAgreementsResponse) String() string {
-	return fmt.Sprintf("Agreements: %v, LastIndex: %v", a.Agreements, a.LastIndex)
 }
 
 type AllDeviceAgreementsResponse struct {
@@ -292,11 +229,6 @@ type WorkloadAgreement struct {
 	Org     string `json:"orgid,omitempty"` // the org of the pattern
 	Pattern string `json:"pattern"`         // pattern - without the org prefix on it
 	URL     string `json:"url,omitempty"`   // workload URL
-}
-
-type PutAgbotAgreementState struct {
-	Service WorkloadAgreement `json:"service,omitempty"`
-	State   string            `json:"state"`
 }
 
 type MSAgreementState struct {
@@ -337,32 +269,6 @@ func (p PutDeviceRequest) ShortString() string {
 		str += fmt.Sprintf("%v,", ms.Url)
 	}
 	return str
-}
-
-type PatchAgbotPublicKey struct {
-	PublicKey []byte `json:"publicKey"`
-}
-
-// This function creates the device registration message body.
-func CreateAgbotPublicKeyPatch(keyPath string) *PatchAgbotPublicKey {
-
-	keyBytes := func() []byte {
-		if pubKey, _, err := GetKeys(keyPath); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf("Error getting keys %v", err)))
-			return []byte(`none`)
-		} else if b, err := MarshalPublicKey(pubKey); err != nil {
-			glog.Errorf(rpclogString(fmt.Sprintf("Error marshalling agbot public key %v, error %v", pubKey, err)))
-			return []byte(`none`)
-		} else {
-			return b
-		}
-	}
-
-	pdr := &PatchAgbotPublicKey{
-		PublicKey: keyBytes(),
-	}
-
-	return pdr
 }
 
 type PostMessage struct {
@@ -425,46 +331,6 @@ func (d DeviceMessage) String() string {
 type GetDeviceMessageResponse struct {
 	Messages  []DeviceMessage `json:"messages"`
 	LastIndex int             `json:"lastIndex"`
-}
-
-type AgbotMessage struct {
-	MsgId        int    `json:"msgId"`
-	DeviceId     string `json:"nodeId"`
-	DevicePubKey []byte `json:"nodePubKey"`
-	Message      []byte `json:"message"`
-	TimeSent     string `json:"timeSent"`
-	TimeExpires  string `json:"timeExpires"`
-}
-
-func (a AgbotMessage) String() string {
-	return fmt.Sprintf("MsgId: %v, DeviceId: %v, TimeSent %v, TimeExpires %v, DevicePubKey %v, Message %v", a.MsgId, a.DeviceId, a.TimeSent, a.TimeExpires, a.DevicePubKey, a.Message[:32])
-}
-
-type GetAgbotMessageResponse struct {
-	Messages  []AgbotMessage `json:"messages"`
-	LastIndex int            `json:"lastIndex"`
-}
-
-// This function creates the exchange search message body.
-func CreateSearchMSRequest() *SearchExchangeMSRequest {
-
-	ser := &SearchExchangeMSRequest{
-		StartIndex: 0,
-		NumEntries: 100,
-	}
-
-	return ser
-}
-
-// This function creates the exchange search message body.
-func CreateSearchPatternRequest() *SearchExchangePatternRequest {
-
-	ser := &SearchExchangePatternRequest{
-		StartIndex: 0,
-		NumEntries: 100,
-	}
-
-	return ser
 }
 
 // This function will cause the messaging key to be created if it doesnt already exist.
@@ -858,6 +724,12 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 					case *GetBusinessPolicyResponse:
 						return nil, nil
 
+					case *SearchExchBusinessPolResponse:
+						return nil, nil
+
+					case *GetAgbotsBusinessPolsResponse:
+						return nil, nil
+
 					default:
 						return errors.New(fmt.Sprintf("Unknown type of response object %v passed to invocation of %v at %v with %v", *resp, method, url, requestBody)), nil
 					}
@@ -933,7 +805,7 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 		}
 
 	case SERVICE:
-		if oVersion == "" || !policy.IsVersionString(oVersion) {
+		if oVersion == "" || !semanticversion.IsVersionString(oVersion) {
 			return nil, errors.New(rpclogString(fmt.Sprintf("GetObjectSigningKeys got wrong version string %v. The version string should be a non-empy single version string.", oVersion)))
 		}
 		ms_resp, ms_id, err := GetService(ec, oURL, oOrg, oVersion, oArch)

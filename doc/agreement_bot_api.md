@@ -308,7 +308,6 @@ curl -s http://localhost:8046/policy/public/netspeed-docker_bluehorizon.network-
     }
   ],
   "valueExchange": {},
-  "resourceLimits": {},
   "dataVerification": {
     "enabled": true,
     "interval": 480,
