@@ -10,11 +10,11 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/persistence"
-	"testing"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
+	"testing"
 	"time"
 )
 
@@ -147,21 +147,21 @@ func Test_ExchangeNodePolicyChanged(t *testing.T) {
 		t.Errorf("expected property %v, but received %v", propName, fnp.Properties[0].Name)
 	}
 
-    changed, _, err := ExchangeNodePolicyChanged(pDevice, db, getDummyNodePolicyHandler())
-    if err != nil {
-    	t.Errorf("Unexpected error calling ExchangeNodePolicyChanged: %v", err)
-    } else if changed {
-    	t.Errorf("Should return false but got true")	
-    }
+	changed, _, err := ExchangeNodePolicyChanged(pDevice, db, getDummyNodePolicyHandler())
+	if err != nil {
+		t.Errorf("Unexpected error calling ExchangeNodePolicyChanged: %v", err)
+	} else if changed {
+		t.Errorf("Should return false but got true")
+	}
 
-    // update the exchange only
-    getDummyPutNodePolicyHandler()(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), &exchange.ExchangePolicy{ExternalPolicy: *extNodePolicy})
-    changed1, _, err := ExchangeNodePolicyChanged(pDevice, db, getDummyNodePolicyHandler())
-    if err != nil {
-    	t.Errorf("Unexpected error calling ExchangeNodePolicyChanged: %v", err)
-    } else if !changed1 {
-    	t.Errorf("Should return true but got false")	
-    }
+	// update the exchange only
+	getDummyPutNodePolicyHandler()(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), &exchange.ExchangePolicy{ExternalPolicy: *extNodePolicy})
+	changed1, _, err := ExchangeNodePolicyChanged(pDevice, db, getDummyNodePolicyHandler())
+	if err != nil {
+		t.Errorf("Unexpected error calling ExchangeNodePolicyChanged: %v", err)
+	} else if !changed1 {
+		t.Errorf("Should return true but got false")
+	}
 
 }
 
@@ -234,7 +234,6 @@ func Test_NodePolicyInitalSetup(t *testing.T) {
 		t.Errorf("Wrong error, should say 'Exchange registration not recorded' but got: %v", err)
 	}
 
-
 	pDevice, err := persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, "myOrg", "", persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
@@ -260,15 +259,15 @@ func Test_NodePolicyInitalSetup(t *testing.T) {
 		Properties:  *propList,
 		Constraints: []string{`prop3 == "some value"`},
 	}
-   	getDummyPutNodePolicyHandler()(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), &exchange.ExchangePolicy{ExternalPolicy: *extNodePolicy})
+	getDummyPutNodePolicyHandler()(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), &exchange.ExchangePolicy{ExternalPolicy: *extNodePolicy})
 
-   	// delete the local node policy
-   	err = persistence.DeleteNodePolicy(db) 
-   	if err != nil {
-   		t.Errorf("Unexpected error: %v", err)
-   	}
+	// delete the local node policy
+	err = persistence.DeleteNodePolicy(db)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
 
-   	//now run NodePolicyInitalSetup and see that the exchange is the master
+	//now run NodePolicyInitalSetup and see that the exchange is the master
 	_, err = NodePolicyInitalSetup(db, &config, getDummyNodePolicyHandler(), getDummyPutNodePolicyHandler())
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
@@ -281,11 +280,10 @@ func Test_NodePolicyInitalSetup(t *testing.T) {
 	}
 }
 
-
 func getDummyPutNodePolicyHandler() exchange.PutNodePolicyHandler {
 	return func(deviceId string, ep *exchange.ExchangePolicy) (*exchange.PutDeviceResponse, error) {
 		if ep == nil {
-			ExchangeNodePolicy = nil 
+			ExchangeNodePolicy = nil
 		} else {
 			v := ep.GetExternalPolicy()
 			ExchangeNodePolicy = &v
@@ -294,7 +292,6 @@ func getDummyPutNodePolicyHandler() exchange.PutNodePolicyHandler {
 		return nil, nil
 	}
 }
-
 
 func getDummyNodePolicyHandler() exchange.NodePolicyHandler {
 	return func(deviceId string) (*exchange.ExchangePolicy, error) {
@@ -307,7 +304,7 @@ func getDummyNodePolicyHandler() exchange.NodePolicyHandler {
 }
 
 func getDummyDeleteNodePolicyHandler() exchange.DeleteNodePolicyHandler {
-	return func(deviceId string) (error) {
+	return func(deviceId string) error {
 		return nil
 	}
 }

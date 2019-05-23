@@ -37,6 +37,9 @@ type HorizonCliConfig struct {
 	// exchange url, the default is shipped with the horizon-cli package
 	HZN_EXCHANGE_URL string `json:"HZN_EXCHANGE_URL,omitempty"`
 
+	// the CSS url, the default is shipped with the horizon-cli package
+	HZN_FSS_CSSURL string `json:"HZN_FSS_CSSURL,omitempty"`
+
 	// keys to sign the service or pattern, the default is ~/.hzn/keys/service.private.key and ~/.hzn/keys/service.public.pem
 	HZN_PRIVATE_KEY_FILE string `json:"HZN_PRIVATE_KEY_FILE,omitempty"`
 	HZN_PUBLIC_KEY_FILE  string `json:"HZN_PUBLIC_KEY_FILE,omitempty"`
