@@ -230,6 +230,9 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	// a workload entry that turns out to be unsupportable by the device.
 	foundWorkload := false
 	var workload, lastWorkload *policy.Workload
+	svcId := ""   // stores the service id that service policy is from
+	found := true // if the service policy can be found from the businesspol_manager
+	var sPol *externalpolicy.ExternalPolicy
 
 	for !foundWorkload {
 
@@ -355,32 +358,23 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				// merge the business policy with the top level service policy + service built-in policy
 				builtInSvcPol := b.CreateServiceBuiltInPolicy(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 
-				servicePolTemp, found := wi.ServicePolicies[sId]
+				servicePolTemp, foundTemp := wi.ServicePolicies[sId]
 				var servicePol *externalpolicy.ExternalPolicy
-				if !found {
+				if !foundTemp {
 					servicePol = nil
 				} else {
 					servicePol = &servicePolTemp
 				}
+				found = foundTemp
 
-				mergedConsumerPol, sPol, err := b.MergeServicePolicyToConsumerPolicy(&wi.ConsumerPolicy, builtInSvcPol, servicePol, sId)
+				mergedConsumerPol, sPolTemp, err := b.MergeServicePolicyToConsumerPolicy(&wi.ConsumerPolicy, builtInSvcPol, servicePol, sId)
 				if err != nil {
 					glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error merging service policy into consumer policy. %v.", err)))
 					return
 				} else if mergedConsumerPol != nil {
 					wi.ConsumerPolicy = *mergedConsumerPol
-
-					// if this service policy is not from the policy manager cache, then send a message to pass the service policy back
-					// so that the business policy manager will save it.
-					if !found && sPol != nil {
-						if polString, err := json.Marshal(sPol); err != nil {
-							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marshaling service policy for service %v. %v", sId, err)))
-							return
-						} else {
-							cph.SendEventMessage(events.NewCacheServicePolicyMessage(events.CACHE_SERVICE_POLICY, wi.Org, wi.ConsumerPolicyName, sId, string(polString)))
-						}
-					}
 				}
+				sPol = sPolTemp
 
 				// check if producer and comsumer polices match
 				if err := policy.Are_Compatible(&wi.ProducerPolicy, &wi.ConsumerPolicy); err != nil {
@@ -414,6 +408,23 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		} else {
 
 			foundWorkload = true
+			svcId = sId
+
+			// if this service policy is not from the policy manager cache, then send a message to pass the service policy back
+			// so that the business policy manager will save it.
+			if !found {
+				if sPol == nil {
+					// an empty policy means that the service does not have a policy
+					sPol = new(externalpolicy.ExternalPolicy)
+				}
+				polString, err := json.Marshal(sPol)
+				if err != nil {
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marshaling service policy for service %v. %v", sId, err)))
+					return
+				} else {
+					cph.SendEventMessage(events.NewCacheServicePolicyMessage(events.CACHE_SERVICE_POLICY, wi.Org, wi.ConsumerPolicyName, sId, string(polString)))
+				}
+			}
 
 			// The device seems to support the required API specs, so augment the consumer policy file with the workload
 			// details that match what the producer can support.
@@ -463,7 +474,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	}
 
 	// Create pending agreement in database
-	if err := b.db.AgreementAttempt(agreementIdString, wi.Org, wi.Device.Id, wi.ConsumerPolicy.Header.Name, bcType, bcName, bcOrg, cph.Name(), wi.ConsumerPolicy.PatternId, wi.ConsumerPolicy.NodeH); err != nil {
+	if err := b.db.AgreementAttempt(agreementIdString, wi.Org, wi.Device.Id, wi.ConsumerPolicy.Header.Name, bcType, bcName, bcOrg, cph.Name(), wi.ConsumerPolicy.PatternId, svcId, wi.ConsumerPolicy.NodeH); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error persisting agreement attempt: %v", err)))
 
 		// Create message target for protocol message

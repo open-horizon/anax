@@ -1258,7 +1258,7 @@ read -d '' bpnsdef <<EOF
   "description": "for netspeed",
   "service": {
     "name": "https://bluehorizon.network/services/netspeed",
-    "org": "IBM",
+    "org": "e2edev@somecomp.com",
     "arch": "amd64",
     "serviceVersions": [
       { 
