@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/policy"
 	"golang.org/x/crypto/sha3"
+	"reflect"
 	"sync"
 	"time"
 )
@@ -147,12 +148,18 @@ func (p *BusinessPolicyEntry) RemoveServicePolicy(svcId string) bool {
 		return false
 	}
 
-	_, found := p.ServicePolicies[svcId]
+	spe, found := p.ServicePolicies[svcId]
 	if !found {
 		return false
 	} else {
-		delete(p.ServicePolicies, svcId)
-		return true
+		// an empty policy means that the service does not have a policy
+		tempPol := new(externalpolicy.ExternalPolicy)
+		if !reflect.DeepEqual(*tempPol, *spe.Policy) {
+			delete(p.ServicePolicies, svcId)
+			return true
+		} else {
+			return false
+		}
 	}
 }
 

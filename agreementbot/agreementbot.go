@@ -187,6 +187,7 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 
 	case *events.CacheServicePolicyMessage:
 		msg, _ := incoming.(*events.CacheServicePolicyMessage)
+
 		switch msg.Event().Id {
 		case events.CACHE_SERVICE_POLICY:
 			w.Commands <- NewCacheServicePolicyCommand(msg)
@@ -419,13 +420,24 @@ func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
 		w.BusinessPolManager.AddMarshaledServicePolicy(cmd.Msg.BusinessPolOrg, cmd.Msg.BusinessPolName, cmd.Msg.ServiceId, cmd.Msg.ServicePolicy)
 
 	case *ServicePolicyChangedCommand:
-		cmd, _ := command.(*CacheServicePolicyCommand)
-		// TODO w.BusinessPolManager.AddMarshaledServicePolicy(cmd.Msg.BusinessPolOrg, cmd.Msg.BusinessPolName, cmd.Msg.ServiceId, cmd.Msg.ServicePolicy)
-		glog.Infof("TODO Received ServicePolicyChangedCommand: %v", cmd)
+		cmd, _ := command.(*ServicePolicyChangedCommand)
+		// Send the service policy changed command to all protocol handlers
+		for agp, _ := range w.consumerPH {
+			// Queue the command to the relevant protocol handler for further processing.
+			if w.consumerPH[agp].AcceptCommand(cmd) {
+				w.consumerPH[agp].HandleServicePolicyChanged(cmd, w.consumerPH[agp])
+			}
+		}
 
 	case *ServicePolicyDeletedCommand:
 		cmd, _ := command.(*ServicePolicyDeletedCommand)
-		glog.Infof("TODO Received ServicePolicyDeletedCommand: %v", cmd)
+		// Send the service policy deleted command to all protocol handlers
+		for agp, _ := range w.consumerPH {
+			// Queue the command to the relevant protocol handler for further processing.
+			if w.consumerPH[agp].AcceptCommand(cmd) {
+				w.consumerPH[agp].HandleServicePolicyDeleted(cmd, w.consumerPH[agp])
+			}
+		}
 
 	case *AgreementTimeoutCommand:
 		cmd, _ := command.(*AgreementTimeoutCommand)
