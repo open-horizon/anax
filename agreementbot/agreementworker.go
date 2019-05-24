@@ -414,7 +414,11 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			// so that the business policy manager will save it.
 			if !found {
 				if sPol == nil {
-					// an empty policy means that the service does not have a policy
+					// An empty policy means that the service does not have a policy.
+					// An empty polcy is also tracked in the business policy manager, this way we know if there is
+					// new service policy added later.
+					// The business policy manager does not track all the service policies referenced by a business policy.
+					// It only tracks the ones that have agreements with the nodes.
 					sPol = new(externalpolicy.ExternalPolicy)
 				}
 				polString, err := json.Marshal(sPol)

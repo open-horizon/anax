@@ -382,10 +382,10 @@ attribute
 | ---- | ---- | ---------------- |
 | id | string| the id of the attribute. |
 | label | string | the user readable name of the attribute |
-| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, HAAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
+| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, HAAttributes, PropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
 | publishable| bool | whether the attribute can be made public or not. |
 | host_only | bool | whether or not the attribute will be passed to the service containers. |
-| service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes: ComputeAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
+| service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes: ComputeAttributes, PropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
 | mappings | map | a list of key value pairs. |
 
 
@@ -524,10 +524,10 @@ body:
 | ---- | ---- | ---------------- |
 | id | string| the id of the attribute. |
 | label | string | the user readable name of the attribute |
-| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, HAAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
+| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, HAAttributes, PropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
 | publishable| bool | whether the attribute can be made public or not. |
 | host_only | bool | whether or not the attribute will be passed to the service containers. |
-| service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes: ComputeAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
+| service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes: ComputeAttributes, PropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
 | mappings | map | a list of key value pairs. |
 
 
@@ -1258,7 +1258,6 @@ body:
 | | header | json|  the header of the policy. It includes the name and the version of the policy. |
 | | apiSpec | array | an array of api specifications. Each one includes a URL pointing to the definition of the API spec, the version of the API spec in OSGI version format, the organization that implements the API spec, whether or not exclusive access to this API spec is required and the hardware architecture of the API spec implementation. |
 | | properties | array | an array of name value pairs that the current party have. |
-| | counterPartyProperties | json | an array of (name, value, op)s that the counter party is required to have. | 
 | | ha_group | json | a list of ha partners. |
 | | agreementProtocols | array | an array of agreement protocols. Each one includes the name of the agreement protocol.|
 

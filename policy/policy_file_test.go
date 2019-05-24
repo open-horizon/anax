@@ -10,7 +10,6 @@ import (
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"io/ioutil"
 	"os"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -301,6 +300,8 @@ func Test_Policy_Merge(t *testing.T) {
 	if _, err := os.Stat("./test/pfmerge1/merged.policy"); !os.IsNotExist(err) {
 		os.Remove("./test/pfmerge1/merged.policy")
 	}
+
+	defer os.Remove("./test/pfmerge1/merged.policy")
 
 	if pf_prod, err := ReadPolicyFile("./test/pfmerge1/device.policy", make(map[string]string)); err != nil {
 		t.Error(err)
@@ -1014,7 +1015,7 @@ func Test_GenPolicyFromExternalPolicy(t *testing.T) {
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,
-		Constraints: []string{"prop3 == \"val3\""},
+		Constraints: []string{"prop3 == val3"},
 	}
 
 	if pol, err := GenPolicyFromExternalPolicy(extNodePolicy, "Policy for mydevice"); err != nil {
@@ -1023,16 +1024,16 @@ func Test_GenPolicyFromExternalPolicy(t *testing.T) {
 		if pol.Header.Name != "Policy for mydevice" {
 			t.Errorf("Wrong policy name generated: %v", pol.Header.Name)
 		}
-		if !reflect.DeepEqual(pol.Properties, *propList) {
+		if !pol.Properties.IsSame(*propList) {
 			t.Errorf("Error converting external properties %v to policy properties: %v", propList, pol.Properties)
 		}
 
-		// check counterparty property
+		// check constraints
 		// this part is tested heavily in constaint_expression_test.go
 		propList3 := new(externalpolicy.PropertyList)
 		propList3.Add_Property(externalpolicy.Property_Factory("prop3", "val3"))
 
-		if err := pol.CounterPartyProperties.IsSatisfiedBy(*propList3); err != nil {
+		if err := pol.Constraints.IsSatisfiedBy(*propList3); err != nil {
 			t.Errorf("Couterparty property check should not have returned error but got: %v", err)
 		}
 	}
@@ -1078,12 +1079,12 @@ func Test_MergePolicyWithExternalPolicy(t *testing.T) {
 			t.Errorf("Property check should not have returned error but got: %v", err)
 		}
 
-		// check counterparty property
+		// check constraints
 		propList := new(externalpolicy.PropertyList)
 		propList.Add_Property(externalpolicy.Property_Factory("prop3", "val3"))
 		propList.Add_Property(externalpolicy.Property_Factory("purpose", "network-testing"))
 
-		if err := pol.CounterPartyProperties.IsSatisfiedBy(*propList); err != nil {
+		if err := pol.Constraints.IsSatisfiedBy(*propList); err != nil {
 			t.Errorf("Couterparty property check should not have returned error but got: %v", err)
 		}
 	}

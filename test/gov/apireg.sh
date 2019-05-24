@@ -124,13 +124,6 @@ then
     exit 2
 fi
 
-# Then set a node level required property (CounterPartyProperty)
-./set_node_requiredproperty.sh "iame2edev" "true"
-if [ $? -ne 0 ]
-then
-    exit 2
-fi
-
 # =========================================================================
 # Run some non-HA tests since we have HA setup right now. HA tests only
 # run when testing services.

@@ -65,6 +65,41 @@ func (c *ConstraintExpression) Merge(other *ConstraintExpression) *ConstraintExp
 	return merged
 }
 
+// This function checks if the 2 constraints are the same. In order to be same, they must have the same constraints.
+// The order can be different.
+func (c ConstraintExpression) IsSame(other ConstraintExpression) bool {
+	if len(other) == 0 && len(c) == 0 {
+		return true
+	}
+
+	for _, const_this := range c {
+		found := false
+		for _, const_other := range other {
+			if const_this == const_other {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+
+	for _, const_other := range other {
+		found := false
+		for _, const_this := range c {
+			if const_this == const_other {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
 // This function is used to determine if an input set of properties and values will satisfy
 // the ConstraintExpression expression.
 func (self *ConstraintExpression) IsSatisfiedBy(props []Property) error {

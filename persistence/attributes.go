@@ -234,13 +234,6 @@ func HydrateConcreteAttribute(v []byte) (Attribute, error) {
 		}
 		attr = pa
 
-	case "CounterPartyPropertyAttributes":
-		var ca CounterPartyPropertyAttributes
-		if err := json.Unmarshal(v, &ca); err != nil {
-			return nil, err
-		}
-		attr = ca
-
 	case "AgreementProtocolAttributes":
 		var agp AgreementProtocolAttributes
 		if err := json.Unmarshal(v, &agp); err != nil {
@@ -434,9 +427,6 @@ func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, pr
 			// Nothing to do
 
 		case PropertyAttributes:
-			// Nothing to do
-
-		case CounterPartyPropertyAttributes:
 			// Nothing to do
 
 		case AgreementProtocolAttributes:

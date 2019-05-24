@@ -389,16 +389,6 @@ export SERVICE_ORG="organization"
 export SERVICE_NAME="name"
 export SERVICE_VERSION="version"
 
-./counterparty_apitest.sh
-if [ $? -ne 0 ]
-then
-  echo -e "Counterparty tests failed"
-  TESTFAIL="1"
-  exit 2
-else
-  echo -e "Counterparty tests SUCCESSFUL"
-fi
-
 ./metering_apitest.sh
 if [ $? -ne 0 ]
 then

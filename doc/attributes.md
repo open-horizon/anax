@@ -27,7 +27,6 @@ Valid values are:
 * [MeteringAttributes](#ma)
 * [AgreementProtocolAttributes](#agpa)
 * [PropertyAttributes](#pa)
-* [CounterPartyPropertyAttributes](#cpa)
 
 Each attrinbute type is described in it's own section below.
 
@@ -361,7 +360,7 @@ For example, the service wants to prefer the "Basic" protocol, but is willing to
 This attribute is used to configure arbitrary properties on the service such that an agbot can select (or ignore) nodes with given property values.
 These properties are ignored when a node uses the [POST /node](https://github.com/open-horizon/anax/blob/master/doc/api.md#api-post--node) API with a non-empty `pattern` field.
 Think of these properties as the means by which a node can advertise anything about its service(s).
-An agbot policy file that wants to select a node based on these properties would do so using the "counterPartyProperties" section of its policy file.
+An agbot policy file that wants to select a node based on these properties would do so using the "constraints" in its policy file.
 When a property is advertised, it's value is automaticaly determined to be 1 of the following types: `string`, `int`, `float`, `boolean`, `list of strings`.
 
 The value for `publishable` should be `true`.
@@ -390,68 +389,3 @@ For example, `myProp` is a `boolean` property:
     }
 ```
 
-### <a name="cpa"></a>CounterPartyPropertyAttributes
-This attribute is used to indicate that a service will only be part of an agreement with an agbot that advertises properties which satisfy the specified expression.
-Agbots can advertise properties in their policy files similarly to how nodes advertise properties.
-
-The value for `publishable` should be `true`.
-
-The value for `host_only` should be `false`.
-
-The `service_specs` specifies what services the attribue applies to. If the `url` is an empty string, it applies to all the services. If you set the CounterPartyPropertyAttributes through the `/service/config` api, you do not need to specify the `service_specs` becuase the serivce is specified in other fields. However, if you use `/attribute` api to set the CounterPartyPropertyAttributes, you must specify the `service_specs`. 
-
-
-The counter-party property expression syntax is as follows:
-```
-    "expression": {
-        _control_operator_ : [_expression_] || _property_
-    }
-```
-Where:
-* `_control_operator_` is one of `and`, `or`, `not`
-* `_expression_` = `_control_operator_`: [`_expression_`] or `_property_`
-* `_property_` = "name": "property_name", "value": "property_value", "op": `_comparison_operator_`
-* `_comparison_operator_` is one of `<`, `=`, `>`, `<=`, `>=`, `!=`.
-The `=` and `!=` comparison operators can be applied to strings and integers.
-If the "op" key is missing, then `=` is assumed.
-
-For example, only make agreements with an agbot that advertises property p1="1" and p2="2", OR p3>3:
-```
-    {
-        "type": "CounterPartyPropertyAttributes",
-        "label": "CounterParty Property",
-        "publishable": true,
-        "host_only": false,
-        "service_specs": [
-            {
-                "url": "https://bluehorizon.network/services/netspeed",
-                "organization": "myorg"
-            }
-        ],
-        "mappings": {
-            "expression": {
-                "or": [
-                    "and": [
-                        {
-                            "name":"p1",
-                            "op":"=",
-                            "value":"1"
-                        },
-                        {
-                            "name":"p2",
-                            "op":"=",
-                            "value":"2"
-                        }
-                    ],
-                    "and": [
-                        {
-                            "name":"p3",
-                            "op":">",
-                            "value":3
-                        }
-                    ]
-                ]
-            }
-        }
-    }
-```

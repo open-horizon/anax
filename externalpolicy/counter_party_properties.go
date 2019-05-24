@@ -5,14 +5,14 @@ import (
 	"fmt"
 )
 
-// The purpose this file is to abstract the CounterPartyProperties field in the Policy struct
+// The purpose this file is to evaluate the Constraints field in the Policy struct
 // so that the complex processing related to handling the properties is componentized.
 //
 // Properties that are required by one party of another are specified in a custom syntax
 // that allows for the ability to express combinations of AND, OR and NOT against
 // name/value simple properties. The syntax of a RequiredProperties expression is:
 //
-// "counterPartyProperties": {
+// {
 //     _control_operator_ : [_expression_] || _property_
 // }
 //

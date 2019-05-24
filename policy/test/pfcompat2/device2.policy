@@ -32,11 +32,9 @@
         {"name":"rpiprop1", "value":"rpival1"},
         {"name":"rpiprop2", "value":"rpival2"}
     ],
-    "counterPartyProperties": {
-        "and":[
-            {"name":"conprop1", "value":"conval1", "op":"="}
-        ]
-    },
+    "constraints": [
+        "conprop1 == conval1"
+    ],
     "ha_group": {
         "partners": null
     },
