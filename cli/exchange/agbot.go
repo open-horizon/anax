@@ -20,7 +20,7 @@ func AgbotList(org string, userPw string, agbot string, namesOnly bool) {
 	if namesOnly && agbot == "" {
 		// Only display the names
 		var resp ExchangeAgbots
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots"+cliutils.AddSlash(agbot), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
+		cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots"+cliutils.AddSlash(agbot), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
 		agbots := []string{}
 		for a := range resp.Agbots {
 			agbots = append(agbots, a)
@@ -33,7 +33,7 @@ func AgbotList(org string, userPw string, agbot string, namesOnly bool) {
 	} else {
 		// Display the full resources
 		var agbots ExchangeAgbots
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots"+cliutils.AddSlash(agbot), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &agbots)
+		httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots"+cliutils.AddSlash(agbot), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &agbots)
 		if httpCode == 404 && agbot != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, "agbot '%s' not found in org %s", agbot, org)
 		}
@@ -65,7 +65,7 @@ func AgbotListPatterns(org, userPw, agbot, patternOrg, pattern, nodeOrg string) 
 	}
 	// Display the full resources
 	var patterns ExchangeAgbotPatterns
-	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/patterns"+cliutils.AddSlash(patternId), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &patterns)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/patterns"+cliutils.AddSlash(patternId), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &patterns)
 	if httpCode == 404 && patternOrg != "" && pattern != "" {
 		cliutils.Fatal(cliutils.NOT_FOUND, "pattern '%s' with org '%s' and node org '%s' not found in agbot '%s'", pattern, patternOrg, nodeOrg, agbot)
 	}
@@ -87,7 +87,7 @@ func AgbotAddPattern(org, userPw, agbot, patternOrg, pattern, nodeOrg string) {
 	}
 	//patternId := formPatternId(patternOrg, pattern, nodeOrg)
 	input := ServedPattern{PatternOrg: patternOrg, Pattern: pattern, NodeOrg: nodeOrg}
-	httpCode := cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/patterns", cliutils.OrgAndCreds(org, userPw), []int{201, 409}, input)
+	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/patterns", cliutils.OrgAndCreds(org, userPw), []int{201, 409}, input)
 	if httpCode == 409 {
 		fmt.Printf("Pattern '%s' with org '%s' and node org '%s' already exists in agbot '%s'\n", pattern, patternOrg, nodeOrg, agbot)
 		os.Exit(cliutils.CLI_INPUT_ERROR)
@@ -101,5 +101,5 @@ func AgbotRemovePattern(org, userPw, agbot, patternOrg, pattern, nodeOrg string)
 		nodeOrg = patternOrg
 	}
 	patternId := formPatternId(patternOrg, pattern, nodeOrg)
-	cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/patterns/"+patternId, cliutils.OrgAndCreds(org, userPw), []int{204})
+	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/patterns/"+patternId, cliutils.OrgAndCreds(org, userPw), []int{204})
 }
