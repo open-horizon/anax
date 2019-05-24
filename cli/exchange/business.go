@@ -18,7 +18,7 @@ func BusinessListPolicy(org string, credToUse string, policy string) {
 
 	//get policy list from Horizon Exchange
 	var policyList exchange.GetBusinessPolicyResponse
-	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &policyList)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &policyList)
 	if httpCode == 404 && policy != "" {
 		cliutils.Fatal(cliutils.NOT_FOUND, "Policy %s not found in org %s", policy, org)
 	}
@@ -50,9 +50,9 @@ func BusinessAddPolicy(org string, credToUse string, policy string, jsonFilePath
 	}
 
 	//add/overwrite business policy file
-	httpCode := cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201, 403}, policyFile)
+	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201, 403}, policyFile)
 	if httpCode == 403 {
-		cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201, 404}, policyFile)
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201, 404}, policyFile)
 		fmt.Println("Business policy: " + org + "/" + policy + " updated in the Horizon Exchange")
 	} else {
 		fmt.Println("Business policy: " + org + "/" + policy + " added in the Horizon Exchange")
@@ -66,7 +66,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policy string, attribute
 
 	//verify that the policy exists
 	var exchangePolicy exchange.GetBusinessPolicyResponse
-	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &exchangePolicy)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &exchangePolicy)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "Policy %s not found in org %s", policy, org)
 	}
@@ -82,7 +82,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policy string, attribute
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", valueFilePath, err)
 		}
 		patch[attribute] = newValue
-		cliutils.ExchangePutPost(http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
+		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
 		fmt.Println("Policy " + org + "/" + policy + " updated in the Horizon Exchange")
 	case "properties":
 		var newValue externalpolicy.PropertyList
@@ -96,7 +96,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policy string, attribute
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Invalid format for properties")
 		}
 		patch[attribute] = newValue
-		cliutils.ExchangePutPost(http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
+		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
 		fmt.Println("Policy " + org + "/" + policy + " updated in the Horizon Exchange")
 	case "constraints":
 		var newValue externalpolicy.ConstraintExpression
@@ -110,7 +110,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policy string, attribute
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Invalid format for properties")
 		}
 		patch[attribute] = newValue
-		cliutils.ExchangePutPost(http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
+		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
 		fmt.Println("Policy " + org + "/" + policy + " updated in the Horizon Exchange")
 	case "label", "description":
 		var newValue string
@@ -120,7 +120,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policy string, attribute
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", valueFilePath, err)
 		}
 		patch[attribute] = newValue
-		cliutils.ExchangePutPost(http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
+		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
 		fmt.Println("Policy " + org + "/" + policy + " updated in the Horizon Exchange")
 	default:
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Business policy attribute not specified. Attributes are: label, description, service, properties, and constraints")
@@ -136,7 +136,7 @@ func BusinessRemovePolicy(org string, credToUse string, policy string, force boo
 	}
 
 	//remove policy
-	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
+	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
 	if httpCode == 404 {
 		fmt.Println("Policy " + org + "/" + policy + " not found in the Horizon Exchange")
 	} else {

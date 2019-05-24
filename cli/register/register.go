@@ -122,7 +122,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	nodeIdTok = nodeId + ":" + nodeToken
 
 	// See if the node exists in the exchange, and create if it doesn't
-	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, nil)
+	httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, nil)
 	if httpCode != 200 {
 		if userPw == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node '%s/%s' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId)
@@ -236,7 +236,7 @@ func GetHighestService(nodeCreds, org, url, arch string, versionRanges []string)
 	route := "orgs/" + org + "/services?url=" + url + "&arch=" + arch // get all services of this org, url, and arch
 	var svcOutput exchange.GetServicesResponse
 	cliutils.SetWhetherUsingApiKey(nodeCreds)
-	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), route, nodeCreds, []int{200}, &svcOutput)
+	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), route, nodeCreds, []int{200}, &svcOutput)
 	if len(svcOutput.Services) == 0 {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "found no services in the exchange matching: org=%s, url=%s, arch=%s", org, url, arch)
 	}
@@ -316,7 +316,7 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 
 	// Get the pattern
 	var patOutput exchange.GetPatternResponse
-	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+patOrg+"/patterns/"+pattern, nodeCreds, []int{200}, &patOutput)
+	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+patOrg+"/patterns/"+pattern, nodeCreds, []int{200}, &patOutput)
 	patKey := cliutils.OrgAndCreds(patOrg, pattern)
 	if _, ok := patOutput.Patterns[patKey]; !ok {
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, "did not find pattern '%s' as expected", patKey)

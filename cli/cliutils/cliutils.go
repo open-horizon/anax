@@ -3,6 +3,7 @@ package cliutils
 import (
 	"bufio"
 	"bytes"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -685,21 +686,77 @@ func GetExchangeUrl() string {
 	return exchUrl
 }
 
-func printHorizonExchRestError(apiMethod string, err error) {
-	if os.Getenv("HZN_EXCHANGE_URL") == "" {
-		Fatal(HTTP_ERROR, "Can't connect to the Horizon Exchange REST API to run %s. Set HZN_EXCHANGE_URL to use an Exchange other than the one the Horizon Agent is currently configured for. Specific error is: %v", apiMethod, err)
-	} else {
-		Fatal(HTTP_ERROR, "Can't connect to the Horizon Exchange REST API to run %s. Maybe HZN_EXCHANGE_URL is set incorrectly? Or unset HZN_EXCHANGE_URL to use the Exchange that the Horizon Agent is configured for. Specific error is: %v", apiMethod, err)
+// Get mms url from /etc/default/horizon file. if not set, check /etc/horizon/anax.json file
+func GetMMSUrlFromAnax() string {
+	if value, err := GetEnvVarFromFile(ANAX_OVERWRITE_FILE, "HZN_FSS_CSSURL"); err != nil {
+		Verbose(fmt.Sprintf("Error getting HZN_FSS_CSSURL from %v. %v", ANAX_OVERWRITE_FILE, err))
+	} else if value != "" {
+		return value
 	}
+
+	if anaxConfig, err := GetAnaxConfig(ANAX_CONFIG_FILE); err != nil {
+		Verbose(fmt.Sprintf("Error getting model management service Url from %v. %v", ANAX_CONFIG_FILE, err))
+	} else if anaxConfig != nil {
+		return anaxConfig.GetCSSURL()
+	}
+
+	return ""
 }
 
-// ExchangeGet runs a GET to the exchange api and fills in the specified json structure. If the structure is just a string, fill in the raw json.
+// GetMMSUrl returns the exchange url from the env var or anax api
+func GetMMSUrl() string {
+	mmsUrl := os.Getenv("HZN_FSS_CSSURL")
+	if mmsUrl == "" {
+		Verbose("HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node.")
+		value := GetMMSUrlFromAnax()
+		if value != "" {
+			mmsUrl = value
+		} else {
+			Fatal(CLI_GENERAL_ERROR, "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent")
+		}
+	}
+
+	mmsUrl = strings.TrimSuffix(mmsUrl, "/") // anax puts a trailing slash on it
+	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" {
+		re := regexp.MustCompile(`edgenode$`)
+		mmsUrl = re.ReplaceAllLiteralString(mmsUrl, "edge")
+	}
+
+	Verbose("The model management service url: %v", mmsUrl)
+	return mmsUrl
+}
+
+func printHorizonServiceRestError(horizonService string, apiMethod string, err error) {
+	serviceEnvVarName := "HZN_EXCHANGE_URL"
+	article := "an"
+	if horizonService == "Model Management Service" {
+		serviceEnvVarName = "HZN_FSS_CSSURL"
+		article = "a"
+	}
+
+	if os.Getenv(serviceEnvVarName) == "" {
+		Fatal(HTTP_ERROR, "Can't connect to the Horizon %v REST API to run %s. Set %v to use %v %v other than the one the Horizon Agent is currently configured for. Specific error is: %v", horizonService, apiMethod, serviceEnvVarName, article, horizonService, err)
+	} else {
+		Fatal(HTTP_ERROR, "Can't connect to the Horizon %v REST API to run %s. Maybe %v is set incorrectly? Or unset %v to use the %v that the Horizon Agent is configured for. Specific error is: %v", horizonService, apiMethod, serviceEnvVarName, serviceEnvVarName, horizonService, err)
+	}
+
+}
+
+// ExchangeGet runs a GET to the specified service api and fills in the specified json structure. If the structure is just a string, fill in the raw json.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
-func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, structure interface{}) (httpCode int) {
+func ExchangeGet(service string, urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, structure interface{}) (httpCode int) {
 	url := urlBase + "/" + urlSuffix
 	apiMsg := http.MethodGet + " " + url
 	Verbose(apiMsg)
 	httpClient := &http.Client{}
+	// This env var should only be used in our test environments or in an emergency when there is a problem with the SSL certificate of a horizon service.
+	if os.Getenv("HZN_SSL_SKIP_VERIFY") != "" {
+		httpClient.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		}
+	}
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
@@ -710,7 +767,7 @@ func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttpC
 	}
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		printHorizonExchRestError(apiMsg, err)
+		printHorizonServiceRestError(service, apiMsg, err)
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
@@ -754,7 +811,7 @@ func ExchangeGet(urlBase string, urlSuffix string, credentials string, goodHttpC
 // ExchangePutPost runs a PUT or POST to the exchange api to create of update a resource. If body is a string, it will be given to the exchange
 // as json. Otherwise the struct will be marshaled to json.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
-func ExchangePutPost(method string, urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, body interface{}) (httpCode int) {
+func ExchangePutPost(service string, method string, urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, body interface{}) (httpCode int) {
 	url := urlBase + "/" + urlSuffix
 	apiMsg := method + " " + url
 	Verbose(apiMsg)
@@ -762,6 +819,14 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 		return 201
 	}
 	httpClient := &http.Client{}
+	// This env var should only be used in our test environments or in an emergency when there is a problem with the SSL certificate of a horizon service.
+	if os.Getenv("HZN_SSL_SKIP_VERIFY") != "" {
+		httpClient.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		}
+	}
 
 	// Prepare body
 	var jsonBytes []byte
@@ -798,7 +863,7 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 	} // else it is an anonymous call
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		printHorizonExchRestError(apiMsg, err)
+		printHorizonServiceRestError(service, apiMsg, err)
 	}
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
@@ -820,7 +885,7 @@ func ExchangePutPost(method string, urlBase string, urlSuffix string, credential
 
 // ExchangeDelete deletes a resource via the exchange api.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
-func ExchangeDelete(urlBase string, urlSuffix string, credentials string, goodHttpCodes []int) (httpCode int) {
+func ExchangeDelete(service string, urlBase string, urlSuffix string, credentials string, goodHttpCodes []int) (httpCode int) {
 	url := urlBase + "/" + urlSuffix
 	apiMsg := http.MethodDelete + " " + url
 	Verbose(apiMsg)
@@ -828,6 +893,14 @@ func ExchangeDelete(urlBase string, urlSuffix string, credentials string, goodHt
 		return 204
 	}
 	httpClient := &http.Client{}
+	// This env var should only be used in our test environments or in an emergency when there is a problem with the SSL certificate of a horizon service.
+	if os.Getenv("HZN_SSL_SKIP_VERIFY") != "" {
+		httpClient.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		}
+	}
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
 		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
@@ -835,7 +908,7 @@ func ExchangeDelete(urlBase string, urlSuffix string, credentials string, goodHt
 	req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		printHorizonExchRestError(apiMsg, err)
+		printHorizonServiceRestError(service, apiMsg, err)
 	}
 	// delete never returns a body
 	httpCode = resp.StatusCode

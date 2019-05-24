@@ -20,6 +20,7 @@ import (
 	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/cli/service"
 	"github.com/open-horizon/anax/cli/status"
+	"github.com/open-horizon/anax/cli/sync_service"
 	"github.com/open-horizon/anax/cli/unregister"
 	"github.com/open-horizon/anax/cli/utilcmds"
 	"github.com/open-horizon/anax/cutil"
@@ -47,6 +48,10 @@ Environment Variables:
       to specify the organization ID'.
   HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn
       register -u' flag, in the form '[org/]user:pw'.
+  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use
+      to communicate with the Horizon Model Management Service, for example
+      https://exchange.bluehorizon.network/css/. (By default hzn will ask the
+      Horizon Agent for the URL.)
 
   All these environment variables and ones mentioned in the command help can be
   specified in user's configuration file: ~/.hzn/hzn.json with JSON format.
@@ -384,6 +389,26 @@ Environment Variables:
 	utilConfigConvCmd := utilCmd.Command("configconv", "Convert the configuration file from JSON format to a shell script.")
 	utilConfigConvFile := utilConfigConvCmd.Flag("config-file", "The path of a configuration file to be converted. ").Short('f').Required().ExistingFile()
 
+	mmsCmd := app.Command("mms", "List and manage Horizon Model Management Service resources.")
+	mmsOrg := mmsCmd.Flag("org", "The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.").Short('o').String()
+	mmsUserPw := mmsCmd.Flag("user-pw", "Horizon user credentials to query and create Model Management Service resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.").Short('u').PlaceHolder("USER:PW").String()
+
+	mmsStatusCmd := mmsCmd.Command("status", "Display the status of the Horizon Model Management Service.")
+	mmsObjectCmd := mmsCmd.Command("object", "List and manage objects in the Horizon Model Management Service.")
+	mmsObjectListCmd := mmsObjectCmd.Command("list", "List objects in the Horizon Model Management Service.")
+	mmsObjectListType := mmsObjectListCmd.Flag("type", "The type of the object to list.").Short('t').Required().String()
+	mmsObjectListId := mmsObjectListCmd.Flag("id", "The id of the object to list.").Short('i').Required().String()
+	mmsObjectNewCmd := mmsObjectCmd.Command("new", "Display an empty object metadata template that can be filled in and passed as the -m option on the 'hzn mms object publish' command.")
+	mmsObjectPublishCmd := mmsObjectCmd.Command("publish", "Publish an object in the Horizon Model Management Service, making it available for services deployed on nodes.")
+	mmsObjectPublishType := mmsObjectPublishCmd.Flag("type", "The type of the object to publish. This flag must be used with -i. It is mutually exclusive with -m").Short('t').String()
+	mmsObjectPublishId := mmsObjectPublishCmd.Flag("id", "The id of the object to publish. This flag must be used with -t. It is mutually exclusive with -m").Short('i').String()
+	mmsObjectPublishPat := mmsObjectPublishCmd.Flag("pattern", "If you want the object to be deployed on nodes using a given pattern, specify it using this flag. This flag is optionla and can only be used with --type and --id. It is mutually exclusive with -m").Short('p').String()
+	mmsObjectPublishDef := mmsObjectPublishCmd.Flag("def", "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command.").Short('m').String()
+	mmsObjectPublishObj := mmsObjectPublishCmd.Flag("object", "The object (in the form of a file) to publish.").Short('f').Required().String()
+	mmsObjectDeleteCmd := mmsObjectCmd.Command("delete", "Publish an object in the Horizon Model Management Service, making it available for services deployed on nodes.")
+	mmsObjectDeleteType := mmsObjectDeleteCmd.Flag("type", "The type of the object to delete.").Short('t').Required().String()
+	mmsObjectDeleteId := mmsObjectDeleteCmd.Flag("id", "The id of the object to delete.").Short('i').Required().String()
+
 	app.Version("Run 'hzn version' to see the Horizon version.")
 	/* trying to override the base --version behavior does not work....
 	fmt.Printf("version: %v\n", *version)
@@ -464,6 +489,12 @@ Environment Variables:
 
 		// use HZN_EXCHANGE_NODE_AUTH for -n and trim the org
 		nodeIdTok = cliutils.WithDefaultEnvVar(nodeIdTok, "HZN_EXCHANGE_NODE_AUTH")
+	}
+
+	// For the mms command family, make sure that org and exchange credentials are specified in some way.
+	if strings.HasPrefix(fullCmd, "mms") {
+		mmsOrg = cliutils.RequiredWithDefaultEnvVar(mmsOrg, "HZN_ORG_ID", "organization ID must be specified with either the -o flag or HZN_ORG_ID")
+		mmsUserPw = cliutils.RequiredWithDefaultEnvVar(mmsUserPw, "HZN_EXCHANGE_USER_AUTH", "exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH")
 	}
 
 	// key file defaults
@@ -642,5 +673,15 @@ Environment Variables:
 		status.DisplayStatus(*agbotStatusLong, true)
 	case utilConfigConvCmd.FullCommand():
 		utilcmds.ConvertConfig(*utilConfigConvFile)
+	case mmsStatusCmd.FullCommand():
+		sync_service.Status(*mmsOrg, *mmsUserPw)
+	case mmsObjectListCmd.FullCommand():
+		sync_service.ObjectList(*mmsOrg, *mmsUserPw, *mmsObjectListType, *mmsObjectListId)
+	case mmsObjectNewCmd.FullCommand():
+		sync_service.ObjectNew(*mmsOrg)
+	case mmsObjectPublishCmd.FullCommand():
+		sync_service.ObjectPublish(*mmsOrg, *mmsUserPw, *mmsObjectPublishType, *mmsObjectPublishId, *mmsObjectPublishPat, *mmsObjectPublishDef, *mmsObjectPublishObj)
+	case mmsObjectDeleteCmd.FullCommand():
+		sync_service.ObjectDelete(*mmsOrg, *mmsUserPw, *mmsObjectDeleteType, *mmsObjectDeleteId)
 	}
 }

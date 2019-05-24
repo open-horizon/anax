@@ -734,7 +734,7 @@ func getServiceDefinition(homeDirectory, surl string, org string, version string
 		userCreds = os.Getenv(DEVTOOL_HZN_USER)
 	}
 	cliutils.SetWhetherUsingApiKey(userCreds)
-	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), resSuffix, cliutils.OrgAndCreds(os.Getenv(DEVTOOL_HZN_ORG), userCreds), []int{200}, resp)
+	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), resSuffix, cliutils.OrgAndCreds(os.Getenv(DEVTOOL_HZN_ORG), userCreds), []int{200}, resp)
 
 	// Parse the response and extract the highest version service definition or return an error.
 	var serviceDef exchange.ServiceDefinition
@@ -791,7 +791,7 @@ func getServiceDefinition(homeDirectory, surl string, org string, version string
 		auth_url := fmt.Sprintf("orgs/%v/services/%v/dockauths", org, exchange.GetId(serviceId))
 		docker_auths := make([]exchange.ImageDockerAuth, 0)
 		cliutils.SetWhetherUsingApiKey(userCreds)
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), auth_url, cliutils.OrgAndCreds(os.Getenv(DEVTOOL_HZN_ORG), userCreds), []int{200, 404}, &docker_auths)
+		cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), auth_url, cliutils.OrgAndCreds(os.Getenv(DEVTOOL_HZN_ORG), userCreds), []int{200, 404}, &docker_auths)
 
 		img_auths := make([]events.ImageDockerAuth, 0)
 		if docker_auths != nil {
