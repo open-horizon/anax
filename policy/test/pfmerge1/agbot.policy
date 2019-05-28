@@ -45,12 +45,9 @@
         {"name":"conprop2", "value":"conval2"},
         {"name":"conprop3", "value":"conval3"}
     ],
-    "counterPartyProperties": {
-        "or":[
-            {"name":"rpiprop1", "value":"rpival1"},
-            {"name":"rpiprop2", "value":"rpival2"}
-        ]
-    },
+    "constraints": [
+        "rpiprop1 == rpival1 OR rpiprop2 == rpival2"
+    ],
     "maxAgreements": 3,
     "blockchains": [
         {

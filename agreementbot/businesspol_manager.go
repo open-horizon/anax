@@ -152,7 +152,10 @@ func (p *BusinessPolicyEntry) RemoveServicePolicy(svcId string) bool {
 	if !found {
 		return false
 	} else {
-		// an empty policy means that the service does not have a policy
+		// An empty polcy is also tracked in the business policy manager, this way we know if there is
+		// new service policy added later.
+		// The business policy manager does not track all the service policies referenced by a business policy.
+		// It only tracks the ones that have agreements associated with it.
 		tempPol := new(externalpolicy.ExternalPolicy)
 		if !reflect.DeepEqual(*tempPol, *spe.Policy) {
 			delete(p.ServicePolicies, svcId)

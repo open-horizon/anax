@@ -145,6 +145,14 @@ Environment Variables:
 	exAgbotDPPatOrg := exAgbotDelPatCmd.Arg("patternorg", "The organization of the pattern to remove.").Required().String()
 	exAgbotDPPat := exAgbotDelPatCmd.Arg("pattern", "The name of the pattern to remove.").Required().String()
 	exAgbotDPNodeOrg := exAgbotDelPatCmd.Arg("nodeorg", "The organization of the nodes that should be searched. Defaults to patternorg.").String()
+	exAgbotListPolicyCmd := exAgbotCmd.Command("listbusinesspol", "Display the business policies that this agbot is serving.")
+	exAgbotPol := exAgbotListPolicyCmd.Arg("agbot", "The agbot to list serving business policies for.").Required().String()
+	exAgbotAddPolCmd := exAgbotCmd.Command("addbusinesspol", "Add this business policy to the list of policies this agbot is serving. Currently only support adding all the business polycies from an organization.")
+	exAgbotAPolAg := exAgbotAddPolCmd.Arg("agbot", "The agbot to add the business policy to.").Required().String()
+	exAgbotAPPolOrg := exAgbotAddPolCmd.Arg("policyorg", "The organization of the business policy to add.").Required().String()
+	exAgbotDelPolCmd := exAgbotCmd.Command("removebusinesspol", "Remove this business policy from the list of policies this agbot is serving. Currently only support removing all the business polycies from an organization.")
+	exAgbotDPolAg := exAgbotDelPolCmd.Arg("agbot", "The agbot to remove the business policy from.").Required().String()
+	exAgbotDPPolOrg := exAgbotDelPolCmd.Arg("policyorg", "The organization of the business policy to remove.").Required().String()
 
 	exPatternCmd := exchangeCmd.Command("pattern", "List and manage patterns in the Horizon Exchange")
 	exPatternListCmd := exPatternCmd.Command("list", "Display the pattern resources from the Horizon Exchange.")
@@ -557,6 +565,12 @@ Environment Variables:
 		exchange.AgbotAddPattern(*exOrg, *exUserPw, *exAgbotAP, *exAgbotAPPatOrg, *exAgbotAPPat, *exAgbotAPNodeOrg)
 	case exAgbotDelPatCmd.FullCommand():
 		exchange.AgbotRemovePattern(*exOrg, *exUserPw, *exAgbotDP, *exAgbotDPPatOrg, *exAgbotDPPat, *exAgbotDPNodeOrg)
+	case exAgbotListPolicyCmd.FullCommand():
+		exchange.AgbotListBusinessPolicy(*exOrg, *exUserPw, *exAgbotPol)
+	case exAgbotAddPolCmd.FullCommand():
+		exchange.AgbotAddBusinessPolicy(*exOrg, *exUserPw, *exAgbotAPolAg, *exAgbotAPPolOrg)
+	case exAgbotDelPolCmd.FullCommand():
+		exchange.AgbotRemoveBusinessPolicy(*exOrg, *exUserPw, *exAgbotDPolAg, *exAgbotDPPolOrg)
 	case exPatternListCmd.FullCommand():
 		exchange.PatternList(*exOrg, credToUse, *exPattern, !*exPatternLong)
 	case exPatternPublishCmd.FullCommand():

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/exchange"
 	"net/http"
 	"os"
 )
@@ -42,8 +43,8 @@ func AgbotList(org string, userPw string, agbot string, namesOnly bool) {
 	}
 }
 
-func formPatternId(patternOrg, pattern, nodeOrg string) string {
-	return patternOrg + "_" + pattern + "_" + nodeOrg
+func formServicedObjectId(objOrg, obj, nodeOrg string) string {
+	return objOrg + "_" + obj + "_" + nodeOrg
 }
 
 type ExchangeAgbotPatterns struct {
@@ -61,7 +62,7 @@ func AgbotListPatterns(org, userPw, agbot, patternOrg, pattern, nodeOrg string) 
 		if nodeOrg == "" {
 			nodeOrg = patternOrg
 		}
-		patternId = formPatternId(patternOrg, pattern, nodeOrg)
+		patternId = formServicedObjectId(patternOrg, pattern, nodeOrg)
 	}
 	// Display the full resources
 	var patterns ExchangeAgbotPatterns
@@ -85,7 +86,6 @@ func AgbotAddPattern(org, userPw, agbot, patternOrg, pattern, nodeOrg string) {
 	if nodeOrg == "" {
 		nodeOrg = patternOrg
 	}
-	//patternId := formPatternId(patternOrg, pattern, nodeOrg)
 	input := ServedPattern{PatternOrg: patternOrg, Pattern: pattern, NodeOrg: nodeOrg}
 	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/patterns", cliutils.OrgAndCreds(org, userPw), []int{201, 409}, input)
 	if httpCode == 409 {
@@ -100,6 +100,46 @@ func AgbotRemovePattern(org, userPw, agbot, patternOrg, pattern, nodeOrg string)
 	if nodeOrg == "" {
 		nodeOrg = patternOrg
 	}
-	patternId := formPatternId(patternOrg, pattern, nodeOrg)
+	patternId := formServicedObjectId(patternOrg, pattern, nodeOrg)
 	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/patterns/"+patternId, cliutils.OrgAndCreds(org, userPw), []int{204})
+}
+
+type ServedBusinessPolicy struct {
+	BusinessPolOrg string `json:"businessPolOrgid"` // defaults to nodeOrgid
+	BusinessPol    string `json:"businessPol"`      // '*' means all
+	NodeOrg        string `json:"nodeOrgid"`
+	LastUpdated    string `json:"lastUpdated"`
+}
+
+func AgbotListBusinessPolicy(org, userPw, agbot string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
+	org, agbot = cliutils.TrimOrg(org, agbot)
+	// Display the full resources
+	resp := new(exchange.GetAgbotsBusinessPolsResponse)
+	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/businesspols", cliutils.OrgAndCreds(org, userPw), []int{200, 404}, resp)
+	output := cliutils.MarshalIndent(resp.BusinessPols, "exchange agbot listbusinesspol")
+	fmt.Println(output)
+}
+
+// Add the business policy to the agot supporting list. Currently
+// all the patterns are open to all the nodes within the same organization.
+func AgbotAddBusinessPolicy(org, userPw, agbot, polOrg string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
+	org, agbot = cliutils.TrimOrg(org, agbot)
+
+	input := exchange.ServedBusinessPolicy{BusinessPolOrg: polOrg, BusinessPol: "*", NodeOrg: polOrg}
+	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/businesspols", cliutils.OrgAndCreds(org, userPw), []int{201, 409}, input)
+	if httpCode == 409 {
+		fmt.Printf("Business policy org %s' already exists in agbot '%s'\n", polOrg, agbot)
+		os.Exit(cliutils.CLI_INPUT_ERROR)
+	}
+}
+
+// Remove the business policy from the agot supporting list. Currently
+// only supporting removing all the policies from a organization.
+func AgbotRemoveBusinessPolicy(org, userPw, agbot, PolOrg string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
+	org, agbot = cliutils.TrimOrg(org, agbot)
+	polId := formServicedObjectId(PolOrg, "*", PolOrg)
+	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/businesspols/"+polId, cliutils.OrgAndCreds(org, userPw), []int{204})
 }
