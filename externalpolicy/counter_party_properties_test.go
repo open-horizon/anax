@@ -4,6 +4,7 @@ package externalpolicy
 
 import (
 	"encoding/json"
+	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"testing"
 )
 
@@ -744,25 +745,110 @@ func Test_simple_conversion(t *testing.T) {
 	}
 }
 
-func Test_complex_conversion(t *testing.T) {
+func Test_succeed_IsSatisfiedBy(t *testing.T) {
 	ce := new(ConstraintExpression)
-	(*ce) = append((*ce), "prop == value && prop2 == value2", "prop3 == value3 || prop4 == value4 && prop5 == value5")
-	if rp, err := RequiredPropertyFromConstraint(ce); err != nil {
+	(*ce) = append((*ce), "prop == true && prop2 == value2")
+	props := new([]Property)
+	(*props) = append((*props), *(Property_Factory("prop", true)), *(Property_Factory("prop2", "value2")), *(Property_Factory("prop3", "value3")), *(Property_Factory("prop4", "value4")), *(Property_Factory("prop5", "value5")))
+	if err := ce.IsSatisfiedBy(*props); err != nil {
 		t.Errorf("Error: unable to convert simple expression: %v", err)
-	} else if tle := rp.TopLevelElements(); tle == nil {
-		t.Errorf("Error: There should be 3 top level array elements")
-	} else if len(tle) != 2 {
-		t.Errorf("Error: Should be 1 top level array element")
 	}
 
 	ce = new(ConstraintExpression)
-	(*ce) = append((*ce), "prop == value && prop2 == value2", "prop3 == value3 || prop4 == value4 && prop5 == value5", "prop6 >= val6 || prop7 < val7")
-	if rp, err := RequiredPropertyFromConstraint(ce); err != nil {
+	(*ce) = append((*ce), "prop == onefishtwofish && prop2 == value2")
+	props = new([]Property)
+	(*props) = append((*props), *(Property_Factory("prop", "onefishtwofish")), *(Property_Factory("prop2", "value2")), *(Property_Factory("prop3", "value3")), *(Property_Factory("prop4", "value4")), *(Property_Factory("prop5", "value5")))
+	if err := ce.IsSatisfiedBy(*props); err != nil {
 		t.Errorf("Error: unable to convert simple expression: %v", err)
-	} else if tle := rp.TopLevelElements(); tle == nil {
-		t.Errorf("Error: There should be 3 top level array elements")
-	} else if len(tle) != 3 {
-		t.Errorf("Error: Should be 1 top level array element")
+	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce), "prop == value && prop2 == value2", "prop3 == value3 || prop4 == value4 && prop5 <= 5", "property6 >= 6")
+	props = new([]Property)
+	(*props) = append((*props), *(Property_Factory("prop", "value")), *(Property_Factory("prop2", "value2")), *(Property_Factory("prop3", "value3")), *(Property_Factory("prop4", "value4")), *(Property_Factory("prop5", 5)), *(Property_Factory("property6", 7.0)))
+	if err := ce.IsSatisfiedBy(*props); err != nil {
+		t.Errorf("Error: unable to convert simple expression: %v", err)
+	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		"iame2edev == true && cpu == 3 || memory <= 32",
+		"hello == \"world\"",
+		//"hello in \"'hiworld', 'test'\"",
+		"eggs == \"truckload\" AND certification in \"USDA,Organic\"",
+		"version == 1.1.1 OR USDA == true",
+		"version in [1.1.1,INFINITY) OR cert == USDA")
+	prop_list := `[{"name":"iame2edev", "value":true},{"name":"cpu", "value":3},{"name":"memory", "value":32},{"name":"hello", "value":"world"},{"name":"eggs","value":"truckload"},{"name":"USDA","value":true},{"name":"certification","value":"USDA"},{"name":"version","value":"1.2.1","type":"version"}]`
+	props = create_property_list(prop_list, t)
+	if err := ce.IsSatisfiedBy(*props); err != nil {
+		t.Errorf("Error: unable to convert simple expression: %v", err)
+	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		"version == 1.1.1 OR USDA in \"United,States,Department,of,Agriculture\"",
+		"version in [1.1.1,INFINITY) OR cert == USDA",
+		"color == \"orange\"")
+	prop_list = `[{"name":"version", "value":"2.1.5", "type":"version"},{"name":"USDA", "value":"Department"},{"name":"color", "value":"orange","type":"string"}]`
+	props = create_property_list(prop_list, t)
+	if err := ce.IsSatisfiedBy(*props); err != nil {
+		t.Errorf("Error: unable to convert simple expression: %v", err)
+	}
+}
+
+func Test_fail_IsSatisfiedBy(t *testing.T) {
+	ce := new(ConstraintExpression)
+	(*ce) = append((*ce), "prop == true && prop2 == \"value2, value3, value4\"")
+	props := new([]Property)
+	(*props) = append((*props), *(Property_Factory("prop", true)), *(Property_Factory("prop2", "value3")), *(Property_Factory("prop3", "value3")), *(Property_Factory("prop4", "value4")), *(Property_Factory("prop5", "value5")))
+	if err := ce.IsSatisfiedBy(*props); err == nil {
+		t.Errorf("Error: constraints not satisfied but no error occured %v %v", ce, props)
+	}
+}
+
+func Test_complex_IsSatisfiedBy(t *testing.T) {
+	rp_list := `{"or":[{"name":"prop1", "value":"val1, val2, val3", "op":"in"}]}`
+	prop_list := `[{"name":"prop1", "value":"val2"}]`
+
+	if rp := create_RP(rp_list, t); rp != nil {
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
+			}
+		}
+	}
+
+	rp_list = `{"or":[{"name":"prop1", "value":"val1, \"val2\", val3", "op":"in"}]}`
+	prop_list = `[{"name":"prop1", "value":"val2"}]`
+
+	if rp := create_RP(rp_list, t); rp != nil {
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
+			}
+		}
+	}
+
+	rp_list = `{"or":[{"name":"prop1", "value":"(1.0.1,INFINITY]", "op":"in"}]}`
+	prop_list = `[{"name":"prop1", "value":"1.4.5", "type":"version"}]`
+
+	if rp := create_RP(rp_list, t); rp != nil {
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
+			}
+		}
+	}
+
+	rp_list = `{"or":[{"name":"prop1", "value":"\"a bc def\""}]}`
+	prop_list = `[{"name":"prop1", "value":"a bc def"}]`
+
+	if rp := create_RP(rp_list, t); rp != nil {
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
+			}
+		}
 	}
 }
 

@@ -4,8 +4,6 @@ package text_language
 
 import (
 	"testing"
-
-	"github.com/open-horizon/anax/externalpolicy"
 )
 
 func Test_Validate_Succeed1(t *testing.T) {
@@ -19,7 +17,7 @@ func Test_Validate_Succeed1(t *testing.T) {
 		"version == 1.1.1 OR USDA == true",
 		"version in [1.1.1,INFINITY) OR cert == USDA",
 	}
-	ce := externalpolicy.ConstraintExpression(constraintStrings)
+	ce := constraintStrings
 
 	t.Log("ce: ", ce)
 
@@ -39,7 +37,7 @@ func Test_Validate_Failed1(t *testing.T) {
 	// string with multiple words, string list should not support ==
 	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
 	constraintStrings := []string{"eggs == \"truck load\" || certification == \"USDA, Organic\""}
-	ce := externalpolicy.ConstraintExpression(constraintStrings)
+	ce := constraintStrings
 
 	var validated bool
 	var err error
@@ -55,7 +53,7 @@ func Test_Validate_Failed1(t *testing.T) {
 
 	// string list should not support ==
 	constraintStrings = []string{"hello == \"'hi world', 'test'\""}
-	ce = externalpolicy.ConstraintExpression(constraintStrings)
+	ce = constraintStrings
 
 	validated, err = textConstraintLanguagePlugin.Validate(interface{}(ce))
 	if validated == true {
@@ -72,7 +70,7 @@ func Test_Validate_Failed2(t *testing.T) {
 	// <, > only supported for numeric value
 	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
 	constraintStrings := []string{"iame2edev < true && cpu == 3 || memory <= 32", "hello > world"}
-	ce := externalpolicy.ConstraintExpression(constraintStrings)
+	ce := constraintStrings
 
 	var validated bool
 	var err error
@@ -92,7 +90,7 @@ func Test_Validate_Failed3(t *testing.T) {
 	// true should only supported as boolean value, not string value
 	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
 	constraintStrings := []string{"version in [1.1.1,INFINITY) OR USDA == \"true\""}
-	ce := externalpolicy.ConstraintExpression(constraintStrings)
+	ce := constraintStrings
 
 	var validated bool
 	var err error
@@ -112,7 +110,7 @@ func Test_Validate_Failed4(t *testing.T) {
 	// string must be quoted if it has white space
 	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
 	constraintStrings := []string{"eggs == truck load && certification == USDA"}
-	ce := externalpolicy.ConstraintExpression(constraintStrings)
+	ce := constraintStrings
 
 	var validated bool
 	var err error
@@ -132,7 +130,7 @@ func Test_Validate_Failed5(t *testing.T) {
 	// invalid logical operator 'abcdefg'
 	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
 	constraintStrings := []string{"version == 1.1.1 abcdefg USDA == true"}
-	ce := externalpolicy.ConstraintExpression(constraintStrings)
+	ce := constraintStrings
 
 	var validated bool
 	var err error

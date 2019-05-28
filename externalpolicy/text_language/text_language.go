@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/externalpolicy/plugin_registry"
 	"github.com/open-horizon/anax/semanticversion"
 )
@@ -27,7 +26,7 @@ func NewTextConstraintLanguagePlugin() plugin_registry.ConstraintLanguagePlugin 
 func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool, error) {
 
 	var err error
-	var constraints externalpolicy.ConstraintExpression
+	var constraints []string
 	var nextExpression, nextLogicalOperator, remainder, constraint string
 	var validated bool
 
@@ -37,7 +36,7 @@ func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool,
 	}
 
 	// Validate that the expression is syntactically correct and parse-able
-	constraints = dconstraints.(externalpolicy.ConstraintExpression)
+	constraints = dconstraints.([]string)
 
 	for _, constraint = range constraints {
 		// 1 constrain inside constrain list
@@ -123,7 +122,7 @@ func (p *TextConstraintLanguagePlugin) GetNextOperator(expression string) (strin
 
 func isConstraintExpression(x interface{}) bool {
 	switch x.(type) {
-	case externalpolicy.ConstraintExpression:
+	case []string:
 		return true
 	default:
 		return false

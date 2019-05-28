@@ -11,11 +11,11 @@ import (
 type ConstraintExpression []string
 
 func (c *ConstraintExpression) Validate() error {
-	return plugin_registry.ConstraintLanguagePlugins.ValidatedByOne(*c)
+	return plugin_registry.ConstraintLanguagePlugins.ValidatedByOne((*c).GetStrings())
 }
 
 func (c *ConstraintExpression) GetLanguageHandler() (plugin_registry.ConstraintLanguagePlugin, error) {
-	return plugin_registry.ConstraintLanguagePlugins.GetLanguageHandlerByOne(*c)
+	return plugin_registry.ConstraintLanguagePlugins.GetLanguageHandlerByOne((*c).GetStrings())
 }
 
 // Create a simple, empty ConstraintExpression Object.
@@ -85,6 +85,10 @@ func (self *ConstraintExpression) IsSatisfiedBy(props []Property) error {
 	}
 }
 
+func (self *ConstraintExpression) GetStrings() []string {
+	return ([]string(*self))
+}
+
 // Create a RequiredProperty Object based on the constraint expression in an external policy. The constraint expression
 // contains references to properties and provides a comparison operator and value on that property. These can be converted
 // into our internal format.
@@ -106,10 +110,10 @@ func RequiredPropertyFromConstraint(extConstraint *ConstraintExpression) (*Requi
 	}
 
 	for _, remainder = range []string(*extConstraint) {
+		extConstraint.Validate()
 
 		// Create a new Required Property structure and initialize it with a top level OR followed by a top level AND. This will allow us
 		// to drop expressions into the structure as they come in through the GetNextExpression function.
-		newRP := RequiredProperty_Factory()
 
 		andArray := make([]interface{}, 0) // An array of PropertyExpression.
 		orArray := make([]interface{}, 0)  // An array of "and" structures, each with an array of PropertyExpression.
@@ -134,8 +138,15 @@ func RequiredPropertyFromConstraint(extConstraint *ConstraintExpression) (*Requi
 
 			// Convert the expression string into JSON and add it into the RequiredProperty object that we're building.
 			pieces := strings.Split(nextExpression, " ")
+			fullValue := pieces[2]
+			if len(pieces) > 3 {
+				for i, piece := range pieces {
+					if i > 2 {
+						fullValue = fmt.Sprint(fullValue + piece)
+					}
+				}
+			}
 			pe := PropertyExpression_Factory(pieces[0], pieces[2], pieces[1])
-
 			andArray = append(andArray, *pe)
 
 			// Get control operator. If no control operator is returned, then it's the end of the expression.
@@ -152,7 +163,7 @@ func RequiredPropertyFromConstraint(extConstraint *ConstraintExpression) (*Requi
 
 			} else {
 				// OR means we need a new element in the "or" array.
-				innerAnd := map[string][]interface{}{
+				innerAnd := map[string]interface{}{
 					OP_AND: andArray,
 				}
 				orArray = append(orArray, innerAnd)
@@ -163,18 +174,17 @@ func RequiredPropertyFromConstraint(extConstraint *ConstraintExpression) (*Requi
 		}
 
 		// Done with the expression, so close up the current and array initialize the RequiredProperty, and return it.
-		innerAnd := map[string][]interface{}{
+		innerAnd := map[string]interface{}{
 			OP_AND: andArray,
 		}
 		orArray = append(orArray, innerAnd)
 
-		newRP.Initialize(&map[string]interface{}{
-			OP_OR: orArray,
-		})
-		allPropArray = append(allPropArray, *newRP)
+		newRP := map[string]interface{}{OP_OR: orArray}
+		allPropArray = append(allPropArray, newRP)
 	}
 	allRP.Initialize(&map[string]interface{}{
 		OP_AND: allPropArray,
 	})
+
 	return allRP, nil
 }
