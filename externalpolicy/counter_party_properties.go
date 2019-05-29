@@ -3,6 +3,9 @@ package externalpolicy
 import (
 	"errors"
 	"fmt"
+	"github.com/open-horizon/anax/semanticversion"
+	"strconv"
+	"strings"
 )
 
 // The purpose this file is to evaluate the Constraints field in the Policy struct
@@ -60,6 +63,7 @@ const equalto = "=="
 const lessthaneq = "<="
 const greaterthaneq = ">="
 const notequalto = "!="
+const isin = "in"
 
 // This struct represents property value expressions to be satisfied
 type PropertyExpression struct {
@@ -274,12 +278,12 @@ func controlOperators() map[string]int {
 // of the supported comparison operators.
 func comparisonOperators() map[string]int {
 	// return map[string]int {and:0, or:0, not:0}
-	return map[string]int{lessthan: 0, greaterthan: 0, equalto: 0, lessthaneq: 0, greaterthaneq: 0, notequalto: 0}
+	return map[string]int{lessthan: 0, greaterthan: 0, equalto: 0, lessthaneq: 0, greaterthaneq: 0, notequalto: 0, isin: 0}
 }
 
 // Return a map of comparison operators that only work on strings
 func stringOperators() map[string]int {
-	return map[string]int{equalto: 0, notequalto: 0}
+	return map[string]int{equalto: 0, notequalto: 0, isin: 0}
 }
 
 // This function checks the type of the input interface object to see if it's a map of string to
@@ -409,37 +413,96 @@ func propertyInArray(propexp *PropertyExpression, props *[]Property) bool {
 			// These are not the droids we're looking for
 			continue
 		} else {
-			if isFloat64(p.Value) && isFloat64(propexp.Value) {
-				if propexp.Op == lessthan {
-					return p.Value.(float64) < propexp.Value.(float64)
-				} else if propexp.Op == greaterthan {
-					return p.Value.(float64) > propexp.Value.(float64)
-				} else if propexp.Op == lessthaneq {
-					return p.Value.(float64) <= propexp.Value.(float64)
-				} else if propexp.Op == greaterthaneq {
-					return p.Value.(float64) >= propexp.Value.(float64)
-				} else if propexp.Op == notequalto {
-					return p.Value.(float64) != propexp.Value.(float64)
+			if isFloat64(p.Value) {
+				var propexpFloat float64
+				if isFloat64(propexp.Value) {
+					propexpFloat = propexp.Value.(float64)
 				} else {
-					return p.Value.(float64) == propexp.Value.(float64)
+					var err error
+					propexpFloat, err = strconv.ParseFloat(propexp.Value.(string), 64)
+					if err != nil {
+						return false
+					}
 				}
-			} else if isBoolean(p.Value) && isBoolean(propexp.Value) {
+				if propexp.Op == lessthan {
+					return p.Value.(float64) < propexpFloat
+				} else if propexp.Op == greaterthan {
+					return p.Value.(float64) > propexpFloat
+				} else if propexp.Op == lessthaneq {
+					return p.Value.(float64) <= propexpFloat
+				} else if propexp.Op == greaterthaneq {
+					return p.Value.(float64) >= propexpFloat
+				} else if propexp.Op == notequalto {
+					return p.Value.(float64) != propexpFloat
+				} else {
+					return p.Value.(float64) == propexpFloat
+				}
+			} else if isBoolean(p.Value) {
+				var propexpBool bool
+				if isBoolean(propexp.Value) {
+					propexpBool = propexp.Value.(bool)
+				} else {
+					var err error
+					propexpBool, err = strconv.ParseBool(propexp.Value.(string))
+					if err != nil {
+						return false
+					}
+				}
 				if _, ok := stringOperators()[propexp.Op]; !ok {
 					return false
 				} else if propexp.Op == notequalto {
-					return p.Value.(bool) != propexp.Value.(bool)
+					return p.Value.(bool) != propexpBool
 				} else if propexp.Op == equalto {
-					return p.Value.(bool) == propexp.Value.(bool)
+					return p.Value.(bool) == propexpBool
 				}
 			} else if isString(p.Value) && isString(propexp.Value) {
+				pValue := removeSpaces(removeQuotes(p.Value.(string)))
+				propexpValue := removeSpaces(removeQuotes(propexp.Value.(string)))
 				if _, ok := stringOperators()[propexp.Op]; !ok {
 					return false
 				} else if propexp.Op == notequalto {
-					return p.Value.(string) != propexp.Value.(string)
+					return pValue != propexpValue
+				} else if propexp.Op == isin {
+					if p.Type == VERSION_TYPE {
+						return containsVersion(pValue, propexpValue)
+					}
+					return stringListContains(pValue, propexpValue)
 				} else {
-					return p.Value.(string) == propexp.Value.(string)
+					return pValue == propexpValue
 				}
 			}
+		}
+	}
+	return false
+}
+
+func removeSpaces(value string) string {
+	return strings.Trim(value, " ")
+}
+func removeQuotes(value string) string {
+	quote := fmt.Sprint("\"")
+	if value[0:1] == quote && value[len(value)-1:len(value)] == quote {
+		value = value[1 : len(value)-1]
+	}
+	return value
+}
+
+func containsVersion(versRange string, version string) bool {
+	vers, err := semanticversion.Version_Expression_Factory(version)
+	if err != nil {
+		return false
+	}
+	within, _ := vers.Is_within_range(versRange)
+	return within
+}
+
+func stringListContains(propVal string, constrList string) bool {
+	constrValueList := strings.Split(constrList, ",")
+	propValTrimmed := removeQuotes(removeSpaces(propVal))
+	for _, constrValue := range constrValueList {
+		constrValue = removeQuotes(removeSpaces(constrValue))
+		if constrValue == propValTrimmed {
+			return true
 		}
 	}
 	return false
