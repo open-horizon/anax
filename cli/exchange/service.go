@@ -43,7 +43,6 @@ type ServiceFile struct {
 	UserInputs          []exchange.UserInput         `json:"userInput"`
 	Deployment          interface{}                  `json:"deployment"` // interface{} because pre-signed services can be stringified json
 	DeploymentSignature string                       `json:"deploymentSignature,omitempty"`
-	ImageStore          map[string]interface{}       `json:"imageStore,omitempty"`
 }
 
 type GetServicesResponse struct {
@@ -67,7 +66,6 @@ type ServiceExch struct {
 	UserInputs          []exchange.UserInput         `json:"userInput"`
 	Deployment          string                       `json:"deployment"`
 	DeploymentSignature string                       `json:"deploymentSignature"`
-	ImageStore          map[string]interface{}       `json:"imageStore"`
 	LastUpdated         string                       `json:"lastUpdated,omitempty"`
 }
 
@@ -210,7 +208,7 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 
 // Sign and publish the service definition. This is a function that is reusable across different hzn commands.
 func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, registryTokens []string, promptForOverwite bool) {
-	svcInput := ServiceExch{Label: sf.Label, Description: sf.Description, Public: sf.Public, Documentation: sf.Documentation, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs, ImageStore: sf.ImageStore}
+	svcInput := ServiceExch{Label: sf.Label, Description: sf.Description, Public: sf.Public, Documentation: sf.Documentation, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs}
 
 	// The deployment field can be json object (map), string (for pre-signed), or nil
 	switch dep := sf.Deployment.(type) {
@@ -306,11 +304,10 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 	// If necessary, tell the user to push the container images to the docker registry. Get the list of images they need to manually push
 	// from the appropriate deployment config plugin.
 	//
-	// If the images are in the deprecated imageserver, then we will NOT tell the user to manually push images to docker, since that makes no
-	// sense. Also, we will NOT tell the user to manually push images if the publish command has already pushed the images. By default, the act
+	// We will NOT tell the user to manually push images if the publish command has already pushed the images. By default, the act
 	// of publishing a service will also cause the docker images used by the service to be pushed to a docker repo. The dontTouchImage flag tells
 	// the publish command to skip pushing the images.
-	if storeType, ok := svcInput.ImageStore["storeType"]; (!ok || storeType != "imageServer") && dontTouchImage {
+	if dontTouchImage {
 		if imageList, err := plugin_registry.DeploymentConfigPlugins.GetContainerImages(sf.Deployment); err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "unable to get container images from deployment: %v", err)
 		} else if len(imageList) > 0 {

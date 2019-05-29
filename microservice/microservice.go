@@ -94,9 +94,6 @@ func ConvertServiceToPersistent(es *exchange.ServiceDefinition, org string) (*pe
 	}
 	pms.RequiredServices = reqServs
 
-	pms.ImageStore = make(persistence.ImplementationPackage)
-	cutil.CopyMap(es.ImageStore, pms.ImageStore)
-
 	pms.LastUpdated = es.LastUpdated
 
 	// set defaults

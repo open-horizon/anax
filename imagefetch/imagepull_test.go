@@ -1,6 +1,6 @@
 // +build unit
 
-package torrent
+package imagefetch
 
 import (
 	docker "github.com/fsouza/go-dockerclient"
@@ -43,12 +43,11 @@ func Test_authDockerFile(t *testing.T) {
 		Auths: auth_array2,
 	}
 
-	httpAuthAttrs := make(map[string]map[string]string, 0)
 	dockerAuthConfigurations := make(map[string][]docker.AuthConfiguration, 0)
 
 	attrib_array := make([]persistence.Attribute, 0)
 	attrib_array = append(attrib_array, auth_attrib1, auth_attrib2)
-	err := ExtractAuthAttributes(attrib_array, httpAuthAttrs, dockerAuthConfigurations)
+	err := ExtractAuthAttributes(attrib_array, dockerAuthConfigurations)
 
 	var config config.Config
 	auth_file_name := "./test/docker_auths.json"
@@ -56,7 +55,6 @@ func Test_authDockerFile(t *testing.T) {
 
 	err = authDockerFile(config, dockerAuthConfigurations)
 	assert.Nil(t, err, "Should return nil.")
-	assert.Equal(t, 0, len(httpAuthAttrs), "the http auth should have 0 elements.")
 	assert.Equal(t, 3, len(dockerAuthConfigurations), "the docker auth should have 3 elements.")
 	assert.Equal(t, 2, len(dockerAuthConfigurations["myrepo1.com"]), "The docker auth array should have 2 items.")
 	assert.Equal(t, 4, len(dockerAuthConfigurations["myrepo2.com"]), "The docker auth array should have 4 items.")

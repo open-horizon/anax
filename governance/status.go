@@ -187,7 +187,7 @@ func (w *GovernanceWorker) getMicroserviceStatus(containers []docker.APIContaine
 				return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving all service instances for %v from database, error: %v", msdef.SpecRef, err)))
 			} else if msinsts != nil {
 				for _, msi := range msinsts {
-					deployment, _, _ := msdef.GetDeployment()
+					deployment, _ := msdef.GetDeployment()
 					if deployment != "" {
 						if cstatus, err := GetContainerStatus(deployment, msi.GetKey(), true, containers); err != nil {
 							return nil, fmt.Errorf(logString(fmt.Sprintf("Error getting service container status for %v. %v", msdef.SpecRef, err)))

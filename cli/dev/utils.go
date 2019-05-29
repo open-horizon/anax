@@ -16,10 +16,9 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/imagefetch"
 	"github.com/open-horizon/anax/persistence"
-	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
-	"github.com/open-horizon/anax/torrent"
 	"github.com/satori/go.uuid"
 	"io/ioutil"
 	"os"
@@ -175,7 +174,7 @@ func IsServiceProject(directory string) bool {
 }
 
 // autoAddDep -- if true, the dependent services will be automatically added if they can be found from the exchange
-func CommonProjectValidation(dir string, userInputFile string, projectType string, cmd string, userCreds string, keyFiles []string, autoAddDep bool) {
+func CommonProjectValidation(dir string, userInputFile string, projectType string, cmd string, userCreds string, autoAddDep bool) {
 	// Get the Userinput file, so that we can validate it.
 	userInputs, userInputsFilePath, uierr := GetUserInputs(dir, userInputFile)
 	if uierr != nil {
@@ -183,7 +182,7 @@ func CommonProjectValidation(dir string, userInputFile string, projectType strin
 	}
 
 	// Validate Dependencies
-	if derr := ValidateDependencies(dir, userInputs, userInputsFilePath, projectType, userCreds, keyFiles, autoAddDep); derr != nil {
+	if derr := ValidateDependencies(dir, userInputs, userInputsFilePath, projectType, userCreds, autoAddDep); derr != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' project does not validate. %v", projectType, cmd, derr)
 	}
 
@@ -676,22 +675,14 @@ func stopContainers(dc *cliexchange.DeploymentConfig, cw *container.ContainerWor
 	return nil
 }
 
-func getImageReferenceAsTorrent(serviceDef *exchange.ServiceDefinition) policy.Torrent {
-
-	pip := make(policy.ImplementationPackage)
-	cutil.CopyMap(serviceDef.ImageStore, pip)
-	return pip.ConvertToTorrent()
-}
-
 // Get the images into the local docker server for services
-func getContainerImages(containerConfig *events.ContainerConfig, pemFiles []string, currentUIs *register.InputFile) error {
+func getContainerImages(containerConfig *events.ContainerConfig, currentUIs *register.InputFile) error {
 
 	// Create a temporary anax config object to hold config for the shared runtime functions.
 	cfg := &config.HorizonConfig{
 		Edge: config.Config{
 			TrustSystemCACerts:     true,
 			TrustDockerAuthFromOrg: true,
-			TorrentDir:             "/tmp",
 		},
 		AgreementBot:  config.AGConfig{},
 		Collaborators: config.Collaborators{},
@@ -716,17 +707,14 @@ func getContainerImages(containerConfig *events.ContainerConfig, pemFiles []stri
 	byValueAttrs := makeByValueAttributes(attributes)
 
 	// Then extract the HTTPS authentication attributes.
-	httpAuthAttrs := make(map[string]map[string]string, 0)
 	dockerAuthConfigurations := make(map[string][]docker.AuthConfiguration, 0)
-	authErr := torrent.ExtractAuthAttributes(byValueAttrs, httpAuthAttrs, dockerAuthConfigurations)
+	authErr := imagefetch.ExtractAuthAttributes(byValueAttrs, dockerAuthConfigurations)
 	if authErr != nil {
 		return errors.New(fmt.Sprintf("failed to extract authentication attribute from %v, error: %v ", USERINPUT_FILE, err))
 	}
 
-	cliutils.Verbose("Using HTTPS Basic authorization: %v", httpAuthAttrs)
-
 	fmt.Printf("getting container images into docker.\n")
-	if err := torrent.ProcessImageFetch(cfg, client, containerConfig, httpAuthAttrs, dockerAuthConfigurations, pemFiles); err != nil {
+	if err := imagefetch.ProcessImageFetch(cfg, client, containerConfig, dockerAuthConfigurations); err != nil {
 		return errors.New(fmt.Sprintf("failed to get container images, error: %v", err))
 	}
 

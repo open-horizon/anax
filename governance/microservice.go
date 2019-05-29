@@ -1,7 +1,6 @@
 package governance
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/api"
@@ -15,7 +14,6 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/producer"
 	"math"
-	"net/url"
 	"strings"
 	"time"
 )
@@ -109,153 +107,130 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 		} else {
 
 			// now handle the case where there are containers
-			deployment, deploymentSig, torr := msdef.GetDeployment()
-
-			// convert the torrent string to a structure
-			var torrent policy.Torrent
-
-			// convert to torrent structure only if the torrent string exists on the exchange
-			if torr != "" {
-				if err := json.Unmarshal([]byte(torr), &torrent); err != nil {
-					return nil, fmt.Errorf(logString(fmt.Sprintf("The torrent definition for service %v/%v has error: %v", msdef.Org, msdef.SpecRef, err)))
-				}
-			} else {
-				// this is the service case where the image server is defined
-				ptorrent := msdef.GetImageStore().ConvertToTorrent()
-
-				// convert the persistence.Torrent to policy.Torrent.
-				torrent.Url = ptorrent.Url
-				torrent.Signature = ptorrent.Signature
-			}
+			deployment, deploymentSig := msdef.GetDeployment()
 
 			// convert workload to policy workload structure
 			var ms_workload policy.Workload
 			ms_workload.Deployment = deployment
 			ms_workload.DeploymentSignature = deploymentSig
-			ms_workload.Torrent = torrent
 			ms_workload.WorkloadPassword = ""
 			ms_workload.DeploymentUserInfo = ""
 
-			// verify torrent url
-			if url, err := url.Parse(torrent.Url); err != nil {
-				return nil, fmt.Errorf("ill-formed URL: %v, error %v", torrent.Url, err)
-			} else {
-				// get microservice/service keys and save it to the user keys.
-				if w.Config.Edge.TrustCertUpdatesFromOrg {
-					key_map, err := exchange.GetHTTPObjectSigningKeysHandler(w)(exchange.SERVICE, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch)
-					if err != nil {
-						return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting signing keys from the exchange: %v/%v %v %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Arch, err)))
-					}
-
-					if key_map != nil {
-						errHandler := func(keyname string) api.ErrorHandler {
-							return func(err error) bool {
-								glog.Errorf(logString(fmt.Sprintf("received error when saving the signing key file %v to anax. %v", keyname, err)))
-								return true
-							}
-						}
-
-						for key, content := range key_map {
-							//add .pem the end of the keyname if it does not have none.
-							fn := key
-							if !strings.HasSuffix(key, ".pem") {
-								fn = fmt.Sprintf("%v.pem", key)
-							}
-
-							api.UploadPublicKey(fn, []byte(content), w.Config, errHandler(fn))
-						}
-					}
+			// get microservice/service keys and save it to the user keys.
+			if w.Config.Edge.TrustCertUpdatesFromOrg {
+				key_map, err := exchange.GetHTTPObjectSigningKeysHandler(w)(exchange.SERVICE, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch)
+				if err != nil {
+					return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting signing keys from the exchange: %v/%v %v %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, msdef.Arch, err)))
 				}
 
-				// Verify the deployment signature
-				if pemFiles, err := w.Config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.Config.Edge.PublicKeyPath, w.Config.UserPublicKeyPath()); err != nil {
-					return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting pem key files: %v", err)))
-				} else if err := ms_workload.HasValidSignature(pemFiles); err != nil {
-					return nil, fmt.Errorf(logString(fmt.Sprintf("service container has invalid deployment signature %v for %v", ms_workload.DeploymentSignature, ms_workload.Deployment)))
-				}
-
-				// Gather up the service dependencies, if there are any. Microservices in the workload/microservice model never have dependencies,
-				// but services can. It is important to use the correct version for the service dependency, which is the version we have
-				// in the local database, not necessarily the version in the dependency. The version we have in the local database should always
-				// be greater than the dependency version.
-				ms_specs := []events.MicroserviceSpec{}
-				for _, rs := range msdef.RequiredServices {
-					msdef_dep, err := microservice.FindOrCreateMicroserviceDef(w.db, rs.URL, rs.Org, rs.Version, rs.Arch, exchange.GetHTTPServiceHandler(w))
-					if err != nil {
-						return nil, fmt.Errorf(logString(fmt.Sprintf("failed to get or create service definition for for %v/%v: %v", rs.Org, rs.URL, err)))
-					} else {
-						// Assume the first msdef is the one we want.
-						msspec := events.MicroserviceSpec{SpecRef: rs.URL, Org: rs.Org, Version: msdef_dep.Version, MsdefId: msdef_dep.Id}
-						ms_specs = append(ms_specs, msspec)
-					}
-				}
-
-				// save the instance
-				var ms_instance *persistence.MicroserviceInstance
-				if isRetry {
-					ms_instance = msinst_given
-				} else {
-					ms_instance, err1 = persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Org, msdef.Version, ms_key, dependencyPath)
-					if err1 != nil {
-						return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting service instance for %v/%v %v %v.", msdef.Org, msdef.SpecRef, msdef.Version, ms_key)))
-					}
-				}
-
-				// get the image auth for service (we have to try even for microservice because we do not know if this is ms or svc.)
-				img_auths := make([]events.ImageDockerAuth, 0)
-				if w.Config.Edge.TrustDockerAuthFromOrg {
-					if ias, err := exchange.GetHTTPServiceDockerAuthsHandler(w)(msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch); err != nil {
-						glog.V(5).Infof(logString(fmt.Sprintf("received error querying exchange for service image auths: %v/%v version %v, error %v", msdef.Org, msdef.SpecRef, msdef.Version, err)))
-					} else {
-						if ias != nil {
-							for _, iau_temp := range ias {
-								username := iau_temp.UserName
-								if username == "" {
-									username = "token"
-								}
-								img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: username, Password: iau_temp.Token})
-							}
-						}
-					}
-				}
-
-				// Fire an event to the torrent worker so that it will download the container
-				cc := events.NewContainerConfig(*url, ms_workload.Torrent.Signature, ms_workload.Deployment, ms_workload.DeploymentSignature, ms_workload.DeploymentUserInfo, "", img_auths)
-
-				// convert the user input from the service attributes to env variables
-				if attrs, err := persistence.FindApplicableAttributes(w.db, msdef.SpecRef, msdef.Org); err != nil {
-					return nil, fmt.Errorf(logString(fmt.Sprintf("Unable to fetch service preferences for %v/%v. Err: %v", msdef.Org, msdef.SpecRef, err)))
-				} else if envAdds, err := persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM); err != nil {
-					return nil, fmt.Errorf(logString(fmt.Sprintf("Failed to convert service preferences to environmental variables for %v/%v. Err: %v", msdef.Org, msdef.SpecRef, err)))
-				} else {
-					envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = exchange.GetId(w.GetExchangeId())
-					envAdds[config.ENVVAR_PREFIX+"ORGANIZATION"] = exchange.GetOrg(w.GetExchangeId())
-					envAdds[config.ENVVAR_PREFIX+"PATTERN"] = w.devicePattern
-					envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = w.Config.Edge.ExchangeURL
-					// Add in any default variables from the microservice userInputs that havent been overridden
-					for _, ui := range msdef.UserInputs {
-						if ui.DefaultValue != "" {
-							if _, ok := envAdds[ui.Name]; !ok {
-								envAdds[ui.Name] = ui.DefaultValue
-							}
+				if key_map != nil {
+					errHandler := func(keyname string) api.ErrorHandler {
+						return func(err error) bool {
+							glog.Errorf(logString(fmt.Sprintf("received error when saving the signing key file %v to anax. %v", keyname, err)))
+							return true
 						}
 					}
 
-					agIds := make([]string, 0)
+					for key, content := range key_map {
+						//add .pem the end of the keyname if it does not have none.
+						fn := key
+						if !strings.HasSuffix(key, ".pem") {
+							fn = fmt.Sprintf("%v.pem", key)
+						}
 
-					if agreementId != "" {
-						// service originally start up
-						agIds = append(agIds, agreementId)
-					} else {
-						// retry case or agreementless case
-						agIds = ms_instance.AssociatedAgreements
+						api.UploadPublicKey(fn, []byte(content), w.Config, errHandler(fn))
 					}
-					lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey(), agIds, ms_specs, persistence.NewServiceInstancePathElement(msdef.SpecRef, msdef.Org, msdef.Version), isRetry)
-					w.Messages() <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
 				}
-
-				return ms_instance, nil // assume there is only one workload for a microservice
 			}
+
+			// Verify the deployment signature
+			if pemFiles, err := w.Config.Collaborators.KeyFileNamesFetcher.GetKeyFileNames(w.Config.Edge.PublicKeyPath, w.Config.UserPublicKeyPath()); err != nil {
+				return nil, fmt.Errorf(logString(fmt.Sprintf("received error getting pem key files: %v", err)))
+			} else if err := ms_workload.HasValidSignature(pemFiles); err != nil {
+				return nil, fmt.Errorf(logString(fmt.Sprintf("service container has invalid deployment signature %v for %v", ms_workload.DeploymentSignature, ms_workload.Deployment)))
+			}
+
+			// Gather up the service dependencies, if there are any. Microservices in the workload/microservice model never have dependencies,
+			// but services can. It is important to use the correct version for the service dependency, which is the version we have
+			// in the local database, not necessarily the version in the dependency. The version we have in the local database should always
+			// be greater than the dependency version.
+			ms_specs := []events.MicroserviceSpec{}
+			for _, rs := range msdef.RequiredServices {
+				msdef_dep, err := microservice.FindOrCreateMicroserviceDef(w.db, rs.URL, rs.Org, rs.Version, rs.Arch, exchange.GetHTTPServiceHandler(w))
+				if err != nil {
+					return nil, fmt.Errorf(logString(fmt.Sprintf("failed to get or create service definition for for %v/%v: %v", rs.Org, rs.URL, err)))
+				} else {
+					// Assume the first msdef is the one we want.
+					msspec := events.MicroserviceSpec{SpecRef: rs.URL, Org: rs.Org, Version: msdef_dep.Version, MsdefId: msdef_dep.Id}
+					ms_specs = append(ms_specs, msspec)
+				}
+			}
+
+			// save the instance
+			var ms_instance *persistence.MicroserviceInstance
+			if isRetry {
+				ms_instance = msinst_given
+			} else {
+				ms_instance, err1 = persistence.NewMicroserviceInstance(w.db, msdef.SpecRef, msdef.Org, msdef.Version, ms_key, dependencyPath)
+				if err1 != nil {
+					return nil, fmt.Errorf(logString(fmt.Sprintf("Error persisting service instance for %v/%v %v %v.", msdef.Org, msdef.SpecRef, msdef.Version, ms_key)))
+				}
+			}
+
+			// get the image auth for service (we have to try even for microservice because we do not know if this is ms or svc.)
+			img_auths := make([]events.ImageDockerAuth, 0)
+			if w.Config.Edge.TrustDockerAuthFromOrg {
+				if ias, err := exchange.GetHTTPServiceDockerAuthsHandler(w)(msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch); err != nil {
+					glog.V(5).Infof(logString(fmt.Sprintf("received error querying exchange for service image auths: %v/%v version %v, error %v", msdef.Org, msdef.SpecRef, msdef.Version, err)))
+				} else {
+					if ias != nil {
+						for _, iau_temp := range ias {
+							username := iau_temp.UserName
+							if username == "" {
+								username = "token"
+							}
+							img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: username, Password: iau_temp.Token})
+						}
+					}
+				}
+			}
+
+			// Fire an event to the torrent worker so that it will download the container
+			cc := events.NewContainerConfig(ms_workload.Deployment, ms_workload.DeploymentSignature, ms_workload.DeploymentUserInfo, "", img_auths)
+
+			// convert the user input from the service attributes to env variables
+			if attrs, err := persistence.FindApplicableAttributes(w.db, msdef.SpecRef, msdef.Org); err != nil {
+				return nil, fmt.Errorf(logString(fmt.Sprintf("Unable to fetch service preferences for %v/%v. Err: %v", msdef.Org, msdef.SpecRef, err)))
+			} else if envAdds, err := persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM); err != nil {
+				return nil, fmt.Errorf(logString(fmt.Sprintf("Failed to convert service preferences to environmental variables for %v/%v. Err: %v", msdef.Org, msdef.SpecRef, err)))
+			} else {
+				envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = exchange.GetId(w.GetExchangeId())
+				envAdds[config.ENVVAR_PREFIX+"ORGANIZATION"] = exchange.GetOrg(w.GetExchangeId())
+				envAdds[config.ENVVAR_PREFIX+"PATTERN"] = w.devicePattern
+				envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = w.Config.Edge.ExchangeURL
+				// Add in any default variables from the microservice userInputs that havent been overridden
+				for _, ui := range msdef.UserInputs {
+					if ui.DefaultValue != "" {
+						if _, ok := envAdds[ui.Name]; !ok {
+							envAdds[ui.Name] = ui.DefaultValue
+						}
+					}
+				}
+
+				agIds := make([]string, 0)
+
+				if agreementId != "" {
+					// service originally start up
+					agIds = append(agIds, agreementId)
+				} else {
+					// retry case or agreementless case
+					agIds = ms_instance.AssociatedAgreements
+				}
+				lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey(), agIds, ms_specs, persistence.NewServiceInstancePathElement(msdef.SpecRef, msdef.Org, msdef.Version), isRetry)
+				w.Messages() <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
+			}
+
+			return ms_instance, nil // assume there is only one workload for a microservice
 		}
 	}
 }

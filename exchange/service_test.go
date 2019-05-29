@@ -5,8 +5,6 @@ package exchange
 import (
 	"errors"
 	"flag"
-	"github.com/open-horizon/anax/policy"
-	"reflect"
 	"testing"
 )
 
@@ -25,13 +23,12 @@ func TestServiceString1(t *testing.T) {
 		UserInputs:          []UserInput{},
 		Deployment:          `{"services":{}}`,
 		DeploymentSignature: "xyzpdq=",
-		ImageStore:          ImplementationPackage{},
 		LastUpdated:         "today",
 	}
 	str := s.String()
 	t.Log(str)
 
-	expected := `Owner: testOwner, Label: service def, Description: a test, Public: false, URL: http://test.company.com/service1, Version: 1.0.0, Arch: amd64, Sharable: singleton, MatchHardware: none, RequiredServices: [], UserInputs: [], Deployment: {"services":{}}, DeploymentSignature: xyzpdq=, Package: none, LastUpdated: today`
+	expected := `Owner: testOwner, Label: service def, Description: a test, Public: false, URL: http://test.company.com/service1, Version: 1.0.0, Arch: amd64, Sharable: singleton, MatchHardware: none, RequiredServices: [], UserInputs: [], Deployment: {"services":{}}, DeploymentSignature: xyzpdq=, LastUpdated: today`
 	if str != expected {
 		t.Errorf("String() output expected: %v", expected)
 	}
@@ -80,15 +77,12 @@ func TestServiceString2(t *testing.T) {
 		},
 		Deployment:          `{"services":{}}`,
 		DeploymentSignature: "xyzpdq=",
-		ImageStore: ImplementationPackage{
-			"storeType": "container",
-		},
-		LastUpdated: "today",
+		LastUpdated:         "today",
 	}
 	str := s.String()
 	t.Log(str)
 
-	expected := `Owner: testOwner, Label: service def, Description: a test, Public: false, URL: http://test.company.com/service1, Version: 1.0.0, Arch: amd64, Sharable: singleton, MatchHardware: {dev:/dev/dev1}, RequiredServices: [{URL: http://my.com/ms/ms1, Org: otherOrg, Version: 1.5.0, Arch: amd64} {URL: http://my.com/ms/ms2, Org: otherOrg, Version: 2.7, Arch: amd64}], UserInputs: [{Name: name, :Label: a ui, Type: string, DefaultValue: } {Name: name2, :Label: another ui, Type: string, DefaultValue: three}], Deployment: {"services":{}}, DeploymentSignature: xyzpdq=, Package: {storeType:container}, LastUpdated: today`
+	expected := `Owner: testOwner, Label: service def, Description: a test, Public: false, URL: http://test.company.com/service1, Version: 1.0.0, Arch: amd64, Sharable: singleton, MatchHardware: {dev:/dev/dev1}, RequiredServices: [{URL: http://my.com/ms/ms1, Org: otherOrg, Version: 1.5.0, Arch: amd64} {URL: http://my.com/ms/ms2, Org: otherOrg, Version: 2.7, Arch: amd64}], UserInputs: [{Name: name, :Label: a ui, Type: string, DefaultValue: } {Name: name2, :Label: another ui, Type: string, DefaultValue: three}], Deployment: {"services":{}}, DeploymentSignature: xyzpdq=, LastUpdated: today`
 	if str != expected {
 		t.Errorf("String() output expected: %v", expected)
 	}
@@ -138,10 +132,7 @@ func TestServiceString3(t *testing.T) {
 		},
 		Deployment:          `{"services":{}}`,
 		DeploymentSignature: "xyzpdq=",
-		ImageStore: ImplementationPackage{
-			"storeType": "container",
-		},
-		LastUpdated: "today",
+		LastUpdated:         "today",
 	}
 	str := s.ShortString()
 	t.Log(str)
@@ -201,10 +192,7 @@ func TestService_GetUserInputByName(t *testing.T) {
 		},
 		Deployment:          `{"services":{}}`,
 		DeploymentSignature: "xyzpdq=",
-		ImageStore: ImplementationPackage{
-			"storeType": "container",
-		},
-		LastUpdated: "today",
+		LastUpdated:         "today",
 	}
 
 	// Test when name is found
@@ -271,10 +259,7 @@ func TestService_NeedsUserInput1(t *testing.T) {
 		},
 		Deployment:          `{"services":{}}`,
 		DeploymentSignature: "xyzpdq=",
-		ImageStore: ImplementationPackage{
-			"storeType": "container",
-		},
-		LastUpdated: "today",
+		LastUpdated:         "today",
 	}
 
 	// Test when user input is needed
@@ -331,10 +316,7 @@ func TestService_NeedsUserInput2(t *testing.T) {
 		},
 		Deployment:          `{"services":{}}`,
 		DeploymentSignature: "xyzpdq=",
-		ImageStore: ImplementationPackage{
-			"storeType": "container",
-		},
-		LastUpdated: "today",
+		LastUpdated:         "today",
 	}
 
 	// Test when user input is needed
@@ -393,10 +375,7 @@ func TestService_PopulateDefaultUserInput(t *testing.T) {
 		},
 		Deployment:          `{"services":{}}`,
 		DeploymentSignature: "xyzpdq=",
-		ImageStore: ImplementationPackage{
-			"storeType": "container",
-		},
-		LastUpdated: "today",
+		LastUpdated:         "today",
 	}
 
 	envAdds := make(map[string]string)
@@ -416,10 +395,6 @@ func TestService_GetDeployment(t *testing.T) {
 
 	targetD := `{"services":{}}`
 	targetDS := "xyzpdq="
-	targetIS := policy.ImplementationPackage{
-		"storeType": "newStore",
-		"foo":       "bar",
-	}
 
 	s := ServiceDefinition{
 		Owner:       "testOwner",
@@ -463,28 +438,17 @@ func TestService_GetDeployment(t *testing.T) {
 		},
 		Deployment:          targetD,
 		DeploymentSignature: targetDS,
-		ImageStore: ImplementationPackage{
-			"storeType": "newStore",
-			"foo":       "bar",
-		},
-		LastUpdated: "today",
+		LastUpdated:         "today",
 	}
 
 	d := s.GetDeployment()
 	ds := s.GetDeploymentSignature()
-	torr := s.GetTorrent()
-	is := s.GetImageStore()
 
 	if d != targetD {
 		t.Errorf("Returned Deployment should be %v, was %v", targetD, d)
 	} else if ds != targetDS {
 		t.Errorf("Returned DeploymentSig should be %v, was %v", targetDS, ds)
-	} else if torr != "" {
-		t.Errorf("Returned Torrent should be empty string, was %v", torr)
-	} else if !reflect.DeepEqual(is, targetIS) {
-		t.Errorf("Returned Image Store should be %v, was %v", targetIS, is)
 	}
-
 }
 
 func Test_GetSearchVersion(t *testing.T) {
@@ -968,7 +932,6 @@ func getRecursiveVariableServiceHandler(mUserInput []UserInput, mRequiredService
 			UserInputs:          mUserInput,
 			Deployment:          `{"services":{}}`,
 			DeploymentSignature: "xyzpdq=",
-			ImageStore:          ImplementationPackage{},
 			LastUpdated:         "today",
 		}
 		return &md, "service-id", nil
@@ -991,7 +954,6 @@ func getVariableServiceHandler(mUserInput []UserInput, mRequiredServices []Servi
 			UserInputs:          mUserInput,
 			Deployment:          `{"services":{}}`,
 			DeploymentSignature: "xyzpdq=",
-			ImageStore:          ImplementationPackage{},
 			LastUpdated:         "today",
 		}
 		return &md, "service-id", nil

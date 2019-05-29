@@ -143,7 +143,6 @@ func createSkeletalServiceDef(serviceName string) *cliexchange.ServiceFile {
 		},
 	}
 	res.DeploymentSignature = ""
-	res.ImageStore = map[string]interface{}{}
 	res.Org = "testorg"
 
 	return res

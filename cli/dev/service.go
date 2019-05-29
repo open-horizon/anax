@@ -170,10 +170,10 @@ func verifyNewServiceInputs(homeDirectory string, org string, specRef string, ve
 	return dir, nil
 }
 
-func ServiceStartTest(homeDirectory string, userInputFile string, configFiles []string, configType string, noFSS bool, userCreds string, keyFiles []string) {
+func ServiceStartTest(homeDirectory string, userInputFile string, configFiles []string, configType string, noFSS bool, userCreds string) {
 
 	// Allow the right plugin to start a test of this service.
-	startErr := plugin_registry.DeploymentConfigPlugins.StartTest(homeDirectory, userInputFile, configFiles, configType, noFSS, userCreds, keyFiles)
+	startErr := plugin_registry.DeploymentConfigPlugins.StartTest(homeDirectory, userInputFile, configFiles, configType, noFSS, userCreds)
 	if startErr != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "%v", startErr)
 	}
@@ -192,7 +192,7 @@ func ServiceStopTest(homeDirectory string) {
 
 }
 
-func ServiceValidate(homeDirectory string, userInputFile string, configFiles []string, configType string, userCreds string, keyFiles []string) []string {
+func ServiceValidate(homeDirectory string, userInputFile string, configFiles []string, configType string, userCreds string) []string {
 
 	// Get the setup info and context for running the command.
 	dir, err := setup(homeDirectory, true, false, "")
@@ -204,7 +204,7 @@ func ServiceValidate(homeDirectory string, userInputFile string, configFiles []s
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_VERIFY_COMMAND, err)
 	}
 
-	CommonProjectValidation(dir, userInputFile, SERVICE_COMMAND, SERVICE_VERIFY_COMMAND, userCreds, keyFiles, true)
+	CommonProjectValidation(dir, userInputFile, SERVICE_COMMAND, SERVICE_VERIFY_COMMAND, userCreds, true)
 
 	absFiles := FileValidation(configFiles, configType, SERVICE_COMMAND, SERVICE_VERIFY_COMMAND)
 

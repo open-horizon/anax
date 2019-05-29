@@ -31,8 +31,5 @@
       }
     }
   },
-  "deployment_signature": "",
-  "imageStore": {
-    "storeType": "dockerRegistry"
-  }
+  "deployment_signature": ""
 }

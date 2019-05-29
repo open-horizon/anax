@@ -23,16 +23,7 @@
             "matchgroups": [],
             "deployment": "Deployment instructions",
             "deployment_signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "deployment_user_info": "",
-            "torrent": {
-                "url": "torrent://the.system.com",
-                "images": [
-                    {
-                        "file": "a_file.tar.gz",
-                        "signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                    }
-                ]
-            }
+            "deployment_user_info": ""
         }
     ],
     "dataVerification": {

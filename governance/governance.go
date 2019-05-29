@@ -19,7 +19,6 @@ import (
 	"github.com/open-horizon/anax/producer"
 	"github.com/open-horizon/anax/worker"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -122,8 +121,8 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 		cmd := w.NewReportDeviceStatusCommand()
 		w.Commands <- cmd
 
-	case *events.TorrentMessage:
-		msg, _ := incoming.(*events.TorrentMessage)
+	case *events.ImageFetchMessage:
+		msg, _ := incoming.(*events.ImageFetchMessage)
 
 		switch msg.LaunchContext.(type) {
 		case *events.AgreementLaunchContext:
@@ -1346,104 +1345,100 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			persistence.EC_AGREEMENT_REACHED,
 			*ag)
 
-		// Publish the "agreement reached" event to the message bus so that torrent can start downloading the workload.
+		// Publish the "agreement reached" event to the message bus so that imagefetch can start downloading the workload.
 		workload := tcPolicy.NextHighestPriorityWorkload(0, 0, 0)
-		if url, err := url.Parse(workload.Torrent.Url); err != nil {
-			return errors.New(fmt.Sprintf("Ill-formed URL: %v", workload.Torrent.Url))
-		} else {
-			// get service image auths from the exchange
-			img_auths := make([]events.ImageDockerAuth, 0)
-			if w.Config.Edge.TrustDockerAuthFromOrg {
-				if ias, err := exchange.GetHTTPServiceDockerAuthsHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
-					return errors.New(logString(fmt.Sprintf("received error querying exchange for service image auths: %v, error %v", workload, err)))
-				} else {
-					if ias != nil {
-						for _, iau_temp := range ias {
-							username := iau_temp.UserName
-							if username == "" {
-								username = "token"
-							}
-							img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: username, Password: iau_temp.Token})
+
+		// get service image auths from the exchange
+		img_auths := make([]events.ImageDockerAuth, 0)
+		if w.Config.Edge.TrustDockerAuthFromOrg {
+			if ias, err := exchange.GetHTTPServiceDockerAuthsHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+				return errors.New(logString(fmt.Sprintf("received error querying exchange for service image auths: %v, error %v", workload, err)))
+			} else {
+				if ias != nil {
+					for _, iau_temp := range ias {
+						username := iau_temp.UserName
+						if username == "" {
+							username = "token"
 						}
+						img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: username, Password: iau_temp.Token})
 					}
 				}
 			}
-
-			cc := events.NewContainerConfig(*url, workload.Torrent.Signature, workload.Deployment, workload.DeploymentSignature, workload.DeploymentUserInfo, workload.DeploymentOverrides, img_auths)
-
-			lc := new(events.AgreementLaunchContext)
-			lc.Configure = *cc
-			lc.AgreementId = proposal.AgreementId()
-
-			// get environmental settings for the workload
-			envAdds := make(map[string]string)
-
-			// The service config variables are stored in the device's attributes.
-			if envAdds, err = w.GetWorkloadPreference(workload.WorkloadURL, workload.Org); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("Error: %v", err)))
-				return err
-			}
-
-			// The workload config we have might be from a lower version of the workload. Go to the exchange and
-			// get the metadata for the version we are running and then add in any unset default user inputs.
-			var serviceDef *exchange.ServiceDefinition
-			if _, sDef, _, err := exchange.GetHTTPServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
-				return errors.New(logString(fmt.Sprintf("received error querying exchange for workload or service metadata: %v, error %v", workload, err)))
-			} else if sDef == nil {
-				return errors.New(logString(fmt.Sprintf("cound not find workload or service metadata for %v.", workload)))
-			} else {
-				serviceDef = sDef
-				sDef.PopulateDefaultUserInput(envAdds)
-			}
-
-			cutil.SetPlatformEnvvars(envAdds,
-				config.ENVVAR_PREFIX,
-				proposal.AgreementId(),
-				exchange.GetId(w.GetExchangeId()),
-				exchange.GetOrg(w.GetExchangeId()),
-				workload.WorkloadPassword,
-				w.GetExchangeURL(),
-				w.devicePattern,
-				w.BaseWorker.Manager.Config.GetFileSyncServiceProtocol(),
-				w.BaseWorker.Manager.Config.GetFileSyncServiceAPIListen(),
-				strconv.Itoa(int(w.BaseWorker.Manager.Config.GetFileSyncServiceAPIPort())))
-
-			lc.EnvironmentAdditions = &envAdds
-			lc.AgreementProtocol = protocol
-
-			// Make a list of service dependencies for this workload. For sevices, it is just the top level dependencies.
-			deps := serviceDef.GetServiceDependencies()
-
-			// Create the service instance dependency path with the workload as the root.
-			instancePath := []persistence.ServiceInstancePathElement{*persistence.NewServiceInstancePathElement(workload.WorkloadURL, workload.Org, workload.Version)}
-
-			eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
-				fmt.Sprintf("Start dependent services for %v/%v.", ag.RunningWorkload.Org, ag.RunningWorkload.URL),
-				persistence.EC_START_DEPENDENT_SERVICE,
-				*ag)
-
-			if ms_specs, err := w.processDependencies(instancePath, deps, proposal.AgreementId(), protocol); err != nil {
-				eventlog.LogAgreementEvent(
-					w.db,
-					persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Encountered error starting dependen services for %v/%v. %v", ag.RunningWorkload.Org, ag.RunningWorkload.URL, err),
-					persistence.EC_ERROR_START_DEPENDENT_SERVICE,
-					*ag)
-				return err
-			} else {
-				// Save the list of services/microservices associated with this agreement and store them in the AgreementLaunchContext. These are
-				// the services that are going to be network accessible to the workload container(s).
-				lc.Microservices = ms_specs
-			}
-
-			eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
-				fmt.Sprintf("Start workload service for %v/%v.", ag.RunningWorkload.Org, ag.RunningWorkload.URL),
-				persistence.EC_START_SERVICE,
-				*ag)
-
-			w.BaseWorker.Manager.Messages <- events.NewAgreementMessage(events.AGREEMENT_REACHED, lc)
-
 		}
+
+		cc := events.NewContainerConfig(workload.Deployment, workload.DeploymentSignature, workload.DeploymentUserInfo, workload.DeploymentOverrides, img_auths)
+
+		lc := new(events.AgreementLaunchContext)
+		lc.Configure = *cc
+		lc.AgreementId = proposal.AgreementId()
+
+		// get environmental settings for the workload
+		envAdds := make(map[string]string)
+
+		// The service config variables are stored in the device's attributes.
+		if envAdds, err = w.GetWorkloadPreference(workload.WorkloadURL, workload.Org); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Error: %v", err)))
+			return err
+		}
+
+		// The workload config we have might be from a lower version of the workload. Go to the exchange and
+		// get the metadata for the version we are running and then add in any unset default user inputs.
+		var serviceDef *exchange.ServiceDefinition
+		if _, sDef, _, err := exchange.GetHTTPServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+			return errors.New(logString(fmt.Sprintf("received error querying exchange for workload or service metadata: %v, error %v", workload, err)))
+		} else if sDef == nil {
+			return errors.New(logString(fmt.Sprintf("cound not find workload or service metadata for %v.", workload)))
+		} else {
+			serviceDef = sDef
+			sDef.PopulateDefaultUserInput(envAdds)
+		}
+
+		cutil.SetPlatformEnvvars(envAdds,
+			config.ENVVAR_PREFIX,
+			proposal.AgreementId(),
+			exchange.GetId(w.GetExchangeId()),
+			exchange.GetOrg(w.GetExchangeId()),
+			workload.WorkloadPassword,
+			w.GetExchangeURL(),
+			w.devicePattern,
+			w.BaseWorker.Manager.Config.GetFileSyncServiceProtocol(),
+			w.BaseWorker.Manager.Config.GetFileSyncServiceAPIListen(),
+			strconv.Itoa(int(w.BaseWorker.Manager.Config.GetFileSyncServiceAPIPort())))
+
+		lc.EnvironmentAdditions = &envAdds
+		lc.AgreementProtocol = protocol
+
+		// Make a list of service dependencies for this workload. For sevices, it is just the top level dependencies.
+		deps := serviceDef.GetServiceDependencies()
+
+		// Create the service instance dependency path with the workload as the root.
+		instancePath := []persistence.ServiceInstancePathElement{*persistence.NewServiceInstancePathElement(workload.WorkloadURL, workload.Org, workload.Version)}
+
+		eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
+			fmt.Sprintf("Start dependent services for %v/%v.", ag.RunningWorkload.Org, ag.RunningWorkload.URL),
+			persistence.EC_START_DEPENDENT_SERVICE,
+			*ag)
+
+		if ms_specs, err := w.processDependencies(instancePath, deps, proposal.AgreementId(), protocol); err != nil {
+			eventlog.LogAgreementEvent(
+				w.db,
+				persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Encountered error starting dependen services for %v/%v. %v", ag.RunningWorkload.Org, ag.RunningWorkload.URL, err),
+				persistence.EC_ERROR_START_DEPENDENT_SERVICE,
+				*ag)
+			return err
+		} else {
+			// Save the list of services/microservices associated with this agreement and store them in the AgreementLaunchContext. These are
+			// the services that are going to be network accessible to the workload container(s).
+			lc.Microservices = ms_specs
+		}
+
+		eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
+			fmt.Sprintf("Start workload service for %v/%v.", ag.RunningWorkload.Org, ag.RunningWorkload.URL),
+			persistence.EC_START_SERVICE,
+			*ag)
+
+		w.BaseWorker.Manager.Messages <- events.NewAgreementMessage(events.AGREEMENT_REACHED, lc)
 
 		// Tell the BC worker to start the BC client container(s) if we need to.
 		if ag.BlockchainType != "" && ag.BlockchainName != "" && ag.BlockchainOrg != "" {
