@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/metering"
 	"github.com/open-horizon/anax/policy"
 	"net/http"
@@ -273,6 +274,13 @@ func DecideOnProposal(p ProtocolHandler,
 		producerPolicy = pPolicy
 		glog.V(3).Infof(AAPlogString(p.Name(), fmt.Sprintf("TsAndCs: %v", tcPolicy.String())))
 		glog.V(3).Infof(AAPlogString(p.Name(), fmt.Sprintf("Producer Policy: %v", pPolicy.String())))
+
+		// now add the node's built-in properties to the producer policy
+		var err1 error
+		producerPolicy, err1 = addNodeBuiltInProps(producerPolicy)
+		if err1 != nil {
+			replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error adding node built-in policy to the producer policy, %v", p.Name(), err))
+		}
 	}
 
 	// Get all the local policies that make up the producer policy.
@@ -284,8 +292,8 @@ func DecideOnProposal(p ProtocolHandler,
 	}
 
 	// The consumer will send 2 policies, one is the merged policy that represents the
-	// terms and conditions of the agreement. The other is a copy of my policy that he thinks
-	// he is matching. Let's make sure it is one of my policies or a valid merger of my policies.
+	// terms and conditions of the agreement. The other is a copy of my policy that he/she thinks
+	// he/she is matching. Let's make sure it is one of my policies or a valid merger of my policies.
 	// In the case of services, the agreement service might not have any dependent services and
 	// therefore, there is no producer policy (or it is empty).
 	if replyErr == nil {
@@ -554,6 +562,26 @@ func DemarshalProposal(proposal string) (Proposal, error) {
 		return prop, nil
 	}
 
+}
+
+// Adds node built-in properties to the producer policy.
+// It will get node's CPU count, available memory and arch and add them to
+// the producer policy that was used to make the proposal on agbot.
+func addNodeBuiltInProps(pol *policy.Policy) (*policy.Policy, error) {
+	if pol == nil {
+		return nil, nil
+	}
+
+	// get built-in node properties and replace the ones in the policy,
+	// the memory will be the available memory instead of total memory
+	builtinNodePol := externalpolicy.CreateNodeBuiltInPolicy(true)
+	for _, prop := range builtinNodePol.Properties {
+		if err := pol.Add_Property(&prop, true); err != nil {
+			return nil, err
+		}
+	}
+
+	return pol, nil
 }
 
 var AAPlogString = func(p string, v interface{}) string {

@@ -31,8 +31,8 @@ func (c *ConstraintExpression) Add_Constraint(newconstr string) {
 	(*c) = append(*c, newconstr)
 }
 
-// merge two constraint into one
-func (c *ConstraintExpression) Merge(other *ConstraintExpression) *ConstraintExpression {
+// merge two constraint into one, remove the duplicates.
+func (c *ConstraintExpression) MergeWith(other *ConstraintExpression) {
 	// the function that checks if an element is in array
 	s_contains := func(s_array []string, elem string) bool {
 		for _, e := range s_array {
@@ -43,27 +43,15 @@ func (c *ConstraintExpression) Merge(other *ConstraintExpression) *ConstraintExp
 		return false
 	}
 
-	if other == nil || len(*other) == 0 {
-		return c
+	if other == nil {
+		return
 	}
 
-	if len(*c) == 0 {
-		return other
-	}
-
-	// merge the two
-	merged := Constraint_Factory()
-	for _, elemA := range *c {
-		merged.Add_Constraint(elemA)
-	}
-
-	for _, elemB := range *other {
-		if !s_contains([]string(*c), elemB) {
-			merged.Add_Constraint(elemB)
+	for _, new_ele := range *other {
+		if !s_contains((*c), new_ele) {
+			(*c) = append((*c), new_ele)
 		}
 	}
-
-	return merged
 }
 
 // This function checks if the 2 constraints are the same. In order to be same, they must have the same constraints.

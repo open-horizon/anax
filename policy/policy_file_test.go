@@ -371,11 +371,11 @@ func Test_Policy_Creation(t *testing.T) {
 	agp2.Blockchains.Add_Blockchain(Blockchain_Factory("Fred", "bc2", "myorg"))
 	pf_created.Add_Agreement_Protocol(agp2)
 
-	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop1", "rpival1"))
-	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop2", "rpival2"))
-	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop3", "rpival3"))
-	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop4", "rpival4"))
-	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop5", "rpival5"))
+	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop1", "rpival1"), false)
+	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop2", "rpival2"), false)
+	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop3", "rpival3"), false)
+	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop4", "rpival4"), false)
+	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop5", "rpival5"), false)
 
 	pf_created.Add_NodeHealth(NodeHealth_Factory(600, 30))
 
@@ -1010,8 +1010,8 @@ func Test_DeleteAllPolicyFiles(t *testing.T) {
 
 func Test_GenPolicyFromExternalPolicy(t *testing.T) {
 	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"))
-	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"))
+	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"), false)
+	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"), false)
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,
@@ -1031,7 +1031,7 @@ func Test_GenPolicyFromExternalPolicy(t *testing.T) {
 		// check constraints
 		// this part is tested heavily in constaint_expression_test.go
 		propList3 := new(externalpolicy.PropertyList)
-		propList3.Add_Property(externalpolicy.Property_Factory("prop3", "val3"))
+		propList3.Add_Property(externalpolicy.Property_Factory("prop3", "val3"), false)
 
 		if err := pol.Constraints.IsSatisfiedBy(*propList3); err != nil {
 			t.Errorf("Couterparty property check should not have returned error but got: %v", err)
@@ -1041,8 +1041,8 @@ func Test_GenPolicyFromExternalPolicy(t *testing.T) {
 
 func Test_MergePolicyWithExternalPolicy(t *testing.T) {
 	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"))
-	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"))
+	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"), false)
+	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"), false)
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,
@@ -1081,8 +1081,8 @@ func Test_MergePolicyWithExternalPolicy(t *testing.T) {
 
 		// check constraints
 		propList := new(externalpolicy.PropertyList)
-		propList.Add_Property(externalpolicy.Property_Factory("prop3", "val3"))
-		propList.Add_Property(externalpolicy.Property_Factory("purpose", "network-testing"))
+		propList.Add_Property(externalpolicy.Property_Factory("prop3", "val3"), false)
+		propList.Add_Property(externalpolicy.Property_Factory("purpose", "network-testing"), false)
 
 		if err := pol.Constraints.IsSatisfiedBy(*propList); err != nil {
 			t.Errorf("Couterparty property check should not have returned error but got: %v", err)

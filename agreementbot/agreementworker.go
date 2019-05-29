@@ -356,7 +356,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				wi.ProducerPolicy = *nodePolicy
 
 				// merge the business policy with the top level service policy + service built-in policy
-				builtInSvcPol := b.CreateServiceBuiltInPolicy(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
+				builtInSvcPol := externalpolicy.CreateServiceBuiltInPolicy(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 
 				servicePolTemp, foundTemp := wi.ServicePolicies[sId]
 				var servicePol *externalpolicy.ExternalPolicy
@@ -516,39 +516,13 @@ func (b *BaseAgreementWorker) GetMergedProducerPolicyForPattern(deviceId string,
 	return mergedProducer, nil
 }
 
-func (b *BaseAgreementWorker) CreateServiceBuiltInPolicy(svcName, svcOrg, svcVersion, svcArch string) *externalpolicy.ExternalPolicy {
-	svcBuiltInProps := new(externalpolicy.PropertyList)
-	svcBuiltInProps.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_URL, svcName))
-	svcBuiltInProps.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_NAME, svcName))
-	svcBuiltInProps.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ORG, svcOrg))
-	svcBuiltInProps.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_VERSION, svcVersion))
-	svcBuiltInProps.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ARCH, svcArch))
-
-	buitInPol := externalpolicy.ExternalPolicy{
-		Properties:  *svcBuiltInProps,
-		Constraints: []string{},
-	}
-
-	return &buitInPol
-}
-
 // This function merge the given business policy with the given built-in properties of the service and the given service policy
 // from the top level service, if any.
 // If the service policy is nil, then this function featches the service policy from the exchange and returned it back
 // in order to let the policy manager to cache it.
-func (b *BaseAgreementWorker) MergeServicePolicyToConsumerPolicy(businessPol *policy.Policy, buitInPol *externalpolicy.ExternalPolicy, servicePol *externalpolicy.ExternalPolicy, sId string) (*policy.Policy, *externalpolicy.ExternalPolicy, error) {
+func (b *BaseAgreementWorker) MergeServicePolicyToConsumerPolicy(businessPol *policy.Policy, builtInSvcPol *externalpolicy.ExternalPolicy, servicePol *externalpolicy.ExternalPolicy, sId string) (*policy.Policy, *externalpolicy.ExternalPolicy, error) {
 	if businessPol == nil {
 		return nil, nil, nil
-	}
-
-	merged_pol1 := businessPol
-
-	// merge the service built-in properties
-	if buitInPol != nil {
-		var err error
-		if merged_pol1, err = policy.MergePolicyWithExternalPolicy(businessPol, buitInPol); err != nil {
-			return nil, nil, fmt.Errorf("error merging business policy with service built-in properties for servcie %v. %v", sId, err)
-		}
 	}
 
 	// get the service policy.
@@ -561,10 +535,21 @@ func (b *BaseAgreementWorker) MergeServicePolicyToConsumerPolicy(businessPol *po
 		}
 	}
 
+	// add built-in service properties to the service policy
+	var merged_pol1 externalpolicy.ExternalPolicy
+	if servicePol != nil {
+		merged_pol1 = externalpolicy.ExternalPolicy(*servicePol)
+		if builtInSvcPol != nil {
+			(&merged_pol1).MergeWith(builtInSvcPol, false)
+		}
+	} else {
+		if builtInSvcPol != nil {
+			merged_pol1 = externalpolicy.ExternalPolicy(*builtInSvcPol)
+		}
+	}
+
 	//merge service policy
-	if servicePol == nil || merged_pol1 == nil {
-		return merged_pol1, nil, nil
-	} else if merged_pol2, err := policy.MergePolicyWithExternalPolicy(merged_pol1, servicePol); err != nil {
+	if merged_pol2, err := policy.MergePolicyWithExternalPolicy(businessPol, &merged_pol1); err != nil {
 		return nil, nil, fmt.Errorf("error merging business policy with service policy for servcie %v. %v", sId, err)
 	} else {
 		return merged_pol2, servicePol, nil

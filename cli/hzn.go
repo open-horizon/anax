@@ -283,7 +283,7 @@ Environment Variables:
 
 	policyCmd := app.Command("policy", "List and manage policy for this Horizon edge node.")
 	policyListCmd := policyCmd.Command("list", "Display this edge node's policy.")
-	policyUpdateCmd := policyCmd.Command("update", "Update the node's policy.")
+	policyUpdateCmd := policyCmd.Command("update", "Update the node's policy. The node's built-in properties will be automatically added if the input policy does not contain them.")
 	policyUpdateInputFile := policyUpdateCmd.Flag("input-file", "The JSON input file name containing the node policy.").Short('f').Required().String()
 	policyRemoveCmd := policyCmd.Command("remove", "Remove the node's policy.")
 	policyRemoveForce := policyRemoveCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
