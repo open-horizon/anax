@@ -18,16 +18,7 @@
     "workloads": [
         {
             "deployment": "Deployment b_2",
-            "deployment_signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "torrent": {
-                "url": "torrent://the.system.com",
-                "images": [
-                    {
-                        "file": "a_file.tar.gz",
-                        "signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                    }
-                ]
-            }
+            "deployment_signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         }
     ],
     "deviceType": "12345-54321-abcdef-fedcba",

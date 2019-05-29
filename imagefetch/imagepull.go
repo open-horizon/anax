@@ -1,8 +1,7 @@
-package torrent
+package imagefetch
 
 import (
 	docker "github.com/fsouza/go-dockerclient"
-	"github.com/open-horizon/horizon-pkg-fetch/fetcherrors"
 	"strings"
 
 	"fmt"
@@ -161,7 +160,7 @@ func pullSingleImageFromRepo(client *docker.Client, opts docker.PullImageOptions
 				dErr := err.(*docker.Error)
 				if strings.Contains(dErr.Message, "cred") {
 					msg := fmt.Sprintf("Aborting fetch of Docker image %v.", opts.Repository)
-					return fetcherrors.PkgSourceFetchAuthError{Msg: msg, InternalError: dErr}
+					return fmt.Errorf("Auth error. Msg: %v, InternalError: %v.", msg, dErr)
 				}
 			}
 
@@ -185,4 +184,38 @@ func pullSingleImageFromRepo(client *docker.Client, opts docker.PullImageOptions
 		}
 	}
 	return nil
+}
+
+func listImages(client *docker.Client) ([]docker.APIImages, error) {
+
+	if images, err := client.ListImages(docker.ListImagesOptions{
+		All: true,
+	}); err != nil {
+		return nil, err
+	} else {
+		return images, nil
+	}
+}
+
+// TODO: user needs to use image IDs instead of repotags to avoid overwriting or otherwise mistaken handling because of name collisions
+func SkipCheckFn(client *docker.Client) func(repotag string) (bool, error) {
+
+	return func(repotag string) (bool, error) {
+		repotagParts := strings.Split(repotag, ":")
+
+		if images, err := listImages(client); err != nil {
+			return false, err
+		} else {
+			for _, image := range images {
+				for _, r := range image.RepoTags {
+					// don't permit skips over "latest" tag in case a newer version exists
+					if r == repotag && repotagParts[1] != "latest" {
+						return true, nil
+					}
+				}
+			}
+
+			return false, nil
+		}
+	}
 }

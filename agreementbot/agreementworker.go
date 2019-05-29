@@ -440,20 +440,6 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			// the workload/service in the policy.
 			workload.Deployment = workloadDetails.GetDeployment()
 			workload.DeploymentSignature = workloadDetails.GetDeploymentSignature()
-			workload.ImageStore = workloadDetails.GetImageStore()
-			if workloadDetails.GetTorrent() != "" {
-				torr := new(policy.Torrent)
-				if err := json.Unmarshal([]byte(workloadDetails.GetTorrent()), torr); err != nil {
-					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Unable to demarshal torrent info from %v, error: %v", workloadDetails, err)))
-					return
-				}
-				workload.Torrent = *torr
-			} else {
-				// Since the torrent field is empty, we can convert the Package implementation to a Torrent object. The conversion
-				// might result in an empty object which would be normal when the ImageStore field does not contain metadata
-				// pointing to an image server.
-				workload.Torrent = workload.ImageStore.ConvertToTorrent()
-			}
 
 			glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("workload %v is supported by device %v", workload, wi.Device.Id)))
 		}

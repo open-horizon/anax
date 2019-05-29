@@ -595,24 +595,6 @@
 			"versionExact": "0.6.0"
 		},
 		{
-			"checksumSHA1": "da+YEJY+nMqad6J7sFQVh2Wed1c=",
-			"path": "github.com/open-horizon/horizon-pkg-fetch",
-			"revision": "e26ba540ae0e0f608487bbb38650749a3b739313",
-			"revisionTime": "2017-12-08T00:46:31Z"
-		},
-		{
-			"checksumSHA1": "7TaYmWpXydU8XjqcnYeJme/oV48=",
-			"path": "github.com/open-horizon/horizon-pkg-fetch/fetcherrors",
-			"revision": "e26ba540ae0e0f608487bbb38650749a3b739313",
-			"revisionTime": "2017-12-08T00:46:31Z"
-		},
-		{
-			"checksumSHA1": "RyA64Y5+znkhKUwOhvXUUHtSf4g=",
-			"path": "github.com/open-horizon/horizon-pkg-fetch/horizonpkg",
-			"revision": "e26ba540ae0e0f608487bbb38650749a3b739313",
-			"revisionTime": "2017-12-08T00:46:31Z"
-		},
-		{
 			"checksumSHA1": "h28o0+CEghkJELsf/KRNqGXZ7LA=",
 			"path": "github.com/open-horizon/rsapss-tool/constants",
 			"revision": "064e62a61118dc418ca20d119687580354856578",

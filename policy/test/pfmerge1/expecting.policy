@@ -22,9 +22,6 @@
         {
             "deployment": "Deployment instructions",
             "deployment_signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "torrent": {
-                "url": "torrent://the.system.com"
-            },
             "priority": {}
         }
     ],

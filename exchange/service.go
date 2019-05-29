@@ -56,30 +56,6 @@ func (ui UserInput) String() string {
 	return fmt.Sprintf("{Name: %v, :Label: %v, Type: %v, DefaultValue: %v}", ui.Name, ui.Label, ui.Type, ui.DefaultValue)
 }
 
-// This type is used to describe the package that implements the service. A package is a generic idea that can
-// be realized in many forms. Initially a docker container is the only supported form. The schema for this
-// type is left wide open. There is 1 required key in the map; "storeType" which is used to discriminate what
-// other keys should be there. The valid values for storeType are "container" and "imageServer". The map could
-// be completely empty if the docker container image in the deployment string is being used as the "package".
-const IMPL_PACKAGE_DISCRIMINATOR = "storeType"
-const IMPL_PACKAGE_CONTAINER = "dockerRegistry"
-const IMPL_PACKAGE_IMAGESERVER = "imageServer"
-
-type ImplementationPackage map[string]interface{}
-
-func (i ImplementationPackage) String() string {
-	res := "{"
-	for key, val := range i {
-		res += fmt.Sprintf("%v:%v, ", key, val)
-	}
-	if len(res) > 2 {
-		res = res[:len(res)-2] + "}"
-	} else {
-		res = "none"
-	}
-	return res
-}
-
 // This is the structure of the object returned on a GET /service.
 // microservice sharing mode
 const MS_SHARING_MODE_EXCLUSIVE = "exclusive"
@@ -88,21 +64,20 @@ const MS_SHARING_MODE_SINGLETON = "singleton"
 const MS_SHARING_MODE_MULTIPLE = "multiple"
 
 type ServiceDefinition struct {
-	Owner               string                `json:"owner"`
-	Label               string                `json:"label"`
-	Description         string                `json:"description"`
-	Public              bool                  `json:"public"`
-	URL                 string                `json:"url"`
-	Version             string                `json:"version"`
-	Arch                string                `json:"arch"`
-	Sharable            string                `json:"sharable"`
-	MatchHardware       HardwareRequirement   `json:"matchHardware"`
-	RequiredServices    []ServiceDependency   `json:"requiredServices"`
-	UserInputs          []UserInput           `json:"userInput"`
-	Deployment          string                `json:"deployment"`
-	DeploymentSignature string                `json:"deploymentSignature"`
-	ImageStore          ImplementationPackage `json:"imageStore"`
-	LastUpdated         string                `json:"lastUpdated"`
+	Owner               string              `json:"owner"`
+	Label               string              `json:"label"`
+	Description         string              `json:"description"`
+	Public              bool                `json:"public"`
+	URL                 string              `json:"url"`
+	Version             string              `json:"version"`
+	Arch                string              `json:"arch"`
+	Sharable            string              `json:"sharable"`
+	MatchHardware       HardwareRequirement `json:"matchHardware"`
+	RequiredServices    []ServiceDependency `json:"requiredServices"`
+	UserInputs          []UserInput         `json:"userInput"`
+	Deployment          string              `json:"deployment"`
+	DeploymentSignature string              `json:"deploymentSignature"`
+	LastUpdated         string              `json:"lastUpdated"`
 }
 
 func (s ServiceDefinition) String() string {
@@ -119,11 +94,10 @@ func (s ServiceDefinition) String() string {
 		"UserInputs: %v, "+
 		"Deployment: %v, "+
 		"DeploymentSignature: %v, "+
-		"Package: %v, "+
 		"LastUpdated: %v",
 		s.Owner, s.Label, s.Description, s.Public, s.URL, s.Version, s.Arch, s.Sharable,
 		s.MatchHardware, s.RequiredServices, s.UserInputs, s.Deployment, s.DeploymentSignature,
-		s.ImageStore, s.LastUpdated)
+		s.LastUpdated)
 }
 
 func (s ServiceDefinition) ShortString() string {
@@ -168,16 +142,6 @@ func (s *ServiceDefinition) GetDeployment() string {
 
 func (s *ServiceDefinition) GetDeploymentSignature() string {
 	return s.DeploymentSignature
-}
-
-func (s *ServiceDefinition) GetTorrent() string {
-	return ""
-}
-
-func (s *ServiceDefinition) GetImageStore() policy.ImplementationPackage {
-	polIP := make(policy.ImplementationPackage)
-	cutil.CopyMap(s.ImageStore, polIP)
-	return polIP
 }
 
 func (s *ServiceDefinition) HasDependencies() bool {

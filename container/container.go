@@ -24,7 +24,6 @@ import (
 	"io"
 	"io/ioutil"
 	"math/big"
-	"net/url"
 	"os"
 	"path"
 	"strconv"
@@ -98,22 +97,20 @@ type WhisperProviderMsg struct {
 type Configure struct {
 	// embedded
 	WhisperProviderMsg
-	ConfigureNonce      string  `json:"configure_nonce"`
-	TorrentURL          url.URL `json:"torrent_url"`
-	Deployment          string  `json:"deployment"` // JSON docker-compose like
-	DeploymentSignature string  `json:"deployment_signature"`
-	DeploymentUserInfo  string  `json:"deployment_user_info"`
+	ConfigureNonce      string `json:"configure_nonce"`
+	Deployment          string `json:"deployment"` // JSON docker-compose like
+	DeploymentSignature string `json:"deployment_signature"`
+	DeploymentUserInfo  string `json:"deployment_user_info"`
 }
 
 func (c Configure) String() string {
-	return fmt.Sprintf("Type: %v, ConfigureNonce: %v, TorrentURL: %v, Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v", c.Type, c.ConfigureNonce, c.TorrentURL.String(), c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo)
+	return fmt.Sprintf("Type: %v, ConfigureNonce: %v, Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v", c.Type, c.ConfigureNonce, c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo)
 }
 
-func NewConfigure(configureNonce string, torrentURL url.URL, deployment string, deploymentSignature string, deploymentUserInfo string) *Configure {
+func NewConfigure(configureNonce string, deployment string, deploymentSignature string, deploymentUserInfo string) *Configure {
 	return &Configure{
 		WhisperProviderMsg:  WhisperProviderMsg{Type: T_CONFIGURE},
 		ConfigureNonce:      configureNonce,
-		TorrentURL:          torrentURL,
 		Deployment:          deployment,
 		DeploymentSignature: deploymentSignature,
 		DeploymentUserInfo:  deploymentUserInfo,
@@ -461,8 +458,8 @@ func (w *ContainerWorker) Messages() chan events.Message {
 func (w *ContainerWorker) NewEvent(incoming events.Message) {
 
 	switch incoming.(type) {
-	case *events.TorrentMessage:
-		msg, _ := incoming.(*events.TorrentMessage)
+	case *events.ImageFetchMessage:
+		msg, _ := incoming.(*events.ImageFetchMessage)
 		switch msg.Event().Id {
 		case events.IMAGE_FETCHED:
 			glog.Infof("Fetched image files in deployment description for services: %v", msg.DeploymentDescription.ServiceNames())
@@ -1565,8 +1562,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				glog.Errorf("Insufficient running containers found for service instance %v. Found: %v", cmd.MsInstKey, cMatches)
 
 				// ask governer to record it into the db
-				u, _ := url.Parse("")
-				cc := events.NewContainerConfig(*u, "", "", "", "", "", nil)
+				cc := events.NewContainerConfig("", "", "", "", nil)
 				ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey, []string{}, []events.MicroserviceSpec{}, persistence.NewServiceInstancePathElement("", "", ""), false)
 				b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *ll, "", "")
 			}
@@ -1986,7 +1982,7 @@ func (b *ContainerWorker) findMicroserviceDefContainerNames(api_spec string, org
 
 	if msdef != nil && msdef.HasDeployment() {
 		// get the service name from the ms def
-		deployment, _, _ := msdef.GetDeployment()
+		deployment, _ := msdef.GetDeployment()
 		deploymentDesc := new(containermessage.DeploymentDescription)
 		if err := json.Unmarshal([]byte(deployment), &deploymentDesc); err != nil {
 			return nil, fmt.Errorf("Error Unmarshalling deployment string %v for service %v version %v. %v", deployment, cutil.FormOrgSpecUrl(api_spec, org), version, err)

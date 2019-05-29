@@ -123,8 +123,6 @@ func (c *BasicProtocolHandler) GetTerminationCode(reason string) uint {
 		return basicprotocol.CANCEL_AGBOT_REQUESTED
 	case TERM_REASON_CONTAINER_FAILURE:
 		return basicprotocol.CANCEL_CONTAINER_FAILURE
-	//case TERM_REASON_TORRENT_FAILURE:
-	//	return basicprotocol.CANCEL_TORRENT_FAILURE
 	case TERM_REASON_USER_REQUESTED:
 		return basicprotocol.CANCEL_USER_REQUESTED
 	// case TERM_REASON_NOT_FINALIZED_TIMEOUT:

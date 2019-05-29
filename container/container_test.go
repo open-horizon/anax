@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/containermessage"
-	"net/url"
 	"testing"
 )
 
@@ -56,9 +55,7 @@ func Test_generatePermittedStringDynamic(t *testing.T) {
 		}
 	`
 
-	url, _ := url.Parse("http://goo.foo")
-
-	configure := NewConfigure("", *url, "", "", deploymentUserInfo)
+	configure := NewConfigure("", "", "", deploymentUserInfo)
 
 	bytes, _ := json.Marshal(configure)
 

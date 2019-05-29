@@ -1,6 +1,6 @@
 // +build unit
 
-package torrent
+package imagefetch
 
 import (
 	docker "github.com/fsouza/go-dockerclient"
@@ -114,15 +114,12 @@ func Test_ExtractAuthAttributes(t *testing.T) {
 		Password: "password4",
 	}
 
-	httpAuthAttrs := make(map[string]map[string]string, 0)
 	dockerAuthConfigurations := make(map[string][]docker.AuthConfiguration, 0)
 
 	attrib_array := make([]persistence.Attribute, 0)
 	attrib_array = append(attrib_array, auth_attrib1, auth_attrib3, auth_attrib2)
-	err := ExtractAuthAttributes(attrib_array, httpAuthAttrs, dockerAuthConfigurations)
+	err := ExtractAuthAttributes(attrib_array, dockerAuthConfigurations)
 	assert.Nil(t, err, "Should return nil.")
-	assert.Equal(t, 1, len(httpAuthAttrs), "the http auth should have only 1 element.")
-	assert.Equal(t, 2, len(httpAuthAttrs["http://myrepo3.com"]), "The http auth element should have 2 items.")
 	assert.Equal(t, 2, len(dockerAuthConfigurations), "the docker auth should have 2 elements.")
 	assert.Equal(t, 2, len(dockerAuthConfigurations["myrepo1.com"]), "The docker auth array should have 2 items.")
 	assert.Equal(t, 3, len(dockerAuthConfigurations["myrepo2.com"]), "The docker auth array should have 3 items.")
@@ -130,10 +127,7 @@ func Test_ExtractAuthAttributes(t *testing.T) {
 	// add duplicate
 	attrib_array = make([]persistence.Attribute, 0)
 	attrib_array = append(attrib_array, auth_attrib1, auth_attrib3, auth_attrib2, auth_attrib4)
-	err = ExtractAuthAttributes(attrib_array, httpAuthAttrs, dockerAuthConfigurations)
-	assert.Equal(t, 2, len(httpAuthAttrs), "the http auth should have 2 elements.")
-	assert.Equal(t, 2, len(httpAuthAttrs["http://myrepo3.com"]), "The http auth element for http://myrepo3.com should have 2 items.")
-	assert.Equal(t, 2, len(httpAuthAttrs["http://myrepo4.com"]), "The http auth element for http://myrepo4.com should have 2 items.")
+	err = ExtractAuthAttributes(attrib_array, dockerAuthConfigurations)
 	assert.Equal(t, 2, len(dockerAuthConfigurations), "the docker auth should have 2 elements.")
 	assert.Equal(t, 2, len(dockerAuthConfigurations["myrepo1.com"]), "The docker auth array should have 2 items.")
 	assert.Equal(t, 3, len(dockerAuthConfigurations["myrepo2.com"]), "The docker auth array should have 3 items.")
@@ -185,12 +179,11 @@ func Test_authExchange(t *testing.T) {
 		Password: "password3",
 	}
 
-	httpAuthAttrs := make(map[string]map[string]string, 0)
 	dockerAuthConfigurations := make(map[string][]docker.AuthConfiguration, 0)
 
 	attrib_array := make([]persistence.Attribute, 0)
 	attrib_array = append(attrib_array, auth_attrib1, auth_attrib3, auth_attrib2)
-	err := ExtractAuthAttributes(attrib_array, httpAuthAttrs, dockerAuthConfigurations)
+	err := ExtractAuthAttributes(attrib_array, dockerAuthConfigurations)
 
 	img_auths := make([]events.ImageDockerAuth, 0)
 	img_auths = append(img_auths, events.ImageDockerAuth{Registry: "myrepo5.com", UserName: "token", Password: "t51"},
@@ -200,8 +193,6 @@ func Test_authExchange(t *testing.T) {
 	err = authExchange(img_auths, dockerAuthConfigurations)
 
 	assert.Nil(t, err, "Should return nil.")
-	assert.Equal(t, 1, len(httpAuthAttrs), "the http auth should have 1 element.")
-	assert.Equal(t, 2, len(httpAuthAttrs["http://myrepo3.com"]), "The http auth element for http://myrepo3.com should have 2 items.")
 	assert.Equal(t, 3, len(dockerAuthConfigurations), "the docker auth should have 3 elements.")
 	assert.Equal(t, 2, len(dockerAuthConfigurations["myrepo1.com"]), "The docker auth array should have 2 items.")
 	assert.Equal(t, 4, len(dockerAuthConfigurations["myrepo2.com"]), "The docker auth array should have 4 items.")

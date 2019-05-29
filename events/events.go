@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/persistence"
-	"net/url"
 	"time"
 )
 
@@ -150,8 +149,6 @@ func (s ImageDockerAuth) String() string {
 }
 
 type ContainerConfig struct {
-	TorrentURL          url.URL           `json:"torrent_url"`
-	TorrentSignature    string            `json:"torrent_signature"`
 	Deployment          string            `json:"deployment"`           // A stringified (and escaped) JSON structure.
 	DeploymentSignature string            `json:"deployment_signature"` // Digital signature of the Deployment string.
 	DeploymentUserInfo  string            `json:"deployment_user_info"`
@@ -160,13 +157,11 @@ type ContainerConfig struct {
 }
 
 func (c ContainerConfig) String() string {
-	return fmt.Sprintf("TorrentURL: %v, TorrentSignature: %v, Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, Overrides: %v, ImageDockerAuths: %v", c.TorrentURL.String(), c.TorrentSignature, c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo, c.Overrides, c.ImageDockerAuths)
+	return fmt.Sprintf("Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, Overrides: %v, ImageDockerAuths: %v", c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo, c.Overrides, c.ImageDockerAuths)
 }
 
-func NewContainerConfig(torrentURL url.URL, torrentSignature string, deployment string, deploymentSignature string, deploymentUserInfo string, overrides string, imageDockerAuths []ImageDockerAuth) *ContainerConfig {
+func NewContainerConfig(deployment string, deploymentSignature string, deploymentUserInfo string, overrides string, imageDockerAuths []ImageDockerAuth) *ContainerConfig {
 	return &ContainerConfig{
-		TorrentURL:          torrentURL,
-		TorrentSignature:    torrentSignature,
 		Deployment:          deployment,
 		DeploymentSignature: deploymentSignature,
 		DeploymentUserInfo:  deploymentUserInfo,
@@ -658,28 +653,28 @@ func NewAgreementMessage(id EventId, lc *AgreementLaunchContext) *AgreementReach
 	}
 }
 
-type TorrentMessage struct {
+type ImageFetchMessage struct {
 	event                 Event
 	DeploymentDescription *containermessage.DeploymentDescription
 	LaunchContext         interface{}
 }
 
 // fulfill interface of events.Message
-func (b *TorrentMessage) Event() Event {
+func (b *ImageFetchMessage) Event() Event {
 	return b.event
 }
 
-func (b *TorrentMessage) String() string {
+func (b *ImageFetchMessage) String() string {
 	return fmt.Sprintf("event: %v, deploymentDescription: %v, launchContext: %v", b.event, b.DeploymentDescription, b.LaunchContext)
 }
 
-func (b *TorrentMessage) ShortString() string {
+func (b *ImageFetchMessage) ShortString() string {
 	return fmt.Sprintf("event: %v, deploymentDescription: %v, launchContext: %v", b.event, b.DeploymentDescription, b.LaunchContext)
 }
 
-func NewTorrentMessage(id EventId, deploymentDescription *containermessage.DeploymentDescription, launchContext interface{}) *TorrentMessage {
+func NewImageFetchMessage(id EventId, deploymentDescription *containermessage.DeploymentDescription, launchContext interface{}) *ImageFetchMessage {
 
-	return &TorrentMessage{
+	return &ImageFetchMessage{
 		event: Event{
 			Id: id,
 		},

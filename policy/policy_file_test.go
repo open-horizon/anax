@@ -732,7 +732,7 @@ func Test_Merge_EmptyProducer_and_Create_TsAndCs1(t *testing.T) {
 	pb := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
 		`"paternId": "e2edev/pws",` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
-		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloads":[{"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
@@ -789,7 +789,7 @@ func Test_DeletePolicyFilesForPattern(t *testing.T) {
 	pb := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
 		`"patternId": "e2edev/pws1",` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
-		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloads":[{"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
@@ -798,7 +798,7 @@ func Test_DeletePolicyFilesForPattern(t *testing.T) {
 	pc := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
 		`"patternId": "IBM/pws2",` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
-		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloads":[{"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
@@ -862,7 +862,7 @@ func Test_DeletePolicyFilesForOrg(t *testing.T) {
 	pb := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
 		`"patternId": "e2edev/pws1",` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
-		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloads":[{"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
@@ -871,7 +871,7 @@ func Test_DeletePolicyFilesForOrg(t *testing.T) {
 	pc := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
 		`"patternId": "IBM/pws2",` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
-		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloads":[{"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
@@ -941,7 +941,7 @@ func Test_DeleteAllPolicyFiles(t *testing.T) {
 	pb := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
 		`"patternId": "e2edev/pws1",` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
-		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloads":[{"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
@@ -950,7 +950,7 @@ func Test_DeleteAllPolicyFiles(t *testing.T) {
 	pc := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
 		`"patternId": "IBM/pws2",` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
-		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloads":[{"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +

@@ -139,7 +139,6 @@ func getVariableServiceResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange
 			UserInputs:          uis,
 			Deployment:          "",
 			DeploymentSignature: "",
-			ImageStore:          exchange.ImplementationPackage{},
 			LastUpdated:         "updated",
 		}
 		return &sl, &wl, "", nil

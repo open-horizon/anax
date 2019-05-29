@@ -229,10 +229,10 @@ func SignImagesFromDeploymentMap(deployment map[string]interface{}, dontTouchIma
 }
 
 // Start the native deployment config in test mode. Only services are supported.
-func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInputFile string, configFiles []string, configType string, noFSS bool, userCreds string, keyFiles []string) bool {
+func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInputFile string, configFiles []string, configType string, noFSS bool, userCreds string) bool {
 
 	// Run verification before trying to start anything.
-	absConfigFiles := dev.ServiceValidate(homeDirectory, userInputFile, configFiles, configType, userCreds, keyFiles)
+	absConfigFiles := dev.ServiceValidate(homeDirectory, userInputFile, configFiles, configType, userCreds)
 
 	// Perform the common execution setup.
 	dir, userInputs, cw := dev.CommonExecutionSetup(homeDirectory, userInputFile, dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND)

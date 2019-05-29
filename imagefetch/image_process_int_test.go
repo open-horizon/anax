@@ -4,7 +4,7 @@
 // - set the envvar HORIZON_TEST_DOCKER_CREDFILE_PATH to the location of a docker cred file path (like ~/.docker/config.json)
 // - execute this test with docker permissions and a working docker instance
 
-package torrent
+package imagefetch
 
 import (
 	"bytes"
@@ -123,11 +123,6 @@ func tConfig(t *testing.T, dir string) *config.HorizonConfig {
 		panic(err)
 	}
 
-	torrentDir := path.Join(dir, "torrent_dir")
-	if err := os.MkdirAll(torrentDir, 0755); err != nil {
-		panic(err)
-	}
-
 	dockerCredFile := os.Getenv("HORIZON_TEST_DOCKER_CREDFILE_PATH")
 	if dockerCredFile == "" {
 		t.Fatalf("Suite setup failed: envvar HORIZON_TEST_DOCKER_CREDFILE_PATH not set (it must point to a docker config file with creds for summit.hovitos.engineering")
@@ -140,7 +135,6 @@ func tConfig(t *testing.T, dir string) *config.HorizonConfig {
 			DockerEndpoint:     "unix:///var/run/docker.sock",
 			DockerCredFilePath: dockerCredFile,
 			DefaultCPUSet:      "0-1",
-			TorrentDir:         torrentDir,
 			ServiceStorage:     workloadStorageDir,
 			//		DockerCredFilePath: "/config.json",
 			PublicKeyPath: path.Join(dir, "validpkgcert.pem"),
@@ -227,18 +221,18 @@ func setup(t *testing.T) (string, *bolt.DB, error) {
 	return dir, db, nil
 }
 
-func tWorker(config *config.HorizonConfig, db *bolt.DB) *TorrentWorker {
-	tw := NewTorrentWorker("tworker", config, db)
+func tWorker(config *config.HorizonConfig, db *bolt.DB) *ImageFetchWorker {
+	tw := NewImageFetchWorker("tworker", config, db)
 	return tw
 }
 
-func tMsg(messages chan events.Message, expectedEvent events.EventId, t *testing.T) *events.TorrentMessage {
+func tMsg(messages chan events.Message, expectedEvent events.EventId, t *testing.T) *events.ImageFetchMessage {
 	// block on this read
 	msg := <-messages
 
 	switch msg.(type) {
-	case *events.TorrentMessage:
-		m, _ := msg.(*events.TorrentMessage)
+	case *events.ImageFetchMessage:
+		m, _ := msg.(*events.ImageFetchMessage)
 		if m.Event().Id == expectedEvent {
 			t.Logf("m: %v", m)
 			return m
@@ -252,7 +246,7 @@ func tMsg(messages chan events.Message, expectedEvent events.EventId, t *testing
 	}
 }
 
-func tCleanup(t *testing.T, worker *TorrentWorker, images []string) {
+func tCleanup(t *testing.T, worker *ImageFetchWorker, images []string) {
 
 	t.Logf("Cleaning up: %v", images)
 	for _, image := range images {
@@ -264,7 +258,7 @@ func tCleanup(t *testing.T, worker *TorrentWorker, images []string) {
 	}
 }
 
-func Test_Torrent_Event_Suite(suite *testing.T) {
+func Test_ImageFetch_Event_Suite(suite *testing.T) {
 	dir, db, err := setup(suite)
 	assert.Nil(suite, err)
 	defer os.RemoveAll(dir)
@@ -315,40 +309,11 @@ func Test_Torrent_Event_Suite(suite *testing.T) {
 
 	// N.B. the following tests use this suite setup; there is cleanup between each
 
-	suite.Run("Torrent event with torrent url and signature causes Horizon Pkg pull", func(t *testing.T) {
-		defer tCleanup(t, worker, images)
-
-		cfg := events.NewContainerConfig(*ur, string(sigBytes), deployment, dSig, "", "")
-
-		cmd := worker.NewFetchCommand(&events.ContainerLaunchContext{
-			Configure:            *cfg,
-			EnvironmentAdditions: &env,
-			Blockchain:           events.BlockchainConfig{"", "", ""},
-			Name:                 "Pkg fetch test",
-		})
-
-		worker.Commands <- cmd
-		tMsg(worker.Messages(), events.IMAGE_FETCHED, t)
-
-		// do it again to make sure the load skip behavior works
-
-		cmdAgain := worker.NewFetchCommand(&events.ContainerLaunchContext{
-			Configure:            *cfg,
-			EnvironmentAdditions: &env,
-			Blockchain:           events.BlockchainConfig{"", "", ""},
-			Name:                 "Pkg fetch test 2 (a clone)",
-		})
-
-		worker.Commands <- cmdAgain
-		// TODO: consider adding an event that distinguishes this case (already exists in docker images repo) from newly-pulled
-		tMsg(worker.Messages(), events.IMAGE_FETCHED, t)
-	})
-	suite.Run("Torrent event without torrent url and signature causes Docker pull (w/ authentication)", func(t *testing.T) {
+	suite.Run("Imagefetch event causes Docker pull (w/ authentication)", func(t *testing.T) {
 		defer tCleanup(t, worker, images)
 
 		emptyUr, _ := url.Parse("")
 
-		// N.B. empty torrent URL and empty torrent signature mean docker pull should be used
 		cfg := events.NewContainerConfig(*emptyUr, "", deployment, dSig, "", "")
 
 		cmd := worker.NewFetchCommand(&events.ContainerLaunchContext{

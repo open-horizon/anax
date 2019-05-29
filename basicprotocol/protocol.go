@@ -330,7 +330,6 @@ func (p *ProtocolHandler) RecordMeter(agreementId string, mn *metering.MeteringN
 // const CANCEL_NOT_FINALIZED_TIMEOUT = 100  // x64
 const CANCEL_POLICY_CHANGED = 101
 
-//const CANCEL_TORRENT_FAILURE = 102  it is subdivided into IMAGE code now
 const CANCEL_CONTAINER_FAILURE = 103
 const CANCEL_NOT_EXECUTED_TIMEOUT = 104
 const CANCEL_USER_REQUESTED = 105
@@ -366,7 +365,6 @@ const AB_CANCEL_AG_MISSING = 209
 func DecodeReasonCode(code uint64) string {
 
 	codeMeanings := map[uint64]string{CANCEL_POLICY_CHANGED: "producer policy changed",
-		// CANCEL_TORRENT_FAILURE:          "torrent failed to download",
 		CANCEL_CONTAINER_FAILURE:        "service terminated",
 		CANCEL_NOT_EXECUTED_TIMEOUT:     "service start timeout",
 		CANCEL_USER_REQUESTED:           "user requested",
