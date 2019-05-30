@@ -359,3 +359,24 @@ func UpdateNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, nodePoli
 
 	return nil
 }
+
+func PatchNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, patchObject interface{},
+	nodeGetPolicyHandler exchange.NodePolicyHandler,
+	nodePatchPolicyHandler exchange.PutNodePolicyHandler) (*externalpolicy.ExternalPolicy, error) {
+
+	// get the local node policy
+	localNodePolicy, err := persistence.FindNodePolicy(db)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to read local node policy object. %v", err)
+	}
+
+	if propertyPatch, ok := patchObject.(externalpolicy.PropertyList); ok {
+		localNodePolicy.Properties = propertyPatch
+	} else if conastraintPatch, ok := patchObject.(externalpolicy.ConstraintExpression); ok {
+		localNodePolicy.Constraints = conastraintPatch
+	} else {
+		return nil, fmt.Errorf("Unable to determine type of patch. %T %v", patchObject, patchObject)
+	}
+
+	return localNodePolicy, UpdateNodePolicy(pDevice, db, localNodePolicy, nodeGetPolicyHandler, nodePatchPolicyHandler)
+}

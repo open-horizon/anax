@@ -284,9 +284,59 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, cfg, http.StatusCreated)
 
 	case "PATCH":
-		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+		//Read in the HTTP message body and pass
+		var constraintExp map[string]externalpolicy.ConstraintExpression
+		var propertyList map[string]externalpolicy.PropertyList
+		body, _ := ioutil.ReadAll(r.Body)
+		err := json.Unmarshal(body, &constraintExp)
+		if _, ok := constraintExp["constraints"]; !ok || err != nil {
+			err := json.Unmarshal(body, &propertyList)
+			if err != nil {
+				LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
+					fmt.Sprintf("Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: %v, error: %v", string(body), err),
+					persistence.EC_API_USER_INPUT_ERROR, nil)
+				errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), err), "body"))
+				return
+			}
+			if _, ok := propertyList["properties"]; !ok {
+				LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
+					fmt.Sprintf("Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: %v, error: %v", string(body), err),
+					persistence.EC_API_USER_INPUT_ERROR, nil)
+				errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), err), "body"))
+				return
+			}
+		}
 
-		errorHandler(NewSystemError(fmt.Sprintf("%v on %v not supported yet.", r.Method, resource)))
+		patch_node_policy_error_handler := func(device interface{}, err error) bool {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in patching node policy. %v", err), persistence.EC_ERROR_NODE_POLICY_PATCH, device)
+			return errorHandler(err)
+		}
+		nodeGetPolicyHandler := exchange.GetHTTPNodePolicyHandler(a)
+		nodePatchPolicyHandler := exchange.GetHTTPPutNodePolicyHandler(a)
+
+		var patchObject interface{}
+
+		if _, ok := constraintExp["constraints"]; ok {
+			//var patchObject externalpolicy.ConstraintExpression
+			patchObject = constraintExp["constraints"]
+		} else {
+			//var patchObject externalpolicy.PropertyList
+			patchObject = propertyList["properties"]
+		}
+		errHandled, cfg, msgs := PatchNodePolicy(patchObject, patch_node_policy_error_handler, nodeGetPolicyHandler, nodePatchPolicyHandler, a.db)
+
+		if errHandled {
+			return
+		}
+
+		// Send out all messages
+		for _, msg := range msgs {
+			a.Messages() <- msg
+		}
+
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handled %v on resource %v", r.Method, resource)))
+
+		writeResponse(w, cfg, http.StatusCreated)
 
 	case "DELETE":
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
