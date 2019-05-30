@@ -265,3 +265,35 @@ func Test_Validate_invalid(t *testing.T) {
 		}
 	}
 }
+
+func Test_add_property(t *testing.T) {
+	pl1 := new(PropertyList)
+	if err := pl1.Add_Property(Property_Factory("iame2edev", "true")); err != nil {
+		t.Errorf("Error valid property could not be added: %v", err)
+	}
+
+	pl1 = new(PropertyList)
+	if err := pl1.Add_Property(Property_Factory("cpu", 3.0)); err != nil {
+		t.Errorf("Error valid property could not be added: %v", err)
+	}
+
+	pl1 = new(PropertyList)
+	if err := pl1.Add_Property(Property_Factory("hello", "\"world\"")); err != nil {
+		t.Errorf("Error valid property could not be added: %v", err)
+	}
+
+	pl1 = new(PropertyList)
+	if err := pl1.Add_Property(Property_Factory("version", "1.1.1")); err != nil {
+		t.Errorf("Error valid property could not be added: %v", err)
+	}
+
+	pl1 = new(PropertyList)
+	if err := pl1.Add_Property(Property_Factory("eggs", "truck load")); err != nil {
+		t.Errorf("Error valid property could not be added: %v", err)
+	}
+
+	pl1 = new(PropertyList)
+	if err := pl1.Add_Property(Property_Factory("certification", "USDA, organic")); err != nil {
+		t.Errorf("Error valid property could not be added: %v", err)
+	}
+}

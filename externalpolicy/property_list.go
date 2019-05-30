@@ -145,6 +145,11 @@ func (self *PropertyList) Concatenate(new_list *PropertyList) {
 
 // This function adds a Property to the list. Return an error if there are duplicates.
 func (self *PropertyList) Add_Property(new_ele *Property) error {
+	tempList := new(PropertyList)
+	*tempList = append(*tempList, *new_ele)
+	if err := tempList.Validate(); err != nil {
+		return fmt.Errorf("Could not validate new property %v: %v", new_ele, err)
+	}
 	for _, ele := range *self {
 		if ele.Name == new_ele.Name {
 			return errors.New(fmt.Sprintf("PropertyList %v already has the element being added: %v", *self, *new_ele))

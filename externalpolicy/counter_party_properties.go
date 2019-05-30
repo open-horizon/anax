@@ -461,6 +461,9 @@ func propertyInArray(propexp *PropertyExpression, props *[]Property) bool {
 				if _, ok := stringOperators()[propexp.Op]; !ok {
 					return false
 				} else if propexp.Op == notequalto {
+					if p.Type == LIST_TYPE {
+						return !stringListContains(propexpValue, pValue)
+					}
 					return pValue != propexpValue
 				} else if propexp.Op == isin {
 					if p.Type == VERSION_TYPE {
@@ -468,6 +471,9 @@ func propertyInArray(propexp *PropertyExpression, props *[]Property) bool {
 					}
 					return stringListContains(pValue, propexpValue)
 				} else {
+					if p.Type == LIST_TYPE {
+						return stringListContains(propexpValue, pValue)
+					}
 					return pValue == propexpValue
 				}
 			}
