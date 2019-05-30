@@ -46,7 +46,6 @@ func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool,
 
 		for {
 			nextExpression, remainder, err = p.GetNextExpression(remainder)
-
 			if err != nil {
 				return false, errors.New(fmt.Sprintf("unable to convert policy constraint %v into internal format, error %v", remainder, err))
 			} else if nextExpression == "" {
@@ -93,15 +92,26 @@ func (p *TextConstraintLanguagePlugin) GetNextExpression(expression string) (str
 	if len(pieces) < 3 {
 		return "", "", errors.New(fmt.Sprintf("found %v token(s), expecting 3 in an expression %v, expected form is <property> == <value>", len(pieces), expression))
 	}
-
+	quote := "\""
+	value := pieces[2]
+	remainder := strings.Join(pieces[3:], " ")
+	if strings.Count(pieces[2], quote)%2 == 1 {
+		for i, piece := range pieces[3:] {
+			value = fmt.Sprintf("%s %s", value, piece)
+			//fmt.Println(value)
+			if strings.Contains(piece, quote) {
+				remainder = strings.Join(pieces[i+4:], " ")
+				break
+			}
+		}
+	}
 	// Reform the expression and return the remainder of the expression.
-	exp := fmt.Sprintf("%v %v %v", pieces[0], pieces[1], pieces[2])
-	return exp, strings.Join(pieces[3:], " "), nil
+	exp := fmt.Sprintf("%v %v %v", pieces[0], pieces[1], value)
+	return exp, remainder, nil
 
 }
 
 func (p *TextConstraintLanguagePlugin) GetNextOperator(expression string) (string, string, error) {
-
 	// The input expression string should begin with an operator (i.e. AND, OR), or it is empty.
 	// This should be true because the full expression should have been validated before calling this function. The
 	// preceding expression has alreday been removed.
@@ -117,6 +127,7 @@ func (p *TextConstraintLanguagePlugin) GetNextOperator(expression string) (strin
 	}
 
 	// Reform the expression and return the remainder of the expression.
+	//fmt.Printf("full exp: %v op: %v rem: %v\n", expression, pieces[0], strings.Join(pieces[1:], " "))
 	return pieces[0], strings.Join(pieces[1:], " "), nil
 }
 

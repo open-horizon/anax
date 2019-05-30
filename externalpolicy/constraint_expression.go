@@ -175,13 +175,11 @@ func RequiredPropertyFromConstraint(extConstraint *ConstraintExpression) (*Requi
 			pieces := strings.Split(nextExpression, " ")
 			fullValue := pieces[2]
 			if len(pieces) > 3 {
-				for i, piece := range pieces {
-					if i > 2 {
-						fullValue = fmt.Sprint(fullValue + piece)
-					}
+				for _, piece := range pieces[3:] {
+					fullValue = fmt.Sprintf("%s %s", fullValue, piece)
 				}
 			}
-			pe := PropertyExpression_Factory(pieces[0], pieces[2], pieces[1])
+			pe := PropertyExpression_Factory(pieces[0], fullValue, pieces[1])
 			andArray = append(andArray, *pe)
 
 			// Get control operator. If no control operator is returned, then it's the end of the expression.
