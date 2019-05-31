@@ -2,7 +2,7 @@
 
 echo -e "Pattern is set to $PATTERN"
 
-if [ "$PATTERN" == "spws" ] || [ "$PATTERN" == "sall" ]
+if [ "$PATTERN" == "spws" ] || [ "$PATTERN" == "sall" ] || [ "$PATTERN" == "" ]
 then
 
 # Configure the weather service variables
