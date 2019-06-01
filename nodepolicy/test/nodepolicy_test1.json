@@ -11,7 +11,7 @@
   ],
   "constraints": [
      "a <= 1",
-     "eggs == 'truck load' AND certification == USDA"
+     "eggs == 'truckload' AND certification == USDA"
   ]
 }
 

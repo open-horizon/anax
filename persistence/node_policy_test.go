@@ -35,7 +35,7 @@ func Test_WriteNodePolicy1(t *testing.T) {
 
 	propName := "prop1"
 	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"))
+	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"), false)
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,
@@ -67,7 +67,7 @@ func Test_UpdateNodePolicy1(t *testing.T) {
 
 	propName := "prop1"
 	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"))
+	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"), false)
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,
@@ -89,7 +89,7 @@ func Test_UpdateNodePolicy1(t *testing.T) {
 	// Now change the property specified in the policy.
 	propName = "prop2"
 	propList = new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory(propName, "val2"))
+	propList.Add_Property(externalpolicy.Property_Factory(propName, "val2"), false)
 
 	extNodePolicy.Properties = *propList
 
@@ -118,7 +118,7 @@ func Test_DeleteNodePolicy1(t *testing.T) {
 
 	propName := "prop1"
 	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"))
+	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"), false)
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,

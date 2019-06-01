@@ -21,6 +21,8 @@ import (
 var ExchangeNodePolicyLastUpdated = ""
 var ExchangeNodePolicy *externalpolicy.ExternalPolicy
 
+const NUM_BUILT_INS = 3
+
 // Verify that a Node Policy Object can be created and saved the first time.
 func Test_UpdateNodePolicy(t *testing.T) {
 
@@ -37,7 +39,7 @@ func Test_UpdateNodePolicy(t *testing.T) {
 
 	propName := "prop1"
 	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"))
+	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"), false)
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,
@@ -53,8 +55,8 @@ func Test_UpdateNodePolicy(t *testing.T) {
 		t.Errorf("Unexpected error: %v", err)
 	} else if fnp, err := persistence.FindNodePolicy(db); err != nil {
 		t.Errorf("failed to find node policy in db, error %v", err)
-	} else if len(fnp.Properties) != 1 {
-		t.Errorf("incorrect node policy, there should be 1 property defined, found: %v", *fnp)
+	} else if len(fnp.Properties) != 1+NUM_BUILT_INS {
+		t.Errorf("incorrect node policy, there should be %v property defined, found: %v", 1+NUM_BUILT_INS, *fnp)
 	} else if fnp.Properties[0].Name != propName {
 		t.Errorf("expected property %v, but received %v", propName, fnp.Properties[0].Name)
 	}
@@ -77,7 +79,7 @@ func Test_DeleteNodePolicy(t *testing.T) {
 
 	propName := "prop1"
 	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"))
+	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"), false)
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,
@@ -93,8 +95,8 @@ func Test_DeleteNodePolicy(t *testing.T) {
 		t.Errorf("Unexpected error: %v", err)
 	} else if fnp, err := persistence.FindNodePolicy(db); err != nil {
 		t.Errorf("failed to find node policy in db, error %v", err)
-	} else if len(fnp.Properties) != 1 {
-		t.Errorf("incorrect node policy, there should be 1 property defined, found: %v", *fnp)
+	} else if len(fnp.Properties) != 1+NUM_BUILT_INS {
+		t.Errorf("incorrect node policy, there should be %v property defined, found: %v", 1+NUM_BUILT_INS, *fnp)
 	} else if fnp.Properties[0].Name != propName {
 		t.Errorf("expected property %v, but received %v", propName, fnp.Properties[0].Name)
 	}
@@ -125,7 +127,7 @@ func Test_ExchangeNodePolicyChanged(t *testing.T) {
 
 	propName := "prop1"
 	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"))
+	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"), false)
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,
@@ -141,8 +143,8 @@ func Test_ExchangeNodePolicyChanged(t *testing.T) {
 		t.Errorf("Unexpected error: %v", err)
 	} else if fnp, err := persistence.FindNodePolicy(db); err != nil {
 		t.Errorf("failed to find node policy in db, error %v", err)
-	} else if len(fnp.Properties) != 1 {
-		t.Errorf("incorrect node policy, there should be 1 property defined, found: %v", *fnp)
+	} else if len(fnp.Properties) != 1+NUM_BUILT_INS {
+		t.Errorf("incorrect node policy, there should be %v property defined, found: %v", 1+NUM_BUILT_INS, *fnp)
 	} else if fnp.Properties[0].Name != propName {
 		t.Errorf("expected property %v, but received %v", propName, fnp.Properties[0].Name)
 	}
@@ -183,15 +185,16 @@ func Test_SetDefaultNodePolicy(t *testing.T) {
 	ExchangeNodePolicy = nil
 
 	// bad file name
-	_, err = SetDefaultNodePolicy("fake file name", pDevice, db, getDummyNodePolicyHandler(), getDummyPutNodePolicyHandler())
-	if err == nil {
-		t.Errorf("Should have returned but not")
-	} else if !strings.Contains(err.Error(), "file does not exist") {
-		t.Errorf("Wrong error, should say 'file does not exist' but got: %v", err)
+	var config config.HorizonConfig
+	config.Edge.DefaultNodePolicyFile = "fake file name"
+	_, err = SetDefaultNodePolicy(&config, pDevice, db, getDummyNodePolicyHandler(), getDummyPutNodePolicyHandler())
+	if err != nil {
+		t.Errorf("Should not have returned error but got: %v", err)
 	}
 
 	// bad file format
-	_, err = SetDefaultNodePolicy("./test/nodepolicy_bad.json", pDevice, db, getDummyNodePolicyHandler(), getDummyPutNodePolicyHandler())
+	config.Edge.DefaultNodePolicyFile = "./test/nodepolicy_bad.json"
+	_, err = SetDefaultNodePolicy(&config, pDevice, db, getDummyNodePolicyHandler(), getDummyPutNodePolicyHandler())
 	if err == nil {
 		t.Errorf("Should have returned but not")
 	} else if !strings.Contains(err.Error(), "Failed to unmarshal") {
@@ -199,13 +202,14 @@ func Test_SetDefaultNodePolicy(t *testing.T) {
 	}
 
 	// good file format
-	_, err = SetDefaultNodePolicy("./test/nodepolicy_test1.json", pDevice, db, getDummyNodePolicyHandler(), getDummyPutNodePolicyHandler())
+	config.Edge.DefaultNodePolicyFile = "./test/nodepolicy_test1.json"
+	_, err = SetDefaultNodePolicy(&config, pDevice, db, getDummyNodePolicyHandler(), getDummyPutNodePolicyHandler())
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	} else if fnp, err := persistence.FindNodePolicy(db); err != nil {
 		t.Errorf("failed to find node policy in db, error %v", err)
-	} else if len(fnp.Properties) != 2 {
-		t.Errorf("incorrect node policy, there should be 2 property defined, found: %v", *fnp)
+	} else if len(fnp.Properties) != 2+NUM_BUILT_INS {
+		t.Errorf("incorrect node policy, there should be %v property defined, found: %v", 2+NUM_BUILT_INS, *fnp)
 	} else if fnp.Properties[0].Name != "purpose" {
 		t.Errorf("expected property %v, but received %v", "purpose", fnp.Properties[0].Name)
 	}
@@ -244,8 +248,8 @@ func Test_NodePolicyInitalSetup(t *testing.T) {
 		t.Errorf("Unexpected error: %v", err)
 	} else if fnp, err := persistence.FindNodePolicy(db); err != nil {
 		t.Errorf("failed to find node policy in db, error %v", err)
-	} else if len(fnp.Properties) != 2 {
-		t.Errorf("incorrect node policy, there should be 2 property defined, found: %v", *fnp)
+	} else if len(fnp.Properties) != 2+NUM_BUILT_INS {
+		t.Errorf("incorrect node policy, there should be %v property defined, found: %v", 2+NUM_BUILT_INS, *fnp)
 	} else if fnp.Properties[0].Name != "purpose" {
 		t.Errorf("expected property %v, but received %v", "purpose", fnp.Properties[0].Name)
 	}
@@ -253,7 +257,7 @@ func Test_NodePolicyInitalSetup(t *testing.T) {
 	// make change to the exchange
 	propName := "prop1"
 	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"))
+	propList.Add_Property(externalpolicy.Property_Factory(propName, "val1"), false)
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,
@@ -273,8 +277,8 @@ func Test_NodePolicyInitalSetup(t *testing.T) {
 		t.Errorf("Unexpected error: %v", err)
 	} else if fnp, err := persistence.FindNodePolicy(db); err != nil {
 		t.Errorf("failed to find node policy in db, error %v", err)
-	} else if len(fnp.Properties) != 1 {
-		t.Errorf("incorrect node policy, there should be 1 property defined, found: %v", *fnp)
+	} else if len(fnp.Properties) != 1+NUM_BUILT_INS {
+		t.Errorf("incorrect node policy, there should be %v property defined, found: %v", 1+NUM_BUILT_INS, *fnp)
 	} else if fnp.Properties[0].Name != propName {
 		t.Errorf("expected property %v, but received %v", propName, fnp.Properties[0].Name)
 	}

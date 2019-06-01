@@ -133,6 +133,7 @@ func (p *BusinessPolicyEntry) AddServicePolicy(svcPolicy *externalpolicy.Externa
 	} else {
 		if !bytes.Equal(pSE.Hash, servicePol.Hash) {
 			p.ServicePolicies[svcId] = pSE
+			p.Updated = uint64(time.Now().Unix())
 			return true, nil
 		} else {
 			// same service policy exists, do nothing
@@ -159,6 +160,9 @@ func (p *BusinessPolicyEntry) RemoveServicePolicy(svcId string) bool {
 		tempPol := new(externalpolicy.ExternalPolicy)
 		if !reflect.DeepEqual(*tempPol, *spe.Policy) {
 			delete(p.ServicePolicies, svcId)
+
+			// update the timestamp
+			p.Updated = uint64(time.Now().Unix())
 			return true
 		} else {
 			return false

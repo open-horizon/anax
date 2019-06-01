@@ -1286,6 +1286,10 @@ read -d '' bpnsdef <<EOF
           "value": "true"
       },
       {
+          "name": "NONS",
+          "value": false
+      },
+      {
           "name": "number",
           "value": "12"
       },
@@ -1323,12 +1327,16 @@ read -d '' bpgpstestdef <<EOF
           "value": "true"
       },
       {
-          "name": "number",
-          "value": "12"
+          "name": "NOGPS",
+          "value": false
       },
       {
-          "name": "foo",
-          "value": "bar"
+          "name": "number",
+          "value": 24
+      },
+      {
+          "name": "gpsvar",
+          "value": "gpsval"
       }
   ],
   "constraints": [
@@ -1373,16 +1381,20 @@ read -d '' bplocdef <<EOF
   },
   "properties": [
       {
-          "name": "iame2edev2",
+          "name": "iame2edev",
           "value": "true"
       },
       {
-          "name": "number",
-          "value": "12"
+          "name": "NOLOC",
+          "value": false
       },
       {
-          "name": "foo",
-          "value": "bar"
+          "name": "number",
+          "value": "36"
+      },
+      {
+          "name": "locvar",
+          "value": "location value"
       }
   ],
   "constraints": [
@@ -1394,7 +1406,106 @@ echo -e "Register business policy for location:"
 RES=$(echo "$bplocdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_location" | jq -r '.')
 results "$RES"
 
+read -d '' bppwsdef <<EOF
+{
+  "label": "business policy for persoanl weather station",
+  "description": "for pws",
+  "service": {
+    "name": "https://bluehorizon.network/services/weather",
+    "org": "e2edev@somecomp.com",
+    "arch": "amd64",
+    "serviceVersions": [
+        {
+          "version":"1.5.0",
+          "priority":{
+            "priority_value": 3,
+            "retries": 1,
+            "retry_durations": 3600,
+            "verified_durations": 52
+          },
+          "upgradePolicy": {}
+        },
+        {
+          "version":"1.5.0",
+          "priority":{
+            "priority_value": 2,
+            "retries": 1,
+            "retry_durations": 3600,
+            "verified_durations": 52
+          },
+          "upgradePolicy": {}
+        }
+     ]
+  },
+  "properties": [
+      {
+          "name": "iame2edev",
+          "value": "true"
+      },
+      {
+          "name": "NOPWS",
+          "value": false
+      },
+      {
+          "name": "number",
+          "value": 48
+      },
+      {
+          "name": "pwsvar",
+          "value": "pws value"
+      }
+  ],
+  "constraints": [
+    "purpose == network-testing"
+  ]
+}
+EOF
+echo -e "Register business policy for pws:"
+RES=$(echo "$bppwsdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_pws" | jq -r '.')
+results "$RES"
 
+read -d '' bphellodef <<EOF
+{
+  "label": "business policy for usehello",
+  "description": "for usehello",
+  "service": {
+    "name": "my.company.com.services.usehello2",
+    "org": "e2edev@somecomp.com",
+    "arch": "amd64",
+    "serviceVersions": [
+        {
+          "version":"1.0.0",
+          "priority":{},
+          "upgradePolicy": {}
+        }
+     ]
+  },
+  "properties": [
+      {
+          "name": "iame2edev",
+          "value": "true"
+      },
+      {
+          "name": "NOHELLO",
+          "value": false
+      },
+      {
+          "name": "number",
+          "value": 60
+      },
+      {
+          "name": "hellovar",
+          "value": "hello value"
+      }
+  ],
+  "constraints": [
+    "purpose == network-testing"
+  ]
+}
+EOF
+echo -e "Register business policy for usehelllo:"
+RES=$(echo "$bphellodef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_usehello" | jq -r '.')
+results "$RES"
 
 # ======================= Service Policies that use top level services ======================
 read -d '' nspoldef <<EOF

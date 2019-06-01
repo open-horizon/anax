@@ -94,9 +94,9 @@ func (self *Policy) Add_Agreement_Protocol(ap *AgreementProtocol) error {
 	}
 }
 
-func (self *Policy) Add_Property(p *externalpolicy.Property) error {
+func (self *Policy) Add_Property(p *externalpolicy.Property, replaceExisting bool) error {
 	if p != nil {
-		return self.Properties.Add_Property(p)
+		return self.Properties.Add_Property(p, replaceExisting)
 	} else {
 		return errors.New(fmt.Sprintf("Add_Property Error: input Property is nil."))
 	}
@@ -220,15 +220,17 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 	merged_pol.APISpecs = (&producer_policy1.APISpecs).MergeWith(&producer_policy2.APISpecs)
 	intersecting_agreement_protocols, _ := (&producer_policy1.AgreementProtocols).Intersects_With(&producer_policy2.AgreementProtocols)
 	(&merged_pol.AgreementProtocols).Concatenate(intersecting_agreement_protocols)
-	(&merged_pol.Properties).Concatenate(&producer_policy1.Properties)
-	(&merged_pol.Properties).Concatenate(&producer_policy2.Properties)
+	(&merged_pol.Properties).MergeWith(&producer_policy1.Properties, false)
+	(&merged_pol.Properties).MergeWith(&producer_policy2.Properties, false)
 	merged_pol.DataVerify = producer_policy1.DataVerify.ProducerMergeWith(producer_policy2.DataVerify, defaultNoData)
 
 	// Merge constraints
 	// TODO: implement comparison logic.
 	// For now we will take the cowards way out and simply AND together the contraint expressions
 	// from both policies.
-	merged_pol.Constraints = *((&producer_policy1.Constraints).Merge(&producer_policy2.Constraints))
+	(&merged_pol.Constraints).MergeWith(&producer_policy1.Constraints)
+	(&merged_pol.Constraints).MergeWith(&producer_policy2.Constraints)
+
 	merged_pol.HAGroup = *((&producer_policy1.HAGroup).Merge(&producer_policy2.HAGroup))
 	merged_pol.MaxAgreements = cutil.Min(producer_policy1.MaxAgreements, producer_policy2.MaxAgreements)
 
@@ -268,7 +270,7 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 
 		// The properties from the consumer are provided, indicating that some or all of them meet
 		// the constraints of the node.
-		(&merged_pol.Properties).Concatenate(&consumer_policy.Properties)
+		(&merged_pol.Properties).MergeWith(&consumer_policy.Properties, false)
 		//(&merged_pol.Properties).Concatenate(&producer_policy.Properties)
 
 		// The consumer's constraints are included indicating the requirements which are being met
@@ -295,8 +297,8 @@ func MergePolicyWithExternalPolicy(pol *Policy, extPol *externalpolicy.ExternalP
 		// make a copy of the given policy
 		merged_pol := Policy(*pol)
 
-		merged_pol.Properties.Concatenate(&(extPol.Properties))
-		merged_pol.Constraints = *((&merged_pol.Constraints).Merge(&extPol.Constraints))
+		merged_pol.Properties.MergeWith(&(extPol.Properties), false)
+		merged_pol.Constraints.MergeWith(&(extPol.Constraints))
 		return &merged_pol, nil
 	}
 }

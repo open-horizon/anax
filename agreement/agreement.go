@@ -502,7 +502,7 @@ func (w *AgreementWorker) checkNodePolicyChanges() int {
 	}
 
 	// exchange is the master
-	updated, newNodePolicy, err := nodepolicy.SyncNodePolicyWithExchange(w.db, pDevice, exchange.GetHTTPNodePolicyHandler(w))
+	updated, newNodePolicy, err := nodepolicy.SyncNodePolicyWithExchange(w.db, pDevice, exchange.GetHTTPNodePolicyHandler(w), exchange.GetHTTPPutNodePolicyHandler(w))
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Unable to sync the local node policy with the exchange copy. Error: %v", err)))
 		eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,

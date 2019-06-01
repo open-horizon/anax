@@ -175,7 +175,7 @@ func ConvertNodeHealth(nodeh NodeHealth, pol *policy.Policy) {
 
 func ConvertProperties(properties externalpolicy.PropertyList, pol *policy.Policy) error {
 	for _, p := range properties {
-		if err := pol.Add_Property(&p); err != nil {
+		if err := pol.Add_Property(&p, false); err != nil {
 			return fmt.Errorf("error trying add external policy property %v to policy. %v", p, err)
 		}
 	}

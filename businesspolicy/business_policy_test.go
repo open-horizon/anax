@@ -13,8 +13,8 @@ import (
 func Test_Validate_Failed1(t *testing.T) {
 
 	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"))
-	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"))
+	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"), false)
+	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"), false)
 
 	service := ServiceRef{}
 
@@ -50,8 +50,8 @@ func Test_Validate_Failed1(t *testing.T) {
 func Test_Validate_Failed2(t *testing.T) {
 
 	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"))
-	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"))
+	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"), false)
+	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"), false)
 
 	service := ServiceRef{
 		Name:            "cpu",
@@ -80,8 +80,8 @@ func Test_Validate_Failed2(t *testing.T) {
 func Test_Validate_Succeeded1(t *testing.T) {
 
 	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"))
-	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"))
+	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"), false)
+	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"), false)
 
 	wlc := WorkloadChoice{
 		Version: "1.00.%4",
@@ -126,8 +126,8 @@ func Test_Validate_Succeeded1(t *testing.T) {
 func Test_Validate_Succeeded2(t *testing.T) {
 
 	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"))
-	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"))
+	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"), false)
+	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"), false)
 
 	wlc := WorkloadChoice{
 		Version: "1.00.%4",
@@ -182,8 +182,8 @@ func Test_Validate_Succeeded3(t *testing.T) {
 func Test_Validate_Succeeded4(t *testing.T) {
 
 	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"))
-	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"))
+	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"), false)
+	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"), false)
 
 	wlc := WorkloadChoice{
 		Version: "1.00.%4",
@@ -242,8 +242,8 @@ func Test_GenPolicyFromBusinessPolicy_Simple(t *testing.T) {
 func Test_GenPolicyFromBusinessPolicy_Complicated(t *testing.T) {
 
 	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"))
-	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"))
+	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"), false)
+	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"), false)
 
 	wlc := WorkloadChoice{
 		Version: "1.00.%4",
