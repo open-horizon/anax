@@ -77,7 +77,7 @@ func NodeCreate(org, nodeIdTok, node, token, userPw, email string, arch string, 
 
 	// Assume the user exists and try to create the node, but handle the error cases
 	putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeName, SoftwareVersions: make(map[string]string), PublicKey: []byte(""), Arch: arch} // we only need to set the token
-	httpCode := cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, putNodeReq)
+	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, putNodeReq)
 	if httpCode == 401 {
 		// Invalid creds means the user doesn't exist, or pw is wrong, try to create it if we are in the public org
 		user, pw := cliutils.SplitIdToken(userPw)
