@@ -252,7 +252,6 @@ func createService(t *testing.T) *persistence.MicroserviceDefinition {
 		UserInputs:          []exchange.UserInput{ut1, ut2},
 		Deployment:          "",
 		DeploymentSignature: "",
-		ImageStore:          exchange.ImplementationPackage{},
 		LastUpdated:         "2017-11-14T22:36:52.748Z[UTC]",
 	}
 

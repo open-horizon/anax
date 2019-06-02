@@ -77,7 +77,6 @@ func CreateServiceDefinition(directory string, specRef string, imageInfo map[str
 	}
 
 	res.DeploymentSignature = ""
-	res.ImageStore = map[string]interface{}{}
 
 	// Convert the object to JSON and write it into the project.
 	return CreateFile(directory, SERVICE_DEFINITION_FILE, res)

@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/policy"
 	"golang.org/x/crypto/sha3"
+	"reflect"
 	"sync"
 	"time"
 )
@@ -132,6 +133,7 @@ func (p *BusinessPolicyEntry) AddServicePolicy(svcPolicy *externalpolicy.Externa
 	} else {
 		if !bytes.Equal(pSE.Hash, servicePol.Hash) {
 			p.ServicePolicies[svcId] = pSE
+			p.Updated = uint64(time.Now().Unix())
 			return true, nil
 		} else {
 			// same service policy exists, do nothing
@@ -147,12 +149,24 @@ func (p *BusinessPolicyEntry) RemoveServicePolicy(svcId string) bool {
 		return false
 	}
 
-	_, found := p.ServicePolicies[svcId]
+	spe, found := p.ServicePolicies[svcId]
 	if !found {
 		return false
 	} else {
-		delete(p.ServicePolicies, svcId)
-		return true
+		// An empty polcy is also tracked in the business policy manager, this way we know if there is
+		// new service policy added later.
+		// The business policy manager does not track all the service policies referenced by a business policy.
+		// It only tracks the ones that have agreements associated with it.
+		tempPol := new(externalpolicy.ExternalPolicy)
+		if !reflect.DeepEqual(*tempPol, *spe.Policy) {
+			delete(p.ServicePolicies, svcId)
+
+			// update the timestamp
+			p.Updated = uint64(time.Now().Unix())
+			return true
+		} else {
+			return false
+		}
 	}
 }
 

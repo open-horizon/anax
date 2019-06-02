@@ -7,7 +7,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
-	"reflect"
 	"sync"
 )
 
@@ -286,8 +285,8 @@ func (self *PolicyManager) hasPolicy(org string, matchPolicy *Policy) (bool, err
 		} else if !pol.Properties.IsSame(matchPolicy.Properties) {
 			errString = fmt.Sprintf("Properties %v mismatch with %v", pol.Properties, matchPolicy.Properties)
 			continue
-		} else if !reflect.DeepEqual(pol.CounterPartyProperties, matchPolicy.CounterPartyProperties) {
-			errString = fmt.Sprintf("CounterPartyProperties %v mismatch with %v", pol.CounterPartyProperties, matchPolicy.CounterPartyProperties)
+		} else if !pol.Constraints.IsSame(matchPolicy.Constraints) {
+			errString = fmt.Sprintf("Constraints %v mismatch with %v", pol.Constraints, matchPolicy.Constraints)
 			continue
 		} else if pol.RequiredWorkload != matchPolicy.RequiredWorkload {
 			errString = fmt.Sprintf("RequiredWorkload %v mismatch with %v", pol.RequiredWorkload, matchPolicy.RequiredWorkload)

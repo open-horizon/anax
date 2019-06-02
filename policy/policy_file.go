@@ -51,22 +51,21 @@ type ProposalRejection struct {
 
 // This is the main struct that defines the Policy object.
 type Policy struct {
-	Header                 PolicyHeader                        `json:"header"`
-	PatternId              string                              `json:"patternId,omitempty"` // Manually created policy files should NOT use this field.
-	APISpecs               APISpecList                         `json:"apiSpec,omitempty"`
-	AgreementProtocols     AgreementProtocolList               `json:"agreementProtocols,omitempty"`
-	Workloads              WorkloadList                        `json:"workloads,omitempty"`
-	DeviceType             string                              `json:"deviceType,omitempty"`
-	ValueEx                ValueExchange                       `json:"valueExchange,omitempty"`
-	DataVerify             DataVerification                    `json:"dataVerification,omitempty"`
-	ProposalReject         ProposalRejection                   `json:"proposalRejection,omitempty"`
-	MaxAgreements          int                                 `json:"maxAgreements,omitempty"`
-	Properties             externalpolicy.PropertyList         `json:"properties,omitempty"`             // Version 2.0
-	Constraints            externalpolicy.ConstraintExpression `json:"constraints,omitempty"`            // Version 2.0
-	CounterPartyProperties externalpolicy.RequiredProperty     `json:"counterPartyProperties,omitempty"` // Version 2.0. replaced by Constraints, but keep it for backward compatibility.
-	RequiredWorkload       string                              `json:"requiredWorkload,omitempty"`       // Version 2.0
-	HAGroup                HighAvailabilityGroup               `json:"ha_group,omitempty"`               // Version 2.0
-	NodeH                  NodeHealth                          `json:"nodeHealth,omitempty"`             // Version 2.0
+	Header             PolicyHeader                        `json:"header"`
+	PatternId          string                              `json:"patternId,omitempty"` // Manually created policy files should NOT use this field.
+	APISpecs           APISpecList                         `json:"apiSpec,omitempty"`
+	AgreementProtocols AgreementProtocolList               `json:"agreementProtocols,omitempty"`
+	Workloads          WorkloadList                        `json:"workloads,omitempty"`
+	DeviceType         string                              `json:"deviceType,omitempty"`
+	ValueEx            ValueExchange                       `json:"valueExchange,omitempty"`
+	DataVerify         DataVerification                    `json:"dataVerification,omitempty"`
+	ProposalReject     ProposalRejection                   `json:"proposalRejection,omitempty"`
+	MaxAgreements      int                                 `json:"maxAgreements,omitempty"`
+	Properties         externalpolicy.PropertyList         `json:"properties,omitempty"`       // Version 2.0
+	Constraints        externalpolicy.ConstraintExpression `json:"constraints,omitempty"`      // Version 2.0
+	RequiredWorkload   string                              `json:"requiredWorkload,omitempty"` // Version 2.0
+	HAGroup            HighAvailabilityGroup               `json:"ha_group,omitempty"`         // Version 2.0
+	NodeH              NodeHealth                          `json:"nodeHealth,omitempty"`       // Version 2.0
 }
 
 // These functions are used to create Policy objects. You can create the base object
@@ -95,9 +94,9 @@ func (self *Policy) Add_Agreement_Protocol(ap *AgreementProtocol) error {
 	}
 }
 
-func (self *Policy) Add_Property(p *externalpolicy.Property) error {
+func (self *Policy) Add_Property(p *externalpolicy.Property, replaceExisting bool) error {
 	if p != nil {
-		return self.Properties.Add_Property(p)
+		return self.Properties.Add_Property(p, replaceExisting)
 	} else {
 		return errors.New(fmt.Sprintf("Add_Property Error: input Property is nil."))
 	}
@@ -118,15 +117,6 @@ func (self *Policy) Add_DataVerification(d *DataVerification) error {
 		return nil
 	} else {
 		return errors.New(fmt.Sprintf("Add_DataVerification Error: input is nil."))
-	}
-}
-
-func (self *Policy) Add_CounterPartyProperties(r *externalpolicy.RequiredProperty) error {
-	if r != nil {
-		self.CounterPartyProperties = *r
-		return nil
-	} else {
-		return errors.New(fmt.Sprintf("Add_CounterPartyProperties Error: input is nil."))
 	}
 }
 
@@ -182,12 +172,8 @@ func Are_Compatible(producer_policy *Policy, consumer_policy *Policy) error {
 		//		return errors.New(fmt.Sprintf("Compatibility Error: Producer policy APISpecs %v do not support Consumer APISpec requirements %v. Underlying error: %v", producer_policy.APISpecs, consumer_policy.APISpecs, err))
 	} else if err := (&consumer_policy.Constraints).IsSatisfiedBy(producer_policy.Properties); err != nil {
 		return errors.New(fmt.Sprintf("Compatibility Error: Producer properties %v do not satisfy Consumer constraint requirements %v. Underlying error: %v", producer_policy.Properties, consumer_policy.Constraints, err))
-	} else if err := (&consumer_policy.CounterPartyProperties).IsSatisfiedBy(producer_policy.Properties); err != nil {
-		return errors.New(fmt.Sprintf("Compatibility Error: Producer properties %v do not satisfy Consumer property requirements %v. Underlying error: %v", producer_policy.Properties, consumer_policy.CounterPartyProperties, err))
 	} else if err := (&producer_policy.Constraints).IsSatisfiedBy(consumer_policy.Properties); err != nil {
 		return errors.New(fmt.Sprintf("Compatibility Error: Consumer properties %v do not satisfy Producer constraint  %v. Underlying error: %v", consumer_policy.Properties, producer_policy.Constraints, err))
-	} else if err := (&producer_policy.CounterPartyProperties).IsSatisfiedBy(consumer_policy.Properties); err != nil {
-		return errors.New(fmt.Sprintf("Compatibility Error: Consumer properties %v do not satisfy Producer property requirements %v. Underlying error: %v", consumer_policy.Properties, producer_policy.CounterPartyProperties, err))
 	} else if _, err := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols); err != nil {
 		return errors.New(fmt.Sprintf("Compatibility Error: No common Agreement Protocols between %v and %v. Underlying error: %v", producer_policy.AgreementProtocols, consumer_policy.AgreementProtocols, err))
 	} else if !producer_policy.DataVerify.IsCompatibleWith(consumer_policy.DataVerify) {
@@ -234,17 +220,17 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 	merged_pol.APISpecs = (&producer_policy1.APISpecs).MergeWith(&producer_policy2.APISpecs)
 	intersecting_agreement_protocols, _ := (&producer_policy1.AgreementProtocols).Intersects_With(&producer_policy2.AgreementProtocols)
 	(&merged_pol.AgreementProtocols).Concatenate(intersecting_agreement_protocols)
-	(&merged_pol.Properties).Concatenate(&producer_policy1.Properties)
-	(&merged_pol.Properties).Concatenate(&producer_policy2.Properties)
+	(&merged_pol.Properties).MergeWith(&producer_policy1.Properties, false)
+	(&merged_pol.Properties).MergeWith(&producer_policy2.Properties, false)
 	merged_pol.DataVerify = producer_policy1.DataVerify.ProducerMergeWith(producer_policy2.DataVerify, defaultNoData)
 
 	// Merge constraints
-	// 2 CounterPartyProperty specifications could be incompatible, and this could be detected in some cases.
 	// TODO: implement comparison logic.
-	// For now we will take the cowards way out and simply AND together the Counter Party Property expressions
+	// For now we will take the cowards way out and simply AND together the contraint expressions
 	// from both policies.
-	merged_pol.Constraints = *((&producer_policy1.Constraints).Merge(&producer_policy2.Constraints))
-	merged_pol.CounterPartyProperties = *((&producer_policy1.CounterPartyProperties).Merge(&producer_policy2.CounterPartyProperties))
+	(&merged_pol.Constraints).MergeWith(&producer_policy1.Constraints)
+	(&merged_pol.Constraints).MergeWith(&producer_policy2.Constraints)
+
 	merged_pol.HAGroup = *((&producer_policy1.HAGroup).Merge(&producer_policy2.HAGroup))
 	merged_pol.MaxAgreements = cutil.Min(producer_policy1.MaxAgreements, producer_policy2.MaxAgreements)
 
@@ -283,14 +269,13 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		merged_pol.DataVerify = producer_policy.DataVerify.MergeWith(consumer_policy.DataVerify, defaultNoData)
 
 		// The properties from the consumer are provided, indicating that some or all of them meet
-		// the counterPartyProperty requirements of the node.
-		(&merged_pol.Properties).Concatenate(&consumer_policy.Properties)
+		// the constraints of the node.
+		(&merged_pol.Properties).MergeWith(&consumer_policy.Properties, false)
 		//(&merged_pol.Properties).Concatenate(&producer_policy.Properties)
 
-		// The consumer's counterparty properties are included indicating the requirements which are being met
+		// The consumer's constraints are included indicating the requirements which are being met
 		// by the producer policy (which is also included in the proposal).
 		merged_pol.Constraints = consumer_policy.Constraints
-		merged_pol.CounterPartyProperties = consumer_policy.CounterPartyProperties
 
 		// Merge the remaining policy.
 		// TODO: Can we get rid of any of these?
@@ -312,8 +297,8 @@ func MergePolicyWithExternalPolicy(pol *Policy, extPol *externalpolicy.ExternalP
 		// make a copy of the given policy
 		merged_pol := Policy(*pol)
 
-		merged_pol.Properties.Concatenate(&(extPol.Properties))
-		merged_pol.Constraints = *((&merged_pol.Constraints).Merge(&extPol.Constraints))
+		merged_pol.Properties.MergeWith(&(extPol.Properties), false)
+		merged_pol.Constraints.MergeWith(&(extPol.Constraints))
 		return &merged_pol, nil
 	}
 }
@@ -426,7 +411,6 @@ func (self *Policy) String() string {
 		res += fmt.Sprintf("Name: %v Value: %v\n", p.Name, p.Value)
 	}
 	res += fmt.Sprintf("Constraints: %v\n", self.Constraints)
-	res += fmt.Sprintf("CounterPartyProperties: %v\n", self.CounterPartyProperties)
 	res += fmt.Sprintf("Data Verification: %v\n", self.DataVerify)
 	res += fmt.Sprintf("Node Health: %v\n", self.NodeH)
 

@@ -15,7 +15,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"math/rand"
 	"os"
-	"reflect"
 	"testing"
 	"time"
 )
@@ -104,8 +103,8 @@ func Test_workload_pw_hash_error(t *testing.T) {
 
 func Test_workload_obscure(t *testing.T) {
 
-	wl1 := `{"deployment":"deploymentabcdefg","deployment_signature":"123456","deployment_user_info":"duiabcdefg","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
-	wl2 := `{"deployment":"deploymentabcdefg","deployment_signature":"123456","deployment_user_info":"duiabcdefg","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
+	wl1 := `{"deployment":"deploymentabcdefg","deployment_signature":"123456","deployment_user_info":"duiabcdefg","workload_password":"mysecret"}`
+	wl2 := `{"deployment":"deploymentabcdefg","deployment_signature":"123456","deployment_user_info":"duiabcdefg","workload_password":"mysecret"}`
 	if wla := create_Workload(wl1, t); wla != nil {
 		wpb4 := wla.WorkloadPassword
 		wla.Obscure("01020304", "")
@@ -167,7 +166,7 @@ func Test_workload_signature(t *testing.T) {
 				t.Errorf("Could not sign test string, error %v\n", err)
 			} else {
 				strSig := base64.StdEncoding.EncodeToString(sig)
-				wl1 := `{"deployment":"teststring","deployment_signature":"","deployment_user_info":"","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
+				wl1 := `{"deployment":"teststring","deployment_signature":"","deployment_user_info":"","workload_password":"mysecret"}`
 				if wla := create_Workload(wl1, t); wla != nil {
 					wla.DeploymentSignature = strSig
 					if err := wla.HasValidSignature([]string{"/tmp/temppolicytestkey.pem"}); err != nil {
@@ -179,23 +178,6 @@ func Test_workload_signature(t *testing.T) {
 		}
 	}
 }
-
-// func Test_debug_signature(t *testing.T) {
-
-//     tempKeyFile := "/tmp/mtn-publicKey.pem"
-//     str := `{"services":{"culex":{"image":"summit.hovitos.engineering/x86/culex:latest","environment":["MTN_MQTT_TOKEN=ZZbrT4ON5rYzoBi7H1VK3Ak9n0Fwjcod"]},"gps":{"image":"summit.hovitos.engineering/x86/gps:v1.2","privileged":true,"environment":["MTN_MQTT_TOKEN=ZZbrT4ON5rYzoBi7H1VK3Ak9n0Fwjcod","SLEEP_INTERVAL=20"],"devices":["/dev/bus/usb/001/001:/dev/bus/usb/001/001"]},"location":{"image":"summit.hovitos.engineering/x86/location:v1.3","environment":["DEPL_ENV=staging"]}}}`
-//     //str := `{\"services\":{\"geth\":{\"image\":\"summit.hovitos.engineering/private-eth:v1.5.7\",\"command\":[\"start.sh\"]}}}`
-//     sig := `gB2d3aN9nvE926H0muL02k4JGUzvYF4oiNFelxMhLxyTlb37yyLyqcHIVV/RNbJM4UOPiyXAyha61MXL0O7zluyN6uJQ9In0puHkcPRX9pC+iDfi2v6ygYl/nCR7OYAwX/8P+NoV3cuQJ1OTAPkTJJCaITvk0S1JsF4QOk+EoNFZrcvZ0JYKc7rzulBEXacW9bydzcFPJuQGhk32SwSzMJ0Rf/XCydeI5VsIGNwCCgTNxZn3cuslUS2JvY0Th3910p662OkEmTKY412ozOLyRM99hWPSxaO5OvGzWYZB7vfQ6N0eGbGVQv6GnDSnnJ+plzXR/rFolgJ92ir2fC1biL4AgnTjm0Ckn5EKj6f63kpgzdFtTw/yMt+5VczQNET2541iV3xyRc8nCDR/HqlfVaY9Q1R+W9R5JZTyVULkNG0yLeP4Hs+3O32PvqtCJovzlppKYX9/Orq3pUTOjRQRZ0AcenPpgmQUxuJEAs0UmhK4oKe5+a9CJm/YigwzyLlk8whxZLIZgvTPAWjW29n41zj8JVAwWIb7UF3bpVxh63p12sUUD1I7cFWCQA6stTpL6yF5+RQHom5frWvhTaNnPGfcFP5EwFVYtH/lFNoICWOyZy98pAbMzK46c8FnFzVB/TM1dCMMcTSjfJILhi7SCURh42Rp6hj3EPf/lO444hI=`
-
-//     wl1 := `{"deployment":"","deployment_signature":"","deployment_user_info":"","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
-//     if wla := create_Workload(wl1, t); wla != nil {
-//         wla.DeploymentSignature = sig
-//         wla.Deployment = str
-//         if err := wla.HasValidSignature(tempKeyFile); err != nil {
-//             t.Errorf("Could not verify signed deployment, error %v\n", err)
-//         }
-//     }
-// }
 
 func Test_workload_signature_invalid(t *testing.T) {
 
@@ -235,7 +217,7 @@ func Test_workload_signature_invalid(t *testing.T) {
 				t.Errorf("Could not sign test string, error %v\n", err)
 			} else {
 				strSig := base64.StdEncoding.EncodeToString(sig)
-				wl1 := `{"deployment":"teststring","deployment_signature":"","deployment_user_info":"","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
+				wl1 := `{"deployment":"teststring","deployment_signature":"","deployment_user_info":"","workload_password":"mysecret"}`
 				if wla := create_Workload(wl1, t); wla != nil {
 					wla.DeploymentSignature = strSig
 					if err := wla.HasValidSignature([]string{"/tmp/temppolicytestkey.pem"}); err == nil {
@@ -250,9 +232,9 @@ func Test_workload_signature_invalid(t *testing.T) {
 
 func Test_nexthighestpriority_workload1(t *testing.T) {
 
-	wl1 := `{"priority":{"priority_value":3,"retries":2,"retry_durations":5},"deployment":"3","deployment_signature":"1","deployment_user_info":"d","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
-	wl2 := `{"priority":{"priority_value":2,"retries":2,"retry_durations":5},"deployment":"2","deployment_signature":"1","deployment_user_info":"d","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
-	wl3 := `{"priority":{"priority_value":1,"retries":2,"retry_durations":5},"deployment":"1","deployment_signature":"1","deployment_user_info":"d","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
+	wl1 := `{"priority":{"priority_value":3,"retries":2,"retry_durations":5},"deployment":"3","deployment_signature":"1","deployment_user_info":"d","workload_password":"mysecret"}`
+	wl2 := `{"priority":{"priority_value":2,"retries":2,"retry_durations":5},"deployment":"2","deployment_signature":"1","deployment_user_info":"d","workload_password":"mysecret"}`
+	wl3 := `{"priority":{"priority_value":1,"retries":2,"retry_durations":5},"deployment":"1","deployment_signature":"1","deployment_user_info":"d","workload_password":"mysecret"}`
 
 	if wla := create_Workload(wl1, t); wla == nil {
 		t.Errorf("Error unmarshalling Workload json string: %v\n", wl1)
@@ -360,9 +342,9 @@ func Test_nexthighestpriority_workload1(t *testing.T) {
 
 func Test_nexthighestpriority_workload2(t *testing.T) {
 
-	wl1 := `{"priority":{"priority_value":3,"retries":2,"retry_durations":5},"deployment":"3","deployment_signature":"1","deployment_user_info":"d","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
-	wl2 := `{"priority":{"priority_value":2,"retries":0,"retry_durations":5},"deployment":"2","deployment_signature":"1","deployment_user_info":"d","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
-	wl3 := `{"priority":{"priority_value":1,"retries":2,"retry_durations":5},"deployment":"1","deployment_signature":"1","deployment_user_info":"d","torrent":{"url":"torrURL","images":[{"file":"filename","signature":"abcdefg"}]},"workload_password":"mysecret"}`
+	wl1 := `{"priority":{"priority_value":3,"retries":2,"retry_durations":5},"deployment":"3","deployment_signature":"1","deployment_user_info":"d","workload_password":"mysecret"}`
+	wl2 := `{"priority":{"priority_value":2,"retries":0,"retry_durations":5},"deployment":"2","deployment_signature":"1","deployment_user_info":"d","workload_password":"mysecret"}`
+	wl3 := `{"priority":{"priority_value":1,"retries":2,"retry_durations":5},"deployment":"1","deployment_signature":"1","deployment_user_info":"d","workload_password":"mysecret"}`
 
 	if wla := create_Workload(wl1, t); wla == nil {
 		t.Errorf("Error unmarshalling Workload json string: %v\n", wl1)
@@ -385,65 +367,6 @@ func Test_nexthighestpriority_workload2(t *testing.T) {
 			t.Errorf("Returned workload is not the next highest priority, returned %v", wl)
 		}
 
-	}
-
-}
-
-func Test_Workload_ConvertToTorrent(t *testing.T) {
-
-	ip := ImplementationPackage{}
-	torr := ip.ConvertToTorrent()
-	if !reflect.DeepEqual(torr, Torrent{}) {
-		t.Errorf("Implementation Package was not converted correctly, was %v, expecting %v", torr, Torrent{})
-	}
-
-	isURL := "http://image.server"
-	sig := "sigsig="
-
-	ip = ImplementationPackage{
-		IMPL_PACKAGE_DISCRIMINATOR:   IMPL_PACKAGE_IMAGESERVER,
-		IMPL_PACKAGE_IMAGESERVER_URL: isURL,
-		IMPL_PACKAGE_IMAGESERVER_SIG: sig,
-	}
-	torr = ip.ConvertToTorrent()
-	if !reflect.DeepEqual(torr, Torrent{Url: isURL, Signature: sig}) {
-		t.Errorf("Implementation Package was not converted correctly, was %v, expecting %v", torr, Torrent{})
-	}
-
-	ip = ImplementationPackage{
-		IMPL_PACKAGE_DISCRIMINATOR:   IMPL_PACKAGE_CONTAINER,
-		IMPL_PACKAGE_IMAGESERVER_URL: isURL,
-		IMPL_PACKAGE_IMAGESERVER_SIG: sig,
-	}
-	torr = ip.ConvertToTorrent()
-	if !reflect.DeepEqual(torr, Torrent{}) {
-		t.Errorf("Implementation Package was not converted correctly, was %v, expecting %v", torr, Torrent{})
-	}
-
-	ip = ImplementationPackage{
-		IMPL_PACKAGE_DISCRIMINATOR: IMPL_PACKAGE_IMAGESERVER,
-	}
-	torr = ip.ConvertToTorrent()
-	if !reflect.DeepEqual(torr, Torrent{}) {
-		t.Errorf("Implementation Package was not converted correctly, was %v, expecting %v", torr, Torrent{})
-	}
-
-	ip = ImplementationPackage{
-		IMPL_PACKAGE_DISCRIMINATOR:   IMPL_PACKAGE_IMAGESERVER,
-		IMPL_PACKAGE_IMAGESERVER_URL: isURL,
-	}
-	torr = ip.ConvertToTorrent()
-	if !reflect.DeepEqual(torr, Torrent{}) {
-		t.Errorf("Implementation Package was not converted correctly, was %v, expecting %v", torr, Torrent{})
-	}
-
-	ip = ImplementationPackage{
-		IMPL_PACKAGE_DISCRIMINATOR:   IMPL_PACKAGE_IMAGESERVER,
-		IMPL_PACKAGE_IMAGESERVER_SIG: sig,
-	}
-	torr = ip.ConvertToTorrent()
-	if !reflect.DeepEqual(torr, Torrent{}) {
-		t.Errorf("Implementation Package was not converted correctly, was %v, expecting %v", torr, Torrent{})
 	}
 
 }

@@ -22,9 +22,6 @@
         {
             "deployment": "Deployment instructions",
             "deployment_signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "torrent": {
-                "url": "torrent://the.system.com"
-            },
             "priority": {}
         }
     ],
@@ -50,18 +47,9 @@
             "value": "conval3"
         }
     ],
-    "counterPartyProperties": {
-        "or": [
-            {
-                "name": "rpiprop1",
-                "value": "rpival1"
-            },
-            {
-                "name": "rpiprop2",
-                "value": "rpival2"
-            }
-        ]
-    },
+    "constraints": [
+        "rpiprop1 == rpival1 OR rpiprop2 == rpival2"
+    ],
     "requiredWorkload": "http://mycompany.com/workload1",
     "ha_group": {},
     "nodeHealth": {}

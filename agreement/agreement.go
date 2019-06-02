@@ -301,7 +301,9 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 		} else if p, err := w.producerPH[msgProtocol].AgreementProtocolHandler("", "", "").ValidateProposal(protocolMsg); err != nil {
 			glog.V(5).Infof(logString(fmt.Sprintf("Proposal handler ignoring non-proposal message: %s due to %v", cmd.Msg.ShortProtocolMessage(), err)))
 			deleteMessage = false
-		} else {
+		} else if pDevice, err := persistence.FindExchangeDevice(w.db); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("unable to get device from the local database. %v", err)))
+		} else if pDevice != nil && pDevice.Config.State == persistence.CONFIGSTATE_CONFIGURED {
 			deleteMessage = w.producerPH[msgProtocol].HandleProposalMessage(p, protocolMsg, exchangeMsg)
 		}
 
@@ -500,7 +502,7 @@ func (w *AgreementWorker) checkNodePolicyChanges() int {
 	}
 
 	// exchange is the master
-	updated, newNodePolicy, err := nodepolicy.SyncNodePolicyWithExchange(w.db, pDevice, exchange.GetHTTPNodePolicyHandler(w))
+	updated, newNodePolicy, err := nodepolicy.SyncNodePolicyWithExchange(w.db, pDevice, exchange.GetHTTPNodePolicyHandler(w), exchange.GetHTTPPutNodePolicyHandler(w))
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Unable to sync the local node policy with the exchange copy. Error: %v", err)))
 		eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,

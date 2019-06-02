@@ -15,7 +15,6 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/semanticversion"
 	"io/ioutil"
-	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -104,7 +103,7 @@ func createLogMessage(specRef string, url string, org string, version string, ar
 }
 
 // This is the entry point for the hzn dev dependency fetch command.
-func DependencyFetch(homeDirectory string, project string, specRef string, url string, org string, version string, arch string, userCreds string, keyFiles []string, userInputFile string) {
+func DependencyFetch(homeDirectory string, project string, specRef string, url string, org string, version string, arch string, userCreds string, userInputFile string) {
 
 	// Check input parameters for correctness.
 	dir, err := verifyFetchInput(homeDirectory, project, specRef, url, org, version, arch, userCreds)
@@ -120,20 +119,7 @@ func DependencyFetch(homeDirectory string, project string, specRef string, url s
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'dependency %v' %v", DEPENDENCY_FETCH_COMMAND, err)
 		}
 	} else {
-		if len(keyFiles) == 0 {
-			//take default key if empty, make sure the key exists
-			pubKeyFile := cliutils.WithDefaultEnvVar(new(string), "HZN_PUBLIC_KEY_FILE")
-			pubKeyFile1 := cliutils.VerifySigningKeyInput(*pubKeyFile, true)
-			keyFiles = []string{pubKeyFile1}
-		} else {
-			// verify the input file exists
-			for _, kf := range keyFiles {
-				if _, err := os.Stat(kf); os.IsNotExist(err) {
-					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
-				}
-			}
-		}
-		if err := fetchExchangeProjectDependency(dir, specRef, url, org, version, arch, userCreds, keyFiles, userInputFile); err != nil {
+		if err := fetchExchangeProjectDependency(dir, specRef, url, org, version, arch, userCreds, userInputFile); err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'dependency %v' %v", DEPENDENCY_FETCH_COMMAND, err)
 		}
 
@@ -252,7 +238,7 @@ func DependenciesExists(directory string, okToCreate bool) (bool, error) {
 
 // Validate that the dependencies are complete and coherent with the rest of the definitions in the project.
 // Any errors will be returned to the caller.
-func ValidateDependencies(directory string, userInputs *register.InputFile, userInputsFilePath string, projectType string, userCreds string, keyFiles []string, autoAddDep bool) error {
+func ValidateDependencies(directory string, userInputs *register.InputFile, userInputsFilePath string, projectType string, userCreds string, autoAddDep bool) error {
 
 	if projectType == SERVICE_COMMAND || IsServiceProject(directory) {
 
@@ -285,7 +271,7 @@ func ValidateDependencies(directory string, userInputs *register.InputFile, user
 			}
 			if !found {
 				if autoAddDep {
-					DependencyFetch(directory, "", "", rs.URL, rs.Org, rs.Version, rs.Arch, userCreds, keyFiles, userInputsFilePath)
+					DependencyFetch(directory, "", "", rs.URL, rs.Org, rs.Version, rs.Arch, userCreds, userInputsFilePath)
 					hasNewDepFile = true
 				} else {
 					return errors.New(fmt.Sprintf("dependency %v at version %v does not exist in %v.", rs.URL, rs.Version, path.Join(directory, DEFAULT_DEPENDENCY_DIR)))
@@ -429,7 +415,7 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' %v", DEPENDENCY_COMMAND, DEPENDENCY_FETCH_COMMAND, err)
 	}
 
-	CommonProjectValidation(project, userInputFile, DEPENDENCY_COMMAND, DEPENDENCY_FETCH_COMMAND, "", []string{}, false)
+	CommonProjectValidation(project, userInputFile, DEPENDENCY_COMMAND, DEPENDENCY_FETCH_COMMAND, "", false)
 
 	fmt.Printf("Service project %v verified.\n", dir)
 
@@ -549,10 +535,10 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	return nil
 }
 
-func fetchExchangeProjectDependency(homeDirectory string, specRef string, url string, org string, version string, arch string, userCreds string, keyFiles []string, userInputFile string) error {
+func fetchExchangeProjectDependency(homeDirectory string, specRef string, url string, org string, version string, arch string, userCreds string, userInputFile string) error {
 
 	// Pull the metadata from the exchange, including any of this dependency's dependencies.
-	sDef, err := getExchangeDefinition(homeDirectory, specRef, url, org, version, arch, userCreds, keyFiles, userInputFile)
+	sDef, err := getExchangeDefinition(homeDirectory, specRef, url, org, version, arch, userCreds, userInputFile)
 	if err != nil {
 		return err
 	}
@@ -633,10 +619,10 @@ func UpdateServiceDefandUserInputFile(homeDirectory string, sDef cliexchange.Abs
 	return nil
 }
 
-func getExchangeDefinition(homeDirectory string, specRef string, surl string, org string, version string, arch string, userCreds string, keyFiles []string, userInputFile string) (cliexchange.AbstractServiceFile, error) {
+func getExchangeDefinition(homeDirectory string, specRef string, surl string, org string, version string, arch string, userCreds string, userInputFile string) (cliexchange.AbstractServiceFile, error) {
 
 	if IsServiceProject(homeDirectory) {
-		return getServiceDefinition(homeDirectory, surl, org, version, arch, userCreds, keyFiles)
+		return getServiceDefinition(homeDirectory, surl, org, version, arch, userCreds)
 	} else {
 		return nil, errors.New(fmt.Sprintf("unsupported project type"))
 	}
@@ -699,11 +685,11 @@ func UpdateDependentDependencies(homeDirectory string, depProject string) error 
 }
 
 // Iterate through the dependencies of the given service and create a dependency for each one.
-func getServiceDefinitionDependencies(homeDirectory string, serviceDef *cliexchange.ServiceFile, userCreds string, keyFiles []string) error {
+func getServiceDefinitionDependencies(homeDirectory string, serviceDef *cliexchange.ServiceFile, userCreds string) error {
 	for _, rs := range serviceDef.RequiredServices {
 		// Get the service definition for each required service. Dependencies refer to each other by version range, so the
 		// service we're looking for might not be at the exact version specified in the required service element.
-		if sDef, err := getServiceDefinition(homeDirectory, rs.URL, rs.Org, "", rs.Arch, userCreds, keyFiles); err != nil {
+		if sDef, err := getServiceDefinition(homeDirectory, rs.URL, rs.Org, "", rs.Arch, userCreds); err != nil {
 			return err
 		} else if err := UpdateDependencyFile(homeDirectory, sDef); err != nil {
 			return err
@@ -714,7 +700,7 @@ func getServiceDefinitionDependencies(homeDirectory string, serviceDef *cliexcha
 	return nil
 }
 
-func getServiceDefinition(homeDirectory, surl string, org string, version string, arch string, userCreds string, keyFiles []string) (*cliexchange.ServiceFile, error) {
+func getServiceDefinition(homeDirectory, surl string, org string, version string, arch string, userCreds string) (*cliexchange.ServiceFile, error) {
 
 	// Construct the resource URL suffix.
 	resSuffix := fmt.Sprintf("orgs/%v/services?url=%v", org, surl)
@@ -734,7 +720,7 @@ func getServiceDefinition(homeDirectory, surl string, org string, version string
 		userCreds = os.Getenv(DEVTOOL_HZN_USER)
 	}
 	cliutils.SetWhetherUsingApiKey(userCreds)
-	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), resSuffix, cliutils.OrgAndCreds(os.Getenv(DEVTOOL_HZN_ORG), userCreds), []int{200}, resp)
+	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), resSuffix, cliutils.OrgAndCreds(os.Getenv(DEVTOOL_HZN_ORG), userCreds), []int{200}, resp)
 
 	// Parse the response and extract the highest version service definition or return an error.
 	var serviceDef exchange.ServiceDefinition
@@ -778,20 +764,11 @@ func getServiceDefinition(homeDirectory, surl string, org string, version string
 			return nil, err
 		}
 
-		// convert the image server info into torrent
-		torrent := getImageReferenceAsTorrent(&serviceDef)
-
-		// verify the image server url
-		url1, err := url.Parse(torrent.Url)
-		if err != nil {
-			return nil, fmt.Errorf("ill-formed URL: %v, error %v", torrent.Url, err)
-		}
-
 		// Get docker auth for the service
 		auth_url := fmt.Sprintf("orgs/%v/services/%v/dockauths", org, exchange.GetId(serviceId))
 		docker_auths := make([]exchange.ImageDockerAuth, 0)
 		cliutils.SetWhetherUsingApiKey(userCreds)
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), auth_url, cliutils.OrgAndCreds(os.Getenv(DEVTOOL_HZN_ORG), userCreds), []int{200, 404}, &docker_auths)
+		cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), auth_url, cliutils.OrgAndCreds(os.Getenv(DEVTOOL_HZN_ORG), userCreds), []int{200, 404}, &docker_auths)
 
 		img_auths := make([]events.ImageDockerAuth, 0)
 		if docker_auths != nil {
@@ -801,10 +778,10 @@ func getServiceDefinition(homeDirectory, surl string, org string, version string
 		}
 		cliutils.Verbose("The image docker auths for the service %v/%v are: %v", org, surl, img_auths)
 
-		cc := events.NewContainerConfig(*url1, torrent.Signature, serviceDef.Deployment, serviceDef.DeploymentSignature, "", "", img_auths)
+		cc := events.NewContainerConfig(serviceDef.Deployment, serviceDef.DeploymentSignature, "", "", img_auths)
 
 		// get the images
-		if err := getContainerImages(cc, keyFiles, currentUIs); err != nil {
+		if err := getContainerImages(cc, currentUIs); err != nil {
 			return nil, errors.New(fmt.Sprintf("failed to get images for %v/%v: %v", org, surl, err))
 		}
 	}
@@ -822,11 +799,10 @@ func getServiceDefinition(homeDirectory, surl string, org string, version string
 	sDef_cliex.Deployment = dc
 	sDef_cliex.MatchHardware = serviceDef.MatchHardware
 	sDef_cliex.RequiredServices = serviceDef.RequiredServices
-	sDef_cliex.ImageStore = serviceDef.ImageStore
 
 	// If this service has dependencies, bring them in.
 	if serviceDef.HasDependencies() {
-		if err := getServiceDefinitionDependencies(homeDirectory, sDef_cliex, userCreds, keyFiles); err != nil {
+		if err := getServiceDefinitionDependencies(homeDirectory, sDef_cliex, userCreds); err != nil {
 			return nil, err
 		}
 	}

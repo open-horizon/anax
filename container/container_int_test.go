@@ -321,7 +321,6 @@ func Test_resourcesCreate_failLoad(t *testing.T) {
   `
 
 	config := tConfig()
-	config.Edge.TorrentDir = "/somethingfake"
 	config.Edge.ServiceStorage = "/tmp"
 	worker := tWorker(config, db)
 

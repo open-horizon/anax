@@ -14,6 +14,5 @@
         "chart_archive": "../external-hello-1.0.0.tgz",
         "release_name": "release1"
     },
-    "deploymentSignature": "",
-    "imageStore": {}
+    "deploymentSignature": ""
 }

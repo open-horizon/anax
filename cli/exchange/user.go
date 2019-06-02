@@ -26,7 +26,7 @@ func UserList(org, userPwCreds, theUser string, allUsers, namesOnly bool) {
 
 	// Get users
 	var users ExchangeUsers
-	httpCode := cliutils.ExchangeGet(exchUrlBase, "orgs/"+org+"/users"+cliutils.AddSlash(theUser), cliutils.OrgAndCreds(org, userPwCreds), []int{200, 404}, &users)
+	httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/users"+cliutils.AddSlash(theUser), cliutils.OrgAndCreds(org, userPwCreds), []int{200, 404}, &users)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "theUser '%s' not found in org %s", strings.TrimPrefix(theUser, "/"), org)
 	}
@@ -58,7 +58,7 @@ func UserCreate(org, userPwCreds, user, pw, email string, isAdmin bool) {
 	}
 	cliutils.SetWhetherUsingApiKey(userPwCreds)
 	postUserReq := cliutils.UserExchangeReq{Password: pw, Admin: isAdmin, Email: email}
-	cliutils.ExchangePutPost(http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, postUserReq)
+	cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, postUserReq)
 }
 
 type UserExchangePatchAdmin struct {
@@ -68,7 +68,7 @@ type UserExchangePatchAdmin struct {
 func UserSetAdmin(org, userPwCreds, user string, isAdmin bool) {
 	cliutils.SetWhetherUsingApiKey(userPwCreds)
 	patchUserReq := UserExchangePatchAdmin{Admin: isAdmin}
-	cliutils.ExchangePutPost(http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, patchUserReq)
+	cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, patchUserReq)
 }
 
 func UserRemove(org, userPwCreds, user string, force bool) {
@@ -77,7 +77,7 @@ func UserRemove(org, userPwCreds, user string, force bool) {
 		cliutils.ConfirmRemove("Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user '" + org + "/" + user + "' from the Horizon Exchange?")
 	}
 
-	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPwCreds), []int{204, 404})
+	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPwCreds), []int{204, 404})
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "user '%s' not found in org %s", user, org)
 	}

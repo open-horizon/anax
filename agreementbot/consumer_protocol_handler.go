@@ -37,6 +37,8 @@ type ConsumerProtocolHandler interface {
 	HandleBlockchainEvent(cmd *BlockchainEventCommand)
 	HandlePolicyChanged(cmd *PolicyChangedCommand, cph ConsumerProtocolHandler)
 	HandlePolicyDeleted(cmd *PolicyDeletedCommand, cph ConsumerProtocolHandler)
+	HandleServicePolicyChanged(cmd *ServicePolicyChangedCommand, cph ConsumerProtocolHandler)
+	HandleServicePolicyDeleted(cmd *ServicePolicyDeletedCommand, cph ConsumerProtocolHandler)
 	HandleWorkloadUpgrade(cmd *WorkloadUpgradeCommand, cph ConsumerProtocolHandler)
 	HandleMakeAgreement(cmd *MakeAgreementCommand, cph ConsumerProtocolHandler)
 	HandleStopProtocol(cph ConsumerProtocolHandler)
@@ -259,46 +261,7 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 					continue
 				} else if err := b.pm.MatchesMine(cmd.Msg.Org(), pol); err != nil {
 					glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a policy %v that has changed: %v", ag.CurrentAgreementId, pol.Header.Name, err)))
-
-					// Remove any workload usage records (non-HA) or mark for pending upgrade (HA). There might not be a workload usage record
-					// if the consumer policy does not specify the workload priority section.
-					if wlUsage, err := b.db.FindSingleWorkloadUsageByDeviceAndPolicyName(ag.DeviceId, ag.PolicyName); err != nil {
-						glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error retreiving workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
-					} else if wlUsage != nil && len(wlUsage.HAPartners) != 0 && wlUsage.PendingUpgradeTime != 0 {
-						// Skip this agreement, it is part of an HA group where another member is upgrading
-						continue
-					} else if wlUsage != nil && len(wlUsage.HAPartners) != 0 && wlUsage.PendingUpgradeTime == 0 {
-						for _, partnerId := range wlUsage.HAPartners {
-							if _, err := b.db.UpdatePendingUpgrade(partnerId, ag.PolicyName); err != nil {
-								glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("could not update pending workload upgrade for %v using policy %v, error: %v", partnerId, ag.PolicyName, err)))
-							}
-						}
-						// Choose this device's agreement within the HA group to start upgrading.
-						// Delete this workload usage record so that a new agreement will be made starting from the highest priority workload
-						if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
-							glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
-						}
-						agreementWork := CancelAgreement{
-							workType:    CANCEL,
-							AgreementId: ag.CurrentAgreementId,
-							Protocol:    ag.AgreementProtocol,
-							Reason:      cph.GetTerminationCode(TERM_REASON_POLICY_CHANGED),
-						}
-						cph.WorkQueue() <- agreementWork
-					} else {
-						// Non-HA device or agreement without workload priority in the policy, re-make the agreement.
-						// Delete this workload usage record so that a new agreement will be made starting from the highest priority workload
-						if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
-							glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
-						}
-						agreementWork := CancelAgreement{
-							workType:    CANCEL,
-							AgreementId: ag.CurrentAgreementId,
-							Protocol:    ag.AgreementProtocol,
-							Reason:      cph.GetTerminationCode(TERM_REASON_POLICY_CHANGED),
-						}
-						cph.WorkQueue() <- agreementWork
-					}
+					b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph)
 				} else {
 					glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("for agreement %v, no policy content differences detected", ag.CurrentAgreementId)))
 				}
@@ -345,6 +308,103 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyDeleted(cmd *PolicyDeletedComm
 		}
 	} else {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error searching database: %v", err)))
+	}
+}
+
+func (b *BaseConsumerProtocolHandler) HandleServicePolicyChanged(cmd *ServicePolicyChangedCommand, cph ConsumerProtocolHandler) {
+
+	glog.V(5).Infof(BCPHlogstring(b.Name(), "received service policy changed command: %v. cmd"))
+
+	InProgress := func() persistence.AFilter {
+		return func(e persistence.Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }
+	}
+
+	if agreements, err := b.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), InProgress()}, cph.Name()); err == nil {
+		for _, ag := range agreements {
+			if ag.Pattern == "" && ag.PolicyName == fmt.Sprintf("%v/%v", cmd.Msg.BusinessPolOrg, cmd.Msg.BusinessPolName) && ag.ServiceId == cmd.Msg.ServiceId {
+
+				glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a service policy %v that has changed.", ag.CurrentAgreementId, ag.ServiceId)))
+				b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph)
+			}
+		}
+	} else {
+		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error searching database: %v", err)))
+	}
+}
+
+func (b *BaseConsumerProtocolHandler) HandleServicePolicyDeleted(cmd *ServicePolicyDeletedCommand, cph ConsumerProtocolHandler) {
+	glog.V(5).Infof(BCPHlogstring(b.Name(), "received policy deleted command."))
+
+	InProgress := func() persistence.AFilter {
+		return func(e persistence.Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }
+	}
+
+	if agreements, err := b.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), InProgress()}, cph.Name()); err == nil {
+		for _, ag := range agreements {
+
+			if ag.Pattern == "" && ag.PolicyName == fmt.Sprintf("%v/%v", cmd.Msg.BusinessPolOrg, cmd.Msg.BusinessPolName) && ag.ServiceId == cmd.Msg.ServiceId {
+				glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a service policy %v that doesn't exist anymore", ag.CurrentAgreementId, ag.ServiceId)))
+
+				// Remove any workload usage records so that a new agreement will be made starting from the highest priority workload.
+				if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
+					glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
+				}
+
+				// Queue up a cancellation command for this agreement.
+				agreementWork := CancelAgreement{
+					workType:    CANCEL,
+					AgreementId: ag.CurrentAgreementId,
+					Protocol:    ag.AgreementProtocol,
+					Reason:      cph.GetTerminationCode(TERM_REASON_POLICY_CHANGED),
+				}
+				cph.WorkQueue() <- agreementWork
+
+			}
+		}
+	} else {
+		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error searching database: %v", err)))
+	}
+}
+
+func (b *BaseConsumerProtocolHandler) CancelAgreement(ag persistence.Agreement, reason string, cph ConsumerProtocolHandler) {
+	// Remove any workload usage records (non-HA) or mark for pending upgrade (HA). There might not be a workload usage record
+	// if the consumer policy does not specify the workload priority section.
+	if wlUsage, err := b.db.FindSingleWorkloadUsageByDeviceAndPolicyName(ag.DeviceId, ag.PolicyName); err != nil {
+		glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error retreiving workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
+	} else if wlUsage != nil && len(wlUsage.HAPartners) != 0 && wlUsage.PendingUpgradeTime != 0 {
+		// Skip this agreement, it is part of an HA group where another member is upgrading
+		return
+	} else if wlUsage != nil && len(wlUsage.HAPartners) != 0 && wlUsage.PendingUpgradeTime == 0 {
+		for _, partnerId := range wlUsage.HAPartners {
+			if _, err := b.db.UpdatePendingUpgrade(partnerId, ag.PolicyName); err != nil {
+				glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("could not update pending workload upgrade for %v using policy %v, error: %v", partnerId, ag.PolicyName, err)))
+			}
+		}
+		// Choose this device's agreement within the HA group to start upgrading.
+		// Delete this workload usage record so that a new agreement will be made starting from the highest priority workload
+		if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
+			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
+		}
+		agreementWork := CancelAgreement{
+			workType:    CANCEL,
+			AgreementId: ag.CurrentAgreementId,
+			Protocol:    ag.AgreementProtocol,
+			Reason:      cph.GetTerminationCode(reason),
+		}
+		cph.WorkQueue() <- agreementWork
+	} else {
+		// Non-HA device or agreement without workload priority in the policy, re-make the agreement.
+		// Delete this workload usage record so that a new agreement will be made starting from the highest priority workload
+		if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
+			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
+		}
+		agreementWork := CancelAgreement{
+			workType:    CANCEL,
+			AgreementId: ag.CurrentAgreementId,
+			Protocol:    ag.AgreementProtocol,
+			Reason:      cph.GetTerminationCode(reason),
+		}
+		cph.WorkQueue() <- agreementWork
 	}
 }
 

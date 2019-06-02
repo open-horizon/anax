@@ -22,26 +22,19 @@ const (
 // This struct represents property values advertised by the policy
 type PropertyList []Property
 
-func (p PropertyList) IsSame(compare PropertyList) bool {
-	for _, prop := range p {
-		found := false
-		for _, compareProp := range compare {
-			if prop.IsSame(compareProp) {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return false
-		}
-	}
-	return true
-}
-
 type Property struct {
 	Name  string      `json:"name"`           // The Property name
 	Value interface{} `json:"value"`          // The Property value
 	Type  string      `json:"type,omitempty"` // The type of the Property value
+}
+
+// This function creates Property objects
+func Property_Factory(name string, value interface{}) *Property {
+	p := new(Property)
+	p.Name = name
+	p.Value = value
+
+	return p
 }
 
 // IsSame will return true if the given properties have the same value
@@ -104,13 +97,20 @@ func isSameList(list1 []string, list2 []string) bool {
 	return true
 }
 
-// This function creates Property objects
-func Property_Factory(name string, value interface{}) *Property {
-	p := new(Property)
-	p.Name = name
-	p.Value = value
-
-	return p
+func (p PropertyList) IsSame(compare PropertyList) bool {
+	for _, prop := range p {
+		found := false
+		for _, compareProp := range compare {
+			if prop.IsSame(compareProp) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
 }
 
 // This function compares 2 property lists to determine if they set different values on the
@@ -127,31 +127,52 @@ func (self *PropertyList) Compatible_With(other *PropertyList) error {
 	return nil
 }
 
-// This function merges 2 Property lists into one list, removing duplicates.
-func (self *PropertyList) Concatenate(new_list *PropertyList) {
+// This function merges two PropertyList into one list. If both have the same property, ignore
+// the ones from new_list unless replaceExsiting is true.
+func (self *PropertyList) MergeWith(new_list *PropertyList, replaceExsiting bool) {
+	if new_list == nil {
+		return
+	}
+
 	for _, new_ele := range *new_list {
-		found := false
-		for _, self_ele := range *self {
-			if new_ele.Name == self_ele.Name {
-				found = true
-				break
-			}
-		}
-		if !found {
-			(*self) = append((*self), new_ele)
-		}
+		self.Add_Property(&new_ele, replaceExsiting)
 	}
 }
 
-// This function adds a Property to the list. Return an error if there are duplicates.
-func (self *PropertyList) Add_Property(new_ele *Property) error {
-	for _, ele := range *self {
+// This function adds a Property to the list. Return an error if there are duplicates and replaceExisting is false.
+func (self *PropertyList) Add_Property(new_ele *Property, replaceExisting bool) error {
+	if new_ele == nil {
+		return nil
+	}
+
+	tempList := new(PropertyList)
+	*tempList = append(*tempList, *new_ele)
+	if err := tempList.Validate(); err != nil {
+		return fmt.Errorf("Could not validate new property %v: %v", new_ele, err)
+	}
+
+	for i, ele := range *self {
 		if ele.Name == new_ele.Name {
-			return errors.New(fmt.Sprintf("PropertyList %v already has the element being added: %v", *self, *new_ele))
+			if replaceExisting {
+				(*self)[i] = *new_ele
+				return nil
+			} else {
+				return errors.New(fmt.Sprintf("PropertyList %v already has the element being added: %v", *self, *new_ele))
+			}
 		}
 	}
 	(*self) = append(*self, *new_ele)
 	return nil
+}
+
+// This function checks the property list to see if the given property is present.
+func (self PropertyList) HasProperty(name string) bool {
+	for _, ele := range self {
+		if ele.Name == name {
+			return true
+		}
+	}
+	return false
 }
 
 // Validate will return an error if any property in the list has an invalid format or a value that does not match a declared type

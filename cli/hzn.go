@@ -23,6 +23,7 @@ import (
 	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/cli/service"
 	"github.com/open-horizon/anax/cli/status"
+	"github.com/open-horizon/anax/cli/sync_service"
 	"github.com/open-horizon/anax/cli/unregister"
 	"github.com/open-horizon/anax/cli/utilcmds"
 	"github.com/open-horizon/anax/cutil"
@@ -48,6 +49,10 @@ Environment Variables:
       to specify the organization ID'.
   HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn
       register -u' flag, in the form '[org/]user:pw'.
+  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use
+      to communicate with the Horizon Model Management Service, for example
+      https://exchange.bluehorizon.network/css/. (By default hzn will ask the
+      Horizon Agent for the URL.)
 
   All these environment variables and ones mentioned in the command help can be
   specified in user's configuration file: ~/.hzn/hzn.json with JSON format.
@@ -143,6 +148,14 @@ Environment Variables:
 	exAgbotDPPatOrg := exAgbotDelPatCmd.Arg("patternorg", "The organization of the pattern to remove.").Required().String()
 	exAgbotDPPat := exAgbotDelPatCmd.Arg("pattern", "The name of the pattern to remove.").Required().String()
 	exAgbotDPNodeOrg := exAgbotDelPatCmd.Arg("nodeorg", "The organization of the nodes that should be searched. Defaults to patternorg.").String()
+	exAgbotListPolicyCmd := exAgbotCmd.Command("listbusinesspol", "Display the business policies that this agbot is serving.")
+	exAgbotPol := exAgbotListPolicyCmd.Arg("agbot", "The agbot to list serving business policies for.").Required().String()
+	exAgbotAddPolCmd := exAgbotCmd.Command("addbusinesspol", "Add this business policy to the list of policies this agbot is serving. Currently only support adding all the business polycies from an organization.")
+	exAgbotAPolAg := exAgbotAddPolCmd.Arg("agbot", "The agbot to add the business policy to.").Required().String()
+	exAgbotAPPolOrg := exAgbotAddPolCmd.Arg("policyorg", "The organization of the business policy to add.").Required().String()
+	exAgbotDelPolCmd := exAgbotCmd.Command("removebusinesspol", "Remove this business policy from the list of policies this agbot is serving. Currently only support removing all the business polycies from an organization.")
+	exAgbotDPolAg := exAgbotDelPolCmd.Arg("agbot", "The agbot to remove the business policy from.").Required().String()
+	exAgbotDPPolOrg := exAgbotDelPolCmd.Arg("policyorg", "The organization of the business policy to remove.").Required().String()
 
 	exPatternCmd := exchangeCmd.Command("pattern", "List and manage patterns in the Horizon Exchange")
 	exPatternListCmd := exPatternCmd.Command("list", "Display the pattern resources from the Horizon Exchange.")
@@ -274,7 +287,7 @@ Environment Variables:
 
 	policyCmd := app.Command("policy", "List and manage policy for this Horizon edge node.")
 	policyListCmd := policyCmd.Command("list", "Display this edge node's policy.")
-	policyUpdateCmd := policyCmd.Command("update", "Update the node's policy.")
+	policyUpdateCmd := policyCmd.Command("update", "Update the node's policy. The node's built-in properties will be automatically added if the input policy does not contain them.")
 	policyUpdateInputFile := policyUpdateCmd.Flag("input-file", "The JSON input file name containing the node policy.").Short('f').Required().String()
 	policyRemoveCmd := policyCmd.Command("remove", "Remove the node's policy.")
 	policyRemoveForce := policyRemoveCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
@@ -342,12 +355,10 @@ Environment Variables:
 	devServiceConfigType := devServiceStartTestCmd.Flag("type", "The type of file to be made available through the sync service APIs. All config files are presumed to be of the same type. This flag is required if any configFiles are specified.").Short('t').String()
 	devServiceNoFSS := devServiceStartTestCmd.Flag("noFSS", "Do not bring up file sync service (FSS) containers. They are brought up by default.").Short('S').Bool()
 	devServiceStartCmdUserPw := devServiceStartTestCmd.Flag("user-pw", "Horizon Exchange user credentials to query exchange resources. Specify it when you want to automatically fetch the missing dependent services from the exchange. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
-	devServiceStartCmdKeyFiles := devServiceStartTestCmd.Flag("public-key-file", "The path of a public key file to be used to verify a signature. Specify it when you want to automatically fetch the missing dependent services from the exchange. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.").Short('k').Strings()
 	devServiceStopTestCmd := devServiceCmd.Command("stop", "Stop a service that is running in a mocked Horizon Agent environment.")
 	devServiceValidateCmd := devServiceCmd.Command("verify", "Validate the project for completeness and schema compliance.")
 	devServiceVerifyUserInputFile := devServiceValidateCmd.Flag("userInputFile", "File containing user input values for verification of a project. If omitted, the userinput file for the project will be used.").Short('f').String()
 	devServiceValidateCmdUserPw := devServiceValidateCmd.Flag("user-pw", "Horizon Exchange user credentials to query exchange resources. Specify it when you want to automatically fetch the missing dependent services from the exchange. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
-	devServiceValidateCmdKeyFiles := devServiceValidateCmd.Flag("public-key-file", "The path of a public key file to be used to verify a signature. Specify it when you want to automatically fetch the missing dependent services from the exchange. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.").Short('k').Strings()
 
 	devDependencyCmd := devCmd.Command("dependency", "For working with project dependencies.")
 	devDependencyCmdSpecRef := devDependencyCmd.Flag("specRef", "The URL of the service dependency in the exchange. Mutually exclusive with -p and --url.").Short('s').String()
@@ -358,7 +369,6 @@ Environment Variables:
 	devDependencyFetchCmd := devDependencyCmd.Command("fetch", "Retrieving Horizon metadata for a new dependency.")
 	devDependencyFetchCmdProject := devDependencyFetchCmd.Flag("project", "Horizon project containing the definition of a dependency. Mutually exclusive with -s -o --ver -a and --url.").Short('p').ExistingDir()
 	devDependencyFetchCmdUserPw := devDependencyFetchCmd.Flag("user-pw", "Horizon Exchange user credentials to query exchange resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.").Short('u').PlaceHolder("USER:PW").String()
-	devDependencyFetchCmdKeyFiles := devDependencyFetchCmd.Flag("public-key-file", "The path of a public key file to be used to verify a signature. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.").Short('k').Strings()
 	devDependencyFetchCmdUserInputFile := devDependencyFetchCmd.Flag("userInputFile", "File containing user input values for configuring the new dependency. If omitted, the userinput file in the dependency project will be used.").Short('f').ExistingFile()
 	devDependencyListCmd := devDependencyCmd.Command("list", "List all dependencies.")
 	devDependencyRemoveCmd := devDependencyCmd.Command("remove", "Remove a project dependency.")
@@ -387,6 +397,26 @@ Environment Variables:
 	utilVerifySig := utilVerifyCmd.Flag("signature", "The supposed signature of stdin.").Short('s').Required().String()
 	utilConfigConvCmd := utilCmd.Command("configconv", "Convert the configuration file from JSON format to a shell script.")
 	utilConfigConvFile := utilConfigConvCmd.Flag("config-file", "The path of a configuration file to be converted. ").Short('f').Required().ExistingFile()
+
+	mmsCmd := app.Command("mms", "List and manage Horizon Model Management Service resources.")
+	mmsOrg := mmsCmd.Flag("org", "The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.").Short('o').String()
+	mmsUserPw := mmsCmd.Flag("user-pw", "Horizon user credentials to query and create Model Management Service resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.").Short('u').PlaceHolder("USER:PW").String()
+
+	mmsStatusCmd := mmsCmd.Command("status", "Display the status of the Horizon Model Management Service.")
+	mmsObjectCmd := mmsCmd.Command("object", "List and manage objects in the Horizon Model Management Service.")
+	mmsObjectListCmd := mmsObjectCmd.Command("list", "List objects in the Horizon Model Management Service.")
+	mmsObjectListType := mmsObjectListCmd.Flag("type", "The type of the object to list.").Short('t').Required().String()
+	mmsObjectListId := mmsObjectListCmd.Flag("id", "The id of the object to list.").Short('i').Required().String()
+	mmsObjectNewCmd := mmsObjectCmd.Command("new", "Display an empty object metadata template that can be filled in and passed as the -m option on the 'hzn mms object publish' command.")
+	mmsObjectPublishCmd := mmsObjectCmd.Command("publish", "Publish an object in the Horizon Model Management Service, making it available for services deployed on nodes.")
+	mmsObjectPublishType := mmsObjectPublishCmd.Flag("type", "The type of the object to publish. This flag must be used with -i. It is mutually exclusive with -m").Short('t').String()
+	mmsObjectPublishId := mmsObjectPublishCmd.Flag("id", "The id of the object to publish. This flag must be used with -t. It is mutually exclusive with -m").Short('i').String()
+	mmsObjectPublishPat := mmsObjectPublishCmd.Flag("pattern", "If you want the object to be deployed on nodes using a given pattern, specify it using this flag. This flag is optionla and can only be used with --type and --id. It is mutually exclusive with -m").Short('p').String()
+	mmsObjectPublishDef := mmsObjectPublishCmd.Flag("def", "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command.").Short('m').String()
+	mmsObjectPublishObj := mmsObjectPublishCmd.Flag("object", "The object (in the form of a file) to publish.").Short('f').Required().String()
+	mmsObjectDeleteCmd := mmsObjectCmd.Command("delete", "Publish an object in the Horizon Model Management Service, making it available for services deployed on nodes.")
+	mmsObjectDeleteType := mmsObjectDeleteCmd.Flag("type", "The type of the object to delete.").Short('t').Required().String()
+	mmsObjectDeleteId := mmsObjectDeleteCmd.Flag("id", "The id of the object to delete.").Short('i').Required().String()
 
 	app.Version("Run 'hzn version' to see the Horizon version.")
 	/* trying to override the base --version behavior does not work....
@@ -470,6 +500,12 @@ Environment Variables:
 		nodeIdTok = cliutils.WithDefaultEnvVar(nodeIdTok, "HZN_EXCHANGE_NODE_AUTH")
 	}
 
+	// For the mms command family, make sure that org and exchange credentials are specified in some way.
+	if strings.HasPrefix(fullCmd, "mms") {
+		mmsOrg = cliutils.RequiredWithDefaultEnvVar(mmsOrg, "HZN_ORG_ID", "organization ID must be specified with either the -o flag or HZN_ORG_ID")
+		mmsUserPw = cliutils.RequiredWithDefaultEnvVar(mmsUserPw, "HZN_EXCHANGE_USER_AUTH", "exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH")
+	}
+
 	// key file defaults
 	switch fullCmd {
 	case "key create":
@@ -530,6 +566,12 @@ Environment Variables:
 		exchange.AgbotAddPattern(*exOrg, *exUserPw, *exAgbotAP, *exAgbotAPPatOrg, *exAgbotAPPat, *exAgbotAPNodeOrg)
 	case exAgbotDelPatCmd.FullCommand():
 		exchange.AgbotRemovePattern(*exOrg, *exUserPw, *exAgbotDP, *exAgbotDPPatOrg, *exAgbotDPPat, *exAgbotDPNodeOrg)
+	case exAgbotListPolicyCmd.FullCommand():
+		exchange.AgbotListBusinessPolicy(*exOrg, *exUserPw, *exAgbotPol)
+	case exAgbotAddPolCmd.FullCommand():
+		exchange.AgbotAddBusinessPolicy(*exOrg, *exUserPw, *exAgbotAPolAg, *exAgbotAPPolOrg)
+	case exAgbotDelPolCmd.FullCommand():
+		exchange.AgbotRemoveBusinessPolicy(*exOrg, *exUserPw, *exAgbotDPolAg, *exAgbotDPPolOrg)
 	case exPatternListCmd.FullCommand():
 		exchange.PatternList(*exOrg, credToUse, *exPattern, !*exPatternLong)
 	case exPatternPublishCmd.FullCommand():
@@ -619,13 +661,13 @@ Environment Variables:
 	case devServiceNewCmd.FullCommand():
 		dev.ServiceNew(*devHomeDirectory, *devServiceNewCmdOrg, *devServiceNewCmdName, *devServiceNewCmdVer, *devServiceNewCmdImage, *devServiceNewCmdNoImageGen, *devServiceNewCmdCfg, *devServiceNewCmdNoPattern)
 	case devServiceStartTestCmd.FullCommand():
-		dev.ServiceStartTest(*devHomeDirectory, *devServiceUserInputFile, *devServiceConfigFile, *devServiceConfigType, *devServiceNoFSS, *devServiceStartCmdUserPw, *devServiceStartCmdKeyFiles)
+		dev.ServiceStartTest(*devHomeDirectory, *devServiceUserInputFile, *devServiceConfigFile, *devServiceConfigType, *devServiceNoFSS, *devServiceStartCmdUserPw)
 	case devServiceStopTestCmd.FullCommand():
 		dev.ServiceStopTest(*devHomeDirectory)
 	case devServiceValidateCmd.FullCommand():
-		dev.ServiceValidate(*devHomeDirectory, *devServiceVerifyUserInputFile, []string{}, "", *devServiceValidateCmdUserPw, *devServiceValidateCmdKeyFiles)
+		dev.ServiceValidate(*devHomeDirectory, *devServiceVerifyUserInputFile, []string{}, "", *devServiceValidateCmdUserPw)
 	case devDependencyFetchCmd.FullCommand():
-		dev.DependencyFetch(*devHomeDirectory, *devDependencyFetchCmdProject, *devDependencyCmdSpecRef, *devDependencyCmdURL, *devDependencyCmdOrg, *devDependencyCmdVersion, *devDependencyCmdArch, *devDependencyFetchCmdUserPw, *devDependencyFetchCmdKeyFiles, *devDependencyFetchCmdUserInputFile)
+		dev.DependencyFetch(*devHomeDirectory, *devDependencyFetchCmdProject, *devDependencyCmdSpecRef, *devDependencyCmdURL, *devDependencyCmdOrg, *devDependencyCmdVersion, *devDependencyCmdArch, *devDependencyFetchCmdUserPw, *devDependencyFetchCmdUserInputFile)
 	case devDependencyListCmd.FullCommand():
 		dev.DependencyList(*devHomeDirectory)
 	case devDependencyRemoveCmd.FullCommand():
@@ -646,5 +688,15 @@ Environment Variables:
 		status.DisplayStatus(*agbotStatusLong, true)
 	case utilConfigConvCmd.FullCommand():
 		utilcmds.ConvertConfig(*utilConfigConvFile)
+	case mmsStatusCmd.FullCommand():
+		sync_service.Status(*mmsOrg, *mmsUserPw)
+	case mmsObjectListCmd.FullCommand():
+		sync_service.ObjectList(*mmsOrg, *mmsUserPw, *mmsObjectListType, *mmsObjectListId)
+	case mmsObjectNewCmd.FullCommand():
+		sync_service.ObjectNew(*mmsOrg)
+	case mmsObjectPublishCmd.FullCommand():
+		sync_service.ObjectPublish(*mmsOrg, *mmsUserPw, *mmsObjectPublishType, *mmsObjectPublishId, *mmsObjectPublishPat, *mmsObjectPublishDef, *mmsObjectPublishObj)
+	case mmsObjectDeleteCmd.FullCommand():
+		sync_service.ObjectDelete(*mmsOrg, *mmsUserPw, *mmsObjectDeleteType, *mmsObjectDeleteId)
 	}
 }

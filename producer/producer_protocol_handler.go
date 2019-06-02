@@ -449,7 +449,6 @@ const TERM_REASON_POLICY_CHANGED = "PolicyChanged"
 const TERM_REASON_AGBOT_REQUESTED = "ConsumerCancelled"
 const TERM_REASON_CONTAINER_FAILURE = "ContainerFailure"
 
-//const TERM_REASON_TORRENT_FAILURE = "TorrentFailure"
 const TERM_REASON_USER_REQUESTED = "UserRequested"
 const TERM_REASON_NOT_FINALIZED_TIMEOUT = "NotFinalized"
 const TERM_REASON_NO_REPLY_ACK = "NoReplyAck"

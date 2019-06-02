@@ -23,16 +23,7 @@
             "matchgroups": [],
             "deployment": "Deployment instructions",
             "deployment_signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "deployment_user_info": "",
-            "torrent": {
-                "url": "torrent://the.system.com",
-                "images": [
-                    {
-                        "file": "a_file.tar.gz",
-                        "signature": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                    }
-                ]
-            }
+            "deployment_user_info": ""
         }
     ],
     "dataVerification": {
@@ -45,12 +36,9 @@
         {"name":"conprop2", "value":"conval2"},
         {"name":"conprop3", "value":"conval3"}
     ],
-    "counterPartyProperties": {
-        "or":[
-            {"name":"rpiprop1", "value":"rpival1"},
-            {"name":"rpiprop2", "value":"rpival2"}
-        ]
-    },
+    "constraints": [
+        "rpiprop1 == rpival1 OR rpiprop2 == rpival2"
+    ],
     "maxAgreements": 3,
     "blockchains": [
         {

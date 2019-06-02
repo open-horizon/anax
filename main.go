@@ -17,10 +17,10 @@ import (
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/governance"
 	"github.com/open-horizon/anax/helm"
+	"github.com/open-horizon/anax/imagefetch"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/resource"
-	"github.com/open-horizon/anax/torrent"
 	"github.com/open-horizon/anax/worker"
 	"os"
 	"os/signal"
@@ -150,7 +150,7 @@ func main() {
 		workers.Add(governance.NewGovernanceWorker("Governance", cfg, db, pm))
 		workers.Add(exchange.NewExchangeMessageWorker("Exchange", cfg, db))
 		workers.Add(container.NewContainerWorker("Container", cfg, db, authm))
-		workers.Add(torrent.NewTorrentWorker("Torrent", cfg, db))
+		workers.Add(imagefetch.NewImageFetchWorker("ImageFetch", cfg, db))
 		workers.Add(helm.NewHelmWorker("Helm", cfg, db))
 		workers.Add(resource.NewResourceWorker("Resource", cfg, db, authm))
 	}

@@ -7,6 +7,6 @@ import (
 
 func Status(org, userPw string) {
 	var output string
-	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "admin/status", cliutils.OrgAndCreds(org, userPw), []int{200}, &output)
+	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "admin/status", cliutils.OrgAndCreds(org, userPw), []int{200}, &output)
 	fmt.Println(output)
 }

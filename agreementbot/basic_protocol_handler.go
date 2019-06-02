@@ -90,6 +90,10 @@ func (c *BasicProtocolHandler) AcceptCommand(cmd worker.Command) bool {
 		return true
 	case *PolicyDeletedCommand:
 		return true
+	case *ServicePolicyChangedCommand:
+		return true
+	case *ServicePolicyDeletedCommand:
+		return true
 	case *WorkloadUpgradeCommand:
 		return true
 	case *MakeAgreementCommand:

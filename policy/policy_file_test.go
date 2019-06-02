@@ -10,7 +10,6 @@ import (
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"io/ioutil"
 	"os"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -302,6 +301,8 @@ func Test_Policy_Merge(t *testing.T) {
 		os.Remove("./test/pfmerge1/merged.policy")
 	}
 
+	defer os.Remove("./test/pfmerge1/merged.policy")
+
 	if pf_prod, err := ReadPolicyFile("./test/pfmerge1/device.policy", make(map[string]string)); err != nil {
 		t.Error(err)
 	} else if pf_con, err := ReadPolicyFile("./test/pfmerge1/agbot.policy", make(map[string]string)); err != nil {
@@ -370,11 +371,11 @@ func Test_Policy_Creation(t *testing.T) {
 	agp2.Blockchains.Add_Blockchain(Blockchain_Factory("Fred", "bc2", "myorg"))
 	pf_created.Add_Agreement_Protocol(agp2)
 
-	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop1", "rpival1"))
-	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop2", "rpival2"))
-	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop3", "rpival3"))
-	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop4", "rpival4"))
-	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop5", "rpival5"))
+	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop1", "rpival1"), false)
+	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop2", "rpival2"), false)
+	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop3", "rpival3"), false)
+	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop4", "rpival4"), false)
+	pf_created.Add_Property(externalpolicy.Property_Factory("rpiprop5", "rpival5"), false)
 
 	pf_created.Add_NodeHealth(NodeHealth_Factory(600, 30))
 
@@ -731,7 +732,7 @@ func Test_Merge_EmptyProducer_and_Create_TsAndCs1(t *testing.T) {
 	pb := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
 		`"paternId": "e2edev/pws",` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
-		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloads":[{"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
@@ -788,7 +789,7 @@ func Test_DeletePolicyFilesForPattern(t *testing.T) {
 	pb := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
 		`"patternId": "e2edev/pws1",` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
-		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloads":[{"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
@@ -797,7 +798,7 @@ func Test_DeletePolicyFilesForPattern(t *testing.T) {
 	pc := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
 		`"patternId": "IBM/pws2",` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
-		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloads":[{"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
@@ -861,7 +862,7 @@ func Test_DeletePolicyFilesForOrg(t *testing.T) {
 	pb := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
 		`"patternId": "e2edev/pws1",` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
-		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloads":[{"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
@@ -870,7 +871,7 @@ func Test_DeletePolicyFilesForOrg(t *testing.T) {
 	pc := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
 		`"patternId": "IBM/pws2",` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
-		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloads":[{"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
@@ -940,7 +941,7 @@ func Test_DeleteAllPolicyFiles(t *testing.T) {
 	pb := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
 		`"patternId": "e2edev/pws1",` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
-		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloads":[{"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
@@ -949,7 +950,7 @@ func Test_DeleteAllPolicyFiles(t *testing.T) {
 	pc := `{"header":{"name":"pws_bluehorizon.network-workloads-weather_e2edev_amd64","version": "2.0"},` +
 		`"patternId": "IBM/pws2",` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
-		`"workloads":[{"torrent":{},"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloads":[{"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
 		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
 		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}` +
 		`],"valueExchange":{},` +
@@ -1009,12 +1010,12 @@ func Test_DeleteAllPolicyFiles(t *testing.T) {
 
 func Test_GenPolicyFromExternalPolicy(t *testing.T) {
 	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"))
-	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"))
+	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"), false)
+	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"), false)
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,
-		Constraints: []string{"prop3 == \"val3\""},
+		Constraints: []string{"prop3 == val3"},
 	}
 
 	if pol, err := GenPolicyFromExternalPolicy(extNodePolicy, "Policy for mydevice"); err != nil {
@@ -1023,16 +1024,16 @@ func Test_GenPolicyFromExternalPolicy(t *testing.T) {
 		if pol.Header.Name != "Policy for mydevice" {
 			t.Errorf("Wrong policy name generated: %v", pol.Header.Name)
 		}
-		if !reflect.DeepEqual(pol.Properties, *propList) {
+		if !pol.Properties.IsSame(*propList) {
 			t.Errorf("Error converting external properties %v to policy properties: %v", propList, pol.Properties)
 		}
 
-		// check counterparty property
+		// check constraints
 		// this part is tested heavily in constaint_expression_test.go
 		propList3 := new(externalpolicy.PropertyList)
-		propList3.Add_Property(externalpolicy.Property_Factory("prop3", "val3"))
+		propList3.Add_Property(externalpolicy.Property_Factory("prop3", "val3"), false)
 
-		if err := pol.CounterPartyProperties.IsSatisfiedBy(*propList3); err != nil {
+		if err := pol.Constraints.IsSatisfiedBy(*propList3); err != nil {
 			t.Errorf("Couterparty property check should not have returned error but got: %v", err)
 		}
 	}
@@ -1040,8 +1041,8 @@ func Test_GenPolicyFromExternalPolicy(t *testing.T) {
 
 func Test_MergePolicyWithExternalPolicy(t *testing.T) {
 	propList := new(externalpolicy.PropertyList)
-	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"))
-	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"))
+	propList.Add_Property(externalpolicy.Property_Factory("prop1", "val1"), false)
+	propList.Add_Property(externalpolicy.Property_Factory("prop2", "val2"), false)
 
 	extNodePolicy := &externalpolicy.ExternalPolicy{
 		Properties:  *propList,
@@ -1078,12 +1079,12 @@ func Test_MergePolicyWithExternalPolicy(t *testing.T) {
 			t.Errorf("Property check should not have returned error but got: %v", err)
 		}
 
-		// check counterparty property
+		// check constraints
 		propList := new(externalpolicy.PropertyList)
-		propList.Add_Property(externalpolicy.Property_Factory("prop3", "val3"))
-		propList.Add_Property(externalpolicy.Property_Factory("purpose", "network-testing"))
+		propList.Add_Property(externalpolicy.Property_Factory("prop3", "val3"), false)
+		propList.Add_Property(externalpolicy.Property_Factory("purpose", "network-testing"), false)
 
-		if err := pol.CounterPartyProperties.IsSatisfiedBy(*propList); err != nil {
+		if err := pol.Constraints.IsSatisfiedBy(*propList); err != nil {
 			t.Errorf("Couterparty property check should not have returned error but got: %v", err)
 		}
 	}

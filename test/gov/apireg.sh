@@ -54,6 +54,34 @@ done
 
 # ================================================================
 # Set a node policy indicating the testing purpose of the node.
+
+constraint2=""
+if [ "$NONS" == "1" ]; then 
+    constraint2="NONS == true"
+else
+    constraint2="NONS == false"
+fi
+if [ "$NOGPS" == "1" ]; then 
+    constraint2="$constraint2 || NOGPS == true"
+else
+    constraint2="$constraint2 || NOGPS == false"
+fi
+if [ "$NOLOC" == "1" ]; then 
+    constraint2="$constraint2 || NOLOC == true"
+else
+    constraint2="$constraint2 || NOLOC == false"
+fi
+if [ "$NOPWS" == "1" ]; then 
+    constraint2="$constraint2 || NOPWS == true"
+else
+    constraint2="$constraint2 || NOPWS == false"
+fi
+if [ "$NOHELLO" == "1" ]; then 
+    constraint2="$constraint2 || NOHELLO == true"
+else
+    constraint2="$constraint2 || NOHELLO == false"
+fi
+
 read -d '' newhznpolicy <<EOF
 {
   "properties": [
@@ -65,10 +93,13 @@ read -d '' newhznpolicy <<EOF
       }
     ],
   "constraints": [
-      "iame2edev == true"
+      "iame2edev == true",
+      "$constraint2"
   ]
 }
 EOF
+
+
 
 echo "Adding policy to the node using node/policy API"
 RES=$(echo "$newhznpolicy" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/policy")
@@ -82,8 +113,19 @@ fi
 ERR=$(echo $RES | jq -r ".error")
 if [ "$ERR" != "null" ]
 then
-  echo -e "$newhznpolicy \nresulted in incorrect response: $RES"
-  exit 2
+    echo -e "$newhznpolicy \nresulted in incorrect response: $RES"
+
+    echo -e "Wait for 30 seconds and try again"
+    sleep 30
+    RES=$(echo "$newhznpolicy" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/policy")
+    ERR=$(echo $RES | jq -r ".error")
+    if [ "$ERR" != "null" ]
+    then
+        echo -e "$newhznpolicy \nsecond try resulted in incorrect response: $RES"
+        exit 2
+    else
+        echo -e "found expected response in second try: $RES" 
+    fi
 else
   echo -e "found expected response: $RES"
 fi
@@ -119,13 +161,6 @@ fi
 
 # Then set a node level property
 ./set_node_property.sh "purpose" "network-testing"
-if [ $? -ne 0 ]
-then
-    exit 2
-fi
-
-# Then set a node level required property (CounterPartyProperty)
-./set_node_requiredproperty.sh "iame2edev" "true"
 if [ $? -ne 0 ]
 then
     exit 2

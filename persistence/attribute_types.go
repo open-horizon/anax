@@ -168,42 +168,6 @@ func (a MeteringAttributes) GetServiceSpecs() *ServiceSpecs {
 	return a.ServiceSpecs
 }
 
-type CounterPartyPropertyAttributes struct {
-	Meta         *AttributeMeta         `json:"meta"`
-	ServiceSpecs *ServiceSpecs          `json:"service_specs"`
-	Expression   map[string]interface{} `json:"expression"`
-}
-
-func (a CounterPartyPropertyAttributes) GetMeta() *AttributeMeta {
-	return a.Meta
-}
-
-func (a CounterPartyPropertyAttributes) GetGenericMappings() map[string]interface{} {
-	return map[string]interface{}{
-		"expression": a.Expression,
-	}
-}
-
-func (a CounterPartyPropertyAttributes) GetServiceSpecs() *ServiceSpecs {
-	if a.ServiceSpecs == nil {
-		a.ServiceSpecs = new(ServiceSpecs)
-	}
-	return a.ServiceSpecs
-}
-
-// TODO: duplicate this for the others too
-func (a CounterPartyPropertyAttributes) Update(other Attribute) error {
-	return fmt.Errorf("Update not implemented for type: %T", a)
-}
-
-func (a CounterPartyPropertyAttributes) String() string {
-	if a.ServiceSpecs == nil {
-		return fmt.Sprintf("Meta: %v, ServiceSpecs: %v, Expression: %v", a.Meta, nil, a.Expression)
-	} else {
-		return fmt.Sprintf("Meta: %v, ServiceSpecs: %v, Expression: %v", a.Meta, *a.ServiceSpecs, a.Expression)
-	}
-}
-
 type PropertyAttributes struct {
 	Meta         *AttributeMeta         `json:"meta"`
 	ServiceSpecs *ServiceSpecs          `json:"service_specs"`

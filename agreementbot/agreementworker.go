@@ -230,6 +230,9 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	// a workload entry that turns out to be unsupportable by the device.
 	foundWorkload := false
 	var workload, lastWorkload *policy.Workload
+	svcId := ""   // stores the service id that service policy is from
+	found := true // if the service policy can be found from the businesspol_manager
+	var sPol *externalpolicy.ExternalPolicy
 
 	for !foundWorkload {
 
@@ -353,34 +356,25 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				wi.ProducerPolicy = *nodePolicy
 
 				// merge the business policy with the top level service policy + service built-in policy
-				builtInSvcPol := b.CreateServiceBuiltInPolicy(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
+				builtInSvcPol := externalpolicy.CreateServiceBuiltInPolicy(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 
-				servicePolTemp, found := wi.ServicePolicies[sId]
+				servicePolTemp, foundTemp := wi.ServicePolicies[sId]
 				var servicePol *externalpolicy.ExternalPolicy
-				if !found {
+				if !foundTemp {
 					servicePol = nil
 				} else {
 					servicePol = &servicePolTemp
 				}
+				found = foundTemp
 
-				mergedConsumerPol, sPol, err := b.MergeServicePolicyToConsumerPolicy(&wi.ConsumerPolicy, builtInSvcPol, servicePol, sId)
+				mergedConsumerPol, sPolTemp, err := b.MergeServicePolicyToConsumerPolicy(&wi.ConsumerPolicy, builtInSvcPol, servicePol, sId)
 				if err != nil {
 					glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error merging service policy into consumer policy. %v.", err)))
 					return
 				} else if mergedConsumerPol != nil {
 					wi.ConsumerPolicy = *mergedConsumerPol
-
-					// if this service policy is not from the policy manager cache, then send a message to pass the service policy back
-					// so that the business policy manager will save it.
-					if !found && sPol != nil {
-						if polString, err := json.Marshal(sPol); err != nil {
-							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marshaling service policy for service %v. %v", sId, err)))
-							return
-						} else {
-							cph.SendEventMessage(events.NewCacheServicePolicyMessage(events.CACHE_SERVICE_POLICY, wi.Org, wi.ConsumerPolicyName, sId, string(polString)))
-						}
-					}
 				}
+				sPol = sPolTemp
 
 				// check if producer and comsumer polices match
 				if err := policy.Are_Compatible(&wi.ProducerPolicy, &wi.ConsumerPolicy); err != nil {
@@ -414,6 +408,27 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		} else {
 
 			foundWorkload = true
+			svcId = sId
+
+			// if this service policy is not from the policy manager cache, then send a message to pass the service policy back
+			// so that the business policy manager will save it.
+			if !found {
+				if sPol == nil {
+					// An empty policy means that the service does not have a policy.
+					// An empty polcy is also tracked in the business policy manager, this way we know if there is
+					// new service policy added later.
+					// The business policy manager does not track all the service policies referenced by a business policy.
+					// It only tracks the ones that have agreements with the nodes.
+					sPol = new(externalpolicy.ExternalPolicy)
+				}
+				polString, err := json.Marshal(sPol)
+				if err != nil {
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marshaling service policy for service %v. %v", sId, err)))
+					return
+				} else {
+					cph.SendEventMessage(events.NewCacheServicePolicyMessage(events.CACHE_SERVICE_POLICY, wi.Org, wi.ConsumerPolicyName, sId, string(polString)))
+				}
+			}
 
 			// The device seems to support the required API specs, so augment the consumer policy file with the workload
 			// details that match what the producer can support.
@@ -425,20 +440,6 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			// the workload/service in the policy.
 			workload.Deployment = workloadDetails.GetDeployment()
 			workload.DeploymentSignature = workloadDetails.GetDeploymentSignature()
-			workload.ImageStore = workloadDetails.GetImageStore()
-			if workloadDetails.GetTorrent() != "" {
-				torr := new(policy.Torrent)
-				if err := json.Unmarshal([]byte(workloadDetails.GetTorrent()), torr); err != nil {
-					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Unable to demarshal torrent info from %v, error: %v", workloadDetails, err)))
-					return
-				}
-				workload.Torrent = *torr
-			} else {
-				// Since the torrent field is empty, we can convert the Package implementation to a Torrent object. The conversion
-				// might result in an empty object which would be normal when the ImageStore field does not contain metadata
-				// pointing to an image server.
-				workload.Torrent = workload.ImageStore.ConvertToTorrent()
-			}
 
 			glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("workload %v is supported by device %v", workload, wi.Device.Id)))
 		}
@@ -463,7 +464,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	}
 
 	// Create pending agreement in database
-	if err := b.db.AgreementAttempt(agreementIdString, wi.Org, wi.Device.Id, wi.ConsumerPolicy.Header.Name, bcType, bcName, bcOrg, cph.Name(), wi.ConsumerPolicy.PatternId, wi.ConsumerPolicy.NodeH); err != nil {
+	if err := b.db.AgreementAttempt(agreementIdString, wi.Org, wi.Device.Id, wi.ConsumerPolicy.Header.Name, bcType, bcName, bcOrg, cph.Name(), wi.ConsumerPolicy.PatternId, svcId, wi.ConsumerPolicy.NodeH); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error persisting agreement attempt: %v", err)))
 
 		// Create message target for protocol message
@@ -515,39 +516,13 @@ func (b *BaseAgreementWorker) GetMergedProducerPolicyForPattern(deviceId string,
 	return mergedProducer, nil
 }
 
-func (b *BaseAgreementWorker) CreateServiceBuiltInPolicy(svcName, svcOrg, svcVersion, svcArch string) *externalpolicy.ExternalPolicy {
-	svcBuiltInProps := new(externalpolicy.PropertyList)
-	svcBuiltInProps.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_URL, svcName))
-	svcBuiltInProps.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_NAME, svcName))
-	svcBuiltInProps.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ORG, svcOrg))
-	svcBuiltInProps.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_VERSION, svcVersion))
-	svcBuiltInProps.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ARCH, svcArch))
-
-	buitInPol := externalpolicy.ExternalPolicy{
-		Properties:  *svcBuiltInProps,
-		Constraints: []string{},
-	}
-
-	return &buitInPol
-}
-
 // This function merge the given business policy with the given built-in properties of the service and the given service policy
 // from the top level service, if any.
 // If the service policy is nil, then this function featches the service policy from the exchange and returned it back
 // in order to let the policy manager to cache it.
-func (b *BaseAgreementWorker) MergeServicePolicyToConsumerPolicy(businessPol *policy.Policy, buitInPol *externalpolicy.ExternalPolicy, servicePol *externalpolicy.ExternalPolicy, sId string) (*policy.Policy, *externalpolicy.ExternalPolicy, error) {
+func (b *BaseAgreementWorker) MergeServicePolicyToConsumerPolicy(businessPol *policy.Policy, builtInSvcPol *externalpolicy.ExternalPolicy, servicePol *externalpolicy.ExternalPolicy, sId string) (*policy.Policy, *externalpolicy.ExternalPolicy, error) {
 	if businessPol == nil {
 		return nil, nil, nil
-	}
-
-	merged_pol1 := businessPol
-
-	// merge the service built-in properties
-	if buitInPol != nil {
-		var err error
-		if merged_pol1, err = policy.MergePolicyWithExternalPolicy(businessPol, buitInPol); err != nil {
-			return nil, nil, fmt.Errorf("error merging business policy with service built-in properties for servcie %v. %v", sId, err)
-		}
 	}
 
 	// get the service policy.
@@ -560,10 +535,21 @@ func (b *BaseAgreementWorker) MergeServicePolicyToConsumerPolicy(businessPol *po
 		}
 	}
 
+	// add built-in service properties to the service policy
+	var merged_pol1 externalpolicy.ExternalPolicy
+	if servicePol != nil {
+		merged_pol1 = externalpolicy.ExternalPolicy(*servicePol)
+		if builtInSvcPol != nil {
+			(&merged_pol1).MergeWith(builtInSvcPol, false)
+		}
+	} else {
+		if builtInSvcPol != nil {
+			merged_pol1 = externalpolicy.ExternalPolicy(*builtInSvcPol)
+		}
+	}
+
 	//merge service policy
-	if servicePol == nil || merged_pol1 == nil {
-		return merged_pol1, nil, nil
-	} else if merged_pol2, err := policy.MergePolicyWithExternalPolicy(merged_pol1, servicePol); err != nil {
+	if merged_pol2, err := policy.MergePolicyWithExternalPolicy(businessPol, &merged_pol1); err != nil {
 		return nil, nil, fmt.Errorf("error merging business policy with service policy for servcie %v. %v", sId, err)
 	} else {
 		return merged_pol2, servicePol, nil

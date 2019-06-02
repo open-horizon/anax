@@ -11,7 +11,6 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
-	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 )
@@ -361,38 +360,6 @@ func parseProperty(errorhandler ErrorHandler, permitEmpty bool, given *Attribute
 		Mappings:     (*given.Mappings)}, false, nil
 }
 
-func parseCounterPartyProperty(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.CounterPartyPropertyAttributes, bool, error) {
-	if permitEmpty {
-		return nil, errorhandler(NewAPIUserInputError("partial update unsupported", "counterpartyproperty.mappings")), nil
-	}
-
-	rawExpression, exists := (*given.Mappings)["expression"]
-	if !exists {
-		return nil, errorhandler(NewAPIUserInputError("missing key", "counterpartyproperty.mappings.expression")), nil
-	}
-
-	if exp, ok := rawExpression.(map[string]interface{}); !ok {
-		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("expected map[string]interface{}, is %T", rawExpression), "counterpartyproperty.mappings.expression")), nil
-	} else if rp := externalpolicy.RequiredProperty_Factory(); rp == nil {
-		return nil, errorhandler(NewAPIUserInputError("could not construct RequiredProperty", "counterpartyproperty.mappings.expression")), nil
-	} else if err := rp.Initialize(&exp); err != nil {
-		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("could not initialize RequiredProperty: %v", err), "counterpartyproperty.mappings.expression")), nil
-	} else if err := rp.IsValid(); err != nil {
-		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("not a valid expression: %v", err), "counterpartyproperty.mappings.expression")), nil
-	} else {
-		sps := new(persistence.ServiceSpecs)
-		if given.ServiceSpecs != nil {
-			sps = given.ServiceSpecs
-		}
-
-		return &persistence.CounterPartyPropertyAttributes{
-			Meta:         generateAttributeMetadata(*given, reflect.TypeOf(persistence.CounterPartyPropertyAttributes{}).Name()),
-			ServiceSpecs: sps,
-			Expression:   rawExpression.(map[string]interface{}),
-		}, false, nil
-	}
-}
-
 func parseAgreementProtocol(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.AgreementProtocolAttributes, bool, error) {
 	if permitEmpty {
 		return nil, errorhandler(NewAPIUserInputError("partial update unsupported", "agreementprotocol.mappings")), nil
@@ -590,13 +557,6 @@ func ValidateAndConvertAPIAttribute(errorhandler ErrorHandler, permitEmpty bool,
 
 		case reflect.TypeOf(persistence.PropertyAttributes{}).Name():
 			attr, inputErr, err := parseProperty(errorhandler, permitEmpty, &given)
-			if err != nil || inputErr {
-				return attribute, inputErr, err
-			}
-			attribute = attr
-
-		case reflect.TypeOf(persistence.CounterPartyPropertyAttributes{}).Name():
-			attr, inputErr, err := parseCounterPartyProperty(errorhandler, permitEmpty, &given)
 			if err != nil || inputErr {
 				return attribute, inputErr, err
 			}

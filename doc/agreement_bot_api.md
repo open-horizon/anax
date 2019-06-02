@@ -292,7 +292,6 @@ curl -s http://localhost:8046/policy/public/netspeed-docker_bluehorizon.network-
   ],
   "workloads": [
     {
-      "torrent": {},
       "priority": {
         "priority_value": 50,
         "retries": 1,

@@ -4,6 +4,7 @@ package externalpolicy
 
 import (
 	"encoding/json"
+	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"testing"
 )
 
@@ -681,6 +682,63 @@ func Test_merge4(t *testing.T) {
 						t.Error(err)
 					}
 				}
+			}
+		}
+	}
+}
+
+func Test_complex_IsSatisfiedBy(t *testing.T) {
+	rp_list := `{"or":[{"name":"prop1", "value":"val1, val2, val3", "op":"in"}]}`
+	prop_list := `[{"name":"prop1", "value":"val2"}]`
+
+	if rp := create_RP(rp_list, t); rp != nil {
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
+			}
+		}
+	}
+
+	rp_list = `{"or":[{"name":"prop1", "value":"val1, \"val2\", val3", "op":"in"}]}`
+	prop_list = `[{"name":"prop1", "value":"val2"}]`
+
+	if rp := create_RP(rp_list, t); rp != nil {
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
+			}
+		}
+	}
+
+	rp_list = `{"or":[{"name":"prop1", "value":"(1.0.1,INFINITY]", "op":"in"}]}`
+	prop_list = `[{"name":"prop1", "value":"1.4.5", "type":"version"}]`
+
+	if rp := create_RP(rp_list, t); rp != nil {
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
+			}
+		}
+	}
+
+	rp_list = `{"or":[{"name":"prop1", "value":"\"a bc def\""}]}`
+	prop_list = `[{"name":"prop1", "value":"a bc def"}]`
+
+	if rp := create_RP(rp_list, t); rp != nil {
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
+			}
+		}
+	}
+
+	rp_list = `{"or":[{"name":"prop1", "value":"abc"}]}`
+	prop_list = `[{"name":"prop1", "value":"abc,def,ghi", "type":"list of string"}]`
+
+	if rp := create_RP(rp_list, t); rp != nil {
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
 			}
 		}
 	}

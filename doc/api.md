@@ -117,15 +117,15 @@ curl -s  http://localhost/status/workers |jq
         "MicroserviceGovernor": "started"
       }
     },
-    "Torrent": {
-      "name": "Torrent",
+    "ImageFetch": {
+      "name": "ImageFetch",
       "status": "initialized",
       "subworker_status": {}
     }
   },
   "worker_status_log": [
-    "2018-05-02 19:25:02 Worker Torrent: started.",
-    "2018-05-02 19:25:02 Worker Torrent: initialized.",
+    "2018-05-02 19:25:02 Worker ImageFetch: started.",
+    "2018-05-02 19:25:02 Worker ImageFetch: initialized.",
     "2018-05-02 19:25:02 Worker AgBot: started.",
     "2018-05-02 19:25:02 Worker AgBot: initialization failed.",
     "2018-05-02 19:25:02 Worker Agreement: started.",
@@ -382,10 +382,10 @@ attribute
 | ---- | ---- | ---------------- |
 | id | string| the id of the attribute. |
 | label | string | the user readable name of the attribute |
-| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, HAAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
+| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, HAAttributes, PropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
 | publishable| bool | whether the attribute can be made public or not. |
 | host_only | bool | whether or not the attribute will be passed to the service containers. |
-| service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes: ComputeAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
+| service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes: ComputeAttributes, PropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
 | mappings | map | a list of key value pairs. |
 
 
@@ -524,10 +524,10 @@ body:
 | ---- | ---- | ---------------- |
 | id | string| the id of the attribute. |
 | label | string | the user readable name of the attribute |
-| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, HAAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
+| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, HAAttributes, PropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
 | publishable| bool | whether the attribute can be made public or not. |
 | host_only | bool | whether or not the attribute will be passed to the service containers. |
-| service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes: ComputeAttributes, PropertyAttributes, CounterPartyPropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
+| service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes: ComputeAttributes, PropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
 | mappings | map | a list of key value pairs. |
 
 
@@ -709,7 +709,6 @@ service definition:
 | | arch | string | of architecture of the dependent service. |
 | deployment | | string | how the service is deployed. It defines the containers, images and configurations for this service. |
 | deployment_signature | | string | the signature that can be used to verify the "deployment" string with a public key. |
-| imageStore | | string | If the image is not from a docker registry, this field defines how the image is fetched. |
 | lastUpdated | | string | date where the service is last update on the exchange. |
 | archived | | boolean | if the service definition is archived. |
 | name | | string | the name of the service. |
@@ -883,7 +882,6 @@ curl http://localhost/service |jq '.definitions.active'
     ],
     "deployment": "{\"services\":{\"netspeed5\":{\"environment\":[\"MY_SETTINGS=0\"],\"image\":\"openhorizon/amd64_netspeed:2.5.0\"}}}",
     "deployment_signature": "vqwgYA/b",
-    "imageStore": {},
     "lastUpdated": "2019-02-13T21:56:02.228Z[UTC]",
     "archived": false,
     "name": "netspeed",
@@ -1258,7 +1256,6 @@ body:
 | | header | json|  the header of the policy. It includes the name and the version of the policy. |
 | | apiSpec | array | an array of api specifications. Each one includes a URL pointing to the definition of the API spec, the version of the API spec in OSGI version format, the organization that implements the API spec, whether or not exclusive access to this API spec is required and the hardware architecture of the API spec implementation. |
 | | properties | array | an array of name value pairs that the current party have. |
-| | counterPartyProperties | json | an array of (name, value, op)s that the counter party is required to have. | 
 | | ha_group | json | a list of ha partners. |
 | | agreementProtocols | array | an array of agreement protocols. Each one includes the name of the agreement protocol.|
 

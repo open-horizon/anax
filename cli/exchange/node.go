@@ -25,7 +25,7 @@ func NodeList(org string, credToUse string, node string, namesOnly bool) {
 	if namesOnly && node == "" {
 		// Only display the names
 		var resp ExchangeNodes
-		cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &resp)
+		cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &resp)
 		nodes := []string{}
 		for n := range resp.Nodes {
 			nodes = append(nodes, n)
@@ -38,7 +38,7 @@ func NodeList(org string, credToUse string, node string, namesOnly bool) {
 	} else {
 		// Display the full resources
 		var nodes ExchangeNodes
-		httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+		httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
 		if httpCode == 404 && node != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, "node '%s' not found in org %s", node, org)
 		}
@@ -85,17 +85,17 @@ func NodeCreate(org, nodeIdTok, node, token, userPw, email string, arch string, 
 			// In the public org we can create a user anonymously, so try that
 			fmt.Printf("User %s/%s does not exist in the exchange with the specified password, creating it...\n", org, user)
 			postUserReq := cliutils.UserExchangeReq{Password: pw, Admin: false, Email: email}
-			httpCode = cliutils.ExchangePutPost(http.MethodPost, exchUrlBase, "orgs/"+org+"/users/"+user, "", []int{201}, postUserReq)
+			httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrlBase, "orgs/"+org+"/users/"+user, "", []int{201}, postUserReq)
 
 			// User created, now try to create the node again
-			httpCode = cliutils.ExchangePutPost(http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201}, putNodeReq)
+			httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201}, putNodeReq)
 		} else {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "user '%s/%s' does not exist with the specified password or -e was not specified to be able to create it in the 'public' org.", org, user)
 		}
 	} else if httpCode == 403 {
 		// Access denied means the node exists and is owned by another user. Figure out who and tell the user
 		var nodesOutput exchange.GetDevicesResponse
-		httpCode = cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{200}, &nodesOutput)
+		httpCode = cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{200}, &nodesOutput)
 		var ok bool
 		var ourNode exchange.Device
 		if ourNode, ok = nodesOutput.Devices[cliutils.OrgAndCreds(org, nodeId)]; !ok {
@@ -112,7 +112,7 @@ type NodeExchangePatchToken struct {
 func NodeSetToken(org, credToUse, node, token string) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
 	patchNodeReq := NodeExchangePatchToken{Token: token}
-	cliutils.ExchangePutPost(http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{201}, patchNodeReq)
+	cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{201}, patchNodeReq)
 }
 
 func NodeConfirm(org, node, token string, nodeIdTok string) {
@@ -141,7 +141,7 @@ func NodeConfirm(org, node, token string, nodeIdTok string) {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Please specify both node and token.")
 	}
 
-	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, node+":"+token), []int{200}, nil)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, node+":"+token), []int{200}, nil)
 	if httpCode == 200 {
 		fmt.Println("Node id and token are valid.")
 	}
@@ -155,7 +155,7 @@ func NodeRemove(org, credToUse, node string, force bool) {
 		cliutils.ConfirmRemove("Are you sure you want to remove node '" + org + "/" + node + "' from the Horizon Exchange (should not be done while an edge node is registered with this node id)?")
 	}
 
-	httpCode := cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
+	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "node '%s' not found in org %s", node, org)
 	}
@@ -167,14 +167,14 @@ func NodeListPolicy(org string, credToUse string, node string) {
 
 	// check node exists first
 	var nodes ExchangeNodes
-	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "node '%v/%v' not found.", org, node)
 	}
 
 	// list policy
 	var policy exchange.ExchangePolicy
-	cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &policy)
+	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &policy)
 	output := cliutils.MarshalIndent(policy.GetExternalPolicy(), "exchange node listpolicy")
 	fmt.Println(output)
 }
@@ -199,13 +199,13 @@ func NodeUpdatePolicy(org string, credToUse string, node string, jsonFilePath st
 
 	// check node exists first
 	var nodes ExchangeNodes
-	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "node '%v/%v' not found.", org, node)
 	}
 
 	// add/replce node policy
-	cliutils.ExchangePutPost(http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
+	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
 
 	fmt.Println("Node policy updated.")
 }
@@ -219,13 +219,13 @@ func NodeRemovePolicy(org, credToUse, node string, force bool) {
 
 	// check node exists first
 	var nodes ExchangeNodes
-	httpCode := cliutils.ExchangeGet(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "node '%v/%v' not found.", org, node)
 	}
 
 	// remove policy
-	cliutils.ExchangeDelete(cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
+	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
 	fmt.Println("Node policy removed.")
 
 }

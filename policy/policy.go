@@ -33,7 +33,7 @@ func GeneratePolicy(sensorUrl string, sensorOrg string, sensorName string, senso
 
 	// Add properties to the policy
 	for prop, val := range *props {
-		p.Add_Property(externalpolicy.Property_Factory(prop, val))
+		p.Add_Property(externalpolicy.Property_Factory(prop, val), false)
 	}
 
 	// Add HA configuration if there is any
@@ -85,7 +85,7 @@ func GenPolicyFromExternalPolicy(extPol *externalpolicy.ExternalPolicy, polName 
 	pPolicy := Policy_Factory(polName)
 
 	for _, p := range extPol.Properties {
-		if err := pPolicy.Add_Property(&p); err != nil {
+		if err := pPolicy.Add_Property(&p, false); err != nil {
 			return nil, fmt.Errorf("Failed to add property %v to policy. %v", p, err)
 		}
 	}

@@ -325,7 +325,7 @@ func CreateService(service *Service,
 
 		// If the device declared itself to be using a pattern, then it CANNOT specify any attributes that generate policy settings.
 		if pDevice.Pattern != "" {
-			if attr.GetMeta().Type == "MeteringAttributes" || attr.GetMeta().Type == "PropertyAttributes" || attr.GetMeta().Type == "CounterPartyPropertyAttributes" || attr.GetMeta().Type == "AgreementProtocolAttributes" {
+			if attr.GetMeta().Type == "MeteringAttributes" || attr.GetMeta().Type == "PropertyAttributes" || attr.GetMeta().Type == "AgreementProtocolAttributes" {
 				return errorhandler(NewAPIUserInputError(fmt.Sprintf("device is using a pattern %v, policy attributes are not supported.", pDevice.Pattern), "service.[attribute].type")), nil
 			}
 		}

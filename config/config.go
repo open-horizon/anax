@@ -22,7 +22,6 @@ type HorizonConfig struct {
 // This is the configuration options for Edge component flavor of Anax
 type Config struct {
 	ServiceStorage                   string // The base storage directory where the service can write or get the data.
-	TorrentDir                       string
 	APIListen                        string
 	DBPath                           string
 	DockerEndpoint                   string
@@ -42,7 +41,6 @@ type Config struct {
 	DVPrefix                         string    // When passing agreement ids into a workload container, add this prefix to the agreement id
 	RegistrationDelayS               uint64    // The number of seconds to wait after blockchain init before registering with the exchange. This is for testing initialization ONLY.
 	ExchangeMessageTTL               int       // The number of seconds the exchange will keep this message before automatically deleting it
-	TorrentListenAddr                string    // Override the torrent listen address just in case there are conflicts, syntax is "host:port"
 	UserPublicKeyPath                string    // The location to store user keys uploaded through the REST API
 	ReportDeviceStatus               bool      // whether to report the device status to the exchange or not.
 	TrustCertUpdatesFromOrg          bool      // whether to trust the certs provided by the organization on the exchange or not.
@@ -242,7 +240,7 @@ func (c *HorizonConfig) String() string {
 }
 
 func (con *Config) String() string {
-	return fmt.Sprintf("ServiceStorage %v, TorrentDir %v, APIListen %v, DBPath %v, DockerEndpoint %v, DockerCredFilePath %v, DefaultCPUSet %v, DefaultServiceRegistrationRAM: %v, StaticWebContent: %v, PublicKeyPath: %v, TrustSystemCACerts: %v, CACertsPath: %v, ExchangeURL: %v, DefaultHTTPClientTimeoutS: %v, PolicyPath: %v, ExchangeHeartbeat: %v, ExchangeVersionCheckIntervalM: %v, AgreementTimeoutS: %v, DVPrefix: %v, RegistrationDelayS: %v, ExchangeMessageTTL: %v, TorrentListenAddr: %v, UserPublicKeyPath: %v, ReportDeviceStatus: %v, TrustCertUpdatesFromOrg: %v, TrustDockerAuthFromOrg: %v, ServiceUpgradeCheckIntervalS: %v, MultipleAnaxInstances: %v, DefaultServiceRetryCount: %v, DefaultServiceRetryDuration: %v, ServiceConfigStateCheckIntervalS: %v, FileSyncService: {%v}, BlockchainAccountId: %v, BlockchainDirectoryAddress %v", con.ServiceStorage, con.TorrentDir, con.APIListen, con.DBPath, con.DockerEndpoint, con.DockerCredFilePath, con.DefaultCPUSet, con.DefaultServiceRegistrationRAM, con.StaticWebContent, con.PublicKeyPath, con.TrustSystemCACerts, con.CACertsPath, con.ExchangeURL, con.DefaultHTTPClientTimeoutS, con.PolicyPath, con.ExchangeHeartbeat, con.ExchangeVersionCheckIntervalM, con.AgreementTimeoutS, con.DVPrefix, con.RegistrationDelayS, con.ExchangeMessageTTL, con.TorrentListenAddr, con.UserPublicKeyPath, con.ReportDeviceStatus, con.TrustCertUpdatesFromOrg, con.TrustDockerAuthFromOrg, con.ServiceUpgradeCheckIntervalS, con.MultipleAnaxInstances, con.DefaultServiceRetryCount, con.DefaultServiceRetryDuration, con.ServiceConfigStateCheckIntervalS, con.FileSyncService.String(), con.BlockchainAccountId, con.BlockchainDirectoryAddress)
+	return fmt.Sprintf("ServiceStorage %v, APIListen %v, DBPath %v, DockerEndpoint %v, DockerCredFilePath %v, DefaultCPUSet %v, DefaultServiceRegistrationRAM: %v, StaticWebContent: %v, PublicKeyPath: %v, TrustSystemCACerts: %v, CACertsPath: %v, ExchangeURL: %v, DefaultHTTPClientTimeoutS: %v, PolicyPath: %v, ExchangeHeartbeat: %v, ExchangeVersionCheckIntervalM: %v, AgreementTimeoutS: %v, DVPrefix: %v, RegistrationDelayS: %v, ExchangeMessageTTL: %v, UserPublicKeyPath: %v, ReportDeviceStatus: %v, TrustCertUpdatesFromOrg: %v, TrustDockerAuthFromOrg: %v, ServiceUpgradeCheckIntervalS: %v, MultipleAnaxInstances: %v, DefaultServiceRetryCount: %v, DefaultServiceRetryDuration: %v, ServiceConfigStateCheckIntervalS: %v, FileSyncService: {%v}, BlockchainAccountId: %v, BlockchainDirectoryAddress %v", con.ServiceStorage, con.APIListen, con.DBPath, con.DockerEndpoint, con.DockerCredFilePath, con.DefaultCPUSet, con.DefaultServiceRegistrationRAM, con.StaticWebContent, con.PublicKeyPath, con.TrustSystemCACerts, con.CACertsPath, con.ExchangeURL, con.DefaultHTTPClientTimeoutS, con.PolicyPath, con.ExchangeHeartbeat, con.ExchangeVersionCheckIntervalM, con.AgreementTimeoutS, con.DVPrefix, con.RegistrationDelayS, con.ExchangeMessageTTL, con.UserPublicKeyPath, con.ReportDeviceStatus, con.TrustCertUpdatesFromOrg, con.TrustDockerAuthFromOrg, con.ServiceUpgradeCheckIntervalS, con.MultipleAnaxInstances, con.DefaultServiceRetryCount, con.DefaultServiceRetryDuration, con.ServiceConfigStateCheckIntervalS, con.FileSyncService.String(), con.BlockchainAccountId, con.BlockchainDirectoryAddress)
 }
 
 func (agc *AGConfig) String() string {
