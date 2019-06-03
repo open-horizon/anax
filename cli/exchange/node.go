@@ -3,13 +3,14 @@ package exchange
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"os"
+
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
-	"net/http"
-	"os"
 )
 
 // We only care about handling the node names, so the rest is left as interface{} and will be passed from the exchange to the display
@@ -46,7 +47,7 @@ func NodeList(org string, credToUse string, node string, namesOnly bool) {
 	}
 }
 
-func NodeCreate(org, nodeIdTok, node, token, userPw, email string) {
+func NodeCreate(org, nodeIdTok, node, token, userPw, email string, arch string, nodeName string) {
 	// They should specify either nodeIdTok (for backward compat) or node and token, but not both
 	var nodeId, nodeToken string
 	if node != "" || token != "" {
@@ -67,13 +68,16 @@ func NodeCreate(org, nodeIdTok, node, token, userPw, email string) {
 		nodeId, nodeToken = cliutils.SplitIdToken(nodeIdTok)
 	}
 
+	if nodeName == "" {
+		nodeName = nodeId
+	}
+
 	cliutils.SetWhetherUsingApiKey(userPw)
 	exchUrlBase := cliutils.GetExchangeUrl()
 
 	// Assume the user exists and try to create the node, but handle the error cases
-	putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeId, SoftwareVersions: make(map[string]string), PublicKey: []byte("")} // we only need to set the token
+	putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeName, SoftwareVersions: make(map[string]string), PublicKey: []byte(""), Arch: arch} // we only need to set the token
 	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, putNodeReq)
-
 	if httpCode == 401 {
 		// Invalid creds means the user doesn't exist, or pw is wrong, try to create it if we are in the public org
 		user, pw := cliutils.SplitIdToken(userPw)

@@ -131,14 +131,15 @@ type Device struct {
 	SoftwareVersions   SoftwareVersion `json:"softwareVersions"`
 	LastHeartbeat      string          `json:"lastHeartbeat"`
 	PublicKey          []byte          `json:"publicKey"`
+	Arch               string          `json:"arch"`
 }
 
 func (d Device) String() string {
-	return fmt.Sprintf("Name: %v, Owner: %v, Pattern: %v, LastHeartbeat: %v, RegisteredServices: %v, MsgEndPoint: %v", d.Name, d.Owner, d.Pattern, d.LastHeartbeat, d.RegisteredServices, d.MsgEndPoint)
+	return fmt.Sprintf("Name: %v, Owner: %v, Pattern: %v, LastHeartbeat: %v, RegisteredServices: %v, MsgEndPoint: %v, Arch: %v", d.Name, d.Owner, d.Pattern, d.LastHeartbeat, d.RegisteredServices, d.MsgEndPoint, d.Arch)
 }
 
 func (d Device) ShortString() string {
-	str := fmt.Sprintf("Name: %v, Owner: %v, Pattern %v, LastHeartbeat: %v, MsgEndPoint: %v, RegisteredServices URLs:", d.Name, d.Owner, d.Pattern, d.LastHeartbeat, d.MsgEndPoint)
+	str := fmt.Sprintf("Name: %v, Owner: %v, Pattern %v, LastHeartbeat: %v, MsgEndPoint: %v, Arch: %v, RegisteredServices URLs:", d.Name, d.Owner, d.Pattern, d.LastHeartbeat, d.MsgEndPoint, d.Arch)
 	for _, ms := range d.RegisteredServices {
 		str += fmt.Sprintf("%v,", ms.Url)
 	}
@@ -256,14 +257,15 @@ type PutDeviceRequest struct {
 	MsgEndPoint        string          `json:"msgEndPoint"`
 	SoftwareVersions   SoftwareVersion `json:"softwareVersions"`
 	PublicKey          []byte          `json:"publicKey"`
+	Arch               string          `json:"arch"`
 }
 
 func (p PutDeviceRequest) String() string {
-	return fmt.Sprintf("Token: %v, Name: %v, RegisteredServices %v, MsgEndPoint %v, SoftwareVersions %v, PublicKey %x", "*****", p.Name, p.RegisteredServices, p.MsgEndPoint, p.SoftwareVersions, p.PublicKey)
+	return fmt.Sprintf("Token: %v, Name: %v, RegisteredServices %v, MsgEndPoint %v, SoftwareVersions %v, PublicKey %x, Arch: %v", "*****", p.Name, p.RegisteredServices, p.MsgEndPoint, p.SoftwareVersions, p.PublicKey, p.Arch)
 }
 
 func (p PutDeviceRequest) ShortString() string {
-	str := fmt.Sprintf("Token: %v, Name: %v, MsgEndPoint %v, SoftwareVersions %v", "*****", p.Name, p.MsgEndPoint, p.SoftwareVersions)
+	str := fmt.Sprintf("Token: %v, Name: %v, MsgEndPoint %v, Arch: %v, SoftwareVersions %v", "*****", p.Name, p.MsgEndPoint, p.Arch, p.SoftwareVersions)
 	str += ", Service URLs: "
 	for _, ms := range p.RegisteredServices {
 		str += fmt.Sprintf("%v,", ms.Url)
@@ -363,6 +365,7 @@ func CreateDevicePut(token string, name string) *PutDeviceRequest {
 		Pattern:          "",
 		SoftwareVersions: make(map[string]string),
 		PublicKey:        pkBytes,
+		Arch:             "",
 	}
 
 	return pdr

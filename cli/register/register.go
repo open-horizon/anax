@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/api"
+	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
@@ -55,7 +56,7 @@ func ReadInputFile(filePath string, inputFileStruct *InputFile) {
 }
 
 // DoIt registers this node to Horizon with a pattern
-func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromFlag string, patternFromFlag string) {
+func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromFlag string, patternFromFlag string, nodeName string) {
 	// check the input
 	if nodeOrgFromFlag != "" || patternFromFlag != "" {
 		if org != "" || pattern != "" {
@@ -90,6 +91,11 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	exchUrlBase := cliutils.GetExchangeUrl()
 	fmt.Printf("Horizon Exchange base URL: %s\n", exchUrlBase)
 
+	// get the arch from anax
+	statusInfo := apicommon.Info{}
+	cliutils.HorizonGet("status", []int{200}, &statusInfo, false)
+	anaxArch := (*statusInfo.Configuration).Arch
+
 	// Default node id and token if necessary
 	nodeId, nodeToken := cliutils.SplitIdToken(nodeIdTok)
 	if nodeId == "" {
@@ -121,14 +127,19 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	}
 	nodeIdTok = nodeId + ":" + nodeToken
 
+	if nodeName == "" {
+		nodeName = nodeId
+	}
+
 	// See if the node exists in the exchange, and create if it doesn't
 	httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, nil)
+
 	if httpCode != 200 {
 		if userPw == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node '%s/%s' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId)
 		}
 		fmt.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...\n", org, nodeId)
-		cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email)
+		cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email, anaxArch, nodeName)
 	} else {
 		fmt.Printf("Node %s/%s exists in the exchange\n", org, nodeId)
 	}
@@ -137,7 +148,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	fmt.Println("Initializing the Horizon node...")
 	//nd := Node{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HA: false}
 	falseVal := false
-	nd := api.HorizonDevice{Id: &nodeId, Token: &nodeToken, Org: &org, Pattern: &pattern, Name: &nodeId, HA: &falseVal} //todo: support HA config
+	nd := api.HorizonDevice{Id: &nodeId, Token: &nodeToken, Org: &org, Pattern: &pattern, Name: &nodeName, HA: &falseVal} //todo: support HA config
 	httpCode, _ = cliutils.HorizonPutPost(http.MethodPost, "node", []int{201, 200, cliutils.ANAX_ALREADY_CONFIGURED}, nd)
 	if httpCode == cliutils.ANAX_ALREADY_CONFIGURED {
 		// Note: I wanted to make `hzn register` idempotent, but the anax api doesn't support changing existing settings once in configuring state (to maintain internal consistency).
@@ -211,8 +222,26 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		}
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "%v", respBody)
 	}
+	var getDevicesResp exchange.GetDevicesResponse
+	cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), []int{200}, &getDevicesResp)
+
+	// if arch is not set, set the arch with anax's arch
+	devices := getDevicesResp.Devices
+	node := org + "/" + nodeId
+	device := devices[node]
+	archFromExchange := device.Arch
+
+	if archFromExchange == "" {
+		// update node arch with anax arch
+		fmt.Printf("archFromNode is empty, update node arch with anax arch %v", anaxArch)
+		putDeviceReq := exchange.PutDeviceRequest{device.Token, device.Name, device.Pattern, device.RegisteredServices, device.MsgEndPoint, device.SoftwareVersions, device.PublicKey, anaxArch}
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{200, 201}, putDeviceReq)
+	} else if archFromExchange != anaxArch {
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, "node arch from Exchange - %v, does not match arch from Anax - %v", archFromExchange, anaxArch)
+	}
 
 	fmt.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
+
 }
 
 // isWithinRanges returns true if version is within at least 1 of the ranges in versionRanges

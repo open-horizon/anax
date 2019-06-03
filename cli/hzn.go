@@ -3,6 +3,9 @@ package main
 
 import (
 	"flag"
+	"os"
+	"strings"
+
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/agreementbot"
 	"github.com/open-horizon/anax/cli/attribute"
@@ -25,8 +28,6 @@ import (
 	"github.com/open-horizon/anax/cli/utilcmds"
 	"github.com/open-horizon/anax/cutil"
 	"gopkg.in/alecthomas/kingpin.v2"
-	"os"
-	"strings"
 )
 
 func main() {
@@ -100,6 +101,8 @@ Environment Variables:
 	exNodeCreateCmd := exNodeCmd.Command("create", "Create the node resource in the Horizon Exchange.")
 	exNodeCreateNodeIdTok := exNodeCreateCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be created. The node ID must be unique within the organization.").Short('n').PlaceHolder("ID:TOK").String()
 	exNodeCreateNodeEmail := exNodeCreateCmd.Flag("email", "Your email address. Only needs to be specified if: the user specified in the -u flag does not exist, and you specified the 'public' org. If these things are true we will create the user and include this value as the email attribute.").Short('e').String()
+	exNodeCreateNodeArch := exNodeCreateCmd.Flag("arch", "Your node architecture. If not specified, arch will leave blank.").Short('a').String()
+	exNodeCreateNodeName := exNodeCreateCmd.Flag("name", "The name of your node").Short('m').String()
 	exNodeCreateNode := exNodeCreateCmd.Arg("node", "The node to be created.").String()
 	exNodeCreateToken := exNodeCreateCmd.Arg("token", "The token the new node should have.").String()
 	exNodeSetTokCmd := exNodeCmd.Command("settoken", "Change the token of a node resource in the Horizon Exchange.")
@@ -256,6 +259,7 @@ Environment Variables:
 	inputFile := registerCmd.Flag("input-file", "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See /usr/horizon/samples/input.json and /usr/horizon/samples/more-examples.json. Specify -f- to read from stdin.").Short('f').String() // not using ExistingFile() because it can be - for stdin
 	nodeOrgFlag := registerCmd.Flag("nodeorg", "The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.").Short('o').String()
 	patternFlag := registerCmd.Flag("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments. ").Short('p').String()
+	nodeName := registerCmd.Flag("name", "The name of your name.").Short('m').String()
 	org := registerCmd.Arg("nodeorg", "The Horizon exchange organization ID that the node should be registered in. Mutually exclusive with -o and -p.").String()
 	pattern := registerCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o and -p.").String()
 
@@ -541,7 +545,7 @@ Environment Variables:
 	case exNodeListCmd.FullCommand():
 		exchange.NodeList(*exOrg, credToUse, *exNode, !*exNodeLong)
 	case exNodeCreateCmd.FullCommand():
-		exchange.NodeCreate(*exOrg, *exNodeCreateNodeIdTok, *exNodeCreateNode, *exNodeCreateToken, *exUserPw, *exNodeCreateNodeEmail)
+		exchange.NodeCreate(*exOrg, *exNodeCreateNodeIdTok, *exNodeCreateNode, *exNodeCreateToken, *exUserPw, *exNodeCreateNodeEmail, *exNodeCreateNodeArch, *exNodeCreateNodeName)
 	case exNodeSetTokCmd.FullCommand():
 		exchange.NodeSetToken(*exOrg, credToUse, *exNodeSetTokNode, *exNodeSetTokToken)
 	case exNodeConfirmCmd.FullCommand():
@@ -613,7 +617,7 @@ Environment Variables:
 	case regInputCmd.FullCommand():
 		register.CreateInputFile(*regInputOrg, *regInputPattern, *regInputArch, *regInputNodeIdTok, *regInputInputFile)
 	case registerCmd.FullCommand():
-		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *email, *inputFile, *nodeOrgFlag, *patternFlag)
+		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *email, *inputFile, *nodeOrgFlag, *patternFlag, *nodeName)
 	case keyListCmd.FullCommand():
 		key.List(*keyName, *keyListAll)
 	case keyCreateCmd.FullCommand():
