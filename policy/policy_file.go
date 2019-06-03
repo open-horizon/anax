@@ -168,12 +168,10 @@ func Are_Compatible(producer_policy *Policy, consumer_policy *Policy) error {
 
 	if !consumer_policy.Is_Version(producer_policy.Header.Version) {
 		return errors.New(fmt.Sprintf("Compatibility Error: Schema versions are not the same, Consumer policy: %v, Producer policy %v", consumer_policy.Header.Version, producer_policy.Header.Version))
-		//	} else if err := producer_policy.APISpecs.Supports(consumer_policy.APISpecs); err != nil {
-		//		return errors.New(fmt.Sprintf("Compatibility Error: Producer policy APISpecs %v do not support Consumer APISpec requirements %v. Underlying error: %v", producer_policy.APISpecs, consumer_policy.APISpecs, err))
 	} else if err := (&consumer_policy.Constraints).IsSatisfiedBy(producer_policy.Properties); err != nil {
-		return errors.New(fmt.Sprintf("Compatibility Error: Producer properties %v do not satisfy Consumer constraint requirements %v. Underlying error: %v", producer_policy.Properties, consumer_policy.Constraints, err))
+		return errors.New(fmt.Sprintf("Compatibility Error: Node properties %v do not satisfy constraint requirements %v. Underlying error: %v", producer_policy.Properties, consumer_policy.Constraints, err))
 	} else if err := (&producer_policy.Constraints).IsSatisfiedBy(consumer_policy.Properties); err != nil {
-		return errors.New(fmt.Sprintf("Compatibility Error: Consumer properties %v do not satisfy Producer constraint  %v. Underlying error: %v", consumer_policy.Properties, producer_policy.Constraints, err))
+		return errors.New(fmt.Sprintf("Compatibility Error: Properties %v do not satisfy Node constraint  %v. Underlying error: %v", consumer_policy.Properties, producer_policy.Constraints, err))
 	} else if _, err := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols); err != nil {
 		return errors.New(fmt.Sprintf("Compatibility Error: No common Agreement Protocols between %v and %v. Underlying error: %v", producer_policy.AgreementProtocols, consumer_policy.AgreementProtocols, err))
 	} else if !producer_policy.DataVerify.IsCompatibleWith(consumer_policy.DataVerify) {

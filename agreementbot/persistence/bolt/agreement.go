@@ -83,7 +83,7 @@ func (db *AgbotBoltDB) FindAgreements(filters []persistence.AFilter, protocol st
 	}
 }
 
-func (db *AgbotBoltDB) AgreementAttempt(agreementid string, org string, deviceid string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string, pattern string, serviceId string, nhPolicy policy.NodeHealth) error {
+func (db *AgbotBoltDB) AgreementAttempt(agreementid string, org string, deviceid string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string, pattern string, serviceId []string, nhPolicy policy.NodeHealth) error {
 	if agreement, err := persistence.NewAgreement(agreementid, org, deviceid, policyName, bcType, bcName, bcOrg, agreementProto, pattern, serviceId, nhPolicy); err != nil {
 		return err
 	} else if err := db.persistNew(agreement.CurrentAgreementId, bucketName(agreementProto), &agreement); err != nil {

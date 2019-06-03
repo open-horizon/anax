@@ -49,7 +49,7 @@ type Agreement struct {
 	NHMissingHBInterval            int      `json:"missing_heartbeat_interval"`        // How long a heartbeat can be missing until it is considered missing (in seconds)
 	NHCheckAgreementStatus         int      `json:"check_agreement_status"`            // How often to check that the node agreement entry still exists in the exchange (in seconds)
 	Pattern                        string   `json:"pattern"`                           // The pattern used to make the agreement, used for pattern case only
-	ServiceId                      string   `json:"service_id"`                        // The service id whose policy is used to make the agreement, used for policy case only
+	ServiceId                      []string `json:"service_id"`                      // All the service ids whose policy is used to make the agreement, used for policy case only
 }
 
 func (a Agreement) String() string {
@@ -103,7 +103,7 @@ func (a Agreement) String() string {
 }
 
 // Factory method for agreement w/out persistence safety.
-func NewAgreement(agreementid string, org string, deviceid string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string, pattern string, serviceId string, nhPolicy policy.NodeHealth) (*Agreement, error) {
+func NewAgreement(agreementid string, org string, deviceid string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string, pattern string, serviceId []string, nhPolicy policy.NodeHealth) (*Agreement, error) {
 	if agreementid == "" || agreementProto == "" {
 		return nil, errors.New("Illegal input: agreement id or agreement protocol is empty")
 	} else {

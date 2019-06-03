@@ -23,7 +23,7 @@ func NewResourceWorker(name string, config *config.HorizonConfig, db *bolt.DB, a
 	var ec *worker.BaseExchangeContext
 	dev, _ := persistence.FindExchangeDevice(db)
 	if dev != nil {
-		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, config.Edge.ExchangeURL, config.Collaborators.HTTPClientFactory)
+		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, config.Edge.ExchangeURL, config.GetCSSURL(), config.Collaborators.HTTPClientFactory)
 	}
 
 	worker := &ResourceWorker{
@@ -50,7 +50,7 @@ func (w *ResourceWorker) NewEvent(incoming events.Message) {
 
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
-		w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.Config.Collaborators.HTTPClientFactory)
+		w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.Config.GetCSSURL(), w.Config.Collaborators.HTTPClientFactory)
 		w.Commands <- NewNodeConfigCommand(msg)
 
 	case *events.NodeShutdownCompleteMessage:
@@ -99,13 +99,16 @@ func (w *ResourceWorker) NoWorkHandler() {
 
 }
 
-// The node has just been configured so we can start functions that need node credentials to login.
+// The node has just been configured so we can start functions that need node credentials to login. If the node is
+// not using a pattern, then we will hard code the destination type of the node. The destination type is not important
+// when services and models are being placed on nodes by policy, thus we can hard code it.
 func (w *ResourceWorker) handleNodeConfigCommand(cmd *NodeConfigCommand) error {
-	if cmd.msg.Pattern() != "" {
-		w.rm.NodeConfigUpdate(cmd.msg.Org(), cmd.msg.Pattern(), cmd.msg.DeviceId(), cmd.msg.Token())
-		return w.rm.StartFileSyncService(w.am)
+	destinationType := cmd.msg.Pattern()
+	if destinationType == "" {
+		destinationType = "openhorizon/openhorizon.edgenode"
 	}
-	return nil
+	w.rm.NodeConfigUpdate(cmd.msg.Org(), destinationType, cmd.msg.DeviceId(), cmd.msg.Token())
+	return w.rm.StartFileSyncService(w.am)
 }
 
 // The node has just been unconfigured so we can stop the file sync service.

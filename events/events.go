@@ -86,6 +86,11 @@ const (
 
 	// Service related
 	SERVICE_SUSPENDED EventId = "SERVICE_SUSPENDED"
+
+	// Object Policy related
+	OBJECT_POLICY_NEW       EventId = "OBJECT_POLICY_NEW"
+	OBJECT_POLICY_CHANGED   EventId = "OBJECT_POLICY_CHANGED"
+	OBJECT_POLICY_DELETED   EventId = "OBJECT_POLICY_DELETED"
 )
 
 type EndContractCause string
@@ -1717,5 +1722,33 @@ func NewServiceConfigStateChangeMessage(id EventId, scs []ServiceConfigState) *S
 			Id: id,
 		},
 		ServiceConfigState: scs,
+	}
+}
+
+type MMSObjectPolicyMessage struct {
+	event     Event
+	NewPolicy interface{} // Holds an object of type exchange.ObjectDestinationPolicy
+	OldPolicy interface{} // Holds an object of type exchange.ObjectDestinationPolicy
+}
+
+func (w *MMSObjectPolicyMessage) Event() Event {
+	return w.event
+}
+
+func (w *MMSObjectPolicyMessage) String() string {
+	return w.ShortString()
+}
+
+func (w *MMSObjectPolicyMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v, NewPolicy: %v OldPolicy: %v", w.event, w.NewPolicy, w.OldPolicy)
+}
+
+func NewMMSObjectPolicyMessage(id EventId, np interface{}, op interface{}) *MMSObjectPolicyMessage {
+	return &MMSObjectPolicyMessage{
+		event: Event{
+			Id: id,
+		},
+		NewPolicy: np,
+		OldPolicy: op,
 	}
 }

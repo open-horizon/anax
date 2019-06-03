@@ -68,6 +68,7 @@ func (f *HTTPClientFactory) WrappedNewHTTPClient() func(*uint) *http.Client {
 // TODO: use a pool of clients instead of creating them forevar
 func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 	var caBytes []byte
+	var cssCaBytes []byte
 
 	if hConfig.Edge.CACertsPath != "" {
 		var err error
@@ -78,6 +79,15 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 		glog.V(4).Infof("Read CA certs from provided file %v", hConfig.Edge.CACertsPath)
 	}
 
+	if hConfig.AgreementBot.CSSSSLCert != "" {
+		var err error
+		cssCaBytes, err = ioutil.ReadFile(hConfig.AgreementBot.CSSSSLCert)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to read Agbot CSS SSL Cert File: %v", hConfig.AgreementBot.CSSSSLCert)
+		}
+		glog.V(4).Infof("Read CA certs from provided file %v", hConfig.AgreementBot.CSSSSLCert)
+	}
+
 	var tlsConf tls.Config
 	tlsConf.InsecureSkipVerify = false
 	// do not allow negotiation to previous versions of TLS
@@ -85,7 +95,7 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 
 	var certPool *x509.CertPool
 
-	if hConfig.Edge.TrustSystemCACerts {
+	if hConfig.Edge.TrustSystemCACerts || hConfig.AgreementBot.CSSSSLCert != "" {
 		var err error
 		certPool, err = x509.SystemCertPool()
 		if err != nil {
@@ -97,7 +107,12 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 		certPool = x509.NewCertPool()
 	}
 
-	certPool.AppendCertsFromPEM(caBytes)
+	if len(caBytes) != 0 {
+		certPool.AppendCertsFromPEM(caBytes)
+	}
+	if len(cssCaBytes) != 0 {
+		certPool.AppendCertsFromPEM(cssCaBytes)
+	}
 	tlsConf.RootCAs = certPool
 
 	tlsConf.BuildNameToCertificate()

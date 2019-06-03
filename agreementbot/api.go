@@ -42,7 +42,7 @@ func NewAPIListener(name string, config *config.HorizonConfig, db persistence.Ag
 
 		name: name,
 		db:   db,
-		EC:   worker.NewExchangeContext(config.AgreementBot.ExchangeId, config.AgreementBot.ExchangeToken, config.AgreementBot.ExchangeURL, config.Collaborators.HTTPClientFactory),
+		EC:   worker.NewExchangeContext(config.AgreementBot.ExchangeId, config.AgreementBot.ExchangeToken, config.AgreementBot.ExchangeURL, config.GetAgbotCSSURL(), config.Collaborators.HTTPClientFactory),
 		em:   events.NewEventStateManager(),
 	}
 
@@ -130,6 +130,14 @@ func (a *API) GetExchangeToken() string {
 func (a *API) GetExchangeURL() string {
 	if a.EC != nil {
 		return a.EC.URL
+	} else {
+		return ""
+	}
+}
+
+func (a *API) GetCSSURL() string {
+	if a.EC != nil {
+		return a.EC.CSSURL
 	} else {
 		return ""
 	}

@@ -11,8 +11,13 @@ import (
 	"path"
 )
 
+type MMSObjectInfo struct {
+	Definition   common.MetaData             `json:"definition"`
+	Destinations []common.DestinationsStatus `json:"destinations,omitempty"`
+}
+
 // Display the object metadata for a given object in the MMS.
-func ObjectList(org string, userPw string, objType string, objId string) {
+func ObjectList(org string, userPw string, objType string, objId string, details bool) {
 
 	if userPw == "" {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "must specify exchange credentials to access the model management service")
@@ -29,23 +34,66 @@ func ObjectList(org string, userPw string, objType string, objId string) {
 	// Construct the URL path from the input pieces. They are required inputs so we know they are at least non-null.
 	urlPath := path.Join("api/v1/objects/", org, objType, objId)
 
-	// Call the MMS service over HTTP
+	// Call the MMS service over HTTP to get the basic object metadata.
 	httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectMeta)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, "object '%s' of type '%s' not found in org %s", objId, objType, org)
 	}
-	output := cliutils.MarshalIndent(objectMeta, "mms object list")
+
+	mmsObjectInfo := MMSObjectInfo{
+		Definition: objectMeta,
+	}
+
+	// If the user wants additional details, provide the destination information from the destination API.
+	if details {
+
+		// Display the full object metadata.
+		var objectDests []common.DestinationsStatus
+
+		// Construct the URL path the additional destination detail.
+		urlPath := path.Join("api/v1/objects/", org, objType, objId, "destinations")
+
+		// Call the MMS service over HTTP to get the object's destination status.
+		httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectDests)
+		if httpCode == 404 {
+			cliutils.Verbose("destination detail for object '%s' of type '%s' not found in org %s", objId, objType, org)
+		}
+
+		mmsObjectInfo.Destinations = objectDests
+
+	}
+
+	output := cliutils.MarshalIndent(mmsObjectInfo, "mms object list")
 	fmt.Println(output)
 
 }
 
 // Display an empty template for the metadata of an object in the MMS. The user can use this template on 'hzn mms object publish' to provide
-// the object definition when uploading it to the MMS.
+// the object definition when uploading it to the MMS. The policy section is filled in with empty values so that the user can see the
+// schema of fields.
 func ObjectNew(org string) {
 
 	// Display the full object metadata
 	var objectMeta common.MetaData
 	objectMeta.DestOrgID = org
+	objectMeta.DestinationPolicy = &common.Policy{
+		Properties: []common.PolicyProperty{
+			common.PolicyProperty{
+				Name: "",
+				Value: "",
+				Type: "string",
+			},
+		},
+		Constraints: []string{""},
+		Services: []common.ServiceID{
+			common.ServiceID{
+				OrgID: "",
+				Arch: "",
+				ServiceName: "",
+				Version: "",
+			},
+		},
+	}
 
 	output := cliutils.MarshalIndent(objectMeta, "mms object metadata")
 	fmt.Println(output)
