@@ -59,8 +59,7 @@ func (auth *FSSAuthenticate) Authenticate(request *http.Request) (int, string, s
 	}
 
 	// The service identity is authenticated.
-	//authCode = security.AuthEdgeNode
-	authCode = security.AuthAdmin
+	authCode = security.AuthService
 	glog.V(3).Infof(essALS(fmt.Sprintf("returned authentication result code %v org %v id %v", authCode, auth.nodeOrg, authId)))
 
 	return authCode, auth.nodeOrg, authId

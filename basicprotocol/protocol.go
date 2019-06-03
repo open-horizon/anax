@@ -364,7 +364,8 @@ const AB_CANCEL_AG_MISSING = 209
 
 func DecodeReasonCode(code uint64) string {
 
-	codeMeanings := map[uint64]string{CANCEL_POLICY_CHANGED: "producer policy changed",
+	codeMeanings := map[uint64]string{
+		CANCEL_POLICY_CHANGED:           "node policy changed",
 		CANCEL_CONTAINER_FAILURE:        "service terminated",
 		CANCEL_NOT_EXECUTED_TIMEOUT:     "service start timeout",
 		CANCEL_USER_REQUESTED:           "user requested",

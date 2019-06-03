@@ -17,8 +17,8 @@ import (
 	"time"
 )
 
-func CreateConsumerPH(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, msgq chan events.Message) ConsumerProtocolHandler {
-	if handler := NewBasicProtocolHandler(name, cfg, db, pm, msgq); handler != nil {
+func CreateConsumerPH(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, msgq chan events.Message, mmsObjMgr  *MMSObjectPolicyManager) ConsumerProtocolHandler {
+	if handler := NewBasicProtocolHandler(name, cfg, db, pm, msgq, mmsObjMgr); handler != nil {
 		return handler
 	} // Add new consumer side protocol handlers here
 	return nil
@@ -66,6 +66,7 @@ type ConsumerProtocolHandler interface {
 	GetExchangeId() string
 	GetExchangeToken() string
 	GetExchangeURL() string
+	GetCSSURL() string
 	GetServiceBased() bool
 	GetHTTPFactory() *config.HTTPClientFactory
 	SendEventMessage(event events.Message)
@@ -81,6 +82,7 @@ type BaseConsumerProtocolHandler struct {
 	token            string
 	deferredCommands []AgreementWork // The agreement related work that has to be deferred and retried
 	messages         chan events.Message
+	mmsObjMgr        *MMSObjectPolicyManager
 }
 
 func (b *BaseConsumerProtocolHandler) GetSendMessage() func(mt interface{}, pay []byte) error {
@@ -101,6 +103,10 @@ func (b *BaseConsumerProtocolHandler) GetExchangeToken() string {
 
 func (b *BaseConsumerProtocolHandler) GetExchangeURL() string {
 	return b.config.AgreementBot.ExchangeURL
+}
+
+func (b *BaseConsumerProtocolHandler) GetCSSURL() string {
+	return b.config.GetAgbotCSSURL()
 }
 
 func (b *BaseConsumerProtocolHandler) GetServiceBased() bool {
@@ -321,7 +327,7 @@ func (b *BaseConsumerProtocolHandler) HandleServicePolicyChanged(cmd *ServicePol
 
 	if agreements, err := b.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), InProgress()}, cph.Name()); err == nil {
 		for _, ag := range agreements {
-			if ag.Pattern == "" && ag.PolicyName == fmt.Sprintf("%v/%v", cmd.Msg.BusinessPolOrg, cmd.Msg.BusinessPolName) && ag.ServiceId == cmd.Msg.ServiceId {
+			if ag.Pattern == "" && ag.PolicyName == fmt.Sprintf("%v/%v", cmd.Msg.BusinessPolOrg, cmd.Msg.BusinessPolName) && ag.ServiceId[0] == cmd.Msg.ServiceId {
 
 				glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a service policy %v that has changed.", ag.CurrentAgreementId, ag.ServiceId)))
 				b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph)
@@ -342,7 +348,7 @@ func (b *BaseConsumerProtocolHandler) HandleServicePolicyDeleted(cmd *ServicePol
 	if agreements, err := b.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), InProgress()}, cph.Name()); err == nil {
 		for _, ag := range agreements {
 
-			if ag.Pattern == "" && ag.PolicyName == fmt.Sprintf("%v/%v", cmd.Msg.BusinessPolOrg, cmd.Msg.BusinessPolName) && ag.ServiceId == cmd.Msg.ServiceId {
+			if ag.Pattern == "" && ag.PolicyName == fmt.Sprintf("%v/%v", cmd.Msg.BusinessPolOrg, cmd.Msg.BusinessPolName) && ag.ServiceId[0] == cmd.Msg.ServiceId {
 				glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a service policy %v that doesn't exist anymore", ag.CurrentAgreementId, ag.ServiceId)))
 
 				// Remove any workload usage records so that a new agreement will be made starting from the highest priority workload.

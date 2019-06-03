@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "prop2",
+      "value": "abc"
+    }
+  ],
+  "constraints": [
+    ""
+  ],
+  "services": [
+    {
+      "orgID": "e2edev@somecomp.com",
+      "arch": "amd64",
+      "serviceName": "my.company.com.services.usehello2",
+      "version": "1.0.0"
+    }
+  ]
+}

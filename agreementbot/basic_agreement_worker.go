@@ -19,7 +19,7 @@ type BasicAgreementWorker struct {
 	protocolHandler *BasicProtocolHandler
 }
 
-func NewBasicAgreementWorker(c *BasicProtocolHandler, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, alm *AgreementLockManager) *BasicAgreementWorker {
+func NewBasicAgreementWorker(c *BasicProtocolHandler, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, alm *AgreementLockManager, mmsObjMgr  *MMSObjectPolicyManager) *BasicAgreementWorker {
 
 	id, err := uuid.NewV4()
 	if err != nil {
@@ -34,7 +34,8 @@ func NewBasicAgreementWorker(c *BasicProtocolHandler, cfg *config.HorizonConfig,
 			alm:        alm,
 			workerID:   id.String(),
 			httpClient: cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
-			ec:         worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, cfg.Collaborators.HTTPClientFactory),
+			ec:         worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, cfg.GetAgbotCSSURL(), cfg.Collaborators.HTTPClientFactory),
+			mmsObjMgr:  mmsObjMgr,
 		},
 		protocolHandler: c,
 	}

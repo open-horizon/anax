@@ -23,7 +23,7 @@ type BasicProtocolHandler struct {
 	Work        chan AgreementWork // outgoing commands for the workers
 }
 
-func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, messages chan events.Message) *BasicProtocolHandler {
+func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, messages chan events.Message, mmsObjMgr  *MMSObjectPolicyManager) *BasicProtocolHandler {
 	if name == basicprotocol.PROTOCOL_NAME {
 		return &BasicProtocolHandler{
 			BaseConsumerProtocolHandler: &BaseConsumerProtocolHandler{
@@ -36,6 +36,7 @@ func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persiste
 				token:            cfg.AgreementBot.ExchangeToken,
 				deferredCommands: nil,
 				messages:         messages,
+				mmsObjMgr:        mmsObjMgr,
 			},
 			agreementPH: basicprotocol.NewProtocolHandler(cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil), pm),
 			Work:        make(chan AgreementWork),
@@ -64,7 +65,7 @@ func (c *BasicProtocolHandler) Initialize() {
 
 	// Set up agreement worker pool based on the current technical config.
 	for ix := 0; ix < c.config.AgreementBot.AgreementWorkers; ix++ {
-		agw := NewBasicAgreementWorker(c, c.config, c.db, c.pm, agreementLockMgr)
+		agw := NewBasicAgreementWorker(c, c.config, c.db, c.pm, agreementLockMgr, c.mmsObjMgr)
 		go agw.start(c.Work, random)
 	}
 

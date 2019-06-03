@@ -7,6 +7,7 @@
 # 4 - the object type.
 # 5 - the destination type. The type of node that can receive the file (i.e. the node's pattern). Specify "none" to leave the field unset.
 # 6 - the destination id. The node's id. Specify "none" to leave the field unset.
+# 7 - the object policy (optional).
 
 DEST_TYPE=${5}
 if [ "${5}" == "none" ]
@@ -20,9 +21,20 @@ then
 	DEST_ID=""
 fi
 
-echo "Deploying file ${1} version ${2} into ${3} as type ${4}, targetting nodes of type ${5} or node id ${6}"
+OBJ_POLICY=${7}
+if [ "${7}" == "none" ]
+then
+  OBJ_POLICY="null"
+fi
+
+echo "Deploying file ${1} version ${2} into ${3} as type ${4}, targetting nodes of type ${5} or node id ${6}, using policy ${7}"
 
 FILENAME=$(basename ${1})
+
+if [ "${OBJ_POLICY}" != "null" ]
+then
+  FILENAME=policy-${FILENAME}
+fi
 
 # Setup the file sync service object metadata, based on the input parameters.
 read -d '' resmeta <<EOF
@@ -34,7 +46,8 @@ read -d '' resmeta <<EOF
   	"destinationID": "${DEST_ID}",
   	"destinationType": "${DEST_TYPE}",
   	"version": "${2}",
-  	"description": "a file"
+    "description": "a file",
+    "destinationPolicy": ${OBJ_POLICY}
   }
 }
 EOF

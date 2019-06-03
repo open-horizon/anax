@@ -243,3 +243,18 @@ func NewServicePolicyDeletedCommand(msg *events.ServicePolicyDeletedMessage) *Se
 		Msg: *msg,
 	}
 }
+
+// ==============================================================================================================
+type MMSObjectPolicyEventCommand struct {
+	Msg events.MMSObjectPolicyMessage
+}
+
+func (e MMSObjectPolicyEventCommand) ShortString() string {
+	return e.Msg.ShortString()
+}
+
+func NewMMSObjectPolicyEventCommand(msg *events.MMSObjectPolicyMessage) *MMSObjectPolicyEventCommand {
+	return &MMSObjectPolicyEventCommand{
+		Msg: *msg,
+	}
+}

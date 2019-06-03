@@ -29,6 +29,8 @@ then
     verify "HZN_ESS_CERT" $HZN_ESS_CERT
     echo -e "All Horizon platform env vars verified."
 
+    echo -e "Service is running on node $HZN_DEVICE_ID in org $HZN_ORGANIZATION"
+
     # Assuming the API address is a unix socket file. HZN_ESS_API_PROTOCOL should be "unix".
     BASEURL='--unix-socket '${HZN_ESS_API_ADDRESS}' https://localhost/api/v1/objects/'
 
@@ -54,8 +56,8 @@ CERT="--cacert ${HZN_ESS_CERT} "
 
 FAILCOUNT=0
 
-# There should be 2 files loaded into the CSS for this node and the node should be able to get them quicklky. If not,
-# there is a problem and the service will terminate, causing to get into a restart loop in docker. This should be detected
+# There should be 2 files loaded into the CSS for this node and the node should be able to get them quickly. If not,
+# there is a problem and the service will terminate, causing it to get into a restart loop in docker. This should be detected
 # by the test automation and terminate the test in error.
 
 while :
@@ -83,11 +85,11 @@ do
         if [ "${COUNT}" != "${COUNT_TARGET}" ]
         then
             echo -e "Found ${COUNT} files from the sync service in ${FILE_LOC}, there should be ${COUNT_TARGET}."
-            if [ "$FAILCOUNT" -gt "2" ]
+            if [ "$FAILCOUNT" -gt "1" ]
             then
                 exit 1
             fi
-            sleep 5
+            sleep 2
             FAILCOUNT=$((FAILCOUNT+1))
         else
             break

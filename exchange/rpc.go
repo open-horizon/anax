@@ -647,11 +647,11 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 				} else {
 					return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil
 				}
-			} else if (method == "PUT" || method == "POST" || method == "PATCH") && httpResp.StatusCode != http.StatusCreated {
+			} else if (method == "PUT" || method == "POST" || method == "PATCH") && (httpResp.StatusCode != http.StatusCreated && httpResp.StatusCode != http.StatusNoContent) {
 				return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil
 			} else if method == "DELETE" && httpResp.StatusCode != http.StatusNoContent {
 				return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil
-			} else if method == "DELETE" {
+			} else if (method == "DELETE") || ((method == "PUT" || method == "POST" || method == "PATCH") && httpResp.StatusCode == http.StatusNoContent) {
 				return nil, nil
 			} else {
 				out := string(outBytes)
@@ -733,8 +733,11 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 					case *GetAgbotsBusinessPolsResponse:
 						return nil, nil
 
+					case *ObjectDestinationPolicies:
+						return nil, nil
+
 					default:
-						return errors.New(fmt.Sprintf("Unknown type of response object %v passed to invocation of %v at %v with %v", *resp, method, url, requestBody)), nil
+						return errors.New(fmt.Sprintf("Unknown type of response object %v (%T) passed to invocation of %v at %v with %v", *resp, *resp, method, url, requestBody)), nil
 					}
 				}
 			}

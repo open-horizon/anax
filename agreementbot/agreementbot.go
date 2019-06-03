@@ -53,15 +53,16 @@ type AgreementBotWorker struct {
 	lastExchVerCheck   int64
 	shutdownStarted    bool
 	lastAgMakingTime   uint64 // the start time for the last agreement making cycle, only used by non-pattern case
+	MMSObjectPM        *MMSObjectPolicyManager
 }
 
 func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase) *AgreementBotWorker {
 
-	// An agbot is never service based, it supports both all the time, until we get rid of support for workloads.
-	ec := worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, cfg.Collaborators.HTTPClientFactory)
+	ec := worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, cfg.AgreementBot.CSSURL, cfg.Collaborators.HTTPClientFactory)
 
+	baseWorker := worker.NewBaseWorker(name, cfg, ec)
 	worker := &AgreementBotWorker{
-		BaseWorker:       worker.NewBaseWorker(name, cfg, ec),
+		BaseWorker:       baseWorker,
 		db:               db,
 		httpClient:       cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 		consumerPH:       make(map[string]ConsumerProtocolHandler),
@@ -207,6 +208,10 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 			w.Commands <- NewServicePolicyDeletedCommand(msg)
 		}
 
+	case *events.MMSObjectPolicyMessage:
+		msg, _ := incoming.(*events.MMSObjectPolicyMessage)
+		w.Commands <- NewMMSObjectPolicyEventCommand(msg)
+
 	default: //nothing
 
 	}
@@ -255,12 +260,14 @@ func (w *AgreementBotWorker) Initialize() bool {
 
 	// Give the policy manager a chance to read in all the policies. The agbot worker will not proceed past this point
 	// until it has some policies to work with.
+	firstTime := true
+	w.BusinessPolManager = NewBusinessPolicyManager(w.Messages())
+	w.MMSObjectPM = NewMMSObjectPolicyManager()
 	for {
 
 		// Query the exchange for patterns that this agbot is supposed to serve and generate a policy for each one. If an error
 		// occurs, it will be ignored. The Agbot should not proceed out of initialization until it has at least 1 policy/pattern
 		// that it can serve.
-		w.BusinessPolManager = NewBusinessPolicyManager(w.Messages())
 
 		// generate policy files for patterns
 		if err := w.internalGeneratePolicyFromPatterns(); err != nil {
@@ -270,17 +277,20 @@ func (w *AgreementBotWorker) Initialize() bool {
 		// let policy manager read it
 		if filePolManager, err := policy.Initialize(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, w.Config.ArchSynonyms, w.serviceResolver, true, false); err != nil {
 			glog.Errorf("AgreementBotWorker unable to initialize policy manager, error: %v", err)
-		} else if filePolManager.NumberPolicies() != 0 {
+		} else {
+			// creating business policy cache and update the policy manager
 			w.pm = filePolManager
-			break
+			if err := w.internalGeneratePolicyFromBusinessPols(firstTime); err != nil {
+				glog.Errorf(AWlogString(fmt.Sprintf("unable to process patterns, error %v", err)))
+			} else if filePolManager.NumberPolicies() != 0 {
+				// w.pm = filePolManager
+				break
+			}
 		}
 		glog.V(3).Infof("AgreementBotWorker waiting for policies to appear")
 		time.Sleep(time.Duration(w.BaseWorker.Manager.Config.AgreementBot.CheckUpdatedPolicyS) * time.Second)
+		firstTime = false
 
-		// creating business policy cache and update the policy manager
-		if err := w.internalGeneratePolicyFromBusinessPols(); err != nil {
-			glog.Errorf(AWlogString(fmt.Sprintf("unable to process patterns, error %v", err)))
-		}
 	}
 
 	glog.Info("AgreementBot worker started")
@@ -296,7 +306,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 	// to initiate the protocol.
 	for protocolName, _ := range w.pm.GetAllAgreementProtocols() {
 		if policy.SupportedAgreementProtocol(protocolName) {
-			cph := CreateConsumerPH(protocolName, w.BaseWorker.Manager.Config, w.db, w.pm, w.BaseWorker.Manager.Messages)
+			cph := CreateConsumerPH(protocolName, w.BaseWorker.Manager.Config, w.db, w.pm, w.BaseWorker.Manager.Messages, w.MMSObjectPM)
 			cph.Initialize()
 			w.consumerPH[protocolName] = cph
 		} else {
@@ -373,7 +383,7 @@ func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
 				// Update the protocol handler map and make sure there are workers available if the policy has a new protocol in it.
 				if _, ok := w.consumerPH[agp.Name]; !ok {
 					glog.V(3).Infof("AgreementBotWorker creating worker pool for new agreement protocol %v", agp.Name)
-					cph := CreateConsumerPH(agp.Name, w.BaseWorker.Manager.Config, w.db, w.pm, w.BaseWorker.Manager.Messages)
+					cph := CreateConsumerPH(agp.Name, w.BaseWorker.Manager.Config, w.db, w.pm, w.BaseWorker.Manager.Messages, w.MMSObjectPM)
 					cph.Initialize()
 					w.consumerPH[agp.Name] = cph
 				}
@@ -476,6 +486,10 @@ func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
 		for _, cph := range w.consumerPH {
 			cph.SetBlockchainClientNotAvailable(&cmd.Msg)
 		}
+
+	case *MMSObjectPolicyEventCommand:
+		cmd, _ := command.(*MMSObjectPolicyEventCommand)
+		w.HandleMMSObjectPolicy(cmd)
 
 	case *AgbotShutdownCommand:
 		w.shutdownStarted = true
@@ -1162,7 +1176,8 @@ func (w *AgreementBotWorker) serviceResolver(wURL string, wOrg string, wVersion 
 
 // Generate policies.
 // 1. generate policy files based on pattern metadata in the exchange.
-// 2. generate policies in memeory on business metadata in the exchange.
+// 2. generate policies in memory on business metadata in the exchange.
+// 3. capture object destination policies in memory from the MMS. This happens within #2.
 // The return value from this function is
 // the length of time the caller should wait before calling again. If -1 is returned, there was an error.
 func (w *AgreementBotWorker) GeneratePolicies() int {
@@ -1174,9 +1189,9 @@ func (w *AgreementBotWorker) GeneratePolicies() int {
 	}
 	glog.V(5).Infof(AWlogString(fmt.Sprintf("pattern manager initialized: %v", w.PatternManager.ShortString())))
 
-	glog.V(5).Infof(AWlogString(fmt.Sprintf("scanning businesses policies for updates")))
-	if err := w.internalGeneratePolicyFromBusinessPols(); err != nil {
-		glog.Errorf(AWlogString(fmt.Sprintf("unable to process business policies, error %v", err)))
+	glog.V(5).Infof(AWlogString(fmt.Sprintf("scanning businesses and object policies for updates")))
+	if err := w.internalGeneratePolicyFromBusinessPols(false); err != nil {
+		glog.Errorf(AWlogString(fmt.Sprintf("unable to process business and object policies, error %v", err)))
 		return -1
 	}
 	glog.V(5).Infof(AWlogString(fmt.Sprintf("scanning service policies for updates")))
@@ -1260,7 +1275,7 @@ func (w *AgreementBotWorker) getAgbotPatterns() (map[string]exchange.ServedPatte
 // Generate policy files based on business policy metadata in the exchange. A list of orgs and business policies is
 // configured for the agbot to serve. Policies are created, updated and deleted based on this
 // metadata and based on the business policy metadata itself.
-func (w *AgreementBotWorker) internalGeneratePolicyFromBusinessPols() error {
+func (w *AgreementBotWorker) internalGeneratePolicyFromBusinessPols(firstTime bool) error {
 
 	// Get the configured (policy org, business policy, node org) triplets for this agbot.
 	pats, err := w.getAgbotBusinessPols()
@@ -1273,10 +1288,16 @@ func (w *AgreementBotWorker) internalGeneratePolicyFromBusinessPols() error {
 		return errors.New(fmt.Sprintf("unable to process agbot served business policy metadata %v, error %v", pats, err))
 	}
 
+	// Consume the configured (policy org, business policy, node org) triplets into the ObjectPolicyManager
+	if err := w.MMSObjectPM.SetCurrentPolicyOrgs(pats); err != nil {
+		return errors.New(fmt.Sprintf("unable to process agbot served business policy metadata %v, error %v", pats, err))
+	}
+
 	// Iterate over each org in the BusinessPolManager and process all the business policies in that org
 	for _, org := range w.BusinessPolManager.GetAllPolicyOrgs() {
 
 		var exchPolsMetadata map[string]exchange.ExchangeBusinessPolicy
+		var mmsObjPolicies *exchange.ObjectDestinationPolicies
 		var err error
 
 		// check if the org exists on the exchange or not
@@ -1285,17 +1306,34 @@ func (w *AgreementBotWorker) internalGeneratePolicyFromBusinessPols() error {
 			// org does not exist is returned as an error
 			glog.V(5).Infof(AWlogString(fmt.Sprintf("unable to get organization %v: %v", org, err)))
 			exchPolsMetadata = make(map[string]exchange.ExchangeBusinessPolicy)
+			mmsObjPolicies = new(exchange.ObjectDestinationPolicies)
 		} else {
 			// Query exchange for all business policies in the org
 			getBusinessPolicies := exchange.GetHTTPBusinessPoliciesHandler(w)
 			if exchPolsMetadata, err = getBusinessPolicies(org, ""); err != nil {
 				return errors.New(fmt.Sprintf("unable to get business polices for org %v, error %v", org, err))
 			}
+
+			// Query MMS for all object policies in the org
+			getMMSObjectPolicies := exchange.GetHTTPObjectPolicyUpdatesQueryHandler(w)
+			if mmsObjPolicies, err = getMMSObjectPolicies(org, firstTime); err != nil {
+				//return errors.New(fmt.Sprintf("unable to get object polices for org %v, error %v", org, err))
+			}
+
 		}
 
 		// Check for business policy metadata changes and update policies accordingly
 		if err := w.BusinessPolManager.UpdatePolicies(org, exchPolsMetadata, w.pm); err != nil {
 			return errors.New(fmt.Sprintf("unable to update business policies for org %v, error %v", org, err))
+		}
+
+		// Check for policy metadata changes and update policies accordingly. Publish any status change events.
+		if events, err := w.MMSObjectPM.UpdatePolicies(org, mmsObjPolicies, exchange.GetHTTPObjectPolicyUpdateReceivedHandler(w)); err != nil {
+			return errors.New(fmt.Sprintf("unable to update object policies for org %v, error %v", org, err))
+		} else {
+			for _, ev := range events {
+				w.Messages() <- ev
+			}
 		}
 	}
 

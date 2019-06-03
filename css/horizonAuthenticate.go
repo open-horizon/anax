@@ -77,11 +77,12 @@ func ExchangeCACert() string {
 }
 
 // Authenticate authenticates a particular appKey/appSecret pair and indicates
-// whether it is an edge node, org admin, or plain user. Also returned is the
-// user's org and identitity.
+// whether it is an edge node, an agbot, an org admin, or plain user. Also returned is the
+// user's org and identity.
 //
 // When this authenticator is using the exchange to authenticate, the expected form for an appKey is:
 // <org>/<destination type>/<destination id> - for a node identity, where destination type is mapped to a pattern in horizon and destination id is the node id.
+// <org>/<agbot id> - for an agbot identity, where agbot id is the agbot's exchange Id.
 // <org>/<user> - for a real person user
 //
 // When this authenticator is allowing something infront of it in the network to do the authentication, the expected form for an appKey is irrelevant.
@@ -111,7 +112,7 @@ func (auth *HorizonAuthenticate) Authenticate(request *http.Request) (int, strin
 
 	// If the exchange is being used for authentication, then use the env var to access the exchange endpoint.
 	if exURL := ExchangeURL(); exURL != "" {
-		return auth.authenticateWithExchange(appKey, appSecret, exURL)
+		return auth.authenticateWithExchange(request.URL.Path, appKey, appSecret, exURL)
 
 	} else {
 		// Otherwise use the env var to know which header to access for the authenticated identity.
@@ -128,12 +129,12 @@ func (auth *HorizonAuthenticate) KeyandSecretForURL(url string) (string, string)
 
 // Internal function used to separate the code for authenticating with the exchange away from the main
 // Authenticate function.
-func (auth *HorizonAuthenticate) authenticateWithExchange(appKey string, appSecret string, exURL string) (int, string, string) {
+func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKey string, appSecret string, exURL string) (int, string, string) {
 	if log.IsLogging(logger.DEBUG) {
-		log.Debug(cssALS(fmt.Sprintf("received exchange authentication request for user %v", appKey)))
+		log.Debug(cssALS(fmt.Sprintf("received exchange authentication request for URL Path %v user %v", otherOrg, appKey)))
 	}
 	if trace.IsLogging(logger.TRACE) {
-		trace.Debug(cssALS(fmt.Sprintf("received exchange authentication request for user %v with secret %v", appKey, appSecret)))
+		trace.Debug(cssALS(fmt.Sprintf("received exchange authentication request for URL Path %v for user %v with secret %v", otherOrg, appKey, appSecret)))
 	}
 
 	// Assume the request will be rejected.
@@ -160,29 +161,50 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(appKey string, appSecr
 		}
 
 	} else if parts := strings.Split(appKey, "/"); len(parts) == 2 {
-		// If the appKey is shaped like a user identity, then let's make sure it is a user identity.
+		// If the appKey is shaped like a user identity or an agbot identity, then let's make sure it is one of these.
+		// The identity is checked for agbot first because it is expected to be an agbot most of the time.
 
-		// A 2 part '/' delimited identity has to be a user identity.
+		// A 2 part '/' delimited identity could be an agbot identity.
 		if trace.IsLogging(logger.TRACE) {
-			trace.Debug(cssALS(fmt.Sprintf("authentication request for user %v appears to be a user identity", appKey)))
+			trace.Debug(cssALS(fmt.Sprintf("attempting authentication request as an agbot %v", appKey)))
 		}
 
-		if admin, err := auth.verifyUserIdentity(parts[1], parts[0], appSecret, ExchangeURL()); err != nil {
-			if log.IsLogging(logger.ERROR) {
-				log.Error(cssALS(fmt.Sprintf("unable to verify identity %v, error %v", appKey, err)))
+		// Agbots are admins by default. If an error is returned, check if the identity is a user.
+		if err := auth.verifyAgbotIdentity(parts[1], parts[0], appSecret, ExchangeURL()); err == nil {
+			// We have a valid agbot identity. Agbots only call a few of the APIs. Verify that it's one of these:
+			// org - this is the API used to query for object policies
+			if !strings.Contains(otherOrg, "/") {
+				authCode = security.AuthAdmin
+				authOrg = otherOrg
+				authId = parts[1]
 			}
-		} else if admin {
-			authCode = security.AuthAdmin
-			authOrg = parts[0]
-			authId = parts[1]
+
 		} else {
-			authCode = security.AuthUser
-			authOrg = parts[0]
-			authId = parts[1]
+			// Check if the identity is a user, since we know its not an agbot.
+			if trace.IsLogging(logger.WARNING) {
+				log.Warning(cssALS(fmt.Sprintf("unable to verify identity %v as agbot, error %v", appKey, err)))
+			}
+			if trace.IsLogging(logger.TRACE) {
+				trace.Debug(cssALS(fmt.Sprintf("attempting authentication request as a user %v", appKey)))
+			}
+			if admin, err := auth.verifyUserIdentity(parts[1], parts[0], appSecret, ExchangeURL()); err != nil {
+				if log.IsLogging(logger.ERROR) {
+					log.Error(cssALS(fmt.Sprintf("unable to verify identity %v as user, error %v", appKey, err)))
+				}
+			} else if admin {
+				authCode = security.AuthAdmin
+				authOrg = parts[0]
+				authId = parts[1]
+			} else {
+				authCode = security.AuthUser
+				authOrg = parts[0]
+				authId = parts[1]
+			}
 		}
+
 	} else {
 		if log.IsLogging(logger.ERROR) {
-			log.Error(cssALS(fmt.Sprintf("request identity %v is not in a supported format, must be either <org>/<destination type>/<destination id> for a node, or <org>/<user id> for a user.", appKey)))
+			log.Error(cssALS(fmt.Sprintf("request identity %v is not in a supported format, must be either <org>/<destination type>/<destination id> for a node, <org>/<agbot id> for an agbot, or <org>/<user id> for a user.", appKey)))
 		}
 	}
 
@@ -241,19 +263,67 @@ func (auth *HorizonAuthenticate) verifyUserIdentity(id string, orgId string, app
 			return false, errors.New(fmt.Sprintf("unable to verify user %v in the exchange, HTTP code %v", user, resp.StatusCode))
 		}
 	} else {
-		users := new(GetUsersResponse)
 
-		// Read in the response object and check if this user is an admin or not.
-		if outBytes, err := ioutil.ReadAll(resp.Body); err != nil {
+		// Read in the response object to clear out the socket and then return true because the user is known to be valid.
+		if _, err := ioutil.ReadAll(resp.Body); err != nil {
 			return false, errors.New(fmt.Sprintf("unable to read HTTP response to %v, error %v", apiMsg, err))
-		} else if err := json.Unmarshal(outBytes, users); err != nil {
-			return false, errors.New(fmt.Sprintf("unable to demarshal response %v from %v, error %v", string(outBytes), apiMsg, err))
-		} else if exUserDef, ok := users.Users[user]; !ok {
-			return false, errors.New(fmt.Sprintf("user %v was not returned in response to %v", user, apiMsg))
-		} else if exUserDef.Admin {
-			return true, nil
+		}
+		return true, nil
+
+	}
+}
+
+type GetAgbotsResponse struct {
+	Agbots     map[string]UserDefinition `json:"agbots"`
+	LastIndex int                       `json:"lastIndex"`
+}
+
+// Returns nil for agbots, and error otherwise.
+func (auth *HorizonAuthenticate) verifyAgbotIdentity(id string, orgId string, appSecret string, exURL string) error {
+
+	// Log which API we're about to use.
+	url := fmt.Sprintf("%v/orgs/%v/agbots/%v", exURL, orgId, id)
+	apiMsg := fmt.Sprintf("%v %v", http.MethodGet, url)
+	if trace.IsLogging(logger.TRACE) {
+		trace.Debug(cssALS(fmt.Sprintf("checking exchange %v", apiMsg)))
+	}
+
+	// Invoke the exchange API to verify the user.
+	agbot := fmt.Sprintf("%v/%v", orgId, id)
+	resp, err := auth.invokeExchange(url, agbot, appSecret)
+
+	// Make sure the response reader is closed if we exit quickly.
+	defer resp.Body.Close()
+
+	// If there was an error invoking the HTTP API, return it.
+	if err != nil {
+		return err
+	}
+
+	// Log the HTTP response code.
+	if trace.IsLogging(logger.TRACE) {
+		trace.Debug(cssALS(fmt.Sprintf("received HTTP code: %d", resp.StatusCode)))
+	}
+
+	// If the response code was not expected, then return the error.
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		if resp.StatusCode == 401 {
+			return errors.New(fmt.Sprintf("unable to verify agbot %v in the exchange, HTTP code %v, either the agbot is undefined or the agbot's token is incorrect.", agbot, resp.StatusCode))
 		} else {
-			return false, nil
+			return errors.New(fmt.Sprintf("unable to verify agbot %v in the exchange, HTTP code %v", agbot, resp.StatusCode))
+		}
+	} else {
+		agbots := new(GetAgbotsResponse)
+
+		// Read in the response object and check if this is an agbot or not.
+		if outBytes, err := ioutil.ReadAll(resp.Body); err != nil {
+			return errors.New(fmt.Sprintf("unable to read HTTP response to %v, error %v", apiMsg, err))
+		} else if err := json.Unmarshal(outBytes, agbots); err != nil {
+			return errors.New(fmt.Sprintf("unable to demarshal response %v from %v, error %v", string(outBytes), apiMsg, err))
+		} else if _, ok := agbots.Agbots[agbot]; !ok {
+			return errors.New(fmt.Sprintf("agbot %v was not returned in response to %v", agbot, apiMsg))
+		} else {
+			return nil
 		}
 
 	}
