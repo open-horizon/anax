@@ -107,6 +107,7 @@ type Worker interface {
 	GetExchangeId() string
 	GetExchangeToken() string
 	GetExchangeURL() string
+	GetCSSURL() string
 	GetHTTPFactory() *config.HTTPClientFactory
 }
 
@@ -114,14 +115,16 @@ type BaseExchangeContext struct {
 	Id          string
 	Token       string
 	URL         string
+	CSSURL      string
 	HTTPFactory *config.HTTPClientFactory
 }
 
-func NewExchangeContext(id string, token string, url string, httpFactory *config.HTTPClientFactory) *BaseExchangeContext {
+func NewExchangeContext(id string, token string, url string, cssurl string, httpFactory *config.HTTPClientFactory) *BaseExchangeContext {
 	return &BaseExchangeContext{
 		Id:          id,
 		Token:       token,
 		URL:         url,
+		CSSURL:      cssurl,
 		HTTPFactory: httpFactory,
 	}
 }
@@ -146,6 +149,14 @@ func (w *BaseWorker) GetExchangeToken() string {
 func (w *BaseWorker) GetExchangeURL() string {
 	if w.EC != nil {
 		return w.EC.URL
+	} else {
+		return ""
+	}
+}
+
+func (w *BaseWorker) GetCSSURL() string {
+	if w.EC != nil {
+		return w.EC.CSSURL
 	} else {
 		return ""
 	}

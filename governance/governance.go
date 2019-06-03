@@ -61,7 +61,7 @@ func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm
 	var ec *worker.BaseExchangeContext
 	pattern := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
-		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, cfg.Edge.ExchangeURL, cfg.Collaborators.HTTPClientFactory)
+		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, cfg.Edge.ExchangeURL, cfg.GetCSSURL(), cfg.Collaborators.HTTPClientFactory)
 		pattern = dev.Pattern
 	}
 
@@ -90,7 +90,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 	switch incoming.(type) {
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
-		w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.Config.Collaborators.HTTPClientFactory)
+		w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.Config.GetCSSURL(), w.Config.Collaborators.HTTPClientFactory)
 		w.devicePattern = msg.Pattern()
 
 	case *events.EdgeConfigCompleteMessage:

@@ -5,13 +5,14 @@ import (
 	"github.com/open-horizon/anax/policy"
 )
 
-// The handlers module defines replaceable functions that represent the exchange API's external dependencies. These
+// The handlers module defines replaceable functions that represent the exchange and CSS API's external dependencies. These
 // handlers can be replaced by unit or integration tests to mock the external dependency.
 
 type ExchangeContext interface {
 	GetExchangeId() string
 	GetExchangeToken() string
 	GetExchangeURL() string
+	GetCSSURL() string
 	GetHTTPFactory() *config.HTTPClientFactory
 }
 
@@ -227,5 +228,41 @@ type BusinessPoliciesHandler func(org string, policy_id string) (map[string]Exch
 func GetHTTPBusinessPoliciesHandler(ec ExchangeContext) BusinessPoliciesHandler {
 	return func(org string, policy_id string) (map[string]ExchangeBusinessPolicy, error) {
 		return GetBusinessPolicies(ec, org, policy_id)
+	}
+}
+
+// A handler for getting the policy of objects in the Model Management System.
+type ObjectPolicyQueryHandler func(org string, serviceId string) (*ObjectDestinationPolicies, error)
+
+func GetHTTPObjectPolicyQueryHandler(ec ExchangeContext) ObjectPolicyQueryHandler {
+	return func(org string, serviceId string) (*ObjectDestinationPolicies, error) {
+		return GetObjectsByService(ec, org, serviceId)
+	}
+}
+
+// A handler for updating the list of object destinations in the Model Management System.
+type UpdateObjectDestinationHandler func(org string, objPol *ObjectDestinationPolicy, dests *PutDestinationListRequest) error
+
+func GetHTTPUpdateObjectDestinationHandler(ec ExchangeContext) UpdateObjectDestinationHandler {
+	return func(org string, objPol *ObjectDestinationPolicy, dests *PutDestinationListRequest) error {
+		return UpdateObjectDestinationList(ec, org, objPol, dests)
+	}
+}
+
+// A handler for getting new policy for objects in the Model Management System.
+type ObjectPolicyUpdatesQueryHandler func(org string, firstTime bool) (*ObjectDestinationPolicies, error)
+
+func GetHTTPObjectPolicyUpdatesQueryHandler(ec ExchangeContext) ObjectPolicyUpdatesQueryHandler {
+	return func(org string, firstTime bool) (*ObjectDestinationPolicies, error) {
+		return GetUpdatedObjects(ec, org, firstTime)
+	}
+}
+
+// A handler for telling the Model Management System that a policy update has been received.
+type ObjectPolicyUpdateReceivedHandler func(objPol *ObjectDestinationPolicy) error
+
+func GetHTTPObjectPolicyUpdateReceivedHandler(ec ExchangeContext) ObjectPolicyUpdateReceivedHandler {
+	return func(objPol *ObjectDestinationPolicy) error {
+		return SetPolicyReceived(ec, objPol)
 	}
 }

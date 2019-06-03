@@ -16,6 +16,7 @@ import (
 	"github.com/open-horizon/anax/worker"
 	"math/rand"
 	"net/http"
+	"strings"
 )
 
 // These structs are the event bodies that flow from the processor to the agreement workers
@@ -150,6 +151,7 @@ type BaseAgreementWorker struct {
 	workerID   string
 	httpClient *http.Client
 	ec         *worker.BaseExchangeContext
+	mmsObjMgr  *MMSObjectPolicyManager
 }
 
 // A local implementation of the ExchangeContext interface because Agbot agreement workers are not full featured workers.
@@ -172,6 +174,14 @@ func (b *BaseAgreementWorker) GetExchangeToken() string {
 func (b *BaseAgreementWorker) GetExchangeURL() string {
 	if b.ec != nil {
 		return b.ec.URL
+	} else {
+		return ""
+	}
+}
+
+func (b *BaseAgreementWorker) GetCSSURL() string {
+	if b.ec != nil {
+		return b.ec.CSSURL
 	} else {
 		return ""
 	}
@@ -324,7 +334,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			}
 		}
 
-		// check if merged producier policy matches the consumer policy
+		// check if merged producer policy matches the consumer policy
 		if wi.ConsumerPolicy.PatternId != "" {
 			mergedProducer, err := b.GetMergedProducerPolicyForPattern(wi.Device.Id, exchangeDev, *asl)
 			if err != nil {
@@ -464,7 +474,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	}
 
 	// Create pending agreement in database
-	if err := b.db.AgreementAttempt(agreementIdString, wi.Org, wi.Device.Id, wi.ConsumerPolicy.Header.Name, bcType, bcName, bcOrg, cph.Name(), wi.ConsumerPolicy.PatternId, svcId, wi.ConsumerPolicy.NodeH); err != nil {
+	if err := b.db.AgreementAttempt(agreementIdString, wi.Org, wi.Device.Id, wi.ConsumerPolicy.Header.Name, bcType, bcName, bcOrg, cph.Name(), wi.ConsumerPolicy.PatternId, []string{svcId}, wi.ConsumerPolicy.NodeH); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error persisting agreement attempt: %v", err)))
 
 		// Create message target for protocol message
@@ -686,6 +696,41 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 				if _, err := b.db.UpdateWUAgreementId(wi.SenderId, consumerPolicy.Header.Name, reply.AgreementId(), cph.Name()); err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error updating agreement id %v in workload usage for %v for policy %v, error: %v", reply.AgreementId(), wi.SenderId, consumerPolicy.Header.Name, err)))
 				}
+			}
+
+			// Both parties have agreed on the proposal, so now we need to scan the MMS object cache and find any objects that should be deployed
+			// on this node.
+
+			// For the purposes of compatibility, skip this function if the agbot config has not been updated to point to the CSS.
+			// Only non-pattern based agreements can use MMS object policy.
+			if b.GetCSSURL() != "" && agreement.Pattern == "" {
+
+				// Retrieve the node policy.
+				nodePolicy, err := b.GetNodePolicy(agreement.DeviceId)
+				if err != nil {
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
+				} else if nodePolicy == nil {
+					glog.Warning(BAWlogstring(workerId, fmt.Sprintf("cannot find node policy for this node %v.", agreement.DeviceId)))
+				} else {
+					glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
+				}
+
+				// Query the CSS (Model Management System) to find objects with policies that refer to the agreed-to service(s). Service IDs are
+				// a concatenation of org '/' service name, hardware architecture and version, separated by underscores. We only need the
+				// org/service-name part, which is the first piece.
+				for _, serviceId := range agreement.ServiceId {
+
+					serviceNamePieces := strings.SplitN(serviceId, "_", 2)
+
+					objPolicies := b.mmsObjMgr.GetObjectPolicies(agreement.Org, serviceNamePieces[0])
+
+					if err := AssignObjectToNode(b, objPolicies, agreement.DeviceId, nodePolicy); err != nil {
+						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to assign object(s) to node %v, error %v", agreement.DeviceId, err)))
+					}
+
+				}
+			} else {
+				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to evaluate object placement because there is no CSS URL configured in this agbot")))
 			}
 
 			// Send the reply Ack if it's still valid.

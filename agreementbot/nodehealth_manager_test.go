@@ -245,16 +245,16 @@ func Test_SetNodeOrgs(t *testing.T) {
 		t.Errorf("patterns map should be empty")
 	}
 
-	ag1, _ := persistence.NewAgreement("agreement_id1", "pattern_org1", "node_org1/device1", "", "", "", "", "basic", "pattern_org1/sall", "", policy.NodeHealth{})
-	ag2, _ := persistence.NewAgreement("agreement_id2", "pattern_org1", "node_org1/device2", "", "", "", "", "basic", "pattern_org1/sall", "", policy.NodeHealth{})
-	ag3, _ := persistence.NewAgreement("agreement_id3", "pattern_org1", "node_org2/device1", "", "", "", "", "basic", "pattern_org1/sall", "", policy.NodeHealth{})
-	ag4, _ := persistence.NewAgreement("agreement_id4", "pattern_org1", "node_org2/device2", "", "", "", "", "basic", "pattern_org1/sall", "", policy.NodeHealth{})
-	ag5, _ := persistence.NewAgreement("agreement_id5", "pattern_org2", "node_org1/device1", "", "", "", "", "basic", "pattern_org2/sall", "", policy.NodeHealth{})
-	ag6, _ := persistence.NewAgreement("agreement_id6", "pattern_org2", "node_org1/device1", "", "", "", "", "basic", "pattern_org2/sall", "", policy.NodeHealth{})
-	ag7, _ := persistence.NewAgreement("agreement_id7", "pattern_org1", "node_org1/device2", "", "", "", "", "basic", "pattern_org1/netspeed", "", policy.NodeHealth{})
-	ag8, _ := persistence.NewAgreement("agreement_id8", "pattern_org1", "node_org2/device2", "", "", "", "", "basic", "pattern_org1/netspeed", "", policy.NodeHealth{})
-	ag9, _ := persistence.NewAgreement("agreement_id9", "org1", "node_org2/device3", "", "", "", "", "basic", "", "", policy.NodeHealth{})
-	ag10, _ := persistence.NewAgreement("agreement_id10", "org1", "node_org3/device3", "", "", "", "", "basic", "", "", policy.NodeHealth{})
+	ag1, _ := persistence.NewAgreement("agreement_id1", "pattern_org1", "node_org1/device1", "", "", "", "", "basic", "pattern_org1/sall", []string{""}, policy.NodeHealth{})
+	ag2, _ := persistence.NewAgreement("agreement_id2", "pattern_org1", "node_org1/device2", "", "", "", "", "basic", "pattern_org1/sall", []string{""}, policy.NodeHealth{})
+	ag3, _ := persistence.NewAgreement("agreement_id3", "pattern_org1", "node_org2/device1", "", "", "", "", "basic", "pattern_org1/sall", []string{""}, policy.NodeHealth{})
+	ag4, _ := persistence.NewAgreement("agreement_id4", "pattern_org1", "node_org2/device2", "", "", "", "", "basic", "pattern_org1/sall", []string{""}, policy.NodeHealth{})
+	ag5, _ := persistence.NewAgreement("agreement_id5", "pattern_org2", "node_org1/device1", "", "", "", "", "basic", "pattern_org2/sall", []string{""}, policy.NodeHealth{})
+	ag6, _ := persistence.NewAgreement("agreement_id6", "pattern_org2", "node_org1/device1", "", "", "", "", "basic", "pattern_org2/sall", []string{""}, policy.NodeHealth{})
+	ag7, _ := persistence.NewAgreement("agreement_id7", "pattern_org1", "node_org1/device2", "", "", "", "", "basic", "pattern_org1/netspeed", []string{""}, policy.NodeHealth{})
+	ag8, _ := persistence.NewAgreement("agreement_id8", "pattern_org1", "node_org2/device2", "", "", "", "", "basic", "pattern_org1/netspeed", []string{""}, policy.NodeHealth{})
+	ag9, _ := persistence.NewAgreement("agreement_id9", "org1", "node_org2/device3", "", "", "", "", "basic", "", []string{""}, policy.NodeHealth{})
+	ag10, _ := persistence.NewAgreement("agreement_id10", "org1", "node_org3/device3", "", "", "", "", "basic", "", []string{""}, policy.NodeHealth{})
 
 	agreements := []persistence.Agreement{*ag1, *ag2, *ag3, *ag4, *ag5, *ag6, *ag7, *ag8, *ag9, *ag10}
 

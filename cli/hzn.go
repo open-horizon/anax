@@ -408,6 +408,7 @@ Environment Variables:
 	mmsObjectListCmd := mmsObjectCmd.Command("list", "List objects in the Horizon Model Management Service.")
 	mmsObjectListType := mmsObjectListCmd.Flag("type", "The type of the object to list.").Short('t').Required().String()
 	mmsObjectListId := mmsObjectListCmd.Flag("id", "The id of the object to list.").Short('i').Required().String()
+	mmsObjectListDetail := mmsObjectListCmd.Flag("detail", "Provides additional detail about the deployment of the object on edge nodes.").Short('d').Bool()
 	mmsObjectNewCmd := mmsObjectCmd.Command("new", "Display an empty object metadata template that can be filled in and passed as the -m option on the 'hzn mms object publish' command.")
 	mmsObjectPublishCmd := mmsObjectCmd.Command("publish", "Publish an object in the Horizon Model Management Service, making it available for services deployed on nodes.")
 	mmsObjectPublishType := mmsObjectPublishCmd.Flag("type", "The type of the object to publish. This flag must be used with -i. It is mutually exclusive with -m").Short('t').String()
@@ -692,7 +693,7 @@ Environment Variables:
 	case mmsStatusCmd.FullCommand():
 		sync_service.Status(*mmsOrg, *mmsUserPw)
 	case mmsObjectListCmd.FullCommand():
-		sync_service.ObjectList(*mmsOrg, *mmsUserPw, *mmsObjectListType, *mmsObjectListId)
+		sync_service.ObjectList(*mmsOrg, *mmsUserPw, *mmsObjectListType, *mmsObjectListId, *mmsObjectListDetail)
 	case mmsObjectNewCmd.FullCommand():
 		sync_service.ObjectNew(*mmsOrg)
 	case mmsObjectPublishCmd.FullCommand():

@@ -89,6 +89,8 @@ type AGConfig struct {
 	APIListen                     string           // Host and port for the API to listen on
 	PurgeArchivedAgreementHours   int              // Number of hours to leave an archived agreement in the database before automatically deleting it
 	CheckUpdatedPolicyS           int              // The number of seconds to wait between checks for an updated policy file. Zero means auto checking is turned off.
+	CSSURL                        string           // The URL used to access the CSS.
+	CSSSSLCert                    string           // The path to the client side SSL certificate for the CSS.
 }
 
 func (c *HorizonConfig) UserPublicKeyPath() string {
@@ -117,6 +119,14 @@ func (c *HorizonConfig) GetPartitionStale() uint64 {
 	} else {
 		return c.AgreementBot.PartitionStale
 	}
+}
+
+func (c *HorizonConfig) GetAgbotCSSURL() string {
+	return strings.TrimRight(c.AgreementBot.CSSURL, "/")
+}
+
+func (c *HorizonConfig) GetAgbotCSSCert() string {
+	return c.AgreementBot.CSSSSLCert
 }
 
 func getDefaultBase() string {
@@ -245,5 +255,40 @@ func (con *Config) String() string {
 
 func (agc *AGConfig) String() string {
 	mask := "******"
-	return fmt.Sprintf("TxLostDelayTolerationSeconds: %v, AgreementWorkers: %v, DBPath: %v, Postgresql: {%v}, PartitionStale: %v, ProtocolTimeoutS: %v, AgreementTimeoutS: %v, NoDataIntervalS: %v, ActiveAgreementsURL: %v, ActiveAgreementsUser: %v, ActiveAgreementsPW: %v, PolicyPath: %v, NewContractIntervalS: %v, ProcessGovernanceIntervalS: %v, IgnoreContractWithAttribs: %v, ExchangeURL: %v, ExchangeHeartbeat: %v, ExchangeVersionCheckIntervalM: %v, ExchangeId: %v, ExchangeToken: %v, DVPrefix: %v, ActiveDeviceTimeoutS: %v, ExchangeMessageTTL: %v, MessageKeyPath: %v, DefaultWorkloadPW: %v, APIListen: %v, PurgeArchivedAgreementHours: %v, CheckUpdatedPolicyS: %v", agc.TxLostDelayTolerationSeconds, agc.AgreementWorkers, agc.DBPath, agc.Postgresql.String(), agc.PartitionStale, agc.ProtocolTimeoutS, agc.AgreementTimeoutS, agc.NoDataIntervalS, agc.ActiveAgreementsURL, agc.ActiveAgreementsUser, mask, agc.PolicyPath, agc.NewContractIntervalS, agc.ProcessGovernanceIntervalS, agc.IgnoreContractWithAttribs, agc.ExchangeURL, agc.ExchangeHeartbeat, agc.ExchangeVersionCheckIntervalM, agc.ExchangeId, mask, agc.DVPrefix, agc.ActiveDeviceTimeoutS, agc.ExchangeMessageTTL, agc.MessageKeyPath, mask, agc.APIListen, agc.PurgeArchivedAgreementHours, agc.CheckUpdatedPolicyS)
+	return fmt.Sprintf("TxLostDelayTolerationSeconds: %v" +
+		", AgreementWorkers: %v" +
+		", DBPath: %v" +
+		", Postgresql: {%v}" +
+		", PartitionStale: %v" +
+		", ProtocolTimeoutS: %v" +
+		", AgreementTimeoutS: %v" +
+		", NoDataIntervalS: %v" +
+		", ActiveAgreementsURL: %v" +
+		", ActiveAgreementsUser: %v" +
+		", ActiveAgreementsPW: %v" +
+		", PolicyPath: %v" +
+		", NewContractIntervalS: %v" +
+		", ProcessGovernanceIntervalS: %v" +
+		", IgnoreContractWithAttribs: %v" +
+		", ExchangeURL: %v" +
+		", ExchangeHeartbeat: %v" +
+		", ExchangeVersionCheckIntervalM: %v" +
+		", ExchangeId: %v" +
+		", ExchangeToken: %v" +
+		", DVPrefix: %v" +
+		", ActiveDeviceTimeoutS: %v" +
+		", ExchangeMessageTTL: %v" +
+		", MessageKeyPath: %v" +
+		", DefaultWorkloadPW: %v" +
+		", APIListen: %v" +
+		", PurgeArchivedAgreementHours: %v" +
+		", CheckUpdatedPolicyS: %v" +
+		", CSSURL: %v" +
+		", CSSSSLCert: %v",
+		agc.TxLostDelayTolerationSeconds, agc.AgreementWorkers, agc.DBPath, agc.Postgresql.String(),
+		agc.PartitionStale, agc.ProtocolTimeoutS, agc.AgreementTimeoutS, agc.NoDataIntervalS, agc.ActiveAgreementsURL,
+		agc.ActiveAgreementsUser, mask, agc.PolicyPath, agc.NewContractIntervalS, agc.ProcessGovernanceIntervalS,
+		agc.IgnoreContractWithAttribs, agc.ExchangeURL, agc.ExchangeHeartbeat, agc.ExchangeVersionCheckIntervalM, agc.ExchangeId,
+		mask, agc.DVPrefix, agc.ActiveDeviceTimeoutS, agc.ExchangeMessageTTL, agc.MessageKeyPath, mask, agc.APIListen,
+		agc.PurgeArchivedAgreementHours, agc.CheckUpdatedPolicyS, agc.CSSURL, agc.CSSSSLCert)
 }
