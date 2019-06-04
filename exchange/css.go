@@ -7,7 +7,7 @@ import (
 	"github.com/open-horizon/edge-sync-service/common"
 	"path"
 	"time"
-	)
+)
 
 // These structs are mirrors of similar structs in the edge-sync-service library. They are mirrored here
 // so that we can use our types when demarhsalling them, which enables us to perform compatibility checks
@@ -61,7 +61,7 @@ func GetObjectsByService(ec ExchangeContext, org string, serviceId string) (*Obj
 
 	url := path.Join("/api/v1/objects", org)
 	url = ec.GetCSSURL() + url + fmt.Sprintf("?destination_policy=true&service=%v", serviceId)
-		
+
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
@@ -90,7 +90,7 @@ func GetUpdatedObjects(ec ExchangeContext, org string, firstTime bool) (*ObjectD
 	if firstTime {
 		url = url + "&received=true"
 	}
-		
+
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))

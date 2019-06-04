@@ -4,10 +4,10 @@ package agreementbot
 
 import (
 	"flag"
-	"github.com/open-horizon/edge-sync-service/common"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
+	"github.com/open-horizon/edge-sync-service/common"
 	"testing"
 )
 
@@ -20,14 +20,14 @@ func init() {
 func Test_object_policy_entry_success1(t *testing.T) {
 
 	p := &exchange.ObjectDestinationPolicy{
-		OrgID: "org1",
+		OrgID:      "org1",
 		ObjectType: "type1",
-		ObjectID: "obj1",
+		ObjectID:   "obj1",
 		DestinationPolicy: exchange.DestinationPolicy{
-			Properties: externalpolicy.PropertyList{},
+			Properties:  externalpolicy.PropertyList{},
 			Constraints: externalpolicy.ConstraintExpression{},
-			Services: []common.ServiceID{},
-			Timestamp: 1,
+			Services:    []common.ServiceID{},
+			Timestamp:   1,
 		},
 	}
 
@@ -107,54 +107,54 @@ func Test_object_manager_setorgs2(t *testing.T) {
 	}
 
 	sid1 := common.ServiceID{
-		OrgID: myorg3,
-		Arch: "amd64",
+		OrgID:       myorg3,
+		Arch:        "amd64",
 		ServiceName: "myservice.com",
-		Version: "1.0.0",
+		Version:     "1.0.0",
 	}
 
 	p1 := exchange.ObjectDestinationPolicy{
-		OrgID: myorg1,
+		OrgID:      myorg1,
 		ObjectType: "type1",
-		ObjectID: "obj1",
+		ObjectID:   "obj1",
 		DestinationPolicy: exchange.DestinationPolicy{
-			Properties: externalpolicy.PropertyList{},
+			Properties:  externalpolicy.PropertyList{},
 			Constraints: externalpolicy.ConstraintExpression{},
-			Services: []common.ServiceID{sid1},
-			Timestamp: 1,
+			Services:    []common.ServiceID{sid1},
+			Timestamp:   1,
 		},
 	}
 
 	p1a := exchange.ObjectDestinationPolicy{
-		OrgID: myorg1,
+		OrgID:      myorg1,
 		ObjectType: "type2",
-		ObjectID: "obj2",
+		ObjectID:   "obj2",
 		DestinationPolicy: exchange.DestinationPolicy{
-			Properties: externalpolicy.PropertyList{},
+			Properties:  externalpolicy.PropertyList{},
 			Constraints: externalpolicy.ConstraintExpression{},
-			Services: []common.ServiceID{sid1},
-			Timestamp: 1,
+			Services:    []common.ServiceID{sid1},
+			Timestamp:   1,
 		},
 	}
 
 	objPolicies1 := &exchange.ObjectDestinationPolicies{p1, p1a}
 
 	sid2 := common.ServiceID{
-		OrgID: myorg3,
-		Arch: "amd64",
+		OrgID:       myorg3,
+		Arch:        "amd64",
 		ServiceName: "otherservice.com",
-		Version: "1.0.0",
+		Version:     "1.0.0",
 	}
 
 	p2 := exchange.ObjectDestinationPolicy{
-		OrgID: myorg2,
+		OrgID:      myorg2,
 		ObjectType: "type1",
-		ObjectID: "obj1",
+		ObjectID:   "obj1",
 		DestinationPolicy: exchange.DestinationPolicy{
-			Properties: externalpolicy.PropertyList{},
+			Properties:  externalpolicy.PropertyList{},
 			Constraints: externalpolicy.ConstraintExpression{},
-			Services: []common.ServiceID{sid2},
-			Timestamp: 1,
+			Services:    []common.ServiceID{sid2},
+			Timestamp:   1,
 		},
 	}
 
@@ -217,38 +217,38 @@ func Test_object_manager_replace1(t *testing.T) {
 	}
 
 	sid1 := common.ServiceID{
-		OrgID: myorg3,
-		Arch: "amd64",
+		OrgID:       myorg3,
+		Arch:        "amd64",
 		ServiceName: "myservice.com",
-		Version: "1.0.0",
+		Version:     "1.0.0",
 	}
 
 	p1 := exchange.ObjectDestinationPolicy{
-		OrgID: myorg1,
+		OrgID:      myorg1,
 		ObjectType: "type1",
-		ObjectID: "obj1",
+		ObjectID:   "obj1",
 		DestinationPolicy: exchange.DestinationPolicy{
-			Properties: externalpolicy.PropertyList{},
+			Properties:  externalpolicy.PropertyList{},
 			Constraints: externalpolicy.ConstraintExpression{},
-			Services: []common.ServiceID{sid1},
-			Timestamp: 1,
+			Services:    []common.ServiceID{sid1},
+			Timestamp:   1,
 		},
 	}
 
 	p2 := exchange.ObjectDestinationPolicy{
-		OrgID: myorg1,
+		OrgID:      myorg1,
 		ObjectType: "type1",
-		ObjectID: "obj1",
+		ObjectID:   "obj1",
 		DestinationPolicy: exchange.DestinationPolicy{
 			Properties: externalpolicy.PropertyList{
 				externalpolicy.Property{
-					Name: "test",
+					Name:  "test",
 					Value: "testvalue",
 				},
 			},
 			Constraints: externalpolicy.ConstraintExpression{},
-			Services: []common.ServiceID{sid1},
-			Timestamp: 2,
+			Services:    []common.ServiceID{sid1},
+			Timestamp:   2,
 		},
 	}
 

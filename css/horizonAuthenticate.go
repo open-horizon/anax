@@ -274,7 +274,7 @@ func (auth *HorizonAuthenticate) verifyUserIdentity(id string, orgId string, app
 }
 
 type GetAgbotsResponse struct {
-	Agbots     map[string]UserDefinition `json:"agbots"`
+	Agbots    map[string]UserDefinition `json:"agbots"`
 	LastIndex int                       `json:"lastIndex"`
 }
 
