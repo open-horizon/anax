@@ -106,7 +106,7 @@ func GetNodePolicy(ec ExchangeContext, deviceId string) (*ExchangePolicy, error)
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("returning node policy for %v.", deviceId)))
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("returning node policy %v for %v.", resp, deviceId)))
 			nodePolicy := resp.(*ExchangePolicy)
 			if nodePolicy.GetLastUpdated() == "" {
 				return nil, nil

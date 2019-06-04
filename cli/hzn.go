@@ -254,14 +254,15 @@ Environment Variables:
 
 	registerCmd := app.Command("register", "Register this edge node with Horizon.")
 	nodeIdTok := registerCmd.Flag("node-id-tok", "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. If both -n and HZN_EXCHANGE_NODE_AUTH are not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.").Short('n').PlaceHolder("ID:TOK").String()
+	nodeName := registerCmd.Flag("name", "The name of the node. If not specified, it will be the same as the node id.").Short('m').String()
 	userPw := registerCmd.Flag("user-pw", "User credentials to create the node resource in the Horizon exchange if it does not already exist. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default.").Short('u').PlaceHolder("USER:PW").String()
 	email := registerCmd.Flag("email", "Your email address. Only needs to be specified if: the node resource does not yet exist in the Horizon exchange, and the user specified in the -u flag does not exist, and you specified the 'public' org. If all of these things are true we will create the user and include this value as the email attribute.").Short('e').String()
 	inputFile := registerCmd.Flag("input-file", "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See /usr/horizon/samples/input.json and /usr/horizon/samples/more-examples.json. Specify -f- to read from stdin.").Short('f').String() // not using ExistingFile() because it can be - for stdin
 	nodeOrgFlag := registerCmd.Flag("nodeorg", "The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.").Short('o').String()
-	patternFlag := registerCmd.Flag("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments. ").Short('p').String()
-	nodeName := registerCmd.Flag("name", "The name of your name.").Short('m').String()
+	patternFlag := registerCmd.Flag("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments and --policy flag. ").Short('p').String()
+	nodepolicyFlag := registerCmd.Flag("policy", "A JSON file that sets or overrides the node policy for this node that will be used for agreement negotiation for non-pattern case. Specify -f- to read from stdin. Mutually exclusive with -p and <pattern> argument.").String()
 	org := registerCmd.Arg("nodeorg", "The Horizon exchange organization ID that the node should be registered in. Mutually exclusive with -o and -p.").String()
-	pattern := registerCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o and -p.").String()
+	pattern := registerCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o, -p and --policy.").String()
 
 	keyCmd := app.Command("key", "List and manage keys for signing and verifying services.")
 	keyListCmd := keyCmd.Command("list", "List the signing keys that have been imported into this Horizon agent.")
@@ -618,7 +619,7 @@ Environment Variables:
 	case regInputCmd.FullCommand():
 		register.CreateInputFile(*regInputOrg, *regInputPattern, *regInputArch, *regInputNodeIdTok, *regInputInputFile)
 	case registerCmd.FullCommand():
-		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *email, *inputFile, *nodeOrgFlag, *patternFlag, *nodeName)
+		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *email, *inputFile, *nodeOrgFlag, *patternFlag, *nodeName, *nodepolicyFlag)
 	case keyListCmd.FullCommand():
 		key.List(*keyName, *keyListAll)
 	case keyCreateCmd.FullCommand():
