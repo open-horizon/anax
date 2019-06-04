@@ -19,7 +19,7 @@ const SERVICE_VERIFY_COMMAND = "verify"
 const SERVICE_NEW_DEFAULT_VERSION = "0.0.1"
 
 // Create skeletal horizon metadata files to establish a new service project.
-func ServiceNew(homeDirectory string, org string, specRef string, version string, images []string, noImageGen bool, dconfig string, noPattern bool) {
+func ServiceNew(homeDirectory string, org string, specRef string, version string, images []string, noImageGen bool, dconfig string, noPattern bool, noPolicy bool) {
 
 	// validate the parameters
 	dir, err := verifyNewServiceInputs(homeDirectory, org, specRef, version, images, noImageGen, dconfig, noPattern)
@@ -96,6 +96,15 @@ func ServiceNew(homeDirectory string, org string, specRef string, version string
 		}
 		cliutils.Verbose(fmt.Sprintf("Creating pattern definition file: %v/%v", dir, PATTERN_DEFINITION_ALL_ARCHES_FILE))
 		err = CreatePatternDefinitionAllArches(dir)
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
+		}
+	}
+
+	// Create default service policy file
+	if !noPolicy {
+		cliutils.Verbose(fmt.Sprintf("Creating service policy file: %v/%v", dir, SERVICE_POLICY_FILE))
+		err = CreateServicePolicy(dir)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
 		}

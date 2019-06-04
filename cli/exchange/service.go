@@ -75,6 +75,11 @@ type ServiceDockAuthExch struct {
 	Token    string `json:"token"`
 }
 
+type ServicePolicyFile struct {
+	Properties  externalpolicy.PropertyList         `json:"properties"`
+	Constraints externalpolicy.ConstraintExpression `json:"constraints"`
+}
+
 func (sf *ServiceFile) GetOrg() string {
 	return sf.Org
 }
@@ -471,6 +476,30 @@ func ServiceUpdatePolicy(org string, credToUse string, service string, jsonFileP
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Incorrect policy format in file %s: %v", jsonFilePath, err)
 	}
 
+	// Set default built in properties before publishing to the exchange
+	properties := policyFile.Properties
+	for i, property := range properties {
+		// remove the {"name":"prop1", "value":"value1"} from the generated service.policy.json template and set defualt built in properties
+		if property.Name == "prop1" {
+			properties = append(properties[:i], properties[i+1:]...)
+		}
+
+	}
+
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_URL, "$SERVICE_NAME"), false)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_NAME, "$SERVICE_NAME"), false)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ORG, "$HZN_ORG_ID"), false)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_VERSION, "$SERVICE_VERSION"), false)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ARCH, "$ARCH"), false)
+
+	policyFile.Properties = properties
+
+	//Check the policy file format again
+	err = policyFile.Validate()
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Incorrect policy format in file %s: %v", jsonFilePath, err)
+	}
+
 	// Check that the service exists
 	var services ServiceExch
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
@@ -478,7 +507,7 @@ func ServiceUpdatePolicy(org string, credToUse string, service string, jsonFileP
 		cliutils.Fatal(cliutils.NOT_FOUND, "service '%v/%v' not found.", org, service)
 	}
 
-	// add/replce service policy
+	// add/replace service policy
 	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
 
 	fmt.Println("Service policy updated.")

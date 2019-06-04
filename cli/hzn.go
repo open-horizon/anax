@@ -348,6 +348,7 @@ Environment Variables:
 	devServiceNewCmdImage := devServiceNewCmd.Flag("image", "The docker container image base name without the version tag for the service. This command will add arch and version to the base name to form the final image name. The format is 'basename_arch:serviceversion'. This flag can be repeated to specify multiple images when '--noImageGen' flag is specified.").Short('i').Strings()
 	devServiceNewCmdNoImageGen := devServiceNewCmd.Flag("noImageGen", "Indicates that the image is built somewhere else. No image sample code will be created by this command. If this flag is not specified, files for generating a simple service image will be created under current directory.").Bool()
 	devServiceNewCmdNoPattern := devServiceNewCmd.Flag("noPattern", "Indicates no pattern definition file will be created.").Bool()
+	devServiceNewCmdNoPolicy := devServiceNewCmd.Flag("noPolicy", "Indicate no policy file will be created.").Bool()
 	devServiceNewCmdCfg := devServiceNewCmd.Flag("dconfig", "Indicates the type of deployment that will be used, e.g. native (the default), or helm.").Short('c').Default("native").String()
 	devServiceStartTestCmd := devServiceCmd.Command("start", "Run a service in a mocked Horizon Agent environment.")
 	devServiceUserInputFile := devServiceStartTestCmd.Flag("userInputFile", "File containing user input values for running a test. If omitted, the userinput file for the project will be used.").Short('f').String()
@@ -659,7 +660,7 @@ Environment Variables:
 	case eventlogListCmd.FullCommand():
 		eventlog.List(*listAllEventlogs, *listDetailedEventlogs, *listSelectedEventlogs)
 	case devServiceNewCmd.FullCommand():
-		dev.ServiceNew(*devHomeDirectory, *devServiceNewCmdOrg, *devServiceNewCmdName, *devServiceNewCmdVer, *devServiceNewCmdImage, *devServiceNewCmdNoImageGen, *devServiceNewCmdCfg, *devServiceNewCmdNoPattern)
+		dev.ServiceNew(*devHomeDirectory, *devServiceNewCmdOrg, *devServiceNewCmdName, *devServiceNewCmdVer, *devServiceNewCmdImage, *devServiceNewCmdNoImageGen, *devServiceNewCmdCfg, *devServiceNewCmdNoPattern, *devServiceNewCmdNoPolicy)
 	case devServiceStartTestCmd.FullCommand():
 		dev.ServiceStartTest(*devHomeDirectory, *devServiceUserInputFile, *devServiceConfigFile, *devServiceConfigType, *devServiceNoFSS, *devServiceStartCmdUserPw)
 	case devServiceStopTestCmd.FullCommand():
