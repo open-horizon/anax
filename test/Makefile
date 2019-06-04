@@ -212,7 +212,7 @@ test-network:
 
 $(ANAX_SOURCE)/anax:
 	@echo "Building anax"
-	cd $(ANAX_SOURCE) && make clean && make
+	cd $(ANAX_SOURCE) && make clean && make && make ess-docker-image && make css-docker-image
 
 agbot-docker-prereqs: $(ANAX_SOURCE)/anax
 	@echo "Configuring agbot prerequisites"

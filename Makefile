@@ -95,7 +95,7 @@ ifndef verbose
 endif
 
 all: deps all-nodeps
-all-nodeps: gopathlinks $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE) css-docker-image ess-docker-image
+all-nodeps: gopathlinks $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE)
 
 $(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathlinks
 	@echo "Producing $(EXECUTABLE) given arch: $(arch)"
