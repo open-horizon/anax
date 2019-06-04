@@ -248,7 +248,16 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	if archFromExchange == "" {
 		// update node arch with anax arch
 		fmt.Printf("Update node arch with anax arch %v\n", anaxArch)
-		putDeviceReq := exchange.PutDeviceRequest{device.Token, device.Name, device.Pattern, device.RegisteredServices, device.MsgEndPoint, device.SoftwareVersions, device.PublicKey, anaxArch}
+		putDeviceReq := exchange.PutDeviceRequest{
+			Token:              device.Token,
+			Name:               device.Name,
+			Pattern:            device.Pattern,
+			RegisteredServices: device.RegisteredServices,
+			MsgEndPoint:        device.MsgEndPoint,
+			SoftwareVersions:   device.SoftwareVersions,
+			PublicKey:          device.PublicKey,
+			Arch:               anaxArch,
+		}
 		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), []int{200, 201}, putDeviceReq)
 	} else if archFromExchange != anaxArch {
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, "node arch from Exchange - %v, does not match arch from Anax - %v", archFromExchange, anaxArch)

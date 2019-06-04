@@ -23,7 +23,7 @@ type BasicProtocolHandler struct {
 	Work        chan AgreementWork // outgoing commands for the workers
 }
 
-func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, messages chan events.Message, mmsObjMgr  *MMSObjectPolicyManager) *BasicProtocolHandler {
+func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, messages chan events.Message, mmsObjMgr *MMSObjectPolicyManager) *BasicProtocolHandler {
 	if name == basicprotocol.PROTOCOL_NAME {
 		return &BasicProtocolHandler{
 			BaseConsumerProtocolHandler: &BaseConsumerProtocolHandler{

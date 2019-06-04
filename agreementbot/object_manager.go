@@ -14,10 +14,10 @@ import (
 // This is the main object that manages the cache of object policies. It uses the agbot's served business policies configuration
 // to figure out which orgs it is going to serve objects from.
 type MMSObjectPolicyManager struct {
-	orgMapLock     sync.Mutex                           // The lock that protects the org map.
-	spMapLock      sync.Mutex                           // The lock that protects the map of ServedPolicies because it is referenced from another thread.
-	orgMap         map[string]map[string][]MMSObjectPolicyEntry     // The list of object policies in the cache.
-	ServedPolicies map[string]exchange.ServedBusinessPolicy   // served node org, business policy org and business policy triplets. The key is the triplet exchange id.
+	orgMapLock     sync.Mutex                                   // The lock that protects the org map.
+	spMapLock      sync.Mutex                                   // The lock that protects the map of ServedPolicies because it is referenced from another thread.
+	orgMap         map[string]map[string][]MMSObjectPolicyEntry // The list of object policies in the cache.
+	ServedPolicies map[string]exchange.ServedBusinessPolicy     // served node org, business policy org and business policy triplets. The key is the triplet exchange id.
 }
 
 func NewMMSObjectPolicyManager() *MMSObjectPolicyManager {
@@ -159,7 +159,7 @@ func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exc
 
 	// Now we just need to handle adding new or updated object policies. Collect the changes so that we can send out events when we're done.
 	var policyReplaced exchange.ObjectDestinationPolicy
-	for _, objPol := range (*updatedPolicies) {
+	for _, objPol := range *updatedPolicies {
 
 		glog.V(5).Infof(mmsLogString(fmt.Sprintf("Updated policy received %v", objPol)))
 
@@ -181,7 +181,7 @@ func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exc
 						m.orgMap[objPol.OrgID][serviceMapKey][ix].Policy = objPol
 						found = true
 						break
-					} 
+					}
 				}
 				// For the current service in the updated policy object, create a new entry and add it to the map.
 				if !found {
@@ -226,8 +226,8 @@ func (m *MMSObjectPolicyManager) deleteOrg(org_in string) error {
 }
 
 type MMSObjectPolicyEntry struct {
-	Policy          exchange.ObjectDestinationPolicy `json:"policy,omitempty"`        // the metadata for this object policy in the MMS
-	Updated         uint64                         `json:"updatedTime,omitempty"`     // the time when this entry was updated
+	Policy  exchange.ObjectDestinationPolicy `json:"policy,omitempty"`      // the metadata for this object policy in the MMS
+	Updated uint64                           `json:"updatedTime,omitempty"` // the time when this entry was updated
 }
 
 // Create a new MMSObjectPolicyEntry. It converts the businesspolicy to internal policy format.

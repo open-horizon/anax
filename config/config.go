@@ -255,35 +255,35 @@ func (con *Config) String() string {
 
 func (agc *AGConfig) String() string {
 	mask := "******"
-	return fmt.Sprintf("TxLostDelayTolerationSeconds: %v" +
-		", AgreementWorkers: %v" +
-		", DBPath: %v" +
-		", Postgresql: {%v}" +
-		", PartitionStale: %v" +
-		", ProtocolTimeoutS: %v" +
-		", AgreementTimeoutS: %v" +
-		", NoDataIntervalS: %v" +
-		", ActiveAgreementsURL: %v" +
-		", ActiveAgreementsUser: %v" +
-		", ActiveAgreementsPW: %v" +
-		", PolicyPath: %v" +
-		", NewContractIntervalS: %v" +
-		", ProcessGovernanceIntervalS: %v" +
-		", IgnoreContractWithAttribs: %v" +
-		", ExchangeURL: %v" +
-		", ExchangeHeartbeat: %v" +
-		", ExchangeVersionCheckIntervalM: %v" +
-		", ExchangeId: %v" +
-		", ExchangeToken: %v" +
-		", DVPrefix: %v" +
-		", ActiveDeviceTimeoutS: %v" +
-		", ExchangeMessageTTL: %v" +
-		", MessageKeyPath: %v" +
-		", DefaultWorkloadPW: %v" +
-		", APIListen: %v" +
-		", PurgeArchivedAgreementHours: %v" +
-		", CheckUpdatedPolicyS: %v" +
-		", CSSURL: %v" +
+	return fmt.Sprintf("TxLostDelayTolerationSeconds: %v"+
+		", AgreementWorkers: %v"+
+		", DBPath: %v"+
+		", Postgresql: {%v}"+
+		", PartitionStale: %v"+
+		", ProtocolTimeoutS: %v"+
+		", AgreementTimeoutS: %v"+
+		", NoDataIntervalS: %v"+
+		", ActiveAgreementsURL: %v"+
+		", ActiveAgreementsUser: %v"+
+		", ActiveAgreementsPW: %v"+
+		", PolicyPath: %v"+
+		", NewContractIntervalS: %v"+
+		", ProcessGovernanceIntervalS: %v"+
+		", IgnoreContractWithAttribs: %v"+
+		", ExchangeURL: %v"+
+		", ExchangeHeartbeat: %v"+
+		", ExchangeVersionCheckIntervalM: %v"+
+		", ExchangeId: %v"+
+		", ExchangeToken: %v"+
+		", DVPrefix: %v"+
+		", ActiveDeviceTimeoutS: %v"+
+		", ExchangeMessageTTL: %v"+
+		", MessageKeyPath: %v"+
+		", DefaultWorkloadPW: %v"+
+		", APIListen: %v"+
+		", PurgeArchivedAgreementHours: %v"+
+		", CheckUpdatedPolicyS: %v"+
+		", CSSURL: %v"+
 		", CSSSSLCert: %v",
 		agc.TxLostDelayTolerationSeconds, agc.AgreementWorkers, agc.DBPath, agc.Postgresql.String(),
 		agc.PartitionStale, agc.ProtocolTimeoutS, agc.AgreementTimeoutS, agc.NoDataIntervalS, agc.ActiveAgreementsURL,
