@@ -290,6 +290,8 @@ Environment Variables:
 	policyListCmd := policyCmd.Command("list", "Display this edge node's policy.")
 	policyUpdateCmd := policyCmd.Command("update", "Update the node's policy. The node's built-in properties will be automatically added if the input policy does not contain them.")
 	policyUpdateInputFile := policyUpdateCmd.Flag("input-file", "The JSON input file name containing the node policy.").Short('f').Required().String()
+	policyPatchCmd := policyCmd.Command("patch", "Add or update node policy properties or overwrite the node policy constraint expression.")
+	policyPatchInput := policyPatchCmd.Arg("patch", "The new constraints or properties in the format '{\"constraints\":[<constraint list>]'} or '{\"properties\":[<property list>]}'").Required().String()
 	policyRemoveCmd := policyCmd.Command("remove", "Remove the node's policy.")
 	policyRemoveForce := policyRemoveCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 
@@ -634,6 +636,8 @@ Environment Variables:
 		policy.List()
 	case policyUpdateCmd.FullCommand():
 		policy.Update(*policyUpdateInputFile)
+	case policyPatchCmd.FullCommand():
+		policy.Patch(*policyPatchInput)
 	case policyRemoveCmd.FullCommand():
 		policy.Remove(*policyRemoveForce)
 	case agreementListCmd.FullCommand():

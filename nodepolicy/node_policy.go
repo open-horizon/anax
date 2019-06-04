@@ -362,7 +362,7 @@ func UpdateNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, nodePoli
 
 func PatchNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, patchObject interface{},
 	nodeGetPolicyHandler exchange.NodePolicyHandler,
-	nodePatchPolicyHandler exchange.PutNodePolicyHandler) (*externalpolicy.ExternalPolicy, error) {
+	nodePutPolicyHandler exchange.PutNodePolicyHandler) (*externalpolicy.ExternalPolicy, error) {
 
 	// get the local node policy
 	localNodePolicy, err := persistence.FindNodePolicy(db)
@@ -371,12 +371,24 @@ func PatchNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, patchObje
 	}
 
 	if propertyPatch, ok := patchObject.(externalpolicy.PropertyList); ok {
-		localNodePolicy.Properties = propertyPatch
+		localNodePolicy.Properties.MergeWith(&propertyPatch, true)
 	} else if conastraintPatch, ok := patchObject.(externalpolicy.ConstraintExpression); ok {
 		localNodePolicy.Constraints = conastraintPatch
 	} else {
 		return nil, fmt.Errorf("Unable to determine type of patch. %T %v", patchObject, patchObject)
 	}
+	if changed, _, err := ExchangeNodePolicyChanged(pDevice, db, nodeGetPolicyHandler); err != nil {
+		return nil, fmt.Errorf("Failed to check the exchange for the node policy: %v.", err)
+	} else if changed {
+		return nil, fmt.Errorf("Cannot accept this node policy because the local node policy is out of sync with the exchange copy. Please wait a minute and try again.")
+	}
 
-	return localNodePolicy, UpdateNodePolicy(pDevice, db, localNodePolicy, nodeGetPolicyHandler, nodePatchPolicyHandler)
+	// save it into the exchange and sync the local db with it.
+	if _, err := nodePutPolicyHandler(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), &exchange.ExchangePolicy{ExternalPolicy: *localNodePolicy}); err != nil {
+		return nil, fmt.Errorf("Unable to save node policy in exchange, error %v", err)
+	} else if _, _, err := SyncNodePolicyWithExchange(db, pDevice, nodeGetPolicyHandler, nodePutPolicyHandler); err != nil {
+		return nil, fmt.Errorf("Unable to sync the local db with the exchange node policy. %v", err)
+	}
+
+	return localNodePolicy, nil
 }

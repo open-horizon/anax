@@ -284,7 +284,9 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, cfg, http.StatusCreated)
 
 	case "PATCH":
-		//Read in the HTTP message body and pass
+		//Read in the HTTP message body and pass the policy update to be updated in the local db and the exchange
+		//Patch object can be either a constraint expression or a property list
+		//This reads in the message body and throws an error if it cannot be unmarshaled or if it is neither a constraint expression nor a property list
 		var constraintExp map[string]externalpolicy.ConstraintExpression
 		var propertyList map[string]externalpolicy.PropertyList
 		body, _ := ioutil.ReadAll(r.Body)
@@ -315,7 +317,6 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 		nodePatchPolicyHandler := exchange.GetHTTPPutNodePolicyHandler(a)
 
 		var patchObject interface{}
-
 		if _, ok := constraintExp["constraints"]; ok {
 			//var patchObject externalpolicy.ConstraintExpression
 			patchObject = constraintExp["constraints"]
@@ -323,6 +324,8 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 			//var patchObject externalpolicy.PropertyList
 			patchObject = propertyList["properties"]
 		}
+
+		//Validate the patch and update the policy
 		errHandled, cfg, msgs := PatchNodePolicy(patchObject, patch_node_policy_error_handler, nodeGetPolicyHandler, nodePatchPolicyHandler, a.db)
 
 		if errHandled {

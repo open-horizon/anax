@@ -52,6 +52,7 @@ func UpdateNodePolicy(nodePolicy *externalpolicy.ExternalPolicy,
 	}
 }
 
+// Update a single field of the policy object in the local node db and in the exchange
 func PatchNodePolicy(patchObject interface{},
 	errorhandler DeviceErrorHandler,
 	nodeGetPolicyHandler exchange.NodePolicyHandler,
