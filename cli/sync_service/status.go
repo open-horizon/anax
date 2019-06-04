@@ -8,7 +8,7 @@ import (
 )
 
 type MMSHealth struct {
-	General common.HealthStatusInfo `json:"general"`
+	General  common.HealthStatusInfo   `json:"general"`
 	DBHealth common.DBHealthStatusInfo `json:"dbHealth"`
 }
 

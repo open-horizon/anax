@@ -19,7 +19,7 @@ func AssignObjectToNode(ec exchange.ExchangeContext, objPolicies *exchange.Objec
 	updateDestHandler := exchange.GetHTTPUpdateObjectDestinationHandler(ec)
 
 	// For each object policy received, evaluate it against the node policy.
-	for _, objPol := range (*objPolicies) {
+	for _, objPol := range *objPolicies {
 
 		glog.V(5).Infof(opLogstring(fmt.Sprintf("evaluating policy for object %v of type %v", objPol.ObjectID, objPol.ObjectType)))
 
@@ -51,12 +51,12 @@ func AssignObjectToNode(ec exchange.ExchangeContext, objPolicies *exchange.Objec
 			} else {
 				// The destination list update is a full replace so we have to capture all the current destinations as
 				// we iterate the current list.
-				(*pdlr) = append((*pdlr), destStatus.DestType + ":" + destStatus.DestID)
+				(*pdlr) = append((*pdlr), destStatus.DestType+":"+destStatus.DestID)
 			}
 		}
 
 		if !found {
-			(*pdlr) = append((*pdlr), "openhorizon.edgenode:" + exchange.GetId(nodeId))
+			(*pdlr) = append((*pdlr), "openhorizon.edgenode:"+exchange.GetId(nodeId))
 
 			if err := updateDestHandler(objPol.OrgID, &objPol, pdlr); err != nil {
 				glog.Errorf(opLogstring(fmt.Sprintf("%v", err)))
@@ -81,7 +81,7 @@ func UnassignObjectFromNode(ec exchange.ExchangeContext, objPol *exchange.Object
 		} else {
 			// The destination list update is a full replace so we have to capture all the current destinations as
 			// we iterate the current list.
-			(*pdlr) = append((*pdlr), destStatus.DestType + ":" + destStatus.DestID)
+			(*pdlr) = append((*pdlr), destStatus.DestType+":"+destStatus.DestID)
 		}
 	}
 
@@ -134,7 +134,7 @@ func (w *AgreementBotWorker) HandleMMSObjectPolicy(cmd *MMSObjectPolicyEventComm
 	glog.V(5).Infof(opLogstring(fmt.Sprintf("NewPolicy: %v", newPolicy)))
 
 	// Construct a list of service ids in the new policy.
-	newPolicyServiceKeys := make([]string, 0 ,5)
+	newPolicyServiceKeys := make([]string, 0, 5)
 	for _, serviceID := range newPolicy.DestinationPolicy.Services {
 		newPolicyServiceKeys = append(newPolicyServiceKeys, cutil.FormOrgSpecUrl(serviceID.ServiceName, serviceID.OrgID))
 	}
@@ -142,7 +142,7 @@ func (w *AgreementBotWorker) HandleMMSObjectPolicy(cmd *MMSObjectPolicyEventComm
 	glog.V(5).Infof(opLogstring(fmt.Sprintf("NewPolicy service keys: %v", newPolicyServiceKeys)))
 
 	// Construct a list of destinations from the old policy.
-	oldPolicyDestNodes := make([]string, 0 ,5)
+	oldPolicyDestNodes := make([]string, 0, 5)
 	for _, dest := range oldPolicy.Destinations {
 		oldPolicyDestNodes = append(oldPolicyDestNodes, dest.DestID)
 	}
@@ -169,7 +169,7 @@ func (w *AgreementBotWorker) HandleMMSObjectPolicy(cmd *MMSObjectPolicyEventComm
 		for _, agreement := range agreements {
 			// If an existing policy has changed, and the agreement's node is a destination in the old policy, then check to see if the node
 			// is still compatible with the new policy. If not, remove the node from the object's destination list.
-			if cmd.Msg.OldPolicy != nil &&  cutil.SliceContains(oldPolicyDestNodes, agreement.DeviceId) {
+			if cmd.Msg.OldPolicy != nil && cutil.SliceContains(oldPolicyDestNodes, agreement.DeviceId) {
 
 				// Convert the object's policy into an internal policy so that we can do the compatibility check.
 				internalObjPol := policy.Policy_Factory(fmt.Sprintf("object policy for %v type %v", newPolicy.ObjectID, newPolicy.ObjectType))
@@ -177,7 +177,7 @@ func (w *AgreementBotWorker) HandleMMSObjectPolicy(cmd *MMSObjectPolicyEventComm
 				internalObjPol.Constraints = newPolicy.DestinationPolicy.Constraints
 				glog.V(5).Infof(opLogstring(fmt.Sprintf("converted new object policy to: %v", internalObjPol)))
 
-				nodePolicy,err := w.GetNodePolicy(agreement.DeviceId)
+				nodePolicy, err := w.GetNodePolicy(agreement.DeviceId)
 				if err != nil {
 					glog.Errorf(opLogstring(fmt.Sprintf("%v", err)))
 				} else if err := policy.Are_Compatible(nodePolicy, internalObjPol); err != nil {
@@ -190,12 +190,11 @@ func (w *AgreementBotWorker) HandleMMSObjectPolicy(cmd *MMSObjectPolicyEventComm
 				}
 			} else {
 
-			// 1. Brand new policy - node might be eligble now
-			// 2. Updated policy - node might be eligible now
+				// 1. Brand new policy - node might be eligble now
+				// 2. Updated policy - node might be eligible now
 
-
-			// If the agreement has a service id in the list of services for the newpolicy AND the agreement's node is not in the dest list of the old policy,
-			// then check to see if the new policy is compatible with node policy. If so, add the object to the node.
+				// If the agreement has a service id in the list of services for the newpolicy AND the agreement's node is not in the dest list of the old policy,
+				// then check to see if the new policy is compatible with node policy. If so, add the object to the node.
 				objPolicies := new(exchange.ObjectDestinationPolicies)
 				(*objPolicies) = append((*objPolicies), newPolicy)
 				for _, serviceId := range agreement.ServiceId {
@@ -203,7 +202,7 @@ func (w *AgreementBotWorker) HandleMMSObjectPolicy(cmd *MMSObjectPolicyEventComm
 					serviceNamePieces := strings.SplitN(serviceId, "_", 2)
 					if cutil.SliceContains(newPolicyServiceKeys, serviceNamePieces[0]) && !cutil.SliceContains(oldPolicyDestNodes, agreement.DeviceId) {
 						// Add the node to the object destination if eligible.
-						nodePolicy,err := w.GetNodePolicy(agreement.DeviceId)
+						nodePolicy, err := w.GetNodePolicy(agreement.DeviceId)
 						if err != nil {
 							glog.Errorf(opLogstring(fmt.Sprintf("%v", err)))
 						} else if err := AssignObjectToNode(w, objPolicies, agreement.DeviceId, nodePolicy); err != nil {

@@ -79,18 +79,18 @@ func ObjectNew(org string) {
 	objectMeta.DestinationPolicy = &common.Policy{
 		Properties: []common.PolicyProperty{
 			common.PolicyProperty{
-				Name: "",
+				Name:  "",
 				Value: "",
-				Type: "string",
+				Type:  "string",
 			},
 		},
 		Constraints: []string{""},
 		Services: []common.ServiceID{
 			common.ServiceID{
-				OrgID: "",
-				Arch: "",
+				OrgID:       "",
+				Arch:        "",
 				ServiceName: "",
-				Version: "",
+				Version:     "",
 			},
 		},
 	}
