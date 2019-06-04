@@ -10,6 +10,7 @@ import (
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/semanticversion"
 	"io/ioutil"
@@ -55,28 +56,29 @@ func ReadInputFile(filePath string, inputFileStruct *InputFile) {
 	}
 }
 
+// read and verify a node policy file
+func ReadAndVerifyPolicFile(jsonFilePath string, nodePol *externalpolicy.ExternalPolicy) {
+	newBytes := cliconfig.ReadJsonFileWithLocalConfig(jsonFilePath)
+	err := json.Unmarshal(newBytes, nodePol)
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", jsonFilePath, err)
+	}
+
+	//Check the policy file format
+	err = nodePol.Validate()
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Incorrect node policy format in file %s: %v", jsonFilePath, err)
+	}
+}
+
 // DoIt registers this node to Horizon with a pattern
-func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromFlag string, patternFromFlag string, nodeName string) {
+func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromFlag string, patternFromFlag string, nodeName string, nodepolicyFlag string) {
 	// check the input
-	if nodeOrgFromFlag != "" || patternFromFlag != "" {
-		if org != "" || pattern != "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "-o and -p are mutually exclusive with <nodeorg> and <pattern> arguments.")
-		} else {
-			org = nodeOrgFromFlag
-			pattern = patternFromFlag
-		}
-	}
+	org, pattern, nodepolicyFlag = verifyRegisterParamters(org, pattern, nodeOrgFromFlag, patternFromFlag, nodepolicyFlag)
 
-	// get default org if needed
-	if org == "" {
-		org = os.Getenv("HZN_ORG_ID")
-	}
-
-	if org == "" {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Please specify the node organization id.")
-	}
-	if pattern == "" {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Please specify a pattern name.")
+	// no pattern and no policy, proceed as a policy case.
+	if pattern == "" && nodepolicyFlag == "" {
+		fmt.Printf("No pattern or node policy is specified. Will proceeed with the existing node policy.\n")
 	}
 
 	cliutils.SetWhetherUsingApiKey(nodeIdTok) // if we have to use userPw later in NodeCreate(), it will set this appropriately for userPw
@@ -85,6 +87,12 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	if inputFile != "" {
 		fmt.Printf("Reading input file %s...\n", inputFile)
 		ReadInputFile(inputFile, &inputFileStruct)
+	}
+
+	// read and verify the node policy if it specified
+	var nodePol externalpolicy.ExternalPolicy
+	if nodepolicyFlag != "" {
+		ReadAndVerifyPolicFile(nodepolicyFlag, &nodePol)
 	}
 
 	// Get the exchange url from the anax api
@@ -142,6 +150,12 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email, anaxArch, nodeName)
 	} else {
 		fmt.Printf("Node %s/%s exists in the exchange\n", org, nodeId)
+	}
+
+	// Update node policy
+	if nodepolicyFlag != "" {
+		fmt.Println("Updating the node policy...")
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId+"/policy", cliutils.OrgAndCreds(org, nodeIdTok), []int{201}, nodePol)
 	}
 
 	// Initialize the Horizon device (node)
@@ -233,15 +247,45 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 
 	if archFromExchange == "" {
 		// update node arch with anax arch
-		fmt.Printf("archFromNode is empty, update node arch with anax arch %v", anaxArch)
+		fmt.Printf("Update node arch with anax arch %v\n", anaxArch)
 		putDeviceReq := exchange.PutDeviceRequest{device.Token, device.Name, device.Pattern, device.RegisteredServices, device.MsgEndPoint, device.SoftwareVersions, device.PublicKey, anaxArch}
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{200, 201}, putDeviceReq)
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), []int{200, 201}, putDeviceReq)
 	} else if archFromExchange != anaxArch {
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, "node arch from Exchange - %v, does not match arch from Anax - %v", archFromExchange, anaxArch)
 	}
 
 	fmt.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
 
+}
+
+func verifyRegisterParamters(org, pattern, nodeOrgFromFlag string, patternFromFlag string, nodepolicyFlag string) (string, string, string) {
+	if nodeOrgFromFlag != "" || patternFromFlag != "" {
+		if org != "" || pattern != "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "-o and -p are mutually exclusive with <nodeorg> and <pattern> arguments.")
+		} else {
+			org = nodeOrgFromFlag
+			pattern = patternFromFlag
+		}
+	}
+
+	if nodepolicyFlag != "" {
+		if patternFromFlag != "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "--policy is mutually exclusive with -p.")
+		}
+		if pattern != "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "--policy is mutually exclusive with <pattern> argument.")
+		}
+	}
+
+	// get default org if needed
+	if org == "" {
+		org = os.Getenv("HZN_ORG_ID")
+	}
+
+	if org == "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Please specify the node organization id.")
+	}
+	return org, pattern, nodepolicyFlag
 }
 
 // isWithinRanges returns true if version is within at least 1 of the ranges in versionRanges
