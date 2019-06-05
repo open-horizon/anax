@@ -113,9 +113,11 @@ func GetVarsFromFile(configFile string) (map[string]string, map[string]string, e
 	hzn_vars := map[string]string{}
 	metadata_vars := map[string]string{}
 
-	if _, err := os.Stat(configFile); os.IsNotExist(err) {
+	if _, err := os.Stat(configFile); err != nil {
 		cliutils.Verbose(fmt.Sprintf("Config file does not exist: %v.", configFile))
-		return hzn_vars, metadata_vars, err
+
+		// return no error here because the file does not exists.
+		return hzn_vars, metadata_vars, nil
 	}
 	if config, err := GetConfig(configFile); err != nil {
 		return hzn_vars, metadata_vars, err
@@ -178,14 +180,14 @@ func GetEnvVars() map[string]string {
 }
 
 // Check for file existence and return any errors.
-func FileExists(directory string, fileName string) (bool, error) {
+// Treat error as file does not exists because os.Stat() only returns PathError.
+func FileExists(directory string, fileName string) bool {
 	filePath := filepath.Join(directory, fileName)
-	if _, err := os.Stat(filePath); err != nil && !os.IsNotExist(err) {
-		return false, fmt.Errorf("error checking for %v: %v", fileName, err)
-	} else if err == nil {
-		return true, nil
+	if _, err := os.Stat(filePath); err != nil {
+		return false
+	} else {
+		return true
 	}
-	return false, nil
 }
 
 // check the project's configuration file, it could be under current directory or the ./horizon directory
@@ -194,31 +196,19 @@ func FileExists(directory string, fileName string) (bool, error) {
 func GetProjectConfigFile(dir string) (string, error) {
 
 	// look for service.definition.json file under current dir
-	found, err := FileExists(dir, DEV_SERVICE_DEFINITION_FILE)
-	if err != nil {
-		return "", err
-	}
-	if found {
+	if found := FileExists(dir, DEV_SERVICE_DEFINITION_FILE); found {
 		return filepath.Join(dir, DEFAULT_CONFIG_FILE), nil
 	}
 
 	// look service.definition.json file under horizon dir
-	found, err = FileExists(filepath.Join(dir, DEV_DEFAULT_WORKING_DIR), DEV_SERVICE_DEFINITION_FILE)
-	if err != nil {
-		return "", err
-	}
-	if found {
+	if found := FileExists(filepath.Join(dir, DEV_DEFAULT_WORKING_DIR), DEV_SERVICE_DEFINITION_FILE); found {
 		return filepath.Join(dir, DEV_DEFAULT_WORKING_DIR, DEFAULT_CONFIG_FILE), nil
 	}
 
 	// look service.definition.json file under dir above if current dir is dependencies
 	path := filepath.Clean(dir)
 	if filepath.Base(path) == DEV_DEFAULT_DEPENDENCY_DIR {
-		found, err = FileExists(filepath.Dir(path), DEV_SERVICE_DEFINITION_FILE)
-		if err != nil {
-			return "", err
-		}
-		if found {
+		if found := FileExists(filepath.Dir(path), DEV_SERVICE_DEFINITION_FILE); found {
 			return filepath.Join(filepath.Dir(path), DEFAULT_CONFIG_FILE), nil
 		}
 	}
@@ -266,7 +256,7 @@ func ReadJsonFileWithLocalConfig(filePath string) []byte {
 	localConfigFile = filepath.Clean(localConfigFile)
 
 	// no local configuration file
-	if _, err := os.Stat(localConfigFile); os.IsNotExist(err) {
+	if _, err := os.Stat(localConfigFile); err == nil {
 		return cliutils.ReadJsonFile(filePath)
 	}
 
@@ -320,9 +310,7 @@ func SetEnvVarsFromConfigFiles(project_dir string) error {
 	}
 	_, _, err = SetEnvVarsFromConfigFile(configFile_pkg, orig_env_vars, false)
 	if err != nil {
-		if !os.IsNotExist(err) {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error set environment variable from file %v. %v", configFile_pkg, err)
-		}
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error set environment variable from file %v. %v", configFile_pkg, err)
 	} else {
 		PACKAGE_CONFIG_FILE = filepath.Clean(configFile_pkg)
 	}
@@ -335,9 +323,7 @@ func SetEnvVarsFromConfigFiles(project_dir string) error {
 	if configFile_user != configFile_pkg {
 		_, _, err = SetEnvVarsFromConfigFile(configFile_user, orig_env_vars, false)
 		if err != nil {
-			if !os.IsNotExist(err) {
-				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error setting environment variable from file %v. %v", configFile_user, err)
-			}
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error setting environment variable from file %v. %v", configFile_user, err)
 		} else {
 			USER_CONFIG_FILE = filepath.Clean(configFile_user)
 		}
@@ -358,9 +344,7 @@ func SetEnvVarsFromConfigFiles(project_dir string) error {
 		if configFile_project != configFile_pkg && configFile_project != configFile_user {
 			_, _, err = SetEnvVarsFromConfigFile(configFile_project, orig_env_vars, true)
 			if err != nil {
-				if !os.IsNotExist(err) {
-					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error set environment variable from file %v. %v", configFile_project, err)
-				}
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error set environment variable from file %v. %v", configFile_project, err)
 			} else {
 				PROJECT_CONFIG_FILE = filepath.Clean(configFile_project)
 			}
