@@ -1,6 +1,7 @@
 package cutil
 
 import (
+	"bufio"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
@@ -10,6 +11,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"net"
+	"os"
 	"path"
 	"regexp"
 	"runtime"
@@ -493,6 +495,115 @@ func SplitOrgSpecUrl(org_url string) (string, string) {
 			return "", s[0]
 		} else {
 			return s[0], s[1]
+		}
+	}
+}
+
+// Get the number of cpus on local node. If cpuinfo_file is an empty string,
+// this function will get /proc/cpuinfo for Linux.
+func GetCPUCount(cpuinfo_file string) (int, error) {
+	if cpuinfo_file == "" {
+		// does not support
+		if runtime.GOOS == "darwin" {
+			return 0, fmt.Errorf("Does not support mac os for getting cpu count.")
+		} else {
+			cpuinfo_file = "/proc/cpuinfo"
+		}
+	}
+
+	// Linux case
+	if _, err := os.Stat(cpuinfo_file); err != nil {
+		return 0, err
+	}
+
+	if fh, err := os.Open(cpuinfo_file); err != nil {
+		return 0, err
+	} else {
+		defer fh.Close()
+
+		cpu_count := 0
+		scanner := bufio.NewScanner(fh)
+		r, _ := regexp.Compile("processor([ \t]*):")
+		for scanner.Scan() {
+			if r.MatchString(string(scanner.Bytes())) {
+				cpu_count++
+			}
+		}
+		if err := scanner.Err(); err != nil {
+			return 0, nil
+		}
+		return cpu_count, nil
+	}
+}
+
+// Get the total memory size and available memory size in MegaBytes
+// If meminfo_file is an empty string, this function will get /proc/meminfo for Linux.
+func GetMemInfo(meminfo_file string) (uint64, uint64, error) {
+	if meminfo_file == "" {
+		// does not support
+		if runtime.GOOS == "darwin" {
+			return 0, 0, fmt.Errorf("Does not support mac os for getting memory info.")
+		} else {
+			meminfo_file = "/proc/meminfo"
+		}
+	}
+
+	// Linux case
+	if _, err := os.Stat(meminfo_file); err != nil {
+		return 0, 0, err
+	}
+
+	if fh, err := os.Open(meminfo_file); err != nil {
+		return 0, 0, err
+	} else {
+		defer fh.Close()
+
+		total_mem := uint64(0)
+		avail_mem := uint64(0)
+		r_total, _ := regexp.Compile(`MemTotal[ \t]*:[ \t]*([\d]+)[ \t]*(.*)$`)
+		r_avail, _ := regexp.Compile(`MemAvailable[ \t]*:[ \t]*([\d]+)[ \t]*(.*)$`)
+
+		scanner := bufio.NewScanner(fh)
+
+		for scanner.Scan() {
+			match := r_total.FindAllStringSubmatch(string(scanner.Bytes()), 1)
+			if match != nil && len(match) > 0 && len(match[0]) > 2 {
+				total_mem, _ = ConvertToMB(match[0][1], match[0][2])
+				if avail_mem != 0 {
+					break
+				}
+			}
+			match = r_avail.FindAllStringSubmatch(string(scanner.Bytes()), 1)
+			if match != nil && len(match) > 0 && len(match[0]) > 2 {
+				avail_mem, _ = ConvertToMB(match[0][1], match[0][2])
+				if total_mem != 0 {
+					break
+				}
+			}
+		}
+		if err := scanner.Err(); err != nil {
+			return 0, 0, nil
+		}
+		return total_mem, avail_mem, nil
+	}
+}
+
+// Converts the given number (in string) to mega bytes. The unit can be MB, KB, GB, or B.
+func ConvertToMB(value string, unit string) (uint64, error) {
+	if s, err := strconv.ParseUint(value, 10, 64); err != nil {
+		return 0, fmt.Errorf("Failed to convert the string to uint64. %v", err)
+	} else {
+		switch strings.ToUpper(unit) {
+		case "B":
+			return s >> 20, nil
+		case "KB":
+			return s >> 10, nil
+		case "MB":
+			return s, nil
+		case "GB":
+			return s << 10, nil
+		default:
+			return s, nil
 		}
 	}
 }

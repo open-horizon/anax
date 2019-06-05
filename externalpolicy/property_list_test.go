@@ -18,7 +18,7 @@ func Test_PropertyList_compatible(t *testing.T) {
 	p2 := `[{"name":"prop1","value":"val1"}]`
 	if pl1 = create_PropertyList(p1, t); pl1 != nil {
 		if pl2 = create_PropertyList(p2, t); pl2 != nil {
-			if err := pl1.Compatible_With(pl2); err != nil {
+			if err := pl1.Compatible_With(pl2, false); err != nil {
 				t.Errorf("Error: %v is compatible with %v, error was %v\n", p1, p2, err)
 			}
 		}
@@ -27,7 +27,7 @@ func Test_PropertyList_compatible(t *testing.T) {
 	p2 = `[{"name":"prop2","value":"val1"}]`
 	if pl1 = create_PropertyList(p1, t); pl1 != nil {
 		if pl2 = create_PropertyList(p2, t); pl2 != nil {
-			if err := pl1.Compatible_With(pl2); err != nil {
+			if err := pl1.Compatible_With(pl2, false); err != nil {
 				t.Errorf("Error: %v is compatible with %v, error was %v\n", p1, p2, err)
 			}
 		}
@@ -37,7 +37,7 @@ func Test_PropertyList_compatible(t *testing.T) {
 	p2 = `[{"name":"prop1","value":"val1"}]`
 	if pl1 = create_PropertyList(p1, t); pl1 != nil {
 		if pl2 = create_PropertyList(p2, t); pl2 != nil {
-			if err := pl1.Compatible_With(pl2); err != nil {
+			if err := pl1.Compatible_With(pl2, false); err != nil {
 				t.Errorf("Error: %v is compatible with %v, error was %v\n", p1, p2, err)
 			}
 		}
@@ -47,7 +47,7 @@ func Test_PropertyList_compatible(t *testing.T) {
 	p2 = `[{"name":"prop1","value":"val1"},{"name":"prop4","value":"val4"}]`
 	if pl1 = create_PropertyList(p1, t); pl1 != nil {
 		if pl2 = create_PropertyList(p2, t); pl2 != nil {
-			if err := pl1.Compatible_With(pl2); err != nil {
+			if err := pl1.Compatible_With(pl2, false); err != nil {
 				t.Errorf("Error: %v is compatible with %v, error was %v\n", p1, p2, err)
 			}
 		}
@@ -57,7 +57,7 @@ func Test_PropertyList_compatible(t *testing.T) {
 	p2 = `[{"name":"prop1","value":"val1"}]`
 	if pl1 = create_PropertyList(p1, t); pl1 != nil {
 		if pl2 = create_PropertyList(p2, t); pl2 != nil {
-			if err := pl1.Compatible_With(pl2); err != nil {
+			if err := pl1.Compatible_With(pl2, false); err != nil {
 				t.Errorf("Error: %v is compatible with %v, error was %v\n", p1, p2, err)
 			}
 		}
@@ -67,7 +67,7 @@ func Test_PropertyList_compatible(t *testing.T) {
 	p2 = `[{"name":"prop1","value":12,"type":"float"},{"name":"prop3","value":"val4"}]`
 	if pl1 = create_PropertyList(p1, t); pl1 != nil {
 		if pl2 = create_PropertyList(p2, t); pl2 != nil {
-			if err := pl1.Compatible_With(pl2); err != nil {
+			if err := pl1.Compatible_With(pl2, false); err != nil {
 				t.Errorf("Error: %v is compatible with %v, error was %v\n", p1, p2, err)
 			}
 		}
@@ -77,7 +77,7 @@ func Test_PropertyList_compatible(t *testing.T) {
 	p2 = `[{"name":"prop2","value":"val2"},{"name":"prop1","value":"1.2.53","type":"version"}]`
 	if pl1 = create_PropertyList(p1, t); pl1 != nil {
 		if pl2 = create_PropertyList(p2, t); pl2 != nil {
-			if err := pl1.Compatible_With(pl2); err != nil {
+			if err := pl1.Compatible_With(pl2, false); err != nil {
 				t.Errorf("Error: %v is compatible with %v, error was %v\n", p1, p2, err)
 			}
 		}
@@ -87,7 +87,7 @@ func Test_PropertyList_compatible(t *testing.T) {
 	p2 = `[{"name":"prop2","value":"val2"},{"name":"prop1","value":"b,a,c","type":"list of string"}]`
 	if pl1 = create_PropertyList(p1, t); pl1 != nil {
 		if pl2 = create_PropertyList(p2, t); pl2 != nil {
-			if err := pl1.Compatible_With(pl2); err != nil {
+			if err := pl1.Compatible_With(pl2, false); err != nil {
 				t.Errorf("Error: %v is compatible with %v, error was %v\n", p1, p2, err)
 			}
 		}
@@ -103,7 +103,7 @@ func Test_PropertyList_incompatible(t *testing.T) {
 	p2 := `[{"name":"prop1","value":"val2"}]`
 	if pl1 = create_PropertyList(p1, t); pl1 != nil {
 		if pl2 = create_PropertyList(p2, t); pl2 != nil {
-			if err := pl1.Compatible_With(pl2); err == nil {
+			if err := pl1.Compatible_With(pl2, false); err == nil {
 				t.Errorf("Error: %v is not compatible with %v\n", p1, p2)
 			}
 		}
@@ -113,7 +113,7 @@ func Test_PropertyList_incompatible(t *testing.T) {
 	p2 = `[{"name":"prop2","value":"val2"},{"name":"prop1","value":"val1"}]`
 	if pl1 = create_PropertyList(p1, t); pl1 != nil {
 		if pl2 = create_PropertyList(p2, t); pl2 != nil {
-			if err := pl1.Compatible_With(pl2); err == nil {
+			if err := pl1.Compatible_With(pl2, false); err == nil {
 				t.Errorf("Error: %v is not compatible with %v\n", p1, p2)
 			}
 		}
@@ -123,7 +123,7 @@ func Test_PropertyList_incompatible(t *testing.T) {
 	p2 = `[{"name":"prop2","value":"val2"},{"name":"prop1","value":"val2"}]`
 	if pl1 = create_PropertyList(p1, t); pl1 != nil {
 		if pl2 = create_PropertyList(p2, t); pl2 != nil {
-			if err := pl1.Compatible_With(pl2); err == nil {
+			if err := pl1.Compatible_With(pl2, false); err == nil {
 				t.Errorf("Error: %v is not compatible with %v\n", p1, p2)
 			}
 		}
@@ -133,7 +133,7 @@ func Test_PropertyList_incompatible(t *testing.T) {
 	p2 = `[{"name":"prop2","value":"val2"},{"name":"prop1","value":"a,b,d","type":"list of string"}]`
 	if pl1 = create_PropertyList(p1, t); pl1 != nil {
 		if pl2 = create_PropertyList(p2, t); pl2 != nil {
-			if err := pl1.Compatible_With(pl2); err == nil {
+			if err := pl1.Compatible_With(pl2, false); err == nil {
 				t.Errorf("Error: %v is not compatible with %v\n", p1, p2)
 			}
 		}

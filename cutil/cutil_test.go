@@ -316,3 +316,54 @@ func Test_MakeMSInstanceKey(t *testing.T) {
 	}
 
 }
+
+func Test_GetCPUCount(t *testing.T) {
+	c, err := GetCPUCount("./test/cpuinfo")
+	if err != nil {
+		t.Errorf("GetCPUCount should not get error but got: %v", err)
+	} else if c != 2 {
+		t.Errorf("Should have 2 cpus but got: %v", c)
+	}
+}
+
+func Test_GetMemInfo(t *testing.T) {
+	total_mem, avail_mem, err := GetMemInfo("./test/meminfo")
+	if err != nil {
+		t.Errorf("GetMemInfo should not get error but got: %v", err)
+	} else if total_mem != 3946 {
+		t.Errorf("Should have 3946 mb total memory but got: %v", total_mem)
+	} else if avail_mem != 3337 {
+		t.Errorf("Should have 3337 mb available memory but got: %v", avail_mem)
+	}
+}
+
+func Test_ConvertToMB(t *testing.T) {
+	v, err := ConvertToMB("1", "GB")
+	if err != nil {
+		t.Errorf("ConvertToMB should not get error but got: %v", err)
+	} else if v != 1024 {
+		t.Errorf("Should return 1024 mb but got: %v", v)
+	}
+
+	v, err = ConvertToMB("2048", "KB")
+	if err != nil {
+		t.Errorf("ConvertToMB should not get error but got: %v", err)
+	} else if v != 2 {
+		t.Errorf("Should return 2 mb but got: %v", v)
+	}
+
+	v, err = ConvertToMB("2048", "MB")
+	if err != nil {
+		t.Errorf("ConvertToMB should not get error but got: %v", err)
+	} else if v != 2048 {
+		t.Errorf("Should return 2048 mb but got: %v", v)
+	}
+
+	v, err = ConvertToMB("1048576", "B")
+	if err != nil {
+		t.Errorf("ConvertToMB should not get error but got: %v", err)
+	} else if v != 1 {
+		t.Errorf("Should return 1 mb but got: %v", v)
+	}
+
+}

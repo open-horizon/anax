@@ -204,7 +204,7 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 		return nil, errors.New(fmt.Sprintf("Compatibility Error: Schema versions are not the same, Policy1: %v, Policy2 %v", producer_policy1.Header.Version, producer_policy2.Header.Version))
 	} else if _, err := (&producer_policy1.AgreementProtocols).Intersects_With(&producer_policy2.AgreementProtocols); err != nil {
 		return nil, errors.New(fmt.Sprintf("Compatibility Error: No common Agreement Protocols between %v and %v. Underlying error: %v", producer_policy1.AgreementProtocols, producer_policy2.AgreementProtocols, err))
-	} else if err := (&producer_policy1.Properties).Compatible_With(&producer_policy2.Properties); err != nil {
+	} else if err := (&producer_policy1.Properties).Compatible_With(&producer_policy2.Properties, true); err != nil {
 		return nil, errors.New(fmt.Sprintf("Compatibility Error: Common Properties between %v and %v. Underlying error: %v", producer_policy1.Properties, producer_policy2.Properties, err))
 	} else if !producer_policy1.DataVerify.IsProducerCompatible(producer_policy2.DataVerify) {
 		return nil, errors.New(fmt.Sprintf("Compatibility Error: Data verification must be compatible between %v and %v.", producer_policy1.DataVerify, producer_policy2.DataVerify))
@@ -218,8 +218,8 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 	merged_pol.APISpecs = (&producer_policy1.APISpecs).MergeWith(&producer_policy2.APISpecs)
 	intersecting_agreement_protocols, _ := (&producer_policy1.AgreementProtocols).Intersects_With(&producer_policy2.AgreementProtocols)
 	(&merged_pol.AgreementProtocols).Concatenate(intersecting_agreement_protocols)
-	(&merged_pol.Properties).MergeWith(&producer_policy1.Properties, false)
-	(&merged_pol.Properties).MergeWith(&producer_policy2.Properties, false)
+	(&merged_pol.Properties).MergeWith(&producer_policy1.Properties, true)
+	(&merged_pol.Properties).MergeWith(&producer_policy2.Properties, true)
 	merged_pol.DataVerify = producer_policy1.DataVerify.ProducerMergeWith(producer_policy2.DataVerify, defaultNoData)
 
 	// Merge constraints
