@@ -38,4 +38,3 @@ func CreateServicePolicy(directory string) error {
 func ServicePolicyExists(directory string) (bool, error) {
 	return FileExists(directory, SERVICE_POLICY_FILE)
 }
-
