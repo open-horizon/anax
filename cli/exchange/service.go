@@ -478,19 +478,11 @@ func ServiceUpdatePolicy(org string, credToUse string, service string, jsonFileP
 
 	// Set default built in properties before publishing to the exchange
 	properties := policyFile.Properties
-	for i, property := range properties {
-		// remove the {"name":"prop1", "value":"value1"} from the generated service.policy.json template and set defualt built in properties
-		if property.Name == "prop1" {
-			properties = append(properties[:i], properties[i+1:]...)
-		}
-
-	}
-
-	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_URL, "$SERVICE_NAME"), false)
-	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_NAME, "$SERVICE_NAME"), false)
-	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ORG, "$HZN_ORG_ID"), false)
-	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_VERSION, "$SERVICE_VERSION"), false)
-	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ARCH, "$ARCH"), false)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_URL, os.Getenv("SERVICE_NAME")), false)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_NAME, os.Getenv("SERVICE_NAME")), false)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ORG, os.Getenv("HZN_ORG_ID")), false)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_VERSION, os.Getenv("SERVICE_VERSION")), false)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ARCH, os.Getenv("ARCH")), false)
 
 	policyFile.Properties = properties
 
