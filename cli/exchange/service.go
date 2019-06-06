@@ -490,12 +490,15 @@ func ServiceUpdatePolicy(org string, credToUse string, service string, jsonFileP
 	serviceArch := serviceFromExchange.Arch
 
 	// Set default built in properties before publishing to the exchange
+	fmt.Println("Adding built-in property values...")
+	fmt.Println("The following property value will be override: service.url, service.name, service.org, service.version, service.arch")
+
 	properties := policyFile.Properties
-	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_URL, serviceName), false)
-	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_NAME, serviceName), false)
-	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ORG, org), false)
-	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_VERSION, serviceVersion), false)
-	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ARCH, serviceArch), false)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_URL, serviceName), true)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_NAME, serviceName), true)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ORG, org), true)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_VERSION, serviceVersion), true)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ARCH, serviceArch), true)
 
 	policyFile.Properties = properties
 
