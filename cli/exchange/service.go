@@ -160,11 +160,11 @@ func ServiceList(credOrg, userPw, service string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	var svcOrg string
 	svcOrg, service = cliutils.TrimOrg(credOrg, service)
-	if namesOnly && (service == "" || service == "*") {
+	if service == "*" {
+		service = ""
+	}
+	if namesOnly && service == "" {
 		// Only display the names
-		if service == "*" {
-			service = ""
-		}
 		var resp GetServicesResponse
 		cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcOrg+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(credOrg, userPw), []int{200, 404}, &resp)
 		services := []string{}

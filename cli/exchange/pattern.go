@@ -94,11 +94,11 @@ func PatternList(credOrg string, userPw string, pattern string, namesOnly bool) 
 	cliutils.SetWhetherUsingApiKey(userPw)
 	var patOrg string
 	patOrg, pattern = cliutils.TrimOrg(credOrg, pattern)
-	if namesOnly && (pattern == "" || pattern == "*") {
+	if pattern == "*" {
+		pattern = ""
+	}
+	if namesOnly && pattern == "" {
 		// Only display the names
-		if pattern == "*" {
-			pattern = ""
-		}
 		var resp ExchangePatterns
 		cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+patOrg+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(credOrg, userPw), []int{200, 404}, &resp)
 		patterns := []string{} // this is important (instead of leaving it nil) so json marshaling displays it as [] instead of null
