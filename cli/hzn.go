@@ -230,6 +230,7 @@ Environment Variables:
 	exBusinessCmd := exchangeCmd.Command("business", "List and manage business policies in the Horizon Exchange.")
 	exBusinessListPolicyCmd := exBusinessCmd.Command("listpolicy", "Display the business policies from the Horizon Exchange.")
 	exBusinessListPolicyIdTok := exBusinessListPolicyCmd.Flag("id-token", "The Horizon ID and password of the user.").Short('n').PlaceHolder("ID:TOK").String()
+	exBusinessListPolicyLong := exBusinessListPolicyCmd.Flag("long", "Display detailed output about the business policies.").Short('l').Bool()
 	exBusinessListPolicyPolicy := exBusinessListPolicyCmd.Arg("policy", "List just this one policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.").String()
 	exBusinessAddPolicyCmd := exBusinessCmd.Command("addpolicy", "Add a new business policy or overwrite an existing policy by the same name in the Horizon Exchange.")
 	exBusinessAddPolicyIdTok := exBusinessAddPolicyCmd.Flag("id-token", "The Horizon ID and password of the user.").Short('n').PlaceHolder("ID:TOK").String()
@@ -612,7 +613,7 @@ Environment Variables:
 	case exServiceRemovePolicyCmd.FullCommand():
 		exchange.ServiceRemovePolicy(*exOrg, credToUse, *exServiceRemovePolicyService, *exServiceRemovePolicyForce)
 	case exBusinessListPolicyCmd.FullCommand():
-		exchange.BusinessListPolicy(*exOrg, credToUse, *exBusinessListPolicyPolicy)
+		exchange.BusinessListPolicy(*exOrg, credToUse, *exBusinessListPolicyPolicy, !*exBusinessListPolicyLong)
 	case exBusinessAddPolicyCmd.FullCommand():
 		exchange.BusinessAddPolicy(*exOrg, credToUse, *exBusinessAddPolicyPolicy, *exBusinessAddPolicyJsonFile)
 	case exBusinessUpdatePolicyCmd.FullCommand():
