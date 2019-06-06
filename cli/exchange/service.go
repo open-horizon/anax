@@ -194,7 +194,10 @@ func ServiceList(credOrg, userPw, service string, namesOnly bool) {
 }
 
 // ServicePublish signs the MS def and puts it in the exchange
-func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, registryTokens []string, overwrite bool) {
+func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, pullImage bool, registryTokens []string, overwrite bool) {
+	if dontTouchImage && pullImage {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Flags -I and -P are mutually exclusive.")
+	}
 	cliutils.SetWhetherUsingApiKey(userPw)
 
 	// Read in the service metadata
@@ -208,11 +211,11 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", svcFile.Org, org)
 	}
 
-	svcFile.SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, dontTouchImage, registryTokens, !overwrite)
+	svcFile.SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, dontTouchImage, pullImage, registryTokens, !overwrite)
 }
 
 // Sign and publish the service definition. This is a function that is reusable across different hzn commands.
-func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, registryTokens []string, promptForOverwite bool) {
+func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, pullImage bool, registryTokens []string, promptForOverwite bool) {
 	svcInput := ServiceExch{Label: sf.Label, Description: sf.Description, Public: sf.Public, Documentation: sf.Documentation, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs}
 
 	// The deployment field can be json object (map), string (for pre-signed), or nil
@@ -235,6 +238,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 		ctx := plugin_registry.NewPluginContext()
 		ctx.Add("currentDir", filepath.Dir(jsonFilePath))
 		ctx.Add("dontTouchImage", dontTouchImage)
+		ctx.Add("pullImage", pullImage)
 
 		// Allow the right plugin to sign the deployment configuration.
 		depStr, sig, err := plugin_registry.DeploymentConfigPlugins.SignByOne(dep, keyFilePath, ctx)

@@ -53,7 +53,12 @@ func (p *NativeDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFileP
 				if client == nil {
 					client = cliutils.NewDockerClient()
 				}
-				digest := cliutils.PushDockerImage(client, domain, path, tag) // this will error out if the push fails or can't get the digest
+				digest := ""
+				if pullImage, ok := (ctx.Get("pullImage")).(bool); ok && pullImage {
+					digest = cliutils.PullDockerImage(client, domain, path, tag) // this will error out if pull fails
+				} else {
+					digest = cliutils.PushDockerImage(client, domain, path, tag) // this will error out if the push fails or can't get the digest
+				}
 				if domain != "" {
 					domain = domain + "/"
 				}

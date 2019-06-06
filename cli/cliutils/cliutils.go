@@ -215,6 +215,43 @@ func PushDockerImage(client *dockerclient.Client, domain, path, tag string) (dig
 	return
 }
 
+//PullDockerImage pulls the image from the docker registry. Progress is written to stdout. Function returns the image digest.
+//If an error occurs the error is printed then the function exits.
+func PullDockerImage(client *dockerclient.Client, domain, path, tag string) (digest string) {
+	var repository string // for PullImageOptions later on
+	if domain == "" {
+		repository = path
+	} else {
+		repository = domain + "/" + path
+	}
+	fmt.Printf("Pulling %v:%v...\n", repository, tag) // Note: tag can be the empty string
+
+	// Get the docker client object for this registry, and set the push options and creds
+	var buf bytes.Buffer
+	multiWriter := io.MultiWriter(os.Stdout, &buf)
+	opts := dockerclient.PullImageOptions{Repository: repository, Tag: tag, OutputStream: multiWriter}
+
+	var auth dockerclient.AuthConfiguration
+	var err error
+	if auth, err = GetDockerAuth(domain); err != nil {
+		Fatal(CLI_INPUT_ERROR, "could not get docker credentials from ~/.docker/config.json: %v. Maybe you need to run 'docker login ...' to provide credentials for the image registry.", err)
+	}
+
+	//Pull the image
+	if err = client.PullImage(opts, auth); err != nil {
+		Fatal(CLI_GENERAL_ERROR, "unable to pull docker image %v: %v", repository+":"+tag, err)
+	}
+
+	// Get the digest value from the docker image
+	reDigest := regexp.MustCompile(`\s+Digest:\s+(\S+)\s+Status:`)
+	var matches []string
+	if matches = reDigest.FindStringSubmatch(buf.String()); len(matches) < 2 {
+		Fatal(CLI_GENERAL_ERROR, "could not find the image digest in the docker push output")
+	}
+	digest = matches[1]
+	return
+}
+
 // OrgAndCreds prepends the org to creds (separated by /) unless creds already has an org prepended
 func OrgAndCreds(org, creds string) string {
 	// org is the org of the resource being accessed, so if they want to use creds from a different org, the prepend that org to creds before calling this
