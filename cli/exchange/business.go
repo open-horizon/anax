@@ -14,13 +14,22 @@ import (
 //BusinessListPolicy lists all the policies in the org or only the specified policy if one is given
 func BusinessListPolicy(org string, credToUse string, policy string) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
-	org, credToUse = cliutils.TrimOrg(org, credToUse)
+	var credOrg string
+	credOrg, credToUse = cliutils.TrimOrg(org, credToUse)
 
+	var polOrg string
+	polOrg, policy = cliutils.TrimOrg(credOrg, policy)
+
+	if policy == "*" {
+		policy = ""
+	}
 	//get policy list from Horizon Exchange
 	var policyList exchange.GetBusinessPolicyResponse
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &policyList)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &policyList)
 	if httpCode == 404 && policy != "" {
-		cliutils.Fatal(cliutils.NOT_FOUND, "Policy %s not found in org %s", policy, org)
+		cliutils.Fatal(cliutils.NOT_FOUND, "Policy %s not found in org %s", policy, polOrg)
+	} else if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "Business policy for organization %s not found", polOrg)
 	}
 
 	jsonBytes, err := json.MarshalIndent(policyList.BusinessPolicy, "", cliutils.JSON_INDENT)
