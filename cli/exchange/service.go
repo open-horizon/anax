@@ -460,6 +460,7 @@ func ServiceListPolicy(org string, credToUse string, service string) {
 //ServiceUpdatePolicy adds a policy or replaces an existing policy for the service in the Horizon Exchange
 func ServiceUpdatePolicy(org string, credToUse string, service string, jsonFilePath string) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
+	fullServiceName := service
 	org, service = cliutils.TrimOrg(org, service)
 
 	// Read in the policy metadata
@@ -476,13 +477,25 @@ func ServiceUpdatePolicy(org string, credToUse string, service string, jsonFileP
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Incorrect policy format in file %s: %v", jsonFilePath, err)
 	}
 
+	// Check that the service exists
+	var services GetServicesResponse
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "service '%v/%v' not found.", org, service)
+	}
+	serviceFromExchange := services.Services[fullServiceName]
+
+	serviceName := serviceFromExchange.URL
+	serviceVersion := serviceFromExchange.Version
+	serviceArch := serviceFromExchange.Arch
+
 	// Set default built in properties before publishing to the exchange
 	properties := policyFile.Properties
-	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_URL, os.Getenv("SERVICE_NAME")), false)
-	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_NAME, os.Getenv("SERVICE_NAME")), false)
-	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ORG, os.Getenv("HZN_ORG_ID")), false)
-	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_VERSION, os.Getenv("SERVICE_VERSION")), false)
-	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ARCH, os.Getenv("ARCH")), false)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_URL, serviceName), false)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_NAME, serviceName), false)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ORG, org), false)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_VERSION, serviceVersion), false)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ARCH, serviceArch), false)
 
 	policyFile.Properties = properties
 
@@ -490,13 +503,6 @@ func ServiceUpdatePolicy(org string, credToUse string, service string, jsonFileP
 	err = policyFile.Validate()
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Incorrect policy format in file %s: %v", jsonFilePath, err)
-	}
-
-	// Check that the service exists
-	var services ServiceExch
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
-	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, "service '%v/%v' not found.", org, service)
 	}
 
 	// add/replace service policy
