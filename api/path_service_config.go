@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/microservice"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -339,7 +340,7 @@ func CreateService(service *Service,
 		var err error
 		var inputErrWritten bool
 
-		attributes, inputErrWritten, err = toPersistedAttributesAttachedToService(errorhandler, pDevice, config.Edge.DefaultServiceRegistrationRAM, *service.Attributes, persistence.NewServiceSpec(*service.Url, *service.Org), []AttributeVerifier{msdefAttributeVerifier, patternedDeviceAttributeVerifier})
+		attributes, inputErrWritten, err = toPersistedAttributesAttachedToService(errorhandler, pDevice, *service.Attributes, persistence.NewServiceSpec(*service.Url, *service.Org), []AttributeVerifier{msdefAttributeVerifier, patternedDeviceAttributeVerifier})
 		if !inputErrWritten && err != nil {
 			return errorhandler(NewSystemError(fmt.Sprintf("Failure deserializing attributes: %v", err))), nil, nil
 		} else if inputErrWritten {
@@ -353,7 +354,6 @@ func CreateService(service *Service,
 
 	props := make(map[string]interface{})
 
-	hasAA := false
 	// There might be node wide global attributes. Check for them and grab the values to use as defaults for later.
 	allAttrs, aerr := persistence.FindApplicableAttributes(db, "", "")
 	if aerr != nil {
@@ -367,10 +367,6 @@ func CreateService(service *Service,
 			haPartner = attr.(persistence.HAAttributes).Partners
 			glog.V(5).Infof(apiLogString(fmt.Sprintf("Found default global HA attribute %v", attr)))
 		}
-
-		if attr.GetMeta().Type == "ArchitectureAttributes" {
-			hasAA = true
-		}
 	}
 
 	// If an HA device has no HA attribute then the configuration is invalid.
@@ -382,24 +378,12 @@ func CreateService(service *Service,
 	// Any policy attributes we find will overwrite values set in a global attribute of the same type.
 	var serviceAgreementProtocols []policy.AgreementProtocol
 	for _, attr := range attributes {
-
-		// there may be multiple ArchitectureAttributes, we only take the first one.
-		// here we assume all the services have the same arch which is defined by the cutil.ArchString()
-		if hasAA && attr.GetMeta().Type == "ArchitectureAttributes" {
-			continue
-		}
-
 		_, err := persistence.SaveOrUpdateAttribute(db, attr, "", false)
 		if err != nil {
 			return errorhandler(NewSystemError(fmt.Sprintf("error saving attribute %v, error %v", attr, err))), nil, nil
 		}
 
 		switch attr.(type) {
-		case *persistence.ComputeAttributes:
-			compute := attr.(*persistence.ComputeAttributes)
-			props["cpus"] = strconv.FormatInt(compute.CPUs, 10)
-			props["ram"] = strconv.FormatInt(compute.RAM, 10)
-
 		case *persistence.HAAttributes:
 			haPartner = attr.(*persistence.HAAttributes).Partners
 
@@ -409,6 +393,18 @@ func CreateService(service *Service,
 
 		default:
 			glog.V(4).Infof(apiLogString(fmt.Sprintf("Unhandled attr type (%T): %v", attr, attr)))
+		}
+	}
+
+	// add node built-in properties
+	externalPol := externalpolicy.CreateNodeBuiltInPolicy(false)
+	if externalPol != nil {
+		for _, ele := range externalPol.Properties {
+			if ele.Name == externalpolicy.PROP_NODE_CPU {
+				props["cpus"] = strconv.FormatFloat(ele.Value.(float64), 'f', -1, 64)
+			} else if ele.Name == externalpolicy.PROP_NODE_MEMORY {
+				props["ram"] = strconv.FormatFloat(ele.Value.(float64), 'f', -1, 64)
+			}
 		}
 	}
 

@@ -6,8 +6,8 @@ if [ "$BC" != "1" ]
 then
 
 echo -e "Pattern is set to $PATTERN"
-if [ "$PATTERN" == "" ]
-then
+# if [ "$PATTERN" == "" ]
+# then
 
 # and then configure by service API to opt into the gps service.
 read -d '' slocservice <<EOF
@@ -16,7 +16,20 @@ read -d '' slocservice <<EOF
   "name": "gps",
   "organization": "IBM",
   "versionRange": "2.0.3",
-  "attributes": []
+  "attributes": [
+     {
+      "type": "UserInputAttributes",
+      "label": "Extra",
+      "publishable": true,
+      "host_only": false,
+      "mappings": {
+        "HZN_LAT": 41.921766,
+        "HZN_LON": -73.894224,
+        "HZN_LOCATION_ACCURACY_KM": 0.5,
+        "HZN_USE_GPS": false
+      }
+    }
+  ]
 }
 EOF
 
@@ -30,7 +43,7 @@ if [ "$ERR" != "null" ]; then
     exit 2
 fi
 
-fi
+#fi
 
 # blockchain is in use
 else
@@ -41,16 +54,6 @@ read -d '' splitgpsservice <<EOF
   "sensor_name": "gps",
   "sensor_version": "2.0.3",
   "attributes": [
-    {
-      "type": "ComputeAttributes",
-      "label": "Compute Resources",
-      "publishable": true,
-      "host_only": false,
-      "mappings": {
-        "ram": 256,
-        "cpus": 1
-      }
-    },
     {
       "type": "MeteringAttributes",
       "label": "Metering Policy",

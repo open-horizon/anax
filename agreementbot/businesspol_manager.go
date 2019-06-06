@@ -579,7 +579,7 @@ func (pm *BusinessPolicyManager) AddMarshaledServicePolicy(businessPolOrg, busin
 
 	servicePol := new(externalpolicy.ExternalPolicy)
 	if err := json.Unmarshal([]byte(servicePolString), servicePol); err != nil {
-		return fmt.Errorf("Failed to unmashling the given service policy for servcie %v. %v", serviceId, err)
+		return fmt.Errorf("Failed to unmashling the given service policy for service %v. %v", serviceId, err)
 	}
 
 	return pm.AddServicePolicy(businessPolOrg, businessPolName, serviceId, servicePol)

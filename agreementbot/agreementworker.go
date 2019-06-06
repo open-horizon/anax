@@ -560,7 +560,7 @@ func (b *BaseAgreementWorker) MergeServicePolicyToConsumerPolicy(businessPol *po
 
 	//merge service policy
 	if merged_pol2, err := policy.MergePolicyWithExternalPolicy(businessPol, &merged_pol1); err != nil {
-		return nil, nil, fmt.Errorf("error merging business policy with service policy for servcie %v. %v", sId, err)
+		return nil, nil, fmt.Errorf("error merging business policy with service policy for service %v. %v", sId, err)
 	} else {
 		return merged_pol2, servicePol, nil
 	}

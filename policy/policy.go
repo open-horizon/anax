@@ -70,7 +70,7 @@ func RetrieveAllProperties(policy *Policy) (*externalpolicy.PropertyList, error)
 }
 
 // Create a header name for the generated policy that should be unique within the org.
-// The input can be a device id or a servcie id.
+// The input can be a device id or a service id.
 func MakeExternalPolicyHeaderName(id string) string {
 	return fmt.Sprintf("Policy for %v", id)
 }

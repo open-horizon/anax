@@ -382,10 +382,10 @@ attribute
 | ---- | ---- | ---------------- |
 | id | string| the id of the attribute. |
 | label | string | the user readable name of the attribute |
-| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, HAAttributes, PropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
+| type| string | the attribute type. Supported attribute types are: HAAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
 | publishable| bool | whether the attribute can be made public or not. |
 | host_only | bool | whether or not the attribute will be passed to the service containers. |
-| service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes: ComputeAttributes, PropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
+| service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes:  MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
 | mappings | map | a list of key value pairs. |
 
 
@@ -394,46 +394,6 @@ attribute
 curl -s http://localhost/attribute | jq '.'
 {
   "attributes": [
-    {
-      "id": "67c65225-ebef-49e9-944c-229a02f2115c",
-      "type": "ArchitectureAttributes",
-      "label": "Architecture",
-      "publishable": true,
-      "host_only": false,
-      "mappings": {
-        "architecture": "amd64"
-      }
-    },
-    {
-      "id": "f08c3992-6f4f-465d-b1a5-4a6bedf3693d",
-      "type": "ComputeAttributes",
-      "label": "Compute Resources",
-      "publishable": true,
-      "host_only": false,
-      "service_specs": [
-        {
-          "url": "https://bluehorizon.network/service-cpu",
-          "organization": "myorg"
-        }
-      ],
-      "mappings": {
-        "cpus": 1,
-        "ram": 1024
-      }
-    },
-    {
-      "id": "f1c7aa1d-2868-477e-8f26-900a3c5adfd3",
-      "type": "LocationAttributes",
-      "label": "Registered Location Facts",
-      "publishable": false,
-      "host_only": false,
-      "mappings": {
-        "lat": 44.921769,
-        "location_accuracy_km": 0.5,
-        "lon": -63.894225,
-        "use_gps": false
-      }
-    },
     {
       "id": "f85de917-ecb1-4d65-9310-66b0d9d2642f",
       "type": "UserInputAttributes",
@@ -524,10 +484,10 @@ body:
 | ---- | ---- | ---------------- |
 | id | string| the id of the attribute. |
 | label | string | the user readable name of the attribute |
-| type| string | the attribute type. Supported attribute types are: ArchitectureAttributes, ComputeAttributes, LocationAttributes, HAAttributes, PropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
+| type| string | the attribute type. Supported attribute types are: HAAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes, HTTPSBasicAuthAttributes, and DockerRegistryAuthAttributes. |
 | publishable| bool | whether the attribute can be made public or not. |
 | host_only | bool | whether or not the attribute will be passed to the service containers. |
-| service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes: ComputeAttributes, PropertyAttributes, MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
+| service_specs | array of json | an array of service organization and url. It applies to all services if it is empty. It is only required for the following attributes:  MeteringAttributes, AgreementProtocolAttributes, UserInputAttributes. |
 | mappings | map | a list of key value pairs. |
 
 
@@ -791,46 +751,6 @@ curl http://localhost/service |jq '.config'
           ],
           "var5": "override"
         }
-      },
-      {
-        "meta": {
-          "id": "67c65225-ebef-49e9-944c-229a02f2115c",
-          "type": "ArchitectureAttributes",
-          "label": "Architecture",
-          "host_only": false,
-          "publishable": true
-        },
-        "architecture": "amd64"
-      },
-      {
-        "meta": {
-          "id": "7fd29cf6-7184-40b9-ae49-5688366c7a7e",
-          "type": "ComputeAttributes",
-          "label": "Compute Resources",
-          "host_only": false,
-          "publishable": true
-        },
-        "service_specs": [
-          {
-            "url": "https://bluehorizon.network/services/netspeed",
-            "organization": "e2edev"
-          }
-        ],
-        "cpus": 1,
-        "ram": 1024
-      },
-      {
-        "meta": {
-          "id": "f1c7aa1d-2868-477e-8f26-900a3c5adfd3",
-          "type": "LocationAttributes",
-          "label": "Registered Location Facts",
-          "host_only": false,
-          "publishable": false
-        },
-        "lat": 41.921766,
-        "lon": -73.894224,
-        "location_accuracy_km": 0.5,
-        "use_gps": false
       }
     ]
   },
@@ -1044,46 +964,6 @@ curl http://localhost/service/config |jq
           ],
           "var5": "override"
         }
-      },
-      {
-        "meta": {
-          "id": "67c65225-ebef-49e9-944c-229a02f2115c",
-          "type": "ArchitectureAttributes",
-          "label": "Architecture",
-          "host_only": false,
-          "publishable": true
-        },
-        "architecture": "amd64"
-      },
-      {
-        "meta": {
-          "id": "7fd29cf6-7184-40b9-ae49-5688366c7a7e",
-          "type": "ComputeAttributes",
-          "label": "Compute Resources",
-          "host_only": false,
-          "publishable": true
-        },
-        "service_specs": [
-          {
-            "url": "https://bluehorizon.network/services/netspeed",
-            "organization": "e2edev"
-          }
-        ],
-        "cpus": 1,
-        "ram": 1024
-      },
-      {
-        "meta": {
-          "id": "f1c7aa1d-2868-477e-8f26-900a3c5adfd3",
-          "type": "LocationAttributes",
-          "label": "Registered Location Facts",
-          "host_only": false,
-          "publishable": false
-        },
-        "lat": 41.921766,
-        "lon": -73.894224,
-        "location_accuracy_km": 0.5,
-        "use_gps": false
       }
     ]
   },

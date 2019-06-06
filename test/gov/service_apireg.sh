@@ -275,7 +275,12 @@ cat <<EOF >$KEY_TEST_DIR/svc_gps.json
     "usbDeviceIds":"1546:01a7",
     "devFiles":"/dev/ttyUSB*,/dev/ttyACM*"
   },
-  "userInput":[],
+  "userInput":[
+    {"name":"HZN_LAT","label":"","type":"string","defaultValue":"41.921766"},
+    {"name":"HZN_LON","label":"","type":"string","defaultValue":"-73.894224"},
+    {"name":"HZN_LOCATION_ACCURACY_KM","label":"","type":"string","defaultValue":"0.5"},
+    {"name":"HZN_USE_GPS","label":"","type":"string","defaultValue":"false"}
+  ],
   "deployment": {
     "services":{
       "gps":{
@@ -310,7 +315,12 @@ cat <<EOF >$KEY_TEST_DIR/svc_gps2.json
     "usbDeviceIds":"1546:01a7",
     "devFiles":"/dev/ttyUSB*,/dev/ttyACM*"
   },
-  "userInput":[],
+  "userInput":[
+    {"name":"HZN_LAT","label":"","type":"float"},
+    {"name":"HZN_LON","label":"","type":"float"},
+    {"name":"HZN_LOCATION_ACCURACY_KM","label":"","type":"float"},
+    {"name":"HZN_USE_GPS","label":"","type":"bool"}
+  ],
   "deployment": {
     "services":{
       "gps":{
@@ -349,7 +359,11 @@ cat <<EOF >$KEY_TEST_DIR/svc_locgps.json
   },
   "userInput":[
     {"name":"test","label":"","type":"string","defaultValue":null},
-    {"name":"testdefault","label":"","type":"string","defaultValue":"default"}
+    {"name":"testdefault","label":"","type":"string","defaultValue":"default"},
+    {"name":"HZN_LAT","label":"","type":"float"},
+    {"name":"HZN_LON","label":"","type":"float"},
+    {"name":"HZN_LOCATION_ACCURACY_KM","label":"","type":"float"},
+    {"name":"HZN_USE_GPS","label":"","type":"bool"}
   ],
   "deployment": {
     "services":{
@@ -396,7 +410,11 @@ cat <<EOF >$KEY_TEST_DIR/svc_locgps2.json
   },
   "userInput":[
     {"name":"test","label":"","type":"string","defaultValue":null},
-    {"name":"testdefault","label":"","type":"string","defaultValue":"default"}
+    {"name":"testdefault","label":"","type":"string","defaultValue":"default"},
+    {"name":"HZN_LAT","label":"","type":"float"},
+    {"name":"HZN_LON","label":"","type":"float"},
+    {"name":"HZN_LOCATION_ACCURACY_KM","label":"","type":"float"},
+    {"name":"HZN_USE_GPS","label":"","type":"bool"}
   ],
   "deployment": {
     "services":{
@@ -700,8 +718,12 @@ cat <<EOF >$KEY_TEST_DIR/svc_weather.json
     {"name":"HZN_PWS_MODEL","label":"","type":"string"},
     {"name":"MTN_PWS_MODEL","label":"","type":"string"},
     {"name":"HZN_PWS_ST_TYPE","label":"","type":"string"},
-    {"name":"MTN_PWS_ST_TYPE","label":"","type":"string"}
-  ],
+    {"name":"MTN_PWS_ST_TYPE","label":"","type":"string"},
+    {"name":"HZN_LAT","label":"","type":"float"},
+    {"name":"HZN_LON","label":"","type":"float"},
+    {"name":"HZN_LOCATION_ACCURACY_KM","label":"","type":"float"},
+    {"name":"HZN_USE_GPS","label":"","type":"bool"}
+],
   "deployment": {
     "services": {
       "eaweather": {

@@ -131,40 +131,6 @@ else
 fi
 
 
-# ================================================================
-# Set global attributes
-# First, set a location attribute.
-
-read -d '' locationattribute <<EOF
-{
-  "type": "LocationAttributes",
-  "label": "Registered Location Facts",
-  "publishable": false,
-  "host_only": false,
-  "mappings": {
-    "lat": 41.921766,
-    "lon": -73.894224,
-    "location_accuracy_km": 0.5
-  }
-}
-EOF
-
-echo -e "\n\n[D] location payload: $locationattribute"
-
-echo "Setting workload independent location attributes"
-
-ERR=$(echo "$locationattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute" | jq -r '.error')
-if [ "$ERR" != "null" ]; then
-  echo -e "error occured: $ERR"
-  exit 2
-fi
-
-# Then set a node level property
-./set_node_property.sh "purpose" "network-testing"
-if [ $? -ne 0 ]
-then
-    exit 2
-fi
 
 # =========================================================================
 # Run some non-HA tests since we have HA setup right now. HA tests only
@@ -175,18 +141,21 @@ if [ "$HA" == "1" ]; then
 
         read -d '' pwsservice <<EOF
 {
-  "url": "https://bluehorizon.network/services/no-such-service",
-  "organization": "e2edev@somecomp.com",
-  "version": "1.0.0",
+  "url": "https://bluehorizon.network/services/netspeed",
+  "versionRange": "2.2.0",
+  "organization": "IBM",
   "attributes": [
     {
-      "type": "ComputeAttributes",
-      "label": "Compute Resources",
-      "publishable": true,
+      "type": "UserInputAttributes",
+      "label": "User input variables",
+      "publishable": false,
       "host_only": false,
       "mappings": {
-        "ram": 256,
-        "cpus": 1
+        "var1": "aString",
+        "var2": 6,
+        "var3": 12.3,
+        "var4": ["abcdefg", "12345"],
+        "var5": "override"
       }
     }
   ]
@@ -213,7 +182,7 @@ EOF
         else
             echo -e "found expected response: $RES"
         fi
-
+ 
     elif [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ] || [ "$PATTERN" = "cpu2msghub" ] || [ "$PATTERN" = "shelm" ]; then
         echo -e "Pattern $PATTERN is not supported with HA tests, only sns and spws are supported."
     fi

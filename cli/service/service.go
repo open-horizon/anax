@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/api"
+	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -36,11 +36,14 @@ func List() {
 		cliutils.Fatal(cliutils.HTTP_ERROR, cliutils.MUST_REGISTER_FIRST)
 	}
 
+	statusInfo := apicommon.Info{}
+	cliutils.HorizonGet("status", []int{200}, &statusInfo, false)
+	anaxArch := (*statusInfo.Configuration).Arch
+
 	// Go thru the services and pull out interesting fields
 	services := make([]OurService, 0)
 	for _, s := range apiOutput.Config {
-		arch := cutil.ArchString()
-		serv := OurService{Url: s.SensorUrl, Org: s.SensorOrg, Version: s.SensorVersion, Arch: arch, Variables: make(map[string]interface{})}
+		serv := OurService{Url: s.SensorUrl, Org: s.SensorOrg, Version: s.SensorVersion, Arch: anaxArch, Variables: make(map[string]interface{})}
 
 		for _, attr := range s.Attributes {
 			if b_attr, err := json.Marshal(attr); err != nil {
@@ -51,9 +54,6 @@ func List() {
 				return
 			} else {
 				switch a.(type) {
-				case persistence.ArchitectureAttributes:
-					// get arch
-					serv.Arch = a.(persistence.ArchitectureAttributes).Architecture
 				case persistence.UserInputAttributes:
 					// get user input
 					serv.Variables = a.GetGenericMappings()

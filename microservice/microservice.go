@@ -9,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
@@ -302,11 +303,6 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 	handleServiceAttributes := func(attributes []persistence.Attribute) {
 		for _, attr := range attributes {
 			switch attr.(type) {
-			case persistence.ComputeAttributes:
-				compute := attr.(persistence.ComputeAttributes)
-				props["cpus"] = strconv.FormatInt(compute.CPUs, 10)
-				props["ram"] = strconv.FormatInt(compute.RAM, 10)
-
 			case persistence.HAAttributes:
 				haPartner = attr.(persistence.HAAttributes).Partners
 
@@ -316,6 +312,18 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 
 			default:
 				glog.V(4).Infof("Unhandled attr type (%T): %v", attr, attr)
+			}
+		}
+	}
+
+	// add node built-in properties
+	externalPol := externalpolicy.CreateNodeBuiltInPolicy(false)
+	if externalPol != nil {
+		for _, ele := range externalPol.Properties {
+			if ele.Name == externalpolicy.PROP_NODE_CPU {
+				props["cpus"] = strconv.FormatFloat(ele.Value.(float64), 'f', -1, 64)
+			} else if ele.Name == externalpolicy.PROP_NODE_MEMORY {
+				props["ram"] = strconv.FormatFloat(ele.Value.(float64), 'f', -1, 64)
 			}
 		}
 	}

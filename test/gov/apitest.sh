@@ -296,32 +296,6 @@ then
   exit 2
 fi
 
-read -d '' locationattribute <<EOF
-{
-  "type": "LocationAttributes",
-  "label": "Registered Location Facts",
-  "publishable": false,
-  "host_only": false,
-  "mappings": {
-    "lat": 41.921766,
-    "lon": -73.894224
-  }
-}
-EOF
-
-echo -e "\n\n[D] location payload: $locationattribute"
-
-echo "Setting workload independent location attributes"
-
-RES=$(echo "$locationattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
-echo -e "Response:\n$RES"
-LAT=$(echo $RES | jq -r '.mappings["lat"]')
-if [ "$LAT" != "41.921766" ]
-then
-  echo -e "$newhzndevice \nresulted in incorrect response, wrong lat: $RES"
-  exit 2
-fi
-
 # =================================================================
 # run HA tests - device is non-HA, cant use HA config
 
@@ -333,16 +307,6 @@ read -d '' service <<EOF
   "url": "$APITESTURL",
   "versionRange": "1.0.0",
   "attributes": [
-    {
-      "type": "ComputeAttributes",
-      "label": "Compute Resources",
-      "publishable": true,
-      "host_only": false,
-      "mappings": {
-        "ram": 256,
-        "cpus": 1
-      }
-    },
     {
       "type": "HAAttributes",
       "label": "HA Partner",

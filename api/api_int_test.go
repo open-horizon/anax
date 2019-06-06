@@ -148,22 +148,8 @@ func Test_API_attribute_Suite(suite *testing.T) {
 	sps.AppendServiceSpec(sp)
 
 	bF := false
-	loc, err := persistence.SaveOrUpdateAttribute(db, &persistence.LocationAttributes{
-		Meta: &persistence.AttributeMeta{
-			Id:          "",
-			Label:       "My Location",
-			HostOnly:    &bF,
-			Publishable: &bF,
-			Type:        "LocationAttributes",
-		},
-		Lat:                40,
-		Lon:                0.55,
-		LocationAccuracyKM: 1,
-		UseGps:             true,
-	}, "", true)
-	assert.Nil(suite, err)
 
-	_, err = persistence.SaveOrUpdateAttribute(db, &persistence.UserInputAttributes{
+	userInput, err := persistence.SaveOrUpdateAttribute(db, &persistence.UserInputAttributes{
 		Meta: &persistence.AttributeMeta{
 			Id:          "",
 			Label:       "Defs",
@@ -276,33 +262,16 @@ vTLlpah1Y8Dvd1Mg6DorvN7eHb+R9pRYz6m/ll84KeLHyX+ml9Yj9Xem+H7MMYh7
 		assert.EqualValues(t, 0, len(attrs))
 	})
 
-	suite.Run("Multiple attributes returned from GET /attribute", func(t *testing.T) {
-		pp, _ := url.Parse(fmt.Sprintf("%s/%s", recordingServer.URL, "attribute"))
-		attrs := simpleGET(t, pp, http.StatusOK, true)
-		assert.EqualValues(t, 2, len(attrs))
-
-		found := false
-		for _, attr := range attrs {
-			if *(attr.Type) == "LocationAttributes" {
-				found = true
-			}
-		}
-
-		if !found {
-			t.Error("Didn't find LocationAttributes type in returned attrs as expected")
-		}
-	})
-
 	suite.Run("Single return from GET /attribute/{id}", func(t *testing.T) {
 		// querying w/ sensorUrl
 
-		pp, _ := url.Parse(fmt.Sprintf("%s/%s/%s", recordingServer.URL, "attribute", url.PathEscape((*loc).GetMeta().Id)))
+		pp, _ := url.Parse(fmt.Sprintf("%s/%s/%s", recordingServer.URL, "attribute", url.PathEscape((*userInput).GetMeta().Id)))
 		attrs := simpleGET(t, pp, http.StatusOK, true)
 		assert.EqualValues(t, 1, len(attrs))
 	})
 
 	suite.Run("OK returned for HEAD /attribute/{id}", func(t *testing.T) {
-		pp, _ := url.Parse(fmt.Sprintf("%s/%s/%s", recordingServer.URL, "attribute", url.PathEscape((*loc).GetMeta().Id)))
+		pp, _ := url.Parse(fmt.Sprintf("%s/%s/%s", recordingServer.URL, "attribute", url.PathEscape((*userInput).GetMeta().Id)))
 		res, err := http.Head(pp.String())
 		assert.Nil(t, err)
 		assert.NotEqual(t, 0, res.ContentLength)
@@ -415,30 +384,9 @@ vTLlpah1Y8Dvd1Mg6DorvN7eHb+R9pRYz6m/ll84KeLHyX+ml9Yj9Xem+H7MMYh7
 		`), false)
 	})
 
-	suite.Run("Update using PATCH to /attribute/{id} is rejected for unsupported type", func(t *testing.T) {
-		pp, _ := url.Parse(fmt.Sprintf("%s/%s/%s", recordingServer.URL, "attribute", url.PathEscape((*loc).GetMeta().Id)))
-		simpleMod(t, http.MethodPatch, pp, http.StatusBadRequest, []byte(`
-			{
-			"type": "LocationAttributes",
-			"label": "My New Location",
-			"publishable": true
-			}
-		`), false)
-	})
-
 	suite.Run("Removal using DELETE /to/attribute/{id} succeeds for unknown ID", func(t *testing.T) {
 		pp, _ := url.Parse(fmt.Sprintf("%s/%s/%s", recordingServer.URL, "attribute", url.PathEscape("fooo")))
 		simpleMod(t, http.MethodDelete, pp, http.StatusOK, nil, false)
-	})
-
-	suite.Run("Removal using DELETE /to/attribute/{id} succeeds for known ID; record is returned", func(t *testing.T) {
-		pp, _ := url.Parse(fmt.Sprintf("%s/%s/%s", recordingServer.URL, "attribute", url.PathEscape((*loc).GetMeta().Id)))
-		responseAttr := simpleMod(t, http.MethodDelete, pp, http.StatusOK, nil, true)
-		assert.EqualValues(t, "My Location", (*(*responseAttr).Label))
-
-		dbAttr, err := persistence.FindAttributeByKey(db, (*loc).GetMeta().Id)
-		assert.Nil(t, err)
-		assert.Nil(t, *dbAttr)
 	})
 
 	suite.Run("Upload using PUT /publickey/{filename} succeeds with x509 certificate", func(t *testing.T) {

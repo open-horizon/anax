@@ -22,7 +22,11 @@ read -d '' spwsconfig <<EOF
         "HZN_PWS_MODEL": "LaCrosse WS2317",
         "MTN_PWS_MODEL": "LaCrosse WS2317",
         "HZN_PWS_ST_TYPE": "WS23xx",
-        "MTN_PWS_ST_TYPE": "WS23xx"
+        "MTN_PWS_ST_TYPE": "WS23xx",
+        "HZN_LAT": 41.921766,
+        "HZN_LON": -73.894224,
+        "HZN_LOCATION_ACCURACY_KM": 0.5,
+        "HZN_USE_GPS": false
       }
     }
   ]

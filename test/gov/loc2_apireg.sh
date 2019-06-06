@@ -24,7 +24,11 @@ read -d '' slocservice <<EOF
       "host_only": false,
       "mappings": {
         "test": "testValue",
-        "extra": "extraValue"
+        "extra": "extraValue",
+        "HZN_LAT": 41.921766,
+        "HZN_LON": -73.894224,
+        "HZN_LOCATION_ACCURACY_KM": 0.5,
+        "HZN_USE_GPS": false
       }
     }
   ]
@@ -112,7 +116,11 @@ read -d '' slocservice <<EOF
       "host_only": false,
       "mappings": {
         "test": "testValue",
-        "extra": "extraValue"
+        "extra": "extraValue",
+        "HZN_LAT": 41.921766,
+        "HZN_LON": -73.894224,
+        "HZN_LOCATION_ACCURACY_KM": 0.5,
+        "HZN_USE_GPS": false
       }
     }
   ]

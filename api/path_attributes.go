@@ -10,7 +10,6 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
-	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 )
@@ -45,100 +44,6 @@ func generateAttributeMetadata(given Attribute, typeName string) *persistence.At
 		HostOnly:    given.HostOnly,
 		Type:        typeName,
 	}
-}
-
-func parseCompute(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.ComputeAttributes, bool, error) {
-	if permitEmpty {
-		return nil, errorhandler(NewAPIUserInputError("partial update unsupported", "compute.mappings")), nil
-	}
-
-	var err error
-	var ram int64
-	r, exists := (*given.Mappings)["ram"]
-	if !exists {
-		return nil, errorhandler(NewAPIUserInputError("missing key", "compute.mappings.ram")), nil
-	}
-	if _, ok := r.(json.Number); !ok {
-		return nil, errorhandler(NewAPIUserInputError("expected integer", "compute.mappings.ram")), nil
-	} else if ram, err = r.(json.Number).Int64(); err != nil {
-		return nil, errorhandler(NewAPIUserInputError("expected integer", "compute.mappings.ram")), nil
-	}
-	var cpus int64
-	c, exists := (*given.Mappings)["cpus"]
-	if !exists {
-		return nil, errorhandler(NewAPIUserInputError("missing key", "compute.mappings.cpus")), nil
-	}
-	if _, ok := c.(json.Number); !ok {
-		return nil, errorhandler(NewAPIUserInputError("expected integer", "compute.mappings.cpus")), nil
-	} else if cpus, err = c.(json.Number).Int64(); err != nil {
-		return nil, errorhandler(NewAPIUserInputError("expected integer", "compute.mappings.cpus")), nil
-	}
-
-	sps := new(persistence.ServiceSpecs)
-	if given.ServiceSpecs != nil {
-		sps = given.ServiceSpecs
-	}
-
-	return &persistence.ComputeAttributes{
-		Meta:         generateAttributeMetadata(*given, reflect.TypeOf(persistence.ComputeAttributes{}).Name()),
-		ServiceSpecs: sps,
-		CPUs:         cpus,
-		RAM:          ram,
-	}, false, nil
-}
-
-func parseLocation(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.LocationAttributes, bool, error) {
-	if permitEmpty {
-		return nil, errorhandler(NewAPIUserInputError("partial update unsupported", "location.mappings")), nil
-	}
-	var ok bool
-	var err error
-
-	var lat float64
-	la, exists := (*given.Mappings)["lat"]
-	if !exists {
-		return nil, errorhandler(NewAPIUserInputError("missing key", "location.mappings.lat")), nil
-	}
-	if _, ok := la.(json.Number); !ok {
-		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("expected float but is %T", la), "location.mappings.lat")), nil
-	} else if lat, err = la.(json.Number).Float64(); err != nil {
-		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("expected float but is %T", la), "location.mappings.lat")), nil
-	}
-
-	var lon float64
-	lo, exists := (*given.Mappings)["lon"]
-	if !exists {
-		return nil, errorhandler(NewAPIUserInputError("missing key", "location.mappings.lon")), nil
-	}
-	if _, ok := lo.(json.Number); !ok {
-		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("expected float but is %T", la), "location.mappings.lon")), nil
-	} else if lon, err = lo.(json.Number).Float64(); err != nil {
-		return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("expected float but is %T", lo), "location.mappings.lon")), nil
-	}
-
-	var locationAccuracyKM float64
-	lacc, exists := (*given.Mappings)["location_accuracy_km"]
-	if exists {
-		if locationAccuracyKM, err = lacc.(json.Number).Float64(); err != nil {
-			return nil, errorhandler(NewAPIUserInputError(fmt.Sprintf("expected float but is %T", lacc), "location.mappings.location_accuracy_km")), nil
-		}
-	}
-
-	var useGps bool
-	ug, exists := (*given.Mappings)["use_gps"]
-	if exists {
-		if useGps, ok = ug.(bool); !ok {
-			return nil, errorhandler(NewAPIUserInputError("non-boolean value", "location.mappings.use_gps")), nil
-		}
-	}
-
-	return &persistence.LocationAttributes{
-		Meta:               generateAttributeMetadata(*given, reflect.TypeOf(persistence.LocationAttributes{}).Name()),
-		Lat:                lat,
-		Lon:                lon,
-		LocationAccuracyKM: locationAccuracyKM,
-		UseGps:             useGps,
-	}, false, nil
 }
 
 func parseUserInput(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.UserInputAttributes, bool, error) {
@@ -344,22 +249,6 @@ func parseMetering(errorhandler ErrorHandler, permitEmpty bool, given *Attribute
 	}, false, nil
 }
 
-func parseProperty(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.PropertyAttributes, bool, error) {
-	if permitEmpty {
-		return nil, errorhandler(NewAPIUserInputError("partial update unsupported", "property.mappings")), nil
-	}
-
-	sps := new(persistence.ServiceSpecs)
-	if given.ServiceSpecs != nil {
-		sps = given.ServiceSpecs
-	}
-
-	return &persistence.PropertyAttributes{
-		Meta:         generateAttributeMetadata(*given, reflect.TypeOf(persistence.PropertyAttributes{}).Name()),
-		ServiceSpecs: sps,
-		Mappings:     (*given.Mappings)}, false, nil
-}
-
 func parseAgreementProtocol(errorhandler ErrorHandler, permitEmpty bool, given *Attribute) (*persistence.AgreementProtocolAttributes, bool, error) {
 	if permitEmpty {
 		return nil, errorhandler(NewAPIUserInputError("partial update unsupported", "agreementprotocol.mappings")), nil
@@ -436,7 +325,7 @@ func parseAgreementProtocol(errorhandler ErrorHandler, permitEmpty bool, given *
 // AttributeVerifier returns true if there is a handled inputError (one that caused a write to the http responsewriter) and error if there is a system processing problem
 type AttributeVerifier func(attr persistence.Attribute) (bool, error)
 
-func toPersistedAttributesAttachedToService(errorhandler ErrorHandler, persistedDevice *persistence.ExchangeDevice, defaultRAM int64, attrs []Attribute, sp *persistence.ServiceSpec, additionalVerifiers []AttributeVerifier) ([]persistence.Attribute, bool, error) {
+func toPersistedAttributesAttachedToService(errorhandler ErrorHandler, persistedDevice *persistence.ExchangeDevice, attrs []Attribute, sp *persistence.ServiceSpec, additionalVerifiers []AttributeVerifier) ([]persistence.Attribute, bool, error) {
 
 	additionalVerifiers = append(additionalVerifiers, func(attr persistence.Attribute) (bool, error) {
 		// can't specify service specs in attributes that are a part of a service
@@ -455,7 +344,7 @@ func toPersistedAttributesAttachedToService(errorhandler ErrorHandler, persisted
 		return persistenceAttrs, inputErr, err
 	}
 
-	persistenceAttrs = FinalizeAttributesSpecifiedInService(defaultRAM, sp, persistenceAttrs)
+	persistenceAttrs = FinalizeAttributesSpecifiedInService(sp, persistenceAttrs)
 
 	return persistenceAttrs, inputErr, err
 }
@@ -520,20 +409,6 @@ func ValidateAndConvertAPIAttribute(errorhandler ErrorHandler, permitEmpty bool,
 		// attribute meta is good, deserialize (except architecture, we add our own for that)
 		switch *given.Type {
 
-		case reflect.TypeOf(persistence.ComputeAttributes{}).Name():
-			attr, inputErr, err := parseCompute(errorhandler, permitEmpty, &given)
-			if err != nil || inputErr {
-				return nil, inputErr, err
-			}
-			attribute = attr
-
-		case reflect.TypeOf(persistence.LocationAttributes{}).Name():
-			attr, inputErr, err := parseLocation(errorhandler, permitEmpty, &given)
-			if err != nil || inputErr {
-				return nil, inputErr, err
-			}
-			attribute = attr
-
 		case reflect.TypeOf(persistence.UserInputAttributes{}).Name():
 			attr, inputErr, err := parseUserInput(errorhandler, permitEmpty, &given)
 			if err != nil || inputErr {
@@ -552,13 +427,6 @@ func ValidateAndConvertAPIAttribute(errorhandler ErrorHandler, permitEmpty bool,
 			attr, inputErr, err := parseMetering(errorhandler, permitEmpty, &given)
 			if err != nil || inputErr {
 				return nil, inputErr, err
-			}
-			attribute = attr
-
-		case reflect.TypeOf(persistence.PropertyAttributes{}).Name():
-			attr, inputErr, err := parseProperty(errorhandler, permitEmpty, &given)
-			if err != nil || inputErr {
-				return attribute, inputErr, err
 			}
 			attribute = attr
 
@@ -625,45 +493,10 @@ func toOutModel(persisted persistence.Attribute) *Attribute {
 	}
 }
 
-func FinalizeAttributesSpecifiedInService(defaultRAM int64, sp *persistence.ServiceSpec, attributes []persistence.Attribute) []persistence.Attribute {
+func FinalizeAttributesSpecifiedInService(sp *persistence.ServiceSpec, attributes []persistence.Attribute) []persistence.Attribute {
 
 	sps := new(persistence.ServiceSpecs)
 	sps.AppendServiceSpec(*sp)
-
-	// check for required
-	cType := reflect.TypeOf(persistence.ComputeAttributes{}).Name()
-	if attributesContains(attributes, sp, cType) == nil {
-		computePub := true
-
-		attributes = append(attributes, &persistence.ComputeAttributes{
-			Meta: &persistence.AttributeMeta{
-				Id:          "compute",
-				Label:       "Compute Resources",
-				Publishable: &computePub,
-				Type:        cType,
-			},
-			ServiceSpecs: sps,
-			CPUs:         1,
-			RAM:          defaultRAM,
-		})
-	}
-
-	aType := reflect.TypeOf(persistence.ArchitectureAttributes{}).Name()
-	// a little weird; could a user give us an alternate architecture than the one we're going to publising in the prop?
-	if attributesContains(attributes, sp, aType) == nil {
-		// make a default
-
-		archPub := true
-		attributes = append(attributes, &persistence.ArchitectureAttributes{
-			Meta: &persistence.AttributeMeta{
-				Id:          "architecture",
-				Label:       "Architecture",
-				Publishable: &(archPub),
-				Type:        aType,
-			},
-			Architecture: cutil.ArchString(),
-		})
-	}
 
 	for _, attr := range attributes {
 		sps := persistence.GetAttributeServiceSpecs(&attr)

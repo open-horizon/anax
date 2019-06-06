@@ -6,15 +6,6 @@ This sample will work as-is with the IBM netspeed pattern.
 {
 	/* Variables that are passed to all containers, or settings for Horizon (depending on the type). */
 	"global": [
-		{
-			"type": "LocationAttributes",   /* required to tell horizon where this node is */
-			"variables": {
-				"lat": 43.123,     /* this is passed to each container as HZN_LAT */
-				"lon": -72.123,    /* this is passed to each container as HZN_LON */
-				"use_gps": false,    /* true if you have, and want to use, an attached GPS sensor. Passed to each container as HZN_USE_GPS. */
-				"location_accuracy_km": 0.0   /* Make the node location inaccurate by this number of KM to protect privacy. */
-			}
-		}
 	],
 	/* You only need to list the services that need input from you the edge node owner */
 	"services": [
