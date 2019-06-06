@@ -34,6 +34,12 @@ func Update(fileName string) {
 
 }
 
+func Patch(patch string) {
+	cliutils.HorizonPutPost(http.MethodPatch, "node/policy", []int{201, 200}, patch)
+
+	fmt.Println("Horizon node policy updated.")
+}
+
 func readInputFile(filePath string, inputFileStruct *externalpolicy.ExternalPolicy) {
 	newBytes := cliconfig.ReadJsonFileWithLocalConfig(filePath)
 	err := json.Unmarshal(newBytes, inputFileStruct)
