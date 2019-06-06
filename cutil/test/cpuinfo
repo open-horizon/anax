@@ -1,0 +1,50 @@
+processor	: 0
+vendor_id	: blah
+cpu family	: 6
+model		: 79
+model name	: blahblah
+stepping	: 1
+microcode	: 0xb00002e
+cpu MHz		: 2100.046
+cache size	: 40960 KB
+physical id	: 0
+siblings	: 2
+core id		: 0
+cpu cores	: 2
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+bogomips	: 4200.09
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 46 bits physical, 48 bits virtual
+power management:
+
+processor	: 1
+vendor_id	: blah
+cpu family	: 6
+model		: 79
+model name	: blahblah
+stepping	: 1
+microcode	: 0xb00002e
+cpu MHz		: 2100.046
+cache size	: 40960 KB
+physical id	: 0
+siblings	: 2
+core id		: 2
+cpu cores	: 2
+apicid		: 2
+initial apicid	: 2
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+bogomips	: 4200.09
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 46 bits physical, 48 bits virtual
+power management:
+

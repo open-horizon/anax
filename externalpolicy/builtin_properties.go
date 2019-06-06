@@ -1,8 +1,9 @@
 package externalpolicy
 
 import (
+	"github.com/golang/glog"
+	"github.com/open-horizon/anax/cutil"
 	"runtime"
-	"syscall"
 )
 
 // These are built-in property names that can be used in the policies.
@@ -29,20 +30,26 @@ const MAX_MEMEORY = 1048576 // the unit is MB. This is 1000G
 func CreateNodeBuiltInPolicy(availableMem bool) *ExternalPolicy {
 	nodeBuiltInProps := new(PropertyList)
 
-	nodeBuiltInProps.Add_Property(Property_Factory(PROP_NODE_CPU, float64(runtime.NumCPU())), false)
+	cpu, err := cutil.GetCPUCount("")
+	if err != nil {
+		glog.Warningf("Failed to get cpu count for the local node. %v", err)
+		cpu = 1
+	}
+
+	total_mem, avail_mem, err := cutil.GetMemInfo("")
+	if err != nil {
+		glog.Warningf("Failed to get memory info for the local node. %v", err)
+		total_mem = 0
+		avail_mem = 0
+	}
+
+	nodeBuiltInProps.Add_Property(Property_Factory(PROP_NODE_CPU, float64(cpu)), false)
 	nodeBuiltInProps.Add_Property(Property_Factory(PROP_NODE_ARCH, runtime.GOARCH), false)
 
-	var info syscall.Sysinfo_t
-	err := syscall.Sysinfo(&info)
-	if err != nil || info.Totalram == 0 {
-		nodeBuiltInProps.Add_Property(Property_Factory(PROP_NODE_MEMORY, float64(MAX_MEMEORY)), false)
+	if availableMem {
+		nodeBuiltInProps.Add_Property(Property_Factory(PROP_NODE_MEMORY, float64(avail_mem)), false)
 	} else {
-		if availableMem {
-			// TODO-new get available memory
-			nodeBuiltInProps.Add_Property(Property_Factory(PROP_NODE_MEMORY, bytesToMegaBytes(info.Totalram)), false)
-		} else {
-			nodeBuiltInProps.Add_Property(Property_Factory(PROP_NODE_MEMORY, bytesToMegaBytes(info.Totalram)), false)
-		}
+		nodeBuiltInProps.Add_Property(Property_Factory(PROP_NODE_MEMORY, float64(total_mem)), false)
 	}
 
 	buitInPol := ExternalPolicy{
@@ -69,9 +76,4 @@ func CreateServiceBuiltInPolicy(svcName, svcOrg, svcVersion, svcArch string) *Ex
 	}
 
 	return &buitInPol
-}
-
-// converts bytes to megabytes
-func bytesToMegaBytes(c uint64) float64 {
-	return float64(c >> 20)
 }
