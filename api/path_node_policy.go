@@ -52,6 +52,30 @@ func UpdateNodePolicy(nodePolicy *externalpolicy.ExternalPolicy,
 	}
 }
 
+// Update a single field of the policy object in the local node db and in the exchange
+func PatchNodePolicy(patchObject interface{},
+	errorhandler DeviceErrorHandler,
+	nodeGetPolicyHandler exchange.NodePolicyHandler,
+	nodePatchPolicyHandler exchange.PutNodePolicyHandler,
+	db *bolt.DB) (bool, *externalpolicy.ExternalPolicy, []*events.NodePolicyMessage) {
+
+	pDevice, err := persistence.FindExchangeDevice(db)
+	if err != nil {
+		return errorhandler(nil, NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err))), nil, nil
+	} else if pDevice == nil {
+		return errorhandler(nil, NewNotFoundError("Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path.", "node")), nil, nil
+	}
+
+	if nodePolicy, err := nodepolicy.PatchNodePolicy(pDevice, db, patchObject, nodeGetPolicyHandler, nodePatchPolicyHandler); err != nil {
+		return errorhandler(pDevice, NewSystemError(fmt.Sprintf("Unable to sync the local db with the exchange node policy. %v", err))), nil, nil
+	} else {
+		LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("New node policy: %v", patchObject), persistence.EC_NODE_POLICY_UPDATED, pDevice)
+
+		nodePolicyUpdated := events.NewNodePolicyMessage(events.UPDATE_POLICY)
+		return false, nodePolicy, []*events.NodePolicyMessage{nodePolicyUpdated}
+	}
+}
+
 // Delete the node policy object.
 func DeleteNodePolicy(errorhandler DeviceErrorHandler, db *bolt.DB,
 	nodeGetPolicyHandler exchange.NodePolicyHandler,

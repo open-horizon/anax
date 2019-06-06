@@ -115,11 +115,17 @@ func (p PropertyList) IsSame(compare PropertyList) bool {
 
 // This function compares 2 property lists to determine if they set different values on the
 // same property. This would make them incompatible.
-func (self *PropertyList) Compatible_With(other *PropertyList) error {
+func (self *PropertyList) Compatible_With(other *PropertyList, ignoreBuiltIn bool) error {
 	for _, self_ele := range *self {
 		for _, other_ele := range *other {
 			if self_ele.Name == other_ele.Name && !self_ele.IsSame(other_ele) {
-				return errors.New(fmt.Sprintf("Property %v has value %v and %v.", self_ele.Name, self_ele.Value, other_ele.Value))
+				// the built-in properties available memory and cpu could change from time to time.
+				// so we ingnore the error here if ignoreBuiltIn is true
+				if ignoreBuiltIn && (self_ele.Name == PROP_NODE_MEMORY || self_ele.Name == PROP_NODE_CPU) {
+					continue
+				} else {
+					return errors.New(fmt.Sprintf("Property %v has value %v and %v.", self_ele.Name, self_ele.Value, other_ele.Value))
+				}
 			}
 		}
 	}

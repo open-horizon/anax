@@ -75,6 +75,7 @@ const (
 	EC_NODE_POLICY_UPDATED         = "update node policy"
 	EC_NODE_POLICY_DELETED         = "delete node policy"
 	EC_ERROR_NODE_POLICY_UPDATE    = "error_policy_update"
+	EC_ERROR_NODE_POLICY_PATCH     = "error_policy_patch"
 	EC_START_POLICY_ADVERTISING    = "start_policy_advertising"
 	EC_COMPLETE_POLICY_ADVERTISING = "complete_policy_advertising"
 	EC_ERROR_POLICY_ADVERTISING    = "error_policy_advertising"
