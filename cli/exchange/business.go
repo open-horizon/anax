@@ -1,6 +1,7 @@
 package exchange
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/businesspolicy"
@@ -23,11 +24,15 @@ func BusinessListPolicy(org string, credToUse string, policy string) {
 		cliutils.Fatal(cliutils.NOT_FOUND, "Policy %s not found in org %s", policy, org)
 	}
 
-	jsonBytes, err := json.MarshalIndent(policyList.BusinessPolicy, "", cliutils.JSON_INDENT)
+	buf := new(bytes.Buffer)
+	enc := json.NewEncoder(buf)
+	enc.SetEscapeHTML(false)
+	enc.SetIndent("", cliutils.JSON_INDENT)
+	err := enc.Encode(policyList.BusinessPolicy)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange business listpolicy' output: %v", err)
 	}
-	fmt.Println(string(jsonBytes))
+	fmt.Println(string(buf.String()))
 }
 
 //BusinessAddPolicy will add a new policy or overwrite an existing policy byt he same name in the Horizon Exchange
