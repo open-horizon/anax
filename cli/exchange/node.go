@@ -22,6 +22,9 @@ type ExchangeNodes struct {
 func NodeList(org string, credToUse string, node string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
 	org, node = cliutils.TrimOrg(org, node)
+	if node == "*" {
+		node = ""
+	}
 	if namesOnly && node == "" {
 		// Only display the names
 		var resp ExchangeNodes

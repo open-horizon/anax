@@ -18,6 +18,9 @@ type ExchangeAgbots struct {
 func AgbotList(org string, userPw string, agbot string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	org, agbot = cliutils.TrimOrg(org, agbot)
+	if agbot == "*" {
+		agbot = ""
+	}
 	if namesOnly && agbot == "" {
 		// Only display the names
 		var resp ExchangeAgbots
