@@ -19,6 +19,18 @@ import (
 	"strings"
 )
 
+const SERVICE_POLICY_TEMPLATE_OBJECT = `{
+  "properties": [   /* A list of policy properties that describe the object. */
+    {
+      "name": "",
+      "value": nil
+    }
+  ],
+  "constraints": [  /* A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||). */
+    ""
+  ]
+}`
+
 type AbstractServiceFile interface {
 	GetOrg() string
 	GetURL() string
@@ -538,4 +550,9 @@ func ServiceRemovePolicy(org string, credToUse string, service string, force boo
 	//remove service policy
 	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
 	fmt.Println("Service policy removed.")
+}
+
+// Display an empty service policy template as an object.
+func ServiceNewPolicy() {
+	fmt.Println(SERVICE_POLICY_TEMPLATE_OBJECT)
 }

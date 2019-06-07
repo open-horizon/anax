@@ -9,6 +9,18 @@ import (
 	"net/http"
 )
 
+const POLICY_TEMPLATE_OBJECT = `{
+  "properties": [   /* A list of policy properties that describe the object. */
+    {
+      "name": "",
+      "value": nil
+    }
+  ],
+  "constraints": [  /* A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||). */
+    ""
+  ]
+}`
+
 func List() {
 	// Get the node policy info
 	nodePolicy := externalpolicy.ExternalPolicy{}
@@ -56,4 +68,9 @@ func Remove(force bool) {
 	cliutils.HorizonDelete("node/policy", []int{200, 204}, false)
 
 	fmt.Println("Horizon node policy deleted.")
+}
+
+// Display an empty policy template as an object.
+func New() {
+	fmt.Println(POLICY_TEMPLATE_OBJECT)
 }
