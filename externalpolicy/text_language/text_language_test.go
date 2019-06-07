@@ -11,6 +11,7 @@ func Test_Validate_Succeed1(t *testing.T) {
 	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
 	constraintStrings := []string{
 		"iame2edev == true && cpu == 3 || memory <= 32",
+		"iame2edev == \"true\"",
 		"hello == \"world\"",
 		"hello in \"'hi world', 'test'\"",
 		"eggs == \"truck load\" AND certification in \"USDA, Organic\"",
@@ -87,26 +88,6 @@ func Test_Validate_Failed2(t *testing.T) {
 
 func Test_Validate_Failed3(t *testing.T) {
 
-	// true should only supported as boolean value, not string value
-	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
-	constraintStrings := []string{"version in [1.1.1,INFINITY) OR USDA == \"true\""}
-	ce := constraintStrings
-
-	var validated bool
-	var err error
-
-	validated, err = textConstraintLanguagePlugin.Validate(interface{}(ce))
-	if validated == true {
-		t.Errorf("Validation should fail but not, err: %v", err)
-	} else if err == nil {
-		t.Errorf("Validated should fail and return err, but didn't")
-	} else if err.Error() != "Expression: USDA == \"true\" is not valid" {
-		t.Errorf("Error message: %v is not the expected error message", err)
-	}
-}
-
-func Test_Validate_Failed4(t *testing.T) {
-
 	// string must be quoted if it has white space
 	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
 	constraintStrings := []string{"eggs == truck load && certification == USDA"}
@@ -125,7 +106,7 @@ func Test_Validate_Failed4(t *testing.T) {
 	}
 }
 
-func Test_Validate_Failed5(t *testing.T) {
+func Test_Validate_Failed4(t *testing.T) {
 
 	// invalid logical operator 'abcdefg'
 	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
@@ -164,7 +145,7 @@ func Test_GetNextExpression_Succeed(t *testing.T) {
 		}
 	}
 
-	ce = "iame2edev == true && cpu == 3 || memory <= 32 AND hello == \"world\" && hello in \"'hi world', 'test'\" AND eggs == \"truck load\" AND certification in \"USDA, Organic\" AND version == 1.1.1 OR USDA == true AND version in [1.1.1,INFINITY) OR cert == USDA"
+	ce = "iame2edev == true && iame2edev == \"true\" && cpu == 3 || memory <= 32 AND hello == \"world\" && hello in \"'hi world', 'test'\" AND eggs == \"truck load\" AND certification in \"USDA, Organic\" AND version == 1.1.1 OR USDA == true AND version in [1.1.1,INFINITY) OR cert == USDA"
 	rem = ce
 	for {
 		_, rem, err = textConstraintLanguagePlugin.GetNextExpression(rem)

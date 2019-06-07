@@ -202,10 +202,6 @@ func canParseToString(s string) bool {
 	if len(s) > 0 && s[0] == '"' && s[len(s)-1] == '"' {
 		content := strings.Trim(s, "\"")
 		glog.V(5).Infof(formatLogString(fmt.Sprintf("content after removing quote: %v", content)))
-		if strings.ToLower(content) == "true" || strings.ToLower(content) == "false" {
-
-			return false
-		}
 	}
 
 	if strings.Contains(s, " ") {
