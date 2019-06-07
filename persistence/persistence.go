@@ -200,7 +200,9 @@ func (a *EstablishedAgreement) GetDeploymentConfig() DeploymentConfig {
 		// The extended deployment config must be in use, so return it.
 	} else if IsHelm(a.ExtendedDeployment) {
 		hd := new(HelmDeploymentConfig)
-		hd.FromPersistentForm(a.ExtendedDeployment)
+		if err := hd.FromPersistentForm(a.ExtendedDeployment); err != nil {
+			glog.Errorf("Unable to convert deployment %v to persistent form, error %v", a.ExtendedDeployment, err)
+		}
 		return hd
 	}
 

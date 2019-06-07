@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
+	"github.com/open-horizon/edge-sync-service/common"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -765,6 +766,12 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 						return nil, nil
 
 					case *ObjectDestinationPolicies:
+						return nil, nil
+
+					case *common.MetaData:
+						return nil, nil
+
+					case *ObjectDestinationStatuses:
 						return nil, nil
 
 					default:

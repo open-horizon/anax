@@ -47,7 +47,9 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		pprof.StartCPUProfile(f)
+		if err := pprof.StartCPUProfile(f); err != nil {
+			panic(err)
+		}
 		glog.V(2).Infof("Started CPU profiling. Writing to: %v", f.Name())
 	}
 
@@ -101,7 +103,9 @@ func main() {
 			dbFile := path.Join(cfg.Edge.DBPath, "anax.db")
 			glog.Infof("Removing local db file %v.", dbFile)
 			if persistence.GetRemoveDatabaseOnExit() {
-				os.Remove(dbFile)
+				if err := os.Remove(dbFile); err != nil {
+					glog.Infof("Error Removing local db file %v, error %v", dbFile, err)
+				}
 			}
 		}
 		if agbotDB != nil {
@@ -165,7 +169,9 @@ func main() {
 		dbFile := path.Join(cfg.Edge.DBPath, "anax.db")
 		glog.Infof("Removing local db file %v.", dbFile)
 		if persistence.GetRemoveDatabaseOnExit() {
-			os.Remove(dbFile)
+			if err := os.Remove(dbFile); err != nil {
+				glog.Infof("Error Removing local db file %v, error %v", dbFile, err)
+			}
 		}
 	}
 

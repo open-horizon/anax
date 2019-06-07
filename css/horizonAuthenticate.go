@@ -174,7 +174,7 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKe
 			// We have a valid agbot identity. Agbots only call a few of the APIs. Verify that it's one of these:
 			// org - this is the API used to query for object policies
 			if !strings.Contains(otherOrg, "/") {
-				authCode = security.AuthAdmin
+				authCode = security.AuthSyncAdmin // This makes the agbot a super user in the CSS so that it can query multiple orgs.
 				authOrg = otherOrg
 				authId = parts[1]
 			}

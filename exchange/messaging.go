@@ -422,8 +422,8 @@ func GetKeys(keyPath string) (*rsa.PublicKey, *rsa.PrivateKey, error) {
 					Bytes:   pubKeyBytes}
 				if err := pem.Encode(pubFile, pubEnc); err != nil {
 					return nil, nil, errors.New(fmt.Sprintf("Could not encode public key to file, error %v", err))
-				} else {
-					pubFile.Close()
+				} else if err := pubFile.Close(); err != nil {
+					return nil, nil, errors.New(fmt.Sprintf("Could not close public key file %v, error %v", pubFilepath, err))
 				}
 			}
 
@@ -433,8 +433,8 @@ func GetKeys(keyPath string) (*rsa.PublicKey, *rsa.PrivateKey, error) {
 				Bytes:   x509.MarshalPKCS1PrivateKey(privateKey)}
 			if err := pem.Encode(privFile, privEnc); err != nil {
 				return nil, nil, errors.New(fmt.Sprintf("Could not encode private key to file, error %v", err))
-			} else {
-				privFile.Close()
+			} else if err := privFile.Close(); err != nil {
+				return nil, nil, errors.New(fmt.Sprintf("Could not close private key file %v, error %v", privFilepath, err))
 			}
 
 			gPublicKey = publicKey

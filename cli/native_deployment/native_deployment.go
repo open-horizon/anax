@@ -194,7 +194,9 @@ func SignImagesFromDeploymentMap(deployment map[string]interface{}, dontTouchIma
 			for k, svc := range services {
 				switch s := svc.(type) {
 				case map[string]interface{}:
-					CheckDeploymentService(k, s)
+					if err := CheckDeploymentService(k, s); err != nil {
+						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "%v", err)
+					}
 					switch image := s["image"].(type) {
 					case string:
 						domain, path, tag, digest := cutil.ParseDockerImagePath(image)

@@ -392,6 +392,7 @@ type ContainerWorker struct {
 	client            *docker.Client
 	iptables          *iptables.IPTables
 	authMgr           *resource.AuthenticationManager
+	pattern           string
 }
 
 func (cw *ContainerWorker) GetClient() *docker.Client {
@@ -415,14 +416,15 @@ func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, e
 		client:     client,
 		iptables:   nil,
 		authMgr:    resource.NewAuthenticationManager(config.GetFileSyncServiceAuthPath()),
+		pattern:    "",
 	}, nil
 }
 
 func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB, am *resource.AuthenticationManager) *ContainerWorker {
 
-	// if config.Edge.ServiceStorage is not empty, then we assume that the local file system directory will
+	// If config.Edge.ServiceStorage is not empty, then we assume that the local file system directory will
 	// be used for the storage of the service container.
-	// if config.Edge.ServiceStorage is empty, docker volume will be used instead for the storage of the service container.
+	// If config.Edge.ServiceStorage is empty, docker volume will be used instead for the storage of the service container.
 	if config.Edge.ServiceStorage != "" {
 		if err := unix.Access(config.Edge.ServiceStorage, unix.W_OK); err != nil {
 			glog.Errorf("Unable to access service storage dir: %v. Error: %v", config.Edge.ServiceStorage, err)
@@ -437,12 +439,18 @@ func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB, 
 		glog.Errorf("Failed to instantiate docker Client: %v", err)
 		panic("Unable to instantiate docker Client")
 	} else {
+
+		pattern := ""
+		if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
+			pattern = dev.Pattern
+		}
 		worker := &ContainerWorker{
 			BaseWorker: worker.NewBaseWorker(name, config, nil),
 			db:         db,
 			client:     client,
 			iptables:   ipt,
 			authMgr:    am,
+			pattern:    pattern,
 		}
 		worker.SetDeferredDelay(15)
 
@@ -458,6 +466,10 @@ func (w *ContainerWorker) Messages() chan events.Message {
 func (w *ContainerWorker) NewEvent(incoming events.Message) {
 
 	switch incoming.(type) {
+	case *events.EdgeRegisteredExchangeMessage:
+		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
+		w.pattern = msg.Pattern()
+
 	case *events.ImageFetchMessage:
 		msg, _ := incoming.(*events.ImageFetchMessage)
 		switch msg.Event().Id {
@@ -954,7 +966,7 @@ func (b *ContainerWorker) workloadStorageDir(agreementId string) (string, bool) 
 }
 
 // This function creates the containers, volumes, networks for the given agreement or service.
-func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol string, configure *events.ContainerConfig, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]docker.ContainerNetwork, serviceURL string) (persistence.DeploymentConfig, error) {
+func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol string, configure *events.ContainerConfig, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]docker.ContainerNetwork, serviceURL string, sVer string) (persistence.DeploymentConfig, error) {
 
 	// local helpers
 	fail := func(container *docker.Container, name string, err error) error {
@@ -1028,9 +1040,14 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 		// No need to create volume separately here because docker will automatically create it if it does not exist.
 	}
 
-	// Create the FSS authentication credentials for this container.
-	if err := b.GetAuthenticationManager().CreateCredential(agreementId, serviceURL); err != nil {
-		glog.Errorf("Failed to create FSS Authentication credential file for %v, error %v", agreementId, err)
+	// Create the MMS authentication credentials for this container. The only time we need the service version to be
+	// part of authentication is when policy is in use.
+	serviceVersion := ""
+	if b.pattern == "" {
+		serviceVersion = sVer
+	}
+	if err := b.GetAuthenticationManager().CreateCredential(agreementId, serviceURL, serviceVersion); err != nil {
+		glog.Errorf("Failed to create MMS Authentication credential file for %v, error %v", agreementId, err)
 	}
 
 	servicePairs, err := b.finalizeDeployment(agreementId, deployment, environmentAdditions, workloadRWStorageDir, b.Config.Edge.DefaultCPUSet, b.Config.GetFileSyncServiceAPIUnixDomainSocketPath())
@@ -1280,9 +1297,10 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			// Each service has an identity that is based on its service defintion URL and Org. This identity is what we can use to
 			// authenticate a service to an API that is hosted by Anax.
 			serviceIdentity := cutil.FormOrgSpecUrl(cutil.NormalizeURL(ags[0].RunningWorkload.URL), ags[0].RunningWorkload.Org)
+			sVer := ags[0].RunningWorkload.Version
 
 			// Create the docker configuration and launch the containers.
-			if deploymentConfig, err := b.ResourcesCreate(agreementId, cmd.AgreementLaunchContext.AgreementProtocol, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_children_networks, serviceIdentity); err != nil {
+			if deploymentConfig, err := b.ResourcesCreate(agreementId, cmd.AgreementLaunchContext.AgreementProtocol, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer); err != nil {
 				eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error starting containers: %v", err), persistence.EC_ERROR_START_CONTAINER, ags[0])
 				glog.Errorf("Error starting containers: %v", err)
 				b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, deploymentConfig) // still using deployment here, need it to shutdown containers
@@ -1410,9 +1428,10 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		// Each service has an identity that is based on its service defintion URL and Org. This identity is what we can use to
 		// authenticate a service to an API that is hosted by Anax.
 		serviceIdentity := cutil.FormOrgSpecUrl(cutil.NormalizeURL(lc.ServicePathElement.URL), lc.ServicePathElement.Org)
+		sVer := lc.ServicePathElement.Version
 
 		// Get the container started.
-		if deployment, err := b.ResourcesCreate(lc.Name, "", &lc.Configure, deploymentDesc, []byte(""), *lc.EnvironmentAdditions, ms_children_networks, serviceIdentity); err != nil {
+		if deployment, err := b.ResourcesCreate(lc.Name, "", &lc.Configure, deploymentDesc, []byte(""), *lc.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer); err != nil {
 			log_str := fmt.Sprintf("Error starting containers for agreement %v: %v", lc.AgreementIds, err)
 			if lc.IsRetry {
 				log_str = fmt.Sprintf("Error restarting containers for agreements %v: %v", lc.AgreementIds, err)
@@ -1830,7 +1849,7 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 		return nil
 	}
 
-	b.ContainersMatchingAgreement(agreements, true, destroy)
+	err = b.ContainersMatchingAgreement(agreements, true, destroy)
 	if err != nil {
 		glog.Errorf("Error removing containers for %v. Error: %v", agreements, err)
 	}

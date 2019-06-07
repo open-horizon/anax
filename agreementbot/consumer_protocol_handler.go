@@ -39,6 +39,7 @@ type ConsumerProtocolHandler interface {
 	HandlePolicyDeleted(cmd *PolicyDeletedCommand, cph ConsumerProtocolHandler)
 	HandleServicePolicyChanged(cmd *ServicePolicyChangedCommand, cph ConsumerProtocolHandler)
 	HandleServicePolicyDeleted(cmd *ServicePolicyDeletedCommand, cph ConsumerProtocolHandler)
+	HandleMMSObjectPolicy(cmd *MMSObjectPolicyEventCommand, cph ConsumerProtocolHandler)
 	HandleWorkloadUpgrade(cmd *WorkloadUpgradeCommand, cph ConsumerProtocolHandler)
 	HandleMakeAgreement(cmd *MakeAgreementCommand, cph ConsumerProtocolHandler)
 	HandleStopProtocol(cph ConsumerProtocolHandler)
@@ -370,6 +371,16 @@ func (b *BaseConsumerProtocolHandler) HandleServicePolicyDeleted(cmd *ServicePol
 	} else {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error searching database: %v", err)))
 	}
+}
+
+func (b *BaseConsumerProtocolHandler) HandleMMSObjectPolicy(cmd *MMSObjectPolicyEventCommand, cph ConsumerProtocolHandler) {
+	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received object policy change command.")))
+	agreementWork := ObjectPolicyChange{
+		workType: MMS_OBJECT_POLICY,
+		Event:    cmd.Msg,
+	}
+	cph.WorkQueue() <- agreementWork
+	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued object policy change command.")))
 }
 
 func (b *BaseConsumerProtocolHandler) CancelAgreement(ag persistence.Agreement, reason string, cph ConsumerProtocolHandler) {

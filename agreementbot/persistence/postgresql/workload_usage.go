@@ -281,13 +281,19 @@ func (db *AgbotPostgresqlDB) UpdateWUAgreementId(deviceid string, policyName str
 		if tx, err := db.db.Begin(); err != nil {
 			return nil, err
 		} else if err := db.deleteWU(tx, deviceid, policyName); err != nil {
-			tx.Rollback()
+			if err := tx.Rollback(); err != nil {
+				glog.Errorf(fmt.Sprintf("Unable to rollback Workload Usage delete when moving to another partition, error %v", err))
+			}
 			return nil, err
 		} else if err := db.insertWorkloadUsage(tx, wlUsage); err != nil {
-			tx.Rollback()
+			if err := tx.Rollback(); err != nil {
+				glog.Errorf(fmt.Sprintf("Unable to rollback Workload Usage insert when moving to another partition, error %v", err))
+			}
 			return nil, err
 		} else {
-			tx.Commit()
+			if err := tx.Commit(); err != nil {
+				return nil, errors.New(fmt.Sprintf("Unable to commit movement of workload usage record to new partition, error %v", err))
+			}
 		}
 	}
 
@@ -309,8 +315,7 @@ func (db *AgbotPostgresqlDB) DeleteWorkloadUsage(deviceid string, policyName str
 	if err := db.deleteWU(tx, deviceid, policyName); err != nil {
 		return err
 	} else {
-		tx.Commit()
-		return nil
+		return tx.Commit()
 	}
 }
 
@@ -333,9 +338,8 @@ func (db *AgbotPostgresqlDB) wrapWUTransaction(deviceid string, policyName strin
 		tx.Rollback()
 		return err
 	} else {
-		tx.Commit()
+		return tx.Commit()
 	}
-	return nil
 
 }
 

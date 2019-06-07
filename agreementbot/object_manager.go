@@ -4,9 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/semanticversion"
+	"github.com/open-horizon/edge-sync-service/common"
 	"sync"
 	"time"
 )
@@ -14,15 +17,19 @@ import (
 // This is the main object that manages the cache of object policies. It uses the agbot's served business policies configuration
 // to figure out which orgs it is going to serve objects from.
 type MMSObjectPolicyManager struct {
-	orgMapLock     sync.Mutex                                   // The lock that protects the org map.
-	spMapLock      sync.Mutex                                   // The lock that protects the map of ServedPolicies because it is referenced from another thread.
-	orgMap         map[string]map[string][]MMSObjectPolicyEntry // The list of object policies in the cache.
-	ServedPolicies map[string]exchange.ServedBusinessPolicy     // served node org, business policy org and business policy triplets. The key is the triplet exchange id.
+	orgMapLock        sync.Mutex                                   // The lock that protects the org map.
+	spMapLock         sync.Mutex                                   // The lock that protects the map of ServedOrgs because it is referenced from another thread.
+	orgMap            map[string]map[string][]MMSObjectPolicyEntry // The list of object policies in the cache.
+	ServedOrgs        map[string]exchange.ServedBusinessPolicy     // The served node org, business policy org and business policy triplets. The key is the triplet exchange id.
+	garbageCollection int64                                        // Last time garbage collection was done.
+	config            *config.HorizonConfig
 }
 
-func NewMMSObjectPolicyManager() *MMSObjectPolicyManager {
+func NewMMSObjectPolicyManager(cfg *config.HorizonConfig) *MMSObjectPolicyManager {
 	m := &MMSObjectPolicyManager{
-		orgMap: make(map[string]map[string][]MMSObjectPolicyEntry),
+		orgMap:            make(map[string]map[string][]MMSObjectPolicyEntry),
+		garbageCollection: time.Now().Unix(),
+		config:            cfg,
 	}
 	return m
 }
@@ -44,23 +51,38 @@ func (m *MMSObjectPolicyManager) hasOrg(org string) bool {
 }
 
 // Retrieve the object policy from the map of policies. The input serviceName is assumed to be org qualified.
-func (m *MMSObjectPolicyManager) GetObjectPolicies(org string, serviceName string) *exchange.ObjectDestinationPolicies {
+func (m *MMSObjectPolicyManager) GetObjectPolicies(org string, serviceName string, arch string, version string) *exchange.ObjectDestinationPolicies {
 	m.orgMapLock.Lock()
 	defer m.orgMapLock.Unlock()
+
+	glog.V(5).Infof(mmsLogString(fmt.Sprintf("retrieving objects for %v %v %v %v", org, serviceName, arch, version)))
 
 	objPolicies := new(exchange.ObjectDestinationPolicies)
 
 	if serviceMap, ok := m.orgMap[org]; ok {
 		if entryList, found := serviceMap[serviceName]; found {
 			for _, entry := range entryList {
+
+				glog.V(5).Infof(mmsLogString(fmt.Sprintf("examining entry %v", entry)))
+				// Filter out the objects that don't meet the arch and version specification of the service.
+				// The arch in the entry's service ID has already been canonicalized.
+				if entry.ServiceID.Arch != "*" && entry.ServiceID.Arch != arch {
+					continue
+				}
+
+				if ok, err := entry.VersionExpression.Is_within_range(version); err != nil {
+					glog.Errorf(mmsLogString(fmt.Sprintf("unable to check version %v against range %v for %v, error %v", version, entry.VersionExpression, serviceName, err)))
+					continue
+				} else if !ok {
+					continue
+				}
+
+				// This object passes the filters, so include it.
 				(*objPolicies) = append((*objPolicies), entry.Policy)
 			}
 		}
-		// Query the MMS to see if the object needs to be brought into the cache.
-		// TBD
 	}
-	// Query the MMS to see if the object needs to be brought into the cache.
-	// TBD
+	glog.V(5).Infof(mmsLogString(fmt.Sprintf("returing objects for %v %v %v %v, %v", org, serviceName, arch, version, objPolicies)))
 	return objPolicies
 }
 
@@ -76,12 +98,12 @@ func (m *MMSObjectPolicyManager) GetAllPolicyOrgs() []string {
 }
 
 // copy the given map of served business policies
-func (m *MMSObjectPolicyManager) setServedBusinessPolicies(servedPols map[string]exchange.ServedBusinessPolicy) {
+func (m *MMSObjectPolicyManager) setServedBusinessPolicies(servedOrgs map[string]exchange.ServedBusinessPolicy) {
 	m.spMapLock.Lock()
 	defer m.spMapLock.Unlock()
 
 	// copy the input map
-	m.ServedPolicies = servedPols
+	m.ServedOrgs = servedOrgs
 }
 
 // check if the agbot serves the given org or not.
@@ -89,7 +111,7 @@ func (m *MMSObjectPolicyManager) serveOrg(polOrg string) bool {
 	m.spMapLock.Lock()
 	defer m.spMapLock.Unlock()
 
-	for _, sp := range m.ServedPolicies {
+	for _, sp := range m.ServedOrgs {
 		if sp.BusinessPolOrg == polOrg {
 			return true
 		}
@@ -105,7 +127,7 @@ func (m *MMSObjectPolicyManager) SetCurrentPolicyOrgs(servedPols map[string]exch
 	defer m.orgMapLock.Unlock()
 
 	// Exit early if nothing to do
-	if len(m.ServedPolicies) == 0 && len(servedPols) == 0 {
+	if len(m.ServedOrgs) == 0 && len(servedPols) == 0 {
 		return nil
 	}
 
@@ -126,7 +148,7 @@ func (m *MMSObjectPolicyManager) SetCurrentPolicyOrgs(servedPols map[string]exch
 	for org, _ := range m.orgMap {
 		if !m.serveOrg(org) {
 			// delete org and all object policies in it.
-			glog.V(5).Infof("Deleting the org %v from the MMS Object Policy manager because it is no longer hosted by the agbot.", org)
+			glog.V(5).Infof(mmsLogString(fmt.Sprintf("Deleting the org %v from the MMS Object Policy manager because it is no longer hosted by the agbot.", org)))
 			if err := m.deleteOrg(org); err != nil {
 				return err
 			}
@@ -138,15 +160,11 @@ func (m *MMSObjectPolicyManager) SetCurrentPolicyOrgs(servedPols map[string]exch
 
 // This function gets called when object policy updates are detected by the agbot. It will be common for no updates
 // to be received most of the time. It should be invoked on a regular basis.
-func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exchange.ObjectDestinationPolicies, objReceivedHandler exchange.ObjectPolicyUpdateReceivedHandler) ([]events.Message, error) {
+func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exchange.ObjectDestinationPolicies, objQueryHandler exchange.ObjectQueryHandler) ([]events.Message, error) {
 	m.orgMapLock.Lock()
 	defer m.orgMapLock.Unlock()
 
 	changeEvents := make([]events.Message, 0, 5)
-
-	if updatedPolicies == nil || len(*updatedPolicies) == 0 {
-		return changeEvents, nil
-	}
 
 	// Exit early on error
 	if !m.hasOrg(org) {
@@ -154,47 +172,77 @@ func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exc
 	}
 
 	// If there are object policies that have been deleted, we wont know until we ask the MMS if the object still exists.
-	// Loop through all the cached object polices checking to see if they still exist.
-	// TBD...
+	// Loop through all the cached object policies checking to see if they still exist.
+	diff := time.Now().Unix() - m.garbageCollection
+	if diff >= m.config.AgreementBot.MMSGarbageCollectionInterval {
+		m.garbageCollection = time.Now().Unix()
+		glog.V(5).Infof(mmsLogString(fmt.Sprintf("Starting object policy garbage collection")))
+		for org, serviceMap := range m.orgMap {
+			for service, peList := range serviceMap {
+				for ix, pe := range peList {
+					if obj, err := objQueryHandler(pe.Policy.OrgID, pe.Policy.ObjectID, pe.Policy.ObjectType); err != nil {
+						glog.Errorf(mmsLogString(fmt.Sprintf("error reading object %v %v %v, %v", pe.Policy.OrgID, pe.Policy.ObjectID, pe.Policy.ObjectType, err)))
+					} else if obj == nil {
+						glog.V(3).Infof(mmsLogString(fmt.Sprintf("object %v %v %v has been deleted", pe.Policy.OrgID, pe.Policy.ObjectID, pe.Policy.ObjectType)))
+						m.orgMap[org][service] = append(m.orgMap[org][service][:ix], m.orgMap[org][service][ix+1:]...)
+					}
+				}
+			}
+		}
+	}
 
 	// Now we just need to handle adding new or updated object policies. Collect the changes so that we can send out events when we're done.
+	if updatedPolicies == nil || len(*updatedPolicies) == 0 {
+		return changeEvents, nil
+	}
+
 	var policyReplaced exchange.ObjectDestinationPolicy
 	for _, objPol := range *updatedPolicies {
 
 		glog.V(5).Infof(mmsLogString(fmt.Sprintf("Updated policy received %v", objPol)))
 
 		for _, serviceID := range objPol.DestinationPolicy.Services {
+
+			// Within each org, there is a map keyed by service names (org/service-name).
 			serviceMapKey := cutil.FormOrgSpecUrl(serviceID.ServiceName, serviceID.OrgID)
 
+			// If the object's version is invalid, do not include it in the cache.
+			versionExp, err := semanticversion.Version_Expression_Factory(serviceID.Version)
+			if err != nil {
+				glog.Errorf(mmsLogString(fmt.Sprintf("object %v %v %v has unrecognized version expression %v in service %v, error %v", objPol.OrgID, objPol.ObjectID, objPol.ObjectType, serviceID.Version, serviceID.ServiceName, err)))
+				continue
+			}
+
+			// If one of this object's services has not been seen before, add a map for it before adding an object entry.
 			if _, ok := m.orgMap[objPol.OrgID][serviceMapKey]; !ok {
-				entry := NewMMSObjectPolicyEntry(&objPol)
+				entry := m.NewMMSObjectPolicyEntry(&objPol, serviceID, versionExp)
 				entryArray := make([]MMSObjectPolicyEntry, 0, 2)
 				entryArray = append(entryArray, *entry)
 				m.orgMap[objPol.OrgID][serviceMapKey] = entryArray
 			} else {
-				// The object policy might already have 1 or more entries in the org map cache, so we need to find and update them.
+
+				// The object policy references a service that already has at least one entry in the map. The object policy update
+				// be a new policy or an update to one that is already cached.
 				found := false
 				for ix, existingEntry := range m.orgMap[objPol.OrgID][serviceMapKey] {
 					if existingEntry.Policy.OrgID == objPol.OrgID && existingEntry.Policy.ObjectID == objPol.ObjectID && existingEntry.Policy.ObjectType == objPol.ObjectType {
 						// Replace the entry
 						policyReplaced = existingEntry.Policy
-						m.orgMap[objPol.OrgID][serviceMapKey][ix].Policy = objPol
+						if canonicalArch := m.config.ArchSynonyms.GetCanonicalArch(serviceID.Arch); canonicalArch != "" {
+							serviceID.Arch = canonicalArch
+						}
+						m.orgMap[objPol.OrgID][serviceMapKey][ix].UpdateEntry(&objPol, serviceID, versionExp)
 						found = true
 						break
 					}
 				}
 				// For the current service in the updated policy object, create a new entry and add it to the map.
 				if !found {
-					entry := NewMMSObjectPolicyEntry(&objPol)
+					entry := m.NewMMSObjectPolicyEntry(&objPol, serviceID, versionExp)
 					m.orgMap[objPol.OrgID][serviceMapKey] = append(m.orgMap[objPol.OrgID][serviceMapKey], *entry)
 				}
 			}
 
-		}
-
-		// Tell the MMS that the policy has been received
-		if err := objReceivedHandler(&objPol); err != nil {
-			glog.Errorf(mmsLogString(fmt.Sprintf("unable to update policy received in Model Management System, error %v", err)))
 		}
 
 		// Create an event to tell the other workers that a model policy has changed.
@@ -226,37 +274,49 @@ func (m *MMSObjectPolicyManager) deleteOrg(org_in string) error {
 }
 
 type MMSObjectPolicyEntry struct {
-	Policy  exchange.ObjectDestinationPolicy `json:"policy,omitempty"`      // the metadata for this object policy in the MMS
-	Updated uint64                           `json:"updatedTime,omitempty"` // the time when this entry was updated
+	Policy            exchange.ObjectDestinationPolicy    `json:"policy,omitempty"`      // the metadata for this object policy in the MMS
+	ServiceID         common.ServiceID                    `json:"service,omitempty"`     // the service id for which we created this entry
+	VersionExpression *semanticversion.Version_Expression `json:"version,omitempty"`     // the service version expression
+	Updated           uint64                              `json:"updatedTime,omitempty"` // the time when this entry was updated
 }
 
 // Create a new MMSObjectPolicyEntry. It converts the businesspolicy to internal policy format.
 // the business policy exchange id (or/id) is the header name for the internal generated policy.
-func NewMMSObjectPolicyEntry(pol *exchange.ObjectDestinationPolicy) *MMSObjectPolicyEntry {
+func (m *MMSObjectPolicyManager) NewMMSObjectPolicyEntry(pol *exchange.ObjectDestinationPolicy, serviceID common.ServiceID, ve *semanticversion.Version_Expression) *MMSObjectPolicyEntry {
 	pE := new(MMSObjectPolicyEntry)
 	pE.Updated = uint64(time.Now().Unix())
 	pE.Policy = (*pol)
-
+	pE.VersionExpression = ve
+	if canonicalArch := m.config.ArchSynonyms.GetCanonicalArch(serviceID.Arch); canonicalArch != "" {
+		serviceID.Arch = canonicalArch
+	}
+	pE.ServiceID = serviceID
 	return pE
 }
 
 func (p *MMSObjectPolicyEntry) String() string {
 	return fmt.Sprintf("MMSObjectPolicyEntry: "+
 		"Updated: %v "+
-		"Policy: %v",
-		p.Updated, p.Policy)
+		"Policy: %v "+
+		"ServiceID: %v "+
+		"Version Exp: %v",
+		p.Updated, p.Policy, p.ServiceID, p.VersionExpression)
 }
 
 func (p *MMSObjectPolicyEntry) ShortString() string {
 	return fmt.Sprintf("MMSObjectPolicyEntry: "+
 		"Updated: %v "+
-		"Policy: %v",
-		p.Updated, p.Policy)
+		"Policy: %v "+
+		"ServiceID: %v "+
+		"Version Exp: %v",
+		p.Updated, p.Policy, p.ServiceID, p.VersionExpression)
 }
 
-func (p *MMSObjectPolicyEntry) UpdateEntry(pol *exchange.ObjectDestinationPolicy) (*MMSObjectPolicyEntry, error) {
+func (p *MMSObjectPolicyEntry) UpdateEntry(pol *exchange.ObjectDestinationPolicy, serviceID common.ServiceID, ve *semanticversion.Version_Expression) (*MMSObjectPolicyEntry, error) {
 	p.Updated = uint64(time.Now().Unix())
 	p.Policy = (*pol)
+	p.VersionExpression = ve
+	p.ServiceID = serviceID
 	return p, nil
 }
 

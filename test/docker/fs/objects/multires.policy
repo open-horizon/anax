@@ -1,13 +1,6 @@
 {
-  "properties": [
-    {
-      "name": "prop2",
-      "value": "abc"
-    }
-  ],
-  "constraints": [
-    ""
-  ],
+  "properties": [],
+  "constraints": [],
   "services": [
     {
       "orgID": "e2edev@somecomp.com",
