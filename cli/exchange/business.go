@@ -13,7 +13,7 @@ import (
 )
 
 //BusinessListPolicy lists all the policies in the org or only the specified policy if one is given
-func BusinessListPolicy(org string, credToUse string, policy string) {
+func BusinessListPolicy(org string, credToUse string, policy string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
 	var credOrg string
 	credOrg, credToUse = cliutils.TrimOrg(org, credToUse)
@@ -33,15 +33,27 @@ func BusinessListPolicy(org string, credToUse string, policy string) {
 		cliutils.Fatal(cliutils.NOT_FOUND, "Business policy for organization %s not found", polOrg)
 	}
 
-	buf := new(bytes.Buffer)
-	enc := json.NewEncoder(buf)
-	enc.SetEscapeHTML(false)
-	enc.SetIndent("", cliutils.JSON_INDENT)
-	err := enc.Encode(policyList.BusinessPolicy)
-	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange business listpolicy' output: %v", err)
+	if namesOnly && (policy == "" || policy == "*") {
+		policyNameList := []string{}
+		for bPolicy := range policyList.BusinessPolicy {
+			policyNameList = append(policyNameList, bPolicy)
+		}
+		jsonBytes, err := json.MarshalIndent(policyNameList, "", cliutils.JSON_INDENT)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange business listpolicy' output: %v", err)
+		}
+		fmt.Println(string(jsonBytes))
+	} else {
+		buf := new(bytes.Buffer)
+		enc := json.NewEncoder(buf)
+		enc.SetEscapeHTML(false)
+		enc.SetIndent("", cliutils.JSON_INDENT)
+		err := enc.Encode(policyList.BusinessPolicy)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange business listpolicy' output: %v", err)
+		}
+		fmt.Println(string(buf.String()))
 	}
-	fmt.Println(string(buf.String()))
 }
 
 //BusinessAddPolicy will add a new policy or overwrite an existing policy byt he same name in the Horizon Exchange

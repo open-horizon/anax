@@ -19,8 +19,8 @@ func (a LocationAttributes) GetMeta() *AttributeMeta {
 
 func (a LocationAttributes) GetGenericMappings() map[string]interface{} {
 	return map[string]interface{}{
-		"lat": a.Lat,
-		"lon": a.Lon,
+		"lat":                  a.Lat,
+		"lon":                  a.Lon,
 		"location_accuracy_km": a.LocationAccuracyKM,
 		"use_gps":              a.UseGps,
 	}
