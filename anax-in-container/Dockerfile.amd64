@@ -7,7 +7,7 @@ ENV ANAX_LOG_LEVEL 3
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install pre-reqs for getting the horizon pkgs
-RUN apt-get update && apt-get install -y curl vim jq wget apt-transport-https software-properties-common gettext-base psmisc gnupg
+RUN apt-get update && apt-get upgrade -y && apt-get install -y curl vim jq wget apt-transport-https software-properties-common gettext-base psmisc gnupg
 
 # Set up the apt repos for docker and horizon
 RUN wget -qO- https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
