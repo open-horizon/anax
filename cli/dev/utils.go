@@ -263,15 +263,6 @@ func makeByValueAttributes(attrs []persistence.Attribute) []persistence.Attribut
 	byValueAttrs := make([]persistence.Attribute, 0, 10)
 	for _, a := range attrs {
 		switch a.(type) {
-		case *persistence.LocationAttributes:
-			p := a.(*persistence.LocationAttributes)
-			byValueAttrs = append(byValueAttrs, *p)
-		case *persistence.ComputeAttributes:
-			p := a.(*persistence.ComputeAttributes)
-			byValueAttrs = append(byValueAttrs, *p)
-		case *persistence.ArchitectureAttributes:
-			p := a.(*persistence.ArchitectureAttributes)
-			byValueAttrs = append(byValueAttrs, *p)
 		case *persistence.HAAttributes:
 			p := a.(*persistence.HAAttributes)
 			byValueAttrs = append(byValueAttrs, *p)
@@ -339,7 +330,7 @@ func createEnvVarMap(agreementId string,
 	}
 
 	// Third, add in default system attributes if not already present.
-	attrs = api.FinalizeAttributesSpecifiedInService(1024, persistence.NewServiceSpec(msURL, org), attrs)
+	attrs = api.FinalizeAttributesSpecifiedInService(persistence.NewServiceSpec(msURL, org), attrs)
 
 	cliutils.Verbose("Final Attributes: %v", attrs)
 

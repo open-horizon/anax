@@ -215,7 +215,7 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 }
 
 // Sign and publish the service definition. This is a function that is reusable across different hzn commands.
-func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, pullImage bool, registryTokens []string, promptForOverwite bool) {
+func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, pullImage bool, registryTokens []string, promptForOverwrite bool) {
 	svcInput := ServiceExch{Label: sf.Label, Description: sf.Description, Public: sf.Public, Documentation: sf.Documentation, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs}
 
 	// The deployment field can be json object (map), string (for pre-signed), or nil
@@ -269,8 +269,8 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 200 {
 		// check if the service exists with the same version, ask user if -O is not specified.
-		if promptForOverwite {
-			cliutils.ConfirmRemove(fmt.Sprintf("Service %v/%v exists in the exchange, do you want to overwite it?", org, exchId))
+		if promptForOverwrite {
+			cliutils.ConfirmRemove(fmt.Sprintf("Service %v/%v exists in the exchange, do you want to overwrite it?", org, exchId))
 		}
 		// Service exists, update it
 		fmt.Printf("Updating %s in the exchange...\n", exchId)

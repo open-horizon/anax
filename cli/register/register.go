@@ -424,7 +424,7 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 
 	// Loop thru each service, find the highest version of that service, and then record the user input for it
 	// Note: if the pattern references multiple versions of the same service (directly or indirectly), we create input for the highest version of the service.
-	templateFile := InputFile{Global: []GlobalSet{}} // to add the global loc attrs: Type: "LocationAttributes", Variables: map[string]interface{}{"lat": 0.0, "lon": 0.0, "use_gps": false, "location_accuracy_km": 0.0}
+	templateFile := InputFile{Global: []GlobalSet{}}
 	for _, s := range allRequiredSvcs {
 		var userInput []exchange.UserInput
 		if s.HighestVersion != "" && len(s.VersionRanges) <= 1 {

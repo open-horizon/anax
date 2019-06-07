@@ -43,41 +43,11 @@ EOF
   echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/node"
 fi
 
-read -d '' locationattribute <<EOF
-{
-  "id": "location",
-  "short_type": "location",
-  "label": "Registered Location Facts",
-  "publishable": false,
-  "mappings": {
-    "lat": 41.921766,
-    "lon": -73.894224,
-    "location_accuracy_km": 0.5
-  }
-}
-EOF
-
-echo -e "\n\n[D] location payload: $locationattribute"
-
-echo "Setting workload independent location attributes"
-
-echo "$locationattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute"
-
 read -d '' gpstestservice <<EOF
 {
   "sensor_url": "https://bluehorizon.network/documentation/gpstest-device-api",
   "sensor_name": "gpstest",
   "attributes": [
-    {
-      "id": "compute",
-      "short_type": "compute",
-      "label": "Compute Resources",
-      "publishable": true,
-      "mappings": {
-        "ram": 256,
-        "cpus": 1
-      }
-    },
     {
       "id": "free form",
       "short_type": "mapped",
@@ -103,16 +73,6 @@ read -d '' location2service <<EOF
   "sensor_url": "https://bluehorizon.network/documentation/location2-device-api",
   "sensor_name": "location2",
   "attributes": [
-    {
-      "id": "compute",
-      "short_type": "compute",
-      "label": "Compute Resources",
-      "publishable": true,
-      "mappings": {
-        "ram": 256,
-        "cpus": 1
-      }
-    },
     {
       "id": "free form",
       "short_type": "mapped",

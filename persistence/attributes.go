@@ -6,6 +6,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/satori/go.uuid"
 	"reflect"
 	"strconv"
@@ -185,33 +186,12 @@ func HydrateConcreteAttribute(v []byte) (Attribute, error) {
 	var attr Attribute
 
 	switch meta.GetMeta().Type {
-	case "LocationAttributes":
-		var location LocationAttributes
-		if err := json.Unmarshal(v, &location); err != nil {
-			return nil, err
-		}
-		attr = location
-
-	case "ArchitectureAttributes":
-		var arch ArchitectureAttributes
-		if err := json.Unmarshal(v, &arch); err != nil {
-			return nil, err
-		}
-		attr = arch
-
 	case "UserInputAttributes":
 		var ui UserInputAttributes
 		if err := json.Unmarshal(v, &ui); err != nil {
 			return nil, err
 		}
 		attr = ui
-
-	case "ComputeAttributes":
-		var compute ComputeAttributes
-		if err := json.Unmarshal(v, &compute); err != nil {
-			return nil, err
-		}
-		attr = compute
 
 	case "HAAttributes":
 		var ha HAAttributes
@@ -226,13 +206,6 @@ func HydrateConcreteAttribute(v []byte) (Attribute, error) {
 			return nil, err
 		}
 		attr = ma
-
-	case "PropertyAttributes":
-		var pa PropertyAttributes
-		if err := json.Unmarshal(v, &pa); err != nil {
-			return nil, err
-		}
-		attr = pa
 
 	case "AgreementProtocolAttributes":
 		var agp AgreementProtocolAttributes
@@ -254,6 +227,10 @@ func HydrateConcreteAttribute(v []byte) (Attribute, error) {
 			return nil, err
 		}
 		attr = dra
+
+		// for backward compatibility
+	case "LocationAttributes", "ArchitectureAttributes", "ComputeAttributes", "PropertyAttributes":
+		return nil, nil
 
 	default:
 		return nil, fmt.Errorf("Unknown attr type: %v", meta.GetMeta().Type)
@@ -278,6 +255,8 @@ func FindAttributeByKey(db *bolt.DB, id string) (*Attribute, error) {
 				attr, err = HydrateConcreteAttribute(v)
 				if err != nil {
 					return err
+				} else if attr == nil {
+					return nil
 				}
 			}
 		}
@@ -317,42 +296,17 @@ func FindApplicableAttributes(db *bolt.DB, serviceUrl string, org string) ([]Att
 			attr, err := HydrateConcreteAttribute(v)
 			if err != nil {
 				return err
-			}
-
-			serviceSpecs := GetAttributeServiceSpecs(&attr)
-			if serviceSpecs == nil {
-				filteredAttrs = append(filteredAttrs, attr)
-			} else if serviceSpecs.SupportService(serviceUrl, org) {
-				filteredAttrs = append(filteredAttrs, attr)
+			} else if attr != nil {
+				serviceSpecs := GetAttributeServiceSpecs(&attr)
+				if serviceSpecs == nil {
+					filteredAttrs = append(filteredAttrs, attr)
+				} else if serviceSpecs.SupportService(serviceUrl, org) {
+					filteredAttrs = append(filteredAttrs, attr)
+				}
 			}
 			return nil
 		})
 	})
-}
-
-// Workloads dont see the same system level env vars that microservices see. This function picks out just
-// the attributes that are applicable to workloads.
-func ConvertWorkloadPersistentNativeToEnv(allAttrs []Attribute, envvars map[string]string, prefix string, defaultRam int64) (map[string]string, error) {
-	var lat, lon, cpus, ram, arch string
-	for _, attr := range allAttrs {
-
-		// Extract location property
-		switch attr.(type) {
-		case LocationAttributes:
-			s := attr.(LocationAttributes)
-			lat = strconv.FormatFloat(s.Lat, 'f', 6, 64)
-			lon = strconv.FormatFloat(s.Lon, 'f', 6, 64)
-		case ComputeAttributes:
-			s := attr.(ComputeAttributes)
-			cpus = strconv.FormatInt(s.CPUs, 10)
-			ram = strconv.FormatInt(s.RAM, 10)
-		case ArchitectureAttributes:
-			s := attr.(ArchitectureAttributes)
-			arch = s.Architecture
-		}
-	}
-	cutil.SetSystemEnvvars(envvars, prefix, lat, lon, cpus, ram, arch)
-	return envvars, nil
 }
 
 // This function is used to convert the persistent attributes for a service to an env var map.
@@ -376,10 +330,24 @@ func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, pr
 		write(k, v, false)
 	}
 
-	// Write defaults
+	// Write the default
 	writePrefix("CPUS", strconv.FormatInt(1, 10))
 	writePrefix("RAM", strconv.FormatInt(defaultRAM, 10))
 	writePrefix("ARCH", cutil.ArchString())
+
+	// Override with the built-in properties
+	externalPol := externalpolicy.CreateNodeBuiltInPolicy(false)
+	if externalPol != nil {
+		for _, ele := range externalPol.Properties {
+			if ele.Name == externalpolicy.PROP_NODE_CPU {
+				writePrefix("CPUS", strconv.FormatFloat(ele.Value.(float64), 'f', -1, 64))
+			} else if ele.Name == externalpolicy.PROP_NODE_MEMORY {
+				writePrefix("RAM", strconv.FormatFloat(ele.Value.(float64), 'f', -1, 64))
+			} else if ele.Name == externalpolicy.PROP_NODE_ARCH {
+				writePrefix("ARCH", ele.Value.(string))
+			}
+		}
+	}
 
 	// Set the Host IPv4 addresses, omit interfaces that are down.
 	if ips, err := cutil.GetAllHostIPv4Addresses([]cutil.NetFilter{cutil.OmitDown}); err != nil {
@@ -397,36 +365,17 @@ func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, pr
 		}
 
 		switch serv.(type) {
-		case ComputeAttributes:
-			s := serv.(ComputeAttributes)
-			writePrefix("CPUS", strconv.FormatInt(s.CPUs, 10))
-			writePrefix("RAM", strconv.FormatInt(s.RAM, 10))
-
 		case UserInputAttributes:
 			s := serv.(UserInputAttributes)
 			for k, v := range s.Mappings {
 				cutil.NativeToEnvVariableMap(envvars, k, v)
 			}
 
-		case LocationAttributes:
-			s := serv.(LocationAttributes)
-			writePrefix("LAT", strconv.FormatFloat(s.Lat, 'f', 6, 64))
-			writePrefix("LON", strconv.FormatFloat(s.Lon, 'f', 6, 64))
-			writePrefix("USE_GPS", strconv.FormatBool(s.UseGps))
-			writePrefix("LOCATION_ACCURACY_KM", strconv.FormatFloat(s.LocationAccuracyKM, 'f', 2, 64))
-
-		case ArchitectureAttributes:
-			s := serv.(ArchitectureAttributes)
-			writePrefix("ARCH", s.Architecture)
-
 		case HAAttributes:
 			s := serv.(HAAttributes)
 			writePrefix("HA_PARTNERS", strings.Join(s.Partners, ","))
 
 		case MeteringAttributes:
-			// Nothing to do
-
-		case PropertyAttributes:
 			// Nothing to do
 
 		case AgreementProtocolAttributes:

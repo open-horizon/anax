@@ -786,7 +786,7 @@ func (w *GovernanceWorker) governServiceConfigState() int {
 
 	service_cs, err := exchange.GetServicesConfigState(w.GetHTTPFactory(), w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL())
 	if err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Unable to retrieve servcie configuration state from the exchange, error %v", err)))
+		glog.Errorf(logString(fmt.Sprintf("Unable to retrieve service configuration state from the exchange, error %v", err)))
 		eventlog.LogExchangeEvent(w.db, persistence.SEVERITY_ERROR,
 			fmt.Sprintf("Unable to retrieve the service configuration state for node resource %v from the exchange, error %v", w.GetExchangeId(), err),
 			persistence.EC_EXCHANGE_ERROR, w.GetExchangeURL())

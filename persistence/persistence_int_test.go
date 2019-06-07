@@ -41,43 +41,6 @@ func init() {
 	pF = &(f)
 }
 
-func Test_SaveArchitectureAttributes(t *testing.T) {
-
-	// TODO: make a factory so the types don't have to be added by caller here
-	attr := &ArchitectureAttributes{
-		Meta: &AttributeMeta{
-			Id:          "arch",
-			Label:       "Supported Architecture",
-			Publishable: pT,
-			Type:        reflect.TypeOf(ArchitectureAttributes{}).Name(),
-		},
-		Architecture: "armhf",
-	}
-
-	_, err := SaveOrUpdateAttribute(testDb, attr, "", true)
-	if err != nil {
-		panic(err)
-	}
-
-	// check for backword compatibility
-	matches, err := FindApplicableAttributes(testDb, "zoo", "mycomp")
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Printf("matches: %v", matches)
-	sAttr := matches[0]
-
-	switch sAttr.(type) {
-	case ArchitectureAttributes:
-		arch := sAttr.(ArchitectureAttributes)
-
-		if arch.Architecture != "armhf" {
-			t.Errorf("Architecture in persisted type not accessible (b/c of ill deserialization or wrong value")
-		}
-	}
-}
-
 func Test_DiscriminateSavedAttributes(t *testing.T) {
 	pub := func(attr Attribute, url ...string) {
 		for _, u := range url {
@@ -96,60 +59,6 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 
 	illZ := "mycomp/http://illuminated.z/v/2"
 	illK := "mycomp/http://illuminated.k/v/2"
-
-	arch := &ArchitectureAttributes{
-		Meta: &AttributeMeta{
-			Id:          "architecture",
-			Label:       "Supported Architecture",
-			Publishable: pT,
-			Type:        reflect.TypeOf(ArchitectureAttributes{}).Name(),
-		},
-		Architecture: "amd64",
-	}
-
-	pub(arch, illZ, illK)
-
-	comp := &ComputeAttributes{
-		Meta: &AttributeMeta{
-			Id:          "compute",
-			Label:       "Compute Resources",
-			Publishable: pT,
-			Type:        reflect.TypeOf(ComputeAttributes{}).Name(),
-		},
-		ServiceSpecs: new(ServiceSpecs),
-		CPUs:         4,
-		RAM:          1024,
-	}
-
-	pub(comp, illZ)
-
-	comp2 := &ComputeAttributes{
-		Meta: &AttributeMeta{
-			Id:          "compute",
-			Label:       "Compute Resources",
-			Publishable: pT,
-			Type:        reflect.TypeOf(ComputeAttributes{}).Name(),
-		},
-		ServiceSpecs: new(ServiceSpecs),
-		CPUs:         2,
-		RAM:          2048,
-	}
-
-	pub(comp2, illK)
-
-	loc := &LocationAttributes{
-		Meta: &AttributeMeta{
-			Id:          "location",
-			Label:       "Location",
-			Publishable: pF,
-			Type:        reflect.TypeOf(LocationAttributes{}).Name(),
-		},
-		Lat: -140.03,
-		Lon: 20.12,
-	}
-
-	// no sensors URLs in meta means apply to all
-	pub(loc)
 
 	misc := &UserInputAttributes{
 		Meta: &AttributeMeta{
@@ -188,43 +97,22 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 		panic(err)
 	}
 
-	var kComp *ComputeAttributes
 	var kCreds *UserInputAttributes
-	var kArch *ArchitectureAttributes
-	var kLoc *LocationAttributes
 
 	for _, serv := range services {
 		switch serv.(type) {
-		case ComputeAttributes:
-			k := serv.(ComputeAttributes)
-			kComp = &k
-			if kComp.CPUs != 2 {
-				t.Errorf("wrong CPU count")
-			}
 		case UserInputAttributes:
 			k := serv.(UserInputAttributes)
 			kCreds = &k
 			if it, ok := kCreds.Mappings["device_label"]; !ok || it != "home" {
 				t.Errorf("wrong cred fact")
 			}
-		case LocationAttributes:
-			k := serv.(LocationAttributes)
-			kLoc = &k
-			if *kLoc.GetMeta().Publishable {
-				t.Errorf("wrong pub fact")
-			}
-		case ArchitectureAttributes:
-			k := serv.(ArchitectureAttributes)
-			kArch = &k
-			if kArch.Architecture != "amd64" {
-				t.Errorf("wrong arch fact")
-			}
 		default:
 			t.Errorf("Unhandled service attribute: %v", serv)
 		}
 	}
 
-	if kComp == nil || kCreds == nil || kLoc == nil || kArch == nil {
+	if kCreds == nil {
 		t.Errorf("Nil attributes that mustn't be")
 	}
 

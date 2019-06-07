@@ -18,15 +18,12 @@ The body of the attribute section always follows the following form:
 
 The `type` field is a string that indicates which attribute you would like to set.
 Valid values are:
-* [ComputeAttributes](#compa)
-* [LocationAttributes](#loca)
 * [UserInputAttributes](#uia)
 * [HTTPSBasicAuthAttributes](#httpsa)
 * [DockerRegistryAuthAttributes](#bxa)
 * [HAAttributes](#haa)
 * [MeteringAttributes](#ma)
 * [AgreementProtocolAttributes](#agpa)
-* [PropertyAttributes](#pa)
 
 Each attrinbute type is described in it's own section below.
 
@@ -38,61 +35,6 @@ The `host_only` field is a boolean that indicates whether or not this attribute 
 
 The `mappings` field is a map of variables and values that are specific to the type of the attribute.
 If an attribute type has any specific variables to be set, they are described in the type's section below.
-
-### <a name="compa"></a>ComputeAttributes
-This attribute is used to define the number of CPUs and the amount of memory to allocate to the service.
-
-The value for `publishable` should be `true`.
-
-The value for `host_only` should be `false`.
-
-The variables you can set are:
-* `cpu` - An integer describing the number of CPUs to allocate to the service. The default is 1.
-* `ram` - An integer in MB describing how much memory to allocate to the service. The default is 128.
-
-These values will be applied to service docker containers, but are not currently included in agreement negotiation.
-
-For example; 2 CPUS and 256 MB of memory:
-```
-    {
-        "type": "ComputeAttributes",
-        "label": "Compute Resources",
-        "publishable": true,
-        "host_only": false,
-        "mappings": {
-            "ram": 256,
-            "cpus": 2
-        }
-    }
-```
-
-### <a name="loca"></a>LocationAttributes
-This attribute is used to define the GPS coordinates of the Horizon agent.
-
-The value for `host_only` should be `false`.
-
-The variables you can set are:
-* `lat` - A float describing the GPS latitude of the node.
-* `lon` - A float describing the GPS longitude of the node.
-* `location_accuracy_km` - A float describing a random radius within which the specific `lat` and `lon` are located.
-This allows the service to broadcast its location publicly without giving away its exact coordinates.
-* `use_gps` - A boolean that enables the service to use a GPS chip (ignoring the `lat` and `lon`) to determine coordinates.
-
-For example;
-```
-    {
-        "type": "LocationAttributes",
-        "label": "Registered Location Facts",
-        "publishable": false,
-        "host_only": false,
-        "mappings": {
-            "lat": 1.234567,
-            "lon": -1.234567,
-            "location_accuracy_km": 0.5,
-            "use_gps": false
-        }
-    }
-```
 
 ### <a name="uia"></a>UserInputAttributes
 This attribute is used to set user input variables from a service definition.
@@ -356,36 +298,4 @@ For example, the service wants to prefer the "Basic" protocol, but is willing to
     }
 ```
 
-### <a name="pa"></a>PropertyAttributes
-This attribute is used to configure arbitrary properties on the service such that an agbot can select (or ignore) nodes with given property values.
-These properties are ignored when a node uses the [POST /node](https://github.com/open-horizon/anax/blob/master/doc/api.md#api-post--node) API with a non-empty `pattern` field.
-Think of these properties as the means by which a node can advertise anything about its service(s).
-An agbot policy file that wants to select a node based on these properties would do so using the "constraints" in its policy file.
-When a property is advertised, it's value is automaticaly determined to be 1 of the following types: `string`, `int`, `float`, `boolean`, `list of strings`.
-
-The value for `publishable` should be `true`.
-
-The value for `host_only` should be `false`.
-
-The `service_specs` specifies what services the attribue applies to. If the `url` is an empty string, it applies to all the services. If you set the PropertyAttributes through the `/service/config` api, you do not need to specify the `service_specs` becuase the serivce is specified in other fields. However, if you use `/attribute` api to set the PropertyAttributes, you must specify the `service_specs`. 
-
-
-For example, `myProp` is a `boolean` property:
-```
-    {
-        "type": "PropertyAttributes",
-        "label": "Property",
-        "publishable": true,
-        "host_only": false,
-        "service_specs": [
-            {
-                "url": "https://bluehorizon.network/services/netspeed",
-                "organization": "myorg"
-            }
-        ],
-        "mappings": {
-            "myProp": true
-        }
-    }
-```
 
