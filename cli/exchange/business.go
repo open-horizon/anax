@@ -12,6 +12,31 @@ import (
 	"net/http"
 )
 
+const BUSINESS_POLICY_TEMPLATE_OBJECT = `{
+  "label": "",  /* Business policy label. */
+  "description": "",  /* Business policy description. */
+  "service": {
+    "name": "",  /* The name of the service. */
+    "org": "put the $HZN_ORG_ID env var value in here",  /* The org of the service. */
+    "arch": "",  /* Can be omitted. */
+    "serviceVersions": [  /* A list of service versions. */
+      {
+        "version": "",
+        "priority":{}
+      }
+    ]
+  },
+  "properties": [  /* A list of policy properties that describe the object. */
+    {
+      "name": "",
+      "value": nil
+    }
+  ],
+  "constraints": [  /* A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||). */
+    ""
+  ]
+}`
+
 //BusinessListPolicy lists all the policies in the org or only the specified policy if one is given
 func BusinessListPolicy(org string, credToUse string, policy string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
@@ -168,4 +193,9 @@ func BusinessRemovePolicy(org string, credToUse string, policy string, force boo
 	} else {
 		fmt.Println("Business policy " + org + "/" + policy + " removed")
 	}
+}
+
+// Display an empty business policy template as an object.
+func BusinessNewPolicy() {
+	fmt.Println(BUSINESS_POLICY_TEMPLATE_OBJECT)
 }

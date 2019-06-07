@@ -219,6 +219,7 @@ Environment Variables:
 	exServiceListPolicyCmd := exServiceCmd.Command("listpolicy", "Display the service policy from the Horizon Exchange.")
 	exServiceListPolicyIdTok := exServiceListPolicyCmd.Flag("service-id-tok", "The Horizon Exchange id and password of the user").Short('n').PlaceHolder("ID:TOK").String()
 	exServiceListPolicyService := exServiceListPolicyCmd.Arg("service", "List policy for this service.").Required().String()
+	exServiceNewPolicyCmd := exServiceCmd.Command("newpolicy", "Display an empty service policy template that can be filled in.")
 	exServiceUpdatePolicyCmd := exServiceCmd.Command("updatepolicy", "Add or replace the service policy in the Horizon Exchange.")
 	exServiceUpdatePolicyIdTok := exServiceUpdatePolicyCmd.Flag("service-id-tok", "The Horizon Exchange ID and password of the user").Short('n').PlaceHolder("ID:TOK").String()
 	exServiceUpdatePolicyService := exServiceUpdatePolicyCmd.Arg("service", "Add or replace policy for this service.").Required().String()
@@ -233,6 +234,7 @@ Environment Variables:
 	exBusinessListPolicyIdTok := exBusinessListPolicyCmd.Flag("id-token", "The Horizon ID and password of the user.").Short('n').PlaceHolder("ID:TOK").String()
 	exBusinessListPolicyLong := exBusinessListPolicyCmd.Flag("long", "Display detailed output about the business policies.").Short('l').Bool()
 	exBusinessListPolicyPolicy := exBusinessListPolicyCmd.Arg("policy", "List just this one policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.").String()
+	exBusinessNewPolicyCmd := exBusinessCmd.Command("new", "Display an empty business policy template that can be filled in.")
 	exBusinessAddPolicyCmd := exBusinessCmd.Command("addpolicy", "Add a new business policy or overwrite an existing policy by the same name in the Horizon Exchange.")
 	exBusinessAddPolicyIdTok := exBusinessAddPolicyCmd.Flag("id-token", "The Horizon ID and password of the user.").Short('n').PlaceHolder("ID:TOK").String()
 	exBusinessAddPolicyPolicy := exBusinessAddPolicyCmd.Arg("policy", "The name of the policy to add or overwrite.").Required().String()
@@ -290,6 +292,7 @@ Environment Variables:
 
 	policyCmd := app.Command("policy", "List and manage policy for this Horizon edge node.")
 	policyListCmd := policyCmd.Command("list", "Display this edge node's policy.")
+	policyNewCmd := policyCmd.Command("new", "Display an empty policy template that can be filled in.")
 	policyUpdateCmd := policyCmd.Command("update", "Update the node's policy. The node's built-in properties will be automatically added if the input policy does not contain them.")
 	policyUpdateInputFile := policyUpdateCmd.Flag("input-file", "The JSON input file name containing the node policy.").Short('f').Required().String()
 	policyPatchCmd := policyCmd.Command("patch", "Add or update node policy properties or overwrite the node policy constraint expression.")
@@ -609,12 +612,16 @@ Environment Variables:
 		exchange.ServiceRemoveAuth(*exOrg, *exUserPw, *exSvcRemAuthSvc, *exSvcRemAuthId)
 	case exServiceListPolicyCmd.FullCommand():
 		exchange.ServiceListPolicy(*exOrg, credToUse, *exServiceListPolicyService)
+	case exServiceNewPolicyCmd.FullCommand():
+		exchange.ServiceNewPolicy()
 	case exServiceUpdatePolicyCmd.FullCommand():
 		exchange.ServiceUpdatePolicy(*exOrg, credToUse, *exServiceUpdatePolicyService, *exServiceUpdatePolicyJsonFile)
 	case exServiceRemovePolicyCmd.FullCommand():
 		exchange.ServiceRemovePolicy(*exOrg, credToUse, *exServiceRemovePolicyService, *exServiceRemovePolicyForce)
 	case exBusinessListPolicyCmd.FullCommand():
 		exchange.BusinessListPolicy(*exOrg, credToUse, *exBusinessListPolicyPolicy, !*exBusinessListPolicyLong)
+	case exBusinessNewPolicyCmd.FullCommand():
+		exchange.BusinessNewPolicy()
 	case exBusinessAddPolicyCmd.FullCommand():
 		exchange.BusinessAddPolicy(*exOrg, credToUse, *exBusinessAddPolicyPolicy, *exBusinessAddPolicyJsonFile)
 	case exBusinessUpdatePolicyCmd.FullCommand():
@@ -637,6 +644,8 @@ Environment Variables:
 		node.List()
 	case policyListCmd.FullCommand():
 		policy.List()
+	case policyNewCmd.FullCommand():
+		policy.New()
 	case policyUpdateCmd.FullCommand():
 		policy.Update(*policyUpdateInputFile)
 	case policyPatchCmd.FullCommand():
