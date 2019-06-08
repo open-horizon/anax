@@ -66,6 +66,7 @@ type Policy struct {
 	RequiredWorkload   string                              `json:"requiredWorkload,omitempty"` // Version 2.0
 	HAGroup            HighAvailabilityGroup               `json:"ha_group,omitempty"`         // Version 2.0
 	NodeH              NodeHealth                          `json:"nodeHealth,omitempty"`       // Version 2.0
+	UserInput          UserInput                           `json:"userInput,omitempty"`
 }
 
 // These functions are used to create Policy objects. You can create the base object

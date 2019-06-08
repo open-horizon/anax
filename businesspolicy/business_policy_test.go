@@ -5,6 +5,7 @@ package businesspolicy
 import (
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
+	"github.com/open-horizon/anax/policy"
 	"strings"
 	"testing"
 )
@@ -270,6 +271,14 @@ func Test_GenPolicyFromBusinessPolicy_Complicated(t *testing.T) {
 		NodeH:           nh,
 	}
 
+	svcUserInput1 := policy.ServiceUserInput{
+		ServiceOrgid:        "mycomp",
+		ServiceUrl:          "cpu",
+		ServiceArch:         "amd64",
+		ServiceVersionRange: "",
+		Inputs:              []policy.Input{policy.Input{Name: "var1", Value: "val1"}, policy.Input{Name: "var2", Value: "val2"}},
+	}
+
 	bPolicy := BusinessPolicy{
 		Owner:       "me",
 		Label:       "my business policy",
@@ -277,6 +286,7 @@ func Test_GenPolicyFromBusinessPolicy_Complicated(t *testing.T) {
 		Service:     service,
 		Properties:  *propList,
 		Constraints: []string{"prop3 == val3"},
+		UserInput:   []policy.ServiceUserInput{svcUserInput1},
 	}
 
 	if err := bPolicy.Validate(); err != nil {
@@ -299,5 +309,15 @@ func Test_GenPolicyFromBusinessPolicy_Complicated(t *testing.T) {
 	} else if pPolicy.Workloads[0].Priority.PriorityValue != bPolicy.Service.ServiceVersions[0].Priority.PriorityValue || pPolicy.Workloads[0].Priority.Retries != bPolicy.Service.ServiceVersions[0].Priority.Retries ||
 		pPolicy.Workloads[0].Priority.RetryDurationS != bPolicy.Service.ServiceVersions[0].Priority.RetryDurationS || pPolicy.Workloads[0].Priority.VerifiedDurationS != bPolicy.Service.ServiceVersions[0].Priority.VerifiedDurationS {
 		t.Errorf("Service priority for policy is wrong: %v", pPolicy.Workloads[0].Priority)
+	} else if len(pPolicy.UserInput) != 1 {
+		t.Errorf("UserInput should have 1 element but got %v.", len(pPolicy.UserInput))
+	} else if len(pPolicy.UserInput[0].Inputs) != 2 {
+		t.Errorf("UserInput for sevice cpu should have 2 variable but got %v.", len(pPolicy.UserInput[0].Inputs))
+	} else if pPolicy.UserInput[0].ServiceUrl != "cpu" {
+		t.Errorf("First UserInput should be for service cpu but got %v.", pPolicy.UserInput[0].ServiceUrl)
+	} else if pPolicy.UserInput[0].Inputs[0].Name != "var1" {
+		t.Errorf("First user input variable name for service cpu should be var1 but got %v.", pPolicy.UserInput[0].Inputs[0].Name)
+	} else if pPolicy.UserInput[0].Inputs[1].Value != "val2" {
+		t.Errorf("Second user input variable value for service cpu should be val2 but got %v.", pPolicy.UserInput[0].Inputs[1].Value)
 	}
 }

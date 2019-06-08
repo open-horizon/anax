@@ -17,16 +17,18 @@ type BusinessPolicy struct {
 	Service     ServiceRef                          `json:"service"`
 	Properties  externalpolicy.PropertyList         `json:"properties,omitempty"`
 	Constraints externalpolicy.ConstraintExpression `json:"constraints,omitempty"`
+	UserInput   policy.UserInput                    `json:"userInput,omitempty"`
 }
 
 func (w BusinessPolicy) String() string {
-	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Service: %v, Properties: %v, Constraints: %v",
+	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Service: %v, Properties: %v, Constraints: %v, UserInput: %v",
 		w.Owner,
 		w.Label,
 		w.Description,
 		w.Service,
 		w.Properties,
-		w.Constraints)
+		w.Constraints,
+		w.UserInput)
 }
 
 type ServiceRef struct {
@@ -123,8 +125,7 @@ func (b *BusinessPolicy) Validate() error {
 	return nil
 }
 
-// Convert a pattern to a list of policy objects. Each pattern contains 1 or more workloads or services,
-// which will each be translated to a policy.
+// Convert business policy to a policy object.
 func (b *BusinessPolicy) GenPolicyFromBusinessPolicy(policyName string) (*policy.Policy, error) {
 
 	// validate first
@@ -155,6 +156,10 @@ func (b *BusinessPolicy) GenPolicyFromBusinessPolicy(policyName string) (*policy
 	ConvertNodeHealth(service.NodeH, pol)
 
 	pol.MaxAgreements = DEFAULT_MAX_AGREEMENT
+
+	// make a copy of the user input
+	pol.UserInput = make([]policy.ServiceUserInput, len(b.UserInput))
+	copy(pol.UserInput, b.UserInput)
 
 	glog.V(3).Infof("converted %v into %v", service, pol)
 

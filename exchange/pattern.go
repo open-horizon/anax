@@ -17,16 +17,18 @@ type Pattern struct {
 	Public             bool                `json:"public"`
 	Services           []ServiceReference  `json:"services"`
 	AgreementProtocols []AgreementProtocol `json:"agreementProtocols"`
+	UserInput          policy.UserInput    `json:"userInput,omitempty"`
 }
 
 func (w Pattern) String() string {
-	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Public: %v, Services: %v, AgreementProtocols: %v",
+	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Public: %v, Services: %v, AgreementProtocols: %v, UserInput: %v",
 		w.Owner,
 		w.Label,
 		w.Description,
 		w.Public,
 		w.Services,
-		w.AgreementProtocols)
+		w.AgreementProtocols,
+		w.UserInput)
 }
 
 func (w Pattern) ShortString() string {
