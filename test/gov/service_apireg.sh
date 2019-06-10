@@ -1260,6 +1260,80 @@ read -d '' msdef <<EOF
     {
       "name": "Basic"
     }
+  ],
+  "userInput": [
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/services/netspeed",
+      "serviceArch": "",
+      "serviceVersionRange": "2.2.0",
+      "inputs": [
+        {
+          "name": "var1",
+          "value": "bString"
+        },
+        {
+          "name": "var2",
+          "value": 10
+        },
+        {
+          "name": "var3",
+          "value": 10.22
+        },
+        {
+          "name": "var4",
+          "value": ["abcd", "1234"]
+        },
+        {
+          "name": "var5",
+          "value": "override2"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/services/locgps",
+      "serviceArch": "",
+      "serviceVersionRange": "2.0.3",
+      "inputs": [
+        {
+          "name": "test",
+          "value": "testValue"
+        },
+        {
+          "name": "extra",
+          "value": "extraValue"
+        },
+        {
+          "name": "HZN_LAT",
+          "value": 41.921766
+        },
+        {
+          "name": "HZN_LON",
+          "value": -73.894224
+        },
+        {
+          "name": "HZN_LOCATION_ACCURACY_KM",
+          "value": 0.5
+        },
+        {
+          "name": "HZN_USE_GPS",
+          "value": false
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "IBM",
+      "serviceUrl": "https://bluehorizon.network/service-cpu",
+      "serviceArch": "",
+      "serviceVersionRange": "1.0.0",
+      "inputs": [
+        {
+          "name": "cpu_var1",
+          "value": "ibmvar1"
+        }
+      ]
+    }
   ]
 }
 EOF
@@ -1322,6 +1396,36 @@ read -d '' bpnsdef <<EOF
   ],
   "constraints": [
     "purpose == network-testing"
+  ],
+  "userInput": [
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/services/netspeed",
+      "serviceArch": "",
+      "serviceVersionRange": "2.2.0",
+      "inputs": [
+        {
+          "name": "var1",
+          "value": "bString"
+        },
+        {
+          "name": "var2",
+          "value": 10
+        },
+        {
+          "name": "var3",
+          "value": 10.22
+        },
+        {
+          "name": "var4",
+          "value": ["abcd", "1234"]
+        },
+        {
+          "name": "var5",
+          "value": "override2"
+        }
+      ]
+    }
   ]
 }
 EOF
@@ -1421,6 +1525,52 @@ read -d '' bplocdef <<EOF
   ],
   "constraints": [
     "purpose == network-testing"
+  ],
+  "userInput": [
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/services/locgps",
+      "serviceArch": "",
+      "serviceVersionRange": "2.0.3",
+      "inputs": [
+        {
+          "name": "test",
+          "value": "testValue"
+        },
+        {
+          "name": "extra",
+          "value": "extraValue"
+        },
+        {
+          "name": "HZN_LAT",
+          "value": 41.921766
+        },
+        {
+          "name": "HZN_LON",
+          "value": -73.894224
+        },
+        {
+          "name": "HZN_LOCATION_ACCURACY_KM",
+          "value": 0.5
+        },
+        {
+          "name": "HZN_USE_GPS",
+          "value": false
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "IBM",
+      "serviceUrl": "https://bluehorizon.network/service-cpu",
+      "serviceArch": "",
+      "serviceVersionRange": "1.0.0",
+      "inputs": [
+        {
+          "name": "cpu_var1",
+          "value": "ibmvar1"
+        }
+      ]
+    }
   ]
 }
 EOF

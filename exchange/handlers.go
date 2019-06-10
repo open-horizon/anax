@@ -81,6 +81,15 @@ func GetHTTPPutDeviceHandler(ec ExchangeContext) PutDeviceHandler {
 	}
 }
 
+// A handler for patching the device information on the exchange
+type PatchDeviceHandler func(deviceId string, deviceToken string, pdr *PatchDeviceRequest) error
+
+func GetHTTPPatchDeviceHandler(ec ExchangeContext) PatchDeviceHandler {
+	return func(id string, token string, pdr *PatchDeviceRequest) error {
+		return PatchExchangeDevice(ec.GetHTTPFactory(), ec.GetExchangeId(), ec.GetExchangeToken(), ec.GetExchangeURL(), pdr)
+	}
+}
+
 // A handler for modifying the device information on the exchange
 type PostDeviceServicesConfigStateHandler func(deviceId string, deviceToken string, svcsConfigState *ServiceConfigState) error
 

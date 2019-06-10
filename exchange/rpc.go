@@ -10,6 +10,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/externalpolicy"
+	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
 	"io/ioutil"
 	"net/http"
@@ -122,20 +123,21 @@ func CreateSearchMSRequest() *SearchExchangeMSRequest {
 
 // Structs and types for interacting with the device (node) object in the exchange
 type Device struct {
-	Token              string          `json:"token"`
-	Name               string          `json:"name"`
-	Owner              string          `json:"owner"`
-	Pattern            string          `json:"pattern"`
-	RegisteredServices []Microservice  `json:"registeredServices"`
-	MsgEndPoint        string          `json:"msgEndPoint"`
-	SoftwareVersions   SoftwareVersion `json:"softwareVersions"`
-	LastHeartbeat      string          `json:"lastHeartbeat"`
-	PublicKey          []byte          `json:"publicKey"`
-	Arch               string          `json:"arch"`
+	Token              string           `json:"token"`
+	Name               string           `json:"name"`
+	Owner              string           `json:"owner"`
+	Pattern            string           `json:"pattern"`
+	RegisteredServices []Microservice   `json:"registeredServices"`
+	MsgEndPoint        string           `json:"msgEndPoint"`
+	SoftwareVersions   SoftwareVersion  `json:"softwareVersions"`
+	LastHeartbeat      string           `json:"lastHeartbeat"`
+	PublicKey          []byte           `json:"publicKey"`
+	Arch               string           `json:"arch"`
+	UserInput          policy.UserInput `json:"userInput"`
 }
 
 func (d Device) String() string {
-	return fmt.Sprintf("Name: %v, Owner: %v, Pattern: %v, LastHeartbeat: %v, RegisteredServices: %v, MsgEndPoint: %v, Arch: %v", d.Name, d.Owner, d.Pattern, d.LastHeartbeat, d.RegisteredServices, d.MsgEndPoint, d.Arch)
+	return fmt.Sprintf("Name: %v, Owner: %v, Pattern: %v, LastHeartbeat: %v, RegisteredServices: %v, MsgEndPoint: %v, Arch: %v, UserInput: %v", d.Name, d.Owner, d.Pattern, d.LastHeartbeat, d.RegisteredServices, d.MsgEndPoint, d.Arch, d.UserInput)
 }
 
 func (d Device) ShortString() string {
@@ -195,6 +197,27 @@ func PutExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 		} else {
 			glog.V(3).Infof(rpclogString(fmt.Sprintf("put device %v to exchange %v", deviceId, pdr)))
 			return resp.(*PutDeviceResponse), nil
+		}
+	}
+}
+
+// patch the the device
+func PatchExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId string, deviceToken string, exchangeUrl string, pdr *PatchDeviceRequest) error {
+	// create PUT body
+	var resp interface{}
+	resp = new(PostDeviceResponse)
+	targetURL := exchangeUrl + "orgs/" + GetOrg(deviceId) + "/nodes/" + GetId(deviceId)
+
+	for {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "PATCH", targetURL, deviceId, deviceToken, pdr, &resp); err != nil {
+			return err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("patch device %v to exchange %v", deviceId, pdr)))
+			return nil
 		}
 	}
 }
@@ -271,6 +294,14 @@ func (p PutDeviceRequest) ShortString() string {
 		str += fmt.Sprintf("%v,", ms.Url)
 	}
 	return str
+}
+
+type PatchDeviceRequest struct {
+	UserInput policy.UserInput `json:"userInput"`
+}
+
+func (p PatchDeviceRequest) String() string {
+	return fmt.Sprintf("UserInput: %v", p.UserInput)
 }
 
 type PostMessage struct {
