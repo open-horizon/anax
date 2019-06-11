@@ -249,6 +249,14 @@ Environment Variables:
 	exBusinessRemovePolicyForce := exBusinessRemovePolicyCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 	exBusinessRemovePolicyPolicy := exBusinessRemovePolicyCmd.Arg("policy", "The name of the business policy to be removed.").Required().String()
 
+	exCatalogCmd := exchangeCmd.Command("catalog", "List all public services/patterns in all orgs that have orgType: IBM.")
+	exCatalogServiceListCmd := exCatalogCmd.Command("servicelist", "Display all public services in all orgs that have orgType: IBM.")
+	exCatalogServiceListShort := exCatalogServiceListCmd.Flag("short", "Only display org (IBM) and service names.").Short('s').Bool()
+	exCatalogServiceListLong := exCatalogServiceListCmd.Flag("long", "Display detailed output about public services in all orgs that have orgType: IBM.").Short('l').Bool()
+	exCatalogPatternListCmd := exCatalogCmd.Command("patternlist", "Display all public patterns in all orgs that have orgType: IBM. ")
+	exCatalogPatternListShort := exCatalogPatternListCmd.Flag("short", "Only display org (IBM) and pattern names.").Short('s').Bool()
+	exCatalogPatternListLong := exCatalogPatternListCmd.Flag("long", "Display detailed output about public patterns in all orgs that have orgType: IBM.").Short('l').Bool()
+
 	regInputCmd := app.Command("reginput", "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the services that the specified pattern uses, and determines the node owner input that is required for them.")
 	regInputNodeIdTok := regInputCmd.Flag("node-id-tok", "The Horizon exchange node ID and token (it must already exist).").Short('n').PlaceHolder("ID:TOK").Required().String()
 	regInputInputFile := regInputCmd.Flag("input-file", "The JSON input template file name that should be created. This file will contain placeholders for you to fill in user input values.").Short('f').Required().String()
@@ -628,6 +636,10 @@ Environment Variables:
 		exchange.BusinessUpdatePolicy(*exOrg, credToUse, *exBusinessUpdatePolicyPolicy, *exBusinessUpdatePolicyAttribute, *exBusinessUpdatePolicyValue)
 	case exBusinessRemovePolicyCmd.FullCommand():
 		exchange.BusinessRemovePolicy(*exOrg, credToUse, *exBusinessRemovePolicyPolicy, *exBusinessRemovePolicyForce)
+	case exCatalogServiceListCmd.FullCommand():
+		exchange.CatalogServiceList(*exOrg, *exUserPw, *exCatalogServiceListShort, *exCatalogServiceListLong)
+	case exCatalogPatternListCmd.FullCommand():
+		exchange.CatalogPatternList(*exOrg, *exUserPw, *exCatalogPatternListShort, *exCatalogPatternListLong)
 	case regInputCmd.FullCommand():
 		register.CreateInputFile(*regInputOrg, *regInputPattern, *regInputArch, *regInputNodeIdTok, *regInputInputFile)
 	case registerCmd.FullCommand():
