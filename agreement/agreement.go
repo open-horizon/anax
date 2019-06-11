@@ -751,35 +751,37 @@ func (w *AgreementWorker) getAllAgreements() (map[string]exchange.DeviceAgreemen
 // Utility functions
 //
 
+// Update the registeredServices and Pattern for the node.
 func (w *AgreementWorker) registerNode(dev *persistence.ExchangeDevice, ms *[]exchange.Microservice) error {
 
-	pdr := exchange.CreateDevicePut(w.GetExchangeToken(), dev.Name)
+	pdr := exchange.PatchDeviceRequest{}
 	if ms != nil {
-		pdr.RegisteredServices = *ms
+		pdr.RegisteredServices = ms
+	} else {
+		tmp := make([]exchange.Microservice, 0)
+		pdr.RegisteredServices = &tmp
 	}
 
+	glog.V(3).Infof("AgreementWorker Registering services and pattern: %v.", pdr)
+
+	patchDevice := exchange.GetHTTPPatchDeviceHandler(w)
+	if err := patchDevice(w.GetExchangeId(), w.GetExchangeToken(), &pdr); err != nil {
+		return err
+	} else {
+		glog.V(3).Infof(logString(fmt.Sprintf("advertised policies for device %v in exchange.", w.GetExchangeId())))
+	}
+
+	pdr = exchange.PatchDeviceRequest{}
 	if dev.Pattern != "" {
 		pdr.Pattern = dev.Pattern
-	}
-
-	var resp interface{}
-	resp = new(exchange.PutDeviceResponse)
-	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId())
-
-	glog.V(3).Infof("AgreementWorker Registering services: %v at %v", pdr.ShortString(), targetURL)
-
-	for {
-		if err, tpErr := exchange.InvokeExchange(w.GetHTTPFactory().NewHTTPClient(nil), "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), pdr, &resp); err != nil {
+		if err := patchDevice(w.GetExchangeId(), w.GetExchangeToken(), &pdr); err != nil {
 			return err
-		} else if tpErr != nil {
-			glog.Warningf(tpErr.Error())
-			time.Sleep(10 * time.Second)
-			continue
 		} else {
-			glog.V(3).Infof(logString(fmt.Sprintf("advertised policies for device %v in exchange: %v", w.GetExchangeId(), resp)))
-			return nil
+			glog.V(3).Infof(logString(fmt.Sprintf("updated the pattern to %v for device %v in exchange.", dev.Pattern, w.GetExchangeId())))
 		}
 	}
+
+	return nil
 }
 
 func (w *AgreementWorker) patchNodeKey() error {

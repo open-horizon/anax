@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 	"github.com/open-horizon/anax/worker"
 	"math/rand"
 	"net/http"
@@ -406,7 +407,24 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			}
 		}
 
-		if !policy_match {
+		// Make sure the user inputs are all there
+		userInput_match := true
+		if policy_match {
+			if err := b.VerifyUserInputForServiceDef(workloadDetails, workload.Org, wi.ConsumerPolicy.UserInput, exchangeDev.UserInput); err != nil {
+				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("Failed to validate the user input: %v", err)))
+				userInput_match = false
+			} else {
+				for _, apiSpec := range *asl {
+					if err := b.VerifyUserInputForService(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch, wi.ConsumerPolicy.UserInput, exchangeDev.UserInput); err != nil {
+						glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("Failed to validate the user input: %v", err)))
+						userInput_match = false
+						break
+					}
+				}
+			}
+		}
+
+		if !policy_match || !userInput_match {
 			if !workload.HasEmptyPriority() {
 				// If this is not the first time through the loop, update the workload usage record, otherwise create it.
 				if lastWorkload != nil {
@@ -592,6 +610,76 @@ func (b *BaseAgreementWorker) GetServicePolicy(svcId string) (*externalpolicy.Ex
 		}
 		return &extPolicy, nil
 	}
+}
+
+// Verfiy that all userInput variables are correctly typed and that non-defaulted userInput variables are specified.
+// Returns nil if the
+func (b *BaseAgreementWorker) VerifyUserInputForService(svcName, svcOrg, svcVersion, svcArch string, default_input []policy.UserInput, userInput []policy.UserInput) error {
+
+	// get the service from the exchange
+	getService := exchange.GetHTTPServiceHandler(b)
+
+	vExp, _ := semanticversion.Version_Expression_Factory(svcVersion)
+
+	sdef, _, err := getService(svcName, svcOrg, vExp.Get_expression(), svcArch)
+	if err != nil {
+		return fmt.Errorf("Failed to get the service %v/%v %v %v from the exchange. %v", err, svcOrg, svcName, svcVersion, svcArch)
+	} else if sdef == nil {
+		return fmt.Errorf("Servcie %v/%v %v %v does not exist on the exchange.", svcOrg, svcName, svcVersion, svcArch)
+	}
+
+	return b.VerifyUserInputForServiceDef(sdef, svcOrg, default_input, userInput)
+}
+
+// Verfiy that all userInput variables are correctly typed and that non-defaulted userInput variables are specified.
+// Returns nil if the
+func (b *BaseAgreementWorker) VerifyUserInputForServiceDef(sdef *exchange.ServiceDefinition, svcOrg string, default_input []policy.UserInput, userInput []policy.UserInput) error {
+	// service does not need user input
+	if !sdef.NeedsUserInput() {
+		return nil
+	}
+
+	// service needs user input, find the correct elements in the array
+	var mergedUI *policy.UserInput
+	ui1, err := policy.FindUserInput(sdef.URL, svcOrg, sdef.Version, sdef.Arch, default_input)
+	if err != nil {
+		return err
+	}
+	ui2, err := policy.FindUserInput(sdef.URL, svcOrg, sdef.Version, sdef.Arch, userInput)
+	if err != nil {
+		return err
+	}
+
+	if ui1 == nil && ui2 == nil {
+		return fmt.Errorf("Cannot find user input for service %v/%v %v %v.", svcOrg, sdef.URL, sdef.Version, sdef.Arch)
+	}
+
+	if ui1 != nil && ui2 != nil {
+		mergedUI, _ = policy.MergeUserInput(*ui1, *ui2, false)
+	} else if ui1 != nil {
+		mergedUI = ui1
+	} else {
+		mergedUI = ui2
+	}
+
+	// Verify that non-default variables are present.
+	for _, ui := range sdef.UserInputs {
+		found := false
+		for _, mui := range mergedUI.Inputs {
+			if ui.Name == mui.Name {
+				found = true
+				//if err := cutil.VerifyWorkloadVarTypes(mui.Value, ui.Type); err != nil {
+				//	return fmt.Errorf("Failed to validate the user input type for variable %v for service %v/%v %v %v. %v",  ui.Name, svcOrg, sdef.URL, sdef.Version, sdef.Arch, err)
+				//}
+			}
+		}
+
+		if !found && ui.DefaultValue == "" {
+			return fmt.Errorf("A required user input value is missing for variable %v for service %v/%v %v %v", ui.Name, svcOrg, sdef.URL, sdef.Version, sdef.Arch)
+		}
+	}
+
+	return nil
 }
 
 func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, wi *HandleReply, workerId string) bool {

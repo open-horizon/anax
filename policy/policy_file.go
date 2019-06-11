@@ -66,7 +66,7 @@ type Policy struct {
 	RequiredWorkload   string                              `json:"requiredWorkload,omitempty"` // Version 2.0
 	HAGroup            HighAvailabilityGroup               `json:"ha_group,omitempty"`         // Version 2.0
 	NodeH              NodeHealth                          `json:"nodeHealth,omitempty"`       // Version 2.0
-	UserInput          UserInput                           `json:"userInput,omitempty"`
+	UserInput          []UserInput                         `json:"userInput,omitempty"`
 }
 
 // These functions are used to create Policy objects. You can create the base object
@@ -233,6 +233,11 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 	merged_pol.HAGroup = *((&producer_policy1.HAGroup).Merge(&producer_policy2.HAGroup))
 	merged_pol.MaxAgreements = cutil.Min(producer_policy1.MaxAgreements, producer_policy2.MaxAgreements)
 
+	if producer_policy1.UserInput != nil && len(producer_policy1.UserInput) != 0 {
+		merged_pol.UserInput = make([]UserInput, len(producer_policy1.UserInput))
+		copy(merged_pol.UserInput, producer_policy1.UserInput)
+	}
+
 	return merged_pol, nil
 }
 
@@ -281,6 +286,12 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		merged_pol.RequiredWorkload = producer_policy.RequiredWorkload
 		merged_pol.HAGroup = producer_policy.HAGroup
 		merged_pol.NodeH = consumer_policy.NodeH
+
+		// the user input is contained in pattern and business policy. they are consumer policies.
+		if consumer_policy.UserInput != nil && len(consumer_policy.UserInput) != 0 {
+			merged_pol.UserInput = make([]UserInput, len(consumer_policy.UserInput))
+			copy(merged_pol.UserInput, consumer_policy.UserInput)
+		}
 
 		return merged_pol, nil
 	}

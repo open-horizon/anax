@@ -17,7 +17,7 @@ type Pattern struct {
 	Public             bool                `json:"public"`
 	Services           []ServiceReference  `json:"services"`
 	AgreementProtocols []AgreementProtocol `json:"agreementProtocols"`
-	UserInput          policy.UserInput    `json:"userInput,omitempty"`
+	UserInput          []policy.UserInput  `json:"userInput,omitempty"`
 }
 
 func (w Pattern) String() string {
@@ -322,6 +322,11 @@ func ConvertCommon(p *Pattern, patternId string, dv DataVerification, nodeh Node
 
 	// Unlimited number of devices can get this service
 	pol.MaxAgreements = 0
+
+	// make a copy of the user input
+	pol.UserInput = make([]policy.UserInput, len(p.UserInput))
+	copy(pol.UserInput, p.UserInput)
+
 }
 
 // Structs and types for working with pattern based exchange searches

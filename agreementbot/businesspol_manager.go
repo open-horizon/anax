@@ -403,7 +403,8 @@ func (pm *BusinessPolicyManager) UpdatePolicies(org string, definedPolicies map[
 
 	// Exit early on error
 	if !pm.hasOrg(org) {
-		return errors.New(fmt.Sprintf("org %v not found in policy manager", org))
+		glog.Infof("org %v not found in policy manager", org)
+		return nil
 	}
 
 	// If there is no business policy in the org, delete the org from the pm and all of the policy files in the org.
@@ -430,7 +431,8 @@ func (pm *BusinessPolicyManager) UpdatePolicies(org string, definedPolicies map[
 		if need_delete {
 			glog.V(5).Infof("Deletinging business policy %v from the org %v from the policy manager because the policy no longer exists.", polName, org)
 			if err := pm.deleteBusinessPolicy(org, polName, polManager); err != nil {
-				return err
+				glog.Errorf("Error deleting business policy %v from the org %v in the policy manager. Error: %v", polName, org, err)
+				continue
 			}
 		}
 	}
@@ -442,7 +444,8 @@ func (pm *BusinessPolicyManager) UpdatePolicies(org string, definedPolicies map[
 			continue
 		}
 		if err := pm.updateBusinessPolicy(org, polId, &pol, polManager); err != nil {
-			return err
+			glog.Errorf("Error updating business policy %v from the org %v in the policy manager. Error: %v", polId, org, err)
+			continue
 		}
 	}
 

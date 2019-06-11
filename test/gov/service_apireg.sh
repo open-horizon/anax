@@ -802,6 +802,48 @@ read -d '' pdef <<EOF
     {
       "name": "Basic"
     }
+  ],
+  "userInput": [
+    {
+      "serviceOrgid": "IBM",
+      "serviceUrl": "https://bluehorizon.network/services/netspeed",
+      "serviceArch": "",
+      "serviceVersionRange": "2.2.0",
+      "inputs": [
+        {
+          "name": "var1",
+          "value": "bString"
+        },
+        {
+          "name": "var2",
+          "value": 10
+        },
+        {
+          "name": "var3",
+          "value": 10.22
+        },
+        {
+          "name": "var4",
+          "value": ["abcd", "1234"]
+        },
+        {
+          "name": "var5",
+          "value": "override2"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "IBM",
+      "serviceUrl": "https://bluehorizon.network/service-cpu",
+      "serviceArch": "",
+      "serviceVersionRange": "1.0.0",
+      "inputs": [
+        {
+          "name": "cpu_var1",
+          "value": "ibm_var1"
+        }
+      ]
+    }
   ]
 }
 EOF
@@ -1002,6 +1044,36 @@ read -d '' sdef <<EOF
     {
       "name": "Basic"
     }
+  ],
+  "userInput": [
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/services/locgps",
+      "serviceArch": "",
+      "serviceVersionRange": "2.0.3",
+      "inputs": [
+        {
+          "name": "test",
+          "value": "testValue"
+        },
+        {
+          "name": "extra",
+          "value": "extraValue"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "IBM",
+      "serviceUrl": "https://bluehorizon.network/service-cpu",
+      "serviceArch": "",
+      "serviceVersionRange": "1.0.0",
+      "inputs": [
+        {
+          "name": "cpu_var1",
+          "value": "ibmvar1"
+        }
+      ]
+    }
   ]
 }
 EOF
@@ -1040,6 +1112,36 @@ read -d '' sdef <<EOF
   "agreementProtocols": [
     {
       "name": "Basic"
+    }
+  ],
+  "userInput": [
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/services/weather",
+      "serviceArch": "",
+      "serviceVersionRange": "1.5.0",
+      "inputs": [
+        {
+          "name": "HZN_WUGNAME",
+          "value": "e2edev mocked pws"
+        },
+        {
+          "name": "HZN_PWS_MODEL",
+          "value": "LaCrosse WS2317"
+        },
+        {
+          "name": "MTN_PWS_MODEL",
+          "value": "LaCrosse WS2317"
+        },
+        {
+          "name": "HZN_PWS_ST_TYPE",
+          "value": "WS23xx"
+        },
+        {
+          "name": "MTN_PWS_ST_TYPE",
+          "value": "WS23xx"
+        }
+      ]
     }
   ]
 }
@@ -1291,6 +1393,70 @@ read -d '' msdef <<EOF
       ]
     },
     {
+      "serviceOrgid": "IBM",
+      "serviceUrl": "https://bluehorizon.network/services/netspeed",
+      "serviceArch": "",
+      "serviceVersionRange": "2.2.0",
+      "inputs": [
+        {
+          "name": "var1",
+          "value": "ibmstring"
+        },
+        {
+          "name": "var2",
+          "value": 11
+        },
+        {
+          "name": "var3",
+          "value": 11.22
+        },
+        {
+          "name": "var4",
+          "value": ["abc", "123"]
+        },
+        {
+          "name": "var5",
+          "value": "override1"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/service-cpu",
+      "serviceArch": "",
+      "serviceVersionRange": "1.0.0",
+      "inputs": [
+        {
+          "name": "cpu_var1",
+          "value": "e2edev_var1"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "IBM",
+      "serviceUrl": "https://bluehorizon.network/service-cpu",
+      "serviceArch": "",
+      "serviceVersionRange": "1.0.0",
+      "inputs": [
+        {
+          "name": "cpu_var1",
+          "value": "ibm_var1"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/service-cpu",
+      "serviceArch": "",
+      "serviceVersionRange": "1.0.0",
+      "inputs": [
+        {
+          "name": "cpu_var1",
+          "value": "e2edev_var1"
+        }
+      ]
+    },
+    {
       "serviceOrgid": "e2edev@somecomp.com",
       "serviceUrl": "https://bluehorizon.network/services/locgps",
       "serviceArch": "",
@@ -1303,22 +1469,6 @@ read -d '' msdef <<EOF
         {
           "name": "extra",
           "value": "extraValue"
-        },
-        {
-          "name": "HZN_LAT",
-          "value": 41.921766
-        },
-        {
-          "name": "HZN_LON",
-          "value": -73.894224
-        },
-        {
-          "name": "HZN_LOCATION_ACCURACY_KM",
-          "value": 0.5
-        },
-        {
-          "name": "HZN_USE_GPS",
-          "value": false
         }
       ]
     },
@@ -1331,6 +1481,34 @@ read -d '' msdef <<EOF
         {
           "name": "cpu_var1",
           "value": "ibmvar1"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/services/weather",
+      "serviceArch": "",
+      "serviceVersionRange": "1.5.0",
+      "inputs": [
+        {
+          "name": "HZN_WUGNAME",
+          "value": "e2edev mocked pws"
+        },
+        {
+          "name": "HZN_PWS_MODEL",
+          "value": "LaCrosse WS2317"
+        },
+        {
+          "name": "MTN_PWS_MODEL",
+          "value": "LaCrosse WS2317"
+        },
+        {
+          "name": "HZN_PWS_ST_TYPE",
+          "value": "WS23xx"
+        },
+        {
+          "name": "MTN_PWS_ST_TYPE",
+          "value": "WS23xx"
         }
       ]
     }
@@ -1423,6 +1601,30 @@ read -d '' bpnsdef <<EOF
         {
           "name": "var5",
           "value": "override2"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "IBM",
+      "serviceUrl": "https://bluehorizon.network/service-cpu",
+      "serviceArch": "",
+      "serviceVersionRange": "1.0.0",
+      "inputs": [
+        {
+          "name": "cpu_var1",
+          "value": "ibm_var1"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/service-cpu",
+      "serviceArch": "",
+      "serviceVersionRange": "1.0.0",
+      "inputs": [
+        {
+          "name": "cpu_var1",
+          "value": "e2edev_var1"
         }
       ]
     }
@@ -1540,22 +1742,6 @@ read -d '' bplocdef <<EOF
         {
           "name": "extra",
           "value": "extraValue"
-        },
-        {
-          "name": "HZN_LAT",
-          "value": 41.921766
-        },
-        {
-          "name": "HZN_LON",
-          "value": -73.894224
-        },
-        {
-          "name": "HZN_LOCATION_ACCURACY_KM",
-          "value": 0.5
-        },
-        {
-          "name": "HZN_USE_GPS",
-          "value": false
         }
       ]
     },
@@ -1629,6 +1815,36 @@ read -d '' bppwsdef <<EOF
   ],
   "constraints": [
     "purpose == network-testing"
+  ],
+  "userInput": [
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/services/weather",
+      "serviceArch": "",
+      "serviceVersionRange": "1.5.0",
+      "inputs": [
+        {
+          "name": "HZN_WUGNAME",
+          "value": "e2edev mocked pws"
+        },
+        {
+          "name": "HZN_PWS_MODEL",
+          "value": "LaCrosse WS2317"
+        },
+        {
+          "name": "MTN_PWS_MODEL",
+          "value": "LaCrosse WS2317"
+        },
+        {
+          "name": "HZN_PWS_ST_TYPE",
+          "value": "WS23xx"
+        },
+        {
+          "name": "MTN_PWS_ST_TYPE",
+          "value": "WS23xx"
+        }
+      ]
+    }
   ]
 }
 EOF
@@ -1741,6 +1957,89 @@ read -d '' locpoldef <<EOF
 EOF
 echo -e "Register service policy for location:"
 RES=$(echo "$locpoldef" | curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-location_2.0.6_amd64/policy" | jq -r '.')
+results "$RES"
+
+# ========================================= Node User Input ==================================
+read -d '' nodeui <<EOF
+{
+  "userInput": [
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/services/locgps",
+      "serviceArch": "",
+      "serviceVersionRange": "2.0.3",
+      "inputs": [
+        {
+          "name": "HZN_LAT",
+          "value": 41.921766
+        },
+        {
+          "name": "HZN_LON",
+          "value": -73.894224
+        },
+        {
+          "name": "HZN_LOCATION_ACCURACY_KM",
+          "value": 0.5
+        },
+        {
+          "name": "HZN_USE_GPS",
+          "value": false
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/services/weather",
+      "serviceArch": "",
+      "serviceVersionRange": "1.5.0",
+      "inputs": [
+        {
+          "name": "HZN_LAT",
+          "value": 41.921766
+        },
+        {
+          "name": "HZN_LON",
+          "value": -73.894224
+        },
+        {
+          "name": "HZN_LOCATION_ACCURACY_KM",
+          "value": 0.5
+        },
+        {
+          "name": "HZN_USE_GPS",
+          "value": false
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "IBM",
+      "serviceUrl": "https://bluehorizon.network/service-gps",
+      "serviceArch": "",
+      "serviceVersionRange": "2.0.3",
+      "inputs": [
+        {
+          "name": "HZN_LAT",
+          "value": 41.921766
+        },
+        {
+          "name": "HZN_LON",
+          "value": -73.894224
+        },
+        {
+          "name": "HZN_LOCATION_ACCURACY_KM",
+          "value": 0.5
+        },
+        {
+          "name": "HZN_USE_GPS",
+          "value": false
+        }
+      ]
+    }
+  ]
+}
+EOF
+echo -e "Register node user input for userdev/an12345:"
+RES=$(echo "$nodeui" | curl -sLX PATCH --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/nodes/an12345" | jq -r '.')
 results "$RES"
 
 unset HZN_EXCHANGE_URL

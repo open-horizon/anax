@@ -17,7 +17,7 @@ type BusinessPolicy struct {
 	Service     ServiceRef                          `json:"service"`
 	Properties  externalpolicy.PropertyList         `json:"properties,omitempty"`
 	Constraints externalpolicy.ConstraintExpression `json:"constraints,omitempty"`
-	UserInput   policy.UserInput                    `json:"userInput,omitempty"`
+	UserInput   []policy.UserInput                  `json:"userInput,omitempty"`
 }
 
 func (w BusinessPolicy) String() string {
@@ -158,7 +158,7 @@ func (b *BusinessPolicy) GenPolicyFromBusinessPolicy(policyName string) (*policy
 	pol.MaxAgreements = DEFAULT_MAX_AGREEMENT
 
 	// make a copy of the user input
-	pol.UserInput = make([]policy.ServiceUserInput, len(b.UserInput))
+	pol.UserInput = make([]policy.UserInput, len(b.UserInput))
 	copy(pol.UserInput, b.UserInput)
 
 	glog.V(3).Infof("converted %v into %v", service, pol)

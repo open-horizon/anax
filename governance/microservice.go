@@ -348,9 +348,10 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 	var unregError error
 	unregError = nil
 	unregError = microservice.RemoveMicroservicePolicy(msdef.SpecRef, msdef.Org, msdef.Version, msdef.Id, w.Config.Edge.PolicyPath, w.pm)
+
 	if unregError != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to remove service policy for service def %v/%v version %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, unregError)))
-	} else if unregError = microservice.UnregisterMicroserviceExchange(exchange.GetHTTPDeviceHandler(w), exchange.GetHTTPPutDeviceHandler(w), msdef.SpecRef, msdef.Org, w.GetExchangeId(), w.GetExchangeToken(), w.db); unregError != nil {
+	} else if unregError = microservice.UnregisterMicroserviceExchange(exchange.GetHTTPDeviceHandler(w), exchange.GetHTTPPatchDeviceHandler(w), msdef.SpecRef, msdef.Org, w.GetExchangeId(), w.GetExchangeToken(), w.db); unregError != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to unregister service from the exchange for service def %v/%v. %v", msdef.Org, msdef.SpecRef, unregError)))
 	}
 
