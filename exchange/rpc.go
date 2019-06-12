@@ -297,6 +297,10 @@ func (p PutDeviceRequest) ShortString() string {
 	return str
 }
 
+type PatchDeviceArchRequest struct {
+	Arch string `json:"arch"`
+}
+
 type PatchDeviceRequest struct {
 	UserInput policy.UserInput `json:"userInput"`
 }
