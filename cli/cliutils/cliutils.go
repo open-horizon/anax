@@ -920,6 +920,81 @@ func ExchangePutPost(service string, method string, urlBase string, urlSuffix st
 	return
 }
 
+// ExchangePatch runs a Patch to the exchange api to create of update a resource. If body is a string, it will be given to the exchange
+// as json. Otherwise the struct will be marshaled to json.
+// If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
+func ExchangePatch(service string, urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, body interface{}) (httpCode int) {
+	url := urlBase + "/" + urlSuffix
+	apiMsg := http.MethodPatch + " " + url
+	Verbose(apiMsg)
+	if IsDryRun() {
+		return 201
+	}
+	httpClient := &http.Client{}
+	// This env var should only be used in our test environments or in an emergency when there is a problem with the SSL certificate of a horizon service.
+	if os.Getenv("HZN_SSL_SKIP_VERIFY") != "" {
+		httpClient.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		}
+	}
+
+	// Prepare body
+	var jsonBytes []byte
+	bodyIsBytes := false
+	switch b := body.(type) {
+	// If the body is a byte array, we treat it like a file being uploaded (not multi-part)
+	case []byte:
+		jsonBytes = b
+		bodyIsBytes = true
+	case string:
+		jsonBytes = []byte(b)
+	default:
+		var err error
+		jsonBytes, err = json.Marshal(body)
+		if err != nil {
+			Fatal(JSON_PARSING_ERROR, "failed to marshal exchange body for %s: %v", apiMsg, err)
+		}
+	}
+	requestBody := bytes.NewBuffer(jsonBytes)
+
+	// Create the request and run it
+	req, err := http.NewRequest(http.MethodPatch, url, requestBody)
+	if err != nil {
+		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
+	}
+	req.Header.Add("Accept", "application/json")
+	if bodyIsBytes {
+		req.Header.Add("Content-Length", strconv.Itoa(len(jsonBytes)))
+	} else {
+		req.Header.Add("Content-Type", "application/json")
+	}
+	if credentials != "" {
+		req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
+	} // else it is an anonymous call
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		printHorizonServiceRestError(service, apiMsg, err)
+	}
+	defer resp.Body.Close()
+	httpCode = resp.StatusCode
+	Verbose("HTTP code: %d", httpCode)
+	if !isGoodCode(httpCode, goodHttpCodes) {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			Fatal(HTTP_ERROR, "failed to read exchange body response from %s: %v", apiMsg, err)
+		}
+		respMsg := exchange.PostDeviceResponse{}
+		err = json.Unmarshal(bodyBytes, &respMsg)
+		if err != nil {
+			Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s", httpCode, apiMsg, string(bodyBytes))
+		}
+		Fatal(HTTP_ERROR, "bad HTTP code %d from %s: %s, %s", httpCode, apiMsg, respMsg.Code, respMsg.Msg)
+	}
+	return
+}
+
 // ExchangeDelete deletes a resource via the exchange api.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
 func ExchangeDelete(service string, urlBase string, urlSuffix string, credentials string, goodHttpCodes []int) (httpCode int) {
