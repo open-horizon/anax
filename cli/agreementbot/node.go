@@ -35,7 +35,9 @@ func (n *AgbotAndStatus) CopyStatusInto(status *apicommon.Info) {
 
 func List() {
 	// set env to call agbot url
-	os.Setenv("HORIZON_URL", cliutils.AGBOT_HZN_API)
+	if err := os.Setenv("HORIZON_URL", cliutils.AGBOT_HZN_API); err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "unable to set env var 'HORIZON_URL', error %v", err)
+	}
 
 	// Get the agbot info
 	horDevice := agreementbot.HorizonAgbot{}

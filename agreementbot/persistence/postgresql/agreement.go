@@ -418,8 +418,7 @@ func (db *AgbotPostgresqlDB) DeleteAgreement(agreementid string, protocol string
 	if err := db.deleteAgreement(tx, agreementid, protocol); err != nil {
 		return err
 	} else {
-		tx.Commit()
-		return nil
+		return tx.Commit()
 	}
 }
 
@@ -454,9 +453,8 @@ func (db *AgbotPostgresqlDB) wrapTransaction(agreementid string, protocol string
 		tx.Rollback()
 		return err
 	} else {
-		tx.Commit()
+		return tx.Commit()
 	}
-	return nil
 
 }
 

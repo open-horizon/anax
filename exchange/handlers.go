@@ -3,6 +3,7 @@ package exchange
 import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/edge-sync-service/common"
 )
 
 // The handlers module defines replaceable functions that represent the exchange and CSS API's external dependencies. These
@@ -249,6 +250,24 @@ func GetHTTPObjectPolicyQueryHandler(ec ExchangeContext) ObjectPolicyQueryHandle
 	}
 }
 
+// A handler for getting the policy of objects in the Model Management System.
+type ObjectQueryHandler func(org string, objID string, objType string) (*common.MetaData, error)
+
+func GetHTTPObjectQueryHandler(ec ExchangeContext) ObjectQueryHandler {
+	return func(org string, objID string, objType string) (*common.MetaData, error) {
+		return GetObject(ec, org, objID, objType)
+	}
+}
+
+// A handler for getting the destinations of objects in the Model Management System.
+type ObjectDestinationQueryHandler func(org string, objID string, objType string) (*ObjectDestinationStatuses, error)
+
+func GetHTTPObjectDestinationQueryHandler(ec ExchangeContext) ObjectDestinationQueryHandler {
+	return func(org string, objID string, objType string) (*ObjectDestinationStatuses, error) {
+		return GetObjectDestinations(ec, org, objID, objType)
+	}
+}
+
 // A handler for updating the list of object destinations in the Model Management System.
 type UpdateObjectDestinationHandler func(org string, objPol *ObjectDestinationPolicy, dests *PutDestinationListRequest) error
 
@@ -259,11 +278,11 @@ func GetHTTPUpdateObjectDestinationHandler(ec ExchangeContext) UpdateObjectDesti
 }
 
 // A handler for getting new policy for objects in the Model Management System.
-type ObjectPolicyUpdatesQueryHandler func(org string, firstTime bool) (*ObjectDestinationPolicies, error)
+type ObjectPolicyUpdatesQueryHandler func(org string, since int64) (*ObjectDestinationPolicies, error)
 
 func GetHTTPObjectPolicyUpdatesQueryHandler(ec ExchangeContext) ObjectPolicyUpdatesQueryHandler {
-	return func(org string, firstTime bool) (*ObjectDestinationPolicies, error) {
-		return GetUpdatedObjects(ec, org, firstTime)
+	return func(org string, since int64) (*ObjectDestinationPolicies, error) {
+		return GetUpdatedObjects(ec, org, since)
 	}
 }
 

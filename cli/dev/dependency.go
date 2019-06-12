@@ -172,14 +172,18 @@ func DependencyRemove(homeDirectory string, specRef string, url string, version 
 	}
 
 	envVarSetting := os.Getenv("HZN_DONT_SUBST_ENV_VARS")
-	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1")
+	if err := os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1"); err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS', error %v", err)
+	}
 
 	if url != "" {
 		specRef = url
 	}
 	removeDependencyAndChildren(dir, specRef, org, version, arch)
 
-	os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting) // restore this setting
+	if err := os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting); err != nil { // restore this setting
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to restore env var 'HZN_DONT_SUBST_ENV_VARS', error %v", err)
+	}
 }
 
 // Returns an os.FileInfo object for each dependency file. This function assumes the caller has
@@ -423,7 +427,9 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	// this project's workload definition and updates it with the reference to the ms. In the files that are read and
 	// then written we want those to preserve the env vars as env vars.
 	envVarSetting := os.Getenv("HZN_DONT_SUBST_ENV_VARS")
-	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "0")
+	if err := os.Setenv("HZN_DONT_SUBST_ENV_VARS", "0"); err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS' to zero, error %v", err)
+	}
 
 	// get original env vars
 	orig_env_vars := cliconfig.GetEnvVars()
@@ -472,7 +478,9 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 		}
 	}
 
-	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1")
+	if err := os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1"); err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS', error %v", err)
+	}
 
 	// Harden the new dependency in a file in this project's dependency store.
 	if err := UpdateDependencyFile(homeDirectory, sDef); err != nil {
@@ -530,7 +538,9 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	}
 
 	cliutils.Verbose("Updated %v/%v with the dependency's variable and global attribute configuration.", homeDirectory, USERINPUT_FILE)
-	os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting) // restore this setting
+	if err := os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting); err != nil { // restore this setting
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to restore env var 'HZN_DONT_SUBST_ENV_VARS', error %v", err)
+	}
 
 	return nil
 }
@@ -563,7 +573,9 @@ func UpdateServiceDefandUserInputFile(homeDirectory string, sDef cliexchange.Abs
 	// this project's workload definition and updates it with the reference to the ms. In the files that are read and
 	// then written we want those to preserve the env vars as env vars.
 	envVarSetting := os.Getenv("HZN_DONT_SUBST_ENV_VARS")
-	os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1")
+	if err := os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1"); err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS', error %v", err)
+	}
 	defer os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting) // restore this setting
 
 	if !skipServcieDef {
@@ -826,7 +838,9 @@ func getDependencyInfo(dir string) ([]*ServiceDependency, error) {
 
 	for _, s := range svc.RequiredServices {
 		sp := NewServiceSpec(s.URL, s.Org, s.Version, s.Arch)
-		getDependencyDependencyInfo(dir, sp, sp, depFiles, &deps)
+		if err := getDependencyDependencyInfo(dir, sp, sp, depFiles, &deps); err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to get dependency info for %v , error %v", sp, err)
+		}
 	}
 
 	return deps, nil
@@ -845,7 +859,7 @@ func getDependencyDependencyInfo(dir string, spTop *ServiceSpec, sp *ServiceSpec
 		}
 	}
 
-	// find the service file from the /dependecies directory
+	// find the service file from the /dependencies directory
 	for _, fileInfo := range depFiles {
 
 		dep, err := GetServiceDefinition(path.Join(dir, DEFAULT_DEPENDENCY_DIR), fileInfo.Name())
@@ -866,7 +880,9 @@ func getDependencyDependencyInfo(dir string, spTop *ServiceSpec, sp *ServiceSpec
 			// get dependent's dependencies
 			for _, s := range dep.RequiredServices {
 				sp_dep_temp := NewServiceSpec(s.URL, s.Org, s.Version, s.Arch)
-				getDependencyDependencyInfo(dir, spTop, sp_dep_temp, depFiles, deps)
+				if err := getDependencyDependencyInfo(dir, spTop, sp_dep_temp, depFiles, deps); err != nil {
+					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to get dependency info for %v , error %v", sp_dep_temp, err)
+				}
 			}
 		}
 	}

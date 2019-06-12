@@ -43,14 +43,14 @@ func (auth *FSSAuthenticate) Authenticate(request *http.Request) (int, string, s
 	}
 
 	glog.V(3).Infof(essALS(fmt.Sprintf("received authentication request for user %v", appKey)))
-	glog.V(6).Infof(essALS(fmt.Sprintf("received authentication request for user %v with secret %v", appKey, appSecret)))
 
 	// appKey will be <service-org>/<service-name> indicating a service running on this node.
 	authCode := security.AuthFailed
 	authId := appKey
 
 	// Verify that this identity is still in use. If there is an error, log it and return not authenticated.
-	if ok, err := auth.AuthMgr.Authenticate(authId, appSecret); err != nil {
+	ok, vers, err := auth.AuthMgr.Authenticate(authId, appSecret)
+	if err != nil {
 		glog.Errorf(essALS(fmt.Sprintf("unable to verify %v, error %v", authId, err)))
 		return authCode, "", ""
 	} else if !ok {
@@ -59,7 +59,17 @@ func (auth *FSSAuthenticate) Authenticate(request *http.Request) (int, string, s
 	}
 
 	// The service identity is authenticated.
-	authCode = security.AuthService
+	authCode = security.AuthAdmin
+
+	// The version of the authenticated service is only needed when placing objects by policy, because this is
+	// the only time object affinity to services is enforced. If there's no version, dont include it in
+	// the returned authenticated idenity.
+	if vers != "" {
+		authCode = security.AuthService
+		sname := strings.Split(authId, "/")
+		authId = fmt.Sprintf("%v/%v/%v", sname[0], vers, sname[1])
+	}
+
 	glog.V(3).Infof(essALS(fmt.Sprintf("returned authentication result code %v org %v id %v", authCode, auth.nodeOrg, authId)))
 
 	return authCode, auth.nodeOrg, authId

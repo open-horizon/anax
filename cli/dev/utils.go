@@ -147,7 +147,9 @@ func VerifyEnvironment(homeDirectory string, mustExist bool, needExchange bool, 
 	} else if os.Getenv(DEVTOOL_HZN_EXCHANGE_URL) == "" {
 		exchangeUrl := cliutils.GetExchangeUrl()
 		if exchangeUrl != "" {
-			os.Setenv(DEVTOOL_HZN_EXCHANGE_URL, exchangeUrl)
+			if err := os.Setenv(DEVTOOL_HZN_EXCHANGE_URL, exchangeUrl); err != nil {
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to set env var %v to %v, error %v", DEVTOOL_HZN_EXCHANGE_URL, exchangeUrl, err)
+			}
 		} else {
 			return "", errors.New(fmt.Sprintf("Environment variable %v must be set.", DEVTOOL_HZN_EXCHANGE_URL))
 		}
@@ -578,7 +580,7 @@ func StartContainers(deployment *containermessage.DeploymentDescription,
 	fmt.Printf("Start %v: %v with instance id prefix %v\n", logName, dc.CLIString(), id)
 
 	// Start the dependent service container.
-	_, startErr := cw.ResourcesCreate(id, "", nil, deployment, []byte(""), environmentAdditions, msNetworks, cutil.FormOrgSpecUrl(cutil.NormalizeURL(specRef), org))
+	_, startErr := cw.ResourcesCreate(id, "", nil, deployment, []byte(""), environmentAdditions, msNetworks, cutil.FormOrgSpecUrl(cutil.NormalizeURL(specRef), org), "")
 	if startErr != nil {
 		return nil, errors.New(fmt.Sprintf("unable to start container using %v, error: %v", dc.CLIString(), startErr))
 	}

@@ -97,7 +97,9 @@ func returnFileBytes(filename string, w http.ResponseWriter) error {
 
 	// Get the Content-Type of the file.
 	fileHeader := make([]byte, 512)
-	file.Read(fileHeader)
+	if _, err := file.Read(fileHeader); err != nil {
+		return err
+	}
 	fileContentType := http.DetectContentType(fileHeader)
 
 	// Get the file size.
@@ -110,8 +112,12 @@ func returnFileBytes(filename string, w http.ResponseWriter) error {
 	w.Header().Set("Content-Length", fileSize)
 
 	// Reset the file so that we can read from the beginning again.
-	file.Seek(0, 0)
-	io.Copy(w, file)
+	if _, err := file.Seek(0, 0); err != nil {
+		return err
+	}
+	if _, err := io.Copy(w, file); err != nil {
+		return err
+	}
 	w.WriteHeader(http.StatusOK)
 	return nil
 }

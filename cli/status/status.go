@@ -13,7 +13,9 @@ func getStatus(agbot bool) (apiOutput *worker.WorkerStatusManager) {
 
 	if agbot {
 		// set env to call agbot url
-		os.Setenv("HORIZON_URL", cliutils.AGBOT_HZN_API)
+		if err := os.Setenv("HORIZON_URL", cliutils.AGBOT_HZN_API); err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "%v", err)
+		}
 	}
 
 	// Get horizon api worker status

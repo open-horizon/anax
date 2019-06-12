@@ -378,7 +378,9 @@ func ConfirmRemove(question string) {
 	// Prompt the user to make sure he/she wants to do this
 	fmt.Print(question + " [y/N]: ")
 	var response string
-	fmt.Scanln(&response)
+	if _, err := fmt.Scanln(&response); err != nil {
+		Fatal(CLI_INPUT_ERROR, "Error scanning input, error %v", err)
+	}
 	if strings.TrimSpace(response) != "y" {
 		fmt.Println("Exiting.")
 		os.Exit(0)
@@ -430,7 +432,9 @@ func GetRespBodyAsString(responseBody io.ReadCloser) string {
 	}
 
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(responseBody)
+	if _, err := buf.ReadFrom(responseBody); err != nil {
+		Fatal(HTTP_ERROR, "Error reading HTTP response, error %v", err)
+	}
 	return buf.String()
 }
 
@@ -1068,7 +1072,9 @@ func GetExchangeAuth(userPw string, nodeIdTok string) string {
 func SetDefaultArch() {
 	arch := os.Getenv("ARCH")
 	if arch == "" {
-		os.Setenv("ARCH", runtime.GOARCH)
+		if err := os.Setenv("ARCH", runtime.GOARCH); err != nil {
+			Fatal(CLI_GENERAL_ERROR, err.Error())
+		}
 	}
 }
 

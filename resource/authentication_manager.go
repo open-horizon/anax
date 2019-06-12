@@ -32,8 +32,8 @@ func (a *AuthenticationManager) GetCredentialPath(key string) string {
 
 // Create a new container authentication credential and write it into the Agent's host file system. The credential file
 // live in a directory named by the key input parameter.
-func (a *AuthenticationManager) CreateCredential(key string, id string) error {
-	cred, err := GenerateNewCredential(id)
+func (a *AuthenticationManager) CreateCredential(key string, id string, ver string) error {
+	cred, err := GenerateNewCredential(id, ver)
 	if err != nil {
 		return errors.New("unable to generate new authentication token")
 	}
@@ -54,12 +54,12 @@ func (a *AuthenticationManager) CreateCredential(key string, id string) error {
 }
 
 // Verify that the input credentials are in the auth manager.
-func (a *AuthenticationManager) Authenticate(authId string, appSecret string) (bool, error) {
+func (a *AuthenticationManager) Authenticate(authId string, appSecret string) (bool, string, error) {
 
 	// Iterate through the list of all directories in the auth manager. Each directory represents a running service
 	// that has been assigned FSS (ESS) API credentials.
 	if dirs, err := ioutil.ReadDir(a.AuthPath); err != nil {
-		return false, errors.New(fmt.Sprintf("unable to read authentication credential file directories in %v, error: %v", a.AuthPath, err))
+		return false, "", errors.New(fmt.Sprintf("unable to read authentication credential file directories in %v, error: %v", a.AuthPath, err))
 	} else {
 		for _, d := range dirs {
 
@@ -71,22 +71,22 @@ func (a *AuthenticationManager) Authenticate(authId string, appSecret string) (b
 			// Demarshal the auth.json file and check to see if the id and pw contained within it matches the input authId and appSecret.
 			authFileName := path.Join(a.GetCredentialPath(d.Name()), config.HZN_FSS_AUTH_FILE)
 			if authFile, err := os.Open(authFileName); err != nil {
-				return false, errors.New(fmt.Sprintf("unable to open auth file %v, error: %v", authFileName, err))
+				return false, "", errors.New(fmt.Sprintf("unable to open auth file %v, error: %v", authFileName, err))
 			} else if bytes, err := ioutil.ReadAll(authFile); err != nil {
-				return false, errors.New(fmt.Sprintf("unable to read auth file %v, error: %v", authFileName, err))
+				return false, "", errors.New(fmt.Sprintf("unable to read auth file %v, error: %v", authFileName, err))
 			} else {
 				authObj := new(AuthenticationCredential)
 				if err := json.Unmarshal(bytes, authObj); err != nil {
-					return false, errors.New(fmt.Sprintf("unable to demarshal auth file %v, error: %v", authFileName, err))
+					return false, "", errors.New(fmt.Sprintf("unable to demarshal auth file %v, error: %v", authFileName, err))
 				} else if authObj.Id == authId && authObj.Token == appSecret {
 					glog.V(5).Infof(authLogString(fmt.Sprintf("Found valid credential for %v.", authId)))
-					return true, nil
+					return true, authObj.Version, nil
 				}
 			}
 		}
 	}
 
-	return false, nil
+	return false, "", nil
 }
 
 // Remove a container authentication credential from the Agent's host file system.

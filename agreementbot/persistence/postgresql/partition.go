@@ -118,7 +118,9 @@ func (db *AgbotPostgresqlDB) findUnownedPartition(timeout uint64) (string, error
 			return "", errors.New(fmt.Sprintf("unable to claim stale, error: %v", err))
 		} else if err == nil {
 			// Nothing to do, we claimed a previously unowned row.
-			tx.Commit()
+			if err := tx.Commit(); err != nil {
+				return "", errors.New(fmt.Sprintf("unable to commit claim on unowned row, error: %v", err))
+			}
 			glog.Infof("AgreementBot %v claimed partition %v", rowowner, id)
 
 			// Verify that the partition has tables that exist. If not, get rid of this partition and find a new one.
@@ -139,9 +141,8 @@ func (db *AgbotPostgresqlDB) findUnownedPartition(timeout uint64) (string, error
 			}
 			return id, nil
 		} else {
-			tx.Commit()
 			// The no rows error was returned, so there were no partitions to be claimed.
-			return "", nil
+			return "", tx.Commit()
 		}
 	}
 }
@@ -232,7 +233,7 @@ func (db *AgbotPostgresqlDB) MovePartition(timeout uint64) error {
 	} else {
 		// We have found a partition and we have claimed it (in a transaction) so no other agbot can grab it now. Move all the
 		// agreement related records in the partition into our primary partition, remove the partition tables and remove the partition
-		// row from the partitions table. This is all done under a single transactions so that if the agbot where to terminate during
+		// row from the partitions table. This is all done under a single transactions so that if the agbot were to terminate during
 		// this time, another agbot will eventually claim this partition and attempt this same cleanup again.
 		tx, err := db.db.Begin()
 		if err != nil {
@@ -251,7 +252,9 @@ func (db *AgbotPostgresqlDB) MovePartition(timeout uint64) error {
 		} else if _, err := tx.Exec(PARTITION_DELETE, fromPartition); err != nil {
 			return err
 		} else {
-			tx.Commit()
+			if err := tx.Commit(); err != nil {
+				return errors.New(fmt.Sprintf("unable to commit transaction for moving agreements, error: %v", err))
+			}
 			glog.V(3).Infof("AgreementBot %v moved agreements from partition %v to %v", db.identity, fromPartition, db.PrimaryPartition())
 		}
 	}
