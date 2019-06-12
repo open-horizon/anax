@@ -8,7 +8,7 @@ import (
 )
 
 // Constants used throughout the code.
-const NODE_POLICY = "nodepolicy"                                   // The bucket name inthe bolt DB.
+const NODE_POLICY = "nodepolicy"                                   // The bucket name in the bolt DB.
 const EXCHANGE_NP_LAST_UPDATED = "exchange_nodepolicy_lastupdated" // The buucket for the exchange last updated string
 
 // Retrieve the node policy object from the database. The bolt APIs assume there is more than 1 object in a bucket,

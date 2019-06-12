@@ -60,6 +60,8 @@ func UpdateConfigstate(cfg *Configstate,
 	getPatterns exchange.PatternHandler,
 	resolveService exchange.ServiceResolverHandler,
 	getService exchange.ServiceHandler,
+	getDevice exchange.DeviceHandler,
+	patchDevice exchange.PatchDeviceHandler,
 	db *bolt.DB,
 	config *config.HorizonConfig) (bool, *Configstate, []*events.PolicyCreatedMessage) {
 
@@ -114,7 +116,7 @@ func UpdateConfigstate(cfg *Configstate,
 		for _, apiSpec := range *common_apispec_list {
 
 			s := NewService(apiSpec.SpecRef, apiSpec.Org, makeServiceName(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version), apiSpec.Arch, apiSpec.Version)
-			if errHandled := configureService(s, getPatterns, resolveService, getService, errorhandler, &msgs, db, config); errHandled {
+			if errHandled := configureService(s, getPatterns, resolveService, getService, getDevice, patchDevice, errorhandler, &msgs, db, config); errHandled {
 				return errHandled, nil, nil
 			}
 
@@ -131,7 +133,7 @@ func UpdateConfigstate(cfg *Configstate,
 			}
 
 			s := NewService(service.ServiceURL, service.ServiceOrg, makeServiceName(service.ServiceURL, service.ServiceOrg, "[0.0.0,INFINITY)"), service.ServiceArch, "[0.0.0,INFINITY)")
-			if errHandled := configureService(s, getPatterns, resolveService, getService, errorhandler, &msgs, db, config); errHandled {
+			if errHandled := configureService(s, getPatterns, resolveService, getService, getDevice, patchDevice, errorhandler, &msgs, db, config); errHandled {
 				return errHandled, nil, nil
 			}
 
@@ -164,6 +166,8 @@ func configureService(service *Service,
 	getPatterns exchange.PatternHandler,
 	resolveService exchange.ServiceResolverHandler,
 	getService exchange.ServiceHandler,
+	getDevice exchange.DeviceHandler,
+	patchDevice exchange.PatchDeviceHandler,
 	errorhandler ErrorHandler,
 	msgs *[]*events.PolicyCreatedMessage,
 	db *bolt.DB,
@@ -179,7 +183,7 @@ func configureService(service *Service,
 		return passthruHandler(err)
 	}
 
-	if errHandled, newService, msg := CreateService(service, create_service_error_handler, getPatterns, resolveService, getService, db, config, false); errHandled {
+	if errHandled, newService, msg := CreateService(service, create_service_error_handler, getPatterns, resolveService, getService, getDevice, patchDevice, db, config, false); errHandled {
 
 		switch createServiceError.(type) {
 

@@ -554,7 +554,7 @@ func (w MicroserviceInstance) String() string {
 		"MaxRetries: %v, "+
 		"MaxRetryDuration: %v, "+
 		"CurrentRetryCount: %v, "+
-		"RetryStartTime: %v, " +
+		"RetryStartTime: %v, "+
 		"EnvVars: %v",
 		w.SpecRef, w.Org, w.Version, w.Arch, w.InstanceId, w.Archived, w.InstanceCreationTime,
 		w.ExecutionStartTime, w.ExecutionFailureCode, w.ExecutionFailureDesc,
@@ -875,7 +875,6 @@ func UpdateMSInstanceEnvVars(db *bolt.DB, key string, env_vars map[string]string
 		return &c
 	})
 }
-
 
 func MicroserviceInstanceCleanupStarted(db *bolt.DB, key string) (*MicroserviceInstance, error) {
 	return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {

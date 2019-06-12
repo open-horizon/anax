@@ -55,10 +55,12 @@ func MergeUserInput(ui1, ui2 UserInput, checkService bool) (*UserInput, error) {
 	// overwrite with the second
 	for _, u2 := range ui2.Inputs {
 		found := false
-		for i, o := range output_ui.Inputs {
+		for i, o := range ui1.Inputs {
 			// replace with the values from ui2 if same variable exists
-			if o.Name == u2.Name && o.Value != u2.Value {
-				output_ui.Inputs[i] = Input(u2)
+			if o.Name == u2.Name {
+				if o.Value != u2.Value {
+					output_ui.Inputs[i] = Input(u2)
+				}
 				found = true
 				break
 			}
@@ -68,6 +70,48 @@ func MergeUserInput(ui1, ui2 UserInput, checkService bool) (*UserInput, error) {
 		}
 	}
 	return &output_ui, nil
+}
+
+// If there are 2 UserInput for the same service, take the one from ui2 if deepMerge is false.
+// If deepMerge is true, then merge the content from ui2 into ui1, ui2 take precedence.
+func MergeUserInputArrays(ui1, ui2 []UserInput, deepMerge bool) []UserInput {
+	// check cornor conditions
+	if ui1 == nil || len(ui1) == 0 {
+		return ui2
+	}
+
+	if ui2 == nil || len(ui2) == 0 {
+		return ui1
+	}
+
+	// Now do the merge
+	userInput := make([]UserInput, len(ui1))
+	copy(userInput, ui1)
+	for _, u2 := range ui2 {
+		found := false
+		for i1, u1 := range ui1 {
+			if u1.ServiceOrgid != u2.ServiceOrgid || u1.ServiceUrl != u2.ServiceUrl {
+				continue
+			}
+			if !(u1.ServiceArch == u2.ServiceArch || u1.ServiceArch == "" || u2.ServiceArch == "") {
+				continue
+			}
+			found = true
+			if deepMerge {
+				new_u, _ := MergeUserInput(u1, u2, false)
+				if new_u != nil {
+					userInput[i1] = *new_u
+				}
+			} else {
+				userInput[i1] = u2
+			}
+			break
+		}
+		if !found {
+			userInput = append(userInput, u2)
+		}
+	}
+	return userInput
 }
 
 // Get the user input that fits this given service spec
@@ -96,11 +140,11 @@ func FindUserInput(svcName, svcOrg, svcVersion, svcArch string, userInput []User
 	return nil, nil
 }
 
-// Gets the default from the userInput of the consumer policy which is from business policy or pattern, and update the existing settings if the name does not exist.
-func UpdateSettingsWithPolicyUserInput(tcPolicy *Policy, existingUserSettings map[string]string, svcUrl string, svcOrg string) (map[string]string, error) {
+// Gets the and update the existing settings if the name does not exist.
+func UpdateSettingsWithUserInputs(userInputs []UserInput, existingUserSettings map[string]string, svcUrl string, svcOrg string) (map[string]string, error) {
 	userSettings := existingUserSettings
-	if tcPolicy.UserInput != nil && len(tcPolicy.UserInput) > 0 {
-		for _, ui := range tcPolicy.UserInput {
+	if userInputs != nil && len(userInputs) > 0 {
+		for _, ui := range userInputs {
 			if ui.Inputs != nil && len(ui.Inputs) > 0 {
 				if ui.ServiceUrl == svcUrl && ui.ServiceOrgid == svcOrg {
 					for _, item := range ui.Inputs {
@@ -124,4 +168,3 @@ func UpdateSettingsWithPolicyUserInput(tcPolicy *Policy, existingUserSettings ma
 
 	return userSettings, nil
 }
-

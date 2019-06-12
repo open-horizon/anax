@@ -149,7 +149,7 @@ func TestGetRollbackMicroserviceDef(t *testing.T) {
 func TestUnregisterServiceExchange(t *testing.T) {
 
 	checkPatchDeviceHandler := func(t *testing.T, mss []exchange.Microservice, url string) exchange.PatchDeviceHandler {
-		return func(id string, token string, pdr *exchange.PatchDeviceRequest) (error) {
+		return func(id string, token string, pdr *exchange.PatchDeviceRequest) error {
 
 			assert.Equal(t, len(mss)-1, len(*pdr.RegisteredServices), "one service should have been removed")
 

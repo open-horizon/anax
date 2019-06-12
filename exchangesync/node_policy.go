@@ -1,4 +1,4 @@
-package nodepolicy
+package exchangesync
 
 import (
 	"encoding/json"

@@ -224,7 +224,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 func (w *GovernanceWorker) GetEnvVarsForServiceDepolyment(msdef *persistence.MicroserviceDefinition, msInst *persistence.MicroserviceInstance, agreementId string) (map[string]string, error) {
 
 	var envAdds map[string]string
-	
+
 	if agreementId != "" {
 		// this the first time this dependent service is brought up
 		ags, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)})
@@ -239,18 +239,9 @@ func (w *GovernanceWorker) GetEnvVarsForServiceDepolyment(msdef *persistence.Mic
 			return nil, fmt.Errorf(logString(fmt.Sprintf("Error demarshalling proposal from agreement %v, %v", agreementId, err)))
 		}
 
-		attrs, err := persistence.FindApplicableAttributes(w.db, msdef.SpecRef, msdef.Org)
+		envAdds, err := w.GetServicePreference(msdef.SpecRef, msdef.Org, tcPolicy)
 		if err != nil {
-			return nil, fmt.Errorf(logString(fmt.Sprintf("Unable to fetch service preferences for %v/%v. Err: %v", msdef.Org, msdef.SpecRef, err)))
-		}
-
-		envAdds, err = persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM)
-		if err != nil {
-			return nil, fmt.Errorf(logString(fmt.Sprintf("Failed to convert service preferences to environmental variables for %v/%v. Err: %v", msdef.Org, msdef.SpecRef, err)))
-		}
-		envAdds, err = policy.UpdateSettingsWithPolicyUserInput(tcPolicy, envAdds, msdef.SpecRef, msdef.Org)
-		if err != nil {
-			return nil, fmt.Errorf(logString(fmt.Sprintf("Error getting environmental variable settings from policy for %v, %v: %v", msdef.SpecRef, msdef.Org, err)))
+			return nil, fmt.Errorf(logString(fmt.Sprintf("Error getting environment variables from node settings for %v %v: %v", msdef.SpecRef, msdef.Org, err)))
 		}
 
 		envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = exchange.GetId(w.GetExchangeId())
@@ -269,9 +260,9 @@ func (w *GovernanceWorker) GetEnvVarsForServiceDepolyment(msdef *persistence.Mic
 
 		// save the envvars for retry case
 		if _, err := persistence.UpdateMSInstanceEnvVars(w.db, msInst.GetKey(), envAdds); err != nil {
-			return nil, fmt.Errorf(logString(fmt.Sprintf("Error saving environmental variable settings to ms instance %v: %v", msInst.GetKey(),  err)))	
+			return nil, fmt.Errorf(logString(fmt.Sprintf("Error saving environmental variable settings to ms instance %v: %v", msInst.GetKey(), err)))
 		}
-		
+
 	} else {
 		// this is the retry case, use the user input is saved in the microservice instance from last run
 		envAdds = msInst.EnvVars

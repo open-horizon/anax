@@ -12,7 +12,7 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/nodepolicy"
+	"github.com/open-horizon/anax/exchangesync"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/producer"
@@ -28,6 +28,7 @@ import (
 // for identifying the subworkers used by this worker
 const HEARTBEAT = "HeartBeat"
 const NODEPOLICY = "NodePolicy"
+const NODEUSERINPUT = "NodeUserInput"
 
 // must be safely-constructed!!
 type AgreementWorker struct {
@@ -206,6 +207,7 @@ func (w *AgreementWorker) Initialize() bool {
 		// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
 		// start heartbeating when the registration event comes in.
 		w.heartBeatFailed = false
+		w.DispatchSubworker(NODEUSERINPUT, w.checkNodeUserInputChanges, w.BaseWorker.Manager.Config.Edge.NodeUserInputCheckIntervalS)
 		w.DispatchSubworker(NODEPOLICY, w.checkNodePolicyChanges, w.BaseWorker.Manager.Config.Edge.NodePolicyCheckIntervalS)
 		w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat)
 	}
@@ -384,6 +386,9 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 		glog.Errorf(logString(fmt.Sprintf("error during sync up of agreements, error: %v", err)))
 	}
 
+	// start checking userinput changes periodically
+	w.DispatchSubworker(NODEUSERINPUT, w.checkNodeUserInputChanges, w.BaseWorker.Manager.Config.Edge.NodeUserInputCheckIntervalS)
+
 	// start checking node policy changes periodically
 	w.DispatchSubworker(NODEPOLICY, w.checkNodePolicyChanges, w.BaseWorker.Manager.Config.Edge.NodePolicyCheckIntervalS)
 
@@ -483,6 +488,53 @@ func (w *AgreementWorker) NodePolicyDeleted() {
 	w.pm.DeletePolicyByName(exchange.GetOrg(w.GetExchangeId()), policy.MakeExternalPolicyHeaderName(w.GetExchangeId()))
 }
 
+// Check the node user input changes on the exchange and sync up with
+// the local copy. THe exchange is the master
+func (w *AgreementWorker) checkNodeUserInputChanges() int {
+	glog.V(5).Infof(logString(fmt.Sprintf("checking the node user input changes.")))
+
+	// get the node
+	pDevice, err := persistence.FindExchangeDevice(w.db)
+	if err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Unable to read node object from the local database. %v", err)))
+		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Unable to read node object from the local database. %v", err),
+			persistence.EC_DATABASE_ERROR)
+		return 0
+	} else if pDevice == nil {
+		glog.Errorf(logString(fmt.Sprintf("No device is found from the local database.")))
+		return 0
+	}
+
+	// exchange is the master
+	updated, changedSvcSpecs, err := exchangesync.SyncLocalUserInputWithExchange(w.db, pDevice, exchange.GetHTTPDeviceHandler(w))
+	if err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Unable to sync the local node user input with the exchange copy. Error: %v", err)))
+		eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Unable to sync the local node user input with the exchange copy. Error: %v", err),
+			persistence.EC_ERROR_NODE_POLICY_UPDATE,
+			exchange.GetOrg(w.GetExchangeId()),
+			exchange.GetId(w.GetExchangeId()),
+			w.devicePattern, "")
+	} else if updated {
+		glog.V(3).Infof(logString(fmt.Sprintf("Node user input updated with the exchange copy. The changed user inputs are: %v", changedSvcSpecs)))
+		eventlog.LogNodeEvent(w.db, persistence.SEVERITY_INFO,
+			fmt.Sprintf("Node user input updated with the exchange copy. The changed user inputs are: %v", changedSvcSpecs),
+			persistence.EC_NODE_POLICY_UPDATED,
+			exchange.GetOrg(w.GetExchangeId()),
+			exchange.GetId(w.GetExchangeId()),
+			w.devicePattern, "")
+
+		// only inform the user input changes when the node is configured.
+		if pDevice.Config.State == persistence.CONFIGSTATE_CONFIGURED {
+			w.Messages() <- events.NewNodeUserInputMessage(events.UPDATE_NODE_USERINPUT, changedSvcSpecs)
+		}
+	}
+
+	glog.V(5).Infof(logString(fmt.Sprintf("Done checking the user input changes.")))
+	return 0
+}
+
 // Check the node policy changes on the exchange and sync up with
 // the local copy. THe exchange is the master
 func (w *AgreementWorker) checkNodePolicyChanges() int {
@@ -502,7 +554,7 @@ func (w *AgreementWorker) checkNodePolicyChanges() int {
 	}
 
 	// exchange is the master
-	updated, newNodePolicy, err := nodepolicy.SyncNodePolicyWithExchange(w.db, pDevice, exchange.GetHTTPNodePolicyHandler(w), exchange.GetHTTPPutNodePolicyHandler(w))
+	updated, newNodePolicy, err := exchangesync.SyncNodePolicyWithExchange(w.db, pDevice, exchange.GetHTTPNodePolicyHandler(w), exchange.GetHTTPPutNodePolicyHandler(w))
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Unable to sync the local node policy with the exchange copy. Error: %v", err)))
 		eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
@@ -536,9 +588,15 @@ func (w *AgreementWorker) syncOnInit() error {
 
 	glog.V(3).Infof(logString("beginning sync up."))
 
+	// setup the user input. exchange is the master.
+	// However, if the exchange does not have user input, convert the old UserInputAttributes into UserInput format
+	if err := exchangesync.NodeUserInputInitalSetup(w.db, exchange.GetHTTPDeviceHandler(w), exchange.GetHTTPPatchDeviceHandler(w)); err != nil {
+		return errors.New(logString(fmt.Sprintf("Failed to initially set up node user input. %v", err)))
+	}
+
 	// setup the node policy. If neither node nor exchange has node policy, setup the default.
 	// Otherwise, use the one from the exchange.
-	if nodePolicy, err := nodepolicy.NodePolicyInitalSetup(w.db, w.Config, exchange.GetHTTPNodePolicyHandler(w), exchange.GetHTTPPutNodePolicyHandler(w)); err != nil {
+	if nodePolicy, err := exchangesync.NodePolicyInitalSetup(w.db, w.Config, exchange.GetHTTPNodePolicyHandler(w), exchange.GetHTTPPutNodePolicyHandler(w)); err != nil {
 		return errors.New(logString(fmt.Sprintf("Failed to initially set up node policy. %v", err)))
 	} else if nodePolicy != nil {
 		// add the node policy to the policy manager

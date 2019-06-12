@@ -52,6 +52,7 @@ type Config struct {
 	ServiceConfigStateCheckIntervalS int       // the service configuration state check interval. The default is 30 seconds.
 	DefaultNodePolicyFile            string    // the default node policy file name.
 	NodePolicyCheckIntervalS         int       // the node policy check interval. The default is 15 seconds.
+	NodeUserInputCheckIntervalS      int       // the node user input check interval. The default is 15 seconds.
 	FileSyncService                  FSSConfig // The config for the embedded ESS sync service.
 
 	// these Ids could be provided in config or discovered after startup by the system
@@ -201,6 +202,10 @@ func Read(file string) (*HorizonConfig, error) {
 
 		if config.Edge.NodePolicyCheckIntervalS == 0 {
 			config.Edge.NodePolicyCheckIntervalS = 15
+		}
+
+		if config.Edge.NodeUserInputCheckIntervalS == 0 {
+			config.Edge.NodeUserInputCheckIntervalS = 15
 		}
 
 		// set default retry parameters

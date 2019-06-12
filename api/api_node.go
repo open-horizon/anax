@@ -183,6 +183,8 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 		patternHandler := exchange.GetHTTPExchangePatternHandler(a)
 		serviceResolver := exchange.GetHTTPServiceResolverHandler(a)
 		getService := exchange.GetHTTPServiceHandler(a)
+		getDevice := exchange.GetHTTPDeviceHandler(a)
+		patchDevice := exchange.GetHTTPPatchDeviceHandler(a)
 
 		// Read in the HTTP body and pass the device registration off to be validated and created.
 		var configState Configstate
@@ -196,7 +198,7 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Validate and update the config state.
-		errHandled, cfg, msgs := UpdateConfigstate(&configState, errorHandler, patternHandler, serviceResolver, getService, a.db, a.Config)
+		errHandled, cfg, msgs := UpdateConfigstate(&configState, errorHandler, patternHandler, serviceResolver, getService, getDevice, patchDevice, a.db, a.Config)
 		if errHandled {
 			return
 		}

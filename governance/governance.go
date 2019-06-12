@@ -320,6 +320,13 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			w.Commands <- NewNodePolicyChangedCommand(msg)
 		}
 
+	case *events.NodeUserInputMessage:
+		msg, _ := incoming.(*events.NodeUserInputMessage)
+		switch msg.Event().Id {
+		case events.UPDATE_NODE_USERINPUT:
+			w.Commands <- NewNodeUserInputChangedCommand(msg)
+		}
+
 	default: //nothing
 	}
 
@@ -1268,6 +1275,12 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 
 		w.handleNodePolicyUpdated()
 
+	case *NodeUserInputChangedCommand:
+		cmd, _ := command.(*NodeUserInputChangedCommand)
+		glog.V(5).Infof(logString(fmt.Sprintf("%v", cmd)))
+
+		w.handleNodeUserInputUpdated(cmd.Msg.ServiceSpecs)
+
 	default:
 		return false
 	}
@@ -1373,17 +1386,11 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		lc.AgreementId = proposal.AgreementId()
 
 		// get environmental settings for the workload
-		envAdds := make(map[string]string)
 
 		// The service config variables are stored in the device's attributes.
-		if envAdds, err = w.GetServicePreference(workload.WorkloadURL, workload.Org); err != nil {
+		envAdds, err := w.GetServicePreference(workload.WorkloadURL, workload.Org, tcPolicy)
+		if err != nil {
 			glog.Errorf(logString(fmt.Sprintf("Error getting environment variables from node settings for %v %v: %v", workload.WorkloadURL, workload.Org, err)))
-			return err
-		}
-
-		// Add settings from business policy or pattern that comes with the proposal.
-		if envAdds, err = policy.UpdateSettingsWithPolicyUserInput(tcPolicy, envAdds, workload.WorkloadURL, workload.Org); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Error getting environmental variable settings from policy for %v, %v: %v", workload.WorkloadURL, workload.Org, err)))
 			return err
 		}
 
@@ -1391,13 +1398,14 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		// get the metadata for the version we are running and then add in any unset default user inputs.
 		var serviceDef *exchange.ServiceDefinition
 		if _, sDef, _, err := exchange.GetHTTPServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
-			return errors.New(logString(fmt.Sprintf("received error querying exchange for workload or service metadata: %v, error %v", workload, err)))
+			return fmt.Errorf("Received error querying exchange for service metadata: %v/%v, error %v", workload.Org, workload.WorkloadURL, err)
 		} else if sDef == nil {
-			return errors.New(logString(fmt.Sprintf("cound not find workload or service metadata for %v.", workload)))
+			return fmt.Errorf("Cound not find service metadata for %v/%v.", workload.Org, workload.WorkloadURL)
 		} else {
 			serviceDef = sDef
 			sDef.PopulateDefaultUserInput(envAdds)
 		}
+		glog.Infof("envAdds 5 =%v", envAdds)
 
 		cutil.SetPlatformEnvvars(envAdds,
 			config.ENVVAR_PREFIX,
@@ -1410,6 +1418,8 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			w.BaseWorker.Manager.Config.GetFileSyncServiceProtocol(),
 			w.BaseWorker.Manager.Config.GetFileSyncServiceAPIListen(),
 			strconv.Itoa(int(w.BaseWorker.Manager.Config.GetFileSyncServiceAPIPort())))
+
+		glog.Infof("envAdds 6 =%v", envAdds)
 
 		lc.EnvironmentAdditions = &envAdds
 		lc.AgreementProtocol = protocol
@@ -1590,17 +1600,43 @@ func (w *GovernanceWorker) startAgreementLessServices() {
 }
 
 // Get the environmental variables for a service (this is about launching).
-func (w *GovernanceWorker) GetServicePreference(url string, org string) (map[string]string, error) {
+func (w *GovernanceWorker) GetServicePreference(url string, org string, tcPolicy *policy.Policy) (map[string]string, error) {
 
-	// get user input from the node userInput
+	envAdds := make(map[string]string)
+
+	// get user input from the node. This does not inclue the UserInputAttributes.
 	attrs, err := persistence.FindApplicableAttributes(w.db, url, org)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to fetch workload %v preferences. Err: %v", url, err)
+		return nil, fmt.Errorf("Unable to fetch service preferences for service %v/%v. Err: %v", org, url, err)
 	}
+	envAdds, err = persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to convert attrributes to env map for service %v/%v. Err: %v", org, url, err)
+	}
+	glog.Infof("envAdds 1 =%v", envAdds)
 
-	return  persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM)
+	// add node user input
+	userInput, err := persistence.FindNodeUserInput(w.db)
+	if err != nil {
+		return nil, fmt.Errorf("Failed get user input from local db. %v", err)
+	}
+	envAdds, err = policy.UpdateSettingsWithUserInputs(userInput, envAdds, url, org)
+	if err != nil {
+		return nil, fmt.Errorf("Error getting environmental variable settings from node user input for %v/%v: %v", org, url, err)
+	}
+	glog.Infof("envAdds 2 =%v", envAdds)
+
+	// Add settings from business policy or pattern that comes with the proposal.
+	if tcPolicy != nil {
+		envAdds, err = policy.UpdateSettingsWithUserInputs(tcPolicy.UserInput, envAdds, url, org)
+		if err != nil {
+			return nil, fmt.Errorf("Error getting environmental variable settings from policy for %v/%v: %v", org, url, err)
+		}
+	}
+	glog.Infof("envAdds 3 =%v", envAdds)
+
+	return envAdds, nil
 }
-
 
 func recordProducerAgreementState(httpClient *http.Client, url string, deviceId string, token string, pattern string, agreementId string, pol *policy.Policy, state string) error {
 
@@ -1782,4 +1818,88 @@ func (w *GovernanceWorker) handleNodeHeartbeatRestored() error {
 		}
 	}
 	return nil
+}
+
+// User input has been changes. Go through all the agreement to see if it has dependencies on the given
+// services. If it does, cancel it.
+func (w *GovernanceWorker) handleNodeUserInputUpdated(svcSpecs persistence.ServiceSpecs) {
+
+	glog.V(5).Infof(logString(fmt.Sprintf("handling node user input changes")))
+
+	if svcSpecs == nil || len(svcSpecs) == 0 {
+		return
+	}
+
+	// get all the unarchived agreements
+	agreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()})
+	if err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Unable to retrieve all the  from the database, error %v", err)))
+		return
+	}
+
+	// cancel the agreement if needed
+	for _, ag := range agreements {
+		agreementId := ag.CurrentAgreementId
+		if ag.AgreementTerminatedTime != 0 && ag.AgreementForceTerminatedTime == 0 {
+			glog.V(3).Infof(logString(fmt.Sprintf("skip agreement %v, it is already terminating", agreementId)))
+		} else {
+			bCancel, err := w.agreementRequiresService(ag, svcSpecs)
+			if err != nil {
+				glog.Errorf(fmt.Sprintf("%v", err))
+			}
+
+			if bCancel {
+				glog.V(3).Infof(logString(fmt.Sprintf("ending the agreement: %v", agreementId)))
+
+				reason := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_NODE_USERINPUT_CHANGED)
+
+				eventlog.LogAgreementEvent(
+					w.db,
+					persistence.SEVERITY_INFO,
+					fmt.Sprintf("Start terminating agreement for %v. Termination reason: %v", ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
+					persistence.EC_CANCEL_AGREEMENT,
+					ag)
+
+				w.cancelAgreement(agreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
+
+				// send the event to the container in case it has started the workloads.
+				w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, agreementId, ag.GetDeploymentConfig())
+				// clean up microservice instances if needed
+				w.handleMicroserviceInstForAgEnded(agreementId, false)
+			}
+		}
+	}
+}
+
+// Check if the agreement uses any of the given services
+func (w *GovernanceWorker) agreementRequiresService(ag persistence.EstablishedAgreement, svcSpecs persistence.ServiceSpecs) (bool, error) {
+	if svcSpecs == nil || len(svcSpecs) == 0 {
+		return false, nil
+	}
+
+	workload := ag.RunningWorkload
+	if workload.URL == "" || workload.Org == "" {
+		return false, nil
+	}
+
+	asl, _, _, err := exchange.GetHTTPServiceResolverHandler(w)(workload.URL, workload.Org, workload.Version, workload.Arch)
+	if err != nil {
+		return false, fmt.Errorf(logString(fmt.Sprintf("error searching for service details %v, error: %v", workload, err)))
+	}
+
+	for _, sp := range svcSpecs {
+		if workload.URL == sp.Url && workload.Org == sp.Org {
+			return true, nil
+		}
+		if asl != nil {
+			for _, s := range *asl {
+				if s.SpecRef == sp.Url && s.Org == sp.Org {
+					return true, nil
+				}
+
+			}
+		}
+	}
+
+	return false, nil
 }

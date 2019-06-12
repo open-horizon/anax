@@ -245,3 +245,19 @@ func NewNodePolicyChangedCommand(msg *events.NodePolicyMessage) *NodePolicyChang
 		Msg: msg,
 	}
 }
+
+// ==============================================================================================================
+// Update node side user input
+type NodeUserInputChangedCommand struct {
+	Msg *events.NodeUserInputMessage
+}
+
+func (d NodeUserInputChangedCommand) ShortString() string {
+	return fmt.Sprintf("%v", d)
+}
+
+func NewNodeUserInputChangedCommand(msg *events.NodeUserInputMessage) *NodeUserInputChangedCommand {
+	return &NodeUserInputChangedCommand{
+		Msg: msg,
+	}
+}

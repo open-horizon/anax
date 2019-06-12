@@ -28,6 +28,18 @@ func getDummyServiceHandler() exchange.ServiceHandler {
 	}
 }
 
+func getDummyDeviceHandler() exchange.DeviceHandler {
+	return func(id string, token string) (*exchange.Device, error) {
+		return nil, nil
+	}
+}
+
+func getDummyPatchDeviceHandler() exchange.PatchDeviceHandler {
+	return func(deviceId string, deviceToken string, pdr *exchange.PatchDeviceRequest) error {
+		return nil
+	}
+}
+
 func getBasicConfig() *config.HorizonConfig {
 	return &config.HorizonConfig{
 		Edge: config.Config{
