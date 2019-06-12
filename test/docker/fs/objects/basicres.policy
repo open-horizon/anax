@@ -1,19 +1,12 @@
 {
-  "properties": [
-    {
-      "name": "iame2edev",
-      "value": true
-    }
-  ],
-  "constraints": [
-    ""
-  ],
+  "properties": [],
+  "constraints": [],
   "services": [
     {
       "orgID": "e2edev@somecomp.com",
       "arch": "amd64",
-      "serviceName": "bluehorizon.network-services-netspeed",
-      "version": "2.3.0"
+      "serviceName": "my.company.com.services.usehello2",
+      "version": "1.0.0"
     }
   ]
 }

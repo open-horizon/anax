@@ -99,6 +99,8 @@ func (c *BasicProtocolHandler) AcceptCommand(cmd worker.Command) bool {
 		return true
 	case *MakeAgreementCommand:
 		return true
+	case *MMSObjectPolicyEventCommand:
+		return true
 	}
 	return false
 }

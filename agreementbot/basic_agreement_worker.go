@@ -156,6 +156,11 @@ func (a *BasicAgreementWorker) start(work chan AgreementWork, random *rand.Rand)
 				}
 			}
 
+		} else if workItem.Type() == MMS_OBJECT_POLICY {
+			// Handle an update to an object policy. The source for this function is in the policy.go file.
+			wi := workItem.(ObjectPolicyChange)
+			a.HandleMMSObjectPolicy(a.protocolHandler, &wi, a.workerID)
+
 		} else if workItem.Type() == STOP {
 			// At this point, we assume that the parent agreement bot worker has already decided that it's ok to terminate.
 			break

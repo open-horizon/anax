@@ -91,6 +91,7 @@ type AGConfig struct {
 	CheckUpdatedPolicyS           int              // The number of seconds to wait between checks for an updated policy file. Zero means auto checking is turned off.
 	CSSURL                        string           // The URL used to access the CSS.
 	CSSSSLCert                    string           // The path to the client side SSL certificate for the CSS.
+	MMSGarbageCollectionInterval  int64            // The amount of time to wait between MMS object cache garbage collection scans.
 }
 
 func (c *HorizonConfig) UserPublicKeyPath() string {
@@ -238,6 +239,10 @@ func Read(file string) (*HorizonConfig, error) {
 
 		if config.ArchSynonyms == nil {
 			config.ArchSynonyms = NewArchSynonyms()
+		}
+
+		if config.AgreementBot.MMSGarbageCollectionInterval == 0 {
+			config.AgreementBot.MMSGarbageCollectionInterval = 300
 		}
 
 		// success at last!

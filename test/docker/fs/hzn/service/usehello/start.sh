@@ -31,6 +31,13 @@ then
 
     echo -e "Service is running on node $HZN_DEVICE_ID in org $HZN_ORGANIZATION"
 
+    if [ "${HZN_PATTERN}" == "" ]
+    then
+        echo "Service is running in policy mode"
+    else
+        echo "Service is running in pattern mode: ${HZN_PATTERN}"
+    fi
+
     # Assuming the API address is a unix socket file. HZN_ESS_API_PROTOCOL should be "unix".
     BASEURL='--unix-socket '${HZN_ESS_API_ADDRESS}' https://localhost/api/v1/objects/'
 
@@ -73,10 +80,28 @@ do
         # For each object, write the data into the local file system using the object ID as the file name. Then mark the object
         # as received so that a subsequent poll doesn't see the object again.
         OBJS=$(curl -sL ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}?received=true)
-        echo ${OBJS} | jq -r '.[].objectID' | while read id ; do
-            DATA=$(curl -sL -o ${FILE_LOC}/${id} ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}/${id}/data)
-            RCVD=$(curl -sLX PUT ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}/${id}/received)
-            echo -e "Received object: ${id}"
+
+        BADRES=$(echo ${OBJS} | jq -r '.[].objectID')
+        if [ "${BADRES}" == "" ]
+        then
+            echo "Error Return from object poll: ${OBJS}"
+            exit 1
+        fi
+
+        echo ${OBJS} | jq -c '.[]' | while read i; do
+
+            del=$(echo $i | jq -r '.deleted')
+            id=$(echo $i | jq -r '.objectID')
+            if [ "$del" == "true" ]
+            then
+                echo "Acknowledging that Object $id is deleted"
+                ACKDEL=$(curl -sLX PUT ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}/${id}/deleted)
+                rm -f ${FILE_LOC}/${id}
+            else
+                DATA=$(curl -sL -o ${FILE_LOC}/${id} ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}/${id}/data)
+                RCVD=$(curl -sLX PUT ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}/${id}/received)
+                echo -e "Received object: ${id}"
+            fi
         done
 
         # There should be 2 files in the file sync service for this node. If not, there is a problem, exit the workload to fail the test.
@@ -115,12 +140,28 @@ do
     then
         echo -e "Calling ESS to poll for new objects"
 
-        # Pick up any newly added objects since our initial poll.
+        # Pick up any newly added objects or notifications of changed or deleted objects since our initial poll.
         OBJS=$(curl -sL ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE})
-        echo ${OBJS} | jq -r '.[].objectID' | while read id ; do
-            DATA=$(curl -sL -o ${FILE_LOC}/${id} ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}/${id}/data)
-            RCVD=$(curl -sLX PUT ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}/${id}/received)
-            echo -e "Got a new object: ${id}"
+
+        echo "Full poll response: ${OBJS}"
+
+        # Iterate over each returned object, it will be set into $i
+        echo ${OBJS} | jq -c '.[]' | while read i; do
+
+            # work with each returned object in $i
+            del=$(echo $i | jq -r '.deleted')
+            id=$(echo $i | jq -r '.objectID')
+            if [ "$del" == "true" ]
+            then
+                echo "Acknowledging that Object $id is deleted"
+                ACKDEL=$(curl -sLX PUT ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}/${id}/deleted)
+                rm -f ${FILE_LOC}/${id}
+            else
+                # Assume we got a new object
+                DATA=$(curl -sL -o ${FILE_LOC}/${id} ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}/${id}/data)
+                RCVD=$(curl -sLX PUT ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}/${id}/received)
+                echo -e "Got a new object: ${id}"
+            fi
         done
     fi
 

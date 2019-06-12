@@ -191,7 +191,9 @@ func (a *API) listen(apiListen string) {
 		router.HandleFunc("/status/workers", a.workerstatus).Methods("GET", "OPTIONS")
 		router.HandleFunc("/node", a.node).Methods("GET", "DELETE", "OPTIONS")
 
-		http.ListenAndServe(apiListen, nocache(router))
+		if err := http.ListenAndServe(apiListen, nocache(router)); err != nil {
+			glog.Fatalf(APIlogString(fmt.Sprintf("failed to start listener on %v, error %v", apiListen, err)))
+		}
 	}()
 }
 

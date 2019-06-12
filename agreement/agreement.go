@@ -662,7 +662,9 @@ func (w *AgreementWorker) syncOnInit() error {
 						} else {
 							state = "unknown"
 						}
-						w.recordAgreementState(ag.CurrentAgreementId, cpol, state)
+						if err := w.recordAgreementState(ag.CurrentAgreementId, cpol, state); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("cannot record agreement %v state %v, error: %v", ag.CurrentAgreementId, state, err)))
+						}
 					}
 				}
 				glog.V(3).Infof(logString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))

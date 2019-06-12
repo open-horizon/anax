@@ -90,7 +90,9 @@ func ConvertToAgreementProtocolList(list []interface{}) (*[]AgreementProtocol, e
 							if bc["organization"] != nil {
 								bcOrg = bc["organization"].(string)
 							}
-							(&newAGP.Blockchains).Add_Blockchain(Blockchain_Factory(bcType, bcName, bcOrg))
+							if err := (&newAGP.Blockchains).Add_Blockchain(Blockchain_Factory(bcType, bcName, bcOrg)); err != nil {
+								return nil, errors.New(fmt.Sprintf("unable to add blockchain %v %v %v to agreement protocol list, error %v", bcType, bcName, bcOrg, err))
+							}
 						} else {
 							return nil, errors.New(fmt.Sprintf("could not convert blockchain list element to map[string]interface{}, %v is %T", bcDef, bcDef))
 						}

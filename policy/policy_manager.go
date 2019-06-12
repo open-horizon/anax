@@ -213,8 +213,11 @@ func Initialize(policyPath string,
 	// that should be invoked at this time.
 	changeNotify := func(org string, fileName string, policy *Policy) {
 		numberFiles += 1
-		pm.AddPolicy(org, policy)
-		glog.V(3).Infof("Found policy file %v/%v containing %v.", org, fileName, policy.Header.Name)
+		if err := pm.AddPolicy(org, policy); err != nil {
+			glog.Errorf("Policy Watcher change notification unable to add policy %v %v to Policy Manager, error %v", org, fileName, err)
+		} else {
+			glog.V(3).Infof("Found policy file %v/%v containing %v.", org, fileName, policy.Header.Name)
+		}
 	}
 
 	deleteNotify := func(org string, fileName string, policy *Policy) {

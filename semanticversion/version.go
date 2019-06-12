@@ -50,6 +50,10 @@ type Version_Expression struct {
 	end_inclusive   bool
 }
 
+func (ve Version_Expression) String() string {
+	return fmt.Sprintf("Vers Exp: %v", ve.full_expression)
+}
+
 func Version_Expression_Factory(ver_string string) (*Version_Expression, error) {
 
 	startVersion := ""

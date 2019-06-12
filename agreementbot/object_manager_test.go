@@ -4,6 +4,7 @@ package agreementbot
 
 import (
 	"flag"
+	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
@@ -31,7 +32,9 @@ func Test_object_policy_entry_success1(t *testing.T) {
 		},
 	}
 
-	if pe := NewMMSObjectPolicyEntry(p); pe == nil {
+	om := NewMMSObjectPolicyManager(getBasicConfig())
+
+	if pe := om.NewMMSObjectPolicyEntry(p, common.ServiceID{}, nil); pe == nil {
 		t.Errorf("Error creating new MMSObjectPolicyEntry")
 	} else if pe.Policy.OrgID != "org1" {
 		t.Errorf("Error: OrgID should be %v but is %v", "org1", pe.Policy.OrgID)
@@ -46,7 +49,7 @@ func Test_object_manager_setorgs0(t *testing.T) {
 
 	servedOrgs := map[string]exchange.ServedBusinessPolicy{}
 
-	if op := NewMMSObjectPolicyManager(); op == nil {
+	if op := NewMMSObjectPolicyManager(getBasicConfig()); op == nil {
 		t.Errorf("Error: object manager not created")
 	} else if err := op.SetCurrentPolicyOrgs(servedOrgs); err != nil {
 		t.Errorf("Error %v consuming served orgs %v", err, servedOrgs)
@@ -69,7 +72,7 @@ func Test_object_manager_setorgs1(t *testing.T) {
 		},
 	}
 
-	if op := NewMMSObjectPolicyManager(); op == nil {
+	if op := NewMMSObjectPolicyManager(getBasicConfig()); op == nil {
 		t.Errorf("Error: object manager not created")
 	} else if err := op.SetCurrentPolicyOrgs(servedOrgs); err != nil {
 		t.Errorf("Error %v consuming served orgs %v", err, servedOrgs)
@@ -161,11 +164,11 @@ func Test_object_manager_setorgs2(t *testing.T) {
 	objPolicies2 := &exchange.ObjectDestinationPolicies{p2}
 
 	// run test
-	if op := NewMMSObjectPolicyManager(); op == nil {
+	if op := NewMMSObjectPolicyManager(getBasicConfig()); op == nil {
 		t.Errorf("Error: object manager not created")
 	} else if err := op.SetCurrentPolicyOrgs(servedOrgs1); err != nil {
 		t.Errorf("Error %v consuming served orgs %v", err, servedOrgs1)
-	} else if events, err := op.UpdatePolicies(myorg1, objPolicies1, getDummyPolicyReceivedHandler()); err != nil {
+	} else if events, err := op.UpdatePolicies(myorg1, objPolicies1, getDummyObjectQueryHandler()); err != nil {
 		t.Errorf("Error: error updating object policies, %v", err)
 	} else if len(op.orgMap) != 1 {
 		t.Errorf("Error: should have 1 org in the Object Manager, have %v", len(op.orgMap))
@@ -173,13 +176,13 @@ func Test_object_manager_setorgs2(t *testing.T) {
 		t.Errorf("Error: OM should have org %v but doesnt, has %v", myorg1, op)
 	} else if len(events) != 2 {
 		t.Errorf("Error: should have 2 events from the Object Manager, have %v", events)
-	} else if objPols := op.GetObjectPolicies(myorg1, cutil.FormOrgSpecUrl(sid1.ServiceName, sid1.OrgID)); objPols == nil {
+	} else if objPols := op.GetObjectPolicies(myorg1, cutil.FormOrgSpecUrl(sid1.ServiceName, sid1.OrgID), "amd64", "1.0.0"); objPols == nil {
 		t.Errorf("Error getting object policy for %v %v", myorg1, sid1)
 	} else if len(*objPols) != 2 {
 		t.Errorf("Error wrong number of policies returned, expecting 2, was %v", len(*objPols))
 	} else if err := op.SetCurrentPolicyOrgs(servedOrgs2); err != nil {
 		t.Errorf("Error %v consuming served orgs %v", err, servedOrgs2)
-	} else if events, err := op.UpdatePolicies(myorg2, objPolicies2, getDummyPolicyReceivedHandler()); err != nil {
+	} else if events, err := op.UpdatePolicies(myorg2, objPolicies2, getDummyObjectQueryHandler()); err != nil {
 		t.Errorf("Error: error updating object policies, %v", err)
 	} else if len(op.orgMap) != 1 {
 		t.Errorf("Error: should have 1 org in the Object Manager, have %v", len(op.orgMap))
@@ -189,11 +192,11 @@ func Test_object_manager_setorgs2(t *testing.T) {
 		t.Errorf("Error: OM should have org %v but doesnt, has %v", myorg2, op)
 	} else if op.hasOrg(myorg1) {
 		t.Errorf("Error: OM should NOT have org %v but does %v", myorg1, op)
-	} else if objPols := op.GetObjectPolicies(myorg2, cutil.FormOrgSpecUrl(sid2.ServiceName, sid2.OrgID)); objPols == nil {
+	} else if objPols := op.GetObjectPolicies(myorg2, cutil.FormOrgSpecUrl(sid2.ServiceName, sid2.OrgID), "amd64", "1.0.0"); objPols == nil {
 		t.Errorf("Error getting object policy for %v %v", myorg2, sid2)
 	} else if len(*objPols) != 1 {
 		t.Errorf("Error wrong number of policies returned, expecting 1, was %v", len(*objPols))
-	} else if objPols := op.GetObjectPolicies(myorg1, cutil.FormOrgSpecUrl(sid1.ServiceName, sid1.OrgID)); objPols != nil && len(*objPols) != 0 {
+	} else if objPols := op.GetObjectPolicies(myorg1, cutil.FormOrgSpecUrl(sid1.ServiceName, sid1.OrgID), "amd64", "1.0.0"); objPols != nil && len(*objPols) != 0 {
 		t.Errorf("Error should not be able to get object policy for %v %v %v", myorg1, sid1, objPols)
 	} else {
 		t.Log(op)
@@ -256,11 +259,11 @@ func Test_object_manager_replace1(t *testing.T) {
 	objPolicies2 := &exchange.ObjectDestinationPolicies{p2}
 
 	// run test
-	if op := NewMMSObjectPolicyManager(); op == nil {
+	if op := NewMMSObjectPolicyManager(getBasicConfig()); op == nil {
 		t.Errorf("Error: object manager not created")
 	} else if err := op.SetCurrentPolicyOrgs(servedOrgs1); err != nil {
 		t.Errorf("Error %v consuming served orgs %v", err, servedOrgs1)
-	} else if events, err := op.UpdatePolicies(myorg1, objPolicies1, getDummyPolicyReceivedHandler()); err != nil {
+	} else if events, err := op.UpdatePolicies(myorg1, objPolicies1, getDummyObjectQueryHandler()); err != nil {
 		t.Errorf("Error: error updating object policies, %v", err)
 	} else if len(op.orgMap) != 1 {
 		t.Errorf("Error: should have 1 org in the Object Manager, have %v", len(op.orgMap))
@@ -268,13 +271,13 @@ func Test_object_manager_replace1(t *testing.T) {
 		t.Errorf("Error: should have 1 event from the Object Manager, have %v", len(events))
 	} else if !op.hasOrg(myorg1) {
 		t.Errorf("Error: OM should have org %v but doesnt, has %v", myorg1, op)
-	} else if objPols := op.GetObjectPolicies(myorg1, cutil.FormOrgSpecUrl(sid1.ServiceName, sid1.OrgID)); objPols == nil {
+	} else if objPols := op.GetObjectPolicies(myorg1, cutil.FormOrgSpecUrl(sid1.ServiceName, sid1.OrgID), "amd64", "1.0.0"); objPols == nil {
 		t.Errorf("Error getting object policy for %v %v", myorg1, sid1)
 	} else if len(*objPols) != 1 {
 		t.Errorf("Error wrong number of policies returned, expecting 1, was %v", len(*objPols))
 	} else if len((*objPols)[0].DestinationPolicy.Properties) != 0 {
 		t.Errorf("Error should not be any properties in the policy, have %v", (*objPols)[0].DestinationPolicy.Properties)
-	} else if events, err := op.UpdatePolicies(myorg1, objPolicies2, getDummyPolicyReceivedHandler()); err != nil {
+	} else if events, err := op.UpdatePolicies(myorg1, objPolicies2, getDummyObjectQueryHandler()); err != nil {
 		t.Errorf("Error: error updating object policies, %v", err)
 	} else if len(op.orgMap) != 1 {
 		t.Errorf("Error: should have 1 org in the Object Manager, have %v", len(op.orgMap))
@@ -282,7 +285,7 @@ func Test_object_manager_replace1(t *testing.T) {
 		t.Errorf("Error: OM should have org %v but doesnt, has %v", myorg1, op)
 	} else if len(events) != 1 {
 		t.Errorf("Error: should have 1 event from the Object Manager, have %v", len(events))
-	} else if objPols := op.GetObjectPolicies(myorg1, cutil.FormOrgSpecUrl(sid1.ServiceName, sid1.OrgID)); objPols == nil {
+	} else if objPols := op.GetObjectPolicies(myorg1, cutil.FormOrgSpecUrl(sid1.ServiceName, sid1.OrgID), "amd64", "1.0.0"); objPols == nil {
 		t.Errorf("Error getting object policy for %v %v", myorg1, sid1)
 	} else if len(*objPols) != 1 {
 		t.Errorf("Error wrong number of policies returned, expecting 1, was %v", len(*objPols))
@@ -294,8 +297,20 @@ func Test_object_manager_replace1(t *testing.T) {
 
 }
 
-func getDummyPolicyReceivedHandler() exchange.ObjectPolicyUpdateReceivedHandler {
-	return func(objPol *exchange.ObjectDestinationPolicy) error {
-		return nil
+func getBasicConfig() *config.HorizonConfig {
+	return &config.HorizonConfig{
+		AgreementBot: config.AGConfig{
+			MMSGarbageCollectionInterval: 300,
+		},
+	}
+}
+
+func getDummyObjectQueryHandler() exchange.ObjectQueryHandler {
+	return func(org string, objID string, objType string) (*common.MetaData, error) {
+		m := &common.MetaData{
+			ObjectID:   objID,
+			ObjectType: objType,
+		}
+		return m, nil
 	}
 }

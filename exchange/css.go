@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/edge-sync-service/common"
 	"path"
+	"strconv"
 	"time"
 )
 
@@ -27,6 +28,10 @@ type DestinationPolicy struct {
 	Timestamp int64 `json:"timestamp" bson:"timestamp"`
 }
 
+func (d DestinationPolicy) String() string {
+	return fmt.Sprintf("Destination Policy: Props %v, Constraints %v, Services %v, timestamp %v", d.Properties, d.Constraints, d.Services, d.Timestamp)
+}
+
 type ObjectDestinationPolicy struct {
 	// OrgID is the organization ID of the object (an object belongs to exactly one organization).
 	//   required: true
@@ -43,13 +48,19 @@ type ObjectDestinationPolicy struct {
 
 	// DestinationPolicy is the policy specification that should be used to distribute this object
 	// to the appropriate set of destinations.
-	DestinationPolicy DestinationPolicy `json:"destinationPolicy"`
+	DestinationPolicy DestinationPolicy `json:"destinationPolicy,omitempty"`
 
 	//Destinations is the list of the object's current destinations
 	Destinations []common.DestinationsStatus `json:"destinations"`
 }
 
+func (d ObjectDestinationPolicy) String() string {
+	return fmt.Sprintf("Object Destination Policy: Org %v, Type %v, ID %v, %v, Destinations %v", d.OrgID, d.ObjectType, d.ObjectID, d.DestinationPolicy, d.Destinations)
+}
+
 type ObjectDestinationPolicies []ObjectDestinationPolicy
+
+type ObjectDestinationStatuses []common.DestinationsStatus
 
 type PutDestinationListRequest []string
 
@@ -78,8 +89,8 @@ func GetObjectsByService(ec ExchangeContext, org string, serviceId string) (*Obj
 	}
 }
 
-// Query the CSS to retrieve object policy that hasn't been seen before.
-func GetUpdatedObjects(ec ExchangeContext, org string, firstTime bool) (*ObjectDestinationPolicies, error) {
+// Query the CSS to retrieve object policy updates that haven't been seen before.
+func GetUpdatedObjects(ec ExchangeContext, org string, since int64) (*ObjectDestinationPolicies, error) {
 
 	var resp interface{}
 	resp = new(ObjectDestinationPolicies)
@@ -87,8 +98,10 @@ func GetUpdatedObjects(ec ExchangeContext, org string, firstTime bool) (*ObjectD
 	url := path.Join("/api/v1/objects", org)
 	url = ec.GetCSSURL() + url + "?destination_policy=true"
 
-	if firstTime {
+	if since == 0 {
 		url = url + "&received=true"
+	} else {
+		url = url + "&since=" + strconv.FormatInt(since, 10)
 	}
 
 	for {
@@ -101,7 +114,7 @@ func GetUpdatedObjects(ec ExchangeContext, org string, firstTime bool) (*ObjectD
 			continue
 		} else {
 			objPolicies := resp.(*ObjectDestinationPolicies)
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("found object policies for org %v", org)))
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("found object policies for org %v, objpolicies %v", org, objPolicies)))
 			return objPolicies, nil
 		}
 	}
@@ -127,6 +140,67 @@ func UpdateObjectDestinationList(ec ExchangeContext, org string, objPol *ObjectD
 		} else {
 			glog.V(5).Infof(rpclogString(fmt.Sprintf("updated destination list for object %v of type %v with %v", objPol.ObjectID, objPol.ObjectType, dests)))
 			return nil
+		}
+	}
+
+}
+
+// Get the object's metadata.
+func GetObject(ec ExchangeContext, org string, objID string, objType string) (*common.MetaData, error) {
+
+	var resp interface{}
+	resp = new(common.MetaData)
+
+	url := path.Join("/api/v1/objects", org, objType, objID)
+	url = ec.GetCSSURL() + url
+
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			objMeta := resp.(*common.MetaData)
+			if objMeta.ObjectID != "" {
+				glog.V(5).Infof(rpclogString(fmt.Sprintf("found object %v %v for org %v: %v", objID, objType, org, objMeta)))
+				return objMeta, nil
+			} else {
+				glog.V(5).Infof(rpclogString(fmt.Sprintf("object %v %v for org %v not found", objID, objType, org)))
+				return nil, nil
+			}
+		}
+	}
+}
+
+// Get the object's list of destinations.
+func GetObjectDestinations(ec ExchangeContext, org string, objID string, objType string) (*ObjectDestinationStatuses, error) {
+
+	var resp interface{}
+	resp = new(ObjectDestinationStatuses)
+
+	url := path.Join("/api/v1/objects", org, objType, objID, "destinations")
+	url = ec.GetCSSURL() + url
+
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			dests := resp.(*ObjectDestinationStatuses)
+			if len(*dests) != 0 {
+				glog.V(5).Infof(rpclogString(fmt.Sprintf("found destinations for %v %v %v: %v", org, objID, objType, dests)))
+				return dests, nil
+			} else {
+				glog.V(5).Infof(rpclogString(fmt.Sprintf("no destinations found for %v %v %v", org, objID, objType)))
+				return nil, nil
+			}
 		}
 	}
 

@@ -26,6 +26,7 @@ const CANCEL = "AGREEMENT_CANCEL"
 const DATARECEIVEDACK = "AGREEMENT_DATARECEIVED_ACK"
 const WORKLOAD_UPGRADE = "WORKLOAD_UPGRADE"
 const ASYNC_CANCEL = "ASYNC_CANCEL"
+const MMS_OBJECT_POLICY = "MMS_OBJECT_POLICY"
 const STOP = "PROTOCOL_WORKER_STOP"
 
 type AgreementWork interface {
@@ -124,6 +125,15 @@ type AsyncCancelAgreement struct {
 }
 
 func (c AsyncCancelAgreement) Type() string {
+	return c.workType
+}
+
+type ObjectPolicyChange struct {
+	workType string
+	Event    events.MMSObjectPolicyMessage
+}
+
+func (c ObjectPolicyChange) Type() string {
 	return c.workType
 }
 
@@ -354,7 +364,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			}
 		} else {
 			// non patten case
-			nodePolicy, err := b.GetNodePolicy(wi.Device.Id)
+			nodePolicy, err := GetNodePolicy(b, wi.Device.Id)
 			if err != nil {
 				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
 				return
@@ -566,27 +576,6 @@ func (b *BaseAgreementWorker) MergeServicePolicyToConsumerPolicy(businessPol *po
 	}
 }
 
-// Get node policy
-func (b *BaseAgreementWorker) GetNodePolicy(deviceId string) (*policy.Policy, error) {
-
-	nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(b)
-	nodePolicy, err := nodePolicyHandler(deviceId)
-	if err != nil {
-		return nil, fmt.Errorf("error trying to query node policy for %v: %v", deviceId, err)
-	}
-	if nodePolicy == nil {
-		return nil, fmt.Errorf("no node policy found for %v", deviceId)
-	}
-
-	extPolicy := nodePolicy.GetExternalPolicy()
-
-	pPolicy, err := policy.GenPolicyFromExternalPolicy(&extPolicy, policy.MakeExternalPolicyHeaderName(deviceId))
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert node policy to internal policy format for node %v: %v", deviceId, err)
-	}
-	return pPolicy, nil
-}
-
 // Get service policy
 func (b *BaseAgreementWorker) GetServicePolicy(svcId string) (*externalpolicy.ExternalPolicy, error) {
 
@@ -706,7 +695,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 			if b.GetCSSURL() != "" && agreement.Pattern == "" {
 
 				// Retrieve the node policy.
-				nodePolicy, err := b.GetNodePolicy(agreement.DeviceId)
+				nodePolicy, err := GetNodePolicy(b, agreement.DeviceId)
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
 				} else if nodePolicy == nil {
@@ -715,14 +704,14 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 					glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
 				}
 
-				// Query the CSS (Model Management System) to find objects with policies that refer to the agreed-to service(s). Service IDs are
-				// a concatenation of org '/' service name, hardware architecture and version, separated by underscores. We only need the
-				// org/service-name part, which is the first piece.
+				// Query the MMS cache to find objects with policies that refer to the agreed-to service(s). Service IDs are
+				// a concatenation of org '/' service name, hardware architecture and version, separated by underscores. We need
+				// all 3 pieces.
 				for _, serviceId := range agreement.ServiceId {
 
-					serviceNamePieces := strings.SplitN(serviceId, "_", 2)
+					serviceNamePieces := strings.SplitN(serviceId, "_", 3)
 
-					objPolicies := b.mmsObjMgr.GetObjectPolicies(agreement.Org, serviceNamePieces[0])
+					objPolicies := b.mmsObjMgr.GetObjectPolicies(agreement.Org, serviceNamePieces[0], serviceNamePieces[2], serviceNamePieces[1])
 
 					if err := AssignObjectToNode(b, objPolicies, agreement.DeviceId, nodePolicy); err != nil {
 						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to assign object(s) to node %v, error %v", agreement.DeviceId, err)))
