@@ -89,7 +89,7 @@ func DeleteNodePolicy(db *bolt.DB) error {
 }
 
 // Retrieve the exchange node policy lastUpdated string from the database.
-func GetNodePolicyLatUpdated_Exch(db *bolt.DB) (string, error) {
+func GetNodePolicyLastUpdated_Exch(db *bolt.DB) (string, error) {
 
 	lastUpdated := ""
 
@@ -112,7 +112,7 @@ func GetNodePolicyLatUpdated_Exch(db *bolt.DB) (string, error) {
 }
 
 // save the exchange node policy lastUpdated string.
-func SaveNodePolicyLatUpdated_Exch(db *bolt.DB, lastUpdated string) error {
+func SaveNodePolicyLastUpdated_Exch(db *bolt.DB, lastUpdated string) error {
 
 	writeErr := db.Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte(EXCHANGE_NP_LAST_UPDATED))
@@ -130,7 +130,7 @@ func SaveNodePolicyLatUpdated_Exch(db *bolt.DB, lastUpdated string) error {
 // Remove the exchange node policy lastUpdated string from the local database.
 func DeleteNodePolicyLastUpdated_Exch(db *bolt.DB) error {
 
-	if lastUpdated, err := GetNodePolicyLatUpdated_Exch(db); err != nil {
+	if lastUpdated, err := GetNodePolicyLastUpdated_Exch(db); err != nil {
 		return err
 	} else if lastUpdated == "" {
 		return nil

@@ -198,41 +198,86 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			// Fire an event to the torrent worker so that it will download the container
 			cc := events.NewContainerConfig(ms_workload.Deployment, ms_workload.DeploymentSignature, ms_workload.DeploymentUserInfo, "", img_auths)
 
-			// convert the user input from the service attributes to env variables
-			if attrs, err := persistence.FindApplicableAttributes(w.db, msdef.SpecRef, msdef.Org); err != nil {
-				return nil, fmt.Errorf(logString(fmt.Sprintf("Unable to fetch service preferences for %v/%v. Err: %v", msdef.Org, msdef.SpecRef, err)))
-			} else if envAdds, err := persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM); err != nil {
-				return nil, fmt.Errorf(logString(fmt.Sprintf("Failed to convert service preferences to environmental variables for %v/%v. Err: %v", msdef.Org, msdef.SpecRef, err)))
-			} else {
-				envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = exchange.GetId(w.GetExchangeId())
-				envAdds[config.ENVVAR_PREFIX+"ORGANIZATION"] = exchange.GetOrg(w.GetExchangeId())
-				envAdds[config.ENVVAR_PREFIX+"PATTERN"] = w.devicePattern
-				envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = w.Config.Edge.ExchangeURL
-				// Add in any default variables from the microservice userInputs that havent been overridden
-				for _, ui := range msdef.UserInputs {
-					if ui.DefaultValue != "" {
-						if _, ok := envAdds[ui.Name]; !ok {
-							envAdds[ui.Name] = ui.DefaultValue
-						}
-					}
-				}
-
-				agIds := make([]string, 0)
-
-				if agreementId != "" {
-					// service originally start up
-					agIds = append(agIds, agreementId)
-				} else {
-					// retry case or agreementless case
-					agIds = ms_instance.AssociatedAgreements
-				}
-				lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey(), agIds, ms_specs, persistence.NewServiceInstancePathElement(msdef.SpecRef, msdef.Org, msdef.Version), isRetry)
-				w.Messages() <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
+			// convert the user input from the service attributes, user input from policy and node to env variables
+			envAdds, err := w.GetEnvVarsForServiceDepolyment(msdef, ms_instance, agreementId)
+			if err != nil {
+				return nil, err
 			}
+
+			agIds := make([]string, 0)
+			if agreementId != "" {
+				// service originally start up
+				agIds = append(agIds, agreementId)
+			} else {
+				// retry case or agreementless case
+				agIds = ms_instance.AssociatedAgreements
+			}
+			lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey(), agIds, ms_specs, persistence.NewServiceInstancePathElement(msdef.SpecRef, msdef.Org, msdef.Version), isRetry)
+			w.Messages() <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
 
 			return ms_instance, nil // assume there is only one workload for a microservice
 		}
 	}
+}
+
+// Collect the user inputs from node, policy and service. Convert them to a map of strings that can be used as environmental variables for a dependent service container.
+func (w *GovernanceWorker) GetEnvVarsForServiceDepolyment(msdef *persistence.MicroserviceDefinition, msInst *persistence.MicroserviceInstance, agreementId string) (map[string]string, error) {
+
+	var envAdds map[string]string
+	
+	if agreementId != "" {
+		// this the first time this dependent service is brought up
+		ags, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)})
+		if err != nil {
+			return nil, fmt.Errorf(logString(fmt.Sprintf("failed to retrieve agreement %v from database, error %v", agreementId, err)))
+		} else if len(ags) == 0 {
+			return nil, fmt.Errorf(logString(fmt.Sprintf("unable to find agreement %v from database.", agreementId)))
+		}
+
+		tcPolicy, err := policy.DemarshalPolicy(ags[0].Proposal)
+		if err != nil {
+			return nil, fmt.Errorf(logString(fmt.Sprintf("Error demarshalling proposal from agreement %v, %v", agreementId, err)))
+		}
+
+		attrs, err := persistence.FindApplicableAttributes(w.db, msdef.SpecRef, msdef.Org)
+		if err != nil {
+			return nil, fmt.Errorf(logString(fmt.Sprintf("Unable to fetch service preferences for %v/%v. Err: %v", msdef.Org, msdef.SpecRef, err)))
+		}
+
+		envAdds, err = persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM)
+		if err != nil {
+			return nil, fmt.Errorf(logString(fmt.Sprintf("Failed to convert service preferences to environmental variables for %v/%v. Err: %v", msdef.Org, msdef.SpecRef, err)))
+		}
+		envAdds, err = policy.UpdateSettingsWithPolicyUserInput(tcPolicy, envAdds, msdef.SpecRef, msdef.Org)
+		if err != nil {
+			return nil, fmt.Errorf(logString(fmt.Sprintf("Error getting environmental variable settings from policy for %v, %v: %v", msdef.SpecRef, msdef.Org, err)))
+		}
+
+		envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = exchange.GetId(w.GetExchangeId())
+		envAdds[config.ENVVAR_PREFIX+"ORGANIZATION"] = exchange.GetOrg(w.GetExchangeId())
+		envAdds[config.ENVVAR_PREFIX+"PATTERN"] = w.devicePattern
+		envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = w.Config.Edge.ExchangeURL
+
+		// Add in any default variables from the microservice userInputs that havent been overridden
+		for _, ui := range msdef.UserInputs {
+			if ui.DefaultValue != "" {
+				if _, ok := envAdds[ui.Name]; !ok {
+					envAdds[ui.Name] = ui.DefaultValue
+				}
+			}
+		}
+
+		// save the envvars for retry case
+		if _, err := persistence.UpdateMSInstanceEnvVars(w.db, msInst.GetKey(), envAdds); err != nil {
+			return nil, fmt.Errorf(logString(fmt.Sprintf("Error saving environmental variable settings to ms instance %v: %v", msInst.GetKey(),  err)))	
+		}
+		
+	} else {
+		// this is the retry case, use the user input is saved in the microservice instance from last run
+		envAdds = msInst.EnvVars
+	}
+
+	return envAdds, nil
 }
 
 // It cleans the microservice instance and its associated agreements

@@ -1376,8 +1376,14 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		envAdds := make(map[string]string)
 
 		// The service config variables are stored in the device's attributes.
-		if envAdds, err = w.GetWorkloadPreference(workload.WorkloadURL, workload.Org); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Error: %v", err)))
+		if envAdds, err = w.GetServicePreference(workload.WorkloadURL, workload.Org); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Error getting environment variables from node settings for %v %v: %v", workload.WorkloadURL, workload.Org, err)))
+			return err
+		}
+
+		// Add settings from business policy or pattern that comes with the proposal.
+		if envAdds, err = policy.UpdateSettingsWithPolicyUserInput(tcPolicy, envAdds, workload.WorkloadURL, workload.Org); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Error getting environmental variable settings from policy for %v, %v: %v", workload.WorkloadURL, workload.Org, err)))
 			return err
 		}
 
@@ -1584,15 +1590,17 @@ func (w *GovernanceWorker) startAgreementLessServices() {
 }
 
 // Get the environmental variables for a service (this is about launching).
-func (w *GovernanceWorker) GetWorkloadPreference(url string, org string) (map[string]string, error) {
+func (w *GovernanceWorker) GetServicePreference(url string, org string) (map[string]string, error) {
+
+	// get user input from the node userInput
 	attrs, err := persistence.FindApplicableAttributes(w.db, url, org)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to fetch workload %v preferences. Err: %v", url, err)
 	}
 
-	return persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM)
-
+	return  persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM)
 }
+
 
 func recordProducerAgreementState(httpClient *http.Client, url string, deviceId string, token string, pattern string, agreementId string, pol *policy.Policy, state string) error {
 

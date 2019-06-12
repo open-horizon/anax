@@ -2,6 +2,7 @@ package policy
 
 import (
 	"fmt"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/semanticversion"
 )
 
@@ -72,17 +73,19 @@ func MergeUserInput(ui1, ui2 UserInput, checkService bool) (*UserInput, error) {
 // Get the user input that fits this given service spec
 func FindUserInput(svcName, svcOrg, svcVersion, svcArch string, userInput []UserInput) (*UserInput, error) {
 	for _, u1 := range userInput {
-		if u1.ServiceOrgid == svcOrg && u1.ServiceUrl == svcName && (u1.ServiceArch == svcArch || u1.ServiceArch == "") {
+		if u1.ServiceOrgid == svcOrg && u1.ServiceUrl == svcName && (u1.ServiceArch == svcArch || u1.ServiceArch == "" || svcArch == "") {
 
-			if u1.ServiceVersionRange == "" {
-				u1.ServiceVersionRange = "[0.0.1, INFINITY)"
-			}
-			if vExp, err := semanticversion.Version_Expression_Factory(u1.ServiceVersionRange); err != nil {
-				return nil, fmt.Errorf("Wrong version string %v specified in user input for service %v/%v %v %v, error %v", u1.ServiceVersionRange, svcOrg, svcName, svcVersion, svcArch, err)
-			} else if inRange, err := vExp.Is_within_range(svcVersion); err != nil {
-				return nil, fmt.Errorf("Error checking version range %v in user input for service %v/%v %v %v . %v", vExp, svcOrg, svcName, svcVersion, svcArch, err)
-			} else if !inRange {
-				return nil, fmt.Errorf("Version range %v in user input for service %v/%v %v %v does not match service version.", u1.ServiceVersionRange, svcOrg, svcName, svcVersion, svcArch)
+			if svcVersion != "" {
+				if u1.ServiceVersionRange == "" {
+					u1.ServiceVersionRange = "[0.0.1,INFINITY)"
+				}
+				if vExp, err := semanticversion.Version_Expression_Factory(u1.ServiceVersionRange); err != nil {
+					return nil, fmt.Errorf("Wrong version string %v specified in user input for service %v/%v %v %v, error %v", u1.ServiceVersionRange, svcOrg, svcName, svcVersion, svcArch, err)
+				} else if inRange, err := vExp.Is_within_range(svcVersion); err != nil {
+					return nil, fmt.Errorf("Error checking version range %v in user input for service %v/%v %v %v . %v", vExp, svcOrg, svcName, svcVersion, svcArch, err)
+				} else if !inRange {
+					continue
+				}
 			}
 
 			u_tmp := UserInput(u1)
@@ -92,3 +95,33 @@ func FindUserInput(svcName, svcOrg, svcVersion, svcArch string, userInput []User
 
 	return nil, nil
 }
+
+// Gets the default from the userInput of the consumer policy which is from business policy or pattern, and update the existing settings if the name does not exist.
+func UpdateSettingsWithPolicyUserInput(tcPolicy *Policy, existingUserSettings map[string]string, svcUrl string, svcOrg string) (map[string]string, error) {
+	userSettings := existingUserSettings
+	if tcPolicy.UserInput != nil && len(tcPolicy.UserInput) > 0 {
+		for _, ui := range tcPolicy.UserInput {
+			if ui.Inputs != nil && len(ui.Inputs) > 0 {
+				if ui.ServiceUrl == svcUrl && ui.ServiceOrgid == svcOrg {
+					for _, item := range ui.Inputs {
+						found := false
+						for k, _ := range existingUserSettings {
+							if item.Name == k {
+								found = true
+								break
+							}
+						}
+						if !found {
+							if err := cutil.NativeToEnvVariableMap(userSettings, item.Name, item.Value); err != nil {
+								return nil, fmt.Errorf("Error converting value %v of %v to string for service %v %v. %v", item.Value, item.Name, svcUrl, svcOrg, err)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return userSettings, nil
+}
+
