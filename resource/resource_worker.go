@@ -21,15 +21,21 @@ type ResourceWorker struct {
 func NewResourceWorker(name string, config *config.HorizonConfig, db *bolt.DB, am *AuthenticationManager) *ResourceWorker {
 
 	var ec *worker.BaseExchangeContext
+	var rm *ResourceManager
 	dev, _ := persistence.FindExchangeDevice(db)
 	if dev != nil {
 		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, config.Edge.ExchangeURL, config.GetCSSURL(), config.Collaborators.HTTPClientFactory)
+		rm = NewResourceManager(config, dev.Org, dev.Pattern, dev.Id, dev.Token)
+	}
+
+	if rm == nil {
+		rm = NewResourceManager(config, "", "", "", "")
 	}
 
 	worker := &ResourceWorker{
 		BaseWorker: worker.NewBaseWorker(name, config, ec),
 		db:         db,
-		rm:         NewResourceManager(config),
+		rm:         rm,
 		am:         am,
 	}
 
@@ -41,6 +47,16 @@ func NewResourceWorker(name string, config *config.HorizonConfig, db *bolt.DB, a
 
 func (w *ResourceWorker) Messages() chan events.Message {
 	return w.BaseWorker.Manager.Messages
+}
+
+func (w *ResourceWorker) Initialize() bool {
+	if w.rm.Configured() {
+		if err := w.rm.StartFileSyncService(w.am); err != nil {
+			glog.Errorf(reslog(fmt.Sprintf("Error starting ESS: %v", err)))
+			return false
+		}
+	}
+	return true
 }
 
 // Handle events that are propogated to this worker from the internal event bus.
