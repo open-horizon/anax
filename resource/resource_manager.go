@@ -26,10 +26,21 @@ type ResourceManager struct {
 	token   string
 }
 
-func NewResourceManager(cfg *config.HorizonConfig) *ResourceManager {
+func NewResourceManager(cfg *config.HorizonConfig, org string, pattern string, id string, token string) *ResourceManager {
+	if id != "" && pattern == "" {
+		pattern = "openhorizon/openhorizon.edgenode"
+	}
 	return &ResourceManager{
 		config: cfg,
+		pattern: pattern,
+		id: id,
+		org: org,
+		token: token,
 	}
+}
+
+func (r *ResourceManager) Configured() bool {
+	return r.id != ""
 }
 
 func (r *ResourceManager) NodeConfigUpdate(org string, pattern string, id string, token string) {
