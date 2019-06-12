@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/rsapss-tool/sign"
 	"github.com/open-horizon/rsapss-tool/verify"
 	"net/http"
@@ -28,6 +29,7 @@ type PatternOutput struct {
 	Public             bool                         `json:"public"`
 	Services           []ServiceReference           `json:"services"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
+	UserInput          policy.UserInput             `json:"userInput,omitempty"`
 	LastUpdated        string                       `json:"lastUpdated"`
 }
 
@@ -62,6 +64,7 @@ type PatternFile struct {
 	Public             bool                         `json:"public"`
 	Services           []ServiceReferenceFile       `json:"services"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols,omitempty"`
+	UserInput          policy.UserInput             `json:"userInput,omitempty"`
 }
 
 type ServiceChoice struct {
@@ -86,6 +89,7 @@ type PatternInput struct {
 	Public             bool                         `json:"public"`
 	Services           []ServiceReference           `json:"services,omitempty"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols,omitempty"`
+	UserInput          policy.UserInput             `json:"userInput,omitempty"`
 }
 
 // List the pattern resources for the given org.
@@ -123,6 +127,21 @@ func PatternList(credOrg string, userPw string, pattern string, namesOnly bool) 
 		}
 		fmt.Println(string(jsonBytes))
 	}
+}
+
+func PatternUpdate(credOrg string, userPw string, pattern string, filePath string) {
+	cliutils.SetWhetherUsingApiKey(userPw)
+
+	attribute := cliconfig.ReadJsonFileWithLocalConfig(filePath)
+
+	var patOrg string
+	patOrg, pattern = cliutils.TrimOrg(credOrg, pattern)
+	if pattern == "*" {
+		pattern = ""
+	}
+
+	cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+patOrg+"/patterns/"+pattern, cliutils.OrgAndCreds(patOrg, userPw), []int{200, 201}, attribute)
+	fmt.Printf("Pattern %s/%s updated in the Horizon exchange.\n", pattern, patOrg)
 }
 
 // Take the deployment overrides field, which we have told the json unmarshaller was unknown type (so we can handle both escaped string and struct)
@@ -172,7 +191,7 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 	if patFile.Org != "" && patFile.Org != org {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", patFile.Org, org)
 	}
-	patInput := PatternInput{Label: patFile.Label, Description: patFile.Description, Public: patFile.Public, AgreementProtocols: patFile.AgreementProtocols}
+	patInput := PatternInput{Label: patFile.Label, Description: patFile.Description, Public: patFile.Public, AgreementProtocols: patFile.AgreementProtocols, UserInput: patFile.UserInput}
 
 	// Loop thru the services array and the servicesVersions array and sign the deployment_overrides fields
 	if patFile.Services != nil && len(patFile.Services) > 0 {
