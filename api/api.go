@@ -94,6 +94,7 @@ func (a *API) router(includeStaticRedirects bool) *mux.Router {
 	router.HandleFunc("/node", a.node).Methods("GET", "HEAD", "POST", "PATCH", "DELETE", "OPTIONS")
 	router.HandleFunc("/node/configstate", a.nodeconfigstate).Methods("GET", "HEAD", "PUT", "OPTIONS")
 	router.HandleFunc("/node/policy", a.nodepolicy).Methods("GET", "HEAD", "PUT", "POST", "PATCH", "DELETE", "OPTIONS")
+	router.HandleFunc("/node/userinput", a.nodeuserinput).Methods("GET", "HEAD", "PUT", "POST", "PATCH", "DELETE", "OPTIONS")
 
 	// Used to get the event logs on this node.
 	// get the eventlogs for current registration.

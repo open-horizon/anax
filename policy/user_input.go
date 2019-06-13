@@ -49,6 +49,14 @@ func MergeUserInput(ui1, ui2 UserInput, checkService bool) (*UserInput, error) {
 		// we will not check the version for now.
 	}
 
+	// handle corner conditions first
+	if ui2.Inputs == nil || len(ui2.Inputs) == 0 {
+		return &ui1, nil
+	}
+	if ui1.Inputs == nil || len(ui1.Inputs) == 0 {
+		return &ui2, nil
+	}
+
 	// make a copy of the first one
 	output_ui := UserInput(ui1)
 
@@ -58,9 +66,7 @@ func MergeUserInput(ui1, ui2 UserInput, checkService bool) (*UserInput, error) {
 		for i, o := range ui1.Inputs {
 			// replace with the values from ui2 if same variable exists
 			if o.Name == u2.Name {
-				if o.Value != u2.Value {
-					output_ui.Inputs[i] = Input(u2)
-				}
+				output_ui.Inputs[i] = Input(u2)
 				found = true
 				break
 			}

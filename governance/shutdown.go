@@ -102,6 +102,18 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 		return
 	}
 
+	// Delete node user input from local db
+	if err := persistence.DeleteNodeUserInput(w.db); err != nil {
+		w.completedWithError(logString(err.Error()))
+		return
+	}
+
+	// Reset the node user input hash
+	if err := persistence.DeleteNodeUserInputHash_Exch(w.db); err != nil {
+		w.completedWithError(logString(err.Error()))
+		return
+	}
+
 	// Tell the system that node quiesce is complete without error. The API worker might be waiting for this message.
 	// All the workers in the system will start quiescing as a result of this message.
 	w.Messages() <- events.NewNodeShutdownCompleteMessage(events.UNCONFIGURE_COMPLETE, "")

@@ -14,18 +14,16 @@ const EXCHANGE_NODE_USERINPUT_HASH = "exchange_node_userinput_hash" // The buuck
 // so this function has to be prepared for that case, even though there should only ever be 1.
 func FindNodeUserInput(db *bolt.DB) ([]policy.UserInput, error) {
 
-	userInput := make([]policy.UserInput, 0)
+	var userInput []policy.UserInput
 
 	readErr := db.View(func(tx *bolt.Tx) error {
 		if b := tx.Bucket([]byte(NODE_USERINPUT)); b != nil {
 			return b.ForEach(func(k, v []byte) error {
-				var ui []policy.UserInput
 
-				if err := json.Unmarshal(v, &ui); err != nil {
+				if err := json.Unmarshal(v, &userInput); err != nil {
 					return fmt.Errorf("Unable to deserialize node user input record: %v", v)
 				}
 
-				copy(userInput, ui)
 				return nil
 			})
 		}

@@ -215,7 +215,7 @@ func configureService(service *Service,
 
 // This function verifies that if the given workload needs variable configuration, that there is a workloadconfig
 // object holding that config.
-func workloadConfigPresent(sd *exchange.ServiceDefinition, wUrl string, wOrg, wVersion string, db *bolt.DB) (bool, error) {
+func workloadConfigPresent(sd *exchange.ServiceDefinition, wUrl string, wOrg, wVersion string, patternUserInput []policy.UserInput, db *bolt.DB) (bool, error) {
 
 	// If the definition needs no config, exit early.
 	if !sd.NeedsUserInput() {
@@ -236,6 +236,24 @@ func workloadConfigPresent(sd *exchange.ServiceDefinition, wUrl string, wOrg, wV
 				return true, nil
 			}
 		}
+	}
+
+	// if not found in attributes, then check the node userinput
+	nodeUserInput, err := persistence.FindNodeUserInput(db)
+	if err != nil {
+		return false, fmt.Errorf(apiLogString(fmt.Sprintf("Failed get user input from local db. %v", err)))
+	}
+	if ui, err := policy.FindUserInput(wUrl, wOrg, wVersion, sd.Arch, nodeUserInput); err != nil {
+		return false, fmt.Errorf("Failed to find preferences for service %v/%v  from the local user input, error: %v", wOrg, wUrl, err)
+	} else if ui != nil {
+		return true, nil
+	}
+
+	// try to get the default from pattern
+	if ui, err := policy.FindUserInput(wUrl, wOrg, wVersion, sd.Arch, patternUserInput); err != nil {
+		return false, fmt.Errorf("Failed to find preferences for service %v/%v  from the pattern userInput section, error: %v", wOrg, wUrl, err)
+	} else if ui != nil {
+		return true, nil
 	}
 
 	return false, nil
@@ -301,7 +319,7 @@ func getSpecRefsForPattern(patName string,
 			if checkWorkloadConfig {
 				// The top-level service might have variables that need to be configured. If so, find all relevant service attribute objects to make sure
 				// there is userinput config available.
-				if present, err := workloadConfigPresent(serviceDef, service.ServiceURL, service.ServiceOrg, serviceChoice.Version, db); err != nil {
+				if present, err := workloadConfigPresent(serviceDef, service.ServiceURL, service.ServiceOrg, serviceChoice.Version, patternDef.UserInput, db); err != nil {
 					return nil, nil, NewSystemError(fmt.Sprintf("Error checking service config, error %v", err))
 				} else if !present {
 					return nil, nil, NewMSMissingVariableConfigError(fmt.Sprintf(cutil.ANAX_SVC_MISSING_CONFIG, serviceChoice.Version, cutil.FormOrgSpecUrl(service.ServiceURL, service.ServiceOrg)), "configstate.state")

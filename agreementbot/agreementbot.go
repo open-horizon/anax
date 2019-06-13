@@ -281,7 +281,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 		} else {
 			// creating business policy cache and update the policy manager
 			w.pm = filePolManager
-			if err := w.internalGeneratePolicyFromBusinessPols(firstTime); err != nil {
+			if err := w.internalGeneratePolicyFromBusinessPols(); err != nil {
 				glog.Errorf(AWlogString(fmt.Sprintf("unable to process business policy, error %v", err)))
 			} else if filePolManager.NumberPolicies() != 0 {
 				// w.pm = filePolManager

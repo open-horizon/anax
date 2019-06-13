@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -87,6 +88,7 @@ func CreateHorizonDevice(device *HorizonDevice,
 	getOrg exchange.OrgHandlerWithContext,
 	getPatterns exchange.PatternHandlerWithContext,
 	getExchangeVersion exchange.ExchangeVersionHandler,
+	patchDeviceHandler exchange.PatchDeviceHandler,
 	em *events.EventStateManager,
 	db *bolt.DB) (bool, *HorizonDevice, *HorizonDevice) {
 
@@ -194,6 +196,13 @@ func CreateHorizonDevice(device *HorizonDevice,
 	// Return 2 device objects, the first is the fully populated newly created device object. The second is a device
 	// object suitable for output (external consumption). Specifically the token is omitted.
 	exDev := ConvertFromPersistentHorizonDevice(pDev)
+
+	// update the arch for the exchange node
+	pdr := exchange.PatchDeviceRequest{}
+	pdr.Arch = cutil.ArchString()
+	if err := patchDeviceHandler(deviceId, *device.Token, &pdr); err != nil {
+		return errorhandler(NewSystemError(fmt.Sprintf("error adding architecture for the exchange node. %v", err))), nil, nil
+	}
 
 	return false, device, exDev
 }

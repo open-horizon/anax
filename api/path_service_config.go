@@ -419,7 +419,9 @@ func CreateService(service *Service,
 
 	// patch the user input into the exchange and local db
 	if from_user && len(userInput) > 0 {
-		exchangesync.PatchUserInput(db, pDevice, userInput, getDevice, patchDevice)
+		if err := exchangesync.PatchNodeUserInput(pDevice, db, userInput, getDevice, patchDevice); err != nil {
+			return errorhandler(NewSystemError(fmt.Sprintf("Failed to add the user input %v to node. %v", userInput, err))), nil, nil
+		}
 	}
 
 	// add node built-in properties
@@ -486,7 +488,7 @@ func convertAttributeToExchangeUserInput(service *Service, attr *persistence.Use
 	userInput := new(policy.UserInput)
 	if attr.ServiceSpecs != nil && len(*attr.ServiceSpecs) > 0 {
 		userInput.ServiceUrl = (*attr.ServiceSpecs)[0].Url
-		userInput.ServiceOrgid = (*attr.ServiceSpecs)[0].Url
+		userInput.ServiceOrgid = (*attr.ServiceSpecs)[0].Org
 	} else {
 		if service.Url != nil {
 			userInput.ServiceUrl = *service.Url

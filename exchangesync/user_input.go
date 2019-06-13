@@ -12,10 +12,18 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"golang.org/x/crypto/sha3"
 	"reflect"
+	"sync"
 )
+
+var nodeUserInputUpdateLock sync.Mutex //The lock that protects the hash value
 
 // Gets all the UserInputAttriutues from the DB and convert then into
 func SyncLocalUserInputWithExchange(db *bolt.DB, pDevice *persistence.ExchangeDevice, getDevice exchange.DeviceHandler) (bool, persistence.ServiceSpecs, error) {
+
+	glog.V(4).Infof("Checking the node user input changes.")
+
+	nodeUserInputUpdateLock.Lock()
+	defer nodeUserInputUpdateLock.Unlock()
 
 	// get the node user input from the exchange
 	exchDevice, err := getDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token)
@@ -60,54 +68,12 @@ func SyncLocalUserInputWithExchange(db *bolt.DB, pDevice *persistence.ExchangeDe
 			return true, nil, fmt.Errorf("Failed to save the user input hash %v to the local db. %v", exchHash, err)
 		}
 
+		glog.V(3).Infof("Node synced with exchange. New node user input is: %v", exchDevice.UserInput)
+
 		// Get a list of what services has been changed
 		changedServiceSpecs := GetChangedServices(oldUserInput, exchDevice.UserInput)
 
 		return true, changedServiceSpecs, nil
-	}
-}
-
-// Add the given user input to the exchange node user input.
-func PatchUserInput(db *bolt.DB, pDevice *persistence.ExchangeDevice,
-	userInputs []policy.UserInput,
-	getDevice exchange.DeviceHandler,
-	patchDevice exchange.PatchDeviceHandler) error {
-
-	if userInputs == nil || len(userInputs) == 0 {
-		return nil
-	}
-
-	// get exchange node user input
-	exchDevice, err := getDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token)
-	if err != nil {
-		return fmt.Errorf("Failed to get the device %v/%v from the exchange. %v", pDevice.Org, pDevice.Id, err)
-	}
-
-	// patch the exchange userinput with the newly added one on the node
-	new_ui := policy.MergeUserInputArrays(exchDevice.UserInput, userInputs, false)
-
-	if new_ui == nil {
-		new_ui = []policy.UserInput{}
-	}
-	pdr := exchange.PatchDeviceRequest{}
-	pdr.UserInput = &new_ui
-
-	glog.V(3).Infof("Patching exchange with user input: %v.", pdr)
-	if err := patchDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token, &pdr); err != nil {
-		return err
-	}
-
-	glog.V(3).Infof("Patching local db: %v.", pdr)
-	// save exchange node user input to local db
-	if err := persistence.SaveNodeUserInput(db, new_ui); err != nil {
-		return fmt.Errorf("Failed save user input %v to local db. %v", exchDevice.UserInput, err)
-	}
-
-	// save the hash for later comparison
-	if hash, err := HashUserInput(new_ui); err != nil {
-		return err
-	} else {
-		return persistence.SaveNodeUserInputHash_Exch(db, hash)
 	}
 }
 
@@ -177,6 +143,39 @@ func NodeUserInputInitalSetup(db *bolt.DB,
 	}
 
 	return nil
+}
+
+// check if the node user input has been changed from last sync.
+func ExchangeNodeUserInputChanged(pDevice *persistence.ExchangeDevice, db *bolt.DB, getDevice exchange.DeviceHandler) (bool, []policy.UserInput, error) {
+
+	// get the node user input from the exchange
+	exchDevice, err := getDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token)
+	if err != nil {
+		return false, nil, fmt.Errorf("Failed to get the device %v/%v from the exchange. %v", pDevice.Org, pDevice.Id, err)
+	}
+
+	// safeguard for nil
+	if exchDevice.UserInput == nil {
+		exchDevice.UserInput = []policy.UserInput{}
+	}
+
+	// create a hash for the user input
+	exchHash, err := HashUserInput(exchDevice.UserInput)
+	if err != nil {
+		return false, nil, fmt.Errorf("Failed to hash the UserInput. %v", err)
+	}
+
+	// get the saved hash
+	savedHash, err := persistence.GetNodeUserInputHash_Exch(db)
+	if err != nil {
+		return false, nil, fmt.Errorf("Failed to get the saved user input hash from the local db. %v", err)
+	}
+
+	if bytes.Equal(exchHash, savedHash) {
+		return false, exchDevice.UserInput, nil
+	} else {
+		return true, exchDevice.UserInput, nil
+	}
 }
 
 func ConvertAttributesToUserInput(attributes []persistence.UserInputAttributes) []policy.UserInput {
@@ -281,4 +280,116 @@ func GetChangedServices(oldUserInput, newUserInput []policy.UserInput) persisten
 	}
 
 	return *changedSvcs
+}
+
+// Delete the node user input from local db and the exchange
+func DeleteNodeUserInput(pDevice *persistence.ExchangeDevice, db *bolt.DB,
+	getDevice exchange.DeviceHandler,
+	patchDevice exchange.PatchDeviceHandler) error {
+
+	// check if the user input got changed on the exchange since last observation
+	// if it is changed, then reject the deletion.
+	changed, _, err := ExchangeNodeUserInputChanged(pDevice, db, getDevice)
+	if err != nil {
+		return fmt.Errorf("Failed to check the exchange for the node user input: %v.", err)
+	} else if changed {
+		return fmt.Errorf("Cannot delete this node user input because the local node user input is out of sync with the exchange copy. Please wait a minute and try again.")
+	}
+
+	// delete the node policy from the exchange if it exists
+	userInputs := []policy.UserInput{}
+	return SaveNodeUserInput(pDevice, db, userInputs, getDevice, patchDevice)
+}
+
+// Update the node user input on local db and the exchange
+func UpdateNodeUserInput(pDevice *persistence.ExchangeDevice, db *bolt.DB,
+	userInputs []policy.UserInput,
+	getDevice exchange.DeviceHandler,
+	patchDevice exchange.PatchDeviceHandler) (persistence.ServiceSpecs, error) {
+
+	// check if the user input is changed or not on the exchange since last observation,
+	// if it is changed, then reject the patch.
+	changed, exchUserInput, err := ExchangeNodeUserInputChanged(pDevice, db, getDevice)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to check the exchange for the node user input: %v.", err)
+	} else if changed {
+		return nil, fmt.Errorf("Cannot accept this node user input because the local node user input is out of sync with the exchange copy. Please wait a minute and try again.")
+	}
+
+	if err := SaveNodeUserInput(pDevice, db, userInputs, getDevice, patchDevice); err != nil {
+		return nil, fmt.Errorf("Failed to save the user input %v. %v.", userInputs, err)
+	}
+
+	// Get a list of what services has been changed
+	changedServiceSpecs := GetChangedServices(exchUserInput, userInputs)
+
+	return changedServiceSpecs, nil
+}
+
+// Add the given user input to the exchange node user input.
+func PatchNodeUserInput(pDevice *persistence.ExchangeDevice, db *bolt.DB,
+	userInputs []policy.UserInput,
+	getDevice exchange.DeviceHandler,
+	patchDevice exchange.PatchDeviceHandler) error {
+
+	if userInputs == nil || len(userInputs) == 0 {
+		return nil
+	}
+
+	// check if the user input is changed or not on the exchange since last observation,
+	// if it is changed, then reject the patch.
+	changed, exchUserInput, err := ExchangeNodeUserInputChanged(pDevice, db, getDevice)
+	if err != nil {
+		return fmt.Errorf("Failed to check the exchange for the node user input: %v.", err)
+	} else if changed {
+		return fmt.Errorf("Cannot accept this node user input because the local node user input is out of sync with the exchange copy. Please wait a minute and try again.")
+	}
+
+	// patch the exchange userinput with the newly added one on the node
+	new_ui := policy.MergeUserInputArrays(exchUserInput, userInputs, false)
+
+	return SaveNodeUserInput(pDevice, db, new_ui, getDevice, patchDevice)
+}
+
+// This fuction saves the given user input into exchange, and local db
+func SaveNodeUserInput(pDevice *persistence.ExchangeDevice, db *bolt.DB,
+	userInputs []policy.UserInput,
+	getDevice exchange.DeviceHandler,
+	patchDevice exchange.PatchDeviceHandler) error {
+
+	nodeUserInputUpdateLock.Lock()
+	defer nodeUserInputUpdateLock.Unlock()
+
+	if userInputs == nil {
+		userInputs = []policy.UserInput{}
+	}
+
+	pdr := exchange.PatchDeviceRequest{}
+	pdr.UserInput = &userInputs
+
+	glog.V(3).Infof("Updating exchange with new user input: %v.", pdr)
+	if err := patchDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token, &pdr); err != nil {
+		return err
+	}
+
+	glog.V(3).Infof("Updating local db with new user input.")
+	// save exchange node user input to local db
+	if err := persistence.SaveNodeUserInput(db, userInputs); err != nil {
+		return fmt.Errorf("Failed save user input %v to local db. %v", userInputs, err)
+	}
+
+	// get the node user input from the exchange do that we can get an accurate hash
+	newExchDevice, err := getDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token)
+	if err != nil {
+		return fmt.Errorf("Failed to get the device %v/%v from the exchange. %v", pDevice.Org, pDevice.Id, err)
+	}
+
+	// save the hash for later comparison
+	if hash, err := HashUserInput(newExchDevice.UserInput); err != nil {
+		return fmt.Errorf("Failed to hash the user input. %v", err)
+	} else if err := persistence.SaveNodeUserInputHash_Exch(db, hash); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -301,6 +301,7 @@ func (p PutDeviceRequest) ShortString() string {
 type PatchDeviceRequest struct {
 	UserInput          *[]policy.UserInput `json:"userInput,omitempty"`
 	Pattern            string              `json:"pattern,omitempty"`
+	Arch               string              `json:"arch,omitempty"`
 	RegisteredServices *[]Microservice     `json:"registeredServices,omitempty"`
 }
 

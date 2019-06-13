@@ -31,11 +31,11 @@ func NewResourceManager(cfg *config.HorizonConfig, org string, pattern string, i
 		pattern = "openhorizon/openhorizon.edgenode"
 	}
 	return &ResourceManager{
-		config: cfg,
+		config:  cfg,
 		pattern: pattern,
-		id: id,
-		org: org,
-		token: token,
+		id:      id,
+		org:     org,
+		token:   token,
 	}
 }
 

@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/version"
 	"github.com/open-horizon/anax/worker"
 )
@@ -60,6 +61,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		orgHandler := exchange.GetHTTPExchangeOrgHandlerWithContext(a.Config)
 		patternHandler := exchange.GetHTTPExchangePatternHandlerWithContext(a.Config)
 		versionHandler := exchange.GetHTTPExchangeVersionHandler(a.Config)
+		patchDeviceHandler := exchange.GetHTTPPatchDeviceHandler2(a.Config)
 
 		create_device_error_handler := func(err error) bool {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in node configuration/registration for node %v. %v", newDevice.Id, err), persistence.EC_ERROR_NODE_CONFIG_REG, &newDevice)
@@ -67,7 +69,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Validate and create the new device registration.
-		errHandled, device, exDev := CreateHorizonDevice(&newDevice, create_device_error_handler, orgHandler, patternHandler, versionHandler, a.em, a.db)
+		errHandled, device, exDev := CreateHorizonDevice(&newDevice, create_device_error_handler, orgHandler, patternHandler, versionHandler, patchDeviceHandler, a.em, a.db)
 		if errHandled {
 			return
 		}
@@ -355,6 +357,141 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 
 		// Validate the DELETE request and delete the object from the database.
 		errHandled, msgs := DeleteNodePolicy(delete_node_policy_error_handler, a.db, nodeGetPolicyHandler, nodeDeletePolicyHandler)
+		if errHandled {
+			return
+		}
+
+		// Send out all messages
+		for _, msg := range msgs {
+			a.Messages() <- msg
+		}
+
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handled %v on resource %v", r.Method, resource)))
+
+		w.WriteHeader(http.StatusNoContent)
+
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, HEAD, PUT, POST, PATCH, DELETE, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *API) nodeuserinput(w http.ResponseWriter, r *http.Request) {
+
+	resource := "node/userinput"
+
+	errorHandler := GetHTTPErrorHandler(w)
+
+	switch r.Method {
+	case "GET":
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		if out, err := FindNodeUserInputForOutput(a.db); err != nil {
+			errorHandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
+		} else {
+			writeResponse(w, out, http.StatusOK)
+		}
+
+	case "HEAD":
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		if out, err := FindNodeUserInputForOutput(a.db); err != nil {
+			errorHandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
+		} else if serial, errWritten := serializeResponse(w, out); !errWritten {
+			w.Header().Add("Content-Length", strconv.Itoa(len(serial)))
+			w.WriteHeader(http.StatusOK)
+		}
+
+	case "PUT", "POST":
+		// Because there is one node user input object, POST and PUT are interchangeable. Either can be used to create the object and either
+		// can be used to update the existing object.
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		// Read in the HTTP body and pass the device registration off to be validated and created.
+		var nodeUserInput []policy.UserInput
+		body, _ := ioutil.ReadAll(r.Body)
+		if err := json.Unmarshal(body, &nodeUserInput); err != nil {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error parsing input for node user input. Input body could not be deserialized as a UserInput object: %v, error: %v", string(body), err),
+				persistence.EC_API_USER_INPUT_ERROR, nil)
+			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), err), "body"))
+			return
+		}
+
+		update_node_userinput_error_handler := func(device interface{}, err error) bool {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in updating node user input. %v", err), persistence.EC_ERROR_NODE_USERINPUT_UPDATE, device)
+			return errorHandler(err)
+		}
+		getDevice := exchange.GetHTTPDeviceHandler(a)
+		patchDevice := exchange.GetHTTPPatchDeviceHandler(a)
+
+		// Validate and create or update the node policy.
+		errHandled, cfg, msgs := UpdateNodeUserInput(nodeUserInput, update_node_userinput_error_handler, getDevice, patchDevice, a.db)
+		if errHandled {
+			return
+		}
+
+		// Send out all messages
+		for _, msg := range msgs {
+			a.Messages() <- msg
+		}
+
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handled %v on resource %v", r.Method, resource)))
+
+		writeResponse(w, cfg, http.StatusCreated)
+
+	case "PATCH":
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		//Read in the HTTP message body and pass the user input update to be updated in the local db and the exchange
+		var nodeUserInput []policy.UserInput
+		body, _ := ioutil.ReadAll(r.Body)
+		if err := json.Unmarshal(body, &nodeUserInput); err != nil {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Error parsing input for node user input. Input body could not be deserialized as a UserInput object: %v, error: %v", string(body), err),
+				persistence.EC_API_USER_INPUT_ERROR, nil)
+			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), err), "body"))
+			return
+		}
+
+		patch_node_userinput_error_handler := func(device interface{}, err error) bool {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in patching node user input. %v", err), persistence.EC_ERROR_NODE_USERINPUT_PATCH, device)
+			return errorHandler(err)
+		}
+
+		getDevice := exchange.GetHTTPDeviceHandler(a)
+		patchDevice := exchange.GetHTTPPatchDeviceHandler(a)
+
+		//Validate the patch and update the policy
+		errHandled, cfg, msgs := PatchNodeUserInput(nodeUserInput, patch_node_userinput_error_handler, getDevice, patchDevice, a.db)
+
+		if errHandled {
+			return
+		}
+
+		// Send out all messages
+		for _, msg := range msgs {
+			a.Messages() <- msg
+		}
+
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handled %v on resource %v", r.Method, resource)))
+
+		writeResponse(w, cfg, http.StatusCreated)
+
+	case "DELETE":
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
+
+		delete_node_userinput_error_handler := func(device interface{}, err error) bool {
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in deleting node userinput. %v", err), persistence.EC_ERROR_NODE_USERINPUT_UPDATE, device)
+			return errorHandler(err)
+		}
+		getDevice := exchange.GetHTTPDeviceHandler(a)
+		patchDevice := exchange.GetHTTPPatchDeviceHandler(a)
+
+		// Validate the DELETE request and delete the object from the database.
+		errHandled, msgs := DeleteNodeUserInput(delete_node_userinput_error_handler, a.db, getDevice, patchDevice)
 		if errHandled {
 			return
 		}

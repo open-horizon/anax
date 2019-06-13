@@ -1405,7 +1405,6 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			serviceDef = sDef
 			sDef.PopulateDefaultUserInput(envAdds)
 		}
-		glog.Infof("envAdds 5 =%v", envAdds)
 
 		cutil.SetPlatformEnvvars(envAdds,
 			config.ENVVAR_PREFIX,
@@ -1418,8 +1417,6 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			w.BaseWorker.Manager.Config.GetFileSyncServiceProtocol(),
 			w.BaseWorker.Manager.Config.GetFileSyncServiceAPIListen(),
 			strconv.Itoa(int(w.BaseWorker.Manager.Config.GetFileSyncServiceAPIPort())))
-
-		glog.Infof("envAdds 6 =%v", envAdds)
 
 		lc.EnvironmentAdditions = &envAdds
 		lc.AgreementProtocol = protocol
@@ -1613,7 +1610,6 @@ func (w *GovernanceWorker) GetServicePreference(url string, org string, tcPolicy
 	if err != nil {
 		return nil, fmt.Errorf("Failed to convert attrributes to env map for service %v/%v. Err: %v", org, url, err)
 	}
-	glog.Infof("envAdds 1 =%v", envAdds)
 
 	// add node user input
 	userInput, err := persistence.FindNodeUserInput(w.db)
@@ -1624,7 +1620,6 @@ func (w *GovernanceWorker) GetServicePreference(url string, org string, tcPolicy
 	if err != nil {
 		return nil, fmt.Errorf("Error getting environmental variable settings from node user input for %v/%v: %v", org, url, err)
 	}
-	glog.Infof("envAdds 2 =%v", envAdds)
 
 	// Add settings from business policy or pattern that comes with the proposal.
 	if tcPolicy != nil {
@@ -1633,7 +1628,6 @@ func (w *GovernanceWorker) GetServicePreference(url string, org string, tcPolicy
 			return nil, fmt.Errorf("Error getting environmental variable settings from policy for %v/%v: %v", org, url, err)
 		}
 	}
-	glog.Infof("envAdds 3 =%v", envAdds)
 
 	return envAdds, nil
 }

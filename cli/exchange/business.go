@@ -168,7 +168,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
 		fmt.Println("Policy " + org + "/" + policyName + " updated in the Horizon Exchange")
 	} else if _, ok := findPatchType["userInputs"]; ok {
-		patch := make(map[string]policy.UserInput)
+		patch := make(map[string][]policy.UserInput)
 		err := json.Unmarshal([]byte(attribute), &patch)
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal attribute input %s: %v", attribute, err)

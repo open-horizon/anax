@@ -212,6 +212,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 				// retry case or agreementless case
 				agIds = ms_instance.AssociatedAgreements
 			}
+
 			lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey(), agIds, ms_specs, persistence.NewServiceInstancePathElement(msdef.SpecRef, msdef.Org, msdef.Version), isRetry)
 			w.Messages() <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
 
@@ -225,6 +226,8 @@ func (w *GovernanceWorker) GetEnvVarsForServiceDepolyment(msdef *persistence.Mic
 
 	var envAdds map[string]string
 
+	var tcPolicy *policy.Policy
+
 	if agreementId != "" {
 		// this the first time this dependent service is brought up
 		ags, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agreementId)})
@@ -234,38 +237,45 @@ func (w *GovernanceWorker) GetEnvVarsForServiceDepolyment(msdef *persistence.Mic
 			return nil, fmt.Errorf(logString(fmt.Sprintf("unable to find agreement %v from database.", agreementId)))
 		}
 
-		tcPolicy, err := policy.DemarshalPolicy(ags[0].Proposal)
+		tcPolicy, err = policy.DemarshalPolicy(ags[0].Proposal)
 		if err != nil {
 			return nil, fmt.Errorf(logString(fmt.Sprintf("Error demarshalling proposal from agreement %v, %v", agreementId, err)))
 		}
+	} else {
+		tcPolicy = nil
+	}
 
-		envAdds, err := w.GetServicePreference(msdef.SpecRef, msdef.Org, tcPolicy)
-		if err != nil {
-			return nil, fmt.Errorf(logString(fmt.Sprintf("Error getting environment variables from node settings for %v %v: %v", msdef.SpecRef, msdef.Org, err)))
-		}
+	envAdds, err := w.GetServicePreference(msdef.SpecRef, msdef.Org, tcPolicy)
+	if err != nil {
+		return nil, fmt.Errorf(logString(fmt.Sprintf("Error getting environment variables from node settings for %v %v: %v", msdef.SpecRef, msdef.Org, err)))
+	}
 
-		envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = exchange.GetId(w.GetExchangeId())
-		envAdds[config.ENVVAR_PREFIX+"ORGANIZATION"] = exchange.GetOrg(w.GetExchangeId())
-		envAdds[config.ENVVAR_PREFIX+"PATTERN"] = w.devicePattern
-		envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = w.Config.Edge.ExchangeURL
-
-		// Add in any default variables from the microservice userInputs that havent been overridden
-		for _, ui := range msdef.UserInputs {
-			if ui.DefaultValue != "" {
-				if _, ok := envAdds[ui.Name]; !ok {
-					envAdds[ui.Name] = ui.DefaultValue
-				}
+	// for the retry case, get the variables from the old tcPolicy back
+	if msInst != nil && msInst.EnvVars != nil && len(msInst.EnvVars) != 0 {
+		for k, v := range msInst.EnvVars {
+			if _, ok := envAdds[k]; !ok {
+				envAdds[k] = v
 			}
 		}
+	}
 
-		// save the envvars for retry case
-		if _, err := persistence.UpdateMSInstanceEnvVars(w.db, msInst.GetKey(), envAdds); err != nil {
-			return nil, fmt.Errorf(logString(fmt.Sprintf("Error saving environmental variable settings to ms instance %v: %v", msInst.GetKey(), err)))
+	envAdds[config.ENVVAR_PREFIX+"DEVICE_ID"] = exchange.GetId(w.GetExchangeId())
+	envAdds[config.ENVVAR_PREFIX+"ORGANIZATION"] = exchange.GetOrg(w.GetExchangeId())
+	envAdds[config.ENVVAR_PREFIX+"PATTERN"] = w.devicePattern
+	envAdds[config.ENVVAR_PREFIX+"EXCHANGE_URL"] = w.Config.Edge.ExchangeURL
+
+	// Add in any default variables from the microservice userInputs that havent been overridden
+	for _, ui := range msdef.UserInputs {
+		if ui.DefaultValue != "" {
+			if _, ok := envAdds[ui.Name]; !ok {
+				envAdds[ui.Name] = ui.DefaultValue
+			}
 		}
+	}
 
-	} else {
-		// this is the retry case, use the user input is saved in the microservice instance from last run
-		envAdds = msInst.EnvVars
+	// save the envvars for retry case
+	if _, err := persistence.UpdateMSInstanceEnvVars(w.db, msInst.GetKey(), envAdds); err != nil {
+		return nil, fmt.Errorf(logString(fmt.Sprintf("Error saving environmental variable settings to ms instance %v: %v", msInst.GetKey(), err)))
 	}
 
 	return envAdds, nil

@@ -72,13 +72,18 @@ const (
 	EC_RECEIVED_CANCEL_AGREEMENT_MESSAGE         = "received_cancel_agreement_message"
 	EC_ERROR_PROCESSING_CANCEL_AGREEMENT_MESSAGE = "error_processing_cancel_agreement_message"
 
-	EC_NODE_POLICY_UPDATED         = "update node policy"
-	EC_NODE_POLICY_DELETED         = "delete node policy"
+	EC_NODE_POLICY_UPDATED         = "update_node_policy"
+	EC_NODE_POLICY_DELETED         = "delete_node_policy"
 	EC_ERROR_NODE_POLICY_UPDATE    = "error_policy_update"
 	EC_ERROR_NODE_POLICY_PATCH     = "error_policy_patch"
 	EC_START_POLICY_ADVERTISING    = "start_policy_advertising"
 	EC_COMPLETE_POLICY_ADVERTISING = "complete_policy_advertising"
 	EC_ERROR_POLICY_ADVERTISING    = "error_policy_advertising"
+
+	EC_NODE_USERINPUT_UPDATED      = "update_node_userinput"
+	EC_NODE_USERINPUT_DELETED      = "delete_node_userinput"
+	EC_ERROR_NODE_USERINPUT_UPDATE = "error_userinput_update"
+	EC_ERROR_NODE_USERINPUT_PATCH  = "error_userinput_patch"
 
 	EC_AGREEMENT_REACHED                  = "agreement_reached"
 	EC_CANCEL_AGREEMENT                   = "cancel_agreement"
