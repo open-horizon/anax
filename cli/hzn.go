@@ -25,6 +25,7 @@ import (
 	"github.com/open-horizon/anax/cli/status"
 	"github.com/open-horizon/anax/cli/sync_service"
 	"github.com/open-horizon/anax/cli/unregister"
+	"github.com/open-horizon/anax/cli/userinput"
 	"github.com/open-horizon/anax/cli/utilcmds"
 	"github.com/open-horizon/anax/cutil"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -322,6 +323,15 @@ Environment Variables:
 
 	attributeCmd := app.Command("attribute", "List or manage the global attributes that are currently registered on this Horizon edge node.")
 	attributeListCmd := attributeCmd.Command("list", "List the global attributes that are currently registered on this Horizon edge node.")
+
+	userinputCmd := app.Command("userinput", "List or manage the service user inputs that are currently registered on this Horizon edge node.")
+	userinputListCmd := userinputCmd.Command("list", "List the service user inputs currently registered on this Horizon edge node.")
+	userinputAddCmd := userinputCmd.Command("add", "Add a new user input object or overwrite the current user input object for this Horizon edge node.")
+	userinputAddFilePath := userinputAddCmd.Flag("file-path", "The file path to the json file with the user input object. Specify -f- to read from stdin.").Short('f').Required().String()
+	userinputUpdateCmd := userinputCmd.Command("update", "Update an existing user input object for this Horizon edge node.")
+	userinputUpdateFilePath := userinputUpdateCmd.Flag("file-path", "The file path to the json file with the updated user input object. Specify -f- to read from stdin.").Short('f').Required().String()
+	userinputRemoveCmd := userinputCmd.Command("remove", "Remove the user inputs that are currently registered on this Horizon edge node.")
+	userinputRemoveForce := userinputRemoveCmd.Flag("force", "Skip the 'Are you sure?' prompt.").Short('f').Bool()
 
 	serviceCmd := app.Command("service", "List or manage the services that are currently registered on this Horizon edge node.")
 	serviceListCmd := serviceCmd.Command("list", "List the services variable configuration that has been done on this Horizon edge node.")
@@ -672,6 +682,14 @@ Environment Variables:
 		metering.List(*listArchivedMetering)
 	case attributeListCmd.FullCommand():
 		attribute.List()
+	case userinputListCmd.FullCommand():
+		userinput.List()
+	case userinputAddCmd.FullCommand():
+		userinput.Add(*userinputAddFilePath)
+	case userinputUpdateCmd.FullCommand():
+		userinput.Update(*userinputUpdateFilePath)
+	case userinputRemoveCmd.FullCommand():
+		userinput.Remove(*userinputRemoveForce)
 	case serviceListCmd.FullCommand():
 		service.List()
 	case serviceRegisteredCmd.FullCommand():
