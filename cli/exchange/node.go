@@ -108,6 +108,23 @@ func NodeCreate(org, nodeIdTok, node, token, userPw, email string, arch string, 
 	}
 }
 
+func NodeUpdate(org string, credToUse string, node string, filePath string) {
+	cliutils.SetWhetherUsingApiKey(credToUse)
+	org, node = cliutils.TrimOrg(org, node)
+
+	attribute := cliconfig.ReadJsonFileWithLocalConfig(filePath)
+
+	//check that the node exists
+	var nodeReq ExchangeNodes
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodeReq)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "Node %s/%s not found in the Horizon Exchange.", org, node)
+	}
+
+	cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, attribute)
+	fmt.Printf("Node %s updated in the Horizon Exchange.\n", node)
+}
+
 type NodeExchangePatchToken struct {
 	Token string `json:"token"`
 }
@@ -182,7 +199,7 @@ func NodeListPolicy(org string, credToUse string, node string) {
 	fmt.Println(output)
 }
 
-func NodeUpdatePolicy(org string, credToUse string, node string, jsonFilePath string) {
+func NodeAddPolicy(org string, credToUse string, node string, jsonFilePath string) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
 	org, node = cliutils.TrimOrg(org, node)
 
@@ -211,6 +228,58 @@ func NodeUpdatePolicy(org string, credToUse string, node string, jsonFilePath st
 	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
 
 	fmt.Println("Node policy updated.")
+}
+
+func NodeUpdatePolicy(org, credToUse, node string, jsonfile string) {
+	cliutils.SetWhetherUsingApiKey(credToUse)
+	org, node = cliutils.TrimOrg(org, node)
+
+	attribute := cliconfig.ReadJsonFileWithLocalConfig(jsonfile)
+
+	//Check if the node policy exists in the exchange
+	var newPolicy externalpolicy.ExternalPolicy
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &newPolicy)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, "Node policy not found for node %s/%s", node, org)
+	}
+
+	findAttrType := make(map[string]interface{})
+	err := json.Unmarshal([]byte(attribute), &findAttrType)
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal attribute input %s: %v", attribute, err)
+	}
+
+	if _, ok := findAttrType["properties"]; ok {
+		propertiesPatch := make(map[string]externalpolicy.PropertyList)
+		err := json.Unmarshal([]byte(attribute), &propertiesPatch)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal attribute input %s: %v", attribute, err)
+		}
+		newProp := propertiesPatch["properties"]
+		err = newProp.Validate()
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Invalid property list %s: %v", attribute, err)
+		}
+		newPolicy.Properties = newProp
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy)
+		fmt.Printf("Node %s policy properties updated in the horizon exchange.\n", node)
+	} else if _, ok = findAttrType["constraints"]; ok {
+		constraintPatch := make(map[string]externalpolicy.ConstraintExpression)
+		err := json.Unmarshal([]byte(attribute), &constraintPatch)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal attribute input %s: %v", attribute, err)
+		}
+		newConstr := constraintPatch["constraints"]
+		err = newConstr.Validate()
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Invalid constraint expression %s: %v", attribute, err)
+		}
+		newPolicy.Constraints = newConstr
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy)
+		fmt.Printf("Node %s policy constraints updated in the horizon exchange.\n", node)
+	} else {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Failed to find valid attribute to update in input %s. Attributes are constraints and properties.", attribute)
+	}
 }
 
 func NodeRemovePolicy(org, credToUse, node string, force bool) {

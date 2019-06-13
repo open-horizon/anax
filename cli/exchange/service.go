@@ -473,8 +473,8 @@ func ServiceListPolicy(org string, credToUse string, service string) {
 	fmt.Println(output)
 }
 
-//ServiceUpdatePolicy adds a policy or replaces an existing policy for the service in the Horizon Exchange
-func ServiceUpdatePolicy(org string, credToUse string, service string, jsonFilePath string) {
+//ServiceAddPolicy adds a policy or replaces an existing policy for the service in the Horizon Exchange
+func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath string) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
 	fullServiceName := service
 	org, service = cliutils.TrimOrg(org, service)

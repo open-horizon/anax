@@ -9,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
+	"github.com/open-horizon/anax/policy"
 	"net/http"
 )
 
@@ -111,70 +112,83 @@ func BusinessAddPolicy(org string, credToUse string, policy string, jsonFilePath
 }
 
 //BusinessUpdatePolicy will replace a single attribute of a business policy in the Horizon Exchange
-func BusinessUpdatePolicy(org string, credToUse string, policy string, attribute string, valueFilePath string) {
+func BusinessUpdatePolicy(org string, credToUse string, policyName string, filePath string) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
 	org, credToUse = cliutils.TrimOrg(org, credToUse)
 
+	//Read in the file
+	attribute := cliconfig.ReadJsonFileWithLocalConfig(filePath)
+
 	//verify that the policy exists
 	var exchangePolicy exchange.GetBusinessPolicyResponse
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &exchangePolicy)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &exchangePolicy)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, "Policy %s not found in org %s", policy, org)
+		cliutils.Fatal(cliutils.NOT_FOUND, "Policy %s not found in org %s", policyName, org)
 	}
 
-	//Read in patch and send to the exchange if format is correct
-	newBytes := cliconfig.ReadJsonFileWithLocalConfig(valueFilePath)
-	switch attribute {
-	case "service":
-		var newValue businesspolicy.ServiceRef
+	findPatchType := make(map[string]interface{})
+
+	json.Unmarshal([]byte(attribute), &findPatchType)
+
+	if _, ok := findPatchType["service"]; ok {
 		patch := make(map[string]businesspolicy.ServiceRef)
-		err := json.Unmarshal(newBytes, &newValue)
+		err := json.Unmarshal([]byte(attribute), &patch)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", valueFilePath, err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal attribute input %s: %v", attribute, err)
 		}
-		patch[attribute] = newValue
-		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
-		fmt.Println("Policy " + org + "/" + policy + " updated in the Horizon Exchange")
-	case "properties":
+		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
+		fmt.Println("Policy " + org + "/" + policyName + " updated in the Horizon Exchange")
+	} else if _, ok := findPatchType["properties"]; ok {
 		var newValue externalpolicy.PropertyList
 		patch := make(map[string]externalpolicy.PropertyList)
-		err := json.Unmarshal(newBytes, &newValue)
+		err := json.Unmarshal([]byte(attribute), &patch)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", valueFilePath, err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal attribute input %s: %v", attribute, err)
 		}
+		newValue = patch["properties"]
 		err = newValue.Validate()
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Invalid format for properties")
 		}
-		patch[attribute] = newValue
-		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
-		fmt.Println("Policy " + org + "/" + policy + " updated in the Horizon Exchange")
-	case "constraints":
+		patch["properties"] = newValue
+		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
+		fmt.Println("Policy " + org + "/" + policyName + " updated in the Horizon Exchange")
+	} else if _, ok := findPatchType["constraints"]; ok {
 		var newValue externalpolicy.ConstraintExpression
 		patch := make(map[string]externalpolicy.ConstraintExpression)
-		err := json.Unmarshal(newBytes, &newValue)
+		err := json.Unmarshal([]byte(attribute), &patch)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", valueFilePath, err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal attribute input %s: %v", attribute, err)
 		}
 		err = newValue.Validate()
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Invalid format for properties")
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Invalid format for constraints: %v")
 		}
-		patch[attribute] = newValue
-		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
-		fmt.Println("Policy " + org + "/" + policy + " updated in the Horizon Exchange")
-	case "label", "description":
-		var newValue string
-		patch := make(map[string]string)
-		err := json.Unmarshal(newBytes, &newValue)
+		newValue = patch["constraints"]
+		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
+		fmt.Println("Policy " + org + "/" + policyName + " updated in the Horizon Exchange")
+	} else if _, ok := findPatchType["userInputs"]; ok {
+		patch := make(map[string]policy.UserInput)
+		err := json.Unmarshal([]byte(attribute), &patch)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", valueFilePath, err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal attribute input %s: %v", attribute, err)
 		}
-		patch[attribute] = newValue
-		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
-		fmt.Println("Policy " + org + "/" + policy + " updated in the Horizon Exchange")
-	default:
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Business policy attribute not specified. Attributes are: label, description, service, properties, and constraints")
+		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
+		fmt.Println("Policy " + org + "/" + policyName + " updated in the Horizon Exchange")
+	} else {
+		_, ok := findPatchType["label"]
+		_, ok2 := findPatchType["description"]
+		if ok || ok2 {
+			patch := make(map[string]string)
+			err := json.Unmarshal([]byte(attribute), &patch)
+			if err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal attribute input %s: %v", attribute, err)
+			}
+			cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
+			fmt.Println("Policy " + org + "/" + policyName + " updated in the Horizon Exchange")
+		} else {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Business policy attribute not specified. Attributes are: label, description, service, properties, constraints, and userProperties.")
+		}
 	}
 }
 
