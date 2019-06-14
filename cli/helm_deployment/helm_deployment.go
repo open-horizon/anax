@@ -32,6 +32,10 @@ func (p *HelmDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFilePat
 	// Grab the archive file from the deployment config. The archive file might be relative to the
 	// service definition file.
 	filePath := dep["chart_archive"].(string)
+	if filePath = filepath.Clean(filePath); filePath == "." {
+		return true, "", "", errors.New(fmt.Sprintf("cleaned %v resulted in an empty string.", dep["chart_archive"].(string)))
+	}
+
 	if currentDir, ok := (ctx.Get("currentDir")).(string); !ok {
 		return true, "", "", errors.New(fmt.Sprintf("plugin context must include 'currentDir' as the current directory of the service definition file"))
 	} else if !filepath.IsAbs(filePath) {
