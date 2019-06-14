@@ -487,8 +487,8 @@ func ServiceListPolicy(org string, credToUse string, service string) {
 //ServiceAddPolicy adds a policy or replaces an existing policy for the service in the Horizon Exchange
 func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath string) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
-	fullServiceName := service
 	org, service = cliutils.TrimOrg(org, service)
+	fullServiceName := fmt.Sprintf(org + "/" + service)
 
 	// Read in the policy metadata
 	newBytes := cliconfig.ReadJsonFileWithLocalConfig(jsonFilePath)
@@ -518,7 +518,7 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 
 	// Set default built in properties before publishing to the exchange
 	fmt.Println("Adding built-in property values...")
-	fmt.Println("The following property value will be override: service.url, service.name, service.org, service.version, service.arch")
+	fmt.Println("The following property value will be overriden: service.url, service.name, service.org, service.version, service.arch")
 
 	properties := policyFile.Properties
 	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_URL, serviceName), true)
