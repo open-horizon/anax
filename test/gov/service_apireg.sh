@@ -459,9 +459,9 @@ cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
   "version":"$VERS",
   "arch":"amd64",
   "requiredServices":[
-    {"url":"https://bluehorizon.network/services/network","version":"1.0.0","arch":"amd64","org":"IBM"},
-    {"url":"https://bluehorizon.network/services/network2","version":"1.0.0","arch":"amd64","org":"IBM"},
-    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"IBM"}
+    {"url":"https://bluehorizon.network/services/network","versionRange":"1.0.0","arch":"amd64","org":"IBM"},
+    {"url":"https://bluehorizon.network/services/network2","versionRange":"1.0.0","arch":"amd64","org":"IBM"},
+    {"url":"https://bluehorizon.network/service-cpu","versionRange":"1.0.0","arch":"amd64","org":"IBM"}
   ],
   "userInput":[
     {
@@ -526,10 +526,10 @@ cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
   "version":"$VERS",
   "arch":"amd64",
   "requiredServices":[
-    {"url":"https://bluehorizon.network/services/network","version":"1.0.0","arch":"amd64","org":"e2edev@somecomp.com"},
+    {"url":"https://bluehorizon.network/services/network","versionRange":"1.0.0","arch":"amd64","org":"e2edev@somecomp.com"},
     {"url":"https://bluehorizon.network/services/network2","version":"1.0.0","arch":"amd64","org":"e2edev@somecomp.com"},
     {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"e2edev@somecomp.com"},
-    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"IBM"}
+    {"url":"https://bluehorizon.network/service-cpu","versionRange":"1.0.0","arch":"amd64","org":"IBM"}
   ],
   "userInput":[
     {
@@ -636,8 +636,8 @@ cat <<EOF >$KEY_TEST_DIR/svc_location.json
   "version":"$VERS",
   "arch":"amd64",
   "requiredServices":[
-    {"url":"https://bluehorizon.network/services/locgps","version":"2.0.3","arch":"amd64","org":"e2edev@somecomp.com"},
-    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"IBM"}
+    {"url":"https://bluehorizon.network/services/locgps","versionRange":"2.0.3","arch":"amd64","org":"e2edev@somecomp.com"},
+    {"url":"https://bluehorizon.network/service-cpu","versionRange":"1.0.0","arch":"amd64","org":"IBM"}
   ],
   "userInput":[],
   "deployment": {

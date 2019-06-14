@@ -25,6 +25,9 @@ func GetServiceDefinition(directory string, name string) (*cliexchange.ServiceFi
 	if err := GetFile(directory, name, res); err != nil {
 		return nil, err
 	}
+	// Compensate for old projects
+	res.SupportVersionRange()
+
 	return res, nil
 
 }
@@ -137,10 +140,10 @@ func RefreshServiceDependencies(homeDirectory string, newDepDef cliexchange.Abst
 	// If the dependency is already present, no need to add it.
 	if !found {
 		newSD := exchange.ServiceDependency{
-			URL:     newDepDef.GetURL(),
-			Org:     newDepDef.GetOrg(),
-			Version: newDepDef.GetVersion(),
-			Arch:    newDepDef.GetArch(),
+			URL:          newDepDef.GetURL(),
+			Org:          newDepDef.GetOrg(),
+			VersionRange: newDepDef.GetVersion(),
+			Arch:         newDepDef.GetArch(),
 		}
 		serviceDef.RequiredServices = append(serviceDef.RequiredServices, newSD)
 

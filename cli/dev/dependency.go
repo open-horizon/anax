@@ -264,7 +264,7 @@ func ValidateDependencies(directory string, userInputs *register.InputFile, user
 			for _, fileInfo := range deps {
 				if dDef, err := GetServiceDefinition(path.Join(directory, DEFAULT_DEPENDENCY_DIR), fileInfo.Name()); err != nil {
 					return errors.New(fmt.Sprintf("dependency validation failed, unable to read %v, error: %v", fileInfo.Name(), err))
-				} else if vRange, err := semanticversion.Version_Expression_Factory(rs.Version); err != nil {
+				} else if vRange, err := semanticversion.Version_Expression_Factory(rs.VersionRange); err != nil {
 					return errors.New(fmt.Sprintf("dependency validation failed, dependency %v has an invalid version %v, error: %v", fileInfo.Name(), rs.Version, err))
 				} else if inRange, err := vRange.Is_within_range(dDef.Version); err != nil {
 					return errors.New(fmt.Sprintf("dependency validation failed, unable to verify version range %v is within required range %v, error: %v", dDef.Version, vRange.Get_expression(), err))
@@ -275,10 +275,10 @@ func ValidateDependencies(directory string, userInputs *register.InputFile, user
 			}
 			if !found {
 				if autoAddDep {
-					DependencyFetch(directory, "", "", rs.URL, rs.Org, rs.Version, rs.Arch, userCreds, userInputsFilePath)
+					DependencyFetch(directory, "", "", rs.URL, rs.Org, rs.VersionRange, rs.Arch, userCreds, userInputsFilePath)
 					hasNewDepFile = true
 				} else {
-					return errors.New(fmt.Sprintf("dependency %v at version %v does not exist in %v.", rs.URL, rs.Version, path.Join(directory, DEFAULT_DEPENDENCY_DIR)))
+					return errors.New(fmt.Sprintf("dependency %v at version %v does not exist in %v.", rs.URL, rs.VersionRange, path.Join(directory, DEFAULT_DEPENDENCY_DIR)))
 				}
 			}
 		}
@@ -837,7 +837,7 @@ func getDependencyInfo(dir string) ([]*ServiceDependency, error) {
 	}
 
 	for _, s := range svc.RequiredServices {
-		sp := NewServiceSpec(s.URL, s.Org, s.Version, s.Arch)
+		sp := NewServiceSpec(s.URL, s.Org, s.VersionRange, s.Arch)
 		if err := getDependencyDependencyInfo(dir, sp, sp, depFiles, &deps); err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to get dependency info for %v , error %v", sp, err)
 		}
@@ -879,7 +879,7 @@ func getDependencyDependencyInfo(dir string, spTop *ServiceSpec, sp *ServiceSpec
 
 			// get dependent's dependencies
 			for _, s := range dep.RequiredServices {
-				sp_dep_temp := NewServiceSpec(s.URL, s.Org, s.Version, s.Arch)
+				sp_dep_temp := NewServiceSpec(s.URL, s.Org, s.VersionRange, s.Arch)
 				if err := getDependencyDependencyInfo(dir, spTop, sp_dep_temp, depFiles, deps); err != nil {
 					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to get dependency info for %v , error %v", sp_dep_temp, err)
 				}

@@ -82,7 +82,7 @@ func TestServiceString2(t *testing.T) {
 	str := s.String()
 	t.Log(str)
 
-	expected := `Owner: testOwner, Label: service def, Description: a test, Public: false, URL: http://test.company.com/service1, Version: 1.0.0, Arch: amd64, Sharable: singleton, MatchHardware: {dev:/dev/dev1}, RequiredServices: [{URL: http://my.com/ms/ms1, Org: otherOrg, Version: 1.5.0, Arch: amd64} {URL: http://my.com/ms/ms2, Org: otherOrg, Version: 2.7, Arch: amd64}], UserInputs: [{Name: name, :Label: a ui, Type: string, DefaultValue: } {Name: name2, :Label: another ui, Type: string, DefaultValue: three}], Deployment: {"services":{}}, DeploymentSignature: xyzpdq=, LastUpdated: today`
+	expected := `Owner: testOwner, Label: service def, Description: a test, Public: false, URL: http://test.company.com/service1, Version: 1.0.0, Arch: amd64, Sharable: singleton, MatchHardware: {dev:/dev/dev1}, RequiredServices: [{URL: http://my.com/ms/ms1, Org: otherOrg, Version: 1.5.0, VersionRange: , Arch: amd64} {URL: http://my.com/ms/ms2, Org: otherOrg, Version: 2.7, VersionRange: , Arch: amd64}], UserInputs: [{Name: name, :Label: a ui, Type: string, DefaultValue: } {Name: name2, :Label: another ui, Type: string, DefaultValue: three}], Deployment: {"services":{}}, DeploymentSignature: xyzpdq=, LastUpdated: today`
 	if str != expected {
 		t.Errorf("String() output expected: %v", expected)
 	}
@@ -137,7 +137,7 @@ func TestServiceString3(t *testing.T) {
 	str := s.ShortString()
 	t.Log(str)
 
-	expected := `URL: http://test.company.com/service1, Version: 1.0.0, Arch: amd64, RequiredServices: [{URL: http://my.com/ms/ms1, Org: otherOrg, Version: 1.5.0, Arch: amd64} {URL: http://my.com/ms/ms2, Org: otherOrg, Version: 2.7, Arch: amd64}]`
+	expected := `URL: http://test.company.com/service1, Version: 1.0.0, Arch: amd64, RequiredServices: [{URL: http://my.com/ms/ms1, Org: otherOrg, Version: 1.5.0, VersionRange: , Arch: amd64} {URL: http://my.com/ms/ms2, Org: otherOrg, Version: 2.7, VersionRange: , Arch: amd64}]`
 	if str != expected {
 		t.Errorf("ShortString() output expected: %v", expected)
 	}
@@ -995,5 +995,53 @@ func Test_ServiceSuspended(t *testing.T) {
 	found, suspended = ServiceSuspended([]Microservice{m1, m2, m3}, "http://servicename2", "myorg1")
 	if found || suspended {
 		t.Errorf("ServiceSuspended should have returned (true, true) but got (%v, %v)", found, suspended)
+	}
+}
+
+func Test_Support_versionrange_0(t *testing.T) {
+
+	sd1 := ServiceDependency{
+		URL:          "other",
+		Org:          "test",
+		Version:      "",
+		VersionRange: "1.0.0",
+		Arch:         "amd64",
+	}
+
+	sd2 := ServiceDependency{
+		URL:          "other",
+		Org:          "test",
+		Version:      "1.0.0",
+		VersionRange: "",
+		Arch:         "amd64",
+	}
+
+	s1 := ServiceDefinition{
+		Owner:               "testOwner",
+		Label:               "service def",
+		Description:         "a test",
+		Public:              false,
+		URL:                 "test name",
+		Version:             "1.0.0",
+		Arch:                "amd64",
+		Sharable:            MS_SHARING_MODE_EXCLUSIVE,
+		MatchHardware:       HardwareRequirement{},
+		RequiredServices:    []ServiceDependency{sd1, sd2},
+		UserInputs:          []UserInput{},
+		Deployment:          `{"services":{}}`,
+		DeploymentSignature: "xyzpdq=",
+		LastUpdated:         "today",
+	}
+
+	gsr := new(GetServicesResponse)
+	gsr.Services = map[string]ServiceDefinition{
+		"s1": s1,
+	}
+
+	gsr.SupportVersionRange()
+	if gsr.Services["s1"].RequiredServices[0].Version != sd1.VersionRange {
+		t.Errorf("Error, version range was not copied into version field: %v, should be %v", gsr.Services["s1"].RequiredServices[0].Version, sd1.VersionRange)
+	} else if gsr.Services["s1"].RequiredServices[1].Version != sd2.Version {
+		t.Errorf("Error, version range was copied into version field: %v, should be %v", gsr.Services["s1"].RequiredServices[1].Version, sd2.Version)
 	}
 }
