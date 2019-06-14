@@ -196,12 +196,18 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 	} else {
 		// If there is no data to upload, set the metaonly flag to indicate that we are only updating the object's metadata. This ensures
 		// that the MSS (CSS) correctly interpets the PUT.
-		objectMeta.MetaOnly = true
+		wrapper.Meta.MetaOnly = true
 	}
 
 	// Call the MMS service over HTTP to add the metadata and the object (if provided).
 	urlPath := path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID)
 	cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204}, wrapper)
+
+	// Grab the object status and display it.
+	urlPath = path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID, "status")
+	var resp []byte
+	cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200}, &resp)
+	cliutils.Verbose("Object status: %v", string(resp))
 
 	fmt.Println("Object " + objString + " added to org " + org + " in the Model Management Service")
 

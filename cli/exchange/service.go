@@ -166,6 +166,14 @@ func (sf *ServiceFile) RequiredVariablesAreSet(setVars map[string]interface{}) e
 	return nil
 }
 
+func (sf *ServiceFile) SupportVersionRange() {
+	for ix, sdep := range sf.RequiredServices {
+		if sdep.VersionRange == "" {
+			sf.RequiredServices[ix].VersionRange = sf.RequiredServices[ix].Version
+		}
+	}
+}
+
 // List the the service resources for the given org.
 // The userPw can be the userId:password auth or the nodeId:token auth.
 func ServiceList(credOrg, userPw, service string, namesOnly bool) {
@@ -222,6 +230,9 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 	if svcFile.Org != "" && svcFile.Org != org {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", svcFile.Org, org)
 	}
+
+	// Compensate for old service definition files
+	svcFile.SupportVersionRange()
 
 	svcFile.SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, dontTouchImage, pullImage, registryTokens, !overwrite)
 }

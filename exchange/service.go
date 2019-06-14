@@ -33,14 +33,15 @@ func (h HardwareRequirement) String() string {
 
 // This type is a tuple used to refer to a specific service that is a dependency for the referencing service.
 type ServiceDependency struct {
-	URL     string `json:"url"`
-	Org     string `json:"org"`
-	Version string `json:"version"`
-	Arch    string `json:"arch"`
+	URL          string `json:"url"`
+	Org          string `json:"org"`
+	Version      string `json:"version,omitempty"`
+	VersionRange string `json:"versionRange"`
+	Arch         string `json:"arch"`
 }
 
 func (sd ServiceDependency) String() string {
-	return fmt.Sprintf("{URL: %v, Org: %v, Version: %v, Arch: %v}", sd.URL, sd.Org, sd.Version, sd.Arch)
+	return fmt.Sprintf("{URL: %v, Org: %v, Version: %v, VersionRange: %v, Arch: %v}", sd.URL, sd.Org, sd.Version, sd.VersionRange, sd.Arch)
 }
 
 // This type is used to describe a configuration variable that the node owner/user has to set before the
@@ -173,6 +174,21 @@ func (w *GetServicesResponse) ShortString() string {
 		w.LastIndex, wl_a)
 }
 
+// The version field of all service dependencies is being changed to versionRange for all external
+// interactions. Internally, since we still have to support old service defs, we will copy the
+// new field into the old field for backward compatibility. This function make an in place
+// modification of itself.
+func (w *GetServicesResponse) SupportVersionRange() {
+	for id, sdef := range w.Services {
+		for ix, sdep := range sdef.RequiredServices {
+			if sdep.Version == "" {
+				w.Services[id].RequiredServices[ix].Version = w.Services[id].RequiredServices[ix].VersionRange
+			}
+		}
+	}
+	return
+}
+
 type ImageDockerAuth struct {
 	DockAuthId  int    `json:"dockAuthId"`
 	Registry    string `json:"registry"`
@@ -213,7 +229,7 @@ func NewServiceConfigState(url, org, state string) *ServiceConfigState {
 }
 
 // check if the 2 given config states are the same.
-func SameCongigState(state1 string, state2 string) bool {
+func SameConfigState(state1 string, state2 string) bool {
 	if state1 == state2 {
 		return true
 	}
@@ -285,7 +301,10 @@ func GetService(ec ExchangeContext, mURL string, mOrg string, mVersion string, m
 func processGetServiceResponse(mURL string, mOrg string, mVersion string, mArch string, searchVersion string, resp interface{}) (*ServiceDefinition, string, error) {
 
 	glog.V(5).Infof(rpclogString(fmt.Sprintf("found service %v.", resp.(*GetServicesResponse).ShortString())))
-	msMetadata := resp.(*GetServicesResponse).Services
+
+	services := resp.(*GetServicesResponse)
+	services.SupportVersionRange()
+	msMetadata := services.Services
 
 	// If the caller wanted a specific version, check for 1 result.
 	if searchVersion != "" {
