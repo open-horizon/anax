@@ -372,21 +372,11 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 
 // Unregisters the given microservice from the exchange
 func UnregisterMicroserviceExchange(getExchangeDevice exchange.DeviceHandler,
-	putExchangeDevice exchange.PutDeviceHandler,
+	patchExchangeDevice exchange.PatchDeviceHandler,
 	spec_ref string, org string,
 	device_id string, device_token string, db *bolt.DB) error {
 
 	glog.V(3).Infof("Unregister service %v/%v from exchange for %v.", org, spec_ref, device_id)
-
-	var deviceName string
-
-	if dev, err := persistence.FindExchangeDevice(db); err != nil {
-		return fmt.Errorf("Received error getting device name: %v", err)
-	} else if dev == nil {
-		return fmt.Errorf("Could not get device name because no device was registered yet.")
-	} else {
-		deviceName = dev.Name
-	}
 
 	if eDevice, err := getExchangeDevice(device_id, device_token); err != nil {
 		return fmt.Errorf("Error getting device %v from the exchange. %v", device_id, err)
@@ -403,16 +393,15 @@ func UnregisterMicroserviceExchange(getExchangeDevice exchange.DeviceHandler,
 			}
 		}
 
-		// create PUT body
-		pdr := exchange.CreateDevicePut(device_token, deviceName)
-		pdr.RegisteredServices = ms_put
+		// modify the registeredServices for node
+		pdr := exchange.PatchDeviceRequest{}
+		pdr.RegisteredServices = &ms_put
 
 		glog.V(3).Infof("Unregistering service: %v/%v", org, spec_ref)
-
-		if resp, err := putExchangeDevice(device_id, device_token, pdr); err != nil {
+		if err := patchExchangeDevice(device_id, device_token, &pdr); err != nil {
 			return fmt.Errorf("Received error unregistering service %v/%v from the exchange: %v", org, spec_ref, err)
 		} else {
-			glog.V(3).Infof("Unregistered service %v/%v in exchange: %v", org, spec_ref, resp)
+			glog.V(3).Infof("Unregistered service %v/%v in exchange", org, spec_ref)
 		}
 	}
 	return nil

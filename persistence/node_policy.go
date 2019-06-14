@@ -8,7 +8,7 @@ import (
 )
 
 // Constants used throughout the code.
-const NODE_POLICY = "nodepolicy"                                   // The bucket name inthe bolt DB.
+const NODE_POLICY = "nodepolicy"                                   // The bucket name in the bolt DB.
 const EXCHANGE_NP_LAST_UPDATED = "exchange_nodepolicy_lastupdated" // The buucket for the exchange last updated string
 
 // Retrieve the node policy object from the database. The bolt APIs assume there is more than 1 object in a bucket,
@@ -89,7 +89,7 @@ func DeleteNodePolicy(db *bolt.DB) error {
 }
 
 // Retrieve the exchange node policy lastUpdated string from the database.
-func GetNodePolicyLatUpdated_Exch(db *bolt.DB) (string, error) {
+func GetNodePolicyLastUpdated_Exch(db *bolt.DB) (string, error) {
 
 	lastUpdated := ""
 
@@ -112,7 +112,7 @@ func GetNodePolicyLatUpdated_Exch(db *bolt.DB) (string, error) {
 }
 
 // save the exchange node policy lastUpdated string.
-func SaveNodePolicyLatUpdated_Exch(db *bolt.DB, lastUpdated string) error {
+func SaveNodePolicyLastUpdated_Exch(db *bolt.DB, lastUpdated string) error {
 
 	writeErr := db.Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte(EXCHANGE_NP_LAST_UPDATED))
@@ -130,7 +130,7 @@ func SaveNodePolicyLatUpdated_Exch(db *bolt.DB, lastUpdated string) error {
 // Remove the exchange node policy lastUpdated string from the local database.
 func DeleteNodePolicyLastUpdated_Exch(db *bolt.DB) error {
 
-	if lastUpdated, err := GetNodePolicyLatUpdated_Exch(db); err != nil {
+	if lastUpdated, err := GetNodePolicyLastUpdated_Exch(db); err != nil {
 		return err
 	} else if lastUpdated == "" {
 		return nil

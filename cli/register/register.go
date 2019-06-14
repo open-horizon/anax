@@ -220,46 +220,24 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		fmt.Println("Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).")
 	}
 
-
 	// Set the pattern and register the node
-        fmt.Println("Changing Horizon state to configured to register this node with Horizon...")
-        configuredStr := "configured"
-        configState := api.Configstate{State: &configuredStr}
-        httpCode, respBody := cliutils.HorizonPutPost(http.MethodPut, "node/configstate", []int{201, 200, 400}, configState)
-        if httpCode == 400 {
-                if matches := parseRegisterInputError(respBody); matches != nil && len(matches) > 2 {
-                        err_string := fmt.Sprintf("Registration failed because %v", matches[0])
-                        if inputFile != "" {
-                                cliutils.Fatal(cliutils.CLI_INPUT_ERROR, err_string+" Please define variables for service %v in the input file %v. Run 'hzn unregister' and then 'hzn register...' again", matches[2], inputFile)
-                        } else {
-                                cliutils.Fatal(cliutils.CLI_INPUT_ERROR, err_string+" Please create an input file, define variables for service %v. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.", matches[2])
-                        }
-                }
-                cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "%v", respBody)
-        }
-
-	var getDevicesResp exchange.GetDevicesResponse
-        cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), []int{200}, &getDevicesResp)
-
-        // if arch is not set, set the arch with anax's arch
-        devices := getDevicesResp.Devices
-        node := org + "/" + nodeId
-        device := devices[node]
-        archFromExchange := device.Arch
-
-        if archFromExchange == "" {
-                // update node arch with anax arch
-                fmt.Printf("Update node arch with anax arch %v\n", anaxArch)
-                patchDeviceReq := exchange.PatchDeviceArchRequest{
-                        Arch:               anaxArch,
-                }
-                cliutils.ExchangePatch("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), []int{200, 201}, patchDeviceReq)
-        } else if archFromExchange != anaxArch {
-                cliutils.Fatal(cliutils.INTERNAL_ERROR, "node arch from Exchange - %v, does not match arch from Anax - %v", archFromExchange, anaxArch)
-        }
+	fmt.Println("Changing Horizon state to configured to register this node with Horizon...")
+	configuredStr := "configured"
+	configState := api.Configstate{State: &configuredStr}
+	httpCode, respBody := cliutils.HorizonPutPost(http.MethodPut, "node/configstate", []int{201, 200, 400}, configState)
+	if httpCode == 400 {
+		if matches := parseRegisterInputError(respBody); matches != nil && len(matches) > 2 {
+			err_string := fmt.Sprintf("Registration failed because %v", matches[0])
+			if inputFile != "" {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, err_string+" Please define variables for service %v in the input file %v. Run 'hzn unregister' and then 'hzn register...' again", matches[2], inputFile)
+			} else {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, err_string+" Please create an input file, define variables for service %v. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.", matches[2])
+			}
+		}
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "%v", respBody)
+	}
 
 	fmt.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
-
 }
 
 func verifyRegisterParamters(org, pattern, nodeOrgFromFlag string, patternFromFlag string, nodepolicyFlag string) (string, string, string) {

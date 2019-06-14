@@ -148,17 +148,16 @@ func TestGetRollbackMicroserviceDef(t *testing.T) {
 
 func TestUnregisterServiceExchange(t *testing.T) {
 
-	checkPutDeviceHandler := func(t *testing.T, mss []exchange.Microservice, url string) exchange.PutDeviceHandler {
-		return func(id string, token string, pdr *exchange.PutDeviceRequest) (*exchange.PutDeviceResponse, error) {
+	checkPatchDeviceHandler := func(t *testing.T, mss []exchange.Microservice, url string) exchange.PatchDeviceHandler {
+		return func(id string, token string, pdr *exchange.PatchDeviceRequest) error {
 
-			assert.Equal(t, len(mss)-1, len(pdr.RegisteredServices), "one service should have been removed")
+			assert.Equal(t, len(mss)-1, len(*pdr.RegisteredServices), "one service should have been removed")
 
-			for _, ms := range pdr.RegisteredServices {
+			for _, ms := range *pdr.RegisteredServices {
 				assert.False(t, ms.Url == url, fmt.Sprintf("%v should have been removed", url))
 			}
 
-			pd := new(exchange.PutDeviceResponse)
-			return pd, nil
+			return nil
 		}
 	}
 
@@ -191,22 +190,17 @@ func TestUnregisterServiceExchange(t *testing.T) {
 	device_name := "mydevicename"
 	url := "network"
 
-	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, mss),
-		checkPutDeviceHandler(t, mss, url),
-		url, org, device_id, device_token, db)
-	assert.NotNil(t, err, "Device not created in the db yet.")
-
 	// save device in db
 	_, err = persistence.SaveNewExchangeDevice(db, "mydevice", device_token, device_name, false, org, "netspeed-amd64", "configuring")
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 
 	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, nil),
-		checkPutDeviceHandler(t, nil, url),
+		checkPatchDeviceHandler(t, nil, url),
 		url, org, device_id, device_token, db)
 	assert.Nil(t, err, "no registered ms, nothing to do")
 
 	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, mss),
-		checkPutDeviceHandler(t, mss, url),
+		checkPatchDeviceHandler(t, mss, url),
 		url, org, device_id, device_token, db)
 	assert.Nil(t, err, "eveything should have worked")
 

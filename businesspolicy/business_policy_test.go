@@ -271,7 +271,7 @@ func Test_GenPolicyFromBusinessPolicy_Complicated(t *testing.T) {
 		NodeH:           nh,
 	}
 
-	svcUserInput1 := policy.ServiceUserInput{
+	svcUserInput1 := policy.UserInput{
 		ServiceOrgid:        "mycomp",
 		ServiceUrl:          "cpu",
 		ServiceArch:         "amd64",
@@ -286,7 +286,7 @@ func Test_GenPolicyFromBusinessPolicy_Complicated(t *testing.T) {
 		Service:     service,
 		Properties:  *propList,
 		Constraints: []string{"prop3 == val3"},
-		UserInput:   []policy.ServiceUserInput{svcUserInput1},
+		UserInput:   []policy.UserInput{svcUserInput1},
 	}
 
 	if err := bPolicy.Validate(); err != nil {

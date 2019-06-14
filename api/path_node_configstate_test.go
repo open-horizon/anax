@@ -108,7 +108,7 @@ func Test_UpdateConfigstate2services(t *testing.T) {
 	sHandler := getVariableServiceHandler(exchange.UserInput{})
 
 	patternHandler := getVariablePatternHandler(sref)
-	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, db, getBasicConfig())
+	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("%v", myError)
@@ -171,7 +171,7 @@ func Test_UpdateConfigstate2service_only(t *testing.T) {
 	sHandler := getVariableServiceHandler(exchange.UserInput{})
 
 	patternHandler := getVariablePatternHandler(sref)
-	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, db, getBasicConfig())
+	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("%v", myError)
@@ -237,7 +237,7 @@ func Test_UpdateConfigstate_Illegal_state_change_services(t *testing.T) {
 	sHandler := getVariableServiceHandler(exchange.UserInput{})
 
 	patternHandler := getVariablePatternHandler(sref)
-	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, db, getBasicConfig())
+	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
@@ -256,7 +256,7 @@ func Test_UpdateConfigstate_Illegal_state_change_services(t *testing.T) {
 	state = persistence.CONFIGSTATE_CONFIGURING
 	cs.State = &state
 
-	errHandled, cfg, _ = UpdateConfigstate(cs, errorhandler, patternHandler, getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
+	errHandled, cfg, _ = UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -318,7 +318,7 @@ func Test_UpdateConfigstate_no_state_change_services(t *testing.T) {
 	sHandler := getVariableServiceHandler(exchange.UserInput{})
 
 	patternHandler := getVariablePatternHandler(sref)
-	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, db, getBasicConfig())
+	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
@@ -334,7 +334,7 @@ func Test_UpdateConfigstate_no_state_change_services(t *testing.T) {
 		t.Errorf("there should be 2 messages, received %v", len(msgs))
 	}
 
-	errHandled, cfg, msgs = UpdateConfigstate(cs, errorhandler, patternHandler, getDummyServiceResolver(), getDummyServiceHandler(), db, getBasicConfig())
+	errHandled, cfg, msgs = UpdateConfigstate(cs, errorhandler, patternHandler, getDummyServiceResolver(), getDummyServiceHandler(), getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
@@ -394,7 +394,7 @@ func Test_UpdateConfigstateWith_services(t *testing.T) {
 	mArch := "amd64"
 	sResolver := getVariableServiceResolver(mURL, myOrg, mVersion, mArch, nil)
 
-	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, db, getBasicConfig())
+	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
@@ -462,7 +462,7 @@ func Test_UpdateConfigstate_unconfig_services(t *testing.T) {
 	patternHandler := getVariablePatternHandler(sr)
 	sResolver := getVariableServiceResolver(mURL, theOrg, mVersion, mArch, nil)
 
-	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, db, getBasicConfig())
+	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
 
 	if !errHandled {
 		t.Errorf("expected error")
@@ -526,7 +526,7 @@ func Test_UpdateConfigstate_unconfig_top_level_services(t *testing.T) {
 	patternHandler := getVariablePatternHandler(sr)
 	sResolver := getVariableServiceResolver(mURL, theOrg, mVersion, mArch, &ui)
 
-	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, db, getBasicConfig())
+	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
 
 	if !errHandled {
 		t.Errorf("expected error")

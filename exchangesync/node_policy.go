@@ -1,4 +1,4 @@
-package nodepolicy
+package exchangesync
 
 import (
 	"encoding/json"
@@ -31,7 +31,7 @@ func SyncNodePolicyWithExchange(db *bolt.DB, pDevice *persistence.ExchangeDevice
 	}
 
 	// get the locally saved exchange node policy last updated string
-	nodePolicyLastUpdated, err := persistence.GetNodePolicyLatUpdated_Exch(db)
+	nodePolicyLastUpdated, err := persistence.GetNodePolicyLastUpdated_Exch(db)
 	if err != nil {
 		return false, nil, fmt.Errorf("Unable to retrieve the locally saved exchange node policy last updated string. Error: %v", err)
 	}
@@ -44,7 +44,7 @@ func SyncNodePolicyWithExchange(db *bolt.DB, pDevice *persistence.ExchangeDevice
 			newNodePolicy := exchangeNodePolicy.GetExternalPolicy()
 			if err := persistence.SaveNodePolicy(db, &newNodePolicy); err != nil {
 				return false, nil, fmt.Errorf("unable to save node policy %v to local database. %v", newNodePolicy, err)
-			} else if err := persistence.SaveNodePolicyLatUpdated_Exch(db, exchangeNodePolicy.GetLastUpdated()); err != nil {
+			} else if err := persistence.SaveNodePolicyLastUpdated_Exch(db, exchangeNodePolicy.GetLastUpdated()); err != nil {
 				return false, nil, fmt.Errorf("unable to save the exchange node policy last update string %v to local database. %v", nodePolicyLastUpdated, err)
 			} else {
 				glog.V(3).Infof("Updated the local node policy with the exchange copy: %v", newNodePolicy)
@@ -264,7 +264,7 @@ func ExchangeNodePolicyChanged(pDevice *persistence.ExchangeDevice, db *bolt.DB,
 	}
 
 	// get the locally saved exchange node policy last updated string
-	nodePolicyLastUpdated, err := persistence.GetNodePolicyLatUpdated_Exch(db)
+	nodePolicyLastUpdated, err := persistence.GetNodePolicyLastUpdated_Exch(db)
 	if err != nil {
 		return false, nil, fmt.Errorf("Unable to retrieve the locally saved exchange node policy last updated string. Error: %v", err)
 	}

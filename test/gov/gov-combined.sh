@@ -133,7 +133,7 @@ cd /root
 
 # Create the organizations we need
 echo "Creating e2edev@somecomp.com organization..."
-CR8EORG=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"label":"E2EDev","description":"E2EDevTest"}' "${EXCH_URL}/orgs/e2edev@somecomp.com" | jq -r '.msg')
+CR8EORG=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" -d '{"label":"E2EDev","description":"E2EDevTest", "orgType":"IBM"}' "${EXCH_URL}/orgs/e2edev@somecomp.com" | jq -r '.msg')
 echo "$CR8EORG"
 
 echo "Creating userdev organization..."

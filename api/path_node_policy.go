@@ -6,8 +6,8 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangesync"
 	"github.com/open-horizon/anax/externalpolicy"
-	"github.com/open-horizon/anax/nodepolicy"
 	"github.com/open-horizon/anax/persistence"
 )
 
@@ -42,7 +42,7 @@ func UpdateNodePolicy(nodePolicy *externalpolicy.ExternalPolicy,
 		return errorhandler(nil, NewNotFoundError("Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path.", "node")), nil, nil
 	}
 
-	if err := nodepolicy.UpdateNodePolicy(pDevice, db, nodePolicy, nodeGetPolicyHandler, nodePutPolicyHandler); err != nil {
+	if err := exchangesync.UpdateNodePolicy(pDevice, db, nodePolicy, nodeGetPolicyHandler, nodePutPolicyHandler); err != nil {
 		return errorhandler(pDevice, NewSystemError(fmt.Sprintf("Unable to sync the local db with the exchange node policy. %v", err))), nil, nil
 	} else {
 		LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("New node policy: %v", *nodePolicy), persistence.EC_NODE_POLICY_UPDATED, pDevice)
@@ -66,7 +66,7 @@ func PatchNodePolicy(patchObject interface{},
 		return errorhandler(nil, NewNotFoundError("Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path.", "node")), nil, nil
 	}
 
-	if nodePolicy, err := nodepolicy.PatchNodePolicy(pDevice, db, patchObject, nodeGetPolicyHandler, nodePatchPolicyHandler); err != nil {
+	if nodePolicy, err := exchangesync.PatchNodePolicy(pDevice, db, patchObject, nodeGetPolicyHandler, nodePatchPolicyHandler); err != nil {
 		return errorhandler(pDevice, NewSystemError(fmt.Sprintf("Unable to sync the local db with the exchange node policy. %v", err))), nil, nil
 	} else {
 		LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("New node policy: %v", patchObject), persistence.EC_NODE_POLICY_UPDATED, pDevice)
@@ -91,7 +91,7 @@ func DeleteNodePolicy(errorhandler DeviceErrorHandler, db *bolt.DB,
 	}
 
 	// delete the node policy from both exchange the local db
-	if err := nodepolicy.DeleteNodePolicy(pDevice, db, nodeGetPolicyHandler, nodeDeletePolicyHandler); err != nil {
+	if err := exchangesync.DeleteNodePolicy(pDevice, db, nodeGetPolicyHandler, nodeDeletePolicyHandler); err != nil {
 		return errorhandler(pDevice, NewSystemError(fmt.Sprintf("Node policy could not be deleted. %v", err))), nil
 	}
 

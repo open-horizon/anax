@@ -124,17 +124,17 @@ func CreateSearchMSRequest() *SearchExchangeMSRequest {
 
 // Structs and types for interacting with the device (node) object in the exchange
 type Device struct {
-	Token              string           `json:"token"`
-	Name               string           `json:"name"`
-	Owner              string           `json:"owner"`
-	Pattern            string           `json:"pattern"`
-	RegisteredServices []Microservice   `json:"registeredServices"`
-	MsgEndPoint        string           `json:"msgEndPoint"`
-	SoftwareVersions   SoftwareVersion  `json:"softwareVersions"`
-	LastHeartbeat      string           `json:"lastHeartbeat"`
-	PublicKey          []byte           `json:"publicKey"`
-	Arch               string           `json:"arch"`
-	UserInput          policy.UserInput `json:"userInput"`
+	Token              string             `json:"token"`
+	Name               string             `json:"name"`
+	Owner              string             `json:"owner"`
+	Pattern            string             `json:"pattern"`
+	RegisteredServices []Microservice     `json:"registeredServices"`
+	MsgEndPoint        string             `json:"msgEndPoint"`
+	SoftwareVersions   SoftwareVersion    `json:"softwareVersions"`
+	LastHeartbeat      string             `json:"lastHeartbeat"`
+	PublicKey          []byte             `json:"publicKey"`
+	Arch               string             `json:"arch"`
+	UserInput          []policy.UserInput `json:"userInput"`
 }
 
 func (d Device) String() string {
@@ -297,16 +297,16 @@ func (p PutDeviceRequest) ShortString() string {
 	return str
 }
 
-type PatchDeviceArchRequest struct {
-	Arch string `json:"arch"`
-}
-
+// Please patch one field at a time.
 type PatchDeviceRequest struct {
-	UserInput policy.UserInput `json:"userInput"`
+	UserInput          *[]policy.UserInput `json:"userInput,omitempty"`
+	Pattern            string              `json:"pattern,omitempty"`
+	Arch               string              `json:"arch,omitempty"`
+	RegisteredServices *[]Microservice     `json:"registeredServices,omitempty"`
 }
 
 func (p PatchDeviceRequest) String() string {
-	return fmt.Sprintf("UserInput: %v", p.UserInput)
+	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v", p.UserInput, p.RegisteredServices, p.Pattern)
 }
 
 type PostMessage struct {

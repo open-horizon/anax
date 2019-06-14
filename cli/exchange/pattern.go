@@ -29,7 +29,7 @@ type PatternOutput struct {
 	Public             bool                         `json:"public"`
 	Services           []ServiceReference           `json:"services"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
-	UserInput          policy.UserInput             `json:"userInput,omitempty"`
+	UserInput          []policy.UserInput           `json:"userInput,omitempty"`
 	LastUpdated        string                       `json:"lastUpdated"`
 }
 
@@ -64,7 +64,7 @@ type PatternFile struct {
 	Public             bool                         `json:"public"`
 	Services           []ServiceReferenceFile       `json:"services"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols,omitempty"`
-	UserInput          policy.UserInput             `json:"userInput,omitempty"`
+	UserInput          []policy.UserInput           `json:"userInput,omitempty"`
 }
 
 type ServiceChoice struct {
@@ -89,7 +89,7 @@ type PatternInput struct {
 	Public             bool                         `json:"public"`
 	Services           []ServiceReference           `json:"services,omitempty"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols,omitempty"`
-	UserInput          policy.UserInput             `json:"userInput,omitempty"`
+	UserInput          []policy.UserInput           `json:"userInput,omitempty"`
 }
 
 // List the pattern resources for the given org.

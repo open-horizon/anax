@@ -91,6 +91,13 @@ func GetHTTPPatchDeviceHandler(ec ExchangeContext) PatchDeviceHandler {
 	}
 }
 
+// this is used when ExchangeContext is not set up yet.
+func GetHTTPPatchDeviceHandler2(cfg *config.HorizonConfig) PatchDeviceHandler {
+	return func(id string, token string, pdr *PatchDeviceRequest) error {
+		return PatchExchangeDevice(cfg.Collaborators.HTTPClientFactory, id, token, cfg.Edge.ExchangeURL, pdr)
+	}
+}
+
 // A handler for modifying the device information on the exchange
 type PostDeviceServicesConfigStateHandler func(deviceId string, deviceToken string, svcsConfigState *ServiceConfigState) error
 

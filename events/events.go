@@ -83,6 +83,7 @@ const (
 	AGBOT_QUIESCE_COMPLETE  EventId = "AGBOT_QUIESCE_COMPLETE"
 	NODE_HEARTBEAT_FAILED   EventId = "HEARTBEAT_FAILED"
 	NODE_HEARTBEAT_RESTORED EventId = "HEARTBEAT_RESTORED"
+	UPDATE_NODE_USERINPUT   EventId = "UPDATE_USER_INPUT"
 
 	// Service related
 	SERVICE_SUSPENDED EventId = "SERVICE_SUSPENDED"
@@ -290,6 +291,34 @@ func NewNodePolicyMessage(id EventId) *NodePolicyMessage {
 		event: Event{
 			Id: id,
 		},
+	}
+}
+
+// This event indicates that something happened with node user input.
+type NodeUserInputMessage struct {
+	event        Event
+	ServiceSpecs persistence.ServiceSpecs
+}
+
+func (e NodeUserInputMessage) String() string {
+	return fmt.Sprintf("event: %v, ServiceSpecs: %v", e.event, e.ServiceSpecs)
+}
+
+func (e NodeUserInputMessage) ShortString() string {
+	return e.String()
+}
+
+func (e NodeUserInputMessage) Event() Event {
+	return e.event
+}
+
+func NewNodeUserInputMessage(id EventId, svcSpecs persistence.ServiceSpecs) *NodeUserInputMessage {
+
+	return &NodeUserInputMessage{
+		event: Event{
+			Id: id,
+		},
+		ServiceSpecs: svcSpecs,
 	}
 }
 

@@ -52,6 +52,8 @@ do
 
 done
 
+sleep 30
+
 # ================================================================
 # Set a node policy indicating the testing purpose of the node.
 
@@ -100,7 +102,6 @@ read -d '' newhznpolicy <<EOF
 EOF
 
 
-
 echo "Adding policy to the node using node/policy API"
 RES=$(echo "$newhznpolicy" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/policy")
 
@@ -129,7 +130,6 @@ then
 else
   echo -e "found expected response: $RES"
 fi
-
 
 
 # =========================================================================

@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangesync"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/microservice"
 	"github.com/open-horizon/anax/persistence"
@@ -130,6 +131,8 @@ func CreateService(service *Service,
 	getPatterns exchange.PatternHandler,
 	resolveService exchange.ServiceResolverHandler,
 	getService exchange.ServiceHandler,
+	getDevice exchange.DeviceHandler,
+	patchDevice exchange.PatchDeviceHandler,
 	db *bolt.DB,
 	config *config.HorizonConfig,
 	from_user bool) (bool, *Service, *events.PolicyCreatedMessage) {
@@ -380,13 +383,21 @@ func CreateService(service *Service,
 	// Persist all attributes on this service, and while we're at it, fetch the attribute values we need for the node side policy file.
 	// Any policy attributes we find will overwrite values set in a global attribute of the same type.
 	var serviceAgreementProtocols []policy.AgreementProtocol
-	for _, attr := range attributes {
-		_, err := persistence.SaveOrUpdateAttribute(db, attr, "", false)
-		if err != nil {
-			return errorhandler(NewSystemError(fmt.Sprintf("error saving attribute %v, error %v", attr, err))), nil, nil
-		}
 
+	userInput := []policy.UserInput{}
+	for _, attr := range attributes {
+		bSave := true
 		switch attr.(type) {
+		case *persistence.UserInputAttributes:
+			// do not save UserInputAttributes because it will be converted to UserInput and saved.
+			bSave = false
+			if from_user {
+				ui := convertAttributeToExchangeUserInput(service, attr.(*persistence.UserInputAttributes))
+				if ui != nil {
+					userInput = append(userInput, *ui)
+				}
+			}
+
 		case *persistence.HAAttributes:
 			haPartner = attr.(*persistence.HAAttributes).Partners
 
@@ -396,6 +407,20 @@ func CreateService(service *Service,
 
 		default:
 			glog.V(4).Infof(apiLogString(fmt.Sprintf("Unhandled attr type (%T): %v", attr, attr)))
+		}
+
+		if bSave {
+			_, err := persistence.SaveOrUpdateAttribute(db, attr, "", false)
+			if err != nil {
+				return errorhandler(NewSystemError(fmt.Sprintf("error saving attribute %v, error %v", attr, err))), nil, nil
+			}
+		}
+	}
+
+	// patch the user input into the exchange and local db
+	if from_user && len(userInput) > 0 {
+		if err := exchangesync.PatchNodeUserInput(pDevice, db, userInput, getDevice, patchDevice); err != nil {
+			return errorhandler(NewSystemError(fmt.Sprintf("Failed to add the user input %v to node. %v", userInput, err))), nil, nil
 		}
 	}
 
@@ -456,4 +481,38 @@ func CreateService(service *Service,
 			return false, service, msg
 		}
 	}
+}
+
+// Convert the UserInputAttributes to UserInput of policy.
+func convertAttributeToExchangeUserInput(service *Service, attr *persistence.UserInputAttributes) *policy.UserInput {
+	userInput := new(policy.UserInput)
+	if attr.ServiceSpecs != nil && len(*attr.ServiceSpecs) > 0 {
+		userInput.ServiceUrl = (*attr.ServiceSpecs)[0].Url
+		userInput.ServiceOrgid = (*attr.ServiceSpecs)[0].Org
+	} else {
+		if service.Url != nil {
+			userInput.ServiceUrl = *service.Url
+		}
+		if service.Org != nil {
+			userInput.ServiceOrgid = *service.Org
+		}
+	}
+	if service.Arch != nil {
+		userInput.ServiceArch = *service.Arch
+	}
+
+	if service.VersionRange != nil {
+		userInput.ServiceVersionRange = *service.VersionRange
+	}
+
+	if len(attr.Mappings) == 0 {
+		return nil
+	} else {
+		ui := []policy.Input{}
+		for k, v := range attr.Mappings {
+			ui = append(ui, policy.Input{Name: k, Value: v})
+		}
+		userInput.Inputs = ui
+	}
+	return userInput
 }

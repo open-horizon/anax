@@ -532,6 +532,7 @@ type MicroserviceInstance struct {
 	MaxRetryDuration     uint                           `json:"max_retry_duration"`    // The number of seconds in which the specified number of retries must occur in order for next retry cycle.
 	CurrentRetryCount    uint                           `json:"current_retry_count"`
 	RetryStartTime       uint64                         `json:"retry_start_time"`
+	EnvVars              map[string]string              `json:"env_vars"`
 }
 
 func (w MicroserviceInstance) String() string {
@@ -553,11 +554,12 @@ func (w MicroserviceInstance) String() string {
 		"MaxRetries: %v, "+
 		"MaxRetryDuration: %v, "+
 		"CurrentRetryCount: %v, "+
-		"RetryStartTime: %v",
+		"RetryStartTime: %v, "+
+		"EnvVars: %v",
 		w.SpecRef, w.Org, w.Version, w.Arch, w.InstanceId, w.Archived, w.InstanceCreationTime,
 		w.ExecutionStartTime, w.ExecutionFailureCode, w.ExecutionFailureDesc,
 		w.CleanupStartTime, w.AssociatedAgreements, w.MicroserviceDefId, w.ParentPath, w.AgreementLess,
-		w.MaxRetries, w.MaxRetryDuration, w.CurrentRetryCount, w.RetryStartTime)
+		w.MaxRetries, w.MaxRetryDuration, w.CurrentRetryCount, w.RetryStartTime, w.EnvVars)
 }
 
 // create a unique name for a microservice def
@@ -867,6 +869,13 @@ func ArchiveMicroserviceInstance(db *bolt.DB, key string) (*MicroserviceInstance
 	})
 }
 
+func UpdateMSInstanceEnvVars(db *bolt.DB, key string, env_vars map[string]string) (*MicroserviceInstance, error) {
+	return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
+		c.EnvVars = env_vars
+		return &c
+	})
+}
+
 func MicroserviceInstanceCleanupStarted(db *bolt.DB, key string) (*MicroserviceInstance, error) {
 	return microserviceInstanceStateUpdate(db, key, func(c MicroserviceInstance) *MicroserviceInstance {
 		c.CleanupStartTime = uint64(time.Now().Unix())
@@ -1016,6 +1025,7 @@ func persistUpdatedMicroserviceInstance(db *bolt.DB, key string, update *Microse
 				mod.MaxRetries = update.MaxRetries
 				mod.MaxRetryDuration = update.MaxRetryDuration
 				mod.CurrentRetryCount = update.CurrentRetryCount
+				mod.EnvVars = update.EnvVars
 
 				if len(mod.ParentPath) != len(update.ParentPath) {
 					mod.ParentPath = update.ParentPath
