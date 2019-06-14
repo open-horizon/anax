@@ -200,6 +200,9 @@ func BusinessRemovePolicy(org string, credToUse string, policy string, force boo
 		cliutils.ConfirmRemove("Are you sure you want to remove business policy " + policy + " for org " + org + " from the Horizon Exchange?")
 	}
 
+	//check if policy name is passed in as <org>/<service>
+	org, policy = cliutils.TrimOrg(org, policy)
+
 	//remove policy
 	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
 	if httpCode == 404 {
