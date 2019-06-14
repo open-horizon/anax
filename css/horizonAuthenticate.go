@@ -400,10 +400,6 @@ func (auth *HorizonAuthenticate) invokeExchange(url string, user string, pw stri
 	req.SetBasicAuth(user, pw)
 	req.Header.Add("Accept", "application/json")
 
-	if trace.IsLogging(logger.TRACE) {
-		trace.Debug(cssALS(fmt.Sprintf("request has headers %v", req.Header)))
-	}
-
 	// Send the request to verify the user.
 	resp, err := auth.httpClient.Do(req)
 	if err != nil {

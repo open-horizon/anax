@@ -647,9 +647,8 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 		if user != "" && pw != "" {
 			req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(user+":"+pw))))
 		}
-		glog.V(5).Infof(rpclogString(fmt.Sprintf("Invoking exchange with headers: %v", req.Header)))
-		// If the exchange is down, this call will return an error.
 
+		// If the exchange is down, this call will return an error.
 		if httpResp, err := httpClient.Do(req); err != nil {
 			if isTransportError(err) {
 				return nil, errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, url, requestBody, err))
