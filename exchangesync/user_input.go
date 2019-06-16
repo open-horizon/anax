@@ -346,7 +346,7 @@ func PatchNodeUserInput(pDevice *persistence.ExchangeDevice, db *bolt.DB,
 	}
 
 	// patch the exchange userinput with the newly added one on the node
-	new_ui := policy.MergeUserInputArrays(exchUserInput, userInputs, false)
+	new_ui := policy.MergeUserInputArrays(exchUserInput, userInputs, true)
 
 	return SaveNodeUserInput(pDevice, db, new_ui, getDevice, patchDevice)
 }

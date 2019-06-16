@@ -1371,14 +1371,6 @@ read -d '' msdef <<EOF
       "serviceVersionRange": "2.2.0",
       "inputs": [
         {
-          "name": "var1",
-          "value": "bString"
-        },
-        {
-          "name": "var2",
-          "value": 10
-        },
-        {
           "name": "var3",
           "value": 10.22
         },
@@ -1398,14 +1390,6 @@ read -d '' msdef <<EOF
       "serviceArch": "",
       "serviceVersionRange": "2.2.0",
       "inputs": [
-        {
-          "name": "var1",
-          "value": "ibmstring"
-        },
-        {
-          "name": "var2",
-          "value": 11
-        },
         {
           "name": "var3",
           "value": 11.22
@@ -1582,14 +1566,6 @@ read -d '' bpnsdef <<EOF
       "serviceArch": "",
       "serviceVersionRange": "2.2.0",
       "inputs": [
-        {
-          "name": "var1",
-          "value": "bString"
-        },
-        {
-          "name": "var2",
-          "value": 10
-        },
         {
           "name": "var3",
           "value": 10.22
@@ -1957,89 +1933,6 @@ read -d '' locpoldef <<EOF
 EOF
 echo -e "Register service policy for location:"
 RES=$(echo "$locpoldef" | curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-location_2.0.6_amd64/policy" | jq -r '.')
-results "$RES"
-
-# ========================================= Node User Input ==================================
-read -d '' nodeui <<EOF
-{
-  "userInput": [
-    {
-      "serviceOrgid": "e2edev@somecomp.com",
-      "serviceUrl": "https://bluehorizon.network/services/locgps",
-      "serviceArch": "",
-      "serviceVersionRange": "2.0.3",
-      "inputs": [
-        {
-          "name": "HZN_LAT",
-          "value": 41.921766
-        },
-        {
-          "name": "HZN_LON",
-          "value": -73.894224
-        },
-        {
-          "name": "HZN_LOCATION_ACCURACY_KM",
-          "value": 0.5
-        },
-        {
-          "name": "HZN_USE_GPS",
-          "value": false
-        }
-      ]
-    },
-    {
-      "serviceOrgid": "e2edev@somecomp.com",
-      "serviceUrl": "https://bluehorizon.network/services/weather",
-      "serviceArch": "",
-      "serviceVersionRange": "1.5.0",
-      "inputs": [
-        {
-          "name": "HZN_LAT",
-          "value": 41.921766
-        },
-        {
-          "name": "HZN_LON",
-          "value": -73.894224
-        },
-        {
-          "name": "HZN_LOCATION_ACCURACY_KM",
-          "value": 0.5
-        },
-        {
-          "name": "HZN_USE_GPS",
-          "value": false
-        }
-      ]
-    },
-    {
-      "serviceOrgid": "IBM",
-      "serviceUrl": "https://bluehorizon.network/service-gps",
-      "serviceArch": "",
-      "serviceVersionRange": "2.0.3",
-      "inputs": [
-        {
-          "name": "HZN_LAT",
-          "value": 41.921766
-        },
-        {
-          "name": "HZN_LON",
-          "value": -73.894224
-        },
-        {
-          "name": "HZN_LOCATION_ACCURACY_KM",
-          "value": 0.5
-        },
-        {
-          "name": "HZN_USE_GPS",
-          "value": false
-        }
-      ]
-    }
-  ]
-}
-EOF
-echo -e "Register node user input for userdev/an12345:"
-RES=$(echo "$nodeui" | curl -sLX PATCH --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/nodes/an12345" | jq -r '.')
 results "$RES"
 
 unset HZN_EXCHANGE_URL

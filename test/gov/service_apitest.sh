@@ -583,8 +583,10 @@ fi
 # ==============================================================================
 # context testcases here. Checking userInput against API input
 
-# missing variable in the variables section
-read -d '' snsconfig <<EOF
+if [ "$PATTERN" != "" ]
+then 
+  # missing variable in the variables section
+  read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -601,28 +603,29 @@ read -d '' snsconfig <<EOF
 }
 EOF
 
-echo -e "\n\n[D] testservice service config payload: $snsconfig"
+  echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
-echo "Registering testservice service config with missing variable"
+  echo "Registering testservice service config with missing variable"
 
-RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
-if [ "$RES" == "" ]
-then
-  echo -e "$snsconfig \nresulted in empty response"
-  exit 2
-fi
+  RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
+  if [ "$RES" == "" ]
+  then
+    echo -e "$snsconfig \nresulted in empty response"
+    exit 2
+  fi
 
-ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var1 for service e2edev@somecomp.com/https://bluehorizon.network/services/testservice is missing from mappings." ]
-then
-  echo -e "$snsconfig \nresulted in incorrect response: $RES"
-  exit 2
-else
-  echo -e "found expected response: $RES"
-fi
+  ERR=$(echo $RES | jq -r ".error")
+  if [ "$ERR" != "variable var1 for service e2edev@somecomp.com/https://bluehorizon.network/services/testservice is missing from mappings." ]
+  then
+    echo -e "$snsconfig \nresulted in incorrect response: $RES"
+    exit 2
+  else
+   echo -e "found expected response: $RES"
+  fi
 
-# another missing variable in the variables section
-read -d '' snsconfig <<EOF
+
+ # another missing variable in the variables section
+ read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -641,24 +644,25 @@ read -d '' snsconfig <<EOF
 }
 EOF
 
-echo -e "\n\n[D] testservice service config payload: $snsconfig"
+  echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
-echo "Registering testservice service config with another missing variable"
+  echo "Registering testservice service config with another missing variable"
 
-RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
-if [ "$RES" == "" ]
-then
-  echo -e "$snsconfig \nresulted in empty response"
-  exit 2
-fi
+  RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
+  if [ "$RES" == "" ]
+  then
+    echo -e "$snsconfig \nresulted in empty response"
+    exit 2
+  fi
 
-ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "variable var2 for service e2edev@somecomp.com/https://bluehorizon.network/services/testservice is missing from mappings." ]
-then
-  echo -e "$snsconfig \nresulted in incorrect response: $RES"
-  exit 2
-else
-  echo -e "found expected response: $RES"
+  ERR=$(echo $RES | jq -r ".error")
+  if [ "$ERR" != "variable var2 for service e2edev@somecomp.com/https://bluehorizon.network/services/testservice is missing from mappings." ]
+  then
+    echo -e "$snsconfig \nresulted in incorrect response: $RES"
+    exit 2
+  else
+    echo -e "found expected response: $RES"
+  fi
 fi
 
 # Configure the testservice service variables, at an older version level just to be sure

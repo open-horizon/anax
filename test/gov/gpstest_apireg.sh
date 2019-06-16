@@ -6,44 +6,52 @@ if [ "$BC" != "1" ]
 then
 
 echo -e "Pattern is set to $PATTERN"
-# if [ "$PATTERN" == "" ]
-# then
 
-# and then configure by service API to opt into the gps service.
-read -d '' slocservice <<EOF
-{
-  "url": "https://bluehorizon.network/service-gps",
-  "name": "gps",
-  "organization": "IBM",
-  "versionRange": "2.0.3",
-  "attributes": [
-     {
-      "type": "UserInputAttributes",
-      "label": "Extra",
-      "publishable": true,
-      "host_only": false,
-      "mappings": {
-        "HZN_LAT": 41.921766,
-        "HZN_LON": -73.894224,
-        "HZN_LOCATION_ACCURACY_KM": 0.5,
-        "HZN_USE_GPS": false
-      }
+  # add user input with /node/userinput api
+  read -d '' nodeui <<EOF
+[
+    {
+      "serviceOrgid": "IBM",
+      "serviceUrl": "https://bluehorizon.network/service-gps",
+      "serviceArch": "",
+      "serviceVersionRange": "2.0.3",
+      "inputs": [
+        {
+          "name": "HZN_LAT",
+          "value": 41.921766
+        },
+        {
+          "name": "HZN_LON",
+          "value": -73.894224
+        },
+        {
+          "name": "HZN_LOCATION_ACCURACY_KM",
+          "value": 0.5
+        },
+        {
+          "name": "HZN_USE_GPS",
+          "value": false
+        }
+      ]
     }
-  ]
-}
+]
+
 EOF
-
-echo -e "\n\n[D] service based gps service payload: $slocservice"
-
-echo "Registering service based gps service"
-
-ERR=$(echo "$slocservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
-if [ "$ERR" != "null" ]; then
-    echo -e "error occured: $ERR"
+  echo "Adding service configurarion for service-gps with /node/userinput api..."
+  RES=$(echo "$nodeui" | curl -sS -X PATCH -w "%{http_code}" -H "Content-Type: application/json" --data @- "$ANAX_API/node/userinput")
+  if [ "$RES" == "" ]
+  then
+    echo -e "$newhznpolicy \nresulted in empty response"
     exit 2
-fi
+  fi
 
-#fi
+  ERR=$(echo $RES | jq -r '.' | tail -1)
+  if [ "$ERR" != "201" ]
+  then
+    echo -e "$nodeui \nresulted in incorrect response: $RES"
+  else
+    echo -e "found expected response: $RES"
+  fi
 
 # blockchain is in use
 else

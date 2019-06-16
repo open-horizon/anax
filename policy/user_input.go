@@ -35,8 +35,30 @@ func (s UserInput) String() string {
 		s.ServiceOrgid, s.ServiceUrl, s.ServiceArch, s.ServiceVersionRange, s.Inputs)
 }
 
+// Get the input given the name of the variable
+func (s UserInput) FindInput(name string) *Input {
+	if s.Inputs == nil || len(s.Inputs) == 0 {
+		return nil
+	}
+
+	for _, u := range s.Inputs {
+		if u.Name == name {
+			return &u
+		}
+	}
+	return nil
+}
+
 // ui1 is the default, ui2 is the input form the user. ui2 overwrites ui1.
 func MergeUserInput(ui1, ui2 UserInput, checkService bool) (*UserInput, error) {
+	// handle corner conditions first
+	if ui2.Inputs == nil || len(ui2.Inputs) == 0 {
+		return &ui1, nil
+	}
+	if ui1.Inputs == nil || len(ui1.Inputs) == 0 {
+		return &ui2, nil
+	}
+
 	if checkService {
 		if ui1.ServiceOrgid != ui2.ServiceOrgid || ui1.ServiceUrl != ui2.ServiceUrl {
 			return nil, fmt.Errorf("The two user input structure are for different services: %v/%v %v/%v", ui1.ServiceOrgid, ui1.ServiceUrl, ui2.ServiceOrgid, ui2.ServiceUrl)
@@ -47,14 +69,6 @@ func MergeUserInput(ui1, ui2 UserInput, checkService bool) (*UserInput, error) {
 		}
 
 		// we will not check the version for now.
-	}
-
-	// handle corner conditions first
-	if ui2.Inputs == nil || len(ui2.Inputs) == 0 {
-		return &ui1, nil
-	}
-	if ui1.Inputs == nil || len(ui1.Inputs) == 0 {
-		return &ui2, nil
 	}
 
 	// make a copy of the first one
@@ -121,7 +135,13 @@ func MergeUserInputArrays(ui1, ui2 []UserInput, deepMerge bool) []UserInput {
 }
 
 // Get the user input that fits this given service spec
+// if arch is an empty string, it means any arch.
+// if service version is an empty string, it means any version is be ok.
 func FindUserInput(svcName, svcOrg, svcVersion, svcArch string, userInput []UserInput) (*UserInput, error) {
+	if userInput == nil || len(userInput) == 0 {
+		return nil, nil
+	}
+
 	for _, u1 := range userInput {
 		if u1.ServiceOrgid == svcOrg && u1.ServiceUrl == svcName && (u1.ServiceArch == svcArch || u1.ServiceArch == "" || svcArch == "") {
 
