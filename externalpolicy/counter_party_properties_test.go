@@ -297,6 +297,17 @@ func Test_not_satisfy_simple1(t *testing.T) {
 			}
 		}
 	}
+
+	prop_list = `[{"name":"prop1", "value":"a, b, c", "type":"list of string"}]`
+	simple_and = `{"and":[{"name":"prop1", "value":"2,z,arch","op":"in"}]}`
+
+	if rp = create_RP(simple_and, t); rp != nil {
+		if pa = create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err == nil {
+				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, simple_and)
+			}
+		}
+	}
 }
 
 // Test that simple expressions dont satisfy a single property value.
@@ -734,6 +745,28 @@ func Test_complex_IsSatisfiedBy(t *testing.T) {
 
 	rp_list = `{"or":[{"name":"prop1", "value":"abc"}]}`
 	prop_list = `[{"name":"prop1", "value":"abc,def,ghi", "type":"list of string"}]`
+
+	if rp := create_RP(rp_list, t); rp != nil {
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
+			}
+		}
+	}
+
+	rp_list = `{"or":[{"name":"prop1", "value":"a, b, c", "op":"in"}]}`
+	prop_list = `[{"name":"prop1", "value":"a, b, c, d", "type":"list of string"}]`
+
+	if rp := create_RP(rp_list, t); rp != nil {
+		if pa := create_property_list(prop_list, t); pa != nil {
+			if err := rp.IsSatisfiedBy(*pa); err != nil {
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
+			}
+		}
+	}
+
+	rp_list = `{"or":[{"name":"prop1", "value":"a, b, c", "op":"in"}]}`
+	prop_list = `[{"name":"prop1", "value":"5, b, def", "type":"list of string"}]`
 
 	if rp := create_RP(rp_list, t); rp != nil {
 		if pa := create_property_list(prop_list, t); pa != nil {

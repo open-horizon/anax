@@ -469,6 +469,9 @@ func propertyInArray(propexp *PropertyExpression, props *[]Property) bool {
 					if p.Type == VERSION_TYPE {
 						return containsVersion(pValue, propexpValue)
 					}
+					if p.Type == LIST_TYPE {
+						return stringListContainsOneOfStringList(pValue, propexpValue)
+					}
 					return stringListContains(pValue, propexpValue)
 				} else {
 					if p.Type == LIST_TYPE {
@@ -508,6 +511,17 @@ func stringListContains(propVal string, constrList string) bool {
 	for _, constrValue := range constrValueList {
 		constrValue = removeQuotes(removeSpaces(constrValue))
 		if constrValue == propValTrimmed {
+			return true
+		}
+	}
+	return false
+}
+
+func stringListContainsOneOfStringList(propList string, constrList string) bool {
+	propValList := strings.Split(propList, ",")
+	for _, propVal := range propValList {
+		propVal = removeQuotes(removeSpaces(propVal))
+		if stringListContains(propVal, constrList) {
 			return true
 		}
 	}
