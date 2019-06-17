@@ -83,7 +83,7 @@ func ServiceNew(homeDirectory string, org string, specRef string, version string
 	}
 
 	cliutils.Verbose(fmt.Sprintf("Creating service definition file: %v/%v", dir, SERVICE_DEFINITION_FILE))
-	err = CreateServiceDefinition(dir, specRef, imageInfo, dconfig)
+	err = CreateServiceDefinition(dir, specRef, imageInfo, noImageGen, dconfig)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
 	}

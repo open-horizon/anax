@@ -34,7 +34,7 @@ func GetServiceDefinition(directory string, name string) (*cliexchange.ServiceFi
 
 // Sort of like a constructor, it creates a service definition config object and writes it to the project
 // in the file system.
-func CreateServiceDefinition(directory string, specRef string, imageInfo map[string]string, deploymentType string) error {
+func CreateServiceDefinition(directory string, specRef string, imageInfo map[string]string, noImageGen bool, deploymentType string) error {
 
 	// Create a skeletal service definition config object with fillins/place-holders for configuration.
 	res := new(cliexchange.ServiceFile)
@@ -47,7 +47,7 @@ func CreateServiceDefinition(directory string, specRef string, imageInfo map[str
 	res.Arch = "$ARCH"
 	res.Description = ""
 	res.Sharable = exchange.MS_SHARING_MODE_MULTIPLE
-	if specRef == "" {
+	if noImageGen || specRef == "" {
 		res.UserInputs = []exchange.UserInput{
 			exchange.UserInput{
 				Name:         "",
