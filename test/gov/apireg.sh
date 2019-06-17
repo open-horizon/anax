@@ -52,6 +52,7 @@ do
 
 done
 
+echo "Waiting for node to sync up with exchange"
 sleep 30
 
 # ================================================================

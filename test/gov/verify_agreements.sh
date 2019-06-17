@@ -10,7 +10,9 @@ function verifyAgreements {
         # Wait until there are agreements
         TARGET_NUM_AG=1
         if [ "${PATTERN}" == "sall" ]; then
-                TARGET_NUM_AG=6
+            TARGET_NUM_AG=6
+        elif [ "${PATTERN}" == "" ]; then
+            TARGET_NUM_AG=5
         fi
 
         # Look for agreements to appear.
@@ -290,7 +292,9 @@ agreementsReached agreement_execution_start_time
 verifyServices
 
 # Do data verification
-verifyData
+if [ "${PATTERN}" == "sall" ]; then
+    verifyData
+fi
 
 # Monitor agreements to make sure they stay in place. This function does not
 # return unless it finds an error.

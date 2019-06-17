@@ -65,8 +65,16 @@ function run_delete_loops {
                 ./verify_agreements.sh &
             fi
         else
+            echo -e "Verifying policy based workload deployment"
             echo -e "No cancellation setting is $NOCANCEL"
             if [ "$NOCANCEL" != "1" ]; then
+                if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ]; then
+                    echo "Skipping agreement verification"
+                    sleep 30
+                else
+                    ./verify_agreements.sh
+                    if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
+                fi
                 ./del_loop.sh
                 if [ $? -ne 0 ]; then echo "Agreement deletion failure."; exit 1; fi
                 echo -e "Sleeping for 30s between device and agbot agreement deletion"
@@ -75,6 +83,12 @@ function run_delete_loops {
                 if [ $? -ne 0 ]; then echo "Agbot agreement deletion failure."; exit 1; fi
             else
                 echo -e "Cancellation tests are disabled"
+            fi
+            if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ]; then
+                echo "Skipping agreement verification"
+            else
+                ./verify_agreements.sh
+                if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
             fi
         fi
     fi
