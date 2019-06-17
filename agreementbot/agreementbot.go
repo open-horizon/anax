@@ -693,7 +693,7 @@ func (w *AgreementBotWorker) searchNodesAndMakeAgreements(consumerPolicy *policy
 				glog.Errorf("AgreementBotWorker protocol handler for %v not accepting new agreement commands.", protocol)
 			} else {
 				w.consumerPH[protocol].HandleMakeAgreement(cmd, w.consumerPH[protocol])
-				glog.V(5).Infof("AgreementBoWorker queued agreement attempt for policy %v and protocol %v", consumerPolicy.Header.Name, protocol)
+				glog.V(5).Infof("AgreementBotWorker queued agreement attempt for policy %v and protocol %v", consumerPolicy.Header.Name, protocol)
 			}
 		}
 	}

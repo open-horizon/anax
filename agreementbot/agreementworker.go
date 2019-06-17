@@ -316,6 +316,13 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		// can verify that the device has the right version API specs (services) to run this workload. Then, we can store the workload details
 		// into the consumer policy file. We have a copy of the consumer policy file that we can modify. If the device doesnt have the right
 		// version API specs (services), then we will try the next workload.
+
+		// The arch field in the workload could be empty or a '*' meaning any arch. If that's the case, we will use the device's arch
+		// when we search for services.
+		if workload.Arch == "" || workload.Arch == "*" {
+			workload.Arch = exchangeDev.Arch
+		}
+
 		asl, workloadDetails, sId, err := exchange.GetHTTPServiceResolverHandler(cph)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 		if err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for service details %v, error: %v", workload, err)))
