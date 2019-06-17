@@ -1533,7 +1533,7 @@ read -d '' bpnsdef <<EOF
   "service": {
     "name": "https://bluehorizon.network/services/netspeed",
     "org": "e2edev@somecomp.com",
-    "arch": "amd64",
+    "arch": "*",
     "serviceVersions": [
       { 
         "version": "2.3.0",
