@@ -95,28 +95,36 @@ func ObjectList(org string, userPw string, objType string, objId string, details
 // user which fields they should be setting
 
 const HZN_OBJECT_METADATA = `{
-  "objectID": "",           /* Required: A unique identifier of the object */
-  "objectType": "",         /* Required: The type of the object. */
+  "objectID": "",                    /* Required: A unique identifier of the object */
+  "objectType": "",                  /* Required: The type of the object. */
   "destinationOrgID": "$HZN_ORG_ID", /* Required: The organization ID of the object (an object belongs to exactly one organization). */
-  "destinationID": "",      /* The node id (without org prefix) where the object should be placed. If omitted the object is sent to all nodes the same destinationType. Delete this field when you are using destinationPolicy. */
-  "destinationType": "",    /* The pattern in use by nodes that should receive this object. If omitted (and if destinationsList is omitted too) the object is broadcast to all known nodes. Delete this field when you are using policy. */
-  "destinationsList": null, /* The list of destinations as an array of pattern:nodeId pairs that should receive this object. If provided destinationType and destinationID must be omitted. Delete this field when you are using policy. */
-  "destinationPolicy": {    /* The policy specification that should be used to distribute this object. Delete these fields if the target node is using a pattern. */
+  "destinationID": "",               /* The node id (without org prefix) where the object should be placed. */
+                                     /* If omitted the object is sent to all nodes the same destinationType. */
+                                     /* Delete this field when you are using destinationPolicy. */
+  "destinationType": "",             /* The pattern in use by nodes that should receive this object. */
+                                     /* If omitted (and if destinationsList is omitted too) the object is broadcast to all known nodes. */
+                                     /* Delete this field when you are using policy. */
+  "destinationsList": null,          /* The list of destinations as an array of pattern:nodeId pairs that should receive this object. */
+                                     /* If provided, destinationType and destinationID must be omitted. */
+                                     /* Delete this field when you are using policy. */
+  "destinationPolicy": {             /* The policy specification that should be used to distribute this object. */
+                                     /* Delete these fields if the target node is using a pattern. */
     "properties": [   /* A list of policy properties that describe the object. */
       {
         "name": "", 
         "value": nil,
-        "type": ""      /* Valid types are string, bool, int, float, list of string (comma separated), version. Type can be omitted if the type is discernable from the value. */
+        "type": ""    /* Valid types are string, bool, int, float, list of string (comma separated), version. */
+                      /* Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean. */
       }
     ],
     "constraints": [  /* A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||). */
       ""
     ],
-    "services": [ /* The service(s) that will use this object. */
+    "services": [     /* The service(s) that will use this object. */
       {
         "orgID": "",        /* The org of the service. */
-        "arch": "",         /* Can be omitted. */
-        "serviceName": "",
+        "serviceName": "",  /* The name of the service. */
+        "arch": "",         /* Set to '*' to indcate services of any hardware architecture. */
         "version": ""       /* A version range. */
       }
     ]

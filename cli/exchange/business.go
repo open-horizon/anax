@@ -14,12 +14,12 @@ import (
 )
 
 const BUSINESS_POLICY_TEMPLATE_OBJECT = `{
-  "label": "",  /* Business policy label. */
-  "description": "",  /* Business policy description. */
+  "label": "",            /* Business policy label. */
+  "description": "",      /* Business policy description. */
   "service": {
-    "name": "",  /* The name of the service. */
-    "org": "put the $HZN_ORG_ID env var value in here",  /* The org of the service. */
-    "arch": "",  /* Can be omitted. */
+    "name": "",           /* The name of the service. */
+    "org": "",            /* The org of the service. */
+    "arch": "",           /* Set to '*' to use services of any hardware architecture. */
     "serviceVersions": [  /* A list of service versions. */
       {
         "version": "",
@@ -27,14 +27,28 @@ const BUSINESS_POLICY_TEMPLATE_OBJECT = `{
       }
     ]
   },
-  "properties": [  /* A list of policy properties that describe the object. */
+  "properties": [         /* A list of policy properties that describe the service being dployed. */
     {
       "name": "",
       "value": nil
     }
   ],
-  "constraints": [  /* A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||). */
+  "constraints": [        /* A list of constraint expressions of the form <property name> <operator> <property value>, */
+                          /* separated by boolean operators AND (&&) or OR (||). */
     ""
+  ],
+  "userInput": [          /* A list of userInput variables to set when the service runs, listed by service. */
+    {
+      "serviceOrgid": "",         /* The org of the service. */
+      "serviceUrl": "",           /* The name of the service. */
+      "serviceVersionRange": "",  /* The service version range to which these variables should be applied. */
+      "inputs": [                 /* The input variables to be set. */
+        {
+          "name": "",
+          "value": nil
+        }
+      ]
+    }
   ]
 }`
 
@@ -167,7 +181,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 		newValue = patch["constraints"]
 		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
 		fmt.Println("Policy " + org + "/" + policyName + " updated in the Horizon Exchange")
-	} else if _, ok := findPatchType["userInputs"]; ok {
+	} else if _, ok := findPatchType["userInput"]; ok {
 		patch := make(map[string][]policy.UserInput)
 		err := json.Unmarshal([]byte(attribute), &patch)
 		if err != nil {
@@ -187,7 +201,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 			cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
 			fmt.Println("Policy " + org + "/" + policyName + " updated in the Horizon Exchange")
 		} else {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Business policy attribute not specified. Attributes are: label, description, service, properties, constraints, and userProperties.")
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Business policy attribute to be updated is not found in the input file. Supported attributes are: label, description, service, properties, constraints, and userInput.")
 		}
 	}
 }

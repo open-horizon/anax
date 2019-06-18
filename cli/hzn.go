@@ -248,11 +248,11 @@ Environment Variables:
 	exBusinessListPolicyLong := exBusinessListPolicyCmd.Flag("long", "Display detailed output about the business policies.").Short('l').Bool()
 	exBusinessListPolicyPolicy := exBusinessListPolicyCmd.Arg("policy", "List just this one policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.").String()
 	exBusinessNewPolicyCmd := exBusinessCmd.Command("new", "Display an empty business policy template that can be filled in.")
-	exBusinessAddPolicyCmd := exBusinessCmd.Command("addpolicy", "Add a new business policy or overwrite an existing policy by the same name in the Horizon Exchange.")
+	exBusinessAddPolicyCmd := exBusinessCmd.Command("addpolicy", "Add or replace a business policy in the Horizon Exchange. Use 'hzn exchange business new' for an empty business policy template.")
 	exBusinessAddPolicyIdTok := exBusinessAddPolicyCmd.Flag("id-token", "The Horizon ID and password of the user.").Short('n').PlaceHolder("ID:TOK").String()
 	exBusinessAddPolicyPolicy := exBusinessAddPolicyCmd.Arg("policy", "The name of the policy to add or overwrite.").Required().String()
 	exBusinessAddPolicyJsonFile := exBusinessAddPolicyCmd.Flag("json-file", "The path of a JSON file containing the metadata necessary to create/update the service policy in the Horizon Exchange. Specify -f- to read from stdin.").Short('f').Required().String()
-	exBusinessUpdatePolicyCmd := exBusinessCmd.Command("updatepolicy", "Update one attribute of an existing policy in the Horizon Exchange.")
+	exBusinessUpdatePolicyCmd := exBusinessCmd.Command("updatepolicy", "Update one attribute of an existing policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange business new'.")
 	exBusinessUpdatePolicyIdTok := exBusinessUpdatePolicyCmd.Flag("id-token", "The Horizon ID and password of the user.").Short('n').PlaceHolder("ID:TOK").String()
 	exBusinessUpdatePolicyPolicy := exBusinessUpdatePolicyCmd.Arg("policy", "The name of the policy to be updated in the Horizon Exchange.").Required().String()
 	exBusinessUpdatePolicyJsonFile := exBusinessUpdatePolicyCmd.Flag("json-file", "The path to the json file containing the updated business policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.").Short('f').Required().String()
@@ -284,7 +284,7 @@ Environment Variables:
 	inputFile := registerCmd.Flag("input-file", "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See /usr/horizon/samples/input.json and /usr/horizon/samples/more-examples.json. Specify -f- to read from stdin.").Short('f').String() // not using ExistingFile() because it can be - for stdin
 	nodeOrgFlag := registerCmd.Flag("nodeorg", "The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.").Short('o').String()
 	patternFlag := registerCmd.Flag("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments and --policy flag. ").Short('p').String()
-	nodepolicyFlag := registerCmd.Flag("policy", "A JSON file that sets or overrides the node policy for this node that will be used for agreement negotiation for non-pattern case. Specify -f- to read from stdin. Mutually exclusive with -p and <pattern> argument.").String()
+	nodepolicyFlag := registerCmd.Flag("policy", "A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation. Mutually exclusive with -p argument.").String()
 	org := registerCmd.Arg("nodeorg", "The Horizon exchange organization ID that the node should be registered in. Mutually exclusive with -o and -p.").String()
 	pattern := registerCmd.Arg("pattern", "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o, -p and --policy.").String()
 

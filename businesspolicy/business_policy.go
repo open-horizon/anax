@@ -104,7 +104,7 @@ func (b *BusinessPolicy) Validate() error {
 
 	// make sure required fields are not empty
 	if b.Service.Name == "" || b.Service.Org == "" {
-		return fmt.Errorf("Name, Org or Arch is empty string.")
+		return fmt.Errorf("Name, or Org is empty string.")
 	} else if b.Service.ServiceVersions == nil || len(b.Service.ServiceVersions) == 0 {
 		return fmt.Errorf("The serviceVersions array is empty.")
 	}
