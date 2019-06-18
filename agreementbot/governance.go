@@ -387,8 +387,8 @@ func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *persistence
 // This function is used to verify that a node is still functioning correctly
 func (w *AgreementBotWorker) VerifyNodeHealth(ag *persistence.Agreement, cph ConsumerProtocolHandler) (int, error) {
 
-	// If there is no node health policy configured, return quickly.
-	if !ag.NodeHealthInUse() {
+	// If there is no node health policy configured, or the agreement is not yet ready to be checked, return quickly.
+	if !ag.NodeHealthInUse() || ag.AgreementFinalizedTime == 0 {
 		return 0, nil
 	}
 

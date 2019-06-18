@@ -30,19 +30,18 @@ func Test_Validate_Failed1(t *testing.T) {
 
 	if err := bPolicy.Validate(); err == nil {
 		t.Errorf("Validate should have returned error but not.")
-	} else if !strings.Contains(err.Error(), "Name, Org or Arch is empty string") {
+	} else if !strings.Contains(err.Error(), "Name, or Org is empty string") {
 		t.Errorf("Wrong error string: %v", err)
 	}
 
 	service = ServiceRef{
 		Name:            "cpu",
-		Org:             "mycomp",
 		ServiceVersions: []WorkloadChoice{},
 	}
 	bPolicy.Service = service
 	if err := bPolicy.Validate(); err == nil {
 		t.Errorf("Validate should have returned error but not.")
-	} else if !strings.Contains(err.Error(), "Name, Org or Arch is empty string") {
+	} else if !strings.Contains(err.Error(), "Name, or Org is empty string") {
 		t.Errorf("Wrong error string: %v", err)
 	}
 }

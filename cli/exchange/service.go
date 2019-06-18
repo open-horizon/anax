@@ -26,7 +26,8 @@ const SERVICE_POLICY_TEMPLATE_OBJECT = `{
       "value": nil
     }
   ],
-  "constraints": [  /* A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||). */
+  "constraints": [  /* A list of constraint expressions of the form <property name> <operator> <property value>, */
+                    /* separated by boolean operators AND (&&) or OR (||). */
     ""
   ]
 }`

@@ -189,6 +189,10 @@ clean:
 	-docker rm -v -f "$(DOCKER_CSSDB_CNAME)"
 	@echo "Removing the $(DOCKER_CSS_CNAME) container"
 	-docker rm -f "$(DOCKER_CSS_CNAME)"
+	@echo "Cleaning up any left over workloads"
+	-docker stop $(docker ps -a | egrep "openhorizon/|wiotp-|localhost" | egrep -v "e2edev-agbot|amd64_exchange-api|amd64_cloud-sync-service|amd64_edge-sync-service|REPOSITORY" | awk '{print $$1}')
+	-docker rm $(docker ps -a | egrep "openhorizon/|wiotp-|localhost" | egrep -v "e2edev-agbot|amd64_exchange-api|amd64_cloud-sync-service|amd64_edge-sync-service|REPOSITORY" | awk '{print $$1}')
+	@echo "Removing working directories"
 	-rm -rf $(CURDIR)/docker/tempfs
 	-sudo rm -fr $(UDS)
 
