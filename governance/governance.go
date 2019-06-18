@@ -701,6 +701,11 @@ func (w *GovernanceWorker) Initialize() bool {
 		w.DispatchSubworker(SERVICE_CONFIGSTATE_GOVERNOR, w.governServiceConfigState, w.Config.Edge.ServiceConfigStateCheckIntervalS)
 	}
 
+	// for the policy case update the exchange with the latest registeredServices
+	if w.devicePattern == "" {
+		w.UpdateRegisteredServicesWithAgreement()
+	}
+
 	return true
 
 }
@@ -1131,6 +1136,11 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				if _, err := persistence.ArchiveEstablishedAgreement(w.db, cmd.AgreementId, cmd.AgreementProtocol); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("error archiving terminated agreement: %v, error: %v", cmd.AgreementId, err)))
 				}
+
+				// for the policy case update the exchange with the latest registeredServices
+				if w.devicePattern == "" {
+					w.UpdateRegisteredServicesWithAgreement()
+				}
 			}
 		}
 
@@ -1326,6 +1336,11 @@ func (w *GovernanceWorker) finalizeAgreement(agreement persistence.EstablishedAg
 		return errors.New(logString(fmt.Sprintf("error persisting agreement %v finalized: %v", agreement.CurrentAgreementId, err)))
 	} else {
 		glog.V(3).Infof(logString(fmt.Sprintf("agreement %v finalized", agreement.CurrentAgreementId)))
+	}
+
+	// for the policy case update the exchange with the latest registeredServices
+	if w.devicePattern == "" {
+		w.UpdateRegisteredServicesWithAgreement()
 	}
 
 	// Update state in exchange

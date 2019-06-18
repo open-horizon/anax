@@ -52,10 +52,6 @@ func ChangeServiceConfigState(service_cs *exchange.ServiceConfigState,
 		return errorhandler(NewAPIUserInputError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API's /horizondevice path.", "service/configstate")), nil
 	}
 
-	if pLocalDevice.Pattern == "" {
-		return errorhandler(NewAPIUserInputError("The service/configstate api does not support non-pattern case now.", "service/configstate")), nil
-	}
-
 	// input error checking
 	if service_cs.Url != "" && service_cs.Org == "" {
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("Please specify organization when the service url is not an empty string: %v", service_cs), "org")), nil

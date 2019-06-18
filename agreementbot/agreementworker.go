@@ -280,12 +280,12 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		}
 
 		// If the service is suspended, then do not make an agreement.
-		if wi.ConsumerPolicy.PatternId != "" {
-			if found, suspended := exchange.ServiceSuspended(exchangeDev.RegisteredServices, workload.WorkloadURL, workload.Org); found && suspended {
-				glog.Infof(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with %v for policy %v because service %v is suspended by the user.", wi.Device.Id, wi.ConsumerPolicy.Header.Name, cutil.FormOrgSpecUrl(workload.WorkloadURL, workload.Org))))
-				return
-			}
+		if found, suspended := exchange.ServiceSuspended(exchangeDev.RegisteredServices, workload.WorkloadURL, workload.Org); found && suspended {
+			glog.Infof(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with %v for policy %v because service %v is suspended by the user.", wi.Device.Id, wi.ConsumerPolicy.Header.Name, cutil.FormOrgSpecUrl(workload.WorkloadURL, workload.Org))))
+			return
+		}
 
+		if wi.ConsumerPolicy.PatternId != "" {
 			// Check the arch of the top level service against the node. If it does not match, then do not make an agreement.
 			// In the pattern case, the top level service spec, arch and version are also put in the node's registeredServices
 			for _, ms_svc := range exchangeDev.RegisteredServices {
@@ -339,14 +339,12 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		policy_match := false
 
 		// Check if the depended services are suspended. If any of them are suspended, then abort the agreement initialization process.
-		if wi.ConsumerPolicy.PatternId != "" {
-			for _, apiSpec := range *asl {
-				for _, devMS := range exchangeDev.RegisteredServices {
-					if devMS.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED {
-						if devMS.Url == cutil.FormOrgSpecUrl(apiSpec.SpecRef, apiSpec.Org) || devMS.Url == apiSpec.SpecRef {
-							glog.Infof(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with %v for policy %v because service %v is suspended by the user.", wi.Device.Id, wi.ConsumerPolicy.Header.Name, devMS.Url)))
-							return
-						}
+		for _, apiSpec := range *asl {
+			for _, devMS := range exchangeDev.RegisteredServices {
+				if devMS.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED {
+					if devMS.Url == cutil.FormOrgSpecUrl(apiSpec.SpecRef, apiSpec.Org) || devMS.Url == apiSpec.SpecRef {
+						glog.Infof(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with %v for policy %v because service %v is suspended by the user.", wi.Device.Id, wi.ConsumerPolicy.Header.Name, devMS.Url)))
+						return
 					}
 				}
 			}
