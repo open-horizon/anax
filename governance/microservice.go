@@ -952,3 +952,151 @@ func (w *GovernanceWorker) handleServiceSuspended(service_cs []events.ServiceCon
 
 	return nil
 }
+
+// get the all the top level and dependent services the given agreements are using
+func (w *GovernanceWorker) getAllServicesFromAgreements() (*policy.APISpecList, error) {
+
+	ags, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()})
+	if err != nil {
+		return nil, fmt.Errorf("Unable to retrieve unarchived agreements from database. %v", err)
+	}
+
+	apiSpecs := new(policy.APISpecList)
+
+	if ags != nil {
+		for _, ag := range ags {
+			workload := ag.RunningWorkload
+			if workload.URL == "" || workload.Org == "" {
+				continue
+			}
+
+			apiSpecs.Add_API_Spec(policy.APISpecification_Factory(workload.URL, workload.Org, "", workload.Arch))
+
+			asl, _, _, err := exchange.GetHTTPServiceResolverHandler(w)(workload.URL, workload.Org, workload.Version, workload.Arch)
+			if err != nil {
+				return nil, fmt.Errorf(logString(fmt.Sprintf("error searching for service details %v, error: %v", workload, err)))
+			}
+
+			if asl != nil {
+				for _, s := range *asl {
+					apiSpecs.Add_API_Spec(policy.APISpecification_Factory(s.SpecRef, s.Org, "", s.Arch))
+				}
+			}
+		}
+	}
+
+	return apiSpecs, nil
+}
+
+// For the policy case, the registeredServices is not used except for service suspension and resumption
+// We need to update the registeredServices when an agreement created and canceled.
+func (w *GovernanceWorker) UpdateRegisteredServicesWithAgreement() {
+	// only do it for
+	if w.devicePattern != "" {
+		return
+	}
+
+	glog.V(3).Infof(logString(fmt.Sprintf("Start updating the registeredServices %v in the exchange for policy case.", w.GetExchangeId())))
+
+	// get current services from agreements
+	apiSpecs, err := w.getAllServicesFromAgreements()
+	if err != nil {
+		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Unable to retrieve unarchived agreements from database. %v", err),
+			persistence.EC_DATABASE_ERROR)
+		glog.Errorf(logString(fmt.Sprintf("Error getting all the services from agreements: %v", err)))
+		return
+	}
+
+	// create a registeredServices object from the services. assume all are active for now
+	activeServices := []exchange.Microservice{}
+	if apiSpecs != nil {
+		for _, a := range *apiSpecs {
+			new_s := exchange.Microservice{
+				Url:         cutil.FormOrgSpecUrl(a.SpecRef, a.Org),
+				ConfigState: exchange.SERVICE_CONFIGSTATE_ACTIVE,
+			}
+			activeServices = append(activeServices, new_s)
+		}
+	}
+
+	// get current registeredServices
+	pDevice, err := exchange.GetHTTPDeviceHandler(w)(w.GetExchangeId(), w.GetExchangeToken())
+	if err != nil {
+		eventlog.LogExchangeEvent(w.db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Error retrieving node %v from the exchange: %v", w.GetExchangeId(), err),
+			persistence.EC_EXCHANGE_ERROR, w.GetExchangeURL())
+		glog.Errorf(logString(fmt.Sprintf("Error retrieving node %v from the exchange: %v", w.GetExchangeId(), err)))
+		return
+	} else if pDevice == nil {
+		glog.Errorf(logString(fmt.Sprintf("Cannot get node %v from the exchange.", w.GetExchangeId())))
+		return
+	}
+
+	// go through existing registeredServices and move the suspended services into the new registsteredServices
+	newRegisteredServices, isSame := composeNewRegisteredServices(activeServices, pDevice.RegisteredServices)
+
+	// no changes, no need to update the node on the exchange.
+	if isSame {
+		glog.V(3).Infof(logString(fmt.Sprintf("No change for the node's registeredServices in the exchange.")))
+		return
+	}
+
+	// update the exchange with the new registeredServices
+	pdr := exchange.PatchDeviceRequest{}
+	pdr.RegisteredServices = &newRegisteredServices
+	patchDevice := exchange.GetHTTPPatchDeviceHandler(w)
+	if err := patchDevice(w.GetExchangeId(), w.GetExchangeToken(), &pdr); err != nil {
+		eventlog.LogExchangeEvent(w.db, persistence.SEVERITY_ERROR,
+			fmt.Sprintf("Error updating registeredServices for node %v in the exchange: %v", w.GetExchangeId(), err),
+			persistence.EC_EXCHANGE_ERROR, w.GetExchangeURL())
+		glog.Errorf(logString(fmt.Sprintf("Error patching node %v with new registeredServices %v. %v", w.GetExchangeId(), newRegisteredServices, err)))
+		return
+	} else {
+		glog.V(3).Infof(logString(fmt.Sprintf("Complete updating the node %v with the new registeredServices %v in the exchange.", w.GetExchangeId(), newRegisteredServices)))
+	}
+}
+
+// For the policy case get the new registeredServices for node from the active services and existing registeredServices.
+// Some services in the existing registeredServices are suspended, we need to move them over.
+func composeNewRegisteredServices(activeServices []exchange.Microservice, oldRegisteredServices []exchange.Microservice) ([]exchange.Microservice, bool) {
+	// go through existing registeredServices and move the suspended services into the new registsteredServices
+	isSame := true
+	if activeServices == nil {
+		activeServices = []exchange.Microservice{}
+	}
+
+	if oldRegisteredServices == nil {
+		return activeServices, len(activeServices) == 0
+	}
+
+	newRegisteredServices := make([]exchange.Microservice, len(activeServices))
+	copy(newRegisteredServices, activeServices)
+
+	for _, rs := range oldRegisteredServices {
+		found := false
+		for i, nrs := range activeServices {
+			if rs.Url == nrs.Url {
+				found = true
+				if rs.ConfigState != nrs.ConfigState {
+					isSame = false
+					newRegisteredServices[i].ConfigState = exchange.SERVICE_CONFIGSTATE_SUSPENDED
+				}
+				break
+			}
+		}
+
+		if !found {
+			if rs.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED {
+				newRegisteredServices = append(newRegisteredServices, exchange.Microservice(rs))
+			}
+		}
+	}
+
+	// no changes, no need to update the node on the exchange.
+	if isSame && len(oldRegisteredServices) == len(newRegisteredServices) {
+		return newRegisteredServices, true
+	} else {
+		return newRegisteredServices, false
+	}
+}
