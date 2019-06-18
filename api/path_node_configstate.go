@@ -111,12 +111,32 @@ func UpdateConfigstate(cfg *Configstate,
 			return errorhandler(err), nil, nil
 		}
 
+		// get node and pattern user input
+		nodeUserInput, err := persistence.FindNodeUserInput(db)
+		if err != nil {
+			LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Failed get user input from local db. %v", err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
+			return errorhandler(fmt.Errorf("Failed get user input from local db. %v", err)), nil, nil
+		}
+
+		// merge node user input it with pattern user input
+		mergedUserInput := policy.MergeUserInputArrays(pattern.UserInput, nodeUserInput, true)
+		if mergedUserInput == nil {
+			mergedUserInput = []policy.UserInput{}
+		}
+
 		// Using the list of APISpec objects, we can create a service on this node automatically, for each service
 		// that already has configuration or which doesn't need it.
 		for _, apiSpec := range *common_apispec_list {
 
+			// get the user input for this service
+			ui_merged, err := policy.FindUserInput(apiSpec.SpecRef, apiSpec.Org, "", apiSpec.Arch, mergedUserInput)
+			if err != nil {
+				LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Failed to find preferences for service %v/%v  from the local user input, error: %v", apiSpec.Org, apiSpec.SpecRef, err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
+				return errorhandler(fmt.Errorf("Failed to find preferences for service %v/%v from the merged user input, error: %v", apiSpec.Org, apiSpec.SpecRef, err)), nil, nil
+			}
+
 			s := NewService(apiSpec.SpecRef, apiSpec.Org, makeServiceName(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version), apiSpec.Arch, apiSpec.Version)
-			if errHandled := configureService(s, getPatterns, resolveService, getService, getDevice, patchDevice, errorhandler, &msgs, db, config); errHandled {
+			if errHandled := configureService(s, getPatterns, resolveService, getService, getDevice, patchDevice, ui_merged, errorhandler, &msgs, db, config); errHandled {
 				return errHandled, nil, nil
 			}
 
@@ -132,11 +152,17 @@ func UpdateConfigstate(cfg *Configstate,
 				continue
 			}
 
-			s := NewService(service.ServiceURL, service.ServiceOrg, makeServiceName(service.ServiceURL, service.ServiceOrg, "[0.0.0,INFINITY)"), service.ServiceArch, "[0.0.0,INFINITY)")
-			if errHandled := configureService(s, getPatterns, resolveService, getService, getDevice, patchDevice, errorhandler, &msgs, db, config); errHandled {
-				return errHandled, nil, nil
+			// get the user input for this service
+			ui_merged, err := policy.FindUserInput(service.ServiceURL, service.ServiceOrg, "", service.ServiceArch, mergedUserInput)
+			if err != nil {
+				LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Failed to find preferences for service %v/%v from the local user input, error: %v", service.ServiceOrg, service.ServiceURL, err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
+				return errorhandler(fmt.Errorf("Failed to find preferences for service %v/%v from the merged user input, error: %v", service.ServiceOrg, service.ServiceURL, err)), nil, nil
 			}
 
+			s := NewService(service.ServiceURL, service.ServiceOrg, makeServiceName(service.ServiceURL, service.ServiceOrg, "[0.0.0,INFINITY)"), service.ServiceArch, "[0.0.0,INFINITY)")
+			if errHandled := configureService(s, getPatterns, resolveService, getService, getDevice, patchDevice, ui_merged, errorhandler, &msgs, db, config); errHandled {
+				return errHandled, nil, nil
+			}
 		}
 
 		glog.V(3).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig of services complete")))
@@ -168,6 +194,7 @@ func configureService(service *Service,
 	getService exchange.ServiceHandler,
 	getDevice exchange.DeviceHandler,
 	patchDevice exchange.PatchDeviceHandler,
+	mergedUserInput *policy.UserInput,
 	errorhandler ErrorHandler,
 	msgs *[]*events.PolicyCreatedMessage,
 	db *bolt.DB,
@@ -183,7 +210,17 @@ func configureService(service *Service,
 		return passthruHandler(err)
 	}
 
-	if errHandled, newService, msg := CreateService(service, create_service_error_handler, getPatterns, resolveService, getService, getDevice, patchDevice, db, config, false); errHandled {
+	// Make sure it is not nil
+	if mergedUserInput == nil {
+		mergedUserInput = &policy.UserInput{
+			ServiceOrgid:        *service.Org,
+			ServiceUrl:          *service.Url,
+			ServiceArch:         *service.Arch,
+			ServiceVersionRange: "",
+			Inputs:              []policy.Input{},
+		}
+	}
+	if errHandled, newService, msg := CreateService(service, create_service_error_handler, getPatterns, resolveService, getService, getDevice, patchDevice, mergedUserInput, db, config, false); errHandled {
 
 		switch createServiceError.(type) {
 
@@ -216,6 +253,9 @@ func configureService(service *Service,
 // This function verifies that if the given workload needs variable configuration, that there is a workloadconfig
 // object holding that config.
 func workloadConfigPresent(sd *exchange.ServiceDefinition, wUrl string, wOrg, wVersion string, patternUserInput []policy.UserInput, db *bolt.DB) (bool, error) {
+	if sd == nil {
+		return true, nil
+	}
 
 	// If the definition needs no config, exit early.
 	if !sd.NeedsUserInput() {
@@ -327,14 +367,16 @@ func getSpecRefsForPattern(patName string,
 			}
 
 			// Look for inconsistencies in the hardware architecture of the list of dependencies.
-			for _, apiSpec := range *apiSpecList {
-				if apiSpec.Arch != thisArch && config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch) != thisArch {
-					return nil, nil, NewSystemError(fmt.Sprintf("The referenced service %v by service %v/%v has a hardware architecture that is not supported by this node: %v.", apiSpec, service.ServiceOrg, service.ServiceURL, thisArch))
+			if apiSpecList != nil {
+				for _, apiSpec := range *apiSpecList {
+					if apiSpec.Arch != thisArch && config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch) != thisArch {
+						return nil, nil, NewSystemError(fmt.Sprintf("The referenced service %v by service %v/%v has a hardware architecture that is not supported by this node: %v.", apiSpec, service.ServiceOrg, service.ServiceURL, thisArch))
+					}
 				}
-			}
 
-			// MergeWith will omit exact duplicates when merging the 2 lists.
-			(*completeAPISpecList) = completeAPISpecList.MergeWith(apiSpecList)
+				// MergeWith will omit exact duplicates when merging the 2 lists.
+				(*completeAPISpecList) = completeAPISpecList.MergeWith(apiSpecList)
+			}
 		}
 
 	}

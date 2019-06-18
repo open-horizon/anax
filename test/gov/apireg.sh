@@ -104,7 +104,7 @@ EOF
 
 
 echo "Adding policy to the node using node/policy API"
-RES=$(echo "$newhznpolicy" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/policy")
+RES=$(echo "$newhznpolicy" | curl -sS -X PUT -w "%{http_code}" -H "Content-Type: application/json" --data @- "$ANAX_API/node/policy")
 
 if [ "$RES" == "" ]
 then
@@ -112,16 +112,16 @@ then
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
-if [ "$ERR" != "null" ]
+ERR=$(echo $RES | jq -r '.' | tail -1)
+if [ "$ERR" != "201" ]
 then
     echo -e "$newhznpolicy \nresulted in incorrect response: $RES"
 
     echo -e "Wait for 30 seconds and try again"
     sleep 30
     RES=$(echo "$newhznpolicy" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/policy")
-    ERR=$(echo $RES | jq -r ".error")
-    if [ "$ERR" != "null" ]
+    ERR=$(echo $RES | jq -r '.' | tail -1)
+    if [ "$ERR" != "201" ]
     then
         echo -e "$newhznpolicy \nsecond try resulted in incorrect response: $RES"
         exit 2
@@ -190,8 +190,7 @@ EOF
 fi
 
 # =======================================================================
-# Setup services/workloads
-
+# Setup some services/workloads
 echo -e "\nNo netspeed setting is $NONS"
 if [ "$NONS" != "1" ]
 then
@@ -223,7 +222,7 @@ then
     if [ $? -ne 0 ]
     then
         exit 2
-    fi
+   fi
 fi
 
 echo -e "\nNo pws setting is $NOPWS"
@@ -250,8 +249,8 @@ then
   fi
   if [ $? -ne 0 ]
   then
-    exit 2
-  fi
+   exit 2
+ fi
 fi
 
 ./hello_apireg.sh

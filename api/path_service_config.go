@@ -133,6 +133,7 @@ func CreateService(service *Service,
 	getService exchange.ServiceHandler,
 	getDevice exchange.DeviceHandler,
 	patchDevice exchange.PatchDeviceHandler,
+	mergedUserInput *policy.UserInput, //nil for /service/config case. non-nil for auto-complete case to save some getPatterns calls.
 	db *bolt.DB,
 	config *config.HorizonConfig,
 	from_user bool) (bool, *Service, *events.PolicyCreatedMessage) {
@@ -177,30 +178,6 @@ func CreateService(service *Service,
 		return true, nil, nil
 	}
 
-	// We might be registering a dependent service, so look through the pattern and get a list of all dependent services, then
-	// come up with a common version for all references. If the service we're registering is one of these, then use the
-	// common version range in our service instead of the version range that was passed as input.
-	if pDevice.Pattern != "" && from_user {
-
-		pattern_org, pattern_name, _ := persistence.GetFormatedPatternString(pDevice.Pattern, pDevice.Org)
-
-		common_apispec_list, _, err := getSpecRefsForPattern(pattern_name, pattern_org, getPatterns, resolveService, db, config, false)
-
-		if err != nil {
-			return errorhandler(err), nil, nil
-		}
-
-		if len(*common_apispec_list) != 0 {
-			for _, apiSpec := range *common_apispec_list {
-				if apiSpec.SpecRef == *service.Url && apiSpec.Org == *service.Org {
-					service.VersionRange = &apiSpec.Version
-					service.Arch = &apiSpec.Arch
-					break
-				}
-			}
-		}
-	}
-
 	// Return error if the arch in the service object is not a synonym of the node's arch.
 	// Use the device's arch if not specified in the service object.
 	thisArch := cutil.ArchString()
@@ -210,6 +187,48 @@ func CreateService(service *Service,
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("arch %v is not supported by this node.", *service.Arch), "service.arch")), nil, nil
 	} else if bail := checkInputString(errorhandler, "service.arch", service.Arch); bail {
 		return true, nil, nil
+	}
+
+	if pDevice.Pattern != "" {
+		pattern_org, pattern_name, _ := persistence.GetFormatedPatternString(pDevice.Pattern, pDevice.Org)
+
+		if from_user {
+			// We might be registering a dependent service, so look through the pattern and get a list of all dependent services, then
+			// come up with a common version for all references. If the service we're registering is one of these, then use the
+			// common version range in our service instead of the version range that was passed as input.
+			common_apispec_list, exchPattern, err := getSpecRefsForPattern(pattern_name, pattern_org, getPatterns, resolveService, db, config, false)
+			if err != nil {
+				return errorhandler(err), nil, nil
+			}
+
+			if len(*common_apispec_list) != 0 {
+				for _, apiSpec := range *common_apispec_list {
+					if apiSpec.SpecRef == *service.Url && apiSpec.Org == *service.Org {
+						service.VersionRange = &apiSpec.Version
+						service.Arch = &apiSpec.Arch
+						break
+					}
+				}
+			}
+
+			// get the user input from the pattern so that we can merge it with the given service attributes to make sure all the necessary user inputs are set.
+			if mergedUserInput == nil {
+				var err1 error
+				mergedUserInput, err1 = getMergedUserInput(exchPattern.UserInput, *service.Url, *service.Org, *service.Arch, db)
+				if err1 != nil {
+					return errorhandler(NewSystemError(fmt.Sprintf("Failed to get the service config from the merged node user input with pattern user input. %v", err1))), nil, nil
+				}
+			}
+		}
+	} else {
+		// this is the case where /service/config is called for policy
+		if mergedUserInput == nil {
+			var err1 error
+			mergedUserInput, err1 = getMergedUserInput([]policy.UserInput{}, *service.Url, *service.Org, *service.Arch, db)
+			if err1 != nil {
+				return errorhandler(NewSystemError(fmt.Sprintf("Failed to get the service config from the node user input. %v", err1))), nil, nil
+			}
+		}
 	}
 
 	// The versionRange field is checked for valid characters by the Version_Expression_Factory, it has a very
@@ -286,13 +305,6 @@ func CreateService(service *Service,
 		return errorhandler(NewDuplicateServiceError(fmt.Sprintf("Duplicate registration for %v/%v %v %v. Only one registration per service is supported.", *service.Org, *service.Url, vExp.Get_expression(), cutil.ArchString()), "service")), nil, nil
 	}
 
-	// If there are no attributes associated with this request but the service requires some configuration, return an error.
-	if service.Attributes == nil || (service.Attributes != nil && len(*service.Attributes) == 0) {
-		if varname := msdef.NeedsUserInput(); varname != "" {
-			return errorhandler(NewMSMissingVariableConfigError(fmt.Sprintf(cutil.ANAX_SVC_MISSING_VARIABLE, varname, cutil.FormOrgSpecUrl(*service.Url, *service.Org)), "service.[attribute].mappings")), nil, nil
-		}
-	}
-
 	// Validate any attributes specified in the attribute list and convert them to persistent objects.
 	// This attribute verifier makes sure that there is a mapped attribute which specifies values for all the non-default
 	// user inputs in the specific service selected earlier.
@@ -310,15 +322,6 @@ func CreateService(service *Service,
 					if err := cutil.VerifyWorkloadVarTypes(varValue, ui.Type); err != nil {
 						return errorhandler(NewAPIUserInputError(fmt.Sprintf(cutil.ANAX_SVC_WRONG_TYPE+"%v", varName, cutil.FormOrgSpecUrl(*service.Url, *service.Org), err), "variables")), nil
 					}
-				}
-			}
-
-			// Verify that non-default variables are present.
-			for _, ui := range msdef.UserInputs {
-				if ui.DefaultValue != "" {
-					continue
-				} else if _, ok := attr.GetGenericMappings()[ui.Name]; !ok {
-					return errorhandler(NewMSMissingVariableConfigError(fmt.Sprintf(cutil.ANAX_SVC_MISSING_VARIABLE, ui.Name, cutil.FormOrgSpecUrl(*service.Url, *service.Org)), "service.[attribute].mappings")), nil
 				}
 			}
 		}
@@ -417,7 +420,28 @@ func CreateService(service *Service,
 		}
 	}
 
-	// patch the user input into the exchange and local db
+	// merge the user input with the pattern and existing node user input to get a whole user input for this service
+	merged_ui := mergedUserInput
+	if len(userInput) > 0 {
+		if mergedUserInput == nil {
+			merged_ui = &userInput[0]
+		} else {
+			// there should be only one for this service
+			merged_ui, _ = policy.MergeUserInput(*mergedUserInput, userInput[0], false)
+		}
+	}
+
+	// make sure we have all the required user settings for this service. We can only check for the pattern case.
+	if present, missingVarName := validateUserInput(sdef, merged_ui); !present {
+		if pDevice.Pattern != "" {
+			return errorhandler(NewMSMissingVariableConfigError(fmt.Sprintf(cutil.ANAX_SVC_MISSING_VARIABLE, missingVarName, cutil.FormOrgSpecUrl(*service.Url, *service.Org)), "service.[attribute].mappings")), nil, nil
+		} else {
+			// For policy case, we do not know what business policy will form agreement with it, so we just give warning for the missing variable name
+			glog.Warningf(apiLogString(fmt.Sprintf("Variable %v is missing in the service configuration for %v/%v. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.", missingVarName, *service.Org, *service.Url)))
+			LogServiceEvent(db, persistence.SEVERITY_WARN, fmt.Sprintf("Variable %v is missing in the service configuration for %v/%v. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.", missingVarName, *service.Org, *service.Url), persistence.EC_WARNING_SERVICE_CONFIG, service)
+		}
+	}
+
 	if from_user && len(userInput) > 0 {
 		if err := exchangesync.PatchNodeUserInput(pDevice, db, userInput, getDevice, patchDevice); err != nil {
 			return errorhandler(NewSystemError(fmt.Sprintf("Failed to add the user input %v to node. %v", userInput, err))), nil, nil
@@ -515,4 +539,72 @@ func convertAttributeToExchangeUserInput(service *Service, attr *persistence.Use
 		userInput.Inputs = ui
 	}
 	return userInput
+}
+
+// check if the given merged user input satisfies the service requirement. It is only called in the pattern case.
+func validateUserInput(sdef *exchange.ServiceDefinition, mergedUserInput *policy.UserInput) (bool, string) {
+	if !sdef.NeedsUserInput() {
+		return true, ""
+	}
+
+	if mergedUserInput == nil || mergedUserInput.Inputs == nil || len(mergedUserInput.Inputs) == 0 {
+		for _, ui := range sdef.UserInputs {
+			if ui.DefaultValue == "" {
+				return false, ui.Name
+			}
+		}
+	} else {
+		// check if the user input has all the necessary values
+		for _, ui := range sdef.UserInputs {
+			if ui.DefaultValue != "" {
+				continue
+			} else if mergedUserInput.FindInput(ui.Name) == nil {
+				return false, ui.Name
+			}
+		}
+	}
+
+	return true, ""
+}
+
+// get the pattern from exchange
+func getExchangePattern(patOrg string, patName string, getPatterns exchange.PatternHandler) (*exchange.Pattern, error) {
+	pattern, err := getPatterns(patOrg, patName)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to read pattern object %v from exchange, error %v", patName, err)
+	} else if len(pattern) != 1 {
+		return nil, fmt.Errorf("Expected only 1 pattern from exchange, received %v", len(pattern))
+	}
+
+	// Get the pattern definition that we need to analyze.
+	patId := fmt.Sprintf("%v/%v", patOrg, patName)
+	exchPattern, ok := pattern[patId]
+	if !ok {
+		return nil, fmt.Errorf("Expected pattern id not found in GET pattern response: %v", pattern)
+	}
+
+	return &exchPattern, nil
+}
+
+// get the merged user input for a service from the pattern and node.
+func getMergedUserInput(patternUserInput []policy.UserInput, svcUrl, svcOrg, svcArch string, db *bolt.DB) (*policy.UserInput, error) {
+
+	// get node user input
+	nodeUserInput, err := persistence.FindNodeUserInput(db)
+	if err != nil {
+		return nil, fmt.Errorf("Failed get user input from local db. %v", err)
+	}
+
+	// merge node user input it with pattern user input
+	mergedUserInput := policy.MergeUserInputArrays(patternUserInput, nodeUserInput, true)
+	if mergedUserInput == nil {
+		mergedUserInput = []policy.UserInput{}
+	}
+
+	// get the user input for this service
+	ui_merged, err := policy.FindUserInput(svcUrl, svcOrg, "", svcArch, mergedUserInput)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to find preferences for service %v/%v from the merged user input, error: %v", svcOrg, svcUrl, err)
+	}
+	return ui_merged, nil
 }

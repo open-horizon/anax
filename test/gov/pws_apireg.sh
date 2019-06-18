@@ -4,43 +4,69 @@ echo -e "Pattern is set to $PATTERN"
 
 if [ "$PATTERN" == "spws" ] || [ "$PATTERN" == "sall" ] || [ "$PATTERN" == "" ]
 then
-
-# Configure the weather service variables
-read -d '' spwsconfig <<EOF
-{
-  "url": "https://bluehorizon.network/services/weather",
-  "version": "1.5.0",
-  "organization": "e2edev@somecomp.com",
-  "attributes": [
+  read -d '' nodeui <<EOF
+[
     {
-      "type": "UserInputAttributes",
-      "label": "User input variables",
-      "publishable": false,
-      "host_only": false,
-      "mappings": {
-        "HZN_WUGNAME": "e2edev mocked pws",
-        "HZN_PWS_MODEL": "LaCrosse WS2317",
-        "MTN_PWS_MODEL": "LaCrosse WS2317",
-        "HZN_PWS_ST_TYPE": "WS23xx",
-        "MTN_PWS_ST_TYPE": "WS23xx",
-        "HZN_LAT": 41.921766,
-        "HZN_LON": -73.894224,
-        "HZN_LOCATION_ACCURACY_KM": 0.5,
-        "HZN_USE_GPS": false
-      }
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/services/weather",
+      "serviceArch": "",
+      "serviceVersionRange": "1.5.0",
+      "inputs": [
+        {
+          "name": "HZN_LAT",
+          "value": 41.921766
+        },
+        {
+          "name": "HZN_LON",
+          "value": -73.894224
+        },
+        {
+          "name": "HZN_LOCATION_ACCURACY_KM",
+          "value": 0.5
+        },
+        {
+          "name": "HZN_USE_GPS",
+          "value": false
+        },
+        {
+          "name": "HZN_WUGNAME",
+          "value": "e2edev mocked pws"
+        },
+        {
+          "name": "HZN_PWS_MODEL",
+          "value": "LaCrosse WS2317"
+        },
+        {
+          "name": "MTN_PWS_MODEL",
+          "value": "LaCrosse WS2317"
+        },
+        {
+          "name": "HZN_PWS_ST_TYPE",
+          "value": "WS23xx"
+        },
+        {
+          "name": "MTN_PWS_ST_TYPE",
+          "value": "WS23xx"
+        }
+      ]
     }
-  ]
-}
+]
+
 EOF
+  echo "Adding service configuration for weather with /node/userinput api..."
+  RES=$(echo "$nodeui" | curl -sS -X PATCH -w "%{http_code}" -H "Content-Type: application/json" --data @- "$ANAX_API/node/userinput")
+  if [ "$RES" == "" ]
+  then
+    echo -e "$newhznpolicy \nresulted in empty response"
+    exit 2
+  fi
 
-echo -e "\n\n[D] weather service config payload: $spwsconfig"
-
-echo "Registering weather service config on node"
-
-ERR=$(echo "$spwsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
-if [ "$ERR" != "null" ]; then
-  echo -e "error occured: $ERR"
-  exit 2
-fi
+  ERR=$(echo $RES | jq -r '.' | tail -1)
+  if [ "$ERR" != "201" ]
+  then
+    echo -e "$nodeui \nresulted in incorrect response: $RES"
+  else
+    echo -e "found expected response: $RES"
+  fi
 
 fi

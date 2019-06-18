@@ -119,8 +119,12 @@ func (s *ServiceDefinition) GetUserInputName(name string) *UserInput {
 }
 
 func (s *ServiceDefinition) NeedsUserInput() bool {
+	if s.UserInputs == nil || len(s.UserInputs) == 0 {
+		return false
+	}
+
 	for _, ui := range s.UserInputs {
-		if ui.DefaultValue == "" {
+		if ui.Name != "" && ui.DefaultValue == "" {
 			return true
 		}
 	}

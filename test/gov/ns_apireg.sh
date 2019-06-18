@@ -30,9 +30,7 @@ then
       "mappings": {
         "var1": "aString",
         "var2": 5,
-        "var3": 10.2,
-        "var4": ["abc", "123"],
-        "var5": "override"
+        "var3": 22.2
       }
     }
   ]
@@ -61,9 +59,7 @@ EOF
       "mappings": {
         "var1": "bString",
         "var2": 10,
-        "var3": 10.22,
-        "var4": ["abcd", "1234"],
-        "var5": "override2"
+        "var3": 23.2
       }
     }
   ]
@@ -227,11 +223,9 @@ EOF
       "publishable": false,
       "host_only": false,
       "mappings": {
-        "var1": "aString",
-        "var2": 5,
-        "var3": 10.2,
-        "var4": ["abc", "123"],
-        "var5": "override"
+        "var1": "bString",
+        "var2": 10,
+        "var3": 20.2
       }
     }
   ]
@@ -258,11 +252,9 @@ EOF
       "publishable": false,
       "host_only": false,
       "mappings": {
-        "var1": "aString",
-        "var2": 5,
-        "var3": 10.2,
-        "var4": ["abc", "123"],
-        "var5": "override"
+        "var1": "bString",
+        "var2": 11,
+        "var3": 21.2
       }
     }
   ]
