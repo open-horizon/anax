@@ -295,16 +295,23 @@ func ConvertNodeHealth(nodeh NodeHealth, pol *policy.Policy) {
 	pol.Add_NodeHealth(nh)
 }
 
+// Copy Agreement protocol metadata into the policy
 func ConvertAgreementProtocol(p *Pattern, pol *policy.Policy) {
-	// Copy Agreement protocol metadata into the policy
-	for _, agp := range p.AgreementProtocols {
-		newAGP := policy.AgreementProtocol_Factory(agp.Name)
+	if p.AgreementProtocols == nil || len(p.AgreementProtocols) == 0 {
+		// add default agreement protocol
+		newAGP := policy.AgreementProtocol_Factory(policy.BasicProtocol)
 		newAGP.Initialize()
-		for _, bc := range agp.Blockchains {
-			newBC := policy.Blockchain_Factory(bc.Type, bc.Name, bc.Org)
-			(&newAGP.Blockchains).Add_Blockchain(newBC)
-		}
 		pol.Add_Agreement_Protocol(newAGP)
+	} else {
+		for _, agp := range p.AgreementProtocols {
+			newAGP := policy.AgreementProtocol_Factory(agp.Name)
+			newAGP.Initialize()
+			for _, bc := range agp.Blockchains {
+				newBC := policy.Blockchain_Factory(bc.Type, bc.Name, bc.Org)
+				(&newAGP.Blockchains).Add_Blockchain(newBC)
+			}
+			pol.Add_Agreement_Protocol(newAGP)
+		}
 	}
 }
 

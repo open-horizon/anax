@@ -157,6 +157,11 @@ func (b *BusinessPolicy) GenPolicyFromBusinessPolicy(policyName string) (*policy
 
 	pol.MaxAgreements = DEFAULT_MAX_AGREEMENT
 
+	// add default agreement protocol
+	newAGP := policy.AgreementProtocol_Factory(policy.BasicProtocol)
+	newAGP.Initialize()
+	pol.Add_Agreement_Protocol(newAGP)
+
 	// make a copy of the user input
 	pol.UserInput = make([]policy.UserInput, len(b.UserInput))
 	copy(pol.UserInput, b.UserInput)
