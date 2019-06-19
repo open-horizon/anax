@@ -872,6 +872,7 @@ func ExchangePutPost(service string, method string, urlBase string, urlSuffix st
 	// Prepare body
 	var jsonBytes []byte
 	bodyIsBytes := false
+	bodyIsFile := false
 	switch b := body.(type) {
 	// If the body is a byte array, we treat it like a file being uploaded (not multi-part)
 	case []byte:
@@ -879,6 +880,8 @@ func ExchangePutPost(service string, method string, urlBase string, urlSuffix st
 		bodyIsBytes = true
 	case string:
 		jsonBytes = []byte(b)
+	case *os.File:
+		bodyIsFile = true
 	default:
 		var err error
 		jsonBytes, err = json.Marshal(body)
@@ -886,7 +889,13 @@ func ExchangePutPost(service string, method string, urlBase string, urlSuffix st
 			Fatal(JSON_PARSING_ERROR, "failed to marshal exchange body for %s: %v", apiMsg, err)
 		}
 	}
-	requestBody := bytes.NewBuffer(jsonBytes)
+
+	var requestBody io.Reader
+	if bodyIsFile {
+		requestBody = body.(*os.File)
+	} else {
+		requestBody = bytes.NewBuffer(jsonBytes)
+	}
 
 	// Create the request and run it
 	req, err := http.NewRequest(method, url, requestBody)
@@ -896,6 +905,8 @@ func ExchangePutPost(service string, method string, urlBase string, urlSuffix st
 	req.Header.Add("Accept", "application/json")
 	if bodyIsBytes {
 		req.Header.Add("Content-Length", strconv.Itoa(len(jsonBytes)))
+	} else if bodyIsFile {
+		req.Header.Add("Content-Type", "application/octet-stream")
 	} else {
 		req.Header.Add("Content-Type", "application/json")
 	}
