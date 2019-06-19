@@ -189,10 +189,14 @@ func (self *PropertyList) Validate() error {
 		}
 		declaredType := property.Type
 
+		if !isValidPropertyType(declaredType) {
+			return fmt.Errorf("Property %s has invalid property type %s. Allowed property types are: version, string, int, boolean, float, and list of string.", property.Name, declaredType)
+		}
+
 		switch actualType := property.Value.(type) {
 		case bool:
 			if declaredType != BOOLEAN_TYPE && declaredType != UNDECLARED_TYPE {
-				return fmt.Errorf("Property value is of type %v, expected type %s", actualType, declaredType)
+				return fmt.Errorf("Property value is of type %T, expected type %s", actualType, declaredType)
 			}
 		case float64, json.Number:
 			if declaredType == INTEGER_TYPE && fmt.Sprintf("%T", actualType) == "float64" {
@@ -206,7 +210,7 @@ func (self *PropertyList) Validate() error {
 				}
 			}
 			if declaredType != INTEGER_TYPE && declaredType != FLOAT_TYPE && declaredType != UNDECLARED_TYPE {
-				return fmt.Errorf("Property value is of type %v, expected type %s", actualType, declaredType)
+				return fmt.Errorf("Property value is of type %T, expected type %s", actualType, declaredType)
 			}
 		case string:
 			stringVal, canBeString := property.Value.(string)
@@ -218,10 +222,10 @@ func (self *PropertyList) Validate() error {
 					return fmt.Errorf("Property %s with value %v is not a valid verion string", property.Name, property.Value)
 				}
 			} else if declaredType != STRING_TYPE && declaredType != UNDECLARED_TYPE && declaredType != LIST_TYPE {
-				return fmt.Errorf("Property value is of type %v, expected type %s", actualType, declaredType)
+				return fmt.Errorf("Property value is of type %T, expected type %s", actualType, declaredType)
 			}
 		default:
-			return fmt.Errorf("Property %s has invalid value type %v", property.Name, actualType)
+			return fmt.Errorf("Property %s has invalid value type %T", property.Name, actualType)
 		}
 	}
 	return nil
@@ -253,4 +257,14 @@ func IsVersionString(expr string) bool {
 		}
 		return true
 	}
+}
+
+func isValidPropertyType(typeInput string) bool {
+	validTypes := []string{STRING_TYPE, VERSION_TYPE, BOOLEAN_TYPE, INTEGER_TYPE, FLOAT_TYPE, LIST_TYPE, UNDECLARED_TYPE}
+	for _, validType := range validTypes {
+		if validType == typeInput {
+			return true
+		}
+	}
+	return false
 }
