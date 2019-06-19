@@ -1,6 +1,7 @@
 package cliconfig
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
@@ -141,12 +142,80 @@ func SetEnvVarsFromConfigFile(configFile string, orig_env_vars map[string]string
 	}
 
 	if err := SetEnvVars(metadata_vars, orig_env_vars, override_env); err != nil {
-		return hzn_vars, metadata_vars, fmt.Errorf("Failed to sent the environment variable defined in the MetadataVars attribute in file %v. %v", configFile, err)
+		return hzn_vars, metadata_vars, fmt.Errorf("Failed to set the environment variable defined in the MetadataVars attribute in file %v. %v", configFile, err)
 	}
 	if err := SetEnvVars(hzn_vars, orig_env_vars, override_env); err != nil {
-		return hzn_vars, metadata_vars, fmt.Errorf("Failed to sent the environment variable defined in top level in file %v. %v", configFile, err)
+		return hzn_vars, metadata_vars, fmt.Errorf("Failed to set the environment variable in top level in file %v. %v", configFile, err)
 	}
 	return hzn_vars, metadata_vars, nil
+}
+
+// set up the environment variables from the given non-jsonfile.
+// skip the ones that's alrady there originally if override_env is false
+// it returns the hzn env vars from the given file
+func SetEnvVarsFromNonJsonFile(configFile string, orig_env_vars map[string]string, override_env bool) (map[string]string, error) {
+	hzn_vars := map[string]string{}
+
+	if _, err := os.Stat(configFile); err != nil {
+		cliutils.Verbose(fmt.Sprintf("Config file does not exist: %v.", configFile))
+
+		// return no error here because the file does not exists.
+		return hzn_vars, nil
+	}
+
+	cliutils.Verbose("Reading configuration file: %v", configFile)
+
+	// read the configuration from the file
+	hzn_vars, err := GetConfigFromNonJsonFile(configFile)
+	if err != nil {
+		return nil, err
+	}
+
+	// set the env variables
+	if err := SetEnvVars(hzn_vars, orig_env_vars, override_env); err != nil {
+		return hzn_vars, fmt.Errorf("Failed to set the environment variable defined in file %v. %v", configFile, err)
+	}
+
+	return hzn_vars, nil
+}
+
+func GetConfigFromNonJsonFile(configFile string) (map[string]string, error) {
+	hzn_vars := map[string]string{}
+
+	fileHandle, err := os.Open(configFile)
+	if err != nil {
+		return hzn_vars, err
+	}
+	defer fileHandle.Close()
+
+	// regex for comment line
+	r, _ := regexp.Compile(`^(\s)*#(.*)*`)
+
+	scanner := bufio.NewScanner(fileHandle)
+	for scanner.Scan() {
+		// skip the comment line
+		if r.MatchString(scanner.Text()) {
+			continue
+		}
+
+		// now handle the normal line
+		a := strings.Split(scanner.Text(), "=")
+		if len(a) > 0 {
+			key := strings.TrimSpace(a[0])
+			value := ""
+			if len(a) > 1 {
+				value = strings.TrimSpace(a[1])
+			}
+			if key != "" {
+				hzn_vars[key] = value
+			}
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return hzn_vars, err
+	}
+
+	return hzn_vars, nil
 }
 
 func SetEnvVars(new_env_vars, orig_env_vars map[string]string, override bool) error {
@@ -274,7 +343,7 @@ func ReadJsonFileWithLocalConfig(filePath string) []byte {
 		orig_env_vars = GetEnvVars()
 		hzn_vars, metadata_vars, err = SetEnvVarsFromConfigFile(localConfigFile, orig_env_vars, true)
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to set the environment variables from the local configuration file %v for file %v. Error: %v", localConfigFile, filePath, err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to set the environment variable from the local configuration file %v for file %v. Error: %v", localConfigFile, filePath, err)
 		}
 	}
 
@@ -284,7 +353,7 @@ func ReadJsonFileWithLocalConfig(filePath string) []byte {
 		// restore the env vars
 		err = RestoreEnvVars(orig_env_vars, hzn_vars, metadata_vars)
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to restore the environment variables after using local configuration file %v. %v", useLocalConfig, err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to restore the environment variable after using local configuration file %v. %v", useLocalConfig, err)
 		}
 	}
 
@@ -310,9 +379,15 @@ func SetEnvVarsFromConfigFiles(project_dir string) error {
 	}
 	_, _, err = SetEnvVarsFromConfigFile(configFile_pkg, orig_env_vars, false)
 	if err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error set environment variable from file %v. %v", configFile_pkg, err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error reading environment variables from file %v. %v", configFile_pkg, err)
 	} else {
 		PACKAGE_CONFIG_FILE = filepath.Clean(configFile_pkg)
+	}
+
+	// check /etc/default/horizon file that ships with horizon package
+	_, err = SetEnvVarsFromNonJsonFile("/etc/default/horizon", orig_env_vars, false)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error reading environment variables from file /etc/default/horizon. %v", err)
 	}
 
 	// check the user's configuration file  ~/.hzn/hzn.json
@@ -323,7 +398,7 @@ func SetEnvVarsFromConfigFiles(project_dir string) error {
 	if configFile_user != configFile_pkg {
 		_, _, err = SetEnvVarsFromConfigFile(configFile_user, orig_env_vars, false)
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error setting environment variable from file %v. %v", configFile_user, err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error reading environment variables from file %v. %v", configFile_user, err)
 		} else {
 			USER_CONFIG_FILE = filepath.Clean(configFile_user)
 		}
@@ -344,7 +419,7 @@ func SetEnvVarsFromConfigFiles(project_dir string) error {
 		if configFile_project != configFile_pkg && configFile_project != configFile_user {
 			_, _, err = SetEnvVarsFromConfigFile(configFile_project, orig_env_vars, true)
 			if err != nil {
-				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error set environment variable from file %v. %v", configFile_project, err)
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error reading environment variables from file %v. %v", configFile_project, err)
 			} else {
 				PROJECT_CONFIG_FILE = filepath.Clean(configFile_project)
 			}
