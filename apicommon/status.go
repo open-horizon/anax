@@ -16,6 +16,7 @@ type Configuration struct {
 	ExchangeVersion string `json:"exchange_version"`
 	MinExchVersion  string `json:"required_minimum_exchange_version"`
 	PrefExchVersion string `json:"preferred_exchange_version"`
+	MMSAPI          string `json:"mms_api"`
 	Arch            string `json:"architecture"`
 	HorizonVersion  string `json:"horizon_version"`
 }
@@ -25,7 +26,7 @@ type Info struct {
 	Connectivity  map[string]bool `json:"connectivity"`
 }
 
-func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, id string, token string) *Info {
+func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, mmsUrl string, id string, token string) *Info {
 
 	exch_version, err := exchange.GetExchangeVersion(httpClientFactory, exchangeUrl, id, token)
 	if err != nil {
@@ -38,6 +39,7 @@ func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, id
 			ExchangeVersion: exch_version,
 			MinExchVersion:  version.MINIMUM_EXCHANGE_VERSION,
 			PrefExchVersion: version.PREFERRED_EXCHANGE_VERSION,
+			MMSAPI:          mmsUrl,
 			Arch:            runtime.GOARCH,
 			HorizonVersion:  version.HORIZON_VERSION,
 		},

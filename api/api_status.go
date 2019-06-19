@@ -13,7 +13,7 @@ func (a *API) status(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 
-		info := apicommon.NewInfo(a.GetHTTPFactory(), a.GetExchangeURL(), a.GetExchangeId(), a.GetExchangeToken())
+		info := apicommon.NewInfo(a.GetHTTPFactory(), a.GetExchangeURL(), a.GetCSSURL(), a.GetExchangeId(), a.GetExchangeToken())
 
 		if err := apicommon.WriteConnectionStatus(info); err != nil {
 			glog.Errorf(apiLogString(fmt.Sprintf("Unable to get connectivity status: %v", err)))
