@@ -548,7 +548,7 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 func fetchExchangeProjectDependency(homeDirectory string, specRef string, url string, org string, version string, arch string, userCreds string, userInputFile string) error {
 
 	// Pull the metadata from the exchange, including any of this dependency's dependencies.
-	sDef, err := getExchangeDefinition(homeDirectory, specRef, url, org, version, arch, userCreds, userInputFile)
+	sDef, err := getExchangeDefinition(homeDirectory, specRef, url, org, "", arch, userCreds, userInputFile)
 	if err != nil {
 		return err
 	}
