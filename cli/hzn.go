@@ -208,6 +208,7 @@ Environment Variables:
 	exSvcPubPullImage := exServicePublishCmd.Flag("pull-image", "Use the image from the image repository. It will pull the image from the image repository and overwrite the local image if exists. This flag is mutually exclusive with -I.").Short('P').Bool()
 	exSvcRegistryTokens := exServicePublishCmd.Flag("registry-token", "Docker registry domain and auth that should be stored with the service, to enable the Horizon edge node to access the service's docker images. This flag can be repeated, and each flag should be in the format: registry:user:token").Short('r').Strings()
 	exSvcOverwrite := exServicePublishCmd.Flag("overwrite", "Overwrite the existing version if the service exists in the exchange. It will skip the 'do you want to overwrite' prompt.").Short('O').Bool()
+	exSvcPolicyFile := exServicePublishCmd.Flag("service-policy-file", "The path of the service policy JSON file to be used for the service to be published. This flag is optional").Short('p').String()
 	exServiceVerifyCmd := exServiceCmd.Command("verify", "Verify the signatures of a service resource in the Horizon Exchange.")
 	exVerService := exServiceVerifyCmd.Arg("service", "The service to verify.").Required().String()
 	exServiceVerifyNodeIdTok := exServiceVerifyCmd.Flag("node-id-tok", "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.").Short('n').PlaceHolder("ID:TOK").String()
@@ -638,7 +639,7 @@ Environment Variables:
 	case exServiceListCmd.FullCommand():
 		exchange.ServiceList(*exOrg, credToUse, *exService, !*exServiceLong)
 	case exServicePublishCmd.FullCommand():
-		exchange.ServicePublish(*exOrg, *exUserPw, *exSvcJsonFile, *exSvcPrivKeyFile, *exSvcPubPubKeyFile, *exSvcPubDontTouchImage, *exSvcPubPullImage, *exSvcRegistryTokens, *exSvcOverwrite)
+		exchange.ServicePublish(*exOrg, *exUserPw, *exSvcJsonFile, *exSvcPrivKeyFile, *exSvcPubPubKeyFile, *exSvcPubDontTouchImage, *exSvcPubPullImage, *exSvcRegistryTokens, *exSvcOverwrite, *exSvcPolicyFile)
 	case exServiceVerifyCmd.FullCommand():
 		exchange.ServiceVerify(*exOrg, credToUse, *exVerService, *exSvcPubKeyFile)
 	case exSvcDelCmd.FullCommand():
