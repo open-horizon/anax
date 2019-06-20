@@ -57,8 +57,8 @@ EOF
       "publishable": false,
       "host_only": false,
       "mappings": {
-        "var1": "bString",
-        "var2": 10,
+        "var1": "node_String",
+        "var2": 20,
         "var3": 23.2
       }
     }
@@ -160,7 +160,7 @@ EOF
             "publishable": false,
             "host_only": false,
             "mappings": {
-                "cpu_var1": "ibmvar1"
+                "cpu_var1": "ibmnodevar1"
             }
         }
     ]
@@ -190,7 +190,7 @@ EOF
             "publishable": false,
             "host_only": false,
             "mappings": {
-                "cpu_var1": "e2edevvar1"
+                "cpu_var1": "e2edevnodevar1"
              }
         }
     ]
@@ -223,8 +223,8 @@ EOF
       "publishable": false,
       "host_only": false,
       "mappings": {
-        "var1": "bString",
-        "var2": 10,
+        "var1": "node_String",
+        "var2": 20,
         "var3": 20.2
       }
     }
@@ -252,8 +252,8 @@ EOF
       "publishable": false,
       "host_only": false,
       "mappings": {
-        "var1": "bString",
-        "var2": 11,
+        "var1": "node_String",
+        "var2": 21,
         "var3": 21.2
       }
     }
@@ -282,7 +282,7 @@ EOF
             "publishable": false,
             "host_only": false,
             "mappings": {
-                "cpu_var1": "ibmvar1"
+                "cpu_var1": "ibmnodevar1"
             }
         }
     ]
@@ -312,7 +312,7 @@ EOF
             "publishable": false,
             "host_only": false,
             "mappings": {
-                "cpu_var1": "e2edevvar1"
+                "cpu_var1": "e2edevnodevar1"
              }
         }
     ]

@@ -35,6 +35,19 @@ func (s UserInput) String() string {
 		s.ServiceOrgid, s.ServiceUrl, s.ServiceArch, s.ServiceVersionRange, s.Inputs)
 }
 
+// Make a copy of this object
+func (s UserInput) Copy() UserInput {
+	out_ui := s
+	if s.Inputs == nil || len(s.Inputs) == 0 {
+		out_ui.Inputs = []Input{}
+	} else {
+		out_ui.Inputs = make([]Input, len(s.Inputs))
+		copy(out_ui.Inputs, s.Inputs)
+	}
+
+	return out_ui
+}
+
 // Get the input given the name of the variable
 func (s UserInput) FindInput(name string) *Input {
 	if s.Inputs == nil || len(s.Inputs) == 0 {
@@ -53,10 +66,12 @@ func (s UserInput) FindInput(name string) *Input {
 func MergeUserInput(ui1, ui2 UserInput, checkService bool) (*UserInput, error) {
 	// handle corner conditions first
 	if ui2.Inputs == nil || len(ui2.Inputs) == 0 {
-		return &ui1, nil
+		output_ui := ui1.Copy()
+		return &output_ui, nil
 	}
 	if ui1.Inputs == nil || len(ui1.Inputs) == 0 {
-		return &ui2, nil
+		output_ui := ui2.Copy()
+		return &output_ui, nil
 	}
 
 	if checkService {
@@ -72,7 +87,7 @@ func MergeUserInput(ui1, ui2 UserInput, checkService bool) (*UserInput, error) {
 	}
 
 	// make a copy of the first one
-	output_ui := UserInput(ui1)
+	output_ui := ui1.Copy()
 
 	// overwrite with the second
 	for _, u2 := range ui2.Inputs {
@@ -97,11 +112,23 @@ func MergeUserInput(ui1, ui2 UserInput, checkService bool) (*UserInput, error) {
 func MergeUserInputArrays(ui1, ui2 []UserInput, deepMerge bool) []UserInput {
 	// check cornor conditions
 	if ui1 == nil || len(ui1) == 0 {
-		return ui2
+		if ui2 == nil {
+			return []UserInput{}
+		} else {
+			output_ui := make([]UserInput, len(ui2))
+			copy(output_ui, ui2)
+			return output_ui
+		}
 	}
 
 	if ui2 == nil || len(ui2) == 0 {
-		return ui1
+		if ui1 == nil {
+			return []UserInput{}
+		} else {
+			output_ui := make([]UserInput, len(ui1))
+			copy(output_ui, ui1)
+			return output_ui
+		}
 	}
 
 	// Now do the merge
