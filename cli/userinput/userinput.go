@@ -9,6 +9,21 @@ import (
 	"net/http"
 )
 
+const USERINPUT_TEMPLATE_OBJECT = `[                                /* A list of objects, each one containing the user inputs required for a specified service. */
+  {
+    "serviceOrgid": "",          /* The horizon org of the specified service. */
+    "serviceUrl": "",            /* The unique string used to identify the specified service. */
+    "serviceArch": "",           /* The service architecture that these inputs apply to. Omit or leave blank to mean all architectures. */
+    "serviceVersionRange": "",   /* The service versions that these inputs apply to. Omit or specify "[0.0.0,INFINITY)" to mean all versions. */
+    "inputs": [                  /* A list of objects with the names and values for the user inputs used by this service. */
+      {
+        "name": "",
+        "value": null
+      }
+    ]
+  }
+]`
+
 //Display a list of the current userInputs of the node
 func List() {
 	var inputs []policy.UserInput
@@ -19,6 +34,10 @@ func List() {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "Unable to marshal userinput object: %v", err)
 	}
 	fmt.Println(output)
+}
+
+func New() {
+	fmt.Println(USERINPUT_TEMPLATE_OBJECT)
 }
 
 //Add or overwrite the userinputs for this node

@@ -21,7 +21,7 @@ func (s Input) String() string {
 type UserInput struct {
 	ServiceOrgid        string  `json:"serviceOrgid"`
 	ServiceUrl          string  `json:"serviceUrl"`
-	ServiceArch         string  `json:"retry_durations,omitempty"`     // empty string means it applies to all arches
+	ServiceArch         string  `json:"serviceArch,omitempty"`         // empty string means it applies to all arches
 	ServiceVersionRange string  `json:"serviceVersionRange,omitempty"` // version range such as [0.0.0,INFINITY). empty string means it applies to all versions
 	Inputs              []Input `json:"inputs"`
 }
