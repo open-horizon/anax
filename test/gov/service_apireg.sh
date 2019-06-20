@@ -1567,16 +1567,24 @@ read -d '' bpnsdef <<EOF
       "serviceVersionRange": "2.2.0",
       "inputs": [
         {
+          "name": "var1",
+          "value": "bp_string"
+        },
+        {
+          "name": "var2",
+          "value": 10
+        },
+        {
           "name": "var3",
           "value": 10.22
         },
         {
           "name": "var4",
-          "value": ["abcd", "1234"]
+          "value": ["bp_abcd", "bp_1234"]
         },
         {
           "name": "var5",
-          "value": "override2"
+          "value": "bp_override2"
         }
       ]
     },
@@ -1588,7 +1596,7 @@ read -d '' bpnsdef <<EOF
       "inputs": [
         {
           "name": "cpu_var1",
-          "value": "ibm_var1"
+          "value": "bp_ibm_var1"
         }
       ]
     },
@@ -1600,7 +1608,7 @@ read -d '' bpnsdef <<EOF
       "inputs": [
         {
           "name": "cpu_var1",
-          "value": "e2edev_var1"
+          "value": "bp_e2edev_var1"
         }
       ]
     }

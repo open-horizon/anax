@@ -306,6 +306,10 @@ func MergePolicyWithExternalPolicy(pol *Policy, extPol *externalpolicy.ExternalP
 	} else {
 		// make a copy of the given policy
 		merged_pol := Policy(*pol)
+		if pol.UserInput != nil && len(pol.UserInput) != 0 {
+			merged_pol.UserInput = make([]UserInput, len(pol.UserInput))
+			copy(merged_pol.UserInput, pol.UserInput)
+		}
 
 		merged_pol.Properties.MergeWith(&(extPol.Properties), false)
 		merged_pol.Constraints.MergeWith(&(extPol.Constraints))
