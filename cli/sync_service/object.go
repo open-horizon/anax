@@ -6,7 +6,6 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/edge-sync-service/common"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -83,6 +82,13 @@ func ObjectList(org string, userPw string, objType string, objId string, details
 
 		output := cliutils.MarshalIndent(mmsObjectInfo, "mms object list")
 		fmt.Println(output)
+
+		// Grab the object status and display it.
+		urlPath = path.Join("api/v1/objects/", org, objType, objId, "status")
+		var resp []byte
+		cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200}, &resp)
+		fmt.Printf("Object status: %v\n", string(resp))
+
 	}
 
 }
@@ -181,35 +187,39 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 		objectMeta.DestType = objPattern
 	}
 
+	// If there is no data to upload, set the metaonly flag to indicate that we are only updating the object's metadata. This ensures
+	// that the MSS (CSS) correctly interpets the PUT.
+	if objFile == "" {
+		objectMeta.MetaOnly = true
+	}
+
 	type ObjectWrapper struct {
 		Meta common.MetaData `json:"meta"`
 		Data []byte          `json:"data"`
 	}
 
-	objString := objectMeta.ObjectID
 	wrapper := ObjectWrapper{Meta: objectMeta}
 
-	// Upload the file contents and the object described by objectMeta.
-	if objFile != "" {
-		if _, err := os.Stat(objFile); err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "unable to read object file %v: %v", objFile, err)
-		}
-
-		if fileBytes, err := ioutil.ReadFile(objFile); err != nil {
-			cliutils.Fatal(cliutils.FILE_IO_ERROR, "reading %s failed: %v", objFile, err)
-		} else {
-			wrapper.Data = fileBytes
-			objString = objFile
-		}
-	} else {
-		// If there is no data to upload, set the metaonly flag to indicate that we are only updating the object's metadata. This ensures
-		// that the MSS (CSS) correctly interpets the PUT.
-		wrapper.Meta.MetaOnly = true
-	}
-
-	// Call the MMS service over HTTP to add the metadata and the object (if provided).
+	// Call the MMS service over HTTP to add the object's metadata to the MMS.
 	urlPath := path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID)
 	cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204}, wrapper)
+
+	// The object's data might be quite large, so upload it in a second call that will stream the file contents
+	// to the MSS (CSS).
+	if objFile != "" {
+
+		file, err := os.Open(objFile)
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "unable to open object file %v: %v", objFile, err)
+		}
+		defer file.Close()
+
+		// Stream the file to the MMS (CSS).
+		urlPath = path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID, "data")
+		cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204}, file)
+
+		cliutils.Verbose("Object " + objFile + " uploaded to org " + org + " in the Model Management Service")
+	}
 
 	// Grab the object status and display it.
 	urlPath = path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID, "status")
@@ -217,7 +227,7 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 	cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200}, &resp)
 	cliutils.Verbose("Object status: %v", string(resp))
 
-	fmt.Println("Object " + objString + " added to org " + org + " in the Model Management Service")
+	fmt.Println("Object " + objectMeta.ObjectID + " added to org " + org + " in the Model Management Service")
 
 }
 
