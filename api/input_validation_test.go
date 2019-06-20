@@ -3,7 +3,6 @@
 package api
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -34,8 +33,8 @@ func Test_MapInputIsIllegal(t *testing.T) {
 		t.Errorf("Map input found to be illegal but isn't")
 	}
 
-	if b, _, _ := MapInputIsIllegal(map[string]interface{}{"one": "g oo", "two": "()", "t hree": "3", "f()our": " ", "germ": "X%"}); b == "" {
-		t.Errorf("Map input found to be legal but isn't")
+	if b, _, _ := MapInputIsIllegal(map[string]interface{}{"one": "g oo", "two": "()", "t hree": "3", "f()our": " ", "germ": "X%"}); b != "" {
+		t.Errorf("Map input found to be illegal but isn't")
 	}
 
 	if b, _, _ := MapInputIsIllegal(map[string]interface{}{"one": "g oo", "t#wo": "()", "t hree": "3", "f()our": " ", "germ": "foo"}); b == "" {
@@ -176,32 +175,6 @@ func Test_CheckMapIsIllegal1(t *testing.T) {
 
 	if key != badKey {
 		t.Errorf("expected error key value %v", badKey)
-	}
-
-	if errorMsg == "" {
-		t.Errorf("expected error message")
-	}
-
-}
-
-func Test_CheckMapIsIllegal2(t *testing.T) {
-
-	key1 := "key1"
-	badValue := "<0"
-	expectedKey := fmt.Sprintf("%v: %v", key1, badValue)
-
-	inMap := map[string]interface{}{
-		key1: badValue,
-	}
-
-	key, errorMsg, err := MapInputIsIllegal(inMap)
-
-	if err != nil {
-		t.Errorf("unexpected error %v", err)
-	}
-
-	if key != expectedKey {
-		t.Errorf("expected error key value %v but was %v", expectedKey, key)
 	}
 
 	if errorMsg == "" {
