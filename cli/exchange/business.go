@@ -100,6 +100,7 @@ func BusinessListPolicy(org string, credToUse string, policy string, namesOnly b
 func BusinessAddPolicy(org string, credToUse string, policy string, jsonFilePath string) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
 	org, credToUse = cliutils.TrimOrg(org, credToUse)
+	org, policy = cliutils.TrimOrg(org, policy)
 
 	//read in the new business policy from file
 	newBytes := cliconfig.ReadJsonFileWithLocalConfig(jsonFilePath)
@@ -129,6 +130,7 @@ func BusinessAddPolicy(org string, credToUse string, policy string, jsonFilePath
 func BusinessUpdatePolicy(org string, credToUse string, policyName string, filePath string) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
 	org, credToUse = cliutils.TrimOrg(org, credToUse)
+	org, policyName = cliutils.TrimOrg(org, policyName)
 
 	//Read in the file
 	attribute := cliconfig.ReadJsonFileWithLocalConfig(filePath)
