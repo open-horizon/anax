@@ -338,6 +338,7 @@ Environment Variables:
 
 	userinputCmd := app.Command("userinput", "List or manage the service user inputs that are currently registered on this Horizon edge node.")
 	userinputListCmd := userinputCmd.Command("list", "List the service user inputs currently registered on this Horizon edge node.")
+	userinputNewCmd := userinputCmd.Command("new", "Display an empty userinput template.")
 	userinputAddCmd := userinputCmd.Command("add", "Add a new user input object or overwrite the current user input object for this Horizon edge node.")
 	userinputAddFilePath := userinputAddCmd.Flag("file-path", "The file path to the json file with the user input object. Specify -f- to read from stdin.").Short('f').Required().String()
 	userinputUpdateCmd := userinputCmd.Command("update", "Update an existing user input object for this Horizon edge node.")
@@ -708,6 +709,8 @@ Environment Variables:
 		attribute.List()
 	case userinputListCmd.FullCommand():
 		userinput.List()
+	case userinputNewCmd.FullCommand():
+		userinput.New()
 	case userinputAddCmd.FullCommand():
 		userinput.Add(*userinputAddFilePath)
 	case userinputUpdateCmd.FullCommand():
