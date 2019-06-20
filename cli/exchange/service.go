@@ -215,7 +215,7 @@ func ServiceList(credOrg, userPw, service string, namesOnly bool) {
 }
 
 // ServicePublish signs the MS def and puts it in the exchange
-func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, pullImage bool, registryTokens []string, overwrite bool) {
+func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, pullImage bool, registryTokens []string, overwrite bool, servicePolicyFilePath string) {
 	if dontTouchImage && pullImage {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Flags -I and -P are mutually exclusive.")
 	}
@@ -236,6 +236,14 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 	svcFile.SupportVersionRange()
 
 	svcFile.SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, dontTouchImage, pullImage, registryTokens, !overwrite)
+
+	// create service policy if servicePolicyFilePath is defined
+	if servicePolicyFilePath != "" {
+		serviceAddPolicyService := fmt.Sprintf("%s/%s_%s_%s", svcFile.Org, svcFile.URL, svcFile.Version, svcFile.Arch) //svcFile.URL + "_" + svcFile.Version + "_" +
+		fmt.Println("Adding service policy for service: ", serviceAddPolicyService)
+		ServiceAddPolicy(org, userPw, serviceAddPolicyService, servicePolicyFilePath)
+		fmt.Println("Service policy added for service: ", serviceAddPolicyService)
+	}
 }
 
 // Sign and publish the service definition. This is a function that is reusable across different hzn commands.
