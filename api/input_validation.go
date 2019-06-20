@@ -23,16 +23,17 @@ func InputIsIllegal(str string) (string, error) {
 
 // returns: faulty value, msg, error
 func MapInputIsIllegal(m map[string]interface{}) (string, string, error) {
-	for k, v := range m {
+	for k, _ := range m {
 		if bogus, err := InputIsIllegal(k); err != nil || bogus != "" {
 			return k, bogus, err
 		}
-		switch v.(type) {
-		case string:
-			if bogus, err := InputIsIllegal(v.(string)); err != nil || bogus != "" {
-				return fmt.Sprintf("%v: %v", k, v), bogus, err
-			}
-		}
+		// disable checking for input values for now
+		//switch v.(type) {
+		//case string:
+		//	if bogus, err := InputIsIllegal(v.(string)); err != nil || bogus != "" {
+		//		return fmt.Sprintf("%v: %v", k, v), bogus, err
+		//	}
+		//}
 	}
 
 	// all good
