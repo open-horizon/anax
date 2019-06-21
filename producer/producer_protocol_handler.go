@@ -207,11 +207,11 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 			handled = true
 		} else if found, err := w.FindAgreementWithSameWorkload(ph, tcPolicy.Header.Name); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error finding agreement with TsAndCs name '%v', error %v", tcPolicy.Header.Name, err)))
-			err_log_event = fmt.Sprintf("Error finding agreement with TsAndCs name '%v', error %v", tcPolicy.Header.Name, err)
+			err_log_event = fmt.Sprintf("Error finding agreement with TsAndCs (Terms And Conditions) name '%v', error %v", tcPolicy.Header.Name, err)
 			handled = true
 		} else if found {
 			glog.Warningf(BPPHlogString(w.Name(), fmt.Sprintf("agreement with TsAndCs name '%v' exists, ignoring proposal: %v", tcPolicy.Header.Name, proposal.ShortString())))
-			err_log_event = "Agreement with TsAndCs name exists, ignoring proposal."
+			err_log_event = "Agreement with TsAndCs (Terms And Conditions) name exists, ignoring proposal."
 			handled = true
 		} else if messageTarget, err := exchange.CreateMessageTarget(exchangeMsg.AgbotId, nil, exchangeMsg.AgbotPubKey, ""); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error creating message target: %v", err)))
