@@ -1302,7 +1302,7 @@ curl -s http://localhost/agreement | jq '.'
         },
         "proposal"...",
         "proposal_sig": "174f67d343fcb0241e9bd8c01ef93f9cb17e1eb434f0234af6e5a3afcd227d93229bb97d26a2b9fae706aa3e5f2521a8dc48503405d682f319cc8925dcc3c34c01",
-        "agreement_protocol": "Citizen Scientist",
+        "agreement_protocol": "Basic",
         "terminated_reason": 0,
         "terminated_description": ""
         "agreement_protocol_terminated_time": 0,

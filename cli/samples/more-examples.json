@@ -1,38 +1,16 @@
 /*
 Sample input file for the 'hzn register -f' flag. This provides variable values for services that need input.
-This sample will work as-is with the IBM netspeed pattern.
 (These comments are allowed in the file.)
 */
 {
 	/* Variables that are passed to all containers, or settings for Horizon (depending on the type). */
 	"global": [
 		{
-			"type": "HTTPSBasicAuthAttributes",   /* use if the image svr requires authentication */
-			"sensor_urls": [
-				"https://mycompany.com/api/horizon/images"
-			],
-			"variables": {
-				"password": "MYPASSWORDVALUE",
-				"username": "MYUSERNAMEVALUE"
-			}
-		},
-		{
 			"type": "DockerRegistryAuthAttributes",   /* use this if your docker images are in the IBM Cloud container registry, you can use either token or Identity and Access Management (IAM) API key. */
-			"sensor_urls": [
-				"registry.ng.bluemix.net"
-			],
 			"variables": {
 				"auths": [
-					{"username": "token", "token": "REGISTRYAUTHTOKEN"},
-               		{"username": "iamapikey", "token": "MYPLATFORMAPIKEY"}
-				]
-			}
-		},
-		{
-			"type": "AgreementProtocolAttributes",   /* This will not have any effect when a pattern is being used. You can use this when not using a pattern to specify that you want to record the agreement on ethereum blockchain */
-			"variables": {
-				"protocols": [
-					{"Citizen Scientist":[]}
+					{"registry": "myregistry", "username": "token", "token": "REGISTRYAUTHTOKEN"},
+					{"registry": "myotherregistry", "username": "iamapikey", "token": "MYPLATFORMAPIKEY"}
 				]
 			}
 		}
@@ -41,7 +19,7 @@ This sample will work as-is with the IBM netspeed pattern.
 	"services": [
 		{
 			"org": "IBM",
-			"url": "https://bluehorizon.network/services/netspeed",
+			"url": "ibm.netspeed",
 			"versionRange": "[0.0.0,INFINITY)",    /* this range applies to any version */
 			"variables": {
 				"HZN_TARGET_SERVER": "closest"

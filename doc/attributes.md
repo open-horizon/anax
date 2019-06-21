@@ -252,18 +252,13 @@ For example, the service wants the agbot to grant 2 tokens per hour, and notify 
 ### <a name="agpa"></a>AgreementProtocolAttributes
 This attribute is used when service has a specific requirement for an agreement protocol.
 An agreement protocol is a pre-defined mechanism for enabling 2 entities (a node and an agbot) to agree on which services and workloads to run.
-The Horizon system supports 2 protocols; "Citizen Scientist" and "Basic".
-The "Citizen Scientist" protocol is based on and requires an Ethereum blockchain.
+The Horizon system supports 1 protocol; "Basic".
 By default, the Horizon system uses the "Basic" protocol (which requires nothing more than a TCP network) and therefore this attribute should only be used in advanced situations where more than 1 protocol is available.
 
 Agreement protocols are chosen by the agbot based on the order they appear in the node's service's attributes.
-For the "Citizen Scientist" protocol, a specific blockchain instance can be chosen.
-Blockchain instances must be registeres in the exchange and refered to by name and org in this attribute.
-It is recommended that this attribute is defined once for all services on the node so that all service attempt to use the same blockchain instance.
 
 The `service_specs` specifies what services the attribue applies to. If the `url` is an empty string, it applies to all the services. If you set the AgreementProtocolAttributes through the `/service/config` api, you do not need to specify the `service_specs` becuase the serivce is specified in other fields. However, if you use `/attribute` api to set the AgreementProtocolAttributes, you must specify the `service_specs`. 
 
-For example, the service wants to prefer the "Basic" protocol, but is willing to use "Citizen Scientist" with either of the blockchain instances shown:
 ```
     {
         "type": "AgreementProtocolAttributes",
@@ -280,18 +275,6 @@ For example, the service wants to prefer the "Basic" protocol, but is willing to
             "protocols": [
                 {
                     "Basic": []
-                },
-                {
-                    "Citizen Scientist": [
-                        {
-                            "name": "privatebc",
-                            "organization": "e2edev"
-                        },
-                        {
-                            "name": "bluehorizon",
-                            "organization": "e2edev"
-                        }
-                    ]
                 }
             ]
         }

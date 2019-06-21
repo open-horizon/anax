@@ -1,6 +1,6 @@
 /* Sample json for adding/replacing a service in an existing pattern. */
     {
-      "serviceUrl": "https://bluehorizon.network/services/netspeed-docker",
+      "serviceUrl": "netspeed-docker",
       "serviceOrgid": "IBM",
       "serviceArch": "amd64",
       "serviceVersions": [

@@ -1,6 +1,5 @@
 /*
 Sample input file for the 'hzn register -f' flag. This provides variable values for services that need input.
-This sample will work as-is with the IBM netspeed pattern.
 (These comments are allowed in the file.)
 */
 {
