@@ -1,0 +1,25 @@
+/*
+Sample for 'hzn userinput add/update -f' flag. It is used for setting up service user input values for the policy case.
+*/
+[
+  {
+    "serviceOrgid": "IBM",
+    "serviceUrl": "ibm.netspeed",
+    "serviceVersionRange": "[0.0.0,INFINITY)",
+    "serviceArch": "amd64",
+    "inputs": [
+      {
+        "name": "var1",
+        "value": "aString"
+      },
+      {
+        "name": "var2",
+        "value": 5
+      },
+      {
+        "name": "var3",
+        "value": 22.2
+      }
+    ]
+  }
+]

@@ -1,0 +1,55 @@
+{
+  "label": "business policy for netspeed",
+  "description": "for netspeed",
+  "service": {
+    "name": "ibm.netspeed",
+    "org": "IBM",
+    "arch": "amd64",
+    "serviceVersions": [
+      {
+        "version": "2.3.0",
+        "priority": {
+          "priority_value": 3,
+          "retries": 1,
+          "retry_durations": 1800,
+          "verified_durations": 45
+        }
+      },
+      {
+        "version": "2.3.1",
+        "priority": {
+          "priority_value": 2,
+          "retries": 1,
+          "retry_durations": 3600
+        }
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "iame2edev",
+      "value": "true"
+    },
+    {
+      "name": "NONS",
+      "value": false
+    }
+  ],
+  "constraints": [
+    "purpose == network-testing"
+  ],
+  "userInput": [
+    {
+      "serviceOrgid": "IBM",
+      "serviceUrl": "ibm.netspeed",
+      "serviceArch": "",
+      "serviceVersionRange": "[0.0.0,INFINITY)",
+      "inputs": [
+        {
+          "name": "var1",
+          "value": "bp_string"
+        }
+      ]
+    }
+  ]
+}

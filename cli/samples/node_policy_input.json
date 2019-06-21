@@ -1,0 +1,21 @@
+/* 
+Sample input for 'hzn policy add -f' flag. It is used for the policy case.
+It provices properties and constrains to determin what services can run on this node.
+*/
+
+{
+  "properties": [
+    {
+      "name": "purpose",
+      "value": "network-testing"
+    },
+    {
+      "name": "group",
+      "value": "bluenode"
+    }
+  ],
+  "constraints": [
+    "iame2edev == true",
+    "NONS == false "
+  ]
+}
