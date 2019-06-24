@@ -650,7 +650,7 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 
 		// If the exchange is down, this call will return an error.
 		if httpResp, err := httpClient.Do(req); err != nil {
-			if isTransportError(err) {
+			if IsTransportError(err) {
 				return nil, errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, url, requestBody, err))
 			} else {
 				return errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, url, requestBody, err)), nil
@@ -662,7 +662,7 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 			var readErr error
 			if httpResp.Body != nil {
 				if outBytes, readErr = ioutil.ReadAll(httpResp.Body); err != nil {
-					if isTransportError(err) {
+					if IsTransportError(err) {
 						return nil, errors.New(fmt.Sprintf("Invocation of %v at %v failed reading response message, HTTP Status %v, error: %v", method, url, httpResp.StatusCode, readErr))
 					} else {
 						return errors.New(fmt.Sprintf("Invocation of %v at %v failed reading response message, HTTP Status %v, error: %v", method, url, httpResp.StatusCode, readErr)), nil
@@ -786,7 +786,7 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 	}
 }
 
-func isTransportError(err error) bool {
+func IsTransportError(err error) bool {
 	l_error_string := strings.ToLower(err.Error())
 	if strings.Contains(l_error_string, "time") && strings.Contains(l_error_string, "out") {
 		return true
