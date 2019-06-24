@@ -369,6 +369,12 @@ then
     else
         echo "Starting Agreement Bot 1."
         /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/agbot/agbot.config >/tmp/agbot.log 2>&1 &
+
+        if [ "$MULTIAGBOT" == "1" ]; then
+            sleep 5
+            echo "Starting Agreement Bot 2."
+            /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/agbot/agbot2.config >/tmp/agbot2.log 2>&1 &
+        fi
     fi
 
     sleep 5
@@ -378,6 +384,14 @@ then
       echo "Agreement Bot 1 startup failure."
       TESTFAIL="1"
     fi
+
+    if [ "$MULTIAGBOT" == "1" ]; then
+        if ! curl -sSL http://localhost:82/agreement > /dev/null; then
+          echo "Agreement Bot 2 startup failure."
+          TESTFAIL="1"
+        fi
+    fi
+
 else
     echo -e "Agbot is disabled"
 fi

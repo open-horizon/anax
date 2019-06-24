@@ -713,9 +713,12 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 		if agreement, err := b.db.FindSingleAgreementByAgreementId(reply.AgreementId(), cph.Name(), []persistence.AFilter{persistence.UnarchivedAFilter()}); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying pending agreement %v, error: %v", reply.AgreementId(), err)))
 		} else if agreement == nil {
-			glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("discarding reply, agreement id %v not in our database", reply.AgreementId())))
+			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("discarding reply %v, agreement id %v not in this agbot's database", wi.MessageId, reply.AgreementId())))
+			// this will cause us to not send a reply, which is what we want in this case because this reply is not for us.
+			sendReply = false
+			deletedMessage = true // causes the msg to not be deleted, which is what we want so that another agbot will see the msg.
 		} else if cph.AlreadyReceivedReply(agreement) {
-			glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("discarding reply, agreement id %v already received a reply", agreement.CurrentAgreementId)))
+			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("discarding reply %v, agreement id %v already received a reply", wi.MessageId, agreement.CurrentAgreementId)))
 			// this will cause us to not send a reply ack, which is what we want in this case
 			sendReply = false
 
@@ -878,6 +881,8 @@ func (b *BaseAgreementWorker) HandleDataReceivedAck(cph ConsumerProtocolHandler,
 
 	protocolHandler := cph.AgreementProtocolHandler("", "", "") // Use the generic protocol handler
 
+	deleteMessage := true
+
 	if d, err := protocolHandler.ValidateDataReceivedAck(wi.Ack); err != nil {
 		glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("discarding message: %v", wi.Ack)))
 	} else if drAck, ok := d.(*abstractprotocol.BaseDataReceivedAck); !ok {
@@ -891,7 +896,8 @@ func (b *BaseAgreementWorker) HandleDataReceivedAck(cph ConsumerProtocolHandler,
 		if ag, err := b.db.FindSingleAgreementByAgreementId(drAck.AgreementId(), cph.Name(), []persistence.AFilter{persistence.UnarchivedAFilter()}); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying timed out agreement %v, error: %v", drAck.AgreementId(), err)))
 		} else if ag == nil {
-			glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("nothing to terminate for agreement %v, no database record.", drAck.AgreementId())))
+			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("agreement %v not on this agbot, ignoring msg %v.", drAck.AgreementId(), wi.MessageId)))
+			deleteMessage = false
 		} else if _, err := b.db.DataNotification(ag.CurrentAgreementId, cph.Name()); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to record data notification, error: %v", err)))
 		}
@@ -902,7 +908,7 @@ func (b *BaseAgreementWorker) HandleDataReceivedAck(cph ConsumerProtocolHandler,
 	}
 
 	// Get rid of the exchange message if there is one
-	if wi.MessageId != 0 {
+	if wi.MessageId != 0 && deleteMessage {
 		if err := cph.DeleteMessage(wi.MessageId); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting message %v from exchange for agbot %v", wi.MessageId, cph.GetExchangeId())))
 		}
@@ -950,28 +956,34 @@ func (b *BaseAgreementWorker) HandleWorkloadUpgrade(cph ConsumerProtocolHandler,
 
 }
 
-func (b *BaseAgreementWorker) CancelAgreementWithLock(cph ConsumerProtocolHandler, agreementId string, reason uint, workerId string) {
+func (b *BaseAgreementWorker) CancelAgreementWithLock(cph ConsumerProtocolHandler, agreementId string, reason uint, workerId string) bool {
 	// Get the agreement id lock to prevent any other thread from processing this same agreement.
 	lock := b.AgreementLockManager().getAgreementLock(agreementId)
 	lock.Lock()
 
 	// Terminate the agreement
-	b.CancelAgreement(cph, agreementId, reason, workerId)
+	ok := b.CancelAgreement(cph, agreementId, reason, workerId)
 
 	lock.Unlock()
 
 	// Don't need the agreement lock anymore
 	b.AgreementLockManager().deleteAgreementLock(agreementId)
+
+	return ok
 }
 
-func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agreementId string, reason uint, workerId string) {
+func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agreementId string, reason uint, workerId string) bool {
 
 	// Start timing out the agreement
 	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("terminating agreement %v.", agreementId)))
 
 	// Update the database
-	if _, err := b.db.AgreementTimedout(agreementId, cph.Name()); err != nil {
+	if ag, err := b.db.AgreementTimedout(agreementId, cph.Name()); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marking agreement %v terminated: %v", agreementId, err)))
+	} else if ag == nil {
+		glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("agreement %v not owned by this agbot, ignoring cancel", agreementId)))
+		// Tell the caller not to delete the exchange message if this is what initiated the cancel because this cancel is not for us.
+		return false
 	}
 
 	// Update state in exchange
@@ -1025,6 +1037,7 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 		}
 
 	}
+	return true
 }
 
 func (b *BaseAgreementWorker) ExternalCancel(cph ConsumerProtocolHandler, agreementId string, reason uint, workerId string) {
