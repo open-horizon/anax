@@ -284,7 +284,7 @@ func getVariableServiceHandler(version string) exchange.ServiceHandler {
 }
 
 func getVariableExchangeDefinitionHandler(version string) exchange.ServiceResolverHandler {
-	return func(mUrl string, mOrg string, mVersion string, mArch string) (*policy.APISpecList, *exchange.ServiceDefinition, string, error) {
+	return func(mUrl string, mOrg string, mVersion string, mArch string) (*policy.APISpecList, *exchange.ServiceDefinition, []string, error) {
 		md := exchange.ServiceDefinition{
 			Owner:         "owner",
 			Label:         "label",
@@ -298,7 +298,7 @@ func getVariableExchangeDefinitionHandler(version string) exchange.ServiceResolv
 			LastUpdated:   "today",
 		}
 
-		return nil, &md, "", nil
+		return nil, &md, []string{}, nil
 	}
 }
 

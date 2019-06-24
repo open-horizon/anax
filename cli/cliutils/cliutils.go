@@ -791,12 +791,12 @@ func invokeRestApi(httpClient *http.Client, req *http.Request, service string, a
 		if resp, err := httpClient.Do(req); err != nil {
 			if exchange.IsTransportError(err) {
 				if retryCount <= 5 {
-					Verbose("Encountered HTTP error: %v for callng %v REST API %v. Will retry.", err, service, apiMsg)
+					Verbose("Encountered HTTP error: %v calling %v REST API %v. Will retry.", err, service, apiMsg)
 					// retry for network tranport errors
-					time.Sleep(10 * time.Second)
+					time.Sleep(2 * time.Second)
 					continue
 				} else {
-					Fatal(HTTP_ERROR, "Encountered HTTP error: %v for callng %v REST API %v", err, service, apiMsg)
+					Fatal(HTTP_ERROR, "Encountered HTTP error: %v calling %v REST API %v", err, service, apiMsg)
 				}
 			} else {
 				printHorizonServiceRestError(service, apiMsg, err)
@@ -805,9 +805,6 @@ func invokeRestApi(httpClient *http.Client, req *http.Request, service string, a
 			return resp
 		}
 	}
-
-	// will not get here
-	return nil
 }
 
 // ExchangeGet runs a GET to the specified service api and fills in the specified json structure. If the structure is just a string, fill in the raw json.

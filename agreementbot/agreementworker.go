@@ -251,8 +251,8 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	// a workload entry that turns out to be unsupportable by the device.
 	foundWorkload := false
 	var workload, lastWorkload *policy.Workload
-	svcId := ""   // stores the service id that service policy is from
-	found := true // if the service policy can be found from the businesspol_manager
+	svcIds := []string{} // stores the service ids for all the services, top level and dependent services
+	found := true        // if the service policy can be found from the businesspol_manager
 	var sPol *externalpolicy.ExternalPolicy
 
 	for !foundWorkload {
@@ -323,7 +323,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			workload.Arch = exchangeDev.Arch
 		}
 
-		asl, workloadDetails, sId, err := exchange.GetHTTPServiceResolverHandler(cph)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
+		asl, workloadDetails, sIds, err := exchange.GetHTTPServiceResolverHandler(cph)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 		if err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for service details %v, error: %v", workload, err)))
 			return
@@ -384,7 +384,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				// merge the business policy with the top level service policy + service built-in policy
 				builtInSvcPol := externalpolicy.CreateServiceBuiltInPolicy(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 
-				servicePolTemp, foundTemp := wi.ServicePolicies[sId]
+				servicePolTemp, foundTemp := wi.ServicePolicies[sIds[0]]
 				var servicePol *externalpolicy.ExternalPolicy
 				if !foundTemp {
 					servicePol = nil
@@ -393,7 +393,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				}
 				found = foundTemp
 
-				mergedConsumerPol, sPolTemp, err := b.MergeServicePolicyToConsumerPolicy(&wi.ConsumerPolicy, builtInSvcPol, servicePol, sId)
+				mergedConsumerPol, sPolTemp, err := b.MergeServicePolicyToConsumerPolicy(&wi.ConsumerPolicy, builtInSvcPol, servicePol, sIds[0])
 				if err != nil {
 					glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error merging service policy into consumer policy. %v.", err)))
 					return
@@ -451,7 +451,8 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		} else {
 
 			foundWorkload = true
-			svcId = sId
+			svcIds = make([]string, len(sIds))
+			copy(svcIds, sIds)
 
 			// if this service policy is not from the policy manager cache, then send a message to pass the service policy back
 			// so that the business policy manager will save it.
@@ -466,10 +467,10 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				}
 				polString, err := json.Marshal(sPol)
 				if err != nil {
-					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marshaling service policy for service %v. %v", sId, err)))
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marshaling service policy for service %v. %v", sIds[0], err)))
 					return
 				} else {
-					cph.SendEventMessage(events.NewCacheServicePolicyMessage(events.CACHE_SERVICE_POLICY, wi.Org, wi.ConsumerPolicyName, sId, string(polString)))
+					cph.SendEventMessage(events.NewCacheServicePolicyMessage(events.CACHE_SERVICE_POLICY, wi.Org, wi.ConsumerPolicyName, sIds[0], string(polString)))
 				}
 			}
 
@@ -507,7 +508,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	}
 
 	// Create pending agreement in database
-	if err := b.db.AgreementAttempt(agreementIdString, wi.Org, wi.Device.Id, wi.ConsumerPolicy.Header.Name, bcType, bcName, bcOrg, cph.Name(), wi.ConsumerPolicy.PatternId, []string{svcId}, wi.ConsumerPolicy.NodeH); err != nil {
+	if err := b.db.AgreementAttempt(agreementIdString, wi.Org, wi.Device.Id, wi.ConsumerPolicy.Header.Name, bcType, bcName, bcOrg, cph.Name(), wi.ConsumerPolicy.PatternId, svcIds, wi.ConsumerPolicy.NodeH); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error persisting agreement attempt: %v", err)))
 
 		// Create message target for protocol message

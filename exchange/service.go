@@ -394,20 +394,37 @@ func GetHighestVersion(msMetadata map[string]ServiceDefinition, vRange *semantic
 // The purpose of this function is to verify that a given service URL, version and architecture, is defined in the exchange
 // as well as all of its required services. This function also returns the dependencies converted into policy types so that the caller
 // can use those types to do policy compatibility checks if they want to.
-func ServiceResolver(wURL string, wOrg string, wVersion string, wArch string, serviceHandler ServiceHandler) (*policy.APISpecList, *ServiceDefinition, string, error) {
+// The string array will contain the service ids of the top level sevice and all the dependency services with highest versions within the
+// specified range.
+func ServiceResolver(wURL string, wOrg string, wVersion string, wArch string, serviceHandler ServiceHandler) (*policy.APISpecList, *ServiceDefinition, []string, error) {
 
 	resolveRequiredServices := true
+
+	// the function that checks if an element is in array
+	s_contains := func(s_array []string, elem string) bool {
+		for _, e := range s_array {
+			if e == elem {
+				return true
+			}
+		}
+		return false
+	}
 
 	glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving service %v %v %v %v", wURL, wOrg, wVersion, wArch)))
 
 	res := new(policy.APISpecList)
+	serviceIds := []string{}
+
 	// Get a version specific service definition.
 	tlService, sId, werr := serviceHandler(wURL, wOrg, wVersion, wArch)
 	if werr != nil {
-		return nil, nil, "", werr
+		return nil, nil, nil, werr
 	} else if tlService == nil {
-		return nil, nil, "", errors.New(fmt.Sprintf("unable to find service %v %v %v %v on the exchange.", wURL, wOrg, wVersion, wArch))
+		return nil, nil, nil, errors.New(fmt.Sprintf("unable to find service %v %v %v %v on the exchange.", wURL, wOrg, wVersion, wArch))
 	} else {
+		if !s_contains(serviceIds, sId) {
+			serviceIds = append(serviceIds, sId)
+		}
 
 		// We found the service definition. Required services are referred to within a service definition by URL, org, architecture,
 		// and version range. Service definitions in the exchange arent queryable by version range, so we will have to do the version
@@ -424,17 +441,23 @@ func ServiceResolver(wURL string, wOrg string, wVersion string, wArch string, se
 				// will return us something in the range required by the service.
 				var serviceDef *ServiceDefinition
 				if sDep.Arch != wArch {
-					return nil, nil, "", errors.New(fmt.Sprintf("service %v has a different architecture than the top level service.", sDep))
+					return nil, nil, nil, errors.New(fmt.Sprintf("service %v has a different architecture than the top level service.", sDep))
 				} else if vExp, err := semanticversion.Version_Expression_Factory(sDep.Version); err != nil {
-					return nil, nil, "", errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", sDep.Version, err))
-				} else if apiSpecs, sd, _, err := ServiceResolver(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch, serviceHandler); err != nil {
-					return nil, nil, "", err
+					return nil, nil, nil, errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", sDep.Version, err))
+				} else if apiSpecs, sd, sIds, err := ServiceResolver(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch, serviceHandler); err != nil {
+					return nil, nil, nil, err
 				} else {
 					// Add all service dependencies to the running list of API specs.
 					serviceDef = sd
 					for _, as := range *apiSpecs {
 						// If the apiSpec is already in the list, ignore it by ignoring the returned error.
 						res.Add_API_Spec(&as)
+					}
+
+					for _, id := range sIds {
+						if !s_contains(serviceIds, id) {
+							serviceIds = append(serviceIds, id)
+						}
 					}
 				}
 
@@ -448,7 +471,7 @@ func ServiceResolver(wURL string, wOrg string, wVersion string, wArch string, se
 			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved required services for %v %v %v %v", wURL, wOrg, wVersion, wArch)))
 		}
 		glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved service %v %v %v %v, APISpecs: %v", wURL, wOrg, wVersion, wArch, *res)))
-		return res, tlService, sId, nil
+		return res, tlService, serviceIds, nil
 
 	}
 
