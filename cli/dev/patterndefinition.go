@@ -50,7 +50,7 @@ func CreatePatternDefinition(directory string) error {
 	res.Name = "pattern-${SERVICE_NAME}-$ARCH"
 	res.Label = "Edge $SERVICE_NAME Service Pattern for $ARCH"
 	res.Description = "Pattern for $SERVICE_NAME for $ARCH"
-	res.Public = true
+	res.Public = false
 	res.Services = []cliexchange.ServiceReferenceFile{*sref}
 
 	// Convert the object to JSON and write it into the project.
@@ -70,7 +70,7 @@ func CreatePatternDefinitionAllArches(directory string) error {
 	res.Name = "pattern-$SERVICE_NAME"
 	res.Label = "Edge $SERVICE_NAME Service Pattern for all architectures"
 	res.Description = "Pattern for $SERVICE_NAME"
-	res.Public = true
+	res.Public = false
 	res.Services = []cliexchange.ServiceReferenceFile{}
 
 	sref := new(cliexchange.ServiceReferenceFile)
