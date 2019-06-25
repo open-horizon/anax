@@ -23,7 +23,7 @@ CLI_COMPLETION_DIR := cli/bash_completion
 DEFAULT_UI = api/static/index.html
 
 ANAX_CONTAINER_DIR := anax-in-container
-DOCKER_IMAGE_VERSION ?= 2.22.7$(BRANCH_NAME)
+DOCKER_IMAGE_VERSION ?= 2.23.10$(BRANCH_NAME)
 DOCKER_IMAGE_BASE = openhorizon/$(arch)_anax
 DOCKER_IMAGE = $(DOCKER_IMAGE_BASE):$(DOCKER_IMAGE_VERSION)
 DOCKER_IMAGE_STG = $(DOCKER_IMAGE_BASE):testing$(BRANCH_NAME)
@@ -32,6 +32,14 @@ DOCKER_IMAGE_PROD = $(DOCKER_IMAGE_BASE):stable$(BRANCH_NAME)
 DOCKER_IMAGE_LATEST = $(DOCKER_IMAGE_BASE):latest$(BRANCH_NAME)
 # By default we do not use cache for the anax container build, so it picks up the latest horizon deb pkgs. If you do want to use the cache: DOCKER_MAYBE_CACHE='' make docker-image
 DOCKER_MAYBE_CACHE ?= --no-cache
+
+AGBOT_IMAGE_BASE=openhorizon/$(arch)_agbot
+AGBOT_IMAGE = $(AGBOT_IMAGE_BASE):$(DOCKER_IMAGE_VERSION)
+AGBOT_IMAGE_STG = $(AGBOT_IMAGE_BASE):testing$(BRANCH_NAME)
+AGBOT_IMAGE_PROD = $(AGBOT_IMAGE_BASE):stable$(BRANCH_NAME)
+# the latest tag is the same as stable
+AGBOT_IMAGE_LATEST = $(AGBOT_IMAGE_BASE):latest$(BRANCH_NAME)
+
 
 # Variables that control packaging the file sync service containers
 FSS_OVERRIDE ?= ""
@@ -227,13 +235,25 @@ docker-image:
 	  docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE_STG); \
 	else echo "Building the anax docker image is not supported on $(arch)"; fi
 
+agbot-image:
+	@echo "Producing agbot docker image $(AGBOT_IMAGE)"
+	if [[ $(arch) == "amd64" ]]; then \
+	  cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) --build-arg HORIZON_REPO_CHANNEL=$(BRANCH_NAME)-testing -t $(AGBOT_IMAGE) -f ./Dockerfile_agbot.$(arch) . && \
+	  docker tag $(AGBOT_IMAGE) $(AGBOT_IMAGE_STG); \
+	else echo "Building the agbot docker image is not supported on $(arch)"; fi
+
 # Pushes the docker image with the staging tag
 docker-push-only:
 	@echo "Pushing anax docker image $(DOCKER_IMAGE)"
 	docker push $(DOCKER_IMAGE)
 	docker push $(DOCKER_IMAGE_STG)
 
-docker-push: docker-image docker-push-only
+agbot-push-only:
+	@echo "Pushing agbot docker image $(AGBOT_IMAGE)"
+	docker push $(AGBOT_IMAGE)
+	docker push $(AGBOT_IMAGE_STG)
+
+docker-push: docker-image docker-push-only agbot-image agbot-push-only
 
 # you must set DOCKER_IMAGE_VERSION to the correct version for promotion to production
 promote-docker:
@@ -244,7 +264,16 @@ promote-docker:
 	docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE_LATEST)
 	docker push $(DOCKER_IMAGE_LATEST)
 
-promote-mac-pkg-and-docker: promote-mac-pkg promote-docker
+# you must set DOCKER_IMAGE_VERSION to the correct version for promotion to production
+promote-agbot:
+	@echo "Promoting $(AGBOT_IMAGE)"
+	docker pull $(AGBOT_IMAGE)
+	docker tag $(AGBOT_IMAGE) $(AGBOT_IMAGE_PROD)
+	docker push $(AGBOT_IMAGE_PROD)
+	docker tag $(AGBOT_IMAGE) $(AGBOT_IMAGE_LATEST)
+	docker push $(AGBOT_IMAGE_LATEST)
+
+promote-mac-pkg-and-docker: promote-mac-pkg promote-docker promote-agbot
 
 css-docker-image: css-clean
 	@echo "Producing CSS docker image $(CSS_IMAGE)"
@@ -309,6 +338,7 @@ mostlyclean: css-clean ess-clean
 	@echo "Mostlyclean"
 	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE) $(CLI_CONFIG_FILE)
 	-docker rmi $(DOCKER_IMAGE) 2> /dev/null || :
+	-docker rmi $(AGBOT_IMAGE) 2> /dev/null || :
 
 css-clean:
 	-docker rmi $(CSS_IMAGE) 2> /dev/null || :
