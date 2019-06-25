@@ -155,7 +155,8 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "deployment":{
     "services":{
       "cpu":{
-        "image":"openhorizon/example_ms_x86_cpu:1.2.2"
+        "image":"openhorizon/example_ms_x86_cpu:1.2.2",
+        "binds":["/tmp:/hosttmp"]
       }
     }
   },

@@ -207,3 +207,67 @@ func Test_RemoveEnvVar_nothing3(t *testing.T) {
 	}
 
 }
+
+func Test_CheckPermissions_0(t *testing.T) {
+
+	binds := []string{"/tmp"}
+
+	if err := hasValidBindPermissions(binds); err != nil {
+		t.Errorf("Bind is supported, should not have returned an error.")
+	}
+
+	binds = []string{"/root"}
+
+	if err := hasValidBindPermissions(binds); err == nil {
+		t.Errorf("Bind is not supported, should have returned an error.")
+	}
+
+	binds = []string{"/root:/hosttmp:ro"}
+
+	if err := hasValidBindPermissions(binds); err == nil {
+		t.Errorf("Bind is not supported, should have returned an error.")
+	}
+
+	binds = []string{"/tmp:/hosttmp:ro"}
+
+	if err := hasValidBindPermissions(binds); err != nil {
+		t.Errorf("Bind is supported, should not have returned an error.")
+	}
+
+	binds = []string{"/root:/hosttmp"}
+
+	if err := hasValidBindPermissions(binds); err == nil {
+		t.Errorf("Bind is not supported, should have returned an error.")
+	}
+
+	binds = []string{"/tmp:/hosttmp"}
+
+	if err := hasValidBindPermissions(binds); err != nil {
+		t.Errorf("Bind is supported, should not have returned an error.")
+	}
+
+	binds = []string{"/root:/hosttmp:rw"}
+
+	if err := hasValidBindPermissions(binds); err == nil {
+		t.Errorf("Bind is not supported, should have returned an error.")
+	}
+
+	binds = []string{"/tmp:/hosttmp:rw"}
+
+	if err := hasValidBindPermissions(binds); err != nil {
+		t.Errorf("Bind is supported, should not have returned an error.")
+	}
+
+	binds = []string{"/not-exist"}
+
+	if err := hasValidBindPermissions(binds); err != nil {
+		t.Errorf("Bind is supported, should not have returned an error.")
+	}
+
+	binds = []string{"tmpvol:/hosttmp"}
+
+	if err := hasValidBindPermissions(binds); err != nil {
+		t.Errorf("Bind is supported, should not have returned an error.")
+	}
+
+}
