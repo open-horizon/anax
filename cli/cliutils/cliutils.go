@@ -783,6 +783,30 @@ func printHorizonServiceRestError(horizonService string, apiMethod string, err e
 
 }
 
+// invoke rest api call with retry
+func invokeRestApi(httpClient *http.Client, req *http.Request, service string, apiMsg string) *http.Response {
+	retryCount := 0
+	for {
+		retryCount++
+		if resp, err := httpClient.Do(req); err != nil {
+			if exchange.IsTransportError(err) {
+				if retryCount <= 5 {
+					Verbose("Encountered HTTP error: %v calling %v REST API %v. Will retry.", err, service, apiMsg)
+					// retry for network tranport errors
+					time.Sleep(2 * time.Second)
+					continue
+				} else {
+					Fatal(HTTP_ERROR, "Encountered HTTP error: %v calling %v REST API %v", err, service, apiMsg)
+				}
+			} else {
+				printHorizonServiceRestError(service, apiMsg, err)
+			}
+		} else {
+			return resp
+		}
+	}
+}
+
 // ExchangeGet runs a GET to the specified service api and fills in the specified json structure. If the structure is just a string, fill in the raw json.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
 func ExchangeGet(service string, urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, structure interface{}) (httpCode int) {
@@ -806,10 +830,8 @@ func ExchangeGet(service string, urlBase string, urlSuffix string, credentials s
 	if credentials != "" {
 		req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
 	}
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		printHorizonServiceRestError(service, apiMsg, err)
-	}
+
+	resp := invokeRestApi(httpClient, req, service, apiMsg)
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -913,10 +935,8 @@ func ExchangePutPost(service string, method string, urlBase string, urlSuffix st
 	if credentials != "" {
 		req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
 	} // else it is an anonymous call
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		printHorizonServiceRestError(service, apiMsg, err)
-	}
+
+	resp := invokeRestApi(httpClient, req, service, apiMsg)
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)
@@ -988,10 +1008,8 @@ func ExchangePatch(service string, urlBase string, urlSuffix string, credentials
 	if credentials != "" {
 		req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
 	} // else it is an anonymous call
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		printHorizonServiceRestError(service, apiMsg, err)
-	}
+
+	resp := invokeRestApi(httpClient, req, service, apiMsg)
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose("HTTP code: %d", httpCode)

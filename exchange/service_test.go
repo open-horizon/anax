@@ -789,6 +789,15 @@ func Test_RecursiveServiceResolver_1level(t *testing.T) {
 	flag.Set("alsologtostderr", "true")
 	flag.Set("v", "7")
 
+	s_contains := func(s_array []string, elem string) bool {
+		for _, e := range s_array {
+			if e == elem {
+				return true
+			}
+		}
+		return false
+	}
+
 	myURL := "http://service1"
 	myOrg := "test"
 	myVersion := "1.0.0"
@@ -816,7 +825,7 @@ func Test_RecursiveServiceResolver_1level(t *testing.T) {
 	sh := getRecursiveVariableServiceHandler([]UserInput{}, sdMap)
 
 	// Test the resolver API
-	apiSpecs, sd, _, err := ServiceResolver(myURL, myOrg, myVersion, myArch, sh)
+	apiSpecs, sd, sIds, err := ServiceResolver(myURL, myOrg, myVersion, myArch, sh)
 
 	if err != nil {
 		t.Errorf("should not have returned err: %v", err)
@@ -824,8 +833,15 @@ func Test_RecursiveServiceResolver_1level(t *testing.T) {
 		t.Errorf("there should be api specs returned")
 	} else if sd == nil {
 		t.Errorf("should have returned a service def")
+	} else if sIds == nil || len(sIds) != 3 {
+		t.Errorf("Wrong service ids returns: %v", sIds)
+	} else if sIds[0] != myURL {
+		t.Errorf("The first element of the service ids should be %v but got %v", myURL, sIds[0])
+	} else if !s_contains(sIds, "http://my.com/ms/ms1") {
+		t.Errorf("http://my.com/ms/ms1 should be in the service id array but not")
+	} else if !s_contains(sIds, "http://my.com/ms/ms2") {
+		t.Errorf("http://my.com/ms/ms2 should be in the service id array but not")
 	}
-
 }
 
 func Test_RecursiveServiceResolver_2level(t *testing.T) {
@@ -934,7 +950,7 @@ func getRecursiveVariableServiceHandler(mUserInput []UserInput, mRequiredService
 			DeploymentSignature: "xyzpdq=",
 			LastUpdated:         "today",
 		}
-		return &md, "service-id", nil
+		return &md, mUrl, nil
 	}
 }
 
@@ -956,7 +972,7 @@ func getVariableServiceHandler(mUserInput []UserInput, mRequiredServices []Servi
 			DeploymentSignature: "xyzpdq=",
 			LastUpdated:         "today",
 		}
-		return &md, "service-id", nil
+		return &md, mUrl, nil
 	}
 }
 

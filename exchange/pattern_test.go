@@ -247,20 +247,20 @@ func Test_IsTraportError(t *testing.T) {
 	error3 := fmt.Errorf("connection reset by the peer")
 	error4 := fmt.Errorf("something is wrong")
 
-	if !isTransportError(error1) {
-		t.Errorf("Error: expection isTransportError return true for %v but got false", error1)
+	if !IsTransportError(error1) {
+		t.Errorf("Error: expection IsTransportError return true for %v but got false", error1)
 	}
 
-	if !isTransportError(error2) {
-		t.Errorf("Error: expection isTransportError return true for %v but got false", error2)
+	if !IsTransportError(error2) {
+		t.Errorf("Error: expection IsTransportError return true for %v but got false", error2)
 	}
 
-	if !isTransportError(error3) {
-		t.Errorf("Error: expection isTransportError return true for %v but got false", error3)
+	if !IsTransportError(error3) {
+		t.Errorf("Error: expection IsTransportError return true for %v but got false", error3)
 	}
 
-	if isTransportError(error4) {
-		t.Errorf("Error: expection isTransportError return false for %v but got true", error4)
+	if IsTransportError(error4) {
+		t.Errorf("Error: expection IsTransportError return false for %v but got true", error4)
 	}
 
 }
