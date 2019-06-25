@@ -1285,6 +1285,17 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 			// Dynamically add in a filesystem mapping so that the workload container has a RO filesystem.
 			for serviceName, service := range deploymentDesc.Services {
+
+				glog.V(5).Infof("Checking bind permissions for service %v", serviceName)
+				if err := hasValidBindPermissions(service.Binds); err != nil {
+					eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR,
+						fmt.Sprintf("Deployment config %v contains unsupported bind for a workload, %v", cmd.AgreementLaunchContext.Configure.Deployment, err),
+						persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG, ags[0])
+					glog.Errorf("Deployment config for service %v contains unsupported bind, %v", serviceName, err)
+					b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
+					return true
+				}
+
 				dir := ""
 				if deploymentDesc.ServicePattern.IsShared("singleton", serviceName) {
 					dir, _ = b.workloadStorageDir(fmt.Sprintf("%v-%v-%v", "singleton", serviceName, service.VariationLabel))
@@ -1391,6 +1402,18 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		serviceNames := deploymentDesc.ServiceNames()
 
 		for serviceName, service := range deploymentDesc.Services {
+
+			glog.V(5).Infof("Checking bind permissions for service %v", serviceName)
+			if err := hasValidBindPermissions(service.Binds); err != nil {
+				eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
+					fmt.Sprintf("Deployment config %v contains unsupported bind for %v, %v", lc.Configure.Deployment, serviceName, err),
+					persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG,
+					"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
+				glog.Errorf("Deployment config for service %v contains unsupported bind, %v", serviceName, err)
+				b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
+				return true
+			}
+
 			if lc.Blockchain.Name != "" {
 				// Dynamically add in a filesystem mapping so that the infrastructure container can write files that will
 				// be saveable or observable to the host system. Also turn on the privileged flag for this container.
@@ -2259,4 +2282,38 @@ func isAnaxNetwork(net *docker.Network, bridgeName string) bool {
 		return true
 	}
 	return false
+}
+
+// Verify that the permission bits for the host side of the binding allow anyone/other
+// to access that file or directory.
+func hasValidBindPermissions(binds []string) error {
+	for _, bind := range binds {
+		containerVol := strings.Split(bind, ":")
+
+		info, err := os.Stat(containerVol[0])
+		if os.IsNotExist(err) {
+			continue
+		} else if err != nil {
+			return err
+		}
+
+		// Grab the permission bits for the host file/directory. The bits are in an int type so it's
+		// possible to do bitwise calculations on it.
+		m := info.Mode()
+		if len(containerVol) > 2 && containerVol[2] == "ro" {
+			// Check the 'other' read permission bit on the host file/directory. If read permission
+			// is not enabled then the bind will not be allowed (because the bind is asking for ro permission).
+			if m&4 == 0 {
+				return errors.New(fmt.Sprintf("Read permission for bind to %v is denied", containerVol[0]))
+			}
+
+		} else {
+			// Check the 'other' write permission bit on the host file/directory. If write permission
+			// is not enabled then the bind will not be allowed (because the bind is asking for rw permission).
+			if m&2 == 0 {
+				return errors.New(fmt.Sprintf("Write permission for bind to %v is denied", containerVol[0]))
+			}
+		}
+	}
+	return nil
 }
