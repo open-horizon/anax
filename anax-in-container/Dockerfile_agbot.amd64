@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 #FROM debian:stretch   # image based on this is 830MB (image based on ubuntu:16.04 is 590MB)
 
 ARG HORIZON_REPO_CHANNEL
@@ -18,8 +18,11 @@ RUN wget -qO- http://pkg.bluehorizon.network/bluehorizon.network-public.key | ap
 # Install bluehorizon
 RUN apt-get update && apt-get install -y bluehorizon mosquitto-clients
 
-#RUN systemctl restart horizon.service  # <- systemd not available in a container w/o hacks
-WORKDIR /root
-COPY service/* /root/
-# You can add a 2nd arg to this on the docker run cmd or the CMD statement in another dockerfile, to configure a specific environment
-ENTRYPOINT ["/root/anax.service", "start"]
+# Add user
+RUN adduser agbotuser --disabled-password --gecos "agbot user,1,2,3" 
+USER agbotuser
+WORKDIR /home/agbotuser
+RUN mkdir -p /home/agbotuser/policy.d
+
+# Run the application
+ENTRYPOINT /usr/horizon/bin/anax -v $ANAX_LOG_LEVEL -logtostderr -config /etc/horizon/anax.json
