@@ -1,5 +1,4 @@
 FROM ubuntu:18.04
-#FROM debian:stretch   # image based on this is 830MB (image based on ubuntu:16.04 is 590MB)
 
 ARG HORIZON_REPO_CHANNEL
 ENV ANAX_LOG_LEVEL 3
