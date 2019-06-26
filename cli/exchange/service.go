@@ -1,6 +1,7 @@
 package exchange
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -489,8 +490,16 @@ func ServiceListPolicy(org string, credToUse string, service string) {
 	}
 	var policy exchange.ExchangePolicy
 	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &policy)
-	output := cliutils.MarshalIndent(policy.GetExternalPolicy(), "exchange service listpolicy")
-	fmt.Println(output)
+
+	buf := new(bytes.Buffer)
+	enc := json.NewEncoder(buf)
+	enc.SetEscapeHTML(false)
+	enc.SetIndent("", cliutils.JSON_INDENT)
+	err := enc.Encode(policy.GetExternalPolicy())
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange service listpolicy' output: %v", err)
+	}
+	fmt.Println(string(buf.String()))
 }
 
 //ServiceAddPolicy adds a policy or replaces an existing policy for the service in the Horizon Exchange
