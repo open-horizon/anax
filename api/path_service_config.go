@@ -266,7 +266,7 @@ func CreateService(service *Service,
 			sdef, _, err1 = getService(*service.Url, *service.Org, vExp.Get_expression(), thisArch)
 			if err1 != nil || sdef == nil {
 				if pDevice.Pattern != "" {
-					return errorhandler(NewAPIUserInputError(fmt.Sprintf("Unable to find the service definition using  %v/%v %v %v in the exchange. Please ensure all services referenced in the user input file are included in pattern %v.", *service.Org, *service.Url, vExp.Get_expression(), thisArch, pDevice.Pattern), "service")), nil, nil
+					return errorhandler(NewAPIUserInputError(fmt.Sprintf("Unable to find the service definition using  %v/%v %v %v in the exchange.", *service.Org, *service.Url, vExp.Get_expression(), thisArch), "service")), nil, nil
 				}
 				return errorhandler(NewAPIUserInputError(fmt.Sprintf("Unable to find the service definition using  %v/%v %v %v in the exchange.", *service.Org, *service.Url, vExp.Get_expression(), thisArch), "service")), nil, nil
 			}

@@ -197,6 +197,12 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 			cliutils.HorizonPutPost(http.MethodPost, "attribute", []int{201, 200}, attr)
 		}
 
+		var patternFromExch cliexchange.ExchangePatterns
+		httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &patternFromExch)
+		if httpCode == 404 && pattern != "" {
+			cliutils.Fatal(cliutils.NOT_FOUND, "pattern '%s' not found in org %s", pattern, org)
+		}
+
 		// Set the service variables
 		attr = api.NewAttribute("UserInputAttributes", "service", false, false, map[string]interface{}{}) // we reuse this for each service
 		emptyStr := ""
@@ -205,6 +211,17 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 			fmt.Println("Setting service variables...")
 		}
 		for _, m := range inputFileStruct.Services {
+			found := false
+			for _, exPattern := range patternFromExch.Patterns {
+				for _, reqService := range exPattern.Services {
+					if reqService.ServiceURL == m.Url && reqService.ServiceOrg == m.Org {
+						found = true
+					}
+				}
+			}
+			if !found {
+				cliutils.Fatal(cliutils.NOT_FOUND, "Pattern %s does not include service %s referenced in userInputs.", pattern, m.Url)
+			}
 			service.Org = &m.Org
 			service.Url = &m.Url
 			service.VersionRange = &m.VersionRange
