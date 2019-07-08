@@ -241,7 +241,7 @@ func isCorrectType(policyInputValue interface{}, serviceInputType string) (bool,
 		if isFloat64(policyInputValue) {
 			return true, nil
 		}
-	case "boolean":
+	case "boolean", "bool":
 		if isBoolean(policyInputValue) {
 			return true, nil
 		}
