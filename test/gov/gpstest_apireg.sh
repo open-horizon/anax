@@ -13,7 +13,7 @@ echo -e "Pattern is set to $PATTERN"
     {
       "serviceOrgid": "IBM",
       "serviceUrl": "https://bluehorizon.network/service-gps",
-      "serviceArch": "",
+      "serviceArch": "amd64",
       "serviceVersionRange": "2.0.3",
       "inputs": [
         {
