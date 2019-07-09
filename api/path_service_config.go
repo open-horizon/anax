@@ -195,7 +195,6 @@ func CreateService(service *Service,
 		vr_saved = *service.VersionRange
 	}
 
-
 	if pDevice.Pattern != "" {
 		pattern_org, pattern_name, _ := persistence.GetFormatedPatternString(pDevice.Pattern, pDevice.Org)
 
