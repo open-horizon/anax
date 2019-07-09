@@ -815,7 +815,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 					}
 
 				}
-			} else {
+			} else if b.GetCSSURL() == "" {
 				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to evaluate object placement because there is no CSS URL configured in this agbot")))
 			}
 
