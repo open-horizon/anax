@@ -426,9 +426,10 @@ func (a *API) nodeuserinput(w http.ResponseWriter, r *http.Request) {
 		}
 		getDevice := exchange.GetHTTPDeviceHandler(a)
 		patchDevice := exchange.GetHTTPPatchDeviceHandler(a)
+		getService := exchange.GetHTTPServiceHandler(a)
 
 		// Validate and create or update the node policy.
-		errHandled, cfg, msgs := UpdateNodeUserInput(nodeUserInput, update_node_userinput_error_handler, getDevice, patchDevice, a.db)
+		errHandled, cfg, msgs := UpdateNodeUserInput(nodeUserInput, update_node_userinput_error_handler, getDevice, patchDevice, getService, a.db)
 		if errHandled {
 			return
 		}
@@ -463,9 +464,10 @@ func (a *API) nodeuserinput(w http.ResponseWriter, r *http.Request) {
 
 		getDevice := exchange.GetHTTPDeviceHandler(a)
 		patchDevice := exchange.GetHTTPPatchDeviceHandler(a)
+		getService := exchange.GetHTTPServiceHandler(a)
 
 		//Validate the patch and update the policy
-		errHandled, cfg, msgs := PatchNodeUserInput(nodeUserInput, patch_node_userinput_error_handler, getDevice, patchDevice, a.db)
+		errHandled, cfg, msgs := PatchNodeUserInput(nodeUserInput, patch_node_userinput_error_handler, getDevice, patchDevice, getService, a.db)
 
 		if errHandled {
 			return
