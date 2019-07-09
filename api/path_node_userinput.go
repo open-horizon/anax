@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangesync"
@@ -48,9 +49,9 @@ func UpdateNodeUserInput(userInput []policy.UserInput,
 	for _, u := range userInput {
 		validated, err = ValidateUserInput(u, getService)
 		if !validated {
-			return errorhandler(nil, NewSystemError(fmt.Sprintf("Failed to validate node userInput, error: %v", err))), nil, nil
+			return errorhandler(nil, NewAPIUserInputError(fmt.Sprintf("Unable to validate node userInput, error: %v", err), "node.userinput")), nil, nil
 		} else if err != nil { // validate == true, but give back warning error message
-			glog.Warningf(logString(fmt.Sprintf("Warning message: Userinput validated: %v. error: %v \n", validated, err)))
+			glog.Warningf(apiLogString(fmt.Sprintf("UPDATE node/userinput %v ", err)))
 		}
 	}
 
@@ -84,9 +85,9 @@ func PatchNodeUserInput(patchObject []policy.UserInput,
 	for _, u := range patchObject {
 		validated, err = ValidateUserInput(u, getService)
 		if !validated {
-			return errorhandler(nil, NewSystemError(fmt.Sprintf("Failed to validate node userInput, error: %v", err))), nil, nil
+			return errorhandler(nil, NewAPIUserInputError(fmt.Sprintf("Unable to validate node userInput, error: %v", err), "node.userinput")), nil, nil
 		} else if err != nil { // validate == true, but give back warning error message
-			glog.Warningf(logString(fmt.Sprintf("Warning message: Userinput validated: %v. error: %v \n", validated, err)))
+			glog.Warningf(apiLogString(fmt.Sprintf("PATCH node/userinput %v ", err)))
 		}
 	}
 
@@ -143,30 +144,34 @@ func DeleteNodeUserInput(errorhandler DeviceErrorHandler, db *bolt.DB,
 	return false, []*events.NodeUserInputMessage{nodeUserInputUpdated}
 }
 
-var logString = func(v interface{}) string {
-	return fmt.Sprintf("path_node_userinput %v", v)
-}
-
 // Validate 1) service exist; 2) variables defined in the service; 3) values have correct type
 func ValidateUserInput(userInput policy.UserInput, getService exchange.ServiceHandler) (bool, error) {
-	glog.V(3).Infof(logString(fmt.Sprintf("Start validate userinput .... \n")))
+	glog.V(3).Infof(apiLogString(fmt.Sprintf("Start validate userinput .... \n")))
 	serviceOrg := userInput.ServiceOrgid
 	serviceUrl := userInput.ServiceUrl
 	serviceVersionRange := userInput.ServiceVersionRange
 	serviceArch := userInput.ServiceArch
 
+	nodeArch := cutil.ArchString()
+	var errorString string
+	if serviceArch == "" {
+		serviceArch = nodeArch
+	} else if serviceArch != nodeArch {
+		errorString = fmt.Sprintf("serviceArch: %v in userinput file should match node arch: %v if serviceArch is not empty", serviceArch, nodeArch)
+		return false, errors.New(errorString)
+	}
+
 	// The versionRange field is checked for valid characters by the Version_Expression_Factory, it has a very
 	// specific syntax and allows a subset of normally valid characters.
 
-	// Use a default sensor version that allows all version if not specified.
+	// Use a default version that allows all version if not specified.
 	if &userInput.ServiceVersionRange == nil || userInput.ServiceVersionRange == "" {
 		def := "0.0.0"
 		serviceVersionRange = def
 	}
 
-	// Convert the sensor version to a version expression.
+	// Convert the version to a version expression.
 	vExp, err := semanticversion.Version_Expression_Factory(serviceVersionRange)
-	var errorString string
 	if err != nil {
 		errorString = fmt.Sprintf("versionRange %v cannot be converted to a version expression, error %v", userInput.ServiceVersionRange, err)
 		return false, errors.New(errorString)
@@ -176,7 +181,7 @@ func ValidateUserInput(userInput policy.UserInput, getService exchange.ServiceHa
 	var sdef *exchange.ServiceDefinition
 	sdef, _, err = getService(serviceUrl, serviceOrg, vExp.Get_expression(), serviceArch)
 	if sdef == nil {
-		errorString = fmt.Sprintf("Service not exist for org: %v, url: %v, version: %v, arch: %v, get error: %v \n", serviceOrg, serviceUrl, vExp.Get_expression, serviceArch, err)
+		errorString = fmt.Sprintf("Service does not exist for org: %v, url: %v, version: %v, arch: %v, get error: %v \n", serviceOrg, serviceUrl, vExp.Get_expression, serviceArch, err)
 		return false, errors.New(errorString)
 	} else if err != nil {
 		errorString = fmt.Sprintf("Error from get exchange service: %v \n", err)
@@ -245,6 +250,10 @@ func isCorrectType(policyInputValue interface{}, serviceInputType string) (bool,
 		if isBoolean(policyInputValue) {
 			return true, nil
 		}
+	case "list of strings", "string list":
+		if isStringList(policyInputValue) {
+			return true, nil
+		}
 	}
 	err := errors.New(fmt.Sprintf("Input value %v in userinput is not the correct type, should be %v", policyInputValue, serviceInputType))
 	return false, err
@@ -272,6 +281,20 @@ func isFloat64(x interface{}) bool {
 func isString(x interface{}) bool {
 	switch x.(type) {
 	case string:
+		return true
+	default:
+		return false
+	}
+}
+
+func isStringList(x interface{}) bool {
+	switch t := x.(type) {
+	case []interface {}:
+		for _,n := range t {
+			if !isString(n) {
+				return false
+			}
+		}
 		return true
 	default:
 		return false

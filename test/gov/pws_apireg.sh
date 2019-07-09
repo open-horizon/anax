@@ -9,7 +9,7 @@ then
     {
       "serviceOrgid": "e2edev@somecomp.com",
       "serviceUrl": "https://bluehorizon.network/services/weather",
-      "serviceArch": "amd64",
+      "serviceArch": "",
       "serviceVersionRange": "1.5.0",
       "inputs": [
         {
