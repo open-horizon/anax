@@ -189,6 +189,13 @@ func CreateService(service *Service,
 		return true, nil, nil
 	}
 
+	// save the version range for later use
+	vr_saved := "[0.0.0,INFINITY)"
+	if service.VersionRange != nil && *service.VersionRange != "" {
+		vr_saved = *service.VersionRange
+	}
+
+
 	if pDevice.Pattern != "" {
 		pattern_org, pattern_name, _ := persistence.GetFormatedPatternString(pDevice.Pattern, pDevice.Org)
 
@@ -395,7 +402,7 @@ func CreateService(service *Service,
 			// do not save UserInputAttributes because it will be converted to UserInput and saved.
 			bSave = false
 			if from_user {
-				ui := convertAttributeToExchangeUserInput(service, attr.(*persistence.UserInputAttributes))
+				ui := convertAttributeToExchangeUserInput(service, vr_saved, attr.(*persistence.UserInputAttributes))
 				if ui != nil {
 					userInput = append(userInput, *ui)
 				}
@@ -508,7 +515,7 @@ func CreateService(service *Service,
 }
 
 // Convert the UserInputAttributes to UserInput of policy.
-func convertAttributeToExchangeUserInput(service *Service, attr *persistence.UserInputAttributes) *policy.UserInput {
+func convertAttributeToExchangeUserInput(service *Service, vr string, attr *persistence.UserInputAttributes) *policy.UserInput {
 	userInput := new(policy.UserInput)
 	if attr.ServiceSpecs != nil && len(*attr.ServiceSpecs) > 0 {
 		userInput.ServiceUrl = (*attr.ServiceSpecs)[0].Url
@@ -525,9 +532,7 @@ func convertAttributeToExchangeUserInput(service *Service, attr *persistence.Use
 		userInput.ServiceArch = *service.Arch
 	}
 
-	if service.VersionRange != nil {
-		userInput.ServiceVersionRange = *service.VersionRange
-	}
+	userInput.ServiceVersionRange = vr
 
 	if len(attr.Mappings) == 0 {
 		return nil

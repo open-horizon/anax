@@ -19,7 +19,7 @@ then
         read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/netspeed",
-  "versionRange": "2.2.0",
+  "versionRange": "[2.2.0,INFINITY)",
   "organization": "IBM",
   "attributes": [
     {
@@ -152,7 +152,6 @@ EOF
     "url": "https://bluehorizon.network/service-cpu",
     "name": "cpu",
     "organization": "IBM",
-    "versionRange": "1.0.0",
     "attributes": [
         {
             "type": "UserInputAttributes",
@@ -214,7 +213,7 @@ EOF
         read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/netspeed",
-  "versionRange": "2.2.0",
+  "versionRange": "[2.2.0,INFINITY)",
   "organization": "IBM",
   "attributes": [
     {
@@ -274,7 +273,6 @@ EOF
     "url": "https://bluehorizon.network/service-cpu",
     "name": "cpu",
     "organization": "IBM",
-    "versionRange": "1.0.0",
     "attributes": [
         {
             "type": "UserInputAttributes",
