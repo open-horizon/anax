@@ -233,12 +233,16 @@ func PullDockerImage(client *dockerclient.Client, domain, path, tag string) (dig
 
 	var auth dockerclient.AuthConfiguration
 	var err error
+	loggedIn := true
 	if auth, err = GetDockerAuth(domain); err != nil {
-		Fatal(CLI_INPUT_ERROR, "could not get docker credentials from ~/.docker/config.json: %v. Maybe you need to run 'docker login ...' to provide credentials for the image registry.", err)
+		loggedIn = false
 	}
 
 	//Pull the image
 	if err = client.PullImage(opts, auth); err != nil {
+		if !loggedIn {
+			Fatal(CLI_GENERAL_ERROR, "unable to pull docker image %v. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: %v", repository+":"+tag, err)
+		}
 		Fatal(CLI_GENERAL_ERROR, "unable to pull docker image %v: %v", repository+":"+tag, err)
 	}
 
