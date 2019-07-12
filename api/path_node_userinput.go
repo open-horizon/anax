@@ -181,7 +181,7 @@ func ValidateUserInput(userInput policy.UserInput, getService exchange.ServiceHa
 	var sdef *exchange.ServiceDefinition
 	sdef, _, err = getService(serviceUrl, serviceOrg, vExp.Get_expression(), serviceArch)
 	if sdef == nil {
-		errorString = fmt.Sprintf("Service does not exist for org: %v, url: %v, version: %v, arch: %v, get error: %v \n", serviceOrg, serviceUrl, vExp.Get_expression, serviceArch, err)
+		errorString = fmt.Sprintf("Service does not exist for org: %v, url: %v, version: %v, arch: %v, get error: %v \n", serviceOrg, serviceUrl, vExp.Get_expression(), serviceArch, err)
 		return false, errors.New(errorString)
 	} else if err != nil {
 		errorString = fmt.Sprintf("Error from get exchange service: %v \n", err)
