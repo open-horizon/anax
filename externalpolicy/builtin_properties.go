@@ -32,13 +32,13 @@ func CreateNodeBuiltInPolicy(availableMem bool) *ExternalPolicy {
 
 	cpu, err := cutil.GetCPUCount("")
 	if err != nil {
-		glog.Warningf("Failed to get cpu count for the local node. %v", err)
+		glog.V(2).Infof("Failed to get cpu count for the local node. Proceeding with default value. %v", err)
 		cpu = 1
 	}
 
 	total_mem, avail_mem, err := cutil.GetMemInfo("")
 	if err != nil {
-		glog.Warningf("Failed to get memory info for the local node. %v", err)
+		glog.V(2).Infof("Failed to get memory info for the local node. Proceeding with default value. %v", err)
 		total_mem = 0
 		avail_mem = 0
 	}
