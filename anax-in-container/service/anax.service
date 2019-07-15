@@ -133,6 +133,9 @@ start() {
           defaultEnv
         fi
 
+	if [[ -f /usr/local/share/ca-certificates/icp.crt ]]; then
+		update-ca-certificates
+	fi
 
 	# Now repeatedly run anax...
 	numInvocations=0

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -691,6 +692,35 @@ func GetAnaxConfig(configFile string) (*config.HorizonConfig, error) {
 	}
 }
 
+//GetIcpCertPath gets the 'HZN_ICP_CERT_PATH' from '/etc/default/horizon'. If the field is not found it will return an empty string
+func GetIcpCertPath() string {
+	if value, err := GetEnvVarFromFile(ANAX_OVERWRITE_FILE, "HZN_ICP_CA_CERT_PATH"); err != nil {
+		Verbose(fmt.Sprintf("Error getting HZN_ICP_CA_CERT_PATH from %v: %v", ANAX_OVERWRITE_FILE, err))
+	} else {
+		return value
+	}
+	return ""
+}
+
+//TrustIcpCert adds the icp cert file to be trusted in calls made by the given http client
+func TrustIcpCert(httpClient *http.Client) error {
+	icpCertPath := GetIcpCertPath()
+	if icpCertPath != "" {
+		icpCert, err := ioutil.ReadFile(icpCertPath)
+		if err != nil {
+			return fmt.Errorf("Encountered error reading ICP cert file %v: %v", icpCertPath, err)
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(icpCert)
+		httpClient.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs: caCertPool,
+			},
+		}
+	}
+	return nil
+}
+
 // Get exchange url from /etc/default/horizon file. if not set, check /etc/horizon/anax.json file
 func GetExchangeUrlFromAnax() string {
 	if value, err := GetEnvVarFromFile(ANAX_OVERWRITE_FILE, "HZN_EXCHANGE_URL"); err != nil {
@@ -789,6 +819,7 @@ func printHorizonServiceRestError(horizonService string, apiMethod string, err e
 
 // invoke rest api call with retry
 func invokeRestApi(httpClient *http.Client, req *http.Request, service string, apiMsg string) *http.Response {
+	TrustIcpCert(httpClient)
 	retryCount := 0
 	for {
 		retryCount++
@@ -1050,6 +1081,7 @@ func ExchangeDelete(service string, urlBase string, urlSuffix string, credential
 			},
 		}
 	}
+	TrustIcpCert(httpClient)
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
 		Fatal(HTTP_ERROR, "%s new request failed: %v", apiMsg, err)
