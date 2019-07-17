@@ -95,14 +95,19 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		ReadAndVerifyPolicFile(nodepolicyFlag, &nodePol)
 	}
 
-	// Get the exchange url from the anax api
-	exchUrlBase := cliutils.GetExchangeUrl()
-	fmt.Printf("Horizon Exchange base URL: %s\n", exchUrlBase)
-
 	// get the arch from anax
 	statusInfo := apicommon.Info{}
 	cliutils.HorizonGet("status", []int{200}, &statusInfo, false)
 	anaxArch := (*statusInfo.Configuration).Arch
+
+	// Get the exchange url from the anax api and the cli. Display a warning if they do not match.
+	exchUrlBase := cliutils.GetExchangeUrl()
+	anaxExchUrlBase := statusInfo.Configuration.ExchangeAPI
+	if exchUrlBase != cliutils.AddSlash(anaxExchUrlBase) && exchUrlBase != "" && anaxExchUrlBase != "" {
+		fmt.Printf("Warning: cli is configured with exchange url %v, and the agent is configured with exchange url %v. This may cause enexpected behavior. Please update /etc/default/horizon and run 'service horizon restart'.\n", exchUrlBase, anaxExchUrlBase)
+	} else {
+		fmt.Printf("Horizon Exchange base URL: %s\n", exchUrlBase)
+	}
 
 	// Default node id and token if necessary
 	nodeId, nodeToken := cliutils.SplitIdToken(nodeIdTok)
