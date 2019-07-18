@@ -49,7 +49,8 @@ Environment Variables:
   HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,
       to specify the organization ID'.
   HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn
-      register -u' flag, in the form '[org/]user:pw'.
+	  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set 
+	  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.
   HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use
       to communicate with the Horizon Model Management Service, for example
       https://exchange.bluehorizon.network/css/. (By default hzn will ask the
@@ -72,7 +73,7 @@ Environment Variables:
 
 	exchangeCmd := app.Command("exchange", "List and manage Horizon Exchange resources.")
 	exOrg := exchangeCmd.Flag("org", "The Horizon exchange organization ID. If not specified, HZN_ORG_ID will be used as a default.").Short('o').String()
-	exUserPw := exchangeCmd.Flag("user-pw", "Horizon Exchange user credentials to query and create exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.").Short('u').PlaceHolder("USER:PW").String()
+	exUserPw := exchangeCmd.Flag("user-pw", "Horizon Exchange user credentials to query and create exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value. As an alternative to using -o, you can set HZN_ORG_ID with the Horizon exchange organization ID").Short('u').PlaceHolder("USER:PW").String()
 
 	exVersionCmd := exchangeCmd.Command("version", "Display the version of the Horizon Exchange.")
 	exStatusCmd := exchangeCmd.Command("status", "Display the status of the Horizon Exchange.")

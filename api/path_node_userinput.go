@@ -289,8 +289,8 @@ func isString(x interface{}) bool {
 
 func isStringList(x interface{}) bool {
 	switch t := x.(type) {
-	case []interface {}:
-		for _,n := range t {
+	case []interface{}:
+		for _, n := range t {
 			if !isString(n) {
 				return false
 			}
