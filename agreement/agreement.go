@@ -20,6 +20,7 @@ import (
 	"github.com/open-horizon/anax/worker"
 	"net/http"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -42,6 +43,7 @@ type AgreementWorker struct {
 	producerPH               map[string]producer.ProducerProtocolHandler
 	lastExchVerCheck         int64
 	heartBeatFailed          bool
+	hznOffline               bool
 }
 
 func NewAgreementWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *AgreementWorker {
@@ -62,6 +64,7 @@ func NewAgreementWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm 
 		producerPH:       make(map[string]producer.ProducerProtocolHandler),
 		lastExchVerCheck: 0,
 		heartBeatFailed:  false,
+		hznOffline:       false,
 	}
 
 	glog.Info("Starting Agreement worker")
@@ -510,13 +513,17 @@ func (w *AgreementWorker) checkNodeUserInputChanges() int {
 	updated, changedSvcSpecs, err := exchangesync.SyncLocalUserInputWithExchange(w.db, pDevice, exchange.GetHTTPDeviceHandler(w))
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Unable to sync the local node user input with the exchange copy. Error: %v", err)))
-		eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
-			fmt.Sprintf("Unable to sync the local node user input with the exchange copy. Error: %v", err),
-			persistence.EC_ERROR_NODE_POLICY_UPDATE,
-			exchange.GetOrg(w.GetExchangeId()),
-			exchange.GetId(w.GetExchangeId()),
-			w.devicePattern, "")
+		if !w.hznOffline {
+			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Unable to sync the local node user input with the exchange copy. Error: %v", err),
+				persistence.EC_ERROR_NODE_POLICY_UPDATE,
+				exchange.GetOrg(w.GetExchangeId()),
+				exchange.GetId(w.GetExchangeId()),
+				w.devicePattern, "")
+			w.isOffline()
+		}
 	} else if updated {
+		w.hznOffline = false
 		glog.V(3).Infof(logString(fmt.Sprintf("Node user input updated with the exchange copy. The changed user inputs are: %v", changedSvcSpecs)))
 		eventlog.LogNodeEvent(w.db, persistence.SEVERITY_INFO,
 			fmt.Sprintf("Node user input updated with the exchange copy. The changed user inputs are: %v", changedSvcSpecs),
@@ -529,6 +536,8 @@ func (w *AgreementWorker) checkNodeUserInputChanges() int {
 		if pDevice.Config.State == persistence.CONFIGSTATE_CONFIGURED {
 			w.Messages() <- events.NewNodeUserInputMessage(events.UPDATE_NODE_USERINPUT, changedSvcSpecs)
 		}
+	} else {
+		w.hznOffline = false
 	}
 
 	glog.V(5).Infof(logString(fmt.Sprintf("Done checking the user input changes.")))
@@ -557,13 +566,17 @@ func (w *AgreementWorker) checkNodePolicyChanges() int {
 	updated, newNodePolicy, err := exchangesync.SyncNodePolicyWithExchange(w.db, pDevice, exchange.GetHTTPNodePolicyHandler(w), exchange.GetHTTPPutNodePolicyHandler(w))
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Unable to sync the local node policy with the exchange copy. Error: %v", err)))
-		eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
-			fmt.Sprintf("Unable to sync the local node policy with the exchange copy. Error: %v", err),
-			persistence.EC_ERROR_NODE_POLICY_UPDATE,
-			exchange.GetOrg(w.GetExchangeId()),
-			exchange.GetId(w.GetExchangeId()),
-			w.devicePattern, "")
+		if !w.hznOffline {
+			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
+				fmt.Sprintf("Unable to sync the local node policy with the exchange copy. Error: %v", err),
+				persistence.EC_ERROR_NODE_POLICY_UPDATE,
+				exchange.GetOrg(w.GetExchangeId()),
+				exchange.GetId(w.GetExchangeId()),
+				w.devicePattern, "")
+			w.isOffline()
+		}
 	} else if updated {
+		w.hznOffline = false
 		glog.V(3).Infof(logString(fmt.Sprintf("Node policy updated with the exchange copy: %v", newNodePolicy)))
 		eventlog.LogNodeEvent(w.db, persistence.SEVERITY_INFO,
 			fmt.Sprintf("Node policy updated with the exchange copy: %v", newNodePolicy),
@@ -573,9 +586,10 @@ func (w *AgreementWorker) checkNodePolicyChanges() int {
 			w.devicePattern, "")
 
 		w.Messages() <- events.NewNodePolicyMessage(events.UPDATE_POLICY)
+	} else {
+		w.hznOffline = false
 	}
-
-	glog.V(5).Infof(logString(fmt.Sprintf("Done checking the node policy changes.")))
+	glog.V(5).Infof(logString(fmt.Sprint("Done checking the node policy changes.")))
 	return 0
 }
 
@@ -1076,4 +1090,31 @@ func (w *AgreementWorker) messageInExchange(msgId int) (bool, error) {
 
 var logString = func(v interface{}) string {
 	return fmt.Sprintf("AgreementWorker %v", v)
+}
+
+func (w *AgreementWorker) isOffline() {
+	eventLogs, err := eventlog.GetEventLogs(w.db, false, nil)
+	if err != nil {
+		glog.V(2).Infof("Error getting event logs: %v", err)
+		return
+	}
+	sort.Sort(eventlog.EventLogByTimestamp(eventLogs))
+	var lastThree []persistence.EventLog
+	lastThree = eventLogs
+	if len(eventLogs) > 4 {
+		lastThree = eventLogs[len(eventLogs)-4:]
+	}
+	for _, log := range lastThree {
+		if !(strings.Contains(log.Message, "network") || strings.Contains(log.Message, "connection") || strings.Contains(log.Message, "time out") || strings.Contains(log.Message, "server")) {
+			w.hznOffline = false
+			return
+		}
+	}
+	eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
+		"Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
+		persistence.EC_ERROR_NODE_POLICY_UPDATE,
+		exchange.GetOrg(w.GetExchangeId()),
+		exchange.GetId(w.GetExchangeId()),
+		w.devicePattern, "")
+	w.hznOffline = true
 }

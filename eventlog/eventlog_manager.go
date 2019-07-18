@@ -87,3 +87,17 @@ func LogExchangeEvent(db *bolt.DB, severity, message, event_code, exchange_url s
 func GetEventLogs(db *bolt.DB, all_logs bool, selectors map[string][]persistence.Selector) ([]persistence.EventLog, error) {
 	return persistence.FindEventLogsWithSelectors(db, all_logs, selectors)
 }
+
+type EventLogByTimestamp []persistence.EventLog
+
+func (s EventLogByTimestamp) Len() int {
+	return len(s)
+}
+
+func (s EventLogByTimestamp) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s EventLogByTimestamp) Less(i, j int) bool {
+	return s[i].Timestamp < s[j].Timestamp
+}
