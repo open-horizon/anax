@@ -708,6 +708,23 @@ func GetExchangeUrlFromAnax() string {
 	return ""
 }
 
+// GetExchangeUrlFromAnax returns a string with the file or envvar that GetExchangeUrlFromAnax is getting the exchange url from
+func GetExchangeUrlLocationFromAnax() string {
+	if value, err := GetEnvVarFromFile(ANAX_OVERWRITE_FILE, "HZN_EXCHANGE_URL"); err != nil {
+		Verbose(fmt.Sprintf("Error getting HZN_EXCHANGE_URL from %v. %v", ANAX_OVERWRITE_FILE, err))
+	} else if value != "" {
+		return ANAX_OVERWRITE_FILE
+	}
+
+	if anaxConfig, err := GetAnaxConfig(ANAX_CONFIG_FILE); err != nil {
+		Verbose(fmt.Sprintf("Error getting ExchangeUrl from %v. %v", ANAX_CONFIG_FILE, err))
+	} else if anaxConfig != nil {
+		return ANAX_CONFIG_FILE
+	}
+
+	return ""
+}
+
 // GetExchangeUrl returns the exchange url from the env var or anax api
 func GetExchangeUrl() string {
 	exchUrl := os.Getenv("HZN_EXCHANGE_URL")
@@ -729,6 +746,30 @@ func GetExchangeUrl() string {
 
 	Verbose("The exchange url: %v", exchUrl)
 	return exchUrl
+}
+
+// GetExchangeUrlLocation returns a string with the filename or envvar that GetExchangeUrl is getting the exchange url from
+func GetExchangeUrlLocation() string {
+	exchUrlLoc := "HZN_EXCHANGE_URL"
+	exchUrl := os.Getenv("HZN_EXCHANGE_URL")
+	if exchUrl == "" {
+		Verbose("HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.")
+		location := GetExchangeUrlLocationFromAnax()
+		if location != "" {
+			exchUrlLoc = location
+		} else {
+			Fatal(CLI_GENERAL_ERROR, "Could not get the exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent")
+		}
+	}
+
+	exchUrl = strings.TrimSuffix(exchUrl, "/") // anax puts a trailing slash on it
+	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" {
+		re := regexp.MustCompile(`edgenode$`)
+		exchUrl = re.ReplaceAllLiteralString(exchUrl, "edge")
+	}
+
+	Verbose("The exchange url: %v", exchUrl)
+	return exchUrlLoc
 }
 
 // Get mms url from /etc/default/horizon file. if not set, check /etc/horizon/anax.json file
