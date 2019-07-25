@@ -341,7 +341,7 @@ func ReadJsonFileWithLocalConfig(filePath string) []byte {
 	metadata_vars := map[string]string{}
 	if useLocalConfig {
 		orig_env_vars = GetEnvVars()
-		hzn_vars, metadata_vars, err = SetEnvVarsFromConfigFile(localConfigFile, orig_env_vars, true)
+		hzn_vars, metadata_vars, err = SetEnvVarsFromConfigFile(localConfigFile, orig_env_vars, false)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to set the environment variable from the local configuration file %v for file %v. Error: %v", localConfigFile, filePath, err)
 		}
@@ -417,7 +417,7 @@ func SetEnvVarsFromConfigFiles(project_dir string) error {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to get the absolute path for file %v. %v", configFile_project, err)
 		}
 		if configFile_project != configFile_pkg && configFile_project != configFile_user {
-			_, _, err = SetEnvVarsFromConfigFile(configFile_project, orig_env_vars, true)
+			_, _, err = SetEnvVarsFromConfigFile(configFile_project, orig_env_vars, false)
 			if err != nil {
 				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error reading environment variables from file %v. %v", configFile_project, err)
 			} else {

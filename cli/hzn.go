@@ -453,7 +453,7 @@ Environment Variables:
 	mmsObjectPublishCmd := mmsObjectCmd.Command("publish", "Publish an object in the Horizon Model Management Service, making it available for services deployed on nodes.")
 	mmsObjectPublishType := mmsObjectPublishCmd.Flag("type", "The type of the object to publish. This flag must be used with -i. It is mutually exclusive with -m").Short('t').String()
 	mmsObjectPublishId := mmsObjectPublishCmd.Flag("id", "The id of the object to publish. This flag must be used with -t. It is mutually exclusive with -m").Short('i').String()
-	mmsObjectPublishPat := mmsObjectPublishCmd.Flag("pattern", "If you want the object to be deployed on nodes using a given pattern, specify it using this flag. This flag is optionla and can only be used with --type and --id. It is mutually exclusive with -m").Short('p').String()
+	mmsObjectPublishPat := mmsObjectPublishCmd.Flag("pattern", "If you want the object to be deployed on nodes using a given pattern, specify it using this flag. This flag is optional and can only be used with --type and --id. It is mutually exclusive with -m").Short('p').String()
 	mmsObjectPublishDef := mmsObjectPublishCmd.Flag("def", "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command.").Short('m').String()
 	mmsObjectPublishObj := mmsObjectPublishCmd.Flag("object", "The object (in the form of a file) to publish. This flag is optional so that you can update only the object's definition.").Short('f').String()
 	mmsObjectDeleteCmd := mmsObjectCmd.Command("delete", "Publish an object in the Horizon Model Management Service, making it available for services deployed on nodes.")
