@@ -417,7 +417,7 @@ func SetEnvVarsFromConfigFiles(project_dir string) error {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to get the absolute path for file %v. %v", configFile_project, err)
 		}
 		if configFile_project != configFile_pkg && configFile_project != configFile_user {
-			_, _, err = SetEnvVarsFromConfigFile(configFile_project, orig_env_vars, true)
+			_, _, err = SetEnvVarsFromConfigFile(configFile_project, orig_env_vars, false)
 			if err != nil {
 				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error reading environment variables from file %v. %v", configFile_project, err)
 			} else {
