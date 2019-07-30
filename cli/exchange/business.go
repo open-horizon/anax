@@ -70,10 +70,9 @@ func BusinessListPolicy(org string, credToUse string, policy string, namesOnly b
 	if httpCode == 404 && policy != "" {
 		cliutils.Fatal(cliutils.NOT_FOUND, "Policy %s not found in org %s", policy, polOrg)
 	} else if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, "Business policy for organization %s not found", polOrg)
-	}
-
-	if namesOnly && (policy == "" || policy == "*") {
+		policyNameList := []string{}
+		fmt.Println(policyNameList)
+	} else if namesOnly && policy == "" {
 		policyNameList := []string{}
 		for bPolicy := range policyList.BusinessPolicy {
 			policyNameList = append(policyNameList, bPolicy)
