@@ -102,9 +102,9 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 
 	// Get the exchange url from the anax api and the cli. Display a warning if they do not match.
 	exchUrlBase := cliutils.GetExchangeUrl()
-	anaxExchUrlBase := statusInfo.Configuration.ExchangeAPI
-	if exchUrlBase != cliutils.AddSlash(anaxExchUrlBase) && exchUrlBase != "" && anaxExchUrlBase != "" {
-		fmt.Printf("Warning: cli is configured with exchange url %v, and the agent is configured with exchange url %v. This may cause enexpected behavior. Please update /etc/default/horizon and run 'service horizon restart'.\n", exchUrlBase, anaxExchUrlBase)
+	anaxExchUrlBase := strings.TrimSuffix(cliutils.GetExchangeUrlFromAnax(), "/")
+	if exchUrlBase != anaxExchUrlBase && exchUrlBase != "" && anaxExchUrlBase != "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "hzn cli is configured with exchange url %s from %s and the horizon agent is configured with exchange url %s from %s. hzn register will not work with mismatched exchange urls.", exchUrlBase, cliutils.GetExchangeUrlLocation(), anaxExchUrlBase, cliutils.GetExchangeUrlLocationFromAnax())
 	} else {
 		fmt.Printf("Horizon Exchange base URL: %s\n", exchUrlBase)
 	}
