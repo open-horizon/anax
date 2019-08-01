@@ -305,6 +305,7 @@ run-css: run-mongo-db
 		-days 365 \
 		-out $(AGBOT_TEMPFS)/certs/css.crt \
 		-subj "/C=US/ST=e2edev@somecomp.com/L=e2edev@somecomp.com/O=e2edev@somecomp.com/CN=$(DOCKER_CSS_CNAME)"
+	chmod +r $(AGBOT_TEMPFS)/certs/css.key
 	@echo "Starting $(DOCKER_CSS_CNAME)"
 	docker/docker_run.bash "$(DOCKER_CSS_CNAME)" \
 		docker run -d \
