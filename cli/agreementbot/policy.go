@@ -11,7 +11,7 @@ import (
 // get the policy names that the agbot hosts
 func getPolicyNames(org string) (map[string][]string, int) {
 	// set env to call agbot url
-	if err := os.Setenv("HORIZON_URL", cliutils.AGBOT_HZN_API); err != nil {
+	if err := os.Setenv("HORIZON_URL", cliutils.GetAgbotUrlBase()); err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "unable to set env var 'HORIZON_URL', error %v", err)
 	}
 
@@ -33,7 +33,7 @@ func getPolicyNames(org string) (map[string][]string, int) {
 // get the policy with the given name for the given org
 func getPolicy(org string, name string) (*policy.Policy, int) {
 	// set env to call agbot url
-	if err := os.Setenv("HORIZON_URL", cliutils.AGBOT_HZN_API); err != nil {
+	if err := os.Setenv("HORIZON_URL", cliutils.GetAgbotUrlBase()); err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "unable to set env var 'HORIZON_URL', error %v", err)
 	}
 

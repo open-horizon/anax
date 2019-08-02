@@ -27,7 +27,6 @@ import (
 const (
 	HZN_API             = "http://localhost"
 	HZN_API_MAC         = "http://localhost:8081"
-	AGBOT_HZN_API       = "http://localhost:8046"
 	JSON_INDENT         = "  "
 	MUST_REGISTER_FIRST = "this command can not be run before running 'hzn register'"
 
@@ -427,6 +426,16 @@ func GetHorizonUrlBase() string {
 	} else {
 		return HZN_API
 	}
+}
+
+// Returns the agbot url. If HZN_AGBOT_API not set, use HORIZON_URL
+func GetAgbotUrlBase() string {
+	envVar := os.Getenv("HZN_AGBOT_API")
+	if envVar != "" {
+		return envVar
+	}
+
+	return GetHorizonUrlBase()
 }
 
 // GetRespBodyAsString converts an http response body to a string
