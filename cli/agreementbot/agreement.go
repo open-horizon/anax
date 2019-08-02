@@ -65,7 +65,7 @@ func NewArchivedAgreement(agreement agbot.Agreement) *ArchivedAgreement {
 
 func getAgreements(archivedAgreements bool) (apiAgreements []agbot.Agreement) {
 	// set env to call agbot url
-	if err := os.Setenv("HORIZON_URL", cliutils.AGBOT_HZN_API); err != nil {
+	if err := os.Setenv("HORIZON_URL", cliutils.GetAgbotUrlBase()); err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "unable to set env var 'HORIZON_URL', error %v", err)
 	}
 
@@ -133,7 +133,7 @@ func AgreementCancel(agreementId string, allAgreements bool) {
 	}
 
 	// Cancel the agreements
-	if err := os.Setenv("HORIZON_URL", cliutils.AGBOT_HZN_API); err != nil {
+	if err := os.Setenv("HORIZON_URL", cliutils.GetAgbotUrlBase()); err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "unable to set env var 'HORIZON_URL', error %v", err)
 	}
 

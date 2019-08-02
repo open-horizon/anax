@@ -97,7 +97,7 @@ run-agbot: agbot-docker-prereqs test-network
 		-e "DOCKER_REG_CNAME=$(DOCKER_REG_CNAME)" \
 		-e "DOCKER_REG_USER=$(DOCKER_REG_USER)" \
 		-e "DOCKER_REG_PW=$(DOCKER_REG_PW)" \
-		-e "AGBOT_HZN_API=http://localhost:81" \
+		-e "HZN_AGBOT_API=http://localhost:81" \
 		-e "HZN_DEV_HOST_IP=$(E2EDEV_HOST_IP)" \
 		-e "HZN_DEV_FSS_IMAGE_TAG"="testing$(BRANCH_NAME)" \
 		-t $(DOCKER_AGBOT_INAME):$(DOCKER_DEV_TAG)
