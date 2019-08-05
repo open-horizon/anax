@@ -260,6 +260,9 @@ func (w *AgreementBotWorker) Initialize() bool {
 		return w.fail()
 	}
 
+	// Start the go thread that heartbeats to the exchange
+	w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.AgreementBot.ExchangeHeartbeat)
+
 	// Give the policy manager a chance to read in all the policies. The agbot worker will not proceed past this point
 	// until it has some policies to work with.
 	w.BusinessPolManager = NewBusinessPolicyManager(w.Messages())
@@ -325,9 +328,6 @@ func (w *AgreementBotWorker) Initialize() bool {
 
 	// The agbot worker is now ready to handle incoming messages
 	w.ready = true
-
-	// Start the go thread that heartbeats to the exchange
-	w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.AgreementBot.ExchangeHeartbeat)
 
 	// Start the go thread that heartbeats to the database and checks for stale partitions.
 	w.DispatchSubworker(DATABASE_HEARTBEAT, w.databaseHeartBeat, int(w.BaseWorker.Manager.Config.GetPartitionStale()/3))
