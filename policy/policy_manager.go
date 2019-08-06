@@ -364,7 +364,7 @@ func (self *PolicyManager) AttemptingAgreement(policies []Policy, agreement stri
 			} else {
 				cce.AgreementIds[agreement] = AGREEMENT_PENDING
 				cce.Count = len(cce.AgreementIds)
-				glog.V(3).Infof("Policy Manager: Agreement tracking %v", self.AgreementCounts)
+				glog.V(3).Infof("Policy Manager: Agreement tracking %v %v", agreement, self.AgreementCounts[org][keyName].AgreementIds[agreement])
 			}
 		}
 	}
@@ -405,7 +405,7 @@ func (self *PolicyManager) FinalAgreement(policies []Policy, agreement string, o
 				return errors.New(fmt.Sprintf("agreement %v NOT in pending status: %v", agreement, status))
 			} else {
 				cce.AgreementIds[agreement] = AGREEMENT_FINAL
-				glog.V(3).Infof("Policy Manager: Agreement tracking %v", self.AgreementCounts)
+				glog.V(3).Infof("Policy Manager: Agreement tracking %v %v", agreement, self.AgreementCounts[org][keyName].AgreementIds[agreement])
 			}
 		}
 	}
@@ -445,7 +445,7 @@ func (self *PolicyManager) CancelAgreement(policies []Policy, agreement string, 
 			} else {
 				delete(cce.AgreementIds, agreement)
 				cce.Count = len(cce.AgreementIds)
-				glog.V(3).Infof("Policy Manager: Agreement tracking %v", self.AgreementCounts)
+				glog.V(3).Infof("Policy Manager: Agreement tracking cancel %v", agreement)
 			}
 		}
 	}
