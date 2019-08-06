@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/containermessage"
+	"github.com/open-horizon/anax/i18n"
 )
 
 type DeploymentConfig struct {
@@ -48,9 +49,9 @@ func (dc DeploymentConfig) CanStartStop() error {
 	} else {
 		for serviceName, service := range dc.Services {
 			if len(serviceName) == 0 {
-				return errors.New(fmt.Sprintf("no service name"))
+				return errors.New(i18n.GetMessagePrinter().Sprintf("no service name"))
 			} else if len(service.Image) == 0 {
-				return errors.New(fmt.Sprintf("no docker image for service %s", serviceName))
+				return errors.New(i18n.GetMessagePrinter().Sprintf("no docker image for service %s", serviceName))
 			}
 		}
 	}
@@ -77,7 +78,7 @@ func ConvertToDeploymentConfig(deployment interface{}) *DeploymentConfig {
 		// The only other valid input is regular json in DeploymentConfig structure. Marshal it back to bytes so we can unmarshal it in a way that lets Go know it is a DeploymentConfig
 		jsonBytes, err = json.Marshal(d)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal body for %v: %v", d, err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal body for %v: %v", d, err))
 		}
 	}
 
@@ -85,7 +86,7 @@ func ConvertToDeploymentConfig(deployment interface{}) *DeploymentConfig {
 	depConfig := new(DeploymentConfig)
 	err = json.Unmarshal(jsonBytes, depConfig)
 	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json for deployment field %s: %v", string(jsonBytes), err)
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to unmarshal json for deployment field %s: %v", string(jsonBytes), err))
 	}
 
 	return depConfig

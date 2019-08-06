@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/i18n"
 )
 
 const orgType = "IBM"
@@ -20,9 +21,12 @@ type CatalogPatternWithMediumInfo struct {
 // List the public service resources for orgType:IBM.
 // The userPw can be the userId:password auth or the nodeId:token auth.
 func CatalogServiceList(credOrg string, userPw string, displayShort bool, displayLong bool) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(userPw)
 	if displayShort && displayLong {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Flags -s and -l are mutually exclusive.")
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Flags -s and -l are mutually exclusive."))
 	}
 
 	var resp GetServicesResponse
@@ -31,7 +35,7 @@ func CatalogServiceList(credOrg string, userPw string, displayShort bool, displa
 	if displayLong {
 		jsonBytes, err := json.MarshalIndent(resp.Services, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange catalog servicelist -l' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange catalog servicelist -l' output: %v", err))
 		}
 		fmt.Printf("%s\n", jsonBytes)
 	} else if displayShort {
@@ -41,7 +45,7 @@ func CatalogServiceList(credOrg string, userPw string, displayShort bool, displa
 		}
 		jsonBytes, err := json.MarshalIndent(serviceNames, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange catalog servicelist -s' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange catalog servicelist -s' output: %v", err))
 		}
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
@@ -56,7 +60,7 @@ func CatalogServiceList(credOrg string, userPw string, displayShort bool, displa
 		}
 		jsonBytes, err := json.MarshalIndent(servicesMedium, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange catalog servicelist' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange catalog servicelist' output: %v", err))
 		}
 		fmt.Printf("%s\n", jsonBytes)
 
@@ -66,9 +70,12 @@ func CatalogServiceList(credOrg string, userPw string, displayShort bool, displa
 
 // List the public pattern resources for orgType:IBM.
 func CatalogPatternList(credOrg string, userPw string, displayShort bool, displayLong bool) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(userPw)
 	if displayShort && displayLong {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Flags -s and -l are mutually exclusive.")
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Flags -s and -l are mutually exclusive."))
 	}
 
 	var resp ExchangePatterns
@@ -77,7 +84,7 @@ func CatalogPatternList(credOrg string, userPw string, displayShort bool, displa
 	if displayLong {
 		jsonBytes, err := json.MarshalIndent(resp.Patterns, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange catalog patternlist -l' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange catalog patternlist -l' output: %v", err))
 		}
 		fmt.Printf("%s\n", jsonBytes)
 	} else if displayShort {
@@ -87,7 +94,7 @@ func CatalogPatternList(credOrg string, userPw string, displayShort bool, displa
 		}
 		jsonBytes, err := json.MarshalIndent(patternNames, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange catalog patternlist -s' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange catalog patternlist -s' output: %v", err))
 		}
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
@@ -101,7 +108,7 @@ func CatalogPatternList(credOrg string, userPw string, displayShort bool, displa
 		}
 		jsonBytes, err := json.MarshalIndent(patternsMedium, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange catalog patternlist' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange catalog patternlist' output: %v", err))
 		}
 		fmt.Printf("%s\n", jsonBytes)
 

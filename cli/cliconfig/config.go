@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/i18n"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -65,11 +66,14 @@ type HorizonCliConfig struct {
 
 // get the config from the given file. Assume file exists.
 func GetConfig(configFile string) (*HorizonCliConfig, error) {
-	cliutils.Verbose("Reading configuration file: %v", configFile)
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	cliutils.Verbose(msgPrinter.Sprintf("Reading configuration file: %v", configFile))
 
 	fileBytes, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to read config file: %v. %v", configFile, err)
+		return nil, fmt.Errorf(msgPrinter.Sprintf("Unable to read config file: %v. %v", configFile, err))
 	}
 
 	// Remove /* */ comments
@@ -78,7 +82,7 @@ func GetConfig(configFile string) (*HorizonCliConfig, error) {
 
 	config := HorizonCliConfig{}
 	if err := json.Unmarshal(newBytes, &config); err != nil {
-		return nil, fmt.Errorf("Unable to decode content of config file %v. %v", configFile, err)
+		return nil, fmt.Errorf(msgPrinter.Sprintf("Unable to decode content of config file %v. %v", configFile, err))
 	} else {
 		return &config, nil
 	}
@@ -115,7 +119,7 @@ func GetVarsFromFile(configFile string) (map[string]string, map[string]string, e
 	metadata_vars := map[string]string{}
 
 	if _, err := os.Stat(configFile); err != nil {
-		cliutils.Verbose(fmt.Sprintf("Config file does not exist: %v.", configFile))
+		cliutils.Verbose(i18n.GetMessagePrinter().Sprintf("Config file does not exist: %v.", configFile))
 
 		// return no error here because the file does not exists.
 		return hzn_vars, metadata_vars, nil
@@ -142,10 +146,10 @@ func SetEnvVarsFromConfigFile(configFile string, orig_env_vars map[string]string
 	}
 
 	if err := SetEnvVars(metadata_vars, orig_env_vars, override_env); err != nil {
-		return hzn_vars, metadata_vars, fmt.Errorf("Failed to set the environment variable defined in the MetadataVars attribute in file %v. %v", configFile, err)
+		return hzn_vars, metadata_vars, fmt.Errorf(i18n.GetMessagePrinter().Sprintf("Failed to set the environment variable defined in the MetadataVars attribute in file %v. %v", configFile, err))
 	}
 	if err := SetEnvVars(hzn_vars, orig_env_vars, override_env); err != nil {
-		return hzn_vars, metadata_vars, fmt.Errorf("Failed to set the environment variable in top level in file %v. %v", configFile, err)
+		return hzn_vars, metadata_vars, fmt.Errorf(i18n.GetMessagePrinter().Sprintf("Failed to set the environment variable in top level in file %v. %v", configFile, err))
 	}
 	return hzn_vars, metadata_vars, nil
 }
@@ -154,16 +158,19 @@ func SetEnvVarsFromConfigFile(configFile string, orig_env_vars map[string]string
 // skip the ones that's alrady there originally if override_env is false
 // it returns the hzn env vars from the given file
 func SetEnvVarsFromNonJsonFile(configFile string, orig_env_vars map[string]string, override_env bool) (map[string]string, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	hzn_vars := map[string]string{}
 
 	if _, err := os.Stat(configFile); err != nil {
-		cliutils.Verbose(fmt.Sprintf("Config file does not exist: %v.", configFile))
+		cliutils.Verbose(msgPrinter.Sprintf("Config file does not exist: %v.", configFile))
 
 		// return no error here because the file does not exists.
 		return hzn_vars, nil
 	}
 
-	cliutils.Verbose("Reading configuration file: %v", configFile)
+	cliutils.Verbose(msgPrinter.Sprintf("Reading configuration file: %v", configFile))
 
 	// read the configuration from the file
 	hzn_vars, err := GetConfigFromNonJsonFile(configFile)
@@ -173,7 +180,7 @@ func SetEnvVarsFromNonJsonFile(configFile string, orig_env_vars map[string]strin
 
 	// set the env variables
 	if err := SetEnvVars(hzn_vars, orig_env_vars, override_env); err != nil {
-		return hzn_vars, fmt.Errorf("Failed to set the environment variable defined in file %v. %v", configFile, err)
+		return hzn_vars, fmt.Errorf(msgPrinter.Sprintf("Failed to set the environment variable defined in file %v. %v", configFile, err))
 	}
 
 	return hzn_vars, nil
@@ -317,6 +324,9 @@ func RestoreEnvVars(orig_env_vars, hzn_vars, metadata_vars map[string]string) er
 // ReadJsonFile reads json from a file or stdin, eliminates comments,
 // setup env vars from local hzn.json configuration file if any, substitutes env vars, and returns it.
 func ReadJsonFileWithLocalConfig(filePath string) []byte {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	inputFile, err := filepath.Abs(filePath)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "%v", err)
@@ -333,7 +343,7 @@ func ReadJsonFileWithLocalConfig(filePath string) []byte {
 	useLocalConfig := true
 	if localConfigFile == PROJECT_CONFIG_FILE || localConfigFile == PACKAGE_CONFIG_FILE || localConfigFile == USER_CONFIG_FILE {
 		useLocalConfig = false
-		cliutils.Verbose(fmt.Sprintf("Local configuration %v has been setup at the beginning of this command. Will not setup twice.", localConfigFile))
+		cliutils.Verbose(msgPrinter.Sprintf("Local configuration %v has been setup at the beginning of this command. Will not setup twice.", localConfigFile))
 	}
 
 	orig_env_vars := map[string]string{}
@@ -343,7 +353,7 @@ func ReadJsonFileWithLocalConfig(filePath string) []byte {
 		orig_env_vars = GetEnvVars()
 		hzn_vars, metadata_vars, err = SetEnvVarsFromConfigFile(localConfigFile, orig_env_vars, false)
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to set the environment variable from the local configuration file %v for file %v. Error: %v", localConfigFile, filePath, err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Failed to set the environment variable from the local configuration file %v for file %v. Error: %v", localConfigFile, filePath, err))
 		}
 	}
 
@@ -353,7 +363,7 @@ func ReadJsonFileWithLocalConfig(filePath string) []byte {
 		// restore the env vars
 		err = RestoreEnvVars(orig_env_vars, hzn_vars, metadata_vars)
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to restore the environment variable after using local configuration file %v. %v", useLocalConfig, err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Failed to restore the environment variable after using local configuration file %v. %v", useLocalConfig, err))
 		}
 	}
 
@@ -361,9 +371,12 @@ func ReadJsonFileWithLocalConfig(filePath string) []byte {
 }
 
 // set up the environment variables from the config files.
-// the precedence order is: project file, environmental variables, user config file, package config file
+// the precedence order is: environmental variables, user config file, package config file
 func SetEnvVarsFromConfigFiles(project_dir string) error {
 	var err error
+
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// get original env vars
 	orig_env_vars := GetEnvVars()
@@ -375,11 +388,11 @@ func SetEnvVarsFromConfigFiles(project_dir string) error {
 	}
 	configFile_pkg := filepath.Join(default_config_file_dir, DEFAULT_CONFIG_FILE)
 	if configFile_pkg, err = filepath.Abs(configFile_pkg); err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to get the absolute path for file %v. %v", configFile_pkg, err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Failed to get the absolute path for file %v. %v", configFile_pkg, err))
 	}
 	_, _, err = SetEnvVarsFromConfigFile(configFile_pkg, orig_env_vars, false)
 	if err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error reading environment variables from file %v. %v", configFile_pkg, err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Error reading environment variables from file %v. %v", configFile_pkg, err))
 	} else {
 		PACKAGE_CONFIG_FILE = filepath.Clean(configFile_pkg)
 	}
@@ -387,39 +400,54 @@ func SetEnvVarsFromConfigFiles(project_dir string) error {
 	// check /etc/default/horizon file that ships with horizon package
 	_, err = SetEnvVarsFromNonJsonFile("/etc/default/horizon", orig_env_vars, false)
 	if err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error reading environment variables from file /etc/default/horizon. %v", err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Error reading environment variables from file /etc/default/horizon. %v", err))
 	}
 
 	// check the user's configuration file  ~/.hzn/hzn.json
 	configFile_user := filepath.Join(os.Getenv("HOME"), ".hzn", DEFAULT_CONFIG_FILE)
 	if configFile_user, err = filepath.Abs(configFile_user); err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to get the absolute path for file ~/.hzn/hzn.json. %v", err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Failed to get the absolute path for file ~/.hzn/hzn.json. %v", err))
 	}
 	if configFile_user != configFile_pkg {
 		_, _, err = SetEnvVarsFromConfigFile(configFile_user, orig_env_vars, false)
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error reading environment variables from file %v. %v", configFile_user, err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Error reading environment variables from file %v. %v", configFile_user, err))
 		} else {
 			USER_CONFIG_FILE = filepath.Clean(configFile_user)
 		}
 	}
 
+	return nil
+
+}
+
+// set up the environment variables from the project config files.
+// the precedence order is: environmental variables, project config file
+func SetEnvVarsFromProjectConfigFile(project_dir string) error {
+	var err error
+
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// get original env vars
+	orig_env_vars := GetEnvVars()
+
 	// check the project's configuration file, it could be under current directory or the ./horizon directory.
 	// it is usually setup by 'hzn dev service create' command
 	configFile_project, err := GetProjectConfigFile(project_dir)
 	if err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error getting project level configuration file name. %v", err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Error getting project level configuration file name. %v", err))
 	}
 	if configFile_project == "" {
-		cliutils.Verbose("No project level configuration file found.")
+		cliutils.Verbose(msgPrinter.Sprintf("No project level configuration file found."))
 	} else {
 		if configFile_project, err = filepath.Abs(configFile_project); err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to get the absolute path for file %v. %v", configFile_project, err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Failed to get the absolute path for file %v. %v", configFile_project, err))
 		}
-		if configFile_project != configFile_pkg && configFile_project != configFile_user {
+		if configFile_project != PACKAGE_CONFIG_FILE && configFile_project != USER_CONFIG_FILE {
 			_, _, err = SetEnvVarsFromConfigFile(configFile_project, orig_env_vars, false)
 			if err != nil {
-				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Error reading environment variables from file %v. %v", configFile_project, err)
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Error reading environment variables from file %v. %v", configFile_project, err))
 			} else {
 				PROJECT_CONFIG_FILE = filepath.Clean(configFile_project)
 			}

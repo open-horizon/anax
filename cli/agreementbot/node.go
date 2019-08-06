@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/agreementbot"
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/i18n"
 	"os"
 )
 
@@ -36,7 +37,7 @@ func (n *AgbotAndStatus) CopyStatusInto(status *apicommon.Info) {
 func List() {
 	// set env to call agbot url
 	if err := os.Setenv("HORIZON_URL", cliutils.GetAgbotUrlBase()); err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "unable to set env var 'HORIZON_URL', error %v", err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("unable to set env var 'HORIZON_URL', error %v", err))
 	}
 
 	// Get the agbot info
@@ -53,7 +54,7 @@ func List() {
 	// Output the combined info
 	jsonBytes, err := json.MarshalIndent(nodeInfo, "", cliutils.JSON_INDENT)
 	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn node list' output: %v", err)
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn node list' output: %v", err))
 	}
 	fmt.Printf("%s\n", jsonBytes) //todo: is there a way to output with json syntax highlighting like jq does?
 }

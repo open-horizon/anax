@@ -3,6 +3,7 @@ package plugin_registry
 import (
 	"errors"
 	"fmt"
+	"github.com/open-horizon/anax/i18n"
 )
 
 // Each deployment config plugin implements this interface.
@@ -36,7 +37,7 @@ func (d DeploymentConfigRegistry) SignByOne(dep map[string]interface{}, keyFileP
 		}
 	}
 
-	return "", "", errors.New(fmt.Sprintf("deployment config %v is not supported", dep))
+	return "", "", errors.New(i18n.GetMessagePrinter().Sprintf("deployment config %v is not supported", dep))
 }
 
 // Ask each plugin to return all the images mentioned in the deployment config. Plugins are called
@@ -50,7 +51,7 @@ func (d DeploymentConfigRegistry) GetContainerImages(dep interface{}) ([]string,
 		}
 	}
 
-	return []string{}, errors.New(fmt.Sprintf("deployment config %v is not supported", dep))
+	return []string{}, errors.New(i18n.GetMessagePrinter().Sprintf("deployment config %v is not supported", dep))
 }
 
 // Ask each plugin to attempt to validate the deployment config. Plugins are called
@@ -63,7 +64,7 @@ func (d DeploymentConfigRegistry) ValidatedByOne(dep interface{}) error {
 		}
 	}
 
-	return errors.New(fmt.Sprintf("deployment config %v is not supported", dep))
+	return errors.New(i18n.GetMessagePrinter().Sprintf("deployment config %v is not supported", dep))
 }
 
 // Ask each plugin to attempt to start the project in test mode. Plugins are called
@@ -76,7 +77,7 @@ func (d DeploymentConfigRegistry) StartTest(homeDirectory string, userInputFile 
 		}
 	}
 
-	return errors.New(fmt.Sprintf("starting test mode is not supported for this project"))
+	return errors.New(i18n.GetMessagePrinter().Sprintf("starting test mode is not supported for this project"))
 }
 
 // Ask each plugin to attempt to stop the project in test mode. Plugins are called

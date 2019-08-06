@@ -8,10 +8,12 @@ import (
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/plugin_registry"
+	"github.com/open-horizon/anax/cli/policy"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/rsapss-tool/verify"
 	"net/http"
 	"os"
@@ -19,19 +21,6 @@ import (
 	"strconv"
 	"strings"
 )
-
-const SERVICE_POLICY_TEMPLATE_OBJECT = `{
-  "properties": [   /* A list of policy properties that describe the object. */
-    {
-      "name": "",
-      "value": nil
-    }
-  ],
-  "constraints": [  /* A list of constraint expressions of the form <property name> <operator> <property value>, */
-                    /* separated by boolean operators AND (&&) or OR (||). */
-    ""
-  ]
-}`
 
 type AbstractServiceFile interface {
 	GetOrg() string
@@ -161,7 +150,7 @@ func (sf *ServiceFile) RequiredVariablesAreSet(setVars map[string]interface{}) e
 	for _, ui := range sf.UserInputs {
 		if ui.DefaultValue == "" && ui.Name != "" {
 			if _, ok := setVars[ui.Name]; !ok {
-				return errors.New(fmt.Sprintf("user input %v has no default value and is not set", ui.Name))
+				return errors.New(i18n.GetMessagePrinter().Sprintf("user input %v has no default value and is not set", ui.Name))
 			}
 		}
 	}
@@ -179,6 +168,9 @@ func (sf *ServiceFile) SupportVersionRange() {
 // List the the service resources for the given org.
 // The userPw can be the userId:password auth or the nodeId:token auth.
 func ServiceList(credOrg, userPw, service string, namesOnly bool) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(userPw)
 	var svcOrg string
 	svcOrg, service = cliutils.TrimOrg(credOrg, service)
@@ -196,7 +188,7 @@ func ServiceList(credOrg, userPw, service string, namesOnly bool) {
 		}
 		jsonBytes, err := json.MarshalIndent(services, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange service list' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange service list' output: %v", err))
 		}
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
@@ -205,11 +197,11 @@ func ServiceList(credOrg, userPw, service string, namesOnly bool) {
 
 		httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcOrg+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(credOrg, userPw), []int{200, 404}, &services)
 		if httpCode == 404 && service != "" {
-			cliutils.Fatal(cliutils.NOT_FOUND, "service '%s' not found in org %s", service, svcOrg)
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%s' not found in org %s", service, svcOrg))
 		}
 		jsonBytes, err := json.MarshalIndent(services.Services, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange service list' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange service list' output: %v", err))
 		}
 		fmt.Println(string(jsonBytes))
 	}
@@ -217,8 +209,11 @@ func ServiceList(credOrg, userPw, service string, namesOnly bool) {
 
 // ServicePublish signs the MS def and puts it in the exchange
 func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, pullImage bool, registryTokens []string, overwrite bool, servicePolicyFilePath string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	if dontTouchImage && pullImage {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Flags -I and -P are mutually exclusive.")
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Flags -I and -P are mutually exclusive."))
 	}
 	cliutils.SetWhetherUsingApiKey(userPw)
 
@@ -227,10 +222,10 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 	var svcFile ServiceFile
 	err := json.Unmarshal(newBytes, &svcFile)
 	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", jsonFilePath, err)
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal json input file %s: %v", jsonFilePath, err))
 	}
 	if svcFile.Org != "" && svcFile.Org != org {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", svcFile.Org, org)
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("the org specified in the input file (%s) must match the org specified on the command line (%s)", svcFile.Org, org))
 	}
 
 	// Compensate for old service definition files
@@ -241,14 +236,19 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 	// create service policy if servicePolicyFilePath is defined
 	if servicePolicyFilePath != "" {
 		serviceAddPolicyService := fmt.Sprintf("%s/%s_%s_%s", svcFile.Org, svcFile.URL, svcFile.Version, svcFile.Arch) //svcFile.URL + "_" + svcFile.Version + "_" +
-		fmt.Println("Adding service policy for service: ", serviceAddPolicyService)
+		msgPrinter.Printf("Adding service policy for service: %v", serviceAddPolicyService)
+		msgPrinter.Println()
 		ServiceAddPolicy(org, userPw, serviceAddPolicyService, servicePolicyFilePath)
-		fmt.Println("Service policy added for service: ", serviceAddPolicyService)
+		msgPrinter.Printf("Service policy added for service: %v", serviceAddPolicyService)
+		msgPrinter.Println()
 	}
 }
 
 // Sign and publish the service definition. This is a function that is reusable across different hzn commands.
 func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, pullImage bool, registryTokens []string, promptForOverwrite bool) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	svcInput := ServiceExch{Label: sf.Label, Description: sf.Description, Public: sf.Public, Documentation: sf.Documentation, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs}
 
 	// The deployment field can be json object (map), string (for pre-signed), or nil
@@ -256,7 +256,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 	case nil:
 		svcInput.Deployment = ""
 		if sf.DeploymentSignature != "" {
-			cliutils.Warning("the 'deploymentSignature' field is non-blank, but being ignored, because the 'deployment' field is null")
+			cliutils.Warning(msgPrinter.Sprintf("the 'deploymentSignature' field is non-blank, but being ignored, because the 'deployment' field is null"))
 		}
 		svcInput.DeploymentSignature = ""
 
@@ -265,7 +265,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 		keyFilePath, pubKeyFilePath = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
 
 		// Construct and sign the deployment string.
-		fmt.Println("Signing service...")
+		msgPrinter.Println("Signing service...")
 
 		// Setup the Plugin context with variables that might be needed by 1 or more of the plugins.
 		ctx := plugin_registry.NewPluginContext()
@@ -276,7 +276,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 		// Allow the right plugin to sign the deployment configuration.
 		depStr, sig, err := plugin_registry.DeploymentConfigPlugins.SignByOne(dep, keyFilePath, ctx)
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "unable to sign deployment config: %v", err)
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to sign deployment config: %v", err))
 		}
 
 		// Update the exchange service input object with the deployment string and sig, so that the service
@@ -287,13 +287,13 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 	case string:
 		// Means this service is pre-signed
 		if sf.Deployment != "" && sf.DeploymentSignature == "" {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "the 'deployment' field is a non-empty string, which implies this service is pre-signed, but the 'deploymentSignature' field is empty")
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("the 'deployment' field is a non-empty string, which implies this service is pre-signed, but the 'deploymentSignature' field is empty"))
 		}
 		svcInput.Deployment = dep
 		svcInput.DeploymentSignature = sf.DeploymentSignature
 
 	default:
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "'deployment' field is invalid type. It must be either a json object or a string (for pre-signed)")
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("'deployment' field is invalid type. It must be either a json object or a string (for pre-signed)"))
 	}
 
 	// Create or update resource in the exchange
@@ -303,14 +303,16 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 	if httpCode == 200 {
 		// check if the service exists with the same version, ask user if -O is not specified.
 		if promptForOverwrite {
-			cliutils.ConfirmRemove(fmt.Sprintf("Service %v/%v exists in the exchange, do you want to overwrite it?", org, exchId))
+			cliutils.ConfirmRemove(msgPrinter.Sprintf("Service %v/%v exists in the exchange, do you want to overwrite it?", org, exchId))
 		}
 		// Service exists, update it
-		fmt.Printf("Updating %s in the exchange...\n", exchId)
+		msgPrinter.Printf("Updating %s in the exchange...", exchId)
+		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, svcInput)
 	} else {
 		// Service not there, create it
-		fmt.Printf("Creating %s in the exchange...\n", exchId)
+		msgPrinter.Printf("Creating %s in the exchange...", exchId)
+		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/services", cliutils.OrgAndCreds(org, userPw), []int{201}, svcInput)
 	}
 
@@ -318,7 +320,8 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 	if pubKeyFilePath != "" {
 		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
 		baseName := filepath.Base(pubKeyFilePath)
-		fmt.Printf("Storing %s with the service in the exchange...\n", baseName)
+		msgPrinter.Printf("Storing %s with the service in the exchange...", baseName)
+		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
 	}
 
@@ -335,10 +338,12 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 		}
 
 		if parts[0] == "" || len(parts) < 3 || parts[2] == "" {
-			fmt.Printf("Error: registry-token value of '%s' is not in the required format: registry:user:token. Not storing that in the Horizon exchange.\n", regTok)
+			msgPrinter.Printf("Error: registry-token value of '%s' is not in the required format: registry:user:token. Not storing that in the Horizon exchange.", regTok)
+			msgPrinter.Println()
 			continue
 		}
-		fmt.Printf("Storing %s with the service in the exchange...\n", regTok)
+		msgPrinter.Printf("Storing %s with the service in the exchange...", regTok)
+		msgPrinter.Println()
 		regTokExch := ServiceDockAuthExch{Registry: regstry, UserName: username, Token: token}
 		cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId+"/dockauths", cliutils.OrgAndCreds(org, userPw), []int{201}, regTokExch)
 	}
@@ -351,9 +356,9 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 	// the publish command to skip pushing the images.
 	if dontTouchImage {
 		if imageList, err := plugin_registry.DeploymentConfigPlugins.GetContainerImages(sf.Deployment); err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "unable to get container images from deployment: %v", err)
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to get container images from deployment: %v", err))
 		} else if len(imageList) > 0 {
-			fmt.Println("If you haven't already, push your docker images to the registry:")
+			msgPrinter.Println("If you haven't already, push your docker images to the registry:")
 			for _, image := range imageList {
 				fmt.Printf("  docker push %s\n", image)
 			}
@@ -365,19 +370,22 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 // ServiceVerify verifies the deployment strings of the specified service resource in the exchange.
 // The userPw can be the userId:password auth or the nodeId:token auth.
 func ServiceVerify(org, userPw, service, keyFilePath string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(userPw)
 	org, service = cliutils.TrimOrg(org, service)
 	// Get service resource from exchange
 	var output GetServicesResponse
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, "service '%s' not found in org %s", service, org)
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%s' not found in org %s", service, org))
 	}
 
 	// Loop thru services array, checking the deployment string signature
 	svc, ok := output.Services[org+"/"+service]
 	if !ok {
-		cliutils.Fatal(cliutils.INTERNAL_ERROR, "key '%s' not found in resources returned from exchange", org+"/"+service)
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("key '%s' not found in resources returned from exchange", org+"/"+service))
 	}
 	someInvalid := false
 
@@ -386,9 +394,10 @@ func ServiceVerify(org, userPw, service, keyFilePath string) {
 
 	verified, err := verify.Input(keyFilePath, svc.DeploymentSignature, []byte(svc.Deployment))
 	if err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem verifying deployment string with %s: %v", keyFilePath, err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("problem verifying deployment string with %s: %v", keyFilePath, err))
 	} else if !verified {
-		fmt.Printf("Deployment string was not signed with the private key associated with this public key %v.\n", keyFilePath)
+		msgPrinter.Printf("Deployment string was not signed with the private key associated with this public key %v.", keyFilePath)
+		msgPrinter.Println()
 		someInvalid = true
 	}
 	// else if they all turned out to be valid, we will tell them that at the end
@@ -396,26 +405,32 @@ func ServiceVerify(org, userPw, service, keyFilePath string) {
 	if someInvalid {
 		os.Exit(cliutils.SIGNATURE_INVALID)
 	} else {
-		fmt.Println("All signatures verified")
+		msgPrinter.Println("All signatures verified")
 	}
 }
 
 func ServiceRemove(org, userPw, service string, force bool) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(userPw)
 	org, service = cliutils.TrimOrg(org, service)
 	if !force {
-		cliutils.ConfirmRemove("Are you sure you want to remove service '" + org + "/" + service + "' from the Horizon Exchange?")
+		cliutils.ConfirmRemove(msgPrinter.Sprintf("Are you sure you want to remove service %v/%v from the Horizon Exchange?", org, service))
 	}
 
 	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, "service '%s' not found in org %s", service, org)
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%s' not found in org %s", service, org))
 	}
 }
 
 // List the public keys for a service that can be used to verify the deployment signature for the service
 // The userPw can be the userId:password auth or the nodeId:token auth.
 func ServiceListKey(org, userPw, service, keyName string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(userPw)
 	org, service = cliutils.TrimOrg(org, service)
 	if keyName == "" {
@@ -423,7 +438,7 @@ func ServiceListKey(org, userPw, service, keyName string) {
 		var output string
 		httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/keys", cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 		if httpCode == 404 {
-			cliutils.Fatal(cliutils.NOT_FOUND, "keys not found")
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("keys not found"))
 		}
 		fmt.Printf("%s\n", output)
 	} else {
@@ -431,24 +446,30 @@ func ServiceListKey(org, userPw, service, keyName string) {
 		var output []byte
 		httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 		if httpCode == 404 {
-			cliutils.Fatal(cliutils.NOT_FOUND, "key '%s' not found", keyName)
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("key '%s' not found", keyName))
 		}
 		fmt.Printf("%s", string(output))
 	}
 }
 
 func ServiceRemoveKey(org, userPw, service, keyName string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(userPw)
 	org, service = cliutils.TrimOrg(org, service)
 	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, "key '%s' not found", keyName)
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("key '%s' not found", keyName))
 	}
 }
 
 // List the docker auth that can be used to get the images for the service
 // The userPw can be the userId:password auth or the nodeId:token auth.
 func ServiceListAuth(org, userPw, service string, authId uint) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(userPw)
 	org, service = cliutils.TrimOrg(org, service)
 	var authIdStr string
@@ -459,26 +480,32 @@ func ServiceListAuth(org, userPw, service string, authId uint) {
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/dockauths"+authIdStr, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 404 {
 		if authId != 0 {
-			cliutils.Fatal(cliutils.NOT_FOUND, "docker auth %d not found", authId)
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("docker auth %d not found", authId))
 		} else {
-			cliutils.Fatal(cliutils.NOT_FOUND, "docker auths not found")
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("docker auths not found"))
 		}
 	}
 	fmt.Printf("%s\n", output)
 }
 
 func ServiceRemoveAuth(org, userPw, service string, authId uint) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(userPw)
 	org, service = cliutils.TrimOrg(org, service)
 	authIdStr := strconv.Itoa(int(authId))
 	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/dockauths/"+authIdStr, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, "docker auth %d not found", authId)
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("docker auth %d not found", authId))
 	}
 }
 
 //ServiceListPolicy lists the policy for the service in the Horizon Exchange
 func ServiceListPolicy(org string, credToUse string, service string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(credToUse)
 	org, service = cliutils.TrimOrg(org, service)
 
@@ -486,7 +513,7 @@ func ServiceListPolicy(org string, credToUse string, service string) {
 	var services ServiceExch
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, "service '%v/%v' not found.", org, service)
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%v/%v' not found.", org, service))
 	}
 	var policy exchange.ExchangePolicy
 	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &policy)
@@ -497,13 +524,16 @@ func ServiceListPolicy(org string, credToUse string, service string) {
 	enc.SetIndent("", cliutils.JSON_INDENT)
 	err := enc.Encode(policy.GetExternalPolicy())
 	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange service listpolicy' output: %v", err)
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange service listpolicy' output: %v", err))
 	}
 	fmt.Println(string(buf.String()))
 }
 
 //ServiceAddPolicy adds a policy or replaces an existing policy for the service in the Horizon Exchange
 func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(credToUse)
 	org, service = cliutils.TrimOrg(org, service)
 	fullServiceName := fmt.Sprintf(org + "/" + service)
@@ -513,20 +543,20 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	var policyFile externalpolicy.ExternalPolicy
 	err := json.Unmarshal(newBytes, &policyFile)
 	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", jsonFilePath, err)
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal json input file %s: %v", jsonFilePath, err))
 	}
 
 	//Check the policy file format
 	err = policyFile.Validate()
 	if err != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Incorrect policy format in file %s: %v", jsonFilePath, err)
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Incorrect policy format in file %s: %v", jsonFilePath, err))
 	}
 
 	// Check that the service exists
 	var services GetServicesResponse
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, "service '%v/%v' not found.", org, service)
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%v/%v' not found.", org, service))
 	}
 	serviceFromExchange := services.Services[fullServiceName]
 
@@ -535,8 +565,8 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	serviceArch := serviceFromExchange.Arch
 
 	// Set default built in properties before publishing to the exchange
-	fmt.Println("Adding built-in property values...")
-	fmt.Println("The following property value will be overriden: service.url, service.name, service.org, service.version, service.arch")
+	msgPrinter.Println("Adding built-in property values...")
+	msgPrinter.Println("The following property value will be overriden: service.url, service.name, service.org, service.version, service.arch")
 
 	properties := policyFile.Properties
 	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_URL, serviceName), true)
@@ -550,38 +580,41 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	//Check the policy file format again
 	err = policyFile.Validate()
 	if err != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Incorrect policy format in file %s: %v", jsonFilePath, err)
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Incorrect policy format in file %s: %v", jsonFilePath, err))
 	}
 
 	// add/replace service policy
 	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
 
-	fmt.Println("Service policy updated.")
+	msgPrinter.Println("Service policy updated.")
 }
 
 //ServiceRemovePolicy removes the service policy in the exchange
 func ServiceRemovePolicy(org string, credToUse string, service string, force bool) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(credToUse)
 	org, service = cliutils.TrimOrg(org, service)
 
 	//confirm removal with user
 	if !force {
-		cliutils.ConfirmRemove("Are you sure you want to remove service policy for '" + org + "/" + service + "' from the Horizon Exchange?")
+		cliutils.ConfirmRemove(msgPrinter.Sprintf("Are you sure you want to remove service policy for %v/%v from the Horizon Exchange?", org, service))
 	}
 
 	// Check that the service exists
 	var services ServiceExch
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, "service '%v/%v' not found.", org, service)
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%v/%v' not found.", org, service))
 	}
 
 	//remove service policy
 	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
-	fmt.Println("Service policy removed.")
+	msgPrinter.Println("Service policy removed.")
 }
 
 // Display an empty service policy template as an object.
 func ServiceNewPolicy() {
-	fmt.Println(SERVICE_POLICY_TEMPLATE_OBJECT)
+	policy.New()
 }

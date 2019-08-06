@@ -2,11 +2,11 @@ package dev
 
 import (
 	"errors"
-	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/plugin_registry"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/i18n"
 	"path"
 )
 
@@ -35,12 +35,14 @@ func GetServiceDefinition(directory string, name string) (*cliexchange.ServiceFi
 // Sort of like a constructor, it creates a service definition config object and writes it to the project
 // in the file system.
 func CreateServiceDefinition(directory string, specRef string, imageInfo map[string]string, noImageGen bool, deploymentType string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Create a skeletal service definition config object with fillins/place-holders for configuration.
 	res := new(cliexchange.ServiceFile)
 
 	res.Org = "$HZN_ORG_ID"
-	res.Label = "$SERVICE_NAME for $ARCH"
+	res.Label = msgPrinter.Sprintf("$SERVICE_NAME for $ARCH")
 	res.Public = true
 	res.URL = "$SERVICE_NAME"
 	res.Version = "$SERVICE_VERSION"
@@ -60,7 +62,7 @@ func CreateServiceDefinition(directory string, specRef string, imageInfo map[str
 		res.UserInputs = []exchange.UserInput{
 			exchange.UserInput{
 				Name:         "HW_WHO",
-				Label:        "Who to say hello to",
+				Label:        msgPrinter.Sprintf("Who to say hello to"),
 				Type:         "string",
 				DefaultValue: "World",
 			},
@@ -76,7 +78,7 @@ func CreateServiceDefinition(directory string, specRef string, imageInfo map[str
 			res.Deployment = plugin_registry.DeploymentConfigPlugins.Get(deploymentType).DefaultConfig(nil)
 		}
 	} else {
-		return errors.New(fmt.Sprintf("unknown deployment type: %v", deploymentType))
+		return errors.New(msgPrinter.Sprintf("unknown deployment type: %v", deploymentType))
 	}
 
 	res.DeploymentSignature = ""
@@ -94,6 +96,8 @@ func ServiceDefinitionExists(directory string) (bool, error) {
 // Validate that the service definition file is complete and coherent with the rest of the definitions in the project.
 // If the file is not valid the reason will be returned in the error.
 func ValidateServiceDefinition(directory string, fileName string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	sDef, mserr := GetServiceDefinition(directory, fileName)
 	if mserr != nil {
@@ -102,18 +106,18 @@ func ValidateServiceDefinition(directory string, fileName string) error {
 
 	filePath := path.Join(directory, fileName)
 	if sDef.URL == DEFAULT_SDEF_URL || sDef.URL == "" {
-		return errors.New(fmt.Sprintf("%v: URL must be set.", filePath))
+		return errors.New(msgPrinter.Sprintf("%v: URL must be set.", filePath))
 	} else if sDef.Version == DEFAULT_SDEF_SPECIFIC_VERSION || sDef.Version == "" {
-		return errors.New(fmt.Sprintf("%v: version must be set to a specific version, e.g. 1.0.0.", filePath))
+		return errors.New(msgPrinter.Sprintf("%v: version must be set to a specific version, e.g. 1.0.0.", filePath))
 	} else if sDef.Org == "" {
-		return errors.New(fmt.Sprintf("%v: org must be set.", filePath))
+		return errors.New(msgPrinter.Sprintf("%v: org must be set.", filePath))
 	} else {
 		if err := plugin_registry.DeploymentConfigPlugins.ValidatedByOne(sDef.Deployment); err != nil {
-			return errors.New(fmt.Sprintf("%v: deployment configuration, %v", filePath, err))
+			return errors.New(msgPrinter.Sprintf("%v: deployment configuration, %v", filePath, err))
 		}
 		for ix, ui := range sDef.UserInputs {
 			if (ui.Name != "" && ui.Type == "") || (ui.Name == "" && (ui.Type != "" || ui.DefaultValue != "")) {
-				return errors.New(fmt.Sprintf("%v: userInput array index %v does not have name and type specified.", filePath, ix))
+				return errors.New(msgPrinter.Sprintf("%v: userInput array index %v does not have name and type specified.", filePath, ix))
 			}
 		}
 	}
@@ -122,6 +126,8 @@ func ValidateServiceDefinition(directory string, fileName string) error {
 
 // Refresh the RequiredServices dependencies in the definition. This is called when new dependencies are added or removed.
 func RefreshServiceDependencies(homeDirectory string, newDepDef cliexchange.AbstractServiceFile) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Update the service definition dependencies.
 	serviceDef, err := GetServiceDefinition(homeDirectory, SERVICE_DEFINITION_FILE)
@@ -152,15 +158,17 @@ func RefreshServiceDependencies(homeDirectory string, newDepDef cliexchange.Abst
 			return err
 		}
 
-		cliutils.Verbose("Updated %v/%v dependencies.", homeDirectory, SERVICE_DEFINITION_FILE)
+		cliutils.Verbose(msgPrinter.Sprintf("Updated %v/%v dependencies.", homeDirectory, SERVICE_DEFINITION_FILE))
 	} else {
-		cliutils.Verbose("No need to update %v/%v dependencies.", homeDirectory, SERVICE_DEFINITION_FILE)
+		cliutils.Verbose(msgPrinter.Sprintf("No need to update %v/%v dependencies.", homeDirectory, SERVICE_DEFINITION_FILE))
 	}
 
 	return nil
 }
 
 func RemoveServiceDependency(homeDirectory string, theDepDef cliexchange.AbstractServiceFile) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Update the service definition dependencies.
 	serviceDef, err := GetServiceDefinition(homeDirectory, SERVICE_DEFINITION_FILE)
@@ -177,11 +185,11 @@ func RemoveServiceDependency(homeDirectory string, theDepDef cliexchange.Abstrac
 				return err
 			}
 
-			cliutils.Verbose("Updated %v/%v dependencies.", homeDirectory, SERVICE_DEFINITION_FILE)
+			cliutils.Verbose(msgPrinter.Sprintf("Updated %v/%v dependencies.", homeDirectory, SERVICE_DEFINITION_FILE))
 			return nil
 		}
 	}
 
-	cliutils.Verbose("No need to update %v/%v dependencies.", homeDirectory, SERVICE_DEFINITION_FILE)
+	cliutils.Verbose(msgPrinter.Sprintf("No need to update %v/%v dependencies.", homeDirectory, SERVICE_DEFINITION_FILE))
 	return nil
 }

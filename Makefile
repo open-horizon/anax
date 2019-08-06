@@ -102,7 +102,7 @@ ifndef verbose
 .SILENT:
 endif
 
-all: deps all-nodeps
+all: deps msg-catalog all-nodeps
 all-nodeps: gopathlinks $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE)
 
 $(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathlinks
@@ -361,6 +361,19 @@ $(TMPGOPATH)/bin/govendor: gopathlinks
 			go get -u github.com/kardianos/govendor; \
 	fi
 
+msg-catalog: deps $(TMPGOPATH)/bin/gotext
+	@echo "Creating message catalogs"
+	cd $(PKGPATH) && \
+		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
+			tools/update-i18n-messages
+
+$(TMPGOPATH)/bin/gotext: gopathlinks
+	if [ ! -e "$(TMPGOPATH)/bin/gotext" ]; then \
+		echo "Fetching gotext"; \
+		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
+			go get -u golang.org/x/text/cmd/gotext; \
+	fi
+
 gopathlinks:
 # unfortunately the .cache directory has to be copied b/c of https://github.com/kardianos/govendor/issues/274
 ifneq ($(GOPATH),$(TMPGOPATH))
@@ -435,4 +448,4 @@ diagrams:
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/protocolSequenceDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/horizonSequenceDiagram.txt
 
-.PHONY: check clean deps format gopathlinks install lint mostlyclean pull test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-docker gen-mac-key install-mac-key css-docker-image ess-promote css-docker-image ess-promote
+.PHONY: check clean deps format gopathlinks install lint mostlyclean pull msg-catalog test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-docker gen-mac-key install-mac-key css-docker-image ess-promote css-docker-image ess-promote

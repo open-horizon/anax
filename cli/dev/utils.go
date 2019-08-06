@@ -17,6 +17,7 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/imagefetch"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/semanticversion"
 	"github.com/satori/go.uuid"
@@ -65,18 +66,20 @@ func GetWorkingDir(dashD string, verifyExists bool) (string, error) {
 
 // Create the working directory if needed.
 func CreateWorkingDir(dir string) error {
-	// Create the working directory with the dependencies and pattern directories in one shot. If it already exists, just keep going.
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
+	// Create the working directory with the dependencies and pattern directories in one shot. If it already exists, just keep going.
 	newDepDir := path.Join(dir, DEFAULT_DEPENDENCY_DIR)
 	if _, err := os.Stat(newDepDir); os.IsNotExist(err) {
 		if err := os.MkdirAll(newDepDir, 0755); err != nil {
-			return errors.New(fmt.Sprintf("could not create directory %v, error: %v", newDepDir, err))
+			return errors.New(msgPrinter.Sprintf("could not create directory %v, error: %v", newDepDir, err))
 		}
 	} else if err != nil {
-		return errors.New(fmt.Sprintf("could not get status of directory %v, error: %v", newDepDir, err))
+		return errors.New(msgPrinter.Sprintf("could not get status of directory %v, error: %v", newDepDir, err))
 	}
 
-	cliutils.Verbose("Using working directory: %v", dir)
+	cliutils.Verbose(msgPrinter.Sprintf("Using working directory: %v", dir))
 	return nil
 }
 
@@ -86,7 +89,7 @@ func FileNotExist(dir string, cmd string, fileName string, check func(string) (b
 	if exists, err := check(dir); err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v' %v", cmd, err)
 	} else if exists {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v' %v", cmd, fmt.Sprintf("horizon project in %v already contains %v.", dir, fileName))
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v' %v", cmd, i18n.GetMessagePrinter().Sprintf("horizon project in %v already contains %v.", dir, fileName))
 	}
 }
 
@@ -94,7 +97,7 @@ func FileNotExist(dir string, cmd string, fileName string, check func(string) (b
 func FileExists(directory string, fileName string) (bool, error) {
 	filePath := path.Join(directory, fileName)
 	if _, err := os.Stat(filePath); err != nil && !os.IsNotExist(err) {
-		return false, errors.New(fmt.Sprintf("error checking for %v: %v", fileName, err))
+		return false, errors.New(i18n.GetMessagePrinter().Sprintf("error checking for %v: %v", fileName, err))
 	} else if err == nil {
 		return true, nil
 	}
@@ -108,7 +111,7 @@ func GetFile(directory string, fileName string, obj interface{}) error {
 
 	fileBytes := cliutils.ReadJsonFile(filePath)
 	if err := json.Unmarshal(fileBytes, obj); err != nil {
-		return errors.New(fmt.Sprintf("failed to unmarshal %s, error: %v", filePath, err))
+		return errors.New(i18n.GetMessagePrinter().Sprintf("failed to unmarshal %s, error: %v", filePath, err))
 	}
 	return nil
 }
@@ -118,9 +121,9 @@ func CreateFile(directory string, fileName string, obj interface{}) error {
 	// Convert the object to JSON and write it.
 	filePath := path.Join(directory, fileName)
 	if jsonBytes, err := json.MarshalIndent(obj, "", "    "); err != nil {
-		return errors.New(fmt.Sprintf("failed to create json object for %v, error: %v", fileName, err))
+		return errors.New(i18n.GetMessagePrinter().Sprintf("failed to create json object for %v, error: %v", fileName, err))
 	} else if err := ioutil.WriteFile(filePath, jsonBytes, 0664); err != nil {
-		return errors.New(fmt.Sprintf("unable to write json object for %v to file %v, error: %v", fileName, filePath, err))
+		return errors.New(i18n.GetMessagePrinter().Sprintf("unable to write json object for %v to file %v, error: %v", fileName, filePath, err))
 	} else {
 		return nil
 	}
@@ -128,37 +131,39 @@ func CreateFile(directory string, fileName string, obj interface{}) error {
 
 // Common verification before executing a sub command.
 func VerifyEnvironment(homeDirectory string, mustExist bool, needExchange bool, userCreds string) (string, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Make sure the env vars needed by the dev tools are setup
 	if needExchange && userCreds != "" {
 		id, _ := cliutils.SplitIdToken(userCreds) // only look for the / in the id, because the token is more likely to have special chars
 		if !strings.Contains(id, "/") && os.Getenv(DEVTOOL_HZN_ORG) == "" {
-			return "", errors.New(fmt.Sprintf("Must set environment variable %v or specify the user as 'org/user' on the --user-pw flag", DEVTOOL_HZN_ORG))
+			return "", errors.New(msgPrinter.Sprintf("Must set environment variable %v or specify the user as 'org/user' on the --user-pw flag", DEVTOOL_HZN_ORG))
 		}
 	} else if needExchange && userCreds == "" {
 		id, _ := cliutils.SplitIdToken(os.Getenv(DEVTOOL_HZN_USER)) // only look for the / in the id, because the token is more likely to have special chars
 		if !strings.Contains(id, "/") && os.Getenv(DEVTOOL_HZN_ORG) == "" {
-			return "", errors.New(fmt.Sprintf("Must set environment variable %v or specify the user as 'org/user' on the --user-pw flag", DEVTOOL_HZN_ORG))
+			return "", errors.New(msgPrinter.Sprintf("Must set environment variable %v or specify the user as 'org/user' on the --user-pw flag", DEVTOOL_HZN_ORG))
 		}
 	}
 
 	if needExchange && os.Getenv(DEVTOOL_HZN_USER) == "" && userCreds == "" {
-		return "", errors.New(fmt.Sprintf("Must set environment variable %v or specify user exchange credentials with --user-pw", DEVTOOL_HZN_USER))
+		return "", errors.New(msgPrinter.Sprintf("Must set environment variable %v or specify user exchange credentials with --user-pw", DEVTOOL_HZN_USER))
 	} else if os.Getenv(DEVTOOL_HZN_EXCHANGE_URL) == "" {
 		exchangeUrl := cliutils.GetExchangeUrl()
 		if exchangeUrl != "" {
 			if err := os.Setenv(DEVTOOL_HZN_EXCHANGE_URL, exchangeUrl); err != nil {
-				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to set env var %v to %v, error %v", DEVTOOL_HZN_EXCHANGE_URL, exchangeUrl, err)
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Unable to set env var %v to %v, error %v", DEVTOOL_HZN_EXCHANGE_URL, exchangeUrl, err))
 			}
 		} else {
-			return "", errors.New(fmt.Sprintf("Environment variable %v must be set.", DEVTOOL_HZN_EXCHANGE_URL))
+			return "", errors.New(msgPrinter.Sprintf("Environment variable %v must be set.", DEVTOOL_HZN_EXCHANGE_URL))
 		}
 	}
 
 	// Get the directory we're working in
 	dir, err := GetWorkingDir(homeDirectory, mustExist)
 	if err != nil {
-		return "", errors.New(fmt.Sprintf("project has no horizon metadata directory. Use hzn dev to create a new project. Error: %v", err))
+		return "", errors.New(msgPrinter.Sprintf("project has no horizon metadata directory. Use hzn dev to create a new project. Error: %v", err))
 	} else {
 		return dir, nil
 	}
@@ -177,6 +182,9 @@ func IsServiceProject(directory string) bool {
 
 // autoAddDep -- if true, the dependent services will be automatically added if they can be found from the exchange
 func CommonProjectValidation(dir string, userInputFile string, projectType string, cmd string, userCreds string, autoAddDep bool) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	// Get the Userinput file, so that we can validate it.
 	userInputs, userInputsFilePath, uierr := GetUserInputs(dir, userInputFile)
 	if uierr != nil {
@@ -185,28 +193,31 @@ func CommonProjectValidation(dir string, userInputFile string, projectType strin
 
 	// Validate Dependencies
 	if derr := ValidateDependencies(dir, userInputs, userInputsFilePath, projectType, userCreds, autoAddDep); derr != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' project does not validate. %v", projectType, cmd, derr)
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("'%v %v' project does not validate. %v", projectType, cmd, derr))
 	}
 
 	if verr := ValidateUserInput(userInputs, dir, userInputsFilePath, projectType); verr != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' project does not validate. %v ", projectType, cmd, verr)
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("'%v %v' project does not validate. %v ", projectType, cmd, verr))
 	}
 }
 
 // Validate that the input list of files actually exist.
 func FileValidation(configFiles []string, configType string, projectType string, cmd string) []string {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 
 	if len(configFiles) > 0 && configType == "" {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' Must specify configuration file type (-t) when a configuration file is specified (-m).", projectType, cmd)
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("'%v %v' Must specify configuration file type (-t) when a configuration file is specified (-m).", projectType, cmd))
 	}
 
 	absoluteFiles := make([]string, 0, 5)
 
 	for _, fileRef := range configFiles {
 		if absFileRef, err := filepath.Abs(fileRef); err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' configuration file %v error %v", projectType, cmd, fileRef, err)
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("'%v %v' configuration file %v error %v", projectType, cmd, fileRef, err))
 		} else if _, err := os.Stat(absFileRef); err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'%v %v' configuration file %v error %v", projectType, cmd, fileRef, err)
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("'%v %v' configuration file %v error %v", projectType, cmd, fileRef, err))
 		} else {
 			absoluteFiles = append(absoluteFiles, absFileRef)
 		}
@@ -217,7 +228,7 @@ func FileValidation(configFiles []string, configType string, projectType string,
 
 func AbstractServiceValidation(dir string) error {
 	if verr := ValidateServiceDefinition(dir, SERVICE_DEFINITION_FILE); verr != nil {
-		return errors.New(fmt.Sprintf("project does not validate. %v ", verr))
+		return errors.New(i18n.GetMessagePrinter().Sprintf("project does not validate. %v ", verr))
 	}
 	return nil
 }
@@ -241,6 +252,9 @@ func GetAbstractDefinition(directory string) (cliexchange.AbstractServiceFile, e
 
 // Common setup processing for handling workload related commands.
 func setup(homeDirectory string, mustExist bool, needExchange bool, userCreds string) (string, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 
 	// Shut off the Anax runtime logging.
 	flag.Set("v", "0")
@@ -251,11 +265,11 @@ func setup(homeDirectory string, mustExist bool, needExchange bool, userCreds st
 		return "", err
 	}
 
-	cliutils.Verbose("Reading Horizon metadata from %s", dir)
+	cliutils.Verbose(msgPrinter.Sprintf("Reading Horizon metadata from %s", dir))
 
 	// Verify that the project is a service project.
 	if !IsServiceProject(dir) {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "project in %v is not a horizon project.", dir)
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("project in %v is not a horizon project.", dir))
 	}
 
 	return dir, nil
@@ -295,6 +309,10 @@ func createEnvVarMap(agreementId string,
 		defaultRAM int64) (map[string]string, error),
 ) (map[string]string, error) {
 
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+
 	// First, add in the Horizon platform env vars.
 	envvars := make(map[string]string)
 
@@ -328,13 +346,13 @@ func createEnvVarMap(agreementId string,
 	// Now convert the reduced global attribute set to API attributes.
 	attrs, err := GlobalSetAsAttributes(shortGlobals)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("%v has error: %v ", USERINPUT_FILE, err))
+		return nil, errors.New(msgPrinter.Sprintf("%v has error: %v ", USERINPUT_FILE, err))
 	}
 
 	// Third, add in default system attributes if not already present.
 	attrs = api.FinalizeAttributesSpecifiedInService(persistence.NewServiceSpec(msURL, org), attrs)
 
-	cliutils.Verbose("Final Attributes: %v", attrs)
+	cliutils.Verbose(msgPrinter.Sprintf("Final Attributes: %v", attrs))
 
 	// The conversion to persistent attributes produces an array of pointers to attributes, we need a by-value
 	// array of attributes because that's what the functions which convert attributes to env vars expect. This is
@@ -346,7 +364,7 @@ func createEnvVarMap(agreementId string,
 	var cerr error
 	envvars, cerr = attrConverter(byValueAttrs, envvars, config.ENVVAR_PREFIX, cw.Config.Edge.DefaultServiceRegistrationRAM)
 	if cerr != nil {
-		return nil, errors.New(fmt.Sprintf("global attribute conversion error: %v", cerr))
+		return nil, errors.New(msgPrinter.Sprintf("global attribute conversion error: %v", cerr))
 	}
 
 	// Last, now that the system and attribute based env vars are in place, we can convert the workload defined variables to env
@@ -404,7 +422,7 @@ func CommonExecutionSetup(homeDirectory string, userInputFile string, projectTyp
 	// Create the containerWorker
 	cw, cerr := createContainerWorker()
 	if cerr != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' unable to create Container Worker, %v", projectType, cmd, cerr)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("'%v %v' unable to create Container Worker, %v", projectType, cmd, cerr))
 	}
 
 	return dir, userInputs, cw
@@ -422,7 +440,7 @@ func findContainers(serviceName string, cw *container.ContainerWorker) ([]docker
 
 	containers, err := cw.GetClient().ListContainers(dcService)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("unable to list containers, %v", err))
+		return nil, errors.New(i18n.GetMessagePrinter().Sprintf("unable to list containers, %v", err))
 	}
 	return containers, nil
 }
@@ -432,7 +450,7 @@ func getContainerNetworks(depConfig *cliexchange.DeploymentConfig, cw *container
 	for serviceName, _ := range depConfig.Services {
 		containers, err := findContainers(serviceName, cw)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("unable to list existing containers: %v", err))
+			return nil, errors.New(i18n.GetMessagePrinter().Sprintf("unable to list existing containers: %v", err))
 		}
 		// Return the main network for this service. It will always be the network name
 		// that matches the agreement_id label.
@@ -440,7 +458,7 @@ func getContainerNetworks(depConfig *cliexchange.DeploymentConfig, cw *container
 			if nw_name, ok := msc.Labels[container.LABEL_PREFIX+".agreement_id"]; ok {
 				if nw, ok := msc.Networks.Networks[nw_name]; ok {
 					containerNetworks[nw_name] = nw
-					cliutils.Verbose("Found main network for service %v, %v", nw_name, nw)
+					cliutils.Verbose(i18n.GetMessagePrinter().Sprintf("Found main network for service %v, %v", nw_name, nw))
 				}
 			}
 		}
@@ -463,7 +481,7 @@ func ProcessStartDependencies(dir string, deps []*cliexchange.ServiceFile, globa
 			// Stop any services that might already be started.
 			ServiceStopTest(dir)
 
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v for dependency %v", SERVICE_COMMAND, SERVICE_START_COMMAND, startErr, depDef.URL)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("'%v %v' %v for dependency %v", SERVICE_COMMAND, SERVICE_START_COMMAND, startErr, depDef.URL))
 
 		} else {
 			// Add the dependent's networks to the map.
@@ -483,6 +501,9 @@ func startDependent(dir string,
 	configUserInputs []register.MicroWork, // indicates configured variables
 	cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
 
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	// The docker networks of any dependencies that the input service has.
 	msNetworks := map[string]docker.ContainerNetwork{}
 
@@ -491,10 +512,10 @@ func startDependent(dir string,
 	if serviceDef.HasDependencies() {
 
 		if deps, err := GetServiceDependencies(dir, serviceDef.RequiredServices); err != nil {
-			return nil, errors.New(fmt.Sprintf("unable to retrieve dependency metadata: %v", err))
+			return nil, errors.New(msgPrinter.Sprintf("unable to retrieve dependency metadata: %v", err))
 			// Start this service's dependencies
 		} else if msn, err := ProcessStartDependencies(dir, deps, globals, configUserInputs, cw); err != nil {
-			return nil, errors.New(fmt.Sprintf("unable to start dependencies: %v", err))
+			return nil, errors.New(msgPrinter.Sprintf("unable to start dependencies: %v", err))
 		} else {
 			msNetworks = msn
 		}
@@ -508,7 +529,7 @@ func startDependent(dir string,
 
 	// Start the service containers
 	if !depConfig.HasAnyServices() {
-		cliutils.Verbose("Skipping service because it has no deployment configuration: %v", depConfig)
+		cliutils.Verbose(msgPrinter.Sprintf("Skipping service because it has no deployment configuration: %v", depConfig))
 		return msNetworks, nil
 	} else {
 
@@ -527,7 +548,7 @@ func startDependent(dir string,
 		// Start the service containers. Make an instance id the same way the runtime makes them.
 		id, err := uuid.NewV4()
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("unable to generate instance ID: %v", err))
+			return nil, errors.New(msgPrinter.Sprintf("unable to generate instance ID: %v", err))
 		}
 
 		sId := cutil.MakeMSInstanceKey(serviceDef.URL, serviceDef.Org, serviceDef.Version, id.String())
@@ -550,6 +571,9 @@ func StartContainers(deployment *containermessage.DeploymentDescription,
 	agreementBased bool,
 	id string) (map[string]docker.ContainerNetwork, error) {
 
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	// Establish logging context
 	logName := "microservice"
 	if service {
@@ -570,22 +594,24 @@ func StartContainers(deployment *containermessage.DeploymentDescription,
 	// Now that we have the configured variables, turn everything into environment variables for the container.
 	environmentAdditions, enverr := createEnvVarMap(agId, wlpw, globals, specRef, configVars, defUserInputs, org, cw, persistence.AttributesToEnvvarMap)
 	if enverr != nil {
-		return nil, errors.New(fmt.Sprintf("unable to create environment variables"))
+		return nil, errors.New(msgPrinter.Sprintf("unable to create environment variables"))
 	}
 
-	cliutils.Verbose("Passing environment variables: %v", environmentAdditions)
+	cliutils.Verbose(msgPrinter.Sprintf("Passing environment variables: %v", environmentAdditions))
 
 	// Start the dpendent service
 
-	fmt.Printf("Start %v: %v with instance id prefix %v\n", logName, dc.CLIString(), id)
+	msgPrinter.Printf("Start %v: %v with instance id prefix %v", logName, dc.CLIString(), id)
+	msgPrinter.Println()
 
 	// Start the dependent service container.
 	_, startErr := cw.ResourcesCreate(id, "", nil, deployment, []byte(""), environmentAdditions, msNetworks, cutil.FormOrgSpecUrl(cutil.NormalizeURL(specRef), org), "")
 	if startErr != nil {
-		return nil, errors.New(fmt.Sprintf("unable to start container using %v, error: %v", dc.CLIString(), startErr))
+		return nil, errors.New(msgPrinter.Sprintf("unable to start container using %v, error: %v", dc.CLIString(), startErr))
 	}
 
-	fmt.Printf("Running %v.\n", logName)
+	msgPrinter.Printf("Running %v.", logName)
+	msgPrinter.Println()
 
 	// Locate the service network(s) and return them so that a workload/parent-service can be hooked in.
 	return getContainerNetworks(dc, cw)
@@ -595,7 +621,7 @@ func ProcessStopDependencies(dir string, deps []*cliexchange.ServiceFile, cw *co
 
 	// Log the stopping of dependencies if there are any.
 	if len(deps) != 0 {
-		cliutils.Verbose("Stopping dependencies.")
+		cliutils.Verbose(i18n.GetMessagePrinter().Sprintf("Stopping dependencies."))
 	}
 
 	for _, depDef := range deps {
@@ -608,6 +634,9 @@ func ProcessStopDependencies(dir string, deps []*cliexchange.ServiceFile, cw *co
 }
 
 func stopDependent(dir string, serviceDef *cliexchange.ServiceFile, cw *container.ContainerWorker) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 
 	// Convert the deployment config into a full DeploymentDescription.
 	depConfig, _, derr := serviceDef.ConvertToDeploymentDescription(false)
@@ -617,7 +646,8 @@ func stopDependent(dir string, serviceDef *cliexchange.ServiceFile, cw *containe
 
 	// Stop the service containers
 	if !depConfig.HasAnyServices() {
-		fmt.Printf("Skipping service because it has no deployment configuration: %v\n", depConfig)
+		msgPrinter.Printf("Skipping service because it has no deployment configuration: %v", depConfig)
+		msgPrinter.Println()
 	} else if err := stopContainers(depConfig, cw, true); err != nil {
 		return err
 	}
@@ -627,10 +657,10 @@ func stopDependent(dir string, serviceDef *cliexchange.ServiceFile, cw *containe
 	if serviceDef.HasDependencies() {
 
 		if deps, err := GetServiceDependencies(dir, serviceDef.RequiredServices); err != nil {
-			return errors.New(fmt.Sprintf("unable to retrieve dependency metadata: %v", err))
+			return errors.New(msgPrinter.Sprintf("unable to retrieve dependency metadata: %v", err))
 			// Stop this service's dependencies
 		} else if err := ProcessStopDependencies(dir, deps, cw); err != nil {
-			return errors.New(fmt.Sprintf("unable to stop dependencies: %v", err))
+			return errors.New(msgPrinter.Sprintf("unable to stop dependencies: %v", err))
 		}
 	}
 
@@ -642,6 +672,9 @@ func StopService(dc *cliexchange.DeploymentConfig, cw *container.ContainerWorker
 }
 
 func stopContainers(dc *cliexchange.DeploymentConfig, cw *container.ContainerWorker, service bool) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 
 	// Establish logging context
 	logName := "service"
@@ -653,15 +686,16 @@ func stopContainers(dc *cliexchange.DeploymentConfig, cw *container.ContainerWor
 	for serviceName, _ := range dc.Services {
 		containers, err := findContainers(serviceName, cw)
 		if err != nil {
-			return errors.New(fmt.Sprintf("unable to list containers, %v", err))
+			return errors.New(msgPrinter.Sprintf("unable to list containers, %v", err))
 		}
 
-		cliutils.Verbose("Found containers %v", containers)
+		cliutils.Verbose(msgPrinter.Sprintf("Found containers %v", containers))
 
 		// Locate the container and stop it.
 		for _, c := range containers {
 			msId := c.Labels[container.LABEL_PREFIX+".agreement_id"]
-			fmt.Printf("Stop %v: %v with instance id prefix %v\n", logName, dc.CLIString(), msId)
+			msgPrinter.Printf("Stop %v: %v with instance id prefix %v", logName, dc.CLIString(), msId)
+			msgPrinter.Println()
 			cw.ResourcesRemove([]string{msId})
 		}
 	}
@@ -670,6 +704,9 @@ func stopContainers(dc *cliexchange.DeploymentConfig, cw *container.ContainerWor
 
 // Get the images into the local docker server for services
 func getContainerImages(containerConfig *events.ContainerConfig, currentUIs *register.InputFile) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 
 	// Create a temporary anax config object to hold config for the shared runtime functions.
 	cfg := &config.HorizonConfig{
@@ -688,14 +725,14 @@ func getContainerImages(containerConfig *events.ContainerConfig, currentUIs *reg
 	dockerEP := "unix:///var/run/docker.sock"
 	client, derr := docker.NewClient(dockerEP)
 	if derr != nil {
-		return errors.New(fmt.Sprintf("failed to create docker client, error: %v", derr))
+		return errors.New(msgPrinter.Sprintf("failed to create docker client, error: %v", derr))
 	}
 
 	// This is the image server authentication configuration. First get any anax attributes and convert them into
 	// anax attributes.
 	attributes, err := GlobalSetAsAttributes(currentUIs.Global)
 	if err != nil {
-		return errors.New(fmt.Sprintf("failed to convert global attributes in %v, error: %v ", USERINPUT_FILE, err))
+		return errors.New(msgPrinter.Sprintf("failed to convert global attributes in %v, error: %v ", USERINPUT_FILE, err))
 	}
 	byValueAttrs := makeByValueAttributes(attributes)
 
@@ -703,12 +740,13 @@ func getContainerImages(containerConfig *events.ContainerConfig, currentUIs *reg
 	dockerAuthConfigurations := make(map[string][]docker.AuthConfiguration, 0)
 	authErr := imagefetch.ExtractAuthAttributes(byValueAttrs, dockerAuthConfigurations)
 	if authErr != nil {
-		return errors.New(fmt.Sprintf("failed to extract authentication attribute from %v, error: %v ", USERINPUT_FILE, err))
+		return errors.New(msgPrinter.Sprintf("failed to extract authentication attribute from %v, error: %v ", USERINPUT_FILE, err))
 	}
 
-	fmt.Printf("getting container images into docker.\n")
+	msgPrinter.Printf("getting container images into docker.")
+	msgPrinter.Println()
 	if err := imagefetch.ProcessImageFetch(cfg, client, containerConfig, dockerAuthConfigurations); err != nil {
-		return errors.New(fmt.Sprintf("failed to get container images, error: %v", err))
+		return errors.New(msgPrinter.Sprintf("failed to get container images, error: %v", err))
 	}
 
 	return nil
@@ -763,6 +801,9 @@ func GetServiceSpecFromImage(image string) (string, string, error) {
 // so that it's easy for the user to update the version later. And it will append_$ARCH to the image name so
 // distiguash images from different arch.
 func GetImageInfoFromImageList(images []string, version string, noImageGen bool) (map[string]string, string, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	imageInfo := make(map[string]string)
 	image_base := ""
 
@@ -774,7 +815,7 @@ func GetImageInfoFromImageList(images []string, version string, noImageGen bool)
 	for _, image := range images {
 		host, path, tag, digest := cutil.ParseDockerImagePath(image)
 		if path == "" {
-			return nil, "", errors.New(fmt.Sprintf("invalid image format: %v", image))
+			return nil, "", errors.New(msgPrinter.Sprintf("invalid image format: %v", image))
 		}
 		s := strings.Split(path, "/")
 
@@ -805,6 +846,9 @@ func GetImageInfoFromImageList(images []string, version string, noImageGen bool)
 
 // check the file existance, substitute the variables and save the file
 func CreateFileWithConent(directory string, filename string, content string, substitutes map[string]string, perm_exec bool) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 
 	filePath := path.Join(directory, filename)
 
@@ -814,7 +858,7 @@ func CreateFileWithConent(directory string, filename string, content string, sub
 		return err
 	}
 	if found {
-		return errors.New(fmt.Sprintf("file %v exists already", filePath))
+		return errors.New(msgPrinter.Sprintf("file %v exists already", filePath))
 	}
 
 	// do the substitution
@@ -834,7 +878,7 @@ func CreateFileWithConent(directory string, filename string, content string, sub
 		perm = 0644
 	}
 	if err := ioutil.WriteFile(filePath, []byte(content), perm); err != nil {
-		return errors.New(fmt.Sprintf("unable to write content to file %v, error: %v", filePath, err))
+		return errors.New(msgPrinter.Sprintf("unable to write content to file %v, error: %v", filePath, err))
 	} else {
 		return nil
 	}

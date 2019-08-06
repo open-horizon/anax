@@ -17,6 +17,8 @@ import (
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/governance"
 	"github.com/open-horizon/anax/helm"
+	"github.com/open-horizon/anax/i18n"
+	_ "github.com/open-horizon/anax/i18n_messages"
 	"github.com/open-horizon/anax/imagefetch"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -60,6 +62,11 @@ func main() {
 	glog.V(2).Infof("Using config: %v", cfg.String())
 	glog.V(2).Infof("GOMAXPROCS: %v", runtime.GOMAXPROCS(-1))
 
+	// initialize the message printer for globalization, the anax will produce English messages.
+	// However, in order to extract messages for eventlog for translation, we need to use the message printer for
+	// eventlog messages.
+	i18n.InitMessagePrinter(true)
+
 	// open edge DB if necessary
 	var db *bolt.DB
 	if len(cfg.Edge.DBPath) != 0 {
@@ -72,7 +79,6 @@ func main() {
 			panic(err)
 		}
 		db = edgeDB
-
 	}
 
 	// open Agreement Bot DB if necessary

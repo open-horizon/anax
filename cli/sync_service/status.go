@@ -3,6 +3,7 @@ package sync_service
 import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/edge-sync-service/common"
 	"path"
 )
@@ -13,9 +14,11 @@ type MMSHealth struct {
 }
 
 func Status(org string, userPw string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	if userPw == "" {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "must specify exchange credentials to access the model management service")
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("must specify exchange credentials to access the model management service"))
 	}
 
 	// Set the API key env var if that's what we're using.
@@ -30,7 +33,7 @@ func Status(org string, userPw string) {
 	// Call the MMS service over HTTP
 	httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200}, &healthData)
 	if httpCode != 200 {
-		cliutils.Fatal(cliutils.HTTP_ERROR, "health status API returned HTTP code %v", httpCode)
+		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("health status API returned HTTP code %v", httpCode))
 	}
 	output := cliutils.MarshalIndent(healthData, "mms health")
 	fmt.Println(output)

@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/rsapss-tool/sign"
 	"github.com/open-horizon/rsapss-tool/verify"
@@ -95,6 +96,9 @@ type PatternInput struct {
 // List the pattern resources for the given org.
 // The userPw can be the userId:password auth or the nodeId:token auth.
 func PatternList(credOrg string, userPw string, pattern string, namesOnly bool) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(userPw)
 	var patOrg string
 	patOrg, pattern = cliutils.TrimOrg(credOrg, pattern)
@@ -111,7 +115,7 @@ func PatternList(credOrg string, userPw string, pattern string, namesOnly bool) 
 		}
 		jsonBytes, err := json.MarshalIndent(patterns, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'exchange pattern list' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'exchange pattern list' output: %v", err))
 		}
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
@@ -119,17 +123,20 @@ func PatternList(credOrg string, userPw string, pattern string, namesOnly bool) 
 		var patterns ExchangePatterns
 		httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+patOrg+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(credOrg, userPw), []int{200, 404}, &patterns)
 		if httpCode == 404 && pattern != "" {
-			cliutils.Fatal(cliutils.NOT_FOUND, "pattern '%s' not found in org %s", pattern, patOrg)
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("pattern '%s' not found in org %s", pattern, patOrg))
 		}
 		jsonBytes, err := json.MarshalIndent(patterns.Patterns, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn exchange pattern list' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange pattern list' output: %v", err))
 		}
 		fmt.Println(string(jsonBytes))
 	}
 }
 
 func PatternUpdate(credOrg string, userPw string, pattern string, filePath string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(userPw)
 
 	attribute := cliconfig.ReadJsonFileWithLocalConfig(filePath)
@@ -141,12 +148,16 @@ func PatternUpdate(credOrg string, userPw string, pattern string, filePath strin
 	}
 
 	cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+patOrg+"/patterns/"+pattern, cliutils.OrgAndCreds(patOrg, userPw), []int{200, 201}, attribute)
-	fmt.Printf("Pattern %s/%s updated in the Horizon exchange.\n", pattern, patOrg)
+	msgPrinter.Printf("Pattern %s/%s updated in the Horizon exchange.", pattern, patOrg)
+	msgPrinter.Println()
 }
 
 // Take the deployment overrides field, which we have told the json unmarshaller was unknown type (so we can handle both escaped string and struct)
 // and turn it into the DeploymentOverrides struct we really want.
 func ConvertToDeploymentOverrides(deployment interface{}) *DeploymentOverrides {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	var jsonBytes []byte
 	var err error
 
@@ -164,7 +175,7 @@ func ConvertToDeploymentOverrides(deployment interface{}) *DeploymentOverrides {
 		// The only other valid input is regular json in DeploymentConfig structure. Marshal it back to bytes so we can unmarshal it in a way that lets Go know it is a DeploymentConfig
 		jsonBytes, err = json.Marshal(d)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal body for %v: %v", d, err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal body for %v: %v", d, err))
 		}
 	}
 
@@ -172,7 +183,7 @@ func ConvertToDeploymentOverrides(deployment interface{}) *DeploymentOverrides {
 	depOver := new(DeploymentOverrides)
 	err = json.Unmarshal(jsonBytes, depOver)
 	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json for deployment overrides field %s: %v", string(jsonBytes), err)
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal json for deployment overrides field %s: %v", string(jsonBytes), err))
 	}
 
 	return depOver
@@ -180,16 +191,19 @@ func ConvertToDeploymentOverrides(deployment interface{}) *DeploymentOverrides {
 
 // PatternPublish signs the MS def and puts it in the exchange
 func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patName string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(userPw)
 	// Read in the pattern metadata
 	newBytes := cliconfig.ReadJsonFileWithLocalConfig(jsonFilePath)
 	var patFile PatternFile
 	err := json.Unmarshal(newBytes, &patFile)
 	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", jsonFilePath, err)
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal json input file %s: %v", jsonFilePath, err))
 	}
 	if patFile.Org != "" && patFile.Org != org {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the org specified in the input file (%s) must match the org specified on the command line (%s)", patFile.Org, org)
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("the org specified in the input file (%s) must match the org specified on the command line (%s)", patFile.Org, org))
 	}
 	patInput := PatternInput{Label: patFile.Label, Description: patFile.Description, Public: patFile.Public, AgreementProtocols: patFile.AgreementProtocols, UserInput: patFile.UserInput}
 
@@ -227,10 +241,11 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 					patInput.Services[i].ServiceVersions[j].DeploymentOverrides = ""
 					patInput.Services[i].ServiceVersions[j].DeploymentOverridesSignature = ""
 				} else {
-					fmt.Printf("Signing deployment_overrides field in service %d, serviceVersion number %d\n", i+1, j+1)
+					msgPrinter.Printf("Signing deployment_overrides field in service %d, serviceVersion number %d", i+1, j+1)
+					msgPrinter.Println()
 					deployment, err = json.Marshal(depOver)
 					if err != nil {
-						cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal deployment_overrides field in service %d, serviceVersion number %d: %v", i+1, j+1, err)
+						cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal deployment_overrides field in service %d, serviceVersion number %d: %v", i+1, j+1, err))
 					}
 					patInput.Services[i].ServiceVersions[j].DeploymentOverrides = string(deployment)
 					// We know we need to sign the overrides, so make sure a real key file was provided.
@@ -240,7 +255,7 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 
 					patInput.Services[i].ServiceVersions[j].DeploymentOverridesSignature, err = sign.Input(keyFilePath, deployment)
 					if err != nil {
-						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem signing the deployment_overrides string with %s: %v", keyFilePath, err)
+						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("problem signing the deployment_overrides string with %s: %v", keyFilePath, err))
 					}
 				}
 			}
@@ -265,11 +280,13 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 200 {
 		// Pattern exists, update it
-		fmt.Printf("Updating %s in the exchange...\n", exchId)
+		msgPrinter.Printf("Updating %s in the exchange...", exchId)
+		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, patInput)
 	} else {
 		// Pattern not there, create it
-		fmt.Printf("Creating %s in the exchange...\n", exchId)
+		msgPrinter.Printf("Creating %s in the exchange...", exchId)
+		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, patInput)
 	}
 
@@ -278,7 +295,8 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 		// Note: already verified the file exists
 		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
 		baseName := filepath.Base(pubKeyFilePath)
-		fmt.Printf("Storing %s with the pattern in the exchange...\n", baseName)
+		msgPrinter.Printf("Storing %s with the pattern in the exchange...", baseName)
+		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
 	}
 }
@@ -286,17 +304,20 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 // Verify that the deployment_overrides_signature is valid for the given key.
 // The userPw can be the userId:password auth or the nodeId:token auth.
 func PatternVerify(org, userPw, pattern, keyFilePath string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(userPw)
 	org, pattern = cliutils.TrimOrg(org, pattern)
 	// Get pattern resource from exchange
 	var output ExchangePatterns
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, "pattern '%s' not found in org %s", pattern, org)
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("pattern '%s' not found in org %s", pattern, org))
 	}
 	pat, ok := output.Patterns[org+"/"+pattern]
 	if !ok {
-		cliutils.Fatal(cliutils.INTERNAL_ERROR, "key '%s' not found in resources returned from exchange", org+"/"+pattern)
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("key '%s' not found in resources returned from exchange", org+"/"+pattern))
 	}
 
 	// Loop thru services array, checking the deployment string signature
@@ -304,7 +325,7 @@ func PatternVerify(org, userPw, pattern, keyFilePath string) {
 	keyVerified := false
 	for i := range pat.Services {
 		for j := range pat.Services[i].ServiceVersions {
-			cliutils.Verbose("verifying deployment_overrides string in service %d, serviceVersion number %d", i+1, j+1)
+			cliutils.Verbose(msgPrinter.Sprintf("verifying deployment_overrides string in service %d, serviceVersion number %d", i+1, j+1))
 			if pat.Services[i].ServiceVersions[j].DeploymentOverrides == "" && pat.Services[i].ServiceVersions[j].DeploymentOverridesSignature == "" {
 				continue // there was nothing to sign, so nothing to verify
 			}
@@ -315,9 +336,10 @@ func PatternVerify(org, userPw, pattern, keyFilePath string) {
 			}
 			verified, err := verify.Input(keyFilePath, pat.Services[i].ServiceVersions[j].DeploymentOverridesSignature, []byte(pat.Services[i].ServiceVersions[j].DeploymentOverrides))
 			if err != nil {
-				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "problem verifying deployment_overrides string in service %d, serviceVersion number %d with %s: %v", i+1, j+1, keyFilePath, err)
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("problem verifying deployment_overrides string in service %d, serviceVersion number %d with %s: %v", i+1, j+1, keyFilePath, err))
 			} else if !verified {
-				fmt.Printf("Deployment_overrides string in service %d, serviceVersion number %d was not signed with the private key associated with this public key %v.\n", i+1, j+1, keyFilePath)
+				msgPrinter.Printf("Deployment_overrides string in service %d, serviceVersion number %d was not signed with the private key associated with this public key %v.", i+1, j+1, keyFilePath)
+				msgPrinter.Println()
 				someInvalid = true
 			}
 			// else if they all turned out to be valid, we will tell them that at the end
@@ -327,20 +349,23 @@ func PatternVerify(org, userPw, pattern, keyFilePath string) {
 	if someInvalid {
 		os.Exit(cliutils.SIGNATURE_INVALID)
 	} else {
-		fmt.Println("All signatures verified")
+		msgPrinter.Println("All signatures verified")
 	}
 }
 
 func PatternRemove(org, userPw, pattern string, force bool) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(userPw)
 	org, pattern = cliutils.TrimOrg(org, pattern)
 	if !force {
-		cliutils.ConfirmRemove("Are you sure you want to remove pattern '" + org + "/" + pattern + "' from the Horizon Exchange?")
+		cliutils.ConfirmRemove(msgPrinter.Sprintf("Are you sure you want to remove pattern %v/%v from the Horizon Exchange?", org, pattern))
 	}
 
 	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, "pattern '%s' not found in org %s", pattern, org)
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("pattern '%s' not found in org %s", pattern, org))
 	}
 }
 
@@ -359,7 +384,7 @@ func PatternListKey(org, userPw, pattern, keyName string) {
 		var output []byte
 		httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 		if httpCode == 404 && pattern != "" {
-			cliutils.Fatal(cliutils.NOT_FOUND, "key '%s' not found", keyName)
+			cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("key '%s' not found", keyName))
 		}
 		fmt.Printf("%s", string(output))
 	}
@@ -370,6 +395,6 @@ func PatternRemoveKey(org, userPw, pattern, keyName string) {
 	org, pattern = cliutils.TrimOrg(org, pattern)
 	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/patterns/"+pattern+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, "key '%s' not found", keyName)
+		cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("key '%s' not found", keyName))
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/policy"
 	"os"
 )
@@ -12,7 +13,7 @@ import (
 func getPolicyNames(org string) (map[string][]string, int) {
 	// set env to call agbot url
 	if err := os.Setenv("HORIZON_URL", cliutils.GetAgbotUrlBase()); err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "unable to set env var 'HORIZON_URL', error %v", err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("unable to set env var 'HORIZON_URL', error %v", err))
 	}
 
 	// Get horizon api policy output
@@ -34,7 +35,7 @@ func getPolicyNames(org string) (map[string][]string, int) {
 func getPolicy(org string, name string) (*policy.Policy, int) {
 	// set env to call agbot url
 	if err := os.Setenv("HORIZON_URL", cliutils.GetAgbotUrlBase()); err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "unable to set env var 'HORIZON_URL', error %v", err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("unable to set env var 'HORIZON_URL', error %v", err))
 	}
 
 	// Get horizon api policy output
@@ -45,27 +46,32 @@ func getPolicy(org string, name string) (*policy.Policy, int) {
 }
 
 func PolicyList(org string, name string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	if name == "" {
 		policies, httpCode := getPolicyNames(org)
 		if httpCode == 200 {
 			jsonBytes, err := json.MarshalIndent(policies, "", cliutils.JSON_INDENT)
 			if err != nil {
-				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'policy list' output: %v", err)
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'policy list' output: %v", err))
 			}
 			fmt.Printf("%s\n", jsonBytes)
 		} else if httpCode == 400 {
-			fmt.Printf("Error: The organization '%v' does not exist.\n", org)
+			msgPrinter.Printf("Error: The organization '%v' does not exist.", org)
+			msgPrinter.Println()
 		}
 	} else {
 		pol, httpCode := getPolicy(org, name)
 		if httpCode == 200 {
 			jsonBytes, err := json.MarshalIndent(pol, "", cliutils.JSON_INDENT)
 			if err != nil {
-				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'policy list' output: %v", err)
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'policy list' output: %v", err))
 			}
 			fmt.Printf("%s\n", jsonBytes)
 		} else if httpCode == 400 {
-			fmt.Printf("Error: Either the organization '%v' does not exist or the policy '%v' is not hosted by this agbot.\n", org, name)
+			msgPrinter.Printf("Error: Either the organization '%v' does not exist or the policy '%v' is not hosted by this agbot.", org, name)
+			msgPrinter.Println()
 		}
 	}
 }

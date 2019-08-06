@@ -3,6 +3,7 @@ package dev
 import (
 	"errors"
 	"fmt"
+	"github.com/open-horizon/anax/i18n"
 )
 
 const MAKE_FILE = "Makefile"
@@ -64,14 +65,17 @@ done
 // It creates a sample Dockerfile for the service container image in the file system.
 // For now we only handle the first image.
 func CreateServiceImageFiles(directory string, hznenv_dir string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	if err := CreateDockerFiles(directory); err != nil {
-		return errors.New(fmt.Sprintf("error creating %v for service image. %v", DOCKER_FILE, err))
+		return errors.New(msgPrinter.Sprintf("error creating %v for service image. %v", DOCKER_FILE, err))
 	}
 	if err := CreateMakeFile(directory, hznenv_dir); err != nil {
-		return errors.New(fmt.Sprintf("error creating %v for service image. %v", MAKE_FILE, err))
+		return errors.New(msgPrinter.Sprintf("error creating %v for service image. %v", MAKE_FILE, err))
 	}
 	if err := CreateServiceFile(directory); err != nil {
-		return errors.New(fmt.Sprintf("error creating %v for service image. %v", SERVICE_FILE, err))
+		return errors.New(msgPrinter.Sprintf("error creating %v for service image. %v", SERVICE_FILE, err))
 	} else {
 		return nil
 	}

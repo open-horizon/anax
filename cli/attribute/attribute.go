@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 )
 
@@ -23,11 +24,11 @@ func List() {
 	apiOutput := map[string][]api.Attribute{}
 	httpCode, _ := cliutils.HorizonGet("attribute", []int{200, cliutils.ANAX_NOT_CONFIGURED_YET}, &apiOutput, false)
 	if httpCode == cliutils.ANAX_NOT_CONFIGURED_YET {
-		cliutils.Fatal(cliutils.HTTP_ERROR, cliutils.MUST_REGISTER_FIRST)
+		cliutils.Fatal(cliutils.HTTP_ERROR, i18n.GetMessagePrinter().Sprintf(cliutils.MUST_REGISTER_FIRST))
 	}
 	var ok bool
 	if _, ok = apiOutput["attributes"]; !ok {
-		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api attributes output did not include 'attributes' key")
+		cliutils.Fatal(cliutils.HTTP_ERROR, i18n.GetMessagePrinter().Sprintf("horizon api attributes output did not include 'attributes' key"))
 	}
 	apiAttrs := apiOutput["attributes"]
 
@@ -44,7 +45,7 @@ func List() {
 	// Convert to json and output
 	jsonBytes, err := json.MarshalIndent(attrs, "", cliutils.JSON_INDENT)
 	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn attribute list' output: %v", err)
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn attribute list' output: %v", err))
 	}
 	fmt.Printf("%s\n", jsonBytes)
 }
