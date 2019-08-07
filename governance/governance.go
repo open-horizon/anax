@@ -688,17 +688,17 @@ func (w *GovernanceWorker) Initialize() bool {
 	w.ReportDeviceStatus()
 
 	// Fire up the container governor
-	w.DispatchSubworker(CONTAINER_GOVERNOR, w.governContainers, 60)
+	w.DispatchSubworker(CONTAINER_GOVERNOR, w.governContainers, 60, false)
 
 	// Fire up the blockchain reporter
-	w.DispatchSubworker(BC_GOVERNOR, w.reportBlockchains, 60)
+	w.DispatchSubworker(BC_GOVERNOR, w.reportBlockchains, 60, false)
 
 	// Fire up the microservice governor
-	w.DispatchSubworker(MICROSERVICE_GOVERNOR, w.governMicroservices, 60)
+	w.DispatchSubworker(MICROSERVICE_GOVERNOR, w.governMicroservices, 60, false)
 
 	// Fire up the service configuration state governer. Only support pattern case for now.
 	if w.devicePattern != "" {
-		w.DispatchSubworker(SERVICE_CONFIGSTATE_GOVERNOR, w.governServiceConfigState, w.Config.Edge.ServiceConfigStateCheckIntervalS)
+		w.DispatchSubworker(SERVICE_CONFIGSTATE_GOVERNOR, w.governServiceConfigState, w.Config.Edge.ServiceConfigStateCheckIntervalS, false)
 	}
 
 	// for the policy case update the exchange with the latest registeredServices

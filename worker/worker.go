@@ -421,7 +421,7 @@ func (w *BaseWorker) AreAllSubworkersTerminated() bool {
 	return true
 }
 
-func (w *BaseWorker) DispatchSubworker(name string, runSubWorker func() int, interval int) {
+func (w *BaseWorker) DispatchSubworker(name string, runSubWorker func() int, interval int, logOptOut bool) {
 	quit := w.AddSubworker(name)
 	nextWaitTime := interval
 	go func() {
@@ -434,7 +434,13 @@ func (w *BaseWorker) DispatchSubworker(name string, runSubWorker func() int, int
 				glog.V(3).Infof(cdLogString(fmt.Sprintf("exiting subworker %v", name)))
 				return
 			case <-time.After(time.Duration(nextWaitTime) * time.Second):
+				if !logOptOut {
+					glog.V(3).Infof(cdLogString(fmt.Sprintf("Running subworker %v", name)))
+				}
 				returnedWait := runSubWorker()
+				if !logOptOut {
+					glog.V(3).Infof(cdLogString(fmt.Sprintf("Finished run of subworker %v", name)))
+				}
 				if returnedWait > 0 {
 					nextWaitTime = returnedWait
 				}
