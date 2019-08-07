@@ -210,9 +210,9 @@ func (w *AgreementWorker) Initialize() bool {
 		// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
 		// start heartbeating when the registration event comes in.
 		w.heartBeatFailed = false
-		w.DispatchSubworker(NODEUSERINPUT, w.checkNodeUserInputChanges, w.BaseWorker.Manager.Config.Edge.NodeUserInputCheckIntervalS)
-		w.DispatchSubworker(NODEPOLICY, w.checkNodePolicyChanges, w.BaseWorker.Manager.Config.Edge.NodePolicyCheckIntervalS)
-		w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat)
+		w.DispatchSubworker(NODEUSERINPUT, w.checkNodeUserInputChanges, w.BaseWorker.Manager.Config.Edge.NodeUserInputCheckIntervalS, false)
+		w.DispatchSubworker(NODEPOLICY, w.checkNodePolicyChanges, w.BaseWorker.Manager.Config.Edge.NodePolicyCheckIntervalS, false)
+		w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat, false)
 	}
 
 	// Publish what we have for the world to see
@@ -390,14 +390,14 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 	}
 
 	// start checking userinput changes periodically
-	w.DispatchSubworker(NODEUSERINPUT, w.checkNodeUserInputChanges, w.BaseWorker.Manager.Config.Edge.NodeUserInputCheckIntervalS)
+	w.DispatchSubworker(NODEUSERINPUT, w.checkNodeUserInputChanges, w.BaseWorker.Manager.Config.Edge.NodeUserInputCheckIntervalS, false)
 
 	// start checking node policy changes periodically
-	w.DispatchSubworker(NODEPOLICY, w.checkNodePolicyChanges, w.BaseWorker.Manager.Config.Edge.NodePolicyCheckIntervalS)
+	w.DispatchSubworker(NODEPOLICY, w.checkNodePolicyChanges, w.BaseWorker.Manager.Config.Edge.NodePolicyCheckIntervalS, false)
 
 	// Start the go thread that heartbeats to the exchange
 	w.heartBeatFailed = false
-	w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat)
+	w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat, false)
 
 }
 

@@ -367,7 +367,7 @@ func (t *TestWorker) Initialize() bool {
 	for i := 0; i < t.NumSubworkers; i++ {
 		if t.NumSubworkers == 1 {
 			dispatchIntervalSecs := 1
-			t.DispatchSubworker(subWorkerName, t.runSubWorker, dispatchIntervalSecs)
+			t.DispatchSubworker(subWorkerName, t.runSubWorker, dispatchIntervalSecs, false)
 		} else {
 			ch := t.AddSubworker(subWorkerName + fmt.Sprintf("%v", i))
 			go t.startSubWorker(subWorkerName+fmt.Sprintf("%v", i), ch)

@@ -327,22 +327,22 @@ func (w *AgreementBotWorker) Initialize() bool {
 	w.ready = true
 
 	// Start the go thread that heartbeats to the exchange
-	w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.AgreementBot.ExchangeHeartbeat)
+	w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.AgreementBot.ExchangeHeartbeat, false)
 
 	// Start the go thread that heartbeats to the database and checks for stale partitions.
-	w.DispatchSubworker(DATABASE_HEARTBEAT, w.databaseHeartBeat, int(w.BaseWorker.Manager.Config.GetPartitionStale()/3))
-	w.DispatchSubworker(STALE_PARTITIONS, w.stalePartitions, int(w.BaseWorker.Manager.Config.GetPartitionStale()))
+	w.DispatchSubworker(DATABASE_HEARTBEAT, w.databaseHeartBeat, int(w.BaseWorker.Manager.Config.GetPartitionStale()/3), false)
+	w.DispatchSubworker(STALE_PARTITIONS, w.stalePartitions, int(w.BaseWorker.Manager.Config.GetPartitionStale()), false)
 
 	// Start the governance routines using the subworker APIs.
-	w.DispatchSubworker(GOVERN_AGREEMENTS, w.GovernAgreements, int(w.BaseWorker.Manager.Config.AgreementBot.ProcessGovernanceIntervalS))
-	w.DispatchSubworker(GOVERN_ARCHIVED_AGREEMENTS, w.GovernArchivedAgreements, 1800)
-	w.DispatchSubworker(GOVERN_BC_NEEDS, w.GovernBlockchainNeeds, 60)
+	w.DispatchSubworker(GOVERN_AGREEMENTS, w.GovernAgreements, int(w.BaseWorker.Manager.Config.AgreementBot.ProcessGovernanceIntervalS), false)
+	w.DispatchSubworker(GOVERN_ARCHIVED_AGREEMENTS, w.GovernArchivedAgreements, 1800, false)
+	w.DispatchSubworker(GOVERN_BC_NEEDS, w.GovernBlockchainNeeds, 60, false)
 	if w.Config.AgreementBot.CheckUpdatedPolicyS != 0 {
 		// Use custom subworker APIs for the policy watcher because it is stateful and already does its own time management.
 		ch := w.AddSubworker(POLICY_WATCHER)
 		go w.policyWatcher(POLICY_WATCHER, ch)
 
-		w.DispatchSubworker(GENERATE_POLICY, w.GeneratePolicies, int(w.Config.AgreementBot.CheckUpdatedPolicyS))
+		w.DispatchSubworker(GENERATE_POLICY, w.GeneratePolicies, int(w.Config.AgreementBot.CheckUpdatedPolicyS), false)
 	}
 
 	return true
