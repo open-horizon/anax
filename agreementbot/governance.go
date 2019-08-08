@@ -398,8 +398,6 @@ func (w *AgreementBotWorker) VerifyNodeHealth(ag *persistence.Agreement, cph Con
 
 	glog.V(5).Infof("AgreementBot Governance checking node health for %v.", ag.CurrentAgreementId)
 
-	finalizedTolerance := uint64(60)
-
 	// Make sure the Node Health Manager has updated info for this agreement's pattern.
 	if err := w.NHManager.SetUpdatedStatus(ag.Pattern, ag.Org, nodeHealthHandler); err != nil {
 		return ag.NHCheckAgreementStatus, errors.New(fmt.Sprintf("unable to update node health for %v, error %v", ag.Pattern, err))
@@ -409,10 +407,7 @@ func (w *AgreementBotWorker) VerifyNodeHealth(ag *persistence.Agreement, cph Con
 	// If the agreement is missing, cancel it.
 	if w.NHManager.NodeOutOfPolicy(ag.Pattern, ag.Org, ag.DeviceId, ag.NHMissingHBInterval) {
 		w.TerminateAgreement(ag, cph.GetTerminationCode(TERM_REASON_NODE_HEARTBEAT))
-	} else if ag.FinalizedWithinTolerance(finalizedTolerance) {
-		// The agreement might have been recently finalized but the device has not yet recorded the agreement in the exchange.
-		// If this is the case, the agreement gets a pass for now.
-	} else if w.NHManager.AgreementOutOfPolicy(ag.Pattern, ag.Org, ag.DeviceId, ag.CurrentAgreementId) {
+	} else if w.NHManager.AgreementOutOfPolicy(ag.Pattern, ag.Org, ag.DeviceId, ag.CurrentAgreementId, ag.AgreementFinalizedTime, ag.NHCheckAgreementStatus) {
 		w.TerminateAgreement(ag, cph.GetTerminationCode(TERM_REASON_AG_MISSING))
 	}
 

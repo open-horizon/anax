@@ -104,16 +104,25 @@ func (m *NodeHealthManager) NodeOutOfPolicy(pattern string, org string, deviceId
 }
 
 // Determine if the input agreement id is still present in the exchange. Return false (not out of policy)
-// if the agreement is still present.
-func (m *NodeHealthManager) AgreementOutOfPolicy(pattern string, org string, deviceId string, agreementId string) bool {
+// if the agreement is present. If the agreement is not present then give the node NHCheckAgreementStatus + agbot finalized time
+// to get the agreement object into the exchange.
+func (m *NodeHealthManager) AgreementOutOfPolicy(pattern string, org string, deviceId string, agreementId string, start uint64, interval int) bool {
 
 	key := getKey(pattern, org)
 	if pe, ok := m.Patterns[key]; !ok {
 		return true
 	} else if node, ok := pe.Nodes.Nodes[deviceId]; !ok {
 		return true
-	} else if _, ok := node.Agreements[agreementId]; !ok {
-		return true
+	} else if _, ok := node.Agreements[agreementId]; ok {
+		return false
+	} else {
+		// The agreement is out of policy if the agent has not set its agreement obj into the exchange within NHCheckAgreementStatus (interval)
+		// seconds of the time when the agbot finalized the agreement (which occurs when it receives the positive proposal reply).
+		now := uint64(time.Now().Unix())
+		limit := start + uint64(interval)
+		if now > limit {
+			return true
+		}
 	}
 
 	return false

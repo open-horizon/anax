@@ -157,11 +157,6 @@ func (a *Agreement) NodeHealthInUse() bool {
 	return a.NHMissingHBInterval != 0 || a.NHCheckAgreementStatus != 0
 }
 
-func (a *Agreement) FinalizedWithinTolerance(tolerance uint64) bool {
-	tolerate := uint64(time.Now().Unix()) - tolerance
-	return a.AgreementFinalizedTime > tolerate
-}
-
 // Functions that are up called from the agbot database implementation. This is done so that the business
 // logic in each of these functions will be the same regardless of the underlying database implementation.
 
