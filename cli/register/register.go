@@ -216,7 +216,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 				if matches := parseRegisterInputError(respBody); matches != nil && len(matches) > 2 {
 					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Registration failed because %v Please update the services section in the input file %v. Run 'hzn unregister' and then 'hzn register...' again", matches[0], inputFile)
 				}
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "%v", respBody)
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Error setting service variables from user input file: %v", respBody)
 			}
 		}
 
