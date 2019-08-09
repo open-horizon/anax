@@ -162,7 +162,8 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		if userPw == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("node '%s/%s' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId))
 		}
-		fmt.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...\n", org, nodeId)
+		msgPrinter.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...", org, nodeId)
+		msgPrinter.Println()
 		cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email, anaxArch, nodeName)
 	} else {
 		msgPrinter.Printf("Node %s/%s exists in the exchange", org, nodeId)

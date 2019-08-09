@@ -3,8 +3,8 @@ package semanticversion
 import (
 	"errors"
 	"fmt"
-	"github.com/open-horizon/anax/i18n"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/i18n"
 	"strconv"
 	"strings"
 )

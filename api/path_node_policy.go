@@ -45,7 +45,7 @@ func UpdateNodePolicy(nodePolicy *externalpolicy.ExternalPolicy,
 	if err := exchangesync.UpdateNodePolicy(pDevice, db, nodePolicy, nodeGetPolicyHandler, nodePutPolicyHandler); err != nil {
 		return errorhandler(pDevice, NewSystemError(fmt.Sprintf("Unable to sync the local db with the exchange node policy. %v", err))), nil, nil
 	} else {
-		LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("New node policy: %v", *nodePolicy), persistence.EC_NODE_POLICY_UPDATED, pDevice)
+		LogDeviceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_NEW_NODE_POL, *nodePolicy), persistence.EC_NODE_POLICY_UPDATED, pDevice)
 
 		nodePolicyUpdated := events.NewNodePolicyMessage(events.UPDATE_POLICY)
 		return false, nodePolicy, []*events.NodePolicyMessage{nodePolicyUpdated}
@@ -69,7 +69,7 @@ func PatchNodePolicy(patchObject interface{},
 	if nodePolicy, err := exchangesync.PatchNodePolicy(pDevice, db, patchObject, nodeGetPolicyHandler, nodePatchPolicyHandler); err != nil {
 		return errorhandler(pDevice, NewSystemError(fmt.Sprintf("Unable to sync the local db with the exchange node policy. %v", err))), nil, nil
 	} else {
-		LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("New node policy: %v", patchObject), persistence.EC_NODE_POLICY_UPDATED, pDevice)
+		LogDeviceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_NEW_NODE_POL, patchObject), persistence.EC_NODE_POLICY_UPDATED, pDevice)
 
 		nodePolicyUpdated := events.NewNodePolicyMessage(events.UPDATE_POLICY)
 		return false, nodePolicy, []*events.NodePolicyMessage{nodePolicyUpdated}
@@ -95,7 +95,7 @@ func DeleteNodePolicy(errorhandler DeviceErrorHandler, db *bolt.DB,
 		return errorhandler(pDevice, NewSystemError(fmt.Sprintf("Node policy could not be deleted. %v", err))), nil
 	}
 
-	LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Deleted node policy"), persistence.EC_NODE_POLICY_DELETED, pDevice)
+	LogDeviceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_NODE_POL_DELETED), persistence.EC_NODE_POLICY_DELETED, pDevice)
 
 	nodePolicyDeleted := events.NewNodePolicyMessage(events.DELETED_POLICY)
 	return false, []*events.NodePolicyMessage{nodePolicyDeleted}

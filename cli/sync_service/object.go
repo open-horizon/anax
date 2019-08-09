@@ -96,7 +96,6 @@ func ObjectList(org string, userPw string, objType string, objId string, details
 
 }
 
-
 func ObjectNew(org string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
@@ -109,51 +108,51 @@ func ObjectNew(org string) {
 	// user which fields they should be setting
 
 	var hzn_object_metadata = []string{
-		`{`, 
-  		`  "objectID": "",            /* ` + msgPrinter.Sprintf("Required: A unique identifier of the object.") + ` */`, 
-  		`  "objectType": "",          /* ` + msgPrinter.Sprintf("Required: The type of the object.") + ` */`, 
-  		`  "destinationOrgID": "$HZN_ORG_ID", /* ` + msgPrinter.Sprintf("Required: The organization ID of the object (an object belongs to exactly one organization).") + ` */`, 
-  		`  "destinationID": "",       /* ` + msgPrinter.Sprintf("The node id (without org prefix) where the object should be placed.") + ` */`, 
-        `                             /* ` + msgPrinter.Sprintf("If omitted the object is sent to all nodes the same destinationType.") + ` */`, 
-        `                             /* ` + msgPrinter.Sprintf("Delete this field when you are using destinationPolicy.") + ` */`, 
-  		`  "destinationType": "",     /* ` + msgPrinter.Sprintf("The pattern in use by nodes that should receive this object.") + ` */`, 
-  		`                             /* ` + msgPrinter.Sprintf("If omitted (and if destinationsList is omitted too) the object is broadcast to all known nodes.") + ` */`, 
-  		`                             /* ` + msgPrinter.Sprintf("Delete this field when you are using policy.") + ` */`, 
-  		`  "destinationsList": null,  /* ` + msgPrinter.Sprintf("The list of destinations as an array of pattern:nodeId pairs that should receive this object.") + ` */`, 
-  		`                             /* ` + msgPrinter.Sprintf("If provided, destinationType and destinationID must be omitted.") + ` */`, 
-  		`                             /* ` + msgPrinter.Sprintf("Delete this field when you are using policy.") + ` */`, 
-  		`  "destinationPolicy": {     /* ` + msgPrinter.Sprintf("The policy specification that should be used to distribute this object.") + ` */`, 
-  		`                             /* ` + msgPrinter.Sprintf("Delete these fields if the target node is using a pattern.") + ` */`, 
-  		`    "properties": [          /* ` + msgPrinter.Sprintf("A list of policy properties that describe the object.") + ` */`, 
-  		`      {`,
-  		`        "name": "",`, 
-  		`        "value": nil,`,
- 	    `        "type": ""           /* ` + msgPrinter.Sprintf("Valid types are string, bool, int, float, list of string (comma separated), version.") + ` */`, 
-  		`                             /* ` + msgPrinter.Sprintf("Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean.") + ` */`, 
-  		`      }`,
-  		`    ],`,
-  		`    "constraints": [         /* ` + msgPrinter.Sprintf("A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||).") + ` */`, 
-  		`      ""`,
-  		`    ],`,
-  		`    "services": [            /* ` + msgPrinter.Sprintf("The service(s) that will use this object.") + ` */`, 
-  		`      {`,
-  		`        "orgID": "",         /* ` + msgPrinter.Sprintf("The org of the service.") + ` */`, 
-  		`        "serviceName": "",   /* ` + msgPrinter.Sprintf("The name of the service.") + ` */`, 
-  		`        "arch": "",          /* ` + msgPrinter.Sprintf("Set to '*' to indcate services of any hardware architecture.") + ` */`, 
-  		`        "version": ""        /* ` + msgPrinter.Sprintf("A version range.") + ` */`, 
-  		`      }`,
-  		`    ]`,
-  		`  },`,
-  		`  "expiration": "",          /* ` + msgPrinter.Sprintf("A timestamp/date indicating when the object expires (it is automatically deleted). The timestamp should be provided in RFC3339 format. ") + ` */`, 
-  		`  "version": "",             /* ` + msgPrinter.Sprintf("Arbitrary string value. The value is not semantically interpreted. The Model Management System does not keep multiple version of an object.") + ` */`, 
-  		`  "description": "",         /* ` + msgPrinter.Sprintf("An arbitrary description.") + ` */`, 
-  		`  "activationTime": ""       /* ` + msgPrinter.Sprintf("A timestamp/date as to when this object should automatically be activated. The timestamp should be provided in RFC3339 format.") + ` */`, 
+		`{`,
+		`  "objectID": "",            /* ` + msgPrinter.Sprintf("Required: A unique identifier of the object.") + ` */`,
+		`  "objectType": "",          /* ` + msgPrinter.Sprintf("Required: The type of the object.") + ` */`,
+		`  "destinationOrgID": "$HZN_ORG_ID", /* ` + msgPrinter.Sprintf("Required: The organization ID of the object (an object belongs to exactly one organization).") + ` */`,
+		`  "destinationID": "",       /* ` + msgPrinter.Sprintf("The node id (without org prefix) where the object should be placed.") + ` */`,
+		`                             /* ` + msgPrinter.Sprintf("If omitted the object is sent to all nodes the same destinationType.") + ` */`,
+		`                             /* ` + msgPrinter.Sprintf("Delete this field when you are using destinationPolicy.") + ` */`,
+		`  "destinationType": "",     /* ` + msgPrinter.Sprintf("The pattern in use by nodes that should receive this object.") + ` */`,
+		`                             /* ` + msgPrinter.Sprintf("If omitted (and if destinationsList is omitted too) the object is broadcast to all known nodes.") + ` */`,
+		`                             /* ` + msgPrinter.Sprintf("Delete this field when you are using policy.") + ` */`,
+		`  "destinationsList": null,  /* ` + msgPrinter.Sprintf("The list of destinations as an array of pattern:nodeId pairs that should receive this object.") + ` */`,
+		`                             /* ` + msgPrinter.Sprintf("If provided, destinationType and destinationID must be omitted.") + ` */`,
+		`                             /* ` + msgPrinter.Sprintf("Delete this field when you are using policy.") + ` */`,
+		`  "destinationPolicy": {     /* ` + msgPrinter.Sprintf("The policy specification that should be used to distribute this object.") + ` */`,
+		`                             /* ` + msgPrinter.Sprintf("Delete these fields if the target node is using a pattern.") + ` */`,
+		`    "properties": [          /* ` + msgPrinter.Sprintf("A list of policy properties that describe the object.") + ` */`,
+		`      {`,
+		`        "name": "",`,
+		`        "value": nil,`,
+		`        "type": ""           /* ` + msgPrinter.Sprintf("Valid types are string, bool, int, float, list of string (comma separated), version.") + ` */`,
+		`                             /* ` + msgPrinter.Sprintf("Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean.") + ` */`,
+		`      }`,
+		`    ],`,
+		`    "constraints": [         /* ` + msgPrinter.Sprintf("A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||).") + ` */`,
+		`      ""`,
+		`    ],`,
+		`    "services": [            /* ` + msgPrinter.Sprintf("The service(s) that will use this object.") + ` */`,
+		`      {`,
+		`        "orgID": "",         /* ` + msgPrinter.Sprintf("The org of the service.") + ` */`,
+		`        "serviceName": "",   /* ` + msgPrinter.Sprintf("The name of the service.") + ` */`,
+		`        "arch": "",          /* ` + msgPrinter.Sprintf("Set to '*' to indcate services of any hardware architecture.") + ` */`,
+		`        "version": ""        /* ` + msgPrinter.Sprintf("A version range.") + ` */`,
+		`      }`,
+		`    ]`,
+		`  },`,
+		`  "expiration": "",          /* ` + msgPrinter.Sprintf("A timestamp/date indicating when the object expires (it is automatically deleted). The timestamp should be provided in RFC3339 format. ") + ` */`,
+		`  "version": "",             /* ` + msgPrinter.Sprintf("Arbitrary string value. The value is not semantically interpreted. The Model Management System does not keep multiple version of an object.") + ` */`,
+		`  "description": "",         /* ` + msgPrinter.Sprintf("An arbitrary description.") + ` */`,
+		`  "activationTime": ""       /* ` + msgPrinter.Sprintf("A timestamp/date as to when this object should automatically be activated. The timestamp should be provided in RFC3339 format.") + ` */`,
 		`}`,
-  	}
+	}
 	// Display the limited object metadata that the user is allowed to set.
-	for _, s := range(hzn_object_metadata) {
+	for _, s := range hzn_object_metadata {
 		fmt.Println(s)
-	}	
+	}
 
 }
 

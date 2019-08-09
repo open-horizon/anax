@@ -148,7 +148,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			if ags, err := persistence.FindEstablishedAgreements(w.db, lc.AgreementProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(lc.AgreementId)}); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", lc.AgreementId, err)))
 				eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Unable to retrieve agreement %v from database, error %v", lc.AgreementId, err),
+					persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_AG_FROM_DB, lc.AgreementId, err),
 					persistence.EC_DATABASE_ERROR)
 			} else if len(ags) != 1 {
 				glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database.", lc.AgreementId)))
@@ -157,14 +157,14 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 					eventlog.LogAgreementEvent(
 						w.db,
 						persistence.SEVERITY_INFO,
-						fmt.Sprintf("Image loaded for %v/%v.", ags[0].RunningWorkload.Org, ags[0].RunningWorkload.URL),
-						persistence.EC_IMAGE_LOADED,
+						persistence.NewMessageMeta(EL_GOV_IMAGE_LOADED, ags[0].RunningWorkload.Org, ags[0].RunningWorkload.URL),
+						fmt.Sprintf(persistence.EC_IMAGE_LOADED),
 						ags[0])
 				} else {
 					eventlog.LogAgreementEvent(
 						w.db,
 						persistence.SEVERITY_ERROR,
-						fmt.Sprintf("Error loading image for %v/%v.", ags[0].RunningWorkload.Org, ags[0].RunningWorkload.URL),
+						persistence.NewMessageMeta(EL_GOV_ERR_LOADING_IMG, ags[0].RunningWorkload.Org, ags[0].RunningWorkload.URL),
 						persistence.EC_ERROR_IMAGE_LOADE,
 						ags[0])
 					cmd := w.NewCleanupExecutionCommand(lc.AgreementProtocol, lc.AgreementId, reason, nil)
@@ -178,14 +178,14 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 				eventlog.LogServiceEvent2(
 					w.db,
 					persistence.SEVERITY_INFO,
-					fmt.Sprintf("Image loaded for service %v/%v.", lc.ServicePathElement.Org, lc.ServicePathElement.URL),
+					persistence.NewMessageMeta(EL_GOV_IMAGE_LOADED_FOR_SVC, lc.ServicePathElement.Org, lc.ServicePathElement.URL),
 					persistence.EC_IMAGE_LOADED,
 					"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
 			} else {
 				eventlog.LogServiceEvent2(
 					w.db,
 					persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Error loading image for service %v/%v.", lc.ServicePathElement.Org, lc.ServicePathElement.URL),
+					persistence.NewMessageMeta(EL_GOV_ERR_LOADING_IMG_FOR_SVC, lc.ServicePathElement.Org, lc.ServicePathElement.URL),
 					persistence.EC_ERROR_IMAGE_LOADE,
 					"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
 				cmd := w.NewUpdateMicroserviceCommand(lc.Name, false, microservice.MS_IMAGE_FETCH_FAILED, microservice.DecodeReasonCode(microservice.MS_IMAGE_FETCH_FAILED))
@@ -375,7 +375,7 @@ func (w *GovernanceWorker) governAgreements() {
 					if recorded, err := w.producerPH[ag.AgreementProtocol].VerifyAgreement(&ag); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("encountered error verifying agreement %v, error %v", ag.CurrentAgreementId, err)))
 						eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_ERROR,
-							fmt.Sprintf("Encountered error for AgreementVerification for %v with agbot, error %v", ag.RunningWorkload.URL, err),
+							persistence.NewMessageMeta(EL_GOV_ERR_AG_VERIFICATION, ag.RunningWorkload.URL, err),
 							persistence.EC_ERROR_AGREEMENT_VERIFICATION,
 							ag)
 					} else {
@@ -401,10 +401,10 @@ func (w *GovernanceWorker) governAgreements() {
 						event_code = persistence.EC_CANCEL_AGREEMENT_NO_REPLYACK
 					}
 
-					w.cancelGovernedAgreement(&ag,
-						fmt.Sprintf("Start terminating agreement for %v. Reason: %v", ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
-						reason,
-						event_code)
+					eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
+						persistence.NewMessageMeta(EL_GOV_START_TERM_AG_WITH_REASON, ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
+						event_code, ag)
+					w.cancelGovernedAgreement(&ag, reason)
 				}
 
 			} else {
@@ -414,10 +414,10 @@ func (w *GovernanceWorker) governAgreements() {
 					if (int64(ag.AgreementAcceptedTime) + (MAX_CONTRACT_PRELAUNCH_TIME_M * 60)) < time.Now().Unix() {
 						glog.Infof(logString(fmt.Sprintf("terminating agreement %v because it hasn't been launched in max allowed time. This could be because of a workload failure.", ag.CurrentAgreementId)))
 						reason := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_NOT_EXECUTED_TIMEOUT)
-						w.cancelGovernedAgreement(&ag,
-							fmt.Sprintf("Start terminating agreement for %v. Reason: %v", ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
-							reason,
-							persistence.EC_CANCEL_AGREEMENT_EXECUTION_TIMEOUT)
+						eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
+							persistence.NewMessageMeta(EL_GOV_START_TERM_AG_WITH_REASON, ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
+							persistence.EC_CANCEL_AGREEMENT_EXECUTION_TIMEOUT, ag)
+						w.cancelGovernedAgreement(&ag, reason)
 					}
 				} else {
 					// Finalized agreements could become out of policy if the policy changes on the node. Verify that the existing agreement
@@ -458,10 +458,10 @@ func (w *GovernanceWorker) governAgreements() {
 						glog.V(3).Infof(logString(fmt.Sprintf("current proposal for %v is out of policy: %v", ag.CurrentAgreementId, err)))
 
 						reason := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_POLICY_CHANGED)
-						w.cancelGovernedAgreement(&ag,
-							fmt.Sprintf("Start terminating agreement for %v. Reason: %v", ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
-							reason,
-							persistence.EC_CANCEL_AGREEMENT_POLICY_CHANGED)
+						eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
+							persistence.NewMessageMeta(EL_GOV_START_TERM_AG_WITH_REASON, ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
+							persistence.EC_CANCEL_AGREEMENT_POLICY_CHANGED, ag)
+						w.cancelGovernedAgreement(&ag, reason)
 
 					} else {
 						glog.V(5).Infof(logString(fmt.Sprintf("agreement %v is still in policy.", ag.CurrentAgreementId)))
@@ -474,9 +474,7 @@ func (w *GovernanceWorker) governAgreements() {
 
 // Perform the common agreement cancelation steps.
 // TODO: consolidate every place that does the same thing as this function to call this function instead.
-func (w *GovernanceWorker) cancelGovernedAgreement(ag *persistence.EstablishedAgreement, detailMsg string, reason uint, eventCode string) {
-
-	eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO, detailMsg, eventCode, *ag)
+func (w *GovernanceWorker) cancelGovernedAgreement(ag *persistence.EstablishedAgreement, reason uint) {
 
 	w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
 
@@ -572,7 +570,7 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 	if agreements, err := persistence.FindEstablishedAgreements(w.db, agreementProtocol, filters); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error getting agreement %v from db: %v.", agreementId, err)))
 		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-			fmt.Sprintf("Error getting agreement %v: %v.", agreementId, err),
+			persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_AG_FROM_DB, agreementId, err),
 			persistence.EC_DATABASE_ERROR)
 	} else if len(agreements) == 0 {
 		glog.Errorf(logString(fmt.Sprintf("no record found for agreement: %v in db.", agreementId)))
@@ -584,7 +582,7 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 			if _, err := persistence.AgreementStateTerminated(w.db, agreementId, uint64(reason), desc, agreementProtocol); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error marking agreement %v terminated: %v.", agreementId, err)))
 				eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Error marking agreement %v terminated: %v.", agreementId, err),
+					persistence.NewMessageMeta(EL_GOV_ERR_MARK_AG_TERMINATED_IN_DB, agreementId, err),
 					persistence.EC_DATABASE_ERROR)
 			}
 		}
@@ -596,7 +594,7 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 				eventlog.LogAgreementEvent(
 					w.db,
 					persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Error deleting agreement for %v in exchange: %v. Will retry.", ag.RunningWorkload.URL, err),
+					persistence.NewMessageMeta(EL_GOV_ERR_DEL_AG_IN_EXCH, ag.RunningWorkload.URL, err),
 					persistence.EC_ERROR_DELETE_AGREEMENT_IN_EXCHANGE,
 					*ag)
 
@@ -615,7 +613,7 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 			eventlog.LogAgreementEvent(
 				w.db,
 				persistence.SEVERITY_INFO,
-				fmt.Sprintf("Complete terminating agreement for %v. Termination reason: %v", ag.RunningWorkload.URL, desc),
+				persistence.NewMessageMeta(EL_GOV_COMPLETE_TERM_AG_WITH_REASON, ag.RunningWorkload.URL, desc),
 				persistence.EC_AGREEMENT_CANCELED,
 				*ag)
 		}
@@ -726,7 +724,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 			eventlog.LogAgreementEvent(
 				w.db,
 				persistence.SEVERITY_INFO,
-				fmt.Sprintf("Workload service containers for %v/%v are up and running.", ag.RunningWorkload.Org, ag.RunningWorkload.URL),
+				persistence.NewMessageMeta(EL_GOV_WL_CONTAINER_UP, ag.RunningWorkload.Org, ag.RunningWorkload.URL),
 				persistence.EC_CONTAINER_RUNNING,
 				*ag)
 		}
@@ -747,7 +745,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 			eventlog.LogAgreementEvent(
 				w.db,
 				persistence.SEVERITY_INFO,
-				fmt.Sprintf("Start terminating agreement for %v. Termination reason: %v", ags[0].RunningWorkload.URL, w.producerPH[cmd.AgreementProtocol].GetTerminationReason(cmd.Reason)),
+				persistence.NewMessageMeta(EL_GOV_START_TERM_AG_WITH_REASON, ags[0].RunningWorkload.URL, w.producerPH[cmd.AgreementProtocol].GetTerminationReason(cmd.Reason)),
 				persistence.EC_CANCEL_AGREEMENT,
 				ags[0])
 
@@ -799,7 +797,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				if ags, err = persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(replyAck.AgreementId())}); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", replyAck.AgreementId(), err)))
 					eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-						fmt.Sprintf("Unable to retrieve agreement %v from database for ReplyAck message, error %v", replyAck.AgreementId(), err),
+						persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_AG_FROM_DB_FOR_RAM, replyAck.AgreementId(), err.Error()),
 						persistence.EC_DATABASE_ERROR)
 				} else if len(ags) != 1 {
 					glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database.", replyAck.AgreementId())))
@@ -826,7 +824,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 						eventlog.LogAgreementEvent(
 							w.db,
 							persistence.SEVERITY_INFO,
-							fmt.Sprintf("ReplyAck indicated that the agbot did not want to pursue the agreement for %v. Node will cancel the agreement", ags[0].RunningWorkload.URL),
+							persistence.NewMessageMeta(EL_GOV_REPLYACK_WILL_CANCEL_AG, ags[0].RunningWorkload.URL),
 							persistence.EC_CANCEL_AGREEMENT_PER_AGBOT,
 							ags[0])
 
@@ -841,10 +839,12 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				if err_log_msg != "" {
 					if len(ags) == 1 {
 						eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_ERROR,
-							fmt.Sprintf("Error handling ReplyAck message for %v. %v", ags[0].RunningWorkload.URL, err_log_msg),
+							persistence.NewMessageMeta(EL_GOV_ERR_HANDLE_REPLYACK_MSG_FOR_AG, ags[0].RunningWorkload.URL, err_log_msg),
 							persistence.EC_ERROR_PROCESSING_REPLYACT_MESSAGE, ags[0])
 					} else {
-						eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_ERROR, err_log_msg, persistence.EC_ERROR_PROCESSING_REPLYACT_MESSAGE, replyAck.AgreementId(), persistence.WorkloadInfo{}, []persistence.ServiceSpec{}, "", replyAck.Protocol())
+						eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_ERROR,
+							persistence.NewMessageMeta(EL_GOV_ERR_HANDLE_REPLYACK_MSG, err_log_msg),
+							persistence.EC_ERROR_PROCESSING_REPLYACT_MESSAGE, replyAck.AgreementId(), persistence.WorkloadInfo{}, []persistence.ServiceSpec{}, "", replyAck.Protocol())
 					}
 				}
 			}
@@ -860,7 +860,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				if ags, err = persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(dataReceived.AgreementId())}); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", dataReceived.AgreementId(), err)))
 					eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-						fmt.Sprintf("Unable to retrieve agreement %v from database for DataReceived message, error %v", dataReceived.AgreementId(), err),
+						persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_AG_FROM_DB_FOR_DRM, dataReceived.AgreementId(), err.Error()),
 						persistence.EC_DATABASE_ERROR)
 				} else if len(ags) != 1 {
 					glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", dataReceived.AgreementId(), err)))
@@ -882,10 +882,12 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				if err_log_msg != "" {
 					if len(ags) == 1 {
 						eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_ERROR,
-							fmt.Sprintf("Error handling DataReceived message for %v. %v", ags[0].RunningWorkload.URL, err_log_msg),
+							persistence.NewMessageMeta(EL_GOV_ERR_HANDLE_DATARECEIVED_MSG_FOR_AG, ags[0].RunningWorkload.URL, err_log_msg),
 							persistence.EC_ERROR_PROCESSING_DATARECEIVED_MESSAGE, ags[0])
 					} else {
-						eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_ERROR, err_log_msg, persistence.EC_ERROR_PROCESSING_DATARECEIVED_MESSAGE, dataReceived.AgreementId(), persistence.WorkloadInfo{}, []persistence.ServiceSpec{}, "", dataReceived.Protocol())
+						eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_ERROR,
+							persistence.NewMessageMeta(EL_GOV_ERR_HANDLE_DATARECEIVED_MSG, err_log_msg),
+							persistence.EC_ERROR_PROCESSING_DATARECEIVED_MESSAGE, dataReceived.AgreementId(), persistence.WorkloadInfo{}, []persistence.ServiceSpec{}, "", dataReceived.Protocol())
 					}
 				}
 			}
@@ -901,7 +903,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				if ags, err = persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(mnReceived.AgreementId())}); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", mnReceived.AgreementId(), err)))
 					eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-						fmt.Sprintf("Unable to retrieve agreement %v from database for MeteringNotification message, error %v", mnReceived.AgreementId(), err),
+						persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_AG_FROM_DB_FOR_MNM, mnReceived.AgreementId(), err.Error()),
 						persistence.EC_DATABASE_ERROR)
 				} else if len(ags) != 1 {
 					glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", mnReceived.AgreementId(), err)))
@@ -926,10 +928,11 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				if err_log_msg != "" {
 					if len(ags) == 1 {
 						eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_ERROR,
-							fmt.Sprintf("Error handling MeterNotification message for %v. %v", ags[0].RunningWorkload.URL, err_log_msg),
+							persistence.NewMessageMeta(EL_GOV_ERR_HANDLE_METERING_MSG_FOR_AG, ags[0].RunningWorkload.URL, err_log_msg),
 							persistence.EC_ERROR_PROCESSING_METERING_NOTIFY_MESSAGE, ags[0])
 					} else {
-						eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_ERROR, err_log_msg,
+						eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_ERROR,
+							persistence.NewMessageMeta(EL_GOV_ERR_HANDLE_METERING_MSG, err_log_msg),
 							persistence.EC_ERROR_PROCESSING_METERING_NOTIFY_MESSAGE,
 							mnReceived.AgreementId(), persistence.WorkloadInfo{}, []persistence.ServiceSpec{}, "", mnReceived.Protocol())
 					}
@@ -948,7 +951,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				if ags, err = persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(canReceived.AgreementId())}); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", canReceived.AgreementId(), err)))
 					eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-						fmt.Sprintf("Unable to retrieve agreement %v from database for Cancel message, error %v", canReceived.AgreementId(), err),
+						persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_AG_FROM_DB_FOR_CANM, canReceived.AgreementId(), err),
 						persistence.EC_DATABASE_ERROR)
 				} else if len(ags) != 1 {
 					glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", canReceived.AgreementId(), err)))
@@ -957,7 +960,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 					eventlog.LogAgreementEvent(
 						w.db,
 						persistence.SEVERITY_INFO,
-						fmt.Sprintf("Node received Cancel message for %v/%v from agbot %v.", ags[0].RunningWorkload.Org, ags[0].RunningWorkload.URL, exchangeMsg.AgbotId),
+						persistence.NewMessageMeta(EL_GOV_NODE_RECEIVED_CANCEL_MSG, ags[0].RunningWorkload.Org, ags[0].RunningWorkload.URL, exchangeMsg.AgbotId),
 						persistence.EC_RECEIVED_CANCEL_AGREEMENT_MESSAGE, ags[0])
 
 					if exchangeMsg.AgbotId != ags[0].ConsumerId {
@@ -981,10 +984,11 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				if err_log_msg != "" {
 					if len(ags) == 1 {
 						eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_ERROR,
-							fmt.Sprintf("Error handling Cancel message for %v. %v", ags[0].RunningWorkload.URL, err_log_msg),
+							persistence.NewMessageMeta(EL_GOV_ERR_HANDLE_CANCEL_MSG_FOR_AG, ags[0].RunningWorkload.URL, err_log_msg),
 							persistence.EC_ERROR_PROCESSING_CANCEL_AGREEMENT_MESSAGE, ags[0])
 					} else {
-						eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_ERROR, err_log_msg,
+						eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_ERROR,
+							persistence.NewMessageMeta(EL_GOV_ERR_HANDLE_CANCEL_MSG, err_log_msg),
 							persistence.EC_ERROR_PROCESSING_CANCEL_AGREEMENT_MESSAGE,
 							canReceived.AgreementId(), persistence.WorkloadInfo{}, []persistence.ServiceSpec{}, "", canReceived.Protocol())
 					}
@@ -1004,7 +1008,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 						eventlog.LogDatabaseEvent(
 							w.db,
 							persistence.SEVERITY_ERROR,
-							fmt.Sprintf("Unable to retrieve agreement %v from database, error %v", agid, err),
+							persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_AG_FROM_DB, agid, err),
 							persistence.EC_DATABASE_ERROR)
 					} else if len(ags) != 1 {
 						glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", agid, err)))
@@ -1013,7 +1017,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 						eventlog.LogAgreementEvent(
 							w.db,
 							persistence.SEVERITY_INFO,
-							fmt.Sprintf("Agreement for %v no longer valid on the agbot. Node will cancel it.", ags[0].RunningWorkload.URL),
+							persistence.NewMessageMeta(EL_GOV_AG_NOT_VALID, ags[0].RunningWorkload.URL),
 							persistence.EC_CANCEL_AGREEMENT_PER_AGBOT,
 							ags[0])
 						w.cancelAgreement(agid, msgProtocol, reason, w.producerPH[msgProtocol].GetTerminationReason(reason))
@@ -1110,7 +1114,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 					eventlog.LogAgreementEvent(
 						w.db,
 						persistence.SEVERITY_INFO,
-						fmt.Sprintf("Workload destroyed for %v", agreement.RunningWorkload.URL),
+						persistence.NewMessageMeta(EL_GOV_WORKLOAD_DESTROYED, agreement.RunningWorkload.URL),
 						persistence.EC_CONTAINER_STOPPED,
 						*agreement)
 
@@ -1175,7 +1179,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 			eventlog.LogAgreementEvent(
 				w.db,
 				persistence.SEVERITY_INFO,
-				fmt.Sprintf("Complete terminating agreement for %v. Termination reason: %v", ags[0].RunningWorkload.URL, cmd.Reason),
+				persistence.NewMessageMeta(EL_GOV_COMPLETE_TERM_AG_WITH_REASON, ags[0].RunningWorkload.URL, cmd.Reason),
 				persistence.EC_AGREEMENT_CANCELED,
 				ags[0])
 		} else {
@@ -1197,7 +1201,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				glog.Errorf(logString(fmt.Sprintf("Error archiving service instance %v. %v", cmd.MsInstKey, err)))
 			} else {
 				eventlog.LogServiceEvent(w.db, persistence.SEVERITY_INFO,
-					fmt.Sprintf("Complete cleaning up the service instance %v.", msi.GetKey()),
+					persistence.NewMessageMeta(EL_GOV_COMPLETE_CLEANUP_SVC, msi.GetKey()),
 					persistence.EC_COMPLETE_CLEANUP_SERVICE,
 					*msi)
 			}
@@ -1217,7 +1221,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				} else {
 					if cmd.ExecutionStarted {
 						eventlog.LogServiceEvent(w.db, persistence.SEVERITY_INFO,
-							fmt.Sprintf("Service containers for %v started.", cutil.FormOrgSpecUrl(msinst.SpecRef, msinst.Org)),
+							persistence.NewMessageMeta(EL_GOV_SVC_CONTAINER_STARTED, cutil.FormOrgSpecUrl(msinst.SpecRef, msinst.Org)),
 							persistence.EC_COMPLETE_DEPENDENT_SERVICE,
 							*msinst)
 					} else {
@@ -1369,7 +1373,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		eventlog.LogAgreementEvent(
 			w.db,
 			persistence.SEVERITY_INFO,
-			fmt.Sprintf("Agreement reached for service %v. The agreement id is %v.", ag.RunningWorkload.URL, ag.CurrentAgreementId),
+			persistence.NewMessageMeta(EL_GOV_AG_REACHED, ag.RunningWorkload.URL, ag.CurrentAgreementId),
 			persistence.EC_AGREEMENT_REACHED,
 			*ag)
 
@@ -1443,7 +1447,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		instancePath := []persistence.ServiceInstancePathElement{*persistence.NewServiceInstancePathElement(workload.WorkloadURL, workload.Org, workload.Version)}
 
 		eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
-			fmt.Sprintf("Start dependent services for %v/%v.", ag.RunningWorkload.Org, ag.RunningWorkload.URL),
+			persistence.NewMessageMeta(EL_GOV_START_DEPENDENT_SVC, ag.RunningWorkload.Org, ag.RunningWorkload.URL),
 			persistence.EC_START_DEPENDENT_SERVICE,
 			*ag)
 
@@ -1451,7 +1455,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			eventlog.LogAgreementEvent(
 				w.db,
 				persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Encountered error starting dependen services for %v/%v. %v", ag.RunningWorkload.Org, ag.RunningWorkload.URL, err),
+				persistence.NewMessageMeta(EL_GOV_ERR_START_DEPENDENT_SVC, ag.RunningWorkload.Org, ag.RunningWorkload.URL, err),
 				persistence.EC_ERROR_START_DEPENDENT_SERVICE,
 				*ag)
 			return err
@@ -1462,7 +1466,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		}
 
 		eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
-			fmt.Sprintf("Start workload service for %v/%v.", ag.RunningWorkload.Org, ag.RunningWorkload.URL),
+			persistence.NewMessageMeta(EL_GOV_START_WORKLOAD_SVC, ag.RunningWorkload.Org, ag.RunningWorkload.URL),
 			persistence.EC_START_SERVICE,
 			*ag)
 
@@ -1498,7 +1502,7 @@ func (w *GovernanceWorker) processDependencies(dependencyPath []persistence.Serv
 		fullPath := append(dependencyPath, *persistence.NewServiceInstancePathElement(msdef.SpecRef, msdef.Org, msdef.Version))
 		if err := w.startDependentService(fullPath, msdef, agreementId, protocol); err != nil {
 			eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error starting dependen service %v/%v version %v for agreement %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, agreementId, err),
+				persistence.NewMessageMeta(EL_GOV_ERR_START_DEPENDENT_SVC_FOR_AG, msdef.Org, msdef.SpecRef, msdef.Version, agreementId, err),
 				persistence.EC_ERROR_START_DEPENDENT_SERVICE,
 				"", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{agreementId})
 		}
@@ -1535,7 +1539,7 @@ func (w *GovernanceWorker) startAgreementLessServices() {
 	patternDef, err := exchange.GetHTTPExchangePatternHandler(w)(pattern_org, pattern_name)
 	if err != nil {
 		eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
-			fmt.Sprintf("Unable to start agreement-less services, error searching for pattern %v in exchange, error: %v", w.devicePattern, err),
+			persistence.NewMessageMeta(EL_GOV_ERR_START_AGLESS_SVC_ERR_SEARCH_PATTERN, w.devicePattern, err),
 			persistence.EC_ERROR_START_AGREEMENTLESS_SERVICE,
 			"", "", "", "", "", []string{})
 		glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less services, error searching for pattern %v in exchange, error: %v", w.devicePattern, err)))
@@ -1545,7 +1549,7 @@ func (w *GovernanceWorker) startAgreementLessServices() {
 	// There should only be 1 pattern in the response.
 	if _, ok := patternDef[pat]; !ok {
 		eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
-			fmt.Sprintf("Unable to start agreement-less services, pattern %v not found in exchange", pat),
+			persistence.NewMessageMeta(EL_GOV_ERR_START_AGLESS_SVC_ERR_PATTERN_NOT_FOUND, pat),
 			persistence.EC_ERROR_START_AGREEMENTLESS_SERVICE,
 			"", "", "", "", "", []string{})
 		glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less services, pattern %v not found in exchange", pat)))
@@ -1566,20 +1570,20 @@ func (w *GovernanceWorker) startAgreementLessServices() {
 			versions := strings.Join(a_versions, ",")
 
 			eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
-				fmt.Sprintf("Start agreement-less service %v/%v.", service.ServiceOrg, service.ServiceURL),
+				persistence.NewMessageMeta(EL_GOV_START_AGLESS_SVC, service.ServiceOrg, service.ServiceURL),
 				persistence.EC_START_AGREEMENTLESS_SERVICE,
 				"", service.ServiceURL, service.ServiceOrg, versions, service.ServiceArch, []string{})
 
 			// Find the microservice definition for this service.
 			if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, service.ServiceURL, service.ServiceOrg); err != nil {
 				eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Unable to start agreement-less service %v/%v, error %v", service.ServiceOrg, service.ServiceURL, err),
+					persistence.NewMessageMeta(EL_GOV_ERR_START_AGLESS_SVC, service.ServiceOrg, service.ServiceURL, err),
 					persistence.EC_DATABASE_ERROR)
 				glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less service %v/%v, error %v", service.ServiceOrg, service.ServiceURL, err)))
 				return
 			} else if msdefs == nil || len(msdefs) == 0 {
 				eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Unable to start agreement-less service %v/%v, local service definition not found", service.ServiceOrg, service.ServiceURL),
+					persistence.NewMessageMeta(EL_GOV_ERR_START_AGLESS_SVC_ERR_SDEF_NOT_FOUND, service.ServiceOrg, service.ServiceURL),
 					persistence.EC_ERROR_START_AGREEMENTLESS_SERVICE,
 					"", service.ServiceURL, service.ServiceOrg, versions, service.ServiceArch, []string{})
 				glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less service %v/%v, local service definition not found", service.ServiceOrg, service.ServiceURL)))
@@ -1591,14 +1595,14 @@ func (w *GovernanceWorker) startAgreementLessServices() {
 
 				if err := w.startDependentService(instancePath, &msdefs[0], "", policy.BasicProtocol); err != nil {
 					eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
-						fmt.Sprintf("Unable to start agreement-less service %v/%v, error %v", service.ServiceOrg, service.ServiceURL, err),
+						persistence.NewMessageMeta(EL_GOV_ERR_START_AGLESS_SVC, service.ServiceOrg, service.ServiceURL, err),
 						persistence.EC_ERROR_START_AGREEMENTLESS_SERVICE,
 						"", service.ServiceURL, service.ServiceOrg, versions, service.ServiceArch, []string{})
 
 					glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less service %v/%v, error %v", service.ServiceOrg, service.ServiceURL, err)))
 				} else {
 					eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
-						fmt.Sprintf("Complete starting agreement-less service %v/%v and its dependents.", service.ServiceOrg, service.ServiceURL),
+						persistence.NewMessageMeta(EL_GOV_COMPLETE_START_AGLESS_SVC, service.ServiceOrg, service.ServiceURL),
 						persistence.EC_COMPLETE_AGREEMENTLESS_SERVICE_STARTUP,
 						"", service.ServiceURL, service.ServiceOrg, versions, service.ServiceArch, []string{})
 				}
@@ -1794,7 +1798,7 @@ func (w *GovernanceWorker) handleNodeHeartbeatRestored() error {
 
 	if ags, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err != nil {
 		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-			fmt.Sprintf("Unable to retrieve unarchived agreements from database. %v", err),
+			persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_UNARCHIVED_AG_FROM_DB, err),
 			persistence.EC_DATABASE_ERROR)
 		return fmt.Errorf(logString(fmt.Sprintf("Unable to retrieve unarchived agreements from database. %v", err)))
 	} else {
@@ -1812,7 +1816,7 @@ func (w *GovernanceWorker) handleNodeHeartbeatRestored() error {
 					if _, err := w.producerPH[ag.AgreementProtocol].VerifyAgreement(&ag); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("encountered error verifying agreement %v, error %v", ag.CurrentAgreementId, err)))
 						eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_ERROR,
-							fmt.Sprintf("Encountered error for AgreementVerification for %v with agbot, error %v", ag.RunningWorkload.URL, err),
+							persistence.NewMessageMeta(EL_GOV_ERR_AG_VERIFICATION, ag.RunningWorkload.URL, err),
 							persistence.EC_ERROR_AGREEMENT_VERIFICATION,
 							ag)
 						veryfication_failed = true
@@ -1865,7 +1869,7 @@ func (w *GovernanceWorker) handleNodeUserInputUpdated(svcSpecs persistence.Servi
 				eventlog.LogAgreementEvent(
 					w.db,
 					persistence.SEVERITY_INFO,
-					fmt.Sprintf("Start terminating agreement for %v. Termination reason: %v", ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
+					persistence.NewMessageMeta(EL_GOV_START_TERM_AG_WITH_REASON, ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
 					persistence.EC_CANCEL_AGREEMENT,
 					ag)
 

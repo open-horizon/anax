@@ -7,6 +7,7 @@ import (
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/version"
 )
 
@@ -86,18 +87,22 @@ func List() {
 
 func Version() {
 	// Show hzn version
-	fmt.Printf("Horizon CLI version: %s\n", version.HORIZON_VERSION)
+	msgPrinter := i18n.GetMessagePrinter()
+
+	msgPrinter.Printf("Horizon CLI version: %s", version.HORIZON_VERSION)
+	msgPrinter.Println()
 
 	// Show anax version
 	status := apicommon.Info{}
 	httpCode, err := cliutils.HorizonGet("status", []int{200}, &status, true)
 	if err == nil && httpCode == 200 && status.Configuration != nil {
-		fmt.Printf("Horizon Agent version: %s\n", status.Configuration.HorizonVersion)
+		msgPrinter.Printf("Horizon Agent version: %s", status.Configuration.HorizonVersion)
+		msgPrinter.Println()
 	} else {
 		if err != nil {
 			cliutils.Verbose(err.Error())
 		}
-		fmt.Printf("Horizon Agent version: failed to get.\n")
+		msgPrinter.Println("Horizon Agent version: failed to get.")
 	}
 }
 

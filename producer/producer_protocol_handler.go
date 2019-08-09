@@ -12,12 +12,37 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
 	"strings"
 	"time"
 )
+
+const (
+	EL_PROD_AG_EXISTS_IGNORE_PROPOSAL  = "Agreement %v already exists, ignoring proposal: %v"
+	EL_PROD_ERR_DEMARSH_TC_FOR_AG      = "received error demarshalling TsAndCs for agrement %v, %v"
+	EL_PROD_NODE_REJECTED_PROPOSAL_MSG = "Node received Proposal message for service %v/%v from the agbot %v."
+	EL_PROD_NODE_REJECTED_PROPOSAL     = "Node rejected the proposal for service %v/%v."
+	EL_PROD_ERR_HANDLE_PROPOSAL        = "Error handling proposal for service %v/%v. Error: %v"
+)
+
+// This is does nothing useful at run time.
+// This code is only used in compileing time to make the eventlog messages gets into the catalog so that
+// they can be translated.
+// The event log messages will be saved in English. But the CLI can request them in different languages.
+func MarkI18nMessages() {
+	// get message printer. anax default language is English
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// from api_node.go
+	msgPrinter.Sprintf(EL_PROD_AG_EXISTS_IGNORE_PROPOSAL)
+	msgPrinter.Sprintf(EL_PROD_ERR_DEMARSH_TC_FOR_AG)
+	msgPrinter.Sprintf(EL_PROD_NODE_REJECTED_PROPOSAL_MSG)
+	msgPrinter.Sprintf(EL_PROD_NODE_REJECTED_PROPOSAL)
+	msgPrinter.Sprintf(EL_PROD_ERR_HANDLE_PROPOSAL)
+}
 
 func CreateProducerPH(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager, ec exchange.ExchangeContext) ProducerProtocolHandler {
 	if handler := NewBasicProtocolHandler(name, cfg, db, pm, ec); handler != nil {
@@ -141,12 +166,11 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 	if agAlreadyExists, err := persistence.FindEstablishedAgreements(w.db, w.Name(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(proposal.AgreementId())}); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("unable to retrieve agreements from database, error %v", err)))
 	} else if len(agAlreadyExists) != 0 {
-		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("agreement %v already exists, ignoring proposal: %v", proposal.AgreementId(), proposal.ShortString())))
-
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("Agreement %v already exists, ignoring proposal: %v", proposal.AgreementId(), proposal.ShortString())))
 		eventlog.LogAgreementEvent(
 			w.db,
 			persistence.SEVERITY_INFO,
-			fmt.Sprintf("Agreement %v already exists, ignoring proposal: %v", proposal.AgreementId(), proposal.ShortString()),
+			persistence.NewMessageMeta(EL_PROD_AG_EXISTS_IGNORE_PROPOSAL, proposal.AgreementId(), proposal.ShortString()),
 			persistence.EC_IGNORE_PROPOSAL,
 			agAlreadyExists[0])
 
@@ -156,7 +180,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 		eventlog.LogAgreementEvent2(
 			w.db,
 			persistence.SEVERITY_ERROR,
-			fmt.Sprintf("received error demarshalling TsAndCs for agrement %v, %v", proposal.AgreementId(), err),
+			persistence.NewMessageMeta(EL_PROD_ERR_DEMARSH_TC_FOR_AG, proposal.AgreementId(), err.Error()),
 			persistence.EC_ERROR_IN_PROPOSAL,
 			proposal.AgreementId(),
 			persistence.WorkloadInfo{},
@@ -175,7 +199,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 		eventlog.LogAgreementEvent2(
 			w.db,
 			persistence.SEVERITY_INFO,
-			fmt.Sprintf("Node received Proposal message for service %v/%v from the agbot %v.", worg, wls, proposal.ConsumerId()),
+			persistence.NewMessageMeta(EL_PROD_NODE_REJECTED_PROPOSAL_MSG, worg, wls, proposal.ConsumerId()),
 			persistence.EC_RECEIVED_PROPOSAL,
 			proposal.AgreementId(),
 			persistence.WorkloadInfo{URL: wls, Org: worg, Version: wversion, Arch: warch},
@@ -226,7 +250,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 					eventlog.LogAgreementEvent2(
 						w.db,
 						persistence.SEVERITY_INFO,
-						fmt.Sprintf("Node rejected the proposal for service %v/%v.", worg, wls),
+						persistence.NewMessageMeta(EL_PROD_NODE_REJECTED_PROPOSAL, worg, wls),
 						persistence.EC_REJECT_PROPOSAL,
 						proposal.AgreementId(),
 						persistence.WorkloadInfo{URL: wls, Org: worg, Version: wversion, Arch: warch},
@@ -242,7 +266,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 			eventlog.LogAgreementEvent2(
 				w.db,
 				persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error handling proposal for service %v/%v. Error: %v", worg, wls, err_log_event),
+				persistence.NewMessageMeta(EL_PROD_ERR_HANDLE_PROPOSAL, worg, wls, err_log_event),
 				persistence.EC_ERROR_PROCESSING_PROPOSAL,
 				proposal.AgreementId(),
 				persistence.WorkloadInfo{URL: wls, Org: worg, Version: wversion, Arch: warch},

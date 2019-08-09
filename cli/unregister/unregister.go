@@ -85,7 +85,7 @@ func DeleteHorizonNode(removeNodeUnregister bool, deepClean bool, timeout int) e
 		select {
 		case output := <-c:
 			if output == "done" {
-				cliutils.Verbose("Horizon node delete call successful with return code: %v", output)
+				cliutils.Verbose(msgPrinter.Sprintf("Horizon node delete call successful with return code: %v", output))
 				return nil
 			} else {
 				return fmt.Errorf("%v", output)
@@ -96,11 +96,13 @@ func DeleteHorizonNode(removeNodeUnregister bool, deepClean bool, timeout int) e
 				if totalWait <= 0 {
 					return fmt.Errorf("Timeout unregistering the node.")
 				}
-				updateStatus := fmt.Sprintf("Timeout in %v seconds ...", totalWait)
-				fmt.Println(fmt.Sprintf("Waiting for Horizon node unregister to complete: %v", updateStatus))
+				updateStatus := msgPrinter.Sprintf("Timeout in %v seconds ...", totalWait)
+				msgPrinter.Printf("Waiting for Horizon node unregister to complete: %v", updateStatus)
+				msgPrinter.Println()
 			} else {
-				updateStatus := fmt.Sprintf("No Timeout specified ...")
-				fmt.Println(fmt.Sprintf("Waiting for Horizon node unregister to complete: %v", updateStatus))
+				updateStatus := msgPrinter.Sprintf("No Timeout specified ...")
+				msgPrinter.Printf("Waiting for Horizon node unregister to complete: %v", updateStatus)
+				msgPrinter.Println()
 			}
 
 		}

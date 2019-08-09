@@ -19,7 +19,7 @@ import (
 // object because it eventually gets deleted at the end of unconfiguration.
 var Unconfiguring bool
 
-func LogDeviceEvent(db *bolt.DB, severity string, message string, event_code string, device interface{}) {
+func LogDeviceEvent(db *bolt.DB, severity string, message *persistence.MessageMeta, event_code string, device interface{}) {
 	id := ""
 	org := ""
 	pattern := ""
@@ -111,7 +111,7 @@ func CreateHorizonDevice(device *HorizonDevice,
 
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("Create node payload: %v", device)))
 
-	LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Start node configuration/registration for node %v.", *device.Id), persistence.EC_START_NODE_CONFIG_REG, device)
+	LogDeviceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_START_NODE_REG, *device.Id), persistence.EC_START_NODE_CONFIG_REG, device)
 
 	// There is no existing device registration in the database, so proceed to verifying the input device object.
 	if device.Id == nil || *device.Id == "" {
@@ -213,7 +213,7 @@ func UpdateHorizonDevice(device *HorizonDevice,
 	getExchangeVersion exchange.ExchangeVersionHandler,
 	db *bolt.DB) (bool, *HorizonDevice, *HorizonDevice) {
 
-	LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Start updating node %v.", *device.Id), persistence.EC_START_NODE_UPDATE, device)
+	LogDeviceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_START_NODE_UPDATE, *device.Id), persistence.EC_START_NODE_UPDATE, device)
 
 	// Check for the device in the local database. If there are errors, they will be written
 	// to the HTTP response.
@@ -262,7 +262,7 @@ func UpdateHorizonDevice(device *HorizonDevice,
 	// object suitable for output (external consumption). Specifically the token is omitted.
 	exDev := ConvertFromPersistentHorizonDevice(updatedDev)
 
-	LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete node update for %v.", *device.Id), persistence.EC_NODE_UPDATE_COMPLETE, device)
+	LogDeviceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_COMPLETE_NODE_UPDATE, *device.Id), persistence.EC_NODE_UPDATE_COMPLETE, device)
 
 	return false, device, exDev
 
@@ -277,33 +277,33 @@ func DeleteHorizonDevice(removeNode string,
 	errorhandler ErrorHandler,
 	db *bolt.DB) bool {
 
-	LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Start node unregistration."), persistence.EC_START_NODE_UNREG, nil)
+	LogDeviceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_START_NODE_UNREG), persistence.EC_START_NODE_UNREG, nil)
 
 	// Check for the device in the local database. If there are errors, they will be written
 	// to the HTTP response.
 	pDevice, err := persistence.FindExchangeDevice(db)
 	if err != nil {
-		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Unable to read node object from database, error %v", err), persistence.EC_DATABASE_ERROR)
+		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_READ_NODE_FROM_DB, err), persistence.EC_DATABASE_ERROR)
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err)))
 	} else if pDevice == nil {
-		LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error unregistring the node. The node is not found from the database."), persistence.EC_ERROR_NODE_UNREG, nil)
+		LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_NODE_UNREG_NOT_FOUND), persistence.EC_ERROR_NODE_UNREG, nil)
 		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API.", "node"))
 	} else if !pDevice.IsState(persistence.CONFIGSTATE_CONFIGURED) && !pDevice.IsState(persistence.CONFIGSTATE_CONFIGURING) {
-		LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."), persistence.EC_ERROR_NODE_UNREG, pDevice)
+		LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_NODE_UNREG_NOT_IN_STATE), persistence.EC_ERROR_NODE_UNREG, pDevice)
 		return errorhandler(NewBadRequestError(fmt.Sprintf("The node must be in configured or configuring state in order to unconfigure it.")))
 	}
 
 	// Verify optional input
 	if removeNode != "" && removeNode != "true" && removeNode != "false" {
-		LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Input error for node unregistration. %v is an incorrect value for removeNode", removeNode), persistence.EC_API_USER_INPUT_ERROR, pDevice)
+		LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_RN, removeNode), persistence.EC_API_USER_INPUT_ERROR, pDevice)
 		return errorhandler(NewAPIUserInputError("%v is an incorrect value for removeNode", "url.removeNode"))
 	}
 	if deepClean != "" && deepClean != "true" && deepClean != "false" {
-		LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Input error for node unregistration. %v is an incorrect value for deepClean", deepClean), persistence.EC_API_USER_INPUT_ERROR, pDevice)
+		LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_DC, deepClean), persistence.EC_API_USER_INPUT_ERROR, pDevice)
 		return errorhandler(NewAPIUserInputError("%v is an incorrect value for deepClean", "url.deepClean"))
 	}
 	if block != "" && block != "true" && block != "false" {
-		LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Input error for node unregistration. %v is an incorrect value for block", block), persistence.EC_API_USER_INPUT_ERROR, pDevice)
+		LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_BLOCK, block), persistence.EC_API_USER_INPUT_ERROR, pDevice)
 		return errorhandler(NewAPIUserInputError("%v is an incorrect value for block", "url.block"))
 	}
 
@@ -325,7 +325,7 @@ func DeleteHorizonDevice(removeNode string,
 	_, err = pDevice.SetConfigstate(db, pDevice.Id, persistence.CONFIGSTATE_UNCONFIGURING)
 	if err != nil {
 		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR,
-			fmt.Sprintf("Error saving new node config state (unconfiguring) in the database: %v", err),
+			persistence.NewMessageMeta(EL_API_ERR_SAVE_NODE_CONF_TO_DB, err),
 			persistence.EC_DATABASE_ERROR)
 		return errorhandler(NewSystemError(fmt.Sprintf("error persisting unconfiguring on node object: %v", err)))
 	}
@@ -349,7 +349,7 @@ func DeleteHorizonDevice(removeNode string,
 		}
 	}
 
-	LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Node unregistration complete for node %v.", pDevice.Id), persistence.EC_NODE_UNREG_COMPLETE, pDevice)
+	LogDeviceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_COMPLETE_NODE_UNREG, pDevice.Id), persistence.EC_NODE_UNREG_COMPLETE, pDevice)
 
 	// now save this timestamp in db.
 	if err := persistence.SaveLastUnregistrationTime(db, uint64(time.Now().Unix())); err != nil {

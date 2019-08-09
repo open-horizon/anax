@@ -64,22 +64,22 @@ func New() {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	var  policy_template = []string{
+	var policy_template = []string{
 		`{`,
-  		`  "properties": [   /* ` + msgPrinter.Sprintf("A list of policy properties that describe the object.") + ` */`,       
-    	`    {`, 
-      	`       "name": "",`, 
-     	`       "value": nil`, 
-    	`      }`, 
-  		`  ],`, 
-  		`  "constraints": [  /* ` + msgPrinter.Sprintf("A list of constraint expressions of the form <property name> <operator> <property value>,") + ` */`,   
-  		`                    /* ` + msgPrinter.Sprintf("separated by boolean operators AND (&&) or OR (||).") + `*/`,               
-   		`       "" `, 
-  		`  ], `, 
+		`  "properties": [   /* ` + msgPrinter.Sprintf("A list of policy properties that describe the object.") + ` */`,
+		`    {`,
+		`       "name": "",`,
+		`       "value": nil`,
+		`      }`,
+		`  ],`,
+		`  "constraints": [  /* ` + msgPrinter.Sprintf("A list of constraint expressions of the form <property name> <operator> <property value>,") + ` */`,
+		`                    /* ` + msgPrinter.Sprintf("separated by boolean operators AND (&&) or OR (||).") + `*/`,
+		`       "" `,
+		`  ], `,
 		`}`,
 	}
 
-	for _, s := range(policy_template) {
+	for _, s := range policy_template {
 		fmt.Println(s)
-	}	
+	}
 }

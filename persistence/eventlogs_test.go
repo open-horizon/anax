@@ -21,14 +21,14 @@ func Test_EventLog_Matches(t *testing.T) {
 	source2 := NewAgreementEventSource("agreement id 2", WorkloadInfo{"http://top2.com", "mycomp", "1.0.0", "amd64"}, []ServiceSpec{sp21, sp22}, "agbot2", "cs")
 	source3 := NewAgreementEventSource("agreement id 3", WorkloadInfo{"http://top3.com", "mycomp", "1.0.0", "amd64"}, []ServiceSpec{sp31, sp32}, "agbot1", "basic")
 
-	e1 := NewEventLog(SEVERITY_INFO, "message 11", EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source1)
-	e2 := NewEventLog(SEVERITY_INFO, "message 21", EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source2)
-	e3 := NewEventLog(SEVERITY_ERROR, "message 12", EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source1)
-	e4 := NewEventLog(SEVERITY_INFO, "test 31", EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source3)
-	e5 := NewEventLog(SEVERITY_WARN, "test 22", EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source2)
-	e6 := NewEventLog(SEVERITY_INFO, "message 32", EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source3)
-	e7 := NewEventLog(SEVERITY_INFO, "message 13", EC_START_NODE_UPDATE, SRC_TYPE_AG, *source1)
-	e8 := NewEventLog(SEVERITY_ERROR, "test 23", EC_ERROR_NODE_CONFIG_REG, SRC_TYPE_AG, *source2)
+	e1 := newEventLog1(SEVERITY_INFO, "message 11", nil, EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source1)
+	e2 := newEventLog1(SEVERITY_INFO, "message 21", nil, EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source2)
+	e3 := newEventLog1(SEVERITY_ERROR, "message 12", nil, EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source1)
+	e4 := newEventLog1(SEVERITY_INFO, "test 31", nil, EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source3)
+	e5 := newEventLog1(SEVERITY_WARN, "test 22", nil, EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source2)
+	e6 := newEventLog1(SEVERITY_INFO, "message 32", nil, EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source3)
+	e7 := newEventLog1(SEVERITY_INFO, "message 13", nil, EC_START_NODE_UPDATE, SRC_TYPE_AG, *source1)
+	e8 := newEventLog1(SEVERITY_ERROR, "test 23", nil, EC_ERROR_NODE_CONFIG_REG, SRC_TYPE_AG, *source2)
 
 	selectors := make(map[string][]Selector)
 	selectors["source_type"] = []Selector{{"=", SRC_TYPE_AG}}
@@ -83,14 +83,14 @@ func Test_EventLog_Matches2(t *testing.T) {
 	source2 := NewAgreementEventSource("agreement id 2", WorkloadInfo{"http://top2.com", "mycomp", "1.0.0", "amd64"}, []ServiceSpec{sp21, sp22}, "agbot2", "cs")
 	source3 := NewAgreementEventSource("agreement id 3", WorkloadInfo{"http://top3.com", "mycomp", "1.0.0", "amd64"}, []ServiceSpec{sp31, sp32}, "agbot1", "basic")
 
-	e1 := NewEventLog(SEVERITY_INFO, "message 11", EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source1)
-	e2 := NewEventLog(SEVERITY_INFO, "message 21", EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source2)
-	e3 := NewEventLog(SEVERITY_ERROR, "message 12", EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source1)
-	e4 := NewEventLog(SEVERITY_INFO, "message 31", EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source3)
-	e5 := NewEventLog(SEVERITY_WARN, "message 22", EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source2)
-	e6 := NewEventLog(SEVERITY_INFO, "message 32", EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source3)
-	e7 := NewEventLog(SEVERITY_INFO, "message 13", EC_ERROR_NODE_CONFIG_REG, SRC_TYPE_AG, *source1)
-	e8 := NewEventLog(SEVERITY_ERROR, "message 23", EC_ERROR_NODE_CONFIG_REG, SRC_TYPE_AG, *source2)
+	e1 := newEventLog1(SEVERITY_INFO, "message 11", nil, EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source1)
+	e2 := newEventLog1(SEVERITY_INFO, "message 21", nil, EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source2)
+	e3 := newEventLog1(SEVERITY_ERROR, "message 12", nil, EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source1)
+	e4 := newEventLog1(SEVERITY_INFO, "message 31", nil, EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source3)
+	e5 := newEventLog1(SEVERITY_WARN, "message 22", nil, EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source2)
+	e6 := newEventLog1(SEVERITY_INFO, "message 32", nil, EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source3)
+	e7 := newEventLog1(SEVERITY_INFO, "message 13", nil, EC_ERROR_NODE_CONFIG_REG, SRC_TYPE_AG, *source1)
+	e8 := newEventLog1(SEVERITY_ERROR, "message 23", nil, EC_ERROR_NODE_CONFIG_REG, SRC_TYPE_AG, *source2)
 
 	base_selectors := make(map[string][]Selector)
 	base_selectors["source_type"] = []Selector{{"=", SRC_TYPE_AG}}
@@ -408,9 +408,9 @@ func Test_SaveLastUnregistrationTime(t *testing.T) {
 	source2 := NewAgreementEventSource("agreement id 2", WorkloadInfo{"http://top2.com", "mycomp", "1.0.0", "amd64"}, []ServiceSpec{sp21, sp22}, "agbot2", "cs")
 	source3 := NewAgreementEventSource("agreement id 3", WorkloadInfo{"http://top3.com", "mycomp", "1.0.0", "amd64"}, []ServiceSpec{sp31, sp32}, "agbot1", "basic")
 
-	e1 := NewEventLog(SEVERITY_INFO, "message 11", EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source1)
-	e2 := NewEventLog(SEVERITY_INFO, "message 21", EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source2)
-	e3 := NewEventLog(SEVERITY_ERROR, "message 12", EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source1)
+	e1 := newEventLog1(SEVERITY_INFO, "message 11", nil, EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source1)
+	e2 := newEventLog1(SEVERITY_INFO, "message 21", nil, EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source2)
+	e3 := newEventLog1(SEVERITY_ERROR, "message 12", nil, EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source1)
 	if err := SaveEventLog(db, e1); err != nil {
 		t.Errorf("Erorr saving eventlog into db. %v", err)
 	} else if err := SaveEventLog(db, e2); err != nil {
@@ -425,11 +425,11 @@ func Test_SaveLastUnregistrationTime(t *testing.T) {
 		time.Sleep(1 * time.Second)
 	}
 
-	e4 := NewEventLog(SEVERITY_INFO, "test 31", EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source3)
-	e5 := NewEventLog(SEVERITY_WARN, "test 22", EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source2)
-	e6 := NewEventLog(SEVERITY_INFO, "message 32", EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source3)
-	e7 := NewEventLog(SEVERITY_INFO, "message 13", EC_START_NODE_UPDATE, SRC_TYPE_AG, *source1)
-	e8 := NewEventLog(SEVERITY_ERROR, "test 23", EC_ERROR_NODE_CONFIG_REG, SRC_TYPE_AG, *source2)
+	e4 := newEventLog1(SEVERITY_INFO, "test 31", nil, EC_START_NODE_CONFIG_REG, SRC_TYPE_AG, *source3)
+	e5 := newEventLog1(SEVERITY_WARN, "test 22", nil, EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source2)
+	e6 := newEventLog1(SEVERITY_INFO, "message 32", nil, EC_NODE_CONFIG_REG_COMPLETE, SRC_TYPE_AG, *source3)
+	e7 := newEventLog1(SEVERITY_INFO, "message 13", nil, EC_START_NODE_UPDATE, SRC_TYPE_AG, *source1)
+	e8 := newEventLog1(SEVERITY_ERROR, "test 23", nil, EC_ERROR_NODE_CONFIG_REG, SRC_TYPE_AG, *source2)
 	if err := SaveEventLog(db, e4); err != nil {
 		t.Errorf("Erorr saving eventlog into db. %v", err)
 	} else if err := SaveEventLog(db, e5); err != nil {
@@ -443,14 +443,14 @@ func Test_SaveLastUnregistrationTime(t *testing.T) {
 	}
 
 	// get all event logs
-	if elogs, err := FindEventLogsWithSelectors(db, true, map[string][]Selector{}); err != nil {
+	if elogs, err := FindEventLogsWithSelectors(db, true, map[string][]Selector{}, nil); err != nil {
 		t.Errorf("error getting event logs: %v", err)
 	} else {
 		assert.Equal(t, 8, len(elogs), "Test FindEventLogsWithSelectors without selection. Total 8 entries.")
 	}
 
 	// get the logs for current registration
-	if elogs, err := FindEventLogsWithSelectors(db, false, map[string][]Selector{}); err != nil {
+	if elogs, err := FindEventLogsWithSelectors(db, false, map[string][]Selector{}, nil); err != nil {
 		t.Errorf("error getting event logs: %v", err)
 	} else {
 		assert.Equal(t, 5, len(elogs), "Test FindEventLogsWithSelectors for current registration without selection. Total 5 entries.")

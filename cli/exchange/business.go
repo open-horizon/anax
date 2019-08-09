@@ -14,7 +14,6 @@ import (
 	"net/http"
 )
 
-
 //BusinessListPolicy lists all the policies in the org or only the specified policy if one is given
 func BusinessListPolicy(org string, credToUse string, policy string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
@@ -220,46 +219,46 @@ func BusinessNewPolicy() {
 
 	var business_policy_template = []string{
 		`{`,
-  		`  "label": "",       /* ` + msgPrinter.Sprintf("Business policy label.") + ` */`,  
-  		`  "description": "", /* ` + msgPrinter.Sprintf("Business policy description.") + ` */`,
-  		`  "service": {       `, 
-   		`    "name": "",      /* ` + msgPrinter.Sprintf("The name of the service.") + ` */`,           
-   		`    "org": "",       /* ` + msgPrinter.Sprintf("The org of the service.") + ` */`,      
-    	`    "arch": "",      /* ` + msgPrinter.Sprintf("Set to '*' to use services of any hardware architecture.") + ` */`,         
-    	`    "serviceVersions": [  /* ` + msgPrinter.Sprintf("A list of service versions.") + ` */`,
-    	`      {`, 
-    	`        "version": "",`, 
-    	`        "priority":{}`, 
-    	`      }`, 
-    	`    ]`, 
-  		`  },`, 
-  		`  "properties": [   /* ` + msgPrinter.Sprintf("A list of policy properties that describe the service being dployed.") + ` */`,       
-    	`    {`, 
-      	`       "name": "",`, 
-     	`       "value": nil`, 
-    	`      }`, 
-  		`  ],`, 
-  		`  "constraints": [  /* ` + msgPrinter.Sprintf("A list of constraint expressions of the form <property name> <operator> <property value>,") + ` */`,   
-  		`                    /* ` + msgPrinter.Sprintf("separated by boolean operators AND (&&) or OR (||).") + `*/`,               
-   		`       "" `, 
-  		`  ], `, 
-  		`  "userInput": [    /* ` + msgPrinter.Sprintf("A list of userInput variables to set when the service runs, listed by service.") + ` */`,         
-    	`    {            `, 
-  		`      "serviceOrgid": "",         /* ` + msgPrinter.Sprintf("The org of the service.") + ` */`,        
-   		`      "serviceUrl": "",           /* ` + msgPrinter.Sprintf("The name of the service.") + ` */`,        
-   		`      "serviceVersionRange": "",  /* ` + msgPrinter.Sprintf("The service version range to which these variables should be applied.") + ` */`,
-   		`      "inputs": [                 /* ` + msgPrinter.Sprintf("The input variables to be set.") + `*/`,             
-   		`        {`, 
-    	`          "name": "",`, 
-    	`          "value": nil`, 
-   	 	`        }`, 
-    	`      ]`, 
-    	`    }`, 
-  		`  ]`, 
+		`  "label": "",       /* ` + msgPrinter.Sprintf("Business policy label.") + ` */`,
+		`  "description": "", /* ` + msgPrinter.Sprintf("Business policy description.") + ` */`,
+		`  "service": {       `,
+		`    "name": "",      /* ` + msgPrinter.Sprintf("The name of the service.") + ` */`,
+		`    "org": "",       /* ` + msgPrinter.Sprintf("The org of the service.") + ` */`,
+		`    "arch": "",      /* ` + msgPrinter.Sprintf("Set to '*' to use services of any hardware architecture.") + ` */`,
+		`    "serviceVersions": [  /* ` + msgPrinter.Sprintf("A list of service versions.") + ` */`,
+		`      {`,
+		`        "version": "",`,
+		`        "priority":{}`,
+		`      }`,
+		`    ]`,
+		`  },`,
+		`  "properties": [   /* ` + msgPrinter.Sprintf("A list of policy properties that describe the service being dployed.") + ` */`,
+		`    {`,
+		`       "name": "",`,
+		`       "value": nil`,
+		`      }`,
+		`  ],`,
+		`  "constraints": [  /* ` + msgPrinter.Sprintf("A list of constraint expressions of the form <property name> <operator> <property value>,") + ` */`,
+		`                    /* ` + msgPrinter.Sprintf("separated by boolean operators AND (&&) or OR (||).") + `*/`,
+		`       "" `,
+		`  ], `,
+		`  "userInput": [    /* ` + msgPrinter.Sprintf("A list of userInput variables to set when the service runs, listed by service.") + ` */`,
+		`    {            `,
+		`      "serviceOrgid": "",         /* ` + msgPrinter.Sprintf("The org of the service.") + ` */`,
+		`      "serviceUrl": "",           /* ` + msgPrinter.Sprintf("The name of the service.") + ` */`,
+		`      "serviceVersionRange": "",  /* ` + msgPrinter.Sprintf("The service version range to which these variables should be applied.") + ` */`,
+		`      "inputs": [                 /* ` + msgPrinter.Sprintf("The input variables to be set.") + `*/`,
+		`        {`,
+		`          "name": "",`,
+		`          "value": nil`,
+		`        }`,
+		`      ]`,
+		`    }`,
+		`  ]`,
 		`}`,
 	}
 
-	for _, s := range(business_policy_template) {
+	for _, s := range business_policy_template {
 		fmt.Println(s)
-	}	
+	}
 }

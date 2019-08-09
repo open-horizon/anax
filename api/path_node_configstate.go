@@ -69,10 +69,10 @@ func UpdateConfigstate(cfg *Configstate,
 	// to the HTTP response.
 	pDevice, err := persistence.FindExchangeDevice(db)
 	if err != nil {
-		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Unable to read node object from database, error %v", err), persistence.EC_DATABASE_ERROR)
+		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_READ_NODE_FROM_DB, err), persistence.EC_DATABASE_ERROR)
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err))), nil, nil
 	} else if pDevice == nil {
-		LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in node configuration. The node is not found from the database."), persistence.EC_ERROR_NODE_CONFIG_REG, nil)
+		LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_NODE_CONF_NOT_FOUND), persistence.EC_ERROR_NODE_CONFIG_REG, nil)
 		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path.", "node")), nil, nil
 	}
 
@@ -85,14 +85,14 @@ func UpdateConfigstate(cfg *Configstate,
 	// If the caller is requesting a state change that is a noop, just return the current state.
 	if *cfg.State != persistence.CONFIGSTATE_CONFIGURING && *cfg.State != persistence.CONFIGSTATE_CONFIGURED {
 		LogDeviceEvent(db, persistence.SEVERITY_ERROR,
-			fmt.Sprintf("Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to %v.", cfg.State),
+			persistence.NewMessageMeta(EL_API_ERR_NODE_CONF_WRONG_STATE, *cfg.State),
 			persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("Supported state values are '%v' and '%v'.", persistence.CONFIGSTATE_CONFIGURING, persistence.CONFIGSTATE_CONFIGURED), "configstate.state")), nil, nil
 	} else if NoOpStateChange(pDevice.Config.State, *cfg.State) {
 		exDev := ConvertFromPersistentHorizonDevice(pDevice)
 		return false, exDev.Config, nil
 	} else if !ValidStateChange(pDevice.Config.State, *cfg.State) {
-		LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Node state transition from '%v' to '%v' is not supported.", pDevice.Config.State, *cfg.State), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
+		LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_UNSUP_NODE_STATE_TRANS, pDevice.Config.State, *cfg.State), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 		return errorhandler(NewAPIUserInputError(fmt.Sprintf("Transition from '%v' to '%v' is not supported.", pDevice.Config.State, *cfg.State), "configstate.state")), nil, nil
 	}
 
@@ -107,14 +107,14 @@ func UpdateConfigstate(cfg *Configstate,
 		common_apispec_list, pattern, err := getSpecRefsForPattern(pattern_name, pattern_org, getPatterns, resolveService, db, config, true)
 
 		if err != nil {
-			LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("%v", err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
+			LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_GET_SREFS_FOR_PATTERN, pattern_name, err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 			return errorhandler(err), nil, nil
 		}
 
 		// get node and pattern user input
 		nodeUserInput, err := persistence.FindNodeUserInput(db)
 		if err != nil {
-			LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Failed get user input from local db. %v", err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
+			LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_FAIL_GET_UI_FROM_DB, err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 			return errorhandler(fmt.Errorf("Failed get user input from local db. %v", err)), nil, nil
 		}
 
@@ -131,7 +131,7 @@ func UpdateConfigstate(cfg *Configstate,
 			// get the user input for this service
 			ui_merged, err := policy.FindUserInput(apiSpec.SpecRef, apiSpec.Org, "", apiSpec.Arch, mergedUserInput)
 			if err != nil {
-				LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Failed to find preferences for service %v/%v  from the local user input, error: %v", apiSpec.Org, apiSpec.SpecRef, err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
+				LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_FAIL_FIND_SVC_PREF_FROM_UI, apiSpec.Org, apiSpec.SpecRef, err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 				return errorhandler(fmt.Errorf("Failed to find preferences for service %v/%v from the merged user input, error: %v", apiSpec.Org, apiSpec.SpecRef, err)), nil, nil
 			}
 
@@ -155,7 +155,7 @@ func UpdateConfigstate(cfg *Configstate,
 			// get the user input for this service
 			ui_merged, err := policy.FindUserInput(service.ServiceURL, service.ServiceOrg, "", service.ServiceArch, mergedUserInput)
 			if err != nil {
-				LogDeviceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Failed to find preferences for service %v/%v from the local user input, error: %v", service.ServiceOrg, service.ServiceURL, err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
+				LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_FAIL_FIND_SVC_PREF_FROM_UI, service.ServiceOrg, service.ServiceURL, err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 				return errorhandler(fmt.Errorf("Failed to find preferences for service %v/%v from the merged user input, error: %v", service.ServiceOrg, service.ServiceURL, err)), nil, nil
 			}
 
@@ -172,7 +172,7 @@ func UpdateConfigstate(cfg *Configstate,
 	// Update the state in the local database
 	updatedDev, err := pDevice.SetConfigstate(db, pDevice.Id, *cfg.State)
 	if err != nil {
-		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error persisting new config state: %v", err), persistence.EC_DATABASE_ERROR)
+		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_SAVE_NODE_CONFSTATE, err), persistence.EC_DATABASE_ERROR)
 		return errorhandler(NewSystemError(fmt.Sprintf("error persisting new config state: %v", err))), nil, nil
 	}
 
@@ -180,7 +180,7 @@ func UpdateConfigstate(cfg *Configstate,
 
 	exDev := ConvertFromPersistentHorizonDevice(updatedDev)
 
-	LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete node configuration/registration for node %v.", updatedDev.Id), persistence.EC_NODE_CONFIG_REG_COMPLETE, updatedDev)
+	LogDeviceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_COMPLETE_NODE_REG, updatedDev.Id), persistence.EC_NODE_CONFIG_REG_COMPLETE, updatedDev)
 
 	return false, exDev.Config, msgs
 
@@ -205,7 +205,7 @@ func configureService(service *Service,
 
 	create_service_error_handler := func(err error) bool {
 		if !strings.Contains(err.Error(), "Duplicate registration") {
-			LogServiceEvent(db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in service configuration for %v. %v", *service.Url, err), persistence.EC_ERROR_SERVICE_CONFIG, service)
+			LogServiceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_SVC_CONF, *service.Url, err), persistence.EC_ERROR_SERVICE_CONFIG, service)
 		}
 		return passthruHandler(err)
 	}

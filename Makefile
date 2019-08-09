@@ -33,6 +33,9 @@ DOCKER_IMAGE_LATEST = $(DOCKER_IMAGE_BASE):latest$(BRANCH_NAME)
 # By default we do not use cache for the anax container build, so it picks up the latest horizon deb pkgs. If you do want to use the cache: DOCKER_MAYBE_CACHE='' make docker-image
 DOCKER_MAYBE_CACHE ?= --no-cache
 
+I18N_OUT_GOTEXT_FILES := locales/*/out.gotext.json
+I18N_CATALOG_FILE := i18n_messages/catalog.go
+
 AGBOT_IMAGE_BASE=openhorizon/$(arch)_agbot
 AGBOT_IMAGE = $(AGBOT_IMAGE_BASE):$(DOCKER_IMAGE_VERSION)
 AGBOT_IMAGE_STG = $(AGBOT_IMAGE_BASE):testing$(BRANCH_NAME)
@@ -102,8 +105,10 @@ ifndef verbose
 .SILENT:
 endif
 
-all: deps msg-catalog all-nodeps
+all: deps i18n-catalog all-nodeps
 all-nodeps: gopathlinks $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE)
+	
+noi18n: deps all-nodeps	
 
 $(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathlinks
 	@echo "Producing $(EXECUTABLE) given arch: $(arch)"
@@ -334,11 +339,14 @@ ifneq ($(TMPGOPATH),$(GOPATH))
 endif
 	rm -rf ./contracts
 
-mostlyclean: css-clean ess-clean
+mostlyclean: css-clean ess-clean i18n-clean
 	@echo "Mostlyclean"
 	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE) $(CLI_CONFIG_FILE)
 	-docker rmi $(DOCKER_IMAGE) 2> /dev/null || :
 	-docker rmi $(AGBOT_IMAGE) 2> /dev/null || :
+
+i18n-clean:
+	rm -f $(I18N_OUT_GOTEXT_FILES) cli/$(I18N_OUT_GOTEXT_FILES) $(I18N_CATALOG_FILE) cli/$(I18N_CATALOG_FILE)
 
 css-clean:
 	-docker rmi $(CSS_IMAGE) 2> /dev/null || :
@@ -361,7 +369,7 @@ $(TMPGOPATH)/bin/govendor: gopathlinks
 			go get -u github.com/kardianos/govendor; \
 	fi
 
-msg-catalog: deps $(TMPGOPATH)/bin/gotext
+i18n-catalog: deps $(TMPGOPATH)/bin/gotext
 	@echo "Creating message catalogs"
 	cd $(PKGPATH) && \
 		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
@@ -448,4 +456,4 @@ diagrams:
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/protocolSequenceDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/horizonSequenceDiagram.txt
 
-.PHONY: check clean deps format gopathlinks install lint mostlyclean pull msg-catalog test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-docker gen-mac-key install-mac-key css-docker-image ess-promote css-docker-image ess-promote
+.PHONY: check clean deps format gopathlinks install lint mostlyclean pull i18n-catalog test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-docker gen-mac-key install-mac-key css-docker-image ess-promote css-docker-image ess-promote

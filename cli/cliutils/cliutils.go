@@ -519,10 +519,26 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
+	httpClient := &http.Client{}
+
 	url := GetHorizonUrlBase() + "/" + urlSuffix
 	apiMsg := http.MethodGet + " " + url
 	Verbose(apiMsg)
-	resp, err := http.Get(url)
+	// Create the request and run it
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		Fatal(HTTP_ERROR, msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
+	}
+	req.Header.Add("Accept", "application/json")
+
+	// add the language request to the http header
+	localeTag, err := i18n.GetLocale()
+	if err != nil {
+		Fatal(HTTP_ERROR, err.Error())
+	}
+	req.Header.Add("Accept-Language", localeTag.String())
+
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		if quiet {
 			if os.Getenv("HORIZON_URL") == "" {
@@ -749,7 +765,7 @@ func GetAnaxConfig(configFile string) (*config.HorizonConfig, error) {
 //GetIcpCertPath gets the 'HZN_ICP_CERT_PATH' from '/etc/default/horizon'. If the field is not found it will return an empty string
 func GetIcpCertPath() string {
 	if value, err := GetEnvVarFromFile(ANAX_OVERWRITE_FILE, "HZN_ICP_CA_CERT_PATH"); err != nil {
-		Verbose(fmt.Sprintf("Error getting HZN_ICP_CA_CERT_PATH from %v: %v", ANAX_OVERWRITE_FILE, err))
+		Verbose(i18n.GetMessagePrinter().Sprintf("Error getting HZN_ICP_CA_CERT_PATH from %v: %v", ANAX_OVERWRITE_FILE, err))
 	} else {
 		return value
 	}

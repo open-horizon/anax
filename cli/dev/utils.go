@@ -16,8 +16,8 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/imagefetch"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/anax/imagefetch"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/semanticversion"
 	"github.com/satori/go.uuid"
@@ -206,7 +206,6 @@ func FileValidation(configFiles []string, configType string, projectType string,
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-
 	if len(configFiles) > 0 && configType == "" {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("'%v %v' Must specify configuration file type (-t) when a configuration file is specified (-m).", projectType, cmd))
 	}
@@ -254,7 +253,6 @@ func GetAbstractDefinition(directory string) (cliexchange.AbstractServiceFile, e
 func setup(homeDirectory string, mustExist bool, needExchange bool, userCreds string) (string, error) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
-
 
 	// Shut off the Anax runtime logging.
 	flag.Set("v", "0")
@@ -311,7 +309,6 @@ func createEnvVarMap(agreementId string,
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
-
 
 	// First, add in the Horizon platform env vars.
 	envvars := make(map[string]string)
@@ -637,7 +634,6 @@ func stopDependent(dir string, serviceDef *cliexchange.ServiceFile, cw *containe
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-
 	// Convert the deployment config into a full DeploymentDescription.
 	depConfig, _, derr := serviceDef.ConvertToDeploymentDescription(false)
 	if derr != nil {
@@ -675,7 +671,6 @@ func stopContainers(dc *cliexchange.DeploymentConfig, cw *container.ContainerWor
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-
 	// Establish logging context
 	logName := "service"
 	if !service {
@@ -706,7 +701,6 @@ func stopContainers(dc *cliexchange.DeploymentConfig, cw *container.ContainerWor
 func getContainerImages(containerConfig *events.ContainerConfig, currentUIs *register.InputFile) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
-
 
 	// Create a temporary anax config object to hold config for the shared runtime functions.
 	cfg := &config.HorizonConfig{
@@ -848,7 +842,6 @@ func GetImageInfoFromImageList(images []string, version string, noImageGen bool)
 func CreateFileWithConent(directory string, filename string, content string, substitutes map[string]string, perm_exec bool) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
-
 
 	filePath := path.Join(directory, filename)
 

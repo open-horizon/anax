@@ -58,7 +58,7 @@ func UpdateNodeUserInput(userInput []policy.UserInput,
 	if changedSvcs, err := exchangesync.UpdateNodeUserInput(pDevice, db, userInput, getDevice, patchDevice); err != nil {
 		return errorhandler(pDevice, NewSystemError(fmt.Sprintf("Unable to update the node user input. %v", err))), nil, nil
 	} else {
-		LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("New node user input: %v", userInput), persistence.EC_NODE_USERINPUT_UPDATED, pDevice)
+		LogDeviceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_NEW_NODE_UI, userInput), persistence.EC_NODE_USERINPUT_UPDATED, pDevice)
 
 		nodeUserInputUpdated := events.NewNodeUserInputMessage(events.UPDATE_NODE_USERINPUT, changedSvcs)
 		return false, userInput, []*events.NodeUserInputMessage{nodeUserInputUpdated}
@@ -94,7 +94,7 @@ func PatchNodeUserInput(patchObject []policy.UserInput,
 	if err := exchangesync.PatchNodeUserInput(pDevice, db, patchObject, getDevice, patchDevice); err != nil {
 		return errorhandler(pDevice, NewSystemError(fmt.Sprintf("Unable patch the user input. %v", err))), nil, nil
 	} else {
-		LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("New node user input: %v", patchObject), persistence.EC_NODE_USERINPUT_UPDATED, pDevice)
+		LogDeviceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_NEW_NODE_UI, patchObject), persistence.EC_NODE_USERINPUT_UPDATED, pDevice)
 
 		chnagedSvcSpecs := new(persistence.ServiceSpecs)
 		for _, ui := range patchObject {
@@ -125,7 +125,7 @@ func DeleteNodeUserInput(errorhandler DeviceErrorHandler, db *bolt.DB,
 		return errorhandler(pDevice, NewSystemError(fmt.Sprintf("unable to read node user input object, error %v", err))), nil
 	}
 	if userInput == nil || len(userInput) == 0 {
-		LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("No node user input to detele"), persistence.EC_NODE_USERINPUT_UPDATED, pDevice)
+		LogDeviceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_NO_NODE_UI_TO_DEL), persistence.EC_NODE_USERINPUT_UPDATED, pDevice)
 		return false, []*events.NodeUserInputMessage{}
 	}
 
@@ -134,7 +134,7 @@ func DeleteNodeUserInput(errorhandler DeviceErrorHandler, db *bolt.DB,
 		return errorhandler(pDevice, NewSystemError(fmt.Sprintf("Node user input could not be deleted. %v", err))), nil
 	}
 
-	LogDeviceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Deleted all node user input"), persistence.EC_NODE_USERINPUT_UPDATED, pDevice)
+	LogDeviceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_DELETED_ALL_NODE_UI), persistence.EC_NODE_USERINPUT_UPDATED, pDevice)
 
 	chnagedSvcSpecs := new(persistence.ServiceSpecs)
 	for _, ui := range userInput {

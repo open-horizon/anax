@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/i18n"
 	"net/http"
 	"strings"
 )
@@ -16,20 +17,27 @@ func (a *API) eventlog(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
+		// get message printer with the language passed in from the header
+		lan := r.Header.Get("Accept-Language")
+		if lan == "" {
+			lan = i18n.DEFAULT_LANGUAGE
+		}
+		msgPrinter := i18n.GetMessagePrinterWithLocale(lan)
+
 		all_loags := false
 		if r.URL != nil && strings.Contains(r.URL.Path, "all") {
 			all_loags = true
 		}
 
 		if err := r.ParseForm(); err != nil {
-			errorHandler(NewAPIUserInputError(fmt.Sprintf("Error parsing the selections %v. %v", r.Form, err), "selection"))
+			errorHandler(NewAPIUserInputError(msgPrinter.Sprintf("Error parsing the selections %v. %v", r.Form, err), "selection"))
 			return
 		}
 
-		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v with selection %v", r.Method, resource, r.Form)))
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v with selection %v. Language: %v", r.Method, resource, r.Form, lan)))
 
-		if out, err := FindEventLogsForOutput(a.db, all_loags, r.Form); err != nil {
-			errorHandler(NewSystemError(fmt.Sprintf("Error getting %v for output, error %v", resource, err)))
+		if out, err := FindEventLogsForOutput(a.db, all_loags, r.Form, msgPrinter); err != nil {
+			errorHandler(NewSystemError(msgPrinter.Sprintf("Error getting %v for output, error %v", resource, err)))
 		} else {
 			writeResponse(w, out, http.StatusOK)
 		}

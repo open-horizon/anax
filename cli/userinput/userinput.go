@@ -27,25 +27,25 @@ func New() {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	var uerinput_template = []string{
-		`[                         /* ` + msgPrinter.Sprintf("A list of objects, each one containing the user inputs required for a specified service.") + ` */`, 
+		`[                         /* ` + msgPrinter.Sprintf("A list of objects, each one containing the user inputs required for a specified service.") + ` */`,
 		`  {`,
-	    `    "serviceOrgid": "",   /* ` + msgPrinter.Sprintf("The horizon org of the specified service.") + ` */`, 
-	    `    "serviceUrl": "",     /* ` + msgPrinter.Sprintf("The unique string used to identify the specified service.") + ` */`,           
-    	`    "serviceArch": "",    /* ` + msgPrinter.Sprintf("The service architecture that these inputs apply to. Omit or leave blank to mean all architectures.") + ` */`,     
-    	`    "serviceVersionRange": "", /* ` + msgPrinter.Sprintf("The service versions that these inputs apply to. Omit or specify \"[0.0.0,INFINITY)\" to mean all versions.") + ` */`, 
-    	`    "inputs": [           /* ` + msgPrinter.Sprintf("A list of objects with the names and values for the user inputs used by this service.") + ` */`,               
-    	`      {`,
-    	`        "name": "",`,
-    	`        "value": null`,
-    	`      }`,
-    	`    ]`,
-  		`  }`,
+		`    "serviceOrgid": "",   /* ` + msgPrinter.Sprintf("The horizon org of the specified service.") + ` */`,
+		`    "serviceUrl": "",     /* ` + msgPrinter.Sprintf("The unique string used to identify the specified service.") + ` */`,
+		`    "serviceArch": "",    /* ` + msgPrinter.Sprintf("The service architecture that these inputs apply to. Omit or leave blank to mean all architectures.") + ` */`,
+		`    "serviceVersionRange": "", /* ` + msgPrinter.Sprintf("The service versions that these inputs apply to. Omit or specify \"[0.0.0,INFINITY)\" to mean all versions.") + ` */`,
+		`    "inputs": [           /* ` + msgPrinter.Sprintf("A list of objects with the names and values for the user inputs used by this service.") + ` */`,
+		`      {`,
+		`        "name": "",`,
+		`        "value": null`,
+		`      }`,
+		`    ]`,
+		`  }`,
 		`]`,
 	}
 
-	for _, s := range(uerinput_template) {
+	for _, s := range uerinput_template {
 		fmt.Println(s)
-	}	
+	}
 }
 
 //Add or overwrite the userinputs for this node
