@@ -171,6 +171,10 @@ func (c *BasicProtocolHandler) GetTerminationReason(code uint) string {
 	return basicprotocol.DecodeReasonCode(uint64(code))
 }
 
+func (c *BasicProtocolHandler) IsTerminationReasonNodeShutdown(code uint) bool {
+	return uint(code) == basicprotocol.CANCEL_NODE_SHUTDOWN
+}
+
 func (c *BasicProtocolHandler) SetBlockchainWritable(ev *events.AccountFundedMessage) {
 	return
 }

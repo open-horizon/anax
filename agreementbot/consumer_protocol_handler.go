@@ -45,6 +45,7 @@ type ConsumerProtocolHandler interface {
 	HandleStopProtocol(cph ConsumerProtocolHandler)
 	GetTerminationCode(reason string) uint
 	GetTerminationReason(code uint) string
+	IsTerminationReasonNodeShutdown(code uint) bool
 	GetSendMessage() func(mt interface{}, pay []byte) error
 	RecordConsumerAgreementState(agreementId string, pol *policy.Policy, org string, state string, workerID string) error
 	DeleteMessage(msgId int) error

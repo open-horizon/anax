@@ -976,7 +976,7 @@ func (b *BaseAgreementWorker) CancelAgreementWithLock(cph ConsumerProtocolHandle
 func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agreementId string, reason uint, workerId string) bool {
 
 	// Start timing out the agreement
-	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("terminating agreement %v.", agreementId)))
+	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("terminating agreement %v reason: %v.", agreementId, cph.GetTerminationReason(reason))))
 
 	// Update the database
 	if ag, err := b.db.AgreementTimedout(agreementId, cph.Name()); err != nil {
@@ -1004,10 +1004,13 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 		if wlUsage, err := b.db.UpdateWUAgreementId(ag.DeviceId, ag.PolicyName, "", cph.Name()); err != nil {
 			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("warning updating agreement id in workload usage for %v for policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 
-		} else if wlUsage != nil && wlUsage.ReqsNotMet {
+		} else if wlUsage != nil && (wlUsage.ReqsNotMet || cph.IsTerminationReasonNodeShutdown(reason)) {
 			// If the workload usage record indicates that it is not at the highest priority workload because the device cant meet the
 			// requirements of the higher priority workload, then when an agreement gets cancelled, we will remove the record so that the
 			// agbot always tries the next agreement starting with the highest priority workload again.
+			// Or, we will remove the workload usage record if the device is cancelling the agreement because it is shutting down. A shut down
+			// node that comes back and registers again, will start trying to run the highest priority workload. It should not remember the
+			// workload priority in use at the time it was removed from the network.
 			if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
 				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting workload usage record for device %v and policyName %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 			}
