@@ -367,6 +367,7 @@ Environment Variables:
 	forceUnregister := unregisterCmd.Flag("force", "Skip the 'are you sure?' prompt.").Short('f').Bool()
 	removeNodeUnregister := unregisterCmd.Flag("remove", "Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).").Short('r').Bool()
 	deepCleanUnregister := unregisterCmd.Flag("deep-clean", "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.").Short('D').Bool()
+	timeoutUnregister := unregisterCmd.Flag("timeout", "The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.").Short('t').Default("0").Int()
 
 	statusCmd := app.Command("status", "Display the current horizon internal status for the node.")
 	statusLong := statusCmd.Flag("long", "Show detailed status").Short('l').Bool()
@@ -729,7 +730,7 @@ Environment Variables:
 	case serviceConfigStateActiveCmd.FullCommand():
 		service.Resume(*resumeAllServices, *resumeServiceOrg, *resumeServiceName)
 	case unregisterCmd.FullCommand():
-		unregister.DoIt(*forceUnregister, *removeNodeUnregister, *deepCleanUnregister)
+		unregister.DoIt(*forceUnregister, *removeNodeUnregister, *deepCleanUnregister, *timeoutUnregister)
 	case statusCmd.FullCommand():
 		status.DisplayStatus(*statusLong, false)
 	case eventlogListCmd.FullCommand():
