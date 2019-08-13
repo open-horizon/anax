@@ -17,7 +17,7 @@ type ApiAttributes struct {
 }
 
 // DoIt unregisters this Horizon edge node and resets it so it can be registered again
-func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool) {
+func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout int) {
 	if !forceUnregister {
 		cliutils.ConfirmRemove("Are you sure you want to unregister this Horizon node?")
 	}
@@ -25,7 +25,7 @@ func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool) {
 	fmt.Println("Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...")
 
 	//call horizon DELETE /node api, timeout in 3 minutes.
-	unregErr := DeleteHorizonNode(removeNodeUnregister, deepClean)
+	unregErr := DeleteHorizonNode(removeNodeUnregister, deepClean, timeout)
 	if unregErr != nil {
 		fmt.Println(unregErr.Error())
 	}
@@ -50,7 +50,7 @@ func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool) {
 }
 
 //call horizon DELETE /node api, timeout in 3 minutes.
-func DeleteHorizonNode(removeNodeUnregister bool, deepClean bool) error {
+func DeleteHorizonNode(removeNodeUnregister bool, deepClean bool, timeout int) error {
 	removeNodeOption := ""
 	if removeNodeUnregister {
 		removeNodeOption = "&removeNode=true"
@@ -70,16 +70,33 @@ func DeleteHorizonNode(removeNodeUnregister bool, deepClean bool) error {
 		}
 	}()
 
-	select {
-	case output := <-c:
-		if output == "done" {
-			cliutils.Verbose("Horizon node delete call successful with return code: %v", output)
-			return nil
-		} else {
-			return fmt.Errorf("%v", output)
+	// Block the CLI until the node shutdown process is complete, or timeout occurs. Given an update every 15 seconds.
+	channelWait := 15
+	totalWait := timeout * 60
+
+	for {
+		select {
+		case output := <-c:
+			if output == "done" {
+				cliutils.Verbose("Horizon node delete call successful with return code: %v", output)
+				return nil
+			} else {
+				return fmt.Errorf("%v", output)
+			}
+		case <-time.After(time.Duration(channelWait) * time.Second):
+			if timeout != 0 {
+				totalWait = totalWait - channelWait
+				if totalWait <= 0 {
+					return fmt.Errorf("Timeout unregistering the node.")
+				}
+				updateStatus := fmt.Sprintf("Timeout in %v seconds ...", totalWait)
+				fmt.Println(fmt.Sprintf("Waiting for Horizon node unregister to complete: %v", updateStatus))
+			} else {
+				updateStatus := fmt.Sprintf("No Timeout specified ...")
+				fmt.Println(fmt.Sprintf("Waiting for Horizon node unregister to complete: %v", updateStatus))
+			}
+
 		}
-	case <-time.After(time.Duration(3) * time.Minute):
-		return fmt.Errorf("Timeout unregistering the node.")
 	}
 }
 
