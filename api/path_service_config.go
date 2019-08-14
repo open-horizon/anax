@@ -20,7 +20,7 @@ import (
 	"strings"
 )
 
-func LogServiceEvent(db *bolt.DB, severity string, message string, event_code string, service *Service) {
+func LogServiceEvent(db *bolt.DB, severity string, message *persistence.MessageMeta, event_code string, service *Service) {
 	surl := ""
 	org := ""
 	version := "[0.0.0,INFINITY)"
@@ -147,9 +147,9 @@ func CreateService(service *Service,
 		url_forlog = *service.Url
 	}
 	if from_user {
-		LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Start service configuration with user input for %v/%v.", org_forlog, url_forlog), persistence.EC_START_SERVICE_CONFIG, service)
+		LogServiceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_START_SVC_CONFIG, org_forlog, url_forlog), persistence.EC_START_SERVICE_CONFIG, service)
 	} else {
-		LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Start service auto configuration for %v/%v.", org_forlog, url_forlog), persistence.EC_START_SERVICE_CONFIG, service)
+		LogServiceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_START_SVC_AUTO_CONFIG, org_forlog, url_forlog), persistence.EC_START_SERVICE_CONFIG, service)
 	}
 
 	// Check for the device in the local database. If there are errors, they will be written
@@ -306,7 +306,7 @@ func CreateService(service *Service,
 	} else if pms != nil && len(pms) > 0 {
 		// this is for the auto service registration case.
 		if !from_user {
-			LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service auto configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+			LogServiceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_COMPLETE_SVC_AUTO_CONFIG, *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
 		}
 		return errorhandler(NewDuplicateServiceError(fmt.Sprintf("Duplicate registration for %v/%v %v %v. Only one registration per service is supported.", *service.Org, *service.Url, vExp.Get_expression(), cutil.ArchString()), "service")), nil, nil
 	}
@@ -444,7 +444,7 @@ func CreateService(service *Service,
 		} else {
 			// For policy case, we do not know what business policy will form agreement with it, so we just give warning for the missing variable name
 			glog.Warningf(apiLogString(fmt.Sprintf("Variable %v is missing in the service configuration for %v/%v. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.", missingVarName, *service.Org, *service.Url)))
-			LogServiceEvent(db, persistence.SEVERITY_WARN, fmt.Sprintf("Variable %v is missing in the service configuration for %v/%v. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.", missingVarName, *service.Org, *service.Url), persistence.EC_WARNING_SERVICE_CONFIG, service)
+			LogServiceEvent(db, persistence.SEVERITY_WARN, persistence.NewMessageMeta(EL_API_ERR_MISS_VAR_IN_SVC_CONFIG, missingVarName, *service.Org, *service.Url), persistence.EC_WARNING_SERVICE_CONFIG, service)
 		}
 	}
 
@@ -475,7 +475,7 @@ func CreateService(service *Service,
 
 	if pDevice.Pattern == "" {
 		// non pattern case, do not generate policies
-		LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+		LogServiceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_COMPLETE_SVC_CONFIG, *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
 		return false, service, nil
 	} else {
 		// Establish the correct agreement protocol list. The AGP list from this service overrides any global list that might exist.
@@ -501,9 +501,9 @@ func CreateService(service *Service,
 			return errorhandler(NewSystemError(fmt.Sprintf("Error generating policy, error: %v", genErr))), nil, nil
 		} else {
 			if from_user {
-				LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+				LogServiceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_COMPLETE_SVC_CONFIG, *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
 			} else {
-				LogServiceEvent(db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete service auto configuration for %v/%v.", *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
+				LogServiceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_COMPLETE_SVC_AUTO_CONFIG, *service.Org, *service.Url), persistence.EC_SERVICE_CONFIG_COMPLETE, service)
 			}
 			// Create the new policy event
 			msg := events.NewPolicyCreatedMessage(events.NEW_POLICY, polFileName)

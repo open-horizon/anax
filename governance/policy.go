@@ -66,7 +66,7 @@ func (w *GovernanceWorker) handleNodePolicyUpdated() {
 			eventlog.LogAgreementEvent(
 				w.db,
 				persistence.SEVERITY_INFO,
-				fmt.Sprintf("Start terminating agreement for %v. Termination reason: %v", ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
+				persistence.NewMessageMeta(EL_GOV_START_TERM_AG_WITH_REASON, ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
 				persistence.EC_CANCEL_AGREEMENT,
 				ag)
 

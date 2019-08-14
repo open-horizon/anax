@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/i18n"
+	"golang.org/x/text/message"
 	"reflect"
 	"strconv"
 	"strings"
@@ -37,12 +39,13 @@ type EventSourceInterface interface {
 }
 
 type EventLogBase struct {
-	Id         string `json:"record_id"` // unique primary key for records
-	Timestamp  uint64 `json:"timestamp"`
-	Severity   string `json:"severity"` // info, warning or error
-	Message    string `json:"message"`
-	EventCode  string `json:"event_code"`
-	SourceType string `json:"source_type"` // the type of the source. It can be agreement, service, image, workload etc.
+	Id          string       `json:"record_id"` // unique primary key for records
+	Timestamp   uint64       `json:"timestamp"`
+	Severity    string       `json:"severity"` // info, warning or error
+	Message     string       `json:"message"`  // obsolte in DB, used for backward compatibility and for output
+	EventCode   string       `json:"event_code"`
+	SourceType  string       `json:"source_type"`            // the type of the source. It can be agreement, service, image, workload etc.
+	MessageMeta *MessageMeta `json:"message_meta,omitempty"` // the message and it's arguements for fmt.Sprintf. This is used for i18n.
 }
 
 // Checks if the base event log matches the selectors
@@ -80,28 +83,48 @@ type EventLog struct {
 	Source EventSourceInterface `json:"event_source"` // source involved for this event.
 }
 
-func NewEventLog(severity string, message string, event_code string, source_type string, source EventSourceInterface) *EventLog {
+func NewEventLog(severity string, message_meta *MessageMeta, event_code string, source_type string, source EventSourceInterface) *EventLog {
 	return &EventLog{
 		EventLogBase: EventLogBase{
-			Timestamp:  uint64(time.Now().Unix()),
-			Severity:   severity,
-			Message:    message,
-			EventCode:  event_code,
-			SourceType: source_type,
+			Timestamp:   uint64(time.Now().Unix()),
+			Severity:    severity,
+			EventCode:   event_code,
+			SourceType:  source_type,
+			MessageMeta: message_meta,
+		},
+		Source: source,
+	}
+}
+
+func newEventLog1(severity string, message string, message_meta *MessageMeta, event_code string, source_type string, source EventSourceInterface) *EventLog {
+	return &EventLog{
+		EventLogBase: EventLogBase{
+			Timestamp:   uint64(time.Now().Unix()),
+			Severity:    severity,
+			Message:     message,
+			EventCode:   event_code,
+			SourceType:  source_type,
+			MessageMeta: message_meta,
 		},
 		Source: source,
 	}
 }
 
 func (w EventLog) String() string {
+	mm := ""
+	if w.MessageMeta != nil {
+		mm = fmt.Sprintf("%v", w.MessageMeta)
+	}
+
 	return fmt.Sprintf("ID: %v, "+
 		"Timestamp: %v, "+
 		"Severity: %v, "+
 		"Message: %v, "+
+		"MessageMeta: %v, "+
 		"EventCode: %v, "+
 		"SourceType: %v, "+
 		"Source: %v",
-		w.Id, w.Timestamp, w.Severity, w.Message, w.EventCode, w.SourceType, w.Source)
+		w.Id, w.Timestamp, w.Severity, w.Message, mm, w.EventCode, w.SourceType, w.Source)
 }
 
 func (w EventLog) ShortString() string {
@@ -147,6 +170,24 @@ func (w EventLog) Matches2(base_selectors map[string][]Selector, source_selector
 
 	// then match the source
 	return w.Source.Matches(source_selectors)
+}
+
+// This structure is used to store the message key and args for fmt.Sprintf().
+// It can be used by the MessagePrinter.Sprintf to print out the messages for different locales.
+type MessageMeta struct {
+	MessageKey  string        `json:"message_key"`
+	MessageArgs []interface{} `json:"message_args,omitempty"`
+}
+
+func (w MessageMeta) String() string {
+	return fmt.Sprintf("MessageKey: %v, MessageArgs: %v", w.MessageKey, w.MessageArgs)
+}
+
+func NewMessageMeta(msg_key string, message_args ...interface{}) *MessageMeta {
+	return &MessageMeta{
+		MessageKey:  msg_key,
+		MessageArgs: message_args,
+	}
 }
 
 // save the timestamp for the last unregistration into db.
@@ -281,7 +322,7 @@ func FindEventLogWithKey(db *bolt.DB, key string) (*EventLog, error) {
 					glog.Errorf("Unable to convert event source: %v. Error: %v", el.Source, err)
 					return err
 				} else {
-					pel = NewEventLog(el.Severity, el.Message, el.EventCode, el.SourceType, *esrc)
+					pel = newEventLog1(el.Severity, el.Message, el.MessageMeta, el.EventCode, el.SourceType, *esrc)
 					pel.Id = el.Id
 					pel.Timestamp = el.Timestamp
 					return nil
@@ -335,7 +376,7 @@ func FindEventLogs(db *bolt.DB, filters []EventLogFilter) ([]EventLog, error) {
 					if esrc, err := getRealEventSource(el.SourceType, el.Source); err != nil {
 						glog.Errorf("Unable to convert event source: %v. Error: %v", el.Source, err)
 					} else {
-						pel := NewEventLog(el.Severity, el.Message, el.EventCode, el.SourceType, *esrc)
+						pel := newEventLog1(el.Severity, el.Message, el.MessageMeta, el.EventCode, el.SourceType, *esrc)
 						pel.Id = el.Id
 						pel.Timestamp = el.Timestamp
 
@@ -366,7 +407,7 @@ func FindEventLogs(db *bolt.DB, filters []EventLogFilter) ([]EventLog, error) {
 
 // find event logs from the db for the given given selectors.
 // If all_logs is false, only the event logs for the current registration is returned.
-func FindEventLogsWithSelectors(db *bolt.DB, all_logs bool, selectors map[string][]Selector) ([]EventLog, error) {
+func FindEventLogsWithSelectors(db *bolt.DB, all_logs bool, selectors map[string][]Selector, msgPrinter *message.Printer) ([]EventLog, error) {
 	// separate base selectors from the source selectors
 	base_selectors, source_selectors := GroupSelectors(selectors)
 
@@ -381,6 +422,10 @@ func FindEventLogsWithSelectors(db *bolt.DB, all_logs bool, selectors map[string
 		}
 	}
 
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+
 	// fetch logs
 	readErr := db.View(func(tx *bolt.Tx) error {
 
@@ -391,14 +436,23 @@ func FindEventLogsWithSelectors(db *bolt.DB, all_logs bool, selectors map[string
 
 				if err := json.Unmarshal(v, &el); err != nil {
 					glog.Errorf("Unable to deserialize event log db record: %v. Error: %v", v, err)
-				} else if (all_logs || el.Timestamp > last_unreg) && el.EventLogBase.Matches(base_selectors) {
-					if esrc, err := getRealEventSource(el.SourceType, el.Source); err != nil {
-						glog.Errorf("Unable to convert event source: %v. Error: %v", el.Source, err)
-					} else if (*esrc).Matches(source_selectors) {
-						pel := NewEventLog(el.Severity, el.Message, el.EventCode, el.SourceType, *esrc)
-						pel.Id = el.Id
-						pel.Timestamp = el.Timestamp
-						evlogs = append(evlogs, *pel)
+				} else {
+					// Use the given message printer to translate the message saved in MessageMeta and save it to Message.
+					if el.MessageMeta != nil && el.MessageMeta.MessageKey != "" {
+						el.Message = msgPrinter.Sprintf(el.MessageMeta.MessageKey, el.MessageMeta.MessageArgs...)
+						// set MessageMeta to nil so that it will not get displayed.
+						el.MessageMeta = nil
+					}
+
+					if (all_logs || el.Timestamp > last_unreg) && el.EventLogBase.Matches(base_selectors) {
+						if esrc, err := getRealEventSource(el.SourceType, el.Source); err != nil {
+							glog.Errorf("Unable to convert event source: %v. Error: %v", el.Source, err)
+						} else if (*esrc).Matches(source_selectors) {
+							pel := newEventLog1(el.Severity, el.Message, el.MessageMeta, el.EventCode, el.SourceType, *esrc)
+							pel.Id = el.Id
+							pel.Timestamp = el.Timestamp
+							evlogs = append(evlogs, *pel)
+						}
 					}
 				}
 				return nil
@@ -433,7 +487,7 @@ func FindAllEventLogs(db *bolt.DB) ([]EventLog, error) {
 					if esrc, err := getRealEventSource(el.SourceType, el.Source); err != nil {
 						glog.Errorf("Unable to convert event source: %v. Error: %v", el.Source, err)
 					} else {
-						pel := NewEventLog(el.Severity, el.Message, el.EventCode, el.SourceType, *esrc)
+						pel := newEventLog1(el.Severity, el.Message, el.MessageMeta, el.EventCode, el.SourceType, *esrc)
 						pel.Id = el.Id
 						pel.Timestamp = el.Timestamp
 

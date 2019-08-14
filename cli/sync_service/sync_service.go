@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/cli/dev"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/container"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/resource"
 	"io/ioutil"
 	"net/http"
@@ -27,17 +28,20 @@ const ESS_NAME = "ess-api"
 
 func Start(cw *container.ContainerWorker, org string, configFiles []string, configType string) error {
 
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	dc := cw.GetClient()
 
 	// Create a network for all the sync service containers.
 	network, err := createNetwork(dc, NETWORK_NAME)
 	if err != nil {
-		return errors.New(fmt.Sprintf("unable to create network %v for file sync service, error %v", NETWORK_NAME, err))
+		return errors.New(msgPrinter.Sprintf("unable to create network %v for file sync service, error %v", NETWORK_NAME, err))
 	}
 
 	// Start the CSS.
 	if err := startCSS(dc, network); err != nil {
-		return errors.New(fmt.Sprintf("unable to start CSS, error %v", err))
+		return errors.New(msgPrinter.Sprintf("unable to start CSS, error %v", err))
 	}
 
 	// Wait a few seconds to give the CSS a chance to initialize itself.
@@ -45,32 +49,34 @@ func Start(cw *container.ContainerWorker, org string, configFiles []string, conf
 
 	// Load the input file objects into the CSS
 	if err := loadCSS(org, configType, configFiles); err != nil {
-		return errors.New(fmt.Sprintf("unable to load file objects into CSS, error %v", err))
+		return errors.New(msgPrinter.Sprintf("unable to load file objects into CSS, error %v", err))
 	}
 
 	// Start the ESS.
 	if err := startESS(cw, network, org); err != nil {
-		return errors.New(fmt.Sprintf("unable to start ESS, error %v", err))
+		return errors.New(msgPrinter.Sprintf("unable to start ESS, error %v", err))
 	}
 
 	return nil
 }
 
 func Stop(dc *docker.Client) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Stop and remove the ESS container.
 	if err := stopContainer(dc, makeLabelName(ESS_NAME)); err != nil {
-		cliutils.Verbose(fmt.Sprintf("Unable to stop %v, error %v", makeLabelName(ESS_NAME), err))
+		cliutils.Verbose(msgPrinter.Sprintf("Unable to stop %v, error %v", makeLabelName(ESS_NAME), err))
 	}
 
 	// Stop and remove the CSS container.
 	if err := stopContainer(dc, makeLabelName(CSS_NAME)); err != nil {
-		cliutils.Verbose(fmt.Sprintf("Unable to stop %v, error %v", makeLabelName(CSS_NAME), err))
+		cliutils.Verbose(msgPrinter.Sprintf("Unable to stop %v, error %v", makeLabelName(CSS_NAME), err))
 	}
 
 	// Delete the hzn-dev network.
 	if err := removeNetwork(dc, NETWORK_NAME); err != nil {
-		cliutils.Verbose(fmt.Sprintf("Unable to remove network %v for file sync service, error %v", NETWORK_NAME, err))
+		cliutils.Verbose(msgPrinter.Sprintf("Unable to remove network %v for file sync service, error %v", NETWORK_NAME, err))
 	}
 
 	return nil
@@ -80,6 +86,8 @@ func Stop(dc *docker.Client) error {
 // local docker repo or we need to pull them in. This function checks for an exact match of image and tag name.
 // It does not try to re-pull if the image is already local.
 func getImage(imageName string, tagName string, dc *docker.Client) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Check if the image already exists locally. If it does then skip the pull.
 	name := fmt.Sprintf("%v:%v", imageName, tagName)
@@ -87,13 +95,13 @@ func getImage(imageName string, tagName string, dc *docker.Client) error {
 	if images, err := dc.ListImages(docker.ListImagesOptions{
 		All: true,
 	}); err != nil {
-		return errors.New(fmt.Sprintf("unable to list existing docker images, error %v", err))
+		return errors.New(msgPrinter.Sprintf("unable to list existing docker images, error %v", err))
 	} else {
 		for _, image := range images {
 			for _, r := range image.RepoTags {
 				if r == name {
 					skipPull = true
-					cliutils.Verbose("Found docker image %v locally.", name)
+					cliutils.Verbose(msgPrinter.Sprintf("Found docker image %v locally.", name))
 					break
 				}
 			}
@@ -112,9 +120,9 @@ func getImage(imageName string, tagName string, dc *docker.Client) error {
 		}
 
 		if err := dc.PullImage(opts, docker.AuthConfiguration{}); err != nil {
-			return errors.New(fmt.Sprintf("unable to pull CSS container using image %v, error %v. Set environment variable %v to use a different image tag.", getFSSFullImageName(), err, dev.DEVTOOL_HZN_FSS_IMAGE_TAG))
+			return errors.New(msgPrinter.Sprintf("unable to pull CSS container using image %v, error %v. Set environment variable %v to use a different image tag.", getFSSFullImageName(), err, dev.DEVTOOL_HZN_FSS_IMAGE_TAG))
 		} else {
-			cliutils.Verbose("Pulled docker image %v.", name)
+			cliutils.Verbose(msgPrinter.Sprintf("Pulled docker image %v.", name))
 		}
 	}
 
@@ -123,10 +131,12 @@ func getImage(imageName string, tagName string, dc *docker.Client) error {
 
 // Start the CSS container.
 func startCSS(dc *docker.Client, network *docker.Network) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// First load the image.
 	if err := getImage(getFSSImageName(), getFSSImageTagName(), dc); err != nil {
-		return errors.New(fmt.Sprintf("unable to pull CSS container using image %v, error %v. Set environment variable %v to use a different image tag.", getFSSFullImageName(), err, dev.DEVTOOL_HZN_FSS_IMAGE_TAG))
+		return errors.New(msgPrinter.Sprintf("unable to pull CSS container using image %v, error %v. Set environment variable %v to use a different image tag.", getFSSFullImageName(), err, dev.DEVTOOL_HZN_FSS_IMAGE_TAG))
 	}
 
 	// Now create the container from this image.
@@ -193,13 +203,13 @@ func startCSS(dc *docker.Client, network *docker.Network) error {
 	}
 
 	if container, err := dc.CreateContainer(containerOpts); err != nil {
-		return errors.New(fmt.Sprintf("unable to create CSS container using image %v, error %v. Set environment variable %v to use a diferent image tag.", getFSSImageName(), err, dev.DEVTOOL_HZN_FSS_IMAGE_TAG))
+		return errors.New(msgPrinter.Sprintf("unable to create CSS container using image %v, error %v. Set environment variable %v to use a diferent image tag.", getFSSImageName(), err, dev.DEVTOOL_HZN_FSS_IMAGE_TAG))
 	} else if err := dc.StartContainer(container.ID, nil); err != nil {
-		return errors.New(fmt.Sprintf("unable to start CSS container, error %v", err))
+		return errors.New(msgPrinter.Sprintf("unable to start CSS container, error %v", err))
 	}
 
-	cliutils.Verbose("Created %v container, listening on host port %v", makeLabelName(CSS_NAME), getCSSPort())
-	fmt.Printf("File sync service container %v listening on host port %v\n", makeLabelName(CSS_NAME), getCSSPort())
+	cliutils.Verbose(msgPrinter.Sprintf("Created %v container, listening on host port %v", makeLabelName(CSS_NAME), getCSSPort()))
+	msgPrinter.Printf("File sync service container %v listening on host port %v\n", makeLabelName(CSS_NAME), getCSSPort())
 
 	return nil
 
@@ -207,10 +217,12 @@ func startCSS(dc *docker.Client, network *docker.Network) error {
 
 // Start the ESS container.
 func startESS(cw *container.ContainerWorker, network *docker.Network, org string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Create a self signed SSL cert for the workload to use.
 	if err := resource.CreateCertificate(org, cw.Config.GetESSSSLCertKeyPath(), cw.Config.GetESSSSLClientCertPath()); err != nil {
-		return errors.New(fmt.Sprintf("unable to create SSL certificate for ESS, error %v", err))
+		return errors.New(msgPrinter.Sprintf("unable to create SSL certificate for ESS, error %v", err))
 	}
 
 	// Pass our certificate and key into the ESS config by value, as a string of bytes.
@@ -222,13 +234,13 @@ func startESS(cw *container.ContainerWorker, network *docker.Network, org string
 	serverCertKey := ""
 
 	if essCert, err := os.Open(certFile); err != nil {
-		return errors.New(fmt.Sprintf("unable to open ESS SSL Certificate file %v, error %v", cw.Config.GetESSSSLClientCertPath(), err))
+		return errors.New(msgPrinter.Sprintf("unable to open ESS SSL Certificate file %v, error %v", cw.Config.GetESSSSLClientCertPath(), err))
 	} else if essCertBytes, err := ioutil.ReadAll(essCert); err != nil {
-		return errors.New(fmt.Sprintf("unable to read ESS SSL Certificate file %v, error %v", cw.Config.GetESSSSLClientCertPath(), err))
+		return errors.New(msgPrinter.Sprintf("unable to read ESS SSL Certificate file %v, error %v", cw.Config.GetESSSSLClientCertPath(), err))
 	} else if essCertKey, err := os.Open(certKeyFile); err != nil {
-		return errors.New(fmt.Sprintf("unable to open ESS SSL Certificate Key file %v, error %v", cw.Config.GetESSSSLCertKeyPath(), err))
+		return errors.New(msgPrinter.Sprintf("unable to open ESS SSL Certificate Key file %v, error %v", cw.Config.GetESSSSLCertKeyPath(), err))
 	} else if essCertKeyBytes, err := ioutil.ReadAll(essCertKey); err != nil {
-		return errors.New(fmt.Sprintf("unable to read ESS SSL Certificate Key file %v, error %v", cw.Config.GetESSSSLCertKeyPath(), err))
+		return errors.New(msgPrinter.Sprintf("unable to read ESS SSL Certificate Key file %v, error %v", cw.Config.GetESSSSLCertKeyPath(), err))
 	} else {
 		serverCert = string(essCertBytes)
 		serverCertKey = string(essCertKeyBytes)
@@ -304,12 +316,12 @@ func startESS(cw *container.ContainerWorker, network *docker.Network, org string
 	}
 
 	if container, err := dc.CreateContainer(containerOpts); err != nil {
-		return errors.New(fmt.Sprintf("unable to create ESS container, error %v", err))
+		return errors.New(msgPrinter.Sprintf("unable to create ESS container, error %v", err))
 	} else if err := dc.StartContainer(container.ID, nil); err != nil {
-		return errors.New(fmt.Sprintf("unable to start ESS container, error %v", err))
+		return errors.New(msgPrinter.Sprintf("unable to start ESS container, error %v", err))
 	}
 
-	cliutils.Verbose("Created %v container", makeLabelName(ESS_NAME))
+	cliutils.Verbose(msgPrinter.Sprintf("Created %v container", makeLabelName(ESS_NAME)))
 
 	return nil
 
@@ -317,6 +329,8 @@ func startESS(cw *container.ContainerWorker, network *docker.Network, org string
 
 // Stop the container.
 func stopContainer(dc *docker.Client, name string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	devFilter := docker.ListContainersOptions{
 		All: true,
@@ -327,17 +341,17 @@ func stopContainer(dc *docker.Client, name string) error {
 
 	allContainers, err := dc.ListContainers(devFilter)
 	if err != nil {
-		return errors.New(fmt.Sprintf("unable to list docker containers, error %v", err))
+		return errors.New(msgPrinter.Sprintf("unable to list docker containers, error %v", err))
 	}
 
 	for _, con := range allContainers {
 		if strings.Contains(con.Names[0], name) {
 			if err := dc.KillContainer(docker.KillContainerOptions{ID: con.ID}); err != nil {
-				return errors.New(fmt.Sprintf("unable to stop docker container %v, error %v", name, err))
+				return errors.New(msgPrinter.Sprintf("unable to stop docker container %v, error %v", name, err))
 			} else if err := dc.RemoveContainer(docker.RemoveContainerOptions{ID: con.ID, RemoveVolumes: true, Force: true}); err != nil {
-				return errors.New(fmt.Sprintf("unable to remove docker container %v, error %v", name, err))
+				return errors.New(msgPrinter.Sprintf("unable to remove docker container %v, error %v", name, err))
 			} else {
-				cliutils.Verbose("Stopped %v container", name)
+				cliutils.Verbose(msgPrinter.Sprintf("Stopped %v container", name))
 			}
 		}
 	}
@@ -346,14 +360,16 @@ func stopContainer(dc *docker.Client, name string) error {
 }
 
 func loadCSS(org string, fileType string, fileObjects []string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	for _, fileName := range fileObjects {
-		cliutils.Verbose("Loading %v into CSS", fileName)
+		cliutils.Verbose(msgPrinter.Sprintf("Loading %v into CSS", fileName))
 
 		if fileObject, err := os.Open(fileName); err != nil {
-			return errors.New(fmt.Sprintf("unable to open file object %v, error %v", fileName, err))
+			return errors.New(msgPrinter.Sprintf("unable to open file object %v, error %v", fileName, err))
 		} else if fileBytes, err := ioutil.ReadAll(fileObject); err != nil {
-			return errors.New(fmt.Sprintf("unable to read file object %v, error %v", fileName, err))
+			return errors.New(msgPrinter.Sprintf("unable to read file object %v, error %v", fileName, err))
 		} else {
 
 			defer fileObject.Close()
@@ -375,13 +391,14 @@ func loadCSS(org string, fileType string, fileObjects []string) error {
 			url := fmt.Sprintf("http://%v:%v/api/v1/objects/%v/%v/%v", hostIP, getCSSPort(), org, fileType, fileObjectName)
 
 			if err := putFile(url, org, metadata, fileBytes); err != nil {
-				return errors.New(fmt.Sprintf("unable to add file %v to the CSS, error %v", fileName, err))
+				return errors.New(msgPrinter.Sprintf("unable to add file %v to the CSS, error %v", fileName, err))
 			}
 		}
 	}
 
 	if len(fileObjects) > 0 {
-		fmt.Printf("Configuration files %v loaded into the File sync service.\n", fileObjects)
+		msgPrinter.Printf("Configuration files %v loaded into the File sync service.", fileObjects)
+		msgPrinter.Println()
 	}
 
 	return nil
@@ -399,6 +416,8 @@ type cssFilePutBody struct {
 }
 
 func putFile(url string, org string, metadata *cssFileMeta, file []byte) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Tell the user what API we're about to use.
 	apiMsg := http.MethodPut + " " + url
@@ -413,7 +432,7 @@ func putFile(url string, org string, metadata *cssFileMeta, file []byte) error {
 	// Convert the body to JSON form.
 	jsonBytes, err := json.Marshal(body)
 	if err != nil {
-		return errors.New(fmt.Sprintf("unable to marshal CSS file PUT for %v, error %v", *metadata, err))
+		return errors.New(msgPrinter.Sprintf("unable to marshal CSS file PUT for %v, error %v", *metadata, err))
 	}
 	requestBody := bytes.NewBuffer(jsonBytes)
 
@@ -421,7 +440,7 @@ func putFile(url string, org string, metadata *cssFileMeta, file []byte) error {
 	httpClient := &http.Client{}
 	req, err := http.NewRequest(http.MethodPut, url, requestBody)
 	if err != nil {
-		return errors.New(fmt.Sprintf("unable to create CSS file PUT request for %v, error %v", *metadata, err))
+		return errors.New(msgPrinter.Sprintf("unable to create CSS file PUT request for %v, error %v", *metadata, err))
 	}
 
 	req.Header.Add("Accept", "application/json")
@@ -432,20 +451,22 @@ func putFile(url string, org string, metadata *cssFileMeta, file []byte) error {
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return errors.New(fmt.Sprintf("unable to send CSS file PUT request to CSS for %v, error %v", *metadata, err))
+		return errors.New(msgPrinter.Sprintf("unable to send CSS file PUT request to CSS for %v, error %v", *metadata, err))
 	}
 
 	defer resp.Body.Close()
-	cliutils.Verbose("HTTP code: %d", resp.StatusCode)
+	cliutils.Verbose(msgPrinter.Sprintf("HTTP code: %d", resp.StatusCode))
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return errors.New(fmt.Sprintf("unable to PUT file %v into CSS, HTTP code %v", *metadata, resp.StatusCode))
+		return errors.New(msgPrinter.Sprintf("unable to PUT file %v into CSS, HTTP code %v", *metadata, resp.StatusCode))
 	}
 
 	return nil
 }
 
 func createNetwork(client *docker.Client, name string) (*docker.Network, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Labels on the docker network indicate attributes about the network.
 	labels := make(map[string]string)
@@ -473,21 +494,24 @@ func createNetwork(client *docker.Client, name string) (*docker.Network, error) 
 	if err != nil {
 		return nil, err
 	}
-	cliutils.Verbose("Created network %v", name)
+	cliutils.Verbose(msgPrinter.Sprintf("Created network %v", name))
 	return bridge, nil
 }
 
 func removeNetwork(client *docker.Client, name string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	// Remove named network
 	networks, err := client.ListNetworks()
 	if err != nil {
-		return errors.New(fmt.Sprintf("unable to list docker networks, error %v", err))
+		return errors.New(msgPrinter.Sprintf("unable to list docker networks, error %v", err))
 	}
 
 	for _, net := range networks {
 		if net.Name == name {
 			if err := client.RemoveNetwork(net.ID); err != nil {
-				return errors.New(fmt.Sprintf("unable to remove docker network %v, error %v", name, err))
+				return errors.New(msgPrinter.Sprintf("unable to remove docker network %v, error %v", name, err))
 			} else {
 				return nil
 			}

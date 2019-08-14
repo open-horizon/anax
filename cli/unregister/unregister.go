@@ -5,6 +5,7 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/i18n"
 	"time"
 )
 
@@ -18,11 +19,14 @@ type ApiAttributes struct {
 
 // DoIt unregisters this Horizon edge node and resets it so it can be registered again
 func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout int) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	if !forceUnregister {
-		cliutils.ConfirmRemove("Are you sure you want to unregister this Horizon node?")
+		cliutils.ConfirmRemove(msgPrinter.Sprintf("Are you sure you want to unregister this Horizon node?"))
 	}
 
-	fmt.Println("Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...")
+	msgPrinter.Println("Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...")
 
 	//call horizon DELETE /node api, timeout in 3 minutes.
 	unregErr := DeleteHorizonNode(removeNodeUnregister, deepClean, timeout)
@@ -44,13 +48,16 @@ func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout in
 		if err := CheckNodeConfigState(180); err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
 		} else {
-			fmt.Println("Horizon node unregistered. You may now run 'hzn register ...' again, if desired.")
+			msgPrinter.Println("Horizon node unregistered. You may now run 'hzn register ...' again, if desired.")
 		}
 	}
 }
 
 //call horizon DELETE /node api, timeout in 3 minutes.
 func DeleteHorizonNode(removeNodeUnregister bool, deepClean bool, timeout int) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	removeNodeOption := ""
 	if removeNodeUnregister {
 		removeNodeOption = "&removeNode=true"
@@ -78,7 +85,7 @@ func DeleteHorizonNode(removeNodeUnregister bool, deepClean bool, timeout int) e
 		select {
 		case output := <-c:
 			if output == "done" {
-				cliutils.Verbose("Horizon node delete call successful with return code: %v", output)
+				cliutils.Verbose(msgPrinter.Sprintf("Horizon node delete call successful with return code: %v", output))
 				return nil
 			} else {
 				return fmt.Errorf("%v", output)
@@ -89,11 +96,13 @@ func DeleteHorizonNode(removeNodeUnregister bool, deepClean bool, timeout int) e
 				if totalWait <= 0 {
 					return fmt.Errorf("Timeout unregistering the node.")
 				}
-				updateStatus := fmt.Sprintf("Timeout in %v seconds ...", totalWait)
-				fmt.Println(fmt.Sprintf("Waiting for Horizon node unregister to complete: %v", updateStatus))
+				updateStatus := msgPrinter.Sprintf("Timeout in %v seconds ...", totalWait)
+				msgPrinter.Printf("Waiting for Horizon node unregister to complete: %v", updateStatus)
+				msgPrinter.Println()
 			} else {
-				updateStatus := fmt.Sprintf("No Timeout specified ...")
-				fmt.Println(fmt.Sprintf("Waiting for Horizon node unregister to complete: %v", updateStatus))
+				updateStatus := msgPrinter.Sprintf("No Timeout specified ...")
+				msgPrinter.Printf("Waiting for Horizon node unregister to complete: %v", updateStatus)
+				msgPrinter.Println()
 			}
 
 		}
@@ -102,46 +111,55 @@ func DeleteHorizonNode(removeNodeUnregister bool, deepClean bool, timeout int) e
 
 // remove local db, policy files and all the service containers
 func DeepClean() error {
-	fmt.Println("Starting external deep clean ...")
-	cliutils.Verbose("Stopping horizon...")
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	msgPrinter.Println("Starting external deep clean ...")
+	cliutils.Verbose(msgPrinter.Sprintf("Stopping horizon..."))
 	cliutils.RunCmd(nil, "systemctl", "stop", "horizon.service")
 
-	fmt.Println("Deleting local horizon DB...")
+	msgPrinter.Println("Deleting local horizon DB...")
 	cliutils.RunCmd(nil, "bash", "-c", "rm -f /var/horizon/*.db")
 	cliutils.RunCmd(nil, "bash", "-c", "rm -Rf /etc/horizon/policy.d/*")
 
-	fmt.Println("Deleting service containers...")
+	msgPrinter.Println("Deleting service containers...")
 	if err := RemoveServiceContainers(); err != nil {
 		fmt.Printf(err.Error())
 	}
 
-	fmt.Println("Starting horizon...")
+	msgPrinter.Println("Starting horizon...")
 	cliutils.RunCmd(nil, "systemctl", "start", "horizon.service")
 	return nil
 }
 
 // make sure the configuration state is back to "unconfigured"
 func CheckNodeConfigState(timeout uint64) error {
-	fmt.Println("Checking the node configuration state...")
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	msgPrinter.Println("Checking the node configuration state...")
 	now := uint64(time.Now().Unix())
 	for uint64(time.Now().Unix())-now < timeout {
 		horDevice := api.HorizonDevice{}
 		_, err := cliutils.HorizonGet("node", []int{200}, &horDevice, true)
 		if err == nil && horDevice.Config != nil && horDevice.Config.State != nil {
-			cliutils.Verbose("Node configuration state: %v", *horDevice.Config.State)
+			cliutils.Verbose(msgPrinter.Sprintf("Node configuration state: %v", *horDevice.Config.State))
 			if *horDevice.Config.State == "unconfigured" {
 				return nil
 			}
 		}
 		time.Sleep(time.Duration(3) * time.Second)
 	}
-	return fmt.Errorf("Timeout waiting for node change to 'unconfigured' state.")
+	return fmt.Errorf(msgPrinter.Sprintf("Timeout waiting for node change to 'unconfigured' state."))
 }
 
 // Remove all the horizon service containers and networks.
 // Note: it will also remove any containers from another horizon instance
 // if there are multiple horizon running on the same node.
 func RemoveServiceContainers() error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	// get docker client
 	dockerEP := "unix:///var/run/docker.sock"
 	client, derr := docker.NewClient(dockerEP)
@@ -153,7 +171,7 @@ func RemoveServiceContainers() error {
 	listOptions := docker.ListContainersOptions{All: true, Filters: map[string][]string{}}
 	containers, err := client.ListContainers(listOptions)
 	if err != nil {
-		return fmt.Errorf("unable to list containers, %v", err)
+		return fmt.Errorf(msgPrinter.Sprintf("unable to list containers, %v", err))
 	}
 
 	if containers == nil || len(containers) == 0 {
@@ -168,9 +186,9 @@ func RemoveServiceContainers() error {
 			for k, _ := range c.Labels {
 				if k == "openhorizon.anax.service_name" {
 					if err := client.RemoveContainer(docker.RemoveContainerOptions{ID: c.ID, RemoveVolumes: true, Force: true}); err != nil {
-						err_string += fmt.Sprintf("Error deleting container %v. %v\n", c.Names[0], err)
+						err_string += msgPrinter.Sprintf("Error deleting container %v. %v\n", c.Names[0], err)
 					} else {
-						cliutils.Verbose("Removed service container: %v", c.Names[0])
+						cliutils.Verbose(msgPrinter.Sprintf("Removed service container: %v", c.Names[0]))
 					}
 					break
 				}
@@ -180,7 +198,7 @@ func RemoveServiceContainers() error {
 
 	// remove all the unused docker networks
 	if _, err := client.PruneNetworks(docker.PruneNetworksOptions{}); err != nil {
-		err_string += fmt.Sprintf("Error pruning docker networks. %v\n", err)
+		err_string += msgPrinter.Sprintf("Error pruning docker networks. %v\n", err)
 	}
 
 	if err_string == "" {

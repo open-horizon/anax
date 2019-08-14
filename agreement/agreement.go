@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangesync"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/producer"
@@ -30,6 +31,48 @@ import (
 const HEARTBEAT = "HeartBeat"
 const NODEPOLICY = "NodePolicy"
 const NODEUSERINPUT = "NodeUserInput"
+
+// messages for eventlog
+const (
+	EL_AG_UNABLE_READ_POL_FILE           = "Unable to read policy file %v for service %v, error: %v"
+	EL_AG_START_ADVERTISE_POL            = "Start policy advertising with the exchange for service %v/%v."
+	EL_AG_UNABLE_ADVERTISE_POL           = "Unable to advertise policies with exchange for service %v/%v, error: %v"
+	EL_AG_COMPLETE_ADVERTISE_POL         = "Complete policy advertising with the exchange for service %v/%v."
+	EL_AG_NODE_HB_FAILED                 = "Node heartbeat failed for node %v/%v. Error: %v"
+	EL_AG_NODE_HB_RESTORED               = "Node heartbeat restored for node %v/%v."
+	EL_AG_UNABLE_READ_NODE_POL_FROM_DB   = "unable to read node policy from the local database. %v"
+	EL_AG_UNABLE_READ_NODE_FROM_DB       = "Unable to read node object from the local database. %v"
+	EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH = "Unable to sync the local node policy with the exchange copy. Error: %v"
+	EL_AG_NODE_POL_SYNCED_WITH_EXCH      = "Node policy updated with the exchange copy: %v"
+	EL_AG_UNABLE_SYNC_NODE_UI_WITH_EXCH  = "Unable to sync the local node user input with the exchange copy. Error: %v"
+	EL_AG_NODE_UI_SYNCED_WITH_EXCH       = "Node user input updated with the exchange copy. The changed user inputs are: %v"
+	EL_AG_NODE_CANNOT_VERIFY_AG          = "Node could not verify the agreement %v with the consumer. Will cancel it"
+	EL_AG_NODE_IS_OFFLINE                = "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored"
+)
+
+// This is does nothing useful at run time.
+// This code is only used in compileing time to make the eventlog messages gets into the catalog so that
+// they can be translated.
+// The event log messages will be saved in English. But the CLI can request them in different languages.
+func MarkI18nMessages() {
+	// get message printer. anax default language is English
+	msgPrinter := i18n.GetMessagePrinter()
+
+	msgPrinter.Sprintf(EL_AG_UNABLE_READ_POL_FILE)
+	msgPrinter.Sprintf(EL_AG_START_ADVERTISE_POL)
+	msgPrinter.Sprintf(EL_AG_UNABLE_ADVERTISE_POL)
+	msgPrinter.Sprintf(EL_AG_COMPLETE_ADVERTISE_POL)
+	msgPrinter.Sprintf(EL_AG_NODE_HB_FAILED)
+	msgPrinter.Sprintf(EL_AG_NODE_HB_RESTORED)
+	msgPrinter.Sprintf(EL_AG_UNABLE_READ_NODE_POL_FROM_DB)
+	msgPrinter.Sprintf(EL_AG_UNABLE_READ_NODE_FROM_DB)
+	msgPrinter.Sprintf(EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH)
+	msgPrinter.Sprintf(EL_AG_NODE_POL_SYNCED_WITH_EXCH)
+	msgPrinter.Sprintf(EL_AG_UNABLE_SYNC_NODE_UI_WITH_EXCH)
+	msgPrinter.Sprintf(EL_AG_NODE_UI_SYNCED_WITH_EXCH)
+	msgPrinter.Sprintf(EL_AG_NODE_CANNOT_VERIFY_AG)
+	msgPrinter.Sprintf(EL_AG_NODE_IS_OFFLINE)
+}
 
 // must be safely-constructed!!
 type AgreementWorker struct {
@@ -245,7 +288,7 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 
 		if newPolicy, err := policy.ReadPolicyFile(cmd.PolicyFile, w.Config.ArchSynonyms); err != nil {
 			eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Unable to read policy file %v for service %v, error: %v", cmd.PolicyFile, svcName, err),
+				persistence.NewMessageMeta(EL_AG_UNABLE_READ_POL_FILE, cmd.PolicyFile, svcName, err),
 				persistence.EC_ERROR_POLICY_ADVERTISING,
 				"", persistence.WorkloadInfo{}, []persistence.ServiceSpec{}, "", "")
 
@@ -260,20 +303,20 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 			protocols := strings.Join(a_protocols, ",")
 
 			eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_INFO,
-				fmt.Sprintf("Start policy advertising with the exchange for service %v/%v.", newPolicy.APISpecs[0].Org, newPolicy.APISpecs[0].SpecRef),
+				persistence.NewMessageMeta(EL_AG_START_ADVERTISE_POL, newPolicy.APISpecs[0].Org, newPolicy.APISpecs[0].SpecRef),
 				persistence.EC_START_POLICY_ADVERTISING,
 				"", persistence.WorkloadInfo{}, producer.ConvertToServiceSpecs(newPolicy.APISpecs), "", protocols)
 			// Publish what we have for the world to see
 			if err := w.advertiseAllPolicies(w.BaseWorker.Manager.Config.Edge.PolicyPath); err != nil {
 				eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Unable to advertise policies with exchange for service %v/%v, error: %v", newPolicy.APISpecs[0].Org, newPolicy.APISpecs[0].SpecRef, err),
+					persistence.NewMessageMeta(EL_AG_UNABLE_ADVERTISE_POL, newPolicy.APISpecs[0].Org, newPolicy.APISpecs[0].SpecRef, err),
 					persistence.EC_ERROR_POLICY_ADVERTISING,
 					"", persistence.WorkloadInfo{}, producer.ConvertToServiceSpecs(newPolicy.APISpecs), "", protocols)
 
 				glog.Warningf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
 			} else {
 				eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_INFO,
-					fmt.Sprintf("Complete policy advertising with the exchange for service %v/%v.", newPolicy.APISpecs[0].Org, newPolicy.APISpecs[0].SpecRef),
+					persistence.NewMessageMeta(EL_AG_COMPLETE_ADVERTISE_POL, newPolicy.APISpecs[0].Org, newPolicy.APISpecs[0].SpecRef),
 					persistence.EC_COMPLETE_POLICY_ADVERTISING,
 					"", persistence.WorkloadInfo{}, producer.ConvertToServiceSpecs(newPolicy.APISpecs), "", protocols)
 			}
@@ -439,7 +482,7 @@ func (w *AgreementWorker) heartBeat() int {
 
 				glog.Errorf(logString(fmt.Sprintf("node heartbeat failed for node %v/%v. Error: %v", nodeOrg, nodeId, err)))
 				eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Node heartbeat failed for node %v/%v. Error: %v", nodeOrg, nodeId, err),
+					persistence.NewMessageMeta(EL_AG_NODE_HB_FAILED, nodeOrg, nodeId, err),
 					persistence.EC_NODE_HEARTBEAT_FAILED, nodeId, nodeOrg, "", "")
 
 				w.Messages() <- events.NewNodeHeartbeatStateChangeMessage(events.NODE_HEARTBEAT_FAILED, nodeOrg, nodeId)
@@ -453,7 +496,7 @@ func (w *AgreementWorker) heartBeat() int {
 
 			glog.Infof(logString(fmt.Sprintf("node heartbeat restored for node %v/%v.", nodeOrg, nodeId)))
 			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_INFO,
-				fmt.Sprintf("Node heartbeat restored for node %v/%v.", nodeOrg, nodeId),
+				persistence.NewMessageMeta(EL_AG_NODE_HB_RESTORED, nodeOrg, nodeId),
 				persistence.EC_NODE_HEARTBEAT_RESTORED, nodeId, nodeOrg, "", "")
 
 			w.Messages() <- events.NewNodeHeartbeatStateChangeMessage(events.NODE_HEARTBEAT_RESTORED, nodeOrg, nodeId)
@@ -471,7 +514,7 @@ func (w *AgreementWorker) NodePolicyUpdated() {
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("unable to read node policy from the local database. %v", err)))
 		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-			fmt.Sprintf("Unable to read node policy from the local database. %v", err),
+			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_POL_FROM_DB, err),
 			persistence.EC_DATABASE_ERROR)
 		return
 	}
@@ -501,7 +544,7 @@ func (w *AgreementWorker) checkNodeUserInputChanges() int {
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Unable to read node object from the local database. %v", err)))
 		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-			fmt.Sprintf("Unable to read node object from the local database. %v", err),
+			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_FROM_DB, err),
 			persistence.EC_DATABASE_ERROR)
 		return 0
 	} else if pDevice == nil {
@@ -515,7 +558,7 @@ func (w *AgreementWorker) checkNodeUserInputChanges() int {
 		glog.Errorf(logString(fmt.Sprintf("Unable to sync the local node user input with the exchange copy. Error: %v", err)))
 		if !w.hznOffline {
 			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Unable to sync the local node user input with the exchange copy. Error: %v", err),
+				persistence.NewMessageMeta(EL_AG_UNABLE_SYNC_NODE_UI_WITH_EXCH, err),
 				persistence.EC_ERROR_NODE_POLICY_UPDATE,
 				exchange.GetOrg(w.GetExchangeId()),
 				exchange.GetId(w.GetExchangeId()),
@@ -526,7 +569,7 @@ func (w *AgreementWorker) checkNodeUserInputChanges() int {
 		w.hznOffline = false
 		glog.V(3).Infof(logString(fmt.Sprintf("Node user input updated with the exchange copy. The changed user inputs are: %v", changedSvcSpecs)))
 		eventlog.LogNodeEvent(w.db, persistence.SEVERITY_INFO,
-			fmt.Sprintf("Node user input updated with the exchange copy. The changed user inputs are: %v", changedSvcSpecs),
+			persistence.NewMessageMeta(EL_AG_NODE_UI_SYNCED_WITH_EXCH, changedSvcSpecs),
 			persistence.EC_NODE_POLICY_UPDATED,
 			exchange.GetOrg(w.GetExchangeId()),
 			exchange.GetId(w.GetExchangeId()),
@@ -554,7 +597,7 @@ func (w *AgreementWorker) checkNodePolicyChanges() int {
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Unable to read node object from the local database. %v", err)))
 		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-			fmt.Sprintf("Unable to read node object from the local database. %v", err),
+			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_FROM_DB, err),
 			persistence.EC_DATABASE_ERROR)
 		return 0
 	} else if pDevice == nil {
@@ -568,7 +611,7 @@ func (w *AgreementWorker) checkNodePolicyChanges() int {
 		glog.Errorf(logString(fmt.Sprintf("Unable to sync the local node policy with the exchange copy. Error: %v", err)))
 		if !w.hznOffline {
 			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Unable to sync the local node policy with the exchange copy. Error: %v", err),
+				persistence.NewMessageMeta(EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH, err),
 				persistence.EC_ERROR_NODE_POLICY_UPDATE,
 				exchange.GetOrg(w.GetExchangeId()),
 				exchange.GetId(w.GetExchangeId()),
@@ -579,7 +622,7 @@ func (w *AgreementWorker) checkNodePolicyChanges() int {
 		w.hznOffline = false
 		glog.V(3).Infof(logString(fmt.Sprintf("Node policy updated with the exchange copy: %v", newNodePolicy)))
 		eventlog.LogNodeEvent(w.db, persistence.SEVERITY_INFO,
-			fmt.Sprintf("Node policy updated with the exchange copy: %v", newNodePolicy),
+			persistence.NewMessageMeta(EL_AG_NODE_POL_SYNCED_WITH_EXCH, newNodePolicy),
 			persistence.EC_NODE_POLICY_UPDATED,
 			exchange.GetOrg(w.GetExchangeId()),
 			exchange.GetId(w.GetExchangeId()),
@@ -687,7 +730,7 @@ func (w *AgreementWorker) syncOnInit() error {
 				eventlog.LogAgreementEvent(
 					w.db,
 					persistence.SEVERITY_INFO,
-					fmt.Sprintf("Node could not verify the agreement %v with the consumer. Will cancel it", ag.CurrentAgreementId),
+					persistence.NewMessageMeta(EL_AG_NODE_CANNOT_VERIFY_AG, ag.CurrentAgreementId),
 					persistence.EC_CANCEL_AGREEMENT,
 					ag)
 				w.Messages() <- events.NewInitAgreementCancelationMessage(events.AGREEMENT_ENDED, w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_AGBOT_REQUESTED), ag.AgreementProtocol, ag.CurrentAgreementId, ag.GetDeploymentConfig())
@@ -1093,7 +1136,8 @@ var logString = func(v interface{}) string {
 }
 
 func (w *AgreementWorker) isOffline() {
-	eventLogs, err := eventlog.GetEventLogs(w.db, false, nil)
+	msgPrinter := i18n.GetMessagePrinterWithLocale("en")
+	eventLogs, err := eventlog.GetEventLogs(w.db, false, nil, msgPrinter)
 	if err != nil {
 		glog.V(2).Infof("Error getting event logs: %v", err)
 		return
@@ -1111,7 +1155,7 @@ func (w *AgreementWorker) isOffline() {
 		}
 	}
 	eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
-		"Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
+		persistence.NewMessageMeta(EL_AG_NODE_IS_OFFLINE),
 		persistence.EC_ERROR_NODE_POLICY_UPDATE,
 		exchange.GetOrg(w.GetExchangeId()),
 		exchange.GetId(w.GetExchangeId()),

@@ -100,7 +100,7 @@ func (a *API) serviceconfig(w http.ResponseWriter, r *http.Request) {
 			if service.Url != nil {
 				service_url = *service.Url
 			}
-			LogServiceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error configuring service %v. %v", service_url, err), persistence.EC_ERROR_SERVICE_CONFIG, &service)
+			LogServiceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_CONFIG_SVC, service_url, err), persistence.EC_ERROR_SERVICE_CONFIG, &service)
 			return errorhandler(err)
 		}
 
@@ -169,7 +169,7 @@ func (a *API) service_configstate(w http.ResponseWriter, r *http.Request) {
 
 		// error handler to save the event log and then pass the error to the default error handler.
 		service_configstate_error_handler := func(err error) bool {
-			LogServiceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error posting %v, error %v", resource, err), persistence.EC_ERROR_CHANGING_SERVICE_CONFIGSTATE, NewService(service_cs.Url, service_cs.Org, "", cutil.ArchString(), ""))
+			LogServiceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_CHANGE_SVC_CONFIGSTATE, resource, err), persistence.EC_ERROR_CHANGING_SERVICE_CONFIGSTATE, NewService(service_cs.Url, service_cs.Org, "", cutil.ArchString(), ""))
 			return errorhandler(err)
 		}
 
@@ -183,7 +183,7 @@ func (a *API) service_configstate(w http.ResponseWriter, r *http.Request) {
 		} else {
 			s_string = cutil.FormOrgSpecUrl(service_cs.Url, service_cs.Org)
 		}
-		LogServiceEvent(a.db, persistence.SEVERITY_INFO, fmt.Sprintf("Start changing service configuration state to %v for %v for the node.", service_cs.ConfigState, s_string), persistence.EC_START_CHANGING_SERVICE_CONFIGSTATE, NewService(service_cs.Url, service_cs.Org, "", cutil.ArchString(), ""))
+		LogServiceEvent(a.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_START_CHANGE_SVC_CONFIGSTATE, service_cs.ConfigState, s_string), persistence.EC_START_CHANGING_SERVICE_CONFIGSTATE, NewService(service_cs.Url, service_cs.Org, "", cutil.ArchString(), ""))
 
 		getDevice := exchange.GetHTTPDeviceHandler(a)
 		postDeviceSCS := exchange.GetHTTPPostDeviceServicesConfigStateHandler(a)
@@ -196,7 +196,7 @@ func (a *API) service_configstate(w http.ResponseWriter, r *http.Request) {
 				a.Messages() <- events.NewServiceConfigStateChangeMessage(events.SERVICE_SUSPENDED, suspended_services)
 			}
 
-			LogServiceEvent(a.db, persistence.SEVERITY_INFO, fmt.Sprintf("Complete changing service configuration state to %v for %v for the node.", service_cs.ConfigState, s_string), persistence.EC_CHANGING_SERVICE_CONFIGSTATE_COMPLETE, NewService(service_cs.Url, service_cs.Org, "", cutil.ArchString(), ""))
+			LogServiceEvent(a.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_COMPLETE_CHANGE_SVC_CONFIGSTATE, service_cs.ConfigState, s_string), persistence.EC_CHANGING_SERVICE_CONFIGSTATE_COMPLETE, NewService(service_cs.Url, service_cs.Org, "", cutil.ArchString(), ""))
 			w.WriteHeader(http.StatusOK)
 		}
 

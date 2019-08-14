@@ -7,6 +7,7 @@ import (
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/version"
 )
 
@@ -59,11 +60,14 @@ func (n *NodeAndStatus) CopyStatusInto(status *apicommon.Info) {
 }
 
 func List() {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	// Get the node info
 	horDevice := api.HorizonDevice{}
 	cliutils.HorizonGet("node", []int{200}, &horDevice, false)
 	if horDevice.Config == nil {
-		cliutils.Fatal(cliutils.ANAX_NOT_CONFIGURED_YET, "Failed to get proper response from Horizon agent")
+		cliutils.Fatal(cliutils.ANAX_NOT_CONFIGURED_YET, msgPrinter.Sprintf("Failed to get proper response from Horizon agent"))
 	}
 	nodeInfo := NodeAndStatus{} // the structure we will output
 	nodeInfo.CopyNodeInto(&horDevice)
@@ -76,25 +80,29 @@ func List() {
 	// Output the combined info
 	jsonBytes, err := json.MarshalIndent(nodeInfo, "", cliutils.JSON_INDENT)
 	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn node list' output: %v", err)
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn node list' output: %v", err))
 	}
 	fmt.Printf("%s\n", jsonBytes) //todo: is there a way to output with json syntax highlighting like jq does?
 }
 
 func Version() {
 	// Show hzn version
-	fmt.Printf("Horizon CLI version: %s\n", version.HORIZON_VERSION)
+	msgPrinter := i18n.GetMessagePrinter()
+
+	msgPrinter.Printf("Horizon CLI version: %s", version.HORIZON_VERSION)
+	msgPrinter.Println()
 
 	// Show anax version
 	status := apicommon.Info{}
 	httpCode, err := cliutils.HorizonGet("status", []int{200}, &status, true)
 	if err == nil && httpCode == 200 && status.Configuration != nil {
-		fmt.Printf("Horizon Agent version: %s\n", status.Configuration.HorizonVersion)
+		msgPrinter.Printf("Horizon Agent version: %s", status.Configuration.HorizonVersion)
+		msgPrinter.Println()
 	} else {
 		if err != nil {
 			cliutils.Verbose(err.Error())
 		}
-		fmt.Printf("Horizon Agent version: failed to get.\n")
+		msgPrinter.Println("Horizon Agent version: failed to get.")
 	}
 }
 

@@ -3,6 +3,7 @@ package externalpolicy
 import (
 	"errors"
 	"fmt"
+	"github.com/open-horizon/anax/i18n"
 )
 
 type ExternalPolicy struct {
@@ -22,10 +23,13 @@ func (e ExternalPolicy) String() string {
 // plugins to handle the constraints field.
 func (e *ExternalPolicy) Validate() error {
 
+	// get message printer because this function is called by CLI
+	msgPrinter := i18n.GetMessagePrinter()
+
 	// Validate the PropertyList.
 	if e != nil && len(e.Properties) != 0 {
 		if err := e.Properties.Validate(); err != nil {
-			return errors.New(fmt.Sprintf("properties contains an invalid property: %v", err))
+			return errors.New(msgPrinter.Sprintf("properties contains an invalid property: %v", err))
 		}
 	}
 

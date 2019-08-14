@@ -52,7 +52,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &newDevice); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: %v, error: %v", string(body), err),
+				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_REG, string(body), err),
 				persistence.EC_API_USER_INPUT_ERROR, nil)
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body couldn't be deserialized to %v object: %v, error: %v", resource, string(body), err), "device"))
 			return
@@ -64,7 +64,11 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		patchDeviceHandler := exchange.GetHTTPPatchDeviceHandler2(a.Config)
 
 		create_device_error_handler := func(err error) bool {
-			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in node configuration/registration for node %v. %v", newDevice.Id, err), persistence.EC_ERROR_NODE_CONFIG_REG, &newDevice)
+			dev_id := ""
+			if newDevice.Id != nil {
+				dev_id = *newDevice.Id
+			}
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_REG, dev_id, err), persistence.EC_ERROR_NODE_CONFIG_REG, &newDevice)
 			return errorHandler(err)
 		}
 
@@ -87,14 +91,18 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &device); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error parsing input for node update. Input body couldn't be deserialized to node object: %v, error: %v", string(body), err),
+				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_UPDATE, body, err),
 				persistence.EC_API_USER_INPUT_ERROR, nil)
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body couldn't be deserialized to %v object: %v, error: %v", resource, string(body), err), "device"))
 			return
 		}
 
 		update_device_error_handler := func(err error) bool {
-			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in updating node %v. %v", device.Id, err),
+			dev_id := ""
+			if device.Id != nil {
+				dev_id = *device.Id
+			}
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_UPDATE, dev_id, err),
 				persistence.EC_ERROR_NODE_UPDATE, &device)
 			return errorHandler(err)
 		}
@@ -126,7 +134,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if a.shutdownError != "" {
-			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in node unregistration. %v", a.shutdownError),
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_UNREG, a.shutdownError),
 				persistence.EC_ERROR_NODE_UNREG, nil)
 			errorHandler(NewSystemError(fmt.Sprintf("received error handling %v on resource %v, error: %v", r.Method, resource, a.shutdownError)))
 			return
@@ -176,7 +184,7 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 		// make sure current exchange version meet the requirement
 		if err := version.VerifyExchangeVersion(a.GetHTTPFactory(), a.GetExchangeURL(), a.GetExchangeId(), a.GetExchangeToken(), false); err != nil {
 			eventlog.LogExchangeEvent(a.db, persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error verifiying exchange version. error: %v", err),
+				persistence.NewMessageMeta(EL_API_ERR_IN_VERIFY_EXCH_VERSION, err),
 				persistence.EC_EXCHANGE_ERROR, a.GetExchangeURL())
 			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
 			return
@@ -193,7 +201,7 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &configState); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: %v, error: %v", string(body), err),
+				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_UNREG, string(body), err),
 				persistence.EC_API_USER_INPUT_ERROR, nil)
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body couldn't be deserialized to %v object: %v, error: %v", resource, string(body), err), "configstate"))
 			return
@@ -259,14 +267,14 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &nodePolicy); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error parsing input for node policy. Input body could not be deserialized as a policy object: %v, error: %v", string(body), err),
+				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY, string(body), err),
 				persistence.EC_API_USER_INPUT_ERROR, nil)
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), err), "body"))
 			return
 		}
 
 		update_node_policy_error_handler := func(device interface{}, err error) bool {
-			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in updating node policy. %v", err), persistence.EC_ERROR_NODE_POLICY_UPDATE, device)
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_POLICY_CREATE, err), persistence.EC_ERROR_NODE_POLICY_UPDATE, device)
 			return errorHandler(err)
 		}
 		nodeGetPolicyHandler := exchange.GetHTTPNodePolicyHandler(a)
@@ -299,14 +307,14 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 			err := json.Unmarshal(body, &propertyList)
 			if err != nil {
 				LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: %v, error: %v", string(body), err),
+					persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY_PATCH, string(body), err),
 					persistence.EC_API_USER_INPUT_ERROR, nil)
 				errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), err), "body"))
 				return
 			}
 			if _, ok := propertyList["properties"]; !ok {
 				LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: %v, error: %v", string(body), err),
+					persistence.NewMessageMeta(EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR, string(body), err),
 					persistence.EC_API_USER_INPUT_ERROR, nil)
 				errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), err), "body"))
 				return
@@ -314,7 +322,7 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 		}
 
 		patch_node_policy_error_handler := func(device interface{}, err error) bool {
-			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in patching node policy. %v", err), persistence.EC_ERROR_NODE_POLICY_PATCH, device)
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_POLICY_PATCH, err), persistence.EC_ERROR_NODE_POLICY_PATCH, device)
 			return errorHandler(err)
 		}
 		nodeGetPolicyHandler := exchange.GetHTTPNodePolicyHandler(a)
@@ -349,7 +357,7 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
 		delete_node_policy_error_handler := func(device interface{}, err error) bool {
-			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in deleting node policy. %v", err), persistence.EC_ERROR_NODE_POLICY_UPDATE, device)
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_POLICY_DEL, err), persistence.EC_ERROR_NODE_POLICY_UPDATE, device)
 			return errorHandler(err)
 		}
 		nodeGetPolicyHandler := exchange.GetHTTPNodePolicyHandler(a)
@@ -414,14 +422,14 @@ func (a *API) nodeuserinput(w http.ResponseWriter, r *http.Request) {
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &nodeUserInput); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error parsing input for node user input. Input body could not be deserialized as a UserInput object: %v, error: %v", string(body), err),
+				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_UI, string(body), err),
 				persistence.EC_API_USER_INPUT_ERROR, nil)
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), err), "body"))
 			return
 		}
 
 		update_node_userinput_error_handler := func(device interface{}, err error) bool {
-			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in updating node user input. %v", err), persistence.EC_ERROR_NODE_USERINPUT_UPDATE, device)
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_UI_UPDATE, err), persistence.EC_ERROR_NODE_USERINPUT_UPDATE, device)
 			return errorHandler(err)
 		}
 		getDevice := exchange.GetHTTPDeviceHandler(a)
@@ -451,14 +459,14 @@ func (a *API) nodeuserinput(w http.ResponseWriter, r *http.Request) {
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &nodeUserInput); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error parsing input for node user input. Input body could not be deserialized as a UserInput object: %v, error: %v", string(body), err),
+				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_UI, string(body), err),
 				persistence.EC_API_USER_INPUT_ERROR, nil)
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), err), "body"))
 			return
 		}
 
 		patch_node_userinput_error_handler := func(device interface{}, err error) bool {
-			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in patching node user input. %v", err), persistence.EC_ERROR_NODE_USERINPUT_PATCH, device)
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_UI_PATCH, err), persistence.EC_ERROR_NODE_USERINPUT_PATCH, device)
 			return errorHandler(err)
 		}
 
@@ -486,7 +494,7 @@ func (a *API) nodeuserinput(w http.ResponseWriter, r *http.Request) {
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
 		delete_node_userinput_error_handler := func(device interface{}, err error) bool {
-			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error in deleting node userinput. %v", err), persistence.EC_ERROR_NODE_USERINPUT_UPDATE, device)
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_UI_DEL, err), persistence.EC_ERROR_NODE_USERINPUT_UPDATE, device)
 			return errorHandler(err)
 		}
 		getDevice := exchange.GetHTTPDeviceHandler(a)

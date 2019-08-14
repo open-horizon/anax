@@ -9,6 +9,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/externalpolicy/plugin_registry"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/semanticversion"
 )
 
@@ -30,9 +31,12 @@ func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool,
 	var nextExpression, nextLogicalOperator, remainder, constraint string
 	var validated bool
 
+	// get message printer because this function is called by CLI
+	msgPrinter := i18n.GetMessagePrinter()
+
 	// Validate that the input is a ConstraintExpression type (string[])
 	if !isConstraintExpression(dconstraints) {
-		return false, errors.New(fmt.Sprintf("The constraint expression: %v is type %T, but is expected to be an array of strings", dconstraints, dconstraints))
+		return false, errors.New(msgPrinter.Sprintf("The constraint expression: %v is type %T, but is expected to be an array of strings", dconstraints, dconstraints))
 	}
 
 	// Validate that the expression is syntactically correct and parse-able
@@ -47,7 +51,7 @@ func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool,
 		for {
 			nextExpression, remainder, err = p.GetNextExpression(remainder)
 			if err != nil {
-				return false, errors.New(fmt.Sprintf("unable to convert policy constraint %v into internal format, error %v", remainder, err))
+				return false, errors.New(msgPrinter.Sprintf("unable to convert policy constraint %v into internal format, error %v", remainder, err))
 			} else if nextExpression == "" {
 				break
 			}
@@ -59,14 +63,14 @@ func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool,
 
 			nextLogicalOperator, remainder, err = p.GetNextOperator(remainder)
 			if err != nil {
-				return false, errors.New(fmt.Sprintf("unable to convert policy constraint %v into internal format, error %v", remainder, err))
+				return false, errors.New(msgPrinter.Sprintf("unable to convert policy constraint %v into internal format, error %v", remainder, err))
 			} else if nextLogicalOperator == "" {
 				break
 			}
 
 			// verify logical operators
 			if !isAllowedLogicalOpType(nextLogicalOperator) {
-				return false, errors.New(fmt.Sprintf("Logical operator %v is not valid, expecting AND, OR, &&, ||", nextLogicalOperator))
+				return false, errors.New(msgPrinter.Sprintf("Logical operator %v is not valid, expecting AND, OR, &&, ||", nextLogicalOperator))
 			}
 
 		}
@@ -90,7 +94,7 @@ func (p *TextConstraintLanguagePlugin) GetNextExpression(expression string) (str
 	// Split the expression based on whitespace in the string.
 	pieces := strings.Split(expression, " ")
 	if len(pieces) < 3 {
-		return "", "", errors.New(fmt.Sprintf("found %v token(s), expecting 3 in an expression %v, expected form is <property> == <value>", len(pieces), expression))
+		return "", "", errors.New(i18n.GetMessagePrinter().Sprintf("found %v token(s), expecting 3 in an expression %v, expected form is <property> == <value>", len(pieces), expression))
 	}
 	quote := "\""
 	value := pieces[2]
@@ -276,9 +280,12 @@ func validateOneConstraintExpression(expression string) (bool, error) {
 		return true, nil
 	}
 
+	// get message printer because this function is called by CLI
+	msgPrinter := i18n.GetMessagePrinter()
+
 	pieces := strings.Split(expression, " ")
 	if len(pieces) < 3 {
-		return false, errors.New(fmt.Sprintf("found %v token(s), expecting 3 in an expression %v, expected form is expression with 3 tokens: <property> <operator> <value> in constraint expression", len(pieces), expression))
+		return false, errors.New(msgPrinter.Sprintf("found %v token(s), expecting 3 in an expression %v, expected form is expression with 3 tokens: <property> <operator> <value> in constraint expression", len(pieces), expression))
 	}
 
 	compOp := pieces[1]
@@ -286,52 +293,52 @@ func validateOneConstraintExpression(expression string) (bool, error) {
 
 	// if will failed on case when string values that contain spaces but not quoted (starting from 2nd interation)
 	if !isAllowedComparisonOpType(pieces[1]) {
-		return false, errors.New(fmt.Sprintf("Expression: %v should contain valid comparison operator - wrong operator %v. Allowed operators: %v, %v, %v, %v, %v, %v, %v, %v", expression, pieces[1], lessthan, greaterthan, equalto, doubleequalto, lessthaneq, greaterthaneq, notequalto, inoperator))
+		return false, errors.New(msgPrinter.Sprintf("Expression: %v should contain valid comparison operator - wrong operator %v. Allowed operators: %v, %v, %v, %v, %v, %v, %v, %v", expression, pieces[1], lessthan, greaterthan, equalto, doubleequalto, lessthaneq, greaterthaneq, notequalto, inoperator))
 	}
 
 	if canParseToFloat(value) || canParseToInteger(value) {
 		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 || strings.Compare(compOp, lessthan) == 0 || strings.Compare(compOp, greaterthan) == 0 || strings.Compare(compOp, lessthaneq) == 0 || strings.Compare(compOp, greaterthaneq) == 0 {
 			return true, nil
 		}
-		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for numeric value: %v", compOp, value))
+		return false, errors.New(msgPrinter.Sprintf("Comparison operator: %v is not supported for numeric value: %v", compOp, value))
 	}
 
 	if canParseToBoolean(value) {
 		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 {
 			return true, nil
 		}
-		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for boolean value: %v", compOp, value))
+		return false, errors.New(msgPrinter.Sprintf("Comparison operator: %v is not supported for boolean value: %v", compOp, value))
 	}
 
 	if isCommaSeparatedStringList(value) {
 		if strings.Compare(strings.ToLower(compOp), inoperator) == 0 {
 			return true, nil
 		}
-		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for string list value: %v", compOp, value))
+		return false, errors.New(msgPrinter.Sprintf("Comparison operator: %v is not supported for string list value: %v", compOp, value))
 	}
 
 	if canParseToString(value) {
 		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 {
 			return true, nil
 		}
-		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for string value: %v", compOp, value))
+		return false, errors.New(msgPrinter.Sprintf("Comparison operator: %v is not supported for string value: %v", compOp, value))
 	}
 
 	if semanticversion.IsVersionString(value) {
 		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 {
 			return true, nil
 		}
-		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for single version: %v", compOp, value))
+		return false, errors.New(msgPrinter.Sprintf("Comparison operator: %v is not supported for single version: %v", compOp, value))
 	}
 
 	if semanticversion.IsVersionExpression(value) {
 		if strings.Compare(strings.ToLower(compOp), inoperator) == 0 {
 			return true, nil
 		}
-		return false, errors.New(fmt.Sprintf("Comparison operator: %v is not supported for version expression: %v", compOp, value))
+		return false, errors.New(msgPrinter.Sprintf("Comparison operator: %v is not supported for version expression: %v", compOp, value))
 	}
 
-	return false, errors.New(fmt.Sprintf("Expression: %v is not valid", expression))
+	return false, errors.New(msgPrinter.Sprintf("Expression: %v is not valid", expression))
 
 }
 

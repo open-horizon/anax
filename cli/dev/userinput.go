@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"path"
 	"path/filepath"
@@ -52,7 +53,7 @@ func GetUserInputs(homeDirectory string, userInputFile string) (*register.InputF
 	decoder.UseNumber()
 
 	if err := decoder.Decode(userInputs); err != nil {
-		return nil, "", errors.New(fmt.Sprintf("unable to demarshal %v file, error: %v", userInputFilePath, err))
+		return nil, "", errors.New(i18n.GetMessagePrinter().Sprintf("unable to demarshal %v file, error: %v", userInputFilePath, err))
 	}
 
 	return userInputs, userInputFilePath, nil
@@ -125,6 +126,8 @@ func AddConfiguredUserInputs(configVars map[string]interface{}, envvars map[stri
 // Convert each attribute in the global set of attributes to a persistent attribute. This enables us to reuse the validation
 // logic and to reuse the logic that converts persistent attributes to environment variables.
 func GlobalSetAsAttributes(global []register.GlobalSet) ([]persistence.Attribute, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Establish an error handler to catch errors that occurr in the API functions.
 	var passthruError error
@@ -141,19 +144,19 @@ func GlobalSetAsAttributes(global []register.GlobalSet) ([]persistence.Attribute
 			attr.ServiceSpecs = &gs.ServiceSpecs
 		}
 		attr.Mappings = &gs.Variables
-		cliutils.Verbose("Converted userinput attribute: %v to API attribute: %v", gs, attr)
+		cliutils.Verbose(msgPrinter.Sprintf("Converted userinput attribute: %v to API attribute: %v", gs, attr))
 
 		// Validate the attribute and convert to a persistent attribute.
 		persistAttr, errorHandled, err := api.ValidateAndConvertAPIAttribute(errorhandler, false, *attr)
 		if errorHandled {
-			return nil, errors.New(fmt.Sprintf("%v encountered error: %v", gs, passthruError.Error()))
+			return nil, errors.New(msgPrinter.Sprintf("%v encountered error: %v", gs, passthruError.Error()))
 		} else if err != nil {
 			return nil, err
 		}
 		attributes = append(attributes, persistAttr)
 
 	}
-	cliutils.Verbose("Converted API Attributes: %v to persistent attributes: %v", global, attributes)
+	cliutils.Verbose(msgPrinter.Sprintf("Converted API Attributes: %v to persistent attributes: %v", global, attributes))
 
 	return attributes, nil
 }
@@ -161,20 +164,22 @@ func GlobalSetAsAttributes(global []register.GlobalSet) ([]persistence.Attribute
 // Validate that the userinputs file is complete and coherent with the rest of the definitions in the project.
 // If the file is not valid the reason will be returned in the error.
 func ValidateUserInput(i *register.InputFile, directory string, originalUserInputFilePath string, projectType string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// 1. type is non-empty and one of the valid types
 	// 2. services - variables refer to valid variable definitions.
 
 	for _, gs := range i.Global {
 		if gs.Type == DEFAULT_GLOBALSET_TYPE {
-			return errors.New(fmt.Sprintf("%v: global array element (%v) has an empty type, must be one of the supported attribute types. See the Horizon agent /attribute API.", originalUserInputFilePath, gs))
+			return errors.New(msgPrinter.Sprintf("%v: global array element (%v) has an empty type, must be one of the supported attribute types. See the Horizon agent /attribute API.", originalUserInputFilePath, gs))
 		}
 	}
 
 	// Validity check the attributes by running them through the converter.
 	_, err := GlobalSetAsAttributes(i.Global)
 	if err != nil {
-		return errors.New(fmt.Sprintf("%v has error: %v ", USERINPUT_FILE, err))
+		return errors.New(msgPrinter.Sprintf("%v has error: %v ", USERINPUT_FILE, err))
 	}
 
 	if IsServiceProject(directory) {
@@ -192,7 +197,7 @@ func ValidateUserInput(i *register.InputFile, directory string, originalUserInpu
 				foundDefinitionTuple = true
 				// For every variable that is set in the userinput file, make sure that variable is defined in the service definition.
 				if err := validateConfiguredVariables(ms.Variables, sDef.DefinesVariable); err != nil {
-					return errors.New(fmt.Sprintf("%v: services array element at index %v is %v %v", originalUserInputFilePath, ix, ms, err))
+					return errors.New(msgPrinter.Sprintf("%v: services array element at index %v is %v %v", originalUserInputFilePath, ix, ms, err))
 				}
 				// For every variable that is defined without a default, make sure it is set.
 				if err := sDef.RequiredVariablesAreSet(ms.Variables); err != nil {
@@ -201,7 +206,7 @@ func ValidateUserInput(i *register.InputFile, directory string, originalUserInpu
 			}
 
 			if err := validateServiceTuple(ms.Org, ms.VersionRange, ms.Url); err != nil {
-				return errors.New(fmt.Sprintf("%v: services array element at index %v is %v %v", originalUserInputFilePath, ix, ms, err))
+				return errors.New(msgPrinter.Sprintf("%v: services array element at index %v is %v %v", originalUserInputFilePath, ix, ms, err))
 			}
 
 		}
@@ -210,9 +215,9 @@ func ValidateUserInput(i *register.InputFile, directory string, originalUserInpu
 			// For every variable that is defined without a default, make sure it is set.
 			if err := sDef.RequiredVariablesAreSet(map[string]interface{}{}); err != nil {
 				if originalUserInputFilePath != "" {
-					return errors.New(fmt.Sprintf("%v: services array does not contain an element for %v. Error: %v", originalUserInputFilePath, sDef.URL, err))
+					return errors.New(msgPrinter.Sprintf("%v: services array does not contain an element for %v. Error: %v", originalUserInputFilePath, sDef.URL, err))
 				} else {
-					return errors.New(fmt.Sprintf("please provice a user input file for service %v. Error: %v", sDef.URL, err))
+					return errors.New(msgPrinter.Sprintf("please provice a user input file for service %v. Error: %v", sDef.URL, err))
 				}
 			}
 		}
@@ -223,23 +228,29 @@ func ValidateUserInput(i *register.InputFile, directory string, originalUserInpu
 }
 
 func validateServiceTuple(org string, vers string, url string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	// version string can be empty
 	if org == "" {
-		return errors.New(fmt.Sprintf("has empty org, must be set to the name of the organization that owns the service."))
+		return errors.New(msgPrinter.Sprintf("has empty org, must be set to the name of the organization that owns the service."))
 	} else if url == "" {
-		return errors.New(fmt.Sprintf("has empty url. Must be set to this service's url or a dependency's url."))
+		return errors.New(msgPrinter.Sprintf("has empty url. Must be set to this service's url or a dependency's url."))
 	}
 	return nil
 }
 
 func validateConfiguredVariables(variables map[string]interface{}, definesVar func(varName string) string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	for varName, varValue := range variables {
 		if expectedType := definesVar(varName); expectedType != "" {
 			if err := cutil.VerifyWorkloadVarTypes(varValue, expectedType); err != nil {
-				return errors.New(fmt.Sprintf("sets variable %v using a value of %v.", varName, err))
+				return errors.New(msgPrinter.Sprintf("sets variable %v using a value of %v.", varName, err))
 			}
 		} else {
-			return errors.New(fmt.Sprintf("sets variable %v of type %T that is not defined.", varName, varValue))
+			return errors.New(msgPrinter.Sprintf("sets variable %v of type %T that is not defined.", varName, varValue))
 		}
 	}
 	return nil
@@ -301,6 +312,8 @@ func SetUserInputsVariableConfiguration(homeDirectory string, sDef cliexchange.A
 
 // Remove configured variables from the userinputs file
 func RemoveConfiguredVariables(homeDirectory string, theDep cliexchange.AbstractServiceFile) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Update the service definition dependencies.
 	userInputs, _, err := GetUserInputs(homeDirectory, "")
@@ -317,11 +330,11 @@ func RemoveConfiguredVariables(homeDirectory string, theDep cliexchange.Abstract
 					return err
 				}
 
-				cliutils.Verbose("Updated %v/%v.", homeDirectory, USERINPUT_FILE)
+				cliutils.Verbose(msgPrinter.Sprintf("Updated %v/%v.", homeDirectory, USERINPUT_FILE))
 				return nil
 			}
 		}
-		cliutils.Verbose("No need to update %v/%v.", homeDirectory, USERINPUT_FILE)
+		cliutils.Verbose(msgPrinter.Sprintf("No need to update %v/%v.", homeDirectory, USERINPUT_FILE))
 
 	}
 

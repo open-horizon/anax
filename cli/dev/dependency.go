@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/semanticversion"
 	"io/ioutil"
@@ -104,6 +105,8 @@ func createLogMessage(specRef string, url string, org string, version string, ar
 
 // This is the entry point for the hzn dev dependency fetch command.
 func DependencyFetch(homeDirectory string, project string, specRef string, url string, org string, version string, arch string, userCreds string, userInputFile string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Check input parameters for correctness.
 	dir, err := verifyFetchInput(homeDirectory, project, specRef, url, org, version, arch, userCreds)
@@ -127,7 +130,8 @@ func DependencyFetch(homeDirectory string, project string, specRef string, url s
 		target = createLogMessage(specRef, url, org, version, arch)
 	}
 
-	fmt.Printf("New dependency created: %v .\n", target)
+	msgPrinter.Printf("New dependency created: %v .", target)
+	msgPrinter.Println()
 }
 
 // This is the entry point for the hzn dev dependency list command.
@@ -157,13 +161,15 @@ func DependencyList(homeDirectory string) {
 func marshalListOut(deps interface{}) {
 	jsonBytes, err := json.MarshalIndent(deps, "", "    ")
 	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "'%v %v' unable to create json object from dependencies, %v", DEPENDENCY_COMMAND, DEPENDENCY_LIST_COMMAND, err)
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("'%v %v' unable to create json object from dependencies, %v", DEPENDENCY_COMMAND, DEPENDENCY_LIST_COMMAND, err))
 	}
 	fmt.Printf("%v\n", string(jsonBytes))
 }
 
 // This is the entry point for the hzn dev dependency remove command.
 func DependencyRemove(homeDirectory string, specRef string, url string, version string, arch string, org string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Check input parameters for correctness.
 	dir, err := verifyRemoveInput(homeDirectory, specRef, url, version, arch)
@@ -173,7 +179,7 @@ func DependencyRemove(homeDirectory string, specRef string, url string, version 
 
 	envVarSetting := os.Getenv("HZN_DONT_SUBST_ENV_VARS")
 	if err := os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1"); err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS', error %v", err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Unable to set env var 'HZN_DONT_SUBST_ENV_VARS', error %v", err))
 	}
 
 	if url != "" {
@@ -182,7 +188,7 @@ func DependencyRemove(homeDirectory string, specRef string, url string, version 
 	removeDependencyAndChildren(dir, specRef, org, version, arch)
 
 	if err := os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting); err != nil { // restore this setting
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to restore env var 'HZN_DONT_SUBST_ENV_VARS', error %v", err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Unable to restore env var 'HZN_DONT_SUBST_ENV_VARS', error %v", err))
 	}
 }
 
@@ -193,7 +199,7 @@ func GetDependencyFiles(directory string, fileSuffix string) ([]os.FileInfo, err
 	res := make([]os.FileInfo, 0, 10)
 	depPath := path.Join(directory, DEFAULT_DEPENDENCY_DIR)
 	if files, err := ioutil.ReadDir(depPath); err != nil {
-		return res, errors.New(fmt.Sprintf("unable to get list of dependency files in %v, error: %v", depPath, err))
+		return res, errors.New(i18n.GetMessagePrinter().Sprintf("unable to get list of dependency files in %v, error: %v", depPath, err))
 	} else {
 		for _, fileInfo := range files {
 			if strings.HasSuffix(fileInfo.Name(), fileSuffix) && !fileInfo.IsDir() {
@@ -232,7 +238,7 @@ func DependenciesExists(directory string, okToCreate bool) (bool, error) {
 	} else if !exists && okToCreate {
 		newDir := path.Join(directory, DEFAULT_DEPENDENCY_DIR)
 		if err := os.MkdirAll(newDir, 0755); err != nil {
-			return false, errors.New(fmt.Sprintf("could not create dependency directory %v, error: %v", newDir, err))
+			return false, errors.New(i18n.GetMessagePrinter().Sprintf("could not create dependency directory %v, error: %v", newDir, err))
 		}
 	} else if !exists {
 		return false, nil
@@ -243,6 +249,8 @@ func DependenciesExists(directory string, okToCreate bool) (bool, error) {
 // Validate that the dependencies are complete and coherent with the rest of the definitions in the project.
 // Any errors will be returned to the caller.
 func ValidateDependencies(directory string, userInputs *register.InputFile, userInputsFilePath string, projectType string, userCreds string, autoAddDep bool) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	if projectType == SERVICE_COMMAND || IsServiceProject(directory) {
 
@@ -263,11 +271,11 @@ func ValidateDependencies(directory string, userInputs *register.InputFile, user
 			found := false
 			for _, fileInfo := range deps {
 				if dDef, err := GetServiceDefinition(path.Join(directory, DEFAULT_DEPENDENCY_DIR), fileInfo.Name()); err != nil {
-					return errors.New(fmt.Sprintf("dependency validation failed, unable to read %v, error: %v", fileInfo.Name(), err))
+					return errors.New(msgPrinter.Sprintf("dependency validation failed, unable to read %v, error: %v", fileInfo.Name(), err))
 				} else if vRange, err := semanticversion.Version_Expression_Factory(rs.VersionRange); err != nil {
-					return errors.New(fmt.Sprintf("dependency validation failed, dependency %v has an invalid version %v, error: %v", fileInfo.Name(), rs.Version, err))
+					return errors.New(msgPrinter.Sprintf("dependency validation failed, dependency %v has an invalid version %v, error: %v", fileInfo.Name(), rs.Version, err))
 				} else if inRange, err := vRange.Is_within_range(dDef.Version); err != nil {
-					return errors.New(fmt.Sprintf("dependency validation failed, unable to verify version range %v is within required range %v, error: %v", dDef.Version, vRange.Get_expression(), err))
+					return errors.New(msgPrinter.Sprintf("dependency validation failed, unable to verify version range %v is within required range %v, error: %v", dDef.Version, vRange.Get_expression(), err))
 				} else if inRange {
 					found = true
 					break
@@ -278,7 +286,7 @@ func ValidateDependencies(directory string, userInputs *register.InputFile, user
 					DependencyFetch(directory, "", "", rs.URL, rs.Org, rs.VersionRange, rs.Arch, userCreds, userInputsFilePath)
 					hasNewDepFile = true
 				} else {
-					return errors.New(fmt.Sprintf("dependency %v at version %v does not exist in %v.", rs.URL, rs.VersionRange, path.Join(directory, DEFAULT_DEPENDENCY_DIR)))
+					return errors.New(msgPrinter.Sprintf("dependency %v at version %v does not exist in %v.", rs.URL, rs.VersionRange, path.Join(directory, DEFAULT_DEPENDENCY_DIR)))
 				}
 			}
 		}
@@ -297,9 +305,9 @@ func ValidateDependencies(directory string, userInputs *register.InputFile, user
 
 		for _, fileInfo := range deps {
 			if err := ValidateServiceDefinition(path.Join(directory, DEFAULT_DEPENDENCY_DIR), fileInfo.Name()); err != nil {
-				return errors.New(fmt.Sprintf("dependency %v did not validate, error: %v", fileInfo.Name(), err))
+				return errors.New(msgPrinter.Sprintf("dependency %v did not validate, error: %v", fileInfo.Name(), err))
 			} else if err := ValidateService(directory, fileInfo, userInputs, userInputsFilePath); err != nil {
-				return errors.New(fmt.Sprintf("dependency %v did not validate, error: %v", fileInfo.Name(), err))
+				return errors.New(msgPrinter.Sprintf("dependency %v did not validate, error: %v", fileInfo.Name(), err))
 			}
 		}
 	}
@@ -330,7 +338,7 @@ func validateDependencyUserInputs(d cliexchange.AbstractServiceFile, uis []excha
 				}
 			}
 			if !found {
-				return errors.New(fmt.Sprintf("variable %v has no default and must be specified in %v", ui.Name, userInputsFilePath))
+				return errors.New(i18n.GetMessagePrinter().Sprintf("variable %v has no default and must be specified in %v", ui.Name, userInputsFilePath))
 			}
 		}
 	}
@@ -338,6 +346,8 @@ func validateDependencyUserInputs(d cliexchange.AbstractServiceFile, uis []excha
 }
 
 func verifyFetchInput(homeDirectory string, project string, specRef string, url string, org string, version string, arch string, userCreds string) (string, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Shut off the Anax runtime logging.
 	flag.Set("v", "0")
@@ -351,24 +361,24 @@ func verifyFetchInput(homeDirectory string, project string, specRef string, url 
 	// Valid inputs are either project or the others, but not both. version and arch are optional when specref and org are used.
 	// url and specRef are mutually exclusive with each other.
 	if specRef != "" && url != "" {
-		return "", errors.New(fmt.Sprintf("--specRef is mutually exclusive with --url."))
+		return "", errors.New(msgPrinter.Sprintf("--specRef is mutually exclusive with --url."))
 	} else if project != "" && (specRef != "" || org != "" || url != "") {
-		return "", errors.New(fmt.Sprintf("--project is mutually exclusive with --specRef, --org and --url."))
+		return "", errors.New(msgPrinter.Sprintf("--project is mutually exclusive with --specRef, --org and --url."))
 	} else if project == "" && specRef == "" && org == "" && url == "" {
-		return "", errors.New(fmt.Sprintf("one of --project, or --specRef and --org, or --url and --org must be specified."))
+		return "", errors.New(msgPrinter.Sprintf("one of --project, or --specRef and --org, or --url and --org must be specified."))
 	} else if (specRef != "" && org == "") || (specRef == "" && org != "" && url == "") || (url != "" && org == "") {
-		return "", errors.New(fmt.Sprintf("either --specRef and --org, or --url and --org must be specified."))
+		return "", errors.New(msgPrinter.Sprintf("either --specRef and --org, or --url and --org must be specified."))
 	}
 
 	// Verify that the inputs match with the project type.
 	if specRef != "" && IsServiceProject(dir) {
-		return "", errors.New(fmt.Sprintf("use --url with service projects."))
+		return "", errors.New(msgPrinter.Sprintf("use --url with service projects."))
 	}
 
 	// Verify that if --project was specified, it points to a valid horizon project directory.
 	if project != "" {
 		if !IsServiceProject(project) {
-			return "", errors.New(fmt.Sprintf("--project %v does not contain Horizon service metadata.", project))
+			return "", errors.New(msgPrinter.Sprintf("--project %v does not contain Horizon service metadata.", project))
 		} else {
 			if err := ValidateServiceDefinition(project, SERVICE_DEFINITION_FILE); err != nil {
 				return "", err
@@ -376,12 +386,14 @@ func verifyFetchInput(homeDirectory string, project string, specRef string, url 
 		}
 	}
 
-	cliutils.Verbose("Reading Horizon metadata from %s", dir)
+	cliutils.Verbose(msgPrinter.Sprintf("Reading Horizon metadata from %s", dir))
 
 	return dir, nil
 }
 
 func verifyRemoveInput(homeDirectory string, specRef string, url string, version string, arch string) (string, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Shut off the Anax runtime logging.
 	flag.Set("v", "0")
@@ -394,12 +406,12 @@ func verifyRemoveInput(homeDirectory string, specRef string, url string, version
 
 	// Valid inputs are specRef with the others being optional.
 	if specRef == "" && url == "" {
-		return "", errors.New(fmt.Sprintf("--specRef or --url is required for remove."))
+		return "", errors.New(msgPrinter.Sprintf("--specRef or --url is required for remove."))
 	} else if specRef != "" && url != "" {
-		return "", errors.New(fmt.Sprintf("--specRef and --url are mutually exclusive."))
+		return "", errors.New(msgPrinter.Sprintf("--specRef and --url are mutually exclusive."))
 	}
 
-	cliutils.Verbose("Reading Horizon metadata from %s", dir)
+	cliutils.Verbose(msgPrinter.Sprintf("Reading Horizon metadata from %s", dir))
 
 	return dir, nil
 }
@@ -407,6 +419,8 @@ func verifyRemoveInput(homeDirectory string, specRef string, url string, version
 // The caller is trying to use a local project (i.e. a project that is on the same machine) as a dependency.
 // If the dependency is a local project then we can validate it and copy the project metadata.
 func fetchLocalProjectDependency(homeDirectory string, project string, userInputFile string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Get the setup info and context for running the command.
 	dir, err := setup(homeDirectory, true, false, "")
@@ -421,14 +435,15 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 
 	CommonProjectValidation(project, userInputFile, DEPENDENCY_COMMAND, DEPENDENCY_FETCH_COMMAND, "", false)
 
-	fmt.Printf("Service project %v verified.\n", dir)
+	msgPrinter.Printf("Service project %v verified.", dir)
+	msgPrinter.Println()
 
 	// The rest of this function gets the dependency's user input and adds it to this project's user input, and it reads
 	// this project's workload definition and updates it with the reference to the ms. In the files that are read and
 	// then written we want those to preserve the env vars as env vars.
 	envVarSetting := os.Getenv("HZN_DONT_SUBST_ENV_VARS")
 	if err := os.Setenv("HZN_DONT_SUBST_ENV_VARS", "0"); err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS' to zero, error %v", err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Unable to set env var 'HZN_DONT_SUBST_ENV_VARS' to zero, error %v", err))
 	}
 
 	// get original env vars
@@ -439,13 +454,13 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	metadata_vars := map[string]string{}
 	proj_config_file, err := cliconfig.GetProjectConfigFile(project)
 	if err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to get the hzn.json configuration file under %v directory. Error: %v", project, err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Failed to get the hzn.json configuration file under %v directory. Error: %v", project, err))
 	}
 	// make sure the dependency files are expended with the env vars of their own config file.
 	if proj_config_file != "" {
 		hzn_vars, metadata_vars, err = cliconfig.SetEnvVarsFromConfigFile(proj_config_file, orig_env_vars, true)
 		if err != nil && !os.IsNotExist(err) {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to set the environment variables from configuration file %v. Error: %v", proj_config_file, err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Failed to set the environment variables from configuration file %v. Error: %v", proj_config_file, err))
 		}
 	}
 
@@ -453,7 +468,7 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	if absProject, err := filepath.Abs(project); err != nil {
 		return err
 	} else {
-		cliutils.Verbose("Reading Horizon metadata from dependency: %v", absProject)
+		cliutils.Verbose(msgPrinter.Sprintf("Reading Horizon metadata from dependency: %v", absProject))
 	}
 
 	// Get the dependency's definition.
@@ -468,18 +483,18 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 		return err
 	}
 
-	cliutils.Verbose("Found dependency %v, Org: %v", sDef.GetURL(), sDef.GetOrg())
+	cliutils.Verbose(msgPrinter.Sprintf("Found dependency %v, Org: %v", sDef.GetURL(), sDef.GetOrg()))
 
 	// restore the env vars
 	if proj_config_file != "" {
 		err = cliconfig.RestoreEnvVars(orig_env_vars, hzn_vars, metadata_vars)
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Failed to restore the environment variables. %v", err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Failed to restore the environment variables. %v", err))
 		}
 	}
 
 	if err := os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1"); err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS', error %v", err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Unable to set env var 'HZN_DONT_SUBST_ENV_VARS', error %v", err))
 	}
 
 	// Harden the new dependency in a file in this project's dependency store.
@@ -537,15 +552,17 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 		return err
 	}
 
-	cliutils.Verbose("Updated %v/%v with the dependency's variable and global attribute configuration.", homeDirectory, USERINPUT_FILE)
+	cliutils.Verbose(msgPrinter.Sprintf("Updated %v/%v with the dependency's variable and global attribute configuration.", homeDirectory, USERINPUT_FILE))
 	if err := os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting); err != nil { // restore this setting
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to restore env var 'HZN_DONT_SUBST_ENV_VARS', error %v", err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Unable to restore env var 'HZN_DONT_SUBST_ENV_VARS', error %v", err))
 	}
 
 	return nil
 }
 
 func fetchExchangeProjectDependency(homeDirectory string, specRef string, url string, org string, version string, arch string, userCreds string, userInputFile string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Pull the metadata from the exchange, including any of this dependency's dependencies.
 	sDef, err := getExchangeDefinition(homeDirectory, specRef, url, org, "", arch, userCreds, userInputFile)
@@ -563,18 +580,22 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, url st
 		return err
 	}
 
-	fmt.Printf("To ensure that the dependency operates correctly, please add variable values to the userinput.json file if this service needs any.\n")
+	msgPrinter.Printf("To ensure that the dependency operates correctly, please add variable values to the userinput.json file if this service needs any.")
+	msgPrinter.Println()
 	return nil
 }
 
 // update the service definition file and userinput file with this dependent service
 func UpdateServiceDefandUserInputFile(homeDirectory string, sDef cliexchange.AbstractServiceFile, skipServcieDef bool) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	// gets the dependency's user input and adds it to this project's user input, and it reads
 	// this project's workload definition and updates it with the reference to the ms. In the files that are read and
 	// then written we want those to preserve the env vars as env vars.
 	envVarSetting := os.Getenv("HZN_DONT_SUBST_ENV_VARS")
 	if err := os.Setenv("HZN_DONT_SUBST_ENV_VARS", "1"); err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS', error %v", err)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Unable to set env var 'HZN_DONT_SUBST_ENV_VARS', error %v", err))
 	}
 	defer os.Setenv("HZN_DONT_SUBST_ENV_VARS", envVarSetting) // restore this setting
 
@@ -596,7 +617,7 @@ func UpdateServiceDefandUserInputFile(homeDirectory string, sDef cliexchange.Abs
 	for _, currentUI := range varConfigs {
 		if currentUI.Url == sDef.GetURL() && currentUI.Org == sDef.GetOrg() && currentUI.VersionRange == sDef.GetVersion() {
 			// The new dependency already has userinputs configured in this project.
-			cliutils.Verbose("The current project already has userinputs defined for this dependency.")
+			cliutils.Verbose(msgPrinter.Sprintf("The current project already has userinputs defined for this dependency."))
 			foundUIs = true
 			break
 		}
@@ -624,7 +645,7 @@ func UpdateServiceDefandUserInputFile(homeDirectory string, sDef cliexchange.Abs
 				return err
 			}
 
-			cliutils.Verbose("Updated %v/%v with the dependency's variable configuration.", homeDirectory, USERINPUT_FILE)
+			cliutils.Verbose(msgPrinter.Sprintf("Updated %v/%v with the dependency's variable configuration.", homeDirectory, USERINPUT_FILE))
 		}
 	}
 
@@ -636,12 +657,14 @@ func getExchangeDefinition(homeDirectory string, specRef string, surl string, or
 	if IsServiceProject(homeDirectory) {
 		return getServiceDefinition(homeDirectory, surl, org, version, arch, userCreds)
 	} else {
-		return nil, errors.New(fmt.Sprintf("unsupported project type"))
+		return nil, errors.New(i18n.GetMessagePrinter().Sprintf("unsupported project type"))
 	}
 
 }
 
 func UpdateDependencyFile(homeDirectory string, sDef cliexchange.AbstractServiceFile) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	fileName := createDependencyFileName(sDef.GetOrg(), sDef.GetURL(), sDef.GetVersion(), SERVICE_DEFINITION_FILE)
 
@@ -650,7 +673,7 @@ func UpdateDependencyFile(homeDirectory string, sDef cliexchange.AbstractService
 		return err
 	}
 
-	cliutils.Verbose("Created %v/%v as a new dependency.", filePath, fileName)
+	cliutils.Verbose(msgPrinter.Sprintf("Created %v/%v as a new dependency.", filePath, fileName))
 
 	return nil
 }
@@ -667,6 +690,8 @@ func createDependencyFileName(org string, url string, version string, suffix str
 
 // Copy the dependency files out, validate them and write them back.
 func UpdateDependentDependencies(homeDirectory string, depProject string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Return early for non-service projects
 	if !IsServiceProject(homeDirectory) {
@@ -685,7 +710,7 @@ func UpdateDependentDependencies(homeDirectory string, depProject string) error 
 			if sDef, err := GetServiceDefinition(path.Join(depProject, DEFAULT_DEPENDENCY_DIR), dep.Name()); err != nil {
 				return err
 			} else if err := ValidateServiceDefinition(path.Join(depProject, DEFAULT_DEPENDENCY_DIR), dep.Name()); err != nil {
-				return errors.New(fmt.Sprintf("dependency %v did not validate, error: %v", dep.Name(), err))
+				return errors.New(msgPrinter.Sprintf("dependency %v did not validate, error: %v", dep.Name(), err))
 			} else if err := CreateFile(path.Join(homeDirectory, DEFAULT_DEPENDENCY_DIR), dep.Name(), sDef); err != nil {
 				return err
 			}
@@ -713,6 +738,8 @@ func getServiceDefinitionDependencies(homeDirectory string, serviceDef *cliexcha
 }
 
 func getServiceDefinition(homeDirectory, surl string, org string, version string, arch string, userCreds string) (*cliexchange.ServiceFile, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Construct the resource URL suffix.
 	resSuffix := fmt.Sprintf("orgs/%v/services?url=%v", org, surl)
@@ -742,14 +769,14 @@ func getServiceDefinition(homeDirectory, surl string, org string, version string
 		if err != nil {
 			return nil, err
 		} else if highest == "" {
-			return nil, errors.New(fmt.Sprintf("unable to find highest version of %v %v in the exchange: %v", surl, org, resp.Services))
+			return nil, errors.New(msgPrinter.Sprintf("unable to find highest version of %v %v in the exchange: %v", surl, org, resp.Services))
 		} else {
 			serviceDef = sDef
 			serviceId = sId
 		}
 
 	} else if len(resp.Services) == 0 {
-		return nil, errors.New(fmt.Sprintf("no services found in the exchange."))
+		return nil, errors.New(msgPrinter.Sprintf("no services found in the exchange."))
 	} else {
 		for sId, sDef := range resp.Services {
 			serviceDef = sDef
@@ -758,7 +785,7 @@ func getServiceDefinition(homeDirectory, surl string, org string, version string
 		}
 	}
 
-	cliutils.Verbose("Creating dependency on: %v, Org: %v", serviceDef, org)
+	cliutils.Verbose(msgPrinter.Sprintf("Creating dependency on: %v, Org: %v", serviceDef, org))
 
 	sDef_cliex := new(cliexchange.ServiceFile)
 
@@ -766,7 +793,7 @@ func getServiceDefinition(homeDirectory, surl string, org string, version string
 	dc := make(map[string]interface{})
 	if serviceDef.Deployment != "" {
 		if err := json.Unmarshal([]byte(serviceDef.Deployment), &dc); err != nil {
-			return nil, errors.New(fmt.Sprintf("failed to unmarshal deployment %v: %v", serviceDef.Deployment, err))
+			return nil, errors.New(msgPrinter.Sprintf("failed to unmarshal deployment %v: %v", serviceDef.Deployment, err))
 		}
 
 		// Get this project's userinputs so that the downloader can use any special authorization attributes that might
@@ -788,13 +815,13 @@ func getServiceDefinition(homeDirectory, surl string, org string, version string
 				img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: "token", Password: iau_temp.Token})
 			}
 		}
-		cliutils.Verbose("The image docker auths for the service %v/%v are: %v", org, surl, img_auths)
+		cliutils.Verbose(msgPrinter.Sprintf("The image docker auths for the service %v/%v are: %v", org, surl, img_auths))
 
 		cc := events.NewContainerConfig(serviceDef.Deployment, serviceDef.DeploymentSignature, "", "", img_auths)
 
 		// get the images
 		if err := getContainerImages(cc, currentUIs); err != nil {
-			return nil, errors.New(fmt.Sprintf("failed to get images for %v/%v: %v", org, surl, err))
+			return nil, errors.New(msgPrinter.Sprintf("failed to get images for %v/%v: %v", org, surl, err))
 		}
 	}
 
@@ -824,6 +851,8 @@ func getServiceDefinition(homeDirectory, surl string, org string, version string
 
 // get all the dependencies, store them in an array. Each element points to an array of top level services.
 func getDependencyInfo(dir string) ([]*ServiceDependency, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	deps := []*ServiceDependency{}
 	svc, err := GetServiceDefinition(dir, SERVICE_DEFINITION_FILE)
@@ -839,7 +868,7 @@ func getDependencyInfo(dir string) ([]*ServiceDependency, error) {
 	for _, s := range svc.RequiredServices {
 		sp := NewServiceSpec(s.URL, s.Org, s.VersionRange, s.Arch)
 		if err := getDependencyDependencyInfo(dir, sp, sp, depFiles, &deps); err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to get dependency info for %v , error %v", sp, err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Unable to get dependency info for %v , error %v", sp, err))
 		}
 	}
 
@@ -849,6 +878,8 @@ func getDependencyInfo(dir string) ([]*ServiceDependency, error) {
 
 // Recursively get dependencies of the dependency
 func getDependencyDependencyInfo(dir string, spTop *ServiceSpec, sp *ServiceSpec, depFiles []os.FileInfo, deps *[]*ServiceDependency) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// find out if the service is already in the list
 	var theItem *ServiceDependency
@@ -881,7 +912,7 @@ func getDependencyDependencyInfo(dir string, spTop *ServiceSpec, sp *ServiceSpec
 			for _, s := range dep.RequiredServices {
 				sp_dep_temp := NewServiceSpec(s.URL, s.Org, s.VersionRange, s.Arch)
 				if err := getDependencyDependencyInfo(dir, spTop, sp_dep_temp, depFiles, deps); err != nil {
-					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "Unable to get dependency info for %v , error %v", sp_dep_temp, err)
+					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Unable to get dependency info for %v , error %v", sp_dep_temp, err))
 				}
 			}
 		}
@@ -892,14 +923,16 @@ func getDependencyDependencyInfo(dir string, spTop *ServiceSpec, sp *ServiceSpec
 
 // Remove the service dependency and dependency's dependencies.
 func removeDependencyAndChildren(dir string, specRef string, org string, version string, arch string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	topDep := NewServiceSpec(specRef, org, version, arch)
 	deps, err := getDependencyInfo(dir)
 	if err != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'dependency %v' failed to get a list of dependecies. Error %v", DEPENDENCY_REMOVE_COMMAND, err)
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("'dependency %v' failed to get a list of dependecies. Error %v", DEPENDENCY_REMOVE_COMMAND, err))
 	}
 
-	cliutils.Verbose("All dependencies are: %v", deps)
+	cliutils.Verbose(msgPrinter.Sprintf("All dependencies are: %v", deps))
 
 	found := false
 	for _, dep := range deps {
@@ -907,7 +940,7 @@ func removeDependencyAndChildren(dir string, specRef string, org string, version
 			if dep_tmp.Matches(*topDep) {
 				found = true
 				// remove this one
-				cliutils.Verbose("Found dependency: %v", dep.FileInfo.Name())
+				cliutils.Verbose(msgPrinter.Sprintf("Found dependency: %v", dep.FileInfo.Name()))
 				if len(dep.TopSvcRefs) <= 1 {
 					// the dependent service is only refrenced once, safe to remove it
 					removeDependencyFromProject(dir, dep, false)
@@ -919,7 +952,8 @@ func removeDependencyAndChildren(dir string, specRef string, org string, version
 						removeDependencyFromProject(dir, dep, true)
 					} else {
 						// keep it because it has other references
-						fmt.Printf("Will not remove dependency %v because it is referenced by other services.\n", dep.FileInfo.Name())
+						msgPrinter.Printf("Will not remove dependency %v because it is referenced by other services.", dep.FileInfo.Name())
+						msgPrinter.Println()
 					}
 				}
 			}
@@ -927,7 +961,7 @@ func removeDependencyAndChildren(dir string, specRef string, org string, version
 	}
 
 	if !found {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "'dependency %v' dependency not found.", DEPENDENCY_REMOVE_COMMAND)
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("'dependency %v' dependency not found.", DEPENDENCY_REMOVE_COMMAND))
 	}
 }
 
@@ -935,6 +969,8 @@ func removeDependencyAndChildren(dir string, specRef string, org string, version
 // onlyRemoveFromSvcDef is true when the top level dependent service is reference by another dependent service.
 // This is a corner case, but we need to handel it.
 func removeDependencyFromProject(dir string, sd *ServiceDependency, onlyRemoveFromSvcDef bool) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Use error string to accumulate the errors so that it can move on to clean other parts even when one part failed.
 	err_string := ""
@@ -942,23 +978,23 @@ func removeDependencyFromProject(dir string, sd *ServiceDependency, onlyRemoveFr
 	// open the service dependency file
 	theDep, err := GetServiceDefinition(path.Join(dir, DEFAULT_DEPENDENCY_DIR), sd.FileInfo.Name())
 	if err != nil {
-		err_string += fmt.Sprintf("Could not read the dependency file %v. Error: %v\n", sd.FileInfo.Name(), err)
+		err_string += msgPrinter.Sprintf("Could not read the dependency file %v. Error: %v\n", sd.FileInfo.Name(), err)
 	}
 
 	// Update the service definition with the new dependencies.
 	if err := RemoveServiceDependency(dir, theDep); err != nil {
-		err_string += fmt.Sprintf("Error updating project definition: %v\n", err)
+		err_string += msgPrinter.Sprintf("Error updating project definition: %v\n", err)
 	}
 
 	if !onlyRemoveFromSvcDef {
 		// We know which dependency to remove, so remove it.
 		if err := os.Remove(path.Join(dir, DEFAULT_DEPENDENCY_DIR, sd.FileInfo.Name())); err != nil {
-			err_string += fmt.Sprintf("Dependency %v could not be removed. Error: %v\n", sd.FileInfo.Name(), err)
+			err_string += msgPrinter.Sprintf("Dependency %v could not be removed. Error: %v\n", sd.FileInfo.Name(), err)
 		}
 
 		// Update the default userinputs removing any configured variables.
 		if err := RemoveConfiguredVariables(dir, theDep); err != nil {
-			err_string += fmt.Sprintf("Error updating userinputs: %v", err)
+			err_string += msgPrinter.Sprintf("Error updating userinputs: %v", err)
 		}
 	}
 
@@ -968,8 +1004,10 @@ func removeDependencyFromProject(dir string, sd *ServiceDependency, onlyRemoveFr
 
 	// Create the right log message.
 	if len(sd.TopSvcRefs) > 0 && sd.TopSvcRefs[0].Matches(sd.Service) {
-		fmt.Printf("Removed dependency %v.\n", createLogMessage(sd.Service.SpecRef, "", sd.Service.Org, sd.Service.Version, sd.Service.Arch))
+		msgPrinter.Printf("Removed dependency %v.", createLogMessage(sd.Service.SpecRef, "", sd.Service.Org, sd.Service.Version, sd.Service.Arch))
+		msgPrinter.Println()
 	} else {
-		fmt.Printf("Removed dependency's dependency %v.\n", createLogMessage(sd.Service.SpecRef, "", sd.Service.Org, sd.Service.Version, sd.Service.Arch))
+		msgPrinter.Printf("Removed dependency's dependency %v.", createLogMessage(sd.Service.SpecRef, "", sd.Service.Org, sd.Service.Version, sd.Service.Arch))
+		msgPrinter.Println()
 	}
 }

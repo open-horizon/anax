@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/i18n"
 	"net/http"
 	"strings"
 )
@@ -14,6 +15,9 @@ type ExchangeUsers struct {
 }
 
 func UserList(org, userPwCreds, theUser string, allUsers, namesOnly bool) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	cliutils.SetWhetherUsingApiKey(userPwCreds)
 
 	// Decide which users should be shown
@@ -28,7 +32,7 @@ func UserList(org, userPwCreds, theUser string, allUsers, namesOnly bool) {
 	var users ExchangeUsers
 	httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/users"+cliutils.AddSlash(theUser), cliutils.OrgAndCreds(org, userPwCreds), []int{200, 404}, &users)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, "theUser '%s' not found in org %s", strings.TrimPrefix(theUser, "/"), org)
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("theUser '%s' not found in org %s", strings.TrimPrefix(theUser, "/"), org))
 	}
 
 	// Decide how much of each user should be shown
@@ -39,7 +43,7 @@ func UserList(org, userPwCreds, theUser string, allUsers, namesOnly bool) {
 		}
 		jsonBytes, err := json.MarshalIndent(usernames, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'exchange user list' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'exchange user list' output: %v", err))
 		}
 		fmt.Printf("%s\n", jsonBytes)
 	} else { // show full resources
@@ -53,7 +57,7 @@ func UserCreate(org, userPwCreds, user, pw, email string, isAdmin bool) {
 		if strings.Contains(user, "@") {
 			email = user
 		} else {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the email must be specified via -e if the username is not an email address.")
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, i18n.GetMessagePrinter().Sprintf("the email must be specified via -e if the username is not an email address."))
 		}
 	}
 	cliutils.SetWhetherUsingApiKey(userPwCreds)
@@ -74,11 +78,11 @@ func UserSetAdmin(org, userPwCreds, user string, isAdmin bool) {
 func UserRemove(org, userPwCreds, user string, force bool) {
 	cliutils.SetWhetherUsingApiKey(userPwCreds)
 	if !force {
-		cliutils.ConfirmRemove("Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user '" + org + "/" + user + "' from the Horizon Exchange?")
+		cliutils.ConfirmRemove(i18n.GetMessagePrinter().Sprintf("Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user %v/%v from the Horizon Exchange?", org, user))
 	}
 
 	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPwCreds), []int{204, 404})
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, "user '%s' not found in org %s", user, org)
+		cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("user '%s' not found in org %s", user, org))
 	}
 }

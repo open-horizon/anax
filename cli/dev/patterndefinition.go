@@ -2,6 +2,7 @@ package dev
 
 import (
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
+	"github.com/open-horizon/anax/i18n"
 )
 
 const PATTERN_DEFINITION_FILE = "pattern.json"
@@ -48,8 +49,8 @@ func CreatePatternDefinition(directory string) error {
 	sref.ServiceVersions = []cliexchange.ServiceChoiceFile{*sv}
 
 	res.Name = "pattern-${SERVICE_NAME}-$ARCH"
-	res.Label = "Edge $SERVICE_NAME Service Pattern for $ARCH"
-	res.Description = "Pattern for $SERVICE_NAME for $ARCH"
+	res.Label = i18n.GetMessagePrinter().Sprintf("Edge $SERVICE_NAME Service Pattern for $ARCH")
+	res.Description = i18n.GetMessagePrinter().Sprintf("Pattern for $SERVICE_NAME for $ARCH")
 	res.Public = false
 	res.Services = []cliexchange.ServiceReferenceFile{*sref}
 
@@ -68,8 +69,8 @@ func CreatePatternDefinitionAllArches(directory string) error {
 	sv.Version = "$SERVICE_VERSION"
 
 	res.Name = "pattern-$SERVICE_NAME"
-	res.Label = "Edge $SERVICE_NAME Service Pattern for all architectures"
-	res.Description = "Pattern for $SERVICE_NAME"
+	res.Label = i18n.GetMessagePrinter().Sprintf("Edge $SERVICE_NAME Service Pattern for all architectures")
+	res.Description = i18n.GetMessagePrinter().Sprintf("Pattern for $SERVICE_NAME")
 	res.Public = false
 	res.Services = []cliexchange.ServiceReferenceFile{}
 

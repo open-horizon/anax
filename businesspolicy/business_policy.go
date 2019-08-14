@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/externalpolicy"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/policy"
 )
 
@@ -102,17 +103,20 @@ func (w NodeHealth) String() string {
 // plugins to handle the constraints field.
 func (b *BusinessPolicy) Validate() error {
 
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	// make sure required fields are not empty
 	if b.Service.Name == "" || b.Service.Org == "" {
-		return fmt.Errorf("Name, or Org is empty string.")
+		return fmt.Errorf(msgPrinter.Sprintf("Name, or Org is empty string."))
 	} else if b.Service.ServiceVersions == nil || len(b.Service.ServiceVersions) == 0 {
-		return fmt.Errorf("The serviceVersions array is empty.")
+		return fmt.Errorf(msgPrinter.Sprintf("The serviceVersions array is empty."))
 	}
 
 	// Validate the PropertyList.
 	if b != nil && len(b.Properties) != 0 {
 		if err := b.Properties.Validate(); err != nil {
-			return fmt.Errorf(fmt.Sprintf("properties contains an invalid property: %v", err))
+			return fmt.Errorf(msgPrinter.Sprintf("properties contains an invalid property: %v", err))
 		}
 	}
 

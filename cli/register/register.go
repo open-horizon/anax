@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/semanticversion"
 	"io/ioutil"
@@ -52,40 +53,48 @@ func ReadInputFile(filePath string, inputFileStruct *InputFile) {
 	newBytes := cliconfig.ReadJsonFileWithLocalConfig(filePath)
 	err := json.Unmarshal(newBytes, inputFileStruct)
 	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", filePath, err)
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to unmarshal json input file %s: %v", filePath, err))
 	}
 }
 
 // read and verify a node policy file
 func ReadAndVerifyPolicFile(jsonFilePath string, nodePol *externalpolicy.ExternalPolicy) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	newBytes := cliconfig.ReadJsonFileWithLocalConfig(jsonFilePath)
 	err := json.Unmarshal(newBytes, nodePol)
 	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to unmarshal json input file %s: %v", jsonFilePath, err)
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal json input file %s: %v", jsonFilePath, err))
 	}
 
 	//Check the policy file format
 	err = nodePol.Validate()
 	if err != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Incorrect node policy format in file %s: %v", jsonFilePath, err)
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Incorrect node policy format in file %s: %v", jsonFilePath, err))
 	}
 }
 
 // DoIt registers this node to Horizon with a pattern
 func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromFlag string, patternFromFlag string, nodeName string, nodepolicyFlag string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	// check the input
 	org, pattern, nodepolicyFlag = verifyRegisterParamters(org, pattern, nodeOrgFromFlag, patternFromFlag, nodepolicyFlag)
 
 	// no pattern and no policy, proceed as a policy case.
 	if pattern == "" && nodepolicyFlag == "" {
-		fmt.Printf("No pattern or node policy is specified. Will proceeed with the existing node policy.\n")
+		msgPrinter.Printf("No pattern or node policy is specified. Will proceeed with the existing node policy.")
+		msgPrinter.Println()
 	}
 
 	cliutils.SetWhetherUsingApiKey(nodeIdTok) // if we have to use userPw later in NodeCreate(), it will set this appropriately for userPw
 	// Read input file 1st, so we don't get half way thru registration before finding the problem
 	inputFileStruct := InputFile{}
 	if inputFile != "" {
-		fmt.Printf("Reading input file %s...\n", inputFile)
+		msgPrinter.Printf("Reading input file %s...", inputFile)
+		msgPrinter.Println()
 		ReadInputFile(inputFile, &inputFileStruct)
 	}
 
@@ -104,9 +113,10 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	exchUrlBase := cliutils.GetExchangeUrl()
 	anaxExchUrlBase := strings.TrimSuffix(cliutils.GetExchangeUrlFromAnax(), "/")
 	if exchUrlBase != anaxExchUrlBase && exchUrlBase != "" && anaxExchUrlBase != "" {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "hzn cli is configured with exchange url %s from %s and the horizon agent is configured with exchange url %s from %s. hzn register will not work with mismatched exchange urls.", exchUrlBase, cliutils.GetExchangeUrlLocation(), anaxExchUrlBase, cliutils.GetExchangeUrlLocationFromAnax())
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("hzn cli is configured with exchange url %s from %s and the horizon agent is configured with exchange url %s from %s. hzn register will not work with mismatched exchange urls.", exchUrlBase, cliutils.GetExchangeUrlLocation(), anaxExchUrlBase, cliutils.GetExchangeUrlLocationFromAnax()))
 	} else {
-		fmt.Printf("Horizon Exchange base URL: %s\n", exchUrlBase)
+		msgPrinter.Printf("Horizon Exchange base URL: %s", exchUrlBase)
+		msgPrinter.Println()
 	}
 
 	// Default node id and token if necessary
@@ -116,14 +126,15 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		horDevice := api.HorizonDevice{}
 		cliutils.HorizonGet("node", []int{200}, &horDevice, false)
 		if horDevice.Id == nil {
-			cliutils.Fatal(cliutils.ANAX_NOT_CONFIGURED_YET, "Failed to get proper response from the Horizon agent")
+			cliutils.Fatal(cliutils.ANAX_NOT_CONFIGURED_YET, msgPrinter.Sprintf("Failed to get proper response from the Horizon agent"))
 		}
 		nodeId = *horDevice.Id
 
 		if nodeId == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Please specify the node id and token using -n flag or HZN_EXCHANGE_NODE_AUTH environment variable.")
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the node id and token using -n flag or HZN_EXCHANGE_NODE_AUTH environment variable."))
 		} else {
-			fmt.Printf("Using node ID '%s' from the Horizon agent\n", nodeId)
+			msgPrinter.Printf("Using node ID '%s' from the Horizon agent", nodeId)
+			msgPrinter.Println()
 		}
 	} else {
 		// trim the org off the node id. the HZN_EXCHANGE_NODE_AUTH may contain the org id.
@@ -134,9 +145,9 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		var err error
 		nodeToken, err = cutil.SecureRandomString()
 		if err != nil {
-			cliutils.Fatal(cliutils.INTERNAL_ERROR, "could not create a random token")
+			cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("could not create a random token"))
 		}
-		fmt.Println("Generated random node token")
+		msgPrinter.Println("Generated random node token")
 	}
 	nodeIdTok = nodeId + ":" + nodeToken
 
@@ -149,22 +160,24 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 
 	if httpCode != 200 {
 		if userPw == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "node '%s/%s' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId)
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("node '%s/%s' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId))
 		}
-		fmt.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...\n", org, nodeId)
+		msgPrinter.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...", org, nodeId)
+		msgPrinter.Println()
 		cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email, anaxArch, nodeName)
 	} else {
-		fmt.Printf("Node %s/%s exists in the exchange\n", org, nodeId)
+		msgPrinter.Printf("Node %s/%s exists in the exchange", org, nodeId)
+		msgPrinter.Println()
 	}
 
 	// Update node policy
 	if nodepolicyFlag != "" {
-		fmt.Println("Updating the node policy...")
+		msgPrinter.Println("Updating the node policy...")
 		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId+"/policy", cliutils.OrgAndCreds(org, nodeIdTok), []int{201}, nodePol)
 	}
 
 	// Initialize the Horizon device (node)
-	fmt.Println("Initializing the Horizon node...")
+	msgPrinter.Println("Initializing the Horizon node...")
 	//nd := Node{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HA: false}
 	falseVal := false
 	nd := api.HorizonDevice{Id: &nodeId, Token: &nodeToken, Org: &org, Pattern: &pattern, Name: &nodeName, HA: &falseVal} //todo: support HA config
@@ -172,7 +185,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	if httpCode == cliutils.ANAX_ALREADY_CONFIGURED {
 		// Note: I wanted to make `hzn register` idempotent, but the anax api doesn't support changing existing settings once in configuring state (to maintain internal consistency).
 		//		And i can't query ALL the existing settings to make sure they are what we were going to set, because i can't query the node token.
-		cliutils.Fatal(cliutils.HTTP_ERROR, "this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first.")
+		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first."))
 	}
 
 	// Process the input file and call /attribute, /service/config to set the specified variables
@@ -181,7 +194,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		// Technically the AgreementProtocolAttributes can be set, but it has no effect on anax if a pattern is being used.
 		attr := api.NewAttribute("", "Global variables", false, false, map[string]interface{}{}) // we reuse this for each GlobalSet
 		if len(inputFileStruct.Global) > 0 {
-			fmt.Println("Setting global variables...")
+			msgPrinter.Println("Setting global variables...")
 		}
 		for _, g := range inputFileStruct.Global {
 			attr.Type = &g.Type
@@ -202,7 +215,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		emptyStr := ""
 		service := api.Service{Name: &emptyStr} // we reuse this too
 		if len(inputFileStruct.Services) > 0 {
-			fmt.Println("Setting service variables...")
+			msgPrinter.Println("Setting service variables...")
 		}
 		for _, m := range inputFileStruct.Services {
 			service.Org = &m.Org
@@ -214,7 +227,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 			httpCode, respBody := cliutils.HorizonPutPost(http.MethodPost, "service/config", []int{201, 200, 400}, service)
 			if httpCode == 400 {
 				if matches := parseRegisterInputError(respBody); matches != nil && len(matches) > 2 {
-					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Registration failed because %v Please update the services section in the input file %v. Run 'hzn unregister' and then 'hzn register...' again", matches[0], inputFile)
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Registration failed because %v Please update the services section in the input file %v. Run 'hzn unregister' and then 'hzn register...' again", matches[0], inputFile))
 				}
 				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Error setting service variables from user input file: %v", respBody)
 			}
@@ -222,11 +235,11 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 
 	} else {
 		// Technically an input file is not required, but it is not the common case, so warn them
-		fmt.Println("Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).")
+		msgPrinter.Println("Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).")
 	}
 
 	// Set the pattern and register the node
-	fmt.Println("Changing Horizon state to configured to register this node with Horizon...")
+	msgPrinter.Println("Changing Horizon state to configured to register this node with Horizon...")
 	configuredStr := "configured"
 	configState := api.Configstate{State: &configuredStr}
 	httpCode, respBody := cliutils.HorizonPutPost(http.MethodPut, "node/configstate", []int{201, 200, 400}, configState)
@@ -234,21 +247,24 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		if matches := parseRegisterInputError(respBody); matches != nil && len(matches) > 2 {
 			err_string := fmt.Sprintf("Registration failed because %v", matches[0])
 			if inputFile != "" {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, err_string+" Please define variables for service %v in the input file %v. Run 'hzn unregister' and then 'hzn register...' again", matches[2], inputFile)
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("%v. Please define variables for service %v in the input file %v. Run 'hzn unregister' and then 'hzn register...' again", err_string, matches[2], inputFile))
 			} else {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, err_string+" Please create an input file, define variables for service %v. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.", matches[2])
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("%v. Please create an input file, define variables for service %v. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.", err_string, matches[2]))
 			}
 		}
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "%v", respBody)
 	}
 
-	fmt.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
+	msgPrinter.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
 }
 
 func verifyRegisterParamters(org, pattern, nodeOrgFromFlag string, patternFromFlag string, nodepolicyFlag string) (string, string, string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	if nodeOrgFromFlag != "" || patternFromFlag != "" {
 		if org != "" || pattern != "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "-o and -p are mutually exclusive with <nodeorg> and <pattern> arguments.")
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-o and -p are mutually exclusive with <nodeorg> and <pattern> arguments."))
 		} else {
 			org = nodeOrgFromFlag
 			pattern = patternFromFlag
@@ -257,10 +273,10 @@ func verifyRegisterParamters(org, pattern, nodeOrgFromFlag string, patternFromFl
 
 	if nodepolicyFlag != "" {
 		if patternFromFlag != "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "--policy is mutually exclusive with -p.")
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("--policy is mutually exclusive with -p."))
 		}
 		if pattern != "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "--policy is mutually exclusive with <pattern> argument.")
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("--policy is mutually exclusive with <pattern> argument."))
 		}
 	}
 
@@ -270,20 +286,23 @@ func verifyRegisterParamters(org, pattern, nodeOrgFromFlag string, patternFromFl
 	}
 
 	if org == "" {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Please specify the node organization id.")
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the node organization id."))
 	}
 	return org, pattern, nodepolicyFlag
 }
 
 // isWithinRanges returns true if version is within at least 1 of the ranges in versionRanges
 func isWithinRanges(version string, versionRanges []string) bool {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	for _, vr := range versionRanges {
 		vRange, err := semanticversion.Version_Expression_Factory(vr)
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "invalid version range '%s': %v", vr, err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("invalid version range '%s': %v", vr, err))
 		}
 		if inRange, err := vRange.Is_within_range(version); err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "unable to verify that %v is within %v, error %v", version, vRange, err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("unable to verify that %v is within %v, error %v", version, vRange, err))
 		} else if inRange {
 			return true
 		}
@@ -293,12 +312,15 @@ func isWithinRanges(version string, versionRanges []string) bool {
 
 // GetHighestService queries the exchange for all versions of this service and returns the highest version that is within at least 1 of the version ranges
 func GetHighestService(nodeCreds, org, url, arch string, versionRanges []string) exchange.ServiceDefinition {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	route := "orgs/" + org + "/services?url=" + url + "&arch=" + arch // get all services of this org, url, and arch
 	var svcOutput exchange.GetServicesResponse
 	cliutils.SetWhetherUsingApiKey(nodeCreds)
 	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), route, nodeCreds, []int{200}, &svcOutput)
 	if len(svcOutput.Services) == 0 {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "found no services in the exchange matching: org=%s, url=%s, arch=%s", org, url, arch)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("found no services in the exchange matching: org=%s, url=%s, arch=%s", org, url, arch))
 	}
 
 	// Loop thru the returned services and pick out the highest version that is within one of the versionRanges
@@ -314,14 +336,14 @@ func GetHighestService(nodeCreds, org, url, arch string, versionRanges []string)
 		// else see if this version is higher than the previous highest version
 		c, err := semanticversion.CompareVersions(svcOutput.Services[highestKey].Version, svc.Version)
 		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "error comparing version %v with version %v. %v", svcOutput.Services[highestKey], svc.Version, err)
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("error comparing version %v with version %v. %v", svcOutput.Services[highestKey], svc.Version, err))
 		} else if c == -1 {
 			highestKey = svcKey
 		}
 	}
 
 	if highestKey == "" {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "found no services in the exchange matched: org=%s, specRef=%s, version range=%s, arch=%s", org, url, versionRanges, arch)
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("found no services in the exchange matched: org=%s, specRef=%s, version range=%s, arch=%s", org, url, versionRanges, arch))
 	}
 	return svcOutput.Services[highestKey]
 }
@@ -341,8 +363,11 @@ type SvcMapValue struct {
 
 // AddAllRequiredSvcs
 func AddAllRequiredSvcs(nodeCreds, org, url, arch, versionRange string, allRequiredSvcs map[string]*SvcMapValue) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	// Add this service to the service map
-	cliutils.Verbose("found: %s, %s, %s, %s", org, url, arch, versionRange)
+	cliutils.Verbose(msgPrinter.Sprintf("found: %s, %s, %s, %s", org, url, arch, versionRange))
 	svcKey := formSvcKey(org, url, arch)
 	if s, ok := allRequiredSvcs[svcKey]; ok {
 		// To protect against circular service references, check if we've already seen this exact svc version range
@@ -370,6 +395,9 @@ func AddAllRequiredSvcs(nodeCreds, org, url, arch, versionRange string, allRequi
 
 // CreateInputFile runs thru the services used by this pattern (descending into all required services) and collects the user input needed
 func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	var patOrg string
 	patOrg, pattern = cliutils.TrimOrg(nodeOrg, pattern) // patOrg will either get the prefix from pattern, or default to nodeOrg
 	nodeCreds := cliutils.OrgAndCreds(nodeOrg, nodeIdTok)
@@ -379,7 +407,7 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+patOrg+"/patterns/"+pattern, nodeCreds, []int{200}, &patOutput)
 	patKey := cliutils.OrgAndCreds(patOrg, pattern)
 	if _, ok := patOutput.Patterns[patKey]; !ok {
-		cliutils.Fatal(cliutils.INTERNAL_ERROR, "did not find pattern '%s' as expected", patKey)
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("did not find pattern '%s' as expected", patKey))
 	}
 	if arch == "" {
 		arch = cutil.ArchString()
@@ -390,7 +418,8 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 	allRequiredSvcs := make(map[string]*SvcMapValue) // the key is the combined org, url, arch. The value is the org, url, arch and a list of the versions.
 	for _, svc := range patOutput.Patterns[patKey].Services {
 		if svc.ServiceArch != arch { // filter out services that are not our arch
-			fmt.Printf("Ignoring service that is a different architecture: %s, %s, %s\n", svc.ServiceOrg, svc.ServiceURL, svc.ServiceArch)
+			msgPrinter.Printf("Ignoring service that is a different architecture: %s, %s, %s", svc.ServiceOrg, svc.ServiceURL, svc.ServiceArch)
+			msgPrinter.Println()
 			continue
 		}
 
@@ -426,13 +455,14 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 	// Output the template file
 	jsonBytes, err := json.MarshalIndent(templateFile, "", cliutils.JSON_INDENT)
 	if err != nil {
-		cliutils.Fatal(cliutils.INTERNAL_ERROR, "failed to marshal the user input template file: %v", err)
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("failed to marshal the user input template file: %v", err))
 	}
 
 	if err := ioutil.WriteFile(inputFile, jsonBytes, 0644); err != nil {
-		cliutils.Fatal(cliutils.FILE_IO_ERROR, "problem writing the user input template file: %v", err)
+		cliutils.Fatal(cliutils.FILE_IO_ERROR, msgPrinter.Sprintf("problem writing the user input template file: %v", err))
 	}
-	fmt.Printf("Wrote %s\n", inputFile)
+	msgPrinter.Printf("Wrote %s", inputFile)
+	msgPrinter.Println()
 }
 
 // this function parses the error returned by the registration process to see if the error

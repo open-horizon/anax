@@ -16,6 +16,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/resource"
@@ -32,6 +33,44 @@ import (
 
 const LABEL_PREFIX = "openhorizon.anax"
 const IPT_COLONUS_ISOLATED_CHAIN = "OPENHORIZON-ANAX-ISOLATION"
+
+// messages for event logs
+const (
+	EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_WL   = "Deployment config %v contains unsupported capability for a workload"
+	EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_CONT = "Deployment config %v contains unsupported capability for infrastructure container."
+	EL_CONT_DEPLOYCONF_UNSUPPORT_BIND         = "Deployment config %v contains unsupported bind for a workload, %v"
+	EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR     = "Deployment config %v contains unsupported bind for %v, %v"
+	EL_CONT_ERROR_UNMARSHAL_DEPLOY            = "Error Unmarshalling deployment string %v, error: %v"
+	EL_CONT_ERROR_UNMARSHAL_DEPLOY_OVERRIDE   = "Error Unmarshalling deployment override string %v for agreement %v, error: %v"
+	EL_CONT_START_CONTAINER_ERROR             = "Error starting containers: %v"
+	EL_CONT_START_CONTAINER_ERROR_FOR_AG      = "Error starting containers for agreement %v: %v"
+	EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG    = "Error restarting containers for agreements %v: %v"
+	EL_CONT_CLEAN_OLD_CONTAINER_ERROR         = "Error cleaning up old containers before starting up new containers for %v. Error: %v"
+	EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC       = "Failed to get a list of parent containers for service retry for %v. %v"
+	EL_CONT_FAIL_RESTORE_NW_WITH_PARENT       = "Failed to restoring the network connection with the parents for service %v. %v"
+)
+
+// This is does nothing useful at run time.
+// This code is only used in compileing time to make the eventlog messages gets into the catalog so that
+// they can be translated.
+// The event log messages will be saved in English. But the CLI can request them in different languages.
+func MarkI18nMessages() {
+	// get message printer. anax default language is English
+	msgPrinter := i18n.GetMessagePrinter()
+
+	msgPrinter.Sprintf(EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_WL)
+	msgPrinter.Sprintf(EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_CONT)
+	msgPrinter.Sprintf(EL_CONT_DEPLOYCONF_UNSUPPORT_BIND)
+	msgPrinter.Sprintf(EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR)
+	msgPrinter.Sprintf(EL_CONT_ERROR_UNMARSHAL_DEPLOY)
+	msgPrinter.Sprintf(EL_CONT_ERROR_UNMARSHAL_DEPLOY_OVERRIDE)
+	msgPrinter.Sprintf(EL_CONT_START_CONTAINER_ERROR)
+	msgPrinter.Sprintf(EL_CONT_START_CONTAINER_ERROR_FOR_AG)
+	msgPrinter.Sprintf(EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG)
+	msgPrinter.Sprintf(EL_CONT_CLEAN_OLD_CONTAINER_ERROR)
+	msgPrinter.Sprintf(EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC)
+	msgPrinter.Sprintf(EL_CONT_FAIL_RESTORE_NW_WITH_PARENT)
+}
 
 /*
  *
@@ -1263,7 +1302,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			deploymentDesc := cmd.DeploymentDescription
 			if valid := deploymentDesc.IsValidFor("workload"); !valid {
 				eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Deployment config %v contains unsupported capability for a workload", cmd.AgreementLaunchContext.Configure.Deployment),
+					persistence.NewMessageMeta(EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_WL, cmd.AgreementLaunchContext.Configure.Deployment),
 					persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG, ags[0])
 				glog.Errorf("Deployment config %v contains unsupported capability for a workload", cmd.AgreementLaunchContext.Configure.Deployment)
 				b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
@@ -1274,7 +1313,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				overrideDD := new(containermessage.DeploymentDescription)
 				if err := json.Unmarshal([]byte(cmd.AgreementLaunchContext.Configure.Overrides), &overrideDD); err != nil {
 					eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR,
-						fmt.Sprintf("Error Unmarshalling deployment override string %v for agreement %v, error: %v", cmd.AgreementLaunchContext.Configure.Overrides, agreementId, err),
+						persistence.NewMessageMeta(EL_CONT_ERROR_UNMARSHAL_DEPLOY_OVERRIDE, cmd.AgreementLaunchContext.Configure.Overrides, agreementId, err),
 						persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG, ags[0])
 					glog.Errorf("Error Unmarshalling deployment override string %v for agreement %v, error: %v", cmd.AgreementLaunchContext.Configure.Overrides, agreementId, err)
 					return true
@@ -1289,7 +1328,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				glog.V(5).Infof("Checking bind permissions for service %v", serviceName)
 				if err := hasValidBindPermissions(service.Binds); err != nil {
 					eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR,
-						fmt.Sprintf("Deployment config %v contains unsupported bind for a workload, %v", cmd.AgreementLaunchContext.Configure.Deployment, err),
+						persistence.NewMessageMeta(EL_CONT_DEPLOYCONF_UNSUPPORT_BIND, cmd.AgreementLaunchContext.Configure.Deployment, err),
 						persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG, ags[0])
 					glog.Errorf("Deployment config for service %v contains unsupported bind, %v", serviceName, err)
 					b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
@@ -1312,7 +1351,10 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 			// Create the docker configuration and launch the containers.
 			if deploymentConfig, err := b.ResourcesCreate(agreementId, cmd.AgreementLaunchContext.AgreementProtocol, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer); err != nil {
-				eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR, fmt.Sprintf("Error starting containers: %v", err), persistence.EC_ERROR_START_CONTAINER, ags[0])
+				eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR,
+					persistence.NewMessageMeta(EL_CONT_START_CONTAINER_ERROR, err),
+					persistence.EC_ERROR_START_CONTAINER,
+					ags[0])
 				glog.Errorf("Error starting containers: %v", err)
 				b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, deploymentConfig) // still using deployment here, need it to shutdown containers
 
@@ -1367,7 +1409,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			err := b.ResourcesRemove([]string{lc.Name})
 			if err != nil {
 				eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_WARN,
-					fmt.Sprintf("Error cleaning up old containers before starting up new containers for %v. Error: %v", lc.Name, err),
+					persistence.NewMessageMeta(EL_CONT_CLEAN_OLD_CONTAINER_ERROR, lc.Name, err),
 					persistence.EC_REMOVE_OLD_DEPENDENT_SERVICE_FAILED,
 					lc.Name, lc.Name, "", "", "", []string{})
 				glog.Errorf("Error cleaning up old containers before starting up new containers for %v. Error: %v", lc.Name, err)
@@ -1383,7 +1425,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		deploymentDesc := new(containermessage.DeploymentDescription)
 		if err := json.Unmarshal([]byte(lc.Configure.Deployment), &deploymentDesc); err != nil {
 			eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Error Unmarshalling deployment string %v, error: %v", lc.Configure.Deployment, err),
+				persistence.NewMessageMeta(EL_CONT_ERROR_UNMARSHAL_DEPLOY, lc.Configure.Deployment, err),
 				persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG,
 				"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
 			glog.Errorf("Error Unmarshalling deployment string %v, error: %v", lc.Configure.Deployment, err)
@@ -1391,10 +1433,10 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			return true
 		} else if valid := deploymentDesc.IsValidFor("infrastructure"); !valid {
 			eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
-				fmt.Sprintf("Deployment config %v contains unsupported capability for infrastructure container.", lc.Configure.Deployment),
+				persistence.NewMessageMeta(EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_CONT, lc.Configure.Deployment),
 				persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG,
 				"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
-			glog.Errorf("Deployment config %v contains unsupported capability for infrastructure container", lc.Configure.Deployment)
+			glog.Errorf("Deployment config %v contains unsupported capability for infrastructure container.", lc.Configure.Deployment)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 			return true
 		}
@@ -1406,7 +1448,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			glog.V(5).Infof("Checking bind permissions for service %v", serviceName)
 			if err := hasValidBindPermissions(service.Binds); err != nil {
 				eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
-					fmt.Sprintf("Deployment config %v contains unsupported bind for %v, %v", lc.Configure.Deployment, serviceName, err),
+					persistence.NewMessageMeta(EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR, lc.Configure.Deployment, serviceName, err),
 					persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG,
 					"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
 				glog.Errorf("Deployment config for service %v contains unsupported bind, %v", serviceName, err)
@@ -1455,13 +1497,13 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 		// Get the container started.
 		if deployment, err := b.ResourcesCreate(lc.Name, "", &lc.Configure, deploymentDesc, []byte(""), *lc.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer); err != nil {
-			log_str := fmt.Sprintf("Error starting containers for agreement %v: %v", lc.AgreementIds, err)
+			log_str := EL_CONT_START_CONTAINER_ERROR_FOR_AG
 			if lc.IsRetry {
-				log_str = fmt.Sprintf("Error restarting containers for agreements %v: %v", lc.AgreementIds, err)
+				log_str = EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG
 			}
-
 			eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
-				log_str, persistence.EC_ERROR_START_CONTAINER, "",
+				persistence.NewMessageMeta(log_str, fmt.Sprintf("%v", lc.AgreementIds), err),
+				persistence.EC_ERROR_START_CONTAINER, "",
 				lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
 			glog.Errorf("Error starting containers: %v", err)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
@@ -1473,14 +1515,14 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				glog.V(5).Infof("Retrying process restoring the network connection with the parents for service %v.", lc.Name)
 				if ms_parents_containers, err := b.findParentContainersForService(lc.Name); err != nil {
 					eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
-						fmt.Sprintf("Failed to get a list of parent containers for service retry for %v. %v", lc.Name, err),
+						persistence.NewMessageMeta(EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC, lc.Name, err),
 						persistence.EC_DEPENDENT_SERVICE_RETRY_FAILED, "",
 						lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
 					glog.Errorf("Failed to get a list of parent containers for service retry for %v. %v", lc.Name, err)
 				} else {
 					if err := b.connectContainers(lc.Name, ms_parents_containers); err != nil {
 						eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
-							fmt.Sprintf("Failed to restoring the network connection with the parents for service %v. %v", lc.Name, err),
+							persistence.NewMessageMeta(EL_CONT_FAIL_RESTORE_NW_WITH_PARENT, lc.Name, err),
 							persistence.EC_DEPENDENT_SERVICE_RETRY_FAILED, "",
 							lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
 						glog.Errorf("Failed to restoring the network connection with the parents for service %v. %v", lc.Name, err)

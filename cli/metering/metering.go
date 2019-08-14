@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 )
 
@@ -89,11 +90,14 @@ func (a *ArchivedMetering) CopyAgreementInto(agreement persistence.EstablishedAg
 }
 
 func List(archivedMetering bool) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	apiOutput := make(map[string]map[string][]persistence.EstablishedAgreement, 0)
 	cliutils.HorizonGet("agreement", []int{200}, &apiOutput, false)
 	var ok bool
 	if _, ok = apiOutput["agreements"]; !ok {
-		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include 'agreements' key")
+		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("horizon api agreement output did not include 'agreements' key"))
 	}
 	whichAgreements := "active"
 	if archivedMetering {
@@ -101,7 +105,7 @@ func List(archivedMetering bool) {
 	}
 	var apiAgreements []persistence.EstablishedAgreement
 	if apiAgreements, ok = apiOutput["agreements"][whichAgreements]; !ok {
-		cliutils.Fatal(cliutils.HTTP_ERROR, "horizon api agreement output did not include '%s' key", whichAgreements)
+		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("horizon api agreement output did not include '%s' key", whichAgreements))
 	}
 
 	// Go thru the apiAgreements and convert into our output struct and then print
@@ -112,7 +116,7 @@ func List(archivedMetering bool) {
 		}
 		jsonBytes, err := json.MarshalIndent(metering, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn metering list' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn metering list' output: %v", err))
 		}
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
@@ -122,7 +126,7 @@ func List(archivedMetering bool) {
 		}
 		jsonBytes, err := json.MarshalIndent(metering, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn metering list' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn metering list' output: %v", err))
 		}
 		fmt.Printf("%s\n", jsonBytes)
 	}

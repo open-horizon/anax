@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"regexp"
 	"strings"
@@ -38,7 +39,7 @@ func getSelectionString(selections []string) (string, error) {
 			}
 
 			if len(op) > 1 {
-				return "", fmt.Errorf("The selection string %v is not valid.", v)
+				return "", fmt.Errorf(i18n.GetMessagePrinter().Sprintf("The selection string %v is not valid.", v))
 			}
 
 			real_op := ""
@@ -56,7 +57,7 @@ func getSelectionString(selections []string) (string, error) {
 			}
 			sels = append(sels, fmt.Sprintf("%v%v%v", attrib, real_op, val))
 		} else {
-			return "", fmt.Errorf("The selection string %v is not valid.", v)
+			return "", fmt.Errorf(i18n.GetMessagePrinter().Sprintf("The selection string %v is not valid.", v))
 		}
 	}
 	return strings.Join(sels, "&"), nil
@@ -96,7 +97,7 @@ func List(all bool, detail bool, selections []string) {
 
 		jsonBytes, err := json.MarshalIndent(long_output, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn eventlog list' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn eventlog list' output: %v", err))
 		}
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
@@ -107,7 +108,7 @@ func List(all bool, detail bool, selections []string) {
 		}
 		jsonBytes, err := json.MarshalIndent(short_output, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, "failed to marshal 'hzn eventlog list' output: %v", err)
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn eventlog list' output: %v", err))
 		}
 		fmt.Printf("%s\n", jsonBytes)
 	}
