@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# this command copies the out.gotext.json files from locales and cli/locales to i18n_translation directory
+mkdir -p $PKGPATH/i18n_translation/anax
+mkdir -p $PKGPATH/i18n_translation/cli
+
+cd $PKGPATH/locales
+cp --parents */out.gotext.json $PKGPATH/i18n_translation/anax
+
+cd $PKGPATH/cli/locales
+cp --parents */out.gotext.json $PKGPATH/i18n_translation/cli
+

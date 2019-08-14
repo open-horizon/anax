@@ -17,6 +17,7 @@ anax/doc/*.png
 minikube-setup-by-test
 /css/cloud-sync-service
 /ess/edge-sync-service
-out.gotext.json
+/locales/*/out.gotext.json
+/cli/locales/*/out.gotext.json
 /i18n_messages/catalog.go
 /cli/i18n_messages/catalog.go
