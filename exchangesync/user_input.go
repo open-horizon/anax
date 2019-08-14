@@ -287,21 +287,12 @@ func DeleteNodeUserInput(pDevice *persistence.ExchangeDevice, db *bolt.DB,
 	getDevice exchange.DeviceHandler,
 	patchDevice exchange.PatchDeviceHandler) error {
 
-	// check if the user input got changed on the exchange since last observation
-	// if it is changed, then reject the deletion.
-	changed, _, err := ExchangeNodeUserInputChanged(pDevice, db, getDevice)
-	if err != nil {
-		return fmt.Errorf("Failed to check the exchange for the node user input: %v.", err)
-	} else if changed {
-		return fmt.Errorf("Cannot delete this node user input because the local node user input is out of sync with the exchange copy. Please wait a minute and try again.")
-	}
-
 	// delete the node policy from the exchange if it exists
 	userInputs := []policy.UserInput{}
 	return SaveNodeUserInput(pDevice, db, userInputs, getDevice, patchDevice)
 }
 
-// Update the node user input on local db and the exchange
+// Update (create new or replace) node user input on local db and the exchange
 func UpdateNodeUserInput(pDevice *persistence.ExchangeDevice, db *bolt.DB,
 	userInputs []policy.UserInput,
 	getDevice exchange.DeviceHandler,
@@ -313,7 +304,10 @@ func UpdateNodeUserInput(pDevice *persistence.ExchangeDevice, db *bolt.DB,
 	if err != nil {
 		return nil, fmt.Errorf("Failed to check the exchange for the node user input: %v.", err)
 	} else if changed {
-		return nil, fmt.Errorf("Cannot accept this node user input because the local node user input is out of sync with the exchange copy. Please wait a minute and try again.")
+		// exchange is the master
+		if _, _, err := SyncLocalUserInputWithExchange(db, pDevice, getDevice); err != nil {
+			return nil, fmt.Errorf("Failed to sync the local user input with the exchange for node %v/%v. %v", pDevice.Org, pDevice.Id, err)
+		}
 	}
 
 	if err := SaveNodeUserInput(pDevice, db, userInputs, getDevice, patchDevice); err != nil {
@@ -342,7 +336,10 @@ func PatchNodeUserInput(pDevice *persistence.ExchangeDevice, db *bolt.DB,
 	if err != nil {
 		return fmt.Errorf("Failed to check the exchange for the node user input: %v.", err)
 	} else if changed {
-		return fmt.Errorf("Cannot accept this node user input because the local node user input is out of sync with the exchange copy. Please wait a minute and try again.")
+		// exchange is the master
+		if _, _, err := SyncLocalUserInputWithExchange(db, pDevice, getDevice); err != nil {
+			return fmt.Errorf("Failed to sync the local user input with the exchange for node %v/%v. %v", pDevice.Org, pDevice.Id, err)
+		}
 	}
 
 	// patch the exchange userinput with the newly added one on the node

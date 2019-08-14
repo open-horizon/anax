@@ -255,6 +255,7 @@ func NodePolicyInitalSetup(db *bolt.DB, config *config.HorizonConfig,
 }
 
 // check if the node policy has been changed from last sync.
+// It returns the latest node policy on the exchange. 
 func ExchangeNodePolicyChanged(pDevice *persistence.ExchangeDevice, db *bolt.DB, getExchangeNodePolicy exchange.NodePolicyHandler) (bool, *externalpolicy.ExternalPolicy, error) {
 
 	// get the node policy from the exchange
@@ -288,20 +289,18 @@ func ExchangeNodePolicyChanged(pDevice *persistence.ExchangeDevice, db *bolt.DB,
 
 // Delete the node policy from local db and the exchange
 func DeleteNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB,
-	getExchangeNodePolicy exchange.NodePolicyHandler,
+	getExchangeNodePolicy exchange.NodePolicyHandler, 
 	deleteExchangeNodePolicy exchange.DeleteNodePolicyHandler) error {
 
 	nodePolicyUpdateLock.Lock()
 	defer nodePolicyUpdateLock.Unlock()
 
-	// check if the policy got changed on the exchange since last observation
-	// if it is changed, then reject the deletion.
-	changed, nodePolicy, err := ExchangeNodePolicyChanged(pDevice, db, getExchangeNodePolicy)
+	// check if the policy got changed on the exchange since last observation,
+	// the returned the nodePolicy is the current exchange node policy
+	_, nodePolicy, err := ExchangeNodePolicyChanged(pDevice, db, getExchangeNodePolicy)
 	if err != nil {
 		return fmt.Errorf("Failed to check the exchange for the node policy: %v.", err)
-	} else if changed {
-		return fmt.Errorf("Cannot delete this node policy because the local node policy is out of sync with the exchange copy. Please wait a minute and try again.")
-	}
+	} 
 
 	// delete the node policy from the exchange if it exists
 	if nodePolicy != nil {
@@ -321,7 +320,7 @@ func DeleteNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB,
 	return nil
 }
 
-// Update the node policy on local db and the exchange
+// Update (create new or replace old) node policy on local db and the exchange
 func UpdateNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, nodePolicy *externalpolicy.ExternalPolicy,
 	nodeGetPolicyHandler exchange.NodePolicyHandler,
 	nodePutPolicyHandler exchange.PutNodePolicyHandler) error {
@@ -342,14 +341,6 @@ func UpdateNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, nodePoli
 		return fmt.Errorf("Node policy with built-in properties does not validate. %v", err)
 	}
 
-	// check if the policy is changed or not on the exchange since last observation,
-	// if it is changed, then reject the updates.
-	if changed, _, err := ExchangeNodePolicyChanged(pDevice, db, nodeGetPolicyHandler); err != nil {
-		return fmt.Errorf("Failed to check the exchange for the node policy: %v.", err)
-	} else if changed {
-		return fmt.Errorf("Cannot accept this node policy because the local node policy is out of sync with the exchange copy. Please wait a minute and try again.")
-	}
-
 	// save it into the exchange and sync the local db with it.
 	if _, err := nodePutPolicyHandler(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), &exchange.ExchangePolicy{ExternalPolicy: *nodePolicy}); err != nil {
 		return fmt.Errorf("Unable to save node policy in exchange, error %v", err)
@@ -364,6 +355,15 @@ func PatchNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, patchObje
 	nodeGetPolicyHandler exchange.NodePolicyHandler,
 	nodePutPolicyHandler exchange.PutNodePolicyHandler) (*externalpolicy.ExternalPolicy, error) {
 
+	if changed, _, err := ExchangeNodePolicyChanged(pDevice, db, nodeGetPolicyHandler); err != nil {
+		return nil, fmt.Errorf("Failed to check the exchange for the node policy: %v.", err)
+	} else if changed {
+		_, _, err = SyncNodePolicyWithExchange(db, pDevice, nodeGetPolicyHandler, nodePutPolicyHandler)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to sync the local node policy with the exchange copy. %v", err)
+		}
+	}
+
 	// get the local node policy
 	localNodePolicy, err := persistence.FindNodePolicy(db)
 	if err != nil {
@@ -376,11 +376,6 @@ func PatchNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, patchObje
 		localNodePolicy.Constraints = conastraintPatch
 	} else {
 		return nil, fmt.Errorf("Unable to determine type of patch. %T %v", patchObject, patchObject)
-	}
-	if changed, _, err := ExchangeNodePolicyChanged(pDevice, db, nodeGetPolicyHandler); err != nil {
-		return nil, fmt.Errorf("Failed to check the exchange for the node policy: %v.", err)
-	} else if changed {
-		return nil, fmt.Errorf("Cannot accept this node policy because the local node policy is out of sync with the exchange copy. Please wait a minute and try again.")
 	}
 
 	// save it into the exchange and sync the local db with it.
