@@ -23,7 +23,7 @@ import (
 const (
 	EL_PROD_AG_EXISTS_IGNORE_PROPOSAL  = "Agreement %v already exists, ignoring proposal: %v"
 	EL_PROD_ERR_DEMARSH_TC_FOR_AG      = "received error demarshalling TsAndCs for agrement %v, %v"
-	EL_PROD_NODE_REJECTED_PROPOSAL_MSG = "Node received Proposal message for service %v/%v from the agbot %v."
+	EL_PROD_NODE_REJECTED_PROPOSAL_MSG = "Node received Proposal message using agreement %v for service %v/%v from the agbot %v."
 	EL_PROD_NODE_REJECTED_PROPOSAL     = "Node rejected the proposal for service %v/%v."
 	EL_PROD_ERR_HANDLE_PROPOSAL        = "Error handling proposal for service %v/%v. Error: %v"
 )
@@ -199,7 +199,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 		eventlog.LogAgreementEvent2(
 			w.db,
 			persistence.SEVERITY_INFO,
-			persistence.NewMessageMeta(EL_PROD_NODE_REJECTED_PROPOSAL_MSG, worg, wls, proposal.ConsumerId()),
+			persistence.NewMessageMeta(EL_PROD_NODE_REJECTED_PROPOSAL_MSG, proposal.AgreementId(), worg, wls, proposal.ConsumerId()),
 			persistence.EC_RECEIVED_PROPOSAL,
 			proposal.AgreementId(),
 			persistence.WorkloadInfo{URL: wls, Org: worg, Version: wversion, Arch: warch},
