@@ -175,7 +175,6 @@ func VerifyWorkloadVarTypes(varValue interface{}, expectedType string) error {
 	case float64:
 		varNum := varValue.(float64)
 		strNum := strconv.FormatFloat(varNum, 'E', -1, 64)
-		//strNum := varValue.(json.Number).String()
 		if expectedType != "int" && expectedType != "float" {
 			return errors.New(fmt.Sprintf("type number, expecting %v.", expectedType))
 		} else if strings.Contains(strNum, ".") && expectedType == "int" {
