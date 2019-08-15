@@ -1,5 +1,5 @@
-Note for translating out.gotext.json files:
-1. Ignore the 'en' directory.
+Note for translating "*.out.gotext.json" files:
+1. Ignore the .en files.
 2. Please only make the changes to the line with: "translation": "". 
    The original English message is above this line with: "message":.
    Do not modify the "message" line even if you see English errors.
