@@ -12,7 +12,6 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
-	"strings"
 )
 
 // Return an empty user input object or the object that's in the local database.
@@ -216,8 +215,7 @@ func ValidateUserInput(userInput policy.UserInput, getService exchange.ServiceHa
 			// give back a warning with this errorString
 			inputNameNotDefinedInService = append(inputNameNotDefinedInService, policyInputName)
 		} else {
-			typeValidated, err := isCorrectType(policyInputValue, serviceInput.Type)
-			if !typeValidated {
+			if err := cutil.VerifyWorkloadVarTypes(policyInputValue, serviceInput.Type); err != nil {
 				return false, err
 			}
 		}
@@ -230,83 +228,4 @@ func ValidateUserInput(userInput policy.UserInput, getService exchange.ServiceHa
 	}
 
 	return true, nil
-}
-
-func isCorrectType(policyInputValue interface{}, serviceInputType string) (bool, error) {
-	switch strings.ToLower(serviceInputType) {
-	case "string":
-		if isString(policyInputValue) {
-			return true, nil
-		}
-	case "int":
-		if isInt(policyInputValue) {
-			return true, nil
-		}
-	case "float":
-		if isFloat64(policyInputValue) {
-			return true, nil
-		}
-	case "boolean", "bool":
-		if isBoolean(policyInputValue) {
-			return true, nil
-		}
-	case "list of strings", "string list":
-		if isStringList(policyInputValue) {
-			return true, nil
-		}
-	}
-	err := errors.New(fmt.Sprintf("Input value %v in userinput is not the correct type, should be %v", policyInputValue, serviceInputType))
-	return false, err
-}
-
-func isInt(x interface{}) bool {
-	switch x.(type) {
-	case int:
-		return true
-	default:
-		return false
-	}
-}
-
-func isFloat64(x interface{}) bool {
-	switch x.(type) {
-	case float64:
-		return true
-	default:
-		return false
-	}
-}
-
-// This function checks the type of the input interface object to see if it's a string.
-func isString(x interface{}) bool {
-	switch x.(type) {
-	case string:
-		return true
-	default:
-		return false
-	}
-}
-
-func isStringList(x interface{}) bool {
-	switch t := x.(type) {
-	case []interface{}:
-		for _, n := range t {
-			if !isString(n) {
-				return false
-			}
-		}
-		return true
-	default:
-		return false
-	}
-}
-
-// This function checks the type of the input interface object to see if it's a boolean.
-func isBoolean(x interface{}) bool {
-	switch x.(type) {
-	case bool:
-		return true
-	default:
-		return false
-	}
 }
