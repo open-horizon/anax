@@ -1,0 +1,14 @@
+Note for translating out.gotext.json files:
+1. Ignore the 'en' directory.
+2. Please only make the changes to the line with: "translation": "". 
+   The original English message is above this line with: "message":.
+   Do not modify the "message" line even if you see English errors.
+   Do not modify any other lines.
+3. For text within {} or with leading $:
+   For example:
+      "Property value is of type {ActualType}, expected type {DeclaredType}".
+      "Edge $SERVICE_NAME Service Pattern for $ARCH".
+   They are variables that will be replaced by the code. 
+   Please keep the text within {} and with leading $ sign as is. 
+   You can change the order but please do not translate them.
+

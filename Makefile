@@ -108,7 +108,7 @@ endif
 all: deps i18n-catalog all-nodeps
 all-nodeps: gopathlinks $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE)
 	
-noi18n: deps all-nodeps	
+noi18n: deps all-nodeps
 
 $(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathlinks
 	@echo "Producing $(EXECUTABLE) given arch: $(arch)"
@@ -375,6 +375,13 @@ i18n-catalog: deps $(TMPGOPATH)/bin/gotext
 		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
 			tools/update-i18n-messages
 
+i18n-translation: deps i18n-catalog all-nodeps
+	@echo "Copying message files for translation"
+	cd $(PKGPATH) && \
+		export PKGPATH=$(PKGPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
+			tools/copy-i18n-messages
+
+
 $(TMPGOPATH)/bin/gotext: gopathlinks
 	if [ ! -e "$(TMPGOPATH)/bin/gotext" ]; then \
 		echo "Fetching gotext"; \
@@ -456,4 +463,4 @@ diagrams:
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/protocolSequenceDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/horizonSequenceDiagram.txt
 
-.PHONY: check clean deps format gopathlinks install lint mostlyclean pull i18n-catalog test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-docker gen-mac-key install-mac-key css-docker-image ess-promote css-docker-image ess-promote
+.PHONY: check clean deps format gopathlinks install lint mostlyclean pull i18n-catalog i18n-translation test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-docker gen-mac-key install-mac-key css-docker-image ess-promote css-docker-image ess-promote
