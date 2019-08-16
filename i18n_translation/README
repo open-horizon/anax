@@ -1,5 +1,15 @@
 Note for translating "*.out.gotext.json" files:
-1. Ignore the .en files.
+1. At line 2, change the value of "language" from "en" to your lanuage
+   it could be
+	de
+	es
+	fr
+	it
+	ja
+	ko
+	pt-BR
+	zh-CN
+	zh-TW
 2. Please only make the changes to the line with: "translation": "". 
    The original English message is above this line with: "message":.
    Do not modify the "message" line even if you see English errors.
