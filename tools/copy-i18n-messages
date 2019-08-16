@@ -1,14 +1,6 @@
 #!/bin/bash
 
 # this command copies the out.gotext.json files from locales and cli/locales to i18n_translation directory
-cd $PKGPATH/locales
-for dirname in */; do
-	dir=${dirname%/}
-    cp ${dir}/out.gotext.json $PKGPATH/i18n_translation/anax.out.gotext.json.${dir}
- done
-
-cd $PKGPATH/cli/locales
-for dirname in */; do 
-	dir=${dirname%/}
-    cp ${dir}/out.gotext.json $PKGPATH/i18n_translation/hzn.out.gotext.json.${dir}
-done
+cp $PKGPATH/locales/en/out.gotext.json $PKGPATH/i18n_translation/anax.out.gotext.json
+ 
+cp $PKGPATH/cli/locales/en/out.gotext.json $PKGPATH/i18n_translation/hzn.out.gotext.json
