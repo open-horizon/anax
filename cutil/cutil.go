@@ -172,6 +172,14 @@ func VerifyWorkloadVarTypes(varValue interface{}, expectedType string) error {
 		} else if strings.Contains(strNum, ".") && expectedType == "int" {
 			return errors.New(fmt.Sprintf("type float, expecting int."))
 		}
+	case float64:
+		varNum := varValue.(float64)
+		strNum := strconv.FormatFloat(varNum, 'E', -1, 64)
+		if expectedType != "int" && expectedType != "float" {
+			return errors.New(fmt.Sprintf("type number, expecting %v.", expectedType))
+		} else if strings.Contains(strNum, ".") && expectedType == "int" {
+			return errors.New(fmt.Sprintf("type float64, expecting int."))
+		}
 	case []interface{}:
 		if expectedType != "list of strings" {
 			return errors.New(fmt.Sprintf("type %T, expecting %v.", varValue, expectedType))
