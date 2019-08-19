@@ -149,7 +149,7 @@ func AgbotRemoveBusinessPolicy(org, userPw, agbot, PolOrg string) {
 	cliutils.SetWhetherUsingApiKey(userPw)
 	org, agbot = cliutils.TrimOrg(org, agbot)
 	polId := formServicedObjectId(PolOrg, "*", PolOrg)
-	i18n.GetMessagePrinter().Printf("Removing Business policy org %s' from agbot '%s' ...", polOrg, agbot)
+	i18n.GetMessagePrinter().Printf("Removing Business policy org %s' from agbot '%s' ...", PolOrg, agbot)
 	i18n.GetMessagePrinter().Println()	
 	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/businesspols/"+polId, cliutils.OrgAndCreds(org, userPw), []int{204})
 }
