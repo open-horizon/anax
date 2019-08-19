@@ -3399,7 +3399,7 @@
     {
       "id": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
       "message": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
-      "translation": "{errstring}. Defina las variables para el servicio {Matches2} en el archivo de entrada {InputFile}. Ejecute 'hzn unregister' y, a continuación, ' hzn register ...' otra vez",
+      "translation": "{Errstring}. Defina las variables para el servicio {Matches2} en el archivo de entrada {InputFile}. Ejecute 'hzn unregister' y, a continuación, ' hzn register ...' otra vez",
       "placeholders": [
         {
           "id": "Errstring",
@@ -3430,7 +3430,7 @@
     {
       "id": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
       "message": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
-      "translation": "{errstring}. Cree un archivo de entrada, defina variables para el servicio {Matches2}. Ejecute 'hzn unregister' y, a continuación, ' hzn register ...' de nuevo con el distintivo -f para especificar el archivo de entrada.",
+      "translation": "{Errstring}. Cree un archivo de entrada, defina variables para el servicio {Matches2}. Ejecute 'hzn unregister' y, a continuación, ' hzn register ...' de nuevo con el distintivo -f para especificar el archivo de entrada.",
       "placeholders": [
         {
           "id": "Errstring",
