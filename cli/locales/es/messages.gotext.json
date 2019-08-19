@@ -831,7 +831,7 @@
     {
       "id": "Failed to get the hzn.json configuration file under {Project} directory. Error: {Err}",
       "message": "Failed to get the hzn.json configuration file under {Project} directory. Error: {Err}",
-      "translation": "No se ha podido obtener el archivo de configuración hzn.json en el directorio {Proyecto}. Error: {Err}",
+      "translation": "No se ha podido obtener el archivo de configuración hzn.json en el directorio {Project}. Error: {Err}",
       "placeholders": [
         {
           "id": "Project",
