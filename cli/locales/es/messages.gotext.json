@@ -10674,7 +10674,7 @@
     {
       "id": "Error parsing the selections {Form}. {Err}",
       "message": "Error parsing the selections {Form}. {Err}",
-      "translation": "Error al analizar las selecciones {Formulario}. {Err}",
+      "translation": "Error al analizar las selecciones {Form}. {Err}",
       "placeholders": [
         {
           "id": "Form",
