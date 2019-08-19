@@ -2260,7 +2260,7 @@
     {
       "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
       "message": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "El valor de propiedad es de tipo {ActualType}, se esperaba el tipo {DeclaredType}",
+      "translation": "El valor de la propiedad es de tipo {ActualType}, se esperaba el tipo {DeclaredType}",
       "placeholders": [
         {
           "id": "ActualType",
