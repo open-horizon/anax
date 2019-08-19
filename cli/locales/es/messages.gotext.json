@@ -628,7 +628,7 @@
     {
       "id": "dependency validation failed, unable to verify version range {Version} is within required range {Expression}, error: {Err}",
       "message": "dependency validation failed, unable to verify version range {Version} is within required range {Expression}, error: {Err}",
-      "translation": "la validación de la dependencia ha fallado, no se ha podido verificar el rango de versión {Version} dentro del rango necesario {Expresión}, error: {Err}",
+      "translation": "la validación de la dependencia ha fallado, no se ha podido verificar el rango de versión {Version} dentro del rango necesario {Expression}, error: {Err}",
       "placeholders": [
         {
           "id": "Version",
@@ -7130,7 +7130,7 @@
     {
       "id": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is <property> == <value>",
       "message": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is <property> == <value>",
-      "translation": "se han encontrado {Lenpieces} token (s), se esperaba 3 en una expresión {Expresión}, el formato esperado es <property> == <value>",
+      "translation": "se han encontrado {Lenpieces} token (s), se esperaba 3 en una expresión {Expression}, el formato esperado es <property> == <value>",
       "placeholders": [
         {
           "id": "Lenpieces",
@@ -7153,7 +7153,7 @@
     {
       "id": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is expression with 3 tokens: <property> <operator> <value> in constraint expression",
       "message": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is expression with 3 tokens: <property> <operator> <value> in constraint expression",
-      "translation": "se han encontrado {Lenpieces} señal (s), se esperaba 3 en una expresión {Expresión}, el formato esperado es expresión con 3 señales: <property><operator><value> en la expresión de restricción",
+      "translation": "se han encontrado {Lenpieces} señal (s), se esperaba 3 en una expresión {Expression}, el formato esperado es expresión con 3 señales: <property><operator><value> en la expresión de restricción",
       "placeholders": [
         {
           "id": "Lenpieces",
@@ -7176,7 +7176,7 @@
     {
       "id": "Expression: {Expression} should contain valid comparison operator - wrong operator {Pieces1}. Allowed operators: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
       "message": "Expression: {Expression} should contain valid comparison operator - wrong operator {Pieces1}. Allowed operators: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
-      "translation": "Expresión: {Expresión} debe contener un operador de comparación válido-operador erróneo {Pieces1}. Operadores permitidos: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
+      "translation": "Expresión: {Expression} debe contener un operador de comparación válido-operador erróneo {Pieces1}. Operadores permitidos: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
       "placeholders": [
         {
           "id": "Expression",
@@ -7401,7 +7401,7 @@
     {
       "id": "Expression: {Expression} is not valid",
       "message": "Expression: {Expression} is not valid",
-      "translation": "Expresión: {Expresión} no es válida",
+      "translation": "Expresión: {Expression} no es válida",
       "placeholders": [
         {
           "id": "Expression",
